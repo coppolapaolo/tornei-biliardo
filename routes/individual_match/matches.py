@@ -474,6 +474,91 @@ def cancel_match(match_id):
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
 
+@individual_match_bp.route("/matches/<int:match_id>/edit", methods=["GET", "POST"])
+@RoleRequirement.player_or_director_required
+def edit_match(match_id):
+    """Corregge come si gioca una sfida, finché non è stato segnato niente.
+
+    Stessi campi dell'avvio rapido e **stesso** normalizzatore
+    (`QuickMatchService.resolve_settings`): un secondo parser qui vorrebbe dire
+    due moduli che accettano cose diverse.
+    """
+    from flask import render_template
+    from models.exceptions import DomainError, http_status_for_exception
+    from models.individual_match.quick_match_service import QuickMatchService
+    from models.location.models import BilliardHall
+
+    match = IndividualMatch.query.get_or_404(match_id)
+
+    if not match.is_player(current_user.id):
+        flash(_("Accesso negato a questo match."), "danger")
+        return redirect(url_for("individual_match.match_list"))
+
+    if not match.can_be_revised():
+        flash(
+            _("La sfida è cominciata: come si gioca non si cambia più."),
+            "warning",
+        )
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+    if request.method == "GET":
+        return render_template(
+            "individual_match/edit_match.html",
+            match=match,
+            settings=QuickMatchService.settings_of(match),
+            verified_venues=(
+                BilliardHall.query.filter_by(is_active=True, verified=True)
+                .order_by(BilliardHall.name)
+                .all()
+            ),
+        )
+
+    data = request.get_json() if request.is_json else request.form
+    config = {
+        "billiard_hall_id": data.get("billiard_hall_id") or None,
+        "location": data.get("location"),
+        "discipline": data.get("discipline") or None,
+        "match_format": data.get("match_format") or None,
+        "distance": data.get("distance") or None,
+        "match_distance": data.get("match_distance") or None,
+        "break_rule": data.get("break_rule") or None,
+    }
+    if data.get("is_race_to") is not None:
+        config["is_race_to"] = str(data.get("is_race_to")).lower() == "true"
+
+    try:
+        settings = QuickMatchService.resolve_settings(
+            QuickMatchService.settings_of(match), config
+        )
+        IndividualMatchService.update_settings(
+            match_id,
+            current_user.id,
+            discipline=settings["discipline"],
+            distance=settings["distance"],
+            is_race_to=settings["is_race_to"],
+            break_rule=settings["break_rule"],
+            is_multi_set=settings["is_multi_set"],
+            match_distance=settings["match_distance"],
+            is_race_to_sets=True if settings["is_multi_set"] else None,
+            billiard_hall_id=settings["billiard_hall_id"],
+            location=settings["location"] or None,
+        )
+    except (DomainError, ValueError) as exc:
+        if request.is_json:
+            stato = (
+                http_status_for_exception(exc) if isinstance(exc, DomainError) else 400
+            )
+            return jsonify({"success": False, "error": str(exc)}), stato
+        flash(str(exc), "danger")
+        return redirect(url_for("individual_match.edit_match", match_id=match_id))
+
+    if request.is_json:
+        return jsonify({"success": True, "match_id": match_id})
+
+    flash(_("Sfida aggiornata."), "success")
+    return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+
 @individual_match_bp.route("/matches/<int:match_id>/update-times", methods=["POST"])
 @RoleRequirement.player_or_director_required
 def update_match_times(match_id):

@@ -492,10 +492,77 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         self.ended_at = utc_now()
         self.winner_id = winner_id
 
+    def has_recorded_play(self) -> bool:
+        """Se su questa partita è già stato registrato qualcosa.
+
+        È la condizione che decide se la sfida si può ancora annullare o
+        modificare: finché non è stato segnato niente, cambiare la distanza o
+        far sparire la partita non riscrive nessun fatto. Dopo il primo
+        triangolo sì, e allora la strada è chiuderla o abbandonarla.
+
+        «Niente segnato» è più di «punteggio 0 a 0», e le tre differenze
+        contano tutte:
+
+        * nei match a set ``player*_score`` conta i **set**, quindi 0-0 può
+          voler dire un set in corso con dei triangoli dentro;
+        * un referto TPA può avere decine di comandi — buche, errori, turni —
+          e ancora nessun rack chiuso (ADR-044). Quei comandi sono lavoro;
+        * un triangolo tolto con l'annulla riporta il punteggio a 0-0, ma è
+          un rack cancellato in modo morbido, non un rack mai esistito.
+          Quello **non** blocca: la partita è tornata dov'era davvero.
+        """
+        if (self.player1_score or 0) + (self.player2_score or 0) > 0:
+            return True
+
+        if any(
+            (s.player1_racks or 0) + (s.player2_racks or 0) > 0
+            for s in (self.sets or [])  # type: ignore[union-attr]
+        ):
+            return True
+
+        if any(
+            not r.is_deleted for r in (self.racks or [])  # type: ignore[union-attr]
+        ):
+            return True
+
+        from models.tpa.models import TpaReferto
+
+        referto = TpaReferto.query.filter_by(individual_match_id=self.id).first()
+        return referto is not None and len(referto.comandi or []) > 0
+
+    def can_be_revised(self) -> bool:
+        """Se la sfida è ancora annullabile e modificabile.
+
+        Una sola condizione per le due azioni, di proposito: sono la stessa
+        domanda posta due volte — «questa partita ha già prodotto dei fatti?».
+        Tenerle separate avrebbe fatto divergere le due risposte al primo caso
+        limite.
+        """
+        return (
+            self.status in (MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS)
+            and not self.has_recorded_play()
+        )
+
     def cancel_match(self, reason: Optional[str] = None) -> None:
-        """Cancel the match."""
-        if self.status == MatchStatus.CLOSED_UNILATERALLY:
-            raise ValueError("Cannot cancel completed match")
+        """Annulla la sfida, se non è ancora stato segnato niente.
+
+        Prima bastava che non fosse ``CLOSED_UNILATERALLY``: passava quindi
+        anche una partita ``CONFIRMED_BY_BOTH``, cioè chiusa dalla doppia
+        conferma dei due giocatori — che è l'unica cosa che muove l'Elo
+        globale (ADR-051). Annullarla lasciava l'Elo dov'era: il risultato
+        spariva e i suoi effetti no.
+        """
+        if self.status not in (MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS):
+            raise ValueError(
+                "Si annulla una sfida solo prima che finisca: "
+                "questa è già chiusa o annullata"
+            )
+
+        if self.has_recorded_play():
+            raise ValueError(
+                "La sfida è cominciata: con dei triangoli già segnati "
+                "si chiude o si abbandona, non si annulla"
+            )
 
         self.status = MatchStatus.CANCELLED
         if reason:

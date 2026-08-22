@@ -234,9 +234,20 @@
 
     {# Azioni. Il ritorno non e' fra queste: vive nella testata (freccia su
        mobile, barra laterale su desktop), come in ogni altra pagina 7c. #}
-    {% if state == MatchStatus.SCHEDULED.value or is_finished %}
+    {# `can_be_revised()` e non «e' ancora SCHEDULED»: con l'avvio rapido
+       (ADR-051) la partita nasce gia' in corso, quindi quella condizione non
+       era mai vera e i due comandi non li vedeva nessuno. La domanda giusta
+       non e' «e' cominciata?» ma «avete gia' segnato qualcosa?». #}
+    {% set revisable = match.can_be_revised() and match.is_player(current_user.id) %}
+    {% if revisable or is_finished %}
     <section class="c7-stack">
-      {% if state == MatchStatus.SCHEDULED.value %}
+      {% if revisable %}
+      {% if feature_visible('individual_match.edit_match') %}
+      <a href="{{ url_for('individual_match.edit_match', match_id=match.id) }}"
+         class="btn btn-secondary w-100">
+        <i class="fas fa-sliders"></i>&nbsp;{{ _('Cambia come si gioca') }}
+      </a>
+      {% endif %}
       <form method="POST" action="{{ url_for('individual_match.cancel_match', match_id=match.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="button" class="btn btn-danger w-100"

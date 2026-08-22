@@ -183,6 +183,32 @@ blocks:
       l'altro al tavolo si cambia, si beve, si aspetta.
 
   - type: heading
+    id: sbagliata
+    title: "Ho sbagliato ad aprirla"
+
+  - type: text
+    text: >-
+      L'avvio rapido è veloce perché non chiede niente: sala, disciplina e
+      distanza le riprende dall'ultima partita. Il rovescio è che ogni tanto
+      riprende quella sbagliata — avevate deciso «al 7» e vi ritrovate un «al
+      5» — oppure hai scelto l'avversario di fianco invece di quello davanti.
+
+  - type: text
+    text: >-
+      Finché **non avete segnato nemmeno un triangolo**, nella pagina della
+      sfida trovi due comandi: **Cambia come si gioca**, per correggere sala,
+      disciplina, formato e distanza, e **Annulla la sfida**, per farla sparire
+      del tutto. Dal primo triangolo in poi non ci sono più: cambiare la
+      distanza a metà partita riscriverebbe il significato dei punti già fatti.
+
+  - type: note
+    tone: info
+    title: "Se ve ne accorgete a metà"
+    text: >-
+      Non c'è più niente da correggere: l'unica strada è chiudere la partita
+      com'è e riaprirne una giusta.
+
+  - type: heading
     id: orari
     title: "Correggere gli orari"
 

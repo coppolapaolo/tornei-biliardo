@@ -87,11 +87,28 @@ def job_exam_requests() -> str:
     return f"{expired} richieste d'esame scadute"
 
 
+def job_match_proposals() -> str:
+    """Scadenza delle proposte di sfida individuale.
+
+    `MatchProposal.expires_at` veniva scritto a ogni proposta e **non lo
+    leggeva nessuno**: `expire_old_proposals` esisteva, con la sua notifica
+    «Proposta scaduta» già pronta, e non la chiamava nessun task, nessuna
+    route, solo i test. Una proposta pendente restava quindi pendente per
+    sempre e continuava a comparire fra quelle attive, senza che il proponente
+    avesse modo di capire perché.
+    """
+    from models.individual_match.services import MatchProposalService
+
+    expired = MatchProposalService.expire_proposals()
+    return f"{expired} proposte di sfida scadute"
+
+
 # nome → (descrizione, callable). Il callable gira dentro l'app context e
 # restituisce una stringa di riepilogo per il log.
 JOBS = {
     "demand": ("Segnali-domanda: riconferma e scadenze", job_demand_signals),
     "exam_requests": ("Richieste d'esame: scadenze", job_exam_requests),
+    "match_proposals": ("Proposte di sfida: scadenze", job_match_proposals),
 }
 
 
