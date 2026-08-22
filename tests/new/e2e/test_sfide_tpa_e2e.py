@@ -38,6 +38,44 @@ def _tasti_segnapunti(pagina: str) -> list[str]:
     return re.findall(r"<button[^>]*c7-rackpad__btn[^>]*>", pagina)
 
 
+def _chiudi_il_gate_del_referto() -> None:
+    """`tpa_scoresheet` con una regola che nessuno dei giocatori soddisfa.
+
+    Calco di `TestSblocco._gate_chiuso` in
+    `tests/new/integration/test_tpa_referto.py`: il gate vero, non un finto.
+    """
+    import json
+
+    from models.base import db
+    from models.gamification.feature_models import FeatureConfig
+    from models.tpa.services import FEATURE_CODE
+
+    db.session.add(
+        FeatureConfig(
+            code=FEATURE_CODE,
+            name="Referto TPA",
+            description="",
+            is_active=True,
+            rules=json.dumps(
+                [
+                    {
+                        "description": "Veterano",
+                        "conditions": [
+                            {
+                                "type": "METRIC",
+                                "metric": "exams_certified",
+                                "operator": "gte",
+                                "value": 1,
+                            }
+                        ],
+                    }
+                ]
+            ),
+        )
+    )
+    db.session.commit()
+
+
 def _c_e_il_tabellone(pagina: str) -> bool:
     """Il tabellone orizzontale (issue #170), che segna dagli stessi endpoint."""
     return 'id="matchBoard"' in pagina
@@ -425,5 +463,153 @@ class TestIlRefertoSiSceglieAllAvvio:
             avversario, tpa_referto="true", match_format="multi", match_distance="3"
         )
 
+        assert sfida.stato(match_id) == MatchStatus.IN_PROGRESS
+        assert sfida.referto(match_id) is None
+
+
+class TestIlRefertoSiSceglieAncheQuandoLaSfidaEraConcordata:
+    """L'altra strada per far partire una sfida, e la stessa domanda.
+
+    L'avvio rapido crea la partita già in corso (ADR-051) e chiede il referto
+    nel suo modulo. Una sfida **concordata** nasce invece da giocare e parte
+    con «Inizia la sfida»: è l'unico momento in cui la domanda ha ancora una
+    risposta, perché subito dopo si è al segnapunti e al primo triangolo il
+    referto non si apre più.
+
+    Prima c'era solo il pulsante «Prendi il referto TPA» in fondo alla pagina
+    del match, sotto il segnapunti: la finestra per accorgersene era larga
+    esattamente un tocco — lo stesso guasto che l'avvio rapido aveva già.
+    """
+
+    def _sfida_concordata(self, sfida: SfidaDriver, **opzioni) -> tuple:
+        """Due giocatori, una proposta accettata: la partita è da giocare."""
+        io_, avversario = sfida.crea_giocatori(2)
+        sfida.entra(io_)
+        proposta_id = sfida.proponi([avversario], **opzioni)
+
+        sfida.esci()
+        sfida.entra(avversario)
+        match_id = sfida.accetta_proposta(proposta_id)
+        return match_id, avversario
+
+    def test_il_modulo_di_avvio_lo_propone(self, sfida: SfidaDriver):
+        match_id, _avversario = self._sfida_concordata(sfida)
+
+        pagina = sfida.pagina(match_id)
+
+        assert 'name="tpa_referto"' in pagina
+        assert "referto TPA" in pagina
+
+    def test_scelto_il_referto_la_sfida_parte_col_referto_gia_aperto(
+        self, sfida: SfidaDriver
+    ):
+        match_id, avversario = self._sfida_concordata(sfida)
+
+        assert sfida.avvia(match_id, tpa_referto="true").status_code == 200
+
+        assert sfida.stato(match_id) == MatchStatus.IN_PROGRESS
+        referto = sfida.referto(match_id)
+        assert referto is not None
+        assert referto.compiler_id == avversario.id
+        # E niente segnapunti doppio: il patto di ADR-044 vale da subito.
+        assert _tasti_segnapunti(sfida.pagina(match_id)) == []
+
+    def test_e_si_va_dritti_al_referto_invece_che_al_segnapunti(
+        self, sfida: SfidaDriver
+    ):
+        match_id, _avversario = self._sfida_concordata(sfida)
+
+        risposta = sfida.avvia(match_id, tpa_referto="true")
+
+        assert risposta.get_json()["url"].endswith("/tpa")
+
+    def test_anche_col_modulo_vero_e_non_solo_via_json(self, sfida: SfidaDriver):
+        """La casella manda `1`, non `true`: il modulo è quello del browser.
+
+        Il resto di questa journey passa dalla chiamata JSON; qui si manda
+        quello che manda davvero un `<input type="checkbox">` premuto — cioè il
+        suo `value`. Il pulsante «Inizia la sfida» è un `<form>`, quindi è
+        questo il formato che arriva dai telefoni.
+        """
+        match_id, _avversario = self._sfida_concordata(sfida)
+
+        risposta = sfida.client.post(
+            f"/match/matches/{match_id}/start",
+            data={"tpa_referto": "1"},
+            follow_redirects=False,
+        )
+
+        assert risposta.status_code == 302
+        assert risposta.headers["Location"].endswith("/tpa")
+        assert sfida.referto(match_id) is not None
+
+    def test_senza_la_spunta_niente_referto(self, sfida: SfidaDriver):
+        match_id, _avversario = self._sfida_concordata(sfida)
+
+        assert sfida.avvia(match_id).status_code == 200
+
+        assert sfida.stato(match_id) == MatchStatus.IN_PROGRESS
+        assert sfida.referto(match_id) is None
+        # Il segnapunti c'è: senza referto i «+1» sono l'unico modo di segnare.
+        assert _tasti_segnapunti(sfida.pagina(match_id)) != []
+
+    def test_su_una_disciplina_senza_tpa_non_si_chiede_e_non_si_blocca(
+        self, sfida: SfidaDriver
+    ):
+        """Chiedere l'impossibile non deve costare la partita.
+
+        A One Pocket il TPA non vuol dire niente: la casella non compare, e chi
+        la manda lo stesso gioca ugualmente — senza referto.
+        """
+        match_id, _avversario = self._sfida_concordata(
+            sfida, discipline=Discipline.ONE_POCKET.value
+        )
+
+        assert 'name="tpa_referto"' not in sfida.pagina(match_id)
+
+        assert sfida.avvia(match_id, tpa_referto="true").status_code == 200
+        assert sfida.stato(match_id) == MatchStatus.IN_PROGRESS
+        assert sfida.referto(match_id) is None
+
+    def test_ne_su_una_sfida_a_set(self, sfida: SfidaDriver):
+        """Il referto conta i rack di **una** partita, non i set di una sfida."""
+        match_id, _avversario = self._sfida_concordata(
+            sfida, match_format="multi", distance="3"
+        )
+
+        assert 'name="tpa_referto"' not in sfida.pagina(match_id)
+
+        assert sfida.avvia(match_id, tpa_referto="true").status_code == 200
+        assert sfida.stato(match_id) == MatchStatus.IN_PROGRESS
+        assert sfida.referto(match_id) is None
+
+    def test_a_chi_non_ha_sbloccato_la_funzione_non_si_chiede(self, sfida: SfidaDriver):
+        """Sarebbe una porta dipinta sul muro.
+
+        E non basta nasconderla: il gate sta sull'*apertura*, quindi la spunta
+        mandata lo stesso non deve aprire niente.
+
+        Il gate è quello vero — una regola su `feature_config` che il giocatore
+        non soddisfa, come in `TestSblocco`. Senza configurazione in tabella
+        `UnlockEngine` apre a tutti (`check_eligibility` torna `True` quando il
+        codice non c'è), quindi un giocatore «non sbloccato» non basterebbe a
+        chiudere niente: il test passerebbe per il motivo sbagliato.
+        """
+        # `gamification_override` scavalca ogni regola (`User.can_access`), e
+        # `crea_giocatori` lo mette a tutti: qui l'avversario — quello che
+        # accetta, e quindi quello che avvia — deve passare dal gate vero.
+        io_ = sfida.crea_giocatore()
+        avversario = sfida.crea_giocatore(sbloccato=False)
+        sfida.entra(io_)
+        proposta_id = sfida.proponi([avversario])
+        sfida.esci()
+        sfida.entra(avversario)
+        match_id = sfida.accetta_proposta(proposta_id)
+
+        _chiudi_il_gate_del_referto()
+
+        assert 'name="tpa_referto"' not in sfida.pagina(match_id)
+
+        assert sfida.avvia(match_id, tpa_referto="true").status_code == 200
         assert sfida.stato(match_id) == MatchStatus.IN_PROGRESS
         assert sfida.referto(match_id) is None

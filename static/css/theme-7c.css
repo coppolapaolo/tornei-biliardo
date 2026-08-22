@@ -520,6 +520,14 @@ input[type="time"].form-control,
 input[type="datetime-local"].form-control,
 input[type="number"].form-control {
   font-family: var(--c7-font-mono); font-weight: 700;
+  /* `min-width: 0` non è un vezzo: il widget nativo di data e ora ha una
+     larghezza minima *intrinseca* (i segnaposto gg/mm/aaaa, l'ora, l'icona del
+     calendario) che `width: 100%` non comprime. Dentro una colonna stretta —
+     due campi affiancati su un telefono — il campo non cede e a sbordare è la
+     pagina intera, in orizzontale. Misurato sulla pagina della sfida a 500px:
+     `document.body.scrollWidth` 510 contro 500 di viewport, colpevole il campo
+     «Inizio». Vale per tutti i moduli che affiancano due date. */
+  min-width: 0;
 }
 
 /* Interruttore */

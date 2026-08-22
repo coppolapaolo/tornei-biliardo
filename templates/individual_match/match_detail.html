@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "components/_match_status_labels.html" as st with context %}
+{% from "components/_form_macros.html" import toggle %}
 
 {% block title %}
 {{- _("Sfida") }} {{ match.player1.username }} vs
@@ -50,6 +51,20 @@
     {% if state == MatchStatus.SCHEDULED.value %}
     <form method="POST" action="{{ url_for('individual_match.start_match', match_id=match.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {# Il referto si sceglie **qui**, non dopo: appena la sfida parte si è al
+         segnapunti, e la prima cosa che si fa è segnare — al primo triangolo il
+         referto non si apre più. È la stessa domanda che l'avvio rapido pone nel
+         suo modulo (PR #202), posta nell'altro modo di far partire una sfida.
+
+         Compare solo a chi ha sbloccato la funzione e solo dove il referto
+         potrà davvero aprirsi: altrimenti sarebbe una porta dipinta sul muro. #}
+      {% if tpa_alla_partenza and feature_visible('individual_match.tpa_referto') %}
+      {{ toggle('tpa_referto', _("Tengo il referto TPA"),
+                _("Si annota visita per visita e il punteggio viene da lì: niente «+1» a mano.")) }}
+      <p style="margin:-8px 2px 12px;font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+        {{ _("Va deciso adesso: a triangoli già segnati il referto non si apre più.") }}
+      </p>
+      {% endif %}
       <button type="submit" class="btn btn-primary btn-lg w-100">
         <i class="fas fa-play"></i> {{ _('Inizia la sfida') }}
       </button>
@@ -257,26 +272,55 @@
        non compariva a nessuno dei due. Punteggio e orari sono proprietà della
        partita: si comportano allo stesso modo comunque sia nata. #}
     {% if match.is_player(current_user.id) %}
+    {# Gli orari **si scrivono da soli**: `started_at` lo mette
+       `IndividualMatch.start_match()`, `ended_at` le tre chiusure. Il modulo
+       qui sotto serve solo a *correggerli* — la partita cominciata mezz'ora
+       prima di premere il pulsante, quella chiusa il giorno dopo — e per un
+       caso raro stava sempre aperto, con due campi da riempire a mano davanti
+       a chi non aveva niente da correggere. Ora si vedono i due orari, e il
+       modulo sta dietro un comando. #}
     <section class="c7-card">
-      <h3 class="mb-3">{{ _('Orari') }}</h3>
-      <div class="c7-grid" style="grid-template-columns:1fr 1fr">
-        <div>
-          <label class="c7-label" for="individualStartTime">{{ _('Inizio') }}</label>
-          {# `|datetime_input` e non `strftime`: sul DB il naive e' UTC, e
-             stampato grezzo qui mostrerebbe un orario che nessuno ha scritto. #}
-          <input type="datetime-local" class="form-control" id="individualStartTime" name="started_at"
-                 value="{{ match.started_at|datetime_input }}">
+      {# «Orari della partita» e non «Orari»: il secondo msgid è lo stesso della
+         scheda di una sala, dove vuol dire *orari di apertura* — e in inglese
+         era tradotto così anche qui («Opening hours»). Due contesti, una voce
+         sola: il modo di separarli senza introdurre `pgettext`, che il
+         progetto non usa da nessuna parte, è dire meglio la cosa in italiano. #}
+      <h3 class="mb-3">{{ _('Orari della partita') }}</h3>
+      <dl style="display:grid;grid-template-columns:auto 1fr;gap:10px 18px;margin:0;font-size:13px">
+        <dt class="text-muted" style="font-weight:700">{{ _('Inizio') }}</dt>
+        <dd style="margin:0;text-align:right">
+          {%- if match.started_at %}{{ match.started_at|datetime_local }}
+          {%- else %}<span class="text-muted">{{ _('non ancora iniziata') }}</span>{% endif %}
+        </dd>
+
+        <dt class="text-muted" style="font-weight:700">{{ _('Fine') }}</dt>
+        <dd style="margin:0;text-align:right">
+          {%- if match.ended_at %}{{ match.ended_at|datetime_local }}
+          {%- else %}<span class="text-muted">{{ _('non ancora conclusa') }}</span>{% endif %}
+        </dd>
+      </dl>
+
+      <details style="margin-top:14px">
+        <summary style="font-size:13px;font-weight:800;cursor:pointer">{{ _('Correggi gli orari') }}</summary>
+        <div class="c7-grid" style="grid-template-columns:1fr 1fr;margin-top:12px">
+          <div style="min-width:0">
+            <label class="c7-label" for="individualStartTime">{{ _('Inizio') }}</label>
+            {# `|datetime_input` e non `strftime`: sul DB il naive e' UTC, e
+               stampato grezzo qui mostrerebbe un orario che nessuno ha scritto. #}
+            <input type="datetime-local" class="form-control" id="individualStartTime" name="started_at"
+                   value="{{ match.started_at|datetime_input }}">
+          </div>
+          <div style="min-width:0">
+            <label class="c7-label" for="individualEndTime">{{ _('Fine') }}</label>
+            <input type="datetime-local" class="form-control" id="individualEndTime" name="ended_at"
+                   value="{{ match.ended_at|datetime_input }}">
+          </div>
         </div>
-        <div>
-          <label class="c7-label" for="individualEndTime">{{ _('Fine') }}</label>
-          <input type="datetime-local" class="form-control" id="individualEndTime" name="ended_at"
-                 value="{{ match.ended_at|datetime_input }}">
-        </div>
-      </div>
-      <button class="btn btn-secondary w-100" style="margin-top:12px"
-              onclick="updateIndividualMatchTimes({{ match.id }})">
-        {{ _('Aggiorna gli orari') }}
-      </button>
+        <button class="btn btn-secondary w-100" style="margin-top:12px"
+                onclick="updateIndividualMatchTimes({{ match.id }})">
+          {{ _('Aggiorna gli orari') }}
+        </button>
+      </details>
     </section>
     {% endif %}
   </div>

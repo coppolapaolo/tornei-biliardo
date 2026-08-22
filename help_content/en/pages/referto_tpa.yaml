@@ -39,7 +39,8 @@ blocks:
     text: >-
       The scoresheet must be started **before the first rack**: it tells the
       match from the start, so once racks have been scored it can no longer be
-      opened. Hence the two ways to take it, depending on how the match began.
+      opened. That is why you are asked for it as the match is about to
+      begin — in both the ways a match can be created.
 
   - type: text
     text: "**If you are starting a quick match:**"
@@ -62,20 +63,30 @@ blocks:
 
   - type: steps
     items:
-      - title: "Open the match and press «Start»"
+      - title: "Open the match and tick «I'll keep the TPA scoresheet»"
         text: >-
-          The scoresheet works for friendly matches at **8-ball, 9-ball and
-          10-ball**. In the other disciplines the TPA is not defined, and it
-          does not apply to matches played in sets.
-      - title: "Tap «Keep the TPA scoresheet»"
+          The tick sits above the «Start the match» button, and only appears
+          if you have unlocked the feature. Here too the question is asked
+          now: as soon as the match starts you are on the scoreboard, and
+          after the first rack the scoresheet can no longer be opened.
+      - title: "Tap «Start the match»"
         text: >-
-          The button sits below the score. Here too it must be pressed before
-          the first rack is scored.
-      - title: "Confirm with «Start the scoresheet»"
-        text: >-
-          From now on the scoresheet is yours: you keep it for the whole match.
-          Your opponent gets «View the TPA scoresheet» and watches the same
-          screen fill in on its own, but cannot write on it.
+          The match begins with the scoresheet already open, and you land
+          straight on the scoresheet screen.
+
+  - type: note
+    tone: tip
+    title: "If you have already started and not scored yet"
+    text: >-
+      There is still time: below the score you will find «Keep the TPA
+      scoresheet», then «Start the scoresheet». It only works while the score
+      is still nil-nil.
+
+  - type: text
+    text: >-
+      Once the scoresheet is open it is yours: you keep it for the whole match.
+      Your opponent gets «View the TPA scoresheet» and watches the same screen
+      fill in on its own, but cannot write on it.
 
   - type: note
     tone: warning
@@ -266,11 +277,11 @@ blocks:
   - type: faq
     items:
       - q: "I cannot see the scoresheet button."
-        a: "«Keep the TPA scoresheet» only shows up if you have unlocked the feature — it needs competitions, championships, friendly matches, drills and exams already played — and only with the match under way, in an 8-ball, 9-ball or 10-ball match without sets, before the first rack is recorded. Once you have scored, the button disappears: that is the most common answer, and the reason is spelled out on the scoresheet page. If your opponent has already started the scoresheet, the «View the TPA scoresheet» button shows up for you anyway, unlocked or not."
+        a: "Both the «I'll keep the TPA scoresheet» tick and the «Keep the TPA scoresheet» button only show up if you have unlocked the feature — it needs competitions, championships, friendly matches, drills and exams already played — and only in an 8-ball, 9-ball or 10-ball match without sets. The button, on top of that, only appears with the match under way and before the first rack is recorded. Once you have scored, the button disappears: that is the most common answer, and the reason is spelled out on the scoresheet page. If your opponent has already started the scoresheet, the «View the TPA scoresheet» button shows up for you anyway, unlocked or not."
       - q: "Can I start it once the match is under way?"
-        a: "No. The scoresheet tells the match from the start, so it has to be started before the first rack. If racks have already been recorded, that match can no longer have one: if you know in advance that you want to keep it, tick «I'll keep the TPA scoresheet» in the quick-start form."
+        a: "Yes, but only while the score is still nil-nil: the scoresheet tells the match from the start. If racks have already been recorded, that match can no longer have one. If you know in advance that you want to keep it, tick «I'll keep the TPA scoresheet» before starting the match — the tick is there both in the quick start and in a match born from a proposal."
       - q: "I ticked «I'll keep the TPA scoresheet» but the match started without one."
-        a: "That happens when the discipline or format you chose does not support it: the scoresheet works at 8-ball, 9-ball and 10-ball, and does not cover matches played in sets. In that case the match still starts, without a scoresheet — asking for the impossible does not cost you the match."
+        a: "That happens when the discipline or format does not support it: the scoresheet works at 8-ball, 9-ball and 10-ball, and does not cover matches played in sets. In that case the match still starts, without a scoresheet — asking for the impossible does not cost you the match."
       - q: "Can my opponent keep it instead of me?"
         a: "Whoever starts it keeps it, for the whole match. You press «View the TPA scoresheet» and watch it fill in on its own, without reloading the page, but you cannot write on it."
       - q: "I pressed the wrong key."

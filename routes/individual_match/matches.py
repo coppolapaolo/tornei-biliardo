@@ -13,6 +13,7 @@ from flask_babel import gettext as _
 from flask_login import current_user
 
 from models import IndividualMatch
+from models.base import db
 from models.individual_match.services import IndividualMatchService
 from models.status_enum import Discipline
 from models.user.permissions import RoleRequirement
@@ -20,6 +21,7 @@ from utils.local_time import parse_local_datetime
 from utils.status_ui import match_scoring_state
 
 from . import individual_match_bp
+from .tpa_choice import open_tpa_referto, wants_referto
 
 logger = logging.getLogger(__name__)
 
@@ -52,14 +54,26 @@ def match_detail(match_id):
             return redirect(url_for("individual_match.match_list"))
 
         from flask import render_template
-        from models.tpa.services import TpaRefertoService
+        from models.tpa.services import (
+            FEATURE_CODE as TPA_FEATURE,
+            TpaRefertoService,
+        )
 
         # Il referto TPA si propone solo dove si puo' davvero aprire: il perche'
         # lo sa il servizio, e la pagina del referto lo ripete per esteso.
+        #
+        # `tpa_alla_partenza` e' l'altra domanda: la spunta nel modulo di avvio,
+        # che si offre a partita ancora da cominciare. Le condizioni sono le
+        # stesse meno lo stato — piu' lo sblocco, che il servizio non guarda
+        # perche' il gate della gamification sta sull'apertura.
         return render_template(
             "individual_match/match_detail.html",
             match=match,
             tpa_can_open=TpaRefertoService.can_open(match, current_user.id),
+            tpa_alla_partenza=(
+                TpaRefertoService.can_open_once_started(match, current_user.id)
+                and current_user.can_access(TPA_FEATURE)
+            ),
         )
 
     except Exception as e:
@@ -82,11 +96,39 @@ def start_match(match_id):
             match_id, "match_started", {"started_by": current_user.id}
         )
 
+        # Il referto TPA si sceglie **qui**, con la partita che sta partendo:
+        # dopo, al segnapunti, la prima cosa che si fa e' segnare, e al primo
+        # triangolo non si apre piu'. La spunta viaggia col modulo di avvio.
+        match = db.session.get(IndividualMatch, match_id)
+        data = request.get_json(silent=True) or request.form
+        col_referto = open_tpa_referto(match, wants_referto(data))
+        destinazione = url_for(
+            (
+                "individual_match.tpa_referto"
+                if col_referto
+                else "individual_match.match_detail"
+            ),
+            match_id=match_id,
+        )
+
         if request.is_json:
-            return jsonify({"success": True, "message": "Match started successfully"})
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Match started successfully",
+                    "url": destinazione,
+                }
+            )
         else:
-            flash(_("Match avviato con successo!"), "success")
-            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+            flash(
+                (
+                    _("Sfida avviata: il referto è tuo.")
+                    if col_referto
+                    else _("Match avviato con successo!")
+                ),
+                "success",
+            )
+            return redirect(destinazione)
 
     except ValueError as e:
         error_msg = f"Error starting match: {str(e)}"
