@@ -573,11 +573,12 @@ hints:
   section: avvio-rapido
 - id: sfida.referto_all_avvio
   label: I'll keep the TPA scoresheet
-  short: 'Decide now: the scoresheet is started before the first rack, and a quick match takes you
-    straight to the scoreboard.'
+  short: 'Decide now: the scoresheet is started before the first rack, and as soon as the match
+    starts you are on the scoreboard.'
   anchor: sfida-referto-all-avvio
   screens:
   - individual_match.quick_match
+  - individual_match.match_detail
   page: referto_tpa
   section: aprire
 tours:

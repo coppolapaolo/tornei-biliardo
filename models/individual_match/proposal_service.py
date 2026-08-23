@@ -561,6 +561,62 @@ class ProposalService:
 
     @staticmethod
     @transactional(domain="individual_match")
+    def delete_proposal(user_id: int, proposal_id: int) -> None:
+        """Cancella davvero la proposta: la riga sparisce.
+
+        Diversa da `cancel_proposal`, che la lascia dov'è cambiandole stato.
+        Le due servono a due cose diverse e vanno tenute distinte: annullare
+        dice «non si gioca più» e resta scritto — la persona invitata, che ha
+        ricevuto la notifica, deve poter capire cos'è successo. Cancellare dice
+        «questa non doveva esistere», e vale per la proposta aperta per sbaglio,
+        o rimasta lì a ingombrare l'elenco per mesi.
+
+        Non si cancella una proposta da cui è nata una partita ancora viva: la
+        partita è il fatto, la proposta è solo il modo in cui ci si è arrivati,
+        e toglierle il presupposto sotto lascerebbe una FK appesa. Se la
+        partita è stata a sua volta annullata, allora non resta niente da
+        proteggere e la proposta se ne va con lei.
+        """
+        from flask_babel import _
+        from ..exceptions import ConflictError, NotFoundError, PermissionDeniedError
+        from ..notification.models import Notification
+        from ..status_enum import MatchStatus
+
+        proposal = db.session.get(MatchProposal, proposal_id)
+        if proposal is None:
+            raise NotFoundError(_("Proposta non trovata"))
+
+        if proposal.proposer_id != user_id:
+            raise PermissionDeniedError(_("La proposta la cancella chi l'ha fatta."))
+
+        match = proposal.individual_match
+        if match is not None:
+            stato = (
+                match.status.value if hasattr(match.status, "value") else match.status
+            )
+            if stato != MatchStatus.CANCELLED.value:
+                raise ConflictError(
+                    _(
+                        "Da questa proposta è nata una partita: "
+                        "per farla sparire annulla prima quella."
+                    )
+                )
+            # La partita annullata resta, ma smette di puntare a una riga che
+            # non esisterà più: la FK non ha `ondelete`, quindi il distacco va
+            # fatto qui e non lasciato al database.
+            match.proposal_id = None
+
+        # Le notifiche già spedite puntano a `/match/proposals/<id>`: senza la
+        # riga, quel link è un 404 nella posta di qualcun altro.
+        Notification.query.filter_by(
+            action_url=f"/match/proposals/{proposal.id}"
+        ).delete(synchronize_session=False)
+
+        # Gli inviti se ne vanno da soli: `cascade="all, delete-orphan"`.
+        db.session.delete(proposal)
+
+    @staticmethod
+    @transactional(domain="individual_match")
     def expire_old_proposals() -> int:
         """Expire proposals that have passed their expiration time."""
         from flask_babel import _

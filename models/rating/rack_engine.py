@@ -9,11 +9,20 @@ entra nel calcolo. Sui dati simulati con la struttura del circolo il guadagno è
 di 0,02–0,03 di log-loss per partita — l'unico margine ampio fra tutte le
 varianti provate (ADR-052, sezione *Esito*).
 
-**La scala è quella di FargoRate, non quella degli scacchi.** Logistica in base
-2 con divisore 100: cento punti di differenza significano probabilità **doppia**
-di vincere *il singolo rack*. Non è convertibile nella scala 10/400 del pool
-storico, perché le due misurano cose diverse — 2:1 per rack corrisponde a circa
-l'80% per partita in una corsa a 7. I due pool convivono e non si confrontano.
+**Il modello è quello di FargoRate; le unità no.** La forma è logistica in base
+2: un certo numero di punti di differenza significa probabilità **doppia** di
+vincere *il singolo rack*. Quel numero — e il valore di partenza — sono
+**unità di misura**, non risultati: cambiarli non sposta una sola previsione,
+riscrive solo l'asse su cui si leggono.
+
+Qui si usano i **100 punti di FargoRate**: una differenza di punteggio
+significa così la stessa cosa da noi e là, e un rating Fargo vero resta
+leggibile sulla nostra scala. Si parte però da **1200** invece che da ~500,
+perché è il valore da cui i giocatori partivano già.
+
+Restano comunque **numeri nuovi**: il rating vecchio e quello nuovo non si
+confrontano, perché misurano cose diverse. La scelta delle unità serve a non
+disorientare, non a rendere confrontabile ciò che non lo è.
 
 **Perché è un modulo puro.** Niente DB, niente sessione, niente app context:
 le regole si possono verificare con l'aritmetica, e la simulazione che ha
@@ -25,9 +34,11 @@ from __future__ import annotations
 
 #: Il rating di un giocatore mai visto. Vale come qualunque altro valore: la
 #: scala non ha uno zero, solo differenze.
-PARTENZA: float = 500.0
+PARTENZA: float = 1200.0
 
-#: Punti che raddoppiano la probabilità di vincere un rack.
+#: Punti che raddoppiano la probabilità di vincere un rack. Insieme a
+#: `PARTENZA` è pura unità di misura: raddoppiarla raddoppia tutte le distanze
+#: e tutti i `k`, e lascia identiche le probabilità che il motore calcola.
 SCALA: float = 100.0
 
 #: Il fattore di sensibilità parte alto e cala coi rack accumulati: un
@@ -40,6 +51,8 @@ SCALA: float = 100.0
 #: annidata (emendamento al protocollo, ADR-052). Non sono numeri di
 #: riferimento presi da qualche parte: a parametri non tarati questo motore
 #: perde contro quello storico, ed è successo davvero durante l'analisi.
+#: Espressi nelle unità di `SCALA`: cambiando quella vanno riscalati insieme,
+#: o il motore diventa più lento o più nervoso senza che nessuno l'abbia deciso.
 K_MAX: float = 10.0
 K_MIN: float = 1.6
 #: Rack necessari a dimezzare lo scarto fra `K_MAX` e `K_MIN`.

@@ -154,8 +154,13 @@ class SfidaDriver:
         assert risposta.status_code == 200, risposta.get_data(as_text=True)[:400]
         return risposta.get_json()["match_id"]
 
-    def avvia(self, match_id: int) -> Any:
-        return self.client.post(f"/match/matches/{match_id}/start", json={})
+    def avvia(self, match_id: int, **opzioni: Any) -> Any:
+        """«Inizia la sfida», col modulo di avvio.
+
+        `opzioni` è quello che il modulo porta con sé — oggi la sola spunta
+        `tpa_referto`, che si dà proprio qui perché dopo sarebbe tardi.
+        """
+        return self.client.post(f"/match/matches/{match_id}/start", json=opzioni)
 
     # ── Segnare ─────────────────────────────────────────────────────
 
@@ -192,6 +197,15 @@ class SfidaDriver:
 
     def annulla(self, match_id: int) -> Any:
         return self.client.post(f"/match/matches/{match_id}/cancel", json={})
+
+    def pagina_modifica(self, match_id: int) -> Any:
+        return self.client.get(f"/match/matches/{match_id}/edit")
+
+    def modifica(self, match_id: int, **campi: Any) -> Any:
+        return self.client.post(f"/match/matches/{match_id}/edit", json=campi)
+
+    def cancella_proposta(self, proposta_id: int) -> Any:
+        return self.client.post(f"/match/proposals/{proposta_id}/delete", json={})
 
     # ── Osservazioni: prima la pagina ───────────────────────────────
 

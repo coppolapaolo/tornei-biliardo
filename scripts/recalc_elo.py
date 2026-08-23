@@ -89,16 +89,6 @@ def recalculate_elo(commit=False):
             f"skipped: walkover/handicap)."
         )
 
-        # Pool a rack (ADR-052): calcolato in parallelo e non mostrato, ma va
-        # ricostruito insieme agli altri o resterebbe fermo all'ultima
-        # riparazione dei dati.
-        rack_result = RatingCalculationService.recalculate_all_rack()
-        logger.info(
-            f"RACK: processed {rack_result['processed']} of "
-            f"{rack_result['total']} match ({rack_result['skipped']} "
-            f"skipped: walkover/handicap/trii)."
-        )
-
         if commit:
             db.session.commit()
             logger.info("Successfully committed changes.")

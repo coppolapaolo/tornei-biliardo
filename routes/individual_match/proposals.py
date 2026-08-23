@@ -361,6 +361,33 @@ def cancel_proposal(proposal_id):
             )
 
 
+@individual_match_bp.route("/proposals/<int:proposal_id>/delete", methods=["POST"])
+@RoleRequirement.player_or_director_required
+def delete_proposal(proposal_id):
+    """Cancella davvero la proposta: la riga sparisce (solo il proponente).
+
+    Distinta da `cancel_proposal`, che la lascia dov'è marcandola annullata.
+    """
+    from models.exceptions import DomainError, http_status_for_exception
+
+    try:
+        MatchProposalService.delete_proposal(proposal_id, current_user.id)
+    except (DomainError, ValueError) as exc:
+        stato = http_status_for_exception(exc) if isinstance(exc, DomainError) else 400
+        if request.is_json:
+            return jsonify({"success": False, "error": str(exc)}), stato
+        flash(str(exc), "danger")
+        return redirect(
+            url_for("individual_match.proposal_detail", proposal_id=proposal_id)
+        )
+
+    if request.is_json:
+        return jsonify({"success": True})
+
+    flash(_("Proposta cancellata."), "success")
+    return redirect(url_for("individual_match.proposal_list"))
+
+
 @individual_match_bp.route("/proposals/<int:proposal_id>/decline", methods=["POST"])
 @RoleRequirement.player_or_director_required
 def decline_proposal(proposal_id):

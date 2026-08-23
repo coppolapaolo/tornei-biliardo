@@ -38,8 +38,9 @@ blocks:
   - type: text
     text: >-
       Il referto va aperto **prima del primo triangolo**: racconta la partita
-      dall'inizio, quindi a triangoli già segnati non si apre più. Di qui le due
-      strade per prenderlo, secondo come è nata la partita.
+      dall'inizio, quindi a triangoli già segnati non si apre più. Per questo lo
+      si chiede quando la partita sta per cominciare — in tutt'e due i modi in
+      cui una partita può nascere.
 
   - type: text
     text: "**Se stai facendo un avvio rapido:**"
@@ -62,20 +63,29 @@ blocks:
 
   - type: steps
     items:
-      - title: "Apri la partita e premi «Inizia»"
+      - title: "Apri la partita e spunta «Tengo il referto TPA»"
         text: >-
-          Il referto vale per le partite amichevoli a **palla 8, palla 9 e
-          palla 10**. Nelle altre discipline il TPA non si calcola, e nelle
-          partite a set non si applica.
-      - title: "Tocca «Prendi il referto TPA»"
+          La spunta è sopra il pulsante «Inizia la sfida», e compare solo se
+          hai sbloccato la funzione. Anche qui la domanda si fa adesso: appena
+          la partita parte sei sul segnapunti, e al primo triangolo il referto
+          non si apre più.
+      - title: "Tocca «Inizia la sfida»"
         text: >-
-          Il pulsante è sotto il punteggio. Anche qui va premuto prima di
-          segnare il primo triangolo.
-      - title: "Conferma con «Apri il referto»"
-        text: >-
-          Da questo momento il referto è tuo: lo tieni tu per tutta la partita.
-          Il tuo avversario trova «Guarda il referto TPA» e vede la stessa
-          schermata riempirsi da sola, ma non può scriverci.
+          La partita comincia con il referto già aperto e ti trovi
+          direttamente sulla schermata del referto.
+
+  - type: note
+    tone: tip
+    title: "Se hai già cominciato e non hai ancora segnato"
+    text: >-
+      C'è ancora tempo: sotto il punteggio trovi «Prendi il referto TPA», e poi
+      «Apri il referto». Vale solo finché il punteggio è fermo a zero a zero.
+
+  - type: text
+    text: >-
+      Da quando il referto è aperto è tuo: lo tieni tu per tutta la partita. Il
+      tuo avversario trova «Guarda il referto TPA» e vede la stessa schermata
+      riempirsi da sola, ma non può scriverci.
 
   - type: note
     tone: warning
@@ -268,11 +278,11 @@ blocks:
   - type: faq
     items:
       - q: "Non vedo il pulsante del referto."
-        a: "«Prendi il referto TPA» compare solo se hai sbloccato la funzione — servono gare, campionati, partite amichevoli, esercizi ed esami già fatti — e solo a partita iniziata, in una partita a palla 8, palla 9 o palla 10 senza set, prima che sia segnato il primo triangolo. Se avete già segnato, il pulsante sparisce: è la risposta più comune, e il motivo lo trovi scritto per esteso aprendo la pagina del referto. Se invece il referto lo ha già aperto il tuo avversario, il pulsante «Guarda il referto TPA» ti compare comunque, che tu abbia sbloccato o no."
+        a: "Sia la spunta «Tengo il referto TPA» sia il pulsante «Prendi il referto TPA» compaiono solo se hai sbloccato la funzione — servono gare, campionati, partite amichevoli, esercizi ed esami già fatti — e solo in una partita a palla 8, palla 9 o palla 10 senza set. Il pulsante, in più, si vede solo a partita iniziata e prima che sia segnato il primo triangolo. Se avete già segnato, il pulsante sparisce: è la risposta più comune, e il motivo lo trovi scritto per esteso aprendo la pagina del referto. Se invece il referto lo ha già aperto il tuo avversario, il pulsante «Guarda il referto TPA» ti compare comunque, che tu abbia sbloccato o no."
       - q: "Posso aprirlo a partita già cominciata?"
-        a: "No. Il referto racconta la partita dall'inizio, quindi va aperto prima del primo triangolo. Se avete già segnato dei triangoli, per quella partita non si può più: se sai in anticipo di volerlo tenere, spunta «Tengo il referto TPA» nel modulo dell'avvio rapido."
+        a: "Sì, ma solo finché il punteggio è fermo a zero a zero: il referto racconta la partita dall'inizio. Se avete già segnato dei triangoli, per quella partita non si può più. Se sai in anticipo di volerlo tenere, spunta «Tengo il referto TPA» prima di far partire la partita — la spunta c'è sia nell'avvio rapido sia nella partita nata da una proposta."
       - q: "Ho spuntato «Tengo il referto TPA» ma la partita è partita senza."
-        a: "Succede se la disciplina o il formato scelti non lo prevedono: il referto vale per palla 8, palla 9 e palla 10, e non copre le partite a set. In quel caso la partita parte lo stesso, senza referto — chiedere l'impossibile non ti fa perdere la partita."
+        a: "Succede se la disciplina o il formato non lo prevedono: il referto vale per palla 8, palla 9 e palla 10, e non copre le partite a set. In quel caso la partita parte lo stesso, senza referto — chiedere l'impossibile non ti fa perdere la partita."
       - q: "Lo può tenere il mio avversario al posto mio?"
         a: "Lo tiene chi lo apre, e resta suo per tutta la partita. Tu premi «Guarda il referto TPA» e lo vedi riempirsi da solo, senza ricaricare la pagina, ma non puoi scriverci."
       - q: "Ho premuto il tasto sbagliato."

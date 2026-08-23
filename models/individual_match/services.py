@@ -200,6 +200,11 @@ class MatchProposalService:
         return ProposalService.cancel_proposal(user_id, proposal_id)
 
     @staticmethod
+    def delete_proposal(proposal_id: int, user_id: int) -> None:
+        """Cancella davvero la proposta (la riga sparisce)."""
+        return ProposalService.delete_proposal(user_id, proposal_id)
+
+    @staticmethod
     def expire_proposals() -> int:
         """Mark expired proposals as expired. Returns count of expired proposals."""
         return ProposalService.expire_old_proposals()
@@ -345,6 +350,11 @@ class IndividualMatchService:
         return ProposalService.cancel_proposal(user_id, proposal_id)
 
     @staticmethod
+    def delete_proposal(user_id: int, proposal_id: int) -> None:
+        """Cancella davvero la proposta (la riga sparisce)."""
+        return ProposalService.delete_proposal(user_id, proposal_id)
+
+    @staticmethod
     def expire_old_proposals() -> int:
         """Expire proposals that have passed their expiration time."""
         return ProposalService.expire_old_proposals()
@@ -434,6 +444,74 @@ class IndividualMatchService:
 
         if ended_at is not None:
             match.ended_at = ended_at
+
+        return match
+
+    #: I campi che una sfida già creata si lascia ancora cambiare. Non è
+    #: l'elenco delle colonne: è l'elenco di **come si gioca**, cioè quello che
+    #: l'avvio rapido decide per conto tuo pescandolo dall'ultima partita
+    #: (`QuickMatchService._resolve_config`) e che quindi è anche quello che si
+    #: ritrova sbagliato. Punteggio, stato, giocatori e orari non sono qui: i
+    #: primi tre non si correggono, gli orari hanno già `update_times`.
+    EDITABLE_SETTINGS = (
+        "discipline",
+        "distance",
+        "is_race_to",
+        "break_rule",
+        "is_multi_set",
+        "match_distance",
+        "is_race_to_sets",
+        "billiard_hall_id",
+        "location",
+        "scheduled_at",
+    )
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def update_settings(match_id: int, user_id: int, **fields: Any) -> IndividualMatch:
+        """Corregge come si gioca una sfida, finché non è stato segnato niente.
+
+        La finestra è la stessa dell'annullamento — `can_be_revised()` — e per
+        la stessa ragione: cambiare la distanza a metà partita riscriverebbe
+        il significato dei triangoli già segnati, e chi ha vinto un «al 5»
+        scoprirebbe di aver giocato un «al 7».
+
+        Con l'avvio rapido (ADR-051) questa è la sola via d'uscita da una
+        precompilazione sbagliata: la partita nasce già in corso, quindi il
+        momento in cui si sarebbe potuto rileggere il modulo non esiste.
+        """
+        match = db.session.get(IndividualMatch, match_id)
+        if not match:
+            raise ValueError(f"IndividualMatch {match_id} not found")
+
+        if not match.is_player(user_id):
+            raise ValueError("La sfida la correggono i due giocatori")
+
+        if not match.can_be_revised():
+            raise ValueError(
+                "La sfida è cominciata: come si gioca si decide "
+                "prima del primo triangolo"
+            )
+
+        sconosciuti = set(fields) - set(IndividualMatchService.EDITABLE_SETTINGS)
+        if sconosciuti:
+            raise ValueError(
+                f"Campi non modificabili: {', '.join(sorted(sconosciuti))}"
+            )
+
+        for nome, valore in fields.items():
+            setattr(match, nome, valore)
+
+        # Un match a set senza set aperto non è giocabile, e uno che smette di
+        # essere a set si porta dietro un set fantasma. Siccome qui non è stato
+        # ancora segnato niente, il primo set si può rifare da zero senza
+        # perdere nulla.
+        if match.status == MatchStatus.IN_PROGRESS:
+            for vecchio_set in list(match.sets or []):
+                db.session.delete(vecchio_set)
+            match.sets = []
+            if match.is_multi_set:
+                match.start_first_set()
 
         return match
 

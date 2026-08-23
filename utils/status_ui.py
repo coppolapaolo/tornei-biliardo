@@ -149,6 +149,15 @@ class StatusPresenter:
         mapping: Dict[str, Tuple[str, str]] = {
             MatchStatus.PENDING.value: ("bg-secondary", _("In Attesa")),
             MatchStatus.PLAYING.value: ("bg-primary", _("In Corso")),
+            # Gli stati delle **sfide individuali**, che mancavano tutti e tre.
+            # I match di gara vanno PENDING → PLAYING, le sfide individuali
+            # SCHEDULED → IN_PROGRESS: due percorsi sullo stesso enum, e qui
+            # era mappato solo il primo. Ogni sfida individuale mostrava così
+            # «Sconosciuto» nel pallino di stato — in corso, da giocare o
+            # annullata che fosse.
+            MatchStatus.SCHEDULED.value: ("bg-secondary", _("Da giocare")),
+            MatchStatus.IN_PROGRESS.value: ("bg-primary", _("In Corso")),
+            MatchStatus.CANCELLED.value: ("bg-secondary", _("Annullata")),
             MatchStatus.CLOSED_UNILATERALLY.value: ("bg-success", _("Completato")),
             # Diceva «Validato», che è proprio il fraintendimento da cui è
             # nato il rinomino dell'enum: questo stato non è la validazione

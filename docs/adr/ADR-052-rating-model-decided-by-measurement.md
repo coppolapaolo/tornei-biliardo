@@ -459,3 +459,104 @@ Corretto, con `scripts/repair_match_ended_at.py` per le righe storiche.
 
 È il motivo per cui il passo 0 valeva la pena a prescindere dal suo esito:
 contare i dati ha trovato un difetto che nessun test vedeva.
+
+---
+
+## Emendamento (2026-08-22): sostituisce invece di affiancare
+
+L'*Esito* prevedeva che il motore a rack nascesse come graduatoria in più,
+calcolata in parallelo e non mostrata, «finché non si decide di sostituire il
+pool visibile». La decisione è arrivata subito: **il motore a rack sostituisce
+quello binario in entrambe le graduatorie esistenti** (`ELO` e `ELO_GLOBAL`).
+Non c'è una terza graduatoria, e il numero che i giocatori vedono è quello
+nuovo dal primo ricalcolo.
+
+### Le unità: si parte da 1200, la scala è quella di FargoRate
+
+Nella prima stesura il motore partiva da 500 con 100 punti per raddoppio,
+cioè la convenzione FargoRate. Era una scelta presentata come se fosse una
+conseguenza del contare i rack, e non lo è: **partenza e scala sono unità di
+misura**. Cambiarle non sposta una sola probabilità calcolata dal modello,
+riscrive solo l'asse su cui i numeri si leggono — e siccome un ricalcolo
+rigenera tutto, restano modificabili in qualunque momento.
+
+Si parte quindi da **1200**, come i giocatori erano abituati, con i **100
+punti per raddoppio** di FargoRate. Le due scelte rispondono a due domande
+diverse:
+
+* la **partenza** è pura abitudine: 1200 è il valore da cui i giocatori
+  partivano già, e spostarlo non porterebbe niente;
+* la **scala** è interoperabilità: con 100 punti una differenza di punteggio
+  significa la stessa cosa da noi e su FargoRate, che nel biliardo è lo
+  standard di fatto. Un rating Fargo vero resta leggibile sulla nostra scala.
+
+Era stata valutata anche una scala 200, che avrebbe tenuto le distanze più
+vicine a quelle della vecchia scala 400/10 sulla partita (a 75% di vittoria:
+191 punti prima, 167 con la 200, 83 con la 100). È stata scartata: è un
+argomento di sola abitudine visiva, mentre raddoppiare la scala raddoppia
+anche il rumore — l'oscillazione tipica di un rating assestato passa da ±10 a
+±20 punti — e fa *sembrare* le differenze più grandi di quanto siano.
+
+**Che aspetto hanno i numeri.** Non esistono un minimo e un massimo: la
+formula non ha barriere. Il rating si ferma dove smette di sorprendere, cioè
+dove la quota di rack attesa coincide con quella vinta davvero:
+
+| rack vinti contro il campo | rating d'equilibrio |
+|---|---|
+| 50% | 1200 |
+| 60% | 1258 |
+| 70% | 1322 |
+| 80% | 1400 |
+| 90% | 1517 |
+
+Con un'oscillazione tipica di **±10 punti** anche a rating assestato, che non
+cala con l'esperienza: il `k` minimo la tiene viva di proposito, così il
+rating può ancora inseguire chi migliora. Dieci punti di variazione non sono
+un segnale.
+
+Resta vero che **i numeri nuovi non si confrontano con i vecchi**: misurano
+un'altra cosa. Chi vedeva 1400 non vedrà 1400.
+
+### `games_played` diventa `robustness`
+
+Col motore a rack quel campo ha smesso di contare le partite: contiene i
+**rack**, e serve solo a regolare quanto in fretta il rating si muove. Un nome
+rimasto vero fino a ieri e falso da oggi è la trappola già vista con
+`rack_difference` — non dà errori, non fa fallire test, e si scopre il giorno
+in cui qualcuno lo mostra, con «40 partite» a chi ne ha giocate 6.
+
+Rinominato mentre è gratis: nessuno legge quel campo (né
+`match_rating_history.games_increment`, ora `robustness_increment`) fuori da
+`models/rating/`. Migration `20260822_rating_robustness`.
+
+### I trii si scompongono davvero
+
+Nella prima stesura i trii erano esclusi, con questa motivazione: «in
+`TrioMatch` i rack sono per giocatore e non per coppia, quindi il dato per i
+tre confronti non esiste». **Era falso.** `TrioRack` registra per **ogni
+rack** chi erano i due al tavolo (`player1_id`, `player2_id`), chi ha vinto e
+chi aspettava: la scomposizione non va indovinata, sta nei dati.
+
+I tre confronti si calcolano tutti sui rating **d'inizio trio** e si applicano
+**insieme**, per due ragioni indipendenti: `match_rating_history` ammette una
+sola riga per `(partita, giocatore, sistema)`, quindi tre aggiornamenti
+separati violerebbero il vincolo; e applicandoli insieme sparisce la
+dipendenza dall'ordine in cui si guardano le coppie, che non significa niente.
+
+È comunque meglio di prima, e non solo del nulla: il motore precedente
+collassava il trio in un 1 / 0.5 / 0 confrontato con la **media dei rating**
+degli altri due — un avversario che non esiste.
+
+Un trio **senza** righe `TrioRack` non è scomponibile: sono dati vecchi, e si
+saltano dicendolo nel log. Inventare una ripartizione dei rack complessivi
+sarebbe peggio di non contarli.
+
+### Cosa comporta
+
+* al primo `recalc_elo.py --commit` **ogni giocatore vede un numero diverso**;
+* `PlayerRating.rating_value` è in virgola mobile, `User.elo_rating` resta
+  intera perché è quella che si mostra: la sincronizzazione arrotonda;
+* `games_played` conta i **rack** e non le partite — è la *robustness*, e
+  regola la sensibilità dell'aggiornamento;
+* resta aperta la taratura di `k` sui dati veri, con validazione annidata.
+

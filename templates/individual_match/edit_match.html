@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% from "components/_form_macros.html" import choice, stepper, form_macros_scripts %}
+
+{% block title %}{{ _("Modifica la sfida") }} - {{ config.APP_NAME }}{% endblock %}
+
+{# Come l'avvio rapido (prototipo 9a·2), di cui questa e' la correzione: stesse
+   domande, stessi comandi, stessa barra in fondo. Una schermata che si
+   abbandona, non un livello da cui si risale. #}
+{% block page_back %}
+<a class="c7-head__back d-lg-none"
+   href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
+   aria-label="{{ _('Chiudi') }}"><i class="fas fa-xmark"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Modifica la sfida") }}{% endblock %}
+{% block page_sub %}{{ _("Contro %(name)s", name=(match.get_opponent(current_user.id).username if match.get_opponent(current_user.id) else _("il tuo avversario"))) }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
+   class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-xmark"></i>&nbsp;{{ _("Annulla") }}
+</a>
+{% endblock %}
+
+{% block content %}
+{% set fmt = settings.match_format %}
+
+<div style="max-width:720px">
+
+  {# La finestra e' stretta di proposito, e va detto prima che dopo: al primo
+     triangolo questa pagina non si apre piu' (il server la rifiuta comunque). #}
+  <div class="c7-card c7-card--warn" style="margin-bottom:16px">
+    <div class="c7-rows__row" style="border:0;padding:0">
+      <i class="fas fa-circle-info" style="font-size:14px;color:var(--c7-warn);width:18px"></i>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ _("Si cambia finché non avete segnato") }}</div>
+        <div class="c7-rows__sub">
+          {{ _("Dal primo triangolo in poi la distanza resta quella: cambiarla riscriverebbe i punti già fatti.") }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <form method="POST" id="editForm"
+        action="{{ url_for('individual_match.edit_match', match_id=match.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="c7-card">
+      <div class="c7-sechead mb-3"><h2>{{ _("Come si gioca") }}</h2></div>
+
+      <div class="mb-3">
+        <label for="location" class="form-label">{{ _("Sala biliardo") }}</label>
+        <input type="text" class="form-control" id="location" name="location"
+               placeholder="{{ _('es. Sala Regina, Udine') }}"
+               list="venue-suggestions" autocomplete="off"
+               value="{{ settings.location }}">
+        <datalist id="venue-suggestions">
+          {% for venue in verified_venues or [] %}
+          <option value="{{ venue.name }}">{{ venue.name }} - {{ venue.city or _('Città non specificata') }}</option>
+          {% endfor %}
+        </datalist>
+      </div>
+
+      <div class="mb-3">
+        <label for="discipline" class="form-label">{{ _("Disciplina") }}</label>
+        <select class="form-select" id="discipline" name="discipline">
+          {% for value, label in Discipline.get_choices() %}
+          <option value="{{ value }}" {% if settings.discipline==value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      {{ choice('match_format', _("Formato"), [
+           {'value': 'single', 'title': _("Set singolo"), 'desc': _("Una partita sola, alla distanza scelta."), 'icon': 'fa-dice-one'},
+           {'value': 'multi', 'title': _("Multi-set"), 'desc': _("Più set: vince chi ne conquista N."), 'icon': 'fa-layer-group'},
+           {'value': 'free', 'title': _("Libero"), 'desc': _("Senza limite: la partita si chiude quando volete."), 'icon': 'fa-infinity'}
+         ], selected=fmt) }}
+
+      <div id="singleSetConfig" class="{{ 'd-none' if fmt != 'single' }}">
+        {{ stepper('distance', _("Distanza"), value=(settings.distance or 5),
+             min=1, max=25, hint=_("triangoli per vincere")) }}
+        {{ choice('is_race_to', _("Come si chiude"), [
+             {'value': 'true', 'title': _("Al N"), 'desc': _("Vince chi arriva primo alla distanza.")},
+             {'value': 'false', 'title': _("Esattamente N"), 'desc': _("Si giocano tutti i triangoli: vince chi ne ha di più.")}
+           ], selected=('true' if settings.is_race_to else 'false')) }}
+      </div>
+
+      <div id="multiSetConfig" class="{{ 'd-none' if fmt != 'multi' }}">
+        {{ stepper('match_distance', _("Set da vincere"), value=(settings.match_distance or 3),
+             min=1, max=11, hint=_("set per vincere la sfida")) }}
+      </div>
+
+      <div>
+        <label for="break_rule" class="form-label">{{ _("Chi spacca") }}</label>
+        <select class="form-select" id="break_rule" name="break_rule">
+          <option value="alternate" {% if settings.break_rule=='alternate' %}selected{% endif %}>{{ _("A turno") }}</option>
+          <option value="winner_breaks" {% if settings.break_rule=='winner_breaks' %}selected{% endif %}>{{ _("Spacca chi ha vinto il triangolo") }}</option>
+          <option value="loser_breaks" {% if settings.break_rule=='loser_breaks' %}selected{% endif %}>{{ _("Spacca chi ha perso il triangolo") }}</option>
+        </select>
+      </div>
+    </div>
+  </form>
+
+  {# Fuori dal form e agganciata con `form=`: dentro la pila perderebbe
+     l'aggancio al fondo dello schermo (come in create_proposal). #}
+  <div class="c7-actionbar" style="flex-direction:column;gap:6px">
+    <button type="submit" form="editForm" class="btn btn-primary w-100">
+      <i class="fas fa-check"></i>&nbsp;{{ _("Salva") }}
+    </button>
+    <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+      {{ _("Vale per questa partita soltanto: le prossime ripartono da qui.") }}
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ form_macros_scripts() }}
+<script>
+    function currentValue(name) {
+        const checked = document.querySelector('input[name="' + name + '"]:checked');
+        return checked ? checked.value : null;
+    }
+
+    // Una sola configurazione visibile alla volta: quella del formato scelto.
+    function syncMatchFormat() {
+        const format = currentValue('match_format') || 'single';
+        document.getElementById('singleSetConfig').classList.toggle('d-none', format !== 'single');
+        document.getElementById('multiSetConfig').classList.toggle('d-none', format !== 'multi');
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('input[name="match_format"]').forEach(r =>
+            r.addEventListener('change', syncMatchFormat));
+        syncMatchFormat();
+    });
+</script>
+{% endblock %}
