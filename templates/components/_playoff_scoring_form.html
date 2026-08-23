@@ -1,0 +1,39 @@
+{# templates/components/_playoff_scoring_form.html
+   Come il playoff entra nella classifica finale del campionato.
+   Attende `cfg` (PlayoffConfiguration) e `campionato` nel contesto.
+   Niente `id` e niente `<script>`: e' incluso una volta per configurazione,
+   sia prima sia dopo l'avvio dei playoff. #}
+<form method="POST" class="mt-3"
+      action='{{ url_for("admin.campionato.playoff_update_scoring", campionato_id=campionato.id, config_id=cfg.id) }}'>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-6">
+            <label class="form-label">{{ _("Classifica finale del campionato") }}</label>
+            <select name="final_ranking_mode" class="form-select form-select-sm">
+                <option value="campionato_plus_playoff" {% if not cfg.decides_final_ranking %}selected{% endif %}>
+                    {{ _("Campionato + gara di playoff") }}
+                </option>
+                <option value="playoff_only" {% if cfg.decides_final_ranking %}selected{% endif %}>
+                    {{ _("Solo i playoff") }}
+                </option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label class="form-label">{{ _("Peso del playoff") }}</label>
+            <input type="number" name="playoff_weight" class="form-control form-control-sm"
+                   value="{{ cfg.playoff_weight or 1 }}" min="1" step="1">
+        </div>
+        <div class="col-md-3">
+            <button type="submit" class="btn btn-sm btn-primary w-100">
+                <i class="fas fa-save"></i> {{ _("Salva") }}
+            </button>
+        </div>
+    </div>
+    <small class="text-muted d-block mt-2">
+        {% if cfg.decides_final_ranking %}
+        {{ _("Chi gioca il playoff occupa le prime posizioni, nell'ordine deciso dal playoff; gli altri seguono nell'ordine del campionato. Il peso non ha effetto in questa modalita'.") }}
+        {% else %}
+        {{ _("Il punteggio della gara di playoff si somma a quello del campionato, moltiplicato per il peso. Peso 1 = una prova come le altre.") }}
+        {% endif %}
+    </small>
+</form>

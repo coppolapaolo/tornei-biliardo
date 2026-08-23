@@ -112,6 +112,101 @@ class ClassificationService:
         ]
 
     @staticmethod
+    def _playoff_final_blocks(campionato) -> List[List[int]]:
+        """I blocchi di giocatori il cui ordine lo detta una gara di playoff.
+
+        Un blocco per ogni configurazione playoff che *decide* la classifica
+        finale e la cui gara ha già una classifica finale. L'ordine dei blocchi
+        segue `positions_from`, così Elite (dal 1°) precede Academy (dal 7°).
+
+        Finché la gara di playoff non è chiusa la lista è vuota, e la
+        classifica generale resta quella del campionato: è il comportamento
+        giusto, non un caso da gestire a parte.
+        """
+        configurations = getattr(campionato, "playoff_configurations", None) or []
+        candidate = [
+            cfg
+            for cfg in configurations
+            if cfg.is_active and cfg.decides_final_ranking and cfg.gara is not None
+        ]
+        if not candidate:
+            return []
+
+        candidate.sort(key=lambda cfg: (cfg.positions_from or 0, cfg.id))
+
+        blocks: List[List[int]] = []
+        for cfg in candidate:
+            rows = (
+                db.session.query(GaraClassification)
+                .filter_by(gara_id=cfg.gara.id)
+                .order_by(GaraClassification.position, GaraClassification.user_id)
+                .all()
+            )
+            if rows:
+                blocks.append([row.user_id for row in rows])
+        return blocks
+
+    @staticmethod
+    def _apply_playoff_final_order(campionato, result):
+        """Riordina la classifica generale quando la decide il playoff.
+
+        Chi ha giocato il playoff occupa le prime posizioni, nell'ordine
+        deciso lì; **sotto** vengono tutti gli altri, nell'ordine che avevano
+        in campionato. Nessuno sparisce: un campionato di venti giocatori con
+        un playoff a sei resta un campionato di venti giocatori.
+
+        I punteggi non si toccano — restano quelli del campionato, e sono
+        quelli che si vedono in tabella. A cambiare è solo la posizione, che
+        è ciò che quella modalità dichiara di voler cambiare.
+        """
+        blocks = ClassificationService._playoff_final_blocks(campionato)
+        if not blocks:
+            return result
+
+        by_player = {entry.player_id: entry for entry in result.entries}
+        ordered: List[int] = []
+        promoted: set[int] = set()
+
+        for block in blocks:
+            for player_id in block:
+                # Un qualificato che non ha punteggio di campionato non c'è in
+                # `result` (nessuna partita finita): non lo si inventa qui.
+                if player_id in by_player and player_id not in promoted:
+                    ordered.append(player_id)
+                    promoted.add(player_id)
+
+        for entry in result.entries:
+            if entry.player_id not in promoted:
+                ordered.append(entry.player_id)
+
+        entries = []
+        for index, player_id in enumerate(ordered, start=1):
+            entry = by_player[player_id]
+            if player_id in promoted:
+                # Il playoff ha deciso: un pari merito di campionato qui non
+                # esiste più, e lasciarlo scritto manderebbe lo spareggio a
+                # risolvere una parità che il campo ha già risolto.
+                entries.append(
+                    replace(
+                        entry,
+                        position=index,
+                        tied_with=(),
+                        tiebreaker_resolved=True,
+                    )
+                )
+            else:
+                entries.append(replace(entry, position=index))
+
+        return replace(
+            result,
+            entries=tuple(entries),
+            has_ties=any(e.is_tied() for e in entries),
+            requires_tiebreaker=any(
+                e.is_tied() and not e.tiebreaker_resolved for e in entries
+            ),
+        )
+
+    @staticmethod
     def _count_gare_played(campionato_id: int) -> Dict[int, int]:
         """Count how many gare each player participated in.
 
@@ -193,6 +288,10 @@ class ClassificationService:
             scores,
             context={"campionato_id": campionato_id},
         )
+
+        # Quando la classifica finale è quella dei playoff, l'ordine dei
+        # partecipanti lo detta la gara di playoff e non il punteggio sommato.
+        result = ClassificationService._apply_playoff_final_order(campionato, result)
 
         # Count gare played per player
         gare_played_map = ClassificationService._count_gare_played(campionato_id)

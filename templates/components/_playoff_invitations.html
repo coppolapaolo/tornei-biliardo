@@ -1,0 +1,63 @@
+{# templates/components/_playoff_invitations.html — 7c #}
+{# Inviti ai playoff in attesa di risposta. Struttura copiata dalla scheda
+   "Richieste direttore" del prototipo (#7c, righe 176-190): contenitore con
+   titolo e conteggio, dentro una card per invito con azione principale piena
+   e rifiuto secondario. Nessun `id` e nessuno `<script>`: il componente puo'
+   essere incluso due volte (mobile/desktop) senza collidere. #}
+{% if vm.playoff_invitations and vm.playoff_invitations|length %}
+<section class="c7-stack" style="margin-top: 22px;">
+  <div>
+    <div class="c7-kicker">{{ _('Playoff') }}</div>
+    <h2 style="margin: 4px 0 0;">{{ _('Sei qualificato') }} <span class="c7-num" style="color: var(--c7-ink-muted);">{{ vm.playoff_invitations|length }}</span></h2>
+  </div>
+
+  <div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+    {% for invito in vm.playoff_invitations %}
+    {% set config = invito.configuration %}
+    <article class="c7-card c7-card--warn">
+      <div class="d-flex align-items-start justify-content-between" style="gap: 10px;">
+        <div>
+          <div class="c7-kicker">{{ config.campionato.name if config.campionato else _('Campionato') }}</div>
+          <h3 style="margin: 5px 0 0;">{{ config.name }}</h3>
+        </div>
+        <span class="c7-state c7-state--warn">{{ _('In attesa') }}</span>
+      </div>
+
+      <div class="c7-divider"></div>
+
+      <dl style="display: grid; grid-template-columns: auto 1fr; gap: 8px 14px; margin: 0; font-size: 13px;">
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Posizione') }}</dt>
+        <dd class="c7-num" style="margin: 0; text-align: right;">{{ invito.qualifying_position }}</dd>
+        {% if config.scheduled_date %}
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Quando') }}</dt>
+        <dd class="c7-num" style="margin: 0; text-align: right;">{{ config.scheduled_date|datetime_local }}</dd>
+        {% endif %}
+        {% if config.location %}
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Sala') }}</dt>
+        <dd style="margin: 0; text-align: right;">{{ config.location }}</dd>
+        {% endif %}
+        {% if invito.expires_at %}
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Rispondi entro') }}</dt>
+        <dd class="c7-num" style="margin: 0; text-align: right;">{{ invito.expires_at|datetime_local }}</dd>
+        {% endif %}
+      </dl>
+
+      <div class="d-flex" style="gap: 8px; margin-top: 16px;">
+        <form method="POST" action="{{ url_for('player.playoff_confirm', qualification_id=invito.id) }}" style="flex: 1;">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-success w-100">{{ _('Accetta') }}</button>
+        </form>
+        <form method="POST" action="{{ url_for('player.playoff_decline', qualification_id=invito.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button type="submit" class="btn btn-secondary"
+                  onclick='return confirm({{ _("Rifiutare il posto ai playoff? L'invito passera' al primo degli esclusi.")|tojson }})'>{{ _('Rifiuta') }}</button>
+        </form>
+      </div>
+
+      <a href="{{ url_for('player.playoff_invitation', qualification_id=invito.id) }}"
+         class="btn btn-link btn-sm w-100" style="margin-top: 6px;">{{ _('Dettagli') }}</a>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}

@@ -150,6 +150,11 @@ class DashboardVM:
     individual_matches: Optional[List[Any]] = None  # Recent individual matches
     match_opportunities: Optional[List[Any]] = None  # Available match opportunities
 
+    # Inviti ai playoff ancora senza risposta (PlayoffQualification PENDING):
+    # una cosa da fare, con scadenza, quindi sta fra le schede della dashboard
+    # e non solo dietro una notifica.
+    playoff_invitations: Optional[List[Any]] = None
+
     # Challenge system
     available_challenges: Optional[List[Any]] = (
         None  # Available challenges for the player

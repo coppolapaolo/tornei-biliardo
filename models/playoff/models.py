@@ -40,6 +40,46 @@ class QualificationStatus(Enum):
     REPLACED = "replaced"  # Replaced by next eligible player
 
 
+class PlayoffRankingMode(Enum):
+    """Come la gara di playoff entra nella classifica finale del campionato.
+
+    Sono due domande diverse e vanno tenute distinte:
+
+    - ``CAMPIONATO_PLUS_PLAYOFF``: il playoff è una gara come le altre e il suo
+      punteggio si **somma** a quello del campionato, moltiplicato per il peso
+      (`Gara.weight`). È il comportamento storico — la gara di playoff nasce
+      già con ``campionato_id`` valorizzato, quindi `ScoreAggregator` la contava
+      da sempre, con peso implicito 1. Resta il default proprio per questo: un
+      campionato esistente non deve cambiare classifica per una migration.
+    - ``PLAYOFF_ONLY``: la classifica finale è **quella dei playoff**. Chi ha
+      giocato il playoff occupa le prime posizioni nell'ordine deciso lì; gli
+      altri seguono nell'ordine che avevano in campionato. Il punteggio della
+      gara di playoff non si somma a niente (il peso non ha effetto: vedi
+      `Gara.classification_weight`, che vale 0 in questa modalità), altrimenti
+      sposterebbe l'ordine di chi al playoff non è nemmeno andato.
+    """
+
+    CAMPIONATO_PLUS_PLAYOFF = "campionato_plus_playoff"
+    PLAYOFF_ONLY = "playoff_only"
+
+    @classmethod
+    def normalize(cls, raw: Any) -> "PlayoffRankingMode":
+        """Interpreta un valore letto da DB/form, con ripiego sul default.
+
+        Accetta sia il membro sia la stringa; su un valore ignoto torna il
+        default invece di sollevare, perché questa lettura sta dentro il
+        calcolo della classifica e un dato storto non deve far sparire la
+        classifica di un campionato.
+        """
+        if isinstance(raw, cls):
+            return raw
+        if isinstance(raw, str):
+            for member in cls:
+                if member.value == raw or member.name == raw:
+                    return member
+        return cls.CAMPIONATO_PLUS_PLAYOFF
+
+
 class PlayoffConfiguration(BaseModel):
     """Configuration for campionato playoffs."""
 
@@ -84,6 +124,26 @@ class PlayoffConfiguration(BaseModel):
     # Response deadline
     response_deadline = db.Column(db.DateTime, nullable=True)
 
+    # Come si forma la classifica finale del campionato e quanto pesa il
+    # playoff quando i due punteggi si sommano. Stringa e non `db.Enum`: senza
+    # `values_callable` SQLAlchemy persiste il NOME del membro, ed è la
+    # cicatrice che `PlayoffQualification.status` porta ancora addosso (vedi
+    # il commento in `PlayoffService.find_replacement_player`).
+    final_ranking_mode = db.Column(
+        db.String(32),
+        nullable=False,
+        default=PlayoffRankingMode.CAMPIONATO_PLUS_PLAYOFF.value,
+        server_default=PlayoffRankingMode.CAMPIONATO_PLUS_PLAYOFF.value,
+    )
+    # Moltiplicatore del punteggio della gara di playoff in classifica
+    # generale. Ha effetto solo in modalità CAMPIONATO_PLUS_PLAYOFF (issue
+    # #64). Vive anche su `Gara.weight`, che è la fonte letta
+    # dall'aggregatore: qui è il **valore di configurazione**, come già
+    # avviene per distanza e turni.
+    playoff_weight = db.Column(
+        db.Integer, nullable=False, default=1, server_default="1"
+    )
+
     # Gara parameters (NULL = inherit from campionato's first completed gara)
     discipline = db.Column(db.String(50), nullable=True)
     distance = db.Column(db.Integer, nullable=True)
@@ -103,6 +163,16 @@ class PlayoffConfiguration(BaseModel):
     )
     # The playoff gara (linked from Gara.playoff_config_id)
     gara = db.relationship("Gara", back_populates="playoff_config", uselist=False)
+
+    @property
+    def ranking_mode(self) -> PlayoffRankingMode:
+        """La modalità di classifica finale, già normalizzata."""
+        return PlayoffRankingMode.normalize(self.final_ranking_mode)
+
+    @property
+    def decides_final_ranking(self) -> bool:
+        """True se la classifica finale è quella dei playoff."""
+        return self.ranking_mode is PlayoffRankingMode.PLAYOFF_ONLY
 
     def has_qualifications(self) -> bool:
         """Check if qualifications have been generated for this config."""
@@ -394,6 +464,12 @@ class PlayoffQualification(BaseModel):
     # Individual deadline for this invitation
     expires_at = db.Column(db.DateTime, nullable=True)
     responded_at = db.Column(db.DateTime, nullable=True)  # When player responded
+    # Chi ha materialmente risposto. È il giocatore stesso quando risponde dal
+    # suo invito; è il direttore quando i giocatori gli comunicano la risposta
+    # a voce e lui la registra per loro. Senza questa colonna le due cose
+    # sarebbero indistinguibili, e in una lista di sei qualificati «confermato»
+    # non direbbe più da chi.
+    responded_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     # Legacy field (kept for compatibility)
     notified_at = db.Column(db.DateTime, nullable=True)  # Deprecated: use invited_at
 
@@ -409,16 +485,29 @@ class PlayoffQualification(BaseModel):
     )
     user = db.relationship("User", foreign_keys=[user_id])
     replaced_by = db.relationship("User", foreign_keys=[replaced_by_id])
+    responded_by = db.relationship("User", foreign_keys=[responded_by_id])
 
-    def confirm_participation(self) -> None:
-        """Confirm participation in playoff."""
+    @property
+    def answered_on_behalf(self) -> bool:
+        """True se a rispondere è stato qualcun altro (il direttore)."""
+        return self.responded_by_id is not None and self.responded_by_id != self.user_id
+
+    def confirm_participation(self, responded_by_id: Optional[int] = None) -> None:
+        """Confirm participation in playoff.
+
+        `responded_by_id` è chi sta registrando la risposta: il giocatore
+        stesso, oppure il direttore che gliel'ha sentita dire a voce.
+        """
         if self.status != QualificationStatus.PENDING:
             raise ValueError("Can only confirm pending qualifications")
 
         self.status = QualificationStatus.CONFIRMED
         self.responded_at = utc_now()
+        self.responded_by_id = (
+            responded_by_id if responded_by_id is not None else self.user_id
+        )
 
-    def decline_participation(self) -> None:
+    def decline_participation(self, responded_by_id: Optional[int] = None) -> None:
         """Decline participation (solo cambio status).
 
         La ricerca del sostituto è responsabilità del service layer
@@ -432,6 +521,9 @@ class PlayoffQualification(BaseModel):
 
         self.status = QualificationStatus.DECLINED
         self.responded_at = utc_now()
+        self.responded_by_id = (
+            responded_by_id if responded_by_id is not None else self.user_id
+        )
 
     def expire_qualification(self) -> None:
         """Mark qualification as expired (solo cambio status).

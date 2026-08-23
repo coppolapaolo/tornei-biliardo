@@ -49,6 +49,13 @@ blocks:
       Se ti qualifichi ricevi una **notifica**. Aprendola trovi la gara di
       playoff — data, sala, formato — e due pulsanti: accettare o rifiutare.
 
+  - type: text
+    text: >-
+      Lo stesso invito compare anche in cima alla tua **pagina iniziale**, in
+      una scheda «Sei qualificato», con gli stessi due pulsanti. Non devi
+      cercarlo fra le notifiche: finché non rispondi resta lì, e sparisce
+      appena hai risposto.
+
   - type: shot
     shot: notifiche
     caption: "Gli inviti ai playoff arrivano fra le notifiche, come gli altri avvisi della gara."
@@ -70,6 +77,15 @@ blocks:
           posto va a qualcun altro.
 
   - type: note
+    tone: tip
+    title: "Puoi anche rispondere a voce"
+    text: >-
+      Se incontri il direttore di gara in sala puoi dirgli se ci sei o no: lui
+      registra la risposta al posto tuo e l'invito si chiude subito. Nella
+      lista dei qualificati resta scritto che l'ha registrata lui, così è
+      chiaro chi ha risposto per chi.
+
+  - type: note
     tone: warning
     title: "Rifiutare non è una penalità"
     text: >-
@@ -88,10 +104,42 @@ blocks:
       in [Seguire la gara](/aiuto/giocare/seguire_la_gara). Cambia solo come ci
       si è arrivati.
 
+  - type: heading
+    id: classifica_finale
+    title: "Come si decide la classifica finale"
+
+  - type: text
+    text: >-
+      Chi organizza il campionato sceglie fra due modi, e la differenza conta
+      parecchio per chi arriva ai playoff da dietro:
+
+  - type: options
+    items:
+      - name: "Campionato + gara di playoff"
+        text: >-
+          Il punteggio del playoff si **somma** a quello del campionato, come
+          se fosse una gara in più. Chi ha fatto una bella stagione parte
+          avvantaggiato. Il direttore può dare al playoff un **peso**: peso 2
+          vuol dire che quella gara vale il doppio delle altre.
+      - name: "Solo i playoff"
+        text: >-
+          La classifica finale la decide il playoff: chi lo gioca occupa le
+          prime posizioni nell'ordine deciso lì, e sotto vengono tutti gli
+          altri nell'ordine che avevano in campionato. Quello che hai fatto
+          durante la stagione ti serve a entrare, non a vincere.
+
+  - type: note
+    tone: info
+    text: >-
+      Se nessuno tocca niente vale il primo modo, con peso 1: il playoff conta
+      esattamente come una gara qualsiasi del campionato.
+
   - type: faq
     items:
       - q: "Come faccio a sapere se mi sono qualificato?"
-        a: "Ricevi una notifica. Senza notifica non ti sei qualificato, oppure il campionato non prevede playoff."
+        a: "Ricevi una notifica, e trovi la scheda «Sei qualificato» sulla tua pagina iniziale. Se non c'è nessuna delle due, non ti sei qualificato oppure il campionato non prevede playoff."
+      - q: "Vincere il playoff vuol dire vincere il campionato?"
+        a: "Dipende da come è impostato. Con «Solo i playoff» sì; con «Campionato + gara di playoff» il punteggio si somma a quello della stagione, e può non bastare. Chiedi al direttore di gara come ha impostato il suo."
       - q: "Posso partecipare a entrambi i playoff?"
         a: "No: la qualificazione ti assegna a uno dei due, in base alla tua posizione in classifica."
       - q: "Ho accettato ma poi non posso venire."

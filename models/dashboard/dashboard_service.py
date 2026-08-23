@@ -336,6 +336,9 @@ class DashboardService:
             match_proposals=individual_sections["match_proposals"],
             individual_matches=individual_sections["individual_matches"],
             match_opportunities=individual_sections["match_opportunities"],
+            playoff_invitations=DashboardSectionBuilder.build_playoff_invitations(
+                user_id
+            ),
             gamification_stats=DashboardSectionBuilder.build_gamification_stats(
                 user_id
             ),
@@ -488,6 +491,9 @@ class DashboardService:
             match_proposals=individual_sections["match_proposals"],
             individual_matches=individual_sections["individual_matches"],
             match_opportunities=individual_sections["match_opportunities"],
+            playoff_invitations=DashboardSectionBuilder.build_playoff_invitations(
+                user_id
+            ),
             available_challenges=challenge_sections["available_challenges"],
             player_challenge_progress=challenge_sections["player_challenge_progress"],
             gamification_stats=DashboardSectionBuilder.build_gamification_stats(

@@ -1,6 +1,10 @@
 {# templates/components/_player_dashboard_content.html — 7c #}
 {# Dashboard giocatore: sezioni separate gare/campionati, gare vicine, match individuali #}
 
+{# L'invito ai playoff sta in cima: e' una cosa da fare con una
+   scadenza, e alla scadenza il posto passa a un altro. #}
+{% include "components/_playoff_invitations.html" %}
+
 {% include "components/_separated_dashboard_content.html" %}
 
 {% include "components/_nearby_gare.html" %}
