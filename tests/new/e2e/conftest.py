@@ -65,6 +65,14 @@ def driver(client):
 
 
 @pytest.fixture
+def campionato(client):
+    """Guida un campionato intero, gare e playoff (`campionato_driver.py`)."""
+    from campionato_driver import CampionatoDriver
+
+    return CampionatoDriver(client)
+
+
+@pytest.fixture
 def sfida(client):
     """Guida una sfida individuale parlando solo HTTP (`sfida_driver.py`)."""
     from sfida_driver import SfidaDriver

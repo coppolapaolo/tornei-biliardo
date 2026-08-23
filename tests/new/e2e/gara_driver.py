@@ -275,6 +275,14 @@ class GaraDriver:
         Senza `vincitore_id` vince il primo giocatore: a un test che sta
         verificando il *percorso* non interessa chi vince, gli interessa che la
         partita si chiuda e il turno avanzi.
+
+        I due formati chiudono in modi diversi e la sequenza di rack non può
+        essere la stessa. Nel race-to basta portare uno dei due al traguardo.
+        Nel formato **esattamente N rack** il traguardo non esiste: la partita
+        finisce quando i rack giocati sono N, e vince chi ne ha di più — quindi
+        si segnano tutti gli N, dando al vincitore la maggioranza. Segnarne N
+        di fila allo stesso giocatore chiuderebbe lo stesso, ma su un punteggio
+        (N-0) che non distinguerebbe i due formati.
         """
         partita = db.session.get(Match, match_id)
         assert partita is not None, f"partita {match_id} inesistente"
@@ -283,19 +291,78 @@ class GaraDriver:
 
         vincitore_id = vincitore_id or partita.player1_id
         assert vincitore_id in (partita.player1_id, partita.player2_id)
+        perdente_id = (
+            partita.player2_id
+            if vincitore_id == partita.player1_id
+            else partita.player1_id
+        )
 
-        traguardo = partita.distance_config.get_winning_racks()
-        for _ in range(traguardo * 2):  # tetto di sicurezza, mai raggiunto
+        # La sequenza è calcolata su una partita da zero, e resta sufficiente
+        # anche se qualche rack è già segnato: in entrambi i formati serve al
+        # più un rack per ciascuno di quelli previsti, mai di più. Il `break`
+        # sullo stato la interrompe appena la partita è chiusa.
+        for segnare_a in self._sequenza_rack(partita, vincitore_id, perdente_id):
             partita = db.session.get(Match, match_id)
             assert partita is not None
             if MatchStatus.is_finished(partita.status):
                 break
-            risposta = self.aggiungi_rack(match_id, vincitore_id)
+            risposta = self.aggiungi_rack(match_id, segnare_a)
             assert risposta.status_code == 200, risposta.get_data(as_text=True)
-        else:  # pragma: no cover - scatta solo se il race-to non chiude mai
-            raise AssertionError(f"partita {match_id} non si chiude")
+
+        partita = db.session.get(Match, match_id)
+        assert partita is not None
+        assert MatchStatus.is_finished(
+            partita.status
+        ), f"partita {match_id} non si chiude ({partita.status})"
 
         return vincitore_id
+
+    @staticmethod
+    def _sequenza_rack(
+        partita: Match, vincitore_id: int, perdente_id: int
+    ) -> list[int]:
+        """A chi va ciascun rack, nell'ordine in cui si segnano.
+
+        Due cose, e la seconda è meno ovvia della prima.
+
+        **I rack si alternano** invece di andare tutti al vincitore: un 3-2 su
+        «esattamente 5» è una partita chiusa, mentre su «al 5» non lo è, ed è
+        la differenza che rende il test capace di accorgersi se il formato
+        configurato non è quello che la partita sta davvero usando.
+
+        **Il margine varia da partita a partita.** Se ogni partita finisse col
+        margine minimo, la differenza triangoli diventerebbe una funzione
+        lineare delle vittorie — ``vittorie − sconfitte`` — e il secondo
+        criterio della classifica WINS (`(matches_won, rack_difference)`)
+        smetterebbe di discriminare: chiunque avesse le stesse vittorie
+        risulterebbe pari merito. Sarebbe un mondo finto, in cui gli spareggi
+        scattano sempre e il secondo criterio non viene mai messo alla prova.
+        Il margine si deriva dall'id della partita, così i punteggi sono vari
+        ma il test resta riproducibile.
+        """
+        distanza = partita.distance_config
+
+        if distanza.is_race_to_racks:
+            traguardo = distanza.get_winning_racks()
+            al_vincitore = traguardo
+            al_perdente = partita.id % traguardo  # da 0 a traguardo-1
+        else:
+            totali = distanza.racks
+            minimo = totali // 2 + 1  # sotto non si vince
+            al_vincitore = minimo + partita.id % (totali - minimo + 1)
+            al_perdente = totali - al_vincitore
+
+        # Si alterna partendo dal vincitore: i suoi rack sono sempre almeno
+        # quanti quelli dell'altro, quindi il rack decisivo cade per ultimo e
+        # la partita non si chiude a metà sequenza.
+        sequenza: list[int] = []
+        restano = [al_vincitore, al_perdente]
+        while sum(restano) > 0:
+            for indice, giocatore in enumerate((vincitore_id, perdente_id)):
+                if restano[indice] > 0:
+                    sequenza.append(giocatore)
+                    restano[indice] -= 1
+        return sequenza
 
     def gioca_turno(self, gara_id: int, numero: int) -> None:
         """Porta a termine tutte le partite giocabili di un turno."""

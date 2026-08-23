@@ -10,6 +10,7 @@ Entry point della documentazione del progetto. Per la guida operativa al codice 
 | [`adr/`](./adr/) | Architecture Decision Records — decisioni architetturali con contesto e conseguenze |
 | [`api/`](./api/) | Documentazione auto-generata: contratti API, modelli dati, albero sorgenti |
 | [`usecases/`](./usecases/) | Use case del prodotto in stile user journey |
+| [`usecases/stagione-amalfi-playoff.md`](./usecases/stagione-amalfi-playoff.md) | I journey di una stagione completa: quattro gare Amalfi, spareggi, playoff — con i test e2e che li percorrono |
 | [`_archive/`](./_archive/) | Documentazione storica congelata (handoff, piani, refactoring completati) |
 
 A livello principale:

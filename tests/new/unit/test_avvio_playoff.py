@@ -693,12 +693,12 @@ class TestPlayoffReplacement:
     (decline_qualification) invoca find_replacement_player esplicitamente.
     """
 
-    def _setup(self, db_session):
+    def _setup(self, db_session, iscritti: int = 4):
         c = _make_campionato(db_session, terminated=True)
         cfg = _make_config(db_session, c, max_p=4, pos_to=4)
         gara = _make_gara(db_session, c)
         players = []
-        for i in range(4):
+        for i in range(iscritti):
             p = _make_user(db_session)
             _make_classification(db_session, c, p, i + 1)
             _make_inscription(db_session, p, gara)
@@ -764,6 +764,31 @@ class TestPlayoffReplacement:
 
         # Il declinante non va re-invitato; nessun altro candidato → None.
         assert replacement is None
+
+    def test_il_posto_di_chi_rifiuta_va_al_primo_degli_esclusi(self, db_session):
+        """`SPECIFICHE.md` riga 186 — la cascata, col candidato che c'è.
+
+        Il test sopra ha quattro giocatori per quattro posti: nessun escluso,
+        quindi `None` è la risposta giusta in qualunque mondo, e da solo non
+        distingue «non c'è nessuno da chiamare» da «non lo so cercare». Con un
+        quinto in classifica la differenza si vede — ed è quella che fino al
+        2026-08-23 faceva partire la finale con un posto vuoto: la ricerca
+        guardava solo i primi `max_participants`, dove tutti avevano già una
+        qualificazione, declinante compreso.
+        """
+        c, cfg, players = self._setup(db_session, iscritti=5)
+        self._add_qual(
+            db_session, cfg, players[0], 1, status=QualificationStatus.DECLINED
+        )
+        for posizione, giocatore in enumerate(players[1:4], start=2):
+            self._add_qual(db_session, cfg, giocatore, posizione)
+        db_session.commit()
+
+        replacement = PlayoffService.find_replacement_player(cfg.id)
+
+        assert replacement is not None, "il quinto in classifica va invitato"
+        assert replacement.user_id == players[4].id
+        assert replacement.user_id != players[0].id, "chi ha rifiutato non si richiama"
 
     def test_decline_qualification_triggers_replacement(self, db_session):
         c, cfg, players = self._setup(db_session)

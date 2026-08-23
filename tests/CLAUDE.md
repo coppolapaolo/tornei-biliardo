@@ -141,7 +141,45 @@ questo file lo dichiarava, ma nessun test lo importava).
 | `test_gara_e2e_amalfi.py` | Gara Amalfi intera + sequenza dei turni + configurazioni rifiutate |
 | `test_gara_e2e_random.py` | Gara Random intera + turni tutti insieme + classifica complessiva |
 | `test_gara_e2e_interazioni.py` | Percorsi di segnatura, annullamenti, permessi, iscrizioni, dispari |
+| `campionato_driver.py` | Il driver del livello **sopra** la gara: wizard, gare numerate, terminazione, playoff |
+| `test_campionato_e2e_playoff.py` | Campionato con quattro gare Amalfi (tre turni, «esattamente N rack») → classifica generale → playoff, sia con le conferme dei giocatori sia con la lista composta dal direttore |
+| `stagione.py` | La **specifica** della stagione 2026-27 (quattro gare, discipline, distanze esatte, override per turno, X sui dispari, min 6 / max 15, spareggio fino al terzo, playoff a 8) — unica copia, i test la importano |
+| `test_stagione_e2e_configurazione.py` | Il campionato e le quattro gare nascono come da specifica, override per turno compresi. Nessuna partita giocata: pochi secondi |
+| `test_stagione_e2e_iscrizioni.py` | Finestra, lista d'attesa oltre il massimo, disiscrizioni, iscrizione e cancellazione dal direttore, gara sotto il minimo |
+| `test_stagione_e2e_risultati.py` | Le cinque strade che chiudono una partita, i tre modi di tornare indietro, il pareggio a distanza pari, i tavoli e lo swap |
+| `test_stagione_e2e_stagione.py` | La stagione giocata con quindici iscritti: la X a ogni turno, gli override sulle partite vere, lo spareggio SSR, i playoff a 8 e la finale a tre turni diversi |
+| `test_stagione_e2e_handicap.py` | L'handicap: categorie create assegnandole, riporto da una gara all'altra, finestra chiusa all'avvio, Elo che si muove solo fra pari categoria |
+| `test_stagione_e2e_x_e_abbinamenti.py` | Quanto vale la X in classifica (rilievo aperto, `xfail(strict=True)`) e il criterio Amalfi: niente reincontri, e abbinamenti ottimi rispetto al salto verificati per forza bruta |
 | `test_complete_workflows.py` | Promozione a direttore, workflow storici |
+
+**Perché il livello campionato ha il suo file.** Le gare sono coperte una per
+una e i playoff hanno i loro test di route, ma ciascuno parte dallo stato
+dell'altro *costruito a mano*: `test_avvio_playoff_route.py` scrive
+`terminated_at` e le righe di classifica direttamente sul DB. Il giunto fra le
+due metà non lo percorreva nessuno — ed è dove è nato il bug 8 di
+`docs/debug20260528.md`, e dove è stato trovato il secondo (data della gara di
+playoff, `tests/new/unit/test_playoff_gara_date_sequence.py`). L'allestimento
+costa: si usa `campionato_terminato` (quattro gare, ~14 s) solo dove le quattro
+gare contano, e `campionato_breve` (una gara) per permessi e vincoli.
+
+**I test `stagione_*`** rispondono a una domanda diversa dalle altre: non «il
+prodotto funziona?» ma «*questa* stagione, configurata così, funziona?». Sono
+scritti attorno alla configurazione reale di un campionato in programma, e
+tengono i costi separati per livello: la configurazione non gioca partite
+(secondi), le iscrizioni nemmeno, i risultati usano sei giocatori, e solo
+`test_stagione_e2e_stagione.py` gioca le quattro gare con quindici iscritti
+(~27 s per la fixture piena, ~7 s per quella a una gara sola).
+
+**Il margine dei punteggi varia di proposito.** `GaraDriver._sequenza_rack`
+deriva dall'id della partita quanti rack prende il perdente. Non è un vezzo: se
+ogni partita finisse col margine minimo, la differenza triangoli diventerebbe
+`vittorie − sconfitte` e il secondo criterio della classifica WINS — la chiave
+di pari merito è `(matches_won, rack_difference)` — smetterebbe di
+discriminare. La suite girerebbe in un mondo in cui gli spareggi scattano
+sempre e il secondo criterio non è mai messo alla prova. Chi vuole i pari
+merito *garantiti* usa `pareggia_turno`, che è dichiarato. Gli user journey
+corrispondenti sono descritti in
+[`docs/usecases/stagione-amalfi-playoff.md`](../docs/usecases/stagione-amalfi-playoff.md).
 
 **Cosa cerca questo livello** — e cosa no. Le regole di dominio (trio, bye,
 lista d'attesa, anti-reincontro, spareggi) hanno i loro test di unità, dove si
