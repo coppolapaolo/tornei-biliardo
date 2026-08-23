@@ -549,6 +549,14 @@ hints:
     screens: [individual_match.quick_match, individual_match.match_detail]
     page: referto_tpa
     section: aprire
+  - id: campionato.playoff_classifica_finale
+    label: "Classifica finale del campionato"
+    short: "Il playoff si somma al campionato (con un peso a scelta), oppure decide da solo le prime posizioni. Se non tocchi niente vale la somma, con peso 1."
+    anchor: campionato-playoff-classifica-finale
+    screens: [admin.campionato.campionato_detail]
+    page: playoff
+    section: classifica_finale
+
 
 tours:
   - screen: dashboard.dashboard

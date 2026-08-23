@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-23 21:21+0200\n"
+"POT-Creation-Date: 2026-08-23 22:22+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -80,7 +80,7 @@ msgstr ""
 "The challenge score must be between 0 and %(massimo)s, the widest rack "
 "difference achievable in this round."
 
-#: models/competition/models.py:397
+#: models/competition/models.py:418
 #: templates/admin/amalfi_classification.html:23
 #: templates/components/_campionato_garas.html:105
 #: templates/components/_new_gara_modal.html:69
@@ -585,11 +585,11 @@ msgstr "Admin Dashboard"
 msgid "Dashboard Direttore"
 msgstr "Director Dashboard"
 
-#: models/dashboard/dashboard_service.py:450
+#: models/dashboard/dashboard_service.py:453
 msgid "Dashboard Giocatore"
 msgstr "Player Dashboard"
 
-#: models/dashboard/dashboard_service.py:522
+#: models/dashboard/dashboard_service.py:528
 msgid "Vista Pubblica"
 msgstr "Public View"
 
@@ -1607,7 +1607,7 @@ msgid "Tutti"
 msgstr "All"
 
 #: routes/help.py:59 templates/admin/accessi.html:86
-#: templates/admin/accessi.html:141 templates/admin/campionato_detail.html:230
+#: templates/admin/accessi.html:141 templates/admin/campionato_detail.html:232
 #: templates/admin/users_list.html:106 templates/admin/users_list.html:177
 #: templates/admin/venue_manager_requests.html:48
 #: templates/components/_campionato_general_classification.html:19
@@ -1876,19 +1876,40 @@ msgstr "Qualification not specified."
 msgid "Giocatore rimosso dai playoff."
 msgstr "Player removed from playoffs."
 
-#: routes/admin/campionato.py:833
+#: routes/admin/campionato.py:799
+msgid "Risposta non valida."
+msgstr "Invalid answer."
+
+#: routes/admin/campionato.py:817
+msgid "Partecipazione confermata per conto del giocatore."
+msgstr "Participation confirmed on the player’s behalf."
+
+#: routes/admin/campionato.py:821
+#, python-format
+msgid "Rifiuto registrato: l'invito passa a %(name)s."
+msgstr "Refusal recorded: the invitation passes to %(name)s."
+
+#: routes/admin/campionato.py:828
+msgid "Rifiuto registrato. Nessun altro giocatore idoneo da invitare."
+msgstr "Refusal recorded. No other eligible player left to invite."
+
+#: routes/admin/campionato.py:852
+msgid "Regole della classifica finale aggiornate."
+msgstr "Final standings rules updated."
+
+#: routes/admin/campionato.py:908
 msgid "Configurazione playoff aggiornata."
 msgstr "Playoff configuration updated."
 
-#: routes/admin/campionato.py:855
+#: routes/admin/campionato.py:930
 msgid "Tutti i campi obbligatori devono essere compilati."
 msgstr "All required fields must be filled."
 
-#: routes/admin/campionato.py:874
+#: routes/admin/campionato.py:949
 msgid "Configurazione playoff aggiunta."
 msgstr "Playoff configuration added."
 
-#: routes/admin/campionato.py:894
+#: routes/admin/campionato.py:969
 msgid "Configurazione playoff disattivata."
 msgstr "Playoff configuration deactivated."
 
@@ -2913,7 +2934,7 @@ msgid "Esami"
 msgstr "Exams"
 
 #: templates/base.html:202 templates/components/_history_filters.html:70
-#: templates/components/_player_dashboard_content.html:12
+#: templates/components/_player_dashboard_content.html:16
 #: templates/individual_match/admin_overview.html:4
 #: templates/individual_match/admin_overview.html:10
 #: templates/individual_match/dashboard.html:3
@@ -3252,6 +3273,7 @@ msgid "Descrizione (opzionale)"
 msgstr "Description (optional)"
 
 #: templates/admin/campionato_detail.html:163 templates/base.html:672
+#: templates/components/_playoff_scoring_form.html:28
 #: templates/gamification/admin/level_config.html:42
 #: templates/gamification/admin/level_config.html:174
 #: templates/gamification/admin/streak_config.html:34
@@ -3299,6 +3321,7 @@ msgstr "Competition %(id)s Management - Admin"
 #: templates/components/_index_open_inscriptions.html:67
 #: templates/components/_index_upcoming.html:18
 #: templates/components/_index_upcoming.html:44
+#: templates/components/_playoff_invitations.html:58
 #: templates/components/_separated_dashboard_content.html:305
 #: templates/components/_separated_dashboard_content.html:334
 #: templates/components/_separated_dashboard_content.html:348
@@ -3639,7 +3662,7 @@ msgstr ""
 "\n"
 "This action CANNOT BE UNDONE!"
 
-#: templates/admin/campionato_detail.html:381 templates/gara_detail.html:747
+#: templates/admin/campionato_detail.html:419 templates/gara_detail.html:747
 #, python-brace-format
 msgid ""
 "Sei SICURO di voler eliminare la Gara {number}?\n"
@@ -3894,7 +3917,7 @@ msgstr[1] "%(count)s championships"
 msgid "Campionati in corso"
 msgstr "Ongoing championships"
 
-#: templates/components/_director_dashboard_content.html:14
+#: templates/components/_director_dashboard_content.html:18
 #: templates/components/_separated_dashboard_content.html:399
 #: templates/index.html:23
 msgid "Vedi tutti"
@@ -4593,6 +4616,7 @@ msgstr "Playoffs awaiting start"
 #: templates/components/_history_campionati_tab.html:91
 #: templates/components/_history_campionati_tab.html:92
 #: templates/components/_index_campionato_cards.html:111
+#: templates/components/_playoff_invitations.html:10
 #: templates/components/_separated_dashboard_content.html:430
 #: templates/components/_unified_cards.html:51
 msgid "Playoff"
@@ -4615,8 +4639,8 @@ msgid "Min. gare giocate"
 msgstr "Min. competitions played"
 
 #: templates/admin/campionato_detail.html:132
-#: templates/admin/campionato_detail.html:181
-#: templates/admin/campionato_detail.html:330
+#: templates/admin/campionato_detail.html:183
+#: templates/admin/campionato_detail.html:368
 #: templates/admin/campionato_wizard_step2.html:24
 #: templates/admin/venues_list.html:30
 #: templates/components/_gara_edit_form.html:30
@@ -4632,20 +4656,20 @@ msgid "Nome"
 msgstr "Name"
 
 #: templates/admin/campionato_detail.html:136
-#: templates/admin/campionato_detail.html:184
-#: templates/admin/campionato_detail.html:333
+#: templates/admin/campionato_detail.html:186
+#: templates/admin/campionato_detail.html:371
 msgid "Da pos."
 msgstr "From pos."
 
 #: templates/admin/campionato_detail.html:140
-#: templates/admin/campionato_detail.html:187
-#: templates/admin/campionato_detail.html:336
+#: templates/admin/campionato_detail.html:189
+#: templates/admin/campionato_detail.html:374
 msgid "A pos."
 msgstr "To pos."
 
 #: templates/admin/campionato_detail.html:144
-#: templates/admin/campionato_detail.html:190
-#: templates/admin/campionato_detail.html:339
+#: templates/admin/campionato_detail.html:192
+#: templates/admin/campionato_detail.html:377
 #: templates/gamification/admin/streaks.html:30
 msgid "Max"
 msgstr "Max"
@@ -4663,20 +4687,20 @@ msgstr "Distance"
 msgid "Eredita"
 msgstr "Inherit"
 
-#: templates/admin/campionato_detail.html:174
-#: templates/admin/campionato_detail.html:323
+#: templates/admin/campionato_detail.html:176
+#: templates/admin/campionato_detail.html:361
 msgid "Aggiungi configurazione"
 msgstr "Add configuration"
 
-#: templates/admin/campionato_detail.html:194
-#: templates/admin/campionato_detail.html:343 templates/exam/detail.html:157
+#: templates/admin/campionato_detail.html:196
+#: templates/admin/campionato_detail.html:381 templates/exam/detail.html:157
 #: templates/exam/examiners.html:45
 #: templates/gamification/admin/level_config.html:221
 #: templates/gamification/admin/streak_config.html:274
 msgid "Aggiungi"
 msgstr "Add"
 
-#: templates/admin/campionato_detail.html:206
+#: templates/admin/campionato_detail.html:208
 msgid ""
 "Avviare i playoff? Le configurazioni verranno bloccate e i giocatori "
 "qualificati riceveranno un invito."
@@ -4684,26 +4708,27 @@ msgstr ""
 "Start playoffs? Configurations will be locked and qualified players will "
 "receive an invitation."
 
-#: templates/admin/campionato_detail.html:207
+#: templates/admin/campionato_detail.html:209
 msgid "Avvia Playoff"
 msgstr "Start Playoffs"
 
-#: templates/admin/campionato_detail.html:218
+#: templates/admin/campionato_detail.html:220
 msgid "confermati"
 msgstr "confirmed"
 
-#: templates/admin/campionato_detail.html:220
+#: templates/admin/campionato_detail.html:222
 #: templates/components/_gara_inscriptions.html:16
 msgid "in attesa"
 msgstr "pending"
 
-#: templates/admin/campionato_detail.html:231
+#: templates/admin/campionato_detail.html:233
 #: templates/admin/venue_form.html:195
+#: templates/components/_playoff_invitations.html:29
 #: templates/individual_match/statistics.html:80
 msgid "Posizione"
 msgstr "Position"
 
-#: templates/admin/campionato_detail.html:232
+#: templates/admin/campionato_detail.html:234
 #: templates/admin/venue_form.html:229
 #: templates/admin/venue_manager_requests.html:33
 #: templates/admin/venues_list.html:37
@@ -4725,16 +4750,17 @@ msgstr "Position"
 msgid "Stato"
 msgstr "Status"
 
-#: templates/admin/campionato_detail.html:233
+#: templates/admin/campionato_detail.html:235
 #: templates/components/_soft_delete_modal.html:36
 #: templates/gamification/admin/xp_management.html:42
 #: templates/gamification/admin/xp_management.html:93
 msgid "Motivo"
 msgstr "Reason"
 
-#: templates/admin/campionato_detail.html:244
+#: templates/admin/campionato_detail.html:246
 #: templates/components/_match_result_row.html:130
 #: templates/components/_multi_set_score_display.html:94
+#: templates/components/_playoff_invitations.html:23
 #: templates/components/_proposal_labels.html:18
 #: templates/exam/request_detail.html:50
 #: templates/individual_match/admin_overview.html:37
@@ -4744,47 +4770,72 @@ msgstr "Reason"
 msgid "In attesa"
 msgstr "Pending"
 
-#: templates/admin/campionato_detail.html:246
+#: templates/admin/campionato_detail.html:248
 #: templates/components/_unified_match_score.html:88
 #: templates/components/_unified_match_score.html:99
 #: templates/exam/requests.html:19 utils/status_ui.py:203
 msgid "Confermato"
 msgstr "Confirmed"
 
-#: templates/admin/campionato_detail.html:248 utils/status_ui.py:204
+#: templates/admin/campionato_detail.html:250 utils/status_ui.py:204
 msgid "Rifiutato"
 msgstr "Declined"
 
-#: templates/admin/campionato_detail.html:250
+#: templates/admin/campionato_detail.html:252
 #: templates/components/_proposal_labels.html:36
 msgid "Scaduto"
 msgstr "Expired"
 
-#: templates/admin/campionato_detail.html:261
+#: templates/admin/campionato_detail.html:255
+#, python-format
+msgid "registrato da %(name)s"
+msgstr "recorded by %(name)s"
+
+#: templates/admin/campionato_detail.html:255
+msgid "direzione"
+msgstr "the direction"
+
+#: templates/admin/campionato_detail.html:270
+msgid "Conferma per conto del giocatore"
+msgstr "Confirm on the player’s behalf"
+
+#: templates/admin/campionato_detail.html:271
+msgid "Confermare la partecipazione per conto di questo giocatore?"
+msgstr "Confirm participation on this player’s behalf?"
+
+#: templates/admin/campionato_detail.html:281
+msgid "Rifiuta per conto del giocatore"
+msgstr "Decline on the player’s behalf"
+
+#: templates/admin/campionato_detail.html:282
+msgid "Registrare il rifiuto? L'invito passera' al primo degli esclusi."
+msgstr "Record the refusal? The invitation goes to the first player left out."
+
+#: templates/admin/campionato_detail.html:293
 msgid "Rimuovere questo giocatore?"
 msgstr "Remove this player?"
 
-#: templates/admin/campionato_detail.html:279
+#: templates/admin/campionato_detail.html:311
 msgid "Aggiungi giocatore..."
 msgstr "Add player..."
 
-#: templates/admin/campionato_detail.html:297
+#: templates/admin/campionato_detail.html:329
 msgid "Creare la gara playoff e iscrivere i giocatori confermati?"
 msgstr "Create the playoff competition and register confirmed players?"
 
-#: templates/admin/campionato_detail.html:298
+#: templates/admin/campionato_detail.html:330
 msgid "Crea Gara Playoff"
 msgstr "Create Playoff Competition"
 
-#: templates/admin/campionato_detail.html:305
+#: templates/admin/campionato_detail.html:337
 msgid "Vai alla gara playoff"
 msgstr "Go to playoff competition"
 
-#: templates/admin/campionato_detail.html:315
+#: templates/admin/campionato_detail.html:353
 msgid "Nessuna configurazione playoff attiva."
 msgstr "No active playoff configuration."
 
-#: templates/admin/campionato_detail.html:403
+#: templates/admin/campionato_detail.html:441
 msgid ""
 "Tutte le gare sono concluse. Passare alla fase playoff? Potrai poi "
 "avviare i playoff e invitare i qualificati."
@@ -4792,7 +4843,7 @@ msgstr ""
 "All competitions are finished. Proceed to the playoff phase? You can then"
 " start the playoffs and invite the qualified players."
 
-#: templates/admin/campionato_detail.html:405
+#: templates/admin/campionato_detail.html:443
 msgid ""
 "Sei sicuro di voler terminare il campionato? Le gare non completate "
 "verranno eliminate."
@@ -4800,7 +4851,7 @@ msgstr ""
 "Are you sure you want to terminate the championship? Non-completed "
 "competitions will be removed."
 
-#: templates/admin/campionato_detail.html:408
+#: templates/admin/campionato_detail.html:446
 msgid ""
 "Attenzione: alcuni playoff hanno un requisito minimo gare non "
 "raggiungibile. Vuoi terminare comunque?"
@@ -4808,13 +4859,13 @@ msgstr ""
 "Warning: some playoffs have a minimum competition requirement that cannot"
 " be met. Terminate anyway?"
 
-#: templates/admin/campionato_detail.html:470
+#: templates/admin/campionato_detail.html:508
 #: templates/components/_new_gara_modal.html:614
 #, python-brace-format
 msgid "Esatto numero: {distance} triangoli totali"
 msgstr "Exact number: {distance} total racks"
 
-#: templates/admin/campionato_detail.html:471
+#: templates/admin/campionato_detail.html:509
 #: templates/components/_new_gara_modal.html:615
 #, python-brace-format
 msgid "Al {distance} (si vince a {distance} triangoli)"
@@ -5156,6 +5207,7 @@ msgstr "Approve"
 #: templates/admin/venue_manager_requests.html:118
 #: templates/admin/venue_manager_requests.html:157
 #: templates/components/_match_scoreboard.html:162
+#: templates/components/_playoff_invitations.html:53
 #: templates/components/_trio_rack_input.html:217
 #: templates/components/_unified_rack_input.html:253
 #: templates/components/_unified_rack_input.html:259
@@ -5595,7 +5647,7 @@ msgstr "Forfeit"
 #: templates/components/_campionato_details_info.html:86
 #: templates/components/_campionato_garas.html:21
 #: templates/components/_gara_info.html:47
-#: templates/components/_player_dashboard_content.html:39
+#: templates/components/_player_dashboard_content.html:43
 #: templates/components/_separated_dashboard_content.html:281
 msgid "Quota"
 msgstr "Fee"
@@ -6667,7 +6719,8 @@ msgstr "All Requests"
 #: templates/components/_history_filters.html:41
 #: templates/components/_match_info.html:31
 #: templates/components/_nearby_gare.html:125
-#: templates/components/_player_dashboard_content.html:32
+#: templates/components/_player_dashboard_content.html:36
+#: templates/components/_playoff_invitations.html:36
 #: templates/exam/request_form.html:55
 #: templates/individual_match/match_detail.html:211
 #: templates/player/my_venue_requests.html:21
@@ -8413,7 +8466,7 @@ msgstr "New Competition"
 
 #: templates/components/_campionato_garas.html:20
 #: templates/components/_distance_configurator.html:15
-#: templates/components/_player_dashboard_content.html:36
+#: templates/components/_player_dashboard_content.html:40
 #: templates/components/_round_management.html:28
 #: templates/individual_match/create_proposal.html:127
 #: templates/individual_match/edit_match.html:78
@@ -8862,15 +8915,15 @@ msgstr "3rd/4th place final"
 msgid "a pari merito"
 msgstr "shared"
 
-#: templates/components/_director_dashboard_content.html:11
+#: templates/components/_director_dashboard_content.html:15
 msgid "Sfide individuali proposte"
 msgstr "Individual matches proposed"
 
-#: templates/components/_director_dashboard_content.html:23
+#: templates/components/_director_dashboard_content.html:27
 #: templates/components/_history_gare_tab.html:87
 #: templates/components/_multi_set_score_display.html:25
 #: templates/components/_multi_set_score_display.html:117
-#: templates/components/_player_dashboard_content.html:37
+#: templates/components/_player_dashboard_content.html:41
 #: templates/individual_match/match_detail.html:203
 #: templates/individual_match/match_detail.html:206
 #: templates/individual_match/matches.html:128
@@ -8879,29 +8932,29 @@ msgstr "Individual matches proposed"
 msgid "Al"
 msgstr "Race to"
 
-#: templates/components/_director_dashboard_content.html:23
+#: templates/components/_director_dashboard_content.html:27
 #: templates/components/_round_management.html:82
 msgid "Esatto"
 msgstr "Exact"
 
-#: templates/components/_director_dashboard_content.html:25
+#: templates/components/_director_dashboard_content.html:29
 msgid "Aperto"
 msgstr "Open"
 
-#: templates/components/_director_dashboard_content.html:31
+#: templates/components/_director_dashboard_content.html:35
 msgid "quota"
 msgstr "fee"
 
-#: templates/components/_director_dashboard_content.html:32
+#: templates/components/_director_dashboard_content.html:36
 msgid "gratis"
 msgstr "free"
 
-#: templates/components/_director_dashboard_content.html:38
+#: templates/components/_director_dashboard_content.html:42
 msgid "Partecipa"
 msgstr "Take part"
 
-#: templates/components/_director_dashboard_content.html:47
-#: templates/components/_player_dashboard_content.html:53
+#: templates/components/_director_dashboard_content.html:51
+#: templates/components/_player_dashboard_content.html:57
 msgid "Proponi un match"
 msgstr "Propose a match"
 
@@ -9985,6 +10038,7 @@ msgstr "Where from"
 #: templates/components/_index_upcoming.html:12
 #: templates/components/_match_info.html:12
 #: templates/components/_player_recent_matches.html:31
+#: templates/components/_playoff_invitations.html:20
 #: templates/components/_unified_cards.html:12
 #: templates/components/_user_recent_matches_table.html:13
 msgid "Campionato"
@@ -10291,7 +10345,7 @@ msgid "Iscrizioni aperte"
 msgstr "Open registrations"
 
 #: templates/components/_index_open_inscriptions.html:19
-#: templates/components/_player_dashboard_content.html:26
+#: templates/components/_player_dashboard_content.html:30
 #: templates/individual_match/proposal_detail.html:42
 msgid "Aperta"
 msgstr "Open"
@@ -10639,6 +10693,7 @@ msgid "vince"
 msgstr "wins"
 
 #: templates/components/_match_scoreboard.html:152
+#: templates/components/_playoff_invitations.html:48
 #: templates/components/_trio_rack_input.html:209
 #: templates/components/_unified_rack_input.html:252
 #: templates/components/_unified_rack_input.html:258
@@ -10980,26 +11035,27 @@ msgstr "your best"
 msgid "Fatta"
 msgstr "Done"
 
-#: templates/components/_player_dashboard_content.html:13
+#: templates/components/_player_dashboard_content.html:17
 msgid "Proposte aperte"
 msgstr "Open proposals"
 
-#: templates/components/_player_dashboard_content.html:15
+#: templates/components/_player_dashboard_content.html:19
 #: templates/components/_separated_dashboard_content.html:171
 msgid "Vedi tutte"
 msgstr "View all"
 
-#: templates/components/_player_dashboard_content.html:34
+#: templates/components/_player_dashboard_content.html:38
+#: templates/components/_playoff_invitations.html:32
 #: templates/individual_match/create_proposal.html:61
 #: templates/player/playoff_invitation.html:23
 msgid "Quando"
 msgstr "When"
 
-#: templates/components/_player_dashboard_content.html:37
+#: templates/components/_player_dashboard_content.html:41
 msgid "Esatto numero"
 msgstr "Exact number"
 
-#: templates/components/_player_dashboard_content.html:46
+#: templates/components/_player_dashboard_content.html:50
 msgid "Accetta il match"
 msgstr "Accept the match"
 
@@ -11200,6 +11256,55 @@ msgstr "Not passed"
 #, python-format
 msgid "certificato da %(who)s"
 msgstr "certified by %(who)s"
+
+#: templates/components/_playoff_invitations.html:11
+msgid "Sei qualificato"
+msgstr "You have qualified"
+
+#: templates/components/_playoff_invitations.html:40
+#: templates/player/playoff_invitation.html:31
+msgid "Rispondi entro"
+msgstr "Respond by"
+
+#: templates/components/_playoff_invitations.html:53
+msgid "Rifiutare il posto ai playoff? L'invito passera' al primo degli esclusi."
+msgstr ""
+"Turn down your playoff spot? The invitation goes to the first player left"
+" out."
+
+#: templates/components/_playoff_scoring_form.html:11
+msgid "Classifica finale del campionato"
+msgstr "Final championship standings"
+
+#: templates/components/_playoff_scoring_form.html:14
+msgid "Campionato + gara di playoff"
+msgstr "Championship + playoff event"
+
+#: templates/components/_playoff_scoring_form.html:17
+msgid "Solo i playoff"
+msgstr "Playoffs only"
+
+#: templates/components/_playoff_scoring_form.html:22
+msgid "Peso del playoff"
+msgstr "Playoff weight"
+
+#: templates/components/_playoff_scoring_form.html:34
+msgid ""
+"Chi gioca il playoff occupa le prime posizioni, nell'ordine deciso dal "
+"playoff; gli altri seguono nell'ordine del campionato. Il peso non ha "
+"effetto in questa modalita'."
+msgstr ""
+"Playoff entrants take the top places, in the order the playoff decides; "
+"everyone else follows in championship order. Weight has no effect in this"
+" mode."
+
+#: templates/components/_playoff_scoring_form.html:36
+msgid ""
+"Il punteggio della gara di playoff si somma a quello del campionato, "
+"moltiplicato per il peso. Peso 1 = una prova come le altre."
+msgstr ""
+"The playoff score is added to the championship score, multiplied by the "
+"weight. Weight 1 = an event like any other."
 
 #: templates/components/_position_points.html:27
 msgid "Punti per posizione"
@@ -15965,10 +16070,6 @@ msgstr "You are invited to the playoffs"
 #: templates/player/playoff_invitation.html:16
 msgid "posizione in classifica"
 msgstr "place in the standings"
-
-#: templates/player/playoff_invitation.html:31
-msgid "Rispondi entro"
-msgstr "Respond by"
 
 #: templates/player/playoff_invitation.html:41
 msgid "Ci sarò"

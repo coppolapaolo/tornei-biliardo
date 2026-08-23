@@ -213,6 +213,13 @@ class Gara(SoftDeleteMixin, db.Model):
         db.Integer, db.ForeignKey("challenge.id", ondelete="SET NULL"), nullable=True
     )  # FK a Challenge se mode = "challenge"
 
+    # Moltiplicatore del punteggio di questa gara nella classifica generale
+    # del campionato (issue #64). 1 = comportamento storico. È l'UNICA fonte
+    # letta da `ScoreAggregator`: la configurazione playoff lo imposta qui
+    # quando crea la propria gara, come già fa con distanza e turni.
+    # Le statistiche (Elo, percentuale vittorie) non lo guardano mai.
+    weight = db.Column(db.Integer, nullable=False, default=1, server_default="1")
+
     # Playoff configuration (if this gara is a playoff)
     playoff_config_id = db.Column(
         db.Integer,
@@ -250,6 +257,20 @@ class Gara(SoftDeleteMixin, db.Model):
     def is_playoff(self) -> bool:
         """Check if this gara is a playoff tournament."""
         return self.playoff_config_id is not None
+
+    @property
+    def classification_weight(self) -> int:
+        """Quanto pesa questa gara nella classifica generale del campionato.
+
+        Vale 0 per la gara di un playoff che **decide** la classifica finale:
+        lì l'ordine dei partecipanti lo detta il playoff stesso, e sommarne
+        anche il punteggio sposterebbe la posizione di chi al playoff non è
+        andato — che è esattamente ciò che quella modalità non vuole.
+        """
+        config = self.playoff_config
+        if config is not None and config.decides_final_ranking:
+            return 0
+        return 1 if self.weight is None else int(self.weight)
 
     # Co-directors relationship (similar to campionati)
     @property

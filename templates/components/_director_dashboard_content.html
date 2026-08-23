@@ -2,6 +2,10 @@
    Dashboard direttore: sezioni gare/campionati + match individuali proposti.
    vm.match_opportunities e gli endpoint sono invariati. #}
 
+{# L'invito ai playoff sta in cima: e' una cosa da fare con una
+   scadenza, e alla scadenza il posto passa a un altro. #}
+{% include "components/_playoff_invitations.html" %}
+
 {% include "components/_separated_dashboard_content.html" %}
 
 {% if vm.match_opportunities and vm.match_opportunities|length %}

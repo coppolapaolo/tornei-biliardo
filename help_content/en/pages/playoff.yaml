@@ -49,6 +49,13 @@ blocks:
       If you qualify you get a **notification**. Opening it shows the play-off
       competition — date, venue, format — and two buttons: accept or decline.
 
+  - type: text
+    text: >-
+      The same invitation also appears at the top of your **home page**, in a
+      "You have qualified" card with the same two buttons. You do not have to
+      dig through your notifications: it stays there until you answer, and
+      disappears as soon as you do.
+
   - type: shot
     shot: notifiche
     caption: "Play-off invitations arrive among your notifications, like other competition messages."
@@ -70,6 +77,15 @@ blocks:
           the place goes to someone else.
 
   - type: note
+    tone: tip
+    title: "You can also answer in person"
+    text: >-
+      If you run into the competition director at the venue you can just tell
+      them whether you are in: they record the answer for you and the
+      invitation closes there and then. The list of qualifiers shows that they
+      recorded it, so it is clear who answered for whom.
+
+  - type: note
     tone: warning
     title: "Declining is not a penalty"
     text: >-
@@ -88,10 +104,42 @@ blocks:
       [Following a competition](/aiuto/giocare/seguire_la_gara). Only how you
       got there is different.
 
+  - type: heading
+    id: classifica_finale
+    title: "How the final standings are decided"
+
+  - type: text
+    text: >-
+      Whoever organises the championship picks one of two ways, and the
+      difference matters a great deal if you reach the play-off from behind:
+
+  - type: options
+    items:
+      - name: "Championship + play-off event"
+        text: >-
+          The play-off score is **added** to the championship score, as if it
+          were one more competition. A good season leaves you ahead. The
+          director can give the play-off a **weight**: weight 2 means that
+          event counts double.
+      - name: "Play-offs only"
+        text: >-
+          The play-off decides the final standings: whoever plays it takes the
+          top places in the order the play-off produces, and everyone else
+          follows in championship order. What you did during the season gets
+          you in, not to the top.
+
+  - type: note
+    tone: info
+    text: >-
+      If nobody changes anything the first way applies, with weight 1: the
+      play-off counts exactly like any other competition of the championship.
+
   - type: faq
     items:
       - q: "How do I know whether I qualified?"
-        a: "You get a notification. No notification means you did not qualify, or the championship has no play-offs."
+        a: "You get a notification, and a \"You have qualified\" card on your home page. If neither is there, you did not qualify or the championship has no play-offs."
+      - q: "Does winning the play-off mean winning the championship?"
+        a: "It depends on the setup. With \"Play-offs only\" yes; with \"Championship + play-off event\" the score is added to the season's, and it may not be enough. Ask the competition director how theirs is set up."
       - q: "Can I play in both play-offs?"
         a: "No: qualifying assigns you to one of the two, based on your position in the standings."
       - q: "I accepted but now I cannot come."

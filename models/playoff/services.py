@@ -15,6 +15,7 @@ from ..exceptions import NotFoundError
 from .models import (
     PlayoffConfiguration,
     PlayoffQualification,
+    PlayoffRankingMode,
     PlayoffTournament,
     PlayoffType,
     QualificationStatus,
@@ -148,14 +149,21 @@ class PlayoffService:
     @staticmethod
     @transactional(domain="playoff")
     def confirm_qualification(
-        qualification_id: int, user_id: int
+        qualification_id: int,
+        user_id: int,
+        responded_by_id: Optional[int] = None,
     ) -> PlayoffQualification:
-        """Confirm a user's playoff qualification."""
+        """Confirm a user's playoff qualification.
+
+        `responded_by_id` è chi registra la risposta: assente vuol dire «l'ha
+        fatto il giocatore stesso». Il direttore lo passa quando gliel'hanno
+        detta a voce (vedi `respond_on_behalf`).
+        """
         qualification = PlayoffQualification.query.filter_by(
             id=qualification_id, user_id=user_id
         ).first_or_404()
 
-        qualification.confirm_participation()
+        qualification.confirm_participation(responded_by_id=responded_by_id)
 
         # Check if we can start the playoff campionato
         PlayoffService._check_playoff_readiness(qualification.configuration_id)
@@ -165,14 +173,16 @@ class PlayoffService:
     @staticmethod
     @transactional(domain="playoff")
     def decline_qualification(
-        qualification_id: int, user_id: int
+        qualification_id: int,
+        user_id: int,
+        responded_by_id: Optional[int] = None,
     ) -> Optional[PlayoffQualification]:
         """Decline a user's playoff qualification and find replacement."""
         qualification = PlayoffQualification.query.filter_by(
             id=qualification_id, user_id=user_id
         ).first_or_404()
 
-        qualification.decline_participation()
+        qualification.decline_participation(responded_by_id=responded_by_id)
 
         # Cerca il sostituto a livello servizio (flusso documentato:
         # decline → invita il prossimo idoneo). Il modello non lo fa più:
@@ -187,6 +197,95 @@ class PlayoffService:
             PlayoffService.notify_qualified_players(qualification.configuration_id)
 
         return replacement
+
+    @staticmethod
+    @transactional(domain="playoff")
+    def respond_on_behalf(
+        qualification_id: int, accept: bool, responded_by_id: int
+    ) -> Optional[PlayoffQualification]:
+        """Il direttore registra la risposta che il giocatore gli ha dato.
+
+        I giocatori qualificati spesso rispondono a voce, in sala: senza
+        questa strada l'invito resterebbe `PENDING` fino alla scadenza, e la
+        cascata dei rifiuti (SPECIFICHE.md riga 186) non partirebbe mai per
+        chi ha detto no al telefono.
+
+        È la stessa transizione che fa il giocatore — stessi controlli, stesso
+        sostituto cercato sul rifiuto — con l'unica differenza che resta
+        scritto chi ha risposto (`responded_by_id`).
+
+        Ritorna l'eventuale sostituto trovato (solo sul rifiuto), come
+        `decline_qualification`.
+        """
+        qualification = db.session.get(PlayoffQualification, qualification_id)
+        if qualification is None:
+            raise NotFoundError("Qualificazione non trovata")
+        if qualification.status != QualificationStatus.PENDING:
+            raise ValueError("Questa qualificazione ha già una risposta")
+
+        if accept:
+            PlayoffService.confirm_qualification(
+                qualification_id,
+                qualification.user_id,
+                responded_by_id=responded_by_id,
+            )
+            return None
+
+        return PlayoffService.decline_qualification(
+            qualification_id,
+            qualification.user_id,
+            responded_by_id=responded_by_id,
+        )
+
+    @staticmethod
+    @transactional(domain="playoff")
+    def update_scoring(
+        config_id: int,
+        final_ranking_mode: Optional[str] = None,
+        playoff_weight: Optional[int] = None,
+    ) -> PlayoffConfiguration:
+        """Cambia come il playoff entra nella classifica finale.
+
+        A differenza di `update_configuration` **non** è bloccata dall'avvio:
+        i criteri di qualificazione non si toccano più dopo gli inviti (chi è
+        dentro è dentro), ma quanto pesa la gara e chi decide la classifica
+        sono decisioni di punteggio, e restano del direttore fino a quando il
+        campionato non è archiviato. Al cambio la classifica generale si
+        ricalcola: un peso modificato che non muove la classifica sarebbe un
+        peso che non fa niente.
+        """
+        config = db.session.get(PlayoffConfiguration, config_id)
+        if config is None:
+            raise NotFoundError("Configurazione playoff non trovata")
+
+        if final_ranking_mode is not None:
+            config.final_ranking_mode = PlayoffRankingMode.normalize(
+                final_ranking_mode
+            ).value
+
+        if playoff_weight is not None:
+            weight = int(playoff_weight)
+            if weight < 1:
+                raise ValueError("Il peso deve essere un intero maggiore di zero")
+            config.playoff_weight = weight
+            # `Gara.weight` è la fonte letta dall'aggregatore: se la gara
+            # esiste già, la configurazione da sola non sposterebbe niente.
+            if config.gara is not None:
+                config.gara.weight = weight
+
+        db.session.flush()
+        PlayoffService._recalculate_campionato_classification(config.campionato_id)
+        return config
+
+    @staticmethod
+    def _recalculate_campionato_classification(campionato_id: Optional[int]) -> None:
+        """Ricalcola la classifica generale dopo un cambio di punteggio."""
+        if not campionato_id:
+            return
+        from ..classification.campionato_classification import ClassificationService
+
+        ClassificationService.invalidate_campionato_cache(campionato_id)
+        ClassificationService.update_campionato_classification(campionato_id)
 
     @staticmethod
     @transactional(domain="playoff")
@@ -765,6 +864,10 @@ class PlayoffService:
             rounds_count=params.get("rounds_count", 1),
             max_participants=config.max_participants,
             playoff_config_id=config.id,
+            # Il peso vive sulla gara, che è ciò che l'aggregatore legge; la
+            # configurazione è il valore scelto dal direttore prima che la
+            # gara esistesse.
+            weight=config.playoff_weight or 1,
             **{
                 k: v
                 for k, v in params.items()

@@ -67,6 +67,8 @@ Defines playoff rules for a campionato.
 - `qualification_criteria` (JSON for complex rules)
 - `location`, `scheduled_date`, `entry_fee`
 - `is_active`, `auto_generate`
+- `final_ranking_mode`, `playoff_weight` — come il playoff entra nella
+  classifica finale del campionato (ADR-053)
 
 ### PlayoffQualification
 Individual player qualification record.
@@ -75,6 +77,9 @@ Individual player qualification record.
 - `playoff_config_id`, `user_id`, `classification_position`
 - `status`: PENDING → CONFIRMED / DECLINED / EXPIRED / REPLACED
 - `invited_at`, `responded_at`, `replaced_by_id`
+- `responded_by_id` — chi ha materialmente risposto: il giocatore, oppure il
+  direttore che ha registrato la risposta ricevuta a voce
+  (`PlayoffService.respond_on_behalf`). `answered_on_behalf` li distingue
 
 ### PlayoffTournament
 Actual playoff tournament (links to generated Campionato).
@@ -109,6 +114,30 @@ CONFIRMED      DECLINED → invite next eligible
 - **Do not skip min_garas_played check** - Players must meet minimum participation
 - **Do not forget to invite** - Qualifications are created but not auto-invited
 - **Do not call `db.session.commit()`** - Services use `@transactional`
+
+---
+
+---
+
+## La classifica finale del campionato (ADR-053)
+
+La gara di playoff **è** una gara del campionato: `create_playoff_gara` le
+mette `campionato_id`, quindi `ScoreAggregator` la contava già da sempre. Da
+qui due conseguenze da non dimenticare:
+
+- il default `campionato_plus_playoff` **è** il comportamento storico, non una
+  scelta nuova. Cambiarlo cambierebbe la classifica di ogni campionato
+  archiviato;
+- in `playoff_only` il peso efficace della gara è **0**
+  (`Gara.classification_weight`): il playoff detta l'ordine dei suoi
+  partecipanti, e sommarne anche il punteggio sposterebbe la posizione di chi
+  al playoff non è andato.
+
+Il peso letto dall'aggregatore è `Gara.weight`; `PlayoffConfiguration.playoff_weight`
+è il valore di configurazione, copiato sulla gara alla creazione.
+`PlayoffService.update_scoring` li tiene allineati e ricalcola la classifica —
+ed è l'unico percorso di modifica che **non** è bloccato dall'avvio dei
+playoff, perché il punteggio non è la qualificazione.
 
 ---
 

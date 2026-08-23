@@ -81,6 +81,16 @@ class ScoreAggregator:
     ) -> List[PlayerScore]:
         """Aggregate scores across all gare in a campionato.
 
+        L'aggregazione è **per gara**, non su un unico mucchio di partite:
+        ogni gara contribuisce con il proprio totale moltiplicato per
+        `Gara.classification_weight` (issue #64 — «il punteggio ottenuto nella
+        prova va moltiplicato per il peso *prima* di essere aggiunto alla
+        classifica»). Con tutti i pesi a 1 il risultato è identico alla somma
+        piatta di prima, che è il caso di ogni campionato esistente.
+
+        Peso 0 esclude la gara: è come la gara di playoff sparisce dal totale
+        quando è lei a decidere la classifica finale.
+
         Args:
             campionato_id: ID of the campionato
 
@@ -103,6 +113,9 @@ class ScoreAggregator:
         player_stats: Dict[int, Dict[str, int]] = {}
 
         for gara in gare:
+            weight = gara.classification_weight
+            gara_stats: Dict[int, Dict[str, int]] = {}
+
             # Include both 'completed' and 'validated' as finished matches
             matches = [
                 m
@@ -111,9 +124,28 @@ class ScoreAggregator:
             ]
             for match in matches:
                 if match.is_trio and match.trio_match:
-                    self._process_trio_match(match, player_stats)
+                    self._process_trio_match(match, gara_stats)
                 else:
-                    self._process_regular_match(match, player_stats)
+                    self._process_regular_match(match, gara_stats)
+
+            # Il peso 0 non è «nessuna partita»: chi ha giocato quella gara
+            # deve comunque comparire in classifica, altrimenti un finalista
+            # sparirebbe dal tabellone generale. Si azzerano i contributi, non
+            # i giocatori.
+            for pid, stats in gara_stats.items():
+                totale = player_stats.setdefault(
+                    pid,
+                    {
+                        "matches_won": 0,
+                        "matches_lost": 0,
+                        "racks_won": 0,
+                        "racks_lost": 0,
+                        "sets_won": 0,
+                        "sets_lost": 0,
+                    },
+                )
+                for chiave, valore in stats.items():
+                    totale[chiave] = totale.get(chiave, 0) + valore * weight
 
         return [
             PlayerScore(

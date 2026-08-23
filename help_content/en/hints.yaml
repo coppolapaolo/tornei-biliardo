@@ -581,6 +581,15 @@ hints:
   - individual_match.match_detail
   page: referto_tpa
   section: aprire
+- id: campionato.playoff_classifica_finale
+  label: Final championship standings
+  short: 'The play-off is added to the championship (with a weight you choose), or it decides
+    the top places on its own. Leave it alone and it is the sum, with weight 1.'
+  anchor: campionato-playoff-classifica-finale
+  screens:
+  - admin.campionato.campionato_detail
+  page: playoff
+  section: classifica_finale
 tours:
 - screen: dashboard.dashboard
   title: Your home

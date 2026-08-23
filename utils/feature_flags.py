@@ -216,6 +216,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.campionato.playoff_edit_config": {"director"},
     "admin.campionato.playoff_deactivate_config": {"director"},
     "admin.campionato.playoff_add_player": {"director"},
+    # Il direttore registra la risposta che il qualificato gli ha dato a voce,
+    # e decide come il playoff entra nella classifica finale.
+    "admin.campionato.playoff_respond_for_player": {"director"},
+    "admin.campionato.playoff_update_scoring": {"director"},
     "admin.campionato.playoff_remove_player": {"director"},
     # Soft delete del campionato: admin-only (@admin_required). Set esplicito
     # per documentare la decisione, non per inerzia.

@@ -143,6 +143,50 @@ class DashboardSectionBuilder:
         }
 
     @staticmethod
+    def build_playoff_invitations(user_id: int) -> List[Any]:
+        """Gli inviti ai playoff ancora senza risposta per questo giocatore.
+
+        Sono una cosa da fare, non una notizia: finché restano `PENDING` il
+        posto in finale è appeso, e alla scadenza la cascata dei rifiuti lo
+        passa a qualcun altro (SPECIFICHE.md riga 186). Vanno quindi in
+        dashboard accanto alle gare e ai match, non solo nella pagina
+        dell'invito che si raggiunge da una notifica.
+        """
+        from models.playoff.models import (
+            PlayoffConfiguration,
+            PlayoffQualification,
+            QualificationStatus,
+        )
+
+        # Il join su `Campionato` non serve a leggere niente: serve a far
+        # scattare il filtro soft-delete, che e' un `with_loader_criteria`
+        # (models/soft_delete/filter.py) e quindi si applica solo alle entita'
+        # che **compaiono nella query**. Interrogando la sola
+        # `PlayoffQualification` una qualificazione rimasta `PENDING` su un
+        # campionato eliminato continuerebbe a comparire in dashboard, con due
+        # pulsanti che scrivono su dati orfani — trovato sul DB di sviluppo,
+        # che ne aveva sette. Il predicato esplicito qui sotto e' ridondante e
+        # sta per dirlo a chi legge. Stessa ragione per `is_active`: una
+        # configurazione disattivata non e' piu' un invito.
+        return (
+            db.session.query(PlayoffQualification)
+            .join(
+                PlayoffConfiguration,
+                PlayoffConfiguration.id == PlayoffQualification.configuration_id,
+            )
+            .join(Campionato, Campionato.id == PlayoffConfiguration.campionato_id)
+            .filter(
+                PlayoffQualification.user_id == user_id,
+                PlayoffQualification.status == QualificationStatus.PENDING,
+                PlayoffConfiguration.is_active.is_(True),
+                Campionato.is_deleted.is_(False),
+            )
+            .options(joinedload(PlayoffQualification.configuration))
+            .order_by(PlayoffQualification.qualifying_position)
+            .all()
+        )
+
+    @staticmethod
     def build_challenge_sections(
         user_id: int, selected_campionato: Optional[Campionato]
     ) -> dict:

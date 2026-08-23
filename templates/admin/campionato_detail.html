@@ -164,6 +164,8 @@
                                 </button>
                             </form>
                         </div>
+
+                        {% include "components/_playoff_scoring_form.html" %}
                     </div>
                 </div>
             {% endfor %}
@@ -249,9 +251,39 @@
                                         {% elif q.status.value == 'expired' %}
                                             <span class="badge bg-secondary">{{ _("Scaduto") }}</span>
                                         {% endif %}
+                                        {% if q.answered_on_behalf %}
+                                        <br><small class="text-muted">{{ _("registrato da %(name)s", name=q.responded_by.username if q.responded_by else _("direzione")) }}</small>
+                                        {% endif %}
                                     </td>
                                     <td><small class="text-muted">{{ q.qualification_reason }}</small></td>
                                     <td>
+                                        {# Rispondere per conto del giocatore: capita che la
+                                           risposta arrivi a voce, in sala. Senza questa strada
+                                           l'invito resterebbe appeso fino alla scadenza. #}
+                                        {% if q.status.value == 'pending' %}
+                                        <form method="POST" class="d-inline"
+                                              action='{{ url_for("admin.campionato.playoff_respond_for_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="qualification_id" value="{{ q.id }}">
+                                            <input type="hidden" name="answer" value="accept">
+                                            <button type="submit" class="btn btn-sm btn-outline-success"
+                                                    title='{{ _("Conferma per conto del giocatore") }}'
+                                                    onclick='return confirm({{ _("Confermare la partecipazione per conto di questo giocatore?")|tojson }})'>
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                        </form>
+                                        <form method="POST" class="d-inline"
+                                              action='{{ url_for("admin.campionato.playoff_respond_for_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input type="hidden" name="qualification_id" value="{{ q.id }}">
+                                            <input type="hidden" name="answer" value="decline">
+                                            <button type="submit" class="btn btn-sm btn-outline-warning"
+                                                    title='{{ _("Rifiuta per conto del giocatore") }}'
+                                                    onclick='return confirm({{ _("Registrare il rifiuto? L'invito passera' al primo degli esclusi.")|tojson }})'>
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                        {% endif %}
                                         {% if cfg.gara is none and q.status.value in ('pending', 'confirmed') %}
                                         <form method="POST" class="d-inline"
                                               action='{{ url_for("admin.campionato.playoff_remove_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
@@ -306,6 +338,12 @@
                             </a>
                         </div>
                         {% endif %}
+
+                        {# Le regole di punteggio restano modificabili anche dopo
+                           l'avvio: i criteri di qualificazione no (chi e' dentro
+                           e' dentro), ma quanto pesa la gara e chi decide la
+                           classifica sono decisioni del direttore fino alla fine. #}
+                        {% include "components/_playoff_scoring_form.html" %}
                     </div>
                 </div>
             {% endfor %}

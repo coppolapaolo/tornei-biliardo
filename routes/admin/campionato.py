@@ -784,6 +784,81 @@ def playoff_remove_player(campionato_id, config_id):
 
 
 @campionato_bp.route(
+    "/<int:campionato_id>/playoff/<int:config_id>/respond", methods=["POST"]
+)
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def playoff_respond_for_player(campionato_id, config_id):
+    """Registra la risposta che un qualificato ha dato a voce al direttore."""
+    from models.playoff.services import PlayoffService
+
+    qualification_id = request.form.get("qualification_id", type=int)
+    answer = (request.form.get("answer") or "").strip()
+
+    if not qualification_id or answer not in ("accept", "decline"):
+        flash(_("Risposta non valida."), "error")
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
+
+    try:
+        replacement = PlayoffService.respond_on_behalf(
+            qualification_id,
+            accept=(answer == "accept"),
+            responded_by_id=current_user.id,
+        )
+    except ValueError as ve:
+        flash(str(ve), "error")
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
+
+    if answer == "accept":
+        flash(_("Partecipazione confermata per conto del giocatore."), "success")
+    elif replacement is not None:
+        flash(
+            _(
+                "Rifiuto registrato: l'invito passa a %(name)s.",
+                name=replacement.user.username if replacement.user else "—",
+            ),
+            "success",
+        )
+    else:
+        flash(
+            _("Rifiuto registrato. Nessun altro giocatore idoneo da invitare."),
+            "info",
+        )
+
+    return redirect(
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    )
+
+
+@campionato_bp.route(
+    "/<int:campionato_id>/playoff/<int:config_id>/scoring", methods=["POST"]
+)
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def playoff_update_scoring(campionato_id, config_id):
+    """Decide se la classifica finale è quella dei playoff, e con che peso."""
+    from models.playoff.services import PlayoffService
+
+    try:
+        PlayoffService.update_scoring(
+            config_id,
+            final_ranking_mode=request.form.get("final_ranking_mode"),
+            playoff_weight=request.form.get("playoff_weight", type=int),
+        )
+        flash(_("Regole della classifica finale aggiornate."), "success")
+    except ValueError as ve:
+        flash(str(ve), "error")
+
+    return redirect(
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    )
+
+
+@campionato_bp.route(
     "/<int:campionato_id>/playoff/config/<int:config_id>/edit", methods=["POST"]
 )
 @login_required

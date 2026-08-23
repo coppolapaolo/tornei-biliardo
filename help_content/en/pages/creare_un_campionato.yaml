@@ -67,7 +67,9 @@ blocks:
           Special competitions at the end of the championship reserved for the
           best-placed players. You can plan an «Elite» play-off for the top
           finishers and an «Academy» one for those below. Qualifiers receive an
-          invitation to accept.
+          invitation to accept — and if they answer in person, you can record
+          their answer yourself.
+        hint: campionato.playoff_classifica_finale
 
   - type: note
     tone: warning

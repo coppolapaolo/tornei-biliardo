@@ -67,7 +67,9 @@ blocks:
         text: >-
           Gare speciali a fine campionato riservate ai migliori classificati.
           Puoi prevedere un playoff «Elite» per i primi e uno «Academy» per i
-          successivi. I qualificati ricevono un invito da accettare.
+          successivi. I qualificati ricevono un invito da accettare — e se ti
+          rispondono a voce puoi registrare tu la loro risposta.
+        hint: campionato.playoff_classifica_finale
 
   - type: note
     tone: warning
