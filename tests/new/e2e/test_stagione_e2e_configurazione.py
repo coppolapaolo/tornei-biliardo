@@ -55,6 +55,9 @@ class TestIlCampionato:
         assert record.default_odd_policy == DISPARI_CON_X
         assert record.default_anti_rematch is True
         assert record.planned_gare_count == len(CALENDARIO)
+        # L'handicap si accende sul campionato e le gare lo ereditano: il
+        # dettaglio di cosa comporta sta in `test_stagione_e2e_handicap.py`.
+        assert record.has_handicap is True
 
     def test_il_playoff_e_configurato_per_i_primi_otto(
         self, campionato: CampionatoDriver, stagione
@@ -105,6 +108,9 @@ class TestLeQuattroGare:
             # Il numero di rack è **esatto**, non un traguardo.
             assert gara.is_race_to is False, quale
             assert gara.is_multi_set is False, quale
+            # «Eredita dal campionato», che non è «no».
+            assert gara.has_handicap is None, quale
+            assert gara.effective_has_handicap is True, quale
 
     def test_ogni_gara_ha_la_sua_disciplina_e_la_sua_distanza(
         self, campionato: CampionatoDriver, stagione

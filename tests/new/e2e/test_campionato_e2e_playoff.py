@@ -165,9 +165,12 @@ class TestQuattroGareAmalfiUguali:
 
         assert punteggi, "nessuna partita giocata: l'allestimento è rotto"
         assert all(uno + due == DISTANZA for uno, due in punteggi)
-        assert all(
+        # Un 5-0 è legittimo anche a rack esatti, quindi da solo non prova
+        # niente. La prova è che *esista* almeno una partita vinta senza
+        # arrivare a cinque: in un «al 5» non potrebbe esistere.
+        assert any(
             max(uno, due) < DISTANZA for uno, due in punteggi
-        ), "un punteggio pieno: la partita si è chiusa da race-to, non da esatto"
+        ), "nessuna partita chiusa sotto la distanza: sembra un race-to, non un esatto"
 
     def test_le_gare_condividono_turni_e_distanza(
         self, campionato: CampionatoDriver, campionato_terminato
@@ -456,24 +459,28 @@ class TestListaSceltaDalDirettore:
 class TestChiusuraDellaFinale:
     """Chiudere la finale non è come chiudere una gara del campionato."""
 
-    def test_la_finale_giocata_chiede_lo_spareggio(
+    def test_la_finale_nasce_con_lo_spareggio_acceso(
         self, campionato: CampionatoDriver, campionato_breve
     ):
-        """La finale non si chiude col pulsante «termina», e non è un guasto.
+        """La finale non eredita tutto, e su un punto diverge senza dirlo.
 
         Le gare create dal form arrivano con lo spareggio SSR **spento**
         (`tiebreaker_enabled` è una casella non spuntata, quindi assente). La
-        gara di playoff invece non passa da nessun form: `create_playoff_gara`
-        eredita solo disciplina, distanza, turni, strategia, dispari, sede e
-        quota, e per tutto il resto prende i default del modello — fra cui lo
+        gara di playoff non passa da nessun form: `create_playoff_gara`
+        eredita disciplina, distanza, turni, strategia, dispari, sede e quota,
+        e per tutto il resto prende i default del modello — fra cui lo
         spareggio **acceso**.
 
-        Con sei giocatori in tre turni i pari merito sono aritmeticamente
-        inevitabili, quindi `terminate_gara` rifiuta la chiusura e rimanda al
-        percorso SSR. È coerente (una finale i pari merito li deve sciogliere)
-        ma è una differenza che nessuno ha scelto, e che si vede solo
-        arrivando fin qui: questo test la tiene ferma, così se un domani
-        l'ereditarietà venisse completata la divergenza si nota subito.
+        È difendibile (una finale i pari merito li deve sciogliere) ma nessuno
+        l'ha scelto. Questo test tiene ferma la divergenza, così se un domani
+        l'ereditarietà venisse completata la cosa si nota subito.
+
+        Che poi lo spareggio *serva* dipende dai risultati, non dal formato:
+        con la classifica a vittorie due giocatori sono pari merito solo se
+        hanno le **stesse vittorie e la stessa differenza triangoli**. Qui si
+        chiude con `chiudi_gara`, che è la sequenza del direttore — termina, e
+        se ci sono pari merito li scioglie e ritermina — e si guarda solo che
+        la finale arrivi in fondo.
         """
         campionato_id, direttore, giocatori = campionato_breve
 
@@ -483,15 +490,15 @@ class TestChiusuraDellaFinale:
             campionato.aggiungi_al_playoff(campionato_id, configurazione.id, giocatore)
         gara_playoff = campionato.crea_gara_playoff(campionato_id, configurazione.id)
 
-        campionato.gioca_gara_gia_iscritta(gara_playoff, direttore, TURNI)
-        campionato.termina(gara_playoff)
-
         finale = campionato.gara(gara_playoff)
         assert finale.tiebreaker_enabled is True
-        assert finale.status == GaraStatus.PLAYING.value
         # Le gare del campionato, nate dal form, lo hanno spento.
         assert all(
             gara.tiebreaker_enabled is False
             for gara in campionato.gare_del_campionato(campionato_id)
             if gara.playoff_config_id is None
         )
+
+        campionato.gioca_gara_gia_iscritta(gara_playoff, direttore, TURNI)
+
+        assert campionato.chiudi_gara(gara_playoff) == GaraStatus.COMPLETED.value

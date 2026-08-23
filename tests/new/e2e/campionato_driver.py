@@ -197,6 +197,62 @@ class CampionatoDriver(GaraDriver):
             f"/player/gara/{gara_id}/unsubscribe", follow_redirects=True
         )
 
+    # ── Categorie dell'handicap (ADR-049) ───────────────────────────
+
+    def iscrizione_di(self, gara_id: int, utente: Utente):
+        """L'iscrizione di quel giocatore a quella gara."""
+        from models.competition.models import Inscription
+
+        iscrizione = Inscription.query.filter_by(
+            gara_id=gara_id, user_id=utente.id
+        ).first()
+        assert iscrizione is not None, f"{utente.username} non è iscritto a {gara_id}"
+        return iscrizione
+
+    def assegna_categoria(
+        self, gara_id: int, utente: Utente, nome: str
+    ) -> dict[str, Any]:
+        """Scrive la categoria di un iscritto dal combo accanto al suo nome.
+
+        Il combo manda un **nome**, non un id: se la categoria non esiste
+        ancora nasce lì. È ciò che rende «definire l'elenco» e «assegnare» un
+        gesto solo. Nome vuoto = togli la categoria.
+        """
+        iscrizione = self.iscrizione_di(gara_id, utente)
+        risposta = self.client.post(
+            f"/admin/gara/{gara_id}/inscription/{iscrizione.id}/categoria",
+            json={"name": nome},
+        )
+        return {"status": risposta.status_code, **(risposta.get_json() or {})}
+
+    def categoria_di(self, gara_id: int, utente: Utente) -> str | None:
+        """Il nome della categoria dell'iscritto, o `None` se non ne ha."""
+        from models.categoria.models import Categoria
+
+        iscrizione = self.iscrizione_di(gara_id, utente)
+        if iscrizione.categoria_id is None:
+            return None
+        categoria = db.session.get(Categoria, iscrizione.categoria_id)
+        return categoria.name if categoria else None
+
+    def categorie_della_gara(self, gara_id: int) -> list[str]:
+        """I nomi delle categorie disponibili in quella competizione."""
+        from models.categoria.service import CategoriaService
+
+        return [
+            categoria.name
+            for categoria in CategoriaService.list_for_gara(self.gara(gara_id))
+        ]
+
+    def elo(self, utente: Utente) -> int | None:
+        """Il rating competitivo del giocatore, `None` se non ne ha ancora."""
+        from models.user.models import User
+
+        record = db.session.get(User, utente.id)
+        assert record is not None
+        db.session.refresh(record)
+        return record.elo_rating
+
     # ── Tavoli ──────────────────────────────────────────────────────
 
     def configura_tavoli(self, gara_id: int, tavoli: str) -> str:

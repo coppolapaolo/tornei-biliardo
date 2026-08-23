@@ -18,7 +18,11 @@ Il campionato:
   (`odd_number_policy="bye"`, che nella schermata si chiama «X (vinto a
   tavolino)»);
 * minimo 6 iscritti, massimo 15;
-* classifica a **vittorie**, spareggio SSR fino al **terzo** posto;
+* classifica a **vittorie** — a parità, **differenza triangoli** — con
+  spareggio SSR fino al **terzo** posto;
+* **handicap acceso**: gli iscritti hanno una categoria (per competizione,
+  ADR-049) e l'Elo si aggiorna **solo fra giocatori della stessa categoria**.
+  L'handicap non tocca le distanze: quelle restano uguali per tutti;
 * playoff finale per i **primi 8**.
 
 Le prime tre gare hanno una configurazione uniforme per tutti i turni. La
@@ -53,6 +57,11 @@ CLASSIFICA = "WINS"
 DISPARI_CON_X = OddNumberPolicy.BYE.value
 SPAREGGIO_FINO_A = 3
 QUALIFICATI_AL_PLAYOFF = 8
+
+#: Le categorie dell'handicap. Non hanno un elenco predefinito nel prodotto:
+#: nascono quando il direttore le scrive sul primo iscritto (ADR-049), quindi
+#: qui sono solo i nomi che userà.
+CATEGORIE = ("A", "B", "C")
 
 #: Giorni fra una gara e la successiva. Serve solo a tenere l'ordine
 #: cronologico che ADR-016 pretende fra gare numerate.
@@ -155,6 +164,10 @@ FORM_CAMPIONATO_STAGIONE: dict[str, str] = {
     "default_odd_policy": DISPARI_CON_X,
     "default_anti_rematch": "on",
     "default_entry_fee": "0",
+    # Casella di spunta: il campionato ha l'handicap, e le gare lo ereditano
+    # perché il loro campo resta su «eredita» (nessun `has_handicap` nel form
+    # della gara → `None` → si guarda il campionato).
+    "has_handicap": "on",
     "playoff_elite_enabled": "on",
     "playoff_elite_participants": str(QUALIFICATI_AL_PLAYOFF),
 }

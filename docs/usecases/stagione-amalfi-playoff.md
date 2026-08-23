@@ -24,7 +24,8 @@ ai playoff.
 
 Uguale per tutte: formato **Amalfi**, **tre turni**, dispari gestito **con la
 X** (chi resta spaiato vince a tavolino), **minimo 6** e **massimo 15**
-iscritti, classifica a **vittorie**, spareggio SSR **fino al terzo posto**.
+iscritti, classifica a **vittorie** (a parità, differenza triangoli), spareggio
+SSR **fino al terzo posto**, **handicap acceso**.
 
 Due conseguenze della configurazione che conviene avere chiare prima di
 cominciare, perché non sono ovvie e non sono errori:
@@ -36,6 +37,10 @@ cominciare, perché non sono ovvie e non sono errori:
 * **Alla gara 2 il pareggio esiste.** Sei è pari: un 3-3 chiude la partita
   senza vincitore. Nelle gare a distanza 5 non può capitare. Vale anche per il
   secondo turno della gara 4 e della finale.
+* **L'handicap non cambia le distanze.** È la cosa che il nome suggerisce e che
+  l'applicazione non fa: nessuno gioca al 5 contro uno che gioca al 3. Il flag
+  governa le **categorie** degli iscritti e, tramite quelle, l'**Elo**. Le
+  distanze restano quelle della gara, uguali per tutti.
 
 La specifica in forma eseguibile sta in `tests/new/e2e/stagione.py`: è l'unica
 copia: se il calendario cambia si cambia là, e tutti i test seguono.
@@ -142,11 +147,48 @@ vero di chi gestisce la sala, non un errore. Un tavolo si può anche togliere.
 3. Il direttore **avvia lo spareggio**, inserisce i punteggi di ogni gruppo di
    pari merito, e a spareggi risolti la gara si chiude.
 
-Con la classifica a vittorie e tre turni i pari merito in cima sono la norma,
-non l'eccezione: **lo spareggio è parte della serata**, non un imprevisto.
+Quando serva lo spareggio dipende dai risultati, non dal formato. Nel sistema
+a vittorie due giocatori sono pari merito solo se hanno **le stesse vittorie e
+la stessa differenza triangoli** (`SpareggioService._group_by_classification`
+raggruppa sulla coppia): con punteggi vari la differenza triangoli separa quasi
+sempre, e lo spareggio resta l'eccezione. Diventa invece sistematico se tutte
+le partite finiscono con lo stesso margine — per esempio tutte 3-2 su una
+distanza 5 — perché in quel caso la differenza triangoli è solo
+`vittorie − sconfitte` e il secondo criterio smette di discriminare.
 
 → `chiudi_gara` in `tests/new/e2e/campionato_driver.py`, usato da
 `tests/new/e2e/test_stagione_e2e_stagione.py`
+
+---
+
+## Journey 4-bis — Le categorie dell'handicap
+
+**Quando**: prima di avviare il primo turno di ogni gara. **Chi**: il direttore.
+
+1. La gara ha l'handicap perché lo ha il campionato: il campo della gara resta
+   su «eredita», che non è «no».
+2. Scendendo l'elenco degli iscritti, il direttore scrive la categoria accanto
+   a ciascun nome. **Non c'è un elenco da preparare prima**: la categoria nasce
+   quando la si scrive sul primo iscritto, e dal secondo in poi si trova già in
+   tendina. Il combo salva sul posto, senza ricaricare la pagina.
+3. Finché qualcuno è senza categoria la pagina lo dice, con il conteggio
+   aggiornato a ogni salvataggio: *«N iscritti su M non hanno una categoria: le
+   loro partite non conteranno per l'Elo, e dopo l'avvio non potrai più
+   cambiarle»*.
+4. **All'avvio del primo turno la finestra si chiude.** Le categorie decidono
+   quali partite contano per l'Elo: cambiarle dopo sarebbe riscrivere le regole
+   a partita in corso.
+5. Dalla seconda gara in poi il lavoro è quasi tutto fatto: iscrivendosi, ogni
+   giocatore **si porta dietro la categoria** della gara precedente dello
+   stesso campionato. Il direttore corregge solo chi è cambiato di categoria, e
+   la correzione non tocca le gare già giocate.
+
+**Cosa cambia davvero**: l'Elo si aggiorna **solo fra giocatori della stessa
+categoria**. Fra categorie diverse la partita vale per la classifica di gara ma
+non tocca il rating, perché il risultato riflette l'handicap e non la forza. E
+senza categoria il rating non si muove: «non lo so» non è «sono uguali».
+
+→ `tests/new/e2e/test_stagione_e2e_handicap.py`
 
 ---
 
@@ -212,3 +254,6 @@ garanzia più ampia di quella che è.
   collegato a nessuna route. È un rilievo aperto, non un comportamento voluto.
 * **Il carico.** Quindici iscritti sono il massimo previsto, non un test di
   carico.
+* **L'handicap sui punteggi.** Non esiste nel prodotto e qui non è simulato: se
+  un giorno servisse far giocare due categorie a distanze diverse, è una
+  funzione da progettare, non un test da aggiungere.

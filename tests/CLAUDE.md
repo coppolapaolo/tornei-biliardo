@@ -148,6 +148,7 @@ questo file lo dichiarava, ma nessun test lo importava).
 | `test_stagione_e2e_iscrizioni.py` | Finestra, lista d'attesa oltre il massimo, disiscrizioni, iscrizione e cancellazione dal direttore, gara sotto il minimo |
 | `test_stagione_e2e_risultati.py` | Le cinque strade che chiudono una partita, i tre modi di tornare indietro, il pareggio a distanza pari, i tavoli e lo swap |
 | `test_stagione_e2e_stagione.py` | La stagione giocata con quindici iscritti: la X a ogni turno, gli override sulle partite vere, lo spareggio SSR, i playoff a 8 e la finale a tre turni diversi |
+| `test_stagione_e2e_handicap.py` | L'handicap: categorie create assegnandole, riporto da una gara all'altra, finestra chiusa all'avvio, Elo che si muove solo fra pari categoria |
 | `test_complete_workflows.py` | Promozione a direttore, workflow storici |
 
 **Perché il livello campionato ha il suo file.** Le gare sono coperte una per
@@ -166,7 +167,16 @@ scritti attorno alla configurazione reale di un campionato in programma, e
 tengono i costi separati per livello: la configurazione non gioca partite
 (secondi), le iscrizioni nemmeno, i risultati usano sei giocatori, e solo
 `test_stagione_e2e_stagione.py` gioca le quattro gare con quindici iscritti
-(~27 s per la fixture piena, ~7 s per quella a una gara sola). Gli user journey
+(~27 s per la fixture piena, ~7 s per quella a una gara sola).
+
+**Il margine dei punteggi varia di proposito.** `GaraDriver._sequenza_rack`
+deriva dall'id della partita quanti rack prende il perdente. Non è un vezzo: se
+ogni partita finisse col margine minimo, la differenza triangoli diventerebbe
+`vittorie − sconfitte` e il secondo criterio della classifica WINS — la chiave
+di pari merito è `(matches_won, rack_difference)` — smetterebbe di
+discriminare. La suite girerebbe in un mondo in cui gli spareggi scattano
+sempre e il secondo criterio non è mai messo alla prova. Chi vuole i pari
+merito *garantiti* usa `pareggia_turno`, che è dichiarato. Gli user journey
 corrispondenti sono descritti in
 [`docs/usecases/stagione-amalfi-playoff.md`](../docs/usecases/stagione-amalfi-playoff.md).
 
