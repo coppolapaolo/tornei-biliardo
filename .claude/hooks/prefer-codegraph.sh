@@ -44,10 +44,10 @@ done < <(printf '%s\n' "$cmd" | sed 's/&&/\n/g; s/||/\n/g; s/;/\n/g; s/|/\n/g')
 motivo=$(cat <<'FINE'
 Ricerca nel codice Python, e il progetto ha `.codegraph/`: il grafo risponde in un colpo solo a ciò che grep ricostruisce a forza di passate.
 
-Una sola ToolSearch li carica tutti:
-  "select:mcp__codegraph__codegraph_search,mcp__codegraph__codegraph_callers,mcp__codegraph__codegraph_callees,mcp__codegraph__codegraph_impact,mcp__codegraph__codegraph_context,mcp__codegraph__codegraph_node"
+Dalla 1.5.0 lo strumento è uno solo:
+  "select:mcp__codegraph__codegraph_explore"
 
-search per trovare un simbolo · callers/callees per seguire il flusso · impact PRIMA di cambiare · context per il contesto di un compito.
+Gli si passa la domanda in linguaggio naturale, oppure i nomi di simboli/file: risponde con il sorgente verbatim numerato per riga (pronto da passare a Edit), il percorso delle chiamate fra quei simboli e chi dipende da loro. Una chiamata sola copre trovare un simbolo, seguire il flusso e vedere il raggio d'impatto prima di cambiare.
 
 Il grafo dice DOVE guardare e non è esaustivo: quando ti serve l'elenco completo, o cerchi in template/guida/traduzioni, aggiungi `# codegraph-checked` al comando e passa.
 FINE
