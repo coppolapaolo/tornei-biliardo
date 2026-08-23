@@ -39,12 +39,6 @@ class TestClassificationDisplay:
         # Use get() for proper session attachment (avoids DetachedInstanceError)
         return db_session.get(User, admin.id)
 
-    @pytest.mark.skip(
-        reason=(
-            "Session isolation issue: DetachedInstanceError in "
-            "GamificationFrontendBridge"
-        )
-    )
     def test_classification_only_shown_for_completed_rounds(self, app, admin_user):
         """
         Test che la classificazione venga mostrata solo per i turni completati,
@@ -111,7 +105,7 @@ class TestClassificationDisplay:
 
             # Should not show any classification section
             assert (
-                "Classifica dopo Turno" not in html_content
+                "Classifica dopo il turno" not in html_content
             ), "Should not show classification when no rounds are completed"
 
             # 5. Complete all matches in round 1
@@ -159,7 +153,7 @@ class TestClassificationDisplay:
 
             # Should show classification for round 1
             assert (
-                "Classifica dopo Turno 1" in html_content
+                "Classifica dopo il turno 1" in html_content
             ), "Should show classification after round 1 is completed"
 
             # 7. Create second round but don't complete it
@@ -174,10 +168,10 @@ class TestClassificationDisplay:
 
             # Should still show only round 1 classification
             assert (
-                "Classifica dopo Turno 1" in html_content
+                "Classifica dopo il turno 1" in html_content
             ), "Should still show round 1 classification"
             assert (
-                "Classifica dopo Turno 2" not in html_content
+                "Classifica dopo il turno 2" not in html_content
             ), "Should not show round 2 classification when round 2 is not completed"
 
             # 9. Complete round 2 matches
@@ -271,8 +265,8 @@ class TestClassificationDisplay:
             print(f"DEBUG: Round 1 classifications: {r1_class}")
             print(f"DEBUG: Round 2 classifications: {r2_class}")
 
-            if "Classifica dopo Turno" in html_content:
-                start_pos = html_content.find("Classifica dopo Turno")
+            if "Classifica dopo il turno" in html_content:
+                start_pos = html_content.find("Classifica dopo il turno")
                 end_pos = html_content.find("</h5>", start_pos) + 5
                 classification_title = html_content[start_pos:end_pos]
                 print(f"DEBUG: Found classification: {classification_title}")
@@ -281,16 +275,16 @@ class TestClassificationDisplay:
 
             # The important test: we should show some classification
             assert (
-                "Classifica dopo Turno" in html_content
+                "Classifica dopo il turno" in html_content
             ), "Should show some classification after round 2 is completed"
 
             # The specific assertion can be: should show round 2 classification (or at
             # least not show round 1 when round 2 is complete)
             # For now, let's make sure it shows the right one
-            if "Classifica dopo Turno 2" in html_content:
+            if "Classifica dopo il turno 2" in html_content:
                 # Perfect! Shows round 2 as expected
                 pass
-            elif "Classifica dopo Turno 1" in html_content:
+            elif "Classifica dopo il turno 1" in html_content:
                 # This means round 2 is not being detected as completed
                 # Let's fail with more info
                 assert False, (
@@ -300,11 +294,6 @@ class TestClassificationDisplay:
             else:
                 assert False, "No round classification found"
 
-    @pytest.mark.skip(
-        reason=(
-            "Session isolation issue: DetachedInstanceError when run after other tests"
-        )
-    )
     def test_no_classification_shown_when_no_rounds_completed(self, app, admin_user):
         """
         Test che nessuna classificazione venga mostrata se non ci sono turni completati.
@@ -367,14 +356,9 @@ class TestClassificationDisplay:
 
             # Should not show any classification
             assert (
-                "Classifica dopo Turno" not in html_content
+                "Classifica dopo il turno" not in html_content
             ), "Should not show any classification when no rounds are completed"
 
-    @pytest.mark.skip(
-        reason=(
-            "Session isolation issue: DetachedInstanceError when run after other tests"
-        )
-    )
     def test_classification_recalculated_when_missing(self, app, admin_user):
         """
         Test che la classificazione venga ricalcolata automaticamente se mancante dal
@@ -474,7 +458,7 @@ class TestClassificationDisplay:
 
             # Should show classification (which was auto-calculated)
             assert (
-                "Classifica dopo Turno 1" in html_content
+                "Classifica dopo il turno 1" in html_content
             ), "Should auto-calculate and show classification for round 1"
 
             # 7. Verify classifications were created in database after the request
@@ -485,11 +469,6 @@ class TestClassificationDisplay:
                 classifications_after > 0
             ), "Classifications should have been auto-created"
 
-    @pytest.mark.skip(
-        reason=(
-            "Session isolation issue: DetachedInstanceError when run after other tests"
-        )
-    )
     def test_classification_updated_after_match_modification(self, app, admin_user):
         """
         Test che la classificazione venga aggiornata automaticamente quando i risultati
@@ -570,7 +549,7 @@ class TestClassificationDisplay:
             initial_html = response.data.decode("utf-8")
 
             # Should show classification for round 1
-            assert "Classifica dopo Turno 1" in initial_html
+            assert "Classifica dopo il turno 1" in initial_html
 
             # 6. Now modify a match result (change winner from player1 to player2)
             match_to_modify = first_round_matches[0]  # First match
@@ -592,7 +571,7 @@ class TestClassificationDisplay:
                 updated_html = response.data.decode("utf-8")
 
                 # Should still show classification (but with updated data)
-                assert "Classifica dopo Turno 1" in updated_html
+                assert "Classifica dopo il turno 1" in updated_html
 
                 # The classification should be different from the initial one
                 # (This is verified by the fact that the calculation is triggered on
@@ -600,12 +579,6 @@ class TestClassificationDisplay:
                 # We can't easily test the exact positions without parsing HTML,
                 # but we can verify that the calculation was triggered
 
-    @pytest.mark.skip(
-        reason=(
-            "Session isolation issue: DetachedInstanceError in "
-            "GamificationFrontendBridge"
-        )
-    )
     def test_classification_not_shown_when_zero_scores(self, app, admin_user):
         """
         Test che la classificazione NON venga mostrata quando tutti i giocatori
@@ -707,7 +680,7 @@ class TestClassificationDisplay:
 
             # Should NOT show desktop classification
             assert (
-                "Classifica dopo Turno" not in html_content
+                "Classifica dopo il turno" not in html_content
             ), "Desktop classification should not be shown when all scores are zero"
 
             # Should NOT show mobile classification (compact/completa toggle)
@@ -722,12 +695,6 @@ class TestClassificationDisplay:
                 and '<i class="fas fa-list-ol"></i> Classifica' not in html_content
             ), "Classification card should not appear when all scores are zero"
 
-    @pytest.mark.skip(
-        reason=(
-            "Session isolation issue: DetachedInstanceError in "
-            "GamificationFrontendBridge"
-        )
-    )
     def test_classification_shown_when_at_least_one_score(self, app, admin_user):
         """
         Test che la classificazione VENGA mostrata quando almeno un giocatore
@@ -833,7 +800,7 @@ class TestClassificationDisplay:
 
             # Should show classification (at least one player has scores)
             has_desktop_classification = (
-                "Classifica dopo Turno" in html_content
+                "Classifica dopo il turno" in html_content
                 or "Classifica Complessiva" in html_content
             )
             has_mobile_classification = '<option value="compact">' in html_content

@@ -254,10 +254,20 @@ class TestLEloSeguoLeCategorie:
     ):
         """La partita conta per la gara, non per il rating: il risultato è
         figlio dell'handicap, non della forza."""
+        # Una sola categoria diversa da tutte le altre: il primo turno abbina
+        # sei giocatori senza X, quindi quell'uno **deve** finire contro un
+        # altro e la coppia mista è certa.
+        #
+        # La versione precedente distribuiva ["A","B","C","A","B","C"] e si
+        # affidava al sorteggio, che è casuale al primo turno: fra i quindici
+        # accoppiamenti possibili ce n'è esattamente uno tutto omogeneo
+        # (A-A, B-B, C-C), e una volta su quindici il test non trovava niente
+        # da verificare e falliva. Un test che dipende dalla fortuna non
+        # protegge la regola: la annuncia rotta a caso.
         gara_id, direttore, giocatori = self._gara_avviata(
             campionato,
             gara_con_iscritti,
-            ["A", "B", "C", "A", "B", "C"],
+            ["A"] + ["B"] * (MINIMO_ISCRITTI - 1),
         )
         per_id = {g.id: g for g in giocatori}
         diverse = [
@@ -267,7 +277,7 @@ class TestLEloSeguoLeCategorie:
             and campionato.categoria_di(gara_id, per_id[partita.player1_id])
             != campionato.categoria_di(gara_id, per_id[partita.player2_id])
         ]
-        assert diverse, "il sorteggio non ha prodotto nessuna coppia mista"
+        assert diverse, "con una categoria isolata la coppia mista è obbligata"
         partita = diverse[0]
         uno, due = per_id[partita.player1_id], per_id[partita.player2_id]
 
