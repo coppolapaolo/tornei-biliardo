@@ -244,6 +244,22 @@ class TestAmalfiRispettaIlSalto:
     È una proprietà di ottimo, e come tale si verifica per confronto: si
     enumerano tutti gli accoppiamenti ammissibili e si controlla che quello
     prodotto sia fra i migliori. Con otto giocatori sono 105 combinazioni.
+
+    Due ragioni per non alzare il numero di giocatori senza pensarci:
+
+    * il peso è `n + 1 − |distanza − salto|` **con un pavimento a 1**. Con otto
+      giocatori il peso sta fra 4 e 9 e il pavimento non morde mai, quindi
+      massimizzare il peso equivale esattamente a minimizzare lo scarto. Con
+      molti più giocatori il pavimento inizierebbe a tagliare, e le due cose
+      smetterebbero di coincidere;
+    * il confronto è per forza bruta, e il numero di accoppiamenti cresce come
+      il doppio fattoriale.
+
+    Le posizioni si leggono dalla colonna `position` della classifica di turno,
+    che è la stessa che legge il sorteggio: ricalcolarle da vittorie e
+    differenza darebbe, fra due giocatori perfettamente pari, un ordine diverso
+    da quello usato davvero — ed è stato il primo modo in cui questo test si è
+    sbagliato.
     """
 
     @staticmethod

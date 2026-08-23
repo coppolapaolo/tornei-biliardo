@@ -558,12 +558,14 @@ class CampionatoDriver(GaraDriver):
         """
         from models.classification.models import RoundClassification
 
+        # Si ordina per `position`, la colonna persistita, e non ricalcolando
+        # l'ordine da vittorie e differenza: è `position` che legge il
+        # sorteggio del turno successivo (`AmalfiStrategy` fa
+        # `order_by(RoundClassification.position)`), e fra due giocatori
+        # perfettamente pari le due letture darebbero ordini diversi.
         return (
             RoundClassification.query.filter_by(gara_id=gara_id, round_number=turno)
-            .order_by(
-                RoundClassification.matches_won.desc(),
-                RoundClassification.rack_difference.desc(),
-            )
+            .order_by(RoundClassification.position)
             .all()
         )
 
