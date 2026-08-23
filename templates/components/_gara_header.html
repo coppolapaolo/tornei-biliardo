@@ -20,13 +20,26 @@
    macro usano `current_user`, `url_for` e `_`.
 #}
 
+{# URL del campionato che contiene la gara, vuoto per una gara singola.
+   Sta in un posto solo perche' lo usano sia la freccia mobile sia il
+   pulsante desktop: due copie della stessa scelta divergerebbero. Chi
+   dirige va alla vista gestionale, gli altri a quella pubblica. #}
+{% macro campionato_url(gara) -%}
+{%- if gara.campionato_id -%}
+{%- if current_user.is_authenticated and current_user.can_manage_competition(gara.id) -%}
+{{ url_for('admin.campionato.campionato_detail', campionato_id=gara.campionato_id) }}
+{%- else -%}
+{{ url_for('main.campionato_detail_public', campionato_id=gara.campionato_id) }}
+{%- endif -%}
+{%- endif -%}
+{%- endmacro %}
+
 {# Freccia di ritorno, solo mobile: sopra i 992px la sidebar fa da
-   navigazione e il tema nasconde comunque `.c7-head__back`. #}
+   navigazione e il tema nasconde comunque `.c7-head__back`. Da lg in su il
+   ritorno al campionato passa quindi da `actions()`. #}
 {% macro back(gara) -%}
-{%- if current_user.is_authenticated and gara.campionato_id and current_user.can_manage_competition(gara.id) -%}
-<a class="c7-head__back d-lg-none" href="{{ url_for('admin.campionato.campionato_detail', campionato_id=gara.campionato_id) }}" aria-label="{{ _('Torna al campionato') }}"><i class="fas fa-arrow-left"></i></a>
-{%- elif gara.campionato_id -%}
-<a class="c7-head__back d-lg-none" href="{{ url_for('main.campionato_detail_public', campionato_id=gara.campionato_id) }}" aria-label="{{ _('Torna al campionato') }}"><i class="fas fa-arrow-left"></i></a>
+{%- if gara.campionato_id -%}
+<a class="c7-head__back d-lg-none" href="{{ campionato_url(gara) }}" aria-label="{{ _('Torna al campionato') }}"><i class="fas fa-arrow-left"></i></a>
 {%- elif current_user.is_authenticated -%}
 <a class="c7-head__back d-lg-none" href="{{ url_for('dashboard.dashboard') }}" aria-label="{{ _('Torna alla dashboard') }}"><i class="fas fa-arrow-left"></i></a>
 {%- else -%}
@@ -49,10 +62,22 @@
 </span>
 {%- endmacro %}
 
+{# Comandi della testata, nell'ordine: prima si risale, poi si modifica. #}
+{% macro actions(gara) -%}
+{# Ritorno al campionato, solo da lg in su: sotto ci pensa la freccia della
+   testata, e sui 390px l'etichetta non ci starebbe accanto a titolo, badge e
+   avatar. Porta il **nome** del campionato invece di un generico "Indietro":
+   e' l'unico punto della pagina che dice a quale campionato appartiene la
+   gara. Il nome si tronca perche' la testata non vada a capo. #}
+{%- if gara.campionato_id and gara.campionato -%}
+<a href="{{ campionato_url(gara) }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex"
+   aria-label="{{ _('Torna al campionato %(nome)s', nome=gara.campionato.name) }}">
+    <i class="fas fa-arrow-left"></i>&nbsp;{{ gara.campionato.name|truncate(28, True, '…') }}
+</a>
+{%- endif -%}
 {# Modifica gara: e' l'unico ingresso alla pagina di modifica, quindi
    resta raggiungibile anche su mobile — dove pero' la testata ospita gia'
    freccia e avatar, e l'etichetta non ci sta. #}
-{% macro actions(gara) -%}
 {%- if current_user.is_authenticated and gara.can_be_modified() and current_user.can_manage_competition(gara.id) -%}
 <a href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" class="btn btn-secondary btn-sm" aria-label="{{ _('Modifica') }}">
     <i class="fas fa-pen"></i><span class="d-none d-lg-inline">&nbsp;{{ _('Modifica') }}</span>

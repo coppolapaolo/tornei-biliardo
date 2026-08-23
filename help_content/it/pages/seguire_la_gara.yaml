@@ -129,7 +129,9 @@ blocks:
   - type: text
     text: >-
       Se la gara faceva parte di un campionato, i suoi risultati vengono sommati
-      alla classifica generale, che trovi nella pagina del campionato.
+      alla classifica generale, che trovi nella pagina del campionato. Per
+      arrivarci dalla gara, su telefono tocca la freccia in alto a sinistra; su
+      computer, in alto a destra, c'è un pulsante con il nome del campionato.
 
   - type: faq
     items:

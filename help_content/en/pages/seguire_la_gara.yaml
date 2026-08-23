@@ -127,7 +127,10 @@ blocks:
   - type: text
     text: >-
       If the competition was part of a championship, its results are added to
-      the overall standings, which you will find on the championship page.
+      the overall standings, which you will find on the championship page. To
+      get there from the competition, on a phone tap the arrow at the top left;
+      on a computer there is a button with the championship name at the top
+      right.
 
   - type: faq
     items:

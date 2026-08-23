@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-23 20:05+0200\n"
+"POT-Creation-Date: 2026-08-23 21:21+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -2919,7 +2919,7 @@ msgstr ""
 msgid "Registrati"
 msgstr ""
 
-#: templates/base.html:311 templates/components/_gara_header.html:33
+#: templates/base.html:311 templates/components/_gara_header.html:46
 #: templates/help/index.html:11
 msgid "Home"
 msgstr ""
@@ -4382,8 +4382,8 @@ msgstr ""
 #: templates/admin/campionato_detail.html:21 templates/admin/gara_edit.html:3
 #: templates/admin/gara_edit.html:4 templates/admin/venue_detail.html:34
 #: templates/admin/venue_form.html:5 templates/admin/venues_list.html:118
-#: templates/components/_gara_header.html:57
-#: templates/components/_gara_header.html:58
+#: templates/components/_gara_header.html:82
+#: templates/components/_gara_header.html:83
 #: templates/components/_separated_dashboard_content.html:442
 #: templates/components/_unified_cards.html:112
 #: templates/components/_unified_cards.html:123
@@ -5518,7 +5518,7 @@ msgid "KPI Dashboard"
 msgstr ""
 
 #: templates/admin/kpi.html:31 templates/admin/users_list.html:8
-#: templates/admin/venues_list.html:8 templates/components/_gara_header.html:31
+#: templates/admin/venues_list.html:8 templates/components/_gara_header.html:44
 #: templates/errors/403.html:15 templates/gamification/dashboard.html:8
 #: templates/individual_match/admin_overview.html:8
 #: templates/individual_match/dashboard.html:9 templates/player/history.html:7
@@ -9048,9 +9048,13 @@ msgid ""
 "massimo {maxRounds} avversari unici)"
 msgstr ""
 
-#: templates/components/_gara_header.html:27
-#: templates/components/_gara_header.html:29
+#: templates/components/_gara_header.html:42
 msgid "Torna al campionato"
+msgstr ""
+
+#: templates/components/_gara_header.html:74
+#, python-format
+msgid "Torna al campionato %(nome)s"
 msgstr ""
 
 #: templates/components/_gara_info.html:28
