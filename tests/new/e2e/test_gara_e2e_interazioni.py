@@ -137,7 +137,11 @@ class TestPercorsiDiSegnatura:
         assert MatchStatus.is_finished(a_rack.status)
         assert MatchStatus.is_finished(secca.status)
         assert a_rack.status == secca.status
-        assert (a_rack.player1_score, a_rack.player2_score) == (traguardo, 0)
+        # Il margine non è l'oggetto del confronto — `gioca_match` lo fa
+        # variare apposta — ma l'invariante del race-to sì: chi vince arriva
+        # al traguardo, e chi perde ci resta sotto.
+        assert a_rack.player1_score == traguardo
+        assert a_rack.player2_score < traguardo
         assert (secca.player1_score, secca.player2_score) == (traguardo, 0)
         assert secca.winner_id == secca.player1_id
 
@@ -537,13 +541,12 @@ class TestConfermeERipensamenti:
         """
         gara_id, partita, uno, _due = self._match_e_giocatori(driver, gara_in_corso)
         direttore = gara_in_corso[1]
-        traguardo = partita.distance_config.get_winning_racks()
 
         driver.entra(direttore)
         driver.gioca_match(partita.id, uno.id)
-        assert driver.partite(gara_id, turno=1)[0].status == (
-            MatchStatus.CLOSED_UNILATERALLY.value
-        )
+        chiusa = driver.partite(gara_id, turno=1)[0]
+        assert chiusa.status == MatchStatus.CLOSED_UNILATERALLY.value
+        agli_atti = (chiusa.player1_score, chiusa.player2_score)
 
         driver.entra(uno)
         risposta = driver.client.post(
@@ -553,7 +556,9 @@ class TestConfermeERipensamenti:
 
         assert risposta.status_code == 400
         rimasta = driver.partite(gara_id, turno=1)[0]
-        assert rimasta.player1_score + rimasta.player2_score == traguardo
+        # Il punto non è quanto fosse il punteggio, ma che il rifiuto non lo
+        # abbia toccato.
+        assert (rimasta.player1_score, rimasta.player2_score) == agli_atti
 
     def test_il_direttore_che_gioca_non_deve_farsi_confermare(self, driver: GaraDriver):
         """Chi dirige la gara ed è in campo scrive già il punteggio ufficiale.

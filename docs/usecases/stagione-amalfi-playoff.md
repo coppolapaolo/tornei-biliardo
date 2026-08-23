@@ -135,6 +135,48 @@ vero di chi gestisce la sala, non un errore. Un tavolo si può anche togliere.
 
 ---
 
+## Cosa vale la X, e come Amalfi decide chi incontra chi
+
+Due dettagli del motore che cambiano la classifica, e che conviene conoscere
+prima di spiegarli in sala.
+
+**La X vale una vittoria — e oggi anche i triangoli della distanza.** Chi resta
+spaiato entra in classifica con una vittoria *e* con `+5` di differenza
+triangoli (`+6` nella seconda gara), perché la partita con la X nasce col
+punteggio pieno a favore e nessun triangolo subìto. Siccome la classifica
+ordina per `(vittorie, differenza triangoli)`, a parità di vittorie **chi ha
+riposato sta davanti a chiunque abbia vinto giocando**: la X vale come la
+vittoria più larga possibile. È un rilievo aperto — l'attesa è che valga una
+vittoria e differenza **zero** — ed è fissato da un test `xfail(strict=True)`
+che diventerà il test di regressione il giorno in cui si decide di cambiarlo.
+La correzione tocca `ScoreAggregator._process_bye_match` e sposterebbe le
+classifiche di tutte le gare con numero dispari, quindi è una decisione, non
+una svista da correggere di nascosto.
+
+Quel che invece è già garantito: **nessuno prende la X due volte** nella stessa
+gara.
+
+**Gli abbinamenti seguono la classifica col «salto».** Il primo turno è
+sorteggiato. Dal secondo in poi Amalfi abbina secondo la classifica del turno
+precedente con un salto che si accorcia: `turni_totali − turno + 1`, quindi 2 al
+secondo turno e 1 al terzo. Con un numero **pari** di giocatori il sorteggio
+risolve un matching di peso massimo sul grafo dei non-incontri: fra tutti gli
+accoppiamenti senza reincontri sceglie quello che minimizza lo scarto
+complessivo dal salto — ed è verificato per confronto, enumerando tutte le
+combinazioni possibili.
+
+**Attenzione al caso dispari**, che è quello della stagione con quindici
+iscritti: la garanzia anti-reincontro di ADR-029 vale per il caso **pari**. Con
+un numero dispari il sentinella della X viene aggiunto dopo quel controllo e si
+prende la strada greedy, dove l'anti-reincontro è un tentativo — con un
+fallback esplicito che *ammette* il reincontro quando le combinazioni si
+esauriscono. Nei test con sette giocatori e tre turni non succede mai, ma la
+differenza fra «garantito» e «finora è sempre riuscito» va conosciuta.
+
+→ `tests/new/e2e/test_stagione_e2e_x_e_abbinamenti.py`
+
+---
+
 ## Journey 4 — Chiudere la gara, e lo spareggio
 
 **Quando**: a fine serata. **Chi**: il direttore.

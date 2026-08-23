@@ -551,6 +551,22 @@ class CampionatoDriver(GaraDriver):
             .all()
         )
 
+    def classifica_di_turno(self, gara_id: int, turno: int):
+        """La classifica di gara dopo quel turno, in ordine di posizione.
+
+        La scrive `gara_detail`: va letta **dopo** aver aperto la pagina.
+        """
+        from models.classification.models import RoundClassification
+
+        return (
+            RoundClassification.query.filter_by(gara_id=gara_id, round_number=turno)
+            .order_by(
+                RoundClassification.matches_won.desc(),
+                RoundClassification.rack_difference.desc(),
+            )
+            .all()
+        )
+
     def classifica_generale(self, campionato_id: int) -> list[Classification]:
         return (
             Classification.query.filter_by(campionato_id=campionato_id)

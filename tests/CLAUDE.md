@@ -149,6 +149,7 @@ questo file lo dichiarava, ma nessun test lo importava).
 | `test_stagione_e2e_risultati.py` | Le cinque strade che chiudono una partita, i tre modi di tornare indietro, il pareggio a distanza pari, i tavoli e lo swap |
 | `test_stagione_e2e_stagione.py` | La stagione giocata con quindici iscritti: la X a ogni turno, gli override sulle partite vere, lo spareggio SSR, i playoff a 8 e la finale a tre turni diversi |
 | `test_stagione_e2e_handicap.py` | L'handicap: categorie create assegnandole, riporto da una gara all'altra, finestra chiusa all'avvio, Elo che si muove solo fra pari categoria |
+| `test_stagione_e2e_x_e_abbinamenti.py` | Quanto vale la X in classifica (rilievo aperto, `xfail(strict=True)`) e il criterio Amalfi: niente reincontri, e abbinamenti ottimi rispetto al salto verificati per forza bruta |
 | `test_complete_workflows.py` | Promozione a direttore, workflow storici |
 
 **Perché il livello campionato ha il suo file.** Le gare sono coperte una per
