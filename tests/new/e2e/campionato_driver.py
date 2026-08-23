@@ -33,6 +33,8 @@ from models.campionato.models import Campionato
 from models.classification.models import Classification
 from models.competition.models import Gara
 from models.matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
+from models.match.models import Match
+from models.status_enum import GaraStatus, MatchStatus
 from models.playoff.models import (
     PlayoffConfiguration,
     PlayoffQualification,
@@ -57,6 +59,11 @@ FORM_WIZARD_DEFAULT: dict[str, str] = {
 #: impone il campionato (`GaraFormParser` legge `camp.campionato_type`), quindi
 #: mandarla dal form darebbe l'idea di poterla scegliere per gara.
 _CAMPI_SOLO_STANDALONE = ("matchmaking_strategy", "classification_system")
+
+#: Tetto di sicurezza sul numero di gruppi di spareggio da sciogliere: con lo
+#: spareggio fino al terzo posto i gruppi sono al più tre, e un ciclo che non
+#: converge è un guasto da far emergere, non da assecondare.
+SPAREGGI_AL_MASSIMO = 10
 
 
 class CampionatoDriver(GaraDriver):
@@ -132,6 +139,210 @@ class CampionatoDriver(GaraDriver):
         risposta = self.client.get(f"/admin/campionato/{campionato_id}")
         assert risposta.status_code == 200, f"pagina campionato: {risposta.status_code}"
         return risposta.get_data(as_text=True)
+
+    # ── Configurazione per turno (ADR-027) ──────────────────────────
+
+    def configura_turno(
+        self, gara_id: int, numero: int, **override: Any
+    ) -> dict[str, Any]:
+        """Imposta l'override di un turno. Risponde JSON, come il pannello.
+
+        Si può fare **solo in `setup`**: a gara avviata la route risponde 409.
+        I campi omessi restano senza override, cioè seguono la gara.
+        """
+        risposta = self.client.post(
+            f"/admin/gara/{gara_id}/round-config/{numero}", json=override
+        )
+        return {"status": risposta.status_code, **(risposta.get_json() or {})}
+
+    def override_dei_turni(self, gara_id: int) -> dict[int, dict[str, Any]]:
+        """Gli override per turno come li rilegge la pagina, per numero di turno."""
+        risposta = self.client.get(f"/admin/gara/{gara_id}/round-config")
+        assert risposta.status_code == 200, f"round-config: {risposta.status_code}"
+        dati = risposta.get_json() or {}
+        return {
+            configurazione["round_number"]: configurazione
+            for configurazione in dati.get("overrides", [])
+        }
+
+    # ── Iscrizioni: gli altri pulsanti ──────────────────────────────
+
+    def chiudi_iscrizioni(self, gara_id: int) -> Any:
+        return self.client.post(
+            f"/admin/gara/{gara_id}/close_inscriptions", follow_redirects=True
+        )
+
+    def iscrivi_dal_direttore(self, gara_id: int, utente: Utente) -> str:
+        """Il direttore iscrive qualcuno al posto suo (foglio cartaceo, telefonata)."""
+        risposta = self.client.post(
+            f"/admin/gara/{gara_id}/admin_inscribe",
+            data={"user_id": str(utente.id)},
+            follow_redirects=True,
+        )
+        assert risposta.status_code == 200
+        return risposta.get_data(as_text=True)
+
+    def cancella_iscrizione(self, gara_id: int, utente: Utente) -> str:
+        risposta = self.client.post(
+            f"/admin/gara/{gara_id}/admin_uninscribe/{utente.id}",
+            follow_redirects=True,
+        )
+        assert risposta.status_code == 200
+        return risposta.get_data(as_text=True)
+
+    def disiscriviti(self, gara_id: int, utente: Utente) -> Any:
+        """Il giocatore si toglie da solo, dal suo pulsante."""
+        self.entra(utente)
+        return self.client.post(
+            f"/player/gara/{gara_id}/unsubscribe", follow_redirects=True
+        )
+
+    # ── Tavoli ──────────────────────────────────────────────────────
+
+    def configura_tavoli(self, gara_id: int, tavoli: str) -> str:
+        """I tavoli della gara, in ordine di pregio. Solo fra apertura e avvio."""
+        risposta = self.client.post(
+            f"/admin/gara/{gara_id}/tables-config",
+            data={"available_tables": tavoli},
+            follow_redirects=True,
+        )
+        assert risposta.status_code == 200
+        return risposta.get_data(as_text=True)
+
+    def assegna_tavolo(self, match_id: int, tavolo: str | None) -> dict[str, Any]:
+        """Assegna, sposta o libera il tavolo di una partita.
+
+        Se il tavolo è già occupato da un'altra partita dello stesso turno il
+        service **scambia** le due: è il gesto del direttore che sposta due
+        partite, non un errore.
+        """
+        risposta = self.client.post(
+            f"/admin/match/{match_id}/assign-table", json={"table_name": tavolo}
+        )
+        return {"status": risposta.status_code, **(risposta.get_json() or {})}
+
+    # ── Correzioni ──────────────────────────────────────────────────
+
+    def resetta_match(self, match_id: int) -> Any:
+        """Il reset del direttore: la partita torna da giocare."""
+        return self.client.post(f"/admin/match/{match_id}/reset", follow_redirects=True)
+
+    def rifiuta_risultato(self, match_id: int, utente: Utente) -> Any:
+        """Il «non è andata così» del giocatore: toglie l'ultimo rack."""
+        self.entra(utente)
+        return self.client.post(f"/player/match/{match_id}/reject")
+
+    # ── Spareggio SSR ───────────────────────────────────────────────
+
+    def avvia_spareggio(self, gara_id: int) -> dict[str, Any]:
+        """Apre la fase di spareggio. Risponde JSON se chiamata come il JS."""
+        risposta = self.client.post(
+            f"/admin/gara/{gara_id}/start_ssr",
+            headers={"X-Requested-With": "XMLHttpRequest"},
+        )
+        return {"status": risposta.status_code, **(risposta.get_json() or {})}
+
+    def salva_spareggio(
+        self, gara_id: int, posizione: int, punteggi: dict[int, int]
+    ) -> dict[str, Any]:
+        """Salva i punteggi di spareggio di un gruppo di pari merito."""
+        risposta = self.client.post(
+            f"/admin/gara/{gara_id}/save_ssr_group",
+            json={
+                "group_position": posizione,
+                "scores": {str(k): v for k, v in punteggi.items()},
+            },
+        )
+        return {"status": risposta.status_code, **(risposta.get_json() or {})}
+
+    def risolvi_spareggi(self, gara_id: int) -> int:
+        """Apre lo spareggio e assegna a ciascun gruppo punteggi tutti diversi.
+
+        Restituisce quanti gruppi ha risolto — zero se non c'erano pari merito
+        da sciogliere. Chi vince lo spareggio non interessa al percorso: conta
+        che dopo non restino pari merito e che la gara si possa chiudere.
+
+        Ogni salvataggio rifinalizza la classifica, quindi i gruppi si
+        rileggono dalla risposta invece di iterare sull'elenco iniziale, che
+        dopo il primo salvataggio può descrivere posizioni diverse.
+        """
+        avvio = self.avvia_spareggio(gara_id)
+        if not avvio.get("success"):
+            return 0
+
+        gruppi = avvio.get("ssr_groups") or []
+        risolti = 0
+        for _ in range(SPAREGGI_AL_MASSIMO):
+            gruppo = self._gruppo_da_sciogliere(gruppi)
+            if gruppo is None:
+                break
+            punteggi = {
+                giocatore["user_id"]: 100 - indice * 10
+                for indice, giocatore in enumerate(gruppo["players"])
+            }
+            esito = self.salva_spareggio(gara_id, gruppo["position"], punteggi)
+            assert esito.get("success"), esito
+            risolti += 1
+            gruppi = esito.get("ssr_groups") or []
+            if esito.get("all_resolved"):
+                break
+        return risolti
+
+    @staticmethod
+    def _gruppo_da_sciogliere(gruppi: list[dict[str, Any]]) -> dict[str, Any] | None:
+        """Il primo gruppo in cui manca un punteggio o due sono uguali."""
+        for gruppo in gruppi:
+            punteggi = [
+                giocatore.get("current_ssr_score") for giocatore in gruppo["players"]
+            ]
+            if any(punteggio is None for punteggio in punteggi):
+                return gruppo
+            if len(set(punteggi)) < len(punteggi):
+                return gruppo
+        return None
+
+    def pareggia_match(self, match_id: int) -> None:
+        """Chiude una partita in parità, alternando i rack fra i due.
+
+        Ha senso solo in «esattamente N» con N pari — l'unico formato in cui il
+        pareggio esiste. Serve a rendere *certi* i pari merito in classifica,
+        che altrimenti dipendono dal sorteggio e comparirebbero a giorni
+        alterni.
+        """
+        partita = db.session.get(Match, match_id)
+        assert partita is not None, f"partita {match_id} inesistente"
+        distanza = partita.distance_config
+        assert not distanza.is_race_to_racks, "il pareggio esiste solo a rack esatti"
+        assert distanza.racks % 2 == 0, "con N dispari il pareggio è impossibile"
+
+        for indice in range(distanza.racks):
+            vincitore = partita.player1_id if indice % 2 == 0 else partita.player2_id
+            risposta = self.aggiungi_rack(match_id, vincitore)
+            assert risposta.status_code == 200, risposta.get_data(as_text=True)
+
+    def pareggia_turno(self, gara_id: int, numero: int) -> None:
+        """Tutte le partite giocabili del turno finiscono in parità."""
+        for partita in self.partite(gara_id, turno=numero):
+            if partita.is_bye or partita.is_trio:
+                continue
+            if MatchStatus.is_finished(partita.status):
+                continue
+            self.pareggia_match(partita.id)
+
+    def chiudi_gara(self, gara_id: int) -> str:
+        """Chiude la gara, sciogliendo prima i pari merito se ce ne sono.
+
+        È la sequenza vera del direttore: preme «termina», e se la gara ha lo
+        spareggio acceso e dei pari merito nelle posizioni che contano il
+        pulsante lo rimanda al percorso SSR. Restituisce lo stato finale della
+        gara, così il test può dire se si è chiusa e non solo se non ha dato
+        errore.
+        """
+        self.termina(gara_id)
+        if self.gara(gara_id).status != GaraStatus.COMPLETED.value:
+            self.risolvi_spareggi(gara_id)
+            self.termina(gara_id)
+        return self.gara(gara_id).status
 
     # ── Il ciclo completo di una gara ───────────────────────────────
 
