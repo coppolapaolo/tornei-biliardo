@@ -159,6 +159,14 @@ Questa unificazione permette di tracciare le statistiche e gestire i risultati i
 
 Un **rack** è relativo ad una disciplina come, ad esempio, "palla 8", "palla 9", "palla 10", "pool continuo", "one pocket". Il valore di default della disciplina viene dal set, che a sua volta prende il valore di default del match, che lo prende da turno, che lo prende come valore di default da gara.
 
+> **Le regole numeriche di questo documento sono eseguibili.**
+> Punteggi, classifiche, valore della X, cascata dei rifiuti ai playoff: ogni
+> regola con un numero dentro ha un test che la cita in
+> `tests/new/unit/test_specifiche_conformita.py`. Se cambi una regola qui,
+> cambia il test nello stesso commit; se trovi che il codice diverge, il test
+> va scritto `xfail(strict=True)` invece che adattato al codice. Il perché sta
+> in `CLAUDE.md`, sezione «Prima di tutto: la specifica, se c'è».
+
 ### Classifica
 
 Una **classifica** può essere collegata ad un turno, una **gara** o ad un **campionato**.

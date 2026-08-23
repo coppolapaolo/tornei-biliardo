@@ -202,6 +202,47 @@ Before writing any code:
 3. **Then implement the code**
 4. **Run verification and iterate** until it passes
 
+### 0. Prima di tutto: la specifica, se c'è
+
+Se stai per toccare una **regola di dominio** — punteggi, classifiche,
+abbinamenti, criteri di qualificazione, cicli di vita — **apri prima
+[`docs/reference/SPECIFICHE.md`](docs/reference/SPECIFICHE.md) e cerca la
+regola.** Non è una formalità: è un difetto già capitato due volte, con lo
+stesso identico meccanismo.
+
+1. La specifica fissa una regola numerica.
+2. L'implementazione ne scrive un'altra, e nessuno se ne accorge perché nessun
+   test confronta il codice con la specifica: i test confrontano il codice con
+   sé stesso.
+3. Una code review trova **due parti del codice incoerenti fra loro** e le
+   allinea — alla parte sbagliata — aggiungendo un test di regressione che da
+   quel momento **difende la deviazione**. Chi provasse a correggere vedrebbe
+   un test rosso, motivato bene, e si fermerebbe.
+
+Le due volte in cui è successo, entrambe scoperte il 2026-08-23:
+
+* **quanto vale la X in classifica** (SPECIFICHE.md righe 64 e 69: una vittoria
+  e **zero** differenza rack; il codice dà +distanza);
+* **a chi passa l'invito ai playoff quando qualcuno rifiuta** (riga 177: «al
+  primo degli esclusi»; il codice non lo trova mai e la finale parte con un
+  posto vuoto).
+
+Regole operative, tre:
+
+* **La specifica vince.** Se il codice diverge, o si corregge il codice o si
+  emenda la specifica con una nota datata che dice perché. Non si lascia la
+  divergenza muta.
+* **Ogni regola numerica va in
+  [`tests/new/unit/test_specifiche_conformita.py`](tests/new/unit/test_specifiche_conformita.py)**,
+  con la citazione della riga nel docstring. È l'unico posto in cui la
+  specifica diventa eseguibile.
+* **Una divergenza trovata e non ancora corretta si scrive
+  `xfail(strict=True)`**, mai si silenzia e mai si adatta il test al codice:
+  `strict` accende la suite il giorno in cui qualcuno corregge.
+
+E quando una review trova due punti del codice incoerenti, la domanda giusta
+non è «quale allineo all'altro» ma **«cosa dice la specifica»**.
+
 ---
 
 ## Critical Conventions
