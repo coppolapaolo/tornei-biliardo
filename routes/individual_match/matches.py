@@ -13,6 +13,7 @@ from flask_babel import gettext as _
 from flask_login import current_user
 
 from models import IndividualMatch
+from models.base import db
 from models.individual_match.services import IndividualMatchService
 from models.status_enum import Discipline
 from models.user.permissions import RoleRequirement
@@ -20,6 +21,7 @@ from utils.local_time import parse_local_datetime
 from utils.status_ui import match_scoring_state
 
 from . import individual_match_bp
+from .tpa_choice import open_tpa_referto, wants_referto
 
 logger = logging.getLogger(__name__)
 
@@ -52,14 +54,26 @@ def match_detail(match_id):
             return redirect(url_for("individual_match.match_list"))
 
         from flask import render_template
-        from models.tpa.services import TpaRefertoService
+        from models.tpa.services import (
+            FEATURE_CODE as TPA_FEATURE,
+            TpaRefertoService,
+        )
 
         # Il referto TPA si propone solo dove si puo' davvero aprire: il perche'
         # lo sa il servizio, e la pagina del referto lo ripete per esteso.
+        #
+        # `tpa_alla_partenza` e' l'altra domanda: la spunta nel modulo di avvio,
+        # che si offre a partita ancora da cominciare. Le condizioni sono le
+        # stesse meno lo stato — piu' lo sblocco, che il servizio non guarda
+        # perche' il gate della gamification sta sull'apertura.
         return render_template(
             "individual_match/match_detail.html",
             match=match,
             tpa_can_open=TpaRefertoService.can_open(match, current_user.id),
+            tpa_alla_partenza=(
+                TpaRefertoService.can_open_once_started(match, current_user.id)
+                and current_user.can_access(TPA_FEATURE)
+            ),
         )
 
     except Exception as e:
@@ -82,11 +96,39 @@ def start_match(match_id):
             match_id, "match_started", {"started_by": current_user.id}
         )
 
+        # Il referto TPA si sceglie **qui**, con la partita che sta partendo:
+        # dopo, al segnapunti, la prima cosa che si fa e' segnare, e al primo
+        # triangolo non si apre piu'. La spunta viaggia col modulo di avvio.
+        match = db.session.get(IndividualMatch, match_id)
+        data = request.get_json(silent=True) or request.form
+        col_referto = open_tpa_referto(match, wants_referto(data))
+        destinazione = url_for(
+            (
+                "individual_match.tpa_referto"
+                if col_referto
+                else "individual_match.match_detail"
+            ),
+            match_id=match_id,
+        )
+
         if request.is_json:
-            return jsonify({"success": True, "message": "Match started successfully"})
+            return jsonify(
+                {
+                    "success": True,
+                    "message": "Match started successfully",
+                    "url": destinazione,
+                }
+            )
         else:
-            flash(_("Match avviato con successo!"), "success")
-            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+            flash(
+                (
+                    _("Sfida avviata: il referto è tuo.")
+                    if col_referto
+                    else _("Match avviato con successo!")
+                ),
+                "success",
+            )
+            return redirect(destinazione)
 
     except ValueError as e:
         error_msg = f"Error starting match: {str(e)}"
@@ -430,6 +472,91 @@ def cancel_match(match_id):
         else:
             flash(error_msg, "danger")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+
+@individual_match_bp.route("/matches/<int:match_id>/edit", methods=["GET", "POST"])
+@RoleRequirement.player_or_director_required
+def edit_match(match_id):
+    """Corregge come si gioca una sfida, finché non è stato segnato niente.
+
+    Stessi campi dell'avvio rapido e **stesso** normalizzatore
+    (`QuickMatchService.resolve_settings`): un secondo parser qui vorrebbe dire
+    due moduli che accettano cose diverse.
+    """
+    from flask import render_template
+    from models.exceptions import DomainError, http_status_for_exception
+    from models.individual_match.quick_match_service import QuickMatchService
+    from models.location.models import BilliardHall
+
+    match = IndividualMatch.query.get_or_404(match_id)
+
+    if not match.is_player(current_user.id):
+        flash(_("Accesso negato a questo match."), "danger")
+        return redirect(url_for("individual_match.match_list"))
+
+    if not match.can_be_revised():
+        flash(
+            _("La sfida è cominciata: come si gioca non si cambia più."),
+            "warning",
+        )
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+    if request.method == "GET":
+        return render_template(
+            "individual_match/edit_match.html",
+            match=match,
+            settings=QuickMatchService.settings_of(match),
+            verified_venues=(
+                BilliardHall.query.filter_by(is_active=True, verified=True)
+                .order_by(BilliardHall.name)
+                .all()
+            ),
+        )
+
+    data = request.get_json() if request.is_json else request.form
+    config = {
+        "billiard_hall_id": data.get("billiard_hall_id") or None,
+        "location": data.get("location"),
+        "discipline": data.get("discipline") or None,
+        "match_format": data.get("match_format") or None,
+        "distance": data.get("distance") or None,
+        "match_distance": data.get("match_distance") or None,
+        "break_rule": data.get("break_rule") or None,
+    }
+    if data.get("is_race_to") is not None:
+        config["is_race_to"] = str(data.get("is_race_to")).lower() == "true"
+
+    try:
+        settings = QuickMatchService.resolve_settings(
+            QuickMatchService.settings_of(match), config
+        )
+        IndividualMatchService.update_settings(
+            match_id,
+            current_user.id,
+            discipline=settings["discipline"],
+            distance=settings["distance"],
+            is_race_to=settings["is_race_to"],
+            break_rule=settings["break_rule"],
+            is_multi_set=settings["is_multi_set"],
+            match_distance=settings["match_distance"],
+            is_race_to_sets=True if settings["is_multi_set"] else None,
+            billiard_hall_id=settings["billiard_hall_id"],
+            location=settings["location"] or None,
+        )
+    except (DomainError, ValueError) as exc:
+        if request.is_json:
+            stato = (
+                http_status_for_exception(exc) if isinstance(exc, DomainError) else 400
+            )
+            return jsonify({"success": False, "error": str(exc)}), stato
+        flash(str(exc), "danger")
+        return redirect(url_for("individual_match.edit_match", match_id=match_id))
+
+    if request.is_json:
+        return jsonify({"success": True, "match_id": match_id})
+
+    flash(_("Sfida aggiornata."), "success")
+    return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
 
 @individual_match_bp.route("/matches/<int:match_id>/update-times", methods=["POST"])

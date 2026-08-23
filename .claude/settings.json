@@ -1,23 +1,10 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(cd /Users/paolo/GDrive/Programming/Python/tornei-biliardo && PYTHONPATH=. pytest tests/new/*)"
-    ],
+    "allow": [],
     "deny": [],
     "ask": []
   },
   "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Write|Edit",
-        "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "You MUST respond with ONLY a JSON object. No markdown, no code blocks, no explanation. Just raw JSON.\n\nThe field \"ok\" MUST always be true.\n\nIf the file is NOT .py, .html, or .js, respond:\n{\"ok\": true, \"reason\": \"\"}\n\nIf the file is a test file (path contains \"test\"), respond:\n{\"ok\": true, \"reason\": \"\"}\n\nOtherwise check for i18n issues: user-facing strings without _(), Jinja2 text without {{ _('...') }}, hardcoded JS strings that should use |tojson. Ignore technical strings, comments, URLs.\n\nNo issues found:\n{\"ok\": true, \"reason\": \"\"}\n\nIssues found:\n{\"ok\": true, \"reason\": \"I18N: brief list of issues\"}"
-          }
-        ]
-      }
-    ],
     "SessionStart": [
       {
         "hooks": [
@@ -36,6 +23,28 @@
             "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/check-help-docs.sh",
             "statusMessage": "Controllo che la guida /aiuto sia allineata",
             "timeout": 20
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/graphify-sync.sh",
+            "statusMessage": "Allineo il grafo graphify",
+            "async": true,
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/prefer-codegraph.sh"
           }
         ]
       }

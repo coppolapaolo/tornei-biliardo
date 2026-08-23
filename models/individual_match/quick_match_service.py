@@ -232,11 +232,54 @@ class QuickMatchService:
     # Interni
     # ------------------------------------------------------------------
     @staticmethod
+    def settings_of(match: "IndividualMatch") -> Dict[str, Any]:
+        """Come si gioca una sfida che esiste già, nella forma del modulo.
+
+        Serve alla correzione: lì la base non sono le abitudini del giocatore
+        ma **questa** partita, e i campi che il modulo non manda devono restare
+        quelli che sono, non tornare all'ultima partita giocata.
+        """
+        if match.distance is None:
+            match_format = "free"
+        elif match.is_multi_set:
+            match_format = "multi"
+        else:
+            match_format = "single"
+
+        return {
+            "billiard_hall_id": match.billiard_hall_id,
+            "location": match.location or "",
+            "discipline": match.discipline,
+            "match_format": match_format,
+            "distance": match.distance,
+            "match_distance": match.match_distance,
+            "break_rule": match.break_rule,
+            "is_race_to": match.is_race_to,
+        }
+
+    @staticmethod
     def _resolve_config(
         user_id: int, config: Optional[Dict[str, Any]]
     ) -> Dict[str, Any]:
         """Fonde quello che è stato scelto con quello che si dà per scontato."""
-        settings = QuickMatchService.get_defaults(user_id)
+        return QuickMatchService.resolve_settings(
+            QuickMatchService.get_defaults(user_id), config
+        )
+
+    @staticmethod
+    def resolve_settings(
+        base: Dict[str, Any], config: Optional[Dict[str, Any]]
+    ) -> Dict[str, Any]:
+        """Normalizza «come si gioca» a partire da una base qualunque.
+
+        Unico posto in cui un modulo diventa configurazione di partita: lo
+        usano l'avvio rapido (base = le abitudini del giocatore) e la
+        correzione di una sfida già aperta (base = la partita stessa). Due
+        moduli che chiedono le stesse cose devono validarle allo stesso modo,
+        o divergono al primo caso limite — è la stessa ragione per cui gare e
+        campionati hanno un solo `FormParser`.
+        """
+        settings = dict(base)
         for key, value in (config or {}).items():
             if value is not None:
                 settings[key] = value

@@ -134,6 +134,24 @@
       {% endif %}
     </div>
     {% endif %}
+
+    {# Cancellare non e' annullare: annullata, la proposta resta scritta e chi
+       era stato invitato capisce cos'e' successo. Cancellata, sparisce — ed e'
+       quello che serve per la proposta aperta per sbaglio o rimasta li' per
+       mesi. Solo chi l'ha fatta, e solo se non c'e' una partita viva appesa:
+       quella e' il fatto, la proposta era solo il modo di arrivarci. #}
+    {% if is_mine and feature_visible('individual_match.delete_proposal')
+          and (proposal.individual_match is none
+               or proposal.individual_match.status.value == MatchStatus.CANCELLED.value) %}
+    <form method="POST" action="{{ url_for('individual_match.delete_proposal', proposal_id=proposal.id) }}"
+          style="margin-top:10px">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="button" class="btn btn-secondary w-100"
+              onclick='confirmSubmit(this.closest("form"), {{ _("La proposta sparisce e non si recupera. Procedo?")|tojson }})'>
+        <i class="fas fa-trash"></i>&nbsp;{{ _("Cancella la proposta") }}
+      </button>
+    </form>
+    {% endif %}
   </div>
 
   {# ---------- Chi e' stato invitato ---------- #}

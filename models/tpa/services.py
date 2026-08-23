@@ -77,6 +77,18 @@ class TpaRefertoService:
         if status != MatchStatus.IN_PROGRESS.value:
             return _("Il referto si apre a match iniziato.")
 
+        return TpaRefertoService._match_blocking_reason(match)
+
+    @staticmethod
+    def _match_blocking_reason(match: IndividualMatch) -> Optional[str]:
+        """Le condizioni che riguardano la **partita**, non il momento.
+
+        Separate da `blocking_reason` perche' vanno chieste anche a partita
+        ancora da avviare: la spunta «Tengo il referto TPA» si offre prima
+        dell'avvio, e li' lo stato e' `SCHEDULED` per definizione. Restano
+        scritte una volta sola, cosi' la casella nascosta e la POST rifiutata
+        continuano a dire la stessa cosa.
+        """
         if TpaRefertoService.game_type_for(match.discipline) is None:
             return _(
                 "Il referto TPA vale per palla 8, palla 9 e palla 10: "
@@ -97,6 +109,19 @@ class TpaRefertoService:
     @staticmethod
     def can_open(match: IndividualMatch, user_id: int) -> bool:
         return TpaRefertoService.blocking_reason(match, user_id) is None
+
+    @staticmethod
+    def can_open_once_started(match: IndividualMatch, user_id: int) -> bool:
+        """Il referto si potra' aprire appena la partita parte?
+
+        La domanda della spunta all'avvio: tutto quello che `can_open` chiede,
+        **tranne** che la partita sia gia' cominciata. Chiederla dopo l'avvio
+        sarebbe chiederla tardi — a segnapunti aperto la prima cosa che si fa
+        e' segnare, e al primo triangolo il referto non si apre piu'.
+        """
+        if user_id not in (match.player1_id, match.player2_id):
+            return False
+        return TpaRefertoService._match_blocking_reason(match) is None
 
     # ------------------------------------------------------------------
     # Lettura

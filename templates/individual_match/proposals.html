@@ -169,6 +169,23 @@
             {%- else %}{{ _("Accettata") }}{% endif %}
           </div>
           {% endif %}
+
+          {# Le proposte che non sono piu' pendenti — scadute, annullate, o
+             accettate ma con la partita poi annullata — restavano nell'elenco
+             per sempre, senza nessun comando accanto. #}
+          {% if feature_visible('individual_match.delete_proposal')
+                and proposal.status.value != 'pending'
+                and (proposal.individual_match is none
+                     or proposal.individual_match.status.value == MatchStatus.CANCELLED.value) %}
+          <form method="POST" action="{{ url_for('individual_match.delete_proposal', proposal_id=proposal.id) }}"
+                style="margin-top:10px">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="button" class="btn btn-secondary w-100"
+                    onclick='confirmSubmit(this.closest("form"), {{ _("La proposta sparisce e non si recupera. Procedo?")|tojson }})'>
+              <i class="fas fa-trash"></i>&nbsp;{{ _("Cancella") }}
+            </button>
+          </form>
+          {% endif %}
         </article>
         {% endfor %}
       </div>
