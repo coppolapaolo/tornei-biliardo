@@ -183,11 +183,30 @@ class PlayoffConfiguration(BaseModel):
         """Set qualification criteria as JSON."""
         self.qualification_criteria = json.dumps(criteria)
 
-    def evaluate_qualifications(self) -> List[Dict[str, Any]]:
-        """Evaluate which players qualify for this playoff based on criteria."""
+    def evaluate_qualifications(
+        self, posti: Optional[int] = None
+    ) -> List[Dict[str, Any]]:
+        """Evaluate which players qualify for this playoff based on criteria.
+
+        `posti` allarga la finestra oltre `max_participants`, e serve alla
+        **cascata dei rifiuti** (`SPECIFICHE.md` riga 186: «se un giocatore
+        rifiuta, la notifica passa al primo degli esclusi e così via»).
+
+        Sono due domande diverse, e confonderle è costato un posto vuoto in
+        finale: «chi entra?» si ferma ai posti disponibili, «chi viene dopo?»
+        deve guardare **oltre** quel taglio. Con la sola lista tagliata,
+        `PlayoffService.find_replacement_player` cercava un sostituto fra
+        giocatori che avevano già tutti una qualificazione — declinante
+        compreso — e non lo trovava mai.
+
+        Le bande di ELITE_ACADEMY non si allargano: lì il gruppo è definito da
+        una fascia di posizioni, non dai posti, e sconfinare vorrebbe dire
+        ripescare un academy dentro l'elite.
+        """
         from ..classification.models import Classification
 
         criteria = self.get_qualification_criteria()
+        finestra = self.max_participants if posti is None else posti
 
         # Get campionato final classification
         classifications = (
@@ -199,8 +218,11 @@ class PlayoffConfiguration(BaseModel):
         qualified_players = []
 
         if self.playoff_type == PlayoffType.TOP_N:
-            # Top N players
+            # Top N players — allargato a `finestra` quando si cercano i
+            # sostituti, altrimenti la cascata non vedrebbe mai gli esclusi.
             top_n = criteria.get("top_positions", self.max_participants)
+            if posti is not None:
+                top_n = max(top_n, posti)
             for i, classification in enumerate(classifications[:top_n]):
                 if self._meets_minimum_requirements(classification.user_id):
                     qualified_players.append(
@@ -240,7 +262,7 @@ class PlayoffConfiguration(BaseModel):
             exclude_top = criteria.get("exclude_top_positions", 2)
             eligible_classifications = classifications[exclude_top:]
 
-            for classification in eligible_classifications[: self.max_participants]:
+            for classification in eligible_classifications[:finestra]:
                 if self._meets_minimum_requirements(classification.user_id):
                     qualified_players.append(
                         {
@@ -265,7 +287,7 @@ class PlayoffConfiguration(BaseModel):
                         }
                     )
 
-        return qualified_players[: self.max_participants]
+        return qualified_players[:finestra]
 
     def _meets_minimum_requirements(self, user_id: int) -> bool:
         """Check if user meets minimum requirements for playoff.

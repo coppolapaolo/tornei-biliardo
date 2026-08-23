@@ -213,8 +213,19 @@ class PlayoffService:
         ).all()
         current_players = {q.user_id for q in existing_qualifications}
 
-        # Re-evaluate qualifications to find next eligible
-        all_qualified = configuration.evaluate_qualifications()
+        # Re-evaluate qualifications to find next eligible.
+        #
+        # La finestra va allargata **oltre** i posti, altrimenti si guarda
+        # esattamente l'insieme di chi ha già una qualificazione — declinante
+        # compreso, che resta in elenco con status DECLINED — e il sostituto
+        # non si trova mai (SPECIFICHE.md riga 186: l'invito «passa al primo
+        # degli esclusi e così via»). Quante posizioni in più: una per ogni
+        # qualificazione già emessa, perché nel caso peggiore hanno rifiutato
+        # tutti e la cascata deve poter scorrere fino in fondo alla classifica.
+        posti_da_guardare = configuration.max_participants + len(
+            existing_qualifications
+        )
+        all_qualified = configuration.evaluate_qualifications(posti=posti_da_guardare)
 
         for player_data in all_qualified:
             if player_data["user_id"] not in current_players:

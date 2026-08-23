@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import logging
 from typing import List, Optional, Dict, Any
+from flask_babel import gettext as _
 from sqlalchemy import desc
 
 from ..base import db
@@ -649,6 +650,31 @@ class ChallengeService:
         if not attempt:
             raise ValueError("Tentativo challenge non trovato")
 
+        # Mark GaraByeChallenge as completed (new pattern)
+        bye_challenge = GaraByeChallenge.query.filter_by(
+            challenge_attempt_id=attempt_id
+        ).first()
+
+        # Il punteggio va verificato PRIMA di scriverlo: è il giocatore stesso
+        # a dichiararlo, e senza un limite superiore un valore fuori scala
+        # finirebbe dritto in classifica (SPECIFICHE.md riga 65).
+        limite = ChallengeService._limite_punteggio_x(
+            gara_id=(bye_challenge.gara_id if bye_challenge else attempt.gara_id),
+            round_number=(
+                bye_challenge.round_number if bye_challenge else attempt.round_number
+            ),
+            user_id=attempt.user_id,
+        )
+        if limite is not None and not 0 <= score <= limite:
+            raise ValidationError(
+                _(
+                    "Il punteggio della prova deve essere compreso fra 0 e "
+                    "%(massimo)s, la differenza più ampia ottenibile in questo "
+                    "turno.",
+                    massimo=limite,
+                )
+            )
+
         # Complete the attempt
         attempt.complete_attempt(score=score, passed=None)
 
@@ -656,10 +682,6 @@ class ChallengeService:
         if notes:
             attempt.notes = notes
 
-        # Mark GaraByeChallenge as completed (new pattern)
-        bye_challenge = GaraByeChallenge.query.filter_by(
-            challenge_attempt_id=attempt_id
-        ).first()
         if bye_challenge:
             bye_challenge.complete_with_attempt(attempt_id)
 
@@ -677,6 +699,42 @@ class ChallengeService:
         )
 
         return attempt
+
+    @staticmethod
+    def _limite_punteggio_x(
+        gara_id: Optional[int], round_number: Optional[int], user_id: int
+    ) -> Optional[int]:
+        """Quanto può valere al massimo la prova giocata al posto della X.
+
+        `SPECIFICHE.md` riga 65: la prova dà «un punteggio da zero alla massima
+        differenza rack raggiungibile in quella gara». La differenza più ampia
+        è vincere senza concedere nulla, quindi il massimo è la distanza del
+        turno.
+
+        ADR-027: la distanza si legge dal match (`effective_distance`), non da
+        `gara.distance` — altrimenti gli override per turno si perdono e in un
+        turno «al 3» dentro una gara «al 5» si accetterebbero punteggi fino a 5.
+
+        Restituisce `None` quando per quel turno non esiste (ancora) una
+        partita con la X: non c'è scala su cui misurare, e un limite inventato
+        sarebbe peggio di nessun limite.
+        """
+        from ..match.models import Match
+
+        if not gara_id or not round_number:
+            return None
+
+        match = (
+            db.session.query(Match)
+            .filter_by(
+                gara_id=gara_id,
+                round_number=round_number,
+                player1_id=user_id,
+                is_bye=True,
+            )
+            .first()
+        )
+        return match.effective_distance if match else None
 
     @staticmethod
     @transactional(domain="challenge")
@@ -731,14 +789,20 @@ class ChallengeService:
             db.session.add(match)
             db.session.flush()  # rende match.gara accessibile (effective_distance)
 
-        # Il bye da X-replacement vale come un bye normale ai fini della
-        # classifica: il punteggio del vincitore è la distanza del round
-        # (ADR-027: effective_distance), NON lo score grezzo della challenge.
-        # Quest'ultimo ha scala arbitraria (es. 0-15) scollegata da
-        # gara.distance e gonfierebbe i rack in classifica rispetto agli altri
-        # bye (che valgono round_distance). Lo score della challenge resta
-        # registrato sul ChallengeAttempt.
-        match.player1_score = match.effective_distance
+        # `SPECIFICHE.md` riga 65: chi gioca la prova al posto della X ottiene
+        # «il match vinto e una differenza rack **pari al punteggio nella
+        # challenge**». Il punteggio ci arriva già dentro la scala del turno —
+        # `complete_x_replacement_attempt` rifiuta tutto ciò che esce da
+        # [0, effective_distance] — quindi qui si usa così com'è.
+        #
+        # Fino al 2026-08-23 questa riga assegnava `effective_distance`,
+        # scartando il punteggio: una difesa contro la scala arbitraria della
+        # prova (es. 0-15 su una gara «al 5»), messa però nel posto sbagliato.
+        # Difendersi qui significava appiattire ogni prova sullo stesso valore,
+        # e quindi rendere la variante con challenge indistinguibile dalla X
+        # secca — che è esattamente ciò che la riga 65 vuole evitare. Il
+        # controllo sta ora dove il dato entra.
+        match.player1_score = attempt.score or 0
         match.player2_score = 0  # X gets 0
 
     @staticmethod

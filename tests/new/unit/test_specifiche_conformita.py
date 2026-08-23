@@ -194,34 +194,51 @@ class TestQuantoValeLaX:
 
         assert _punteggi(gara.id)[giocatore.id].matches_won == 1
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "DIVERGENZA da SPECIFICHE.md righe 64 e 69: la X deve dare 0 "
-            "differenza rack. Oggi la partita con la X nasce con "
-            "player1_score = round_distance (round_creation.py) e "
-            "ScoreAggregator._process_bye_match somma quei rack ai vinti "
-            "senza persi, quindi la differenza è +distanza. La specifica "
-            "dichiara anche l'intento — «un posizionamento migliore di tutti "
-            "i perdenti e peggiore di tutti i vincenti» — che oggi è "
-            "rovesciato: chi riposa sta sopra tutti i vincenti. Da correggere "
-            "alla creazione, non nell'aggregatore, che serve anche alla X con "
-            "challenge (riga 65). Va rivisto insieme "
-            "test_x_replacement_score_scale.py, che allinea le tre strade "
-            "della X alla scala sbagliata."
-        ),
-    )
-    def test_la_x_da_zero_differenza_rack(self, db_session):
-        """`SPECIFICHE.md` righe 64 e 69.
+    def test_la_x_nasce_senza_triangoli(self, db_session):
+        """`SPECIFICHE.md` righe 64 e 69, **alla fonte**.
 
         > abbina un giocatore alla X assegnando il match vinto, ma con **zero
         > differenza punti**
+
+        Questo test passa dal vero punto di creazione, non da un `Match`
+        costruito a mano: è lì che stava la divergenza (`round_creation.py`
+        assegnava `player1_score = round_distance`), ed è lì che va presidiata.
+        Un test che costruisce da sé la partita con il punteggio che vuole non
+        può accorgersi di come la produzione la crea davvero.
+        """
+        from models.competition.round_creation import create_matches_from_pairings
+        from models.matchmaking.strategies.base import Pairing
+
+        gara = _gara(db_session)
+        giocatore = _utente(db_session)
+
+        create_matches_from_pairings(
+            gara=gara,
+            pairings=[Pairing(players=(giocatore.id,), is_bye=True, round_number=1)],
+            round_number=1,
+            round_distance=gara.distance,
+        )
+        db_session.flush()
+
+        partita = db_session.query(Match).filter_by(gara_id=gara.id).one()
+        assert partita.is_bye
+        assert partita.player1_score == 0
+
+    def test_la_x_da_zero_differenza_rack(self, db_session):
+        """`SPECIFICHE.md` righe 64 e 69, **in classifica**.
+
+        La conseguenza del test precedente sul punteggio aggregato: con zero
+        triangoli vinti e nessuno perso, la differenza resta ferma e chi riposa
+        si piazza sotto chiunque abbia vinto giocando — che è l'intento
+        dichiarato dalla riga 64.
         """
         gara = _gara(db_session)
         giocatore = _utente(db_session)
-        self._con_la_x(db_session, gara, giocatore, gara.distance)
+        self._con_la_x(db_session, gara, giocatore, 0)
 
-        assert _punteggi(gara.id)[giocatore.id].rack_difference == 0
+        voce = _punteggi(gara.id)[giocatore.id]
+        assert voce.matches_won == 1
+        assert voce.rack_difference == 0
 
     def test_la_x_con_challenge_da_differenza_pari_al_punteggio(self, db_session):
         """`SPECIFICHE.md` riga 65.
@@ -336,21 +353,6 @@ class TestCascataDeiRifiutiAiPlayoff:
         db_session.commit()
         return campionato, configurazione, giocatori
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "DIVERGENZA da SPECIFICHE.md riga 177: quando un qualificato "
-            "rifiuta, l'invito deve passare «al primo degli esclusi». Oggi "
-            "PlayoffService.find_replacement_player cerca il sostituto dentro "
-            "config.evaluate_qualifications(), che per un TOP_N restituisce "
-            "solo i primi `max_participants`: tutti hanno già una "
-            "qualificazione (anche il declinante, in stato DECLINED), quindi "
-            "il sostituto non viene mai trovato e la finale parte con un "
-            "posto vuoto. Il comportamento attuale è documentato — e difeso — "
-            "da test_avvio_playoff.py::test_declined_player_not_repicked, "
-            "che va rivisto insieme a questo."
-        ),
-    )
     def test_chi_rifiuta_lascia_il_posto_al_primo_degli_esclusi(self, db_session):
         """`SPECIFICHE.md` riga 177.
 

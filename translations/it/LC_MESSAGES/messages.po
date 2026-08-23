@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-23 13:01+0200\n"
+"POT-Creation-Date: 2026-08-23 20:05+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -69,6 +69,13 @@ msgstr ""
 #: models/challenge/models.py:288
 #, python-format
 msgid "Esercizio %(number)s"
+msgstr ""
+
+#: models/challenge/services.py:671
+#, python-format
+msgid ""
+"Il punteggio della prova deve essere compreso fra 0 e %(massimo)s, la "
+"differenza più ampia ottenibile in questo turno."
 msgstr ""
 
 #: models/competition/models.py:397

@@ -114,9 +114,23 @@ def create_matches_from_pairings(
         "is_race_to_sets": is_race_to_sets_override,
     }
 
-    # Per il bye/forfeit "winning_score" è il numero di rack del round,
-    # non la match_distance (che in multi-set è il numero di set).
+    # Per il forfeit "winning_score" è il numero di rack del round, non la
+    # match_distance (che in multi-set è il numero di set): chi vince a
+    # tavolino prende il punteggio pieno, perché l'avversario si è ritirato.
     winning_score = round_distance
+
+    # La X *non* è un forfeit, e non prende il punteggio pieno.
+    # `SPECIFICHE.md` righe 64 e 69: la X assegna «il match vinto, ma con zero
+    # differenza punti», così chi riposa si piazza «migliore di tutti i
+    # perdenti e peggiore di tutti i vincenti». Con `round_distance` era il
+    # contrario — la X valeva quanto la vittoria più larga possibile e chi
+    # riposava scavalcava chi aveva vinto giocando.
+    # Lo dichiarava già `validators._validate_rack_system`, che vieta il bye
+    # semplice col sistema RACK proprio perché «il giocatore con bye
+    # riceverebbe 0 rack»: quel divieto e questa riga adesso concordano.
+    # La variante con challenge (riga 65) sovrascrive questo punteggio quando
+    # la prova viene completata — vedi `AmalfiChallengeByeService`.
+    bye_score = 0
 
     for pairing in pairings:
         # Le coordinate variano per pairing, quindi non possono stare in
@@ -136,7 +150,7 @@ def create_matches_from_pairings(
                 player1_id=pairing.players[0],
                 player2_id=None,
                 is_bye=True,
-                player1_score=winning_score,
+                player1_score=bye_score,
                 winner_id=pairing.players[0],
                 status="pending",
             )

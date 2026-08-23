@@ -222,10 +222,31 @@ stesso identico meccanismo.
 Le due volte in cui è successo, entrambe scoperte il 2026-08-23:
 
 * **quanto vale la X in classifica** (SPECIFICHE.md righe 64 e 69: una vittoria
-  e **zero** differenza rack; il codice dà +distanza);
-* **a chi passa l'invito ai playoff quando qualcuno rifiuta** (riga 177: «al
-  primo degli esclusi»; il codice non lo trova mai e la finale parte con un
-  posto vuoto).
+  e **zero** differenza rack; il codice dava +distanza). **Corretto** lo stesso
+  giorno in `round_creation.py`: la X nasce con `player1_score = 0`. Notevole
+  che un terzo punto del codice — `validators._validate_rack_system`, che
+  vieta il bye semplice col sistema RACK «perché il giocatore con bye
+  riceverebbe 0 rack» — fosse d'accordo con la specifica da sempre: nessuno
+  aveva mai confrontato i tre. **Corretta lo stesso giorno anche la variante
+  con challenge** (riga 65): la differenza torna a essere il punteggio della
+  prova, e il limite `[0, effective_distance]` è passato dal *lettore* del dato
+  a chi lo *registra*. Difendersi a valle, scartando il punteggio, equivaleva a
+  cancellare la regola che si voleva applicare — vedi
+  `tests/new/unit/test_x_replacement_score_scale.py`;
+* **a chi passa l'invito ai playoff quando qualcuno rifiuta** (riga 186: «al
+  primo degli esclusi»; il codice non lo trovava mai e la finale partiva con un
+  posto vuoto). **Corretta** il 2026-08-23: `evaluate_qualifications(posti=…)`
+  sa allargare la finestra oltre `max_participants`, e
+  `find_replacement_player` la chiama così. La causa era una domanda sola usata
+  per due scopi — «chi entra?» si ferma ai posti, «chi viene dopo?» deve
+  guardare oltre — e la lista tagliata conteneva solo giocatori che avevano già
+  una qualificazione, declinante compreso.
+
+**Nessuna delle due era difesa da un test come si temeva**:
+`test_declined_player_not_repicked` ha quattro giocatori per quattro posti,
+quindi passa in entrambi i mondi. Vale la pena notarlo, perché il sospetto che
+un test difendesse la deviazione era ragionevole e si è rivelato infondato: va
+verificato, non assunto.
 
 Regole operative, tre:
 
@@ -609,7 +630,10 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 | Migration che crea una tabella senza `created_at`/`updated_at` | `BaseModel` le aggiunge a ogni entità: l'ORM fallisce con «no such column» e la funzione muore in silenzio in produzione (incidente `categoria`, 2026-08-19). I test di comportamento non lo vedono — creano lo schema con `db.create_all()` — quindi il presidio legge il **testo** delle migration: `tests/new/unit/test_migrations_timestamps.py` |
 | Correggere la migration che ha creato la tabella sbagliata | Non serve a niente: è già marcata applicata e non gira più, e comunque è `CREATE TABLE IF NOT EXISTS`. Un DB già storto si ripara solo con una **migration nuova** che aggiunga le colonne (`20260820_timestamps_basemodel.py`) |
 | Schermata della guida ritoccata a mano in un editor | Le immagini si **generano** dall'app (`capture_screenshots.py`) sul dataset di `seed_demo.py`: una ritoccata sopravvive al cambio di interfaccia e diventa una bugia permanente |
-| Trattare la X come neutra in classifica | Vale una vittoria **e** i triangoli della distanza (`player1_score = round_distance`, e `ScoreAggregator._process_bye_match` li somma ai vinti senza persi): con la classifica a vittorie, che ordina per `(vittorie, differenza triangoli)`, chi riposa scavalca chi ha vinto giocando. Rilievo aperto, fissato da `test_stagione_e2e_x_e_abbinamenti.py` |
+| Dare alla X i triangoli della distanza | La X vale una vittoria e **zero** differenza (SPECIFICHE.md righe 64 e 69): nasce con `player1_score = 0` in `round_creation.py`, e `ScoreAggregator._process_bye_match` somma quello zero ai vinti senza contarne di persi. Fino al 2026-08-23 valeva `round_distance`, e con la classifica a vittorie — che ordina per `(vittorie, differenza triangoli)` — chi riposava scavalcava chi aveva vinto giocando. Presidiato da `test_stagione_e2e_x_e_abbinamenti.py` e `test_specifiche_conformita.py` |
+| Assumere che la X con **challenge** segua la stessa regola | Non la segue: lì la differenza è **pari al punteggio della prova** (SPECIFICHE.md riga 65), non zero. Il punteggio arriva grezzo in classifica, ed è sicuro perché `complete_x_replacement_attempt` rifiuta tutto ciò che esce da `[0, effective_distance]` — la scala la impone chi registra il dato, non chi lo legge. Fino al 2026-08-23 il punteggio veniva **scartato** e sostituito dalla distanza, il che rendeva la variante con prova indistinguibile dalla X secca. Presidiato da `test_x_replacement_score_scale.py` |
+| Validare il punteggio della prova contro `gara.distance` | `match.effective_distance` (ADR-027): in un turno «al 3» dentro una gara «al 5» il massimo è 3, e leggere la gara accetterebbe un punteggio che in quel turno nessuno può ottenere giocando |
+| Cercare il sostituto ai playoff dentro `evaluate_qualifications()` senza `posti` | Quella lista è tagliata a `max_participants`, cioè contiene **solo chi ha già una qualificazione** — declinante incluso, che resta in elenco con status `DECLINED`. Il sostituto non si trovava mai e la finale partiva con un posto vuoto. Serve `evaluate_qualifications(posti=max_participants + qualificazioni_esistenti)`: «chi entra?» e «chi viene dopo?» sono due domande diverse (SPECIFICHE.md riga 186) |
 | Dare per garantito l'anti-reincontro Amalfi con un numero dispari di giocatori | La garanzia di ADR-029 è per il caso **pari**, dove si risolve un matching di peso massimo sul grafo dei non-incontri. Nel dispari il sentinella della X si aggiunge **dopo** quel controllo: si passa al greedy, che dopo `len(players)` tentativi ammette esplicitamente il reincontro |
 | Dare per scontato che una partita abbia sempre un vincitore | In «esattamente N rack» con **N pari** il pareggio esiste: a 3-3 la partita è chiusa e `winner_id` resta `None`. Chi somma le vittorie senza contemplarlo perde una riga di classifica; chi scrive «ha vinto X» in una notifica scrive una frase falsa. Con N dispari non può capitare, ed è per questo che il caso passa inosservato (`test_stagione_e2e_risultati.py`) |
 | Datare a `today` una gara che il programma crea dentro un campionato | Le gare numerate stanno in ordine cronologico (ADR-016) e il controllo **non** salta le soft-eliminate. La gara di playoff nasceva datata oggi pur essendo l'ultima del calendario: con una gara ancora nel futuro — anche solo una pianificata e mai giocata, che la terminazione cancella — veniva rifiutata, e al posto della finale compariva un messaggio. La data si sceglie a partire dall'ultima gara, non dall'orologio (`test_playoff_gara_date_sequence.py`) |

@@ -87,7 +87,7 @@ def _riga(classifica, user_id):
 
 @pytest.mark.e2e
 class TestQuantoValeLaX:
-    """La X dà una vittoria — e, oggi, anche i triangoli della distanza."""
+    """La X dà una vittoria, e nient'altro: zero triangoli, differenza ferma."""
 
     def test_la_x_vale_una_vittoria(self, campionato: CampionatoDriver, gara_dispari):
         gara_id, _direttore, _giocatori = gara_dispari
@@ -97,38 +97,28 @@ class TestQuantoValeLaX:
 
         assert _riga(classifica, riposato).matches_won == 1
 
-    def test_oggi_la_x_porta_in_dote_anche_i_triangoli_della_distanza(
+    def test_la_x_non_porta_in_dote_nessun_triangolo(
         self, campionato: CampionatoDriver, gara_dispari
     ):
-        """Il comportamento attuale, fissato perché si veda quando cambia.
+        """`SPECIFICHE.md` righe 64 e 69: vittoria sì, triangoli no.
 
-        La partita con la X nasce con `player1_score = distanza` e nessun
-        avversario; `ScoreAggregator._process_bye_match` somma quei triangoli
-        ai vinti e non ne conta nessuno di persi. Risultato: chi riposa entra
-        in classifica con **+5 di differenza**, mentre chi ha vinto giocando
-        un 3-2 ne ha **+1**.
+        La partita con la X nasce con `player1_score = 0` e nessun avversario;
+        `ScoreAggregator._process_bye_match` somma quei triangoli ai vinti e
+        non ne conta nessuno di persi. Con zero da entrambe le parti chi riposa
+        entra in classifica con la vittoria e la differenza ferma.
+
+        Fino al 2026-08-23 il punteggio era `distanza`: chi riposava prendeva
+        +5 di differenza, più di chiunque avesse vinto giocando.
         """
         gara_id, _direttore, _giocatori = gara_dispari
         riposato = _chi_ha_preso_la_x(campionato, gara_id, 1)
 
         riga = _riga(campionato.classifica_di_turno(gara_id, 1), riposato)
 
-        assert riga.racks_won == DISTANZA
-        assert riga.rack_difference == DISTANZA
+        assert riga.racks_won == 0
+        assert riga.rack_difference == 0
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "Rilievo aperto: la X dovrebbe valere una vittoria e differenza "
-            "triangoli ZERO. Oggi vale una vittoria e +distanza, quindi chi "
-            "riposa scavalca in classifica chi ha vinto giocando a parità di "
-            "vittorie. La correzione sta in "
-            "ScoreAggregator._process_bye_match e cambia le classifiche di "
-            "tutte le gare con numero dispari: è una decisione di prodotto, "
-            "non una svista da correggere di nascosto."
-        ),
-    )
-    def test_la_x_non_dovrebbe_spostare_la_differenza_triangoli(
+    def test_la_x_non_sposta_la_differenza_triangoli(
         self, campionato: CampionatoDriver, gara_dispari
     ):
         gara_id, _direttore, _giocatori = gara_dispari
@@ -138,25 +128,36 @@ class TestQuantoValeLaX:
 
         assert riga.rack_difference == 0
 
-    def test_a_parita_di_vittorie_chi_ha_riposato_sta_davanti(
+    def test_chi_ha_riposato_sta_sotto_i_vincenti_e_sopra_i_perdenti(
         self, campionato: CampionatoDriver, gara_dispari
     ):
-        """La conseguenza visibile, ed è quella che conta in sala.
+        """L'intento della specifica, riga 64, verificato dove si vede: in sala.
 
-        Dopo il primo turno tutti quelli che hanno vinto hanno una vittoria: chi
-        ha vinto giocando ha differenza pari al suo margine (da +1 a +5), chi ha
-        riposato ha +5 pieni. La X quindi non è neutra: vale come la vittoria
-        più larga possibile.
+        > chi ottiene la X con l'abbinamento ottiene in classifica un
+        > posizionamento migliore di tutti i perdenti e peggiore di tutti i
+        > vincenti
+
+        Con la classifica a vittorie — che ordina per `(vittorie, differenza)` —
+        le due metà si reggono su criteri diversi: **sopra i perdenti** per il
+        primo criterio (una vittoria contro zero), **sotto i vincenti** per il
+        secondo (differenza 0 contro il loro margine, che è almeno +1 perché
+        una partita non finisce in parità a distanza dispari).
         """
         gara_id, _direttore, _giocatori = gara_dispari
         riposato = _chi_ha_preso_la_x(campionato, gara_id, 1)
         classifica = campionato.classifica_di_turno(gara_id, 1)
 
-        con_una_vittoria = [riga for riga in classifica if riga.matches_won == 1]
-        differenze = {riga.user_id: riga.rack_difference for riga in con_una_vittoria}
+        posizione = {riga.user_id: indice for indice, riga in enumerate(classifica)}
+        vincenti = [
+            riga.user_id
+            for riga in classifica
+            if riga.matches_won == 1 and riga.user_id != riposato
+        ]
+        perdenti = [riga.user_id for riga in classifica if riga.matches_won == 0]
 
-        assert differenze[riposato] == DISTANZA
-        assert differenze[riposato] >= max(differenze.values())
+        assert vincenti and perdenti, "il turno deve avere sia vincenti sia perdenti"
+        assert all(posizione[vincente] < posizione[riposato] for vincente in vincenti)
+        assert all(posizione[riposato] < posizione[perdente] for perdente in perdenti)
 
     def test_nessuno_prende_la_x_due_volte(
         self, campionato: CampionatoDriver, gara_dispari
