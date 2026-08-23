@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-22 22:57+0200\n"
+"POT-Creation-Date: 2026-08-23 13:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -4577,11 +4577,11 @@ msgstr ""
 #: templates/admin/campionato_detail.html:246
 #: templates/components/_unified_match_score.html:88
 #: templates/components/_unified_match_score.html:99
-#: templates/exam/requests.html:19 utils/status_ui.py:194
+#: templates/exam/requests.html:19 utils/status_ui.py:203
 msgid "Confermato"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:248 utils/status_ui.py:195
+#: templates/admin/campionato_detail.html:248 utils/status_ui.py:204
 msgid "Rifiutato"
 msgstr ""
 
@@ -6470,12 +6470,12 @@ msgid "Admin:"
 msgstr ""
 
 #: templates/admin/venue_manager_requests.html:73 utils/status_ui.py:150
-#: utils/status_ui.py:193
+#: utils/status_ui.py:202
 msgid "In Attesa"
 msgstr ""
 
 #: templates/admin/venue_manager_requests.html:77
-#: templates/player/my_venue_requests.html:43 utils/status_ui.py:176
+#: templates/player/my_venue_requests.html:43 utils/status_ui.py:185
 msgid "Approvata"
 msgstr ""
 
@@ -10162,7 +10162,7 @@ msgstr ""
 #: templates/components/_match_status_labels.html:22
 #: templates/individual_match/dashboard.html:103
 #: templates/individual_match/matches.html:37
-#: templates/individual_match/matches.html:107
+#: templates/individual_match/matches.html:107 utils/status_ui.py:158
 msgid "Da giocare"
 msgstr ""
 
@@ -10355,7 +10355,7 @@ msgstr ""
 msgid "Annulla il triangolo"
 msgstr ""
 
-#: templates/components/_match_status_labels.html:25 utils/status_ui.py:159
+#: templates/components/_match_status_labels.html:25 utils/status_ui.py:168
 msgid "Confermato dai giocatori"
 msgstr ""
 
@@ -10899,7 +10899,7 @@ msgid "Scaduta"
 msgstr ""
 
 #: templates/components/_proposal_labels.html:22
-#: templates/player/my_venue_requests.html:47
+#: templates/player/my_venue_requests.html:47 utils/status_ui.py:160
 msgid "Annullata"
 msgstr ""
 
@@ -11022,7 +11022,7 @@ msgstr ""
 
 #: templates/components/_round_navigation.html:24
 #: templates/components/_ssr_section.html:17 utils/status_ui.py:134
-#: utils/status_ui.py:152
+#: utils/status_ui.py:161
 msgid "Completato"
 msgstr ""
 
@@ -16088,11 +16088,12 @@ msgid "Iscrizioni Aperte"
 msgstr ""
 
 #: utils/status_ui.py:100 utils/status_ui.py:133 utils/status_ui.py:151
+#: utils/status_ui.py:159
 msgid "In Corso"
 msgstr ""
 
-#: utils/status_ui.py:104 utils/status_ui.py:138 utils/status_ui.py:163
-#: utils/status_ui.py:181 utils/status_ui.py:199 utils/status_ui.py:238
+#: utils/status_ui.py:104 utils/status_ui.py:138 utils/status_ui.py:172
+#: utils/status_ui.py:190 utils/status_ui.py:208 utils/status_ui.py:247
 msgid "Sconosciuto"
 msgstr ""
 
@@ -16100,11 +16101,11 @@ msgstr ""
 msgid "Terminato"
 msgstr ""
 
-#: utils/status_ui.py:175
+#: utils/status_ui.py:184
 msgid "In Valutazione"
 msgstr ""
 
-#: utils/status_ui.py:177
+#: utils/status_ui.py:186
 msgid "Respinta"
 msgstr ""
 

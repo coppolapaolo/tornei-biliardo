@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-22 22:57+0200\n"
+"POT-Creation-Date: 2026-08-23 13:01+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -71,7 +71,8 @@ msgstr ""
 msgid "Esercizio %(number)s"
 msgstr ""
 
-#: models/competition/models.py:397 templates/admin/amalfi_classification.html:23
+#: models/competition/models.py:397
+#: templates/admin/amalfi_classification.html:23
 #: templates/components/_campionato_garas.html:105
 #: templates/components/_new_gara_modal.html:69
 #, python-format
@@ -80,14 +81,14 @@ msgstr ""
 
 #: models/competition/round_manager.py:124
 msgid ""
-"Gara certificata da spareggio: annulla prima lo spareggio per modificare i "
-"match"
+"Gara certificata da spareggio: annulla prima lo spareggio per modificare "
+"i match"
 msgstr ""
 
 #: models/competition/round_manager.py:152
 msgid ""
-"Gara in fase di spareggio (SSR): concludi lo spareggio prima di modificare i"
-" risultati"
+"Gara in fase di spareggio (SSR): concludi lo spareggio prima di "
+"modificare i risultati"
 msgstr ""
 
 #: models/competition/round_manager.py:157
@@ -105,8 +106,8 @@ msgstr ""
 
 #: models/competition/round_manager.py:279
 msgid ""
-"Gara certificata da spareggio: annulla prima lo spareggio per cancellare il "
-"turno"
+"Gara certificata da spareggio: annulla prima lo spareggio per cancellare "
+"il turno"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:162
@@ -512,7 +513,8 @@ msgstr ""
 msgid "Come vanno le tue gare"
 msgstr ""
 
-#: models/dashboard/activity_feedback.py:1531 routes/gamification/features.py:47
+#: models/dashboard/activity_feedback.py:1531
+#: routes/gamification/features.py:47
 msgid "Gare organizzate"
 msgstr ""
 
@@ -611,8 +613,8 @@ msgstr ""
 
 #: models/demand/service.py:406
 msgid ""
-"La gara che aspettavi nella tua zona è stata pubblicata: dai un'occhiata e "
-"iscriviti."
+"La gara che aspettavi nella tua zona è stata pubblicata: dai un'occhiata "
+"e iscriviti."
 msgstr ""
 
 #: models/demand/service.py:412
@@ -625,8 +627,8 @@ msgstr ""
 
 #: models/demand/service.py:445
 msgid ""
-"La tua richiesta di una gara nella tua zona sta per scadere. Confermala se "
-"ti interessa ancora."
+"La tua richiesta di una gara nella tua zona sta per scadere. Confermala "
+"se ti interessa ancora."
 msgstr ""
 
 #: models/exam/request_service.py:437
@@ -643,8 +645,8 @@ msgstr ""
 
 #: models/exam/request_service.py:489
 msgid ""
-"La tua richiesta d'esame è scaduta senza che si trovasse un accordo su data "
-"e ora."
+"La tua richiesta d'esame è scaduta senza che si trovasse un accordo su "
+"data e ora."
 msgstr ""
 
 #: models/exam/request_service.py:637
@@ -692,7 +694,9 @@ msgstr ""
 
 #: models/exam/request_service.py:718
 #, python-format
-msgid "La richiesta per «%(exam)s» è stata presa in carico da un altro esaminatore."
+msgid ""
+"La richiesta per «%(exam)s» è stata presa in carico da un altro "
+"esaminatore."
 msgstr ""
 
 #: models/exam/services.py:830
@@ -702,8 +706,8 @@ msgstr ""
 #: models/exam/services.py:832
 #, python-format
 msgid ""
-"L'esaminatore ha aperto la sessione di «%(exam)s»: accetta l'inizio per far "
-"partire la valutazione."
+"L'esaminatore ha aperto la sessione di «%(exam)s»: accetta l'inizio per "
+"far partire la valutazione."
 msgstr ""
 
 #: models/exam/services.py:839
@@ -807,7 +811,9 @@ msgid "Scopri gli altri giocatori"
 msgstr ""
 
 #: models/gamification/frontend_bridge.py:474
-msgid "Ora puoi sbirciare i profili degli altri. Vai alla classifica per cominciare!"
+msgid ""
+"Ora puoi sbirciare i profili degli altri. Vai alla classifica per "
+"cominciare!"
 msgstr ""
 
 #: models/gamification/frontend_bridge.py:475
@@ -831,7 +837,9 @@ msgid "Proponi una partita aperta"
 msgstr ""
 
 #: models/gamification/frontend_bridge.py:480
-msgid "Lancia una proposta alla community e aspetta che qualcuno si faccia avanti."
+msgid ""
+"Lancia una proposta alla community e aspetta che qualcuno si faccia "
+"avanti."
 msgstr ""
 
 #: models/gamification/frontend_bridge.py:481
@@ -872,8 +880,8 @@ msgstr ""
 
 #: models/gamification/frontend_bridge.py:491
 msgid ""
-"Più esercizi in fila, in un colpo solo. Da solo per allenarti, o davanti a "
-"un esaminatore per farlo valere."
+"Più esercizi in fila, in un colpo solo. Da solo per allenarti, o davanti "
+"a un esaminatore per farlo valere."
 msgstr ""
 
 #: models/gamification/frontend_bridge.py:494 templates/base.html:503
@@ -1080,8 +1088,8 @@ msgstr ""
 #: models/individual_match/quick_match_service.py:396
 #, python-format
 msgid ""
-"%(player)s ha aperto una partita con te%(location)s. A fine partita dovrai "
-"confermare il risultato."
+"%(player)s ha aperto una partita con te%(location)s. A fine partita "
+"dovrai confermare il risultato."
 msgstr ""
 
 #: models/individual_match/quick_match_service.py:403
@@ -1154,8 +1162,8 @@ msgstr ""
 
 #: models/kpi/notifications.py:116
 msgid ""
-"Non sono stati giocati match negli ultimi 3 giorni. Potrebbe essere utile "
-"stimolare la community."
+"Non sono stati giocati match negli ultimi 3 giorni. Potrebbe essere utile"
+" stimolare la community."
 msgstr ""
 
 #: models/kpi/notifications.py:121
@@ -1164,8 +1172,8 @@ msgstr ""
 
 #: models/kpi/notifications.py:123
 msgid ""
-"Non sono stati giocati match negli ultimi 7 giorni. La community potrebbe "
-"aver bisogno di attenzione."
+"Non sono stati giocati match negli ultimi 7 giorni. La community potrebbe"
+" aver bisogno di attenzione."
 msgstr ""
 
 #: models/kpi/notifications.py:128
@@ -1217,7 +1225,9 @@ msgid "ogni set esattamente %(n)s triangoli"
 msgstr ""
 
 #: models/match/scoring_service.py:170 models/match/trio_scoring_service.py:148
-msgid "Il risultato è già stato validato: per correggerlo serve il direttore di gara"
+msgid ""
+"Il risultato è già stato validato: per correggerlo serve il direttore di "
+"gara"
 msgstr ""
 
 #: models/notification/factory.py:386
@@ -1239,8 +1249,8 @@ msgstr ""
 
 #: models/tpa/services.py:94
 msgid ""
-"Il referto TPA vale per palla 8, palla 9 e palla 10: in questa disciplina "
-"non si calcola."
+"Il referto TPA vale per palla 8, palla 9 e palla 10: in questa disciplina"
+" non si calcola."
 msgstr ""
 
 #: models/tpa/services.py:99
@@ -1249,8 +1259,8 @@ msgstr ""
 
 #: models/tpa/services.py:103
 msgid ""
-"Questo match ha gia' dei triangoli segnati: il referto va aperto prima del "
-"primo triangolo."
+"Questo match ha gia' dei triangoli segnati: il referto va aperto prima "
+"del primo triangolo."
 msgstr ""
 
 #: models/tpa/services.py:165
@@ -1375,8 +1385,8 @@ msgstr ""
 #: models/user/role_grant_service.py:644
 #, python-format
 msgid ""
-"La richiesta per il ruolo di %(role)s è stata presa in carico da un altro "
-"titolare."
+"La richiesta per il ruolo di %(role)s è stata presa in carico da un altro"
+" titolare."
 msgstr ""
 
 #: models/user/role_grant_service.py:661
@@ -1398,8 +1408,8 @@ msgstr ""
 
 #: routes/auth.py:180
 msgid ""
-"Il tuo account non è ancora verificato. Senza email confermata non potrai "
-"recuperare la password se la dimentichi."
+"Il tuo account non è ancora verificato. Senza email confermata non potrai"
+" recuperare la password se la dimentichi."
 msgstr ""
 
 #: routes/auth.py:188
@@ -1545,7 +1555,8 @@ msgstr ""
 #: templates/components/_campionato_general_classification.html:19
 #: templates/components/_detailed_classification.html:19
 #: templates/components/_unified_dashboard_header.html:10
-#: templates/components/_user_info_card.html:25 templates/player/profile.html:80
+#: templates/components/_user_info_card.html:25
+#: templates/player/profile.html:80
 msgid "Giocatore"
 msgstr ""
 
@@ -1554,7 +1565,8 @@ msgstr ""
 #: templates/admin/users_list.html:175
 #: templates/admin/venue_manager_requests.html:46
 #: templates/components/_unified_dashboard_header.html:9
-#: templates/components/_user_info_card.html:13 templates/player/profile.html:79
+#: templates/components/_user_info_card.html:13
+#: templates/player/profile.html:79
 msgid "Direttore di gara"
 msgstr ""
 
@@ -1594,8 +1606,8 @@ msgstr ""
 #: routes/main.py:318
 #, python-format
 msgid ""
-"Sei in lista d'attesa per %(gara)s, in posizione %(position)s. Se si libera "
-"un posto entri automaticamente."
+"Sei in lista d'attesa per %(gara)s, in posizione %(position)s. Se si "
+"libera un posto entri automaticamente."
 msgstr ""
 
 #: routes/main.py:328
@@ -1632,8 +1644,8 @@ msgstr ""
 #: routes/main.py:361
 #, python-format
 msgid ""
-"%(gara)s è già iniziata: non è più possibile iscriversi, ma puoi seguire i "
-"risultati da questa pagina."
+"%(gara)s è già iniziata: non è più possibile iscriversi, ma puoi seguire "
+"i risultati da questa pagina."
 msgstr ""
 
 #: routes/main.py:370
@@ -1725,11 +1737,13 @@ msgstr ""
 msgid "Sessione wizard scaduta. Ricomincia la creazione."
 msgstr ""
 
-#: routes/admin/campionato.py:243 templates/admin/campionato_wizard_step1.html:122
+#: routes/admin/campionato.py:243
+#: templates/admin/campionato_wizard_step1.html:122
 msgid "Playoff Elite"
 msgstr ""
 
-#: routes/admin/campionato.py:258 templates/admin/campionato_wizard_step1.html:141
+#: routes/admin/campionato.py:258
+#: templates/admin/campionato_wizard_step1.html:141
 msgid "Playoff Academy"
 msgstr ""
 
@@ -1946,12 +1960,13 @@ msgstr ""
 
 #: routes/admin/competition/rounds.py:304
 msgid ""
-"Spareggio annullato: i punteggi SSR sono stati azzerati e puoi modificare di"
-" nuovo i risultati."
+"Spareggio annullato: i punteggi SSR sono stati azzerati e puoi modificare"
+" di nuovo i risultati."
 msgstr ""
 
 #: routes/admin/competition/rounds.py:322 routes/individual_match/matches.py:40
-#: routes/individual_match/matches.py:81 routes/individual_match/proposals.py:38
+#: routes/individual_match/matches.py:81
+#: routes/individual_match/proposals.py:38
 #: routes/individual_match/proposals.py:66
 #: routes/individual_match/proposals.py:411 routes/individual_match/tpa.py:167
 #: routes/individual_match/tpa.py:188 routes/individual_match/tpa.py:211
@@ -1995,8 +2010,8 @@ msgstr ""
 #: routes/admin/competition/squadre.py:150
 #, python-format
 msgid ""
-"In elenco ci sono già nomi simili: %(nomi)s. Scegli la voce giusta, oppure "
-"conferma di volerne creare una nuova."
+"In elenco ci sono già nomi simili: %(nomi)s. Scegli la voce giusta, "
+"oppure conferma di volerne creare una nuova."
 msgstr ""
 
 #: routes/admin/competition/squadre.py:168
@@ -2079,7 +2094,8 @@ msgstr ""
 msgid "Richiesta ritirata."
 msgstr ""
 
-#: routes/gamification/admin.py:83 templates/gamification/admin/dashboard.html:2
+#: routes/gamification/admin.py:83
+#: templates/gamification/admin/dashboard.html:2
 #: templates/gamification/admin/dashboard.html:8
 msgid "Admin Gamification"
 msgstr ""
@@ -2300,7 +2316,8 @@ msgstr ""
 msgid "Le Tue Streak"
 msgstr ""
 
-#: routes/gamification/features.py:27 templates/gamification/admin/features.html:2
+#: routes/gamification/features.py:27
+#: templates/gamification/admin/features.html:2
 #: templates/gamification/admin/features.html:8
 msgid "Gestione Feature Gating"
 msgstr ""
@@ -2367,11 +2384,13 @@ msgstr ""
 #: routes/gamification/features.py:63 templates/admin/accessi.html:81
 #: templates/admin/accessi.html:118 templates/admin/accessi.html:135
 #: templates/admin/users_list.html:132 templates/admin/users_list.html:171
-#: templates/components/_user_info_card.html:11 templates/player/profile.html:76
+#: templates/components/_user_info_card.html:11
+#: templates/player/profile.html:76
 msgid "Ruolo"
 msgstr ""
 
-#: routes/gamification/features.py:64 templates/gamification/achievements.html:12
+#: routes/gamification/features.py:64
+#: templates/gamification/achievements.html:12
 #: templates/gamification/admin/achievements.html:23
 #: templates/gamification/admin/dashboard.html:25
 #: templates/gamification/admin/dashboard.html:52
@@ -2485,7 +2504,8 @@ msgstr ""
 msgid "Triangolo rimosso!"
 msgstr ""
 
-#: routes/individual_match/matches.py:354 routes/individual_match/matches.py:443
+#: routes/individual_match/matches.py:354
+#: routes/individual_match/matches.py:443
 msgid "Match completato con successo!"
 msgstr ""
 
@@ -2824,8 +2844,8 @@ msgid "Sfide individuali"
 msgstr ""
 
 #: templates/base.html:207 templates/base.html:423
-#: templates/gamification/admin/feature_create.html:59 templates/help/_ui.html:10
-#: templates/help/index.html:6
+#: templates/gamification/admin/feature_create.html:59
+#: templates/help/_ui.html:10 templates/help/index.html:6
 msgid "Guida"
 msgstr ""
 
@@ -2885,7 +2905,8 @@ msgstr ""
 msgid "Login"
 msgstr ""
 
-#: templates/base.html:288 templates/components/_index_registration_info.html:33
+#: templates/base.html:288
+#: templates/components/_index_registration_info.html:33
 #: templates/login.html:40 templates/no_campionato.html:15
 #: templates/register.html:38
 msgid "Registrati"
@@ -2924,14 +2945,15 @@ msgstr ""
 #: templates/components/_history_drills_tab.html:47
 #: templates/components/_page_modal.html:17
 #: templates/components/_player_activity_feedback.html:208
-#: templates/components/_soft_delete_modal.html:7 templates/gara_detail.html:522
-#: templates/gara_detail.html:621 templates/gara_detail.html:656
-#: templates/gara_detail.html:697
+#: templates/components/_soft_delete_modal.html:7
+#: templates/gara_detail.html:522 templates/gara_detail.html:621
+#: templates/gara_detail.html:656 templates/gara_detail.html:697
 #: templates/individual_match/create_proposal.html:17
 #: templates/individual_match/edit_match.html:12
 #: templates/individual_match/quick_match.html:16
 #: templates/individual_match/quick_match.html:242
-#: templates/player/_change_password_modal.html:8 templates/player/venues.html:77
+#: templates/player/_change_password_modal.html:8
+#: templates/player/venues.html:77
 msgid "Chiudi"
 msgstr ""
 
@@ -3052,7 +3074,8 @@ msgstr ""
 msgid "Close"
 msgstr ""
 
-#: templates/admin/campionato_edit.html:8 templates/admin/campionato_edit.html:15
+#: templates/admin/campionato_edit.html:8
+#: templates/admin/campionato_edit.html:15
 #: templates/admin/campionato_wizard_step1.html:8
 #: templates/admin/campionato_wizard_step1.html:158
 #: templates/admin/campionato_wizard_step2.html:8
@@ -3081,7 +3104,8 @@ msgstr ""
 #: templates/individual_match/edit_match.html:19
 #: templates/individual_match/quick_match.html:22
 #: templates/player/_change_password_modal.html:28
-#: templates/player/delete_account.html:7 templates/player/delete_account.html:42
+#: templates/player/delete_account.html:7
+#: templates/player/delete_account.html:42
 #: templates/player/my_venue_requests.html:66
 #: templates/player/profile_edit.html:60 templates/player/venue_detail.html:287
 #: templates/player/venues.html:99 templates/roles/request_form.html:63
@@ -3155,7 +3179,8 @@ msgstr ""
 #: templates/gamification/admin/streak_config.html:34
 #: templates/gamification/admin/streak_config.html:152
 #: templates/individual_match/edit_match.html:106
-#: templates/player/privacy_settings.html:86 templates/player/profile_edit.html:57
+#: templates/player/privacy_settings.html:86
+#: templates/player/profile_edit.html:57
 msgid "Salva"
 msgstr ""
 
@@ -3164,7 +3189,8 @@ msgstr ""
 msgid "Tabellone"
 msgstr ""
 
-#: templates/gara_bracket.html:10 templates/player/gara_challenge_detail.html:10
+#: templates/gara_bracket.html:10
+#: templates/player/gara_challenge_detail.html:10
 msgid "Torna alla gara"
 msgstr ""
 
@@ -3174,7 +3200,8 @@ msgstr ""
 #: templates/components/_gara_matches.html:6
 #: templates/components/_history_matches_tab.html:19
 #: templates/components/_history_matches_tab.html:57
-#: templates/components/_match_cards_mobile.html:8 templates/gara_bracket.html:21
+#: templates/components/_match_cards_mobile.html:8
+#: templates/gara_bracket.html:21
 #: templates/individual_match/admin_overview.html:20
 #: templates/player/history.html:22
 msgid "Partite"
@@ -3271,7 +3298,8 @@ msgstr ""
 
 #: templates/components/_gara_management.html:148
 #: templates/components/_gara_management.html:180
-#: templates/components/_gara_management.html:250 templates/gara_detail.html:148
+#: templates/components/_gara_management.html:250
+#: templates/gara_detail.html:148
 msgid "Termina Gara"
 msgstr ""
 
@@ -3279,7 +3307,8 @@ msgstr ""
 msgid "Conferma la conclusione e blocca le modifiche"
 msgstr ""
 
-#: templates/components/_gara_management.html:236 templates/gara_detail.html:209
+#: templates/components/_gara_management.html:236
+#: templates/gara_detail.html:209
 msgid "Fase Spareggio (SSR)"
 msgstr ""
 
@@ -3312,7 +3341,8 @@ msgid "vince chi vince"
 msgstr ""
 
 #: templates/components/_multi_set_score_display.html:27
-#: templates/gara_detail.html:538 templates/individual_match/match_detail.html:203
+#: templates/gara_detail.html:538
+#: templates/individual_match/match_detail.html:203
 #: templates/individual_match/match_detail.html:206
 #: templates/individual_match/matches.html:128
 #: templates/individual_match/proposals.html:40
@@ -3416,8 +3446,8 @@ msgstr ""
 
 #: templates/gara_detail.html:701
 msgid ""
-"Questa gara tiene lontani i compagni di squadra nel sorteggio. Dicci con chi"
-" giochi, così il tabellone può farlo."
+"Questa gara tiene lontani i compagni di squadra nel sorteggio. Dicci con "
+"chi giochi, così il tabellone può farlo."
 msgstr ""
 
 #: templates/gara_detail.html:734
@@ -3428,41 +3458,42 @@ msgstr ""
 
 #: templates/gara_detail.html:735
 msgid ""
-"Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse "
-"definitivamente."
+"Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse"
+" definitivamente."
 msgstr ""
 
 #: templates/gara_detail.html:738
 msgid ""
-"Sorteggiare il tabellone? Le iscrizioni si chiudono, le squadre si congelano"
-" e il percorso di ogni giocatore fino alla finale resta questo, salvo "
-"annullare il sorteggio."
+"Sorteggiare il tabellone? Le iscrizioni si chiudono, le squadre si "
+"congelano e il percorso di ogni giocatore fino alla finale resta questo, "
+"salvo annullare il sorteggio."
 msgstr ""
 
 #: templates/gara_detail.html:739
 msgid ""
-"Calcolo dello schedule in corso… Per gare con trio (giocatori dispari) il "
-"calcolo può richiedere qualche secondo."
+"Calcolo dello schedule in corso… Per gare con trio (giocatori dispari) il"
+" calcolo può richiedere qualche secondo."
 msgstr ""
 
 #: templates/gara_detail.html:740
 msgid ""
-"Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite del"
-" primo turno verranno eliminate e la gara tornerà allo stato di iscrizioni."
+"Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite "
+"del primo turno verranno eliminate e la gara tornerà allo stato di "
+"iscrizioni."
 msgstr ""
 
 #: templates/gara_detail.html:741
 msgid ""
-"Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le partite "
-"del turno verranno eliminate e si tornerà al turno precedente."
+"Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le "
+"partite del turno verranno eliminate e si tornerà al turno precedente."
 msgstr ""
 
 #: templates/gara_detail.html:742
 msgid ""
 "Sei sicuro di voler terminare la gara?\n"
 "\n"
-"Dopo la conferma, i risultati saranno definitivi e non sarà più possibile "
-"modificarli."
+"Dopo la conferma, i risultati saranno definitivi e non sarà più possibile"
+" modificarli."
 msgstr ""
 
 #: templates/gara_detail.html:743
@@ -3470,16 +3501,16 @@ msgstr ""
 msgid ""
 "Avviare la fase di spareggio (SSR)?\n"
 "\n"
-"Dovrai inserire i punteggi per risolvere i parimerito nelle prime %(pos)s "
-"posizioni."
+"Dovrai inserire i punteggi per risolvere i parimerito nelle prime %(pos)s"
+" posizioni."
 msgstr ""
 
 #: templates/gara_detail.html:744
 msgid ""
 "Annullare la fase di spareggio (SSR)?\n"
 "\n"
-"I punteggi SSR già inseriti verranno azzerati e la gara tornerà in gioco, "
-"così potrai correggere i risultati."
+"I punteggi SSR già inseriti verranno azzerati e la gara tornerà in gioco,"
+" così potrai correggere i risultati."
 msgstr ""
 
 #: templates/gara_detail.html:745
@@ -3490,8 +3521,8 @@ msgstr ""
 msgid ""
 "Sei sicuro di voler resettare l'ultimo turno?\n"
 "\n"
-"Tutti i risultati del turno verranno azzerati e i match torneranno in stato "
-"'In Attesa'.\n"
+"Tutti i risultati del turno verranno azzerati e i match torneranno in "
+"stato 'In Attesa'.\n"
 "\n"
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
@@ -3539,14 +3570,15 @@ msgstr ""
 #: templates/individual_match/match_detail.html:565
 #: templates/individual_match/match_detail.html:604
 #: templates/individual_match/proposal_detail.html:208
-#: templates/individual_match/proposals.html:269 templates/match_detail.html:179
-#: templates/match_detail.html:211 templates/match_detail.html:247
-#: templates/match_detail.html:280 templates/match_detail.html:306
-#: templates/match_detail.html:331 templates/match_detail.html:356
-#: templates/match_detail.html:381 templates/match_detail.html:408
-#: templates/match_detail.html:436 templates/match_detail.html:462
-#: templates/match_detail.html:487 templates/match_detail.html:540
-#: templates/match_detail.html:589 templates/match_detail.html:612
+#: templates/individual_match/proposals.html:269
+#: templates/match_detail.html:179 templates/match_detail.html:211
+#: templates/match_detail.html:247 templates/match_detail.html:280
+#: templates/match_detail.html:306 templates/match_detail.html:331
+#: templates/match_detail.html:356 templates/match_detail.html:381
+#: templates/match_detail.html:408 templates/match_detail.html:436
+#: templates/match_detail.html:462 templates/match_detail.html:487
+#: templates/match_detail.html:540 templates/match_detail.html:589
+#: templates/match_detail.html:612
 msgid "Errore:"
 msgstr ""
 
@@ -3631,8 +3663,8 @@ msgstr ""
 
 #: templates/gara_detail.html:773
 msgid ""
-"Serve un vincitore netto: il punteggio più alto del gruppo non può essere "
-"condiviso"
+"Serve un vincitore netto: il punteggio più alto del gruppo non può essere"
+" condiviso"
 msgstr ""
 
 #: templates/gara_detail.html:774
@@ -3641,7 +3673,8 @@ msgstr ""
 
 #: templates/components/_match_admin_controls.html:310
 #: templates/components/_match_admin_controls.html:352
-#: templates/gara_detail.html:780 templates/individual_match/match_detail.html:604
+#: templates/gara_detail.html:780
+#: templates/individual_match/match_detail.html:604
 #: templates/match_detail.html:179 templates/match_detail.html:211
 #: templates/match_detail.html:247 templates/match_detail.html:280
 #: templates/match_detail.html:306 templates/match_detail.html:436
@@ -3671,7 +3704,8 @@ msgstr ""
 msgid "Click per scambiare con match occupante"
 msgstr ""
 
-#: templates/challenge/builder.html:132 templates/components/_bracket_view.html:54
+#: templates/challenge/builder.html:132
+#: templates/components/_bracket_view.html:54
 #: templates/components/_gara_matches.html:58
 #: templates/components/_gara_matches.html:92
 #: templates/components/_gara_my_match.html:14
@@ -3687,8 +3721,8 @@ msgstr ""
 
 #: templates/gara_detail.html:1447
 msgid ""
-"Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di "
-"setup."
+"Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di"
+" setup."
 msgstr ""
 
 #: templates/gara_detail.html:1607
@@ -3776,7 +3810,8 @@ msgid "Match"
 msgstr ""
 
 #: templates/components/_bracket_view.html:53
-#: templates/components/_match_bye.html:8 templates/components/_match_card.html:22
+#: templates/components/_match_bye.html:8
+#: templates/components/_match_card.html:22
 #: templates/components/_match_card.html:42
 #: templates/components/_match_card.html:98
 #: templates/components/_match_header.html:60
@@ -3784,8 +3819,9 @@ msgstr ""
 #: templates/components/_match_result_row.html:112
 #: templates/components/_match_scoreboard.html:78
 #: templates/components/_unified_match_score.html:23
-#: templates/components/_unified_rack_input.html:23 templates/match_detail.html:13
-#: templates/match_detail.html:50 templates/match_detail.html:102
+#: templates/components/_unified_rack_input.html:23
+#: templates/match_detail.html:13 templates/match_detail.html:50
+#: templates/match_detail.html:102
 msgid "X a tavolino"
 msgstr ""
 
@@ -3838,7 +3874,9 @@ msgid "Errore durante la conferma"
 msgstr ""
 
 #: templates/match_detail.html:368
-msgid "Sei sicuro di voler rifiutare il risultato? L'ultimo triangolo verrà rimosso."
+msgid ""
+"Sei sicuro di voler rifiutare il risultato? L'ultimo triangolo verrà "
+"rimosso."
 msgstr ""
 
 #: templates/match_detail.html:381
@@ -3980,8 +4018,8 @@ msgstr ""
 #: templates/privacy.html:13
 #, python-format
 msgid ""
-"Titolare del trattamento dei dati è il gestore di %(site)s. Per qualsiasi "
-"richiesta relativa ai tuoi dati puoi scrivere a %(email)s."
+"Titolare del trattamento dei dati è il gestore di %(site)s. Per qualsiasi"
+" richiesta relativa ai tuoi dati puoi scrivere a %(email)s."
 msgstr ""
 
 #: templates/privacy.html:18
@@ -3991,17 +4029,17 @@ msgstr ""
 #: templates/privacy.html:20
 msgid ""
 "Per creare un account raccogliamo username, indirizzo email e password "
-"(conservata solo in forma cifrata). Durante l'uso della piattaforma vengono "
-"registrati i dati sportivi che generi: iscrizioni alle gare, risultati delle"
-" partite, statistiche e classifiche."
+"(conservata solo in forma cifrata). Durante l'uso della piattaforma "
+"vengono registrati i dati sportivi che generi: iscrizioni alle gare, "
+"risultati delle partite, statistiche e classifiche."
 msgstr ""
 
 #: templates/privacy.html:23
 msgid ""
 "I dati personali identificativi sono conservati cifrati nel database. La "
 "cancellazione dell'account avviene tramite anonimizzazione: i risultati "
-"sportivi restano nelle classifiche storiche, ma non sono più riconducibili a"
-" te."
+"sportivi restano nelle classifiche storiche, ma non sono più "
+"riconducibili a te."
 msgstr ""
 
 #: templates/privacy.html:28
@@ -4010,10 +4048,10 @@ msgstr ""
 
 #: templates/privacy.html:30
 msgid ""
-"Il sito usa cookie tecnici necessari al funzionamento: mantenimento della "
-"sessione di login, protezione dei moduli contro gli invii fraudolenti (CSRF)"
-" e memorizzazione della lingua scelta. Questi cookie non richiedono consenso"
-" perché senza di essi il sito non può funzionare."
+"Il sito usa cookie tecnici necessari al funzionamento: mantenimento della"
+" sessione di login, protezione dei moduli contro gli invii fraudolenti "
+"(CSRF) e memorizzazione della lingua scelta. Questi cookie non richiedono"
+" consenso perché senza di essi il sito non può funzionare."
 msgstr ""
 
 #: templates/privacy.html:36
@@ -4022,24 +4060,25 @@ msgstr ""
 
 #: templates/privacy.html:38
 msgid ""
-"Usiamo Google Analytics 4 per capire come viene utilizzato il sito: quante "
-"persone lo visitano, quali pagine consultano, da quale dispositivo e da "
-"quale fonte arrivano. Lo scopo è esclusivamente migliorare la piattaforma."
+"Usiamo Google Analytics 4 per capire come viene utilizzato il sito: "
+"quante persone lo visitano, quali pagine consultano, da quale dispositivo"
+" e da quale fonte arrivano. Lo scopo è esclusivamente migliorare la "
+"piattaforma."
 msgstr ""
 
 #: templates/privacy.html:41
 msgid ""
-"Google Analytics 4 non registra il tuo indirizzo IP completo e non lo usa "
-"per identificarti. Non inviamo a Google il tuo nome, la tua email o altri "
-"dati che permettano di risalire alla tua identità."
+"Google Analytics 4 non registra il tuo indirizzo IP completo e non lo usa"
+" per identificarti. Non inviamo a Google il tuo nome, la tua email o "
+"altri dati che permettano di risalire alla tua identità."
 msgstr ""
 
 #: templates/privacy.html:44
 msgid ""
-"Puoi disattivare la raccolta installando il componente aggiuntivo ufficiale "
-"per la disattivazione di Google Analytics, disponibile su "
-"tools.google.com/dlpage/gaoptout, oppure attivando l'opzione Do Not Track "
-"del tuo browser."
+"Puoi disattivare la raccolta installando il componente aggiuntivo "
+"ufficiale per la disattivazione di Google Analytics, disponibile su "
+"tools.google.com/dlpage/gaoptout, oppure attivando l'opzione Do Not Track"
+" del tuo browser."
 msgstr ""
 
 #: templates/privacy.html:50
@@ -4048,10 +4087,10 @@ msgstr ""
 
 #: templates/privacy.html:52
 msgid ""
-"Puoi in qualsiasi momento accedere ai tuoi dati, correggerli, chiederne la "
-"cancellazione o opporti al trattamento. La maggior parte delle operazioni è "
-"disponibile direttamente dalle impostazioni del tuo profilo; per le altre "
-"puoi contattarci all'indirizzo indicato sopra."
+"Puoi in qualsiasi momento accedere ai tuoi dati, correggerli, chiederne "
+"la cancellazione o opporti al trattamento. La maggior parte delle "
+"operazioni è disponibile direttamente dalle impostazioni del tuo profilo;"
+" per le altre puoi contattarci all'indirizzo indicato sopra."
 msgstr ""
 
 #: templates/privacy.html:57
@@ -4095,18 +4134,21 @@ msgstr ""
 msgid "Hai già un account?"
 msgstr ""
 
-#: templates/admin/accessi.html:21 templates/components/_user_accessi_card.html:19
+#: templates/admin/accessi.html:21
+#: templates/components/_user_accessi_card.html:19
 msgid "meno di un minuto"
 msgstr ""
 
-#: templates/admin/accessi.html:22 templates/components/_user_accessi_card.html:20
+#: templates/admin/accessi.html:22
+#: templates/components/_user_accessi_card.html:20
 #, python-format
 msgid "%(n)s minuto"
 msgid_plural "%(n)s minuti"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/admin/accessi.html:23 templates/components/_user_accessi_card.html:21
+#: templates/admin/accessi.html:23
+#: templates/components/_user_accessi_card.html:21
 #, python-format
 msgid "%(ore)sh %(min)sm"
 msgstr ""
@@ -4159,7 +4201,8 @@ msgstr ""
 msgid "Solo collegati"
 msgstr ""
 
-#: templates/admin/accessi.html:96 templates/components/_history_filters.html:170
+#: templates/admin/accessi.html:96
+#: templates/components/_history_filters.html:170
 #: templates/individual_match/discover_players.html:107
 #: templates/public/campionatos_list.html:26
 msgid "Filtra"
@@ -4168,14 +4211,14 @@ msgstr ""
 #: templates/admin/accessi.html:105
 #, python-format
 msgid ""
-"Gli accessi che rispondono al filtro sono %(totale)s: qui sotto ci sono i "
-"%(mostrati)s più recenti. Restringi il periodo per vedere gli altri."
+"Gli accessi che rispondono al filtro sono %(totale)s: qui sotto ci sono i"
+" %(mostrati)s più recenti. Restringi il periodo per vedere gli altri."
 msgstr ""
 
 #: templates/admin/accessi.html:117 templates/admin/accessi.html:128
 #: templates/admin/accessi.html:189 templates/admin/accessi.html:199
-#: templates/admin/director_requests.html:13 templates/admin/users_list.html:129
-#: templates/admin/users_list.html:163
+#: templates/admin/director_requests.html:13
+#: templates/admin/users_list.html:129 templates/admin/users_list.html:163
 #: templates/admin/venue_manager_requests.html:30
 #: templates/gamification/admin/dashboard.html:144
 #: templates/gamification/admin/streaks.html:65
@@ -4227,8 +4270,8 @@ msgstr ""
 
 #: templates/admin/accessi.html:163
 msgid ""
-"La traccia degli accessi parte dal momento in cui è stata attivata: prima di"
-" allora l'informazione non esisteva da nessuna parte."
+"La traccia degli accessi parte dal momento in cui è stata attivata: prima"
+" di allora l'informazione non esisteva da nessuna parte."
 msgstr ""
 
 #: templates/admin/accessi.html:175
@@ -4241,8 +4284,8 @@ msgstr[1] ""
 #: templates/admin/accessi.html:182
 msgid ""
 "Iscritti da più di un mese e mai collegati. Se l'email non è nemmeno "
-"confermata, è probabile che la verifica non sia mai arrivata: da qui la si "
-"può rimandare."
+"confermata, è probabile che la verifica non sia mai arrivata: da qui la "
+"si può rimandare."
 msgstr ""
 
 #: templates/admin/accessi.html:191 templates/admin/accessi.html:204
@@ -4256,8 +4299,8 @@ msgid "Email confermata"
 msgstr ""
 
 #: templates/admin/accessi.html:193 templates/admin/accessi.html:212
-#: templates/admin/director_requests.html:15 templates/admin/users_list.html:143
-#: templates/admin/users_list.html:248
+#: templates/admin/director_requests.html:15
+#: templates/admin/users_list.html:143 templates/admin/users_list.html:248
 #: templates/admin/venue_manager_requests.html:36
 #: templates/admin/venues_list.html:38
 #: templates/components/_campionato_garas.html:24
@@ -4485,12 +4528,14 @@ msgstr ""
 msgid "in attesa"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:231 templates/admin/venue_form.html:195
+#: templates/admin/campionato_detail.html:231
+#: templates/admin/venue_form.html:195
 #: templates/individual_match/statistics.html:80
 msgid "Posizione"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:232 templates/admin/venue_form.html:229
+#: templates/admin/campionato_detail.html:232
+#: templates/admin/venue_form.html:229
 #: templates/admin/venue_manager_requests.html:33
 #: templates/admin/venues_list.html:37
 #: templates/components/_campionato_details_info.html:40
@@ -4505,8 +4550,9 @@ msgstr ""
 #: templates/gamification/admin/quests.html:24
 #: templates/player/my_venue_requests.html:23
 #: templates/public/campionato_detail.html:100
-#: templates/public/campionatos_list.html:17 templates/public/garas_list.html:13
-#: templates/public/garas_list.html:33 templates/roles/holders.html:22
+#: templates/public/campionatos_list.html:17
+#: templates/public/garas_list.html:13 templates/public/garas_list.html:33
+#: templates/roles/holders.html:22
 msgid "Stato"
 msgstr ""
 
@@ -4532,11 +4578,11 @@ msgstr ""
 #: templates/admin/campionato_detail.html:246
 #: templates/components/_unified_match_score.html:88
 #: templates/components/_unified_match_score.html:99
-#: templates/exam/requests.html:19 utils/status_ui.py:194
+#: templates/exam/requests.html:19 utils/status_ui.py:203
 msgid "Confermato"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:248 utils/status_ui.py:195
+#: templates/admin/campionato_detail.html:248 utils/status_ui.py:204
 msgid "Rifiutato"
 msgstr ""
 
@@ -4571,20 +4617,20 @@ msgstr ""
 
 #: templates/admin/campionato_detail.html:403
 msgid ""
-"Tutte le gare sono concluse. Passare alla fase playoff? Potrai poi avviare i"
-" playoff e invitare i qualificati."
+"Tutte le gare sono concluse. Passare alla fase playoff? Potrai poi "
+"avviare i playoff e invitare i qualificati."
 msgstr ""
 
 #: templates/admin/campionato_detail.html:405
 msgid ""
-"Sei sicuro di voler terminare il campionato? Le gare non completate verranno"
-" eliminate."
+"Sei sicuro di voler terminare il campionato? Le gare non completate "
+"verranno eliminate."
 msgstr ""
 
 #: templates/admin/campionato_detail.html:408
 msgid ""
-"Attenzione: alcuni playoff hanno un requisito minimo gare non raggiungibile."
-" Vuoi terminare comunque?"
+"Attenzione: alcuni playoff hanno un requisito minimo gare non "
+"raggiungibile. Vuoi terminare comunque?"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:470
@@ -4662,8 +4708,8 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:58
 msgid ""
-"Punti per quanto si arriva avanti nel tabellone. Solo eliminazione diretta o"
-" doppio KO."
+"Punti per quanto si arriva avanti nel tabellone. Solo eliminazione "
+"diretta o doppio KO."
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:64
@@ -4685,8 +4731,8 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:89
 msgid ""
-"Chi perde è fuori. Il tabellone si dimensiona sugli iscritti e le teste di "
-"serie restano lontane fino in fondo."
+"Chi perde è fuori. Il tabellone si dimensiona sugli iscritti e le teste "
+"di serie restano lontane fino in fondo."
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:95
@@ -4694,7 +4740,9 @@ msgid "Doppio KO"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:96
-msgid "Servono due sconfitte per uscire: chi perde una volta rientra dal recupero."
+msgid ""
+"Servono due sconfitte per uscire: chi perde una volta rientra dal "
+"recupero."
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:104
@@ -4785,8 +4833,8 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:47
 msgid ""
-"Questi valori vengono usati come default quando crei una gara. Potrai sempre"
-" cambiarli sulla singola gara."
+"Questi valori vengono usati come default quando crei una gara. Potrai "
+"sempre cambiarli sulla singola gara."
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:55
@@ -4832,8 +4880,8 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:101
 msgid ""
-"Chi rende il numero dispari va in lista d'attesa. Appena si iscrive un altro"
-" giocatore entrano entrambi."
+"Chi rende il numero dispari va in lista d'attesa. Appena si iscrive un "
+"altro giocatore entrano entrambi."
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:105
@@ -4921,7 +4969,8 @@ msgstr ""
 #: templates/components/_unified_rack_input.html:259
 #: templates/individual_match/match_detail.html:115
 #: templates/individual_match/proposal_detail.html:132
-#: templates/individual_match/proposals.html:109 templates/roles/requests.html:48
+#: templates/individual_match/proposals.html:109
+#: templates/roles/requests.html:48
 msgid "Rifiuta"
 msgstr ""
 
@@ -4933,7 +4982,9 @@ msgid "Nessuna richiesta"
 msgstr ""
 
 #: templates/admin/director_requests.html:49
-msgid "Quando un giocatore chiederà di diventare direttore di gara, lo troverai qui."
+msgid ""
+"Quando un giocatore chiederà di diventare direttore di gara, lo troverai "
+"qui."
 msgstr ""
 
 #: templates/admin/gara_challenge_classification.html:5
@@ -5058,7 +5109,9 @@ msgid "Informazioni Pubbliche"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:118
-msgid "Questi dati saranno visibili ai giocatori e servono a identificare la gara."
+msgid ""
+"Questi dati saranno visibili ai giocatori e servono a identificare la "
+"gara."
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:121
@@ -5082,8 +5135,8 @@ msgstr ""
 #: templates/individual_match/edit_match.html:63
 #: templates/individual_match/match_detail.html:196
 #: templates/individual_match/quick_match.html:155
-#: templates/public/campionato_detail.html:99 templates/public/garas_list.html:10
-#: templates/public/garas_list.html:27
+#: templates/public/campionato_detail.html:99
+#: templates/public/garas_list.html:10 templates/public/garas_list.html:27
 msgid "Disciplina"
 msgstr ""
 
@@ -5101,8 +5154,9 @@ msgstr ""
 #: templates/components/_new_gara_modal.html:86
 #: templates/gamification/admin/xp_management.html:89
 #: templates/individual_match/discover_players.html:38
-#: templates/public/campionato_detail.html:98 templates/public/garas_list.html:11
-#: templates/public/garas_list.html:31 templates/roles/holders.html:21
+#: templates/public/campionato_detail.html:98
+#: templates/public/garas_list.html:11 templates/public/garas_list.html:31
+#: templates/roles/holders.html:21
 msgid "Data"
 msgstr ""
 
@@ -5209,8 +5263,8 @@ msgstr ""
 #: templates/components/_gara_edit_form.html:142
 #: templates/components/_new_gara_modal.html:318
 msgid ""
-"I match con handicap non aggiornano il rating Elo quando i giocatori sono di"
-" categorie diverse."
+"I match con handicap non aggiornano il rating Elo quando i giocatori sono"
+" di categorie diverse."
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:293
@@ -5447,9 +5501,9 @@ msgstr ""
 #: templates/admin/gara_create_standalone.html:478
 #, python-brace-format
 msgid ""
-"Con anti-rematch attivo e {max} partecipanti massimi, puoi avere al massimo "
-"{rounds} turni (ogni giocatore può incontrare al massimo {rounds} avversari "
-"unici)"
+"Con anti-rematch attivo e {max} partecipanti massimi, puoi avere al "
+"massimo {rounds} turni (ogni giocatore può incontrare al massimo {rounds}"
+" avversari unici)"
 msgstr ""
 
 #: templates/admin/kpi.html:4
@@ -5737,21 +5791,23 @@ msgstr ""
 
 #: templates/admin/kpi.html:698
 #, python-format
-msgid "Le classifiche sono calcolate on-demand (cache %(ttl)s s). Soglie superate:"
+msgid ""
+"Le classifiche sono calcolate on-demand (cache %(ttl)s s). Soglie "
+"superate:"
 msgstr ""
 
 #: templates/admin/kpi.html:706
 #, python-format
 msgid ""
-"Calcolo on-demand nei limiti: nessuna materializzazione necessaria. Cache "
-"TTL %(ttl)s s."
+"Calcolo on-demand nei limiti: nessuna materializzazione necessaria. Cache"
+" TTL %(ttl)s s."
 msgstr ""
 
 #: templates/admin/kpi.html:710
 msgid ""
 "Il board \"Contributo\" costa ~(contributori × 3 query). Quando i numeri "
-"sopra superano le soglie, conviene materializzare/cachare in tabella (vedi "
-"ADR-037)."
+"sopra superano le soglie, conviene materializzare/cachare in tabella "
+"(vedi ADR-037)."
 msgstr ""
 
 #: templates/admin/kpi.html:831
@@ -5774,8 +5830,8 @@ msgstr ""
 msgid ""
 "Unisce l'account SORGENTE in quello DESTINAZIONE: tutte le partite, "
 "iscrizioni, XP e statistiche passano alla destinazione, poi la sorgente "
-"viene anonimizzata. ELO e classifiche vengono ricalcolati. L'operazione non "
-"è reversibile."
+"viene anonimizzata. ELO e classifiche vengono ricalcolati. L'operazione "
+"non è reversibile."
 msgstr ""
 
 #: templates/admin/users_list.html:33
@@ -5944,8 +6000,8 @@ msgstr ""
 #: templates/admin/users_list.html:304
 #: templates/components/_user_info_card.html:80
 msgid ""
-"Togliere l'accesso alle funzioni in prova? Tornerà a vedere quello che vede "
-"il suo ruolo."
+"Togliere l'accesso alle funzioni in prova? Tornerà a vedere quello che "
+"vede il suo ruolo."
 msgstr ""
 
 #: templates/admin/users_list.html:308
@@ -6009,7 +6065,8 @@ msgstr ""
 
 #: templates/admin/venue_detail.html:26
 #: templates/admin/venue_manager_requests.html:8
-#: templates/player/my_venue_requests.html:9 templates/player/venue_detail.html:8
+#: templates/player/my_venue_requests.html:9
+#: templates/player/venue_detail.html:8
 msgid "Torna alle sale"
 msgstr ""
 
@@ -6141,7 +6198,8 @@ msgid "Tipi di Tavoli:"
 msgstr ""
 
 #: templates/admin/venue_detail.html:171 templates/admin/venue_detail.html:188
-#: templates/player/venue_detail.html:115 templates/player/venue_detail.html:133
+#: templates/player/venue_detail.html:115
+#: templates/player/venue_detail.html:133
 msgid "Non specificati"
 msgstr ""
 
@@ -6185,8 +6243,8 @@ msgstr ""
 
 #: templates/admin/venue_detail.html:253
 #: templates/components/_campionato_statistics.html:4
-#: templates/components/_player_statistics.html:5 templates/exam/detail.html:163
-#: templates/individual_match/dashboard.html:285
+#: templates/components/_player_statistics.html:5
+#: templates/exam/detail.html:163 templates/individual_match/dashboard.html:285
 #: templates/player/privacy_settings.html:42
 #: templates/player/venue_detail.html:194
 #: templates/public/campionato_detail.html:62
@@ -6238,7 +6296,8 @@ msgstr ""
 msgid "Aggiungi una sala biliardo"
 msgstr ""
 
-#: templates/admin/venue_form.html:36 templates/components/_new_gara_modal.html:61
+#: templates/admin/venue_form.html:36
+#: templates/components/_new_gara_modal.html:61
 msgid "Informazioni Base"
 msgstr ""
 
@@ -6386,8 +6445,8 @@ msgstr ""
 #: templates/components/_player_dashboard_content.html:32
 #: templates/exam/request_form.html:55
 #: templates/individual_match/match_detail.html:211
-#: templates/player/my_venue_requests.html:21 templates/public/garas_list.html:12
-#: templates/public/garas_list.html:32
+#: templates/player/my_venue_requests.html:21
+#: templates/public/garas_list.html:12 templates/public/garas_list.html:32
 msgid "Sala"
 msgstr ""
 
@@ -6412,12 +6471,12 @@ msgid "Admin:"
 msgstr ""
 
 #: templates/admin/venue_manager_requests.html:73 utils/status_ui.py:150
-#: utils/status_ui.py:193
+#: utils/status_ui.py:202
 msgid "In Attesa"
 msgstr ""
 
 #: templates/admin/venue_manager_requests.html:77
-#: templates/player/my_venue_requests.html:43 utils/status_ui.py:176
+#: templates/player/my_venue_requests.html:43 utils/status_ui.py:185
 msgid "Approvata"
 msgstr ""
 
@@ -6495,7 +6554,8 @@ msgstr ""
 
 #: templates/admin/venues_list.html:33
 #: templates/components/_gara_edit_form.html:188
-#: templates/components/_new_gara_modal.html:124 templates/player/venues.html:29
+#: templates/components/_new_gara_modal.html:124
+#: templates/player/venues.html:29
 msgid "Tavoli"
 msgstr ""
 
@@ -6625,8 +6685,8 @@ msgstr ""
 
 #: templates/auth/diagnosi_cookie.html:95
 msgid ""
-"Su questo browser il sito può riconoscerti: se il login continua a fallire, "
-"fai uno screenshot di questa pagina e segnala il problema."
+"Su questo browser il sito può riconoscerti: se il login continua a "
+"fallire, fai uno screenshot di questa pagina e segnala il problema."
 msgstr ""
 
 #: templates/auth/diagnosi_cookie.html:97
@@ -6636,8 +6696,8 @@ msgstr ""
 #: templates/auth/diagnosi_cookie.html:98
 msgid ""
 "Tocca l'icona accanto all'indirizzo, apri le impostazioni del sito e usa "
-"«Cancella e reimposta»; controlla anche eventuali blocchi per questo sito "
-"nelle impostazioni dei cookie del browser."
+"«Cancella e reimposta»; controlla anche eventuali blocchi per questo sito"
+" nelle impostazioni dei cookie del browser."
 msgstr ""
 
 #: templates/auth/diagnosi_cookie.html:100
@@ -6646,8 +6706,8 @@ msgstr ""
 
 #: templates/auth/diagnosi_cookie.html:101
 msgid ""
-"Qualcosa tra il telefono e il sito lo sta togliendo: controlla app di blocco"
-" pubblicità, VPN o risparmio dati e riprova senza."
+"Qualcosa tra il telefono e il sito lo sta togliendo: controlla app di "
+"blocco pubblicità, VPN o risparmio dati e riprova senza."
 msgstr ""
 
 #: templates/auth/diagnosi_cookie.html:106
@@ -6735,7 +6795,8 @@ msgstr ""
 msgid "Provalo"
 msgstr ""
 
-#: templates/challenge/_challenge_card.html:76 templates/challenge/builder.html:64
+#: templates/challenge/_challenge_card.html:76
+#: templates/challenge/builder.html:64
 #: templates/components/_campionato_garas.html:80
 #: templates/components/_campionato_garas.html:178
 #: templates/components/_categorie_management.html:107
@@ -6768,7 +6829,8 @@ msgid "Nessuna foto"
 msgstr ""
 
 #: templates/challenge/_challenge_detail.html:43
-#: templates/challenge/create.html:51 templates/components/_challenge_bits.html:27
+#: templates/challenge/create.html:51
+#: templates/components/_challenge_bits.html:27
 #: templates/components/_challenge_management_modal.html:98
 #: templates/player/challenge_attempt_detail.html:49
 msgid "Riuscita o no"
@@ -6846,7 +6908,8 @@ msgstr ""
 #: templates/challenge/_training_board.html:57
 #: templates/components/_player_training.html:56
 #: templates/gamification/admin/streaks.html:104
-#: templates/gamification/dashboard.html:65 templates/gamification/streaks.html:79
+#: templates/gamification/dashboard.html:65
+#: templates/gamification/streaks.html:79
 msgid "Record"
 msgstr ""
 
@@ -6882,14 +6945,16 @@ msgid "Non superata"
 msgstr ""
 
 #: templates/challenge/_training_board.html:74
-#: templates/challenge/training.html:107 templates/components/_form_macros.html:84
+#: templates/challenge/training.html:107
+#: templates/components/_form_macros.html:84
 #: templates/player/challenge_attempt_detail.html:94
 #: templates/player/gara_challenge_detail.html:94
 msgid "Diminuisci"
 msgstr ""
 
 #: templates/challenge/_training_board.html:80
-#: templates/challenge/training.html:116 templates/components/_form_macros.html:89
+#: templates/challenge/training.html:116
+#: templates/components/_form_macros.html:89
 #: templates/player/challenge_attempt_detail.html:97
 #: templates/player/gara_challenge_detail.html:97
 msgid "Aumenta"
@@ -6911,7 +6976,8 @@ msgstr ""
 msgid "Disegna l'esercizio"
 msgstr ""
 
-#: templates/challenge/builder.html:35 templates/player/challenge_detail.html:108
+#: templates/challenge/builder.html:35
+#: templates/player/challenge_detail.html:108
 msgid "Modifica il disegno"
 msgstr ""
 
@@ -7004,9 +7070,9 @@ msgstr ""
 
 #: templates/challenge/builder.html:103
 msgid ""
-"A forza 30 la biglia percorre due lunghezze di tavolo. Il percorso cresce "
-"con il quadrato della forza, si divide fra le biglie all'impatto e cala a "
-"ogni sponda; il cerchio tratteggiato segna il punto di arresto."
+"A forza 30 la biglia percorre due lunghezze di tavolo. Il percorso cresce"
+" con il quadrato della forza, si divide fra le biglie all'impatto e cala "
+"a ogni sponda; il cerchio tratteggiato segna il punto di arresto."
 msgstr ""
 
 #: templates/challenge/builder.html:105
@@ -7227,19 +7293,21 @@ msgid "spacco"
 msgstr ""
 
 #: templates/challenge/builder.html:281
-msgid "Attiva Tiro: la traiettoria segue il puntatore e si ricalcola in tempo reale."
+msgid ""
+"Attiva Tiro: la traiettoria segue il puntatore e si ricalcola in tempo "
+"reale."
 msgstr ""
 
 #: templates/challenge/builder.html:282
 msgid ""
-"Muovi per mirare. Premi e rilascia per fissare; tieni premuto e trascina per"
-" la mira fine. Esc annulla."
+"Muovi per mirare. Premi e rilascia per fissare; tieni premuto e trascina "
+"per la mira fine. Esc annulla."
 msgstr ""
 
 #: templates/challenge/builder.html:283
 msgid ""
-"Clicca la biglia da giocare per iniziare a mirare. Clicca un tiro esistente "
-"per correggerlo."
+"Clicca la biglia da giocare per iniziare a mirare. Clicca un tiro "
+"esistente per correggerlo."
 msgstr ""
 
 #: templates/challenge/builder.html:284
@@ -7403,11 +7471,13 @@ msgstr ""
 msgid "Errore di rete: riprova."
 msgstr ""
 
-#: templates/challenge/catalog.html:112 templates/player/challenge_detail.html:122
+#: templates/challenge/catalog.html:112
+#: templates/player/challenge_detail.html:122
 msgid "Confermi di voler eliminare questo esercizio? Non si torna indietro."
 msgstr ""
 
-#: templates/challenge/catalog.html:113 templates/player/challenge_detail.html:132
+#: templates/challenge/catalog.html:113
+#: templates/player/challenge_detail.html:132
 msgid "Non è stato possibile eliminare l'esercizio."
 msgstr ""
 
@@ -7417,8 +7487,8 @@ msgstr ""
 
 #: templates/challenge/create.html:31
 msgid ""
-"Facoltativo: senza, l'esercizio prende il suo numero progressivo (Esercizio "
-"12)."
+"Facoltativo: senza, l'esercizio prende il suo numero progressivo "
+"(Esercizio 12)."
 msgstr ""
 
 #: templates/challenge/create.html:36
@@ -7519,7 +7589,8 @@ msgstr ""
 msgid "Alla fine registri il punteggio"
 msgstr ""
 
-#: templates/challenge/start_attempt.html:43 templates/challenge/training.html:165
+#: templates/challenge/start_attempt.html:43
+#: templates/challenge/training.html:165
 msgid "Puoi riprovare quante volte vuoi: resta il tuo risultato migliore."
 msgstr ""
 
@@ -7544,7 +7615,8 @@ msgstr ""
 msgid "Prove registrate"
 msgstr ""
 
-#: templates/challenge/training.html:79 templates/player/challenge_detail.html:38
+#: templates/challenge/training.html:79
+#: templates/player/challenge_detail.html:38
 msgid "Il tuo record"
 msgstr ""
 
@@ -7669,9 +7741,9 @@ msgstr ""
 #: templates/components/_bracket_options.html:41
 msgid ""
 "Il sorteggio allontana i compagni il più possibile. Con squadre molto "
-"numerose l’incontro viene rinviato, non evitato: se una società porta più "
-"giocatori di quanti siano i rami del tabellone, un derby è matematicamente "
-"inevitabile."
+"numerose l’incontro viene rinviato, non evitato: se una società porta più"
+" giocatori di quanti siano i rami del tabellone, un derby è "
+"matematicamente inevitabile."
 msgstr ""
 
 #: templates/components/_bracket_options.html:56
@@ -7680,8 +7752,8 @@ msgstr ""
 
 #: templates/components/_bracket_options.html:58
 msgid ""
-"I due semifinalisti sconfitti si giocano il terzo posto, nello stesso turno "
-"della finale. Senza, sono terzi a pari merito."
+"I due semifinalisti sconfitti si giocano il terzo posto, nello stesso "
+"turno della finale. Senza, sono terzi a pari merito."
 msgstr ""
 
 #: templates/components/_bracket_options.html:73
@@ -7702,16 +7774,16 @@ msgstr ""
 
 #: templates/components/_bracket_options.html:86
 msgid ""
-"Ogni girone qualifica quattro giocatori al tabellone finale: due imbattuti e"
-" due ripescati."
+"Ogni girone qualifica quattro giocatori al tabellone finale: due "
+"imbattuti e due ripescati."
 msgstr ""
 
 #: templates/components/_bracket_options.html:91
 msgid ""
-"Sul tabellone la classifica è per posizione, e il numero massimo di iscritti"
-" è obbligatorio: dichiara la capienza e dà la stima dei turni. Il tabellone "
-"vero viene poi dimensionato sugli iscritti effettivi al momento del "
-"sorteggio."
+"Sul tabellone la classifica è per posizione, e il numero massimo di "
+"iscritti è obbligatorio: dichiara la capienza e dà la stima dei turni. Il"
+" tabellone vero viene poi dimensionato sugli iscritti effettivi al "
+"momento del sorteggio."
 msgstr ""
 
 #: templates/components/_bracket_view.html:20
@@ -8026,8 +8098,8 @@ msgstr ""
 
 #: templates/components/_campionato_edit_form.html:163
 msgid ""
-"Il giocatore riceve bye ma deve completare un esercizio per guadagnare punti"
-" extra."
+"Il giocatore riceve bye ma deve completare un esercizio per guadagnare "
+"punti extra."
 msgstr ""
 
 #: templates/components/_campionato_edit_form.html:167
@@ -8055,8 +8127,8 @@ msgstr ""
 
 #: templates/components/_campionato_edit_form.html:208
 msgid ""
-"Una volta che una gara del campionato avra' delle iscrizioni, non sara' piu'"
-" possibile modificare le impostazioni del campionato."
+"Una volta che una gara del campionato avra' delle iscrizioni, non sara' "
+"piu' possibile modificare le impostazioni del campionato."
 msgstr ""
 
 #: templates/components/_campionato_edit_form.html:217
@@ -8144,8 +8216,8 @@ msgstr ""
 
 #: templates/components/_campionato_general_classification.html:120
 msgid ""
-"Classifica generale: ordinata per triangoli totali, poi per punti spareggio "
-"(SSR)."
+"Classifica generale: ordinata per triangoli totali, poi per punti "
+"spareggio (SSR)."
 msgstr ""
 
 #: templates/components/_campionato_general_classification.html:122
@@ -8158,8 +8230,8 @@ msgstr ""
 
 #: templates/components/_campionato_general_classification.html:125
 msgid ""
-"Classifica generale: ordinata per match vinti, poi per differenza triangoli "
-"totale."
+"Classifica generale: ordinata per match vinti, poi per differenza "
+"triangoli totale."
 msgstr ""
 
 #: templates/components/_campionato_statistics.html:9
@@ -8210,9 +8282,9 @@ msgstr ""
 
 #: templates/components/_categorie_management.html:43
 msgid ""
-"In una gara con handicap l’Elo si aggiorna solo nelle partite fra giocatori "
-"della stessa categoria. Le categorie si scrivono accanto a ogni iscritto: un"
-" nome nuovo entra da solo in elenco."
+"In una gara con handicap l’Elo si aggiorna solo nelle partite fra "
+"giocatori della stessa categoria. Le categorie si scrivono accanto a ogni"
+" iscritto: un nome nuovo entra da solo in elenco."
 msgstr ""
 
 #: templates/components/_categorie_management.html:48
@@ -8399,8 +8471,8 @@ msgstr ""
 
 #: templates/components/_dashboard_empty_state.html:12
 msgid ""
-"Non ci sono campionati aperti a cui iscriverti. Torna più tardi o guarda le "
-"gare nella tua zona."
+"Non ci sono campionati aperti a cui iscriverti. Torna più tardi o guarda "
+"le gare nella tua zona."
 msgstr ""
 
 #: templates/components/_detailed_classification.html:10
@@ -8576,8 +8648,8 @@ msgstr ""
 
 #: templates/components/_directors_management.html:67
 msgid ""
-"Si possono aggiungere solo utenti con ruolo direttore vicini alla sede della"
-" gara."
+"Si possono aggiungere solo utenti con ruolo direttore vicini alla sede "
+"della gara."
 msgstr ""
 
 #: templates/components/_distance_configurator.html:20
@@ -8633,8 +8705,8 @@ msgstr ""
 
 #: templates/components/_distance_configurator.html:83
 msgid ""
-"Sul tabellone si gioca sempre a chi arriva prima: conta solo chi passa il "
-"turno, quindi i triangoli giocati dopo che il vincitore è deciso non "
+"Sul tabellone si gioca sempre a chi arriva prima: conta solo chi passa il"
+" turno, quindi i triangoli giocati dopo che il vincitore è deciso non "
 "cambierebbero nulla."
 msgstr ""
 
@@ -8684,9 +8756,9 @@ msgstr ""
 
 #: templates/components/_double_knockout_algorithm_info.html:16
 msgid ""
-"Chi perde scende nel ramo dei ripescati; chi perde due volte è eliminato. In"
-" finale il vincitore dei ripescati deve battere l’imbattuto due volte: se ci"
-" riesce una sola, si gioca la bella."
+"Chi perde scende nel ramo dei ripescati; chi perde due volte è eliminato."
+" In finale il vincitore dei ripescati deve battere l’imbattuto due volte:"
+" se ci riesce una sola, si gioca la bella."
 msgstr ""
 
 #: templates/components/_double_knockout_algorithm_info.html:22
@@ -8840,7 +8912,9 @@ msgid "Tipo di competizione"
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:103
-msgid "Evita di riabbinare gli stessi giocatori. Dipende dal tipo di competizione."
+msgid ""
+"Evita di riabbinare gli stessi giocatori. Dipende dal tipo di "
+"competizione."
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:130
@@ -8962,9 +9036,9 @@ msgstr ""
 #: templates/components/_gara_edit_form.html:311
 #, python-brace-format
 msgid ""
-"Con anti-rematch attivo e {maxParticipants} partecipanti massimi, puoi avere"
-" al massimo {maxRounds} turni (ogni giocatore può incontrare al massimo "
-"{maxRounds} avversari unici)"
+"Con anti-rematch attivo e {maxParticipants} partecipanti massimi, puoi "
+"avere al massimo {maxRounds} turni (ogni giocatore può incontrare al "
+"massimo {maxRounds} avversari unici)"
 msgstr ""
 
 #: templates/components/_gara_header.html:27
@@ -9251,8 +9325,8 @@ msgstr ""
 
 #: templates/components/_gara_management.html:259
 msgid ""
-"Riporta la gara in gioco per correggere i risultati. I punteggi SSR inseriti"
-" verranno azzerati."
+"Riporta la gara in gioco per correggere i risultati. I punteggi SSR "
+"inseriti verranno azzerati."
 msgstr ""
 
 #: templates/components/_gara_management.html:265
@@ -9283,7 +9357,8 @@ msgstr ""
 #: templates/components/_gara_my_match.html:29
 #: templates/components/_match_card.html:148
 #: templates/player/notifications.html:96
-#: templates/public/campionatos_list.html:57 templates/public/garas_list.html:39
+#: templates/public/campionatos_list.html:57
+#: templates/public/garas_list.html:39
 msgid "Apri"
 msgstr ""
 
@@ -9301,8 +9376,8 @@ msgstr ""
 
 #: templates/components/_gara_public_link.html:34
 msgid ""
-"Condividi questo indirizzo su locandine, post o QR code: chi lo apre arriva "
-"su questa gara e si iscrive."
+"Condividi questo indirizzo su locandine, post o QR code: chi lo apre "
+"arriva su questa gara e si iscrive."
 msgstr ""
 
 #: templates/components/_gara_tables_config.html:10
@@ -9321,8 +9396,8 @@ msgstr ""
 #: templates/components/_gara_tables_config.html:25
 msgid ""
 "Elenco separato da virgole: l'assegnazione automatica userà solo questi "
-"tavoli, nell'ordine indicato. Lascia vuoto per usare tutti i tavoli della "
-"sala."
+"tavoli, nell'ordine indicato. Lascia vuoto per usare tutti i tavoli della"
+" sala."
 msgstr ""
 
 #: templates/components/_gara_tables_config.html:33
@@ -9473,8 +9548,8 @@ msgstr ""
 
 #: templates/components/_history_drills_tab.html:106
 msgid ""
-"Questo esercizio è superato o non superato: non c'è un punteggio da mettere "
-"in grafico."
+"Questo esercizio è superato o non superato: non c'è un punteggio da "
+"mettere in grafico."
 msgstr ""
 
 #: templates/components/_history_drills_tab.html:110
@@ -9490,7 +9565,9 @@ msgid "Vedi l'andamento"
 msgstr ""
 
 #: templates/components/_history_drills_tab.html:161
-msgid "Cancellare questa prova? Il punteggio sparisce e i progressi si ricalcolano."
+msgid ""
+"Cancellare questa prova? Il punteggio sparisce e i progressi si "
+"ricalcolano."
 msgstr ""
 
 #: templates/components/_history_drills_tab.html:165
@@ -9514,8 +9591,8 @@ msgstr ""
 msgid "Esami sostenuti"
 msgstr ""
 
-#: templates/components/_history_exams_tab.html:25 templates/exam/detail.html:171
-#: templates/exam/manage.html:19
+#: templates/components/_history_exams_tab.html:25
+#: templates/exam/detail.html:171 templates/exam/manage.html:19
 msgid "Superati"
 msgstr ""
 
@@ -9527,7 +9604,8 @@ msgstr ""
 msgid "Certificati e superati"
 msgstr ""
 
-#: templates/components/_history_exams_tab.html:41 templates/exam/manage.html:35
+#: templates/components/_history_exams_tab.html:41
+#: templates/exam/manage.html:35
 msgid "I tuoi esami"
 msgstr ""
 
@@ -9540,7 +9618,8 @@ msgid "Certificato"
 msgstr ""
 
 #: templates/components/_history_exams_tab.html:64
-#: templates/components/_player_training.html:136 templates/exam/detail.html:179
+#: templates/components/_player_training.html:136
+#: templates/exam/detail.html:179
 msgid "In autonomia"
 msgstr ""
 
@@ -9548,7 +9627,8 @@ msgstr ""
 msgid "Apri l'esame"
 msgstr ""
 
-#: templates/components/_history_exams_tab.html:86 templates/exam/manage.html:59
+#: templates/components/_history_exams_tab.html:86
+#: templates/exam/manage.html:59
 msgid "Nessun esame"
 msgstr ""
 
@@ -10083,7 +10163,7 @@ msgstr ""
 #: templates/components/_match_status_labels.html:22
 #: templates/individual_match/dashboard.html:103
 #: templates/individual_match/matches.html:37
-#: templates/individual_match/matches.html:107
+#: templates/individual_match/matches.html:107 utils/status_ui.py:158
 msgid "Da giocare"
 msgstr ""
 
@@ -10276,7 +10356,7 @@ msgstr ""
 msgid "Annulla il triangolo"
 msgstr ""
 
-#: templates/components/_match_status_labels.html:25 utils/status_ui.py:159
+#: templates/components/_match_status_labels.html:25 utils/status_ui.py:168
 msgid "Confermato dai giocatori"
 msgstr ""
 
@@ -10435,8 +10515,8 @@ msgstr ""
 
 #: templates/components/_new_gara_modal.html:178
 msgid ""
-"Con auto-copia attiva, gli iscritti verranno copiati dall'ultima gara del "
-"campionato."
+"Con auto-copia attiva, gli iscritti verranno copiati dall'ultima gara del"
+" campionato."
 msgstr ""
 
 #: templates/components/_new_gara_modal.html:185
@@ -10630,8 +10710,8 @@ msgstr ""
 
 #: templates/components/_player_inscription_info.html:36
 msgid ""
-"Stai guardando questa gara come ospite: vedi risultati e classifica, ma non "
-"partecipi."
+"Stai guardando questa gara come ospite: vedi risultati e classifica, ma "
+"non partecipi."
 msgstr ""
 
 #: templates/components/_player_inscriptions.html:13
@@ -10706,8 +10786,8 @@ msgstr[1] ""
 
 #: templates/components/_player_ratings.html:47
 msgid ""
-"L'Elo competitivo si aggiorna a fine partita ufficiale. Clicca il valore per"
-" vedere l'Elo globale (include le sfide individuali)."
+"L'Elo competitivo si aggiorna a fine partita ufficiale. Clicca il valore "
+"per vedere l'Elo globale (include le sfide individuali)."
 msgstr ""
 
 #: templates/components/_player_ratings.html:53
@@ -10733,8 +10813,8 @@ msgstr ""
 
 #: templates/components/_player_recent_matches.html:81
 msgid ""
-"Non hai ancora giocato partite. Iscriviti a una gara, o apri una sfida con "
-"un altro giocatore."
+"Non hai ancora giocato partite. Iscriviti a una gara, o apri una sfida "
+"con un altro giocatore."
 msgstr ""
 
 #: templates/components/_player_recent_matches.html:83
@@ -10760,8 +10840,9 @@ msgstr ""
 
 #: templates/components/_player_training.html:52
 #: templates/components/_player_training.html:100
-#: templates/components/_player_training.html:146 templates/exam/session.html:89
-#: templates/exam/session.html:104 templates/exam/session.html:136
+#: templates/components/_player_training.html:146
+#: templates/exam/session.html:89 templates/exam/session.html:104
+#: templates/exam/session.html:136
 msgid "Superato"
 msgstr ""
 
@@ -10780,8 +10861,9 @@ msgid "Dal catalogo"
 msgstr ""
 
 #: templates/components/_player_training.html:100
-#: templates/components/_player_training.html:146 templates/exam/session.html:89
-#: templates/exam/session.html:106 templates/exam/session.html:144
+#: templates/components/_player_training.html:146
+#: templates/exam/session.html:89 templates/exam/session.html:106
+#: templates/exam/session.html:144
 msgid "Non superato"
 msgstr ""
 
@@ -10796,15 +10878,15 @@ msgstr ""
 
 #: templates/components/_position_points.html:29
 msgid ""
-"Quanti punti di campionato vale ciascun piazzamento nelle gare a tabellone. "
-"I pari merito di una banda prendono lo stesso punteggio: i quattro "
-"quartifinalisti sono tutti quinti."
+"Quanti punti di campionato vale ciascun piazzamento nelle gare a "
+"tabellone. I pari merito di una banda prendono lo stesso punteggio: i "
+"quattro quartifinalisti sono tutti quinti."
 msgstr ""
 
 #: templates/components/_position_points.html:44
 msgid ""
-"Lasciando i valori proposti il campionato continua a seguire la tabella di "
-"default, invece di portarsene dietro una copia."
+"Lasciando i valori proposti il campionato continua a seguire la tabella "
+"di default, invece di portarsene dietro una copia."
 msgstr ""
 
 #: templates/components/_proposal_labels.html:19
@@ -10812,13 +10894,13 @@ msgstr ""
 msgid "Accettata"
 msgstr ""
 
-#: templates/components/_proposal_labels.html:21 templates/exam/requests.html:25
-#: templates/gamification/admin/quests.html:48
+#: templates/components/_proposal_labels.html:21
+#: templates/exam/requests.html:25 templates/gamification/admin/quests.html:48
 msgid "Scaduta"
 msgstr ""
 
 #: templates/components/_proposal_labels.html:22
-#: templates/player/my_venue_requests.html:47
+#: templates/player/my_venue_requests.html:47 utils/status_ui.py:160
 msgid "Annullata"
 msgstr ""
 
@@ -10884,7 +10966,9 @@ msgid "Puoi configurare disciplina e distanza diverse per ciascun turno."
 msgstr ""
 
 #: templates/components/_round_management.html:10
-msgid "Se non specificata, verrà utilizzata la configurazione di default della gara."
+msgid ""
+"Se non specificata, verrà utilizzata la configurazione di default della "
+"gara."
 msgstr ""
 
 #: templates/components/_round_management.html:20
@@ -10939,7 +11023,7 @@ msgstr ""
 
 #: templates/components/_round_navigation.html:24
 #: templates/components/_ssr_section.html:17 utils/status_ui.py:134
-#: utils/status_ui.py:152
+#: utils/status_ui.py:161
 msgid "Completato"
 msgstr ""
 
@@ -11147,8 +11231,8 @@ msgstr ""
 
 #: templates/components/_squadra_choice.html:50
 msgid ""
-"Scrivi qui solo se la tua squadra non è in elenco. Se ne esistono di simili "
-"te le mostriamo prima di crearla."
+"Scrivi qui solo se la tua squadra non è in elenco. Se ne esistono di "
+"simili te le mostriamo prima di crearla."
 msgstr ""
 
 #: templates/components/_squadra_choice.html:56
@@ -11161,14 +11245,14 @@ msgstr ""
 
 #: templates/components/_squadra_choice.html:62
 msgid ""
-"Vale solo per questa gara e non cambia il tuo profilo. Puoi cambiarla finché"
-" il primo turno non è partito."
+"Vale solo per questa gara e non cambia il tuo profilo. Puoi cambiarla "
+"finché il primo turno non è partito."
 msgstr ""
 
 #: templates/components/_squadra_choice.html:71
 msgid ""
-"Il primo turno è partito: il tabellone è già estratto, quindi le squadre non"
-" si cambiano più."
+"Il primo turno è partito: il tabellone è già estratto, quindi le squadre "
+"non si cambiano più."
 msgstr ""
 
 #: templates/components/_squadre_management.html:18
@@ -11177,8 +11261,9 @@ msgstr ""
 
 #: templates/components/_squadre_management.html:28
 msgid ""
-"Il sorteggio tiene lontani i compagni di squadra il più a lungo possibile; "
-"con squadre molto numerose l’incontro viene rinviato, non evitato."
+"Il sorteggio tiene lontani i compagni di squadra il più a lungo "
+"possibile; con squadre molto numerose l’incontro viene rinviato, non "
+"evitato."
 msgstr ""
 
 #: templates/components/_squadre_management.html:36
@@ -11236,8 +11321,8 @@ msgstr ""
 
 #: templates/components/_squadre_management.html:135
 msgid ""
-"Il primo turno è partito: il tabellone è già estratto, quindi l’elenco non "
-"si modifica più."
+"Il primo turno è partito: il tabellone è già estratto, quindi l’elenco "
+"non si modifica più."
 msgstr ""
 
 #: templates/components/_ssr_section.html:13
@@ -11764,14 +11849,14 @@ msgstr ""
 
 #: templates/errors/400.html:17
 msgid ""
-"Per riconoscerti tra una pagina e l'altra serve un cookie, e il tuo browser "
-"non lo sta mandando."
+"Per riconoscerti tra una pagina e l'altra serve un cookie, e il tuo "
+"browser non lo sta mandando."
 msgstr ""
 
 #: templates/errors/400.html:18
 msgid ""
-"Controlla che i cookie non siano bloccati nelle impostazioni del browser (o "
-"dell'app da cui hai aperto il collegamento) e riprova."
+"Controlla che i cookie non siano bloccati nelle impostazioni del browser "
+"(o dell'app da cui hai aperto il collegamento) e riprova."
 msgstr ""
 
 #: templates/errors/400.html:20
@@ -11788,8 +11873,8 @@ msgstr ""
 
 #: templates/errors/400.html:29
 msgid ""
-"Il modulo che hai inviato non era più valido: succede con una pagina rimasta"
-" aperta a lungo o ripescata dalla cronologia."
+"Il modulo che hai inviato non era più valido: succede con una pagina "
+"rimasta aperta a lungo o ripescata dalla cronologia."
 msgstr ""
 
 #: templates/errors/400.html:30
@@ -11849,8 +11934,8 @@ msgstr ""
 
 #: templates/errors/429.html:11
 msgid ""
-"Hai fatto troppe azioni di fila: il sistema ti ha messo in pausa per qualche"
-" minuto."
+"Hai fatto troppe azioni di fila: il sistema ti ha messo in pausa per "
+"qualche minuto."
 msgstr ""
 
 #: templates/errors/429.html:12
@@ -11879,8 +11964,8 @@ msgstr ""
 
 #: templates/exam/catalog.html:7
 msgid ""
-"Più esercizi in fila. Da solo per allenarti, davanti a un esaminatore per "
-"farlo valere."
+"Più esercizi in fila. Da solo per allenarti, davanti a un esaminatore per"
+" farlo valere."
 msgstr ""
 
 #: templates/exam/catalog.html:11 templates/exam/manage.html:3
@@ -12057,8 +12142,8 @@ msgstr ""
 
 #: templates/exam/examiners.html:54
 msgid ""
-"Non c'è ancora nessun altro esaminatore da aggiungere: sei l'unico titolare "
-"del ruolo."
+"Non c'è ancora nessun altro esaminatore da aggiungere: sei l'unico "
+"titolare del ruolo."
 msgstr ""
 
 #: templates/exam/manage.html:6
@@ -12220,7 +12305,9 @@ msgid "Nessun esaminatore"
 msgstr ""
 
 #: templates/exam/request_form.html:23
-msgid "Questo esame non ha esaminatori a cui rivolgersi, oppure lo somministri tu."
+msgid ""
+"Questo esame non ha esaminatori a cui rivolgersi, oppure lo somministri "
+"tu."
 msgstr ""
 
 #: templates/exam/request_form.html:32
@@ -12233,8 +12320,8 @@ msgstr ""
 
 #: templates/exam/request_form.html:46
 msgid ""
-"Se ne interpelli più d'uno, il primo che accetta chiude la richiesta per gli"
-" altri."
+"Se ne interpelli più d'uno, il primo che accetta chiude la richiesta per "
+"gli altri."
 msgstr ""
 
 #: templates/exam/request_form.html:50
@@ -12321,8 +12408,8 @@ msgstr ""
 
 #: templates/exam/session.html:20
 msgid ""
-"Finché non accetta, nessun punteggio è registrabile: nessuno viene valutato "
-"a sua insaputa."
+"Finché non accetta, nessun punteggio è registrabile: nessuno viene "
+"valutato a sua insaputa."
 msgstr ""
 
 #: templates/exam/session.html:25
@@ -12472,7 +12559,8 @@ msgstr ""
 msgid "Streak settimanali"
 msgstr ""
 
-#: templates/gamification/dashboard.html:65 templates/gamification/streaks.html:34
+#: templates/gamification/dashboard.html:65
+#: templates/gamification/streaks.html:34
 #: templates/gamification/streaks.html:102
 #, python-format
 msgid "%(num)d settimana"
@@ -12522,15 +12610,18 @@ msgstr ""
 msgid "Quest attive"
 msgstr ""
 
-#: templates/gamification/dashboard.html:214 templates/gamification/quests.html:70
+#: templates/gamification/dashboard.html:214
+#: templates/gamification/quests.html:70
 msgid "Partecipi automaticamente giocando"
 msgstr ""
 
-#: templates/gamification/dashboard.html:223 templates/gamification/quests.html:82
+#: templates/gamification/dashboard.html:223
+#: templates/gamification/quests.html:82
 msgid "Nessuna quest attiva"
 msgstr ""
 
-#: templates/gamification/dashboard.html:224 templates/gamification/quests.html:83
+#: templates/gamification/dashboard.html:224
+#: templates/gamification/quests.html:83
 msgid "Le quest arrivano a ondate: settimanali, mensili e qualche speciale."
 msgstr ""
 
@@ -12698,18 +12789,19 @@ msgstr ""
 #: templates/gamification/streaks.html:115
 #, python-format
 msgid ""
-"Questa settimana non hai ancora giocato. Hai %(num)d freeze da parte: quando"
-" la funzione sarà attiva potrai usarlo per non azzerare la streak."
+"Questa settimana non hai ancora giocato. Hai %(num)d freeze da parte: "
+"quando la funzione sarà attiva potrai usarlo per non azzerare la streak."
 msgid_plural ""
-"Questa settimana non hai ancora giocato. Hai %(num)d freeze da parte: quando"
-" la funzione sarà attiva potrai usarne uno per non azzerare la streak."
+"Questa settimana non hai ancora giocato. Hai %(num)d freeze da parte: "
+"quando la funzione sarà attiva potrai usarne uno per non azzerare la "
+"streak."
 msgstr[0] ""
 msgstr[1] ""
 
 #: templates/gamification/streaks.html:119
 msgid ""
-"Questa settimana non hai ancora giocato: una partita basta a tenere in vita "
-"la streak."
+"Questa settimana non hai ancora giocato: una partita basta a tenere in "
+"vita la streak."
 msgstr ""
 
 #: templates/gamification/streaks.html:136
@@ -12951,8 +13043,8 @@ msgstr ""
 
 #: templates/gamification/admin/feature_create.html:66
 msgid ""
-"Dopo aver creato la feature, potrai configurare le regole di sblocco basate "
-"su:"
+"Dopo aver creato la feature, potrai configurare le regole di sblocco "
+"basate su:"
 msgstr ""
 
 #: templates/gamification/admin/feature_create.html:69
@@ -13287,8 +13379,8 @@ msgstr ""
 #: templates/gamification/admin/streak_config.html:55
 msgid ""
 "I milestone definiscono i reward quando un utente raggiunge una certa "
-"streak. I milestone ricorrenti si applicano ogni volta che la streak è un "
-"multiplo delle settimane."
+"streak. I milestone ricorrenti si applicano ogni volta che la streak è un"
+" multiplo delle settimane."
 msgstr ""
 
 #: templates/gamification/admin/streak_config.html:61
@@ -13421,8 +13513,8 @@ msgstr ""
 
 #: templates/gamification/admin/xp_config.html:20
 msgid ""
-"Modifica i valori XP assegnati per ogni tipo di attività. Le modifiche hanno"
-" effetto immediato."
+"Modifica i valori XP assegnati per ogni tipo di attività. Le modifiche "
+"hanno effetto immediato."
 msgstr ""
 
 #: templates/gamification/admin/xp_config.html:26
@@ -13563,10 +13655,10 @@ msgstr ""
 
 #: templates/help/hints.html:23
 msgid ""
-"Raccoglie i testi già pronti per la guida contestuale: la presentazione che "
-"apparirà la prima volta che si apre una schermata, e le spiegazioni brevi da"
-" mostrare accanto ai singoli comandi. Nessuno di questi testi è ancora "
-"attivo nell'app."
+"Raccoglie i testi già pronti per la guida contestuale: la presentazione "
+"che apparirà la prima volta che si apre una schermata, e le spiegazioni "
+"brevi da mostrare accanto ai singoli comandi. Nessuno di questi testi è "
+"ancora attivo nell'app."
 msgstr ""
 
 #: templates/help/hints.html:29
@@ -13615,8 +13707,8 @@ msgstr ""
 
 #: templates/help/page.html:46
 msgid ""
-"Queste frasi compariranno accanto ai comandi dell'interfaccia quando sarà "
-"attiva la guida contestuale."
+"Queste frasi compariranno accanto ai comandi dell'interfaccia quando sarà"
+" attiva la guida contestuale."
 msgstr ""
 
 #: templates/help/page.html:63
@@ -13649,8 +13741,8 @@ msgstr ""
 
 #: templates/help/search.html:19
 msgid ""
-"Prova con una parola sola e più comune: per esempio «iscrizione», «turno», "
-"«classifica», «triangolo»."
+"Prova con una parola sola e più comune: per esempio «iscrizione», "
+"«turno», «classifica», «triangolo»."
 msgstr ""
 
 #: templates/help/search.html:34
@@ -13835,8 +13927,8 @@ msgstr ""
 
 #: templates/individual_match/availability.html:151
 msgid ""
-"Gli avversari vedono solo i giorni che hai segnato: le proposte arrivano già"
-" compatibili e si chiude in un messaggio."
+"Gli avversari vedono solo i giorni che hai segnato: le proposte arrivano "
+"già compatibili e si chiude in un messaggio."
 msgstr ""
 
 #: templates/individual_match/availability.html:156
@@ -13867,8 +13959,8 @@ msgstr ""
 
 #: templates/individual_match/create_proposal.html:44
 msgid ""
-"Scegli tu i giocatori: ricevono una notifica e il primo che accetta gioca "
-"con te."
+"Scegli tu i giocatori: ricevono una notifica e il primo che accetta gioca"
+" con te."
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:46
@@ -14164,7 +14256,9 @@ msgstr ""
 
 #: templates/individual_match/dashboard.html:208
 #: templates/individual_match/matches.html:156
-msgid "Proponi una data a un altro giocatore: quando accetta, la sfida compare qui."
+msgid ""
+"Proponi una data a un altro giocatore: quando accetta, la sfida compare "
+"qui."
 msgstr ""
 
 #: templates/individual_match/dashboard.html:212
@@ -14255,8 +14349,8 @@ msgstr ""
 
 #: templates/individual_match/discover_players.html:157
 msgid ""
-"Prova ad allargare il raggio o a togliere il filtro sulla sala. Puoi anche "
-"segnare le tue disponibilità: chi cerca vede anche te."
+"Prova ad allargare il raggio o a togliere il filtro sulla sala. Puoi "
+"anche segnare le tue disponibilità: chi cerca vede anche te."
 msgstr ""
 
 #: templates/individual_match/discover_players.html:172
@@ -14276,7 +14370,9 @@ msgid "Rilevamento della posizione…"
 msgstr ""
 
 #: templates/individual_match/discover_players.html:212
-msgid "Posizione non disponibile. Imposta una città nel profilo o filtra per sala."
+msgid ""
+"Posizione non disponibile. Imposta una città nel profilo o filtra per "
+"sala."
 msgstr ""
 
 #: templates/individual_match/edit_match.html:4
@@ -14299,8 +14395,8 @@ msgstr ""
 
 #: templates/individual_match/edit_match.html:36
 msgid ""
-"Dal primo triangolo in poi la distanza resta quella: cambiarla riscriverebbe"
-" i punti già fatti."
+"Dal primo triangolo in poi la distanza resta quella: cambiarla "
+"riscriverebbe i punti già fatti."
 msgstr ""
 
 #: templates/individual_match/edit_match.html:109
@@ -14326,7 +14422,9 @@ msgstr ""
 
 #: templates/individual_match/match_detail.html:63
 #: templates/individual_match/quick_match.html:208
-msgid "Si annota visita per visita e il punteggio viene da lì: niente «+1» a mano."
+msgid ""
+"Si annota visita per visita e il punteggio viene da lì: niente «+1» a "
+"mano."
 msgstr ""
 
 #: templates/individual_match/match_detail.html:65
@@ -14349,7 +14447,9 @@ msgstr ""
 
 #: templates/individual_match/match_detail.html:98
 #, python-format
-msgid "Manca la conferma di %(name)s: fino ad allora il risultato non è definitivo."
+msgid ""
+"Manca la conferma di %(name)s: fino ad allora il risultato non è "
+"definitivo."
 msgstr ""
 
 #: templates/individual_match/match_detail.html:107
@@ -14704,8 +14804,8 @@ msgstr ""
 
 #: templates/individual_match/proposals.html:231
 msgid ""
-"Quando qualcuno cerca un avversario senza scegliere chi, la proposta compare"
-" qui."
+"Quando qualcuno cerca un avversario senza scegliere chi, la proposta "
+"compare qui."
 msgstr ""
 
 #: templates/individual_match/quick_match.html:19
@@ -14974,17 +15074,17 @@ msgstr ""
 
 #: templates/individual_match/tpa_referto.html:28
 msgid ""
-"Invece dei soli triangoli vinti, annoti ogni visita al tavolo: quante bilie "
-"sono entrate e perche' il turno e' finito. Da li' esce il TPA, la "
-"percentuale di azioni riuscite — lo stesso conto che Accu-Stats usa per i "
-"professionisti."
+"Invece dei soli triangoli vinti, annoti ogni visita al tavolo: quante "
+"bilie sono entrate e perche' il turno e' finito. Da li' esce il TPA, la "
+"percentuale di azioni riuscite — lo stesso conto che Accu-Stats usa per i"
+" professionisti."
 msgstr ""
 
 #: templates/individual_match/tpa_referto.html:31
 msgid ""
-"Il referto lo tiene chi lo apre; l'altro giocatore lo vede aggiornarsi. I "
-"triangoli vinti finiscono da soli nel punteggio del match: non c'e' niente "
-"da segnare due volte."
+"Il referto lo tiene chi lo apre; l'altro giocatore lo vede aggiornarsi. I"
+" triangoli vinti finiscono da soli nel punteggio del match: non c'e' "
+"niente da segnare due volte."
 msgstr ""
 
 #: templates/individual_match/tpa_referto.html:44
@@ -15244,8 +15344,8 @@ msgstr ""
 
 #: templates/player/delete_account.html:23
 msgid ""
-"Le partite già giocate restano nel sistema: senza di quelle le classifiche "
-"degli altri non tornerebbero."
+"Le partite già giocate restano nel sistema: senza di quelle le "
+"classifiche degli altri non tornerebbero."
 msgstr ""
 
 #: templates/player/delete_account.html:28
@@ -15500,8 +15600,8 @@ msgstr ""
 
 #: templates/player/privacy_settings.html:83
 msgid ""
-"Nome utente e partecipazione alle gare restano sempre visibili: senza, le "
-"classifiche non avrebbero senso."
+"Nome utente e partecipazione alle gare restano sempre visibili: senza, le"
+" classifiche non avrebbero senso."
 msgstr ""
 
 #: templates/player/privacy_settings.html:91
@@ -15514,14 +15614,14 @@ msgstr ""
 
 #: templates/player/privacy_settings.html:94
 msgid ""
-"Account, partite, iscrizioni, classifiche, esercizi e progressi. È un tuo "
-"diritto (GDPR art. 20)."
+"Account, partite, iscrizioni, classifiche, esercizi e progressi. È un tuo"
+" diritto (GDPR art. 20)."
 msgstr ""
 
 #: templates/player/privacy_settings.html:97
 msgid ""
-"L'archivio si prepara in background: ti arriva una notifica quando è pronto,"
-" e il link vale 24 ore."
+"L'archivio si prepara in background: ti arriva una notifica quando è "
+"pronto, e il link vale 24 ore."
 msgstr ""
 
 #: templates/player/privacy_settings.html:101
@@ -15554,8 +15654,8 @@ msgstr ""
 
 #: templates/player/profile.html:96
 msgid ""
-"Eliminando l'account perdi storico, iscrizioni e statistiche. Non si torna "
-"indietro."
+"Eliminando l'account perdi storico, iscrizioni e statistiche. Non si "
+"torna indietro."
 msgstr ""
 
 #: templates/player/profile_edit.html:2
@@ -15584,9 +15684,9 @@ msgstr ""
 
 #: templates/player/profile_edit.html:52
 msgid ""
-"Il circolo o la società con cui giochi di solito. Viene proposta quando ti "
-"iscrivi a una gara che tiene conto delle squadre; lì potrai sempre cambiarla"
-" o lasciarla vuota."
+"Il circolo o la società con cui giochi di solito. Viene proposta quando "
+"ti iscrivi a una gara che tiene conto delle squadre; lì potrai sempre "
+"cambiarla o lasciarla vuota."
 msgstr ""
 
 #: templates/player/venue_detail.html:4
@@ -15619,8 +15719,8 @@ msgstr ""
 
 #: templates/player/venue_detail.html:167
 msgid ""
-"Vuoi gestire questa sala? I gestori possono modificare informazioni, servizi"
-" e dettagli della sala."
+"Vuoi gestire questa sala? I gestori possono modificare informazioni, "
+"servizi e dettagli della sala."
 msgstr ""
 
 #: templates/player/venue_detail.html:170
@@ -15663,7 +15763,9 @@ msgid "Questa sala ha già un gestore (%(name)s)."
 msgstr ""
 
 #: templates/player/venue_detail.html:263
-msgid "La tua richiesta aprirà un contenzioso che sarà valutato dall'amministratore."
+msgid ""
+"La tua richiesta aprirà un contenzioso che sarà valutato "
+"dall'amministratore."
 msgstr ""
 
 #: templates/player/venue_detail.html:266
@@ -15841,8 +15943,9 @@ msgstr ""
 
 #: templates/public/invite_not_found.html:18
 msgid ""
-"Il link di iscrizione che hai seguito non è valido: la gara potrebbe essere "
-"stata rimossa, oppure l'indirizzo è stato copiato in modo incompleto."
+"Il link di iscrizione che hai seguito non è valido: la gara potrebbe "
+"essere stata rimossa, oppure l'indirizzo è stato copiato in modo "
+"incompleto."
 msgstr ""
 
 #: templates/public/invite_not_found.html:22
@@ -15875,8 +15978,8 @@ msgstr ""
 
 #: templates/roles/holders.html:46
 msgid ""
-"Revocare il ruolo? Gli esami creati e le certificazioni rilasciate restano "
-"validi."
+"Revocare il ruolo? Gli esami creati e le certificazioni rilasciate "
+"restano validi."
 msgstr ""
 
 #: templates/roles/holders.html:51
@@ -15901,8 +16004,8 @@ msgstr ""
 
 #: templates/roles/request_form.html:25
 msgid ""
-"Un esaminatore compone gli esami e ne certifica di persona l'esito. Scegli a"
-" chi indirizzare la richiesta: basta che uno solo approvi."
+"Un esaminatore compone gli esami e ne certifica di persona l'esito. "
+"Scegli a chi indirizzare la richiesta: basta che uno solo approvi."
 msgstr ""
 
 #: templates/roles/request_form.html:33
@@ -15986,11 +16089,12 @@ msgid "Iscrizioni Aperte"
 msgstr ""
 
 #: utils/status_ui.py:100 utils/status_ui.py:133 utils/status_ui.py:151
+#: utils/status_ui.py:159
 msgid "In Corso"
 msgstr ""
 
-#: utils/status_ui.py:104 utils/status_ui.py:138 utils/status_ui.py:163
-#: utils/status_ui.py:181 utils/status_ui.py:199 utils/status_ui.py:238
+#: utils/status_ui.py:104 utils/status_ui.py:138 utils/status_ui.py:172
+#: utils/status_ui.py:190 utils/status_ui.py:208 utils/status_ui.py:247
 msgid "Sconosciuto"
 msgstr ""
 
@@ -15998,11 +16102,11 @@ msgstr ""
 msgid "Terminato"
 msgstr ""
 
-#: utils/status_ui.py:175
+#: utils/status_ui.py:184
 msgid "In Valutazione"
 msgstr ""
 
-#: utils/status_ui.py:177
+#: utils/status_ui.py:186
 msgid "Respinta"
 msgstr ""
 
