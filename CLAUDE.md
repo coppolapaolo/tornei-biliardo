@@ -31,10 +31,9 @@ pyright
 # Format code
 black . && flake8
 
-# Internationalization (i18n)
-pybabel extract -F babel.cfg -o messages.pot .  # Extract new strings
-pybabel update -i messages.pot -d translations  # Update catalogs
-pybabel compile -d translations                 # Compile translations
+# Internationalization (i18n) — NON copiare i comandi a memoria: invoca la
+# skill `translate`. I flag obbligatori (--ignore-dirs, --ignore-obsolete) e il
+# divieto di usare msgfmt al posto di pybabel stanno lì.
 
 # Documentation
 python scripts/generate_schema_docs.py          # Regenerate DB schema docs
@@ -44,63 +43,27 @@ python scripts/generate_schema_docs.py          # Regenerate DB schema docs
 
 **Production URL**: https://www.torneibiliardo.it
 
-> ⚠️ **`recalc_elo.py` è un dry-run finché non gli si passa `--commit`.**
-> Senza, rigioca tutta la storia, stampa cosa cambierebbe e fa rollback: sembra
-> aver lavorato, e non ha scritto niente. Vale anche per
-> `repair_match_ended_at.py` e `repair_round_classification_racks.py`
-> (`--apply`): è la convenzione degli script che toccano dati storici, e va
-> verificata sul singolo script invece che ricordata a memoria, perché il nome
-> del flag non è lo stesso per tutti.
+Le tre cose che devono essere note **sempre**, non solo quando si deploya. Il
+resto — i 4 job della CI, la procedura manuale PythonAnywhere, le env negli
+script da console, l'ordine degli import, gli scheduled task, GlitchTip, la
+convenzione dry-run degli script sui dati storici — sta nella skill **`deploy`**
+(`.claude/skills/deploy/SKILL.md`), che si carica quando serve.
 
-```bash
-# Run migrations (with tracking)
-python migrations/runner.py              # Run pending migrations
-python migrations/runner.py --status     # Show migration status
-python migrations/runner.py --mark-all-applied  # Init existing DB
-
-# Deploy to PythonAnywhere (manual)
-cd /home/paolocoppola/mysite
-git pull origin main
-# ATTENZIONE: migrations SOLO con web app Disabled (tab Web)!
-python migrations/runner.py
-# poi Reload dal tab Web
-```
-
-**GitHub Actions** (`.github/workflows/ci.yml`) — 4 job:
-
-| Job | Quando gira | Cosa fa |
-|-----|-------------|---------|
-| `test-and-typecheck` | push su `main` **e** PR **verso `main`** | unit test + pyright. È l'unico status check che blocca il merge. Attenzione: il workflow ha `on: push: branches: [main]` e `pull_request: branches: [main]`, quindi **una PR con base diversa da `main` non fa girare nessun check** e resta bloccata per sempre. Le PR impilate vanno riportate su `main` prima del merge |
-| `check-migrations` | solo push su `main` | `git diff --diff-filter=A HEAD~1 HEAD -- 'migrations/*.py'`: c'è una migration **nuova**? |
-| `deploy` | solo push su `main`, **e solo se NON ci sono migration nuove** | **reload** della web app via API PythonAnywhere |
-| `skip-deploy-notification` | solo push su `main`, **se ci sono migration nuove** | salta il deploy e stampa la procedura manuale |
-
-> ⚠️ **Il merge su `main` NON deploya il codice.** Questo è l'errore che si continua a
-> fare leggendo di fretta: il job `deploy` esegue **solo un reload** della web app, non un
-> `git pull` (commento esplicito nel workflow: *«PythonAnywhere console API requires
-> browser session, doesn't work from CI»*). Il codice nuovo arriva su PythonAnywhere solo
-> quando gira lo scheduled task giornaliero `scripts/auto_deploy.py`, che fa `git pull` +
-> `pip install` + migrations + reload. Fra il merge e il codice in produzione può quindi
-> passare fino a **un giorno**.
+> ⚠️ **1. Il merge su `main` NON deploya il codice.** Il job `deploy` fa **solo
+> un reload** della web app, non un `git pull`. Il codice nuovo arriva su
+> PythonAnywhere quando gira lo scheduled task giornaliero
+> `scripts/auto_deploy.py`: fra il merge e la produzione può passare fino a **un
+> giorno**. E se la PR **aggiunge una migration** non parte nemmeno il reload.
 >
-> E se la PR **aggiunge una migration**, non parte nemmeno il reload: `check-migrations`
-> lo rileva e la CI passa a `skip-deploy-notification`, che stampa la procedura manuale.
->
-> **Quella procedura è un fallback, non un compito da assegnare a chi fa il merge.**
-> Le migration pendenti le applica da solo `scripts/auto_deploy.py` al giro successivo,
-> disabilitando e riabilitando la web app via API. Quindi dopo un merge **non c'è nulla
-> da ricordare all'utente**: niente promemoria sul deploy, niente istruzioni su Disabled
-> /Enabled, a meno che non sia lui a chiedere di andare in produzione subito.
->
-> Sulle **PR** girano solo `test-and-typecheck` (verde/rosso); gli altri tre risultano
-> `skipped` perché condizionati a `github.event_name == 'push'`. Vederli skipped su una PR
-> è normale e **non** va segnalato come problema, né richiesto come status check
-> (resterebbero pending all'infinito).
+> Le migration pendenti le applica da solo `auto_deploy.py` al giro successivo.
+> Quindi dopo un merge **non c'è nulla da ricordare all'utente**: niente
+> promemoria sul deploy, niente istruzioni su Disabled/Enabled, a meno che non
+> sia lui a chiedere di andare in produzione subito.
 
-**⚠️ Branch protection su `main` (dal 2026-06)**: `main` è protetto e
-`enforce_admins=true` — **niente push diretti su `main`, neanche da admin**.
-Ogni modifica passa da una PR e il merge è bloccato finché lo status check
-`test-and-typecheck` (unit test + pyright) non è verde. Workflow obbligatorio:
+**⚠️ 2. Branch protection su `main` (dal 2026-06)**: `main` è protetto e
+`enforce_admins=true` — **niente push diretti, neanche da admin** (`git push
+origin main` → `protected branch hook declined`). Ogni modifica passa da una PR
+e il merge è bloccato finché `test-and-typecheck` non è verde.
 
 ```bash
 git checkout -b claude/descrizione   # branch di lavoro
@@ -110,86 +73,20 @@ gh pr create                          # apri la PR
 # attendi che la CI sia verde, poi merge (il codice va in produzione dopo, vedi sopra)
 ```
 
-Un `git push origin main` diretto viene rifiutato (`protected branch hook
-declined`). Al merge parte **solo il reload** della web app — e nemmeno quello
-se la PR aggiunge migration: il codice lo porta `auto_deploy.py`, non la CI
-(tabella e riquadro sopra). Il gate è solo `test-and-typecheck`:
-gli altri job (`check-migrations`, `deploy`, `skip-deploy-notification`) girano
-solo sull'evento `push` a `main`, **non** sulle PR, quindi non vanno mai
-richiesti come status check (resterebbero in pending all'infinito). Per un
-hotfix urgente con CI rotta serve togliere temporaneamente la protezione
-(`gh api -X DELETE repos/coppolapaolo/tornei-biliardo/branches/main/protection`,
-poi riapplicarla).
+Due trappole: una **PR con base diversa da `main` non fa girare nessun check** e
+resta bloccata per sempre (le PR impilate vanno riportate su `main`); e sulle PR
+gli altri tre job risultano `skipped` di proposito — è **normale**, non va
+segnalato come problema né richiesto come status check.
 
-> **Il resto dell'operativita' in produzione — scheduled task, variabili
-> d'ambiente nel WSGI, incidente PII del 2026-06-25, GlitchTip — sta nella skill
-> `deploy`** (`.claude/skills/deploy/SKILL.md`), che si carica quando serve
-> invece di stare in contesto a ogni sessione. Qui restano solo le due cose che
-> devono essere note *sempre*: il merge non deploya, e su `main` non si spinge.
-
-**Env di produzione negli script da console/task**: console e scheduled task
-sono processi separati e **non ereditano** le variabili dal file WSGI, quindi
-`create_app("production")` fallirebbe subito su `SECRET_KEY`. Uno script che
-avvia l'app chiama **`bootstrap_and_create_app()`** da `scripts/prod_env.py`:
-legge le env dal WSGI (riusa `read_wsgi_env` di `auto_deploy`, parsing AST
-senza eseguirlo), esce dicendo cosa manca e da dove dovrebbe arrivare, e **poi**
-importa l'app. Un valore passato a mano sulla riga di comando resta
-prioritario. Se lo script tocca i PII gli si passa
-`required=PRODUCTION_REQUIRED + ("ENCRYPTION_KEY",)`, altrimenti la decifratura
-degrada in silenzio sulla chiave di sviluppo (incidente 2026-06-25).
-`auto_deploy.py` resta autonomo di proposito: è il punto d'ingresso del deploy
-e non importa nulla dal progetto.
-
-> ⚠️ **`from app import create_app` in cima a uno script è un guasto**, non
-> uno stile. L'import esegue `config.py`, che legge `os.environ` — e a quel
-> punto `bootstrap_or_exit()` non l'ha ancora popolato. Il valore congelato
-> resta per sempre. È così che `daily_jobs.py` (giornaliero) e
-> `send_match_reminders.py` (orario) sono morti a ogni esecuzione con
-> `RuntimeError: SECRET_KEY env var must be set in production` — con nel log,
-> la riga prima, la conferma di aver letto proprio `SECRET_KEY`: le due righe
-> raccontano momenti diversi. `reconcile_achievements.py` aveva lo stesso
-> difetto latente. Dal 2026-08-17 `config.py` rilegge l'ambiente in
-> `Config.environment_settings()` (applicata da `create_app`) e il cipher PII
-> si deriva al primo uso, quindi l'ordine non è più fatale; resta però
-> l'unica regola facile da rispettare, ed è presidiata staticamente da
-> `tests/new/unit/test_script_import_order.py`. Gli script di analisi che si
-> lanciano a mano in sviluppo (`diagnose_elo.py`, `set_gara_handicap.py`,
-> `migrate_gamification_rules.py`) **non** usano `prod_env` e restano fuori
-> dalla regola: non caricano env di produzione, quindi per loro l'ordine non
-> significa nulla. Se un domani dovessero girare in produzione, vanno prima
-> agganciati a `bootstrap_and_create_app`. `recalc_elo.py` **è già stato
-> agganciato** (era in questo elenco fino al 2026-08-21): gira in console di
-> produzione, e chi si fida dell'elenco vecchio gli sconsiglia il comando che
-> invece funziona.
-
-> ⚠️ `scripts/send_match_reminders.py` è **registrato** e gira ogni ora
-> (confermato dal log del 2026-08-17). Non è accorpabile a `daily_jobs.py`:
-> quello è il runner dei lavori *giornalieri*. Lo script era nato
-> presupponendo di girare ogni 15 minuti, ma gli scheduled task di
-> PythonAnywhere non scendono sotto l'ora: finestra e cadenza sono ora
-> entrambe orarie, così il promemoria arriva fra le 2 e le 3 ore prima del
-> match.
-
-**⚠️ SQLite su PythonAnywhere (incidenti 2026-06-10 e 2026-08-17)**: lo storage
-è NFS con lock inaffidabili. Regola operativa: ogni script/comando console che
-scrive sul DB di produzione va eseguito con la web app su **Disabled**
-(riabilitare subito dopo).
-
-> La causa vera delle due corruzioni (`database disk image is malformed`) era
-> però un'altra, e la regola qui sopra da sola non l'avrebbe mai fermata:
-> `PRAGMA journal_mode=WAL` in `models/base.py`. Il WAL coordina i processi con
-> un file `-shm` in **memoria condivisa via mmap**, che su NFS non è coerente —
-> quindi bastavano la web app e uno scheduled task, senza nessuno alla console.
-> Rimosso il 2026-08-17 (**ADR-045**), con presidio in
-> `tests/new/unit/test_sqlite_pragmas.py`. **Non rimetterlo**, nemmeno
-> condizionato a `FLASK_ENV`: una env var assente in un task lo riattiverebbe
-> in silenzio per tutti, ed è persistito dentro il file `.db`.
+> ⚠️ **3. Non rimettere `PRAGMA journal_mode=WAL`** in `models/base.py`, nemmeno
+> condizionato a `FLASK_ENV`: su NFS la memoria condivisa del WAL non è coerente
+> fra processi e corrompe il DB (due incidenti `database disk image is
+> malformed`). Una env var assente in un task lo riattiverebbe in silenzio per
+> tutti, ed è persistito dentro il file `.db`. Rimosso il 2026-08-17
+> (**ADR-045**), presidio in `tests/new/unit/test_sqlite_pragmas.py`.
 >
-> Corollario per la diagnosi: un `malformed` che **sparisce con un reload** non
-> è un file corrotto — è il WAL, e il file può essere intatto. Le due cose si
-> distinguono solo con `PRAGMA integrity_check`, da rifare **dopo** il
-> checkpoint (`PRAGMA journal_mode=DELETE`), perché è lì che un'eventuale
-> incoerenza si materializza su disco.
+> Regola operativa correlata: ogni script/comando console che **scrive** sul DB
+> di produzione va eseguito con la web app su **Disabled**.
 
 ---
 
@@ -438,37 +335,14 @@ Migration files must:
 - Use `op.execute()` for raw SQL on SQLite
 
 ### 11. Email Service (Flask-Mail)
-Use `EmailService` for all email sending:
-
-```python
-from models.shared.email_service import EmailService
-
-email_service = EmailService()
-email_service.send_email(
-    to=user.email,
-    subject=_("Subject"),
-    template="email/template.html",
-    **template_context
-)
-```
-
-Configuration via environment: `MAIL_SERVER`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`.
-See `docs/reference/AUTHENTICATION.md` for full setup.
+Ogni invio passa da `EmailService` (`models/shared/email_service.py`) — mai SMTP
+a mano. Configurazione via env: `MAIL_SERVER`, `MAIL_PORT`, `MAIL_USERNAME`,
+`MAIL_PASSWORD`. Vedi `docs/reference/AUTHENTICATION.md`.
 
 ### 12. Gamification Frontend Bridge
-Domain events trigger toast notifications via the frontend bridge:
-
-```python
-from models.gamification.frontend_bridge import flash_gamification_event, GamificationEventType
-
-flash_gamification_event(GamificationEventType.XP, {
-    "amount": 50,
-    "title": _("XP Guadagnati!"),
-    "subtitle": _("Continua così!")
-})
-```
-
-See `docs/reference/GAMIFICATION_V2.md` for event types and animation system.
+Gli eventi di dominio diventano toast passando da
+`flash_gamification_event` (`models/gamification/frontend_bridge.py`). Tipi di
+evento e sistema di animazioni in `docs/reference/GAMIFICATION_V2.md`.
 
 ### 13. Production Endpoint Allowlist (ADR-028)
 Endpoint visibility in production is gated by an explicit role matrix in `utils/feature_flags.py`. **Endpoint not listed = admin-only in production.** In development (`DEBUG_MODE=true`) and tests (`TESTING=true`) the middleware is pass-through.
@@ -539,16 +413,7 @@ grafo anti-rematch. Non reimplementare algoritmi su grafi — usa `nx`, è già 
 
 ### Type Safety (MANDATORY)
 - Run `pyright` before every commit - maintain 0 errors
-- Use proper type hints for all functions
 - Pyright config (`pyrightconfig.json`) disables `reportCallIssue` due to SQLAlchemy mixin inheritance issues (pyright doesn't recognize that `db.Model` generates constructors accepting column names as kwargs)
-
-### Code Quality Checklist
-```bash
-# Before every commit:
-black . && flake8
-pyright
-pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
-```
 
 ### Testing Requirements
 - All new features MUST have tests in `tests/new/`
@@ -647,41 +512,40 @@ pytest tests/new/unit/ -n auto && pytest tests/new/integration/ -n 4
 
 ## Additional Documentation
 
-- **[docs/reference/DATABASE_SCHEMA.md](docs/reference/DATABASE_SCHEMA.md)**: Auto-generated database schema (tables, columns, FKs) - regenerate with `python scripts/generate_schema_docs.py`
-- **[docs/reference/AUTHENTICATION.md](docs/reference/AUTHENTICATION.md)**: Email verification, password reset, Flask-Mail setup
-- **[docs/reference/GAMIFICATION_V2.md](docs/reference/GAMIFICATION_V2.md)**: Frontend bridge, toast notifications, mascot system
-- **[models/CLAUDE.md](models/CLAUDE.md)**: Complete model reference with all fields and methods
-- **[routes/CLAUDE.md](routes/CLAUDE.md)**: Route handlers and API endpoints
-- **[tests/CLAUDE.md](tests/CLAUDE.md)**: Testing strategy and test organization
-- **[models/gamification/CLAUDE.md](models/gamification/CLAUDE.md)**: Gamification system (XP, achievements, streaks)
-- **[docs/reference/SPECIFICHE.md](docs/reference/SPECIFICHE.md)**: Complete platform requirements (Italian)
-- **[docs/usecases/gare.md](docs/usecases/gare.md)**: Detailed workflow documentation
-- **[docs/reference/UI_CONVENTIONS.md](docs/reference/UI_CONVENTIONS.md)**: UI conventions (icons, colors, design decisions)
-- **[docs/reference/NAMING_CONVENTIONS.md](docs/reference/NAMING_CONVENTIONS.md)**: Naming conventions (italian plurals, italian/english split, URL, test, DB columns)
-- **[help_content/](help_content/)**: contenuti del mini-sito di aiuto per gli utenti (`/aiuto`) — YAML, non HTML. `it/pages/*.yaml` le pagine, `it/hints.yaml` i micro-aiuti **già pronti per la futura interfaccia adattiva** (fumetti "?" e presentazione alla prima visita), `screenshots.yaml` il manifest delle catture. Si aggiorna con la skill `help-docs`; le schermate si rigenerano con `scripts/help_docs/seed_demo.py` + `capture_screenshots.py`
-- **[models/tpa/CLAUDE.md](models/tpa/CLAUDE.md)**: referto TPA (motore Accu-Stats, registro dei comandi, sblocco)
-- **[docs/adr/](docs/adr/)**: Architecture Decision Records (ADR)
-- **[docs/adr/ADR-027-round-level-configuration-enforcement.md](docs/adr/ADR-027-round-level-configuration-enforcement.md)**: Override per turno persistiti server-side + uso obbligatorio di `Distance` VO nello scoring
-- **[docs/adr/ADR-028-production-endpoint-allowlist.md](docs/adr/ADR-028-production-endpoint-allowlist.md)**: allowlist endpoint deny-by-default in produzione, matrice ruoli (anonimo/player/director) con admin bypass — vedi anche `docs/reference/PRODUCTION_INVENTORY.md`
-- **[docs/reference/PRODUCTION_INVENTORY.md](docs/reference/PRODUCTION_INVENTORY.md)**: inventario completo route/UI/permessi/feature WIP, base per la matrice di ADR-028
-- **[docs/adr/ADR-038-bracket-persistence.md](docs/adr/ADR-038-bracket-persistence.md)**: il tabellone è persistito su `Match` (`bracket_type`/`round`/`slot`/`group`), seat derivato, dimensionamento sugli iscritti effettivi e riscrittura di `rounds_count` al sorteggio
-- **[docs/adr/ADR-039-team-separation-in-the-draw.md](docs/adr/ADR-039-team-separation-in-the-draw.md)**: squadre a due livelli (testo libero sul profilo, elenco per competizione) e separazione dei compagni come obiettivo lessicografico, non come vincolo rigido
-- **[docs/adr/ADR-040-position-classification-ties.md](docs/adr/ADR-040-position-classification-ties.md)**: classifica POSITION per bande a pari merito, con lo spareggio **deliberatamente** spento — divergenza voluta dalla convenzione di `gara_strategies.py`
-- **[docs/adr/ADR-041-grantable-roles-and-delegation.md](docs/adr/ADR-041-grantable-roles-and-delegation.md)**: ruoli concedibili ortogonali a `user.role` (`RoleGrant`), delega a catena come proprietà **per-ruolo** (`self_propagating`), revoca riservata ad admin perché unico punto di contenimento
-- **[docs/adr/ADR-042-certified-exam.md](docs/adr/ADR-042-certified-exam.md)**: l'esame è una sequenza di esercizi con esito **booleano**, certificato solo di persona; entità gemelle di `MatchProposal` e non astrazione condivisa; `max_score` per-esame su `ExamChallenge` — **più** quello facoltativo dell'esercizio (emendamento 2026-08-18): due domande diverse, nessuna deriva dall'altra
-- **[docs/adr/ADR-043-reader-timezone.md](docs/adr/ADR-043-reader-timezone.md)**: gli orari sono nel fuso di **chi legge**, dedotto dal browser e **salvato** su `User.timezone` (senza colonna, promemoria ed email non lo saprebbero); nessun backfill, perché «non lo so» e «è Roma» sono cose diverse
-- **[docs/adr/ADR-044-tpa-scoresheet.md](docs/adr/ADR-044-tpa-scoresheet.md)**: referto TPA sui match singoli — funzione da sbloccare, punteggio **derivato** dal referto, registro dei comandi come unica verita', motore verificato per differenza contro l'app JS di riferimento
-- **[docs/adr/ADR-045-no-wal-on-network-storage.md](docs/adr/ADR-045-no-wal-on-network-storage.md)**: niente `journal_mode=WAL` — su NFS la memoria condivisa del WAL non e' coerente fra processi e corrompe il DB; il file `.db` ricorda il journal mode, quindi togliere la riga non basta
-- **[docs/adr/ADR-046-beta-tester-visibility.md](docs/adr/ADR-046-beta-tester-visibility.md)**: il beta tester e' un `RoleGrant` (ADR-041) che apre la visibilita' di ADR-028 su tutto **tranne** l'amministrazione; «amministrazione» si riconosce dal decoratore `@admin_required`, non dal nome; non propagante e non richiedibile
-- **[docs/adr/ADR-047-classification-system-drives-the-standings.md](docs/adr/ADR-047-classification-system-drives-the-standings.md)**: la classifica generale segue il **sistema di classifica** (`WINS`/`RACK`/`POSITION`), non il tipo di campionato; `ClassificationSystem` è l'unico vocabolario e conosce il plurale storico `RACKS`; le righe storiche si riparano ricalcolandole dai match con `scripts/repair_round_classification_racks.py` (dry-run per default), non indovinando quali siano stantie
-- **[docs/adr/ADR-048-gara-scoped-participant-reassignment.md](docs/adr/ADR-048-gara-scoped-participant-reassignment.md)**: spostare la partecipazione a **una** gara da un giocatore a un altro (direttore che ha iscritto l'omonimo sbagliato) — i **fatti** si riassegnano, i **derivati** (classifiche, ELO, livello, traguardi) si ricalcolano da zero; l'elenco delle tabelle si deriva dal grafo delle FK ed è presidiato; i traguardi non più meritati si tolgono, in deroga allo sblocco monotòno; la prova generale si fa su una **copia del file .db**, perché un `@transactional` annidato committa la transazione esterna e un rollback non annullerebbe i ricalcoli
-- **[docs/adr/ADR-049-same-category-restores-elo-in-handicap-events.md](docs/adr/ADR-049-same-category-restores-elo-in-handicap-events.md)**: in una gara con handicap l'ELO si aggiorna **solo** fra giocatori della stessa categoria; categorie per competizione (campionato XOR gara standalone, calco di ADR-039), **create assegnandole** da un combo accanto all'iscritto, ordine alfabetico senza colonna di posizione (rinvio consapevole: servirà all'handicap sul punteggio), finestra chiusa all'avvio del turno; policy dell'ELO unificata in `RatingEligibility`; rimosso l'impianto morto `PlayerCategory`/`HandicapRule` e il blueprint `/rating`
-- **[docs/adr/ADR-050-csrf-origin-instead-of-referrer.md](docs/adr/ADR-050-csrf-origin-instead-of-referrer.md)**: il CSRF non pretende più il `Referer` (header facoltativo: chi non lo manda prendeva 400 su ogni POST, login compreso), ma rifiuta un `Origin` estraneo; token firmato e `SameSite=Lax` restano la difesa quando l'header non c'è; emendamento 2026-08-20: `WTF_CSRF_TIME_LIMIT = None`, perché il token scadeva in un'ora dalla **generazione della pagina** e una scheda lasciata aperta sul telefono dava lo stesso 400
-- **[docs/adr/ADR-051-quick-start-moves-the-acceptance-to-the-end.md](docs/adr/ADR-051-quick-start-moves-the-acceptance-to-the-end.md)**: l'avvio rapido di una
-  sfida individuale crea la partita **già in corso**, senza proposta e senza accettazione; l'accettazione non sparisce, si sposta alla **doppia conferma del risultato** — che è anche l'unica
-  condizione che muove l'Elo globale, quindi una partita mai riconosciuta resta senza effetti; precompilazioni dall'ultima partita giocata; l'avversario **senza account** è rimandato di proposito
-- **[docs/adr/ADR-053-playoff-weight-and-final-ranking-mode.md](docs/adr/ADR-053-playoff-weight-and-final-ranking-mode.md)**: il **peso** della prova (`Gara.weight`, issue #64) applicato da un'aggregazione **per gara**, e la **modalità di classifica finale** del playoff (`campionato_plus_playoff` — il comportamento storico, quindi il default — oppure `playoff_only`, dove il playoff detta le prime posizioni e gli altri seguono nell'ordine del campionato, con peso efficace 0 per non spostare chi non ha giocato); scelta **per configurazione playoff**, modificabile anche dopo l'avvio perché è punteggio e non qualificazione; il direttore può registrare la risposta all'invito per conto del giocatore, e resta scritto chi l'ha registrata
-- **[docs/usecases/esami.md](docs/usecases/esami.md)**: i sette journey degli esami e del ruolo esaminatore
+Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
+
+- **[docs/reference/SPECIFICHE.md](docs/reference/SPECIFICHE.md)**: requisiti completi della piattaforma. **Si apre prima di toccare una regola di dominio** (vedi sezione 0)
+- **[docs/reference/DATABASE_SCHEMA.md](docs/reference/DATABASE_SCHEMA.md)**: schema DB autogenerato — si rigenera con `python scripts/generate_schema_docs.py`
+- **[docs/reference/AUTHENTICATION.md](docs/reference/AUTHENTICATION.md)**: verifica email, reset password, Flask-Mail
+- **[docs/reference/GAMIFICATION_V2.md](docs/reference/GAMIFICATION_V2.md)**: frontend bridge, toast, mascotte
+- **[docs/reference/UI_CONVENTIONS.md](docs/reference/UI_CONVENTIONS.md)**: icone, colori, decisioni di design
+- **[docs/reference/NAMING_CONVENTIONS.md](docs/reference/NAMING_CONVENTIONS.md)**: plurali italiani, split italiano/inglese, URL, test, colonne DB
+- **[docs/reference/PRODUCTION_INVENTORY.md](docs/reference/PRODUCTION_INVENTORY.md)**: inventario route/UI/permessi, base della matrice ADR-028
+- **[docs/usecases/gare.md](docs/usecases/gare.md)** · **[docs/usecases/esami.md](docs/usecases/esami.md)**: flussi di gara; i sette journey degli esami
+- **[help_content/](help_content/)**: contenuti di `/aiuto` in YAML (`it/pages/*.yaml` le pagine, `it/hints.yaml` i micro-aiuti, `screenshots.yaml` il manifest). Si aggiorna con la skill `help-docs`; le schermate si **generano**, non si ritoccano
+- **CLAUDE.md annidati** (si caricano lavorando in quella cartella): [models/](models/CLAUDE.md) · [routes/](routes/CLAUDE.md) · [tests/](tests/CLAUDE.md) · [templates/](templates/CLAUDE.md) · [models/gamification/](models/gamification/CLAUDE.md) · [models/tpa/](models/tpa/CLAUDE.md) (referto Accu-Stats) · [models/transaction/](models/transaction/CLAUDE.md)
+
+**[Architecture Decision Records](docs/adr/)** — quando serve il *perché* di una scelta:
+
+| ADR | Decisione |
+|-----|-----------|
+| [027](docs/adr/ADR-027-round-level-configuration-enforcement.md) | override per turno persistiti server-side; `Distance` VO obbligatorio nello scoring |
+| [028](docs/adr/ADR-028-production-endpoint-allowlist.md) | allowlist endpoint deny-by-default in produzione, matrice ruoli con bypass admin |
+| [038](docs/adr/ADR-038-bracket-persistence.md) | tabellone persistito su `Match`, seat derivato, dimensionamento sugli iscritti effettivi |
+| [039](docs/adr/ADR-039-team-separation-in-the-draw.md) | squadre a due livelli; separazione dei compagni come obiettivo lessicografico, non vincolo |
+| [040](docs/adr/ADR-040-position-classification-ties.md) | classifica POSITION per bande a pari merito, spareggio **deliberatamente** spento |
+| [041](docs/adr/ADR-041-grantable-roles-and-delegation.md) | `RoleGrant` ortogonali a `user.role`; delega a catena per-ruolo; revoca solo admin |
+| [042](docs/adr/ADR-042-certified-exam.md) | esame come sequenza di esercizi a esito booleano; `max_score` per-esame **e** per-esercizio |
+| [043](docs/adr/ADR-043-reader-timezone.md) | gli orari sono nel fuso di **chi legge**, salvato su `User.timezone`; nessun backfill |
+| [044](docs/adr/ADR-044-tpa-scoresheet.md) | referto TPA: punteggio **derivato** dal referto, registro dei comandi unica verità |
+| [045](docs/adr/ADR-045-no-wal-on-network-storage.md) | niente `journal_mode=WAL` su NFS; il file `.db` ricorda il journal mode |
+| [046](docs/adr/ADR-046-beta-tester-visibility.md) | beta tester = `RoleGrant` che apre tutto **tranne** `@admin_required` |
+| [047](docs/adr/ADR-047-classification-system-drives-the-standings.md) | la classifica segue `classification_system`, non `campionato_type` |
+| [048](docs/adr/ADR-048-gara-scoped-participant-reassignment.md) | riassegnare la partecipazione a una gara: i fatti si spostano, i derivati si ricalcolano |
+| [049](docs/adr/ADR-049-same-category-restores-elo-in-handicap-events.md) | con handicap l'ELO si muove solo fra **stessa categoria**; categorie per competizione |
+| [050](docs/adr/ADR-050-csrf-origin-instead-of-referrer.md) | CSRF su `Origin` e non `Referer`; `WTF_CSRF_TIME_LIMIT = None` |
+| [051](docs/adr/ADR-051-quick-start-moves-the-acceptance-to-the-end.md) | avvio rapido: partita già in corso, accettazione spostata alla doppia conferma |
+| [053](docs/adr/ADR-053-playoff-weight-and-final-ranking-mode.md) | `Gara.weight` con aggregazione per gara; modalità di classifica finale del playoff |
 
 ---
 

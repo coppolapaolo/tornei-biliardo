@@ -6,9 +6,10 @@ description: Portare il codice in produzione su PythonAnywhere, e diagnosticare 
 # Deploy e operativita' in produzione
 
 Il dettaglio operativo che serve **al momento del deploy** o di una diagnosi in
-produzione. Le due cose che servono anche fuori da qui — «il merge su `main` non
-deploya» e il divieto di rimettere `journal_mode=WAL` — restano in `CLAUDE.md`,
-perche' devono essere in contesto sempre, non solo quando si deploya.
+produzione. Le tre cose che servono anche fuori da qui — «il merge su `main` non
+deploya», il divieto di push diretti su `main`, e il divieto di rimettere
+`journal_mode=WAL` — restano in `CLAUDE.md`, perche' devono essere in contesto
+sempre, non solo quando si deploya.
 
 **URL di produzione**: https://www.torneibiliardo.it
 
@@ -109,3 +110,109 @@ moriva in `create_app` su `AttributeError: module 'lib' has no attribute
 'X509_V_FLAG_NOTIFY_POLICY'` (la web app no: set di pacchetti diverso). Le due
 integrazioni dichiarate sono le stesse che si attivavano prima — l'insieme
 attivo non cambia.
+
+---
+
+## GitHub Actions (`.github/workflows/ci.yml`) — 4 job
+
+| Job | Quando gira | Cosa fa |
+|-----|-------------|---------|
+| `test-and-typecheck` | push su `main` **e** PR **verso `main`** | unit test + pyright. È l'unico status check che blocca il merge. Il workflow ha `on: push: branches: [main]` e `pull_request: branches: [main]`, quindi **una PR con base diversa da `main` non fa girare nessun check** e resta bloccata per sempre: le PR impilate vanno riportate su `main` prima del merge |
+| `check-migrations` | solo push su `main` | `git diff --diff-filter=A HEAD~1 HEAD -- 'migrations/*.py'`: c'è una migration **nuova**? |
+| `deploy` | solo push su `main`, **e solo se NON ci sono migration nuove** | **reload** della web app via API PythonAnywhere |
+| `skip-deploy-notification` | solo push su `main`, **se ci sono migration nuove** | salta il deploy e stampa la procedura manuale |
+
+Il job `deploy` non fa `git pull` per un motivo scritto nel workflow stesso:
+*«PythonAnywhere console API requires browser session, doesn't work from CI»*.
+Il codice lo porta `scripts/auto_deploy.py`. La procedura manuale stampata da
+`skip-deploy-notification` è un **fallback**, non un compito da assegnare a chi
+fa il merge: le migration pendenti le applica `auto_deploy.py` al giro
+successivo, disabilitando e riabilitando la web app via API.
+
+Sulle PR girano solo `test-and-typecheck`; gli altri tre risultano `skipped`
+perché condizionati a `github.event_name == 'push'`. Non vanno **mai** richiesti
+come status check: resterebbero pending all'infinito. Per un hotfix urgente con
+CI rotta serve togliere temporaneamente la protezione
+(`gh api -X DELETE repos/coppolapaolo/tornei-biliardo/branches/main/protection`,
+poi riapplicarla).
+
+## Migrations
+
+```bash
+python migrations/runner.py                     # Run pending migrations
+python migrations/runner.py --status            # Show migration status
+python migrations/runner.py --mark-all-applied  # Init existing DB
+```
+
+In produzione: **solo con web app Disabled** (tab Web), poi Reload.
+
+## Script che toccano dati storici: dry-run per default
+
+> ⚠️ **`recalc_elo.py` è un dry-run finché non gli si passa `--commit`.**
+> Senza, rigioca tutta la storia, stampa cosa cambierebbe e fa rollback: sembra
+> aver lavorato, e non ha scritto niente. Vale anche per
+> `repair_match_ended_at.py` e `repair_round_classification_racks.py`
+> (`--apply`): è la convenzione degli script che toccano dati storici, e va
+> verificata sul singolo script invece che ricordata a memoria, perché il nome
+> del flag non è lo stesso per tutti.
+
+## Env di produzione negli script da console/task
+
+Console e scheduled task sono processi separati e **non ereditano** le variabili
+dal file WSGI, quindi `create_app("production")` fallirebbe subito su
+`SECRET_KEY`. Uno script che avvia l'app chiama **`bootstrap_and_create_app()`**
+da `scripts/prod_env.py`: legge le env dal WSGI (riusa `read_wsgi_env` di
+`auto_deploy`, parsing AST senza eseguirlo), esce dicendo cosa manca e da dove
+dovrebbe arrivare, e **poi** importa l'app. Un valore passato a mano sulla riga
+di comando resta prioritario. Se lo script tocca i PII gli si passa
+`required=PRODUCTION_REQUIRED + ("ENCRYPTION_KEY",)`, altrimenti la decifratura
+degrada in silenzio sulla chiave di sviluppo (incidente 2026-06-25).
+`auto_deploy.py` resta autonomo di proposito: è il punto d'ingresso del deploy e
+non importa nulla dal progetto.
+
+> ⚠️ **`from app import create_app` in cima a uno script è un guasto**, non
+> uno stile. L'import esegue `config.py`, che legge `os.environ` — e a quel
+> punto `bootstrap_or_exit()` non l'ha ancora popolato. Il valore congelato
+> resta per sempre. È così che `daily_jobs.py` (giornaliero) e
+> `send_match_reminders.py` (orario) sono morti a ogni esecuzione con
+> `RuntimeError: SECRET_KEY env var must be set in production` — con nel log,
+> la riga prima, la conferma di aver letto proprio `SECRET_KEY`: le due righe
+> raccontano momenti diversi. `reconcile_achievements.py` aveva lo stesso
+> difetto latente. Dal 2026-08-17 `config.py` rilegge l'ambiente in
+> `Config.environment_settings()` (applicata da `create_app`) e il cipher PII
+> si deriva al primo uso, quindi l'ordine non è più fatale; resta però
+> l'unica regola facile da rispettare, ed è presidiata staticamente da
+> `tests/new/unit/test_script_import_order.py`. Gli script di analisi che si
+> lanciano a mano in sviluppo (`diagnose_elo.py`, `set_gara_handicap.py`,
+> `migrate_gamification_rules.py`) **non** usano `prod_env` e restano fuori
+> dalla regola: non caricano env di produzione, quindi per loro l'ordine non
+> significa nulla. Se un domani dovessero girare in produzione, vanno prima
+> agganciati a `bootstrap_and_create_app`. `recalc_elo.py` **è già stato
+> agganciato** (era in questo elenco fino al 2026-08-21): gira in console di
+> produzione, e chi si fida dell'elenco vecchio gli sconsiglia il comando che
+> invece funziona.
+
+> ⚠️ `scripts/send_match_reminders.py` è **registrato** e gira ogni ora
+> (confermato dal log del 2026-08-17). Non è accorpabile a `daily_jobs.py`:
+> quello è il runner dei lavori *giornalieri*. Lo script era nato
+> presupponendo di girare ogni 15 minuti, ma gli scheduled task di
+> PythonAnywhere non scendono sotto l'ora: finestra e cadenza sono ora
+> entrambe orarie, così il promemoria arriva fra le 2 e le 3 ore prima del
+> match.
+
+## SQLite su NFS: diagnosticare un `malformed`
+
+Il divieto di `journal_mode=WAL` sta in `CLAUDE.md` perché deve valere sempre
+(ADR-045). Qui il corollario diagnostico, che serve solo davanti al guasto:
+
+Un `database disk image is malformed` che **sparisce con un reload** non è un
+file corrotto — è il WAL, e il file può essere intatto. Le due cose si
+distinguono solo con `PRAGMA integrity_check`, da rifare **dopo** il checkpoint
+(`PRAGMA journal_mode=DELETE`), perché è lì che un'eventuale incoerenza si
+materializza su disco.
+
+Il WAL coordina i processi con un file `-shm` in **memoria condivisa via mmap**,
+che su NFS non è coerente: bastavano la web app e uno scheduled task, senza
+nessuno alla console. Ecco perché la regola «script di scrittura solo con web
+app Disabled», da sola, non avrebbe mai fermato i due incidenti del 2026-06-10 e
+2026-08-17.
