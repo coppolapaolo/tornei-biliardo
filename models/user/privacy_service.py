@@ -27,6 +27,11 @@ class PrivacyService:
     All methods use @transactional for automatic commit/rollback.
     """
 
+    #: I campi che si vedono finche' non li si spegne. Sono l'eccezione, e
+    #: stanno scritti in un posto solo: due letture diverse dello stesso
+    #: default sono il modo piu' facile di far sparire un dato a meta'.
+    OPT_OUT_FIELDS = frozenset({"elo"})
+
     # ========== Privacy Settings CRUD ==========
 
     @staticmethod
@@ -52,6 +57,7 @@ class PrivacyService:
         show_recent_matches: Optional[bool] = None,
         show_classifications: Optional[bool] = None,
         show_challenge_stats: Optional[bool] = None,
+        show_elo: Optional[bool] = None,
     ) -> UserPrivacySetting:
         """Update privacy settings for user.
 
@@ -80,9 +86,14 @@ class PrivacyService:
             settings.show_classifications = show_classifications
         if show_challenge_stats is not None:
             settings.show_challenge_stats = show_challenge_stats
+        if show_elo is not None:
+            settings.show_elo = show_elo
 
         # Check if user is now sharing any gaming data (for achievement)
-        # Gaming data fields (excluding personal contact info)
+        # Gaming data fields (excluding personal contact info).
+        # `show_elo` resta **fuori**: nasce acceso, quindi contarlo regalerebbe
+        # l'achievement a chiunque salvi questa pagina senza aver condiviso
+        # niente di suo.
         is_sharing_gaming_data = any(
             [
                 settings.show_statistics,
@@ -111,7 +122,8 @@ class PrivacyService:
         Rules:
         - User can always see their own data
         - Others respect privacy settings
-        - No settings = default to private (GDPR compliance - opt-in required)
+        - No settings = default to private (GDPR compliance - opt-in required),
+          **tranne** i campi opt-out di ``OPT_OUT_FIELDS``
 
         Args:
             viewer_user_id: ID of user viewing (None for anonymous/guest)
@@ -128,9 +140,13 @@ class PrivacyService:
         # Get privacy settings
         settings = UserPrivacySetting.query.filter_by(user_id=target_user_id).first()
 
-        # No settings = default to private (GDPR compliance - opt-in required)
+        # Senza riga di impostazioni l'utente non ha scelto niente. Per i campi
+        # opt-in questo vuol dire «privato»; per quelli opt-out vuol dire
+        # «visibile» — ed e' il caso di quasi tutti gli utenti, che questa
+        # pagina non l'hanno mai aperta. Sbagliare qui spegnerebbe l'Elo per
+        # tutti, cioe' il contrario esatto di quel che dice il campo.
         if not settings:
-            return False
+            return field in PrivacyService.OPT_OUT_FIELDS
 
         field_map = {
             "email": settings.show_email,
@@ -139,6 +155,7 @@ class PrivacyService:
             "recent_matches": settings.show_recent_matches,
             "classifications": settings.show_classifications,
             "challenge_stats": settings.show_challenge_stats,
+            "elo": settings.show_elo,
         }
 
         return field_map.get(field, False)

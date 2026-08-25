@@ -45,19 +45,36 @@ blocks:
 
   - type: shot
     shot: dashboard-direttore
-    caption: "La home di un direttore di gara: in cima compaiono i pulsanti «Nuova Gara» e «Nuovo Campionato», che un giocatore non vede."
+    caption: "La home di un direttore di gara: i pulsanti «Nuova Gara» e «Nuovo Campionato» che un giocatore non vede, e sotto il riquadro «Come vanno le tue gare»."
 
   - type: text
     text: >-
-      Cambia anche il riquadro che accoglie all'ingresso: dove un giocatore
-      legge «Come stai andando», chi ha organizzato almeno una gara trova
-      **«Come vanno le tue gare»** — quante ne ha organizzate, quanti posti
-      sono occupati sul totale disponibile e l'andamento delle iscrizioni gara
-      per gara. Se ce n'è qualcuna ancora da chiudere, accanto al titolo
-      compare un'etichetta che lo ricorda. È solo un resoconto: dentro non c'è
-      niente da premere. E come per il giocatore si vede una volta sola, al
-      primo ingresso in home dopo l'accesso: poi lascia il posto alle gare da
-      seguire, e torna al prossimo accesso.
+      Cambia anche il riquadro che accoglie all'ingresso, e **segue l'ultima
+      cosa che hai fatto**: se hai appena creato una gara, o qualcuno si è
+      appena iscritto a una delle tue, trovi **«Come vanno le tue gare»** —
+      quante ne hai organizzate, quanti posti sono occupati sul totale
+      disponibile e l'andamento delle iscrizioni gara per gara. Se invece
+      l'ultima cosa è stata una **partita giocata**, trovi «Come stai andando»
+      come un giocatore qualsiasi, con il tuo Elo: chi organizza gioca anche, e
+      il riquadro racconta quello che stai facendo, non il ruolo che hai.
+
+  - type: text
+    text: >-
+      Le **gare ancora da chiudere** non si perdono nel passaggio: qualunque
+      dei due riquadri ti tocchi, accanto al titolo compare l'etichetta che
+      le ricorda. È l'unica cosa lì dentro che ha una scadenza.
+
+  - type: text
+    text: >-
+      In basso c'è la striscia delle tue ultime gare, una tessera per gara, con
+      gli iscritti sul totale dei posti. Il colore dice a colpo d'occhio come
+      sta andando il riempimento — e le gare con le **iscrizioni ancora
+      aperte** hanno un colore tutto loro, perché sono le uniche su cui puoi
+      ancora fare qualcosa. Sotto, una riga traduce ogni colore in parole.
+      È comunque solo un resoconto: dentro non c'è niente da premere. E come
+      per il giocatore si vede una volta sola, al primo ingresso in home dopo
+      l'accesso: poi lascia il posto alle gare da seguire, e torna al prossimo
+      accesso.
 
   - type: note
     tone: warning

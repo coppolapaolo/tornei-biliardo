@@ -7,4 +7,13 @@ autoflake
 pytest-cov>=4.0
 pyright  # Type checking - MANDATORY before commits
 debugpy  # Python debugger for VSCode
-playwright  # E2E testing framework
+# Playwright NON serve ai test e2e: quelli girano sul test client di Flask
+# (tests/new/e2e/). Serve a `scripts/help_docs/capture_screenshots.py`, che
+# genera le schermate del mini-sito di aiuto dall'app vera.
+#
+# Il pacchetto qui installa solo la libreria Python: il browser e' un
+# artefatto a parte, da scaricare una volta con
+#     playwright install chromium
+# Senza, la cattura muore con «Executable doesn't exist at ~/Library/Caches/
+# ms-playwright/...» — e non e' un problema di questo file.
+playwright

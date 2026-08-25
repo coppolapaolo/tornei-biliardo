@@ -479,6 +479,13 @@ def create_app(config_name=None):
 
     app.jinja_env.globals["position_points_rows"] = position_points_rows
 
+    # Quale Elo sta accanto a un giocatore in una partita: competitivo per le
+    # gare, globale per le sfide individuali, e niente se l'interessato l'ha
+    # spento nella privacy.
+    from utils.elo_visibility import register_elo_visibility
+
+    register_elo_visibility(app)
+
     # Registra blueprints
     from routes import register_blueprints
 

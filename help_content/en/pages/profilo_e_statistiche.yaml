@@ -147,8 +147,8 @@ blocks:
   - type: text
     text: >-
       What others see of your profile is up to you: from the privacy settings
-      you can switch off your statistics, your recent matches, your standings
-      or your drill statistics. They go off as whole blocks, not one match at a
+      you can switch off your statistics, your recent matches, your standings,
+      your drill statistics or your Elo. They go off as whole blocks, not one match at a
       time, and the official standings do not change either way. See
       [Privacy and data](/aiuto/account/privacy_e_dati).
 

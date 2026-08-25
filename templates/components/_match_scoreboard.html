@@ -49,9 +49,16 @@
    È un `<button>`, non un `<div>` con un `onclick`: così si raggiunge da
    tastiera, si annuncia con il nome del giocatore e risponde a Invio e spazio.
 #}
-{% macro board_side(player_id, name, score, behind, pips, can_add, add_rack, mine) %}
+{% macro board_side(player_id, name, score, behind, pips, can_add, add_rack, mine, elo, elo_label) %}
 {% set inner %}
     <span class="c7-board__name {{ 'c7-board__name--behind' if behind }}">{{ name }}{% if mine %} <span class="c7-board__you">{{ _('tu') }}</span>{% endif %}</span>
+    {# Il pool lo decide il tipo di partita, non chi guarda: niente classe
+       `elo-value`, che `window.EloToggle` riscriverebbe al primo clic altrove
+       nella pagina. Il nome per esteso sta nel `title`, dove non toglie spazio
+       alle cifre. #}
+    {% if elo is not none %}
+    <span class="c7-board__elo c7-num" title="{{ elo_label }}" aria-label="{{ elo_label }} {{ elo }}">{{ elo }}</span>
+    {% endif %}
     <span class="c7-board__num {{ 'c7-board__num--behind' if behind }}">{{ score }}</span>
     {% if pips %}
     <span class="c7-board__pips">
@@ -80,6 +87,14 @@
 {% set p2_score = match.player2_score or 0 %}
 
 {% set board = match_scoring_state(match, current_user) %}
+
+{# L'Elo dei due giocatori, sotto il nome. Quale pool lo decide il tipo di
+   partita — competitivo per le gare, globale per le sfide individuali, che il
+   competitivo non lo muovono — e la privacy del diretto interessato puo'
+   toglierlo (`show_elo`, acceso di suo). Vedi `utils/elo_visibility.py`. #}
+{% set p1_elo = elo_for_match(match, match.player1, current_user) %}
+{% set p2_elo = elo_for_match(match, match.player2, current_user) %}
+{% set elo_label = elo_pool_label(match) %}
 
 {# Trattini di progresso: quanti rack mancano alla vittoria, senza contare le
    cifre. Solo per il "race to N", dove un traguardo esiste davvero. #}
@@ -129,10 +144,10 @@
         {# `mine`: chi gioca deve riconoscere la propria metà a colpo d'occhio.
            Prima lo diceva il riempimento del proprio `+1`, che non c'è più. #}
         {{ board_side(match.player1_id, p1_name, p1_score, p1_behind, pips, board.can_add, add_rack,
-             board.is_player and not mine_is_p2) }}
+             board.is_player and not mine_is_p2, p1_elo, elo_label) }}
         <div class="c7-board__rule"></div>
         {{ board_side(match.player2_id, p2_name, p2_score, p2_behind, pips, board.can_add, add_rack,
-             board.is_player and mine_is_p2) }}
+             board.is_player and mine_is_p2, p2_elo, elo_label) }}
     </div>
 
     {# L'esito a parole sotto le cifre: chi legge da due metri vede i numeri,

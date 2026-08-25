@@ -92,6 +92,18 @@ class Gara(SoftDeleteMixin, db.Model):
     date = db.Column(db.Date, nullable=False)
     time = db.Column(db.Time, nullable=True)  # Ora della gara
 
+    #: Quando la gara è stata **creata**, che non è `date` — quello è il giorno
+    #: in cui si gioca, e può stare mesi nel futuro. `Gara` estende `db.Model`
+    #: e non `BaseModel`, quindi questa colonna non arrivava dal mixin come per
+    #: quasi tutte le altre entità: mancava e basta.
+    #:
+    #: Serve a distinguere «l'ultima cosa che questo direttore ha fatto»
+    #: (dashboard adattiva, `models/dashboard/activity_feedback.py`). Nullable
+    #: perché sulle gare già esistenti la data vera non c'è più: la migration
+    #: `20260825_gara_created_at` la ricostruisce dalla prima iscrizione dove
+    #: c'è, e dove non c'è resta il ripiego documentato lì.
+    created_at = db.Column(db.DateTime, nullable=True, default=utc_now)
+
     # Location - FK to BilliardHall (nullable for backward compatibility)
     billiard_hall_id = db.Column(
         db.Integer,

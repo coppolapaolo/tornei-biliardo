@@ -667,8 +667,13 @@ def _strip(activities: Sequence[Activity], *, label: str, note: str) -> Dict[str
             "draw": lambda n: ngettext("%(num)s pari", "%(num)s pari", n),
             "loss": lambda n: ngettext("%(num)s persa", "%(num)s perse", n),
         }
+        # `color_role` accanto a `outcome`: la pastiglia della legenda deve
+        # sapere di che colore e', e il template non e' il posto dove tenere la
+        # tabella di conversione — la striscia del direttore ha toni suoi
+        # (`_FILL_WORDING`) che li' non esistono.
+        roles = {"win": "ok", "draw": "muted", "loss": "err"}
         legend = [
-            {"outcome": key, "label": wording[key](count)}
+            {"outcome": key, "color_role": roles[key], "label": wording[key](count)}
             for key, count in counts.items()
             if count
         ]
@@ -855,6 +860,7 @@ def _director_pending(user_id: int) -> int:
         db.session.query(db.func.count(Gara.id))
         .filter(
             Gara.director_id == user_id,
+            Gara.deleted_at.is_(None),
             Gara.status.in_([GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value]),
         )
         .scalar()
@@ -863,14 +869,59 @@ def _director_pending(user_id: int) -> int:
 
 
 def _director_garas(user_id: int) -> List[Any]:
+    """Le gare organizzate da questo direttore, dalla piu' vecchia.
+
+    `Gara` e' soft-deleted (`SoftDeleteMixin`) e **non** ha un filtro globale:
+    senza `deleted_at IS NULL` una gara cancellata continuerebbe a contare in
+    «Gare organizzate», a occupare una tessera e a portarsi dietro i suoi posti
+    nella ciambella del riempimento.
+    """
     from models.competition.models import Gara
 
     return (
         db.session.query(Gara)
-        .filter(Gara.director_id == user_id)
+        .filter(Gara.director_id == user_id, Gara.deleted_at.is_(None))
         .order_by(Gara.date.asc().nullslast(), Gara.id.asc())
         .all()
     )
+
+
+def _director_last_event(user_id: int) -> Optional[datetime]:
+    """Quand'e' l'ultima volta che questo utente ha fatto **il direttore**.
+
+    Due fatti, non uno, ed e' il punto: il direttore e' anche un giocatore, e
+    il blocco deve seguire l'ultima cosa che ha fatto, non il ruolo che ha.
+
+    * la gara che ha creato lui (`Gara.created_at`);
+    * l'iscrizione che **qualcun altro** ha mandato a una sua gara — e'
+      un'attivita' della sua gara anche se non l'ha svolta lui. La propria
+      iscrizione a una propria gara resta fuori: quella e' un atto da
+      giocatore, e conta gia' nella finestra delle attivita'.
+
+    ``None`` significa «nessun fatto da direttore», non «nessuna gara»: chi ha
+    gare senza `created_at` (righe antiche) ricade sul comportamento storico,
+    cioe' il blocco da direttore.
+    """
+    from models.competition.models import Gara, Inscription
+
+    creata = (
+        db.session.query(db.func.max(Gara.created_at))
+        .filter(Gara.director_id == user_id, Gara.deleted_at.is_(None))
+        .scalar()
+    )
+    iscritto = (
+        db.session.query(db.func.max(Inscription.created_at))
+        .join(Gara, Gara.id == Inscription.gara_id)
+        .filter(
+            Gara.director_id == user_id,
+            Gara.deleted_at.is_(None),
+            Inscription.user_id != user_id,
+        )
+        .scalar()
+    )
+
+    momenti = [m for m in (creata, iscritto) if m is not None]
+    return max(momenti) if momenti else None
 
 
 def has_any_activity(user_id: int, user: Any = None) -> bool:
@@ -997,17 +1048,43 @@ def _classify(
     has_tpa: bool,
     is_director: bool,
     director_garas: int,
+    director_last_at: Optional[datetime] = None,
 ) -> str:
     """Quale delle otto casistiche e' questo giocatore.
 
     L'ordine conta: «direttore» e «di rientro» cambiano il *tono* del blocco e
     vincono su tutto il resto; «in calo» viene prima delle classificazioni per
     fonte perche' e' quella che decide se il delta va mostrato in ambra.
-    """
-    if is_director and director_garas:
-        return "director"
 
-    last = max(a.at for a in activities)
+    **Il direttore non e' una casistica permanente.** Fino al 2026-08-25 bastava
+    avere una gara per ricevere per sempre il blocco «Come vanno le tue gare»:
+    un direttore che gioca — e giocano tutti — non vedeva mai il proprio Elo,
+    nemmeno la sera in cui aveva appena chiuso una partita. Il blocco segue
+    l'**ultima cosa fatta**: se e' una partita si comporta da giocatore, se e'
+    una gara creata o un'iscrizione arrivata si comporta da direttore.
+    ``director_last_at`` porta il secondo termine del confronto.
+    """
+    last_player = max((a.at for a in activities), default=None)
+
+    if is_director and director_garas:
+        # Nessuna attivita' da giocatore, o il fatto da direttore e' il piu'
+        # recente: e' il blocco delle gare. `director_last_at is None` copre le
+        # righe antiche senza `created_at` e vale come «non so», che qui
+        # significa restare al comportamento storico.
+        if (
+            last_player is None
+            or director_last_at is None
+            or director_last_at >= last_player
+        ):
+            return "director"
+
+    if last_player is None:
+        # Non ci si arriva da `for_player` (senza attivita' e senza gare esce
+        # prima con `None`), ma la funzione e' pubblica dentro il modulo e un
+        # `max()` su una sequenza vuota qui sarebbe un 500 in dashboard.
+        return "elo_only"
+
+    last = last_player
     if (utc_now() - last) > timedelta(days=RETURNING_AFTER_DAYS):
         return "returning"
 
@@ -1084,6 +1161,7 @@ class ActivityFeedbackService:
 
         is_director = bool(getattr(user, "is_director", False))
         director_garas = _director_garas(user_id) if is_director else []
+        director_last = _director_last_event(user_id) if director_garas else None
 
         pool = (
             _tournament_match_activities(user_id)
@@ -1108,6 +1186,7 @@ class ActivityFeedbackService:
             has_tpa=tpa is not None,
             is_director=is_director,
             director_garas=len(director_garas),
+            director_last_at=director_last,
         )
 
         if profile == "director":
@@ -1123,6 +1202,12 @@ class ActivityFeedbackService:
                 elo_current=elo_current,
                 tpa=tpa,
             )
+            # Il tono passa al giocatore, l'operativita' no: le gare da
+            # chiudere restano da chiudere anche la sera in cui il direttore
+            # ha giocato. E' l'unica cosa del blocco da direttore che
+            # sopravvive al cambio, ed e' quella che ha una scadenza.
+            if director_garas:
+                _apply_director_badge(block, user_id)
 
         rows = _expanded_rows(user_id)
         block["expanded_rows"] = rows
@@ -1509,13 +1594,37 @@ def _drill_chart(user_id: int, drills: Sequence[Activity]) -> Optional[Dict[str,
     )
 
 
+def _apply_director_badge(block: Dict[str, Any], user_id: int) -> None:
+    """Sovrascrive il badge del blocco giocatore con le gare da chiudere.
+
+    Vince sugli altri badge («N attivita' nel mese», «3 settimane fa») perche'
+    quelli descrivono, questo chiede: e' l'unico che indica una cosa da fare.
+    Se non c'e' niente da chiudere il badge del giocatore resta dov'era.
+    """
+    pending = _director_pending(user_id)
+    if pending:
+        block["context_badge"] = {
+            "text": ngettext("%(num)s da chiudere", "%(num)s da chiudere", pending),
+            "tone": "urgent",
+        }
+
+
 def _build_director(user_id: int, garas: Sequence[Any]) -> Dict[str, Any]:
     """«Come vanno le tue gare»: il direttore vede il riempimento, non l'Elo."""
     from models.competition.models import Inscription
 
+    # Solo le iscrizioni **attive**: chi si è ritirato non occupa un posto, e
+    # chi è in lista d'attesa non lo ha ancora. Contandole tutte una gara con
+    # la lista d'attesa piena mostrava «112% posti occupati» e zero liberi —
+    # una percentuale che non può esistere, e che diceva il falso in tutte e
+    # due le direzioni. Stesso criterio di `Inscription.active_count_for_gara`.
     counts = dict(
         db.session.query(Inscription.gara_id, db.func.count(Inscription.id))
-        .filter(Inscription.gara_id.in_([g.id for g in garas]))
+        .filter(
+            Inscription.gara_id.in_([g.id for g in garas]),
+            Inscription.is_withdrawn.is_(False),
+            Inscription.is_waitlist.is_(False),
+        )
         .group_by(Inscription.gara_id)
         .all()
     )
@@ -1582,29 +1691,138 @@ def _build_director(user_id: int, garas: Sequence[Any]) -> Dict[str, Any]:
             },
         )
 
-    tail = list(zip(garas, filled))[-WINDOW:]
-    block["strip"] = {
-        "label": _("Le tue ultime gare"),
-        "note": _("dalla più vecchia"),
-        "dense": len(tail) > 6,
-        "legend": [],
-        "items": [
-            {
-                "text": f"{n}/{g.max_participants}" if g.max_participants else str(n),
-                "icon": None,
-                "outcome": _fill_outcome(n, g.max_participants),
-                "title": _("%(gara)s, %(n)s iscritti", gara=g.display_name, n=n),
-            }
-            for g, n in tail
-        ],
-    }
+    block["strip"] = _director_strip(list(zip(garas, filled)))
     return block
 
 
-def _fill_outcome(filled: int, capacity: Optional[int]) -> str:
-    """Quanto e' piena una gara, tradotto nei quattro toni delle tessere."""
+def _iscrizioni_aperte(gara: Any) -> bool:
+    """Se su questa gara ci si puo' iscrivere **adesso**.
+
+    Non basta `status == INSCRIPTION`: una gara con l'apertura programmata per
+    la settimana prossima ha quello stato e non accetta nessuno. La distinzione
+    la fa gia' `get_real_status()`, che in quel caso risponde
+    `inscription_not_yet_open`.
+    """
+    stato = getattr(gara, "get_real_status", None)
+    reale = stato() if callable(stato) else getattr(gara, "status", None)
+    return reale == GaraStatus.INSCRIPTION.value
+
+
+def _director_strip(coppie: Sequence[Tuple[Any, int]]) -> Dict[str, Any]:
+    """La striscia «Le tue ultime gare»: riempimento, e quali sono ancora aperte.
+
+    Due cose che la versione precedente non faceva, ed erano entrambe difetti
+    veri, segnalati il 2026-08-25:
+
+    * **le gare aperte non si distinguevano.** Una gara a meta' perche' le
+      iscrizioni sono ancora aperte e una rimasta a meta' e ormai chiusa
+      avevano lo stesso identico grigio, e sono l'opposto l'una dell'altra: su
+      una il direttore puo' ancora fare qualcosa. Ora hanno un tono proprio, e
+      non cadono fuori dalla finestra per colpa della data;
+    * **oltre sei gare il colore restava solo.** Sopra quella soglia la
+      striscia diventa `dense` e le tessere perdono il testo `7/12`; la
+      versione giocatore compensa con la legenda dei conteggi (`_strip`), qui
+      la legenda era `[]`. Restavano dieci rettangoli colorati senza niente che
+      li traducesse — proprio la cosa che il foglio di stile dichiara di non
+      voler fare («il colore da solo non basta a dire com'e' andata a chi non
+      lo distingue»).
+
+    Da qui la finestra a `STRIP_TEXT_LIMIT` invece che a `WINDOW`: dieci
+    tessere ci stanno solo rinunciando al testo, e per un direttore il numero
+    di iscritti **e'** l'informazione — non la forma della serie, che per un
+    giocatore vale (dieci risultati di fila raccontano un periodo) e qui no.
+    Sei gare leggibili battono dieci rettangoli, e la legenda sotto continua a
+    dire cosa vuol dire ogni colore.
+    """
+    aperte = [c for c in coppie if _iscrizioni_aperte(c[0])][-STRIP_TEXT_LIMIT:]
+    chiuse = [c for c in coppie if c not in aperte]
+
+    # Le aperte entrano sempre; il resto della finestra lo prendono le piu'
+    # recenti fra le altre. Poi si rimette l'ordine cronologico, che e' quello
+    # che la nota «dalla piu' vecchia» promette.
+    posti = max(STRIP_TEXT_LIMIT - len(aperte), 0)
+    scelte = (chiuse[-posti:] if posti else []) + aperte
+    tail = [c for c in coppie if c in scelte]
+
+    items = [
+        {
+            "text": f"{n}/{g.max_participants}" if g.max_participants else str(n),
+            "icon": None,
+            "outcome": _fill_outcome(n, g.max_participants, _iscrizioni_aperte(g)),
+            "title": (
+                _(
+                    "%(gara)s, %(n)s iscritti, iscrizioni aperte",
+                    gara=g.display_name,
+                    n=n,
+                )
+                if _iscrizioni_aperte(g)
+                else _("%(gara)s, %(n)s iscritti", gara=g.display_name, n=n)
+            ),
+        }
+        for g, n in tail
+    ]
+
+    return {
+        "label": _("Le tue ultime gare"),
+        "note": _("dalla più vecchia"),
+        "dense": len(tail) > STRIP_TEXT_LIMIT,
+        "legend": _director_legend(items),
+        "items": items,
+    }
+
+
+#: Come si chiama e di che colore e' ogni tono della striscia del direttore.
+#: L'ordine e' quello in cui compare la legenda, e va dal piu' urgente al meno.
+_FILL_WORDING = (
+    ("open", "accent", lambda n: ngettext("%(num)s aperta", "%(num)s aperte", n)),
+    ("win", "ok", lambda n: ngettext("%(num)s al completo", "%(num)s al completo", n)),
+    (
+        "neutral",
+        "mid",
+        lambda n: ngettext("%(num)s quasi piena", "%(num)s quasi piene", n),
+    ),
+    (
+        "uncapped",
+        "outline",
+        lambda n: ngettext("%(num)s senza limite", "%(num)s senza limite", n),
+    ),
+    (
+        "draw",
+        "muted",
+        lambda n: ngettext("%(num)s da riempire", "%(num)s da riempire", n),
+    ),
+)
+
+
+def _director_legend(items: Sequence[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Cosa vuol dire ogni colore, con quante gare ci stanno dentro.
+
+    Si scrive **sempre**, non solo nella striscia fitta: qui il tono non dice
+    «com'e' andata» ma «cosa puoi ancora farci», e non lo si indovina dal
+    contesto come si indovina che il verde e' una vittoria.
+    """
+    return [
+        {"outcome": tono, "color_role": ruolo, "label": parole(n)}
+        for tono, ruolo, parole in _FILL_WORDING
+        for n in [sum(1 for i in items if i["outcome"] == tono)]
+        if n
+    ]
+
+
+def _fill_outcome(filled: int, capacity: Optional[int], is_open: bool = False) -> str:
+    """Quanto e' piena una gara, tradotto nei toni delle tessere.
+
+    Se le iscrizioni sono aperte il riempimento passa in secondo piano: quel
+    numero si muove ancora, e la cosa che il direttore deve leggere per prima e'
+    proprio che si muove.
+    """
+    if is_open:
+        return "open"
     if not capacity:
-        return "neutral"
+        # Senza un massimo la domanda «quanto è piena» non ha risposta, e
+        # accorparla a `neutral` faceva scrivere in legenda «quasi piena» su una
+        # gara che non ha nessun tetto a cui avvicinarsi.
+        return "uncapped"
     ratio = filled / capacity
     if ratio >= 0.95:
         return "win"

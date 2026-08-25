@@ -19,8 +19,11 @@ class UserPrivacySetting(BaseModel):
     """User privacy preferences for profile visibility.
 
     Controls which data categories are visible to other users
-    on the public profile. All settings default to False (private)
-    for GDPR compliance - users must opt-in to share data.
+    on the public profile. Quasi tutte le impostazioni nascono a False
+    (private) per il GDPR: si condivide per scelta esplicita.
+
+    L'eccezione dichiarata e' ``show_elo`` (opt-out) — il perche' e' scritto
+    accanto alla colonna.
     """
 
     __tablename__ = "user_privacy_setting"
@@ -40,6 +43,20 @@ class UserPrivacySetting(BaseModel):
     show_recent_matches = db.Column(db.Boolean, nullable=False, default=False)
     show_classifications = db.Column(db.Boolean, nullable=False, default=False)
     show_challenge_stats = db.Column(db.Boolean, nullable=False, default=False)
+
+    #: L'unica preferenza **opt-out** del gruppo, e l'eccezione va spiegata.
+    #: Le altre nascondono dati che il giocatore ha dato di suo (email,
+    #: telefono) o che raccontano come gioca; l'Elo invece e' il numero con cui
+    #: due avversari si misurano prima di cominciare, e sul tabellone della
+    #: partita serve a tutti e due. Nasconderlo di default vorrebbe dire
+    #: spegnere la funzione per chiunque non abbia mai aperto questa pagina —
+    #: cioe' per quasi tutti. Chi non lo vuole lo toglie, e da quel momento non
+    #: si vede piu' da nessuna parte.
+    #:
+    #: Conseguenza per chi legge il dato: `can_view_field(..., "elo")` deve
+    #: rispondere **True** anche quando la riga di impostazioni non esiste
+    #: ancora, al contrario di tutti gli altri campi.
+    show_elo = db.Column(db.Boolean, nullable=False, default=True)
 
     # Relationship
     user = db.relationship(
@@ -86,6 +103,7 @@ class UserPrivacySetting(BaseModel):
             "show_recent_matches": self.show_recent_matches,
             "show_classifications": self.show_classifications,
             "show_challenge_stats": self.show_challenge_stats,
+            "show_elo": self.show_elo,
         }
 
 

@@ -18,7 +18,7 @@ gara-turni: "A competition in progress as a player sees it: the matches of the r
 gara-classifica: "The standings of a finished competition, ordered by wins and rack difference."
 partita-segnapunti: "The match page: score at the top, scoreboard in the middle, list of racks played below."
 partita-rack: "The two scoreboard buttons: you press the one belonging to whoever won the rack."
-partita-tabellone: "The scoreboard with the phone turned sideways: the two large scores, one button per player at the bottom, and the X in the top left to go back to the page."
+partita-tabellone: "The scoreboard with the phone turned sideways: the two large scores, each player's Elo under their name, and the X in the top left to go back to the page."
 profilo: "The personal profile with statistics and rating."
 storico: "The history of competitions you have taken part in."
 notifiche: "The list of notifications received."

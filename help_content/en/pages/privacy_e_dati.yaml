@@ -51,9 +51,19 @@ blocks:
   - type: text
     text: >-
       From the privacy settings you decide which parts of your public profile
-      stay on: **statistics**, **recent matches**, **standings** and **drill
-      statistics**. Each one goes off as a whole — there is no way to hide a
-      single match and keep the others.
+      stay on: **statistics**, **recent matches**, **standings**, **drill
+      statistics** and **Elo**. Each one goes off as a whole — there is no way
+      to hide a single match and keep the others.
+
+  - type: note
+    tone: info
+    title: "Elo starts switched on"
+    text: >-
+      It is the only one of these that is visible from the start. Elo is the
+      number two players measure themselves by before the first break, and it
+      also appears under their names on the match scoreboard: if it started off,
+      almost nobody would see that comparison. Switch it off and it disappears
+      everywhere — profile, scoreboard, everywhere — except for you.
 
   - type: note
     tone: warning

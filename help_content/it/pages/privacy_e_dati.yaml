@@ -50,9 +50,19 @@ blocks:
   - type: text
     text: >-
       Dalle impostazioni di privacy decidi quali parti del tuo profilo pubblico
-      restano accese: **statistiche**, **partite recenti**, **classifiche** e
-      **statistiche esercizi**. Ognuna si spegne per intero — non c'è modo di
-      nascondere una singola partita e lasciare le altre.
+      restano accese: **statistiche**, **partite recenti**, **classifiche**,
+      **statistiche esercizi** e **Elo**. Ognuna si spegne per intero — non c'è
+      modo di nascondere una singola partita e lasciare le altre.
+
+  - type: note
+    tone: info
+    title: "L'Elo parte acceso"
+    text: >-
+      È l'unica di queste voci che nasce già visibile. L'Elo è il numero con cui
+      due giocatori si misurano prima di cominciare, e compare anche sotto il
+      nome nel tabellone della partita: se partisse spento, quel confronto non
+      lo vedrebbe quasi nessuno. Spegnendolo sparisce dappertutto — profilo,
+      tabellone, tutto — tranne che per te.
 
   - type: note
     tone: warning

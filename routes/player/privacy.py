@@ -28,6 +28,10 @@ def privacy_settings():
             show_recent_matches="show_recent_matches" in request.form,
             show_classifications="show_classifications" in request.form,
             show_challenge_stats="show_challenge_stats" in request.form,
+            # Opt-out: la casella non spuntata non arriva nel form, quindi
+            # l'assenza *e'* la scelta di nascondere. Vale per tutte, ma qui
+            # cambia il verso della domanda — vedi `PrivacyService`.
+            show_elo="show_elo" in request.form,
         )
         flash(_("Impostazioni privacy aggiornate con successo."), "success")
         return redirect(url_for("player.privacy_settings"))
