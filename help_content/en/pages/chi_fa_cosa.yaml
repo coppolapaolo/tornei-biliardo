@@ -46,20 +46,37 @@ blocks:
 
   - type: shot
     shot: dashboard-direttore
-    caption: "A competition director's home: the «New Competition» and «New Championship» buttons appear at the top, which a player does not see."
+    caption: "A competition director's home: the «New Competition» and «New Championship» buttons a player does not see, and below them the «How your competitions are going» panel."
 
   - type: text
     text: >-
-      The panel that greets you on the way in changes too: where a player reads
-      «How you are doing», anyone who has organised at least one competition
-      finds **«How your competitions are going»** — how many they have
-      organised, how many seats are taken out of those available, and how
-      registrations went competition by competition. If any of them is still to
-      be closed, a label next to the title says so. It is a report, nothing
-      more: there is nothing to tap inside it. And just as for a player it
-      shows only once, on the first visit to your home after signing in: then
-      it makes way for the competitions to follow, and comes back next time you
-      sign in.
+      The panel that greets you on the way in changes too, and it **follows the
+      last thing you did**: if you have just created a competition, or someone
+      has just registered for one of yours, you find **«How your competitions
+      are going»** — how many you have organised, how many seats are taken out
+      of those available, and how registrations went competition by
+      competition. If the last thing was a **match you played**, you find «How
+      you are doing» like any other player, with your Elo: people who organise
+      also play, and the panel reports what you are doing, not the role you
+      hold.
+
+  - type: text
+    text: >-
+      **Competitions still to be closed** are not lost in the switch: whichever
+      of the two panels you get, the label next to the title reminds you of
+      them. It is the only thing in there with a deadline.
+
+  - type: text
+    text: >-
+      At the bottom is the strip of your latest competitions, one tile each,
+      with the entries out of the total seats. The colour tells you at a glance
+      how filling is going — and competitions whose **entries are still open**
+      have a colour of their own, because they are the only ones you can still
+      do something about. Below it, a line puts every colour into words. It is
+      still a report, nothing more: there is nothing to tap inside it. And just
+      as for a player it shows only once, on the first visit to your home after
+      signing in: then it makes way for the competitions to follow, and comes
+      back next time you sign in.
 
   - type: note
     tone: warning

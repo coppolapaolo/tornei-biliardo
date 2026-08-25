@@ -1261,6 +1261,14 @@ input[type="number"].form-control {
   max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 .c7-board__name--behind { color: var(--c7-accent-dim); }
+/* L'Elo sotto il nome: si legge da vicino, non da due metri. Deve restare
+   sotto il punteggio nella gerarchia — chi guarda il tabellone dal tavolo
+   cerca le cifre grandi, non questa. */
+.c7-board__elo {
+  font-size: 12px; font-weight: 700; letter-spacing: .02em;
+  color: rgba(242, 248, 247, .62);
+  font-variant-numeric: tabular-nums;
+}
 .c7-board__num {
   font-family: var(--c7-font);
   font-size: clamp(72px, 22vh, 116px); font-weight: 800; letter-spacing: -.07em; line-height: .9;
@@ -1870,6 +1878,12 @@ button.c7-tpa-player:disabled { cursor: default; }
 .c7-feedback__swatch--ok     { background: var(--c7-ok); }
 .c7-feedback__swatch--err    { background: var(--c7-err); }
 .c7-feedback__swatch--accent { background: var(--c7-accent); }
+/* Il grigio medio delle tessere `neutral`, che finora non aveva pastiglia
+   perche' nessuna legenda lo nominava. */
+.c7-feedback__swatch--mid { background: var(--c7-chart-mid); }
+.c7-feedback__swatch--outline {
+  background: transparent; box-shadow: inset 0 0 0 1.5px var(--c7-chart-mid);
+}
 
 /* --- Il riquadro del grafico -------------------------------------------- */
 
@@ -1935,6 +1949,18 @@ button.c7-tpa-player:disabled { cursor: default; }
 .c7-feedback__tile--win  { background: var(--c7-ok);   color: #fff; }
 .c7-feedback__tile--draw { background: var(--c7-line); color: var(--c7-ink-soft); }
 .c7-feedback__tile--loss { background: var(--c7-err);  color: #fff; }
+/* Gara con le iscrizioni ancora aperte: non e' «quanto e' piena» ma «si sta
+   ancora riempiendo», ed e' l'unica su cui il direttore puo' fare qualcosa.
+   Percio' l'accento e non una gradazione di grigio: la differenza fra una gara
+   a meta' perche' e' aperta e una rimasta a meta' e chiusa e' tutta qui. */
+.c7-feedback__tile--open { background: var(--c7-accent); color: var(--c7-accent-ink); }
+/* Gara senza un massimo di posti: non c'e' un traguardo, quindi non c'e' un
+   riempimento da colorare. Il contorno tratteggiato dice proprio quello — il
+   numero degli iscritti resta, la barra di quanto manca no. */
+.c7-feedback__tile--uncapped {
+  background: transparent; color: var(--c7-ink-soft);
+  box-shadow: inset 0 0 0 1.5px var(--c7-chart-mid);
+}
 .c7-feedback__tile i { font-size: 11px; }
 /* Oltre sei attivita' il testo non ci sta: le tessere si stringono e i
    conteggi passano nella legenda sotto, che resta l'unico modo di non

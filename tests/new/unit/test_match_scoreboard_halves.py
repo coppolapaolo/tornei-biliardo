@@ -26,10 +26,14 @@ META_TOCCABILE = 'class="c7-board__side c7-board__side--tap"'
 
 
 class _User:
-    def __init__(self, user_id, username="Tizio", authenticated=True):
+    def __init__(self, user_id, username="Tizio", authenticated=True, elo=1350):
         self.id = user_id
         self.username = username
         self.is_authenticated = authenticated
+        # I due pool: il tabellone ne mostra uno solo, e quale lo decide il
+        # tipo di partita (`utils/elo_visibility.py`).
+        self.elo_rating = elo
+        self.elo_global_rating = elo
 
 
 class _Rack:
@@ -68,6 +72,10 @@ class _Match:
         self.match_distance = None
         self.is_race_to_sets = True
         self.gara = None
+        # Senza `gara_id` questa e' una sfida individuale, coerentemente con
+        # `gara = None` qui sopra: il tabellone scrive «Sfida individuale» in
+        # testata e accanto ai nomi mette l'Elo globale.
+        self.gara_id = None
         self.round_number = 1
         self.racks = racks if racks is not None else []
 
@@ -200,3 +208,63 @@ def test_le_funzioni_della_pagina_ospite_restano_le_sue(app, nome_funzione):
         )
 
     assert f"{nome_funzione}(1, this)" in html
+
+
+class TestLEloAccantoAlNome:
+    """Chi c'è dall'altra parte del tavolo, e quanto vale.
+
+    Prima di cominciare i due si misurano, e il tabellone è la schermata che
+    hanno davanti in quel momento. Il numero però non è sempre lo stesso: le
+    gare muovono l'Elo competitivo, le sfide individuali il globale — scrivere
+    l'uno al posto dell'altro non solleva niente, mostra solo un numero che
+    quella partita non muoverà mai (`utils/elo_visibility.py`).
+    """
+
+    def test_i_due_elo_compaiono_sotto_i_nomi(self, app):
+        html = _render(app, _Match())
+
+        assert html.count("c7-board__elo") == 2
+        assert "1350" in html
+
+    def test_la_sfida_individuale_dichiara_il_pool_globale(self, app):
+        """Il nome per esteso sta nel `title`: nella riga non ci sta."""
+        html = _render(app, _Match())
+
+        assert "Elo globale" in html
+        assert "Elo competitivo" not in html
+
+    def test_chi_lo_ha_spento_non_lo_mostra(self, app, db_session):
+        """`show_elo` è opt-out: acceso di suo, e sparisce quando lo si toglie."""
+        import uuid
+
+        from models.user.models import User
+        from models.user.privacy_models import UserPrivacySetting
+        from models.user.role_enum import UserRole
+
+        # Qui servono utenti veri: la preferenza vive su una riga con una
+        # chiave esterna, e il tabellone la interroga per id.
+        veri = []
+        for _ in range(2):
+            tag = uuid.uuid4().hex[:8]
+            u = User(
+                username=f"u_{tag}",
+                email=f"{tag}@example.test",
+                role=UserRole.PLAYER.value,
+            )
+            u.set_password("x")
+            db_session.add(u)
+            veri.append(u)
+        db_session.commit()
+
+        match = _Match()
+        match.player1_id, match.player2_id = veri[0].id, veri[1].id
+        match.player1 = _User(veri[0].id, "Rossi M.")
+        match.player2 = _User(veri[1].id, "Bianchi L.")
+
+        db_session.add(UserPrivacySetting(user_id=veri[1].id, show_elo=False))
+        db_session.commit()
+
+        html = _render(app, match, user=_User(veri[0].id, "Rossi M."))
+
+        # Resta quello di chi non l'ha spento: la scelta è di ciascuno.
+        assert html.count("c7-board__elo") == 1

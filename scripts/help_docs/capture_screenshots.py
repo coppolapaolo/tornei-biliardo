@@ -86,6 +86,13 @@ VIEWPORTS = {
 HIDE_CSS = """
 .debug-footer, .debug-banner, #debugFooter,
 [data-help-capture-hide] { display: none !important; }
+/* I messaggi flash: sono l'esito di un'azione appena compiuta, e nelle
+   schermate della guida non c'e' nessuna azione appena compiuta — solo il
+   login di servizio della cattura, che annuncia «Quick login effettuato
+   come ...». E' un artefatto dello strumento, che nessun utente vede mai.
+   Prima non si notava perche' la rinavigazione lo bruciava per strada; da
+   quando la dashboard si fotografa dove il login atterra (vedi sotto), no. */
+.c7-flashes { display: none !important; }
 /* L'animazione di ingresso delle card lascia elementi a meta' dissolvenza se
    lo scatto arriva troppo presto: qui si spegne ogni transizione. */
 *, *::before, *::after {
@@ -426,7 +433,19 @@ def _capture_one(
                     "Serve DEBUG_MODE attivo e l'utente nel database dimostrativo."
                 )
 
-        page.goto(f"{base_url}{shot['route']}", wait_until="networkidle")
+        # Se il login ci ha gia' portati dove volevamo, si resta li'.
+        #
+        # Non e' un risparmio: e' l'unico modo di fotografare la dashboard
+        # **appena entrati**. Il riquadro «Come stai andando» (e la sua
+        # variante «Come vanno le tue gare») si mostra una volta per sessione,
+        # al primo ingresso dopo il login — e `/debug/login/<utente>` reindirizza
+        # proprio alla dashboard, quindi era il redirect a consumare il turno.
+        # La rinavigazione arrivava sempre seconda, e le catture della home non
+        # hanno mai contenuto quel riquadro: le didascalie che lo descrivevano
+        # promettevano una cosa che nell'immagine non c'era.
+        destinazione = f"{base_url}{shot['route']}"
+        if not _stessa_pagina(page.url, destinazione):
+            page.goto(destinazione, wait_until="networkidle")
         page.add_style_tag(content=HIDE_CSS)
         if shot.get("full_page") or shot.get("clip"):
             page.add_style_tag(content=OVERLAY_CSS)
@@ -476,6 +495,19 @@ def _capture_one(
         return path
     finally:
         context.close()
+
+
+def _stessa_pagina(corrente: str, voluta: str) -> bool:
+    """Se due indirizzi puntano alla stessa pagina, ignorando coda e barra finale.
+
+    Serve a capire se il redirect del login ci ha gia' portati a destinazione.
+    Il confronto e' sul solo percorso: la query string non compare mai nelle
+    rotte del manifest, e la barra finale la mette o la toglie Flask a seconda
+    della regola.
+    """
+    da_pulire = (corrente or "", voluta or "")
+    percorsi = [urllib.parse.urlsplit(u).path.rstrip("/") or "/" for u in da_pulire]
+    return percorsi[0] == percorsi[1]
 
 
 def serve_app(base_url: str) -> subprocess.Popen:

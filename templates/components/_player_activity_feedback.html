@@ -165,7 +165,10 @@
     <div class="c7-feedback__striplegend">
       {% for key in fb.strip.legend %}
       <span>
-        <span class="c7-feedback__swatch c7-feedback__swatch--{{ {'win': 'ok', 'loss': 'err', 'draw': 'muted'}[key.outcome] }}"></span>{{ key.label }}
+        {# Il colore lo dice il servizio (`color_role`): la striscia del
+           direttore ha toni che qui non esisterebbero, e una tabella di
+           conversione nel template li farebbe cadere su un KeyError muto. #}
+        <span class="c7-feedback__swatch c7-feedback__swatch--{{ key.color_role }}"></span>{{ key.label }}
       </span>
       {% endfor %}
     </div>

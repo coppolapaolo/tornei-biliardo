@@ -67,6 +67,18 @@
         </span>
       </label>
 
+      {# L'unica che nasce accesa: l'Elo e' il numero con cui ci si misura, e
+         sul tabellone della partita serve a tutti e due i giocatori. #}
+      <label class="c7-choice" for="show_elo">
+        <span style="flex: 1;">
+          <span class="c7-choice__title">{{ _("Elo") }}</span>
+          <span class="c7-choice__desc">{{ _("Il tuo punteggio, anche sul tabellone delle partite che giochi.") }}</span>
+        </span>
+        <span class="form-switch form-check" style="padding-left: 0;">
+          <input class="form-check-input" type="checkbox" id="show_elo" name="show_elo" style="margin-left: 0;" {% if settings.show_elo %}checked{% endif %}>
+        </span>
+      </label>
+
       <label class="c7-choice" for="show_challenge_stats">
         <span style="flex: 1;">
           <span class="c7-choice__title">{{ _("Statistiche esercizi") }}</span>
