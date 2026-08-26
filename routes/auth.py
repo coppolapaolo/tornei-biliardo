@@ -281,15 +281,32 @@ def verify_email(token):
 def forgot_password():
     """Richiesta reset password"""
     if request.method == "POST":
-        email = request.form["email"]
-        if UserProfileService.request_password_reset(email):
+        # `request.form["email"]` sollevava KeyError — cioe' un 400 secco senza
+        # spiegazione — se il campo non arrivava (form parziale, client che non
+        # rispetta il `required`).
+        email = (request.form.get("email") or "").strip()
+        if not email:
+            flash(_("Inserisci l'indirizzo email del tuo account."), "error")
+        elif UserProfileService.request_password_reset(email):
+            # Lo stesso messaggio sia che l'email appartenga a qualcuno sia
+            # che non appartenga a nessuno: distinguere i due casi direbbe a
+            # chiunque quali indirizzi sono registrati sul sito.
             flash(
-                "Se l'email esiste, riceverai un link per resettare la password.",
+                _("Se l'email esiste, riceverai un link per resettare la password."),
                 "info",
             )
             return redirect(url_for("auth.login"))
         else:
-            flash("Errore nell'invio della richiesta.", "error")
+            # Questo ramo esisteva gia' ma non lo raggiungeva nessuno: l'esito
+            # dell'invio veniva scartato e l'utente leggeva comunque «riceverai
+            # un link», restando ad aspettare un'email mai partita.
+            flash(
+                _(
+                    "Non siamo riusciti a inviare l'email. "
+                    "Riprova fra qualche minuto."
+                ),
+                "error",
+            )
 
     return render_template("auth/forgot_password.html")
 
@@ -305,7 +322,7 @@ def reset_password(token):
             token=token, token_type="password_reset"
         ).first()
         if not token_obj or not token_obj.is_valid():
-            flash("Token non valido o scaduto.", "error")
+            flash(_("Token non valido o scaduto."), "error")
             return redirect(url_for("auth.login"))
 
     if request.method == "POST":
@@ -313,18 +330,21 @@ def reset_password(token):
         confirm_password = request.form["confirm_password"]
 
         if password != confirm_password:
-            flash("Le password non coincidono.", "error")
+            flash(_("Le password non coincidono."), "error")
             return render_template("auth/reset_password.html", token=token)
 
         try:
             if UserProfileService.reset_password_with_token(token, password):
                 flash(
-                    "Password aggiornata con successo! Ora puoi effettuare il login.",
+                    _(
+                        "Password aggiornata con successo! "
+                        "Ora puoi effettuare il login."
+                    ),
                     "success",
                 )
                 return redirect(url_for("auth.login"))
             else:
-                flash("Token non valido o scaduto.", "error")
+                flash(_("Token non valido o scaduto."), "error")
                 return redirect(url_for("auth.login"))
         except ValueError as e:
             flash(str(e), "error")

@@ -107,7 +107,7 @@ def _partita_di_gara(player1, player2):
 def _client_for(app, user):
     client = app.test_client()
     with client.session_transaction() as sess:
-        sess["_user_id"] = str(user.id)
+        sess["_user_id"] = user.get_id()
         sess["_fresh"] = True
     return client
 

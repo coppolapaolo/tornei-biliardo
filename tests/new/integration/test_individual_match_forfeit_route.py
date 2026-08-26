@@ -131,7 +131,7 @@ class TestIndividualMatchForfeitRoute:
         """POST /match/matches/<id>/forfeit should return success JSON."""
         # Login as player1
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(player1.id)
+            sess["_user_id"] = player1.get_id()
 
         response = client.post(
             f"/match/matches/{in_progress_match.id}/forfeit",
@@ -150,7 +150,7 @@ class TestIndividualMatchForfeitRoute:
         """Forfeit endpoint should update match to COMPLETED."""
         # Login as player1
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(player1.id)
+            sess["_user_id"] = player1.get_id()
 
         client.post(f"/match/matches/{in_progress_match.id}/forfeit")
 
@@ -165,7 +165,7 @@ class TestIndividualMatchForfeitRoute:
         """Forfeit endpoint should fail for non-players."""
         # Login as other_player (not in match)
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(other_player.id)
+            sess["_user_id"] = other_player.get_id()
 
         response = client.post(
             f"/match/matches/{in_progress_match.id}/forfeit",
@@ -183,7 +183,7 @@ class TestIndividualMatchForfeitRoute:
         """Forfeit endpoint should fail for completed matches."""
         # Login as player1
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(player1.id)
+            sess["_user_id"] = player1.get_id()
 
         response = client.post(
             f"/match/matches/{completed_match.id}/forfeit",
@@ -200,7 +200,7 @@ class TestIndividualMatchForfeitRoute:
         """Forfeit should preserve the forfeiting player's racks."""
         # Login as player1 (who will forfeit)
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(player1.id)
+            sess["_user_id"] = player1.get_id()
 
         # Player 1 forfeits
         client.post(f"/match/matches/{match_with_scores.id}/forfeit")
@@ -217,7 +217,7 @@ class TestIndividualMatchForfeitRoute:
         """Forfeit endpoint should redirect for non-JSON requests."""
         # Login as player1
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(player1.id)
+            sess["_user_id"] = player1.get_id()
 
         # Non-JSON request should redirect
         response = client.post(f"/match/matches/{in_progress_match.id}/forfeit")

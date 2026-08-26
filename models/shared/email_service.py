@@ -173,9 +173,17 @@ class EmailService:
         return EmailService.send_email(user.email, subject, html_content)
 
     @staticmethod
-    def send_password_reset_email(user: User, token: UserToken, base_url: str) -> bool:
-        """Send password reset email to user."""
-        reset_url = f"{base_url}/auth/reset-password/{token.token}"
+    def send_password_reset_email(
+        user: User, token: "UserToken | str", base_url: str
+    ) -> bool:
+        """Send password reset email to user.
+
+        `token` puo' essere l'oggetto o la sola stringa. Chi invia **dopo** il
+        commit (`UserProfileService.request_password_reset`) passa la stringa,
+        per non dipendere da un oggetto ORM che a quel punto e' scaduto.
+        """
+        token_str = token if isinstance(token, str) else token.token
+        reset_url = f"{base_url}/auth/reset-password/{token_str}"
 
         subject = f"Reset Password - {APP_NAME}"
         safe_username = escape(user.username)  # XSS: escape dato utente in HTML

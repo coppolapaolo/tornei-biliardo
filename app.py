@@ -222,10 +222,12 @@ def create_app(config_name=None):
 
     @login_manager.user_loader
     def load_user(user_id):
-        user = db.session.get(User, user_id)
-        if user and user.is_deleted:
-            return None
-        return user
+        # L'id di sessione non e' piu' il solo `user.id`: porta con se' una
+        # impronta della credenziale (`User.get_id()`), e qui la si verifica.
+        # Un cambio password rende quindi inservibili tutte le sessioni gia'
+        # aperte — che e' cio' che una persona si aspetta quando resetta la
+        # password proprio perche' qualcun altro era entrato nel suo account.
+        return User.from_session_id(user_id)
 
     # Context processor per debug info
     @app.context_processor

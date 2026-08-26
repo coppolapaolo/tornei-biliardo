@@ -167,7 +167,7 @@ class TestLeRotteDelBuilder:
 
     def test_la_pagina_si_apre(self, client, director):
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(director.id)
+            sess["_user_id"] = director.get_id()
 
         response = client.get("/challenges/builder")
 
@@ -188,7 +188,7 @@ class TestLeRotteDelBuilder:
             player_id = player.id
 
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(player_id)
+            sess["_user_id"] = db.session.get(User, player_id).get_id()
 
         response = client.get("/challenges/builder")
 
@@ -199,7 +199,7 @@ class TestLeRotteDelBuilder:
     ):
         """Non c'è un disegno da riaprire: si viene rimandati indietro."""
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(director.id)
+            sess["_user_id"] = director.get_id()
 
         response = client.get(f"/challenges/{drill_fotografato.id}/builder")
 
@@ -210,7 +210,7 @@ class TestLeRotteDelBuilder:
     ):
         """Modificare deve ripartire da com'era, non da un tavolo vuoto."""
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(director.id)
+            sess["_user_id"] = director.get_id()
 
         response = client.get(f"/challenges/{drill_disegnato.id}/builder")
 
@@ -222,7 +222,7 @@ class TestLeRotteDelBuilder:
         prima = Challenge.query.count()
 
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(director.id)
+            sess["_user_id"] = director.get_id()
 
         response = client.post(
             "/challenges/builder",

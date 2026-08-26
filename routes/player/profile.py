@@ -15,12 +15,13 @@ from flask import (
     url_for,
     flash,
 )
-from flask_login import login_required, current_user
+from flask_login import login_required, current_user, login_user
 from flask_babel import gettext as _
 
 from models import db, Gara, Inscription
 from models.status_enum import GaraStatus
 from models.campionato.models import Campionato
+from models.user.models import User
 from models.user.services import UserService
 from models.user.permission_service import UserPermissionService
 from utils import feature_required, player_only
@@ -382,6 +383,14 @@ def change_password():
 
     ok = UserService.change_password(current_user.id, current, new)
     if ok:
+        # La sessione e' legata alla credenziale (`User.get_id()`): cambiata la
+        # password, il cookie in corso non vale piu' e al prossimo click si
+        # finirebbe alla pagina di login. Si rinnova subito, cosi' chi cambia
+        # la **propria** password resta dentro — mentre le altre sessioni
+        # aperte altrove, che e' il punto, cadono.
+        utente = db.session.get(User, current_user.id)
+        if utente is not None:
+            login_user(utente)
         flash(_("Password aggiornata correttamente."), "success")
     else:
         flash(_("Password attuale errata o nuova password non valida."), "error")

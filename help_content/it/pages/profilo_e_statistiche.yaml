@@ -176,7 +176,10 @@ blocks:
           Riceverai un messaggio di verifica al nuovo indirizzo. Finché non lo
           confermi, il recupero password continua a passare dal vecchio.
       - title: "Per la password c'è una voce dedicata"
-        text: "Serve la password attuale: è la garanzia che sia davvero tu a cambiarla."
+        text: >-
+          Serve la password attuale: è la garanzia che sia davvero tu a
+          cambiarla. Cambiandola, gli altri dispositivi dove sei entrato
+          vengono disconnessi: dovrai rifare l'accesso con la password nuova.
 
   - type: faq
     items:
@@ -188,3 +191,7 @@ blocks:
         a: "Sì: nell'elenco delle partite recenti, con l'etichetta «Individuale», e nei conteggi delle partite giocate, vinte e perse. A tenerle fuori è solo il rating competitivo: per contarle serve quello globale."
       - q: "Chi vede il mio indirizzo email?"
         a: "Nessun altro giocatore. È conservato cifrato e serve solo alle comunicazioni dell'app."
+      - q: "Ho chiesto il link per la password più volte: quale uso?"
+        a: "L'ultimo arrivato. Ogni richiesta nuova annulla quelle precedenti, così un link vecchio finito nelle mani sbagliate non serve più a niente. Il link dura un giorno e vale una volta sola."
+      - q: "Qualcuno è entrato nel mio account: cosa faccio?"
+        a: "Cambia la password, dal profilo o con il recupero dalla pagina di accesso. Chi era entrato viene buttato fuori subito: gli accessi già aperti smettono di valere appena la password cambia."

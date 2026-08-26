@@ -64,7 +64,7 @@ class TestAvailabilitySurfaceRoutes:
     @staticmethod
     def _login(client, user):
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(user.id)
+            sess["_user_id"] = user.get_id()
             sess["_fresh"] = True
 
     # ---- manage_availability (GET) ----

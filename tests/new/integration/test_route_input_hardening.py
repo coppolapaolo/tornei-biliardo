@@ -32,7 +32,7 @@ def player_user(app):
 
 def _login(client, user):
     with client.session_transaction() as sess:
-        sess["_user_id"] = str(user.id)
+        sess["_user_id"] = user.get_id()
 
 
 def test_leaderboards_non_numeric_limit_no_500(client):

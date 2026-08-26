@@ -328,7 +328,7 @@ class TestRotte:
     def _client(app, user: User):
         client = app.test_client()
         with client.session_transaction() as session:
-            session["_user_id"] = str(user.id)
+            session["_user_id"] = user.get_id()
             session["_fresh"] = True
         return client
 

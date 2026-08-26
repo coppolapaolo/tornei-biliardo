@@ -62,7 +62,7 @@ def _login(client, user_id: int) -> None:
     chiamati durante il setup, e la pagina risponde 403 all'admin.
     """
     with client.session_transaction() as session:
-        session["_user_id"] = str(user_id)
+        session["_user_id"] = db.session.get(User, user_id).get_id()
         session["_fresh"] = True
 
 

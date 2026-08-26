@@ -47,7 +47,7 @@ class TestClassificationDisplay:
         with app.test_client() as client:
             # Login as admin
             with client.session_transaction() as sess:
-                sess["_user_id"] = str(admin_user.id)
+                sess["_user_id"] = admin_user.get_id()
                 sess["_fresh"] = True
 
             # 1. Create gara with 6 players (minimum required)
@@ -301,7 +301,7 @@ class TestClassificationDisplay:
         with app.test_client() as client:
             # Login as admin
             with client.session_transaction() as sess:
-                sess["_user_id"] = str(admin_user.id)
+                sess["_user_id"] = admin_user.get_id()
                 sess["_fresh"] = True
 
             # 1. Create gara with 6 players (minimum required)
@@ -367,7 +367,7 @@ class TestClassificationDisplay:
         with app.test_client() as client:
             # Login as admin
             with client.session_transaction() as sess:
-                sess["_user_id"] = str(admin_user.id)
+                sess["_user_id"] = admin_user.get_id()
                 sess["_fresh"] = True
 
             # 1. Create gara with 6 players (minimum required)
@@ -477,7 +477,7 @@ class TestClassificationDisplay:
         with app.test_client() as client:
             # Login as admin
             with client.session_transaction() as sess:
-                sess["_user_id"] = str(admin_user.id)
+                sess["_user_id"] = admin_user.get_id()
                 sess["_fresh"] = True
 
             # 1. Create gara with 6 players (minimum required)
@@ -591,7 +591,7 @@ class TestClassificationDisplay:
         with app.test_client() as client:
             # Login as admin
             with client.session_transaction() as sess:
-                sess["_user_id"] = str(admin_user.id)
+                sess["_user_id"] = admin_user.get_id()
                 sess["_fresh"] = True
 
             # 1. Create gara with 6 players (minimum required)
@@ -706,7 +706,7 @@ class TestClassificationDisplay:
         with app.test_client() as client:
             # Login as admin
             with client.session_transaction() as sess:
-                sess["_user_id"] = str(admin_user.id)
+                sess["_user_id"] = admin_user.get_id()
                 sess["_fresh"] = True
 
             # 1. Create gara with 6 players

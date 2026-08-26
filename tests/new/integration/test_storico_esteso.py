@@ -410,7 +410,7 @@ class TestCancellareUnaProvaDalloStorico:
             prova_id, giocatore_id = prova.id, giocatore.id
 
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(giocatore_id)
+            sess["_user_id"] = db.session.get(User, giocatore_id).get_id()
         risposta = client.post(f"/player/history/drill/{prova_id}/delete")
 
         assert risposta.status_code in (301, 302)
@@ -430,7 +430,7 @@ class TestCancellareUnaProvaDalloStorico:
         db_session.commit()
 
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(io_.id)
+            sess["_user_id"] = io_.get_id()
         client.post(f"/player/history/drill/{prova.id}/delete")
 
         _, stats = PlayerHistoryService.get_drill_history(altro.id, HistoryFilters())

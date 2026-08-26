@@ -536,6 +536,9 @@ grafo anti-rematch. Non reimplementare algoritmi su grafi — usa `nx`, è già 
 | Datare a `today` una gara che il programma crea dentro un campionato | Le gare numerate stanno in ordine cronologico (ADR-016) e il controllo **non** salta le soft-eliminate. La gara di playoff nasceva datata oggi pur essendo l'ultima del calendario: con una gara ancora nel futuro — anche solo una pianificata e mai giocata, che la terminazione cancella — veniva rifiutata, e al posto della finale compariva un messaggio. La data si sceglie a partire dall'ultima gara, non dall'orologio (`test_playoff_gara_date_sequence.py`) |
 | Aprire una PR con un titolo senza prefisso `fix:`/`feat:`/… | Con lo squash merge il titolo **è** il messaggio di commit su `main`, e release-please ne ricava la versione: una PR senza prefisso non alza il numero e non compare in `docs/RELEASES.md`, senza dire niente a nessuno. Il job `pr-title` la blocca prima (vedi CI/CD, punto 4) |
 | Modificare `Config.VERSION` (o `.release-please-manifest.json`) a mano | Le scrive release-please nella PR di rilascio, e il manifest è la sua memoria: correggere la versione a mano fa ripartire il rilascio successivo dal numero vecchio. La riga di `config.py` va lasciata con la sua annotazione `# x-release-please-version` — senza, il bot smette di aggiornarla e il footer si congela in silenzio (`test_version_single_source.py`) |
+| `sess["_user_id"] = str(user.id)` in un test | `user.get_id()` (ADR-055): l'id di sessione porta un'impronta della credenziale, e l'id nudo produce un client **non autenticato** — i test falliscono con 302 verso il login senza dire perché |
+| Verificare in un test che una sessione sia caduta, senza ripulire `g` | In questa suite `g` **non è per-richiesta**: Flask-Login trova l'utente già in cache e non richiama mai `load_user`, quindi il test passa sempre — anche col controllo rimosso (verificato sabotandolo). Cancella `g._login_user` prima della verifica, come fa `_simula_richiesta_nuova()` in `test_recupero_password.py` |
+| Chiudere le righe di `user_session` per «buttare fuori» qualcuno | `user_session` è **analitica**: misura le permanenze, non autentica. Il cookie non la consulta, quindi chiuderne le righe cambia le statistiche e lascia l'intruso dov'è (ADR-055) |
 
 ---
 
@@ -576,6 +579,7 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [051](docs/adr/ADR-051-quick-start-moves-the-acceptance-to-the-end.md) | avvio rapido: partita già in corso, accettazione spostata alla doppia conferma |
 | [053](docs/adr/ADR-053-playoff-weight-and-final-ranking-mode.md) | `Gara.weight` con aggregazione per gara; modalità di classifica finale del playoff |
 | [054](docs/adr/ADR-054-version-from-pull-request-titles.md) | la versione nasce dai titoli delle PR (Conventional Commits + release-please); `CHANGELOG.md` a mano, `docs/RELEASES.md` generato |
+| [055](docs/adr/ADR-055-session-bound-to-credential.md) | la sessione porta un'impronta della credenziale: cambiare password invalida le sessioni aperte |
 
 ---
 

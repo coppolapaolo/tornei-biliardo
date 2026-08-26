@@ -80,7 +80,7 @@ def pass_fail_drill(app, author):
 
 def login(client, user):
     with client.session_transaction() as sess:
-        sess["_user_id"] = str(user.id)
+        sess["_user_id"] = user.get_id()
 
 
 def attempts_of(user, challenge):
@@ -138,7 +138,7 @@ class TestSchermataDiAllenamento:
             admin_id = admin.id
 
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(admin_id)
+            sess["_user_id"] = db.session.get(User, admin_id).get_id()
         response = client.get(f"/challenges/{drill_id}/train")
 
         assert response.status_code == 302

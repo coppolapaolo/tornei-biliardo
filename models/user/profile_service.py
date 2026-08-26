@@ -12,7 +12,7 @@ from models.user.role_enum import UserRole
 from models.transaction.manager import transactional, read_only
 from models.user.tokens import UserToken
 from models.shared.email_service import EmailService
-from flask import request  # For base_url
+from flask import current_app, request  # For base_url
 from flask_babel import gettext as _
 
 
@@ -616,6 +616,41 @@ class UserProfileService:
 
     @staticmethod
     @transactional(domain="user")
+    def _prepara_reset_password(email: str) -> Optional[tuple]:
+        """Crea il token di reset e restituisce cosa serve per scrivere l'email.
+
+        Sta separata dall'invio per una ragione precisa: `EmailService` fa
+        partire l'invio **in un thread**, e finche' questa transazione non ha
+        committato il token non esiste ancora sul database. Inviando da dentro,
+        un commit fallito lascerebbe l'utente con in mano un link che non
+        funzionera' mai — e un commit lento gli darebbe un link che «non vale»
+        per qualche istante, senza spiegazione.
+
+        E' lo stesso motivo per cui `create_user` non invia l'email di verifica
+        da dentro la transazione ma la rimanda a `send_pending_verification_email`
+        (vedi il commento li'): qui la lezione mancava.
+
+        Returns:
+            `(user_id, token, base_url)`, oppure `None` se quell'email non
+            appartiene a nessuno — caso in cui non si invia niente e non si
+            rivela niente.
+        """
+        user = UserProfileService.get_user_by_email(email)
+        if not user:
+            return None  # nessuna rivelazione: il chiamante risponde come sempre
+
+        # I link chiesti prima smettono di valere. Chiederne uno nuovo e'
+        # spesso il gesto di chi teme che il primo sia finito dove non doveva
+        # (email inoltrata, casella condivisa): lasciarli tutti attivi per 24
+        # ore vanificherebbe proprio quel gesto.
+        UserToken.query.filter_by(
+            user_id=user.id, token_type="password_reset", is_used=False
+        ).update({"is_used": True}, synchronize_session=False)
+
+        token = UserToken.create_token(user.id, "password_reset")
+        return user.id, token.token, request.host_url.rstrip("/")
+
+    @staticmethod
     def request_password_reset(email: str) -> bool:
         """Request password reset for user.
 
@@ -623,22 +658,37 @@ class UserProfileService:
             email: User email
 
         Returns:
-            bool: True if request processed (even if user not found, for
-                security against user enumeration), False on error.
+            bool: True se la richiesta e' andata a buon fine — compreso il caso
+                in cui quell'email non appartenga a nessuno, che deve essere
+                indistinguibile dall'altro. False **solo** se l'email doveva
+                partire e non e' partita.
         """
-        user = UserProfileService.get_user_by_email(email)
-        if not user:
-            return True  # Return True to prevent user enumeration
+        preparazione = UserProfileService._prepara_reset_password(email)
+        if preparazione is None:
+            return True  # nessun utente con quell'email: nulla da inviare
 
-        try:
-            token = UserToken.create_token(user.id, "password_reset")
-            EmailService.send_password_reset_email(
-                user, token, request.host_url.rstrip("/")
-            )
-        except Exception:
+        user_id, token, base_url = preparazione
+        user = db.session.get(User, user_id)
+        if user is None:  # pragma: no cover - l'abbiamo appena creato
             return False
 
-        return True
+        try:
+            inviata = EmailService.send_password_reset_email(user, token, base_url)
+        except Exception as e:
+            current_app.logger.error(f"Reset password: invio fallito ({e})")
+            return False
+
+        if not inviata:
+            # Prima questo esito veniva scartato, e chi aveva chiesto il reset
+            # leggeva comunque «riceverai un link»: se la posta era rotta — o
+            # non configurata affatto — il recupero password restava morto
+            # senza un solo sintomo. Ora l'errore si vede nei log (GlitchTip) e
+            # il chiamante lo riferisce a chi sta aspettando.
+            current_app.logger.error(
+                "Reset password: l'email non e' partita "
+                f"(utente {user_id}); servizio di posta non disponibile?"
+            )
+        return inviata
 
     @staticmethod
     @transactional(domain="user")
@@ -668,7 +718,24 @@ class UserProfileService:
         user.set_password(new_password)
         token.mark_as_used()
 
-        # Invalidate other sessions/tokens if needed (optional)
+        # Chi arriva qui ha letto un link recapitato a quella casella: ha
+        # dimostrato di controllarla, che e' esattamente cio' che la verifica
+        # dell'email accerta. Lasciarlo «non verificato» significava mostrargli
+        # al login l'avviso «senza email confermata non potrai recuperare la
+        # password» — proprio a chi l'aveva appena recuperata.
+        user.is_verified = True
+
+        # Gli altri link di reset ancora in giro non servono piu'.
+        UserToken.query.filter(
+            UserToken.user_id == user.id,
+            UserToken.token_type == "password_reset",
+            UserToken.is_used.is_(False),
+        ).update({"is_used": True}, synchronize_session=False)
+
+        # Le sessioni gia' aperte cadono da se': `User.get_id()` porta con se'
+        # un'impronta di `password_hash`, che `set_password` ha appena
+        # cambiato. Chi era dentro con la vecchia password si ritrova fuori —
+        # ed e' il motivo per cui molta gente resetta la password.
 
         return True
 

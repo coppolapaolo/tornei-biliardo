@@ -68,6 +68,7 @@ Crea un ADR quando:
 | ADR-052 | [Fra Elo iterativo a rack e rifit globale si decide misurando](ADR-052-rating-model-decided-by-measurement.md) | Accepted | 2026-08-21 |
 | ADR-053 | [Il peso della prova, e chi decide la classifica finale](ADR-053-playoff-weight-and-final-ranking-mode.md) | Accepted | 2026-08-23 |
 | ADR-054 | [La versione la decidono i titoli delle PR](ADR-054-version-from-pull-request-titles.md) | Accepted | 2026-08-26 |
+| ADR-055 | [La sessione è legata alla credenziale](ADR-055-session-bound-to-credential.md) | Accepted | 2026-08-26 |
 
 ## Come Creare un Nuovo ADR
 
