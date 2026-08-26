@@ -411,7 +411,10 @@
                 <div class="text-center" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
                     <span>{{ config.APP_NAME }}</span>
                     {# La versione in chiaro: dice quale rilascio sta girando
-                       senza dover leggere un log. La fonte e' Config.VERSION. #}
+                       senza dover leggere un log. La fonte e' Config.VERSION,
+                       che dal 2026-08-26 scrive release-please a ogni rilascio
+                       (CLAUDE.md, CI/CD punto 4): qui non c'e' niente da
+                       aggiornare a mano. #}
                     <span class="c7-sep mx-2">&middot;</span>
                     <span>v{{ config.VERSION }}</span>
                     {# Il mini-sito di aiuto sta nel footer perche' deve essere
