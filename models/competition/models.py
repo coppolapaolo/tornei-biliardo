@@ -184,6 +184,13 @@ class Gara(SoftDeleteMixin, db.Model):
     anti_rematch_enabled = db.Column(
         db.Boolean, default=True
     )  # Evita reincontri tra giocatori
+    # A chi tocca la X nel primo turno quando i giocatori sono dispari e la
+    # policy è "bye" (o "bye con esercizio"): False = la sorteggia
+    # l'algoritmo, True = va all'ultimo iscritto. Il resto degli abbinamenti
+    # resta casuale in entrambi i casi. Scelto dal direttore all'avvio, e
+    # persistito come `draw_seed`: dice come è stato fatto quel sorteggio.
+    # Vedi models/matchmaking/bye_preference.py.
+    bye_to_last_inscribed = db.Column(db.Boolean, nullable=False, default=False)
 
     # ── Configurazione a tabellone (eliminazione diretta / doppio KO) ──────
     # Separazione dei compagni di squadra nel sorteggio del primo turno.

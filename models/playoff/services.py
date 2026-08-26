@@ -207,7 +207,7 @@ class PlayoffService:
 
         I giocatori qualificati spesso rispondono a voce, in sala: senza
         questa strada l'invito resterebbe `PENDING` fino alla scadenza, e la
-        cascata dei rifiuti (SPECIFICHE.md riga 186) non partirebbe mai per
+        cascata dei rifiuti (SPECIFICHE.md riga 188) non partirebbe mai per
         chi ha detto no al telefono.
 
         È la stessa transizione che fa il giocatore — stessi controlli, stesso
@@ -317,7 +317,7 @@ class PlayoffService:
         # La finestra va allargata **oltre** i posti, altrimenti si guarda
         # esattamente l'insieme di chi ha già una qualificazione — declinante
         # compreso, che resta in elenco con status DECLINED — e il sostituto
-        # non si trova mai (SPECIFICHE.md riga 186: l'invito «passa al primo
+        # non si trova mai (SPECIFICHE.md riga 188: l'invito «passa al primo
         # degli esclusi e così via»). Quante posizioni in più: una per ogni
         # qualificazione già emessa, perché nel caso peggiore hanno rifiutato
         # tutti e la cascata deve poter scorrere fino in fondo alla classifica.

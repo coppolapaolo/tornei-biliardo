@@ -42,6 +42,7 @@ import pytest
 from models.classification.score_aggregator import ScoreAggregator
 from models.competition.models import Gara, Inscription
 from models.competition.spareggio_service import SpareggioService
+from models.matchmaking import bye_preference
 from models.status_enum import Discipline, GaraStatus, MatchStatus
 from models.match.models import Match
 from models.playoff.models import (
@@ -156,12 +157,82 @@ class TestSistemiDiClassifica:
         assert SpareggioService.tiebreakers_apply_to(gara) is True
 
 
+# ══ A chi tocca la X nel primo turno ═════════════════════════════════════
+
+
+@pytest.mark.unit
+class TestAChiToccaLaXNelPrimoTurno:
+    """`SPECIFICHE.md` riga 67.
+
+    > all'avvio il direttore può assegnare la X **all'ultimo iscritto** invece
+    > di lasciarla al caso [...] Il resto degli abbinamenti resta casuale: chi
+    > riceve la X viene scambiato di posto con chi l'aveva sorteggiata, e
+    > nient'altro si muove.
+
+    Qui si verifica *quando* la domanda si pone e *chi* è "l'ultimo iscritto".
+    Che lo scambio conservi le garanzie del sorteggio (una X a testa, nessun
+    reincontro) lo verifica
+    `tests/new/integration/test_x_al_ultimo_iscritto.py`, che ha bisogno di
+    generare i turni veri.
+    """
+
+    @staticmethod
+    def _iscrivi(db_session, gara: Gara, quanti: int) -> list[User]:
+        giocatori = []
+        for _ in range(quanti):
+            giocatore = _utente(db_session)
+            db_session.add(Inscription(gara_id=gara.id, user_id=giocatore.id))
+            giocatori.append(giocatore)
+        db_session.flush()
+        return giocatori
+
+    def test_si_pone_solo_con_amalfi_o_casuale_dispari_e_la_x(self, db_session):
+        gara = _gara(db_session)
+        self._iscrivi(db_session, gara, 5)
+
+        assert bye_preference.choice_applies(gara) is True
+
+        gara.matchmaking_strategy = "random"
+        assert bye_preference.choice_applies(gara) is True
+
+        # Fuori dalle due strategie la X non è una sola e la domanda decade.
+        gara.matchmaking_strategy = "round_robin"
+        assert bye_preference.choice_applies(gara) is False
+
+    def test_col_trio_non_ci_sono_x_da_assegnare(self, db_session):
+        gara = _gara(db_session)
+        self._iscrivi(db_session, gara, 5)
+        gara.odd_number_policy = "trio"
+
+        assert bye_preference.choice_applies(gara) is False
+
+    def test_con_giocatori_pari_non_ci_sono_x_da_assegnare(self, db_session):
+        gara = _gara(db_session)
+        self._iscrivi(db_session, gara, 6)
+
+        assert bye_preference.choice_applies(gara) is False
+
+    def test_l_ultimo_iscritto_e_l_ultimo_arrivato_fra_chi_gioca(self, db_session):
+        gara = _gara(db_session)
+        giocatori = self._iscrivi(db_session, gara, 5)
+
+        assert bye_preference.last_inscribed_user_id(gara) == giocatori[-1].id
+
+    def test_senza_la_scelta_la_x_resta_al_sorteggio(self, db_session):
+        """Il default è il comportamento storico, non la novità."""
+        gara = _gara(db_session)
+        self._iscrivi(db_session, gara, 5)
+
+        assert gara.bye_to_last_inscribed in (False, None)
+        assert bye_preference.preferred_bye_player(gara) is None
+
+
 # ══ La X (bye) ═══════════════════════════════════════════════════════════
 
 
 @pytest.mark.unit
 class TestQuantoValeLaX:
-    """`SPECIFICHE.md` righe 64 e 69."""
+    """`SPECIFICHE.md` righe 64 e 71."""
 
     @staticmethod
     def _con_la_x(db_session, gara: Gara, giocatore: User, punteggio: int) -> Match:
@@ -181,7 +252,7 @@ class TestQuantoValeLaX:
         return partita
 
     def test_la_x_vale_una_vittoria(self, db_session):
-        """`SPECIFICHE.md` riga 69.
+        """`SPECIFICHE.md` riga 71.
 
         > **Bye**: un giocatore salta il turno (solo per sistema WINS: ottiene
         > 1 vittoria, 0 diff rack)
@@ -195,7 +266,7 @@ class TestQuantoValeLaX:
         assert _punteggi(gara.id)[giocatore.id].matches_won == 1
 
     def test_la_x_nasce_senza_triangoli(self, db_session):
-        """`SPECIFICHE.md` righe 64 e 69, **alla fonte**.
+        """`SPECIFICHE.md` righe 64 e 71, **alla fonte**.
 
         > abbina un giocatore alla X assegnando il match vinto, ma con **zero
         > differenza punti**
@@ -225,7 +296,7 @@ class TestQuantoValeLaX:
         assert partita.player1_score == 0
 
     def test_la_x_da_zero_differenza_rack(self, db_session):
-        """`SPECIFICHE.md` righe 64 e 69, **in classifica**.
+        """`SPECIFICHE.md` righe 64 e 71, **in classifica**.
 
         La conseguenza del test precedente sul punteggio aggregato: con zero
         triangoli vinti e nessuno perso, la differenza resta ferma e chi riposa

@@ -39,6 +39,19 @@ blocks:
           se ne libera uno.
 
   - type: note
+    tone: tip
+    title: "Se i giocatori sono dispari, scegli tu a chi va la X"
+    text: >-
+      Quando gli iscritti sono dispari e la gara gestisce il caso con l'X a
+      tavolino (o con un esercizio al posto dell'X), toccando «Avvia Primo
+      Turno» l'app ti chiede una cosa in più: se l'X deve andare **all'ultimo
+      iscritto** oppure a sorteggio, come sempre. Serve quando l'ultimo
+      arrivato è quello che ha completato il numero all'ultimo momento. Gli
+      altri abbinamenti restano casuali in tutti e due i casi. La domanda non
+      compare nelle gare con il trio, né quando i giocatori sono in numero
+      pari: lì non c'è nessuna X da assegnare.
+
+  - type: note
     tone: info
     title: "Il sorteggio è riproducibile"
     text: >-

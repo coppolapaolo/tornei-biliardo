@@ -228,6 +228,14 @@ hints:
     page: condurre_la_gara
     section: turni_successivi
 
+  - id: gara.x_ultimo_iscritto
+    label: "A chi va la X del primo turno?"
+    short: "Con i giocatori dispari: l'X a tavolino la sorteggia l'app, oppure la dai all'ultimo iscritto. Gli altri abbinamenti restano casuali."
+    anchor: gara-x-ultimo-iscritto
+    screens: [admin.competition.gara_detail]
+    page: condurre_la_gara
+    section: primo_turno
+
   - id: gara.sorteggia_tabellone
     label: "Sorteggia il tabellone"
     short: "Nelle gare a tabellone sostituisce «Avvia Primo Turno»: chiude le iscrizioni, congela le squadre e fissa il percorso di tutti fino alla finale."

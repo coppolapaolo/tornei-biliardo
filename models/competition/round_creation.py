@@ -120,7 +120,7 @@ def create_matches_from_pairings(
     winning_score = round_distance
 
     # La X *non* è un forfeit, e non prende il punteggio pieno.
-    # `SPECIFICHE.md` righe 64 e 69: la X assegna «il match vinto, ma con zero
+    # `SPECIFICHE.md` righe 64 e 71: la X assegna «il match vinto, ma con zero
     # differenza punti», così chi riposa si piazza «migliore di tutti i
     # perdenti e peggiore di tutti i vincenti». Con `round_distance` era il
     # contrario — la X valeva quanto la vittoria più larga possibile e chi

@@ -507,6 +507,11 @@
 <!-- Modal Modifica Date -->
 {% include "components/_modify_dates_modal.html" %}
 
+<!-- Modal "a chi va la X" (solo se la domanda ha senso per questa gara) -->
+{% if x_choice_last_inscribed %}
+{% include "components/_x_choice_modal.html" %}
+{% endif %}
+
 <!-- Modal Gestione Challenge (solo per gare Random con challenge_mode abilitato) -->
 {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
 {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value and challenge_enabled %}
@@ -794,6 +799,11 @@
   {% if user_can_manage %}
   // JavaScript functions per admin/director (tutto il codice JavaScript da admin/gara_detail.html)
   function startFirstRound(provaId, strategy) {
+    // Quando c'e' una X da assegnare, la conferma secca lascia il posto al
+    // modale che chiede anche a chi tocca: e' la stessa domanda, con una
+    // scelta in piu'. Il form del modale posta da solo.
+    if (openXChoiceModal()) return;
+
     let message;
     if (strategy === {{ MatchmakingStrategy.RANDOM.value|tojson }}) {
       message = GARA_CONFIG.i18n.confirmStartRandom;
@@ -829,6 +839,28 @@
       document.body.appendChild(form);
       form.submit();
     });
+  }
+
+  // Apre il modale "a chi va la X", se questa gara ce l'ha. Ritorna false
+  // quando non c'e' (gare pari, trio, tabellone...): il chiamante prosegue
+  // con la conferma di sempre.
+  function openXChoiceModal() {
+    const modal = document.getElementById('xChoiceModal');
+    if (!modal) return false;
+
+    // Ultimo istante utile per le categorie: dopo l'avvio decidono gia' quali
+    // partite contano per l'Elo. Il testo arriva composto dal server ed e'
+    // riscritto a ogni salvataggio, quindi si legge ora e non all'apertura
+    // della pagina.
+    const warn = document.getElementById('xChoiceCategoriaWarn');
+    const warnText = document.getElementById('xChoiceCategoriaWarnText');
+    if (warn && warnText) {
+      warnText.textContent = GARA_CONFIG.i18n.warnSenzaCategoria || '';
+      warn.style.display = GARA_CONFIG.i18n.warnSenzaCategoria ? '' : 'none';
+    }
+
+    bootstrap.Modal.getOrCreateInstance(modal).show();
+    return true;
   }
 
   function showScheduleOverlay() {

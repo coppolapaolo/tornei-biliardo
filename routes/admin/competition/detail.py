@@ -541,9 +541,29 @@ def gara_detail(gara_id):
         if token:
             public_invite_url = url_for("main.gara_invite", token=token, _external=True)
 
+    # Chi riceve la X del primo turno. La domanda si pone solo per gare
+    # amalfi/casuali col primo turno a sorteggio e i dispari gestiti dalla X,
+    # e solo mentre la gara è ancora da avviare: dopo non c'è più niente da
+    # decidere. Vedi models/matchmaking/bye_preference.py.
+    x_choice_last_inscribed = None
+    if user_can_manage and gara.current_round == 0:
+        from models.matchmaking import bye_preference
+
+        if bye_preference.choice_applies(gara):
+            last_user_id = bye_preference.last_inscribed_user_id(gara)
+            x_choice_last_inscribed = next(
+                (
+                    inscription.user
+                    for inscription in inscriptions
+                    if inscription.user_id == last_user_id
+                ),
+                None,
+            )
+
     return render_template(
         "gara_detail.html",
         gara=gara,
+        x_choice_last_inscribed=x_choice_last_inscribed,
         can_inscribe_now=can_inscribe_now,
         show_login_to_inscribe=show_login_to_inscribe,
         public_invite_url=public_invite_url,

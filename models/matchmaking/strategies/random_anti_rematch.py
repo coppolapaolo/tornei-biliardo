@@ -111,9 +111,19 @@ class RandomAntiRematchStrategy(BaseStrategy):
         if schedule is not None and 1 <= round_number <= len(schedule):
             return list(schedule[round_number - 1])
 
-        return self._generate_valid_random_pairings(
+        pairings = self._generate_valid_random_pairings(
             player_ids, set(), round_number, gara
         )
+        if round_number == 1:
+            # Path incrementale: qui i turni nascono uno alla volta leggendo
+            # gli incontri già giocati, quindi lo scambio sul primo turno non
+            # può contraddire i successivi — sono ancora da generare.
+            from models.matchmaking import bye_preference
+
+            pairings = bye_preference.apply_to_round(
+                pairings, bye_preference.preferred_bye_player(gara)
+            )
+        return pairings
 
     def _get_or_build_schedule(
         self, gara: Gara, player_ids: List[int]
@@ -130,19 +140,52 @@ class RandomAntiRematchStrategy(BaseStrategy):
         if not isinstance(n_rounds, int) or n_rounds < 1:
             return None
 
+        from models.matchmaking import bye_preference
+
+        preferred_bye = bye_preference.preferred_bye_player(gara)
+
         signature = (
             getattr(gara, "id", None),
             tuple(sorted(player_ids)),
             n_rounds,
             getattr(gara, "odd_number_policy", None),
+            preferred_bye,
         )
         if self._schedule_signature == signature:
             return self._precomputed_schedule
 
         schedule = self._pre_generate_full_schedule(gara, player_ids, n_rounds)
+        if schedule is not None:
+            schedule = self._relabel_for_preferred_bye(schedule, preferred_bye)
         self._precomputed_schedule = schedule
         self._schedule_signature = signature
         return schedule
+
+    def _relabel_for_preferred_bye(
+        self, schedule: List[List[Pairing]], preferred_bye: Optional[int]
+    ) -> List[List[Pairing]]:
+        """Porta la X del primo turno al giocatore scelto dal direttore.
+
+        Lo scambio è su **tutto** lo schedule, non sul solo primo turno. Qui i
+        turni sono già tutti generati e ogni giocatore ha una X sola: spostare
+        la X del turno 1 senza toccare il resto ne regalerebbe due al
+        destinatario e introdurrebbe un reincontro. Scambiare le identità
+        ovunque è invece una pura rietichettatura — la struttura dipende dalle
+        posizioni, non dai nomi — e conserva tutte le garanzie del sorteggio.
+        """
+        from models.matchmaking import bye_preference
+
+        if preferred_bye is None or not schedule:
+            return schedule
+
+        drawn = bye_preference.bye_player_in(schedule[0])
+        if drawn is None or drawn == preferred_bye:
+            return schedule
+
+        return [
+            bye_preference.swap_players(round_pairings, drawn, preferred_bye)
+            for round_pairings in schedule
+        ]
 
     def _pre_generate_full_schedule(
         self, gara: Gara, player_ids: List[int], n_rounds: int
