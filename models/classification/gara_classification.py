@@ -409,13 +409,9 @@ class StrategyBasedClassificationService:
                 player_id=rc.user_id,
                 matches_won=rc.matches_won,
                 rack_difference=rc.rack_difference or 0,
-                # `ranking_rack_value` copre le righe pre-separazione, dove
-                # `racks_won` è NULL e il totale stava in `rack_difference`.
-                racks_won=(
-                    rc.racks_won
-                    if rc.racks_won is not None
-                    else (rc.ranking_rack_value if rc.is_rack_ranking else 0)
-                ),
+                # `total_racks_value` è sempre il totale, e copre le righe
+                # pre-separazione dove `racks_won` è NULL.
+                racks_won=rc.total_racks_value,
                 previous_position=rc.previous_position,
             )
             entries.append(
