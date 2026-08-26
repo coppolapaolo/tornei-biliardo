@@ -9,8 +9,11 @@ Updated: Added encryption for personal data (email, phone) per SPECIFICHE.md
 
 from __future__ import annotations
 
+import hashlib
+import hmac
 from typing import Any, Dict, List, TYPE_CHECKING
 
+from flask import current_app
 from flask_login import UserMixin
 from sqlalchemy.orm import validates
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -161,6 +164,55 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password_hash, password)
+
+    def auth_fingerprint(self) -> str:
+        """Impronta breve della credenziale attuale, per legarci la sessione.
+
+        Cambia ogni volta che cambia `password_hash`, ed e' questo che rende
+        efficace un cambio password: chi ha in mano un cookie emesso prima
+        porta un'impronta che non torna piu'.
+
+        E' un HMAC con `SECRET_KEY` e non un pezzo di `password_hash` grezzo:
+        il valore finisce dentro un cookie, e da un frammento di hash si puo'
+        montare un attacco offline sulla password. Da un HMAC no, senza il
+        segreto del server.
+        """
+        segreto = (current_app.config.get("SECRET_KEY") or "").encode()
+        materiale = (self.password_hash or "").encode()
+        return hmac.new(segreto, materiale, hashlib.sha256).hexdigest()[:16]
+
+    def get_id(self) -> str:
+        """Identificatore di sessione: id **piu'** impronta della credenziale.
+
+        `UserMixin` restituirebbe il solo `id`, e una sessione aperta con la
+        vecchia password resterebbe valida per sempre — anche dopo un reset
+        fatto proprio perche' qualcun altro era entrato. Vedi
+        `load_user()` in `app.py`, che e' la meta' che verifica.
+        """
+        return f"{self.id}.{self.auth_fingerprint()}"
+
+    @classmethod
+    def from_session_id(cls, raw_id: str) -> "User | None":
+        """Ricarica l'utente da cio' che sta nel cookie, verificando l'impronta.
+
+        Restituisce `None` — cioe' «non autenticato» — quando l'impronta non
+        corrisponde piu' (password cambiata) o quando manca del tutto (cookie
+        emesso prima di questa modifica: si rifa' il login, una volta sola).
+        """
+        id_str, _, impronta = str(raw_id).partition(".")
+        if not impronta or not id_str.isdigit():
+            return None
+
+        user = db.session.get(cls, int(id_str))
+        if user is None or user.is_deleted:
+            return None
+
+        # `compare_digest` e non `==`: il confronto non deve dire, col tempo
+        # che impiega, quanti caratteri iniziali erano giusti.
+        if not hmac.compare_digest(user.auth_fingerprint(), impronta):
+            return None
+
+        return user
 
     @validates("email")
     def _sync_email_hash(self, key: str, value: Any) -> Any:

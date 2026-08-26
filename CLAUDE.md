@@ -508,6 +508,9 @@ grafo anti-rematch. Non reimplementare algoritmi su grafi — usa `nx`, è già 
 | Dare per garantito l'anti-reincontro Amalfi con un numero dispari di giocatori | La garanzia di ADR-029 è per il caso **pari**, dove si risolve un matching di peso massimo sul grafo dei non-incontri. Nel dispari il sentinella della X si aggiunge **dopo** quel controllo: si passa al greedy, che dopo `len(players)` tentativi ammette esplicitamente il reincontro |
 | Dare per scontato che una partita abbia sempre un vincitore | In «esattamente N rack» con **N pari** il pareggio esiste: a 3-3 la partita è chiusa e `winner_id` resta `None`. Chi somma le vittorie senza contemplarlo perde una riga di classifica; chi scrive «ha vinto X» in una notifica scrive una frase falsa. Con N dispari non può capitare, ed è per questo che il caso passa inosservato (`test_stagione_e2e_risultati.py`) |
 | Datare a `today` una gara che il programma crea dentro un campionato | Le gare numerate stanno in ordine cronologico (ADR-016) e il controllo **non** salta le soft-eliminate. La gara di playoff nasceva datata oggi pur essendo l'ultima del calendario: con una gara ancora nel futuro — anche solo una pianificata e mai giocata, che la terminazione cancella — veniva rifiutata, e al posto della finale compariva un messaggio. La data si sceglie a partire dall'ultima gara, non dall'orologio (`test_playoff_gara_date_sequence.py`) |
+| `sess["_user_id"] = str(user.id)` in un test | `user.get_id()` (ADR-055): l'id di sessione porta un'impronta della credenziale, e l'id nudo produce un client **non autenticato** — i test falliscono con 302 verso il login senza dire perché |
+| Verificare in un test che una sessione sia caduta, senza ripulire `g` | In questa suite `g` **non è per-richiesta**: Flask-Login trova l'utente già in cache e non richiama mai `load_user`, quindi il test passa sempre — anche col controllo rimosso (verificato sabotandolo). Cancella `g._login_user` prima della verifica, come fa `_simula_richiesta_nuova()` in `test_recupero_password.py` |
+| Chiudere le righe di `user_session` per «buttare fuori» qualcuno | `user_session` è **analitica**: misura le permanenze, non autentica. Il cookie non la consulta, quindi chiuderne le righe cambia le statistiche e lascia l'intruso dov'è (ADR-055) |
 
 ---
 
@@ -547,6 +550,7 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [050](docs/adr/ADR-050-csrf-origin-instead-of-referrer.md) | CSRF su `Origin` e non `Referer`; `WTF_CSRF_TIME_LIMIT = None` |
 | [051](docs/adr/ADR-051-quick-start-moves-the-acceptance-to-the-end.md) | avvio rapido: partita già in corso, accettazione spostata alla doppia conferma |
 | [053](docs/adr/ADR-053-playoff-weight-and-final-ranking-mode.md) | `Gara.weight` con aggregazione per gara; modalità di classifica finale del playoff |
+| [055](docs/adr/ADR-055-session-bound-to-credential.md) | la sessione porta un'impronta della credenziale: cambiare password invalida le sessioni aperte |
 
 ---
 

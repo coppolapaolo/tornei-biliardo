@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-26 13:08+0200\n"
+"POT-Creation-Date: 2026-08-26 14:47+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,23 +17,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:690 templates/errors/403.html:3
+#: app.py:692 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
-#: app.py:708
+#: app.py:710
 msgid "Non è il tuo turno"
 msgstr ""
 
-#: app.py:709
+#: app.py:711
 msgid "Colpo irregolare"
 msgstr ""
 
-#: app.py:728
+#: app.py:730
 msgid "Operazione non consentita"
 msgstr ""
 
-#: app.py:742
+#: app.py:744
 msgid "Tiro non valido"
 msgstr ""
 
@@ -1484,6 +1484,30 @@ msgstr ""
 msgid "Registrazione completata con successo."
 msgstr ""
 
+#: routes/auth.py:289
+msgid "Inserisci l'indirizzo email del tuo account."
+msgstr ""
+
+#: routes/auth.py:295
+msgid "Se l'email esiste, riceverai un link per resettare la password."
+msgstr ""
+
+#: routes/auth.py:305
+msgid "Non siamo riusciti a inviare l'email. Riprova fra qualche minuto."
+msgstr ""
+
+#: routes/auth.py:325 routes/auth.py:347
+msgid "Token non valido o scaduto."
+msgstr ""
+
+#: routes/auth.py:333
+msgid "Le password non coincidono."
+msgstr ""
+
+#: routes/auth.py:340
+msgid "Password aggiornata con successo! Ora puoi effettuare il login."
+msgstr ""
+
 #: routes/challenge.py:61
 #: templates/components/_challenge_management_modal.html:150
 msgid "Non è stato possibile caricare gli esercizi."
@@ -2810,46 +2834,46 @@ msgstr ""
 msgid "Campionato non era nascosto"
 msgstr ""
 
-#: routes/player/profile.py:327
+#: routes/player/profile.py:328
 msgid ""
 "Informazioni aggiornate. Abbiamo inviato una nuova email di verifica al "
 "nuovo indirizzo."
 msgstr ""
 
-#: routes/player/profile.py:333
+#: routes/player/profile.py:334
 msgid "Informazioni aggiornate correttamente."
 msgstr ""
 
-#: routes/player/profile.py:338
+#: routes/player/profile.py:339
 msgid "Si è verificato un errore durante l'aggiornamento."
 msgstr ""
 
-#: routes/player/profile.py:350
+#: routes/player/profile.py:351
 msgid "La tua email è già verificata."
 msgstr ""
 
-#: routes/player/profile.py:359
+#: routes/player/profile.py:360
 msgid "Email di verifica inviata. Controlla la tua casella di posta."
 msgstr ""
 
-#: routes/player/profile.py:363
+#: routes/player/profile.py:364
 msgid "Impossibile inviare l'email. Riprova più tardi."
 msgstr ""
 
-#: routes/player/profile.py:365
+#: routes/player/profile.py:366
 #, python-format
 msgid "Errore durante l'invio: %(detail)s"
 msgstr ""
 
-#: routes/player/profile.py:380
+#: routes/player/profile.py:381
 msgid "La nuova password e la conferma non coincidono."
 msgstr ""
 
-#: routes/player/profile.py:385
+#: routes/player/profile.py:394
 msgid "Password aggiornata correttamente."
 msgstr ""
 
-#: routes/player/profile.py:387
+#: routes/player/profile.py:396
 msgid "Password attuale errata o nuova password non valida."
 msgstr ""
 

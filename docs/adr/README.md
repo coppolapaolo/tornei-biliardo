@@ -66,6 +66,7 @@ Crea un ADR quando:
 | ADR-050 | [Il CSRF si difende con l'Origin, non con il referrer](ADR-050-csrf-origin-instead-of-referrer.md) | Accepted | 2026-08-19 |
 | ADR-051 | [L'avvio rapido non toglie l'accettazione: la sposta alla fine](ADR-051-quick-start-moves-the-acceptance-to-the-end.md) | Accepted | 2026-08-20 |
 | ADR-052 | [Fra Elo iterativo a rack e rifit globale si decide misurando](ADR-052-rating-model-decided-by-measurement.md) | Accepted | 2026-08-21 |
+| ADR-055 | [La sessione è legata alla credenziale](ADR-055-session-bound-to-credential.md) | Accepted | 2026-08-26 |
 
 ## Come Creare un Nuovo ADR
 

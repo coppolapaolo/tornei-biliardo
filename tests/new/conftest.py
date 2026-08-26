@@ -311,7 +311,11 @@ def logged_in_client(app, db_session):
 
         # Login using session manipulation (compatible with test client)
         with client.session_transaction() as sess:
-            sess["_user_id"] = str(user_id)
+            # L'id di sessione non e' il solo `user.id`: `User.get_id()`
+            # ci lega un'impronta della credenziale, cosi' un cambio
+            # password invalida le sessioni aperte. Scrivere qui l'id nudo
+            # produce un client che risulta **non autenticato**.
+            sess["_user_id"] = user.get_id()
             sess["_fresh"] = True
 
         # Refresh user from current session to avoid DetachedInstanceError
