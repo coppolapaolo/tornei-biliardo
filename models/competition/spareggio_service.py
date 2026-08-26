@@ -583,7 +583,10 @@ class SpareggioService:
                     user_id=user_id,
                     position=round_class.position,
                     matches_won=round_class.matches_won,
-                    racks_won=round_class.ranking_rack_value,
+                    # `total_racks_value`, non `ranking_rack_value`: qui si
+                    # **persiste** un totale, e il secondo restituisce la
+                    # differenza in ogni gara che non sia RACK.
+                    racks_won=round_class.total_racks_value,
                     rack_difference=round_class.rack_difference or 0,
                 )
                 db.session.add(gara_class)
@@ -676,7 +679,10 @@ class SpareggioService:
                     user_id=user_id,
                     position=round_class.position,
                     matches_won=round_class.matches_won,
-                    racks_won=round_class.ranking_rack_value,
+                    # `total_racks_value`, non `ranking_rack_value`: qui si
+                    # **persiste** un totale, e il secondo restituisce la
+                    # differenza in ogni gara che non sia RACK.
+                    racks_won=round_class.total_racks_value,
                     rack_difference=round_class.rack_difference or 0,
                 )
                 db.session.add(gara_class)
@@ -804,6 +810,9 @@ class SpareggioService:
                     # `ranking_rack_value`, unico punto che conosce la
                     # configurazione.
                     "rack_totali": rc.ranking_rack_value,
+                    # Il totale vero, che è cosa diversa dal valore di
+                    # classifica: serve solo a scrivere `racks_won`.
+                    "racks_total": rc.total_racks_value,
                     "rack_difference": rc.rack_difference or 0,
                     "ssr_score": ssr_score,
                     "matches_won": rc.matches_won,
@@ -877,7 +886,7 @@ class SpareggioService:
                 gara_class = GaraClassification(
                     gara_id=gara_id,
                     user_id=data["user_id"],
-                    racks_won=data["rack_totali"],
+                    racks_won=data["racks_total"],
                     rack_difference=data["rack_difference"],
                     matches_won=data["matches_won"],
                 )

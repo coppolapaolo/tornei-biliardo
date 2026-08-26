@@ -151,6 +151,35 @@ class RoundClassification(db.Model):
             return self.racks_won
         return self.rack_difference or 0
 
+    @property
+    def total_racks_value(self) -> int:
+        """I triangoli **vinti**, sempre — qualunque sia il sistema di classifica.
+
+        È il gemello di `ranking_rack_value` e serve a un uso opposto:
+        `ranking_rack_value` risponde a «che numero mostro in classifica?» e
+        cambia significato con la configurazione della gara; questo risponde a
+        «quanti triangoli ha vinto?» e non cambia mai.
+
+        La distinzione non è accademica. Chi **persiste** un totale deve usare
+        questo: scriverci dentro `ranking_rack_value` mette la *differenza*
+        nella colonna dei totali in ogni gara che non sia RACK — un totale
+        negativo in classifica è la firma esatta dello scambio. Chi **ordina**
+        una classifica usa l'altro, perché lì il criterio dipende davvero dalla
+        configurazione.
+
+        Fallback per le righe pre-separazione (migration 20260728), dove
+        `racks_won` è NULL: nelle gare RACK il totale stava in
+        `rack_difference`; altrove non è ricostruibile dalle colonne e si
+        restituisce 0 anziché la differenza, che non è un totale — sommarla
+        rifarebbe il guasto della issue #89. Quelle righe si riparano dai match
+        con `scripts/repair_round_classification_racks.py`.
+        """
+        if self.racks_won is not None:
+            return self.racks_won
+        if self.is_rack_ranking:
+            return self.rack_difference or 0
+        return 0
+
     @staticmethod
     def ordered_for_display(gara_id: int, round_number: int):
         """Classifica di un turno, con i parimerito in ordine di estrazione.
