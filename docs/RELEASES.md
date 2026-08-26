@@ -11,5 +11,3 @@
 ### Correzioni
 
 * cambiare la password invalida le sessioni già aperte ([#232](https://github.com/coppolapaolo/tornei-biliardo/issues/232)) ([84f64c5](https://github.com/coppolapaolo/tornei-biliardo/commit/84f64c51955067bb58ec9d4dddb2c84f9f50c7d6))
-
-## Rilasci
