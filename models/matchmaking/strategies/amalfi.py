@@ -104,9 +104,37 @@ class AmalfiStrategy(BaseStrategy):
             # Primo round: usa la policy configurata
             classification = self._get_first_round_classification(gara)
 
-        return self._amalfi_pairing(
+        pairings = self._amalfi_pairing(
             classification, round_number, gara.rounds_count, gara
         )
+
+        if round_number == 1:
+            pairings = self._apply_bye_preference(gara, pairings)
+
+        return pairings
+
+    def _apply_bye_preference(
+        self, gara: Gara, pairings: Sequence[Pairing]
+    ) -> Sequence[Pairing]:
+        """Porta la X del primo turno a chi il direttore ha scelto.
+
+        Scambia il destinatario voluto con quello sorteggiato **anche nella
+        classifica di partenza**: al turno 1 gli abbinamenti dipendono solo
+        dalle posizioni (nessun incontro precedente, nessuna X già data),
+        quindi scambiare due nomi nel seeding produce esattamente questi
+        abbinamenti — e i due restano leggibili l'uno dall'altro.
+        """
+        from models.matchmaking import bye_preference
+
+        target = bye_preference.preferred_bye_player(gara)
+        drawn = bye_preference.bye_player_in(pairings)
+        if target is None or drawn is None or drawn == target:
+            return pairings
+
+        from models.classification.seeding_service import SeedingService
+
+        SeedingService.swap_positions(gara.id, drawn, target)
+        return bye_preference.swap_players(pairings, drawn, target)
 
     def _get_first_round_classification(
         self, gara: Gara

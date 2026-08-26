@@ -38,6 +38,19 @@ blocks:
           up.
 
   - type: note
+    tone: tip
+    title: "With an odd number of players, you choose who gets the X"
+    text: >-
+      When registrations are odd and the competition handles that with the X
+      by walkover (or with a drill instead of the X), tapping «Start First
+      Round» asks you one extra thing: whether the X should go to the **last
+      player to register** or be drawn, as usual. It helps when the last
+      arrival is the one who made up the numbers at the last minute. The other
+      pairings stay random either way. The question does not appear in
+      competitions with trios, nor when the players are an even number: there
+      is no X to hand out there.
+
+  - type: note
     tone: info
     title: "The draw is reproducible"
     text: >-

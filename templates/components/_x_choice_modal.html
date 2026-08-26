@@ -1,0 +1,84 @@
+{# templates/components/_x_choice_modal.html — Design System 7c
+
+   A chi tocca la X del primo turno. Compare solo quando la domanda ha senso:
+   gara amalfi o casuale, primo turno a sorteggio, giocatori dispari gestiti
+   con la X (o la X con esercizio). Il server lo decide in
+   `routes/admin/competition/detail.py` valorizzando `x_choice_last_inscribed`;
+   la regola sta in `models/matchmaking/bye_preference.py`.
+
+   Prende il posto della conferma secca: e' la stessa domanda ("sicuro di
+   avviare?") con una scelta in piu', non un passaggio aggiunto. #}
+{% from "components/_form_macros.html" import choice, form_macros_scripts %}
+
+{% set is_random = gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
+
+<div class="modal fade" id="xChoiceModal" tabindex="-1">
+  <div class="modal-dialog modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          {{ _('Avvia la Gara') if is_random else _('Avvia il Primo Turno') }}
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
+      </div>
+
+      <form method="POST"
+            action="{{ url_for('admin.competition.start_first_round', gara_id=gara.id) }}"
+            onsubmit="showScheduleOverlay()">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="modal-body c7-stack">
+
+          {# Composto dal server e riscritto a ogni salvataggio di categoria:
+             lo riempie `openXChoiceModal()` all'apertura, cosi' non racconta
+             di categorie assegnate un minuto fa. #}
+          <div class="c7-flash c7-flash--warning" id="xChoiceCategoriaWarn" style="display:none">
+            <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
+            <div class="c7-flash__body">
+              <div class="c7-flash__text" id="xChoiceCategoriaWarnText"></div>
+            </div>
+          </div>
+
+          <p class="mb-0" style="font-size:14px;font-weight:600;line-height:1.5">
+            {% if is_random %}
+              {{ _('Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.') }}
+            {% else %}
+              {{ _('Le iscrizioni verranno chiuse definitivamente.') }}
+            {% endif %}
+          </p>
+
+          <p class="mb-0" style="font-size:13px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+            {{ _('Gli iscritti sono in numero dispari: uno di loro riceve la X e non gioca in questo turno. Gli altri abbinamenti restano casuali in ogni caso.') }}
+          </p>
+
+          {{ choice(
+               'bye_to_last_inscribed',
+               _('A chi va la X del primo turno?'),
+               [
+                 {'value': '0',
+                  'icon': 'fa-dice',
+                  'title': _('A sorteggio'),
+                  'desc': _('La decide l\'algoritmo insieme agli abbinamenti, come sempre.')},
+                 {'value': '1',
+                  'icon': 'fa-user-clock',
+                  'title': _('A %(username)s', username=x_choice_last_inscribed.username),
+                  'desc': _('L\'ultimo iscritto alla gara.')}
+               ],
+               selected=('1' if gara.bye_to_last_inscribed else '0')
+          ) }}
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-play"></i>
+            {{ _('Avvia la Gara') if is_random else _('Avvia il Primo Turno') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{{ form_macros_scripts() }}

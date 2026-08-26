@@ -50,8 +50,17 @@ def start_first_round(gara_id):
         # mascherava il None e mostrava comunque il flash di successo.
         abort(404)
 
+    # Chi riceve la X del primo turno: il modale la chiede solo quando la
+    # domanda ha senso (gara amalfi/casuale, primo turno a sorteggio, dispari
+    # gestito con la X). Campo assente = nessuna risposta, la gara tiene quel
+    # che ha.
+    bye_choice = request.form.get("bye_to_last_inscribed")
+    bye_to_last_inscribed = None if bye_choice is None else bye_choice == "1"
+
     try:
-        RoundService.start_first_round(gara_id)
+        RoundService.start_first_round(
+            gara_id, bye_to_last_inscribed=bye_to_last_inscribed
+        )
 
         if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value:
             flash("Gara avviata! Tutti i turni sono stati creati.", "success")

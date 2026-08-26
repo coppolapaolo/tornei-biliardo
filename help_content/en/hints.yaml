@@ -218,6 +218,15 @@ hints:
   - admin.competition.gara_detail
   page: condurre_la_gara
   section: turni_successivi
+- id: gara.x_ultimo_iscritto
+  label: Who gets the X in the first round?
+  short: 'With an odd number of players: the app draws the X by walkover, or you hand it to
+    the last player to register. The other pairings stay random.'
+  anchor: gara-x-ultimo-iscritto
+  screens:
+  - admin.competition.gara_detail
+  page: condurre_la_gara
+  section: primo_turno
 - id: gara.sorteggia_tabellone
   label: Draw the bracket
   short: 'In bracket competitions it replaces «Start First Round»: it closes registrations, freezes teams

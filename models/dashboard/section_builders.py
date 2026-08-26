@@ -148,7 +148,7 @@ class DashboardSectionBuilder:
 
         Sono una cosa da fare, non una notizia: finché restano `PENDING` il
         posto in finale è appeso, e alla scadenza la cascata dei rifiuti lo
-        passa a qualcun altro (SPECIFICHE.md riga 186). Vanno quindi in
+        passa a qualcun altro (SPECIFICHE.md riga 188). Vanno quindi in
         dashboard accanto alle gare e ai match, non solo nella pagina
         dell'invito che si raggiunge da una notifica.
         """

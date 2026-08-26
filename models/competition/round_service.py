@@ -37,8 +37,17 @@ class RoundService:
 
     @staticmethod
     @transactional(domain="competition")
-    def start_first_round(gara_id: int) -> Gara:
-        """Avvia il primo turno della gara con controlli e sorteggio."""
+    def start_first_round(
+        gara_id: int, bye_to_last_inscribed: bool | None = None
+    ) -> Gara:
+        """Avvia il primo turno della gara con controlli e sorteggio.
+
+        `bye_to_last_inscribed` è la risposta del direttore alla domanda su chi
+        riceve la X del primo turno (`None` = non gliel'abbiamo chiesta, resta
+        quel che la gara ha già). Va registrata **prima** del sorteggio: sono
+        le strategie a leggerla dalla gara. Vedi
+        `models/matchmaking/bye_preference.py`.
+        """
         from models.competition.models import Inscription
         import random
         import secrets
@@ -49,6 +58,9 @@ class RoundService:
 
         if gara.current_round != 0:
             raise ValueError("La gara è già iniziata!")
+
+        if bye_to_last_inscribed is not None:
+            gara.bye_to_last_inscribed = bool(bye_to_last_inscribed)
 
         # Verifica numero minimo partecipanti (escludi lista d'attesa)
         inscriptions = (

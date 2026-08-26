@@ -308,7 +308,7 @@ class AdvancedRoundManager:
         # machinery, not a user-entered result. Conceptually the bye is always
         # "in initial state" (no racks to play), so it does not count as a
         # partial result.
-        # Dal 2026-08-23 quel punteggio è `0` (SPECIFICHE.md righe 64 e 69, era
+        # Dal 2026-08-23 quel punteggio è `0` (SPECIFICHE.md righe 64 e 71, era
         # `round_distance`), quindi un bye non supererebbe comunque il test
         # `score > 0`. L'esclusione esplicita resta perché la ragione non è il
         # valore ma la natura del bye: regge anche per la variante con

@@ -97,6 +97,36 @@ class SeedingService:
         return seeding
 
     @staticmethod
+    def swap_positions(gara_id: int, first_user_id: int, second_user_id: int) -> bool:
+        """Scambia di posto due giocatori nella classifica di partenza.
+
+        Serve a chi rietichetta un sorteggio già generato (la X assegnata
+        all'ultimo iscritto, vedi `models/matchmaking/bye_preference.py`): il
+        seeding è l'input da cui il primo turno discende, e lasciarlo com'era
+        significherebbe pubblicare un ordine di partenza che non spiega più gli
+        abbinamenti che si vedono.
+
+        Si scambiano le **posizioni**, non gli `user_id`: il vincolo
+        `unique_round_classification` è su (gara, turno, utente), e riscrivere
+        gli utenti lo violerebbe a metà scambio.
+
+        Ritorna False se uno dei due non è nel seeding (niente da scambiare).
+        """
+        if first_user_id == second_user_id:
+            return False
+
+        seeding = SeedingService.get_seeding(gara_id)
+        rows = {row.user_id: row for row in seeding}
+        first = rows.get(first_user_id)
+        second = rows.get(second_user_id)
+        if first is None or second is None:
+            return False
+
+        first.position, second.position = second.position, first.position
+        db.session.flush()
+        return True
+
+    @staticmethod
     def clear_seeding(gara_id: int) -> int:
         """Elimina la classifica di partenza. Ritorna il numero di righe.
 

@@ -454,7 +454,7 @@ class TestRispostaPerContoDelGiocatore:
     def test_il_rifiuto_registrato_dal_direttore_fa_partire_la_cascata(
         self, db_session
     ):
-        """SPECIFICHE.md riga 186: il posto passa al primo degli esclusi.
+        """SPECIFICHE.md riga 188: il posto passa al primo degli esclusi.
 
         E' la ragione per cui questa strada serve: se la risposta arriva a
         voce e nessuno la registra, l'invito resta appeso e il sostituto non
