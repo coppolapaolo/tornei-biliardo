@@ -144,6 +144,13 @@ class MultiDisciplineService:
             return {}
 
         discipline_rules: Dict[Discipline, Dict[str, Any]] = {
+            Discipline.SEVEN_BALL: {
+                "rack_size": 7,
+                "winning_condition": "7-ball on any legal shot",
+                "break_rule": "push_out_allowed",
+                "foul_penalties": ["ball_in_hand"],
+                "tiebreaker_type": "spot_shot",
+            },
             Discipline.EIGHT_BALL: {
                 "rack_size": 15,
                 "winning_condition": "8-ball after group clearance",

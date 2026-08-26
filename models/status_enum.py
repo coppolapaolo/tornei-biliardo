@@ -358,8 +358,15 @@ class Discipline(_StrEnum):
     come valore persistito. Non essendo un enum, niente lo validava: le colonne
     sono `String(50)`. `normalize` è il ponte per i dati storici e per gli input
     esterni; il codice nuovo usa direttamente i membri.
+
+    L'ordine di dichiarazione **è** l'ordine delle tendine (`get_choices` itera
+    l'enum), quindi le rotazioni stanno in ordine di bilie. Aggiungerne una in
+    testa è sicuro perché ogni `<select>` del progetto marca da sé l'opzione
+    scelta — o mette davanti un «Seleziona disciplina…» vuoto: nessuno lascia
+    decidere al browser, che altrimenti preselezionerebbe la prima voce.
     """
 
+    SEVEN_BALL = "7_ball"
     EIGHT_BALL = "8_ball"
     NINE_BALL = "9_ball"
     TEN_BALL = "10_ball"
@@ -379,6 +386,7 @@ class Discipline(_StrEnum):
         dovrà toccare il codice.
         """
         display_map = {
+            self.SEVEN_BALL: _("Palla 7"),
             self.EIGHT_BALL: _("Palla 8"),
             self.NINE_BALL: _("Palla 9"),
             self.TEN_BALL: _("Palla 10"),
