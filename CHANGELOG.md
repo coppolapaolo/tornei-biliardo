@@ -5,6 +5,16 @@ Tutte le modifiche degne di nota a questo progetto sono annotate qui.
 Il formato segue [Keep a Changelog](https://keepachangelog.com/it/1.1.0/) e il
 versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
+> **Questo file si scrive a mano** ed è il posto in cui una modifica viene
+> raccontata: cosa cambia per chi usa l'app, e perché è stata fatta così.
+>
+> Il numero di versione, invece, non lo decide più nessuno a mano: lo calcola
+> release-please dai titoli delle PR unite (`fix:` alza la patch, `feat:` la
+> minor, `feat!:` la major) e lo scrive in `config.py`, da dove arriva nel
+> footer di ogni pagina. L'elenco secco dei rilasci con le PR che li compongono
+> sta in [`docs/RELEASES.md`](docs/RELEASES.md), generato dal bot: è un indice,
+> non un racconto — questo resta il racconto.
+
 ## [Non rilasciato]
 
 ### Aggiunto

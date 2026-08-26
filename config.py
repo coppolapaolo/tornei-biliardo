@@ -75,7 +75,18 @@ class Config:
 
     # App Info
     APP_NAME = "Tornei Biliardo"
-    VERSION = "1.0.0"
+
+    # **Non si scrive a mano.** La riscrive release-please quando si unisce la
+    # PR di rilascio, calcolandola dai titoli delle PR unite da allora
+    # (`fix:` alza la patch, `feat:` la minor, `feat!:` la major). L'annotazione
+    # in fondo alla riga e' esattamente cio' che il bot cerca per sapere dove
+    # scrivere: toglierla non rompe niente di visibile, il numero semplicemente
+    # smette di muoversi — per questo c'e' un test che la pretende
+    # (`tests/new/unit/test_version_single_source.py`).
+    #
+    # Il valore compare nel footer di ogni pagina (`templates/base.html`) e
+    # nella risposta di `/health`.
+    VERSION = "1.0.0"  # x-release-please-version
 
     # Cache-buster per CSS/JS (vedi _compute_asset_version). Non dipende
     # dall'ambiente ma dal filesystem, quindi resta qui.
