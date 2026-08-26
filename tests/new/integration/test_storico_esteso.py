@@ -21,7 +21,7 @@ from datetime import date, datetime, timedelta
 
 import pytest
 
-from models import db, Challenge, Gara, Match, User
+from models import db, Challenge, Gara, Match
 from models.campionato.models import Campionato
 from models.challenge.services import ChallengeService
 from models.individual_match.match_models import IndividualMatch

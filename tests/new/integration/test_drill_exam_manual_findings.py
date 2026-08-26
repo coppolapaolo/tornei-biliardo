@@ -29,7 +29,6 @@ from pathlib import Path
 import pytest
 
 from models.base import db
-from models.user.models import User
 from models.challenge.models import Challenge
 from models.challenge.services import ChallengeService
 from models.user.models import User
