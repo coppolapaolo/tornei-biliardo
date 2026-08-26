@@ -175,7 +175,10 @@ blocks:
           You will get a verification message at the new address. Until you
           confirm it, password recovery still goes through the old one.
       - title: "The password has its own entry"
-        text: "It asks for your current password: that is the guarantee it really is you changing it."
+        text: >-
+          It asks for your current password: that is the guarantee it really is
+          you changing it. When you change it, the other devices where you are
+          signed in are logged out: you will sign in again with the new one.
 
   - type: faq
     items:
@@ -187,3 +190,7 @@ blocks:
         a: "Yes: in the recent matches list, labelled «Individual», and in the counts of matches played, won and lost. The only thing that leaves them out is the competitive rating: to count them, switch to the overall one."
       - q: "Who can see my email address?"
         a: "No other player. It is stored encrypted and is only used for the app's own messages."
+      - q: "I asked for the password link more than once: which one works?"
+        a: "The one that arrived last. Every new request cancels the earlier ones, so an old link that ended up in the wrong hands is no longer any use. The link lasts a day and works once."
+      - q: "Someone got into my account: what do I do?"
+        a: "Change the password, from your profile or through recovery on the sign-in page. Whoever was in is thrown out at once: sessions already open stop working the moment the password changes."
