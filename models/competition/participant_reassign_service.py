@@ -25,10 +25,28 @@ Cosa fa, in ordine:
 3. **sposta gli XP della gara** — il registro XP è la fonte esatta del livello,
    quindi i movimenti legati alla gara e alle sue partite cambiano proprietario.
    Si riconoscono da ``related_entities`` (``gara_id`` / ``match_id``);
-4. **ricostruisce i derivati** — classifiche di turno, di gara e di campionato,
+4. **riscrive la categoria**, se gliela si chiede (vedi sotto);
+5. **ricostruisce i derivati** — classifiche di turno, di gara e di campionato,
    ELO (competitivo e globale), livello, serie e traguardi. Nessun dato derivato
    viene *spostato*: sarebbe il modo comodo di sbagliare. Vengono ricalcolati
    dalla fonte di verità, che a quel punto è già corretta.
+
+**La categoria viaggia con l'iscrizione, ed è quasi sempre quella sbagliata.**
+``inscription`` è fra le tabelle spostate, quindi ``categoria_id`` cambia
+proprietario dentro la riga: il destinatario eredita la categoria di chi era
+iscritto per errore. In una gara **con handicap** non è un dettaglio anagrafico
+— l'ADR-049 fa dipendere da lì quali partite entrano nell'ELO, e due persone
+diverse non hanno la stessa categoria per definizione. Da qui il parametro
+``categoria``:
+
+- ``None`` (default) — non si tocca: la categoria resta quella ereditata;
+- ``""`` — si toglie l'assegnazione;
+- un nome — si assegna, creando la voce in elenco se non c'è.
+
+Si scrive **prima** del ricalcolo dell'ELO e nella stessa operazione. Farlo
+dopo, da fuori, vorrebbe dire un secondo replay globale del rating e una
+finestra in cui i dati sono già spostati ma la categoria è ancora quella di un
+altro.
 
 Due cose non si spostano di proposito:
 
@@ -174,7 +192,11 @@ class GaraParticipantReassignService:
 
     @staticmethod
     def plan(
-        gara_id: int, source_id: int, target_id: int, performed_by_id: int
+        gara_id: int,
+        source_id: int,
+        target_id: int,
+        performed_by_id: int,
+        categoria: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Inventario di **sola lettura**: cosa verrebbe spostato, e da dove.
 
@@ -212,6 +234,9 @@ class GaraParticipantReassignService:
                 gara_id, source_id
             ),
             "moved_xp": GaraParticipantReassignService._select_xp(gara_id, source_id),
+            "categoria": GaraParticipantReassignService._categoria_preview(
+                gara, source_id, categoria
+            ),
             "before": GaraParticipantReassignService._snapshot(
                 gara_id, gara.campionato_id, source_id, target_id
             ),
@@ -223,7 +248,11 @@ class GaraParticipantReassignService:
     @staticmethod
     @transactional(domain="competition")
     def reassign(
-        gara_id: int, source_id: int, target_id: int, performed_by_id: int
+        gara_id: int,
+        source_id: int,
+        target_id: int,
+        performed_by_id: int,
+        categoria: Optional[str] = None,
     ) -> Dict[str, Any]:
         """Sposta la partecipazione a ``gara_id`` da ``source_id`` a ``target_id``.
 
@@ -256,6 +285,9 @@ class GaraParticipantReassignService:
         report["before"] = GaraParticipantReassignService._snapshot(
             gara_id, gara.campionato_id, source_id, target_id
         )
+        report["categoria"] = GaraParticipantReassignService._categoria_preview(
+            gara, source_id, categoria
+        )
 
         report["moved_rows"] = GaraParticipantReassignService._reassign_facts(
             gara_id, source_id, target_id
@@ -271,6 +303,12 @@ class GaraParticipantReassignService:
         # ricalcoli rileggerebbero le righe vecchie dalla sessione.
         db.session.flush()
         db.session.expire_all()
+
+        # Prima del ricalcolo dell'ELO, non dopo: la categoria decide quali
+        # partite ci entrano (ADR-049), e il replay del rating è globale.
+        report["categoria"]["applied"] = (
+            GaraParticipantReassignService._apply_categoria(gara, target_id, categoria)
+        )
 
         GaraParticipantReassignService._rebuild_encounters(gara_id)
         GaraParticipantReassignService._recalculate_classifications(
@@ -564,6 +602,137 @@ class GaraParticipantReassignService:
         except (ValueError, TypeError):
             return {}
         return parsed if isinstance(parsed, dict) else {}
+
+    # ----------------------------------------------------------- categoria
+
+    @staticmethod
+    def _categoria_rows(gara_id: int, user_id: int):
+        from models.competition.models import Inscription
+
+        return (
+            Inscription.query.filter_by(gara_id=gara_id, user_id=user_id)
+            .order_by(Inscription.is_withdrawn.asc(), Inscription.id.desc())
+            .all()
+        )
+
+    @staticmethod
+    def _categoria_preview(gara, source_id: int, categoria: Optional[str]):
+        """Cosa succede alla categoria, e **quali partite entrano o escono dall'ELO**.
+
+        Senza questo, l'effetto più importante dello spostamento resterebbe
+        invisibile fino a rating già rigiocato. In una gara con handicap la
+        categoria è l'interruttore dell'idoneità (ADR-049): la stessa
+        riassegnazione, con la categoria giusta o con quella ereditata,
+        produce due storie di rating diverse per **tutti** i giocatori.
+
+        Il confronto si fa sostituendo la sola categoria dentro l'indice di
+        ``build_index``: l'identità del giocatore non entra nella decisione, e
+        le partite sono le stesse prima e dopo lo spostamento.
+        """
+        from models.categoria.service import CategoriaService
+        from models.match.models import Match
+        from models.rating.eligibility import RatingEligibility
+
+        inscriptions = GaraParticipantReassignService._categoria_rows(
+            gara.id, source_id
+        )
+        corrente = next(
+            (i.categoria for i in inscriptions if i.categoria is not None), None
+        )
+        preview: Dict[str, Any] = {
+            "requested": categoria,
+            "current": (
+                {"id": corrente.id, "name": corrente.name} if corrente else None
+            ),
+            "target": None,
+            "elo_effect": [],
+        }
+        if categoria is None:
+            # Nessuna richiesta: la categoria resta quella ereditata, e non c'è
+            # un "dopo" da confrontare.
+            return preview
+
+        pulito = (categoria or "").strip()
+        if pulito:
+            esistente = CategoriaService.find_by_name(gara, pulito)
+            preview["target"] = {
+                "id": esistente.id if esistente else None,
+                "name": esistente.name if esistente else pulito,
+                "exists": esistente is not None,
+            }
+            # Se la voce non c'è ancora la si creerà: nessun altro iscritto può
+            # averla, e per il confronto basta un id che non collida con nulla.
+            nuovo_id = esistente.id if esistente else -1
+        else:
+            nuovo_id = None
+
+        matches = Match.query.filter(
+            Match.gara_id == gara.id,
+            db.or_(Match.player1_id == source_id, Match.player2_id == source_id),
+        ).all()
+        if not matches:
+            return preview
+
+        prima = RatingEligibility.build_index(matches)
+        dopo = dict(prima)
+        dopo[(gara.id, source_id)] = nuovo_id
+
+        for match in matches:
+            avversario = (
+                match.player2_id if match.player1_id == source_id else match.player1_id
+            )
+            motivo_prima = RatingEligibility.exclusion_reason(match, prima)
+            motivo_dopo = RatingEligibility.exclusion_reason(match, dopo)
+            if motivo_prima == motivo_dopo:
+                continue
+            preview["elo_effect"].append(
+                {
+                    "match_id": match.id,
+                    "round_number": match.round_number,
+                    "opponent": (
+                        GaraParticipantReassignService._username(avversario)
+                        if avversario
+                        else "—"
+                    ),
+                    "before": motivo_prima.value if motivo_prima else None,
+                    "after": motivo_dopo.value if motivo_dopo else None,
+                }
+            )
+        return preview
+
+    @staticmethod
+    def _apply_categoria(gara, target_id: int, categoria: Optional[str]):
+        """Scrive la categoria del destinatario in questa gara.
+
+        Passa da ``CategoriaService`` e non da un UPDATE: lì vivono la
+        normalizzazione del nome, la creazione della voce mancante e la
+        riattivazione di una disattivata. ``force=True`` scavalca la finestra
+        di modifica — chiusa per definizione su una gara già giocata — ed esiste
+        proprio per gli script di riparazione.
+
+        Tutte le iscrizioni del destinatario a quella gara, non solo l'attiva:
+        se ce n'è più di una (una ritirata e una valida) devono dire la stessa
+        cosa, o la categoria dipenderebbe da quale delle due si legge.
+        """
+        if categoria is None:
+            return {"skipped": True, "touched": 0, "name": None}
+
+        from models.categoria.service import CategoriaService
+
+        inscriptions = GaraParticipantReassignService._categoria_rows(
+            gara.id, target_id
+        )
+        assegnata = None
+        for inscription in inscriptions:
+            assegnata = CategoriaService.set_inscription_categoria_by_name(
+                gara, inscription, categoria, actor=None, force=True
+            )
+        db.session.flush()
+        return {
+            "skipped": False,
+            "touched": len(inscriptions),
+            "name": assegnata.name if assegnata else None,
+        }
 
     # ------------------------------------------------------------ ricalcoli
 

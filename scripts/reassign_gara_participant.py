@@ -18,6 +18,17 @@ esercizi, XP, ELO e classifica sono attribuiti a chi non ha giocato.
     venv/bin/python scripts/reassign_gara_participant.py \
         --gara 35 --from 16 --to 58 --by <ID_ADMIN> --commit
 
+**La categoria non si eredita: si dichiara.** L'iscrizione si sposta intera,
+quindi il destinatario si ritrova la categoria di chi era iscritto per errore —
+la categoria di un'altra persona. In una gara con handicap è l'interruttore che
+decide quali partite entrano nell'ELO (ADR-049), quindi va detta:
+
+    ... --gara 38 --from 12 --to 52 --by <ID_ADMIN> --categoria E
+
+L'inventario mostra **quali partite cambiano idoneità** con la categoria nuova:
+è l'effetto più importante dello spostamento, e senza guardarlo lì lo si scopre
+a rating già rigiocato.
+
 **Perché la prova si fa su una copia e non con un rollback.** Un
 ``@transactional`` annidato chiama ``db.session.commit()``, e da SQLAlchemy 1.4
 quel commit chiude la transazione *esterna* invece di rilasciare il savepoint:
@@ -78,6 +89,44 @@ def _print_snapshot(label, snap, highlight):
     print(f"  Livello/XP: {snap['level']}")
 
 
+def _print_categoria(cat):
+    """La categoria e — se cambia — quali partite entrano o escono dall'ELO."""
+    corrente = cat["current"]["name"] if cat["current"] else "—"
+    print(f"\nCATEGORIA nella gara: {corrente}")
+
+    if cat["requested"] is None:
+        print("  (non richiesta: resta quella ereditata dal sorgente)")
+        return
+
+    if cat["target"] is None:
+        print("  → assegnazione TOLTA")
+    else:
+        nuova = cat["target"]["name"]
+        nota = "" if cat["target"]["exists"] else "  (voce nuova, verrà creata)"
+        print(f"  → {nuova}{nota}")
+
+    applied = cat.get("applied")
+    if applied and not applied["skipped"]:
+        print(f"  scritta su {applied['touched']} iscrizione/i")
+
+    if not cat["elo_effect"]:
+        print("  Idoneità ELO delle partite: invariata.")
+        return
+
+    print("\n  PARTITE CHE CAMBIANO IDONEITÀ ELO")
+    for riga in cat["elo_effect"]:
+        prima = riga["before"] or "CONTAVA"
+        dopo = riga["after"] or "CONTA"
+        print(
+            f"    turno {riga['round_number']} vs {riga['opponent']} "
+            f"(match {riga['match_id']}): {prima} → {dopo}"
+        )
+    print(
+        "\n  ⚠️  L'ELO è path-dependent: far entrare o uscire una partita "
+        "sposta il rating\n      di tutti, non solo di chi vi ha giocato."
+    )
+
+
 def _print_report(report):
     source_id = report["source"]["id"]
     target_id = report["target"]["id"]
@@ -114,6 +163,8 @@ def _print_report(report):
 
     xp = report["moved_xp"]
     print(f"\nXP: {xp['count']} movimenti, {xp['xp_amount']} XP totali")
+
+    _print_categoria(report["categoria"])
 
     if not report["read_only"]:
         gam = report["gamification"]
@@ -152,6 +203,16 @@ def main() -> int:
         "--by", type=int, required=True, help="ID dell'admin che esegue la correzione"
     )
     parser.add_argument(
+        "--categoria",
+        default=None,
+        help=(
+            "Categoria da assegnare al destinatario in questa gara, creandola "
+            "se non è in elenco. Senza il flag la categoria resta quella "
+            "ereditata dal sorgente — che è di un'altra persona. Stringa vuota "
+            "per toglierla."
+        ),
+    )
+    parser.add_argument(
         "--commit", action="store_true", help="Scrive davvero (default: sola lettura)"
     )
     parser.add_argument(
@@ -183,6 +244,7 @@ def main() -> int:
                     source_id=args.source,
                     target_id=args.target,
                     performed_by_id=args.by,
+                    categoria=args.categoria,
                 )
                 db.session.commit()
             else:
@@ -191,6 +253,7 @@ def main() -> int:
                     source_id=args.source,
                     target_id=args.target,
                     performed_by_id=args.by,
+                    categoria=args.categoria,
                 )
         except Exception as exc:
             db.session.rollback()
