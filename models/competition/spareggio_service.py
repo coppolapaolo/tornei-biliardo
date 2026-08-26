@@ -711,6 +711,61 @@ class SpareggioService:
         return len(rows)
 
     @staticmethod
+    def has_recorded_ssr(gara_id: int) -> bool:
+        """Questa gara ha uno spareggio davvero registrato?
+
+        Uno zero non conta: sulla colonna è indistinguibile da un'assenza, ed è
+        lo stesso criterio con cui `_recorded_spot_shot` rilegge i punteggi.
+        """
+        return (
+            db.session.query(GaraClassification.id)
+            .filter(
+                GaraClassification.gara_id == gara_id,
+                GaraClassification.spot_shot_wins > 0,
+            )
+            .first()
+            is not None
+        )
+
+    @staticmethod
+    def reapply_final_positions_if_resolved(gara_id: int) -> bool:
+        """Rimette l'esito dello spareggio nelle posizioni, dopo un ricalcolo.
+
+        `apply_final_positions` scrive l'ordine finale in `GaraClassification`
+        **e** lo rispecchia in `RoundClassification.position` dell'ultimo turno,
+        perché è quella la classifica che la pagina della gara mostra.
+
+        Un ricalcolo delle classifiche di turno — riassegnazione di una
+        partecipazione (ADR-048), unione di due account, correzione di un
+        risultato — riscrive quelle righe da zero, e lo specchio torna
+        all'ordine puro del turno: (vittorie, differenza, posizione
+        precedente). Lo spareggio scompare dalla vista e ricompare un pari
+        merito che era già stato sciolto sul tavolo.
+
+        `calculate_gara_classification` si difende già rileggendo i punteggi
+        registrati, ma difende **la sua** tabella: la copia mostrata all'utente
+        resta indietro. Successo in produzione sulla gara 38, il 2026-08-26:
+        il primo in classifica aveva il punteggio di spareggio più basso.
+
+        Si applica **solo** dove uno spareggio c'è stato davvero. Chiamarla
+        sempre significherebbe far passare ogni gara ricalcolata da
+        `apply_final_positions`, che assegna posizioni condivise ai pari
+        merito: un cambiamento di comportamento per gare che non hanno mai
+        avuto uno spareggio, e che nessuno ha chiesto.
+
+        Senza `@transactional`: è chiamata dentro contesti già transazionali, e
+        annidare i decoratori provoca il rollback del savepoint esterno (stessa
+        ragione di `clear_ssr_scores`).
+
+        Returns:
+            True se le posizioni sono state riapplicate.
+        """
+        if not SpareggioService.has_recorded_ssr(gara_id):
+            return False
+        SpareggioService.apply_final_positions(gara_id)
+        return True
+
+    @staticmethod
     @transactional(domain="competition")
     def finalize_classification(gara_id: int) -> Tuple[bool, str]:
         """

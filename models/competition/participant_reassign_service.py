@@ -787,6 +787,14 @@ class GaraParticipantReassignService:
         if rounds:
             service.calculate_gara_classification(gara_id)
 
+        # Il ricalcolo dei turni riscrive `RoundClassification.position`, dove
+        # `apply_final_positions` aveva rispecchiato l'ordine dello spareggio —
+        # ed è quella la classifica che la pagina mostra. Senza questo, una
+        # gara con spareggio torna a esibire un pari merito già sciolto.
+        from models.competition.spareggio_service import SpareggioService
+
+        SpareggioService.reapply_final_positions_if_resolved(gara_id)
+
         # La classifica di campionato **persistita** si rinfresca solo se
         # esiste già. Non è pigrizia: l'applicazione la scrive in momenti
         # precisi — chiusura del campionato, avvio dei playoff, correzione
