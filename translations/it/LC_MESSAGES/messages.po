@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-25 12:37+0200\n"
+"POT-Creation-Date: 2026-08-26 09:33+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -38,31 +38,35 @@ msgstr ""
 msgid "Tiro non valido"
 msgstr ""
 
-#: models/status_enum.py:382
+#: models/status_enum.py:389
+msgid "Palla 7"
+msgstr ""
+
+#: models/status_enum.py:390
 msgid "Palla 8"
 msgstr ""
 
-#: models/status_enum.py:383
+#: models/status_enum.py:391
 msgid "Palla 9"
 msgstr ""
 
-#: models/status_enum.py:384
+#: models/status_enum.py:392
 msgid "Palla 10"
 msgstr ""
 
-#: models/status_enum.py:385
+#: models/status_enum.py:393
 msgid "One Pocket"
 msgstr ""
 
-#: models/status_enum.py:386
+#: models/status_enum.py:394
 msgid "Straight Pool"
 msgstr ""
 
-#: models/status_enum.py:387
+#: models/status_enum.py:395
 msgid "Bank Pool"
 msgstr ""
 
-#: models/status_enum.py:388
+#: models/status_enum.py:396
 msgid "Rotation"
 msgstr ""
 

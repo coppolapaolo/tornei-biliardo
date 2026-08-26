@@ -103,6 +103,8 @@ blocks:
 
   - type: options
     items:
+      - name: "Palla 7"
+        text: "Sette bilie in ordine numerico, vince chi imbuca la 7. La più corta: adatta alle serate con molti iscritti."
       - name: "Palla 8"
         text: "La più diffusa nei circoli. Bilie piene contro spezzate, chiude chi imbuca la 8."
       - name: "Palla 9"

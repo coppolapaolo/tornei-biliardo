@@ -197,3 +197,75 @@ def test_get_choices_labels_are_translated(monkeypatch) -> None:
     for value, label in Discipline.get_choices():
         assert value in {d.value for d in Discipline}
         assert label.startswith("[tradotto]")
+
+
+# ── Palla 7 (2026-08-26) ────────────────────────────────────────────────────
+#
+# Aggiunta per la «Garetta Esordienti Palla 7 "Sudden Death"»: la specialità
+# esisteva già nelle note della gara, ma non nel vocabolario, quindi la gara
+# risultava giocata a Palla 9.
+
+
+def test_palla_7_e_nel_vocabolario() -> None:
+    """`7_ball` è un valore canonico, non un letterale scritto a mano."""
+    assert Discipline.SEVEN_BALL.value == "7_ball"
+    assert Discipline.normalize("7_ball") is Discipline.SEVEN_BALL
+    assert ("7_ball", Discipline.SEVEN_BALL.display_name) in Discipline.get_choices()
+
+
+def test_palla_7_resta_fuori_dal_referto_tpa() -> None:
+    """Il referto TPA non copre Palla 7, ed è una scelta, non una dimenticanza.
+
+    `TpaRefertoService._match_blocking_reason` dice all'utente che il referto
+    «vale per palla 8, palla 9 e palla 10»: finché quella frase resta, la mappa
+    deve dire la stessa cosa. Se un giorno si decide di includerla, questo test
+    va cambiato *insieme* al messaggio, non prima.
+    """
+    from models.tpa.services import TpaRefertoService
+
+    assert TpaRefertoService.game_type_for(Discipline.SEVEN_BALL.value) is None
+
+
+# La regex prende un `<select>…</select>` intero, corpo compreso.
+SELECT_BLOCK = re.compile(r"<select\b[^>]*>(.*?)</select>", re.DOTALL | re.IGNORECASE)
+
+# Le due forme con cui un template cicla le discipline.
+ITERATES_DISCIPLINES = re.compile(r"discipline_choices|Discipline\.get_choices")
+
+
+def test_ogni_tendina_di_discipline_fissa_la_propria_scelta() -> None:
+    """Nessun `<select>` di discipline lascia decidere al browser.
+
+    L'ordine di dichiarazione di `Discipline` **è** l'ordine delle opzioni. Un
+    `<select>` che non marca `selected` e non mette davanti un'opzione propria
+    fa preselezionare al browser la prima voce dell'enum: aggiungere una
+    disciplina in testa cambierebbe in silenzio il valore predefinito di quel
+    form. È il genere di regressione che nessuno collega alla riga aggiunta
+    dentro un enum, e che si vede solo mesi dopo nei dati.
+
+    Due forme sono accettate: `selected` sull'opzione giusta, oppure
+    un'opzione scritta a mano **prima** del ciclo (il segnaposto vuoto
+    «Seleziona disciplina…», o il default della gara in cima).
+    """
+    offenders: list[str] = []
+    for path in _live_code_paths():
+        if path.suffix != ".html":
+            continue
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for match in SELECT_BLOCK.finditer(text):
+            body = match.group(1)
+            if not ITERATES_DISCIPLINES.search(body):
+                continue
+            if "selected" in body:
+                continue
+            before_loop = body.split("{%", 1)[0]
+            if "<option" in before_loop:
+                continue
+            rel = path.relative_to(REPO_ROOT)
+            line = text[: match.start()].count("\n") + 1
+            offenders.append(f"{rel}:{line}")
+
+    assert not offenders, (
+        "Tendine di discipline senza scelta esplicita: la prima voce dell'enum "
+        "diventerebbe il default di fatto.\n" + "\n".join(offenders)
+    )

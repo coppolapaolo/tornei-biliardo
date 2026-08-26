@@ -101,6 +101,8 @@ blocks:
 
   - type: options
     items:
+      - name: "7-ball"
+        text: "Seven balls in numerical order, the player who pots the 7 wins. The shortest format: handy on nights with many entrants."
       - name: "8-ball"
         text: "The most common in clubs. Solids against stripes, the player who pots the 8 closes."
       - name: "9-ball"
