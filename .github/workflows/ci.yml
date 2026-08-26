@@ -39,6 +39,41 @@ jobs:
       - name: Run type check
         run: pyright
 
+  pr-title:
+    # Il titolo della PR non e' cosmetica: con lo squash merge diventa il
+    # messaggio di commit su `main`, ed e' da li' che release-please decide se
+    # e come muovere la versione. Una PR senza prefisso non produce nessun
+    # errore — semplicemente sparisce da `docs/RELEASES.md` e non fa avanzare
+    # `Config.VERSION`. Un guasto muto, quindi si blocca prima.
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Check Conventional Commits prefix
+        env:
+          # Il titolo passa da una variabile d'ambiente e non interpolato nello
+          # script: un titolo di PR e' testo scritto da chiunque apra la PR, e
+          # interpolarlo in `run:` lo farebbe eseguire dalla shell del runner.
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          TYPES='feat|fix|perf|revert|refactor|docs|test|build|ci|chore|style'
+          if echo "$PR_TITLE" | grep -qE "^($TYPES)(\([a-z0-9 ._/-]+\))?!?: .+"; then
+            echo "Titolo conforme: $PR_TITLE"
+            exit 0
+          fi
+          echo "::error::Titolo non conforme a Conventional Commits: '$PR_TITLE'"
+          echo ""
+          echo "Il titolo deve iniziare con un tipo, due punti e uno spazio."
+          echo "La descrizione resta in italiano: solo il prefisso e' fisso."
+          echo ""
+          echo "  fix:   una correzione            -> alza la patch (1.0.0 -> 1.0.1)"
+          echo "  feat:  una funzione nuova        -> alza la minor (1.0.1 -> 1.1.0)"
+          echo "  feat!: un cambiamento rompente   -> alza la major (1.1.0 -> 2.0.0)"
+          echo "  chore/docs/test/ci/refactor/... -> non muovono la versione"
+          echo ""
+          echo "Esempio: fix: la X del primo turno puo' andare all'ultimo iscritto"
+          exit 1
+
   check-migrations:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

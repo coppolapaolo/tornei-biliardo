@@ -69,14 +69,15 @@ e il merge è bloccato finché `test-and-typecheck` non è verde.
 git checkout -b claude/descrizione   # branch di lavoro
 # ... commit ...
 git push -u origin claude/descrizione
-gh pr create                          # apri la PR
+gh pr create --title "fix: descrizione in italiano"   # il prefisso è obbligatorio
 # attendi che la CI sia verde, poi merge (il codice va in produzione dopo, vedi sopra)
 ```
 
 Due trappole: una **PR con base diversa da `main` non fa girare nessun check** e
 resta bloccata per sempre (le PR impilate vanno riportate su `main`); e sulle PR
-gli altri tre job risultano `skipped` di proposito — è **normale**, non va
-segnalato come problema né richiesto come status check.
+`check-migrations`, `deploy` e `skip-deploy-notification` risultano `skipped` di
+proposito — è **normale**, non va segnalato come problema né richiesto come
+status check. (`pr-title`, invece, sulle PR gira eccome: vedi il punto 4.)
 
 > ⚠️ **3. Non rimettere `PRAGMA journal_mode=WAL`** in `models/base.py`, nemmeno
 > condizionato a `FLASK_ENV`: su NFS la memoria condivisa del WAL non è coerente
@@ -87,6 +88,31 @@ segnalato come problema né richiesto come status check.
 >
 > Regola operativa correlata: ogni script/comando console che **scrive** sul DB
 > di produzione va eseguito con la web app su **Disabled**.
+
+> ⚠️ **4. Il titolo della PR decide il numero di versione.** Le PR si uniscono
+> in **squash**, quindi il titolo diventa il messaggio di commit su `main`, e da
+> lì [release-please](.github/workflows/release-please.yml) calcola la versione
+> mostrata nel footer (`Config.VERSION`). Il prefisso è **obbligatorio** — il
+> job `pr-title` blocca la PR senza — mentre la descrizione resta in italiano:
+>
+> | Titolo | Effetto |
+> |---|---|
+> | `fix: la X va all'ultimo iscritto` | 1.0.0 → 1.0.**1** |
+> | `feat: referto TPA sui match singoli` | 1.0.1 → 1.**1**.0 |
+> | `feat!: nuovo schema dei rack` | 1.1.0 → **2**.0.0 |
+> | `chore:` `docs:` `test:` `ci:` `refactor:` `style:` `build:` | nessuno |
+>
+> Unita la PR, il bot apre — o aggiorna — una PR **«chore(main): release
+> X.Y.Z»** che porta il numero in `config.py` e la voce in `docs/RELEASES.md`.
+> È unendo *quella* che si rilascia: nasce il tag `vX.Y.Z` e il numero nuovo
+> parte verso la produzione col solito `auto_deploy.py`. Finché non la unisci,
+> il footer mostra la versione precedente — ed è corretto, perché è quella che
+> sta girando.
+>
+> `CHANGELOG.md` **resta scritto a mano**: è il racconto. `docs/RELEASES.md` è
+> l'indice generato. Non scambiare i due, e non modificare `Config.VERSION` o
+> `.release-please-manifest.json` a mano (presidio:
+> `tests/new/unit/test_version_single_source.py`).
 
 ---
 
@@ -508,6 +534,8 @@ grafo anti-rematch. Non reimplementare algoritmi su grafi — usa `nx`, è già 
 | Dare per garantito l'anti-reincontro Amalfi con un numero dispari di giocatori | La garanzia di ADR-029 è per il caso **pari**, dove si risolve un matching di peso massimo sul grafo dei non-incontri. Nel dispari il sentinella della X si aggiunge **dopo** quel controllo: si passa al greedy, che dopo `len(players)` tentativi ammette esplicitamente il reincontro |
 | Dare per scontato che una partita abbia sempre un vincitore | In «esattamente N rack» con **N pari** il pareggio esiste: a 3-3 la partita è chiusa e `winner_id` resta `None`. Chi somma le vittorie senza contemplarlo perde una riga di classifica; chi scrive «ha vinto X» in una notifica scrive una frase falsa. Con N dispari non può capitare, ed è per questo che il caso passa inosservato (`test_stagione_e2e_risultati.py`) |
 | Datare a `today` una gara che il programma crea dentro un campionato | Le gare numerate stanno in ordine cronologico (ADR-016) e il controllo **non** salta le soft-eliminate. La gara di playoff nasceva datata oggi pur essendo l'ultima del calendario: con una gara ancora nel futuro — anche solo una pianificata e mai giocata, che la terminazione cancella — veniva rifiutata, e al posto della finale compariva un messaggio. La data si sceglie a partire dall'ultima gara, non dall'orologio (`test_playoff_gara_date_sequence.py`) |
+| Aprire una PR con un titolo senza prefisso `fix:`/`feat:`/… | Con lo squash merge il titolo **è** il messaggio di commit su `main`, e release-please ne ricava la versione: una PR senza prefisso non alza il numero e non compare in `docs/RELEASES.md`, senza dire niente a nessuno. Il job `pr-title` la blocca prima (vedi CI/CD, punto 4) |
+| Modificare `Config.VERSION` (o `.release-please-manifest.json`) a mano | Le scrive release-please nella PR di rilascio, e il manifest è la sua memoria: correggere la versione a mano fa ripartire il rilascio successivo dal numero vecchio. La riga di `config.py` va lasciata con la sua annotazione `# x-release-please-version` — senza, il bot smette di aggiornarla e il footer si congela in silenzio (`test_version_single_source.py`) |
 
 ---
 
@@ -547,6 +575,7 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [050](docs/adr/ADR-050-csrf-origin-instead-of-referrer.md) | CSRF su `Origin` e non `Referer`; `WTF_CSRF_TIME_LIMIT = None` |
 | [051](docs/adr/ADR-051-quick-start-moves-the-acceptance-to-the-end.md) | avvio rapido: partita già in corso, accettazione spostata alla doppia conferma |
 | [053](docs/adr/ADR-053-playoff-weight-and-final-ranking-mode.md) | `Gara.weight` con aggregazione per gara; modalità di classifica finale del playoff |
+| [054](docs/adr/ADR-054-version-from-pull-request-titles.md) | la versione nasce dai titoli delle PR (Conventional Commits + release-please); `CHANGELOG.md` a mano, `docs/RELEASES.md` generato |
 
 ---
 

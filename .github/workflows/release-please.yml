@@ -1,0 +1,48 @@
+name: Release Please
+
+# Il numero di versione mostrato nel footer dell'app (`Config.VERSION`, letto da
+# `templates/base.html`) non si scrive piu' a mano: lo calcola questo workflow
+# dai titoli delle PR unite, secondo Conventional Commits.
+#
+# Come funziona il giro completo:
+#   1. unisci una PR con titolo `fix: ...` o `feat: ...` (squash merge, quindi
+#      il titolo diventa il messaggio di commit su main);
+#   2. questo workflow apre — o aggiorna — una PR "chore(main): release X.Y.Z"
+#      che porta il numero nuovo in `config.py` e la voce in `docs/RELEASES.md`;
+#   3. quando unisci *quella* PR, crea il tag `vX.Y.Z` e la GitHub Release;
+#   4. il numero nuovo arriva in produzione col `git pull` di
+#      `scripts/auto_deploy.py`, come qualsiasi altra modifica al codice.
+#
+# Non c'e' nessun push diretto su `main`: `main` e' protetto con
+# `enforce_admins=true` e non lo accetterebbe. Il bot passa da una PR come tutti.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          # Il `GITHUB_TOKEN` di default NON va bene: GitHub, per evitare loop
+          # infiniti, non fa scattare workflow sulle PR aperte con quel token.
+          # La PR di release resterebbe quindi senza il check
+          # `test-and-typecheck` — che e' required e con `enforce_admins=true`
+          # non si aggira — e sarebbe impossibile da unire, per sempre.
+          #
+          # Serve un PAT nei secret del repo (scope `repo` + `workflow`).
+          # Il fallback sul token di default e' li' solo perche' il workflow non
+          # fallisca finche' il segreto non esiste: in quel caso la PR di
+          # release si apre lo stesso, ma va sbloccata a mano (chiudere e
+          # riaprire la PR fa partire i check).
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
