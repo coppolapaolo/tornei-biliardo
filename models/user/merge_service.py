@@ -359,6 +359,8 @@ class UserMergeService:
         # DELETE+INSERT, così l'identity-map non collide con i rowid riusati.
         db.session.expire_all()
 
+        from models.competition.spareggio_service import SpareggioService
+
         service = StrategyBasedClassificationService()
         for gara_id in gara_ids:
             gara = db.session.get(Gara, gara_id)
@@ -382,6 +384,9 @@ class UserMergeService:
                 service.calculate_round_classification(gara_id, round_number)
             if rounds:
                 service.calculate_gara_classification(gara_id)
+                # Vedi `reapply_final_positions_if_resolved`: il ricalcolo dei
+                # turni cancella lo specchio dell'ordine di spareggio.
+                SpareggioService.reapply_final_positions_if_resolved(gara_id)
 
         for cid in campionato_ids:
             ClassificationService.update_campionato_classification(cid)
