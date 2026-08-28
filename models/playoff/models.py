@@ -99,7 +99,7 @@ class PlayoffConfiguration(BaseModel):
 
     # Qualification criteria
     max_participants = db.Column(db.Integer, nullable=False)
-    # Minimum provas to qualify
+    # Minimum gare to qualify
     min_garas_played = db.Column(db.Integer, nullable=True)
     # Simplified position-based criteria (preferred over JSON)
     # e.g. 1 for Elite, 6 for Top 6

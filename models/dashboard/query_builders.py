@@ -60,13 +60,23 @@ def standalone_q():
     )
 
 
-def annotate_garas_with_flags(provas: Optional[List[Gara]]) -> List[Gara]:
-    """Arricchisce le Gare per la UI con flag derivati (no logica in Jinja)."""
-    if not provas:
+def annotate_garas_with_flags(gare: Optional[List[Gara]]) -> List[Gara]:
+    """Arricchisce le Gare per la UI con flag derivati (no logica in Jinja).
+
+    Il **nome** della funzione porta ancora `garas`, che e' lo stesso
+    anti-pattern del parametro appena rinominato. Non si tocca qui di
+    proposito: `garas` sopravvive in una cinquantina di posti, fra cui la URL
+    pubblica `/garas`, e quella `NAMING_CONVENTIONS.md` la vuole in una PR
+    dedicata con il redirect 301. Rinominare questa sola funzione renderebbe il
+    codice meno coerente, non piu'.
+    """
+    if not gare:
         return []
-    for p in provas:
-        p.is_inscription_open = p.get_real_status() == GaraStatus.INSCRIPTION.value
-    return provas
+    for gara in gare:
+        gara.is_inscription_open = (
+            gara.get_real_status() == GaraStatus.INSCRIPTION.value
+        )
+    return gare
 
 
 def standalone_available_for_user(

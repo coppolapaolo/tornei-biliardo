@@ -119,7 +119,7 @@ class UserStatsService:
 
         Returns statistics expected by _user_general_stats.html template:
         - tournaments_played: Count of distinct campionati with completed gare
-        - provas_played: Count of gare (provas) user has inscriptions for
+        - gare_played: Count of gare user has inscriptions for
         - won_matches: Count of matches won
         - win_percentage: Win rate as percentage
 
@@ -148,8 +148,8 @@ class UserStatsService:
             or 0
         )
 
-        # Count gare (provas) where user is inscribed
-        provas_played = (
+        # Count gare where user is inscribed
+        gare_played = (
             db.session.query(func.count(Inscription.id))
             .join(Gara, Gara.id == Inscription.gara_id)
             .filter(
@@ -163,7 +163,7 @@ class UserStatsService:
         return {
             **base_stats,
             "tournaments_played": tournaments_played,
-            "provas_played": provas_played,
+            "gare_played": gare_played,
         }
 
     @staticmethod

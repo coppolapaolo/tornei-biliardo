@@ -7,7 +7,7 @@
         </button>
     </div>
     <div class="card-body">
-        {% if provas %}
+        {% if gare %}
             {# === DESKTOP VIEW (≥768px): Table === #}
             <div class="table-responsive d-none d-md-block">
                 <table class="table table-striped">
@@ -25,7 +25,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {% for gara in provas %}
+                        {% for gara in gare %}
                             <tr>
                                 <td><strong>{{ gara.number }}</strong></td>
                                 <td>{{ gara.date|date_local }}</td>
@@ -91,7 +91,7 @@
 
             {# === MOBILE VIEW (<768px): Cards === #}
             <div class="d-md-none">
-                {% for gara in provas %}
+                {% for gara in gare %}
                 {% set status_class = 'border-secondary' %}
                 {% if gara.status == GaraStatus.PLAYING.value %}{% set status_class = 'border-primary' %}
                 {% elif gara.status == GaraStatus.COMPLETED.value %}{% set status_class = 'border-success' %}

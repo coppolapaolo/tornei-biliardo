@@ -455,7 +455,7 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         )
 
         # Conta le gare completate dove l'utente ha partecipato
-        provas_played = (
+        gare_played = (
             Inscription.query.filter_by(user_id=self.id)
             .join(Gara)
             # Solo gare completate
@@ -476,7 +476,7 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
             "lost_matches": lost_matches,
             "win_percentage": round(win_percentage, 1),
             "tournaments_played": tournaments_played,
-            "provas_played": provas_played,
+            "gare_played": gare_played,
             "total_racks_won": total_racks_won,
             "total_racks_played": total_racks_played,
             "rack_win_percentage": round(rack_win_percentage, 1),

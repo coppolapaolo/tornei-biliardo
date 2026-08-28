@@ -286,7 +286,7 @@ class Campionato(db.Model):
         self.deleted_reason = reason or "Campionato deleted by administrator"
         self.is_active = False
 
-        # Also soft delete related provas
+        # Also soft delete related gare
         gare = getattr(self, "gare", [])
         for gara in gare:
             if hasattr(gara, "soft_delete"):

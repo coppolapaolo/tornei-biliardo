@@ -450,7 +450,6 @@ def campionato_detail(campionato_id):
         "admin/campionato_detail.html",
         campionato=campionato,
         gare=gare,
-        provas=gare,  # Alias per compatibilità con il template
         users=candidate_directors,
         can_manage_directors=can_manage_directors,
         campionato_stats=campionato_stats,
