@@ -138,6 +138,43 @@ blocks:
       pending; if they disagree they can reject it and you fix it.
 
   - type: heading
+    id: chi-apre
+    title: "Who breaks, and how the shot passes"
+
+  - type: text
+    text: >-
+      Under «How you play», next to discipline and distance, there are two
+      choices about the **break shot**. Neither is compulsory: leave them alone
+      and the first of the two breaks, then it alternates — the way it has
+      always worked.
+
+  - type: options
+    items:
+      - name: "Start rule"
+        values: "default «First player»"
+        text: >-
+          Who takes the first shot. With **Lag** the scoreboard, before the
+          first rack, asks who won the lag and who breaks — because the lag
+          winner **chooses**, and may send the opponent to the table. How it
+          works at the table is explained in [Playing a
+          match](/aiuto/giocare/giocare_una_partita).
+      - name: "Who breaks"
+        values: "default «Alternating»"
+        text: >-
+          How the break shot passes from one rack to the next. **Alternating**
+          is the standard rule and switches every time; **Alternating every
+          two** gives two racks each; **Winner breaks** and **Loser breaks**
+          follow the result of the previous rack instead.
+
+  - type: note
+    tone: info
+    title: "Whoever proposes, picks"
+    text: >-
+      In a proposal the two rules travel with the invitation, like the
+      discipline and the distance: whoever accepts already knows what they are
+      saying yes to. Until the match starts they can still be corrected.
+
+  - type: heading
     id: senza-limite
     title: "The match with no limit"
 

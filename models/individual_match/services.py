@@ -25,6 +25,7 @@ from .models import (
     ProposalType,
     ProposalStatus,
 )
+from ..match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
 from ..status_enum import Discipline, MatchStatus
 
 # Import specialized services
@@ -50,7 +51,8 @@ class MatchProposalService:
         discipline: str = Discipline.EIGHT_BALL.value,
         distance: Optional[int] = 5,
         is_race_to: bool = True,
-        break_rule: str = "alternate",
+        break_rule: str = DEFAULT_BREAK_RULE.value,
+        start_rule: str = DEFAULT_START_RULE.value,
         description: Optional[str] = None,
         invited_user_ids: Optional[List[int]] = None,
         billiard_hall_id: Optional[int] = None,
@@ -75,6 +77,7 @@ class MatchProposalService:
                 distance=distance,
                 is_race_to=is_race_to,
                 break_rule=break_rule,
+                start_rule=start_rule,
                 description=description,
                 billiard_hall_id=billiard_hall_id,
                 is_multi_set=is_multi_set,
@@ -90,6 +93,7 @@ class MatchProposalService:
                 distance=distance,
                 is_race_to=is_race_to,
                 break_rule=break_rule,
+                start_rule=start_rule,
                 description=description,
                 billiard_hall_id=billiard_hall_id,
                 is_multi_set=is_multi_set,
@@ -458,6 +462,7 @@ class IndividualMatchService:
         "distance",
         "is_race_to",
         "break_rule",
+        "start_rule",
         "is_multi_set",
         "match_distance",
         "is_race_to_sets",

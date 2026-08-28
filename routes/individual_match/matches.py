@@ -15,6 +15,7 @@ from flask_login import current_user
 from models import IndividualMatch
 from models.base import db
 from models.individual_match.services import IndividualMatchService
+from models.match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
 from models.status_enum import Discipline
 from models.user.permissions import RoleRequirement
 from utils.local_time import parse_local_datetime
@@ -585,6 +586,7 @@ def edit_match(match_id):
         "distance": data.get("distance") or None,
         "match_distance": data.get("match_distance") or None,
         "break_rule": data.get("break_rule") or None,
+        "start_rule": data.get("start_rule") or None,
     }
     if data.get("is_race_to") is not None:
         config["is_race_to"] = str(data.get("is_race_to")).lower() == "true"
@@ -600,6 +602,7 @@ def edit_match(match_id):
             distance=settings["distance"],
             is_race_to=settings["is_race_to"],
             break_rule=settings["break_rule"],
+            start_rule=settings["start_rule"],
             is_multi_set=settings["is_multi_set"],
             match_distance=settings["match_distance"],
             is_race_to_sets=True if settings["is_multi_set"] else None,
@@ -750,7 +753,8 @@ def rematch(match_id):
         "discipline": match.discipline or Discipline.EIGHT_BALL.value,
         "distance": match.distance or 5,
         "is_race_to": "true" if match.is_race_to else "false",
-        "break_rule": match.break_rule or "alternate",
+        "break_rule": match.break_rule or DEFAULT_BREAK_RULE.value,
+        "start_rule": match.start_rule or DEFAULT_START_RULE.value,
     }
 
     # Add billiard_hall_id if present
