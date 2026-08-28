@@ -180,9 +180,7 @@ class TestQuandoLeMetaSiSpengono:
         nome giusto per il gesto: non correggo un punto qualunque, dico che il
         risultato non mi torna.
         """
-        html = _render(
-            app, _Match(p1_score=5, p2_score=3, racks=[_Rack(1, 1)])
-        )
+        html = _render(app, _Match(p1_score=5, p2_score=3, racks=[_Rack(1, 1)]))
 
         assert "Accetta" in html
         assert "Rifiuta" in html

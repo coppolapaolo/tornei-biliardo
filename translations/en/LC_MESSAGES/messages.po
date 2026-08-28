@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-28 13:56+0200\n"
+"POT-Creation-Date: 2026-08-28 15:14+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1250,6 +1250,7 @@ msgstr "The winner of the previous rack breaks."
 
 #: models/match/break_rules.py:124
 #: templates/admin/campionato_wizard_step2.html:144
+#: templates/admin/gara_create_standalone.html:406
 #: templates/components/_campionato_edit_form.html:203
 msgid "Tiri di apertura alternati, la regola standard FIBiS."
 msgstr "Alternating break shots, the standard FIBiS rule."
@@ -2140,7 +2141,7 @@ msgstr "Session opened: wait for the candidate to accept."
 msgid "Esame iniziato."
 msgstr "Exam started."
 
-#: routes/exam/attempts.py:163 templates/components/_match_scoreboard.html:355
+#: routes/exam/attempts.py:163 templates/components/_match_scoreboard.html:367
 msgid "Risultato registrato."
 msgstr "Result recorded."
 
@@ -3360,8 +3361,8 @@ msgstr "One rack more"
 
 #: templates/admin/campionato_detail.html:158
 #: templates/admin/campionato_wizard_step2.html:76
-#: templates/admin/gara_create_standalone.html:401
-#: templates/admin/gara_create_standalone.html:465
+#: templates/admin/gara_create_standalone.html:432
+#: templates/admin/gara_create_standalone.html:496
 #: templates/components/_campionato_details_info.html:92
 #: templates/components/_gara_edit_form.html:313
 #: templates/components/_gara_info.html:26
@@ -4853,7 +4854,7 @@ msgid "N."
 msgstr "No."
 
 #: templates/admin/campionato_wizard_step1.html:159
-#: templates/admin/gara_create_standalone.html:439
+#: templates/admin/gara_create_standalone.html:470
 #: templates/components/_new_gara_modal.html:368
 msgid "Avanti"
 msgstr "Next"
@@ -4876,7 +4877,7 @@ msgstr "Step 2 of 2"
 #: templates/components/_gara_edit_form.html:75
 #: templates/components/_history_filters.html:95
 #: templates/components/_history_matches_tab.html:23
-#: templates/components/_player_statistics.html:25
+#: templates/components/_player_statistics.html:36
 msgid "Vittorie"
 msgstr "Wins"
 
@@ -4898,7 +4899,7 @@ msgstr "Strategy"
 #: templates/components/_gamification_labels.html:51
 #: templates/components/_history_gare_tab.html:14
 #: templates/components/_history_gare_tab.html:50
-#: templates/components/_player_statistics.html:19
+#: templates/components/_player_statistics.html:32
 #: templates/components/_separated_dashboard_content.html:165
 #: templates/player/history.html:25 templates/public/campionatos_list.html:53
 #: templates/public/garas_list.html:51
@@ -4971,16 +4972,19 @@ msgid "Solo per distanze 2-7."
 msgstr "For distances 2-7 only."
 
 #: templates/admin/campionato_wizard_step2.html:129
+#: templates/admin/gara_create_standalone.html:391
 #: templates/components/_gara_edit_form.html:243
 msgid "Regola di inizio"
 msgstr "Start rule"
 
 #: templates/admin/campionato_wizard_step2.html:135
+#: templates/admin/gara_create_standalone.html:397
 #: templates/components/_gara_edit_form.html:255
 msgid "Con l'acchito il segnapunti chiede chi ha vinto e chi apre: chi vince può mandare al tavolo l'avversario."
 msgstr "With a lag the scoreboard asks who won it and who breaks: the winner may send the opponent to the table."
 
 #: templates/admin/campionato_wizard_step2.html:138
+#: templates/admin/gara_create_standalone.html:400
 #: templates/components/_gara_edit_form.html:264
 #: templates/individual_match/create_proposal.html:160
 #: templates/individual_match/edit_match.html:92
@@ -5012,7 +5016,7 @@ msgid "Il rating Elo si aggiorna solo fra giocatori della stessa categoria. Ered
 msgstr "The Elo rating is only updated between players of the same category. Inherited by competitions and matches."
 
 #: templates/admin/campionato_wizard_step2.html:180
-#: templates/admin/gara_create_standalone.html:435
+#: templates/admin/gara_create_standalone.html:466
 #: templates/admin/venue_form.html:12 templates/admin/venue_form.html:23
 #: templates/components/_new_gara_modal.html:363
 #: templates/gamification/admin/feature_create.html:6
@@ -5049,7 +5053,7 @@ msgstr "Approve"
 #: templates/admin/director_requests.html:36
 #: templates/admin/venue_manager_requests.html:118
 #: templates/admin/venue_manager_requests.html:157
-#: templates/components/_match_scoreboard.html:343
+#: templates/components/_match_scoreboard.html:355
 #: templates/components/_playoff_invitations.html:53
 #: templates/components/_trio_rack_input.html:217
 #: templates/components/_unified_rack_input.html:253
@@ -5359,7 +5363,7 @@ msgid "Casuale"
 msgstr "Random"
 
 #: templates/admin/gara_create_standalone.html:297
-#: templates/components/_player_ratings.html:15
+#: templates/components/_player_ratings.html:19
 msgid "Rating"
 msgstr "Rating"
 
@@ -5446,19 +5450,19 @@ msgstr "Match Format"
 msgid "Definisci il target di punteggio per ogni singola partita."
 msgstr "Set the score target for each single match."
 
-#: templates/admin/gara_create_standalone.html:387
+#: templates/admin/gara_create_standalone.html:418
 msgid "Riepilogo e Conferma"
 msgstr "Summary and Confirmation"
 
-#: templates/admin/gara_create_standalone.html:392
+#: templates/admin/gara_create_standalone.html:423
 msgid "Competizione"
 msgstr "Competition"
 
-#: templates/admin/gara_create_standalone.html:399
+#: templates/admin/gara_create_standalone.html:430
 msgid "Struttura"
 msgstr "Structure"
 
-#: templates/admin/gara_create_standalone.html:402
+#: templates/admin/gara_create_standalone.html:433
 #: templates/components/_gara_info.html:42
 #: templates/components/_new_gara_modal.html:39
 #: templates/gamification/admin/quests.html:26
@@ -5466,7 +5470,7 @@ msgstr "Structure"
 msgid "Partecipanti"
 msgstr "Participants"
 
-#: templates/admin/gara_create_standalone.html:403
+#: templates/admin/gara_create_standalone.html:434
 #: templates/components/_gara_inscriptions.html:59
 #: templates/components/_match_result_row.html:24
 #: templates/components/_match_result_row.html:28
@@ -5476,7 +5480,7 @@ msgstr "Participants"
 msgid "Forfait"
 msgstr "Forfeit"
 
-#: templates/admin/gara_create_standalone.html:404
+#: templates/admin/gara_create_standalone.html:435
 #: templates/components/_campionato_details_info.html:86
 #: templates/components/_campionato_garas.html:21
 #: templates/components/_gara_info.html:47
@@ -5485,99 +5489,99 @@ msgstr "Forfeit"
 msgid "Quota"
 msgstr "Fee"
 
-#: templates/admin/gara_create_standalone.html:407
+#: templates/admin/gara_create_standalone.html:438
 msgid "Politiche Abbinamento"
 msgstr "Pairing Policies"
 
-#: templates/admin/gara_create_standalone.html:410
+#: templates/admin/gara_create_standalone.html:441
 msgid "Seeding"
 msgstr "Seeding"
 
-#: templates/admin/gara_create_standalone.html:411
+#: templates/admin/gara_create_standalone.html:442
 msgid "Dispari"
 msgstr "Odd Players"
 
-#: templates/admin/gara_create_standalone.html:417
+#: templates/admin/gara_create_standalone.html:448
 msgid "Formato Partite"
 msgstr "Match Format"
 
-#: templates/admin/gara_create_standalone.html:425
+#: templates/admin/gara_create_standalone.html:456
 msgid "Puoi ancora tornare indietro per correggere eventuali errori prima di salvare definitivamente."
 msgstr "You can still go back and fix any mistakes before saving permanently."
 
-#: templates/admin/gara_create_standalone.html:443
+#: templates/admin/gara_create_standalone.html:474
 #: templates/components/_new_gara_modal.html:371
 msgid "Crea Gara"
 msgstr "Create Competition"
 
-#: templates/admin/gara_create_standalone.html:462
+#: templates/admin/gara_create_standalone.html:493
 msgid "Nessun nome"
 msgstr "No name"
 
-#: templates/admin/gara_create_standalone.html:463
+#: templates/admin/gara_create_standalone.html:494
 msgid "Luogo non specificato"
 msgstr "Venue not specified"
 
-#: templates/admin/gara_create_standalone.html:464
+#: templates/admin/gara_create_standalone.html:495
 msgid "ore"
 msgstr "hrs"
 
-#: templates/admin/gara_create_standalone.html:466
+#: templates/admin/gara_create_standalone.html:497
 msgid "Illimitati"
 msgstr "Unlimited"
 
-#: templates/admin/gara_create_standalone.html:467
+#: templates/admin/gara_create_standalone.html:498
 #, python-brace-format
 msgid "Min: {min}, Max: {max}"
 msgstr "Min: {min}, Max: {max}"
 
-#: templates/admin/gara_create_standalone.html:468
+#: templates/admin/gara_create_standalone.html:499
 #, python-brace-format
 msgid "Forfait: {value}"
 msgstr "Withdrawal: {value}"
 
-#: templates/admin/gara_create_standalone.html:469
+#: templates/admin/gara_create_standalone.html:500
 #, python-brace-format
 msgid "Quota: €{value}"
 msgstr "Fee: €{value}"
 
-#: templates/admin/gara_create_standalone.html:470
+#: templates/admin/gara_create_standalone.html:501
 msgid "Anti-rematch ON"
 msgstr "Anti-rematch ON"
 
-#: templates/admin/gara_create_standalone.html:471
+#: templates/admin/gara_create_standalone.html:502
 msgid "Anti-rematch OFF"
 msgstr "Anti-rematch OFF"
 
-#: templates/admin/gara_create_standalone.html:472
+#: templates/admin/gara_create_standalone.html:503
 #, python-brace-format
 msgid "Seeding: {value}"
 msgstr "Seeding: {value}"
 
-#: templates/admin/gara_create_standalone.html:473
+#: templates/admin/gara_create_standalone.html:504
 #, python-brace-format
 msgid "Dispari: {value}"
 msgstr "Odd players: {value}"
 
-#: templates/admin/gara_create_standalone.html:474
+#: templates/admin/gara_create_standalone.html:505
 #, python-brace-format
 msgid "Classifica: {value}"
 msgstr "Standings: {value}"
 
-#: templates/admin/gara_create_standalone.html:475
+#: templates/admin/gara_create_standalone.html:506
 #, python-brace-format
 msgid "SSR: fino {value}"
 msgstr "SSR: up to {value}"
 
-#: templates/admin/gara_create_standalone.html:476
+#: templates/admin/gara_create_standalone.html:507
 msgid "SSR: Disabilitato"
 msgstr "SSR: Disabled"
 
-#: templates/admin/gara_create_standalone.html:477
+#: templates/admin/gara_create_standalone.html:508
 msgid "Calcolato automaticamente"
 msgstr "Calculated automatically"
 
-#: templates/admin/gara_create_standalone.html:478
+#: templates/admin/gara_create_standalone.html:509
 #, python-brace-format
 msgid "Con anti-rematch attivo e {max} partecipanti massimi, puoi avere al massimo {rounds} turni (ogni giocatore può incontrare al massimo {rounds} avversari unici)"
 msgstr "With anti-rematch on and {max} maximum participants, you can have at most {rounds} rounds (each player can face at most {rounds} unique opponents)"
@@ -6298,7 +6302,7 @@ msgstr "Select user..."
 
 #: templates/admin/venue_detail.html:253
 #: templates/components/_campionato_statistics.html:4
-#: templates/components/_player_statistics.html:5
+#: templates/components/_player_statistics.html:19
 #: templates/exam/detail.html:163 templates/individual_match/dashboard.html:285
 #: templates/player/privacy_settings.html:42
 #: templates/player/venue_detail.html:194
@@ -9461,7 +9465,7 @@ msgid "Accedi per iscriverti"
 msgstr "Log in to register"
 
 #: templates/components/_history_campionati_tab.html:12
-#: templates/components/_player_statistics.html:13
+#: templates/components/_player_statistics.html:28
 #: templates/components/_separated_dashboard_content.html:393
 #: templates/player/history.html:28 templates/public/campionatos_list.html:2
 #: templates/public/campionatos_list.html:7
@@ -9667,7 +9671,7 @@ msgstr "Opponent"
 
 #: templates/components/_history_filters.html:98
 #: templates/components/_history_matches_tab.html:27
-#: templates/components/_player_statistics.html:43
+#: templates/components/_player_statistics.html:51
 msgid "Sconfitte"
 msgstr "Losses"
 
@@ -10344,7 +10348,7 @@ msgstr "Start"
 msgid "vince"
 msgstr "wins"
 
-#: templates/components/_match_scoreboard.html:333
+#: templates/components/_match_scoreboard.html:352
 #: templates/components/_playoff_invitations.html:48
 #: templates/components/_trio_rack_input.html:209
 #: templates/components/_unified_rack_input.html:252
@@ -10356,29 +10360,28 @@ msgstr "wins"
 msgid "Accetta"
 msgstr "Accept"
 
-#: templates/components/_match_scoreboard.html:338
-#: templates/components/_match_scoreboard.html:361
+#: templates/components/_match_scoreboard.html:363
+#: templates/components/_unified_rack_input.html:193
+msgid "Hai confermato. Manca la conferma dell'avversario."
+msgstr "You confirmed. Your opponent still has to."
+
+#: templates/components/_match_scoreboard.html:365
+msgid "Risultato confermato da entrambi."
+msgstr "Both players confirmed the result."
+
+#: templates/components/_match_scoreboard.html:373
 #: templates/components/_trio_rack_input.html:402
 #: templates/components/_unified_rack_input.html:288
 msgid "Annulla ultimo triangolo"
 msgstr "Undo last rack"
 
-#: templates/components/_match_scoreboard.html:351
-#: templates/components/_unified_rack_input.html:193
-msgid "Hai confermato. Manca la conferma dell'avversario."
-msgstr "You confirmed. Your opponent still has to."
-
-#: templates/components/_match_scoreboard.html:353
-msgid "Risultato confermato da entrambi."
-msgstr "Both players confirmed the result."
-
-#: templates/components/_match_scoreboard.html:375
+#: templates/components/_match_scoreboard.html:387
 #: templates/components/_unified_rack_input.html:201
 #: templates/components/_unified_rack_input.html:295
 msgid "Serve un tavolo assegnato prima di iniziare."
 msgstr "A table must be assigned before starting."
 
-#: templates/components/_match_scoreboard.html:380
+#: templates/components/_match_scoreboard.html:392
 msgid "Annulla il triangolo"
 msgstr "Undo the rack"
 
@@ -10795,11 +10798,11 @@ msgstr "Change password"
 msgid "Richiedi il ruolo di direttore di gara"
 msgstr "Apply to become a tournament director"
 
-#: templates/components/_player_ratings.html:17
+#: templates/components/_player_ratings.html:20
 msgid "Lv. 6+"
 msgstr "Lv. 6+"
 
-#: templates/components/_player_ratings.html:32
+#: templates/components/_player_ratings.html:46
 #: templates/individual_match/statistics.html:35
 #, python-format
 msgid "%(n)s referto"
@@ -10807,16 +10810,16 @@ msgid_plural "%(n)s referti"
 msgstr[0] "%(n)s scoresheet"
 msgstr[1] "%(n)s scoresheets"
 
-#: templates/components/_player_ratings.html:47
+#: templates/components/_player_ratings.html:56
 msgid "L'Elo competitivo si aggiorna a fine partita ufficiale. Clicca il valore per vedere l'Elo globale (include le sfide individuali)."
 msgstr "Competitive Elo updates at the end of an official match. Click the value to see the global Elo (includes individual matches)."
 
-#: templates/components/_player_ratings.html:53
+#: templates/components/_player_ratings.html:61
 #, python-format
-msgid "Il TPA e' la percentuale di azioni riuscite al tavolo: %(balls)s bilie imbucate contro %(errors)s errori."
+msgid "Il TPA è la percentuale di azioni riuscite al tavolo: %(balls)s bilie imbucate contro %(errors)s errori."
 msgstr "The TPA is the share of successful actions at the table: %(balls)s balls pocketed against %(errors)s errors."
 
-#: templates/components/_player_ratings.html:56
+#: templates/components/_player_ratings.html:64
 #: templates/individual_match/statistics.html:43
 msgid "Il TPA compare dopo il primo referto compilato durante una partita."
 msgstr "The TPA appears after the first scoresheet is filled in during a match."
@@ -10838,24 +10841,24 @@ msgstr "You have not played any matches yet. Register for a competition, or star
 msgid "Questo giocatore non ha ancora partite da mostrare."
 msgstr "This player has no matches to show yet."
 
-#: templates/components/_player_statistics.html:5
+#: templates/components/_player_statistics.html:19
 msgid "Le mie Statistiche"
 msgstr "My Statistics"
 
-#: templates/components/_player_statistics.html:31
+#: templates/components/_player_statistics.html:40
 msgid "Win Rate"
 msgstr "Win Rate"
 
-#: templates/components/_player_statistics.html:40
+#: templates/components/_player_statistics.html:47
 #: templates/gamification/achievements.html:41
 msgid "Totali"
 msgstr "Total"
 
-#: templates/components/_player_statistics.html:61
+#: templates/components/_player_statistics.html:70
 msgid "Runout"
 msgstr "Runout"
 
-#: templates/components/_player_statistics.html:63
+#: templates/components/_player_statistics.html:72
 #, python-format
 msgid "di cui %(n)s break and run"
 msgstr "of which %(n)s break and run"

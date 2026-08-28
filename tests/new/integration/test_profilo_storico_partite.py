@@ -131,6 +131,24 @@ def _link_partita(match):
     return f'/admin/match/{match.id}"'
 
 
+def _statistica(body: str, valore) -> bool:
+    """Se `valore` compare come **numero di una statistica** del profilo.
+
+    Prima si cercava `">1</h3>"`: il conteggio giusto dentro il tag che il
+    componente usava allora. Portandolo al design system i numeri sono passati
+    da `<h3 class="text-primary">` a `<div class="c7-num-lg">`, e i due test
+    che ne dipendevano sono diventati rossi senza che il **conteggio** — cioè
+    l'unica cosa che volevano difendere — fosse cambiato di una virgola.
+
+    Qui si cerca la classe, non il tag: e' quella a dire «questo e' un numero
+    di statistica», e sopravvive al prossimo giro di impaginazione.
+    """
+    import re
+
+    numeri = re.findall(r'class="c7-num(?:-lg|-xl)?"[^>]*>\s*([^<\s][^<]*?)\s*<', body)
+    return str(valore) in [n.strip() for n in numeri]
+
+
 @pytest.mark.integration
 class TestPartiteRecentiDelProfilo:
     def test_la_sfida_individuale_compare(self, app):
@@ -150,8 +168,8 @@ class TestPartiteRecentiDelProfilo:
 
         # Una giocata e vinta: prima erano zero, perché `CONFIRMED_BY_BOTH` non
         # veniva contata e la tabella non veniva nemmeno interrogata.
-        assert ">1</h3>" in body
-        assert ">100.0%</h3>" in body
+        assert _statistica(body, 1)
+        assert _statistica(body, "100.0%")
 
     def test_partite_di_gara_e_sfide_stanno_insieme(self, app):
         me, avversario = _player(), _player()
@@ -188,7 +206,7 @@ class TestPartiteRecentiDelProfilo:
         body = _get(_client_for(app, me), "/player/profile").get_data(as_text=True)
 
         assert stats.total_matches == 2
-        assert f">{stats.total_matches}</h3>" in body
+        assert _statistica(body, stats.total_matches)
 
 
 @pytest.mark.integration

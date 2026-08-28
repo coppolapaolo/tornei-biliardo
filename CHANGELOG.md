@@ -17,6 +17,25 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ## [Non rilasciato]
 
+### Modificato
+
+- **Il profilo non ha più i colori di Bootstrap in mezzo.** «Rating» e «Le mie
+  Statistiche» erano rimasti in markup Bootstrap: le card le ridisegnava già il
+  tema, ma i quattro numeri — campionati, gare, vittorie, percentuale — erano
+  il blu, il ciano, il verde e l'ambra di Bootstrap, e nessun foglio di stile
+  li sovrascriveva. Erano l'unico punto della pagina dove si vedevano colori
+  fuori dalla palette, per giunta accanto a una sezione, «Esercizi», che era
+  già a posto. Adesso le tre sezioni hanno la stessa forma; le etichette non
+  cambiano. Sistemato anche un «e'» al posto di «è» nella spiegazione del TPA.
+- **Sul tabellone, a risultato da confermare, le risposte sono due e non tre.**
+  «Rifiuta» toglie l'ultimo triangolo — è quello che ha sempre fatto — quindi
+  era la stessa mossa del pulsante ⟲ che gli stava accanto: tre pulsanti per
+  due azioni, con quello muto schiacciato in mezzo. In quello stato l'ultimo
+  triangolo è per l'appunto quello che ha **chiuso la partita**, e «Rifiuta» è
+  il nome giusto per il gesto: non si corregge un punto qualunque, si dice che
+  il risultato non torna. Il ⟲ resta in tutti gli altri stati, dove non è un
+  doppione ma la sola via d'uscita per un triangolo segnato per sbaglio.
+
 ### Aggiunto
 
 - **Chi apre, l'acchito e i triangoli chiusi in una visita** (ADR-056). Il
