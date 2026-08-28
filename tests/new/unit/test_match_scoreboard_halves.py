@@ -171,6 +171,41 @@ class TestQuandoLeMetaSiSpengono:
         assert "Accetta" in html
         assert "Rifiuta" in html
 
+    def test_a_distanza_raggiunta_le_risposte_sono_due_non_tre(self, app):
+        """«Rifiuta» **è** l'annulla: la route toglie l'ultimo triangolo.
+
+        Tenere anche il ⟲ voleva dire tre pulsanti per due azioni, con quello
+        muto schiacciato in mezzo. E in questo stato l'ultimo triangolo è
+        proprio quello che ha chiuso la partita, quindi «Rifiuta» è anche il
+        nome giusto per il gesto: non correggo un punto qualunque, dico che il
+        risultato non mi torna.
+        """
+        html = _render(
+            app, _Match(p1_score=5, p2_score=3, racks=[_Rack(1, 1)])
+        )
+
+        assert "Accetta" in html
+        assert "Rifiuta" in html
+        # Il ⟲ non c'è: il suo `aria-label` è l'unico modo di riconoscerlo,
+        # perché il pulsante è una sola icona.
+        assert "Annulla ultimo triangolo" not in html
+
+    def test_dopo_aver_confermato_l_annulla_torna_perche_e_la_sola_via(self, app):
+        """Qui non è un doppione: le risposte non ci sono più, e un triangolo
+        segnato per sbaglio va pur tolto in qualche modo."""
+        html = _render(
+            app,
+            _Match(
+                p1_score=5,
+                p2_score=3,
+                p1_confirmed=True,
+                racks=[_Rack(1, 1)],
+            ),
+        )
+
+        assert "Rifiuta" not in html
+        assert "Annulla ultimo triangolo" in html
+
     def test_senza_tavolo_assegnato_le_meta_dicono_perche(self, app):
         """Un'area muta che non fa niente è peggio di un pulsante spento."""
         html = _render(app, _Match(table_assignment=None))

@@ -242,10 +242,16 @@ Da fare prima o durante l'implementazione:
 
 Cose viste per strada, indipendenti da questo lavoro, da sistemare a parte:
 
-* **«Rifiuta» e «Annulla ultimo triangolo» fanno la stessa cosa.**
+* ~~**«Rifiuta» e «Annulla ultimo triangolo» fanno la stessa cosa.**
   `routes/player/matches.py:344` è commentata «reject — removes last rack», e
   la conferma a schermo lo dice: «L'ultimo triangolo verrà rimosso». Nello
-  stato «da confermare» il tabellone mostra tre pulsanti per due azioni.
+  stato «da confermare» il tabellone mostra tre pulsanti per due azioni.~~
+  **Risolto il 2026-08-28.** Il nome giusto è «Rifiuta», perché in quello stato
+  l'ultimo triangolo è quello che ha *chiuso la partita*: non si sta
+  correggendo un punto qualunque, si sta dicendo che il risultato non torna.
+  Tolto il ⟲ dal solo stato «da confermare», dove era il doppione; negli altri
+  resta, perché lì è la sola via d'uscita. La vista verticale non ha mai avuto
+  il problema — lì le risposte sono sempre state due.
 * **`components/_player_statistics.html` e `_player_ratings.html` sono ancora
   in markup Bootstrap**, non 7c. Le card le ridisegna `theme-7c.css`, ma
   `text-primary` / `text-info` / `text-success` / `text-warning` **non sono
