@@ -328,17 +328,29 @@
     <div class="c7-board__pad">
         {% if board.awaiting_you %}
         {# Il risultato aspetta questo giocatore: al posto dei +1 le due
-           risposte. Stessi endpoint della vista verticale. #}
+           risposte. Stessi endpoint della vista verticale.
+
+           QUI L'ANNULLA NON C'E', ED E' VOLUTO
+           ------------------------------------
+           «Rifiuta» **toglie l'ultimo triangolo**: la route lo dice
+           (`reject_match_result`, «removes last rack») e la conferma a schermo
+           pure. E' la stessa identica mossa di «Annulla il triangolo» — e in
+           questo stato l'ultimo triangolo e' quello che ha chiuso la partita,
+           quindi «Rifiuta» e' anche il **nome giusto** per quel gesto: non sto
+           correggendo un punto qualunque, sto dicendo che il risultato non mi
+           torna.
+
+           Tenere entrambi voleva dire tre pulsanti per due azioni, con il
+           ⟲ schiacciato in mezzo ad Accetta e Rifiuta: chi guarda deve
+           scegliere fra due comandi che fanno la stessa cosa, e uno dei due
+           non dice cosa fa. La vista verticale non ha mai avuto questo
+           problema — li' le risposte sono sempre state due.
+
+           Negli **altri** stati il ⟲ resta, e li' non e' un doppione: e' la
+           sola via d'uscita per un triangolo segnato per sbaglio. #}
         <button type="button" class="c7-board__btn c7-board__btn--ok" onclick="{{ confirm_func }}(this)">
             <i class="fas fa-check c7-board__plus"></i><span>{{ _('Accetta') }}</span>
         </button>
-        {% if puo_annullare %}
-        <button type="button" class="c7-board__undo"
-                onclick="{{ remove_rack }}({{ last_rack.winner_id }}, this)"
-                aria-label="{{ _('Annulla ultimo triangolo') }}">
-            <i class="fas fa-rotate-left"></i>
-        </button>
-        {% endif %}
         <button type="button" class="c7-board__btn c7-board__btn--no" onclick="{{ reject_func }}(this)">
             <i class="fas fa-xmark c7-board__plus"></i><span>{{ _('Rifiuta') }}</span>
         </button>
