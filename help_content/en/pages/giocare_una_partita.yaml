@@ -112,7 +112,7 @@ blocks:
       - "You score by tapping the **player's half**: left half of the screen, a rack to whoever is on the left; right half, to the other one. There is no button to look for — the target is half the screen, and you can hit it one-handed, even without looking."
       - "Your half is the one with **you** next to the name."
       - "Under each name is the player's **Elo rating**: it tells you who you are up against before the first break. In a competition match it is the competition Elo, in an individual match it is the one that also counts individual matches. Anyone who would rather not show it switches it off in their [privacy](/aiuto/account/privacy_e_dati) settings — and then nothing appears under their name."
-      - "At the bottom the button to **undo the last rack** stays: with a target this big a stray tap gets easier, not harder."
+      - "While you play, at the bottom the button to **undo the last rack** stays: with a target this big a stray tap gets easier, not harder. At the distance it gives way to «Accept» and «Reject», which does the same thing."
       - "The point lands in the same place as on the normal page: for the score there is no difference between the two views."
       - "Under each score, the dashes show how many racks are left to win, so you do not have to count them."
       - "In the top left, when a table is assigned, its **number stands out**: it is how you recognise your own scoreboard walking across a room with eight tables. Next to it, the time the match started."
