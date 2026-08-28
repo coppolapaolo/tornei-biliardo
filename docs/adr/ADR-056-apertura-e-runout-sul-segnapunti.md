@@ -252,12 +252,19 @@ Cose viste per strada, indipendenti da questo lavoro, da sistemare a parte:
   Tolto il ⟲ dal solo stato «da confermare», dove era il doppione; negli altri
   resta, perché lì è la sola via d'uscita. La vista verticale non ha mai avuto
   il problema — lì le risposte sono sempre state due.
-* **`components/_player_statistics.html` e `_player_ratings.html` sono ancora
+* ~~**`components/_player_statistics.html` e `_player_ratings.html` sono ancora
   in markup Bootstrap**, non 7c. Le card le ridisegna `theme-7c.css`, ma
   `text-primary` / `text-info` / `text-success` / `text-warning` **non sono
   sovrascritti da nessuna parte**: quei quattro numeri del profilo sono il blu,
   il ciano, il verde e l'ambra di Bootstrap, e sono l'unico punto della pagina
-  dove si vedono.
+  dove si vedono.~~
+  **Risolto il 2026-08-28.** Portati alla forma dei componenti che gli stanno
+  accanto nella stessa pagina — `c7-sechead`, `c7-card` con `c7-num-lg`,
+  `c7-rows` per le righe etichetta/valore — invece di inventarne una: la
+  schermata del profilo nel prototipo sta al turno 5, che la skill `ui-7c`
+  dichiara direzione **scartata**, quindi non era riferimento. Presidio in
+  `tests/new/unit/test_player_statistics_component.py`. Resta in Bootstrap
+  `_user_general_stats.html`, che e' la pagina utente dell'amministratore.
 * **`stats.provas_played`** in `_player_statistics.html` è l'anti-pattern
   «radice italiana + `-s` inglese» vietato da `NAMING_CONVENTIONS.md`.
 
