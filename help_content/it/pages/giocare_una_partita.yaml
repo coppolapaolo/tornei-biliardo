@@ -166,8 +166,10 @@ blocks:
 
   - type: text
     text: >-
-      Se il direttore ha scelto **Acchito** come regola di inizio, prima del
-      primo triangolo il tabellone fa due domande al posto del punteggio.
+      Se la regola di inizio è **Acchito**, prima del primo triangolo il
+      tabellone fa due domande al posto del punteggio. In gara la sceglie il
+      direttore; in una [sfida individuale](/aiuto/giocare/partite_amichevoli)
+      la scegli tu, insieme al resto di come si gioca.
 
   - type: steps
     items:

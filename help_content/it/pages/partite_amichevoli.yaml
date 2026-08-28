@@ -136,6 +136,43 @@ blocks:
       corregge.
 
   - type: heading
+    id: chi-apre
+    title: "Chi apre, e come si passa il tiro"
+
+  - type: text
+    text: >-
+      Sotto «Come si gioca», insieme a disciplina e distanza, ci sono due
+      scelte che riguardano il **tiro di apertura**. Non sono obbligatorie: se
+      non le tocchi, apre il primo dei due e poi ci si alterna, che è come si
+      è sempre giocato.
+
+  - type: options
+    items:
+      - name: "Regola di inizio"
+        values: "predefinito «Primo giocatore»"
+        text: >-
+          Chi esegue il primo tiro. Con **Acchito** il segnapunti, prima del
+          primo triangolo, chiede chi ha vinto l'acchito e chi apre — perché
+          chi vince l'acchito **sceglie**, e può mandare al tavolo
+          l'avversario. Come funziona al tavolo è spiegato in [Giocare una
+          partita](/aiuto/giocare/giocare_una_partita).
+      - name: "Chi spacca"
+        values: "predefinito «A turno»"
+        text: >-
+          Come passa il tiro di apertura da un triangolo al successivo. **A
+          turno** è la regola standard e alterna ogni volta; **A turno ogni
+          due** dà due triangoli a testa; **Spacca chi ha vinto** e **Spacca
+          chi ha perso** seguono invece il risultato del triangolo prima.
+
+  - type: note
+    tone: info
+    title: "Chi propone, sceglie"
+    text: >-
+      In una proposta le due regole viaggiano con l'invito, come la disciplina
+      e la distanza: chi accetta sa già a cosa sta dicendo di sì. Finché la
+      partita non è cominciata si possono ancora correggere.
+
+  - type: heading
     id: senza-limite
     title: "La sfida senza limite"
 

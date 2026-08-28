@@ -167,8 +167,10 @@ blocks:
 
   - type: text
     text: >-
-      If the director chose **Lag** as the start rule, before the first rack
-      the scoreboard asks two questions instead of showing the score.
+      If the start rule is **Lag**, before the first rack the scoreboard asks
+      two questions instead of showing the score. In a competition the director
+      picks it; in a [friendly match](/aiuto/giocare/partite_amichevoli) you
+      pick it yourself, along with the rest of how you play.
 
   - type: steps
     items:
