@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.1.0...v1.2.0) (2026-08-28)
+
+
+### Funzioni nuove
+
+* acchito, chi spacca e i triangoli chiusi in una visita ([#244](https://github.com/coppolapaolo/tornei-biliardo/issues/244)) ([ee6dc1a](https://github.com/coppolapaolo/tornei-biliardo/commit/ee6dc1a8afdc45995f7dd490138ffe5daf2550a9))
+
+
+### Correzioni
+
+* a risultato da confermare il tabellone offriva tre pulsanti per due azioni ([#246](https://github.com/coppolapaolo/tornei-biliardo/issues/246)) ([5ea38ad](https://github.com/coppolapaolo/tornei-biliardo/commit/5ea38ad033c7025c9708dbea8bd28160f23e348e))
+
 ## [1.1.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.0.0...v1.1.0) (2026-08-26)
 
 
