@@ -462,3 +462,130 @@ class TestCascataDeiRifiutiAiPlayoff:
         # Il sostituto è il quinto della classifica, cioè il primo escluso.
         quinto = giocatori[4]
         assert quinto.id in {q.user_id for q in invitati}
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# APERTURA E RUNOUT (SPECIFICHE.md, sezione «Match», righe 131-144 — ADR-056)
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+class TestRegoleDiApertura:
+    """«Il match ha una regola di inizio e una regola di apertura, entrambe
+    ereditate dalla gara a cui appartiene: sul singolo match non si scelgono.»
+    (SPECIFICHE.md riga 131)
+    """
+
+    def test_le_quattro_modalita_di_apertura_sono_quelle_della_specifica(self):
+        """SPECIFICHE.md righe 137-141: quattro, e con questi valori.
+
+        Fino al 2026-08-28 la specifica ne prevedeva **due** e il codice ne
+        aveva **tre**, sulle sole sfide individuali. I valori contano quanto il
+        numero: finiscono in colonna, e rinominarne uno rende illeggibili le
+        righe gia' scritte.
+        """
+        from models.match.break_rules import BreakRule
+
+        assert [r.value for r in BreakRule] == [
+            "winner_breaks",
+            "alternate",
+            "alternate_two",
+            "loser_breaks",
+        ]
+
+    def test_le_due_regole_di_inizio_sono_quelle_della_specifica(self):
+        """SPECIFICHE.md righe 133-135: primo giocatore, oppure acchito."""
+        from models.match.break_rules import StartRule
+
+        assert [r.value for r in StartRule] == ["first_player", "lag"]
+
+    def test_a_turno_e_il_default(self):
+        """SPECIFICHE.md riga 139: «È il default».
+
+        E' anche quello che le sfide individuali avevano gia' dal 2026-02:
+        cambiarlo riscriverebbe il passato di quelle partite.
+        """
+        from models.match.break_rules import DEFAULT_BREAK_RULE, BreakRule
+
+        assert DEFAULT_BREAK_RULE is BreakRule.ALTERNATE
+
+    def test_a_turno_alterna_a_ogni_rack(self):
+        """SPECIFICHE.md riga 139: «tiri di apertura alternati»."""
+        from models.match.break_rules import BreakRule, break_player_for_rack
+
+        apre = [
+            break_player_for_rack(BreakRule.ALTERNATE, n, 1, 2, []) for n in range(4)
+        ]
+        assert apre == [1, 2, 1, 2]
+
+    def test_a_turno_ogni_due_cambia_ogni_due_rack(self):
+        """SPECIFICHE.md riga 140: «due rack a testa, poi si cambia»."""
+        from models.match.break_rules import BreakRule, break_player_for_rack
+
+        apre = [
+            break_player_for_rack(BreakRule.ALTERNATE_TWO, n, 1, 2, [])
+            for n in range(6)
+        ]
+        assert apre == [1, 1, 2, 2, 1, 1]
+
+    def test_spacca_chi_ha_vinto_e_chi_ha_perso_guardano_il_rack_prima(self):
+        """SPECIFICHE.md righe 138 e 141."""
+        from models.match.break_rules import BreakRule, break_player_for_rack
+
+        # Rack 0 vinto da 2: al rack 1 apre 2 (winner) oppure 1 (loser).
+        assert break_player_for_rack(BreakRule.WINNER_BREAKS, 1, 1, 2, [2]) == 2
+        assert break_player_for_rack(BreakRule.LOSER_BREAKS, 1, 1, 2, [2]) == 1
+
+    def test_l_acchito_e_due_domande_non_una(self):
+        """SPECIFICHE.md riga 135: chi vince l'acchito **sceglie chi** apre.
+
+        Quindi chi ha vinto e chi apre sono due fatti indipendenti, e il
+        secondo puo' essere l'avversario del primo. Se fossero lo stesso dato,
+        `first_break_player_id` non esisterebbe.
+        """
+        from models.match.models import Match
+
+        assert hasattr(Match, "lag_winner_id")
+        assert hasattr(Match, "first_break_player_id")
+
+    def test_break_and_run_si_deduce_da_chi_apriva(self):
+        """SPECIFICHE.md riga 143: «Non si scelgono: si deduce da chi apriva.»
+
+        Un solo flag sul rack (`is_run_out`) piu' chi ha aperto: il break and
+        run non e' un secondo flag che qualcuno potrebbe dimenticare di
+        alzare — e quindi non puo' contraddire il primo.
+        """
+        from models.match.models import Rack
+
+        vinto_da_chi_apriva = Rack(winner_id=7, break_player_id=7, is_run_out=True)
+        vinto_rispondendo = Rack(winner_id=7, break_player_id=9, is_run_out=True)
+        non_runout = Rack(winner_id=7, break_player_id=7, is_run_out=False)
+
+        assert vinto_da_chi_apriva.is_break_and_run is True
+        assert vinto_rispondendo.is_break_and_run is False
+        assert non_runout.is_break_and_run is False
+
+    def test_le_regole_si_ereditano_dalla_gara_non_dal_match(self, app):
+        """SPECIFICHE.md riga 131: «sul singolo match non si scelgono».
+
+        Il match non ha un override: `effective_*_rule` legge **sempre** la
+        gara. Se un domani qualcuno aggiungesse una colonna sul match, questo
+        test resterebbe verde — ma la catena la descrive la riga 131, ed e'
+        quella che il codice deve continuare a seguire.
+        """
+        from models.campionato.models import Campionato
+        from models.competition.models import Gara
+        from models.match.break_rules import BreakRule
+        from models.match.models import Match
+
+        campionato = Campionato(default_break_rule=BreakRule.LOSER_BREAKS.value)
+        gara = Gara(break_rule=None)
+        gara.campionato = campionato
+        match = Match()
+        match.gara = gara
+
+        # NULL sulla gara = eredita dal campionato.
+        assert match.effective_break_rule is BreakRule.LOSER_BREAKS
+
+        # Un valore sulla gara vince sul campionato.
+        gara.break_rule = BreakRule.ALTERNATE_TWO.value
+        assert match.effective_break_rule is BreakRule.ALTERNATE_TWO

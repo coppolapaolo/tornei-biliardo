@@ -43,6 +43,22 @@ blocks:
           Campionati e gare giocate, vittorie, sconfitte, totale delle partite
           e percentuale di vittorie. Conta **tutto quello che hai giocato**,
           comprese le partite amichevoli.
+      - name: "Runout"
+        text: >-
+          Quanti triangoli hai chiuso **in una sola visita**, cioè senza mai
+          lasciare il tavolo all'avversario, e quanti di quelli li avevi anche
+          aperti tu — i *break and run*. Compare solo se ne hai almeno uno.
+        hint: profilo.runout
+
+  - type: note
+    tone: info
+    title: "Da dove arrivano i runout"
+    text: >-
+      Da due posti che non si sovrappongono mai: i triangoli che hai marcato
+      **premendo il trattino** sul tabellone durante la partita, e quelli che
+      il [referto TPA](/aiuto/giocare/referto_tpa) riconosce da sé quando lo
+      tieni. Il numero grande è il totale; i break and run sono la parte di
+      quelli in cui avevi anche il tiro di apertura.
 
   - type: heading
     id: rating

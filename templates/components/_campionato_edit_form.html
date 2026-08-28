@@ -182,6 +182,27 @@
                 <small class="text-muted">{{ _("Evita accoppiamenti ripetuti tra gli stessi giocatori nella stessa gara") }}</small>
             </div>
 
+            <!-- Regola di inizio e regola di apertura (ADR-056) -->
+            <div class="mb-4">
+                <label for="default_start_rule" class="form-label">{{ _("Regola di Inizio Predefinita") }}</label>
+                <select class="form-select" id="default_start_rule" name="default_start_rule">
+                    {% for rule in StartRule %}
+                    <option value="{{ rule.value }}" {% if campionato.default_start_rule == rule.value %}selected{% endif %}>{{ rule.display_name }}</option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted">{{ _("Da qui la ereditano le gare del campionato.") }}</small>
+            </div>
+
+            <div class="mb-4">
+                <label for="default_break_rule" class="form-label">{{ _("Spaccata Predefinita") }}</label>
+                <select class="form-select" id="default_break_rule" name="default_break_rule">
+                    {% for rule in BreakRule %}
+                    <option value="{{ rule.value }}" {% if campionato.default_break_rule == rule.value %}selected{% endif %}>{{ rule.display_name }}</option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted">{{ _("Tiri di apertura alternati, la regola standard FIBiS.") }}</small>
+            </div>
+
             <!-- Handicap mode -->
             <div class="mb-4">
                 <div class="form-check form-switch">

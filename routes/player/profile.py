@@ -24,6 +24,7 @@ from models.campionato.models import Campionato
 from models.user.models import User
 from models.user.services import UserService
 from models.user.permission_service import UserPermissionService
+from models.user.runout_stats import runout_summary
 from utils import feature_required, player_only
 from utils.route_helpers import handle_service_action
 
@@ -141,6 +142,12 @@ def profile():
     # TPA: compare a chi ha sbloccato il referto oppure a chi ha gia' giocato
     # una partita in cui qualcun altro lo teneva. `None` = qui non ci va.
     tpa_stats = TpaStatsService.profile_summary(current_user.id, user=current_user)
+
+    # Runout: un numero, due fonti — il trattino sul tabellone e il tally del
+    # referto TPA, che non convivono mai sulla stessa partita (ADR-056).
+    # `tpa_stats` si passa perché è già stato calcolato qui sopra: ricalcolarlo
+    # vorrebbe dire rigiocare ogni referto una seconda volta.
+    stats["runouts"] = runout_summary(current_user.id, tpa_stats)
 
     return render_template(
         "player/profile.html",
@@ -261,10 +268,13 @@ def view_profile(user_id):
 
     from models.tpa.stats_service import TpaStatsService
 
+    tpa_stats = TpaStatsService.profile_summary(user.id, user=user)
+    stats["runouts"] = runout_summary(user.id, tpa_stats)
+
     return render_template(
         "player/profile.html",
         user=user,
-        tpa_stats=TpaStatsService.profile_summary(user.id, user=user),
+        tpa_stats=tpa_stats,
         inscriptions=visible_inscriptions,
         matches=recent_matches,
         stats=stats,

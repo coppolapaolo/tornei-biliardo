@@ -87,8 +87,9 @@ blocks:
     text: >-
       Il secondo passaggio chiede come saranno fatte le gare «tipo» del
       campionato: sala, quota di partecipazione, numero di turni, gestione del
-      numero dispari. Ogni gara nuova nascerà già così, e tu dovrai solo
-      cambiare nome, data e disciplina.
+      numero dispari, e come si decide chi esegue il tiro di apertura. Ogni
+      gara nuova nascerà già così, e tu dovrai solo cambiare nome, data e
+      disciplina.
 
   - type: note
     tone: tip
@@ -106,6 +107,38 @@ blocks:
       sulle gare a tabellone quelle impostazioni non hanno effetto, quindi non
       avrebbe senso ereditarle. Compare invece la tabella dei punti per
       posizione, qui sotto.
+
+  - type: heading
+    id: apertura
+    title: "Come si comincia, e chi spacca"
+
+  - type: text
+    text: >-
+      Due voci nel passo 2 decidono il tiro di apertura per tutte le gare del
+      campionato.
+
+  - type: options
+    items:
+      - name: "Regola di inizio"
+        values: "predefinito «Primo giocatore»"
+        text: >-
+          Con **Primo giocatore** apre sempre il primo dei due. Con
+          **Acchito** il segnapunti, prima del primo triangolo, chiede chi ha
+          vinto l'acchito e chi apre — perché chi vince l'acchito sceglie, e
+          può mandare al tavolo l'avversario.
+      - name: "Chi spacca"
+        values: "predefinito «A turno»"
+        text: >-
+          Come passa il tiro di apertura da un triangolo al successivo. **A
+          turno** è la regola standard. Le altre: **a turno ogni due**,
+          **spacca chi ha vinto**, **spacca chi ha perso**.
+
+  - type: note
+    tone: info
+    text: >-
+      Ogni gara può discostarsi, oppure lasciare scritto «eredita dal
+      campionato» e seguirlo anche se un domani lo cambi. La scelta si blocca
+      quando la gara comincia.
 
   - type: heading
     id: punti_posizione

@@ -108,7 +108,7 @@ shots:
     as: Marco Rossi
     viewports: [landscape]
     wait_for: "#matchBoard"
-    caption: "Il tabellone a telefono ruotato: i due punteggi grandi al centro, l'Elo sotto ogni nome e la X in alto a sinistra per tornare alla pagina."
+    caption: "Il tabellone a telefono ruotato: il numero del tavolo in alto a sinistra, i due punteggi grandi, la pastiglia SPACCA su chi apre e i trattini dei triangoli sotto ogni punteggio."
 
   - id: profilo
     route: /player/profile

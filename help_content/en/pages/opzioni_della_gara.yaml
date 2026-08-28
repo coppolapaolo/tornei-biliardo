@@ -239,6 +239,32 @@ blocks:
           suitable for finals or dedicated evenings. Here too, on brackets the
           sets are a race: the option to play them all is not offered.
         hint: gara.multiset
+      - name: "Start rule"
+        values: "default «First player» · inside a championship it can be inherited"
+        text: >-
+          Who takes the first shot of the match. With **First player** the
+          first of the two always breaks, with no lag. With **Lag** the
+          scoreboard asks two questions before letting anyone score: who won
+          the lag, and who breaks — because whoever wins the lag **chooses**
+          who breaks, and may send the opponent to the table.
+        hint: gara.regola_inizio
+      - name: "Who breaks"
+        values: "default «Alternating» · inside a championship it can be inherited"
+        text: >-
+          How the break shot passes from one rack to the next. **Alternating**
+          is the standard rule and switches every rack; **Alternating every
+          two** gives two racks each; **Winner breaks** and **Loser breaks**
+          follow the result of the previous rack instead. It applies to every
+          match in the competition: it cannot be changed match by match.
+        hint: gara.chi_spacca
+
+  - type: note
+    tone: warning
+    title: "These two are chosen before, not after"
+    text: >-
+      Once the competition has started the two fields lock. Changing them
+      midway would rewrite who took the break shot in the racks already
+      played — and with it which of those racks count as broken and run.
 
   - type: note
     tone: tip

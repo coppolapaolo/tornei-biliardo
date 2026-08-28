@@ -128,7 +128,28 @@ Si sceglie la combinazione con score minimo (lessicografico). La ricomposizione 
 ## Match
 
 Un **match** è una parte di una gara. È formato da uno o più **set**.
-Il **match** ha una regola di inizio che può essere "primo giocatore" oppure "acchitto". Si gioca con "break continuo" o "break alternato". Entrambi questi valori hanno un default che dipende da quello che è impostato nella gara a cui appartiene il match. 
+Il **match** ha una **regola di inizio** e una **regola di apertura**, entrambe ereditate dalla gara a cui appartiene: sul singolo match non si scelgono.
+
+La **regola di inizio** dice chi esegue il tiro di apertura del primo rack e può essere:
+- **"primo giocatore"**: apre il primo dei due, senza sorteggio;
+- **"acchito"**: si tira l'acchito. Chi lo vince **sceglie chi** esegue il tiro di apertura, e può scegliere l'avversario.
+
+La **regola di apertura** dice come il tiro di apertura passa da un rack al successivo e può essere:
+- **"spacca chi ha vinto"** (`winner_breaks`): apre chi ha vinto il rack precedente;
+- **"a turno"** (`alternate`): tiri di apertura alternati, la regola standard FIBiS. È il default;
+- **"a turno ogni due"** (`alternate_two`): due rack a testa, poi si cambia;
+- **"spacca chi ha perso"** (`loser_breaks`): apre chi ha perso il rack precedente.
+
+Un rack chiuso in **una sola visita** è un **run-out**; se a quel rack l'apertura era di chi l'ha vinto è un **break and run**. Non si sceglie: si deduce da chi apriva. Nel profilo del giocatore i due numeri si mostrano come insieme e sottoinsieme («Runout: 26, di cui 9 break and run»).
+
+> **Nota del 2026-08-28 (ADR-056).** Questo paragrafo emenda la versione precedente, che diceva: «Il match ha una regola di inizio che può essere "primo giocatore" oppure "acchitto". Si gioca con "break continuo" o "break alternato". Entrambi questi valori hanno un default che dipende da quello che è impostato nella gara a cui appartiene il match.» Quattro cose non tornavano.
+> 1. La specifica prevedeva **due** modalità di apertura; il codice ne aveva già **tre** (`alternate`, `winner_breaks`, `loser_breaks`), sulle sole sfide individuali. «A turno ogni due» è **nuova**.
+> 2. La regola di inizio lasciava intendere che chi vince l'acchito cominci. Il regolamento FIBiS («Regole generali pool», 1.2) dice altro: «Il giocatore che vince l'acchito **sceglie chi** eseguirà il tiro di apertura.» Sono due domande, non una.
+> 3. Sui match di **gara** non esisteva nulla: né le due regole su `Campionato`/`Gara`/`Match`, né il posto dove scrivere chi avesse aperto un rack. Esisteva solo sulle sfide individuali, dove il match **è** la radice perché una gara da cui ereditare non c'è.
+> 4. Il default della regola di apertura è `alternate` perché è quello che le sfide individuali avevano già dal 2026-02: cambiarlo riscriverebbe il passato di quelle partite.
+>
+> Nota lessicale, dallo stesso regolamento: «acchito» ha **due** significati — il primo tiro che decide l'ordine di gioco (1.2) e la preparazione delle bilie nel triangolo (1.4, «Acchito delle bilie», «Riacchito»). Qui vale sempre il primo. Per *run-out* e *break and run* un termine italiano nel regolamento non c'è, e «serie» è già occupato (indica il **gruppo** di bilie assegnato): restano in inglese.
+
 Il **match** ha una distanza (numero di **set** necessari per vincere un match). Di solito il set è uno solo e quindi si definisce la distanza come numero di rack necessari per vincere, ma possono essere anche più set e in questo caso vince il match il giocatore che vince per primo il numero di set prefissato (la distanza del match).  La distanza di default viene definito dalla gara a cui appartiene il match.
 La distanza del **set** è il numero di **rack** che devono essere vinti per aggiudicarsi il set. La distanza può essere:
 - **"Race to N"** (al meglio di): vince il giocatore che per primo vince N rack. Produce sempre un vincitore.

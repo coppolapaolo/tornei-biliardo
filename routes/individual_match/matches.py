@@ -224,7 +224,12 @@ def add_rack(match_id):
             return jsonify(
                 {
                     "success": True,
+                    # `rack_id`: senza, il trattino che si accende sul
+                    # tabellone resta muto — non saprebbe **quale** triangolo
+                    # marcherebbe, e il tabellone non si ricarica (ADR-056).
+                    "rack_id": rack.id,
                     "rack_number": rack.rack_number,
+                    "winner_id": winner_id,
                     "player1_score": match.player1_score,
                     "player2_score": match.player2_score,
                     "is_ready_for_validation": match.is_ready_for_validation(),
@@ -242,6 +247,64 @@ def add_rack(match_id):
         else:
             flash(error_msg, "danger")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+
+@individual_match_bp.route("/matches/<int:match_id>/lag", methods=["POST"])
+@RoleRequirement.player_or_director_required
+def register_lag(match_id):
+    """Esito dell'acchito: chi ha vinto, e chi esegue il tiro di apertura.
+
+    Due campi e non uno: chi vince l'acchito **sceglie chi** apre, e può
+    scegliere l'avversario («Regole generali pool» 1.2).
+    """
+    data = request.get_json() if request.is_json else request.form
+    try:
+        if (
+            data.get("lag_winner_id") is None
+            or data.get("first_break_player_id") is None
+        ):
+            raise ValueError(_("Scegli uno dei due giocatori."))
+
+        IndividualMatchService.register_lag(
+            match_id=match_id,
+            lag_winner_id=int(data["lag_winner_id"]),
+            first_break_player_id=int(data["first_break_player_id"]),
+        )
+        if request.is_json:
+            return jsonify({"success": True})
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
+    except ValueError as e:
+        if request.is_json:
+            return jsonify({"success": False, "error": str(e)}), 400
+        flash(str(e), "danger")
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
+
+
+@individual_match_bp.route(
+    "/matches/<int:match_id>/racks/<int:rack_id>/runout", methods=["POST"]
+)
+@RoleRequirement.player_or_director_required
+def toggle_run_out(match_id, rack_id):
+    """Marca (o smarca) un triangolo come chiuso in una visita (ADR-056)."""
+    try:
+        stato = IndividualMatchService.toggle_run_out(
+            match_id=match_id, rack_id=rack_id
+        )
+        if request.is_json:
+            # `letter`: la sigla la decide il server, non il tabellone —
+            # dipende da chi apriva quel triangolo. Resta in inglese perché nel
+            # regolamento FIBiS un termine italiano per run-out e break and run
+            # non esiste (ADR-056).
+            sigla = ""
+            if stato["is_run_out"]:
+                sigla = "B" if stato["is_break_and_run"] else "R"
+            return jsonify({"success": True, "letter": sigla, **stato})
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
+    except ValueError as e:
+        if request.is_json:
+            return jsonify({"success": False, "error": str(e)}), 400
+        flash(str(e), "danger")
+        return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
 
 @individual_match_bp.route("/matches/<int:match_id>/racks/remove", methods=["POST"])

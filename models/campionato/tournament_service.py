@@ -10,6 +10,7 @@ from __future__ import annotations
 from typing import List, Optional, Dict, Any
 from models.user.models import User
 from models.match.models import Match
+from models.match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
 from sqlalchemy.exc import IntegrityError
 
 from models.base import db, utc_now
@@ -111,6 +112,11 @@ class TournamentService(TournamentStatisticsService):
         default_anti_rematch: bool = True,
         default_classification_system: str = "WINS",
         has_handicap: bool = False,
+        # Come si comincia, e chi apre poi (ADR-056). I default sono il
+        # comportamento storico: apre il primo giocatore, tiri di apertura
+        # alternati.
+        default_start_rule: str = DEFAULT_START_RULE.value,
+        default_break_rule: str = DEFAULT_BREAK_RULE.value,
         # Punti per posizione delle gare a tabellone (US-17). None = usa i
         # valori di default della spec, che restano quelli anche se un domani
         # cambiano: un campionato non configurato li **segue**, non ne
@@ -143,6 +149,8 @@ class TournamentService(TournamentStatisticsService):
             default_anti_rematch=default_anti_rematch,
             default_classification_system=default_classification_system,
             has_handicap=has_handicap,
+            default_start_rule=default_start_rule,
+            default_break_rule=default_break_rule,
             position_points=position_points,
             # Deprecated fields
             without_x=without_x,

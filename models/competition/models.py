@@ -8,6 +8,12 @@ Dependencies: models.base.db, datetime
 from models.base import db, SoftDeleteMixin, utc_now
 from enum import Enum
 from models.status_enum import GaraStatus, MatchStatus, WithdrawPolicy  # noqa: F401
+from models.match.break_rules import (
+    DEFAULT_BREAK_RULE,
+    DEFAULT_START_RULE,
+    BreakRule,
+    StartRule,
+)
 from models.matchmaking.configuration import (
     MatchmakingStrategy,
     FirstRoundPolicy,
@@ -150,6 +156,15 @@ class Gara(SoftDeleteMixin, db.Model):
     # Handicap mode: NULL = eredita dal campionato (vedi effective_has_handicap).
     # I match di una gara con handicap non aggiornano il rating Elo.
     has_handicap = db.Column(db.Boolean, nullable=True)
+
+    # Regola di inizio e regola di apertura (ADR-056).
+    # NULL = eredita dal campionato; su una gara standalone il ripiego è il
+    # default del progetto. I match della gara le ereditano **sempre**: sul
+    # singolo match non c'è niente da scegliere.
+    start_rule = db.Column(db.String(20), nullable=True)  # first_player, lag
+    break_rule = db.Column(
+        db.String(20), nullable=True
+    )  # winner_breaks, alternate, alternate_two, loser_breaks
 
     # Date iscrizioni
     inscription_start = db.Column(db.DateTime)
@@ -402,6 +417,39 @@ class Gara(SoftDeleteMixin, db.Model):
         if self.campionato is not None:
             return bool(self.campionato.has_handicap)
         return False
+
+    @property
+    def effective_start_rule(self) -> "StartRule":
+        """Regola di inizio effettiva: gara → campionato → primo giocatore.
+
+        NULL su `start_rule` significa "eredita dal campionato" (ADR-056). Su
+        una gara standalone non c'è niente da cui ereditare e vale il default
+        del progetto, che è il comportamento storico: apre il primo giocatore.
+        """
+        scelta = StartRule.normalize(self.start_rule)
+        if scelta is not None:
+            return scelta
+        if self.campionato is not None:
+            ereditata = StartRule.normalize(self.campionato.default_start_rule)
+            if ereditata is not None:
+                return ereditata
+        return DEFAULT_START_RULE
+
+    @property
+    def effective_break_rule(self) -> "BreakRule":
+        """Regola di apertura effettiva: gara → campionato → a turno.
+
+        Stessa catena di `effective_start_rule`. Il ripiego è `alternate`, i
+        tiri di apertura alternati della regola standard FIBiS.
+        """
+        scelta = BreakRule.normalize(self.break_rule)
+        if scelta is not None:
+            return scelta
+        if self.campionato is not None:
+            ereditata = BreakRule.normalize(self.campionato.default_break_rule)
+            if ereditata is not None:
+                return ereditata
+        return DEFAULT_BREAK_RULE
 
     @property
     def display_name(self) -> str:

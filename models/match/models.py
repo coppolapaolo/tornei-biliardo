@@ -114,6 +114,24 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         db.String(10), nullable=True
     )  # e.g., "A", "B", "sala rossa"
 
+    # ── Acchito e tiro di apertura (ADR-056) ──────────────────────────────
+    # Le **regole** non stanno qui: il match le eredita sempre dalla gara e
+    # non si toccano (`effective_start_rule` / `effective_break_rule`). Qui
+    # stanno i due **fatti** che l'acchito produce al tavolo, e che nessuna
+    # regola può ricostruire.
+    #
+    # `lag_winner_id` non lo legge nessuna schermata dopo la domanda: resta
+    # perché è la risposta che il segnapunti ha chiesto, e buttarla via
+    # renderebbe impossibile dire, a posteriori, perché apre chi apre —
+    # visto che chi vince l'acchito può mandare al tavolo l'avversario.
+    lag_winner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    #: Chi esegue il tiro di apertura del **primo** triangolo. NULL con la
+    #: regola "primo giocatore" significa `player1_id` (vedi
+    #: `breaker_of_first_rack`): non si scrive un dato che è già una regola.
+    first_break_player_id = db.Column(
+        db.Integer, db.ForeignKey("user.id"), nullable=True
+    )
+
     # Handicap system
     # NULL = eredita da gara (→ campionato). Vedi effective_has_handicap.
     # Un match con handicap effettivo NON aggiorna il rating Elo.
@@ -140,6 +158,8 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     player1 = db.relationship("User", foreign_keys=[player1_id])
     player2 = db.relationship("User", foreign_keys=[player2_id])
     winner = db.relationship("User", foreign_keys=[winner_id])
+    lag_winner = db.relationship("User", foreign_keys=[lag_winner_id])
+    first_break_player = db.relationship("User", foreign_keys=[first_break_player_id])
     racks = db.relationship(
         "Rack",
         backref="match",
@@ -316,6 +336,30 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         if self.gara is not None:
             return self.gara.effective_has_handicap
         return False
+
+    @property
+    def effective_start_rule(self):
+        """Regola di inizio effettiva: **sempre** quella della gara (ADR-056).
+
+        Sul match non c'è un override, ed è una scelta: la regola di inizio e
+        quella di apertura descrivono come si gioca la gara, non come si gioca
+        una singola partita. Un match staccato dalla sua gara ricade sul
+        default del progetto.
+        """
+        from models.match.break_rules import DEFAULT_START_RULE
+
+        if self.gara is not None:
+            return self.gara.effective_start_rule
+        return DEFAULT_START_RULE
+
+    @property
+    def effective_break_rule(self):
+        """Regola di apertura effettiva: **sempre** quella della gara (ADR-056)."""
+        from models.match.break_rules import DEFAULT_BREAK_RULE
+
+        if self.gara is not None:
+            return self.gara.effective_break_rule
+        return DEFAULT_BREAK_RULE
 
     @property
     def counts_for_rating(self) -> bool:
@@ -507,6 +551,19 @@ class Rack(db.Model):
         db.Integer, db.ForeignKey("user.id")
     )  # Pool Continuo (Straight Pool) non supportato - future feature
 
+    # ── Chi ha aperto, e se è stato chiuso in una visita (ADR-056) ────────
+    # `break_player_id` c'era già sui rack delle sfide individuali e su quelli
+    # dei set, ma **non qui**: sui match di gara a set singolo — cioè il caso
+    # normale — chi aprisse il triangolo non lo registrava nessuno. Lo scrive
+    # ora chi crea il triangolo, deducendolo dalla regola di apertura della
+    # gara: è un fatto, e come tale non deve cambiare se domani la regola
+    # cambia.
+    break_player_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    #: Triangolo chiuso in una visita. Lo marca chi segna, premendo il
+    #: trattino che si è appena acceso sul tabellone. Il *break and run* non è
+    #: un secondo flag: è questo, quando ad aprire era chi ha vinto.
+    is_run_out = db.Column(db.Boolean, nullable=False, default=False)
+
     # Campi per conferma punti (reporting workflow)
     reported_by_id = db.Column(db.Integer, db.ForeignKey("user.id"))  # chi ha segnato
     confirmed_by_player = db.Column(
@@ -530,9 +587,24 @@ class Rack(db.Model):
 
     # Relazioni
     winner = db.relationship("User", foreign_keys=[winner_id])
+    break_player = db.relationship("User", foreign_keys=[break_player_id])
     reported_by = db.relationship("User", foreign_keys=[reported_by_id])
     added_by = db.relationship("User", foreign_keys=[added_by_id])
     removed_by = db.relationship("User", foreign_keys=[removed_by_id])
+
+    @property
+    def is_break_and_run(self) -> bool:
+        """Chiuso in una visita **avendolo aperto**: si deduce, non si sceglie.
+
+        Chi segna preme sempre e solo il trattino; la distinzione fra R e B la
+        fa questa riga, ed è la stessa regola di `check_break_and_run()` nel
+        motore TPA.
+        """
+        return bool(
+            self.is_run_out
+            and self.break_player_id is not None
+            and self.break_player_id == self.winner_id
+        )
 
     def __repr__(self):
         return f"<Rack {self.rack_number} (Match {self.match_id})>"

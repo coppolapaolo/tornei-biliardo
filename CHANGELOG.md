@@ -19,6 +19,46 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Chi apre, l'acchito e i triangoli chiusi in una visita** (ADR-056). Il
+  tabellone orizzontale — il telefono appoggiato alla sponda — registrava solo
+  chi vinceva il triangolo. Adesso registra anche le tre cose che al tavolo
+  esistono da sempre.
+  - **La pastiglia «spacca»** sopra il nome dice di chi è il tiro di apertura
+    *adesso*, e si sposta da sola triangolo per triangolo seguendo la regola
+    della gara. È la regola in forma viva: per questo dalla riga dei metadati
+    non compare come configurazione: sarebbe la stessa cosa detta due volte.
+  - **Il runout si marca premendo il trattino** che si è appena acceso, non con
+    un pulsante. Un pulsante dedicato è stato scartato tre volte per una
+    ragione di proporzione: il runout è un evento **raro** su una superficie
+    fatta per un gesto **frequente**, e qualunque bersaglio permanente o ruba
+    spazio al gesto che si fa sempre, o è troppo piccolo per prenderlo al buio.
+    Sul trattino compare **B** se ad aprire era chi ha vinto, **R** se ha
+    chiuso rispondendo: la distinzione **si deduce**, non si chiede.
+  - **L'acchito fa due domande, non una.** Il regolamento FIBiS dice che chi
+    vince l'acchito *sceglie chi* esegue il tiro di apertura, e può mandare al
+    tavolo l'avversario: prima del primo triangolo il tabellone chiede
+    entrambe. Compare solo dove la gara lo prevede — la regola predefinita
+    resta «apre il primo giocatore», e chi non configura niente non vede
+    cambiare niente.
+  - **Quattro modalità di apertura** — a turno (la standard FIBiS), a turno
+    ogni due (nuova), spacca chi ha vinto, spacca chi ha perso — scelte sul
+    campionato e ereditate dalle gare, con la voce «eredita dal campionato»
+    sempre disponibile. Una gara **fuori da un campionato** le sceglie alla
+    nascita, nel modulo di creazione: non avendo nulla da cui ereditare,
+    l'alternativa sarebbe crearla e poi modificarla. A gara cominciata i campi si bloccano: cambiarli a metà
+    riscriverebbe chi ha aperto i triangoli già giocati.
+  - **In testata il numero del tavolo** in evidenza, che è come si riconosce il
+    proprio tabellone attraversando una sala con otto biliardi, e l'ora
+    d'inizio della partita.
+  - Nel profilo, una riga nuova: **«Runout: 26 — di cui 9 break and run»**. Il
+    numero unisce due fonti che non convivono mai sulla stessa partita — i
+    trattini marcati sul tabellone e il referto TPA, che i runout li riconosce
+    da sé.
+  - `SPECIFICHE.md` emendata con nota datata su quattro punti: prevedeva due
+    modalità di apertura mentre il codice ne aveva già tre, «a turno ogni due»
+    non esisteva, l'acchito era descritto al contrario del regolamento, e sui
+    match di gara non esisteva nulla.
+
 - **Referto TPA sui match singoli** (ADR-044). Nelle partite amichevoli a palla
   8, 9 e 10 si può annotare tutta la partita — quante bilie a ogni visita al
   tavolo e perché il turno è finito — e ricavarne il *Total Performance

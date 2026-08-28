@@ -599,6 +599,20 @@ class IndividualMatchService:
         )
 
     @staticmethod
+    def register_lag(
+        match_id: int, lag_winner_id: int, first_break_player_id: int
+    ) -> None:
+        """Esito dell'acchito (delegates to IndividualRackService)."""
+        return IndividualRackService.register_lag(
+            match_id, lag_winner_id, first_break_player_id
+        )
+
+    @staticmethod
+    def toggle_run_out(match_id: int, rack_id: int) -> dict:
+        """Marca/smarca un triangolo come runout (delegates)."""
+        return IndividualRackService.toggle_run_out(match_id, rack_id)
+
+    @staticmethod
     def submit_rack_result(
         match_id: int,
         user_id: int,

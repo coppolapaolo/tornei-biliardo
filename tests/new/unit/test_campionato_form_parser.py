@@ -33,6 +33,10 @@ class TestParseDefaultSettings:
             "has_handicap": False,
             # None = "usa la tabella punti di default" (US-17)
             "position_points": None,
+            # ADR-056: i default sono il comportamento storico — apre il primo
+            # giocatore, tiri di apertura alternati.
+            "default_start_rule": "first_player",
+            "default_break_rule": "alternate",
         }
 
     def test_empty_form_uses_safe_defaults(self):
@@ -46,6 +50,10 @@ class TestParseDefaultSettings:
             "has_handicap": False,
             # None = "usa la tabella punti di default" (US-17)
             "position_points": None,
+            # ADR-056: i default sono il comportamento storico — apre il primo
+            # giocatore, tiri di apertura alternati.
+            "default_start_rule": "first_player",
+            "default_break_rule": "alternate",
         }
 
     def test_invalid_numeric_inputs_fall_back(self):

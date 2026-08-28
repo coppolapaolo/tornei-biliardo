@@ -375,6 +375,37 @@
 
                             <!-- Distance Configurator Component (Phase 6: Multi-Set Support) -->
                             {% include "components/_distance_configurator.html" %}
+
+                            {# Chi apre, e come passa il tiro di apertura
+                               (ADR-056). Su una gara standalone non c'è un
+                               campionato da cui ereditare, quindi qui non c'è
+                               la voce «eredita» e non c'è nemmeno un altro
+                               posto in cui sceglierle alla nascita: se non
+                               stessero qui, l'unica strada sarebbe creare la
+                               gara e poi modificarla. È lo stesso motivo per
+                               cui `has_handicap`, che ha la stessa forma, sta
+                               nel passo 2 di questo modulo. #}
+                            <hr class="my-4">
+                            <div class="row">
+                                <div class="col-sm-6 mb-3">
+                                    <label for="start_rule" class="form-label">{{ _("Regola di inizio") }}</label>
+                                    <select class="form-select" id="start_rule" name="start_rule">
+                                        {% for rule in StartRule %}
+                                        <option value="{{ rule.value }}" {% if rule == StartRule.FIRST_PLAYER %}selected{% endif %}>{{ rule.display_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <small class="text-muted">{{ _("Con l'acchito il segnapunti chiede chi ha vinto e chi apre: chi vince può mandare al tavolo l'avversario.") }}</small>
+                                </div>
+                                <div class="col-sm-6 mb-3">
+                                    <label for="break_rule" class="form-label">{{ _("Chi spacca") }}</label>
+                                    <select class="form-select" id="break_rule" name="break_rule">
+                                        {% for rule in BreakRule %}
+                                        <option value="{{ rule.value }}" {% if rule == BreakRule.ALTERNATE %}selected{% endif %}>{{ rule.display_name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <small class="text-muted">{{ _("Tiri di apertura alternati, la regola standard FIBiS.") }}</small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

@@ -178,6 +178,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Match scoring (player side, for matches the user is playing)
     "player.add_rack_simplified": {"player", "director"},
     "player.remove_rack_simplified": {"player", "director"},
+    # Acchito e runout sul segnapunti da tavolo (ADR-056): stessa platea di
+    # chi segna il triangolo, perché sono lo stesso gesto al tavolo.
+    "player.register_lag": {"player", "director"},
+    "player.toggle_run_out": {"player", "director"},
     "player.confirm_match_result": {"player", "director"},
     "player.reject_match_result": {"player", "director"},
     "player.forfeit_match": {"player", "director"},
@@ -370,6 +374,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "individual_match.start_next_set": {"player", "director"},
     "individual_match.add_rack": {"player", "director"},
     "individual_match.remove_rack": {"player", "director"},
+    "individual_match.register_lag": {"player", "director"},
+    "individual_match.toggle_run_out": {"player", "director"},
     "individual_match.confirm_result": {"player", "director"},
     "individual_match.reject_result": {"player", "director"},
     "individual_match.complete_match": {"player", "director"},

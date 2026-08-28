@@ -1275,11 +1275,93 @@ input[type="number"].form-control {
   font-variant-numeric: tabular-nums;
 }
 .c7-board__num--behind { color: var(--c7-accent-dim); }
-/* Quanto manca alla vittoria, senza far contare le cifre. */
-.c7-board__pips { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
-.c7-board__pip { width: 26px; height: 6px; border-radius: var(--c7-r-pill); background: rgba(242, 248, 247, .2); }
-.c7-board__pip.is-on { background: var(--c7-accent-bright); }
+/* Quanto manca alla vittoria, senza far contare le cifre — e, dall'ADR-056, il
+   comando che marca il triangolo chiuso in una visita.
+
+   I trattini stanno **fuori** dal `<button>` della meta' (un bottone dentro un
+   bottone non e' HTML valido) e ci si sovrappongono in fondo. Quelli spenti
+   hanno `pointer-events: none`: senza, il bersaglio grande si bucherebbe anche
+   dove non c'e' niente da marcare, ed e' proprio la meta' — il gesto che si fa
+   sempre — a perderci. */
+.c7-board__half { position: relative; align-self: stretch; display: flex; min-width: 0; }
+.c7-board__half .c7-board__side { flex: 1; padding-bottom: 34px; }
+.c7-board__pips {
+  position: absolute; bottom: 10px; left: 0; right: 0;
+  display: flex; gap: 5px; flex-wrap: wrap; justify-content: center;
+  pointer-events: none;
+}
+.c7-board__pip {
+  width: 26px; height: 18px; padding: 0; border: 0;
+  border-radius: var(--c7-r-pill); background: rgba(242, 248, 247, .2);
+  color: transparent; font-family: inherit; font-size: 11px; font-weight: 800;
+  display: grid; place-items: center;
+  pointer-events: auto; cursor: pointer;
+  transition: transform .1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.c7-board__pip.is-on { background: var(--c7-accent-bright); color: #0D2A36; }
 .c7-board__pip.is-on--muted { background: rgba(242, 248, 247, .5); }
+/* Spento: non e' un comando e non deve rubare il tocco alla meta' sotto. */
+.c7-board__pip.is-off { pointer-events: none; cursor: default; color: transparent; }
+.c7-board__pip:active:not(:disabled) { transform: scale(1.25); }
+.c7-board__pip:focus-visible { outline: 2px solid var(--c7-accent-bright); outline-offset: 3px; }
+/* Marcato: la sigla la sceglie il server — B se aveva aperto lui, R se ha
+   chiuso rispondendo. Qui cambia solo il peso, perche' un trattino con una
+   lettera dentro dev'essere leggibile da due metri quanto uno vuoto. */
+.c7-board__pip.is-runout { font-size: 12px; letter-spacing: .02em; }
+
+/* Il tavolo: un localizzatore, non una voce dell'elenco. Chi attraversa una
+   sala con otto biliardi riconosce da qui il proprio tabellone, quindi e'
+   pieno e sta in testa. Il nome puo' essere qualunque stringa: tronca. */
+.c7-board__table {
+  flex-shrink: 0; max-width: 30%; height: 28px; padding: 0 13px;
+  border-radius: var(--c7-r-pill);
+  background: var(--c7-accent-bright); color: #0D2A36;
+  font-size: 13px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+  display: flex; align-items: center;
+  overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+}
+
+/* Di chi e' il tiro di apertura, adesso. Si sposta da sola triangolo per
+   triangolo: e' la regola di apertura in forma viva — ed e' il motivo per cui
+   la regola, come configurazione, dalla riga dei metadati e' uscita. */
+.c7-board__breakrow { height: 26px; display: flex; align-items: center; }
+.c7-board__break {
+  display: flex; align-items: center; gap: 7px; height: 26px; padding: 0 13px;
+  border-radius: var(--c7-r-pill);
+  background: var(--c7-accent-bright); color: #0D2A36;
+  font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+}
+.c7-board__break i { font-size: 10px; }
+/* Chi spacca lo dice **solo** la pastiglia. Un filo d'accento sulla meta' era
+   la stessa informazione detta due volte, e su un angolo cosi' arrotondato non
+   restava un filo: scendeva lungo i fianchi e leggeva come «riquadro
+   selezionato» — cioe' come se quella meta' fosse in qualche modo scelta. La
+   meta' e' il bersaglio per segnare, e non deve sembrare altro. */
+
+/* L'acchito: due domande in sequenza, al posto del punteggio. Compare solo
+   prima del primo triangolo, e solo dove la gara lo prevede (ADR-056). */
+.c7-board__lagq { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.c7-board__lagq-title {
+  padding: 8px 24px 0; text-align: center;
+  font-size: 16px; font-weight: 800; letter-spacing: -.01em;
+}
+.c7-board__lagq-body {
+  flex: 1; display: grid; grid-template-columns: 1fr 1px 1fr; align-items: center;
+  padding: 0 24px; min-height: 0;
+}
+.c7-board__lagq-side { align-self: stretch; gap: 10px; }
+.c7-board__lagq-ico { font-size: 44px; color: rgba(242, 248, 247, .28); }
+.c7-board__lagq-side.c7-board__half--breaks .c7-board__lagq-ico { color: var(--c7-accent-bright); }
+.c7-board__lagq-pillrow { height: 24px; display: flex; align-items: center; }
+.c7-board__lagq-pill {
+  height: 24px; padding: 0 12px; border-radius: var(--c7-r-pill);
+  background: rgba(242, 248, 247, .16); color: var(--c7-accent-dim);
+  font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  display: flex; align-items: center;
+}
+.c7-board__lagq-pill[hidden] { display: none; }
+.c7-board__lagq-pill.is-breaking { background: var(--c7-accent-bright); color: #0D2A36; }
 
 .c7-board__pad { padding: 0 24px 20px; display: flex; align-items: center; gap: 12px; }
 .c7-board__btn {

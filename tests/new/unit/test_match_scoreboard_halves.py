@@ -15,6 +15,8 @@ from __future__ import annotations
 
 import pytest
 
+from models.match.base_match import BaseMatchMixin
+from models.match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
 from models.match.distance import Distance
 from models.status_enum import MatchStatus
 
@@ -37,14 +39,32 @@ class _User:
 
 
 class _Rack:
-    def __init__(self, rack_number, winner_id):
+    def __init__(self, rack_number, winner_id, *, run_out=False, break_player_id=None):
+        self.id = 100 + rack_number
         self.rack_number = rack_number
         self.winner_id = winner_id
         self.is_deleted = False
+        self.is_run_out = run_out
+        self.break_player_id = break_player_id
+
+    @property
+    def is_break_and_run(self):
+        """Stessa deduzione dei due modelli veri (ADR-056)."""
+        return bool(
+            self.is_run_out
+            and self.break_player_id is not None
+            and self.break_player_id == self.winner_id
+        )
 
 
-class _Match:
-    """Il minimo che il tabellone legge di una partita."""
+class _Match(BaseMatchMixin):
+    """Il minimo che il tabellone legge di una partita.
+
+    Estende `BaseMatchMixin` **davvero**, invece di reimplementarne i pezzi:
+    `active_racks()`, `next_break_player_id` e `needs_lag` sono contratto
+    condiviso fra `Match` e `IndividualMatch`, e una copia qui sarebbe la terza
+    — cioè quella che resta indietro senza che nessun test se ne accorga.
+    """
 
     def __init__(
         self,
@@ -56,6 +76,9 @@ class _Match:
         p1_confirmed=False,
         p2_confirmed=False,
         racks=None,
+        start_rule=DEFAULT_START_RULE,
+        break_rule=DEFAULT_BREAK_RULE,
+        first_break_player_id=None,
     ):
         self.status = status
         self.player1 = _User(1, "Rossi M.")
@@ -78,6 +101,19 @@ class _Match:
         self.gara_id = None
         self.round_number = 1
         self.racks = racks if racks is not None else []
+        self.started_at = None
+        self._start_rule = start_rule
+        self._break_rule = break_rule
+        self.lag_winner_id = None
+        self.first_break_player_id = first_break_player_id
+
+    @property
+    def effective_start_rule(self):
+        return self._start_rule
+
+    @property
+    def effective_break_rule(self):
+        return self._break_rule
 
 
 def _render(app, match, user=None):
