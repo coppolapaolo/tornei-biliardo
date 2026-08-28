@@ -37,10 +37,18 @@ class RackService:
                 "Cannot add rack: match has reached maximum and needs validation"
             )
 
+        # Chi ha aperto: dedotto dalla regola della gara e da chi ha vinto i
+        # triangoli prima di questo (ADR-056). Resta NULL se il match non c'è
+        # o se la deduzione non ha abbastanza storia — e NULL è la risposta
+        # onesta: un triangolo di cui non si sa chi l'ha aperto non può essere
+        # un break and run.
+        break_player_id = match.next_break_player_id if match else None
+
         rack = Rack(
             match_id=match_id,
             rack_number=rack_number,
             winner_id=winner_id,
+            break_player_id=break_player_id,
             reported_by_id=reported_by_id,
             confirmed_by_player=confirmed_by_player,
             validated_by_admin=validated_by_admin,

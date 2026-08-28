@@ -462,6 +462,24 @@ class MatchService:
         return ScoringService.remove_rack_for_player(match_id, user_id, player_id)
 
     @staticmethod
+    def register_lag(
+        match_id: int, lag_winner_id: int, first_break_player_id: int
+    ) -> None:
+        """Esito dell'acchito (delegates to ScoringService)."""
+        from .scoring_service import ScoringService
+
+        return ScoringService.register_lag(
+            match_id, lag_winner_id, first_break_player_id
+        )
+
+    @staticmethod
+    def toggle_run_out(match_id: int, rack_id: int) -> dict:
+        """Marca/smarca un triangolo come runout (delegates to ScoringService)."""
+        from .scoring_service import ScoringService
+
+        return ScoringService.toggle_run_out(match_id, rack_id)
+
+    @staticmethod
     @transactional(domain="match")
     def confirm_match_result(match_id: int, user_id: int) -> Match:
         """

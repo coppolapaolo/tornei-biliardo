@@ -238,6 +238,34 @@ blocks:
           tabelloni il set si vince arrivando primi: la scelta di giocarli
           tutti non viene chiesta.
         hint: gara.multiset
+      - name: "Regola di inizio"
+        values: "predefinito «Primo giocatore» · dentro un campionato si può ereditare"
+        text: >-
+          Chi esegue il primo tiro della partita. Con **Primo giocatore** apre
+          sempre il primo dei due, senza sorteggio. Con **Acchito** il
+          segnapunti fa due domande prima di lasciar segnare: chi ha vinto
+          l'acchito, e chi apre — perché chi vince l'acchito **sceglie** chi
+          apre, e può mandare al tavolo l'avversario.
+        hint: gara.regola_inizio
+      - name: "Chi spacca"
+        values: "predefinito «A turno» · dentro un campionato si può ereditare"
+        text: >-
+          Come passa il tiro di apertura da un triangolo al successivo. **A
+          turno** è la regola standard e alterna a ogni triangolo; **A turno
+          ogni due** dà due triangoli a testa; **Spacca chi ha vinto** e
+          **Spacca chi ha perso** seguono invece il risultato del triangolo
+          prima. Vale per tutte le partite della gara: sulla singola partita
+          non si cambia.
+        hint: gara.chi_spacca
+
+  - type: note
+    tone: warning
+    title: "Queste due si scelgono prima, non dopo"
+    text: >-
+      Una volta che la gara è cominciata i due campi si bloccano. Cambiarli a
+      metà riscriverebbe chi ha eseguito il tiro di apertura nei triangoli già
+      giocati — e con esso quali di quei triangoli risultano chiusi
+      «spaccando».
 
   - type: note
     tone: tip

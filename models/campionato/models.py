@@ -14,6 +14,7 @@ from models.status_enum import (
     ClassificationSystem,
 )
 from models.matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
+from models.match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
 
 if TYPE_CHECKING:
     pass
@@ -53,6 +54,17 @@ class Campionato(db.Model):
     default_classification_system = db.Column(
         db.String(10), nullable=False, default="WINS"
     )  # Default: RACK, WINS, POSITION (see docs/CLASSIFICATION_SYSTEM.md)
+
+    # Regola di inizio e regola di apertura predefinite delle gare (ADR-056).
+    # Radice della catena Campionato → Gara (nullable) → match, che eredita
+    # sempre e non si tocca: cambiarle a match iniziato riscriverebbe chi ha
+    # aperto i triangoli già giocati.
+    default_start_rule = db.Column(
+        db.String(20), nullable=False, default=DEFAULT_START_RULE.value
+    )  # first_player, lag (acchito)
+    default_break_rule = db.Column(
+        db.String(20), nullable=False, default=DEFAULT_BREAK_RULE.value
+    )  # winner_breaks, alternate, alternate_two, loser_breaks
     # Punti per posizione delle gare a tabellone, come JSON {"1": 25, ...}
     # (US-17). NULL = usa la tabella di default della spec, che è il caso
     # normale: un campionato non deve configurare nulla per funzionare.

@@ -24,6 +24,7 @@ from models.matchmaking.configuration import (
     calculate_rounds_for_strategy,
     minimum_players_for,
 )
+from models.match.break_rules import BreakRule, StartRule
 from models.status_enum import WithdrawPolicy
 
 # Ri-esportato: `BRACKET_STRATEGIES` vive nel dominio
@@ -209,6 +210,21 @@ class GaraFormParser:
             data["has_handicap"] = False
         else:
             data["has_handicap"] = None  # eredita dal campionato
+
+        # ── Regola di inizio e di apertura (ADR-056) ─────────────
+        # Tri-stato come l'handicap: "" = eredita dal campionato (NULL), un
+        # valore = scelta esplicita per questa gara.
+        #
+        # **Assenti dal form = non toccare.** Non è la stessa cosa di "":
+        # a gara cominciata i due campi si affossano, e un campo affossato non
+        # viene inviato. Se qui li leggessimo comunque, un salvataggio
+        # innocuo — cambiare la descrizione — riscriverebbe le due regole a
+        # "eredita", cioè cambierebbe chi ha aperto i triangoli già giocati,
+        # senza che nessuno l'abbia chiesto e senza dirlo.
+        for campo, enum_cls in (("start_rule", StartRule), ("break_rule", BreakRule)):
+            if campo in request.form:
+                scelta = enum_cls.normalize(request.form.get(campo, ""))
+                data[campo] = scelta.value if scelta is not None else None
 
         # ── Strategy ─────────────────────────────────────────────
         if camp:

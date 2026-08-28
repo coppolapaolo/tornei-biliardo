@@ -222,6 +222,72 @@
       </div>
     </div>
 
+    {# Come si comincia, e chi apre poi (ADR-056) ---------------------------
+
+       Un `<select>` la cui **prima voce** è «Eredita dal campionato (X)», come
+       per l'handicap qui sopra: senza quella voce i tre stati diventano due, e
+       scelto una volta un valore esplicito non si torna più a «segue il
+       campionato». In un menù costa una riga.
+
+       A gara cominciata i due campi si **affossano**, non si avvertono
+       soltanto: cambiarli a metà riscriverebbe chi ha eseguito il tiro di
+       apertura nei triangoli già giocati — e con esso quali sono stati break
+       and run. Affossati vuol dire che il campo non viene nemmeno inviato, e
+       il parser lo sa: assente ≠ vuoto, assente vuol dire «non toccare».
+       (Oggi la rotta di modifica si chiude già prima, alla prima iscrizione;
+       la difesa resta perché il giorno in cui quel cancello si allarga questo
+       non deve cedere con lui.) #}
+    {% set regole_modificabili = gara.can_be_modified() %}
+    <div class="d-flex gap-3 flex-wrap mt-3">
+      <div class="flex-fill" style="min-width:220px">
+        <label for="start_rule" class="form-label">{{ _('Regola di inizio') }}</label>
+        {% if regole_modificabili %}
+        <select class="form-select" id="start_rule" name="start_rule">
+          {% if gara.campionato %}
+          <option value="" {% if gara.start_rule is none %}selected{% endif %}>
+            {{ _('Eredita dal campionato') }} ({{ (StartRule.normalize(gara.campionato.default_start_rule) or StartRule.FIRST_PLAYER).display_name }})
+          </option>
+          {% endif %}
+          {% for rule in StartRule %}
+          <option value="{{ rule.value }}" {% if gara.start_rule == rule.value %}selected{% endif %}>{{ rule.display_name }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-text">{{ _("Con l'acchito il segnapunti chiede chi ha vinto e chi apre: chi vince può mandare al tavolo l'avversario.") }}</div>
+        {% else %}
+        <div class="c7-card c7-card--locked d-flex align-items-center gap-2"
+             style="height:56px;padding:0 16px;font-size:15px;font-weight:700">
+          <i class="fas fa-lock" style="font-size:12px"></i>{{ gara.effective_start_rule.display_name }}
+        </div>
+        {% endif %}
+      </div>
+      <div class="flex-fill" style="min-width:220px">
+        <label for="break_rule" class="form-label">{{ _('Chi spacca') }}</label>
+        {% if regole_modificabili %}
+        <select class="form-select" id="break_rule" name="break_rule">
+          {% if gara.campionato %}
+          <option value="" {% if gara.break_rule is none %}selected{% endif %}>
+            {{ _('Eredita dal campionato') }} ({{ (BreakRule.normalize(gara.campionato.default_break_rule) or BreakRule.ALTERNATE).display_name }})
+          </option>
+          {% endif %}
+          {% for rule in BreakRule %}
+          <option value="{{ rule.value }}" {% if gara.break_rule == rule.value %}selected{% endif %}>{{ rule.display_name }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-text">{{ _('Vale per tutti i match della gara: sul singolo match non si cambia.') }}</div>
+        {% else %}
+        <div class="c7-card c7-card--locked d-flex align-items-center gap-2"
+             style="height:56px;padding:0 16px;font-size:15px;font-weight:700">
+          <i class="fas fa-lock" style="font-size:12px"></i>{{ gara.effective_break_rule.display_name }}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+    {% if not regole_modificabili %}
+    <div class="form-text mt-2">
+      {{ _('La gara è cominciata: le regole di gioco non si cambiano più. Cambiarle a metà riscriverebbe chi ha eseguito il tiro di apertura nei triangoli già giocati.') }}
+    </div>
+    {% endif %}
+
     <div class="mt-3" style="max-width:280px">
       <label for="discipline" class="form-label">{{ _('Disciplina') }}</label>
       <select class="form-select" id="discipline" name="discipline" required>

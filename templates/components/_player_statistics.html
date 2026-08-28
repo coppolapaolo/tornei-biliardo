@@ -43,6 +43,28 @@
                     <strong>{{ _("Sconfitte") }}:</strong> {{ stats.lost_matches }}
                 </div>
             </div>
+            {# Runout — nello stesso stampo di «Totali» e «Sconfitte».
+
+               Il lessico resta inglese di proposito: nel regolamento FIBiS non
+               esiste un termine italiano per run-out o break and run, e «serie»
+               è già occupato — indica il **gruppo** di bilie assegnato («la
+               propria serie»). Vedi ADR-056.
+
+               Qui runout è l'insieme e break and run un suo sottoinsieme, che è
+               come parlano i giocatori. Il numero lo compone
+               `models/user/runout_stats.py`, che unisce le due fonti — il
+               trattino sul tabellone e il tally del referto TPA — e conosce la
+               trappola dei due contatori disgiunti del motore TPA. #}
+            {% if stats.runouts and stats.runouts.total %}
+            <div class="row text-center text-md-start mt-2">
+                <div class="col-12">
+                    <strong>{{ _("Runout") }}:</strong> {{ stats.runouts.total }}
+                    {%- if stats.runouts.break_and_runs %}
+                    <span class="text-muted">— {{ _("di cui %(n)s break and run", n=stats.runouts.break_and_runs) }}</span>
+                    {%- endif %}
+                </div>
+            </div>
+            {% endif %}
         {% endif %}
     </div>
 </div>

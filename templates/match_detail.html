@@ -339,6 +339,62 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             });
     }
 
+    // ADR-056 — il trattino che marca il runout, e le due domande dell'acchito.
+    // Il tabellone li chiama per nome (`data-runout-fn` / `data-lag-fn`),
+    // perche' l'endpoint di una gara e quello di una sfida sono due.
+    function markRunout(rackId, pip) {
+        // Il trattino cambia subito: chi segna sta guardando il tavolo, e un
+        // riscontro che arriva dopo la rete non lo vede nessuno. La **sigla**
+        // pero' la scrive il server — dipende da chi apriva quel triangolo, e
+        // dedurla qui sarebbe la terza copia della regola.
+        const marcatoPrima = pip.classList.contains('is-runout');
+        window.c7BoardRunout(pip, !marcatoPrima, '');
+        fetch(`/player/match/{{ match.id }}/racks/${rackId}/runout`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrfToken()}
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.c7BoardRunout(pip, data.is_run_out, data.letter);
+                } else {
+                    window.c7BoardRunout(pip, marcatoPrima, '');
+                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || ''));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                window.c7BoardRunout(pip, marcatoPrima, '');
+            });
+    }
+
+    function registerLag(lagWinnerId, firstBreakerId, btn) {
+        const restore = withLoading(btn);
+        fetch(`/player/match/{{ match.id }}/lag`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken()},
+            body: `lag_winner_id=${lagWinnerId}&first_break_player_id=${firstBreakerId}`
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Qui si ricarica, e va bene: quel che cambia non sono due
+                    // cifre — al posto delle domande compare il tabellone.
+                    location.reload();
+                } else {
+                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || ''));
+                    restore();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError({{ _("Errore durante la registrazione dell'acchito")|tojson }});
+                restore();
+            });
+    }
+
     function confirmResult(btn) {
         const restore = withLoading(btn);
         fetch(`/player/match/{{ match.id }}/confirm`, {

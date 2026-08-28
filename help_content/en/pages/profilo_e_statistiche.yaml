@@ -43,6 +43,23 @@ blocks:
           Championships and competitions played, wins, losses, total matches
           and win percentage. It counts **everything you have played**,
           friendly matches included.
+      - name: "Runout"
+        text: >-
+          How many racks you closed **in a single visit**, that is without ever
+          leaving the table to your opponent, and how many of those you had
+          also broken — the *break and runs*. It only appears once you have at
+          least one.
+        hint: profilo.runout
+
+  - type: note
+    tone: info
+    title: "Where runouts come from"
+    text: >-
+      From two places that never overlap: the racks you marked by **pressing
+      the dash** on the scoreboard during the match, and the ones the [TPA
+      scoresheet](/aiuto/giocare/referto_tpa) recognises by itself when you
+      keep one. The big number is the total; break and runs are the share of
+      those where you also had the break shot.
 
   - type: heading
     id: rating

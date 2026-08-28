@@ -285,6 +285,69 @@ def remove_rack_simplified(match_id):
         return safe_json_error(e, "player match operation")
 
 
+# ============ ADR-056 - Acchito e runout (Match di gara) ============
+
+
+def _lettera(stato: dict) -> str:
+    """La sigla sul trattino: ``B`` se aveva aperto lui, ``R`` se ha risposto.
+
+    Resta in inglese di proposito: nel regolamento FIBiS non esiste un termine
+    italiano per run-out o break and run, e «serie» è già occupato — indica il
+    **gruppo** di bilie assegnato («la propria serie»). Vedi ADR-056.
+    """
+    if not stato.get("is_run_out"):
+        return ""
+    return "B" if stato.get("is_break_and_run") else "R"
+
+
+@player_bp.route("/match/<int:match_id>/lag", methods=["POST"])
+@login_required
+@match_player_required
+def register_lag(match_id):
+    """Esito dell'acchito: chi ha vinto, e chi esegue il tiro di apertura.
+
+    Due campi e non uno: chi vince l'acchito **sceglie chi** apre, e può
+    scegliere l'avversario («Regole generali pool» 1.2). Dedurre il secondo
+    dal primo sarebbe riscrivere il regolamento.
+    """
+    lag_winner_id = request.form.get("lag_winner_id", type=int)
+    first_break_player_id = request.form.get("first_break_player_id", type=int)
+
+    if not lag_winner_id or not first_break_player_id:
+        return jsonify({"error": _("Scegli uno dei due giocatori.")}), 400
+
+    try:
+        MatchService.register_lag(
+            match_id=match_id,
+            lag_winner_id=lag_winner_id,
+            first_break_player_id=first_break_player_id,
+        )
+        return jsonify({"success": True})
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return safe_json_error(e, "player match lag")
+
+
+@player_bp.route("/match/<int:match_id>/racks/<int:rack_id>/runout", methods=["POST"])
+@login_required
+@match_player_required
+def toggle_run_out(match_id, rack_id):
+    """Marca (o smarca) un triangolo come chiuso in una visita.
+
+    È il trattino di progresso, non un pulsante: il runout è un evento raro su
+    una superficie fatta per un gesto frequente, e un bersaglio permanente
+    sbaglierebbe in un verso o nell'altro (ADR-056).
+    """
+    try:
+        stato = MatchService.toggle_run_out(match_id=match_id, rack_id=rack_id)
+        return jsonify({"success": True, "letter": _lettera(stato), **stato})
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return safe_json_error(e, "player match runout")
+
+
 @player_bp.route("/match/<int:match_id>/confirm", methods=["POST"])
 @login_required
 @match_player_required

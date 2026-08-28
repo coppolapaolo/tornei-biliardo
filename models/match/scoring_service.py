@@ -14,6 +14,7 @@ from typing import Optional, Tuple
 from flask_babel import gettext as _
 
 from models.base import db, utc_now
+from models.exceptions import NotFoundError
 from models.status_enum import MatchStatus
 from models.transaction.manager import transactional
 from .models import Match, Rack
@@ -82,11 +83,21 @@ class ScoringService:
         )
         rack_number = (max_rack or 0) + 1
 
+        # Chi apre questo triangolo, **prima** di crearlo: dopo, il conteggio
+        # dei triangoli attivi sarebbe già avanzato di uno e la deduzione
+        # risponderebbe per quello successivo. Si scrive sul rack invece di
+        # ricalcolarlo a ogni lettura perché è un fatto: se domani il direttore
+        # cambia la regola di apertura della gara, i triangoli già giocati non
+        # devono cambiare chi li ha aperti — e con loro le B/R del profilo
+        # (ADR-056).
+        break_player_id = match.next_break_player_id
+
         # Create rack with audit trail
         rack = Rack(
             match_id=match_id,
             rack_number=rack_number,
             winner_id=winner_id,
+            break_player_id=break_player_id,
             added_by_id=user_id,
             added_at=utc_now(),
         )
@@ -135,6 +146,32 @@ class ScoringService:
             match.status = MatchStatus.PLAYING.value
 
         return rack
+
+    @staticmethod
+    @transactional(domain="match")
+    def register_lag(
+        match_id: int,
+        lag_winner_id: int,
+        first_break_player_id: int,
+    ) -> None:
+        """Esito dell'acchito su un match di gara (ADR-056)."""
+        from models.match import opening_service
+
+        match = db.session.get(Match, match_id)
+        if match is None:
+            raise NotFoundError(_("Partita non trovata."))
+        opening_service.register_lag(match, lag_winner_id, first_break_player_id)
+
+    @staticmethod
+    @transactional(domain="match")
+    def toggle_run_out(match_id: int, rack_id: int) -> dict:
+        """Marca o smarca un triangolo di gara come chiuso in una visita."""
+        from models.match import opening_service
+
+        match = db.session.get(Match, match_id)
+        if match is None:
+            raise NotFoundError(_("Partita non trovata."))
+        return opening_service.toggle_run_out(match, rack_id)
 
     @staticmethod
     @transactional(domain="match")

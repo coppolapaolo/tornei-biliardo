@@ -354,6 +354,7 @@ def create_app(config_name=None):
             MatchmakingStrategy,
             minimum_players_for,
         )
+        from models.match.break_rules import BreakRule, StartRule
 
         return {
             "GaraStatus": GaraStatus,
@@ -390,6 +391,12 @@ def create_app(config_name=None):
             "bracket_minimum_players": {
                 name: minimum_players_for(name) for name in sorted(BRACKET_STRATEGIES)
             },
+            # Come si decide chi apre (ADR-056). Sono due domande distinte —
+            # come si comincia, e come il tiro di apertura passa da un
+            # triangolo al successivo — e i form le pongono come tali. L'ordine
+            # di dichiarazione è quello delle tendine.
+            "StartRule": StartRule,
+            "BreakRule": BreakRule,
         }
 
     # Production endpoint allowlist (ADR-028) — pass-through in dev/test.

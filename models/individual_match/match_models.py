@@ -14,6 +14,12 @@ from sqlalchemy import func
 from ..base import db, BaseModel, utc_now
 from ..status_enum import Discipline, MatchStatus
 from ..match.base_match import BaseMatchMixin
+from ..match.break_rules import (
+    DEFAULT_BREAK_RULE,
+    DEFAULT_START_RULE,
+    BreakRule,
+    StartRule,
+)
 
 if TYPE_CHECKING:
     from ..user.models import User
@@ -91,6 +97,19 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
     distance = db.Column(db.Integer, nullable=True)
     is_race_to = db.Column(db.Boolean, nullable=False, default=True)
     break_rule = db.Column(db.String(20), nullable=False, default="alternate")
+    # Sulle sfide individuali una gara da cui ereditare non c'è: il match **è**
+    # la radice, e porta le sue due regole (ADR-056). `break_rule` c'era già dal
+    # 2026-02 — scritto, mostrato e testato, ma mai letto da nessuno per dedurre
+    # chi aprisse un triangolo. Adesso lo si legge.
+    start_rule = db.Column(
+        db.String(20), nullable=False, default=DEFAULT_START_RULE.value
+    )  # first_player, lag (acchito)
+
+    # I due fatti che l'acchito produce al tavolo (vedi `Match`, stessa forma).
+    lag_winner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    first_break_player_id = db.Column(
+        db.Integer, db.ForeignKey("user.id"), nullable=True
+    )
 
     # Multi-set configuration (Phase 6: Frontend Integration)
     is_multi_set = db.Column(db.Boolean, default=False, nullable=False)
@@ -123,6 +142,8 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
     player1 = db.relationship("User", foreign_keys=[player1_id])
     player2 = db.relationship("User", foreign_keys=[player2_id])
     winner = db.relationship("User", foreign_keys=[winner_id])
+    lag_winner = db.relationship("User", foreign_keys=[lag_winner_id])
+    first_break_player = db.relationship("User", foreign_keys=[first_break_player_id])
 
     # UNIQUE on proposal_id prevents double-accept of same proposal (TOCTOU guard).
     # SQLite allows multiple NULLs → matches without proposal remain valid.
@@ -217,28 +238,22 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
             )
 
     # ------------------------------------------------------------------
-    # Chi prende parte, e com'è finita per lui
+    # Chi apre (ADR-056)
     # ------------------------------------------------------------------
 
-    def is_player(self, user_id: Optional[int]) -> bool:
-        """Se questa persona è uno dei due che giocano.
+    @property
+    def effective_start_rule(self) -> StartRule:
+        """Qui il match **è** la radice: nessuna gara da cui ereditare."""
+        return StartRule.normalize(self.start_rule) or DEFAULT_START_RULE
 
-        È la domanda che decide chi può segnare, correggere gli orari,
-        confermare o rifiutare il risultato — e **non dipende da come la
-        partita è nata**. Una partita da avvio rapido e una nata da una
-        proposta accettata, una volta che esistono, sono la stessa cosa: il
-        *proponente* è un concetto della proposta, e la proposta è soltanto
-        uno dei modi di arrivare qui.
+    @property
+    def effective_break_rule(self) -> BreakRule:
+        """Qui il match **è** la radice: nessuna gara da cui ereditare."""
+        return BreakRule.normalize(self.break_rule) or DEFAULT_BREAK_RULE
 
-        Prima questa condizione era riscritta in ogni servizio
-        (``user_id not in [match.player1_id, match.player2_id]``) e gli orari
-        — unico caso — la chiedevano alla **proposta**: su una partita da
-        avvio rapido, che proposta non ne ha, non poteva correggerli nessuno
-        dei due giocatori.
-        """
-        if user_id is None:
-            return False
-        return user_id in (self.player1_id, self.player2_id)
+    # ------------------------------------------------------------------
+    # Chi prende parte, e com'è finita per lui
+    # ------------------------------------------------------------------
 
     def outcome_for(self, user_id: int) -> str:
         """Com'è finita per questo giocatore: ``won``, ``lost`` o ``tie``.
@@ -1033,7 +1048,12 @@ class IndividualRack(BaseModel):
     winner_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
     # Optional details
+    #: Chi ha eseguito il tiro di apertura. La colonna c'era dal 2026-02 e non
+    #: la valorizzava nessuno: adesso la scrive chi crea il triangolo,
+    #: deducendola dalla regola di apertura della sfida (ADR-056).
     break_player_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    #: Triangolo chiuso in una visita, marcato dal trattino sul tabellone.
+    is_run_out = db.Column(db.Boolean, nullable=False, default=False)
     notes = db.Column(db.Text, nullable=True)
 
     # Log delle operazioni per tracciare chi ha aggiunto/rimosso rack
@@ -1057,6 +1077,15 @@ class IndividualRack(BaseModel):
     __table_args__ = (
         db.UniqueConstraint("match_id", "rack_number", name="uq_match_rack"),
     )
+
+    @property
+    def is_break_and_run(self) -> bool:
+        """Chiuso in una visita **avendolo aperto**: si deduce, non si sceglie."""
+        return bool(
+            self.is_run_out
+            and self.break_player_id is not None
+            and self.break_player_id == self.winner_id
+        )
 
     def __repr__(self) -> str:
         return (

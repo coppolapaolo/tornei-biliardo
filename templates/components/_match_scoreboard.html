@@ -49,8 +49,81 @@
    È un `<button>`, non un `<div>` con un `onclick`: così si raggiunge da
    tastiera, si annuncia con il nome del giocatore e risponde a Invio e spazio.
 #}
-{% macro board_side(player_id, name, score, behind, pips, can_add, add_rack, mine, elo, elo_label) %}
+{# I trattini sono il comando del runout (ADR-056) ----------------------------
+
+   Premere il trattino che si e' appena acceso marca quel triangolo come chiuso
+   in una visita; premerlo di nuovo lo smarca. Nessun pulsante dedicato: il
+   runout e' un evento **raro** su una superficie fatta per un gesto
+   **frequente**, e qualunque bersaglio permanente sbaglia in un verso o
+   nell'altro — piccolo abbastanza da non disturbare e non lo si prende al
+   buio, grande abbastanza da prenderlo al buio e ruba spazio al gesto che si
+   fa sempre. Il runout non e' un altro modo di vincere il triangolo: e' un
+   **aggettivo** di quello appena vinto.
+
+   La sigla la deduce il server: **B** se ad aprire era chi ha vinto, **R** se
+   ha chiuso rispondendo. Chi segna preme e basta.
+
+   DUE VINCOLI DI MARKUP, ENTRAMBI NECESSARI
+   - I trattini **non possono stare dentro** il `<button>` della meta': un
+     bottone dentro un bottone non e' HTML valido, e i browser lo srotolano
+     spostando il secondo fuori dal primo.
+   - I trattini **spenti** hanno `pointer-events: none` (classe `is-off`), cosi'
+     il tocco passa alla meta' sottostante: se no il bersaglio grande si
+     bucherebbe anche dove non c'e' niente da marcare.
+
+   DEBOLEZZA ACCETTATA: non si scopre da solo. Va insegnato una volta, non con
+   chrome permanente sul tabellone — che vanificherebbe il guadagno.
+#}
+{% macro board_pips(pips, behind, marcabile) %}
+{% if pips %}
+<span class="c7-board__pips">
+    {% for pip in pips %}
+    {% if marcabile %}
+    {# Anche i trattini **spenti** sono `<button>`, non `<span>`: il tabellone
+       non si ricarica a ogni triangolo, quindi quello che si accende adesso e'
+       uno di questi — e uno `<span>` non diventerebbe mai premibile. Da spento
+       e' `disabled` e ha `pointer-events: none`, cosi' il tocco passa alla
+       meta' sotto e il bersaglio grande resta intero.
+
+       Il comando non e' un `onclick` scritto qui ma un ascoltatore delegato
+       sul tabellone, che legge `data-rack-id`: e' l'unico modo perche' valga
+       anche per i trattini che ricevono la loro identita' dopo, dal
+       JavaScript. #}
+    <button type="button"
+            class="c7-board__pip {{ 'is-on' if pip.won else 'is-off' }}{{ ' is-on--muted' if pip.won and behind }}{{ ' is-runout' if pip.run_out }}"
+            {% if pip.rack_id %}data-rack-id="{{ pip.rack_id }}"{% endif %}
+            {%- if pip.won %}
+            aria-pressed="{{ 'true' if pip.run_out else 'false' }}"
+            aria-label="{{ _('Chiuso in una visita') }}"
+            {%- else %}
+            {# Spento: e' il traguardo che manca, non un comando. Chi legge con
+               un lettore di schermo non deve sentirsi proporre cinque volte
+               «chiuso in una visita» per triangoli che non esistono. #}
+            disabled aria-hidden="true"
+            {%- endif %}>{{ pip.letter|default('') }}</button>
+    {% elif pip.won %}
+    {# Non marcabile: il lettore non gioca, o il risultato l'ha registrato il
+       direttore. Resta un trattino, non diventa un comando. #}
+    <span class="c7-board__pip is-on{{ ' is-on--muted' if behind }}{{ ' is-runout' if pip.run_out }}">{{ pip.letter|default('') }}</span>
+    {% else %}
+    <span class="c7-board__pip is-off"></span>
+    {% endif %}
+    {% endfor %}
+</span>
+{% endif %}
+{% endmacro %}
+
+{% macro board_side(player_id, name, score, behind, pips, can_add, add_rack, mine, elo, elo_label, breaks, marcabile) %}
 {% set inner %}
+    {# Di chi e' il tiro di apertura, adesso. La pastiglia si sposta da sola
+       triangolo per triangolo: e' la regola di apertura in forma viva, ed e'
+       il motivo per cui dalla riga dei metadati la regola **esce** — sarebbe
+       la stessa cosa detta due volte, una delle quali morta. #}
+    <span class="c7-board__breakrow">
+    {% if breaks %}
+        <span class="c7-board__break"><i class="fas fa-play"></i>{{ _('spacca') }}</span>
+    {% endif %}
+    </span>
     <span class="c7-board__name {{ 'c7-board__name--behind' if behind }}">{{ name }}{% if mine %} <span class="c7-board__you">{{ _('tu') }}</span>{% endif %}</span>
     {# Il pool lo decide il tipo di partita, non chi guarda: niente classe
        `elo-value`, che `window.EloToggle` riscriverebbe al primo clic altrove
@@ -60,14 +133,9 @@
     <span class="c7-board__elo c7-num" title="{{ elo_label }}" aria-label="{{ elo_label }} {{ elo }}">{{ elo }}</span>
     {% endif %}
     <span class="c7-board__num {{ 'c7-board__num--behind' if behind }}">{{ score }}</span>
-    {% if pips %}
-    <span class="c7-board__pips">
-        {% for i in range(pips) %}
-        <span class="c7-board__pip {{ ('is-on is-on--muted' if behind else 'is-on') if i < score }}"></span>
-        {% endfor %}
-    </span>
-    {% endif %}
 {% endset %}
+{# I trattini sono **fratelli** della meta', non figli: vedi il commento sopra. #}
+<div class="c7-board__half">
 {% if can_add %}
 <button type="button" class="c7-board__side c7-board__side--tap"
         onclick="{{ add_rack }}({{ player_id }}, this)"
@@ -75,6 +143,8 @@
 {% else %}
 <div class="c7-board__side">{{ inner }}</div>
 {% endif %}
+{{ board_pips(pips, behind, marcabile) }}
+</div>
 {% endmacro %}
 
 {% set add_rack = add_rack_js_func|default('addRack') %}
@@ -99,11 +169,41 @@
 {# Trattini di progresso: quanti rack mancano alla vittoria, senza contare le
    cifre. Solo per il "race to N", dove un traguardo esiste davvero. #}
 {% set distance = match.distance_config if match.distance_config is defined else none %}
-{% set pips = distance.get_winning_racks() if distance and distance.is_race_to_racks else 0 %}
+{% set pips_target = distance.get_winning_racks() if distance and distance.is_race_to_racks else 0 %}
 
-{% set active_racks = (match.racks|selectattr('is_deleted', 'equalto', False)|list) if match.racks is defined else [] %}
-{% set last_rack = (active_racks|sort(attribute='rack_number')|last) if active_racks else none %}
+{% set active_racks = match.active_racks() if match.active_racks is defined else [] %}
+{% set last_rack = active_racks|last if active_racks else none %}
 {% set mine_is_p2 = current_user.is_authenticated and match.player2_id is defined and current_user.id == match.player2_id %}
+
+{# Marcare un runout ha la stessa finestra dell'annulla: finche' si gioca, o
+   finche' la chiusura e' quella **dei due giocatori** — che e' reversibile. Su
+   una chiusura d'ufficio no: quel risultato non e' piu' dei giocatori. #}
+{% set puo_marcare = board.is_player and (board.in_progress or board.closed_by_players) %}
+
+{# Un trattino per triangolo vinto, nell'ordine in cui sono stati vinti, piu'
+   quelli ancora spenti fino al traguardo. `rack_id` c'e' solo dove il trattino
+   e' un comando: e' quello che decide se il macro disegna un `<button>` o uno
+   `<span>`. #}
+{% set pips_p1 = [] %}
+{% set pips_p2 = [] %}
+{% for rack in active_racks %}
+    {% set lettera = ('B' if rack.is_break_and_run else 'R') if rack.is_run_out else '' %}
+    {% set voce = {'rack_id': rack.id if puo_marcare else none, 'won': True,
+                   'run_out': rack.is_run_out, 'letter': lettera,
+                   'number': loop.index} %}
+    {% if rack.winner_id == match.player1_id %}{% set _ = pips_p1.append(voce) %}
+    {% elif rack.winner_id == match.player2_id %}{% set _ = pips_p2.append(voce) %}{% endif %}
+{% endfor %}
+{% if pips_target %}
+    {% for _i in range(pips_target) %}
+        {% if _i >= pips_p1|length %}{% set _ = pips_p1.append({'won': False}) %}{% endif %}
+        {% if _i >= pips_p2|length %}{% set _ = pips_p2.append({'won': False}) %}{% endif %}
+    {% endfor %}
+{% endif %}
+
+{# Di chi e' il tiro di apertura adesso. A traguardo raggiunto non c'e' nessun
+   triangolo da aprire, e la pastiglia sparisce. #}
+{% set breaks_now = none if board.at_distance else (match.next_break_player_id if match.next_break_player_id is defined else none) %}
 
 {# L'annullamento segue la stessa regola della vista verticale: si torna
    indietro finche' la partita e' in corso o e' stata chiusa dai due
@@ -114,17 +214,36 @@
 {% set winner_name = p1_name if board.winner_id == match.player1_id else p2_name %}
 
 {% if match.player2 and (board.in_progress or board.finished) %}
-<div class="c7-board" id="matchBoard" role="region" aria-label="{{ _('Tabellone della partita') }}">
+<div class="c7-board" id="matchBoard" role="region"
+     data-runout-fn="{{ mark_runout_js_func|default('markRunout') }}"
+     data-lag-fn="{{ register_lag_js_func|default('registerLag') }}" aria-label="{{ _('Tabellone della partita') }}">
     <div class="c7-board__head">
         <button type="button" class="c7-board__close" onclick="document.body.classList.add('c7-board-off')" aria-label="{{ _('Chiudi il tabellone') }}">
             <i class="fas fa-xmark"></i>
         </button>
+        {# Il tavolo e' una pastiglia piena, non una voce in coda all'elenco:
+           e' un **localizzatore** — e' cosi' che chi attraversa una sala con
+           otto biliardi riconosce il proprio tabellone — e va letto da
+           lontano. In coda a "Gara 4 · Turno 3 · Al 5 triangoli" non si
+           vedeva. Compare **solo quando e' assegnato**: nella schermata senza
+           tavolo la sua assenza *e'* il segnale, e la barra in basso dice il
+           perche'.
+
+           `table_assignment` e' una **stringa**, non un numero:
+           `gara.get_available_tables()` restituisce nomi, anche
+           personalizzati. Per questo la pastiglia tronca. #}
+        {%- if match.table_assignment %}
+        <span class="c7-board__table">{{ match.table_assignment }}</span>
+        {%- endif %}
         <span class="c7-board__where">
             {%- if where %}{{ where }}
             {%- elif match.gara %}{{ match.gara|gara_display_name }} <span class="c7-sep">·</span> {{ _('Turno') }} {{ match.round_number }}
             {%- else %}{{ _('Sfida individuale') }}{% endif -%}
-            {%- if match.table_assignment %} <span class="c7-sep">·</span> {{ _('Tavolo') }} {{ match.table_assignment }}{% endif -%}
             {%- if distance %} <span class="c7-sep">·</span> {{ distance|format_distance }}{% endif -%}
+            {#- L'ora d'inizio e' naive-UTC sul DB: `|time_local` la riporta nel
+                fuso di chi legge (ADR-043). Scriverla grezza la sposterebbe, in
+                silenzio. -#}
+            {%- if match.started_at %} <span class="c7-sep">·</span> {{ _('Inizio') }} {{ match.started_at|time_local }}{% endif -%}
         </span>
         {# Il pallino che pulsa dice "si sta giocando". A partita ferma
            smette: un tabellone che continua a lampeggiare su un risultato
@@ -140,14 +259,61 @@
 
     {% set p1_behind = p1_score < p2_score %}
     {% set p2_behind = p2_score < p1_score %}
+
+    {# L'ACCHITO FA DUE DOMANDE, NON UNA ------------------------------------
+
+       Regolamento FIBiS, «Regole generali pool» 1.2: «L'acchito e' il primo
+       tiro della partita e determina l'ordine di gioco. Il giocatore che vince
+       l'acchito **sceglie chi** eseguira' il tiro di apertura.» Quindi: chi ha
+       vinto l'acchito? e poi: chi apre? — che puo' essere l'avversario.
+
+       Compare solo se la gara (o la sfida) lo prevede, e solo **prima** del
+       primo triangolo: dopo, cambiare chi ha aperto riscriverebbe chi ha
+       aperto tutti quelli venuti dopo. Chi non vuole rispondere chiude il
+       tabellone con la X e segna dalla vista verticale: non e' una trappola. #}
+    {% set chiedi_acchito = board.is_player and board.can_add and not active_racks
+                            and (match.needs_lag if match.needs_lag is defined else False) %}
+    {% if chiedi_acchito %}
+    <div class="c7-board__lagq" id="boardLag"
+         data-p1="{{ match.player1_id }}" data-p2="{{ match.player2_id }}"
+         data-domanda-uno="{{ _("Chi ha vinto l'acchito?") }}"
+         data-domanda-due="{{ _('Chi esegue il tiro di apertura?') }}"
+         data-nota-uno="{{ _("Tocca il nome di chi ha vinto l'acchito.") }}"
+         data-nota-due="{{ _('Lo sceglie chi ha vinto, e non deve essere lui: tocca chi apre.') }}"
+         data-et-acchito="{{ _('acchito') }}" data-et-apre="{{ _('apre') }}"
+         data-et-entrambi="{{ _('acchito · apre') }}">
+        <div class="c7-board__lagq-title" data-lag-title>{{ _("Chi ha vinto l'acchito?") }}</div>
+        <div class="c7-board__lagq-body">
+            {% for pid, pname in [(match.player1_id, p1_name), (match.player2_id, p2_name)] %}
+            {% if not loop.first %}<div class="c7-board__rule"></div>{% endif %}
+            <button type="button" class="c7-board__side c7-board__side--tap c7-board__lagq-side"
+                    data-lag-player="{{ pid }}">
+                <span class="c7-board__name">{{ pname }}</span>
+                <i class="fas fa-play c7-board__lagq-ico"></i>
+                <span class="c7-board__lagq-pillrow"><span class="c7-board__lagq-pill" hidden></span></span>
+            </button>
+            {% endfor %}
+        </div>
+        <div class="c7-board__pad">
+            <span class="c7-board__note" data-lag-note>{{ _("Tocca il nome di chi ha vinto l'acchito.") }}</span>
+            <button type="button" class="c7-board__btn c7-board__btn--mine" style="flex:0 0 auto;padding:0 26px"
+                    data-lag-go disabled>
+                <span>{{ _('Comincia') }}</span><i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+    {% else %}
+
     <div class="c7-board__body">
         {# `mine`: chi gioca deve riconoscere la propria metà a colpo d'occhio.
            Prima lo diceva il riempimento del proprio `+1`, che non c'è più. #}
-        {{ board_side(match.player1_id, p1_name, p1_score, p1_behind, pips, board.can_add, add_rack,
-             board.is_player and not mine_is_p2, p1_elo, elo_label) }}
+        {{ board_side(match.player1_id, p1_name, p1_score, p1_behind, pips_p1, board.can_add, add_rack,
+             board.is_player and not mine_is_p2, p1_elo, elo_label,
+             breaks_now == match.player1_id, puo_marcare) }}
         <div class="c7-board__rule"></div>
-        {{ board_side(match.player2_id, p2_name, p2_score, p2_behind, pips, board.can_add, add_rack,
-             board.is_player and mine_is_p2, p2_elo, elo_label) }}
+        {{ board_side(match.player2_id, p2_name, p2_score, p2_behind, pips_p2, board.can_add, add_rack,
+             board.is_player and mine_is_p2, p2_elo, elo_label,
+             breaks_now == match.player2_id, puo_marcare) }}
     </div>
 
     {# L'esito a parole sotto le cifre: chi legge da due metri vede i numeri,
@@ -215,6 +381,7 @@
         </button>
         {% endif %}
     </div>
+    {% endif %}
 </div>
 
 <script>
@@ -241,24 +408,53 @@
                 return orizzontale.matches
                     && !document.body.classList.contains('c7-board-off');
             },
-            aggiorna: function (p1, p2) {
-                var lati = board.querySelectorAll('.c7-board__side');
-                if (lati.length < 2) { return; }
-                [[lati[0], p1, p2], [lati[1], p2, p1]].forEach(function (voce) {
-                    var lato = voce[0], mio = voce[1], altrui = voce[2];
-                    var cifra = lato.querySelector('.c7-board__num');
+            /* `segnato`, facoltativo: {lato: 1|2, rackId: n}. Serve a dare
+               un'identita' al trattino che si accende adesso — senza, il
+               trattino c'e' ma non e' premibile, perche' non si sa **quale**
+               triangolo marcherebbe. Chi lo passa e' la pagina che ha appena
+               ricevuto la risposta del server; chi non lo passa e' il giro di
+               polling, che riallinea le cifre di un triangolo segnato
+               dall'altro telefono. In quel caso il trattino resta acceso e
+               muto fino alla prima ricarica: accettabile, perche' il runout lo
+               marca chi ha appena giocato quel triangolo, non l'avversario. */
+            aggiorna: function (p1, p2, segnato) {
+                var meta = board.querySelectorAll('.c7-board__half');
+                if (meta.length < 2) { return; }
+                [[meta[0], p1, p2, 1], [meta[1], p2, p1, 2]].forEach(function (voce) {
+                    var mezzo = voce[0], mio = voce[1], altrui = voce[2], lato = voce[3];
+                    var cifra = mezzo.querySelector('.c7-board__num');
                     if (cifra) {
                         cifra.textContent = mio;
                         cifra.classList.toggle('c7-board__num--behind', mio < altrui);
                     }
-                    var nome = lato.querySelector('.c7-board__name');
+                    var nome = mezzo.querySelector('.c7-board__name');
                     if (nome) {
                         nome.classList.toggle('c7-board__name--behind', mio < altrui);
                     }
-                    lato.querySelectorAll('.c7-board__pip').forEach(function (pip, i) {
-                        pip.classList.toggle('is-on', i < mio);
-                        pip.classList.toggle('is-on--muted', i < mio && mio < altrui);
+                    mezzo.querySelectorAll('.c7-board__pip').forEach(function (pip, i) {
+                        var acceso = i < mio;
+                        pip.classList.toggle('is-on', acceso);
+                        pip.classList.toggle('is-off', !acceso);
+                        pip.classList.toggle('is-on--muted', acceso && mio < altrui);
+                        if (!acceso) {
+                            pip.textContent = '';
+                            pip.classList.remove('is-runout');
+                            pip.removeAttribute('data-rack-id');
+                        }
+                        if (acceso && segnato && segnato.lato === lato
+                            && segnato.rackId && i === mio - 1) {
+                            pip.setAttribute('data-rack-id', segnato.rackId);
+                        }
                     });
+                });
+                /* Chi apre il prossimo triangolo cambia a ogni triangolo, e la
+                   pastiglia SPACCA e' l'unica cosa sul tabellone che lo dica.
+                   Qui non si ricalcola la regola — sarebbe la terza copia dopo
+                   il modello e il referto TPA: la si nasconde, e la ricarica
+                   alla chiusura rimette quella giusta. Meglio muta che
+                   bugiarda. */
+                board.querySelectorAll('.c7-board__break').forEach(function (p) {
+                    p.hidden = true;
                 });
                 daRicaricare = true;
             }
@@ -350,6 +546,93 @@
                 event.stopPropagation();
             }
         }, true);
+
+        /* Il trattino che marca il runout
+           -----------------------------------------------------------------
+           Ascoltatore **delegato**, non un `onclick` sul singolo trattino: il
+           tabellone non si ricarica a ogni triangolo, quindi il trattino che
+           si accende adesso riceve il suo `data-rack-id` dal JavaScript, dopo
+           che il markup e' stato scritto. Un `onclick` inline, generato col
+           numero di allora, non ci sarebbe mai.
+
+           La chiamata la fa la pagina ospite — l'endpoint di una gara e quello
+           di una sfida sono due — e il nome della sua funzione viaggia in
+           `data-runout-fn`, come per i comandi di segnatura. */
+        board.addEventListener('click', function (event) {
+            var pip = event.target.closest('.c7-board__pip[data-rack-id]');
+            if (!pip || pip.disabled) { return; }
+            if (Date.now() - tornataVisibile < CIECA_MS) { return; }
+            var nome = board.getAttribute('data-runout-fn') || 'markRunout';
+            var fn = window[nome];
+            if (typeof fn === 'function') {
+                fn(Number(pip.getAttribute('data-rack-id')), pip);
+            }
+        });
+
+        /* Riscontro del runout, senza aspettare il server: la sigla non si
+           puo' indovinare qui — dipende da chi apriva, e quello lo sa il
+           modello — quindi il trattino cambia **aspetto** subito e la lettera
+           la scrive la risposta. */
+        window.c7BoardRunout = function (pip, marcato, lettera) {
+            if (!pip) { return; }
+            pip.classList.toggle('is-runout', !!marcato);
+            pip.setAttribute('aria-pressed', marcato ? 'true' : 'false');
+            pip.textContent = marcato ? (lettera || 'R') : '';
+            daRicaricare = true;
+        };
+
+        /* L'acchito: due domande in sequenza sulla stessa schermata
+           -----------------------------------------------------------------
+           Il primo tocco risponde «chi ha vinto» e, in prima battuta, mette
+           l'apertura sullo stesso giocatore — che e' il caso di gran lunga
+           piu' comune. Il secondo tocco sposta solo l'apertura, che per
+           regolamento puo' andare all'avversario. Cosi' la risposta piu'
+           frequente costa un tocco e un «Comincia», e quella rara ne costa
+           uno in piu'. */
+        var lag = document.getElementById('boardLag');
+        if (lag) {
+            var vinto = null, apre = null;
+            var lati = lag.querySelectorAll('[data-lag-player]');
+            var titolo = lag.querySelector('[data-lag-title]');
+            var nota = lag.querySelector('[data-lag-note]');
+            var vai = lag.querySelector('[data-lag-go]');
+
+            function disegna() {
+                titolo.textContent = lag.getAttribute(
+                    vinto === null ? 'data-domanda-uno' : 'data-domanda-due');
+                nota.textContent = lag.getAttribute(
+                    vinto === null ? 'data-nota-uno' : 'data-nota-due');
+                vai.disabled = (vinto === null);
+                lati.forEach(function (lato) {
+                    var id = Number(lato.getAttribute('data-lag-player'));
+                    var pill = lato.querySelector('.c7-board__lagq-pill');
+                    var mostra = (id === vinto) || (id === apre);
+                    pill.hidden = !mostra;
+                    if (mostra) {
+                        pill.textContent = lag.getAttribute(
+                            (id === vinto && id === apre) ? 'data-et-entrambi'
+                                : (id === vinto ? 'data-et-acchito' : 'data-et-apre'));
+                    }
+                    pill.classList.toggle('is-breaking', id === apre);
+                    lato.classList.toggle('c7-board__half--breaks', id === apre);
+                });
+            }
+
+            lati.forEach(function (lato) {
+                lato.addEventListener('click', function () {
+                    var id = Number(lato.getAttribute('data-lag-player'));
+                    if (vinto === null) { vinto = id; apre = id; } else { apre = id; }
+                    disegna();
+                });
+            });
+
+            vai.addEventListener('click', function () {
+                if (vinto === null || apre === null) { return; }
+                var nome = board.getAttribute('data-lag-fn') || 'registerLag';
+                var fn = window[nome];
+                if (typeof fn === 'function') { fn(vinto, apre, vai); }
+            });
+        }
 
         // Riscontro immediato al tocco: chi segna sta guardando il tavolo, non
         // lo schermo, e il numero che cambia da solo non basta. Il lampo lo fa

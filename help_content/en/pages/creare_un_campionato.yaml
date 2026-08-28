@@ -86,9 +86,9 @@ blocks:
   - type: text
     text: >-
       The second step asks what the championship's «typical» competitions look
-      like: venue, entry fee, number of rounds, handling of odd numbers. Every
-      new competition will start out like that, and you will only have to
-      change the name, date and discipline.
+      like: venue, entry fee, number of rounds, handling of odd numbers, and
+      how the break shot is decided. Every new competition will start out like
+      that, and you will only have to change the name, date and discipline.
 
   - type: note
     tone: tip
@@ -106,6 +106,38 @@ blocks:
       bracket competitions those settings have no effect, so there would be no
       point inheriting them. What appears instead is the position points table,
       below.
+
+  - type: heading
+    id: apertura
+    title: "How play starts, and who breaks"
+
+  - type: text
+    text: >-
+      Two fields in step 2 decide the break shot for every competition in the
+      championship.
+
+  - type: options
+    items:
+      - name: "Start rule"
+        values: "default «First player»"
+        text: >-
+          With **First player** the first of the two always breaks. With
+          **Lag** the scoreboard, before the first rack, asks who won the lag
+          and who breaks — because the lag winner chooses, and may send the
+          opponent to the table.
+      - name: "Who breaks"
+        values: "default «Alternating»"
+        text: >-
+          How the break shot passes from one rack to the next. **Alternating**
+          is the standard rule. The others: **alternating every two**,
+          **winner breaks**, **loser breaks**.
+
+  - type: note
+    tone: info
+    text: >-
+      Each competition may differ, or leave «inherit from championship» in
+      place and follow it even if you change it later. The choice locks once
+      the competition starts.
 
   - type: heading
     id: punti_posizione

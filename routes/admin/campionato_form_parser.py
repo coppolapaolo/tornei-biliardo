@@ -22,6 +22,12 @@ from models.classification.position_points import (
     DEFAULT_POSITION_POINTS,
     serialize_points_table,
 )
+from models.match.break_rules import (
+    DEFAULT_BREAK_RULE,
+    DEFAULT_START_RULE,
+    BreakRule,
+    StartRule,
+)
 from models.matchmaking.configuration import OddNumberPolicy
 
 _VALID_ODD_POLICIES = {
@@ -109,6 +115,17 @@ class CampionatoFormParser:
             "default_rounds_count": default_rounds_count,
             "default_odd_policy": default_odd_policy,
             "default_anti_rematch": "default_anti_rematch" in form,
+            # Come si comincia e chi apre poi (ADR-056). Radice della catena:
+            # un valore ignoto ricade sul default del progetto — che è il
+            # comportamento storico, non una scelta nuova imposta a nessuno.
+            "default_start_rule": (
+                StartRule.normalize(form.get("default_start_rule"))
+                or DEFAULT_START_RULE
+            ).value,
+            "default_break_rule": (
+                BreakRule.normalize(form.get("default_break_rule"))
+                or DEFAULT_BREAK_RULE
+            ).value,
             # Handicap mode del campionato (ereditato da gare/match). Checkbox.
             "has_handicap": "has_handicap" in form,
             # Punti per posizione delle gare a tabellone (US-17). Il campo

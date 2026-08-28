@@ -112,3 +112,149 @@ def test_edit_standalone_gara_persists_classification_system(client, db_session)
     assert (
         updated.classification_system == "RACK"
     ), "classification_system change must persist (regression F9.2)"
+
+
+@pytest.mark.integration
+def test_edit_gara_persiste_le_regole_di_apertura(client, db_session):
+    """Le due regole dell'ADR-056 fanno tutto il giro del form.
+
+    Stessa classe di difetto della F9.2: un campo che il modulo manda e il
+    salvataggio non legge non dà nessun errore — dice «Gara aggiornata con
+    successo!» e butta via la scelta.
+    """
+    from models.match.break_rules import BreakRule, StartRule
+
+    director = _create_and_login_director(client, db_session)
+    gara_date = date.today() + timedelta(days=3)
+
+    gara = GaraService.create_gara(
+        campionato_id=None,
+        number=1,
+        name="Edit break rules",
+        date=gara_date,
+        location="Test Location",
+        rounds_count=3,
+        min_participants=2,
+        max_participants=8,
+        entry_fee=0.0,
+        discipline="palla 9",
+        distance=5,
+        is_race_to=True,
+        withdraw_policy=WithdrawPolicy.EXCLUDE.value,
+        matchmaking_strategy="amalfi",
+        classification_system="WINS",
+        director_id=director.id,
+    )
+    gara_id = gara.id
+    # Una gara nuova nasce senza scelta esplicita: eredita.
+    assert gara.start_rule is None
+    assert gara.break_rule is None
+
+    resp = client.post(
+        f"/admin/gara/{gara_id}/edit",
+        data=_edit_payload(
+            gara_date,
+            start_rule=StartRule.LAG.value,
+            break_rule=BreakRule.ALTERNATE_TWO.value,
+        ),
+        follow_redirects=False,
+    )
+    assert resp.status_code in (301, 302, 303)
+
+    db_session.expire_all()
+    aggiornata = db_session.get(Gara, gara_id)
+    assert aggiornata.start_rule == StartRule.LAG.value
+    assert aggiornata.break_rule == BreakRule.ALTERNATE_TWO.value
+
+
+@pytest.mark.integration
+def test_i_campi_assenti_dal_modulo_non_azzerano_le_regole(client, db_session):
+    """Assente ≠ vuoto: un campo affossato non deve riscrivere niente.
+
+    A gara cominciata i due `<select>` cedono il posto a una scheda bloccata,
+    quindi il modulo non li manda affatto. Se il parser leggesse comunque
+    `request.form.get("break_rule")` troverebbe `None`, lo tratterebbe come
+    «eredita» e un salvataggio innocuo — cambiare la descrizione — cancellerebbe
+    la regola scelta, in silenzio (ADR-056).
+    """
+    from models.match.break_rules import BreakRule, StartRule
+
+    director = _create_and_login_director(client, db_session)
+    gara_date = date.today() + timedelta(days=3)
+
+    gara = GaraService.create_gara(
+        campionato_id=None,
+        number=1,
+        name="Regole affossate",
+        date=gara_date,
+        location="Test Location",
+        rounds_count=3,
+        min_participants=2,
+        max_participants=8,
+        entry_fee=0.0,
+        discipline="palla 9",
+        distance=5,
+        is_race_to=True,
+        withdraw_policy=WithdrawPolicy.EXCLUDE.value,
+        matchmaking_strategy="amalfi",
+        classification_system="WINS",
+        director_id=director.id,
+        start_rule=StartRule.LAG.value,
+        break_rule=BreakRule.LOSER_BREAKS.value,
+    )
+    gara_id = gara.id
+
+    # Il modulo non porta i due campi: è la forma che ha a gara cominciata.
+    payload = _edit_payload(gara_date)
+    assert "start_rule" not in payload and "break_rule" not in payload
+
+    resp = client.post(
+        f"/admin/gara/{gara_id}/edit", data=payload, follow_redirects=False
+    )
+    assert resp.status_code in (301, 302, 303)
+
+    db_session.expire_all()
+    aggiornata = db_session.get(Gara, gara_id)
+    assert aggiornata.start_rule == StartRule.LAG.value
+    assert aggiornata.break_rule == BreakRule.LOSER_BREAKS.value
+
+
+@pytest.mark.integration
+def test_la_creazione_standalone_porta_le_due_regole(client, db_session):
+    """Su una standalone il modulo di creazione è l'**unico** posto in cui
+    sceglierle alla nascita: non c'è un campionato da cui ereditare, e senza
+    questi campi l'unica strada sarebbe creare la gara e poi modificarla.
+    """
+    from models.match.break_rules import BreakRule, StartRule
+
+    _create_and_login_director(client, db_session)
+    gara_date = date.today() + timedelta(days=4)
+
+    modulo = client.get("/admin/gara/create_standalone")
+    assert modulo.status_code == 200
+    pagina = modulo.get_data(as_text=True)
+    assert 'name="start_rule"' in pagina
+    assert 'name="break_rule"' in pagina
+
+    payload = _edit_payload(
+        gara_date,
+        name="Standalone con acchito",
+        start_rule=StartRule.LAG.value,
+        break_rule=BreakRule.WINNER_BREAKS.value,
+    )
+    resp = client.post(
+        "/admin/gara/create_standalone", data=payload, follow_redirects=False
+    )
+    assert resp.status_code in (301, 302, 303)
+
+    creata = (
+        Gara.query.filter_by(name="Standalone con acchito")
+        .order_by(Gara.id.desc())
+        .first()
+    )
+    assert creata is not None
+    assert creata.start_rule == StartRule.LAG.value
+    assert creata.break_rule == BreakRule.WINNER_BREAKS.value
+    # E la gara le riporta come «effettive», visto che campionato non c'è.
+    assert creata.effective_start_rule is StartRule.LAG
+    assert creata.effective_break_rule is BreakRule.WINNER_BREAKS

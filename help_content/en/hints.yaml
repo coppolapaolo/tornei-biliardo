@@ -174,6 +174,25 @@ hints:
   - admin.competition.create_gara_standalone
   page: formati_di_gioco
   section: set
+- id: gara.regola_inizio
+  label: Start rule
+  short: Who takes the first shot. With a lag, whoever wins it chooses who breaks, and may send the opponent
+    to the table.
+  anchor: gara-regola-inizio
+  screens:
+  - admin.competition.create_gara_standalone
+  - admin.competition.edit_gara
+  page: opzioni_della_gara
+  section: formato
+- id: gara.chi_spacca
+  label: Who breaks
+  short: How the break shot passes from one rack to the next. «Alternating» is the standard rule.
+  anchor: gara-chi-spacca
+  screens:
+  - admin.competition.create_gara_standalone
+  - admin.competition.edit_gara
+  page: opzioni_della_gara
+  section: formato
 - id: gara.spareggio
   label: Tie-break
   short: Up to which position level finishes are settled with an extra contest. Normally the podium. Not
@@ -308,6 +327,14 @@ hints:
   - player.gara_detail
   page: iscriversi_a_una_gara
   section: lista_attesa
+- id: profilo.runout
+  label: Runout
+  short: 'Racks closed in a single visit. «Break and run» are the ones where you also had the break shot.'
+  anchor: profilo-runout
+  screens:
+  - player.profile
+  page: profilo_e_statistiche
+  section: cosa_contiene
 - id: profilo.rating
   label: Rating
   short: 'An estimate of your strength worked out from results: it rises when you win, and more when you

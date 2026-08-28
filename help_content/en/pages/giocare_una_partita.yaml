@@ -104,7 +104,7 @@ blocks:
   - type: shot
     shot: partita-tabellone
     variant: landscape
-    caption: "The scoreboard with the phone turned sideways: the two large scores, each player's Elo under their name, and the X in the top left to go back to the page."
+    caption: "The scoreboard with the phone turned sideways: the table number in the top left, the two large scores, the BREAKING pill over whoever opens, and the rack dashes under each score."
 
   - type: list
     title: "What changes from the normal page"
@@ -115,6 +115,7 @@ blocks:
       - "At the bottom the button to **undo the last rack** stays: with a target this big a stray tap gets easier, not harder."
       - "The point lands in the same place as on the normal page: for the score there is no difference between the two views."
       - "Under each score, the dashes show how many racks are left to win, so you do not have to count them."
+      - "In the top left, when a table is assigned, its **number stands out**: it is how you recognise your own scoreboard walking across a room with eight tables. Next to it, the time the match started."
       - "The red dot in the top right blinks while the match is live; it stops once the match is over."
 
   - type: text
@@ -123,6 +124,70 @@ blocks:
       **Accept** and **Reject** appear at the bottom, and above them you can
       read who won and by what score. You do not need to turn the phone upright
       to confirm the result.
+
+  - type: heading
+    id: chi-spacca
+    title: "Who breaks, and racks closed in one visit"
+
+  - type: text
+    text: >-
+      Above the name of whoever takes the break shot the word **breaking**
+      appears. It moves on its own after each rack, following the rule chosen
+      for the competition: there is nothing to press and nothing to remember.
+
+  - type: text
+    text: >-
+      The dashes under the score do more than count: the one that has just lit
+      up can be **pressed**. One tap marks that rack as closed in a single
+      visit, that is without ever leaving the table to the opponent; a second
+      tap unmarks it, if you got it wrong.
+
+  - type: list
+    title: "What appears on the dash"
+    items:
+      - "**B** if that rack was his to open: he broke and ran it."
+      - "**R** if he closed it in reply, that is after the opponent had broken."
+      - "Nothing, if you did not mark it. That is the normal case: marking is optional and does not change the score."
+
+  - type: note
+    tone: info
+    title: "The difference between B and R is not a choice"
+    text: >-
+      You are not asked: the app already knows who had the break shot in that
+      rack, and works it out by itself. All you do is press the dash.
+
+  - type: text
+    text: >-
+      Both numbers end up in your [profile](/aiuto/account/profilo_e_statistiche),
+      under **Runout**.
+
+  - type: heading
+    id: acchito
+    title: "When the competition starts with a lag"
+
+  - type: text
+    text: >-
+      If the director chose **Lag** as the start rule, before the first rack
+      the scoreboard asks two questions instead of showing the score.
+
+  - type: steps
+    items:
+      - title: "Who won the lag?"
+        text: "Tap the name of whoever won it."
+      - title: "Who takes the break shot?"
+        text: >-
+          The lag winner chooses, and it **need not be them**: they may send
+          the opponent to the table. If they break themselves you touch
+          nothing; if they send the other player, tap the other name.
+      - title: "Start"
+        text: "The scoreboard appears, and you score as usual."
+
+  - type: note
+    tone: info
+    title: "If the competition does not use a lag you see none of this"
+    text: >-
+      With the **First player** rule — which is the default — the first of the
+      two breaks and the questions never appear.
 
   - type: note
     tone: tip

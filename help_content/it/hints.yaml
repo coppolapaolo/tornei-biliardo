@@ -186,6 +186,22 @@ hints:
     page: formati_di_gioco
     section: set
 
+  - id: gara.regola_inizio
+    label: "Regola di inizio"
+    short: "Chi esegue il primo tiro. Con l'acchito chi lo vince sceglie chi apre, e può mandare al tavolo l'avversario."
+    anchor: gara-regola-inizio
+    screens: [admin.competition.create_gara_standalone, admin.competition.edit_gara]
+    page: opzioni_della_gara
+    section: formato
+
+  - id: gara.chi_spacca
+    label: "Chi spacca"
+    short: "Come passa il tiro di apertura da un triangolo al successivo. «A turno» è la regola standard."
+    anchor: gara-chi-spacca
+    screens: [admin.competition.create_gara_standalone, admin.competition.edit_gara]
+    page: opzioni_della_gara
+    section: formato
+
   - id: gara.spareggio
     label: "Spareggio"
     short: "Fino a che posizione sciogliere i pari merito con una prova aggiuntiva. Di norma il podio. Sui tabelloni non si chiede."
@@ -311,6 +327,14 @@ hints:
     section: lista_attesa
 
   # --- Profilo -------------------------------------------------------------
+  - id: profilo.runout
+    label: "Runout"
+    short: "Triangoli chiusi in una sola visita. I «break and run» sono quelli in cui avevi anche il tiro di apertura."
+    anchor: profilo-runout
+    screens: [player.profile]
+    page: profilo_e_statistiche
+    section: cosa_contiene
+
   - id: profilo.rating
     label: "Rating"
     short: "Una stima della tua forza calcolata dai risultati: sale vincendo, e di più quando batti qualcuno più forte."

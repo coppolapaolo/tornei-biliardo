@@ -417,7 +417,13 @@
                         // dopo, cancellerebbe l'aggiornamento — e il tabellone
                         // resterebbe fermo mentre il punteggio va avanti.
                         restore();
-                        window.c7Board.aggiorna(data.player1_score, data.player2_score);
+                        // `segnato`: da' un'identita' al trattino che si
+                        // accende adesso, cosi' resta premibile per marcare il
+                        // runout senza ricaricare (ADR-056).
+                        window.c7Board.aggiorna(data.player1_score, data.player2_score, {
+                            lato: (winnerId === {{ match.player1_id }}) ? 1 : 2,
+                            rackId: data.rack_id
+                        });
                         return;
                     }
                     location.reload();
@@ -429,6 +435,67 @@
             .catch(error => {
                 console.error('Error:', error);
                 showError({{ _("Errore durante l'aggiunta del triangolo")|tojson }});
+                restore();
+            });
+    }
+
+    // ADR-056 — il trattino che marca il runout, e le due domande dell'acchito.
+    // Il tabellone li chiama per nome (`data-runout-fn` / `data-lag-fn`),
+    // perche' l'endpoint di una gara e quello di una sfida sono due.
+    function markRunout(rackId, pip) {
+        // Il trattino cambia subito: chi segna sta guardando il tavolo. La
+        // **sigla** pero' la scrive il server — dipende da chi apriva quel
+        // triangolo, e dedurla qui sarebbe la terza copia della regola.
+        const marcatoPrima = pip.classList.contains('is-runout');
+        window.c7BoardRunout(pip, !marcatoPrima, '');
+        fetch(`/match/matches/${matchId}/racks/${rackId}/runout`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken()},
+            body: '{}'
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.c7BoardRunout(pip, data.is_run_out, data.letter);
+                } else {
+                    window.c7BoardRunout(pip, marcatoPrima, '');
+                    showError({{ _('Errore:')|tojson }} + ' ' + (data.error || ''));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                window.c7BoardRunout(pip, marcatoPrima, '');
+            });
+    }
+
+    function registerLag(lagWinnerId, firstBreakerId, btn) {
+        const restore = withLoading(btn);
+        fetch(`/match/matches/${matchId}/lag`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken()},
+            body: JSON.stringify({
+                lag_winner_id: lagWinnerId,
+                first_break_player_id: firstBreakerId
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Qui si ricarica, e va bene: quel che cambia non sono due
+                    // cifre — al posto delle domande compare il tabellone.
+                    location.reload();
+                } else {
+                    showError({{ _('Errore:')|tojson }} + ' ' + (data.error || ''));
+                    restore();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError({{ _("Errore durante la registrazione dell'acchito")|tojson }});
                 restore();
             });
     }

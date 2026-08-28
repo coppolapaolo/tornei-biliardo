@@ -102,7 +102,7 @@ blocks:
   - type: shot
     shot: partita-tabellone
     variant: landscape
-    caption: "Il tabellone a telefono ruotato: i due punteggi grandi, l'Elo sotto ogni nome e la X in alto a sinistra per tornare alla pagina."
+    caption: "Il tabellone a telefono ruotato: il numero del tavolo in alto a sinistra, i due punteggi grandi, la pastiglia SPACCA su chi apre e i trattini dei triangoli sotto ogni punteggio."
 
   - type: list
     title: "Cosa cambia rispetto alla pagina normale"
@@ -113,6 +113,7 @@ blocks:
       - "In fondo resta il pulsante per **annullare l'ultimo triangolo**: con un bersaglio così grande un tocco per sbaglio è più facile, non meno."
       - "Il punto arriva nello stesso posto della pagina normale: fra le due viste non c'è differenza per il punteggio."
       - "Sotto ogni punteggio i trattini dicono quanti triangoli mancano alla vittoria, senza doverli contare."
+      - "In alto a sinistra, quando il tavolo è assegnato, c'è il suo **numero in evidenza**: serve a riconoscere il proprio tabellone attraversando una sala con otto biliardi. Accanto, l'ora in cui la partita è cominciata."
       - "In alto a destra il pallino rosso lampeggia finché si gioca; a partita ferma smette."
 
   - type: text
@@ -121,6 +122,71 @@ blocks:
       spengono e in fondo compaiono **Accetta** e **Rifiuta**, mentre sopra c'è
       scritto chi ha vinto e con che punteggio. Non serve raddrizzare il
       telefono per confermare il risultato.
+
+  - type: heading
+    id: chi-spacca
+    title: "Chi spacca, e i triangoli chiusi in una visita"
+
+  - type: text
+    text: >-
+      Sopra il nome di chi deve eseguire il tiro di apertura compare la
+      scritta **spacca**. Si sposta da sola dopo ogni triangolo, seguendo la
+      regola scelta per la gara: non c'è niente da premere e niente da
+      ricordare.
+
+  - type: text
+    text: >-
+      I trattini sotto il punteggio non contano soltanto: quello che si è
+      appena acceso si può **premere**. Un tocco lo marca come triangolo chiuso
+      in una visita, cioè senza mai lasciare il tavolo all'avversario; un
+      secondo tocco lo smarca, se hai sbagliato.
+
+  - type: list
+    title: "Cosa compare sul trattino"
+    items:
+      - "**B** se quel triangolo lo aveva aperto lui: ha spaccato e ha chiuso."
+      - "**R** se lo ha chiuso rispondendo, cioè dopo che ad aprire era stato l'avversario."
+      - "Niente, se non lo hai marcato. È il caso normale: la marcatura è facoltativa e non cambia il punteggio."
+
+  - type: note
+    tone: info
+    title: "La distinzione fra B e R non si sceglie"
+    text: >-
+      Non ti viene chiesta: la app sa già chi aveva il tiro di apertura in quel
+      triangolo, e decide da sé. A te basta premere il trattino.
+
+  - type: text
+    text: >-
+      I due numeri finiscono nel tuo [profilo](/aiuto/account/profilo_e_statistiche),
+      alla voce **Runout**.
+
+  - type: heading
+    id: acchito
+    title: "Quando la gara si comincia con l'acchito"
+
+  - type: text
+    text: >-
+      Se il direttore ha scelto **Acchito** come regola di inizio, prima del
+      primo triangolo il tabellone fa due domande al posto del punteggio.
+
+  - type: steps
+    items:
+      - title: "Chi ha vinto l'acchito?"
+        text: "Tocca il nome di chi lo ha vinto."
+      - title: "Chi esegue il tiro di apertura?"
+        text: >-
+          Lo sceglie chi ha vinto l'acchito, e **non deve essere lui**: può
+          mandare al tavolo l'avversario. Se apre lui, non tocchi niente; se
+          manda l'altro, tocca l'altro nome.
+      - title: "Comincia"
+        text: "Il tabellone compare, e si segna come sempre."
+
+  - type: note
+    tone: info
+    title: "Se la gara non usa l'acchito non vedi niente"
+    text: >-
+      Con la regola **Primo giocatore** — che è quella predefinita — apre il
+      primo dei due e le domande non compaiono affatto.
 
   - type: note
     tone: tip

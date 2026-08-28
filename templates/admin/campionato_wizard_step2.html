@@ -120,6 +120,31 @@
       </div>
     </div>
 
+    {# Come si comincia, e chi apre poi (ADR-056). Sono due domande diverse:
+       il regolamento FIBiS le tiene distinte, e la seconda non discende dalla
+       prima. Da qui le ereditano le gare del campionato — e i match di ogni
+       gara le ereditano dalla gara, sempre. #}
+    <div class="c7-card">
+      <div class="mb-3">
+        <label for="default_start_rule" class="form-label">{{ _("Regola di inizio") }}</label>
+        <select class="form-select" id="default_start_rule" name="default_start_rule">
+          {% for rule in StartRule %}
+          <option value="{{ rule.value }}" {% if rule == StartRule.FIRST_PLAYER %}selected{% endif %}>{{ rule.display_name }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-text">{{ _("Con l'acchito il segnapunti chiede chi ha vinto e chi apre: chi vince può mandare al tavolo l'avversario.") }}</div>
+      </div>
+      <div>
+        <label for="default_break_rule" class="form-label">{{ _("Chi spacca") }}</label>
+        <select class="form-select" id="default_break_rule" name="default_break_rule">
+          {% for rule in BreakRule %}
+          <option value="{{ rule.value }}" {% if rule == BreakRule.ALTERNATE %}selected{% endif %}>{{ rule.display_name }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-text">{{ _("Tiri di apertura alternati, la regola standard FIBiS.") }}</div>
+      </div>
+    </div>
+
     {# Nel tabellone due giocatori non possono reincontrarsi: chi perde esce. #}
     <label class="c7-card d-flex align-items-center gap-3"
            style="cursor:pointer{% if wizard_data.campionato_type in bracket_minimum_players %};display:none{% endif %}">

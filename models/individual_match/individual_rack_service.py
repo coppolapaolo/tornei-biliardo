@@ -13,7 +13,7 @@ from flask_babel import gettext as _
 from sqlalchemy import func
 
 from ..base import db, utc_now
-from ..exceptions import ValidationError
+from ..exceptions import NotFoundError, ValidationError
 from ..transaction.manager import transactional
 from .models import IndividualMatch, IndividualRack
 
@@ -70,9 +70,11 @@ class IndividualRackService:
             #
             # La logica dei set sta già sul modello (`IndividualSet`): qui si
             # delega, invece di riscriverla una seconda volta.
+            break_player_id = match.next_break_player_id
             rack = match.add_rack_result(winner_id)
             rack.added_by_id = user_id
             rack.added_at = utc_now()
+            rack.break_player_id = break_player_id
         else:
             # Include ALL racks (even deleted) for max calculation
             # because UNIQUE constraint is on (match_id, rack_number)
@@ -83,10 +85,18 @@ class IndividualRackService:
             )
             rack_number = (max_rack or 0) + 1
 
+            # Chi apre questo triangolo, dedotto dalla regola di apertura
+            # della sfida e da chi ha vinto i precedenti — e scritto sul
+            # triangolo, perché è un fatto (ADR-056). Va letto **prima** di
+            # creare il rack: dopo, la deduzione risponderebbe per quello
+            # successivo.
+            break_player_id = match.next_break_player_id
+
             rack = IndividualRack(
                 match_id=match_id,
                 rack_number=rack_number,
                 winner_id=winner_id,
+                break_player_id=break_player_id,
                 added_by_id=user_id,
                 added_at=utc_now(),
             )
@@ -174,6 +184,32 @@ class IndividualRackService:
         match.player2_confirmed = False
         match.player1_confirmed_at = None
         match.player2_confirmed_at = None
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def register_lag(
+        match_id: int,
+        lag_winner_id: int,
+        first_break_player_id: int,
+    ) -> None:
+        """Esito dell'acchito su una sfida individuale (ADR-056)."""
+        from models.match import opening_service
+
+        match = db.session.get(IndividualMatch, match_id)
+        if match is None:
+            raise NotFoundError(_("Partita non trovata."))
+        opening_service.register_lag(match, lag_winner_id, first_break_player_id)
+
+    @staticmethod
+    @transactional(domain="individual_match")
+    def toggle_run_out(match_id: int, rack_id: int) -> dict:
+        """Marca o smarca un triangolo di sfida come chiuso in una visita."""
+        from models.match import opening_service
+
+        match = db.session.get(IndividualMatch, match_id)
+        if match is None:
+            raise NotFoundError(_("Partita non trovata."))
+        return opening_service.toggle_run_out(match, rack_id)
 
     @staticmethod
     def _set_da_correggere(match: IndividualMatch):
