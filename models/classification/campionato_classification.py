@@ -249,7 +249,7 @@ class ClassificationService:
     )
     def update_campionato_classification(campionato_id: int) -> List[Classification]:
         """
-        Update overall campionato classification based on all completed provas.
+        Update overall campionato classification based on all completed gare.
         Results are cached for 5 minutes and invalidated on campionato changes.
 
         Uses ScoreAggregator for data collection and classification strategies

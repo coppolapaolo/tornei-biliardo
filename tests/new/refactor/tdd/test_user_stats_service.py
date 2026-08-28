@@ -323,7 +323,7 @@ class TestUserStatsServiceTDD:
 
         Expected behavior:
         - Returns comprehensive statistics dictionary
-        - Calculates tournaments played, provas played
+        - Calculates tournaments played, gare played
         - Uses get_user_detail_data for complex calculations
         - Counts only completed tournaments and matches
         """
@@ -343,7 +343,7 @@ class TestUserStatsServiceTDD:
             assert "lost_matches" in stats
             assert "win_percentage" in stats
             # Note: Current implementation only includes basic stats, not
-            # tournaments_played/provas_played
+            # tournaments_played/gare_played
 
             # Verify calculated values
             assert stats["inscription_count"] == 1
@@ -351,7 +351,7 @@ class TestUserStatsServiceTDD:
             assert stats["won_matches"] == 2
             assert stats["lost_matches"] == 1
             assert stats["win_percentage"] == 66.7  # Rounded to 1 decimal
-            # Note: tournaments_played and provas_played not included in current
+            # Note: tournaments_played and gare_played not included in current
             # implementation
 
     def test_get_user_matches_functionality(self, app, test_user_with_stats_data):

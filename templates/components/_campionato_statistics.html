@@ -6,11 +6,11 @@
     <div class="card-body">
         <div class="row">
             <div class="col-12">
-                <strong>{{ _("Gare Totali:") }}</strong> {{ provas|length }}<br>
-                <strong>{{ _("Gare Setup:") }}</strong> {{ provas|selectattr("status", "equalto", GaraStatus.SETUP.value)|list|length }}<br>
-                <strong>{{ _("Iscrizioni Aperte:") }}</strong> {{ provas|selectattr("status", "equalto", GaraStatus.INSCRIPTION.value)|list|length }}<br>
-                <strong>{{ _("In Corso:") }}</strong> {{ provas|selectattr("status", "equalto", GaraStatus.PLAYING.value)|list|length }}<br>
-                <strong>{{ _("Completate:") }}</strong> {{ provas|selectattr("status", "equalto", GaraStatus.COMPLETED.value)|list|length }}<br>
+                <strong>{{ _("Gare Totali:") }}</strong> {{ gare|length }}<br>
+                <strong>{{ _("Gare Setup:") }}</strong> {{ gare|selectattr("status", "equalto", GaraStatus.SETUP.value)|list|length }}<br>
+                <strong>{{ _("Iscrizioni Aperte:") }}</strong> {{ gare|selectattr("status", "equalto", GaraStatus.INSCRIPTION.value)|list|length }}<br>
+                <strong>{{ _("In Corso:") }}</strong> {{ gare|selectattr("status", "equalto", GaraStatus.PLAYING.value)|list|length }}<br>
+                <strong>{{ _("Completate:") }}</strong> {{ gare|selectattr("status", "equalto", GaraStatus.COMPLETED.value)|list|length }}<br>
             </div>
         </div>
         <hr class="my-3">

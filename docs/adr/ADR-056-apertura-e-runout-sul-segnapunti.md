@@ -265,8 +265,15 @@ Cose viste per strada, indipendenti da questo lavoro, da sistemare a parte:
   dichiara direzione **scartata**, quindi non era riferimento. Presidio in
   `tests/new/unit/test_player_statistics_component.py`. Resta in Bootstrap
   `_user_general_stats.html`, che e' la pagina utente dell'amministratore.
-* **`stats.provas_played`** in `_player_statistics.html` è l'anti-pattern
-  «radice italiana + `-s` inglese» vietato da `NAMING_CONVENTIONS.md`.
+* ~~**`stats.provas_played`** in `_player_statistics.html` è l'anti-pattern
+  «radice italiana + `-s` inglese» vietato da `NAMING_CONVENTIONS.md`.~~
+  **Risolto il 2026-08-28**: `gare_played`, sul modello di `gare_organized` che
+  esisteva già in `community_leaderboard_service.py`. Con l'occasione è sparito
+  anche l'alias `provas=gare` che la rotta del campionato passava ai template
+  «per compatibilità»: la parola `provas` non esiste più nel codice. `garas`
+  invece resta — è un debito molto più grande, con dentro la URL pubblica
+  `/garas`, e `NAMING_CONVENTIONS.md` lo vuole in una PR dedicata col redirect
+  301.
 
 Verifica finale che nessun test può dare: **il tabellone sta dietro
 `(orientation: landscape) and (max-height: 520px) and (pointer: coarse)`**, che

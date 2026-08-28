@@ -62,7 +62,7 @@ class TournamentStatisticsService:
         if not campionato:
             raise NotFoundError("Campionato not found")
 
-        # Get all provas for this campionato
+        # Get all gare for this campionato
         gare = Gara.query.filter_by(campionato_id=campionato_id).all()
         gara_ids = [p.id for p in gare]
 

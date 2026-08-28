@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-28 15:14+0200\n"
+"POT-Creation-Date: 2026-08-28 15:27+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1924,87 +1924,87 @@ msgstr ""
 msgid "Non hai i permessi per creare un campionato."
 msgstr ""
 
-#: routes/admin/campionato.py:617
+#: routes/admin/campionato.py:616
 #, python-format
 msgid "Campionato \"%(name)s\" terminato con successo."
 msgstr ""
 
-#: routes/admin/campionato.py:623
+#: routes/admin/campionato.py:622
 msgid "Il campionato è già stato terminato."
 msgstr ""
 
-#: routes/admin/campionato.py:641
+#: routes/admin/campionato.py:640
 msgid "Parametri non validi."
 msgstr ""
 
-#: routes/admin/campionato.py:648
+#: routes/admin/campionato.py:647
 msgid "Requisito minimo gare aggiornato."
 msgstr ""
 
-#: routes/admin/campionato.py:680
+#: routes/admin/campionato.py:679
 #, python-format
 msgid "Playoff avviati: %(count)s giocatori qualificati."
 msgstr ""
 
-#: routes/admin/campionato.py:707
+#: routes/admin/campionato.py:706
 msgid "Configurazione playoff non trovata."
 msgstr ""
 
-#: routes/admin/campionato.py:721
+#: routes/admin/campionato.py:720
 #, python-format
 msgid "Gara playoff \"%(name)s\" creata con successo."
 msgstr ""
 
-#: routes/admin/campionato.py:743
+#: routes/admin/campionato.py:742
 msgid "Seleziona un giocatore."
 msgstr ""
 
-#: routes/admin/campionato.py:750
+#: routes/admin/campionato.py:749
 msgid "Giocatore aggiunto ai playoff."
 msgstr ""
 
-#: routes/admin/campionato.py:770
+#: routes/admin/campionato.py:769
 msgid "Qualificazione non specificata."
 msgstr ""
 
-#: routes/admin/campionato.py:777
+#: routes/admin/campionato.py:776
 msgid "Giocatore rimosso dai playoff."
 msgstr ""
 
-#: routes/admin/campionato.py:799
+#: routes/admin/campionato.py:798
 msgid "Risposta non valida."
 msgstr ""
 
-#: routes/admin/campionato.py:817
+#: routes/admin/campionato.py:816
 msgid "Partecipazione confermata per conto del giocatore."
 msgstr ""
 
-#: routes/admin/campionato.py:821
+#: routes/admin/campionato.py:820
 #, python-format
 msgid "Rifiuto registrato: l'invito passa a %(name)s."
 msgstr ""
 
-#: routes/admin/campionato.py:828
+#: routes/admin/campionato.py:827
 msgid "Rifiuto registrato. Nessun altro giocatore idoneo da invitare."
 msgstr ""
 
-#: routes/admin/campionato.py:852
+#: routes/admin/campionato.py:851
 msgid "Regole della classifica finale aggiornate."
 msgstr ""
 
-#: routes/admin/campionato.py:908
+#: routes/admin/campionato.py:907
 msgid "Configurazione playoff aggiornata."
 msgstr ""
 
-#: routes/admin/campionato.py:930
+#: routes/admin/campionato.py:929
 msgid "Tutti i campi obbligatori devono essere compilati."
 msgstr ""
 
-#: routes/admin/campionato.py:949
+#: routes/admin/campionato.py:948
 msgid "Configurazione playoff aggiunta."
 msgstr ""
 
-#: routes/admin/campionato.py:969
+#: routes/admin/campionato.py:968
 msgid "Configurazione playoff disattivata."
 msgstr ""
 

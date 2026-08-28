@@ -19,6 +19,12 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Modificato
 
+- **Rinominata la statistica «gare giocate» nel codice** (`provas_played` →
+  `gare_played`). Era l'anti-pattern «radice italiana con la `-s` inglese» che
+  `NAMING_CONVENTIONS.md` vieta, e per giunta con la parola sbagliata: il
+  termine di dominio è *gara*. Nessun effetto visibile — è un identificatore,
+  non un'etichetta.
+
 - **Il profilo non ha più i colori di Bootstrap in mezzo.** «Rating» e «Le mie
   Statistiche» erano rimasti in markup Bootstrap: le card le ridisegnava già il
   tema, ma i quattro numeri — campionati, gare, vittorie, percentuale — erano

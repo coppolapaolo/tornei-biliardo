@@ -20,7 +20,7 @@ COLORI_BOOTSTRAP = ("text-primary", "text-info", "text-success", "text-warning")
 def _stats(**overrides):
     base = {
         "tournaments_played": 6,
-        "provas_played": 23,
+        "gare_played": 23,
         "won_matches": 68,
         "win_percentage": 61.0,
         "total_matches": 111,

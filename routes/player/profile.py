@@ -109,7 +109,7 @@ def profile():
     )
 
     # Conta solo le gare completate
-    completed_provas = len(
+    completed_gare = len(
         [
             insc
             for insc in inscriptions
@@ -130,7 +130,7 @@ def profile():
         "lost_matches": match_stats.lost_matches,
         "win_percentage": match_stats.win_percentage,
         "tournaments_played": len(completed_tournaments),
-        "provas_played": completed_provas,
+        "gare_played": completed_gare,
     }
 
     # Privacy context for template consistency (own profile always has full access)
@@ -243,7 +243,7 @@ def view_profile(user_id):
         ]
     )
 
-    completed_provas = len(
+    completed_gare = len(
         [
             insc
             for insc in visible_inscriptions
@@ -258,7 +258,7 @@ def view_profile(user_id):
         "lost_matches": match_stats.lost_matches,
         "win_percentage": win_percentage,
         "tournaments_played": len(completed_tournaments),
-        "provas_played": completed_provas,
+        "gare_played": completed_gare,
     }
 
     # Allenamento: stessa fonte del profilo proprio. Prima qui si leggeva solo

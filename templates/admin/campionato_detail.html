@@ -406,7 +406,7 @@
             Can be modified: {{ campionato.can_be_modified() }}<br>
             Can be deleted: {{ campionato.can_be_deleted() }}<br>
             Status: {{ campionato.get_status() }}<br>
-            Provas count: {{ provas|length }}
+            Provas count: {{ gare|length }}
         </small>
     </div>
 </div>
@@ -469,17 +469,17 @@
         const createGameModeText = document.getElementById('create-game-mode-text');
 
         // Dati dell'ultima gara per auto-popolamento
-        {% if provas %}
+        {% if gare %}
         const lastProva = {{ {
-            'location': provas[-1].location or '',
-            'min_participants': provas[-1].min_participants,
-            'max_participants': provas[-1].max_participants or '',
-            'entry_fee': provas[-1].entry_fee,
-            'discipline': provas[-1].discipline,
-            'distance': provas[-1].distance,
-            'exact_number': not provas[-1].is_race_to,
-            'rounds_count': provas[-1].rounds_count,
-            'description': provas[-1].description or ''
+            'location': gare[-1].location or '',
+            'min_participants': gare[-1].min_participants,
+            'max_participants': gare[-1].max_participants or '',
+            'entry_fee': gare[-1].entry_fee,
+            'discipline': gare[-1].discipline,
+            'distance': gare[-1].distance,
+            'exact_number': not gare[-1].is_race_to,
+            'rounds_count': gare[-1].rounds_count,
+            'description': gare[-1].description or ''
     } | tojson
     }};
     {% else %}

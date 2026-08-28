@@ -23,7 +23,7 @@ class Classification(db.Model, TimestampMixin):
     """
     Campionato overall classification tracking.
 
-    Tracks the overall performance of players across all provas in a campionato,
+    Tracks the overall performance of players across all gare in a campionato,
     maintaining total wins, point differences, and final rankings.
     """
 
