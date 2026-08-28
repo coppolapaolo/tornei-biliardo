@@ -57,6 +57,7 @@ def quick_match():
         "distance": data.get("distance") or None,
         "match_distance": data.get("match_distance") or None,
         "break_rule": data.get("break_rule") or None,
+        "start_rule": data.get("start_rule") or None,
     }
     if data.get("is_race_to") is not None:
         config["is_race_to"] = str(data.get("is_race_to")).lower() == "true"

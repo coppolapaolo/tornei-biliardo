@@ -89,11 +89,27 @@
       </div>
 
       <div>
+        {# Le opzioni le detta l'enum, non questo file: `BreakRule` e
+           `StartRule` sono iniettati nel contesto Jinja (`app.py`), e i form
+           di gara e campionato iterano gli stessi. Scritte a mano qui, lo
+           stesso formato finiva per chiamarsi in due modi a seconda della
+           schermata, e «a turno ogni due» non era raggiungibile (ADR-056).
+           Qui non c'è la voce «eredita»: una sfida non ha una gara sopra, il
+           match **è** la radice. #}
+        <label for="start_rule" class="form-label">{{ _("Regola di inizio") }}</label>
+        <select class="form-select" id="start_rule" name="start_rule">
+          {% for rule in StartRule %}
+          <option value="{{ rule.value }}" {% if settings.start_rule == rule.value %}selected{% endif %}>{{ rule.display_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div>
         <label for="break_rule" class="form-label">{{ _("Chi spacca") }}</label>
         <select class="form-select" id="break_rule" name="break_rule">
-          <option value="alternate" {% if settings.break_rule=='alternate' %}selected{% endif %}>{{ _("A turno") }}</option>
-          <option value="winner_breaks" {% if settings.break_rule=='winner_breaks' %}selected{% endif %}>{{ _("Spacca chi ha vinto il triangolo") }}</option>
-          <option value="loser_breaks" {% if settings.break_rule=='loser_breaks' %}selected{% endif %}>{{ _("Spacca chi ha perso il triangolo") }}</option>
+          {% for rule in BreakRule %}
+          <option value="{{ rule.value }}" {% if settings.break_rule == rule.value %}selected{% endif %}>{{ rule.display_name }}</option>
+          {% endfor %}
         </select>
       </div>
     </div>

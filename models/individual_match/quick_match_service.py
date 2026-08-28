@@ -30,6 +30,12 @@ from flask_babel import gettext as _
 
 from ..base import db, utc_now
 from ..exceptions import ConflictError, NotFoundError, ValidationError
+from ..match.break_rules import (
+    DEFAULT_BREAK_RULE,
+    DEFAULT_START_RULE,
+    BreakRule,
+    StartRule,
+)
 from ..status_enum import Discipline, MatchStatus
 from ..transaction.manager import transactional
 from .models import IndividualMatch
@@ -50,7 +56,8 @@ class QuickMatchService:
         "distance": 5,
         "is_race_to": True,
         "match_distance": None,
-        "break_rule": "alternate",
+        "break_rule": DEFAULT_BREAK_RULE.value,
+        "start_rule": DEFAULT_START_RULE.value,
     }
 
     # ------------------------------------------------------------------
@@ -85,6 +92,7 @@ class QuickMatchService:
                     "location": last.location or "",
                     "discipline": last.discipline or defaults["discipline"],
                     "break_rule": last.break_rule or defaults["break_rule"],
+                    "start_rule": last.start_rule or defaults["start_rule"],
                 }
             )
             if last.distance is None:
@@ -212,6 +220,7 @@ class QuickMatchService:
             distance=settings["distance"],
             is_race_to=settings["is_race_to"],
             break_rule=settings["break_rule"],
+            start_rule=settings["start_rule"],
             is_multi_set=settings["is_multi_set"],
             match_distance=settings["match_distance"],
             is_race_to_sets=True if settings["is_multi_set"] else None,
@@ -254,6 +263,7 @@ class QuickMatchService:
             "distance": match.distance,
             "match_distance": match.match_distance,
             "break_rule": match.break_rule,
+            "start_rule": match.start_rule,
             "is_race_to": match.is_race_to,
         }
 
@@ -318,7 +328,16 @@ class QuickMatchService:
 
         settings["location"] = (settings.get("location") or "").strip()
         settings["billiard_hall_id"] = QuickMatchService._resolve_venue(settings)
-        settings["break_rule"] = settings.get("break_rule") or "alternate"
+        # Le due regole passano dall'enum e non da un `or "alternate"` scritto
+        # qui: un valore ignoto — un form vecchio, una chiamata a mano — ricade
+        # sul default invece di finire in colonna e rendere illeggibile la
+        # deduzione di chi apre (ADR-056).
+        settings["break_rule"] = (
+            BreakRule.normalize(settings.get("break_rule")) or DEFAULT_BREAK_RULE
+        ).value
+        settings["start_rule"] = (
+            StartRule.normalize(settings.get("start_rule")) or DEFAULT_START_RULE
+        ).value
         return settings
 
     @staticmethod

@@ -11,6 +11,7 @@ from enum import Enum
 
 from ..base import db, BaseModel, utc_now
 from ..status_enum import Discipline
+from ..match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
 
 if TYPE_CHECKING:
     from .match_models import IndividualMatch
@@ -84,8 +85,14 @@ class MatchProposal(BaseModel):
         db.Boolean, nullable=True, default=True
     )  # Race-to vs exact racks
     break_rule = db.Column(
-        db.String(20), nullable=True, default="alternate"
-    )  # Break rule: alternate, winner, loser
+        db.String(20), nullable=True, default=DEFAULT_BREAK_RULE.value
+    )  # winner_breaks, alternate, alternate_two, loser_breaks
+    #: Come si decide chi apre il primo triangolo (ADR-056). Viaggia con la
+    #: proposta perché è parte di «come si gioca», come la distanza e la
+    #: disciplina: chi accetta deve sapere a cosa sta dicendo di sì.
+    start_rule = db.Column(
+        db.String(20), nullable=True, default=DEFAULT_START_RULE.value
+    )  # first_player, lag (acchito)
     description = db.Column(db.Text, nullable=True)
 
     # Multi-set configuration (Phase 6: Frontend Integration)
@@ -231,6 +238,7 @@ class MatchProposal(BaseModel):
             distance=self.distance,
             is_race_to=self.is_race_to,
             break_rule=self.break_rule,
+            start_rule=self.start_rule or DEFAULT_START_RULE.value,
             # Phase 6: Copy multi-set configuration
             is_multi_set=self.is_multi_set if self.is_multi_set is not None else False,
             match_distance=self.match_distance,

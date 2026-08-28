@@ -16,6 +16,7 @@ from datetime import timedelta
 
 from models.individual_match.services import MatchProposalService
 from models.individual_match.models import MatchProposal, ProposalType
+from models.match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
 from models.status_enum import Discipline
 from models.user.permissions import RoleRequirement
 from utils.local_time import parse_local_datetime
@@ -175,7 +176,8 @@ def create_proposal():
                 "set_distance": request.args.get("set_distance", "5"),
                 "distance": request.args.get("distance", "5"),
                 "is_race_to": request.args.get("is_race_to", "true"),
-                "break_rule": request.args.get("break_rule", "alternate"),
+                "break_rule": request.args.get("break_rule", DEFAULT_BREAK_RULE.value),
+                "start_rule": request.args.get("start_rule", DEFAULT_START_RULE.value),
                 "is_multi_set": request.args.get("is_multi_set", "false"),
                 "match_distance": request.args.get("match_distance", ""),
                 "is_race_to_sets": request.args.get("is_race_to_sets", "true"),
@@ -267,7 +269,8 @@ def create_proposal():
             "is_race_to": is_race_to,
             "is_multi_set": is_multi_set,
             "match_distance": match_distance,
-            "break_rule": data.get("break_rule", "alternate"),
+            "break_rule": data.get("break_rule", DEFAULT_BREAK_RULE.value),
+            "start_rule": data.get("start_rule", DEFAULT_START_RULE.value),
             "description": data.get("description"),
             "invited_user_ids": (
                 [int(uid) for uid in data.getlist("invited_user_ids")]

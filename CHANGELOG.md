@@ -17,6 +17,18 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ## [Non rilasciato]
 
+### Corretto
+
+- **Le sfide individuali non offrivano le regole di apertura che il modello
+  aveva già imparato.** Le tre schermate — avvio rapido, proposta, correzione —
+  avevano ancora tre opzioni scritte a mano con etichette diverse da quelle
+  della gara, quindi lo stesso formato si chiamava in due modi a seconda di
+  dove lo leggevi; «a turno ogni due» non era raggiungibile; e l'acchito, pur
+  funzionando sul tabellone, non si poteva accendere da nessuna parte. Adesso
+  le opzioni le detta l'enum, come nei moduli di gara e campionato, e la regola
+  di inizio viaggia anche con la **proposta**: chi accetta una sfida sa a cosa
+  sta dicendo di sì.
+
 ### Modificato
 
 - **Rinominata la statistica «gare giocate» nel codice** (`provas_played` →
