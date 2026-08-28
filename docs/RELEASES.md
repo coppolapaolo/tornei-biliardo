@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.2.0...v1.2.1) (2026-08-28)
+
+
+### Correzioni
+
+* le sfide individuali non offrivano le regole di apertura che il modello aveva ([#251](https://github.com/coppolapaolo/tornei-biliardo/issues/251)) ([4798389](https://github.com/coppolapaolo/tornei-biliardo/commit/4798389671f87be3df79c7dfa8d5ab8ed945ea11))
+
 ## [1.2.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.1.0...v1.2.0) (2026-08-28)
 
 
