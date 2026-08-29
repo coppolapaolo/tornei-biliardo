@@ -163,6 +163,13 @@ class DashboardVM:
         None  # Player progress on challenges
     )
 
+    # La X da sostituire con una prova: chi resta senza avversario in un turno
+    # di una gara con `odd_number_policy = bye_with_challenge` ha qualcosa da
+    # fare, ma il suo match nasce gia' concluso e quindi non compare fra le
+    # partite in corso. Senza una voce sua, la prova non e' annunciata da
+    # nessuna parte (issue #221).
+    bye_challenges: Optional[List[Any]] = None
+
     # Gamification: {level, xp, next_level_xp, streaks}
     gamification_stats: Optional[dict[str, Any]] = None
 

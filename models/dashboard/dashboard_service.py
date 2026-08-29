@@ -339,6 +339,7 @@ class DashboardService:
             playoff_invitations=DashboardSectionBuilder.build_playoff_invitations(
                 user_id
             ),
+            bye_challenges=DashboardSectionBuilder.build_bye_challenges(user_id),
             gamification_stats=DashboardSectionBuilder.build_gamification_stats(
                 user_id
             ),
@@ -494,6 +495,7 @@ class DashboardService:
             playoff_invitations=DashboardSectionBuilder.build_playoff_invitations(
                 user_id
             ),
+            bye_challenges=DashboardSectionBuilder.build_bye_challenges(user_id),
             available_challenges=challenge_sections["available_challenges"],
             player_challenge_progress=challenge_sections["player_challenge_progress"],
             gamification_stats=DashboardSectionBuilder.build_gamification_stats(

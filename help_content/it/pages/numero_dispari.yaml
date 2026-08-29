@@ -55,10 +55,27 @@ blocks:
       «Triangoli» diventa il numero di triangoli accreditati, con «Vittorie» diventa la
       differenza triangoli che accompagna la vittoria a tavolino.
 
+  - type: text
+    text: >-
+      Chi ha il turno di riposo lo vede in bacheca: compare una scheda «Hai un
+      esercizio da giocare», che porta all'esercizio e alla casella dove
+      scrivere il punteggio.
+
+  - type: note
+    tone: warning
+    title: "Il punteggio vale solo dopo la convalida del direttore"
+    text: >-
+      L'esercizio si gioca da soli, quindi non c'è un avversario che confermi il
+      risultato come succede in una partita. Per questo il punteggio registrato
+      dal giocatore **non entra in classifica da solo**: finché il direttore non
+      lo convalida, quel turno vale zero. Il direttore lo fa dalla pagina della
+      gara, sulla scheda del giocatore in riposo — e da lì può anche scriverlo
+      lui al posto di chi non usa l'applicazione, correggerlo, o azzerarlo.
+
   - type: list
     items:
       - "**Pro**: nessuno sta fermo, e il turno resta equo anche a triangoli."
-      - "**Contro**: serve avere almeno un esercizio configurato nella gara."
+      - "**Contro**: serve avere almeno un esercizio configurato nella gara, e il direttore deve convalidare i punteggi."
 
   - type: heading
     id: trio

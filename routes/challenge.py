@@ -580,10 +580,23 @@ def attempt_detail(attempt_id):
         else None
     )
 
+    # Un tentativo che sostituisce una X si chiude da un'altra parte: solo
+    # `complete_x_replacement` scrive il punteggio sul match del turno
+    # (SPECIFICHE.md riga 65). Inviare al `complete_attempt` generico registra
+    # il tentativo e lascia la classifica a zero — era la seconda meta' della
+    # issue #221, e non si vedeva perche' le due strade *sembrano* la stessa.
+    from models.competition.gara_bye_challenge import GaraByeChallenge
+
+    is_x_replacement = (
+        GaraByeChallenge.query.filter_by(challenge_attempt_id=attempt.id).first()
+        is not None
+    )
+
     return render_template(
         "player/challenge_attempt_detail.html",
         attempt=attempt,
         user_best_score=user_best_score,
+        is_x_replacement=is_x_replacement,
     )
 
 
@@ -857,7 +870,9 @@ def complete_x_replacement(attempt_id):
             )
         else:
             flash(_("Esercizio di gara registrato."), "success")
-            return redirect(url_for("admin.gara_detail", gara_id=redirect_gara_id))
+            return redirect(
+                url_for("admin.competition.gara_detail", gara_id=redirect_gara_id)
+            )
 
     except ValueError as e:
         error_msg = f"Error completing X replacement: {str(e)}"

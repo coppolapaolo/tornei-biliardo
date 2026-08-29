@@ -434,6 +434,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "challenge.complete_attempt": {"player", "director"},
     "challenge.toggle_favorite": {"player", "director"},
     "challenge.create_x_replacement": {"player", "director"},
+    # Le due azioni del direttore sulla prova giocata al posto della X:
+    # registrarla/validarla e azzerarla, come per i match (issue #221).
+    "admin.competition.validate_x_replacement": {"director"},
+    "admin.competition.reset_x_replacement": {"director"},
     "challenge.complete_x_replacement": {"player", "director"},
     # Autorialità e statistiche: portano @director_required, quindi la matrice
     # non deve prometterle a un player — vedrebbe il pulsante e si prenderebbe

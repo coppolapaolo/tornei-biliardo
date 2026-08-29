@@ -1,0 +1,54 @@
+{# templates/components/_bye_challenges.html — 7c #}
+{# La X da sostituire con una prova. Stessa struttura della scheda degli inviti
+   ai playoff (`_playoff_invitations.html`), perché è la stessa natura: una cosa
+   da fare, con una scadenza implicita — il turno finisce.
+
+   Perché serve una scheda sua e non basta «I tuoi match»: il match con la X
+   nasce già concluso (`round_creation`), e quella sezione mostra solo le
+   partite in corso. Senza questo riquadro la prova non è annunciata da nessuna
+   parte, ed è il motivo per cui non la giocava nessuno (issue #221).
+
+   Nessun `id` e nessuno `<script>`: il componente può essere incluso due volte
+   (mobile/desktop) senza collidere. #}
+{% if vm.bye_challenges and vm.bye_challenges|length %}
+<section class="c7-stack" style="margin-top: 22px;">
+  <div>
+    <div class="c7-kicker">{{ _('Turno senza avversario') }}</div>
+    <h2 style="margin: 4px 0 0;">{{ _('Hai un esercizio da giocare') }} <span class="c7-num" style="color: var(--c7-ink-muted);">{{ vm.bye_challenges|length }}</span></h2>
+  </div>
+
+  <div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
+    {% for scheda in vm.bye_challenges %}
+    <article class="c7-card c7-card--warn">
+      <div class="d-flex align-items-start justify-content-between" style="gap: 10px;">
+        <div>
+          <div class="c7-kicker">{{ _('Turno') }} {{ scheda.round_number }}</div>
+          <h3 style="margin: 5px 0 0;">{{ scheda.gara.display_name }}</h3>
+          {% if scheda.gara.campionato %}
+          <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">{{ scheda.gara.campionato.name }}</div>
+          {% endif %}
+        </div>
+        <span class="c7-state c7-state--warn">
+          {{ _('Iniziato') if scheda.iniziata else _('Da giocare') }}
+        </span>
+      </div>
+
+      <div class="c7-divider"></div>
+
+      <p style="margin: 0; font-size: 13px; font-weight: 600; color: var(--c7-ink-soft); line-height: 1.5;">
+        {{ _("In questo turno resti senza avversario. Invece di stare fermo giochi un esercizio: il punteggio diventa la tua differenza triangoli, fino a un massimo di %(massimo)s.", massimo=scheda.punteggio_massimo) }}
+      </p>
+
+      <form method="POST"
+            action="{{ url_for('challenge.create_x_replacement', gara_id=scheda.gara.id, round_number=scheda.round_number) }}"
+            style="margin-top: 16px;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="fas fa-play"></i>&nbsp;{{ _('Continua') if scheda.iniziata else _('Gioca l\'esercizio') }}
+        </button>
+      </form>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}

@@ -685,8 +685,12 @@ class ChallengeService:
         if bye_challenge:
             bye_challenge.complete_with_attempt(attempt_id)
 
-        # Create equivalent match result for campionato classification
-        ChallengeService._create_x_replacement_match_result(attempt)
+        # Il punteggio **non** arriva ancora sul match: lo porta li' la
+        # validazione del direttore (`validate_x_replacement`). A dichiararlo e'
+        # il giocatore stesso, e a differenza di una partita non c'e' un
+        # avversario che possa smentirlo — la doppia conferma, qui, non esiste
+        # per costruzione. Finche' nessuno valida, la prova e' giocata e non
+        # conta, che e' uno stato legittimo e non un dato mancante.
 
         # Il drill giocato al posto di un match resta un drill: vale per
         # l'abitudine settimanale come qualunque altro. Il bye equivalente non
@@ -735,6 +739,120 @@ class ChallengeService:
             .first()
         )
         return match.effective_distance if match else None
+
+    @staticmethod
+    def _ponte_x(gara_id: int, round_number: int, user_id: int):
+        """Il ponte gara↔esercizio di quel giocatore in quel turno, se c'e'."""
+        from models.competition.gara_bye_challenge import GaraByeChallenge
+
+        return GaraByeChallenge.query.filter_by(
+            gara_id=gara_id, round_number=round_number, user_id=user_id
+        ).first()
+
+    @staticmethod
+    @transactional(domain="challenge")
+    def validate_x_replacement(
+        gara_id: int,
+        round_number: int,
+        user_id: int,
+        actor_id: int,
+        score: Optional[int] = None,
+    ) -> "ChallengeAttempt":
+        """Il direttore registra e valida la prova giocata al posto della X.
+
+        Una sola operazione per due gesti che sono lo stesso: **confermare** il
+        punteggio che il giocatore ha dichiarato, e **registrarlo** al posto suo
+        quando non l'ha fatto — che nella pratica e' il caso frequente, perche'
+        molti giocatori non usano l'applicazione ed e' il direttore a inserire
+        per loro. Con `score` assente vale quello gia' dichiarato; con `score`
+        presente lo corregge.
+
+        Da qui, e solo da qui, il punteggio arriva sul match e quindi in
+        classifica. E' il controllo che una partita ha nell'avversario e che una
+        prova giocata da soli non puo' avere.
+        """
+        from models.competition.gara_bye_challenge import GaraByeChallenge
+
+        ponte = ChallengeService._ponte_x(gara_id, round_number, user_id)
+        attempt = (
+            db.session.get(ChallengeAttempt, ponte.challenge_attempt_id)
+            if ponte is not None and ponte.challenge_attempt_id
+            else None
+        )
+
+        # Il direttore puo' arrivare qui prima del giocatore: se non c'e' nessun
+        # tentativo lo apre lui. `create_x_replacement_attempt` verifica anche
+        # che quel giocatore abbia davvero la X in quel turno, quindi la
+        # protezione contro un id sbagliato vale anche per questa strada.
+        if attempt is None:
+            attempt = ChallengeService.create_x_replacement_attempt(
+                user_id=user_id, gara_id=gara_id, round_number=round_number
+            )
+            ponte = ChallengeService._ponte_x(gara_id, round_number, user_id)
+
+        punteggio = score if score is not None else attempt.score
+        if punteggio is None:
+            raise ValidationError(
+                _("Serve un punteggio: la prova non ne ha ancora uno registrato.")
+            )
+
+        limite = ChallengeService._limite_punteggio_x(
+            gara_id=gara_id, round_number=round_number, user_id=user_id
+        )
+        if limite is not None and not 0 <= punteggio <= limite:
+            raise ValidationError(
+                _(
+                    "Il punteggio della prova deve essere compreso fra 0 e "
+                    "%(massimo)s, la differenza più ampia ottenibile in questo "
+                    "turno.",
+                    massimo=limite,
+                )
+            )
+
+        if attempt.score != punteggio or not attempt.completed:
+            attempt.complete_attempt(score=punteggio, passed=None)
+
+        if ponte is None:
+            ponte = GaraByeChallenge.create_for_bye(
+                gara_id=gara_id, user_id=user_id, round_number=round_number
+            )
+            db.session.add(ponte)
+        ponte.complete_with_attempt(attempt.id)
+        ponte.validate(actor_id)
+
+        ChallengeService._create_x_replacement_match_result(attempt)
+        return attempt
+
+    @staticmethod
+    @transactional(domain="challenge")
+    def reset_x_replacement(gara_id: int, round_number: int, user_id: int) -> None:
+        """Azzera la prova: il match torna a zero e l'esercizio torna da giocare.
+
+        Il gemello di «annulla il risultato» sui match. Non cancella il
+        tentativo — resta nello storico personale del giocatore, che quella
+        prova l'ha giocata davvero — ma toglie la validazione e riporta il match
+        al valore con cui era nato: zero, che e' quanto vale una X non
+        sostituita (SPECIFICHE.md riga 64).
+        """
+        from ..match.models import Match
+
+        ponte = ChallengeService._ponte_x(gara_id, round_number, user_id)
+        if ponte is not None:
+            ponte.clear_validation()
+
+        match = (
+            db.session.query(Match)
+            .filter_by(
+                gara_id=gara_id,
+                round_number=round_number,
+                player1_id=user_id,
+                is_bye=True,
+            )
+            .first()
+        )
+        if match is not None:
+            match.player1_score = 0
+            match.player2_score = 0
 
     @staticmethod
     @transactional(domain="challenge")

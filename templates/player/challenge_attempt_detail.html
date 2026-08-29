@@ -55,8 +55,14 @@
 
     {% if not attempt.completed %}
     {# ================= Tentativo da chiudere ================= #}
+    {# Un esercizio giocato al posto della X si chiude da un'altra parte: solo
+       `complete_x_replacement` porta il punteggio sul match del turno, e quindi
+       in classifica (issue #221). Le due strade si somigliano abbastanza da
+       aver fatto passare per anni la piu' sbagliata. #}
     <form id="completeAttemptForm" method="POST"
-          action="{{ url_for('challenge.complete_attempt', attempt_id=attempt.id) }}" class="c7-stack">
+          action="{{ url_for('challenge.complete_x_replacement', attempt_id=attempt.id)
+                     if is_x_replacement else
+                     url_for('challenge.complete_attempt', attempt_id=attempt.id) }}" class="c7-stack">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
       {% if is_pass_fail %}
