@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.2.1...v1.2.2) (2026-08-29)
+
+
+### Correzioni
+
+* nel doppio KO la gara dichiarava un turno che non esisteva ([#258](https://github.com/coppolapaolo/tornei-biliardo/issues/258)) ([6aee561](https://github.com/coppolapaolo/tornei-biliardo/commit/6aee56174f0a5b93a61c40885e6e4d023a0c9a74))
+
 ## [1.2.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.2.0...v1.2.1) (2026-08-28)
 
 
