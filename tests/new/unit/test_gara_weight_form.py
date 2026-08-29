@@ -98,3 +98,49 @@ def test_sulla_gara_standalone_il_peso_resta_uno(app):
     with _gara_form(app, weight="5"):
         data = GaraFormParser(campionato=None).parse()
     assert data["weight"] == 1
+
+
+class TestLEsercizioDellaX:
+    """Il direttore sceglie l'esercizio della X dal modulo (issue #267).
+
+    Il campo si legge **solo** con `odd_number_policy = bye_with_challenge`:
+    altrove è una domanda senza oggetto, e un valore rimasto scritto da una
+    scelta precedente resterebbe in colonna senza che nessuna schermata lo
+    mostri più. Stessa regola di `_parse_bracket_options`, che azzera le opzioni
+    del tabellone fuori dal tabellone invece di ignorarle.
+    """
+
+    @pytest.mark.unit
+    def test_l_esercizio_scelto_arriva_al_modello(self, app):
+        with _gara_form(
+            app, odd_number_policy="bye_with_challenge", x_challenge_id="7"
+        ):
+            data = GaraFormParser(campionato=None).parse()
+        assert data["x_challenge_id"] == 7
+
+    @pytest.mark.unit
+    def test_senza_scelta_il_modulo_viene_rifiutato(self, app):
+        """Sceglie sempre il direttore: non c'è un «decide l'applicazione».
+
+        Il rifiuto sta qui e non a valle perché è il momento in cui il direttore
+        sta guardando il modulo. Accettare e scoprirlo al primo turno dispari
+        vorrebbe dire dirglielo quando la gara è già cominciata.
+        """
+        with _gara_form(app, odd_number_policy="bye_with_challenge", x_challenge_id=""):
+            with pytest.raises(ValueError, match="esercizio"):
+                GaraFormParser(campionato=None).parse()
+
+    @pytest.mark.unit
+    def test_un_valore_non_numerico_viene_rifiutato(self, app):
+        with _gara_form(
+            app, odd_number_policy="bye_with_challenge", x_challenge_id="pippo"
+        ):
+            with pytest.raises(ValueError, match="esercizio"):
+                GaraFormParser(campionato=None).parse()
+
+    @pytest.mark.unit
+    def test_con_un_altra_politica_il_campo_viene_azzerato(self, app):
+        """Cambiando politica la scelta non deve restare appesa in colonna."""
+        with _gara_form(app, odd_number_policy="bye", x_challenge_id="7"):
+            data = GaraFormParser(campionato=None).parse()
+        assert data["x_challenge_id"] is None

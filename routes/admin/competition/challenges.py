@@ -21,6 +21,7 @@ from models import (
 from models.status_enum import GaraStatus
 from models.matchmaking.configuration import MatchmakingStrategy
 from utils import gara_manager_required, admin_required
+from utils.permissions import director_or_admin_required
 from utils.route_helpers import get_or_ajax_404, safe_json_error
 from utils.image_paths import challenge_image_url
 
@@ -434,4 +435,32 @@ def get_gara_challenge_classification(gara_id):
         classification=classification,
         challenge_stats=challenge_stats,
         gara_challenges=gara_challenges,
+    )
+
+
+@competition_bp.route("/challenges/per-la-x", methods=["GET"])
+@login_required
+@director_or_admin_required
+def x_challenges_json():
+    """Gli esercizi offribili per la X, in JSON.
+
+    Serve al modulo di creazione/modifica gara: il direttore che non trova
+    l'esercizio giusto lo crea nel builder (altra scheda) e poi ricarica questo
+    elenco senza perdere quello che ha già compilato. Senza, l'unica strada
+    sarebbe ricaricare la pagina e ricominciare da capo.
+
+    Il criterio — attivi e a punteggio — sta in `get_challenges_for_x_choice`,
+    non qui: è lo stesso del motore che sceglie la prova, e viverne due copie
+    sarebbe il modo classico di farle divergere.
+    """
+    from models.challenge.services import ChallengeService
+
+    return jsonify(
+        {
+            "success": True,
+            "challenges": [
+                {"id": c.id, "name": c.get_display_name()}
+                for c in ChallengeService.get_challenges_for_x_choice()
+            ],
+        }
     )

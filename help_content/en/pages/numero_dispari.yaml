@@ -77,6 +77,30 @@ blocks:
       - "**For**: nobody sits out, and the round stays fair even on racks."
       - "**Against**: the competition needs at least one challenge configured, and the director has to validate the scores."
 
+  - type: text
+    text: >-
+      **Which** drill is played is your choice, made when you create the
+      competition: a «Drill for the X» field appears as soon as you pick this
+      option. It is the same for every round, and that is deliberate — with an
+      odd number a different person has the bye each round, and a drill that
+      changed would have two players facing tests of different difficulty with
+      their scores in the same standings. If you cannot find the right one you
+      can create it on the spot: it stays in the catalogue, available to other
+      competitions too. The choice is required — there is no «let the program
+      decide» option.
+
+  - type: note
+    tone: info
+    title: "If the drill is withdrawn from the catalogue"
+    text: >-
+      Deactivating it — or deleting it — means «stop offering it for new
+      choices», not removing it from the competitions that already picked it.
+      Competitions that have not finished move automatically to an active copy
+      of the same drill, so whoever has the bye always finds something to play
+      and nobody ends up with a different test from the one the director chose.
+      This holds for both routes: a drill chosen by a competition is never
+      really deleted.
+
   - type: heading
     id: trio
     title: "3. Trio — a three-way match"

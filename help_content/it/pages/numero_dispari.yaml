@@ -77,6 +77,29 @@ blocks:
       - "**Pro**: nessuno sta fermo, e il turno resta equo anche a triangoli."
       - "**Contro**: serve avere almeno un esercizio configurato nella gara, e il direttore deve convalidare i punteggi."
 
+  - type: text
+    text: >-
+      **Quale** esercizio si gioca lo scegli tu, quando crei la gara: c'è un
+      campo «Esercizio per la X» che compare appena selezioni questa opzione.
+      Vale lo stesso per tutti i turni, ed è voluto — a numero dispari riposa
+      una persona diversa a ogni turno, e se l'esercizio cambiasse due
+      giocatori affronterebbero prove di difficoltà diversa con i punteggi
+      nella stessa classifica. Se non trovi quello giusto puoi crearne uno
+      lì per lì: resta nel catalogo, disponibile anche per le altre gare.
+      La scelta è obbligatoria — non c'è un'opzione «decide il programma».
+
+  - type: note
+    tone: info
+    title: "Se l'esercizio viene ritirato dal catalogo"
+    text: >-
+      Disattivarlo — o cancellarlo — significa «non proponetelo più per le
+      scelte nuove», non toglierlo dalle gare che l'hanno già scelto. Le gare
+      non ancora concluse passano automaticamente a una copia attiva della
+      stessa prova, così chi riposa trova sempre qualcosa da giocare e nessuno
+      si ritrova con una prova diversa da quella che il direttore aveva scelto.
+      Vale per entrambe le strade: un esercizio scelto da una gara non viene
+      mai cancellato davvero.
+
   - type: heading
     id: trio
     title: "3. Trio — partita a tre"

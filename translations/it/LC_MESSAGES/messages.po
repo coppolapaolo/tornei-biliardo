@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-29 20:13+0200\n"
+"POT-Creation-Date: 2026-08-29 21:19+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -75,18 +75,24 @@ msgstr ""
 msgid "Esercizio %(number)s"
 msgstr ""
 
-#: models/challenge/services.py:671 models/challenge/services.py:805
+#: models/challenge/services.py:728
+msgid ""
+"Il direttore non ha ancora scelto l'esercizio da giocare al posto della X"
+" in questa gara."
+msgstr ""
+
+#: models/challenge/services.py:774 models/challenge/services.py:908
 #, python-format
 msgid ""
 "Il punteggio della prova deve essere compreso fra 0 e %(massimo)s, la "
 "differenza più ampia ottenibile in questo turno."
 msgstr ""
 
-#: models/challenge/services.py:796
+#: models/challenge/services.py:899
 msgid "Serve un punteggio: la prova non ne ha ancora uno registrato."
 msgstr ""
 
-#: models/competition/models.py:485
+#: models/competition/models.py:499
 #: templates/admin/amalfi_classification.html:23
 #: templates/components/_campionato_garas.html:105
 #: templates/components/_new_gara_modal.html:69
@@ -1870,143 +1876,143 @@ msgstr ""
 msgid "Ruolo concesso (debug)."
 msgstr ""
 
-#: routes/admin/campionato.py:104 routes/admin/campionato.py:325
+#: routes/admin/campionato.py:105 routes/admin/campionato.py:326
 msgid "Il nome del campionato è obbligatorio"
 msgstr ""
 
-#: routes/admin/campionato.py:113
+#: routes/admin/campionato.py:114
 msgid "Il numero di gare deve essere un numero positivo"
 msgstr ""
 
-#: routes/admin/campionato.py:180
+#: routes/admin/campionato.py:181
 msgid "Lista Attesa (solo pari)"
 msgstr ""
 
-#: routes/admin/campionato.py:181
+#: routes/admin/campionato.py:182
 msgid "Bye (riposo)"
 msgstr ""
 
-#: routes/admin/campionato.py:184
+#: routes/admin/campionato.py:185
 msgid "Bye con esercizio"
 msgstr ""
 
-#: routes/admin/campionato.py:187
+#: routes/admin/campionato.py:188
 msgid "Trio (match a 3)"
 msgstr ""
 
-#: routes/admin/campionato.py:217
+#: routes/admin/campionato.py:218
 msgid "Sessione wizard scaduta. Ricomincia la creazione."
 msgstr ""
 
-#: routes/admin/campionato.py:243
+#: routes/admin/campionato.py:244
 #: templates/admin/campionato_wizard_step1.html:122
 msgid "Playoff Elite"
 msgstr ""
 
-#: routes/admin/campionato.py:258
+#: routes/admin/campionato.py:259
 #: templates/admin/campionato_wizard_step1.html:141
 msgid "Playoff Academy"
 msgstr ""
 
-#: routes/admin/campionato.py:268 routes/admin/campionato.py:353
+#: routes/admin/campionato.py:269 routes/admin/campionato.py:354
 #, python-format
 msgid "Campionato \"%(name)s\" creato con successo!"
 msgstr ""
 
-#: routes/admin/campionato.py:276
+#: routes/admin/campionato.py:277
 #, python-format
 msgid "Errore durante la creazione: %(error)s"
 msgstr ""
 
-#: routes/admin/campionato.py:302
+#: routes/admin/campionato.py:303
 msgid "Creazione campionato annullata"
 msgstr ""
 
-#: routes/admin/campionato.py:320
+#: routes/admin/campionato.py:321
 msgid "Non hai i permessi per creare un campionato."
 msgstr ""
 
-#: routes/admin/campionato.py:616
+#: routes/admin/campionato.py:620
 #, python-format
 msgid "Campionato \"%(name)s\" terminato con successo."
 msgstr ""
 
-#: routes/admin/campionato.py:622
+#: routes/admin/campionato.py:626
 msgid "Il campionato è già stato terminato."
 msgstr ""
 
-#: routes/admin/campionato.py:640
+#: routes/admin/campionato.py:644
 msgid "Parametri non validi."
 msgstr ""
 
-#: routes/admin/campionato.py:647
+#: routes/admin/campionato.py:651
 msgid "Requisito minimo gare aggiornato."
 msgstr ""
 
-#: routes/admin/campionato.py:679
+#: routes/admin/campionato.py:683
 #, python-format
 msgid "Playoff avviati: %(count)s giocatori qualificati."
 msgstr ""
 
-#: routes/admin/campionato.py:706
+#: routes/admin/campionato.py:710
 msgid "Configurazione playoff non trovata."
 msgstr ""
 
-#: routes/admin/campionato.py:720
+#: routes/admin/campionato.py:724
 #, python-format
 msgid "Gara playoff \"%(name)s\" creata con successo."
 msgstr ""
 
-#: routes/admin/campionato.py:742
+#: routes/admin/campionato.py:746
 msgid "Seleziona un giocatore."
 msgstr ""
 
-#: routes/admin/campionato.py:749
+#: routes/admin/campionato.py:753
 msgid "Giocatore aggiunto ai playoff."
 msgstr ""
 
-#: routes/admin/campionato.py:769
+#: routes/admin/campionato.py:773
 msgid "Qualificazione non specificata."
 msgstr ""
 
-#: routes/admin/campionato.py:776
+#: routes/admin/campionato.py:780
 msgid "Giocatore rimosso dai playoff."
 msgstr ""
 
-#: routes/admin/campionato.py:798
+#: routes/admin/campionato.py:802
 msgid "Risposta non valida."
 msgstr ""
 
-#: routes/admin/campionato.py:816
+#: routes/admin/campionato.py:820
 msgid "Partecipazione confermata per conto del giocatore."
 msgstr ""
 
-#: routes/admin/campionato.py:820
+#: routes/admin/campionato.py:824
 #, python-format
 msgid "Rifiuto registrato: l'invito passa a %(name)s."
 msgstr ""
 
-#: routes/admin/campionato.py:827
+#: routes/admin/campionato.py:831
 msgid "Rifiuto registrato. Nessun altro giocatore idoneo da invitare."
 msgstr ""
 
-#: routes/admin/campionato.py:851
+#: routes/admin/campionato.py:855
 msgid "Regole della classifica finale aggiornate."
 msgstr ""
 
-#: routes/admin/campionato.py:907
+#: routes/admin/campionato.py:911
 msgid "Configurazione playoff aggiornata."
 msgstr ""
 
-#: routes/admin/campionato.py:929
+#: routes/admin/campionato.py:933
 msgid "Tutti i campi obbligatori devono essere compilati."
 msgstr ""
 
-#: routes/admin/campionato.py:948
+#: routes/admin/campionato.py:952
 msgid "Configurazione playoff aggiunta."
 msgstr ""
 
-#: routes/admin/campionato.py:968
+#: routes/admin/campionato.py:972
 msgid "Configurazione playoff disattivata."
 msgstr ""
 
@@ -2125,7 +2131,7 @@ msgstr[1] ""
 msgid "Nessun iscritto da copiare dalla gara precedente."
 msgstr ""
 
-#: routes/admin/competition/crud.py:376
+#: routes/admin/competition/crud.py:382
 msgid "Configurazione tavoli salvata!"
 msgstr ""
 
@@ -3282,9 +3288,9 @@ msgstr ""
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:235
 #: templates/components/_challenge_management_modal.html:117
-#: templates/components/_gara_edit_form.html:362
+#: templates/components/_gara_edit_form.html:383
 #: templates/components/_modify_dates_modal.html:34
-#: templates/components/_new_gara_modal.html:386
+#: templates/components/_new_gara_modal.html:415
 #: templates/components/_open_inscriptions_modal.html:28
 #: templates/components/_soft_delete_modal.html:48
 #: templates/components/_x_choice_modal.html:73
@@ -3453,7 +3459,7 @@ msgstr ""
 #: templates/admin/gara_create_standalone.html:432
 #: templates/admin/gara_create_standalone.html:496
 #: templates/components/_campionato_details_info.html:92
-#: templates/components/_gara_edit_form.html:327
+#: templates/components/_gara_edit_form.html:348
 #: templates/components/_gara_info.html:26
 #: templates/components/_round_navigation.html:4 templates/gara_detail.html:71
 msgid "Turni"
@@ -4527,8 +4533,8 @@ msgstr ""
 #: templates/auth/diagnosi_cookie.html:49
 #: templates/components/_gara_edit_form.html:144
 #: templates/components/_gara_edit_form.html:146
-#: templates/components/_new_gara_modal.html:314
-#: templates/components/_new_gara_modal.html:315
+#: templates/components/_new_gara_modal.html:343
+#: templates/components/_new_gara_modal.html:344
 #: templates/components/_user_info_card.html:45
 #: templates/components/_user_info_card.html:76
 msgid "Sì"
@@ -4539,8 +4545,8 @@ msgstr ""
 #: templates/auth/diagnosi_cookie.html:50
 #: templates/components/_gara_edit_form.html:144
 #: templates/components/_gara_edit_form.html:147
-#: templates/components/_new_gara_modal.html:314
-#: templates/components/_new_gara_modal.html:316
+#: templates/components/_new_gara_modal.html:343
+#: templates/components/_new_gara_modal.html:345
 #: templates/components/_user_info_card.html:56
 #: templates/components/_user_info_card.html:87
 #: templates/gamification/admin/streak_config.html:85
@@ -4869,13 +4875,13 @@ msgid ""
 msgstr ""
 
 #: templates/admin/campionato_detail.html:508
-#: templates/components/_new_gara_modal.html:634
+#: templates/components/_new_gara_modal.html:674
 #, python-brace-format
 msgid "Esatto numero: {distance} triangoli totali"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:509
-#: templates/components/_new_gara_modal.html:635
+#: templates/components/_new_gara_modal.html:675
 #, python-brace-format
 msgid "Al {distance} (si vince a {distance} triangoli)"
 msgstr ""
@@ -5015,7 +5021,7 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:159
 #: templates/admin/gara_create_standalone.html:470
-#: templates/components/_new_gara_modal.html:388
+#: templates/components/_new_gara_modal.html:417
 msgid "Avanti"
 msgstr ""
 
@@ -5086,7 +5092,7 @@ msgid "Dove si svolgeranno tipicamente le gare"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:67
-#: templates/components/_gara_edit_form.html:209
+#: templates/components/_gara_edit_form.html:230
 #: templates/components/_new_gara_modal.html:154
 msgid "Quota €"
 msgstr ""
@@ -5137,7 +5143,7 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:129
 #: templates/admin/gara_create_standalone.html:391
-#: templates/components/_gara_edit_form.html:257
+#: templates/components/_gara_edit_form.html:278
 #: templates/individual_match/create_proposal.html:168
 #: templates/individual_match/edit_match.html:99
 #: templates/individual_match/quick_match.html:191
@@ -5146,7 +5152,7 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:135
 #: templates/admin/gara_create_standalone.html:397
-#: templates/components/_gara_edit_form.html:269
+#: templates/components/_gara_edit_form.html:290
 msgid ""
 "Con l'acchito il segnapunti chiede chi ha vinto e chi apre: chi vince può"
 " mandare al tavolo l'avversario."
@@ -5154,7 +5160,7 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:138
 #: templates/admin/gara_create_standalone.html:400
-#: templates/components/_gara_edit_form.html:278
+#: templates/components/_gara_edit_form.html:299
 #: templates/individual_match/create_proposal.html:176
 #: templates/individual_match/edit_match.html:108
 #: templates/individual_match/quick_match.html:199
@@ -5176,7 +5182,7 @@ msgstr ""
 #: templates/components/_campionato_edit_form.html:212
 #: templates/components/_gara_edit_form.html:141
 #: templates/components/_gara_edit_form.html:153
-#: templates/components/_new_gara_modal.html:312
+#: templates/components/_new_gara_modal.html:341
 msgid "Gioco con handicap"
 msgstr ""
 
@@ -5189,7 +5195,7 @@ msgstr ""
 #: templates/admin/campionato_wizard_step2.html:180
 #: templates/admin/gara_create_standalone.html:466
 #: templates/admin/venue_form.html:12 templates/admin/venue_form.html:23
-#: templates/components/_new_gara_modal.html:383
+#: templates/components/_new_gara_modal.html:412
 #: templates/gamification/admin/feature_create.html:6
 #: templates/gamification/admin/feature_detail.html:6
 #: templates/gamification/admin/level_config.html:6
@@ -5386,7 +5392,7 @@ msgstr ""
 
 #: templates/admin/gara_create_standalone.html:129
 #: templates/components/_campionato_garas.html:19
-#: templates/components/_gara_edit_form.html:306
+#: templates/components/_gara_edit_form.html:327
 #: templates/components/_history_filters.html:27
 #: templates/components/_match_info.html:24
 #: templates/components/_match_info.html:45
@@ -5437,7 +5443,7 @@ msgid "es. Circolo Biliardo Milano"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:162
-#: templates/components/_gara_edit_form.html:194
+#: templates/components/_gara_edit_form.html:215
 #: templates/individual_match/create_proposal.html:94
 #: templates/individual_match/edit_match.html:57
 #: templates/individual_match/quick_match.html:149
@@ -5523,7 +5529,7 @@ msgstr ""
 
 #: templates/admin/gara_create_standalone.html:288
 #: templates/components/_gara_edit_form.html:156
-#: templates/components/_new_gara_modal.html:318
+#: templates/components/_new_gara_modal.html:347
 msgid ""
 "I match con handicap non aggiornano il rating Elo quando i giocatori sono"
 " di categorie diverse."
@@ -5585,7 +5591,7 @@ msgid "Triangoli Totali (triangoli accumulati)"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:340
-#: templates/components/_new_gara_modal.html:345
+#: templates/components/_new_gara_modal.html:374
 msgid "Spareggio (SSR)"
 msgstr ""
 
@@ -5598,24 +5604,24 @@ msgid "Richiede Spot Shot Rally per risolvere parimerito nelle prime posizioni"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:354
-#: templates/components/_gara_edit_form.html:346
+#: templates/components/_gara_edit_form.html:367
 msgid "Spareggio fino alla posizione"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:356
-#: templates/components/_gara_edit_form.html:348
-#: templates/components/_new_gara_modal.html:363
+#: templates/components/_gara_edit_form.html:369
+#: templates/components/_new_gara_modal.html:392
 msgid "Solo 1° posto"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:357
-#: templates/components/_gara_edit_form.html:349
-#: templates/components/_new_gara_modal.html:364
+#: templates/components/_gara_edit_form.html:370
+#: templates/components/_new_gara_modal.html:393
 msgid "Fino al 2° posto"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:358
-#: templates/components/_gara_edit_form.html:350
+#: templates/components/_gara_edit_form.html:371
 msgid "Fino al 3° posto"
 msgstr ""
 
@@ -5689,7 +5695,7 @@ msgid ""
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:474
-#: templates/components/_new_gara_modal.html:391
+#: templates/components/_new_gara_modal.html:420
 msgid "Crea Gara"
 msgstr ""
 
@@ -6699,7 +6705,7 @@ msgid "Tutte le Richieste"
 msgstr ""
 
 #: templates/admin/venue_manager_requests.html:31
-#: templates/components/_gara_edit_form.html:189
+#: templates/components/_gara_edit_form.html:210
 #: templates/components/_gara_info.html:20
 #: templates/components/_history_filters.html:41
 #: templates/components/_match_info.html:31
@@ -6781,7 +6787,7 @@ msgstr ""
 
 #: templates/admin/venue_manager_requests.html:147
 #: templates/components/_gara_edit_form.html:30
-#: templates/components/_gara_edit_form.html:355
+#: templates/components/_gara_edit_form.html:376
 #: templates/player/venue_detail.html:280
 msgid "opzionale"
 msgstr ""
@@ -6816,7 +6822,7 @@ msgid "Tutte le Sale Biliardo"
 msgstr ""
 
 #: templates/admin/venues_list.html:33
-#: templates/components/_gara_edit_form.html:202
+#: templates/components/_gara_edit_form.html:223
 #: templates/components/_new_gara_modal.html:124
 #: templates/player/venues.html:29
 msgid "Tavoli"
@@ -7367,7 +7373,7 @@ msgid "Etichetta dell'angolo di taglio"
 msgstr ""
 
 #: templates/challenge/builder.html:117
-#: templates/components/_bye_challenges.html:47
+#: templates/components/_bye_challenges.html:52
 #: templates/components/_player_challenges.html:47
 #: templates/individual_match/dashboard.html:131
 #: templates/individual_match/matches.html:137
@@ -8205,9 +8211,15 @@ msgid ""
 "massimo di %(massimo)s."
 msgstr ""
 
-#: templates/components/_bye_challenges.html:47
-#, fuzzy, python-format
+#: templates/components/_bye_challenges.html:52
+#, fuzzy
 msgid "Gioca l'esercizio"
+msgstr ""
+
+#: templates/components/_bye_challenges.html:57
+msgid ""
+"Il direttore non ha ancora scelto l'esercizio: per ora non c'è niente da "
+"giocare."
 msgstr ""
 
 #: templates/components/_campionato_create_modal.html:6
@@ -8426,7 +8438,7 @@ msgid "I tre giocatori piu' bassi giocano un match a 3."
 msgstr ""
 
 #: templates/components/_campionato_edit_form.html:179
-#: templates/components/_new_gara_modal.html:298
+#: templates/components/_new_gara_modal.html:327
 msgid "Anti-Rematch"
 msgstr ""
 
@@ -9247,7 +9259,7 @@ msgid "default"
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:93
-#: templates/components/_new_gara_modal.html:325
+#: templates/components/_new_gara_modal.html:354
 msgid "Peso nella classifica"
 msgstr ""
 
@@ -9268,9 +9280,9 @@ msgid ""
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:144
-#: templates/components/_gara_edit_form.html:262
 #: templates/components/_gara_edit_form.html:283
-#: templates/components/_new_gara_modal.html:314
+#: templates/components/_gara_edit_form.html:304
+#: templates/components/_new_gara_modal.html:343
 msgid "Eredita dal campionato"
 msgstr ""
 
@@ -9298,83 +9310,111 @@ msgstr ""
 msgid "Il match a 3 vale solo per distanze da 2 a 7"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:186
+#: templates/components/_gara_edit_form.html:187
+#: templates/components/_new_gara_modal.html:293
+msgid "Esercizio per la X"
+msgstr ""
+
+#: templates/components/_gara_edit_form.html:189
+#: templates/components/_new_gara_modal.html:295
+#, fuzzy, python-format
+msgid "Scegli un esercizio…"
+msgstr ""
+
+#: templates/components/_gara_edit_form.html:195
+#: templates/components/_new_gara_modal.html:301
+msgid ""
+"Lo stesso esercizio per tutti i turni: chi riposa affronta la stessa "
+"prova, in qualunque turno gli capiti."
+msgstr ""
+
+#: templates/components/_gara_edit_form.html:196
+#: templates/components/_new_gara_modal.html:302
+msgid "Non trovi quello giusto? Creane uno"
+msgstr ""
+
+#: templates/components/_gara_edit_form.html:200
+#: templates/components/_new_gara_modal.html:306
+msgid "aggiorna l'elenco"
+msgstr ""
+
+#: templates/components/_gara_edit_form.html:207
 msgid "Impostazioni di gioco"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:191
+#: templates/components/_gara_edit_form.html:212
 msgid "es. Biliardo Centrale"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:197
+#: templates/components/_gara_edit_form.html:218
 msgid "Scegli una sala verificata o scrivi un nuovo nome"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:205
+#: templates/components/_gara_edit_form.html:226
 msgid "es. 3 oppure 2,3,5"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:206
+#: templates/components/_gara_edit_form.html:227
 msgid "Numero o elenco separato da virgole"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:217
+#: templates/components/_gara_edit_form.html:238
 msgid "Min iscritti"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:222
+#: templates/components/_gara_edit_form.html:243
 msgid "Max iscritti"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:224
+#: templates/components/_gara_edit_form.html:245
 #: templates/components/_new_gara_modal.html:149
 msgid "Illimitato"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:227
+#: templates/components/_gara_edit_form.html:248
 msgid "Gestione ritiri"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:230
+#: templates/components/_gara_edit_form.html:251
 msgid "Escludi — X o match a 3"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:233
+#: templates/components/_gara_edit_form.html:254
 msgid "Forfait — vittoria all'avversario"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:290
+#: templates/components/_gara_edit_form.html:311
 msgid "Vale per tutti i match della gara: sul singolo match non si cambia."
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:301
+#: templates/components/_gara_edit_form.html:322
 msgid ""
 "La gara è cominciata: le regole di gioco non si cambiano più. Cambiarle a"
 " metà riscriverebbe chi ha eseguito il tiro di apertura nei triangoli già"
 " giocati."
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:308
+#: templates/components/_gara_edit_form.html:329
 msgid "Seleziona disciplina…"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:324
+#: templates/components/_gara_edit_form.html:345
 msgid "Turni e spareggi"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:333
+#: templates/components/_gara_edit_form.html:354
 msgid "Spareggio SSR"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:337
+#: templates/components/_gara_edit_form.html:358
 msgid "Abilita spareggio per i parimerito"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:338
+#: templates/components/_gara_edit_form.html:359
 msgid "Richiede Spot Shot Rally per risolvere i parimerito nelle prime posizioni"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:355 templates/exam/detail.html:18
+#: templates/components/_gara_edit_form.html:376 templates/exam/detail.html:18
 #: templates/exam/manage.html:72
 #: templates/gamification/admin/achievement_form.html:34
 #: templates/gamification/admin/feature_create.html:38
@@ -9387,16 +9427,16 @@ msgstr ""
 msgid "Descrizione"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:357
+#: templates/components/_gara_edit_form.html:378
 msgid "Note per gli iscritti: ritrovo, parcheggio, premi…"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:364
+#: templates/components/_gara_edit_form.html:385
 #: templates/gamification/admin/feature_detail.html:74
 msgid "Salva modifiche"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:391
+#: templates/components/_gara_edit_form.html:412
 #, python-brace-format
 msgid ""
 "Con anti-rematch attivo e {maxParticipants} partecipanti massimi, puoi "
@@ -10989,48 +11029,48 @@ msgstr ""
 msgid "Trio disponibile solo per distanze 2-7"
 msgstr ""
 
-#: templates/components/_new_gara_modal.html:301
+#: templates/components/_new_gara_modal.html:330
 msgid "Evita reincontri tra stessi avversari"
 msgstr ""
 
-#: templates/components/_new_gara_modal.html:329
+#: templates/components/_new_gara_modal.html:358
 msgid "Moltiplicatore"
 msgstr ""
 
-#: templates/components/_new_gara_modal.html:336
+#: templates/components/_new_gara_modal.html:365
 msgid ""
 "Il punteggio di questa prova viene moltiplicato per il peso prima di "
 "entrare nella classifica del campionato. 1 = una prova come le altre; 3 ="
 " vale come tre prove."
 msgstr ""
 
-#: templates/components/_new_gara_modal.html:353
+#: templates/components/_new_gara_modal.html:382
 msgid "Abilita spareggio"
 msgstr ""
 
-#: templates/components/_new_gara_modal.html:356
+#: templates/components/_new_gara_modal.html:385
 msgid "Spot Shot Rally per pari punti"
 msgstr ""
 
-#: templates/components/_new_gara_modal.html:361
+#: templates/components/_new_gara_modal.html:390
 msgid "Spareggio fino a"
 msgstr ""
 
-#: templates/components/_new_gara_modal.html:365
+#: templates/components/_new_gara_modal.html:394
 msgid "Fino al 3° posto (podio)"
 msgstr ""
 
-#: templates/components/_new_gara_modal.html:366
+#: templates/components/_new_gara_modal.html:395
 msgid "Fino al 5° posto"
 msgstr ""
 
-#: templates/components/_new_gara_modal.html:375
+#: templates/components/_new_gara_modal.html:404
 #: templates/player/challenge_attempt_detail.html:151
 #: templates/player/my_venue_requests.html:25
 msgid "Note"
 msgstr ""
 
-#: templates/components/_new_gara_modal.html:377
+#: templates/components/_new_gara_modal.html:406
 msgid "Note aggiuntive sulla gara... (opzionale)"
 msgstr ""
 

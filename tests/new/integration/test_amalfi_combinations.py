@@ -633,71 +633,25 @@ class TestAmalfiOddPolicies:
         assert len(byes) == 1
         assert len(regular) == 2
 
-    def test_bye_with_challenge_full_flow(self, db_session):
-        """Full bye_with_challenge flow: bye -> challenge -> score update."""
-        from models.challenge.models import Challenge
-        from models.competition.gara_challenge_service import GaraChallengeService
-        from models.matchmaking.amalfi_challenge_bye_service import (
-            AmalfiChallengeByeService,
-        )
-
-        director = _create_director(db_session)
-        players = _create_players(db_session, 5)
-
-        # Create a numeric challenge (for bye replacement scoring)
-        challenge = Challenge(
-            description="Spot Shot Rally",
-            image_path="test.jpg",
-            pass_fail_only=False,
-            created_by_id=director.id,
-            is_active=True,
-        )
-        db_session.add(challenge)
-        db_session.commit()
-
-        # Create gara with bye_with_challenge
-        gara = _create_amalfi_gara(
-            director.id,
-            players,
-            db_session,
-            odd_number_policy="bye_with_challenge",
-        )
-
-        # Link challenge to gara for round 1
-        gara_challenge = GaraChallengeService.add_challenge_to_gara(
-            gara_id=gara.id,
-            challenge_id=challenge.id,
-            round_number=1,
-            max_attempts=3,
-            added_by_id=director.id,
-        )
-
-        # Start round — creates bye match
-        RoundService.start_first_round(gara.id)
-
-        bye_match = Match.query.filter_by(
-            gara_id=gara.id, round_number=1, is_bye=True
-        ).first()
-        assert bye_match is not None
-        bye_player_id = bye_match.player1_id
-        bye_match.player1_score
-
-        # Bye player records a challenge attempt with score 12
-        attempt = GaraChallengeService.record_challenge_attempt(
-            gara_challenge_id=gara_challenge.id,
-            user_id=bye_player_id,
-            score=12,
-            round_when_attempted=1,
-        )
-
-        # Update bye match with challenge score
-        updated = AmalfiChallengeByeService.update_bye_match_from_challenge(attempt.id)
-        assert updated is True
-
-        # Verify bye match now has the challenge score
-        db_session.refresh(bye_match)
-        assert bye_match.player1_score == 12
-        assert bye_match.status == "completed"
+    # Qui c'era `test_bye_with_challenge_full_flow`, che percorreva
+    # `AmalfiChallengeByeService.update_bye_match_from_challenge` — un ponte fra
+    # gli esercizi configurati per la gara (`GaraChallengeAttempt`) e il match
+    # con la X, mai collegato a nessuna schermata.
+    #
+    # Il servizio e' stato cancellato con la issue #267, che ha deciso il
+    # contrario: l'esercizio della X e' **uno per gara**, scelto dal direttore,
+    # perche' a numero dispari riposa una persona diversa a ogni turno e un
+    # esercizio che cambia renderebbe le prove di due giocatori non
+    # confrontabili pur finendo nella stessa classifica.
+    #
+    # Il test conteneva anche la prova che quella strada era sbagliata: scriveva
+    # 12 sul match di una gara «al 5», cioe' ignorava il limite
+    # [0, distanza del turno] che la #220 aveva introdotto. Collegarla avrebbe
+    # riportato indietro quel difetto.
+    #
+    # Il percorso vero — dalla bacheca del giocatore alla convalida del
+    # direttore — e' coperto da
+    # `tests/new/integration/test_prova_al_posto_della_x.py`.
 
     def test_trio_policy_creates_trio_match(self, db_session):
         """Amalfi with trio policy: 3 lowest-ranked players get a trio match."""

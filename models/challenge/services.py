@@ -128,6 +128,12 @@ class ChallengeService:
             challenge.diagram_scene = diagram_scene
         if pass_fail_only is not None:
             challenge.pass_fail_only = pass_fail_only
+        # Il passaggio attivo→disattivato si legge prima di scriverlo: dopo,
+        # `is_active` vale False sia per chi lo era gia' sia per chi lo diventa
+        # ora, e la copia scatterebbe a ogni salvataggio.
+        disattivato_ora = (
+            is_active is not None and not is_active and bool(challenge.is_active)
+        )
         if is_active is not None:
             challenge.is_active = is_active
 
@@ -149,7 +155,64 @@ class ChallengeService:
         if challenge.pass_fail_only:
             challenge.max_score = None
 
+        if disattivato_ora:
+            ChallengeService._copia_per_le_gare_che_lo_usano(challenge)
+
         return challenge
+
+    @staticmethod
+    def _copia_per_le_gare_che_lo_usano(originale: Challenge) -> None:
+        """Alla disattivazione, le gare non concluse passano a **una** copia attiva.
+
+        Disattivare un esercizio dice «non proponetelo piu'»: e' una decisione
+        sul **catalogo**, non sulle gare che l'hanno gia' scelto. Una gara
+        ancora da giocare pero' resterebbe con una prova che nessuno mantiene, e
+        il direttore non se ne accorgerebbe finche' qualcuno non riposa.
+
+        Una copia sola, condivisa da tutte le gare interessate: e' la stessa
+        prova, e moltiplicarla riempirebbe il catalogo di voci identiche e
+        indistinguibili. Il creatore e' il direttore della prima gara
+        interessata (in ordine di id, cosi' l'esito e' riproducibile): serve un
+        proprietario perche' la voce sia manutenibile da qualcuno, e quando le
+        gare sono di direttori diversi la scelta e' arbitraria per forza — ma
+        dichiarata, e non e' un permesso esclusivo.
+
+        **Solo le gare non concluse**: una gara finita non deve proporre piu'
+        niente a nessuno, e ripuntarla altrove riscriverebbe la configurazione
+        con cui e' stata giocata, cioe' un pezzo della sua storia.
+        """
+        from models.competition.models import Gara
+        from models.status_enum import GaraStatus
+
+        da_spostare = (
+            db.session.query(Gara)
+            .filter(
+                Gara.x_challenge_id == originale.id,
+                Gara.status.notin_(
+                    [GaraStatus.COMPLETED.value, GaraStatus.CANCELLED.value]
+                ),
+            )
+            .order_by(Gara.id)
+            .all()
+        )
+        if not da_spostare:
+            return
+
+        copia = Challenge(
+            title=originale.title,
+            description=originale.description,
+            image_path=originale.image_path,
+            pass_fail_only=originale.pass_fail_only,
+            diagram_scene=originale.diagram_scene,
+            max_score=originale.max_score,
+            created_by_id=da_spostare[0].director_id,
+            is_active=True,
+        )
+        db.session.add(copia)
+        db.session.flush()
+
+        for gara in da_spostare:
+            gara.x_challenge_id = copia.id
 
     @staticmethod
     def _validate_score_against_max(challenge: Challenge, score: int) -> None:
@@ -541,51 +604,81 @@ class ChallengeService:
             return True
 
     @staticmethod
-    def get_challenge_for_x_replacement(gara_id: int) -> Optional[Challenge]:
-        """Seleziona una sfida appropriata per sostituzione X in campionato.
+    def get_challenges_for_x_choice(
+        includi_id: Optional[int] = None,
+    ) -> List[Challenge]:
+        """Gli esercizi che si possono offrire per la X, in ordine di nome.
 
-        L'algoritmo di selezione implementa una strategia di equità:
-        1. Filtra sfide attive con punteggio numerico (no pass/fail only)
-        2. Conta utilizzi precedenti nella stessa gara
-        3. Preferisce sfide meno utilizzate per bilanciamento
+        Attivi e **a punteggio**: il punteggio della X e' una differenza
+        triangoli, che un esercizio superato/non superato non produce. Il
+        criterio sta qui una volta sola perche' e' lo stesso che il motore
+        applica leggendo la scelta, e due copie sarebbero due copie destinate a
+        divergere — la divergenza si vedrebbe solo il giorno in cui un direttore
+        sceglie un esercizio che poi il motore rifiuta.
 
-        Args:
-            gara_id: ID della gara per cui trovare la sfida sostitutiva
-
-        Returns:
-            Challenge: Sfida selezionata, None se nessuna disponibile
-
-        Note:
-            X-replacement: quando un giocatore ha 'bye' può fare una sfida
-            invece di riposare, per mantenere attivo l'allenamento.
+        `includi_id` aggiunge in coda l'esercizio **gia' scelto** da una gara
+        anche se nel frattempo e' stato disattivato. Senza, il modulo di
+        modifica non avrebbe piu' la sua opzione: e siccome il campo e'
+        obbligatorio, chi aprisse la gara per cambiarne il nome si troverebbe
+        costretto a sceglierne un altro. La disattivazione nel catalogo
+        cambierebbe cosi' la gara passando per la mano di chi non voleva
+        toccarla.
         """
-        # Criteri per X-replacement: attive e con scoring numerico (no pass/fail)
-        suitable_challenges = (
+        offribili = (
             db.session.query(Challenge)
             .filter_by(is_active=True, pass_fail_only=False)
+            .order_by(Challenge.title, Challenge.id)
             .all()
         )
+        if includi_id and not any(c.id == includi_id for c in offribili):
+            gia_scelto = db.session.get(Challenge, includi_id)
+            if gia_scelto is not None and not gia_scelto.pass_fail_only:
+                offribili.append(gia_scelto)
+        return offribili
 
-        if not suitable_challenges:
+    @staticmethod
+    def get_challenge_for_x_replacement(gara_id: int) -> Optional[Challenge]:
+        """L'esercizio che si gioca al posto della X in questa gara.
+
+        Lo sceglie **sempre** il direttore, in fase di creazione o modifica
+        della gara (issue #267): qui non c'e' nessuna selezione automatica, e
+        non e' una semplificazione ma la regola. La versione precedente pescava
+        dal catalogo il meno usato, il che rendeva imprevedibile per il
+        direttore cosa sarebbe stato chiesto ai suoi giocatori.
+
+        Sta sulla **gara** e non sul turno: a numero dispari riposa una persona
+        diversa a ogni turno, e un esercizio che cambia renderebbe le prove di
+        due giocatori non confrontabili pur finendo nella stessa classifica.
+
+        Un esercizio **disattivato nel catalogo resta** quello della gara che
+        l'aveva scelto: disattivare vuol dire «non proporlo piu' per le scelte
+        nuove», non «toglilo da dove e' gia' in uso». Stesso principio di
+        `break_player_id` (ADR-056): una decisione gia' presa non si riscrive
+        perche' la regola e' cambiata dopo.
+
+        Restituisce ``None`` solo quando non c'e' proprio niente da giocare:
+        nessuna scelta (gare create prima di questa regola), esercizio
+        cancellato, o diventato a esito booleano — che non e' una questione di
+        visibilita' nel catalogo ma di sostanza, perche' un superato/non
+        superato non produce la differenza triangoli che serve. **Non** si
+        sostituisce mai con un altro: sarebbe di nuovo l'applicazione che
+        sceglie al posto del direttore, per giunta in un momento in cui nessuno
+        sta guardando.
+        """
+        from models.competition.models import Gara
+
+        gara = db.session.get(Gara, gara_id)
+        if gara is None or not gara.x_challenge_id:
             return None
 
-        # Algoritmo equità: conta utilizzi per gara per bilanciare le sfide
-        challenge_usage = {}
-        for challenge in suitable_challenges:
-            usage_count = (
-                db.session.query(ChallengeAttempt)
-                .filter_by(challenge_id=challenge.id, gara_id=gara_id)
-                .count()
-            )
-            challenge_usage[challenge.id] = usage_count
-
-        # Selezione: sfida con minor numero di utilizzi nella gara corrente
-        min_usage = min(challenge_usage.values())
-        for challenge in suitable_challenges:
-            if challenge_usage[challenge.id] == min_usage:
-                return challenge
-
-        return suitable_challenges[0]  # Fallback se tutte hanno stesso utilizzo
+        # `scelto is None` non e' paranoia: su uno schema costruito dal modello
+        # la chiave esterna c'e' e un id orfano non si scrive, ma in produzione
+        # la colonna nasce da un `ALTER TABLE ADD COLUMN`, che in SQLite non puo'
+        # creare vincoli. Le due meta' del mondo hanno schemi diversi.
+        scelto = db.session.get(Challenge, gara.x_challenge_id)
+        if scelto is None or scelto.pass_fail_only:
+            return None
+        return scelto
 
     @staticmethod
     def create_x_replacement_attempt(
@@ -625,7 +718,17 @@ class ChallengeService:
         if challenge_id is None:
             challenge = ChallengeService.get_challenge_for_x_replacement(gara_id)
             if not challenge:
-                raise ValueError("No suitable challenge available for X replacement")
+                # Non si ripiega su un esercizio qualsiasi: la scelta e' del
+                # direttore (issue #267). Qui ci si arriva solo con una gara
+                # creata prima di quella regola, o con l'esercizio scelto poi
+                # disattivato — in entrambi i casi c'e' una configurazione da
+                # sistemare, e il messaggio deve dire quella.
+                raise ValidationError(
+                    _(
+                        "Il direttore non ha ancora scelto l'esercizio da "
+                        "giocare al posto della X in questa gara."
+                    )
+                )
             final_challenge_id = challenge.id
         else:
             final_challenge_id = challenge_id
@@ -972,21 +1075,33 @@ class ChallengeService:
             is not None
         )
 
-        # Verifica se la sfida è stata selezionata in qualche gara
-        # Controlla relazioni gara-challenge se il modello esiste
-        has_gara_usage = False
-        try:
-            from models.competition.gara_challenge import GaraChallenge
+        # Verifica se la sfida è stata selezionata in qualche gara.
+        # **Due** modi, e dimenticarne uno è il difetto che questo blocco ha
+        # avuto: `GaraChallenge` (gli esercizi configurati per i turni) e
+        # `Gara.x_challenge_id` (l'esercizio della X, issue #267). Il secondo è
+        # nato dopo, e senza questa riga un esercizio scelto per la X ma non
+        # ancora giocato risultava inutilizzato: veniva cancellato davvero, e la
+        # chiave esterna `ondelete="SET NULL"` azzerava in silenzio la scelta
+        # della gara.
+        from models.competition.models import Gara
 
-            has_gara_usage = (
-                db.session.query(GaraChallenge)
-                .filter_by(challenge_id=challenge_id)
-                .first()
-                is not None
-            )
-        except ImportError:
-            # Se non esiste relazione gara-challenge, salta questo controllo
-            pass
+        has_gara_usage = (
+            db.session.query(Gara).filter_by(x_challenge_id=challenge_id).first()
+            is not None
+        )
+        if not has_gara_usage:
+            try:
+                from models.competition.gara_challenge import GaraChallenge
+
+                has_gara_usage = (
+                    db.session.query(GaraChallenge)
+                    .filter_by(challenge_id=challenge_id)
+                    .first()
+                    is not None
+                )
+            except ImportError:
+                # Se non esiste relazione gara-challenge, salta questo controllo
+                pass
 
         if not has_attempts and not has_gara_usage:
             # Hard delete: rimozione completa dal database (mai utilizzata)
@@ -994,6 +1109,11 @@ class ChallengeService:
         else:
             # Soft delete: marca inattiva ma preserva per dati storici
             challenge.is_active = False
+            # Cancellare si comporta come disattivare: le gare non concluse
+            # passano a una copia attiva della stessa prova, così chi riposa
+            # trova comunque qualcosa da giocare. Senza, la gara resterebbe su
+            # un esercizio che il catalogo non mostra più a nessuno.
+            ChallengeService._copia_per_le_gare_che_lo_usano(challenge)
 
     @staticmethod
     def record_attempt(

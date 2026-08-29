@@ -220,3 +220,106 @@ class TestIlPesoSiVede:
         pagina = client.get(f"/admin/campionato/{campionato.id}").get_data(as_text=True)
 
         assert "&times;1" not in pagina
+
+
+class TestLEsercizioDellaXNelleSchermate:
+    """La scelta dell'esercizio della X esiste in un modulo e arriva in colonna.
+
+    Il parser ha i suoi unit test; qui si verifica il passaggio che quelli non
+    vedono — ed è esattamente il passaggio che mancava alla #221, dove le route
+    esistevano, funzionavano, ed erano irraggiungibili perché nessun template le
+    linkava.
+    """
+
+    def _esercizio(self, db_session):
+        from models.challenge.models import Challenge
+
+        c = Challenge(
+            description=f"Prova {uuid.uuid4().hex[:6]}",
+            image_path="test.jpg",
+            pass_fail_only=False,
+            is_active=True,
+        )
+        db_session.add(c)
+        db_session.commit()
+        return c
+
+    def test_il_campo_e_nel_modulo_di_creazione(
+        self, client, db_session, director, campionato
+    ):
+        self._esercizio(db_session)
+        _login(client, director)
+
+        pagina = client.get(f"/admin/campionato/{campionato.id}").get_data(as_text=True)
+
+        assert 'name="x_challenge_id"' in pagina
+
+    def test_la_scelta_arriva_al_database(
+        self, client, db_session, director, campionato
+    ):
+        esercizio = self._esercizio(db_session)
+        _login(client, director)
+        dati = _form(
+            campionato.id,
+            odd_number_policy="bye_with_challenge",
+            x_challenge_id=str(esercizio.id),
+        )
+
+        client.post("/admin/gara/create", data=dati, follow_redirects=True)
+
+        gara = Gara.query.filter_by(name=dati["name"]).one()
+        assert gara.x_challenge_id == esercizio.id
+
+    def test_con_un_altra_politica_non_resta_appesa(
+        self, client, db_session, director, campionato
+    ):
+        """Cambiare politica non deve lasciare in colonna una scelta invisibile."""
+        esercizio = self._esercizio(db_session)
+        _login(client, director)
+        dati = _form(
+            campionato.id,
+            odd_number_policy="bye",
+            x_challenge_id=str(esercizio.id),
+        )
+
+        client.post("/admin/gara/create", data=dati, follow_redirects=True)
+
+        gara = Gara.query.filter_by(name=dati["name"]).one()
+        assert gara.x_challenge_id is None
+
+    def test_l_elenco_si_puo_ricaricare_senza_perdere_il_modulo(
+        self, client, db_session, director, campionato
+    ):
+        """È ciò che rende la creazione «dentro la procedura».
+
+        Il direttore che non trova l'esercizio giusto lo crea nel builder, in
+        un'altra scheda; al ritorno ricarica l'elenco invece di ricaricare la
+        pagina, che gli farebbe perdere tutto quello che ha già compilato.
+        """
+        esercizio = self._esercizio(db_session)
+        _login(client, director)
+
+        risposta = client.get("/admin/gara/challenges/per-la-x")
+
+        assert risposta.status_code == 200
+        dati = risposta.get_json()
+        assert dati["success"] is True
+        assert esercizio.id in [c["id"] for c in dati["challenges"]]
+
+    def test_un_giocatore_non_puo_leggere_l_elenco(self, client, db_session):
+        from models.user.role_enum import UserRole
+
+        giocatore = User(
+            username=f"pl_{uuid.uuid4().hex[:8]}",
+            email=f"pl_{uuid.uuid4().hex[:8]}@test.com",
+            role=UserRole.PLAYER.value,
+            onboarding_completed=True,
+        )
+        giocatore.set_password("director123")
+        db_session.add(giocatore)
+        db_session.commit()
+        _login(client, giocatore)
+
+        risposta = client.get("/admin/gara/challenges/per-la-x")
+
+        assert risposta.status_code != 200

@@ -210,6 +210,7 @@ class DashboardSectionBuilder:
         del turno e del punteggio massimo ammesso, che vengono da tre posti
         diversi e che il template non deve ricomporre.
         """
+        from models.challenge.services import ChallengeService
         from models.competition.gara_bye_challenge import GaraByeChallenge
         from models.matchmaking.configuration import OddNumberPolicy
 
@@ -263,6 +264,11 @@ class DashboardSectionBuilder:
                     # `complete_x_replacement_attempt` applica in scrittura.
                     "punteggio_massimo": match.effective_distance,
                     "iniziata": ponte is not None,
+                    # Senza esercizio configurato il pulsante fallirebbe: la
+                    # scheda lo dice invece di offrirlo (issue #267).
+                    "esercizio": ChallengeService.get_challenge_for_x_replacement(
+                        match.gara_id
+                    ),
                 }
             )
         return schede

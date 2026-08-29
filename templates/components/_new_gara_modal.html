@@ -280,6 +280,35 @@
                                 </div>
                             </div>
                         </div>
+                        {# L'esercizio della X (issue #267). Compare solo con «X con
+                           esercizio»: altrove e' una domanda senza oggetto, e infatti
+                           il parser non legge nemmeno il campo. Sta sulla gara e non
+                           sul turno perche' a numero dispari riposa una persona
+                           diversa a ogni turno: un esercizio che cambia renderebbe le
+                           prove di due giocatori non confrontabili pur finendo nella
+                           stessa classifica. #}
+                        <div class="row" id="create_x_challenge_section" style="display: none;">
+                            <div class="col-md-12">
+                                <div class="mb-3">
+                                    <label for="x_challenge_id" class="form-label">{{ _("Esercizio per la X") }}</label>
+                                    <select class="form-control" name="x_challenge_id" id="create_x_challenge_id" required>
+                                        <option value="" disabled selected>{{ _("Scegli un esercizio…") }}</option>
+                                        {% for esercizio in x_challenges or [] %}
+                                        <option value="{{ esercizio.id }}">{{ esercizio.get_display_name() }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <small class="form-text text-muted">
+                                        {{ _("Lo stesso esercizio per tutti i turni: chi riposa affronta la stessa prova, in qualunque turno gli capiti.") }}
+                                        <a href="{{ url_for('challenge.create_challenge') }}" target="_blank" rel="noopener">{{ _("Non trovi quello giusto? Creane uno") }}</a>
+                                        <button type="button" class="btn btn-link btn-sm p-0 align-baseline"
+                                                data-url="{{ url_for('admin.competition.x_challenges_json') }}"
+                                                data-target="create_x_challenge_id"
+                                                onclick="ricaricaEserciziX(this)">{{ _("aggiorna l'elenco") }}</button>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
                         {# Amalfi lo impone acceso; sul tabellone non esiste proprio,
                            perche' chi perde esce e non puo' esserci un reincontro. #}
                         {% set anti_rematch_forced = campionato.campionato_type in [MatchmakingStrategy.AMALFI.value] %}
@@ -490,6 +519,17 @@
         const exactNumberContainer = document.getElementById('create_exact_number_container');
         const gameModeText = document.getElementById('create-game-mode-text');
         const oddPolicySelect = document.getElementById('create_odd_number_policy');
+        const xChallengeSection = document.getElementById('create_x_challenge_section');
+
+        function aggiornaVisibilitaEsercizioX() {
+            if (!oddPolicySelect || !xChallengeSection) return;
+            xChallengeSection.style.display =
+                oddPolicySelect.value === 'bye_with_challenge' ? '' : 'none';
+        }
+        if (oddPolicySelect) {
+            oddPolicySelect.addEventListener('change', aggiornaVisibilitaEsercizioX);
+            aggiornaVisibilitaEsercizioX();
+        }
         const trioWarning = document.getElementById('create_trio_warning');
         const numberSelect = document.getElementById('create_number');
         const timeInput = document.getElementById('create_time');
@@ -710,3 +750,4 @@
         updateExactNumberAvailability();
     });
 </script>
+<script src="{{ url_for('static', filename='js/x-challenge-picker.js') }}"></script>

@@ -106,6 +106,9 @@ def gara_con_x(db_session):
         first_round_policy="random",
         odd_number_policy="bye_with_challenge",
         anti_rematch_enabled=True,
+        # L'esercizio lo sceglie il direttore, sempre (issue #267): una gara
+        # con la X senza esercizio scelto non è più una configurazione valida.
+        x_challenge_id=esercizio.id,
     )
     InscriptionService.open_inscriptions(
         gara.id, utc_now() - timedelta(hours=1), utc_now() + timedelta(days=5)
@@ -465,3 +468,41 @@ class TestIComandiSonoNellaPaginaDellaGara:
         )
 
         assert "prova-x" not in pagina
+
+
+class TestSenzaEsercizioSceltoNonSiInventa:
+    """Nessun ripiego: se manca l'esercizio si dice, non si sostituisce.
+
+    Ci si arriva solo con una gara creata prima che la scelta diventasse
+    obbligatoria (#267), o con l'esercizio scelto poi disattivato dal catalogo.
+    Pescarne un altro sarebbe l'applicazione che decide al posto del direttore,
+    per giunta in un momento in cui nessuno sta guardando.
+    """
+
+    @pytest.fixture
+    def gara_senza_esercizio(self, db_session, gara_con_x):
+        gara = gara_con_x["gara"]
+        gara.x_challenge_id = None
+        db_session.commit()
+        return gara_con_x
+
+    def test_la_scheda_lo_dice_invece_di_offrire_il_pulsante(
+        self, client, db_session, gara_senza_esercizio
+    ):
+        _login(client, gara_senza_esercizio["giocatore"])
+
+        pagina = client.get("/dashboard").get_data(as_text=True)
+
+        assert "non ha ancora scelto" in pagina
+        assert "x-replacement" not in pagina
+
+    def test_la_prova_non_si_puo_avviare(
+        self, client, db_session, gara_senza_esercizio
+    ):
+        gara = gara_senza_esercizio["gara"]
+        giocatore = gara_senza_esercizio["giocatore"]
+        _login(client, giocatore)
+
+        client.post(f"/challenges/x-replacement/{gara.id}/1", follow_redirects=True)
+
+        assert ChallengeAttempt.query.filter_by(user_id=giocatore.id).first() is None

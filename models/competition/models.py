@@ -247,6 +247,18 @@ class Gara(SoftDeleteMixin, db.Model):
         db.Integer, db.ForeignKey("challenge.id", ondelete="SET NULL"), nullable=True
     )  # FK a Challenge se mode = "challenge"
 
+    # L'esercizio che si gioca al posto della X, scelto dal direttore (issue
+    # #267). Sta sulla **gara** e non sul turno di proposito: a numero dispari
+    # riposa una persona diversa a ogni turno, e un esercizio che cambia
+    # renderebbe le prove di due giocatori non confrontabili pur finendo nella
+    # stessa classifica. NULL significa «sceglie l'applicazione» — il
+    # comportamento storico, e quello di ogni gara creata prima.
+    x_challenge_id = db.Column(
+        db.Integer,
+        db.ForeignKey("challenge.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
     # Moltiplicatore del punteggio di questa gara nella classifica generale
     # del campionato (issue #64). 1 = comportamento storico. È l'UNICA fonte
     # letta da `ScoreAggregator`: la configurazione playoff lo imposta qui
@@ -286,6 +298,8 @@ class Gara(SoftDeleteMixin, db.Model):
     playoff_config = db.relationship(
         "PlayoffConfiguration", foreign_keys=[playoff_config_id], back_populates="gara"
     )
+
+    x_challenge = db.relationship("Challenge", foreign_keys=[x_challenge_id])
 
     @property
     def is_playoff(self) -> bool:
