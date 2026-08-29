@@ -280,6 +280,36 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         return Distance.from_match(self)
 
     @property
+    def bye_challenge(self):
+        """Il ponte verso la prova giocata al posto di questa X, se esiste.
+
+        Serve alla scheda del direttore, che su una X deve poter registrare,
+        validare o azzerare il punteggio dell'esercizio (issue #221). `None`
+        vuol dire «nessuno ha ancora aperto la prova», che sulla pagina di una
+        gara con `bye_with_challenge` e' lo stato di partenza e non un errore.
+        """
+        if not self.is_bye or self.player1_id is None:
+            return None
+        from models.competition.gara_bye_challenge import GaraByeChallenge
+
+        return GaraByeChallenge.query.filter_by(
+            gara_id=self.gara_id,
+            round_number=self.round_number,
+            user_id=self.player1_id,
+        ).first()
+
+    @property
+    def is_x_with_challenge(self) -> bool:
+        """Questa X si sostituisce con una prova invece di stare fermi."""
+        from models.matchmaking.configuration import OddNumberPolicy
+
+        return bool(
+            self.is_bye
+            and self.gara is not None
+            and self.gara.odd_number_policy == OddNumberPolicy.BYE_WITH_CHALLENGE.value
+        )
+
+    @property
     def effective_distance(self) -> int:
         """Numero di rack per vincere il match (single-set).
 

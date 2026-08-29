@@ -109,6 +109,51 @@
   </div>
 
   {# === AZIONI === #}
+  {# Su una X con prova il direttore ha due comandi, gli stessi che ha sui
+     match: registrare il risultato e disfarlo. Non e' una comodita' — molti
+     giocatori non usano l'applicazione, ed e' il direttore a inserire per
+     loro. E il punteggio arriva in classifica **solo** da qui: la prova si
+     gioca da soli, quindi manca l'avversario che in una partita fa da
+     controllo (issue #221). #}
+  {% if match.is_x_with_challenge and user_can_manage %}
+  {% set ponte = match.bye_challenge %}
+  <div style="margin-top: 14px;">
+    <div class="c7-kicker">{{ _('Prova al posto della X') }}</div>
+    {% if ponte and ponte.is_validated %}
+    <div class="d-flex align-items-center" style="gap: 8px; margin-top: 8px;">
+      <span class="c7-state c7-state--ok"><i class="fas fa-check"></i>&nbsp;{{ _('Convalidata') }}</span>
+      <span class="c7-num" style="margin-left:auto">{{ match.player1_score }}</span>
+      <form method="POST"
+            action="{{ url_for('admin.competition.reset_x_replacement', gara_id=match.gara_id, round_number=match.round_number, user_id=match.player1_id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-sm btn-outline-secondary"
+                onclick='return confirm({{ _("Azzerare la prova? Il turno torna a valere zero.")|tojson }})'>{{ _('Azzera') }}</button>
+      </form>
+    </div>
+    {% else %}
+    <form method="POST" class="d-flex align-items-end" style="gap: 8px; margin-top: 8px;"
+          action="{{ url_for('admin.competition.validate_x_replacement', gara_id=match.gara_id, round_number=match.round_number, user_id=match.player1_id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div style="flex: 1;">
+        <label class="form-label" style="font-size:12px;margin-bottom:2px">{{ _('Punteggio') }}</label>
+        <input type="number" name="score" class="form-control form-control-sm"
+               min="0" max="{{ match.effective_distance }}" step="1"
+               value="{{ ponte.challenge_attempt.score if ponte and ponte.challenge_attempt and ponte.challenge_attempt.score is not none else '' }}"
+               placeholder="0–{{ match.effective_distance }}">
+      </div>
+      <button type="submit" class="btn btn-sm btn-primary">{{ _('Convalida') }}</button>
+    </form>
+    <small class="text-muted d-block" style="margin-top:6px">
+      {% if ponte and ponte.is_completed %}
+      {{ _('Il giocatore ha dichiarato un punteggio. Finché non lo convalidi, il turno vale zero.') }}
+      {% else %}
+      {{ _('Il giocatore non ha ancora registrato la prova. Puoi farlo tu al posto suo.') }}
+      {% endif %}
+    </small>
+    {% endif %}{# fine ramo convalidata / da convalidare #}
+  </div>
+  {% endif %}{# fine blocco prova al posto della X #}
+
   {% if not match.is_bye %}
   <div style="margin-top: 14px;">
     {% if user_can_manage %}

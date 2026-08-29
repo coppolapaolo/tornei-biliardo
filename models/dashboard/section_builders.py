@@ -187,6 +187,87 @@ class DashboardSectionBuilder:
         )
 
     @staticmethod
+    def build_bye_challenges(user_id: int) -> List[Any]:
+        """Le X che questo giocatore puo' ancora sostituire con una prova.
+
+        Chi resta senza avversario in una gara con
+        `odd_number_policy = "bye_with_challenge"` non sta fermo: gioca un
+        esercizio, e il punteggio diventa la sua differenza triangoli in quel
+        turno (SPECIFICHE.md riga 65). E' una cosa **da fare**, con una
+        scadenza implicita — il turno finisce — quindi va in dashboard accanto
+        ai match e agli inviti ai playoff.
+
+        Perche' non basta la sezione «I tuoi match»: il match con la X nasce
+        `pending` e viene chiuso subito da `round_creation`, mentre quella
+        sezione mostra solo `pending`/`playing`. Il giocatore quindi non vede
+        niente — ed e' esattamente il motivo per cui la prova non la giocava
+        nessuno (issue #221). Lasciare il match aperto lo farebbe comparire li'
+        gratis, ma un turno e' completo quando **tutte** le sue partite sono
+        concluse: chi non gioca mai l'esercizio bloccherebbe l'avanzamento per
+        tutti gli altri.
+
+        Restituisce dizionari e non entita': la scheda ha bisogno della gara,
+        del turno e del punteggio massimo ammesso, che vengono da tre posti
+        diversi e che il template non deve ricomporre.
+        """
+        from models.competition.gara_bye_challenge import GaraByeChallenge
+        from models.matchmaking.configuration import OddNumberPolicy
+
+        # Il join su `Gara` non e' decorativo: serve a limitare alle gare in
+        # corso e a far scattare il filtro soft-delete, che e' un
+        # `with_loader_criteria` e quindi si applica solo alle entita' presenti
+        # nella query. Senza, una X su una gara eliminata resterebbe in
+        # dashboard con un pulsante che scrive su dati orfani — stessa trappola
+        # gia' documentata in `build_playoff_invitations`.
+        match_con_x = (
+            db.session.query(TournamentMatch)
+            .join(Gara, Gara.id == TournamentMatch.gara_id)
+            .filter(
+                TournamentMatch.player1_id == user_id,
+                TournamentMatch.is_bye.is_(True),
+                Gara.status == GaraStatus.PLAYING.value,
+                Gara.odd_number_policy == OddNumberPolicy.BYE_WITH_CHALLENGE.value,
+            )
+            .options(joinedload(TournamentMatch.gara))
+            .order_by(TournamentMatch.round_number)
+            .all()
+        )
+        if not match_con_x:
+            return []
+
+        # Una sola query per i ponti gia' aperti, invece di una per match.
+        ponti = {
+            (p.gara_id, p.round_number): p
+            for p in db.session.query(GaraByeChallenge)
+            .filter(
+                GaraByeChallenge.user_id == user_id,
+                GaraByeChallenge.gara_id.in_({m.gara_id for m in match_con_x}),
+            )
+            .all()
+        }
+
+        schede: List[Any] = []
+        for match in match_con_x:
+            ponte = ponti.get((match.gara_id, match.round_number))
+            if ponte is not None and ponte.is_completed:
+                continue  # gia' giocata: non e' piu' una cosa da fare
+            schede.append(
+                {
+                    "gara": match.gara,
+                    "round_number": match.round_number,
+                    "match": match,
+                    # Il massimo ammesso e' quello del **turno**, non della
+                    # gara: in un turno «al 3» dentro una gara «al 5» un 4
+                    # sarebbe un punteggio che giocando nessuno puo' ottenere
+                    # (ADR-027). E' lo stesso limite che
+                    # `complete_x_replacement_attempt` applica in scrittura.
+                    "punteggio_massimo": match.effective_distance,
+                    "iniziata": ponte is not None,
+                }
+            )
+        return schede
+
+    @staticmethod
     def build_challenge_sections(
         user_id: int, selected_campionato: Optional[Campionato]
     ) -> dict:

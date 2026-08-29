@@ -85,11 +85,23 @@ class GaraByeChallenge(BaseModel):
     is_completed = db.Column(db.Boolean, nullable=False, default=False)
     completed_at = db.Column(db.DateTime, nullable=True)
 
+    # Validazione del direttore. Il punteggio della prova diventa la differenza
+    # triangoli di quel turno, cioe' entra dritto in classifica — ma a
+    # dichiararlo e' il giocatore stesso, e qui manca il controllo che una
+    # partita ha per costruzione: l'avversario. Finche' queste due sono NULL la
+    # prova e' giocata ma **non conta**, ed e' uno stato legittimo, non un dato
+    # mancante. Il punteggio arriva sul match solo con `validated_at`.
+    validated_by_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True
+    )
+    validated_at = db.Column(db.DateTime, nullable=True)
+
     # Relationships (Competition → Challenge direction)
     gara = db.relationship("Gara", backref="bye_challenges")
     challenge_attempt = db.relationship("ChallengeAttempt")
-    user = db.relationship("User")
+    user = db.relationship("User", foreign_keys=[user_id])
     match = db.relationship("Match")
+    validated_by = db.relationship("User", foreign_keys=[validated_by_id])
 
     # Unique constraint: one bye challenge per user per gara per round
     __table_args__ = (
@@ -126,6 +138,21 @@ class GaraByeChallenge(BaseModel):
             match_id=match_id,
             is_completed=False,
         )
+
+    @property
+    def is_validated(self) -> bool:
+        """La prova conta in classifica solo se il direttore l'ha validata."""
+        return self.validated_at is not None
+
+    def validate(self, validated_by_id: int) -> None:
+        """Il direttore conferma il punteggio: da qui la prova conta."""
+        self.validated_by_id = validated_by_id
+        self.validated_at = utc_now()
+
+    def clear_validation(self) -> None:
+        """Azzera la validazione. La prova resta registrata, ma non conta piu'."""
+        self.validated_by_id = None
+        self.validated_at = None
 
     def complete_with_attempt(self, challenge_attempt_id: int) -> None:
         """Mark bye challenge as completed with a challenge attempt.

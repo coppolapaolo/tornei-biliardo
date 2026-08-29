@@ -11,7 +11,7 @@ from flask import (
     jsonify,
 )
 from flask_babel import _
-from flask_login import login_required
+from flask_login import login_required, current_user
 
 from models import (
     db,
@@ -1092,3 +1092,65 @@ def delete_round_config(gara_id: int, round_number: int):
 
     deleted = _delete()
     return jsonify({"success": True, "deleted": deleted})
+
+
+@competition_bp.route(
+    "/<int:gara_id>/round/<int:round_number>/prova-x/<int:user_id>/valida",
+    methods=["POST"],
+)
+@login_required
+@gara_manager_required
+def validate_x_replacement(gara_id, round_number, user_id):
+    """Registra e valida la prova giocata al posto della X.
+
+    Un gesto solo per due cose che sono la stessa: confermare il punteggio che
+    il giocatore ha dichiarato, e registrarlo al posto suo quando non l'ha
+    fatto — che nella pratica è il caso frequente, perché molti giocatori non
+    usano l'applicazione. Da qui, e solo da qui, il punteggio arriva sul match e
+    quindi in classifica: la prova si gioca da soli, e la validazione è il
+    controllo che una partita ha nell'avversario.
+    """
+    from models.challenge.services import ChallengeService
+    from models.exceptions import ValidationError
+
+    raw = (request.form.get("score") or "").strip()
+    try:
+        score = int(raw) if raw else None
+    except ValueError:
+        flash(_("Il punteggio deve essere un numero."), "danger")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+    try:
+        ChallengeService.validate_x_replacement(
+            gara_id=gara_id,
+            round_number=round_number,
+            user_id=user_id,
+            actor_id=current_user.id,
+            score=score,
+        )
+        flash(_("Prova convalidata: il punteggio è in classifica."), "success")
+    except (ValidationError, ValueError) as e:
+        flash(str(e), "danger")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+@competition_bp.route(
+    "/<int:gara_id>/round/<int:round_number>/prova-x/<int:user_id>/azzera",
+    methods=["POST"],
+)
+@login_required
+@gara_manager_required
+def reset_x_replacement(gara_id, round_number, user_id):
+    """Azzera la prova: il match torna a zero e l'esercizio torna da giocare."""
+    from models.challenge.services import ChallengeService
+
+    try:
+        ChallengeService.reset_x_replacement(
+            gara_id=gara_id, round_number=round_number, user_id=user_id
+        )
+        flash(_("Prova azzerata: il turno torna a valere zero."), "success")
+    except ValueError as e:
+        flash(str(e), "danger")
+
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))

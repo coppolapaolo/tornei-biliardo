@@ -55,10 +55,27 @@ blocks:
       system it becomes the racks credited, with «Wins» it becomes the rack
       difference that goes with the walkover win.
 
+  - type: text
+    text: >-
+      Whoever has the bye sees it on their board: a card reading «You have a
+      drill to play» takes them to the drill and to the box where they write
+      their score.
+
+  - type: note
+    tone: warning
+    title: "The score only counts once the director validates it"
+    text: >-
+      A drill is played alone, so there is no opponent to confirm the result the
+      way there is in a match. That is why the score a player records **does not
+      reach the standings on its own**: until the director validates it, that
+      round counts zero. The director does it from the competition page, on the
+      card of the player with the bye — and from there they can also enter it
+      for someone who does not use the app, correct it, or clear it.
+
   - type: list
     items:
       - "**For**: nobody sits out, and the round stays fair even on racks."
-      - "**Against**: the competition needs at least one challenge configured."
+      - "**Against**: the competition needs at least one challenge configured, and the director has to validate the scores."
 
   - type: heading
     id: trio
