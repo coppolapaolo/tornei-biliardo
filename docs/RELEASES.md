@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.3.0...v1.4.0) (2026-08-29)
+
+
+### Funzioni nuove
+
+* il direttore sceglie l'esercizio che si gioca al posto della X ([#269](https://github.com/coppolapaolo/tornei-biliardo/issues/269)) ([f144ec6](https://github.com/coppolapaolo/tornei-biliardo/commit/f144ec6700124152703d649476c90e212f5c6368))
+* la prova giocata al posto della X arriva in classifica, convalidata dal direttore ([#264](https://github.com/coppolapaolo/tornei-biliardo/issues/264)) ([329a175](https://github.com/coppolapaolo/tornei-biliardo/commit/329a1758119b5582e32c37a4c471b1100bd730ce))
+
 ## [1.3.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.2.2...v1.3.0) (2026-08-29)
 
 
