@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.3.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.2.2...v1.3.0) (2026-08-29)
+
+
+### Funzioni nuove
+
+* il direttore puo' dare un peso a una prova del campionato ([#263](https://github.com/coppolapaolo/tornei-biliardo/issues/263)) ([c3cdc4c](https://github.com/coppolapaolo/tornei-biliardo/commit/c3cdc4c1bb4282a37fa6f4a18ebd3a71b138fb27))
+
+
+### Correzioni
+
+* gli errori inghiottiti da un print() ora arrivano a GlitchTip ([#261](https://github.com/coppolapaolo/tornei-biliardo/issues/261)) ([7e9fbe9](https://github.com/coppolapaolo/tornei-biliardo/commit/7e9fbe930caf5d4f89c42244fb53fcd8159518ef))
+
 ## [1.2.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.2.1...v1.2.2) (2026-08-29)
 
 
