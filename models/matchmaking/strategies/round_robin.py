@@ -6,12 +6,15 @@ Requirements: SPECIFICHE.md - Round Robin campionato format
 
 from __future__ import annotations
 
+import logging
 from typing import Sequence, List, Optional, Tuple, Dict, Any, TYPE_CHECKING
 
 from .base import Pairing, BaseStrategy
 
 if TYPE_CHECKING:
     pass
+
+logger = logging.getLogger(__name__)
 
 
 class RoundRobinStrategy(BaseStrategy):
@@ -111,8 +114,21 @@ class RoundRobinStrategy(BaseStrategy):
 
             return []
 
-        except Exception as e:
-            print(f"Error generating Round Robin pairings: {e}")
+        except Exception:
+            # La lista vuota non e' piu' un esito silenzioso: dal 2026-08-28
+            # `_create_round_impl` rifiuta un turno senza accoppiamenti (issue
+            # #239), quindi chi ha chiesto il turno vede un errore. Quello che
+            # mancava era il **perche'**: l'eccezione originale finiva in un
+            # `print` e non arrivava a GlitchTip, lasciando a valle solo un
+            # «non produce accoppiamenti» senza causa. `exc_info=True` porta
+            # lo stack dove qualcuno lo guarda.
+            logger.error(
+                "Errore nella generazione degli abbinamenti Round Robin "
+                "(gara=%s, turno=%s)",
+                getattr(gara, "id", None),
+                round_number,
+                exc_info=True,
+            )
             return []
 
     # Sentinella "giocatore fantasma" per il caso dispari: chi viene accoppiato

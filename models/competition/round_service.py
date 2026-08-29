@@ -11,11 +11,15 @@ are orchestrator methods tightly coupled to gara state transitions.
 
 from __future__ import annotations
 
+import logging
+
 from models.base import db, transactional
 from models.matchmaking.configuration import MatchmakingStrategy
 from .models import Gara
 from .round_creation import RoundCreationService
 from .round_cancellation import RoundCancellationService
+
+logger = logging.getLogger(__name__)
 
 
 class RoundService:
@@ -251,7 +255,7 @@ class RoundService:
                 ).first()
 
                 if not existing_classification:
-                    print(f"Calculating classification for round {round_num}")
+                    logger.debug("Calcolo la classifica del turno %s", round_num)
                     RoundClassification.calculate_classification_after_round(
                         gara_id, round_num
                     )
