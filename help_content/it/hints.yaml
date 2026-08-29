@@ -212,7 +212,7 @@ hints:
 
   - id: gara.numero_turni
     label: "Numero di turni"
-    short: "Quanti giri di partite. Sui tabelloni non si imposta: lo fissa il sorteggio, sugli iscritti che si presentano."
+    short: "Quanti giri di partite. Sui tabelloni non si imposta: lo fissa il sorteggio, sugli iscritti che si presentano. Nel doppio KO può crescere di uno se si gioca la Bella."
     anchor: gara-numero-turni
     screens: [admin.competition.create_gara_standalone]
     page: opzioni_della_gara

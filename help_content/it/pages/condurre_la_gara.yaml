@@ -177,7 +177,10 @@ blocks:
   - type: text
     text: >-
       Finito l'ultimo turno, la gara si conclude e la classifica diventa
-      definitiva. Due cose possono ancora accadere:
+      definitiva: al posto di «Avvia turno» compare il pulsante per terminarla.
+      Fa eccezione il doppio KO, dove dopo la Finale può comparire un turno in
+      più — la Bella, spiegata nella pagina del [tabellone](/aiuto/giocare/tabellone).
+      Due cose possono ancora accadere:
 
   - type: list
     items:

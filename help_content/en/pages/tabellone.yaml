@@ -42,7 +42,10 @@ blocks:
       - name: "The round names"
         text: >-
           Last 16, quarter-finals, semi-finals, final. The director does not
-          choose them: the number of entrants does.
+          choose them: the number of entrants does. Double elimination uses
+          different names, because there are two brackets: **Round 1, 2, 3...**
+          on the winners' side, **Losers round 1, 2, 3...** on the other, then
+          the **Final** and possibly the **Decider**.
       - name: "Bold type"
         text: "Whoever won that match, and therefore goes through to the next round."
       - name: "The numbers on the right"
@@ -94,7 +97,9 @@ blocks:
       That is why the number of rounds is not set at creation time: the draw
       fixes it, on whoever actually turns up. Before the draw the competition
       card marks the figure **(estimate)**, worked out from the declared
-      maximum capacity; after the draw it is the final one.
+      maximum capacity; after the draw it is the final one. Under double
+      elimination it can still grow by one, if the Decider is needed: see
+      below for when that happens.
 
   - type: text
     text: >-
@@ -131,6 +136,18 @@ blocks:
       **losers'**. Whoever loses their first match does not go out, they drop
       into the second; losing again puts them out for good. At the end the
       winner of the losers' bracket meets the winner of the winners'.
+
+  - type: note
+    tone: info
+    title: "The Decider: a round that is not always played"
+    text: >-
+      Whoever reaches the Final from the winners' bracket has not lost a match
+      yet, and double elimination promises everyone two defeats before they go
+      out. So **if the Final is won by the player coming up from the losers'
+      bracket**, the two play it again on level terms: that is the
+      **Decider**, and the competition has one more round. If instead the
+      Final is won by the still-unbeaten player, the competition ends there
+      and the Decider is not played.
 
   - type: note
     tone: info

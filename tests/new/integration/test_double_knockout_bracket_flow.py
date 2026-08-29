@@ -23,6 +23,9 @@ from models.base import utc_now
 from models.competition.inscription_service import InscriptionService
 from models.competition.round_service import RoundService
 from models.match.services import RackService
+from models.matchmaking.strategies.double_knockout import (
+    DoubleKnockoutStrategy,
+)
 from models.status_enum import MatchStatus
 from models.user.role_enum import UserRole
 
@@ -65,9 +68,9 @@ def _make_gara(db_session, players: List[User]) -> Gara:
         discipline="9_ball",
         distance=2,
         is_race_to=True,
-        # Stima da max_participants (2k+1 su 16 posti); il sorteggio la
+        # Stima da max_participants (2k su 16 posti); il sorteggio la
         # riscrive sugli iscritti effettivi.
-        rounds_count=9,
+        rounds_count=8,
         min_participants=8,
         max_participants=16,
         matchmaking_strategy="double_knockout",
@@ -140,12 +143,13 @@ def _play_to_the_end(db_session, gara: Gara) -> int:
         _play_round(db_session, gara.id, round_number - 1)
         _assert_no_zombie(gara.id)
         RoundService.start_next_round(gara.id, round_number)
-        if Match.query.filter_by(gara_id=gara.id, round_number=round_number).count():
-            ultimo = round_number
-        else:
-            # Turno vuoto = tabellone esaurito. Non è un errore: la bella si
-            # materializza solo se il campione del losers vince la finale.
-            break
+        # Ogni turno avviato ha partite: un turno vuoto non si apre piu'.
+        # Prima qui c'era un `break` sul turno senza match, che trattava
+        # l'anomalia come la fine normale del tabellone (issue #239).
+        assert Match.query.filter_by(
+            gara_id=gara.id, round_number=round_number
+        ).count(), f"il turno {round_number} e' stato avviato senza partite"
+        ultimo = round_number
     _play_round(db_session, gara.id, ultimo)
     return ultimo
 
@@ -186,7 +190,7 @@ class TestTabellonePieno:
 
         RoundService.start_first_round(gara.id)
         db_session.refresh(gara)
-        assert gara.rounds_count == 7, "2k + 1 con k = 3"
+        assert gara.rounds_count == 6, "2k con k = 3: la bella non e' programmata"
 
         ultimo = _play_to_the_end(db_session, gara)
 
@@ -244,7 +248,7 @@ class TestBuchiNelLosersBracket:
 
         RoundService.start_first_round(gara.id)
         db_session.refresh(gara)
-        assert gara.rounds_count == 9, "2k + 1 con k = 4"
+        assert gara.rounds_count == 8, "2k con k = 4: la bella non e' programmata"
 
         byes = Match.query.filter_by(gara_id=gara.id, round_number=1, is_bye=True)
         assert byes.count() == 16 - n_players
@@ -324,18 +328,77 @@ class TestBracketReset:
         }
 
     def test_vince_l_imbattuto_la_gara_finisce(self, db_session):
-        """Il turno della bella resta vuoto, e avviarlo non solleva."""
+        """Vinta la finale dall'imbattuto, il turno della bella non esiste.
+
+        Prima questo test diceva l'opposto — "il turno resta vuoto, e avviarlo
+        non solleva" — e cosi' descriveva la issue #239 come se fosse il
+        comportamento voluto: la gara restava PLAYING per sempre su un turno
+        senza partite, e il pannello annunciava "Turno 7/7 in corso".
+
+        Ora la domanda si pone prima di aprirlo: la strategia dice che quel
+        turno non c'e', e la gara risulta conclusa.
+        """
+        from models.status_enum import ProvaDerivedStatus
+
         players = _make_players(db_session, 8)
         gara = _make_gara(db_session, players)
         RoundService.start_first_round(gara.id)
 
         self._fino_alla_finale(db_session, gara)
         _play_round(db_session, gara.id, 6)
+        db_session.refresh(gara)
 
-        total, *_ = RoundService.start_next_round(gara.id, 7)
+        strategia = DoubleKnockoutStrategy()
+        assert strategia.has_round(gara, 6) is True
+        assert strategia.has_round(gara, 7) is False
 
-        assert total == 0
+        with pytest.raises(ValueError, match="non valido"):
+            RoundService.start_next_round(gara.id, 7)
+
         assert not Match.query.filter_by(gara_id=gara.id, round_number=7).count()
+        assert (
+            gara.get_real_status() == ProvaDerivedStatus.TOURNAMENT_COMPLETED.value
+        ), "senza bella la gara e' finita, e il direttore deve poterla terminare"
+
+
+class TestNoveIscrittiFinoInFondo:
+    """La gara della segnalazione: 9 iscritti, e la finale la vince l'imbattuto.
+
+    Riproduce l'issue #239 dal sorteggio alla fine. Prima la gara dichiarava
+    9 turni (2k + 1 con k = 4), il turno 9 veniva aperto senza partite e il
+    pannello mostrava "Turno 9/9 in corso" senza offrire piu' alcun modo di
+    terminare: la gara restava `playing` per sempre.
+    """
+
+    def test_la_gara_si_conclude_e_si_puo_terminare(self, db_session):
+        from models.status_enum import ProvaDerivedStatus
+
+        players = _make_players(db_session, 9)
+        gara = _make_gara(db_session, players)
+        RoundService.start_first_round(gara.id)
+        db_session.refresh(gara)
+
+        assert gara.rounds_count == 8, "2k con k = 4: 9 iscritti, tabellone da 16"
+
+        ultimo = _play_to_the_end(db_session, gara)
+        db_session.refresh(gara)
+
+        assert ultimo == 8, "l'ultimo turno giocato e' la finale"
+        assert not Match.query.filter_by(gara_id=gara.id, round_number=9).count()
+        assert gara.rounds_count == 8, "nessun turno in piu': la bella non serviva"
+        assert (
+            gara.get_real_status() == ProvaDerivedStatus.TOURNAMENT_COMPLETED.value
+        ), "la gara e' conclusa, e il direttore vede il pulsante per terminarla"
+
+    def test_avviare_il_turno_fantasma_non_e_possibile(self, db_session):
+        """Anche chiesto a mano, il turno 9 non si apre."""
+        players = _make_players(db_session, 9)
+        gara = _make_gara(db_session, players)
+        RoundService.start_first_round(gara.id)
+        _play_to_the_end(db_session, gara)
+
+        with pytest.raises(ValueError, match="non valido"):
+            RoundService.start_next_round(gara.id, 9)
 
 
 class TestTurniRimastiIndietro:
@@ -360,7 +423,7 @@ class TestTurniRimastiIndietro:
         RoundService.start_first_round(gara.id)
 
         db_session.refresh(gara)
-        assert gara.rounds_count == 7  # 2*log2(8) + 1
+        assert gara.rounds_count == 6  # 2*log2(8)
         assert Match.query.filter_by(gara_id=gara.id, round_number=1).count() == 4
 
     def test_a_tabellone_estratto_resta_un_errore(self, db_session):

@@ -194,11 +194,14 @@
               <div class="c7-flash__title">{{ _('Turno %(current)d/%(total)d completato', current=display_round, total=gara.rounds_count) }}</div>
             </div>
           </div>
-          {% if gara.current_round < gara.rounds_count %}
+          {# Nessuna condizione qui: ci si arriva solo con lo stato
+             ROUND_COMPLETED, che *significa* gia' "c'e' un altro turno". Il
+             confronto `current_round < rounds_count` era la stessa domanda
+             posta una seconda volta, e nel doppio KO le due risposte
+             divergevano: il turno della bella sta oltre `rounds_count`. #}
           <button class="btn btn-success w-100" onclick="startRound({{ gara.current_round + 1 }}, this)">
             <i class="fas fa-forward"></i> {{ _('Avvia Turno %(num)s', num=gara.current_round + 1) }}
           </button>
-          {% endif %}
 
         {% else %}
           <div class="c7-flash c7-flash--info">

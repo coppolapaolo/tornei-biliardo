@@ -55,6 +55,24 @@ Una **strategia di abbinamento per _eliminazione diretta_**, invece, abbina tra 
 
 Una **sttategia di abbinamento per _doppio ko_** abbina tra loro i vincitori e ripesca una sola volta i perdenti.
 
+> **Quanti turni dura un doppio KO** (nota del 2026-08-29, issue #239). Con un
+> tabellone di `S` posti (`S` potenza di 2, minimo 8) e `k = log₂ S`, i turni
+> **programmati** sono `2k`: `k` per il winners bracket, `2k - 2` per il
+> losers — che si intercalano — e la finale. La **bella** e' un turno in piu',
+> il `2k + 1`, e si gioca **solo se la finale la vince chi arriva dal losers
+> bracket**: chi e' imbattuto non puo' essere eliminato da una sola partita,
+> quindi in quel caso si rigioca da pari; se invece la finale la vince
+> l'imbattuto, la gara e' conclusa e quel turno non esiste.
+>
+> Nella variante con **fase a gironi** (formula FISBB) non c'e' mai una bella.
+> Il girone e' un doppio KO da `2^(w+1)` giocatori che **non deve produrre un
+> vincitore**: si ferma appena i qualificati sono determinati — due imbattuti
+> e due ripescati, quattro per girone — e quindi dura `2w - 1` turni, tre in
+> meno del doppio KO completo della stessa taglia (gli mancano la finale e gli
+> ultimi due round del recupero, che servirebbero a stringere i quattro fino a
+> uno). Il tabellone finale e' a eliminazione diretta. I turni della gara sono
+> `(2w - 1) + log₂` della taglia del tabellone finale.
+
 La **strategia di abbinamento _casuale_** abbina a caso i giocatori assicurandosi solo che non ci sia mai lo stesso abbinamento più di una volta in turni diversi della stessa gara. Questo tipo di strategia può calcolare tutti gli abbinamenti subito e non ha bisogno di aspettare la conclusione dei match per l'abbinamento successivo.
 
 Una strategia di abbinamento è associata anche ad una **strategia per il _primo abbinamento_** che può essere _casuale_ (in questo caso limitata al primo turno) oppure _basato su classifica_ oppure _basato su rating_ (elo).

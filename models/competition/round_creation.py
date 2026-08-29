@@ -335,6 +335,15 @@ class RoundCreationService:
 
         gara.current_round = round_number
 
+        # Un turno oltre quelli programmati puo' esistere solo se la strategia
+        # l'ha riconosciuto (il guard sopra), e allora la gara ne ha uno in
+        # piu': la bella del doppio KO. Il numero si aggiorna qui, sul turno
+        # **appena creato**, e non in anticipo su un turno che meta' delle
+        # volte non nascera'. E' lo stesso momento in cui il sorteggio scrive
+        # `rounds_count` smettendo di stimarlo (ADR-038).
+        if round_number > (gara.rounds_count or 0):
+            gara.rounds_count = round_number
+
         tables_assigned = TableAssignmentService.assign_tables_to_round(
             gara_id, round_number
         )
@@ -352,8 +361,18 @@ class RoundCreationService:
         if not gara:
             raise ValueError(f"Gara {gara_id} non trovata")
 
-        # Verifica precondizioni
-        if round_number < 1 or round_number > gara.rounds_count:
+        # Verifica precondizioni. Il limite non e' `rounds_count` ma cio' che
+        # la strategia riconosce come turno: nel doppio KO la bella sta un
+        # turno oltre quelli programmati, e solo se la finale la richiede.
+        from models.matchmaking.bootstrap import strategy_for_gara
+
+        strategia = strategy_for_gara(gara)
+        turno_valido = (
+            strategia.has_round(gara, round_number)
+            if strategia is not None
+            else 1 <= round_number <= gara.rounds_count
+        )
+        if not turno_valido:
             raise ValueError(f"Turno {round_number} non valido")
 
         # Verifica se esistono già match per questo turno
@@ -376,31 +395,28 @@ class RoundCreationService:
             trio_matches = sum(1 for m in matches if getattr(m, "is_trio", False))
             return (len(matches), normal_matches, bye_matches, trio_matches)
 
-        # Ottieni la strategia configurata
-        strategy_name = gara.matchmaking_strategy or "amalfi"
+        # Ottieni la strategia configurata (unica fonte per la mappatura)
+        from models.matchmaking.bootstrap import strategy_for_gara
 
-        # Usa il registry per tutte le strategie
-        from models.matchmaking.bootstrap import get_registry
-
-        registry = get_registry()
-
-        # Mappatura nome strategia: enum -> registry
-        strategy_mapping = {
-            "random": "random_anti_rematch",
-            "amalfi": "amalfi",
-            "advanced_amalfi": "amalfi",  # Alias per compatibilità
-            "round_robin": "round_robin",
-            "direct_elimination": "direct_elimination",
-            "double_knockout": "double_knockout",
-        }
-
-        registry_name = strategy_mapping.get(strategy_name, strategy_name)
-        strategy = registry.get(registry_name)
+        strategy = strategy_for_gara(gara)
         if not strategy:
-            raise ValueError(f"Strategia '{strategy_name}' non trovata")
+            raise ValueError(f"Strategia '{gara.matchmaking_strategy}' non trovata")
 
         # Genera gli abbinamenti usando l'interfaccia della strategia
         pairings = strategy.create_round(gara, round_number)
+
+        # Un turno senza accoppiamenti non e' uno stato: e' un turno che non
+        # doveva aprirsi. Il doppio KO lo dichiarava legittimo — "zero pairing
+        # significa torneo concluso" — e la gara restava PLAYING per sempre su
+        # un turno senza partite (issue #239). Ora la domanda "questo turno
+        # esiste?" si pone **prima**, con `strategy.has_round`, e arrivare qui
+        # a mani vuote significa che quella domanda e la generazione si sono
+        # disallineate: e' un difetto, e va detto invece che materializzato.
+        if not pairings:
+            raise ValueError(
+                f"Il turno {round_number} della gara {gara_id} non produce "
+                f"accoppiamenti: non c'e' nessun turno da avviare"
+            )
 
         # Materializza la classifica di partenza (turno 0) al primo turno.
         if round_number == 1:

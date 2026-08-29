@@ -323,10 +323,27 @@ class TestDoubleKnockoutSchedule:
         }
 
     @pytest.mark.parametrize("size", POWER_SIZES)
-    def test_total_rounds_is_two_k_plus_one(self, size):
+    def test_i_turni_programmati_sono_due_k(self, size):
+        """`total_rounds` conta i turni certi: la bella non e' fra questi.
+
+        Diceva `2k + 1`, contando anche il grand final reset — che pero' si
+        gioca solo se la finale la vince chi arriva dal losers bracket. La
+        gara si ritrovava un turno dichiarato e mai popolato (issue #239).
+        L'induzione che fissa il numero sta in
+        `test_doppio_ko_conteggio_turni.py`.
+        """
+        k = int(math.log2(size))
+        assert total_rounds(size, double_elimination=True) == 2 * k
+
+    @pytest.mark.parametrize("size", POWER_SIZES)
+    def test_lo_schedule_arriva_fino_alla_bella(self, size):
+        """La *struttura*, al contrario, la bella ce l'ha: e' un nodo vero.
+
+        Sono due domande diverse — quanti turni si giocano, e quanto e' alto
+        il tabellone — e prima un solo numero rispondeva a entrambe.
+        """
         k = int(math.log2(size))
         schedule = bracket_schedule(size, double_elimination=True)
-        assert total_rounds(size, double_elimination=True) == 2 * k + 1
         assert sorted(schedule) == list(range(1, 2 * k + 2))
 
     @pytest.mark.parametrize("size", POWER_SIZES)

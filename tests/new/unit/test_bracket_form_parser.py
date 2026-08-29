@@ -175,7 +175,7 @@ class TestCampiDerivati:
         de = self._parse(app, self._bracket_form("direct_elimination"))
         dk = self._parse(app, self._bracket_form("double_knockout"))
         assert de["rounds_count"] == 4  # log2(16)
-        assert dk["rounds_count"] == 9  # 2*log2(16) + 1
+        assert dk["rounds_count"] == 8  # 2*log2(16): la bella non e' programmata
 
     def test_il_minimo_iscritti_sale_al_pavimento_del_formato(self, app):
         """Il default del form è 6, ma il doppio KO ne richiede 8."""
