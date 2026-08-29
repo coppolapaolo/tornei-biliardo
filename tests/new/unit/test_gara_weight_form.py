@@ -98,3 +98,44 @@ def test_sulla_gara_standalone_il_peso_resta_uno(app):
     with _gara_form(app, weight="5"):
         data = GaraFormParser(campionato=None).parse()
     assert data["weight"] == 1
+
+
+class TestLEsercizioDellaX:
+    """Il direttore sceglie l'esercizio della X dal modulo (issue #267).
+
+    Il campo si legge **solo** con `odd_number_policy = bye_with_challenge`:
+    altrove è una domanda senza oggetto, e un valore rimasto scritto da una
+    scelta precedente resterebbe in colonna senza che nessuna schermata lo
+    mostri più. Stessa regola di `_parse_bracket_options`, che azzera le opzioni
+    del tabellone fuori dal tabellone invece di ignorarle.
+    """
+
+    @pytest.mark.unit
+    def test_l_esercizio_scelto_arriva_al_modello(self, app):
+        with _gara_form(
+            app, odd_number_policy="bye_with_challenge", x_challenge_id="7"
+        ):
+            data = GaraFormParser(campionato=None).parse()
+        assert data["x_challenge_id"] == 7
+
+    @pytest.mark.unit
+    def test_senza_scelta_resta_none(self, app):
+        """NULL vuol dire «scegli tu»: è il comportamento storico."""
+        with _gara_form(app, odd_number_policy="bye_with_challenge", x_challenge_id=""):
+            data = GaraFormParser(campionato=None).parse()
+        assert data["x_challenge_id"] is None
+
+    @pytest.mark.unit
+    def test_con_un_altra_politica_il_campo_viene_azzerato(self, app):
+        """Cambiando politica la scelta non deve restare appesa in colonna."""
+        with _gara_form(app, odd_number_policy="bye", x_challenge_id="7"):
+            data = GaraFormParser(campionato=None).parse()
+        assert data["x_challenge_id"] is None
+
+    @pytest.mark.unit
+    def test_un_valore_non_numerico_non_rompe(self, app):
+        with _gara_form(
+            app, odd_number_policy="bye_with_challenge", x_challenge_id="pippo"
+        ):
+            data = GaraFormParser(campionato=None).parse()
+        assert data["x_challenge_id"] is None

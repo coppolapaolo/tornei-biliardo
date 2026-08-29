@@ -129,7 +129,8 @@ def create_matches_from_pairings(
     # semplice col sistema RACK proprio perché «il giocatore con bye
     # riceverebbe 0 rack»: quel divieto e questa riga adesso concordano.
     # La variante con challenge (riga 65) sovrascrive questo punteggio quando
-    # la prova viene completata — vedi `AmalfiChallengeByeService`.
+    # la prova viene completata e il direttore la convalida — vedi
+    # `ChallengeService.validate_x_replacement` (issue #221).
     bye_score = 0
 
     for pairing in pairings:

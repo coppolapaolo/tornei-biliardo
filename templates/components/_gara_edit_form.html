@@ -179,6 +179,27 @@
         </div>
       </div>
     </div>
+
+    {# L'esercizio della X (issue #267). Visibile solo con «X con esercizio»:
+       altrove e' una domanda senza oggetto, e il parser non legge il campo. #}
+    <div class="mb-3" id="x_challenge_section" data-bracket-hide
+         {% if gara.odd_number_policy != 'bye_with_challenge' %}style="display:none"{% endif %}>
+      <label for="x_challenge_id" class="form-label">{{ _('Esercizio per la X') }}</label>
+      <select class="form-select" id="x_challenge_id" name="x_challenge_id">
+        <option value="">{{ _("Scelto dall'applicazione") }}</option>
+        {% for esercizio in x_challenges or [] %}
+        <option value="{{ esercizio.id }}" {% if gara.x_challenge_id == esercizio.id %}selected{% endif %}>{{ esercizio.get_display_name() }}</option>
+        {% endfor %}
+      </select>
+      <div class="form-text">
+        {{ _('Lo stesso esercizio per tutti i turni: chi riposa affronta la stessa prova, in qualunque turno gli capiti.') }}
+        <a href="{{ url_for('challenge.create_challenge') }}" target="_blank" rel="noopener">{{ _('Non trovi quello giusto? Creane uno') }}</a>
+        <button type="button" class="btn btn-link btn-sm p-0 align-baseline"
+                data-url="{{ url_for('admin.competition.x_challenges_json') }}"
+                data-target="x_challenge_id"
+                onclick="ricaricaEserciziX(this)">{{ _("aggiorna l'elenco") }}</button>
+      </div>
+    </div>
   </div>
 
   {# ---------------- Impostazioni di gioco ---------------- #}
@@ -431,4 +452,19 @@
 
         validateAntiRematchConstraint();
     });
+</script>
+<script src="{{ url_for('static', filename='js/x-challenge-picker.js') }}"></script>
+<script>
+(function () {
+  // La domanda «quale esercizio per la X» esiste solo con quella politica:
+  // lasciarla visibile altrove chiederebbe una cosa che non ha effetto.
+  var policy = document.getElementById('odd_number_policy');
+  var sezione = document.getElementById('x_challenge_section');
+  if (!policy || !sezione) return;
+  function aggiorna() {
+    sezione.style.display = policy.value === 'bye_with_challenge' ? '' : 'none';
+  }
+  policy.addEventListener('change', aggiorna);
+  aggiorna();
+})();
 </script>

@@ -533,7 +533,7 @@ def _timbra_la_fine(_mapper: Any, _connection: Any, match: "Match") -> None:
     * il **ritiro** di un giocatore, che chiude d'ufficio le sue partite
       (``WithdrawPolicyService``);
     * il **bye** Amalfi chiuso col punteggio della sfida
-      (``AmalfiChallengeByeService``).
+      (``ChallengeService.validate_x_replacement``, issue #221).
 
     In produzione erano 63 partite finite senza data su 367. E non era un
     buco innocuo: SQLite ordina i NULL **per primi**, quindi

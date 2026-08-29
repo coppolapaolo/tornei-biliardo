@@ -30,6 +30,7 @@ from utils import (
     director_or_admin_required,
 )
 from models.campionato.services import TournamentService
+from models.challenge.services import ChallengeService
 from .campionato_form_parser import CampionatoFormParser
 from .competition.form_parser import BRACKET_STRATEGIES
 
@@ -449,6 +450,9 @@ def campionato_detail(campionato_id):
     return render_template(
         "admin/campionato_detail.html",
         campionato=campionato,
+        # Gli esercizi offribili per la X (issue #267): il modale di creazione
+        # gara li mostra solo con `odd_number_policy = bye_with_challenge`.
+        x_challenges=ChallengeService.get_challenges_for_x_choice(),
         gare=gare,
         users=candidate_directors,
         can_manage_directors=can_manage_directors,

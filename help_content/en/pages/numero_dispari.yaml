@@ -77,6 +77,18 @@ blocks:
       - "**For**: nobody sits out, and the round stays fair even on racks."
       - "**Against**: the competition needs at least one challenge configured, and the director has to validate the scores."
 
+  - type: text
+    text: >-
+      **Which** drill is played is your choice, made when you create the
+      competition: a «Drill for the X» field appears as soon as you pick this
+      option. It is the same for every round, and that is deliberate — with an
+      odd number a different person has the bye each round, and a drill that
+      changed would have two players facing tests of different difficulty with
+      their scores in the same standings. If you cannot find the right one you
+      can create it on the spot: it stays in the catalogue, available to other
+      competitions too. Leaving «Chosen by the app» lets the program decide, as
+      it did before.
+
   - type: heading
     id: trio
     title: "3. Trio — a three-way match"

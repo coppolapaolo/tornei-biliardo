@@ -119,6 +119,7 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/admin/gara/<int:gara_id>/round/<int:round_number>/bulk_reset` | POST | `admin.competition.bulk_reset_round_matches` | `@gara_manager_required` | JSON action | Azzera tutte le partite del turno |
 | `/admin/gara/<int:gara_id>/round/<int:round_number>/prova-x/<int:user_id>/valida` | POST | `admin.competition.validate_x_replacement` | `@gara_manager_required` | form | Registra e convalida la prova giocata al posto della X: è da qui che il punteggio entra in classifica |
 | `/admin/gara/<int:gara_id>/round/<int:round_number>/prova-x/<int:user_id>/azzera` | POST | `admin.competition.reset_x_replacement` | `@gara_manager_required` | form | Azzera la prova: il turno torna a valere zero |
+| `/admin/gara/challenges/per-la-x` | GET | `admin.competition.x_challenges_json` | `@director_or_admin_required` | JSON | Esercizi offribili per la X: alimenta il ricaricamento dell'elenco nel modulo gara |
 | `/admin/gara/<int:gara_id>/round-config` | GET | `admin.competition.list_round_configs` | `@gara_manager_required` | JSON API | Elenca gli override di configurazione per turno |
 | `/admin/gara/<int:gara_id>/round-config/<int:round_number>` | POST | `admin.competition.upsert_round_config` | `@gara_manager_required` | JSON action | Salva l'override del turno (ADR-027) |
 | `/admin/gara/<int:gara_id>/round-config/<int:round_number>` | DELETE | `admin.competition.delete_round_config` | `@gara_manager_required` | JSON action | Rimuove l'override del turno |

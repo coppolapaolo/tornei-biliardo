@@ -541,6 +541,24 @@ class ChallengeService:
             return True
 
     @staticmethod
+    def get_challenges_for_x_choice() -> List[Challenge]:
+        """Gli esercizi che si possono offrire per la X, in ordine di nome.
+
+        Il criterio e' quello del ripiego automatico — attivi e **a punteggio**
+        — e sta qui una volta sola: il punteggio della X e' una differenza
+        triangoli, che un esercizio superato/non superato non produce. Due copie
+        di questo filtro sarebbero due copie destinate a divergere, e la
+        divergenza si vedrebbe solo il giorno in cui un direttore sceglie un
+        esercizio che poi il motore rifiuta.
+        """
+        return (
+            db.session.query(Challenge)
+            .filter_by(is_active=True, pass_fail_only=False)
+            .order_by(Challenge.title, Challenge.id)
+            .all()
+        )
+
+    @staticmethod
     def get_challenge_for_x_replacement(gara_id: int) -> Optional[Challenge]:
         """Seleziona una sfida appropriata per sostituzione X in campionato.
 
@@ -559,6 +577,30 @@ class ChallengeService:
             X-replacement: quando un giocatore ha 'bye' può fare una sfida
             invece di riposare, per mantenere attivo l'allenamento.
         """
+        # La scelta del direttore vince (issue #267). Sta sulla gara e non sul
+        # turno: a numero dispari riposa una persona diversa a ogni turno, e un
+        # esercizio che cambia renderebbe le prove di due giocatori non
+        # confrontabili pur finendo nella stessa classifica.
+        #
+        # I due filtri del ripiego valgono anche qui: un esercizio disattivato o
+        # a esito booleano non torna utilizzabile solo perche' l'ha scelto
+        # qualcuno — sul secondo il punteggio della X e' una differenza
+        # triangoli, che un superato/non superato non produce. Quando la scelta
+        # non e' piu' valida si ricade sul ripiego: meglio un esercizio diverso
+        # che una X che non si puo' giocare.
+        from models.competition.models import Gara
+
+        gara = db.session.get(Gara, gara_id)
+        if gara is not None and gara.x_challenge_id:
+            # `scelto is None` non e' paranoia: su uno schema costruito dal
+            # modello la chiave esterna c'e' e un id orfano non si scrive, ma in
+            # produzione la colonna nasce da un `ALTER TABLE ADD COLUMN`, che in
+            # SQLite non puo' creare vincoli. Le due meta' del mondo hanno
+            # schemi diversi, e questo ramo copre quella senza vincolo.
+            scelto = db.session.get(Challenge, gara.x_challenge_id)
+            if scelto is not None and scelto.is_active and not scelto.pass_fail_only:
+                return scelto
+
         # Criteri per X-replacement: attive e con scoring numerico (no pass/fail)
         suitable_challenges = (
             db.session.query(Challenge)

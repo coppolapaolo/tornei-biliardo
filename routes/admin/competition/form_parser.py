@@ -275,6 +275,11 @@ class GaraFormParser:
         # ── Peso nella classifica del campionato (issue #64) ─────
         data["weight"] = GaraFormParser._parse_weight(camp)
 
+        # ── Esercizio giocato al posto della X (issue #267) ───────
+        data["x_challenge_id"] = GaraFormParser._parse_x_challenge(
+            data["odd_number_policy"]
+        )
+
         # ── SSR tiebreaker ───────────────────────────────────────
         data["tiebreaker_enabled"] = request.form.get("tiebreaker_enabled") == "on"
         data["tiebreaker_until_position"] = int(
@@ -288,6 +293,35 @@ class GaraFormParser:
         data.update(_bracket_derived_fields(data))
 
         return data
+
+    @staticmethod
+    def _parse_x_challenge(odd_number_policy: str) -> Optional[int]:
+        """Quale esercizio si gioca al posto della X, se il direttore lo sceglie.
+
+        Si legge **solo** con `bye_with_challenge`: con qualunque altra politica
+        e' una domanda senza oggetto, e una scelta rimasta da prima resterebbe
+        in colonna senza che nessuna schermata la mostri piu'. Si azzera invece
+        di ignorarla, come `_parse_bracket_options` fa con le opzioni del
+        tabellone fuori dal tabellone.
+
+        `None` e' un valore legittimo e vuol dire «sceglie l'applicazione»: e' il
+        comportamento storico, e quello di ogni gara creata prima. Per lo stesso
+        motivo un valore malformato ricade su `None` invece di sollevare — non
+        e' una configurazione che si possa sbagliare in modo dannoso, il ripiego
+        automatico c'e' comunque.
+        """
+        from models.matchmaking.configuration import OddNumberPolicy
+
+        if odd_number_policy != OddNumberPolicy.BYE_WITH_CHALLENGE.value:
+            return None
+
+        raw = (request.form.get("x_challenge_id") or "").strip()
+        if not raw:
+            return None
+        try:
+            return int(raw)
+        except ValueError:
+            return None
 
     @staticmethod
     def _parse_weight(campionato: Optional[Any]) -> int:

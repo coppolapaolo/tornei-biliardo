@@ -341,9 +341,13 @@ def edit_gara(gara_id):
         .all()
     )
 
+    from models.challenge.services import ChallengeService
+
     return render_template(
         "admin/gara_edit.html",
         gara=gara,
+        # Gli esercizi offribili per la X (issue #267).
+        x_challenges=ChallengeService.get_challenges_for_x_choice(),
         WithdrawPolicy=WithdrawPolicy,
         available_strategies=available_strategies,
         verified_venues=verified_venues,
