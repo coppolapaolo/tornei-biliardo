@@ -624,7 +624,7 @@ class PlayoffService:
         if campionato is None:
             raise NotFoundError("Campionato non trovato")
 
-        if campionato.get_status() != TournamentStatus.TERMINATED.value:
+        if campionato.get_status() != TournamentStatus.AWAITING_PLAYOFF.value:
             raise ValueError(
                 "Il campionato deve essere terminato per avviare i playoff"
             )

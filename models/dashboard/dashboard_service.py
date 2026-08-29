@@ -61,7 +61,7 @@ DASHBOARD_STANDALONE_COMPLETED_LIMIT = 2
 _TERMINAL_TOURNAMENT_STATUSES = frozenset(
     {
         TournamentStatus.COMPLETED.value,
-        TournamentStatus.TERMINATED.value,
+        TournamentStatus.AWAITING_PLAYOFF.value,
     }
 )
 

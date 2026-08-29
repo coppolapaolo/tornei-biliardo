@@ -155,9 +155,16 @@ def public_campionatos_list():
                 TournamentStatus.SETUP.value,
                 TournamentStatus.REGISTRATION_OPEN.value,
                 TournamentStatus.IN_PROGRESS.value,
+                # Gare finite ma campionato non chiuso: la classifica generale
+                # non è consolidata, quindi per chi legge è ancora in corso.
+                # Senza questa riga sparirebbe da ogni secchiello tranne
+                # "Tutti", perché prima si spacciava per COMPLETED.
+                TournamentStatus.AWAITING_CLOSURE.value,
             },
             "completati": {TournamentStatus.COMPLETED.value},
-            "terminati": {TournamentStatus.TERMINATED.value},
+            # La chiave dell'URL resta "terminati" per non rompere i link già
+            # in giro; l'etichetta nel selettore dice ora cosa significa.
+            "terminati": {TournamentStatus.AWAITING_PLAYOFF.value},
         }[status_filter]
         campionatos = [c for c in campionatos if c.get_status() in wanted]
 

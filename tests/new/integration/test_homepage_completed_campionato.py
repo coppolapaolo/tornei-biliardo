@@ -21,6 +21,7 @@ from datetime import date, timedelta
 import pytest
 
 from models import Campionato, Gara
+from models.base import utc_now
 from models.campionato.homepage_service import (
     HomepageService,
     HOMEPAGE_ARCHIVE_LIMIT,
@@ -74,6 +75,19 @@ def _make_campionato(
     )
 
 
+def _chiudi(db_session, campionato):
+    """Chiude il campionato come fa il direttore col pulsante «Termina».
+
+    Dalla #242 completare le gare non basta: senza `terminated_at` lo stato è
+    AWAITING_CLOSURE, che di proposito **non** è terminale — il campionato resta
+    fra gli attivi e fuori dall'archivio. Questi test parlano dell'archivio e
+    del filtro "completati", quindi devono chiuderlo davvero.
+    """
+    campionato.terminated_at = utc_now()
+    db_session.flush()
+    return campionato
+
+
 def _add_completed_gara(
     db_session, campionato_id: int, number: int, director_id: int
 ) -> Gara:
@@ -117,6 +131,7 @@ class TestHomepageCompletedCampionato:
         active campionati. It belongs to the archive section instead."""
         campionato = _make_campionato("Old", isolated_director_user.id)
         _add_completed_gara(db_session, campionato.id, 1, isolated_director_user.id)
+        _chiudi(db_session, campionato)
 
         # Sanity: derived status is COMPLETED, is_active is still True
         assert campionato.is_active is True
@@ -162,6 +177,7 @@ class TestHomepageCompletedCampionato:
         for i in range(extra):
             c = _make_campionato(f"Done{i}", isolated_director_user.id)
             _add_completed_gara(db_session, c.id, 1, isolated_director_user.id)
+            _chiudi(db_session, c)
 
         data = HomepageService.get_homepage_data()
         assert data is not None
@@ -487,6 +503,7 @@ class TestPublicCampionatosListFilters:
 
         done = _make_campionato("DoneOne", isolated_director_user.id)
         _add_completed_gara(db_session, done.id, 1, isolated_director_user.id)
+        _chiudi(db_session, done)
 
         response = _guest_render(app, "/campionatos", "status=completati")
         assert response.status_code == 200

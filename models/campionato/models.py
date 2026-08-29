@@ -8,7 +8,6 @@ Dependencies: models.base.db, models.user.models
 from typing import TYPE_CHECKING
 from models.base import db, utc_now
 from models.status_enum import (
-    TournamentStatus,
     GaraStatus,
     EntityType,
     ClassificationSystem,
@@ -185,39 +184,17 @@ class Campionato(db.Model):
                     return False
         return True
 
-    def get_status_badge_class(self):
-        """Restituisce la classe CSS per il badge status"""
-        status = self.get_status()
-        return {
-            TournamentStatus.SETUP.value: "bg-warning",
-            TournamentStatus.REGISTRATION_OPEN.value: "bg-info",
-            TournamentStatus.IN_PROGRESS.value: "bg-primary",
-            TournamentStatus.COMPLETED.value: "bg-success",
-            TournamentStatus.TERMINATED.value: "bg-dark",
-        }.get(status, "bg-secondary")
-
-    def get_status_text(self):
-        """Restituisce il testo dello status"""
-        status = self.get_status()
-        return {
-            TournamentStatus.SETUP.value: "Setup",
-            TournamentStatus.REGISTRATION_OPEN.value: "Iscrizioni Aperte",
-            TournamentStatus.IN_PROGRESS.value: "In Corso",
-            TournamentStatus.COMPLETED.value: "Completato",
-            TournamentStatus.TERMINATED.value: "Terminato",
-        }.get(status, "Sconosciuto")
+    # `get_status_badge_class()` e `get_status_text()` vivevano qui: una seconda
+    # tabella di etichette, non tradotta (stringhe italiane nude, senza `_()`) e
+    # senza un solo chiamante in tutto il repo — già segnalata come "view
+    # concern nell'entità" dalla revisione del debito tecnico del giugno 2026.
+    # Rimosse con la #242: badge e testo li decide `StatusPresenter.campionato`
+    # (utils/status_ui.py), che è l'unica tabella e passa da `_()`.
 
     def has_playoff_configurations(self) -> bool:
         """Check if campionato has playoff configurations."""
         configurations = getattr(self, "playoff_configurations", [])
         return len(configurations) > 0
-
-    def can_generate_playoffs(self) -> bool:
-        """Check if campionato is ready for playoff generation."""
-        return (
-            self.get_status() == TournamentStatus.COMPLETED.value
-            and self.has_playoff_configurations()
-        )
 
     def all_gare_concluded(self) -> bool:
         """True se tutte le gare attive sono di fatto concluse.
@@ -261,14 +238,13 @@ class Campionato(db.Model):
             and self.all_gare_concluded()
         )
 
-    def generate_playoff_qualifications(self) -> dict:
-        """Generate playoff qualifications for all configurations."""
-        if not self.can_generate_playoffs():
-            raise ValueError("Campionato is not ready for playoff generation")
-
-        from ..playoff.services import PlayoffService
-
-        return PlayoffService.generate_all_qualifications(self.id)
+    # `can_generate_playoffs()` e `generate_playoff_qualifications()` vivevano
+    # qui, senza chiamanti e con un guard che nessuno stato poteva soddisfare:
+    # pretendevano `COMPLETED`, mentre `PlayoffService.start_playoff` esige
+    # `AWAITING_PLAYOFF`. Due condizioni disgiunte, quindi la coppia sollevava
+    # comunque. Rimosse con la #242. Il controllo vivo è
+    # `is_ready_for_playoff_transition()`, qui sopra, che non guarda lo stato
+    # derivato ma i tre fatti che contano.
 
     def get_playoff_status(self) -> dict:
         """Get comprehensive playoff status."""

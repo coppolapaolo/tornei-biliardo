@@ -19,6 +19,7 @@ from datetime import date, timedelta
 import pytest
 
 from models import Campionato, Gara
+from models.base import utc_now
 from models.campionato.services import TournamentService
 from models.competition.services import GaraService
 from models.dashboard.dashboard_service import (
@@ -73,6 +74,20 @@ def _make_campionato(
     )
 
 
+def _chiudi(db_session, campionato: Campionato) -> Campionato:
+    """Chiude il campionato come fa il direttore col pulsante «Termina».
+
+    Dalla #242 completare le gare non basta a renderlo "concluso": senza
+    `terminated_at` lo stato è AWAITING_CLOSURE — la classifica generale non è
+    consolidata — e resta di proposito fra gli **attivi**, che è dove il
+    direttore deve ritrovarlo. Questi test parlano del secchiello dei conclusi,
+    quindi devono chiuderlo davvero.
+    """
+    campionato.terminated_at = utc_now()
+    db_session.flush()
+    return campionato
+
+
 def _add_completed_gara(
     db_session, campionato_id: int, number: int, director_id: int
 ) -> Gara:
@@ -110,6 +125,7 @@ class TestPlayerDashboardCampionatiPartition:
     ):
         campionato = _make_campionato("Done", isolated_director_user.id)
         _add_completed_gara(db_session, campionato.id, 1, isolated_director_user.id)
+        _chiudi(db_session, campionato)
 
         # Sanity
         assert campionato.get_status() == TournamentStatus.COMPLETED.value
@@ -143,6 +159,7 @@ class TestPlayerDashboardCampionatiPartition:
         for i in range(extra):
             c = _make_campionato(f"Past{i}", isolated_director_user.id)
             _add_completed_gara(db_session, c.id, 1, isolated_director_user.id)
+            _chiudi(db_session, c)
 
         vm = DashboardService.for_player(isolated_players[0].id)
 
@@ -162,6 +179,7 @@ class TestDirectorDashboardCampionatiPartition:
     ):
         campionato = _make_campionato("Old", isolated_director_user.id)
         _add_completed_gara(db_session, campionato.id, 1, isolated_director_user.id)
+        _chiudi(db_session, campionato)
 
         vm = DashboardService.for_director(isolated_director_user.id)
 

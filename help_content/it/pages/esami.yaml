@@ -201,7 +201,7 @@ blocks:
   - type: faq
     items:
       - q: "Non vedo la sezione Esami."
-        a: "Si sblocca dopo aver completato tre esercizio. Fino a quel momento la voce non compare: nella pagina dei progressi la trovi fra le funzioni ancora chiuse, con quanti te ne mancano."
+        a: "Si sblocca dopo aver completato tre esercizi. Fino a quel momento la voce non compare: nella pagina dei progressi la trovi fra le funzioni ancora chiuse, con quanti te ne mancano."
       - q: "Posso ripetere lo stesso esame più volte?"
         a: "Sì. In autonomia quando vuoi; certificato, aprendo ogni volta un nuovo appuntamento."
       - q: "Posso chiedere un esame che somministro io?"

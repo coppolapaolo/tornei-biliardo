@@ -398,12 +398,19 @@ class TournamentStatisticsService:
 def compute_campionato_status(campionato: Campionato) -> str:
     """Calcola lo stato derivato del campionato in base agli stati delle Gare.
 
+    Le due domande sono distinte, ed è il punto di tutta la funzione:
+    «si può ancora giocare?» e «il direttore ha chiuso?». Prima della #242 una
+    risposta sola le copriva entrambe, e COMPLETED significava tanto
+    "consolidato" quanto "esaurito ma in attesa di qualcuno che prema Termina".
+
     Regole:
-    - Se terminated_at → TERMINATED (se playoff config) o COMPLETED (altrimenti)
+    - terminated_at valorizzato → AWAITING_PLAYOFF se restano playoff da
+      giocare, altrimenti COMPLETED
     - Se non ci sono Gare → SETUP
     - Se almeno una Gara è in PLAYING → IN_PROGRESS
     - Altrimenti, se almeno una Gara è in INSCRIPTION → REGISTRATION_OPEN
-    - Altrimenti, se tutte le Gare esistono e sono COMPLETED → COMPLETED
+    - Altrimenti, se tutte le gare previste esistono e sono COMPLETED →
+      AWAITING_CLOSURE (finite le gare, non chiuso il campionato)
     - In tutti gli altri casi → SETUP
 
     Ritorna la stringa dello stato (compat con UI/template esistenti).
@@ -413,7 +420,7 @@ def compute_campionato_status(campionato: Campionato) -> str:
             hasattr(campionato, "has_playoff_configurations")
             and campionato.has_playoff_configurations()
         ):
-            # TERMINATED until all playoffs completed, then COMPLETED.
+            # AWAITING_PLAYOFF finché i playoff non sono tutti finiti.
             # Usa le relationship (playoff_configurations + playoff_campionato
             # scalar) invece di query fresche per-config: identico semanticamente
             # (filter_by(is_active=True) ≡ list-comp; .first() ≡ scalar uselist),
@@ -431,7 +438,7 @@ def compute_campionato_status(campionato: Campionato) -> str:
                 )
                 if all_completed:
                     return TournamentStatus.COMPLETED.value
-            return TournamentStatus.TERMINATED.value
+            return TournamentStatus.AWAITING_PLAYOFF.value
         return TournamentStatus.COMPLETED.value
 
     gare = getattr(campionato, "gare", []) or []
@@ -456,7 +463,12 @@ def compute_campionato_status(campionato: Campionato) -> str:
         planned = getattr(campionato, "planned_gare_count", 0) or 0
         if len(gare) < planned:
             return TournamentStatus.IN_PROGRESS.value
-        return TournamentStatus.COMPLETED.value
+        # Le gare previste sono finite tutte, ma `terminated_at` è NULL: la
+        # classifica generale non è consolidata e il pulsante "Termina" aspetta
+        # ancora qualcuno. Non è COMPLETED, e soprattutto non è terminale — così
+        # il campionato resta fra gli attivi della dashboard, che è dove il
+        # direttore lo ritrova.
+        return TournamentStatus.AWAITING_CLOSURE.value
 
     return TournamentStatus.SETUP.value
 
@@ -469,7 +481,7 @@ def compute_campionato_status(campionato: Campionato) -> str:
 _TERMINAL_TOURNAMENT_STATUSES = frozenset(
     {
         TournamentStatus.COMPLETED.value,
-        TournamentStatus.TERMINATED.value,
+        TournamentStatus.AWAITING_PLAYOFF.value,
     }
 )
 
@@ -493,7 +505,7 @@ def partition_campionati_by_status(
     Returns:
         Dict con:
         - `active`: lista di campionati con status non-terminale
-        - `completed`: lista completa dei campionati COMPLETED/TERMINATED
+        - `completed`: lista completa dei campionati COMPLETED/AWAITING_PLAYOFF
         - `completed_shown`: prefisso di `completed` con al più
           `completed_limit` elementi (preserva l'ordine in input)
         - `to_show`: `active + completed_shown` (lista renderizzabile)

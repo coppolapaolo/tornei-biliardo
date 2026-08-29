@@ -161,8 +161,8 @@ class TestComputeStatusTerminated:
         c.terminated_at = utc_now()
         db_session.commit()
 
-        assert compute_campionato_status(c) == TournamentStatus.TERMINATED.value
-        assert c.get_status() == TournamentStatus.TERMINATED.value
+        assert compute_campionato_status(c) == TournamentStatus.AWAITING_PLAYOFF.value
+        assert c.get_status() == TournamentStatus.AWAITING_PLAYOFF.value
 
     def test_terminated_all_completed_with_playoff(self, db_session):
         """Terminate when all gare already completed + playoff config → TERMINATED."""
@@ -173,8 +173,8 @@ class TestComputeStatusTerminated:
         c.terminated_at = utc_now()
         db_session.commit()
 
-        assert compute_campionato_status(c) == TournamentStatus.TERMINATED.value
-        assert c.get_status() == TournamentStatus.TERMINATED.value
+        assert compute_campionato_status(c) == TournamentStatus.AWAITING_PLAYOFF.value
+        assert c.get_status() == TournamentStatus.AWAITING_PLAYOFF.value
 
     def test_not_terminated_unchanged(self, db_session):
         """Normal (non-terminated) campionato status unchanged."""
