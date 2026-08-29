@@ -169,6 +169,16 @@ blocks:
           band — the two beaten semi-finalists, the four quarter-finalists —
           are the intended outcome, and no tie-break would ever fire.
         hint: gara.spareggio
+      - name: "Weight in the standings"
+        values: "1 · only inside a championship"
+        text: >-
+          How many times this competition's score counts in the championship
+          standings. With **1** it counts like every other; with **3** it
+          counts as three competitions. It keeps the championship open to the
+          end: if the last one weighs more, nobody takes it with two
+          competitions to spare. A competition outside a championship has no
+          such field, because there are no general standings to weigh it in.
+        hint: gara.peso
 
   - type: heading
     id: tabellone

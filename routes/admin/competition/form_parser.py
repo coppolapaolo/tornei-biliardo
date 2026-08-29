@@ -272,6 +272,9 @@ class GaraFormParser:
 
         data.update(GaraFormParser._parse_bracket_options(data["matchmaking_strategy"]))
 
+        # ── Peso nella classifica del campionato (issue #64) ─────
+        data["weight"] = GaraFormParser._parse_weight(camp)
+
         # ── SSR tiebreaker ───────────────────────────────────────
         data["tiebreaker_enabled"] = request.form.get("tiebreaker_enabled") == "on"
         data["tiebreaker_until_position"] = int(
@@ -285,6 +288,41 @@ class GaraFormParser:
         data.update(_bracket_derived_fields(data))
 
         return data
+
+    @staticmethod
+    def _parse_weight(campionato: Optional[Any]) -> int:
+        """Quanto pesa questa gara nella classifica generale del campionato.
+
+        Su una gara **standalone** il campo non viene mostrato — non c'e'
+        nessuna classifica generale in cui pesare — e quindi non viene nemmeno
+        letto: restituire sempre 1 evita che un POST costruito a mano scriva un
+        valore che poi nessuna schermata potra' rivedere. E' la stessa regola
+        di `_parse_bracket_options` per le opzioni del tabellone fuori dal
+        tabellone.
+
+        Un valore assente o vuoto vale 1, che e' il comportamento storico. Un
+        valore **non positivo o non intero** invece si rifiuta invece di
+        ripiegare sul default: lo zero ha gia' un significato riservato
+        (`Gara.classification_weight` vale 0 per il playoff che decide da solo
+        la classifica finale), e correggerlo in silenzio scriverebbe in
+        classifica un peso che il direttore non ha scelto. Stesso messaggio di
+        `PlayoffService.update_scoring`, che sulla stessa colonna decide gia'
+        cosi'.
+        """
+        if campionato is None:
+            return 1
+
+        raw = (request.form.get("weight") or "").strip()
+        if not raw:
+            return 1
+
+        try:
+            weight = int(raw)
+        except ValueError:
+            raise ValueError("Il peso deve essere un intero maggiore di zero")
+        if weight < 1:
+            raise ValueError("Il peso deve essere un intero maggiore di zero")
+        return weight
 
     @staticmethod
     def _parse_bracket_options(strategy: str) -> Dict[str, Any]:

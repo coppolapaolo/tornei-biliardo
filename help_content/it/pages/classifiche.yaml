@@ -140,6 +140,15 @@ blocks:
       sommando i risultati di tutte le gare disputate. Chi salta una gara non
       viene penalizzato oltre al non aver guadagnato punti in quell'occasione.
 
+  - type: text
+    text: >-
+      Ogni gara può avere un **peso**, e il suo punteggio viene moltiplicato
+      per quel numero prima di entrare nella somma. Di norma il peso è 1 e
+      tutte le gare valgono uguale. Il direttore può alzarlo — di solito
+      sull'ultima prova, così nessuno vince il campionato con due gare di
+      anticipo — e nell'elenco delle gare quelle che pesano di più lo
+      dichiarano con un segno accanto al numero: ×2, ×3.
+
   - type: heading
     id: casi_particolari
     title: "Casi particolari"
@@ -172,4 +181,4 @@ blocks:
       - q: "La classifica non si è aggiornata dopo la mia partita."
         a: "Si ricalcola quando tutte le partite del turno sono concluse."
       - q: "Come si somma la classifica del campionato?"
-        a: "Sommando: vittorie e differenza triangoli con «Vittorie», triangoli totali con «Triangoli», punti-posizione con «Posizione»."
+        a: "Sommando: vittorie e differenza triangoli con «Vittorie», triangoli totali con «Triangoli», punti-posizione con «Posizione». Se una gara ha un peso, il suo punteggio viene prima moltiplicato per quel numero."

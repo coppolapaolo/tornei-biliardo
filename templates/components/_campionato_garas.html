@@ -27,7 +27,7 @@
                     <tbody>
                         {% for gara in gare %}
                             <tr>
-                                <td><strong>{{ gara.number }}</strong></td>
+                                <td><strong>{{ gara.number }}</strong>{%- if gara.classification_weight > 1 %}<span class="badge bg-warning text-dark ms-1" title="{{ _('Il punteggio di questa prova conta %(n)s volte nella classifica del campionato', n=gara.classification_weight) }}">&times;{{ gara.classification_weight }}</span>{% endif %}</td>
                                 <td>{{ gara.date|date_local }}</td>
                                 <td>{{ gara.location or '-' }}</td>
                                 <td>
@@ -102,7 +102,7 @@
                     {# Header: Numero gara + Stato #}
                     <div class="card-header py-2 d-flex justify-content-between align-items-center">
                         <div>
-                            <strong>{{ _("Gara %(number)s", number=gara.number) }}</strong>
+                            <strong>{{ _("Gara %(number)s", number=gara.number) }}</strong>{%- if gara.classification_weight > 1 %}<span class="badge bg-warning text-dark ms-1" title="{{ _('Il punteggio di questa prova conta %(n)s volte nella classifica del campionato', n=gara.classification_weight) }}">&times;{{ gara.classification_weight }}</span>{% endif %}
                             {% if gara.name and gara.name != ('Gara ' ~ gara.number) %}
                             <small class="text-muted d-block">{{ gara.name }}</small>
                             {% endif %}

@@ -318,6 +318,26 @@
                             <small class="text-muted">{{ _("I match con handicap non aggiornano il rating Elo quando i giocatori sono di categorie diverse.") }}</small>
                         </div>
 
+                        {# Peso nella classifica generale (issue #64). Il modale
+                           esiste solo dentro un campionato, quindi la classifica
+                           in cui pesare c'e' sempre. #}
+                        <hr class="my-3">
+                        <h6 class="text-primary mb-3"><i class="fas fa-scale-balanced"></i> {{ _("Peso nella classifica") }}</h6>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="weight" class="form-label">{{ _("Moltiplicatore") }}</label>
+                                    <input type="number" class="form-control" name="weight" id="create_weight"
+                                        min="1" max="10" step="1" value="1">
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <small class="text-muted">{{ _("Il punteggio di questa prova viene moltiplicato per il peso prima di entrare nella classifica del campionato. 1 = una prova come le altre; 3 = vale come tre prove.") }}</small>
+                                </div>
+                            </div>
+                        </div>
+
                         {# Le strategie POSITION dichiarano `requires_tiebreaker=False`:
                            i pari merito per banda sono l'esito voluto. #}
                         <div {% if modal_is_bracket %}style="display:none"{% endif %}>

@@ -140,6 +140,15 @@ blocks:
       up the results of every competition played. Missing one is not penalised
       beyond not having earned points on that occasion.
 
+  - type: text
+    text: >-
+      Each competition can carry a **weight**, and its score is multiplied by
+      that number before it enters the sum. Normally the weight is 1 and every
+      competition counts the same. The director can raise it — usually on the
+      last one, so nobody wins the championship with two competitions to
+      spare — and in the list of competitions the heavier ones say so with a
+      mark next to the number: ×2, ×3.
+
   - type: heading
     id: casi_particolari
     title: "Special cases"
@@ -173,4 +182,4 @@ blocks:
       - q: "The standings did not update after my match."
         a: "They are recalculated when every match in the round is finished."
       - q: "How do the championship standings add up?"
-        a: "By summing: wins and rack difference with «Wins», total racks with «Racks», position points with «Position»."
+        a: "By summing: wins and rack difference with «Wins», total racks with «Racks», position points with «Position». If a competition carries a weight, its score is multiplied by that number first."
