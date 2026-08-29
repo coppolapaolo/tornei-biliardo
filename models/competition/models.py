@@ -550,25 +550,6 @@ class Gara(SoftDeleteMixin, db.Model):
             return self.current_round
         return 1 if self.status == GaraStatus.PLAYING.value else 0
 
-    def can_start_new_round(self):
-        """Verifica se si può iniziare un nuovo round"""
-        if self.status != GaraStatus.PLAYING.value:
-            return False
-        if self.current_round >= self.rounds_count:
-            return False
-        # Tutti i match del round corrente devono essere completati
-        matches_list = getattr(self, "matches", []) or []
-        current_round_matches = [
-            m
-            for m in matches_list
-            if hasattr(m, "round_number") and m.round_number == self.current_round
-        ]
-        # Must have matches in current round AND all must be finished
-        # Note: VALIDATED (bilateral player confirmation) also counts as finished
-        return bool(current_round_matches) and all(
-            MatchStatus.is_finished(m.status) for m in current_round_matches
-        )
-
     def can_inscribe(self):
         """Verifica se si possono fare iscrizioni"""
         if self.status != GaraStatus.INSCRIPTION.value:

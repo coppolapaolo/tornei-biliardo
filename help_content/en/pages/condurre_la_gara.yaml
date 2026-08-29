@@ -172,8 +172,11 @@ blocks:
 
   - type: text
     text: >-
-      After the last round the competition ends and the standings become final.
-      Two things can still happen:
+      After the last round the competition ends and the standings become
+      final: the «Start round» button is replaced by the one that closes the
+      competition. Double elimination is the exception — after the Final one
+      more round may appear, the Decider, explained on the
+      [bracket](/aiuto/giocare/tabellone) page. Two things can still happen:
 
   - type: list
     items:

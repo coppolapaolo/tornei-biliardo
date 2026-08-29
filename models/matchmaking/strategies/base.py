@@ -202,6 +202,24 @@ class PairingStrategy(ABC):
         else:
             raise NotImplementedError("Subclasses must implement create_round")
 
+    def has_round(self, gara: object, round_number: int) -> bool:
+        """Questo turno esiste per questa gara?
+
+        Per quasi tutte le strategie il numero di turni programmati e' esatto,
+        e la risposta e' aritmetica. Fa eccezione il formato in cui un turno
+        dipende da un **esito** invece che dal numero di iscritti: la bella del
+        doppio KO, che si gioca solo se la finale la vince chi arrivava dal
+        losers bracket.
+
+        Serve perche' "c'e' un altro turno?" veniva chiesto in tre posti che
+        potevano rispondere diversamente — il resolver di stato, il guard che
+        crea il turno e il template che disegna il pulsante — e nessuno dei
+        tre poteva sapere del turno condizionale. Il doppio KO ne approfittava
+        al contrario: apriva un turno vuoto e lo dichiarava legittimo
+        (issue #239).
+        """
+        return 1 <= round_number <= (getattr(gara, "rounds_count", 0) or 0)
+
 
 class BaseStrategy(PairingStrategy):
     """Abstract base implementation providing common strategy infrastructure.

@@ -42,7 +42,10 @@ blocks:
       - name: "I nomi dei turni"
         text: >-
           Ottavi, quarti, semifinali, finale. Non li sceglie il direttore: li
-          determina il numero di iscritti.
+          determina il numero di iscritti. Nel doppio KO i nomi sono altri,
+          perché i tabelloni sono due: **Turno 1, 2, 3...** per i vincenti,
+          **Recupero 1, 2, 3...** per i ripescaggi, poi **Finale** ed
+          eventualmente **Bella**.
       - name: "Il grassetto"
         text: "Chi ha vinto quella partita, e quindi passa al turno successivo."
       - name: "I numeri a destra"
@@ -95,7 +98,9 @@ blocks:
       Per questo il numero di turni non si imposta alla creazione: lo fissa il
       sorteggio, su chi si presenta davvero. Prima di sorteggiare, nella scheda
       della gara il numero è marcato **(stima)**, calcolata sulla capienza
-      massima dichiarata; dopo il sorteggio è quello definitivo.
+      massima dichiarata; dopo il sorteggio è quello definitivo. Con il doppio
+      KO può ancora crescere di uno, se serve la Bella: qui sotto è spiegato
+      quando.
 
   - type: text
     text: >-
@@ -134,6 +139,17 @@ blocks:
       dei **ripescaggi**. Chi perde la prima partita non esce, scende nel
       secondo; chi perde di nuovo esce davvero. Alla fine il vincitore del
       tabellone dei ripescaggi affronta quello dei vincenti.
+
+  - type: note
+    tone: info
+    title: "La Bella: un turno che a volte non si gioca"
+    text: >-
+      Chi arriva alla Finale dal tabellone dei vincenti non ha ancora perso
+      nessuna partita, e il doppio KO promette a tutti due sconfitte prima di
+      uscire. Perciò, **se la Finale la vince chi risale dai ripescaggi**, i
+      due si rigiocano la partita da pari: è la **Bella**, e la gara ha un
+      turno in più. Se invece la Finale la vince chi era ancora imbattuto, la
+      gara finisce lì e la Bella non si gioca.
 
   - type: note
     tone: info

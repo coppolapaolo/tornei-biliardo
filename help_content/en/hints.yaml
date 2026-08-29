@@ -204,7 +204,7 @@ hints:
   section: pari_merito
 - id: gara.numero_turni
   label: Number of rounds
-  short: 'How many sets of matches. Not set on brackets: the draw fixes it, on the entrants who turn up.'
+  short: 'How many sets of matches. Not set on brackets: the draw fixes it, on the entrants who turn up. Under double elimination it can grow by one if the Decider is played.'
   anchor: gara-numero-turni
   screens:
   - admin.competition.create_gara_standalone

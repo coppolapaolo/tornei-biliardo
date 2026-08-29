@@ -62,3 +62,30 @@ def get_registry() -> EngineRegistry:
         and advanced configuration scenarios.
     """
     return _registry
+
+
+# Alias storici del campo `Gara.matchmaking_strategy` verso i nomi con cui le
+# strategie sono registrate. Stava scritto dentro `round_creation`, dove pero'
+# lo poteva usare solo chi crea un turno: chi doveva porre la stessa domanda
+# altrove — "questa gara ha un altro turno?" — non aveva modo di arrivare alla
+# strategia giusta se non ricopiando la mappa.
+_ALIAS_STRATEGIE = {
+    "random": "random_anti_rematch",
+    "amalfi": "amalfi",
+    "advanced_amalfi": "amalfi",  # alias di compatibilita'
+    "round_robin": "round_robin",
+    "direct_elimination": "direct_elimination",
+    "double_knockout": "double_knockout",
+}
+
+
+def strategy_for_gara(gara: object):
+    """La strategia di abbinamento configurata su questa gara.
+
+    Restituisce `None` se il nome non e' registrato: chi crea un turno ne fa
+    un errore, chi sta solo leggendo uno stato ripiega sul conteggio dei
+    turni. Sono due reazioni diverse alla stessa assenza, e vanno lasciate
+    decidere al chiamante.
+    """
+    nome = getattr(gara, "matchmaking_strategy", None) or "amalfi"
+    return get_registry().get(_ALIAS_STRATEGIE.get(nome, nome))

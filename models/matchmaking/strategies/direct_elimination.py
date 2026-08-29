@@ -19,9 +19,9 @@ from ..bracket import (
     BRACKET_THIRD_PLACE,
     BRACKET_WINNERS,
     MIN_BRACKET_SIZE_DIRECT_ELIMINATION,
-    bracket_levels,
     bracket_size,
     standard_bracket_order,
+    total_rounds,
 )
 from ..team_separation import assign_slots
 from .base import Pairing, BaseStrategy
@@ -709,8 +709,15 @@ class DirectEliminationStrategy(BaseStrategy):
         return max(bracket_size(player_count), self.min_bracket_size)
 
     def total_rounds_for_size(self, size: int) -> int:
-        levels = bracket_levels(size)
-        return 2 * levels + 1 if self.double_elimination else levels
+        """Turni programmati per un tabellone di quella taglia.
+
+        Delega a `bracket.total_rounds`: l'aritmetica era ricopiata qui, e le
+        due copie sono rimaste d'accordo finche' non c'e' stato bisogno di
+        correggerne una. Questa e' la strada che il sorteggio usa per scrivere
+        `rounds_count` sulla gara (`_apply_side_effects`), quindi era la copia
+        che contava — e la si sarebbe lasciata indietro.
+        """
+        return total_rounds(size, double_elimination=self.double_elimination)
 
     def get_total_rounds_needed(self, player_count: int) -> int:
         """Turni necessari per un dato numero di iscritti."""

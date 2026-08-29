@@ -206,14 +206,38 @@ def losers_feed_permutation(wb_round: int, n_matches: int) -> List[int]:
 
 
 def total_rounds(size: int, *, double_elimination: bool = False) -> int:
-    """Turni di gara necessari: `k` per la DE, `2k + 1` per il doppio KO.
+    """Turni **programmati**: `k` per la DE, `2k` per il doppio KO.
 
-    Il `+1` del doppio KO e' la bella (grand final reset), che puo' restare
-    vuota: un turno con zero pairing significa "torneo concluso", non
-    errore (Step 8).
+    Programmati significa "che si giocano comunque". La bella (grand final
+    reset) non lo e': si materializza al turno `2k + 1` solo se la finale la
+    vince chi arriva dal losers bracket, e in un doppio KO ben giocato e' un
+    caso su due. Contarla qui fa dichiarare alla gara un turno che meta' delle
+    volte non esiste — da cui il turno fantasma della issue #239, con
+    l'interfaccia che annunciava "Turno 9/9 in corso" su un turno senza
+    partite.
+
+    Il conto si giustifica per induzione su `k`, e cosi' e' verificato in
+    `tests/new/unit/test_doppio_ko_conteggio_turni.py`:
+
+    * `P(1) = 2` — due giocatori: `W1`, poi la finale (il losers e' vuoto e il
+      perdente ne e' campione d'ufficio);
+    * `P(k) = P(k-1) + 2` — un livello in piu' nel winners aggiunge un round
+      `W` e **due** round `L`, uno che assorbe chi cade dal winners e uno che
+      riduce i losers fra loro: separati per forza, o i nuovi arrivati
+      salterebbero un giro. Con `W_w` al turno `w` e `L_m` al turno `m + 1`,
+      quei due round spingono la finale avanti di due turni esatti.
+
+    Attenzione al fatto che la vecchia formula `2k + 1` soddisfaceva *la stessa
+    ricorrenza*: sbagliava solo la base. Ogni proprieta' relativa fra due
+    taglie tornava, ed e' per questo che il difetto e' passato indenne.
+
+    La struttura del tabellone, invece, la bella ce l'ha eccome:
+    `bracket_schedule` la colloca al turno `2k + 1` con le sue coordinate. Chi
+    dimensiona il tabellone guarda lo schedule; chi programma i turni guarda
+    questa funzione.
     """
     levels = bracket_levels(size)
-    return 2 * levels + 1 if double_elimination else levels
+    return 2 * levels if double_elimination else levels
 
 
 def bracket_schedule(

@@ -13,6 +13,26 @@ from models.base import utc_now
 from models.status_enum import GaraStatus, MatchStatus, ProvaDerivedStatus
 
 
+def _ha_un_altro_turno(gara: Any, current_round: int) -> bool:
+    """C'e' un turno dopo questo?
+
+    Non basta confrontare con `rounds_count`: nel doppio KO la bella sta un
+    turno oltre quelli programmati e si gioca solo se la finale la vince chi
+    arrivava dal losers bracket. La domanda va girata alla strategia, che e'
+    l'unica a saperlo — e che risponde interrogando chi quel turno lo
+    costruisce, senza una seconda copia del criterio.
+
+    Si arriva qui **solo** quando il conteggio programmato e' esaurito, cioe'
+    a gara finita: negli elenchi di gare nessuno paga la lettura dei nodi.
+    """
+    from models.matchmaking.bootstrap import strategy_for_gara
+
+    strategia = strategy_for_gara(gara)
+    if strategia is None:
+        return False
+    return strategia.has_round(gara, current_round + 1)
+
+
 class GaraStatusResolver:
     """Resolves derived status for a Gara based on match and round state."""
 
@@ -63,6 +83,8 @@ class GaraStatusResolver:
         )
 
         if all_matches_completed and all_rounds_have_matches:
+            if _ha_un_altro_turno(gara, rounds_count):
+                return ProvaDerivedStatus.ROUND_COMPLETED.value
             return ProvaDerivedStatus.TOURNAMENT_COMPLETED.value
 
         # Fallback: check current round status
@@ -78,7 +100,9 @@ class GaraStatusResolver:
                 m.status in finished_statuses for m in current_round_matches
             )
             if all_finished:
-                if current_round < rounds_count:
+                if current_round < rounds_count or _ha_un_altro_turno(
+                    gara, current_round
+                ):
                     return ProvaDerivedStatus.ROUND_COMPLETED.value
                 else:
                     return ProvaDerivedStatus.TOURNAMENT_COMPLETED.value

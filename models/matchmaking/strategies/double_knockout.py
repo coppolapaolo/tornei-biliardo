@@ -694,8 +694,12 @@ class DoubleKnockoutStrategy(BaseStrategy):
         Il doppio KO promette due sconfitte prima dell'eliminazione. Chi arriva
         alla finale imbattuto non puo' quindi essere eliminato da una sola
         partita: se perde, si rigioca da pari — entrambi con una sconfitta.
-        Se invece vince, la gara e' finita e questo turno **resta vuoto**, che
-        e' uno stato legittimo e non un errore.
+        Se invece vince, la gara e' finita e questo turno **non esiste**: il
+        vuoto restituito qui non e' un turno senza partite, e' la risposta
+        "niente da giocare". La differenza non era solo lessicale — il turno
+        veniva aperto lo stesso e la gara ci restava incastrata (issue #239) —
+        ed e' `has_round` a porre ora la domanda prima di aprirlo, chiamando
+        proprio questo metodo.
 
         Il rilevamento e' banale grazie alla convenzione di seat della finale
         (`player1` = campione winners): `winner_id == player2_id` significa
@@ -760,6 +764,36 @@ class DoubleKnockoutStrategy(BaseStrategy):
 
     # ── Aritmetica ────────────────────────────────────────────────────────
 
+    def has_round(self, gara: object, round_number: int) -> bool:
+        """Oltre i turni programmati c'e' un solo turno possibile: la bella.
+
+        E non lo decidiamo qui. Chi sa se quel turno esiste e' la funzione che
+        lo **costruisce**: se `_classic_pairings` produce un accoppiamento, il
+        turno c'e'; se produce il vuoto, non c'e'. Riscrivere qui il criterio
+        (`winner_id == player2_id`) ne farebbe la terza copia di un fatto che
+        gia' vive in due posti, ed e' esattamente cosi' che due parti dello
+        stesso codice finiscono per non essere piu' d'accordo.
+
+        Si chiama il livello interno e non `create_round`, che passa da
+        `_apply_side_effects` e **scrive** `rounds_count`: interrogarlo per
+        sapere una cosa la cambierebbe.
+
+        Nella formula FISBB la domanda non si pone: il girone si ferma appena
+        ha i suoi quattro qualificati — due imbattuti e due ripescati — quindi
+        senza mai arrivare alla finale, e il tabellone finale e' eliminazione
+        diretta pura. Nessuno dei due produce mai una bella, e vale il
+        conteggio programmato.
+        """
+        if super().has_round(gara, round_number):
+            return True
+        if group_rounds_of(gara) is not None:
+            return False
+        # Le due guardie tengono la lettura dei nodi fuori dal caso comune:
+        # si paga una query sola, e solo a gara arrivata in fondo.
+        if round_number != (getattr(gara, "rounds_count", 0) or 0) + 1:
+            return False
+        return bool(self._classic_pairings(gara, round_number))
+
     def total_rounds_for(self, gara: object, player_count: int) -> int:
         """Turni necessari alla gara, nel formato che la gara dichiara.
 
@@ -774,11 +808,11 @@ class DoubleKnockoutStrategy(BaseStrategy):
         return group_format_total_rounds(player_count, group_rounds)
 
     def get_total_rounds_needed(self, player_count: int) -> int:
-        """Turni necessari al doppio KO classico: `2k + 1`, con `k = log2(S)`.
+        """Turni **programmati** del doppio KO classico: `2k`, `k = log2(S)`.
 
-        Il `+1` e' la bella, che puo' restare vuota: un turno con zero pairing
-        significa "torneo concluso", non errore. Il vecchio `2k + 2` era
-        un'approssimazione dichiarata tale nel codice.
+        La bella non e' fra questi: si aggiunge al turno `2k + 1` se e solo se
+        la finale la vince chi arrivava dal losers bracket, e la gara se ne
+        accorge quando quel turno nasce. Diceva `2k + 1`, contandola sempre.
         """
         return self._seeding.get_total_rounds_needed(player_count)
 

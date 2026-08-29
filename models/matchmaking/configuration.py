@@ -484,7 +484,7 @@ def calculate_rounds_for_strategy(
     Different strategies require specific round counts for proper tournament flow:
     - Round-Robin: n-1 rounds (everyone plays everyone)
     - Direct Elimination: k = log2(S) rounds (binary elimination tree)
-    - Double Knockout: 2k + 1 rounds (winners, losers, finale e bella)
+    - Double Knockout: 2k rounds (winners, losers, finale; la bella e' a parte)
     - Flexible strategies: Sensible defaults based on tournament size
 
     Per le due strategie a tabellone il conteggio passa da
@@ -494,10 +494,13 @@ def calculate_rounds_for_strategy(
     otterrebbe qui un numero di turni diverso da quello che il sorteggio le
     scrivera' poi addosso.
 
-    Il `+1` del doppio KO e' la bella: si materializza solo se il campione del
-    losers bracket vince la finale, e altrimenti quel turno resta vuoto. Prima
-    questa funzione diceva `2k` e la strategia ne pretendeva `2k + 2`: nessuno
-    dei due era il numero giusto.
+    Il doppio KO conta `2k` turni **programmati**: la bella non e' fra questi,
+    perche' si gioca solo se la finale la vince il campione del losers bracket.
+    Fino alla issue #239 il conteggio era `2k + 1` e la gara dichiarava un
+    turno che meta' delle volte non esiste — l'interfaccia lo apriva senza
+    partite e non offriva piu' modo di terminare. La ricorrenza che fissa il
+    numero, e il fatto che `2k` e `2k + 1` la soddisfino entrambe (cambia solo
+    la base), stanno in `tests/new/unit/test_doppio_ko_conteggio_turni.py`.
 
     Args:
         strategy: Tournament pairing algorithm

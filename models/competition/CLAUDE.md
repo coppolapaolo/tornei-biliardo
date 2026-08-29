@@ -68,7 +68,12 @@ if lock == RoundLockStatus.LOCKED:
 
 **Key Methods:**
 - `get_real_status()` - Actual status (considers round completion, inscription expiry)
-- `can_start_new_round()` - All current matches completed?
+- «c'è un altro turno?» → `strategy.has_round(gara, n)`, **non** un confronto
+  con `rounds_count`: nel doppio KO la bella sta un turno oltre quelli
+  programmati e solo se la finale la richiede (issue #239). Qui c'era
+  `can_start_new_round()`, che confrontava con `rounds_count` e non lo sapeva
+  — ed era per giunta senza chiamanti, quindi documentava un decisore che non
+  decideva niente.
 - `can_inscribe()` - In inscription period?
 - `is_full()` / `has_waitlist()` - Capacity checks
 - `validate_strategy_configuration()` - Validate matchmaking config

@@ -6,7 +6,8 @@ interessante:
 - la **bella** si gioca solo se la finale l'ha vinta chi arrivava dal losers
   bracket. Il doppio KO promette due sconfitte prima dell'eliminazione, quindi
   chi arriva imbattuto non può uscire per una sola partita. Se invece vince
-  lui, il turno della bella resta vuoto — e un turno vuoto non è un errore;
+  lui, la bella non si gioca e quel turno non esiste (issue #239: veniva
+  aperto lo stesso, senza partite, e la gara ci restava incastrata);
 - la **finalina** si gioca solo se il director l'ha chiesta, e occupa lo stesso
   turno della finale invece di aggiungerne uno.
 """

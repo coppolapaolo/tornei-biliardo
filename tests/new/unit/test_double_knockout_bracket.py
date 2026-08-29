@@ -424,10 +424,17 @@ class TestGareSenzaTabellone:
 class TestConteggioTurni:
     @pytest.mark.parametrize(
         "n_players,expected",
-        [(8, 7), (9, 9), (16, 9), (17, 11)],
+        [(8, 6), (9, 8), (16, 8), (17, 10)],
     )
-    def test_due_k_piu_uno(self, n_players, expected):
-        """`2k + 1`: il vecchio `2k + 2` era dichiarato "approssimativo"."""
+    def test_i_turni_programmati_sono_due_k(self, n_players, expected):
+        """`2k` sul **tabellone**, non sugli iscritti: 9 giocatori danno k=4.
+
+        Diceva `2k + 1`, contando la bella fra i turni certi: la gara ne
+        dichiarava uno che meta' delle volte non si gioca, e l'interfaccia lo
+        annunciava come "in corso" pur essendo senza partite (issue #239).
+        L'induzione che fissa il numero sta in
+        `test_doppio_ko_conteggio_turni.py`.
+        """
         assert DoubleKnockoutStrategy().get_total_rounds_needed(n_players) == expected
 
     def test_pavimento_a_otto(self):

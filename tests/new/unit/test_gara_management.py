@@ -862,32 +862,11 @@ class TestGaraStatusWithEmptyMatches:
             "round_completed."
         )
 
-    def test_can_start_new_round_with_no_matches_returns_false(self, db_session):
-        """Test that can_start_new_round returns False when no matches exist.
-
-        Bug fix: Previously, all([]) returned True, incorrectly indicating
-        we can start a new round when there are no matches at all.
-        """
-        tomorrow = date.today() + timedelta(days=1)
-
-        gara = Gara(
-            campionato_id=None,
-            number=1,
-            name="Can Start Round Test",
-            date=tomorrow,
-            discipline="9_ball",
-            distance=5,
-            is_race_to=True,
-            status=GaraStatus.PLAYING.value,
-            current_round=1,
-            rounds_count=3,
-        )
-        db_session.add(gara)
-        db_session.commit()
-
-        # Cannot start new round when no matches exist in current round
-        can_start = gara.can_start_new_round()
-        assert can_start is False, (
-            "Expected False but got True. "
-            "Cannot start new round when no matches exist in current round."
-        )
+    # Qui c'era `test_can_start_new_round_with_no_matches_returns_false`, che
+    # esercitava `Gara.can_start_new_round()`: un metodo senza chiamanti nel
+    # codice applicativo, rimosso insieme al test (issue #239). Difendeva la
+    # stessa proprieta' del test qui sopra — una lista vuota di match non
+    # significa "tutti completati" — ma su un decisore che non decideva
+    # niente: chi lo chiede davvero e' `get_real_status()`, e li' resta
+    # presidiata. "C'e' un altro turno?" ora si chiede a
+    # `strategy.has_round()`, che conosce anche i turni condizionali.
