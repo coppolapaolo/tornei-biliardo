@@ -16,6 +16,7 @@ Created: 2025-01-18
 
 from __future__ import annotations
 
+import logging
 from typing import Optional
 from datetime import datetime
 
@@ -35,6 +36,8 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from models.competition.models import Gara
+
+logger = logging.getLogger(__name__)
 
 
 class InscriptionService:
@@ -484,8 +487,18 @@ class InscriptionService:
                 update_type="waitlist_promotion",
                 related_entities={"gara_id": gara.id, "gara_name": gara.name},
             )
-        except Exception as e:
-            print(f"DEBUG: Error creating promotion notification: {e}")
+        except Exception:
+            # La promozione e' gia' avvenuta: il posto e' suo anche se la
+            # notifica non parte. Per questo l'errore resta catturato — ma
+            # deve arrivare a GlitchTip, altrimenti il giocatore promosso che
+            # non viene avvisato e' un guasto senza sintomi (issue #256).
+            logger.error(
+                "Notifica di promozione dalla lista d'attesa non inviata "
+                "(utente=%s, gara=%s)",
+                inscription.user_id,
+                gara.id,
+                exc_info=True,
+            )
 
     @staticmethod
     @transactional(domain="competition")
@@ -538,12 +551,18 @@ class InscriptionService:
                         tournament_id=gara_id,
                     )
                 )
-                print(
-                    f"DEBUG: Notification created for user "
-                    f"{user_id}: {notification_result}"
+                logger.debug(
+                    "Notifica di disiscrizione creata (utente=%s): %s",
+                    user_id,
+                    notification_result,
                 )
-            except Exception as e:
-                print(f"DEBUG: Error creating notification " f"for user {user_id}: {e}")
+            except Exception:
+                logger.error(
+                    "Notifica di disiscrizione non inviata " "(utente=%s, gara=%s)",
+                    user_id,
+                    gara_id,
+                    exc_info=True,
+                )
 
             # Rimuovi l'iscrizione
             db.session.delete(inscription)
@@ -598,16 +617,18 @@ class InscriptionService:
                                 tournament_id=gara_id,
                             )
                         )
-                        print(
-                            f"DEBUG: Promotion notification created "
-                            f"for user {first_waitlist.user_id}: "
-                            f"{notification_result}"
+                        logger.debug(
+                            "Notifica di promozione creata (utente=%s): %s",
+                            first_waitlist.user_id,
+                            notification_result,
                         )
-                    except Exception as e:
-                        print(
-                            f"DEBUG: Error creating promotion "
-                            f"notification for user "
-                            f"{first_waitlist.user_id}: {e}"
+                    except Exception:
+                        logger.error(
+                            "Notifica di promozione non inviata "
+                            "(utente=%s, gara=%s)",
+                            first_waitlist.user_id,
+                            gara_id,
+                            exc_info=True,
                         )
 
                 # Nessuno da promuovere: se la gara non ammette numeri dispari
