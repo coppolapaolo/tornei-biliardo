@@ -85,6 +85,20 @@
       {% endif %}
     </div>
 
+    {# Peso nella classifica generale (issue #64). Solo dentro un campionato:
+       una gara standalone non ha nessuna classifica in cui pesare, e il parser
+       infatti non legge il campo quando manca il campionato. #}
+    {% if gara.campionato_id %}
+    <div class="mb-3">
+      <label for="weight" class="form-label">{{ _('Peso nella classifica') }}</label>
+      <input type="number" class="form-control" id="weight" name="weight"
+             min="1" max="10" step="1" value="{{ gara.weight or 1 }}">
+      <div class="form-text">
+        {{ _('Il punteggio di questa prova viene moltiplicato per il peso prima di entrare nella classifica del campionato. 1 = una prova come le altre.') }}
+      </div>
+    </div>
+    {% endif %}
+
     <div class="mb-3">
       <label for="matchmaking_strategy" class="form-label">{{ _('Tipo di competizione') }}</label>
       <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy" required>

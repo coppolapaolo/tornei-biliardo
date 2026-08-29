@@ -223,11 +223,16 @@ def create_gara():
     tables_input = request.form.get("available_tables", "").strip()
     location, billiard_hall_id = _handle_venue_creation(location, tables_input)
 
-    # Parse common fields (campionato defaults as fallback per ADR-0001)
-    parser = GaraFormParser(campionato=campionato)
-    data = parser.parse()
-
     try:
+        # Parse common fields (campionato defaults as fallback per ADR-0001)
+        # Dentro il `try`: `parse()` solleva su un modulo malformato — il peso
+        # non positivo lo fa di proposito, ma `int(request.form["distance"])`
+        # lo faceva gia' da sempre — e fuori di qui diventava un 500 invece di
+        # un messaggio. `edit_gara` e `create_gara_standalone` lo chiamavano
+        # gia' protetto: questa era l'unica delle tre a non farlo.
+        parser = GaraFormParser(campionato=campionato)
+        data = parser.parse()
+
         gara = GaraService.create_gara(
             campionato_id=campionato_id,
             number=number,

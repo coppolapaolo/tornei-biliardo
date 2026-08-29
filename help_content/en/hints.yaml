@@ -202,6 +202,15 @@ hints:
   - admin.competition.create_gara_standalone
   page: classifiche
   section: pari_merito
+- id: gara.peso
+  label: Weight in the standings
+  short: 'How many times this competition''s score counts in the championship standings. 1 = like every other. Not shown outside a championship.'
+  anchor: gara-peso
+  screens:
+  - admin.campionato.campionato_detail
+  - admin.competition.edit_gara
+  page: opzioni_della_gara
+  section: struttura
 - id: gara.numero_turni
   label: Number of rounds
   short: 'How many sets of matches. Not set on brackets: the draw fixes it, on the entrants who turn up. Under double elimination it can grow by one if the Decider is played.'

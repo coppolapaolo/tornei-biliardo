@@ -168,6 +168,16 @@ blocks:
           semifinalisti sconfitti, i quattro quartifinalisti — sono il
           risultato voluto, e nessuno spareggio scatterebbe.
         hint: gara.spareggio
+      - name: "Peso nella classifica"
+        values: "1 · solo dentro un campionato"
+        text: >-
+          Quante volte il punteggio di questa gara conta nella classifica del
+          campionato. Con **1** vale come tutte le altre; con **3** vale come
+          tre gare. Serve a tenere il campionato aperto fino in fondo: se
+          l'ultima prova pesa di più, nessuno se lo aggiudica con due gare di
+          anticipo. Una gara che non fa parte di un campionato non ha questo
+          campo, perché non c'è nessuna classifica generale in cui pesare.
+        hint: gara.peso
 
   - type: heading
     id: tabellone
