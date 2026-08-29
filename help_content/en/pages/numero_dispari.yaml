@@ -86,8 +86,18 @@ blocks:
       changed would have two players facing tests of different difficulty with
       their scores in the same standings. If you cannot find the right one you
       can create it on the spot: it stays in the catalogue, available to other
-      competitions too. Leaving «Chosen by the app» lets the program decide, as
-      it did before.
+      competitions too. The choice is required — there is no «let the program
+      decide» option.
+
+  - type: note
+    tone: info
+    title: "If the drill is withdrawn from the catalogue"
+    text: >-
+      Deactivating a drill means «stop offering it for new choices», not
+      removing it from the competitions that already picked it. Competitions
+      that have not finished move automatically to an active copy of the same
+      drill, so whoever has the bye always finds something to play and nobody
+      ends up with a different test from the one the director chose.
 
   - type: heading
     id: trio

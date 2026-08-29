@@ -86,8 +86,17 @@ blocks:
       giocatori affronterebbero prove di difficoltà diversa con i punteggi
       nella stessa classifica. Se non trovi quello giusto puoi crearne uno
       lì per lì: resta nel catalogo, disponibile anche per le altre gare.
-      Lasciando «Scelto dall'applicazione» decide il programma, come faceva
-      prima.
+      La scelta è obbligatoria — non c'è un'opzione «decide il programma».
+
+  - type: note
+    tone: info
+    title: "Se l'esercizio viene ritirato dal catalogo"
+    text: >-
+      Disattivare un esercizio significa «non proponetelo più per le scelte
+      nuove», non toglierlo dalle gare che l'hanno già scelto. Le gare non
+      ancora concluse passano automaticamente a una copia attiva della stessa
+      prova, così chi riposa trova sempre qualcosa da giocare e nessuno si
+      ritrova con una prova diversa da quella che il direttore aveva scelto.
 
   - type: heading
     id: trio

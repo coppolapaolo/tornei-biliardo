@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-29 20:58+0200\n"
+"POT-Creation-Date: 2026-08-29 21:19+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -75,7 +75,15 @@ msgstr "Rotation"
 msgid "Esercizio %(number)s"
 msgstr "Drill %(number)s"
 
-#: models/challenge/services.py:713 models/challenge/services.py:847
+#: models/challenge/services.py:728
+msgid ""
+"Il direttore non ha ancora scelto l'esercizio da giocare al posto della X"
+" in questa gara."
+msgstr ""
+"The director has not yet chosen the drill to play in place of the X in "
+"this competition."
+
+#: models/challenge/services.py:774 models/challenge/services.py:908
 #, python-format
 msgid ""
 "Il punteggio della prova deve essere compreso fra 0 e %(massimo)s, la "
@@ -84,7 +92,7 @@ msgstr ""
 "The challenge score must be between 0 and %(massimo)s, the widest rack "
 "difference achievable in this round."
 
-#: models/challenge/services.py:838
+#: models/challenge/services.py:899
 msgid "Serve un punteggio: la prova non ne ha ancora uno registrato."
 msgstr "A score is needed: none has been recorded for this drill yet."
 
@@ -2190,7 +2198,7 @@ msgstr[1] "%(num)d players copied from the previous competition."
 msgid "Nessun iscritto da copiare dalla gara precedente."
 msgstr "No players to copy from the previous competition."
 
-#: routes/admin/competition/crud.py:380
+#: routes/admin/competition/crud.py:382
 msgid "Configurazione tavoli salvata!"
 msgstr "Table configuration saved!"
 
@@ -7605,7 +7613,7 @@ msgid "Etichetta dell'angolo di taglio"
 msgstr "Cut angle label"
 
 #: templates/challenge/builder.html:117
-#: templates/components/_bye_challenges.html:47
+#: templates/components/_bye_challenges.html:52
 #: templates/components/_player_challenges.html:47
 #: templates/individual_match/dashboard.html:131
 #: templates/individual_match/matches.html:137
@@ -8465,9 +8473,17 @@ msgstr ""
 "drill: the score becomes your rack difference, up to a maximum of "
 "%(massimo)s."
 
-#: templates/components/_bye_challenges.html:47
+#: templates/components/_bye_challenges.html:52
 msgid "Gioca l'esercizio"
 msgstr "Play the drill"
+
+#: templates/components/_bye_challenges.html:57
+msgid ""
+"Il direttore non ha ancora scelto l'esercizio: per ora non c'è niente da "
+"giocare."
+msgstr ""
+"The director has not chosen the drill yet: there is nothing to play for "
+"now."
 
 #: templates/components/_campionato_create_modal.html:6
 msgid "Nuovo campionato"
@@ -9609,8 +9625,8 @@ msgstr "Drill for the X"
 
 #: templates/components/_gara_edit_form.html:189
 #: templates/components/_new_gara_modal.html:295
-msgid "Scelto dall'applicazione"
-msgstr "Chosen by the app"
+msgid "Scegli un esercizio…"
+msgstr "Choose a drill…"
 
 #: templates/components/_gara_edit_form.html:195
 #: templates/components/_new_gara_modal.html:301

@@ -119,23 +119,28 @@ class TestLEsercizioDellaX:
         assert data["x_challenge_id"] == 7
 
     @pytest.mark.unit
-    def test_senza_scelta_resta_none(self, app):
-        """NULL vuol dire «scegli tu»: è il comportamento storico."""
+    def test_senza_scelta_il_modulo_viene_rifiutato(self, app):
+        """Sceglie sempre il direttore: non c'è un «decide l'applicazione».
+
+        Il rifiuto sta qui e non a valle perché è il momento in cui il direttore
+        sta guardando il modulo. Accettare e scoprirlo al primo turno dispari
+        vorrebbe dire dirglielo quando la gara è già cominciata.
+        """
         with _gara_form(app, odd_number_policy="bye_with_challenge", x_challenge_id=""):
-            data = GaraFormParser(campionato=None).parse()
-        assert data["x_challenge_id"] is None
+            with pytest.raises(ValueError, match="esercizio"):
+                GaraFormParser(campionato=None).parse()
+
+    @pytest.mark.unit
+    def test_un_valore_non_numerico_viene_rifiutato(self, app):
+        with _gara_form(
+            app, odd_number_policy="bye_with_challenge", x_challenge_id="pippo"
+        ):
+            with pytest.raises(ValueError, match="esercizio"):
+                GaraFormParser(campionato=None).parse()
 
     @pytest.mark.unit
     def test_con_un_altra_politica_il_campo_viene_azzerato(self, app):
         """Cambiando politica la scelta non deve restare appesa in colonna."""
         with _gara_form(app, odd_number_policy="bye", x_challenge_id="7"):
-            data = GaraFormParser(campionato=None).parse()
-        assert data["x_challenge_id"] is None
-
-    @pytest.mark.unit
-    def test_un_valore_non_numerico_non_rompe(self, app):
-        with _gara_form(
-            app, odd_number_policy="bye_with_challenge", x_challenge_id="pippo"
-        ):
             data = GaraFormParser(campionato=None).parse()
         assert data["x_challenge_id"] is None

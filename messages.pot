@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-29 20:58+0200\n"
+"POT-Creation-Date: 2026-08-29 21:19+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -74,14 +74,20 @@ msgstr ""
 msgid "Esercizio %(number)s"
 msgstr ""
 
-#: models/challenge/services.py:713 models/challenge/services.py:847
+#: models/challenge/services.py:728
+msgid ""
+"Il direttore non ha ancora scelto l'esercizio da giocare al posto della X"
+" in questa gara."
+msgstr ""
+
+#: models/challenge/services.py:774 models/challenge/services.py:908
 #, python-format
 msgid ""
 "Il punteggio della prova deve essere compreso fra 0 e %(massimo)s, la "
 "differenza più ampia ottenibile in questo turno."
 msgstr ""
 
-#: models/challenge/services.py:838
+#: models/challenge/services.py:899
 msgid "Serve un punteggio: la prova non ne ha ancora uno registrato."
 msgstr ""
 
@@ -2124,7 +2130,7 @@ msgstr[1] ""
 msgid "Nessun iscritto da copiare dalla gara precedente."
 msgstr ""
 
-#: routes/admin/competition/crud.py:380
+#: routes/admin/competition/crud.py:382
 msgid "Configurazione tavoli salvata!"
 msgstr ""
 
@@ -7366,7 +7372,7 @@ msgid "Etichetta dell'angolo di taglio"
 msgstr ""
 
 #: templates/challenge/builder.html:117
-#: templates/components/_bye_challenges.html:47
+#: templates/components/_bye_challenges.html:52
 #: templates/components/_player_challenges.html:47
 #: templates/individual_match/dashboard.html:131
 #: templates/individual_match/matches.html:137
@@ -8204,8 +8210,14 @@ msgid ""
 "massimo di %(massimo)s."
 msgstr ""
 
-#: templates/components/_bye_challenges.html:47
+#: templates/components/_bye_challenges.html:52
 msgid "Gioca l'esercizio"
+msgstr ""
+
+#: templates/components/_bye_challenges.html:57
+msgid ""
+"Il direttore non ha ancora scelto l'esercizio: per ora non c'è niente da "
+"giocare."
 msgstr ""
 
 #: templates/components/_campionato_create_modal.html:6
@@ -9303,7 +9315,7 @@ msgstr ""
 
 #: templates/components/_gara_edit_form.html:189
 #: templates/components/_new_gara_modal.html:295
-msgid "Scelto dall'applicazione"
+msgid "Scegli un esercizio…"
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:195

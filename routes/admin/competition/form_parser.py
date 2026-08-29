@@ -304,11 +304,11 @@ class GaraFormParser:
         di ignorarla, come `_parse_bracket_options` fa con le opzioni del
         tabellone fuori dal tabellone.
 
-        `None` e' un valore legittimo e vuol dire «sceglie l'applicazione»: e' il
-        comportamento storico, e quello di ogni gara creata prima. Per lo stesso
-        motivo un valore malformato ricade su `None` invece di sollevare — non
-        e' una configurazione che si possa sbagliare in modo dannoso, il ripiego
-        automatico c'e' comunque.
+        Con `bye_with_challenge` la scelta e' **obbligatoria**: non esiste un
+        «decide l'applicazione» (issue #267). Il rifiuto sta qui e non a valle
+        perche' questo e' il momento in cui il direttore sta guardando il
+        modulo: accettare e scoprirlo al primo turno dispari vorrebbe dire
+        dirglielo a gara cominciata, quando cambiare costa.
         """
         from models.matchmaking.configuration import OddNumberPolicy
 
@@ -316,12 +316,16 @@ class GaraFormParser:
             return None
 
         raw = (request.form.get("x_challenge_id") or "").strip()
-        if not raw:
-            return None
         try:
-            return int(raw)
+            scelto = int(raw)
         except ValueError:
-            return None
+            scelto = 0
+        if scelto < 1:
+            raise ValueError(
+                "Scegli l'esercizio che si gioca al posto della X. "
+                "Se non ne trovi uno adatto puoi crearlo dal modulo."
+            )
+        return scelto
 
     @staticmethod
     def _parse_weight(campionato: Optional[Any]) -> int:

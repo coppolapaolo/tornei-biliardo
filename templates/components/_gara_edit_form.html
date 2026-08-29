@@ -185,8 +185,8 @@
     <div class="mb-3" id="x_challenge_section" data-bracket-hide
          {% if gara.odd_number_policy != 'bye_with_challenge' %}style="display:none"{% endif %}>
       <label for="x_challenge_id" class="form-label">{{ _('Esercizio per la X') }}</label>
-      <select class="form-select" id="x_challenge_id" name="x_challenge_id">
-        <option value="">{{ _("Scelto dall'applicazione") }}</option>
+      <select class="form-select" id="x_challenge_id" name="x_challenge_id" required>
+        <option value="" disabled {% if not gara.x_challenge_id %}selected{% endif %}>{{ _("Scegli un esercizio…") }}</option>
         {% for esercizio in x_challenges or [] %}
         <option value="{{ esercizio.id }}" {% if gara.x_challenge_id == esercizio.id %}selected{% endif %}>{{ esercizio.get_display_name() }}</option>
         {% endfor %}

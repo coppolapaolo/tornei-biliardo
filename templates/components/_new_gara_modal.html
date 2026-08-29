@@ -291,8 +291,8 @@
                             <div class="col-md-12">
                                 <div class="mb-3">
                                     <label for="x_challenge_id" class="form-label">{{ _("Esercizio per la X") }}</label>
-                                    <select class="form-control" name="x_challenge_id" id="create_x_challenge_id">
-                                        <option value="">{{ _("Scelto dall'applicazione") }}</option>
+                                    <select class="form-control" name="x_challenge_id" id="create_x_challenge_id" required>
+                                        <option value="" disabled selected>{{ _("Scegli un esercizio…") }}</option>
                                         {% for esercizio in x_challenges or [] %}
                                         <option value="{{ esercizio.id }}">{{ esercizio.get_display_name() }}</option>
                                         {% endfor %}

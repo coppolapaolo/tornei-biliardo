@@ -11,9 +11,12 @@ nella stessa classifica con lo stesso peso. Per questo la scelta sta sulla
 **gara** e non sul turno — un esercizio solo per tutte le X è l'unica
 configurazione in cui la X è la stessa prova per tutti.
 
-`x_challenge_id` a NULL resta legittimo e vuol dire «scegli tu»: è il
-comportamento storico, ed è quello di ogni gara creata prima di oggi. Il ripiego
-automatico non si toglie, si retrocede a ripiego.
+Non c'è **nessuna** selezione automatica, e non è una semplificazione: sceglie
+sempre il direttore. Quando la configurazione non è utilizzabile — nessuna
+scelta, esercizio disattivato o a esito booleano — la funzione restituisce
+`None` invece di sostituire con un altro. Sostituire in silenzio sarebbe di
+nuovo l'applicazione che sceglie al posto del direttore, per giunta in un
+momento in cui nessuno sta guardando.
 """
 
 from __future__ import annotations
@@ -101,52 +104,57 @@ def test_la_scelta_vale_per_tutti_i_turni(app, db_session):
 
 
 @pytest.mark.unit
-def test_senza_scelta_resta_il_ripiego_automatico(app, db_session):
-    """Le gare create prima non hanno la colonna valorizzata e devono funzionare."""
-    _esercizio(db_session, "Catalogo")
+def test_senza_scelta_non_c_e_esercizio(app, db_session):
+    """Nessun ripiego: se il direttore non ha scelto, non c'è niente da giocare.
+
+    È il caso delle gare create prima di questa regola. Pescarne uno dal
+    catalogo sarebbe l'applicazione che decide al posto del direttore — cioè
+    esattamente ciò che la #267 toglie.
+    """
+    _esercizio(db_session, "Nel catalogo, ma non scelto")
     gara = _gara(db_session)  # x_challenge_id resta None
     db_session.commit()
 
-    assert ChallengeService.get_challenge_for_x_replacement(gara.id) is not None
+    assert ChallengeService.get_challenge_for_x_replacement(gara.id) is None
 
 
 @pytest.mark.unit
-def test_un_esercizio_disattivato_non_viene_piu_usato(app, db_session):
-    """Una scelta che non è più valida ricade sul ripiego, non rompe.
+def test_un_esercizio_disattivato_resta_giocabile(app, db_session):
+    """Disattivare nel catalogo non svuota la X di una gara in corso.
 
-    Un esercizio si può disattivare dal catalogo dopo essere stato scelto: la
-    gara resterebbe con un id che punta a qualcosa che non si deve più
-    proporre. Meglio un esercizio diverso che una X che non si può giocare.
+    La disattivazione fa nascere una copia attiva su cui la gara viene
+    ripuntata (vedi `test_esercizio_disattivato_copia.py`), quindi da qui la
+    prova resta giocabile ed è la stessa. Quello che non succede — mai — è che
+    l'applicazione sostituisca con un esercizio **diverso**.
     """
-    ripiego = _esercizio(db_session, "Ancora buono")
-    scelto = _esercizio(db_session, "Poi ritirato")
+    altro = _esercizio(db_session, "Un altro, che non c'entra")
+    scelto = _esercizio(db_session, "Poi ritirato dal catalogo")
     gara = _gara(db_session, x_challenge_id=scelto.id)
     db_session.commit()
 
-    scelto.is_active = False
+    ChallengeService.update_challenge(scelto.id, is_active=False)
     db_session.commit()
 
     trovato = ChallengeService.get_challenge_for_x_replacement(gara.id)
     assert trovato is not None
-    assert trovato.id == ripiego.id
+    assert trovato.id != altro.id
+    assert trovato.description == scelto.description
 
 
 @pytest.mark.unit
-def test_un_esercizio_riuscita_o_no_non_viene_usato(app, db_session):
+def test_un_esercizio_riuscita_o_no_non_e_utilizzabile(app, db_session):
     """Il punteggio della X è una differenza triangoli: un esito booleano non la dà.
 
-    È già il filtro della selezione automatica, e deve valere anche quando è il
-    direttore a scegliere — altrimenti la scelta manuale sarebbe l'unico modo di
-    aggirare un vincolo di dominio.
+    Il modulo non lo offre nemmeno, ma un esercizio può diventare
+    superato/non superato *dopo* essere stato scelto. Anche qui si segnala
+    invece di rimpiazzare.
     """
-    a_punteggio = _esercizio(db_session, "A punteggio")
+    _esercizio(db_session, "A punteggio")
     booleano = _esercizio(db_session, "Superata o no", pass_fail_only=True)
     gara = _gara(db_session, x_challenge_id=booleano.id)
     db_session.commit()
 
-    trovato = ChallengeService.get_challenge_for_x_replacement(gara.id)
-    assert trovato is not None
-    assert trovato.id == a_punteggio.id
+    assert ChallengeService.get_challenge_for_x_replacement(gara.id) is None
 
 
 # Manca di proposito un test sull'id orfano (`x_challenge_id` che punta a un
@@ -154,6 +162,6 @@ def test_un_esercizio_riuscita_o_no_non_viene_usato(app, db_session):
 # c'è e il DB rifiuta la scrittura, quindi il caso non è costruibile qui; in
 # produzione invece la colonna nasce da un `ALTER TABLE ADD COLUMN`, che in
 # SQLite non può creare vincoli, e lì l'id orfano è possibile. Il guard in
-# `get_challenge_for_x_replacement` esiste per quella metà del mondo, ed è
-# annotato lì: un test verde su un vincolo che in produzione non c'è sarebbe
-# peggio di nessun test.
+# `get_challenge_for_x_replacement` (che restituisce None) esiste per quella
+# metà del mondo, ed è annotato lì: un test verde su un vincolo che in
+# produzione non c'è sarebbe peggio di nessun test.

@@ -39,6 +39,11 @@
         {{ _("In questo turno resti senza avversario. Invece di stare fermo giochi un esercizio: il punteggio diventa la tua differenza triangoli, fino a un massimo di %(massimo)s.", massimo=scheda.punteggio_massimo) }}
       </p>
 
+      {# Senza esercizio configurato il pulsante fallirebbe con un messaggio
+         d'errore: meglio dire com'e' la situazione. Ci si arriva solo con una
+         gara creata prima che la scelta diventasse obbligatoria, o con
+         l'esercizio scelto poi disattivato (issue #267). #}
+      {% if scheda.esercizio %}
       <form method="POST"
             action="{{ url_for('challenge.create_x_replacement', gara_id=scheda.gara.id, round_number=scheda.round_number) }}"
             style="margin-top: 16px;">
@@ -47,6 +52,11 @@
           <i class="fas fa-play"></i>&nbsp;{{ _('Continua') if scheda.iniziata else _('Gioca l\'esercizio') }}
         </button>
       </form>
+      {% else %}
+      <div class="c7-card c7-card--locked" style="margin-top: 16px; font-size: 13px; font-weight: 600;">
+        <i class="fas fa-hourglass-half"></i>&nbsp;{{ _("Il direttore non ha ancora scelto l'esercizio: per ora non c'è niente da giocare.") }}
+      </div>
+      {% endif %}
     </article>
     {% endfor %}
   </div>
