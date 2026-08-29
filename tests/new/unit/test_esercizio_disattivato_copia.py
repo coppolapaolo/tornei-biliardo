@@ -187,3 +187,56 @@ def test_riattivare_non_crea_niente(app, db_session):
 
     assert db.session.query(Challenge).count() == quanti_prima
     assert db.session.get(Gara, gara.id).x_challenge_id == originale.id
+
+
+class TestCancellareSiComportaComeDisattivare:
+    """Cancellare un esercizio scelto da una gara non deve svuotarle la X.
+
+    `delete_challenge` sceglie fra cancellazione vera e disattivazione
+    guardando se l'esercizio è «usato»: contava i tentativi registrati e le
+    associazioni `GaraChallenge`, ma **non** `Gara.x_challenge_id` — la colonna
+    nata con la #267. Un esercizio scelto per la X ma non ancora giocato
+    risultava quindi inutilizzato, e veniva cancellato davvero: la chiave
+    esterna `ondelete="SET NULL"` azzerava in silenzio la scelta della gara.
+
+    È il difetto tipico del campo nuovo: si aggiunge un modo di usare una cosa
+    e non lo si aggiunge all'elenco di chi la sta usando.
+    """
+
+    def test_non_viene_cancellato_davvero(self, app, db_session):
+        direttore = _direttore(db_session)
+        originale = _esercizio(db_session)
+        _gara(db_session, direttore.id, originale.id)
+        db_session.commit()
+        id_originale = originale.id
+
+        ChallengeService.delete_challenge(id_originale)
+        db_session.commit()
+
+        assert db.session.get(Challenge, id_originale) is not None
+
+    def test_la_gara_passa_a_una_copia_attiva(self, app, db_session):
+        """Stesso esito della disattivazione: la prova resta giocabile."""
+        direttore = _direttore(db_session)
+        originale = _esercizio(db_session)
+        gara = _gara(db_session, direttore.id, originale.id)
+        db_session.commit()
+
+        ChallengeService.delete_challenge(originale.id)
+        db_session.commit()
+
+        copia = db.session.get(Challenge, db.session.get(Gara, gara.id).x_challenge_id)
+        assert copia.id != originale.id
+        assert copia.is_active is True
+        assert copia.description == originale.description
+
+    def test_un_esercizio_che_nessuno_usa_si_cancella_ancora(self, app, db_session):
+        """La correzione non deve impedire di ripulire il catalogo."""
+        originale = _esercizio(db_session)
+        db_session.commit()
+        id_originale = originale.id
+
+        ChallengeService.delete_challenge(id_originale)
+        db_session.commit()
+
+        assert db.session.get(Challenge, id_originale) is None

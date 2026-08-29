@@ -1075,21 +1075,33 @@ class ChallengeService:
             is not None
         )
 
-        # Verifica se la sfida è stata selezionata in qualche gara
-        # Controlla relazioni gara-challenge se il modello esiste
-        has_gara_usage = False
-        try:
-            from models.competition.gara_challenge import GaraChallenge
+        # Verifica se la sfida è stata selezionata in qualche gara.
+        # **Due** modi, e dimenticarne uno è il difetto che questo blocco ha
+        # avuto: `GaraChallenge` (gli esercizi configurati per i turni) e
+        # `Gara.x_challenge_id` (l'esercizio della X, issue #267). Il secondo è
+        # nato dopo, e senza questa riga un esercizio scelto per la X ma non
+        # ancora giocato risultava inutilizzato: veniva cancellato davvero, e la
+        # chiave esterna `ondelete="SET NULL"` azzerava in silenzio la scelta
+        # della gara.
+        from models.competition.models import Gara
 
-            has_gara_usage = (
-                db.session.query(GaraChallenge)
-                .filter_by(challenge_id=challenge_id)
-                .first()
-                is not None
-            )
-        except ImportError:
-            # Se non esiste relazione gara-challenge, salta questo controllo
-            pass
+        has_gara_usage = (
+            db.session.query(Gara).filter_by(x_challenge_id=challenge_id).first()
+            is not None
+        )
+        if not has_gara_usage:
+            try:
+                from models.competition.gara_challenge import GaraChallenge
+
+                has_gara_usage = (
+                    db.session.query(GaraChallenge)
+                    .filter_by(challenge_id=challenge_id)
+                    .first()
+                    is not None
+                )
+            except ImportError:
+                # Se non esiste relazione gara-challenge, salta questo controllo
+                pass
 
         if not has_attempts and not has_gara_usage:
             # Hard delete: rimozione completa dal database (mai utilizzata)
@@ -1097,6 +1109,11 @@ class ChallengeService:
         else:
             # Soft delete: marca inattiva ma preserva per dati storici
             challenge.is_active = False
+            # Cancellare si comporta come disattivare: le gare non concluse
+            # passano a una copia attiva della stessa prova, così chi riposa
+            # trova comunque qualcosa da giocare. Senza, la gara resterebbe su
+            # un esercizio che il catalogo non mostra più a nessuno.
+            ChallengeService._copia_per_le_gare_che_lo_usano(challenge)
 
     @staticmethod
     def record_attempt(

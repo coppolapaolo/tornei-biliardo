@@ -92,11 +92,13 @@ blocks:
     tone: info
     title: "Se l'esercizio viene ritirato dal catalogo"
     text: >-
-      Disattivare un esercizio significa «non proponetelo più per le scelte
-      nuove», non toglierlo dalle gare che l'hanno già scelto. Le gare non
-      ancora concluse passano automaticamente a una copia attiva della stessa
-      prova, così chi riposa trova sempre qualcosa da giocare e nessuno si
-      ritrova con una prova diversa da quella che il direttore aveva scelto.
+      Disattivarlo — o cancellarlo — significa «non proponetelo più per le
+      scelte nuove», non toglierlo dalle gare che l'hanno già scelto. Le gare
+      non ancora concluse passano automaticamente a una copia attiva della
+      stessa prova, così chi riposa trova sempre qualcosa da giocare e nessuno
+      si ritrova con una prova diversa da quella che il direttore aveva scelto.
+      Vale per entrambe le strade: un esercizio scelto da una gara non viene
+      mai cancellato davvero.
 
   - type: heading
     id: trio
