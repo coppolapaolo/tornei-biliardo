@@ -14,6 +14,7 @@ from models.status_enum import (
 )
 from models.matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
 from models.match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
+from models.competition.models import generate_public_token
 
 if TYPE_CHECKING:
     pass
@@ -96,6 +97,17 @@ class Campionato(db.Model):
     banner_path = db.Column(db.String(255), nullable=True)
     external_url = db.Column(db.String(500), nullable=True)
     external_label = db.Column(db.String(60), nullable=True)
+    # La descrizione libera, che il campionato non aveva: una gara ce l'ha da
+    # sempre, e senza, la vetrina del campionato sarebbe un calendario e basta
+    # — mai una riga che dica di cosa si tratta e a chi è aperto.
+    description = db.Column(db.Text, nullable=True)
+    # Indirizzo pubblico, stesse due forme della gara: il token nasce con
+    # l'oggetto e non cambia mai (le locandine stampate restano valide), lo
+    # slug è la versione leggibile che il direttore può scegliere dopo.
+    public_token = db.Column(
+        db.String(32), unique=True, nullable=True, default=generate_public_token
+    )
+    slug = db.Column(db.String(60), unique=True, nullable=True, index=True)
 
     # Status e date
     is_active = db.Column(db.Boolean, default=True)
@@ -117,6 +129,23 @@ class Campionato(db.Model):
     default_venue = db.relationship(
         "BilliardHall", foreign_keys=[default_venue_id], lazy=True
     )
+
+    @property
+    def public_slug_or_token(self):
+        """L'identificatore da mettere nel link: lo slug se c'è, il token se no.
+
+        I due restano entrambi validi per sempre (vedi
+        `showcase_service.resolve_public_identifier_campionato`): questo dice
+        soltanto quale dei due si *pubblica*.
+        """
+        return self.slug or self.public_token
+
+    @property
+    def effective_external_link(self):
+        """Il link esterno del campionato, come coppia (url, etichetta)."""
+        if not self.external_url:
+            return None
+        return (self.external_url, self.external_label)
 
     @property
     def directors(self):

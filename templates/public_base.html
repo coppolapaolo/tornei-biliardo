@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{# Guscio delle pagine pubbliche condivisibili (issue #235).
+
+   Chi arriva qui da un post **non ha un account, non ha una cronologia e non
+   ha un posto dove tornare**: la freccia indietro, l'avatar e la nav flottante
+   sono arredamento che non serve a nessuno, e sul desktop la barra laterale
+   sarebbe peggio — un menu di voci che portano tutte al login.
+
+   Estende `base.html` invece di duplicarne la testa: i meta, i fogli di stile
+   e il blocco `social_meta` sono gli stessi, ed è lì che vive tutto quello che
+   uno scraper legge. Due `<head>` da tenere allineati a mano sarebbero due
+   `<head>` che prima o poi divergono, e la divergenza si scoprirebbe da
+   un'anteprima che smette di funzionare — cioè mai, guardando l'app. #}
+
+{% block body_class %}c7-public{% endblock %}
+
+{% block app_side %}{% endblock %}
+{% block app_nav %}{% endblock %}
+{% block page_head %}{% endblock %}
+
+{% block scripts %}
+<script>
+  // Condivisione: sul telefono apre il foglio nativo (WhatsApp, Telegram,
+  // Instagram…), sul desktop — dove `navigator.share` non c'è quasi mai —
+  // copia il link. Due comportamenti diversi dietro allo stesso pulsante
+  // perché la domanda dell'utente è una sola: «come lo mando a qualcuno?».
+  (function () {
+    var bottoni = document.querySelectorAll('[data-condividi]');
+    if (!bottoni.length) return;
+
+    var dati = {
+      title: {{ social_title|tojson }},
+      text: {{ social_description|tojson }},
+      url: {{ social_url|tojson }}
+    };
+    var testoCopiato = {{ _("Link copiato")|tojson }};
+
+    function copiaNegliAppunti(bottone) {
+      // `navigator.clipboard` non esiste fuori da un contesto sicuro (http in
+      // sviluppo), e lì fallirebbe in silenzio: il ripiego è un campo
+      // temporaneo con `execCommand`, brutto ma universale.
+      var promessa;
+      if (navigator.clipboard && window.isSecureContext) {
+        promessa = navigator.clipboard.writeText(dati.url);
+      } else {
+        promessa = new Promise(function (risolvi, rifiuta) {
+          var campo = document.createElement('textarea');
+          campo.value = dati.url;
+          campo.setAttribute('readonly', '');
+          campo.style.position = 'fixed';
+          campo.style.opacity = '0';
+          document.body.appendChild(campo);
+          campo.select();
+          try {
+            document.execCommand('copy') ? risolvi() : rifiuta();
+          } catch (e) {
+            rifiuta(e);
+          } finally {
+            document.body.removeChild(campo);
+          }
+        });
+      }
+      promessa.then(function () {
+        // Il riscontro si scrive su un elemento marcato, non sul bottone
+        // intero: un bottone che contiene solo un'icona non ha testo da
+        // sostituire, e sovrascriverne il contenuto cancellerebbe l'icona.
+        var etichetta = bottone.querySelector('[data-condividi-testo]');
+        if (!etichetta) { window.prompt(testoCopiato, dati.url); return; }
+        var precedente = etichetta.textContent;
+        etichetta.textContent = testoCopiato;
+        setTimeout(function () { etichetta.textContent = precedente; }, 2000);
+      }).catch(function () {
+        window.prompt(testoCopiato, dati.url);
+      });
+    }
+
+    bottoni.forEach(function (bottone) {
+      bottone.addEventListener('click', function () {
+        if (navigator.share) {
+          // Un `catch` che tace è voluto: chi chiude il foglio di condivisione
+          // produce un rifiuto, e non è un errore da segnalare.
+          navigator.share(dati).catch(function () {});
+        } else {
+          copiaNegliAppunti(bottone);
+        }
+      });
+    });
+  })();
+</script>
+{% endblock %}

@@ -162,7 +162,13 @@ class TestCosaMostraLaVetrina:
         # Il pannello di debug in fondo a `base.html` elenca ogni utente per
         # il login rapido: si guarda la pagina, non il guscio, altrimenti il
         # test fallisce per una ragione che non c'entra con la vetrina.
-        pagina = body.split("debug-footer")[0]
+        #
+        # Si taglia sul **tag**: `base.html` definisce anche `.debug-footer`
+        # in un `<style>` dentro `<head>`, e tagliare sulla parola lasciava in
+        # mano la sola testa del documento — dove «1» c'è sempre e il nome di
+        # un utente non c'è mai, quindi questo test passava senza guardare
+        # niente.
+        pagina = body.split('<footer class="debug-footer"')[0]
 
         assert giocatore.username not in pagina, "la vetrina non elenca gli iscritti"
         assert "1" in pagina, "il conteggio invece si mostra"
@@ -285,3 +291,70 @@ class TestIndirizzoLeggibile:
 
     def test_un_indirizzo_inesistente_resta_un_404(self, client, db_session):
         assert client.get("/g/non-esiste-questa-gara").status_code == 404
+
+
+@pytest.mark.integration
+class TestLaClassificaHaINomi:
+    """Il difetto silenzioso: `User` **non ha** `display_name`.
+
+    Il template mostrava `riga.user.display_name`. In Jinja un attributo che
+    non esiste è `Undefined`, che si stampa come stringa vuota: nessun errore,
+    nessuna riga nei log, solo una classifica finale di posizioni e punteggi
+    **senza un nome**. È vissuto così dal primo lotto fino a qui.
+    """
+
+    def test_a_gara_conclusa_i_giocatori_hanno_un_nome(self, client, db_session):
+        from models.classification.models import RoundClassification
+
+        gara = _gara(_user(UserRole.DIRECTOR.value))
+        gara.status = GaraStatus.COMPLETED.value
+        vincitore = _user()
+        db.session.add(
+            RoundClassification(
+                gara_id=gara.id,
+                round_number=gara.rounds_count,
+                user_id=vincitore.id,
+                position=1,
+                matches_won=3,
+                rack_difference=5,
+            )
+        )
+        db.session.commit()
+
+        body = client.get(f"/g/{gara.public_token}").get_data(as_text=True)
+        pagina = body.split('<footer class="debug-footer"')[0]
+
+        assert vincitore.username in pagina, (
+            "la classifica finale mostra posizione e punteggio ma non chi ha "
+            "vinto: è il sintomo di un attributo inesistente letto da Jinja"
+        )
+
+    def test_la_vista_risolve_il_nome_senza_passare_dal_template(self, db_session):
+        """La riduzione sta nella vista, dove un test può leggerla.
+
+        È ciò che rende quel difetto impossibile da ripetere in silenzio: una
+        stringa vuota qui si vede, dentro un template no.
+        """
+        from models.classification.models import RoundClassification
+        from models.competition.showcase_view import costruisci_vetrina
+
+        gara = _gara(_user(UserRole.DIRECTOR.value))
+        gara.status = GaraStatus.COMPLETED.value
+        giocatore = _user()
+        db.session.add(
+            RoundClassification(
+                gara_id=gara.id,
+                round_number=gara.rounds_count,
+                user_id=giocatore.id,
+                position=1,
+                matches_won=3,
+                rack_difference=5,
+            )
+        )
+        db.session.commit()
+
+        vetrina = costruisci_vetrina(gara)
+
+        assert vetrina.classifica, "la gara è conclusa: la classifica ci deve essere"
+        assert vetrina.classifica[0].nome == giocatore.username
+        assert vetrina.classifica[0].posizione == 1

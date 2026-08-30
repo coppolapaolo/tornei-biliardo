@@ -1054,11 +1054,13 @@ def campionato_vetrina(campionato_id):
     presenta allo stesso modo sui social. Una singola gara può sempre
     scavalcarla dalla propria vetrina — vedi `Gara.effective_banner_path`.
 
-    Il campionato non ha (ancora) una pagina-vetrina propria: questa schermata
-    serve a fornire il materiale alle gare. La vetrina del campionato è il
-    secondo lotto della issue, e richiede una descrizione che oggi il modello
-    non ha.
+    Da qui si cura anche la **vetrina del campionato stessa** (`/c/<link>`),
+    che è il secondo lotto della issue: descrizione, indirizzo leggibile e
+    link esterno. I campi sono gli stessi della gara e fanno due mestieri
+    insieme — quello che il campionato mostra sulla propria pagina, e quello
+    che le sue gare ereditano quando non hanno niente di proprio.
     """
+    from models.competition.showcase_service import ensure_campionato_public_token
     from utils.image_paths import ImagePathManager
 
     campionato = db.get_or_404(Campionato, campionato_id)
@@ -1069,18 +1071,33 @@ def campionato_vetrina(campionato_id):
     )
     gare_che_ereditano = [g for g in campionato.gare if not g.banner_path]
 
+    # Il token può mancare su un campionato costruito prima della migration
+    # in un ambiente che non l'ha eseguita: si assegna qui, che è una
+    # schermata di **scrittura** del direttore — non nella pagina pubblica,
+    # dove una scrittura innescata da un crawler sarebbe un difetto.
+    ensure_campionato_public_token(campionato)
+
     return render_template(
         "admin/campionato_vetrina.html",
         campionato=campionato,
         banner=banner,
         gare_che_ereditano=len(gare_che_ereditano),
+        url_pubblica=url_for(
+            "main.campionato_invite",
+            identificatore=campionato.public_slug_or_token,
+            _external=True,
+        ),
+        url_anteprima=url_for(
+            "main.campionato_invite",
+            identificatore=campionato.public_slug_or_token,
+        ),
     )
 
 
 @campionato_bp.route("/<int:campionato_id>/vetrina", methods=["POST"])
 @campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def salva_campionato_vetrina(campionato_id):
-    """Link esterno del campionato."""
+    """Descrizione, indirizzo leggibile e link esterno del campionato."""
     from models.competition.showcase_service import update_campionato_showcase
     from models.exceptions import DomainError
 
@@ -1088,8 +1105,10 @@ def salva_campionato_vetrina(campionato_id):
     try:
         update_campionato_showcase(
             campionato_id,
+            slug=request.form.get("slug"),
             external_url=request.form.get("external_url"),
             external_label=request.form.get("external_label"),
+            description=request.form.get("description"),
         )
         flash(_("Vetrina del campionato aggiornata."), "success")
     except DomainError as errore:

@@ -1,7 +1,9 @@
 {% extends "base.html" %}
-{# La locandina e il link che tutte le gare del campionato ereditano
-   (issue #235). Una grafica sola, caricata una volta: ogni tappa si presenta
-   allo stesso modo quando il direttore la condivide. #}
+{# La vetrina del campionato (issue #235). Questi campi fanno due mestieri
+   insieme, ed è il motivo per cui stanno su una schermata sola: sono quello
+   che il campionato mostra sulla **propria** pagina pubblica, e quello che le
+   sue gare **ereditano** quando non hanno niente di proprio. Una grafica
+   caricata una volta e ogni tappa si presenta allo stesso modo. #}
 
 {% block title %}{{ _("Vetrina") }} - {{ campionato.name }}{% endblock %}
 {% block page_title %}{{ _("Vetrina del campionato") }}{% endblock %}
@@ -53,6 +55,28 @@
   <form method="POST" action="{{ url_for('admin.campionato.salva_campionato_vetrina', campionato_id=campionato.id) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="card">
+      <div class="c7-kicker">{{ _("Descrizione") }}</div>
+      <p class="text-muted mt-2">
+        {{ _("Di cosa si tratta, a chi è aperto, come funziona: è la riga che spiega il campionato a chi apre il link senza conoscerlo. Senza, la sua pagina resta un calendario di date.") }}
+      </p>
+      <textarea class="form-control mt-2" name="description" rows="4"
+                placeholder="{{ _('Campionato sociale aperto a tutti i tesserati…') }}">{{ campionato.description or '' }}</textarea>
+    </div>
+
+    <div class="card mt-3">
+      <div class="c7-kicker">{{ _("Indirizzo personalizzato") }}</div>
+      <p class="text-muted mt-2">
+        {{ _("Un nome leggibile al posto del codice, da dettare al telefono o stampare su una locandina. Il link con il codice continua a funzionare.") }}
+      </p>
+      <div class="input-group mt-2">
+        <span class="input-group-text">{{ request.host_url }}c/</span>
+        <input type="text" class="form-control" name="slug" value="{{ campionato.slug or '' }}"
+               maxlength="60" placeholder="{{ _('sociale-2026') }}">
+      </div>
+      <div class="form-text">{{ _("Spazi e accenti diventano trattini. Lascia vuoto per usare solo il codice.") }}</div>
+    </div>
+
+    <div class="card mt-3">
       <div class="c7-kicker">{{ _("Link esterno") }}</div>
       <p class="text-muted mt-2">
         {{ _("Il regolamento del campionato, o la pagina dell'organizzazione: compare sulla vetrina di ogni gara che non ne ha uno proprio.") }}
@@ -70,5 +94,46 @@
     </button>
   </form>
 
+  <div class="card c7-card--accent">
+    <div class="c7-kicker">{{ _("Link da condividere") }}</div>
+    <div class="c7-vetrina__url mt-2">{{ url_pubblica }}</div>
+    <div class="d-flex flex-wrap gap-2 mt-3">
+      <button type="button" class="btn btn-primary flex-grow-1" data-copia-url>
+        <span><i class="fa-solid fa-copy me-2"></i>{{ _("Copia link") }}</span>
+      </button>
+      <a href="{{ url_anteprima }}" class="btn btn-outline-light">
+        <i class="fa-solid fa-eye me-2"></i>{{ _("Anteprima") }}
+      </a>
+    </div>
+  </div>
+
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var bottone = document.querySelector('[data-copia-url]');
+    if (!bottone) return;
+    var indirizzo = {{ url_pubblica|tojson }};
+    var copiato = {{ _("Link copiato")|tojson }};
+
+    bottone.addEventListener('click', function () {
+      var etichetta = bottone.querySelector('span');
+      var precedente = etichetta.innerHTML;
+      // Fuori da un contesto sicuro (http in sviluppo) `navigator.clipboard`
+      // non esiste: il ripiego mostra l'indirizzo da copiare a mano invece di
+      // non fare niente senza dire perché.
+      var esito = (navigator.clipboard && window.isSecureContext)
+        ? navigator.clipboard.writeText(indirizzo)
+        : Promise.reject();
+      esito.then(function () {
+        etichetta.textContent = copiato;
+        setTimeout(function () { etichetta.innerHTML = precedente; }, 2000);
+      }).catch(function () {
+        window.prompt(copiato, indirizzo);
+      });
+    });
+  })();
+</script>
 {% endblock %}

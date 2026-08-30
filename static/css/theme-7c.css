@@ -2376,19 +2376,293 @@ button.c7-tpa-player:disabled { cursor: default; }
   transform: translate(-50%, -50%); pointer-events: none;
 }
 
-/* --------------------------------------------------------------------------
-   Vetrina pubblica di una gara (issue #235)
+/* ---------------------------------------------------------------------------
+   Vetrina pubblica di gare e campionati (issue #235)
 
-   La pagina che vede chi arriva da un post sui social. Impaginazione presa
-   da `#10a` del prototipo (ospite in sola lettura): riquadro informazioni a
-   coppie etichetta/valore, fascia di numeri, card ad accento con l'invito.
-   Qui stanno solo le poche misure che quel blocco non aveva già.
+   La pagina che vede chi arriva da un post. Non e' una schermata dell'app: e'
+   un manifesto, e la differenza si vede prima nel guscio che nei colori.
+
+   Chi apre il link non ha un account, non ha una cronologia e non ha un posto
+   dove tornare. Una freccia indietro, un avatar e una nav flottante sono
+   percio' arredamento che non serve a nessuno, e sul desktop la barra
+   laterale sarebbe peggio: un menu di voci che portano tutte al login. Il
+   guscio pubblico (`templates/public_base.html`) li toglie tutti, e da qui in
+   giu' c'e' solo cio' che resta.
    -------------------------------------------------------------------------- */
 
-/* La locandina caricata dal direttore. `aspect-ratio` invece di un'altezza
-   fissa: le immagini arrivano in ogni proporzione, e il ritaglio al centro
-   e' lo stesso che fanno i social con l'anteprima — cosi' chi guarda la
-   pagina e chi guarda il link su WhatsApp vedono la stessa figura. */
+/* `.c7-content` porta gutter e max-width pensati per l'app, ma la locandina
+   deve arrivare ai bordi dello schermo: il margine se lo rimettono i blocchi
+   che lo vogliono, non la pagina. */
+.c7-public .c7-siderestore { display: none; }
+.c7-public .c7-main { padding-bottom: 0; }
+.c7-public .c7-content { padding: 0; max-width: none; }
+.c7-public .c7-flashes { padding: 12px var(--c7-gutter) 0; margin-bottom: 0; }
+.c7-public footer.c7-content { padding: 0 var(--c7-gutter) 18px; }
+
+/* Sul telefono la chiamata all'azione galleggia in fondo (`.c7-vt__act`):
+   senza questo spazio coprirebbe l'ultima riga della pagina. */
+.c7-public .c7-vt { padding-bottom: 104px; }
+
+.c7-vt__bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 14px var(--c7-gutter);
+}
+.c7-vt__mark {
+  font-size: 12px; font-weight: 800; letter-spacing: .14em;
+  text-transform: uppercase; color: var(--c7-ink-muted); text-decoration: none;
+}
+.c7-vt__mark:hover { color: var(--c7-ink); }
+.c7-vt__iconbtn {
+  width: 46px; height: 46px; border: 0; border-radius: 50%;
+  background: var(--c7-card); color: var(--c7-ink-soft);
+  display: grid; place-items: center; font-size: 15px; flex-shrink: 0;
+}
+.c7-vt__iconbtn:hover { background: var(--c7-line); color: var(--c7-ink); }
+
+/* La locandina a tutta larghezza. `object-fit: cover` su un'altezza fissa: le
+   immagini arrivano in ogni proporzione, e il ritaglio al centro e' lo stesso
+   che fanno i social con l'anteprima — cosi' chi apre la pagina e chi guarda
+   il link su WhatsApp vedono la stessa figura. */
+.c7-vt__hero { background: var(--c7-sunken); }
+.c7-vt__hero img { display: block; width: 100%; height: 262px; object-fit: cover; }
+
+.c7-vt__shell { margin-top: -34px; position: relative; z-index: 2; }
+/* Senza locandina non si lascia un buco: la pagina parte dal pannello. */
+.c7-vt--nohero .c7-vt__shell { margin-top: 6px; }
+
+/* Il titolo su una superficie piena che scavalca l'immagine, non su una
+   velatura sfumata: in 7c le superfici si distinguono per tono, e una
+   sfumatura qui sarebbe l'unica eccezione della pagina. */
+.c7-vt__plate {
+  background: var(--c7-ink); color: var(--c7-on-ink);
+  border-radius: var(--c7-r-card-lg); padding: 20px; margin: 0 var(--c7-gutter);
+}
+.c7-vt__ovr {
+  font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--c7-accent-bright); text-decoration: none; display: inline-block;
+}
+a.c7-vt__ovr:hover { color: var(--c7-on-ink); }
+.c7-vt__title {
+  font-size: 31px; line-height: 1.08; letter-spacing: -.03em;
+  color: var(--c7-on-ink); margin: 8px 0 0;
+}
+.c7-vt__when {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 14px;
+  color: var(--c7-on-ink-muted); font-size: 13px; font-weight: 700;
+}
+.c7-vt__when strong {
+  font-family: var(--c7-font-mono); font-variant-numeric: tabular-nums;
+  font-weight: 700; color: var(--c7-on-ink);
+}
+.c7-vt__badge {
+  margin-top: 16px; display: inline-flex; align-items: center; height: 28px;
+  padding: 0 12px; border-radius: var(--c7-r-pill); font-size: 10px; font-weight: 800;
+  letter-spacing: .06em; text-transform: uppercase;
+  background: rgba(255, 255, 255, .14); color: var(--c7-on-ink);
+}
+.c7-vt__badge--open { background: var(--c7-ok); color: #fff; }
+.c7-vt__badge--live { background: var(--c7-accent-bright); color: var(--c7-accent); }
+
+.c7-vt__col, .c7-vt__rail { padding: 0 var(--c7-gutter); }
+
+/* I fatti come blocco di manifesto: righe con filetto, etichetta a sinistra e
+   valore a destra. Non sono dentro una card — la card e' un contenitore da
+   scrivania, e qui l'informazione deve leggersi di seguito. */
+.c7-vt__facts { margin: 26px 0 0; }
+.c7-vt__fact {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px;
+  padding: 13px 0; border-bottom: 1px solid var(--c7-line);
+}
+.c7-vt__fact:first-child { border-top: 1px solid var(--c7-line); }
+.c7-vt__fact dt {
+  display: flex; align-items: center; gap: 7px; flex-shrink: 0;
+  font-size: 10px; font-weight: 800; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--c7-ink-muted);
+}
+.c7-vt__fact dd {
+  margin: 0; text-align: right; font-size: 15px; font-weight: 800; letter-spacing: -.02em;
+}
+.c7-vt__fact dd small {
+  display: block; font-size: 12px; font-weight: 600; letter-spacing: 0;
+  color: var(--c7-ink-muted); margin-top: 1px;
+}
+
+.c7-vt__desc { margin: 24px 0 0; font-size: 14px; line-height: 1.6; color: var(--c7-ink-soft); }
+
+.c7-vt__panel {
+  margin-top: 22px; background: var(--c7-card);
+  border-radius: var(--c7-r-card-lg); padding: 20px;
+}
+/* Un fatto solo — quanti posti restano — invece di due cifre e una barra che
+   dicono la stessa cosa in tre modi. */
+.c7-vt__seats { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.c7-vt__seats b {
+  font-family: var(--c7-font-mono); font-variant-numeric: tabular-nums;
+  font-weight: 800; font-size: 34px; letter-spacing: -.04em;
+}
+.c7-vt__seats span { font-size: 15px; font-weight: 800; letter-spacing: -.02em; }
+.c7-vt__free {
+  font-size: 12px; font-weight: 800; padding: 5px 11px; white-space: nowrap;
+  border-radius: var(--c7-r-pill); background: var(--c7-ok-bg); color: var(--c7-ok-ink);
+}
+.c7-vt__free--none { background: var(--c7-warn-bg); color: var(--c7-warn-ink); }
+/* Una tacca per posto: a colpo d'occhio dice quanto e' piena senza leggere. */
+.c7-vt__track { display: flex; gap: 3px; margin-top: 12px; }
+.c7-vt__track i { flex: 1; height: 7px; border-radius: 2px; background: var(--c7-bg); }
+.c7-vt__track i.is-taken { background: var(--c7-accent); }
+
+/* La chiamata all'azione galleggia per tutta la pagina sul telefono e diventa
+   il fondo della colonna ferma sul desktop: UN SOLO elemento, due
+   comportamenti. Duplicarla in due punti del DOM e' la strada breve, ed e' la
+   strada per cui prima o poi le due copie dicono cose diverse. */
+.c7-vt__act {
+  position: fixed; left: 12px; right: 12px; bottom: 14px; z-index: var(--c7-z-mobnav);
+  display: flex; gap: 8px; padding: 9px; border-radius: var(--c7-r-pill);
+  background: var(--c7-card); box-shadow: var(--c7-shadow-pop);
+}
+.c7-vt__act .btn { flex: 1; border-radius: var(--c7-r-pill); }
+.c7-vt__act .c7-vt__iconbtn { width: 56px; height: 56px; background: var(--c7-bg); }
+
+.c7-vt__out {
+  margin-top: 12px; display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; min-height: 56px; padding: 0 18px;
+  border: 1.5px solid var(--c7-line); border-radius: var(--c7-r-field);
+  font-weight: 800; color: var(--c7-ink); text-decoration: none;
+}
+.c7-vt__out:hover { background: var(--c7-card); color: var(--c7-ink); }
+
+.c7-vt__who {
+  margin-top: 26px; padding-top: 18px; border-top: 1px solid var(--c7-line);
+  display: flex; align-items: center; gap: 10px;
+  color: var(--c7-ink-muted); font-size: 12px; font-weight: 700;
+}
+.c7-vt__who b { color: var(--c7-ink-soft); }
+
+/* --- Sezioni: calendario delle prove e classifica ------------------------- */
+.c7-vt__sec { margin-top: 28px; }
+.c7-vt__sechead {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 12px; margin-bottom: 12px;
+}
+.c7-vt__sechead h2 { font-size: 17px; letter-spacing: -.02em; margin: 0; }
+.c7-vt__sechead span {
+  font-size: 10px; font-weight: 800; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--c7-ink-muted);
+}
+/* Una prova del calendario: il bersaglio e' la riga, non le parole. */
+.c7-vt__leg {
+  display: flex; align-items: center; gap: 13px; margin-bottom: 8px;
+  padding: 13px 14px; border: 1.5px solid transparent; border-radius: var(--c7-r-field);
+  background: var(--c7-card); color: var(--c7-ink); text-decoration: none;
+}
+.c7-vt__leg:hover { background: var(--c7-line-soft); color: var(--c7-ink); }
+/* La prova su cui si puo' agire adesso: l'unica riga scura della lista. */
+.c7-vt__leg--now { background: var(--c7-ink); color: var(--c7-on-ink); }
+.c7-vt__leg--now:hover { background: #2A3033; color: var(--c7-on-ink); }
+/* Una prova ancora da giocare non e' un oggetto pieno: non c'e' niente da
+   leggerci dentro, e il contorno lo dice senza spegnerla come farebbe il
+   grigio del disabilitato. Il bordo trasparente sulle altre tiene le righe
+   della stessa altezza: senza, le tratteggiate risulterebbero piu' alte. */
+.c7-vt__leg--todo { background: transparent; border-color: var(--c7-line); border-style: dashed; }
+.c7-vt__legd {
+  width: 48px; flex-shrink: 0; text-align: center; line-height: 1.05;
+  font-family: var(--c7-font-mono); font-variant-numeric: tabular-nums;
+}
+.c7-vt__legd b { display: block; font-size: 19px; font-weight: 800; letter-spacing: -.04em; }
+.c7-vt__legd span { font-size: 10px; font-weight: 700; text-transform: uppercase; color: var(--c7-ink-muted); }
+.c7-vt__leg--now .c7-vt__legd span { color: var(--c7-on-ink-muted); }
+.c7-vt__legb { flex: 1; min-width: 0; }
+.c7-vt__legb b { display: block; font-size: 14px; font-weight: 800; letter-spacing: -.02em; }
+.c7-vt__legb span { font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); }
+.c7-vt__leg--now .c7-vt__legb span { color: var(--c7-on-ink-muted); }
+.c7-vt__legs {
+  flex-shrink: 0; font-size: 10px; font-weight: 800; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--c7-ink-muted);
+}
+.c7-vt__legs--done {
+  color: var(--c7-ok-ink); background: var(--c7-ok-bg);
+  border-radius: var(--c7-r-pill); padding: 5px 10px;
+}
+.c7-vt__legs--open {
+  color: var(--c7-accent); background: var(--c7-accent-bright);
+  border-radius: var(--c7-r-pill); padding: 5px 10px;
+}
+
+.c7-vt__std { border-radius: var(--c7-r-card); background: var(--c7-card); overflow: hidden; }
+.c7-vt__stdr {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 16px; border-bottom: 1px solid var(--c7-line-soft);
+}
+.c7-vt__stdr:last-child { border-bottom: 0; }
+.c7-vt__stdp {
+  width: 20px; flex-shrink: 0; font-family: var(--c7-font-mono);
+  font-weight: 800; font-size: 14px; color: var(--c7-ink-muted);
+}
+.c7-vt__stdr--podio .c7-vt__stdp { color: var(--c7-accent); }
+.c7-vt__stdn { flex: 1; min-width: 0; font-size: 14px; font-weight: 800; letter-spacing: -.02em; }
+.c7-vt__stdv {
+  font-family: var(--c7-font-mono); font-variant-numeric: tabular-nums;
+  font-weight: 800; font-size: 15px;
+}
+.c7-vt__stdv small { font-weight: 600; font-size: 11px; color: var(--c7-ink-muted); }
+
+/* --- Da lg: impaginazione editoriale, senza barra laterale ----------------- *
+   Il rapporto fra pannello e locandina resta identico: cambia la scala, non
+   la gerarchia. La colonna di destra e' `sticky` perche' l'iscrizione deve
+   restare raggiungibile anche in fondo a un calendario lungo. */
+@media (min-width: 992px) {
+  .c7-public .c7-vt { padding-bottom: 0; }
+  .c7-vt__bar { max-width: 1160px; margin: 0 auto; padding: 20px var(--c7-gutter-lg); }
+  .c7-vt__mark { font-size: 13px; }
+  .c7-vt__hero img { height: 420px; }
+  .c7-vt__shell {
+    max-width: 1160px; margin: -84px auto 0; padding: 0 var(--c7-gutter-lg);
+    display: grid; grid-template-columns: minmax(0, 1fr) 392px; gap: 40px; align-items: start;
+  }
+  .c7-vt--nohero .c7-vt__shell { margin-top: 10px; }
+  .c7-vt__col, .c7-vt__rail { padding: 0; }
+  .c7-vt__plate { margin: 0; padding: 32px 34px; }
+  /* Piu' piccolo dei 52px del prototipo: un nome di campionato appena piu'
+     lungo di «Campionato Sociale 2026» ci andava a capo. */
+  .c7-vt__title { font-size: 44px; line-height: 1.04; letter-spacing: -.035em; }
+  .c7-vt__ovr, .c7-vt__sechead span { font-size: 11px; }
+  .c7-vt__when { font-size: 15px; margin-top: 20px; }
+  .c7-vt__badge { height: 30px; font-size: 11px; margin-top: 22px; }
+  .c7-vt__facts { margin-top: 34px; }
+  .c7-vt__fact { padding: 16px 4px; }
+  .c7-vt__fact dt { font-size: 11px; }
+  .c7-vt__fact dd { font-size: 17px; }
+  .c7-vt__fact dd small { font-size: 13px; }
+  .c7-vt__desc { margin-top: 30px; font-size: 16px; line-height: 1.65; max-width: 62ch; padding: 0 4px; }
+  .c7-vt__sec { margin-top: 36px; }
+  .c7-vt__sechead h2 { font-size: 21px; }
+  .c7-vt__leg { padding: 16px 20px; gap: 18px; border-radius: var(--c7-r-card); }
+  .c7-vt__legd { width: 58px; }
+  .c7-vt__legd b { font-size: 23px; }
+  .c7-vt__legb b { font-size: 16px; }
+  .c7-vt__legb span { font-size: 13px; }
+  .c7-vt__legs { font-size: 11px; }
+  .c7-vt__rail { position: sticky; top: 24px; }
+  .c7-vt__panel { margin-top: 0; padding: 24px; }
+  .c7-vt__seats b { font-size: 40px; }
+  /* Da qui in su la barra non galleggia piu': e' il fondo del pannello. */
+  .c7-vt__act {
+    position: static; padding: 0; margin-top: 20px; background: transparent;
+    box-shadow: none; border-radius: 0; flex-direction: column;
+  }
+  .c7-vt__act .btn { border-radius: var(--c7-r-field); }
+  .c7-vt__act .c7-vt__iconbtn {
+    width: 100%; height: var(--c7-btn-h); border-radius: var(--c7-r-field);
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    font-size: 15px; font-weight: 800; color: var(--c7-ink); background: var(--c7-bg);
+  }
+  .c7-vt__out { min-height: 60px; padding: 0 22px; font-size: 15px; border-radius: var(--c7-r-card); }
+  .c7-vt__who { margin-top: 20px; padding-top: 0; border-top: 0; font-size: 13px; }
+}
+
+/* --- Schermate di cura della vetrina (lato direttore) ---------------------- */
+/* Stesso ritaglio della pagina pubblica: il direttore vede quello che vedranno
+   gli altri, non un'approssimazione. */
 .c7-vetrina__banner {
   border-radius: var(--c7-r-card-lg);
   overflow: hidden;
@@ -2400,55 +2674,16 @@ button.c7-tpa-player:disabled { cursor: default; }
   aspect-ratio: 1200 / 630;
   object-fit: cover;
 }
-
-/* Due colonne di coppie etichetta/valore, come nel prototipo. Restano due
-   anche sul telefono: sono dati brevi (una data, «al 5», una quota) e su una
-   colonna sola il riquadro diventerebbe una lista lunga da scorrere. */
-.c7-vetrina__info {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 12px;
-}
-.c7-vetrina__valore {
-  margin-top: 3px;
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: -.02em;
-}
-
-.c7-vetrina__kpi { text-align: left; }
-.c7-vetrina__kpi .text-muted { font-size: 12px; font-weight: 700; }
-
-.c7-vetrina__cta-titolo {
-  font-size: 17px;
-  font-weight: 800;
-  letter-spacing: -.02em;
-}
-
-/* Il link esterno e' una card che si preme tutta: il bersaglio e' la riga,
-   non le parole. */
-.c7-vetrina__link {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  min-height: 56px;
-  text-decoration: none;
-  color: inherit;
-  font-weight: 700;
-}
-.c7-vetrina__link:hover { background: var(--c7-sunken); }
-
-.c7-vetrina__pos {
+/* L'indirizzo da copiare: monospazio perche' si legge carattere per carattere
+   quando lo si detta al telefono, e `break-all` perche' un link lungo dentro
+   una card stretta altrimenti sborda. */
+.c7-vetrina__url {
   font-family: var(--c7-font-mono);
-  font-weight: 800;
-  color: var(--c7-ink-muted);
+  font-size: 13px;
+  font-weight: 700;
+  word-break: break-all;
+  line-height: 1.5;
 }
-
-/* La vetrina e' un manifesto, non una scrivania: su schermo largo si centra
-   invece di stirarsi: una card di quattro righe larga 1400px sembra un
-   errore di impaginazione, ed e' anche la larghezza sbagliata per leggere. */
-.c7-vetrina { max-width: 720px; margin-inline: auto; width: 100%; }
 
 /* Dentro una card ad accento il primario e' il fondo scuro dell'app: scuro su
    scuro, cioe' invisibile. Sull'accento la gerarchia la fanno l'azzurro

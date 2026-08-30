@@ -1,0 +1,174 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap">
+  <style>
+:root{
+  --c7-bg:#E4E8E7; --c7-card:#F5F7F6; --c7-sunken:#ECEEED;
+  --c7-ink:#1B2124; --c7-ink-soft:#3D474A; --c7-ink-muted:#6B7679; --c7-ink-faint:#9AA3A6;
+  --c7-on-ink:#F2F5F4; --c7-on-ink-muted:#9AA6A9;
+  --c7-line:#D3D8D7; --c7-line-soft:#E4E8E7;
+  --c7-accent:#2C4A52; --c7-accent-ink:#F2F8F7; --c7-accent-bright:#8FCDE8;
+  --c7-accent-dim:#A9C4C7; --c7-accent-tint:#DDE9EE; --c7-accent-tint-ink:#23404A;
+  --c7-ok-bg:#E4EDE9; --c7-ok-ink:#1D5F4A; --c7-ok:#2C8A6B;
+  --c7-warn-bg:#F0E9D8; --c7-warn-ink:#6E5417;
+  --c7-font:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --c7-font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",monospace;
+  --c7-r-pill:999px; --c7-r-card:22px; --c7-r-card-lg:26px; --c7-r-field:18px;
+  --c7-gutter:18px; --c7-pad-card:16px; --c7-gap:12px; --c7-gap-lg:16px;
+  --c7-btn-h:56px; --c7-field-h:58px;
+  --c7-shadow-pop:0 18px 36px -20px rgba(27,33,36,.75);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--c7-bg);color:var(--c7-ink);font-family:var(--c7-font);
+  font-weight:600;font-size:14px;line-height:1.5;text-wrap:pretty;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-weight:800;letter-spacing:-.025em;color:var(--c7-ink);margin:0}
+a{color:var(--c7-accent);text-decoration:none}
+a:hover{color:var(--c7-accent-tint-ink)}
+p{margin:0}
+.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.card{background:var(--c7-card);border-radius:var(--c7-r-card);padding:var(--c7-pad-card)}
+.kicker{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--c7-ink-muted)}
+.state{height:26px;padding:0 11px;border-radius:var(--c7-r-pill);font-size:10px;font-weight:800;
+  letter-spacing:.04em;text-transform:uppercase;display:inline-flex;align-items:center}
+.state--ok{background:var(--c7-ok-bg);color:var(--c7-ok-ink)}
+.muted{color:var(--c7-ink-muted);font-weight:600}
+.mono{font-family:var(--c7-font-mono);font-variant-numeric:tabular-nums}
+.btn{height:var(--c7-btn-h);border:0;border-radius:var(--c7-r-field);padding:0 20px;font-size:15px;
+  font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  font-family:var(--c7-font);cursor:pointer}
+.btn--primary{background:var(--c7-ink);color:#fff}
+
+
+    .page{min-height:100%;background:var(--c7-bg);padding-bottom:56px}
+    .bar{max-width:1160px;margin:0 auto;padding:20px 0;display:flex;align-items:center;
+      justify-content:space-between;gap:20px}
+    .wordmark{font-size:13px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--c7-ink-muted)}
+    .bar .btn{height:46px;border-radius:var(--c7-r-pill);background:var(--c7-card);color:var(--c7-ink);font-size:14px}
+    .hero img{display:block;width:100%;height:420px;object-fit:cover}
+    /* Niente barra laterale: chi arriva da un post non ha un'app da navigare.
+       Impaginazione editoriale centrata, i fatti a sinistra e l'azione in una
+       colonna che resta ferma mentre si scorre. */
+    .shell{max-width:1160px;margin:-84px auto 0;display:grid;grid-template-columns:1fr 392px;
+      gap:40px;align-items:start;position:relative;z-index:2}
+    .plate{background:var(--c7-ink);color:var(--c7-on-ink);border-radius:var(--c7-r-card-lg);padding:32px 34px}
+    .plate .ovr{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--c7-accent-bright)}
+    .plate h1{font-size:52px;line-height:1.03;color:var(--c7-on-ink);margin-top:12px;letter-spacing:-.035em}
+    .plate .when{display:flex;align-items:center;gap:10px;margin-top:20px;color:var(--c7-on-ink-muted);
+      font-size:15px;font-weight:700}
+    .plate .when .mono{color:var(--c7-on-ink)}
+    .badge-live{margin-top:22px;display:inline-flex;align-items:center;height:30px;padding:0 14px;
+      border-radius:var(--c7-r-pill);background:var(--c7-ok);color:#fff;font-size:11px;font-weight:800;
+      letter-spacing:.06em;text-transform:uppercase}
+    .facts{margin-top:34px}
+    .fact{display:flex;align-items:baseline;justify-content:space-between;gap:24px;padding:16px 4px;
+      border-bottom:1px solid var(--c7-line)}
+    .fact:first-child{border-top:1px solid var(--c7-line)}
+    .fact dt{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:800;letter-spacing:.12em;
+      text-transform:uppercase;color:var(--c7-ink-muted);flex-shrink:0}
+    .fact dd{margin:0;text-align:right;font-size:17px;font-weight:800;letter-spacing:-.02em}
+    .fact dd small{display:block;font-size:13px;font-weight:600;color:var(--c7-ink-muted);letter-spacing:0;margin-top:2px}
+    .desc{margin-top:30px;font-size:16px;line-height:1.65;color:var(--c7-ink-soft);max-width:62ch;padding:0 4px}
+    .rail{position:sticky;top:24px;display:flex;flex-direction:column;gap:12px}
+    .panel{background:var(--c7-card);border-radius:var(--c7-r-card-lg);padding:24px}
+    .seats__row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+    .seats__n{font-family:var(--c7-font-mono);font-variant-numeric:tabular-nums;font-weight:800;
+      font-size:15px;letter-spacing:-.02em}
+    .seats__n b{font-size:40px;letter-spacing:-.04em}
+    .seats__free{font-size:12px;font-weight:800;color:var(--c7-ok-ink);background:var(--c7-bg);
+      border-radius:var(--c7-r-pill);padding:6px 12px}
+    .track{display:flex;gap:3px;margin-top:16px}
+    .track i{flex:1;height:8px;border-radius:2px;background:var(--c7-bg)}
+    .track i.on{background:var(--c7-accent)}
+    .panel .btn{width:100%;margin-top:20px}
+    .panel .btn--ghost{background:var(--c7-bg);color:var(--c7-ink);margin-top:8px}
+    .out{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:60px;
+      padding:0 22px;border:1.5px solid var(--c7-line);border-radius:var(--c7-r-card);
+      font-weight:800;color:var(--c7-ink);font-size:15px}
+    .who{display:flex;align-items:center;gap:12px;padding:4px 6px;color:var(--c7-ink-muted);
+      font-size:13px;font-weight:700}
+    .who .avatar{width:38px;height:38px;border-radius:50%;background:var(--c7-accent);color:#fff;
+      display:grid;place-items:center;font-size:12px;font-weight:800}
+
+  </style>
+</helmet>
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+  <symbol id="i-cup" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/><path d="M12 14v4M9 21h6"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+  <symbol id="i-eur" viewBox="0 0 24 24"><path d="M17 6.5A6.5 6.5 0 0 0 7.5 12 6.5 6.5 0 0 0 17 17.5M4 10.5h8M4 13.5h8"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20a6.5 6.5 0 0 1 13 0M19 8v6M22 11h-6"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-8 8"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-6 8 6v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20h4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+</svg>
+<div class="page">
+  <div class="bar">
+    <span class="wordmark">Tornei Biliardo</span>
+    <button class="btn"><svg class="ic"><use href="#i-share"/></svg> Condividi</button>
+  </div>
+  <div class="hero"><img src="locandina.png" alt="Locandina della gara"></div>
+
+  <div class="shell">
+    <div>
+      <div class="plate">
+        <div class="ovr">Campionato Sociale 2026 &middot; 3ª prova</div>
+        <h1>Terza prova &mdash; Palla 8</h1>
+        <div class="when"><svg class="ic"><use href="#i-cal"/></svg>
+          <span class="mono">sabato 12 settembre</span> &middot; <span class="mono">20:30</span></div>
+        <div><span class="badge-live">Iscrizioni aperte</span></div>
+      </div>
+
+      <dl class="facts">
+        <div class="fact"><dt><svg class="ic"><use href="#i-pin"/></svg>Dove</dt>
+          <dd>Sala Centrale<small>via Roma 14, Udine</small></dd></div>
+        <div class="fact"><dt><svg class="ic"><use href="#i-cup"/></svg>Formato</dt>
+          <dd>Palla 8, al 5<small>5 turni, abbinamento casuale</small></dd></div>
+        <div class="fact"><dt><svg class="ic"><use href="#i-eur"/></svg>Quota</dt><dd class="mono">15 &euro;</dd></div>
+        <div class="fact"><dt><svg class="ic"><use href="#i-clock"/></svg>Chiusura iscrizioni</dt>
+          <dd class="mono">10 set, 23:59</dd></div>
+      </dl>
+
+      <p class="desc">Terza tappa del campionato sociale. Turni di qualificazione al 5,
+        poi tabellone a eliminazione diretta per i primi otto. Tavoli Brunswick 9 piedi,
+        panno Simonis 860. Ritrovo alle 20:00 in sala.</p>
+    </div>
+
+    <div class="rail">
+      <div class="panel">
+        <div class="seats__row">
+          <div class="seats__n"><b>12</b> su 16 posti</div>
+          <span class="seats__free">4 liberi</span>
+        </div>
+        <div class="track">
+          <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+          <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+          <i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i>
+        </div>
+        <button class="btn btn--primary"><svg class="ic"><use href="#i-plus"/></svg> Iscriviti</button>
+        <button class="btn btn--ghost"><svg class="ic"><use href="#i-share"/></svg> Condividi</button>
+      </div>
+      <a class="panel out" href="#">
+        <span style="display:inline-flex;align-items:center;gap:10px"><svg class="ic"><use href="#i-ext"/></svg>Regolamento</span>
+        <svg class="ic muted"><use href="#i-chev"/></svg></a>
+      <div class="who"><span class="avatar">LB</span>
+        <span>Organizza <b style="color:var(--c7-ink-soft)">Luca Bianchi</b><br>Direttore di gara</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

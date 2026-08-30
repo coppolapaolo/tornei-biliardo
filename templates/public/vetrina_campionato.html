@@ -1,0 +1,207 @@
+{% extends "public_base.html" %}
+{# La vetrina di un campionato (issue #235, secondo lotto).
+
+   Stessa impaginazione della vetrina di una gara, con in più il blocco che
+   distingue una stagione da una serata: il **calendario delle prove**, con
+   quella aperta in rilievo.
+
+   Da lì viene la decisione che conta: la chiamata all'azione di un campionato
+   **punta a una gara**. Non esiste «iscriviti al campionato»; ci si iscrive
+   alla prova aperta, e se non ce n'è nessuna la pagina lo dice invece di
+   mostrare un pulsante che non porta da nessuna parte. #}
+
+{% block title %}{{ vetrina.titolo }} - {{ config.APP_NAME }}{% endblock %}
+
+{% block social_meta %}
+<meta property="og:site_name" content="{{ config.APP_NAME }}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ social_title }}">
+<meta property="og:description" content="{{ social_description }}">
+<meta property="og:image" content="{{ social_image }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="{{ social_url }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ social_title }}">
+<meta name="twitter:description" content="{{ social_description }}">
+<meta name="description" content="{{ social_description }}">
+{% if not vetrina.indicizzabile %}
+{# Un campionato senza nemmeno una prova in calendario non è ancora niente:
+   il link funziona per chi ce l'ha, ma non si offre ai motori di ricerca una
+   pagina che non ha ancora contenuto. #}
+<meta name="robots" content="noindex">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="c7-vt{% if not vetrina.banner_url %} c7-vt--nohero{% endif %}">
+
+  <div class="c7-vt__bar">
+    <a class="c7-vt__mark" href="{{ url_for('main.index') }}">{{ config.APP_NAME }}</a>
+    <button type="button" class="c7-vt__iconbtn" data-condividi
+            aria-label="{{ _('Condividi') }}" title="{{ _('Condividi') }}">
+      <i class="fa-solid fa-share-nodes"></i>
+    </button>
+  </div>
+
+  {% if vetrina.banner_url %}
+  <div class="c7-vt__hero">
+    <img src="{{ vetrina.banner_url }}" alt="{{ _('Locandina di %(nome)s', nome=vetrina.titolo) }}">
+  </div>
+  {% endif %}
+
+  <div class="c7-vt__shell">
+    <div class="c7-vt__col">
+
+      <div class="c7-vt__plate">
+        <div class="c7-vt__ovr">{{ _("Campionato") }}</div>
+        <h1 class="c7-vt__title">{{ vetrina.titolo }}</h1>
+        {% if vetrina.periodo or vetrina.prove_totali %}
+        <div class="c7-vt__when">
+          <i class="fa-solid fa-calendar-days"></i>
+          {% if vetrina.periodo %}<strong>{{ vetrina.periodo }}</strong>{% endif %}
+          {% if vetrina.prove_totali %}
+          <span>·</span><span>{{ _("%(n)s gare", n=vetrina.prove_totali) }}</span>
+          {% endif %}
+        </div>
+        {% endif %}
+        <div>
+          <span class="c7-vt__badge{% if vetrina.stato_tono %} c7-vt__badge--{{ vetrina.stato_tono }}{% endif %}">
+            {{ vetrina.stato_testo }}
+          </span>
+        </div>
+      </div>
+
+      <dl class="c7-vt__facts">
+        {% if vetrina.sede %}
+        <div class="c7-vt__fact">
+          <dt><i class="fa-solid fa-location-dot"></i>{{ _("Dove") }}</dt>
+          <dd>{{ vetrina.sede }}{% if vetrina.citta %}<small>{{ vetrina.citta }}</small>{% endif %}</dd>
+        </div>
+        {% endif %}
+        <div class="c7-vt__fact">
+          <dt><i class="fa-solid fa-trophy"></i>{{ _("Formula") }}</dt>
+          <dd>{{ vetrina.formula }}</dd>
+        </div>
+        {% if vetrina.giocatori %}
+        <div class="c7-vt__fact">
+          <dt><i class="fa-solid fa-users"></i>{{ _("Giocatori") }}</dt>
+          <dd>{{ vetrina.giocatori }}</dd>
+        </div>
+        {% endif %}
+      </dl>
+
+      {% if vetrina.descrizione %}
+      <p class="c7-vt__desc">{{ vetrina.descrizione }}</p>
+      {% endif %}
+
+      {% if vetrina.calendario %}
+      <div class="c7-vt__sec">
+        <div class="c7-vt__sechead">
+          <h2>{{ _("Le gare") }}</h2>
+          <span>{{ _("%(giocate)s di %(totali)s giocate", giocate=vetrina.prove_giocate, totali=vetrina.prove_totali) }}</span>
+        </div>
+
+        {% for tappa in vetrina.calendario %}
+        {% set indirizzo = tappa.gara.public_slug_or_token %}
+        {% set classe = 'c7-vt__leg' + (' c7-vt__leg--now' if tappa.stato == 'open' else (' c7-vt__leg--todo' if tappa.stato == 'todo' else '')) %}
+        {# Il contenuto si scrive una volta sola: la riga è un link solo quando
+           la prova ha un indirizzo pubblico, e duplicare il markup nei due
+           rami è il modo in cui i due rami finiscono per divergere. #}
+        {% set contenuto %}
+          <span class="c7-vt__legd"><b>{{ tappa.giorno }}</b><span>{{ tappa.mese }}</span></span>
+          <span class="c7-vt__legb">
+            <b>{{ tappa.titolo }}</b>
+            {% if tappa.sottotitolo %}<span>{{ tappa.sottotitolo }}</span>{% endif %}
+          </span>
+          <span class="c7-vt__legs{% if tappa.stato == 'done' %} c7-vt__legs--done{% elif tappa.stato == 'open' %} c7-vt__legs--open{% endif %}">
+            {{ tappa.stato_testo }}
+          </span>
+        {% endset %}
+        {% if indirizzo %}
+        <a class="{{ classe }}" href="{{ url_for('main.gara_invite', token=indirizzo) }}">{{ contenuto }}</a>
+        {% else %}
+        <div class="{{ classe }}">{{ contenuto }}</div>
+        {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if vetrina.classifica %}
+      <div class="c7-vt__sec">
+        <div class="c7-vt__sechead">
+          <h2>{{ _("Classifica") }}</h2>
+          <span>{{ _("dopo %(n)s gare", n=vetrina.prove_giocate) }}</span>
+        </div>
+        <div class="c7-vt__std">
+          {% for riga in vetrina.classifica %}
+          <div class="c7-vt__stdr{% if riga.posizione <= 3 %} c7-vt__stdr--podio{% endif %}">
+            <span class="c7-vt__stdp">{{ riga.posizione }}</span>
+            <span class="c7-vt__stdn">{{ riga.nome }}</span>
+            <span class="c7-vt__stdv">{{ riga.valore }} <small>{{ riga.unita }}</small></span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+
+    <div class="c7-vt__rail">
+      <div class="c7-vt__panel">
+        {% if vetrina.prossima %}
+        <div class="c7-vt__sechead"><span>{{ _("Prossima gara") }}</span></div>
+        <div class="c7-vt__seats">
+          <div>
+            <span style="font-size:17px">{{ vetrina.prossima.titolo }}</span>
+          </div>
+        </div>
+        {% if vetrina.prossima.sottotitolo %}
+        <p class="text-muted mt-2 mb-0">
+          {{ vetrina.prossima.giorno }} {{ vetrina.prossima.mese }} · {{ vetrina.prossima.sottotitolo }}
+        </p>
+        {% endif %}
+        {% else %}
+        <div class="c7-vt__sechead"><span>{{ _("Iscrizioni") }}</span></div>
+        <p class="text-muted mb-0">
+          {{ _("Nessuna gara ha le iscrizioni aperte in questo momento. Condividi la pagina o torna a controllare: il calendario è qui sopra.") }}
+        </p>
+        {% endif %}
+
+        <div class="c7-vt__act">
+          {% if vetrina.prossima and vetrina.prossima.gara.public_slug_or_token %}
+          <a href="{{ url_for('main.gara_invite', token=vetrina.prossima.gara.public_slug_or_token) }}"
+             class="btn btn-primary">
+            <i class="fa-solid fa-user-plus"></i>{{ _("Iscriviti alla gara") }}
+          </a>
+          <button type="button" class="c7-vt__iconbtn" data-condividi
+                  aria-label="{{ _('Condividi') }}" title="{{ _('Condividi') }}">
+            <i class="fa-solid fa-share-nodes"></i>
+          </button>
+          {% else %}
+          <button type="button" class="btn btn-secondary" data-condividi>
+            <i class="fa-solid fa-share-nodes"></i>
+            <span data-condividi-testo>{{ _("Condividi il campionato") }}</span>
+          </button>
+          {% endif %}
+        </div>
+      </div>
+
+      {% if vetrina.link_esterno %}
+      <a class="c7-vt__out" href="{{ vetrina.link_esterno }}" target="_blank" rel="noopener noreferrer">
+        <span><i class="fa-solid fa-arrow-up-right-from-square me-2"></i>{{ vetrina.etichetta_link }}</span>
+        <i class="fa-solid fa-chevron-right text-muted"></i>
+      </a>
+      {% endif %}
+
+      {% if vetrina.organizzatore %}
+      <div class="c7-vt__who">
+        <i class="fa-solid fa-user-tie"></i>
+        <span>{{ _("Organizza") }} <b>{{ vetrina.organizzatore }}</b></span>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

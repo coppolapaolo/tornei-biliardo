@@ -12,6 +12,14 @@ seconda è che gli stessi dati servono due volte — una alla pagina e una ai
 meta Open Graph, che sono quello che lo scraper del social legge — e comporli
 due volte è il modo sicuro per farli divergere.
 
+**Dove va ciascun dato.** La pagina è impaginata come un manifesto, non come
+una scheda, e questo decide la forma dei campi: *quando si gioca* sta nel
+pannello del titolo (`data_testo` / `ora_testo`, separati perché l'ora può
+mancare), *chi organizza* è la firma in fondo (`organizzatore`), e in `righe`
+restano solo i fatti che si leggono di seguito. Impaginare non è decorare: se
+la data tornasse dentro `righe` finirebbe in mezzo alle altre voci, e la prima
+cosa che si cerca su un volantino sarebbe l'ultima a farsi trovare.
+
 **Nessuna scrittura.** Nemmeno indiretta: la classifica si legge già
 calcolata (vedi `showcase_service.classifica_gia_calcolata`), perché questa
 pagina la aprono i crawler e ogni loro passaggio innescherebbe altrimenti un
@@ -21,28 +29,56 @@ ricalcolo con relativo commit.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date as _date, datetime
+from datetime import date as _date
 from typing import Any, List, Optional
 
-from flask_babel import gettext as _
+from flask_babel import format_date, gettext as _
 
 from models.base import db, utc_now
 from models.competition.models import Gara, Inscription
-from models.status_enum import Discipline, GaraStatus
+from models.status_enum import Discipline, GaraStatus, ProvaDerivedStatus
 
-#: Quante righe di classifica finisce in vetrina a gara conclusa. Il podio più
-#: un contorno: è un manifesto, non un tabulato — chi vuole tutto apre la
+#: Quante righe di classifica finiscono in vetrina a gara conclusa. Il podio
+#: più un contorno: è un manifesto, non un tabulato — chi vuole tutto apre la
 #: pagina della gara.
 RIGHE_CLASSIFICA_VETRINA = 8
+
+#: Oltre questa capienza le tacche dei posti diventano trattini da due pixel,
+#: che non si contano e non si leggono: sopra, la barra torna piena.
+MAX_TACCHE_POSTI = 32
 
 
 @dataclass(frozen=True)
 class RigaInformativa:
-    """Una voce del riquadro dei dati: etichetta, valore, icona."""
+    """Una voce del blocco dei fatti: etichetta, valore, icona.
+
+    `dettaglio` è la seconda riga, più piccola, sotto il valore: la città di
+    una sala, il numero di turni. Non è un secondo dato — è la stessa risposta
+    guardata più da vicino, e sta lì per non moltiplicare le righe.
+    """
 
     icona: str
     etichetta: str
     valore: str
+    dettaglio: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class RigaClassifica:
+    """Una riga di classifica già ridotta a ciò che si mostra.
+
+    Esiste per una ragione precisa: il template mostrava
+    `riga.user.display_name`, e `User` **non ha** `display_name`. In Jinja un
+    attributo inesistente è `Undefined`, che si stampa come stringa vuota —
+    nessun errore, nessun log, solo una classifica di posizioni e punteggi
+    senza un nome. Ridurre qui, dove un test può leggere `.nome`, è ciò che
+    rende quel difetto impossibile da ripetere in silenzio.
+    """
+
+    posizione: int
+    nome: str
+    valore: int
+    unita: str
 
 
 @dataclass(frozen=True)
@@ -51,9 +87,13 @@ class Vetrina:
 
     gara: Any
     titolo: str
-    sottotitolo: Optional[str]
+    #: La riga sopra il titolo: il campionato e a che numero di prova siamo.
+    sopratitolo: Optional[str]
     descrizione: Optional[str]
     banner_url: Optional[str]
+    data_testo: str = ""
+    ora_testo: Optional[str] = None
+    organizzatore: Optional[str] = None
     righe: List[RigaInformativa] = field(default_factory=list)
     #: Iscritti confermati e posti totali. `posti` è `None` quando la gara non
     #: ha un massimo: lì "12 iscritti" è tutto ciò che si può dire, e inventare
@@ -62,8 +102,11 @@ class Vetrina:
     posti: Optional[int] = None
     iscrizioni_aperte: bool = False
     stato_testo: str = ""
+    #: Come si colora la pastiglia di stato: `open` (iscrizioni aperte),
+    #: `live` (si sta giocando), `""` (tutto il resto, neutro).
+    stato_tono: str = ""
     conclusa: bool = False
-    classifica: List[Any] = field(default_factory=list)
+    classifica: List[RigaClassifica] = field(default_factory=list)
     link_esterno: Optional[str] = None
     etichetta_link: Optional[str] = None
     #: Una gara in preparazione con la data già passata è un residuo (ADR-030):
@@ -84,6 +127,49 @@ class Vetrina:
         if not self.posti:
             return 0
         return min(100, round(self.iscritti * 100 / self.posti))
+
+    @property
+    def mostra_tacche(self) -> bool:
+        """Una tacca per posto, o la barra piena se i posti sono troppi."""
+        return self.posti is not None and 0 < self.posti <= MAX_TACCHE_POSTI
+
+
+#: Gli stati in cui una gara **ha finito di giocare**. Sono due, e il secondo
+#: è quello che si dimentica: una gara che ha completato tutti i turni resta
+#: `status='playing'` in colonna, e `get_real_status()` risponde
+#: `campionato_completed` — non `completed`. Confrontare con il solo
+#: `GaraStatus.COMPLETED` la classifica come «ancora da giocare», senza
+#: vincitore e senza classifica finale, e sulla vetrina di un campionato la
+#: fa comparire fra le gare in attesa mesi dopo che si è giocata.
+STATI_CONCLUSI = frozenset(
+    {
+        GaraStatus.COMPLETED.value,
+        ProvaDerivedStatus.TOURNAMENT_COMPLETED.value,
+    }
+)
+
+
+#: Gli stati in cui una gara **si sta giocando**. Vale lo stesso avvertimento:
+#: fra un turno e l'altro il risolutore risponde `round_completed`, e una gara
+#: a metà torneo confrontata col solo `GaraStatus.PLAYING` risultava «da
+#: giocare» — con tanto di «iscrizioni dal…» per una gara già cominciata.
+STATI_IN_GIOCO = frozenset(
+    {
+        GaraStatus.PLAYING.value,
+        GaraStatus.AWAITING_SSR.value,
+        ProvaDerivedStatus.ROUND_COMPLETED.value,
+    }
+)
+
+
+def gara_ha_finito(gara) -> bool:
+    """La gara ha finito di giocare? Unica risposta per tutte le vetrine."""
+    return gara.get_real_status() in STATI_CONCLUSI
+
+
+def gara_si_sta_giocando(gara) -> bool:
+    """La gara è cominciata e non è ancora finita?"""
+    return gara.get_real_status() in STATI_IN_GIOCO
 
 
 def _formato_di_gioco(gara: Gara) -> str:
@@ -120,8 +206,8 @@ def _formato_di_gioco(gara: Gara) -> str:
     )
 
 
-def _dove_si_gioca(gara: Gara) -> Optional[str]:
-    """Sede: la sala se c'è, la stringa libera se no.
+def _dove_si_gioca(gara: Gara):
+    """Sede e città, come coppia. La città è il dettaglio sotto il nome.
 
     `billiard_hall` è il dato buono (ha anche la città); `location` è il
     residuo storico e resta come ripiego perché su molte gare è l'unica cosa
@@ -129,13 +215,12 @@ def _dove_si_gioca(gara: Gara) -> Optional[str]:
     """
     sala = getattr(gara, "billiard_hall", None)
     if sala is not None and getattr(sala, "name", None):
-        citta = getattr(sala, "city", None)
-        return f"{sala.name}, {citta}" if citta else sala.name
-    return gara.location or None
+        return sala.name, getattr(sala, "city", None)
+    return (gara.location or None), None
 
 
-def _quando_si_gioca(gara: Gara) -> str:
-    """Quando si gioca, come è scritto sul calendario della sala.
+def _quando_si_gioca(gara: Gara):
+    """Data e ora dell'evento, già formattate e già separate.
 
     `Gara.date` e `Gara.time` sono **già l'ora locale dell'evento**: il
     direttore scrive «sabato alle 20:30» e quello resta, colonne `Date` e
@@ -147,9 +232,9 @@ def _quando_si_gioca(gara: Gara) -> str:
     solo, e a un giocatore in viaggio direbbe di presentarsi all'ora
     sbagliata.
     """
-    if gara.time is not None:
-        return datetime.combine(gara.date, gara.time).strftime("%d/%m/%Y, %H:%M")
-    return gara.date.strftime("%d/%m/%Y")
+    data = format_date(gara.date, "EEE d MMM yyyy") if gara.date else ""
+    ora = gara.time.strftime("%H:%M") if gara.time is not None else None
+    return data, ora
 
 
 def _chi_organizza(gara: Gara) -> Optional[str]:
@@ -163,21 +248,70 @@ def _chi_organizza(gara: Gara) -> Optional[str]:
     return ", ".join(nomi) if nomi else None
 
 
-def _stato_leggibile(gara: Gara, aperte: bool) -> str:
-    """Una riga che dice a che punto è la gara, senza gergo."""
+def _sopratitolo(gara: Gara) -> Optional[str]:
+    """«Campionato Sociale 2026 · gara 3», o solo il nome del campionato.
+
+    Si dice «gara» e non «prova» perché in questo vocabolario **prova è già
+    presa**: nel catalogo delle traduzioni indica il tentativo di un esercizio
+    (`Prove` → *Attempts*), e le tappe di un campionato l'app le chiama gare.
+    Riusare la parola qui reintrodurrebbe l'ambiguità che il progetto ha già
+    disfatto una volta con «sfida».
+
+    Il numero da solo non si mostra: fuori da un campionato non vuol dire
+    niente, e «gara 3» senza dire di quale campionato è un'informazione che il
+    lettore non può usare.
+    """
+    if gara.campionato is None:
+        return None
+    if gara.number:
+        return _(
+            "%(campionato)s · gara %(n)s",
+            campionato=gara.campionato.name,
+            n=gara.number,
+        )
+    return gara.campionato.name
+
+
+def _stato(gara: Gara, aperte: bool):
+    """Una riga che dice a che punto è la gara, e con che tono mostrarla."""
     stato = gara.get_real_status()
-    if stato == GaraStatus.COMPLETED.value:
-        return _("Gara conclusa")
-    if stato == GaraStatus.PLAYING.value:
-        return _("Gara in corso")
+    if stato in STATI_CONCLUSI:
+        return _("Gara conclusa"), ""
+    if stato in STATI_IN_GIOCO:
+        return _("Gara in corso"), "live"
     if aperte:
-        return _("Iscrizioni aperte")
+        return _("Iscrizioni aperte"), "open"
     # `inscription_start` è naive-UTC come tutte le colonne `DateTime` del
     # progetto: si confronta con `utc_now()`, non con l'ora locale della
     # macchina — altrimenti d'estate la finestra si sposta di due ore.
     if gara.inscription_start and gara.inscription_start > utc_now():
-        return _("Iscrizioni non ancora aperte")
-    return _("Iscrizioni chiuse")
+        return _("Iscrizioni non ancora aperte"), ""
+    return _("Iscrizioni chiuse"), ""
+
+
+def _nome_giocatore(utente) -> str:
+    """Come si chiama un giocatore in vetrina.
+
+    `display_name` non esiste su `User` — è una proprietà di `Gara` — quindi
+    il `getattr` non è pigrizia: è il ripiego che tiene la funzione corretta
+    se un giorno venisse aggiunta, senza dipendere da lei oggi.
+    """
+    if utente is None:
+        return "—"
+    return getattr(utente, "display_name", None) or utente.username
+
+
+def _righe_classifica(classifiche) -> List[RigaClassifica]:
+    """Il podio più un contorno, con i nomi già risolti."""
+    return [
+        RigaClassifica(
+            posizione=riga.position,
+            nome=_nome_giocatore(riga.user),
+            valore=riga.matches_won or 0,
+            unita=_("V"),
+        )
+        for riga in classifiche[:RIGHE_CLASSIFICA_VETRINA]
+    ]
 
 
 def costruisci_vetrina(gara: Gara) -> Vetrina:
@@ -194,27 +328,33 @@ def costruisci_vetrina(gara: Gara) -> Vetrina:
     )
 
     aperte = GaraInviteService.inscription_open(gara)
-    stato_reale = gara.get_real_status()
-    conclusa = stato_reale == GaraStatus.COMPLETED.value
+    conclusa = gara_ha_finito(gara)
+    stato_testo, stato_tono = _stato(gara, aperte)
+    data_testo, ora_testo = _quando_si_gioca(gara)
 
-    righe = [
-        RigaInformativa(
-            icona="fa-calendar-day",
-            etichetta=_("Quando"),
-            valore=_quando_si_gioca(gara),
-        ),
+    righe = []
+
+    sede, citta = _dove_si_gioca(gara)
+    if sede:
+        righe.append(
+            RigaInformativa(
+                icona="fa-location-dot",
+                etichetta=_("Dove"),
+                valore=sede,
+                dettaglio=citta,
+            )
+        )
+
+    righe.append(
         RigaInformativa(
             icona="fa-trophy",
             etichetta=_("Formato"),
             valore=_formato_di_gioco(gara),
-        ),
-    ]
-
-    dove = _dove_si_gioca(gara)
-    if dove:
-        righe.append(
-            RigaInformativa(icona="fa-location-dot", etichetta=_("Dove"), valore=dove)
+            dettaglio=(
+                _("%(n)s turni", n=gara.rounds_count) if gara.rounds_count else None
+            ),
         )
+    )
 
     # La quota si mostra sempre che sia stata decisa, zero compreso: «Gratuito»
     # è un'informazione, il silenzio no — chi legge non sa se sia gratis o se
@@ -232,11 +372,14 @@ def costruisci_vetrina(gara: Gara) -> Vetrina:
             )
         )
 
-    organizza = _chi_organizza(gara)
-    if organizza:
+    # La chiusura delle iscrizioni si mostra solo mentre sono aperte: dopo è
+    # una data passata che non dice più a nessuno cosa fare.
+    if aperte and gara.inscription_end:
         righe.append(
             RigaInformativa(
-                icona="fa-user-tie", etichetta=_("Organizza"), valore=organizza
+                icona="fa-hourglass-half",
+                etichetta=_("Chiusura iscrizioni"),
+                valore=format_date(gara.inscription_end, "d MMM"),
             )
         )
 
@@ -244,24 +387,25 @@ def costruisci_vetrina(gara: Gara) -> Vetrina:
     banner_url = ImagePathManager.url_from_db_path(banner) if banner else None
 
     link = gara.effective_external_link
-    titolo_campionato = gara.campionato.name if gara.campionato is not None else None
 
     return Vetrina(
         gara=gara,
         titolo=gara.display_name,
-        sottotitolo=titolo_campionato,
+        sopratitolo=_sopratitolo(gara),
         descrizione=(gara.description or "").strip() or None,
         banner_url=banner_url,
+        data_testo=data_testo,
+        ora_testo=ora_testo,
+        organizzatore=_chi_organizza(gara),
         righe=righe,
         iscritti=iscritti,
         posti=gara.max_participants,
         iscrizioni_aperte=aperte,
-        stato_testo=_stato_leggibile(gara, aperte),
+        stato_testo=stato_testo,
+        stato_tono=stato_tono,
         conclusa=conclusa,
         classifica=(
-            classifica_gia_calcolata(gara.id)[:RIGHE_CLASSIFICA_VETRINA]
-            if conclusa
-            else []
+            _righe_classifica(classifica_gia_calcolata(gara.id)) if conclusa else []
         ),
         link_esterno=link[0] if link else None,
         etichetta_link=(link[1] if link else None) or _("Regolamento e informazioni"),
@@ -277,11 +421,25 @@ def descrizione_social(vetrina: Vetrina) -> str:
     """La riga che compare sotto il titolo nell'anteprima di WhatsApp.
 
     Ha spazio per poco — i client ne mostrano circa 150 caratteri — quindi
-    prende le tre cose che fanno decidere: quando, dove, e se ci si può ancora
+    prende le cose che fanno decidere: quando, dove, e se ci si può ancora
     iscrivere. La descrizione libera del direttore verrebbe tagliata a metà, e
     non è detto che le prime parole siano quelle importanti.
+
+    I pezzi si nominano **uno per uno** invece di pescare le prime righe di
+    `righe`: quella lista cambia con lo stato della gara — la chiusura delle
+    iscrizioni compare e sparisce — e un'anteprima che cambia forma a seconda
+    del giorno in cui la si condivide è esattamente il difetto che non si
+    vedrebbe mai in prova.
     """
-    pezzi = [riga.valore for riga in vetrina.righe[:3]]
+    quando = vetrina.data_testo
+    if vetrina.ora_testo:
+        quando = f"{quando}, {vetrina.ora_testo}"
+
+    pezzi = [quando]
+    for riga in vetrina.righe:
+        if riga.etichetta in (_("Dove"), _("Formato")):
+            pezzi.append(riga.valore)
+
     if vetrina.conclusa:
         pezzi.append(_("Gara conclusa"))
     elif vetrina.iscrizioni_aperte:

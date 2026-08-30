@@ -1,0 +1,162 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap">
+  <style>
+:root{
+  --c7-bg:#E4E8E7; --c7-card:#F5F7F6; --c7-sunken:#ECEEED;
+  --c7-ink:#1B2124; --c7-ink-soft:#3D474A; --c7-ink-muted:#6B7679; --c7-ink-faint:#9AA3A6;
+  --c7-on-ink:#F2F5F4; --c7-on-ink-muted:#9AA6A9;
+  --c7-line:#D3D8D7; --c7-line-soft:#E4E8E7;
+  --c7-accent:#2C4A52; --c7-accent-ink:#F2F8F7; --c7-accent-bright:#8FCDE8;
+  --c7-accent-dim:#A9C4C7; --c7-accent-tint:#DDE9EE; --c7-accent-tint-ink:#23404A;
+  --c7-ok-bg:#E4EDE9; --c7-ok-ink:#1D5F4A; --c7-ok:#2C8A6B;
+  --c7-warn-bg:#F0E9D8; --c7-warn-ink:#6E5417;
+  --c7-font:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --c7-font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",monospace;
+  --c7-r-pill:999px; --c7-r-card:22px; --c7-r-card-lg:26px; --c7-r-field:18px;
+  --c7-gutter:18px; --c7-pad-card:16px; --c7-gap:12px; --c7-gap-lg:16px;
+  --c7-btn-h:56px; --c7-field-h:58px;
+  --c7-shadow-pop:0 18px 36px -20px rgba(27,33,36,.75);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--c7-bg);color:var(--c7-ink);font-family:var(--c7-font);
+  font-weight:600;font-size:14px;line-height:1.5;text-wrap:pretty;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-weight:800;letter-spacing:-.025em;color:var(--c7-ink);margin:0}
+a{color:var(--c7-accent);text-decoration:none}
+a:hover{color:var(--c7-accent-tint-ink)}
+p{margin:0}
+.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.card{background:var(--c7-card);border-radius:var(--c7-r-card);padding:var(--c7-pad-card)}
+.kicker{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--c7-ink-muted)}
+.state{height:26px;padding:0 11px;border-radius:var(--c7-r-pill);font-size:10px;font-weight:800;
+  letter-spacing:.04em;text-transform:uppercase;display:inline-flex;align-items:center}
+.state--ok{background:var(--c7-ok-bg);color:var(--c7-ok-ink)}
+.muted{color:var(--c7-ink-muted);font-weight:600}
+.mono{font-family:var(--c7-font-mono);font-variant-numeric:tabular-nums}
+.btn{height:var(--c7-btn-h);border:0;border-radius:var(--c7-r-field);padding:0 20px;font-size:15px;
+  font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  font-family:var(--c7-font);cursor:pointer}
+.btn--primary{background:var(--c7-ink);color:#fff}
+
+
+    .page{min-height:100%;background:var(--c7-bg);padding:0 var(--c7-gutter) 28px}
+    .top{display:flex;align-items:center;justify-content:space-between;padding:16px 0}
+    .wordmark{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--c7-ink-muted)}
+    .iconbtn{width:46px;height:46px;border:0;border-radius:50%;background:var(--c7-card);
+      color:var(--c7-ink-soft);display:grid;place-items:center;cursor:pointer}
+    /* Il pass: una cosa sola che si tiene in mano, non tre riquadri in fila. */
+    .ticket{background:var(--c7-card);border-radius:var(--c7-r-card-lg);overflow:hidden;position:relative}
+    .ticket__img{display:block;width:100%;height:148px;object-fit:cover}
+    .ticket__head{padding:18px 20px 20px}
+    .ovr{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--c7-accent)}
+    .ticket__head h1{font-size:26px;line-height:1.12;margin-top:7px}
+    .state-row{margin-top:14px;display:flex;align-items:center;gap:8px}
+    /* Strappo: filetto tratteggiato e due tacche del colore della pagina. */
+    .perf{position:relative;height:24px}
+    .perf:before{content:"";position:absolute;left:22px;right:22px;top:50%;
+      border-top:2px dashed var(--c7-line)}
+    .perf i{position:absolute;top:50%;width:24px;height:24px;margin-top:-12px;border-radius:50%;
+      background:var(--c7-bg)}
+    .perf i.l{left:-12px} .perf i.r{right:-12px}
+    .stub{padding:6px 20px 20px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 14px}
+    .f dt{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--c7-ink-muted)}
+    .f dd{margin:4px 0 0;font-family:var(--c7-font-mono);font-variant-numeric:tabular-nums;
+      font-weight:800;font-size:16px;letter-spacing:-.03em}
+    .f dd.txt{font-family:var(--c7-font);font-size:15px;letter-spacing:-.02em}
+    .f dd small{display:block;font-family:var(--c7-font);font-size:12px;font-weight:600;
+      color:var(--c7-ink-muted);letter-spacing:0;margin-top:2px}
+    .seat{margin-top:20px;padding:14px 16px;border-radius:var(--c7-r-field);background:var(--c7-bg);
+      display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .seat__l{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--c7-ink-muted)}
+    .seat__v{font-family:var(--c7-font-mono);font-variant-numeric:tabular-nums;font-weight:800;
+      font-size:24px;letter-spacing:-.04em;margin-top:2px}
+    .seat__v em{font-style:normal;color:var(--c7-ink-muted)}
+    .cta{margin-top:18px}
+    .cta .btn{width:100%}
+    .below{margin-top:16px;display:flex;flex-direction:column;gap:12px}
+    .out{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:56px;
+      padding:0 18px;border-radius:var(--c7-r-card);background:var(--c7-card);font-weight:800;color:var(--c7-ink)}
+    .who{display:flex;align-items:center;gap:10px;color:var(--c7-ink-muted);font-size:12px;font-weight:700;padding:0 4px}
+    .who .avatar{width:30px;height:30px;border-radius:50%;background:var(--c7-accent);color:#fff;
+      display:grid;place-items:center;font-size:10px;font-weight:800}
+
+  </style>
+</helmet>
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+  <symbol id="i-cup" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/><path d="M12 14v4M9 21h6"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+  <symbol id="i-eur" viewBox="0 0 24 24"><path d="M17 6.5A6.5 6.5 0 0 0 7.5 12 6.5 6.5 0 0 0 17 17.5M4 10.5h8M4 13.5h8"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20a6.5 6.5 0 0 1 13 0M19 8v6M22 11h-6"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-8 8"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-6 8 6v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20h4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+</svg>
+<div class="page">
+  <div class="top">
+    <span class="wordmark">Tornei Biliardo</span>
+    <button class="iconbtn" aria-label="Condividi"><svg class="ic"><use href="#i-share"/></svg></button>
+  </div>
+
+  <div class="ticket">
+    <img class="ticket__img" src="locandina.png" alt="Locandina della gara">
+    <div class="ticket__head">
+      <div class="ovr">Campionato Sociale 2026 &middot; 3ª prova</div>
+      <h1>Terza prova<br>Palla 8</h1>
+      <div class="state-row"><span class="state state--ok">Iscrizioni aperte</span>
+        <span class="muted" style="font-size:12px">fino al 10 set</span></div>
+    </div>
+
+    <div class="perf"><i class="l"></i><i class="r"></i></div>
+
+    <div class="stub">
+      <dl class="grid">
+        <div class="f"><dt>Data</dt><dd>SAB 12 SET</dd></div>
+        <div class="f"><dt>Ora</dt><dd>20:30</dd></div>
+        <div class="f"><dt>Sala</dt><dd class="txt">Sala Centrale<small>via Roma 14, Udine</small></dd></div>
+        <div class="f"><dt>Formato</dt><dd class="txt">Palla 8, al 5<small>5 turni</small></dd></div>
+        <div class="f"><dt>Quota</dt><dd>15 &euro;</dd></div>
+        <div class="f"><dt>Direttore</dt><dd class="txt">Luca Bianchi</dd></div>
+      </dl>
+
+      <div class="seat">
+        <div>
+          <div class="seat__l">Il tuo posto sarebbe il</div>
+          <div class="seat__v">13 <em>/ 16</em></div>
+        </div>
+        <span class="state state--ok">4 liberi</span>
+      </div>
+
+      <div class="cta">
+        <button class="btn btn--primary"><svg class="ic"><use href="#i-plus"/></svg> Prendi il posto</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="below">
+    <a class="out" href="#">
+      <span style="display:inline-flex;align-items:center;gap:9px"><svg class="ic"><use href="#i-ext"/></svg>Regolamento</span>
+      <svg class="ic muted"><use href="#i-chev"/></svg>
+    </a>
+    <div class="who"><span class="avatar">LB</span>
+      <span>Terza tappa del campionato sociale.<br>Tavoli Brunswick 9 piedi.</span></div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

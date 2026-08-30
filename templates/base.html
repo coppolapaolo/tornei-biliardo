@@ -186,7 +186,7 @@
     {% block head_extra %}{% endblock %}
 </head>
 
-<body>
+<body class="{% block body_class %}{% endblock %}">
     <!-- Toast Container for notifications.js -->
     <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;"></div>
 
@@ -212,6 +212,9 @@
     <div class="c7-app">
 
         {# ---------- Sidebar (>= lg) ---------- #}
+        {# In un blocco perche' il guscio pubblico la toglie: vedi
+           `templates/public_base.html`. #}
+        {% block app_side %}
         <aside class="c7-side">
             <div class="c7-side__top">
             <a class="c7-side__brand" href="{{ url_for('main.index') }}">
@@ -350,6 +353,7 @@
             </div>
             {% endif %}
         </aside>
+        {% endblock %}
 
         {# La linguetta che riporta indietro il menu: sta fuori dalla colonna,
            altrimenti sparirebbe con lei. Compare solo a menu nascosto. #}
@@ -511,6 +515,7 @@
     </div>
 
     {# ---------- Nav flottante (< lg) ---------- #}
+    {% block app_nav %}
     {% if current_user.is_authenticated %}
     <nav class="c7-mobilenav">
         <a href="{{ url_for('dashboard.dashboard') }}" class="{{ 'is-active' if ep.startswith('dashboard.') }}">
@@ -540,6 +545,7 @@
         </a>
     </nav>
     {% endif %}
+    {% endblock %}
 
     <!-- DEBUG FOOTER - quick login (PUNTO 8) -->
     {% if debug_info.debug_mode %}

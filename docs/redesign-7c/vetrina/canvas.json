@@ -1,0 +1,156 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Direzione A"
+    },
+    {
+      "id": "page-2",
+      "name": "Direzioni scartate"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "page": "page-1",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1220,
+      "title": "Gara — telefono"
+    },
+    {
+      "file": "Campionato.dc.html",
+      "page": "page-1",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 1740,
+      "title": "Campionato — telefono"
+    },
+    {
+      "file": "MainDesktop.dc.html",
+      "page": "page-1",
+      "x": 940,
+      "y": 0,
+      "w": 1440,
+      "h": 1180,
+      "title": "Gara — desktop"
+    },
+    {
+      "file": "CampionatoDesktop.dc.html",
+      "page": "page-1",
+      "x": 2460,
+      "y": 0,
+      "w": 1440,
+      "h": 1480,
+      "title": "Campionato — desktop"
+    },
+    {
+      "file": "AnteprimaSocial.dc.html",
+      "page": "page-1",
+      "x": 940,
+      "y": 1620,
+      "w": 1240,
+      "h": 780,
+      "title": "L'anteprima nel messaggio"
+    },
+    {
+      "file": "Oggi.dc.html",
+      "page": "page-2",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1240,
+      "title": "Oggi — com'è adesso"
+    },
+    {
+      "file": "DirezioneB.dc.html",
+      "page": "page-2",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 1000,
+      "title": "B · Biglietto"
+    },
+    {
+      "file": "DirezioneC.dc.html",
+      "page": "page-2",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 1120,
+      "title": "C · Tabellone"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "brief-a",
+      "page": "page-1",
+      "x": 0,
+      "y": -300,
+      "w": 1200,
+      "text": "DIREZIONE A · MANIFESTO — scelta\n\nÈ un volantino, non una schermata: la locandina a tutta larghezza, il nome su un pannello pieno che la scavalca (superficie, non sfumatura — 7c non usa gradienti), i fatti su filetti invece che dentro una card, e l'iscrizione che resta sotto gli occhi.\n\nLe altre due direzioni sono nella pagina «Direzioni scartate», con lo stato di oggi accanto."
+    },
+    {
+      "id": "n-mobile",
+      "page": "page-1",
+      "x": 0,
+      "y": 1300,
+      "w": 390,
+      "text": "Il telefono è il caso normale: da un post si arriva quasi sempre da lì.\n\nNiente freccia indietro, niente avatar, niente nav in fondo — chi apre il link non ha un'app da navigare né un posto dove tornare. Al loro posto, l'unica cosa che deve restare a portata: iscriversi."
+    },
+    {
+      "id": "n-desktop",
+      "page": "page-1",
+      "x": 940,
+      "y": 1280,
+      "w": 700,
+      "text": "DESKTOP — senza barra laterale, ed è una decisione, non una dimenticanza\n\nOgni altra pagina dell'app, sopra i 992px, mostra la barra laterale. Qui sarebbe la stessa contraddizione della freccia indietro, solo più grande: un menu di voci che portano tutte al login.\n\nImpaginazione editoriale centrata su 1160px: i fatti a sinistra, l'iscrizione in una colonna che resta ferma mentre si scorre. Da mettere in conto: la vetrina non può più estendere base.html così com'è — le serve un guscio pubblico."
+    },
+    {
+      "id": "n-camp",
+      "page": "page-1",
+      "x": 470,
+      "y": 1820,
+      "w": 390,
+      "text": "CAMPIONATO — secondo lotto\n\nStessa direzione, più il blocco che lo distingue da una gara: il calendario delle prove, con quella aperta in rilievo.\n\nDa qui la decisione che conta: la chiamata all'azione di un campionato non è «iscriviti al campionato» — non esiste. È «iscriviti alla 3ª prova», cioè punta alla gara aperta. Sul desktop diventa il primo pannello della colonna.\n\nDa aggiungere al modello: Campionato non ha una description (locandina e link esterno ci sono già). Serve una migration."
+    },
+    {
+      "id": "n-social",
+      "page": "page-1",
+      "x": 940,
+      "y": 2460,
+      "w": 1240,
+      "text": "Questa parte è già in produzione con la PR #289 e non cambia con la direzione scelta: la scheda la compone lo scraper leggendo i meta.\n\nÈ però l'argomento più forte a favore di A. In bacheca la locandina occupa quasi tutto il posto che il messaggio ha: è lì che una grafica propria si fa notare, ed è la stessa immagine che apre la pagina. Se nel messaggio è protagonista e sulla vetrina diventasse una striscia in cima, il passaggio si sentirebbe come un cambio di posto."
+    },
+    {
+      "id": "n-oggi",
+      "page": "page-2",
+      "x": 0,
+      "y": 1330,
+      "w": 390,
+      "text": "COM'È ADESSO\nRicostruita con i valori esatti del tema, per un confronto onesto.\n\nTre card grigie identiche in fila: nessuna guida l'occhio. «Informazioni» nomina il contenitore, non il contenuto. Due numeri e una barra per dire un fatto solo (12 su 16). L'invito è la terza scatola, non l'azione della pagina."
+    },
+    {
+      "id": "n-b",
+      "page": "page-2",
+      "x": 470,
+      "y": 1330,
+      "w": 390,
+      "text": "B · BIGLIETTO — scartata\nAsse: la gara è un posto che si prende.\n\nUn oggetto solo invece di quattro riquadri, con lo strappo e la matrice in monospazio.\n\nCosto: la metafora regge finché ci si iscrive. A gara conclusa un biglietto che non si può staccare è una promessa smentita — servirebbe una seconda forma per quegli stati."
+    },
+    {
+      "id": "n-c",
+      "page": "page-2",
+      "x": 940,
+      "y": 1330,
+      "w": 390,
+      "text": "C · TABELLONE — scartata\nAsse: è il tabellone appeso in sala.\n\nTutta la pagina sull'accento, come il segnapunti (#7c): di tutte e tre è quella che somiglia di più all'app.\n\nCosto: la locandina si scontra con la superficie scura e da protagonista diventa una striscia. Ed è la direzione che sposta di più il peso dai fatti ai numeri — il verso sbagliato per chi ancora non sa se venire."
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-1"
+  }
+}

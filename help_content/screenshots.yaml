@@ -176,7 +176,7 @@ shots:
   - id: vetrina-pubblica
     route: /g/terza-prova-palla-8
     as: anonimo
-    caption: "La vetrina di una gara vista da chi arriva dal link: quando si gioca, il formato, la sede, la quota, i posti liberi e il pulsante per iscriversi."
+    caption: "La vetrina di una gara vista da chi arriva dal link: quando si gioca, la sede, il formato, la quota, quanti si sono iscritti e il pulsante per iscriversi."
     viewports: [mobile]
 
   - id: vetrina-cura
@@ -184,6 +184,12 @@ shots:
     as: Luca Bianchi
     caption: "La schermata da cui il direttore cura la vetrina: la locandina, l'indirizzo leggibile e il link al regolamento."
     viewports: [mobile]
+
+  - id: vetrina-campionato
+    route: /c/campionato-sociale
+    as: anonimo
+    caption: "La vetrina di un campionato: il calendario delle gare con quella aperta in rilievo, la classifica generale e l'iscrizione che porta alla gara aperta."
+    viewports: [mobile, desktop]
 
   - id: gara-iscritti
     route: /admin/gara/3

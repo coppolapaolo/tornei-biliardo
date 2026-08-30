@@ -210,24 +210,81 @@ def set_gara_banner(gara_id: int, banner_path: Optional[str]) -> Gara:
     return gara
 
 
+def slug_campionato_is_taken(slug: str, campionato_id=None) -> bool:
+    """Quello slug è già l'indirizzo pubblico di un altro campionato?
+
+    Guarda **entrambe** le colonne, come per le gare: un token è url-safe e
+    può capitare che sia tutto minuscolo, cioè indistinguibile da uno slug.
+
+    Gare e campionati non si contendono nulla fra loro: vivono su due rotte
+    diverse (`/g/` e `/c/`), quindi lo stesso nome può indicare la gara di
+    Natale e il campionato di Natale senza ambiguità per nessuno.
+    """
+    from models.campionato.models import Campionato
+
+    query = Campionato.query.filter(
+        db.or_(Campionato.slug == slug, Campionato.public_token == slug)
+    )
+    if campionato_id is not None:
+        query = query.filter(Campionato.id != campionato_id)
+    return db.session.query(query.exists()).scalar()
+
+
+def resolve_public_identifier_campionato(identificatore: str):
+    """Il campionato che risponde a `/c/<identificatore>`, per slug o token.
+
+    Il filtro sui soft-eliminati non è automatico su questa entità, quindi si
+    scrive: un campionato eliminato non deve avere una vetrina pubblica, e
+    senza questa riga il link continuerebbe a rispondere 200 mostrando una
+    stagione che per l'applicazione non esiste più.
+    """
+    from models.campionato.models import Campionato
+
+    if not identificatore:
+        return None
+    base = Campionato.query.filter(
+        db.or_(Campionato.is_deleted.is_(False), Campionato.is_deleted.is_(None))
+    )
+    per_slug = base.filter(Campionato.slug == identificatore).first()
+    if per_slug is not None:
+        return per_slug
+    return base.filter(Campionato.public_token == identificatore).first()
+
+
 @transactional(domain="campionato")
 def update_campionato_showcase(
     campionato_id: int,
+    slug: Optional[str] = None,
     external_url: Optional[str] = None,
     external_label: Optional[str] = None,
+    description: Optional[str] = None,
 ):
-    """Link esterno del campionato, ereditato dalle sue gare."""
+    """Salva i campi della vetrina di un campionato.
+
+    Come per la gara, un campo vuoto **cancella** il valore: è l'unico modo
+    che il direttore ha per togliere un link o rinunciare all'indirizzo
+    personalizzato.
+    """
     from models.campionato.models import Campionato
 
     campionato = db.session.get(Campionato, campionato_id)
     if campionato is None:
         raise NotFoundError(f"Campionato {campionato_id} non trovato")
 
+    nuovo_slug = normalize_slug(slug)
+    if nuovo_slug and slug_campionato_is_taken(nuovo_slug, campionato_id=campionato_id):
+        raise ConflictError(
+            f"L'indirizzo «{nuovo_slug}» è già usato da un altro campionato. "
+            "Scegline un altro."
+        )
+
+    campionato.slug = nuovo_slug
     campionato.external_url = normalize_external_url(external_url)
     etichetta = (external_label or "").strip()
     campionato.external_label = (
         etichetta[:60] if (etichetta and campionato.external_url) else None
     )
+    campionato.description = (description or "").strip() or None
     return campionato
 
 
@@ -241,3 +298,20 @@ def set_campionato_banner(campionato_id: int, banner_path: Optional[str]):
         raise NotFoundError(f"Campionato {campionato_id} non trovato")
     campionato.banner_path = banner_path
     return campionato
+
+
+@transactional(domain="campionato")
+def ensure_campionato_public_token(campionato):
+    """Garantisce che il campionato abbia un token, e lo restituisce.
+
+    Il default dell'ORM copre i campionati creati dopo questa funzione e la
+    migration quelli già in tabella. Resta scoperto un caso solo, ma capita
+    davvero: un oggetto costruito a mano (un test, uno script) con il token
+    esplicitamente a `None`. Assegnarlo pigramente al primo uso è più
+    economico che difendersi in ogni punto che legge il link.
+    """
+    from models.competition.models import generate_public_token
+
+    if not campionato.public_token:
+        campionato.public_token = generate_public_token()
+    return campionato.public_token

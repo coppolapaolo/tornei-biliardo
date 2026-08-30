@@ -1,10 +1,10 @@
-title: "Far conoscere la gara"
+title: "Far conoscere gare e campionati"
 section: organizzare
 kind: approfondimento
 audience: [direttore]
 minutes: 3
-summary: "Il link da mettere su WhatsApp o Facebook, la locandina che compare nell'anteprima, e un indirizzo facile da dettare al telefono."
-screens: [admin.competition.gara_vetrina, main.gara_invite, admin.campionato.campionato_vetrina]
+summary: "I link da mettere su WhatsApp o Facebook, la locandina che compare nell'anteprima, e un indirizzo facile da dettare al telefono."
+screens: [admin.competition.gara_vetrina, main.gara_invite, admin.campionato.campionato_vetrina, main.campionato_invite]
 related: [gestire_le_iscrizioni, creare_una_gara, iscriversi_a_una_gara]
 
 blocks:
@@ -57,6 +57,41 @@ blocks:
     text: >-
       La stessa pagina, quando la gara è finita, mostra la classifica finale:
       è l'indirizzo da ripubblicare per far sapere com'è andata.
+
+  - type: heading
+    id: campionato
+    title: "Anche il campionato ha una pagina sua"
+
+  - type: text
+    text: >-
+      Se le gare fanno parte di un campionato, c'è un secondo link da
+      condividere: quello del campionato intero. È la pagina da mettere in giro
+      **a inizio stagione**, quando le singole gare non ci sono ancora tutte.
+
+  - type: shot
+    shot: vetrina-campionato
+    caption: "La vetrina di un campionato: il calendario, la classifica e l'iscrizione alla gara aperta."
+
+  - type: list
+    title: "Mostra:"
+    items:
+      - "il periodo, quante gare sono e quanti giocatori hanno partecipato;"
+      - "il **calendario**, con le gare concluse, quella con le iscrizioni aperte in evidenza e quelle ancora da giocare;"
+      - "la classifica generale aggiornata;"
+      - "un pulsante che porta **alla gara aperta** — perché al campionato non ci si iscrive: ci si iscrive alle sue gare."
+
+  - type: text
+    text: >-
+      Il link lo trovi nella stessa schermata da cui carichi la locandina del
+      campionato, in fondo. Da lì scegli anche la descrizione e l'indirizzo
+      leggibile, esattamente come per una gara.
+
+  - type: note
+    tone: tip
+    title: "Scrivi la descrizione"
+    text: >-
+      Senza, la pagina del campionato resta un calendario di date: nessuna riga
+      che dica di cosa si tratta e a chi è aperto. Basta qualche frase.
 
   - type: heading
     id: locandina
@@ -123,5 +158,7 @@ blocks:
         a: "No, si vede solo quanti sono e quanti posti restano."
       - q: "Come faccio a vedere cosa vedranno gli altri?"
         a: "Dalla schermata «Cura la vetrina», il pulsante **Anteprima** apre la pagina esattamente com'è per chi arriva dal link."
+      - q: "Che differenza c'è fra il link della gara e quello del campionato?"
+        a: "Il primo porta a una serata precisa e serve per riempirla; il secondo racconta tutta la stagione e porta alla gara aperta del momento. A inizio campionato condividi il secondo, sotto data il primo."
       - q: "Posso cambiare l'indirizzo leggibile dopo averlo scelto?"
         a: "Sì, ma il vecchio nome smette di funzionare: chi aveva salvato quel link non arriva più. Il codice invece resta valido per sempre."

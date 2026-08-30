@@ -493,7 +493,8 @@ cosa che il rating decide da solo è **quali partite entrano nell'Elo**:
 | `/garas` | GET | `main.public_garas_list` | None (public) | UI page | Lista gare standalone pubbliche |
 | `/gara/<int:gara_id>` | GET | `main.gara_detail_public` | None (public) | UI page | Dettaglio gara (redirect a unified view) |
 | `/public/gara/<int:gara_id>` | GET | `main.gara_detail_public` | None (public) | UI page | Dettaglio gara (deprecated, redirects) |
-| `/g/<token>` | GET | `main.gara_invite` | None (public) | Redirect | Link pubblico di iscrizione a una gara (issue #61): iscrive l'utente autenticato e reindirizza al dettaglio gara; l'anonimo passa da login/registrazione |
+| `/g/<token>` | GET | `main.gara_invite` | None (public) | Vetrina / Redirect | Link pubblico di una gara (#61, #235). Per l'anonimo — e quindi per lo scraper dei social — è la **vetrina**: locandina, quando, dove, formato, quota, posti liberi e una chiamata all'azione. L'autenticato prosegue al flusso di iscrizione; `?anteprima=1` mostra la vetrina anche a lui. Accetta il token o l'indirizzo leggibile |
+| `/c/<identificatore>` | GET | `main.campionato_invite` | None (public) | Vetrina | Link pubblico di un campionato (#235, secondo lotto): descrizione, periodo, calendario delle prove con quella aperta in rilievo, classifica generale, e l'iscrizione che punta alla prova aperta. Uguale per tutti — su un campionato non c'è un'azione da compiere |
 
 **Debug Routes (only if DEBUG_MODE):**
 

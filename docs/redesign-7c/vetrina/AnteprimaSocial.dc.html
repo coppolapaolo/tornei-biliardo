@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap">
+  <style>
+:root{
+  --c7-bg:#E4E8E7; --c7-card:#F5F7F6; --c7-sunken:#ECEEED;
+  --c7-ink:#1B2124; --c7-ink-soft:#3D474A; --c7-ink-muted:#6B7679; --c7-ink-faint:#9AA3A6;
+  --c7-on-ink:#F2F5F4; --c7-on-ink-muted:#9AA6A9;
+  --c7-line:#D3D8D7; --c7-line-soft:#E4E8E7;
+  --c7-accent:#2C4A52; --c7-accent-ink:#F2F8F7; --c7-accent-bright:#8FCDE8;
+  --c7-accent-dim:#A9C4C7; --c7-accent-tint:#DDE9EE; --c7-accent-tint-ink:#23404A;
+  --c7-ok-bg:#E4EDE9; --c7-ok-ink:#1D5F4A; --c7-ok:#2C8A6B;
+  --c7-warn-bg:#F0E9D8; --c7-warn-ink:#6E5417;
+  --c7-font:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --c7-font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",monospace;
+  --c7-r-pill:999px; --c7-r-card:22px; --c7-r-card-lg:26px; --c7-r-field:18px;
+  --c7-gutter:18px; --c7-pad-card:16px; --c7-gap:12px; --c7-gap-lg:16px;
+  --c7-btn-h:56px; --c7-field-h:58px;
+  --c7-shadow-pop:0 18px 36px -20px rgba(27,33,36,.75);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--c7-bg);color:var(--c7-ink);font-family:var(--c7-font);
+  font-weight:600;font-size:14px;line-height:1.5;text-wrap:pretty;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-weight:800;letter-spacing:-.025em;color:var(--c7-ink);margin:0}
+a{color:var(--c7-accent);text-decoration:none}
+a:hover{color:var(--c7-accent-tint-ink)}
+p{margin:0}
+.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.card{background:var(--c7-card);border-radius:var(--c7-r-card);padding:var(--c7-pad-card)}
+.kicker{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--c7-ink-muted)}
+.state{height:26px;padding:0 11px;border-radius:var(--c7-r-pill);font-size:10px;font-weight:800;
+  letter-spacing:.04em;text-transform:uppercase;display:inline-flex;align-items:center}
+.state--ok{background:var(--c7-ok-bg);color:var(--c7-ok-ink)}
+.muted{color:var(--c7-ink-muted);font-weight:600}
+.mono{font-family:var(--c7-font-mono);font-variant-numeric:tabular-nums}
+.btn{height:var(--c7-btn-h);border:0;border-radius:var(--c7-r-field);padding:0 20px;font-size:15px;
+  font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  font-family:var(--c7-font);cursor:pointer}
+.btn--primary{background:var(--c7-ink);color:#fff}
+
+
+    .wrap{padding:30px}
+    .cols{display:flex;gap:26px;align-items:flex-start}
+    .col__h{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+      color:var(--c7-ink-muted);margin-bottom:12px}
+    .col__h em{font-style:normal;color:var(--c7-ink-faint);letter-spacing:.02em;text-transform:none;font-weight:600}
+    /* Contenitori neutri: qui interessa l'anatomia della scheda-anteprima
+       (immagine 1200x630, titolo, riga, dominio), non la livrea di questa o
+       quella applicazione. */
+    .surface{background:var(--c7-card);border-radius:var(--c7-r-card-lg);padding:16px}
+    .bubble{background:var(--c7-bg);border-radius:18px 18px 18px 6px;padding:10px}
+    .prev{background:var(--c7-card);border-radius:12px;overflow:hidden}
+    .prev img{display:block;width:100%;aspect-ratio:1200/630;object-fit:cover}
+    .prev__none{aspect-ratio:1200/630;background:var(--c7-sunken);display:grid;place-items:center;
+      color:var(--c7-ink-muted);font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+    .prev__b{padding:11px 13px 13px}
+    .prev__t{font-size:13px;font-weight:800;letter-spacing:-.02em;line-height:1.25}
+    .prev__d{margin-top:4px;font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.35}
+    .prev__u{margin-top:8px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+      color:var(--c7-ink-muted)}
+    .msg{margin-top:9px;font-size:13px;font-weight:600;padding:0 2px}
+    .time{margin-top:6px;font-size:10px;font-weight:700;color:var(--c7-ink-muted);text-align:right}
+    /* In bacheca la scheda e' larga: la locandina occupa quasi tutto il posto
+       che il messaggio ha, ed e' li' che una grafica propria si fa notare. */
+    .post__h{display:flex;align-items:center;gap:10px;padding:2px 2px 12px}
+    .post__h .avatar{width:38px;height:38px;border-radius:50%;background:var(--c7-accent);color:#fff;
+      display:grid;place-items:center;font-size:12px;font-weight:800}
+    .post__h b{display:block;font-size:13px;font-weight:800}
+    .post__h span{font-size:11px;font-weight:600;color:var(--c7-ink-muted)}
+    .post__txt{font-size:13.5px;font-weight:600;padding:0 2px 12px;line-height:1.45}
+    .wide .prev{border-radius:14px}
+    .wide .prev__b{padding:14px 16px 16px;background:var(--c7-bg)}
+    .wide .prev__t{font-size:16px}
+    .wide .prev__d{font-size:12.5px}
+    .legend{margin-top:28px;padding-top:22px;border-top:1px solid var(--c7-line)}
+    .legend h2{font-size:19px;letter-spacing:-.025em}
+    .legend p{margin-top:7px;font-size:13.5px;font-weight:600;color:var(--c7-ink-muted);
+      line-height:1.55;max-width:74ch}
+    .lrow{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;margin-top:20px}
+    .lrow dt{font-family:var(--c7-font-mono);font-size:11.5px;font-weight:700;color:var(--c7-accent)}
+    .lrow dd{margin:6px 0 0;font-size:12.5px;font-weight:600;color:var(--c7-ink-soft);line-height:1.5}
+
+  </style>
+</helmet>
+<div class="wrap">
+  <div class="cols">
+    <div style="flex:0 0 320px">
+      <div class="col__h">In chat <em>&mdash; WhatsApp, Telegram</em></div>
+      <div class="surface">
+        <div class="bubble">
+          <div class="prev"><img src="locandina.png" alt="Anteprima in chat"><div class="prev__b">
+            <div class="prev__t">Terza prova &mdash; Palla 8</div>
+            <div class="prev__d">sab 12 set, 20:30 &middot; Palla 8, al 5 &middot; Sala Centrale &middot;
+              Iscrizioni aperte &mdash; 4 posti liberi</div>
+            <div class="prev__u">torneibiliardo.it</div>
+          </div></div>
+          <div class="msg">Ragazzi, sabato si gioca &mdash; ecco il link</div>
+          <div class="time">20:14</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex:0 0 500px">
+      <div class="col__h">In bacheca <em>&mdash; Facebook, LinkedIn</em></div>
+      <div class="surface wide">
+        <div class="post__h">
+          <span class="avatar">SC</span>
+          <span><b>Sala Centrale Udine</b><span>2 h &middot; Udine</span></span>
+        </div>
+        <div class="post__txt">Sabato 12 la terza prova del sociale. Restano 4 posti,
+          ci si iscrive dal link.</div>
+        <div class="prev"><img src="locandina.png" alt="Anteprima in bacheca"><div class="prev__b">
+            <div class="prev__t">Terza prova &mdash; Palla 8</div>
+            <div class="prev__d">sab 12 set, 20:30 &middot; Palla 8, al 5 &middot; Sala Centrale &middot;
+              Iscrizioni aperte &mdash; 4 posti liberi</div>
+            <div class="prev__u">torneibiliardo.it</div>
+          </div></div>
+      </div>
+    </div>
+
+    <div style="flex:0 0 300px">
+      <div class="col__h">Senza locandina <em>&mdash; ripiego</em></div>
+      <div class="surface">
+        <div class="bubble">
+          <div class="prev"><div class="prev__none">Grafica del sito</div><div class="prev__b">
+            <div class="prev__t">Terza prova &mdash; Palla 8</div>
+            <div class="prev__d">sab 12 set, 20:30 &middot; Palla 8, al 5 &middot; Sala Centrale &middot;
+              Iscrizioni aperte &mdash; 4 posti liberi</div>
+            <div class="prev__u">torneibiliardo.it</div>
+          </div></div>
+          <div class="msg">Ragazzi, sabato si gioca &mdash; ecco il link</div>
+          <div class="time">20:14</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <h2>Da dove viene ogni pezzo</h2>
+    <p>La scheda la compone lo scraper leggendo i meta della pagina, che &egrave; un
+      client anonimo senza cookie. &Egrave; l&rsquo;unica parte della vetrina che si vede
+      <b>prima</b> di aprirla &mdash; e spesso l&rsquo;unica che si vede.</p>
+    <dl class="lrow">
+      <div><dt>og:image</dt><dd>La locandina della gara, o quella ereditata dal campionato,
+        o la grafica del sito. Sempre 1200&times;630.</dd></div>
+      <div><dt>og:title</dt><dd>Il nome della gara, con il campionato se ne fa parte.</dd></div>
+      <div><dt>og:description</dt><dd>Quando, formato, dove, e se ci si pu&ograve; ancora iscrivere:
+        le tre cose che fanno decidere, in ~150 caratteri.</dd></div>
+      <div><dt>og:url</dt><dd>L&rsquo;indirizzo leggibile se il direttore l&rsquo;ha scelto,
+        altrimenti il codice di otto caratteri.</dd></div>
+    </dl>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

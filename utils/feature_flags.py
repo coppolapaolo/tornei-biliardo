@@ -60,6 +60,11 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Link pubblico di iscrizione (issue #61): nasce per essere seguito da
     # chi non ha ancora un account, quindi "anonimo" non è opzionale.
     "main.gara_invite": {"anonimo", "player", "director"},
+    # La vetrina pubblica di un campionato (issue #235, secondo lotto).
+    # Aperta agli anonimi per la stessa ragione della gara: lo scraper del
+    # social è un client senza cookie, e un 404 qui vuol dire nessuna
+    # anteprima — mai, e senza un solo errore nei log.
+    "main.campionato_invite": {"anonimo", "player", "director"},
     "main.campionato_detail_public": {"anonimo", "player", "director"},
     # Informativa privacy/cookie: deve essere raggiungibile da chiunque,
     # utenti non registrati inclusi (link nel footer di base.html).
