@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Le tue segnalazioni') }}{% endblock %}
+
+{% block page_title %}{{ _('Segnalazioni') }}{% endblock %}
+{% block page_sub %}{{ _('Quello che ci hai scritto, e come è andata a finire.') }}{% endblock %}
+
+{% block page_actions %}
+{# A elenco vuoto l'invito sta dentro la card, dove c'è anche la frase che lo
+   spiega: due pulsanti identici a mezzo schermo di distanza sono rumore. #}
+{% if segnalazioni %}
+<a href="{{ url_for('feedback.nuova_segnalazione') }}" class="btn btn-success">
+  <i class="fas fa-bullhorn me-2"></i>{{ _('Segnala un problema') }}
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="c7-stack">
+
+  {% if segnalazioni %}
+  <section class="c7-stack">
+    {% for s in segnalazioni %}
+    <article class="c7-card
+      {%- if s.stato == 'non_prevista' %} c7-card--locked{% endif %}">
+      <div class="d-flex align-items-start gap-3">
+        <span class="flex-fill">
+          <span class="c7-kicker d-block mb-1">
+            <span class="c7-num">{{ s.created_at|datetime_local }}</span>
+          </span>
+          <h3 class="mb-1" style="font-size:16px">{{ s.titolo }}</h3>
+          <span class="c7-state
+            {%- if s.stato == 'risolta' %} c7-state--ok
+            {%- elif s.stato == 'non_prevista' %} c7-state--muted
+            {%- elif s.stato == 'presa_in_carico' %} c7-state--info
+            {%- else %} c7-state--warn{% endif %}">{{ etichette_stato[s.stato] }}</span>
+        </span>
+      </div>
+
+      {% if s.nota_pubblica %}
+      <div class="c7-card mt-3" style="background:var(--c7-bg)">
+        <div class="c7-kicker mb-2">{{ _('La nostra risposta') }}</div>
+        <p class="mb-0" style="font-size:14px">{{ s.nota_pubblica }}</p>
+      </div>
+      {% endif %}
+    </article>
+    {% endfor %}
+  </section>
+  {% else %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-bullhorn"></i></div>
+    <h2 class="c7-empty__title">{{ _('Non hai ancora segnalato niente') }}</h2>
+    <p class="c7-empty__text">
+      {{ _('Se qualcosa non funziona, se ti viene un\'idea o se non trovi come si fa, scrivicelo: è il modo più rapido perché ce ne accorgiamo.') }}
+    </p>
+    <a href="{{ url_for('feedback.nuova_segnalazione') }}" class="btn btn-success mt-3">
+      {{ _('Segnala un problema') }}
+    </a>
+  </div>
+  {% endif %}
+
+  {# ---------- Novità sulle tue segnalazioni ---------- #}
+  {% if novita %}
+  <section>
+    <div class="c7-label">{{ _('Novità sulle tue segnalazioni') }}</div>
+    <div class="c7-stack">
+      {% for s in novita %}
+      <article class="c7-card" style="background:var(--c7-sunken)">
+        <div class="c7-kicker mb-1">
+          <span class="c7-num">{{ s.stato_cambiato_il|datetime_local }}</span>
+        </div>
+        <p class="mb-0" style="font-size:14px">
+          <strong>{{ s.titolo }}</strong> — {{ etichette_stato[s.stato]|lower }}
+        </p>
+        {% if s.nota_pubblica %}
+        <p class="c7-choice__desc mb-0 mt-2">{{ s.nota_pubblica }}</p>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}

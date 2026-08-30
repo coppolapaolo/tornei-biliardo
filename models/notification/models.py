@@ -56,6 +56,9 @@ class NotificationType(Enum):
     ROLE_REQUEST_CLOSED = "role_request_closed"  # Presa in carico da un altro
     ROLE_GRANTED = "role_granted"  # Ti è stato concesso un ruolo
 
+    # Segnalazioni degli utenti (issue #255)
+    FEEDBACK_UPDATE = "feedback_update"  # La tua segnalazione è cambiata di stato
+
     SYSTEM_ANNOUNCEMENT = "system_announcement"  # System-wide announcement
     ACCOUNT_UPDATE = "account_update"  # Account-related updates
     ADMIN_ACTION_REQUIRED = "admin_action_required"  # Action required by admin

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-30 15:24+0200\n"
+"POT-Creation-Date: 2026-08-30 15:49+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -109,7 +109,10 @@ msgid ""
 "Il turno è bloccato perché un turno successivo è già iniziato: quel turno"
 " si è formato su questa classifica. Per intervenire qui, annulla prima il"
 " turno successivo."
-msgstr "This round is locked because a later round has already started: that round was drawn from these standings. To change something here, cancel the later round first."
+msgstr ""
+"This round is locked because a later round has already started: that "
+"round was drawn from these standings. To change something here, cancel "
+"the later round first."
 
 #: models/competition/round_manager.py:135
 msgid ""
@@ -827,6 +830,52 @@ msgstr "«%(exam)s»: %(outcome)s, certified by %(examiner)s."
 msgid "Vedi l'esito"
 msgstr "View the outcome"
 
+#: models/feedback/service.py:82
+msgid "Scegli di cosa si tratta."
+msgstr "Choose what this is about."
+
+#: models/feedback/service.py:87
+msgid "Serve un titolo, anche breve."
+msgstr "A title is needed, even a short one."
+
+#: models/feedback/service.py:89
+msgid "Racconta cosa è successo."
+msgstr "Tell us what happened."
+
+#: models/feedback/service.py:93
+#, python-format
+msgid "Il titolo è troppo lungo: al massimo %(max)s caratteri."
+msgstr "The title is too long: %(max)s characters at most."
+
+#: models/feedback/service.py:100
+#, python-format
+msgid "Il racconto è troppo lungo: al massimo %(max)s caratteri."
+msgstr "Your account is too long: %(max)s characters at most."
+
+#: models/feedback/sync.py:192
+msgid "La tua segnalazione è stata presa in considerazione"
+msgstr "Your report is being considered"
+
+#: models/feedback/sync.py:194
+msgid "La tua segnalazione è stata risolta"
+msgstr "Your report has been resolved"
+
+#: models/feedback/sync.py:196
+msgid "Sulla tua segnalazione abbiamo deciso di non intervenire"
+msgstr "We decided not to act on your report"
+
+#: models/feedback/sync.py:198
+msgid "Ci sono novità sulla tua segnalazione"
+msgstr "There is news about your report"
+
+#: models/feedback/sync.py:206
+msgid "Novità sulla tua segnalazione"
+msgstr "News about your report"
+
+#: models/feedback/sync.py:211
+msgid "Vedi le tue segnalazioni"
+msgstr "See your reports"
+
 #: models/gamification/frontend_bridge.py:164
 msgid "Hai guadagnato XP"
 msgstr "You earned XP"
@@ -980,7 +1029,7 @@ msgstr ""
 "Several drills in a row, in one go. On your own to practise, or before an"
 " examiner to make it count."
 
-#: models/gamification/frontend_bridge.py:494 templates/base.html:548
+#: models/gamification/frontend_bridge.py:494 templates/base.html:557
 msgid "Diventa esaminatore"
 msgstr "Become an examiner"
 
@@ -1380,7 +1429,9 @@ msgstr "A walkover has no result to correct"
 msgid ""
 "Le partite a tre si correggono dal loro segnapunti, che tiene il conto "
 "dei tre giocatori"
-msgstr "Three-player matches are corrected from their own scoresheet, which keeps score for all three players"
+msgstr ""
+"Three-player matches are corrected from their own scoresheet, which keeps"
+" score for all three players"
 
 #: models/match/correction_service.py:75
 msgid "Questa partita non appartiene a una gara"
@@ -1643,7 +1694,7 @@ msgstr "You have been granted the %(role)s role."
 msgid "Che piacere rivederti!"
 msgstr "Nice to see you again!"
 
-#: routes/auth.py:153 templates/base.html:669
+#: routes/auth.py:153 templates/base.html:678
 msgid "Tutto pronto per giocare?"
 msgstr "Ready to play?"
 
@@ -1784,6 +1835,50 @@ msgstr "Request not found or cannot be renewed."
 #: routes/demand.py:67
 msgid "Richiesta riconfermata: resterà attiva ancora a lungo."
 msgstr "Request reconfirmed: it will stay active for a while longer."
+
+#: routes/feedback.py:110
+msgid "Segnalazione ricevuta. Ti avvisiamo qui quando ci sono novità."
+msgstr "Report received. We will let you know here when there is news."
+
+#: routes/feedback.py:142
+msgid "Ricevuta, la guarderemo presto"
+msgstr "Received, we will look at it soon"
+
+#: routes/feedback.py:143
+msgid "Presa in considerazione"
+msgstr "Being considered"
+
+#: routes/feedback.py:144 templates/base.html:430
+msgid "Fatto"
+msgstr "Done"
+
+#: routes/feedback.py:145
+msgid "Per ora non la faremo"
+msgstr "Not planned for now"
+
+#: routes/feedback.py:151
+msgid "Qualcosa non funziona"
+msgstr "Something is not working"
+
+#: routes/feedback.py:152
+msgid "Ho un'idea"
+msgstr "I have an idea"
+
+#: routes/feedback.py:153
+msgid "Non ho capito come si fa"
+msgstr "I could not work out how to do it"
+
+#: routes/feedback.py:159
+msgid "Una cosa che dovrebbe funzionare e non va"
+msgstr "Something that should work and does not"
+
+#: routes/feedback.py:160
+msgid "Qualcosa che vorresti trovare nell'app"
+msgstr "Something you would like the app to have"
+
+#: routes/feedback.py:161
+msgid "Cerchi una funzione e non la trovi"
+msgstr "You are looking for a feature and cannot find it"
 
 #: routes/help.py:51 templates/admin/kpi.html:112
 msgid "Panoramica"
@@ -2692,7 +2787,7 @@ msgstr "Drills completed in competition"
 msgid "Esami certificati superati"
 msgstr "Certified exams passed"
 
-#: routes/gamification/features.py:61 templates/base.html:386
+#: routes/gamification/features.py:61 templates/base.html:391
 #: templates/gamification/admin/dashboard.html:102
 #: templates/gamification/admin/dashboard.html:145
 #: templates/gamification/admin/feature_create.html:69
@@ -3128,7 +3223,7 @@ msgstr "administration"
 msgid "direzione gara"
 msgstr "tournament direction"
 
-#: templates/base.html:202 templates/base.html:309
+#: templates/base.html:202 templates/base.html:314
 msgid "giocatore"
 msgstr "player"
 
@@ -3140,7 +3235,7 @@ msgstr "Hide the sidebar"
 msgid "Generale"
 msgstr "General"
 
-#: templates/admin/kpi.html:37 templates/base.html:217 templates/base.html:486
+#: templates/admin/kpi.html:37 templates/base.html:217 templates/base.html:495
 msgid "Dashboard"
 msgstr "Dashboard"
 
@@ -3148,7 +3243,7 @@ msgstr "Dashboard"
 msgid "Sale Biliardo"
 msgstr "Billiard Halls"
 
-#: templates/base.html:226 templates/base.html:504
+#: templates/base.html:226 templates/base.html:513
 #: templates/challenge/catalog.html:3 templates/challenge/catalog.html:8
 #: templates/components/_gara_info.html:69
 #: templates/components/_history_campionati_tab.html:96
@@ -3175,105 +3270,106 @@ msgstr "Exams"
 msgid "Sfide individuali"
 msgstr "Individual matches"
 
-#: templates/base.html:241 templates/base.html:468
+#: templates/base.html:241 templates/base.html:473
 #: templates/gamification/admin/feature_create.html:59
 #: templates/help/_ui.html:10 templates/help/index.html:6
 msgid "Guida"
 msgstr "Guide"
 
-#: templates/base.html:248
+#: templates/base.html:246 templates/base.html:477
+#: templates/feedback/index.html:4
+msgid "Segnalazioni"
+msgstr "Reports"
+
+#: templates/base.html:253
 msgid "Persone"
 msgstr "People"
 
 #: templates/admin/accessi.html:37 templates/admin/users_list.html:10
-#: templates/base.html:251 templates/base.html:499
+#: templates/base.html:256 templates/base.html:508
 #: templates/gamification/admin/dashboard.html:103
 msgid "Utenti"
 msgstr "Users"
 
 #: templates/admin/accessi.html:33 templates/admin/accessi.html:111
-#: templates/admin/users_list.html:94 templates/base.html:256
+#: templates/admin/users_list.html:94 templates/base.html:261
 msgid "Accessi"
 msgstr "Sign-ins"
 
-#: templates/base.html:261
+#: templates/base.html:266
 msgid "Richieste Direttore"
 msgstr "Director requests"
 
-#: templates/admin/venue_manager_requests.html:4 templates/base.html:266
+#: templates/admin/venue_manager_requests.html:4 templates/base.html:271
 msgid "Richieste Gestore Sala"
 msgstr "Venue Manager Requests"
 
-#: templates/base.html:277
+#: templates/base.html:282
 msgid "Richieste Esaminatore"
 msgstr "Examiner requests"
 
 #: templates/admin/users_list.html:137 templates/admin/users_list.html:212
-#: templates/base.html:283 templates/components/_user_info_card.html:102
+#: templates/base.html:288 templates/components/_user_info_card.html:102
 msgid "Gamification"
 msgstr "Gamification"
 
-#: templates/base.html:285
+#: templates/base.html:290
 msgid "Traguardi e XP"
 msgstr "Achievements and XP"
 
-#: templates/base.html:295
+#: templates/base.html:300
 msgid "Debug"
 msgstr "Debug"
 
-#: templates/base.html:296 templates/base.html:581
+#: templates/base.html:301 templates/base.html:590
 msgid "Reset DB"
 msgstr "Reset DB"
 
-#: templates/base.html:307
+#: templates/base.html:312
 msgid "amministratore"
 msgstr "administrator"
 
-#: templates/base.html:308
+#: templates/base.html:313
 msgid "direttore"
 msgstr "director"
 
-#: templates/base.html:321 templates/base.html:407
+#: templates/base.html:326 templates/base.html:412
 msgid "Login"
 msgstr "Login"
 
-#: templates/base.html:322
+#: templates/base.html:327
 #: templates/components/_index_registration_info.html:33
 #: templates/login.html:40 templates/no_campionato.html:15
 #: templates/register.html:38
 msgid "Registrati"
 msgstr "Register"
 
-#: templates/base.html:330 templates/base.html:331
+#: templates/base.html:335 templates/base.html:336
 msgid "Mostra il menu laterale"
 msgstr "Show the sidebar"
 
-#: templates/base.html:353 templates/components/_gara_header.html:46
+#: templates/base.html:358 templates/components/_gara_header.html:46
 #: templates/help/index.html:11
 msgid "Home"
 msgstr "Home"
 
-#: templates/base.html:394
+#: templates/base.html:399
 msgid "Lv"
 msgstr "Lv"
 
-#: templates/base.html:423
+#: templates/base.html:428
 msgid "Non è riuscito"
 msgstr "Did not pass"
 
-#: templates/base.html:425
-msgid "Fatto"
-msgstr "Done"
-
-#: templates/base.html:427 templates/player/venue_detail.html:262
+#: templates/base.html:432 templates/player/venue_detail.html:262
 msgid "Attenzione"
 msgstr "Warning"
 
-#: templates/base.html:429
+#: templates/base.html:434
 msgid "Informazione"
 msgstr "Information"
 
-#: templates/base.html:439 templates/challenge/create.html:8
+#: templates/base.html:444 templates/challenge/create.html:8
 #: templates/components/_campionato_create_modal.html:7
 #: templates/components/_challenge_management_modal.html:19
 #: templates/components/_challenge_management_modal.html:76
@@ -3294,120 +3390,120 @@ msgstr "Information"
 msgid "Chiudi"
 msgstr "Close"
 
-#: templates/base.html:472 templates/privacy.html:3
+#: templates/base.html:481 templates/privacy.html:3
 msgid "Privacy e Cookie"
 msgstr "Privacy and Cookies"
 
-#: templates/admin/venue_manager_requests.html:14 templates/base.html:490
+#: templates/admin/venue_manager_requests.html:14 templates/base.html:499
 msgid "Sale"
 msgstr "Venues"
 
-#: templates/base.html:495
+#: templates/base.html:504
 msgid "Sfide"
 msgstr "Matches"
 
-#: templates/base.html:508 templates/components/_user_menu.html:8
+#: templates/base.html:517 templates/components/_user_menu.html:8
 #: templates/player/notifications.html:3 templates/player/notifications.html:8
 msgid "Notifiche"
 msgstr "Notifications"
 
-#: templates/base.html:517
+#: templates/base.html:526
 msgid "DEBUG MODE - Informazioni Sistema"
 msgstr "DEBUG MODE - System Information"
 
-#: templates/base.html:521
+#: templates/base.html:530
 msgid "Utente:"
 msgstr "User:"
 
-#: templates/base.html:528
+#: templates/base.html:537
 msgid "User ID:"
 msgstr "User ID:"
 
-#: templates/base.html:535
+#: templates/base.html:544
 msgid "Esami:"
 msgstr "Exams:"
 
-#: templates/base.html:537 templates/components/_history_exams_tab.html:66
+#: templates/base.html:546 templates/components/_history_exams_tab.html:66
 msgid "esaminatore"
 msgstr "examiner"
 
-#: templates/base.html:537 templates/base.html:540
+#: templates/base.html:546 templates/base.html:549
 msgid "sì"
 msgstr "yes"
 
-#: templates/base.html:537 templates/base.html:540
+#: templates/base.html:546 templates/base.html:549
 msgid "no"
 msgstr "no"
 
-#: templates/base.html:540
+#: templates/base.html:549
 msgid "override"
 msgstr "override"
 
-#: templates/base.html:556
+#: templates/base.html:565
 msgid "Endpoint:"
 msgstr "Endpoint:"
 
-#: templates/base.html:560
+#: templates/base.html:569
 msgid "Method:"
 msgstr "Method:"
 
-#: templates/base.html:566 templates/base.html:580
+#: templates/base.html:575 templates/base.html:589
 msgid "Database:"
 msgstr "Database:"
 
-#: templates/base.html:574
+#: templates/base.html:583
 msgid "Not accessible"
 msgstr "Not accessible"
 
-#: templates/base.html:582
+#: templates/base.html:591
 msgid "Save Reset"
 msgstr "Save Reset"
 
-#: templates/base.html:585
+#: templates/base.html:594
 msgid "Quick Login:"
 msgstr "Quick Login:"
 
-#: templates/base.html:598
+#: templates/base.html:607
 msgid "Test Fixtures:"
 msgstr "Test Fixtures:"
 
-#: templates/base.html:600
+#: templates/base.html:609
 msgid "Player"
 msgstr "Player"
 
-#: templates/base.html:605
+#: templates/base.html:614
 msgid "Fill Gara"
 msgstr "Fill Competition"
 
-#: templates/base.html:609
+#: templates/base.html:618
 msgid "Iscrivi"
 msgstr "Enroll"
 
-#: templates/base.html:613
+#: templates/base.html:622
 msgid "Completare i match in corso del turno attuale con risultati random?"
 msgstr "Complete the current round's in-progress matches with random results?"
 
-#: templates/base.html:614
+#: templates/base.html:623
 msgid "Complete Round"
 msgstr "Complete Round"
 
-#: templates/base.html:618
+#: templates/base.html:627
 msgid "Complete Match"
 msgstr "Complete Match"
 
-#: templates/base.html:622
+#: templates/base.html:631
 msgid "Completare l'intera gara con risultati random fino alla fine?"
 msgstr "Complete the whole competition with random results to the end?"
 
-#: templates/base.html:623
+#: templates/base.html:632
 msgid "Complete Gara"
 msgstr "Complete Competition"
 
-#: templates/base.html:638 templates/base.html:644
+#: templates/base.html:647 templates/base.html:653
 msgid "Conferma"
 msgstr "Confirm"
 
-#: templates/base.html:639 templates/base.html:703
+#: templates/base.html:648 templates/base.html:712
 msgid "Close"
 msgstr "Close"
 
@@ -3417,8 +3513,8 @@ msgstr "Close"
 #: templates/admin/campionato_wizard_step1.html:158
 #: templates/admin/campionato_wizard_step2.html:8
 #: templates/admin/gara_edit.html:11 templates/admin/venue_form.html:296
-#: templates/admin/venue_manager_requests.html:155 templates/base.html:643
-#: templates/base.html:716 templates/challenge/_training_board.html:92
+#: templates/admin/venue_manager_requests.html:155 templates/base.html:652
+#: templates/base.html:725 templates/challenge/_training_board.html:92
 #: templates/challenge/builder.html:33 templates/challenge/builder.html:262
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
@@ -3450,68 +3546,68 @@ msgstr "Close"
 msgid "Annulla"
 msgstr "Cancel"
 
-#: templates/base.html:659
+#: templates/base.html:668
 msgid "XP OTTENUTI"
 msgstr "XP EARNED"
 
-#: templates/base.html:660
+#: templates/base.html:669
 msgid "LEVEL UP!"
 msgstr "LEVEL UP!"
 
-#: templates/base.html:661
+#: templates/base.html:670
 msgid "Nuovo livello raggiunto!"
 msgstr "New level reached!"
 
-#: templates/base.html:662
+#: templates/base.html:671
 msgid "NUOVO TRAGUARDO!"
 msgstr "NEW MILESTONE!"
 
-#: templates/base.html:663
+#: templates/base.html:672
 msgid "STREAK!"
 msgstr "STREAK!"
 
-#: templates/base.html:664
+#: templates/base.html:673
 msgid "Freeze attivo"
 msgstr "Freeze active"
 
-#: templates/base.html:665
+#: templates/base.html:674
 msgid "STREAK PERSA"
 msgstr "STREAK LOST"
 
-#: templates/base.html:666
+#: templates/base.html:675
 msgid "Non mollare, riprovare!"
 msgstr "Don't give up, try again!"
 
-#: templates/base.html:667
+#: templates/base.html:676
 msgid "QUEST COMPLETATA!"
 msgstr "QUEST COMPLETED!"
 
-#: templates/base.html:668
+#: templates/base.html:677
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr "WELCOME BACK!"
 
-#: templates/base.html:670
+#: templates/base.html:679
 msgid "Ciao!"
 msgstr "Hello!"
 
-#: templates/base.html:671
+#: templates/base.html:680
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr "Hello %(username)s!"
 
-#: templates/base.html:702
+#: templates/base.html:711
 msgid "Save Reset Snapshot"
 msgstr "Save Reset Snapshot"
 
-#: templates/base.html:707
+#: templates/base.html:716
 msgid "Nome snapshot"
 msgstr "Snapshot name"
 
-#: templates/base.html:711
+#: templates/base.html:720
 msgid "Descrizione (opzionale)"
 msgstr "Description (optional)"
 
-#: templates/admin/campionato_detail.html:171 templates/base.html:717
+#: templates/admin/campionato_detail.html:171 templates/base.html:726
 #: templates/components/_playoff_scoring_form.html:28
 #: templates/gamification/admin/level_config.html:42
 #: templates/gamification/admin/level_config.html:174
@@ -4525,10 +4621,31 @@ msgstr ""
 "enabling the Do Not Track option in your browser."
 
 #: templates/privacy.html:53
+msgid "Segnalazioni (GitHub)"
+msgstr "Reports (GitHub)"
+
+#: templates/privacy.html:55
+msgid ""
+"Se ci segnali un problema dall'app, il testo che scrivi viene trasmesso a"
+" GitHub, il servizio dove teniamo l'elenco dei lavori da fare. Insieme al"
+" testo inviamo la pagina da cui arrivi, la versione dell'app, il tuo "
+"ruolo, il browser e la lingua: servono a capire cosa non ha funzionato."
+msgstr "If you report a problem from the app, the text you write is sent on to GitHub, the service where we keep our list of work to do. Along with the text we send the page you came from, the app version, your role, your browser and your language: they help us understand what went wrong."
+
+#: templates/privacy.html:58
+msgid ""
+"Non inviamo il tuo indirizzo email: la segnalazione porta solo il tuo "
+"nome utente, e il collegamento con il tuo account resta sui nostri "
+"sistemi. Ti chiediamo di non scrivere nel testo dati personali tuoi o di "
+"altri giocatori, perché finirebbero su un servizio di terzi insieme al "
+"resto."
+msgstr "We do not send your email address: the report carries only your username, and the link with your account stays on our systems. We ask you not to put personal details — yours or another player's — in the text, because they would end up on a third-party service along with everything else."
+
+#: templates/privacy.html:63
 msgid "I tuoi diritti"
 msgstr "Your rights"
 
-#: templates/privacy.html:55
+#: templates/privacy.html:65
 msgid ""
 "Puoi in qualsiasi momento accedere ai tuoi dati, correggerli, chiederne "
 "la cancellazione o opporti al trattamento. La maggior parte delle "
@@ -4540,9 +4657,9 @@ msgstr ""
 "directly from your profile settings; for the others you can contact us at"
 " the address indicated above."
 
-#: templates/privacy.html:60
-msgid "Ultimo aggiornamento: luglio 2026."
-msgstr "Last updated: July 2026."
+#: templates/privacy.html:70
+msgid "Ultimo aggiornamento: agosto 2026."
+msgstr "Last updated: August 2026."
 
 #: templates/register.html:3
 msgid "Registrazione"
@@ -5008,6 +5125,7 @@ msgstr "Position"
 #: templates/components/_history_filters.html:107
 #: templates/components/_history_filters.html:122
 #: templates/components/_multi_set_score_display.html:64
+#: templates/feedback/tutte.html:17
 #: templates/gamification/admin/features.html:27
 #: templates/gamification/admin/quests.html:24
 #: templates/player/my_venue_requests.html:23
@@ -7814,6 +7932,7 @@ msgid "Svuota"
 msgstr "Clear"
 
 #: templates/challenge/builder.html:211 templates/challenge/create.html:27
+#: templates/feedback/nuova.html:39 templates/feedback/tutte.html:16
 msgid "Titolo"
 msgstr "Title"
 
@@ -8600,7 +8719,7 @@ msgid "Informazioni Campionato"
 msgstr "Championship Information"
 
 #: templates/components/_campionato_details_info.html:9
-#: templates/components/_match_info.html:36
+#: templates/components/_match_info.html:36 templates/feedback/tutte.html:15
 #: templates/gamification/admin/quests.html:23
 #: templates/gamification/admin/streak_config.html:181
 #: templates/gamification/admin/streaks.html:28
@@ -10918,7 +11037,9 @@ msgid ""
 "I triangoli segnati uno per uno vengono cancellati: resta solo il "
 "punteggio finale. La correzione resterà visibile sulla partita. "
 "Procedere?"
-msgstr "The racks recorded one by one will be deleted: only the final score is kept. The correction stays visible on the match. Go ahead?"
+msgstr ""
+"The racks recorded one by one will be deleted: only the final score is "
+"kept. The correction stays visible on the match. Go ahead?"
 
 #: templates/components/_match_admin_controls.html:162
 msgid "Perché (facoltativo)"
@@ -10932,7 +11053,9 @@ msgstr "E.g. the score was entered the wrong way round"
 msgid ""
 "La correzione resta scritta sulla partita: chi aveva visto il risultato "
 "di prima capisce perché è cambiato."
-msgstr "The correction stays written on the match: anyone who saw the earlier result can tell why it changed."
+msgstr ""
+"The correction stays written on the match: anyone who saw the earlier "
+"result can tell why it changed."
 
 #: templates/components/_match_admin_controls.html:177
 msgid "Il risultato non si può correggere"
@@ -11139,7 +11262,9 @@ msgstr "Match information"
 msgid ""
 "Il risultato è stato corretto dopo la chiusura: apri la partita per "
 "vedere da cosa a cosa"
-msgstr "The result was corrected after the match was closed: open the match to see what it was and what it is now"
+msgstr ""
+"The result was corrected after the match was closed: open the match to "
+"see what it was and what it is now"
 
 #: templates/components/_match_result_row.html:77
 msgid "corretto"
@@ -11612,6 +11737,7 @@ msgstr "View all"
 
 #: templates/components/_player_dashboard_content.html:38
 #: templates/components/_playoff_invitations.html:32
+#: templates/feedback/tutte.html:13
 #: templates/individual_match/create_proposal.html:61
 #: templates/player/playoff_invitation.html:23
 msgid "Quando"
@@ -13058,6 +13184,10 @@ msgstr "The cloth has torn: something went wrong on our side."
 msgid "Ricarica la pagina. Se il problema resta, riprova tra qualche minuto."
 msgstr "Reload the page. If the problem stays, try again in a few minutes."
 
+#: templates/errors/500.html:21
+msgid "Segnala questo problema"
+msgstr "Report this problem"
+
 #: templates/errors/dominio.html:23
 msgid "Torna indietro"
 msgstr "Go back"
@@ -13234,7 +13364,7 @@ msgstr "Candidates"
 msgid "Aggiungi un esaminatore"
 msgstr "Add an examiner"
 
-#: templates/exam/examiners.html:39
+#: templates/exam/examiners.html:39 templates/feedback/tutte.html:14
 msgid "Chi"
 msgstr "Who"
 
@@ -13610,6 +13740,111 @@ msgstr "Session stopped"
 #: templates/exam/session.html:183
 msgid "Senza esito: non è una bocciatura."
 msgstr "No outcome recorded: this is not a fail."
+
+#: templates/feedback/index.html:2
+msgid "Le tue segnalazioni"
+msgstr "Your reports"
+
+#: templates/feedback/index.html:5
+msgid "Quello che ci hai scritto, e come è andata a finire."
+msgstr "What you wrote to us, and how it turned out."
+
+#: templates/feedback/index.html:9 templates/feedback/index.html:52
+#: templates/feedback/nuova.html:2 templates/feedback/nuova.html:8
+msgid "Segnala un problema"
+msgstr "Report a problem"
+
+#: templates/feedback/index.html:37
+msgid "La nostra risposta"
+msgstr "Our reply"
+
+#: templates/feedback/index.html:47
+msgid "Non hai ancora segnalato niente"
+msgstr "You have not reported anything yet"
+
+#: templates/feedback/index.html:49
+msgid ""
+"Se qualcosa non funziona, se ti viene un'idea o se non trovi come si fa, "
+"scrivicelo: è il modo più rapido perché ce ne accorgiamo."
+msgstr "If something does not work, if you have an idea, or if you cannot find how to do something, write to us: it is the fastest way for us to notice."
+
+#: templates/feedback/index.html:60
+msgid "Novità sulle tue segnalazioni"
+msgstr "News about your reports"
+
+#: templates/feedback/nuova.html:6
+msgid "Torna alle segnalazioni"
+msgstr "Back to the reports"
+
+#: templates/feedback/nuova.html:9
+msgid "Tre campi, e la leggiamo davvero."
+msgstr "Three fields, and we really do read it."
+
+#: templates/feedback/nuova.html:17
+msgid "Di cosa si tratta"
+msgstr "What it is about"
+
+#: templates/feedback/nuova.html:42
+msgid "Es. non riesco a segnare i triangoli dal telefono"
+msgstr "E.g. I cannot record racks on my phone"
+
+#: templates/feedback/nuova.html:47
+msgid "Racconta cosa è successo"
+msgstr "Tell us what happened"
+
+#: templates/feedback/nuova.html:50
+msgid "Cosa stavi facendo? Cosa ti aspettavi? Cosa è successo invece?"
+msgstr "What were you doing? What did you expect? What happened instead?"
+
+#: templates/feedback/nuova.html:52
+msgid "Non serve essere tecnici: scrivi come lo racconteresti a voce."
+msgstr "No need to be technical: write it the way you would say it out loud."
+
+#: templates/feedback/nuova.html:58
+msgid "Prima di inviare"
+msgstr "Before you send"
+
+#: templates/feedback/nuova.html:60
+msgid ""
+"Alla segnalazione alleghiamo la pagina da cui arrivi, la versione "
+"dell'app, il tuo ruolo e il browser: serve a capire cosa non ha "
+"funzionato. Il testo che scrivi finisce su GitHub, il servizio dove "
+"teniamo l'elenco dei lavori, quindi non scriverci dati personali tuoi o "
+"di altri giocatori."
+msgstr "We attach the page you came from, the app version, your role and your browser: they help us understand what went wrong. The text you write ends up on GitHub, the service where we keep our list of work, so do not put personal details in it, yours or another player's."
+
+#: templates/feedback/nuova.html:65
+msgid "Invia la segnalazione"
+msgstr "Send the report"
+
+#: templates/feedback/tutte.html:2 templates/feedback/tutte.html:4
+msgid "Tutte le segnalazioni"
+msgstr "All reports"
+
+#: templates/feedback/tutte.html:5
+msgid "Quello che gli utenti hanno scritto, e se è arrivato a destinazione."
+msgstr "What people wrote, and whether it reached its destination."
+
+#: templates/feedback/tutte.html:18
+msgid "Issue"
+msgstr "Issue"
+
+#: templates/feedback/tutte.html:47
+msgid "da spedire"
+msgstr "to send"
+
+#: templates/feedback/tutte.html:52
+#, python-format
+msgid "tentativi: %(n)s"
+msgstr "attempts: %(n)s"
+
+#: templates/feedback/tutte.html:64
+msgid "Nessuna segnalazione"
+msgstr "No reports"
+
+#: templates/feedback/tutte.html:65
+msgid "Quando qualcuno segnalerà un problema dall'app, lo troverai qui."
+msgstr "When someone reports a problem from the app, you will find it here."
 
 #: templates/gamification/achievements.html:10
 #: templates/gamification/quests.html:8 templates/gamification/streaks.html:8

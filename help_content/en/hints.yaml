@@ -133,7 +133,8 @@ hints:
   section: doppio_ko
 - id: gara.handicap
   label: Play with handicap
-  short: "You agree the head start at the table. What changes here is the rating\u003A it only moves between players of the same category."
+  short: 'You agree the head start at the table. What changes here is the rating: it only moves between
+    players of the same category.'
   anchor: gara-handicap
   screens:
   - admin.competition.create_gara_standalone
@@ -204,7 +205,8 @@ hints:
   section: pari_merito
 - id: gara.peso
   label: Weight in the standings
-  short: 'How many times this competition''s score counts in the championship standings. 1 = like every other. Not shown outside a championship.'
+  short: How many times this competition's score counts in the championship standings. 1 = like every
+    other. Not shown outside a championship.
   anchor: gara-peso
   screens:
   - admin.campionato.campionato_detail
@@ -213,7 +215,8 @@ hints:
   section: struttura
 - id: gara.numero_turni
   label: Number of rounds
-  short: 'How many sets of matches. Not set on brackets: the draw fixes it, on the entrants who turn up. Under double elimination it can grow by one if the Decider is played.'
+  short: 'How many sets of matches. Not set on brackets: the draw fixes it, on the entrants who turn up.
+    Under double elimination it can grow by one if the Decider is played.'
   anchor: gara-numero-turni
   screens:
   - admin.competition.create_gara_standalone
@@ -248,8 +251,8 @@ hints:
   section: turni_successivi
 - id: gara.x_ultimo_iscritto
   label: Who gets the X in the first round?
-  short: 'With an odd number of players: the app draws the X by walkover, or you hand it to
-    the last player to register. The other pairings stay random.'
+  short: 'With an odd number of players: the app draws the X by walkover, or you hand it to the last player
+    to register. The other pairings stay random.'
   anchor: gara-x-ultimo-iscritto
   screens:
   - admin.competition.gara_detail
@@ -266,8 +269,8 @@ hints:
   section: sorteggio
 - id: gara.squadra_iscrizione
   label: Which team are you playing for?
-  short: 'Asked the moment you register, if the competition keeps team-mates apart in the draw. «No team»
-    is an answer, changeable until the draw.'
+  short: Asked the moment you register, if the competition keeps team-mates apart in the draw. «No team»
+    is an answer, changeable until the draw.
   anchor: gara-squadra-iscrizione
   screens:
   - admin.competition.gara_detail
@@ -338,7 +341,7 @@ hints:
   section: lista_attesa
 - id: profilo.runout
   label: Runout
-  short: 'Racks closed in a single visit. «Break and run» are the ones where you also had the break shot.'
+  short: Racks closed in a single visit. «Break and run» are the ones where you also had the break shot.
   anchor: profilo-runout
   screens:
   - player.profile
@@ -384,8 +387,8 @@ hints:
   section: punti_posizione
 - id: esame.prova_da_solo
   label: Try it on your own
-  short: 'You practise: you record the scores and can stop and resume. It stays in your history but
-    carries no certification.'
+  short: 'You practise: you record the scores and can stop and resume. It stays in your history but carries
+    no certification.'
   anchor: esame-prova-da-solo
   screens:
   - exam.exam_detail
@@ -393,8 +396,8 @@ hints:
   section: due_modi
 - id: esame.appuntamento
   label: Ask for an appointment
-  short: 'The exam that counts is taken in person: propose a date, a time and a venue to one or more
-    examiners. The first to accept closes it for the others.'
+  short: 'The exam that counts is taken in person: propose a date, a time and a venue to one or more examiners.
+    The first to accept closes it for the others.'
   anchor: esame-appuntamento
   screens:
   - exam.exam_detail
@@ -403,8 +406,8 @@ hints:
   section: appuntamento
 - id: esame.quante_prove
   label: How many attempts
-  short: How many times the candidate repeats that drill. If it is more than one, the best attempt
-    counts, not the sum.
+  short: How many times the candidate repeats that drill. If it is more than one, the best attempt counts,
+    not the sum.
   anchor: esame-quante-prove
   screens:
   - exam.exam_detail
@@ -412,8 +415,8 @@ hints:
   section: comporre
 - id: esame.punteggio_massimo
   label: Maximum score
-  short: 'What the drill is worth inside this exam. It is per exam, not a property of the drill: the
-    same drill can weigh differently elsewhere.'
+  short: 'What the drill is worth inside this exam. It is per exam, not a property of the drill: the same
+    drill can weigh differently elsewhere.'
   anchor: esame-punteggio-massimo
   screens:
   - exam.exam_detail
@@ -429,8 +432,8 @@ hints:
   section: comporre
 - id: referto.tastierino
   label: The keypad
-  short: 'First how many balls went in, then why the inning ended. Keys that make no sense right now
-    are switched off.'
+  short: First how many balls went in, then why the inning ended. Keys that make no sense right now are
+    switched off.
   anchor: referto-tastierino
   screens:
   - individual_match.tpa_referto
@@ -438,7 +441,7 @@ hints:
   section: come-si-compila
 - id: referto.passa_tavolo
   label: Handing over the table
-  short: "Tap the other player's name: it closes your inning and starts theirs."
+  short: 'Tap the other player''s name: it closes your inning and starts theirs.'
   anchor: referto-passa-tavolo
   screens:
   - individual_match.tpa_referto
@@ -455,7 +458,7 @@ hints:
   section: annotazioni-piccole
 - id: referto.annulla
   label: Undo last entry
-  short: 'Steps back one move, as many times as you like. It also takes back racks already awarded.'
+  short: Steps back one move, as many times as you like. It also takes back racks already awarded.
   anchor: referto-annulla
   screens:
   - individual_match.tpa_referto
@@ -463,8 +466,8 @@ hints:
   section: come-si-compila
 - id: challenge.ricerca
   label: Search the title or the instructions…
-  short: 'It filters all three tabs at once, and the numbers next to the tab names update. It looks inside
-    the instructions too, not just the title.'
+  short: It filters all three tabs at once, and the numbers next to the tab names update. It looks inside
+    the instructions too, not just the title.
   anchor: challenge-ricerca
   screens:
   - challenge.challenge_catalog
@@ -483,8 +486,8 @@ hints:
   section: crearle
 - id: challenge.punteggio_massimo
   label: Maximum score
-  short: 'How far you can get. Optional: leave it empty for drills you repeat until
-    you miss, where a maximum does not exist.'
+  short: 'How far you can get. Optional: leave it empty for drills you repeat until you miss, where a
+    maximum does not exist.'
   anchor: challenge-punteggio-massimo
   screens:
   - challenge.create_challenge
@@ -494,8 +497,8 @@ hints:
   section: due_tipi
 - id: allenamento.esito
   label: Passed / Not passed
-  short: 'The button you tap records the attempt straight away: there is nothing to
-    confirm. Tapped the wrong one? «Undo the last one» takes it back.'
+  short: 'The button you tap records the attempt straight away: there is nothing to confirm. Tapped the
+    wrong one? «Undo the last one» takes it back.'
   anchor: allenamento-esito
   screens:
   - challenge.training_session
@@ -503,8 +506,8 @@ hints:
   section: allenarsi
 - id: allenamento.annulla
   label: Undo the last one
-  short: 'Removes the attempt you just recorded. The XP goes back too: it is there
-    to fix a wrong tap, not to replay a score.'
+  short: 'Removes the attempt you just recorded. The XP goes back too: it is there to fix a wrong tap,
+    not to replay a score.'
   anchor: allenamento-annulla
   screens:
   - challenge.training_session
@@ -609,8 +612,8 @@ hints:
   section: avvio-rapido
 - id: sfida.riepilogo_rapido
   label: How it is played
-  short: 'Venue, discipline and distance are the ones from your last match. If they are fine you touch
-    nothing; «Change» opens them up.'
+  short: Venue, discipline and distance are the ones from your last match. If they are fine you touch
+    nothing; «Change» opens them up.
   anchor: sfida-riepilogo-rapido
   screens:
   - individual_match.quick_match
@@ -618,8 +621,8 @@ hints:
   section: avvio-rapido
 - id: sfida.referto_all_avvio
   label: I'll keep the TPA scoresheet
-  short: 'Decide now: the scoresheet is started before the first rack, and as soon as the match
-    starts you are on the scoreboard.'
+  short: 'Decide now: the scoresheet is started before the first rack, and as soon as the match starts
+    you are on the scoreboard.'
   anchor: sfida-referto-all-avvio
   screens:
   - individual_match.quick_match
@@ -628,13 +631,40 @@ hints:
   section: aprire
 - id: campionato.playoff_classifica_finale
   label: Final championship standings
-  short: 'The play-off is added to the championship (with a weight you choose), or it decides
-    the top places on its own. Leave it alone and it is the sum, with weight 1.'
+  short: The play-off is added to the championship (with a weight you choose), or it decides the top places
+    on its own. Leave it alone and it is the sum, with weight 1.
   anchor: campionato-playoff-classifica-finale
   screens:
   - admin.campionato.campionato_detail
   page: playoff
   section: classifica_finale
+- id: segnalazione.tipo
+  label: What it is about
+  short: 'Three choices: something is not working, you have an idea, you did not understand how to do
+    something. It tells us at a glance what kind of report this is.'
+  anchor: segnalazione-tipo
+  screens:
+  - feedback.nuova_segnalazione
+  page: segnalare_un_problema
+  section: come_si_scrive
+- id: segnalazione.racconto
+  label: Tell us what happened
+  short: 'What you were doing, what you expected, what happened instead. You do not need to be technical:
+    write it the way you would say it out loud.'
+  anchor: segnalazione-racconto
+  screens:
+  - feedback.nuova_segnalazione
+  page: segnalare_un_problema
+  section: come_si_scrive
+- id: segnalazione.stato
+  label: The status of your report
+  short: 'It says where we are: received, being considered, done, or not planned for now. It changes on
+    its own, and you get a notification.'
+  anchor: segnalazione-stato
+  screens:
+  - feedback.le_mie_segnalazioni
+  page: segnalare_un_problema
+  section: che_fine_fa
 tours:
 - screen: dashboard.dashboard
   title: Your home
@@ -706,3 +736,16 @@ tours:
   - hint: referto.passa_tavolo
   - hint: referto.annotazioni_piccole
   - hint: referto.annulla
+- screen: feedback.nuova_segnalazione
+  title: Reporting a problem
+  intro: Three fields, that is all. The page you came from, the version and the browser are attached by
+    the app itself.
+  audience:
+  - giocatore
+  - direttore
+  steps:
+  - hint: segnalazione.tipo
+  - hint: segnalazione.racconto
+  - title: What not to write
+    text: 'The text ends up on GitHub, where we keep our list of work: do not put personal details in
+      it, yours or another player''s.'

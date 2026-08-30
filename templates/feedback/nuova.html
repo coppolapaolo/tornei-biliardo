@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Segnala un problema') }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('feedback.le_mie_segnalazioni') }}"
+   aria-label="{{ _('Torna alle segnalazioni') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Segnala un problema') }}{% endblock %}
+{% block page_sub %}{{ _('Tre campi, e la leggiamo davvero.') }}{% endblock %}
+
+{% block content %}
+<form method="POST" action="{{ url_for('feedback.invia_segnalazione') }}" class="c7-stack">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  {# ---------- Di cosa si tratta ---------- #}
+  <section>
+    <div class="c7-label">{{ _('Di cosa si tratta') }}</div>
+    <div class="c7-stack">
+      {% for tipo in tipi %}
+      <label class="c7-choice c7-choice--big">
+        <input type="radio" name="tipo" value="{{ tipo.value }}" class="d-none" required>
+        <span class="c7-tile c7-tile--round">
+          <i class="fas {% if tipo.value == 'bug' %}fa-triangle-exclamation
+                        {% elif tipo.value == 'enhancement' %}fa-lightbulb
+                        {% else %}fa-circle-question{% endif %}"></i>
+        </span>
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ etichette_tipo[tipo.value] }}</span>
+          <span class="c7-choice__desc d-block">{{ descrizioni_tipo[tipo.value] }}</span>
+        </span>
+        <i class="fas fa-circle-check c7-choice__mark"></i>
+      </label>
+      {% endfor %}
+    </div>
+  </section>
+
+  {# ---------- Titolo ---------- #}
+  <section>
+    <label for="titolo" class="c7-label">{{ _('Titolo') }}</label>
+    <input type="text" class="form-control" id="titolo" name="titolo" required
+           maxlength="200"
+           placeholder="{{ _('Es. non riesco a segnare i triangoli dal telefono') }}">
+  </section>
+
+  {# ---------- Il racconto ---------- #}
+  <section>
+    <label for="corpo" class="c7-label">{{ _('Racconta cosa è successo') }}</label>
+    <textarea class="form-control" id="corpo" name="corpo" rows="7" required
+              maxlength="5000"
+              placeholder="{{ _('Cosa stavi facendo? Cosa ti aspettavi? Cosa è successo invece?') }}"></textarea>
+    <p class="c7-choice__desc mt-2" style="padding-left:4px">
+      {{ _('Non serve essere tecnici: scrivi come lo racconteresti a voce.') }}
+    </p>
+  </section>
+
+  {# ---------- Cosa raccogliamo, e dove va ---------- #}
+  <div class="c7-card" style="background:var(--c7-sunken)">
+    <div class="c7-kicker mb-2">{{ _('Prima di inviare') }}</div>
+    <p class="c7-choice__desc mb-0">
+      {{ _('Alla segnalazione alleghiamo la pagina da cui arrivi, la versione dell\'app, il tuo ruolo e il browser: serve a capire cosa non ha funzionato. Il testo che scrivi finisce su GitHub, il servizio dove teniamo l\'elenco dei lavori, quindi non scriverci dati personali tuoi o di altri giocatori.') }}
+    </p>
+  </div>
+
+  <button type="submit" class="btn btn-success w-100">
+    <i class="fas fa-paper-plane me-2"></i>{{ _('Invia la segnalazione') }}
+  </button>
+</form>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+// `.c7-choice.is-selected` segue la selezione viva, non quella stampata dal
+// server: senza queste righe le tre card restano tutte uguali e chi compila
+// non vede cosa ha scelto. Nessuna stringa tradotta qui dentro, quindi nessun
+// `|tojson` da mettere.
+(function () {
+    const scelte = document.querySelectorAll('input[name="tipo"]');
+    scelte.forEach(function (radio) {
+        radio.addEventListener('change', function () {
+            scelte.forEach(function (r) {
+                r.closest('.c7-choice').classList.toggle('is-selected', r.checked);
+            });
+        });
+    });
+})();
+</script>
+{% endblock %}

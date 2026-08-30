@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}{{ _('Tutte le segnalazioni') }}{% endblock %}
+
+{% block page_title %}{{ _('Tutte le segnalazioni') }}{% endblock %}
+{% block page_sub %}{{ _('Quello che gli utenti hanno scritto, e se è arrivato a destinazione.') }}{% endblock %}
+
+{% block content %}
+{% if segnalazioni %}
+<div class="c7-table-wrap table-responsive">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>{{ _('Quando') }}</th>
+        <th>{{ _('Chi') }}</th>
+        <th>{{ _('Tipo') }}</th>
+        <th>{{ _('Titolo') }}</th>
+        <th>{{ _('Stato') }}</th>
+        <th>{{ _('Issue') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in segnalazioni %}
+      <tr>
+        <td class="text-muted"><span class="c7-num">{{ s.created_at|datetime_local }}</span></td>
+        <td>
+          <div style="display:flex;align-items:center;gap:10px">
+            <span class="c7-avatar">{{ s.user.username[:2]|upper if s.user else '??' }}</span>
+            <strong>{{ s.user.username if s.user else '—' }}</strong>
+          </div>
+        </td>
+        <td>{{ etichette_tipo.get(s.tipo, s.tipo) }}</td>
+        <td>{{ s.titolo }}</td>
+        <td>
+          <span class="c7-state
+            {%- if s.stato == 'risolta' %} c7-state--ok
+            {%- elif s.stato == 'non_prevista' %} c7-state--muted
+            {%- elif s.stato == 'presa_in_carico' %} c7-state--info
+            {%- else %} c7-state--warn{% endif %}">{{ etichette_stato[s.stato] }}</span>
+        </td>
+        <td>
+          {% if s.issue_number %}
+          <span class="c7-num">#{{ s.issue_number }}</span>
+          {% else %}
+          {# Non ancora spedita: il job riprova al prossimo giro. L'ultimo
+             errore è la sola cosa che dice perché, e va vista qui — un rinvio
+             che fallisce ogni notte in silenzio è un guasto senza sintomi. #}
+          <span class="c7-state c7-state--err">{{ _('da spedire') }}</span>
+          {% if s.ultimo_errore %}
+          <div class="c7-choice__desc mt-1">{{ s.ultimo_errore }}</div>
+          {% endif %}
+          {% if s.tentativi_invio %}
+          <div class="c7-kicker mt-1">{{ _('tentativi: %(n)s', n=s.tentativi_invio) }}</div>
+          {% endif %}
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="c7-empty">
+  <div class="c7-empty__ico"><i class="fas fa-bullhorn"></i></div>
+  <h2 class="c7-empty__title">{{ _('Nessuna segnalazione') }}</h2>
+  <p class="c7-empty__text">{{ _('Quando qualcuno segnalerà un problema dall\'app, lo troverai qui.') }}</p>
+</div>
+{% endif %}
+{% endblock %}

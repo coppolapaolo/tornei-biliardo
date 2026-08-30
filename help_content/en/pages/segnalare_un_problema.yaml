@@ -1,0 +1,93 @@
+title: "Reporting a problem"
+section: account
+kind: tutorial
+audience: [giocatore, direttore]
+minutes: 2
+summary: "How to tell us something is broken, how to ask for something new, and how to find out what happened to your report."
+screens: [feedback.le_mie_segnalazioni, feedback.nuova_segnalazione]
+related: [notifiche, privacy_e_dati]
+
+blocks:
+  - type: text
+    text: >-
+      If something does not work, if you think of something the app ought to
+      do, or if you are looking for a command and cannot find it, you can write
+      to us straight from here. **Reports** is in the menu, under Help, and at
+      the bottom of every page.
+
+  - type: heading
+    id: come_si_scrive
+    title: "Writing a report"
+
+  - type: steps
+    items:
+      - title: "Open the reports page"
+        text: "From the menu, or from the link at the bottom of the page. If an error screen comes up, it has a button that takes you straight to the form."
+      - title: "Pick what it is about"
+        text: "Three choices: something is not working, you have an idea, or you did not understand how to do something. It tells us at a glance what kind of report this is."
+      - title: "Give it a title"
+        text: "A single line, the way you would say it out loud: «I cannot record racks on my phone»."
+      - title: "Tell us what happened"
+        text: "Three things help more than anything else: what you were doing, what you expected, and what happened instead. You do not need to be technical."
+      - title: "Send it"
+        text: "The report reaches us and stays in your own list."
+
+  - type: note
+    tone: tip
+    title: "The right moment is right away"
+    text: >-
+      Report it while the screen that misbehaved is still in front of you: the
+      app attaches by itself which page you came from, which version you are
+      running and which browser you use. Those are exactly the things nobody
+      remembers afterwards.
+
+  - type: heading
+    id: che_fine_fa
+    title: "What happens to your report"
+
+  - type: text
+    text: >-
+      Every report has a status, which you see in your list and which changes
+      as we work on it. When it changes, you get a notification.
+
+  - type: options
+    items:
+      - name: "Received, we will look at it soon"
+        text: "It has just arrived. Every report starts here."
+      - name: "Being considered"
+        text: "We have read it and put it in the works."
+      - name: "Done"
+        text: "What you reported has been sorted out."
+      - name: "Not planned for now"
+        text: "We decided not to act on it. It is not always a no forever: sometimes it is a «not yet»."
+
+  - type: note
+    tone: info
+    title: "News can take up to a day"
+    text: >-
+      The check on how reports are progressing runs once a day, so a few hours
+      can pass between us working on yours and the notification reaching you.
+      In the list, the status is always the one from the latest check.
+
+  - type: heading
+    id: cosa_finisce_scritto
+    title: "What to write, and what not to"
+
+  - type: text
+    text: >-
+      The text you write is sent on to GitHub, the service where we keep our
+      list of work to do. Along with the text we send your username, but
+      **not** your email address. That is why we ask you not to put personal
+      details — yours or another player's — in a report: they would end up
+      there along with everything else.
+
+  - type: faq
+    items:
+      - q: "How many reports can I send?"
+        a: "Five an hour. The limit only exists to stop accidental repeat submissions: in normal use you will never meet it."
+      - q: "Can I reply to a report?"
+        a: "Not yet. If we answer you, our reply appears under the report in your list. To add something, for now, write a new report."
+      - q: "I reported something someone else had already reported."
+        a: "That is fine: we notice and merge them. Two identical reports are better than none."
+      - q: "I cannot log in — how do I report that?"
+        a: "Not from here, because the form needs you to be signed in. In that case write to the email address given on the Privacy and Cookies page."

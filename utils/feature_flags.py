@@ -467,6 +467,16 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     #
     # Il gate di progressione (`can_access('request_examiner')`) è **ortogonale**
     # e verificato da route e service: questo layer governa solo la visibilità.
+    # === Segnalazioni (issue #255) ===
+    # Chi usa l'app deve poter dire che qualcosa non va, e questo è il canale.
+    # Fuori dalla matrice sarebbe admin-only in produzione (ADR-028): la voce
+    # comparirebbe in sviluppo e darebbe 404 a tutti gli altri.
+    "feedback.le_mie_segnalazioni": {"player", "director"},
+    "feedback.nuova_segnalazione": {"player", "director"},
+    "feedback.invia_segnalazione": {"player", "director"},
+    # L'elenco completo è dell'admin, e lo dichiara: `set()` significa deciso,
+    # non dimenticato. La route ha comunque il suo `@admin_required`.
+    "feedback.tutte_le_segnalazioni": set(),
     "roles.request_role_form": {"player", "director"},
     "roles.request_role": {"player", "director"},
     "roles.role_requests": {"examiner"},

@@ -112,6 +112,12 @@ from .location.models import (
 from .demand.models import DemandSignal, DemandSignalStatus
 from .squadra.models import Squadra
 from .categoria.models import Categoria
+from .feedback.models import (
+    FeedbackReport,
+    FeedbackStatus,
+    FeedbackSyncState,
+    FeedbackType,
+)
 from .tiebreaker.models import (
     Tiebreaker,
     SpotShot,
@@ -249,6 +255,10 @@ __all__ = [
     "DayOfWeek",
     "Squadra",
     "Categoria",
+    "FeedbackReport",
+    "FeedbackStatus",
+    "FeedbackSyncState",
+    "FeedbackType",
     # Tiebreaker domain models (Phase 4)
     "Tiebreaker",
     "SpotShot",

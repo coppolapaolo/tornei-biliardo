@@ -1,0 +1,93 @@
+title: "Segnalare un problema"
+section: account
+kind: tutorial
+audience: [giocatore, direttore]
+minutes: 2
+summary: "Come dirci che qualcosa non funziona, come chiederci una cosa nuova, e come sapere che fine ha fatto la tua segnalazione."
+screens: [feedback.le_mie_segnalazioni, feedback.nuova_segnalazione]
+related: [notifiche, privacy_e_dati]
+
+blocks:
+  - type: text
+    text: >-
+      Se qualcosa non funziona, se ti viene in mente una cosa che l'app
+      dovrebbe fare, o se cerchi un comando e non lo trovi, puoi scrivercelo
+      direttamente da qui. La voce **Segnalazioni** è nel menu, sotto la
+      Guida, e in fondo a ogni pagina.
+
+  - type: heading
+    id: come_si_scrive
+    title: "Scrivere una segnalazione"
+
+  - type: steps
+    items:
+      - title: "Apri le segnalazioni"
+        text: "Dal menu, oppure dal collegamento in fondo alla pagina. Se ti compare una schermata di errore, lì trovi un pulsante che ti porta dritto al modulo."
+      - title: "Scegli di cosa si tratta"
+        text: "Tre possibilità: qualcosa non funziona, hai un'idea, oppure non hai capito come si fa. Serve a noi per capire subito che tipo di segnalazione è."
+      - title: "Dai un titolo"
+        text: "Una riga sola, come la diresti a voce: «non riesco a segnare i triangoli dal telefono»."
+      - title: "Racconta cosa è successo"
+        text: "Tre cose aiutano più di ogni altra: cosa stavi facendo, cosa ti aspettavi, cosa è successo invece. Non serve essere tecnici."
+      - title: "Invia"
+        text: "La segnalazione arriva a noi e la ritrovi nel tuo elenco."
+
+  - type: note
+    tone: tip
+    title: "Il momento giusto è subito"
+    text: >-
+      Segnala mentre hai ancora davanti la schermata che non va: l'app allega
+      da sola da quale pagina arrivi, che versione stai usando e con che
+      browser. Sono proprio le cose che dopo non ci si ricorda.
+
+  - type: heading
+    id: che_fine_fa
+    title: "Che fine fa la tua segnalazione"
+
+  - type: text
+    text: >-
+      Ogni segnalazione ha uno stato, che vedi nel tuo elenco e che cambia man
+      mano che la lavoriamo. Quando cambia, ti arriva una notifica.
+
+  - type: options
+    items:
+      - name: "Ricevuta, la guarderemo presto"
+        text: "È appena arrivata. È lo stato con cui nasce ogni segnalazione."
+      - name: "Presa in considerazione"
+        text: "L'abbiamo letta e messa in lavorazione."
+      - name: "Fatto"
+        text: "La cosa che avevi segnalato è stata sistemata."
+      - name: "Per ora non la faremo"
+        text: "Abbiamo deciso di non intervenire. Non sempre è un no per sempre: a volte è un «non adesso»."
+
+  - type: note
+    tone: info
+    title: "Le novità possono metterci un giorno"
+    text: >-
+      Il controllo su come procedono le segnalazioni gira una volta al giorno,
+      quindi fra il momento in cui lavoriamo la tua e quello in cui ti arriva
+      la notifica può passare qualche ora. Nell'elenco lo stato è sempre
+      aggiornato all'ultimo controllo.
+
+  - type: heading
+    id: cosa_finisce_scritto
+    title: "Cosa scrivere, e cosa no"
+
+  - type: text
+    text: >-
+      Il testo che scrivi viene trasmesso a GitHub, il servizio dove teniamo
+      l'elenco dei lavori da fare. Insieme al testo mandiamo il tuo nome
+      utente, ma **non** il tuo indirizzo email. Per questo ti chiediamo di non
+      scrivere nella segnalazione dati personali tuoi o di altri giocatori:
+      finirebbero lì insieme al resto.
+
+  - type: faq
+    items:
+      - q: "Quante segnalazioni posso mandare?"
+        a: "Cinque all'ora. È un limite pensato solo per evitare gli invii accidentali ripetuti: per l'uso normale non lo incontrerai."
+      - q: "Posso rispondere a una segnalazione?"
+        a: "Non ancora. Se ti rispondiamo, la nostra risposta compare sotto la segnalazione nel tuo elenco. Per aggiungere qualcosa, per ora, scrivi una nuova segnalazione."
+      - q: "Ho segnalato una cosa che aveva già segnalato un altro."
+        a: "Non è un problema: ce ne accorgiamo noi e le uniamo. Meglio due segnalazioni uguali che nessuna."
+      - q: "Non riesco a entrare nell'app: come faccio a segnalarlo?"
+        a: "Da qui non si può, perché il modulo chiede di essere collegati. In quel caso scrivi all'indirizzo email indicato nella pagina Privacy e Cookie."

@@ -12,6 +12,15 @@
     <p class="c7-empty__text" style="margin-top: 10px; color: var(--c7-ink-faint);">{{ _('Ricarica la pagina. Se il problema resta, riprova tra qualche minuto.') }}</p>
     <div class="c7-empty__actions">
       <a href="{{ url_for('main.index') }}" class="btn btn-primary">{{ _('Torna al tavolo') }}</a>
+      {# Qui il bottone vale dieci voci di menu: chi ha appena visto rompersi
+         qualcosa è nel momento in cui saprebbe raccontarlo. Solo per chi è
+         autenticato: la segnalazione nasce da un account, e mandare al login
+         chi ha appena preso un errore è chiedergli troppo. #}
+      {% if current_user.is_authenticated and feature_visible('feedback.nuova_segnalazione') %}
+      <a href="{{ url_for('feedback.nuova_segnalazione') }}" class="btn btn-outline-secondary">
+        {{ _('Segnala questo problema') }}
+      </a>
+      {% endif %}
     </div>
   </div>
 </div>
