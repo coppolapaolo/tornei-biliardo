@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.4.1...v1.4.2) (2026-08-30)
+
+
+### Correzioni
+
+* la stima dei turni in creazione ignorava la fase a gironi ([#274](https://github.com/coppolapaolo/tornei-biliardo/issues/274)) ([399da7f](https://github.com/coppolapaolo/tornei-biliardo/commit/399da7fba0d82cd057950a6665c671fe9bd29c42))
+
 ## [1.4.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.4.0...v1.4.1) (2026-08-30)
 
 
