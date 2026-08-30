@@ -1157,3 +1157,62 @@ class TrioRack(db.Model):
             f"<TrioRack {self.rack_number} "
             f"trio={self.trio_match_id} winner={self.winner_id}>"
         )
+
+
+class MatchCorrection(TimestampMixin, db.Model):
+    """La traccia di un risultato corretto dal direttore dopo la chiusura.
+
+    Nasce da una domanda pratica (issue #90): il direttore inserisce un
+    punteggio sbagliato, se ne accorge, e vuole rimetterlo a posto. Fin qui
+    basterebbe sovrascrivere. Il punto è l'altro lato: **i giocatori quel
+    risultato l'avevano già visto**, e una classifica che cambia da sola,
+    senza dire perché, sembra un errore dell'applicazione — o peggio, un
+    favore a qualcuno.
+
+    Da qui la riga: chi ha corretto, quando, da quale punteggio a quale, e
+    una nota facoltativa. Non è un registro amministrativo da consultare in
+    una pagina di log: è il dato che la pagina della partita mostra accanto
+    al risultato, a chiunque la apra.
+
+    Ha `match_id` e non l'id della gara: una correzione appartiene alla
+    partita, e con la partita se ne va (`ondelete="CASCADE"`).
+    """
+
+    __tablename__ = "match_correction"
+
+    id = db.Column(db.Integer, primary_key=True)
+    match_id = db.Column(
+        db.Integer,
+        db.ForeignKey("match.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    corrected_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+
+    #: Com'era prima. Lo stato serve a distinguere una correzione su una
+    #: partita chiusa dai giocatori da una su una chiusa dal direttore: la
+    #: prima disfa un accordo fra due persone, la seconda una svista di una.
+    previous_player1_score = db.Column(db.Integer, nullable=True)
+    previous_player2_score = db.Column(db.Integer, nullable=True)
+    previous_status = db.Column(db.String(30), nullable=True)
+
+    #: Com'è dopo. Ridondante rispetto al match — finché non arriva la
+    #: correzione successiva, che sposterebbe il punto di arrivo di questa e
+    #: renderebbe illeggibile la catena.
+    new_player1_score = db.Column(db.Integer, nullable=False)
+    new_player2_score = db.Column(db.Integer, nullable=False)
+
+    #: Il perché, scritto dal direttore. Facoltativo: obbligarlo produrrebbe
+    #: «errore» ripetuto mille volte, che non spiega niente più del fatto in
+    #: sé — e il fatto è già scritto qui sopra.
+    note = db.Column(db.String(200), nullable=True)
+
+    match = db.relationship("Match", backref=db.backref("corrections", lazy="select"))
+    corrected_by = db.relationship("User", foreign_keys=[corrected_by_id])
+
+    def __repr__(self):
+        return (
+            f"<MatchCorrection match={self.match_id} "
+            f"{self.previous_player1_score}-{self.previous_player2_score} → "
+            f"{self.new_player1_score}-{self.new_player2_score}>"
+        )

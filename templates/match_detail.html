@@ -88,6 +88,10 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         {% include "components/_match_admin_controls.html" %}
         {% endif %}
 
+        {# Le correzioni del risultato: le legge chiunque apra la partita, non
+           solo chi l'ha corretta (issue #90). #}
+        {% include "components/_match_corrections.html" %}
+
         {# Challenge Input (if applicable) #}
         {% include "components/_match_challenge_input.html" %}
 

@@ -1,0 +1,37 @@
+{# templates/components/_match_corrections.html — 7c #}
+{# La storia delle correzioni di questa partita, visibile a chiunque la apra.
+
+   È la metà che conta della issue #90: correggere un risultato è facile, il
+   problema è che i giocatori quel risultato l'avevano già visto. Una
+   classifica che cambia da sola, senza dire perché, sembra un errore
+   dell'applicazione — o un favore a qualcuno.
+
+   Il **fatto** sta nel marcatore («risultato corretto»), i particolari
+   subito sotto: chi, quando, da quale punteggio a quale, e il perché se il
+   direttore l'ha scritto. Mai il colore da solo. #}
+{% set corrections = match.corrections %}
+{% if corrections %}
+<section class="c7-card c7-stack">
+    <div class="c7-kicker">
+        <i class="fas fa-pen"></i>
+        {{ ngettext('Risultato corretto', 'Risultato corretto %(num)s volte', corrections|length, num=corrections|length) }}
+    </div>
+    <div class="c7-stack" style="gap: 10px;">
+        {% for correction in corrections|sort(attribute='created_at') %}
+        <div class="c7-subrow" style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
+            <span class="c7-num" style="color: var(--c7-ink-muted); text-decoration: line-through;">
+                {{ correction.previous_player1_score if correction.previous_player1_score is not none else '—' }}–{{ correction.previous_player2_score if correction.previous_player2_score is not none else '—' }}
+            </span>
+            <i class="fas fa-arrow-right" style="font-size: 10px; color: var(--c7-ink-faint);"></i>
+            <span class="c7-num">{{ correction.new_player1_score }}–{{ correction.new_player2_score }}</span>
+            <span style="font-size: 12px; font-weight: 600; color: var(--c7-ink-muted);">
+                {{ _('da %(chi)s il %(quando)s', chi=correction.corrected_by.username, quando=correction.created_at|datetime_local) }}
+            </span>
+            {% if correction.note %}
+            <div style="flex-basis: 100%; font-size: 13px; font-weight: 600;">{{ correction.note }}</div>
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}

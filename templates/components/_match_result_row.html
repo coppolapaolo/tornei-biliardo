@@ -66,6 +66,17 @@
         <span style="color: var(--c7-ink-faint);">—</span>
         {% elif is_finished %}
         <span class="c7-num">{{ match.player1_score }}–{{ match.player2_score }}</span>
+        {# Un risultato corretto dopo la chiusura lo dice qui, dove il
+           punteggio si legge: chi aveva visto l'altro deve poter capire
+           perché è cambiato, e i particolari stanno sulla pagina della
+           partita (issue #90). #}
+        {% if match.corrections %}
+        <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}"
+           style="font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); white-space: nowrap;"
+           title="{{ _('Il risultato è stato corretto dopo la chiusura: apri la partita per vedere da cosa a cosa') }}">
+            <i class="fas fa-pen" style="font-size: 9px;"></i> {{ _('corretto') }}
+        </a>
+        {% endif %}
         {% elif match.player1_score > 0 or match.player2_score > 0 %}
         <span class="c7-num" style="color: var(--c7-warn-ink);">{{ match.player1_score }}–{{ match.player2_score }}</span>
         {% else %}

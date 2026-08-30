@@ -55,15 +55,22 @@ class MatchStateService:
                 "I match bye non possono essere messi in stato 'playing'"
             )
 
+        # `CONFIRMED_BY_BOTH` è riapribile quanto `CLOSED_UNILATERALLY`: sono
+        # i due stati finali, e riaprire vuol dire disfare un risultato — che
+        # i due giocatori si siano messi d'accordo o che l'abbia messo agli
+        # atti il direttore. Finché mancava, la correzione di un risultato
+        # (issue #90) poteva toccare solo metà delle partite chiuse, e proprio
+        # quella metà che il direttore ha inserito di persona.
         if (match.status or MatchStatus.PENDING.value) not in (
             MatchStatus.PENDING.value,
             MatchStatus.CLOSED_UNILATERALLY.value,
+            MatchStatus.CONFIRMED_BY_BOTH.value,
         ):
             raise InvalidTransitionError(
                 f"Transizione non ammessa: {match.status!r} → playing"
             )
 
-        was_completed = match.status == MatchStatus.CLOSED_UNILATERALLY.value
+        was_completed = MatchStatus.is_finished(match.status)
 
         match.status = MatchStatus.PLAYING.value
 
