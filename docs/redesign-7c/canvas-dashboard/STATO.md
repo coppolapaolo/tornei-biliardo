@@ -1,8 +1,11 @@
 # Redesign delle dashboard — stato al 2026-08-30
 
 Lavoro di design sulle tre dashboard (ospite, giocatore, direttore).
-Niente codice dell'app è stato toccato: qui ci sono solo i disegni e le
-decisioni prese guardandoli.
+
+Questa cartella contiene **solo** i disegni e le decisioni prese guardandoli:
+niente codice dell'app. Il codice è arrivato dopo, in due PR separate — vedi
+«La forma nei template» più giù, che dice anche dove è finita ciascuna
+decisione.
 
 ## Dove sono le cose
 
@@ -61,7 +64,7 @@ proposta che lo riduceva è stata bocciata il 30/08.
 ## Rilievi sul codice emersi disegnando — e come sono finiti
 
 Indipendenti dal redesign: valgono come correzioni anche da soli. **Tutti
-chiusi** nelle PR #295 (dashboard) e #296 (home dell'ospite), tranite dove
+chiusi** nelle PR #295 (dashboard) e #296 (home dell'ospite), tranne dove
 indicato.
 
 1. ~~**La sfida a due in corso non compare in nessuna dashboard.**~~ Corretto
