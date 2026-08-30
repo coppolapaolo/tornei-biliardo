@@ -23,7 +23,7 @@ from models.playoff.models import (
     PlayoffType,
     QualificationStatus,
 )
-from models.status_enum import GaraStatus
+from models.status_enum import Discipline, GaraStatus
 from models.user.models import DirectorAssignment, User
 
 
@@ -67,7 +67,7 @@ def campionato_con_inviti(db_session):
         number=1,
         name="Gara 1",
         date=date(2026, 1, 15),
-        discipline="nine_ball",
+        discipline=Discipline.NINE_BALL.value,
         status=GaraStatus.COMPLETED.value,
         rounds_count=1,
         current_round=1,

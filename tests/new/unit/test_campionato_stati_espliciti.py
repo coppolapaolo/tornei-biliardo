@@ -24,7 +24,7 @@ from models.campionato.statistics_service import (
     compute_campionato_status,
 )
 from models.competition.models import Gara
-from models.status_enum import GaraStatus, TournamentStatus
+from models.status_enum import Discipline, GaraStatus, TournamentStatus
 from utils.status_ui import StatusPresenter
 
 
@@ -46,7 +46,7 @@ def _make_gara(db_session, campionato, number, status):
         number=number,
         name=f"Gara {number}",
         date=date(2026, 1, number),
-        discipline="nine_ball",
+        discipline=Discipline.NINE_BALL.value,
         status=status,
         rounds_count=3,
         current_round=1,

@@ -32,6 +32,20 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 # parole italiane legittime ("palla" in un commento) né i nomi tradotti.
 LEGACY_PATTERN = re.compile(r"palla_\d")
 
+# La **terza** forma, scoperta il 2026-08-30: il numero scritto in lettere
+# inglesi, `nine_ball` invece di `9_ball`. Non era né il vocabolario italiano
+# né quello canonico, quindi nessuno dei due controlli la vedeva, e viveva in
+# quattordici fixture di test sparse su undici file.
+#
+# Il danno è lo stesso descritto qui sopra, un gradino peggio: `normalize()`
+# restituisce `None`, il filtro ripiega su `raw.replace("_", " ").title()` e a
+# schermo compare **"Nine Ball"** in mezzo a «Palla 8» e «Palla 9». Nei test
+# non se ne accorgeva nessuno perché nessuno asseriva sul nome mostrato.
+#
+# Minuscolo di proposito: i **nomi** dei membri (`Discipline.NINE_BALL`) sono
+# maiuscoli e devono restare scrivibili.
+PAROLA_INGLESE_PATTERN = re.compile(r"\b(seven|eight|nine|ten)_ball\b")
+
 # Il codice vivo. `migrations/` è escluso di proposito: le migration storiche
 # sono immutabili (riscriverle cambierebbe ciò che è già girato in produzione) e
 # quella di normalizzazione deve poter nominare i valori vecchi per convertirli.
@@ -72,6 +86,33 @@ def test_no_legacy_discipline_literals_in_live_code() -> None:
     assert not offenders, (
         "Vocabolario fantasma tornato nel codice vivo. Usa Discipline.*.value:\n"
         + "\n".join(offenders)
+    )
+
+
+def test_no_english_word_discipline_literals_anywhere() -> None:
+    """Nessun `nine_ball` — nemmeno nelle fixture dei test.
+
+    Questo controllo guarda **anche** `tests/`, e non è un eccesso di zelo: è
+    esattamente dove la forma si era annidata, indisturbata, perché il
+    controllo gemello qui sopra si ferma al codice vivo. Una fixture che crea
+    una disciplina impossibile non fallisce — le colonne sono `db.String` —
+    ma costruisce uno stato che l'applicazione non può produrre, e da lì in
+    poi il test misura un mondo che non esiste.
+    """
+    paths = list(_live_code_paths()) + list((REPO_ROOT / "tests").rglob("*.py"))
+    offenders: list[str] = []
+    for path in paths:
+        rel = path.relative_to(REPO_ROOT)
+        if rel.as_posix() == "tests/new/unit/test_discipline_single_vocabulary.py":
+            continue  # è questo file: nomina la forma per vietarla
+        text = path.read_text(encoding="utf-8", errors="ignore")
+        for lineno, line in enumerate(text.splitlines(), start=1):
+            if PAROLA_INGLESE_PATTERN.search(line):
+                offenders.append(f"{rel}:{lineno}: {line.strip()}")
+
+    assert not offenders, (
+        "Disciplina scritta col numero in lettere. Il valore canonico è "
+        "`9_ball`, e si scrive `Discipline.NINE_BALL.value`:\n" + "\n".join(offenders)
     )
 
 

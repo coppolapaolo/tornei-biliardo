@@ -14,7 +14,7 @@ import pytest
 from models.base import db
 from models.competition.models import Gara
 from models.match.models import Match
-from models.status_enum import GaraStatus, MatchStatus
+from models.status_enum import Discipline, GaraStatus, MatchStatus
 from models.user.models import User
 
 
@@ -23,7 +23,7 @@ def _make_gara(db_session, *, status=GaraStatus.PLAYING.value, current_round=1):
         number=1,
         name=f"Gara {uuid.uuid4().hex[:6]}",
         date=date(2026, 3, 1),
-        discipline="nine_ball",
+        discipline=Discipline.NINE_BALL.value,
         status=status,
         rounds_count=3,
         current_round=current_round,
