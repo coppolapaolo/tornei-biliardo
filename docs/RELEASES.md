@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.5.0...v1.6.0) (2026-08-30)
+
+
+### Funzioni nuove
+
+* la vetrina diventa un manifesto, e ce l'ha anche il campionato ([#290](https://github.com/coppolapaolo/tornei-biliardo/issues/290)) ([d193a83](https://github.com/coppolapaolo/tornei-biliardo/commit/d193a83838f977b0bb1f86627a1ffcd8804ec64b))
+
 ## [1.5.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.4.2...v1.5.0) (2026-08-30)
 
 
