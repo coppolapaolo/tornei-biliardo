@@ -105,10 +105,42 @@ def job_match_proposals() -> str:
 
 # nome → (descrizione, callable). Il callable gira dentro l'app context e
 # restituisce una stringa di riepilogo per il log.
+def job_feedback() -> str:
+    """Segnalazioni degli utenti: rispedizione e ritorno degli stati (#255).
+
+    Tre cose in un giro solo, e in quest'ordine:
+
+    1. **rispedisce** quelle rimaste senza `issue_number` — token assente quel
+       giorno, GitHub in 5xx, rete muta. Prima del polling, così una
+       segnalazione nata oggi può gia' ricevere il suo stato stasera;
+    2. **chiede a GitHub** le issue toccate dall'ultimo giro riuscito, con
+       l'`ETag` della volta prima: **una chiamata per tutta l'app**, non una
+       per utente;
+    3. **aggiorna gli stati** e notifica chi ha scritto.
+
+    Niente thread nella web app: un controllo agganciato al login sarebbe una
+    chiamata di rete dentro la richiesta di chi sta solo entrando, dentro
+    worker che PythonAnywhere ricicla senza preavviso. Il prezzo e' che fra
+    l'etichetta e la notifica puo' passare fino a un giorno — per «la tua
+    segnalazione e' stata presa in considerazione» e' un prezzo che non si
+    sente.
+    """
+    from models.feedback.sync import FeedbackSync
+
+    esito = FeedbackSync.giro_completo()
+    return (
+        f"{esito['spedite']} spedite, "
+        f"{esito['aggiornate']} aggiornate, "
+        f"{esito['notificate']} notifiche"
+        + (f" — {esito['nota']}" if esito.get("nota") else "")
+    )
+
+
 JOBS = {
     "demand": ("Segnali-domanda: riconferma e scadenze", job_demand_signals),
     "exam_requests": ("Richieste d'esame: scadenze", job_exam_requests),
     "match_proposals": ("Proposte di sfida: scadenze", job_match_proposals),
+    "feedback": ("Segnalazioni: rispedizione e stati da GitHub", job_feedback),
 }
 
 

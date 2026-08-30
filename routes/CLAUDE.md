@@ -25,6 +25,7 @@ Flask blueprints for the American Pool community platform with role-based access
 | `individual_match` | `/match` | Casual matches |
 | `exam` | `/exam` | Esami: catalogo, sessioni, appuntamenti (ADR-042) |
 | `roles` | `/roles` | Ruoli concedibili e delega (ADR-041) |
+| `feedback` | `/segnalazioni` | Segnalazioni degli utenti → issue GitHub (#255) |
 
 ---
 
@@ -77,7 +78,7 @@ L'allowlist endpoint **non sostituisce** i decoratori di permesso sopra: agisce 
 
 ### Modello matriciale
 
-`config/features.py::ENDPOINT_ROLES` mappa ogni endpoint Flask a un set di ruoli ammessi (`anonimo`, `player`, `director`). Admin è bypass globale (vede tutto, anche endpoint non listati). Endpoint non listato → solo admin lo vede in produzione.
+`utils/feature_flags.py::ENDPOINT_ROLES` mappa ogni endpoint Flask a un set di ruoli ammessi (`anonimo`, `player`, `director`). Admin è bypass globale (vede tutto, anche endpoint non listati). Endpoint non listato → solo admin lo vede in produzione.
 
 ```python
 ENDPOINT_ROLES = {
@@ -94,7 +95,7 @@ ENDPOINT_ROLES = {
 ### Quando aggiungi una nuova route
 
 1. Decidi quali ruoli devono vederla in produzione.
-2. Aggiungi l'entry in `ENDPOINT_ROLES` (anche `set()` esplicito = "solo admin", per documentare la decisione).
+2. Aggiungi l'entry in `ENDPOINT_ROLES` (`utils/feature_flags.py`; anche `set()` esplicito = "solo admin", per documentare la decisione).
 3. Se la route compare in un menu/link condizionato, aggiungi `{% if feature_visible('endpoint.name') %}` nel template.
 
 ⚠️ **Nessun test impone la copertura.** `tests/new/unit/test_endpoint_coverage.py`

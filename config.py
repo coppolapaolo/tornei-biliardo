@@ -184,6 +184,14 @@ class Config:
             # test il traffico locale non finisce nelle statistiche di
             # produzione.
             "GA_MEASUREMENT_ID": os.environ.get("GA_MEASUREMENT_ID"),
+            # Segnalazioni degli utenti (issue #255): un token fine-grained
+            # con `Issues: read and write` sul solo repo del progetto. Assente
+            # = le segnalazioni si salvano lo stesso e restano in attesa; è il
+            # job giornaliero a rispedirle quando il token c'è.
+            "GITHUB_FEEDBACK_TOKEN": os.environ.get("GITHUB_FEEDBACK_TOKEN"),
+            "GITHUB_FEEDBACK_REPO": (
+                os.environ.get("GITHUB_FEEDBACK_REPO") or "coppolapaolo/tornei-biliardo"
+            ),
         }
 
 

@@ -13,6 +13,7 @@ def register_blueprints(app):
     from .demand import demand_bp
     from .help import help_bp
     from .role_grant import role_grant_bp
+    from .feedback import feedback_bp
 
     # Import dei blueprint extended domains (Phase 3)
     from .challenge import challenge_bp
@@ -39,6 +40,9 @@ def register_blueprints(app):
     # Ruoli concedibili (ADR-041): prefix /roles, non /admin — le richieste
     # le processano anche i titolari non-admin.
     app.register_blueprint(role_grant_bp)
+    # Segnalazioni (issue #255): il prefisso /segnalazioni lo dichiara il
+    # blueprint. Non sta sotto /admin perché chi segnala è un giocatore.
+    app.register_blueprint(feedback_bp)
 
     # Registrazione blueprints extended domains
     app.register_blueprint(challenge_bp, url_prefix="/challenges")

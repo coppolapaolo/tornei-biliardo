@@ -597,6 +597,29 @@ hints:
     page: playoff
     section: classifica_finale
 
+  # --- Segnalazioni ------------------------------------------------------------
+  - id: segnalazione.tipo
+    label: "Di cosa si tratta"
+    short: "Tre possibilità: qualcosa non funziona, hai un'idea, non hai capito come si fa. Serve a noi per capire subito che tipo di segnalazione è."
+    anchor: segnalazione-tipo
+    screens: [feedback.nuova_segnalazione]
+    page: segnalare_un_problema
+    section: come_si_scrive
+  - id: segnalazione.racconto
+    label: "Racconta cosa è successo"
+    short: "Cosa stavi facendo, cosa ti aspettavi, cosa è successo invece. Non serve essere tecnici: scrivi come lo racconteresti a voce."
+    anchor: segnalazione-racconto
+    screens: [feedback.nuova_segnalazione]
+    page: segnalare_un_problema
+    section: come_si_scrive
+  - id: segnalazione.stato
+    label: "Lo stato della segnalazione"
+    short: "Dice a che punto siamo: ricevuta, presa in considerazione, fatto, oppure per ora non la faremo. Cambia da solo, e ti arriva una notifica."
+    anchor: segnalazione-stato
+    screens: [feedback.le_mie_segnalazioni]
+    page: segnalare_un_problema
+    section: che_fine_fa
+
 
 tours:
   - screen: dashboard.dashboard
@@ -657,3 +680,13 @@ tours:
       - hint: referto.passa_tavolo
       - hint: referto.annotazioni_piccole
       - hint: referto.annulla
+
+  - screen: feedback.nuova_segnalazione
+    title: "Segnalare un problema"
+    intro: "Tre campi e basta. La pagina da cui arrivi, la versione e il browser li allega l'app da sola."
+    audience: [giocatore, direttore]
+    steps:
+      - hint: segnalazione.tipo
+      - hint: segnalazione.racconto
+      - title: "Cosa non scrivere"
+        text: "Il testo finisce su GitHub, dove teniamo l'elenco dei lavori: non scriverci dati personali tuoi o di altri giocatori."
