@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import hmac
-from typing import Any, Dict, List, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from flask import current_app
 from flask_login import UserMixin
@@ -59,6 +59,19 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     role = db.Column(db.String(20), nullable=False, default="player")
     # admin|director|player
     phone = db.Column(EncryptedString(100), nullable=True)  # Encrypted personal data
+
+    # ── Anagrafica: chi è, oltre a come si chiama qui dentro ──────────────
+    # Lo username è un soprannome, e in una sala dove tre persone si chiamano
+    # `marco`, `marco_b` e `marcob` il direttore che iscrive qualcuno non ha
+    # modo di sapere quale sia quello giusto (issue #156). L'email lo
+    # direbbe, ma non si mostra a nessuno: nome e cognome sono il dato che
+    # l'interessato sceglie di dare per farsi riconoscere.
+    #
+    # Cifrati come il telefono: sono dati personali, e la chiave sta fuori
+    # dal database. Entrambi **facoltativi** — l'app funziona senza, e chi
+    # non li vuole dare resta il suo username.
+    first_name = db.Column(EncryptedString(100), nullable=True)
+    last_name = db.Column(EncryptedString(100), nullable=True)
 
     # Rating systems (player skill metrics)
     elo_rating = db.Column(db.Integer, nullable=True)  # Elo rating
@@ -307,6 +320,16 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     # Onboarding (ADR-035)
     # ───────────────────
     @property
+    def full_name(self) -> Optional[str]:
+        """Nome e cognome, se dati; `None` se non ne è stato scritto nessuno.
+
+        Restituire `None` invece di stringa vuota permette al template di
+        scrivere `user.full_name or user.username` senza doppioni.
+        """
+        parti = [p for p in (self.first_name, self.last_name) if p and p.strip()]
+        return " ".join(parti) if parti else None
+
+    @property
     def interests_list(self) -> list[str]:
         """Interessi dichiarati nell'onboarding come lista (CSV → list)."""
         if not self.onboarding_interests:
@@ -328,6 +351,10 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         self.username = f"deleted-{self.id}-{stamp}"
         self.email = None
         self.phone = None
+        # L'anagrafica se ne va con la persona: e' il dato piu' identificante
+        # che questa applicazione conservi.
+        self.first_name = None
+        self.last_name = None
         # opzionale: invalidare la password
         self.password_hash = "!deleted!"
 

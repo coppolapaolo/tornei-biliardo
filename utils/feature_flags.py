@@ -308,6 +308,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.match.validate_match": {"director"},
     "admin.match.validate_rack_admin": {"director"},
     "admin.match.reset_match": {"director"},
+    # Correzione tracciata di un risultato già chiuso (issue #90): è una
+    # facoltà del direttore, come il reset con cui condivide il perimetro.
+    "admin.match.correct_match_result": {"director"},
     "admin.match.record_challenge_attempt": {"director"},
     "admin.match.record_challenge_attempts": {"director"},
     "admin.match.start_next_set": {"director"},

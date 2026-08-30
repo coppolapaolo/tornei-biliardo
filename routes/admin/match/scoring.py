@@ -7,6 +7,7 @@ from flask import (
     flash,
     jsonify,
 )
+from flask_babel import lazy_gettext as _
 from flask_login import current_user, login_required
 
 from models import (
@@ -178,6 +179,44 @@ def reset_match(match_id):
     except Exception as e:
         flash(f"Errore durante il reset: {str(e)}", "error")
         return redirect(url_for("admin.match.match_detail", match_id=match_id))
+
+
+@match_bp.route("/<int:match_id>/correct", methods=["POST"])
+@login_required
+@match_manager_required
+def correct_match_result(match_id):
+    """Corregge il risultato di una partita già chiusa, lasciandone traccia.
+
+    Non è un reset: il reset cancella e basta, e chi aveva visto il risultato
+    di ieri non ha modo di sapere perché oggi la classifica dice un'altra
+    cosa. Qui il risultato precedente resta scritto, con chi l'ha corretto e
+    quando (issue #90).
+    """
+    from models.match.correction_service import MatchCorrectionService
+
+    try:
+        player1_score = int(request.form["player1_score"])
+        player2_score = int(request.form["player2_score"])
+    except (KeyError, ValueError):
+        flash(_("Punteggio non valido."), "error")
+        return redirect(url_for("admin.match.match_detail", match_id=match_id))
+
+    try:
+        MatchCorrectionService.correct_result(
+            match_id=match_id,
+            player1_score=player1_score,
+            player2_score=player2_score,
+            corrected_by_id=current_user.id,
+            note=request.form.get("note"),
+        )
+        flash(
+            _("Risultato corretto. La correzione resta visibile sulla partita."),
+            "success",
+        )
+    except ValueError as e:
+        flash(str(e), "error")
+
+    return redirect(url_for("admin.match.match_detail", match_id=match_id))
 
 
 # ============ GESTIONE RACK ADMIN ============
