@@ -2419,23 +2419,44 @@ button.c7-tpa-player:disabled { cursor: default; }
 }
 .c7-vt__iconbtn:hover { background: var(--c7-line); color: var(--c7-ink); }
 
-/* La locandina a tutta larghezza. `object-fit: cover` su un'altezza fissa: le
-   immagini arrivano in ogni proporzione, e il ritaglio al centro e' lo stesso
-   che fanno i social con l'anteprima — cosi' chi apre la pagina e chi guarda
-   il link su WhatsApp vedono la stessa figura. */
-.c7-vt__hero { background: var(--c7-sunken); }
-.c7-vt__hero img { display: block; width: 100%; height: 262px; object-fit: cover; }
+/* La locandina a tutta larghezza, con **il rapporto della locandina**.
+   L'applicazione chiede 1200x630 perche' e' il formato che i social leggono
+   nell'anteprima, e lo stesso file serve a entrambe: se la pagina lo mettesse
+   in un riquadro di altezza fissa, `object-fit: cover` lo ritaglierebbe a
+   ogni larghezza tranne quella in cui i conti tornano per caso. E' successo:
+   un riquadro alto 262px tagliava il 22% ai lati su un telefono da 390px e
+   il 47% sopra e sotto su un desktop da 1512px — ma non tagliava niente a
+   500px, che e' la larghezza a cui la pagina era stata guardata.
 
-.c7-vt__shell { margin-top: -34px; position: relative; z-index: 2; }
-/* Senza locandina non si lascia un buco: la pagina parte dal pannello. */
-.c7-vt--nohero .c7-vt__shell { margin-top: 6px; }
+   Con `aspect-ratio` il riquadro segue il formato dichiarato, quindi una
+   locandina delle misure giuste si vede **intera**. `cover` resta per le
+   altre proporzioni, che vengono ritagliate al centro — ed e' cio' che la
+   guida dice al direttore. */
+.c7-vt__hero {
+  background: var(--c7-sunken);
+  /* Sta dentro la colonna, ma sul telefono esce dai suoi margini e arriva ai
+     bordi dello schermo: e' l'immagine che apre il manifesto. */
+  margin: 0 calc(-1 * var(--c7-gutter));
+}
+.c7-vt__hero img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1200 / 630;
+  object-fit: cover;
+}
+
+.c7-vt__shell { position: relative; z-index: 2; }
 
 /* Il titolo su una superficie piena che scavalca l'immagine, non su una
    velatura sfumata: in 7c le superfici si distinguono per tono, e una
    sfumatura qui sarebbe l'unica eccezione della pagina. */
 .c7-vt__plate {
   background: var(--c7-ink); color: var(--c7-on-ink);
-  border-radius: var(--c7-r-card-lg); padding: 20px; margin: 0 var(--c7-gutter);
+  border-radius: var(--c7-r-card-lg); padding: 20px;
+  /* Scavalca la locandina, che c'e' sempre: quando il direttore non ne
+     carica una, la pagina mostra la grafica del sito — la stessa che il
+     social mette nell'anteprima. */
+  position: relative; margin-top: -34px;
 }
 .c7-vt__ovr {
   font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
@@ -2614,14 +2635,18 @@ a.c7-vt__ovr:hover { color: var(--c7-on-ink); }
   .c7-public .c7-vt { padding-bottom: 0; }
   .c7-vt__bar { max-width: 1160px; margin: 0 auto; padding: 20px var(--c7-gutter-lg); }
   .c7-vt__mark { font-size: 13px; }
-  .c7-vt__hero img { height: 420px; }
+  /* Da qui in su la locandina prende la larghezza della **colonna**, 672px,
+     che col suo rapporto fa 353px di altezza. A tutta pagina sarebbero 609px
+     su 1160, e prima di leggere una riga bisognerebbe scorrere. Si limita la
+     larghezza, mai l'altezza: un tetto in altezza rimetterebbe il ritaglio da
+     un'altra porta. */
+  .c7-vt__hero { margin: 0; border-radius: var(--c7-r-card-lg); overflow: hidden; }
   .c7-vt__shell {
-    max-width: 1160px; margin: -84px auto 0; padding: 0 var(--c7-gutter-lg);
+    max-width: 1160px; margin: 0 auto; padding: 0 var(--c7-gutter-lg);
     display: grid; grid-template-columns: minmax(0, 1fr) 392px; gap: 40px; align-items: start;
   }
-  .c7-vt--nohero .c7-vt__shell { margin-top: 10px; }
   .c7-vt__col, .c7-vt__rail { padding: 0; }
-  .c7-vt__plate { margin: 0; padding: 32px 34px; }
+  .c7-vt__plate { margin-top: -46px; padding: 32px 34px; }
   /* Piu' piccolo dei 52px del prototipo: un nome di campionato appena piu'
      lungo di «Campionato Sociale 2026» ci andava a capo. */
   .c7-vt__title { font-size: 44px; line-height: 1.04; letter-spacing: -.035em; }
@@ -2658,6 +2683,45 @@ a.c7-vt__ovr:hover { color: var(--c7-on-ink); }
   }
   .c7-vt__out { min-height: 60px; padding: 0 22px; font-size: 15px; border-radius: var(--c7-r-card); }
   .c7-vt__who { margin-top: 20px; padding-top: 0; border-top: 0; font-size: 13px; }
+}
+
+/* --- Menu di condivisione -------------------------------------------------- *
+   Compare dove il foglio del sistema non elenca i social, cioe' su desktop.
+   Sul telefono sale dal basso come la barra dell'azione; su schermo largo e'
+   una scheda al centro. Le destinazioni sono indirizzi, non librerie. */
+.c7-share {
+  position: fixed; inset: 0; z-index: var(--c7-z-toast);
+  background: rgba(27, 33, 36, .45);
+  display: none; align-items: flex-end; justify-content: center;
+  padding: 12px;
+}
+.c7-share.is-open { display: flex; }
+.c7-share__sheet {
+  width: 100%; max-width: 420px;
+  background: var(--c7-card); border-radius: var(--c7-r-card-lg);
+  padding: 8px; box-shadow: var(--c7-shadow-pop);
+}
+.c7-share__head {
+  padding: 12px 14px 10px;
+  font-size: 10px; font-weight: 800; letter-spacing: .12em;
+  text-transform: uppercase; color: var(--c7-ink-muted);
+}
+.c7-share__row {
+  display: flex; align-items: center; gap: 14px; width: 100%;
+  min-height: var(--c7-touch); padding: 0 14px;
+  border: 0; background: transparent; border-radius: var(--c7-r-control);
+  font-family: var(--c7-font); font-size: 15px; font-weight: 800;
+  color: var(--c7-ink); text-align: left; text-decoration: none; cursor: pointer;
+}
+.c7-share__row:hover { background: var(--c7-bg); color: var(--c7-ink); }
+.c7-share__ico {
+  width: 34px; height: 34px; flex-shrink: 0; border-radius: 50%;
+  background: var(--c7-bg); color: var(--c7-accent);
+  display: grid; place-items: center; font-size: 16px;
+}
+
+@media (min-width: 992px) {
+  .c7-share { align-items: center; }
 }
 
 /* --- Schermate di cura della vetrina (lato direttore) ---------------------- */

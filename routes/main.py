@@ -262,12 +262,9 @@ def _render_vetrina(gara, identificatore: str):
 
     vetrina = costruisci_vetrina(gara)
 
-    if vetrina.banner_url:
-        immagine = urljoin(request.url_root, vetrina.banner_url.lstrip("/"))
-    else:
-        immagine = url_for(
-            "static", filename="img/social/vetrina-default.png", _external=True
-        )
+    # Un solo ripiego, deciso dalla vista: quello che finisce nei meta è
+    # esattamente l'immagine che apre la pagina.
+    immagine = urljoin(request.url_root, vetrina.banner_url.lstrip("/"))
 
     # Il sopratitolo porta alla vetrina del campionato, se ce n'è una da
     # aprire. Un campionato eliminato o senza indirizzo pubblico lascia il
@@ -512,12 +509,9 @@ def campionato_invite(identificatore):
     # Assoluti, come per la gara: uno scraper non risolve i relativi, e il
     # sintomo di un `og:image` relativo è un'anteprima senza figura — nessun
     # errore, niente nei log, invisibile in sviluppo.
-    if vetrina.banner_url:
-        immagine = urljoin(request.url_root, vetrina.banner_url.lstrip("/"))
-    else:
-        immagine = url_for(
-            "static", filename="img/social/vetrina-default.png", _external=True
-        )
+    # Un solo ripiego, deciso dalla vista: quello che finisce nei meta è
+    # esattamente l'immagine che apre la pagina.
+    immagine = urljoin(request.url_root, vetrina.banner_url.lstrip("/"))
 
     return render_template(
         "public/vetrina_campionato.html",

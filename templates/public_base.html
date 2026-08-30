@@ -20,10 +20,20 @@
 
 {% block scripts %}
 <script>
-  // Condivisione: sul telefono apre il foglio nativo (WhatsApp, Telegram,
-  // Instagram…), sul desktop — dove `navigator.share` non c'è quasi mai —
-  // copia il link. Due comportamenti diversi dietro allo stesso pulsante
-  // perché la domanda dell'utente è una sola: «come lo mando a qualcuno?».
+  // Condivisione (issue #235).
+  //
+  // `navigator.share` non è la risposta a tutto, ed è l'errore che questa
+  // pagina faceva. Sul telefono apre il foglio del sistema, che elenca
+  // WhatsApp, Telegram, Instagram: è esattamente ciò che serve. Su un Mac la
+  // funzione **esiste lo stesso**, ma apre il foglio di macOS — Mail,
+  // Messaggi, Note, AirDrop — dove i social non compaiono, perché sono app
+  // del telefono. Chi premeva il pulsante da desktop vedeva quindi un menu di
+  // sistema senza nessuna delle destinazioni che si aspettava.
+  //
+  // Da qui la regola: il foglio nativo si usa dove ha senso, cioè su un
+  // dispositivo a tocco; altrove si apre un menu nostro con le destinazioni
+  // scritte a mano. Sono indirizzi, non librerie: nessuno script di terze
+  // parti, quindi niente da aggiungere alla CSP e nessun tracciamento.
   (function () {
     var bottoni = document.querySelectorAll('[data-condividi]');
     if (!bottoni.length) return;
@@ -33,12 +43,39 @@
       text: {{ social_description|tojson }},
       url: {{ social_url|tojson }}
     };
-    var testoCopiato = {{ _("Link copiato")|tojson }};
+    var etichette = {
+      condividi: {{ _("Condividi")|tojson }},
+      copia: {{ _("Copia link")|tojson }},
+      copiato: {{ _("Link copiato")|tojson }},
+      email: {{ _("E-mail")|tojson }},
+      chiudi: {{ _("Chiudi")|tojson }}
+    };
 
-    function copiaNegliAppunti(bottone) {
+    var u = encodeURIComponent(dati.url);
+    var titolo = encodeURIComponent(dati.title);
+    var messaggio = encodeURIComponent(dati.title + ' — ' + dati.url);
+    var corpo = encodeURIComponent(dati.text + '\n\n' + dati.url);
+
+    // Instagram e TikTok non hanno un indirizzo di condivisione: lì si incolla
+    // il link, ed è per questo che «Copia link» resta in fondo all'elenco
+    // invece di essere un ripiego nascosto.
+    var destinazioni = [
+      { nome: 'WhatsApp', icona: 'fa-brands fa-whatsapp',
+        href: 'https://wa.me/?text=' + messaggio },
+      { nome: 'Telegram', icona: 'fa-brands fa-telegram',
+        href: 'https://t.me/share/url?url=' + u + '&text=' + titolo },
+      { nome: 'Facebook', icona: 'fa-brands fa-facebook',
+        href: 'https://www.facebook.com/sharer/sharer.php?u=' + u },
+      { nome: etichette.email, icona: 'fa-solid fa-envelope',
+        href: 'mailto:?subject=' + titolo + '&body=' + corpo }
+    ];
+
+    var menu = null;
+
+    function copiaNegliAppunti(riga) {
       // `navigator.clipboard` non esiste fuori da un contesto sicuro (http in
-      // sviluppo), e lì fallirebbe in silenzio: il ripiego è un campo
-      // temporaneo con `execCommand`, brutto ma universale.
+      // sviluppo): il ripiego è un campo temporaneo con `execCommand`, brutto
+      // ma universale.
       var promessa;
       if (navigator.clipboard && window.isSecureContext) {
         promessa = navigator.clipboard.writeText(dati.url);
@@ -61,28 +98,98 @@
         });
       }
       promessa.then(function () {
-        // Il riscontro si scrive su un elemento marcato, non sul bottone
-        // intero: un bottone che contiene solo un'icona non ha testo da
-        // sostituire, e sovrascriverne il contenuto cancellerebbe l'icona.
-        var etichetta = bottone.querySelector('[data-condividi-testo]');
-        if (!etichetta) { window.prompt(testoCopiato, dati.url); return; }
-        var precedente = etichetta.textContent;
-        etichetta.textContent = testoCopiato;
-        setTimeout(function () { etichetta.textContent = precedente; }, 2000);
+        var testo = riga.querySelector('span');
+        testo.textContent = etichette.copiato;
+        setTimeout(chiudiMenu, 900);
       }).catch(function () {
-        window.prompt(testoCopiato, dati.url);
+        // Se non si può copiare, si mostra l'indirizzo: meglio un riquadro da
+        // selezionare a mano che un pulsante che non fa niente.
+        window.prompt(etichette.copia, dati.url);
       });
+    }
+
+    function costruisciMenu() {
+      var fondo = document.createElement('div');
+      fondo.className = 'c7-share';
+      fondo.setAttribute('role', 'dialog');
+      fondo.setAttribute('aria-modal', 'true');
+      fondo.setAttribute('aria-label', etichette.condividi);
+
+      var foglio = document.createElement('div');
+      foglio.className = 'c7-share__sheet';
+
+      var testata = document.createElement('div');
+      testata.className = 'c7-share__head';
+      testata.textContent = etichette.condividi;
+      foglio.appendChild(testata);
+
+      destinazioni.forEach(function (d) {
+        var riga = document.createElement('a');
+        riga.className = 'c7-share__row';
+        riga.href = d.href;
+        riga.target = '_blank';
+        riga.rel = 'noopener noreferrer';
+        riga.innerHTML = '<i class="c7-share__ico ' + d.icona + '"></i><span></span>';
+        riga.querySelector('span').textContent = d.nome;
+        riga.addEventListener('click', function () { setTimeout(chiudiMenu, 120); });
+        foglio.appendChild(riga);
+      });
+
+      var copia = document.createElement('button');
+      copia.type = 'button';
+      copia.className = 'c7-share__row';
+      copia.innerHTML = '<i class="c7-share__ico fa-solid fa-link"></i><span></span>';
+      copia.querySelector('span').textContent = etichette.copia;
+      copia.addEventListener('click', function () { copiaNegliAppunti(copia); });
+      foglio.appendChild(copia);
+
+      fondo.appendChild(foglio);
+      fondo.addEventListener('click', function (e) {
+        if (e.target === fondo) chiudiMenu();
+      });
+      document.body.appendChild(fondo);
+      return fondo;
+    }
+
+    function chiudiMenu() {
+      if (!menu) return;
+      menu.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+
+    function apriMenu() {
+      if (!menu) menu = costruisciMenu();
+      // Il testo di «Copia link» torna com'era: il menu si riapre, e la
+      // seconda volta direbbe ancora «Link copiato».
+      var copia = menu.querySelector('button.c7-share__row span');
+      if (copia) copia.textContent = etichette.copia;
+      menu.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') chiudiMenu();
+    });
+
+    // Il foglio del sistema si usa dove elenca davvero le app di messaggistica,
+    // cioè su un dispositivo a tocco. Il puntatore è il segnale giusto: la
+    // larghezza direbbe «telefono» anche a una finestra stretta sul Mac.
+    function fogliettoDelSistema() {
+      return typeof navigator.share === 'function'
+        && window.matchMedia('(pointer: coarse)').matches;
     }
 
     bottoni.forEach(function (bottone) {
       bottone.addEventListener('click', function () {
-        if (navigator.share) {
-          // Un `catch` che tace è voluto: chi chiude il foglio di condivisione
-          // produce un rifiuto, e non è un errore da segnalare.
-          navigator.share(dati).catch(function () {});
-        } else {
-          copiaNegliAppunti(bottone);
-        }
+        if (!fogliettoDelSistema()) { apriMenu(); return; }
+        navigator.share(dati).catch(function (errore) {
+          // Chi chiude il foglio produce un `AbortError`, e non è un errore da
+          // segnalare. Qualunque altro rifiuto invece **è** un guasto: prima
+          // finiva in un `catch` muto, e il pulsante non faceva niente senza
+          // che nessuno potesse accorgersene. Ora si ripiega sul menu.
+          if (errore && errore.name === 'AbortError') return;
+          apriMenu();
+        });
       });
     });
   })();
