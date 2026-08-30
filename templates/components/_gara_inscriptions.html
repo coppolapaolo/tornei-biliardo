@@ -52,6 +52,13 @@
             {{ inscription.user.username }}
           </a>
           <div style="font-size:11px;font-weight:600;color:var(--c7-ink-muted)">
+            {# Nome e cognome li vede **chi dirige la gara**, ed esistono per
+               una ragione sola: distinguere due iscritti con username simili
+               prima di disiscriverne uno per sbaglio (issue #156). Non
+               sostituiscono lo username, che resta il nome sotto cui si gioca,
+               e non compaiono a chi guarda la gara da fuori. #}
+            {% if user_can_manage and inscription.user.full_name %}{{ inscription.user.full_name }}
+            <span class="c7-sep">·</span>{% endif %}
             {{ _('Iscritto il %(date)s', date=inscription.created_at|datetime_local) }}
           </div>
         </div>

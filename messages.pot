@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-29 22:38+0200\n"
+"POT-Creation-Date: 2026-08-30 14:15+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2936,46 +2936,46 @@ msgstr ""
 msgid "Campionato non era nascosto"
 msgstr ""
 
-#: routes/player/profile.py:338
+#: routes/player/profile.py:346
 msgid ""
 "Informazioni aggiornate. Abbiamo inviato una nuova email di verifica al "
 "nuovo indirizzo."
 msgstr ""
 
-#: routes/player/profile.py:344
+#: routes/player/profile.py:352
 msgid "Informazioni aggiornate correttamente."
 msgstr ""
 
-#: routes/player/profile.py:349
+#: routes/player/profile.py:357
 msgid "Si è verificato un errore durante l'aggiornamento."
 msgstr ""
 
-#: routes/player/profile.py:361
+#: routes/player/profile.py:369
 msgid "La tua email è già verificata."
 msgstr ""
 
-#: routes/player/profile.py:370
+#: routes/player/profile.py:378
 msgid "Email di verifica inviata. Controlla la tua casella di posta."
 msgstr ""
 
-#: routes/player/profile.py:374
+#: routes/player/profile.py:382
 msgid "Impossibile inviare l'email. Riprova più tardi."
 msgstr ""
 
-#: routes/player/profile.py:376
+#: routes/player/profile.py:384
 #, python-format
 msgid "Errore durante l'invio: %(detail)s"
 msgstr ""
 
-#: routes/player/profile.py:391
+#: routes/player/profile.py:399
 msgid "La nuova password e la conferma non coincidono."
 msgstr ""
 
-#: routes/player/profile.py:404
+#: routes/player/profile.py:412
 msgid "Password aggiornata correttamente."
 msgstr ""
 
-#: routes/player/profile.py:406
+#: routes/player/profile.py:414
 msgid "Password attuale errata o nuova password non valida."
 msgstr ""
 
@@ -3308,7 +3308,7 @@ msgstr ""
 #: templates/player/delete_account.html:7
 #: templates/player/delete_account.html:42
 #: templates/player/my_venue_requests.html:66
-#: templates/player/profile_edit.html:60 templates/player/venue_detail.html:287
+#: templates/player/profile_edit.html:81 templates/player/venue_detail.html:287
 #: templates/player/venues.html:99 templates/roles/request_form.html:63
 msgid "Annulla"
 msgstr ""
@@ -3382,7 +3382,7 @@ msgstr ""
 #: templates/gamification/admin/streak_config.html:152
 #: templates/individual_match/edit_match.html:122
 #: templates/player/privacy_settings.html:98
-#: templates/player/profile_edit.html:57
+#: templates/player/profile_edit.html:78
 msgid "Salva"
 msgstr ""
 
@@ -4181,7 +4181,7 @@ msgstr ""
 msgid "Es. Napoli"
 msgstr ""
 
-#: templates/onboarding.html:36 templates/player/profile_edit.html:41
+#: templates/onboarding.html:36 templates/player/profile_edit.html:62
 msgid ""
 "Usata per trovare sale e proposte vicino a te quando il GPS non è "
 "disponibile."
@@ -4248,17 +4248,26 @@ msgstr ""
 
 #: templates/privacy.html:23
 msgid ""
+"Puoi aggiungere al tuo profilo nome, cognome, telefono e città: sono "
+"tutti facoltativi e li fornisci tu. Nome e cognome sono visibili al "
+"direttore delle gare a cui ti iscrivi, perché possa riconoscerti fra "
+"giocatori con username simili; non compaiono nel tuo profilo pubblico né "
+"nelle classifiche."
+msgstr ""
+
+#: templates/privacy.html:26
+msgid ""
 "I dati personali identificativi sono conservati cifrati nel database. La "
 "cancellazione dell'account avviene tramite anonimizzazione: i risultati "
 "sportivi restano nelle classifiche storiche, ma non sono più "
 "riconducibili a te."
 msgstr ""
 
-#: templates/privacy.html:28
+#: templates/privacy.html:31
 msgid "Cookie tecnici"
 msgstr ""
 
-#: templates/privacy.html:30
+#: templates/privacy.html:33
 msgid ""
 "Il sito usa cookie tecnici necessari al funzionamento: mantenimento della"
 " sessione di login, protezione dei moduli contro gli invii fraudolenti "
@@ -4266,11 +4275,11 @@ msgid ""
 " consenso perché senza di essi il sito non può funzionare."
 msgstr ""
 
-#: templates/privacy.html:36
+#: templates/privacy.html:39
 msgid "Cookie analitici (Google Analytics)"
 msgstr ""
 
-#: templates/privacy.html:38
+#: templates/privacy.html:41
 msgid ""
 "Usiamo Google Analytics 4 per capire come viene utilizzato il sito: "
 "quante persone lo visitano, quali pagine consultano, da quale dispositivo"
@@ -4278,14 +4287,14 @@ msgid ""
 "piattaforma."
 msgstr ""
 
-#: templates/privacy.html:41
+#: templates/privacy.html:44
 msgid ""
 "Google Analytics 4 non registra il tuo indirizzo IP completo e non lo usa"
 " per identificarti. Non inviamo a Google il tuo nome, la tua email o "
 "altri dati che permettano di risalire alla tua identità."
 msgstr ""
 
-#: templates/privacy.html:44
+#: templates/privacy.html:47
 msgid ""
 "Puoi disattivare la raccolta installando il componente aggiuntivo "
 "ufficiale per la disattivazione di Google Analytics, disponibile su "
@@ -4293,11 +4302,11 @@ msgid ""
 " del tuo browser."
 msgstr ""
 
-#: templates/privacy.html:50
+#: templates/privacy.html:53
 msgid "I tuoi diritti"
 msgstr ""
 
-#: templates/privacy.html:52
+#: templates/privacy.html:55
 msgid ""
 "Puoi in qualsiasi momento accedere ai tuoi dati, correggerli, chiederne "
 "la cancellazione o opporti al trattamento. La maggior parte delle "
@@ -4305,7 +4314,7 @@ msgid ""
 " per le altre puoi contattarci all'indirizzo indicato sopra."
 msgstr ""
 
-#: templates/privacy.html:57
+#: templates/privacy.html:60
 msgid "Ultimo aggiornamento: luglio 2026."
 msgstr ""
 
@@ -4323,7 +4332,7 @@ msgstr ""
 #: templates/components/_player_personal_info.html:18
 #: templates/components/_user_info_card.html:9
 #: templates/player/privacy_settings.html:19 templates/player/profile.html:67
-#: templates/player/profile_edit.html:20 templates/player/venue_detail.html:70
+#: templates/player/profile_edit.html:41 templates/player/venue_detail.html:70
 #: templates/register.html:23
 msgid "Email"
 msgstr ""
@@ -4333,7 +4342,7 @@ msgstr ""
 #: templates/components/_player_personal_info.html:21
 #: templates/components/_user_info_card.html:10
 #: templates/player/privacy_settings.html:29 templates/player/profile.html:71
-#: templates/player/profile_edit.html:35 templates/player/venue_detail.html:63
+#: templates/player/profile_edit.html:56 templates/player/venue_detail.html:63
 #: templates/register.html:28
 msgid "Telefono"
 msgstr ""
@@ -4676,7 +4685,7 @@ msgstr ""
 #: templates/gamification/admin/feature_detail.html:35
 #: templates/gamification/admin/features.html:26
 #: templates/gamification/admin/quests.html:22
-#: templates/player/venue_detail.html:49
+#: templates/player/profile_edit.html:25 templates/player/venue_detail.html:49
 #: templates/public/campionato_detail.html:97
 msgid "Nome"
 msgstr ""
@@ -5657,7 +5666,7 @@ msgid "Partecipanti"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:434
-#: templates/components/_gara_inscriptions.html:59
+#: templates/components/_gara_inscriptions.html:66
 #: templates/components/_match_result_row.html:24
 #: templates/components/_match_result_row.html:28
 #: templates/components/_match_result_row.html:32
@@ -6584,7 +6593,7 @@ msgstr ""
 
 #: templates/admin/venue_form.html:60 templates/admin/venues_list.html:32
 #: templates/components/_player_personal_info.html:24
-#: templates/player/profile_edit.html:39 templates/player/venue_detail.html:58
+#: templates/player/profile_edit.html:60 templates/player/venue_detail.html:58
 msgid "Città"
 msgstr ""
 
@@ -9511,75 +9520,75 @@ msgstr ""
 msgid "Iscritti attivi"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:55
+#: templates/components/_gara_inscriptions.html:62
 #, python-format
 msgid "Iscritto il %(date)s"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:59
+#: templates/components/_gara_inscriptions.html:66
 msgid "Ha dato forfait"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:66
+#: templates/components/_gara_inscriptions.html:73
 #, python-format
 msgid "Disiscrivere %(username)s? Riceverà una notifica."
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:69
+#: templates/components/_gara_inscriptions.html:76
 msgid "Disiscrive il giocatore"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:93
-#: templates/components/_gara_inscriptions.html:105
+#: templates/components/_gara_inscriptions.html:100
+#: templates/components/_gara_inscriptions.html:112
 #: templates/gamification/admin/achievement_form.html:41
 #: templates/gamification/admin/achievements.html:25
 msgid "Categoria"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:101
+#: templates/components/_gara_inscriptions.html:108
 #, python-format
 msgid "Categoria di %(username)s in questa gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:121
+#: templates/components/_gara_inscriptions.html:128
 #, python-format
 msgid "Squadra di %(username)s in questa gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:122
+#: templates/components/_gara_inscriptions.html:129
 msgid "Senza squadra"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:144
+#: templates/components/_gara_inscriptions.html:151
 #: templates/components/_separated_dashboard_content.html:216
 #: templates/components/_separated_dashboard_content.html:360
 #: templates/components/_unified_cards.html:139
 msgid "Lista d'attesa"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:153
+#: templates/components/_gara_inscriptions.html:160
 #, python-format
 msgid "In lista dal %(date)s"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:159
+#: templates/components/_gara_inscriptions.html:166
 #, python-format
 msgid "Rimuovere %(username)s dalla lista d'attesa?"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:162
+#: templates/components/_gara_inscriptions.html:169
 msgid "Rimuove dalla lista d'attesa"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:175
+#: templates/components/_gara_inscriptions.html:182
 msgid "Nessun iscritto"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:176
+#: templates/components/_gara_inscriptions.html:183
 msgid "Appena qualcuno si iscrive lo trovi qui."
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:183
+#: templates/components/_gara_inscriptions.html:190
 msgid "Limite massimo raggiunto"
 msgstr ""
 
@@ -11207,7 +11216,7 @@ msgid "Non indicata"
 msgstr ""
 
 #: templates/components/_player_personal_info.html:27
-#: templates/player/profile_edit.html:48
+#: templates/player/profile_edit.html:69
 msgid "Squadra"
 msgstr ""
 
@@ -16203,19 +16212,30 @@ msgstr ""
 msgid "L'username deve essere unico"
 msgstr ""
 
-#: templates/player/profile_edit.html:23
+#: templates/player/profile_edit.html:30
+msgid "Cognome"
+msgstr ""
+
+#: templates/player/profile_edit.html:37
+msgid ""
+"Facoltativi. Li vede il direttore delle gare a cui ti iscrivi, per non "
+"confondere due giocatori con username simili. Non compaiono nel tuo "
+"profilo pubblico né nelle classifiche, dove resti il tuo username."
+msgstr ""
+
+#: templates/player/profile_edit.html:44
 msgid "Email verificata"
 msgstr ""
 
-#: templates/player/profile_edit.html:26
+#: templates/player/profile_edit.html:47
 msgid "Email non verificata."
 msgstr ""
 
-#: templates/player/profile_edit.html:29
+#: templates/player/profile_edit.html:50
 msgid "Invia link di verifica"
 msgstr ""
 
-#: templates/player/profile_edit.html:52
+#: templates/player/profile_edit.html:73
 msgid ""
 "Il circolo o la società con cui giochi di solito. Viene proposta quando "
 "ti iscrivi a una gara che tiene conto delle squadre; lì potrai sempre "
