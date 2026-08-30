@@ -25,7 +25,9 @@ blocks:
           riquadro **«Come si partecipa»**: scorri fino in fondo. Se sei su
           computer, il collegamento è anche nella colonna di sinistra. Una
           scorciatoia: se una gara ti interessa già, tocca il suo pulsante
-          **Iscriviti** e l'app ti porta prima a farti l'account.
+          **Iscriviti**; ti si apre la pagina di accesso, e lì in fondo c'è
+          **Registrati**. Finita l'iscrizione torni alla pagina da cui eri
+          partito, senza dover ricercare la gara.
         shot: home-pubblica
       - title: "Compila i tre campi"
         text: >-

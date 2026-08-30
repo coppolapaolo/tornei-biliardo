@@ -24,8 +24,10 @@ blocks:
           The **Register** button is at the bottom of the home page, in the
           **«How to take part»** panel: scroll all the way down. On a computer
           the link is also in the left-hand column. A shortcut: if a
-          competition already caught your eye, tap its **Register** button and
-          the app takes you to create the account first.
+          competition already caught your eye, tap its **Register** button; the
+          sign-in page opens, and **Register** is at the bottom of it. Once you
+          are done you land back where you started, with no need to look for
+          the competition again.
         shot: home-pubblica
       - title: "Fill in the three fields"
         text: >-
