@@ -58,33 +58,48 @@ al primo ingresso dopo il login (`claim_activity_feedback_view`), e i suoi nove
 casi — otto profili più la card dei tre passi — non sono in discussione. Una
 proposta che lo riduceva è stata bocciata il 30/08.
 
-## Rilievi sul codice emersi disegnando
+## Rilievi sul codice emersi disegnando — e come sono finiti
 
-Indipendenti dal redesign: valgono come correzioni anche da soli.
+Indipendenti dal redesign: valgono come correzioni anche da soli. **Tutti
+chiusi** nelle PR #295 (dashboard) e #296 (home dell'ospite), tranite dove
+indicato.
 
-1. **La sfida a due in corso non compare in nessuna dashboard.**
-   `vm.individual_matches` e `vm.match_proposals` sono calcolati da
-   `DashboardSectionBuilder` e **nessun template li usa** (zero occorrenze in
-   `templates/`). Si vede solo `vm.match_opportunities`, cioè le proposte
-   aperte altrui. `IndividualMatch` usa lo stesso `MatchStatus`: una sfida
-   `playing` è una partita da giocare come quella di gara.
-2. **«Le gare» non sono le tue.** `build_unified_items` include tutti i
-   campionati visibili e tutte le gare standalone vive, iscritto o no.
-3. **`WaitlistReason` ha due valori e l'interfaccia non li distingue.**
-   `CAPACITY` (gara piena) e `PARITY` (la gara non prevede la X, quindi serve un
-   numero pari e l'ultimo iscritto aspetta). Il template legge `is_waitlist` e
-   non `waitlist_reason`: il secondo caso si legge come un errore — «Lista
-   d'attesa #1» su una gara con 17 posti occupati su 24. Correzione di poche
-   righe, indipendente dal resto.
-4. **Il badge «N da chiudere» del direttore non porta da nessuna parte**: è uno
-   `<span>`, e le gare che conta (`playing` + `awaiting_ssr` dirette da lui)
-   stanno nell'elenco sotto con la stessa pastiglia che vede un giocatore.
-5. **`_index_campionato_cards.html` è l'unico pezzo della home ancora Bootstrap
-   legacy** (list-group, alert, `col-md-*`, medaglie in emoji).
-6. **`no_campionato.html` non è 7c** (`text-center`, `fa-5x`, `lead`,
-   `btn-outline-primary`).
-7. **Per il visitatore anonimo la barra laterale si presenta come
-   «giocatore»** (`base.html`, ramo `else` del ruolo).
+1. ~~**La sfida a due in corso non compare in nessuna dashboard.**~~ Corretto
+   (#295). `vm.individual_matches` era calcolato e nessun template lo usava:
+   si vedevano solo le proposte aperte altrui, cioè gli inviti, e non le sfide
+   già accettate. Il campo si chiama ora `sfide_in_corso` e porta solo quelle
+   da giocare.
+2. ~~**«Le gare» non sono le tue.**~~ Corretto (#295): due elenchi, «Le tue
+   gare» e «Aperte, puoi iscriverti», decisi in
+   `models/dashboard/gara_cards.py`.
+3. ~~**`WaitlistReason` ha due valori e l'interfaccia non li distingue.**~~
+   Corretto (#295): la card dice se la gara è piena o se serve un numero pari.
+4. ~~**Il badge «N da chiudere» del direttore non porta da nessuna parte.**~~
+   Superato (#295): ogni gara diretta porta ora sulla card il comando che
+   aspetta, quindi il conteggio aggregato non serve più.
+5. ~~**`_index_campionato_cards.html` è l'unico pezzo della home ancora
+   Bootstrap legacy.**~~ Corretto (#296): riscritto in 7c, 219 righe → 138.
+6. ~~**`no_campionato.html` non è 7c.**~~ Corretto (#296): usa `.c7-empty`.
+7. ~~**Per il visitatore anonimo la barra laterale si presenta come
+   «giocatore».**~~ Corretto (#296): dice «vista pubblica».
+
+Tre ne sono emersi **scrivendo il codice**, non disegnando:
+
+8. **Una gara con le iscrizioni programmate nel futuro spariva da ogni
+   dashboard.** `get_real_status()` risponde `inscription_not_yet_open` e
+   quello stato non era fra quelli «vivi»: il direttore che l'aveva appena
+   creata non aveva più da nessuna parte il pulsante per gestirla. Corretto
+   in #295.
+9. **Quattordici fixture creavano gare con `discipline="nine_ball"`**, una
+   terza forma che non era né il vocabolario canonico (`9_ball`) né quello
+   italiano storico già vietato — quindi non la vedeva nessuno dei due
+   controlli. Trovata **guardando la dashboard nel browser**, non leggendo il
+   codice: a schermo compariva «Nine Ball» in mezzo a «Palla 8» e «Palla 9».
+   Corretta in #295, e il presidio ora copre anche `tests/`.
+10. **I rami `is_authenticated` della home erano tutti morti.** `main.index`
+    rimanda alla dashboard chiunque sia autenticato, quindi `index.html` e i
+    suoi sei componenti li vede solo un ospite: c'era perfino un form di
+    iscrizione che nessun iscritto poteva vedere. Tolti in #296.
 
 ## Come si ricostruisce il canvas
 
@@ -113,34 +128,45 @@ Per ripubblicare: si riseminano tutti gli artboard con `seed-canvas.mjs` della
 skill `design` e si ripubblica lo stesso file (`dashboard-tre-ruoli.html`), che
 mantiene l'indirizzo.
 
-## Cosa manca
+## La forma nei template: fatto
+
+Il passo successivo al disegno è stato fatto il **2026-08-30**, in due PR che
+toccano file disgiunti:
+
+| PR | Cosa |
+|---|---|
+| [#295](https://github.com/coppolapaolo/tornei-biliardo/pull/295) | Le dashboard di giocatore e direttore |
+| [#296](https://github.com/coppolapaolo/tornei-biliardo/pull/296) | La home dell'ospite |
+
+Dove sta ora la logica che prima stava in Jinja:
+
+* `models/dashboard/gara_cards.py` — chi vede quali gare, e in quale dei due
+  elenchi. Prima l'appartenenza si ricostruiva iterando `gara.inscriptions`
+  card per card: una query a gara per una riga già in memoria in
+  `vm.my_inscriptions`. `enrich_with_progress` aggiunge posizione in classifica
+  e partite del turno, con tre query in tutto e non tre per gara;
+* `models/dashboard/comandi.py` — quale comando una gara aspetta dal suo
+  direttore. Rispecchia i rami di `_gara_management.html`, che resta l'unico
+  posto in cui i comandi si **eseguono**: quel file dipende da variabili
+  calcolate dalla route della gara e da funzioni JS che vivono lì, quindi in
+  dashboard il comando si **annuncia** e basta. La scelta è isolata in quel
+  modulo: il giorno che si volesse agire sul posto, cambia il template e non il
+  ragionamento.
+
+Una cosa che il disegno non poteva prevedere e che è emersa scrivendo: il testo
+nato spezzato in frammenti (`Sei` + `su`) non si può tradurre, e in catalogo i
+frammenti di due lettere si agganciano a qualunque cosa gli somigli — `pybabel`
+aveva proposto *Yes* per «Sei» e *Slug* per «su». I messaggi ora sono interi,
+coi placeholder dentro.
+
+## Cosa resta
 
 Dei casi dell'inventario restano da disegnare i profili **«di rientro»** e
 **«solo esercizi»** del saluto, e il **desktop nella forma C**.
 
-## Prossimo passo: portare la forma nei template
-
-I file che la forma C tocca, in ordine di dipendenza:
-
-- `templates/components/_separated_dashboard_content.html` — è il cuore: qui
-  «I tuoi match» si fonde nella card della gara e l'elenco si divide fra le tue
-  e le aperte;
-- `templates/components/_unified_dashboard_header.html` — il saluto sale in
-  testata (`page_title` in `dashboard/base.html`), il blocco sparisce;
-- `templates/components/_playoff_invitations.html` — l'invito scende dentro la
-  card del campionato;
-- `templates/components/_player_dashboard_content.html` e
-  `_director_dashboard_content.html` — la sezione delle sfide a due, che oggi
-  mostra solo le proposte altrui, deve mostrare anche la sfida in corso;
-- `templates/index.html` + `_index_registration_info.html` +
-  `_index_open_inscriptions.html` — l'ordine dell'ospite e l'account chiesto
-  dove serve;
-- `models/dashboard/` — la divisione «tue / aperte» e la posizione in
-  classifica provvisoria vanno preparate nel view model, non ricavate in Jinja.
-
-Vincoli del progetto da non perdere di vista: ogni stringa in `_()`, il token
-CSRF su ogni form, `ENDPOINT_ROLES` per le route nuove, e la verifica a 500px
-di larghezza dal browser pilotato (skill `ui-7c`).
+Vincoli del progetto da non perdere di vista quando si continua: ogni stringa
+in `_()`, il token CSRF su ogni form, `ENDPOINT_ROLES` per le route nuove, e la
+verifica a 500px di larghezza dal browser pilotato (skill `ui-7c`).
 
 ## Nota sui file
 
