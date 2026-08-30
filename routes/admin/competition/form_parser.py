@@ -24,6 +24,7 @@ from models.matchmaking.configuration import (
     calculate_rounds_for_strategy,
     minimum_players_for,
 )
+from models.matchmaking.bracket import group_format_total_rounds
 from models.match.break_rules import BreakRule, StartRule
 from models.status_enum import WithdrawPolicy
 
@@ -120,9 +121,22 @@ def _bracket_derived_fields(data: Dict[str, Any]) -> Dict[str, Any]:
 
     capienza = data.get("max_participants")
     if capienza:
-        derived["rounds_count"] = calculate_rounds_for_strategy(
-            MatchmakingStrategy(strategy), int(capienza)
-        )
+        # Con una fase a gironi i turni sono `2w - 1` di girone piu' quelli del
+        # tabellone finale fra i qualificati: molti meno del doppio KO pieno
+        # sulla stessa capienza (6 invece di 8 con 16 iscritti, 8 invece di 12
+        # con 48). Il sorteggio lo sa gia' — `DoubleKnockoutStrategy` fissa
+        # `rounds_count` sugli iscritti effettivi con la stessa funzione — ma
+        # fino a quel momento il direttore leggeva la stima del formato
+        # sbagliato, in creazione e sulla pagina della gara.
+        gruppi = data.get("double_ko_rounds")
+        if gruppi:
+            derived["rounds_count"] = group_format_total_rounds(
+                int(capienza), int(gruppi)
+            )
+        else:
+            derived["rounds_count"] = calculate_rounds_for_strategy(
+                MatchmakingStrategy(strategy), int(capienza)
+            )
 
     return derived
 
