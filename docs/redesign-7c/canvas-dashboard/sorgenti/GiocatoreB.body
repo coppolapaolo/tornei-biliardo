@@ -1,0 +1,142 @@
+<div class="screen">
+
+  <header class="c7-head">
+    <span class="c7-head__back"><svg viewBox="0 0 24 24" class="ico ico-lg"><use href="#i-nodes"></use></svg></span>
+    <div class="c7-head__title">
+      <span class="c7-title">Ciao marco</span>
+      <span class="c7-head__sub">Giocatore</span>
+    </div>
+    <span class="gami-badge">
+      <span class="gami-badge__ring"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-trophy"></use></svg></span>
+      <span class="gami-badge__level">Lv 7</span>
+    </span>
+    <span class="c7-avatar c7-avatar--lg">MA</span>
+  </header>
+
+  <main class="c7-content">
+
+    <section class="c7-card c7-card--accent now">
+      <div class="now__head"><h2>Da fare</h2><span class="now__count">3</span></div>
+
+      <a class="now__row" href="#">
+        <span class="now__body">
+          <span class="now__ctx">
+            <span class="c7-live__dot"></span>
+            <span class="c7-kicker">Gara 3 <span class="c7-sep">&middot;</span> Turno 3 <span class="c7-sep">&middot;</span> Tavolo 4</span>
+          </span>
+          <span class="now__what">La tua partita &egrave; al tavolo</span>
+          <span class="now__meta">vs Luca Berti <span class="c7-sep">&middot;</span> <span class="c7-num">3&ndash;2</span> <span class="c7-sep">&middot;</span> al 5</span>
+        </span>
+        <span class="now__go">Gioca</span>
+      </a>
+
+      <a class="now__row" href="#">
+        <span class="now__body">
+          <span class="now__ctx">
+            <span class="c7-live__dot"></span>
+            <span class="c7-kicker">Sfida a due <span class="c7-sep">&middot;</span> Sala Da Vinci</span>
+          </span>
+          <span class="now__what">Sfida con Andrea Zanin</span>
+          <span class="now__meta">Palla 9 <span class="c7-sep">&middot;</span> <span class="c7-num">3&ndash;4</span> <span class="c7-sep">&middot;</span> al 7</span>
+        </span>
+        <span class="now__go">Gioca</span>
+      </a>
+
+      <a class="now__row" href="#">
+        <span class="now__body">
+          <span class="now__ctx">
+            <span class="c7-kicker">Playoff</span>
+            <span class="now__when">entro il 05/09</span>
+          </span>
+          <span class="now__what">Sei qualificato alla finale</span>
+          <span class="now__meta">3&deg; posto <span class="c7-sep">&middot;</span> 21/09 20:30 <span class="c7-sep">&middot;</span> Sala Centrale</span>
+        </span>
+        <span class="now__go now__go--soft">Rispondi</span>
+      </a>
+    </section>
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Le tue gare <span class="count">1</span></h2>
+        <a href="#" style="font-size:12px">Vedi tutte</a>
+      </div>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 3 &mdash; Palla 8</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 <span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span></div>
+            <div class="meta"><span class="c7-num" style="color:var(--c7-ink)">30/08/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <span class="c7-state c7-state--err">In corso</span>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700">
+          <span class="fill">Turno <span class="c7-num">3/5</span></span>
+          <span class="muted"><span class="c7-num">14</span> giocatori</span>
+        </div>
+        <div class="inset">
+          <div class="c7-kicker">Classifica provvisoria</div>
+          <div style="margin-top:2px;font-size:14px;font-weight:800">Sei <span class="c7-num">4&deg;</span> su <span class="c7-num">14</span></div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--c7-line)">
+            <div class="c7-kicker">Altre partite del turno</div>
+            <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;font-size:12px;font-weight:700">
+              <div class="row"><span class="c7-num muted">T1</span><span class="trunc">Elena Furlan <span class="c7-num">4&ndash;1</span> Sara De Rossi</span></div>
+              <div class="row"><span class="c7-num muted">T2</span><span class="trunc">Andrea Zanin <span class="c7-num">2&ndash;2</span> Paolo Rizzo</span></div>
+              <div class="row"><span class="c7-num muted">T3</span><span class="trunc">Giulia Nardin <span class="c7-num">5&ndash;3</span> Ivan Sartori</span></div>
+            </div>
+            <div class="meta" style="margin-top:6px">e altre <span class="c7-num">3</span> da giocare</div>
+          </div>
+        </div>
+        <span class="btn btn-secondary btn-sm btn-w">Vedi la gara</span>
+      </article>
+    </section>
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Aperte, puoi iscriverti <span class="count">1</span></h2>
+        <a href="#" style="font-size:12px">Vedi tutte</a>
+      </div>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 4 &mdash; Palla 9</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 9 <span class="c7-sep">&middot;</span> Al <span class="c7-num">4</span></div>
+            <div class="meta"><span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <span class="c7-state c7-state--ok">Aperta</span>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700">
+          <span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span>
+          <span class="muted"><span class="c7-num">18/24</span></span>
+        </div>
+        <div class="meta"><span style="color:var(--c7-warn)">Chiudono il <span class="c7-num">10/09/2026 20:00</span></span></div>
+        <div style="display:flex;gap:8px">
+          <span class="btn btn-secondary btn-sm btn-fill">Dettagli</span>
+          <span class="btn btn-success btn-sm btn-fill">Iscriviti</span>
+        </div>
+      </article>
+    </section>
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Campionati <span class="count">1 attivo</span></h2>
+        <a href="#" style="font-size:12px">Vedi tutti</a>
+      </div>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Campionato Sociale 2026</div>
+            <div class="meta">amalfi <span class="c7-sep">&middot;</span> 5 gare <span class="c7-sep">&middot;</span> sei <span class="c7-num">4&deg;</span> su <span class="c7-num">14</span></div>
+          </div>
+          <span class="c7-state c7-state--err">In corso</span>
+        </div>
+        <div class="meta">Prossima: <span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span></div>
+        <span class="btn btn-secondary btn-sm btn-w">Dettagli</span>
+      </article>
+    </section>
+
+  </main>
+
+  <nav class="c7-mobilenav">
+    <a href="#" class="is-active"><svg viewBox="0 0 24 24" class="ico"><use href="#i-gauge"></use></svg>Dashboard</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-users"></use></svg>Sfide</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-target"></use></svg>Esercizi</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-bell"></use></svg>Notifiche</a>
+  </nav>
+</div>

@@ -1,0 +1,44 @@
+/* ============================================================
+   Proposta — nessun valore nuovo: solo composizioni dei token.
+   ============================================================ */
+
+/* La fascia «Adesso» riusa la forma di `.c7-shortcut` — la scorciatoia
+   scura alla propria partita che in gara sta gia' in cima alla vista turni
+   (`_gara_my_match.html`) — ripetuta in righe. Tutta la riga e' il
+   bersaglio, non solo la pastiglia. */
+.now{padding:var(--c7-pad-card-lg)}
+.now__head{display:flex;align-items:center;gap:10px}
+.now__head h2{color:inherit;font-size:20px}
+.now__count{margin-left:auto;height:26px;min-width:26px;padding:0 9px;
+  border-radius:var(--c7-r-pill);background:var(--c7-accent-bright);
+  color:var(--c7-accent);display:grid;place-items:center;
+  font-family:var(--c7-font-mono);font-size:12px;font-weight:800}
+.now__row{display:flex;align-items:center;gap:14px;padding:14px 0;color:inherit;
+  border-top:1px solid rgba(255,255,255,.12)}
+.now__row:first-of-type{margin-top:8px;border-top:0}
+.now__body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.now__ctx{display:flex;align-items:center;gap:8px;min-width:0}
+.now__what{display:block;font-size:17px;font-weight:800;letter-spacing:-.02em;
+  color:var(--c7-accent-ink);line-height:1.25}
+.now__meta{display:block;font-size:12px;font-weight:600;color:var(--c7-accent-dim)}
+.now__go{height:44px;padding:0 16px;border-radius:var(--c7-r-pill);
+  background:var(--c7-accent-bright);color:#0D2A36;display:flex;align-items:center;
+  font-size:13px;font-weight:800;flex-shrink:0;white-space:nowrap}
+.now__go--soft{background:rgba(255,255,255,.14);color:var(--c7-accent-ink)}
+.now__when{margin-left:auto;flex-shrink:0;font-family:var(--c7-font-mono);font-weight:800;
+  font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--c7-accent-bright)}
+.now__ctx .c7-kicker{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Il feedback si annuncia in una riga; il blocco intero si apre da qui. */
+.sumline{display:flex;align-items:center;gap:12px;min-height:60px;padding:12px 16px}
+.sumline__v{font-family:var(--c7-font-mono);font-weight:800;font-size:20px;
+  letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+
+/* Il fatto che sta dentro la gara: la mia partita, non una card a parte. */
+.inset{background:var(--c7-bg);border-radius:var(--c7-r-field);padding:12px 14px}
+
+/* Un campionato non e' una cosa da fare: e' un contesto. Riga, non card. */
+.listrow{display:flex;align-items:center;gap:12px;padding:13px 0;
+  border-top:1px solid var(--c7-line-soft)}
+.listrow:first-of-type{border-top:0;padding-top:4px}
+.chev{color:var(--c7-ink-faint);flex-shrink:0}

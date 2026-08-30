@@ -1,0 +1,258 @@
+<div class="c7-app">
+
+  <aside class="c7-side">
+    <div class="c7-side__top">
+      <span class="c7-side__brand">
+        <span class="c7-side__mark"><svg viewBox="0 0 24 24" class="ico"><use href="#i-nodes"></use></svg></span>
+        <span>
+          <span class="c7-side__name">Tornei Biliardo</span>
+          <span class="c7-side__role">direzione gara</span>
+        </span>
+      </span>
+      <span class="c7-sidetoggle"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-collapse"></use></svg></span>
+    </div>
+
+    <nav class="c7-side__group">
+      <span class="c7-side__grouplabel">Generale</span>
+      <a href="#" class="is-active"><svg viewBox="0 0 24 24" class="ico"><use href="#i-gauge"></use></svg>Dashboard</a>
+      <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-venue"></use></svg>Sale Biliardo</a>
+      <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-target"></use></svg>Esercizi</a>
+      <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-users"></use></svg>Sfide individuali</a>
+      <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-help"></use></svg>Guida</a>
+      <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-megaphone"></use></svg>Segnalazioni</a>
+    </nav>
+
+    <div class="c7-side__user">
+      <span class="c7-avatar">PA</span>
+      <span class="fill">
+        <span style="display:block;font-size:12px;font-weight:800">paolo</span>
+        <span class="c7-side__role">direttore &middot; Lv 12</span>
+      </span>
+      <span class="c7-side__count">5</span>
+    </div>
+  </aside>
+
+  <div class="c7-main">
+
+    <header class="c7-head">
+      <div class="c7-head__title">
+        <span class="c7-title">Dashboard Direttore</span>
+      </div>
+      <span class="gami-badge">
+        <span class="gami-badge__ring"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-trophy"></use></svg></span>
+        <span class="gami-badge__level">Lv 12</span>
+        <span class="gami-badge__xp">910 XP</span>
+      </span>
+    </header>
+
+    <main class="c7-content">
+
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:22px">
+        <div class="fill">
+          <div class="c7-kicker">Direttore di gara</div>
+          <h1 style="margin-top:4px;font-size:24px">Ciao paolo</h1>
+        </div>
+        <span class="btn btn-secondary btn-sm btn-secondary--onpage">
+          <svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-plus"></use></svg>Nuova Gara
+        </span>
+        <span class="btn btn-primary btn-sm">
+          <svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-wand"></use></svg>Nuovo Campionato
+        </span>
+      </div>
+
+      <section class="c7-feedback">
+        <div class="c7-feedback__head">
+          <h2>Come vanno le tue gare</h2>
+          <span class="c7-feedback__badge c7-feedback__badge--urgent">2 da chiudere</span>
+        </div>
+
+        <div class="split" style="align-items:start;margin-top:4px">
+          <div>
+            <div class="c7-feedback__metrics">
+              <div>
+                <div class="c7-feedback__value">9</div>
+                <div class="c7-feedback__label">Gare organizzate</div>
+                <div class="c7-feedback__delta">da quando sei direttore</div>
+              </div>
+              <div class="c7-feedback__donutcell">
+                <span class="c7-feedback__donut" style="background:conic-gradient(var(--c7-ok) 0 79%, var(--c7-chart-soft) 0)">
+                  <span>79%</span>
+                </span>
+                <div class="c7-feedback__legend">
+                  <span><span class="c7-feedback__swatch c7-feedback__swatch--ok"></span>142 posti occupati</span>
+                  <span><span class="c7-feedback__swatch"></span>38 liberi</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="c7-feedback__strip">
+              <div class="c7-feedback__striphead">
+                <span>Le tue ultime gare</span>
+                <span class="c7-feedback__stripnote">dalla più vecchia</span>
+              </div>
+              <div class="c7-feedback__tiles">
+                <span class="c7-feedback__tile">18/24</span>
+                <span class="c7-feedback__tile c7-feedback__tile--win">24/24</span>
+                <span class="c7-feedback__tile">20/24</span>
+                <span class="c7-feedback__tile">22/24</span>
+                <span class="c7-feedback__tile c7-feedback__tile--open">16/24</span>
+                <span class="c7-feedback__tile c7-feedback__tile--uncapped">9</span>
+              </div>
+              <div class="c7-feedback__striplegend">
+                <span><span class="c7-feedback__swatch c7-feedback__swatch--accent"></span>1 aperta</span>
+                <span><span class="c7-feedback__swatch c7-feedback__swatch--ok"></span>1 al completo</span>
+                <span><span class="c7-feedback__swatch c7-feedback__swatch--mid"></span>3 quasi piene</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="c7-feedback__chart" style="margin-top:0">
+            <div class="c7-feedback__bars" style="height:104px" role="img" aria-label="12 iscritti a Gara 1, 22 a Gara 9">
+              <span class="c7-feedback__bar c7-feedback__bar--mid" style="height:55%"></span>
+              <span class="c7-feedback__bar c7-feedback__bar--mid" style="height:70%"></span>
+              <span class="c7-feedback__bar c7-feedback__bar--mid" style="height:62%"></span>
+              <span class="c7-feedback__bar c7-feedback__bar--ok" style="height:100%"></span>
+              <span class="c7-feedback__bar c7-feedback__bar--mid" style="height:74%"></span>
+              <span class="c7-feedback__bar c7-feedback__bar--mid" style="height:83%"></span>
+              <span class="c7-feedback__bar c7-feedback__bar--mid" style="height:66%"></span>
+              <span class="c7-feedback__bar c7-feedback__bar--mid" style="height:75%"></span>
+              <span class="c7-feedback__bar c7-feedback__bar--dark" style="height:92%"></span>
+            </div>
+            <div class="c7-feedback__caption"><span>12 iscritti a Gara 1</span><span>22 a Gara 9</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="sec-head"><h2>I tuoi match</h2></div>
+        <div class="cards">
+          <article class="c7-card cardstack">
+            <div class="rowtop">
+              <div class="fill">
+                <div class="c7-kicker">Turno 2</div>
+                <div class="cardtitle" style="margin-top:4px">Torneo del Giovedì</div>
+                <div class="meta">Gara singola</div>
+              </div>
+              <span class="c7-state c7-state--err">In corso</span>
+            </div>
+            <div style="font-size:14px;font-weight:700">vs Elena Furlan</div>
+            <div class="c7-num" style="font-size:22px">2 &mdash; 4</div>
+            <div class="meta">
+              Palla 8 <span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span><br>
+              In attesa del tavolo
+            </div>
+            <span class="btn btn-secondary btn-sm btn-w is-disabled">In attesa del tavolo</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="sec-head">
+          <h2>Gare <span class="count">3 attive</span></h2>
+          <a href="#" style="font-size:12px">Vedi tutte</a>
+        </div>
+        <div class="cards">
+          <article class="c7-card cardstack">
+            <div class="rowtop">
+              <div class="fill">
+                <div class="cardtitle">Gara 3 &mdash; Palla 8</div>
+                <div class="meta">Campionato Sociale 2026</div>
+                <div class="meta" style="margin-top:4px">Palla 8 <span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span></div>
+              </div>
+              <span class="c7-state c7-state--err">In corso</span>
+            </div>
+            <div class="meta">
+              <span class="c7-num" style="color:var(--c7-ink)">30/08/2026</span><br>
+              Biliardo Club Udine
+            </div>
+            <div class="row" style="font-size:12px;font-weight:700">
+              <span class="fill">Turno <span class="c7-num">3/5</span></span>
+              <span class="muted"><span class="c7-num">14</span> giocatori</span>
+            </div>
+            <span class="btn btn-secondary btn-sm btn-w">Dettagli</span>
+          </article>
+
+          <article class="c7-card cardstack">
+            <div class="rowtop">
+              <div class="fill">
+                <div class="cardtitle">Gara 2 &mdash; Palla 8</div>
+                <div class="meta">Campionato Sociale 2026</div>
+                <div class="meta" style="margin-top:4px">Palla 8 <span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span></div>
+              </div>
+              <span class="c7-state c7-state--warn">Spareggi</span>
+            </div>
+            <div class="meta">
+              <span class="c7-num" style="color:var(--c7-ink)">16/08/2026</span><br>
+              Biliardo Club Udine
+            </div>
+            <div class="row" style="font-size:12px;font-weight:700">
+              <span class="fill">Turno <span class="c7-num">5/5</span></span>
+              <span class="muted"><span class="c7-num">16</span> giocatori</span>
+            </div>
+            <span class="btn btn-primary btn-sm btn-w">Gestisci spareggi</span>
+          </article>
+
+          <article class="c7-card cardstack">
+            <div class="rowtop">
+              <div class="fill">
+                <div class="cardtitle">Gara 5 &mdash; Palla 8</div>
+                <div class="meta">Campionato Sociale 2026</div>
+                <div class="meta" style="margin-top:4px">Palla 8 <span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span></div>
+              </div>
+              <span class="c7-state c7-state--muted">In preparazione</span>
+            </div>
+            <div class="meta">
+              <span class="c7-num" style="color:var(--c7-ink)">03/10/2026</span><br>
+              Biliardo Club Udine
+            </div>
+            <div class="row" style="font-size:12px;font-weight:700">
+              <span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span>
+              <span class="muted"><span class="c7-num">0/24</span></span>
+            </div>
+            <span class="btn btn-secondary btn-sm btn-w">Gestisci</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="sec-head">
+          <h2>Campionati <span class="count">1 attivo</span></h2>
+          <a href="#" style="font-size:12px">Vedi tutti</a>
+        </div>
+        <div class="cards">
+          <article class="c7-card cardstack">
+            <div class="rowtop">
+              <div class="fill">
+                <div class="cardtitle">Campionato Sociale 2026</div>
+                <div class="meta">amalfi <span class="c7-sep">&middot;</span> 5 gare</div>
+              </div>
+              <span class="c7-state c7-state--err">In corso</span>
+            </div>
+            <div class="meta">Prossima: <span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span class="c7-state c7-state--info">Senza X</span>
+              <span class="c7-state c7-state--ok">Playoff</span>
+            </div>
+            <div style="display:flex;gap:8px">
+              <span class="btn btn-secondary btn-sm btn-fill">Gestione</span>
+              <span class="c7-iconbtn" aria-label="Modifica"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-pen"></use></svg></span>
+            </div>
+          </article>
+
+          <article class="c7-card c7-card--locked cardstack">
+            <div class="rowtop">
+              <div class="fill">
+                <div class="cardtitle">Coppa Città di Udine</div>
+                <div class="meta">eliminazione diretta <span class="c7-sep">&middot;</span> 3 gare</div>
+              </div>
+              <span class="c7-state c7-state--muted">Concluso</span>
+            </div>
+            <div class="meta">Nessuna gara programmata</div>
+            <span class="btn btn-secondary btn-sm btn-w">Gestione</span>
+          </article>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>

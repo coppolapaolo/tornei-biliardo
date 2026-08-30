@@ -1,0 +1,347 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Mobile"
+    },
+    {
+      "id": "page-2",
+      "name": "Desktop"
+    },
+    {
+      "id": "page-3",
+      "name": "Confronto"
+    },
+    {
+      "id": "page-4",
+      "name": "Casi"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Ospite.dc.html",
+      "title": "Ospite · mobile",
+      "page": "page-1",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 2560
+    },
+    {
+      "file": "Main.dc.html",
+      "title": "Giocatore · mobile",
+      "page": "page-1",
+      "x": 520,
+      "y": 0,
+      "w": 390,
+      "h": 1930
+    },
+    {
+      "file": "Direttore.dc.html",
+      "title": "Direttore · mobile",
+      "page": "page-1",
+      "x": 1040,
+      "y": 0,
+      "w": 390,
+      "h": 2340
+    },
+    {
+      "file": "OspiteDesktop.dc.html",
+      "title": "Ospite · desktop",
+      "page": "page-2",
+      "x": 0,
+      "y": 0,
+      "w": 1440,
+      "h": 1860
+    },
+    {
+      "file": "GiocatoreDesktop.dc.html",
+      "title": "Giocatore · desktop",
+      "page": "page-2",
+      "x": 1600,
+      "y": 0,
+      "w": 1440,
+      "h": 1400
+    },
+    {
+      "file": "DirettoreDesktop.dc.html",
+      "title": "Direttore · desktop",
+      "page": "page-2",
+      "x": 3200,
+      "y": 0,
+      "w": 1440,
+      "h": 1400
+    },
+    {
+      "file": "GiocatoreA.dc.html",
+      "title": "A · com'è oggi",
+      "page": "page-3",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 2010
+    },
+    {
+      "file": "GiocatoreC.dc.html",
+      "title": "C · tutto dentro le gare",
+      "page": "page-3",
+      "x": 520,
+      "y": 0,
+      "w": 390,
+      "h": 1690
+    },
+    {
+      "file": "DirettoreA.dc.html",
+      "title": "A · senza comandi di direzione",
+      "page": "page-3",
+      "x": 0,
+      "y": 2200,
+      "w": 390,
+      "h": 2260
+    },
+    {
+      "file": "DirettoreB.dc.html",
+      "title": "B · con i comandi sulla card",
+      "page": "page-3",
+      "x": 520,
+      "y": 2200,
+      "w": 390,
+      "h": 2290
+    },
+    {
+      "file": "OspiteA.dc.html",
+      "title": "A · com'è oggi",
+      "page": "page-3",
+      "x": 0,
+      "y": 4900,
+      "w": 390,
+      "h": 2010
+    },
+    {
+      "file": "OspiteB.dc.html",
+      "title": "B · l'account chiesto una volta",
+      "page": "page-3",
+      "x": 520,
+      "y": 4900,
+      "w": 390,
+      "h": 1770
+    },
+    {
+      "file": "OspiteC.dc.html",
+      "title": "C · l'account chiesto dove serve",
+      "page": "page-3",
+      "x": 1040,
+      "y": 4900,
+      "w": 390,
+      "h": 1620
+    },
+    {
+      "file": "CasoPrimoAccesso.dc.html",
+      "title": "Primo accesso della sessione",
+      "page": "page-4",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 2090
+    },
+    {
+      "file": "CasoNuovo.dc.html",
+      "title": "Appena iscritto",
+      "page": "page-4",
+      "x": 520,
+      "y": 0,
+      "w": 390,
+      "h": 1360
+    },
+    {
+      "file": "CasoX.dc.html",
+      "title": "La X da sostituire",
+      "page": "page-4",
+      "x": 1040,
+      "y": 0,
+      "w": 390,
+      "h": 1780
+    },
+    {
+      "file": "CasoConcluse.dc.html",
+      "title": "Gara e campionato conclusi",
+      "page": "page-4",
+      "x": 1560,
+      "y": 0,
+      "w": 390,
+      "h": 1240
+    },
+    {
+      "file": "CasoVuoto.dc.html",
+      "title": "Giocatore senza niente",
+      "page": "page-4",
+      "x": 0,
+      "y": 2800,
+      "w": 390,
+      "h": 900
+    },
+    {
+      "file": "CasoDirettoreVuoto.dc.html",
+      "title": "Direttore senza gare",
+      "page": "page-4",
+      "x": 520,
+      "y": 2800,
+      "w": 390,
+      "h": 1000
+    },
+    {
+      "file": "CasoOspiteQuieto.dc.html",
+      "title": "Ospite senza diretta",
+      "page": "page-4",
+      "x": 1040,
+      "y": 2800,
+      "w": 390,
+      "h": 1260
+    },
+    {
+      "file": "CasoOspiteVuoto.dc.html",
+      "title": "Ospite a sistema vuoto",
+      "page": "page-4",
+      "x": 1560,
+      "y": 2800,
+      "w": 390,
+      "h": 530
+    },
+    {
+      "file": "CasoListaAttesa.dc.html",
+      "title": "Lista d’attesa",
+      "page": "page-4",
+      "x": 2080,
+      "y": 0,
+      "w": 390,
+      "h": 1430
+    },
+    {
+      "file": "CasoSenzaTavolo.dc.html",
+      "title": "Partita senza tavolo",
+      "page": "page-4",
+      "x": 2600,
+      "y": 0,
+      "w": 390,
+      "h": 1280
+    }
+  ],
+  "annotations": [
+    {
+      "id": "nota-ruoli",
+      "page": "page-1",
+      "x": 0,
+      "y": -190,
+      "w": 900,
+      "text": "Le tre dashboard come sono oggi, nel design system 7c.\nL'ospite non ha una /dashboard: quella che vede è la home pubblica (index.html), e qui è disegnata come tale."
+    },
+    {
+      "id": "nota-campionati",
+      "page": "page-1",
+      "x": 0,
+      "y": 2640,
+      "w": 420,
+      "text": "Il blocco «Campionati in corso» qui è ridisegnato in 7c: nell'app è ancora Bootstrap legacy (list-group, alert, medaglie emoji) — l'unico pezzo della home rimasto indietro."
+    },
+    {
+      "id": "nota-desktop",
+      "page": "page-2",
+      "x": 0,
+      "y": -190,
+      "w": 900,
+      "text": "Da lg (992px) compare la barra laterale scura e sparisce la nav flottante. Le griglie di card passano a tre colonne: stessi contenuti, stesso vocabolario."
+    },
+    {
+      "id": "conf-intro",
+      "page": "page-3",
+      "x": 0,
+      "y": -250,
+      "w": 1430,
+      "text": "Le stesse identiche informazioni, sistemate in modi diversi: una scelta per riga.\nGIOCATORE — A: ogni cosa la sua sezione. C: ogni cosa dentro ciò a cui appartiene. (La B, la lista unica «da fare», è scartata.)\nDIRETTORE — un elenco solo, perché una gara può essere insieme diretta e giocata. Resta da scegliere se i comandi di direzione stanno sulla card.\nOSPITE — dove si chiede l'account.\nQuesta è la visita ordinaria, non la prima della sessione: il blocco «Come stai andando» non c'è perché in quel momento l'app non lo disegna. Al primo ingresso c'è, intero, e resta com'è."
+    },
+    {
+      "id": "conf-g-a",
+      "page": "page-3",
+      "x": 0,
+      "y": 2050,
+      "w": 390,
+      "text": "A · ogni cosa la sua sezione, come la struttura di oggi: playoff, match, gare, campionati. La partita di gara e la sfida a due stanno insieme in «I tuoi match», perché per chi gioca sono la stessa cosa. Costo: la gara compare in due posti, come card di partita e come card di gara."
+    },
+    {
+      "id": "conf-g-c",
+      "page": "page-3",
+      "x": 520,
+      "y": 2050,
+      "w": 390,
+      "text": "C · ogni cosa dentro ciò a cui appartiene: la partita nella sua gara, l'invito alla finale nel suo campionato. È lo stesso principio della card ibrida che hai approvato per il direttore. Limite: la sfida a due non ha una gara dove stare, e si prende comunque una sezione sua."
+    },
+    {
+      "id": "conf-d-a",
+      "page": "page-3",
+      "x": 0,
+      "y": 4500,
+      "w": 390,
+      "text": "A · una gara può essere insieme «che dirigo» e «in cui gioco»: la card è una sola e porta le due nature — la tua partita, la classifica, e la pastiglia «Dirigi». Qui i comandi di direzione non ci sono: si apre la gara."
+    },
+    {
+      "id": "conf-d-b",
+      "page": "page-3",
+      "x": 520,
+      "y": 4530,
+      "w": 390,
+      "text": "B · stessa struttura, ma il comando di direzione disponibile in quel momento sta sulla card: Avvia Spareggio, Apri Iscrizioni. Sono gli stessi pulsanti della pagina della gara, non funzioni nuove.\nSulla Gara 3 non c'è: il turno 4 si avvia solo quando l'ultima partita finisce, e la card lo dice invece di offrire un pulsante spento."
+    },
+    {
+      "id": "conf-o-a",
+      "page": "page-3",
+      "x": 0,
+      "y": 7000,
+      "w": 390,
+      "text": "A · com'è oggi. Il pitch «come si partecipa» occupa 420px prima di qualunque gara, e ogni card ripete l'invito: tre bottoni verdi identici che portano tutti al login."
+    },
+    {
+      "id": "conf-o-b",
+      "page": "page-3",
+      "x": 520,
+      "y": 7000,
+      "w": 390,
+      "text": "B · prima cosa sta succedendo, poi le gare; l'account si chiede una volta sola e dopo aver mostrato perché serve. Sulle card il comando è «vedi», non «accedi»: il verde resta per chi può davvero concludere."
+    },
+    {
+      "id": "conf-o-c",
+      "page": "page-3",
+      "x": 1040,
+      "y": 7000,
+      "w": 390,
+      "text": "C · nessun blocco dedicato all'account. Il comando resta «Iscriviti» — l'azione che l'ospite vuole — e la riga sotto dice cosa serve. Si chiede dove serve, non prima. Costo: la riga si ripete su ogni gara."
+    },
+    {
+      "id": "conf-o-riga",
+      "page": "page-3",
+      "x": 0,
+      "y": 4700,
+      "w": 1430,
+      "text": "OSPITE — la home pubblica è la sua dashboard: /  reindirizza a /dashboard chiunque sia autenticato. In tutte e tre il blocco dei campionati è ridisegnato in 7c: nell'app è l'unico pezzo rimasto a Bootstrap legacy, e va rifatto comunque. La domanda qui è una sola: dove si chiede l'account."
+    },
+    {
+      "id": "casi-intro",
+      "page": "page-4",
+      "x": 0,
+      "y": -190,
+      "w": 1950,
+      "text": "Gli altri casi dell'inventario, nella forma scelta: giocatore C (ogni cosa dentro ciò a cui appartiene), direttore B (comandi sulla card), ospite C (l'account chiesto dove serve).\nRiga di sopra: quando c'è qualcosa. Riga di sotto: quando non c'è niente — è lì che una dashboard si vede se è progettata."
+    },
+    {
+      "id": "casi-attesa",
+      "page": "page-4",
+      "x": 2080,
+      "y": 1490,
+      "w": 910,
+      "text": "Due attese diverse. A sinistra la lista: la ragione non è una sola — la gara è piena (CAPACITY) oppure non prevede la X e serve un numero pari (PARITY). Oggi l'interfaccia mostra «Lista d'attesa #n» in entrambi i casi, e nel secondo si legge come un errore: sei in lista su una gara con 17 posti occupati su 24. In tutti e due la promozione è automatica, in ordine di posizione.\nA destra la partita senza tavolo: il comando principale non può essere «Gioca», perché non c'è niente da aprire. Al suo posto l'unica cosa utile mentre si aspetta — chi occupa i tavoli e quanto manca — e il fatto che l'unica cosa giocabile adesso è la sfida a due, che infatti si prende il bottone scuro."
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-4"
+  }
+}
