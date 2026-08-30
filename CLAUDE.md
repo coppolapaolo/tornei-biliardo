@@ -109,6 +109,20 @@ status check. (`pr-title`, invece, sulle PR gira eccome: vedi il punto 4.)
 > il footer mostra la versione precedente — ed è corretto, perché è quella che
 > sta girando.
 >
+> ⚠️ **Niente parentesi annidate nel corpo del commit.** Il parser
+> Conventional Commits di release-please legge una `(` come apertura di uno
+> *scope* e si aspetta la chiusura: `matchMedia('(min-width: 992px)')` in un
+> corpo lo fa fallire con «unexpected token '(' … valid tokens [)]». Il commit
+> viene allora **saltato in silenzio** — il workflow resta verde e la PR di
+> rilascio «remained the same» — quindi quella PR non compare in
+> `docs/RELEASES.md` e, se fosse l'unica `feat:`, non alzerebbe la versione.
+> Successo il 2026-08-30 con la #287. Il rimedio è a valle e costa una PR:
+> il commit su `main` non si riscrive. **Quando un corpo deve citare del
+> codice con parentesi dentro parentesi, riscrivilo** — «`matchMedia` sul
+> breakpoint lg» dice la stessa cosa. Il titolo, dove le parentesi servono
+> davvero, non è mai un problema: `(#287)` lo mette GitHub e il parser lo
+> conosce.
+
 > `CHANGELOG.md` **resta scritto a mano**: è il racconto. `docs/RELEASES.md` è
 > l'indice generato. Non scambiare i due, e non modificare `Config.VERSION` o
 > `.release-please-manifest.json` a mano (presidio:
@@ -534,6 +548,7 @@ grafo anti-rematch. Non reimplementare algoritmi su grafi — usa `nx`, è già 
 | Dare per garantito l'anti-reincontro Amalfi con un numero dispari di giocatori | La garanzia di ADR-029 è per il caso **pari**, dove si risolve un matching di peso massimo sul grafo dei non-incontri. Nel dispari il sentinella della X si aggiunge **dopo** quel controllo: si passa al greedy, che dopo `len(players)` tentativi ammette esplicitamente il reincontro |
 | Dare per scontato che una partita abbia sempre un vincitore | In «esattamente N rack» con **N pari** il pareggio esiste: a 3-3 la partita è chiusa e `winner_id` resta `None`. Chi somma le vittorie senza contemplarlo perde una riga di classifica; chi scrive «ha vinto X» in una notifica scrive una frase falsa. Con N dispari non può capitare, ed è per questo che il caso passa inosservato (`test_stagione_e2e_risultati.py`) |
 | Datare a `today` una gara che il programma crea dentro un campionato | Le gare numerate stanno in ordine cronologico (ADR-016) e il controllo **non** salta le soft-eliminate. La gara di playoff nasceva datata oggi pur essendo l'ultima del calendario: con una gara ancora nel futuro — anche solo una pianificata e mai giocata, che la terminazione cancella — veniva rifiutata, e al posto della finale compariva un messaggio. La data si sceglie a partire dall'ultima gara, non dall'orologio (`test_playoff_gara_date_sequence.py`) |
+| Parentesi annidate nel **corpo** del commit (`matchMedia('(min-width: 992px)')`) | Il parser di release-please le legge come apertura di *scope* e salta il commit **in silenzio**: workflow verde, PR di rilascio «remained the same», e la funzione non compare in `docs/RELEASES.md`. Successo il 2026-08-30 con la #287. Riscrivi la citazione senza parentesi dentro parentesi |
 | Aprire una PR con un titolo senza prefisso `fix:`/`feat:`/… | Con lo squash merge il titolo **è** il messaggio di commit su `main`, e release-please ne ricava la versione: una PR senza prefisso non alza il numero e non compare in `docs/RELEASES.md`, senza dire niente a nessuno. Il job `pr-title` la blocca prima (vedi CI/CD, punto 4) |
 | Modificare `Config.VERSION` (o `.release-please-manifest.json`) a mano | Le scrive release-please nella PR di rilascio, e il manifest è la sua memoria: correggere la versione a mano fa ripartire il rilascio successivo dal numero vecchio. La riga di `config.py` va lasciata con la sua annotazione `# x-release-please-version` — senza, il bot smette di aggiornarla e il footer si congela in silenzio (`test_version_single_source.py`) |
 | Dedurre chi ha aperto un triangolo a ogni lettura invece di scriverlo sul rack | `break_player_id` si **persiste** alla creazione (ADR-056). Se domani il direttore cambia la regola di apertura della gara, i triangoli già giocati devono continuare a dire chi li ha aperti: dedurli a valle cambierebbe anche quali risultano *break and run*, cioè un numero nel profilo dei giocatori. Stesso schema dell'ADR-027 |

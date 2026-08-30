@@ -17,7 +17,33 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ## [Non rilasciato]
 
+### Aggiunto
+
+- **Segnalare un problema dall'app.** Chi usa l'app non aveva nessun modo di
+  dire che qualcosa non va: il backlog vive su GitHub, e i giocatori non hanno
+  un account GitHub. Ora **Segnalazioni** sta nel menu sotto la Guida, nel
+  footer di ogni pagina e sulla schermata di errore; il modulo ha tre campi, e
+  il contesto tecnico — pagina di provenienza, versione, ruolo, browser — lo
+  allega l'app. Le segnalazioni diventano issue vere e gli stati tornano
+  indietro come notifiche, in italiano corrente: «ricevuta», «presa in
+  considerazione», «fatto», «per ora non la faremo». La segnalazione si salva
+  **prima** su DB e si spedisce dopo, così un GitHub irraggiungibile non porta
+  via il testo appena scritto. (#255, PR #287)
+
+  > **Nota sul rilascio**: questa voce è a mano perché il commit della #287
+  > non è entrato in `docs/RELEASES.md` — vedi «Corretto» qui sotto.
+
 ### Corretto
+
+- **Un messaggio di commit con parentesi annidate spariva dal changelog.**
+  Il corpo del commit della #287 conteneva `matchMedia('(min-width: 992px)')`:
+  il parser Conventional Commits di release-please legge quella `(` come
+  l'apertura di uno *scope* e si ferma con «unexpected token». Il commit viene
+  **saltato in silenzio** — il workflow risulta verde e la PR di rilascio
+  «remained the same» — quindi la funzione non compare in `docs/RELEASES.md` e,
+  se fosse stata l'unica `feat:`, non avrebbe alzato la versione. La regola sta
+  ora in `CLAUDE.md`.
+
 
 - **Le sfide individuali non offrivano le regole di apertura che il modello
   aveva già imparato.** Le tre schermate — avvio rapido, proposta, correzione —
