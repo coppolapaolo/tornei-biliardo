@@ -30,9 +30,14 @@ from dataclasses import dataclass, field
 from datetime import date as date_cls
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+from sqlalchemy import and_, func, or_
+from sqlalchemy.orm import joinedload
+
+from models.base import db
+from models.classification.models import RoundClassification
 from models.competition.models import Gara, Inscription, WaitlistReason
 from models.match.models import Match as TournamentMatch
-from models.status_enum import GaraStatus, ProvaDerivedStatus
+from models.status_enum import GaraStatus, MatchStatus, ProvaDerivedStatus
 
 #: Gli stati in cui una gara è ancora "viva", cioè ha senso mostrarla fra le
 #: cose correnti invece che negli archivi.
@@ -87,6 +92,21 @@ def is_conclusa(gara: Gara) -> bool:
     return gara.get_real_status() in STATI_CONCLUSI
 
 
+@dataclass(frozen=True)
+class PosizioneVM:
+    """Dove sei in classifica, e dopo quale turno.
+
+    Il turno fa parte del dato e non è un dettaglio: la classifica si calcola
+    **quando un turno finisce**, quindi mentre giochi il terzo turno quella
+    che esiste è la classifica dopo il secondo. Mostrarla senza dirlo la
+    farebbe leggere come se tenesse conto della partita che hai in mano.
+    """
+
+    posizione: int
+    su: int
+    turno: int
+
+
 @dataclass
 class GaraCardVM:
     """Una gara come la vede **una persona precisa**.
@@ -107,6 +127,13 @@ class GaraCardVM:
     inscription: Optional[Inscription] = None
     #: Le sue partite ancora aperte in questa gara, per turno crescente.
     matches: List[TournamentMatch] = field(default_factory=list)
+    #: Dove sei in classifica adesso, se la gara ne ha già prodotta una.
+    #: La riempie `enrich_with_progress`, che fa le query.
+    classifica: Optional["PosizioneVM"] = None
+    #: Le partite **degli altri** nel turno in corso, al più tre.
+    altre_partite: List[TournamentMatch] = field(default_factory=list)
+    #: Quante ne restano oltre quelle mostrate.
+    altre_restanti: int = 0
 
     # -- scorciatoie per il template ------------------------------------
     # Tutte derivate: nessuno stato in più da tenere allineato.
@@ -340,12 +367,151 @@ def build_gara_cards(
     return mie, aperte, len(concluse)
 
 
+#: Quante partite degli altri mostrare sotto la propria. Tre bastano a capire
+#: come sta andando il turno; l'elenco completo sta nella pagina della gara.
+ALTRE_PARTITE_MOSTRATE = 3
+
+
+def enrich_with_progress(cards: Iterable[GaraCardVM], user_id: int) -> None:
+    """Riempie «come sta andando» sulle gare in corso: posizione e turno.
+
+    Modifica le card sul posto. Sta separata da `build_gara_cards` perché
+    quella non tocca il database — riordina roba già in memoria — mentre
+    questa fa tre query, e vale la pena poter provare la divisione senza.
+
+    Le query sono **tre in tutto**, non tre per gara: una dashboard con
+    quattro gare in corso costava altrimenti dodici viaggi.
+    """
+    in_corso = [
+        c
+        for c in cards
+        if c.real_status == GaraStatus.PLAYING.value and c.gara.id is not None
+    ]
+    if not in_corso:
+        return
+
+    gara_ids = [c.gara.id for c in in_corso]
+
+    # 1. Qual è l'ultimo turno con una classifica, gara per gara.
+    #    Si parte da 1: il turno 0 è la classifica di **partenza**
+    #    (SeedingService), cioè l'ordine del sorteggio. Spacciarla per una
+    #    classifica provvisoria prima che si giochi vorrebbe dire dire a
+    #    qualcuno che è quarto quando nessuno ha ancora tirato.
+    ultimi = dict(
+        db.session.query(
+            RoundClassification.gara_id,
+            func.max(RoundClassification.round_number),
+        )
+        .filter(
+            RoundClassification.gara_id.in_(gara_ids),
+            RoundClassification.round_number >= 1,
+        )
+        .group_by(RoundClassification.gara_id)
+        .all()
+    )
+
+    # 2. Le righe di quei turni: servono la posizione di chi guarda e quante
+    #    righe ci sono in tutto, cioè il «su quanti».
+    if ultimi:
+        righe = (
+            db.session.query(
+                RoundClassification.gara_id,
+                RoundClassification.user_id,
+                RoundClassification.position,
+            )
+            .filter(
+                or_(
+                    *[
+                        and_(
+                            RoundClassification.gara_id == gid,
+                            RoundClassification.round_number == rnd,
+                        )
+                        for gid, rnd in ultimi.items()
+                    ]
+                )
+            )
+            .all()
+        )
+        quanti: Dict[int, int] = {}
+        mia_posizione: Dict[int, int] = {}
+        for gid, uid, posizione in righe:
+            quanti[gid] = quanti.get(gid, 0) + 1
+            if uid == user_id:
+                mia_posizione[gid] = posizione
+
+        for card in in_corso:
+            posizione = mia_posizione.get(card.gara.id)
+            if posizione is not None:
+                card.classifica = PosizioneVM(
+                    posizione=posizione,
+                    su=quanti[card.gara.id],
+                    turno=ultimi[card.gara.id],
+                )
+
+    # 3. Le partite degli altri nel turno in corso. `current_round` cambia da
+    #    gara a gara, quindi il filtro è una coppia per gara.
+    turni = {c.gara.id: (c.gara.current_round or 1) for c in in_corso}
+    partite = (
+        db.session.query(TournamentMatch)
+        .filter(
+            or_(
+                *[
+                    and_(
+                        TournamentMatch.gara_id == gid,
+                        TournamentMatch.round_number == rnd,
+                    )
+                    for gid, rnd in turni.items()
+                ]
+            )
+        )
+        .options(
+            joinedload(TournamentMatch.player1),
+            joinedload(TournamentMatch.player2),
+        )
+        .all()
+    )
+
+    per_gara: Dict[int, List[TournamentMatch]] = {}
+    for match in partite:
+        if match.player1_id == user_id or match.player2_id == user_id:
+            continue  # la propria sta già in cima alla card
+        if match.is_bye:
+            continue  # una X non è una partita da guardare
+        per_gara.setdefault(match.gara_id, []).append(match)
+
+    for card in in_corso:
+        altre = per_gara.get(card.gara.id, [])
+        # Prima quelle che dicono qualcosa: una partita ancora a zero non
+        # aggiunge niente a «come sta andando il turno».
+        altre.sort(
+            key=lambda m: (
+                not _ha_un_punteggio(m),
+                m.table_assignment if m.table_assignment is not None else 10**6,
+                m.id or 0,
+            )
+        )
+        card.altre_partite = altre[:ALTRE_PARTITE_MOSTRATE]
+        card.altre_restanti = max(0, len(altre) - ALTRE_PARTITE_MOSTRATE)
+
+
+def _ha_un_punteggio(match: TournamentMatch) -> bool:
+    """Qualcuno ha segnato almeno un triangolo, o la partita è chiusa."""
+    return bool(
+        (match.player1_score or 0)
+        or (match.player2_score or 0)
+        or MatchStatus.is_finished(match.status)
+    )
+
+
 __all__ = [
+    "ALTRE_PARTITE_MOSTRATE",
     "CONCLUSE_IN_CODA",
     "GaraCardVM",
     "LIVE_STATES",
+    "PosizioneVM",
     "STATI_CONCLUSI",
     "STATI_IN_CORSO",
     "build_gara_cards",
+    "enrich_with_progress",
     "is_conclusa",
 ]

@@ -22,7 +22,7 @@ from models.user.models import User
 from models.status_enum import GaraStatus, MatchStatus
 
 from .activity_feedback import ActivityFeedbackService, has_any_activity
-from .gara_cards import build_gara_cards
+from .gara_cards import build_gara_cards, enrich_with_progress
 from .view_models import (
     _role_truthy,
     _user_is_match_participant,
@@ -298,6 +298,9 @@ class DashboardService:
             all_current_matches,
             can_inscribe=not _role_truthy(user, "is_admin"),
         )
+        # «Come sta andando»: posizione provvisoria e partite del turno. Sta
+        # in una chiamata a parte perche' e' l'unica che tocca il database.
+        enrich_with_progress(gare_mie, user_id)
 
         # Il blocco di feedback vale anche qui: chi ha il ruolo di direttore
         # non passa mai da `dashboard/player.html` (la rotta smista per ruolo
@@ -464,6 +467,9 @@ class DashboardService:
             all_current_matches,
             can_inscribe=not _role_truthy(user, "is_admin"),
         )
+        # «Come sta andando»: posizione provvisoria e partite del turno. Sta
+        # in una chiamata a parte perche' e' l'unica che tocca il database.
+        enrich_with_progress(gare_mie, user_id)
 
         # Il blocco si mostra una volta per sessione: quando il turno e' gia'
         # stato consumato non lo si calcola nemmeno — sarebbero cinque query

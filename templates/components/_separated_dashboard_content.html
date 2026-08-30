@@ -216,6 +216,53 @@
       </div>
       {% endif %}
 
+      {# Come sta andando la gara. Due cose che stanno **in questa gara** e
+         che prima si potevano sapere solo aprendo la pagina della gara: dove
+         sei, e cosa stanno facendo gli altri nel turno che stai giocando. #}
+      {% if card.classifica or card.altre_partite %}
+      <div class="c7-inset">
+        {% if card.classifica %}
+        {# Una frase sola, non tre pezzi: «Sei» e «su» da soli non si possono
+           tradurre — l'ordine delle parole cambia da lingua a lingua, e in
+           catalogo un frammento di due lettere finisce agganciato a qualunque
+           cosa gli somigli. #}
+        <div class="c7-kicker">
+          {{ _('Classifica provvisoria dopo il turno %(n)s', n=card.classifica.turno) }}
+        </div>
+        <div class="mt-1" style="font-size:14px;font-weight:800">
+          {{ _('Sei %(pos)s° su %(tot)s', pos=card.classifica.posizione, tot=card.classifica.su) }}
+        </div>
+        {% endif %}
+
+        {% if card.altre_partite %}
+        <div class="{{ 'mt-3 pt-3' if card.classifica }}"
+             style="{{ 'border-top:1px solid var(--c7-line-soft)' if card.classifica }}">
+          <div class="c7-kicker">{{ _('Altre partite del turno') }}</div>
+          <div class="d-flex flex-column gap-1 mt-1" style="font-size:12px;font-weight:700">
+            {% for altra in card.altre_partite %}
+            <div class="d-flex align-items-center gap-2">
+              {% if altra.table_assignment %}
+              <span class="c7-num" style="color:var(--c7-ink-muted);flex-shrink:0">T{{ altra.table_assignment }}</span>
+              {% endif %}
+              <span class="text-truncate">
+                {{ altra.player1.username if altra.player1 else '—' }}
+                <span class="c7-num">{{ altra.player1_score or 0 }}–{{ altra.player2_score or 0 }}</span>
+                {{ altra.player2.username if altra.player2 else '—' }}
+              </span>
+            </div>
+            {% endfor %}
+          </div>
+          {% if card.altre_restanti %}
+          <div class="mt-1" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+            {{ ngettext('e un\'altra partita', 'e altre %(num)s partite',
+                        card.altre_restanti, num=card.altre_restanti) }}
+          </div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+
       {# Perché sei in lista d'attesa. Sono due motivi diversi e finora
          l'interfaccia ne mostrava uno solo: «Lista d'attesa #1» su una gara
          mezza vuota si legge come un errore del sito. #}

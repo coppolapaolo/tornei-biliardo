@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-30 22:52+0200\n"
+"POT-Creation-Date: 2026-08-30 23:00+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -898,15 +898,15 @@ msgstr[1] "%(num)s to fill"
 msgid "Dashboard Amministratore"
 msgstr "Admin Dashboard"
 
-#: models/dashboard/dashboard_service.py:313
+#: models/dashboard/dashboard_service.py:316
 msgid "Dashboard Direttore"
 msgstr "Director Dashboard"
 
-#: models/dashboard/dashboard_service.py:478
+#: models/dashboard/dashboard_service.py:484
 msgid "Dashboard Giocatore"
 msgstr "Player Dashboard"
 
-#: models/dashboard/dashboard_service.py:557
+#: models/dashboard/dashboard_service.py:563
 msgid "Vista Pubblica"
 msgstr "Public View"
 
@@ -3532,7 +3532,7 @@ msgstr "Billiard Halls"
 #: templates/components/_history_campionati_tab.html:97
 #: templates/components/_index_campionato_cards.html:114
 #: templates/components/_player_challenge_statistics.html:13
-#: templates/components/_separated_dashboard_content.html:401
+#: templates/components/_separated_dashboard_content.html:448
 #: templates/components/_unified_cards.html:52
 #: templates/player/challenge_detail.html:3 templates/player/history.html:31
 msgid "Esercizi"
@@ -3942,9 +3942,9 @@ msgstr "Competition %(id)s Management - Admin"
 #: templates/components/_index_upcoming.html:18
 #: templates/components/_index_upcoming.html:44
 #: templates/components/_playoff_invitations.html:58
-#: templates/components/_separated_dashboard_content.html:260
-#: templates/components/_separated_dashboard_content.html:322
-#: templates/components/_separated_dashboard_content.html:418
+#: templates/components/_separated_dashboard_content.html:307
+#: templates/components/_separated_dashboard_content.html:369
+#: templates/components/_separated_dashboard_content.html:465
 #: templates/components/_unified_cards.html:108
 #: templates/components/_unified_cards.html:120
 #: templates/gamification/dashboard.html:51 templates/gara_detail.html:12
@@ -3987,7 +3987,7 @@ msgstr "Rounds"
 #: templates/admin/gara_create_standalone.html:298
 #: templates/components/_classification_mobile.html:10
 #: templates/components/_index_campionato_cards.html:180
-#: templates/components/_separated_dashboard_content.html:421
+#: templates/components/_separated_dashboard_content.html:468
 #: templates/gara_detail.html:73 templates/public/vetrina_campionato.html:131
 msgid "Classifica"
 msgstr "Standings"
@@ -4001,7 +4001,7 @@ msgid "Iscritti"
 msgstr "Registered"
 
 #: templates/components/_gara_management.html:51
-#: templates/components/_separated_dashboard_content.html:408
+#: templates/components/_separated_dashboard_content.html:455
 #: templates/gamification/admin/dashboard.html:39 templates/gara_detail.html:77
 #: templates/gara_detail.html:170 templates/gara_detail.html:203
 #: templates/gara_detail.html:325 templates/player/venue_detail.html:147
@@ -4543,7 +4543,7 @@ msgid "Campionati in corso"
 msgstr "Ongoing championships"
 
 #: templates/components/_director_dashboard_content.html:18
-#: templates/components/_separated_dashboard_content.html:369
+#: templates/components/_separated_dashboard_content.html:416
 #: templates/index.html:23
 msgid "Vedi tutti"
 msgstr "View All"
@@ -5260,7 +5260,7 @@ msgstr "Back to championships"
 #: templates/admin/venue_form.html:5 templates/admin/venues_list.html:118
 #: templates/components/_gara_header.html:82
 #: templates/components/_gara_header.html:83
-#: templates/components/_separated_dashboard_content.html:412
+#: templates/components/_separated_dashboard_content.html:459
 #: templates/components/_unified_cards.html:112
 #: templates/components/_unified_cards.html:123
 #: templates/gamification/admin/config_dashboard.html:75
@@ -5325,7 +5325,7 @@ msgstr "Championship completed"
 #: templates/components/_history_campionati_tab.html:92
 #: templates/components/_index_campionato_cards.html:111
 #: templates/components/_playoff_invitations.html:10
-#: templates/components/_separated_dashboard_content.html:400
+#: templates/components/_separated_dashboard_content.html:447
 #: templates/components/_unified_cards.html:51
 msgid "Playoff"
 msgstr "Playoffs"
@@ -7768,7 +7768,7 @@ msgid "Dati incompleti"
 msgstr "Incomplete details"
 
 #: templates/admin/venues_list.html:111
-#: templates/components/_separated_dashboard_content.html:256
+#: templates/components/_separated_dashboard_content.html:303
 #: templates/player/venue_detail.html:17 templates/player/venues.html:42
 msgid "Gestisci"
 msgstr "Manage"
@@ -8917,7 +8917,7 @@ msgstr "Championship Mode:"
 #: templates/components/_history_campionati_tab.html:86
 #: templates/components/_history_campionati_tab.html:87
 #: templates/components/_index_campionato_cards.html:108
-#: templates/components/_separated_dashboard_content.html:399
+#: templates/components/_separated_dashboard_content.html:446
 #: templates/components/_unified_cards.html:50
 msgid "Senza X"
 msgstr "Without X"
@@ -10828,7 +10828,7 @@ msgstr "You can see results and standings, but you cannot take part."
 #: templates/components/_index_campionato_cards.html:78
 #: templates/components/_index_open_inscriptions.html:61
 #: templates/components/_nearby_gare.html:43
-#: templates/components/_separated_dashboard_content.html:327
+#: templates/components/_separated_dashboard_content.html:374
 #: templates/components/_unified_cards.html:141
 #: templates/public/vetrina_gara.html:166
 msgid "Iscriviti"
@@ -10841,7 +10841,7 @@ msgstr "Log in to register"
 
 #: templates/components/_history_campionati_tab.html:12
 #: templates/components/_player_statistics.html:28
-#: templates/components/_separated_dashboard_content.html:363
+#: templates/components/_separated_dashboard_content.html:410
 #: templates/player/history.html:28 templates/public/campionatos_list.html:2
 #: templates/public/campionatos_list.html:7
 msgid "Campionati"
@@ -11337,7 +11337,7 @@ msgstr[0] "%(num)s spot left"
 msgstr[1] "%(num)s spots left"
 
 #: templates/components/_index_open_inscriptions.html:52
-#: templates/components/_separated_dashboard_content.html:315
+#: templates/components/_separated_dashboard_content.html:362
 #: templates/components/_unified_cards.html:74
 msgid "Chiudono il"
 msgstr "Close on"
@@ -12150,7 +12150,7 @@ msgstr "Open proposals"
 
 #: templates/components/_player_dashboard_content.html:19
 #: templates/components/_separated_dashboard_content.html:149
-#: templates/components/_separated_dashboard_content.html:304
+#: templates/components/_separated_dashboard_content.html:351
 msgid "Vedi tutte"
 msgstr "View all"
 
@@ -12635,112 +12635,123 @@ msgid ""
 "uno."
 msgstr "No table assigned yet: the competition assigns one as soon as it frees up."
 
-#: templates/components/_separated_dashboard_content.html:225
+#: templates/components/_separated_dashboard_content.html:230
+msgid "Classifica provvisoria dopo il turno %(n)s"
+msgstr "Provisional standings after round %(n)s"
+
+#: templates/components/_separated_dashboard_content.html:233
+msgid "Sei %(pos)s° su %(tot)s"
+msgstr "You are %(pos)s of %(tot)s"
+
+#: templates/components/_separated_dashboard_content.html:240
+msgid "Altre partite del turno"
+msgstr "Other matches this round"
+
+#: templates/components/_separated_dashboard_content.html:257
+msgid "e un'altra partita"
+msgid_plural "e altre %(num)s partite"
+msgstr[0] "and one more match"
+msgstr[1] "and %(num)s more matches"
+
+#: templates/components/_separated_dashboard_content.html:272
 msgid "Serve un numero pari"
 msgstr "An even number is needed"
 
-#: templates/components/_separated_dashboard_content.html:227
+#: templates/components/_separated_dashboard_content.html:274
 msgid ""
 "Questa gara non prevede la X, quindi i giocatori devono essere in numero "
 "pari e l'ultimo iscritto aspetta. Appena si iscrive qualcun altro entri "
 "tu."
-msgstr ""
-"This competition has no X, so the players must be an even number and the "
-"last one to register waits. As soon as someone else registers, you are "
-"in."
+msgstr "This competition has no X, so the players must be an even number and the last one to register waits. As soon as someone else registers, you are in."
 
-#: templates/components/_separated_dashboard_content.html:230
+#: templates/components/_separated_dashboard_content.html:277
 msgid "La gara è al completo"
 msgstr "The competition is full"
 
-#: templates/components/_separated_dashboard_content.html:232
+#: templates/components/_separated_dashboard_content.html:279
 msgid ""
 "Se qualcuno si ritira entri tu, in ordine di posizione: succede da solo, "
 "non devi rifare l'iscrizione."
-msgstr ""
-"If someone withdraws you take their place, in list order: it happens by "
-"itself, you do not need to register again."
+msgstr "If someone withdraws you take their place, in list order: it happens by itself, you do not need to register again."
 
-#: templates/components/_separated_dashboard_content.html:242
+#: templates/components/_separated_dashboard_content.html:289
 msgid "Gioca la tua partita"
 msgstr "Play your match"
 
-#: templates/components/_separated_dashboard_content.html:248
+#: templates/components/_separated_dashboard_content.html:295
 msgid "Vedi i risultati"
 msgstr "See the results"
 
-#: templates/components/_separated_dashboard_content.html:252
+#: templates/components/_separated_dashboard_content.html:299
 msgid "Gestisci spareggi"
 msgstr "Manage tiebreakers"
 
-#: templates/components/_separated_dashboard_content.html:268
+#: templates/components/_separated_dashboard_content.html:315
 msgid "Esci dalla lista"
 msgstr "Leave the waiting list"
 
-#: templates/components/_separated_dashboard_content.html:268
+#: templates/components/_separated_dashboard_content.html:315
 msgid "Disiscriviti"
 msgstr "Withdraw"
 
-#: templates/components/_separated_dashboard_content.html:278
+#: templates/components/_separated_dashboard_content.html:325
 #, python-format
 msgid "Mostrate %(shown)s delle %(total)s gare che hai concluso"
 msgstr "Showing %(shown)s of the %(total)s competitions you have finished"
 
-#: templates/components/_separated_dashboard_content.html:301
+#: templates/components/_separated_dashboard_content.html:348
 msgid "Aperte, puoi iscriverti"
 msgstr "Open, you can register"
 
-#: templates/components/_separated_dashboard_content.html:327
+#: templates/components/_separated_dashboard_content.html:374
 msgid "Mettiti in lista"
 msgstr "Join the waitlist"
 
-#: templates/components/_separated_dashboard_content.html:343
+#: templates/components/_separated_dashboard_content.html:390
 msgid "Nessuna gara per te, per ora"
 msgstr "No competitions for you yet"
 
-#: templates/components/_separated_dashboard_content.html:344
+#: templates/components/_separated_dashboard_content.html:391
 msgid "Quando un direttore apre le iscrizioni a una gara la trovi qui."
-msgstr ""
-"When a director opens registrations for a competition you will find it "
-"here."
+msgstr "When a director opens registrations for a competition you will find it here."
 
-#: templates/components/_separated_dashboard_content.html:346
+#: templates/components/_separated_dashboard_content.html:393
 msgid "Guarda tutte le gare"
 msgstr "Browse all competitions"
 
-#: templates/components/_separated_dashboard_content.html:365
+#: templates/components/_separated_dashboard_content.html:412
 #, python-format
 msgid "%(count)s attivo"
 msgid_plural "%(count)s attivi"
 msgstr[0] "%(count)s active"
 msgstr[1] "%(count)s active"
 
-#: templates/components/_separated_dashboard_content.html:383
+#: templates/components/_separated_dashboard_content.html:430
 #, python-format
 msgid "%(num)s gara"
 msgid_plural "%(num)s gare"
 msgstr[0] "%(num)s competition"
 msgstr[1] "%(num)s competitions"
 
-#: templates/components/_separated_dashboard_content.html:391
+#: templates/components/_separated_dashboard_content.html:438
 msgid "Prossima"
 msgstr "Next"
 
-#: templates/components/_separated_dashboard_content.html:393
+#: templates/components/_separated_dashboard_content.html:440
 msgid "Nessuna gara programmata"
 msgstr "No competitions scheduled"
 
-#: templates/components/_separated_dashboard_content.html:430
+#: templates/components/_separated_dashboard_content.html:477
 #, python-format
 msgid "Mostrati %(shown)s di %(total)s campionati completati"
 msgstr "Showing %(shown)s of %(total)s completed championships"
 
-#: templates/components/_separated_dashboard_content.html:436
+#: templates/components/_separated_dashboard_content.html:483
 #: templates/public/campionatos_list.html:64
 msgid "Nessun campionato"
 msgstr "No championship"
 
-#: templates/components/_separated_dashboard_content.html:437
+#: templates/components/_separated_dashboard_content.html:484
 msgid "Non ci sono campionati disponibili al momento."
 msgstr "There are no championships available right now."
 

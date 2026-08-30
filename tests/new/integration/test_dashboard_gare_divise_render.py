@@ -17,6 +17,7 @@ from datetime import date, timedelta
 import pytest
 
 from models import db
+from models.classification.models import RoundClassification
 from models.competition.models import Gara, Inscription, WaitlistReason
 from models.match.models import Match
 from models.status_enum import GaraStatus, MatchStatus
@@ -275,3 +276,126 @@ def test_il_saluto_compare_una_volta_sola_e_sta_nella_testata(
     # come intestazione visibile della pagina.
     assert "<title>Dashboard Giocatore</title>" in html
     assert html.count("Dashboard Giocatore") == 1
+
+
+# --------------------------------------------------------------------------
+# «Come sta andando»: la posizione e le altre partite del turno
+# --------------------------------------------------------------------------
+
+
+def _gara_in_corso_con_avversari(db_session, giocatore, quanti=6, turno=2):
+    """Una gara che sta giocando il turno indicato, con N iscritti."""
+    gara = _gara(
+        db_session,
+        name="Gara Con Classifica",
+        status=GaraStatus.PLAYING.value,
+        date=date.today(),
+        current_round=turno,
+        rounds_count=5,
+    )
+    altri = []
+    for _ in range(quanti - 1):
+        u = User(username=f"alt_{_uid()}", email=f"alt_{_uid()}@t.com", role="player")
+        u.set_password("test1234")
+        db_session.add(u)
+        altri.append(u)
+    db_session.flush()
+
+    for u in [giocatore] + altri:
+        db_session.add(Inscription(user_id=u.id, gara_id=gara.id))
+    db_session.flush()
+    return gara, altri
+
+
+@pytest.mark.integration
+def test_la_gara_in_corso_dice_dove_sei_in_classifica(client, db_session, giocatore):
+    gara, altri = _gara_in_corso_con_avversari(db_session, giocatore, quanti=4)
+    ordine = [altri[0], giocatore, altri[1], altri[2]]
+    for posizione, u in enumerate(ordine, start=1):
+        db_session.add(
+            RoundClassification(
+                gara_id=gara.id, round_number=1, user_id=u.id, position=posizione
+            )
+        )
+    db_session.commit()
+
+    _login(client, giocatore)
+    html = client.get("/dashboard").get_data(as_text=True)
+
+    assert "Classifica provvisoria" in html
+    assert "dopo il turno" in html
+    assert "2°" in html and "4" in html
+
+
+@pytest.mark.integration
+def test_la_classifica_di_partenza_non_si_spaccia_per_provvisoria(
+    client, db_session, giocatore
+):
+    """Il turno 0 è l'ordine del sorteggio, non una classifica.
+
+    Dire a qualcuno che è quarto prima che si sia giocato un solo triangolo
+    è un'informazione inventata: quella riga la scrive il seeding.
+    """
+    gara, altri = _gara_in_corso_con_avversari(db_session, giocatore, quanti=4, turno=1)
+    for posizione, u in enumerate([giocatore] + altri, start=1):
+        db_session.add(
+            RoundClassification(
+                gara_id=gara.id, round_number=0, user_id=u.id, position=posizione
+            )
+        )
+    db_session.commit()
+
+    _login(client, giocatore)
+    html = client.get("/dashboard").get_data(as_text=True)
+
+    assert "Classifica provvisoria" not in html
+
+
+@pytest.mark.integration
+def test_si_vedono_le_altre_partite_del_turno_e_quante_ne_restano(
+    client, db_session, giocatore
+):
+    gara, altri = _gara_in_corso_con_avversari(
+        db_session, giocatore, quanti=11, turno=2
+    )
+
+    # La mia, che sta gia' in cima alla card.
+    db_session.add(
+        Match(
+            gara_id=gara.id,
+            round_number=2,
+            player1_id=giocatore.id,
+            player2_id=altri[0].id,
+            status=MatchStatus.PLAYING.value,
+            table_assignment=1,
+        )
+    )
+    # Cinque degli altri, tutte con un punteggio: tre si mostrano, due no.
+    for i in range(1, 10, 2):
+        db_session.add(
+            Match(
+                gara_id=gara.id,
+                round_number=2,
+                player1_id=altri[i].id,
+                player2_id=altri[i + 1].id if i + 1 < len(altri) else None,
+                status=MatchStatus.PLAYING.value,
+                player1_score=3,
+                player2_score=1,
+                table_assignment=i + 1,
+            )
+        )
+    db_session.commit()
+
+    _login(client, giocatore)
+    html = client.get("/dashboard").get_data(as_text=True)
+
+    assert "Altre partite del turno" in html
+    assert "e altre 2 partite" in html
+
+    # La propria partita non e' ripetuta fra le altre. Si guarda **dentro la
+    # sezione**, non su tutta la pagina: in modalita' debug il pannello Quick
+    # Login elenca ogni utente per nome, quindi un `html.count(username)`
+    # conterebbe quello e non direbbe niente sulla dashboard.
+    sezione = html.split("Altre partite del turno", 1)[1].split("</article>", 1)[0]
+    assert altri[0].username not in sezione
+    assert any(u.username in sezione for u in altri[1:])
