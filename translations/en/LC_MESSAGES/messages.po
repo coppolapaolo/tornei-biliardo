@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-30 15:09+0200\n"
+"POT-Creation-Date: 2026-08-30 15:08+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -973,7 +973,7 @@ msgstr ""
 "Several drills in a row, in one go. On your own to practise, or before an"
 " examiner to make it count."
 
-#: models/gamification/frontend_bridge.py:494 templates/base.html:506
+#: models/gamification/frontend_bridge.py:494 templates/base.html:548
 msgid "Diventa esaminatore"
 msgstr "Become an examiner"
 
@@ -1598,7 +1598,7 @@ msgstr "You have been granted the %(role)s role."
 msgid "Che piacere rivederti!"
 msgstr "Nice to see you again!"
 
-#: routes/auth.py:153 templates/base.html:627
+#: routes/auth.py:153 templates/base.html:669
 msgid "Tutto pronto per giocare?"
 msgstr "Ready to play?"
 
@@ -2639,7 +2639,7 @@ msgstr "Drills completed in competition"
 msgid "Esami certificati superati"
 msgstr "Certified exams passed"
 
-#: routes/gamification/features.py:61 templates/base.html:344
+#: routes/gamification/features.py:61 templates/base.html:386
 #: templates/gamification/admin/dashboard.html:102
 #: templates/gamification/admin/dashboard.html:145
 #: templates/gamification/admin/feature_create.html:69
@@ -3010,7 +3010,7 @@ msgstr "Championship visible"
 msgid "Campionato non era nascosto"
 msgstr "Championship was not hidden"
 
-#: routes/player/profile.py:346
+#: routes/player/profile.py:338
 msgid ""
 "Informazioni aggiornate. Abbiamo inviato una nuova email di verifica al "
 "nuovo indirizzo."
@@ -3018,80 +3018,84 @@ msgstr ""
 "Information updated. A new verification email has been sent to the new "
 "address."
 
-#: routes/player/profile.py:352
+#: routes/player/profile.py:344
 msgid "Informazioni aggiornate correttamente."
 msgstr "Information updated successfully."
 
-#: routes/player/profile.py:357
+#: routes/player/profile.py:349
 msgid "Si è verificato un errore durante l'aggiornamento."
 msgstr "An error occurred during the update."
 
-#: routes/player/profile.py:369
+#: routes/player/profile.py:361
 msgid "La tua email è già verificata."
 msgstr "Your email is already verified."
 
-#: routes/player/profile.py:378
+#: routes/player/profile.py:370
 msgid "Email di verifica inviata. Controlla la tua casella di posta."
 msgstr "Verification email sent. Check your inbox."
 
-#: routes/player/profile.py:382
+#: routes/player/profile.py:374
 msgid "Impossibile inviare l'email. Riprova più tardi."
 msgstr "Could not send the email. Please try again later."
 
-#: routes/player/profile.py:384
+#: routes/player/profile.py:376
 #, python-format
 msgid "Errore durante l'invio: %(detail)s"
 msgstr "Error while sending: %(detail)s"
 
-#: routes/player/profile.py:399
+#: routes/player/profile.py:391
 msgid "La nuova password e la conferma non coincidono."
 msgstr "The new password and its confirmation do not match."
 
-#: routes/player/profile.py:412
+#: routes/player/profile.py:404
 msgid "Password aggiornata correttamente."
 msgstr "Password updated successfully."
 
-#: routes/player/profile.py:414
+#: routes/player/profile.py:406
 msgid "Password attuale errata o nuova password non valida."
 msgstr "Current password is wrong, or the new password is not valid."
 
-#: templates/base.html:76
+#: templates/base.html:103
 msgid "competitivo"
 msgstr "competitive"
 
-#: templates/base.html:77
+#: templates/base.html:104
 msgid "globale (tornei + casual)"
 msgstr "global (tournaments + casual)"
 
-#: templates/base.html:170
+#: templates/base.html:198
 msgid "Tornei Biliardo"
 msgstr "Billiard Championships"
 
-#: templates/base.html:172
+#: templates/base.html:200
 msgid "amministrazione"
 msgstr "administration"
 
-#: templates/base.html:173
+#: templates/base.html:201
 msgid "direzione gara"
 msgstr "tournament direction"
 
-#: templates/base.html:174 templates/base.html:275
+#: templates/base.html:202 templates/base.html:309
 msgid "giocatore"
 msgstr "player"
 
-#: templates/base.html:181
+#: templates/base.html:207 templates/base.html:208
+msgid "Nascondi il menu laterale"
+msgstr "Hide the sidebar"
+
+#: templates/base.html:215
 msgid "Generale"
 msgstr "General"
 
-#: templates/admin/kpi.html:37 templates/base.html:183 templates/base.html:444
+#: templates/admin/kpi.html:37 templates/base.html:217 templates/base.html:486
 msgid "Dashboard"
 msgstr "Dashboard"
 
-#: templates/base.html:187
+#: templates/base.html:221
 msgid "Sale Biliardo"
 msgstr "Billiard Halls"
 
-#: templates/base.html:192 templates/base.html:462
+#: templates/base.html:226 templates/base.html:504
 #: templates/challenge/catalog.html:3 templates/challenge/catalog.html:8
 #: templates/components/_gara_info.html:69
 #: templates/components/_history_campionati_tab.html:96
@@ -3104,12 +3108,12 @@ msgstr "Billiard Halls"
 msgid "Esercizi"
 msgstr "Drills"
 
-#: templates/base.html:197 templates/exam/catalog.html:3
+#: templates/base.html:231 templates/exam/catalog.html:3
 #: templates/exam/catalog.html:6 templates/player/history.html:34
 msgid "Esami"
 msgstr "Exams"
 
-#: templates/base.html:202 templates/components/_history_filters.html:70
+#: templates/base.html:236 templates/components/_history_filters.html:70
 #: templates/components/_player_dashboard_content.html:16
 #: templates/individual_match/admin_overview.html:4
 #: templates/individual_match/admin_overview.html:10
@@ -3118,101 +3122,105 @@ msgstr "Exams"
 msgid "Sfide individuali"
 msgstr "Individual matches"
 
-#: templates/base.html:207 templates/base.html:426
+#: templates/base.html:241 templates/base.html:468
 #: templates/gamification/admin/feature_create.html:59
 #: templates/help/_ui.html:10 templates/help/index.html:6
 msgid "Guida"
 msgstr "Guide"
 
-#: templates/base.html:214
+#: templates/base.html:248
 msgid "Persone"
 msgstr "People"
 
 #: templates/admin/accessi.html:37 templates/admin/users_list.html:10
-#: templates/base.html:217 templates/base.html:457
+#: templates/base.html:251 templates/base.html:499
 #: templates/gamification/admin/dashboard.html:103
 msgid "Utenti"
 msgstr "Users"
 
 #: templates/admin/accessi.html:33 templates/admin/accessi.html:111
-#: templates/admin/users_list.html:94 templates/base.html:222
+#: templates/admin/users_list.html:94 templates/base.html:256
 msgid "Accessi"
 msgstr "Sign-ins"
 
-#: templates/base.html:227
+#: templates/base.html:261
 msgid "Richieste Direttore"
 msgstr "Director requests"
 
-#: templates/admin/venue_manager_requests.html:4 templates/base.html:232
+#: templates/admin/venue_manager_requests.html:4 templates/base.html:266
 msgid "Richieste Gestore Sala"
 msgstr "Venue Manager Requests"
 
-#: templates/base.html:243
+#: templates/base.html:277
 msgid "Richieste Esaminatore"
 msgstr "Examiner requests"
 
 #: templates/admin/users_list.html:137 templates/admin/users_list.html:212
-#: templates/base.html:249 templates/components/_user_info_card.html:102
+#: templates/base.html:283 templates/components/_user_info_card.html:102
 msgid "Gamification"
 msgstr "Gamification"
 
-#: templates/base.html:251
+#: templates/base.html:285
 msgid "Traguardi e XP"
 msgstr "Achievements and XP"
 
-#: templates/base.html:261
+#: templates/base.html:295
 msgid "Debug"
 msgstr "Debug"
 
-#: templates/base.html:262 templates/base.html:539
+#: templates/base.html:296 templates/base.html:581
 msgid "Reset DB"
 msgstr "Reset DB"
 
-#: templates/base.html:273
+#: templates/base.html:307
 msgid "amministratore"
 msgstr "administrator"
 
-#: templates/base.html:274
+#: templates/base.html:308
 msgid "direttore"
 msgstr "director"
 
-#: templates/base.html:287 templates/base.html:365
+#: templates/base.html:321 templates/base.html:407
 msgid "Login"
 msgstr "Login"
 
-#: templates/base.html:288
+#: templates/base.html:322
 #: templates/components/_index_registration_info.html:33
 #: templates/login.html:40 templates/no_campionato.html:15
 #: templates/register.html:38
 msgid "Registrati"
 msgstr "Register"
 
-#: templates/base.html:311 templates/components/_gara_header.html:46
+#: templates/base.html:330 templates/base.html:331
+msgid "Mostra il menu laterale"
+msgstr "Show the sidebar"
+
+#: templates/base.html:353 templates/components/_gara_header.html:46
 #: templates/help/index.html:11
 msgid "Home"
 msgstr "Home"
 
-#: templates/base.html:352
+#: templates/base.html:394
 msgid "Lv"
 msgstr "Lv"
 
-#: templates/base.html:381
+#: templates/base.html:423
 msgid "Non è riuscito"
 msgstr "Did not pass"
 
-#: templates/base.html:383
+#: templates/base.html:425
 msgid "Fatto"
 msgstr "Done"
 
-#: templates/base.html:385 templates/player/venue_detail.html:262
+#: templates/base.html:427 templates/player/venue_detail.html:262
 msgid "Attenzione"
 msgstr "Warning"
 
-#: templates/base.html:387
+#: templates/base.html:429
 msgid "Informazione"
 msgstr "Information"
 
-#: templates/base.html:397 templates/challenge/create.html:8
+#: templates/base.html:439 templates/challenge/create.html:8
 #: templates/components/_campionato_create_modal.html:7
 #: templates/components/_challenge_management_modal.html:19
 #: templates/components/_challenge_management_modal.html:76
@@ -3233,120 +3241,120 @@ msgstr "Information"
 msgid "Chiudi"
 msgstr "Close"
 
-#: templates/base.html:430 templates/privacy.html:3
+#: templates/base.html:472 templates/privacy.html:3
 msgid "Privacy e Cookie"
 msgstr "Privacy and Cookies"
 
-#: templates/admin/venue_manager_requests.html:14 templates/base.html:448
+#: templates/admin/venue_manager_requests.html:14 templates/base.html:490
 msgid "Sale"
 msgstr "Venues"
 
-#: templates/base.html:453
+#: templates/base.html:495
 msgid "Sfide"
 msgstr "Matches"
 
-#: templates/base.html:466 templates/components/_user_menu.html:8
+#: templates/base.html:508 templates/components/_user_menu.html:8
 #: templates/player/notifications.html:3 templates/player/notifications.html:8
 msgid "Notifiche"
 msgstr "Notifications"
 
-#: templates/base.html:475
+#: templates/base.html:517
 msgid "DEBUG MODE - Informazioni Sistema"
 msgstr "DEBUG MODE - System Information"
 
-#: templates/base.html:479
+#: templates/base.html:521
 msgid "Utente:"
 msgstr "User:"
 
-#: templates/base.html:486
+#: templates/base.html:528
 msgid "User ID:"
 msgstr "User ID:"
 
-#: templates/base.html:493
+#: templates/base.html:535
 msgid "Esami:"
 msgstr "Exams:"
 
-#: templates/base.html:495 templates/components/_history_exams_tab.html:66
+#: templates/base.html:537 templates/components/_history_exams_tab.html:66
 msgid "esaminatore"
 msgstr "examiner"
 
-#: templates/base.html:495 templates/base.html:498
+#: templates/base.html:537 templates/base.html:540
 msgid "sì"
 msgstr "yes"
 
-#: templates/base.html:495 templates/base.html:498
+#: templates/base.html:537 templates/base.html:540
 msgid "no"
 msgstr "no"
 
-#: templates/base.html:498
+#: templates/base.html:540
 msgid "override"
 msgstr "override"
 
-#: templates/base.html:514
+#: templates/base.html:556
 msgid "Endpoint:"
 msgstr "Endpoint:"
 
-#: templates/base.html:518
+#: templates/base.html:560
 msgid "Method:"
 msgstr "Method:"
 
-#: templates/base.html:524 templates/base.html:538
+#: templates/base.html:566 templates/base.html:580
 msgid "Database:"
 msgstr "Database:"
 
-#: templates/base.html:532
+#: templates/base.html:574
 msgid "Not accessible"
 msgstr "Not accessible"
 
-#: templates/base.html:540
+#: templates/base.html:582
 msgid "Save Reset"
 msgstr "Save Reset"
 
-#: templates/base.html:543
+#: templates/base.html:585
 msgid "Quick Login:"
 msgstr "Quick Login:"
 
-#: templates/base.html:556
+#: templates/base.html:598
 msgid "Test Fixtures:"
 msgstr "Test Fixtures:"
 
-#: templates/base.html:558
+#: templates/base.html:600
 msgid "Player"
 msgstr "Player"
 
-#: templates/base.html:563
+#: templates/base.html:605
 msgid "Fill Gara"
 msgstr "Fill Competition"
 
-#: templates/base.html:567
+#: templates/base.html:609
 msgid "Iscrivi"
 msgstr "Enroll"
 
-#: templates/base.html:571
+#: templates/base.html:613
 msgid "Completare i match in corso del turno attuale con risultati random?"
 msgstr "Complete the current round's in-progress matches with random results?"
 
-#: templates/base.html:572
+#: templates/base.html:614
 msgid "Complete Round"
 msgstr "Complete Round"
 
-#: templates/base.html:576
+#: templates/base.html:618
 msgid "Complete Match"
 msgstr "Complete Match"
 
-#: templates/base.html:580
+#: templates/base.html:622
 msgid "Completare l'intera gara con risultati random fino alla fine?"
 msgstr "Complete the whole competition with random results to the end?"
 
-#: templates/base.html:581
+#: templates/base.html:623
 msgid "Complete Gara"
 msgstr "Complete Competition"
 
-#: templates/base.html:596 templates/base.html:602
+#: templates/base.html:638 templates/base.html:644
 msgid "Conferma"
 msgstr "Confirm"
 
-#: templates/base.html:597 templates/base.html:661
+#: templates/base.html:639 templates/base.html:703
 msgid "Close"
 msgstr "Close"
 
@@ -3356,8 +3364,8 @@ msgstr "Close"
 #: templates/admin/campionato_wizard_step1.html:158
 #: templates/admin/campionato_wizard_step2.html:8
 #: templates/admin/gara_edit.html:11 templates/admin/venue_form.html:296
-#: templates/admin/venue_manager_requests.html:155 templates/base.html:601
-#: templates/base.html:674 templates/challenge/_training_board.html:92
+#: templates/admin/venue_manager_requests.html:155 templates/base.html:643
+#: templates/base.html:716 templates/challenge/_training_board.html:92
 #: templates/challenge/builder.html:33 templates/challenge/builder.html:262
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
@@ -3384,73 +3392,73 @@ msgstr "Close"
 #: templates/player/delete_account.html:7
 #: templates/player/delete_account.html:42
 #: templates/player/my_venue_requests.html:66
-#: templates/player/profile_edit.html:81 templates/player/venue_detail.html:287
+#: templates/player/profile_edit.html:60 templates/player/venue_detail.html:287
 #: templates/player/venues.html:99 templates/roles/request_form.html:63
 msgid "Annulla"
 msgstr "Cancel"
 
-#: templates/base.html:617
+#: templates/base.html:659
 msgid "XP OTTENUTI"
 msgstr "XP EARNED"
 
-#: templates/base.html:618
+#: templates/base.html:660
 msgid "LEVEL UP!"
 msgstr "LEVEL UP!"
 
-#: templates/base.html:619
+#: templates/base.html:661
 msgid "Nuovo livello raggiunto!"
 msgstr "New level reached!"
 
-#: templates/base.html:620
+#: templates/base.html:662
 msgid "NUOVO TRAGUARDO!"
 msgstr "NEW MILESTONE!"
 
-#: templates/base.html:621
+#: templates/base.html:663
 msgid "STREAK!"
 msgstr "STREAK!"
 
-#: templates/base.html:622
+#: templates/base.html:664
 msgid "Freeze attivo"
 msgstr "Freeze active"
 
-#: templates/base.html:623
+#: templates/base.html:665
 msgid "STREAK PERSA"
 msgstr "STREAK LOST"
 
-#: templates/base.html:624
+#: templates/base.html:666
 msgid "Non mollare, riprovare!"
 msgstr "Don't give up, try again!"
 
-#: templates/base.html:625
+#: templates/base.html:667
 msgid "QUEST COMPLETATA!"
 msgstr "QUEST COMPLETED!"
 
-#: templates/base.html:626
+#: templates/base.html:668
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr "WELCOME BACK!"
 
-#: templates/base.html:628
+#: templates/base.html:670
 msgid "Ciao!"
 msgstr "Hello!"
 
-#: templates/base.html:629
+#: templates/base.html:671
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr "Hello %(username)s!"
 
-#: templates/base.html:660
+#: templates/base.html:702
 msgid "Save Reset Snapshot"
 msgstr "Save Reset Snapshot"
 
-#: templates/base.html:665
+#: templates/base.html:707
 msgid "Nome snapshot"
 msgstr "Snapshot name"
 
-#: templates/base.html:669
+#: templates/base.html:711
 msgid "Descrizione (opzionale)"
 msgstr "Description (optional)"
 
-#: templates/admin/campionato_detail.html:171 templates/base.html:675
+#: templates/admin/campionato_detail.html:171 templates/base.html:717
 #: templates/components/_playoff_scoring_form.html:28
 #: templates/gamification/admin/level_config.html:42
 #: templates/gamification/admin/level_config.html:174
@@ -3458,7 +3466,7 @@ msgstr "Description (optional)"
 #: templates/gamification/admin/streak_config.html:152
 #: templates/individual_match/edit_match.html:122
 #: templates/player/privacy_settings.html:98
-#: templates/player/profile_edit.html:78
+#: templates/player/profile_edit.html:57
 msgid "Salva"
 msgstr "Save"
 
@@ -4314,7 +4322,7 @@ msgstr "Your city"
 msgid "Es. Napoli"
 msgstr "E.g. Naples"
 
-#: templates/onboarding.html:36 templates/player/profile_edit.html:62
+#: templates/onboarding.html:36 templates/player/profile_edit.html:41
 msgid ""
 "Usata per trovare sale e proposte vicino a te quando il GPS non è "
 "disponibile."
@@ -4387,15 +4395,6 @@ msgstr ""
 
 #: templates/privacy.html:23
 msgid ""
-"Puoi aggiungere al tuo profilo nome, cognome, telefono e città: sono "
-"tutti facoltativi e li fornisci tu. Nome e cognome sono visibili al "
-"direttore delle gare a cui ti iscrivi, perché possa riconoscerti fra "
-"giocatori con username simili; non compaiono nel tuo profilo pubblico né "
-"nelle classifiche."
-msgstr "You may add your first name, surname, phone number and town to your profile: all of them are optional and you provide them yourself. First name and surname are shown to the director of the competitions you enter, so they can tell you apart from players with similar usernames; they do not appear on your public profile or in the standings."
-
-#: templates/privacy.html:26
-msgid ""
 "I dati personali identificativi sono conservati cifrati nel database. La "
 "cancellazione dell'account avviene tramite anonimizzazione: i risultati "
 "sportivi restano nelle classifiche storiche, ma non sono più "
@@ -4406,11 +4405,11 @@ msgstr ""
 " in the historical rankings, but they can no longer be traced back to "
 "you."
 
-#: templates/privacy.html:31
+#: templates/privacy.html:28
 msgid "Cookie tecnici"
 msgstr "Technical cookies"
 
-#: templates/privacy.html:33
+#: templates/privacy.html:30
 msgid ""
 "Il sito usa cookie tecnici necessari al funzionamento: mantenimento della"
 " sessione di login, protezione dei moduli contro gli invii fraudolenti "
@@ -4422,11 +4421,11 @@ msgstr ""
 "submissions (CSRF) and remembering your chosen language. These cookies do"
 " not require consent because without them the site cannot function."
 
-#: templates/privacy.html:39
+#: templates/privacy.html:36
 msgid "Cookie analitici (Google Analytics)"
 msgstr "Analytics cookies (Google Analytics)"
 
-#: templates/privacy.html:41
+#: templates/privacy.html:38
 msgid ""
 "Usiamo Google Analytics 4 per capire come viene utilizzato il sito: "
 "quante persone lo visitano, quali pagine consultano, da quale dispositivo"
@@ -4437,7 +4436,7 @@ msgstr ""
 "people visit it, which pages they view, from which device and from which "
 "source they arrive. The sole purpose is to improve the platform."
 
-#: templates/privacy.html:44
+#: templates/privacy.html:41
 msgid ""
 "Google Analytics 4 non registra il tuo indirizzo IP completo e non lo usa"
 " per identificarti. Non inviamo a Google il tuo nome, la tua email o "
@@ -4447,7 +4446,7 @@ msgstr ""
 "it to identify you. We do not send Google your name, your email or any "
 "other data that could reveal your identity."
 
-#: templates/privacy.html:47
+#: templates/privacy.html:44
 msgid ""
 "Puoi disattivare la raccolta installando il componente aggiuntivo "
 "ufficiale per la disattivazione di Google Analytics, disponibile su "
@@ -4458,11 +4457,11 @@ msgstr ""
 "browser add-on, available at tools.google.com/dlpage/gaoptout, or by "
 "enabling the Do Not Track option in your browser."
 
-#: templates/privacy.html:53
+#: templates/privacy.html:50
 msgid "I tuoi diritti"
 msgstr "Your rights"
 
-#: templates/privacy.html:55
+#: templates/privacy.html:52
 msgid ""
 "Puoi in qualsiasi momento accedere ai tuoi dati, correggerli, chiederne "
 "la cancellazione o opporti al trattamento. La maggior parte delle "
@@ -4474,7 +4473,7 @@ msgstr ""
 "directly from your profile settings; for the others you can contact us at"
 " the address indicated above."
 
-#: templates/privacy.html:60
+#: templates/privacy.html:57
 msgid "Ultimo aggiornamento: luglio 2026."
 msgstr "Last updated: July 2026."
 
@@ -4492,7 +4491,7 @@ msgstr "Create your account"
 #: templates/components/_player_personal_info.html:18
 #: templates/components/_user_info_card.html:9
 #: templates/player/privacy_settings.html:19 templates/player/profile.html:67
-#: templates/player/profile_edit.html:41 templates/player/venue_detail.html:70
+#: templates/player/profile_edit.html:20 templates/player/venue_detail.html:70
 #: templates/register.html:23
 msgid "Email"
 msgstr "Email"
@@ -4502,7 +4501,7 @@ msgstr "Email"
 #: templates/components/_player_personal_info.html:21
 #: templates/components/_user_info_card.html:10
 #: templates/player/privacy_settings.html:29 templates/player/profile.html:71
-#: templates/player/profile_edit.html:56 templates/player/venue_detail.html:63
+#: templates/player/profile_edit.html:35 templates/player/venue_detail.html:63
 #: templates/register.html:28
 msgid "Telefono"
 msgstr "Phone"
@@ -4852,7 +4851,7 @@ msgstr "Min. competitions played"
 #: templates/gamification/admin/feature_detail.html:35
 #: templates/gamification/admin/features.html:26
 #: templates/gamification/admin/quests.html:22
-#: templates/player/profile_edit.html:25 templates/player/venue_detail.html:49
+#: templates/player/venue_detail.html:49
 #: templates/public/campionato_detail.html:97
 msgid "Nome"
 msgstr "Name"
@@ -5864,7 +5863,7 @@ msgid "Partecipanti"
 msgstr "Participants"
 
 #: templates/admin/gara_create_standalone.html:434
-#: templates/components/_gara_inscriptions.html:66
+#: templates/components/_gara_inscriptions.html:59
 #: templates/components/_match_result_row.html:24
 #: templates/components/_match_result_row.html:28
 #: templates/components/_match_result_row.html:32
@@ -6813,7 +6812,7 @@ msgstr "Address"
 
 #: templates/admin/venue_form.html:60 templates/admin/venues_list.html:32
 #: templates/components/_player_personal_info.html:24
-#: templates/player/profile_edit.html:60 templates/player/venue_detail.html:58
+#: templates/player/profile_edit.html:39 templates/player/venue_detail.html:58
 msgid "Città"
 msgstr "City"
 
@@ -9852,75 +9851,75 @@ msgstr "Add participant"
 msgid "Iscritti attivi"
 msgstr "Active entrants"
 
-#: templates/components/_gara_inscriptions.html:62
+#: templates/components/_gara_inscriptions.html:55
 #, python-format
 msgid "Iscritto il %(date)s"
 msgstr "Registered on %(date)s"
 
-#: templates/components/_gara_inscriptions.html:66
+#: templates/components/_gara_inscriptions.html:59
 msgid "Ha dato forfait"
 msgstr "Forfeited"
 
-#: templates/components/_gara_inscriptions.html:73
+#: templates/components/_gara_inscriptions.html:66
 #, python-format
 msgid "Disiscrivere %(username)s? Riceverà una notifica."
 msgstr "Remove %(username)s? They will get a notification."
 
-#: templates/components/_gara_inscriptions.html:76
+#: templates/components/_gara_inscriptions.html:69
 msgid "Disiscrive il giocatore"
 msgstr "Removes the player"
 
-#: templates/components/_gara_inscriptions.html:100
-#: templates/components/_gara_inscriptions.html:112
+#: templates/components/_gara_inscriptions.html:93
+#: templates/components/_gara_inscriptions.html:105
 #: templates/gamification/admin/achievement_form.html:41
 #: templates/gamification/admin/achievements.html:25
 msgid "Categoria"
 msgstr "Category"
 
-#: templates/components/_gara_inscriptions.html:108
+#: templates/components/_gara_inscriptions.html:101
 #, python-format
 msgid "Categoria di %(username)s in questa gara"
 msgstr "%(username)s's category in this competition"
 
-#: templates/components/_gara_inscriptions.html:128
+#: templates/components/_gara_inscriptions.html:121
 #, python-format
 msgid "Squadra di %(username)s in questa gara"
 msgstr "%(username)s's team in this competition"
 
-#: templates/components/_gara_inscriptions.html:129
+#: templates/components/_gara_inscriptions.html:122
 msgid "Senza squadra"
 msgstr "No team"
 
-#: templates/components/_gara_inscriptions.html:151
+#: templates/components/_gara_inscriptions.html:144
 #: templates/components/_separated_dashboard_content.html:216
 #: templates/components/_separated_dashboard_content.html:360
 #: templates/components/_unified_cards.html:139
 msgid "Lista d'attesa"
 msgstr "Waitlist"
 
-#: templates/components/_gara_inscriptions.html:160
+#: templates/components/_gara_inscriptions.html:153
 #, python-format
 msgid "In lista dal %(date)s"
 msgstr "In list since %(date)s"
 
-#: templates/components/_gara_inscriptions.html:166
+#: templates/components/_gara_inscriptions.html:159
 #, python-format
 msgid "Rimuovere %(username)s dalla lista d'attesa?"
 msgstr "Remove %(username)s from the waiting list?"
 
-#: templates/components/_gara_inscriptions.html:169
+#: templates/components/_gara_inscriptions.html:162
 msgid "Rimuove dalla lista d'attesa"
 msgstr "Remove from waitlist"
 
-#: templates/components/_gara_inscriptions.html:182
+#: templates/components/_gara_inscriptions.html:175
 msgid "Nessun iscritto"
 msgstr "No registered players"
 
-#: templates/components/_gara_inscriptions.html:183
+#: templates/components/_gara_inscriptions.html:176
 msgid "Appena qualcuno si iscrive lo trovi qui."
 msgstr "As soon as someone signs up you will find them here."
 
-#: templates/components/_gara_inscriptions.html:190
+#: templates/components/_gara_inscriptions.html:183
 msgid "Limite massimo raggiunto"
 msgstr "Maximum limit reached"
 
@@ -11567,7 +11566,7 @@ msgid "Non indicata"
 msgstr "Not given"
 
 #: templates/components/_player_personal_info.html:27
-#: templates/player/profile_edit.html:69
+#: templates/player/profile_edit.html:48
 msgid "Squadra"
 msgstr "Team"
 
@@ -16699,30 +16698,19 @@ msgstr "Edit Personal Information"
 msgid "L'username deve essere unico"
 msgstr "The username must be unique"
 
-#: templates/player/profile_edit.html:30
-msgid "Cognome"
-msgstr "Surname"
-
-#: templates/player/profile_edit.html:37
-msgid ""
-"Facoltativi. Li vede il direttore delle gare a cui ti iscrivi, per non "
-"confondere due giocatori con username simili. Non compaiono nel tuo "
-"profilo pubblico né nelle classifiche, dove resti il tuo username."
-msgstr "Optional. They are shown to the director of the competitions you enter, so two players with similar usernames cannot be confused. They never appear on your public profile or in the standings, where your username is what people see."
-
-#: templates/player/profile_edit.html:44
+#: templates/player/profile_edit.html:23
 msgid "Email verificata"
 msgstr "Email verified"
 
-#: templates/player/profile_edit.html:47
+#: templates/player/profile_edit.html:26
 msgid "Email non verificata."
 msgstr "Email not verified."
 
-#: templates/player/profile_edit.html:50
+#: templates/player/profile_edit.html:29
 msgid "Invia link di verifica"
 msgstr "Send verification link"
 
-#: templates/player/profile_edit.html:73
+#: templates/player/profile_edit.html:52
 msgid ""
 "Il circolo o la società con cui giochi di solito. Viene proposta quando "
 "ti iscrivi a una gara che tiene conto delle squadre; lì potrai sempre "

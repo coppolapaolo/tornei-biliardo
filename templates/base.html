@@ -57,6 +57,33 @@
     {% endif %}
 
     <script>
+        {# Colonna laterale richiudibile (issue #153): chi proietta la pagina
+           su uno schermo grande non vuole il menu addosso al contenuto. La
+           classe si mette su <html> qui nel head, prima che il body esista:
+           applicarla dopo farebbe comparire il menu per un fotogramma a ogni
+           cambio pagina. La scelta vive nel browser di chi guarda — e' una
+           preferenza di visualizzazione, non un dato dell'account. #}
+        (function () {
+            var KEY = 'c7-side-hidden';
+            function nascosta() {
+                return document.documentElement.classList.contains(KEY);
+            }
+            window.SideColumn = {
+                set: function (hidden) {
+                    document.documentElement.classList.toggle(KEY, hidden);
+                    try { localStorage.setItem(KEY, hidden ? '1' : '0'); } catch (e) { /* storage negato */ }
+                },
+                toggle: function () { this.set(!nascosta()); }
+            };
+            try {
+                if (localStorage.getItem(KEY) === '1') document.documentElement.classList.add(KEY);
+            } catch (e) { /* storage negato: il menu resta visibile */ }
+            document.addEventListener('click', function (ev) {
+                var comando = ev.target.closest && ev.target.closest('[data-side-toggle]');
+                if (comando) { ev.preventDefault(); window.SideColumn.toggle(); }
+            });
+        })();
+
         // CSRF token helper for AJAX requests
         window.csrfToken = function() {
             var meta = document.querySelector('meta[name="csrf-token"]');
@@ -164,6 +191,7 @@
 
         {# ---------- Sidebar (>= lg) ---------- #}
         <aside class="c7-side">
+            <div class="c7-side__top">
             <a class="c7-side__brand" href="{{ url_for('main.index') }}">
                 <span class="c7-side__mark"><i class="fas fa-circle-nodes"></i></span>
                 <span>
@@ -175,6 +203,12 @@
                     </span>
                 </span>
             </a>
+            <button type="button" class="c7-sidetoggle" data-side-toggle
+                    aria-label="{{ _('Nascondi il menu laterale') }}"
+                    title="{{ _('Nascondi il menu laterale') }}">
+                <i class="fas fa-angles-left"></i>
+            </button>
+            </div>
 
             {% if current_user.is_authenticated %}
             <nav class="c7-side__group">
@@ -289,6 +323,14 @@
             </div>
             {% endif %}
         </aside>
+
+        {# La linguetta che riporta indietro il menu: sta fuori dalla colonna,
+           altrimenti sparirebbe con lei. Compare solo a menu nascosto. #}
+        <button type="button" class="c7-siderestore" data-side-toggle
+                aria-label="{{ _('Mostra il menu laterale') }}"
+                title="{{ _('Mostra il menu laterale') }}">
+            <i class="fas fa-angles-right"></i>
+        </button>
 
         {# ---------- Colonna contenuto ---------- #}
         <div class="c7-main">
