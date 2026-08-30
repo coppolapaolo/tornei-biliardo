@@ -306,6 +306,30 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
 .c7-card--err  { background: var(--c7-err-bg);  color: var(--c7-err-ink); }
 .c7-card--info { background: var(--c7-info-bg); color: var(--c7-info-ink); }
 
+/* Il fatto che sta DENTRO una cosa piu' grande: la tua partita dentro la card
+   della sua gara, l'invito ai playoff dentro il campionato che lo manda.
+   Non e' una card annidata — le card non si annidano, perche' due bordi
+   arrotondati concentrici leggono come un errore di impaginazione — ma un
+   incasso: lo stesso grigio del fondo pagina, che dice «questo sta dentro»
+   senza aggiungere una cornice.
+
+   Nessun valore nuovo: `--c7-bg` e' il fondo, `--c7-r-field` il raggio dei
+   campi. Le varianti colorate servono quando l'incasso porta un avviso, e
+   riusano le stesse terne dei `.c7-card--*` qui sopra. */
+.c7-inset {
+  background: var(--c7-bg);
+  border-radius: var(--c7-r-field);
+  padding: 12px 14px;
+}
+.c7-inset--warn { background: var(--c7-warn-bg); color: var(--c7-warn-body); }
+.c7-inset--warn .c7-kicker { color: var(--c7-warn-ink); }
+.c7-inset--ok   { background: var(--c7-ok-bg);   color: var(--c7-ok-body); }
+.c7-inset--ok .c7-kicker { color: var(--c7-ok-ink); }
+
+/* Dentro una card gia' incassata (`--c7-sunken`) il fondo pagina non si
+   distingue piu': li' l'incasso torna al bianco sporco della card. */
+.c7-card--locked .c7-inset { background: var(--c7-card); }
+
 .c7-grid { display: grid; gap: var(--c7-gap); }
 
 /* La fascia di numeri in cima a una schermata: due colonne sotto i 992px,

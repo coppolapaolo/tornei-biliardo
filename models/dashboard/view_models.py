@@ -196,3 +196,19 @@ class DashboardVM:
     # campionato di appartenenza, non vengono duplicate qui.
     standalone_completed_recent: Optional[List[Any]] = None
     standalone_completed_total: int = 0
+
+    # Le gare divise fra «le tue» e «aperte, puoi iscriverti»
+    # (models/dashboard/gara_cards.py). Sono `GaraCardVM`, cioè la gara più il
+    # posto che ci occupa chi guarda: la sua iscrizione — lista d'attesa e
+    # motivo compresi — e le sue partite ancora aperte in quella gara.
+    #
+    # Prima questa divisione non c'era: il template mostrava una sezione
+    # «Gare» che conteneva ogni gara viva del sistema, e ricostruiva
+    # l'appartenenza iterando `gara.inscriptions` card per card — una query a
+    # gara per una riga che la dashboard aveva già in mano qui sotto, in
+    # `my_inscriptions`.
+    gare_mie: Optional[List[Any]] = None
+    gare_aperte: Optional[List[Any]] = None
+    #: Quante gare concluse ha in tutto chi guarda: la coda mostrata è tagliata
+    #: (`CONCLUSE_IN_CODA`) e questo è il «di M» della riga sotto l'elenco.
+    gare_concluse_total: int = 0

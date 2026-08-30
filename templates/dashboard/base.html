@@ -1,7 +1,25 @@
 {% extends "base.html" %}
 {% block title %}{{ vm.title }}{% endblock %}
 
+{# La testata porta il **saluto**, non «Dashboard Giocatore».
+
+   Prima la stessa cosa era scritta due volte a tre centimetri di distanza: il
+   titolo della pagina in cima e, subito sotto, un blocco «GIOCATORE / Ciao
+   paolo» dentro il contenuto. Il titolo diceva anche meno — chi e' arrivato
+   sulla propria home lo sa che e' la sua home; quello che non sa e' con quale
+   dei suoi ruoli il sito lo sta trattando, ed e' esattamente il sottotitolo.
+
+   `page_title`/`page_sub`/`page_actions` sono i blocchi di `base.html`: una
+   testata sola per tutto il sito. Il titolo del browser (`title`) resta
+   «Dashboard Giocatore», che nella linguetta serve. #}
+{% block page_title %}{{ _('Ciao') }} {{ current_user.username }}{% endblock %}
+{% block page_sub %}
+  {%- if current_user.is_admin %}{{ _('Amministratore') }}
+  {%- elif current_user.is_director %}{{ _('Direttore di gara') }}
+  {%- else %}{{ _('Giocatore') }}{% endif -%}
+{% endblock %}
+{% block page_actions %}{% include "components/_unified_dashboard_header.html" %}{% endblock %}
+
 {% block content %}
-  {% block dashboard_header %}{% endblock %}
   {% block dashboard_content %}{% endblock %}
 {% endblock %}

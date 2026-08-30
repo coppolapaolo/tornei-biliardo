@@ -22,6 +22,7 @@ from models.user.models import User
 from models.status_enum import GaraStatus, MatchStatus
 
 from .activity_feedback import ActivityFeedbackService, has_any_activity
+from .gara_cards import build_gara_cards
 from .view_models import (
     _role_truthy,
     _user_is_match_participant,
@@ -288,6 +289,16 @@ class DashboardService:
             _standalone_completed_tail(standalones_all)
         )
 
+        # Le gare divise fra «le tue» e «aperte»: la divisione e' una regola
+        # di dominio (chi vede cosa) e sta in `gara_cards`, non in Jinja.
+        # Tutti e tre gli argomenti sono gia' in memoria: nessuna query nuova.
+        gare_mie, gare_aperte, gare_concluse_total = build_gara_cards(
+            unified_items,
+            all_my_inscriptions,
+            all_current_matches,
+            can_inscribe=not _role_truthy(user, "is_admin"),
+        )
+
         # Il blocco di feedback vale anche qui: chi ha il ruolo di direttore
         # non passa mai da `dashboard/player.html` (la rotta smista per ruolo
         # piu' alto), quindi la variante «Come vanno le tue gare» del design
@@ -312,6 +323,9 @@ class DashboardService:
             campionati_completed_total=completed_total,
             standalone_completed_recent=standalone_completed_recent,
             standalone_completed_total=standalone_completed_total,
+            gare_mie=gare_mie,
+            gare_aperte=gare_aperte,
+            gare_concluse_total=gare_concluse_total,
             unified_items=unified_items,
             selected_campionato=selected,
             selected_gara=selected_gara,
@@ -441,6 +455,16 @@ class DashboardService:
             _standalone_completed_tail(all_standalone_garas)
         )
 
+        # Le gare divise fra «le tue» e «aperte»: la divisione e' una regola
+        # di dominio (chi vede cosa) e sta in `gara_cards`, non in Jinja.
+        # Tutti e tre gli argomenti sono gia' in memoria: nessuna query nuova.
+        gare_mie, gare_aperte, gare_concluse_total = build_gara_cards(
+            unified_items,
+            all_my_inscriptions,
+            all_current_matches,
+            can_inscribe=not _role_truthy(user, "is_admin"),
+        )
+
         # Il blocco si mostra una volta per sessione: quando il turno e' gia'
         # stato consumato non lo si calcola nemmeno — sarebbero cinque query
         # per qualcosa che non finisce in pagina.
@@ -468,6 +492,9 @@ class DashboardService:
             campionati_completed_total=completed_total,
             standalone_completed_recent=standalone_completed_recent,
             standalone_completed_total=standalone_completed_total,
+            gare_mie=gare_mie,
+            gare_aperte=gare_aperte,
+            gare_concluse_total=gare_concluse_total,
             unified_items=unified_items,
             selected_campionato=selected,
             selected_gara=selected_gara,
