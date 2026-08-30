@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.4.0...v1.4.1) (2026-08-30)
+
+
+### Correzioni
+
+* gli stati del campionato dicono cosa manca, non due cose insieme ([#270](https://github.com/coppolapaolo/tornei-biliardo/issues/270)) ([eaaf1fb](https://github.com/coppolapaolo/tornei-biliardo/commit/eaaf1fb0be8920395169d46f57e79c1fe12bbd52)), closes [#242](https://github.com/coppolapaolo/tornei-biliardo/issues/242)
+
 ## [1.4.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.3.0...v1.4.0) (2026-08-29)
 
 
