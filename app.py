@@ -355,9 +355,15 @@ def create_app(config_name=None):
             minimum_players_for,
         )
         from models.match.break_rules import BreakRule, StartRule
+        from models.dashboard.comandi import ComandoDirezione
 
         return {
             "GaraStatus": GaraStatus,
+            # Il comando che una gara aspetta dal suo direttore. Non sta in
+            # colonna e vive solo dentro una richiesta: e' qui per la stessa
+            # ragione degli altri — un template che deve nominarlo non deve
+            # riscriverne il valore a mano.
+            "ComandoDirezione": ComandoDirezione,
             "MatchStatus": MatchStatus,
             # `Gara.get_real_status()` restituisce sia valori di GaraStatus sia
             # stati *derivati* che non esistono su disco (iscrizioni non ancora

@@ -35,6 +35,7 @@ from sqlalchemy.orm import joinedload
 
 from models.base import db
 from models.classification.models import RoundClassification
+from models.dashboard.comandi import ComandoVM, comando_per
 from models.competition.models import Gara, Inscription, WaitlistReason
 from models.match.models import Match as TournamentMatch
 from models.status_enum import GaraStatus, MatchStatus, ProvaDerivedStatus
@@ -134,6 +135,10 @@ class GaraCardVM:
     altre_partite: List[TournamentMatch] = field(default_factory=list)
     #: Quante ne restano oltre quelle mostrate.
     altre_restanti: int = 0
+    #: Il comando che questa gara aspetta dal suo direttore, se lo dirigi.
+    #: Vedi `models/dashboard/comandi.py`: qui si **annuncia**, si esegue
+    #: nella pagina della gara.
+    comando: Optional["ComandoVM"] = None
 
     # -- scorciatoie per il template ------------------------------------
     # Tutte derivate: nessuno stato in più da tenere allineato.
@@ -494,6 +499,18 @@ def enrich_with_progress(cards: Iterable[GaraCardVM], user_id: int) -> None:
         card.altre_restanti = max(0, len(altre) - ALTRE_PARTITE_MOSTRATE)
 
 
+def enrich_with_comandi(cards: Iterable[GaraCardVM]) -> None:
+    """Dice, per ogni gara che dirigi, cosa sta aspettando da te.
+
+    Solo per quelle che dirigi: a chi gioca e basta non serve sapere che la
+    gara aspetta l'avvio del turno, e chiederlo costerebbe una query di
+    parimerito per gara.
+    """
+    for card in cards:
+        if card.can_manage:
+            card.comando = comando_per(card.gara)
+
+
 def _ha_un_punteggio(match: TournamentMatch) -> bool:
     """Qualcuno ha segnato almeno un triangolo, o la partita è chiusa."""
     return bool(
@@ -512,6 +529,7 @@ __all__ = [
     "STATI_CONCLUSI",
     "STATI_IN_CORSO",
     "build_gara_cards",
+    "enrich_with_comandi",
     "enrich_with_progress",
     "is_conclusa",
 ]

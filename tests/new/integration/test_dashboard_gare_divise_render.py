@@ -483,3 +483,93 @@ def test_una_sfida_gia_conclusa_non_e_una_cosa_da_fare(client, db_session, gioca
     html = client.get("/dashboard").get_data(as_text=True)
 
     assert "Sfide a due" not in html
+
+
+# --------------------------------------------------------------------------
+# Il comando che la gara aspetta dal suo direttore
+# --------------------------------------------------------------------------
+
+
+@pytest.fixture
+def direttore(db_session):
+    user = User(username=f"dir_{_uid()}", email=f"dir_{_uid()}@t.com", role="director")
+    user.set_password("test1234")
+    db_session.add(user)
+    db_session.flush()
+    return user
+
+
+@pytest.mark.integration
+def test_la_gara_che_dirigo_dice_cosa_aspetta_da_me(client, db_session, direttore):
+    """Prima diceva «Gestisci», uguale per ogni stato.
+
+    Con cinque gare in mano, capire quale aspetta te e per fare cosa voleva
+    aprirle una a una.
+    """
+    _gara(
+        db_session,
+        name="Gara Da Aprire",
+        status=GaraStatus.SETUP.value,
+        director_id=direttore.id,
+    )
+    db_session.commit()
+
+    _login(client, direttore)
+    html = client.get("/dashboard").get_data(as_text=True)
+
+    assert "Gara Da Aprire" in html
+    sezione = html.split("Gara Da Aprire", 1)[1].split("</article>", 1)[0]
+    assert "Apri le iscrizioni" in sezione
+    assert "Dirigi" in sezione
+
+
+@pytest.mark.integration
+def test_senza_abbastanza_iscritti_la_card_dice_quanti_ne_mancano(
+    client, db_session, direttore
+):
+    gara = _gara(
+        db_session,
+        name="Gara Vuota",
+        status=GaraStatus.INSCRIPTION.value,
+        director_id=direttore.id,
+        min_participants=6,
+        inscription_start=utc_now() - timedelta(days=1),
+        inscription_end=utc_now() + timedelta(days=7),
+    )
+    db_session.add(Inscription(user_id=direttore.id, gara_id=gara.id))
+    db_session.commit()
+
+    _login(client, direttore)
+    html = client.get("/dashboard").get_data(as_text=True)
+
+    sezione = html.split("Gara Vuota", 1)[1].split("</article>", 1)[0]
+    assert "Avvia la gara" in sezione
+    assert "abbastanza iscritti" in sezione
+    assert "6" in sezione
+
+
+@pytest.mark.integration
+def test_a_chi_gioca_e_basta_non_si_annuncia_nessun_comando(
+    client, db_session, giocatore, direttore
+):
+    """Il comando è del direttore: a un giocatore non dice niente.
+
+    E non è solo estetica: calcolarlo costa una query di parimerito a gara.
+    """
+    gara = _gara(
+        db_session,
+        name="Gara Altrui",
+        status=GaraStatus.INSCRIPTION.value,
+        director_id=direttore.id,
+        inscription_start=utc_now() - timedelta(days=1),
+        inscription_end=utc_now() + timedelta(days=7),
+    )
+    db_session.add(Inscription(user_id=giocatore.id, gara_id=gara.id))
+    db_session.commit()
+
+    _login(client, giocatore)
+    html = client.get("/dashboard").get_data(as_text=True)
+
+    sezione = html.split("Gara Altrui", 1)[1].split("</article>", 1)[0]
+    assert "Avvia la gara" not in sezione
+    assert "Dirigi" not in sezione

@@ -282,6 +282,19 @@
       </div>
       {% endif %}
 
+      {# Perche' il comando non si puo' ancora dare. Annunciarlo comunque e' il
+         punto: il direttore deve sapere che quella gara aspetta lui, e cosa
+         le manca — altrimenti resta ferma e nessuno sa perche'. #}
+      {% if card.comando and card.comando.bloccato and card.comando.minimo %}
+      <div class="c7-inset c7-inset--warn">
+        <div class="c7-kicker">{{ _('Non ci sono ancora abbastanza iscritti') }}</div>
+        <p class="mb-0 mt-1" style="font-size:12px;font-weight:600;line-height:1.55">
+          {{ _('Ne servono almeno %(min)s, per ora sono %(now)s.',
+                min=card.comando.minimo, now=card.comando.iscritti) }}
+        </p>
+      </div>
+      {% endif %}
+
       {# Azioni #}
       <div class="d-flex gap-2 flex-wrap">
         {% if partita %}
@@ -294,14 +307,36 @@
           <a href="{{ url_for('admin.competition.gara_detail', gara_id=card.id) }}" class="btn btn-secondary btn-sm flex-fill">
             {{ _('Vedi i risultati') }}
           </a>
-        {% elif card.can_manage and card.real_status == GaraStatus.AWAITING_SSR.value %}
-          <a href="{{ url_for('admin.competition.gara_detail', gara_id=card.id) }}" class="btn btn-primary btn-sm flex-fill">
-            {{ _('Gestisci spareggi') }}
-          </a>
+
         {% elif card.can_manage %}
-          <a href="{{ url_for('admin.competition.gara_detail', gara_id=card.id) }}" class="btn btn-secondary btn-sm flex-fill">
-            {{ _('Gestisci') }}
+          {# La gara che dirigi dice **cosa aspetta da te**, non un generico
+             «Gestisci» uguale per tutti gli stati. Con cinque gare in mano,
+             capire quale aspetta te e per fare cosa voleva aprirle una a una.
+
+             Il comando porta alla pagina della gara, dove il pulsante vero
+             sta gia': il pannello di gestione ha otto rami e dipende da
+             variabili che calcola quella route, quindi una seconda copia qui
+             si staccherebbe al primo cambiamento senza che nessun test se ne
+             accorga. Qui si annuncia; la' si esegue. #}
+          <a href="{{ url_for('admin.competition.gara_detail', gara_id=card.id) }}"
+             class="btn btn-sm flex-fill {{ 'btn-secondary' if (card.comando is none or card.comando.bloccato) else 'btn-success' }}">
+            {% if card.comando is none %}
+              {{ _('Gestisci') }}
+            {% elif card.comando.tipo == ComandoDirezione.APRI_ISCRIZIONI.value %}
+              {{ _('Apri le iscrizioni') }}
+            {% elif card.comando.tipo == ComandoDirezione.AVVIA_GARA.value %}
+              {{ _('Avvia la gara') }}
+            {% elif card.comando.tipo == ComandoDirezione.ESTENDI_ISCRIZIONI.value %}
+              {{ _('Estendi le iscrizioni') }}
+            {% elif card.comando.tipo == ComandoDirezione.AVVIA_TURNO.value %}
+              {{ _('Avvia il turno %(n)s', n=card.comando.turno) }}
+            {% elif card.comando.tipo == ComandoDirezione.AVVIA_SPAREGGIO.value %}
+              {{ _('Avvia lo spareggio') }}
+            {% elif card.comando.tipo == ComandoDirezione.TERMINA_GARA.value %}
+              {{ _('Termina la gara') }}
+            {% endif %}
           </a>
+
         {% elif card.can_view_details and not partita %}
           <a href="{{ url_for('admin.competition.gara_detail', gara_id=card.id) }}" class="btn btn-secondary btn-sm flex-fill">
             {{ _('Dettagli') }}
