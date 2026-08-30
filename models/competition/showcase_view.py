@@ -47,6 +47,13 @@ RIGHE_CLASSIFICA_VETRINA = 8
 #: che non si contano e non si leggono: sopra, la barra torna piena.
 MAX_TACCHE_POSTI = 32
 
+#: La grafica del sito, quando il direttore non ha caricato una locandina.
+#: È **la stessa** che finisce in `og:image`, ed è il punto: chi vede
+#: l'anteprima nel messaggio e poi apre il link ritrova la stessa figura. Un
+#: ripiego scritto due volte — una per i meta e una per la pagina — è un
+#: ripiego destinato a divergere.
+LOCANDINA_DI_RIPIEGO = "/static/img/social/vetrina-default.png"
+
 
 @dataclass(frozen=True)
 class RigaInformativa:
@@ -90,7 +97,9 @@ class Vetrina:
     #: La riga sopra il titolo: il campionato e a che numero di prova siamo.
     sopratitolo: Optional[str]
     descrizione: Optional[str]
-    banner_url: Optional[str]
+    #: L'immagine che apre la pagina: la locandina del direttore, oppure
+    #: quella del sito. Non è mai `None` — vedi `LOCANDINA_DI_RIPIEGO`.
+    banner_url: str
     data_testo: str = ""
     ora_testo: Optional[str] = None
     organizzatore: Optional[str] = None
@@ -384,7 +393,9 @@ def costruisci_vetrina(gara: Gara) -> Vetrina:
         )
 
     banner = gara.effective_banner_path
-    banner_url = ImagePathManager.url_from_db_path(banner) if banner else None
+    banner_url = (
+        ImagePathManager.url_from_db_path(banner) if banner else LOCANDINA_DI_RIPIEGO
+    )
 
     link = gara.effective_external_link
 

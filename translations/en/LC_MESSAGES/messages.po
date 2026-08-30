@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-30 18:41+0200\n"
+"POT-Creation-Date: 2026-08-30 19:37+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -70,7 +70,7 @@ msgstr "Bank Pool"
 msgid "Rotation"
 msgstr "Rotation"
 
-#: models/campionato/showcase_view.py:133
+#: models/campionato/showcase_view.py:135
 #: templates/components/_index_archive.html:35
 #: templates/components/_match_card.html:28
 #: templates/components/_match_result_row.html:106
@@ -80,12 +80,12 @@ msgstr "Rotation"
 msgid "Conclusa"
 msgstr "Finished"
 
-#: models/campionato/showcase_view.py:135
-#,  python-format
+#: models/campionato/showcase_view.py:137
+#, python-format
 msgid "Vince %(nome)s"
 msgstr "Winner: %(nome)s"
 
-#: models/campionato/showcase_view.py:137
+#: models/campionato/showcase_view.py:139
 #: templates/components/_bracket_view.html:52
 #: templates/components/_gara_matches.html:49
 #: templates/components/_match_card.html:26
@@ -107,24 +107,24 @@ msgstr "Winner: %(nome)s"
 msgid "In corso"
 msgstr "In Progress"
 
-#: models/campionato/showcase_view.py:140
+#: models/campionato/showcase_view.py:142
 #: templates/components/_index_open_inscriptions.html:19
 #: templates/components/_player_dashboard_content.html:30
 #: templates/individual_match/proposal_detail.html:42
 msgid "Aperta"
 msgstr "Open"
 
-#: models/campionato/showcase_view.py:148
-#,  python-format
+#: models/campionato/showcase_view.py:150
+#, python-format
 msgid "%(n)s iscritti · %(liberi)s liberi"
 msgstr "%(n)s registered · %(liberi)s free"
 
-#: models/campionato/showcase_view.py:150
-#,  python-format
+#: models/campionato/showcase_view.py:152
+#, python-format
 msgid "%(n)s iscritti"
 msgstr "%(n)s registered"
 
-#: models/campionato/showcase_view.py:153
+#: models/campionato/showcase_view.py:155
 #: templates/components/_bye_challenges.html:32
 #: templates/components/_match_card.html:24
 #: templates/components/_match_result_row.html:94
@@ -136,64 +136,59 @@ msgstr "%(n)s registered"
 msgid "Da giocare"
 msgstr "To play"
 
-#: models/campionato/showcase_view.py:156
-#,  python-format
+#: models/campionato/showcase_view.py:158
+#, python-format
 msgid "Iscrizioni dal %(data)s"
 msgstr "Registration opens %(data)s"
 
-#: models/campionato/showcase_view.py:191
-
+#: models/campionato/showcase_view.py:193
 msgid "Classifica a triangoli vinti"
 msgstr "Standings by racks won"
 
-#: models/campionato/showcase_view.py:193
-
+#: models/campionato/showcase_view.py:195
 msgid "Classifica a punti per piazzamento"
 msgstr "Standings by placement points"
 
-#: models/campionato/showcase_view.py:194
-
+#: models/campionato/showcase_view.py:196
 msgid "Classifica a vittorie"
 msgstr "Standings by wins"
 
-#: models/campionato/showcase_view.py:210
-
+#: models/campionato/showcase_view.py:212
 msgid "T"
 msgstr "R"
 
-#: models/campionato/showcase_view.py:212
+#: models/campionato/showcase_view.py:214
 #: templates/individual_match/statistics.html:204
 #: templates/individual_match/statistics.html:212
 msgid "P"
 msgstr "L"
 
-#: models/campionato/showcase_view.py:214
-#: models/competition/showcase_view.py:273
+#: models/campionato/showcase_view.py:216
+#: models/competition/showcase_view.py:320
 #: templates/individual_match/availability.html:17
 #: templates/individual_match/statistics.html:203
 #: templates/individual_match/statistics.html:212
 msgid "V"
 msgstr "W"
 
-#: models/campionato/showcase_view.py:245
-#: models/campionato/showcase_view.py:250
-#,  python-format
+#: models/campionato/showcase_view.py:247
+#: models/campionato/showcase_view.py:252
+#, python-format
 msgid "%(a)s – %(b)s"
 msgstr "%(a)s – %(b)s"
 
-#: models/campionato/showcase_view.py:259
-
+#: models/campionato/showcase_view.py:261
 msgid "Campionato concluso"
 msgstr "Championship finished"
 
-#: models/campionato/showcase_view.py:264
-#,  python-format
+#: models/campionato/showcase_view.py:266
+#, python-format
 msgid "Iscrizioni aperte · gara %(n)s"
 msgstr "Registration open · competition %(n)s"
 
-#: models/campionato/showcase_view.py:266
-#: models/competition/showcase_view.py:245
-#: models/competition/showcase_view.py:413
+#: models/campionato/showcase_view.py:268
+#: models/competition/showcase_view.py:292
+#: models/competition/showcase_view.py:461
 #: templates/components/_index_open_inscriptions.html:6
 #: templates/components/_nearby_gare.html:40
 #: templates/components/_separated_dashboard_content.html:233
@@ -201,34 +196,32 @@ msgstr "Registration open · competition %(n)s"
 msgid "Iscrizioni aperte"
 msgstr "Open registrations"
 
-#: models/campionato/showcase_view.py:271
-#: models/competition/showcase_view.py:243
+#: models/campionato/showcase_view.py:273
+#: models/competition/showcase_view.py:290
 msgid "Gara in corso"
 msgstr "Competition in progress"
 
-#: models/campionato/showcase_view.py:275
-
+#: models/campionato/showcase_view.py:277
 msgid "Tutte le gare giocate"
 msgstr "All competitions played"
 
-#: models/campionato/showcase_view.py:277
-#,  python-format
+#: models/campionato/showcase_view.py:279
+#, python-format
 msgid "In corso · %(n)s gare giocate"
 msgstr "In progress · %(n)s competitions played"
 
-#: models/campionato/showcase_view.py:278
-
+#: models/campionato/showcase_view.py:280
 msgid "Non ancora iniziato"
 msgstr "Not started yet"
 
-#: models/campionato/showcase_view.py:336
-#: models/competition/showcase_view.py:374
+#: models/campionato/showcase_view.py:342
+#: models/competition/showcase_view.py:422
 msgid "Regolamento e informazioni"
 msgstr "Rules and information"
 
-#: models/campionato/showcase_view.py:361
-#: templates/public/vetrina_campionato.html:64
-#,  python-format
+#: models/campionato/showcase_view.py:367
+#: templates/public/vetrina_campionato.html:62
+#, python-format
 msgid "%(n)s gare"
 msgstr "%(n)s competitions"
 
@@ -313,60 +306,60 @@ msgstr ""
 "Competition certified by tiebreaker: cancel the tiebreaker first to "
 "cancel the round"
 
-#: models/competition/showcase_view.py:149
+#: models/competition/showcase_view.py:196
 #, python-format
 msgid "al %(n)s"
 msgstr "race to %(n)s"
 
-#: models/competition/showcase_view.py:151
+#: models/competition/showcase_view.py:198
 #, python-format
 msgid "%(n)s set"
 msgstr "exactly %(n)s sets"
 
-#: models/competition/showcase_view.py:154
+#: models/competition/showcase_view.py:201
 #, python-format
 msgid "%(disciplina)s — %(set)s, ogni set al %(rack)s"
 msgstr "%(disciplina)s — %(set)s, each set race to %(rack)s"
 
-#: models/competition/showcase_view.py:162
+#: models/competition/showcase_view.py:209
 #, python-format
 msgid "%(disciplina)s — al %(n)s"
 msgstr "%(disciplina)s — race to %(n)s"
 
-#: models/competition/showcase_view.py:165
+#: models/competition/showcase_view.py:212
 #, python-format
 msgid "%(disciplina)s — %(n)s rack esatti"
 msgstr "%(disciplina)s — exactly %(n)s racks"
 
-#: models/competition/showcase_view.py:230
-#,  python-format
+#: models/competition/showcase_view.py:277
+#, python-format
 msgid "%(campionato)s · gara %(n)s"
 msgstr "%(campionato)s · competition %(n)s"
 
-#: models/competition/showcase_view.py:241
-#: models/competition/showcase_view.py:407 routes/main.py:451
+#: models/competition/showcase_view.py:288
+#: models/competition/showcase_view.py:455 routes/main.py:448
 msgid "Gara conclusa"
 msgstr "Competition finished"
 
-#: models/competition/showcase_view.py:250 routes/main.py:421
+#: models/competition/showcase_view.py:297 routes/main.py:418
 #: templates/components/_unified_cards.html:79
 msgid "Iscrizioni non ancora aperte"
 msgstr "Registrations not yet open"
 
-#: models/competition/showcase_view.py:251 routes/main.py:432
+#: models/competition/showcase_view.py:298 routes/main.py:429
 msgid "Iscrizioni chiuse"
 msgstr "Registration closed"
 
-#: models/competition/showcase_view.py:305
-#: models/competition/showcase_view.py:403
+#: models/competition/showcase_view.py:351
+#: models/competition/showcase_view.py:451
 #: templates/individual_match/create_proposal.html:86
 #: templates/player/playoff_invitation.html:27
-#: templates/public/vetrina_campionato.html:78
+#: templates/public/vetrina_campionato.html:76
 msgid "Dove"
 msgstr "Where"
 
-#: models/competition/showcase_view.py:314
-#: models/competition/showcase_view.py:403
+#: models/competition/showcase_view.py:360
+#: models/competition/showcase_view.py:451
 #: templates/individual_match/create_proposal.html:119
 #: templates/individual_match/edit_match.html:71
 #: templates/individual_match/match_detail.html:199
@@ -374,12 +367,12 @@ msgstr "Where"
 msgid "Formato"
 msgstr "Format"
 
-#: models/competition/showcase_view.py:317
-#,  python-format
+#: models/competition/showcase_view.py:363
+#, python-format
 msgid "%(n)s turni"
 msgstr "%(n)s rounds"
 
-#: models/competition/showcase_view.py:329
+#: models/competition/showcase_view.py:375
 #: templates/admin/gara_create_standalone.html:435
 #: templates/components/_campionato_details_info.html:86
 #: templates/components/_campionato_garas.html:21
@@ -389,21 +382,20 @@ msgstr "%(n)s rounds"
 msgid "Quota"
 msgstr "Fee"
 
-#: models/competition/showcase_view.py:331
+#: models/competition/showcase_view.py:377
 msgid "Gratuito"
 msgstr "Free"
 
-#: models/competition/showcase_view.py:333
+#: models/competition/showcase_view.py:379
 #, python-format
 msgid "%(fee)s €"
 msgstr "€%(fee)s"
 
-#: models/competition/showcase_view.py:344
-
+#: models/competition/showcase_view.py:390
 msgid "Chiusura iscrizioni"
 msgstr "Registration closes"
 
-#: models/competition/showcase_view.py:411
+#: models/competition/showcase_view.py:459
 #, python-format
 msgid "Iscrizioni aperte — %(n)s posti liberi"
 msgstr "Registration open — %(n)s seats left"
@@ -2194,35 +2186,35 @@ msgstr "Competition Director"
 msgid "Amministratore"
 msgstr "Administrator"
 
-#: routes/main.py:373
+#: routes/main.py:370
 #, python-format
 msgid "Iscrizioni dal %(start)s al %(end)s."
 msgstr "Registration open from %(start)s to %(end)s."
 
-#: routes/main.py:379
+#: routes/main.py:376
 #, python-format
 msgid "Iscrizioni aperte fino al %(end)s."
 msgstr "Registration open until %(end)s."
 
-#: routes/main.py:384
+#: routes/main.py:381
 #, python-format
 msgid "Iscrizioni aperte dal %(start)s."
 msgstr "Registration open from %(start)s."
 
-#: routes/main.py:390
+#: routes/main.py:387
 msgid "Sei già iscritto"
 msgstr "You're already registered"
 
-#: routes/main.py:391
+#: routes/main.py:388
 #, python-format
 msgid "Risulti iscritto a %(gara)s."
 msgstr "You are registered for %(gara)s."
 
-#: routes/main.py:397
+#: routes/main.py:394
 msgid "Sei in lista d'attesa"
 msgstr "You're on the waiting list"
 
-#: routes/main.py:399
+#: routes/main.py:396
 #, python-format
 msgid ""
 "Sei in lista d'attesa per %(gara)s, in posizione %(position)s. Se si "
@@ -2231,30 +2223,30 @@ msgstr ""
 "You're on the waiting list for %(gara)s, in position %(position)s. If a "
 "place frees up, you're moved in automatically."
 
-#: routes/main.py:409
+#: routes/main.py:406
 msgid "Puoi iscriverti"
 msgstr "You can register"
 
-#: routes/main.py:411
+#: routes/main.py:408
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono aperte: premi «Iscriviti» per confermare."
 msgstr "Registration for %(gara)s is open: press “Register” to confirm."
 
-#: routes/main.py:423
+#: routes/main.py:420
 #, python-format
 msgid "Le iscrizioni a %(gara)s non sono ancora aperte."
 msgstr "Registration for %(gara)s is not open yet."
 
-#: routes/main.py:433
+#: routes/main.py:430
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono chiuse."
 msgstr "Registration for %(gara)s is closed."
 
-#: routes/main.py:440
+#: routes/main.py:437
 msgid "Gara già iniziata"
 msgstr "Competition already started"
 
-#: routes/main.py:442
+#: routes/main.py:439
 #, python-format
 msgid ""
 "%(gara)s è già iniziata: non è più possibile iscriversi, ma puoi seguire "
@@ -2263,25 +2255,25 @@ msgstr ""
 "%(gara)s has already started: you can no longer register, but you can "
 "follow the results from this page."
 
-#: routes/main.py:453
+#: routes/main.py:450
 #, python-format
 msgid "%(gara)s è conclusa: qui trovi la classifica finale."
 msgstr "%(gara)s is over: here are the final standings."
 
-#: routes/main.py:461
+#: routes/main.py:458
 msgid "Gara annullata"
 msgstr "Competition cancelled"
 
-#: routes/main.py:462
+#: routes/main.py:459
 #, python-format
 msgid "%(gara)s è stata annullata."
 msgstr "%(gara)s has been cancelled."
 
-#: routes/main.py:468
+#: routes/main.py:465
 msgid "Iscrizione non riuscita"
 msgstr "Registration failed"
 
-#: routes/main.py:470
+#: routes/main.py:467
 #, python-format
 msgid ""
 "Non è stato possibile iscriverti a %(gara)s. Riprova dal pulsante "
@@ -3678,7 +3670,7 @@ msgstr "Information"
 #: templates/individual_match/quick_match.html:16
 #: templates/individual_match/quick_match.html:257
 #: templates/player/_change_password_modal.html:8
-#: templates/player/venues.html:77
+#: templates/player/venues.html:77 templates/public_base.html:51
 msgid "Chiudi"
 msgstr "Close"
 
@@ -3998,7 +3990,7 @@ msgstr "Rounds"
 #: templates/components/_classification_mobile.html:10
 #: templates/components/_index_campionato_cards.html:180
 #: templates/components/_separated_dashboard_content.html:456
-#: templates/gara_detail.html:73 templates/public/vetrina_campionato.html:133
+#: templates/gara_detail.html:73 templates/public/vetrina_campionato.html:131
 msgid "Classifica"
 msgstr "Standings"
 
@@ -4963,10 +4955,28 @@ msgstr ""
 msgid "Ultimo aggiornamento: agosto 2026."
 msgstr "Last updated: August 2026."
 
+#: templates/public/vetrina_campionato.html:42
+#: templates/public/vetrina_campionato.html:176
+#: templates/public/vetrina_gara.html:47 templates/public/vetrina_gara.html:169
+#: templates/public/vetrina_gara.html:182 templates/public_base.html:47
+msgid "Condividi"
+msgstr "Share"
+
+#: templates/admin/campionato_vetrina.html:102
+#: templates/admin/gara_vetrina.html:103
+#: templates/components/_gara_public_link.html:31 templates/public_base.html:48
+msgid "Copia link"
+msgstr "Copy link"
+
 #: templates/admin/campionato_vetrina.html:119
-#: templates/admin/gara_vetrina.html:120 templates/public_base.html:36
+#: templates/admin/gara_vetrina.html:120 templates/public_base.html:49
 msgid "Link copiato"
 msgstr "Link copied"
+
+#: templates/public_base.html:50
+
+msgid "E-mail"
+msgstr "Email"
 
 #: templates/register.html:3
 msgid "Registrazione"
@@ -5640,7 +5650,10 @@ msgid ""
 "Di cosa si tratta, a chi è aperto, come funziona: è la riga che spiega il"
 " campionato a chi apre il link senza conoscerlo. Senza, la sua pagina "
 "resta un calendario di date."
-msgstr "What it is, who can enter, how it works: this is the line that explains the championship to whoever opens the link without knowing it. Without it, the page stays a calendar of dates."
+msgstr ""
+"What it is, who can enter, how it works: this is the line that explains "
+"the championship to whoever opens the link without knowing it. Without "
+"it, the page stays a calendar of dates."
 
 #: templates/admin/campionato_vetrina.html:63
 msgid "Campionato sociale aperto a tutti i tesserati…"
@@ -5661,7 +5674,6 @@ msgstr ""
 "print on a poster. The link with the code keeps working."
 
 #: templates/admin/campionato_vetrina.html:74
-
 msgid "sociale-2026"
 msgstr "club-2026"
 
@@ -5704,12 +5716,6 @@ msgstr "Rules"
 #: templates/admin/gara_vetrina.html:99
 msgid "Link da condividere"
 msgstr "Link to share"
-
-#: templates/admin/campionato_vetrina.html:102
-#: templates/admin/gara_vetrina.html:103
-#: templates/components/_gara_public_link.html:31
-msgid "Copia link"
-msgstr "Copy link"
 
 #: templates/admin/campionato_vetrina.html:105
 #: templates/admin/gara_vetrina.html:106
@@ -7103,7 +7109,7 @@ msgid "Richiesta"
 msgstr "Request"
 
 #: templates/admin/users_list.html:139 templates/admin/users_list.html:231
-#: templates/public/vetrina_campionato.html:165
+#: templates/public/vetrina_campionato.html:163
 msgid "Iscrizioni"
 msgstr "Registrations"
 
@@ -8034,7 +8040,7 @@ msgstr "Instructions"
 #: templates/challenge/_challenge_detail.html:58
 #: templates/components/_gara_matches.html:55
 #: templates/components/_gara_matches.html:89
-#: templates/public/vetrina_campionato.html:88
+#: templates/public/vetrina_campionato.html:86
 msgid "Giocatori"
 msgstr "Players"
 
@@ -10831,7 +10837,7 @@ msgstr "You can see results and standings, but you cannot take part."
 #: templates/components/_nearby_gare.html:43
 #: templates/components/_separated_dashboard_content.html:360
 #: templates/components/_unified_cards.html:141
-#: templates/public/vetrina_gara.html:168
+#: templates/public/vetrina_gara.html:166
 msgid "Iscriviti"
 msgstr "Register"
 
@@ -11036,7 +11042,7 @@ msgstr "Where from"
 #: templates/components/_playoff_invitations.html:20
 #: templates/components/_unified_cards.html:12
 #: templates/components/_user_recent_matches_table.html:13
-#: templates/public/vetrina_campionato.html:57
+#: templates/public/vetrina_campionato.html:55
 msgid "Campionato"
 msgstr "Championship"
 
@@ -11314,7 +11320,7 @@ msgstr "Venue to be decided"
 #: templates/components/_index_live.html:29
 #: templates/components/_nearby_gare.html:42
 #: templates/components/_unified_cards.html:60
-#: templates/public/vetrina_gara.html:132
+#: templates/public/vetrina_gara.html:130
 msgid "iscritti"
 msgstr "registered"
 
@@ -13079,7 +13085,7 @@ msgid "vince chi ha piu triangoli"
 msgstr "most racks wins"
 
 #: templates/components/_unified_cards.html:33
-#: templates/public/vetrina_campionato.html:153
+#: templates/public/vetrina_campionato.html:151
 msgid "Prossima gara"
 msgstr "Next competition"
 
@@ -17770,103 +17776,91 @@ msgstr ""
 msgid "Vedi le gare"
 msgstr "See the competitions"
 
-#: templates/public/vetrina_campionato.html:42
-#: templates/public/vetrina_campionato.html:178
-#: templates/public/vetrina_gara.html:47 templates/public/vetrina_gara.html:171
-#: templates/public/vetrina_gara.html:184
-msgid "Condividi"
-msgstr "Share"
-
-#: templates/public/vetrina_campionato.html:49
-#,  python-format
+#: templates/public/vetrina_campionato.html:51
+#, python-format
 msgid "Locandina di %(nome)s"
 msgstr "Poster for %(nome)s"
 
-#: templates/public/vetrina_campionato.html:83
-
+#: templates/public/vetrina_campionato.html:81
 msgid "Formula"
 msgstr "Format"
 
-#: templates/public/vetrina_campionato.html:101
-
+#: templates/public/vetrina_campionato.html:99
 msgid "Le gare"
 msgstr "The competitions"
 
-#: templates/public/vetrina_campionato.html:102
-#,  python-format
+#: templates/public/vetrina_campionato.html:100
+#, python-format
 msgid "%(giocate)s di %(totali)s giocate"
 msgstr "%(giocate)s of %(totali)s played"
 
-#: templates/public/vetrina_campionato.html:134
-#,  python-format
+#: templates/public/vetrina_campionato.html:132
+#, python-format
 msgid "dopo %(n)s gare"
 msgstr "after %(n)s competitions"
 
-#: templates/public/vetrina_campionato.html:167
+#: templates/public/vetrina_campionato.html:165
 msgid ""
 "Nessuna gara ha le iscrizioni aperte in questo momento. Condividi la "
 "pagina o torna a controllare: il calendario è qui sopra."
-msgstr "No competition has registration open right now. Share the page or check back later: the calendar is just above."
+msgstr ""
+"No competition has registration open right now. Share the page or check "
+"back later: the calendar is just above."
 
-#: templates/public/vetrina_campionato.html:175
-
+#: templates/public/vetrina_campionato.html:173
 msgid "Iscriviti alla gara"
 msgstr "Register for the competition"
 
-#: templates/public/vetrina_campionato.html:184
-
+#: templates/public/vetrina_campionato.html:182
 msgid "Condividi il campionato"
 msgstr "Share the championship"
 
-#: templates/public/vetrina_campionato.html:200
-#: templates/public/vetrina_gara.html:201
+#: templates/public/vetrina_campionato.html:198
+#: templates/public/vetrina_gara.html:199
 msgid "Organizza"
 msgstr "Organised by"
 
-#: templates/public/vetrina_gara.html:54
+#: templates/public/vetrina_gara.html:56
 #, python-format
 msgid "Locandina di %(gara)s"
 msgstr "Poster for %(gara)s"
 
-#: templates/public/vetrina_gara.html:105
+#: templates/public/vetrina_gara.html:103
 msgid "Classifica finale"
 msgstr "Final standings"
 
-#: templates/public/vetrina_gara.html:106
-
+#: templates/public/vetrina_gara.html:104
 msgid "Come è andata"
 msgstr "How it went"
 
-#: templates/public/vetrina_gara.html:131
-#,  python-format
+#: templates/public/vetrina_gara.html:129
+#, python-format
 msgid "su %(n)s posti"
 msgstr "of %(n)s seats"
 
-#: templates/public/vetrina_gara.html:136
-#,  python-format
+#: templates/public/vetrina_gara.html:134
+#, python-format
 msgid "%(n)s liberi"
 msgstr "%(n)s free"
 
-#: templates/public/vetrina_gara.html:137
-
+#: templates/public/vetrina_gara.html:135
 msgid "Al completo"
 msgstr "Full"
 
-#: templates/public/vetrina_gara.html:144
+#: templates/public/vetrina_gara.html:142
 #, python-format
 msgid "%(iscritti)s su %(posti)s posti"
 msgstr "%(iscritti)s of %(posti)s seats"
 
-#: templates/public/vetrina_gara.html:149
+#: templates/public/vetrina_gara.html:147
 msgid "Posti occupati"
 msgstr "Seats taken"
 
-#: templates/public/vetrina_gara.html:177
+#: templates/public/vetrina_gara.html:175
 msgid "Condividi il risultato"
 msgstr "Share the result"
 
-#: templates/public/vetrina_gara.html:181
-
+#: templates/public/vetrina_gara.html:179
 msgid "Vedi le altre gare"
 msgstr "See other competitions"
 

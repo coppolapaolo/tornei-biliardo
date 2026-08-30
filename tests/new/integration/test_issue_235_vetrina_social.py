@@ -21,6 +21,7 @@ from __future__ import annotations
 import re
 import uuid
 from datetime import date, timedelta
+from pathlib import Path
 
 import pytest
 
@@ -358,3 +359,89 @@ class TestLaClassificaHaINomi:
         assert vetrina.classifica, "la gara è conclusa: la classifica ci deve essere"
         assert vetrina.classifica[0].nome == giocatore.username
         assert vetrina.classifica[0].posizione == 1
+
+
+@pytest.mark.integration
+class TestLaLocandinaNonSiRitaglia:
+    """L'applicazione chiede 1200×630: la pagina deve mostrarli tutti.
+
+    È lo stesso file che finisce in `og:image`, quindi il formato non è una
+    preferenza — è un contratto con l'anteprima del social. Un riquadro di
+    **altezza fissa** con `object-fit: cover` lo rispetta a una sola
+    larghezza, e a tutte le altre ritaglia: 262px tagliavano il 22% ai lati
+    su un telefono da 390 e il 47% sopra e sotto su un desktop da 1512 — ma
+    niente a 500px, che è la larghezza a cui la pagina era stata guardata.
+
+    Niente di tutto questo lo vede un test di comportamento: la pagina
+    risponde 200 e l'immagine c'è. Il presidio guarda quindi il **testo** del
+    foglio di stile, come fa `test_migrations_timestamps` con le migration.
+    """
+
+    def _regole_della_locandina(self) -> str:
+        css = Path("static/css/theme-7c.css").read_text(encoding="utf-8")
+        inizio = css.index(".c7-vt__hero img {")
+        return css[inizio : css.index("}", inizio)]
+
+    def test_il_riquadro_ha_il_rapporto_della_locandina(self):
+        regole = self._regole_della_locandina()
+
+        assert "aspect-ratio: 1200 / 630" in regole, (
+            "il riquadro deve avere il rapporto del formato dichiarato, "
+            "altrimenti `cover` ritaglia a ogni larghezza tranne una"
+        )
+
+    def test_il_riquadro_non_ha_un_altezza_fissa(self):
+        regole = self._regole_della_locandina()
+
+        assert "height:" not in regole, (
+            "un'altezza fissa rimette il ritaglio: su schermo largo si limita "
+            "la larghezza, mai l'altezza"
+        )
+
+
+@pytest.mark.integration
+class TestLaStessaFiguraNelMessaggioESullaPagina:
+    """Chi apre il link deve ritrovare l'immagine che ha visto in chat.
+
+    Il ripiego era scritto due volte — una nella route per i meta, una
+    implicita nella pagina, che senza locandina non mostrava niente — e due
+    ripieghi separati sono due ripieghi destinati a divergere.
+    """
+
+    def test_senza_locandina_si_usa_la_grafica_del_sito(self, client, db_session):
+        gara = _gara(_user(UserRole.DIRECTOR.value))
+        assert gara.effective_banner_path is None, "questa gara non ha locandina"
+
+        body = client.get(f"/g/{gara.public_token}").get_data(as_text=True)
+
+        assert "img/social/vetrina-default.png" in body
+        assert 'class="c7-vt__hero"' in body, (
+            "la pagina non lascia un buco: mostra la grafica del sito, la "
+            "stessa che il social mette nell'anteprima"
+        )
+
+    def test_meta_e_pagina_indicano_lo_stesso_file(self, client, db_session):
+        import re
+
+        gara = _gara(_user(UserRole.DIRECTOR.value))
+
+        body = client.get(f"/g/{gara.public_token}").get_data(as_text=True)
+        og = _meta(body, "og:image") or ""
+        in_pagina = re.search(r'class="c7-vt__hero">\s*<img src="([^"]*)"', body)
+
+        assert in_pagina, "la locandina deve esserci in pagina"
+        assert og.endswith(
+            in_pagina.group(1).lstrip("/")
+        ), f"i meta dicono {og}, la pagina mostra {in_pagina.group(1)}"
+
+    def test_vale_anche_per_il_campionato(self, client, db_session):
+        from models import Campionato
+
+        campionato = Campionato(name=f"Camp {uuid.uuid4().hex[:6]}")
+        db.session.add(campionato)
+        db.session.commit()
+        _gara(_user(UserRole.DIRECTOR.value), campionato_id=campionato.id)
+
+        body = client.get(f"/c/{campionato.public_token}").get_data(as_text=True)
+
+        assert "img/social/vetrina-default.png" in body

@@ -29,6 +29,7 @@ from models.base import db
 # la disegnano con lo stesso markup, e due dataclass gemelle sarebbero due
 # occasioni di farle divergere.
 from models.competition.showcase_view import (
+    LOCANDINA_DI_RIPIEGO,
     RigaClassifica,
     gara_ha_finito,
     gara_si_sta_giocando,
@@ -63,7 +64,7 @@ class VetrinaCampionato:
     campionato: Any
     titolo: str
     descrizione: Optional[str]
-    banner_url: Optional[str]
+    banner_url: str
     periodo: Optional[str] = None
     sede: Optional[str] = None
     citta: Optional[str] = None
@@ -319,7 +320,11 @@ def costruisci_vetrina_campionato(campionato) -> VetrinaCampionato:
         campionato=campionato,
         titolo=campionato.name,
         descrizione=(campionato.description or "").strip() or None,
-        banner_url=ImagePathManager.url_from_db_path(banner) if banner else None,
+        banner_url=(
+            ImagePathManager.url_from_db_path(banner)
+            if banner
+            else LOCANDINA_DI_RIPIEGO
+        ),
         periodo=_periodo(gare),
         sede=getattr(sala, "name", None) if sala is not None else None,
         citta=getattr(sala, "city", None) if sala is not None else None,

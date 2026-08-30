@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-30 18:41+0200\n"
+"POT-Creation-Date: 2026-08-30 19:37+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -69,7 +69,7 @@ msgstr ""
 msgid "Rotation"
 msgstr ""
 
-#: models/campionato/showcase_view.py:133
+#: models/campionato/showcase_view.py:135
 #: templates/components/_index_archive.html:35
 #: templates/components/_match_card.html:28
 #: templates/components/_match_result_row.html:106
@@ -79,12 +79,12 @@ msgstr ""
 msgid "Conclusa"
 msgstr ""
 
-#: models/campionato/showcase_view.py:135
+#: models/campionato/showcase_view.py:137
 #, python-format
 msgid "Vince %(nome)s"
 msgstr ""
 
-#: models/campionato/showcase_view.py:137
+#: models/campionato/showcase_view.py:139
 #: templates/components/_bracket_view.html:52
 #: templates/components/_gara_matches.html:49
 #: templates/components/_match_card.html:26
@@ -106,24 +106,24 @@ msgstr ""
 msgid "In corso"
 msgstr ""
 
-#: models/campionato/showcase_view.py:140
+#: models/campionato/showcase_view.py:142
 #: templates/components/_index_open_inscriptions.html:19
 #: templates/components/_player_dashboard_content.html:30
 #: templates/individual_match/proposal_detail.html:42
 msgid "Aperta"
 msgstr ""
 
-#: models/campionato/showcase_view.py:148
+#: models/campionato/showcase_view.py:150
 #, python-format
 msgid "%(n)s iscritti · %(liberi)s liberi"
 msgstr ""
 
-#: models/campionato/showcase_view.py:150
+#: models/campionato/showcase_view.py:152
 #, python-format
 msgid "%(n)s iscritti"
 msgstr ""
 
-#: models/campionato/showcase_view.py:153
+#: models/campionato/showcase_view.py:155
 #: templates/components/_bye_challenges.html:32
 #: templates/components/_match_card.html:24
 #: templates/components/_match_result_row.html:94
@@ -135,59 +135,59 @@ msgstr ""
 msgid "Da giocare"
 msgstr ""
 
-#: models/campionato/showcase_view.py:156
+#: models/campionato/showcase_view.py:158
 #, python-format
 msgid "Iscrizioni dal %(data)s"
 msgstr ""
 
-#: models/campionato/showcase_view.py:191
+#: models/campionato/showcase_view.py:193
 msgid "Classifica a triangoli vinti"
 msgstr ""
 
-#: models/campionato/showcase_view.py:193
+#: models/campionato/showcase_view.py:195
 msgid "Classifica a punti per piazzamento"
 msgstr ""
 
-#: models/campionato/showcase_view.py:194
+#: models/campionato/showcase_view.py:196
 msgid "Classifica a vittorie"
 msgstr ""
 
-#: models/campionato/showcase_view.py:210
+#: models/campionato/showcase_view.py:212
 msgid "T"
 msgstr ""
 
-#: models/campionato/showcase_view.py:212
+#: models/campionato/showcase_view.py:214
 #: templates/individual_match/statistics.html:204
 #: templates/individual_match/statistics.html:212
 msgid "P"
 msgstr ""
 
-#: models/campionato/showcase_view.py:214
-#: models/competition/showcase_view.py:273
+#: models/campionato/showcase_view.py:216
+#: models/competition/showcase_view.py:320
 #: templates/individual_match/availability.html:17
 #: templates/individual_match/statistics.html:203
 #: templates/individual_match/statistics.html:212
 msgid "V"
 msgstr ""
 
-#: models/campionato/showcase_view.py:245
-#: models/campionato/showcase_view.py:250
+#: models/campionato/showcase_view.py:247
+#: models/campionato/showcase_view.py:252
 #, python-format
 msgid "%(a)s – %(b)s"
 msgstr ""
 
-#: models/campionato/showcase_view.py:259
+#: models/campionato/showcase_view.py:261
 msgid "Campionato concluso"
 msgstr ""
 
-#: models/campionato/showcase_view.py:264
+#: models/campionato/showcase_view.py:266
 #, python-format
 msgid "Iscrizioni aperte · gara %(n)s"
 msgstr ""
 
-#: models/campionato/showcase_view.py:266
-#: models/competition/showcase_view.py:245
-#: models/competition/showcase_view.py:413
+#: models/campionato/showcase_view.py:268
+#: models/competition/showcase_view.py:292
+#: models/competition/showcase_view.py:461
 #: templates/components/_index_open_inscriptions.html:6
 #: templates/components/_nearby_gare.html:40
 #: templates/components/_separated_dashboard_content.html:233
@@ -195,31 +195,31 @@ msgstr ""
 msgid "Iscrizioni aperte"
 msgstr ""
 
-#: models/campionato/showcase_view.py:271
-#: models/competition/showcase_view.py:243
+#: models/campionato/showcase_view.py:273
+#: models/competition/showcase_view.py:290
 msgid "Gara in corso"
 msgstr ""
 
-#: models/campionato/showcase_view.py:275
+#: models/campionato/showcase_view.py:277
 msgid "Tutte le gare giocate"
 msgstr ""
 
-#: models/campionato/showcase_view.py:277
+#: models/campionato/showcase_view.py:279
 #, python-format
 msgid "In corso · %(n)s gare giocate"
 msgstr ""
 
-#: models/campionato/showcase_view.py:278
+#: models/campionato/showcase_view.py:280
 msgid "Non ancora iniziato"
 msgstr ""
 
-#: models/campionato/showcase_view.py:336
-#: models/competition/showcase_view.py:374
+#: models/campionato/showcase_view.py:342
+#: models/competition/showcase_view.py:422
 msgid "Regolamento e informazioni"
 msgstr ""
 
-#: models/campionato/showcase_view.py:361
-#: templates/public/vetrina_campionato.html:64
+#: models/campionato/showcase_view.py:367
+#: templates/public/vetrina_campionato.html:62
 #, python-format
 msgid "%(n)s gare"
 msgstr ""
@@ -292,60 +292,60 @@ msgid ""
 "il turno"
 msgstr ""
 
-#: models/competition/showcase_view.py:149
+#: models/competition/showcase_view.py:196
 #, python-format
 msgid "al %(n)s"
 msgstr ""
 
-#: models/competition/showcase_view.py:151
+#: models/competition/showcase_view.py:198
 #, python-format
 msgid "%(n)s set"
 msgstr ""
 
-#: models/competition/showcase_view.py:154
+#: models/competition/showcase_view.py:201
 #, python-format
 msgid "%(disciplina)s — %(set)s, ogni set al %(rack)s"
 msgstr ""
 
-#: models/competition/showcase_view.py:162
+#: models/competition/showcase_view.py:209
 #, python-format
 msgid "%(disciplina)s — al %(n)s"
 msgstr ""
 
-#: models/competition/showcase_view.py:165
+#: models/competition/showcase_view.py:212
 #, python-format
 msgid "%(disciplina)s — %(n)s rack esatti"
 msgstr ""
 
-#: models/competition/showcase_view.py:230
+#: models/competition/showcase_view.py:277
 #, python-format
 msgid "%(campionato)s · gara %(n)s"
 msgstr ""
 
-#: models/competition/showcase_view.py:241
-#: models/competition/showcase_view.py:407 routes/main.py:451
+#: models/competition/showcase_view.py:288
+#: models/competition/showcase_view.py:455 routes/main.py:448
 msgid "Gara conclusa"
 msgstr ""
 
-#: models/competition/showcase_view.py:250 routes/main.py:421
+#: models/competition/showcase_view.py:297 routes/main.py:418
 #: templates/components/_unified_cards.html:79
 msgid "Iscrizioni non ancora aperte"
 msgstr ""
 
-#: models/competition/showcase_view.py:251 routes/main.py:432
+#: models/competition/showcase_view.py:298 routes/main.py:429
 msgid "Iscrizioni chiuse"
 msgstr ""
 
-#: models/competition/showcase_view.py:305
-#: models/competition/showcase_view.py:403
+#: models/competition/showcase_view.py:351
+#: models/competition/showcase_view.py:451
 #: templates/individual_match/create_proposal.html:86
 #: templates/player/playoff_invitation.html:27
-#: templates/public/vetrina_campionato.html:78
+#: templates/public/vetrina_campionato.html:76
 msgid "Dove"
 msgstr ""
 
-#: models/competition/showcase_view.py:314
-#: models/competition/showcase_view.py:403
+#: models/competition/showcase_view.py:360
+#: models/competition/showcase_view.py:451
 #: templates/individual_match/create_proposal.html:119
 #: templates/individual_match/edit_match.html:71
 #: templates/individual_match/match_detail.html:199
@@ -353,12 +353,12 @@ msgstr ""
 msgid "Formato"
 msgstr ""
 
-#: models/competition/showcase_view.py:317
+#: models/competition/showcase_view.py:363
 #, python-format
 msgid "%(n)s turni"
 msgstr ""
 
-#: models/competition/showcase_view.py:329
+#: models/competition/showcase_view.py:375
 #: templates/admin/gara_create_standalone.html:435
 #: templates/components/_campionato_details_info.html:86
 #: templates/components/_campionato_garas.html:21
@@ -368,20 +368,20 @@ msgstr ""
 msgid "Quota"
 msgstr ""
 
-#: models/competition/showcase_view.py:331
+#: models/competition/showcase_view.py:377
 msgid "Gratuito"
 msgstr ""
 
-#: models/competition/showcase_view.py:333
+#: models/competition/showcase_view.py:379
 #, python-format
 msgid "%(fee)s €"
 msgstr ""
 
-#: models/competition/showcase_view.py:344
+#: models/competition/showcase_view.py:390
 msgid "Chiusura iscrizioni"
 msgstr ""
 
-#: models/competition/showcase_view.py:411
+#: models/competition/showcase_view.py:459
 #, python-format
 msgid "Iscrizioni aperte — %(n)s posti liberi"
 msgstr ""
@@ -2125,90 +2125,90 @@ msgstr ""
 msgid "Amministratore"
 msgstr ""
 
-#: routes/main.py:373
+#: routes/main.py:370
 #, python-format
 msgid "Iscrizioni dal %(start)s al %(end)s."
 msgstr ""
 
-#: routes/main.py:379
+#: routes/main.py:376
 #, python-format
 msgid "Iscrizioni aperte fino al %(end)s."
 msgstr ""
 
-#: routes/main.py:384
+#: routes/main.py:381
 #, python-format
 msgid "Iscrizioni aperte dal %(start)s."
 msgstr ""
 
-#: routes/main.py:390
+#: routes/main.py:387
 msgid "Sei già iscritto"
 msgstr ""
 
-#: routes/main.py:391
+#: routes/main.py:388
 #, python-format
 msgid "Risulti iscritto a %(gara)s."
 msgstr ""
 
-#: routes/main.py:397
+#: routes/main.py:394
 msgid "Sei in lista d'attesa"
 msgstr ""
 
-#: routes/main.py:399
+#: routes/main.py:396
 #, python-format
 msgid ""
 "Sei in lista d'attesa per %(gara)s, in posizione %(position)s. Se si "
 "libera un posto entri automaticamente."
 msgstr ""
 
-#: routes/main.py:409
+#: routes/main.py:406
 msgid "Puoi iscriverti"
 msgstr ""
 
-#: routes/main.py:411
+#: routes/main.py:408
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono aperte: premi «Iscriviti» per confermare."
 msgstr ""
 
-#: routes/main.py:423
+#: routes/main.py:420
 #, python-format
 msgid "Le iscrizioni a %(gara)s non sono ancora aperte."
 msgstr ""
 
-#: routes/main.py:433
+#: routes/main.py:430
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono chiuse."
 msgstr ""
 
-#: routes/main.py:440
+#: routes/main.py:437
 msgid "Gara già iniziata"
 msgstr ""
 
-#: routes/main.py:442
+#: routes/main.py:439
 #, python-format
 msgid ""
 "%(gara)s è già iniziata: non è più possibile iscriversi, ma puoi seguire "
 "i risultati da questa pagina."
 msgstr ""
 
-#: routes/main.py:453
+#: routes/main.py:450
 #, python-format
 msgid "%(gara)s è conclusa: qui trovi la classifica finale."
 msgstr ""
 
-#: routes/main.py:461
+#: routes/main.py:458
 msgid "Gara annullata"
 msgstr ""
 
-#: routes/main.py:462
+#: routes/main.py:459
 #, python-format
 msgid "%(gara)s è stata annullata."
 msgstr ""
 
-#: routes/main.py:468
+#: routes/main.py:465
 msgid "Iscrizione non riuscita"
 msgstr ""
 
-#: routes/main.py:470
+#: routes/main.py:467
 #, python-format
 msgid ""
 "Non è stato possibile iscriverti a %(gara)s. Riprova dal pulsante "
@@ -3585,7 +3585,7 @@ msgstr ""
 #: templates/individual_match/quick_match.html:16
 #: templates/individual_match/quick_match.html:257
 #: templates/player/_change_password_modal.html:8
-#: templates/player/venues.html:77
+#: templates/player/venues.html:77 templates/public_base.html:51
 msgid "Chiudi"
 msgstr ""
 
@@ -3905,7 +3905,7 @@ msgstr ""
 #: templates/components/_classification_mobile.html:10
 #: templates/components/_index_campionato_cards.html:180
 #: templates/components/_separated_dashboard_content.html:456
-#: templates/gara_detail.html:73 templates/public/vetrina_campionato.html:133
+#: templates/gara_detail.html:73 templates/public/vetrina_campionato.html:131
 msgid "Classifica"
 msgstr ""
 
@@ -4775,9 +4775,26 @@ msgstr ""
 msgid "Ultimo aggiornamento: agosto 2026."
 msgstr ""
 
+#: templates/public/vetrina_campionato.html:42
+#: templates/public/vetrina_campionato.html:176
+#: templates/public/vetrina_gara.html:47 templates/public/vetrina_gara.html:169
+#: templates/public/vetrina_gara.html:182 templates/public_base.html:47
+msgid "Condividi"
+msgstr ""
+
+#: templates/admin/campionato_vetrina.html:102
+#: templates/admin/gara_vetrina.html:103
+#: templates/components/_gara_public_link.html:31 templates/public_base.html:48
+msgid "Copia link"
+msgstr ""
+
 #: templates/admin/campionato_vetrina.html:119
-#: templates/admin/gara_vetrina.html:120 templates/public_base.html:36
+#: templates/admin/gara_vetrina.html:120 templates/public_base.html:49
 msgid "Link copiato"
+msgstr ""
+
+#: templates/public_base.html:50
+msgid "E-mail"
 msgstr ""
 
 #: templates/register.html:3
@@ -5492,12 +5509,6 @@ msgstr ""
 #: templates/admin/campionato_vetrina.html:98
 #: templates/admin/gara_vetrina.html:99
 msgid "Link da condividere"
-msgstr ""
-
-#: templates/admin/campionato_vetrina.html:102
-#: templates/admin/gara_vetrina.html:103
-#: templates/components/_gara_public_link.html:31
-msgid "Copia link"
 msgstr ""
 
 #: templates/admin/campionato_vetrina.html:105
@@ -6848,7 +6859,7 @@ msgid "Richiesta"
 msgstr ""
 
 #: templates/admin/users_list.html:139 templates/admin/users_list.html:231
-#: templates/public/vetrina_campionato.html:165
+#: templates/public/vetrina_campionato.html:163
 msgid "Iscrizioni"
 msgstr ""
 
@@ -7753,7 +7764,7 @@ msgstr ""
 #: templates/challenge/_challenge_detail.html:58
 #: templates/components/_gara_matches.html:55
 #: templates/components/_gara_matches.html:89
-#: templates/public/vetrina_campionato.html:88
+#: templates/public/vetrina_campionato.html:86
 msgid "Giocatori"
 msgstr ""
 
@@ -10457,7 +10468,7 @@ msgstr ""
 #: templates/components/_nearby_gare.html:43
 #: templates/components/_separated_dashboard_content.html:360
 #: templates/components/_unified_cards.html:141
-#: templates/public/vetrina_gara.html:168
+#: templates/public/vetrina_gara.html:166
 msgid "Iscriviti"
 msgstr ""
 
@@ -10662,7 +10673,7 @@ msgstr ""
 #: templates/components/_playoff_invitations.html:20
 #: templates/components/_unified_cards.html:12
 #: templates/components/_user_recent_matches_table.html:13
-#: templates/public/vetrina_campionato.html:57
+#: templates/public/vetrina_campionato.html:55
 msgid "Campionato"
 msgstr ""
 
@@ -10940,7 +10951,7 @@ msgstr ""
 #: templates/components/_index_live.html:29
 #: templates/components/_nearby_gare.html:42
 #: templates/components/_unified_cards.html:60
-#: templates/public/vetrina_gara.html:132
+#: templates/public/vetrina_gara.html:130
 msgid "iscritti"
 msgstr ""
 
@@ -12649,7 +12660,7 @@ msgid "vince chi ha piu triangoli"
 msgstr ""
 
 #: templates/components/_unified_cards.html:33
-#: templates/public/vetrina_campionato.html:153
+#: templates/public/vetrina_campionato.html:151
 msgid "Prossima gara"
 msgstr ""
 
@@ -17224,96 +17235,89 @@ msgstr ""
 msgid "Vedi le gare"
 msgstr ""
 
-#: templates/public/vetrina_campionato.html:42
-#: templates/public/vetrina_campionato.html:178
-#: templates/public/vetrina_gara.html:47 templates/public/vetrina_gara.html:171
-#: templates/public/vetrina_gara.html:184
-msgid "Condividi"
-msgstr ""
-
-#: templates/public/vetrina_campionato.html:49
+#: templates/public/vetrina_campionato.html:51
 #, python-format
 msgid "Locandina di %(nome)s"
 msgstr ""
 
-#: templates/public/vetrina_campionato.html:83
+#: templates/public/vetrina_campionato.html:81
 msgid "Formula"
 msgstr ""
 
-#: templates/public/vetrina_campionato.html:101
+#: templates/public/vetrina_campionato.html:99
 msgid "Le gare"
 msgstr ""
 
-#: templates/public/vetrina_campionato.html:102
+#: templates/public/vetrina_campionato.html:100
 #, python-format
 msgid "%(giocate)s di %(totali)s giocate"
 msgstr ""
 
-#: templates/public/vetrina_campionato.html:134
+#: templates/public/vetrina_campionato.html:132
 #, python-format
 msgid "dopo %(n)s gare"
 msgstr ""
 
-#: templates/public/vetrina_campionato.html:167
+#: templates/public/vetrina_campionato.html:165
 msgid ""
 "Nessuna gara ha le iscrizioni aperte in questo momento. Condividi la "
 "pagina o torna a controllare: il calendario è qui sopra."
 msgstr ""
 
-#: templates/public/vetrina_campionato.html:175
+#: templates/public/vetrina_campionato.html:173
 msgid "Iscriviti alla gara"
 msgstr ""
 
-#: templates/public/vetrina_campionato.html:184
+#: templates/public/vetrina_campionato.html:182
 msgid "Condividi il campionato"
 msgstr ""
 
-#: templates/public/vetrina_campionato.html:200
-#: templates/public/vetrina_gara.html:201
+#: templates/public/vetrina_campionato.html:198
+#: templates/public/vetrina_gara.html:199
 msgid "Organizza"
 msgstr ""
 
-#: templates/public/vetrina_gara.html:54
+#: templates/public/vetrina_gara.html:56
 #, python-format
 msgid "Locandina di %(gara)s"
 msgstr ""
 
-#: templates/public/vetrina_gara.html:105
+#: templates/public/vetrina_gara.html:103
 msgid "Classifica finale"
 msgstr ""
 
-#: templates/public/vetrina_gara.html:106
+#: templates/public/vetrina_gara.html:104
 msgid "Come è andata"
 msgstr ""
 
-#: templates/public/vetrina_gara.html:131
+#: templates/public/vetrina_gara.html:129
 #, python-format
 msgid "su %(n)s posti"
 msgstr ""
 
-#: templates/public/vetrina_gara.html:136
+#: templates/public/vetrina_gara.html:134
 #, python-format
 msgid "%(n)s liberi"
 msgstr ""
 
-#: templates/public/vetrina_gara.html:137
+#: templates/public/vetrina_gara.html:135
 msgid "Al completo"
 msgstr ""
 
-#: templates/public/vetrina_gara.html:144
+#: templates/public/vetrina_gara.html:142
 #, python-format
 msgid "%(iscritti)s su %(posti)s posti"
 msgstr ""
 
-#: templates/public/vetrina_gara.html:149
+#: templates/public/vetrina_gara.html:147
 msgid "Posti occupati"
 msgstr ""
 
-#: templates/public/vetrina_gara.html:177
+#: templates/public/vetrina_gara.html:175
 msgid "Condividi il risultato"
 msgstr ""
 
-#: templates/public/vetrina_gara.html:181
+#: templates/public/vetrina_gara.html:179
 msgid "Vedi le altre gare"
 msgstr ""
 

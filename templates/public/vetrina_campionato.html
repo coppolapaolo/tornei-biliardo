@@ -34,7 +34,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="c7-vt{% if not vetrina.banner_url %} c7-vt--nohero{% endif %}">
+<div class="c7-vt">
 
   <div class="c7-vt__bar">
     <a class="c7-vt__mark" href="{{ url_for('main.index') }}">{{ config.APP_NAME }}</a>
@@ -44,14 +44,12 @@
     </button>
   </div>
 
-  {% if vetrina.banner_url %}
-  <div class="c7-vt__hero">
-    <img src="{{ vetrina.banner_url }}" alt="{{ _('Locandina di %(nome)s', nome=vetrina.titolo) }}">
-  </div>
-  {% endif %}
-
   <div class="c7-vt__shell">
     <div class="c7-vt__col">
+
+      <div class="c7-vt__hero">
+        <img src="{{ vetrina.banner_url }}" alt="{{ _('Locandina di %(nome)s', nome=vetrina.titolo) }}">
+      </div>
 
       <div class="c7-vt__plate">
         <div class="c7-vt__ovr">{{ _("Campionato") }}</div>
@@ -181,7 +179,7 @@
           {% else %}
           <button type="button" class="btn btn-secondary" data-condividi>
             <i class="fa-solid fa-share-nodes"></i>
-            <span data-condividi-testo>{{ _("Condividi il campionato") }}</span>
+            <span>{{ _("Condividi il campionato") }}</span>
           </button>
           {% endif %}
         </div>
