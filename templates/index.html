@@ -2,17 +2,45 @@
 
 {% block title %}{{ _("Home - Tornei Biliardo") }}{% endblock %}
 
-{% block content %}
-{# 1. Onboarding (solo ospiti) #}
-{% include "components/_index_registration_info.html" %}
+{# In testata il nome del sito, non «Home». Il titolo della pagina serve alla
+   linguetta del browser; la testata la legge chi e' appena arrivato e non sa
+   ancora dove si trova, e «Home» non glielo dice. Il sottotitolo dichiara da
+   che parte sta guardando — la stessa parola della barra laterale. #}
+{% block page_title %}{{ _("Tornei Biliardo") }}{% endblock %}
+{% block page_sub %}{{ _("vista pubblica") }}{% endblock %}
 
-{# 2. In diretta ora — gare playing/awaiting_ssr + match ai tavoli #}
+{% block content %}
+{# QUESTA PAGINA LA VEDONO SOLO GLI OSPITI.
+
+   `main.index` rimanda alla dashboard chiunque sia autenticato, prima ancora
+   di caricare i dati, e `index.html` non lo renderizza nessun altro. Quindi in
+   questo file e nei sei componenti che include un ramo
+   `current_user.is_authenticated` non si apre mai: erano rami morti che
+   raccontavano una pagina inesistente — su `_index_open_inscriptions.html`
+   c'era perfino un form di iscrizione che nessun iscritto poteva vedere.
+   Sono stati tolti; se un giorno servisse mostrare queste sezioni a chi e'
+   entrato, si riaggiungono sapendo cosa si sta aggiungendo.
+
+   La pagina parte da quello che sta succedendo, non da come si partecipa.
+
+   Prima in cima c'era il blocco «Come si partecipa»: tre passi e due pulsanti,
+   che un visitatore incontrava **prima** di sapere se qui succede qualcosa che
+   gli interessa. La domanda che si fa arrivando è l'altra — c'è del biliardo?
+   — e la risposta e' due sezioni piu' giu'.
+
+   L'account non sparisce: si chiede **dove serve**, cioè sul pulsante
+   «Iscriviti» di una gara precisa, con sotto una riga che dice che è gratis
+   (`_index_open_inscriptions.html`). Il blocco dei tre passi resta, in fondo:
+   chi ha scorso tutta la pagina ed è interessato lo trova, e nel frattempo
+   non si è messo in mezzo. #}
+
+{# 1. In diretta ora — gare playing/awaiting_ssr + match ai tavoli #}
 {% include "components/_index_live.html" %}
 
-{# 3. Iscrizioni aperte — posti e scadenza ben visibili #}
+{# 2. Iscrizioni aperte — posti e scadenza ben visibili #}
 {% include "components/_index_open_inscriptions.html" %}
 
-{# 4. Campionati in corso — con testa della classifica generale #}
+{# 3. Campionati in corso — con testa della classifica generale #}
 {% if active_campionati %}
 <section class="c7-stack" style="margin-top: 34px;">
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
@@ -27,9 +55,12 @@
 </section>
 {% endif %}
 
-{# 5. In arrivo — gare/campionati in preparazione #}
+{# 4. In arrivo — gare/campionati in preparazione #}
 {% include "components/_index_upcoming.html" %}
 
-{# 6. Archivio — campionati e gare concluse (coda recente) #}
+{# 5. Archivio — campionati e gare concluse (coda recente) #}
 {% include "components/_index_archive.html" %}
+
+{# 6. Come si partecipa — l'invito di chiusura, solo per chi non è entrato #}
+{% include "components/_index_registration_info.html" %}
 {% endblock %}

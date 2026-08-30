@@ -54,18 +54,19 @@
             {% endif %}
 
             <div style="margin-top: 16px;">
-                {% if current_user.is_authenticated and gara.can_inscribe() and not gara.is_user_inscribed(current_user.id) %}
-                <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=gara.id) }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <button type="submit" class="btn btn-success w-100">
-                        {% if card.is_full %}{{ _("Mettiti in lista d'attesa") }}{% else %}{{ _("Iscriviti") }}{% endif %}
-                    </button>
-                </form>
-                {% elif not current_user.is_authenticated %}
-                <a href="{{ url_for('auth.login') }}" class="btn btn-success w-100">{{ _("Accedi per iscriverti") }}</a>
-                {% else %}
-                <a href="{{ url_for('main.gara_detail_public', gara_id=gara.id) }}" class="btn btn-secondary w-100">{{ _("Dettagli") }}</a>
-                {% endif %}
+                {# Solo l'ospite arriva qui: vedi la nota in `index.html`. Il
+                   comando resta quello — «Iscriviti» — perche' e' la cosa che
+                   si vuole fare; prima diceva «Accedi per iscriverti», che
+                   mette in mezzo l'ostacolo e per giunta non dice che
+                   l'account e' gratuito, cioe' l'unica informazione che
+                   l'ostacolo lo toglie. Il `next` riporta qui, cosi' dopo
+                   l'accesso non si e' persa la gara che interessava. #}
+                <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-success w-100">
+                    {% if card.is_full %}{{ _("Mettiti in lista d'attesa") }}{% else %}{{ _("Iscriviti") }}{% endif %}
+                </a>
+                <p class="text-muted" style="margin: 8px 0 0; font-size: 12px; font-weight: 600; text-align: center;">
+                    {{ _("Serve un account gratuito: ci vogliono trenta secondi") }}
+                </p>
             </div>
         </article>
         {% endfor %}

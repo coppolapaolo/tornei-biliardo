@@ -1,20 +1,29 @@
 {% extends "base.html" %}
 
 {% block title %}{{ _("Nessun Campionato Attivo") }}{% endblock %}
+{% block page_title %}{{ _("Tornei Biliardo") }}{% endblock %}
+{% block page_sub %}{{ _("vista pubblica") }}{% endblock %}
 
+{# La pagina che si vede quando non c'è proprio niente: nessun campionato,
+   nessuna gara. Era rimasta l'unico pezzo della home in Bootstrap di serie —
+   `text-center`, `fa-5x`, `lead`, `btn-outline-primary` — quindi chi capitava
+   qui usciva dal 7c senza preavviso, sulla schermata in cui il sito ha meno
+   da mostrare e più bisogno di sembrare in ordine.
+
+   Il vuoto usa `.c7-empty`, che è il vuoto di tutte le altre schermate. #}
 {% block content %}
-<div class="text-center">
-    <div class="mb-4">
-        <i class="fas fa-trophy fa-5x text-muted"></i>
-    </div>
-    <h1 class="mb-3">{{ _("Nessun Campionato") }}</h1>
-    <p class="lead text-muted">{{ _("Al momento non ci sono campionati in corso.") }}</p>
+<div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-trophy"></i></div>
+    <div class="c7-empty__title">{{ _("Non c'è ancora niente in programma") }}</div>
+    <p class="c7-empty__text">
+        {{ _("Nessun campionato è in corso in questo momento. Quando un direttore ne apre uno, lo trovi qui.") }}
+    </p>
 
     {% if not current_user.is_authenticated %}
-        <div class="mt-4">
-            <a href="{{ url_for('auth.register') }}" class="btn btn-primary me-2">{{ _("Registrati") }}</a>
-            <a href="{{ url_for('auth.login') }}" class="btn btn-outline-primary">{{ _("Accedi") }}</a>
-        </div>
+    <div class="c7-empty__actions">
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary">{{ _("Registrati") }}</a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary">{{ _("Accedi") }}</a>
+    </div>
     {% endif %}
 </div>
 {% endblock %}

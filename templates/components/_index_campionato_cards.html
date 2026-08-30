@@ -1,220 +1,138 @@
-{# templates/components/_index_campionato_cards.html #}
-<!-- Loop per ogni campionato attivo -->
+{# templates/components/_index_campionato_cards.html — Design System 7c
+
+   La card di un campionato nella home. Era l'ultima isola Bootstrap della
+   pagina — `card-header`, `row`/`col-md-*`, `list-group`, `alert`, medaglie
+   in emoji, titoli in Maiuscolo Iniziale — e si vedeva: stava sotto le card
+   7c delle sezioni precedenti e sembrava un pezzo di un altro sito.
+
+   La forma è quella disegnata per l'ospite: nome, tipo e quante gare, la
+   prossima data, e la testa della classifica generale. Il resto — l'elenco
+   completo delle gare, la classifica intera — sta un tocco più in là, nella
+   pagina del campionato.
+
+   Due cose sono rimaste identiche perché portano una storia:
+
+   * il criterio della classifica segue `classification_system` e **non** il
+     tipo di campionato: mostrare la differenza triangoli come se fosse un
+     totale è la issue #89;
+   * il collegamento ai risultati c'è anche per i campionati in corso: chi non
+     ha un account vedeva i primi cinque e nient'altro, e la pagina — che gli
+     è aperta — non era raggiungibile da nessun link (issue #88). #}
+
 {% for data in tournaments_data %}
 {% set campionato = data.campionato %}
 {% set upcoming_garas = data.upcoming_garas %}
 {% set completed_garas = data.completed_garas %}
 {% set top_classifications = data.top_classifications %}
 
-<div class="card mb-4 {% if not campionato.is_active %}border-secondary{% endif %}">
-    <div class="card-header">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h3 class="mb-0">{{ campionato.name }}</h3>
-                <small class="text-muted">{{ campionato.campionato_type }}</small>
-            </div>
-            <div>
-                <span class="badge {{ campionato | status_badge_class }}">{{ campionato | status_text }}</span>
-                {% if not campionato.is_active %}
-                <span class="badge bg-secondary ms-1">{{ _("Inattivo") }}</span>
-                {% endif %}
-            </div>
-        </div>
+<article class="c7-card d-flex flex-column gap-3{{ ' c7-card--locked' if not campionato.is_active }}">
+
+  <div class="d-flex align-items-start gap-2">
+    <div class="flex-fill">
+      <div style="font-size:15px;font-weight:800;letter-spacing:-.02em">{{ campionato.name }}</div>
+      <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+        {{ campionato.campionato_type }}
+        <span class="c7-sep">·</span>
+        {{ ngettext('%(num)s gara', '%(num)s gare', campionato.gare|length, num=campionato.gare|length) }}
+        {% if upcoming_garas %}
+          <span class="c7-sep">·</span>
+          {{ _('prossima') }}
+          <span class="c7-num" style="font-size:12px;color:var(--c7-ink)">{{ upcoming_garas[0].date|date_local }}</span>
+        {% endif %}
+      </div>
     </div>
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-8">
-                <!-- Prossime Gare -->
-                {% if upcoming_garas %}
-                <h5><i class="fas fa-calendar"></i> {{ _("Prossime Gare") }}</h5>
-                <div class="row">
-                    {% for gara in upcoming_garas %}
-                    <div class="col-md-4 mb-3">
-                        <div class="card border-light">
-                            <div class="card-body p-3">
-                                <h6 class="card-title">{{ _("Gara %(num)s", num=gara.number) }}</h6>
-                                <p class="card-text mb-1">
-                                    <strong>{{ gara.discipline|discipline_display }}</strong><br>
-                                    <small class="text-muted">{{ gara.date|date_local }}</small>
-                                </p>
-                                {% if gara.location %}
-                                <p class="card-text mb-2">
-                                    <small class="text-muted">
-                                        <i class="fas fa-map-marker-alt"></i> {{ gara.location }}
-                                    </small>
-                                </p>
-                                {% endif %}
-
-                                {{ status_badge(gara, 'gara') }}
-
-                                {% if gara.get_real_status() == GaraStatus.INSCRIPTION.value %}
-                                <br><small class="text-success">
-                                    <i class="fas fa-clock"></i>
-                                    {{ _("Scade:") }} <span>
-                                        {{ gara.inscription_end|datetime_local if gara.inscription_end else 'N/A' }}
-                                    </span>
-                                </small>
-                                {% elif gara.get_real_status() == ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value %}
-                                <br><small class="text-info">
-                                    <i class="fas fa-clock"></i>
-                                    {{ _("Iniziano:") }} <span>
-                                        {{ gara.inscription_start|datetime_local if gara.inscription_start else 'N/A' }}
-                                    </span>
-                                </small>
-                                {% endif %}
-
-                                <div class="mt-2">
-                                    <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}"
-                                        class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-eye"></i> {{ _("Dettagli") }}
-                                    </a>
-                                    {% if current_user.is_authenticated and gara.can_inscribe() and not
-                                    gara.is_user_inscribed(current_user.id) %}
-                                    <form method="POST"
-                                        action="{{ url_for('player.inscribe_to_gara', gara_id=gara.id) }}"
-                                        class="d-inline">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                        <button type="submit" class="btn btn-primary btn-sm">
-                                            <i class="fas fa-user-plus"></i> {{ _("Iscriviti") }}
-                                        </button>
-                                    </form>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="alert alert-info">
-                    <h5><i class="fas fa-calendar-times"></i> {{ _("Nessuna Gara Programmata") }}</h5>
-                    <p class="mb-0">{{ _("Al momento non ci sono gare programmate per questo campionato.") }}</p>
-                </div>
-                {% endif %}
-
-                <!-- Info Campionato -->
-                <div class="mt-3">
-                    <h6>{{ _("Informazioni Campionato") }}</h6>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <small class="text-muted">
-                                <strong>{{ _("Tipo:") }}</strong> {{ campionato.campionato_type }}<br>
-                                <strong>{{ _("Gare totali:") }}</strong> {{ campionato.gare|length }}
-                            </small>
-                        </div>
-                        <div class="col-md-6">
-                            <small class="text-muted">
-                                {% if campionato.without_x %}
-                                <span class="badge bg-info me-1">{{ _("Senza X") }}</span>
-                                {% endif %}
-                                {% if campionato.final_playoffs %}
-                                <span class="badge bg-success me-1">{{ _("Playoff") }}</span>
-                                {% endif %}
-                                {% if campionato.challenge_mode %}
-                                <span class="badge bg-warning me-1">{{ _("Esercizi") }}</span>
-                                {% endif %}
-                            </small>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Gare Giocate -->
-                {% if completed_garas %}
-                <div class="mt-3">
-                    <h6><i class="fas fa-flag-checkered"></i> {{ _("Gare Giocate (%(count)s)", count=completed_garas|length) }}</h6>
-                    <div class="list-group list-group-flush">
-                        {% for gara in completed_garas[:5] %}
-                        <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}"
-                            class="list-group-item list-group-item-action py-2 px-0 border-0">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <strong>{{ _("Gara %(num)s", num=gara.number) }}</strong>
-                                    <small class="text-muted ms-2">{{ gara.date|date_local }}</small>
-                                </div>
-                                <span class="badge bg-success">{{ _('Completata') }}</span>
-                            </div>
-                        </a>
-                        {% endfor %}
-                        {% if completed_garas|length > 5 %}
-                        <small class="text-muted">{{ _("... e altre %(count)s gare", count=completed_garas|length - 5) }}</small>
-                        {% endif %}
-                    </div>
-                </div>
-                {% endif %}
-            </div>
-
-            <div class="col-md-4">
-                <!-- Classifica Generale -->
-                {% if top_classifications %}
-                <h5><i class="fas fa-trophy"></i> {{ _("Classifica Generale (Top 5)") }}</h5>
-                <div class="list-group">
-                    {% for classification in top_classifications %}
-                    <div class="list-group-item d-flex justify-content-between align-items-center py-2">
-                        <div>
-                            <strong>
-                                {% if classification.position <= 3 %} {% if classification.position==1 %}🥇{% elif
-                                    classification.position==2 %}🥈{% elif classification.position==3 %}🥉{% endif %} {%
-                                    endif %} {{ classification.position }}. {{ classification.user.username }} </strong>
-                        </div>
-                        <small class="text-muted">
-                            {# Il criterio è il sistema di classifica, non il tipo di
-                               campionato: mostrare la differenza come se fosse un
-                               totale è la issue #89. #}
-                            {% if campionato.classification_system == ClassificationSystem.RACK %}
-                            {% if classification.total_spot_shot_wins|default(0) > 0 %}
-                            <span class="badge bg-warning text-dark me-1" title="{{ _('Punti SSR') }}">{{
-                                classification.total_spot_shot_wins }}</span>
-                            {% endif %}
-                            {% set rack_count = classification.total_racks_won %}
-                            {{ ngettext('%(num)s triangoli', '%(num)s triangoli', rack_count, num=rack_count) }}
-                            {% else %}
-                            {% set wins_count = classification.total_matches_won if classification.total_matches_won is defined else classification.matches_won %}
-                            {{ ngettext('%(num)s vittoria', '%(num)s vittorie', wins_count, num=wins_count) }}
-                            {% endif %}
-                        </small>
-                    </div>
-                    {% endfor %}
-                </div>
-                {% else %}
-                <div class="alert alert-secondary">
-                    <h6><i class="fas fa-chart-bar"></i> {{ _("Classifica") }}</h6>
-                    <p class="mb-0">{{ _("Nessuna classifica disponibile ancora.") }}</p>
-                </div>
-                {% endif %}
-
-                <!-- Risultati: il riepilogo completo del campionato, con la
-                     classifica intera e l'elenco delle gare. Per i campionati
-                     conclusi il collegamento c'era gia' (archivio della home),
-                     per quelli in corso no: chi non ha un account vedeva i
-                     primi cinque e nient'altro, e la pagina — che gli e' aperta
-                     — non era raggiungibile da nessun link (issue #88). -->
-                {% if feature_visible('main.campionato_detail_public') %}
-                <div class="mt-3">
-                    <a href="{{ url_for('main.campionato_detail_public', campionato_id=campionato.id) }}"
-                        class="btn btn-outline-secondary btn-sm w-100">
-                        <i class="fas fa-list-ol"></i> {{ _("Risultati") }}
-                    </a>
-                </div>
-                {% endif %}
-
-                <!-- Quick Actions -->
-                {% if current_user.is_authenticated %}
-                <div class="mt-3">
-                    {% if current_user.is_admin %}
-                    <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=campionato.id) }}"
-                        class="btn btn-outline-primary btn-sm w-100 mb-2">
-                        <i class="fas fa-cog"></i> {{ _("Gestisci Campionato") }}
-                    </a>
-                    {% else %}
-                    <a href="{{ url_for('player.dashboard', campionato_id=campionato.id) }}"
-                        class="btn btn-outline-primary btn-sm w-100 mb-2">
-                        <i class="fas fa-user"></i> {{ _("Vai al Campionato") }}
-                    </a>
-                    {% endif %}
-                </div>
-                {% endif %}
-            </div>
-        </div>
+    <div class="d-flex flex-wrap justify-content-end gap-1" style="max-width:170px">
+      <span class="badge {{ campionato | status_badge_class }}">{{ campionato | status_text }}</span>
+      {% if not campionato.is_active %}
+      <span class="c7-state c7-state--muted">{{ _("Inattivo") }}</span>
+      {% endif %}
     </div>
-</div>
+  </div>
+
+  {# Le prossime gare: una riga a testa. Prima erano card dentro la card, tre
+     per riga su desktop e impilate sul telefono — tre cornici arrotondate
+     annidate per dire una data e una disciplina. #}
+  {% if upcoming_garas %}
+  <div class="c7-inset">
+    <div class="c7-kicker">{{ _('Prossime gare') }}</div>
+    <div class="d-flex flex-column gap-2 mt-1">
+      {% for gara in upcoming_garas %}
+      <div class="d-flex align-items-baseline gap-2" style="font-size:12px;font-weight:700">
+        <span class="c7-num" style="color:var(--c7-ink-muted);flex-shrink:0">{{ gara.date|date_local }}</span>
+        <span class="text-truncate flex-fill">
+          {{ _("Gara %(num)s", num=gara.number) }}
+          <span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}
+          {% if gara.location %}<span class="c7-sep">·</span> {{ gara.location }}{% endif %}
+        </span>
+      </div>
+      {% if gara.get_real_status() == GaraStatus.INSCRIPTION.value and gara.inscription_end %}
+      <div style="font-size:12px;font-weight:600;color:var(--c7-warn)">
+        {{ _('Le iscrizioni chiudono il') }}
+        <span class="c7-num" style="font-size:12px">{{ gara.inscription_end|datetime_local }}</span>
+      </div>
+      {% elif gara.get_real_status() == ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value and gara.inscription_start %}
+      <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+        {{ _('Le iscrizioni aprono il') }}
+        <span class="c7-num" style="font-size:12px">{{ gara.inscription_start|datetime_local }}</span>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {# La testa della classifica generale. Le medaglie in emoji sono sparite: la
+     posizione la dice il numero, e tre emoji su cinque righe fanno sembrare
+     le altre due un errore. #}
+  {% if top_classifications %}
+  <div class="c7-inset">
+    <div class="c7-kicker">{{ _('Classifica generale') }}</div>
+    <div class="d-flex flex-column gap-1 mt-1">
+      {% for classification in top_classifications %}
+      <div class="d-flex align-items-baseline gap-2" style="font-size:13px;font-weight:700">
+        <span class="c7-num" style="color:var(--c7-ink-muted);width:22px;flex-shrink:0">{{ classification.position }}°</span>
+        <span class="text-truncate flex-fill">{{ classification.user.username }}</span>
+        <span style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);flex-shrink:0">
+          {# Il criterio è il sistema di classifica, non il tipo di
+             campionato: mostrare la differenza come se fosse un totale è la
+             issue #89. #}
+          {% if campionato.classification_system == ClassificationSystem.RACK %}
+            {% if classification.total_spot_shot_wins|default(0) > 0 %}
+            <span class="c7-state c7-state--warn me-1" title="{{ _('Punti SSR') }}">{{ classification.total_spot_shot_wins }}</span>
+            {% endif %}
+            {% set rack_count = classification.total_racks_won %}
+            <span class="c7-num" style="font-size:12px">{{ rack_count }}</span>
+            {{ ngettext('triangolo', 'triangoli', rack_count) }}
+          {% else %}
+            {% set wins_count = classification.total_matches_won if classification.total_matches_won is defined else classification.matches_won %}
+            <span class="c7-num" style="font-size:12px">{{ wins_count }}</span>
+            {{ ngettext('vittoria', 'vittorie', wins_count) }}
+          {% endif %}
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% else %}
+  <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+    {{ _("La classifica comincia con la prima gara giocata.") }}
+  </div>
+  {% endif %}
+
+  {% if completed_garas %}
+  <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+    {{ ngettext('%(num)s gara già giocata', '%(num)s gare già giocate',
+                completed_garas|length, num=completed_garas|length) }}
+  </div>
+  {% endif %}
+
+  <div class="d-flex gap-2">
+    {% if feature_visible('main.campionato_detail_public') %}
+    <a href="{{ url_for('main.campionato_detail_public', campionato_id=campionato.id) }}"
+       class="btn btn-secondary btn-sm flex-fill">
+      {{ _("Classifica e risultati") }}
+    </a>
+    {% endif %}
+  </div>
+</article>
 {% endfor %}
