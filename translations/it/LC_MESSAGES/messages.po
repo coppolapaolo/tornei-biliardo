@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-29 22:38+0200\n"
+"POT-Creation-Date: 2026-08-30 13:53+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -8846,27 +8846,37 @@ msgstr ""
 msgid "Spot Shot Rally - punteggio spareggio"
 msgstr ""
 
-#: templates/components/_detailed_classification.html:26
+#: templates/components/_detailed_classification.html:34
 msgid "Turno prec."
 msgstr ""
 
-#: templates/components/_detailed_classification.html:27
-msgid "Movimento"
-msgstr ""
-
-#: templates/components/_detailed_classification.html:57
+#: templates/components/_detailed_classification.html:64
 msgid "Punteggio Spot Shot Rally"
 msgstr ""
 
-#: templates/components/_detailed_classification.html:90
+#: templates/components/_detailed_classification.html:76
+#, python-format
+msgid "Sale di %(num)d posizione"
+msgid_plural "Sale di %(num)d posizioni"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/components/_detailed_classification.html:79
+#, python-format
+msgid "Scende di %(num)d posizione"
+msgid_plural "Scende di %(num)d posizioni"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/components/_detailed_classification.html:93
 msgid "Classifica non ancora calcolata"
 msgstr ""
 
-#: templates/components/_detailed_classification.html:93
+#: templates/components/_detailed_classification.html:96
 msgid "Serve che tutte le partite del turno siano concluse."
 msgstr ""
 
-#: templates/components/_detailed_classification.html:95
+#: templates/components/_detailed_classification.html:98
 msgid "Verrà calcolata quando il turno sarà giocato."
 msgstr ""
 
