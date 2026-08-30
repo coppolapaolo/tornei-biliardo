@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-30 13:53+0200\n"
+"POT-Creation-Date: 2026-08-30 15:09+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1194,7 +1194,7 @@ msgstr ""
 "the result when it ends."
 
 #: models/individual_match/quick_match_service.py:422
-#: templates/components/_match_card.html:219
+#: templates/components/_match_card.html:224
 #: templates/individual_match/proposal_detail.html:105
 msgid "Vai alla partita"
 msgstr "Go to the match"
@@ -1361,32 +1361,32 @@ msgstr "Two racks each, then it switches."
 msgid "Apre chi ha perso il triangolo prima."
 msgstr "The loser of the previous rack breaks."
 
-#: models/match/distance.py:90
+#: models/match/distance.py:107
 #, python-format
 msgid "Al %(n)s triangoli"
 msgstr "Race to %(n)s racks"
 
-#: models/match/distance.py:92
+#: models/match/distance.py:109
 #, python-format
 msgid "Esattamente %(n)s triangoli"
 msgstr "Exactly %(n)s racks"
 
-#: models/match/distance.py:96
+#: models/match/distance.py:113
 #, python-format
 msgid "Al %(n)s set"
 msgstr "Race to %(n)s sets"
 
-#: models/match/distance.py:98
+#: models/match/distance.py:115
 #, python-format
 msgid "Esattamente %(n)s set"
 msgstr "Exactly %(n)s sets"
 
-#: models/match/distance.py:101
+#: models/match/distance.py:118
 #, python-format
 msgid "ogni set al %(n)s triangoli"
 msgstr "each set race to %(n)s racks"
 
-#: models/match/distance.py:103
+#: models/match/distance.py:120
 #, python-format
 msgid "ogni set esattamente %(n)s triangoli"
 msgstr "each set exactly %(n)s racks"
@@ -1774,7 +1774,7 @@ msgstr "All"
 #: templates/admin/accessi.html:141 templates/admin/campionato_detail.html:240
 #: templates/admin/users_list.html:106 templates/admin/users_list.html:177
 #: templates/admin/venue_manager_requests.html:48
-#: templates/components/_campionato_general_classification.html:19
+#: templates/components/_campionato_general_classification.html:24
 #: templates/components/_detailed_classification.html:19
 #: templates/components/_unified_dashboard_header.html:10
 #: templates/components/_user_info_card.html:25
@@ -3010,7 +3010,7 @@ msgstr "Championship visible"
 msgid "Campionato non era nascosto"
 msgstr "Championship was not hidden"
 
-#: routes/player/profile.py:338
+#: routes/player/profile.py:346
 msgid ""
 "Informazioni aggiornate. Abbiamo inviato una nuova email di verifica al "
 "nuovo indirizzo."
@@ -3018,40 +3018,40 @@ msgstr ""
 "Information updated. A new verification email has been sent to the new "
 "address."
 
-#: routes/player/profile.py:344
+#: routes/player/profile.py:352
 msgid "Informazioni aggiornate correttamente."
 msgstr "Information updated successfully."
 
-#: routes/player/profile.py:349
+#: routes/player/profile.py:357
 msgid "Si è verificato un errore durante l'aggiornamento."
 msgstr "An error occurred during the update."
 
-#: routes/player/profile.py:361
+#: routes/player/profile.py:369
 msgid "La tua email è già verificata."
 msgstr "Your email is already verified."
 
-#: routes/player/profile.py:370
+#: routes/player/profile.py:378
 msgid "Email di verifica inviata. Controlla la tua casella di posta."
 msgstr "Verification email sent. Check your inbox."
 
-#: routes/player/profile.py:374
+#: routes/player/profile.py:382
 msgid "Impossibile inviare l'email. Riprova più tardi."
 msgstr "Could not send the email. Please try again later."
 
-#: routes/player/profile.py:376
+#: routes/player/profile.py:384
 #, python-format
 msgid "Errore durante l'invio: %(detail)s"
 msgstr "Error while sending: %(detail)s"
 
-#: routes/player/profile.py:391
+#: routes/player/profile.py:399
 msgid "La nuova password e la conferma non coincidono."
 msgstr "The new password and its confirmation do not match."
 
-#: routes/player/profile.py:404
+#: routes/player/profile.py:412
 msgid "Password aggiornata correttamente."
 msgstr "Password updated successfully."
 
-#: routes/player/profile.py:406
+#: routes/player/profile.py:414
 msgid "Password attuale errata o nuova password non valida."
 msgstr "Current password is wrong, or the new password is not valid."
 
@@ -3384,7 +3384,7 @@ msgstr "Close"
 #: templates/player/delete_account.html:7
 #: templates/player/delete_account.html:42
 #: templates/player/my_venue_requests.html:66
-#: templates/player/profile_edit.html:60 templates/player/venue_detail.html:287
+#: templates/player/profile_edit.html:81 templates/player/venue_detail.html:287
 #: templates/player/venues.html:99 templates/roles/request_form.html:63
 msgid "Annulla"
 msgstr "Cancel"
@@ -3458,7 +3458,7 @@ msgstr "Description (optional)"
 #: templates/gamification/admin/streak_config.html:152
 #: templates/individual_match/edit_match.html:122
 #: templates/player/privacy_settings.html:98
-#: templates/player/profile_edit.html:57
+#: templates/player/profile_edit.html:78
 msgid "Salva"
 msgstr "Save"
 
@@ -4023,7 +4023,7 @@ msgstr "Tie for"
 msgid "posto"
 msgstr "place"
 
-#: templates/components/_campionato_general_classification.html:22
+#: templates/components/_campionato_general_classification.html:27
 #: templates/components/_index_campionato_cards.html:165
 #: templates/gara_detail.html:789
 msgid "Punti SSR"
@@ -4038,10 +4038,12 @@ msgstr "Click to swap with occupying match"
 #: templates/components/_gara_matches.html:58
 #: templates/components/_gara_matches.html:92
 #: templates/components/_gara_my_match.html:14
-#: templates/components/_match_card.html:47
-#: templates/components/_match_card.html:56
-#: templates/components/_match_header.html:78
-#: templates/components/_match_result_row.html:128
+#: templates/components/_match_card.html:41
+#: templates/components/_match_card.html:52
+#: templates/components/_match_card.html:61
+#: templates/components/_match_header.html:80
+#: templates/components/_match_result_row.html:110
+#: templates/components/_match_result_row.html:135
 #: templates/components/_separated_dashboard_content.html:91
 #: templates/gara_detail.html:791
 msgid "Tavolo"
@@ -4142,11 +4144,11 @@ msgstr "Match"
 #: templates/components/_bracket_view.html:53
 #: templates/components/_match_bye.html:8
 #: templates/components/_match_card.html:22
-#: templates/components/_match_card.html:42
-#: templates/components/_match_card.html:98
+#: templates/components/_match_card.html:47
+#: templates/components/_match_card.html:103
 #: templates/components/_match_header.html:60
 #: templates/components/_match_result_row.html:56
-#: templates/components/_match_result_row.html:112
+#: templates/components/_match_result_row.html:119
 #: templates/components/_match_scoreboard.html:155
 #: templates/components/_unified_match_score.html:23
 #: templates/components/_unified_rack_input.html:23
@@ -4312,7 +4314,7 @@ msgstr "Your city"
 msgid "Es. Napoli"
 msgstr "E.g. Naples"
 
-#: templates/onboarding.html:36 templates/player/profile_edit.html:41
+#: templates/onboarding.html:36 templates/player/profile_edit.html:62
 msgid ""
 "Usata per trovare sale e proposte vicino a te quando il GPS non è "
 "disponibile."
@@ -4385,6 +4387,15 @@ msgstr ""
 
 #: templates/privacy.html:23
 msgid ""
+"Puoi aggiungere al tuo profilo nome, cognome, telefono e città: sono "
+"tutti facoltativi e li fornisci tu. Nome e cognome sono visibili al "
+"direttore delle gare a cui ti iscrivi, perché possa riconoscerti fra "
+"giocatori con username simili; non compaiono nel tuo profilo pubblico né "
+"nelle classifiche."
+msgstr "You may add your first name, surname, phone number and town to your profile: all of them are optional and you provide them yourself. First name and surname are shown to the director of the competitions you enter, so they can tell you apart from players with similar usernames; they do not appear on your public profile or in the standings."
+
+#: templates/privacy.html:26
+msgid ""
 "I dati personali identificativi sono conservati cifrati nel database. La "
 "cancellazione dell'account avviene tramite anonimizzazione: i risultati "
 "sportivi restano nelle classifiche storiche, ma non sono più "
@@ -4395,11 +4406,11 @@ msgstr ""
 " in the historical rankings, but they can no longer be traced back to "
 "you."
 
-#: templates/privacy.html:28
+#: templates/privacy.html:31
 msgid "Cookie tecnici"
 msgstr "Technical cookies"
 
-#: templates/privacy.html:30
+#: templates/privacy.html:33
 msgid ""
 "Il sito usa cookie tecnici necessari al funzionamento: mantenimento della"
 " sessione di login, protezione dei moduli contro gli invii fraudolenti "
@@ -4411,11 +4422,11 @@ msgstr ""
 "submissions (CSRF) and remembering your chosen language. These cookies do"
 " not require consent because without them the site cannot function."
 
-#: templates/privacy.html:36
+#: templates/privacy.html:39
 msgid "Cookie analitici (Google Analytics)"
 msgstr "Analytics cookies (Google Analytics)"
 
-#: templates/privacy.html:38
+#: templates/privacy.html:41
 msgid ""
 "Usiamo Google Analytics 4 per capire come viene utilizzato il sito: "
 "quante persone lo visitano, quali pagine consultano, da quale dispositivo"
@@ -4426,7 +4437,7 @@ msgstr ""
 "people visit it, which pages they view, from which device and from which "
 "source they arrive. The sole purpose is to improve the platform."
 
-#: templates/privacy.html:41
+#: templates/privacy.html:44
 msgid ""
 "Google Analytics 4 non registra il tuo indirizzo IP completo e non lo usa"
 " per identificarti. Non inviamo a Google il tuo nome, la tua email o "
@@ -4436,7 +4447,7 @@ msgstr ""
 "it to identify you. We do not send Google your name, your email or any "
 "other data that could reveal your identity."
 
-#: templates/privacy.html:44
+#: templates/privacy.html:47
 msgid ""
 "Puoi disattivare la raccolta installando il componente aggiuntivo "
 "ufficiale per la disattivazione di Google Analytics, disponibile su "
@@ -4447,11 +4458,11 @@ msgstr ""
 "browser add-on, available at tools.google.com/dlpage/gaoptout, or by "
 "enabling the Do Not Track option in your browser."
 
-#: templates/privacy.html:50
+#: templates/privacy.html:53
 msgid "I tuoi diritti"
 msgstr "Your rights"
 
-#: templates/privacy.html:52
+#: templates/privacy.html:55
 msgid ""
 "Puoi in qualsiasi momento accedere ai tuoi dati, correggerli, chiederne "
 "la cancellazione o opporti al trattamento. La maggior parte delle "
@@ -4463,7 +4474,7 @@ msgstr ""
 "directly from your profile settings; for the others you can contact us at"
 " the address indicated above."
 
-#: templates/privacy.html:57
+#: templates/privacy.html:60
 msgid "Ultimo aggiornamento: luglio 2026."
 msgstr "Last updated: July 2026."
 
@@ -4481,7 +4492,7 @@ msgstr "Create your account"
 #: templates/components/_player_personal_info.html:18
 #: templates/components/_user_info_card.html:9
 #: templates/player/privacy_settings.html:19 templates/player/profile.html:67
-#: templates/player/profile_edit.html:20 templates/player/venue_detail.html:70
+#: templates/player/profile_edit.html:41 templates/player/venue_detail.html:70
 #: templates/register.html:23
 msgid "Email"
 msgstr "Email"
@@ -4491,7 +4502,7 @@ msgstr "Email"
 #: templates/components/_player_personal_info.html:21
 #: templates/components/_user_info_card.html:10
 #: templates/player/privacy_settings.html:29 templates/player/profile.html:71
-#: templates/player/profile_edit.html:35 templates/player/venue_detail.html:63
+#: templates/player/profile_edit.html:56 templates/player/venue_detail.html:63
 #: templates/register.html:28
 msgid "Telefono"
 msgstr "Phone"
@@ -4841,7 +4852,7 @@ msgstr "Min. competitions played"
 #: templates/gamification/admin/feature_detail.html:35
 #: templates/gamification/admin/features.html:26
 #: templates/gamification/admin/quests.html:22
-#: templates/player/venue_detail.html:49
+#: templates/player/profile_edit.html:25 templates/player/venue_detail.html:49
 #: templates/public/campionato_detail.html:97
 msgid "Nome"
 msgstr "Name"
@@ -4949,7 +4960,7 @@ msgid "Motivo"
 msgstr "Reason"
 
 #: templates/admin/campionato_detail.html:254
-#: templates/components/_match_result_row.html:130
+#: templates/components/_match_result_row.html:137
 #: templates/components/_multi_set_score_display.html:94
 #: templates/components/_playoff_invitations.html:23
 #: templates/components/_proposal_labels.html:18
@@ -5853,7 +5864,7 @@ msgid "Partecipanti"
 msgstr "Participants"
 
 #: templates/admin/gara_create_standalone.html:434
-#: templates/components/_gara_inscriptions.html:59
+#: templates/components/_gara_inscriptions.html:66
 #: templates/components/_match_result_row.html:24
 #: templates/components/_match_result_row.html:28
 #: templates/components/_match_result_row.html:32
@@ -6163,7 +6174,7 @@ msgid "Utenti unici"
 msgstr "Unique users"
 
 #: templates/admin/kpi.html:476
-#: templates/components/_campionato_general_classification.html:31
+#: templates/components/_campionato_general_classification.html:36
 msgid "Trend"
 msgstr "Trend"
 
@@ -6802,7 +6813,7 @@ msgstr "Address"
 
 #: templates/admin/venue_form.html:60 templates/admin/venues_list.html:32
 #: templates/components/_player_personal_info.html:24
-#: templates/player/profile_edit.html:39 templates/player/venue_detail.html:58
+#: templates/player/profile_edit.html:60 templates/player/venue_detail.html:58
 msgid "Città"
 msgstr "City"
 
@@ -8176,7 +8187,7 @@ msgid "adesso"
 msgstr "just now"
 
 #: templates/challenge/training.html:196
-#: templates/components/_match_card.html:138
+#: templates/components/_match_card.html:143
 #: templates/components/_match_challenge_input.html:57
 #: templates/exam/session.html:109
 msgid "Punteggio"
@@ -8804,56 +8815,56 @@ msgstr ""
 "Use the \"New Competition\" button in the header to add the first "
 "competition."
 
-#: templates/components/_campionato_general_classification.html:10
+#: templates/components/_campionato_general_classification.html:15
 #, python-format
 msgid "Classifica dopo Gara %(num)s"
 msgstr "Standings after Competition %(num)s"
 
-#: templates/components/_campionato_general_classification.html:18
+#: templates/components/_campionato_general_classification.html:23
 #: templates/components/_detailed_classification.html:18
 msgid "Pos."
 msgstr "Pos."
 
-#: templates/components/_campionato_general_classification.html:21
+#: templates/components/_campionato_general_classification.html:26
 msgid "Triangoli Totali"
 msgstr "Total Racks"
 
-#: templates/components/_campionato_general_classification.html:24
+#: templates/components/_campionato_general_classification.html:29
 msgid "Punti Totali"
 msgstr "Total Points"
 
-#: templates/components/_campionato_general_classification.html:25
+#: templates/components/_campionato_general_classification.html:30
 msgid "Diff. Triangoli Tot."
 msgstr "Total Rack Diff."
 
-#: templates/components/_campionato_general_classification.html:27
+#: templates/components/_campionato_general_classification.html:32
 #: templates/gamification/admin/quest_form.html:56
 msgid "Match Vinti"
 msgstr "Matches Won"
 
-#: templates/components/_campionato_general_classification.html:28
+#: templates/components/_campionato_general_classification.html:33
 msgid "Diff. Triangoli"
 msgstr "Rack diff."
 
-#: templates/components/_campionato_general_classification.html:30
+#: templates/components/_campionato_general_classification.html:35
 msgid "Partecipazioni"
 msgstr "Appearances"
 
-#: templates/components/_campionato_general_classification.html:120
+#: templates/components/_campionato_general_classification.html:125
 msgid ""
 "Classifica generale: ordinata per triangoli totali, poi per punti "
 "spareggio (SSR)."
 msgstr "General standings: sorted by total racks, then by tiebreaker points (SSR)."
 
-#: templates/components/_campionato_general_classification.html:122
+#: templates/components/_campionato_general_classification.html:127
 msgid "Classifica generale basata sui punti ottenuti in tutte le gare completate."
 msgstr "General standings based on points earned in all completed competitions."
 
-#: templates/components/_campionato_general_classification.html:123
+#: templates/components/_campionato_general_classification.html:128
 msgid "Sistema di punteggio: posizioni 1-10 assegnano punti decrescenti."
 msgstr "Scoring system: positions 1-10 assign decreasing points."
 
-#: templates/components/_campionato_general_classification.html:125
+#: templates/components/_campionato_general_classification.html:130
 msgid ""
 "Classifica generale: ordinata per match vinti, poi per differenza "
 "triangoli totale."
@@ -9841,75 +9852,75 @@ msgstr "Add participant"
 msgid "Iscritti attivi"
 msgstr "Active entrants"
 
-#: templates/components/_gara_inscriptions.html:55
+#: templates/components/_gara_inscriptions.html:62
 #, python-format
 msgid "Iscritto il %(date)s"
 msgstr "Registered on %(date)s"
 
-#: templates/components/_gara_inscriptions.html:59
+#: templates/components/_gara_inscriptions.html:66
 msgid "Ha dato forfait"
 msgstr "Forfeited"
 
-#: templates/components/_gara_inscriptions.html:66
+#: templates/components/_gara_inscriptions.html:73
 #, python-format
 msgid "Disiscrivere %(username)s? Riceverà una notifica."
 msgstr "Remove %(username)s? They will get a notification."
 
-#: templates/components/_gara_inscriptions.html:69
+#: templates/components/_gara_inscriptions.html:76
 msgid "Disiscrive il giocatore"
 msgstr "Removes the player"
 
-#: templates/components/_gara_inscriptions.html:93
-#: templates/components/_gara_inscriptions.html:105
+#: templates/components/_gara_inscriptions.html:100
+#: templates/components/_gara_inscriptions.html:112
 #: templates/gamification/admin/achievement_form.html:41
 #: templates/gamification/admin/achievements.html:25
 msgid "Categoria"
 msgstr "Category"
 
-#: templates/components/_gara_inscriptions.html:101
+#: templates/components/_gara_inscriptions.html:108
 #, python-format
 msgid "Categoria di %(username)s in questa gara"
 msgstr "%(username)s's category in this competition"
 
-#: templates/components/_gara_inscriptions.html:121
+#: templates/components/_gara_inscriptions.html:128
 #, python-format
 msgid "Squadra di %(username)s in questa gara"
 msgstr "%(username)s's team in this competition"
 
-#: templates/components/_gara_inscriptions.html:122
+#: templates/components/_gara_inscriptions.html:129
 msgid "Senza squadra"
 msgstr "No team"
 
-#: templates/components/_gara_inscriptions.html:144
+#: templates/components/_gara_inscriptions.html:151
 #: templates/components/_separated_dashboard_content.html:216
 #: templates/components/_separated_dashboard_content.html:360
 #: templates/components/_unified_cards.html:139
 msgid "Lista d'attesa"
 msgstr "Waitlist"
 
-#: templates/components/_gara_inscriptions.html:153
+#: templates/components/_gara_inscriptions.html:160
 #, python-format
 msgid "In lista dal %(date)s"
 msgstr "In list since %(date)s"
 
-#: templates/components/_gara_inscriptions.html:159
+#: templates/components/_gara_inscriptions.html:166
 #, python-format
 msgid "Rimuovere %(username)s dalla lista d'attesa?"
 msgstr "Remove %(username)s from the waiting list?"
 
-#: templates/components/_gara_inscriptions.html:162
+#: templates/components/_gara_inscriptions.html:169
 msgid "Rimuove dalla lista d'attesa"
 msgstr "Remove from waitlist"
 
-#: templates/components/_gara_inscriptions.html:175
+#: templates/components/_gara_inscriptions.html:182
 msgid "Nessun iscritto"
 msgstr "No registered players"
 
-#: templates/components/_gara_inscriptions.html:176
+#: templates/components/_gara_inscriptions.html:183
 msgid "Appena qualcuno si iscrive lo trovi qui."
 msgstr "As soon as someone signs up you will find them here."
 
-#: templates/components/_gara_inscriptions.html:183
+#: templates/components/_gara_inscriptions.html:190
 msgid "Limite massimo raggiunto"
 msgstr "Maximum limit reached"
 
@@ -10095,7 +10106,7 @@ msgid "Il tuo match"
 msgstr "Your match"
 
 #: templates/components/_gara_my_match.html:29
-#: templates/components/_match_card.html:193
+#: templates/components/_match_card.html:198
 #: templates/player/notifications.html:96
 #: templates/public/campionatos_list.html:57
 #: templates/public/garas_list.html:39
@@ -10511,7 +10522,7 @@ msgid "Apri la sfida"
 msgstr "Open the match"
 
 #: templates/components/_history_matches_tab.html:107
-#: templates/components/_match_result_row.html:152
+#: templates/components/_match_result_row.html:159
 #: templates/components/_player_recent_matches.html:68
 #: templates/individual_match/dashboard.html:131
 #: templates/individual_match/matches.html:136
@@ -10557,6 +10568,7 @@ msgstr "Finished championships"
 
 #: templates/components/_index_archive.html:16
 #: templates/components/_index_archive.html:58
+#: templates/components/_index_campionato_cards.html:195
 msgid "Risultati"
 msgstr "Results"
 
@@ -10655,11 +10667,11 @@ msgstr[1] "%(num)s wins"
 msgid "Nessuna classifica disponibile ancora."
 msgstr "No standings available yet."
 
-#: templates/components/_index_campionato_cards.html:191
+#: templates/components/_index_campionato_cards.html:206
 msgid "Gestisci Campionato"
 msgstr "Manage Championship"
 
-#: templates/components/_index_campionato_cards.html:196
+#: templates/components/_index_campionato_cards.html:211
 msgid "Vai al Campionato"
 msgstr "Go to Championship"
 
@@ -10750,7 +10762,7 @@ msgid "Scegli fra le gare con iscrizioni aperte."
 msgstr "Choose from the tournaments with open entries."
 
 #: templates/components/_index_registration_info.html:25
-#: templates/components/_match_card.html:211
+#: templates/components/_match_card.html:216
 #: templates/components/_separated_dashboard_content.html:103
 msgid "Gioca"
 msgstr "Play"
@@ -10896,34 +10908,34 @@ msgstr "%(player)s moves on to the next round without playing."
 msgid "Trio"
 msgstr "Trio"
 
-#: templates/components/_match_card.html:52
+#: templates/components/_match_card.html:57
 msgid "Assegna tavolo"
 msgstr "Assign table"
 
-#: templates/components/_match_card.html:121
+#: templates/components/_match_card.html:126
 msgid "Prova al posto della X"
 msgstr "Drill in place of the X"
 
-#: templates/components/_match_card.html:124
+#: templates/components/_match_card.html:129
 msgid "Convalidata"
 msgstr "Validated"
 
-#: templates/components/_match_card.html:130
+#: templates/components/_match_card.html:135
 msgid "Azzerare la prova? Il turno torna a valere zero."
 msgstr "Clear the drill? The round goes back to counting zero."
 
-#: templates/components/_match_card.html:130
-#: templates/components/_match_card.html:200
-#: templates/components/_match_card.html:204
+#: templates/components/_match_card.html:135
+#: templates/components/_match_card.html:205
+#: templates/components/_match_card.html:209
 #: templates/public/campionatos_list.html:28
 msgid "Azzera"
 msgstr "Reset"
 
-#: templates/components/_match_card.html:144
+#: templates/components/_match_card.html:149
 msgid "Convalida"
 msgstr "Validate"
 
-#: templates/components/_match_card.html:148
+#: templates/components/_match_card.html:153
 msgid ""
 "Il giocatore ha dichiarato un punteggio. Finché non lo convalidi, il "
 "turno vale zero."
@@ -10931,27 +10943,27 @@ msgstr ""
 "The player has declared a score. Until you validate it, the round counts "
 "zero."
 
-#: templates/components/_match_card.html:150
+#: templates/components/_match_card.html:155
 msgid ""
 "Il giocatore non ha ancora registrato la prova. Puoi farlo tu al posto "
 "suo."
 msgstr "The player has not recorded the drill yet. You can do it for them."
 
-#: templates/components/_match_card.html:168
-#: templates/components/_match_result_row.html:180
+#: templates/components/_match_card.html:173
+#: templates/components/_match_result_row.html:187
 msgid "Bloccato"
 msgstr "Locked"
 
-#: templates/components/_match_card.html:170
+#: templates/components/_match_card.html:175
 msgid "Assegna un tavolo per abilitare le azioni"
 msgstr "Assign a table to enable the actions"
 
-#: templates/components/_match_card.html:178
 #: templates/components/_match_card.html:183
+#: templates/components/_match_card.html:188
 msgid "Inserisci risultato"
 msgstr "Enter the result"
 
-#: templates/components/_match_card.html:188
+#: templates/components/_match_card.html:193
 msgid "Valida"
 msgstr "Validate"
 
@@ -11007,7 +11019,7 @@ msgstr "Back to History"
 msgid "Sfida individuale"
 msgstr "Individual match"
 
-#: templates/components/_match_header.html:80
+#: templates/components/_match_header.html:82
 msgid "senza tavolo"
 msgstr "no table"
 
@@ -11019,30 +11031,30 @@ msgstr "Match information"
 msgid "A tavolino"
 msgstr "Walkover"
 
-#: templates/components/_match_result_row.html:117
+#: templates/components/_match_result_row.html:124
 #, python-format
 msgid "Tavolo %(id)s"
 msgstr "Table %(id)s"
 
-#: templates/components/_match_result_row.html:122
+#: templates/components/_match_result_row.html:129
 msgid "Assegna"
 msgstr "Assign"
 
-#: templates/components/_match_result_row.html:141
-#: templates/components/_match_result_row.html:146
+#: templates/components/_match_result_row.html:148
+#: templates/components/_match_result_row.html:153
 msgid "Risultato rapido"
 msgstr "Quick result"
 
-#: templates/components/_match_result_row.html:159
+#: templates/components/_match_result_row.html:166
 msgid "Valida il risultato"
 msgstr "Validate the result"
 
-#: templates/components/_match_result_row.html:170
-#: templates/components/_match_result_row.html:174
+#: templates/components/_match_result_row.html:177
+#: templates/components/_match_result_row.html:181
 msgid "Azzera il risultato"
 msgstr "Reset the result"
 
-#: templates/components/_match_result_row.html:182
+#: templates/components/_match_result_row.html:189
 msgid "Assegna un tavolo"
 msgstr "Assign a table"
 
@@ -11555,7 +11567,7 @@ msgid "Non indicata"
 msgstr "Not given"
 
 #: templates/components/_player_personal_info.html:27
-#: templates/player/profile_edit.html:48
+#: templates/player/profile_edit.html:69
 msgid "Squadra"
 msgstr "Team"
 
@@ -16687,19 +16699,30 @@ msgstr "Edit Personal Information"
 msgid "L'username deve essere unico"
 msgstr "The username must be unique"
 
-#: templates/player/profile_edit.html:23
+#: templates/player/profile_edit.html:30
+msgid "Cognome"
+msgstr "Surname"
+
+#: templates/player/profile_edit.html:37
+msgid ""
+"Facoltativi. Li vede il direttore delle gare a cui ti iscrivi, per non "
+"confondere due giocatori con username simili. Non compaiono nel tuo "
+"profilo pubblico né nelle classifiche, dove resti il tuo username."
+msgstr "Optional. They are shown to the director of the competitions you enter, so two players with similar usernames cannot be confused. They never appear on your public profile or in the standings, where your username is what people see."
+
+#: templates/player/profile_edit.html:44
 msgid "Email verificata"
 msgstr "Email verified"
 
-#: templates/player/profile_edit.html:26
+#: templates/player/profile_edit.html:47
 msgid "Email non verificata."
 msgstr "Email not verified."
 
-#: templates/player/profile_edit.html:29
+#: templates/player/profile_edit.html:50
 msgid "Invia link di verifica"
 msgstr "Send verification link"
 
-#: templates/player/profile_edit.html:52
+#: templates/player/profile_edit.html:73
 msgid ""
 "Il circolo o la società con cui giochi di solito. Viene proposta quando "
 "ti iscrivi a una gara che tiene conto delle squadre; lì potrai sempre "
