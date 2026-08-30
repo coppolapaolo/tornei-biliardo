@@ -103,9 +103,14 @@ class WithdrawPolicyService:
 
         # Handle regular matches
         for match in pending_regular_matches:
-            # Determine winner (the opponent)
-            # Use match_distance if set, otherwise fall back to gara.distance
-            winning_score = match.match_distance or gara.distance
+            # Quanto vale il tavolino lo dice il value object `Distance`
+            # (ADR-027, issue #260). Qui c'era `match.match_distance or
+            # gara.distance`: il valore coincideva quasi sempre, ma il
+            # ripiego era rotto — `match_distance == 1` è il sentinella di
+            # «non popolato» per `effective_distance`, e con l'`or` non
+            # scatta, quindi una partita mai configurata sarebbe stata
+            # chiusa 1-0 invece che alla distanza vera.
+            winning_score = match.distance_config.walkover_score()
             if match.player1_id == user_id:
                 winner_id = match.player2_id
                 match.player1_score = 0

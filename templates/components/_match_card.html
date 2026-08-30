@@ -34,7 +34,12 @@
     </div>
 
     <div>
-      {% if match.is_bye or is_finished %}
+      {% if match.is_bye %}
+      {% elif is_finished %}
+        {# Conclusa: il tavolo dove si è giocato, se lo sappiamo (issue #154) #}
+        {% if match.played_on_table %}
+        <span class="text-muted" style="font-size: 12px;">{{ _('Tavolo') }} <span class="c7-num">{{ match.played_on_table }}</span></span>
+        {% endif %}
       {% elif user_can_manage and available_tables %}
         {% if match.is_trio and match.trio_match %}
           {% set player_display = match.trio_match.player1.username ~ ' · ' ~ match.trio_match.player2.username ~ ' · ' ~ match.trio_match.player3.username %}

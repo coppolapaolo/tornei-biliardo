@@ -686,10 +686,26 @@ input[type="number"].form-control {
 
 .c7-table-wrap,
 .table-responsive {
-  background: var(--c7-card);
+  /* Le due ombre ai lati dicono che la tabella continua fuori dal bordo.
+     Restano invisibili finché non c'è nulla da scorrere: i due strati
+     `local` sono ritagli del fondo card che scorrono col contenuto e
+     coprono l'ombra quando si è a fine corsa. Senza questo indizio una
+     colonna fuori dal contenitore semplicemente non esiste, per chi
+     guarda — è la sostanza della issue #152. */
+  background:
+    linear-gradient(to right, var(--c7-card) 40%, rgba(255, 255, 255, 0)) left center / 28px 100% no-repeat local,
+    linear-gradient(to left, var(--c7-card) 40%, rgba(255, 255, 255, 0)) right center / 28px 100% no-repeat local,
+    radial-gradient(farthest-side at 0 50%, rgba(20, 24, 26, .13), rgba(20, 24, 26, 0)) left center / 14px 100% no-repeat scroll,
+    radial-gradient(farthest-side at 100% 50%, rgba(20, 24, 26, .13), rgba(20, 24, 26, 0)) right center / 14px 100% no-repeat scroll,
+    var(--c7-card);
   border-radius: var(--c7-r-card);
   overflow-x: auto;
   overflow-y: hidden;
+  /* Contenitore di query: quel che conta per una tabella non è quanto è
+     larga la finestra ma quanto spazio ha *lì dove sta*. La classifica
+     della pagina gara vive nella colonna laterale da 380px anche su uno
+     schermo da 1512, dove nessuna media query scatta (issue #152). */
+  container-type: inline-size;
 }
 .table {
   --bs-table-bg: transparent;
@@ -698,12 +714,19 @@ input[type="number"].form-control {
   border-color: var(--c7-line-soft);
 }
 .table > :not(caption) > * > * { background: transparent; box-shadow: none; }
+/* Le intestazioni vanno a capo. Con `white-space: nowrap` bastava
+   un'etichetta lunga — «Triangoli totali», «Partecipazioni» — perché la
+   tabella diventasse più larga del contenitore: le ultime colonne finivano
+   oltre il bordo della card, e lo scorrimento orizzontale di
+   `.c7-table-wrap` su desktop non si vede, quindi quelle colonne per chi
+   guarda non esistono (issue #152). Andare a capo costa una riga di
+   altezza e restituisce la tabella intera. Le celle del corpo restano su
+   una riga sola: sono numeri e nomi, e lì il nowrap non allarga niente. */
 .table thead th {
   padding: 12px 20px;
   font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
   color: var(--c7-ink-muted);
   border-bottom: 1px solid var(--c7-line-soft);
-  white-space: nowrap;
 }
 .table tbody td {
   padding: 14px 20px;
@@ -712,6 +735,19 @@ input[type="number"].form-control {
   font-size: 14px; font-weight: 700;
 }
 .table tbody tr:last-child td { border-bottom: 0; }
+/* Celle compatte quando il contenitore è stretto: 20px di padding per lato
+   su sei colonne sono 240px, cioè più della metà di una colonna laterale.
+   Il secondo gradino serve alla classifica con lo spareggio SSR, che di
+   colonne ne ha una in più. */
+@container (max-width: 520px) {
+  .table:not(.c7-table-cards) thead th,
+  .table:not(.c7-table-cards) tbody td { padding-left: 12px; padding-right: 12px; }
+}
+@container (max-width: 440px) {
+  .table:not(.c7-table-cards) thead th,
+  .table:not(.c7-table-cards) tbody td { padding-left: 8px; padding-right: 8px; }
+  .table:not(.c7-table-cards) thead th { font-size: 10px; letter-spacing: .04em; }
+}
 .table-striped > tbody > tr:nth-of-type(odd) > * { background: transparent; }
 .table-hover > tbody > tr:hover > * { background: var(--c7-bg); }
 .table-bordered > :not(caption) > * > * { border-width: 0 0 1px 0; }

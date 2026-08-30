@@ -470,11 +470,7 @@ class ScoringService:
     @staticmethod
     def _calculate_forfeit_score(match: Match) -> int:
         """Calculate winning score for forfeit."""
-        distance = match.distance_config
-        if match.is_multi_set:
-            return distance.get_winning_sets()
-        else:
-            return distance.get_winning_racks()
+        return match.distance_config.walkover_score()
 
     @staticmethod
     def _apply_forfeit_scores(
