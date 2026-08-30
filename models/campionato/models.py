@@ -87,6 +87,16 @@ class Campionato(db.Model):
     # ereditarietà has_handicap: Campionato → Gara (nullable) → Match (nullable).
     has_handicap = db.Column(db.Boolean, default=False, nullable=False)
 
+    # ── Vetrina da condividere sui social (issue #235) ───────────────────
+    # Non si chiamano `default_*` come `default_venue_id`: quelli sono valori
+    # che il campionato suggerisce alle gare e basta, questi sono la sua
+    # identità pubblica — il banner del campionato è il banner del
+    # campionato. Che le gare li ereditino quando non ne hanno di propri è un
+    # comportamento della gara: vedi `Gara.effective_banner_path`.
+    banner_path = db.Column(db.String(255), nullable=True)
+    external_url = db.Column(db.String(500), nullable=True)
+    external_label = db.Column(db.String(60), nullable=True)
+
     # Status e date
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=utc_now)

@@ -665,6 +665,36 @@ hints:
   - feedback.le_mie_segnalazioni
   page: segnalare_un_problema
   section: che_fine_fa
+- id: vetrina.locandina
+  label: Poster
+  short: The image shown in the link preview on WhatsApp or Facebook. Upload it to the
+    championship and all of its competitions will use it.
+  anchor: vetrina-locandina
+  screens:
+  - admin.competition.gara_vetrina
+  - admin.campionato.campionato_vetrina
+  page: far_conoscere_la_gara
+  section: locandina
+- id: vetrina.indirizzo
+  label: Custom address
+  short: 'A readable name instead of the code, easy to read out on the phone. The link
+    with the code keeps working.'
+  anchor: vetrina-indirizzo
+  screens:
+  - admin.competition.gara_vetrina
+  page: far_conoscere_la_gara
+  section: indirizzo
+- id: vetrina.link_esterno
+  label: External link
+  short: 'Rules, venue page or payment form: it becomes a button at the bottom of the
+    showcase.'
+  anchor: vetrina-link-esterno
+  screens:
+  - admin.competition.gara_vetrina
+  - admin.campionato.campionato_vetrina
+  page: far_conoscere_la_gara
+  section: regolamento
+
 tours:
 - screen: dashboard.dashboard
   title: Your home

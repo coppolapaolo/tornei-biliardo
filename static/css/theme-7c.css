@@ -2375,3 +2375,97 @@ button.c7-tpa-player:disabled { cursor: default; }
   background: var(--c7-accent-bright);
   transform: translate(-50%, -50%); pointer-events: none;
 }
+
+/* --------------------------------------------------------------------------
+   Vetrina pubblica di una gara (issue #235)
+
+   La pagina che vede chi arriva da un post sui social. Impaginazione presa
+   da `#10a` del prototipo (ospite in sola lettura): riquadro informazioni a
+   coppie etichetta/valore, fascia di numeri, card ad accento con l'invito.
+   Qui stanno solo le poche misure che quel blocco non aveva già.
+   -------------------------------------------------------------------------- */
+
+/* La locandina caricata dal direttore. `aspect-ratio` invece di un'altezza
+   fissa: le immagini arrivano in ogni proporzione, e il ritaglio al centro
+   e' lo stesso che fanno i social con l'anteprima — cosi' chi guarda la
+   pagina e chi guarda il link su WhatsApp vedono la stessa figura. */
+.c7-vetrina__banner {
+  border-radius: var(--c7-r-card-lg);
+  overflow: hidden;
+  background: var(--c7-sunken);
+}
+.c7-vetrina__banner img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1200 / 630;
+  object-fit: cover;
+}
+
+/* Due colonne di coppie etichetta/valore, come nel prototipo. Restano due
+   anche sul telefono: sono dati brevi (una data, «al 5», una quota) e su una
+   colonna sola il riquadro diventerebbe una lista lunga da scorrere. */
+.c7-vetrina__info {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 12px;
+}
+.c7-vetrina__valore {
+  margin-top: 3px;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+
+.c7-vetrina__kpi { text-align: left; }
+.c7-vetrina__kpi .text-muted { font-size: 12px; font-weight: 700; }
+
+.c7-vetrina__cta-titolo {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+
+/* Il link esterno e' una card che si preme tutta: il bersaglio e' la riga,
+   non le parole. */
+.c7-vetrina__link {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 56px;
+  text-decoration: none;
+  color: inherit;
+  font-weight: 700;
+}
+.c7-vetrina__link:hover { background: var(--c7-sunken); }
+
+.c7-vetrina__pos {
+  font-family: var(--c7-font-mono);
+  font-weight: 800;
+  color: var(--c7-ink-muted);
+}
+
+/* La vetrina e' un manifesto, non una scrivania: su schermo largo si centra
+   invece di stirarsi: una card di quattro righe larga 1400px sembra un
+   errore di impaginazione, ed e' anche la larghezza sbagliata per leggere. */
+.c7-vetrina { max-width: 720px; margin-inline: auto; width: 100%; }
+
+/* Dentro una card ad accento il primario e' il fondo scuro dell'app: scuro su
+   scuro, cioe' invisibile. Sull'accento la gerarchia la fanno l'azzurro
+   brillante e un velo bianco — le stesse due superfici della card
+   «Come si partecipa» in homepage, qui pero' legate alle classi Bootstrap
+   invece che riscritte inline a ogni uso. */
+.c7-card--accent .btn-primary,
+.c7-card--accent .btn-dark {
+  background: var(--c7-accent-bright);
+  color: var(--c7-accent);
+}
+.c7-card--accent .btn-primary:hover,
+.c7-card--accent .btn-dark:hover { background: #7FC0DE; color: var(--c7-accent); }
+.c7-card--accent .btn-outline-light,
+.c7-card--accent .btn-secondary {
+  background: rgba(255, 255, 255, .12);
+  color: var(--c7-accent-ink);
+}
+.c7-card--accent .btn-outline-light:hover,
+.c7-card--accent .btn-secondary:hover { background: rgba(255, 255, 255, .2); color: var(--c7-accent-ink); }

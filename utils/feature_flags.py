@@ -228,9 +228,22 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Soft delete del campionato: admin-only (@admin_required). Set esplicito
     # per documentare la decisione, non per inerzia.
     "admin.campionato.soft_delete_campionato": set(),
+    # Locandina e link che le gare del campionato ereditano (issue #235).
+    "admin.campionato.campionato_vetrina": {"director"},
+    "admin.campionato.salva_campionato_vetrina": {"director"},
+    "admin.campionato.carica_banner_campionato": {"director"},
+    "admin.campionato.rimuovi_banner_campionato": {"director"},
     "admin.competition.create_gara_standalone": {"director"},
     "admin.competition.create_gara": {"director"},
     "admin.competition.edit_gara": {"director"},
+    # Vetrina social della gara (issue #235): la cura chi gestisce la gara.
+    # La pagina *pubblica* che ne esce è `main.gara_invite`, già aperta agli
+    # anonimi qui sopra — e deve restarci, altrimenti lo scraper del social
+    # riceve 404 e l'anteprima non compare mai.
+    "admin.competition.gara_vetrina": {"director"},
+    "admin.competition.salva_gara_vetrina": {"director"},
+    "admin.competition.carica_banner_gara": {"director"},
+    "admin.competition.rimuovi_banner_gara": {"director"},
     "admin.competition.update_tables_config": {"director"},
     "admin.competition.cancel_gara": {"director"},
     "admin.competition.delete_gara": {"director"},

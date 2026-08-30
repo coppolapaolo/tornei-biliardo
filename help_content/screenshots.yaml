@@ -173,6 +173,18 @@ shots:
     caption: "La gara vista dal direttore: il pannello «Gestione» con il pulsante per avviare il turno successivo."
     viewports: [mobile, desktop]
 
+  - id: vetrina-pubblica
+    route: /g/terza-prova-palla-8
+    as: anonimo
+    caption: "La vetrina di una gara vista da chi arriva dal link: quando si gioca, il formato, la sede, la quota, i posti liberi e il pulsante per iscriversi."
+    viewports: [mobile]
+
+  - id: vetrina-cura
+    route: /admin/gara/3/vetrina
+    as: Luca Bianchi
+    caption: "La schermata da cui il direttore cura la vetrina: la locandina, l'indirizzo leggibile e il link al regolamento."
+    viewports: [mobile]
+
   - id: gara-iscritti
     route: /admin/gara/3
     as: Luca Bianchi

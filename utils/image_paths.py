@@ -69,6 +69,42 @@ class ImagePathManager:
         upload_dir = ImagePathManager.get_venue_upload_dir()
         os.makedirs(upload_dir, exist_ok=True)
 
+    # Banner-specific methods (vetrina social, issue #235)
+    @staticmethod
+    def get_banner_upload_dir() -> str:
+        """Get the absolute filesystem path for banner uploads."""
+        return ImagePathManager._get_upload_dir("BANNER_UPLOAD_FOLDER", "banners")
+
+    @staticmethod
+    def get_banner_db_path(filename: str) -> str:
+        """Get the database path for a banner image (relative to static folder)."""
+        return ImagePathManager._get_db_path(
+            "BANNER_UPLOAD_FOLDER", "banners", filename
+        )
+
+    @staticmethod
+    def get_banner_url_path(filename: str) -> str:
+        """Get the URL path for a banner image (for use in templates)."""
+        return ImagePathManager._get_url_path(
+            "BANNER_UPLOAD_FOLDER", "banners", filename
+        )
+
+    @staticmethod
+    def ensure_banner_upload_dir() -> None:
+        """Ensure the banner upload directory exists."""
+        os.makedirs(ImagePathManager.get_banner_upload_dir(), exist_ok=True)
+
+    @staticmethod
+    def url_from_db_path(db_path: str) -> str:
+        """Da percorso salvato su DB a URL, per qualsiasi tipo di immagine.
+
+        La conversione non dipende dal tipo: è la stessa normalizzazione dei
+        tre formati storici (assoluto, `static/…`, nudo) che
+        `get_challenge_url_path_from_db_path` faceva già, con un nome che non
+        promette di riguardare solo gli esercizi.
+        """
+        return ImagePathManager.get_challenge_url_path_from_db_path(db_path)
+
     # Private helper methods
     @staticmethod
     def _get_upload_dir(config_key: str, default_folder: str) -> str:

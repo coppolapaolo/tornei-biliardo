@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import uuid
 from datetime import date, timedelta
+from urllib.parse import quote
 
 import pytest
 
@@ -176,20 +177,27 @@ class TestAuthenticatedVisitor:
 
 @pytest.mark.integration
 class TestAnonymousVisitor:
-    def test_the_link_sends_the_guest_to_login_keeping_the_destination(
-        self, client, db_session
-    ):
+    def test_the_guest_sees_the_showcase_with_a_way_in(self, client, db_session):
+        """L'ospite vede la vetrina, non la pagina di accesso (issue #235).
+
+        Fino ad agosto 2026 questo indirizzo rispondeva a un anonimo con un
+        302 verso il login. Siccome è quello che il direttore condivide, era
+        anche quello che lo scraper di WhatsApp o Facebook trovava seguendo il
+        link: l'anteprima mostrava la pagina di accesso. Ora la pagina arriva
+        con un 200 e i suoi meta, e la via per iscriversi resta — il pulsante
+        porta al login con il ritorno qui.
+        """
         director = _user(UserRole.DIRECTOR.value)
         gara = _gara(director)
 
         response = client.get(f"/g/{gara.public_token}")
 
-        assert response.status_code == 302
-        location = response.headers["Location"]
-        assert "/auth/login" in location
-        assert f"%2Fg%2F{gara.public_token}" in location or (
-            f"/g/{gara.public_token}" in location
-        )
+        assert response.status_code == 200
+        body = response.get_data(as_text=True)
+        assert "/auth/login" in body, "la vetrina deve offrire una via per iscriversi"
+        assert f"%2Fg%2F{gara.public_token}" in body or (
+            f"/g/{gara.public_token}" in body
+        ), "dopo il login si deve tornare su questa gara"
 
     def test_after_login_the_user_lands_on_the_gara_without_being_inscribed(
         self, client, db_session
@@ -204,8 +212,11 @@ class TestAnonymousVisitor:
         player = _user()
 
         invite = f"/g/{gara.public_token}"
-        redirect_to_login = client.get(invite)
-        login_url = redirect_to_login.headers["Location"]
+        # L'ospite ora riceve la vetrina, non un redirect: l'indirizzo del
+        # login è quello che la vetrina gli offre, e lo si compone qui come
+        # farebbe il suo click sul pulsante.
+        assert client.get(invite).status_code == 200
+        login_url = f"/auth/login?next={quote(invite, safe='')}"
 
         after_login = client.post(
             login_url,

@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{# La vetrina di una gara: la pagina che chi arriva da un post vede per prima
+   (issue #235).
+
+   Impaginazione presa da `#10a` del prototipo — la schermata «Ospite — sola
+   lettura» — perché è lo stesso caso: qualcuno che non ha un account guarda
+   una gara e deve capire in un colpo d'occhio se gli interessa. Da lì
+   arrivano il riquadro «Informazioni» a coppie etichetta/valore, la fascia di
+   numeri e la card ad accento con l'invito a registrarsi.
+
+   Il pulsante di iscrizione c'è **sempre**, anche per chi non è autenticato:
+   lo porta a registrarsi e lo riporta esattamente qui. Una vetrina senza
+   richiamo all'azione è un volantino senza indirizzo. #}
+
+{% block title %}{{ vetrina.titolo }} - {{ config.APP_NAME }}{% endblock %}
+{% block page_title %}{{ vetrina.titolo }}{% endblock %}
+{% block page_sub %}{{ vetrina.sottotitolo or vetrina.stato_testo }}{% endblock %}
+
+{% block social_meta %}
+{# Quello che WhatsApp, Facebook e Telegram leggono. Gli indirizzi arrivano
+   già assoluti dalla route: uno scraper non risolve i percorsi relativi. #}
+<meta property="og:site_name" content="{{ config.APP_NAME }}">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{{ social_title }}">
+<meta property="og:description" content="{{ social_description }}">
+<meta property="og:image" content="{{ social_image }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:url" content="{{ social_url }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ social_title }}">
+<meta name="twitter:description" content="{{ social_description }}">
+<meta name="twitter:image" content="{{ social_image }}">
+<meta name="description" content="{{ social_description }}">
+{% if not vetrina.indicizzabile %}
+{# Gara in preparazione con la data già passata: è un residuo, e la lista
+   pubblica la nasconde. Chi ha il link la vede lo stesso — gliel'ha dato il
+   direttore — ma non finisce sui motori di ricerca. #}
+<meta name="robots" content="noindex">
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="c7-stack c7-vetrina">
+
+  {% if vetrina.banner_url %}
+  <div class="c7-vetrina__banner">
+    <img src="{{ vetrina.banner_url }}" alt="{{ _('Locandina di %(gara)s', gara=vetrina.titolo) }}">
+  </div>
+  {% endif %}
+
+  <div class="card">
+    <div class="d-flex align-items-start justify-content-between gap-3">
+      <div>
+        <div class="c7-kicker">{{ _("Informazioni") }}</div>
+      </div>
+      <span class="c7-state {% if vetrina.conclusa %}c7-state--muted{% elif vetrina.iscrizioni_aperte %}c7-state--ok{% else %}c7-state--info{% endif %}">
+        {{ vetrina.stato_testo }}
+      </span>
+    </div>
+
+    <div class="c7-vetrina__info mt-3">
+      {% for riga in vetrina.righe %}
+      <div>
+        <div class="c7-kicker">
+          <i class="fa-solid {{ riga.icona }} me-1"></i>{{ riga.etichetta }}
+        </div>
+        <div class="c7-vetrina__valore">{{ riga.valore }}</div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% if vetrina.descrizione %}
+    <hr class="c7-divider">
+    <p class="mb-0">{{ vetrina.descrizione }}</p>
+    {% endif %}
+  </div>
+
+  {# Quanti sono e quanti posti restano. I **nomi** non si mostrano: la pagina
+     è pubblica per costruzione, e chi si iscrive a una gara non sta scegliendo
+     di comparire in un elenco che chiunque abbia il link può leggere. #}
+  <div class="card">
+    <div class="c7-kicker">{{ _("Iscrizioni") }}</div>
+    <div class="c7-grid c7-kpis mt-3">
+      <div class="c7-vetrina__kpi">
+        <div class="c7-num-lg">{{ vetrina.iscritti }}</div>
+        <div class="text-muted">{{ _("Iscritti") }}</div>
+      </div>
+      {% if vetrina.posti %}
+      <div class="c7-vetrina__kpi">
+        <div class="c7-num-lg">{{ vetrina.posti_liberi }}</div>
+        <div class="text-muted">{{ _("Posti liberi") }}</div>
+      </div>
+      {% endif %}
+    </div>
+    {% if vetrina.posti %}
+    <div class="progress mt-3" role="progressbar"
+         aria-label="{{ _('Posti occupati') }}"
+         aria-valuenow="{{ vetrina.iscritti }}" aria-valuemin="0" aria-valuemax="{{ vetrina.posti }}">
+      <div class="progress-bar" style="width: {{ vetrina.percentuale_riempimento }}%"></div>
+    </div>
+    <div class="text-muted mt-2">
+      {{ _("%(iscritti)s su %(posti)s posti", iscritti=vetrina.iscritti, posti=vetrina.posti) }}
+    </div>
+    {% endif %}
+  </div>
+
+  {% if not vetrina.conclusa %}
+  <div class="card c7-card--accent">
+    <div class="c7-vetrina__cta-titolo">
+      {% if vetrina.iscrizioni_aperte %}
+        {{ _("Vuoi giocare questa gara?") }}
+      {% else %}
+        {{ _("Vuoi giocare le prossime gare?") }}
+      {% endif %}
+    </div>
+    <p class="text-muted mt-2 mb-3">
+      {% if vetrina.iscrizioni_aperte %}
+        {{ _("La registrazione è gratuita: username, email e password. Il telefono è opzionale.") }}
+      {% else %}
+        {{ _("Le iscrizioni a questa gara non sono aperte, ma puoi registrarti e seguire le prossime.") }}
+      {% endif %}
+    </p>
+    <div class="d-flex flex-wrap gap-2">
+      <a href="{{ url_iscrizione }}" class="btn btn-primary flex-grow-1">
+        <i class="fa-solid fa-user-plus me-2"></i>{{ _("Iscriviti") }}
+      </a>
+      <button type="button" class="btn btn-outline-light" data-condividi>
+        <i class="fa-solid fa-share-nodes me-2"></i>{{ _("Condividi") }}
+      </button>
+    </div>
+  </div>
+  {% else %}
+  <div class="d-flex flex-wrap gap-2">
+    <button type="button" class="btn btn-outline-secondary flex-grow-1" data-condividi>
+      <i class="fa-solid fa-share-nodes me-2"></i>{{ _("Condividi il risultato") }}
+    </button>
+  </div>
+  {% endif %}
+
+  {% if vetrina.link_esterno %}
+  <a class="card c7-vetrina__link" href="{{ vetrina.link_esterno }}" target="_blank" rel="noopener noreferrer">
+    <span>
+      <i class="fa-solid fa-arrow-up-right-from-square me-2"></i>{{ vetrina.etichetta_link }}
+    </span>
+    <i class="fa-solid fa-chevron-right text-muted"></i>
+  </a>
+  {% endif %}
+
+  {% if vetrina.conclusa and vetrina.classifica %}
+  <div class="card">
+    <div class="c7-kicker">{{ _("Classifica finale") }}</div>
+    <div class="c7-table-wrap mt-3">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">{{ _("Giocatore") }}</th>
+            <th scope="col" class="text-end">{{ _("V") }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for riga in vetrina.classifica %}
+          <tr>
+            <td class="c7-vetrina__pos">{{ riga.position }}</td>
+            <td>{{ riga.user.display_name if riga.user else _("—") }}</td>
+            <td class="text-end">{{ riga.matches_won }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // Condivisione: sul telefono apre il foglio nativo (WhatsApp, Telegram,
+  // Instagram…), sul desktop — dove `navigator.share` non c'è quasi mai —
+  // copia il link. Due comportamenti diversi dietro allo stesso pulsante
+  // perché la domanda dell'utente è una sola: «come lo mando a qualcuno?».
+  (function () {
+    var bottoni = document.querySelectorAll('[data-condividi]');
+    if (!bottoni.length) return;
+
+    var datiCondivisione = {
+      title: {{ social_title|tojson }},
+      text: {{ social_description|tojson }},
+      url: {{ social_url|tojson }}
+    };
+    var testoCopiato = {{ _("Link copiato")|tojson }};
+    var testoOriginale = {{ _("Condividi")|tojson }};
+
+    function copiaNegliAppunti(bottone) {
+      // `navigator.clipboard` non esiste fuori da un contesto sicuro (http
+      // in sviluppo), e lì fallirebbe in silenzio: il ripiego è un campo
+      // temporaneo con `execCommand`, brutto ma universale.
+      var promessa;
+      if (navigator.clipboard && window.isSecureContext) {
+        promessa = navigator.clipboard.writeText(datiCondivisione.url);
+      } else {
+        promessa = new Promise(function (risolvi, rifiuta) {
+          var campo = document.createElement('textarea');
+          campo.value = datiCondivisione.url;
+          campo.setAttribute('readonly', '');
+          campo.style.position = 'fixed';
+          campo.style.opacity = '0';
+          document.body.appendChild(campo);
+          campo.select();
+          try {
+            document.execCommand('copy') ? risolvi() : rifiuta();
+          } catch (e) {
+            rifiuta(e);
+          } finally {
+            document.body.removeChild(campo);
+          }
+        });
+      }
+      promessa.then(function () {
+        var etichetta = bottone.querySelector('span') || bottone;
+        var precedente = etichetta.textContent;
+        etichetta.textContent = ' ' + testoCopiato;
+        setTimeout(function () {
+          etichetta.textContent = precedente || (' ' + testoOriginale);
+        }, 2000);
+      }).catch(function () {
+        window.prompt(testoOriginale, datiCondivisione.url);
+      });
+    }
+
+    bottoni.forEach(function (bottone) {
+      bottone.addEventListener('click', function () {
+        if (navigator.share) {
+          // Un `catch` che tace è voluto: l'utente che chiude il foglio di
+          // condivisione produce un rifiuto, e non è un errore da segnalare.
+          navigator.share(datiCondivisione).catch(function () {});
+        } else {
+          copiaNegliAppunti(bottone);
+        }
+      });
+    });
+  })();
+</script>
+{% endblock %}

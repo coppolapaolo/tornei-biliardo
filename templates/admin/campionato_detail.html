@@ -21,6 +21,15 @@
     <i class="fas fa-pencil"></i>&nbsp;{{ _("Modifica") }}
   </a>
   {% endif %}
+  {# La locandina e il link che tutte le gare ereditano (issue #235). Non e'
+     dentro «Modifica» perche' quella e' bloccata a campionato avviato,
+     mentre una grafica si aggiunge anche dopo. #}
+  {% if feature_visible('admin.campionato.campionato_vetrina') %}
+  <a href="{{ url_for('admin.campionato.campionato_vetrina', campionato_id=campionato.id) }}"
+     class="btn btn-secondary btn-sm">
+    <i class="fas fa-rectangle-ad"></i>&nbsp;{{ _("Vetrina") }}
+  </a>
+  {% endif %}
   {% if not campionato.terminated_at %}
   {% if campionato.is_ready_for_playoff_transition() %}
   <button type="button" class="btn btn-success btn-sm" id="btn-terminate-campionato">
@@ -42,6 +51,12 @@
   <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}"
      class="btn btn-secondary w-100">
     <i class="fas fa-pencil"></i>&nbsp;{{ _("Modifica campionato") }}
+  </a>
+  {% endif %}
+  {% if feature_visible('admin.campionato.campionato_vetrina') %}
+  <a href="{{ url_for('admin.campionato.campionato_vetrina', campionato_id=campionato.id) }}"
+     class="btn btn-secondary w-100">
+    <i class="fas fa-rectangle-ad"></i>&nbsp;{{ _("Vetrina del campionato") }}
   </a>
   {% endif %}
   {% if not campionato.terminated_at %}

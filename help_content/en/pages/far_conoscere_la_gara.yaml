@@ -1,0 +1,128 @@
+title: "Getting the word out"
+section: organizzare
+kind: approfondimento
+audience: [direttore]
+minutes: 3
+summary: "The link to post on WhatsApp or Facebook, the poster shown in the preview, and an address that is easy to read out on the phone."
+screens: [admin.competition.gara_vetrina, main.gara_invite, admin.campionato.campionato_vetrina]
+related: [gestire_le_iscrizioni, creare_una_gara, iscriversi_a_una_gara]
+
+blocks:
+  - type: text
+    text: >-
+      Every competition has its own public address to share. Whoever opens it —
+      even without an account — sees a single page with everything they need to
+      decide whether to come: when it is played, where, in what format, how
+      much it costs, how many seats are left. And a **Register** button.
+
+  - type: heading
+    id: dove-si-trova
+    title: "Where to find the link"
+
+  - type: steps
+    items:
+      - title: "Open the competition page"
+        text: "The **Management** panel, on the right, or in the tab at the top if you are on a phone."
+        shot: gara-gestione
+      - title: "Tap «Copy link»"
+        text: >-
+          The address goes to your clipboard: paste it into a message, a post
+          or a printed poster.
+      - title: "Tap «Edit the showcase» to personalise it"
+        text: >-
+          From there you choose the poster, the readable address and an
+          optional link to the rules.
+        shot: vetrina-cura
+
+  - type: heading
+    id: la-pagina
+    title: "What people see when they open the link"
+
+  - type: shot
+    shot: vetrina-pubblica
+    caption: "The showcase of a competition with registration open."
+
+  - type: list
+    title: "The page shows:"
+    items:
+      - "the name of the competition and the championship it belongs to;"
+      - "when it is played, where, in what format and how much the entry fee is;"
+      - "**how many** players have registered and how many seats are left — not their names, because anyone with the link can open the page;"
+      - "the description you wrote when you created the competition;"
+      - "the **Register** button, which takes people to sign up and then brings them back here."
+
+  - type: note
+    tone: info
+    title: "Once the competition is over it becomes the report"
+    text: >-
+      The same page, when the competition has finished, shows the final
+      standings: it is the address to post again to let everyone know how it
+      went.
+
+  - type: heading
+    id: locandina
+    title: "The poster"
+
+  - type: text
+    text: >-
+      This is the image shown in the preview when you paste the link on
+      WhatsApp, Facebook or Telegram. Without one, the preview shows the site
+      artwork: it still works, but your own poster gets noticed far more.
+
+  - type: note
+    tone: tip
+    title: "Upload it once for the whole championship"
+    text: >-
+      If the competition belongs to a championship, upload the poster **to the
+      championship**: all of its competitions will use it, and you will not
+      have to repeat the job at every stage. A single competition can always
+      have a different one if needed.
+
+  - type: options
+    items:
+      - name: "Image size"
+        text: "The best is 1200×630 pixels. Other ratios are cropped from the centre."
+      - name: "File type"
+        text: "JPG, PNG or GIF."
+      - name: "Removing the competition poster"
+        text: "The competition goes back to the championship one, if there is one. It is never left without an image by mistake."
+
+  - type: heading
+    id: indirizzo
+    title: "An address you can read out on the phone"
+
+  - type: text
+    text: >-
+      The normal address ends with an eight-character code: it fits on a
+      poster, but you cannot read it out and it says nothing. You can replace
+      it with a readable name — for example **christmas-open-2026** — by typing
+      it into the «Custom address» field.
+
+  - type: note
+    tone: info
+    title: "The link with the code keeps working"
+    text: >-
+      Even after you choose a readable name: posters already printed and
+      messages already sent stay valid.
+
+  - type: heading
+    id: regolamento
+    title: "The link to the rules"
+
+  - type: text
+    text: >-
+      If the rules, the payment form or the venue page live elsewhere, put them
+      in the **External link** field: they appear as a button at the bottom of
+      the showcase. This too can be written once on the championship and used
+      by all of its competitions.
+
+  - type: faq
+    items:
+      - q: "Do people need to register to see the competition?"
+        a: "No. The page opens for anyone; signing up is only needed to register for the competition."
+      - q: "Are registered players shown by name?"
+        a: "No, only how many they are and how many seats are left."
+      - q: "How can I see what other people will see?"
+        a: "From the «Edit the showcase» screen, the **Preview** button opens the page exactly as it looks to someone arriving from the link."
+      - q: "Can I change the readable address after choosing it?"
+        a: "Yes, but the old name stops working: anyone who saved that link will no longer get through. The code, on the other hand, stays valid forever."

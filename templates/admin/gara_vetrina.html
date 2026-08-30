@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{# Come si presenta la gara quando la si condivide (issue #235).
+
+   Tre riquadri, uno per decisione: la locandina, l'indirizzo da dettare, il
+   link esterno. In fondo l'indirizzo pubblico da copiare e il collegamento
+   all'anteprima — che è la stessa pagina che vedrà chi arriva dal post, e non
+   una simulazione. #}
+
+{% block title %}{{ _("Vetrina") }} - {{ gara.display_name }}{% endblock %}
+{% block page_title %}{{ _("Vetrina") }}{% endblock %}
+{% block page_sub %}{{ gara.display_name }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack c7-vetrina">
+
+  <div class="card">
+    <div class="c7-kicker">{{ _("Locandina") }}</div>
+    <p class="text-muted mt-2">
+      {{ _("È l'immagine che compare nell'anteprima del link su WhatsApp, Facebook e Telegram. Il formato migliore è 1200×630 pixel: le altre proporzioni vengono ritagliate al centro.") }}
+    </p>
+
+    {% if banner_effettivo %}
+    <div class="c7-vetrina__banner mt-3">
+      <img src="{{ banner_effettivo }}" alt="{{ _('Locandina attuale') }}">
+    </div>
+    {% if banner_ereditato %}
+    <p class="text-muted mt-2 mb-0">
+      <i class="fa-solid fa-link me-1"></i>{{ _("Ereditata dal campionato. Carica un'immagine qui per usarne una diversa solo su questa gara.") }}
+    </p>
+    {% endif %}
+    {% else %}
+    <div class="c7-empty mt-3">
+      <div class="c7-empty__ico"><i class="fa-solid fa-image"></i></div>
+      <div class="c7-empty__title">{{ _("Nessuna locandina") }}</div>
+      <p class="c7-empty__text">{{ _("Senza immagine il link mostra la grafica del sito.") }}</p>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('admin.competition.carica_banner_gara', gara_id=gara.id) }}"
+          enctype="multipart/form-data" class="mt-3">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="file" class="form-control" name="banner" accept="image/png,image/jpeg,image/gif" required>
+      <button type="submit" class="btn btn-primary mt-2">
+        <i class="fa-solid fa-upload me-2"></i>{{ _("Carica locandina") }}
+      </button>
+    </form>
+
+    {% if banner_proprio %}
+    <form method="POST" action="{{ url_for('admin.competition.rimuovi_banner_gara', gara_id=gara.id) }}" class="mt-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-secondary">
+        <i class="fa-solid fa-trash me-2"></i>{{ _("Rimuovi") }}
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  <form method="POST" action="{{ url_for('admin.competition.salva_gara_vetrina', gara_id=gara.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="card">
+      <div class="c7-kicker">{{ _("Indirizzo personalizzato") }}</div>
+      <p class="text-muted mt-2">
+        {{ _("Un nome leggibile al posto del codice, da dettare al telefono o stampare su una locandina. Il link con il codice continua a funzionare.") }}
+      </p>
+      <div class="input-group mt-2">
+        <span class="input-group-text">{{ request.host_url }}g/</span>
+        <input type="text" class="form-control" name="slug" value="{{ gara.slug or '' }}"
+               maxlength="60" placeholder="{{ _('open-di-natale-2026') }}">
+      </div>
+      <div class="form-text">{{ _("Spazi e accenti diventano trattini. Lascia vuoto per usare solo il codice.") }}</div>
+    </div>
+
+    <div class="card mt-3">
+      <div class="c7-kicker">{{ _("Link esterno") }}</div>
+      <p class="text-muted mt-2">
+        {{ _("Regolamento, pagina della sala, modulo di pagamento: compare come pulsante in fondo alla vetrina.") }}
+      </p>
+      <label class="c7-label mt-2" for="external_url">{{ _("Indirizzo") }}</label>
+      <input type="url" class="form-control" id="external_url" name="external_url"
+             value="{{ gara.external_url or '' }}" placeholder="https://…">
+      <label class="c7-label mt-3" for="external_label">{{ _("Come si chiama") }}</label>
+      <input type="text" class="form-control" id="external_label" name="external_label"
+             value="{{ gara.external_label or '' }}" maxlength="60"
+             placeholder="{{ _('Regolamento') }}">
+      {% if not gara.external_url and gara.effective_external_link %}
+      <div class="form-text">
+        <i class="fa-solid fa-link me-1"></i>{{ _("Ora si usa il link del campionato.") }}
+      </div>
+      {% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3 w-100">
+      <i class="fa-solid fa-floppy-disk me-2"></i>{{ _("Salva") }}
+    </button>
+  </form>
+
+  <div class="card c7-card--accent">
+    <div class="c7-kicker">{{ _("Link da condividere") }}</div>
+    <div class="c7-vetrina__url mt-2">{{ url_pubblica }}</div>
+    <div class="d-flex flex-wrap gap-2 mt-3">
+      <button type="button" class="btn btn-primary flex-grow-1" data-copia-url>
+        <span><i class="fa-solid fa-copy me-2"></i>{{ _("Copia link") }}</span>
+      </button>
+      <a href="{{ url_anteprima }}" class="btn btn-outline-light">
+        <i class="fa-solid fa-eye me-2"></i>{{ _("Anteprima") }}
+      </a>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  (function () {
+    var bottone = document.querySelector('[data-copia-url]');
+    if (!bottone) return;
+    var indirizzo = {{ url_pubblica|tojson }};
+    var copiato = {{ _("Link copiato")|tojson }};
+
+    bottone.addEventListener('click', function () {
+      var etichetta = bottone.querySelector('span');
+      var precedente = etichetta.innerHTML;
+      // Fuori da un contesto sicuro (http in sviluppo) `navigator.clipboard`
+      // non esiste: il ripiego mostra l'indirizzo da copiare a mano invece di
+      // non fare niente senza dire perché.
+      var esito = (navigator.clipboard && window.isSecureContext)
+        ? navigator.clipboard.writeText(indirizzo)
+        : Promise.reject();
+      esito.then(function () {
+        etichetta.textContent = copiato;
+        setTimeout(function () { etichetta.innerHTML = precedente; }, 2000);
+      }).catch(function () {
+        window.prompt(copiato, indirizzo);
+      });
+    });
+  })();
+</script>
+{% endblock %}

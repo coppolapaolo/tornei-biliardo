@@ -201,6 +201,14 @@ def _create_gare(db, campionato, director, venue):
         )
         db.session.commit()
         gare.append(gara)
+
+    # La gara con le iscrizioni aperte riceve un indirizzo leggibile fisso
+    # (issue #235): la sua vetrina finisce nella guida, e il manifest delle
+    # schermate ha bisogno di un percorso stabile — il token, generato con
+    # `secrets`, cambia a ogni seed e non si potrebbe scrivere lì.
+    gare[-1].slug = "terza-prova-palla-8"
+    db.session.commit()
+
     log(f"gare: {len(gare)} nel campionato")
     return gare
 

@@ -33,6 +33,14 @@
   <div class="form-text">
     {{ _('Condividi questo indirizzo su locandine, post o QR code: chi lo apre arriva su questa gara e si iscrive.') }}
   </div>
+  {# Chi non ha un account vede una vetrina, non questa pagina: da li' si
+     decide con che faccia si presenta (locandina, link al regolamento, un
+     indirizzo leggibile al posto del codice). Issue #235. #}
+  {% if feature_visible('admin.competition.gara_vetrina') %}
+  <a class="btn btn-secondary" href="{{ url_for('admin.competition.gara_vetrina', gara_id=gara.id) }}">
+    <i class="fas fa-rectangle-ad"></i> {{ _('Cura la vetrina') }}
+  </a>
+  {% endif %}
 </div>
 
 <script>

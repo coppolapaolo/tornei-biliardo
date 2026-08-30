@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{# La locandina e il link che tutte le gare del campionato ereditano
+   (issue #235). Una grafica sola, caricata una volta: ogni tappa si presenta
+   allo stesso modo quando il direttore la condivide. #}
+
+{% block title %}{{ _("Vetrina") }} - {{ campionato.name }}{% endblock %}
+{% block page_title %}{{ _("Vetrina del campionato") }}{% endblock %}
+{% block page_sub %}{{ campionato.name }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack c7-vetrina">
+
+  <div class="card">
+    <div class="c7-kicker">{{ _("Locandina") }}</div>
+    <p class="text-muted mt-2">
+      {{ _("La usano tutte le gare del campionato che non ne hanno una propria: è l'immagine che compare nell'anteprima del link sui social. Formato migliore 1200×630 pixel.") }}
+    </p>
+
+    {% if banner %}
+    <div class="c7-vetrina__banner mt-3">
+      <img src="{{ banner }}" alt="{{ _('Locandina del campionato') }}">
+    </div>
+    <p class="text-muted mt-2 mb-0">
+      {{ ngettext("La usa %(num)s gara.", "La usano %(num)s gare.", gare_che_ereditano, num=gare_che_ereditano) }}
+    </p>
+    {% else %}
+    <div class="c7-empty mt-3">
+      <div class="c7-empty__ico"><i class="fa-solid fa-image"></i></div>
+      <div class="c7-empty__title">{{ _("Nessuna locandina") }}</div>
+      <p class="c7-empty__text">{{ _("Senza immagine i link delle gare mostrano la grafica del sito.") }}</p>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('admin.campionato.carica_banner_campionato', campionato_id=campionato.id) }}"
+          enctype="multipart/form-data" class="mt-3">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="file" class="form-control" name="banner" accept="image/png,image/jpeg,image/gif" required>
+      <button type="submit" class="btn btn-primary mt-2">
+        <i class="fa-solid fa-upload me-2"></i>{{ _("Carica locandina") }}
+      </button>
+    </form>
+
+    {% if banner %}
+    <form method="POST" action="{{ url_for('admin.campionato.rimuovi_banner_campionato', campionato_id=campionato.id) }}" class="mt-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-secondary">
+        <i class="fa-solid fa-trash me-2"></i>{{ _("Rimuovi") }}
+      </button>
+    </form>
+    {% endif %}
+  </div>
+
+  <form method="POST" action="{{ url_for('admin.campionato.salva_campionato_vetrina', campionato_id=campionato.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="card">
+      <div class="c7-kicker">{{ _("Link esterno") }}</div>
+      <p class="text-muted mt-2">
+        {{ _("Il regolamento del campionato, o la pagina dell'organizzazione: compare sulla vetrina di ogni gara che non ne ha uno proprio.") }}
+      </p>
+      <label class="c7-label mt-2" for="external_url">{{ _("Indirizzo") }}</label>
+      <input type="url" class="form-control" id="external_url" name="external_url"
+             value="{{ campionato.external_url or '' }}" placeholder="https://…">
+      <label class="c7-label mt-3" for="external_label">{{ _("Come si chiama") }}</label>
+      <input type="text" class="form-control" id="external_label" name="external_label"
+             value="{{ campionato.external_label or '' }}" maxlength="60"
+             placeholder="{{ _('Regolamento') }}">
+    </div>
+    <button type="submit" class="btn btn-primary mt-3 w-100">
+      <i class="fa-solid fa-floppy-disk me-2"></i>{{ _("Salva") }}
+    </button>
+  </form>
+
+</div>
+{% endblock %}

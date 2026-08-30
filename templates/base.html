@@ -29,6 +29,28 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <title>{% block title %}{{ config.APP_NAME }}{% endblock %}</title>
 
+    {# Anteprima del link quando qualcuno lo incolla su WhatsApp, Facebook,
+       Telegram o Instagram (issue #235). Senza questi tag lo scraper non
+       trova niente e mostra il dominio nudo.
+
+       Le pagine che hanno qualcosa di proprio da mostrare — la vetrina di una
+       gara — sovrascrivono `social_meta`; qui restano i default del sito, che
+       valgono per ogni altra pagina condivisa.
+
+       ⚠️ Gli indirizzi devono essere **assoluti**: uno scraper non risolve un
+       `/static/...` relativo, e il risultato è un'anteprima senza immagine —
+       senza errori, senza log, e invisibile in sviluppo. Da qui `_external=True`
+       ovunque. #}
+    {% block social_meta %}
+    <meta property="og:site_name" content="{{ config.APP_NAME }}">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="{{ config.APP_NAME }}">
+    <meta property="og:description" content="{{ _("Tornei e campionati di biliardo americano: iscrizioni, tabelloni, classifiche.") }}">
+    <meta property="og:image" content="{{ url_for('static', filename='img/social/vetrina-default.png', _external=True) }}">
+    <meta property="og:url" content="{{ request.url }}">
+    <meta name="twitter:card" content="summary_large_image">
+    {% endblock %}
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">

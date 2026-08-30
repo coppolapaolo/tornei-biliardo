@@ -1,5 +1,6 @@
 # routes/main.py - AGGIORNATO per correggere import path
 from typing import Optional
+from urllib.parse import urljoin
 
 from flask import (
     Blueprint,
@@ -249,12 +250,67 @@ def public_garas_list():
     )
 
 
+def _render_vetrina(gara, identificatore: str):
+    """La pagina-vetrina di una gara, con i meta che i social leggono.
+
+    L'immagine e l'indirizzo sono **assoluti** (`_external=True`): lo scraper
+    di Facebook o WhatsApp non risolve i percorsi relativi, e un `og:image`
+    che comincia per `/static/` gli risulta semplicemente assente — l'unico
+    sintomo è un'anteprima senza figura, che in sviluppo non si vede mai.
+    """
+    from models.competition.showcase_view import costruisci_vetrina, descrizione_social
+
+    vetrina = costruisci_vetrina(gara)
+
+    if vetrina.banner_url:
+        immagine = urljoin(request.url_root, vetrina.banner_url.lstrip("/"))
+    else:
+        immagine = url_for(
+            "static", filename="img/social/vetrina-default.png", _external=True
+        )
+
+    return render_template(
+        "public/vetrina_gara.html",
+        vetrina=vetrina,
+        gara=gara,
+        social_title=vetrina.titolo,
+        social_description=descrizione_social(vetrina),
+        social_image=immagine,
+        social_url=url_for("main.gara_invite", token=identificatore, _external=True),
+        # Dove porta «Iscriviti» per chi non ha ancora un account: al login,
+        # con il ritorno **qui**. Da autenticato questo stesso indirizzo
+        # riporta al flusso di iscrizione di sempre, quindi il giro si chiude
+        # da solo senza una seconda route da tenere allineata.
+        url_iscrizione=url_for(
+            "auth.login",
+            next=url_for("main.gara_invite", token=identificatore),
+        ),
+    )
+
+
 @main_bp.route("/g/<token>")
 def gara_invite(token):
-    """Link pubblico di iscrizione a una gara (issue #61).
+    """Link pubblico di una gara: vetrina per chi arriva, iscrizione per chi c'è.
 
     È l'indirizzo che il direttore stampa su una locandina o incolla in un
-    post: chi lo segue arriva sulla pagina della gara con l'iscrizione in
+    post — `/g/<token>` o, se ne ha scelto uno, `/g/<nome-leggibile>`: sono
+    due nomi per la stessa pagina e restano validi entrambi, così una
+    locandina già stampata non smette di funzionare.
+
+    **Chi non è autenticato vede la vetrina** (issue #235): nome, formato,
+    quando, dove, quanto costa, quanti posti restano, e un pulsante
+    «Iscriviti» che lo porta a registrarsi e lo riporta esattamente qui. Fino
+    al 2026-08 questo indirizzo rispondeva a un anonimo con un redirect al
+    login, e siccome è quello che il direttore condivide, era anche quello che
+    lo scraper di WhatsApp o Facebook trovava: l'anteprima del link mostrava
+    la pagina di accesso, e nessun meta Open Graph avrebbe potuto rimediare.
+
+    Chi è autenticato prosegue come sempre — dialog di stato e pagina della
+    gara — perché lì l'iscrizione è a un click e la vetrina sarebbe un
+    passaggio in più. Con `?anteprima=1` vede comunque la vetrina: serve al
+    direttore per controllare cosa sta pubblicando.
+
+    Chi lo segue arriva sulla pagina della gara con l'iscrizione in
     evidenza e conferma con un click. Chi non è autenticato passa da
     login/registrazione e torna qui, allo stesso punto.
 
@@ -273,19 +329,19 @@ def gara_invite(token):
         GaraInviteService,
         InviteOutcome,
     )
+    from models.competition.showcase_service import resolve_public_identifier
     from utils.jinja import format_datetime_local_text
     from utils.page_modal import flash_page_modal
 
-    gara = Gara.query.filter_by(public_token=token).first()
+    gara = resolve_public_identifier(token)
     if gara is None:
         # Il token non dice se la gara non è mai esistita o è stata
         # cancellata, e va bene così: la pagina non deve fare da oracolo.
         return render_template("public/invite_not_found.html"), 404
 
-    if not current_user.is_authenticated:
-        return redirect(
-            url_for("auth.login", next=url_for("main.gara_invite", token=token))
-        )
+    vuole_anteprima = request.args.get("anteprima") == "1"
+    if not current_user.is_authenticated or vuole_anteprima:
+        return _render_vetrina(gara, token)
 
     result = GaraInviteService.evaluate(gara, current_user)
 

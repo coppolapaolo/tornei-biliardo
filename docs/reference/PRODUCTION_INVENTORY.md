@@ -66,6 +66,10 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/admin/gara/create_standalone` | GET, POST | `admin.competition.create_gara_standalone` | `@director_or_admin_required` | UI page + action | Crea gara standalone |
 | `/admin/gara/create` | POST | `admin.competition.create_gara` | `@login_required` (permessi sul campionato verificati inline) | action | Crea gara entro campionato (POST via wizard) |
 | `/admin/gara/<int:gara_id>/edit` | GET, POST | `admin.competition.edit_gara` | `@gara_manager_required` | UI page + action | Modifica configurazione gara |
+| `/admin/gara/<int:gara_id>/vetrina` | GET | `admin.competition.gara_vetrina` | `@gara_manager_required` | UI page | Vetrina social: locandina, link esterno, indirizzo leggibile (issue #235) |
+| `/admin/gara/<int:gara_id>/vetrina` | POST | `admin.competition.salva_gara_vetrina` | `@gara_manager_required` | action | Salva indirizzo leggibile e link esterno |
+| `/admin/gara/<int:gara_id>/vetrina/banner` | POST | `admin.competition.carica_banner_gara` | `@gara_manager_required` | action | Carica la locandina della gara |
+| `/admin/gara/<int:gara_id>/vetrina/banner/rimuovi` | POST | `admin.competition.rimuovi_banner_gara` | `@gara_manager_required` | action | Toglie la locandina: la gara torna a ereditare quella del campionato |
 | `/admin/gara/<int:gara_id>/tables-config` | POST | `admin.competition.update_tables_config` | `@gara_manager_required` | JSON action | Aggiorna numero/nomi dei tavoli |
 | `/admin/gara/<int:gara_id>/delete` | POST | `admin.competition.delete_gara` | `@gara_manager_required` | action | Elimina gara (hard delete) |
 | `/admin/gara/<int:gara_id>/soft-delete` | POST | `admin.competition.soft_delete_gara` | `@admin_required` | action | Soft delete gara |
