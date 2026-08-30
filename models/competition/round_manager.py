@@ -107,9 +107,20 @@ class AdvancedRoundManager:
         )
 
         if lock_status == RoundLockStatus.LOCKED:
+            # Il messaggio dice anche **come uscirne**: il turno seguente si è
+            # costruito su questa classifica, quindi la strada è annullarlo e
+            # rifarlo. Senza la seconda frase chi legge sa solo di non poter
+            # fare quel che voleva, e la partita resta lì (issue #90).
             return (
                 False,
-                "Il turno è bloccato perché un turno successivo è già iniziato",
+                str(
+                    _(
+                        "Il turno è bloccato perché un turno successivo è già "
+                        "iniziato: quel turno si è formato su questa "
+                        "classifica. Per intervenire qui, annulla prima il "
+                        "turno successivo."
+                    )
+                ),
             )
 
         # ADR-026 residuo: lo spareggio (SSR/rally/playoff) certifica

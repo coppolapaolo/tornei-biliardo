@@ -161,6 +161,10 @@ _SKIPPED_TABLES: Dict[str, str] = {
     "hidden_match": "preferenza di visibilità di chi l'ha messa: si cancella",
     "hidden_inscription": "preferenza di visibilità di chi l'ha messa: si cancella",
     "demand_signal": "segnale di disponibilità dell'utente, non un fatto della gara",
+    "match_correction": (
+        "corrected_by_id: è il direttore che ha corretto il risultato, "
+        "non chi ha giocato la partita"
+    ),
 }
 
 #: Colonne che, pur stando in una tabella spostata, restano dove sono.

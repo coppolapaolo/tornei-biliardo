@@ -133,6 +133,55 @@
         </div>
     {% endif %}
 
+    {# Correzione del risultato (issue #90). Compare a partita **chiusa** — o
+       ferma «in attesa» dopo un annullamento, che è il caso da cui la issue è
+       nata: lì il punteggio non si poteva più reinserire da nessuna parte.
+       Quando non si può correggere si dice **perché**: di solito il turno
+       successivo è già partito, e la via d'uscita è annullare quello. #}
+    {% if not match.is_bye and not match.is_trio and (MatchStatus.is_finished(match.status) or match.status == MatchStatus.PENDING.value) %}
+    <hr class="c7-divider">
+    <div class="c7-stack" style="gap: 10px;">
+        <h3 class="mb-0">{{ _('Correggi il risultato') }}</h3>
+        {% if match_can_correct %}
+        <form method="POST" action="{{ url_for('admin.match.correct_match_result', match_id=match.id) }}" class="c7-stack" style="gap:10px"
+              onsubmit='return confirm({{ _("I triangoli segnati uno per uno vengono cancellati: resta solo il punteggio finale. La correzione resterà visibile sulla partita. Procedere?")|tojson }})'>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+                <div>
+                    <label class="c7-label" for="correctScore1">{{ match.player1.username }}</label>
+                    <input type="number" min="0" class="form-control" id="correctScore1"
+                           name="player1_score" value="{{ match.player1_score or 0 }}" required>
+                </div>
+                <div>
+                    <label class="c7-label" for="correctScore2">{{ match.player2.username if match.player2 else '' }}</label>
+                    <input type="number" min="0" class="form-control" id="correctScore2"
+                           name="player2_score" value="{{ match.player2_score or 0 }}" required>
+                </div>
+            </div>
+            <div>
+                <label class="c7-label" for="correctNote">{{ _('Perché (facoltativo)') }}</label>
+                <input type="text" class="form-control" id="correctNote" name="note" maxlength="200"
+                       placeholder="{{ _('Es. punteggio invertito in fase di inserimento') }}">
+            </div>
+            <button type="submit" class="btn btn-secondary w-100">
+                <i class="fas fa-pen"></i> {{ _('Correggi il risultato') }}
+            </button>
+            <div class="text-muted" style="font-size: 12px; font-weight: 600;">
+                {{ _('La correzione resta scritta sulla partita: chi aveva visto il risultato di prima capisce perché è cambiato.') }}
+            </div>
+        </form>
+        {% else %}
+        <div class="c7-flash c7-flash--info">
+            <span class="c7-flash__ico"><i class="fas fa-lock"></i></span>
+            <div class="c7-flash__body">
+                <div class="c7-flash__title">{{ _('Il risultato non si può correggere') }}</div>
+                <div class="c7-flash__text">{{ match_correct_reason }}</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
     <!-- Reset Match - Always available for completed matches or matches with scores -->
     {% if reset_visible %}
     <button class="btn btn-danger" onclick="{% if match.is_trio and match.trio_match %}resetTrio({{ match.trio_match.id }}){% else %}resetMatch({{ match.id }}){% endif %}">

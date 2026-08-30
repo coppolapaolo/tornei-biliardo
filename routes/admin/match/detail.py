@@ -128,6 +128,15 @@ def match_detail(match_id):
             match.id
         )
 
+    # Correzione del risultato (issue #90). Il motivo del rifiuto si passa al
+    # template com'è: chi non può correggere deve sapere cosa fare — di solito
+    # annullare il turno successivo — e non solo che non si può.
+    from models.match.correction_service import MatchCorrectionService
+
+    match_can_correct, match_correct_reason = MatchCorrectionService.can_correct(
+        match.id
+    )
+
     # "L'azionabile va prima" (UI_CONVENTIONS): a punteggio definitivo - rack
     # massimi raggiunti, o match gia' chiuso - la prossima azione probabile e'
     # uscire dal match (torna alla gara / alla dashboard), quindi su mobile il
@@ -149,6 +158,8 @@ def match_detail(match_id):
         player1_is_forfeit=player1_is_forfeit,
         player2_is_forfeit=player2_is_forfeit,
         match_can_modify=match_can_modify,
+        match_can_correct=match_can_correct,
+        match_correct_reason=match_correct_reason,
         score_is_final=score_is_final,
     )
 
