@@ -161,7 +161,7 @@ class TestTerminateCampionatoRoute:
         client.post(f"/admin/campionato/{c.id}/terminate", follow_redirects=True)
 
         refreshed = db_session.get(Campionato, c.id)
-        assert refreshed.get_status() == TournamentStatus.TERMINATED.value
+        assert refreshed.get_status() == TournamentStatus.AWAITING_PLAYOFF.value
 
     def test_can_create_gara_blocked_after_terminate(
         self, client, db_session, isolated_director_user
@@ -259,4 +259,4 @@ class TestUpdatePlayoffMinRoute:
 
         refreshed = db_session.get(Campionato, c.id)
         assert refreshed.terminated_at is not None
-        assert refreshed.get_status() == TournamentStatus.TERMINATED.value
+        assert refreshed.get_status() == TournamentStatus.AWAITING_PLAYOFF.value

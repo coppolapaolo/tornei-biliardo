@@ -78,17 +78,58 @@ class ProvaDerivedStatus(_StrEnum):
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# CAMPIONATO (derivato dalle Gare)
-# Restituito da `Campionato.get_status()`:
-#           {setup, registration_open, in_progress, completed}
-# Fonte: models/campionato/models.py
+# CAMPIONATO (derivato dalle Gare — mai persistito)
+# Restituito da `Campionato.get_status()` e da `compute_campionato_status()`.
+# Fonte: models/campionato/statistics_service.py
 # ──────────────────────────────────────────────────────────────────────────────
 class TournamentStatus(_StrEnum):
+    """Stato di un campionato, **calcolato** dalle sue gare e da `terminated_at`.
+
+    Nessuna colonna lo persiste: l'unico dato su disco è `terminated_at`, un
+    timestamp. Aggiungere o rinominare un membro qui non tocca il database.
+
+    OGNI ETICHETTA DICE COSA MANCA
+    ------------------------------
+    Il badge non è letto solo dal direttore: lo vedono anche il giocatore
+    iscritto e il visitatore anonimo, nella lista pubblica dei campionati e in
+    homepage. Per questo ogni stato constata un **fatto** e non impartisce
+    un'istruzione ("Da chiudere" sarebbe un promemoria rivolto a qualcun
+    altro), e i due stati non finali dicono *che cosa* si sta aspettando:
+
+        In attesa di chiusura  →  In attesa dei playoff  →  Completato
+
+    Letti in fila sono una scala, e `COMPLETED` resta l'unico stato finale.
+
+    PERCHÉ `TERMINATED` NON SI CHIAMA PIÙ COSÌ
+    ------------------------------------------
+    Si chiamava `TERMINATED`, etichetta «Terminato», e significava il
+    contrario di quello che sembrava: non «finito», ma «chiuso, **con i
+    playoff ancora da giocare**». In italiano "terminato" suona più definitivo
+    di "completato", cioè l'opposto della semantica del codice — e la pagina
+    del campionato mostrava le due parole a pochi pixel di distanza (issue
+    #242). Rinominato in `AWAITING_PLAYOFF`, che dice quello che è.
+
+    Il **valore** resta `"terminated"`: compare nel filtro pubblico
+    (`routes/main.py`) e non c'è ragione di cambiarlo. È la stessa cura
+    applicata a `MatchStatus`, dove i nomi mentivano e sono stati corretti
+    lasciando stare i valori.
+    """
+
     SETUP = "setup"
     REGISTRATION_OPEN = "registration_open"
     IN_PROGRESS = "in_progress"
+
+    # Tutte le gare previste sono finite, ma il direttore non ha ancora chiuso:
+    # `terminated_at` è NULL e la classifica generale non è consolidata. Prima
+    # della #242 questo caso si spacciava per COMPLETED, quindi un campionato
+    # solo esaurito era indistinguibile da uno chiuso davvero.
+    AWAITING_CLOSURE = "awaiting_closure"
+
+    # Chiuso dal direttore, ma restano i playoff da giocare. Vedi la docstring.
+    AWAITING_PLAYOFF = "terminated"
+
+    # L'unico stato finale: non c'è più niente da giocare.
     COMPLETED = "completed"
-    TERMINATED = "terminated"
 
 
 # ──────────────────────────────────────────────────────────────────────────────

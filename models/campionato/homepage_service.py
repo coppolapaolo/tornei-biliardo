@@ -39,7 +39,7 @@ HOMEPAGE_LIVE_MATCHES_PER_GARA = 6
 
 _LIVE_GARA_STATUSES = (GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value)
 _TERMINAL_CAMPIONATO_STATUSES = frozenset(
-    {TournamentStatus.COMPLETED.value, TournamentStatus.TERMINATED.value}
+    {TournamentStatus.COMPLETED.value, TournamentStatus.AWAITING_PLAYOFF.value}
 )
 
 

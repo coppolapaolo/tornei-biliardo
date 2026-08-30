@@ -19,6 +19,47 @@ Un **campionato** può avere anche dei **playoff** che possono essere giocati al
 Nel caso di cancellazione di un **campionato** con alcune **gare** già giocate, si opera un _soft delete_ e i **match** giocati vengono mantenuti per le **statistiche** personali dei vari **player**.
 Un **campionato** può avere 0 o più direttori di gara. Se ne ha zero allora viene gestito dall'``admin``. 
 
+### Stati di un campionato
+
+Lo stato di un campionato non è un dato salvato: si **calcola** dalle sue gare e
+da `terminated_at`, l'istante in cui il direttore lo chiude consolidando la
+classifica generale. Le due domande sono distinte e vanno tenute distinte:
+«si può ancora giocare?» e «il direttore ha chiuso?».
+
+| Stato | Etichetta mostrata | Vale quando |
+|---|---|---|
+| `SETUP` | Setup | non c'è ancora niente di aperto |
+| `REGISTRATION_OPEN` | Iscrizioni aperte | almeno una gara raccoglie iscrizioni |
+| `IN_PROGRESS` | In corso | almeno una gara si sta giocando, **oppure** restano gare da creare rispetto a quelle pianificate |
+| `AWAITING_CLOSURE` | **In attesa di chiusura** | tutte le gare previste sono finite, ma `terminated_at` è NULL: la classifica generale **non è consolidata** |
+| `AWAITING_PLAYOFF` | **In attesa dei playoff** | il direttore ha chiuso, e restano playoff da giocare |
+| `COMPLETED` | Completato | non c'è più niente da giocare: nessun playoff previsto, o tutti conclusi |
+
+Tre regole, e la ragione di ciascuna:
+
+1. **`COMPLETED` è l'unico stato finale.** Fino alla issue #242 copriva anche
+   «gare esaurite ma nessuno ha premuto Termina»: due situazioni diverse sotto
+   la stessa parola, e chi guardava l'elenco non poteva distinguerle.
+2. **Ogni etichetta constata un fatto, nessuna impartisce un ordine.** Il badge
+   non lo legge solo il direttore: lo vedono il giocatore iscritto e il
+   visitatore anonimo, nella lista pubblica e in homepage. Per questo lo stato
+   nuovo si chiama «In attesa di chiusura» e non «Da chiudere», che sarebbe un
+   promemoria rivolto a qualcun altro. I due stati non finali dicono **che
+   cosa** si sta aspettando, e letti in fila sono una scala:
+   *In attesa di chiusura → In attesa dei playoff → Completato*.
+3. **`AWAITING_CLOSURE` non è uno stato terminale.** Un campionato che lo porta
+   resta fra gli **attivi** nella dashboard del direttore ed è elencato fra
+   quelli «in corso» nella lista pubblica. È così che il pulsante «Termina»
+   torna sotto gli occhi di chi deve premerlo, invece di finire in archivio.
+
+> **Nota storica (2026-08-29).** Lo stato che oggi si chiama `AWAITING_PLAYOFF`
+> si chiamava `TERMINATED`, etichetta «Terminato», e significava il contrario di
+> quello che sembrava: non «finito», ma «chiuso, con i playoff ancora da
+> giocare». In italiano *terminato* suona più definitivo di *completato*, cioè
+> l'opposto della semantica del codice, e la pagina del campionato mostrava le
+> due parole a pochi pixel di distanza. Il **valore** persistito nelle URL resta
+> `terminated`; è cambiato il nome del membro, come già fatto per `MatchStatus`.
+
 ## Gare
 
 Una **gara** è parte di un **campionato**. È formata da uno o più **turni** e da zero o più **challenge**. Il numero di turni e di challenge di default dipende dal toreno a cui appartiene la gara. 

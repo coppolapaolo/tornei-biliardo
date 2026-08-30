@@ -5,6 +5,14 @@
 vera nella finestra fra la fine di una prova e la creazione della successiva,
 e la UI mostrava il campionato come concluso (badge "Completato",
 esclusione dalle sezioni "attivi") per poi tornare indietro.
+
+**Precisato dalla #242 (2026-08-29).** Il ramo "tutte le prove pianificate sono
+finite" non ritorna più COMPLETED ma `AWAITING_CLOSURE`: le gare sono esaurite,
+ma `terminated_at` è NULL e la classifica generale non è consolidata. È la stessa
+preoccupazione della #60 portata fino in fondo — un campionato che nessuno ha
+chiuso non è concluso — e `AWAITING_CLOSURE` **non è terminale**, quindi resta
+nelle sezioni "attivi" invece di uscirne. Vedi la sezione «Stati di un
+campionato» in `docs/reference/SPECIFICHE.md`.
 """
 
 import uuid
@@ -61,22 +69,25 @@ class TestCampionatoStatusWithPlannedGare:
         assert compute_campionato_status(c) == TournamentStatus.IN_PROGRESS.value
 
     def test_completed_when_all_planned_gare_are_done(self, db_session):
-        """Tutte le prove pianificate create e completate → Completato."""
+        """Tutte le prove pianificate create e completate → in attesa di chiusura.
+
+        Non COMPLETED: manca l'atto del direttore. Vedi la nota #242 in testa.
+        """
         c = _make_campionato(db_session, planned_gare_count=2)
         _make_gara(db_session, c, 1, GaraStatus.COMPLETED.value)
         _make_gara(db_session, c, 2, GaraStatus.COMPLETED.value)
         db_session.commit()
 
-        assert compute_campionato_status(c) == TournamentStatus.COMPLETED.value
+        assert compute_campionato_status(c) == TournamentStatus.AWAITING_CLOSURE.value
 
     def test_more_gare_than_planned_still_completes(self, db_session):
-        """Il director ha creato più prove del previsto: resta Completato."""
+        """Il director ha creato più prove del previsto: non torna "in corso"."""
         c = _make_campionato(db_session, planned_gare_count=2)
         for n in (1, 2, 3):
             _make_gara(db_session, c, n, GaraStatus.COMPLETED.value)
         db_session.commit()
 
-        assert compute_campionato_status(c) == TournamentStatus.COMPLETED.value
+        assert compute_campionato_status(c) == TournamentStatus.AWAITING_CLOSURE.value
 
     def test_manual_termination_completes_regardless(self, db_session):
         """La chiusura deliberata del director chiude comunque il campionato,

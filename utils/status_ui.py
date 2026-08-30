@@ -106,6 +106,15 @@ class StatusPresenter:
     # ------------------- CAMPIONATO -------------------
     @staticmethod
     def campionato(o: Any) -> Tuple[str, str]:
+        # Uno stato già calcolato si accetta com'è. Senza questo ramo, passare
+        # una stringa faceva cadere `compute_campionato_status` sul suo default
+        # (`gare` vuote → SETUP), quindi il presidio
+        # `test_status_presenter_copre_gli_stati` non poteva fallire: qualunque
+        # stato gli si desse, la risposta era "Setup".
+        if isinstance(o, str):
+            return StatusPresenter._campionato_mapping().get(
+                o, ("bg-secondary", _("Sconosciuto"))
+            )
         # Preferisci funzione pura se disponibile, altrimenti delega al model
         if compute_campionato_status is not None:
             try:
@@ -124,19 +133,32 @@ class StatusPresenter:
             except Exception:
                 s = TournamentStatus.SETUP.value
 
-        mapping: Dict[str, Tuple[str, str]] = {
+        return StatusPresenter._campionato_mapping().get(
+            s or TournamentStatus.SETUP.value, ("bg-secondary", _("Sconosciuto"))
+        )
+
+    @staticmethod
+    def _campionato_mapping() -> Dict[str, Tuple[str, str]]:
+        return {
             TournamentStatus.SETUP.value: ("bg-warning", _("Setup")),
             TournamentStatus.REGISTRATION_OPEN.value: (
                 "bg-info",
                 _("Iscrizioni Aperte"),
             ),
             TournamentStatus.IN_PROGRESS.value: ("bg-primary", _("In Corso")),
+            # I due stati non finali dicono *cosa* si sta aspettando: il badge
+            # lo legge anche il visitatore anonimo, a cui un "Da chiudere" non
+            # direbbe niente di utile. Vedi la docstring di TournamentStatus.
+            TournamentStatus.AWAITING_CLOSURE.value: (
+                "bg-secondary",
+                _("In attesa di chiusura"),
+            ),
+            TournamentStatus.AWAITING_PLAYOFF.value: (
+                "bg-dark",
+                _("In attesa dei playoff"),
+            ),
             TournamentStatus.COMPLETED.value: ("bg-success", _("Completato")),
-            TournamentStatus.TERMINATED.value: ("bg-dark", _("Terminato")),
         }
-        return mapping.get(
-            s or TournamentStatus.SETUP.value, ("bg-secondary", _("Sconosciuto"))
-        )
 
     # --------------------- MATCH ---------------------
     @staticmethod
