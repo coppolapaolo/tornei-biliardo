@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.6.0...v1.6.1) (2026-08-30)
+
+
+### Correzioni
+
+* la locandina si vede intera, e il pulsante condividi porta ai social ([#292](https://github.com/coppolapaolo/tornei-biliardo/issues/292)) ([23b3761](https://github.com/coppolapaolo/tornei-biliardo/commit/23b3761ed14fc1524a7c5cbf6953c7d65c5b2278))
+
 ## [1.6.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.5.0...v1.6.0) (2026-08-30)
 
 
