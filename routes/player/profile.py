@@ -295,7 +295,15 @@ def view_profile(user_id):
 #: `squadra` è testo libero e la scrive solo il giocatore (US-1): non produce
 #: alcun effetto da sé, serve a precompilare l'iscrizione alle gare che hanno
 #: attivato le squadre.
-CAMPI_PROFILO = ("username", "email", "phone", "home_city", "squadra")
+CAMPI_PROFILO = (
+    "username",
+    "email",
+    "phone",
+    "home_city",
+    "squadra",
+    "first_name",
+    "last_name",
+)
 
 
 @player_bp.route("/profile/edit", methods=["GET", "POST"])
