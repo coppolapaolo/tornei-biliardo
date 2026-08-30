@@ -5,9 +5,13 @@
 {% block page_sub %}{{ _('Quello che ci hai scritto, e come è andata a finire.') }}{% endblock %}
 
 {% block page_actions %}
+{# A elenco vuoto l'invito sta dentro la card, dove c'è anche la frase che lo
+   spiega: due pulsanti identici a mezzo schermo di distanza sono rumore. #}
+{% if segnalazioni %}
 <a href="{{ url_for('feedback.nuova_segnalazione') }}" class="btn btn-success">
   <i class="fas fa-bullhorn me-2"></i>{{ _('Segnala un problema') }}
 </a>
+{% endif %}
 {% endblock %}
 
 {% block content %}

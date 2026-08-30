@@ -134,14 +134,26 @@ Allora **si interpreta**, non si inventa:
 
 ## Verifica — prima di dire che è fatto
 
-1. **Mobile 390px e desktop 1512px**, sempre entrambi. Il mobile si guarda con
-   la **device toolbar dei DevTools** (cmd+shift+M): la finestra di Chrome su
-   macOS non scende sotto ~500px, quindi ridimensionare non basta. Se stai
-   pilotando il browser e la device toolbar non è raggiungibile, chiedi
-   all'utente di guardare lui, e nel frattempo usa
-   `document.documentElement.style.zoom = (innerWidth/390)` — impagina a 390
-   px logici, ma **le media query restano sul valore vero**: serve a vedere
-   ritorni a capo e sbordamenti, non a sostituire la verifica.
+1. **Mobile e desktop 1512px**, sempre entrambi. Dal browser pilotato il
+   mobile si guarda **ridimensionando la finestra**: scheda nuova,
+   `resize_window` **come prima azione** (prima di navigare), poi si misura con
+   `document.documentElement.clientWidth`. Chrome su macOS si ferma a 500px, ma
+   500 è **sotto il punto di rottura lg (992px)**: la barra laterale sparisce,
+   compare la nav flottante, e fra 390 e 500 il tema non ha altri breakpoint.
+   È una verifica vera, non un ripiego. Per i soli ritorni a capo a 390 resta
+   `document.documentElement.style.zoom = (innerWidth/390)`, che però **non
+   sposta le media query**: dichiaralo per quello che è.
+
+   ⚠️ **Non aprire i DevTools dal browser pilotato.** Con i DevTools aperti
+   ogni misura mente: `clientWidth` riporta la larghezza dello schermo in pixel
+   fisici (3008 su questo Mac), `outerWidth` diventa **0**, e
+   `matchMedia('(min-width: 992px)')` resta `true` a qualunque dimensione — il
+   layout sembra bloccato su desktop e `resize_window` risponde «Successfully
+   resized» senza che cambi niente. Il segnale è `window.outerWidth === 0`; si
+   esce con `cmd+alt+i`, che li chiude. Le scorciatoie arrivano al browser, ma
+   i **controlli dentro il pannello** no (l'input va al tab), quindi la device
+   toolbar parte a una larghezza arbitraria che non si può cambiare: se serve
+   davvero un 390px con touch reale, chiedilo all'utente.
 2. **`document.body.scrollWidth`** deve essere uguale alla larghezza del
    viewport: se è maggiore, qualcosa sborda.
 3. **Il CSS è servito con `?v=`**: dopo averlo modificato il browser continua a
@@ -172,8 +184,9 @@ Allora **si interpreta**, non si inventa:
   `/debug/login/player2`. Funziona **solo con `DEBUG_MODE` attivo** (default in
   sviluppo): in produzione quelle route rispondono 403, ed e' bene che resti
   cosi' — sono scorciatoie che autenticano senza password.
-- Il browser pilotato perde il ridimensionamento dopo qualche `resize_window`:
-  se `outerWidth` diventa uguale a `innerWidth`, la scheda è andata — aprine
-  una nuova e ridimensionala **come prima azione**.
+- Se le misure smettono di avere senso (`outerWidth` uguale a `innerWidth`, o
+  a `screen.width`, o **0**), quasi sempre ci sono i DevTools aperti: chiudili
+  con `cmd+alt+i` e rimisura. Se non basta, apri una scheda nuova e
+  ridimensionala **come prima azione**.
 - Diario del redesign e disallineamenti noti col prototipo:
   `docs/redesign-7c/STATO.md`.
