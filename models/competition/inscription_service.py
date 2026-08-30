@@ -230,8 +230,16 @@ class InscriptionService:
         """Promuove il primo giocatore dalla waitlist parità.
 
         Chiamato quando un nuovo giocatore si iscrive e rende il count pari.
+        A gara avviata non promuove nessuno: vedi
+        `_lista_attesa_ancora_aperta`.
         """
-        from models.competition.models import WaitlistReason
+        from models.competition.models import Gara, WaitlistReason
+
+        gara = db.session.get(Gara, gara_id)
+        if gara is not None and not InscriptionService._lista_attesa_ancora_aperta(
+            gara
+        ):
+            return None
 
         first_parity_waitlist = (
             db.session.query(Inscription)
@@ -269,12 +277,34 @@ class InscriptionService:
         return None
 
     @staticmethod
+    def _lista_attesa_ancora_aperta(gara: "Gara") -> bool:
+        """La lista d'attesa serve **solo fino all'avvio della gara**.
+
+        Dopo il primo turno la composizione degli iscritti è la base degli
+        abbinamenti già sorteggiati e della classifica: promuovere qualcuno lo
+        farebbe entrare senza i turni giocati e con zero punti, e retrocedere
+        un attivo lo toglierebbe da partite che ha davanti (issue #260).
+
+        Il controllo sta qui, non nei chiamanti, perché le strade che toccano
+        la lista sono parecchie — disiscrizione volontaria, cancellazione dal
+        direttore, esclusione per forfait, cambio del massimo iscritti — e
+        presidiarle una a una lascerebbe scoperta la prossima.
+        """
+        return gara.status in (GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value)
+
+    @staticmethod
     def _demote_last_to_parity_waitlist(gara_id: int) -> Optional[Inscription]:
         """Mette l'ultimo iscritto attivo in waitlist parità.
 
         Chiamato quando una disiscrizione rende il count dispari.
         """
-        from models.competition.models import WaitlistReason
+        from models.competition.models import Gara, WaitlistReason
+
+        gara = db.session.get(Gara, gara_id)
+        if gara is not None and not InscriptionService._lista_attesa_ancora_aperta(
+            gara
+        ):
+            return None
 
         # Trova l'ultimo iscritto attivo (per created_at)
         last_active = (
@@ -436,9 +466,16 @@ class InscriptionService:
 
     @staticmethod
     def _promote_and_notify(inscription: Inscription, gara: "Gara") -> None:
-        """Promuove un'iscrizione dalla waitlist e invia notifica."""
+        """Promuove un'iscrizione dalla waitlist e invia notifica.
+
+        A gara avviata non promuove nessuno: vedi
+        `_lista_attesa_ancora_aperta`.
+        """
         from models.notification.factory import NotificationFactory
         from models.notification.models import NotificationPriority
+
+        if not InscriptionService._lista_attesa_ancora_aperta(gara):
+            return
 
         old_reason = inscription.waitlist_reason
         inscription.is_waitlist = False
