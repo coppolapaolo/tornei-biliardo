@@ -1,0 +1,77 @@
+{# templates/components/_sfide_in_corso.html — Design System 7c
+
+   Le sfide a due da giocare: fissate o già iniziate.
+
+   Prima non comparivano da nessuna parte. `DashboardSectionBuilder` calcolava
+   `vm.individual_matches` e nessun template lo usava — zero occorrenze in
+   `templates/` — quindi in dashboard si vedevano solo le **proposte aperte
+   degli altri**, cioè gli inviti, e non le sfide che avevi già accettato.
+   Una sfida a due è una partita da giocare esattamente come quella di gara,
+   e usa lo stesso `MatchStatus`.
+
+   Sta subito sotto «Le tue gare» perché è la stessa domanda — cosa devo
+   giocare — e resta una sezione a sé perché non ha una gara dove stare: è il
+   limite dichiarato della forma scelta. #}
+
+{% if vm.sfide_in_corso %}
+<section class="mb-4">
+  <div class="d-flex align-items-center gap-3 mb-3">
+    <h2 class="mb-0 flex-fill" style="font-size:17px">
+      {{ _('Sfide a due') }}
+      <span class="c7-num ms-1" style="font-size:13px;color:var(--c7-ink-muted)">{{ vm.sfide_in_corso|length }}</span>
+    </h2>
+    <a href="{{ url_for('individual_match.match_list') }}" style="font-size:12px">{{ _('Vedi tutte') }}</a>
+  </div>
+
+  <div class="c7-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
+    {% for sfida in vm.sfide_in_corso %}
+    {# `.value` anche se qui la colonna e' un `db.Enum` e `sfida.status` e'
+       gia' un membro: `MatchStatus` deriva da `str`, quindi i due confronti
+       sono equivalenti, e la convenzione del progetto e' una sola. #}
+    {% set iniziata = sfida.status == MatchStatus.IN_PROGRESS.value %}
+    {% set avversario = sfida.player2 if sfida.player1_id == current_user.id else sfida.player1 %}
+    <article class="c7-card d-flex flex-column gap-3">
+
+      <div class="d-flex align-items-start gap-2">
+        <div class="flex-fill">
+          <div class="c7-kicker">
+            {{ _('Sfida a due') }}
+            {% if sfida.location_display %}
+              <span class="c7-sep">·</span> {{ sfida.location_display }}
+            {% endif %}
+          </div>
+          <div class="mt-1" style="font-size:15px;font-weight:800;letter-spacing:-.02em">
+            {# L'avversario può mancare su una sfida a cui non ha ancora
+               risposto nessuno: senza guardia sarebbe un 500 in dashboard. #}
+            {% if avversario %}{{ _('vs') }} {{ avversario.username }}
+            {% else %}{{ _('In attesa di un avversario') }}{% endif %}
+          </div>
+          <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+            {{ sfida.discipline|discipline_display }}
+            {% if sfida.distance %}
+              <span class="c7-sep">·</span> {{ sfida.distance_config|format_distance }}
+            {% endif %}
+            <span class="c7-sep">·</span>
+            <span class="c7-num" style="font-size:12px">{{ sfida.scheduled_at|datetime_local }}</span>
+          </div>
+        </div>
+        <span class="c7-state {{ 'c7-state--err' if iniziata else 'c7-state--info' }}">
+          {{ _('In corso') if iniziata else _('Fissata') }}
+        </span>
+      </div>
+
+      {% if sfida.player1_score or sfida.player2_score %}
+      <div class="c7-num" style="font-size:22px">
+        {{ sfida.player1_score }} — {{ sfida.player2_score }}
+      </div>
+      {% endif %}
+
+      <a href="{{ url_for('individual_match.match_detail', match_id=sfida.id) }}"
+         class="btn btn-primary btn-sm w-100">
+        <i class="fas fa-play"></i>{{ _('Gioca') if iniziata else _('Apri la sfida') }}
+      </a>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}

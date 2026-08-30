@@ -330,6 +330,11 @@
 </section>
 {% endif %}
 
+{# La sfida a due sta qui perche' risponde alla stessa domanda di sopra —
+   cosa devo giocare — ma resta una sezione a se': non ha una gara dentro cui
+   stare, ed e' il limite dichiarato della forma scelta. #}
+{% include "components/_sfide_in_corso.html" %}
+
 {# Sezione Challenge (solo per player con challenge disponibili) #}
 {% if vm.available_challenges %}
 <section class="mb-4">

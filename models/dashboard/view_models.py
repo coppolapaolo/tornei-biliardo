@@ -147,7 +147,11 @@ class DashboardVM:
     match_proposals: Optional[dict[str, Any]] = (
         None  # {"created": [], "received": [], "available": []}
     )
-    individual_matches: Optional[List[Any]] = None  # Recent individual matches
+    #: Le sfide a due **da giocare**: fissate o gia' iniziate. Era
+    #: `individual_matches` — le ultime dieci di qualunque stato — e non la
+    #: disegnava nessun template: una sfida in corso non compariva in nessuna
+    #: dashboard, mentre la partita di gara si'.
+    sfide_in_corso: Optional[List[Any]] = None
     match_opportunities: Optional[List[Any]] = None  # Available match opportunities
 
     # Inviti ai playoff ancora senza risposta (PlayoffQualification PENDING):

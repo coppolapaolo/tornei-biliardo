@@ -17,10 +17,11 @@ from datetime import date, timedelta
 import pytest
 
 from models import db
+from models.base import utc_now
 from models.classification.models import RoundClassification
 from models.competition.models import Gara, Inscription, WaitlistReason
 from models.match.models import Match
-from models.status_enum import GaraStatus, MatchStatus
+from models.status_enum import Discipline, GaraStatus, MatchStatus
 from models.user.models import User
 
 
@@ -52,7 +53,7 @@ def _gara(db_session, **kwargs) -> Gara:
         # all'ordine cronologico delle prove (ADR-016).
         "number": 1,
         "date": date.today() + timedelta(days=7),
-        "discipline": "nine_ball",
+        "discipline": Discipline.NINE_BALL.value,
         "status": GaraStatus.INSCRIPTION.value,
         "distance": 5,
         "is_race_to": True,
@@ -399,3 +400,86 @@ def test_si_vedono_le_altre_partite_del_turno_e_quante_ne_restano(
     sezione = html.split("Altre partite del turno", 1)[1].split("</article>", 1)[0]
     assert altri[0].username not in sezione
     assert any(u.username in sezione for u in altri[1:])
+
+
+# --------------------------------------------------------------------------
+# La sfida a due
+# --------------------------------------------------------------------------
+
+
+def _sfida(db_session, giocatore, avversario, *, stato, punteggio=(0, 0)):
+    from models.individual_match.match_models import IndividualMatch
+
+    sfida = IndividualMatch(
+        player1_id=giocatore.id,
+        player2_id=avversario.id,
+        location="Sala Da Vinci",
+        scheduled_at=utc_now() + timedelta(hours=3),
+        discipline=Discipline.NINE_BALL.value,
+        distance=7,
+        is_race_to=True,
+        status=stato,
+        player1_score=punteggio[0],
+        player2_score=punteggio[1],
+    )
+    db_session.add(sfida)
+    db_session.flush()
+    return sfida
+
+
+@pytest.mark.integration
+def test_la_sfida_a_due_in_corso_compare_in_dashboard(client, db_session, giocatore):
+    """Regressione: non compariva in nessuna dashboard.
+
+    `DashboardSectionBuilder` la calcolava e nessun template la disegnava, con
+    il risultato che si vedevano solo le proposte aperte **degli altri** — gli
+    inviti — e non le sfide già accettate.
+    """
+    avversario = User(
+        username=f"avv_{_uid()}", email=f"avv_{_uid()}@t.com", role="player"
+    )
+    avversario.set_password("test1234")
+    db_session.add(avversario)
+    db_session.flush()
+
+    _sfida(
+        db_session,
+        giocatore,
+        avversario,
+        stato=MatchStatus.IN_PROGRESS,
+        punteggio=(3, 4),
+    )
+    db_session.commit()
+
+    _login(client, giocatore)
+    html = client.get("/dashboard").get_data(as_text=True)
+
+    assert "Sfide a due" in html
+    sezione = html.split("Sfide a due", 1)[1].split("</section>", 1)[0]
+    assert avversario.username in sezione
+    assert "3" in sezione and "4" in sezione
+    assert "Gioca" in sezione
+
+
+@pytest.mark.integration
+def test_una_sfida_gia_conclusa_non_e_una_cosa_da_fare(client, db_session, giocatore):
+    avversario = User(
+        username=f"avv_{_uid()}", email=f"avv_{_uid()}@t.com", role="player"
+    )
+    avversario.set_password("test1234")
+    db_session.add(avversario)
+    db_session.flush()
+
+    _sfida(
+        db_session,
+        giocatore,
+        avversario,
+        stato=MatchStatus.CONFIRMED_BY_BOTH,
+        punteggio=(7, 5),
+    )
+    db_session.commit()
+
+    _login(client, giocatore)
+    html = client.get("/dashboard").get_data(as_text=True)
+
+    assert "Sfide a due" not in html

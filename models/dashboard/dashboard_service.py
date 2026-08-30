@@ -161,7 +161,7 @@ class DashboardService:
             caps=caps,
             debug_mode=False,
             match_proposals=None,
-            individual_matches=None,
+            sfide_in_corso=None,
             match_opportunities=None,
         )
 
@@ -351,7 +351,7 @@ class DashboardService:
             can_manage_directors=can_manage_directors,
             caps=caps,
             match_proposals=individual_sections["match_proposals"],
-            individual_matches=individual_sections["individual_matches"],
+            sfide_in_corso=individual_sections["sfide_in_corso"],
             match_opportunities=individual_sections["match_opportunities"],
             playoff_invitations=DashboardSectionBuilder.build_playoff_invitations(
                 user_id
@@ -523,7 +523,7 @@ class DashboardService:
             can_manage_directors=False,
             caps=caps,
             match_proposals=individual_sections["match_proposals"],
-            individual_matches=individual_sections["individual_matches"],
+            sfide_in_corso=individual_sections["sfide_in_corso"],
             match_opportunities=individual_sections["match_opportunities"],
             playoff_invitations=DashboardSectionBuilder.build_playoff_invitations(
                 user_id
@@ -579,7 +579,7 @@ class DashboardService:
             can_manage_directors=False,
             caps=guest_caps,
             match_proposals=None,
-            individual_matches=None,
+            sfide_in_corso=None,
             match_opportunities=None,
             available_challenges=None,
             player_challenge_progress=None,
