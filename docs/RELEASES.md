@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.5.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.4.2...v1.5.0) (2026-08-30)
+
+
+### Funzioni nuove
+
+* il direttore corregge un risultato chiuso, e la correzione resta scritta ([#284](https://github.com/coppolapaolo/tornei-biliardo/issues/284)) ([47fc4e1](https://github.com/coppolapaolo/tornei-biliardo/commit/47fc4e15c288f62f62dcede0b6a610dc7d80d672))
+* il menu laterale si puo' richiudere ([#281](https://github.com/coppolapaolo/tornei-biliardo/issues/281)) ([1bf7bed](https://github.com/coppolapaolo/tornei-biliardo/commit/1bf7bed0aa7c6527568c8812e8ff103dd1da3ab3))
+* le partite concluse dicono su che tavolo si sono giocate ([#279](https://github.com/coppolapaolo/tornei-biliardo/issues/279)) ([589ad3b](https://github.com/coppolapaolo/tornei-biliardo/commit/589ad3be3ff962f149131c1439192bddee909fb1)), closes [#154](https://github.com/coppolapaolo/tornei-biliardo/issues/154)
+* nome e cognome nel profilo, per non iscrivere il giocatore sbagliato ([#282](https://github.com/coppolapaolo/tornei-biliardo/issues/282)) ([ed7bf4b](https://github.com/coppolapaolo/tornei-biliardo/commit/ed7bf4b35637a18ab27ca16db257fe86572ca6c9))
+
+
+### Correzioni
+
+* i risultati di un campionato in corso non erano raggiungibili da nessun link ([#280](https://github.com/coppolapaolo/tornei-biliardo/issues/280)) ([f2dfe89](https://github.com/coppolapaolo/tornei-biliardo/commit/f2dfe890e7c43e107b44621169e1059fde097173)), closes [#88](https://github.com/coppolapaolo/tornei-biliardo/issues/88)
+* il tavolino non sapeva se contare rack o set, e la lista d'attesa si muoveva a gara avviata ([#285](https://github.com/coppolapaolo/tornei-biliardo/issues/285)) ([d1e1a7c](https://github.com/coppolapaolo/tornei-biliardo/commit/d1e1a7caab50e7579850fa5b8b5f989bfebea005)), closes [#260](https://github.com/coppolapaolo/tornei-biliardo/issues/260)
+* la classifica del campionato aveva l'intestazione di un'altra interfaccia ([#278](https://github.com/coppolapaolo/tornei-biliardo/issues/278)) ([896f857](https://github.com/coppolapaolo/tornei-biliardo/commit/896f857d06585489822eacf6fe603b802f915a9d)), closes [#162](https://github.com/coppolapaolo/tornei-biliardo/issues/162)
+* la classifica non entrava nella colonna e l'ultima colonna spariva ([#277](https://github.com/coppolapaolo/tornei-biliardo/issues/277)) ([0e7576f](https://github.com/coppolapaolo/tornei-biliardo/commit/0e7576f5927f16bc7a2107001a83a7d35150b48a)), closes [#152](https://github.com/coppolapaolo/tornei-biliardo/issues/152)
+
 ## [1.4.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.4.1...v1.4.2) (2026-08-30)
 
 
