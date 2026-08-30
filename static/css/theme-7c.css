@@ -178,7 +178,15 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
   height: 100vh;
   overflow-y: auto;
 }
+.c7-side__top { display: flex; align-items: center; gap: 8px; }
 .c7-side__brand { display: flex; align-items: center; gap: 11px; padding: 0 6px; }
+.c7-side__top .c7-side__brand { flex: 1; min-width: 0; }
+/* Comando per richiudere la colonna, e linguetta per riaprirla (issue #153).
+   Servono a chi proietta la pagina su uno schermo: il menu e' inutile a chi
+   guarda da lontano, e ruba larghezza al contenuto. Entrambi esistono solo
+   da lg in su, perche' sotto quella soglia la colonna non c'e' proprio. */
+.c7-sidetoggle,
+.c7-siderestore { display: none; }
 .c7-side__mark {
   width: 34px; height: 34px; border-radius: 10px;
   background: var(--c7-accent); color: var(--c7-accent-bright);
@@ -232,6 +240,25 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
 
 @media (min-width: 992px) {
   .c7-side { display: flex; }
+  .c7-sidetoggle {
+    display: grid; place-items: center;
+    width: 34px; height: 34px; flex-shrink: 0;
+    border: 0; border-radius: 10px;
+    background: transparent; color: #8A9599;
+    font-size: 13px; cursor: pointer;
+  }
+  .c7-sidetoggle:hover { background: #2A3033; color: var(--c7-bg); }
+  html.c7-side-hidden .c7-side { display: none; }
+  html.c7-side-hidden .c7-siderestore {
+    display: grid; place-items: center;
+    position: fixed; left: 0; top: 50%; transform: translateY(-50%);
+    z-index: var(--c7-z-head);
+    width: 24px; height: 72px;
+    border: 0; border-radius: 0 12px 12px 0;
+    background: var(--c7-ink); color: var(--c7-bg);
+    font-size: 12px; cursor: pointer;
+  }
+  html.c7-side-hidden .c7-siderestore:hover { background: var(--c7-accent); }
   .c7-mobilenav { display: none; }
   .c7-main { padding-bottom: 0; }
   .c7-content { padding: 0 var(--c7-gutter-lg) 28px; }
