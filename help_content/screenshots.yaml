@@ -41,7 +41,7 @@ shots:
   - id: home-pubblica
     route: /
     as: anonimo
-    caption: "La pagina iniziale di Tornei Biliardo vista da chi non ha ancora un account: le gare in diretta e quelle con le iscrizioni aperte."
+    caption: "La pagina iniziale di Tornei Biliardo vista da chi non ha ancora un account: si apre con «In diretta ora», poi le gare con le iscrizioni aperte."
     viewports: [mobile, desktop]
 
   - id: registrazione
@@ -63,7 +63,7 @@ shots:
   - id: dashboard-giocatore
     route: /dashboard
     as: Marco Rossi
-    caption: "La home del giocatore appena entrato: in cima il riquadro «Come stai andando», poi le gare a cui sei iscritto, i campionati e le gare vicine a te."
+    caption: "La home del giocatore appena entrato: in cima il riquadro «Come stai andando», poi «Le tue gare», «Sfide a due», «Aperte, puoi iscriverti», i campionati e le gare vicine a te."
     viewports: [mobile, desktop]
 
   - id: gara-iscrizione
@@ -154,7 +154,7 @@ shots:
   - id: dashboard-direttore
     route: /dashboard
     as: Luca Bianchi
-    caption: "La home del direttore di gara appena entrato: i pulsanti per creare gare e campionati, il riquadro «Come vanno le tue gare» e l'elenco delle gare che gestisce."
+    caption: "La home del direttore di gara appena entrato: il saluto con il ruolo sotto, i pulsanti per creare gare e campionati, il riquadro «Come vanno le tue gare» e «Le tue gare», dove ogni gara diretta dice cosa aspetta da lui."
     viewports: [mobile, desktop]
 
   - id: campionato-wizard

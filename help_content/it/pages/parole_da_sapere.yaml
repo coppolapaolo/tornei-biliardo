@@ -135,3 +135,9 @@ blocks:
           Se la gara ha un numero massimo di iscritti e si riempie, chi arriva
           dopo entra in lista d'attesa ed entra automaticamente se qualcuno si
           ritira.
+      - name: "Sfida individuale"
+        text: >-
+          Una partita fra due giocatori fuori da ogni gara. Nel menu si chiama
+          **Sfide** (su computer «Sfide individuali»), nella tua home la
+          sezione si chiama **«Sfide a due»**: è sempre la stessa cosa. Vedi
+          [Partite amichevoli](/aiuto/giocare/partite_amichevoli).

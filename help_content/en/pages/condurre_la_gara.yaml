@@ -14,6 +14,20 @@ blocks:
       round, watch the matches finish, start the next round. The app does the
       rest.
 
+  - type: note
+    tone: tip
+    title: "Your home tells you what is waiting for you"
+    text: >-
+      You do not have to open your competitions one by one to find the one
+      that has stalled. On your home, under **«Your competitions»**, every
+      competition you direct spells the pending command out on its button:
+      **Open registrations**, **Start the competition**, **Extend
+      registrations**, **Start round 3**, **Start the tiebreaker**, **End the
+      competition**. The button takes you to the competition page, where the
+      command is actually given. If people are still missing to get going, in
+      place of the command you find **«Not enough players registered yet»**
+      with how many are needed.
+
   - type: shot
     shot: gara-gestione
     caption: "The «Management» panel during a competition: the state of the current round and the button to start the next."

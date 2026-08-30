@@ -133,3 +133,10 @@ blocks:
           If a competition has a maximum number of entrants and fills up,
           latecomers join the waitlist and get in automatically if someone
           withdraws.
+      - name: "Individual match"
+        text: >-
+          A match between two players outside any competition. The menu calls
+          it **Matches** (**Individual matches** on a computer), and on your
+          home the section is **«Individual matches»**: it is all the same
+          thing. See [Friendly
+          matches](/aiuto/giocare/partite_amichevoli).

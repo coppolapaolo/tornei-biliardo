@@ -22,7 +22,11 @@ blocks:
       - title: "Look at your home"
         text: >-
           As soon as you log in, competitions open for registration are already
-          there, marked **Registrations open** with the closing date.
+          there, in the **«Open, you can register»** section, with the date you
+          have to decide by. The ones you are already registered for — and the
+          ones you direct — are higher up under **«Your competitions»**: two
+          separate lists on purpose, so you never have to hunt for yours among
+          everyone else's.
         shot: dashboard-giocatore
       - title: "Or browse all competitions"
         text: >-
@@ -81,6 +85,13 @@ blocks:
       you are in the queue. If someone withdraws before the start, the first
       person on the list gets in automatically and is notified.
 
+  - type: text
+    text: >-
+      On your home, the competition you are queuing for also says **why**, and
+      there are two different reasons: **«The competition is full»** — you are
+      waiting for someone to withdraw — or **«An even number is needed»**, in
+      which case one more person registering lets you both in.
+
   - type: note
     tone: info
     title: "Even numbers only"
@@ -125,7 +136,7 @@ blocks:
   - type: faq
     items:
       - q: "I registered but the competition is not on my home page."
-        a: "Your home shows active competitions. If the date is still far off you will find it in the full list, and it will come back to your home as the date approaches."
+        a: "Look under **«Your competitions»**: as soon as you register, the competition moves there from «Open, you can register». If the date is still far off you will find it in the full list, and it will come back to your home as the date approaches."
       - q: "Can I enter two competitions on the same day?"
         a: "Yes, the app does not stop you. It is up to you to check the times do not clash."
       - q: "Do I pay the fee in the app?"

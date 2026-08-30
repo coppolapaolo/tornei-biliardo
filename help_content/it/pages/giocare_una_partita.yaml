@@ -19,9 +19,20 @@ blocks:
 
   - type: text
     text: >-
-      Quando il turno parte, la tua partita compare in cima alla tua home e
-      nella pagina della gara, con il pulsante **Inserisci risultato**. Ricevi
-      anche una notifica. Toccala e sei dentro.
+      Quando il turno parte, la tua partita compare nella tua home **dentro la
+      scheda della gara** — sotto **«Le tue gare»**, con il turno, l'avversario
+      e il tavolo — e il pulsante **Gioca la tua partita** ti porta al
+      segnapunti. La ritrovi nella pagina della gara, dove il pulsante si
+      chiama **Inserisci risultato**. Ricevi anche una notifica. Toccala e sei
+      dentro.
+
+  - type: note
+    tone: info
+    title: "Se il tavolo non è ancora assegnato"
+    text: >-
+      La partita si apre lo stesso: al posto del numero c'è la riga «Il tavolo
+      non è ancora assegnato», e il numero compare da solo appena se ne libera
+      uno. Non c'è niente da aspettare per cominciare a segnare.
 
   - type: shot
     shot: partita-segnapunti

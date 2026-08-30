@@ -19,7 +19,7 @@ blocks:
 
   - type: shot
     shot: home-pubblica
-    caption: "The home page shows live competitions and the ones open for registration straight away, even to someone without an account."
+    caption: "The home page opens with «Live now» and, just below it, the competitions open for registration — even for someone without an account."
 
   - type: heading
     id: senza_account
@@ -38,6 +38,7 @@ blocks:
       - "The list of competitions and championships."
       - "A competition in detail: entrants, rounds, matches and standings."
       - "Scores updating while the matches are being played."
+      - "A championship's overall standings: on the championship card, on the home page, the **Standings and results** button."
 
   - type: shot
     shot: campionati-pubblici
@@ -46,9 +47,11 @@ blocks:
   - type: text
     text: >-
       To **register** for a competition, though, you need an account: it is
-      free and takes a username, an email address and a password. How to do it
-      is explained in [Your first
-      steps](/aiuto/introduzione/primo_accesso).
+      free and takes a username, an email address and a password. Competitions
+      open for registration show the **Register** button even to someone who
+      is not signed in: tapping it asks you to sign in first and then brings
+      you back to the competition you were looking at. How to do it is
+      explained in [Your first steps](/aiuto/introduzione/primo_accesso).
 
   - type: heading
     id: come_e_fatta
