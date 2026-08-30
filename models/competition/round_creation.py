@@ -9,6 +9,7 @@ from __future__ import annotations
 from typing import Optional, Set
 
 from models.base import db, transactional
+from models.match.distance import Distance
 from models.status_enum import GaraStatus
 from .models import Gara
 
@@ -91,18 +92,17 @@ def create_matches_from_pairings(
 
     # is_race_to / is_race_to_sets sono nullable su Match: NULL = eredita gara.
     # Memorizziamo l'override esplicito solo se differisce dalla gara, per
-    # tenere lo schema parlante (NULL = "nessun override").
-    is_race_to_override = (
-        round_is_race_to
-        if (round_is_race_to is not None and round_is_race_to != gara.is_race_to)
-        else None
-    )
+    # tenere lo schema parlante (NULL = "nessun override"). Il valore
+    # *risolto* serve comunque, per calcolare qui sotto quanto vale un
+    # tavolino: i Match non esistono ancora, quindi non c'è un
+    # `distance_config` da interrogare.
     gara_irts = getattr(gara, "is_race_to_sets", True)
-    is_race_to_sets_override = (
-        round_is_race_to_sets
-        if (round_is_race_to_sets is not None and round_is_race_to_sets != gara_irts)
-        else None
+    is_race_to = round_is_race_to if round_is_race_to is not None else gara.is_race_to
+    is_race_to_sets = (
+        round_is_race_to_sets if round_is_race_to_sets is not None else gara_irts
     )
+    is_race_to_override = is_race_to if is_race_to != gara.is_race_to else None
+    is_race_to_sets_override = is_race_to_sets if is_race_to_sets != gara_irts else None
 
     common_kwargs = {
         "gara_id": gara.id,
@@ -114,10 +114,28 @@ def create_matches_from_pairings(
         "is_race_to_sets": is_race_to_sets_override,
     }
 
-    # Per il forfeit "winning_score" è il numero di rack del round, non la
-    # match_distance (che in multi-set è il numero di set): chi vince a
-    # tavolino prende il punteggio pieno, perché l'avversario si è ritirato.
-    winning_score = round_distance
+    # Quanto vale un tavolino lo dice il value object `Distance`, che è
+    # l'unico posto dove quella regola è scritta (ADR-027, issue #260). Qui
+    # c'era `round_distance`, cioè i **rack** del turno: giusto a set unico,
+    # sbagliato in multi-set, dove `player*_score` conta i **set**. In una
+    # gara «al 3 set da 4 rack» un tavolino segnava 4-0 set invece di 3-0 —
+    # un punteggio che in quella gara nessuno può ottenere giocando.
+    winning_score = Distance(
+        racks=round_distance,
+        is_race_to_racks=is_race_to,
+        is_multi_set=is_multi_set,
+        sets=match_distance_field if is_multi_set else 1,
+        is_race_to_sets=is_race_to_sets,
+    ).walkover_score()
+
+    # I trio non giocano a set: qui sotto nascono con `is_multi_set=False` e
+    # `match_distance=round_distance`, quindi il loro tavolino si conta in
+    # **rack** anche quando la gara è multi-set. Usare `winning_score` gli
+    # avrebbe dato i set — un 3-0 in una colonna che per quel match significa
+    # triangoli.
+    trio_winning_score = Distance(
+        racks=round_distance, is_race_to_racks=is_race_to
+    ).walkover_score()
 
     # La X *non* è un forfeit, e non prende il punteggio pieno.
     # `SPECIFICHE.md` righe 64 e 71: la X assegna «il match vinto, ma con zero
@@ -267,7 +285,7 @@ def create_matches_from_pairings(
                     player2_id=p1,
                     is_bye=False,
                     is_trio=True,
-                    player1_score=winning_score,
+                    player1_score=trio_winning_score,
                     player2_score=0,
                     winner_id=winner_id,
                     status="pending",

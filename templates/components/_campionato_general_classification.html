@@ -5,7 +5,12 @@
 {% set classification_sys = campionato.classification_system %}
 {% if general_classification %}
 <div class="card mb-4">
-    <div class="card-header bg-primary text-white">
+    {# Intestazione come quella degli altri box della pagina: inchiostro scuro
+       su fondo trasparente. `bg-primary text-white` ci dipingeva sopra una
+       fascia piena color accento — l'unica della pagina — e faceva sembrare
+       la classifica un elemento di un'altra interfaccia (issue #162). Il
+       tema 7c dà già a `.card > .card-header` l'aspetto giusto. #}
+    <div class="card-header">
         <h5 class="mb-0">
             <i class="fas fa-trophy"></i> {{ _("Classifica dopo Gara %(num)s", num=last_completed_gara_number) }}
         </h5>
