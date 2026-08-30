@@ -113,6 +113,13 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     table_assignment = db.Column(
         db.String(10), nullable=True
     )  # e.g., "A", "B", "sala rossa"
+    #: Il tavolo su cui la partita **si è giocata**, che è un fatto e non
+    #: cambia più. `table_assignment` risponde a un'altra domanda — quale
+    #: tavolo è occupato *adesso* — e per questo viene azzerato alla
+    #: chiusura, per rimetterlo in circolo: senza una colonna sua, "dove
+    #: abbiamo giocato" spariva insieme all'occupazione (issue #154).
+    #: Stesso schema dell'ADR-056: un fatto si persiste, non si deduce.
+    played_on_table = db.Column(db.String(10), nullable=True)
 
     # ── Acchito e tiro di apertura (ADR-056) ──────────────────────────────
     # Le **regole** non stanno qui: il match le eredita sempre dalla gara e
@@ -565,6 +572,27 @@ def _timbra_la_fine(_mapper: Any, _connection: Any, match: "Match") -> None:
         return
 
     match.ended_at = utc_now()
+
+
+@event.listens_for(Match, "before_insert")
+@event.listens_for(Match, "before_update")
+def _ricorda_il_tavolo(_mapper: Any, _connection: Any, match: "Match") -> None:
+    """Il tavolo assegnato viene ricordato appena assegnato.
+
+    Alla chiusura di una partita il tavolo si libera — ``table_assignment``
+    torna a NULL — perché quella colonna dice *chi occupa cosa adesso*, ed è
+    su di lei che si regge la riassegnazione. Il fatto storico «questa
+    partita si è giocata al tavolo 3» andava perso con l'occupazione, e la
+    tabella dei turni poteva solo scrivere un trattino.
+
+    Come per ``ended_at`` qui sopra, l'invariante sta dove si scrive e non
+    nei chiamanti: i punti che assegnano un tavolo sono otto — prima
+    assegnazione, riassegnazione a catena, scambio fra due partite, ripesca
+    dei tavoli persi — e i punti che lo liberano quattro. Correggerli tutti
+    lascerebbe scoperto il nono, quello che ancora non esiste.
+    """
+    if match.table_assignment:
+        match.played_on_table = match.table_assignment
 
 
 class Rack(db.Model):

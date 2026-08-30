@@ -22,9 +22,16 @@
                     {% if ssr_scores_map %}<th style="width: 10%;" title="{{ _('Spot Shot Rally - punteggio spareggio') }}">SSR</th>{% endif %}
                     {# "Turno" esplicito: qui la posizione precedente è quella del
                        turno prima DENTRO questa gara, non quella della gara
-                       precedente del campionato. Issue #68. #}
-                    <th style="width: 14%;">{{ _('Turno prec.') }}</th>
-                    <th style="width: 12%;">{{ _('Movimento') }}</th>
+                       precedente del campionato. Issue #68.
+
+                       La freccia del movimento sta dentro questa colonna, non
+                       in una sua. Erano due colonne per lo stesso fatto — dove
+                       si era e di quanto ci si è spostati, che è la differenza
+                       fra i due numeri già in tabella — e la sesta colonna non
+                       entrava nella colonna laterale da 380px: finiva oltre il
+                       bordo della card, dove nessuno la vede (issue #152).
+                       Nemmeno il prototipo (#8b) ha una colonna "Movimento". #}
+                    <th style="width: 18%;">{{ _('Turno prec.') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -62,21 +69,17 @@
                     {% endif %}
                     <td>
                         {% if player_class.previous_position %}
+                        {% set diff = player_class.previous_position - player_class.position %}
                         <span class="c7-num" style="color: var(--c7-ink-muted);">{{ player_class.previous_position }}</span>
+                        {% if diff > 0 %}
+                        <i class="fas fa-arrow-up" style="color: var(--c7-ok); font-size: 11px;"
+                           title="{{ ngettext('Sale di %(num)d posizione', 'Sale di %(num)d posizioni', diff, num=diff) }}"></i>
+                        {% elif diff < 0 %}
+                        <i class="fas fa-arrow-down" style="color: var(--c7-err); font-size: 11px;"
+                           title="{{ ngettext('Scende di %(num)d posizione', 'Scende di %(num)d posizioni', -diff, num=-diff) }}"></i>
+                        {% endif %}
                         {% else %}
                         <span style="color: var(--c7-ink-faint);">—</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if player_class.previous_position and player_class.previous_position != player_class.position %}
-                            {% set diff = player_class.previous_position - player_class.position %}
-                            {% if diff > 0 %}
-                            <span class="c7-num" style="color: var(--c7-ok);"><i class="fas fa-arrow-up"></i> +{{ diff }}</span>
-                            {% else %}
-                            <span class="c7-num" style="color: var(--c7-err);"><i class="fas fa-arrow-down"></i> {{ diff }}</span>
-                            {% endif %}
-                        {% else %}
-                        <span style="color: var(--c7-ink-faint);">=</span>
                         {% endif %}
                     </td>
                 </tr>

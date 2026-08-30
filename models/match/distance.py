@@ -74,6 +74,23 @@ class Distance:
             return 1
         return self.sets
 
+    def walkover_score(self) -> int:
+        """Quanto segna chi vince a tavolino, nell'unità in cui si conta.
+
+        `player1_score`/`player2_score` contengono i **rack** in una partita a
+        set unico e i **set** in una multi-set: sono la stessa colonna con due
+        significati, e la domanda «quanto vale un tavolino» va risposta una
+        volta sola, qui.
+
+        Le tre risposte sparse per il codice non concordavano (issue #260): in
+        una gara «al 3 set da 4 rack» la creazione del turno segnava 4-0
+        **set** invece di 3-0 — un punteggio che in quella gara nessuno può
+        ottenere giocando, e che gonfiava i set vinti in classifica.
+        """
+        if self.is_multi_set:
+            return self.get_winning_sets()
+        return self.get_winning_racks()
+
     def to_display_string(self) -> str:
         """Generate human-readable description.
 

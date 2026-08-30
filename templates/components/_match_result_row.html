@@ -113,8 +113,15 @@
         {% if match.is_bye %}
         <span style="color: var(--c7-ink-faint);">—</span>
         {% elif is_finished %}
-        {# Partite concluse: nessun tavolo (già liberato) #}
+        {# Il tavolo di una partita conclusa è un fatto, non un'assegnazione:
+           `table_assignment` è tornato a NULL per rimettere il tavolo in
+           circolo, e resta `played_on_table` (issue #154). In tono spento e
+           non cliccabile — non si riassegna il tavolo a una partita finita. #}
+        {% if match.played_on_table %}
+        <span style="color: var(--c7-ink-muted);">{{ _('Tavolo') }} <span class="c7-num">{{ match.played_on_table }}</span></span>
+        {% else %}
         <span style="color: var(--c7-ink-faint);">—</span>
+        {% endif %}
         {% elif user_can_manage and available_tables %}
         {# Vista direttore di gara / admin: badge cliccabile che apre il modale #}
         {% if match.is_trio and match.trio_match %}

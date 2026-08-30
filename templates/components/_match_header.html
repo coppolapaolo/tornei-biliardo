@@ -74,8 +74,10 @@
 {{ _('Sfida individuale') }}
 {%- if match.discipline %} <span class="c7-sep">·</span> {{ match.discipline|discipline_display }}{% endif -%}
 {%- endif -%}
-{%- if match.table_assignment %}
-<span class="c7-sep">·</span> {{ _('Tavolo') }} <span class="c7-num">{{ match.table_assignment }}</span>
+{%- if match.table_assignment or match.played_on_table %}
+{# A partita finita `table_assignment` è NULL — il tavolo è tornato libero —
+   ma dove si è giocato resta scritto (issue #154). #}
+<span class="c7-sep">·</span> {{ _('Tavolo') }} <span class="c7-num">{{ match.table_assignment or match.played_on_table }}</span>
 {%- elif not match.is_bye and not MatchStatus.is_finished(match.status) %}
 <span class="c7-sep">·</span> {{ _('senza tavolo') }}
 {%- endif -%}
