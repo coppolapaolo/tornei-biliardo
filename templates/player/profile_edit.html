@@ -16,6 +16,27 @@
             <input id="username" name="username" type="text" class="form-control" required value="{{ user.username }}">
             <div class="form-text text-muted">{{ _("L'username deve essere unico") }}</div>
           </div>
+          {# Anagrafica facoltativa (issue #156). Serve al direttore che deve
+             iscrivere la persona giusta fra tre username che si somigliano:
+             l'email non gliela mostriamo, il nome sì — ed è chi lo scrive a
+             deciderlo. #}
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="first_name">{{ _("Nome") }}</label>
+              <input id="first_name" name="first_name" type="text" class="form-control"
+                     maxlength="100" value="{{ user.first_name or '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+              <label class="form-label" for="last_name">{{ _("Cognome") }}</label>
+              <input id="last_name" name="last_name" type="text" class="form-control"
+                     maxlength="100" value="{{ user.last_name or '' }}">
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="form-text text-muted">
+              {{ _("Facoltativi. Li vede il direttore delle gare a cui ti iscrivi, per non confondere due giocatori con username simili. Non compaiono nel tuo profilo pubblico né nelle classifiche, dove resti il tuo username.") }}
+            </div>
+          </div>
           <div class="mb-3">
             <label class="form-label" for="email">{{ _("Email") }}</label>
             <input id="email" name="email" type="email" class="form-control" required value="{{ user.email }}">

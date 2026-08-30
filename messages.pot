@@ -99,39 +99,32 @@ msgstr ""
 msgid "Gara %(number)s"
 msgstr ""
 
-#: models/competition/round_manager.py:118
-msgid ""
-"Il turno è bloccato perché un turno successivo è già iniziato: quel turno"
-" si è formato su questa classifica. Per intervenire qui, annulla prima il"
-" turno successivo."
-msgstr ""
-
-#: models/competition/round_manager.py:135
+#: models/competition/round_manager.py:124
 msgid ""
 "Gara certificata da spareggio: annulla prima lo spareggio per modificare "
 "i match"
 msgstr ""
 
-#: models/competition/round_manager.py:163
+#: models/competition/round_manager.py:152
 msgid ""
 "Gara in fase di spareggio (SSR): concludi lo spareggio prima di "
 "modificare i risultati"
 msgstr ""
 
-#: models/competition/round_manager.py:168
+#: models/competition/round_manager.py:157
 msgid "La gara è già completata"
 msgstr ""
 
-#: models/competition/round_manager.py:170
+#: models/competition/round_manager.py:159
 msgid "La gara è ancora in fase di iscrizione"
 msgstr ""
 
-#: models/competition/round_manager.py:171
+#: models/competition/round_manager.py:160
 #, python-format
 msgid "La gara non è in corso (stato: %(status)s)"
 msgstr ""
 
-#: models/competition/round_manager.py:290
+#: models/competition/round_manager.py:279
 msgid ""
 "Gara certificata da spareggio: annulla prima lo spareggio per cancellare "
 "il turno"
@@ -1322,44 +1315,6 @@ msgstr ""
 msgid "Apre chi ha perso il triangolo prima."
 msgstr ""
 
-#: models/match/correction_service.py:61
-msgid "Partita non trovata"
-msgstr ""
-
-#: models/match/correction_service.py:64
-msgid "La X a tavolino non ha un risultato da correggere"
-msgstr ""
-
-#: models/match/correction_service.py:69
-msgid ""
-"Le partite a tre si correggono dal loro segnapunti, che tiene il conto "
-"dei tre giocatori"
-msgstr ""
-
-#: models/match/correction_service.py:75
-msgid "Questa partita non appartiene a una gara"
-msgstr ""
-
-#: models/match/correction_service.py:161
-msgid "I triangoli non possono essere negativi"
-msgstr ""
-
-#: models/match/correction_service.py:171
-#, python-format
-msgid "In una partita al %(n)s la vince chi arriva a %(n)s triangoli"
-msgstr ""
-
-#: models/match/correction_service.py:179
-msgid "Non possono arrivarci tutti e due: uno solo vince"
-msgstr ""
-
-#: models/match/correction_service.py:189
-#, python-format
-msgid ""
-"Si giocano esattamente %(n)s triangoli: la somma dei due punteggi deve "
-"fare %(n)s"
-msgstr ""
-
 #: models/match/distance.py:107
 #, python-format
 msgid "Al %(n)s triangoli"
@@ -2266,14 +2221,6 @@ msgstr ""
 msgid "Giocherai senza squadra in questa gara"
 msgstr ""
 
-#: routes/admin/match/scoring.py:201
-msgid "Punteggio non valido."
-msgstr ""
-
-#: routes/admin/match/scoring.py:213
-msgid "Risultato corretto. La correzione resta visibile sulla partita."
-msgstr ""
-
 #: routes/exam/attempts.py:96
 msgid "Tentativo aperto: buon allenamento."
 msgstr ""
@@ -2786,7 +2733,7 @@ msgstr ""
 msgid "Orari aggiornati con successo!"
 msgstr ""
 
-#: routes/individual_match/matches.py:708 templates/match_detail.html:465
+#: routes/individual_match/matches.py:708 templates/match_detail.html:461
 msgid "Forfait dichiarato"
 msgstr ""
 
@@ -2989,46 +2936,46 @@ msgstr ""
 msgid "Campionato non era nascosto"
 msgstr ""
 
-#: routes/player/profile.py:338
+#: routes/player/profile.py:346
 msgid ""
 "Informazioni aggiornate. Abbiamo inviato una nuova email di verifica al "
 "nuovo indirizzo."
 msgstr ""
 
-#: routes/player/profile.py:344
+#: routes/player/profile.py:352
 msgid "Informazioni aggiornate correttamente."
 msgstr ""
 
-#: routes/player/profile.py:349
+#: routes/player/profile.py:357
 msgid "Si è verificato un errore durante l'aggiornamento."
 msgstr ""
 
-#: routes/player/profile.py:361
+#: routes/player/profile.py:369
 msgid "La tua email è già verificata."
 msgstr ""
 
-#: routes/player/profile.py:370
+#: routes/player/profile.py:378
 msgid "Email di verifica inviata. Controlla la tua casella di posta."
 msgstr ""
 
-#: routes/player/profile.py:374
+#: routes/player/profile.py:382
 msgid "Impossibile inviare l'email. Riprova più tardi."
 msgstr ""
 
-#: routes/player/profile.py:376
+#: routes/player/profile.py:384
 #, python-format
 msgid "Errore durante l'invio: %(detail)s"
 msgstr ""
 
-#: routes/player/profile.py:391
+#: routes/player/profile.py:399
 msgid "La nuova password e la conferma non coincidono."
 msgstr ""
 
-#: routes/player/profile.py:404
+#: routes/player/profile.py:412
 msgid "Password aggiornata correttamente."
 msgstr ""
 
-#: routes/player/profile.py:406
+#: routes/player/profile.py:414
 msgid "Password attuale errata o nuova password non valida."
 msgstr ""
 
@@ -3369,7 +3316,7 @@ msgstr ""
 #: templates/player/delete_account.html:7
 #: templates/player/delete_account.html:42
 #: templates/player/my_venue_requests.html:66
-#: templates/player/profile_edit.html:60 templates/player/venue_detail.html:287
+#: templates/player/profile_edit.html:81 templates/player/venue_detail.html:287
 #: templates/player/venues.html:99 templates/roles/request_form.html:63
 msgid "Annulla"
 msgstr ""
@@ -3443,7 +3390,7 @@ msgstr ""
 #: templates/gamification/admin/streak_config.html:152
 #: templates/individual_match/edit_match.html:122
 #: templates/player/privacy_settings.html:98
-#: templates/player/profile_edit.html:57
+#: templates/player/profile_edit.html:78
 msgid "Salva"
 msgstr ""
 
@@ -3652,7 +3599,7 @@ msgstr ""
 msgid "Tempi partita (opzionale)"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:200
+#: templates/components/_match_admin_controls.html:151
 #: templates/components/_match_info.html:58
 #: templates/components/_match_scoreboard.html:246
 #: templates/gara_detail.html:597
@@ -3661,7 +3608,7 @@ msgstr ""
 msgid "Inizio"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:205
+#: templates/components/_match_admin_controls.html:156
 #: templates/components/_match_info.html:62 templates/gara_detail.html:601
 #: templates/individual_match/match_detail.html:307
 #: templates/individual_match/match_detail.html:325
@@ -3819,14 +3766,14 @@ msgid "Sei sicuro di voler resettare questo trio?"
 msgstr ""
 
 #: templates/gara_detail.html:756 templates/gara_detail.html:1846
-#: templates/match_detail.html:660
+#: templates/match_detail.html:656
 msgid ""
 "Confermi di voler validare questo risultato? Il tavolo verrà liberato e "
 "assegnato alla prossima partita in attesa."
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:359
-#: templates/components/_match_admin_controls.html:401
+#: templates/components/_match_admin_controls.html:310
+#: templates/components/_match_admin_controls.html:352
 #: templates/gara_detail.html:757 templates/gara_detail.html:772
 #: templates/individual_match/match_detail.html:431
 #: templates/individual_match/match_detail.html:464
@@ -3839,15 +3786,15 @@ msgstr ""
 #: templates/individual_match/match_detail.html:671
 #: templates/individual_match/proposal_detail.html:208
 #: templates/individual_match/proposals.html:269
-#: templates/match_detail.html:183 templates/match_detail.html:215
-#: templates/match_detail.html:251 templates/match_detail.html:284
-#: templates/match_detail.html:310 templates/match_detail.html:335
-#: templates/match_detail.html:366 templates/match_detail.html:391
-#: templates/match_detail.html:416 templates/match_detail.html:441
-#: templates/match_detail.html:468 templates/match_detail.html:496
-#: templates/match_detail.html:522 templates/match_detail.html:547
-#: templates/match_detail.html:600 templates/match_detail.html:649
-#: templates/match_detail.html:672
+#: templates/match_detail.html:179 templates/match_detail.html:211
+#: templates/match_detail.html:247 templates/match_detail.html:280
+#: templates/match_detail.html:306 templates/match_detail.html:331
+#: templates/match_detail.html:362 templates/match_detail.html:387
+#: templates/match_detail.html:412 templates/match_detail.html:437
+#: templates/match_detail.html:464 templates/match_detail.html:492
+#: templates/match_detail.html:518 templates/match_detail.html:543
+#: templates/match_detail.html:596 templates/match_detail.html:645
+#: templates/match_detail.html:668
 msgid "Errore:"
 msgstr ""
 
@@ -3895,14 +3842,14 @@ msgstr ""
 msgid "Errore di rete durante la creazione del turno"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:364
+#: templates/components/_match_admin_controls.html:315
 #: templates/gara_detail.html:769
 msgid "Errore durante l'impostazione del risultato"
 msgstr ""
 
-#: templates/gara_detail.html:770 templates/match_detail.html:626
-#: templates/match_detail.html:631 templates/match_detail.html:649
-#: templates/match_detail.html:654
+#: templates/gara_detail.html:770 templates/match_detail.html:622
+#: templates/match_detail.html:627 templates/match_detail.html:645
+#: templates/match_detail.html:650
 msgid "Errore durante il reset"
 msgstr ""
 
@@ -3910,7 +3857,7 @@ msgstr ""
 msgid "Errore durante il reset del trio"
 msgstr ""
 
-#: templates/gara_detail.html:773 templates/match_detail.html:677
+#: templates/gara_detail.html:773 templates/match_detail.html:673
 msgid "Errore durante la validazione"
 msgstr ""
 
@@ -3940,18 +3887,18 @@ msgstr ""
 msgid "Usa 'Avvia SSR' per inserire i punteggi degli spareggi"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:359
-#: templates/components/_match_admin_controls.html:401
+#: templates/components/_match_admin_controls.html:310
+#: templates/components/_match_admin_controls.html:352
 #: templates/gara_detail.html:785
 #: templates/individual_match/match_detail.html:671
-#: templates/match_detail.html:183 templates/match_detail.html:215
-#: templates/match_detail.html:251 templates/match_detail.html:284
-#: templates/match_detail.html:310 templates/match_detail.html:496
-#: templates/match_detail.html:600
+#: templates/match_detail.html:179 templates/match_detail.html:211
+#: templates/match_detail.html:247 templates/match_detail.html:280
+#: templates/match_detail.html:306 templates/match_detail.html:492
+#: templates/match_detail.html:596
 msgid "Errore sconosciuto"
 msgstr ""
 
-#: templates/gara_detail.html:786 templates/match_detail.html:672
+#: templates/gara_detail.html:786 templates/match_detail.html:668
 msgid "Impossibile validare il risultato"
 msgstr ""
 
@@ -3982,8 +3929,8 @@ msgstr ""
 #: templates/components/_match_card.html:52
 #: templates/components/_match_card.html:61
 #: templates/components/_match_header.html:80
-#: templates/components/_match_result_row.html:121
-#: templates/components/_match_result_row.html:146
+#: templates/components/_match_result_row.html:110
+#: templates/components/_match_result_row.html:135
 #: templates/components/_separated_dashboard_content.html:91
 #: templates/gara_detail.html:791
 msgid "Tavolo"
@@ -4086,125 +4033,125 @@ msgstr ""
 #: templates/components/_match_card.html:103
 #: templates/components/_match_header.html:60
 #: templates/components/_match_result_row.html:56
-#: templates/components/_match_result_row.html:130
+#: templates/components/_match_result_row.html:119
 #: templates/components/_match_scoreboard.html:155
 #: templates/components/_unified_match_score.html:23
 #: templates/components/_unified_rack_input.html:23
 #: templates/match_detail.html:13 templates/match_detail.html:50
-#: templates/match_detail.html:106
+#: templates/match_detail.html:102
 msgid "X a tavolino"
 msgstr ""
 
-#: templates/match_detail.html:117
+#: templates/match_detail.html:113
 msgid "Esercizi disponibili"
 msgstr ""
 
-#: templates/match_detail.html:119
+#: templates/match_detail.html:115
 msgid "Gli esercizi sono prove tecniche che puoi completare durante il match."
 msgstr ""
 
-#: templates/match_detail.html:189
+#: templates/match_detail.html:185
 msgid "Errore durante l'aggiunta del triangolo al trio"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:554
-#: templates/match_detail.html:221 templates/match_detail.html:341
-#: templates/match_detail.html:528
+#: templates/match_detail.html:217 templates/match_detail.html:337
+#: templates/match_detail.html:524
 msgid "Errore durante la rimozione del triangolo"
 msgstr ""
 
-#: templates/match_detail.html:257
+#: templates/match_detail.html:253
 msgid "Errore durante la conferma del risultato"
 msgstr ""
 
-#: templates/match_detail.html:263
+#: templates/match_detail.html:259
 msgid "Sei sicuro di voler dichiarare forfait per questo giocatore?"
 msgstr ""
 
-#: templates/match_detail.html:289
+#: templates/match_detail.html:285
 msgid "Errore durante la registrazione del forfait"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:437
-#: templates/match_detail.html:316
+#: templates/match_detail.html:312
 msgid "Errore durante l'aggiunta del triangolo"
 msgstr ""
 
-#: templates/match_detail.html:335 templates/match_detail.html:522
+#: templates/match_detail.html:331 templates/match_detail.html:518
 msgid "Impossibile rimuovere il triangolo"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:498
-#: templates/match_detail.html:397
+#: templates/match_detail.html:393
 msgid "Errore durante la registrazione dell'acchito"
 msgstr ""
 
-#: templates/match_detail.html:416
+#: templates/match_detail.html:412
 msgid "Impossibile confermare il risultato"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:585
-#: templates/match_detail.html:422
+#: templates/match_detail.html:418
 msgid "Errore durante la conferma"
 msgstr ""
 
-#: templates/match_detail.html:428
+#: templates/match_detail.html:424
 msgid ""
 "Sei sicuro di voler rifiutare il risultato? L'ultimo triangolo verrà "
 "rimosso."
 msgstr ""
 
-#: templates/match_detail.html:441
+#: templates/match_detail.html:437
 msgid "Impossibile rifiutare il risultato"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:612
-#: templates/match_detail.html:447
+#: templates/match_detail.html:443
 msgid "Errore durante il rifiuto"
 msgstr ""
 
-#: templates/match_detail.html:454
+#: templates/match_detail.html:450
 msgid ""
 "Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita "
 "dalla gara secondo la policy impostata."
 msgstr ""
 
-#: templates/match_detail.html:468
+#: templates/match_detail.html:464
 msgid "Impossibile dichiarare forfait"
 msgstr ""
 
 #: templates/individual_match/match_detail.html:637
-#: templates/match_detail.html:474
+#: templates/match_detail.html:470
 msgid "Errore durante la dichiarazione di forfait"
 msgstr ""
 
-#: templates/match_detail.html:502
+#: templates/match_detail.html:498
 msgid "Errore durante l'aggiunta del triangolo al set"
 msgstr ""
 
-#: templates/match_detail.html:508
+#: templates/match_detail.html:504
 msgid "Rimuovere l'ultimo triangolo dal set?"
 msgstr ""
 
-#: templates/match_detail.html:547
+#: templates/match_detail.html:543
 msgid "Impossibile iniziare il nuovo set"
 msgstr ""
 
-#: templates/match_detail.html:553
+#: templates/match_detail.html:549
 msgid "Errore durante l'avvio del nuovo set"
 msgstr ""
 
-#: templates/admin/venue_form.html:314 templates/match_detail.html:607
+#: templates/admin/venue_form.html:314 templates/match_detail.html:603
 msgid "Errore durante l'aggiornamento"
 msgstr ""
 
-#: templates/match_detail.html:615
+#: templates/match_detail.html:611
 msgid ""
 "Sei sicuro di voler resettare completamente questa partita? Tutti i "
 "risultati verranno cancellati."
 msgstr ""
 
-#: templates/match_detail.html:637
+#: templates/match_detail.html:633
 msgid ""
 "Sei sicuro di voler resettare completamente questa partita trio? Tutti i "
 "risultati verranno cancellati."
@@ -4244,7 +4191,7 @@ msgstr ""
 msgid "Es. Napoli"
 msgstr ""
 
-#: templates/onboarding.html:36 templates/player/profile_edit.html:41
+#: templates/onboarding.html:36 templates/player/profile_edit.html:62
 msgid ""
 "Usata per trovare sale e proposte vicino a te quando il GPS non è "
 "disponibile."
@@ -4311,17 +4258,26 @@ msgstr ""
 
 #: templates/privacy.html:23
 msgid ""
+"Puoi aggiungere al tuo profilo nome, cognome, telefono e città: sono "
+"tutti facoltativi e li fornisci tu. Nome e cognome sono visibili al "
+"direttore delle gare a cui ti iscrivi, perché possa riconoscerti fra "
+"giocatori con username simili; non compaiono nel tuo profilo pubblico né "
+"nelle classifiche."
+msgstr ""
+
+#: templates/privacy.html:26
+msgid ""
 "I dati personali identificativi sono conservati cifrati nel database. La "
 "cancellazione dell'account avviene tramite anonimizzazione: i risultati "
 "sportivi restano nelle classifiche storiche, ma non sono più "
 "riconducibili a te."
 msgstr ""
 
-#: templates/privacy.html:28
+#: templates/privacy.html:31
 msgid "Cookie tecnici"
 msgstr ""
 
-#: templates/privacy.html:30
+#: templates/privacy.html:33
 msgid ""
 "Il sito usa cookie tecnici necessari al funzionamento: mantenimento della"
 " sessione di login, protezione dei moduli contro gli invii fraudolenti "
@@ -4329,11 +4285,11 @@ msgid ""
 " consenso perché senza di essi il sito non può funzionare."
 msgstr ""
 
-#: templates/privacy.html:36
+#: templates/privacy.html:39
 msgid "Cookie analitici (Google Analytics)"
 msgstr ""
 
-#: templates/privacy.html:38
+#: templates/privacy.html:41
 msgid ""
 "Usiamo Google Analytics 4 per capire come viene utilizzato il sito: "
 "quante persone lo visitano, quali pagine consultano, da quale dispositivo"
@@ -4341,14 +4297,14 @@ msgid ""
 "piattaforma."
 msgstr ""
 
-#: templates/privacy.html:41
+#: templates/privacy.html:44
 msgid ""
 "Google Analytics 4 non registra il tuo indirizzo IP completo e non lo usa"
 " per identificarti. Non inviamo a Google il tuo nome, la tua email o "
 "altri dati che permettano di risalire alla tua identità."
 msgstr ""
 
-#: templates/privacy.html:44
+#: templates/privacy.html:47
 msgid ""
 "Puoi disattivare la raccolta installando il componente aggiuntivo "
 "ufficiale per la disattivazione di Google Analytics, disponibile su "
@@ -4356,11 +4312,11 @@ msgid ""
 " del tuo browser."
 msgstr ""
 
-#: templates/privacy.html:50
+#: templates/privacy.html:53
 msgid "I tuoi diritti"
 msgstr ""
 
-#: templates/privacy.html:52
+#: templates/privacy.html:55
 msgid ""
 "Puoi in qualsiasi momento accedere ai tuoi dati, correggerli, chiederne "
 "la cancellazione o opporti al trattamento. La maggior parte delle "
@@ -4368,7 +4324,7 @@ msgid ""
 " per le altre puoi contattarci all'indirizzo indicato sopra."
 msgstr ""
 
-#: templates/privacy.html:57
+#: templates/privacy.html:60
 msgid "Ultimo aggiornamento: luglio 2026."
 msgstr ""
 
@@ -4386,7 +4342,7 @@ msgstr ""
 #: templates/components/_player_personal_info.html:18
 #: templates/components/_user_info_card.html:9
 #: templates/player/privacy_settings.html:19 templates/player/profile.html:67
-#: templates/player/profile_edit.html:20 templates/player/venue_detail.html:70
+#: templates/player/profile_edit.html:41 templates/player/venue_detail.html:70
 #: templates/register.html:23
 msgid "Email"
 msgstr ""
@@ -4396,7 +4352,7 @@ msgstr ""
 #: templates/components/_player_personal_info.html:21
 #: templates/components/_user_info_card.html:10
 #: templates/player/privacy_settings.html:29 templates/player/profile.html:71
-#: templates/player/profile_edit.html:35 templates/player/venue_detail.html:63
+#: templates/player/profile_edit.html:56 templates/player/venue_detail.html:63
 #: templates/register.html:28
 msgid "Telefono"
 msgstr ""
@@ -4739,7 +4695,7 @@ msgstr ""
 #: templates/gamification/admin/feature_detail.html:35
 #: templates/gamification/admin/features.html:26
 #: templates/gamification/admin/quests.html:22
-#: templates/player/venue_detail.html:49
+#: templates/player/profile_edit.html:25 templates/player/venue_detail.html:49
 #: templates/public/campionato_detail.html:97
 msgid "Nome"
 msgstr ""
@@ -4845,7 +4801,7 @@ msgid "Motivo"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:254
-#: templates/components/_match_result_row.html:148
+#: templates/components/_match_result_row.html:137
 #: templates/components/_multi_set_score_display.html:94
 #: templates/components/_playoff_invitations.html:23
 #: templates/components/_proposal_labels.html:18
@@ -5720,7 +5676,7 @@ msgid "Partecipanti"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:434
-#: templates/components/_gara_inscriptions.html:59
+#: templates/components/_gara_inscriptions.html:66
 #: templates/components/_match_result_row.html:24
 #: templates/components/_match_result_row.html:28
 #: templates/components/_match_result_row.html:32
@@ -6647,7 +6603,7 @@ msgstr ""
 
 #: templates/admin/venue_form.html:60 templates/admin/venues_list.html:32
 #: templates/components/_player_personal_info.html:24
-#: templates/player/profile_edit.html:39 templates/player/venue_detail.html:58
+#: templates/player/profile_edit.html:60 templates/player/venue_detail.html:58
 msgid "Città"
 msgstr ""
 
@@ -8176,8 +8132,8 @@ msgstr ""
 #: templates/components/_gara_matches.html:49
 #: templates/components/_match_card.html:26
 #: templates/components/_match_cards_mobile.html:44
-#: templates/components/_match_result_row.html:100
-#: templates/components/_match_result_row.html:102
+#: templates/components/_match_result_row.html:89
+#: templates/components/_match_result_row.html:91
 #: templates/components/_match_scoreboard.html:256
 #: templates/components/_match_status_labels.html:23
 #: templates/components/_multi_set_score_display.html:90
@@ -8260,8 +8216,8 @@ msgstr ""
 
 #: templates/components/_bye_challenges.html:32
 #: templates/components/_match_card.html:24
-#: templates/components/_match_result_row.html:94
-#: templates/components/_match_result_row.html:96
+#: templates/components/_match_result_row.html:83
+#: templates/components/_match_result_row.html:85
 #: templates/components/_match_status_labels.html:22
 #: templates/individual_match/dashboard.html:103
 #: templates/individual_match/matches.html:37
@@ -9584,75 +9540,75 @@ msgstr ""
 msgid "Iscritti attivi"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:55
+#: templates/components/_gara_inscriptions.html:62
 #, python-format
 msgid "Iscritto il %(date)s"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:59
+#: templates/components/_gara_inscriptions.html:66
 msgid "Ha dato forfait"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:66
+#: templates/components/_gara_inscriptions.html:73
 #, python-format
 msgid "Disiscrivere %(username)s? Riceverà una notifica."
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:69
+#: templates/components/_gara_inscriptions.html:76
 msgid "Disiscrive il giocatore"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:93
-#: templates/components/_gara_inscriptions.html:105
+#: templates/components/_gara_inscriptions.html:100
+#: templates/components/_gara_inscriptions.html:112
 #: templates/gamification/admin/achievement_form.html:41
 #: templates/gamification/admin/achievements.html:25
 msgid "Categoria"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:101
+#: templates/components/_gara_inscriptions.html:108
 #, python-format
 msgid "Categoria di %(username)s in questa gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:121
+#: templates/components/_gara_inscriptions.html:128
 #, python-format
 msgid "Squadra di %(username)s in questa gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:122
+#: templates/components/_gara_inscriptions.html:129
 msgid "Senza squadra"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:144
+#: templates/components/_gara_inscriptions.html:151
 #: templates/components/_separated_dashboard_content.html:216
 #: templates/components/_separated_dashboard_content.html:360
 #: templates/components/_unified_cards.html:139
 msgid "Lista d'attesa"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:153
+#: templates/components/_gara_inscriptions.html:160
 #, python-format
 msgid "In lista dal %(date)s"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:159
+#: templates/components/_gara_inscriptions.html:166
 #, python-format
 msgid "Rimuovere %(username)s dalla lista d'attesa?"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:162
+#: templates/components/_gara_inscriptions.html:169
 msgid "Rimuove dalla lista d'attesa"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:175
+#: templates/components/_gara_inscriptions.html:182
 msgid "Nessun iscritto"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:176
+#: templates/components/_gara_inscriptions.html:183
 msgid "Appena qualcuno si iscrive lo trovi qui."
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:183
+#: templates/components/_gara_inscriptions.html:190
 msgid "Limite massimo raggiunto"
 msgstr ""
 
@@ -10245,7 +10201,7 @@ msgid "Apri la sfida"
 msgstr ""
 
 #: templates/components/_history_matches_tab.html:107
-#: templates/components/_match_result_row.html:170
+#: templates/components/_match_result_row.html:159
 #: templates/components/_player_recent_matches.html:68
 #: templates/individual_match/dashboard.html:131
 #: templates/individual_match/matches.html:136
@@ -10305,8 +10261,8 @@ msgstr ""
 
 #: templates/components/_index_archive.html:35
 #: templates/components/_match_card.html:28
-#: templates/components/_match_result_row.html:106
-#: templates/components/_match_result_row.html:108
+#: templates/components/_match_result_row.html:95
+#: templates/components/_match_result_row.html:97
 #: templates/components/_match_scoreboard.html:252
 #: templates/components/_separated_dashboard_content.html:220
 msgid "Conclusa"
@@ -10565,86 +10521,56 @@ msgstr ""
 msgid "Assegna un tavolo per abilitare i controlli di punteggio"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:144
-#: templates/components/_match_admin_controls.html:167
-msgid "Correggi il risultato"
-msgstr ""
-
-#: templates/components/_match_admin_controls.html:147
-msgid ""
-"I triangoli segnati uno per uno vengono cancellati: resta solo il "
-"punteggio finale. La correzione resterà visibile sulla partita. "
-"Procedere?"
-msgstr ""
-
-#: templates/components/_match_admin_controls.html:162
-msgid "Perché (facoltativo)"
-msgstr ""
-
-#: templates/components/_match_admin_controls.html:164
-msgid "Es. punteggio invertito in fase di inserimento"
-msgstr ""
-
-#: templates/components/_match_admin_controls.html:170
-msgid ""
-"La correzione resta scritta sulla partita: chi aveva visto il risultato "
-"di prima capisce perché è cambiato."
-msgstr ""
-
-#: templates/components/_match_admin_controls.html:177
-msgid "Il risultato non si può correggere"
-msgstr ""
-
-#: templates/components/_match_admin_controls.html:188
+#: templates/components/_match_admin_controls.html:139
 msgid "Reset Partita"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:197
+#: templates/components/_match_admin_controls.html:148
 msgid "Tempi Partita"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:211
+#: templates/components/_match_admin_controls.html:162
 msgid "Aggiorna Tempi"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:214
+#: templates/components/_match_admin_controls.html:165
 msgid "Inserisci solo orario, il giorno viene inferito dalla data della gara"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:302
+#: templates/components/_match_admin_controls.html:253
 msgid ""
 "In un match 'al N', entrambi i giocatori non possono avere il punteggio "
 "vincente!"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:307
-#: templates/components/_match_admin_controls.html:348
+#: templates/components/_match_admin_controls.html:258
+#: templates/components/_match_admin_controls.html:299
 msgid "Confermi di voler impostare questo risultato?"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:333
+#: templates/components/_match_admin_controls.html:284
 msgid "Ogni giocatore puo' vincere al massimo"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:340
+#: templates/components/_match_admin_controls.html:291
 msgid "La somma dei triangoli deve essere"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:340
+#: templates/components/_match_admin_controls.html:291
 msgid "hai inserito"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:380
+#: templates/components/_match_admin_controls.html:331
 #: templates/individual_match/match_detail.html:650
 msgid "Inserisci almeno un orario"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:398
+#: templates/components/_match_admin_controls.html:349
 #: templates/individual_match/match_detail.html:668
 msgid "Tempi aggiornati con successo"
 msgstr ""
 
-#: templates/components/_match_admin_controls.html:406
+#: templates/components/_match_admin_controls.html:357
 #: templates/individual_match/match_detail.html:676
 msgid "Errore durante l'aggiornamento dei tempi"
 msgstr ""
@@ -10701,7 +10627,7 @@ msgid ""
 msgstr ""
 
 #: templates/components/_match_card.html:173
-#: templates/components/_match_result_row.html:198
+#: templates/components/_match_result_row.html:187
 msgid "Bloccato"
 msgstr ""
 
@@ -10755,18 +10681,6 @@ msgstr ""
 msgid "Errore di rete: il tentativo non è stato registrato."
 msgstr ""
 
-#: templates/components/_match_corrections.html:17
-#, python-format
-msgid "Risultato corretto"
-msgid_plural "Risultato corretto %(num)s volte"
-msgstr[0] ""
-msgstr[1] ""
-
-#: templates/components/_match_corrections.html:28
-#, python-format
-msgid "da %(chi)s il %(quando)s"
-msgstr ""
-
 #: templates/components/_match_header.html:42
 #: templates/public/campionato_detail.html:18
 msgid "Torna alla Dashboard"
@@ -10790,44 +10704,34 @@ msgstr ""
 msgid "Informazioni partita"
 msgstr ""
 
-#: templates/components/_match_result_row.html:76
-msgid ""
-"Il risultato è stato corretto dopo la chiusura: apri la partita per "
-"vedere da cosa a cosa"
-msgstr ""
-
-#: templates/components/_match_result_row.html:77
-msgid "corretto"
-msgstr ""
-
-#: templates/components/_match_result_row.html:91
+#: templates/components/_match_result_row.html:80
 msgid "A tavolino"
 msgstr ""
 
-#: templates/components/_match_result_row.html:135
+#: templates/components/_match_result_row.html:124
 #, python-format
 msgid "Tavolo %(id)s"
 msgstr ""
 
-#: templates/components/_match_result_row.html:140
+#: templates/components/_match_result_row.html:129
 msgid "Assegna"
 msgstr ""
 
-#: templates/components/_match_result_row.html:159
-#: templates/components/_match_result_row.html:164
+#: templates/components/_match_result_row.html:148
+#: templates/components/_match_result_row.html:153
 msgid "Risultato rapido"
 msgstr ""
 
-#: templates/components/_match_result_row.html:177
+#: templates/components/_match_result_row.html:166
 msgid "Valida il risultato"
 msgstr ""
 
-#: templates/components/_match_result_row.html:188
-#: templates/components/_match_result_row.html:192
+#: templates/components/_match_result_row.html:177
+#: templates/components/_match_result_row.html:181
 msgid "Azzera il risultato"
 msgstr ""
 
-#: templates/components/_match_result_row.html:200
+#: templates/components/_match_result_row.html:189
 msgid "Assegna un tavolo"
 msgstr ""
 
@@ -11333,7 +11237,7 @@ msgid "Non indicata"
 msgstr ""
 
 #: templates/components/_player_personal_info.html:27
-#: templates/player/profile_edit.html:48
+#: templates/player/profile_edit.html:69
 msgid "Squadra"
 msgstr ""
 
@@ -16329,19 +16233,30 @@ msgstr ""
 msgid "L'username deve essere unico"
 msgstr ""
 
-#: templates/player/profile_edit.html:23
+#: templates/player/profile_edit.html:30
+msgid "Cognome"
+msgstr ""
+
+#: templates/player/profile_edit.html:37
+msgid ""
+"Facoltativi. Li vede il direttore delle gare a cui ti iscrivi, per non "
+"confondere due giocatori con username simili. Non compaiono nel tuo "
+"profilo pubblico né nelle classifiche, dove resti il tuo username."
+msgstr ""
+
+#: templates/player/profile_edit.html:44
 msgid "Email verificata"
 msgstr ""
 
-#: templates/player/profile_edit.html:26
+#: templates/player/profile_edit.html:47
 msgid "Email non verificata."
 msgstr ""
 
-#: templates/player/profile_edit.html:29
+#: templates/player/profile_edit.html:50
 msgid "Invia link di verifica"
 msgstr ""
 
-#: templates/player/profile_edit.html:52
+#: templates/player/profile_edit.html:73
 msgid ""
 "Il circolo o la società con cui giochi di solito. Viene proposta quando "
 "ti iscrivi a una gara che tiene conto delle squadre; lì potrai sempre "
