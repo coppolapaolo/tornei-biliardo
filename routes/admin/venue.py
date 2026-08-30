@@ -5,7 +5,6 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request
 from werkzeug.utils import secure_filename
 import os
 from typing import cast
-from PIL import Image, ImageOps
 
 from models import BilliardHall
 from models.location.services import LocationService
@@ -14,6 +13,7 @@ from models.user.venue_manager_service import VenueManagerService
 from models.user.models import User
 from utils import admin_required, venue_manager_required
 from utils.route_helpers import handle_service_action, safe_json_error
+from utils.image_upload import estensione_ammessa, salva_immagine_ridimensionata
 from flask_login import login_required
 from models.base import db, utc_now
 
@@ -521,52 +521,18 @@ def venue_names_api():
 
 
 def _resize_and_save_image(file, save_path, max_size=(400, 300), quality=80):
-    """Resize and save image with optimization."""
-    try:
-        # Open image
-        image = Image.open(file.stream)
+    """Ridimensiona e salva. Il lavoro vero sta in `utils.image_upload`.
 
-        # Convert RGBA to RGB if necessary (for JPEG)
-        if image.mode in ("RGBA", "P"):
-            # Create a white background
-            background = Image.new("RGB", image.size, (255, 255, 255))
-            if image.mode == "P":
-                image = image.convert("RGBA")
-            background.paste(image, mask=image.split()[-1])  # Use alpha channel as mask
-            image = background
-
-        # Auto-rotate based on EXIF data
-        image = ImageOps.exif_transpose(image)
-
-        # Resize image maintaining aspect ratio
-        image.thumbnail(max_size, Image.Resampling.LANCZOS)
-
-        # Determine format and save
-        format_mapping = {".jpg": "JPEG", ".jpeg": "JPEG", ".png": "PNG", ".gif": "GIF"}
-
-        file_ext = os.path.splitext(save_path)[1].lower()
-        save_format = format_mapping.get(file_ext, "JPEG")
-
-        # Save with optimization
-        if save_format == "JPEG":
-            image.save(save_path, format=save_format, quality=quality, optimize=True)
-        elif save_format == "PNG":
-            image.save(save_path, format=save_format, optimize=True)
-        else:
-            image.save(save_path, format=save_format)
-
-    except Exception as e:
-        # Fallback to regular save if image processing fails
-        file.seek(0)  # Reset file pointer
-        with open(save_path, "wb") as f:
-            f.write(file.read())
-        raise e
+    Resta qui come nome storico perché è quello che le route di questo modulo
+    usano; la funzione condivisa serve anche alle locandine della vetrina
+    (issue #235), che vogliono le stesse attenzioni con misure diverse.
+    """
+    salva_immagine_ridimensionata(file, save_path, max_size=max_size, quality=quality)
 
 
 def _allowed_file(filename):
     """Check if file extension is allowed"""
-    ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
-    return "." in filename and filename.rsplit(".", 1)[1].lower() in ALLOWED_EXTENSIONS
+    return estensione_ammessa(filename)
 
 
 # ────────────────────────────────────────────────────────────────────────────────

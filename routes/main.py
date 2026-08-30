@@ -1,5 +1,6 @@
 # routes/main.py - AGGIORNATO per correggere import path
 from typing import Optional
+from urllib.parse import urljoin
 
 from flask import (
     Blueprint,
@@ -249,12 +250,85 @@ def public_garas_list():
     )
 
 
+def _render_vetrina(gara, identificatore: str):
+    """La pagina-vetrina di una gara, con i meta che i social leggono.
+
+    L'immagine e l'indirizzo sono **assoluti** (`_external=True`): lo scraper
+    di Facebook o WhatsApp non risolve i percorsi relativi, e un `og:image`
+    che comincia per `/static/` gli risulta semplicemente assente — l'unico
+    sintomo è un'anteprima senza figura, che in sviluppo non si vede mai.
+    """
+    from models.competition.showcase_view import costruisci_vetrina, descrizione_social
+
+    vetrina = costruisci_vetrina(gara)
+
+    if vetrina.banner_url:
+        immagine = urljoin(request.url_root, vetrina.banner_url.lstrip("/"))
+    else:
+        immagine = url_for(
+            "static", filename="img/social/vetrina-default.png", _external=True
+        )
+
+    # Il sopratitolo porta alla vetrina del campionato, se ce n'è una da
+    # aprire. Un campionato eliminato o senza indirizzo pubblico lascia il
+    # sopratitolo inerte: meglio un testo che non si clicca di un link che
+    # porta a un 404.
+    url_campionato = None
+    campionato = gara.campionato
+    if campionato is not None and not campionato.is_deleted:
+        indirizzo_campionato = campionato.public_slug_or_token
+        if indirizzo_campionato:
+            url_campionato = url_for(
+                "main.campionato_invite", identificatore=indirizzo_campionato
+            )
+
+    return render_template(
+        "public/vetrina_gara.html",
+        vetrina=vetrina,
+        gara=gara,
+        url_campionato=url_campionato,
+        social_title=vetrina.titolo,
+        social_description=descrizione_social(vetrina),
+        social_image=immagine,
+        social_url=url_for("main.gara_invite", token=identificatore, _external=True),
+        # Dove porta «Iscriviti» per chi non ha ancora un account: al login,
+        # con il ritorno **qui**. Da autenticato questo stesso indirizzo
+        # riporta al flusso di iscrizione di sempre, quindi il giro si chiude
+        # da solo senza una seconda route da tenere allineata.
+        url_iscrizione=url_for(
+            "auth.login",
+            next=url_for("main.gara_invite", token=identificatore),
+        ),
+        # Dove va chi arriva su una gara a cui non può più iscriversi. Non è
+        # un ripiego: è la persona più interessata alle prossime che questa
+        # pagina incontrerà, e mandarla in un vicolo cieco sarebbe uno spreco.
+        url_altre_gare=url_for("main.public_garas_list"),
+    )
+
+
 @main_bp.route("/g/<token>")
 def gara_invite(token):
-    """Link pubblico di iscrizione a una gara (issue #61).
+    """Link pubblico di una gara: vetrina per chi arriva, iscrizione per chi c'è.
 
     È l'indirizzo che il direttore stampa su una locandina o incolla in un
-    post: chi lo segue arriva sulla pagina della gara con l'iscrizione in
+    post — `/g/<token>` o, se ne ha scelto uno, `/g/<nome-leggibile>`: sono
+    due nomi per la stessa pagina e restano validi entrambi, così una
+    locandina già stampata non smette di funzionare.
+
+    **Chi non è autenticato vede la vetrina** (issue #235): nome, formato,
+    quando, dove, quanto costa, quanti posti restano, e un pulsante
+    «Iscriviti» che lo porta a registrarsi e lo riporta esattamente qui. Fino
+    al 2026-08 questo indirizzo rispondeva a un anonimo con un redirect al
+    login, e siccome è quello che il direttore condivide, era anche quello che
+    lo scraper di WhatsApp o Facebook trovava: l'anteprima del link mostrava
+    la pagina di accesso, e nessun meta Open Graph avrebbe potuto rimediare.
+
+    Chi è autenticato prosegue come sempre — dialog di stato e pagina della
+    gara — perché lì l'iscrizione è a un click e la vetrina sarebbe un
+    passaggio in più. Con `?anteprima=1` vede comunque la vetrina: serve al
+    direttore per controllare cosa sta pubblicando.
+
+    Chi lo segue arriva sulla pagina della gara con l'iscrizione in
     evidenza e conferma con un click. Chi non è autenticato passa da
     login/registrazione e torna qui, allo stesso punto.
 
@@ -273,19 +347,19 @@ def gara_invite(token):
         GaraInviteService,
         InviteOutcome,
     )
+    from models.competition.showcase_service import resolve_public_identifier
     from utils.jinja import format_datetime_local_text
     from utils.page_modal import flash_page_modal
 
-    gara = Gara.query.filter_by(public_token=token).first()
+    gara = resolve_public_identifier(token)
     if gara is None:
         # Il token non dice se la gara non è mai esistita o è stata
         # cancellata, e va bene così: la pagina non deve fare da oracolo.
         return render_template("public/invite_not_found.html"), 404
 
-    if not current_user.is_authenticated:
-        return redirect(
-            url_for("auth.login", next=url_for("main.gara_invite", token=token))
-        )
+    vuole_anteprima = request.args.get("anteprima") == "1"
+    if not current_user.is_authenticated or vuole_anteprima:
+        return _render_vetrina(gara, token)
 
     result = GaraInviteService.evaluate(gara, current_user)
 
@@ -406,6 +480,56 @@ def gara_invite(token):
     # proprio link sarebbe rumore.
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
+
+
+@main_bp.route("/c/<identificatore>")
+def campionato_invite(identificatore):
+    """Link pubblico di un campionato: la sua vetrina (issue #235).
+
+    `/c/<token>` o, se il direttore ne ha scelto uno, `/c/<nome-leggibile>`:
+    due nomi per la stessa pagina, entrambi validi per sempre, come per le
+    gare.
+
+    A differenza di `/g/<token>` **non cambia in base a chi guarda**: qui non
+    c'è un'azione da compiere sul campionato — ci si iscrive alle sue prove,
+    non a lui — quindi la vetrina è la pagina giusta anche per chi è già
+    autenticato, e non c'è un flusso alternativo da saltare.
+    """
+    from models.campionato.showcase_view import (
+        costruisci_vetrina_campionato,
+        descrizione_social_campionato,
+    )
+    from models.competition.showcase_service import (
+        resolve_public_identifier_campionato,
+    )
+
+    campionato = resolve_public_identifier_campionato(identificatore)
+    if campionato is None:
+        return render_template("public/invite_not_found.html"), 404
+
+    vetrina = costruisci_vetrina_campionato(campionato)
+
+    # Assoluti, come per la gara: uno scraper non risolve i relativi, e il
+    # sintomo di un `og:image` relativo è un'anteprima senza figura — nessun
+    # errore, niente nei log, invisibile in sviluppo.
+    if vetrina.banner_url:
+        immagine = urljoin(request.url_root, vetrina.banner_url.lstrip("/"))
+    else:
+        immagine = url_for(
+            "static", filename="img/social/vetrina-default.png", _external=True
+        )
+
+    return render_template(
+        "public/vetrina_campionato.html",
+        vetrina=vetrina,
+        campionato=campionato,
+        social_title=vetrina.titolo,
+        social_description=descrizione_social_campionato(vetrina),
+        social_image=immagine,
+        social_url=url_for(
+            "main.campionato_invite", identificatore=identificatore, _external=True
+        ),
+    )
 
 
 @main_bp.route("/gara/<int:gara_id>")

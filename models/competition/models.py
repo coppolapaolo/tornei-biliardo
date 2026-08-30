@@ -25,7 +25,7 @@ from models.competition.constants import (
     DEFAULT_ENTRY_FEE,
     DEFAULT_WITHDRAW_POLICY,
 )
-from typing import TYPE_CHECKING, Optional, List
+from typing import TYPE_CHECKING, Optional, List, Tuple
 import json
 import secrets
 
@@ -137,6 +137,19 @@ class Gara(SoftDeleteMixin, db.Model):
     entry_fee = db.Column(
         db.Float, default=DEFAULT_ENTRY_FEE
     )  # Quota di partecipazione
+
+    # ── Vetrina da condividere sui social (issue #235) ───────────────────
+    # Il banner e il link esterno si ereditano dal campionato quando la gara
+    # non ne ha di propri: si legge `effective_banner_path` /
+    # `effective_external_link`, mai queste colonne direttamente, altrimenti
+    # una gara che eredita risulta senza immagine.
+    banner_path = db.Column(db.String(255), nullable=True)
+    external_url = db.Column(db.String(500), nullable=True)
+    external_label = db.Column(db.String(60), nullable=True)
+    #: Indirizzo leggibile facoltativo, accanto a `public_token`: `/g/<slug>`
+    #: e `/g/<token>` aprono la stessa pagina. Il token non si tocca mai — le
+    #: locandine già stampate devono continuare a funzionare.
+    slug = db.Column(db.String(60), unique=True, nullable=True, index=True)
 
     # Game settings
     discipline = db.Column(db.String(50), nullable=False)  # palla 8, 9, 10
@@ -464,6 +477,55 @@ class Gara(SoftDeleteMixin, db.Model):
             if ereditata is not None:
                 return ereditata
         return DEFAULT_BREAK_RULE
+
+    @property
+    def effective_banner_path(self) -> Optional[str]:
+        """La locandina di questa gara: propria → campionato → nessuna.
+
+        Il direttore che carica un'immagine sul campionato la sta scegliendo
+        per tutte le sue gare: è il caso normale, e gli evita di ricaricarla
+        dieci volte. La singola gara la scavalca quando serve — la tappa
+        speciale, la finale con la sua grafica.
+
+        `None` non è un difetto da correggere a valle: significa "nessuna
+        locandina", e la vetrina mostra l'immagine di ripiego del sito.
+        """
+        if self.banner_path:
+            return self.banner_path
+        if self.campionato is not None:
+            return self.campionato.banner_path or None
+        return None
+
+    @property
+    def effective_external_link(self) -> Optional[Tuple[str, Optional[str]]]:
+        """Link fuori dall'applicazione: (indirizzo, etichetta), o `None`.
+
+        Stessa catena della locandina, e per la stessa ragione: il regolamento
+        di un campionato vale per tutte le sue gare, finché una non ne
+        pubblica uno proprio.
+
+        L'indirizzo e l'etichetta viaggiano **insieme**: ereditarli
+        separatamente produrrebbe il regolamento del campionato sotto
+        l'etichetta scelta per un'altra pagina.
+        """
+        if self.external_url:
+            return (self.external_url, self.external_label or None)
+        if self.campionato is not None and self.campionato.external_url:
+            return (
+                self.campionato.external_url,
+                self.campionato.external_label or None,
+            )
+        return None
+
+    @property
+    def public_slug_or_token(self) -> Optional[str]:
+        """Cosa mettere nell'indirizzo pubblico: lo slug se c'è, il token se no.
+
+        Sono due nomi per la stessa pagina e restano validi entrambi. Questo
+        dice solo quale **pubblicare**: chi ha scelto un nome leggibile vuole
+        che sia quello a comparire sulla locandina e nel post.
+        """
+        return self.slug or self.public_token
 
     @property
     def display_name(self) -> str:

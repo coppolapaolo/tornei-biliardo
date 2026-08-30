@@ -58,6 +58,7 @@ sections:
       - creare_una_gara
       - creare_un_campionato
       - gestire_le_iscrizioni
+      - far_conoscere_la_gara
       - condurre_la_gara
       - squadre
       - categorie

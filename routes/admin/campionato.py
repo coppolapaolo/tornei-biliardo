@@ -1038,3 +1038,143 @@ def remove_director(campionato_id):
     return redirect(
         url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
     )
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# VETRINA: LOCANDINA E LINK EREDITATI DALLE GARE (issue #235)
+# ────────────────────────────────────────────────────────────────────────────
+
+
+@campionato_bp.route("/<int:campionato_id>/vetrina")
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def campionato_vetrina(campionato_id):
+    """Locandina e link del campionato, che tutte le sue gare ereditano.
+
+    È il caso normale: una grafica sola, caricata una volta, e ogni tappa si
+    presenta allo stesso modo sui social. Una singola gara può sempre
+    scavalcarla dalla propria vetrina — vedi `Gara.effective_banner_path`.
+
+    Da qui si cura anche la **vetrina del campionato stessa** (`/c/<link>`),
+    che è il secondo lotto della issue: descrizione, indirizzo leggibile e
+    link esterno. I campi sono gli stessi della gara e fanno due mestieri
+    insieme — quello che il campionato mostra sulla propria pagina, e quello
+    che le sue gare ereditano quando non hanno niente di proprio.
+    """
+    from models.competition.showcase_service import ensure_campionato_public_token
+    from utils.image_paths import ImagePathManager
+
+    campionato = db.get_or_404(Campionato, campionato_id)
+    banner = (
+        ImagePathManager.url_from_db_path(campionato.banner_path)
+        if campionato.banner_path
+        else None
+    )
+    gare_che_ereditano = [g for g in campionato.gare if not g.banner_path]
+
+    # Il token può mancare su un campionato costruito prima della migration
+    # in un ambiente che non l'ha eseguita: si assegna qui, che è una
+    # schermata di **scrittura** del direttore — non nella pagina pubblica,
+    # dove una scrittura innescata da un crawler sarebbe un difetto.
+    ensure_campionato_public_token(campionato)
+
+    return render_template(
+        "admin/campionato_vetrina.html",
+        campionato=campionato,
+        banner=banner,
+        gare_che_ereditano=len(gare_che_ereditano),
+        url_pubblica=url_for(
+            "main.campionato_invite",
+            identificatore=campionato.public_slug_or_token,
+            _external=True,
+        ),
+        url_anteprima=url_for(
+            "main.campionato_invite",
+            identificatore=campionato.public_slug_or_token,
+        ),
+    )
+
+
+@campionato_bp.route("/<int:campionato_id>/vetrina", methods=["POST"])
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def salva_campionato_vetrina(campionato_id):
+    """Descrizione, indirizzo leggibile e link esterno del campionato."""
+    from models.competition.showcase_service import update_campionato_showcase
+    from models.exceptions import DomainError
+
+    db.get_or_404(Campionato, campionato_id)
+    try:
+        update_campionato_showcase(
+            campionato_id,
+            slug=request.form.get("slug"),
+            external_url=request.form.get("external_url"),
+            external_label=request.form.get("external_label"),
+            description=request.form.get("description"),
+        )
+        flash(_("Vetrina del campionato aggiornata."), "success")
+    except DomainError as errore:
+        flash(str(errore), "danger")
+    return redirect(
+        url_for("admin.campionato.campionato_vetrina", campionato_id=campionato_id)
+    )
+
+
+@campionato_bp.route("/<int:campionato_id>/vetrina/banner", methods=["POST"])
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def carica_banner_campionato(campionato_id):
+    """Carica la locandina del campionato."""
+    import os
+
+    from werkzeug.utils import secure_filename
+
+    from models.base import utc_now
+    from models.competition.showcase_service import set_campionato_banner
+    from routes.admin.competition.vetrina import MISURA_BANNER
+    from utils.image_paths import ImagePathManager
+    from utils.image_upload import estensione_ammessa, salva_immagine_ridimensionata
+
+    db.get_or_404(Campionato, campionato_id)
+    destinazione = url_for(
+        "admin.campionato.campionato_vetrina", campionato_id=campionato_id
+    )
+
+    file = request.files.get("banner")
+    if file is None or not file.filename:
+        flash(_("Nessuna immagine selezionata."), "warning")
+        return redirect(destinazione)
+    if not estensione_ammessa(file.filename):
+        flash(_("Formato non supportato. Usa JPG, PNG o GIF."), "danger")
+        return redirect(destinazione)
+
+    try:
+        nome = secure_filename(
+            f"campionato_{campionato_id}_"
+            f"{utc_now().strftime('%Y%m%d_%H%M%S')}_{file.filename}"
+        )
+        ImagePathManager.ensure_banner_upload_dir()
+        percorso = os.path.join(ImagePathManager.get_banner_upload_dir(), nome)
+        salva_immagine_ridimensionata(file, percorso, max_size=MISURA_BANNER)
+        set_campionato_banner(campionato_id, ImagePathManager.get_banner_db_path(nome))
+        flash(
+            _("Locandina caricata: la useranno tutte le gare senza una propria."),
+            "success",
+        )
+    except Exception as errore:  # noqa: BLE001 — il messaggio va all'utente
+        flash(
+            _("Non è stato possibile caricare l'immagine: %(errore)s", errore=errore),
+            "danger",
+        )
+    return redirect(destinazione)
+
+
+@campionato_bp.route("/<int:campionato_id>/vetrina/banner/rimuovi", methods=["POST"])
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def rimuovi_banner_campionato(campionato_id):
+    """Toglie la locandina del campionato."""
+    from models.competition.showcase_service import set_campionato_banner
+
+    db.get_or_404(Campionato, campionato_id)
+    set_campionato_banner(campionato_id, None)
+    flash(_("Locandina rimossa."), "info")
+    return redirect(
+        url_for("admin.campionato.campionato_vetrina", campionato_id=campionato_id)
+    )

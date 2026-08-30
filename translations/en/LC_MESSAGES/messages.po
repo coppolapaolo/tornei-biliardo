@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-30 15:49+0200\n"
+"POT-Creation-Date: 2026-08-30 18:41+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -70,6 +70,168 @@ msgstr "Bank Pool"
 msgid "Rotation"
 msgstr "Rotation"
 
+#: models/campionato/showcase_view.py:133
+#: templates/components/_index_archive.html:35
+#: templates/components/_match_card.html:28
+#: templates/components/_match_result_row.html:106
+#: templates/components/_match_result_row.html:108
+#: templates/components/_match_scoreboard.html:252
+#: templates/components/_separated_dashboard_content.html:220
+msgid "Conclusa"
+msgstr "Finished"
+
+#: models/campionato/showcase_view.py:135
+#,  python-format
+msgid "Vince %(nome)s"
+msgstr "Winner: %(nome)s"
+
+#: models/campionato/showcase_view.py:137
+#: templates/components/_bracket_view.html:52
+#: templates/components/_gara_matches.html:49
+#: templates/components/_match_card.html:26
+#: templates/components/_match_cards_mobile.html:44
+#: templates/components/_match_result_row.html:100
+#: templates/components/_match_result_row.html:102
+#: templates/components/_match_scoreboard.html:256
+#: templates/components/_match_status_labels.html:23
+#: templates/components/_multi_set_score_display.html:90
+#: templates/components/_round_navigation.html:26
+#: templates/components/_separated_dashboard_content.html:55
+#: templates/components/_separated_dashboard_content.html:224
+#: templates/individual_match/dashboard.html:115
+#: templates/individual_match/matches.html:38
+#: templates/individual_match/matches.html:99
+#: templates/individual_match/quick_match.html:60
+#: templates/player/challenge_attempt_detail.html:24
+#: templates/public/campionatos_list.html:20
+msgid "In corso"
+msgstr "In Progress"
+
+#: models/campionato/showcase_view.py:140
+#: templates/components/_index_open_inscriptions.html:19
+#: templates/components/_player_dashboard_content.html:30
+#: templates/individual_match/proposal_detail.html:42
+msgid "Aperta"
+msgstr "Open"
+
+#: models/campionato/showcase_view.py:148
+#,  python-format
+msgid "%(n)s iscritti · %(liberi)s liberi"
+msgstr "%(n)s registered · %(liberi)s free"
+
+#: models/campionato/showcase_view.py:150
+#,  python-format
+msgid "%(n)s iscritti"
+msgstr "%(n)s registered"
+
+#: models/campionato/showcase_view.py:153
+#: templates/components/_bye_challenges.html:32
+#: templates/components/_match_card.html:24
+#: templates/components/_match_result_row.html:94
+#: templates/components/_match_result_row.html:96
+#: templates/components/_match_status_labels.html:22
+#: templates/individual_match/dashboard.html:103
+#: templates/individual_match/matches.html:37
+#: templates/individual_match/matches.html:107 utils/status_ui.py:180
+msgid "Da giocare"
+msgstr "To play"
+
+#: models/campionato/showcase_view.py:156
+#,  python-format
+msgid "Iscrizioni dal %(data)s"
+msgstr "Registration opens %(data)s"
+
+#: models/campionato/showcase_view.py:191
+
+msgid "Classifica a triangoli vinti"
+msgstr "Standings by racks won"
+
+#: models/campionato/showcase_view.py:193
+
+msgid "Classifica a punti per piazzamento"
+msgstr "Standings by placement points"
+
+#: models/campionato/showcase_view.py:194
+
+msgid "Classifica a vittorie"
+msgstr "Standings by wins"
+
+#: models/campionato/showcase_view.py:210
+
+msgid "T"
+msgstr "R"
+
+#: models/campionato/showcase_view.py:212
+#: templates/individual_match/statistics.html:204
+#: templates/individual_match/statistics.html:212
+msgid "P"
+msgstr "L"
+
+#: models/campionato/showcase_view.py:214
+#: models/competition/showcase_view.py:273
+#: templates/individual_match/availability.html:17
+#: templates/individual_match/statistics.html:203
+#: templates/individual_match/statistics.html:212
+msgid "V"
+msgstr "W"
+
+#: models/campionato/showcase_view.py:245
+#: models/campionato/showcase_view.py:250
+#,  python-format
+msgid "%(a)s – %(b)s"
+msgstr "%(a)s – %(b)s"
+
+#: models/campionato/showcase_view.py:259
+
+msgid "Campionato concluso"
+msgstr "Championship finished"
+
+#: models/campionato/showcase_view.py:264
+#,  python-format
+msgid "Iscrizioni aperte · gara %(n)s"
+msgstr "Registration open · competition %(n)s"
+
+#: models/campionato/showcase_view.py:266
+#: models/competition/showcase_view.py:245
+#: models/competition/showcase_view.py:413
+#: templates/components/_index_open_inscriptions.html:6
+#: templates/components/_nearby_gare.html:40
+#: templates/components/_separated_dashboard_content.html:233
+#: templates/components/_unified_cards.html:71
+msgid "Iscrizioni aperte"
+msgstr "Open registrations"
+
+#: models/campionato/showcase_view.py:271
+#: models/competition/showcase_view.py:243
+msgid "Gara in corso"
+msgstr "Competition in progress"
+
+#: models/campionato/showcase_view.py:275
+
+msgid "Tutte le gare giocate"
+msgstr "All competitions played"
+
+#: models/campionato/showcase_view.py:277
+#,  python-format
+msgid "In corso · %(n)s gare giocate"
+msgstr "In progress · %(n)s competitions played"
+
+#: models/campionato/showcase_view.py:278
+
+msgid "Non ancora iniziato"
+msgstr "Not started yet"
+
+#: models/campionato/showcase_view.py:336
+#: models/competition/showcase_view.py:374
+msgid "Regolamento e informazioni"
+msgstr "Rules and information"
+
+#: models/campionato/showcase_view.py:361
+#: templates/public/vetrina_campionato.html:64
+#,  python-format
+msgid "%(n)s gare"
+msgstr "%(n)s competitions"
+
 #: models/challenge/models.py:288
 #, python-format
 msgid "Esercizio %(number)s"
@@ -96,7 +258,7 @@ msgstr ""
 msgid "Serve un punteggio: la prova non ne ha ancora uno registrato."
 msgstr "A score is needed: none has been recorded for this drill yet."
 
-#: models/competition/models.py:499
+#: models/competition/models.py:561
 #: templates/admin/amalfi_classification.html:23
 #: templates/components/_campionato_garas.html:105
 #: templates/components/_new_gara_modal.html:69
@@ -150,6 +312,101 @@ msgid ""
 msgstr ""
 "Competition certified by tiebreaker: cancel the tiebreaker first to "
 "cancel the round"
+
+#: models/competition/showcase_view.py:149
+#, python-format
+msgid "al %(n)s"
+msgstr "race to %(n)s"
+
+#: models/competition/showcase_view.py:151
+#, python-format
+msgid "%(n)s set"
+msgstr "exactly %(n)s sets"
+
+#: models/competition/showcase_view.py:154
+#, python-format
+msgid "%(disciplina)s — %(set)s, ogni set al %(rack)s"
+msgstr "%(disciplina)s — %(set)s, each set race to %(rack)s"
+
+#: models/competition/showcase_view.py:162
+#, python-format
+msgid "%(disciplina)s — al %(n)s"
+msgstr "%(disciplina)s — race to %(n)s"
+
+#: models/competition/showcase_view.py:165
+#, python-format
+msgid "%(disciplina)s — %(n)s rack esatti"
+msgstr "%(disciplina)s — exactly %(n)s racks"
+
+#: models/competition/showcase_view.py:230
+#,  python-format
+msgid "%(campionato)s · gara %(n)s"
+msgstr "%(campionato)s · competition %(n)s"
+
+#: models/competition/showcase_view.py:241
+#: models/competition/showcase_view.py:407 routes/main.py:451
+msgid "Gara conclusa"
+msgstr "Competition finished"
+
+#: models/competition/showcase_view.py:250 routes/main.py:421
+#: templates/components/_unified_cards.html:79
+msgid "Iscrizioni non ancora aperte"
+msgstr "Registrations not yet open"
+
+#: models/competition/showcase_view.py:251 routes/main.py:432
+msgid "Iscrizioni chiuse"
+msgstr "Registration closed"
+
+#: models/competition/showcase_view.py:305
+#: models/competition/showcase_view.py:403
+#: templates/individual_match/create_proposal.html:86
+#: templates/player/playoff_invitation.html:27
+#: templates/public/vetrina_campionato.html:78
+msgid "Dove"
+msgstr "Where"
+
+#: models/competition/showcase_view.py:314
+#: models/competition/showcase_view.py:403
+#: templates/individual_match/create_proposal.html:119
+#: templates/individual_match/edit_match.html:71
+#: templates/individual_match/match_detail.html:199
+#: templates/individual_match/quick_match.html:163
+msgid "Formato"
+msgstr "Format"
+
+#: models/competition/showcase_view.py:317
+#,  python-format
+msgid "%(n)s turni"
+msgstr "%(n)s rounds"
+
+#: models/competition/showcase_view.py:329
+#: templates/admin/gara_create_standalone.html:435
+#: templates/components/_campionato_details_info.html:86
+#: templates/components/_campionato_garas.html:21
+#: templates/components/_gara_info.html:47
+#: templates/components/_player_dashboard_content.html:43
+#: templates/components/_separated_dashboard_content.html:286
+msgid "Quota"
+msgstr "Fee"
+
+#: models/competition/showcase_view.py:331
+msgid "Gratuito"
+msgstr "Free"
+
+#: models/competition/showcase_view.py:333
+#, python-format
+msgid "%(fee)s €"
+msgstr "€%(fee)s"
+
+#: models/competition/showcase_view.py:344
+
+msgid "Chiusura iscrizioni"
+msgstr "Registration closes"
+
+#: models/competition/showcase_view.py:411
+#, python-format
+msgid "Iscrizioni aperte — %(n)s posti liberi"
+msgstr "Registration open — %(n)s seats left"
 
 #: models/dashboard/activity_feedback.py:162
 msgid "vinta"
@@ -1029,7 +1286,7 @@ msgstr ""
 "Several drills in a row, in one go. On your own to practise, or before an"
 " examiner to make it count."
 
-#: models/gamification/frontend_bridge.py:494 templates/base.html:557
+#: models/gamification/frontend_bridge.py:494 templates/base.html:585
 msgid "Diventa esaminatore"
 msgstr "Become an examiner"
 
@@ -1694,7 +1951,7 @@ msgstr "You have been granted the %(role)s role."
 msgid "Che piacere rivederti!"
 msgstr "Nice to see you again!"
 
-#: routes/auth.py:153 templates/base.html:678
+#: routes/auth.py:153 templates/base.html:706
 msgid "Tutto pronto per giocare?"
 msgstr "Ready to play?"
 
@@ -1848,7 +2105,7 @@ msgstr "Received, we will look at it soon"
 msgid "Presa in considerazione"
 msgstr "Being considered"
 
-#: routes/feedback.py:144 templates/base.html:430
+#: routes/feedback.py:144 templates/base.html:456
 msgid "Fatto"
 msgstr "Done"
 
@@ -1911,7 +2168,7 @@ msgid "Tutti"
 msgstr "All"
 
 #: routes/help.py:59 templates/admin/accessi.html:86
-#: templates/admin/accessi.html:141 templates/admin/campionato_detail.html:240
+#: templates/admin/accessi.html:141 templates/admin/campionato_detail.html:255
 #: templates/admin/users_list.html:106 templates/admin/users_list.html:177
 #: templates/admin/venue_manager_requests.html:48
 #: templates/components/_campionato_general_classification.html:24
@@ -1937,35 +2194,35 @@ msgstr "Competition Director"
 msgid "Amministratore"
 msgstr "Administrator"
 
-#: routes/main.py:299
+#: routes/main.py:373
 #, python-format
 msgid "Iscrizioni dal %(start)s al %(end)s."
 msgstr "Registration open from %(start)s to %(end)s."
 
-#: routes/main.py:305
+#: routes/main.py:379
 #, python-format
 msgid "Iscrizioni aperte fino al %(end)s."
 msgstr "Registration open until %(end)s."
 
-#: routes/main.py:310
+#: routes/main.py:384
 #, python-format
 msgid "Iscrizioni aperte dal %(start)s."
 msgstr "Registration open from %(start)s."
 
-#: routes/main.py:316
+#: routes/main.py:390
 msgid "Sei già iscritto"
 msgstr "You're already registered"
 
-#: routes/main.py:317
+#: routes/main.py:391
 #, python-format
 msgid "Risulti iscritto a %(gara)s."
 msgstr "You are registered for %(gara)s."
 
-#: routes/main.py:323
+#: routes/main.py:397
 msgid "Sei in lista d'attesa"
 msgstr "You're on the waiting list"
 
-#: routes/main.py:325
+#: routes/main.py:399
 #, python-format
 msgid ""
 "Sei in lista d'attesa per %(gara)s, in posizione %(position)s. Se si "
@@ -1974,38 +2231,30 @@ msgstr ""
 "You're on the waiting list for %(gara)s, in position %(position)s. If a "
 "place frees up, you're moved in automatically."
 
-#: routes/main.py:335
+#: routes/main.py:409
 msgid "Puoi iscriverti"
 msgstr "You can register"
 
-#: routes/main.py:337
+#: routes/main.py:411
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono aperte: premi «Iscriviti» per confermare."
 msgstr "Registration for %(gara)s is open: press “Register” to confirm."
 
-#: routes/main.py:347 templates/components/_unified_cards.html:79
-msgid "Iscrizioni non ancora aperte"
-msgstr "Registrations not yet open"
-
-#: routes/main.py:349
+#: routes/main.py:423
 #, python-format
 msgid "Le iscrizioni a %(gara)s non sono ancora aperte."
 msgstr "Registration for %(gara)s is not open yet."
 
-#: routes/main.py:358
-msgid "Iscrizioni chiuse"
-msgstr "Registration closed"
-
-#: routes/main.py:359
+#: routes/main.py:433
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono chiuse."
 msgstr "Registration for %(gara)s is closed."
 
-#: routes/main.py:366
+#: routes/main.py:440
 msgid "Gara già iniziata"
 msgstr "Competition already started"
 
-#: routes/main.py:368
+#: routes/main.py:442
 #, python-format
 msgid ""
 "%(gara)s è già iniziata: non è più possibile iscriversi, ma puoi seguire "
@@ -2014,29 +2263,25 @@ msgstr ""
 "%(gara)s has already started: you can no longer register, but you can "
 "follow the results from this page."
 
-#: routes/main.py:377
-msgid "Gara conclusa"
-msgstr "Competition finished"
-
-#: routes/main.py:379
+#: routes/main.py:453
 #, python-format
 msgid "%(gara)s è conclusa: qui trovi la classifica finale."
 msgstr "%(gara)s is over: here are the final standings."
 
-#: routes/main.py:387
+#: routes/main.py:461
 msgid "Gara annullata"
 msgstr "Competition cancelled"
 
-#: routes/main.py:388
+#: routes/main.py:462
 #, python-format
 msgid "%(gara)s è stata annullata."
 msgstr "%(gara)s has been cancelled."
 
-#: routes/main.py:394
+#: routes/main.py:468
 msgid "Iscrizione non riuscita"
 msgstr "Registration failed"
 
-#: routes/main.py:396
+#: routes/main.py:470
 #, python-format
 msgid ""
 "Non è stato possibile iscriverti a %(gara)s. Riprova dal pulsante "
@@ -2216,6 +2461,31 @@ msgstr "Playoff configuration added."
 #: routes/admin/campionato.py:972
 msgid "Configurazione playoff disattivata."
 msgstr "Playoff configuration deactivated."
+
+#: routes/admin/campionato.py:1113
+msgid "Vetrina del campionato aggiornata."
+msgstr "Championship showcase updated."
+
+#: routes/admin/campionato.py:1142 routes/admin/competition/vetrina.py:115
+msgid "Nessuna immagine selezionata."
+msgstr "No image selected."
+
+#: routes/admin/campionato.py:1145 routes/admin/competition/vetrina.py:119
+msgid "Formato non supportato. Usa JPG, PNG o GIF."
+msgstr "Unsupported format. Use JPG, PNG or GIF."
+
+#: routes/admin/campionato.py:1158
+msgid "Locandina caricata: la useranno tutte le gare senza una propria."
+msgstr "Poster uploaded: every competition without one of its own will use it."
+
+#: routes/admin/campionato.py:1163 routes/admin/competition/vetrina.py:137
+#, python-format
+msgid "Non è stato possibile caricare l'immagine: %(errore)s"
+msgstr "The image could not be uploaded: %(errore)s"
+
+#: routes/admin/campionato.py:1177
+msgid "Locandina rimossa."
+msgstr "Poster removed."
 
 #: routes/admin/kpi.py:204
 msgid "Nessun match giocato negli ultimi 3 giorni"
@@ -2434,6 +2704,20 @@ msgstr "Team updated"
 #: routes/admin/competition/squadre.py:170
 msgid "Giocherai senza squadra in questa gara"
 msgstr "You will play without a team in this competition"
+
+#: routes/admin/competition/vetrina.py:100
+msgid "Vetrina aggiornata."
+msgstr "Showcase updated."
+
+#: routes/admin/competition/vetrina.py:134
+msgid "Locandina caricata."
+msgstr "Poster uploaded."
+
+#: routes/admin/competition/vetrina.py:157
+msgid "Locandina rimossa: la gara torna a usare quella del campionato, se c'è."
+msgstr ""
+"Poster removed: the competition goes back to the championship one, if "
+"there is one."
 
 #: routes/admin/match/scoring.py:201
 msgid "Punteggio non valido."
@@ -2787,7 +3071,7 @@ msgstr "Drills completed in competition"
 msgid "Esami certificati superati"
 msgstr "Certified exams passed"
 
-#: routes/gamification/features.py:61 templates/base.html:391
+#: routes/gamification/features.py:61 templates/base.html:417
 #: templates/gamification/admin/dashboard.html:102
 #: templates/gamification/admin/dashboard.html:145
 #: templates/gamification/admin/feature_create.html:69
@@ -3203,47 +3487,55 @@ msgstr "Password updated successfully."
 msgid "Password attuale errata o nuova password non valida."
 msgstr "Current password is wrong, or the new password is not valid."
 
-#: templates/base.html:103
+#: templates/base.html:48
+msgid ""
+"Tornei e campionati di biliardo americano: iscrizioni, tabelloni, "
+"classifiche."
+msgstr ""
+"American pool tournaments and championships: registration, brackets, "
+"standings."
+
+#: templates/base.html:125
 msgid "competitivo"
 msgstr "competitive"
 
-#: templates/base.html:104
+#: templates/base.html:126
 msgid "globale (tornei + casual)"
 msgstr "global (tournaments + casual)"
 
-#: templates/base.html:198
+#: templates/base.html:223
 msgid "Tornei Biliardo"
 msgstr "Billiard Championships"
 
-#: templates/base.html:200
+#: templates/base.html:225
 msgid "amministrazione"
 msgstr "administration"
 
-#: templates/base.html:201
+#: templates/base.html:226
 msgid "direzione gara"
 msgstr "tournament direction"
 
-#: templates/base.html:202 templates/base.html:314
+#: templates/base.html:227 templates/base.html:339
 msgid "giocatore"
 msgstr "player"
 
-#: templates/base.html:207 templates/base.html:208
+#: templates/base.html:232 templates/base.html:233
 msgid "Nascondi il menu laterale"
 msgstr "Hide the sidebar"
 
-#: templates/base.html:215
+#: templates/base.html:240
 msgid "Generale"
 msgstr "General"
 
-#: templates/admin/kpi.html:37 templates/base.html:217 templates/base.html:495
+#: templates/admin/kpi.html:37 templates/base.html:242 templates/base.html:522
 msgid "Dashboard"
 msgstr "Dashboard"
 
-#: templates/base.html:221
+#: templates/base.html:246
 msgid "Sale Biliardo"
 msgstr "Billiard Halls"
 
-#: templates/base.html:226 templates/base.html:513
+#: templates/base.html:251 templates/base.html:540
 #: templates/challenge/catalog.html:3 templates/challenge/catalog.html:8
 #: templates/components/_gara_info.html:69
 #: templates/components/_history_campionati_tab.html:96
@@ -3256,12 +3548,12 @@ msgstr "Billiard Halls"
 msgid "Esercizi"
 msgstr "Drills"
 
-#: templates/base.html:231 templates/exam/catalog.html:3
+#: templates/base.html:256 templates/exam/catalog.html:3
 #: templates/exam/catalog.html:6 templates/player/history.html:34
 msgid "Esami"
 msgstr "Exams"
 
-#: templates/base.html:236 templates/components/_history_filters.html:70
+#: templates/base.html:261 templates/components/_history_filters.html:70
 #: templates/components/_player_dashboard_content.html:16
 #: templates/individual_match/admin_overview.html:4
 #: templates/individual_match/admin_overview.html:10
@@ -3270,106 +3562,106 @@ msgstr "Exams"
 msgid "Sfide individuali"
 msgstr "Individual matches"
 
-#: templates/base.html:241 templates/base.html:473
+#: templates/base.html:266 templates/base.html:499
 #: templates/gamification/admin/feature_create.html:59
 #: templates/help/_ui.html:10 templates/help/index.html:6
 msgid "Guida"
 msgstr "Guide"
 
-#: templates/base.html:246 templates/base.html:477
+#: templates/base.html:271 templates/base.html:503
 #: templates/feedback/index.html:4
 msgid "Segnalazioni"
 msgstr "Reports"
 
-#: templates/base.html:253
+#: templates/base.html:278
 msgid "Persone"
 msgstr "People"
 
 #: templates/admin/accessi.html:37 templates/admin/users_list.html:10
-#: templates/base.html:256 templates/base.html:508
+#: templates/base.html:281 templates/base.html:535
 #: templates/gamification/admin/dashboard.html:103
 msgid "Utenti"
 msgstr "Users"
 
 #: templates/admin/accessi.html:33 templates/admin/accessi.html:111
-#: templates/admin/users_list.html:94 templates/base.html:261
+#: templates/admin/users_list.html:94 templates/base.html:286
 msgid "Accessi"
 msgstr "Sign-ins"
 
-#: templates/base.html:266
+#: templates/base.html:291
 msgid "Richieste Direttore"
 msgstr "Director requests"
 
-#: templates/admin/venue_manager_requests.html:4 templates/base.html:271
+#: templates/admin/venue_manager_requests.html:4 templates/base.html:296
 msgid "Richieste Gestore Sala"
 msgstr "Venue Manager Requests"
 
-#: templates/base.html:282
+#: templates/base.html:307
 msgid "Richieste Esaminatore"
 msgstr "Examiner requests"
 
 #: templates/admin/users_list.html:137 templates/admin/users_list.html:212
-#: templates/base.html:288 templates/components/_user_info_card.html:102
+#: templates/base.html:313 templates/components/_user_info_card.html:102
 msgid "Gamification"
 msgstr "Gamification"
 
-#: templates/base.html:290
+#: templates/base.html:315
 msgid "Traguardi e XP"
 msgstr "Achievements and XP"
 
-#: templates/base.html:300
+#: templates/base.html:325
 msgid "Debug"
 msgstr "Debug"
 
-#: templates/base.html:301 templates/base.html:590
+#: templates/base.html:326 templates/base.html:618
 msgid "Reset DB"
 msgstr "Reset DB"
 
-#: templates/base.html:312
+#: templates/base.html:337
 msgid "amministratore"
 msgstr "administrator"
 
-#: templates/base.html:313
+#: templates/base.html:338
 msgid "direttore"
 msgstr "director"
 
-#: templates/base.html:326 templates/base.html:412
+#: templates/base.html:351 templates/base.html:438
 msgid "Login"
 msgstr "Login"
 
-#: templates/base.html:327
+#: templates/base.html:352
 #: templates/components/_index_registration_info.html:33
 #: templates/login.html:40 templates/no_campionato.html:15
 #: templates/register.html:38
 msgid "Registrati"
 msgstr "Register"
 
-#: templates/base.html:335 templates/base.html:336
+#: templates/base.html:361 templates/base.html:362
 msgid "Mostra il menu laterale"
 msgstr "Show the sidebar"
 
-#: templates/base.html:358 templates/components/_gara_header.html:46
+#: templates/base.html:384 templates/components/_gara_header.html:46
 #: templates/help/index.html:11
 msgid "Home"
 msgstr "Home"
 
-#: templates/base.html:399
+#: templates/base.html:425
 msgid "Lv"
 msgstr "Lv"
 
-#: templates/base.html:428
+#: templates/base.html:454
 msgid "Non è riuscito"
 msgstr "Did not pass"
 
-#: templates/base.html:432 templates/player/venue_detail.html:262
+#: templates/base.html:458 templates/player/venue_detail.html:262
 msgid "Attenzione"
 msgstr "Warning"
 
-#: templates/base.html:434
+#: templates/base.html:460
 msgid "Informazione"
 msgstr "Information"
 
-#: templates/base.html:444 templates/challenge/create.html:8
+#: templates/base.html:470 templates/challenge/create.html:8
 #: templates/components/_campionato_create_modal.html:7
 #: templates/components/_challenge_management_modal.html:19
 #: templates/components/_challenge_management_modal.html:76
@@ -3390,120 +3682,120 @@ msgstr "Information"
 msgid "Chiudi"
 msgstr "Close"
 
-#: templates/base.html:481 templates/privacy.html:3
+#: templates/base.html:507 templates/privacy.html:3
 msgid "Privacy e Cookie"
 msgstr "Privacy and Cookies"
 
-#: templates/admin/venue_manager_requests.html:14 templates/base.html:499
+#: templates/admin/venue_manager_requests.html:14 templates/base.html:526
 msgid "Sale"
 msgstr "Venues"
 
-#: templates/base.html:504
+#: templates/base.html:531
 msgid "Sfide"
 msgstr "Matches"
 
-#: templates/base.html:517 templates/components/_user_menu.html:8
+#: templates/base.html:544 templates/components/_user_menu.html:8
 #: templates/player/notifications.html:3 templates/player/notifications.html:8
 msgid "Notifiche"
 msgstr "Notifications"
 
-#: templates/base.html:526
+#: templates/base.html:554
 msgid "DEBUG MODE - Informazioni Sistema"
 msgstr "DEBUG MODE - System Information"
 
-#: templates/base.html:530
+#: templates/base.html:558
 msgid "Utente:"
 msgstr "User:"
 
-#: templates/base.html:537
+#: templates/base.html:565
 msgid "User ID:"
 msgstr "User ID:"
 
-#: templates/base.html:544
+#: templates/base.html:572
 msgid "Esami:"
 msgstr "Exams:"
 
-#: templates/base.html:546 templates/components/_history_exams_tab.html:66
+#: templates/base.html:574 templates/components/_history_exams_tab.html:66
 msgid "esaminatore"
 msgstr "examiner"
 
-#: templates/base.html:546 templates/base.html:549
+#: templates/base.html:574 templates/base.html:577
 msgid "sì"
 msgstr "yes"
 
-#: templates/base.html:546 templates/base.html:549
+#: templates/base.html:574 templates/base.html:577
 msgid "no"
 msgstr "no"
 
-#: templates/base.html:549
+#: templates/base.html:577
 msgid "override"
 msgstr "override"
 
-#: templates/base.html:565
+#: templates/base.html:593
 msgid "Endpoint:"
 msgstr "Endpoint:"
 
-#: templates/base.html:569
+#: templates/base.html:597
 msgid "Method:"
 msgstr "Method:"
 
-#: templates/base.html:575 templates/base.html:589
+#: templates/base.html:603 templates/base.html:617
 msgid "Database:"
 msgstr "Database:"
 
-#: templates/base.html:583
+#: templates/base.html:611
 msgid "Not accessible"
 msgstr "Not accessible"
 
-#: templates/base.html:591
+#: templates/base.html:619
 msgid "Save Reset"
 msgstr "Save Reset"
 
-#: templates/base.html:594
+#: templates/base.html:622
 msgid "Quick Login:"
 msgstr "Quick Login:"
 
-#: templates/base.html:607
+#: templates/base.html:635
 msgid "Test Fixtures:"
 msgstr "Test Fixtures:"
 
-#: templates/base.html:609
+#: templates/base.html:637
 msgid "Player"
 msgstr "Player"
 
-#: templates/base.html:614
+#: templates/base.html:642
 msgid "Fill Gara"
 msgstr "Fill Competition"
 
-#: templates/base.html:618
+#: templates/base.html:646
 msgid "Iscrivi"
 msgstr "Enroll"
 
-#: templates/base.html:622
+#: templates/base.html:650
 msgid "Completare i match in corso del turno attuale con risultati random?"
 msgstr "Complete the current round's in-progress matches with random results?"
 
-#: templates/base.html:623
+#: templates/base.html:651
 msgid "Complete Round"
 msgstr "Complete Round"
 
-#: templates/base.html:627
+#: templates/base.html:655
 msgid "Complete Match"
 msgstr "Complete Match"
 
-#: templates/base.html:631
+#: templates/base.html:659
 msgid "Completare l'intera gara con risultati random fino alla fine?"
 msgstr "Complete the whole competition with random results to the end?"
 
-#: templates/base.html:632
+#: templates/base.html:660
 msgid "Complete Gara"
 msgstr "Complete Competition"
 
-#: templates/base.html:647 templates/base.html:653
+#: templates/base.html:675 templates/base.html:681
 msgid "Conferma"
 msgstr "Confirm"
 
-#: templates/base.html:648 templates/base.html:712
+#: templates/base.html:676 templates/base.html:740
 msgid "Close"
 msgstr "Close"
 
@@ -3513,8 +3805,8 @@ msgstr "Close"
 #: templates/admin/campionato_wizard_step1.html:158
 #: templates/admin/campionato_wizard_step2.html:8
 #: templates/admin/gara_edit.html:11 templates/admin/venue_form.html:296
-#: templates/admin/venue_manager_requests.html:155 templates/base.html:652
-#: templates/base.html:725 templates/challenge/_training_board.html:92
+#: templates/admin/venue_manager_requests.html:155 templates/base.html:680
+#: templates/base.html:753 templates/challenge/_training_board.html:92
 #: templates/challenge/builder.html:33 templates/challenge/builder.html:262
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
@@ -3546,68 +3838,70 @@ msgstr "Close"
 msgid "Annulla"
 msgstr "Cancel"
 
-#: templates/base.html:668
+#: templates/base.html:696
 msgid "XP OTTENUTI"
 msgstr "XP EARNED"
 
-#: templates/base.html:669
+#: templates/base.html:697
 msgid "LEVEL UP!"
 msgstr "LEVEL UP!"
 
-#: templates/base.html:670
+#: templates/base.html:698
 msgid "Nuovo livello raggiunto!"
 msgstr "New level reached!"
 
-#: templates/base.html:671
+#: templates/base.html:699
 msgid "NUOVO TRAGUARDO!"
 msgstr "NEW MILESTONE!"
 
-#: templates/base.html:672
+#: templates/base.html:700
 msgid "STREAK!"
 msgstr "STREAK!"
 
-#: templates/base.html:673
+#: templates/base.html:701
 msgid "Freeze attivo"
 msgstr "Freeze active"
 
-#: templates/base.html:674
+#: templates/base.html:702
 msgid "STREAK PERSA"
 msgstr "STREAK LOST"
 
-#: templates/base.html:675
+#: templates/base.html:703
 msgid "Non mollare, riprovare!"
 msgstr "Don't give up, try again!"
 
-#: templates/base.html:676
+#: templates/base.html:704
 msgid "QUEST COMPLETATA!"
 msgstr "QUEST COMPLETED!"
 
-#: templates/base.html:677
+#: templates/base.html:705
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr "WELCOME BACK!"
 
-#: templates/base.html:679
+#: templates/base.html:707
 msgid "Ciao!"
 msgstr "Hello!"
 
-#: templates/base.html:680
+#: templates/base.html:708
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr "Hello %(username)s!"
 
-#: templates/base.html:711
+#: templates/base.html:739
 msgid "Save Reset Snapshot"
 msgstr "Save Reset Snapshot"
 
-#: templates/base.html:716
+#: templates/base.html:744
 msgid "Nome snapshot"
 msgstr "Snapshot name"
 
-#: templates/base.html:720
+#: templates/base.html:748
 msgid "Descrizione (opzionale)"
 msgstr "Description (optional)"
 
-#: templates/admin/campionato_detail.html:171 templates/base.html:726
+#: templates/admin/campionato_detail.html:186
+#: templates/admin/campionato_vetrina.html:93
+#: templates/admin/gara_vetrina.html:94 templates/base.html:754
 #: templates/components/_playoff_scoring_form.html:28
 #: templates/gamification/admin/level_config.html:42
 #: templates/gamification/admin/level_config.html:174
@@ -3686,7 +3980,7 @@ msgstr "One rack less"
 msgid "Un triangolo in più"
 msgstr "One rack more"
 
-#: templates/admin/campionato_detail.html:166
+#: templates/admin/campionato_detail.html:181
 #: templates/admin/campionato_wizard_step2.html:76
 #: templates/admin/gara_create_standalone.html:432
 #: templates/admin/gara_create_standalone.html:496
@@ -3704,7 +3998,7 @@ msgstr "Rounds"
 #: templates/components/_classification_mobile.html:10
 #: templates/components/_index_campionato_cards.html:180
 #: templates/components/_separated_dashboard_content.html:456
-#: templates/gara_detail.html:73
+#: templates/gara_detail.html:73 templates/public/vetrina_campionato.html:133
 msgid "Classifica"
 msgstr "Standings"
 
@@ -3999,7 +4293,7 @@ msgstr ""
 "\n"
 "This action CANNOT BE UNDONE!"
 
-#: templates/admin/campionato_detail.html:427 templates/gara_detail.html:752
+#: templates/admin/campionato_detail.html:442 templates/gara_detail.html:752
 #, python-brace-format
 msgid ""
 "Sei SICURO di voler eliminare la Gara {number}?\n"
@@ -4630,7 +4924,11 @@ msgid ""
 " GitHub, il servizio dove teniamo l'elenco dei lavori da fare. Insieme al"
 " testo inviamo la pagina da cui arrivi, la versione dell'app, il tuo "
 "ruolo, il browser e la lingua: servono a capire cosa non ha funzionato."
-msgstr "If you report a problem from the app, the text you write is sent on to GitHub, the service where we keep our list of work to do. Along with the text we send the page you came from, the app version, your role, your browser and your language: they help us understand what went wrong."
+msgstr ""
+"If you report a problem from the app, the text you write is sent on to "
+"GitHub, the service where we keep our list of work to do. Along with the "
+"text we send the page you came from, the app version, your role, your "
+"browser and your language: they help us understand what went wrong."
 
 #: templates/privacy.html:58
 msgid ""
@@ -4639,7 +4937,11 @@ msgid ""
 "sistemi. Ti chiediamo di non scrivere nel testo dati personali tuoi o di "
 "altri giocatori, perché finirebbero su un servizio di terzi insieme al "
 "resto."
-msgstr "We do not send your email address: the report carries only your username, and the link with your account stays on our systems. We ask you not to put personal details — yours or another player's — in the text, because they would end up on a third-party service along with everything else."
+msgstr ""
+"We do not send your email address: the report carries only your username,"
+" and the link with your account stays on our systems. We ask you not to "
+"put personal details — yours or another player's — in the text, because "
+"they would end up on a third-party service along with everything else."
 
 #: templates/privacy.html:63
 msgid "I tuoi diritti"
@@ -4660,6 +4962,11 @@ msgstr ""
 #: templates/privacy.html:70
 msgid "Ultimo aggiornamento: agosto 2026."
 msgstr "Last updated: August 2026."
+
+#: templates/admin/campionato_vetrina.html:119
+#: templates/admin/gara_vetrina.html:120 templates/public_base.html:36
+msgid "Link copiato"
+msgstr "Link copied"
 
 #: templates/register.html:3
 msgid "Registrazione"
@@ -4958,45 +5265,56 @@ msgstr "Back to championships"
 msgid "Modifica"
 msgstr "Edit"
 
-#: templates/admin/campionato_detail.html:27
+#: templates/admin/campionato_detail.html:30
+#: templates/admin/campionato_vetrina.html:8
+#: templates/admin/gara_vetrina.html:9 templates/admin/gara_vetrina.html:10
+msgid "Vetrina"
+msgstr "Showcase"
+
+#: templates/admin/campionato_detail.html:36
 msgid "Passa ai playoff"
 msgstr "Move to the playoffs"
 
-#: templates/admin/campionato_detail.html:31
+#: templates/admin/campionato_detail.html:40
 #: templates/gamification/admin/quests.html:75
 msgid "Termina"
 msgstr "Ends"
 
-#: templates/admin/campionato_detail.html:44
+#: templates/admin/campionato_detail.html:53
 #: templates/admin/campionato_edit.html:10
 msgid "Modifica campionato"
 msgstr "Edit championship"
 
-#: templates/admin/campionato_detail.html:50
+#: templates/admin/campionato_detail.html:59
+#: templates/admin/campionato_vetrina.html:9
+msgid "Vetrina del campionato"
+msgstr "Championship showcase"
+
+#: templates/admin/campionato_detail.html:65
 msgid "Passa alla fase playoff"
 msgstr "Proceed to playoff phase"
 
-#: templates/admin/campionato_detail.html:54
+#: templates/admin/campionato_detail.html:69
 msgid "Termina campionato"
 msgstr "End the championship"
 
-#: templates/admin/campionato_detail.html:82
+#: templates/admin/campionato_detail.html:97
 msgid "Campionato terminato"
 msgstr "Championship terminated"
 
-#: templates/admin/campionato_detail.html:83
+#: templates/admin/campionato_detail.html:98
 msgid "Playoff in corso"
 msgstr "Playoffs in progress"
 
-#: templates/admin/campionato_detail.html:83
+#: templates/admin/campionato_detail.html:98
 msgid "Playoff in attesa di avvio"
 msgstr "Playoffs awaiting start"
 
-#: templates/admin/campionato_detail.html:85
+#: templates/admin/campionato_detail.html:100
 msgid "Campionato completato"
 msgstr "Championship completed"
 
-#: templates/admin/campionato_detail.html:97
+#: templates/admin/campionato_detail.html:112
 #: templates/components/_campionato_details_info.html:54
 #: templates/components/_history_campionati_tab.html:91
 #: templates/components/_history_campionati_tab.html:92
@@ -5007,25 +5325,25 @@ msgstr "Championship completed"
 msgid "Playoff"
 msgstr "Playoffs"
 
-#: templates/admin/campionato_detail.html:122
+#: templates/admin/campionato_detail.html:137
 msgid "Disattivare questa configurazione?"
 msgstr "Deactivate this configuration?"
 
-#: templates/admin/campionato_detail.html:129
+#: templates/admin/campionato_detail.html:144
 msgid "Posizioni"
 msgstr "Positions"
 
-#: templates/admin/campionato_detail.html:129
+#: templates/admin/campionato_detail.html:144
 msgid "Max partecipanti"
 msgstr "Max participants"
 
-#: templates/admin/campionato_detail.html:131
+#: templates/admin/campionato_detail.html:146
 msgid "Min. gare giocate"
 msgstr "Min. competitions played"
 
-#: templates/admin/campionato_detail.html:140
-#: templates/admin/campionato_detail.html:191
-#: templates/admin/campionato_detail.html:376
+#: templates/admin/campionato_detail.html:155
+#: templates/admin/campionato_detail.html:206
+#: templates/admin/campionato_detail.html:391
 #: templates/admin/campionato_wizard_step2.html:24
 #: templates/admin/venues_list.html:30
 #: templates/components/_gara_edit_form.html:30
@@ -5040,52 +5358,52 @@ msgstr "Min. competitions played"
 msgid "Nome"
 msgstr "Name"
 
-#: templates/admin/campionato_detail.html:144
-#: templates/admin/campionato_detail.html:194
-#: templates/admin/campionato_detail.html:379
+#: templates/admin/campionato_detail.html:159
+#: templates/admin/campionato_detail.html:209
+#: templates/admin/campionato_detail.html:394
 msgid "Da pos."
 msgstr "From pos."
 
-#: templates/admin/campionato_detail.html:148
-#: templates/admin/campionato_detail.html:197
-#: templates/admin/campionato_detail.html:382
+#: templates/admin/campionato_detail.html:163
+#: templates/admin/campionato_detail.html:212
+#: templates/admin/campionato_detail.html:397
 msgid "A pos."
 msgstr "To pos."
 
-#: templates/admin/campionato_detail.html:152
-#: templates/admin/campionato_detail.html:200
-#: templates/admin/campionato_detail.html:385
+#: templates/admin/campionato_detail.html:167
+#: templates/admin/campionato_detail.html:215
+#: templates/admin/campionato_detail.html:400
 #: templates/gamification/admin/streaks.html:30
 msgid "Max"
 msgstr "Max"
 
-#: templates/admin/campionato_detail.html:156
+#: templates/admin/campionato_detail.html:171
 msgid "Min gare"
 msgstr "Min competitions"
 
-#: templates/admin/campionato_detail.html:162
+#: templates/admin/campionato_detail.html:177
 msgid "Distance"
 msgstr "Distance"
 
-#: templates/admin/campionato_detail.html:163
-#: templates/admin/campionato_detail.html:167
+#: templates/admin/campionato_detail.html:178
+#: templates/admin/campionato_detail.html:182
 msgid "Eredita"
 msgstr "Inherit"
 
-#: templates/admin/campionato_detail.html:184
-#: templates/admin/campionato_detail.html:369
+#: templates/admin/campionato_detail.html:199
+#: templates/admin/campionato_detail.html:384
 msgid "Aggiungi configurazione"
 msgstr "Add configuration"
 
-#: templates/admin/campionato_detail.html:204
-#: templates/admin/campionato_detail.html:389 templates/exam/detail.html:157
+#: templates/admin/campionato_detail.html:219
+#: templates/admin/campionato_detail.html:404 templates/exam/detail.html:157
 #: templates/exam/examiners.html:45
 #: templates/gamification/admin/level_config.html:221
 #: templates/gamification/admin/streak_config.html:274
 msgid "Aggiungi"
 msgstr "Add"
 
-#: templates/admin/campionato_detail.html:216
+#: templates/admin/campionato_detail.html:231
 msgid ""
 "Avviare i playoff? Le configurazioni verranno bloccate e i giocatori "
 "qualificati riceveranno un invito."
@@ -5093,27 +5411,27 @@ msgstr ""
 "Start playoffs? Configurations will be locked and qualified players will "
 "receive an invitation."
 
-#: templates/admin/campionato_detail.html:217
+#: templates/admin/campionato_detail.html:232
 msgid "Avvia Playoff"
 msgstr "Start Playoffs"
 
-#: templates/admin/campionato_detail.html:228
+#: templates/admin/campionato_detail.html:243
 msgid "confermati"
 msgstr "confirmed"
 
-#: templates/admin/campionato_detail.html:230
+#: templates/admin/campionato_detail.html:245
 #: templates/components/_gara_inscriptions.html:16
 msgid "in attesa"
 msgstr "pending"
 
-#: templates/admin/campionato_detail.html:241
+#: templates/admin/campionato_detail.html:256
 #: templates/admin/venue_form.html:195
 #: templates/components/_playoff_invitations.html:29
 #: templates/individual_match/statistics.html:80
 msgid "Posizione"
 msgstr "Position"
 
-#: templates/admin/campionato_detail.html:242
+#: templates/admin/campionato_detail.html:257
 #: templates/admin/venue_form.html:229
 #: templates/admin/venue_manager_requests.html:33
 #: templates/admin/venues_list.html:37
@@ -5136,14 +5454,14 @@ msgstr "Position"
 msgid "Stato"
 msgstr "Status"
 
-#: templates/admin/campionato_detail.html:243
+#: templates/admin/campionato_detail.html:258
 #: templates/components/_soft_delete_modal.html:36
 #: templates/gamification/admin/xp_management.html:42
 #: templates/gamification/admin/xp_management.html:93
 msgid "Motivo"
 msgstr "Reason"
 
-#: templates/admin/campionato_detail.html:254
+#: templates/admin/campionato_detail.html:269
 #: templates/components/_match_result_row.html:148
 #: templates/components/_multi_set_score_display.html:94
 #: templates/components/_playoff_invitations.html:23
@@ -5156,72 +5474,72 @@ msgstr "Reason"
 msgid "In attesa"
 msgstr "Pending"
 
-#: templates/admin/campionato_detail.html:256
+#: templates/admin/campionato_detail.html:271
 #: templates/components/_unified_match_score.html:88
 #: templates/components/_unified_match_score.html:99
 #: templates/exam/requests.html:19 utils/status_ui.py:225
 msgid "Confermato"
 msgstr "Confirmed"
 
-#: templates/admin/campionato_detail.html:258 utils/status_ui.py:226
+#: templates/admin/campionato_detail.html:273 utils/status_ui.py:226
 msgid "Rifiutato"
 msgstr "Declined"
 
-#: templates/admin/campionato_detail.html:260
+#: templates/admin/campionato_detail.html:275
 #: templates/components/_proposal_labels.html:36
 msgid "Scaduto"
 msgstr "Expired"
 
-#: templates/admin/campionato_detail.html:263
+#: templates/admin/campionato_detail.html:278
 #, python-format
 msgid "registrato da %(name)s"
 msgstr "recorded by %(name)s"
 
-#: templates/admin/campionato_detail.html:263
+#: templates/admin/campionato_detail.html:278
 msgid "direzione"
 msgstr "the direction"
 
-#: templates/admin/campionato_detail.html:278
+#: templates/admin/campionato_detail.html:293
 msgid "Conferma per conto del giocatore"
 msgstr "Confirm on the player’s behalf"
 
-#: templates/admin/campionato_detail.html:279
+#: templates/admin/campionato_detail.html:294
 msgid "Confermare la partecipazione per conto di questo giocatore?"
 msgstr "Confirm participation on this player’s behalf?"
 
-#: templates/admin/campionato_detail.html:289
+#: templates/admin/campionato_detail.html:304
 msgid "Rifiuta per conto del giocatore"
 msgstr "Decline on the player’s behalf"
 
-#: templates/admin/campionato_detail.html:290
+#: templates/admin/campionato_detail.html:305
 msgid "Registrare il rifiuto? L'invito passera' al primo degli esclusi."
 msgstr "Record the refusal? The invitation goes to the first player left out."
 
-#: templates/admin/campionato_detail.html:301
+#: templates/admin/campionato_detail.html:316
 msgid "Rimuovere questo giocatore?"
 msgstr "Remove this player?"
 
-#: templates/admin/campionato_detail.html:319
+#: templates/admin/campionato_detail.html:334
 msgid "Aggiungi giocatore..."
 msgstr "Add player..."
 
-#: templates/admin/campionato_detail.html:337
+#: templates/admin/campionato_detail.html:352
 msgid "Creare la gara playoff e iscrivere i giocatori confermati?"
 msgstr "Create the playoff competition and register confirmed players?"
 
-#: templates/admin/campionato_detail.html:338
+#: templates/admin/campionato_detail.html:353
 msgid "Crea Gara Playoff"
 msgstr "Create Playoff Competition"
 
-#: templates/admin/campionato_detail.html:345
+#: templates/admin/campionato_detail.html:360
 msgid "Vai alla gara playoff"
 msgstr "Go to playoff competition"
 
-#: templates/admin/campionato_detail.html:361
+#: templates/admin/campionato_detail.html:376
 msgid "Nessuna configurazione playoff attiva."
 msgstr "No active playoff configuration."
 
-#: templates/admin/campionato_detail.html:449
+#: templates/admin/campionato_detail.html:464
 msgid ""
 "Tutte le gare sono concluse. Passare alla fase playoff? Potrai poi "
 "avviare i playoff e invitare i qualificati."
@@ -5229,7 +5547,7 @@ msgstr ""
 "All competitions are finished. Proceed to the playoff phase? You can then"
 " start the playoffs and invite the qualified players."
 
-#: templates/admin/campionato_detail.html:451
+#: templates/admin/campionato_detail.html:466
 msgid ""
 "Sei sicuro di voler terminare il campionato? Le gare non completate "
 "verranno eliminate."
@@ -5237,7 +5555,7 @@ msgstr ""
 "Are you sure you want to terminate the championship? Non-completed "
 "competitions will be removed."
 
-#: templates/admin/campionato_detail.html:454
+#: templates/admin/campionato_detail.html:469
 msgid ""
 "Attenzione: alcuni playoff hanno un requisito minimo gare non "
 "raggiungibile. Vuoi terminare comunque?"
@@ -5245,17 +5563,158 @@ msgstr ""
 "Warning: some playoffs have a minimum competition requirement that cannot"
 " be met. Terminate anyway?"
 
-#: templates/admin/campionato_detail.html:516
+#: templates/admin/campionato_detail.html:531
 #: templates/components/_new_gara_modal.html:674
 #, python-brace-format
 msgid "Esatto numero: {distance} triangoli totali"
 msgstr "Exact number: {distance} total racks"
 
-#: templates/admin/campionato_detail.html:517
+#: templates/admin/campionato_detail.html:532
 #: templates/components/_new_gara_modal.html:675
 #, python-brace-format
 msgid "Al {distance} (si vince a {distance} triangoli)"
 msgstr "Race to {distance} (first to {distance} racks wins)"
+
+#: templates/admin/campionato_vetrina.html:16
+#: templates/admin/gara_vetrina.html:17
+msgid "Locandina"
+msgstr "Poster"
+
+#: templates/admin/campionato_vetrina.html:18
+msgid ""
+"La usano tutte le gare del campionato che non ne hanno una propria: è "
+"l'immagine che compare nell'anteprima del link sui social. Formato "
+"migliore 1200×630 pixel."
+msgstr ""
+"Every competition in the championship without one of its own uses it: it "
+"is the image shown in the link preview on social media. Best size "
+"1200×630 pixels."
+
+#: templates/admin/campionato_vetrina.html:23
+msgid "Locandina del campionato"
+msgstr "Championship poster"
+
+#: templates/admin/campionato_vetrina.html:26
+#, python-format
+msgid "La usa %(num)s gara."
+msgid_plural "La usano %(num)s gare."
+msgstr[0] "%(num)s competition uses it."
+msgstr[1] "%(num)s competitions use it."
+
+#: templates/admin/campionato_vetrina.html:31
+#: templates/admin/gara_vetrina.html:34
+msgid "Nessuna locandina"
+msgstr "No poster"
+
+#: templates/admin/campionato_vetrina.html:32
+msgid "Senza immagine i link delle gare mostrano la grafica del sito."
+msgstr "Without an image, competition links show the site artwork."
+
+#: templates/admin/campionato_vetrina.html:41
+#: templates/admin/gara_vetrina.html:44
+msgid "Carica locandina"
+msgstr "Upload poster"
+
+#: templates/admin/campionato_vetrina.html:49
+#: templates/admin/gara_vetrina.html:52
+#: templates/components/_directors_management.html:44
+msgid "Rimuovi"
+msgstr "Remove"
+
+#: templates/admin/campionato_vetrina.html:58
+#: templates/components/_gara_edit_form.html:376 templates/exam/detail.html:18
+#: templates/exam/manage.html:72
+#: templates/gamification/admin/achievement_form.html:34
+#: templates/gamification/admin/feature_create.html:38
+#: templates/gamification/admin/feature_detail.html:45
+#: templates/gamification/admin/level_config.html:101
+#: templates/gamification/admin/level_config.html:163
+#: templates/gamification/admin/level_config.html:214
+#: templates/gamification/admin/quest_form.html:24
+#: templates/gamification/admin/xp_config.html:33
+msgid "Descrizione"
+msgstr "Description"
+
+#: templates/admin/campionato_vetrina.html:60
+msgid ""
+"Di cosa si tratta, a chi è aperto, come funziona: è la riga che spiega il"
+" campionato a chi apre il link senza conoscerlo. Senza, la sua pagina "
+"resta un calendario di date."
+msgstr "What it is, who can enter, how it works: this is the line that explains the championship to whoever opens the link without knowing it. Without it, the page stays a calendar of dates."
+
+#: templates/admin/campionato_vetrina.html:63
+msgid "Campionato sociale aperto a tutti i tesserati…"
+msgstr "Club championship, open to all members…"
+
+#: templates/admin/campionato_vetrina.html:67
+#: templates/admin/gara_vetrina.html:62
+msgid "Indirizzo personalizzato"
+msgstr "Custom address"
+
+#: templates/admin/campionato_vetrina.html:69
+#: templates/admin/gara_vetrina.html:64
+msgid ""
+"Un nome leggibile al posto del codice, da dettare al telefono o stampare "
+"su una locandina. Il link con il codice continua a funzionare."
+msgstr ""
+"A readable name instead of the code, easy to read out on the phone or "
+"print on a poster. The link with the code keeps working."
+
+#: templates/admin/campionato_vetrina.html:74
+
+msgid "sociale-2026"
+msgstr "club-2026"
+
+#: templates/admin/campionato_vetrina.html:76
+#: templates/admin/gara_vetrina.html:71
+msgid "Spazi e accenti diventano trattini. Lascia vuoto per usare solo il codice."
+msgstr "Spaces and accents become hyphens. Leave empty to use the code only."
+
+#: templates/admin/campionato_vetrina.html:80
+#: templates/admin/gara_vetrina.html:75
+msgid "Link esterno"
+msgstr "External link"
+
+#: templates/admin/campionato_vetrina.html:82
+msgid ""
+"Il regolamento del campionato, o la pagina dell'organizzazione: compare "
+"sulla vetrina di ogni gara che non ne ha uno proprio."
+msgstr ""
+"The championship rules, or the organiser page: it appears on the showcase"
+" of every competition without a link of its own."
+
+#: templates/admin/campionato_vetrina.html:84
+#: templates/admin/gara_vetrina.html:79 templates/admin/venue_form.html:52
+#: templates/admin/venues_list.html:31 templates/auth/diagnosi_cookie.html:20
+#: templates/player/venue_detail.html:50 templates/player/venues.html:35
+msgid "Indirizzo"
+msgstr "Address"
+
+#: templates/admin/campionato_vetrina.html:87
+#: templates/admin/gara_vetrina.html:82
+msgid "Come si chiama"
+msgstr "Label"
+
+#: templates/admin/campionato_vetrina.html:90
+#: templates/admin/gara_vetrina.html:85
+msgid "Regolamento"
+msgstr "Rules"
+
+#: templates/admin/campionato_vetrina.html:98
+#: templates/admin/gara_vetrina.html:99
+msgid "Link da condividere"
+msgstr "Link to share"
+
+#: templates/admin/campionato_vetrina.html:102
+#: templates/admin/gara_vetrina.html:103
+#: templates/components/_gara_public_link.html:31
+msgid "Copia link"
+msgstr "Copy link"
+
+#: templates/admin/campionato_vetrina.html:105
+#: templates/admin/gara_vetrina.html:106
+msgid "Anteprima"
+msgstr "Preview"
 
 #: templates/admin/campionato_wizard_step1.html:3
 #: templates/admin/campionato_wizard_step1.html:4
@@ -6057,15 +6516,6 @@ msgstr "Participants"
 msgid "Forfait"
 msgstr "Forfeit"
 
-#: templates/admin/gara_create_standalone.html:435
-#: templates/components/_campionato_details_info.html:86
-#: templates/components/_campionato_garas.html:21
-#: templates/components/_gara_info.html:47
-#: templates/components/_player_dashboard_content.html:43
-#: templates/components/_separated_dashboard_content.html:286
-msgid "Quota"
-msgstr "Fee"
-
 #: templates/admin/gara_create_standalone.html:438
 msgid "Politiche Abbinamento"
 msgstr "Pairing Policies"
@@ -6169,6 +6619,48 @@ msgid ""
 msgstr ""
 "With anti-rematch on and {max} maximum participants, you can have at most"
 " {rounds} rounds (each player can face at most {rounds} unique opponents)"
+
+#: templates/admin/gara_vetrina.html:19
+msgid ""
+"È l'immagine che compare nell'anteprima del link su WhatsApp, Facebook e "
+"Telegram. Il formato migliore è 1200×630 pixel: le altre proporzioni "
+"vengono ritagliate al centro."
+msgstr ""
+"This is the image shown in the link preview on WhatsApp, Facebook and "
+"Telegram. Best size is 1200×630 pixels: other ratios are cropped from the"
+" centre."
+
+#: templates/admin/gara_vetrina.html:24
+msgid "Locandina attuale"
+msgstr "Current poster"
+
+#: templates/admin/gara_vetrina.html:28
+msgid ""
+"Ereditata dal campionato. Carica un'immagine qui per usarne una diversa "
+"solo su questa gara."
+msgstr ""
+"Inherited from the championship. Upload an image here to use a different "
+"one for this competition only."
+
+#: templates/admin/gara_vetrina.html:35
+msgid "Senza immagine il link mostra la grafica del sito."
+msgstr "Without an image, the link shows the site artwork."
+
+#: templates/admin/gara_vetrina.html:69
+msgid "open-di-natale-2026"
+msgstr "christmas-open-2026"
+
+#: templates/admin/gara_vetrina.html:77
+msgid ""
+"Regolamento, pagina della sala, modulo di pagamento: compare come "
+"pulsante in fondo alla vetrina."
+msgstr ""
+"Rules, venue page, payment form: it appears as a button at the bottom of "
+"the showcase."
+
+#: templates/admin/gara_vetrina.html:88
+msgid "Ora si usa il link del campionato."
+msgstr "The championship link is being used."
 
 #: templates/admin/kpi.html:4
 msgid "KPI Dashboard"
@@ -6611,6 +7103,7 @@ msgid "Richiesta"
 msgstr "Request"
 
 #: templates/admin/users_list.html:139 templates/admin/users_list.html:231
+#: templates/public/vetrina_campionato.html:165
 msgid "Iscrizioni"
 msgstr "Registrations"
 
@@ -6988,12 +7481,6 @@ msgstr "Basic Information"
 #: templates/admin/venue_form.html:42
 msgid "Nome Sala"
 msgstr "Venue Name"
-
-#: templates/admin/venue_form.html:52 templates/admin/venues_list.html:31
-#: templates/auth/diagnosi_cookie.html:20 templates/player/venue_detail.html:50
-#: templates/player/venues.html:35
-msgid "Indirizzo"
-msgstr "Address"
 
 #: templates/admin/venue_form.html:60 templates/admin/venues_list.html:32
 #: templates/components/_player_personal_info.html:24
@@ -7547,6 +8034,7 @@ msgstr "Instructions"
 #: templates/challenge/_challenge_detail.html:58
 #: templates/components/_gara_matches.html:55
 #: templates/components/_gara_matches.html:89
+#: templates/public/vetrina_campionato.html:88
 msgid "Giocatori"
 msgstr "Players"
 
@@ -8563,27 +9051,6 @@ msgstr "Round of 32"
 msgid "Da definire"
 msgstr "To be decided"
 
-#: templates/components/_bracket_view.html:52
-#: templates/components/_gara_matches.html:49
-#: templates/components/_match_card.html:26
-#: templates/components/_match_cards_mobile.html:44
-#: templates/components/_match_result_row.html:100
-#: templates/components/_match_result_row.html:102
-#: templates/components/_match_scoreboard.html:256
-#: templates/components/_match_status_labels.html:23
-#: templates/components/_multi_set_score_display.html:90
-#: templates/components/_round_navigation.html:26
-#: templates/components/_separated_dashboard_content.html:55
-#: templates/components/_separated_dashboard_content.html:224
-#: templates/individual_match/dashboard.html:115
-#: templates/individual_match/matches.html:38
-#: templates/individual_match/matches.html:99
-#: templates/individual_match/quick_match.html:60
-#: templates/player/challenge_attempt_detail.html:24
-#: templates/public/campionatos_list.html:20
-msgid "In corso"
-msgstr "In Progress"
-
 #: templates/components/_bracket_view.html:70
 msgid "Tabellone non ancora sorteggiato"
 msgstr "Bracket not drawn yet"
@@ -8650,17 +9117,6 @@ msgstr "Round"
 #: templates/individual_match/match_detail.html:224
 msgid "Iniziato"
 msgstr "Started"
-
-#: templates/components/_bye_challenges.html:32
-#: templates/components/_match_card.html:24
-#: templates/components/_match_result_row.html:94
-#: templates/components/_match_result_row.html:96
-#: templates/components/_match_status_labels.html:22
-#: templates/individual_match/dashboard.html:103
-#: templates/individual_match/matches.html:37
-#: templates/individual_match/matches.html:107 utils/status_ui.py:180
-msgid "Da giocare"
-msgstr "To play"
 
 #: templates/components/_bye_challenges.html:39
 #, python-format
@@ -9481,10 +9937,6 @@ msgstr "No co-directors: you are running this competition on your own."
 msgid "Direttore campionato"
 msgstr "Championship director"
 
-#: templates/components/_directors_management.html:44
-msgid "Rimuovi"
-msgstr "Remove"
-
 #: templates/components/_directors_management.html:59
 msgid "Nessun altro direttore in zona"
 msgstr "No other director nearby"
@@ -9938,19 +10390,6 @@ msgstr "Enable a tiebreaker for tied players"
 msgid "Richiede Spot Shot Rally per risolvere i parimerito nelle prime posizioni"
 msgstr "Requires a Spot Shot Rally to break ties in the top places"
 
-#: templates/components/_gara_edit_form.html:376 templates/exam/detail.html:18
-#: templates/exam/manage.html:72
-#: templates/gamification/admin/achievement_form.html:34
-#: templates/gamification/admin/feature_create.html:38
-#: templates/gamification/admin/feature_detail.html:45
-#: templates/gamification/admin/level_config.html:101
-#: templates/gamification/admin/level_config.html:163
-#: templates/gamification/admin/level_config.html:214
-#: templates/gamification/admin/quest_form.html:24
-#: templates/gamification/admin/xp_config.html:33
-msgid "Descrizione"
-msgstr "Description"
-
 #: templates/components/_gara_edit_form.html:378
 msgid "Note per gli iscritti: ritrovo, parcheggio, premi…"
 msgstr "Notes for entrants: meeting point, parking, prizes…"
@@ -10306,10 +10745,6 @@ msgstr "Public registration link"
 msgid "Copiato!"
 msgstr "Copied!"
 
-#: templates/components/_gara_public_link.html:31
-msgid "Copia link"
-msgstr "Copy link"
-
 #: templates/components/_gara_public_link.html:34
 msgid ""
 "Condividi questo indirizzo su locandine, post o QR code: chi lo apre "
@@ -10317,6 +10752,10 @@ msgid ""
 msgstr ""
 "Share this address on posters, social posts or QR codes: whoever opens it"
 " lands on this competition and registers."
+
+#: templates/components/_gara_public_link.html:41
+msgid "Cura la vetrina"
+msgstr "Edit the showcase"
 
 #: templates/components/_gara_tables_config.html:10
 #: templates/components/_gara_tables_config.html:49
@@ -10392,6 +10831,7 @@ msgstr "You can see results and standings, but you cannot take part."
 #: templates/components/_nearby_gare.html:43
 #: templates/components/_separated_dashboard_content.html:360
 #: templates/components/_unified_cards.html:141
+#: templates/public/vetrina_gara.html:168
 msgid "Iscriviti"
 msgstr "Register"
 
@@ -10596,6 +11036,7 @@ msgstr "Where from"
 #: templates/components/_playoff_invitations.html:20
 #: templates/components/_unified_cards.html:12
 #: templates/components/_user_recent_matches_table.html:13
+#: templates/public/vetrina_campionato.html:57
 msgid "Campionato"
 msgstr "Championship"
 
@@ -10765,15 +11206,6 @@ msgstr "See all finished championships"
 msgid "Gare concluse"
 msgstr "Finished competitions"
 
-#: templates/components/_index_archive.html:35
-#: templates/components/_match_card.html:28
-#: templates/components/_match_result_row.html:106
-#: templates/components/_match_result_row.html:108
-#: templates/components/_match_scoreboard.html:252
-#: templates/components/_separated_dashboard_content.html:220
-msgid "Conclusa"
-msgstr "Finished"
-
 #: templates/components/_index_archive.html:46
 #: templates/components/_unified_cards.html:88
 msgid "Podio"
@@ -10882,6 +11314,7 @@ msgstr "Venue to be decided"
 #: templates/components/_index_live.html:29
 #: templates/components/_nearby_gare.html:42
 #: templates/components/_unified_cards.html:60
+#: templates/public/vetrina_gara.html:132
 msgid "iscritti"
 msgstr "registered"
 
@@ -10892,19 +11325,6 @@ msgstr "At the tables now"
 #: templates/components/_index_live.html:54
 msgid "Segui la diretta"
 msgstr "Watch live"
-
-#: templates/components/_index_open_inscriptions.html:6
-#: templates/components/_nearby_gare.html:40
-#: templates/components/_separated_dashboard_content.html:233
-#: templates/components/_unified_cards.html:71
-msgid "Iscrizioni aperte"
-msgstr "Open registrations"
-
-#: templates/components/_index_open_inscriptions.html:19
-#: templates/components/_player_dashboard_content.html:30
-#: templates/individual_match/proposal_detail.html:42
-msgid "Aperta"
-msgstr "Open"
 
 #: templates/components/_index_open_inscriptions.html:43
 msgid "Posti esauriti: si entra in lista d'attesa"
@@ -12659,8 +13079,9 @@ msgid "vince chi ha piu triangoli"
 msgstr "most racks wins"
 
 #: templates/components/_unified_cards.html:33
+#: templates/public/vetrina_campionato.html:153
 msgid "Prossima gara"
-msgstr "Next tournament"
+msgstr "Next competition"
 
 #: templates/components/_unified_cards.html:38
 msgid "Nessuna gara in calendario"
@@ -13749,26 +14170,28 @@ msgstr "Your reports"
 msgid "Quello che ci hai scritto, e come è andata a finire."
 msgstr "What you wrote to us, and how it turned out."
 
-#: templates/feedback/index.html:9 templates/feedback/index.html:52
+#: templates/feedback/index.html:12 templates/feedback/index.html:56
 #: templates/feedback/nuova.html:2 templates/feedback/nuova.html:8
 msgid "Segnala un problema"
 msgstr "Report a problem"
 
-#: templates/feedback/index.html:37
+#: templates/feedback/index.html:41
 msgid "La nostra risposta"
 msgstr "Our reply"
 
-#: templates/feedback/index.html:47
+#: templates/feedback/index.html:51
 msgid "Non hai ancora segnalato niente"
 msgstr "You have not reported anything yet"
 
-#: templates/feedback/index.html:49
+#: templates/feedback/index.html:53
 msgid ""
 "Se qualcosa non funziona, se ti viene un'idea o se non trovi come si fa, "
 "scrivicelo: è il modo più rapido perché ce ne accorgiamo."
-msgstr "If something does not work, if you have an idea, or if you cannot find how to do something, write to us: it is the fastest way for us to notice."
+msgstr ""
+"If something does not work, if you have an idea, or if you cannot find "
+"how to do something, write to us: it is the fastest way for us to notice."
 
-#: templates/feedback/index.html:60
+#: templates/feedback/index.html:64
 msgid "Novità sulle tue segnalazioni"
 msgstr "News about your reports"
 
@@ -13811,7 +14234,11 @@ msgid ""
 "funzionato. Il testo che scrivi finisce su GitHub, il servizio dove "
 "teniamo l'elenco dei lavori, quindi non scriverci dati personali tuoi o "
 "di altri giocatori."
-msgstr "We attach the page you came from, the app version, your role and your browser: they help us understand what went wrong. The text you write ends up on GitHub, the service where we keep our list of work, so do not put personal details in it, yours or another player's."
+msgstr ""
+"We attach the page you came from, the app version, your role and your "
+"browser: they help us understand what went wrong. The text you write ends"
+" up on GitHub, the service where we keep our list of work, so do not put "
+"personal details in it, yours or another player's."
 
 #: templates/feedback/nuova.html:65
 msgid "Invia la segnalazione"
@@ -15205,12 +15632,6 @@ msgid "G"
 msgstr "T"
 
 #: templates/individual_match/availability.html:17
-#: templates/individual_match/statistics.html:203
-#: templates/individual_match/statistics.html:212
-msgid "V"
-msgstr "W"
-
-#: templates/individual_match/availability.html:17
 msgid "S"
 msgstr "S"
 
@@ -15399,11 +15820,6 @@ msgstr "48 hours before the match"
 msgid "Dopo quel momento nessuno può più accettarla"
 msgstr "After that moment nobody can accept it"
 
-#: templates/individual_match/create_proposal.html:86
-#: templates/player/playoff_invitation.html:27
-msgid "Dove"
-msgstr "Where"
-
 #: templates/individual_match/create_proposal.html:89
 #: templates/individual_match/edit_match.html:52
 #: templates/individual_match/quick_match.html:144
@@ -15419,13 +15835,6 @@ msgstr "Choose a verified venue or write a new one"
 #: templates/individual_match/quick_match.html:103
 msgid "Come si gioca"
 msgstr "How it is played"
-
-#: templates/individual_match/create_proposal.html:119
-#: templates/individual_match/edit_match.html:71
-#: templates/individual_match/match_detail.html:199
-#: templates/individual_match/quick_match.html:163
-msgid "Formato"
-msgstr "Format"
 
 #: templates/individual_match/create_proposal.html:120
 #: templates/individual_match/edit_match.html:72
@@ -16353,11 +16762,6 @@ msgstr "lost"
 #: templates/individual_match/statistics.html:201
 msgid "Ultime sfide"
 msgstr "Latest matches"
-
-#: templates/individual_match/statistics.html:204
-#: templates/individual_match/statistics.html:212
-msgid "P"
-msgstr "L"
 
 #: templates/individual_match/statistics.html:206
 #: templates/individual_match/statistics.html:213
@@ -17365,6 +17769,106 @@ msgstr ""
 #: templates/public/invite_not_found.html:26
 msgid "Vedi le gare"
 msgstr "See the competitions"
+
+#: templates/public/vetrina_campionato.html:42
+#: templates/public/vetrina_campionato.html:178
+#: templates/public/vetrina_gara.html:47 templates/public/vetrina_gara.html:171
+#: templates/public/vetrina_gara.html:184
+msgid "Condividi"
+msgstr "Share"
+
+#: templates/public/vetrina_campionato.html:49
+#,  python-format
+msgid "Locandina di %(nome)s"
+msgstr "Poster for %(nome)s"
+
+#: templates/public/vetrina_campionato.html:83
+
+msgid "Formula"
+msgstr "Format"
+
+#: templates/public/vetrina_campionato.html:101
+
+msgid "Le gare"
+msgstr "The competitions"
+
+#: templates/public/vetrina_campionato.html:102
+#,  python-format
+msgid "%(giocate)s di %(totali)s giocate"
+msgstr "%(giocate)s of %(totali)s played"
+
+#: templates/public/vetrina_campionato.html:134
+#,  python-format
+msgid "dopo %(n)s gare"
+msgstr "after %(n)s competitions"
+
+#: templates/public/vetrina_campionato.html:167
+msgid ""
+"Nessuna gara ha le iscrizioni aperte in questo momento. Condividi la "
+"pagina o torna a controllare: il calendario è qui sopra."
+msgstr "No competition has registration open right now. Share the page or check back later: the calendar is just above."
+
+#: templates/public/vetrina_campionato.html:175
+
+msgid "Iscriviti alla gara"
+msgstr "Register for the competition"
+
+#: templates/public/vetrina_campionato.html:184
+
+msgid "Condividi il campionato"
+msgstr "Share the championship"
+
+#: templates/public/vetrina_campionato.html:200
+#: templates/public/vetrina_gara.html:201
+msgid "Organizza"
+msgstr "Organised by"
+
+#: templates/public/vetrina_gara.html:54
+#, python-format
+msgid "Locandina di %(gara)s"
+msgstr "Poster for %(gara)s"
+
+#: templates/public/vetrina_gara.html:105
+msgid "Classifica finale"
+msgstr "Final standings"
+
+#: templates/public/vetrina_gara.html:106
+
+msgid "Come è andata"
+msgstr "How it went"
+
+#: templates/public/vetrina_gara.html:131
+#,  python-format
+msgid "su %(n)s posti"
+msgstr "of %(n)s seats"
+
+#: templates/public/vetrina_gara.html:136
+#,  python-format
+msgid "%(n)s liberi"
+msgstr "%(n)s free"
+
+#: templates/public/vetrina_gara.html:137
+
+msgid "Al completo"
+msgstr "Full"
+
+#: templates/public/vetrina_gara.html:144
+#, python-format
+msgid "%(iscritti)s su %(posti)s posti"
+msgstr "%(iscritti)s of %(posti)s seats"
+
+#: templates/public/vetrina_gara.html:149
+msgid "Posti occupati"
+msgstr "Seats taken"
+
+#: templates/public/vetrina_gara.html:177
+msgid "Condividi il risultato"
+msgstr "Share the result"
+
+#: templates/public/vetrina_gara.html:181
+
+msgid "Vedi le altre gare"
+msgstr "See other competitions"
 
 #: templates/roles/holders.html:3 templates/roles/holders.html:8
 msgid "Titolari del ruolo"

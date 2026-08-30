@@ -1,0 +1,194 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap">
+  <style>
+:root{
+  --c7-bg:#E4E8E7; --c7-card:#F5F7F6; --c7-sunken:#ECEEED;
+  --c7-ink:#1B2124; --c7-ink-soft:#3D474A; --c7-ink-muted:#6B7679; --c7-ink-faint:#9AA3A6;
+  --c7-on-ink:#F2F5F4; --c7-on-ink-muted:#9AA6A9;
+  --c7-line:#D3D8D7; --c7-line-soft:#E4E8E7;
+  --c7-accent:#2C4A52; --c7-accent-ink:#F2F8F7; --c7-accent-bright:#8FCDE8;
+  --c7-accent-dim:#A9C4C7; --c7-accent-tint:#DDE9EE; --c7-accent-tint-ink:#23404A;
+  --c7-ok-bg:#E4EDE9; --c7-ok-ink:#1D5F4A; --c7-ok:#2C8A6B;
+  --c7-warn-bg:#F0E9D8; --c7-warn-ink:#6E5417;
+  --c7-font:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --c7-font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",monospace;
+  --c7-r-pill:999px; --c7-r-card:22px; --c7-r-card-lg:26px; --c7-r-field:18px;
+  --c7-gutter:18px; --c7-pad-card:16px; --c7-gap:12px; --c7-gap-lg:16px;
+  --c7-btn-h:56px; --c7-field-h:58px;
+  --c7-shadow-pop:0 18px 36px -20px rgba(27,33,36,.75);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--c7-bg);color:var(--c7-ink);font-family:var(--c7-font);
+  font-weight:600;font-size:14px;line-height:1.5;text-wrap:pretty;-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-weight:800;letter-spacing:-.025em;color:var(--c7-ink);margin:0}
+a{color:var(--c7-accent);text-decoration:none}
+a:hover{color:var(--c7-accent-tint-ink)}
+p{margin:0}
+.ic{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;
+  stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.card{background:var(--c7-card);border-radius:var(--c7-r-card);padding:var(--c7-pad-card)}
+.kicker{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--c7-ink-muted)}
+.state{height:26px;padding:0 11px;border-radius:var(--c7-r-pill);font-size:10px;font-weight:800;
+  letter-spacing:.04em;text-transform:uppercase;display:inline-flex;align-items:center}
+.state--ok{background:var(--c7-ok-bg);color:var(--c7-ok-ink)}
+.muted{color:var(--c7-ink-muted);font-weight:600}
+.mono{font-family:var(--c7-font-mono);font-variant-numeric:tabular-nums}
+.btn{height:var(--c7-btn-h);border:0;border-radius:var(--c7-r-field);padding:0 20px;font-size:15px;
+  font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  font-family:var(--c7-font);cursor:pointer}
+.btn--primary{background:var(--c7-ink);color:#fff}
+
+
+    .page{min-height:100%;background:var(--c7-bg);position:relative;padding-bottom:96px}
+    /* Barra di servizio: chi arriva da un post non ha una cronologia in cui
+       tornare indietro, quindi niente freccia, niente avatar, niente nav. */
+    .top{display:flex;align-items:center;justify-content:space-between;
+      padding:14px var(--c7-gutter);position:relative;z-index:2}
+    .wordmark{font-size:12px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;
+      color:var(--c7-ink-muted)}
+    .iconbtn{width:46px;height:46px;border:0;border-radius:50%;background:var(--c7-card);
+      color:var(--c7-ink-soft);display:grid;place-items:center;cursor:pointer}
+    .hero{position:relative;margin-top:-58px}
+    .hero img{display:block;width:100%;height:262px;object-fit:cover}
+    /* Il titolo su un pannello pieno che scavalca l'immagine invece che su una
+       velatura sfumata: 7c distingue le superfici per tono, non per gradiente. */
+    .plate{position:relative;margin:-34px var(--c7-gutter) 0;background:var(--c7-ink);
+      color:var(--c7-on-ink);border-radius:var(--c7-r-card-lg);padding:20px}
+    .plate .ovr{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+      color:var(--c7-accent-bright)}
+    .plate h1{font-size:31px;line-height:1.08;color:var(--c7-on-ink);margin-top:8px}
+    .plate .when{display:flex;align-items:center;gap:8px;margin-top:14px;
+      color:var(--c7-on-ink-muted);font-size:13px;font-weight:700}
+    .plate .when .mono{color:var(--c7-on-ink)}
+    .badge-live{margin-top:16px;display:inline-flex;align-items:center;gap:7px;height:28px;
+      padding:0 12px;border-radius:var(--c7-r-pill);background:var(--c7-ok);color:#fff;
+      font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+    .body{padding:0 var(--c7-gutter)}
+    /* I fatti come blocco di manifesto: righe con filetto, etichetta a sinistra,
+       valore a destra. Non e' una card — sta sul fondo pagina. */
+    .facts{margin-top:26px}
+    .fact{display:flex;align-items:baseline;justify-content:space-between;gap:16px;
+      padding:13px 0;border-bottom:1px solid var(--c7-line)}
+    .fact:first-child{border-top:1px solid var(--c7-line)}
+    .fact dt{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:800;
+      letter-spacing:.12em;text-transform:uppercase;color:var(--c7-ink-muted);flex-shrink:0}
+    .fact dd{margin:0;text-align:right;font-size:15px;font-weight:800;letter-spacing:-.02em}
+    .fact dd small{display:block;font-size:12px;font-weight:600;color:var(--c7-ink-muted);
+      letter-spacing:0;margin-top:1px}
+    /* Un fatto solo, non due numeri e una barra: quanti posti restano. */
+    .seats{margin-top:26px}
+    .seats__row{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+    .seats__n{font-family:var(--c7-font-mono);font-variant-numeric:tabular-nums;font-weight:800;
+      font-size:15px;letter-spacing:-.02em}
+    .seats__n b{font-size:34px;letter-spacing:-.04em}
+    .seats__free{font-size:12px;font-weight:800;color:var(--c7-ok-ink);background:var(--c7-ok-bg);
+      border-radius:var(--c7-r-pill);padding:5px 11px}
+    .track{display:flex;gap:3px;margin-top:12px}
+    .track i{flex:1;height:7px;border-radius:2px;background:var(--c7-line)}
+    .track i.on{background:var(--c7-accent)}
+    .desc{margin-top:24px;font-size:14px;line-height:1.6;color:var(--c7-ink-soft)}
+    .out{margin-top:22px;display:flex;align-items:center;justify-content:space-between;gap:12px;
+      min-height:56px;padding:0 18px;border:1.5px solid var(--c7-line);border-radius:var(--c7-r-field);
+      font-weight:800;color:var(--c7-ink)}
+    .foot{margin-top:26px;padding-top:18px;border-top:1px solid var(--c7-line);
+      display:flex;align-items:center;gap:10px;color:var(--c7-ink-muted);font-size:12px;font-weight:700}
+    .foot .avatar{width:30px;height:30px;border-radius:50%;background:var(--c7-accent);color:#fff;
+      display:grid;place-items:center;font-size:10px;font-weight:800}
+    /* La chiamata all'azione resta sotto gli occhi per tutta la pagina: e' un
+       volantino, e un volantino senza indirizzo non serve a niente. */
+    .actionbar{position:absolute;left:12px;right:12px;bottom:14px;display:flex;gap:8px;
+      padding:9px;border-radius:var(--c7-r-pill);background:var(--c7-card);box-shadow:var(--c7-shadow-pop)}
+    .actionbar .btn{flex:1;border-radius:var(--c7-r-pill)}
+    .actionbar .share{width:56px;height:56px;flex:0 0 56px;border-radius:50%;border:0;
+      background:var(--c7-bg);color:var(--c7-ink);display:grid;place-items:center;cursor:pointer}
+
+  </style>
+</helmet>
+<svg style="display:none" aria-hidden="true">
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M8 3v4M16 3v4M3 10h18"/></symbol>
+  <symbol id="i-cup" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/><path d="M12 14v4M9 21h6"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s7-6.2 7-11a7 7 0 1 0-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></symbol>
+  <symbol id="i-eur" viewBox="0 0 24 24"><path d="M17 6.5A6.5 6.5 0 0 0 7.5 12 6.5 6.5 0 0 0 17 17.5M4 10.5h8M4 13.5h8"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><circle cx="10" cy="8" r="3.5"/><path d="M3.5 20a6.5 6.5 0 0 1 13 0M19 8v6M22 11h-6"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><path d="M8.3 10.8l7.4-4.3M8.3 13.2l7.4 4.3"/></symbol>
+  <symbol id="i-ext" viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-8 8"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 11l8-6 8 6v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6z"/><path d="M10 20h4"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></symbol>
+</svg>
+<div class="page">
+  <div class="top">
+    <span class="wordmark">Tornei Biliardo</span>
+    <button class="iconbtn" aria-label="Condividi"><svg class="ic"><use href="#i-share"/></svg></button>
+  </div>
+
+  <div class="hero"><img src="locandina.png" alt="Locandina della gara"></div>
+
+  <div class="plate">
+    <div class="ovr">Campionato Sociale 2026 &middot; 3ª prova</div>
+    <h1>Terza prova<br>Palla 8</h1>
+    <div class="when">
+      <svg class="ic"><use href="#i-cal"/></svg>
+      <span class="mono">sab 12 set</span> &middot; <span class="mono">20:30</span>
+    </div>
+    <span class="badge-live">Iscrizioni aperte</span>
+  </div>
+
+  <div class="body">
+    <dl class="facts">
+      <div class="fact"><dt><svg class="ic"><use href="#i-pin"/></svg>Dove</dt>
+        <dd>Sala Centrale<small>via Roma 14, Udine</small></dd></div>
+      <div class="fact"><dt><svg class="ic"><use href="#i-cup"/></svg>Formato</dt>
+        <dd>Palla 8, al 5<small>5 turni, abbinamento casuale</small></dd></div>
+      <div class="fact"><dt><svg class="ic"><use href="#i-eur"/></svg>Quota</dt>
+        <dd class="mono">15 &euro;</dd></div>
+      <div class="fact"><dt><svg class="ic"><use href="#i-clock"/></svg>Chiusura</dt>
+        <dd class="mono">10 set, 23:59</dd></div>
+    </dl>
+
+    <div class="seats">
+      <div class="seats__row">
+        <div class="seats__n"><b>12</b> su 16 posti</div>
+        <span class="seats__free">4 liberi</span>
+      </div>
+      <div class="track">
+        <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+        <i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i>
+        <i class="on"></i><i class="on"></i><i></i><i></i><i></i><i></i>
+      </div>
+    </div>
+
+    <p class="desc">Terza tappa del campionato sociale. Turni di qualificazione al 5,
+      poi tabellone a eliminazione diretta per i primi otto. Tavoli Brunswick 9 piedi.</p>
+
+    <a class="out" href="#">
+      <span style="display:inline-flex;align-items:center;gap:9px"><svg class="ic"><use href="#i-ext"/></svg>Regolamento</span>
+      <svg class="ic muted"><use href="#i-chev"/></svg>
+    </a>
+
+    <div class="foot">
+      <span class="avatar">LB</span>
+      <span>Organizza <b style="color:var(--c7-ink-soft)">Luca Bianchi</b><br>Direttore di gara</span>
+    </div>
+  </div>
+
+  <div class="actionbar">
+    <button class="btn btn--primary"><svg class="ic"><use href="#i-plus"/></svg> Iscriviti</button>
+    <button class="share" aria-label="Condividi"><svg class="ic"><use href="#i-share"/></svg></button>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

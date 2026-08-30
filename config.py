@@ -96,6 +96,8 @@ class Config:
     UPLOAD_BASE_PATH = "static/uploads"
     CHALLENGE_UPLOAD_FOLDER = "challenges"
     VENUE_UPLOAD_FOLDER = "venues"
+    # Locandine della vetrina social di gare e campionati (issue #235)
+    BANNER_UPLOAD_FOLDER = "banners"
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
     ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif"}
 

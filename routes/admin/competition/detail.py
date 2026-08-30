@@ -538,8 +538,14 @@ def gara_detail(gara_id):
         from models.competition.services import GaraService
 
         token = gara.public_token or GaraService.ensure_public_token(gara_id)
-        if token:
-            public_invite_url = url_for("main.gara_invite", token=token, _external=True)
+        # Lo slug, quando il direttore ne ha scelto uno: e' quello che vuole
+        # vedere sulla locandina, e il token continua comunque a funzionare
+        # (issue #235). `public_slug_or_token` decide quale **pubblicare**.
+        indirizzo = gara.slug or token
+        if indirizzo:
+            public_invite_url = url_for(
+                "main.gara_invite", token=indirizzo, _external=True
+            )
 
     # Chi riceve la X del primo turno. La domanda si pone solo per gare
     # amalfi/casuali col primo turno a sorteggio e i dispari gestiti dalla X,

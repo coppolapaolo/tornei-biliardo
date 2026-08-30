@@ -11,6 +11,7 @@ This package organizes competition routes by responsibility:
 - matches: Match and trio operations
 - challenges: Challenge integration with competitions
 - squadre: Elenco squadre della competizione e squadra degli iscritti
+- vetrina: Locandina, link esterno e indirizzo leggibile della pagina pubblica
 """
 
 from flask import Blueprint
@@ -29,6 +30,7 @@ from . import matches  # noqa: E402, F401
 from . import challenges  # noqa: E402, F401
 from . import squadre  # noqa: E402, F401
 from . import categorie  # noqa: E402, F401
+from . import vetrina  # noqa: E402, F401
 
 # Export blueprint for parent package
 __all__ = ["competition_bp"]

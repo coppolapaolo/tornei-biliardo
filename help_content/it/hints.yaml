@@ -620,6 +620,28 @@ hints:
     page: segnalare_un_problema
     section: che_fine_fa
 
+  - id: vetrina.locandina
+    label: "Locandina"
+    short: "L'immagine che compare nell'anteprima del link su WhatsApp o Facebook. Caricala sul campionato e la usano tutte le sue gare."
+    anchor: vetrina-locandina
+    screens: [admin.competition.gara_vetrina, admin.campionato.campionato_vetrina]
+    page: far_conoscere_la_gara
+    section: locandina
+  - id: vetrina.indirizzo
+    label: "Indirizzo personalizzato"
+    short: "Un nome leggibile al posto del codice, da dettare al telefono. Il link con il codice continua a funzionare."
+    anchor: vetrina-indirizzo
+    screens: [admin.competition.gara_vetrina]
+    page: far_conoscere_la_gara
+    section: indirizzo
+  - id: vetrina.link_esterno
+    label: "Link esterno"
+    short: "Regolamento, pagina della sala o modulo di pagamento: diventa un pulsante in fondo alla vetrina."
+    anchor: vetrina-link-esterno
+    screens: [admin.competition.gara_vetrina, admin.campionato.campionato_vetrina]
+    page: far_conoscere_la_gara
+    section: regolamento
+
 
 tours:
   - screen: dashboard.dashboard

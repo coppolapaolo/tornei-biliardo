@@ -201,6 +201,24 @@ def _create_gare(db, campionato, director, venue):
         )
         db.session.commit()
         gare.append(gara)
+
+    # La gara con le iscrizioni aperte riceve un indirizzo leggibile fisso
+    # (issue #235): la sua vetrina finisce nella guida, e il manifest delle
+    # schermate ha bisogno di un percorso stabile — il token, generato con
+    # `secrets`, cambia a ogni seed e non si potrebbe scrivere lì.
+    gare[-1].slug = "terza-prova-palla-8"
+    # Stessa ragione per il campionato, che dal secondo lotto ha una vetrina
+    # sua: anche il suo token nasce da `secrets` e cambierebbe a ogni seed.
+    gare[-1].campionato.slug = "campionato-sociale"
+    # La descrizione deve reggere il confronto con il calendario che le sta
+    # sotto: una schermata della guida in cui il testo dice «cinque gare da
+    # marzo» e l'elenco ne mostra quattro da agosto è una bugia stampata.
+    gare[-1].campionato.description = (
+        "Quattro gare fra agosto e settembre, aperte a tutti i soci della "
+        "sala. La classifica somma le vittorie di ogni gara."
+    )
+    db.session.commit()
+
     log(f"gare: {len(gare)} nel campionato")
     return gare
 
