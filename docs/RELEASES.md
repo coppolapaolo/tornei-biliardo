@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.6.1...v1.7.0) (2026-08-31)
+
+
+### Funzioni nuove
+
+* chi iscrive un giocatore lo cerca per cognome, e l'admin può scriverlo ([#297](https://github.com/coppolapaolo/tornei-biliardo/issues/297)) ([f66f662](https://github.com/coppolapaolo/tornei-biliardo/commit/f66f66212bbc039364e1657b9193b38c42a1b628))
+
 ## [1.6.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.6.0...v1.6.1) (2026-08-30)
 
 
