@@ -140,6 +140,14 @@ hints:
   - admin.competition.create_gara_standalone
   page: formati_di_gioco
   section: handicap
+- id: gara.cerca_da_iscrivere
+  label: Search for the player to enter
+  short: 'Type a username, first name or last name: the list narrows as you type. Players who added their name to their profile show up with it.'
+  anchor: gara-cerca-da-iscrivere
+  screens:
+  - admin.competition.gara_detail
+  page: gestire_le_iscrizioni
+  section: durante
 - id: gara.categoria_iscritto
   label: Category
   short: The player's level in this competition. Type a new name and the category is created.

@@ -154,6 +154,14 @@ hints:
     page: formati_di_gioco
     section: handicap
 
+  - id: gara.cerca_da_iscrivere
+    label: "Cerca il giocatore da iscrivere"
+    short: "Scrivi username, nome o cognome: l'elenco si accorcia mentre scrivi. Chi ha messo il nome nel profilo compare con quello."
+    anchor: gara-cerca-da-iscrivere
+    screens: [admin.competition.gara_detail]
+    page: gestire_le_iscrizioni
+    section: durante
+
   - id: gara.categoria_iscritto
     label: "Categoria"
     short: "Il livello del giocatore in questa gara. Scrivi un nome nuovo e la categoria viene creata."
