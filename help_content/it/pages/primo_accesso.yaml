@@ -28,7 +28,7 @@ blocks:
           **Iscriviti**; ti si apre la pagina di accesso, e lì in fondo c'è
           **Registrati**. Finita l'iscrizione torni alla pagina da cui eri
           partito, senza dover ricercare la gara.
-        shot: home-pubblica
+        shot: home-come-si-partecipa
       - title: "Compila i tre campi"
         text: >-
           **Nome utente**: è il nome con cui comparirai nelle classifiche e che

@@ -7,6 +7,7 @@
 # Pages may override these with their own `caption:` on a block. What is here
 # is the fallback used when they do not.
 
+home-come-si-partecipa: "The «How to take part» panel at the bottom of the home page: the three steps and the Sign in and Register buttons."
 home-pubblica: "The Tornei Biliardo home page as seen by someone without an account: it opens with «Live now», then the competitions open for registration."
 registrazione: "The sign-up form: username, email and password."
 gare-aperte: "The public list of competitions, each with its status."
