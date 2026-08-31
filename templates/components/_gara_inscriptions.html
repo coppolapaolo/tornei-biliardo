@@ -18,21 +18,38 @@
   </div>
   {% endif %}
 
-  {# Aggiunta manuale (solo direttore/admin in fase iscrizione) #}
+  {# Aggiunta manuale (solo direttore/admin in fase iscrizione).
+
+     Chi dirige spesso conosce la persona per nome e cognome, non per username:
+     la tendina mostra entrambi e il campo qui sopra cerca in tutti e tre i
+     campi (issue #156, `static/js/iscritti_ricerca.js`). La ricerca è nel
+     browser perché nome e cognome sono cifrati e in SQL non si filtrano; senza
+     JavaScript resta la tendina completa, che è il comportamento di prima. #}
   {% if available_users and available_users|length > 0 %}
   <form method="POST" action="{{ url_for('admin.competition.admin_inscribe_user', gara_id=gara.id) }}" class="mb-3">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="d-flex gap-2 mb-2">
+      <input type="search" class="form-control js-iscritti-cerca" autocomplete="off"
+             placeholder="{{ _('Cerca cognome, nome o username…') }}"
+             aria-label="{{ _('Cerca il giocatore da iscrivere') }}">
+    </div>
     <div class="d-flex gap-2">
-      <select name="user_id" class="form-select flex-fill" required>
+      <select name="user_id" class="form-select flex-fill" required
+              aria-label="{{ _('Giocatore da iscrivere') }}">
         <option value="">{{ _('Seleziona giocatore…') }}</option>
         {% for user in available_users %}
-        <option value="{{ user.id }}">{{ user.username }}</option>
+        <option value="{{ user.id }}"
+                data-cerca="{{ (user.username ~ ' ' ~ (user.full_name or ''))|trim|lower }}">
+          {% if user.full_name %}{{ user.full_name }} · {{ user.username }}{% else %}{{ user.username }}{% endif %}
+        </option>
         {% endfor %}
       </select>
       <button type="submit" class="btn btn-primary" title="{{ _('Aggiungi iscritto') }}">
         <i class="fas fa-user-plus"></i>
       </button>
     </div>
+    <div class="js-iscritti-esito c7-kicker mt-1" aria-live="polite"
+         data-formato="{{ _('{n} giocatori trovati') }}"></div>
   </form>
   {% endif %}
 

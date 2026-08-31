@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-08-30 19:37+0200\n"
+"POT-Creation-Date: 2026-08-31 07:37+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -2106,7 +2106,7 @@ msgstr ""
 #: templates/components/_campionato_general_classification.html:24
 #: templates/components/_detailed_classification.html:19
 #: templates/components/_unified_dashboard_header.html:10
-#: templates/components/_user_info_card.html:25
+#: templates/components/_user_info_card.html:26
 #: templates/player/profile.html:80
 msgid "Giocatore"
 msgstr ""
@@ -2116,7 +2116,7 @@ msgstr ""
 #: templates/admin/users_list.html:175
 #: templates/admin/venue_manager_requests.html:46
 #: templates/components/_unified_dashboard_header.html:9
-#: templates/components/_user_info_card.html:13
+#: templates/components/_user_info_card.html:14
 #: templates/player/profile.html:79
 msgid "Direttore di gara"
 msgstr ""
@@ -2470,6 +2470,10 @@ msgstr ""
 
 #: routes/admin/user.py:304
 msgid "Password impostata con successo"
+msgstr ""
+
+#: routes/admin/user.py:334
+msgid "Anagrafica aggiornata."
 msgstr ""
 
 #: routes/admin/competition/categorie.py:68
@@ -3001,7 +3005,7 @@ msgstr ""
 #: routes/gamification/features.py:63 templates/admin/accessi.html:81
 #: templates/admin/accessi.html:118 templates/admin/accessi.html:135
 #: templates/admin/users_list.html:132 templates/admin/users_list.html:171
-#: templates/components/_user_info_card.html:11
+#: templates/components/_user_info_card.html:12
 #: templates/player/profile.html:76
 msgid "Ruolo"
 msgstr ""
@@ -3509,7 +3513,7 @@ msgid "Richieste Esaminatore"
 msgstr ""
 
 #: templates/admin/users_list.html:137 templates/admin/users_list.html:212
-#: templates/base.html:313 templates/components/_user_info_card.html:102
+#: templates/base.html:313 templates/components/_user_info_card.html:103
 msgid "Gamification"
 msgstr ""
 
@@ -4090,45 +4094,45 @@ msgid ""
 "chi giochi, così il tabellone può farlo."
 msgstr ""
 
-#: templates/gara_detail.html:739
+#: templates/gara_detail.html:743
 msgid ""
 "Sei sicuro di voler avviare la gara? Tutti i turni verranno creati "
 "contemporaneamente e le iscrizioni chiuse definitivamente."
 msgstr ""
 
-#: templates/gara_detail.html:740
+#: templates/gara_detail.html:744
 msgid ""
 "Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse"
 " definitivamente."
 msgstr ""
 
-#: templates/gara_detail.html:743
+#: templates/gara_detail.html:747
 msgid ""
 "Sorteggiare il tabellone? Le iscrizioni si chiudono, le squadre si "
 "congelano e il percorso di ogni giocatore fino alla finale resta questo, "
 "salvo annullare il sorteggio."
 msgstr ""
 
-#: templates/gara_detail.html:744
+#: templates/gara_detail.html:748
 msgid ""
 "Calcolo dello schedule in corso… Per gare con trio (giocatori dispari) il"
 " calcolo può richiedere qualche secondo."
 msgstr ""
 
-#: templates/gara_detail.html:745
+#: templates/gara_detail.html:749
 msgid ""
 "Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite "
 "del primo turno verranno eliminate e la gara tornerà allo stato di "
 "iscrizioni."
 msgstr ""
 
-#: templates/gara_detail.html:746
+#: templates/gara_detail.html:750
 msgid ""
 "Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le "
 "partite del turno verranno eliminate e si tornerà al turno precedente."
 msgstr ""
 
-#: templates/gara_detail.html:747
+#: templates/gara_detail.html:751
 msgid ""
 "Sei sicuro di voler terminare la gara?\n"
 "\n"
@@ -4136,7 +4140,7 @@ msgid ""
 " modificarli."
 msgstr ""
 
-#: templates/gara_detail.html:748
+#: templates/gara_detail.html:752
 #, python-format
 msgid ""
 "Avviare la fase di spareggio (SSR)?\n"
@@ -4145,7 +4149,7 @@ msgid ""
 " posizioni."
 msgstr ""
 
-#: templates/gara_detail.html:749
+#: templates/gara_detail.html:753
 msgid ""
 "Annullare la fase di spareggio (SSR)?\n"
 "\n"
@@ -4153,11 +4157,11 @@ msgid ""
 " così potrai correggere i risultati."
 msgstr ""
 
-#: templates/gara_detail.html:750
+#: templates/gara_detail.html:754
 msgid "Errore durante l'annullamento della fase SSR"
 msgstr ""
 
-#: templates/gara_detail.html:751
+#: templates/gara_detail.html:755
 msgid ""
 "Sei sicuro di voler resettare l'ultimo turno?\n"
 "\n"
@@ -4167,7 +4171,7 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:442 templates/gara_detail.html:752
+#: templates/admin/campionato_detail.html:442 templates/gara_detail.html:756
 #, python-brace-format
 msgid ""
 "Sei SICURO di voler eliminare la Gara {number}?\n"
@@ -4175,7 +4179,7 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/gara_detail.html:753
+#: templates/gara_detail.html:757
 #, python-brace-format
 msgid ""
 "Sei SICURO di voler cancellare la Gara {number}?\n"
@@ -4184,15 +4188,15 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/gara_detail.html:754 templates/gara_detail.html:1794
+#: templates/gara_detail.html:758 templates/gara_detail.html:1798
 msgid "Sei sicuro di voler resettare questa partita?"
 msgstr ""
 
-#: templates/gara_detail.html:755 templates/gara_detail.html:1818
+#: templates/gara_detail.html:759 templates/gara_detail.html:1822
 msgid "Sei sicuro di voler resettare questo trio?"
 msgstr ""
 
-#: templates/gara_detail.html:756 templates/gara_detail.html:1846
+#: templates/gara_detail.html:760 templates/gara_detail.html:1850
 #: templates/match_detail.html:660
 msgid ""
 "Confermi di voler validare questo risultato? Il tavolo verrà liberato e "
@@ -4201,7 +4205,7 @@ msgstr ""
 
 #: templates/components/_match_admin_controls.html:359
 #: templates/components/_match_admin_controls.html:401
-#: templates/gara_detail.html:757 templates/gara_detail.html:772
+#: templates/gara_detail.html:761 templates/gara_detail.html:776
 #: templates/individual_match/match_detail.html:431
 #: templates/individual_match/match_detail.html:464
 #: templates/individual_match/match_detail.html:492
@@ -4225,98 +4229,98 @@ msgstr ""
 msgid "Errore:"
 msgstr ""
 
-#: templates/gara_detail.html:758
+#: templates/gara_detail.html:762
 msgid "Errore durante la cancellazione:"
 msgstr ""
 
-#: templates/gara_detail.html:759
+#: templates/gara_detail.html:763
 msgid "Errore durante la terminazione:"
 msgstr ""
 
-#: templates/gara_detail.html:760
+#: templates/gara_detail.html:764
 msgid "Errore durante la terminazione della gara"
 msgstr ""
 
-#: templates/gara_detail.html:761
+#: templates/gara_detail.html:765
 msgid "Errore durante l'avvio della fase SSR"
 msgstr ""
 
-#: templates/gara_detail.html:762
+#: templates/gara_detail.html:766
 msgid "Errore durante il salvataggio dei punteggi"
 msgstr ""
 
-#: templates/gara_detail.html:763
+#: templates/gara_detail.html:767
 msgid "Errore durante il reset:"
 msgstr ""
 
-#: templates/gara_detail.html:764
+#: templates/gara_detail.html:768
 msgid "Errore durante l'eliminazione della gara: "
 msgstr ""
 
-#: templates/gara_detail.html:765
+#: templates/gara_detail.html:769
 msgid "Errore di rete durante l'eliminazione"
 msgstr ""
 
-#: templates/gara_detail.html:766
+#: templates/gara_detail.html:770
 msgid "Errore di rete durante l'avvio del turno"
 msgstr ""
 
-#: templates/gara_detail.html:767
+#: templates/gara_detail.html:771
 msgid "Errore durante l'avvio del turno:"
 msgstr ""
 
-#: templates/gara_detail.html:768
+#: templates/gara_detail.html:772
 msgid "Errore di rete durante la creazione del turno"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:364
-#: templates/gara_detail.html:769
+#: templates/gara_detail.html:773
 msgid "Errore durante l'impostazione del risultato"
 msgstr ""
 
-#: templates/gara_detail.html:770 templates/match_detail.html:626
+#: templates/gara_detail.html:774 templates/match_detail.html:626
 #: templates/match_detail.html:631 templates/match_detail.html:649
 #: templates/match_detail.html:654
 msgid "Errore durante il reset"
 msgstr ""
 
-#: templates/gara_detail.html:771
+#: templates/gara_detail.html:775
 msgid "Errore durante il reset del trio"
 msgstr ""
 
-#: templates/gara_detail.html:773 templates/match_detail.html:677
+#: templates/gara_detail.html:777 templates/match_detail.html:677
 msgid "Errore durante la validazione"
 msgstr ""
 
-#: templates/gara_detail.html:774
+#: templates/gara_detail.html:778
 msgid "Errore di rete durante l'operazione sul tavolo"
 msgstr ""
 
-#: templates/gara_detail.html:775
+#: templates/gara_detail.html:779
 msgid "Tutti i punteggi devono essere numeri interi non negativi"
 msgstr ""
 
-#: templates/gara_detail.html:776
+#: templates/gara_detail.html:780
 msgid "I punteggi devono essere tutti diversi per risolvere il parimerito"
 msgstr ""
 
-#: templates/gara_detail.html:777
+#: templates/gara_detail.html:781
 msgid "I punteggi devono essere numeri interi non negativi"
 msgstr ""
 
-#: templates/gara_detail.html:778
+#: templates/gara_detail.html:782
 msgid ""
 "Serve un vincitore netto: il punteggio più alto del gruppo non può essere"
 " condiviso"
 msgstr ""
 
-#: templates/gara_detail.html:779
+#: templates/gara_detail.html:783
 msgid "Usa 'Avvia SSR' per inserire i punteggi degli spareggi"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:359
 #: templates/components/_match_admin_controls.html:401
-#: templates/gara_detail.html:785
+#: templates/gara_detail.html:789
 #: templates/individual_match/match_detail.html:671
 #: templates/match_detail.html:183 templates/match_detail.html:215
 #: templates/match_detail.html:251 templates/match_detail.html:284
@@ -4325,25 +4329,25 @@ msgstr ""
 msgid "Errore sconosciuto"
 msgstr ""
 
-#: templates/gara_detail.html:786 templates/match_detail.html:672
+#: templates/gara_detail.html:790 templates/match_detail.html:672
 msgid "Impossibile validare il risultato"
 msgstr ""
 
-#: templates/gara_detail.html:787
+#: templates/gara_detail.html:791
 msgid "Pari merito per il"
 msgstr ""
 
-#: templates/gara_detail.html:788
+#: templates/gara_detail.html:792
 msgid "posto"
 msgstr ""
 
 #: templates/components/_campionato_general_classification.html:27
 #: templates/components/_index_campionato_cards.html:165
-#: templates/gara_detail.html:789
+#: templates/gara_detail.html:793
 msgid "Punti SSR"
 msgstr ""
 
-#: templates/gara_detail.html:790
+#: templates/gara_detail.html:794
 msgid "Click per scambiare con match occupante"
 msgstr ""
 
@@ -4359,41 +4363,41 @@ msgstr ""
 #: templates/components/_match_result_row.html:121
 #: templates/components/_match_result_row.html:146
 #: templates/components/_separated_dashboard_content.html:91
-#: templates/gara_detail.html:791
+#: templates/gara_detail.html:795
 msgid "Tavolo"
 msgstr ""
 
-#: templates/gara_detail.html:1479
+#: templates/gara_detail.html:1483
 msgid ""
 "Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di"
 " setup."
 msgstr ""
 
-#: templates/gara_detail.html:1639
+#: templates/gara_detail.html:1643
 msgid "I triangoli non possono essere negativi."
-msgstr ""
-
-#: templates/gara_detail.html:1641
-#, python-format
-msgid "Nessun giocatore può avere più di %(d)s triangoli."
 msgstr ""
 
 #: templates/gara_detail.html:1645
 #, python-format
+msgid "Nessun giocatore può avere più di %(d)s triangoli."
+msgstr ""
+
+#: templates/gara_detail.html:1649
+#, python-format
 msgid "Somma triangoli troppo alta: massimo %(d)s."
 msgstr ""
 
-#: templates/gara_detail.html:1647
+#: templates/gara_detail.html:1651
 #, python-format
 msgid "Risultato incompleto: uno dei due deve raggiungere %(d)s."
 msgstr ""
 
-#: templates/gara_detail.html:1652
+#: templates/gara_detail.html:1656
 #, python-format
 msgid "Somma triangoli troppo alta: il totale esatto è %(d)s."
 msgstr ""
 
-#: templates/gara_detail.html:1654
+#: templates/gara_detail.html:1658
 #, python-format
 msgid "Risultato incompleto: la somma deve essere esattamente %(d)s."
 msgstr ""
@@ -4810,7 +4814,7 @@ msgstr ""
 #: templates/admin/users_list.html:130 templates/admin/users_list.html:169
 #: templates/admin/venue_form.html:89 templates/auth/forgot_password.html:17
 #: templates/components/_player_personal_info.html:18
-#: templates/components/_user_info_card.html:9
+#: templates/components/_user_info_card.html:10
 #: templates/player/privacy_settings.html:19 templates/player/profile.html:67
 #: templates/player/profile_edit.html:41 templates/player/venue_detail.html:70
 #: templates/register.html:23
@@ -4820,7 +4824,7 @@ msgstr ""
 #: templates/admin/users_list.html:131 templates/admin/users_list.html:170
 #: templates/admin/venue_form.html:80
 #: templates/components/_player_personal_info.html:21
-#: templates/components/_user_info_card.html:10
+#: templates/components/_user_info_card.html:11
 #: templates/player/privacy_settings.html:29 templates/player/profile.html:71
 #: templates/player/profile_edit.html:56 templates/player/venue_detail.html:63
 #: templates/register.html:28
@@ -4991,7 +4995,7 @@ msgstr ""
 
 #: templates/admin/accessi.html:191 templates/admin/accessi.html:204
 #: templates/admin/users_list.html:142 templates/admin/users_list.html:245
-#: templates/components/_user_info_card.html:150
+#: templates/components/_user_info_card.html:185
 msgid "Registrato"
 msgstr ""
 
@@ -5023,8 +5027,8 @@ msgstr ""
 #: templates/components/_gara_edit_form.html:146
 #: templates/components/_new_gara_modal.html:343
 #: templates/components/_new_gara_modal.html:344
-#: templates/components/_user_info_card.html:45
-#: templates/components/_user_info_card.html:76
+#: templates/components/_user_info_card.html:46
+#: templates/components/_user_info_card.html:77
 msgid "Sì"
 msgstr ""
 
@@ -5035,8 +5039,8 @@ msgstr ""
 #: templates/components/_gara_edit_form.html:147
 #: templates/components/_new_gara_modal.html:343
 #: templates/components/_new_gara_modal.html:345
-#: templates/components/_user_info_card.html:56
-#: templates/components/_user_info_card.html:87
+#: templates/components/_user_info_card.html:57
+#: templates/components/_user_info_card.html:88
 #: templates/gamification/admin/streak_config.html:85
 msgid "No"
 msgstr ""
@@ -5170,7 +5174,10 @@ msgstr ""
 #: templates/admin/campionato_wizard_step2.html:24
 #: templates/admin/venues_list.html:30
 #: templates/components/_gara_edit_form.html:30
-#: templates/components/_new_gara_modal.html:77 templates/exam/manage.html:68
+#: templates/components/_new_gara_modal.html:77
+#: templates/components/_user_info_card.html:9
+#: templates/components/_user_info_card.html:138
+#: templates/components/_user_info_card.html:140 templates/exam/manage.html:68
 #: templates/gamification/admin/achievement_form.html:26
 #: templates/gamification/admin/feature_create.html:32
 #: templates/gamification/admin/feature_detail.html:35
@@ -6285,7 +6292,7 @@ msgid "Partecipanti"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:434
-#: templates/components/_gara_inscriptions.html:66
+#: templates/components/_gara_inscriptions.html:83
 #: templates/components/_match_result_row.html:24
 #: templates/components/_match_result_row.html:28
 #: templates/components/_match_result_row.html:32
@@ -6900,7 +6907,7 @@ msgid "Rimuovi director"
 msgstr ""
 
 #: templates/admin/users_list.html:275
-#: templates/components/_user_info_card.html:49
+#: templates/components/_user_info_card.html:50
 msgid ""
 "Revocare il ruolo di Esaminatore? Gli esami creati e le certificazioni "
 "rilasciate restano validi."
@@ -6915,7 +6922,7 @@ msgid "Revoca esaminatore"
 msgstr ""
 
 #: templates/admin/users_list.html:286
-#: templates/components/_user_info_card.html:59
+#: templates/components/_user_info_card.html:60
 msgid "Promuovere a Esaminatore?"
 msgstr ""
 
@@ -6924,7 +6931,7 @@ msgid "Rendi esaminatore"
 msgstr ""
 
 #: templates/admin/users_list.html:304
-#: templates/components/_user_info_card.html:80
+#: templates/components/_user_info_card.html:81
 msgid ""
 "Togliere l'accesso alle funzioni in prova? Tornerà a vedere quello che "
 "vede il suo ruolo."
@@ -6935,19 +6942,19 @@ msgid "Togli il ruolo di beta tester"
 msgstr ""
 
 #: templates/admin/users_list.html:309
-#: templates/components/_user_info_card.html:83
+#: templates/components/_user_info_card.html:84
 msgid "Togli beta"
 msgstr ""
 
 #: templates/admin/users_list.html:315
-#: templates/components/_user_info_card.html:90
+#: templates/components/_user_info_card.html:91
 msgid ""
 "Fargli vedere le funzioni non ancora aperte? Non vedrà comunque "
 "l'amministrazione."
 msgstr ""
 
 #: templates/admin/users_list.html:319
-#: templates/components/_user_info_card.html:93
+#: templates/components/_user_info_card.html:94
 msgid "Rendi beta tester"
 msgstr ""
 
@@ -7048,7 +7055,8 @@ msgstr ""
 #: templates/admin/venue_detail.html:78 templates/admin/venue_detail.html:82
 #: templates/admin/venue_detail.html:90 templates/admin/venue_detail.html:104
 #: templates/admin/venue_detail.html:127 templates/admin/venues_list.html:59
-#: templates/components/_user_info_card.html:10
+#: templates/components/_user_info_card.html:9
+#: templates/components/_user_info_card.html:11
 #: templates/player/venue_detail.html:55 templates/player/venue_detail.html:59
 #: templates/player/venue_detail.html:67 templates/player/venue_detail.html:81
 #: templates/player/venue_detail.html:104
@@ -10111,87 +10119,105 @@ msgstr ""
 msgid "Direzione di gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:27
+#: templates/components/_gara_inscriptions.html:33
+msgid "Cerca cognome, nome o username…"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:34
+msgid "Cerca il giocatore da iscrivere"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:38
+#, fuzzy, python-format
+msgid "Giocatore da iscrivere"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:39
 msgid "Seleziona giocatore…"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:32
+#: templates/components/_gara_inscriptions.html:47
 msgid "Aggiungi iscritto"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:43
+#: templates/components/_gara_inscriptions.html:52
+#, python-brace-format
+msgid "{n} giocatori trovati"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:60
 msgid "Iscritti attivi"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:62
+#: templates/components/_gara_inscriptions.html:79
 #, python-format
 msgid "Iscritto il %(date)s"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:66
+#: templates/components/_gara_inscriptions.html:83
 msgid "Ha dato forfait"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:73
+#: templates/components/_gara_inscriptions.html:90
 #, python-format
 msgid "Disiscrivere %(username)s? Riceverà una notifica."
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:76
+#: templates/components/_gara_inscriptions.html:93
 msgid "Disiscrive il giocatore"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:100
-#: templates/components/_gara_inscriptions.html:112
+#: templates/components/_gara_inscriptions.html:117
+#: templates/components/_gara_inscriptions.html:129
 #: templates/gamification/admin/achievement_form.html:41
 #: templates/gamification/admin/achievements.html:25
 msgid "Categoria"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:108
+#: templates/components/_gara_inscriptions.html:125
 #, python-format
 msgid "Categoria di %(username)s in questa gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:128
+#: templates/components/_gara_inscriptions.html:145
 #, python-format
 msgid "Squadra di %(username)s in questa gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:129
+#: templates/components/_gara_inscriptions.html:146
 msgid "Senza squadra"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:151
+#: templates/components/_gara_inscriptions.html:168
 #: templates/components/_separated_dashboard_content.html:216
 #: templates/components/_separated_dashboard_content.html:360
 #: templates/components/_unified_cards.html:139
 msgid "Lista d'attesa"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:160
+#: templates/components/_gara_inscriptions.html:177
 #, python-format
 msgid "In lista dal %(date)s"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:166
+#: templates/components/_gara_inscriptions.html:183
 #, python-format
 msgid "Rimuovere %(username)s dalla lista d'attesa?"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:169
+#: templates/components/_gara_inscriptions.html:186
 msgid "Rimuove dalla lista d'attesa"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:182
+#: templates/components/_gara_inscriptions.html:199
 msgid "Nessun iscritto"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:183
+#: templates/components/_gara_inscriptions.html:200
 msgid "Appena qualcuno si iscrive lo trovi qui."
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:190
+#: templates/components/_gara_inscriptions.html:207
 msgid "Limite massimo raggiunto"
 msgstr ""
 
@@ -12853,84 +12879,105 @@ msgstr ""
 msgid "Username"
 msgstr ""
 
-#: templates/components/_user_info_card.html:17
+#: templates/components/_user_info_card.html:18
 #, python-format
 msgid "Sei sicuro di voler rimuovere il ruolo di direttore a %(name)s?"
 msgstr ""
 
-#: templates/components/_user_info_card.html:20
+#: templates/components/_user_info_card.html:21
 msgid "Rimuovi ruolo"
 msgstr ""
 
-#: templates/components/_user_info_card.html:29
+#: templates/components/_user_info_card.html:30
 #, python-format
 msgid "Promuovere %(name)s a Direttore di Gara?"
 msgstr ""
 
-#: templates/components/_user_info_card.html:32
+#: templates/components/_user_info_card.html:33
 msgid "Promuovi a Direttore"
 msgstr ""
 
-#: templates/components/_user_info_card.html:42
+#: templates/components/_user_info_card.html:43
 msgid "Esaminatore:"
 msgstr ""
 
-#: templates/components/_user_info_card.html:52
+#: templates/components/_user_info_card.html:53
 msgid "Revoca ruolo"
 msgstr ""
 
-#: templates/components/_user_info_card.html:62
+#: templates/components/_user_info_card.html:63
 msgid "Promuovi a Esaminatore"
 msgstr ""
 
-#: templates/components/_user_info_card.html:73
+#: templates/components/_user_info_card.html:74
 msgid "Beta tester:"
 msgstr ""
 
-#: templates/components/_user_info_card.html:105
+#: templates/components/_user_info_card.html:106
 msgid "Override Attivo"
 msgstr ""
 
-#: templates/components/_user_info_card.html:109
+#: templates/components/_user_info_card.html:110
 msgid "Regole Normali"
 msgstr ""
 
-#: templates/components/_user_info_card.html:114
+#: templates/components/_user_info_card.html:115
 #, python-format
 msgid "%(action)s Override Gamification per %(name)s?"
 msgstr ""
 
-#: templates/components/_user_info_card.html:114
+#: templates/components/_user_info_card.html:115
 msgid "Disattivare"
 msgstr ""
 
-#: templates/components/_user_info_card.html:114
+#: templates/components/_user_info_card.html:115
 msgid "Attivare"
 msgstr ""
 
-#: templates/components/_user_info_card.html:119
+#: templates/components/_user_info_card.html:120
 msgid "Disattiva Override"
 msgstr ""
 
-#: templates/components/_user_info_card.html:119
+#: templates/components/_user_info_card.html:120
 msgid "Attiva Override"
 msgstr ""
 
-#: templates/components/_user_info_card.html:128
+#: templates/components/_user_info_card.html:133
+msgid "Nome e cognome"
+msgstr ""
+
+#: templates/components/_user_info_card.html:143
+#: templates/components/_user_info_card.html:145
+#: templates/player/profile_edit.html:30
+msgid "Cognome"
+msgstr ""
+
+#: templates/components/_user_info_card.html:149
+msgid "Salva nome e cognome"
+msgstr ""
+
+#: templates/components/_user_info_card.html:155
+msgid ""
+"Facoltativi. Li vede il direttore delle gare a cui si iscrive, per non "
+"confondere due giocatori con username simili. Lasciandoli vuoti si "
+"cancellano."
+msgstr ""
+
+#: templates/components/_user_info_card.html:163
 msgid "Imposta Password"
 msgstr ""
 
-#: templates/components/_user_info_card.html:130
+#: templates/components/_user_info_card.html:165
 #, python-format
 msgid "Impostare una nuova password per %(name)s?"
 msgstr ""
 
-#: templates/components/_user_info_card.html:135
+#: templates/components/_user_info_card.html:170
 #: templates/player/_change_password_modal.html:17
 msgid "Nuova password"
 msgstr ""
 
-#: templates/components/_user_info_card.html:139
+#: templates/components/_user_info_card.html:174
 msgid "Conferma password"
 msgstr ""
 
@@ -16935,10 +16982,6 @@ msgstr ""
 
 #: templates/player/profile_edit.html:17
 msgid "L'username deve essere unico"
-msgstr ""
-
-#: templates/player/profile_edit.html:30
-msgid "Cognome"
 msgstr ""
 
 #: templates/player/profile_edit.html:37
