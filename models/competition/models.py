@@ -990,6 +990,18 @@ class Inscription(db.Model):
 
     __tablename__ = "inscription"
 
+    # Un giocatore, un'iscrizione per gara. La regola c'è da sempre, ma stava
+    # solo in `InscriptionService.inscribe_user` (`if existing: return
+    # existing`) — cioè in un `if` di Python, invisibile a chi scrive in SQL.
+    # L'unione di due account riassegnava le iscrizioni con un UPDATE di massa
+    # e sulle gare comuni lasciava il giocatore iscritto due volte, una con la
+    # categoria e una senza. Il vincolo è anche ciò che insegna la regola alla
+    # dedup del merge, che deduce l'unicità logica dallo schema
+    # (`UserMergeService._is_constrained`).
+    __table_args__ = (
+        db.UniqueConstraint("gara_id", "user_id", name="uq_inscription_gara_user"),
+    )
+
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     gara_id = db.Column(
