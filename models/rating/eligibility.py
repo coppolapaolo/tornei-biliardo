@@ -91,9 +91,10 @@ class RatingEligibility:
                 Inscription.categoria_id,
             )
             .filter(Inscription.gara_id.in_(gara_ids))
-            # Nulla in DB impedisce due iscrizioni dello stesso giocatore alla
-            # stessa gara (una ritirata, una attiva): l'ultima scritta nel
-            # dizionario vince, e quest'ordine fa vincere quella attiva.
+            # Dal vincolo `uq_inscription_gara_user` (settembre 2026) la riga
+            # è una sola e l'ordinamento non decide più niente. Resta perché su
+            # un database non ancora migrato le doppie ci sono ancora, e in quel
+            # caso fa vincere l'iscrizione attiva su quella ritirata.
             .order_by(Inscription.is_withdrawn.desc(), Inscription.id.asc())
             .all()
         )
