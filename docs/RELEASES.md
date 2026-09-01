@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.7.0...v1.7.1) (2026-09-01)
+
+
+### Correzioni
+
+* unire due account non lascia più il giocatore iscritto due volte ([#305](https://github.com/coppolapaolo/tornei-biliardo/issues/305)) ([588aab1](https://github.com/coppolapaolo/tornei-biliardo/commit/588aab10651be1df009d206c5c17406a7b18c32a))
+
 ## [1.7.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.6.1...v1.7.0) (2026-08-31)
 
 
