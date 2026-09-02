@@ -739,20 +739,15 @@ class TestIlRefertoSiVedeCambiare:
     """
 
     @pytest.fixture(autouse=True)
-    def _canale_pulito(self):
-        """Il buffer degli eventi e' globale e in memoria, il database no.
+    def _canale_pulito(self, db_session):
+        """Gli id dei match ripartono da 1 a ogni test: senza questa pulizia
+        gli eventi di un test finirebbero nella casella di quello dopo — e le
+        asserzioni conterebbero roba di altri."""
+        from models.live_event import LiveEvent
 
-        Ogni test fa rollback e gli id dei match ripartono da 1, quindi senza
-        questa pulizia gli eventi di un test finirebbero nella casella di
-        quello dopo — e le asserzioni conterebbero roba di altri.
-        """
-        from routes.sse import EventScope, _events, _events_lock
-
-        with _events_lock:
-            _events[EventScope.INDIVIDUAL_MATCH.value].clear()
+        LiveEvent.query.delete()
+        db_session.commit()
         yield
-        with _events_lock:
-            _events[EventScope.INDIVIDUAL_MATCH.value].clear()
 
     @staticmethod
     def _eventi(match_id: int):

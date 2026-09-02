@@ -570,11 +570,8 @@ INFRASTRUCTURE_ALLOWLIST: set[str] = {
     "sse.poll_user",
     # Real-time sync per i match individuali (match_detail polling)
     "sse.poll_individual_match",
-    # Legacy SSE streams kept for backward compat (ADR-021)
-    "sse.gara_stream",
-    "sse.user_stream",
-    "sse.trio_stream",
-    "sse.individual_match_stream",
+    # Gli stream SSE (`sse.*_stream`) non esistono più: tenevano occupato un
+    # worker per connessione (ADR-021) e sono stati tolti con ADR-057.
 }
 
 

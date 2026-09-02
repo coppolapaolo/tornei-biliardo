@@ -104,6 +104,7 @@ from .notification.models import (
     NotificationPriority,
     NotificationStatus,
 )
+from .live_event import LiveEvent
 from .location.models import (
     BilliardHall,
     UserLocationAvailability,
@@ -240,6 +241,8 @@ __all__ = [
     "PlayerRating",
     "MatchRatingHistory",
     "RatingSystem",
+    # Aggiornamenti live (ADR-057)
+    "LiveEvent",
     # Notification domain models (Phase 3)
     "Notification",
     "NotificationPreference",

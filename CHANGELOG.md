@@ -35,6 +35,18 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **Gli aggiornamenti live arrivano sempre.** La pagina della gara, il tabellone
+  della partita e il badge delle notifiche chiedono al server ogni tre secondi
+  se è successo qualcosa, e a volte la risposta era «niente» anche quando un
+  rack era appena stato segnato: l'archivio degli eventi stava nella memoria
+  di **uno** dei tre processi che servono il sito, e solo le richieste capitate
+  su quello lo vedevano. Circa un evento su tre arrivava. Ora gli eventi
+  passano da una tabella condivisa, l'evento nasce insieme al fatto che lo
+  genera, il turno nuovo compare da solo sulla pagina della gara (prima non
+  si annunciava mai), e chi torna su una scheda rimasta chiusa per minuti la
+  vede aggiornata invece di vecchia. Non dipende più dall'orologio del
+  telefono (ADR-057).
+
 - **Un messaggio di commit con parentesi annidate spariva dal changelog.**
   Il corpo del commit della #287 conteneva `matchMedia('(min-width: 992px)')`:
   il parser Conventional Commits di release-please legge quella `(` come

@@ -9,8 +9,6 @@ from __future__ import annotations
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 
-from sqlalchemy import event as sa_event
-
 from ..base import db, utc_now
 from ..transaction.manager import transactional
 from .models import (
@@ -22,42 +20,21 @@ from .models import (
     NotificationStatus,
 )
 
-_PENDING_SSE_KEY = "_pending_notification_sse"
 
+def _annuncia_non_letti(user_id: int, unread_count: int) -> None:
+    """Emette l'evento del badge non-letti, nella stessa transazione.
 
-def _emit_unread_after_commit(user_id: int, unread_count: int) -> None:
-    """Accoda l'evento SSE del badge non-letti, da emettere DOPO il commit.
-
-    Emetterlo prima del commit (come faceva create_notification) significa che,
-    se la transazione fa rollback, il client riceve un contatore incrementato
-    che non corrisponde allo stato persistito. Qui l'emit viene accodato in
-    session.info e drenato dai listener after_commit/after_rollback registrati
-    UNA sola volta a livello modulo (registrarli per-chiamata e rimuoverli dal
-    dispatch romperebbe il commit con "deque mutated during iteration").
+    Fino a settembre 2026 l'emit era rimandato a un listener `after_commit`,
+    perché l'archivio degli eventi stava in memoria e non poteva fare rollback
+    con la notifica: emesso prima, un rollback lasciava al client un contatore
+    fantasma. Ora l'evento è una riga della tabella `live_event` (ADR-057):
+    viaggia con la transazione, e se questa salta salta anche lui. Il rinvio
+    non serve più — e non sarebbe nemmeno possibile: dentro `after_commit`
+    SQLAlchemy non ammette altre query.
     """
-    db.session.info.setdefault(_PENDING_SSE_KEY, []).append(
-        (user_id, {"unread_count": unread_count})
-    )
-
-
-def _flush_pending_sse(session: Any) -> None:
-    """after_commit: emette gli eventi SSE accodati durante la transazione."""
-    pending = session.info.pop(_PENDING_SSE_KEY, None)
-    if not pending:
-        return
     from routes.sse import emit_user_event
 
-    for user_id, payload in pending:
-        emit_user_event(user_id, "notification", payload)
-
-
-def _discard_pending_sse(session: Any) -> None:
-    """after_rollback: scarta gli eventi accodati (niente badge fantasma)."""
-    session.info.pop(_PENDING_SSE_KEY, None)
-
-
-sa_event.listen(db.session, "after_commit", _flush_pending_sse)
-sa_event.listen(db.session, "after_rollback", _discard_pending_sse)
+    emit_user_event(user_id, "notification", {"unread_count": unread_count})
 
 
 class NotificationService:
@@ -134,9 +111,7 @@ class NotificationService:
             )
             .count()
         )
-        # Emit SSE solo dopo il commit: se la transazione fa rollback il client
-        # non deve vedere un badge incrementato fantasma.
-        _emit_unread_after_commit(user_id, new_count)
+        _annuncia_non_letti(user_id, new_count)
 
         return notification
 

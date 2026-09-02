@@ -4,7 +4,7 @@
   "private": true,
   "description": "Headless (jsdom) automation for gamification frontend logic — automatable subset of the V3 manual test report.",
   "scripts": {
-    "test": "node test_gamification_badge.cjs && node test_iscritti_ricerca.cjs"
+    "test": "node test_gamification_badge.cjs && node test_iscritti_ricerca.cjs && node test_polling_cursore.cjs"
   },
   "devDependencies": {
     "jsdom": "^29.0.0"
