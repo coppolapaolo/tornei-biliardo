@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.7.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.7.1...v1.7.2) (2026-09-02)
+
+
+### Correzioni
+
+* gli aggiornamenti live arrivano da qualunque worker ([#308](https://github.com/coppolapaolo/tornei-biliardo/issues/308)) ([26791e8](https://github.com/coppolapaolo/tornei-biliardo/commit/26791e85b85027cc159a9c0c5f6caccec07708ed))
+
 ## [1.7.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.7.0...v1.7.1) (2026-09-01)
 
 
