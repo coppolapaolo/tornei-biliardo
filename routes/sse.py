@@ -189,14 +189,61 @@ def _get_events_since(scope: EventScope, scope_id: int, since_id: int) -> List[d
     ]
 
 
+def _get_events_after_ts(
+    scope: EventScope, scope_id: int, since_ts: float
+) -> List[dict]:
+    """Il vecchio criterio, per le pagine rimaste aperte col vecchio client.
+
+    Fino a settembre 2026 `since` era un timestamp e il client teneva come
+    cursore il `timestamp` della risposta. Una pagina aperta prima del deploy
+    continua a mandarlo — e non riceve né il cursore nuovo né il `retention`,
+    quindi non ricaricherebbe mai da sola. Per lei vale il criterio di prima,
+    con i suoi difetti: sparisce col primo ricaricamento.
+    """
+    rows = (
+        LiveEvent.query.filter(
+            LiveEvent.scope == scope.value,
+            LiveEvent.scope_id == scope_id,
+            LiveEvent.ts > since_ts,
+        )
+        .order_by(LiveEvent.id)
+        .all()
+    )
+    return [
+        {
+            "id": row.id,
+            "type": row.event_type,
+            "data": json.loads(row.payload),
+            "timestamp": row.ts,
+        }
+        for row in rows
+    ]
+
+
 def _poll_response(scope: EventScope, scope_id: int):
     """La risposta di ogni endpoint di poll.
 
-    `since` assente o non numerico — un client appena aperto, o una pagina
-    rimasta aperta col vecchio protocollo a timestamp — vale come primo poll:
-    nessun evento, solo il cursore da cui partire.
+    `since` assente — un client appena aperto — vale come primo poll: nessun
+    evento, solo il cursore da cui partire. Un `since` con la virgola è un
+    timestamp del vecchio client: per lui vale ancora il criterio a tempo.
     """
     since = request.args.get("since", type=int)
+    grezzo = request.args.get("since")
+    if since is None and grezzo is not None:
+        try:
+            since_ts = float(grezzo)
+        except ValueError:
+            since_ts = None
+        if since_ts is not None:
+            return jsonify(
+                {
+                    "events": _get_events_after_ts(scope, scope_id, since_ts),
+                    "cursor": _current_cursor(),
+                    "timestamp": time.time(),
+                    "retention": MAX_EVENT_AGE,
+                }
+            )
+
     current = _current_cursor()
     if since is None or since > current:
         # Oltre l'ultimo id scritto può capitare dopo un ripristino del DB

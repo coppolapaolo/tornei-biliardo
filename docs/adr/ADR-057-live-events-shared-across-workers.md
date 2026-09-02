@@ -132,9 +132,11 @@ processi condividono. Ne discendono le altre scelte:
   margine sul cursore o un `ts` di commit, e va deciso quando e se cambia il
   database.
 - Una pagina rimasta aperta col vecchio client manda un timestamp come
-  `since`: il server lo tratta come primo poll, quindi quella pagina non
-  riceve eventi finché non viene ricaricata. Succede solo nella finestra del
-  deploy.
+  `since` e non conosce né il cursore né `retention`: non ricaricherebbe mai
+  da sola. Per lei il server tiene il **criterio a tempo di prima**
+  (`_get_events_after_ts`), con i suoi difetti, finché non viene ricaricata.
+  Rilievo di Copilot sulla PR #308; il ripiego si può togliere quando nessuna
+  pagina precedente al deploy può più essere aperta.
 
 ## Note Implementative
 

@@ -301,11 +301,26 @@ def test_il_primo_poll_senza_cursore_non_consegna_il_passato(client_loggato):
     assert terzo["cursor"] == secondo["cursor"]
 
 
+def test_una_pagina_col_vecchio_client_riceve_ancora_gli_eventi(client_loggato):
+    """Il vecchio client manda un timestamp come `since` e legge `timestamp`
+    dalla risposta: nella finestra del deploy deve continuare a funzionare col
+    criterio di prima, altrimenti resta muta finché qualcuno non ricarica."""
+    client, _ = client_loggato
+    with patch("routes.sse.time.time", return_value=1000.0):
+        emit_event(EventScope.GARA, 42, "match_updated", {"n": 1})
+
+    prima = client.get("/sse/poll/gara/42?since=999.5").get_json()
+    assert [e["data"]["n"] for e in prima["events"]] == [1]
+    assert isinstance(prima["timestamp"], float)
+
+    dopo = client.get("/sse/poll/gara/42?since=1000.5").get_json()
+    assert dopo["events"] == []
+
+
 def test_un_cursore_non_numerico_vale_come_primo_poll(client_loggato):
-    """Una pagina rimasta aperta col vecchio client manda un timestamp."""
     client, _ = client_loggato
     emit_event(EventScope.GARA, 42, "match_updated", {"n": 1})
-    risposta = client.get("/sse/poll/gara/42?since=1725000000.5").get_json()
+    risposta = client.get("/sse/poll/gara/42?since=boh").get_json()
     assert risposta["events"] == []
     assert risposta["cursor"] == _current_cursor()
 
