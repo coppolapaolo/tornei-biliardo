@@ -513,15 +513,11 @@ cosa che il rating decide da solo è **quali partite entrano nell'Elo**:
 
 ---
 
-### Real-time Updates (SSE / Polling)
+### Real-time Updates (polling — ADR-021, ADR-057)
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/sse/trio/<int:trio_id>` | GET | `sse.trio_stream` | `@login_required` | SSE stream | Real-time trio match updates |
-| `/sse/gara/<int:gara_id>` | GET | `sse.gara_stream` | `@login_required` | SSE stream | Real-time gara (competition) updates |
-| `/sse/user/<int:user_id>` | GET | `sse.user_stream` | `@login_required` | SSE stream | Real-time user-specific updates (XP, achievements) |
-| `/sse/individual_match/<int:match_id>` | GET | `sse.individual_match_stream` | `@login_required` | SSE stream | Real-time individual match updates |
-| `/sse/poll/trio/<int:trio_id>` | GET | `sse.poll_trio` | `@login_required` | JSON API (polling) | Poll trio updates (recommended over SSE) |
+| `/sse/poll/trio/<int:trio_id>` | GET | `sse.poll_trio` | `@login_required` | JSON API (polling) | Poll trio updates |
 | `/sse/poll/gara/<int:gara_id>` | GET | `sse.poll_gara` | `@login_required` | JSON API (polling) | Poll gara updates |
 | `/sse/poll/user/<int:user_id>` | GET | `sse.poll_user` | `@login_required` | JSON API (polling) | Poll user updates (security: own user only) |
 | `/sse/poll/individual_match/<int:match_id>` | GET | `sse.poll_individual_match` | `@login_required` | JSON API (polling) | Poll individual match updates |

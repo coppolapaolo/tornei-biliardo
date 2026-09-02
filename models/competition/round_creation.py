@@ -367,6 +367,14 @@ class RoundCreationService:
             gara_id, round_number
         )
 
+        # Chi ha la pagina della gara aperta deve vedere il turno comparire:
+        # l'evento viaggia con questa transazione (ADR-057).
+        from routes.sse import emit_gara_event
+
+        emit_gara_event(
+            gara_id, "round_started", {"gara_id": gara_id, "round_number": round_number}
+        )
+
         return total, n_normal, n_bye, n_trio, tables_assigned
 
     @staticmethod
