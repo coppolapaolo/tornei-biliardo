@@ -29,13 +29,13 @@ classifica generale. Le due domande sono distinte e vanno tenute distinte:
 | Stato | Etichetta mostrata | Vale quando |
 |---|---|---|
 | `SETUP` | Setup | non c'è ancora niente di aperto |
-| `REGISTRATION_OPEN` | Iscrizioni aperte | almeno una gara raccoglie iscrizioni |
-| `IN_PROGRESS` | In corso | almeno una gara si sta giocando, **oppure** restano gare da creare rispetto a quelle pianificate |
+| `REGISTRATION_OPEN` | Iscrizioni aperte | almeno una gara raccoglie iscrizioni **adesso**: è nella fase iscrizioni *e* la finestra è aperta |
+| `IN_PROGRESS` | In corso | almeno una gara si sta giocando, **oppure** restano gare da creare rispetto a quelle pianificate, **oppure** il campionato è già cominciato (qualche gara conclusa) e ne restano da giocare |
 | `AWAITING_CLOSURE` | **In attesa di chiusura** | tutte le gare previste sono finite, ma `terminated_at` è NULL: la classifica generale **non è consolidata** |
 | `AWAITING_PLAYOFF` | **In attesa dei playoff** | il direttore ha chiuso, e restano playoff da giocare |
 | `COMPLETED` | Completato | non c'è più niente da giocare: nessun playoff previsto, o tutti conclusi |
 
-Tre regole, e la ragione di ciascuna:
+Cinque regole, e la ragione di ciascuna:
 
 1. **`COMPLETED` è l'unico stato finale.** Fino alla issue #242 copriva anche
    «gare esaurite ma nessuno ha premuto Termina»: due situazioni diverse sotto
@@ -51,6 +51,20 @@ Tre regole, e la ragione di ciascuna:
    resta fra gli **attivi** nella dashboard del direttore ed è elencato fra
    quelli «in corso» nella lista pubblica. È così che il pulsante «Termina»
    torna sotto gli occhi di chi deve premerlo, invece di finire in archivio.
+4. **«Raccoglie iscrizioni» è una domanda sull'orologio, non sulla colonna.**
+   `status = INSCRIPTION` dice che la gara è *nella fase* delle iscrizioni;
+   quando la finestra si apre lo dicono `inscription_start` e
+   `inscription_end`. Fino al 2026-09-04 il campionato guardava la sola colonna
+   e la gara la finestra, quindi nella stessa schermata il campionato mostrava
+   «Iscrizioni aperte» e le sue due gare «Iscrizioni programmate» — visto in
+   produzione. La distinzione la fa già `Gara.get_real_status()`, ed è a lui che
+   va chiesta invece di riscriverla una terza volta.
+5. **Un campionato cominciato non torna in Setup.** Quando le gare giocate
+   stanno alle spalle e la prossima non ha ancora aperto le iscrizioni, nessuna
+   delle prime tre righe della tabella si applicava e lo stato cadeva su
+   `SETUP`: il campionato sarebbe passato da «Campionati in corso» a «in
+   preparazione» a metà stagione. Da qui il terzo ramo di `IN_PROGRESS`,
+   aggiunto il 2026-09-04 insieme alla regola 4.
 
 > **Nota storica (2026-08-29).** Lo stato che oggi si chiama `AWAITING_PLAYOFF`
 > si chiamava `TERMINATED`, etichetta «Terminato», e significava il contrario di
