@@ -287,11 +287,19 @@
                            diversa a ogni turno: un esercizio che cambia renderebbe le
                            prove di due giocatori non confrontabili pur finendo nella
                            stessa classifica. #}
-                        <div class="row" id="create_x_challenge_section" style="display: none;">
+                        {# Il `required` non si scrive qui: lo mette e lo toglie
+                           `x_challenge_section.js` insieme al display. Su un campo
+                           nascosto blocca l'invio senza poter dire dove — e con la
+                           politica di default («X vinta a tavolino») era nascosto
+                           sempre, quindi da questo modal non si creava piu' nessuna
+                           gara. #}
+                        <div class="row" id="create_x_challenge_section"
+                             data-x-challenge-section="create_odd_number_policy"
+                             style="display: none;">
                             <div class="col-md-12">
                                 <div class="mb-3">
                                     <label for="x_challenge_id" class="form-label">{{ _("Esercizio per la X") }}</label>
-                                    <select class="form-control" name="x_challenge_id" id="create_x_challenge_id" required>
+                                    <select class="form-control" name="x_challenge_id" id="create_x_challenge_id">
                                         <option value="" disabled selected>{{ _("Scegli un esercizio…") }}</option>
                                         {% for esercizio in x_challenges or [] %}
                                         <option value="{{ esercizio.id }}">{{ esercizio.get_display_name() }}</option>
@@ -518,18 +526,10 @@
         const exactNumberCheckbox = document.getElementById('create_exact_number');
         const exactNumberContainer = document.getElementById('create_exact_number_container');
         const gameModeText = document.getElementById('create-game-mode-text');
+        // La visibilita' della sezione «esercizio per la X» — e con essa
+        // l'obbligo sul campo — la governa x_challenge_section.js, che serve
+        // anche il modulo di modifica: la regola e' una sola.
         const oddPolicySelect = document.getElementById('create_odd_number_policy');
-        const xChallengeSection = document.getElementById('create_x_challenge_section');
-
-        function aggiornaVisibilitaEsercizioX() {
-            if (!oddPolicySelect || !xChallengeSection) return;
-            xChallengeSection.style.display =
-                oddPolicySelect.value === 'bye_with_challenge' ? '' : 'none';
-        }
-        if (oddPolicySelect) {
-            oddPolicySelect.addEventListener('change', aggiornaVisibilitaEsercizioX);
-            aggiornaVisibilitaEsercizioX();
-        }
         const trioWarning = document.getElementById('create_trio_warning');
         const numberSelect = document.getElementById('create_number');
         const timeInput = document.getElementById('create_time');
@@ -714,6 +714,12 @@
             if (oddPolicy === 'trio' && (distance < 2 || distance > 7)) {
                 trioWarning.style.display = 'block';
                 oddPolicySelect.value = 'bye';
+                // Assegnare `.value` non emette `change`: chi ascolta la
+                // politica resterebbe fermo alla scelta precedente. Qui il
+                // ripiego e' su 'bye', che nasconde la sezione dell'esercizio
+                // come 'trio', ma un cambiamento silenzioso e' proprio il modo
+                // in cui l'interfaccia e il valore inviato divergono.
+                oddPolicySelect.dispatchEvent(new Event('change'));
             } else {
                 trioWarning.style.display = 'none';
             }
@@ -751,3 +757,4 @@
     });
 </script>
 <script src="{{ url_for('static', filename='js/x-challenge-picker.js') }}"></script>
+<script src="{{ url_for('static', filename='js/x_challenge_section.js') }}"></script>
