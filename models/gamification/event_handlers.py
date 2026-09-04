@@ -34,6 +34,7 @@ from models.exam.events import ExamAttemptCompletedEvent
 from models.gamification.level_service import LevelService
 from models.gamification.achievement_service import AchievementService
 from models.gamification.streak_service import StreakService
+from models.prova.guard import senza_prove
 from models.gamification.quest_service import QuestService
 from models.gamification.config_service import (
     GamificationConfigService as ConfigService,
@@ -41,6 +42,17 @@ from models.gamification.config_service import (
 from models.gamification.models import XPTransactionType, StreakType
 
 logger = logging.getLogger(__name__)
+
+
+def _registra(event_cls, handler, priority: int = 10) -> None:
+    """Registra un handler che ignora le competizioni di prova (ADR-058).
+
+    Un guard solo, qui, invece di un `if` in testa a ogni handler: la
+    gamification non deve muovere XP, badge, missioni o serie per ciò che
+    succede in una prova — né per i giocatori fittizi né per il direttore che
+    la crea — e un handler nuovo registrato da qui lo eredita da solo.
+    """
+    EventBus.register_handler(event_cls, senza_prove(handler), priority=priority)
 
 
 class GamificationEventHandlers:
@@ -54,48 +66,48 @@ class GamificationEventHandlers:
     def register_all_handlers() -> None:
         """Register all gamification event handlers with the EventBus."""
         # Match domain handlers
-        EventBus.register_handler(
+        _registra(
             MatchCompletedEvent,
             GamificationEventHandlers.handle_match_completed_for_xp,
             priority=10,
         )
-        EventBus.register_handler(
+        _registra(
             IndividualMatchCompletedEvent,
             GamificationEventHandlers.handle_individual_match_completed_for_xp,
             priority=10,
         )
 
         # Competition domain handlers
-        EventBus.register_handler(
+        _registra(
             InscriptionCreatedEvent,
             GamificationEventHandlers.handle_inscription_for_xp,
             priority=10,
         )
-        EventBus.register_handler(
+        _registra(
             CompetitionCompletedEvent,
             GamificationEventHandlers.handle_competition_completed_for_xp,
             priority=10,
         )
-        EventBus.register_handler(
+        _registra(
             CompetitionCreatedEvent,
             GamificationEventHandlers.handle_competition_created_for_xp,
             priority=10,
         )
-        EventBus.register_handler(
+        _registra(
             CampionatoCreatedEvent,
             GamificationEventHandlers.handle_campionato_created_for_xp,
             priority=10,
         )
 
         # Drill (catalogo e gara)
-        EventBus.register_handler(
+        _registra(
             ChallengeAttemptCompletedEvent,
             GamificationEventHandlers.handle_challenge_attempt_completed_for_xp,
             priority=10,
         )
 
         # Esame (ADR-042)
-        EventBus.register_handler(
+        _registra(
             ExamAttemptCompletedEvent,
             GamificationEventHandlers.handle_exam_attempt_completed_for_xp,
             priority=10,

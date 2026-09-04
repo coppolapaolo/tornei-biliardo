@@ -861,6 +861,7 @@ def _director_pending(user_id: int) -> int:
         .filter(
             Gara.director_id == user_id,
             Gara.deleted_at.is_(None),
+            Gara.is_prova.is_(False),
             Gara.status.in_([GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value]),
         )
         .scalar()
@@ -874,13 +875,18 @@ def _director_garas(user_id: int) -> List[Any]:
     `Gara` e' soft-deleted (`SoftDeleteMixin`) e **non** ha un filtro globale:
     senza `deleted_at IS NULL` una gara cancellata continuerebbe a contare in
     «Gare organizzate», a occupare una tessera e a portarsi dietro i suoi posti
-    nella ciambella del riempimento.
+    nella ciambella del riempimento. Le prove (ADR-058) restano fuori per lo
+    stesso motivo: il direttore le vede, ma non sono gare organizzate.
     """
     from models.competition.models import Gara
 
     return (
         db.session.query(Gara)
-        .filter(Gara.director_id == user_id, Gara.deleted_at.is_(None))
+        .filter(
+            Gara.director_id == user_id,
+            Gara.deleted_at.is_(None),
+            Gara.is_prova.is_(False),
+        )
         .order_by(Gara.date.asc().nullslast(), Gara.id.asc())
         .all()
     )

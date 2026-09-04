@@ -210,6 +210,9 @@
             </div>
 
             <div class="d-flex flex-column align-items-end gap-1">
+              {% if item.entity.is_prova %}
+                <span class="c7-state c7-state--warn"><i class="fas fa-flask me-1"></i>{{ _('Prova') }}</span>
+              {% endif %}
               {% if ns.user_inscribed and not ns.is_waitlist %}
                 <span class="c7-state c7-state--accent">{{ _('Iscritto') }}</span>
               {% elif ns.is_waitlist %}
@@ -353,7 +356,9 @@
                 {{ _('Dettagli') }}
               </a>
               {% endif %}
-              {% if not current_user.is_admin and real_status == GaraStatus.INSCRIPTION.value %}
+              {# In una prova si iscrivono solo i fittizi (ADR-058): niente
+                 «Iscriviti» sulla tessera, il server lo rifiuterebbe. #}
+              {% if not current_user.is_admin and real_status == GaraStatus.INSCRIPTION.value and not item.entity.is_prova %}
                 {% if not ns.user_inscribed %}
                   <a href="#" onclick="inscribeToGara({{ item.id }}); return false;"
                      class="btn {{ 'btn-warning' if item.entity.is_full() else 'btn-success' }} btn-sm flex-fill">

@@ -19,6 +19,27 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Competizione di prova** (ADR-058, prima tappa). Un direttore appena
+  promosso deve poter capire le schermate di gestione prima di condurre una
+  serata vera, e finora poteva solo leggere la guida o fare esperimenti su
+  gare reali. Ora nel modulo della gara singola c'è la spunta «Competizione
+  di prova»: nasce la stessa gara di sempre, con un flag. La vede **solo chi
+  la dirige** (co-direttori e admin compresi), non ha link pubblico né
+  vetrina, non compare in nessun elenco. A iscrizioni aperte la si popola con
+  tre pulsanti — il minimo, fino al massimo, uno in più — che creano
+  **giocatori fittizi** con nomi generici e rating fissi e diversi; nessun
+  utente vero può iscriversi. Le partite di una prova non muovono l'ELO e
+  nessun evento di prova dà XP, badge o missioni a nessuno; le statistiche
+  del direttore la ignorano; le notifiche che genera arrivano con il prefisso
+  «Prova ·». Al massimo tre prove aperte per direttore. Si elimina in
+  qualunque stato dal banner in cima alla pagina, **fisicamente**, con
+  partite, iscrizioni e fittizi; una prova dimenticata sparisce da sola dopo
+  14 giorni, con un avviso in app tre giorni prima. L'invisibilità è un
+  filtro di sessione come il soft delete: una schermata nuova che se ne
+  dimentica non la mostra, invece di mostrarla per errore. Le tappe
+  successive — simulazione dei risultati, campionato di prova, aiuto
+  contestuale — sono in `docs/usecases/competizione-di-prova.md`.
+
 - **Segnalare un problema dall'app.** Chi usa l'app non aveva nessun modo di
   dire che qualcosa non va: il backlog vive su GitHub, e i giocatori non hanno
   un account GitHub. Ora **Segnalazioni** sta nel menu sotto la Guida, nel

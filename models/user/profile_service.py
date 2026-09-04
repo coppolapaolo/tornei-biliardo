@@ -374,6 +374,17 @@ class UserProfileService:
             raise ValueError("Impossibile eliminare un utente amministratore")
         if performed_by_id is not None and performed_by_id == user_id:
             raise ValueError("Non puoi eliminare il tuo stesso account")
+        if user.is_fittizio:
+            # Non è una persona: se ne va con la sua prova, fisicamente.
+            raise ValueError(
+                "Un giocatore fittizio non si anonimizza: elimina la sua prova"
+            )
+
+        # Le prove di un direttore se ne vanno con lui (ADR-058), prima che
+        # l'account perda il ruolo: dopo nessuno potrebbe più eliminarle.
+        from models.prova.service import ProvaService
+
+        ProvaService.elimina_prove_del_direttore(user_id)
 
         user.anonymize()
 

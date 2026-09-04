@@ -22,6 +22,14 @@
 {% block page_actions %}{{ gara_head.actions(gara) }}{% endblock %}
 
 {% block content %}
+{# Competizione di prova (ADR-058): il banner viene prima di tutto, perche'
+   ogni schermata sotto e' quella vera e il direttore deve sapere di essere
+   in una prova prima di toccarla. #}
+{% if gara.is_prova and user_can_manage %}
+<div class="c7-stack" style="margin-bottom:14px">
+  {% include "components/_prova_banner.html" %}
+</div>
+{% endif %}
 {# Punteggio di un giocatore nel modal del risultato rapido: stepper, non
    campo numerico (regola 7c per i numeri piccoli e frequenti). L'input
    conserva id, min/max e handler, quindi il JS non cambia. #}

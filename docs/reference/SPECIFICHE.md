@@ -416,6 +416,18 @@ Creare una nuova gara significa definire:
 
 Quando un utente crea una nuova gara in un campionato, tutti i valori vengono precompilati. Ad esempio il numero di gara è incrementale, la data viene precompilata con quella di oggi per la prima gara o con quella di una settimana più avanti rispetto all'ultima gara aggiunta al campionato, gli altri valori vengono precompilati con i valori delle gare precedenti o con valori di default per la prima gara. 
 
+#### Competizione di prova
+
+Un direttore può creare una gara singola o un campionato **di prova** (ADR-058, specifica completa in `docs/usecases/competizione-di-prova.md`): la stessa competizione con un flag, per imparare le schermate di gestione senza toccare dati reali.
+
+- Una prova è visibile **solo** a chi la dirige (direttore, co-direttori, admin). Non compare in nessun elenco pubblico, non ha link pubblico né vetrina.
+- Un direttore può avere al massimo **3 prove aperte** contemporaneamente (gare singole e campionati sommati).
+- A una prova si iscrivono **solo giocatori fittizi**, creati dalla prova stessa con nomi generici e rating iniziali fissi e diversi fra loro. Nessun utente reale, nemmeno il direttore.
+- Le partite di una prova **non muovono alcun rating** e nessun evento di una prova assegna XP, badge o missioni a nessuno. Le statistiche del direttore (gare organizzate) ignorano le prove.
+- Le notifiche originate da una prova arrivano al direttore solo in app, con il prefisso «Prova ·».
+- Una prova si può eliminare in qualunque stato; l'eliminazione è **fisica** e include partite, iscrizioni, qualificazioni e giocatori fittizi.
+- Una prova non eliminata sparisce da sola **14 giorni** dopo la creazione; il direttore riceve un avviso in app **3 giorni** prima.
+
 ## Internazionalizzazione
 
 La piattaforma supporta più lingue:

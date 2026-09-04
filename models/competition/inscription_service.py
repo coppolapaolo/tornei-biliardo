@@ -94,6 +94,18 @@ class InscriptionService:
         if user.role == UserRole.ADMIN.value:
             raise PermissionDeniedError("Admin non può partecipare ai tornei")
 
+        # Competizione di prova (ADR-058): solo fittizi, e i fittizi solo lì.
+        # Il filtro di visibilità già nasconde la prova ai giocatori veri;
+        # questo è il punto unico che lo garantisce anche a chi la vede.
+        if gara.is_prova and not user.is_fittizio:
+            raise PermissionDeniedError(
+                "In una competizione di prova si iscrivono solo i giocatori fittizi"
+            )
+        if user.is_fittizio and not gara.is_prova:
+            raise PermissionDeniedError(
+                "Un giocatore fittizio gioca solo nella sua prova"
+            )
+
         # Validazione: Verifica periodo di iscrizione
         # IMPORTANT: Use UTC for all datetime comparisons
         # Database stores naive datetimes which are treated as UTC

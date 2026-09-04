@@ -54,6 +54,7 @@
    disciplina della gara e' comunque solo il default, quella vera e' del turno
    e ogni turno la scrive da se'. #}
 {% macro sub(gara) -%}
+{%- if gara.is_prova %}<span class="c7-state c7-state--warn">{{ _('Prova') }}</span> {% endif -%}
 {%- if gara.location %}{{ gara.location }} <span class="c7-sep">·</span> {% endif -%}
 {{ gara.distance_config|format_distance }}
 <span class="d-none d-lg-inline">

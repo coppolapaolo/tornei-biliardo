@@ -85,6 +85,8 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/admin/gara/<int:gara_id>/close_inscriptions` | POST | `admin.competition.close_inscriptions` | `@gara_manager_required` | action | Chiude iscrizioni |
 | `/admin/gara/<int:gara_id>/admin_inscribe` | POST | `admin.competition.admin_inscribe_user` | `@gara_manager_required` | action | Iscrive player manualmente |
 | `/admin/gara/<int:gara_id>/admin_uninscribe/<int:user_id>` | POST | `admin.competition.admin_uninscribe_user` | `@gara_manager_required` | action | Disiscrive player manualmente |
+| `/admin/gara/<int:gara_id>/prova/iscrivi/<modalita>` | POST | `admin.competition.prova_iscrivi_fittizi` | `@gara_manager_required` | action | Competizione di prova (ADR-058): crea e iscrive giocatori fittizi (il minimo, fino al massimo, uno in più) |
+| `/admin/gara/<int:gara_id>/prova/elimina` | POST | `admin.competition.prova_elimina` | `@gara_manager_required` | action | Competizione di prova (ADR-058): eliminazione fisica in qualunque stato |
 | `/admin/gara/<int:gara_id>/add_director` | POST | `admin.competition.add_director` | `@gara_manager_required` | action | Aggiunge co-director a gara |
 | `/admin/gara/<int:gara_id>/remove_director` | POST | `admin.competition.remove_director` | `@gara_manager_required` | action | Rimuove co-director |
 

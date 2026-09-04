@@ -54,6 +54,17 @@ def gara_vetrina(gara_id):
     """La schermata da cui si cura la pagina pubblica della gara."""
     gara = db.get_or_404(Gara, gara_id)
 
+    # Una prova non ha una pagina pubblica: da fuori non esiste (ADR-058).
+    if gara.is_prova:
+        flash(
+            _(
+                "Una competizione di prova non ha vetrina né link pubblico: "
+                "in una gara vera qui trovi il link da condividere."
+            ),
+            "info",
+        )
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
     from models.competition.services import GaraService
 
     token = gara.public_token or GaraService.ensure_public_token(gara_id)
