@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.7.3](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.7.2...v1.7.3) (2026-09-04)
+
+
+### Correzioni
+
+* creare o modificare una gara non chiede più l'esercizio della X ([#314](https://github.com/coppolapaolo/tornei-biliardo/issues/314)) ([071cd10](https://github.com/coppolapaolo/tornei-biliardo/commit/071cd10bd7302c09701a6a61100ac495a3fb84ef))
+* il campionato non dice più "iscrizioni aperte" per una gara programmata ([#312](https://github.com/coppolapaolo/tornei-biliardo/issues/312)) ([47d08e0](https://github.com/coppolapaolo/tornei-biliardo/commit/47d08e0b08af58f74f6ed5afe321528998b62446))
+
 ## [1.7.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.7.1...v1.7.2) (2026-09-02)
 
 
