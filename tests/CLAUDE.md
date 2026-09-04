@@ -212,6 +212,17 @@ anti-invasiveness intensity scale (§11/§11-quater).
   update, cap = 1 capped toast/session (with reset + privacy degrade),
   `prefers-reduced-motion` no-op, confetti only on strong events,
   welcome/nudge/unlock toasts. **26 checks**.
+- **File**: `tests/frontend/test_x_challenge_section.cjs` — carica i veri
+  `static/js/x_challenge_section.js` e `static/js/bracket_options.js` e verifica
+  `form.checkValidity()`, cioè la differenza fra «Salva funziona» e «Salva non
+  fa niente». Presidia il guasto del 2026-09-04: il campo dell'esercizio della X
+  era `required` dentro una sezione `display:none`, e il browser bloccava
+  l'invio senza poter mostrare il messaggio (l'elemento nascosto non riceve il
+  focus). **La forma HTML** — che il `required` non sia scritto nel template —
+  la presidia invece `tests/new/unit/test_x_challenge_section_template.py`:
+  sono due domande diverse, e il difetto stava nella seconda.
+- Gli altri due file (`test_iscritti_ricerca.cjs`, `test_polling_cursore.cjs`)
+  coprono la ricerca fra gli iscritti e il cursore del polling live.
 - **Run**: `cd tests/frontend && npm install && npm test`
   (jsdom is the only dependency; `node_modules` is gitignored).
 - **Standalone toolchain**: intentionally decoupled from pytest and not in CI
