@@ -30,6 +30,14 @@ blocks:
       - name: "Competition name"
         values: "required"
         text: "How it appears in the lists. Recognisable beats formal: «Thursday 9-ball night» works perfectly well."
+      - name: "Trial competition"
+        values: "switch · off"
+        text: >-
+          Turn it on to practise: only you can see the competition, you fill
+          it with fictitious players from the Registered tab and delete it when
+          you are done. It does not touch ELO, XP or statistics, has no public
+          link or showcase, and disappears on its own after 14 days. You can
+          keep three open at a time.
       - name: "Discipline"
         values: "required · 8-ball, 9-ball, 10-ball, one pocket, straight pool, bank pool, rotation"
         text: "The game. It only determines how the competition is displayed: the rules at the table are yours to know."
