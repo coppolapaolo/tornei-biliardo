@@ -40,6 +40,12 @@
         <div class="c7-kicker">{{ _("Gare") }}</div>
         <div class="c7-num mt-1" style="font-size:14px">{{ wizard_data.planned_gare_count }}</div>
       </div>
+      {% if wizard_data.is_prova %}
+      <div>
+        <div class="c7-kicker">{{ _("Modalità") }}</div>
+        <div class="mt-1"><span class="c7-state c7-state--warn"><i class="fas fa-flask me-1"></i>{{ _("Competizione di prova") }}</span></div>
+      </div>
+      {% endif %}
     </div>
   </div>
 

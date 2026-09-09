@@ -172,6 +172,9 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
 | `/admin/campionato/create` | POST | `admin.campionato.create_campionato` | `@director_or_admin_required` | action | Crea campionato (legacy, wizard preferito) |
+| `/admin/campionato/<int:campionato_id>/prova/elimina` | POST | `admin.campionato.prova_elimina` | `@campionato_manager_required` | action | Competizione di prova (ADR-058): elimina fisicamente il campionato di prova con gare, partite, playoff e fittizi |
+| `/admin/campionato/<int:campionato_id>/prova/invito/<int:qualification_id>/<risposta>` | POST | `admin.campionato.prova_rispondi_invito` | `@campionato_manager_required` | action | Competizione di prova (ADR-058): il fittizio accetta o rifiuta l'invito ai playoff; un rifiuto fa scattare il primo degli esclusi |
+| `/admin/campionato/<int:campionato_id>/prova/inviti/accetta-tutti` | POST | `admin.campionato.prova_accetta_inviti` | `@campionato_manager_required` | action | Competizione di prova (ADR-058): accetta tutti gli inviti ai playoff ancora in attesa dei fittizi |
 | (vedi wizard sopra) | - | - | - | - | - |
 
 **Endpoint root:** `/admin/campionato`

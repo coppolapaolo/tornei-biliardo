@@ -221,14 +221,20 @@ class ProvaService:
 
     @staticmethod
     def iscrivi_fittizi(gara_id: int, modalita: str) -> int:
-        """Crea e iscrive i fittizi che il pulsante chiede. Restituisce quanti.
+        """Iscrive i fittizi che il pulsante chiede. Restituisce quanti.
+
+        I fittizi sono **della prova**, non della gara: in un campionato di
+        prova la seconda gara riusa quelli della prima — altrimenti la
+        classifica generale non si formerebbe mai, con sedici nomi nuovi a
+        ogni gara — e ne crea di nuovi solo se non bastano. Per una gara
+        singola i due casi coincidono.
 
         Non è `@transactional` di proposito: chiama due metodi che lo sono
         già (`crea_fittizi`, `inscribe_user`), e il decoratore annidato fa
         rollback in silenzio (ADR-012).
         """
         from models.competition.inscription_service import InscriptionService
-        from models.competition.models import Gara
+        from models.competition.models import Gara, Inscription
         from models.status_enum import GaraStatus
 
         with prova_visibili():
@@ -242,7 +248,23 @@ class ProvaService:
             quanti = ProvaService.quanti_da_iscrivere(gara, modalita)
             if quanti == 0:
                 return 0
-            fittizi = ProvaService.crea_fittizi(gara, quanti)
+            gia_in_gara = {
+                uid
+                for (uid,) in db.session.execute(
+                    select(Inscription.user_id).where(Inscription.gara_id == gara.id)
+                ).all()
+            }
+            gara_id_radice, campionato_id = ProvaService._radice(gara)
+            liberi = [
+                f
+                for f in ProvaService.fittizi_della_radice(
+                    gara_id_radice, campionato_id
+                )
+                if f.id not in gia_in_gara
+            ][:quanti]
+            fittizi = list(liberi)
+            if len(fittizi) < quanti:
+                fittizi += ProvaService.crea_fittizi(gara, quanti - len(fittizi))
             for fittizio in fittizi:
                 InscriptionService.inscribe_user(fittizio.id, gara.id)
             return len(fittizi)

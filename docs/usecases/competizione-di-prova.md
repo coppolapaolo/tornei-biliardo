@@ -321,6 +321,16 @@ Ogni tappa è una PR `feat:` e va in produzione da sola.
   «prova» li distingue dai giocatori veri.
 - **Non esiste un elenco iscritti di campionato** distinto dalle gare: i tre
   pulsanti agiscono solo sulle gare.
+- **I fittizi sono del campionato, non della gara** (2026-09-09, tappa 3).
+  «Iscrivi il minimo» sulla seconda gara riusa i fittizi della prima e ne
+  crea di nuovi solo se non bastano: altrimenti ogni gara avrebbe sedici
+  nomi nuovi e la classifica generale non si formerebbe mai. Per una gara
+  singola i due casi coincidono.
+- **Le risposte agli inviti nella prova non sono «per conto del giocatore».**
+  La route del direttore `playoff_respond_for_player` esiste già per i
+  campionati veri e registra chi ha risposto; nella prova risponde il
+  fittizio stesso, con i servizi della route del giocatore, e sulla pagina
+  compaiono «Accetta», «Rifiuta» e «Accetta tutti i rimanenti».
 
 ## Domande aperte
 

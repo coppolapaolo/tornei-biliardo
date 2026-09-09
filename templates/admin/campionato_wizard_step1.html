@@ -109,6 +109,24 @@
       </span>
     </label>
 
+    {# Competizione di prova (ADR-058): stessa card-interruttore di «Modalità
+       esercizi», perche' e' una scelta della stessa famiglia — un modo del
+       campionato, non un campo. Al limite di prove l'interruttore e' spento
+       e la nota dice perche'; il server rifiuta comunque la quarta. #}
+    {% set _al_limite = prove_attive is defined and prove_attive >= limite_prove %}
+    <label class="c7-card d-flex align-items-center gap-3" style="cursor:pointer">
+      <span class="flex-fill">
+        <span class="c7-choice__title d-block"><i class="fas fa-flask me-1"></i>{{ _("Competizione di prova") }}</span>
+        <span class="c7-choice__desc d-block">{{ _("Solo tu la vedi: la popoli di giocatori fittizi, la conduci come un campionato vero e la elimini quando hai finito. Non tocca ELO, XP né statistiche, e sparisce da sola dopo 14 giorni.") }}</span>
+        {% if _al_limite %}
+        <span class="c7-kicker d-block mt-1" style="color:var(--c7-warn-ink)">{{ _("Hai già %(n)s prove aperte: eliminane una per crearne un'altra.", n=limite_prove) }}</span>
+        {% endif %}
+      </span>
+      <span class="form-check form-switch m-0">
+        <input class="form-check-input m-0" type="checkbox" role="switch" id="is_prova" name="is_prova" {% if _al_limite %}disabled{% endif %}>
+      </span>
+    </label>
+
     <div class="c7-card">
       <h3 class="mb-1">{{ _("Playoff finali") }}</h3>
       <p class="mb-3" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">

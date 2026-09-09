@@ -11,8 +11,16 @@
 
    Niente `id`: la pagina della gara include alcuni componenti due volte
    (mobile/desktop) e questo potrebbe seguirli. La scadenza c'e' solo sulla
-   radice: per una gara di campionato la porta il campionato. #}
-{% set _scadenza = gara.prova_expires_at or (gara.campionato.prova_expires_at if gara.campionato else none) %}
+   radice: per una gara di campionato la porta il campionato.
+
+   Lo include anche la pagina del campionato di prova, che passa la radice
+   con `prova_radice`; senza, la radice e' `gara`. Eliminare da una gara di
+   campionato elimina il campionato intero, e la conferma lo dice. #}
+{% set _campionato = prova_radice if prova_radice is defined and prova_radice else none %}
+{% set _radice = _campionato or gara %}
+{% set _scadenza = _radice.prova_expires_at or (gara.campionato.prova_expires_at if not _campionato and gara.campionato else none) %}
+{% set _tutto_il_campionato = _campionato or gara.campionato_id %}
+{% set _endpoint_elimina = 'admin.campionato.prova_elimina' if _campionato else 'admin.competition.prova_elimina' %}
 <div class="c7-card c7-card--warn">
   <div class="d-flex align-items-start gap-3 flex-wrap">
     <div class="flex-fill min-width-0">
@@ -27,9 +35,9 @@
       </div>
       {% endif %}
     </div>
-    {% if feature_visible('admin.competition.prova_elimina') %}
-    <form method="POST" action="{{ url_for('admin.competition.prova_elimina', gara_id=gara.id) }}"
-          onsubmit='return confirm({{ _("Eliminare la prova con tutte le partite e i giocatori fittizi? Non si torna indietro.")|tojson }})'>
+    {% if feature_visible(_endpoint_elimina) %}
+    <form method="POST" action="{{ url_for('admin.campionato.prova_elimina', campionato_id=_radice.id) if _campionato else url_for('admin.competition.prova_elimina', gara_id=gara.id) }}"
+          onsubmit='return confirm({{ (_("Eliminare la prova con tutto il campionato, le gare, le partite e i giocatori fittizi? Non si torna indietro.") if _tutto_il_campionato else _("Eliminare la prova con tutte le partite e i giocatori fittizi? Non si torna indietro."))|tojson }})'>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-outline-danger">
         <i class="fas fa-trash-can me-1"></i>{{ _("Elimina la prova") }}
