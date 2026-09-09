@@ -134,9 +134,9 @@ def search():
 def hints_index():
     """Catalogo dei micro-aiuti, raggruppati per schermata.
 
-    Non e' una pagina per l'utente finale: serve a chi scrive l'aiuto e a chi
-    costruira' l'interfaccia adattiva per vedere, oggi, cosa dira' domani la
-    "?" accanto a ogni comando — e accorgersi di cosa manca.
+    Non e' una pagina per l'utente finale: serve a chi scrive l'aiuto per
+    rivedere tutti insieme, fuori dalle schermate, i testi che la modalità
+    aiuto mostra accanto a ogni comando — e accorgersi di cosa manca.
     """
     content = _content()
     by_screen: dict[str, list] = {}
