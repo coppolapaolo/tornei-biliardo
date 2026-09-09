@@ -5,12 +5,11 @@ query al database, nessuno stato utente. Sono raggiungibili anche senza
 account — chi sta valutando se registrarsi e' esattamente la persona che ha
 piu' bisogno di capire come funziona.
 
-L'API `/aiuto/api/schermata/<endpoint>` e' la **predisposizione** per
-l'interfaccia adattiva (presentazione alla prima visita, "?" accanto ai
-comandi): restituisce i contenuti gia' scritti, per schermata, in una forma
-che un componente lato client puo' consumare. Oggi nessuna pagina dell'app la
-chiama; esiste perche' quando l'interfaccia adattiva verra' costruita i testi
-siano gia' li', rivisti e verificati, invece di essere inventati allora.
+L'API `/aiuto/api/schermata/<endpoint>` serve la «modalità aiuto»
+(`static/js/help-hints.js`, ADR-058): restituisce i contenuti di una
+schermata — presentazione alla prima visita, "?" accanto ai comandi — in una
+forma che il componente lato client consuma. I testi sono nati prima del
+componente, rivisti e verificati, invece di essere inventati insieme al codice.
 """
 
 from __future__ import annotations
