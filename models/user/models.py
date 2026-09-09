@@ -126,6 +126,23 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     # Gamification Override
     gamification_override = db.Column(db.Boolean, default=False, nullable=False)
 
+    # Giocatore fittizio di una competizione di prova (ADR-058). Nasce con la
+    # prova e muore con lei: e' l'unico `User` che si cancella fisicamente.
+    # Non ha login, non compare in nessun elenco fuori dalla sua prova
+    # (filtro di sessione in `models/prova/visibility.py`), e il motore di
+    # rating lo ignora. Le due FK dicono a quale radice appartiene: una sola
+    # delle due e' valorizzata.
+    #
+    # Senza `ForeignKey`, di proposito: `gara.director_id` riferisce gia'
+    # `user`, e una FK qui chiuderebbe un ciclo user ↔ gara / campionato che
+    # SQLAlchemy non sa piu' ordinare — `drop_all` butta giu' `gara` con i
+    # fittizi ancora dentro e, con `foreign_keys=ON`, SQLite rifiuta. Il
+    # legame lo garantisce il servizio: un fittizio nasce dalla sua prova e
+    # muore con lei (`ProvaService._elimina` li toglie prima della radice).
+    is_fittizio = db.Column(db.Boolean, default=False, nullable=False, index=True)
+    prova_gara_id = db.Column(db.Integer, nullable=True, index=True)
+    prova_campionato_id = db.Column(db.Integer, nullable=True, index=True)
+
     # Relationships (string names to postpone model imports)
     inscriptions = db.relationship("Inscription", back_populates="user", lazy=True)
     match_results = db.relationship(

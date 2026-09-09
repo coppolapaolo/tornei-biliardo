@@ -604,6 +604,7 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [055](docs/adr/ADR-055-session-bound-to-credential.md) | la sessione porta un'impronta della credenziale: cambiare password invalida le sessioni aperte |
 | [056](docs/adr/ADR-056-apertura-e-runout-sul-segnapunti.md) | acchito, regola di apertura ereditata campionato→gara, runout marcato sul trattino |
 | [057](docs/adr/ADR-057-live-events-shared-across-workers.md) | aggiornamenti live su tabella `live_event` condivisa fra i worker; cursore a id; evento atomico col fatto |
+| [058](docs/adr/ADR-058-competizione-di-prova.md) | competizione di prova: invisibile per default (filtro di sessione con opt-in), giocatori fittizi cancellati fisicamente, ELO e gamification fuori |
 
 ---
 

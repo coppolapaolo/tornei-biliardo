@@ -37,6 +37,20 @@ def _annuncia_non_letti(user_id: int, unread_count: int) -> None:
     emit_user_event(user_id, "notification", {"unread_count": unread_count})
 
 
+def _riguarda_una_prova(related_entities: Dict[str, Any]) -> bool:
+    """True se le entità collegate puntano a una competizione di prova."""
+    from models.prova.guard import campionato_e_di_prova, gara_e_di_prova
+
+    try:
+        gara_id = related_entities.get("gara_id")
+        if gara_id and gara_e_di_prova(int(gara_id)):
+            return True
+        campionato_id = related_entities.get("campionato_id")
+        return bool(campionato_id) and campionato_e_di_prova(int(campionato_id))
+    except (TypeError, ValueError):
+        return False
+
+
 class NotificationService:
     """Service for notification management and delivery."""
 
@@ -78,6 +92,12 @@ class NotificationService:
         )
         if preference and not preference.can_send_notification():
             return None
+
+        # Una notifica nata dentro una competizione di prova lo dice nel
+        # titolo (ADR-058): il direttore impara cosa gli arriva, e non lo
+        # scambia per una gara vera.
+        if related_entities and _riguarda_una_prova(related_entities):
+            title = f"Prova · {title}"
 
         # Create notification
         notification = Notification(

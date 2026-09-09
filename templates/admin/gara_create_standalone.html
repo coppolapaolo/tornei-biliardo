@@ -125,6 +125,29 @@
                                 <input type="hidden" name="number" value="1">
                             </div>
 
+                            {# Competizione di prova (ADR-058): stesso modulo,
+                               una spunta. Sta nel primo passo perche' e' la
+                               prima cosa da decidere — cambia chi vedra' la
+                               gara — e al limite si spegne con la spiegazione,
+                               ma il server rifiuta comunque la quarta. #}
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="is_prova" name="is_prova"
+                                        {% if prove_attive is defined and prove_attive >= limite_prove %}disabled{% endif %}>
+                                    <label class="form-check-label" for="is_prova">
+                                        <i class="fas fa-flask me-1"></i>{{ _("Competizione di prova") }}
+                                    </label>
+                                </div>
+                                <small class="text-muted">
+                                    {{ _("Solo tu la vedi: la popoli di giocatori fittizi, la conduci come una gara vera e la elimini quando hai finito. Non tocca ELO, XP né statistiche, e sparisce da sola dopo 14 giorni.") }}
+                                </small>
+                                {% if prove_attive is defined and prove_attive >= limite_prove %}
+                                <div class="c7-kicker mt-1" style="color:var(--c7-warn-ink)">
+                                    {{ _("Hai già %(n)s prove aperte: eliminane una per crearne un'altra.", n=limite_prove) }}
+                                </div>
+                                {% endif %}
+                            </div>
+
                             <div class="mb-3">
                                 <label for="discipline" class="form-label">{{ _("Disciplina") }} <span
                                         class="text-danger">*</span></label>

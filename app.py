@@ -188,6 +188,11 @@ def create_app(config_name=None):
     limiter.init_app(app)
 
     register_soft_delete_filters(SASession)
+    # Le competizioni di prova e i loro giocatori fittizi si vedono solo da
+    # chi le dirige (ADR-058): stesso meccanismo del soft delete.
+    from models.prova import register_prova_filters
+
+    register_prova_filters(SASession)
 
     # Setup Login Manager
     login_manager = LoginManager()

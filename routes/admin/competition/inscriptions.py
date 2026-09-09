@@ -172,6 +172,24 @@ def admin_inscribe_user(gara_id):
             flash("Utente non trovato.", "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
+        # In una prova si iscrivono solo i fittizi (ADR-058): un utente vero
+        # riceverebbe notifiche e comparirebbe in una gara che nessuno vede.
+        if gara.is_prova and not user.is_fittizio:
+            flash(
+                _(
+                    "In una competizione di prova si iscrivono solo "
+                    "i giocatori fittizi."
+                ),
+                "error",
+            )
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+        if user.is_fittizio and not gara.is_prova:
+            flash(
+                _("Un giocatore fittizio gioca solo nella sua prova."),
+                "error",
+            )
+            return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
         # Esegui l'iscrizione usando il service layer
         inscription = InscriptionService.inscribe_user(user_id, gara_id)
 

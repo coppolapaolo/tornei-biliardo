@@ -90,6 +90,12 @@ class UserMergeService:
             raise ValidationError("Sorgente e destinazione coincidono")
         if source.role == UserRole.ADMIN.value or target.role == UserRole.ADMIN.value:
             raise ValidationError("Impossibile unire un account amministratore")
+        if source.is_fittizio or target.is_fittizio:
+            # Un fittizio non è una persona con due account: non si unisce
+            # a nessuno, e nessuno si unisce a lui (ADR-058).
+            raise ValidationError(
+                "Un giocatore fittizio di una prova non si unisce a un account"
+            )
 
         performer = db.session.get(User, performed_by_id)
         if performer is None or performer.role != UserRole.ADMIN.value:
