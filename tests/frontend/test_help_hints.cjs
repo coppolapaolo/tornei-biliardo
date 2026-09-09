@@ -15,7 +15,10 @@
  *    (memoria in localStorage);
  * 5. l'interruttore spegne tutto e lo riaccende, e la scelta resta;
  * 6. un 404 dell'API (schermata senza aiuto) è silenzioso per l'utente;
- * 7. senza localStorage (navigazione privata) funziona lo stesso.
+ * 7. senza localStorage (navigazione privata) funziona lo stesso;
+ * 8. la presentazione e' un dialogo modale davvero: prende il fuoco, Tab
+ *    gira fra i suoi pulsanti, un clic sul velo non la chiude ne' passa
+ *    dietro, e alla chiusura il fuoco torna dov'era.
  *
  * Run:  cd tests/frontend && npm install && npm test
  */
@@ -227,6 +230,34 @@ function check(nome, fn) {
     assert.strictEqual(a.document.querySelector(".c7-help-tour"), null, "seconda visita: niente");
     // Le «?» restano anche senza presentazione.
     assert.strictEqual(q(a.document).length, 3);
+  });
+
+  await check("la presentazione e' modale: fuoco dentro, Tab in cerchio, velo che assorbe", async () => {
+    const a = ambiente();
+    const interruttore = a.document.querySelector("[data-help-toggle]");
+    interruttore.focus();
+    await a.finestra.HelpHints.refresh();
+    const tour = a.document.querySelector(".c7-help-tour");
+    const avanti = tour.querySelector('[data-help-action="next"]');
+    const salta = tour.querySelector('[data-help-action="skip"]');
+    assert.strictEqual(a.document.activeElement, avanti, "il fuoco entra sul pulsante principale");
+    const tab = (shift) =>
+      a.document.dispatchEvent(
+        new a.finestra.KeyboardEvent("keydown", { key: "Tab", shiftKey: !!shift, cancelable: true })
+      );
+    tab(false);
+    assert.strictEqual(a.document.activeElement, salta, "Tab dall'ultimo torna al primo");
+    tab(false);
+    assert.strictEqual(a.document.activeElement, avanti);
+    tab(true);
+    assert.strictEqual(a.document.activeElement, salta, "Shift+Tab va indietro");
+    // Un clic sul velo non chiude la presentazione.
+    tour.click();
+    assert.ok(a.document.querySelector(".c7-help-tour"), "velo cliccato: resta aperta");
+    // Alla chiusura il fuoco torna dov'era.
+    salta.click();
+    assert.strictEqual(a.document.querySelector(".c7-help-tour"), null);
+    assert.strictEqual(a.document.activeElement, interruttore, "fuoco ripristinato");
   });
 
   await check("l'interruttore spegne tutto, riaccende, e la scelta resta", async () => {
