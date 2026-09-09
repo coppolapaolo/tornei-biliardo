@@ -211,7 +211,8 @@ nessun altro veda la prova.
 - L'opt-in viene acceso **una volta sola**, nei decoratori
   `gara_manager_required` / `campionato_manager_required` e per l'admin: tutte
   le route del direttore vedono le prove, tutte le altre no. La home del
-  direttore fa opt-in esplicito nella sola sezione «Le tue prove».
+  direttore le mostra fra le sue gare, con l'etichetta «Di prova» (vedi la
+  nota del 2026-09-09 in «Route e interfaccia»).
 - Trappola nota: il criterio vale solo per le entità presenti nella query
   (`models/dashboard/section_builders.py`, righe 162 e 219). Per questo serve
   il test di enumerazione di AC10, sul modello di
@@ -257,7 +258,13 @@ nessun altro veda la prova.
 - Pulsanti dei fittizi nella fase iscrizioni; pulsanti di simulazione nella
   fase di gioco; risposte agli inviti nella pagina del playoff. Tutti nel
   design system 7c (skill `ui-7c`).
-- Sezione «Le tue prove» in home, con badge e contatore su 3.
+- ~~Sezione «Le tue prove» in home, con badge e contatore su 3.~~ **Emendata
+  il 2026-09-09**: il riquadro dedicato non è stato costruito. Le prove del
+  direttore stanno in home fra le sue gare, con l'etichetta «Di prova» sulla
+  tessera; il limite di tre si manifesta nella spunta disabilitata del
+  modulo di creazione, con la nota che spiega perché. La forma è stata
+  confermata a tappa 4 conclusa, e la guida («Fare una prova») la descrive
+  così.
 
 ### Aiuto contestuale
 
