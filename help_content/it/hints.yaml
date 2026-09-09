@@ -1,15 +1,16 @@
 # Micro-aiuto e presentazioni: contenuti pronti per l'interfaccia adattiva.
 #
-# QUESTO FILE NON È ANCORA USATO DALL'APP. È la predisposizione per la guida
-# contestuale prevista dal progetto: alla prima visita di una schermata una
-# breve presentazione delle cose principali, poi per un certo periodo una
-# piccola "?" accanto ai comandi, che sparisce man mano che l'utente li usa.
+# QUESTI TESTI LI MOSTRA L'APP: `static/js/help-hints.js` (la «modalità
+# aiuto», ADR-058) li chiede a /aiuto/api/schermata/<endpoint> e, dove la
+# pagina la accende — oggi il banner della competizione di prova — mette una
+# piccola "?" accanto a ogni elemento che espone `data-help="<anchor>"` e
+# alla prima visita di una schermata la presentazione (`tours`).
 #
-# Il codice che mostra tutto questo verrà dopo. I testi vengono prima di
-# proposito: sono la parte che richiede di conoscere il dominio e di essere
-# riletta con calma, ed è la parte che, scritta di corsa insieme al codice,
-# esce male. Sono già visibili e verificabili in /aiuto/microaiuto, e
-# interrogabili in JSON da /aiuto/api/schermata/<endpoint>.
+# I testi sono nati prima del codice, di proposito: sono la parte che
+# richiede di conoscere il dominio e di essere riletta con calma. Si rivedono
+# tutti insieme in /aiuto/microaiuto. Ogni `anchor` deve avere il suo
+# `data-help` in un template, e viceversa: lo verifica
+# tests/new/unit/test_help_anchors.py.
 #
 # Campi di `hints`:
 #   id       nome puntato, es. gara.distanza (identifica il suggerimento)

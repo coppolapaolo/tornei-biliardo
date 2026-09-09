@@ -155,12 +155,11 @@ class Section:
 class Hint:
     """Micro-aiuto agganciabile a un elemento dell'interfaccia.
 
-    E' la **predisposizione** per l'interfaccia adattiva descritta nella guida:
-    `anchor` e' il valore che l'elemento esporra' in `data-help`, `screens` dice
-    su quali schermate compare, `page`/`section` dove leggerne di piu'. Oggi
-    nessuna pagina dell'app li consuma: esistono, sono verificati dai test e
-    interrogabili via API, e questo e' quanto serve perche' lo sviluppo
-    dell'interfaccia adattiva parta da contenuti gia' scritti e gia' rivisti.
+    `anchor` e' il valore che l'elemento espone in `data-help`, `screens` dice
+    su quali schermate compare, `page`/`section` dove leggerne di piu'. Li
+    consuma `static/js/help-hints.js` (la «modalità aiuto», ADR-058) attraverso
+    `screen_payload`; il contratto ancora↔template lo verifica
+    `tests/new/unit/test_help_anchors.py`.
     """
 
     id: str

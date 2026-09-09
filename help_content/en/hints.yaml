@@ -1,7 +1,9 @@
 # Micro-help and introductions: content ready for the adaptive interface.
 #
-# THIS FILE IS NOT USED BY THE APP YET. It mirrors `it/hints.yaml` one to one:
-# same ids, same `anchor` values, same screens. Only the wording is translated.
+# THE APP SHOWS THESE TEXTS: `static/js/help-hints.js` (the "help mode",
+# ADR-058) fetches them from /aiuto/api/schermata/<endpoint>. This file
+# mirrors `it/hints.yaml` one to one: same ids, same `anchor` values, same
+# screens. Only the wording is translated.
 #
 # The `anchor` values are NOT translated on purpose: they are the contract with
 # the app's templates (`data-help="..."`), and translating them would mean two

@@ -67,51 +67,51 @@ nessun altro veda la prova.
 
 ## Criteri di accettazione
 
-- [ ] AC1. Un direttore crea una gara singola o un campionato con la spunta
+- [x] AC1. Un direttore crea una gara singola o un campionato con la spunta
   «Competizione di prova». La competizione nasce con il flag, la scadenza a 14
   giorni e nessun giocatore.
-- [ ] AC2. Con 3 prove attive la spunta è disabilitata con la nota «hai già tre
+- [x] AC2. Con 3 prove attive la spunta è disabilitata con la nota «hai già tre
   prove: eliminane una per crearne un'altra». Il server rifiuta comunque la
   quarta (`ConflictError`).
-- [ ] AC3. In una prova a iscrizioni aperte i tre pulsanti creano giocatori
+- [x] AC3. In una prova a iscrizioni aperte i tre pulsanti creano giocatori
   fittizi e li iscrivono: «il minimo» porta gli iscritti a
   `min_participants`, «fino al massimo» a `max_participants`, «uno in più»
   ne aggiunge uno. Ogni pulsante è disabilitato quando non ha effetto.
-- [ ] AC4. Nessun utente reale può iscriversi a una prova: la prova non compare
+- [x] AC4. Nessun utente reale può iscriversi a una prova: la prova non compare
   negli elenchi delle gare aperte, non ha link pubblico, e l'iscrizione manuale
   del direttore accetta solo fittizi.
-- [ ] AC5. In una prova avviata, «Simula una partita», «Simula il turno» e
+- [x] AC5. In una prova avviata, «Simula una partita», «Simula il turno» e
   «Simula tutta la gara» producono risultati validi per la distanza effettiva
   del turno (ADR-027) e portano la gara nello stato che avrebbe con giocatori
   veri. Il segnapunti e le altre azioni del direttore restano usabili.
-- [ ] AC6. In un campionato di prova con playoff, la pagina degli inviti offre
+- [x] AC6. In un campionato di prova con playoff, la pagina degli inviti offre
   per ogni fittizio «Accetta» e «Rifiuta», più «Accetta tutti i rimanenti». Un
   rifiuto fa scattare la ricerca del sostituto (SPECIFICHE.md, «primo degli
   esclusi»).
-- [ ] AC7. Ogni schermata di una prova mostra un banner persistente con:
+- [x] AC7. Ogni schermata di una prova mostra un banner persistente con:
   etichetta «Competizione di prova», data di scadenza, interruttore
   dell'aiuto, pulsante «Elimina la prova».
-- [ ] AC8. «Elimina la prova» funziona in qualunque stato, dopo conferma, e
+- [x] AC8. «Elimina la prova» funziona in qualunque stato, dopo conferma, e
   non lascia righe orfane: gare, partite, rack, iscrizioni, qualificazioni,
   notifiche, eventi live e utenti fittizi spariscono.
-- [ ] AC9. Un job giornaliero elimina le prove scadute con la stessa procedura.
+- [x] AC9. Un job giornaliero elimina le prove scadute con la stessa procedura.
   Tre giorni prima il direttore riceve una notifica in app.
-- [ ] AC10. Le competizioni di prova e i giocatori fittizi non compaiono in:
+- [x] AC10. Le competizioni di prova e i giocatori fittizi non compaiono in:
   elenchi pubblici, home ospite, pagina della sala, «gare vicino a te»,
   ricerca giocatori, classifiche ELO, esami, disponibilità, profili altrui,
   segnalazioni. Presidiato da un test di enumerazione.
-- [ ] AC11. Nessuna partita di prova muove un rating (`RatingExclusion.PROVA`)
+- [x] AC11. Nessuna partita di prova muove un rating (`RatingExclusion.PROVA`)
   e nessun evento di prova assegna XP, badge o missioni a nessuno.
-- [ ] AC12. Le notifiche generate da una prova arrivano al direttore in app
+- [x] AC12. Le notifiche generate da una prova arrivano al direttore in app
   con il prefisso «Prova»; i canali email e push le scartano.
-- [ ] AC13. Il contatore «gare organizzate» e ogni altra statistica del
+- [x] AC13. Il contatore «gare organizzate» e ogni altra statistica del
   direttore ignorano le prove.
-- [ ] AC14. Con l'aiuto acceso, ogni elemento con `data-help` mostra una «?»
+- [x] AC14. Con l'aiuto acceso, ogni elemento con `data-help` mostra una «?»
   con il testo di `hints.yaml` e il link alla guida; alla prima visita di una
   schermata compare la presentazione (`tours`). L'interruttore spegne tutto.
-- [ ] AC15. Un test statico verifica che ogni `anchor` di `hints.yaml` compaia
+- [x] AC15. Un test statico verifica che ogni `anchor` di `hints.yaml` compaia
   come `data-help` in un template della sua schermata, e viceversa.
-- [ ] AC16. Tutte le stringhe nuove sono tradotte (skill `translate`).
+- [x] AC16. Tutte le stringhe nuove sono tradotte (skill `translate`).
 
 ## User journey
 

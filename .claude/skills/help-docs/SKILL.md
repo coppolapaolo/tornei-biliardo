@@ -243,10 +243,11 @@ non esistono: e' l'esatto contrario di cio' che deve fare.
 
 ### 5. Aggiorna il micro-aiuto
 
-`help_content/it/hints.yaml` contiene i testi **già pronti** per l'interfaccia
-adattiva prevista dal progetto: la presentazione alla prima visita di una
-schermata, e la piccola «?» accanto ai comandi. Il codice che li mostra non
-esiste ancora; i testi sì, e vanno tenuti veri come il resto.
+`help_content/it/hints.yaml` contiene i testi della **modalità aiuto**: la
+presentazione alla prima visita di una schermata, e la piccola «?» accanto ai
+comandi. Li mostra `static/js/help-hints.js` dove la pagina la accende (oggi
+il banner della competizione di prova, ADR-058), e vanno tenuti veri come il
+resto.
 
 Quando aggiungi un comando importante a una schermata, aggiungi anche il suo
 suggerimento:
@@ -261,10 +262,14 @@ suggerimento:
     section: struttura            # `heading` esistente in quella pagina
 ```
 
-`anchor` è il contratto con i template dell'app: quando l'interfaccia adattiva
-verrà costruita, l'elemento esporrà `data-help="gara-nuova-opzione"` e il
-componente chiederà i testi a `/aiuto/api/schermata/<endpoint>`. Fino ad allora
-resta una dichiarazione di intenti verificata dai test.
+`anchor` è il contratto con i template dell'app: l'elemento espone
+`data-help="gara-nuova-opzione"` e `static/js/help-hints.js` chiede i testi a
+`/aiuto/api/schermata/<endpoint>`. **Ogni ancora nuova vuole il suo
+`data-help` nel template, nello stesso giro di lavoro**: lo pretende
+`tests/new/unit/test_help_anchors.py`, in tutte e due le direzioni. La «?»
+compare dove la pagina accende la modalità aiuto (oggi il banner della
+competizione di prova) e alla prima visita di una schermata compare la
+presentazione (`tours`).
 
 Per rivederli tutti insieme: `/aiuto/microaiuto` (in produzione è admin-only).
 
