@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-09 22:13+0200\n"
+"POT-Creation-Date: 2026-09-09 22:52+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -2399,7 +2399,7 @@ msgid ""
 "campionato vero qui trovi il link da condividere."
 msgstr ""
 
-#: routes/admin/campionato.py:1187 routes/admin/competition/prova.py:126
+#: routes/admin/campionato.py:1187 routes/admin/competition/prova.py:134
 #, python-format
 msgid "Prova «%(nome)s» eliminata."
 msgstr ""
@@ -2596,21 +2596,29 @@ msgstr ""
 #: routes/admin/competition/prova.py:81
 #, python-format
 msgid ""
+"Simulata %(quante)s partita fino alla fine della gara: le pari chiuse dai"
+" giocatori, le dispari validate come le avresti validate tu."
+msgid_plural ""
 "Simulate %(quante)s partite fino alla fine della gara: le pari chiuse dai"
 " giocatori, le dispari validate come le avresti validate tu."
-msgstr ""
+msgstr[0] ""
+msgstr[1] ""
 
-#: routes/admin/competition/prova.py:90
+#: routes/admin/competition/prova.py:94
 #, python-format
 msgid "La simulazione si è fermata %(dove)s."
 msgstr ""
 
-#: routes/admin/competition/prova.py:96
+#: routes/admin/competition/prova.py:100
 #, python-format
 msgid ""
+"Simulata %(quante)s partita del turno %(turno)s. Se ha la doppia conferma"
+" è chiusa; altrimenti aspetta che tu la validi dal segnapunti."
+msgid_plural ""
 "Simulate %(quante)s partite del turno %(turno)s. Quelle con la doppia "
 "conferma sono chiuse; le altre aspettano che tu le validi dal segnapunti."
-msgstr ""
+msgstr[0] ""
+msgstr[1] ""
 
 #: routes/admin/competition/rounds.py:304
 msgid "La gara non è in fase di spareggio!"

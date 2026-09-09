@@ -350,6 +350,10 @@ class TournamentService(TournamentStatisticsService):
             .where(Campionato.id == campionato_id)
             .execution_options(include_prova=True, include_deleted=True)
         ).scalar()
+        if campionato is None:
+            # `False` è un campionato vero, `None` un campionato che non c'è:
+            # la data di una gara per un campionato inesistente non ha senso.
+            raise NotFoundError("Campionato not found")
         ultima = db.session.execute(
             select(func.max(Gara.date))
             .where(Gara.campionato_id == campionato_id)

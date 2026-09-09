@@ -21,6 +21,11 @@ from models.base import db
 from models.campionato.tournament_service import TournamentService
 from models.competition.models import Gara
 from models.competition.services import GaraService
+from models.matchmaking.configuration import (
+    FirstRoundPolicy,
+    MatchmakingStrategy,
+    OddNumberPolicy,
+)
 from models.prova.service import ProvaService
 from models.prova.visibility import prova_visibili
 from models.status_enum import Discipline, GaraStatus
@@ -44,9 +49,9 @@ def _prova(direttore: User, *, iscritti: int = 6) -> Gara:
         min_participants=iscritti,
         max_participants=iscritti,
         rounds_count=3,
-        matchmaking_strategy="amalfi",
-        first_round_policy="random",
-        odd_number_policy="bye",
+        matchmaking_strategy=MatchmakingStrategy.AMALFI.value,
+        first_round_policy=FirstRoundPolicy.RANDOM.value,
+        odd_number_policy=OddNumberPolicy.BYE.value,
         status=GaraStatus.INSCRIPTION.value,
         **ProvaService.campi_di_creazione(),
     )

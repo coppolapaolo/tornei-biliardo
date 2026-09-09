@@ -17,6 +17,19 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ## [Non rilasciato]
 
+### Corretto
+
+- **Rilievi della revisione automatica sulle tappe della prova** (PR #305,
+  #314, #318, #319). «Simula il turno» contava come chiuse anche le partite
+  dispari già a distanza e in attesa del direttore, e il messaggio diceva
+  partite simulate che non lo erano: ora una partita conta solo se la
+  simulazione ci ha fatto qualcosa. I messaggi della simulazione hanno la
+  forma singolare («Simulata 1 partita»). Chiedere la data proposta per un
+  campionato inesistente solleva `NotFoundError` invece di rispondere una
+  data. Nel modale «Nuova gara» l'etichetta «Esercizio per la X» punta al
+  suo controllo, quindi toccarla porta il fuoco sulla tendina. Lo script di
+  riparazione delle iscrizioni duplicate propaga il codice di uscita.
+
 ### Aggiunto
 
 - **Aiuto contestuale dentro le prove** (ADR-058, quarta tappa). Le

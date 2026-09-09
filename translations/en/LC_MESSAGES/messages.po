@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-09 22:13+0200\n"
+"POT-Creation-Date: 2026-09-09 22:52+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -2467,7 +2467,7 @@ msgstr ""
 "A trial competition has no showcase or public link: in a real "
 "championship this is where you find the link to share."
 
-#: routes/admin/campionato.py:1187 routes/admin/competition/prova.py:126
+#: routes/admin/campionato.py:1187 routes/admin/competition/prova.py:134
 #, python-format
 msgid "Prova «%(nome)s» eliminata."
 msgstr "Trial \"%(nome)s\" deleted."
@@ -2672,26 +2672,39 @@ msgstr "No match to simulate."
 #: routes/admin/competition/prova.py:81
 #, python-format
 msgid ""
+"Simulata %(quante)s partita fino alla fine della gara: le pari chiuse dai"
+" giocatori, le dispari validate come le avresti validate tu."
+msgid_plural ""
 "Simulate %(quante)s partite fino alla fine della gara: le pari chiuse dai"
 " giocatori, le dispari validate come le avresti validate tu."
-msgstr ""
-"Simulated %(quante)s matches through the end of the tournament: even ones"
+msgstr[0] ""
+"Simulated %(quante)s match through the end of the competition: even ones"
+" closed by the players, odd ones validated as you would have."
+msgstr[1] ""
+"Simulated %(quante)s matches through the end of the competition: even ones"
 " closed by the players, odd ones validated as you would have."
 
-#: routes/admin/competition/prova.py:90
+#: routes/admin/competition/prova.py:94
 #, python-format
 msgid "La simulazione si è fermata %(dove)s."
 msgstr "The simulation stopped %(dove)s."
 
-#: routes/admin/competition/prova.py:96
+#: routes/admin/competition/prova.py:100
 #, python-format
 msgid ""
+"Simulata %(quante)s partita del turno %(turno)s. Se ha la doppia conferma"
+" è chiusa; altrimenti aspetta che tu la validi dal segnapunti."
+msgid_plural ""
 "Simulate %(quante)s partite del turno %(turno)s. Quelle con la doppia "
 "conferma sono chiuse; le altre aspettano che tu le validi dal segnapunti."
-msgstr ""
-"Simulated %(quante)s matches of round %(turno)s. Those with the double "
-"confirmation are closed; the others are waiting for you to validate them "
-"from the scoreboard."
+msgstr[0] ""
+"Simulated %(quante)s match of round %(turno)s. If it has the double"
+" confirmation it is closed; otherwise it waits for you to validate it from the"
+" scoreboard."
+msgstr[1] ""
+"Simulated %(quante)s matches of round %(turno)s. Those with the double"
+" confirmation are closed; the others are waiting for you to validate them from"
+" the scoreboard."
 
 #: routes/admin/competition/rounds.py:304
 msgid "La gara non è in fase di spareggio!"
