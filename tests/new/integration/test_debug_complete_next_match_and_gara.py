@@ -112,9 +112,14 @@ def test_complete_next_match_completes_one(client, db_session):
 
     # Complete Match pesca da TUTTI i round attivi (bug 12), quindi il match
     # completato puo' essere indifferentemente di round 1 o round 2.
-    completed_total = Match.query.filter_by(
-        gara_id=gara.id, status=MatchStatus.CLOSED_UNILATERALLY.value
-    ).count()
+    # Chiusa in uno dei due modi: dalla tappa 2 della prova (ADR-058) il
+    # debug passa dal segnapunti vero, e le partite pari le chiudono i
+    # giocatori con la doppia conferma.
+    completed_total = (
+        Match.query.filter_by(gara_id=gara.id)
+        .filter(Match.status.in_(MatchStatus.finished_values()))
+        .count()
+    )
     pending_total = (
         Match.query.filter_by(gara_id=gara.id)
         .filter(
@@ -143,7 +148,7 @@ def test_complete_round_advances_to_next_active_round(client, db_session):
     assert resp1.status_code in (302, 303)
     r1_done = (
         Match.query.filter_by(gara_id=gara.id, round_number=1)
-        .filter(Match.status == MatchStatus.CLOSED_UNILATERALLY.value)
+        .filter(Match.status.in_(MatchStatus.finished_values()))
         .count()
     )
     assert r1_done == 2
@@ -196,11 +201,11 @@ def test_complete_next_match_picks_from_any_round(client, db_session):
     resp = client.get(f"/debug/complete_next_match/{gara.id}", follow_redirects=False)
     assert resp.status_code in (302, 303)
 
-    r2_completed = Match.query.filter_by(
-        gara_id=gara.id,
-        round_number=2,
-        status=MatchStatus.CLOSED_UNILATERALLY.value,
-    ).count()
+    r2_completed = (
+        Match.query.filter_by(gara_id=gara.id, round_number=2)
+        .filter(Match.status.in_(MatchStatus.finished_values()))
+        .count()
+    )
     assert (
         r2_completed == 1
     ), f"Atteso 1 match round 2 completato, trovati {r2_completed}"
@@ -235,11 +240,11 @@ def test_complete_next_match_ignores_matches_without_table(client, db_session):
 def test_completable_matches_only_playing_with_table(client, db_session):
     """Bug 13: l'helper di selezione restituisce solo i match PLAYING con
     tavolo assegnato, mai i PENDING senza tavolo."""
-    from routes.main import _debug_completable_matches
+    from models.prova.simulation_service import SimulationService
 
     gara = _setup_random_pregenerated_gara(db_session)
 
-    completable = _debug_completable_matches(gara.id)
+    completable = SimulationService.partite_al_tavolo(gara.id)
 
     # Setup: 2 match round 1 PLAYING+tavolo, 2 round 2 PENDING senza tavolo.
     assert len(completable) == 2

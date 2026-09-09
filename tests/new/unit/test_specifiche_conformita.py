@@ -592,7 +592,7 @@ class TestRegoleDiApertura:
 
 
 class TestCompetizioneDiProva:
-    """`SPECIFICHE.md` righe 419-429: la competizione di prova (ADR-058)."""
+    """`SPECIFICHE.md` righe 419-430: la competizione di prova (ADR-058)."""
 
     def test_al_massimo_tre_prove_aperte(self):
         """Riga 424: «al massimo **3 prove aperte** contemporaneamente»."""
@@ -601,13 +601,25 @@ class TestCompetizioneDiProva:
         assert LIMITE_PROVE_ATTIVE == 3
 
     def test_scade_a_quattordici_giorni_con_avviso_tre_giorni_prima(self):
-        """Riga 429: «**14 giorni** dopo la creazione ... **3 giorni** prima»."""
+        """Riga 430: «**14 giorni** dopo la creazione ... **3 giorni** prima»."""
         from datetime import timedelta
 
         from models.prova.service import DURATA_PROVA, PREAVVISO_SCADENZA
 
         assert DURATA_PROVA == timedelta(days=14)
         assert PREAVVISO_SCADENZA == timedelta(days=3)
+
+    def test_la_simulazione_chiude_le_pari_dai_giocatori_e_le_dispari_dal_direttore(
+        self,
+    ):
+        """Riga 426: «le **pari** con la doppia conferma dei giocatori, le
+        **dispari** restano ... in attesa che il direttore le validi»."""
+        from types import SimpleNamespace
+
+        from models.prova.simulation_service import SimulationService
+
+        assert SimulationService.chiusa_dai_giocatori(SimpleNamespace(id=2))
+        assert not SimulationService.chiusa_dai_giocatori(SimpleNamespace(id=3))
 
     def test_i_fittizi_hanno_rating_fissi_e_diversi(self):
         """Riga 425: «rating iniziali fissi e diversi fra loro»."""
@@ -617,7 +629,7 @@ class TestCompetizioneDiProva:
         assert len(set(rating)) == len(rating)
 
     def test_una_partita_di_prova_non_muove_il_rating(self, db_session):
-        """Riga 426: «non muovono alcun rating»."""
+        """Riga 427: «non muovono alcun rating»."""
         from models.prova.service import ProvaService
         from models.rating.eligibility import RatingEligibility, RatingExclusion
 

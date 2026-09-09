@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-04 22:22+0200\n"
+"POT-Creation-Date: 2026-09-09 12:32+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -324,16 +324,16 @@ msgid "%(campionato)s · gara %(n)s"
 msgstr ""
 
 #: models/competition/showcase_view.py:288
-#: models/competition/showcase_view.py:455 routes/main.py:448
+#: models/competition/showcase_view.py:455 routes/main.py:447
 msgid "Gara conclusa"
 msgstr ""
 
-#: models/competition/showcase_view.py:297 routes/main.py:418
+#: models/competition/showcase_view.py:297 routes/main.py:417
 #: templates/components/_unified_cards.html:79
 msgid "Iscrizioni non ancora aperte"
 msgstr ""
 
-#: models/competition/showcase_view.py:298 routes/main.py:429
+#: models/competition/showcase_view.py:298 routes/main.py:428
 msgid "Iscrizioni chiuse"
 msgstr ""
 
@@ -2126,90 +2126,90 @@ msgstr ""
 msgid "Amministratore"
 msgstr ""
 
-#: routes/main.py:370
+#: routes/main.py:369
 #, python-format
 msgid "Iscrizioni dal %(start)s al %(end)s."
 msgstr ""
 
-#: routes/main.py:376
+#: routes/main.py:375
 #, python-format
 msgid "Iscrizioni aperte fino al %(end)s."
 msgstr ""
 
-#: routes/main.py:381
+#: routes/main.py:380
 #, python-format
 msgid "Iscrizioni aperte dal %(start)s."
 msgstr ""
 
-#: routes/main.py:387
+#: routes/main.py:386
 msgid "Sei già iscritto"
 msgstr ""
 
-#: routes/main.py:388
+#: routes/main.py:387
 #, python-format
 msgid "Risulti iscritto a %(gara)s."
 msgstr ""
 
-#: routes/main.py:394
+#: routes/main.py:393
 msgid "Sei in lista d'attesa"
 msgstr ""
 
-#: routes/main.py:396
+#: routes/main.py:395
 #, python-format
 msgid ""
 "Sei in lista d'attesa per %(gara)s, in posizione %(position)s. Se si "
 "libera un posto entri automaticamente."
 msgstr ""
 
-#: routes/main.py:406
+#: routes/main.py:405
 msgid "Puoi iscriverti"
 msgstr ""
 
-#: routes/main.py:408
+#: routes/main.py:407
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono aperte: premi «Iscriviti» per confermare."
 msgstr ""
 
-#: routes/main.py:420
+#: routes/main.py:419
 #, python-format
 msgid "Le iscrizioni a %(gara)s non sono ancora aperte."
 msgstr ""
 
-#: routes/main.py:430
+#: routes/main.py:429
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono chiuse."
 msgstr ""
 
-#: routes/main.py:437
+#: routes/main.py:436
 msgid "Gara già iniziata"
 msgstr ""
 
-#: routes/main.py:439
+#: routes/main.py:438
 #, python-format
 msgid ""
 "%(gara)s è già iniziata: non è più possibile iscriversi, ma puoi seguire "
 "i risultati da questa pagina."
 msgstr ""
 
-#: routes/main.py:450
+#: routes/main.py:449
 #, python-format
 msgid "%(gara)s è conclusa: qui trovi la classifica finale."
 msgstr ""
 
-#: routes/main.py:458
+#: routes/main.py:457
 msgid "Gara annullata"
 msgstr ""
 
-#: routes/main.py:459
+#: routes/main.py:458
 #, python-format
 msgid "%(gara)s è stata annullata."
 msgstr ""
 
-#: routes/main.py:465
+#: routes/main.py:464
 msgid "Iscrizione non riuscita"
 msgstr ""
 
-#: routes/main.py:467
+#: routes/main.py:466
 #, python-format
 msgid ""
 "Non è stato possibile iscriverti a %(gara)s. Riprova dal pulsante "
@@ -2556,16 +2556,39 @@ msgstr ""
 msgid "Un giocatore fittizio gioca solo nella sua prova."
 msgstr ""
 
-#: routes/admin/competition/prova.py:45
+#: routes/admin/competition/prova.py:47
 msgid "Niente da aggiungere: gli iscritti sono già quelli."
 msgstr ""
 
-#: routes/admin/competition/prova.py:48
+#: routes/admin/competition/prova.py:50
 #, python-format
 msgid "Iscritti %(quanti)s giocatori fittizi."
 msgstr ""
 
-#: routes/admin/competition/prova.py:73
+#: routes/admin/competition/prova.py:77
+msgid "Nessuna partita da simulare."
+msgstr ""
+
+#: routes/admin/competition/prova.py:81
+#, python-format
+msgid ""
+"Simulate %(quante)s partite fino alla fine della gara: le pari chiuse dai"
+" giocatori, le dispari validate come le avresti validate tu."
+msgstr ""
+
+#: routes/admin/competition/prova.py:90
+#, python-format
+msgid "La simulazione si è fermata %(dove)s."
+msgstr ""
+
+#: routes/admin/competition/prova.py:96
+#, python-format
+msgid ""
+"Simulate %(quante)s partite del turno %(turno)s. Quelle con la doppia "
+"conferma sono chiuse; le altre aspettano che tu le validi dal segnapunti."
+msgstr ""
+
+#: routes/admin/competition/prova.py:126
 #, python-format
 msgid "Prova «%(nome)s» eliminata."
 msgstr ""
@@ -3971,9 +3994,9 @@ msgstr ""
 msgid "Tutti gli spareggi risolti! Classifica finale pronta."
 msgstr ""
 
-#: templates/components/_gara_management.html:148
-#: templates/components/_gara_management.html:180
-#: templates/components/_gara_management.html:253
+#: templates/components/_gara_management.html:176
+#: templates/components/_gara_management.html:208
+#: templates/components/_gara_management.html:281
 #: templates/gara_detail.html:156
 msgid "Termina Gara"
 msgstr ""
@@ -3982,7 +4005,7 @@ msgstr ""
 msgid "Conferma la conclusione e blocca le modifiche"
 msgstr ""
 
-#: templates/components/_gara_management.html:239
+#: templates/components/_gara_management.html:267
 #: templates/gara_detail.html:217
 msgid "Fase Spareggio (SSR)"
 msgstr ""
@@ -10362,103 +10385,126 @@ msgstr ""
 msgid "Le iscrizioni iniziano"
 msgstr ""
 
-#: templates/components/_gara_management.html:137
+#: templates/components/_gara_management.html:136
+msgid "Simulazione"
+msgstr ""
+
+#: templates/components/_gara_management.html:139
+msgid "Simula una partita"
+msgstr ""
+
+#: templates/components/_gara_management.html:140
+msgid "Simula il turno"
+msgstr ""
+
+#: templates/components/_gara_management.html:141
+msgid "Simula tutta la gara"
+msgstr ""
+
+#: templates/components/_gara_management.html:151
+msgid ""
+"Metà delle partite si chiudono con la doppia conferma dei giocatori, le "
+"altre aspettano che tu le validi dal segnapunti. «Tutta la gara» chiude "
+"tutto."
+msgstr ""
+
+#: templates/components/_gara_management.html:165
 #, python-format
 msgid "Tutte le %(total)d partite completate!"
 msgstr ""
 
-#: templates/components/_gara_management.html:143
-#: templates/components/_gara_management.html:175
+#: templates/components/_gara_management.html:171
+#: templates/components/_gara_management.html:203
 msgid "Avvia Spareggio (SSR)"
 msgstr ""
 
-#: templates/components/_gara_management.html:145
-#: templates/components/_gara_management.html:177
+#: templates/components/_gara_management.html:173
+#: templates/components/_gara_management.html:205
 #, python-format
 msgid "Ci sono parimerito nelle prime %(pos)d posizioni da risolvere"
 msgstr ""
 
-#: templates/components/_gara_management.html:150
-#: templates/components/_gara_management.html:182
-#: templates/components/_gara_management.html:255
+#: templates/components/_gara_management.html:178
+#: templates/components/_gara_management.html:210
+#: templates/components/_gara_management.html:283
 msgid "Conferma la conclusione della gara e blocca le modifiche"
 msgstr ""
 
-#: templates/components/_gara_management.html:154
+#: templates/components/_gara_management.html:182
 msgid "Partite completate"
 msgstr ""
 
-#: templates/components/_gara_management.html:160
+#: templates/components/_gara_management.html:188
 msgid "I giocatori avanzano automaticamente quando il loro avversario ha finito"
 msgstr ""
 
-#: templates/components/_gara_management.html:169
+#: templates/components/_gara_management.html:197
 #, python-format
 msgid "Tutti i %(total)d turni completati!"
 msgstr ""
 
-#: templates/components/_gara_management.html:186
+#: templates/components/_gara_management.html:214
 msgid "Reset Ultimo Turno"
 msgstr ""
 
-#: templates/components/_gara_management.html:188
+#: templates/components/_gara_management.html:216
 #, python-format
 msgid "Azzera i risultati del turno %(num)s per correzioni"
 msgstr ""
 
-#: templates/components/_gara_management.html:194
+#: templates/components/_gara_management.html:222
 #, python-format
 msgid "Turno %(current)d/%(total)d completato"
 msgstr ""
 
-#: templates/components/_gara_management.html:203
+#: templates/components/_gara_management.html:231
 #, python-format
 msgid "Avvia Turno %(num)s"
 msgstr ""
 
-#: templates/components/_gara_management.html:210
+#: templates/components/_gara_management.html:238
 #, python-format
 msgid "Turno %(current)d/%(total)d in corso"
 msgstr ""
 
-#: templates/components/_gara_management.html:219
+#: templates/components/_gara_management.html:247
 msgid "Annulla Avvio Gara"
 msgstr ""
 
-#: templates/components/_gara_management.html:221
-#: templates/components/_gara_management.html:226
-#: templates/components/_gara_management.html:231
+#: templates/components/_gara_management.html:249
+#: templates/components/_gara_management.html:254
+#: templates/components/_gara_management.html:259
 msgid "Puoi annullare l'avvio poiché non sono ancora stati inseriti risultati"
 msgstr ""
 
-#: templates/components/_gara_management.html:224
+#: templates/components/_gara_management.html:252
 msgid "Annulla Avvio Primo Turno"
 msgstr ""
 
-#: templates/components/_gara_management.html:229
+#: templates/components/_gara_management.html:257
 #, python-format
 msgid "Annulla Avvio Turno %(num)s"
 msgstr ""
 
-#: templates/components/_gara_management.html:244
+#: templates/components/_gara_management.html:272
 msgid "Inserisci i punteggi SSR nella sezione sottostante"
 msgstr ""
 
-#: templates/components/_gara_management.html:249
+#: templates/components/_gara_management.html:277
 msgid "Tutti gli spareggi risolti!"
 msgstr ""
 
-#: templates/components/_gara_management.html:260
+#: templates/components/_gara_management.html:288
 msgid "Annulla Spareggio (SSR)"
 msgstr ""
 
-#: templates/components/_gara_management.html:262
+#: templates/components/_gara_management.html:290
 msgid ""
 "Riporta la gara in gioco per correggere i risultati. I punteggi SSR "
 "inseriti verranno azzerati."
 msgstr ""
 
-#: templates/components/_gara_management.html:268
+#: templates/components/_gara_management.html:296
 msgid "Elimina Gara"
 msgstr ""
 

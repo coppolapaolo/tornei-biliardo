@@ -423,6 +423,7 @@ Un direttore può creare una gara singola o un campionato **di prova** (ADR-058,
 - Una prova è visibile **solo** a chi la dirige (direttore, co-direttori, admin). Non compare in nessun elenco pubblico, non ha link pubblico né vetrina.
 - Un direttore può avere al massimo **3 prove aperte** contemporaneamente (gare singole e campionati sommati).
 - A una prova si iscrivono **solo giocatori fittizi**, creati dalla prova stessa con nomi generici e rating iniziali fissi e diversi fra loro. Nessun utente reale, nemmeno il direttore.
+- In una prova avviata il direttore **simula i risultati**: una partita, il turno o tutta la gara. Ogni rack passa dal segnapunti vero, con l'id del fittizio che lo segna, e il punteggio rispetta la distanza effettiva del turno (ADR-027). Le partite si chiudono **in entrambi i modi**, deciso dalla parità dell'id: le **pari** con la doppia conferma dei giocatori, le **dispari** restano a distanza raggiunta in attesa che il direttore le validi. «Simula tutta la gara» chiude tutto, validando le dispari come farebbe lui. Il segnapunti vero resta usabile.
 - Le partite di una prova **non muovono alcun rating** e nessun evento di una prova assegna XP, badge o missioni a nessuno. Le statistiche del direttore (gare organizzate) ignorano le prove.
 - Le notifiche originate da una prova arrivano al direttore solo in app, con il prefisso «Prova ·».
 - Una prova si può eliminare in qualunque stato; l'eliminazione è **fisica** e include partite, iscrizioni, qualificazioni e giocatori fittizi.

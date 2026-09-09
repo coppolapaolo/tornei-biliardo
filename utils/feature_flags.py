@@ -264,6 +264,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.admin_uninscribe_user": {"director"},
     # Competizione di prova (ADR-058): la popola e la elimina chi la dirige.
     "admin.competition.prova_iscrivi_fittizi": {"director"},
+    "admin.competition.prova_simula": {"director"},
     "admin.competition.prova_elimina": {"director"},
     # Squadre (US-2/3/8/9): l'elenco lo governa chi dirige la competizione,
     # la squadra della propria iscrizione la scrive anche il giocatore.
