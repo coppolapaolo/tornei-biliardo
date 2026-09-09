@@ -13,7 +13,7 @@ richiesta e servizio, come in `vetrina.py`.
 """
 
 from flask import abort, flash, redirect, url_for
-from flask_babel import _
+from flask_babel import _, ngettext
 from flask_login import login_required
 
 from models import db, Gara
@@ -77,10 +77,14 @@ def prova_simula(gara_id: int, azione: str):
         flash(_("Nessuna partita da simulare."), "info")
     elif azione == "gara":
         flash(
-            _(
+            ngettext(
+                "Simulata %(quante)s partita fino alla fine della gara: le pari "
+                "chiuse dai giocatori, le dispari validate come le avresti "
+                "validate tu.",
                 "Simulate %(quante)s partite fino alla fine della gara: le pari "
                 "chiuse dai giocatori, le dispari validate come le avresti "
                 "validate tu.",
+                esito.partite_chiuse,
                 quante=esito.partite_chiuse,
             ),
             "success",
@@ -92,10 +96,14 @@ def prova_simula(gara_id: int, azione: str):
             )
     else:
         flash(
-            _(
+            ngettext(
+                "Simulata %(quante)s partita del turno %(turno)s. Se ha la "
+                "doppia conferma è chiusa; altrimenti aspetta che tu la validi "
+                "dal segnapunti.",
                 "Simulate %(quante)s partite del turno %(turno)s. Quelle con la "
                 "doppia conferma sono chiuse; le altre aspettano che tu le "
                 "validi dal segnapunti.",
+                esito.partite_chiuse,
                 quante=esito.partite_chiuse,
                 turno=esito.turno,
             ),

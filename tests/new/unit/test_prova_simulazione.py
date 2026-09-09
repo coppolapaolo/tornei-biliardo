@@ -251,6 +251,18 @@ class TestSimulaUnaPartita:
 
 
 class TestSimulaIlTurno:
+    def test_un_secondo_giro_sulle_dispari_in_attesa_non_conta_niente(self, db_session):
+        """Rilievo sulla #318: «simula il turno» ripescava le dispari già a
+        distanza, in attesa del direttore, e le contava come chiuse un'altra
+        volta — il messaggio diceva partite simulate che non lo erano."""
+        gara_id = _prova_avviata(db_session, _direttore(db_session), iscritti=6)
+        with prova_visibili():
+            primo = SimulationService.simula_turno(gara_id, rng=random.Random(5))
+            assert primo.partite_chiuse == 3
+            secondo = SimulationService.simula_turno(gara_id, rng=random.Random(5))
+            assert secondo.partite_chiuse == 0
+            assert secondo.turno == 1
+
     def test_le_pari_le_chiudono_i_giocatori_le_dispari_aspettano_il_direttore(
         self, db_session
     ):

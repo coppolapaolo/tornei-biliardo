@@ -108,4 +108,4 @@ if __name__ == "__main__":
         "--commit", action="store_true", help="Scrive le modifiche sul database"
     )
     args = parser.parse_args()
-    ripara(commit=args.commit)
+    raise SystemExit(ripara(commit=args.commit))

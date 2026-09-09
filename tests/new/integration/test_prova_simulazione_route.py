@@ -17,6 +17,11 @@ from flask import url_for
 from models.base import db
 from models.competition.models import Gara
 from models.competition.services import GaraService
+from models.matchmaking.configuration import (
+    FirstRoundPolicy,
+    MatchmakingStrategy,
+    OddNumberPolicy,
+)
 from models.match.models import Match
 from models.prova.service import ProvaService
 from models.prova.visibility import prova_visibili
@@ -40,9 +45,9 @@ def _prova(direttore: User, *, iscritti: int = 6) -> Gara:
         min_participants=iscritti,
         max_participants=iscritti,
         rounds_count=3,
-        matchmaking_strategy="amalfi",
-        first_round_policy="random",
-        odd_number_policy="bye",
+        matchmaking_strategy=MatchmakingStrategy.AMALFI.value,
+        first_round_policy=FirstRoundPolicy.RANDOM.value,
+        odd_number_policy=OddNumberPolicy.BYE.value,
         status=GaraStatus.INSCRIPTION.value,
         **ProvaService.campi_di_creazione(),
     )
@@ -152,7 +157,7 @@ class TestLaRoute:
     def test_una_partita(self, scenario):
         risposta = _simula(scenario["client"], scenario["gara_id"], "partita")
         assert risposta.status_code == 200
-        assert "Simulate 1 partite del turno 1" in risposta.get_data(as_text=True)
+        assert "Simulata 1 partita del turno 1" in risposta.get_data(as_text=True)
         chiuse = [m for m in _partite(scenario["gara_id"]) if m.is_at_distance]
         assert len(chiuse) == 1
 

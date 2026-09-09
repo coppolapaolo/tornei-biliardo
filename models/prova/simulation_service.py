@@ -430,12 +430,18 @@ class SimulationService:
         if MatchStatus.is_finished(match.status):
             return False
 
+        # «Chiusa» solo se qui è successo qualcosa: una dispari già a distanza
+        # e in attesa del direttore, ripescata da «simula il turno», non va
+        # contata di nuovo — altrimenti il messaggio dice partite simulate
+        # che non lo sono state.
+        fatto = False
         match_id = match.id
         for chi in SimulationService._sequenza_rack(match, rng):
             corrente = db.session.get(Match, match_id)
             if corrente is None or corrente.is_at_distance:
                 break
             ScoringService.add_rack_for_player(match_id, user_id=chi, winner_id=chi)
+            fatto = True
 
         corrente = db.session.get(Match, match_id)
         if corrente is None or not corrente.is_at_distance:
@@ -453,9 +459,11 @@ class SimulationService:
                 )
                 if not firmato:
                     MatchService.confirm_match_result(match_id, giocatore)
+                    fatto = True
         elif chiudi_tutto:
             MatchValidationService.validate_and_complete(match_id)
-        return True
+            fatto = True
+        return fatto
 
     @staticmethod
     def _sequenza_rack(match: Any, rng: Sorteggio) -> List[int]:

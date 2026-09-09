@@ -24,7 +24,7 @@ from models.campionato.tournament_service import TournamentService
 from models.classification.models import Classification
 from models.competition.models import Gara, Inscription
 from models.competition.services import GaraService
-from models.exceptions import ConflictError, ValidationError
+from models.exceptions import ConflictError, NotFoundError, ValidationError
 from models.playoff.models import (
     PlayoffConfiguration,
     PlayoffQualification,
@@ -186,6 +186,11 @@ class TestLeDateDelleGare:
             assert TournamentService.data_proposta_gara(
                 campionato.id
             ) == date.today() + timedelta(days=4)
+
+    def test_un_campionato_inesistente_solleva(self, db_session):
+        """Rilievo sulla #319: `None` non è un campionato vero, è un id sbagliato."""
+        with pytest.raises(NotFoundError):
+            TournamentService.data_proposta_gara(987654321)
 
     def test_in_un_campionato_vero_oggi_e_poi_una_settimana_dopo(self, db_session):
         """SPECIFICHE.md: «oggi per la prima gara o una settimana più avanti
