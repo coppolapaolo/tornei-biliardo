@@ -40,6 +40,21 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
   successive — simulazione dei risultati, campionato di prova, aiuto
   contestuale — sono in `docs/usecases/competizione-di-prova.md`.
 
+- **Competizione di prova, seconda tappa: la simulazione dei risultati.** In
+  una prova avviata il pannello di gestione ha tre pulsanti — **Simula una
+  partita**, **Simula il turno**, **Simula tutta la gara** — con cui il
+  direttore fa andare avanti la gara senza giocatori veri. Le partite si
+  chiudono **nei due modi che deve imparare**: metà con la doppia conferma dei
+  giocatori, chiuse da sole; l'altra metà con il risultato segnato da un solo
+  giocatore, in attesa che lui le validi dal segnapunti, esattamente come gli
+  succederà con giocatori veri che non passano dal suo tavolo. «Tutta la gara»
+  chiude tutto, validando anche quelle. Ogni rack passa dal segnapunti vero con
+  l'id del fittizio che lo segna, quindi il tabellino è vero e il segnapunti
+  resta usabile dopo; i punteggi rispettano la distanza del turno, e in
+  «esattamente N» con N pari il pareggio esiste come nella realtà. Le vecchie
+  azioni di debug del footer di sviluppo usano lo stesso servizio: una sola
+  implementazione.
+
 - **Segnalare un problema dall'app.** Chi usa l'app non aveva nessun modo di
   dire che qualcosa non va: il backlog vive su GitHub, e i giocatori non hanno
   un account GitHub. Ora **Segnalazioni** sta nel menu sotto la Guida, nel

@@ -124,6 +124,34 @@
     {% elif gara.status == GaraStatus.PLAYING.value %}
       {% set display_round = gara.current_round if gara.current_round > 0 else 1 %}
 
+      {# Competizione di prova (ADR-058): i risultati li simula il direttore,
+         una partita, il turno o tutta la gara. Stessa griglia a tre dei
+         pulsanti dei fittizi in fase iscrizioni, cosi' la prova ha un solo
+         modo di chiedere le cose. Le partite pari le chiudono i giocatori
+         con la doppia conferma, le dispari restano da validare: la nota
+         sotto lo dice, perche' e' la ragione per cui dopo il clic meta' delle
+         partite risultano ancora aperte. #}
+      {% if gara.is_prova and feature_visible('admin.competition.prova_simula') %}
+      <div>
+        <div class="c7-label mb-2"><i class="fas fa-flask me-1"></i>{{ _("Simulazione") }}</div>
+        <div class="c7-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+          {% for azione, etichetta, icona in [
+                ('partita', _('Simula una partita'), 'fa-dice'),
+                ('turno', _('Simula il turno'), 'fa-forward-step'),
+                ('gara', _('Simula tutta la gara'), 'fa-forward-fast')] %}
+          <form method="POST" action="{{ url_for('admin.competition.prova_simula', gara_id=gara.id, azione=azione) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-secondary w-100 h-100 d-flex flex-column align-items-center gap-1 py-2">
+              <i class="fas {{ icona }}"></i>
+              <span style="font-size:12px;font-weight:700;line-height:1.15">{{ etichetta }}</span>
+            </button>
+          </form>
+          {% endfor %}
+        </div>
+        {{ hint(_("Metà delle partite si chiudono con la doppia conferma dei giocatori, le altre aspettano che tu le validi dal segnapunti. «Tutta la gara» chiude tutto.")) }}
+      </div>
+      {% endif %}
+
       {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
         {% set total_matches = gara.matches|length %}
         {% set completed_count = gara.matches|selectattr('status', 'equalto', MatchStatus.CLOSED_UNILATERALLY.value)|list|length %}
