@@ -398,3 +398,49 @@ shots:
     clip: "#sectionTurni"
     caption: "La configurazione dei turni: disciplina e distanza si possono cambiare turno per turno."
 
+
+  # --- Competizione di prova (ADR-058) ------------------------------------
+  # Le gare 6 e 7 sono le due prove create in coda da `seed_demo.py`: la
+  # prima a iscrizioni aperte con i fittizi al minimo, la seconda avviata con
+  # un turno simulato. Alla prima visita di una schermata compare la
+  # presentazione: le catture che vogliono la pagina «sotto» la chiudono con
+  # il primo `click` (il pulsante «Salta»), quella che vuole la presentazione
+  # la aspetta con `wait_for`.
+  - id: prova-spunta
+    route: /admin/gara/create_standalone
+    as: Luca Bianchi
+    clip: "div.mb-3:has(#is_prova)"
+    caption: "La spunta «Competizione di prova» nel modulo della nuova gara, con la spiegazione sotto."
+
+  - id: prova-presentazione
+    route: /admin/gara/6
+    as: Luca Bianchi
+    wait_for: ".c7-help-tour"
+    caption: "La presentazione che compare la prima volta che si apre la pagina di una gara di prova: titolo, un passo alla volta, e i pulsanti «Salta» e «Avanti»."
+
+  - id: prova-iscrizioni
+    route: /admin/gara/6
+    as: Luca Bianchi
+    click: ['[data-help-action="skip"]', '[data-c7-tab-btn="iscritti"]']
+    wait_for: ".c7-help-q"
+    caption: "La gara di prova a iscrizioni aperte: in cima il banner con la scadenza, l'interruttore «Suggerimenti» e «Elimina la prova»; sotto i tre pulsanti dei giocatori fittizi, ciascuno con la sua «?»."
+
+  - id: prova-fumetto
+    route: /admin/gara/6
+    as: Luca Bianchi
+    # La «?» da toccare e' quella del pannello mobile: il pannello iscritti
+    # desktop viene prima nel DOM ed e' nascosto, e un clic su un elemento
+    # nascosto aprirebbe il fumetto nell'angolo in alto.
+    click: ['[data-help-action="skip"]', '[data-c7-tab-btn="iscritti"]', '.d-lg-none .c7-help-q[data-help-for="prova-fittizi"]']
+    wait_for: ".c7-help-pop"
+    caption: "Il fumetto che si apre toccando una «?»: il nome del comando, due frasi, e il collegamento «Leggi nella guida»."
+
+  - id: prova-simulazione
+    route: /admin/gara/7
+    as: Luca Bianchi
+    click: ['[data-help-action="skip"]', '[data-c7-tab-btn="gestione"]']
+    # Il selettore si àncora al pannello mobile (`#sectionGestioneMobile`):
+    # il primo `div:has(...)` della pagina è la copia desktop, nascosta, e
+    # Playwright non fotografa un elemento invisibile.
+    clip: '#sectionGestioneMobile div:has(> [data-help="prova-simulazione"])'
+    caption: "I tre pulsanti della simulazione nel pannello Gestione di una prova avviata: una partita, il turno, tutta la gara."

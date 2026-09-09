@@ -54,6 +54,7 @@ sections:
     icon: fa-clipboard-list
     summary: "Creare una gara o un campionato, gestire le iscrizioni, condurre la serata turno per turno e correggere gli errori."
     pages:
+      - fare_una_prova
       - creare_una_gara
       - creare_un_campionato
       - gestire_le_iscrizioni

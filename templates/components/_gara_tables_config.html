@@ -13,7 +13,7 @@
         <form method="POST" action="{{ url_for('admin.competition.update_tables_config', gara_id=gara.id) }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="mb-3">
-                <label for="available_tables" class="form-label">{{ _('Tavoli da usare (in ordine)') }}</label>
+                <label for="available_tables" class="form-label" data-help="gara-tavoli">{{ _('Tavoli da usare (in ordine)') }}</label>
                 {# Prefill SOLO con la lista specifica della gara: se available_tables
                    è vuoto NON mostrare il fallback della sala, altrimenti un submit
                    senza modifiche lo persisterebbe perdendo il fallback dinamico

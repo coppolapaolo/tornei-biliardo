@@ -810,6 +810,82 @@ def _create_tpa_referto(db, players):
         log(f"referto TPA non creato ({exc.__class__.__name__}: {exc})")
 
 
+def _create_prove(db, director, venue):
+    """Due competizioni di prova (ADR-058) per la pagina «Fare una prova».
+
+    La prima resta a iscrizioni aperte con i fittizi al minimo: e' la
+    schermata dei tre pulsanti e del banner con l'interruttore dei
+    suggerimenti. La seconda e' avviata e ha un turno simulato: e' la
+    schermata dei pulsanti di simulazione, con meta' partite chiuse dai
+    giocatori e meta' in attesa del direttore — esattamente cio' che il
+    direttore vede dopo «Simula il turno».
+
+    Tutto passa dai servizi della prova, non da scorciatoie: i nomi dei
+    fittizi vengono da `models/prova/nomi.py`, i risultati dal
+    `SimulationService` col generatore gia' fissato da `SEED`. Le prove
+    nascono per ultime perche' gli id delle gare precedenti stanno nel
+    manifest delle schermate e non devono spostarsi.
+    """
+    from models.competition.inscription_service import InscriptionService
+    from models.competition.round_service import RoundService
+    from models.competition.services import GaraService
+    from models.base import utc_now
+    from models.prova.service import ProvaService
+    from models.prova.simulation_service import SimulationService
+    from models.prova.visibility import prova_visibili
+    from models.status_enum import Discipline
+
+    today = date.today()
+    prove = []
+    with prova_visibili():
+        for name, discipline, giocata in (
+            ("Prova - Palla 9", Discipline.NINE_BALL.value, False),
+            ("Prova - Palla 8", Discipline.EIGHT_BALL.value, True),
+        ):
+            gara = GaraService.create_gara(
+                number=1,
+                name=name,
+                date=today + timedelta(days=1),
+                discipline=discipline,
+                distance=4,
+                campionato_id=None,
+                director_id=director.id,
+                creator_id=director.id,
+                time=time(21, 0),
+                rounds_count=3,
+                min_participants=6,
+                max_participants=8,
+                billiard_hall_id=venue.id,
+                location=venue.name,
+                is_race_to=True,
+                classification_system="WINS",
+                **ProvaService.campi_di_creazione(),
+            )
+            db.session.commit()
+            now = utc_now()
+            InscriptionService.open_inscriptions(
+                gara_id=gara.id,
+                inscription_start=now - timedelta(days=1),
+                inscription_end=datetime.combine(gara.date, time(17, 0)),
+            )
+            db.session.commit()
+            iscritti = ProvaService.iscrivi_fittizi(gara.id, "minimo")
+            db.session.commit()
+            if giocata:
+                RoundService.start_first_round(gara.id)
+                db.session.commit()
+                esito = SimulationService.simula_turno(gara.id)
+                db.session.commit()
+                log(
+                    f"«{gara.name}»: prova avviata, turno simulato "
+                    f"({esito.partite_chiuse} partite chiuse)"
+                )
+            else:
+                log(f"«{gara.name}»: prova a iscrizioni aperte, {iscritti} fittizi")
+            prove.append(gara)
+    return prove
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -863,6 +939,7 @@ def main() -> int:
         _create_individual_match(db, players)
         _create_esami(db, director, players, challenges, venue)
         _create_tpa_referto(db, players)
+        _create_prove(db, director, venue)
 
         print("\nFatto. Credenziali dimostrative:")
         print(f"  direttore: {DEMO_DIRECTOR[0]} / {DEMO_PASSWORD}")

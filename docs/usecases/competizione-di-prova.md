@@ -332,6 +332,23 @@ Ogni tappa è una PR `feat:` e va in produzione da sola.
   fittizio stesso, con i servizi della route del giocatore, e sulla pagina
   compaiono «Accetta», «Rifiuta» e «Accetta tutti i rimanenti».
 
+- **La modalità aiuto è «offerta dalla pagina, scelta dall'utente»**
+  (2026-09-09, tappa 4). Il componente si accende solo dove trova un
+  attivatore (`[data-help-toggle]`, oggi nel banner della prova) e l'utente
+  non l'ha spenta; la scelta sta in `localStorage`, per browser, e vale per
+  tutte le pagine che la offrono. Accenderla dentro una prova **non** la
+  porta nelle competizioni vere: lì nessuna pagina la offre, e la domanda
+  aperta qui sotto resta aperta senza che il codice l'abbia decisa di
+  nascosto. Le presentazioni si ricordano per schermata, sempre in
+  `localStorage`; senza `localStorage` (navigazione privata) tutto funziona,
+  solo senza memoria.
+- **Le ancore dei suggerimenti esistenti sono tutte nei template** (tappa 4):
+  il test statico è bidirezionale su tutta `hints.yaml`, non solo sulle
+  schermate del direttore, perché un'ancora senza elemento è una promessa
+  vuota ovunque stia. Dove il nome del comando non c'era (`gara-x-ultimo-
+  iscritto` è reso da un macro condiviso) l'ancora sta sull'elemento più
+  vicino, ed è annotato nel template.
+
 ## Domande aperte
 
 - [ ] **Aiuto contestuale fuori dalla prova**: chi lo accende nelle

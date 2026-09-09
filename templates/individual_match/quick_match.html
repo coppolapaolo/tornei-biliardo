@@ -72,7 +72,7 @@
 
     {# ---------- Chi gioca ---------- #}
     <div class="c7-card">
-      <div class="c7-sechead mb-3"><h2>{{ _("Chi hai davanti") }}</h2></div>
+      <div class="c7-sechead mb-3"><h2 data-help="sfida-chi-hai-davanti">{{ _("Chi hai davanti") }}</h2></div>
 
       {% if frequent_opponents %}
       <div class="c7-stack mb-3" id="frequentOpponents">
@@ -100,7 +100,7 @@
     {# ---------- Come si gioca: gia' deciso, si cambia solo se serve ---------- #}
     <div class="c7-card">
       <div class="c7-sechead mb-3">
-        <h2>{{ _("Come si gioca") }}</h2>
+        <h2 data-help="sfida-riepilogo-rapido">{{ _("Come si gioca") }}</h2>
         <button type="button" class="c7-sechead__more" id="toggleSettings"
                 style="background:none;border:0;padding:0;color:var(--c7-accent)">{{ _("Cambia") }}</button>
       </div>
@@ -221,7 +221,7 @@
     <div id="tpaChoice">
       {{ toggle('tpa_referto', _("Tengo il referto TPA"),
                 _("Si annota visita per visita e il punteggio viene da lì: niente «+1» a mano.")) }}
-      <p style="margin:-8px 2px 0;font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+      <p style="margin:-8px 2px 0;font-size:12px;font-weight:600;color:var(--c7-ink-muted)" data-help="sfida-referto-all-avvio">
         {{ _("Va deciso adesso: a triangoli già segnati il referto non si apre più.") }}
       </p>
     </div>

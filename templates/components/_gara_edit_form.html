@@ -90,7 +90,7 @@
        infatti non legge il campo quando manca il campionato. #}
     {% if gara.campionato_id %}
     <div class="mb-3">
-      <label for="weight" class="form-label">{{ _('Peso nella classifica') }}</label>
+      <label for="weight" class="form-label" data-help="gara-peso">{{ _('Peso nella classifica') }}</label>
       <input type="number" class="form-control" id="weight" name="weight"
              min="1" max="10" step="1" value="{{ gara.weight or 1 }}">
       <div class="form-text">

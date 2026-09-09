@@ -19,6 +19,23 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Aiuto contestuale dentro le prove** (ADR-058, quarta tappa). Le
+  schermate di una competizione di prova si spiegano da sole: la prima volta
+  che se ne apre una compare una breve presentazione, un passo alla volta,
+  che evidenzia i comandi principali; poi accanto a ogni comando importante
+  resta una «?» che apre due frasi e il collegamento alla pagina della guida.
+  I testi sono quelli di `hints.yaml`, scritti mesi fa come predisposizione e
+  finora letti solo dal catalogo `/aiuto/microaiuto`: ora ogni ancora ha il
+  suo elemento nei template (`data-help`), i suggerimenti mancanti per
+  campionato, playoff e prova sono stati scritti in italiano e inglese, e un
+  test statico tiene allineati i due lati del contratto. Il componente
+  (`static/js/help-hints.js`) non sa cos'è una prova: è una «modalità
+  aiuto» che si accende dove la pagina la offre — oggi il banner della prova,
+  con l'interruttore «Suggerimenti» — e resta accesa finché l'utente non la
+  spegne, per il suo browser. Nella guida nasce la pagina «Fare una prova
+  prima della serata vera», con le schermate catturate da un seed
+  dimostrativo esteso con due prove; «Chi fa cosa» e «Diventare direttore»
+  la indicano.
 - **Competizione di prova** (ADR-058, prima tappa). Un direttore appena
   promosso deve poter capire le schermate di gestione prima di condurre una
   serata vera, e finora poteva solo leggere la guida o fare esperimenti su

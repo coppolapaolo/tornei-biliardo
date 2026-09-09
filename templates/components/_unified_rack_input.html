@@ -127,7 +127,7 @@ Parametri:
 {% if is_in_progress or puo_annullare %}
 <section class="c7-stack" style="margin-top: 18px;">
     <div style="display: flex; align-items: center; gap: 10px;">
-        <h3 style="margin: 0;">{{ _('Segnapunti') }}</h3>
+        <h3 style="margin: 0;" data-help="partita-segnapunti">{{ _('Segnapunti') }}</h3>
         {% if is_multi_set and active_set %}
         <span class="c7-state c7-state--accent" style="margin-left: auto;">{{ _('Set') }} {{ active_set.set_number }} <span class="c7-sep">·</span> {{ _('al') }} {{ active_set.distance }}</span>
         {% endif %}
@@ -203,7 +203,7 @@ Parametri:
         {% endif %}
 
         {% if show_forfeit_btn and not match_complete_by_sets and not (match.is_bye is defined and match.is_bye) %}
-        <button class="btn btn-secondary w-100" onclick="{{ forfeit_func }}(this)">{{ _('Dichiara forfait') }}</button>
+        <button class="btn btn-secondary w-100" onclick="{{ forfeit_func }}(this)" data-help="partita-forfait">{{ _('Dichiara forfait') }}</button>
         {% endif %}
 
     {# ══════════ SET UNICO ══════════ #}
@@ -297,7 +297,7 @@ Parametri:
         {% endif %}
 
         {% if is_in_progress and show_forfeit_btn and not match_at_distance %}
-        <button class="btn btn-secondary w-100" onclick="{{ forfeit_func }}(this)">{{ _('Dichiara forfait') }}</button>
+        <button class="btn btn-secondary w-100" onclick="{{ forfeit_func }}(this)" data-help="partita-forfait">{{ _('Dichiara forfait') }}</button>
         {% endif %}
     {% endif %}
 </section>

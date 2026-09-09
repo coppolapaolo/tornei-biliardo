@@ -50,6 +50,15 @@ blocks:
 
   - type: text
     text: >-
+      The first time there is no need to take risks on a real evening: a
+      director can create a **trial competition**, visible only to them, fill
+      it with fictitious players and run it to the end with simulated
+      results. Inside the trial every screen introduces itself, with a «?»
+      next to the controls. It is explained in
+      [Running a trial](/aiuto/organizzare/fare_una_prova).
+
+  - type: text
+    text: >-
       The panel that greets you on the way in changes too, and it **follows the
       last thing you did**: if you have just created a competition, or someone
       has just registered for one of yours, you find **«How your competitions
