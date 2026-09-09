@@ -110,7 +110,10 @@ nessun altro veda la prova.
   con il testo di `hints.yaml` e il link alla guida; alla prima visita di una
   schermata compare la presentazione (`tours`). L'interruttore spegne tutto.
 - [x] AC15. Un test statico verifica che ogni `anchor` di `hints.yaml` compaia
-  come `data-help` in un template della sua schermata, e viceversa.
+  come `data-help` in un template dell'app, e viceversa
+  (`test_help_anchors.py`); che le ancore presenti su una schermata della
+  prova siano servite dall'API di **quella** schermata lo verifica il test di
+  integrazione sulle pagine renderizzate (`test_help_hints_prova.py`).
 - [x] AC16. Tutte le stringhe nuove sono tradotte (skill `translate`).
 
 ## User journey

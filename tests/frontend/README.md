@@ -40,7 +40,7 @@ center remain a **manual browser gate** — see
 ```bash
 cd tests/frontend
 npm install      # installs jsdom locally (node_modules is gitignored)
-npm test         # node test_gamification_badge.cjs
+npm test         # runs the five suites listed in package.json, in order
 ```
 
 Exit code is non-zero if any check fails; the summary lists every check.

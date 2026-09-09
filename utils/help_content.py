@@ -434,7 +434,7 @@ def clear_cache() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Interfaccia adattiva (predisposizione)
+# Modalità aiuto: cio' che `static/js/help-hints.js` chiede per schermata
 # ---------------------------------------------------------------------------
 
 
@@ -449,10 +449,11 @@ def tour_for_screen(screen: str, locale: Optional[str] = None) -> Optional[Tour]
 
 
 def screen_payload(screen: str, locale: Optional[str] = None) -> dict[str, Any]:
-    """Tutto cio' che l'interfaccia adattiva dovra' sapere di una schermata.
+    """Tutto cio' che la modalità aiuto sa di una schermata.
 
-    Forma stabile e volutamente povera: un oggetto JSON che un componente
-    lato client possa consumare senza conoscere il resto dell'aiuto.
+    Forma stabile e volutamente povera: un oggetto JSON che
+    `static/js/help-hints.js` consuma senza conoscere il resto dell'aiuto
+    (la forma e' fissata da `test_api_per_schermata`).
     """
     content = get_content(locale)
     tour = content.tours.get(screen)
