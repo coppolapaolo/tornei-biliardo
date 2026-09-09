@@ -79,6 +79,12 @@ resta bloccata per sempre (le PR impilate vanno riportate su `main`); e sulle PR
 proposito — è **normale**, non va segnalato come problema né richiesto come
 status check. (`pr-title`, invece, sulle PR gira eccome: vedi il punto 4.)
 
+`test-and-typecheck` parte sempre, ma su una PR di **sola documentazione**
+(Markdown, testo, `docs/` senza sorgenti Python) salta test e pyright e chiude
+in pochi secondi: il passo «Decide what to run» lo scrive nel log. Un `.py`
+toccato per un docstring, un template o uno YAML della guida contano come
+codice, e allora dura i soliti 4-5 minuti.
+
 > ⚠️ **3. Non rimettere `PRAGMA journal_mode=WAL`** in `models/base.py`, nemmeno
 > condizionato a `FLASK_ENV`: su NFS la memoria condivisa del WAL non è coerente
 > fra processi e corrompe il DB (due incidenti `database disk image is
