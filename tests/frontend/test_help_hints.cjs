@@ -260,6 +260,25 @@ function check(nome, fn) {
     assert.strictEqual(a.document.activeElement, interruttore, "fuoco ripristinato");
   });
 
+  await check("Esc chiude la presentazione come «Salta»: ricordata, fuoco ripristinato", async () => {
+    const a = ambiente();
+    const interruttore = a.document.querySelector("[data-help-toggle]");
+    interruttore.focus();
+    await a.finestra.HelpHints.refresh();
+    assert.ok(a.document.querySelector(".c7-help-tour"));
+    a.document.dispatchEvent(new a.finestra.KeyboardEvent("keydown", { key: "Escape" }));
+    assert.strictEqual(a.document.querySelector(".c7-help-tour"), null, "chiusa");
+    assert.strictEqual(a.document.querySelectorAll(".c7-help-target").length, 0, "evidenziazione tolta");
+    assert.strictEqual(a.document.activeElement, interruttore, "fuoco ripristinato");
+    assert.strictEqual(
+      a.finestra.localStorage.getItem("tb-help-seen:admin.competition.gara_detail"),
+      "1",
+      "ricordata come vista"
+    );
+    await a.finestra.HelpHints.refresh();
+    assert.strictEqual(a.document.querySelector(".c7-help-tour"), null, "non ricompare");
+  });
+
   await check("l'interruttore spegne tutto, riaccende, e la scelta resta", async () => {
     const a = ambiente();
     await a.finestra.HelpHints.refresh();
