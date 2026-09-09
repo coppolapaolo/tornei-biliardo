@@ -28,6 +28,7 @@ from utils.feature_flags import ENDPOINT_ROLES
 ROOT = Path(__file__).resolve().parents[3]
 TEMPLATES = ROOT / "templates"
 HELP_CONTENT = ROOT / "help_content"
+THEME_CSS = ROOT / "static" / "css" / "theme-7c.css"
 
 # Solo valori letterali: un `data-help="{{ ... }}"` sfuggirebbe al confronto
 # e riaprirebbe esattamente il buco che questo test chiude.
@@ -127,6 +128,29 @@ def test_il_guscio_inietta_la_configurazione_e_carica_il_componente():
     assert "help-hints.js" in base
     # L'endpoint corrente è ciò che il componente chiede all'API.
     assert "request.endpoint" in base.split('id="help-hints-config"', 1)[1][:1500]
+
+
+def _css_rule(selector: str) -> str:
+    """Il corpo della prima regola del tema con esattamente quel selettore."""
+    css = THEME_CSS.read_text(encoding="utf-8")
+    match = re.search(re.escape(selector) + r"\s*\{([^}]*)\}", css)
+    assert match, f"regola `{selector}` assente in theme-7c.css"
+    return match.group(1)
+
+
+@pytest.mark.unit
+def test_il_velo_della_presentazione_assorbe_i_clic():
+    """Il velo è un dialogo modale: ciò che sta dietro non deve rispondere.
+
+    jsdom non fa hit testing, quindi il contratto del CSS si legge nel
+    sorgente (rilievo sulla #322): `.c7-help-tour` non deve tornare
+    `pointer-events: none` — un tocco fuori dalla scheda arriverebbe ai
+    comandi della prova — e l'elemento evidenziato, che sale sopra il velo
+    per farsi vedere, deve restare non premibile.
+    """
+    velo = _css_rule(".c7-help-tour")
+    assert "pointer-events" not in velo or "pointer-events: none" not in velo
+    assert "pointer-events: none" in _css_rule(".c7-help-target")
 
 
 @pytest.mark.unit
