@@ -40,6 +40,21 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
   successive — simulazione dei risultati, campionato di prova, aiuto
   contestuale — sono in `docs/usecases/competizione-di-prova.md`.
 
+- **Competizione di prova, terza tappa: il campionato di prova.** Nel wizard
+  del campionato c'è la spunta «Competizione di prova», con lo stesso limite
+  di tre prove delle gare singole. Le gare del campionato nascono di prova da
+  sole, il modale «Nuova gara» propone le date nei prossimi giorni e in
+  ordine — domani la prima, il giorno dopo l'ultima le altre — e i giocatori
+  fittizi sono **del campionato**: la seconda gara riusa quelli della prima,
+  così la classifica generale si forma come in un campionato vero. Al
+  playoff il direttore accetta o rifiuta l'invito per ciascun fittizio, o
+  accetta tutti i rimanenti con un pulsante; un rifiuto fa scattare il primo
+  degli esclusi, come nella realtà. Il banner della prova sta anche sulle
+  pagine del campionato e da lì elimina tutto, gare e playoff compresi. Il
+  modale «Nuova gara» dei campionati veri ora propone la data che la
+  specifica prevedeva da sempre: oggi per la prima gara, una settimana dopo
+  l'ultima per le altre.
+
 - **Competizione di prova, seconda tappa: la simulazione dei risultati.** In
   una prova avviata il pannello di gestione ha tre pulsanti — **Simula una
   partita**, **Simula il turno**, **Simula tutta la gara** — con cui il

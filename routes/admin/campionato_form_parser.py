@@ -73,6 +73,16 @@ class CampionatoFormParser:
     """Extract and normalise the shared 'default gare settings' form block."""
 
     @staticmethod
+    def parse_prova(form: MultiDict) -> bool:
+        """La spunta «Competizione di prova» del passo 1 (ADR-058).
+
+        Sta qui e non nella route perché è la stessa domanda del modulo della
+        gara singola (`request.form.get("is_prova") == "on"`), e la risposta
+        deve avere una forma sola.
+        """
+        return form.get("is_prova") == "on"
+
+    @staticmethod
     def parse_default_settings(form: MultiDict) -> Dict[str, Any]:
         """Parse the default-settings block shared by create-wizard and edit.
 

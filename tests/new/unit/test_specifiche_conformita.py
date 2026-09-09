@@ -592,7 +592,7 @@ class TestRegoleDiApertura:
 
 
 class TestCompetizioneDiProva:
-    """`SPECIFICHE.md` righe 419-430: la competizione di prova (ADR-058)."""
+    """`SPECIFICHE.md` righe 419-431: la competizione di prova (ADR-058)."""
 
     def test_al_massimo_tre_prove_aperte(self):
         """Riga 424: «al massimo **3 prove aperte** contemporaneamente»."""
@@ -601,7 +601,7 @@ class TestCompetizioneDiProva:
         assert LIMITE_PROVE_ATTIVE == 3
 
     def test_scade_a_quattordici_giorni_con_avviso_tre_giorni_prima(self):
-        """Riga 430: «**14 giorni** dopo la creazione ... **3 giorni** prima»."""
+        """Riga 431: «**14 giorni** dopo la creazione ... **3 giorni** prima»."""
         from datetime import timedelta
 
         from models.prova.service import DURATA_PROVA, PREAVVISO_SCADENZA
@@ -621,6 +621,25 @@ class TestCompetizioneDiProva:
         assert SimulationService.chiusa_dai_giocatori(SimpleNamespace(id=2))
         assert not SimulationService.chiusa_dai_giocatori(SimpleNamespace(id=3))
 
+    def test_nel_campionato_di_prova_le_date_sono_nei_prossimi_giorni(self, db_session):
+        """Riga 427: «domani la prima, il giorno dopo l'ultima le altre»."""
+        from datetime import date, timedelta
+
+        from models.campionato.tournament_service import TournamentService
+        from models.prova.service import ProvaService
+        from models.prova.visibility import prova_visibili
+
+        with prova_visibili():
+            campionato = TournamentService().create_campionato_with_director(
+                name="Prova",
+                creator_user_id=_utente(db_session).id,
+                **ProvaService.campi_di_creazione(),
+            )
+            db_session.commit()
+            assert TournamentService.data_proposta_gara(
+                campionato.id
+            ) == date.today() + timedelta(days=1)
+
     def test_i_fittizi_hanno_rating_fissi_e_diversi(self):
         """Riga 425: «rating iniziali fissi e diversi fra loro»."""
         from models.prova.nomi import NOMI_FITTIZI
@@ -629,7 +648,7 @@ class TestCompetizioneDiProva:
         assert len(set(rating)) == len(rating)
 
     def test_una_partita_di_prova_non_muove_il_rating(self, db_session):
-        """Riga 427: «non muovono alcun rating»."""
+        """Riga 428: «non muovono alcun rating»."""
         from models.prova.service import ProvaService
         from models.rating.eligibility import RatingEligibility, RatingExclusion
 

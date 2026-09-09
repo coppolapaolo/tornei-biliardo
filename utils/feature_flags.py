@@ -228,6 +228,11 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Il direttore registra la risposta che il qualificato gli ha dato a voce,
     # e decide come il playoff entra nella classifica finale.
     "admin.campionato.playoff_respond_for_player": {"director"},
+    # Competizione di prova (ADR-058): il campionato di prova lo elimina e ne
+    # risponde agli inviti chi lo dirige.
+    "admin.campionato.prova_elimina": {"director"},
+    "admin.campionato.prova_rispondi_invito": {"director"},
+    "admin.campionato.prova_accetta_inviti": {"director"},
     "admin.campionato.playoff_update_scoring": {"director"},
     "admin.campionato.playoff_remove_player": {"director"},
     # Soft delete del campionato: admin-only (@admin_required). Set esplicito

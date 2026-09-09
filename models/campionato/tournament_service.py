@@ -126,6 +126,11 @@ class TournamentService(TournamentStatisticsService):
         without_x: bool = False,
         final_playoffs: bool = False,
         scoring_policy: str = "classic",
+        # Competizione di prova (ADR-058): i due campi arrivano insieme da
+        # `ProvaService.campi_di_creazione()`. Le gare del campionato
+        # erediteranno il flag alla nascita (`GaraService.create_gara`).
+        is_prova: bool = False,
+        prova_expires_at: Optional[Any] = None,
     ) -> Campionato:
         """Crea campionato e assegna automaticamente il direttore se necessario."""
 
@@ -152,6 +157,8 @@ class TournamentService(TournamentStatisticsService):
             default_start_rule=default_start_rule,
             default_break_rule=default_break_rule,
             position_points=position_points,
+            is_prova=is_prova,
+            prova_expires_at=prova_expires_at,
             # Deprecated fields
             without_x=without_x,
             final_playoffs=final_playoffs,
@@ -317,6 +324,43 @@ class TournamentService(TournamentStatisticsService):
         """Restituisce i campionati attivi (non soft-deleted)."""
 
         return Campionato.get_active_campionatos().all()
+
+    @staticmethod
+    def data_proposta_gara(campionato_id: int) -> Any:
+        """La data con cui precompilare il modulo della prossima gara.
+
+        SPECIFICHE.md: «oggi per la prima gara o una settimana più avanti
+        rispetto all'ultima gara aggiunta al campionato». In una competizione
+        di prova (ADR-058) le gare stanno nei prossimi giorni — domani la
+        prima, il giorno dopo l'ultima le altre — perché il direttore le
+        gioca tutte in una sessione e non deve inventarsi un calendario.
+
+        Si guarda anche fra le gare soft-eliminate: il controllo di ordine
+        cronologico (ADR-016) non le salta, e una data più vecchia della loro
+        verrebbe rifiutata.
+        """
+        from datetime import date, timedelta
+
+        from sqlalchemy import func, select
+
+        from models.competition.models import Gara
+
+        campionato = db.session.execute(
+            select(Campionato.is_prova)
+            .where(Campionato.id == campionato_id)
+            .execution_options(include_prova=True, include_deleted=True)
+        ).scalar()
+        ultima = db.session.execute(
+            select(func.max(Gara.date))
+            .where(Gara.campionato_id == campionato_id)
+            .execution_options(include_prova=True, include_deleted=True)
+        ).scalar()
+        if campionato:
+            base = ultima or date.today()
+            return base + timedelta(days=1)
+        if ultima is None:
+            return date.today()
+        return ultima + timedelta(days=7)
 
     @transactional(domain="campionato")
     def delete_campionato(self, campionato_id: int) -> None:

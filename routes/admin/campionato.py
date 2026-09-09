@@ -7,7 +7,16 @@ Implements:
 - Step 2: Default values for gare (venue, cost, rounds, odd policy)
 """
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session
+from flask import (
+    Blueprint,
+    abort,
+    render_template,
+    request,
+    redirect,
+    url_for,
+    flash,
+    session,
+)
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError
 from flask_babel import _, lazy_gettext as _l
@@ -79,10 +88,14 @@ def wizard_start():
     # Clear any previous wizard data
     session.pop(WIZARD_SESSION_KEY, None)
 
+    from models.prova.service import LIMITE_PROVE_ATTIVE, ProvaService
+
     return render_template(
         "admin/campionato_wizard_step1.html",
         matchmaking_strategies=CAMPIONATO_TYPES,
         classification_compatibility=get_classification_compatibility_map(),
+        prove_attive=len(ProvaService.prove_attive(current_user.id)),
+        limite_prove=LIMITE_PROVE_ATTIVE,
     )
 
 
@@ -164,6 +177,9 @@ def wizard_step2():
         "playoff_elite_participants": playoff_elite_participants,
         "playoff_academy_enabled": playoff_academy_enabled,
         "playoff_academy_participants": playoff_academy_participants,
+        # Competizione di prova (ADR-058): la spunta viaggia con il resto del
+        # passo 1 e si applica alla creazione.
+        "is_prova": CampionatoFormParser.parse_prova(request.form),
     }
 
     # Get venues for dropdown
@@ -224,6 +240,21 @@ def wizard_create():
     # Classification system comes from Step 1 (session)
     classification_system = wizard_data.get("default_classification_system", "WINS")
 
+    # Competizione di prova (ADR-058): stesso campionato, con il flag e la
+    # scadenza. Il limite si controlla qui, prima di creare, ed è lo stesso
+    # delle gare singole.
+    e_prova = bool(wizard_data.get("is_prova"))
+    if e_prova:
+        from models.exceptions import ConflictError
+        from models.prova.service import ProvaService
+
+        try:
+            ProvaService.verifica_limite(current_user.id)
+        except ConflictError as errore:
+            flash(str(errore), "error")
+            return redirect(url_for("admin.campionato.wizard_start"))
+        settings.update(ProvaService.campi_di_creazione())
+
     # Create the campionato
     try:
         campionato = campionato_service.create_campionato_with_director(
@@ -265,10 +296,25 @@ def wizard_create():
         # Clear wizard session
         session.pop(WIZARD_SESSION_KEY, None)
 
-        flash(
-            _('Campionato "%(name)s" creato con successo!', name=wizard_data["name"]),
-            "success",
-        )
+        if e_prova:
+            from models.prova.visibility import invalida_ambito
+
+            invalida_ambito()
+            flash(
+                _(
+                    "Prova «%(name)s» creata: solo tu la vedi.",
+                    name=wizard_data["name"],
+                ),
+                "success",
+            )
+        else:
+            flash(
+                _(
+                    'Campionato "%(name)s" creato con successo!',
+                    name=wizard_data["name"],
+                ),
+                "success",
+            )
         return redirect(
             url_for("admin.campionato.campionato_detail", campionato_id=campionato.id)
         )
@@ -466,6 +512,10 @@ def campionato_detail(campionato_id):
         playoff_feasibility=playoff_feasibility,
         playoff_status=playoff_status,
         campionato_players=campionato_players,
+        # La data con cui il modale «Nuova gara» si presenta: oggi o una
+        # settimana dopo l'ultima; in una prova, domani o il giorno dopo
+        # l'ultima (ADR-016 vuole le gare in ordine).
+        data_proposta_gara=TournamentService.data_proposta_gara(campionato_id),
     )
 
 
@@ -1064,6 +1114,20 @@ def campionato_vetrina(campionato_id):
     from utils.image_paths import ImagePathManager
 
     campionato = db.get_or_404(Campionato, campionato_id)
+
+    # Una prova non ha una pagina pubblica: da fuori non esiste (ADR-058).
+    if campionato.is_prova:
+        flash(
+            _(
+                "Una competizione di prova non ha vetrina né link pubblico: "
+                "in un campionato vero qui trovi il link da condividere."
+            ),
+            "info",
+        )
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
+
     banner = (
         ImagePathManager.url_from_db_path(campionato.banner_path)
         if campionato.banner_path
@@ -1092,6 +1156,115 @@ def campionato_vetrina(campionato_id):
             identificatore=campionato.public_slug_or_token,
         ),
     )
+
+
+# =============================================================================
+# COMPETIZIONE DI PROVA (ADR-058)
+# =============================================================================
+
+
+def _torna_al_campionato(campionato_id: int) -> str:
+    return url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+
+
+@campionato_bp.route("/<int:campionato_id>/prova/elimina", methods=["POST"])
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def prova_elimina(campionato_id):
+    """Elimina il campionato di prova con tutto ciò che gli appartiene."""
+    from models.exceptions import DomainError
+    from models.prova.service import ProvaService
+
+    campionato = db.get_or_404(Campionato, campionato_id)
+    if not campionato.is_prova:
+        abort(404)
+    nome = campionato.name
+    try:
+        ProvaService.elimina_prova(campionato_id=campionato_id)
+    except DomainError as errore:
+        flash(str(errore), "error")
+        return redirect(_torna_al_campionato(campionato_id))
+    flash(_("Prova «%(nome)s» eliminata.", nome=nome), "success")
+    return redirect(url_for("dashboard.dashboard"))
+
+
+@campionato_bp.route(
+    "/<int:campionato_id>/prova/invito/<int:qualification_id>/<risposta>",
+    methods=["POST"],
+)
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def prova_rispondi_invito(campionato_id, qualification_id, risposta):
+    """Il fittizio accetta o rifiuta l'invito ai playoff.
+
+    Non è la risposta «per conto del giocatore» di
+    `playoff_respond_for_player`: qui il fittizio risponde da solo, con i
+    servizi della route del giocatore, e un rifiuto fa scattare il primo
+    degli esclusi come nella realtà.
+    """
+    from models.exceptions import DomainError
+    from models.playoff.models import PlayoffQualification
+    from models.prova.simulation_service import SimulationService
+
+    campionato = db.get_or_404(Campionato, campionato_id)
+    if not campionato.is_prova or risposta not in ("accetta", "rifiuta"):
+        abort(404)
+    invito = db.session.get(PlayoffQualification, qualification_id)
+    if (
+        invito is None
+        or invito.configuration is None
+        or invito.configuration.campionato_id != campionato_id
+    ):
+        abort(404)
+    try:
+        sostituto = SimulationService.rispondi_invito(
+            qualification_id, accetta=(risposta == "accetta")
+        )
+    except DomainError as errore:
+        flash(str(errore), "error")
+        return redirect(_torna_al_campionato(campionato_id))
+
+    if risposta == "accetta":
+        flash(_("Invito accettato."), "success")
+    elif sostituto is not None:
+        flash(
+            _(
+                "Rifiuto registrato: l'invito passa a %(name)s.",
+                name=sostituto.user.username if sostituto.user else "—",
+            ),
+            "success",
+        )
+    else:
+        flash(
+            _("Rifiuto registrato. Nessun altro giocatore idoneo da invitare."),
+            "info",
+        )
+    return redirect(_torna_al_campionato(campionato_id))
+
+
+@campionato_bp.route(
+    "/<int:campionato_id>/prova/inviti/accetta-tutti", methods=["POST"]
+)
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def prova_accetta_inviti(campionato_id):
+    """Accetta tutti gli inviti ai playoff ancora in attesa dei fittizi."""
+    from models.exceptions import DomainError
+    from models.prova.simulation_service import SimulationService
+
+    campionato = db.get_or_404(Campionato, campionato_id)
+    if not campionato.is_prova:
+        abort(404)
+    try:
+        quanti = SimulationService.accetta_tutti_gli_inviti(campionato_id)
+    except DomainError as errore:
+        flash(str(errore), "error")
+        return redirect(_torna_al_campionato(campionato_id))
+    if quanti == 0:
+        flash(_("Nessun invito in attesa."), "info")
+    else:
+        flash(_("%(quanti)s inviti accettati.", quanti=quanti), "success")
+    return redirect(_torna_al_campionato(campionato_id))
 
 
 @campionato_bp.route("/<int:campionato_id>/vetrina", methods=["POST"])

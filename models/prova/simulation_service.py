@@ -218,6 +218,73 @@ class SimulationService:
                 fermata=fermata,
             )
 
+    # ------------------------------------------------------------ playoff
+
+    @staticmethod
+    def rispondi_invito(qualification_id: int, *, accetta: bool) -> Optional[Any]:
+        """Il fittizio accetta o rifiuta l'invito ai playoff.
+
+        Passa dai servizi della route del giocatore — `confirm_qualification`
+        e `decline_qualification` — con l'id del fittizio, e senza
+        `responded_by_id`: è lui che risponde, non il direttore per suo
+        conto. Sul rifiuto torna il sostituto trovato (SPECIFICHE.md, «primo
+        degli esclusi»), come farebbe la route.
+        """
+        from models.exceptions import NotFoundError, ValidationError
+        from models.playoff.models import PlayoffQualification, QualificationStatus
+        from models.playoff.services import PlayoffService
+
+        with prova_visibili():
+            invito = db.session.get(PlayoffQualification, qualification_id)
+            if invito is None:
+                raise NotFoundError("Invito non trovato")
+            if invito.user is None or not invito.user.is_fittizio:
+                raise ValidationError(
+                    "Qui si risponde solo per i giocatori fittizi: gli altri "
+                    "rispondono da soli"
+                )
+            if invito.status != QualificationStatus.PENDING:
+                raise ConflictError("Questo invito ha già una risposta")
+            if accetta:
+                PlayoffService.confirm_qualification(invito.id, invito.user_id)
+                return None
+            return PlayoffService.decline_qualification(invito.id, invito.user_id)
+
+    @staticmethod
+    def accetta_tutti_gli_inviti(campionato_id: int) -> int:
+        """Accetta ogni invito ancora in attesa dei fittizi. Restituisce quanti.
+
+        Uno alla volta, con `rispondi_invito`: ogni accettazione è la stessa
+        transazione che farebbe il giocatore.
+        """
+        from models.playoff.models import (
+            PlayoffConfiguration,
+            PlayoffQualification,
+            QualificationStatus,
+        )
+        from models.user.models import User
+
+        with prova_visibili():
+            in_attesa = (
+                db.session.query(PlayoffQualification.id)
+                .join(
+                    PlayoffConfiguration,
+                    PlayoffConfiguration.id == PlayoffQualification.configuration_id,
+                )
+                .join(User, User.id == PlayoffQualification.user_id)
+                .filter(
+                    PlayoffConfiguration.campionato_id == campionato_id,
+                    PlayoffConfiguration.is_active.is_(True),
+                    PlayoffQualification.status == QualificationStatus.PENDING,
+                    User.is_fittizio.is_(True),
+                )
+                .order_by(PlayoffQualification.id)
+                .all()
+            )
+            for (invito_id,) in in_attesa:
+                SimulationService.rispondi_invito(invito_id, accetta=True)
+            return len(in_attesa)
+
     # ------------------------------------------------------------ letture
 
     @staticmethod
