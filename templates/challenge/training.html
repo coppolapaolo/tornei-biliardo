@@ -89,7 +89,7 @@
        numero va composto, quindi il tastierino resta e la conferma e' un tasto
        a parte — ma e' lo stesso identico giro di richiesta. #}
     {% if is_pass_fail %}
-    <div class="c7-grid" style="grid-template-columns:1fr 1fr;gap:12px">
+    <div class="c7-grid" style="grid-template-columns:1fr 1fr;gap:12px" data-help="allenamento-esito">
       <button type="button" class="c7-bigbtn c7-bigbtn--ok" data-outcome="true">
         <i class="fas fa-check"></i>
         <span>{{ _("Superata") }}</span>
@@ -170,7 +170,7 @@
      L'annulla nasce spento quando non c'e' niente da annullare — un tasto che
      risponde «non c'e' nessuna prova» e' un tasto che non doveva essere li'. #}
   <div class="c7-actionbar">
-    <button type="button" class="btn btn-secondary w-100" data-undo
+    <button type="button" class="btn btn-secondary w-100" data-undo data-help="allenamento-annulla"
             {% if not attempts %}disabled{% endif %}>
       <i class="fas fa-rotate-left"></i>&nbsp;{{ _("Annulla l'ultima") }}
     </button>

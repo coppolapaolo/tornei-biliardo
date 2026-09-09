@@ -55,6 +55,7 @@ sections:
     icon: fa-clipboard-list
     summary: "Creating a competition or a championship, handling registrations, running the evening round by round, and fixing mistakes."
     pages:
+      - fare_una_prova
       - creare_una_gara
       - creare_un_campionato
       - gestire_le_iscrizioni

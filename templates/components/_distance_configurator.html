@@ -12,7 +12,7 @@ Parametri:
 {% set is_required = required if required is defined else True %}
 
 <section class="c7-stack" id="distance-configuration">
-    <div class="c7-label">{{ _('Distanza') }}</div>
+    <div class="c7-label" data-help="gara-distanza">{{ _('Distanza') }}</div>
 
     {# Rack per set: stepper, non campo numerico #}
     <div class="c7-stepper">
@@ -31,7 +31,7 @@ Parametri:
         <input class="form-check-input" type="checkbox" id="exact_number" name="exact_number"
                onchange="updateDistancePreview()" {% if not is_race_to_value %}checked{% endif %}>
         <span>
-            <span class="c7-choice__title">{{ _('Numero esatto di triangoli') }}</span>
+            <span class="c7-choice__title" data-help="gara-numero-esatto">{{ _('Numero esatto di triangoli') }}</span>
             <span class="c7-choice__desc">{{ _('Si giocano tutti i triangoli invece di fermarsi al primo che arriva alla distanza.') }}</span>
         </span>
     </label>
@@ -41,7 +41,7 @@ Parametri:
         <input class="form-check-input" type="checkbox" id="is_multi_set" name="is_multi_set"
                onchange="toggleMultiSetOptions()" {% if is_multi_set_value %}checked{% endif %}>
         <span>
-            <span class="c7-choice__title">{{ _('Partita a set') }}</span>
+            <span class="c7-choice__title" data-help="gara-multiset">{{ _('Partita a set') }}</span>
             <span class="c7-choice__desc">{{ _('La partita si divide in più set, come nei tornei professionali.') }}</span>
         </span>
     </label>

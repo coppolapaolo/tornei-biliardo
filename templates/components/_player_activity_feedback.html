@@ -22,7 +22,7 @@
 <section class="c7-feedback mb-4" aria-labelledby="activity-feedback-title">
 
   <div class="c7-feedback__head">
-    <h2 id="activity-feedback-title">{{ fb.title }}</h2>
+    <h2 id="activity-feedback-title" data-help="home-andamento">{{ fb.title }}</h2>
     {% if fb.context_badge %}
     <span class="c7-feedback__badge c7-feedback__badge--{{ fb.context_badge.tone }}">
       {{ fb.context_badge.text }}
@@ -206,7 +206,7 @@
     {% endfor %}
   </div>
 
-  <button type="button" class="c7-feedback__toggle" id="activity-feedback-toggle"
+  <button type="button" class="c7-feedback__toggle" id="activity-feedback-toggle" data-help="home-tutti-i-numeri"
           aria-expanded="false" aria-controls="{{ panel_id }}"
           data-label-closed="{{ fb.toggle_label }}" data-label-open="{{ _('Chiudi') }}">
     <span data-role="label">{{ fb.toggle_label }}</span>

@@ -99,6 +99,15 @@ blocks:
           Entrambi i ruoli si possono revocare: chiedilo a un amministratore.
           Le gare che hai già creato restano dove sono.
 
+  - type: note
+    tone: tip
+    title: "Prima serata? Fai una prova"
+    text: >-
+      Appena hai il ruolo, crea una **competizione di prova**: la vedi solo tu,
+      la riempi di giocatori fittizi e la conduci fino in fondo con i risultati
+      simulati, con i suggerimenti accesi su ogni schermata. Quando hai finito
+      la elimini. Vedi [Fare una prova](/aiuto/organizzare/fare_una_prova).
+
   - type: faq
     items:
       - q: "Quanto ci mette la risposta?"

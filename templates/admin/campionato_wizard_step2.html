@@ -95,7 +95,7 @@
     {# Nei tabelloni i bye sono strutturali (`S - n` buchi ai primi seed), non
        una politica: un trio o una lista d'attesa non hanno posto nell'albero. #}
     <div class="c7-card" {% if wizard_data.campionato_type in bracket_minimum_players %}style="display:none"{% endif %}>
-      <label for="default_odd_policy" class="form-label">{{ _("Giocatori dispari") }}</label>
+      <label for="default_odd_policy" class="form-label" data-help="gara-dispari">{{ _("Giocatori dispari") }}</label>
       <select class="form-select" id="default_odd_policy" name="default_odd_policy">
         {% for value, label in odd_policies %}
         <option value="{{ value }}" {% if value == 'bye' %}selected{% endif %}>{{ label }}</option>
@@ -132,7 +132,7 @@
        gara le ereditano dalla gara, sempre. #}
     <div class="c7-card">
       <div class="mb-3">
-        <label for="default_start_rule" class="form-label">{{ _("Regola di inizio") }}</label>
+        <label for="default_start_rule" class="form-label" data-help="gara-regola-inizio">{{ _("Regola di inizio") }}</label>
         <select class="form-select" id="default_start_rule" name="default_start_rule">
           {% for rule in StartRule %}
           <option value="{{ rule.value }}" {% if rule == StartRule.FIRST_PLAYER %}selected{% endif %}>{{ rule.display_name }}</option>
@@ -141,7 +141,7 @@
         <div class="form-text">{{ _("Con l'acchito il segnapunti chiede chi ha vinto e chi apre: chi vince può mandare al tavolo l'avversario.") }}</div>
       </div>
       <div>
-        <label for="default_break_rule" class="form-label">{{ _("Chi spacca") }}</label>
+        <label for="default_break_rule" class="form-label" data-help="gara-chi-spacca">{{ _("Chi spacca") }}</label>
         <select class="form-select" id="default_break_rule" name="default_break_rule">
           {% for rule in BreakRule %}
           <option value="{{ rule.value }}" {% if rule == BreakRule.ALTERNATE %}selected{% endif %}>{{ rule.display_name }}</option>
@@ -155,7 +155,7 @@
     <label class="c7-card d-flex align-items-center gap-3"
            style="cursor:pointer{% if wizard_data.campionato_type in bracket_minimum_players %};display:none{% endif %}">
       <span class="flex-fill">
-        <span class="c7-choice__title d-block">{{ _("Anti-rematch") }}</span>
+        <span class="c7-choice__title d-block" data-help="gara-anti-rematch">{{ _("Anti-rematch") }}</span>
         <span class="c7-choice__desc d-block">{{ _("Evita di riabbinare gli stessi giocatori nella stessa gara") }}</span>
       </span>
       <span class="form-check form-switch m-0">
@@ -165,7 +165,7 @@
 
     <label class="c7-card d-flex align-items-center gap-3" style="cursor:pointer">
       <span class="flex-fill">
-        <span class="c7-choice__title d-block">{{ _("Gioco con handicap") }}</span>
+        <span class="c7-choice__title d-block" data-help="gara-handicap">{{ _("Gioco con handicap") }}</span>
         <span class="c7-choice__desc d-block">{{ _("Il rating Elo si aggiorna solo fra giocatori della stessa categoria. Ereditato da gare e partite.") }}</span>
       </span>
       <span class="form-check form-switch m-0">

@@ -24,7 +24,7 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <div class="c7-card">
-      <label for="title" class="form-label">{{ _("Titolo") }}</label>
+      <label for="title" class="form-label" data-help="challenge-titolo">{{ _("Titolo") }}</label>
       <input type="text" class="form-control" id="title" name="title" maxlength="120"
              placeholder="{{ _('es. Progressione lungo sponda') }}">
       <div class="form-text">
@@ -59,7 +59,7 @@
          campo grigio su una prova superato/non superato fa credere che il
          numero serva e che manchi un permesso. #}
       <div id="maxScoreRow" style="margin-top:16px">
-        <label for="max_score" class="form-label">{{ _("Punteggio massimo") }}</label>
+        <label for="max_score" class="form-label" data-help="challenge-punteggio-massimo">{{ _("Punteggio massimo") }}</label>
         <input type="number" class="form-control" id="max_score" name="max_score"
                min="1" max="999" inputmode="numeric"
                placeholder="{{ _('es. 15') }}">
@@ -84,7 +84,7 @@
       <div class="c7-topline">
         <div class="c7-kicker">{{ _("Non hai una foto?") }}</div>
         <a href="{{ url_for('challenge.diagram_builder') }}"
-           id="goToBuilder" class="btn btn-secondary w-100" style="margin-top:8px">
+           id="goToBuilder" class="btn btn-secondary w-100" style="margin-top:8px" data-help="drill-disegna">
           <i class="fas fa-pen-ruler"></i>&nbsp;{{ _("Disegna l'esercizio") }}
         </a>
       </div>

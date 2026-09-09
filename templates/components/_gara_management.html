@@ -24,7 +24,7 @@
 {% macro start_round_button(gara, disabled_condition) %}
 {% set is_bracket = gara.matchmaking_strategy in bracket_minimum_players %}
 <button class="btn btn-primary w-100" onclick="startFirstRound({{ gara.id }}, '{{ gara.matchmaking_strategy }}')"
-        {% if disabled_condition %}disabled{% endif %}>
+        {% if disabled_condition %}disabled{% endif %}{% if is_bracket %} data-help="gara-sorteggia-tabellone"{% endif %}>
   <i class="fas {{ 'fa-sitemap' if is_bracket else 'fa-play' }}"></i>
   {% if is_bracket %}{{ _('Sorteggia il tabellone') }}
   {% elif gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}{{ _('Avvia Gara') }}
@@ -133,7 +133,7 @@
          partite risultano ancora aperte. #}
       {% if gara.is_prova and feature_visible('admin.competition.prova_simula') %}
       <div>
-        <div class="c7-label mb-2"><i class="fas fa-flask me-1"></i>{{ _("Simulazione") }}</div>
+        <div class="c7-label mb-2" data-help="prova-simulazione"><i class="fas fa-flask me-1"></i>{{ _("Simulazione") }}</div>
         <div class="c7-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
           {% for azione, etichetta, icona in [
                 ('partita', _('Simula una partita'), 'fa-dice'),
@@ -227,7 +227,7 @@
              confronto `current_round < rounds_count` era la stessa domanda
              posta una seconda volta, e nel doppio KO le due risposte
              divergevano: il turno della bella sta oltre `rounds_count`. #}
-          <button class="btn btn-success w-100" onclick="startRound({{ gara.current_round + 1 }}, this)">
+          <button class="btn btn-success w-100" data-help="gara-avvia-turno" onclick="startRound({{ gara.current_round + 1 }}, this)">
             <i class="fas fa-forward"></i> {{ _('Avvia Turno %(num)s', num=gara.current_round + 1) }}
           </button>
 

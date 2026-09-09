@@ -81,12 +81,12 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "help.section": {"anonimo", "player", "director"},
     "help.page": {"anonimo", "player", "director"},
     "help.search": {"anonimo", "player", "director"},
-    # Catalogo dei micro-aiuti e API per schermata: predisposizione per
-    # l'interfaccia adattiva, materiale di lavoro per chi scrive la guida.
-    # `set()` esplicito = admin-only e deciso, non dimenticato: si aprono ai
-    # player quando l'interfaccia adattiva li consumerà davvero.
+    # Catalogo dei micro-aiuti: materiale di lavoro per chi scrive la guida.
+    # `set()` esplicito = admin-only e deciso, non dimenticato.
     "help.hints_index": set(),
-    "help.screen_api": set(),
+    # API per schermata: la chiama `static/js/help-hints.js` (modalità aiuto,
+    # ADR-058) da qualunque pagina, con gli stessi ruoli del mini-sito.
+    "help.screen_api": {"anonimo", "player", "director"},
     # === Logged-in (player or director) ===
     "auth.logout": {"player", "director"},
     # Il browser comunica il fuso di chi legge (ADR-043). Lo chiama il guscio da

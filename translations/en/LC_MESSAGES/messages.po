@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-09 12:56+0200\n"
+"POT-Creation-Date: 2026-09-09 22:13+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -2160,7 +2160,7 @@ msgid "Tutti"
 msgstr "All"
 
 #: routes/help.py:59 templates/admin/accessi.html:86
-#: templates/admin/accessi.html:141 templates/admin/campionato_detail.html:275
+#: templates/admin/accessi.html:141 templates/admin/campionato_detail.html:278
 #: templates/admin/users_list.html:106 templates/admin/users_list.html:177
 #: templates/admin/venue_manager_requests.html:48
 #: templates/components/_campionato_general_classification.html:24
@@ -2463,7 +2463,9 @@ msgstr "Playoff configuration deactivated."
 msgid ""
 "Una competizione di prova non ha vetrina né link pubblico: in un "
 "campionato vero qui trovi il link da condividere."
-msgstr "A trial competition has no showcase or public link: in a real championship this is where you find the link to share."
+msgstr ""
+"A trial competition has no showcase or public link: in a real "
+"championship this is where you find the link to share."
 
 #: routes/admin/campionato.py:1187 routes/admin/competition/prova.py:126
 #, python-format
@@ -3739,7 +3741,8 @@ msgstr "Warning"
 msgid "Informazione"
 msgstr "Information"
 
-#: templates/base.html:470 templates/challenge/create.html:8
+#: templates/base.html:470 templates/base.html:746
+#: templates/challenge/create.html:8
 #: templates/components/_campionato_create_modal.html:7
 #: templates/components/_challenge_management_modal.html:19
 #: templates/components/_challenge_management_modal.html:76
@@ -3873,7 +3876,7 @@ msgstr "Complete Competition"
 msgid "Conferma"
 msgstr "Confirm"
 
-#: templates/base.html:676 templates/base.html:740
+#: templates/base.html:676 templates/base.html:765
 msgid "Close"
 msgstr "Close"
 
@@ -3884,7 +3887,7 @@ msgstr "Close"
 #: templates/admin/campionato_wizard_step2.html:8
 #: templates/admin/gara_edit.html:11 templates/admin/venue_form.html:296
 #: templates/admin/venue_manager_requests.html:155 templates/base.html:680
-#: templates/base.html:753 templates/challenge/_training_board.html:92
+#: templates/base.html:778 templates/challenge/_training_board.html:92
 #: templates/challenge/builder.html:33 templates/challenge/builder.html:262
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
@@ -3965,21 +3968,52 @@ msgstr "Hello!"
 msgid "Ciao %(username)s!"
 msgstr "Hello %(username)s!"
 
-#: templates/base.html:739
+#: templates/base.html:744
+msgid "Aiuto"
+msgstr "Help"
+
+#: templates/base.html:745
+msgid "Leggi nella guida"
+msgstr "Read in the guide"
+
+#: templates/admin/campionato_wizard_step1.html:177
+#: templates/admin/gara_create_standalone.html:493 templates/base.html:747
+#: templates/components/_new_gara_modal.html:425
+msgid "Avanti"
+msgstr "Next"
+
+#: templates/base.html:748 templates/components/_page_modal.html:31
+msgid "Ho capito"
+msgstr "Got it"
+
+#: templates/base.html:749
+msgid "Salta"
+msgstr "Skip"
+
+#: templates/base.html:750
+#, python-brace-format
+msgid "{n} di {total}"
+msgstr "{n} of {total}"
+
+#: templates/base.html:751
+msgid "Presentazione"
+msgstr "Introduction"
+
+#: templates/base.html:764
 msgid "Save Reset Snapshot"
 msgstr "Save Reset Snapshot"
 
-#: templates/base.html:744
+#: templates/base.html:769
 msgid "Nome snapshot"
 msgstr "Snapshot name"
 
-#: templates/base.html:748
+#: templates/base.html:773
 msgid "Descrizione (opzionale)"
 msgstr "Description (optional)"
 
 #: templates/admin/campionato_detail.html:193
 #: templates/admin/campionato_vetrina.html:93
-#: templates/admin/gara_vetrina.html:94 templates/base.html:754
+#: templates/admin/gara_vetrina.html:94 templates/base.html:779
 #: templates/components/_playoff_scoring_form.html:28
 #: templates/gamification/admin/level_config.html:42
 #: templates/gamification/admin/level_config.html:174
@@ -4371,7 +4405,7 @@ msgstr ""
 "\n"
 "This action CANNOT BE UNDONE!"
 
-#: templates/admin/campionato_detail.html:481 templates/gara_detail.html:764
+#: templates/admin/campionato_detail.html:485 templates/gara_detail.html:764
 #, python-brace-format
 msgid ""
 "Sei SICURO di voler eliminare la Gara {number}?\n"
@@ -5438,7 +5472,7 @@ msgstr "Min. competitions played"
 
 #: templates/admin/campionato_detail.html:162
 #: templates/admin/campionato_detail.html:213
-#: templates/admin/campionato_detail.html:430
+#: templates/admin/campionato_detail.html:434
 #: templates/admin/campionato_wizard_step2.html:24
 #: templates/admin/venues_list.html:30
 #: templates/components/_gara_edit_form.html:30
@@ -5458,19 +5492,19 @@ msgstr "Name"
 
 #: templates/admin/campionato_detail.html:166
 #: templates/admin/campionato_detail.html:216
-#: templates/admin/campionato_detail.html:433
+#: templates/admin/campionato_detail.html:437
 msgid "Da pos."
 msgstr "From pos."
 
 #: templates/admin/campionato_detail.html:170
 #: templates/admin/campionato_detail.html:219
-#: templates/admin/campionato_detail.html:436
+#: templates/admin/campionato_detail.html:440
 msgid "A pos."
 msgstr "To pos."
 
 #: templates/admin/campionato_detail.html:174
 #: templates/admin/campionato_detail.html:222
-#: templates/admin/campionato_detail.html:439
+#: templates/admin/campionato_detail.html:443
 #: templates/gamification/admin/streaks.html:30
 msgid "Max"
 msgstr "Max"
@@ -5489,12 +5523,12 @@ msgid "Eredita"
 msgstr "Inherit"
 
 #: templates/admin/campionato_detail.html:206
-#: templates/admin/campionato_detail.html:423
+#: templates/admin/campionato_detail.html:427
 msgid "Aggiungi configurazione"
 msgstr "Add configuration"
 
 #: templates/admin/campionato_detail.html:226
-#: templates/admin/campionato_detail.html:443 templates/exam/detail.html:157
+#: templates/admin/campionato_detail.html:447 templates/exam/detail.html:157
 #: templates/exam/examiners.html:45
 #: templates/gamification/admin/level_config.html:221
 #: templates/gamification/admin/streak_config.html:274
@@ -5526,14 +5560,14 @@ msgstr "pending"
 msgid "Accetta tutti i rimanenti"
 msgstr "Accept all remaining"
 
-#: templates/admin/campionato_detail.html:276
+#: templates/admin/campionato_detail.html:279
 #: templates/admin/venue_form.html:195
 #: templates/components/_playoff_invitations.html:29
 #: templates/individual_match/statistics.html:80
 msgid "Posizione"
 msgstr "Position"
 
-#: templates/admin/campionato_detail.html:277
+#: templates/admin/campionato_detail.html:280
 #: templates/admin/venue_form.html:229
 #: templates/admin/venue_manager_requests.html:33
 #: templates/admin/venues_list.html:37
@@ -5556,14 +5590,14 @@ msgstr "Position"
 msgid "Stato"
 msgstr "Status"
 
-#: templates/admin/campionato_detail.html:278
+#: templates/admin/campionato_detail.html:281
 #: templates/components/_soft_delete_modal.html:36
 #: templates/gamification/admin/xp_management.html:42
 #: templates/gamification/admin/xp_management.html:93
 msgid "Motivo"
 msgstr "Reason"
 
-#: templates/admin/campionato_detail.html:289
+#: templates/admin/campionato_detail.html:292
 #: templates/components/_match_result_row.html:148
 #: templates/components/_multi_set_score_display.html:94
 #: templates/components/_playoff_invitations.html:23
@@ -5576,32 +5610,32 @@ msgstr "Reason"
 msgid "In attesa"
 msgstr "Pending"
 
-#: templates/admin/campionato_detail.html:291
+#: templates/admin/campionato_detail.html:294
 #: templates/components/_unified_match_score.html:88
 #: templates/components/_unified_match_score.html:99
 #: templates/exam/requests.html:19 utils/status_ui.py:225
 msgid "Confermato"
 msgstr "Confirmed"
 
-#: templates/admin/campionato_detail.html:293 utils/status_ui.py:226
+#: templates/admin/campionato_detail.html:296 utils/status_ui.py:226
 msgid "Rifiutato"
 msgstr "Declined"
 
-#: templates/admin/campionato_detail.html:295
+#: templates/admin/campionato_detail.html:298
 #: templates/components/_proposal_labels.html:36
 msgid "Scaduto"
 msgstr "Expired"
 
-#: templates/admin/campionato_detail.html:298
+#: templates/admin/campionato_detail.html:301
 #, python-format
 msgid "registrato da %(name)s"
 msgstr "recorded by %(name)s"
 
-#: templates/admin/campionato_detail.html:298
+#: templates/admin/campionato_detail.html:301
 msgid "direzione"
 msgstr "the direction"
 
-#: templates/admin/campionato_detail.html:314
+#: templates/admin/campionato_detail.html:317
 #: templates/components/_match_scoreboard.html:352
 #: templates/components/_playoff_invitations.html:48
 #: templates/components/_trio_rack_input.html:209
@@ -5614,14 +5648,14 @@ msgstr "the direction"
 msgid "Accetta"
 msgstr "Accept"
 
-#: templates/admin/campionato_detail.html:321
+#: templates/admin/campionato_detail.html:324
 #: templates/components/_playoff_invitations.html:53
 msgid "Rifiutare il posto ai playoff? L'invito passera' al primo degli esclusi."
 msgstr ""
 "Turn down your playoff spot? The invitation goes to the first player left"
 " out."
 
-#: templates/admin/campionato_detail.html:322
+#: templates/admin/campionato_detail.html:325
 #: templates/admin/director_requests.html:36
 #: templates/admin/venue_manager_requests.html:118
 #: templates/admin/venue_manager_requests.html:157
@@ -5637,47 +5671,47 @@ msgstr ""
 msgid "Rifiuta"
 msgstr "Reject"
 
-#: templates/admin/campionato_detail.html:332
+#: templates/admin/campionato_detail.html:335
 msgid "Conferma per conto del giocatore"
 msgstr "Confirm on the player’s behalf"
 
-#: templates/admin/campionato_detail.html:333
+#: templates/admin/campionato_detail.html:336
 msgid "Confermare la partecipazione per conto di questo giocatore?"
 msgstr "Confirm participation on this player’s behalf?"
 
-#: templates/admin/campionato_detail.html:343
+#: templates/admin/campionato_detail.html:346
 msgid "Rifiuta per conto del giocatore"
 msgstr "Decline on the player’s behalf"
 
-#: templates/admin/campionato_detail.html:344
+#: templates/admin/campionato_detail.html:347
 msgid "Registrare il rifiuto? L'invito passera' al primo degli esclusi."
 msgstr "Record the refusal? The invitation goes to the first player left out."
 
-#: templates/admin/campionato_detail.html:355
+#: templates/admin/campionato_detail.html:358
 msgid "Rimuovere questo giocatore?"
 msgstr "Remove this player?"
 
-#: templates/admin/campionato_detail.html:373
+#: templates/admin/campionato_detail.html:377
 msgid "Aggiungi giocatore..."
 msgstr "Add player..."
 
-#: templates/admin/campionato_detail.html:391
+#: templates/admin/campionato_detail.html:395
 msgid "Creare la gara playoff e iscrivere i giocatori confermati?"
 msgstr "Create the playoff competition and register confirmed players?"
 
-#: templates/admin/campionato_detail.html:392
+#: templates/admin/campionato_detail.html:396
 msgid "Crea Gara Playoff"
 msgstr "Create Playoff Competition"
 
-#: templates/admin/campionato_detail.html:399
+#: templates/admin/campionato_detail.html:403
 msgid "Vai alla gara playoff"
 msgstr "Go to playoff competition"
 
-#: templates/admin/campionato_detail.html:415
+#: templates/admin/campionato_detail.html:419
 msgid "Nessuna configurazione playoff attiva."
 msgstr "No active playoff configuration."
 
-#: templates/admin/campionato_detail.html:503
+#: templates/admin/campionato_detail.html:507
 msgid ""
 "Tutte le gare sono concluse. Passare alla fase playoff? Potrai poi "
 "avviare i playoff e invitare i qualificati."
@@ -5685,7 +5719,7 @@ msgstr ""
 "All competitions are finished. Proceed to the playoff phase? You can then"
 " start the playoffs and invite the qualified players."
 
-#: templates/admin/campionato_detail.html:505
+#: templates/admin/campionato_detail.html:509
 msgid ""
 "Sei sicuro di voler terminare il campionato? Le gare non completate "
 "verranno eliminate."
@@ -5693,7 +5727,7 @@ msgstr ""
 "Are you sure you want to terminate the championship? Non-completed "
 "competitions will be removed."
 
-#: templates/admin/campionato_detail.html:508
+#: templates/admin/campionato_detail.html:512
 msgid ""
 "Attenzione: alcuni playoff hanno un requisito minimo gare non "
 "raggiungibile. Vuoi terminare comunque?"
@@ -5701,13 +5735,13 @@ msgstr ""
 "Warning: some playoffs have a minimum competition requirement that cannot"
 " be met. Terminate anyway?"
 
-#: templates/admin/campionato_detail.html:570
+#: templates/admin/campionato_detail.html:574
 #: templates/components/_new_gara_modal.html:674
 #, python-brace-format
 msgid "Esatto numero: {distance} triangoli totali"
 msgstr "Exact number: {distance} total racks"
 
-#: templates/admin/campionato_detail.html:571
+#: templates/admin/campionato_detail.html:575
 #: templates/components/_new_gara_modal.html:675
 #, python-brace-format
 msgid "Al {distance} (si vince a {distance} triangoli)"
@@ -5977,7 +6011,10 @@ msgid ""
 "Solo tu la vedi: la popoli di giocatori fittizi, la conduci come un "
 "campionato vero e la elimini quando hai finito. Non tocca ELO, XP né "
 "statistiche, e sparisce da sola dopo 14 giorni."
-msgstr "Only you can see it: fill it with dummy players, run it like a real championship and delete it when you are done. It does not touch ELO, XP or statistics, and it disappears on its own after 14 days."
+msgstr ""
+"Only you can see it: fill it with dummy players, run it like a real "
+"championship and delete it when you are done. It does not touch ELO, XP "
+"or statistics, and it disappears on its own after 14 days."
 
 #: templates/admin/campionato_wizard_step1.html:122
 #: templates/admin/gara_create_standalone.html:146
@@ -6013,12 +6050,6 @@ msgstr "For the next ranked players"
 #: templates/admin/campionato_wizard_step1.html:163
 msgid "N."
 msgstr "No."
-
-#: templates/admin/campionato_wizard_step1.html:177
-#: templates/admin/gara_create_standalone.html:493
-#: templates/components/_new_gara_modal.html:425
-msgid "Avanti"
-msgstr "Next"
 
 #: templates/admin/campionato_wizard_step2.html:4
 #: templates/components/_campionato_create_modal.html:23
@@ -11967,7 +11998,7 @@ msgid "Chiuso in una visita"
 msgstr "Closed in one visit"
 
 #: templates/components/_match_scoreboard.html:124
-#: templates/individual_match/tpa_referto.html:127
+#: templates/individual_match/tpa_referto.html:134
 msgid "spacca"
 msgstr "breaking"
 
@@ -12324,10 +12355,6 @@ msgstr "Notes"
 #: templates/components/_new_gara_modal.html:414
 msgid "Note aggiuntive sulla gara... (opzionale)"
 msgstr "Extra notes about the competition... (optional)"
-
-#: templates/components/_page_modal.html:31
-msgid "Ho capito"
-msgstr "Got it"
 
 #: templates/components/_player_campionato_classifications.html:6
 msgid "Le mie Classifiche"
@@ -12722,13 +12749,19 @@ msgstr ""
 msgid "Sparisce da sola il"
 msgstr "It disappears on its own on"
 
-#: templates/components/_prova_banner.html:40
+#: templates/components/_prova_banner.html:46
+msgid "Suggerimenti"
+msgstr "Tips"
+
+#: templates/components/_prova_banner.html:53
 msgid ""
 "Eliminare la prova con tutto il campionato, le gare, le partite e i "
 "giocatori fittizi? Non si torna indietro."
-msgstr "Delete the trial with the whole championship, its events, matches and dummy players? There is no going back."
+msgstr ""
+"Delete the trial with the whole championship, its events, matches and "
+"dummy players? There is no going back."
 
-#: templates/components/_prova_banner.html:40
+#: templates/components/_prova_banner.html:53
 msgid ""
 "Eliminare la prova con tutte le partite e i giocatori fittizi? Non si "
 "torna indietro."
@@ -12736,7 +12769,7 @@ msgstr ""
 "Delete the trial with all its matches and dummy players? There is no "
 "going back."
 
-#: templates/components/_prova_banner.html:43
+#: templates/components/_prova_banner.html:56
 msgid "Elimina la prova"
 msgstr "Delete the trial"
 
@@ -12806,7 +12839,7 @@ msgstr "(default)"
 
 #: templates/components/_round_management.html:68
 #: templates/components/_unified_rack_history.html:61
-#: templates/individual_match/tpa_referto.html:132
+#: templates/individual_match/tpa_referto.html:139
 msgid "Triangoli"
 msgstr "Racks"
 
@@ -17106,7 +17139,7 @@ msgid "Referto TPA"
 msgstr "TPA Scoresheet"
 
 #: templates/individual_match/tpa_referto.html:10
-#: templates/individual_match/tpa_referto.html:112
+#: templates/individual_match/tpa_referto.html:119
 msgid "Torna alla sfida"
 msgstr "Back to the match"
 
@@ -17153,99 +17186,99 @@ msgstr "Scoresheet closed: from here on it is read-only."
 msgid "Il referto lo tiene %(name)s. Qui lo vedi aggiornarsi."
 msgstr "%(name)s is keeping the scoresheet. Here you can watch it fill in."
 
-#: templates/individual_match/tpa_referto.html:76
+#: templates/individual_match/tpa_referto.html:83
 msgid "Annulla l'ultimo tocco"
 msgstr "Undo last entry"
 
-#: templates/individual_match/tpa_referto.html:81
+#: templates/individual_match/tpa_referto.html:88
 msgid "Cosa vuol dire ogni lettera"
 msgstr "What each letter means"
 
-#: templates/individual_match/tpa_referto.html:83
+#: templates/individual_match/tpa_referto.html:90
 msgid "sbagli un tiro d'attacco"
 msgstr "you miss a shot you meant to pot"
 
-#: templates/individual_match/tpa_referto.html:84
+#: templates/individual_match/tpa_referto.html:91
 msgid "giochi di difesa"
 msgstr "you play a safety"
 
-#: templates/individual_match/tpa_referto.html:85
+#: templates/individual_match/tpa_referto.html:92
 msgid "tiro di sponda obbligato, non vedi la bilia"
 msgstr "forced rail-first shot: you cannot see the ball"
 
-#: templates/individual_match/tpa_referto.html:86
+#: templates/individual_match/tpa_referto.html:93
 msgid "battente in buca o fuori dal tavolo"
 msgstr "cue ball pocketed or off the table"
 
-#: templates/individual_match/tpa_referto.html:87
+#: templates/individual_match/tpa_referto.html:94
 msgid "non colpisci la bilia designata"
 msgstr "you fail to hit the lowest ball legally"
 
-#: templates/individual_match/tpa_referto.html:88
+#: templates/individual_match/tpa_referto.html:95
 msgid "con questo turno vinci il triangolo"
 msgstr "this inning wins the rack"
 
-#: templates/individual_match/tpa_referto.html:89
+#: templates/individual_match/tpa_referto.html:96
 msgid "il tiro sbagliato era facile: vale doppio"
 msgstr "the missed shot was an easy one: counts double"
 
-#: templates/individual_match/tpa_referto.html:90
+#: templates/individual_match/tpa_referto.html:97
 msgid "difesa premeditata: niente errore di posizione"
 msgstr "planned safety: no position error"
 
-#: templates/individual_match/tpa_referto.html:91
+#: templates/individual_match/tpa_referto.html:98
 msgid "push out"
 msgstr "push out"
 
-#: templates/individual_match/tpa_referto.html:96
+#: templates/individual_match/tpa_referto.html:103
 msgid "Il foglio"
 msgstr "The sheet"
 
-#: templates/individual_match/tpa_referto.html:102
+#: templates/individual_match/tpa_referto.html:109
 msgid "Chiudere il referto? Dopo non si annota piu'."
 msgstr "Close the scoresheet? Nothing can be recorded afterwards."
 
-#: templates/individual_match/tpa_referto.html:105
+#: templates/individual_match/tpa_referto.html:112
 msgid "Chiudi il referto"
 msgstr "Close the scoresheet"
 
-#: templates/individual_match/tpa_referto.html:125
+#: templates/individual_match/tpa_referto.html:132
 msgid "passa il tavolo"
 msgstr "hand over the table"
 
-#: templates/individual_match/tpa_referto.html:126
+#: templates/individual_match/tpa_referto.html:133
 msgid "al tavolo"
 msgstr "at the table"
 
-#: templates/individual_match/tpa_referto.html:128
+#: templates/individual_match/tpa_referto.html:135
 msgid "spacca lui"
 msgstr "let them break"
 
-#: templates/individual_match/tpa_referto.html:129
+#: templates/individual_match/tpa_referto.html:136
 msgid "TPA ancora da calcolare"
 msgstr "TPA not available yet"
 
-#: templates/individual_match/tpa_referto.html:130
+#: templates/individual_match/tpa_referto.html:137
 msgid "quante bilie?"
 msgstr "how many balls?"
 
-#: templates/individual_match/tpa_referto.html:131
+#: templates/individual_match/tpa_referto.html:138
 msgid "perche' finisce il turno?"
 msgstr "why did the inning end?"
 
-#: templates/individual_match/tpa_referto.html:133
+#: templates/individual_match/tpa_referto.html:140
 msgid "Non e' stato possibile annotare."
 msgstr "That entry could not be recorded."
 
-#: templates/individual_match/tpa_referto.html:134
+#: templates/individual_match/tpa_referto.html:141
 msgid "e' entrata di sponda alla prima bilia"
 msgstr "kicked in on the first ball"
 
-#: templates/individual_match/tpa_referto.html:135
+#: templates/individual_match/tpa_referto.html:142
 msgid "Ha chiuso in una sola visita?"
 msgstr "Did they run out in one visit?"
 
-#: templates/individual_match/tpa_referto.html:136
+#: templates/individual_match/tpa_referto.html:143
 msgid "Chiusa in una sola visita"
 msgstr "Ran out in one visit"
 

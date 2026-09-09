@@ -63,7 +63,12 @@
     {% endif %}
 
     <section class="c7-tpa">
-      <div id="tpaPlayers" class="c7-tpa"></div>
+      {# I riquadri dei giocatori e il tastierino li disegna il JavaScript e li
+         svuota a ogni tocco: le ancore dell'aiuto (`data-help`) stanno su
+         involucri stabili, che non partecipano alla griglia. #}
+      <div data-help="referto-passa-tavolo">
+        <div id="tpaPlayers" class="c7-tpa"></div>
+      </div>
 
       <div class="c7-tpa-boxes" id="tpaBoxes">
         <div class="c7-tpa-box c7-tpa-box--white" id="tpaWhiteBox"></div>
@@ -71,15 +76,17 @@
       </div>
 
       {% if state.can_write %}
-      <div class="c7-tpa-pad" id="tpaNumbers"></div>
-      <div class="c7-tpa-pad c7-tpa-pad--letters" id="tpaLetters"></div>
-      <button type="button" class="c7-undo" id="tpaUndo">{{ _('Annulla l\'ultimo tocco') }}</button>
+      <div class="c7-stack" data-help="referto-tastierino">
+        <div class="c7-tpa-pad" id="tpaNumbers"></div>
+        <div class="c7-tpa-pad c7-tpa-pad--letters" id="tpaLetters"></div>
+      </div>
+      <button type="button" class="c7-undo" id="tpaUndo" data-help="referto-annulla">{{ _('Annulla l\'ultimo tocco') }}</button>
       {% endif %}
     </section>
 
     <details class="c7-card">
       <summary style="font-size:13px;font-weight:800;cursor:pointer">{{ _('Cosa vuol dire ogni lettera') }}</summary>
-      <p class="c7-tpa-legend" style="margin:10px 0 0">
+      <p class="c7-tpa-legend" style="margin:10px 0 0" data-help="referto-annotazioni-piccole">
         <b>M</b> {{ _('sbagli un tiro d\'attacco') }} <span class="c7-sep">·</span>
         <b>S</b> {{ _('giochi di difesa') }} <span class="c7-sep">·</span>
         <b>K</b> {{ _('tiro di sponda obbligato, non vedi la bilia') }}<br>

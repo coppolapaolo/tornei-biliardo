@@ -36,7 +36,7 @@
        nulla, e il campo squadra non compare da nessuna parte. #}
     <label class="c7-card d-flex align-items-center gap-3 mb-0" style="cursor:pointer">
       <span class="flex-fill">
-        <span class="c7-choice__title d-block">{{ _('Evita incontri fra compagni di squadra nei primi turni') }}</span>
+        <span class="c7-choice__title d-block" data-help="gara-separazione-squadre">{{ _('Evita incontri fra compagni di squadra nei primi turni') }}</span>
         <span class="c7-choice__desc d-block">
           {{ _('Il sorteggio allontana i compagni il più possibile. Con squadre molto numerose l’incontro viene rinviato, non evitato: se una società porta più giocatori di quanti siano i rami del tabellone, un derby è matematicamente inevitabile.') }}
         </span>
@@ -53,7 +53,7 @@
     <div id="third_place_row" style="margin-top:10px">
       <label class="c7-card d-flex align-items-center gap-3 mb-0" style="cursor:pointer">
         <span class="flex-fill">
-          <span class="c7-choice__title d-block">{{ _('Finale per il 3°/4° posto') }}</span>
+          <span class="c7-choice__title d-block" data-help="gara-finalina">{{ _('Finale per il 3°/4° posto') }}</span>
           <span class="c7-choice__desc d-block">
             {{ _('I due semifinalisti sconfitti si giocano il terzo posto, nello stesso turno della finale. Senza, sono terzi a pari merito.') }}
           </span>
@@ -70,7 +70,7 @@
        girone discende dai turni (G = 2^(w+1)), quindi si sceglie quella e non
        due parametri che possono contraddirsi. #}
     <div id="double_ko_rounds_row" style="margin-top:14px">
-      <label for="double_ko_rounds" class="form-label">{{ _('Fase a gironi') }}</label>
+      <label for="double_ko_rounds" class="form-label" data-help="gara-fase-gironi">{{ _('Fase a gironi') }}</label>
       <select class="form-select" id="double_ko_rounds" name="double_ko_rounds">
         <option value="" {% if not (g and g.double_ko_rounds) %}selected{% endif %}>
           {{ _('Nessuna — un tabellone solo') }}

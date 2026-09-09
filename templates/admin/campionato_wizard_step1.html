@@ -30,7 +30,7 @@
       </div>
 
       <div>
-        <label for="planned_gare_count" class="form-label">{{ _("Gare pianificate") }}</label>
+        <label for="planned_gare_count" class="form-label" data-help="campionato-gare-pianificate">{{ _("Gare pianificate") }}</label>
         <input type="number" class="form-control" id="planned_gare_count" name="planned_gare_count"
                value="10" min="1" max="52" style="max-width:160px">
         <div class="form-text">{{ _("Obiettivo indicativo: potrai aggiungere o togliere gare.") }}</div>
@@ -38,7 +38,7 @@
     </div>
 
     <div class="c7-card">
-      <label for="default_classification_system" class="form-label">{{ _("Sistema di classifica") }}</label>
+      <label for="default_classification_system" class="form-label" data-help="campionato-classifica">{{ _("Sistema di classifica") }}</label>
       <select class="form-select" id="default_classification_system" name="default_classification_system" required>
         <option value="WINS" selected>{{ _("Vittorie — match vinti, poi differenza triangoli") }}</option>
         <option value="RACK">{{ _("Triangoli totali — ogni triangoli conta") }}</option>
@@ -61,7 +61,7 @@
     </div>
 
     <div class="c7-card">
-      <label for="campionato_type" class="form-label">{{ _("Strategia di abbinamento") }}</label>
+      <label for="campionato_type" class="form-label" data-help="gara-strategia">{{ _("Strategia di abbinamento") }}</label>
       <select class="form-select" id="campionato_type" name="campionato_type" required>
         {% for value, label in matchmaking_strategies %}
         <option value="{{ value }}">{{ label }}</option>
@@ -101,7 +101,7 @@
 
     <label class="c7-card d-flex align-items-center gap-3" style="cursor:pointer">
       <span class="flex-fill">
-        <span class="c7-choice__title d-block">{{ _("Modalità esercizi") }}</span>
+        <span class="c7-choice__title d-block" data-help="campionato-modalita-esercizi">{{ _("Modalità esercizi") }}</span>
         <span class="c7-choice__desc d-block">{{ _("Prove di abilità individuali nelle gare del campionato") }}</span>
       </span>
       <span class="form-check form-switch m-0">
@@ -116,7 +116,7 @@
     {% set _al_limite = prove_attive is defined and prove_attive >= limite_prove %}
     <label class="c7-card d-flex align-items-center gap-3" style="cursor:pointer">
       <span class="flex-fill">
-        <span class="c7-choice__title d-block"><i class="fas fa-flask me-1"></i>{{ _("Competizione di prova") }}</span>
+        <span class="c7-choice__title d-block" data-help="prova-spunta"><i class="fas fa-flask me-1"></i>{{ _("Competizione di prova") }}</span>
         <span class="c7-choice__desc d-block">{{ _("Solo tu la vedi: la popoli di giocatori fittizi, la conduci come un campionato vero e la elimini quando hai finito. Non tocca ELO, XP né statistiche, e sparisce da sola dopo 14 giorni.") }}</span>
         {% if _al_limite %}
         <span class="c7-kicker d-block mt-1" style="color:var(--c7-warn-ink)">{{ _("Hai già %(n)s prove aperte: eliminane una per crearne un'altra.", n=limite_prove) }}</span>
@@ -137,7 +137,7 @@
         <div class="d-flex align-items-center gap-3">
           <i class="fas fa-crown" style="font-size:15px;color:var(--c7-warn)"></i>
           <label for="playoff_elite_enabled" class="flex-fill mb-0" style="cursor:pointer">
-            <span class="c7-choice__title d-block">{{ _("Playoff Elite") }}</span>
+            <span class="c7-choice__title d-block" data-help="campionato-playoff-elite">{{ _("Playoff Elite") }}</span>
             <span class="c7-choice__desc d-block">{{ _("Per i primi classificati") }}</span>
           </label>
           <div class="d-flex align-items-center gap-2" style="background:var(--c7-card);border-radius:var(--c7-r-chip);padding:0 12px;height:44px">
@@ -156,7 +156,7 @@
         <div class="d-flex align-items-center gap-3">
           <i class="fas fa-graduation-cap" style="font-size:15px;color:var(--c7-accent)"></i>
           <label for="playoff_academy_enabled" class="flex-fill mb-0" style="cursor:pointer">
-            <span class="c7-choice__title d-block">{{ _("Playoff Academy") }}</span>
+            <span class="c7-choice__title d-block" data-help="campionato-playoff-academy">{{ _("Playoff Academy") }}</span>
             <span class="c7-choice__desc d-block">{{ _("Per i classificati successivi") }}</span>
           </label>
           <div class="d-flex align-items-center gap-2" style="background:var(--c7-card);border-radius:var(--c7-r-chip);padding:0 12px;height:44px">

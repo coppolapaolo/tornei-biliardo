@@ -223,6 +223,14 @@ anti-invasiveness intensity scale (§11/§11-quater).
   sono due domande diverse, e il difetto stava nella seconda.
 - Gli altri due file (`test_iscritti_ricerca.cjs`, `test_polling_cursore.cjs`)
   coprono la ricerca fra gli iscritti e il cursore del polling live.
+- **File**: `tests/frontend/test_help_hints.cjs` — la «modalità aiuto» di
+  `static/js/help-hints.js` (ADR-058): si accende solo dove la pagina espone
+  `[data-help-toggle]`, chiama `/aiuto/api/schermata/<endpoint>`, mette una
+  «?» per ogni `[data-help]` (dentro i titoli, *dopo* i pulsanti), apre il
+  fumetto, mostra la presentazione una volta per schermata, si spegne
+  dall'interruttore e regge senza `localStorage`. Il contratto ancora↔template
+  lo presidia invece `tests/new/unit/test_help_anchors.py` (statico), e il
+  giunto pagina↔API `tests/new/integration/test_help_hints_prova.py`.
 - **Run**: `cd tests/frontend && npm install && npm test`
   (jsdom is the only dependency; `node_modules` is gitignored).
 - **Standalone toolchain**: intentionally decoupled from pytest and not in CI

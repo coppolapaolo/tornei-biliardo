@@ -32,11 +32,11 @@
   {% endif %}
   {% if not campionato.terminated_at %}
   {% if campionato.is_ready_for_playoff_transition() %}
-  <button type="button" class="btn btn-success btn-sm" id="btn-terminate-campionato">
+  <button type="button" class="btn btn-success btn-sm" id="btn-terminate-campionato" data-help="campionato-termina">
     <i class="fas fa-trophy"></i>&nbsp;{{ _("Passa ai playoff") }}
   </button>
   {% else %}
-  <button type="button" class="btn btn-danger btn-sm" id="btn-terminate-campionato">
+  <button type="button" class="btn btn-danger btn-sm" id="btn-terminate-campionato" data-help="campionato-termina">
     <i class="fas fa-stop"></i>&nbsp;{{ _("Termina") }}
   </button>
   {% endif %}
@@ -68,11 +68,11 @@
   {% endif %}
   {% if not campionato.terminated_at %}
   {% if campionato.is_ready_for_playoff_transition() %}
-  <button type="button" class="btn btn-success w-100" id="btn-terminate-campionato-mobile">
+  <button type="button" class="btn btn-success w-100" id="btn-terminate-campionato-mobile" data-help="campionato-termina">
     <i class="fas fa-trophy"></i>&nbsp;{{ _("Passa alla fase playoff") }}
   </button>
   {% else %}
-  <button type="button" class="btn btn-danger w-100" id="btn-terminate-campionato-mobile">
+  <button type="button" class="btn btn-danger w-100" id="btn-terminate-campionato-mobile" data-help="campionato-termina">
     <i class="fas fa-stop"></i>&nbsp;{{ _("Termina campionato") }}
   </button>
   {% endif %}
@@ -234,7 +234,7 @@
             {# Avvia Playoff button #}
             <form method="POST" action='{{ url_for("admin.campionato.start_playoff", campionato_id=campionato.id) }}'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-success"
+                <button type="submit" class="btn btn-success" data-help="campionato-avvia-playoff"
                         onclick='return confirm({{ _("Avviare i playoff? Le configurazioni verranno bloccate e i giocatori qualificati riceveranno un invito.")|tojson }})'>
                     <i class="fas fa-play"></i> {{ _("Avvia Playoff") }}
                 </button>
@@ -259,7 +259,7 @@
                         {% if campionato.is_prova and cs.pending > 0 and feature_visible('admin.campionato.prova_accetta_inviti') %}
                         <form method="POST" action='{{ url_for("admin.campionato.prova_accetta_inviti", campionato_id=campionato.id) }}'>
                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-sm btn-success">
+                            <button type="submit" class="btn btn-sm btn-success" data-help="playoff-accetta-tutti">
                                 <i class="fas fa-check-double"></i> {{ _("Accetta tutti i rimanenti") }}
                             </button>
                         </form>
@@ -313,7 +313,7 @@
                                         <form method="POST" class="d-inline"
                                               action='{{ url_for("admin.campionato.prova_rispondi_invito", campionato_id=campionato.id, qualification_id=q.id, risposta="accetta") }}'>
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                            <button type="submit" class="btn btn-sm btn-success">
+                                            <button type="submit" class="btn btn-sm btn-success" data-help="playoff-risposta-invito">
                                                 <i class="fas fa-check"></i> {{ _("Accetta") }}
                                             </button>
                                         </form>
@@ -331,7 +331,7 @@
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <input type="hidden" name="qualification_id" value="{{ q.id }}">
                                             <input type="hidden" name="answer" value="accept">
-                                            <button type="submit" class="btn btn-sm btn-outline-success"
+                                            <button type="submit" class="btn btn-sm btn-outline-success" data-help="playoff-risposta-invito"
                                                     title='{{ _("Conferma per conto del giocatore") }}'
                                                     onclick='return confirm({{ _("Confermare la partecipazione per conto di questo giocatore?")|tojson }})'>
                                                 <i class="fas fa-check"></i>

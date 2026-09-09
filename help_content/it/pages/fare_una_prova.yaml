@@ -1,0 +1,218 @@
+title: "Fare una prova prima della serata vera"
+section: organizzare
+kind: tutorial
+audience: [direttore]
+minutes: 6
+summary: "Una gara o un campionato che vedi solo tu, con giocatori fittizi e risultati simulati: per imparare le schermate del direttore senza toccare niente di vero."
+screens: [admin.competition.create_gara_standalone, admin.competition.gara_detail, admin.campionato.wizard_start, admin.campionato.campionato_detail]
+related: [creare_una_gara, creare_un_campionato, condurre_la_gara, playoff]
+
+blocks:
+  - type: text
+    text: >-
+      Sei appena diventato direttore di gara e la prima serata è fra una
+      settimana. Le schermate di gestione le hai viste solo nella guida, e
+      provarle su una gara vera vuol dire iscrizioni che partono davvero e
+      risultati che finiscono nelle statistiche di qualcuno. La
+      **competizione di prova** serve a questo: è una gara — o un campionato
+      intero — uguale in tutto a una vera, tranne che la vedi soltanto tu e
+      non lascia traccia da nessuna parte.
+
+  - type: heading
+    id: perche
+    title: "Cos'è, e cosa non è"
+
+  - type: list
+    title: "Una prova"
+    items:
+      - "La vede solo chi la dirige: tu, i co-direttori che aggiungi, e chi amministra la piattaforma. Non compare in nessun elenco, non ha link pubblico né vetrina."
+      - "Si popola solo di **giocatori fittizi**, creati dall'app con nomi generici. Nessun giocatore vero può iscriversi, nemmeno tu."
+      - "Non muove niente: né il rating dei giocatori, né i tuoi punti esperienza, né il contatore delle gare che hai organizzato."
+      - "Ne puoi avere **tre alla volta**. Sparisce da sola dopo **14 giorni**, con un avviso tre giorni prima; oppure la elimini tu quando hai finito."
+
+  - type: note
+    tone: info
+    text: >-
+      Per tutto il resto è una gara vera: stesse opzioni, stessi turni,
+      stesso segnapunti, stessa classifica. Quello che impari qui vale
+      identico la sera della gara.
+
+  - type: heading
+    id: creare
+    title: "Creare la prova"
+
+  - type: steps
+    items:
+      - title: "Apri il modulo di sempre"
+        text: >-
+          Dalla home tocca **Nuova Gara** (o **Nuovo Campionato**, se vuoi
+          provare anche la classifica generale e i playoff). Il modulo è lo
+          stesso della gara vera.
+        shot: dashboard-direttore
+      - title: "Accendi «Competizione di prova»"
+        text: >-
+          È la prima scelta del modulo. Da lì in poi compila come faresti
+          davvero: nome, data, sala, disciplina, distanza, e tutte le opzioni
+          che vuoi provare. Se hai già tre prove aperte l'interruttore è
+          spento, e la nota dice perché.
+        shot: prova-spunta
+      - title: "Riconoscila dal banner"
+        text: >-
+          Ogni schermata della prova ha in cima un riquadro giallo con
+          l'etichetta **Competizione di prova**, la data in cui sparirà da
+          sola, l'interruttore dei suggerimenti e il pulsante per
+          eliminarla. Se non lo vedi, non sei in una prova.
+        shot: prova-iscrizioni
+
+  - type: heading
+    id: iscrivere
+    title: "Riempirla di giocatori"
+
+  - type: text
+    text: >-
+      Apri le iscrizioni come in una gara vera. Nel pannello degli iscritti,
+      al posto della ricerca del giocatore, trovi tre pulsanti:
+
+  - type: options
+    items:
+      - name: "Iscrivi il minimo"
+        text: >-
+          Porta gli iscritti al numero minimo che hai impostato: è quanto
+          basta per avviare la gara.
+        hint: prova.fittizi
+      - name: "Iscrivi fino al massimo"
+        text: >-
+          Riempie tutti i posti. Serve un massimo di iscritti nel modulo,
+          altrimenti il pulsante è spento e una riga te lo ricorda.
+      - name: "Iscrivine uno in più"
+        text: >-
+          Aggiunge un solo giocatore: è il modo di vedere cosa succede con un
+          numero dispari, cioè la X a tavolino.
+
+  - type: text
+    text: >-
+      Ogni pulsante dice quanti giocatori aggiunge e si spegne quando non ne
+      aggiungerebbe nessuno. I fittizi si riconoscono dall'etichetta
+      **prova** accanto al nome; per il resto sono iscritti come gli altri:
+      puoi assegnare le categorie, formare le squadre, ritirarne uno.
+
+  - type: heading
+    id: simulare
+    title: "Far giocare i fittizi"
+
+  - type: text
+    text: >-
+      Avvia il primo turno come faresti davvero. I fittizi però non prendono
+      in mano il telefono: i risultati li fai comparire tu, dal pannello
+      **Gestione**, con tre pulsanti.
+
+  - type: shot
+    shot: prova-simulazione
+
+  - type: options
+    items:
+      - name: "Simula una partita"
+        text: "Chiude una partita fra quelle al tavolo, con un punteggio plausibile per la distanza del turno."
+        hint: prova.simulazione
+      - name: "Simula il turno"
+        text: "Chiude tutte le partite ancora aperte del turno in corso."
+      - name: "Simula tutta la gara"
+        text: "Va fino in fondo: chiude ogni partita e avvia i turni che mancano, finché la gara è conclusa."
+
+  - type: note
+    tone: tip
+    title: "Perché metà partite restano «da validare»"
+    text: >-
+      Con «una partita» e «il turno», metà dei risultati si chiudono come
+      se i due giocatori li avessero confermati dal telefono, e l'altra metà
+      resta com'è quando un solo giocatore ha segnato: aspetta che tu la
+      **validi dal segnapunti**. È voluto: sono le due strade che una partita
+      vera può prendere, e devi vederle entrambe. «Tutta la gara» invece
+      chiude tutto, perché hai chiesto di arrivare in fondo.
+
+  - type: text
+    text: >-
+      Il segnapunti e tutte le altre azioni del direttore restano disponibili:
+      puoi segnare una partita a mano, azzerarla, correggere un risultato,
+      assegnare i tavoli. Quello che stai imparando è la pagina descritta in
+      [Condurre la gara turno per turno](/aiuto/organizzare/condurre_la_gara).
+
+  - type: heading
+    id: campionato
+    title: "Un campionato di prova, con i playoff"
+
+  - type: text
+    text: >-
+      Se la spunta la metti nel wizard del campionato, tutte le gare che
+      aggiungi nascono di prova, e i giocatori fittizi sono **del
+      campionato**: la seconda gara riusa quelli della prima, così la
+      classifica generale si forma davvero. Le date proposte per le gare sono
+      nei prossimi giorni, una dopo l'altra, perché le giochi tutte in una
+      sessione.
+
+  - type: text
+    text: >-
+      Terminato il campionato e avviati i playoff, gli inviti ai fittizi non
+      trovano nessuno che risponda: sulla pagina del campionato, accanto a
+      ciascun invito in attesa, trovi **Accetta** e **Rifiuta**, e in alto
+      **Accetta tutti i rimanenti**. Un rifiuto fa scattare la stessa regola
+      della realtà: il posto passa al primo degli esclusi.
+
+  - type: heading
+    id: aiuto
+    title: "I suggerimenti sulle schermate"
+
+  - type: text
+    text: >-
+      Dentro una prova l'app ti spiega da sola cosa stai guardando. La prima
+      volta che apri una schermata compare una breve **presentazione**, un
+      passo alla volta, che evidenzia i comandi principali; poi accanto a ogni
+      comando importante resta una piccola **«?»** che apre due frasi e il
+      collegamento alla pagina della guida che ne parla.
+
+  - type: shot
+    shot: prova-presentazione
+    caption: "La presentazione alla prima visita: «Avanti» passa al comando successivo, «Salta» la chiude."
+
+  - type: shot
+    shot: prova-fumetto
+    caption: "Una «?» aperta: il nome del comando, la spiegazione breve e «Leggi nella guida»."
+
+  - type: text
+    text: >-
+      L'interruttore **Suggerimenti** nel banner li spegne e li riaccende.
+      La scelta vale per il browser che stai usando: spenti qui, restano
+      spenti in ogni tua prova finché non li riaccendi. Le presentazioni si
+      mostrano una volta sola per schermata.
+
+  - type: heading
+    id: eliminare
+    title: "Quando hai finito"
+
+  - type: text
+    text: >-
+      **Elimina la prova**, nel banner, cancella tutto e subito: la gara (o
+      il campionato con tutte le sue gare), le partite, le iscrizioni, le
+      notifiche e i giocatori fittizi. Chiede conferma e non si torna
+      indietro. Funziona in qualunque stato, anche a gara appena creata o
+      a metà.
+
+  - type: text
+    text: >-
+      Se te ne dimentichi, la prova sparisce da sola alla data scritta nel
+      banner, quattordici giorni dopo la creazione. Tre giorni prima ricevi
+      una notifica in app — come tutte quelle che nascono da una prova, ha il
+      prefisso «Prova» e non arriva mai per email.
+
+  - type: faq
+    items:
+      - q: "Posso iscrivermi io alla mia prova, per provare il segnapunti dalla parte del giocatore?"
+        a: "No: in una prova si iscrivono solo giocatori fittizi. Il segnapunti però lo apri lo stesso dalla pagina della gara, come direttore, e ci segni i triangoli al posto loro."
+      - q: "Ho tre prove aperte e non riesco a crearne un'altra."
+        a: "È il limite: tre alla volta. Elimina quella che non ti serve più dal suo banner, e la spunta torna disponibile."
+      - q: "I giocatori fittizi compaiono da qualche parte fuori dalla prova?"
+        a: "No. Non stanno nelle ricerche, nelle classifiche, nei profili né nelle statistiche, e spariscono con la prova."
+      - q: "Posso far vedere la prova a un altro direttore?"
+        a: "Sì, aggiungendolo come co-direttore dalla pagina della gara, come faresti in una gara vera. Da quel momento la vede anche lui."
+      - q: "Le «?» posso averle anche nelle gare vere?"
+        a: "Per ora i suggerimenti si accendono solo dentro le prove. Le pagine della guida, invece, sono sempre a disposizione."
