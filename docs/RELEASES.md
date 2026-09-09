@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.8.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.7.3...v1.8.0) (2026-09-09)
+
+
+### Funzioni nuove
+
+* aiuto contestuale nelle competizioni di prova ([#320](https://github.com/coppolapaolo/tornei-biliardo/issues/320)) ([45c3809](https://github.com/coppolapaolo/tornei-biliardo/commit/45c38098272ff1bae9bba15c4c495bb4db57045b))
+* campionato di prova con playoff simulato ([#319](https://github.com/coppolapaolo/tornei-biliardo/issues/319)) ([d286cf4](https://github.com/coppolapaolo/tornei-biliardo/commit/d286cf477ffa15b72671021aed95db0735eceb74))
+* competizione di prova per i direttori, prima tappa ([#315](https://github.com/coppolapaolo/tornei-biliardo/issues/315)) ([297542d](https://github.com/coppolapaolo/tornei-biliardo/commit/297542d49a22e5b57f00aa4fa834cd5ec2dcfa18))
+* simulazione dei risultati nella competizione di prova ([#318](https://github.com/coppolapaolo/tornei-biliardo/issues/318)) ([a10d83e](https://github.com/coppolapaolo/tornei-biliardo/commit/a10d83e89e851033f829c006681acb8d3c605f91))
+
+
+### Correzioni
+
+* la presentazione dell'aiuto è un dialogo modale davvero ([#322](https://github.com/coppolapaolo/tornei-biliardo/issues/322)) ([8de3998](https://github.com/coppolapaolo/tornei-biliardo/commit/8de3998f3fce724b6dc087dbb02d5d52db7c68ef))
+* recepiti i rilievi della revisione automatica sulle tappe della prova ([#324](https://github.com/coppolapaolo/tornei-biliardo/issues/324)) ([7989bf4](https://github.com/coppolapaolo/tornei-biliardo/commit/7989bf4caa60ed267dd5282ae8fc6dbd0db6705f))
+
 ## [1.7.3](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.7.2...v1.7.3) (2026-09-04)
 
 
