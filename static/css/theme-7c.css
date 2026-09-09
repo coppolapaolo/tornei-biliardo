@@ -2818,16 +2818,17 @@ a.c7-vt__ovr:hover { color: var(--c7-on-ink); }
 .c7-help-pop__link::after { content: " \2192"; }
 .c7-help-pop__link:hover { text-decoration: underline; }
 
+/* Il velo intercetta i clic: e' un dialogo modale, e ciò che sta dietro
+   (compresi i comandi della prova) non deve rispondere a un tocco fuori
+   dalla scheda. */
 .c7-help-tour {
   position: fixed; inset: 0; z-index: var(--c7-z-toast);
   display: flex; align-items: flex-end; justify-content: center;
   padding: var(--c7-gutter);
   padding-bottom: calc(var(--c7-mobilenav-h) + var(--c7-gutter));
   background: rgba(27, 33, 36, .28);
-  pointer-events: none;
 }
 .c7-help-tour__card {
-  pointer-events: auto;
   width: 100%; max-width: 420px;
   background: var(--c7-card); color: var(--c7-ink);
   border-radius: var(--c7-r-card);
@@ -2849,11 +2850,14 @@ a.c7-vt__ovr:hover { color: var(--c7-on-ink); }
   .c7-help-tour { align-items: center; padding-bottom: var(--c7-gutter); }
 }
 
+/* L'elemento del passo corrente sale sopra il velo per farsi vedere, ma non
+   per farsi premere: la classe sparisce quando la presentazione si chiude. */
 .c7-help-target {
   outline: 3px solid var(--c7-accent-bright);
   outline-offset: 4px;
   border-radius: var(--c7-r-chip);
   position: relative; z-index: calc(var(--c7-z-toast) + 1);
+  pointer-events: none;
 }
 @media (prefers-reduced-motion: no-preference) {
   .c7-help-target { animation: c7-help-pulse 1.2s ease-in-out 2; }

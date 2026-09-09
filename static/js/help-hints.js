@@ -265,10 +265,33 @@ window.HelpHints = (function () {
 
     function closeTour(remember) {
         if (!state.tour) { return; }
-        state.tour.el.parentNode.removeChild(state.tour.el);
-        clearTargets();
-        if (remember) { markSeen(state.tour.screen); }
+        var tour = state.tour;
         state.tour = null;
+        tour.el.parentNode.removeChild(tour.el);
+        clearTargets();
+        if (remember) { markSeen(tour.screen); }
+        // Il fuoco torna dov'era: chi navigava da tastiera riparte da li'.
+        if (tour.restore && typeof tour.restore.focus === 'function' && document.contains(tour.restore)) {
+            tour.restore.focus();
+        }
+    }
+
+    /**
+     * La presentazione e' `aria-modal`: il fuoco resta fra i suoi due
+     * pulsanti finche' e' aperta. Tab va avanti, Shift+Tab indietro, e in
+     * fondo si ricomincia — cosi' Tab non raggiunge i comandi dietro il velo.
+     */
+    function trapTab(event) {
+        var tour = state.tour;
+        if (!tour) { return; }
+        var stops = [tour.skip, tour.next];
+        var index = stops.indexOf(document.activeElement);
+        event.preventDefault();
+        if (event.shiftKey) {
+            stops[index <= 0 ? stops.length - 1 : index - 1].focus();
+        } else {
+            stops[index < 0 || index >= stops.length - 1 ? 0 : index + 1].focus();
+        }
     }
 
     function renderTourStep() {
@@ -346,9 +369,12 @@ window.HelpHints = (function () {
 
         state.tour = {
             el: el, screen: screen, steps: steps, index: 0,
-            count: count, stepTitle: stepTitle, stepText: stepText, next: next
+            count: count, stepTitle: stepTitle, stepText: stepText,
+            skip: skip, next: next,
+            restore: document.activeElement
         };
         renderTourStep();
+        next.focus();
     }
 
     function tourNext() {
@@ -449,10 +475,16 @@ window.HelpHints = (function () {
             return;
         }
 
+        // Il velo della presentazione assorbe il clic: dietro c'e' la pagina
+        // con i suoi comandi, e un tocco fuori dalla scheda non deve
+        // arrivarci ne' chiudere una presentazione che si vede una volta sola.
+        if (state.tour && target === state.tour.el) { return; }
+
         if (state.pop && !state.pop.el.contains(target)) { closePop(); }
     }
 
     function onKeydown(event) {
+        if (event.key === 'Tab' && state.tour) { trapTab(event); return; }
         if (event.key !== 'Escape') { return; }
         if (state.pop) { closePop(); return; }
         if (state.tour) { closeTour(true); }
