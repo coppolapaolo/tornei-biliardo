@@ -1,0 +1,27 @@
+<div class="screen screen--nonav">
+
+  <header class="c7-head">
+    <span class="c7-head__back"><svg viewBox="0 0 24 24" class="ico ico-lg"><use href="#i-nodes"></use></svg></span>
+    <div class="c7-head__title">
+      <span class="c7-title">Tornei Biliardo</span>
+      <span class="c7-head__sub">Vista pubblica</span>
+    </div>
+    <span class="btn btn-secondary btn-sm btn-secondary--onpage">Login</span>
+  </header>
+
+  <main class="c7-content">
+
+    <section class="sec" style="margin-top:40px">
+      <div class="c7-empty">
+        <div class="c7-empty__ico"><svg viewBox="0 0 24 24" class="ico ico-lg"><use href="#i-trophy"></use></svg></div>
+        <div class="c7-empty__title">Non c&rsquo;è ancora niente da vedere</div>
+        <p class="c7-empty__text">Nessuna gara aperta, nessun campionato in corso. Registrati adesso: quando parte la prima gara ti trovi già dentro.</p>
+        <div class="c7-empty__actions">
+          <span class="btn btn-success">Registrati</span>
+          <span class="btn btn-secondary btn-secondary--onpage">Accedi</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>

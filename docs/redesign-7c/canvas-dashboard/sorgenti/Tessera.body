@@ -1,0 +1,329 @@
+<div class="matrix" style="--cols:4">
+  <div class="mx-title"><h2>La tessera decisa</h2><div class="meta">Barra e numeri sulle aperte, scura in corso, azioni all&rsquo;altezza standard, il riquadro della tua partita &egrave; il bersaglio, chi dirige ha Gestisci.</div></div>
+  <div></div>
+  <div class="mx-col">Nessun fatto tuo<div class="meta">la tessera dell&rsquo;ospite</div></div>
+  <div class="mx-col">Sei iscritto<div class="meta">&egrave; una tua gara</div></div>
+  <div class="mx-col">La dirigi<div class="meta">il comando che aspetta</div></div>
+  <div class="mx-col">La dirigi e sei iscritto<div class="meta">somma; sul conflitto vince il direttore</div></div>
+  <div class="mx-row">Iscrizioni aperte<div class="meta">Gara 4 &middot; 12/09</div></div>
+  <div class="mx-cell">
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 4 &mdash; Palla 9</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 9 <span class="c7-sep">&middot;</span> Al <span class="c7-num">4</span><br><span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--ok">Iscrizioni aperte</span></div>
+        </div>
+        <div>
+          <div class="progress"><div class="progress-bar" style="width:75%"></div></div>
+          <div class="row" style="margin-top:8px;font-size:12px;font-weight:700">
+            <span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span>
+            <span class="muted"><span class="c7-num">18/24</span> <span class="c7-sep">&middot;</span> <span class="c7-num">6</span> liberi</span>
+          </div>
+        </div>
+        <div class="meta" style="color:var(--c7-warn)">Chiudono il <span class="c7-num">10/09/2026 20:00</span></div>
+        <div style="display:flex;gap:8px">
+          <span class="btn btn-secondary btn-fill">Dettagli</span>
+          <span class="btn btn-success btn-fill">Iscriviti</span>
+        </div>
+      </article>
+  </div>
+  <div class="mx-cell">
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 4 &mdash; Palla 9</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 9 <span class="c7-sep">&middot;</span> Al <span class="c7-num">4</span><br><span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--accent">Iscritto</span><span class="c7-state c7-state--ok">Iscrizioni aperte</span></div>
+        </div>
+        <div>
+          <div class="progress"><div class="progress-bar" style="width:75%"></div></div>
+          <div class="row" style="margin-top:8px;font-size:12px;font-weight:700">
+            <span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span>
+            <span class="muted"><span class="c7-num">18/24</span> <span class="c7-sep">&middot;</span> <span class="c7-num">6</span> liberi</span>
+          </div>
+        </div>
+        <div class="meta" style="color:var(--c7-warn)">Chiudono il <span class="c7-num">10/09/2026 20:00</span></div>
+        <div style="display:flex;gap:8px">
+          <span class="btn btn-secondary btn-fill">Dettagli</span>
+          <span class="btn btn-danger btn-fill">Disiscriviti</span>
+        </div>
+      </article>
+  </div>
+  <div class="mx-cell">
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 4 &mdash; Palla 9</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 9 <span class="c7-sep">&middot;</span> Al <span class="c7-num">4</span><br><span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--info">Dirigi</span><span class="c7-state c7-state--ok">Iscrizioni aperte</span></div>
+        </div>
+        <div>
+          <div class="progress"><div class="progress-bar" style="width:75%"></div></div>
+          <div class="row" style="margin-top:8px;font-size:12px;font-weight:700">
+            <span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span>
+            <span class="muted"><span class="c7-num">18/24</span> <span class="c7-sep">&middot;</span> <span class="c7-num">6</span> liberi</span>
+          </div>
+        </div>
+        <div class="meta" style="color:var(--c7-warn)">Chiudono il <span class="c7-num">10/09/2026 20:00</span></div>
+        <div style="display:flex;gap:8px">
+          <span class="btn btn-secondary btn-fill">Gestisci</span>
+          <span class="btn btn-success btn-fill">Iscriviti</span>
+        </div>
+      </article>
+  </div>
+  <div class="mx-cell">
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 4 &mdash; Palla 9</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 9 <span class="c7-sep">&middot;</span> Al <span class="c7-num">4</span><br><span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--info">Dirigi</span><span class="c7-state c7-state--accent">Iscritto</span><span class="c7-state c7-state--ok">Iscrizioni aperte</span></div>
+        </div>
+        <div>
+          <div class="progress"><div class="progress-bar" style="width:75%"></div></div>
+          <div class="row" style="margin-top:8px;font-size:12px;font-weight:700">
+            <span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span>
+            <span class="muted"><span class="c7-num">18/24</span> <span class="c7-sep">&middot;</span> <span class="c7-num">6</span> liberi</span>
+          </div>
+        </div>
+        <div class="meta" style="color:var(--c7-warn)">Chiudono il <span class="c7-num">10/09/2026 20:00</span></div>
+        <div style="display:flex;gap:8px">
+          <span class="btn btn-secondary btn-fill">Gestisci</span>
+          <span class="btn btn-danger btn-fill">Disiscriviti</span>
+        </div>
+      </article>
+  </div>
+  <div class="mx-row">In corso<div class="meta">Gara 3 &middot; turno 3 di 5</div></div>
+  <div class="mx-cell">
+      <article class="c7-card cardstack c7-card--accent">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 3 &mdash; Palla 8</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 <span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span><br><span class="c7-num" style="color:var(--c7-accent-ink)">30/08/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--live">Live</span></div>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700">
+          <span class="fill">Turno <span class="c7-num">3/5</span></span>
+          <span class="muted"><span class="c7-num">14</span> giocatori</span>
+        </div>
+        <div class="inset" style="background:rgba(255,255,255,.08)">
+          <div class="c7-kicker">Ai tavoli adesso</div>
+          <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;font-size:12px;font-weight:700">
+            <div class="row"><span class="c7-num" style="color:var(--c7-accent-dim)">T1</span><span class="trunc">Elena Furlan <span class="c7-num">4&ndash;1</span> Sara De Rossi</span></div>
+            <div class="row"><span class="c7-num" style="color:var(--c7-accent-dim)">T2</span><span class="trunc">Andrea Zanin <span class="c7-num">2&ndash;2</span> Paolo Rizzo</span></div>
+            <div class="row"><span class="c7-num" style="color:var(--c7-accent-dim)">T4</span><span class="trunc">Marco Bassi <span class="c7-num">3&ndash;2</span> Luca Berti</span></div>
+          </div>
+          <div class="meta" style="margin-top:6px;color:var(--c7-accent-dim);border-top:1px solid rgba(255,255,255,.12);padding-top:6px">e altre <span class="c7-num">3</span> da giocare</div>
+        </div>
+        <span class="btn btn-bright btn-w">Segui la diretta</span>
+      </article>
+  </div>
+  <div class="mx-cell">
+      <article class="c7-card cardstack c7-card--accent">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 3 &mdash; Palla 8</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 <span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span><br><span class="c7-num" style="color:var(--c7-accent-ink)">30/08/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--accent">Iscritto</span><span class="c7-state c7-state--live">Live</span></div>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700">
+          <span class="fill">Turno <span class="c7-num">3/5</span></span>
+          <span class="muted"><span class="c7-num">14</span> giocatori</span>
+        </div>
+        <a class="inset inset--go" href="#" style="background:rgba(255,255,255,.08)">
+          <span class="fill">
+            <span class="c7-kicker">La tua partita <span class="c7-sep">&middot;</span> Turno 3 <span class="c7-sep">&middot;</span> Tavolo 4</span>
+            <span class="row" style="margin-top:6px">
+              <span class="fill" style="font-size:14px;font-weight:800">vs Luca Berti</span>
+              <span class="c7-num" style="font-size:20px">3 &mdash; 2</span>
+            </span>
+          </span>
+          <svg viewBox="0 0 24 24" class="ico chev"><use href="#i-chev"></use></svg>
+        </a>
+        <div class="inset" style="background:rgba(255,255,255,.08)">
+          <div class="c7-kicker">Classifica provvisoria</div>
+          <div style="margin-top:2px;font-size:14px;font-weight:800">Sei <span class="c7-num">4&deg;</span> su <span class="c7-num">14</span></div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12)">
+            <div class="c7-kicker">Altre partite del turno</div>
+            <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;font-size:12px;font-weight:700">
+              <div class="row"><span class="c7-num muted">T1</span><span class="trunc">Elena Furlan <span class="c7-num">4&ndash;1</span> Sara De Rossi</span></div>
+              <div class="row"><span class="c7-num muted">T2</span><span class="trunc">Andrea Zanin <span class="c7-num">2&ndash;2</span> Paolo Rizzo</span></div>
+              <div class="row"><span class="c7-num muted">T3</span><span class="trunc">Giulia Nardin <span class="c7-num">5&ndash;3</span> Ivan Sartori</span></div>
+            </div>
+            <div class="meta" style="margin-top:6px">e altre <span class="c7-num">3</span> da giocare</div>
+          </div>
+        </div>
+        <span class="btn btn-bright btn-w">Segui la diretta</span>
+      </article>
+  </div>
+  <div class="mx-cell">
+      <article class="c7-card cardstack c7-card--accent">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 3 &mdash; Palla 8</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 <span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span><br><span class="c7-num" style="color:var(--c7-accent-ink)">30/08/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--info">Dirigi</span><span class="c7-state c7-state--live">Live</span></div>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700">
+          <span class="fill">Turno <span class="c7-num">3/5</span> <span class="c7-sep">&middot;</span> <span class="c7-num">6/7</span> confermate</span>
+          <span class="muted"><span class="c7-num">14</span> giocatori</span>
+        </div>
+        <div class="inset" style="background:rgba(255,255,255,.08)">
+          <div class="c7-kicker">Ai tavoli adesso</div>
+          <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;font-size:12px;font-weight:700">
+            <div class="row"><span class="c7-num" style="color:var(--c7-accent-dim)">T1</span><span class="trunc">Elena Furlan <span class="c7-num">4&ndash;1</span> Sara De Rossi</span></div>
+            <div class="row"><span class="c7-num" style="color:var(--c7-accent-dim)">T2</span><span class="trunc">Andrea Zanin <span class="c7-num">2&ndash;2</span> Paolo Rizzo</span></div>
+            <div class="row"><span class="c7-num" style="color:var(--c7-accent-dim)">T4</span><span class="trunc">Marco Bassi <span class="c7-num">3&ndash;2</span> Luca Berti</span></div>
+          </div>
+          <div class="meta" style="margin-top:6px;color:var(--c7-accent-dim);border-top:1px solid rgba(255,255,255,.12);padding-top:6px">e altre <span class="c7-num">3</span> da giocare</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <span class="btn btn-bright btn-fill">Gestisci</span>
+          <span class="btn btn-ghost btn-fill">Avvia il turno 4</span>
+        </div>
+        <div class="meta">Il turno 4 si avvia quando finisce l&rsquo;ultima partita.</div>
+      </article>
+  </div>
+  <div class="mx-cell">
+      <article class="c7-card cardstack c7-card--accent">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 3 &mdash; Palla 8</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 <span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span><br><span class="c7-num" style="color:var(--c7-accent-ink)">30/08/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--info">Dirigi</span><span class="c7-state c7-state--accent">Iscritto</span><span class="c7-state c7-state--live">Live</span></div>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700">
+          <span class="fill">Turno <span class="c7-num">3/5</span> <span class="c7-sep">&middot;</span> <span class="c7-num">6/7</span> confermate</span>
+          <span class="muted"><span class="c7-num">14</span> giocatori</span>
+        </div>
+        <a class="inset inset--go" href="#" style="background:rgba(255,255,255,.08)">
+          <span class="fill">
+            <span class="c7-kicker">La tua partita <span class="c7-sep">&middot;</span> Turno 3 <span class="c7-sep">&middot;</span> Tavolo 4</span>
+            <span class="row" style="margin-top:6px">
+              <span class="fill" style="font-size:14px;font-weight:800">vs Luca Berti</span>
+              <span class="c7-num" style="font-size:20px">3 &mdash; 2</span>
+            </span>
+          </span>
+          <svg viewBox="0 0 24 24" class="ico chev"><use href="#i-chev"></use></svg>
+        </a>
+        <div class="inset" style="background:rgba(255,255,255,.08)">
+          <div class="c7-kicker">Classifica provvisoria</div>
+          <div style="margin-top:2px;font-size:14px;font-weight:800">Sei <span class="c7-num">4&deg;</span> su <span class="c7-num">14</span></div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.12)">
+            <div class="c7-kicker">Altre partite del turno</div>
+            <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;font-size:12px;font-weight:700">
+              <div class="row"><span class="c7-num muted">T1</span><span class="trunc">Elena Furlan <span class="c7-num">4&ndash;1</span> Sara De Rossi</span></div>
+              <div class="row"><span class="c7-num muted">T2</span><span class="trunc">Andrea Zanin <span class="c7-num">2&ndash;2</span> Paolo Rizzo</span></div>
+              <div class="row"><span class="c7-num muted">T3</span><span class="trunc">Giulia Nardin <span class="c7-num">5&ndash;3</span> Ivan Sartori</span></div>
+            </div>
+            <div class="meta" style="margin-top:6px">e altre <span class="c7-num">3</span> da giocare</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <span class="btn btn-bright btn-fill">Gestisci</span>
+          <span class="btn btn-ghost btn-fill">Avvia il turno 4</span>
+        </div>
+        <div class="meta">Il turno 4 si avvia quando finisce l&rsquo;ultima partita.</div>
+      </article>
+  </div>
+  <div class="mx-row">Conclusa<div class="meta">Gara 2 &middot; 16/08</div></div>
+  <div class="mx-cell">
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 2 &mdash; Palla 8</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 <span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span><br><span class="c7-num" style="color:var(--c7-ink)">16/08/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--muted">Conclusa</span></div>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700">
+          <span class="fill muted">Turni finiti</span>
+          <span class="muted"><span class="c7-num">16</span> giocatori</span>
+        </div>
+        <div class="inset">
+          <div class="c7-kicker">Podio</div>
+          <div class="podium" style="margin-top:10px">
+            <div><span class="c7-pos medal--1"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">1&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Elena Furlan</div></div><div><span class="c7-pos medal--2"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">2&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Marco Bassi</div></div><div><span class="c7-pos medal--3"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">3&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Luca Berti</div></div>
+          </div>
+        </div>
+        <span class="btn btn-secondary btn-w">Risultati</span>
+      </article>
+  </div>
+  <div class="mx-cell">
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 2 &mdash; Palla 8</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 <span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span><br><span class="c7-num" style="color:var(--c7-ink)">16/08/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--accent">Hai giocato</span><span class="c7-state c7-state--muted">Conclusa</span></div>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700">
+          <span class="fill muted">Turni finiti</span>
+          <span class="muted"><span class="c7-num">16</span> giocatori</span>
+        </div>
+        <div class="inset">
+          <div class="c7-kicker">Podio</div>
+          <div class="podium" style="margin-top:10px">
+            <div><span class="c7-pos medal--1"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">1&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Elena Furlan</div></div><div><span class="c7-pos medal--2"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">2&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Marco Bassi</div></div><div><span class="c7-pos medal--3"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">3&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Luca Berti</div></div>
+          </div>
+          <div class="meta" style="margin-top:10px">Sei arrivato <span class="c7-num" style="color:var(--c7-ink)">5&deg;</span> su <span class="c7-num">16</span> <span class="c7-sep">&middot;</span> <span class="c7-num">8</span> vittorie su <span class="c7-num">12</span></div>
+        </div>
+        <span class="btn btn-secondary btn-w">Risultati</span>
+      </article>
+  </div>
+  <div class="mx-cell">
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 2 &mdash; Palla 8</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 <span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span><br><span class="c7-num" style="color:var(--c7-ink)">16/08/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--info">Hai diretto</span><span class="c7-state c7-state--muted">Conclusa</span></div>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700">
+          <span class="fill muted">Turni finiti</span>
+          <span class="muted"><span class="c7-num">16</span> giocatori</span>
+        </div>
+        <div class="inset">
+          <div class="c7-kicker">Podio</div>
+          <div class="podium" style="margin-top:10px">
+            <div><span class="c7-pos medal--1"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">1&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Elena Furlan</div></div><div><span class="c7-pos medal--2"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">2&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Marco Bassi</div></div><div><span class="c7-pos medal--3"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">3&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Luca Berti</div></div>
+          </div>
+        </div>
+        <span class="btn btn-secondary btn-w">Risultati</span>
+      </article>
+  </div>
+  <div class="mx-cell">
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 2 &mdash; Palla 8</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 <span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span><br><span class="c7-num" style="color:var(--c7-ink)">16/08/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--info">Hai diretto</span><span class="c7-state c7-state--accent">Hai giocato</span><span class="c7-state c7-state--muted">Conclusa</span></div>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700">
+          <span class="fill muted">Turni finiti</span>
+          <span class="muted"><span class="c7-num">16</span> giocatori</span>
+        </div>
+        <div class="inset">
+          <div class="c7-kicker">Podio</div>
+          <div class="podium" style="margin-top:10px">
+            <div><span class="c7-pos medal--1"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">1&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Elena Furlan</div></div><div><span class="c7-pos medal--2"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">2&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Marco Bassi</div></div><div><span class="c7-pos medal--3"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">3&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Luca Berti</div></div>
+          </div>
+          <div class="meta" style="margin-top:10px">Sei arrivato <span class="c7-num" style="color:var(--c7-ink)">5&deg;</span> su <span class="c7-num">16</span> <span class="c7-sep">&middot;</span> <span class="c7-num">8</span> vittorie su <span class="c7-num">12</span></div>
+        </div>
+        <span class="btn btn-secondary btn-w">Risultati</span>
+      </article>
+  </div>
+</div>

@@ -1,0 +1,309 @@
+<div class="c7-app">
+
+  <aside class="c7-side">
+    <div class="c7-side__top">
+      <span class="c7-side__brand">
+        <span class="c7-side__mark"><svg viewBox="0 0 24 24" class="ico"><use href="#i-nodes"></use></svg></span>
+        <span>
+          <span class="c7-side__name">Tornei Biliardo</span>
+          <span class="c7-side__role">giocatore</span>
+        </span>
+      </span>
+      <span class="c7-sidetoggle"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-collapse"></use></svg></span>
+    </div>
+
+    <!-- All'ospite la colonna non ha voci: solo i due ingressi, in fondo. -->
+    <nav class="c7-side__group c7-side__spacer">
+      <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-login"></use></svg>Login</a>
+      <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-userplus"></use></svg>Registrati</a>
+    </nav>
+  </aside>
+
+  <div class="c7-main">
+
+    <header class="c7-head">
+      <div class="c7-head__title">
+        <span class="c7-title">Home</span>
+        <span class="c7-head__sub">Vista pubblica</span>
+      </div>
+    </header>
+
+    <main class="c7-content">
+
+      <section class="c7-card c7-card--accent" style="padding:26px 24px;margin-top:22px">
+        <div class="split" style="align-items:center">
+          <div>
+            <div class="c7-kicker">Come si partecipa</div>
+            <h2 style="margin:6px 0 0;color:inherit;font-size:26px">Iscriviti, gioca, scala la classifica</h2>
+            <div style="display:flex;gap:10px;margin-top:22px;max-width:340px">
+              <span class="btn btn-bright btn-fill">Accedi</span>
+              <span class="btn btn-ghost btn-fill">Registrati</span>
+            </div>
+          </div>
+          <div style="display:grid;gap:14px">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span class="c7-num" style="color:var(--c7-accent-bright);width:20px">1</span>
+              <span>
+                <span style="display:block;font-weight:800;font-size:14px">Accedi</span>
+                <span style="display:block;font-size:12px;color:var(--c7-accent-dim);margin-top:2px">Hai già un account? Entra. Altrimenti registrati, è gratis.</span>
+              </span>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span class="c7-num" style="color:var(--c7-accent-bright);width:20px">2</span>
+              <span>
+                <span style="display:block;font-weight:800;font-size:14px">Iscriviti a una gara</span>
+                <span style="display:block;font-size:12px;color:var(--c7-accent-dim);margin-top:2px">Scegli fra le gare con iscrizioni aperte.</span>
+              </span>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <span class="c7-num" style="color:var(--c7-accent-bright);width:20px">3</span>
+              <span>
+                <span style="display:block;font-weight:800;font-size:14px">Gioca</span>
+                <span style="display:block;font-size:12px;color:var(--c7-accent-dim);margin-top:2px">Segna i triangoli dal telefono, la classifica si aggiorna da sola.</span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="sec-head">
+          <span class="c7-live__dot"></span>
+          <h2 style="flex:1">In diretta ora</h2>
+          <span class="btn btn-secondary btn-sm btn-secondary--onpage">Tutte le gare</span>
+        </div>
+        <div class="cards">
+          <article class="c7-card c7-card--accent">
+            <div class="rowtop">
+              <div class="fill">
+                <div class="c7-kicker">Campionato Sociale 2026</div>
+                <h3 style="margin:4px 0 0">Gara 3 &mdash; Palla 8</h3>
+              </div>
+              <span class="c7-state c7-state--live">Live</span>
+            </div>
+            <div style="margin-top:12px;font-size:12px;font-weight:700;color:var(--c7-accent-dim)">
+              Turno <span class="c7-num">3/5</span>
+              <span class="c7-sep">&middot;</span> Palla 8
+              <span class="c7-sep">&middot;</span> Biliardo Club Udine
+              <span class="c7-sep">&middot;</span> <span class="c7-num">14</span> iscritti
+            </div>
+            <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.12)">
+              <div class="c7-kicker">Ai tavoli adesso</div>
+              <div style="display:flex;flex-direction:column;gap:7px;margin-top:8px">
+                <div class="row" style="font-size:13px">
+                  <span class="c7-num" style="color:var(--c7-accent-dim)">T1</span>
+                  <span class="trunc">Marco Bassi <span class="c7-num">3&ndash;2</span> Luca Berti</span>
+                </div>
+                <div class="row" style="font-size:13px">
+                  <span class="c7-num" style="color:var(--c7-accent-dim)">T2</span>
+                  <span class="trunc">Elena Furlan <span class="c7-num">4&ndash;1</span> Sara De Rossi</span>
+                </div>
+                <div class="row" style="font-size:13px">
+                  <span class="c7-num" style="color:var(--c7-accent-dim)">T3</span>
+                  <span class="trunc">Andrea Zanin <span class="c7-num">2&ndash;2</span> Paolo Rizzo</span>
+                </div>
+              </div>
+            </div>
+            <span class="btn btn-bright btn-w" style="margin-top:16px">Segui la diretta</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="sec-head">
+          <h2>Iscrizioni aperte</h2>
+          <span class="btn btn-secondary btn-sm btn-secondary--onpage">Tutte le gare</span>
+        </div>
+        <div class="cards">
+          <article class="c7-card">
+            <div class="rowtop">
+              <div class="fill">
+                <div class="c7-kicker">Campionato Sociale 2026</div>
+                <h3 style="margin:4px 0 0">Gara 4 &mdash; Palla 9</h3>
+              </div>
+              <span class="c7-state c7-state--ok">Aperta</span>
+            </div>
+            <div class="meta" style="margin-top:10px;font-weight:700">
+              <span class="c7-num">12/09/2026</span>
+              <span class="c7-sep">&middot;</span> Palla 9
+              <span class="c7-sep">&middot;</span> Biliardo Club Udine
+            </div>
+            <hr class="c7-divider">
+            <div class="row" style="font-size:13px;font-weight:700">
+              <span class="muted fill">Iscritti</span>
+              <span class="c7-num">18/24</span>
+            </div>
+            <div class="progress" style="margin-top:8px"><div class="progress-bar" style="width:75%"></div></div>
+            <p style="margin-top:8px;font-size:12px;font-weight:700;color:var(--c7-ok)">6 posti liberi</p>
+            <p class="meta" style="margin-top:8px;font-weight:700">Chiudono il <span class="c7-num">10/09/2026 20:00</span></p>
+            <span class="btn btn-success btn-w" style="margin-top:16px">Accedi per iscriverti</span>
+          </article>
+
+          <article class="c7-card">
+            <div class="rowtop">
+              <div class="fill"><h3 style="margin:0">Torneo del Giovedì</h3></div>
+              <span class="c7-state c7-state--ok">Aperta</span>
+            </div>
+            <div class="meta" style="margin-top:10px;font-weight:700">
+              <span class="c7-num">04/09/2026</span>
+              <span class="c7-sep">&middot;</span> Palla 8
+              <span class="c7-sep">&middot;</span> Sala Da Vinci, Pordenone
+            </div>
+            <hr class="c7-divider">
+            <div class="row" style="font-size:13px;font-weight:700">
+              <span class="muted fill">Iscritti</span>
+              <span class="c7-num">24/24</span>
+            </div>
+            <div class="progress" style="margin-top:8px"><div class="progress-bar" style="width:100%"></div></div>
+            <p style="margin-top:8px;font-size:12px;font-weight:700;color:var(--c7-warn-ink)">Posti esauriti: si entra in lista d'attesa</p>
+            <p class="meta" style="margin-top:8px;font-weight:700">Chiudono il <span class="c7-num">03/09/2026 22:00</span></p>
+            <span class="btn btn-success btn-w" style="margin-top:16px">Accedi per iscriverti</span>
+          </article>
+
+          <article class="c7-card">
+            <div class="rowtop">
+              <div class="fill">
+                <div class="c7-kicker">Coppa Città di Udine</div>
+                <h3 style="margin:4px 0 0">Semifinali</h3>
+              </div>
+              <span class="c7-state c7-state--ok">Aperta</span>
+            </div>
+            <div class="meta" style="margin-top:10px;font-weight:700">
+              <span class="c7-num">21/09/2026</span>
+              <span class="c7-sep">&middot;</span> Palla 8
+              <span class="c7-sep">&middot;</span> Sala Centrale, Trieste
+            </div>
+            <hr class="c7-divider">
+            <div class="row" style="font-size:13px;font-weight:700">
+              <span class="muted fill">Iscritti</span>
+              <span class="c7-num">7/16</span>
+            </div>
+            <div class="progress" style="margin-top:8px"><div class="progress-bar" style="width:44%"></div></div>
+            <p style="margin-top:8px;font-size:12px;font-weight:700;color:var(--c7-ok)">9 posti liberi</p>
+            <p class="meta" style="margin-top:8px;font-weight:700">Chiudono il <span class="c7-num">19/09/2026 20:00</span></p>
+            <span class="btn btn-success btn-w" style="margin-top:16px">Accedi per iscriverti</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="sec-head">
+          <div class="fill">
+            <div class="c7-kicker">2 campionati</div>
+            <h2 style="margin-top:4px">Campionati in corso</h2>
+          </div>
+          <span class="btn btn-secondary btn-sm btn-secondary--onpage">Vedi tutti</span>
+        </div>
+
+        <article class="c7-card" style="padding:var(--c7-pad-card-lg)">
+          <div class="rowtop">
+            <div class="fill">
+              <h3 style="margin:0">Campionato Sociale 2026</h3>
+              <div class="meta">amalfi <span class="c7-sep">&middot;</span> 5 gare</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <span class="c7-state c7-state--info">Senza X</span>
+              <span class="c7-state c7-state--ok">Playoff</span>
+              <span class="c7-state c7-state--err">In corso</span>
+            </div>
+          </div>
+
+          <hr class="c7-divider">
+
+          <div class="split">
+            <div>
+              <div class="c7-kicker">Prossime gare</div>
+              <div class="c7-rows" style="margin-top:6px">
+                <div class="c7-rows__row">
+                  <div class="fill">
+                    <div style="font-size:13px;font-weight:800">Gara 4 &mdash; Palla 9</div>
+                    <div class="meta"><span class="c7-num">12/09/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+                  </div>
+                  <span class="c7-state c7-state--ok">Aperta</span>
+                </div>
+                <div class="c7-rows__row">
+                  <div class="fill">
+                    <div style="font-size:13px;font-weight:800">Gara 5 &mdash; Palla 8</div>
+                    <div class="meta"><span class="c7-num">03/10/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+                  </div>
+                  <span class="c7-state c7-state--muted">In preparazione</span>
+                </div>
+              </div>
+
+              <div class="c7-kicker" style="margin-top:18px">Gare giocate</div>
+              <div class="c7-rows" style="margin-top:6px">
+                <div class="c7-rows__row">
+                  <div class="fill">
+                    <div style="font-size:13px;font-weight:800">Gara 2 &mdash; Palla 8</div>
+                    <div class="meta"><span class="c7-num">16/08/2026</span></div>
+                  </div>
+                  <span class="c7-state c7-state--muted">Conclusa</span>
+                </div>
+                <div class="c7-rows__row">
+                  <div class="fill">
+                    <div style="font-size:13px;font-weight:800">Gara 1 &mdash; Palla 9</div>
+                    <div class="meta"><span class="c7-num">04/07/2026</span></div>
+                  </div>
+                  <span class="c7-state c7-state--muted">Conclusa</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="c7-kicker">Classifica generale</div>
+              <div class="c7-rows" style="margin-top:6px">
+                <div class="c7-rows__row">
+                  <span class="c7-pos c7-pos--1">1</span>
+                  <span class="fill trunc" style="font-size:13px;font-weight:800">Elena Furlan</span>
+                  <span class="c7-num muted" style="font-size:12px">7 vittorie</span>
+                </div>
+                <div class="c7-rows__row">
+                  <span class="c7-pos c7-pos--2">2</span>
+                  <span class="fill trunc" style="font-size:13px;font-weight:800">Marco Bassi</span>
+                  <span class="c7-num muted" style="font-size:12px">6 vittorie</span>
+                </div>
+                <div class="c7-rows__row">
+                  <span class="c7-pos c7-pos--3">3</span>
+                  <span class="fill trunc" style="font-size:13px;font-weight:800">Luca Berti</span>
+                  <span class="c7-num muted" style="font-size:12px">6 vittorie</span>
+                </div>
+                <div class="c7-rows__row">
+                  <span class="c7-pos">4</span>
+                  <span class="fill trunc" style="font-size:13px;font-weight:800">Andrea Zanin</span>
+                  <span class="c7-num muted" style="font-size:12px">5 vittorie</span>
+                </div>
+                <div class="c7-rows__row">
+                  <span class="c7-pos">5</span>
+                  <span class="fill trunc" style="font-size:13px;font-weight:800">Sara De Rossi</span>
+                  <span class="c7-num muted" style="font-size:12px">4 vittorie</span>
+                </div>
+              </div>
+              <span class="btn btn-secondary btn-sm btn-w" style="margin-top:16px">Risultati</span>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <section class="sec">
+        <div class="sec-head"><h2>In arrivo</h2></div>
+        <div class="cards">
+          <article class="c7-card">
+            <div class="rowtop">
+              <div class="fill">
+                <div class="c7-kicker">Campionato Sociale 2026</div>
+                <h3 style="margin:4px 0 0">Gara 5 &mdash; Palla 8</h3>
+              </div>
+              <span class="c7-state c7-state--muted">In preparazione</span>
+            </div>
+            <div class="meta" style="margin-top:10px;font-weight:700">
+              <span class="c7-num">03/10/2026</span>
+              <span class="c7-sep">&middot;</span> Biliardo Club Udine
+            </div>
+            <p class="meta" style="margin-top:8px;font-weight:700">Le iscrizioni aprono il <span class="c7-num">20/09/2026</span></p>
+          </article>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>

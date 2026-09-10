@@ -1,0 +1,92 @@
+<div class="screen">
+
+  <header class="c7-head">
+    <span class="c7-head__back"><svg viewBox="0 0 24 24" class="ico ico-lg"><use href="#i-nodes"></use></svg></span>
+    <div class="c7-head__title">
+      <span class="c7-title">Ciao marco</span>
+      <span class="c7-head__sub">Giocatore</span>
+    </div>
+    <span class="gami-badge">
+      <span class="gami-badge__ring"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-trophy"></use></svg></span>
+      <span class="gami-badge__level">Lv 7</span>
+    </span>
+    <span class="c7-avatar c7-avatar--lg">MA</span>
+  </header>
+
+  <main class="c7-content">
+
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Le tue gare <span class="count">2</span></h2>
+      </div>
+      <div class="meta">&hellip; le gare vive, come sopra &hellip;</div>
+    </section>
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Concluse <span class="count">3</span></h2>
+        <a href="#" style="font-size:12px">Storico</a>
+      </div>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Torneo del Gioved&igrave;</div>
+            <div class="meta">Gara singola <span class="c7-sep">&middot;</span> Palla 8 <span class="c7-sep">&middot;</span> <span class="c7-num" style="color:var(--c7-ink)">04/09</span> <span class="c7-sep">&middot;</span> Sala Da Vinci, Pordenone</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--info">Hai diretto</span><span class="c7-state c7-state--muted">Conclusa</span></div>
+        </div>
+        <div class="meta"><span class="c7-num" style="color:var(--c7-ink)">1&deg;</span> Elena Furlan <span class="c7-sep">&middot;</span> <span class="c7-num">2&deg;</span> Marco Bassi <span class="c7-sep">&middot;</span> <span class="c7-num">3&deg;</span> Luca Berti</div>
+        <span class="btn btn-secondary btn-w">Risultati</span>
+      </article>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 2 &mdash; Palla 8</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 <span class="c7-sep">&middot;</span> <span class="c7-num" style="color:var(--c7-ink)">16/08</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--accent">Hai giocato</span><span class="c7-state c7-state--muted">Conclusa</span></div>
+        </div>
+        <div class="meta"><span class="c7-num" style="color:var(--c7-ink)">1&deg;</span> Elena Furlan <span class="c7-sep">&middot;</span> <span class="c7-num">2&deg;</span> Marco Bassi <span class="c7-sep">&middot;</span> <span class="c7-num">3&deg;</span> Luca Berti</div>
+        <div class="meta">Sei arrivato <span class="c7-num" style="color:var(--c7-ink)">5&deg;</span> su <span class="c7-num">16</span></div>
+        <span class="btn btn-secondary btn-w">Risultati</span>
+      </article>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Coppa di Ferragosto</div>
+            <div class="meta">Gara singola <span class="c7-sep">&middot;</span> Palla 9 <span class="c7-sep">&middot;</span> <span class="c7-num" style="color:var(--c7-ink)">15/08</span> <span class="c7-sep">&middot;</span> Circolo Ferragosto, Grado</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--muted">Conclusa</span></div>
+        </div>
+        <div class="meta"><span class="c7-num" style="color:var(--c7-ink)">1&deg;</span> Elena Furlan <span class="c7-sep">&middot;</span> <span class="c7-num">2&deg;</span> Marco Bassi <span class="c7-sep">&middot;</span> <span class="c7-num">3&deg;</span> Luca Berti</div>
+        <span class="btn btn-secondary btn-w">Risultati</span>
+      </article>
+      <div class="meta" style="text-align:center">L&rsquo;ultima e quelle dell&rsquo;ultimo mese. Le altre <span class="c7-num">31</span> sono nello storico.</div>
+    </section>
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Campionati conclusi <span class="count">1</span></h2>
+        <a href="#" style="font-size:12px">Storico</a>
+      </div>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Campionato Primavera 2026</div>
+            <div class="meta">amalfi <span class="c7-sep">&middot;</span> 6 gare <span class="c7-sep">&middot;</span> ultima gara il <span class="c7-num" style="color:var(--c7-ink)">20/08</span></div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--accent">Hai giocato</span><span class="c7-state c7-state--muted">Concluso</span></div>
+        </div>
+        <div class="meta"><span class="c7-num" style="color:var(--c7-ink)">1&deg;</span> Elena Furlan <span class="c7-sep">&middot;</span> <span class="c7-num">2&deg;</span> Marco Bassi <span class="c7-sep">&middot;</span> <span class="c7-num">3&deg;</span> Luca Berti</div>
+        <div class="meta">Sei arrivato <span class="c7-num" style="color:var(--c7-ink)">6&deg;</span> su <span class="c7-num">14</span></div>
+        <span class="btn btn-secondary btn-w">Classifica e risultati</span>
+      </article>
+    </section>
+
+  </main>
+
+  <nav class="c7-mobilenav">
+    <a href="#" class="is-active"><svg viewBox="0 0 24 24" class="ico"><use href="#i-gauge"></use></svg>Dashboard</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-users"></use></svg>Sfide</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-target"></use></svg>Esercizi</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-bell"></use></svg>Notifiche</a>
+  </nav>
+</div>

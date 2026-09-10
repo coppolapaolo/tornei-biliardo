@@ -1,0 +1,106 @@
+<div class="screen">
+
+  <header class="c7-head">
+    <span class="c7-head__back"><svg viewBox="0 0 24 24" class="ico ico-lg"><use href="#i-nodes"></use></svg></span>
+    <div class="c7-head__title">
+      <span class="c7-title">Ciao marco</span>
+      <span class="c7-head__sub">Giocatore</span>
+    </div>
+    <span class="gami-badge">
+      <span class="gami-badge__ring"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-trophy"></use></svg></span>
+      <span class="gami-badge__level">Lv 7</span>
+    </span>
+    <span class="c7-avatar c7-avatar--lg">MA</span>
+  </header>
+
+  <main class="c7-content">
+
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Le tue gare <span class="count">2</span></h2>
+        <a href="#" style="font-size:12px">Vedi tutte</a>
+      </div>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Torneo del Giovedì</div>
+            <div class="meta">Gara singola <span class="c7-sep">&middot;</span> Palla 8 <span class="c7-sep">&middot;</span> <span class="c7-num">04/09</span> <span class="c7-sep">&middot;</span> Sala Da Vinci, Pordenone</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:170px"><span class="c7-state c7-state--warn">Lista d’attesa #3</span><span class="c7-state c7-state--ok">Iscrizioni aperte</span></div>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700"><span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span><span class="muted"><span class="c7-num">24/24</span> <span style="color:var(--c7-warn)">+3 in lista</span></span></div>
+        <div class="inset" style="background:var(--c7-warn-bg)">
+          <div class="c7-kicker" style="color:var(--c7-warn-ink)">La gara è al completo</div>
+          <p class="meta" style="margin-top:4px;color:var(--c7-warn-body)">Sei il terzo della lista. Se qualcuno si ritira entri tu, in ordine di posizione: succede da solo, non devi rifare l’iscrizione.</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <span class="btn btn-secondary btn-sm btn-fill">Dettagli</span>
+          <span class="btn btn-danger btn-sm btn-fill">Esci dalla lista</span>
+        </div>
+      </article>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Coppa del Venerdì</div>
+            <div class="meta">Gara singola <span class="c7-sep">&middot;</span> Palla 9 <span class="c7-sep">&middot;</span> <span class="c7-num">11/09</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:170px"><span class="c7-state c7-state--warn">Lista d’attesa #1</span><span class="c7-state c7-state--ok">Iscrizioni aperte</span></div>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700"><span class="fill muted">Gratuita</span><span class="muted"><span class="c7-num">17/24</span> <span style="color:var(--c7-warn)">+1 in lista</span></span></div>
+        <div class="inset" style="background:var(--c7-warn-bg)">
+          <div class="c7-kicker" style="color:var(--c7-warn-ink)">Serve un numero pari</div>
+          <p class="meta" style="margin-top:4px;color:var(--c7-warn-body)">Questa gara non prevede la X, quindi i giocatori devono essere pari e l’ultimo iscritto aspetta. Sei il primo della lista: appena si iscrive qualcun altro entri tu.</p>
+        </div>
+        <div style="display:flex;gap:8px">
+          <span class="btn btn-secondary btn-sm btn-fill">Dettagli</span>
+          <span class="btn btn-danger btn-sm btn-fill">Esci dalla lista</span>
+        </div>
+      </article>
+    </section>
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Aperte, puoi iscriverti <span class="count">1</span></h2>
+        <a href="#" style="font-size:12px">Vedi tutte</a>
+      </div>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 4 &mdash; Palla 9</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 9 <span class="c7-sep">&middot;</span> <span class="c7-num">12/09</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:170px"><span class="c7-state c7-state--warn">Massimo raggiunto</span></div>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700"><span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span><span class="muted"><span class="c7-num">24/24</span> <span style="color:var(--c7-warn)">+2 in lista</span></span></div>
+        <div style="display:flex;gap:8px">
+          <span class="btn btn-secondary btn-sm btn-fill">Dettagli</span>
+          <span class="btn btn-warning btn-sm btn-fill">Mettiti in lista</span>
+        </div>
+      </article>
+    </section>
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Campionati <span class="count">1 attivo</span></h2>
+        <a href="#" style="font-size:12px">Vedi tutti</a>
+      </div>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Campionato Sociale 2026</div>
+            <div class="meta">amalfi <span class="c7-sep">&middot;</span> 5 gare <span class="c7-sep">&middot;</span> sei <span class="c7-num">4&deg;</span> su <span class="c7-num">14</span></div>
+          </div>
+          <span class="c7-state c7-state--err">In corso</span>
+        </div>
+        <div class="meta">Prossima: <span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span></div>
+        <span class="btn btn-secondary btn-sm btn-w">Dettagli</span>
+      </article>
+    </section>
+
+  </main>
+
+  <nav class="c7-mobilenav">
+    <a href="#" class="is-active"><svg viewBox="0 0 24 24" class="ico"><use href="#i-gauge"></use></svg>Dashboard</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-users"></use></svg>Sfide</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-target"></use></svg>Esercizi</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-bell"></use></svg>Notifiche</a>
+  </nav>
+</div>
