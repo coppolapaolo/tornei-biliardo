@@ -1,0 +1,127 @@
+{# templates/components/_tessera_campionato.html — Design System 7c
+
+   La tessera del campionato, condivisa fra home dell'ospite e dashboard
+   (regola 1 del 2026-09-10). Parte da quella dell'ospite — la testa della
+   classifica generale e le prossime gare — e aggiunge i fatti di chi guarda:
+   la **sua riga** in classifica, scura, se non è già fra le prime; «Gestione»
+   al posto di «Classifica e risultati» se lo dirige. Sui conclusi «Hai
+   giocato» / «Hai diretto».
+
+   Prima la tessera in dashboard mostrava meno di quella dell'ospite: solo la
+   prossima data e tre spie di configurazione.
+
+   Riceve una `CampionatoCardVM` (models/dashboard/campionato_cards.py). #}
+
+{% macro _riga(riga, is_rack) %}
+  <div class="c7-tessera__row{{ ' is-me' if riga.is_me }}">
+    <span class="c7-pos{{ ' c7-pos--' ~ riga.posizione if riga.posizione <= 3 }}">{{ riga.posizione }}</span>
+    <span class="flex-fill text-truncate">{{ riga.username }}</span>
+    <span class="c7-tessera__muted" style="font-size:12px;font-weight:600;flex-shrink:0">
+      <span class="c7-num" style="font-size:12px">{{ riga.valore }}</span>
+      {% if is_rack %}{{ ngettext('triangolo', 'triangoli', riga.valore) }}
+      {% else %}{{ ngettext('vittoria', 'vittorie', riga.valore) }}{% endif %}
+    </span>
+  </div>
+{% endmacro %}
+
+{% macro tessera_campionato(card) %}
+{% set campionato = card.campionato %}
+<article class="c7-card d-flex flex-column gap-3">
+
+  <div class="d-flex align-items-start gap-2">
+    <div class="flex-fill">
+      <div class="c7-tessera__title">{{ card.name }}</div>
+      <div class="c7-tessera__meta">
+        {{ campionato.campionato_type }}
+        <span class="c7-sep">·</span>
+        {{ ngettext('%(num)s gara', '%(num)s gare', campionato.gare|length, num=campionato.gare|length) }}
+        {% if card.is_concluso %}
+          {% if card.ultima_data %}
+          <span class="c7-sep">·</span> {{ _('ultima gara il') }}
+          <span class="c7-num" style="font-size:12px">{{ card.ultima_data|date_local }}</span>
+          {% endif %}
+        {% elif card.next_prova_date %}
+          <span class="c7-sep">·</span> {{ _('prossima') }}
+          <span class="c7-num" style="font-size:12px">{{ card.next_prova_date|date_local }}</span>
+        {% else %}
+          <span class="c7-sep">·</span> {{ _('nessuna gara programmata') }}
+        {% endif %}
+      </div>
+    </div>
+    <div class="c7-tessera__states">
+      {% if card.is_concluso %}
+        {% if card.hai_diretto %}<span class="c7-state c7-state--info">{{ _('Hai diretto') }}</span>{% endif %}
+        {% if card.hai_giocato %}<span class="c7-state c7-state--accent">{{ _('Hai giocato') }}</span>{% endif %}
+      {% else %}
+        {% if card.can_manage %}<span class="c7-state c7-state--info">{{ _('Dirigi') }}</span>{% endif %}
+        {% if card.is_inscribed %}<span class="c7-state c7-state--accent">{{ _('Iscritto') }}</span>{% endif %}
+      {% endif %}
+      {% if campionato.is_prova %}
+        <span class="c7-state c7-state--warn"><i class="fas fa-flask me-1"></i>{{ _('Di prova') }}</span>
+      {% endif %}
+      <span class="badge {{ campionato | status_badge_class }}">{{ campionato | status_text }}</span>
+    </div>
+  </div>
+
+  {# La testa della classifica, e la riga di chi guarda se non è già lì. #}
+  <div class="c7-inset">
+    <div class="c7-kicker">{{ _('Classifica finale') if card.is_concluso else _('Classifica generale') }}</div>
+    {% if card.testa %}
+    <div class="d-flex flex-column mt-1">
+      {% for riga in card.testa %}{{ _riga(riga, card.is_rack) }}{% endfor %}
+      {% if card.mia_riga %}{{ _riga(card.mia_riga, card.is_rack) }}{% endif %}
+    </div>
+    {% else %}
+    <div class="c7-tessera__meta mt-1">
+      {% if card.is_concluso %}{{ _('La classifica finale non è disponibile.') }}
+      {% else %}{{ _('La classifica comincia con la prima gara giocata.') }}{% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  {# Le prossime gare: una riga a testa, con la scadenza quando c'è. #}
+  {% if not card.is_concluso and card.prossime %}
+  <div class="c7-inset">
+    <div class="c7-kicker">{{ _('Prossime gare') }}</div>
+    <div class="d-flex flex-column gap-2 mt-1">
+      {% for gara in card.prossime %}
+      <div class="d-flex align-items-baseline gap-2" style="font-size:12px;font-weight:700">
+        <span class="c7-num c7-tessera__muted" style="flex-shrink:0">{{ gara.date|date_local }}</span>
+        <span class="text-truncate flex-fill">
+          {{ gara.display_name }}
+          {% if gara.discipline %}<span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}{% endif %}
+          {% if gara.location %}<span class="c7-sep">·</span> {{ gara.location }}{% endif %}
+        </span>
+      </div>
+      {% set st = gara.get_real_status() %}
+      {% if st == GaraStatus.INSCRIPTION.value and gara.inscription_end %}
+      <div class="c7-tessera__meta" style="color:var(--c7-warn)">
+        {{ _('Le iscrizioni chiudono il') }} <span class="c7-num" style="font-size:12px">{{ gara.inscription_end|datetime_local }}</span>
+      </div>
+      {% elif st == ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value and gara.inscription_start %}
+      <div class="c7-tessera__meta">
+        {{ _('Le iscrizioni aprono il') }} <span class="c7-num" style="font-size:12px">{{ gara.inscription_start|datetime_local }}</span>
+      </div>
+      {% endif %}
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <div class="c7-tessera__actions">
+    {% if card.can_manage %}
+      <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=card.id) }}" class="btn btn-primary">{{ _('Gestione') }}</a>
+      {% if not card.is_concluso and campionato.can_be_modified() %}
+      <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=card.id) }}"
+         class="c7-iconbtn" style="flex:0 0 auto;width:56px;height:56px" aria-label="{{ _('Modifica') }}">
+        <i class="fas fa-pen"></i>
+      </a>
+      {% endif %}
+    {% elif card.can_view_details %}
+      <a href="{{ url_for('main.campionato_detail_public', campionato_id=card.id) }}" class="btn btn-secondary">{{ _('Classifica e risultati') }}</a>
+    {% else %}
+      <span class="btn btn-secondary disabled">{{ _('Classifica') }}</span>
+    {% endif %}
+  </div>
+</article>
+{% endmacro %}

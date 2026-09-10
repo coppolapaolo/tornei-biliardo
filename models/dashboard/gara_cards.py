@@ -27,14 +27,14 @@ regola di dominio, e in un template non la copre nessun test.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date as date_cls
+from datetime import date as date_cls, timedelta
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from sqlalchemy import and_, func, or_
 from sqlalchemy.orm import joinedload
 
 from models.base import db
-from models.classification.models import RoundClassification
+from models.classification.models import GaraClassification, RoundClassification
 from models.dashboard.comandi import ComandoVM, comando_per
 from models.competition.models import Gara, Inscription, WaitlistReason
 from models.match.models import Match as TournamentMatch
@@ -82,10 +82,22 @@ STATI_IN_CORSO: frozenset[str] = frozenset(
     }
 )
 
-#: Quante gare concluse tenere in coda a «Le tue gare». Le altre stanno nel
-#: proprio storico: una gara finita non è una cosa da fare, e venti di fila
-#: seppellirebbero quella in corso.
-CONCLUSE_IN_CODA = 3
+#: Gli stati di una gara che deve ancora cominciare: creata, iscrizioni
+#: programmate, iscrizioni chiuse in attesa dell'avvio. Per chi non c'entra è
+#: «in arrivo», cioè contesto: non c'è ancora niente da fare.
+STATI_IN_ARRIVO: frozenset[str] = frozenset(
+    {
+        GaraStatus.SETUP.value,
+        ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value,
+        ProvaDerivedStatus.INSCRIPTION_CLOSED.value,
+    }
+)
+
+#: Quanto dura la finestra delle concluse in dashboard e in home (regola 2
+#: del 2026-09-10): l'ultima, sempre, più quelle dell'ultimo mese. Le altre
+#: stanno nello storico. Si ancora a `Gara.date` perché una data di chiusura
+#: non esiste: lo stato «conclusa» è derivato.
+FINESTRA_CONCLUSE = timedelta(days=30)
 
 
 def is_conclusa(gara: Gara) -> bool:
@@ -106,6 +118,37 @@ class PosizioneVM:
     posizione: int
     su: int
     turno: int
+
+
+@dataclass(frozen=True)
+class PiazzamentoVM:
+    """Come è finita per chi guarda, su una gara conclusa che ha giocato."""
+
+    posizione: int
+    su: int
+    vinte: int
+    giocate: int
+
+
+@dataclass
+class ElenchiGare:
+    """Le gare della dashboard, già divise per quello che chiedono.
+
+    Ogni elenco è una sezione. Sono cinque perché rispondono a cinque domande
+    diverse: cosa devo fare io (`mie`), cosa sta succedendo (`in_diretta`),
+    dove posso entrare (`aperte`), cosa arriva (`in_arrivo`), com'è andata
+    (`concluse`). Senza un fatto mio la gara sta in uno degli ultimi quattro,
+    ed è la stessa tessera che vede l'ospite.
+    """
+
+    mie: List["GaraCardVM"] = field(default_factory=list)
+    in_diretta: List["GaraCardVM"] = field(default_factory=list)
+    aperte: List["GaraCardVM"] = field(default_factory=list)
+    in_arrivo: List["GaraCardVM"] = field(default_factory=list)
+    #: L'ultima più quelle dell'ultimo mese, di tutti (`finestra_concluse`).
+    concluse: List["GaraCardVM"] = field(default_factory=list)
+    #: Quante ne esistono in tutto: la riga «le altre N sono nello storico».
+    concluse_totali: int = 0
 
 
 @dataclass
@@ -139,6 +182,9 @@ class GaraCardVM:
     #: Vedi `models/dashboard/comandi.py`: qui si **annuncia**, si esegue
     #: nella pagina della gara.
     comando: Optional["ComandoVM"] = None
+    #: Su una gara conclusa che hai giocato: dove sei arrivato. La riempie
+    #: `enrich_with_piazzamento`.
+    piazzamento: Optional["PiazzamentoVM"] = None
 
     # -- scorciatoie per il template ------------------------------------
     # Tutte derivate: nessuno stato in più da tenere allineato.
@@ -158,6 +204,27 @@ class GaraCardVM:
     @property
     def is_conclusa(self) -> bool:
         return self.real_status in STATI_CONCLUSI
+
+    @property
+    def is_in_corso(self) -> bool:
+        """Si sta giocando adesso: la tessera è scura per chiunque la guardi."""
+        return self.real_status in STATI_IN_CORSO
+
+    @property
+    def ha_un_fatto_mio(self) -> bool:
+        """Iscritto, la dirigo, o ho una partita: senza, la tessera è quella
+        dell'ospite (regola 1 del 2026-09-10)."""
+        return self.is_inscribed or self.can_manage or bool(self.matches)
+
+    @property
+    def hai_giocato(self) -> bool:
+        """Conclusa e c'ero: la pastiglia «Hai giocato». A gara finita
+        «Iscritto» non dice più niente."""
+        return self.is_conclusa and self.is_inscribed
+
+    @property
+    def hai_diretto(self) -> bool:
+        return self.is_conclusa and self.can_manage
 
     @property
     def is_inscribed(self) -> bool:
@@ -251,30 +318,60 @@ def _ordine_delle_mie(card: GaraCardVM) -> Tuple[int, int]:
     return (1, giorno)
 
 
+def finestra_concluse(
+    cards: Iterable[GaraCardVM], oggi: Optional[date_cls] = None
+) -> List[GaraCardVM]:
+    """L'ultima conclusa, sempre, più quelle dell'ultimo mese.
+
+    Regola 2 del 2026-09-10. «Sempre» è il punto: chi apre la dashboard dopo
+    l'estate trova comunque un aggancio al passato invece di un vuoto. La
+    finestra si misura su `Gara.date`, il giorno in cui si è giocata — una
+    data di chiusura non esiste — quindi una gara chiusa dal direttore due
+    mesi dopo averla giocata esce dalla dashboard nel momento in cui viene
+    chiusa: accettato.
+
+    Pura: non tocca il database, ordina quello che riceve.
+    """
+    oggi = oggi or date_cls.today()
+    ordinate = sorted(
+        (c for c in cards if c.is_conclusa),
+        key=lambda c: (c.date is None, -(c.date.toordinal() if c.date else 0)),
+    )
+    if not ordinate:
+        return []
+    soglia = oggi - FINESTRA_CONCLUSE
+    ultima, altre = ordinate[0], ordinate[1:]
+    return [ultima] + [c for c in altre if c.date is not None and c.date >= soglia]
+
+
 def build_gara_cards(
     unified_items: Iterable[Any],
     my_inscriptions: Optional[Iterable[Inscription]],
     current_matches: Optional[Iterable[TournamentMatch]],
     *,
-    can_inscribe: bool = True,
-) -> Tuple[List[GaraCardVM], List[GaraCardVM], int]:
-    """Le gare da mostrare, divise.
+    oggi: Optional[date_cls] = None,
+) -> ElenchiGare:
+    """Le gare da mostrare, divise per quello che chiedono.
 
     Args:
         unified_items: l'uscita di `build_unified_items` — campionati e gare
-            standalone con i permessi già calcolati.
+            standalone con i permessi già calcolati. Contiene **tutte** le
+            gare visibili, concluse comprese: da qui vengono anche gli
+            elenchi «di tutti».
         my_inscriptions: **tutte** le iscrizioni di chi guarda, con la gara
             già caricata (`vm.my_inscriptions`). Sono la sorgente di «le tue»:
             una gara a cui sono iscritto è mia anche se `unified_items` non la
             porta, il che succede per le gare concluse dentro un campionato.
         current_matches: le sue partite ancora aperte (`vm.current_matches`).
-        can_inscribe: falso per l'amministratore, che non gioca — per lui
-            «aperte, puoi iscriverti» è vuota.
+        oggi: il giorno da cui misurare la finestra delle concluse; nei test
+            si passa, altrimenti è oggi.
 
     Returns:
-        `(mie, aperte, concluse_totali)`. Il terzo valore conta **tutte** le
-        gare concluse di chi guarda, non solo quelle in coda: serve alla riga
-        «mostrate N di M» sotto l'elenco.
+        `ElenchiGare`. Ogni gara sta in un elenco solo: se c'è un fatto mio
+        sta in `mie` (finché è viva), altrimenti nell'elenco del suo stato,
+        con la stessa tessera che vede l'ospite. Le concluse stanno tutte in
+        `concluse`, mie comprese — riconoscibili dalle pastiglie «Hai giocato»
+        e «Hai diretto» — tagliate con `finestra_concluse`.
     """
     visibili = _gare_visibili(unified_items)
 
@@ -314,62 +411,51 @@ def build_gara_cards(
             matches=matches_by_gara.get(gara.id, []),
         )
 
-    # -- le tue ---------------------------------------------------------
-    # Due sorgenti che si sovrappongono: le gare a cui sono iscritto e quelle
-    # che dirigo. Si sovrappongono davvero — niente vieta al direttore di
-    # iscriversi alla propria gara — ed è il motivo per cui l'elenco è uno
-    # solo: la stessa card porta le due nature.
-    mie_per_id: Dict[int, GaraCardVM] = {}
-
+    # -- una card per gara, con i miei fatti dentro --------------------
+    # Due sorgenti che si sovrappongono: le gare visibili e quelle a cui sono
+    # iscritto. Una gara che dirigo e in cui gioco compare una volta sola,
+    # con entrambe le nature: è il motivo per cui l'elenco delle mie è uno.
+    per_id: Dict[int, GaraCardVM] = {}
+    for gara_id, ctx in visibili.items():
+        per_id[gara_id] = _card(ctx["gara"], ctx)
     for ins in my_inscriptions or []:
         gara = ins.gara
-        if gara is None or ins.is_withdrawn:
+        if gara is None or ins.is_withdrawn or gara.id in per_id:
             continue
-        voce = visibili.get(gara.id)
-        mie_per_id[gara.id] = _card(gara, voce)
-
-    for gara_id, ctx in visibili.items():
-        if gara_id in mie_per_id or not ctx["can_manage"]:
-            continue
-        gara = ctx["gara"]
-        stato = gara.get_real_status()
-        if stato not in LIVE_STATES and stato not in STATI_CONCLUSI:
-            continue
-        mie_per_id[gara_id] = _card(gara, ctx)
-
+        per_id[gara.id] = _card(gara)
     # Terza sorgente, ed e' la piu' forte: una partita aperta. Se ce l'hai,
     # quella gara e' tua qualunque cosa dica l'iscrizione — e senza questo
     # giro sparirebbe in silenzio il caso in cui l'iscrizione risulta ritirata
-    # ma un match e' rimasto aperto. La sezione «I tuoi match» di prima quel
-    # match lo mostrava, perche' partiva dai match e non dalle iscrizioni:
-    # ereditarne la copertura e' il minimo.
+    # ma un match e' rimasto aperto.
     for gara_id in matches_by_gara:
-        if gara_id in mie_per_id:
-            continue
-        ctx = visibili.get(gara_id)
-        if ctx is not None:
-            mie_per_id[gara_id] = _card(ctx["gara"], ctx)
+        if gara_id not in per_id and gara_id in visibili:
+            per_id[gara_id] = _card(visibili[gara_id]["gara"], visibili[gara_id])
 
-    tutte_mie = sorted(mie_per_id.values(), key=_ordine_delle_mie)
+    elenchi = ElenchiGare()
+    tutte_le_concluse: List[GaraCardVM] = []
+    for card in per_id.values():
+        stato = card.real_status
+        if card.is_conclusa:
+            tutte_le_concluse.append(card)
+        elif card.ha_un_fatto_mio and stato in LIVE_STATES:
+            elenchi.mie.append(card)
+        elif card.is_in_corso:
+            elenchi.in_diretta.append(card)
+        elif stato == GaraStatus.INSCRIPTION.value:
+            elenchi.aperte.append(card)
+        elif stato in STATI_IN_ARRIVO:
+            elenchi.in_arrivo.append(card)
+        # Una gara viva in nessuno di questi stati non esiste: LIVE_STATES
+        # copre tutto ciò che non è concluso.
 
-    # Le concluse si mostrano in coda e con il tetto: il resto sta nello
-    # storico. Il conteggio totale torna al chiamante per la riga «di M».
-    vive = [c for c in tutte_mie if not c.is_conclusa]
-    concluse = [c for c in tutte_mie if c.is_conclusa]
-    mie = vive + concluse[:CONCLUSE_IN_CODA]
-
-    # -- aperte ---------------------------------------------------------
-    aperte: List[GaraCardVM] = []
-    if can_inscribe:
-        for gara_id, ctx in visibili.items():
-            if gara_id in mie_per_id:
-                continue
-            if ctx["gara"].get_real_status() != GaraStatus.INSCRIPTION.value:
-                continue
-            aperte.append(_card(ctx["gara"], ctx))
-        aperte.sort(key=lambda c: (c.date is None, c.date or date_cls.max))
-
-    return mie, aperte, len(concluse)
+    elenchi.mie.sort(key=_ordine_delle_mie)
+    per_data = lambda c: (c.date is None, c.date or date_cls.max)  # noqa: E731
+    elenchi.in_diretta.sort(key=per_data)
+    elenchi.aperte.sort(key=per_data)
+    elenchi.in_arrivo.sort(key=per_data)
+    elenchi.concluse = finestra_concluse(tutte_le_concluse, oggi)
+    elenchi.concluse_totali = len(tutte_le_concluse)
+    return elenchi
 
 
 #: Quante partite degli altri mostrare sotto la propria. Tre bastano a capire
@@ -511,6 +597,45 @@ def enrich_with_comandi(cards: Iterable[GaraCardVM]) -> None:
             card.comando = comando_per(card.gara)
 
 
+def enrich_with_piazzamento(cards: Iterable[GaraCardVM], user_id: int) -> None:
+    """Sulle concluse che hai giocato: dove sei arrivato, in una query.
+
+    La classifica finale di gara (`GaraClassification`) ha una riga per
+    giocatore; servono la tua e quante sono, cioè il «su quanti».
+    """
+    giocate = [c for c in cards if c.hai_giocato and c.gara.id is not None]
+    if not giocate:
+        return
+    gara_ids = [c.gara.id for c in giocate]
+    righe = (
+        db.session.query(
+            GaraClassification.gara_id,
+            GaraClassification.user_id,
+            GaraClassification.position,
+            GaraClassification.matches_won,
+            GaraClassification.matches_lost,
+        )
+        .filter(GaraClassification.gara_id.in_(gara_ids))
+        .all()
+    )
+    quanti: Dict[int, int] = {}
+    mie: Dict[int, Tuple[int, int, int]] = {}
+    for gid, uid, posizione, vinte, perse in righe:
+        quanti[gid] = quanti.get(gid, 0) + 1
+        if uid == user_id:
+            mie[gid] = (posizione, vinte or 0, (vinte or 0) + (perse or 0))
+    for card in giocate:
+        dati = mie.get(card.gara.id)
+        if dati is not None:
+            posizione, vinte, giocate_n = dati
+            card.piazzamento = PiazzamentoVM(
+                posizione=posizione,
+                su=quanti[card.gara.id],
+                vinte=vinte,
+                giocate=giocate_n,
+            )
+
+
 def _ha_un_punteggio(match: TournamentMatch) -> bool:
     """Qualcuno ha segnato almeno un triangolo, o la partita è chiusa."""
     return bool(
@@ -522,14 +647,19 @@ def _ha_un_punteggio(match: TournamentMatch) -> bool:
 
 __all__ = [
     "ALTRE_PARTITE_MOSTRATE",
-    "CONCLUSE_IN_CODA",
+    "ElenchiGare",
+    "FINESTRA_CONCLUSE",
     "GaraCardVM",
     "LIVE_STATES",
+    "PiazzamentoVM",
     "PosizioneVM",
     "STATI_CONCLUSI",
+    "STATI_IN_ARRIVO",
     "STATI_IN_CORSO",
     "build_gara_cards",
     "enrich_with_comandi",
+    "enrich_with_piazzamento",
     "enrich_with_progress",
+    "finestra_concluse",
     "is_conclusa",
 ]

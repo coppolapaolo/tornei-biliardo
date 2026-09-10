@@ -7,8 +7,12 @@ Extracted from services.py for maintainability (Round 4 P3).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 from datetime import date as date_cls
+
+if TYPE_CHECKING:  # pragma: no cover
+    from .campionato_cards import ElenchiCampionati
+    from .gara_cards import ElenchiGare
 
 from sqlalchemy import or_, and_
 
@@ -194,25 +198,14 @@ class DashboardVM:
     campionati_completed_shown_items: Optional[List["UnifiedDashboardItem"]] = None
     campionati_completed_total: int = 0
 
-    # Coda recente di gare standalone COMPLETED per la sezione Gare in
-    # dashboard player/director (analogo del pattern campionati).
-    # Le gare-di-campionato completate restano accessibili tramite il
-    # campionato di appartenenza, non vengono duplicate qui.
-    standalone_completed_recent: Optional[List[Any]] = None
-    standalone_completed_total: int = 0
-
-    # Le gare divise fra «le tue» e «aperte, puoi iscriverti»
-    # (models/dashboard/gara_cards.py). Sono `GaraCardVM`, cioè la gara più il
-    # posto che ci occupa chi guarda: la sua iscrizione — lista d'attesa e
-    # motivo compresi — e le sue partite ancora aperte in quella gara.
-    #
-    # Prima questa divisione non c'era: il template mostrava una sezione
-    # «Gare» che conteneva ogni gara viva del sistema, e ricostruiva
-    # l'appartenenza iterando `gara.inscriptions` card per card — una query a
-    # gara per una riga che la dashboard aveva già in mano qui sotto, in
-    # `my_inscriptions`.
-    gare_mie: Optional[List[Any]] = None
-    gare_aperte: Optional[List[Any]] = None
-    #: Quante gare concluse ha in tutto chi guarda: la coda mostrata è tagliata
-    #: (`CONCLUSE_IN_CODA`) e questo è il «di M» della riga sotto l'elenco.
-    gare_concluse_total: int = 0
+    # Le gare della dashboard, divise per quello che chiedono
+    # (`models/dashboard/gara_cards.py`): le mie, in diretta, aperte, in
+    # arrivo, concluse. Sono `GaraCardVM`, cioè la gara più il posto che ci
+    # occupa chi guarda — iscrizione, partite aperte, direzione — e la tessera
+    # si disegna da quei fatti: senza, è quella dell'ospite (regola 1 del
+    # 2026-09-10). Le concluse sono di tutti, l'ultima più l'ultimo mese.
+    gare: Optional["ElenchiGare"] = None
+    # I campionati con la testa della classifica e la riga di chi guarda
+    # (`models/dashboard/campionato_cards.py`): attivi e conclusi, questi
+    # ultimi con la stessa finestra delle gare.
+    campionati_tessere: Optional["ElenchiCampionati"] = None

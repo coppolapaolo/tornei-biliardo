@@ -218,6 +218,9 @@ class TournamentStatisticsService:
                 if user_id not in player_totals:
                     player_totals[user_id] = {
                         "username": classification.user.username,
+                        # L'id accanto al nome: chi legge la classifica per
+                        # trovare la propria riga confronta l'id, non il nome.
+                        "user_id": user_id,
                         "total_matches_won": 0,
                         "total_racks_won": 0,
                         "total_rack_difference": 0,

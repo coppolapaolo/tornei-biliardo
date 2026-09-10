@@ -185,9 +185,16 @@ def test_la_partita_in_corso_e_dentro_la_card_della_sua_gara(
 
     assert "La tua partita" in html
     assert avversario.username in html
-    assert "Gioca la tua partita" in html
+    # Il riquadro della partita è il bersaglio (10/09): niente pulsante a
+    # parte, e il riquadro porta alla partita.
+    assert "Gioca la tua partita" not in html
+    riquadro = html.split("La tua partita", 1)[0].rsplit("<a ", 1)[1]
+    assert "c7-inset--go" in riquadro
+    assert "/match/" in riquadro
     # La sezione gemella non c'è più: la partita vive dentro la sua gara.
     assert "I tuoi match" not in html
+    # La gara in corso è scura per chiunque la guardi.
+    assert "c7-card--accent" in html.split("Gara Viva", 1)[0].rsplit("<article", 1)[1]
 
 
 @pytest.mark.integration
@@ -227,10 +234,11 @@ def test_una_partita_senza_tavolo_lo_dice_invece_di_tacere(
 
 
 @pytest.mark.integration
-def test_la_gara_in_corso_di_altri_non_finisce_in_dashboard(
+def test_la_gara_in_corso_di_altri_sta_in_diretta_ora_come_per_l_ospite(
     client, db_session, giocatore
 ):
-    """Regressione: «Gare» conteneva ogni gara viva del sistema."""
+    """Regola 1 del 2026-09-10: senza un fatto mio la tessera è quella
+    dell'ospite, e l'ospite la diretta la vede. Prima spariva del tutto."""
     _gara(
         db_session,
         name="Gara Di Altri",
@@ -242,7 +250,59 @@ def test_la_gara_in_corso_di_altri_non_finisce_in_dashboard(
     _login(client, giocatore)
     html = client.get("/dashboard").get_data(as_text=True)
 
-    assert "Gara Di Altri" not in html
+    assert "In diretta ora" in html
+    sezione = html.split("In diretta ora", 1)[1]
+    assert "Gara Di Altri" in sezione
+    tessera = sezione.split("Gara Di Altri", 1)[1].split("</article>", 1)[0]
+    assert "Segui la diretta" in tessera
+    assert "Iscritto" not in tessera and "Dirigi" not in tessera
+    # Non è mia: «Le tue gare» non c'è.
+    assert "Le tue gare" not in html
+
+
+@pytest.mark.integration
+def test_le_concluse_sono_di_tutti_e_dicono_se_hai_giocato(
+    client, db_session, giocatore
+):
+    """Regola 2: l'ultima più l'ultimo mese, di tutti, riconoscibili."""
+    mia = _gara(
+        db_session,
+        name="Gara Giocata",
+        status=GaraStatus.COMPLETED.value,
+        date=date.today() - timedelta(days=3),
+    )
+    db_session.add(Inscription(user_id=giocatore.id, gara_id=mia.id))
+    _gara(
+        db_session,
+        name="Gara Altrui Finita",
+        status=GaraStatus.COMPLETED.value,
+        date=date.today() - timedelta(days=5),
+    )
+    _gara(
+        db_session,
+        name="Gara Vecchissima",
+        status=GaraStatus.COMPLETED.value,
+        date=date.today() - timedelta(days=400),
+    )
+    db_session.commit()
+
+    _login(client, giocatore)
+    html = client.get("/dashboard").get_data(as_text=True)
+
+    assert "Concluse" in html
+    concluse = html.split("Concluse", 1)[1]
+    assert "Gara Giocata" in concluse and "Gara Altrui Finita" in concluse
+    # Fuori dalla finestra e non è l'ultima: nello storico.
+    assert "Gara Vecchissima" not in concluse
+    assert "nello storico" in concluse
+    tessera_mia = concluse.split("Gara Giocata", 1)[1].split("</article>", 1)[0]
+    assert "Hai giocato" in tessera_mia
+    tessera_altrui = concluse.split("Gara Altrui Finita", 1)[1].split("</article>", 1)[
+        0
+    ]
+    assert "Hai giocato" not in tessera_altrui
+    # A gara finita «Iscritto» non dice più niente.
+    assert "Iscritto" not in tessera_mia
 
 
 @pytest.mark.integration
@@ -573,3 +633,45 @@ def test_a_chi_gioca_e_basta_non_si_annuncia_nessun_comando(
     sezione = html.split("Gara Altrui", 1)[1].split("</article>", 1)[0]
     assert "Avvia la gara" not in sezione
     assert "Dirigi" not in sezione
+
+
+@pytest.mark.integration
+def test_chi_dirige_una_gara_in_corso_ha_gestisci_al_posto_di_segui_la_diretta(
+    client, db_session, direttore
+):
+    """Sul conflitto vince il direttore: «Segui la diretta» e «Gioca» non
+    hanno senso per chi dirige, la gestione sì — anche se ci gioca."""
+    gara = _gara(
+        db_session,
+        name="Gara Che Dirigo",
+        status=GaraStatus.PLAYING.value,
+        director_id=direttore.id,
+        date=date.today(),
+    )
+    db_session.add(Inscription(user_id=direttore.id, gara_id=gara.id))
+    db_session.commit()
+
+    _login(client, direttore)
+    html = client.get("/dashboard").get_data(as_text=True)
+
+    tessera = html.split("Gara Che Dirigo", 1)[1].split("</article>", 1)[0]
+    assert "Gestisci" in tessera
+    assert "Segui la diretta" not in tessera
+    assert "Gioca la tua partita" not in tessera
+    assert "Dirigi" in tessera and "Iscritto" in tessera
+
+
+@pytest.mark.integration
+def test_sulle_tessere_non_ci_sono_pulsanti_piccoli(client, db_session, giocatore):
+    """I 40px di `btn-sm` sono difficili da tappare, e su una tessera si
+    tappa: le azioni hanno l'altezza standard del tema."""
+    gara = _gara(db_session, name="Gara Aperta Tap")
+    db_session.add(Inscription(user_id=giocatore.id, gara_id=gara.id))
+    db_session.commit()
+
+    _login(client, giocatore)
+    html = client.get("/dashboard").get_data(as_text=True)
+
+    tessera = html.split("Gara Aperta Tap", 1)[1].split("</article>", 1)[0]
+    assert "btn-sm" not in tessera
+    assert "Disiscriviti" in tessera
