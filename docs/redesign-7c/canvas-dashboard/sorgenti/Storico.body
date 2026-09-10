@@ -1,0 +1,101 @@
+<div class="screen">
+
+  <header class="c7-head">
+    <span class="c7-head__back"><svg viewBox="0 0 24 24" class="ico ico-lg"><use href="#i-chev" transform="rotate(180 12 12)"></use></svg></span>
+    <div class="c7-head__title">
+      <span class="c7-title">Storico</span>
+      <span class="c7-head__sub">Gare e campionati conclusi</span>
+    </div>
+  </header>
+
+  <main class="c7-content">
+
+    <div class="seg"><span class="is-on">Gare</span><span>Campionati</span></div>
+    <div class="field"><svg viewBox="0 0 24 24" class="ico"><use href="#i-search"></use></svg>Cerca per nome o sala</div>
+    <div class="chips">
+      <span class="chip is-on">Tutte</span>
+      <span class="chip">Che ho giocato</span>
+      <span class="chip">Che ho diretto</span>
+      <span class="chip">Palla 8</span>
+      <span class="chip">Palla 9</span>
+      <span class="chip">2026 <svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-chev" transform="rotate(90 12 12)"></use></svg></span>
+    </div>
+    <div class="meta"><span class="c7-num" style="color:var(--c7-ink)">34</span> gare concluse nel 2026 <span class="c7-sep">&middot;</span> <span class="c7-num">9</span> giocate, <span class="c7-num">4</span> dirette</div>
+    <section class="sec" style="gap:8px">
+      <div class="mese">Settembre 2026</div>
+      <div class="c7-card">
+        <a class="listrow" href="#">
+          <span class="fill">
+            <span style="display:block;font-size:14px;font-weight:800">Torneo del Gioved&igrave;</span>
+            <span class="meta" style="display:block">04/09 &middot; Palla 8 &middot; Sala Da Vinci</span>
+            <span class="meta" style="display:block"><span class="c7-num" style="color:var(--c7-ink)">1&deg;</span> Elena Furlan</span>
+          </span>
+          <span class="c7-state c7-state--info">Hai diretto</span><svg viewBox="0 0 24 24" class="ico chev"><use href="#i-chev"></use></svg>
+        </a>
+      </div>
+      <div class="mese">Agosto 2026</div>
+      <div class="c7-card">
+        <a class="listrow" href="#">
+          <span class="fill">
+            <span style="display:block;font-size:14px;font-weight:800">Campionato Primavera &middot; Gara 6</span>
+            <span class="meta" style="display:block">20/08 &middot; Palla 8 &middot; Biliardo Club Udine</span>
+            <span class="meta" style="display:block"><span class="c7-num" style="color:var(--c7-ink)">1&deg;</span> Marco Bassi</span>
+          </span>
+          <span class="c7-state c7-state--accent">Hai giocato</span><svg viewBox="0 0 24 24" class="ico chev"><use href="#i-chev"></use></svg>
+        </a>
+        <a class="listrow" href="#">
+          <span class="fill">
+            <span style="display:block;font-size:14px;font-weight:800">Gara 2 &mdash; Palla 8</span>
+            <span class="meta" style="display:block">16/08 &middot; Campionato Sociale 2026</span>
+            <span class="meta" style="display:block"><span class="c7-num" style="color:var(--c7-ink)">1&deg;</span> Elena Furlan</span>
+          </span>
+          <span class="c7-state c7-state--accent">Hai giocato</span><svg viewBox="0 0 24 24" class="ico chev"><use href="#i-chev"></use></svg>
+        </a>
+        <a class="listrow" href="#">
+          <span class="fill">
+            <span style="display:block;font-size:14px;font-weight:800">Coppa di Ferragosto</span>
+            <span class="meta" style="display:block">15/08 &middot; Palla 9 &middot; Circolo Ferragosto, Grado</span>
+            <span class="meta" style="display:block"><span class="c7-num" style="color:var(--c7-ink)">1&deg;</span> Ivan Sartori</span>
+          </span>
+          <svg viewBox="0 0 24 24" class="ico chev"><use href="#i-chev"></use></svg>
+        </a>
+        <a class="listrow" href="#">
+          <span class="fill">
+            <span style="display:block;font-size:14px;font-weight:800">Gara 1 &mdash; Palla 8</span>
+            <span class="meta" style="display:block">02/08 &middot; Campionato Sociale 2026</span>
+            <span class="meta" style="display:block"><span class="c7-num" style="color:var(--c7-ink)">1&deg;</span> Luca Berti</span>
+          </span>
+          <span class="c7-state c7-state--accent">Hai giocato</span><svg viewBox="0 0 24 24" class="ico chev"><use href="#i-chev"></use></svg>
+        </a>
+      </div>
+      <div class="mese">Luglio 2026</div>
+      <div class="c7-card">
+        <a class="listrow" href="#">
+          <span class="fill">
+            <span style="display:block;font-size:14px;font-weight:800">Notturna di luglio</span>
+            <span class="meta" style="display:block">25/07 &middot; Palla 9 &middot; Sala Centrale, Trieste</span>
+            <span class="meta" style="display:block"><span class="c7-num" style="color:var(--c7-ink)">1&deg;</span> Giulia Nardin</span>
+          </span>
+          <span class="c7-state c7-state--info">Hai diretto</span><svg viewBox="0 0 24 24" class="ico chev"><use href="#i-chev"></use></svg>
+        </a>
+        <a class="listrow" href="#">
+          <span class="fill">
+            <span style="display:block;font-size:14px;font-weight:800">Campionato Primavera &middot; Gara 5</span>
+            <span class="meta" style="display:block">12/07 &middot; Palla 8 &middot; Biliardo Club Udine</span>
+            <span class="meta" style="display:block"><span class="c7-num" style="color:var(--c7-ink)">1&deg;</span> Elena Furlan</span>
+          </span>
+          <span class="c7-state c7-state--accent">Hai giocato</span><svg viewBox="0 0 24 24" class="ico chev"><use href="#i-chev"></use></svg>
+        </a>
+      </div>
+      <span class="btn btn-secondary btn-sm btn-w" style="margin-top:6px">Mostra altre <span class="c7-num">27</span></span>
+    </section>
+
+  </main>
+
+  <nav class="c7-mobilenav">
+    <a href="#" class="is-active"><svg viewBox="0 0 24 24" class="ico"><use href="#i-gauge"></use></svg>Dashboard</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-users"></use></svg>Sfide</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-target"></use></svg>Esercizi</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-bell"></use></svg>Notifiche</a>
+  </nav>
+</div>

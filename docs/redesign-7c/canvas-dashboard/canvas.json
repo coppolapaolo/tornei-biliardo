@@ -15,6 +15,10 @@
     {
       "id": "page-4",
       "name": "Casi"
+    },
+    {
+      "id": "page-5",
+      "name": "Tessera"
     }
   ],
   "artboards": [
@@ -224,6 +228,51 @@
       "y": 0,
       "w": 390,
       "h": 1280
+    },
+    {
+      "file": "TesseraA.dc.html",
+      "title": "A · dalla dashboard",
+      "page": "page-5",
+      "x": 0,
+      "y": 0,
+      "w": 1600,
+      "h": 1410
+    },
+    {
+      "file": "TesseraB.dc.html",
+      "title": "B · dalla home dell’ospite",
+      "page": "page-5",
+      "x": 0,
+      "y": 1670,
+      "w": 1600,
+      "h": 1400
+    },
+    {
+      "file": "TesseraCampionato.dc.html",
+      "title": "Campionato · stessa regola",
+      "page": "page-5",
+      "x": 1720,
+      "y": 0,
+      "w": 1250,
+      "h": 1150
+    },
+    {
+      "file": "Concluse.dc.html",
+      "title": "Concluse · l’ultima più un mese",
+      "page": "page-5",
+      "x": 1720,
+      "y": 1670,
+      "w": 390,
+      "h": 1340
+    },
+    {
+      "file": "Storico.dc.html",
+      "title": "Storico · archivio",
+      "page": "page-5",
+      "x": 2240,
+      "y": 1670,
+      "w": 390,
+      "h": 1480
     }
   ],
   "annotations": [
@@ -338,10 +387,58 @@
       "y": 1490,
       "w": 910,
       "text": "Due attese diverse. A sinistra la lista: la ragione non è una sola — la gara è piena (CAPACITY) oppure non prevede la X e serve un numero pari (PARITY). Oggi l'interfaccia mostra «Lista d'attesa #n» in entrambi i casi, e nel secondo si legge come un errore: sei in lista su una gara con 17 posti occupati su 24. In tutti e due la promozione è automatica, in ordine di posizione.\nA destra la partita senza tavolo: il comando principale non può essere «Gioca», perché non c'è niente da aprire. Al suo posto l'unica cosa utile mentre si aspetta — chi occupa i tavoli e quanto manca — e il fatto che l'unica cosa giocabile adesso è la sfida a due, che infatti si prende il bottone scuro."
+    },
+    {
+      "id": "tess-intro",
+      "page": "page-5",
+      "x": 0,
+      "y": -250,
+      "w": 1600,
+      "text": "REGOLA 1 (2026-09-10) — il ruolo è per elemento, non per pagina. Per ogni gara contano tre fatti — sono iscritto, la dirigo, ho una partita aperta — e la tessera si disegna da quelli: senza fatti è quella dell'ospite, con due i pezzi si sommano, sul conflitto vince il direttore.\n\nOgni riga è uno stato della gara, ogni colonna un insieme di fatti, ogni cella la tessera che ne discende. Le due matrici sotto contengono le STESSE celle: cambia solo da quale delle due forme di oggi parte la tessera condivisa fra home dell'ospite e dashboard. È l'unica scelta da fare qui."
+    },
+    {
+      "id": "tess-a",
+      "page": "page-5",
+      "x": 0,
+      "y": 1450,
+      "w": 780,
+      "text": "A · dalla dashboard (#295). Numeri: quota, iscritti/posti, «chiudono il». La diretta si legge dalla pastiglia rossa. Densa e quieta: in un elenco di dieci tessere nessuna urla — ma nemmeno la gara in corso, che è l'unica che chiede attenzione adesso."
+    },
+    {
+      "id": "tess-b",
+      "page": "page-5",
+      "x": 820,
+      "y": 1450,
+      "w": 780,
+      "text": "B · dalla home dell'ospite (#296). Barra di riempimento e posti liberi; la gara in corso è scura per chiunque la guardi. Si vede da lontano, che è il punto della diretta. Costa: in un elenco lungo pesa, e ogni pezzo che entra nella tessera scura (partita, classifica, comando) va ridisegnato nella palette accent."
+    },
+    {
+      "id": "tess-marker",
+      "page": "page-5",
+      "x": 0,
+      "y": 3110,
+      "w": 1600,
+      "text": "RICONOSCIBILI. Sulle concluse la pastiglia «Iscritto» non dice più niente (#295 la toglie): al suo posto «Hai giocato» / «Hai diretto», che è ciò che la regola 2 chiede — riconoscere a colpo d'occhio le concluse che ti riguardano, in dashboard e nello storico. Chi ha giocato ha anche la riga «Sei arrivato 5° su 16»: è il fatto, la pastiglia è solo il segnale. Alternativa scartata: la sola riga senza pastiglia — in uno storico di 34 righe non si scorre."
+    },
+    {
+      "id": "tess-camp",
+      "page": "page-5",
+      "x": 1720,
+      "y": 1190,
+      "w": 1250,
+      "text": "CAMPIONATO — oggi la tessera in dashboard (#295) mostra meno di quella dell'ospite (#296): niente classifica, niente prossime gare. Con la regola 1 parte dalla tessera dell'ospite e aggiunge: la TUA riga sotto i primi tre (se non ci sei già), «Gestione» al posto di «Classifica e risultati» per chi dirige.\n\nINVITO AI PLAYOFF — lo STATO prometteva «dentro la card del campionato» (Giocatore C, pagina Confronto), la #295 lo tiene in cima come sezione a sé (Giocatore A). Il confronto sta già lì: è una cosa da fare con scadenza, e in cima si vede; dentro la card è al suo posto ma si scorre. Da decidere, non da ridisegnare."
+    },
+    {
+      "id": "tess-concl",
+      "page": "page-5",
+      "x": 1720,
+      "y": 3190,
+      "w": 910,
+      "text": "REGOLA 2 — le concluse in dashboard e in home: l'ultima, sempre, più quelle degli ultimi trenta giorni su Gara.date; di tutti, non solo tue; riconoscibili. Vale per gare e campionati, e vale uguale per l'ospite (che oggi ne vede quattro fisse). La riga in coda dice quante ne restano e porta allo storico.\n\nSTORICO — pagina nuova per le gare (oggi /garas è solo standalone, senza ricerca né filtri) e /campionatos esteso: ricerca per nome o sala, chip «che ho giocato / che ho diretto», disciplina, anno; righe raggruppate per mese, vincitore in vista, pastiglia di partecipazione. Un segmentato in cima passa da gare a campionati: è lo stesso archivio, non due pagine."
     }
   ],
   "launch": {
     "view": "canvas",
-    "page": "page-4"
+    "page": "page-5"
   }
 }

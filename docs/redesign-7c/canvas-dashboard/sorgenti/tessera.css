@@ -1,0 +1,34 @@
+/* ============================================================
+   Pagina «Tessera» — la stessa gara vista da chi ha fatti diversi.
+   Nessun valore nuovo: composizioni dei token e due controlli
+   (chip di filtro, segmentato) presi dal tema 7c dell'app.
+   ============================================================ */
+.matrix{background:var(--c7-bg);padding:28px 32px 36px;display:grid;
+  grid-template-columns:120px repeat(var(--cols,4),330px);gap:20px 24px;align-items:start}
+.mx-col{font-size:13px;font-weight:800;letter-spacing:-.01em;padding:0 4px}
+.mx-col .meta{margin-top:2px}
+.mx-row{font-size:13px;font-weight:800;padding-top:16px}
+.mx-row .meta{margin-top:2px}
+.mx-cell{display:flex;flex-direction:column;gap:12px}
+.mx-cell>.c7-card{width:330px}
+.mx-title{grid-column:1 / -1;display:flex;flex-direction:column;gap:4px;padding-bottom:6px}
+.mx-title h2{font-size:20px}
+
+/* chip di filtro e segmentato: `.c7-chip` / `.c7-seg` di theme-7c.css */
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{height:36px;padding:0 14px;border-radius:var(--c7-r-pill);background:var(--c7-card);
+  color:var(--c7-ink-soft);font-size:12px;font-weight:800;display:inline-flex;
+  align-items:center;gap:6px;white-space:nowrap}
+.chip.is-on{background:var(--c7-ink);color:var(--c7-on-ink)}
+.seg{display:flex;background:var(--c7-card);border-radius:var(--c7-r-field);padding:4px;gap:4px}
+.seg>span{flex:1;height:40px;border-radius:var(--c7-r-control);display:flex;align-items:center;
+  justify-content:center;font-size:13px;font-weight:800;color:var(--c7-ink-muted)}
+.seg>span.is-on{background:var(--c7-ink);color:var(--c7-on-ink)}
+.field{height:48px;border-radius:var(--c7-r-field);background:var(--c7-card);padding:0 16px;
+  display:flex;align-items:center;gap:10px;color:var(--c7-ink-faint);font-size:14px;font-weight:600}
+.mese{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--c7-ink-muted);padding:6px 4px 0}
+
+/* tessera scura (forma B): i testi secondari nel tono dim del tema accent */
+.c7-card--accent .meta,.c7-card--accent .muted{color:var(--c7-accent-dim)}
+.c7-card--accent .cardtitle{color:var(--c7-accent-ink)}

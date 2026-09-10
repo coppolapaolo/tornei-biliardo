@@ -15,9 +15,11 @@ decisione.
 | Inventario dei casi | <https://claude.ai/code/artifact/c1527bf6-4a71-4c5f-9ad1-d84eff348d79> |
 | Sorgenti degli artboard | `docs/redesign-7c/canvas-dashboard/sorgenti/` — **non `parts/`**: il `.gitignore` del repo esclude quel nome per buildout |
 
-Le quattro pagine del canvas: **Mobile** e **Desktop** ritraggono l'app com'è
+Le cinque pagine del canvas: **Mobile** e **Desktop** ritraggono l'app com'è
 oggi; **Confronto** mette a fianco le alternative fra cui si è scelto; **Casi**
-contiene dieci stati disegnati nella forma scelta.
+contiene dieci stati disegnati nella forma scelta; **Tessera** (10/09) mostra
+la stessa gara vista da chi ha fatti diversi — la regola 1 resa visibile — e
+le due schermate della regola 2, «Concluse» e «Storico».
 
 La cartella è versionata (PR `docs:` del 30/08); il canvas seminato no, vedi
 «Nota sui file» in fondo.
@@ -111,6 +113,7 @@ cd docs/redesign-7c/canvas-dashboard
 python3 sorgenti/gen_confronto.py      # varianti A/B/C giocatore e direttore
 python3 sorgenti/gen_ospite.py         # varianti A/B/C ospite
 python3 sorgenti/gen_casi.py           # i dieci casi
+python3 sorgenti/gen_tessera.py        # pagina Tessera: matrici stato x fatti, Concluse, Storico
 ./build.sh <NomeArtboard> ...       # cuce sorgenti/base.css + corpo -> .dc.html
 ```
 
@@ -119,7 +122,10 @@ scritti a mano in `sorgenti/*.body`, senza generatore.
 
 `build.sh` decide quali fogli aggiungere in base al **nome** dell'artboard
 (`*Desktop` → `desktop.css`; `Giocatore[ABC]`, `Direttore[ABC]`,
-`Ospite[ABC]`, `Caso*` → `extra.css`). Chi aggiunge un foglio deve
+`Ospite[ABC]`, `Caso*`, `Tessera*`, `Concluse`, `Storico` → `extra.css`;
+gli ultimi tre anche `tessera.css`). Da zsh il ciclo su tutti i nomi vuole
+`for f in *.dc.html; do ./build.sh "${f%.dc.html}"; done`: una variabile con
+gli spazi non si spezza e arriva come un nome solo. Chi aggiunge un foglio deve
 aggiornare **anche** il banco di prova, che ha la stessa regola scritta a parte:
 disallineate, le misure sono sbagliate senza dare errore (successo due volte).
 
@@ -252,6 +258,13 @@ Dove si rompe, in ordine di costo:
    verde da una parte, podio a tre riquadri e pastiglia grigia dall'altra.
 6. **I campionati non hanno ruolo per elemento**: la tessera in dashboard
    distingue solo il pulsante finale e non porta pastiglie di appartenenza.
+
+**La pagina «Tessera» del canvas** (10/09) mette in fila questi punti: due
+matrici stato × fatti — la stessa tessera che parte dalla forma della
+dashboard (A) o da quella dell'ospite (B), unica scelta ancora aperta — la
+matrice del campionato, e le schermate «Concluse» e «Storico» della regola 2.
+Il confronto sull'invito ai playoff non è stato ridisegnato: sta già in
+Confronto, Giocatore A (in cima) contro C (nella card).
 
 Cose che invece **restano come sono** e non vanno rifatte: la divisione «Le
 tue gare» / «Aperte, puoi iscriverti», la partita dentro la tessera, il
