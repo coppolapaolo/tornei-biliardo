@@ -67,7 +67,7 @@
     {% if stats.runouts and stats.runouts.total %}
     <div class="c7-rows__row">
       <div class="c7-rows__main">
-        <div class="c7-rows__title">{{ _("Runout") }}</div>
+        <div class="c7-rows__title" data-help="profilo-runout">{{ _("Runout") }}</div>
         {% if stats.runouts.break_and_runs %}
         <div class="c7-rows__sub">{{ _("di cui %(n)s break and run", n=stats.runouts.break_and_runs) }}</div>
         {% endif %}

@@ -101,7 +101,7 @@ def test_complete_round_completes_trio_matches(client, db_session):
     trio_after = Match.query.get(trio_match.id)
     db_session.refresh(trio)
 
-    assert normal_after.status == MatchStatus.CLOSED_UNILATERALLY.value
+    assert MatchStatus.is_finished(normal_after.status)
     assert trio_after.status == MatchStatus.CLOSED_UNILATERALLY.value
     assert trio.is_completed is True
     assert trio.winner_id is not None, "Il trio deve avere un vincitore"

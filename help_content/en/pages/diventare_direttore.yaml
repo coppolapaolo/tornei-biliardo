@@ -103,6 +103,16 @@ blocks:
           Both roles can be revoked: ask an administrator. The competitions you
           have already created stay where they are.
 
+  - type: note
+    tone: tip
+    title: "First evening? Run a trial"
+    text: >-
+      As soon as you have the role, create a **trial competition**: only you
+      can see it, you fill it with fictitious players and run it to the end
+      with simulated results, with the tips switched on in every screen. When
+      you are done you delete it. See
+      [Running a trial](/aiuto/organizzare/fare_una_prova).
+
   - type: faq
     items:
       - q: "How long does the answer take?"

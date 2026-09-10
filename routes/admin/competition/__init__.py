@@ -31,6 +31,7 @@ from . import challenges  # noqa: E402, F401
 from . import squadre  # noqa: E402, F401
 from . import categorie  # noqa: E402, F401
 from . import vetrina  # noqa: E402, F401
+from . import prova  # noqa: E402, F401
 
 # Export blueprint for parent package
 __all__ = ["competition_bp"]

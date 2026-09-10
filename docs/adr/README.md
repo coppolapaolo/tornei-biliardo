@@ -69,6 +69,9 @@ Crea un ADR quando:
 | ADR-053 | [Il peso della prova, e chi decide la classifica finale](ADR-053-playoff-weight-and-final-ranking-mode.md) | Accepted | 2026-08-23 |
 | ADR-054 | [La versione la decidono i titoli delle PR](ADR-054-version-from-pull-request-titles.md) | Accepted | 2026-08-26 |
 | ADR-055 | [La sessione è legata alla credenziale](ADR-055-session-bound-to-credential.md) | Accepted | 2026-08-26 |
+| ADR-056 | [Apertura e runout sul segnapunti](ADR-056-apertura-e-runout-sul-segnapunti.md) | Accepted | 2026-08-28 |
+| ADR-057 | [Gli aggiornamenti live passano da una tabella condivisa fra i worker](ADR-057-live-events-shared-across-workers.md) | Accepted | 2026-09-02 |
+| ADR-058 | [La competizione di prova è invisibile per default e si cancella fisicamente](ADR-058-competizione-di-prova.md) | Accepted | 2026-09-04 |
 
 ## Come Creare un Nuovo ADR
 

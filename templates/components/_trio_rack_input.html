@@ -286,7 +286,7 @@
                 {% if user_can_manage %}
                     {# Admin/Director can forfeit any player #}
                     <div class="dropdown">
-                        <button class="btn btn-outline-danger btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <button class="btn btn-outline-danger btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" data-help="partita-forfait">
                             <i class="fas fa-flag"></i> {{ _('Dichiara forfait') }}
                         </button>
                         <ul class="dropdown-menu">
@@ -301,7 +301,7 @@
                     </div>
                 {% elif user_is_player %}
                     {# Player can only forfeit themselves #}
-                    <button class="btn btn-outline-danger btn-sm" onclick="declareForfeit({{ current_user.id }})">
+                    <button class="btn btn-outline-danger btn-sm" onclick="declareForfeit({{ current_user.id }})" data-help="partita-forfait">
                         <i class="fas fa-flag"></i> {{ _('Dichiara forfait') }}
                     </button>
                 {% endif %}

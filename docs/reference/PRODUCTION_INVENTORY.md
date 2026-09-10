@@ -85,6 +85,9 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/admin/gara/<int:gara_id>/close_inscriptions` | POST | `admin.competition.close_inscriptions` | `@gara_manager_required` | action | Chiude iscrizioni |
 | `/admin/gara/<int:gara_id>/admin_inscribe` | POST | `admin.competition.admin_inscribe_user` | `@gara_manager_required` | action | Iscrive player manualmente |
 | `/admin/gara/<int:gara_id>/admin_uninscribe/<int:user_id>` | POST | `admin.competition.admin_uninscribe_user` | `@gara_manager_required` | action | Disiscrive player manualmente |
+| `/admin/gara/<int:gara_id>/prova/iscrivi/<modalita>` | POST | `admin.competition.prova_iscrivi_fittizi` | `@gara_manager_required` | action | Competizione di prova (ADR-058): crea e iscrive giocatori fittizi (il minimo, fino al massimo, uno in più) |
+| `/admin/gara/<int:gara_id>/prova/simula/<azione>` | POST | `admin.competition.prova_simula` | `@gara_manager_required` | action | Competizione di prova (ADR-058): simula i risultati — una partita, il turno, tutta la gara. Le partite pari le chiudono i giocatori con la doppia conferma, le dispari restano da validare |
+| `/admin/gara/<int:gara_id>/prova/elimina` | POST | `admin.competition.prova_elimina` | `@gara_manager_required` | action | Competizione di prova (ADR-058): eliminazione fisica in qualunque stato |
 | `/admin/gara/<int:gara_id>/add_director` | POST | `admin.competition.add_director` | `@gara_manager_required` | action | Aggiunge co-director a gara |
 | `/admin/gara/<int:gara_id>/remove_director` | POST | `admin.competition.remove_director` | `@gara_manager_required` | action | Rimuove co-director |
 
@@ -169,6 +172,9 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
 | `/admin/campionato/create` | POST | `admin.campionato.create_campionato` | `@director_or_admin_required` | action | Crea campionato (legacy, wizard preferito) |
+| `/admin/campionato/<int:campionato_id>/prova/elimina` | POST | `admin.campionato.prova_elimina` | `@campionato_manager_required` | action | Competizione di prova (ADR-058): elimina fisicamente il campionato di prova con gare, partite, playoff e fittizi |
+| `/admin/campionato/<int:campionato_id>/prova/invito/<int:qualification_id>/<risposta>` | POST | `admin.campionato.prova_rispondi_invito` | `@campionato_manager_required` | action | Competizione di prova (ADR-058): il fittizio accetta o rifiuta l'invito ai playoff; un rifiuto fa scattare il primo degli esclusi |
+| `/admin/campionato/<int:campionato_id>/prova/inviti/accetta-tutti` | POST | `admin.campionato.prova_accetta_inviti` | `@campionato_manager_required` | action | Competizione di prova (ADR-058): accetta tutti gli inviti ai playoff ancora in attesa dei fittizi |
 | (vedi wizard sopra) | - | - | - | - | - |
 
 **Endpoint root:** `/admin/campionato`
@@ -513,15 +519,11 @@ cosa che il rating decide da solo è **quali partite entrano nell'Elo**:
 
 ---
 
-### Real-time Updates (SSE / Polling)
+### Real-time Updates (polling — ADR-021, ADR-057)
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/sse/trio/<int:trio_id>` | GET | `sse.trio_stream` | `@login_required` | SSE stream | Real-time trio match updates |
-| `/sse/gara/<int:gara_id>` | GET | `sse.gara_stream` | `@login_required` | SSE stream | Real-time gara (competition) updates |
-| `/sse/user/<int:user_id>` | GET | `sse.user_stream` | `@login_required` | SSE stream | Real-time user-specific updates (XP, achievements) |
-| `/sse/individual_match/<int:match_id>` | GET | `sse.individual_match_stream` | `@login_required` | SSE stream | Real-time individual match updates |
-| `/sse/poll/trio/<int:trio_id>` | GET | `sse.poll_trio` | `@login_required` | JSON API (polling) | Poll trio updates (recommended over SSE) |
+| `/sse/poll/trio/<int:trio_id>` | GET | `sse.poll_trio` | `@login_required` | JSON API (polling) | Poll trio updates |
 | `/sse/poll/gara/<int:gara_id>` | GET | `sse.poll_gara` | `@login_required` | JSON API (polling) | Poll gara updates |
 | `/sse/poll/user/<int:user_id>` | GET | `sse.poll_user` | `@login_required` | JSON API (polling) | Poll user updates (security: own user only) |
 | `/sse/poll/individual_match/<int:match_id>` | GET | `sse.poll_individual_match` | `@login_required` | JSON API (polling) | Poll individual match updates |

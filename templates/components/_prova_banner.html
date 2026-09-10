@@ -1,0 +1,62 @@
+{# templates/components/_prova_banner.html — Design System 7c
+   Il banner della competizione di prova (ADR-058), in cima alla pagina della
+   gara per chi la dirige. Dice tre cose e basta: che e' una prova, quando
+   sparisce da sola, e come eliminarla adesso.
+
+   Superficie `c7-card--warn` e non `--accent`: la prova e' uno stato
+   «attenzione, non e' vera», lo stesso tono con cui il tema segnala la lista
+   d'attesa o lo spareggio. Il pulsante di eliminazione e' un'azione
+   distruttiva: fondo tenue (`btn-outline-danger` ridefinito dal tema), mai
+   rosso pieno.
+
+   Niente `id`: la pagina della gara include alcuni componenti due volte
+   (mobile/desktop) e questo potrebbe seguirli. La scadenza c'e' solo sulla
+   radice: per una gara di campionato la porta il campionato.
+
+   Lo include anche la pagina del campionato di prova, che passa la radice
+   con `prova_radice`; senza, la radice e' `gara`. Eliminare da una gara di
+   campionato elimina il campionato intero, e la conferma lo dice. #}
+{% set _campionato = prova_radice if prova_radice is defined and prova_radice else none %}
+{% set _radice = _campionato or gara %}
+{% set _scadenza = _radice.prova_expires_at or (gara.campionato.prova_expires_at if not _campionato and gara.campionato else none) %}
+{% set _tutto_il_campionato = _campionato or gara.campionato_id %}
+{% set _endpoint_elimina = 'admin.campionato.prova_elimina' if _campionato else 'admin.competition.prova_elimina' %}
+<div class="c7-card c7-card--warn">
+  <div class="d-flex align-items-start gap-3 flex-wrap">
+    <div class="flex-fill min-width-0">
+      <div class="c7-kicker"><i class="fas fa-flask me-1"></i>{{ _("Competizione di prova") }}</div>
+      <div style="font-size:14px;font-weight:700">
+        {{ _("Solo tu la vedi. Gli iscritti sono giocatori fittizi; ELO, XP e statistiche non cambiano.") }}
+      </div>
+      {% if _scadenza %}
+      <div class="mt-1" style="font-size:12px;font-weight:600">
+        {{ _("Sparisce da sola il") }}
+        <span class="c7-num">{{ _scadenza|date_local }}</span>.
+      </div>
+      {% endif %}
+    </div>
+    <div class="d-flex flex-column align-items-stretch gap-2">
+      {# L'interruttore della modalità aiuto (static/js/help-hints.js). Il
+         componente non sa cos'è una prova: vede questo attivatore e si
+         accende, finché l'utente non lo spegne — per il suo browser. #}
+      <label class="c7-prova__aiuto" data-help="prova-aiuto">
+        <span class="form-check form-switch m-0">
+          <input class="form-check-input m-0" type="checkbox" role="switch" data-help-toggle>
+        </span>
+        <span><i class="fas fa-circle-question me-1"></i>{{ _("Suggerimenti") }}</span>
+      </label>
+      {% if feature_visible(_endpoint_elimina) %}
+      {# `d-flex`: la «?» dell'aiuto si aggancia dopo il pulsante, e senza la
+         riga flessibile finirebbe a capo sotto di lui. #}
+      <form method="POST" class="d-flex align-items-center"
+            action="{{ url_for('admin.campionato.prova_elimina', campionato_id=_radice.id) if _campionato else url_for('admin.competition.prova_elimina', gara_id=gara.id) }}"
+            onsubmit='return confirm({{ (_("Eliminare la prova con tutto il campionato, le gare, le partite e i giocatori fittizi? Non si torna indietro.") if _tutto_il_campionato else _("Eliminare la prova con tutte le partite e i giocatori fittizi? Non si torna indietro."))|tojson }})'>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-outline-danger flex-fill" data-help="prova-elimina">
+          <i class="fas fa-trash-can me-1"></i>{{ _("Elimina la prova") }}
+        </button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</div>

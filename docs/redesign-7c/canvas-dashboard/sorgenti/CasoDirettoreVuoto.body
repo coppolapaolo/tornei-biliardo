@@ -1,0 +1,69 @@
+<div class="screen">
+
+  <header class="c7-head">
+    <span class="c7-head__back"><svg viewBox="0 0 24 24" class="ico ico-lg"><use href="#i-nodes"></use></svg></span>
+    <div class="c7-head__title">
+      <span class="c7-title">Ciao paolo</span>
+      <span class="c7-head__sub">Direttore di gara</span>
+    </div>
+    <span class="gami-badge">
+      <span class="gami-badge__ring"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-trophy"></use></svg></span>
+      <span class="gami-badge__level">Lv 12</span>
+    </span>
+    <span class="c7-avatar c7-avatar--lg">PA</span>
+    <div class="c7-head__actions">
+      <span class="btn btn-secondary btn-sm btn-secondary--onpage"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-plus"></use></svg>Nuova Gara</span>
+      <span class="btn btn-primary btn-sm"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-wand"></use></svg>Nuovo Campionato</span>
+    </div>
+  </header>
+
+  <main class="c7-content">
+
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Le tue gare</h2>
+      </div>
+      <div class="c7-empty">
+        <div class="c7-empty__ico"><svg viewBox="0 0 24 24" class="ico ico-lg"><use href="#i-flag"></use></svg></div>
+        <div class="c7-empty__title">Non dirigi ancora nessuna gara</div>
+        <p class="c7-empty__text">Crea una gara singola, oppure un campionato con più gare in calendario. Qui compaiono anche le gare in cui giochi.</p>
+        <div class="c7-empty__actions">
+          <span class="btn btn-primary">Crea la prima gara</span>
+        </div>
+      </div>
+    </section>
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Aperte, puoi iscriverti <span class="count">1</span></h2>
+        <a href="#" style="font-size:12px">Vedi tutte</a>
+      </div>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 4 &mdash; Palla 9</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 9 <span class="c7-sep">&middot;</span> Al <span class="c7-num">4</span></div>
+            <div class="meta"><span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <span class="c7-state c7-state--ok">Aperta</span>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700">
+          <span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span>
+          <span class="muted"><span class="c7-num">18/24</span></span>
+        </div>
+        <div class="meta"><span style="color:var(--c7-warn)">Chiudono il <span class="c7-num">10/09/2026 20:00</span></span></div>
+        <div style="display:flex;gap:8px">
+          <span class="btn btn-secondary btn-sm btn-fill">Dettagli</span>
+          <span class="btn btn-success btn-sm btn-fill">Iscriviti</span>
+        </div>
+      </article>
+    </section>
+
+  </main>
+
+  <nav class="c7-mobilenav">
+    <a href="#" class="is-active"><svg viewBox="0 0 24 24" class="ico"><use href="#i-gauge"></use></svg>Dashboard</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-users"></use></svg>Sfide</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-venue"></use></svg>Sale</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-bell"></use></svg>Notifiche</a>
+  </nav>
+</div>

@@ -29,13 +29,13 @@ classifica generale. Le due domande sono distinte e vanno tenute distinte:
 | Stato | Etichetta mostrata | Vale quando |
 |---|---|---|
 | `SETUP` | Setup | non c'è ancora niente di aperto |
-| `REGISTRATION_OPEN` | Iscrizioni aperte | almeno una gara raccoglie iscrizioni |
-| `IN_PROGRESS` | In corso | almeno una gara si sta giocando, **oppure** restano gare da creare rispetto a quelle pianificate |
+| `REGISTRATION_OPEN` | Iscrizioni aperte | almeno una gara raccoglie iscrizioni **adesso**: è nella fase iscrizioni *e* la finestra è aperta |
+| `IN_PROGRESS` | In corso | almeno una gara si sta giocando, **oppure** restano gare da creare rispetto a quelle pianificate, **oppure** il campionato è già cominciato (qualche gara conclusa) e ne restano da giocare |
 | `AWAITING_CLOSURE` | **In attesa di chiusura** | tutte le gare previste sono finite, ma `terminated_at` è NULL: la classifica generale **non è consolidata** |
 | `AWAITING_PLAYOFF` | **In attesa dei playoff** | il direttore ha chiuso, e restano playoff da giocare |
 | `COMPLETED` | Completato | non c'è più niente da giocare: nessun playoff previsto, o tutti conclusi |
 
-Tre regole, e la ragione di ciascuna:
+Cinque regole, e la ragione di ciascuna:
 
 1. **`COMPLETED` è l'unico stato finale.** Fino alla issue #242 copriva anche
    «gare esaurite ma nessuno ha premuto Termina»: due situazioni diverse sotto
@@ -51,6 +51,20 @@ Tre regole, e la ragione di ciascuna:
    resta fra gli **attivi** nella dashboard del direttore ed è elencato fra
    quelli «in corso» nella lista pubblica. È così che il pulsante «Termina»
    torna sotto gli occhi di chi deve premerlo, invece di finire in archivio.
+4. **«Raccoglie iscrizioni» è una domanda sull'orologio, non sulla colonna.**
+   `status = INSCRIPTION` dice che la gara è *nella fase* delle iscrizioni;
+   quando la finestra si apre lo dicono `inscription_start` e
+   `inscription_end`. Fino al 2026-09-04 il campionato guardava la sola colonna
+   e la gara la finestra, quindi nella stessa schermata il campionato mostrava
+   «Iscrizioni aperte» e le sue due gare «Iscrizioni programmate» — visto in
+   produzione. La distinzione la fa già `Gara.get_real_status()`, ed è a lui che
+   va chiesta invece di riscriverla una terza volta.
+5. **Un campionato cominciato non torna in Setup.** Quando le gare giocate
+   stanno alle spalle e la prossima non ha ancora aperto le iscrizioni, nessuna
+   delle prime tre righe della tabella si applicava e lo stato cadeva su
+   `SETUP`: il campionato sarebbe passato da «Campionati in corso» a «in
+   preparazione» a metà stagione. Da qui il terzo ramo di `IN_PROGRESS`,
+   aggiunto il 2026-09-04 insieme alla regola 4.
 
 > **Nota storica (2026-08-29).** Lo stato che oggi si chiama `AWAITING_PLAYOFF`
 > si chiamava `TERMINATED`, etichetta «Terminato», e significava il contrario di
@@ -401,6 +415,20 @@ Creare una nuova gara significa definire:
 - la distanza di default per i turni
 
 Quando un utente crea una nuova gara in un campionato, tutti i valori vengono precompilati. Ad esempio il numero di gara è incrementale, la data viene precompilata con quella di oggi per la prima gara o con quella di una settimana più avanti rispetto all'ultima gara aggiunta al campionato, gli altri valori vengono precompilati con i valori delle gare precedenti o con valori di default per la prima gara. 
+
+#### Competizione di prova
+
+Un direttore può creare una gara singola o un campionato **di prova** (ADR-058, specifica completa in `docs/usecases/competizione-di-prova.md`): la stessa competizione con un flag, per imparare le schermate di gestione senza toccare dati reali.
+
+- Una prova è visibile **solo** a chi la dirige (direttore, co-direttori, admin). Non compare in nessun elenco pubblico, non ha link pubblico né vetrina.
+- Un direttore può avere al massimo **3 prove aperte** contemporaneamente (gare singole e campionati sommati).
+- A una prova si iscrivono **solo giocatori fittizi**, creati dalla prova stessa con nomi generici e rating iniziali fissi e diversi fra loro. Nessun utente reale, nemmeno il direttore.
+- In una prova avviata il direttore **simula i risultati**: una partita, il turno o tutta la gara. Ogni rack passa dal segnapunti vero, con l'id del fittizio che lo segna, e il punteggio rispetta la distanza effettiva del turno (ADR-027). Le partite si chiudono **in entrambi i modi**, deciso dalla parità dell'id: le **pari** con la doppia conferma dei giocatori, le **dispari** restano a distanza raggiunta in attesa che il direttore le validi. «Simula tutta la gara» chiude tutto, validando le dispari come farebbe lui. Il segnapunti vero resta usabile.
+- In un **campionato di prova** le gare ereditano il flag e i giocatori fittizi sono **del campionato**: la seconda gara riusa quelli della prima e ne crea di nuovi solo se non bastano, così la classifica generale si forma. Le date delle gare vengono proposte **nei prossimi giorni e in ordine** (domani la prima, il giorno dopo l'ultima le altre, ADR-016). Al playoff il direttore accetta o rifiuta l'invito **per ciascun fittizio**, con gli stessi servizi del giocatore, e può accettare tutti i rimanenti insieme; un rifiuto fa scattare il primo degli esclusi.
+- Le partite di una prova **non muovono alcun rating** e nessun evento di una prova assegna XP, badge o missioni a nessuno. Le statistiche del direttore (gare organizzate) ignorano le prove.
+- Le notifiche originate da una prova arrivano al direttore solo in app, con il prefisso «Prova ·».
+- Una prova si può eliminare in qualunque stato; l'eliminazione è **fisica** e include partite, iscrizioni, qualificazioni e giocatori fittizi.
+- Una prova non eliminata sparisce da sola **14 giorni** dopo la creazione; il direttore riceve un avviso in app **3 giorni** prima.
 
 ## Internazionalizzazione
 

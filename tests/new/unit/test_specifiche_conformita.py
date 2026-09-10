@@ -589,3 +589,86 @@ class TestRegoleDiApertura:
         # Un valore sulla gara vince sul campionato.
         gara.break_rule = BreakRule.ALTERNATE_TWO.value
         assert match.effective_break_rule is BreakRule.ALTERNATE_TWO
+
+
+class TestCompetizioneDiProva:
+    """`SPECIFICHE.md` righe 419-431: la competizione di prova (ADR-058)."""
+
+    def test_al_massimo_tre_prove_aperte(self):
+        """Riga 424: «al massimo **3 prove aperte** contemporaneamente»."""
+        from models.prova.service import LIMITE_PROVE_ATTIVE
+
+        assert LIMITE_PROVE_ATTIVE == 3
+
+    def test_scade_a_quattordici_giorni_con_avviso_tre_giorni_prima(self):
+        """Riga 431: «**14 giorni** dopo la creazione ... **3 giorni** prima»."""
+        from datetime import timedelta
+
+        from models.prova.service import DURATA_PROVA, PREAVVISO_SCADENZA
+
+        assert DURATA_PROVA == timedelta(days=14)
+        assert PREAVVISO_SCADENZA == timedelta(days=3)
+
+    def test_la_simulazione_chiude_le_pari_dai_giocatori_e_le_dispari_dal_direttore(
+        self,
+    ):
+        """Riga 426: «le **pari** con la doppia conferma dei giocatori, le
+        **dispari** restano ... in attesa che il direttore le validi»."""
+        from types import SimpleNamespace
+
+        from models.prova.simulation_service import SimulationService
+
+        assert SimulationService.chiusa_dai_giocatori(SimpleNamespace(id=2))
+        assert not SimulationService.chiusa_dai_giocatori(SimpleNamespace(id=3))
+
+    def test_nel_campionato_di_prova_le_date_sono_nei_prossimi_giorni(self, db_session):
+        """Riga 427: «domani la prima, il giorno dopo l'ultima le altre»."""
+        from datetime import date, timedelta
+
+        from models.campionato.tournament_service import TournamentService
+        from models.prova.service import ProvaService
+        from models.prova.visibility import prova_visibili
+
+        with prova_visibili():
+            campionato = TournamentService().create_campionato_with_director(
+                name="Prova",
+                creator_user_id=_utente(db_session).id,
+                **ProvaService.campi_di_creazione(),
+            )
+            db_session.commit()
+            assert TournamentService.data_proposta_gara(
+                campionato.id
+            ) == date.today() + timedelta(days=1)
+
+    def test_i_fittizi_hanno_rating_fissi_e_diversi(self):
+        """Riga 425: «rating iniziali fissi e diversi fra loro»."""
+        from models.prova.nomi import NOMI_FITTIZI
+
+        rating = [r for _, _, r in NOMI_FITTIZI]
+        assert len(set(rating)) == len(rating)
+
+    def test_una_partita_di_prova_non_muove_il_rating(self, db_session):
+        """Riga 428: «non muovono alcun rating»."""
+        from models.prova.service import ProvaService
+        from models.rating.eligibility import RatingEligibility, RatingExclusion
+
+        gara = _gara(db_session)
+        gara.director_id = _utente(db_session).id
+        for chiave, valore in ProvaService.campi_di_creazione().items():
+            setattr(gara, chiave, valore)
+        db_session.flush()
+        a, b = _utente(db_session), _utente(db_session)
+        match = Match(
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=a.id,
+            player2_id=b.id,
+            player1_score=5,
+            player2_score=1,
+            winner_id=a.id,
+            status=MatchStatus.CONFIRMED_BY_BOTH.value,
+        )
+        db_session.add(match)
+        db_session.flush()
+
+        assert RatingEligibility.exclusion_reason(match) is RatingExclusion.PROVA

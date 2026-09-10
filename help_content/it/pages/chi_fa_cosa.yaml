@@ -49,6 +49,14 @@ blocks:
 
   - type: text
     text: >-
+      La prima volta non serve rischiare su una serata vera: un direttore può
+      creare una **competizione di prova**, che vede solo lui, riempirla di
+      giocatori fittizi e condurla fino in fondo con i risultati simulati.
+      Dentro la prova ogni schermata si presenta da sola, con una «?» accanto
+      ai comandi. È spiegata in [Fare una prova](/aiuto/organizzare/fare_una_prova).
+
+  - type: text
+    text: >-
       Cambia anche il riquadro che accoglie all'ingresso, e **segue l'ultima
       cosa che hai fatto**: se hai appena creato una gara, o qualcuno si è
       appena iscritto a una delle tue, trovi **«Come vanno le tue gare»** —

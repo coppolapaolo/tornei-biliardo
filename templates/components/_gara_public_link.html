@@ -18,6 +18,18 @@
    riferimento e' per attributo `data-*`, e l'ascoltatore e' delegato e
    registrato una volta sola. #}
 
+{# Competizione di prova (ADR-058): il link non esiste, e lo si dice al posto
+   di lasciare un vuoto — il direttore sta imparando dove lo trovera'. #}
+{% if gara.is_prova %}
+<hr class="c7-divider">
+<div class="c7-card--sunk" style="padding:10px 12px;border-radius:12px;background:var(--c7-sunken)">
+  <div class="c7-label"><i class="fas fa-share-nodes"></i> {{ _('Link pubblico di iscrizione') }}</div>
+  <div class="form-text mt-1">
+    {{ _('In una gara vera qui trovi il link da condividere su locandine, post o QR code. Una prova non ha una pagina pubblica: da fuori non esiste.') }}
+  </div>
+</div>
+{% endif %}
+
 {% if public_invite_url %}
 <hr class="c7-divider">
 <div class="c7-linkshare" data-gara-public-link>

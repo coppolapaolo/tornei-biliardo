@@ -215,6 +215,16 @@ class RoundService:
 
         TableAssignmentService.assign_tables_to_round(gara_id, round_number=1)
 
+        # Chi ha la pagina della gara aperta deve vedere il turno comparire.
+        # L'evento viaggia con questa transazione (ADR-057). Con la strategia
+        # casuale i turni nascono tutti insieme, ma per chi guarda è un
+        # avvio solo.
+        from routes.sse import emit_gara_event
+
+        emit_gara_event(
+            gara_id, "round_started", {"gara_id": gara_id, "round_number": 1}
+        )
+
         return gara
 
     @staticmethod

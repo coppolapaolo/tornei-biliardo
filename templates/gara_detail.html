@@ -22,6 +22,14 @@
 {% block page_actions %}{{ gara_head.actions(gara) }}{% endblock %}
 
 {% block content %}
+{# Competizione di prova (ADR-058): il banner viene prima di tutto, perche'
+   ogni schermata sotto e' quella vera e il direttore deve sapere di essere
+   in una prova prima di toccarla. #}
+{% if gara.is_prova and user_can_manage %}
+<div class="c7-stack" style="margin-bottom:14px">
+  {% include "components/_prova_banner.html" %}
+</div>
+{% endif %}
 {# Punteggio di un giocatore nel modal del risultato rapido: stepper, non
    campo numerico (regola 7c per i numeri piccoli e frequenti). L'input
    conserva id, min/max e handler, quindi il JS non cambia. #}
@@ -698,7 +706,7 @@
   <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{ _('Con che squadra giochi?') }}</h5>
+        <h5 class="modal-title" data-help="gara-squadra-iscrizione">{{ _('Con che squadra giochi?') }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
       </div>
       <div class="modal-body">
@@ -714,6 +722,10 @@
 {% endblock %}
 
 {% block scripts %}
+{# La ricerca fra gli iscrivibili. Sta qui e non dentro
+   `_gara_inscriptions.html` perché quel componente è incluso due volte
+   (mobile e desktop) e lo script girerebbe due volte. #}
+<script src="{{ url_for('static', filename='js/iscritti_ricerca.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script type="application/json" id="gara-config">
   {
     "gara": {

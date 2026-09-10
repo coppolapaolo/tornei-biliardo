@@ -1,15 +1,16 @@
 # Micro-aiuto e presentazioni: contenuti pronti per l'interfaccia adattiva.
 #
-# QUESTO FILE NON È ANCORA USATO DALL'APP. È la predisposizione per la guida
-# contestuale prevista dal progetto: alla prima visita di una schermata una
-# breve presentazione delle cose principali, poi per un certo periodo una
-# piccola "?" accanto ai comandi, che sparisce man mano che l'utente li usa.
+# QUESTI TESTI LI MOSTRA L'APP: `static/js/help-hints.js` (la «modalità
+# aiuto», ADR-058) li chiede a /aiuto/api/schermata/<endpoint> e, dove la
+# pagina la accende — oggi il banner della competizione di prova — mette una
+# piccola "?" accanto a ogni elemento che espone `data-help="<anchor>"` e
+# alla prima visita di una schermata la presentazione (`tours`).
 #
-# Il codice che mostra tutto questo verrà dopo. I testi vengono prima di
-# proposito: sono la parte che richiede di conoscere il dominio e di essere
-# riletta con calma, ed è la parte che, scritta di corsa insieme al codice,
-# esce male. Sono già visibili e verificabili in /aiuto/microaiuto, e
-# interrogabili in JSON da /aiuto/api/schermata/<endpoint>.
+# I testi sono nati prima del codice, di proposito: sono la parte che
+# richiede di conoscere il dominio e di essere riletta con calma. Si rivedono
+# tutti insieme in /aiuto/microaiuto. Ogni `anchor` deve avere il suo
+# `data-help` in un template, e viceversa: lo verifica
+# tests/new/unit/test_help_anchors.py.
 #
 # Campi di `hints`:
 #   id       nome puntato, es. gara.distanza (identifica il suggerimento)
@@ -102,7 +103,7 @@ hints:
     label: "Se i giocatori sono dispari"
     short: "Riposo, riposo con esercizio, partita a tre o lista d'attesa. Sui tabelloni non si chiede: chi resta fuori dal conto passa il turno."
     anchor: gara-dispari
-    screens: [admin.competition.create_gara_standalone]
+    screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2]
     page: numero_dispari
     section: quale
 
@@ -118,7 +119,7 @@ hints:
     label: "Evita reincontri"
     short: "Impedisce che due giocatori si affrontino due volte nella stessa gara. Sui tabelloni non si chiede: chi perde esce."
     anchor: gara-anti-rematch
-    screens: [admin.competition.create_gara_standalone]
+    screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2]
     page: abbinamenti
     section: amalfi
 
@@ -150,9 +151,17 @@ hints:
     label: "Gioco con handicap"
     short: "Il vantaggio lo concordate al tavolo. Qui cambia il rating: si muove solo fra giocatori della stessa categoria."
     anchor: gara-handicap
-    screens: [admin.competition.create_gara_standalone]
+    screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2]
     page: formati_di_gioco
     section: handicap
+
+  - id: gara.cerca_da_iscrivere
+    label: "Cerca il giocatore da iscrivere"
+    short: "Scrivi username, nome o cognome: l'elenco si accorcia mentre scrivi. Chi ha messo il nome nel profilo compare con quello."
+    anchor: gara-cerca-da-iscrivere
+    screens: [admin.competition.gara_detail]
+    page: gestire_le_iscrizioni
+    section: durante
 
   - id: gara.categoria_iscritto
     label: "Categoria"
@@ -190,7 +199,7 @@ hints:
     label: "Regola di inizio"
     short: "Chi esegue il primo tiro. Con l'acchito chi lo vince sceglie chi apre, e può mandare al tavolo l'avversario."
     anchor: gara-regola-inizio
-    screens: [admin.competition.create_gara_standalone, admin.competition.edit_gara]
+    screens: [admin.competition.create_gara_standalone, admin.competition.edit_gara, admin.campionato.wizard_step2]
     page: opzioni_della_gara
     section: formato
 
@@ -198,7 +207,7 @@ hints:
     label: "Chi spacca"
     short: "Come passa il tiro di apertura da un triangolo al successivo. «A turno» è la regola standard."
     anchor: gara-chi-spacca
-    screens: [admin.competition.create_gara_standalone, admin.competition.edit_gara]
+    screens: [admin.competition.create_gara_standalone, admin.competition.edit_gara, admin.campionato.wizard_step2]
     page: opzioni_della_gara
     section: formato
 
@@ -281,7 +290,7 @@ hints:
     label: "Punteggio"
     short: "I triangoli vinti da ciascuno finora. Cambia appena qualcuno segna, anche dal telefono dell'avversario."
     anchor: partita-punteggio
-    screens: [admin.match.match_detail]
+    screens: [admin.match.match_detail, individual_match.match_detail]
     page: giocare_una_partita
     section: leggere
 
@@ -289,7 +298,7 @@ hints:
     label: "Segnapunti"
     short: "Dopo ogni triangolo premi il tasto del giocatore che l'ha vinto. Il tasto pieno è il tuo."
     anchor: partita-segnapunti
-    screens: [admin.match.match_detail]
+    screens: [admin.match.match_detail, individual_match.match_detail]
     page: giocare_una_partita
     section: segnare
 
@@ -297,7 +306,7 @@ hints:
     label: "Triangoli giocati"
     short: "Il tabellino: chi ha vinto ogni triangolo e il punteggio progressivo. Serve a ricontrollare se qualcosa non torna."
     anchor: partita-rack
-    screens: [admin.match.match_detail]
+    screens: [admin.match.match_detail, individual_match.match_detail]
     page: giocare_una_partita
     section: leggere
 
@@ -305,7 +314,7 @@ hints:
     label: "Dichiara forfait"
     short: "Da usare solo se la partita si interrompe davvero: assegna all'avversario tutti i triangoli che mancano."
     anchor: partita-forfait
-    screens: [admin.match.match_detail]
+    screens: [admin.match.match_detail, individual_match.match_detail]
     page: giocare_una_partita
     section: forfait
 
@@ -339,7 +348,7 @@ hints:
     label: "Runout"
     short: "Triangoli chiusi in una sola visita. I «break and run» sono quelli in cui avevi anche il tiro di apertura."
     anchor: profilo-runout
-    screens: [player.profile]
+    screens: [player.profile, player.view_profile]
     page: profilo_e_statistiche
     section: cosa_contiene
 
@@ -355,7 +364,7 @@ hints:
     label: "Livello"
     short: "Misura quanto usi l'app, non quanto giochi bene. Per la bravura c'è il rating."
     anchor: profilo-livello
-    screens: [gamification.dashboard, player.profile]
+    screens: [gamification.dashboard]
     page: progressi
     section: xp
 
@@ -372,7 +381,7 @@ hints:
     label: "Punti per posizione"
     short: "Quanti punti vale ogni piazzamento nelle gare a tabellone. Si indicano sei bande: chi le condivide prende lo stesso punteggio."
     anchor: campionato-punti-posizione
-    screens: [admin.campionato.edit_campionato]
+    screens: [admin.campionato.edit_campionato, admin.campionato.wizard_step2]
     page: creare_un_campionato
     section: punti_posizione
 
@@ -411,7 +420,7 @@ hints:
 
   - id: esame.ordine_drill
     label: "L'ordine degli esercizi"
-    short: "I candidati li affrontano nella sequenza in cui li metti. Si riordina finché l'esame non è quello che volevi."
+    short: "I candidati li affrontano nella sequenza in cui li aggiungi. Non si spostano: se l'ordine è sbagliato, togli l'esercizio e rimettilo al posto giusto."
     anchor: esame-ordine-drill
     screens: [exam.exam_detail]
     page: diventare_esaminatore
@@ -642,6 +651,119 @@ hints:
     page: far_conoscere_la_gara
     section: regolamento
 
+  # --- Campionato: wizard e pagina del campionato ---------------------------
+  - id: campionato.gare_pianificate
+    label: "Gare pianificate"
+    short: "Quante gare pensi di giocare nel campionato. È un'indicazione per chi lo segue: le gare le aggiungi una alla volta, e puoi farne di più o di meno."
+    anchor: campionato-gare-pianificate
+    screens: [admin.campionato.wizard_start]
+    page: creare_un_campionato
+    section: passo1
+
+  - id: campionato.modalita_esercizi
+    label: "Modalità esercizi"
+    short: "Nelle gare del campionato i giocatori affrontano anche prove di abilità individuali, con una classifica a parte. Se non sai cos'è, lascia spento."
+    anchor: campionato-modalita-esercizi
+    screens: [admin.campionato.wizard_start]
+    page: creare_un_campionato
+    section: passo1
+
+  - id: campionato.playoff_elite
+    label: "Playoff Elite"
+    short: "A fine campionato i primi della classifica generale giocano una gara finale fra loro. Qui decidi se farla e per quanti giocatori."
+    anchor: campionato-playoff-elite
+    screens: [admin.campionato.wizard_start]
+    page: playoff
+    section: qualificarsi
+
+  - id: campionato.playoff_academy
+    label: "Playoff Academy"
+    short: "Una seconda finale per chi viene subito dopo i primi: così anche chi non è in testa ha una gara da giocarsi a fine stagione."
+    anchor: campionato-playoff-academy
+    screens: [admin.campionato.wizard_start]
+    page: playoff
+    section: qualificarsi
+
+  - id: campionato.nuova_gara
+    label: "Nuova Gara"
+    short: "Aggiunge una gara al campionato. Nasce già con le impostazioni predefinite scelte nel wizard: cambia solo quello che serve."
+    anchor: campionato-nuova-gara
+    screens: [admin.campionato.campionato_detail]
+    page: creare_un_campionato
+    section: aggiungere_gare
+
+  - id: campionato.termina
+    label: "Termina"
+    short: "Chiude il campionato: la classifica generale diventa definitiva e, se hai previsto i playoff, da qui li avvii. Non si torna indietro."
+    anchor: campionato-termina
+    screens: [admin.campionato.campionato_detail]
+    page: creare_un_campionato
+    section: classifica_generale
+
+  - id: campionato.avvia_playoff
+    label: "Avvia Playoff"
+    short: "Manda l'invito ai giocatori qualificati. Chi accetta entra nella gara finale; chi rifiuta lascia il posto al primo degli esclusi."
+    anchor: campionato-avvia-playoff
+    screens: [admin.campionato.campionato_detail]
+    page: playoff
+    section: invito
+
+  - id: playoff.risposta_invito
+    label: "Accetta / Rifiuta"
+    short: "La risposta all'invito. Di norma la dà il giocatore dal suo telefono; se te la dice a voce, o se il giocatore è fittizio, la registri tu qui."
+    anchor: playoff-risposta-invito
+    screens: [admin.campionato.campionato_detail]
+    page: playoff
+    section: invito
+
+  - id: playoff.accetta_tutti
+    label: "Accetta tutti i rimanenti"
+    short: "In una prova i fittizi non rispondono da soli: questo pulsante accetta tutti gli inviti ancora in attesa, e la finale si riempie in un tocco."
+    anchor: playoff-accetta-tutti
+    screens: [admin.campionato.campionato_detail]
+    page: fare_una_prova
+    section: campionato
+
+  # --- Competizione di prova (ADR-058) ---------------------------------------
+  - id: prova.spunta
+    label: "Competizione di prova"
+    short: "Una competizione che vedi solo tu, da riempire di giocatori fittizi e condurre come una vera. Non tocca statistiche né classifiche. Al massimo tre alla volta."
+    anchor: prova-spunta
+    screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_start]
+    page: fare_una_prova
+    section: creare
+
+  - id: prova.fittizi
+    label: "Giocatori fittizi"
+    short: "Tre pulsanti per riempire la prova: il minimo per farla partire, fino al massimo per riempirla, uno in più per vedere cosa succede con i dispari."
+    anchor: prova-fittizi
+    screens: [admin.competition.gara_detail]
+    page: fare_una_prova
+    section: iscrivere
+
+  - id: prova.simulazione
+    label: "Simulazione"
+    short: "Fa giocare i fittizi al posto tuo: una partita, il turno intero o tutta la gara. Metà partite si chiudono da sole, le altre aspettano che le validi tu."
+    anchor: prova-simulazione
+    screens: [admin.competition.gara_detail]
+    page: fare_una_prova
+    section: simulare
+
+  - id: prova.aiuto
+    label: "Suggerimenti"
+    short: "Accende o spegne le «?» accanto ai comandi e la presentazione delle schermate. Vale per questo browser: spento qui, resta spento in ogni prova."
+    anchor: prova-aiuto
+    screens: [admin.competition.gara_detail, admin.campionato.campionato_detail, admin.campionato.edit_campionato]
+    page: fare_una_prova
+    section: aiuto
+
+  - id: prova.elimina
+    label: "Elimina la prova"
+    short: "Cancella tutto, subito: gare, partite, iscrizioni e giocatori fittizi. Se non lo fai tu, la prova sparisce da sola alla scadenza scritta qui sopra."
+    anchor: prova-elimina
+    screens: [admin.competition.gara_detail, admin.campionato.campionato_detail, admin.campionato.edit_campionato]
+    page: fare_una_prova
+    section: eliminare
 
 tours:
   - screen: dashboard.dashboard
@@ -712,3 +834,25 @@ tours:
       - hint: segnalazione.racconto
       - title: "Cosa non scrivere"
         text: "Il testo finisce su GitHub, dove teniamo l'elenco dei lavori: non scriverci dati personali tuoi o di altri giocatori."
+
+  - screen: admin.campionato.wizard_start
+    title: "Creare un campionato"
+    intro: "Due passaggi: prima cos'è il campionato, poi le impostazioni che ogni gara erediterà. Se è la prima volta, spunta «Competizione di prova»: si elimina con un tocco."
+    audience: [direttore]
+    steps:
+      - hint: campionato.gare_pianificate
+      - hint: campionato.classifica
+      - hint: gara.strategia
+      - hint: campionato.playoff_elite
+      - hint: prova.spunta
+
+  - screen: admin.campionato.campionato_detail
+    title: "La pagina del campionato"
+    intro: "Da qui aggiungi le gare, segui la classifica generale e, a fine stagione, chiudi il campionato e avvii i playoff."
+    audience: [direttore]
+    steps:
+      - hint: campionato.nuova_gara
+      - title: "Classifica generale"
+        text: "Somma i risultati di tutte le gare giocate, con il peso che hai dato a ciascuna. Si aggiorna da sola a ogni partita chiusa."
+      - hint: campionato.termina
+      - hint: campionato.avvia_playoff

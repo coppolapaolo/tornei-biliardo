@@ -61,6 +61,7 @@ Convenzioni e dettagli specifici per ogni area del codice:
 
 - [`usecases/gare.md`](./usecases/gare.md) — workflow completo gestione gare
 - [`usecases/UC01.md`](./usecases/UC01.md), [`UC02.md`](./usecases/UC02.md) — scenari specifici
+- [`usecases/competizione-di-prova.md`](./usecases/competizione-di-prova.md) — specifica della gara e del campionato di prova per i direttori (intervista del 2026-09-04)
 - [`usecases/convenzioni.md`](./usecases/convenzioni.md) — notazione "_(variante: …)_"
 
 ## Archivio

@@ -83,6 +83,15 @@ def create_gara_standalone():
                 flash(f"Configurazione non valida: {', '.join(errors)}", "error")
                 return redirect(url_for("admin.competition.create_gara_standalone"))
 
+            # Competizione di prova (ADR-058): stessa gara, con il flag e la
+            # scadenza. Il limite si controlla qui, prima di creare.
+            e_prova = request.form.get("is_prova") == "on"
+            if e_prova:
+                from models.prova.service import ProvaService
+
+                ProvaService.verifica_limite(current_user.id)
+                data.update(ProvaService.campi_di_creazione())
+
             gara = GaraService.create_gara(
                 campionato_id=None,
                 number=1,
@@ -93,12 +102,23 @@ def create_gara_standalone():
                 **data,
             )
 
-            track_gara_create()
-            track_event(AnalyticsEvent.GARA_CREATED, gara_id=gara.id, standalone=True)
-            flash(
-                _("Gara singola '%(name)s' creata con successo!", name=name),
-                "success",
-            )
+            if e_prova:
+                from models.prova.visibility import invalida_ambito
+
+                invalida_ambito()
+                flash(
+                    _("Prova «%(name)s» creata: solo tu la vedi.", name=name),
+                    "success",
+                )
+            else:
+                track_gara_create()
+                track_event(
+                    AnalyticsEvent.GARA_CREATED, gara_id=gara.id, standalone=True
+                )
+                flash(
+                    _("Gara singola '%(name)s' creata con successo!", name=name),
+                    "success",
+                )
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
 
         except ValueError as e:
@@ -119,12 +139,16 @@ def create_gara_standalone():
     # Ottieni le strategie disponibili
     available_strategies = get_available_strategies()
 
+    from models.prova.service import LIMITE_PROVE_ATTIVE, ProvaService
+
     return render_template(
         "admin/gara_create_standalone.html",
         WithdrawPolicy=WithdrawPolicy,
         verified_venues=verified_venues,
         available_strategies=available_strategies,
         discipline_choices=Discipline.get_choices(),
+        prove_attive=len(ProvaService.prove_attive(current_user.id)),
+        limite_prove=LIMITE_PROVE_ATTIVE,
     )
 
 

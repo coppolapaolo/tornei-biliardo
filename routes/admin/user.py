@@ -306,6 +306,36 @@ def set_user_password(user_id: int):
     )
 
 
+@user_bp.route("/user/<int:user_id>/anagrafica", methods=["POST"])
+@admin_required
+def update_anagrafica(user_id: int):
+    """Nome e cognome di un utente, scritti dall'admin.
+
+    Stessa operazione che il giocatore fa dal proprio profilo (issue #156), e
+    stesso servizio: l'anagrafica serve al direttore per iscrivere la persona
+    giusta fra username che si somigliano, ma chi non compila il profilo resta
+    indistinguibile e qualcuno deve poterlo scrivere al posto suo.
+
+    Si passano solo i campi che il form ha davvero mandato — un campo assente
+    non è un campo svuotato — mentre un campo **presente e vuoto** cancella:
+    per l'anagrafica, che è facoltativa, è un gesto sensato.
+    """
+    from flask_babel import _
+
+    aggiornamenti = {
+        campo: request.form[campo].strip()
+        for campo in ("first_name", "last_name")
+        if campo in request.form
+    }
+
+    return handle_service_action(
+        action=lambda: UserService.update_user(user_id, **aggiornamenti),
+        redirect_url=url_for("admin.user.user_detail", user_id=user_id),
+        success_message=_("Anagrafica aggiornata."),
+        error_prefix=None,
+    )
+
+
 @user_bp.route("/users/accessi")
 @admin_required
 def accessi():

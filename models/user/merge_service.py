@@ -90,6 +90,12 @@ class UserMergeService:
             raise ValidationError("Sorgente e destinazione coincidono")
         if source.role == UserRole.ADMIN.value or target.role == UserRole.ADMIN.value:
             raise ValidationError("Impossibile unire un account amministratore")
+        if source.is_fittizio or target.is_fittizio:
+            # Un fittizio non è una persona con due account: non si unisce
+            # a nessuno, e nessuno si unisce a lui (ADR-058).
+            raise ValidationError(
+                "Un giocatore fittizio di una prova non si unisce a un account"
+            )
 
         performer = db.session.get(User, performed_by_id)
         if performer is None or performer.role != UserRole.ADMIN.value:
@@ -103,6 +109,17 @@ class UserMergeService:
                 f"({', '.join(head_to_head)}): unione annullata. Risolvi "
                 "manualmente quelle partite prima di riprovare."
             )
+
+        # ---- FASE 1b: iscrizioni alla stessa gara ----
+        # Prima del passo generico, e non dentro: la dedup metadata-driven
+        # tiene la riga del destinatario e cancella quella della sorgente,
+        # che qui vorrebbe dire buttare via la categoria assegnata dal
+        # direttore all'account vecchio. Le iscrizioni si **fondono**, e dopo
+        # questo passo ogni gara ne ha una sola: il passo generico non trova
+        # più conflitti. Vedi models/competition/inscription_dedup.py.
+        from models.competition.inscription_dedup import fondi_tra_utenti
+
+        fusioni = fondi_tra_utenti(source_id, target_id)
 
         # ---- FASE 2/3: reassign FK + cleanup tabelle a sola eliminazione ----
         reassigned = UserMergeService._reassign_foreign_keys(source_id, target_id)
@@ -124,16 +141,19 @@ class UserMergeService:
             source.anonymize()
 
         logger.info(
-            "Merge utenti: %s → %s (eseguito da %s). Colonne riassegnate: %s",
+            "Merge utenti: %s → %s (eseguito da %s). Colonne riassegnate: %s. "
+            "Iscrizioni fuse: %s",
             source_id,
             target_id,
             performed_by_id,
             reassigned,
+            len(fusioni),
         )
         return {
             "source_id": source_id,
             "target_id": target_id,
             "reassigned_columns": reassigned,
+            "merged_inscriptions": len(fusioni),
         }
 
     # ----------------------------------------------------------- head-to-head

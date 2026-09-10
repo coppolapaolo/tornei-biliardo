@@ -49,7 +49,7 @@
     <div id="panel">
 
       <div class="sec" id="sec-strumenti">
-        <h2>{{ _("Strumenti") }}</h2>
+        <h2 data-help="drill-strumento">{{ _("Strumenti") }}</h2>
         <div class="row">
           <button class="btn wide" data-tool="select">{{ _("Sposta") }}</button>
           <button class="btn wide" data-tool="shot">{{ _("Tiro") }}</button>
@@ -68,7 +68,7 @@
       <div class="sec" id="sec-biglie">
         <h2>{{ _("Biglie") }}</h2>
         <div id="palette"></div>
-        <label class="chk" style="margin-top:6px"><input type="checkbox" id="magnets" checked> {{ _("Calamite sponda e biglie") }}</label>
+        <label class="chk" style="margin-top:6px" data-help="drill-calamite"><input type="checkbox" id="magnets" checked> {{ _("Calamite sponda e biglie") }}</label>
         <div class="field">
           <span>{{ _("Dimensione delle biglie") }}</span>
           <select id="ballScale">
@@ -84,7 +84,7 @@
         <h2>{{ _("Tiro") }}</h2>
         <p class="tip" id="shotHint"></p>
 
-        <div class="field"><span>{{ _("Punto di impatto sulla bianca") }}</span></div>
+        <div class="field"><span data-help="drill-punto-impatto">{{ _("Punto di impatto sulla bianca") }}</span></div>
         <div id="tipwrap">
           <svg id="tipsvg" viewBox="-52 -52 104 104"></svg>
           <div id="tipinfo"></div>
@@ -96,7 +96,7 @@
         </div>
 
         <div class="field">
-          <span>{{ _("Forza") }} — <b id="forceVal">30% · {{ _("medio") }}</b></span>
+          <span data-help="drill-forza">{{ _("Forza") }} — <b id="forceVal">30% · {{ _("medio") }}</b></span>
           <input type="range" id="force" min="5" max="100" step="5" value="30">
         </div>
         <div class="row" id="forcePresets"></div>
@@ -160,7 +160,7 @@
       </div>
 
       <div class="sec" id="sec-posizioni">
-        <h2>{{ _("Posizioni standard") }}</h2>
+        <h2 data-help="drill-posizioni-standard">{{ _("Posizioni standard") }}</h2>
         <div class="row">
           <button class="btn wide" data-preset="rack9">{{ _("Triangolo 9-ball") }}</button>
           <button class="btn wide" data-preset="rack8">{{ _("Triangolo 8-ball") }}</button>
@@ -208,7 +208,7 @@
     {% set drill_max = challenge.max_score if challenge else (prefill.max_score if prefill) %}
 
     <div>
-      <label for="drillTitle" class="form-label">{{ _("Titolo") }}</label>
+      <label for="drillTitle" class="form-label" data-help="challenge-titolo">{{ _("Titolo") }}</label>
       <input type="text" class="form-control" id="drillTitle" name="title" maxlength="120"
              placeholder="{{ _('es. Progressione lungo sponda') }}" value="{{ drill_title or '' }}">
       <div class="c7-kicker" style="margin-top:6px">
@@ -217,7 +217,7 @@
     </div>
 
     <div>
-      <label for="drillDescription" class="form-label">{{ _("Istruzioni per chi la esegue") }}</label>
+      <label for="drillDescription" class="form-label" data-help="drill-istruzioni">{{ _("Istruzioni per chi la esegue") }}</label>
       {# Nessun `maxlength`: la colonna e' TEXT, e il tetto di 1000 caratteri
          era del solo modulo. #}
       <textarea class="form-control" id="drillDescription" name="description" rows="6" required
@@ -242,7 +242,7 @@
     {# Solo per gli esercizi a punteggio, e facoltativo: senza tetto la prova
        si ripete finche' si sbaglia, ed e' un caso legittimo. #}
     <div id="drillMaxRow" {% if drill_pass_fail %}style="display:none"{% endif %}>
-      <label for="drillMaxScore" class="form-label">{{ _("Punteggio massimo") }}</label>
+      <label for="drillMaxScore" class="form-label" data-help="challenge-punteggio-massimo">{{ _("Punteggio massimo") }}</label>
       <input type="number" class="form-control" id="drillMaxScore" name="max_score"
              min="1" max="999" inputmode="numeric"
              placeholder="{{ _('es. 15') }}" value="{{ drill_max if drill_max is not none else '' }}">

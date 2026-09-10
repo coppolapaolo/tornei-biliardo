@@ -104,7 +104,7 @@
       and feature_visible('challenge.edit_diagram') %}
 <div class="c7-actionbar">
   <a href="{{ url_for('challenge.edit_diagram', challenge_id=challenge.id) }}"
-     class="btn btn-secondary w-100">
+     class="btn btn-secondary w-100" data-help="drill-modifica-disegno">
     <i class="fas fa-pen-ruler"></i>&nbsp;{{ _("Modifica il disegno") }}
   </a>
 </div>

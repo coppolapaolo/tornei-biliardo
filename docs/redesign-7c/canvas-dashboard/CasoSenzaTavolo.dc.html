@@ -1,0 +1,511 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap">
+  <style>
+/* Token 7c — copiati verbatim da static/css/tokens-7c.css */
+:root{
+  --c7-bg:#E4E8E7; --c7-card:#F5F7F6; --c7-sunken:#ECEEED;
+  --c7-ink:#1B2124; --c7-ink-soft:#3D474A; --c7-ink-muted:#6B7679; --c7-ink-faint:#9AA3A6;
+  --c7-on-ink:#F2F5F4; --c7-on-ink-muted:#9AA6A9;
+  --c7-line:#D3D8D7; --c7-line-soft:#E4E8E7;
+  --c7-accent:#2C4A52; --c7-accent-ink:#F2F8F7; --c7-accent-bright:#8FCDE8;
+  --c7-accent-dim:#A9C4C7; --c7-accent-tint:#DDE9EE; --c7-accent-tint-ink:#23404A;
+  --c7-ok-bg:#E4EDE9; --c7-ok-ink:#1D5F4A; --c7-ok:#2C8A6B;
+  --c7-err-bg:#F3E2E0; --c7-err-ink:#8A2C2C; --c7-err:#B23B3B;
+  --c7-warn-bg:#F0E9D8; --c7-warn-ink:#6E5417; --c7-warn:#8A6A1F;
+  --c7-chart-soft:#C9CFCE; --c7-chart-mid:#A8B4B7; --c7-chart-ink:#8B979A;
+  --c7-font:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --c7-font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",monospace;
+  --c7-r-pill:999px; --c7-r-card:22px; --c7-r-card-lg:26px;
+  --c7-r-field:18px; --c7-r-control:14px; --c7-r-chip:12px;
+  --c7-gutter:18px; --c7-gutter-lg:28px; --c7-pad-card:16px; --c7-pad-card-lg:20px;
+  --c7-gap:12px; --c7-gap-lg:16px; --c7-side-w:244px;
+  --c7-shadow-pop:0 18px 36px -20px rgba(27,33,36,.75);
+  /* NUOVI (10/09), non ancora in tokens-7c.css: le medaglie del podio.
+     Stessa saturazione bassa del resto della palette. */
+  --c7-oro:#C9A84C; --c7-oro-ink:#4A3A0E;
+  --c7-argento:#B4BDBF; --c7-argento-ink:#39434B;
+  --c7-bronzo:#B98A5E; --c7-bronzo-ink:#4A2F16;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--c7-bg);color:var(--c7-ink);
+  font-family:var(--c7-font);font-weight:600;font-size:14px;line-height:1.5;
+  text-wrap:pretty;-webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.025em;color:var(--c7-ink)}
+h1{font-size:24px} h2{font-size:20px} h3{font-size:17px;letter-spacing:-.02em}
+p{margin:0}
+a{color:var(--c7-accent);text-decoration:none;font-weight:700}
+a:hover{color:var(--c7-ink)}
+dl,dd{margin:0}
+
+/* ---- servizio ---- */
+.ico{width:16px;height:16px;flex-shrink:0;display:block}
+.ico-sm{width:13px;height:13px}
+.ico-lg{width:24px;height:24px}
+.c7-num{font-family:var(--c7-font-mono);font-weight:700;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums}
+.c7-kicker{font-size:10px;font-weight:800;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--c7-ink-muted)}
+.c7-sep{color:var(--c7-ink-faint)}
+.c7-divider{height:1px;background:var(--c7-line-soft);border:0;margin:16px 0}
+.muted{color:var(--c7-ink-muted)}
+.meta{font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.6}
+.cardtitle{font-size:15px;font-weight:800;letter-spacing:-.02em}
+.row{display:flex;align-items:center;gap:10px}
+.rowtop{display:flex;align-items:flex-start;gap:10px}
+.fill{flex:1;min-width:0}
+.right{margin-left:auto}
+.trunc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ---- guscio ---- */
+.screen{position:relative;width:390px;min-height:100%;background:var(--c7-bg);
+  padding-bottom:104px;overflow:hidden}
+.c7-app{display:flex;min-height:100%;width:1440px;background:var(--c7-bg)}
+.c7-main{flex:1;min-width:0;display:flex;flex-direction:column}
+.c7-content{flex:1;padding:0 var(--c7-gutter) 28px;display:flex;
+  flex-direction:column;gap:22px}
+.c7-head{background:var(--c7-bg);padding:20px var(--c7-gutter) 12px;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.c7-head__back{width:46px;height:46px;border-radius:50%;background:var(--c7-card);
+  color:var(--c7-accent);display:grid;place-items:center;flex-shrink:0}
+.c7-head__title{flex:1;min-width:0;display:flex;flex-direction:column}
+.c7-title{font-size:18px;font-weight:800;letter-spacing:-.025em}
+.c7-head__sub{font-size:12px;font-weight:600;color:var(--c7-ink-muted)}
+.c7-head__actions{order:5;flex:1 0 100%;display:flex;align-items:center;
+  flex-wrap:wrap;gap:8px}
+.c7-avatar{width:34px;height:34px;border-radius:50%;background:var(--c7-accent);
+  color:#fff;display:grid;place-items:center;font-size:11px;font-weight:800;flex-shrink:0}
+.c7-avatar--lg{width:46px;height:46px;font-size:14px}
+.gami-badge{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 11px;
+  border-radius:var(--c7-r-pill);background:var(--c7-accent);color:var(--c7-accent-ink);
+  flex-shrink:0;font-size:13px}
+.gami-badge__ring{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;
+  color:var(--c7-accent-bright)}
+.gami-badge__level,.gami-badge__xp{font-family:var(--c7-font-mono);font-size:13px;font-weight:700}
+.gami-badge__xp{color:var(--c7-accent-dim)}
+
+/* ---- barra laterale (>= lg) ---- */
+.c7-side{display:flex;width:var(--c7-side-w);flex-shrink:0;background:var(--c7-ink);
+  color:var(--c7-bg);padding:24px 16px;flex-direction:column;gap:26px}
+.c7-side__top{display:flex;align-items:center;gap:8px}
+.c7-side__brand{display:flex;align-items:center;gap:11px;padding:0 6px;flex:1;min-width:0}
+.c7-side__mark{width:34px;height:34px;border-radius:10px;background:var(--c7-accent);
+  color:var(--c7-accent-bright);display:grid;place-items:center;flex-shrink:0}
+.c7-side__name{font-size:14px;font-weight:800;letter-spacing:-.01em;display:block;color:var(--c7-bg)}
+.c7-side__role{font-size:11px;font-weight:600;color:#8A9599;display:block}
+.c7-sidetoggle{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+  color:#8A9599;flex-shrink:0}
+.c7-side__group{display:flex;flex-direction:column;gap:3px}
+.c7-side__grouplabel{font-size:10px;font-weight:800;letter-spacing:.12em;
+  color:#6E797C;padding:0 10px 8px;text-transform:uppercase}
+.c7-side a{height:42px;border-radius:12px;padding:0 12px;display:flex;align-items:center;
+  gap:11px;font-size:13px;font-weight:600;color:#B6BEC0}
+.c7-side a.is-active{background:var(--c7-accent);color:#EAF6F8;font-weight:700}
+.c7-side__count{margin-left:auto;height:20px;min-width:20px;padding:0 6px;
+  border-radius:var(--c7-r-pill);background:var(--c7-err);color:#fff;display:grid;
+  place-items:center;font-family:var(--c7-font-mono);font-size:11px;font-weight:700}
+.c7-side__user{margin-top:auto;border-radius:var(--c7-r-control);background:#2A3033;
+  padding:12px;display:flex;align-items:center;gap:11px}
+.c7-side__spacer{margin-top:auto}
+
+/* ---- nav flottante (< lg) ---- */
+.c7-mobilenav{position:absolute;left:12px;right:12px;bottom:14px;height:62px;padding:0 8px;
+  border-radius:var(--c7-r-pill);background:var(--c7-card);box-shadow:var(--c7-shadow-pop);
+  display:flex;align-items:center;justify-content:space-around}
+.c7-mobilenav a{flex:1;height:48px;border-radius:var(--c7-r-pill);display:flex;
+  flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  color:var(--c7-ink-muted);font-size:10px;font-weight:700}
+.c7-mobilenav a.is-active{color:var(--c7-ink)}
+.c7-mobilenav a.is-active .ico{color:var(--c7-accent)}
+
+/* ---- card ---- */
+.c7-card{background:var(--c7-card);border-radius:var(--c7-r-card);padding:var(--c7-pad-card)}
+.c7-card--accent{background:var(--c7-accent);color:var(--c7-accent-ink)}
+.c7-card--accent .c7-kicker{color:var(--c7-accent-dim)}
+.c7-card--accent h3{color:var(--c7-accent-ink)}
+.c7-card--locked{background:var(--c7-sunken);color:var(--c7-ink-muted)}
+.c7-grid{display:grid;gap:var(--c7-gap)}
+.c7-stack{display:flex;flex-direction:column;gap:var(--c7-gap)}
+.cardstack{display:flex;flex-direction:column;gap:12px}
+.sec{display:flex;flex-direction:column;gap:12px}
+.sec-head{display:flex;align-items:center;gap:12px}
+.sec-head h2{flex:1;min-width:0;font-size:17px}
+.count{font-family:var(--c7-font-mono);font-weight:700;font-size:13px;color:var(--c7-ink-muted)}
+
+/* ---- bottoni ---- */
+.btn{height:56px;border:0;border-radius:var(--c7-r-field);padding:0 20px;font-size:15px;
+  font-weight:800;display:inline-flex;align-items:center;justify-content:center;gap:9px}
+.btn-primary{background:var(--c7-ink);color:#fff}
+.btn-secondary{background:var(--c7-bg);color:var(--c7-ink-soft);font-weight:700}
+.btn-secondary--onpage{background:var(--c7-card)}
+.btn-success{background:var(--c7-ok);color:#fff}
+.btn-danger{background:var(--c7-err-bg);color:var(--c7-err-ink)}
+.btn-warning{background:var(--c7-warn-bg);color:var(--c7-warn-ink)}
+.btn-bright{background:var(--c7-accent-bright);color:var(--c7-accent)}
+.btn-ghost{background:rgba(255,255,255,.12);color:var(--c7-accent-ink)}
+.btn-sm{height:40px;border-radius:var(--c7-r-chip);padding:0 15px;font-size:13px}
+.btn-w{width:100%}
+.btn-fill{flex:1}
+.btn.is-disabled{background:var(--c7-sunken);color:var(--c7-ink-faint)}
+.c7-iconbtn{width:40px;height:40px;border-radius:10px;background:var(--c7-bg);
+  color:var(--c7-ink-soft);display:grid;place-items:center;flex-shrink:0}
+
+/* ---- stati ---- */
+.c7-state{height:26px;padding:0 11px;border-radius:var(--c7-r-pill);font-size:10px;
+  font-weight:800;letter-spacing:.04em;text-transform:uppercase;display:inline-flex;
+  align-items:center;justify-content:center;white-space:nowrap}
+.c7-state--ok{background:var(--c7-ok-bg);color:var(--c7-ok-ink)}
+.c7-state--err{background:var(--c7-err-bg);color:var(--c7-err-ink)}
+.c7-state--warn{background:var(--c7-warn-bg);color:var(--c7-warn-ink)}
+.c7-state--info{background:var(--c7-accent-tint);color:var(--c7-accent-tint-ink)}
+.c7-state--accent{background:var(--c7-accent);color:var(--c7-accent-ink)}
+.c7-state--muted{background:var(--c7-bg);color:var(--c7-ink-muted)}
+.c7-state--live{background:var(--c7-accent-bright);color:var(--c7-accent)}
+.c7-live__dot{width:9px;height:9px;border-radius:50%;background:#FF8A7E;flex-shrink:0}
+
+/* ---- barra di riempimento ---- */
+.progress{height:8px;border-radius:var(--c7-r-pill);background:var(--c7-bg);overflow:hidden}
+.progress-bar{height:100%;background:var(--c7-accent);border-radius:var(--c7-r-pill)}
+
+/* ---- stato vuoto ---- */
+.c7-empty{border-radius:var(--c7-r-card-lg);background:var(--c7-card);padding:26px 20px;
+  text-align:center}
+.c7-empty__ico{width:66px;height:66px;margin:0 auto;border-radius:50%;background:var(--c7-bg);
+  color:var(--c7-ink-faint);display:grid;place-items:center}
+.c7-empty__title{margin-top:16px;font-size:19px;font-weight:800;letter-spacing:-.02em}
+.c7-empty__text{margin-top:8px;font-size:13px;font-weight:600;line-height:1.55;
+  color:var(--c7-ink-muted)}
+
+/* ---- blocco «come stai andando» ---- */
+.c7-feedback{background:var(--c7-card);border-radius:var(--c7-r-card-lg);padding:var(--c7-pad-card-lg)}
+.c7-feedback__head{display:flex;align-items:baseline;gap:10px}
+.c7-feedback__head h2{font-size:17px;letter-spacing:-.02em}
+.c7-feedback__badge{margin-left:auto;height:24px;padding:0 10px;border-radius:var(--c7-r-pill);
+  display:inline-flex;align-items:center;white-space:nowrap;font-size:10px;font-weight:800;
+  letter-spacing:.04em;text-transform:uppercase;background:var(--c7-bg);color:var(--c7-ink-muted)}
+.c7-feedback__badge--positive{background:var(--c7-ok-bg);color:var(--c7-ok-ink)}
+.c7-feedback__badge--urgent{background:var(--c7-err-bg);color:var(--c7-err-ink)}
+.c7-feedback__metrics{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.c7-feedback__value{font-family:var(--c7-font-mono);font-weight:800;font-size:30px;
+  letter-spacing:-.035em;line-height:1;font-variant-numeric:tabular-nums}
+.c7-feedback__suffix{font-size:18px;color:var(--c7-ink-muted)}
+.c7-feedback__label{margin-top:5px;font-size:11px;font-weight:700;color:var(--c7-ink-muted)}
+.c7-feedback__delta{margin-top:2px;font-size:12px;font-weight:700;color:var(--c7-ink-muted)}
+.c7-feedback__delta--up{color:var(--c7-ok)}
+.c7-feedback__delta--down{color:var(--c7-warn)}
+.c7-feedback__donutcell{display:flex;align-items:center;gap:12px}
+.c7-feedback__donut{position:relative;display:inline-flex;align-items:center;
+  justify-content:center;width:58px;height:58px;border-radius:50%;flex-shrink:0}
+.c7-feedback__donut::after{content:"";position:absolute;inset:9px;border-radius:50%;
+  background:var(--c7-card)}
+.c7-feedback__donut>span{position:relative;z-index:1;font-family:var(--c7-font-mono);
+  font-size:14px;font-weight:800;letter-spacing:-.03em}
+.c7-feedback__legend{min-width:0;display:flex;flex-direction:column;gap:3px;
+  font-size:11px;font-weight:700}
+.c7-feedback__legend>span{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.c7-feedback__swatch{width:8px;height:8px;border-radius:2px;flex-shrink:0;
+  background:var(--c7-chart-soft)}
+.c7-feedback__swatch--ok{background:var(--c7-ok)}
+.c7-feedback__swatch--accent{background:var(--c7-accent)}
+.c7-feedback__swatch--mid{background:var(--c7-chart-mid)}
+.c7-feedback__chart{margin-top:18px;background:var(--c7-bg);border-radius:var(--c7-r-field);
+  padding:14px 14px 10px}
+.c7-feedback__spark{width:100%;height:66px;display:block;overflow:visible}
+.c7-feedback__bars{display:flex;align-items:flex-end;gap:5px;height:62px}
+.c7-feedback__bar{flex:1;border-radius:5px 5px 3px 3px;background:var(--c7-chart-soft)}
+.c7-feedback__bar--mid{background:var(--c7-chart-mid)}
+.c7-feedback__bar--dark{background:var(--c7-accent)}
+.c7-feedback__bar--ok{background:var(--c7-ok)}
+.c7-feedback__caption{display:flex;justify-content:space-between;gap:10px;margin-top:8px;
+  font-family:var(--c7-font-mono);font-size:11px;font-weight:700;color:var(--c7-ink-muted)}
+.c7-feedback__chartlegend{display:flex;align-items:center;gap:12px;margin-top:8px;
+  font-size:11px;font-weight:700;color:var(--c7-ink-muted)}
+.c7-feedback__chartlegend>span{display:flex;align-items:center;gap:6px}
+.c7-feedback__linekey{width:14px;height:2px;background:var(--c7-accent);flex-shrink:0}
+.c7-feedback__linekey--dash{height:0;background:none;border-top:2px dashed var(--c7-chart-ink)}
+.c7-feedback__strip{margin-top:14px}
+.c7-feedback__striphead{display:flex;align-items:baseline;gap:8px;font-size:11px;
+  font-weight:700;color:var(--c7-ink-muted)}
+.c7-feedback__stripnote{margin-left:auto}
+.c7-feedback__tiles{display:flex;gap:5px;margin-top:7px}
+.c7-feedback__tile{flex:1;min-width:0;height:30px;padding:0 4px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;font-family:var(--c7-font-mono);
+  font-size:12px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;
+  white-space:nowrap;overflow:hidden;background:var(--c7-chart-mid);color:var(--c7-ink)}
+.c7-feedback__tile--win{background:var(--c7-ok);color:#fff}
+.c7-feedback__tile--draw{background:var(--c7-line);color:var(--c7-ink-soft)}
+.c7-feedback__tile--loss{background:var(--c7-err);color:#fff}
+.c7-feedback__tile--open{background:var(--c7-accent);color:var(--c7-accent-ink)}
+.c7-feedback__tile--uncapped{background:transparent;color:var(--c7-ink-soft);
+  box-shadow:inset 0 0 0 1.5px var(--c7-chart-mid)}
+.c7-feedback__striplegend{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;
+  font-size:11px;font-weight:700;color:var(--c7-ink-muted)}
+.c7-feedback__striplegend>span{display:flex;align-items:center;gap:6px}
+
+/* ---- righe di classifica (versione 7c del blocco campionati della home) ---- */
+.c7-rows{display:flex;flex-direction:column}
+.c7-rows__row{display:flex;align-items:center;gap:12px;padding:10px 0;
+  border-top:1px solid var(--c7-line-soft)}
+.c7-rows__row:first-child{border-top:0}
+.c7-pos{width:24px;height:24px;border-radius:8px;background:var(--c7-bg);
+  display:grid;place-items:center;font-family:var(--c7-font-mono);font-size:11px;
+  font-weight:800;color:var(--c7-ink-muted);flex-shrink:0}
+.c7-pos--1{background:var(--c7-accent);color:var(--c7-accent-ink)}
+.c7-pos--2,.c7-pos--3{background:var(--c7-accent-tint);color:var(--c7-accent-tint-ink)}
+.podium{display:flex;gap:8px}
+.podium>div{flex:1;text-align:center;background:var(--c7-bg);
+  border-radius:var(--c7-r-chip);padding:8px 6px}
+/* podio con le medaglie: chip del tema, icona dentro, colore della medaglia */
+.podium .c7-pos{margin:0 auto;width:30px;height:30px;border-radius:10px}
+.podium .c7-pos .ico{width:16px;height:16px}
+.medal--1{background:var(--c7-oro);color:var(--c7-oro-ink)}
+.medal--2{background:var(--c7-argento);color:var(--c7-argento-ink)}
+.medal--3{background:var(--c7-bronzo);color:var(--c7-bronzo-ink)}
+/* la riga di chi guarda, in classifica: scura, senza dirlo a parole */
+.c7-rows__row.is-me{background:var(--c7-accent);color:var(--c7-accent-ink);
+  border-radius:var(--c7-r-chip);padding:10px 10px;margin:2px -10px 0;border-top:0}
+.c7-rows__row.is-me .muted{color:var(--c7-accent-dim)}
+.c7-rows__row.is-me+.c7-rows__row{border-top:0}
+/* ============================================================
+   Proposta — nessun valore nuovo: solo composizioni dei token.
+   ============================================================ */
+
+/* La fascia «Adesso» riusa la forma di `.c7-shortcut` — la scorciatoia
+   scura alla propria partita che in gara sta gia' in cima alla vista turni
+   (`_gara_my_match.html`) — ripetuta in righe. Tutta la riga e' il
+   bersaglio, non solo la pastiglia. */
+.now{padding:var(--c7-pad-card-lg)}
+.now__head{display:flex;align-items:center;gap:10px}
+.now__head h2{color:inherit;font-size:20px}
+.now__count{margin-left:auto;height:26px;min-width:26px;padding:0 9px;
+  border-radius:var(--c7-r-pill);background:var(--c7-accent-bright);
+  color:var(--c7-accent);display:grid;place-items:center;
+  font-family:var(--c7-font-mono);font-size:12px;font-weight:800}
+.now__row{display:flex;align-items:center;gap:14px;padding:14px 0;color:inherit;
+  border-top:1px solid rgba(255,255,255,.12)}
+.now__row:first-of-type{margin-top:8px;border-top:0}
+.now__body{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.now__ctx{display:flex;align-items:center;gap:8px;min-width:0}
+.now__what{display:block;font-size:17px;font-weight:800;letter-spacing:-.02em;
+  color:var(--c7-accent-ink);line-height:1.25}
+.now__meta{display:block;font-size:12px;font-weight:600;color:var(--c7-accent-dim)}
+.now__go{height:44px;padding:0 16px;border-radius:var(--c7-r-pill);
+  background:var(--c7-accent-bright);color:#0D2A36;display:flex;align-items:center;
+  font-size:13px;font-weight:800;flex-shrink:0;white-space:nowrap}
+.now__go--soft{background:rgba(255,255,255,.14);color:var(--c7-accent-ink)}
+.now__when{margin-left:auto;flex-shrink:0;font-family:var(--c7-font-mono);font-weight:800;
+  font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--c7-accent-bright)}
+.now__ctx .c7-kicker{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Il feedback si annuncia in una riga; il blocco intero si apre da qui. */
+.sumline{display:flex;align-items:center;gap:12px;min-height:60px;padding:12px 16px}
+.sumline__v{font-family:var(--c7-font-mono);font-weight:800;font-size:20px;
+  letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+
+/* Il fatto che sta dentro la gara: la mia partita, non una card a parte. */
+.inset{background:var(--c7-bg);border-radius:var(--c7-r-field);padding:12px 14px}
+
+/* Un campionato non e' una cosa da fare: e' un contesto. Riga, non card. */
+.listrow{display:flex;align-items:center;gap:12px;padding:13px 0;
+  border-top:1px solid var(--c7-line-soft)}
+.listrow:first-of-type{border-top:0;padding-top:4px}
+.chev{color:var(--c7-ink-faint);flex-shrink:0}
+  </style>
+</helmet>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="i-nodes" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+      <circle cx="12" cy="12" r="3"></circle><circle cx="19" cy="5.5" r="2"></circle>
+      <circle cx="5" cy="6.5" r="2"></circle><circle cx="7.5" cy="19.5" r="2"></circle>
+      <path d="M14.2 9.8 17.4 6.9M9.4 10.4 6.7 8.2M10.4 14.6 8.6 17.6"></path>
+    </g>
+    <g id="i-gauge" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+      <path d="M3.6 17.5a9 9 0 1 1 16.8 0"></path><path d="M12 14 16.2 9.2"></path>
+      <circle cx="12" cy="15.2" r="1.4"></circle>
+    </g>
+    <g id="i-bell" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+      <path d="M6.2 9.5a5.8 5.8 0 0 1 11.6 0c0 4 1.1 5.4 1.7 6a.6.6 0 0 1-.4 1H4.9a.6.6 0 0 1-.4-1c.6-.6 1.7-2 1.7-6Z"></path>
+      <path d="M10 19.6a2.2 2.2 0 0 0 4 0"></path>
+    </g>
+    <g id="i-users" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+      <circle cx="9" cy="8.2" r="3"></circle><path d="M3.6 19a5.4 5.4 0 0 1 10.8 0"></path>
+      <circle cx="17.2" cy="9.6" r="2.3"></circle><path d="M15.7 14.6A4.6 4.6 0 0 1 20.8 19"></path>
+    </g>
+    <g id="i-target" fill="none" stroke="currentColor" stroke-width="1.7">
+      <circle cx="12" cy="12" r="8.4"></circle><circle cx="12" cy="12" r="4.4"></circle>
+      <circle cx="12" cy="12" r="1" fill="currentColor"></circle>
+    </g>
+    <g id="i-venue" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3.2 20V9.4L12 4.8l8.8 4.6V20"></path><path d="M7.4 20v-5.6h9.2V20"></path>
+    </g>
+    <g id="i-trophy" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 4.2h8v4.6a4 4 0 0 1-8 0Z"></path>
+      <path d="M8 5.6H5.6a2.4 2.4 0 0 0 2.4 4"></path><path d="M16 5.6h2.4a2.4 2.4 0 0 1-2.4 4"></path>
+      <path d="M12 12.8v3.4"></path><path d="M9 19.8h6"></path>
+      <path d="M10 19.8c0-2 .7-3.6 2-3.6s2 1.6 2 3.6"></path>
+    </g>
+    <g id="i-play" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round">
+      <path d="M8.4 5.6v12.8L18.6 12Z"></path>
+    </g>
+    <g id="i-plus" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+      <path d="M12 5.4v13.2M5.4 12h13.2"></path>
+    </g>
+    <g id="i-wand" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+      <path d="M4 20 14.6 9.4"></path><path d="M12.9 7.7 16.3 11.1"></path>
+      <path d="M18 3.6v3M16.5 5.1h3M19 13.6v2.6M17.7 14.9h2.6"></path>
+    </g>
+    <g id="i-pen" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4.6 19.4h3.8L19 8.8a1.9 1.9 0 0 0-2.7-2.7L5.7 16.7Z"></path>
+    </g>
+    <g id="i-collapse" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12.6 6.6 7.2 12l5.4 5.4M18 6.6 12.6 12 18 17.4"></path>
+    </g>
+    <g id="i-login" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M11 4.6H6.4a1.8 1.8 0 0 0-1.8 1.8v11.2a1.8 1.8 0 0 0 1.8 1.8H11"></path>
+      <path d="M15.4 8.2 19.2 12l-3.8 3.8M19.2 12H9.4"></path>
+    </g>
+    <g id="i-userplus" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+      <circle cx="10" cy="8.2" r="3.1"></circle><path d="M4 19.4a6 6 0 0 1 12 0"></path>
+      <path d="M18.6 8.6v4.4M16.4 10.8h4.4"></path>
+    </g>
+    <g id="i-help" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round">
+      <circle cx="12" cy="12" r="8.4"></circle>
+      <path d="M9.7 9.6a2.4 2.4 0 1 1 3.2 2.3c-.6.2-.9.7-.9 1.4v.4"></path>
+      <path d="M12 16.9v.1"></path>
+    </g>
+    <g id="i-flag" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 20.4V4.6"></path><path d="M6 5.4h11l-2.4 3.8L17 13H6"></path>
+    </g>
+    <g id="i-cog" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="12" r="2.9"></circle>
+      <path d="M12 3.4v2.2M12 18.4v2.2M20.6 12h-2.2M5.6 12H3.4M18 6l-1.6 1.6M7.6 16.4 6 18M18 18l-1.6-1.6M7.6 7.6 6 6"></path>
+    </g>
+    <g id="i-megaphone" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4.6 10.4v3.2a1.6 1.6 0 0 0 1.6 1.6h1.6l8.8 3.8V6.6L8 10.4H6.2a1.6 1.6 0 0 0-1.6 0Z"></path>
+      <path d="M8 15.4v3.4a1.4 1.4 0 0 0 2.8 0v-2.2"></path>
+    </g>
+    <g id="i-medal" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="15" r="5.5"></circle><path d="m8.5 10.5-3-7h4l2.5 5M15.5 10.5l3-7h-4L12 8.5"></path>
+    </g>
+    <g id="i-search" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+      <circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path>
+    </g>
+    <g id="i-chev" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M9.5 5.5 16 12l-6.5 6.5"></path>
+    </g>
+    <g id="i-check" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5.5 12.6 10 17l8.5-9.4"></path>
+    </g>
+    <g id="i-circle" fill="none" stroke="currentColor" stroke-width="1.9">
+      <circle cx="12" cy="12" r="7.4"></circle>
+    </g>
+  </defs>
+</svg>
+<div class="screen">
+
+  <header class="c7-head">
+    <span class="c7-head__back"><svg viewBox="0 0 24 24" class="ico ico-lg"><use href="#i-nodes"></use></svg></span>
+    <div class="c7-head__title">
+      <span class="c7-title">Ciao marco</span>
+      <span class="c7-head__sub">Giocatore</span>
+    </div>
+    <span class="gami-badge">
+      <span class="gami-badge__ring"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-trophy"></use></svg></span>
+      <span class="gami-badge__level">Lv 7</span>
+    </span>
+    <span class="c7-avatar c7-avatar--lg">MA</span>
+  </header>
+
+  <main class="c7-content">
+
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Le tue gare <span class="count">1</span></h2>
+        <a href="#" style="font-size:12px">Vedi tutte</a>
+      </div>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Gara 3 &mdash; Palla 8</div>
+            <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 <span class="c7-sep">&middot;</span> <span class="c7-num">30/08</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;max-width:170px"><span class="c7-state c7-state--accent">Iscritto</span><span class="c7-state c7-state--err">In corso</span></div>
+        </div>
+        <div class="row" style="font-size:12px;font-weight:700"><span class="fill">Turno <span class="c7-num">4/5</span></span><span class="muted"><span class="c7-num">14</span> giocatori</span></div>
+        <div class="inset">
+          <div class="c7-kicker">La tua partita <span class="c7-sep">&middot;</span> Turno 4</div>
+          <div class="row" style="margin-top:6px">
+            <span class="fill" style="font-size:14px;font-weight:800">vs Giulia Nardin</span>
+            <span class="c7-state c7-state--muted">In attesa del tavolo</span>
+          </div>
+          <div class="meta" style="margin-top:8px">I tavoli si assegnano da soli quando si liberano: la tua è una delle <span class="c7-num">2</span> ancora da assegnare.</div>
+        </div>
+        <div class="inset">
+          <div class="c7-kicker">Ai tavoli adesso</div>
+          <div style="display:flex;flex-direction:column;gap:5px;margin-top:6px;font-size:12px;font-weight:700">
+            <div class="row"><span class="c7-num muted">T1</span><span class="trunc">Elena Furlan <span class="c7-num">4&ndash;1</span> Sara De Rossi</span></div>
+            <div class="row"><span class="c7-num muted">T2</span><span class="trunc">Andrea Zanin <span class="c7-num">2&ndash;2</span> Paolo Rizzo</span></div>
+            <div class="row"><span class="c7-num muted">T3</span><span class="trunc">Marco Bassi <span class="c7-num">5&ndash;3</span> Ivan Sartori</span></div>
+          </div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--c7-line)">
+            <div class="c7-kicker">Classifica provvisoria</div>
+            <div style="margin-top:2px;font-size:14px;font-weight:800">Sei <span class="c7-num">4&deg;</span> su <span class="c7-num">14</span></div>
+          </div>
+        </div>
+        <span class="btn btn-secondary btn-sm btn-w">Vedi la gara</span>
+      </article>
+    </section>
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Sfide a due <span class="count">1</span></h2>
+      </div>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="c7-kicker">Sfida a due <span class="c7-sep">&middot;</span> Sala Da Vinci</div>
+            <div class="cardtitle" style="margin-top:4px">vs Andrea Zanin</div>
+            <div class="meta">Palla 9 <span class="c7-sep">&middot;</span> Al <span class="c7-num">7</span></div>
+          </div>
+          <span class="c7-state c7-state--err">In corso</span>
+        </div>
+        <div class="c7-num" style="font-size:22px">3 &mdash; 4</div>
+        <span class="btn btn-primary btn-sm btn-w"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-play"></use></svg>Gioca</span>
+      </article>
+    </section>
+    <section class="sec">
+      <div class="sec-head">
+        <h2>Campionati <span class="count">1 attivo</span></h2>
+        <a href="#" style="font-size:12px">Vedi tutti</a>
+      </div>
+      <article class="c7-card cardstack">
+        <div class="rowtop">
+          <div class="fill">
+            <div class="cardtitle">Campionato Sociale 2026</div>
+            <div class="meta">amalfi <span class="c7-sep">&middot;</span> 5 gare <span class="c7-sep">&middot;</span> sei <span class="c7-num">4&deg;</span> su <span class="c7-num">14</span></div>
+          </div>
+          <span class="c7-state c7-state--err">In corso</span>
+        </div>
+        <div class="meta">Prossima: <span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span></div>
+        <span class="btn btn-secondary btn-sm btn-w">Dettagli</span>
+      </article>
+    </section>
+
+  </main>
+
+  <nav class="c7-mobilenav">
+    <a href="#" class="is-active"><svg viewBox="0 0 24 24" class="ico"><use href="#i-gauge"></use></svg>Dashboard</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-users"></use></svg>Sfide</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-target"></use></svg>Esercizi</a>
+    <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-bell"></use></svg>Notifiche</a>
+  </nav>
+</div>
+</x-dc>
+</body>
+</html>

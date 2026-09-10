@@ -90,6 +90,11 @@
       {% if card.can_manage %}
         <span class="c7-state c7-state--info">{{ _('Dirigi') }}</span>
       {% endif %}
+      {# Una prova (ADR-058) la vede solo chi la dirige: la pastiglia dice
+         che i giocatori sono fittizi e i risultati non contano. #}
+      {% if card.gara.is_prova %}
+        <span class="c7-state c7-state--warn"><i class="fas fa-flask me-1"></i>{{ _('Di prova') }}</span>
+      {% endif %}
       {{ pastiglia_stato(card) }}
     </div>
   </div>

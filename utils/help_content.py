@@ -155,12 +155,11 @@ class Section:
 class Hint:
     """Micro-aiuto agganciabile a un elemento dell'interfaccia.
 
-    E' la **predisposizione** per l'interfaccia adattiva descritta nella guida:
-    `anchor` e' il valore che l'elemento esporra' in `data-help`, `screens` dice
-    su quali schermate compare, `page`/`section` dove leggerne di piu'. Oggi
-    nessuna pagina dell'app li consuma: esistono, sono verificati dai test e
-    interrogabili via API, e questo e' quanto serve perche' lo sviluppo
-    dell'interfaccia adattiva parta da contenuti gia' scritti e gia' rivisti.
+    `anchor` e' il valore che l'elemento espone in `data-help`, `screens` dice
+    su quali schermate compare, `page`/`section` dove leggerne di piu'. Li
+    consuma `static/js/help-hints.js` (la «modalità aiuto», ADR-058) attraverso
+    `screen_payload`; il contratto ancora↔template lo verifica
+    `tests/new/unit/test_help_anchors.py`.
     """
 
     id: str
@@ -435,7 +434,7 @@ def clear_cache() -> None:
 
 
 # ---------------------------------------------------------------------------
-# Interfaccia adattiva (predisposizione)
+# Modalità aiuto: cio' che `static/js/help-hints.js` chiede per schermata
 # ---------------------------------------------------------------------------
 
 
@@ -450,10 +449,11 @@ def tour_for_screen(screen: str, locale: Optional[str] = None) -> Optional[Tour]
 
 
 def screen_payload(screen: str, locale: Optional[str] = None) -> dict[str, Any]:
-    """Tutto cio' che l'interfaccia adattiva dovra' sapere di una schermata.
+    """Tutto cio' che la modalità aiuto sa di una schermata.
 
-    Forma stabile e volutamente povera: un oggetto JSON che un componente
-    lato client possa consumare senza conoscere il resto dell'aiuto.
+    Forma stabile e volutamente povera: un oggetto JSON che
+    `static/js/help-hints.js` consuma senza conoscere il resto dell'aiuto
+    (la forma e' fissata da `test_api_per_schermata`).
     """
     content = get_content(locale)
     tour = content.tours.get(screen)

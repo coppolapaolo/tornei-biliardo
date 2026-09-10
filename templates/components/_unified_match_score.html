@@ -102,7 +102,7 @@ Parametri:
     </div>
 
     {# "Al 5 · 7 rack giocati": come si vince e a che punto siamo, in parole. #}
-    <div class="c7-score__foot">
+    <div class="c7-score__foot" data-help="partita-punteggio">
         {{ match.distance_config|format_distance }}
         {% if is_multi_set %}
         <span class="c7-sep">·</span> {{ _('%(n)s set giocati', n=p1_score + p2_score) }}

@@ -317,15 +317,22 @@ def test_l_indice_da_lo_stesso_verdetto_delle_query_singole(db_session):
 
 
 @pytest.mark.unit
-def test_l_indice_preferisce_l_iscrizione_attiva_al_ritiro(db_session):
-    """Due iscrizioni per lo stesso giocatore: vince quella non ritirata."""
+def test_l_indice_legge_la_categoria_dell_iscrizione(db_session):
+    """La categoria che l'indice riporta è quella scritta sull'iscrizione.
+
+    Questo test verificava un tie-break fra **due** iscrizioni dello stesso
+    giocatore alla stessa gara, una ritirata e una attiva. Da settembre 2026
+    quel dato non esiste più: `uq_inscription_gara_user` lo rifiuta, e il test
+    non riusciva nemmeno a costruirlo. L'ordinamento in `build_index` resta —
+    difende la finestra fra il codice nuovo e la migration — ma non è più
+    raggiungibile da qui; il presidio dell'invariante è in
+    `tests/new/unit/test_iscrizione_unica_per_gara.py`.
+    """
     suffix = uuid.uuid4().hex[:8]
     gara = _gara(suffix, has_handicap=True)
     cat_b = _categoria(gara, "B")
     p1, p2 = _user(f"{suffix}a"), _user(f"{suffix}b")
 
-    ritirata = _iscrivi(gara, p1, None)
-    ritirata.is_withdrawn = True
     _iscrivi(gara, p1, cat_b)
     _iscrivi(gara, p2, cat_b)
     db.session.flush()

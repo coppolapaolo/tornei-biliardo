@@ -26,7 +26,7 @@
     <form method="POST" action="{{ url_for('player.inscribe_to_gara', gara_id=gara.id) }}" style="margin-top: 16px;">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="next" value="{{ request.path }}">
-        <button type="submit" class="btn btn-success w-100">{{ _('Iscriviti') }}</button>
+        <button type="submit" class="btn btn-success w-100" data-help="iscrizione-pulsante">{{ _('Iscriviti') }}</button>
     </form>
     {% elif show_login_to_inscribe %}
     <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-success w-100" style="margin-top: 16px;">{{ _('Accedi per iscriverti') }}</a>

@@ -40,11 +40,14 @@ class RatingExclusion(Enum):
     WALKOVER = "walkover"
     HANDICAP_CATEGORY_MISSING = "handicap_category_missing"
     HANDICAP_DIFFERENT_CATEGORY = "handicap_different_category"
+    #: Competizione di prova (ADR-058): giocatori fittizi, niente rating.
+    PROVA = "prova"
 
     @property
     def description(self) -> str:
         """Testo per log e diagnostica — non è rivolto agli utenti finali."""
         return {
+            RatingExclusion.PROVA: "competizione di prova: i fittizi non hanno rating",
             RatingExclusion.WALKOVER: "walkover: nessun rack giocato",
             RatingExclusion.HANDICAP_CATEGORY_MISSING: (
                 "handicap: categoria non assegnata a uno dei giocatori"
@@ -91,9 +94,10 @@ class RatingEligibility:
                 Inscription.categoria_id,
             )
             .filter(Inscription.gara_id.in_(gara_ids))
-            # Nulla in DB impedisce due iscrizioni dello stesso giocatore alla
-            # stessa gara (una ritirata, una attiva): l'ultima scritta nel
-            # dizionario vince, e quest'ordine fa vincere quella attiva.
+            # Dal vincolo `uq_inscription_gara_user` (settembre 2026) la riga
+            # è una sola e l'ordinamento non decide più niente. Resta perché su
+            # un database non ancora migrato le doppie ci sono ancora, e in quel
+            # caso fa vincere l'iscrizione attiva su quella ritirata.
             .order_by(Inscription.is_withdrawn.desc(), Inscription.id.asc())
             .all()
         )
@@ -132,6 +136,13 @@ class RatingEligibility:
         categorie si leggono dal DB (due query, irrilevanti sul match singolo).
         ``is_walkover`` permette a chi ha già calcolato i rack di non rifarlo.
         """
+        # Prima di tutto il resto: in una prova non c'è niente da misurare.
+        # `match.gara` è un caricamento di relazione, che il filtro di
+        # visibilità lascia passare anche fuori richiesta (ADR-058).
+        gara = getattr(match, "gara", None)
+        if gara is not None and getattr(gara, "is_prova", False):
+            return RatingExclusion.PROVA
+
         walkover = match.is_walkover if is_walkover is None else is_walkover
         if walkover:
             return RatingExclusion.WALKOVER

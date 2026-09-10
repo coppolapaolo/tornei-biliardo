@@ -58,8 +58,11 @@ blocks:
     items:
       - name: "Iscrivere un giocatore a mano"
         text: >-
-          Per chi non usa l'app o non ce la fa in tempo: lo cerchi per nome e
-          lo aggiungi. Deve comunque avere un account.
+          Per chi non usa l'app o non ce la fa in tempo. Nel campo di ricerca
+          scrivi quello che sai di lui — il nome che usa nell'app, il suo nome
+          o il cognome: l'elenco si accorcia mentre scrivi. Chi ha aggiunto
+          nome e cognome al proprio profilo compare con quelli, così non
+          rischi di scegliere un omonimo. Deve comunque avere un account.
       - name: "Togliere un iscritto"
         text: >-
           Per chi avvisa che non viene. Il giocatore riceve una notifica, e se

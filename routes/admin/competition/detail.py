@@ -532,9 +532,11 @@ def gara_detail(gara_id):
     # Guest: non può iscriversi ora, ma deve sapere che potrebbe accedendo.
     show_login_to_inscribe = inscription_open and not current_user.is_authenticated
 
-    # Link pubblico da condividere: solo per chi gestisce la gara.
+    # Link pubblico da condividere: solo per chi gestisce la gara — e mai per
+    # una prova (ADR-058), che da fuori non deve esistere. Il template lo
+    # spiega al posto del link.
     public_invite_url = None
-    if user_can_manage:
+    if user_can_manage and not gara.is_prova:
         from models.competition.services import GaraService
 
         token = gara.public_token or GaraService.ensure_public_token(gara_id)
@@ -566,9 +568,21 @@ def gara_detail(gara_id):
                 None,
             )
 
+    # Competizione di prova (ADR-058): quanti fittizi aggiungerebbe ciascun
+    # pulsante, ora. Zero = pulsante spento.
+    prova_iscrizioni = None
+    if gara.is_prova and user_can_manage:
+        from models.prova.service import MODALITA_ISCRIZIONE, ProvaService
+
+        prova_iscrizioni = {
+            modalita: ProvaService.quanti_da_iscrivere(gara, modalita)
+            for modalita in MODALITA_ISCRIZIONE
+        }
+
     return render_template(
         "gara_detail.html",
         gara=gara,
+        prova_iscrizioni=prova_iscrizioni,
         x_choice_last_inscribed=x_choice_last_inscribed,
         can_inscribe_now=can_inscribe_now,
         show_login_to_inscribe=show_login_to_inscribe,

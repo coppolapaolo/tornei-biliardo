@@ -136,8 +136,23 @@ def job_feedback() -> str:
     )
 
 
+def job_prove() -> str:
+    """Competizioni di prova: avviso e scadenza (ADR-058).
+
+    Tre giorni prima il direttore riceve l'avviso; alla scadenza la prova
+    sparisce con partite, iscrizioni e giocatori fittizi. Le prove
+    dimenticate sono l'unico modo in cui i fittizi si accumulerebbero.
+    """
+    from models.prova.service import ProvaService
+
+    avvisate = ProvaService.avvisa_scadenze()
+    eliminate = ProvaService.elimina_scadute()
+    return f"{avvisate} avvisi di scadenza, {eliminate} prove eliminate"
+
+
 JOBS = {
     "demand": ("Segnali-domanda: riconferma e scadenze", job_demand_signals),
+    "prove": ("Competizioni di prova: avviso e scadenza", job_prove),
     "exam_requests": ("Richieste d'esame: scadenze", job_exam_requests),
     "match_proposals": ("Proposte di sfida: scadenze", job_match_proposals),
     "feedback": ("Segnalazioni: rispedizione e stati da GitHub", job_feedback),

@@ -293,6 +293,17 @@ class CommunityLeaderboardService:
             )
             .all()
         )
+        # Le prove non sono gare organizzate (ADR-058). `include_prova`: la
+        # domanda «è di prova?» va fatta a prescindere da chi sta guardando.
+        if gara_ids:
+            prove = {
+                gid
+                for (gid,) in db.session.query(Gara.id)
+                .filter(Gara.id.in_(gara_ids), Gara.is_prova.is_(True))
+                .execution_options(include_prova=True)
+                .all()
+            }
+            gara_ids -= prove
         return len(gara_ids)
 
     @staticmethod

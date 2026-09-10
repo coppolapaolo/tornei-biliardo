@@ -14,7 +14,7 @@
 <div class="c7-stack c7-vetrina">
 
   <div class="card">
-    <div class="c7-kicker">{{ _("Locandina") }}</div>
+    <div class="c7-kicker" data-help="vetrina-locandina">{{ _("Locandina") }}</div>
     <p class="text-muted mt-2">
       {{ _("È l'immagine che compare nell'anteprima del link su WhatsApp, Facebook e Telegram. Il formato migliore è 1200×630 pixel: le altre proporzioni vengono ritagliate al centro.") }}
     </p>
@@ -59,7 +59,7 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <div class="card">
-      <div class="c7-kicker">{{ _("Indirizzo personalizzato") }}</div>
+      <div class="c7-kicker" data-help="vetrina-indirizzo">{{ _("Indirizzo personalizzato") }}</div>
       <p class="text-muted mt-2">
         {{ _("Un nome leggibile al posto del codice, da dettare al telefono o stampare su una locandina. Il link con il codice continua a funzionare.") }}
       </p>
@@ -72,7 +72,7 @@
     </div>
 
     <div class="card mt-3">
-      <div class="c7-kicker">{{ _("Link esterno") }}</div>
+      <div class="c7-kicker" data-help="vetrina-link-esterno">{{ _("Link esterno") }}</div>
       <p class="text-muted mt-2">
         {{ _("Regolamento, pagina della sala, modulo di pagamento: compare come pulsante in fondo alla vetrina.") }}
       </p>

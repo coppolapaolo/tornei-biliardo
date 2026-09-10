@@ -125,8 +125,31 @@
                                 <input type="hidden" name="number" value="1">
                             </div>
 
+                            {# Competizione di prova (ADR-058): stesso modulo,
+                               una spunta. Sta nel primo passo perche' e' la
+                               prima cosa da decidere — cambia chi vedra' la
+                               gara — e al limite si spegne con la spiegazione,
+                               ma il server rifiuta comunque la quarta. #}
                             <div class="mb-3">
-                                <label for="discipline" class="form-label">{{ _("Disciplina") }} <span
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="is_prova" name="is_prova"
+                                        {% if prove_attive is defined and prove_attive >= limite_prove %}disabled{% endif %}>
+                                    <label class="form-check-label" for="is_prova" data-help="prova-spunta">
+                                        <i class="fas fa-flask me-1"></i>{{ _("Competizione di prova") }}
+                                    </label>
+                                </div>
+                                <small class="text-muted">
+                                    {{ _("Solo tu la vedi: la popoli di giocatori fittizi, la conduci come una gara vera e la elimini quando hai finito. Non tocca ELO, XP né statistiche, e sparisce da sola dopo 14 giorni.") }}
+                                </small>
+                                {% if prove_attive is defined and prove_attive >= limite_prove %}
+                                <div class="c7-kicker mt-1" style="color:var(--c7-warn-ink)">
+                                    {{ _("Hai già %(n)s prove aperte: eliminane una per crearne un'altra.", n=limite_prove) }}
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="discipline" class="form-label" data-help="gara-disciplina">{{ _("Disciplina") }} <span
                                         class="text-danger">*</span></label>
                                 <select class="form-select" id="discipline" name="discipline" required>
                                     <option value="">{{ _("Seleziona disciplina...") }}</option>
@@ -168,7 +191,7 @@
                             </div>
 
                             <div class="mb-3">
-                                <label for="available_tables" class="form-label">{{ _("Tavoli Disponibili") }}</label>
+                                <label for="available_tables" class="form-label" data-help="gara-tavoli">{{ _("Tavoli Disponibili") }}</label>
                                 <input type="text" class="form-control" id="available_tables" name="available_tables"
                                     placeholder="{{ _('es: 3 oppure 2,3,5') }}">
                                 <small class="text-muted">{{ _("Numero di tavoli oppure elenco specifico separato da virgole") }}</small>
@@ -200,7 +223,7 @@
                             <p class="text-muted small">{{ _("Configura la logica di abbinamento e il numero di turni.") }}</p>
 
                             <div class="mb-4">
-                                <label for="matchmaking_strategy" class="form-label">{{ _("Algoritmo di Abbinamento") }} <span
+                                <label for="matchmaking_strategy" class="form-label" data-help="gara-strategia">{{ _("Algoritmo di Abbinamento") }} <span
                                         class="text-danger">*</span></label>
                                 <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy"
                                     required>
@@ -217,13 +240,13 @@
 
                             <div class="row">
                                 <div class="col-sm-6 mb-3" data-bracket-hide>
-                                    <label for="rounds_count" class="form-label">{{ _("Numero di Turni") }} <span
+                                    <label for="rounds_count" class="form-label" data-help="gara-numero-turni">{{ _("Numero di Turni") }} <span
                                             class="text-danger">*</span></label>
                                     <input type="number" class="form-control" id="rounds_count" name="rounds_count"
                                         value="3" min="1" max="10" required>
                                 </div>
                                 <div class="col-sm-6 mb-3" data-bracket-hide>
-                                    <label for="withdraw_policy" class="form-label">{{ _("Gestione Forfait") }}</label>
+                                    <label for="withdraw_policy" class="form-label" data-help="gara-forfait">{{ _("Gestione Forfait") }}</label>
                                     <select class="form-select" id="withdraw_policy" name="withdraw_policy" required>
                                         <option value="{{ WithdrawPolicy.FORFEIT.value }}" selected>{{ _("Vincita a tavolino avversario") }}
                                         </option>
@@ -256,7 +279,7 @@
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="anti_rematch_enabled"
                                                 name="anti_rematch_enabled" checked>
-                                            <label class="form-check-label" for="anti_rematch_enabled">
+                                            <label class="form-check-label" for="anti_rematch_enabled" data-help="gara-anti-rematch">
                                                 {{ _("Evita reincontri tra gli stessi giocatori") }}
                                             </label>
                                         </div>
@@ -281,7 +304,7 @@
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="has_handicap"
                                                 name="has_handicap" value="true">
-                                            <label class="form-check-label" for="has_handicap">
+                                            <label class="form-check-label" for="has_handicap" data-help="gara-handicap">
                                                 {{ _("Gioco con handicap") }}
                                             </label>
                                         </div>
@@ -290,7 +313,7 @@
 
                                     <div class="row" id="strategy_config_section">
                                         <div class="col-sm-6 mb-2">
-                                            <label for="first_round_policy" class="form-label small">{{ _("Primo Turno") }}</label>
+                                            <label for="first_round_policy" class="form-label small" data-help="gara-primo-turno">{{ _("Primo Turno") }}</label>
                                             <select class="form-select form-select-sm" id="first_round_policy"
                                                 name="first_round_policy">
                                                 <option value="random">{{ _("Casuale") }}</option>
@@ -299,7 +322,7 @@
                                             </select>
                                         </div>
                                         <div class="col-sm-6 mb-2" data-bracket-hide>
-                                            <label for="odd_number_policy" class="form-label small">{{ _("Se Giocatori Dispari") }}</label>
+                                            <label for="odd_number_policy" class="form-label small" data-help="gara-dispari">{{ _("Se Giocatori Dispari") }}</label>
                                             <select class="form-select form-select-sm" id="odd_number_policy"
                                                 name="odd_number_policy">
                                                 <option value="bye">{{ _("Riposo (punto gratis)") }}</option>
@@ -315,7 +338,7 @@
 
                                     <div class="row">
                                         <div class="col-sm-6 mb-2" data-bracket-hide>
-                                            <label for="classification_system" class="form-label small">
+                                            <label for="classification_system" class="form-label small" data-help="gara-classifica-sistema">
                                                 {{ _('Sistema di Classifica') }}
                                             </label>
                                             <select class="form-select form-select-sm" id="classification_system"
@@ -336,7 +359,7 @@
 
                                     <!-- SSR (Spot Shot Rally) Configuration -->
                                     <div class="border-top pt-3 mt-3" data-bracket-hide>
-                                        <h6 class="text-uppercase small fw-bold text-muted mb-3">
+                                        <h6 class="text-uppercase small fw-bold text-muted mb-3" data-help="gara-spareggio">
                                             <i class="fas fa-balance-scale text-warning me-1"></i> {{ _("Spareggio (SSR)") }}
                                         </h6>
                                         <div class="form-check form-switch mb-2">
@@ -388,7 +411,7 @@
                             <hr class="my-4">
                             <div class="row">
                                 <div class="col-sm-6 mb-3">
-                                    <label for="start_rule" class="form-label">{{ _("Regola di inizio") }}</label>
+                                    <label for="start_rule" class="form-label" data-help="gara-regola-inizio">{{ _("Regola di inizio") }}</label>
                                     <select class="form-select" id="start_rule" name="start_rule">
                                         {% for rule in StartRule %}
                                         <option value="{{ rule.value }}" {% if rule == StartRule.FIRST_PLAYER %}selected{% endif %}>{{ rule.display_name }}</option>
@@ -397,7 +420,7 @@
                                     <small class="text-muted">{{ _("Con l'acchito il segnapunti chiede chi ha vinto e chi apre: chi vince può mandare al tavolo l'avversario.") }}</small>
                                 </div>
                                 <div class="col-sm-6 mb-3">
-                                    <label for="break_rule" class="form-label">{{ _("Chi spacca") }}</label>
+                                    <label for="break_rule" class="form-label" data-help="gara-chi-spacca">{{ _("Chi spacca") }}</label>
                                     <select class="form-select" id="break_rule" name="break_rule">
                                         {% for rule in BreakRule %}
                                         <option value="{{ rule.value }}" {% if rule == BreakRule.ALTERNATE %}selected{% endif %}>{{ rule.display_name }}</option>

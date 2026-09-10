@@ -235,7 +235,7 @@
         {%- if match.table_assignment %}
         <span class="c7-board__table">{{ match.table_assignment }}</span>
         {%- endif %}
-        <span class="c7-board__where">
+        <span class="c7-board__where" data-help="partita-tabellone">
             {%- if where %}{{ where }}
             {%- elif match.gara %}{{ match.gara|gara_display_name }} <span class="c7-sep">·</span> {{ _('Turno') }} {{ match.round_number }}
             {%- else %}{{ _('Sfida individuale') }}{% endif -%}

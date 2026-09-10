@@ -28,7 +28,7 @@
             <span class="c7-num">{{ s.created_at|datetime_local }}</span>
           </span>
           <h3 class="mb-1" style="font-size:16px">{{ s.titolo }}</h3>
-          <span class="c7-state
+          <span{% if loop.first %} data-help="segnalazione-stato"{% endif %} class="c7-state
             {%- if s.stato == 'risolta' %} c7-state--ok
             {%- elif s.stato == 'non_prevista' %} c7-state--muted
             {%- elif s.stato == 'presa_in_carico' %} c7-state--info

@@ -164,6 +164,14 @@ class GaraService:
         # Estrai available_tables (list) — va impostato via set_available_tables()
         available_tables = kwargs.pop("available_tables", None)
 
+        # Le gare di un campionato di prova nascono di prova (ADR-058), come
+        # ereditano la regola di apertura: il flag vive sulla radice.
+        if campionato_id and "is_prova" not in kwargs:
+            from models.prova.guard import campionato_e_di_prova
+
+            if campionato_e_di_prova(campionato_id):
+                kwargs["is_prova"] = True
+
         gara = Gara(
             number=number,
             name=name,

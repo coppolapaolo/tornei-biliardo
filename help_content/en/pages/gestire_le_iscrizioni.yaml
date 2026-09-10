@@ -58,8 +58,11 @@ blocks:
     items:
       - name: "Register a player by hand"
         text: >-
-          For people who do not use the app or did not make it in time: you
-          search for them by name and add them. They still need an account.
+          For people who do not use the app or did not make it in time. Type
+          into the search box whatever you know about them — their username,
+          their first name or their last name: the list narrows as you type.
+          Players who added their name to their profile show up with it, so
+          you do not pick a namesake by mistake. They still need an account.
       - name: "Remove an entrant"
         text: >-
           For people who say they cannot come. The player is notified, and if

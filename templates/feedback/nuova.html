@@ -14,7 +14,7 @@
 
   {# ---------- Di cosa si tratta ---------- #}
   <section>
-    <div class="c7-label">{{ _('Di cosa si tratta') }}</div>
+    <div class="c7-label" data-help="segnalazione-tipo">{{ _('Di cosa si tratta') }}</div>
     <div class="c7-stack">
       {% for tipo in tipi %}
       <label class="c7-choice c7-choice--big">
@@ -44,7 +44,7 @@
 
   {# ---------- Il racconto ---------- #}
   <section>
-    <label for="corpo" class="c7-label">{{ _('Racconta cosa è successo') }}</label>
+    <label for="corpo" class="c7-label" data-help="segnalazione-racconto">{{ _('Racconta cosa è successo') }}</label>
     <textarea class="form-control" id="corpo" name="corpo" rows="7" required
               maxlength="5000"
               placeholder="{{ _('Cosa stavi facendo? Cosa ti aspettavi? Cosa è successo invece?') }}"></textarea>
