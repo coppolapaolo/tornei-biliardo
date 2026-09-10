@@ -1,4 +1,4 @@
-# Redesign delle dashboard — stato al 2026-08-30
+# Redesign delle dashboard — stato al 2026-09-10
 
 Lavoro di design sulle tre dashboard (ospite, giocatore, direttore).
 
@@ -162,10 +162,119 @@ frammenti di due lettere si agganciano a qualunque cosa gli somigli — `pybabel
 aveva proposto *Yes* per «Sei» e *Slug* per «su». I messaggi ora sono interi,
 coi placeholder dentro.
 
+## Due regole decise il 2026-09-10, guardando il codice
+
+Non sono emerse disegnando: sono emerse **rileggendo la #295 e la #296** dieci
+giorni dopo, con una domanda precisa in mano. Valgono per tutto ciò che
+segue, e le PR aperte vanno riallineate a loro prima di unirle.
+
+### 1. Il ruolo è per elemento, non per pagina
+
+Un utente non *è* giocatore o direttore: **lo è rispetto a una gara**. Per
+ogni gara (e per ogni campionato) contano tre fatti — sono iscritto, la
+dirigo, ho una partita aperta — e la tessera si disegna da quelli:
+
+* senza nessun fatto mio, la tessera è **quella dell'ospite**, qualunque ruolo
+  abbia il mio account;
+* con un fatto solo, è quella di quel fatto;
+* con due, gli elementi che non confliggono **si sommano** (pastiglie
+  `Iscritto` + `Dirigi`, «Gioca la tua partita» + il comando di direzione) e
+  su quelli che confliggono **vince il direttore** (il comando al posto di
+  «Dettagli»).
+
+La *selezione* di cosa entra in pagina è un'altra cosa e resta per ruolo:
+«Gare vicine a te» esiste per giocatore e direttore e non per l'ospite,
+perché dell'ospite non si sa dove sta. Ma una volta in pagina, la gara si
+mostra secondo i fatti, non secondo chi la guarda.
+
+Conseguenza pratica: **una tessera sola per gara e una per campionato**,
+condivise fra home dell'ospite e dashboard, che prendono i fatti del lettore
+in ingresso e degradano alla vista pubblica quando non ce ne sono. Oggi sono
+due componenti per la stessa cosa (`_index_*.html` da una parte,
+`_separated_dashboard_content.html` dall'altra), coerenti per intenzione e
+non per costruzione.
+
+### 2. Il passato: l'ultima più un mese, il resto nello storico
+
+Vale per le gare e per i campionati, e vale uguale per ospite e loggati:
+
+* in dashboard e in home compaiono **l'ultima conclusa** — sempre, anche se
+  vecchia, così dopo l'estate c'è comunque un aggancio — più tutte quelle
+  concluse **negli ultimi trenta giorni**;
+* sono **di tutti**, non solo mie: quelle che ho giocato o diretto si
+  **riconoscono** dalla pastiglia, in dashboard come nello storico;
+* la finestra si ancora a `Gara.date`, perché una data di chiusura non esiste
+  (lo stato «conclusa» è derivato); per il campionato, alla data della sua
+  ultima gara. Una gara chiusa dal direttore due mesi dopo averla giocata
+  esce dalla dashboard nel momento in cui viene chiusa: accettato;
+* il resto sta nello **storico**: un archivio ricercabile e filtrabile. Per i
+  campionati `/campionatos` c'è già, con ricerca per nome e filtro di stato,
+  e va esteso con la spia della partecipazione. Per le gare va **fatto**:
+  `/garas` copre solo le standalone e non ha né ricerca né filtri, ed è il
+  motivo per cui l'archivio dell'ospite non ha un «vedi tutte».
+
+Sostituisce i tagli fissi di oggi: tre gare e due campionati in coda nella
+#295, quattro e quattro nell'archivio della #296.
+
+## Verifica del 2026-09-10: dove le PR rispettano le regole e dove no
+
+Fra giocatore e direttore la regola 1 **vale per costruzione**: la tessera è
+una (`_separated_dashboard_content.html`, inclusa da entrambi) e non guarda
+mai `current_user.is_director`, solo `is_inscribed`, `can_manage` e la
+partita. Il direttore iscritto a una gara che non dirige vede byte per byte
+la tessera del giocatore; su quella che dirige e gioca le pastiglie si
+sommano e il comando vince su «Dettagli».
+
+Dove si rompe, in ordine di costo:
+
+1. **Il direttore non iscritto alla propria gara, con le iscrizioni aperte,
+   non ha «Iscriviti»** né la riga «Chiudono il»: la tessera sta in «Le tue
+   gare» e lì il pulsante non esiste. Il suo elemento da giocatore è perso
+   invece di sommarsi. Correzione piccola, nella #295.
+2. **Lo STATO prometteva «l'invito ai playoff dentro la card del suo
+   campionato»** e la #295 lo tiene invece in una sezione a sé, in cima
+   (`_playoff_invitations.html`). Da decidere al confronto: la sezione in
+   cima ha un argomento — è una cosa da fare con scadenza — che la forma C
+   non aveva considerato.
+3. **«Crea Match» in testata compare solo al giocatore puro**, non al
+   direttore che gioca; e le proposte di sfida aperte sono due componenti con
+   testi diversi nei due contenuti («Accetta il match» / «Partecipa»).
+   Si risolve unificando `_director_dashboard_content.html` con quello del
+   giocatore, «Gare vicine a te» compreso.
+4. **Chi è loggato vede meno dell'ospite** dove non ha fatti: l'ospite ha «In
+   diretta ora» coi tavoli, «In arrivo», il campionato con la testa della
+   classifica e un archivio di tutti; il giocatore, per le stesse gare, vede
+   solo quelle in `INSCRIPTION` e solo le concluse proprie. È la regola 1
+   applicata alle sezioni, e si risolve con la tessera condivisa.
+5. **Stesso stato, due disegni**: iscrizioni aperte per l'ospite è `Aperta` +
+   barra di riempimento + «N posti liberi», per il loggato è `Iscrizioni
+   aperte` + «Quota · 5/16 +2 in lista»; conclusa è podio a righe e pastiglia
+   verde da una parte, podio a tre riquadri e pastiglia grigia dall'altra.
+6. **I campionati non hanno ruolo per elemento**: la tessera in dashboard
+   distingue solo il pulsante finale e non porta pastiglie di appartenenza.
+
+Cose che invece **restano come sono** e non vanno rifatte: la divisione «Le
+tue gare» / «Aperte, puoi iscriverti», la partita dentro la tessera, il
+comando di direzione annunciato sulla tessera, le sfide a due, il blocco «Come
+stai andando».
+
 ## Cosa resta
 
+Le PR #295 e #296 sono da riallineare alle due regole del 2026-09-10 (vedi
+la verifica sopra): la tessera condivisa fra home e dashboard e il criterio
+delle concluse cambiano abbastanza forma da meritare **il confronto
+disegnato** prima del codice, come per le scelte del 30/08. Con quello
+arrivano lo **storico delle gare** (pagina nuova) e la spia «hai giocato /
+hai diretto» su quello dei campionati.
+
+Nel frattempo `main` è andata avanti: la #295 va rifatta sopra la prima tappa
+della competizione di prova (ADR-058), che ha messo sulla tessera la pastiglia
+«Di prova» presidiata da `test_prova_visibilita.py`.
+
 Dei casi dell'inventario restano da disegnare i profili **«di rientro»** e
-**«solo esercizi»** del saluto, e il **desktop nella forma C**.
+**«solo esercizi»** del saluto, e il **desktop nella forma C**. Le schermate
+`dashboard-giocatore` e `dashboard-direttore` della guida si catturano dopo
+il merge della #295, non prima.
 
 Vincoli del progetto da non perdere di vista quando si continua: ogni stringa
 in `_()`, il token CSRF su ogni form, `ENDPOINT_ROLES` per le route nuove, e la
