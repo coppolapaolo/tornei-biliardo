@@ -393,7 +393,7 @@
       "x": 0,
       "y": 1590,
       "w": 1600,
-      "text": "SCELTE DEL 10/09 — iscrizioni aperte: la barra di B più i numeri di A (quota, iscritti/posti, «chiudono il»). In corso: la tessera scura di B, per chiunque la guardi. Niente pulsanti piccoli: le azioni hanno l'altezza standard del tema (56px, --c7-btn-h), i 40px del btn-sm sono difficili da tappare. Niente «Gioca la tua partita»: il bersaglio è il riquadro della tua partita, che sta più in alto e ha già tutto. Chi dirige una gara in corso ha «Gestisci» (la pagina di amministrazione) al posto di «Segui la diretta». Il podio porta le medaglie.\n\nRICONOSCIBILI: sulle concluse «Hai giocato» / «Hai diretto» al posto di «Iscritto», che a gara finita non dice più niente; chi ha giocato ha anche la riga «Sei arrivato 5° su 16»."
+      "text": "SCELTE DEL 10/09 — iscrizioni aperte: la barra di B più i numeri di A (quota, iscritti/posti, «chiudono il»). In corso: la tessera scura di B, per chiunque la guardi. Niente pulsanti piccoli: le azioni hanno l'altezza standard del tema (56px, --c7-btn-h), i 40px del btn-sm sono difficili da tappare. Niente «Gioca la tua partita»: il bersaglio è il riquadro della tua partita, che sta più in alto e ha già tutto. Chi dirige una gara in corso ha «Gestisci» (la pagina di amministrazione) al posto di «Segui la diretta». Il podio porta le medaglie: oro, argento e bronzo sono tre token nuovi, da aggiungere a tokens-7c.css. In classifica la riga di chi guarda è scura, senza «sei tu».\n\nRICONOSCIBILI: sulle concluse «Hai giocato» / «Hai diretto» al posto di «Iscritto», che a gara finita non dice più niente; chi ha giocato ha anche la riga «Sei arrivato 5° su 16»."
     },
     {
       "id": "tess-camp",

@@ -36,6 +36,3 @@
 /* il riquadro della propria partita e' il bersaglio: niente pulsante a parte */
 .inset--go{color:inherit;display:flex;align-items:center;gap:10px;box-shadow:inset 0 0 0 1.5px var(--c7-accent-bright)}
 .inset--go .chev{color:var(--c7-accent-bright)}
-/* podio con le medaglie: chip del tema, icona dentro */
-.podium .c7-pos{margin:0 auto;width:30px;height:30px;border-radius:10px}
-.podium .c7-pos .ico{width:16px;height:16px}

@@ -280,8 +280,12 @@ canvas; la decisione è qui sotto.
 * chi **dirige** una gara in corso ha **«Gestisci»** — la pagina di
   amministrazione della gara — al posto di «Segui la diretta», anche quando
   è pure iscritto;
-* il **podio porta le medaglie**: icona `i-medal` nel chip di posizione
-  (`c7-pos--1/2/3`);
+* il **podio porta le medaglie**, oro, argento e bronzo: icona `i-medal` nel
+  chip di posizione. Sono **tre token nuovi** (`--c7-oro`, `--c7-argento`,
+  `--c7-bronzo`, con il loro inchiostro), dichiarati in `sorgenti/base.css`
+  e da aggiungere a `tokens-7c.css` quando si scrive il codice;
+* in classifica **la riga di chi guarda è scura** (`is-me`), col solo nome:
+  niente «sei tu» scritto accanto;
 * **storico**: niente filtro per disciplina; c'è **«nei primi N»**, con N a
   scelta;
 * **l'invito ai playoff va in cima**, come sezione a sé (Giocatore A in

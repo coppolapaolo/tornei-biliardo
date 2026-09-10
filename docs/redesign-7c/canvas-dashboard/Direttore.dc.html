@@ -28,6 +28,11 @@
   --c7-gutter:18px; --c7-gutter-lg:28px; --c7-pad-card:16px; --c7-pad-card-lg:20px;
   --c7-gap:12px; --c7-gap-lg:16px; --c7-side-w:244px;
   --c7-shadow-pop:0 18px 36px -20px rgba(27,33,36,.75);
+  /* NUOVI (10/09), non ancora in tokens-7c.css: le medaglie del podio.
+     Stessa saturazione bassa del resto della palette. */
+  --c7-oro:#C9A84C; --c7-oro-ink:#4A3A0E;
+  --c7-argento:#B4BDBF; --c7-argento-ink:#39434B;
+  --c7-bronzo:#B98A5E; --c7-bronzo-ink:#4A2F16;
 }
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0;background:var(--c7-bg);color:var(--c7-ink);
@@ -257,6 +262,17 @@ dl,dd{margin:0}
 .podium{display:flex;gap:8px}
 .podium>div{flex:1;text-align:center;background:var(--c7-bg);
   border-radius:var(--c7-r-chip);padding:8px 6px}
+/* podio con le medaglie: chip del tema, icona dentro, colore della medaglia */
+.podium .c7-pos{margin:0 auto;width:30px;height:30px;border-radius:10px}
+.podium .c7-pos .ico{width:16px;height:16px}
+.medal--1{background:var(--c7-oro);color:var(--c7-oro-ink)}
+.medal--2{background:var(--c7-argento);color:var(--c7-argento-ink)}
+.medal--3{background:var(--c7-bronzo);color:var(--c7-bronzo-ink)}
+/* la riga di chi guarda, in classifica: scura, senza dirlo a parole */
+.c7-rows__row.is-me{background:var(--c7-accent);color:var(--c7-accent-ink);
+  border-radius:var(--c7-r-chip);padding:10px 10px;margin:2px -10px 0;border-top:0}
+.c7-rows__row.is-me .muted{color:var(--c7-accent-dim)}
+.c7-rows__row.is-me+.c7-rows__row{border-top:0}
   </style>
 </helmet>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">

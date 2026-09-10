@@ -72,9 +72,9 @@
               <span class="fill trunc" style="font-size:13px;font-weight:800">Luca Berti</span>
               <span class="c7-num muted" style="font-size:12px">6 vittorie</span>
             </div>
-            <div class="c7-rows__row" style="border-color:var(--c7-line);border-top-style:dashed">
+            <div class="c7-rows__row is-me">
               <span class="c7-pos">4</span>
-              <span class="fill trunc" style="font-size:13px;font-weight:800;color:var(--c7-ink)">marco &mdash; sei tu</span>
+              <span class="fill trunc" style="font-size:13px;font-weight:800">marco</span>
               <span class="c7-num muted" style="font-size:12px">5 vittorie</span>
             </div>
           </div>
@@ -193,9 +193,9 @@
               <span class="fill trunc" style="font-size:13px;font-weight:800">Luca Berti</span>
               <span class="c7-num muted" style="font-size:12px">27 vittorie</span>
             </div>
-            <div class="c7-rows__row" style="border-color:var(--c7-line);border-top-style:dashed">
+            <div class="c7-rows__row is-me">
               <span class="c7-pos">6</span>
-              <span class="fill trunc" style="font-size:13px;font-weight:800;color:var(--c7-ink)">marco &mdash; sei tu</span>
+              <span class="fill trunc" style="font-size:13px;font-weight:800">marco</span>
               <span class="c7-num muted" style="font-size:12px">22 vittorie</span>
             </div>
           </div>

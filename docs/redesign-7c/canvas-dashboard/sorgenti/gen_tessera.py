@@ -141,7 +141,7 @@ def tavoli(titolo, accent=False):
 
 
 def _medaglia(pos, nome):
-    return (f'<div><span class="c7-pos c7-pos--{pos}"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span>'
+    return (f'<div><span class="c7-pos medal--{pos}"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span>'
             f'<div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">{pos}&deg;</div>'
             f'<div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">{nome}</div></div>')
 
@@ -153,6 +153,11 @@ PODIO = '''        <div class="inset">
           </div>
 {extra}        </div>
 '''
+def podio(extra=""):
+    """Il podio con le medaglie: lo usa anche `gen_casi` (CasoConcluse)."""
+    return PODIO.format(extra=extra)
+
+
 TU = ('          <div class="meta" style="margin-top:10px">Sei arrivato '
       '<span class="c7-num" style="color:var(--c7-ink)">5&deg;</span> su <span class="c7-num">16</span> '
       '<span class="c7-sep">&middot;</span> <span class="c7-num">8</span> vittorie su <span class="c7-num">12</span></div>\n')
@@ -270,13 +275,14 @@ def classifica(righe, finale=False):
 
 
 def rr(pos, nome, v, tu=False, cls=""):
+    """La riga di chi guarda e' scura (`is-me`): si riconosce dal fondo, non
+    da un «sei tu» scritto accanto al nome."""
     c = f"c7-pos c7-pos--{pos}" if pos <= 3 else "c7-pos"
-    n = f'{nome} &mdash; sei tu' if tu else nome
-    st = ';color:var(--c7-ink)' if tu else ''
-    sep = ' style="border-color:var(--c7-line);border-top-style:dashed"' if cls == "gap" else ' style="border-color:var(--c7-line)"'
-    return (f'            <div class="c7-rows__row"{sep}>\n'
+    me = " is-me" if tu else ""
+    sep = "" if tu else ' style="border-color:var(--c7-line)"'
+    return (f'            <div class="c7-rows__row{me}"{sep}>\n'
             f'              <span class="{c}">{pos}</span>\n'
-            f'              <span class="fill trunc" style="font-size:13px;font-weight:800{st}">{n}</span>\n'
+            f'              <span class="fill trunc" style="font-size:13px;font-weight:800">{nome}</span>\n'
             f'              <span class="c7-num muted" style="font-size:12px">{v} vittorie</span>\n'
             f'            </div>\n')
 
