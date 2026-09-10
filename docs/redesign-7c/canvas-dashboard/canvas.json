@@ -230,22 +230,13 @@
       "h": 1280
     },
     {
-      "file": "TesseraA.dc.html",
-      "title": "A · dalla dashboard",
+      "file": "Tessera.dc.html",
+      "title": "La tessera decisa",
       "page": "page-5",
       "x": 0,
       "y": 0,
       "w": 1600,
-      "h": 1410
-    },
-    {
-      "file": "TesseraB.dc.html",
-      "title": "B · dalla home dell’ospite",
-      "page": "page-5",
-      "x": 0,
-      "y": 1670,
-      "w": 1600,
-      "h": 1400
+      "h": 1550
     },
     {
       "file": "TesseraCampionato.dc.html",
@@ -254,25 +245,25 @@
       "x": 1720,
       "y": 0,
       "w": 1250,
-      "h": 1150
+      "h": 1230
     },
     {
       "file": "Concluse.dc.html",
       "title": "Concluse · l’ultima più un mese",
       "page": "page-5",
-      "x": 1720,
-      "y": 1670,
+      "x": 0,
+      "y": 1850,
       "w": 390,
-      "h": 1340
+      "h": 1410
     },
     {
       "file": "Storico.dc.html",
       "title": "Storico · archivio",
       "page": "page-5",
-      "x": 2240,
-      "y": 1670,
+      "x": 520,
+      "y": 1850,
       "w": 390,
-      "h": 1480
+      "h": 1490
     }
   ],
   "annotations": [
@@ -394,47 +385,31 @@
       "x": 0,
       "y": -250,
       "w": 1600,
-      "text": "REGOLA 1 (2026-09-10) — il ruolo è per elemento, non per pagina. Per ogni gara contano tre fatti — sono iscritto, la dirigo, ho una partita aperta — e la tessera si disegna da quelli: senza fatti è quella dell'ospite, con due i pezzi si sommano, sul conflitto vince il direttore.\n\nOgni riga è uno stato della gara, ogni colonna un insieme di fatti, ogni cella la tessera che ne discende. Le due matrici sotto contengono le STESSE celle: cambia solo da quale delle due forme di oggi parte la tessera condivisa fra home dell'ospite e dashboard. È l'unica scelta da fare qui."
+      "text": "REGOLA 1 (2026-09-10) — il ruolo è per elemento, non per pagina. Per ogni gara contano tre fatti — sono iscritto, la dirigo, ho una partita aperta — e la tessera si disegna da quelli: senza fatti è quella dell'ospite, con due i pezzi si sommano, sul conflitto vince il direttore.\n\nOgni riga è uno stato della gara, ogni colonna un insieme di fatti, ogni cella la tessera che ne discende. La tessera è UNA, condivisa fra home dell'ospite e dashboard: qui nella forma decisa il 10/09 dopo aver guardato le due basi possibili (A dalla dashboard, B dalla home dell'ospite, rimosse dal canvas)."
     },
     {
-      "id": "tess-a",
+      "id": "tess-decisa",
       "page": "page-5",
       "x": 0,
-      "y": 1450,
-      "w": 780,
-      "text": "A · dalla dashboard (#295). Numeri: quota, iscritti/posti, «chiudono il». La diretta si legge dalla pastiglia rossa. Densa e quieta: in un elenco di dieci tessere nessuna urla — ma nemmeno la gara in corso, che è l'unica che chiede attenzione adesso."
-    },
-    {
-      "id": "tess-b",
-      "page": "page-5",
-      "x": 820,
-      "y": 1450,
-      "w": 780,
-      "text": "B · dalla home dell'ospite (#296). Barra di riempimento e posti liberi; la gara in corso è scura per chiunque la guardi. Si vede da lontano, che è il punto della diretta. Costa: in un elenco lungo pesa, e ogni pezzo che entra nella tessera scura (partita, classifica, comando) va ridisegnato nella palette accent."
-    },
-    {
-      "id": "tess-marker",
-      "page": "page-5",
-      "x": 0,
-      "y": 3110,
+      "y": 1590,
       "w": 1600,
-      "text": "RICONOSCIBILI. Sulle concluse la pastiglia «Iscritto» non dice più niente (#295 la toglie): al suo posto «Hai giocato» / «Hai diretto», che è ciò che la regola 2 chiede — riconoscere a colpo d'occhio le concluse che ti riguardano, in dashboard e nello storico. Chi ha giocato ha anche la riga «Sei arrivato 5° su 16»: è il fatto, la pastiglia è solo il segnale. Alternativa scartata: la sola riga senza pastiglia — in uno storico di 34 righe non si scorre."
+      "text": "SCELTE DEL 10/09 — iscrizioni aperte: la barra di B più i numeri di A (quota, iscritti/posti, «chiudono il»). In corso: la tessera scura di B, per chiunque la guardi. Niente pulsanti piccoli: le azioni hanno l'altezza standard del tema (56px, --c7-btn-h), i 40px del btn-sm sono difficili da tappare. Niente «Gioca la tua partita»: il bersaglio è il riquadro della tua partita, che sta più in alto e ha già tutto. Chi dirige una gara in corso ha «Gestisci» (la pagina di amministrazione) al posto di «Segui la diretta». Il podio porta le medaglie.\n\nRICONOSCIBILI: sulle concluse «Hai giocato» / «Hai diretto» al posto di «Iscritto», che a gara finita non dice più niente; chi ha giocato ha anche la riga «Sei arrivato 5° su 16»."
     },
     {
       "id": "tess-camp",
       "page": "page-5",
       "x": 1720,
-      "y": 1190,
+      "y": 1270,
       "w": 1250,
-      "text": "CAMPIONATO — oggi la tessera in dashboard (#295) mostra meno di quella dell'ospite (#296): niente classifica, niente prossime gare. Con la regola 1 parte dalla tessera dell'ospite e aggiunge: la TUA riga sotto i primi tre (se non ci sei già), «Gestione» al posto di «Classifica e risultati» per chi dirige.\n\nINVITO AI PLAYOFF — lo STATO prometteva «dentro la card del campionato» (Giocatore C, pagina Confronto), la #295 lo tiene in cima come sezione a sé (Giocatore A). Il confronto sta già lì: è una cosa da fare con scadenza, e in cima si vede; dentro la card è al suo posto ma si scorre. Da decidere, non da ridisegnare."
+      "text": "CAMPIONATO — oggi la tessera in dashboard (#295) mostra meno di quella dell'ospite (#296): niente classifica, niente prossime gare. Con la regola 1 parte dalla tessera dell'ospite e aggiunge: la TUA riga sotto i primi tre (se non ci sei già), «Gestione» al posto di «Classifica e risultati» per chi dirige.\n\nINVITO AI PLAYOFF — deciso il 10/09: IN CIMA, come sezione a sé (Giocatore A in Confronto, ed è già così nella #295). È una cosa da fare con scadenza: dentro la card si scorre. Lo STATO del 30/08 diceva il contrario ed è stato emendato."
     },
     {
       "id": "tess-concl",
       "page": "page-5",
-      "x": 1720,
-      "y": 3190,
+      "x": 0,
+      "y": 3380,
       "w": 910,
-      "text": "REGOLA 2 — le concluse in dashboard e in home: l'ultima, sempre, più quelle degli ultimi trenta giorni su Gara.date; di tutti, non solo tue; riconoscibili. Vale per gare e campionati, e vale uguale per l'ospite (che oggi ne vede quattro fisse). La riga in coda dice quante ne restano e porta allo storico.\n\nSTORICO — pagina nuova per le gare (oggi /garas è solo standalone, senza ricerca né filtri) e /campionatos esteso: ricerca per nome o sala, chip «che ho giocato / che ho diretto», disciplina, anno; righe raggruppate per mese, vincitore in vista, pastiglia di partecipazione. Un segmentato in cima passa da gare a campionati: è lo stesso archivio, non due pagine."
+      "text": "REGOLA 2 — le concluse in dashboard e in home: l'ultima, sempre, più quelle degli ultimi trenta giorni su Gara.date; di tutti, non solo tue; riconoscibili. Vale per gare e campionati, e vale uguale per l'ospite (che oggi ne vede quattro fisse). La riga in coda dice quante ne restano e porta allo storico.\n\nSTORICO — pagina nuova per le gare (oggi /garas è solo standalone, senza ricerca né filtri) e /campionatos esteso: ricerca per nome o sala, chip «che ho giocato / che ho diretto», «nei primi N» (N si sceglie), anno; niente filtro per disciplina. Righe raggruppate per mese, vincitore in vista, pastiglia di partecipazione. Il segmentato in cima passa da gare a campionati: è lo stesso archivio, non due pagine."
     }
   ],
   "launch": {

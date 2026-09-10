@@ -16,8 +16,7 @@
       <span class="chip is-on">Tutte</span>
       <span class="chip">Che ho giocato</span>
       <span class="chip">Che ho diretto</span>
-      <span class="chip">Palla 8</span>
-      <span class="chip">Palla 9</span>
+      <span class="chip">Nei primi <span class="c7-num">3</span> <svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-chev" transform="rotate(90 12 12)"></use></svg></span>
       <span class="chip">2026 <svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-chev" transform="rotate(90 12 12)"></use></svg></span>
     </div>
     <div class="meta"><span class="c7-num" style="color:var(--c7-ink)">34</span> gare concluse nel 2026 <span class="c7-sep">&middot;</span> <span class="c7-num">9</span> giocate, <span class="c7-num">4</span> dirette</div>
@@ -87,7 +86,7 @@
           <span class="c7-state c7-state--accent">Hai giocato</span><svg viewBox="0 0 24 24" class="ico chev"><use href="#i-chev"></use></svg>
         </a>
       </div>
-      <span class="btn btn-secondary btn-sm btn-w" style="margin-top:6px">Mostra altre <span class="c7-num">27</span></span>
+      <span class="btn btn-secondary btn-secondary--onpage btn-w" style="margin-top:6px">Mostra altre <span class="c7-num">27</span></span>
     </section>
 
   </main>

@@ -28,7 +28,9 @@ La cartella è versionata (PR `docs:` del 30/08); il canvas seminato no, vedi
 
 **Giocatore — forma C: ogni cosa dentro ciò a cui appartiene.**
 La partita vive dentro la card della sua gara (non in una sezione «I tuoi
-match» gemella), l'invito ai playoff dentro la card del suo campionato. La
+match» gemella). ~~L'invito ai playoff dentro la card del suo campionato~~ —
+**emendato il 10/09**: l'invito sta **in cima**, come sezione a sé, perché è
+una cosa da fare con scadenza e dentro la card si scorre. La
 sfida a due resta una sezione a sé, perché non ha una gara dove stare: è il
 limite dichiarato di questa forma.
 
@@ -113,7 +115,7 @@ cd docs/redesign-7c/canvas-dashboard
 python3 sorgenti/gen_confronto.py      # varianti A/B/C giocatore e direttore
 python3 sorgenti/gen_ospite.py         # varianti A/B/C ospite
 python3 sorgenti/gen_casi.py           # i dieci casi
-python3 sorgenti/gen_tessera.py        # pagina Tessera: matrici stato x fatti, Concluse, Storico
+python3 sorgenti/gen_tessera.py        # pagina Tessera: la tessera decisa, campionato, Concluse, Storico
 ./build.sh <NomeArtboard> ...       # cuce sorgenti/base.css + corpo -> .dc.html
 ```
 
@@ -237,11 +239,10 @@ Dove si rompe, in ordine di costo:
    non ha «Iscriviti»** né la riga «Chiudono il»: la tessera sta in «Le tue
    gare» e lì il pulsante non esiste. Il suo elemento da giocatore è perso
    invece di sommarsi. Correzione piccola, nella #295.
-2. **Lo STATO prometteva «l'invito ai playoff dentro la card del suo
+2. ~~**Lo STATO prometteva «l'invito ai playoff dentro la card del suo
    campionato»** e la #295 lo tiene invece in una sezione a sé, in cima
-   (`_playoff_invitations.html`). Da decidere al confronto: la sezione in
-   cima ha un argomento — è una cosa da fare con scadenza — che la forma C
-   non aveva considerato.
+   (`_playoff_invitations.html`).~~ **Deciso il 10/09: resta in cima**, la
+   #295 è già giusta; la decisione del 30/08 è emendata (vedi sotto).
 3. **«Crea Match» in testata compare solo al giocatore puro**, non al
    direttore che gioca; e le proposte di sfida aperte sono due componenti con
    testi diversi nei due contenuti («Accetta il match» / «Partecipa»).
@@ -259,12 +260,33 @@ Dove si rompe, in ordine di costo:
 6. **I campionati non hanno ruolo per elemento**: la tessera in dashboard
    distingue solo il pulsante finale e non porta pastiglie di appartenenza.
 
-**La pagina «Tessera» del canvas** (10/09) mette in fila questi punti: due
-matrici stato × fatti — la stessa tessera che parte dalla forma della
-dashboard (A) o da quella dell'ospite (B), unica scelta ancora aperta — la
-matrice del campionato, e le schermate «Concluse» e «Storico» della regola 2.
-Il confronto sull'invito ai playoff non è stato ridisegnato: sta già in
-Confronto, Giocatore A (in cima) contro C (nella card).
+**La pagina «Tessera» del canvas** (10/09) mette in fila questi punti: la
+matrice stato × fatti della tessera decisa, la matrice del campionato, e le
+schermate «Concluse» e «Storico» della regola 2. Le due basi fra cui si è
+scelto — A dalla dashboard, B dalla home dell'ospite — sono state rimosse dal
+canvas; la decisione è qui sotto.
+
+### Scelte del 10/09 sulla tessera
+
+* **iscrizioni aperte**: la barra di riempimento di B **e** i numeri di A
+  (quota, iscritti/posti liberi, «chiudono il»);
+* **in corso**: la tessera **scura** di B, per chiunque la guardi;
+* **niente pulsanti piccoli** (`btn-sm`, 40px) sulle tessere: sono difficili
+  da tappare. Le azioni hanno l'altezza standard del tema, `--c7-btn-h`
+  (56px). Vale anche per «Risultati» e «Classifica e risultati»;
+* **niente «Gioca la tua partita»**: il bersaglio è il **riquadro della
+  propria partita**, che sta più in alto e ha già tutto (chevron a destra,
+  bordo `accent-bright`);
+* chi **dirige** una gara in corso ha **«Gestisci»** — la pagina di
+  amministrazione della gara — al posto di «Segui la diretta», anche quando
+  è pure iscritto;
+* il **podio porta le medaglie**: icona `i-medal` nel chip di posizione
+  (`c7-pos--1/2/3`);
+* **storico**: niente filtro per disciplina; c'è **«nei primi N»**, con N a
+  scelta;
+* **l'invito ai playoff va in cima**, come sezione a sé (Giocatore A in
+  Confronto). La #295 lo fa già; la decisione del 30/08 diceva «dentro la
+  card del campionato» ed è **emendata** qui.
 
 Cose che invece **restano come sono** e non vanno rifatte: la divisione «Le
 tue gare» / «Aperte, puoi iscriverti», la partita dentro la tessera, il
@@ -273,12 +295,11 @@ stai andando».
 
 ## Cosa resta
 
-Le PR #295 e #296 sono da riallineare alle due regole del 2026-09-10 (vedi
-la verifica sopra): la tessera condivisa fra home e dashboard e il criterio
-delle concluse cambiano abbastanza forma da meritare **il confronto
-disegnato** prima del codice, come per le scelte del 30/08. Con quello
-arrivano lo **storico delle gare** (pagina nuova) e la spia «hai giocato /
-hai diretto» su quello dei campionati.
+Le PR #295 e #296 sono da riallineare alle due regole del 2026-09-10 e alle
+scelte sulla tessera (pagina «Tessera» del canvas, decisa il 10/09): la
+tessera condivisa fra home e dashboard, le concluse con la finestra di un
+mese, lo **storico delle gare** (pagina nuova) e la spia «hai giocato / hai
+diretto» su quello dei campionati.
 
 Nel frattempo `main` è andata avanti: la #295 va rifatta sopra la prima tappa
 della competizione di prova (ADR-058), che ha messo sulla tessera la pastiglia

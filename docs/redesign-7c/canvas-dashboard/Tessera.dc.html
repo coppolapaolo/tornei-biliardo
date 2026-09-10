@@ -335,6 +335,54 @@ dl,dd{margin:0}
 /* tessera scura (forma B): i testi secondari nel tono dim del tema accent */
 .c7-card--accent .meta,.c7-card--accent .muted{color:var(--c7-accent-dim)}
 .c7-card--accent .cardtitle{color:var(--c7-accent-ink)}
+
+/* il riquadro della propria partita e' il bersaglio: niente pulsante a parte */
+.inset--go{color:inherit;display:flex;align-items:center;gap:10px;box-shadow:inset 0 0 0 1.5px var(--c7-accent-bright)}
+.inset--go .chev{color:var(--c7-accent-bright)}
+/* podio con le medaglie: chip del tema, icona dentro */
+.podium .c7-pos{margin:0 auto;width:30px;height:30px;border-radius:10px}
+.podium .c7-pos .ico{width:16px;height:16px}
+/* ============================================================
+   Pagina «Tessera» — la stessa gara vista da chi ha fatti diversi.
+   Nessun valore nuovo: composizioni dei token e due controlli
+   (chip di filtro, segmentato) presi dal tema 7c dell'app.
+   ============================================================ */
+.matrix{background:var(--c7-bg);padding:28px 32px 36px;display:grid;
+  grid-template-columns:120px repeat(var(--cols,4),330px);gap:20px 24px;align-items:start}
+.mx-col{font-size:13px;font-weight:800;letter-spacing:-.01em;padding:0 4px}
+.mx-col .meta{margin-top:2px}
+.mx-row{font-size:13px;font-weight:800;padding-top:16px}
+.mx-row .meta{margin-top:2px}
+.mx-cell{display:flex;flex-direction:column;gap:12px}
+.mx-cell>.c7-card{width:330px}
+.mx-title{grid-column:1 / -1;display:flex;flex-direction:column;gap:4px;padding-bottom:6px}
+.mx-title h2{font-size:20px}
+
+/* chip di filtro e segmentato: `.c7-chip` / `.c7-seg` di theme-7c.css */
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{height:36px;padding:0 14px;border-radius:var(--c7-r-pill);background:var(--c7-card);
+  color:var(--c7-ink-soft);font-size:12px;font-weight:800;display:inline-flex;
+  align-items:center;gap:6px;white-space:nowrap}
+.chip.is-on{background:var(--c7-ink);color:var(--c7-on-ink)}
+.seg{display:flex;background:var(--c7-card);border-radius:var(--c7-r-field);padding:4px;gap:4px}
+.seg>span{flex:1;height:40px;border-radius:var(--c7-r-control);display:flex;align-items:center;
+  justify-content:center;font-size:13px;font-weight:800;color:var(--c7-ink-muted)}
+.seg>span.is-on{background:var(--c7-ink);color:var(--c7-on-ink)}
+.field{height:48px;border-radius:var(--c7-r-field);background:var(--c7-card);padding:0 16px;
+  display:flex;align-items:center;gap:10px;color:var(--c7-ink-faint);font-size:14px;font-weight:600}
+.mese{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--c7-ink-muted);padding:6px 4px 0}
+
+/* tessera scura (forma B): i testi secondari nel tono dim del tema accent */
+.c7-card--accent .meta,.c7-card--accent .muted{color:var(--c7-accent-dim)}
+.c7-card--accent .cardtitle{color:var(--c7-accent-ink)}
+
+/* il riquadro della propria partita e' il bersaglio: niente pulsante a parte */
+.inset--go{color:inherit;display:flex;align-items:center;gap:10px;box-shadow:inset 0 0 0 1.5px var(--c7-accent-bright)}
+.inset--go .chev{color:var(--c7-accent-bright)}
+/* podio con le medaglie: chip del tema, icona dentro */
+.podium .c7-pos{margin:0 auto;width:30px;height:30px;border-radius:10px}
+.podium .c7-pos .ico{width:16px;height:16px}
   </style>
 </helmet>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -409,6 +457,9 @@ dl,dd{margin:0}
       <path d="M4.6 10.4v3.2a1.6 1.6 0 0 0 1.6 1.6h1.6l8.8 3.8V6.6L8 10.4H6.2a1.6 1.6 0 0 0-1.6 0Z"></path>
       <path d="M8 15.4v3.4a1.4 1.4 0 0 0 2.8 0v-2.2"></path>
     </g>
+    <g id="i-medal" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="12" cy="15" r="5.5"></circle><path d="m8.5 10.5-3-7h4l2.5 5M15.5 10.5l3-7h-4L12 8.5"></path>
+    </g>
     <g id="i-search" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
       <circle cx="11" cy="11" r="6.5"></circle><path d="m16 16 4.5 4.5"></path>
     </g>
@@ -424,7 +475,7 @@ dl,dd{margin:0}
   </defs>
 </svg>
 <div class="matrix" style="--cols:4">
-  <div class="mx-title"><h2>B &middot; dalla home dell&rsquo;ospite</h2><div class="meta">Barra di riempimento e posti liberi, la gara in corso &egrave; scura per tutti. Si legge da lontano; in un elenco lungo pesa, e la tessera scura cambia palette a ogni pezzo che contiene.</div></div>
+  <div class="mx-title"><h2>La tessera decisa</h2><div class="meta">Barra e numeri sulle aperte, scura in corso, azioni all&rsquo;altezza standard, il riquadro della tua partita &egrave; il bersaglio, chi dirige ha Gestisci.</div></div>
   <div></div>
   <div class="mx-col">Nessun fatto tuo<div class="meta">la tessera dell&rsquo;ospite</div></div>
   <div class="mx-col">Sei iscritto<div class="meta">&egrave; una tua gara</div></div>
@@ -438,18 +489,19 @@ dl,dd{margin:0}
             <div class="cardtitle">Gara 4 &mdash; Palla 9</div>
             <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 9 <span class="c7-sep">&middot;</span> Al <span class="c7-num">4</span><br><span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
           </div>
-          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--ok">6 posti</span></div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--ok">Iscrizioni aperte</span></div>
         </div>
         <div>
           <div class="progress"><div class="progress-bar" style="width:75%"></div></div>
-          <div class="row" style="margin-top:7px;font-size:12px;font-weight:700">
-            <span class="fill muted"><span class="c7-num">18</span> iscritti <span class="c7-sep">&middot;</span> quota <span class="c7-num">&euro;10</span></span>
-            <span class="muted">chiudono il <span class="c7-num">10/09</span></span>
+          <div class="row" style="margin-top:8px;font-size:12px;font-weight:700">
+            <span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span>
+            <span class="muted"><span class="c7-num">18/24</span> <span class="c7-sep">&middot;</span> <span class="c7-num">6</span> liberi</span>
           </div>
         </div>
+        <div class="meta" style="color:var(--c7-warn)">Chiudono il <span class="c7-num">10/09/2026 20:00</span></div>
         <div style="display:flex;gap:8px">
-          <span class="btn btn-secondary btn-sm btn-fill">Dettagli</span>
-          <span class="btn btn-success btn-sm btn-fill">Iscriviti</span>
+          <span class="btn btn-secondary btn-fill">Dettagli</span>
+          <span class="btn btn-success btn-fill">Iscriviti</span>
         </div>
       </article>
   </div>
@@ -460,18 +512,19 @@ dl,dd{margin:0}
             <div class="cardtitle">Gara 4 &mdash; Palla 9</div>
             <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 9 <span class="c7-sep">&middot;</span> Al <span class="c7-num">4</span><br><span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
           </div>
-          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--accent">Iscritto</span><span class="c7-state c7-state--ok">6 posti</span></div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--accent">Iscritto</span><span class="c7-state c7-state--ok">Iscrizioni aperte</span></div>
         </div>
         <div>
           <div class="progress"><div class="progress-bar" style="width:75%"></div></div>
-          <div class="row" style="margin-top:7px;font-size:12px;font-weight:700">
-            <span class="fill muted"><span class="c7-num">18</span> iscritti <span class="c7-sep">&middot;</span> quota <span class="c7-num">&euro;10</span></span>
-            <span class="muted">chiudono il <span class="c7-num">10/09</span></span>
+          <div class="row" style="margin-top:8px;font-size:12px;font-weight:700">
+            <span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span>
+            <span class="muted"><span class="c7-num">18/24</span> <span class="c7-sep">&middot;</span> <span class="c7-num">6</span> liberi</span>
           </div>
         </div>
+        <div class="meta" style="color:var(--c7-warn)">Chiudono il <span class="c7-num">10/09/2026 20:00</span></div>
         <div style="display:flex;gap:8px">
-          <span class="btn btn-secondary btn-sm btn-fill">Dettagli</span>
-          <span class="btn btn-danger btn-sm btn-fill">Disiscriviti</span>
+          <span class="btn btn-secondary btn-fill">Dettagli</span>
+          <span class="btn btn-danger btn-fill">Disiscriviti</span>
         </div>
       </article>
   </div>
@@ -482,18 +535,19 @@ dl,dd{margin:0}
             <div class="cardtitle">Gara 4 &mdash; Palla 9</div>
             <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 9 <span class="c7-sep">&middot;</span> Al <span class="c7-num">4</span><br><span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
           </div>
-          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--info">Dirigi</span><span class="c7-state c7-state--ok">6 posti</span></div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--info">Dirigi</span><span class="c7-state c7-state--ok">Iscrizioni aperte</span></div>
         </div>
         <div>
           <div class="progress"><div class="progress-bar" style="width:75%"></div></div>
-          <div class="row" style="margin-top:7px;font-size:12px;font-weight:700">
-            <span class="fill muted"><span class="c7-num">18</span> iscritti <span class="c7-sep">&middot;</span> quota <span class="c7-num">&euro;10</span></span>
-            <span class="muted">chiudono il <span class="c7-num">10/09</span></span>
+          <div class="row" style="margin-top:8px;font-size:12px;font-weight:700">
+            <span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span>
+            <span class="muted"><span class="c7-num">18/24</span> <span class="c7-sep">&middot;</span> <span class="c7-num">6</span> liberi</span>
           </div>
         </div>
+        <div class="meta" style="color:var(--c7-warn)">Chiudono il <span class="c7-num">10/09/2026 20:00</span></div>
         <div style="display:flex;gap:8px">
-          <span class="btn btn-secondary btn-sm btn-fill">Gestisci</span>
-          <span class="btn btn-success btn-sm btn-fill">Iscriviti</span>
+          <span class="btn btn-secondary btn-fill">Gestisci</span>
+          <span class="btn btn-success btn-fill">Iscriviti</span>
         </div>
       </article>
   </div>
@@ -504,18 +558,19 @@ dl,dd{margin:0}
             <div class="cardtitle">Gara 4 &mdash; Palla 9</div>
             <div class="meta">Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 9 <span class="c7-sep">&middot;</span> Al <span class="c7-num">4</span><br><span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span> <span class="c7-sep">&middot;</span> Biliardo Club Udine</div>
           </div>
-          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--info">Dirigi</span><span class="c7-state c7-state--accent">Iscritto</span><span class="c7-state c7-state--ok">6 posti</span></div>
+          <div style="display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:flex-start;gap:6px;max-width:170px"><span class="c7-state c7-state--info">Dirigi</span><span class="c7-state c7-state--accent">Iscritto</span><span class="c7-state c7-state--ok">Iscrizioni aperte</span></div>
         </div>
         <div>
           <div class="progress"><div class="progress-bar" style="width:75%"></div></div>
-          <div class="row" style="margin-top:7px;font-size:12px;font-weight:700">
-            <span class="fill muted"><span class="c7-num">18</span> iscritti <span class="c7-sep">&middot;</span> quota <span class="c7-num">&euro;10</span></span>
-            <span class="muted">chiudono il <span class="c7-num">10/09</span></span>
+          <div class="row" style="margin-top:8px;font-size:12px;font-weight:700">
+            <span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span>
+            <span class="muted"><span class="c7-num">18/24</span> <span class="c7-sep">&middot;</span> <span class="c7-num">6</span> liberi</span>
           </div>
         </div>
+        <div class="meta" style="color:var(--c7-warn)">Chiudono il <span class="c7-num">10/09/2026 20:00</span></div>
         <div style="display:flex;gap:8px">
-          <span class="btn btn-secondary btn-sm btn-fill">Gestisci</span>
-          <span class="btn btn-danger btn-sm btn-fill">Disiscriviti</span>
+          <span class="btn btn-secondary btn-fill">Gestisci</span>
+          <span class="btn btn-danger btn-fill">Disiscriviti</span>
         </div>
       </article>
   </div>
@@ -542,7 +597,7 @@ dl,dd{margin:0}
           </div>
           <div class="meta" style="margin-top:6px;color:var(--c7-accent-dim);border-top:1px solid rgba(255,255,255,.12);padding-top:6px">e altre <span class="c7-num">3</span> da giocare</div>
         </div>
-        <span class="btn btn-bright btn-sm btn-fill">Segui la diretta</span>
+        <span class="btn btn-bright btn-w">Segui la diretta</span>
       </article>
   </div>
   <div class="mx-cell">
@@ -558,13 +613,16 @@ dl,dd{margin:0}
           <span class="fill">Turno <span class="c7-num">3/5</span></span>
           <span class="muted"><span class="c7-num">14</span> giocatori</span>
         </div>
-        <div class="inset" style="background:rgba(255,255,255,.08)">
-          <div class="c7-kicker">La tua partita <span class="c7-sep">&middot;</span> Turno 3 <span class="c7-sep">&middot;</span> Tavolo 4</div>
-          <div class="row" style="margin-top:6px">
-            <span class="fill" style="font-size:14px;font-weight:800">vs Luca Berti</span>
-            <span class="c7-num" style="font-size:20px">3 &mdash; 2</span>
-          </div>
-        </div>
+        <a class="inset inset--go" href="#" style="background:rgba(255,255,255,.08)">
+          <span class="fill">
+            <span class="c7-kicker">La tua partita <span class="c7-sep">&middot;</span> Turno 3 <span class="c7-sep">&middot;</span> Tavolo 4</span>
+            <span class="row" style="margin-top:6px">
+              <span class="fill" style="font-size:14px;font-weight:800">vs Luca Berti</span>
+              <span class="c7-num" style="font-size:20px">3 &mdash; 2</span>
+            </span>
+          </span>
+          <svg viewBox="0 0 24 24" class="ico chev"><use href="#i-chev"></use></svg>
+        </a>
         <div class="inset" style="background:rgba(255,255,255,.08)">
           <div class="c7-kicker">Classifica provvisoria</div>
           <div style="margin-top:2px;font-size:14px;font-weight:800">Sei <span class="c7-num">4&deg;</span> su <span class="c7-num">14</span></div>
@@ -578,7 +636,7 @@ dl,dd{margin:0}
             <div class="meta" style="margin-top:6px">e altre <span class="c7-num">3</span> da giocare</div>
           </div>
         </div>
-        <span class="btn btn-bright btn-sm btn-fill"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-play"></use></svg>Gioca la tua partita</span>
+        <span class="btn btn-bright btn-w">Segui la diretta</span>
       </article>
   </div>
   <div class="mx-cell">
@@ -604,8 +662,8 @@ dl,dd{margin:0}
           <div class="meta" style="margin-top:6px;color:var(--c7-accent-dim);border-top:1px solid rgba(255,255,255,.12);padding-top:6px">e altre <span class="c7-num">3</span> da giocare</div>
         </div>
         <div style="display:flex;gap:8px">
-          <span class="btn btn-bright btn-sm btn-fill">Segui la diretta</span>
-          <span class="btn btn-ghost btn-sm btn-fill">Avvia il turno 4</span>
+          <span class="btn btn-bright btn-fill">Gestisci</span>
+          <span class="btn btn-ghost btn-fill">Avvia il turno 4</span>
         </div>
         <div class="meta">Il turno 4 si avvia quando finisce l&rsquo;ultima partita.</div>
       </article>
@@ -623,13 +681,16 @@ dl,dd{margin:0}
           <span class="fill">Turno <span class="c7-num">3/5</span> <span class="c7-sep">&middot;</span> <span class="c7-num">6/7</span> confermate</span>
           <span class="muted"><span class="c7-num">14</span> giocatori</span>
         </div>
-        <div class="inset" style="background:rgba(255,255,255,.08)">
-          <div class="c7-kicker">La tua partita <span class="c7-sep">&middot;</span> Turno 3 <span class="c7-sep">&middot;</span> Tavolo 4</div>
-          <div class="row" style="margin-top:6px">
-            <span class="fill" style="font-size:14px;font-weight:800">vs Luca Berti</span>
-            <span class="c7-num" style="font-size:20px">3 &mdash; 2</span>
-          </div>
-        </div>
+        <a class="inset inset--go" href="#" style="background:rgba(255,255,255,.08)">
+          <span class="fill">
+            <span class="c7-kicker">La tua partita <span class="c7-sep">&middot;</span> Turno 3 <span class="c7-sep">&middot;</span> Tavolo 4</span>
+            <span class="row" style="margin-top:6px">
+              <span class="fill" style="font-size:14px;font-weight:800">vs Luca Berti</span>
+              <span class="c7-num" style="font-size:20px">3 &mdash; 2</span>
+            </span>
+          </span>
+          <svg viewBox="0 0 24 24" class="ico chev"><use href="#i-chev"></use></svg>
+        </a>
         <div class="inset" style="background:rgba(255,255,255,.08)">
           <div class="c7-kicker">Classifica provvisoria</div>
           <div style="margin-top:2px;font-size:14px;font-weight:800">Sei <span class="c7-num">4&deg;</span> su <span class="c7-num">14</span></div>
@@ -644,8 +705,8 @@ dl,dd{margin:0}
           </div>
         </div>
         <div style="display:flex;gap:8px">
-          <span class="btn btn-bright btn-sm btn-fill"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-play"></use></svg>Gioca la tua partita</span>
-          <span class="btn btn-ghost btn-sm btn-fill">Avvia il turno 4</span>
+          <span class="btn btn-bright btn-fill">Gestisci</span>
+          <span class="btn btn-ghost btn-fill">Avvia il turno 4</span>
         </div>
         <div class="meta">Il turno 4 si avvia quando finisce l&rsquo;ultima partita.</div>
       </article>
@@ -666,13 +727,11 @@ dl,dd{margin:0}
         </div>
         <div class="inset">
           <div class="c7-kicker">Podio</div>
-          <div class="podium" style="margin-top:8px">
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">1&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Elena Furlan</div></div>
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">2&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Marco Bassi</div></div>
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">3&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Luca Berti</div></div>
+          <div class="podium" style="margin-top:10px">
+            <div><span class="c7-pos c7-pos--1"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">1&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Elena Furlan</div></div><div><span class="c7-pos c7-pos--2"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">2&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Marco Bassi</div></div><div><span class="c7-pos c7-pos--3"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">3&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Luca Berti</div></div>
           </div>
         </div>
-        <span class="btn btn-secondary btn-sm btn-fill">Risultati</span>
+        <span class="btn btn-secondary btn-w">Risultati</span>
       </article>
   </div>
   <div class="mx-cell">
@@ -690,14 +749,12 @@ dl,dd{margin:0}
         </div>
         <div class="inset">
           <div class="c7-kicker">Podio</div>
-          <div class="podium" style="margin-top:8px">
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">1&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Elena Furlan</div></div>
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">2&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Marco Bassi</div></div>
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">3&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Luca Berti</div></div>
+          <div class="podium" style="margin-top:10px">
+            <div><span class="c7-pos c7-pos--1"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">1&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Elena Furlan</div></div><div><span class="c7-pos c7-pos--2"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">2&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Marco Bassi</div></div><div><span class="c7-pos c7-pos--3"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">3&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Luca Berti</div></div>
           </div>
           <div class="meta" style="margin-top:10px">Sei arrivato <span class="c7-num" style="color:var(--c7-ink)">5&deg;</span> su <span class="c7-num">16</span> <span class="c7-sep">&middot;</span> <span class="c7-num">8</span> vittorie su <span class="c7-num">12</span></div>
         </div>
-        <span class="btn btn-secondary btn-sm btn-fill">Risultati</span>
+        <span class="btn btn-secondary btn-w">Risultati</span>
       </article>
   </div>
   <div class="mx-cell">
@@ -715,13 +772,11 @@ dl,dd{margin:0}
         </div>
         <div class="inset">
           <div class="c7-kicker">Podio</div>
-          <div class="podium" style="margin-top:8px">
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">1&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Elena Furlan</div></div>
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">2&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Marco Bassi</div></div>
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">3&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Luca Berti</div></div>
+          <div class="podium" style="margin-top:10px">
+            <div><span class="c7-pos c7-pos--1"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">1&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Elena Furlan</div></div><div><span class="c7-pos c7-pos--2"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">2&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Marco Bassi</div></div><div><span class="c7-pos c7-pos--3"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">3&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Luca Berti</div></div>
           </div>
         </div>
-        <span class="btn btn-secondary btn-sm btn-fill">Risultati</span>
+        <span class="btn btn-secondary btn-w">Risultati</span>
       </article>
   </div>
   <div class="mx-cell">
@@ -739,14 +794,12 @@ dl,dd{margin:0}
         </div>
         <div class="inset">
           <div class="c7-kicker">Podio</div>
-          <div class="podium" style="margin-top:8px">
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">1&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Elena Furlan</div></div>
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">2&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Marco Bassi</div></div>
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">3&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Luca Berti</div></div>
+          <div class="podium" style="margin-top:10px">
+            <div><span class="c7-pos c7-pos--1"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">1&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Elena Furlan</div></div><div><span class="c7-pos c7-pos--2"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">2&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Marco Bassi</div></div><div><span class="c7-pos c7-pos--3"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span><div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">3&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Luca Berti</div></div>
           </div>
           <div class="meta" style="margin-top:10px">Sei arrivato <span class="c7-num" style="color:var(--c7-ink)">5&deg;</span> su <span class="c7-num">16</span> <span class="c7-sep">&middot;</span> <span class="c7-num">8</span> vittorie su <span class="c7-num">12</span></div>
         </div>
-        <span class="btn btn-secondary btn-sm btn-fill">Risultati</span>
+        <span class="btn btn-secondary btn-w">Risultati</span>
       </article>
   </div>
 </div>

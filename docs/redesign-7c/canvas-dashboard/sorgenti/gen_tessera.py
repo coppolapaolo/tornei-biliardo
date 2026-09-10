@@ -6,14 +6,20 @@ contano tre fatti — sono iscritto, la dirigo, ho una partita aperta — e la
 tessera si disegna da quelli: senza fatti e' quella dell'ospite, con due i
 pezzi si sommano, sul conflitto vince il direttore. Qui la regola si vede:
 ogni riga e' uno stato della gara, ogni colonna un insieme di fatti, e la
-cella e' la tessera che ne discende. Due matrici, perche' resta una scelta da
-fare: **da quale delle due forme di oggi parte la tessera condivisa**.
+cella e' la tessera che ne discende.
 
-  A — dalla dashboard: numeri (quota, iscritti/posti), pastiglia di stato,
-      diretta segnalata dalla pastiglia. Piu' densa, piu' quieta.
-  B — dalla home dell'ospite: barra di riempimento e posti liberi, la gara in
-      corso e' scura (accent) per tutti. Piu' leggibile da lontano, piu'
-      pesante in un elenco lungo.
+La forma e' quella **decisa il 10/09 guardando le due basi possibili** (A
+dalla dashboard, B dalla home dell'ospite, entrambe rimosse dal canvas):
+
+* iscrizioni aperte: la barra di riempimento di B **e** i numeri di A;
+* in corso: la tessera scura di B, per chiunque la guardi;
+* nessun pulsante «piccolo» (`btn-sm`, 40px): sono difficili da tappare.
+  Le azioni della tessera hanno l'altezza standard del tema (`--c7-btn-h`);
+* niente «Gioca la tua partita»: il bersaglio e' il **riquadro della propria
+  partita**, che sta piu' in alto e ha gia' tutto;
+* chi dirige una gara in corso ha «Gestisci» (la pagina di amministrazione
+  della gara) al posto di «Segui la diretta»;
+* il podio porta le medaglie (icona `i-medal` nel chip di posizione).
 
 Regola 2: le concluse in dashboard sono l'ultima piu' l'ultimo mese, di
 tutti, riconoscibili; il resto nello storico. `Concluse` e `Storico` sono
@@ -64,7 +70,9 @@ def card(titolo, meta, past, corpo, azioni, accent=False, nota=""):
 
 def btns(*bs):
     if len(bs) == 1:
-        return f'        {bs[0]}\n'
+        # Da solo in una colonna flex `btn-fill` (flex:1) lo schiaccia in
+        # verticale: un pulsante solo va a larghezza piena, non a riempimento.
+        return f'        {bs[0].replace("btn-fill", "btn-w")}\n'
     return ('        <div style="display:flex;gap:8px">\n'
             + "".join(f'          {b}\n' for b in bs)
             + '        </div>\n')
@@ -72,7 +80,7 @@ def btns(*bs):
 
 def b(testo, tipo="secondary", fill=True, icona=""):
     w = "btn-fill" if fill else "btn-w"
-    return f'<span class="btn btn-{tipo} btn-sm {w}">{icona}{testo}</span>'
+    return f'<span class="btn btn-{tipo} {w}">{icona}{testo}</span>'
 
 
 NOTA = '        <div class="meta">{}</div>\n'
@@ -96,19 +104,14 @@ G2 = ("Gara 2 &mdash; Palla 8",
 
 
 # ── Corpi per stato ──────────────────────────────────────────────────────────
-APERTA_A = '''        <div class="row" style="font-size:12px;font-weight:700">
-          <span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span>
-          <span class="muted"><span class="c7-num">18/24</span> <span style="color:var(--c7-warn)">+2 in lista</span></span>
-        </div>
-        <div class="meta" style="color:var(--c7-warn)">Chiudono il <span class="c7-num">10/09/2026 20:00</span></div>
-'''
-APERTA_B = '''        <div>
+APERTA = '''        <div>
           <div class="progress"><div class="progress-bar" style="width:75%"></div></div>
-          <div class="row" style="margin-top:7px;font-size:12px;font-weight:700">
-            <span class="fill muted"><span class="c7-num">18</span> iscritti <span class="c7-sep">&middot;</span> quota <span class="c7-num">&euro;10</span></span>
-            <span class="muted">chiudono il <span class="c7-num">10/09</span></span>
+          <div class="row" style="margin-top:8px;font-size:12px;font-weight:700">
+            <span class="fill muted">Quota <span class="c7-num">&euro;10,00</span></span>
+            <span class="muted"><span class="c7-num">18/24</span> <span class="c7-sep">&middot;</span> <span class="c7-num">6</span> liberi</span>
           </div>
         </div>
+        <div class="meta" style="color:var(--c7-warn)">Chiudono il <span class="c7-num">10/09/2026 20:00</span></div>
 '''
 
 TURNO = '''        <div class="row" style="font-size:12px;font-weight:700">
@@ -137,12 +140,16 @@ def tavoli(titolo, accent=False):
 '''
 
 
+def _medaglia(pos, nome):
+    return (f'<div><span class="c7-pos c7-pos--{pos}"><svg viewBox="0 0 24 24" class="ico"><use href="#i-medal"></use></svg></span>'
+            f'<div class="c7-num" style="margin-top:6px;font-size:11px;color:var(--c7-ink-muted)">{pos}&deg;</div>'
+            f'<div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">{nome}</div></div>')
+
+
 PODIO = '''        <div class="inset">
           <div class="c7-kicker">Podio</div>
-          <div class="podium" style="margin-top:8px">
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">1&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Elena Furlan</div></div>
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">2&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Marco Bassi</div></div>
-            <div><div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">3&deg;</div><div class="trunc" style="margin-top:2px;font-size:12px;font-weight:800">Luca Berti</div></div>
+          <div class="podium" style="margin-top:10px">
+            ''' + _medaglia(1, "Elena Furlan") + _medaglia(2, "Marco Bassi") + _medaglia(3, "Luca Berti") + '''
           </div>
 {extra}        </div>
 '''
@@ -167,42 +174,50 @@ COLS = [
 ]
 
 
-def riga_aperta(forma):
-    corpo = APERTA_A if forma == "A" else APERTA_B
-    stato = ('<span class="c7-state c7-state--ok">Iscrizioni aperte</span>' if forma == "A"
-             else '<span class="c7-state c7-state--ok">6 posti</span>')
+def riga_aperta():
+    stato = '<span class="c7-state c7-state--ok">Iscrizioni aperte</span>'
     return [
-        card(*G4, pastiglie(stato), corpo, btns(b("Dettagli"), b("Iscriviti", "success"))),
-        card(*G4, pastiglie(ISCRITTO, stato), corpo, btns(b("Dettagli"), b("Disiscriviti", "danger"))),
-        card(*G4, pastiglie(DIRIGI, stato), corpo, btns(b("Gestisci"), b("Iscriviti", "success"))),
-        card(*G4, pastiglie(DIRIGI, ISCRITTO, stato), corpo, btns(b("Gestisci"), b("Disiscriviti", "danger"))),
+        card(*G4, pastiglie(stato), APERTA, btns(b("Dettagli"), b("Iscriviti", "success"))),
+        card(*G4, pastiglie(ISCRITTO, stato), APERTA, btns(b("Dettagli"), b("Disiscriviti", "danger"))),
+        card(*G4, pastiglie(DIRIGI, stato), APERTA, btns(b("Gestisci"), b("Iscriviti", "success"))),
+        card(*G4, pastiglie(DIRIGI, ISCRITTO, stato), APERTA, btns(b("Gestisci"), b("Disiscriviti", "danger"))),
     ]
 
 
-def riga_in_corso(forma):
-    acc = forma == "B"
-    stato = ('<span class="c7-state c7-state--live">Live</span>' if acc
-             else '<span class="c7-state c7-state--err">In corso</span>')
+MIA_PARTITA = '''        <a class="inset inset--go" href="#" style="background:rgba(255,255,255,.08)">
+          <span class="fill">
+            <span class="c7-kicker">La tua partita <span class="c7-sep">&middot;</span> Turno 3 <span class="c7-sep">&middot;</span> Tavolo 4</span>
+            <span class="row" style="margin-top:6px">
+              <span class="fill" style="font-size:14px;font-weight:800">vs Luca Berti</span>
+              <span class="c7-num" style="font-size:20px">3 &mdash; 2</span>
+            </span>
+          </span>
+          <svg viewBox="0 0 24 24" class="ico chev"><use href="#i-chev"></use></svg>
+        </a>
+'''
+CLASSIFICA_VIVA = INSET_GARA_VIVA.replace(
+    'class="inset"', 'class="inset" style="background:rgba(255,255,255,.08)"'
+).replace("border-top:1px solid var(--c7-line)", "border-top:1px solid rgba(255,255,255,.12)")
+
+
+def riga_in_corso():
+    stato = '<span class="c7-state c7-state--live">Live</span>'
     turno = TURNO.format(extra="")
     turno_dir = TURNO.format(extra=CONFERMATE)
-    mia = INSET_PARTITA + INSET_GARA_VIVA.replace("Altre partite del turno", "Altre partite del turno")
-    segui = b("Segui la diretta", "bright" if acc else "secondary")
-    gioca = b("Gioca la tua partita", "bright" if acc else "primary", icona=PLAY)
-    avvia = b("Avvia il turno 4", "ghost" if acc else "secondary")
-    if acc:
-        mia = mia.replace('class="inset"', 'class="inset" style="background:rgba(255,255,255,.08)"')
-        mia = mia.replace("border-top:1px solid var(--c7-line)", "border-top:1px solid rgba(255,255,255,.12)")
+    segui = b("Segui la diretta", "bright")
+    gest = b("Gestisci", "bright")
+    avvia = b("Avvia il turno 4", "ghost")
     return [
-        card(*G3, pastiglie(stato), turno + tavoli("Ai tavoli adesso", acc), btns(segui), acc),
-        card(*G3, pastiglie(ISCRITTO, stato), turno + mia, btns(gioca), acc),
-        card(*G3, pastiglie(DIRIGI, stato), turno_dir + tavoli("Ai tavoli adesso", acc),
-             btns(segui, avvia), acc, NOTA_TURNO),
-        card(*G3, pastiglie(DIRIGI, ISCRITTO, stato), turno_dir + mia,
-             btns(gioca, avvia), acc, NOTA_TURNO),
+        card(*G3, pastiglie(stato), turno + tavoli("Ai tavoli adesso", True), btns(segui), True),
+        card(*G3, pastiglie(ISCRITTO, stato), turno + MIA_PARTITA + CLASSIFICA_VIVA, btns(segui), True),
+        card(*G3, pastiglie(DIRIGI, stato), turno_dir + tavoli("Ai tavoli adesso", True),
+             btns(gest, avvia), True, NOTA_TURNO),
+        card(*G3, pastiglie(DIRIGI, ISCRITTO, stato), turno_dir + MIA_PARTITA + CLASSIFICA_VIVA,
+             btns(gest, avvia), True, NOTA_TURNO),
     ]
 
 
-def riga_conclusa(forma):
+def riga_conclusa():
     stato = '<span class="c7-state c7-state--muted">Conclusa</span>'
     ris = btns(b("Risultati"))
     return [
@@ -234,17 +249,12 @@ def matrice(titolo, sotto, cols, rows, celle, ncol):
     return "".join(out)
 
 
-def tessera(forma):
-    if forma == "A":
-        t = "A &middot; dalla dashboard"
-        s = ("Numeri al posto della barra, pastiglia di stato, la diretta si legge dalla pastiglia. "
-             "Densa e quieta: in un elenco di dieci tessere nessuna urla.")
-    else:
-        t = "B &middot; dalla home dell&rsquo;ospite"
-        s = ("Barra di riempimento e posti liberi, la gara in corso &egrave; scura per tutti. "
-             "Si legge da lontano; in un elenco lungo pesa, e la tessera scura cambia palette a ogni pezzo che contiene.")
-    return matrice(t, s, COLS, ROWS,
-                   [riga_aperta(forma), riga_in_corso(forma), riga_conclusa(forma)], 4)
+def tessera():
+    return matrice(
+        "La tessera decisa",
+        "Barra e numeri sulle aperte, scura in corso, azioni all&rsquo;altezza standard, "
+        "il riquadro della tua partita &egrave; il bersaglio, chi dirige ha Gestisci.",
+        COLS, ROWS, [riga_aperta(), riga_in_corso(), riga_conclusa()], 4)
 
 
 # ── Campionato ───────────────────────────────────────────────────────────────
@@ -292,7 +302,7 @@ C_IN = ("Campionato Sociale 2026",
 C_FIN = ("Campionato Primavera 2026",
          'amalfi <span class="c7-sep">&middot;</span> 6 gare <span class="c7-sep">&middot;</span> '
          'ultima gara il <span class="c7-num" style="color:var(--c7-ink)">20/08</span>')
-PEN = ('<span class="c7-iconbtn"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-pen"></use></svg></span>')
+PEN = ('<span class="c7-iconbtn" style="width:56px;height:56px"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-pen"></use></svg></span>')
 
 COLS_C = [
     ("Nessun fatto tuo", "la tessera dell&rsquo;ospite"),
@@ -335,7 +345,7 @@ def compatta(titolo, meta, past, extra="", locked=False):
           {past}
         </div>
         <div class="meta"><span class="c7-num" style="color:var(--c7-ink)">1&deg;</span> Elena Furlan <span class="c7-sep">&middot;</span> <span class="c7-num">2&deg;</span> Marco Bassi <span class="c7-sep">&middot;</span> <span class="c7-num">3&deg;</span> Luca Berti</div>
-{extra}        <span class="btn btn-secondary btn-sm btn-w">Risultati</span>
+{extra}        <span class="btn btn-secondary btn-w">Risultati</span>
       </article>
 '''
 
@@ -365,7 +375,7 @@ CAMP_CONCLUSO = f'''      <article class="c7-card cardstack">
         </div>
         <div class="meta"><span class="c7-num" style="color:var(--c7-ink)">1&deg;</span> Elena Furlan <span class="c7-sep">&middot;</span> <span class="c7-num">2&deg;</span> Marco Bassi <span class="c7-sep">&middot;</span> <span class="c7-num">3&deg;</span> Luca Berti</div>
         <div class="meta">Sei arrivato <span class="c7-num" style="color:var(--c7-ink)">6&deg;</span> su <span class="c7-num">14</span></div>
-        <span class="btn btn-secondary btn-sm btn-w">Classifica e risultati</span>
+        <span class="btn btn-secondary btn-w">Classifica e risultati</span>
       </article>
 '''
 
@@ -412,8 +422,7 @@ STORICO = f'''    <div class="seg"><span class="is-on">Gare</span><span>Campiona
       <span class="chip is-on">Tutte</span>
       <span class="chip">Che ho giocato</span>
       <span class="chip">Che ho diretto</span>
-      <span class="chip">Palla 8</span>
-      <span class="chip">Palla 9</span>
+      <span class="chip">Nei primi <span class="c7-num">3</span> <svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-chev" transform="rotate(90 12 12)"></use></svg></span>
       <span class="chip">2026 <svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-chev" transform="rotate(90 12 12)"></use></svg></span>
     </div>
     <div class="meta"><span class="c7-num" style="color:var(--c7-ink)">34</span> gare concluse nel 2026 <span class="c7-sep">&middot;</span> <span class="c7-num">9</span> giocate, <span class="c7-num">4</span> dirette</div>
@@ -428,16 +437,15 @@ STORICO = f'''    <div class="seg"><span class="is-on">Gare</span><span>Campiona
 ])}{mese("Luglio 2026", [
     riga_storico("Notturna di luglio", "25/07 &middot; Palla 9 &middot; Sala Centrale, Trieste", "Giulia Nardin", HAI_DIRETTO),
     riga_storico("Campionato Primavera &middot; Gara 5", "12/07 &middot; Palla 8 &middot; Biliardo Club Udine", "Elena Furlan", HAI_GIOCATO),
-])}      <span class="btn btn-secondary btn-sm btn-w" style="margin-top:6px">Mostra altre <span class="c7-num">27</span></span>
+])}      <span class="btn btn-secondary btn-secondary--onpage btn-w" style="margin-top:6px">Mostra altre <span class="c7-num">27</span></span>
     </section>
 '''
 
 
 if __name__ == "__main__":
-    (OUT / "TesseraA.body").write_text(tessera("A"), encoding="utf-8")
-    (OUT / "TesseraB.body").write_text(tessera("B"), encoding="utf-8")
+    (OUT / "Tessera.body").write_text(tessera(), encoding="utf-8")
     (OUT / "TesseraCampionato.body").write_text(campionato(), encoding="utf-8")
     (OUT / "Concluse.body").write_text(screen(G_HEAD, concluse, NAV_GIOC), encoding="utf-8")
     (OUT / "Storico.body").write_text(screen(head_storico(), STORICO, NAV_GIOC), encoding="utf-8")
-    for n in ["TesseraA", "TesseraB", "TesseraCampionato", "Concluse", "Storico"]:
+    for n in ["Tessera", "TesseraCampionato", "Concluse", "Storico"]:
         print("scritto", n)
