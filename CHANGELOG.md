@@ -32,6 +32,15 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Il cambio pagina senza lampo bianco.** L'app è fatta di pagine intere:
+  ogni tocco su un link ne chiede una nuova al server, e fra le due c'era un
+  istante di bianco — su PythonAnywhere anche un terzo di secondo — che
+  faceva sembrare l'app un sito. Ora la pagina che si lascia resta sullo
+  schermo finché quella nuova non è pronta, poi le due si dissolvono l'una
+  nell'altra in un quarto di secondo, mentre testata, barra laterale e
+  barra di navigazione del telefono restano ferme al loro posto. Funziona
+  su Chrome e Safari; dove il browser non lo sa fare non cambia niente. Chi
+  ha «riduci movimento» attivo non vede nessuna dissolvenza.
 - **Una scala del movimento per tutta l'interfaccia.** Fino a oggi ogni
   animazione del tema aveva i suoi tempi, scritti a mano e diversi fra loro:
   il toast di Chalky entrava in 320 ms con una curva sua, il chevron delle

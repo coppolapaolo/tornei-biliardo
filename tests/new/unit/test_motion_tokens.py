@@ -175,3 +175,73 @@ def test_il_tocco_premuto_e_istantaneo():
     assert re.search(
         r"transition-duration:\s*0m?s", corpo
     ), "la pressione deve essere istantanea"
+
+
+# ---------------------------------------------------------------------------
+# Il cambio pagina.
+#
+# L'app è multipagina: ogni link è una navigazione intera, e fino all'11/09
+# fra le due pagine c'era un lampo bianco. Con la view transition
+# cross-document il browser tiene la pagina vecchia finché la nuova non è
+# pronta e poi dissolve; testata, barra laterale e nav mobile hanno un nome e
+# restano ferme. Un nome che compare due volte nella stessa pagina fa saltare
+# la transizione **in silenzio**: la testata unica la tiene
+# `test_single_page_header.py`, gli altri due stanno solo in `base.html`.
+# ---------------------------------------------------------------------------
+
+NOMI_DEL_GUSCIO = {"c7-head", "c7-side", "c7-mobilenav"}
+
+
+def test_il_cambio_pagina_e_dichiarato_nel_tema():
+    css = _senza_commenti(THEME.read_text(encoding="utf-8"))
+    assert re.search(r"@view-transition\s*\{\s*navigation:\s*auto\s*;?\s*\}", css), (
+        "manca `@view-transition { navigation: auto }`: senza, il cambio pagina "
+        "torna al lampo bianco"
+    )
+    for pseudo in ("group", "old", "new"):
+        m = re.search(rf"::view-transition-{pseudo}\(\*\)[^{{]*\{{([^}}]*)\}}", css)
+        assert m and "var(--c7-dur-base)" in m.group(
+            1
+        ), f"::view-transition-{pseudo}(*) non legge la durata dai token"
+
+
+@pytest.mark.parametrize("nome", sorted(NOMI_DEL_GUSCIO))
+def test_le_parti_del_guscio_hanno_un_nome_di_transizione(nome):
+    css = _senza_commenti(THEME.read_text(encoding="utf-8"))
+    assert re.search(rf"\.{nome}\s*\{{[^}}]*view-transition-name:\s*{nome}\b", css), (
+        f".{nome} non ha `view-transition-name: {nome}`: si dissolverebbe col resto "
+        "invece di restare ferma"
+    )
+
+
+def test_con_riduci_movimento_il_cambio_pagina_non_parte():
+    """Le durate a zero non bastano: la transizione cattura comunque le due
+    pagine, e su un telefono lento si vede. Meglio non partire."""
+    css = _senza_commenti(THEME.read_text(encoding="utf-8"))
+    spenti = "".join(_blocchi_media(css, "reduce"))
+    assert re.search(
+        r"@view-transition\s*\{\s*navigation:\s*none", spenti
+    ), "manca `@view-transition { navigation: none }` sotto prefers-reduced-motion"
+
+
+TEMPLATES = Path(__file__).resolve().parents[3] / "templates"
+
+
+@pytest.mark.parametrize("nome", sorted(NOMI_DEL_GUSCIO - {"c7-head"}))
+def test_barra_e_nav_mobile_compaiono_una_volta_e_solo_nel_guscio(nome):
+    """Un `view-transition-name` duplicato annulla la transizione in silenzio.
+
+    La testata la presidia `test_single_page_header.py`; barra laterale e nav
+    mobile non avevano nessuno: un include duplicato lascerebbe verdi tutti i
+    test e spegnerebbe il cambio pagina senza dirlo a nessuno.
+    """
+    marcatore = re.compile(rf"""class=["'][^"']*\b{nome}\b""")
+    for template in sorted(TEMPLATES.rglob("*.html")):
+        occorrenze = len(marcatore.findall(template.read_text(encoding="utf-8")))
+        attese = (
+            1 if template.name == "base.html" and template.parent == TEMPLATES else 0
+        )
+        assert occorrenze == attese, (
+            f"{template.relative_to(TEMPLATES)}: `.{nome}` compare {occorrenze} volte, "
+            f"attese {attese} — vive solo in base.html, una volta"
+        )

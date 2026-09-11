@@ -48,8 +48,17 @@ sono mondi precedenti al tema, con guard propri.
 
 ## Passi successivi
 
-1. ~~Token e allineamento dei timing esistenti~~ (questa PR).
-2. Cambio pagina: `@view-transition { navigation: auto }` e un
-   `view-transition-name` sulla testata di `base.html`.
+1. ~~Token e allineamento dei timing esistenti~~ (PR #338).
+2. ~~Cambio pagina~~: `@view-transition { navigation: auto }` nel tema, nomi
+   su `.c7-head`, `.c7-side`, `.c7-mobilenav`, durata dai token, spento con
+   «riduci movimento». Verificato con Chromium headless ascoltando
+   `pageswap`: link e `location.replace` transitano, `location.reload()` no.
+   Dal browser pilotato non si vede: la scheda risulta `hidden` e ogni
+   transizione viene saltata.
 3. La cifra del segnapunti che si anima quando cambia, al tocco e all'arrivo
-   di un evento live.
+   di un evento live. Sulla card verticale il cambio passa da un
+   ricaricamento: per farlo transitare va sostituito `location.reload()` con
+   `location.replace(location.href)`.
+
+I tre fogli rimasti fuori scala (`gamification.css`, `main.css`,
+`drill-builder.css`) sono nella issue #340.

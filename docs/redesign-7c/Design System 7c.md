@@ -90,7 +90,8 @@ Si animano solo `transform` e `opacity` (l'altezza di una sezione che si apre è
 l'unica eccezione). Niente hover, niente blur, niente durate scritte a mano:
 `test_motion_tokens.py` legge il tema e fa rosso. Con `prefers-reduced-motion`
 le durate vanno a zero alla fonte; i battiti (`infinite`) tengono il proprio
-`animation: none`.
+`animation: none`. Il cambio pagina è una view transition cross-document
+(`@view-transition`), con testata, barra laterale e nav mobile ferme.
 
 ---
 

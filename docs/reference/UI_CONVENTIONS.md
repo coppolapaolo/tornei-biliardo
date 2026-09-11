@@ -1111,6 +1111,13 @@ Principi, in ordine di importanza:
 4. **Chi chiede meno movimento lo ottiene alla fonte**: con
    `prefers-reduced-motion: reduce` le due durate vanno a zero in
    `tokens-7c.css`. Solo i battiti (`infinite`) portano il proprio guard.
+5. **Il cambio pagina è una view transition cross-document.** L'app è
+   multipagina: `@view-transition { navigation: auto }` tiene la pagina
+   vecchia sullo schermo finché la nuova non è pronta e poi dissolve a
+   `base`; testata, barra laterale e nav mobile hanno un nome e restano
+   ferme. Un nome duplicato nella stessa pagina annulla la transizione in
+   silenzio; `location.reload()` non transita, si usa
+   `location.replace(location.href)`. Con «riduci movimento» non parte.
 
 ---
 
@@ -1139,6 +1146,7 @@ Principi, in ordine di importanza:
 | 2026-06-10 | fa-8-ball per "Ai tavoli adesso" | Card "In diretta ora": era fa-table-tennis-paddle-ball (racchetta ping pong!) — allineata alla convenzione biliardo |
 | 2026-08-16 | Immagini dei drill mai ritagliate (`.c7-diagram`) | L'immagine **è** l'esercizio: `object-fit: cover` toglieva fino al 43% della foto, cioè le teste del tavolo. Cinque superfici passano a `contain` su riquadro affossato, regola unica nel tema (ADR-044) |
 | 2026-09-11 | Segmenti (`.c7-seg`), ricerca con chip (`.c7-search`, `.c7-chips`) e chip di posizione (`.c7-pos`) nello storico | Introdotti con lo storico delle gare (#333): i segmenti scelgono fra Gare e Campionati, i chip sono filtri persistiti nell'URL, il chip di posizione è lo stesso del podio (#332). Linguette e chip sono controlli frequenti e rispettano `--c7-touch` (48px), il minimo del design system; i 44px della sezione «Touch Target» sono il limite storico Bootstrap, il token vince |
+| 2026-09-11 | Il cambio pagina è una view transition cross-document (`@view-transition`), con testata, barra laterale e nav mobile ferme | L'app è multipagina e il lampo bianco fra le pagine era il punto in cui sembrava un sito: la pagina vecchia resta finché la nuova è pronta, poi dissolve a `--c7-dur-base`. Scelta guardando la colonna «dissolvenza 250 ms» contro «lampo bianco» nella pagina di confronto. Spenta con «riduci movimento»; `location.reload()` non transita, si usa `location.replace(location.href)` (#341) |
 | 2026-09-11 | Scala del movimento: 250 ms entra/apre, 150 ms esce/chiude/torna dal tocco, `ease-out`, tocco a `.94` istantaneo | Decisione utente guardando cinque gesti a tre durate affiancate (`docs/redesign-7c/movimento/confronto.html`). Il prototipo è statico e non poteva fissarla. Il tema aveva cinque durate diverse per lo stesso gesto e un `cubic-bezier` isolato; ora legge i token e `test_motion_tokens.py` fa rosso su una durata scritta a mano. Con «riduci movimento» le durate vanno a zero alla fonte |
 | 2026-07-28 | "L'azionabile va prima" esteso a admin/match e al turno finito Amalfi | Decisione utente: a punteggio definitivo il pulsante di ritorno sale in cima su mobile (`score_is_final`); a turno Amalfi finito la Gestione sale in cima **già aperta** con Avvia Turno/SSR/Termina (`round_action_ready`). Regressioni in `tests/new/integration/test_rilievi_20260728_mobile_azionabile.py` |
 

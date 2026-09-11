@@ -132,6 +132,15 @@ regole, presidiate da `tests/new/unit/test_motion_tokens.py`:
   guard `prefers-reduced-motion`; tutto il resto è coperto dai token, che con
   «riduci movimento» vanno a zero.
 - `gamification.css` ha un lessico suo, voluto: non lo si allinea.
+- **Il cambio pagina è una view transition cross-document**
+  (`@view-transition` nel tema): la pagina vecchia resta finché la nuova
+  non è pronta, poi dissolve a `base`; testata, barra laterale e nav mobile
+  hanno un `view-transition-name` e restano ferme. Un nome duplicato nella
+  stessa pagina fa saltare la transizione **in silenzio**. E
+  `location.reload()` non transita: chi vuole la dissolvenza dopo
+  un'azione usa `location.replace(location.href)`. Dal browser pilotato
+  non si vede — la scheda risulta `hidden` e ogni transizione viene
+  saltata — si verifica con Playwright headless, ascoltando `pageswap`.
 
 ## Trappole del progetto
 
