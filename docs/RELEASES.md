@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.9.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.9.0...v1.9.1) (2026-09-11)
+
+
+### Correzioni
+
+* recepiti i rilievi della revisione automatica sulle ultime PR ([#336](https://github.com/coppolapaolo/tornei-biliardo/issues/336)) ([0175d23](https://github.com/coppolapaolo/tornei-biliardo/commit/0175d23dda56621d2d2c3bfde3d1b2793ba03582))
+
 ## [1.9.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.8.0...v1.9.0) (2026-09-11)
 
 
