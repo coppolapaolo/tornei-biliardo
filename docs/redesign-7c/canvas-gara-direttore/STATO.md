@@ -4,8 +4,9 @@ Canvas: <https://claude.ai/code/artifact/2a185d1b-19e1-4e16-8456-b866787dcc1c>
 (disegnato il 31/08/2026, versionato l'11/09). Le sorgenti stanno in
 `sorgenti/`: `gen_gara_direttore.py` (il kit — token 7c copiati alla lettera
 da `tokens-7c.css` e `theme-7c.css` — e le tre direzioni del primo giro),
-`gen_fasi.py` (le schermate delle cinque fasi e il `canvas.json` completo).
-Si rigenera con `python3 sorgenti/gen_fasi.py`; il canvas seminato
+`gen_fasi.py` (le schermate delle cinque fasi e il `canvas.json` completo),
+`gen_decisioni.py` (la pagina «0 · Decisioni», vedi sotto). Si rigenera con
+`python3 sorgenti/gen_decisioni.py`, che richiama gli altri due; il canvas seminato
 (`pagina-gara-direttore.html`, 3 MB) non è committato, vedi «Nota sui file».
 
 ## Da dove viene
@@ -102,6 +103,13 @@ comando che aspetta («Termina la gara», «Avvia il turno N»).
 
 ## Da decidere
 
+Le cinque decisioni stanno **a confronto nella pagina «0 · Decisioni»** del
+canvas (aggiunta l'11/09/2026, `gen_decisioni.py`): una riga per decisione,
+le alternative fianco a fianco con **gli stessi dati** — cambia solo la
+forma — e un bigliettino per riga con motivazione e costo di ciascuna. Le
+schermate hanno una sigla (1A/1B/1C/1S, 2L/2S, 3C/3F, 4N/4S, 5L/5S) ed è con
+quella che si risponde. In attesa di risposta.
+
 Le due segnate sul canvas:
 
 1. **La spunta «Esercizi» in preparazione** compare solo con accoppiamento
@@ -133,7 +141,7 @@ di prova (ADR-058, arrivata dopo il canvas).
 
 ```bash
 cd docs/redesign-7c/canvas-gara-direttore
-python3 sorgenti/gen_fasi.py        # riscrive gli artboard e canvas.json
+python3 sorgenti/gen_decisioni.py   # riscrive tutti gli artboard e canvas.json
 # poi si semina il canvas con seed-canvas.mjs della skill `design`
 # (stesso file → stesso URL dell'artefatto)
 ```

@@ -1,6 +1,10 @@
 {
   "pages": [
     {
+      "id": "page-0",
+      "name": "0 · Decisioni"
+    },
+    {
       "id": "page-1",
       "name": "1 · Preparazione"
     },
@@ -295,6 +299,150 @@
       "y": 1010,
       "w": 1440,
       "h": 900
+    },
+    {
+      "file": "Dec1A.dc.html",
+      "title": "1A · Regia — in gioco",
+      "page": "page-0",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec1B.dc.html",
+      "title": "1B · Console — in gioco (la sintesi)",
+      "page": "page-0",
+      "x": 560,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec1C.dc.html",
+      "title": "1C · Fasi — in gioco",
+      "page": "page-0",
+      "x": 1120,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec1ASetup.dc.html",
+      "title": "1A · Regia — in preparazione",
+      "page": "page-0",
+      "x": 1680,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec1SSetup.dc.html",
+      "title": "1S · Sintesi — in preparazione",
+      "page": "page-0",
+      "x": 2240,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2LGioco.dc.html",
+      "title": "2L · Linguette — in gioco",
+      "page": "page-0",
+      "x": 0,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2SGioco.dc.html",
+      "title": "2S · Striscia di fase — in gioco",
+      "page": "page-0",
+      "x": 560,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2LSetup.dc.html",
+      "title": "2L · Linguette — in preparazione",
+      "page": "page-0",
+      "x": 1120,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2SSetup.dc.html",
+      "title": "2S · Striscia di fase — in preparazione",
+      "page": "page-0",
+      "x": 1680,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec3Card.dc.html",
+      "title": "3C · Sulla card",
+      "page": "page-0",
+      "x": 0,
+      "y": 2600,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec3Foglio.dc.html",
+      "title": "3F · Dal foglio",
+      "page": "page-0",
+      "x": 560,
+      "y": 2600,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec3FoglioAperto.dc.html",
+      "title": "3F · Il foglio aperto",
+      "page": "page-0",
+      "x": 1120,
+      "y": 2600,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec4Nascosta.dc.html",
+      "title": "4N · Nascosta",
+      "page": "page-0",
+      "x": 0,
+      "y": 3900,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec4Spenta.dc.html",
+      "title": "4S · Spenta",
+      "page": "page-0",
+      "x": 560,
+      "y": 3900,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec5Link.dc.html",
+      "title": "5L · Link",
+      "page": "page-0",
+      "x": 0,
+      "y": 5200,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec5Sezione.dc.html",
+      "title": "5S · Sezione in pagina",
+      "page": "page-0",
+      "x": 560,
+      "y": 5200,
+      "w": 390,
+      "h": 844
     }
   ],
   "annotations": [
@@ -529,10 +677,58 @@
       "w": 460,
       "text": "C · FASI\nNiente quattro linguette: una striscia mostra il ciclo (iscrizione → gioco → chiusura) e la pagina e' la fase in corso. Direttori, tavoli, squadre, categorie e configurazione turni finiscono sotto «Impostazioni gara».\n\nPerche': in gioco il 90% di quelle sezioni non serve.\nCosto: aggiungere un co-direttore a gara iniziata costa un tap in piu', e la striscia mangia spazio verticale sul telefono.",
       "page": "page-6"
+    },
+    {
+      "id": "dec-come",
+      "page": "page-0",
+      "x": 0,
+      "y": -580,
+      "w": 1060,
+      "text": "COME SI SCEGLIE\nOgni riga è una decisione. Le schermate di una riga portano gli stessi dati: cambia solo dove stanno le cose e che comando hanno. Si risponde con la sigla (1B, 2S, …), in chat o in un bigliettino qui accanto.\nLe decisioni 1 e 2 vengono prima: le altre tre si posano sulla forma scelta. Le pagine 1–5 restano la proposta completa, fase per fase."
+    },
+    {
+      "id": "dec-1",
+      "page": "page-0",
+      "x": 0,
+      "y": -320,
+      "w": 1060,
+      "text": "DECISIONE 1 · LA FORMA — in gioco (le prime tre) e in preparazione (le ultime due)\nStessi dati: turno 2 di 4, 2 partite chiuse su 5, m.rossi–g.verdi 4–2 al tavolo 1, d.bianchi–l.ferrari 3–3 al tavolo 2, s.conti–p.marini senza tavolo, turno 1 concluso.\n1A · Regia: la pagina di oggi (card partita con il tavolo, le quattro linguette) più una fascia che dice cosa tiene aperto il turno. Costa poco e non toglie niente; il punteggio resta fuori pagina (decisione 3).\n1B · Console: il turno è la pagina, il punteggio si segna sulla card, l'azione della fase sta nella barra in fondo. È ciò che le pagine 1–5 usano in gioco («la sintesi»). Costa il segnapunti.\n1C · Fasi: la striscia del ciclo al posto delle linguette, la fascia dice l'unica cosa da fare, la classifica in un commutatore, iscritti e impostazioni come righe. Costa un tap in più per tutto ciò che non è la fase.\nIn preparazione: 1A è la Gestione di oggi (bottoni, select dei direttori, card dei turni) con la fascia sopra; 1S è la sintesi già disegnata nella pagina 1 (righe «da preparare» e impostazioni).\nDomanda: la sintesi (1B in gioco, fascia e righe nelle altre fasi) va bene, o una delle tre da sola?"
+    },
+    {
+      "id": "dec-2",
+      "page": "page-0",
+      "x": 0,
+      "y": 980,
+      "w": 1060,
+      "text": "DECISIONE 2 · LINGUETTE O STRISCIA DI FASE — stesso contenuto (la sintesi), cambia solo la navigazione\n2L · Linguette: Turni · Classifica · Iscritti · Gestione come oggi (in preparazione solo Gestione · Iscritti). Sono un filtro CSS su un solo DOM: le sezioni ci sono tutte, la linguetta nasconde le altre. La classifica è a un tap, sempre nello stesso posto.\n2S · Striscia: dice in che fase è la gara (fatto ✓ · in corso · da fare); classifica, iscritti e impostazioni diventano righe in fondo. Le quattro fasi con le etichette non ci stanno in 354 px: le inattive mostrano solo l'icona. Cambia anche il meccanismo: non più un filtro, ma pagine o sezioni separate.\nOggi: linguette. Domanda: striscia al posto delle linguette, o linguette con la fascia di fase dentro la pagina?"
+    },
+    {
+      "id": "dec-3",
+      "page": "page-0",
+      "x": 0,
+      "y": 2280,
+      "w": 1060,
+      "text": "DECISIONE 3 · IL PUNTEGGIO — dove si segna il risultato di una partita del turno\n3C · Sulla card: gli stepper stanno sulla card, ogni tocco scrive il punteggio; a 5 la partita si chiude e il tavolo si libera. Niente foglio, niente conferma. È la scelta più costosa: tocca il segnapunti (una scrittura per tocco, la conferma da ripensare).\n3F · Dal foglio: la card mostra il punteggio e «Segna il risultato»; il foglio ha gli stepper, la riga che dice chi vince secondo la regola del turno, «Imposta il risultato». È il meccanismo di oggi (il «risultato rapido» dalla card), rivestito.\nOggi: bottone sulla card → modale del risultato rapido; il segnapunti a triangoli sta nella pagina della partita.\nDomanda: card o foglio?"
+    },
+    {
+      "id": "dec-4",
+      "page": "page-0",
+      "x": 0,
+      "y": 3580,
+      "w": 1060,
+      "text": "DECISIONE 4 · «ESERCIZI» CON AMALFI — in preparazione, gli esercizi di gara esistono solo con l'accoppiamento casuale (oggi il bottone non compare affatto con Amalfi)\n4N · Nascosta: la riga non c'è, «da preparare» conta quattro voci. Chi non sa che gli esercizi esistono non lo scopre qui.\n4S · Spenta: la riga c'è, grigia, e dice perché non si può: «solo con accoppiamento casuale». Un rigo in più per sempre, per una funzione che con Amalfi non si accenderà mai.\nDomanda: nascosta o spenta?"
+    },
+    {
+      "id": "dec-5",
+      "page": "page-0",
+      "x": 0,
+      "y": 4880,
+      "w": 1060,
+      "text": "DECISIONE 5 · «RIEPILOGO PARTITE» A GARA CONCLUSA — la pagina dopo la fine, vista Turni\n5L · Link: una riga «Riepilogo partite · 20 partite, tutte validate» che apre l'elenco. La pagina resta corta: fascia, dove sono finiti i punti, cosa non si tocca più.\n5S · Sezione: le partite restano in pagina, turno per turno, sotto le righe. È ciò che l'app fa oggi (la sezione Turni non sparisce). La pagina si allunga, ma chi cerca «chi ha giocato con chi» lo trova senza cambiare pagina.\nDomanda: link o sezione?"
     }
   ],
   "launch": {
     "view": "canvas",
-    "page": "page-1"
+    "page": "page-0"
   }
 }
