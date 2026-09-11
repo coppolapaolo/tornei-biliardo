@@ -88,7 +88,7 @@ blocks:
 
   - type: shot
     shot: dashboard-giocatore
-    caption: "La tua home appena entrato: in cima il riquadro con il tuo andamento, sotto «Le tue gare», le sfide a due, le gare aperte alle iscrizioni, i campionati e le gare vicine a te."
+    caption: "La tua home appena entrato: in cima il riquadro con il tuo andamento, sotto «Le tue gare» e le sfide a due, poi «In diretta ora» con le gare in corso, le gare aperte alle iscrizioni, quelle in arrivo, le concluse dell'ultimo mese — con «Hai giocato» su quelle tue —, i campionati e le gare vicine a te."
 
   - type: heading
     id: come_stai_andando

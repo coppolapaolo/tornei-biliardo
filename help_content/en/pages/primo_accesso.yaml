@@ -87,7 +87,7 @@ blocks:
 
   - type: shot
     shot: dashboard-giocatore
-    caption: "Your home right after you come in: at the top the panel with how you are doing, below «Your competitions», the individual matches, the competitions open for registration, the championships and competitions near you."
+    caption: "Your home right after you come in: at the top the panel with how you are doing, below «Your competitions» and the head-to-head matches, then «Live now» with the competitions in progress, the ones open for registration, the upcoming ones, those finished in the last month — with «You played» on yours —, the championships and competitions near you."
 
   - type: heading
     id: come_stai_andando
