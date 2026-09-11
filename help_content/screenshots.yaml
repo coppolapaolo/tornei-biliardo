@@ -56,11 +56,6 @@ shots:
     as: anonimo
     caption: "Il modulo di registrazione: nome utente, email e password."
 
-  - id: gare-aperte
-    route: /garas
-    as: anonimo
-    caption: "L'elenco pubblico delle gare, con lo stato di ciascuna."
-
   - id: campionati-pubblici
     route: /campionatos
     as: anonimo

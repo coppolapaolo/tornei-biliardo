@@ -283,7 +283,12 @@ canvas; la decisione è qui sotto.
 * il **podio porta le medaglie**, oro, argento e bronzo: icona `i-medal` nel
   chip di posizione. Sono **tre token nuovi** (`--c7-oro`, `--c7-argento`,
   `--c7-bronzo`, con il loro inchiostro), dichiarati in `sorgenti/base.css`
-  e da aggiungere a `tokens-7c.css` quando si scrive il codice;
+  e da aggiungere a `tokens-7c.css` quando si scrive il codice.
+  **Emendata l'11/09/2026**: niente icona. Il podio usa **lo stesso chip
+  numerato** delle righe di classifica del campionato (`c7-pos--N`), e sono
+  i tre colori delle medaglie a passare sul chip, in entrambe le tessere:
+  nell'app le due forme stavano una sotto l'altra e dicevano 1°, 2°, 3° in
+  due modi diversi;
 * in classifica **la riga di chi guarda è scura** (`is-me`), col solo nome:
   niente «sei tu» scritto accanto;
 * **storico**: niente filtro per disciplina; c'è **«nei primi N»**, con N a
