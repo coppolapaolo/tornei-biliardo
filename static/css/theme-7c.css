@@ -2960,6 +2960,49 @@ a.c7-vt__ovr:hover { color: var(--c7-on-ink); }
 .c7-podio .c7-pos { margin: 0 auto; }
 .c7-podio__name { margin-top: 6px; font-size: 12px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* Lo storico (canvas «Tessera», 10/09): i due segmenti gare/campionati, la
+   ricerca, i chip dei filtri, l'etichetta del mese e le righe cliccabili.
+   Le righe sono `.c7-rows`, l'elenco compatto che c'e' gia'. */
+.c7-seg { display: flex; background: var(--c7-card); border-radius: var(--c7-r-field); padding: 4px; gap: 4px; }
+.c7-seg__item {
+  flex: 1; height: 40px; border-radius: var(--c7-r-control);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800; color: var(--c7-ink-muted); text-decoration: none;
+}
+.c7-seg__item:hover { color: var(--c7-ink); }
+.c7-seg__item.is-on, .c7-seg__item.is-on:hover { background: var(--c7-ink); color: var(--c7-on-ink); }
+.c7-search {
+  height: 48px; border-radius: var(--c7-r-field); background: var(--c7-card);
+  padding: 0 16px; display: flex; align-items: center; gap: 10px; color: var(--c7-ink-faint);
+}
+.c7-search input {
+  flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; outline: none;
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--c7-ink);
+}
+.c7-search input::placeholder { color: var(--c7-ink-faint); }
+.c7-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.c7-chip {
+  height: 36px; padding: 0 14px; margin: 0; border-radius: var(--c7-r-pill);
+  background: var(--c7-card); color: var(--c7-ink-soft);
+  font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;
+  white-space: nowrap; text-decoration: none; cursor: pointer;
+}
+.c7-chip:hover { color: var(--c7-ink); }
+.c7-chip.is-on, .c7-chip.is-on:hover { background: var(--c7-ink); color: var(--c7-on-ink); }
+/* Il chip che contiene una scelta («Nei primi 3», «2026»): la tendina e'
+   nuda, il chip e' il suo vestito. */
+.c7-chip select {
+  appearance: none; -webkit-appearance: none; border: 0; background: transparent;
+  color: inherit; font: inherit; font-weight: 800; padding: 0; cursor: pointer; outline: none;
+}
+.c7-chip select option { color: var(--c7-ink); background: var(--c7-card); }
+.c7-chip__caret { font-size: 10px; opacity: .7; }
+.c7-mese { font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--c7-ink-muted); padding: 6px 4px 0; }
+a.c7-rows__row { color: inherit; text-decoration: none; }
+a.c7-rows__row:hover { background: var(--c7-sunken); }
+.c7-rows__chev { color: var(--c7-ink-faint); flex-shrink: 0; }
+.c7-storico__meta { font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); }
+
 /* In classifica la riga di chi guarda e' scura (`.c7-tessera__row.is-me`):
    si riconosce dal fondo, non da un «sei tu» scritto accanto al nome. */
 /* Il chip di posizione: lo stesso nel podio della gara e nelle righe di

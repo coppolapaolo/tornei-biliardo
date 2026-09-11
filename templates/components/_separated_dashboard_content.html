@@ -119,7 +119,7 @@
 {# ── Concluse: l'ultima più l'ultimo mese, di tutti ─────────────────── #}
 {% if gare and gare.concluse %}
 <section class="mb-4">
-  {{ _titolo(_('Concluse'), gare.concluse|length, url_for('main.public_garas_list'), _('Storico')) }}
+  {{ _titolo(_('Concluse'), gare.concluse|length, url_for('main.storico_gare'), _('Storico')) }}
   <div class="c7-grid" style="{{ griglia }}">
     {% for card in gare.concluse %}{{ tessera_gara(card) }}{% endfor %}
   </div>

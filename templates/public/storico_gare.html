@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}{{ _("Storico") }}{% endblock %}
+
+{# Lo storico delle gare concluse — la pagina «Storico» del canvas «Tessera»
+   (10/09): una riga per gara, raggruppate per mese, ricerca per nome o sala
+   e i filtri «che ho giocato», «che ho diretto», «nei primi N», anno. I
+   filtri sono link e tendine su un form GET: l'indirizzo dice tutto, si può
+   condividere. Le regole stanno in `models/storico/gare.py`. #}
+
+{% block page_back %}
+<a class="c7-head__back" href="{{ url_for('main.index') }}" aria-label="{{ _('Torna alla home') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Storico") }}{% endblock %}
+{% block page_sub %}{{ _("Gare e campionati conclusi") }}{% endblock %}
+
+{% block content %}
+{% set seg_attivo = 'gare' %}
+{% set ospite = not current_user.is_authenticated %}
+
+<form method="get" class="c7-stack" style="gap:10px">
+  {% include "components/_storico_seg.html" %}
+
+  <label class="c7-search">
+    <i class="fas fa-search"></i>
+    <input type="search" name="q" value="{{ filtri.testo }}" placeholder="{{ _('Cerca per nome o sala') }}" aria-label="{{ _('Cerca per nome o sala') }}">
+  </label>
+  {% if filtri.chi != 'tutte' %}<input type="hidden" name="chi" value="{{ filtri.chi }}">{% endif %}
+
+  <div class="c7-chips">
+    {# «Tutte / che ho giocato / che ho diretto» sono link: cambiano un
+       parametro e tengono gli altri. Per l'ospite non ci sono: non ha fatti. #}
+    {% if not ospite %}
+      {% for valore, testo in [('tutte', _('Tutte')), ('giocate', _('Che ho giocato')), ('dirette', _('Che ho diretto'))] %}
+        <a class="c7-chip{{ ' is-on' if filtri.chi == valore }}" href="{{ url_for('main.storico_gare', **filtri.parametri(chi=valore)) }}">{{ testo }}</a>
+      {% endfor %}
+      <label class="c7-chip{{ ' is-on' if filtri.primi }}">
+        {{ _('Nei primi') }}
+        <select name="primi" onchange="this.form.submit()" aria-label="{{ _('Nei primi') }}">
+          <option value="">—</option>
+          {% for n in scelte_primi %}<option value="{{ n }}"{{ ' selected' if filtri.primi == n }}>{{ n }}</option>{% endfor %}
+        </select>
+        <i class="fas fa-chevron-down c7-chip__caret"></i>
+      </label>
+    {% endif %}
+    <label class="c7-chip{{ ' is-on' if filtri.anno }}">
+      <select name="anno" onchange="this.form.submit()" aria-label="{{ _('Anno') }}">
+        <option value="">{{ _('Tutti gli anni') }}</option>
+        {% for anno in storico.anni %}<option value="{{ anno }}"{{ ' selected' if filtri.anno == anno }}>{{ anno }}</option>{% endfor %}
+      </select>
+      <i class="fas fa-chevron-down c7-chip__caret"></i>
+    </label>
+  </div>
+</form>
+
+<div class="c7-storico__meta mt-3">
+  {% if filtri.anno %}
+    {{ ngettext('%(num)s gara conclusa nel %(anno)s', '%(num)s gare concluse nel %(anno)s', storico.conteggio, num=storico.conteggio, anno=filtri.anno) }}
+  {% else %}
+    {{ ngettext('%(num)s gara conclusa', '%(num)s gare concluse', storico.conteggio, num=storico.conteggio) }}
+  {% endif %}
+  {% if not ospite and storico.conteggio %}
+    <span class="c7-sep">·</span>
+    {{ ngettext('%(num)s giocata', '%(num)s giocate', storico.giocate, num=storico.giocate) }},
+    {{ ngettext('%(num)s diretta', '%(num)s dirette', storico.dirette, num=storico.dirette) }}
+  {% endif %}
+</div>
+
+{% if storico.righe %}
+<section class="c7-stack mt-2" style="gap:8px">
+  {% for etichetta, righe in gruppi %}
+  <div class="c7-mese">{{ etichetta }}</div>
+  <div class="c7-rows">
+    {% for riga in righe %}
+    <a class="c7-rows__row" href="{{ url_for('main.gara_detail_public', gara_id=riga.id) }}">
+      <span class="c7-rows__main">
+        <span class="c7-rows__title d-block">{{ riga.name }}</span>
+        <span class="c7-rows__sub d-block">
+          {% if riga.date %}<span class="c7-num">{{ riga.date|date_local }}</span>{% endif %}
+          {% if riga.discipline %}<span class="c7-sep">·</span> {{ riga.discipline|discipline_display }}{% endif %}
+          {% if riga.location %}<span class="c7-sep">·</span> {{ riga.location }}{% endif %}
+          {% if riga.campionato_name %}<span class="c7-sep">·</span> {{ riga.campionato_name }}{% endif %}
+        </span>
+        {% if riga.vincitore %}
+        <span class="c7-rows__sub d-block"><span class="c7-num" style="color:var(--c7-ink)">1°</span> {{ riga.vincitore }}</span>
+        {% endif %}
+      </span>
+      {% if riga.hai_diretto %}<span class="c7-state c7-state--info">{{ _('Hai diretto') }}</span>{% endif %}
+      {% if riga.hai_giocato %}
+        <span class="c7-state c7-state--accent">{{ _('Hai giocato') }}{% if riga.piazzamento %} · {{ riga.piazzamento }}°{% endif %}</span>
+      {% endif %}
+      <i class="fas fa-chevron-right c7-rows__chev"></i>
+    </a>
+    {% endfor %}
+  </div>
+  {% endfor %}
+
+  {% if storico.restanti %}
+  <a class="btn btn-secondary w-100 mt-2" href="{{ url_for('main.storico_gare', **filtri.parametri(mostra=filtri.mostra + storico.altre)) }}">
+    {{ ngettext('Mostra un\'altra', 'Mostra altre %(num)s', storico.altre, num=storico.altre) }}
+  </a>
+  {% endif %}
+</section>
+{% else %}
+<div class="c7-empty mt-3">
+  <div class="c7-empty__ico"><i class="fas fa-flag-checkered"></i></div>
+  <h2 class="c7-empty__title">{{ _('Nessuna gara conclusa') }}</h2>
+  <p class="c7-empty__text">
+    {% if filtri.testo or filtri.anno or filtri.chi != 'tutte' or filtri.primi %}
+      {{ _('Nessuna gara corrisponde ai filtri.') }}
+      <a href="{{ url_for('main.storico_gare') }}">{{ _('Togli i filtri') }}</a>
+    {% else %}
+      {{ _('Quando una gara finisce, la trovi qui.') }}
+    {% endif %}
+  </p>
+</div>
+{% endif %}
+{% endblock %}

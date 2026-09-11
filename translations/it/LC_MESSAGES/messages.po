@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-11 07:57+0200\n"
+"POT-Creation-Date: 2026-09-11 08:35+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -102,7 +102,7 @@ msgstr ""
 #: templates/individual_match/matches.html:99
 #: templates/individual_match/quick_match.html:60
 #: templates/player/challenge_attempt_detail.html:24
-#: templates/public/campionatos_list.html:20
+#: templates/public/campionatos_list.html:27
 msgid "In corso"
 msgstr ""
 
@@ -322,16 +322,16 @@ msgid "%(campionato)s · gara %(n)s"
 msgstr ""
 
 #: models/competition/showcase_view.py:288
-#: models/competition/showcase_view.py:455 routes/main.py:449
+#: models/competition/showcase_view.py:455 routes/main.py:499
 msgid "Gara conclusa"
 msgstr ""
 
-#: models/competition/showcase_view.py:297 routes/main.py:419
+#: models/competition/showcase_view.py:297 routes/main.py:469
 #: templates/components/_unified_cards.html:79
 msgid "Iscrizioni non ancora aperte"
 msgstr ""
 
-#: models/competition/showcase_view.py:298 routes/main.py:430
+#: models/competition/showcase_view.py:298 routes/main.py:480
 #: templates/components/_tessera_gara.html:43
 msgid "Iscrizioni chiuse"
 msgstr ""
@@ -2094,7 +2094,7 @@ msgstr ""
 #: templates/gamification/dashboard.html:150
 #: templates/individual_match/dashboard.html:178
 #: templates/individual_match/matches.html:36
-#: templates/public/campionatos_list.html:19
+#: templates/public/campionatos_list.html:26
 msgid "Tutti"
 msgstr ""
 
@@ -2123,90 +2123,94 @@ msgstr ""
 msgid "Amministratore"
 msgstr ""
 
-#: routes/main.py:371
+#: routes/main.py:289
+msgid "Senza data"
+msgstr ""
+
+#: routes/main.py:421
 #, python-format
 msgid "Iscrizioni dal %(start)s al %(end)s."
 msgstr ""
 
-#: routes/main.py:377
+#: routes/main.py:427
 #, python-format
 msgid "Iscrizioni aperte fino al %(end)s."
 msgstr ""
 
-#: routes/main.py:382
+#: routes/main.py:432
 #, python-format
 msgid "Iscrizioni aperte dal %(start)s."
 msgstr ""
 
-#: routes/main.py:388
+#: routes/main.py:438
 msgid "Sei già iscritto"
 msgstr ""
 
-#: routes/main.py:389
+#: routes/main.py:439
 #, python-format
 msgid "Risulti iscritto a %(gara)s."
 msgstr ""
 
-#: routes/main.py:395
+#: routes/main.py:445
 msgid "Sei in lista d'attesa"
 msgstr ""
 
-#: routes/main.py:397
+#: routes/main.py:447
 #, python-format
 msgid ""
 "Sei in lista d'attesa per %(gara)s, in posizione %(position)s. Se si "
 "libera un posto entri automaticamente."
 msgstr ""
 
-#: routes/main.py:407
+#: routes/main.py:457
 msgid "Puoi iscriverti"
 msgstr ""
 
-#: routes/main.py:409
+#: routes/main.py:459
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono aperte: premi «Iscriviti» per confermare."
 msgstr ""
 
-#: routes/main.py:421
+#: routes/main.py:471
 #, python-format
 msgid "Le iscrizioni a %(gara)s non sono ancora aperte."
 msgstr ""
 
-#: routes/main.py:431
+#: routes/main.py:481
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono chiuse."
 msgstr ""
 
-#: routes/main.py:438
+#: routes/main.py:488
 msgid "Gara già iniziata"
 msgstr ""
 
-#: routes/main.py:440
+#: routes/main.py:490
 #, python-format
 msgid ""
 "%(gara)s è già iniziata: non è più possibile iscriversi, ma puoi seguire "
 "i risultati da questa pagina."
 msgstr ""
 
-#: routes/main.py:451
+#: routes/main.py:501
 #, python-format
 msgid "%(gara)s è conclusa: qui trovi la classifica finale."
 msgstr ""
 
-#: routes/main.py:459
+#: routes/main.py:509
 msgid "Gara annullata"
 msgstr ""
 
-#: routes/main.py:460
+#: routes/main.py:510
 #, python-format
 msgid "%(gara)s è stata annullata."
 msgstr ""
 
-#: routes/main.py:466
+#: routes/main.py:516
 msgid "Iscrizione non riuscita"
 msgstr ""
 
-#: routes/main.py:468
+#: routes/main.py:518
 #, python-format
 msgid ""
 "Non è stato possibile iscriverti a %(gara)s. Riprova dal pulsante "
@@ -4998,7 +5002,7 @@ msgstr ""
 #: templates/admin/accessi.html:96
 #: templates/components/_history_filters.html:170
 #: templates/individual_match/discover_players.html:107
-#: templates/public/campionatos_list.html:26
+#: templates/public/campionatos_list.html:33
 msgid "Filtra"
 msgstr ""
 
@@ -5367,7 +5371,7 @@ msgstr ""
 #: templates/gamification/admin/quests.html:24
 #: templates/player/my_venue_requests.html:23
 #: templates/public/campionato_detail.html:100
-#: templates/public/campionatos_list.html:17
+#: templates/public/campionatos_list.html:24
 #: templates/public/garas_list.html:13 templates/public/garas_list.html:33
 #: templates/roles/holders.html:22
 msgid "Stato"
@@ -5661,7 +5665,7 @@ msgid "Passo 1 di 2 · configurazione"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:26
-#: templates/public/campionatos_list.html:14
+#: templates/public/campionatos_list.html:21
 msgid "Nome del campionato"
 msgstr ""
 
@@ -5843,7 +5847,8 @@ msgstr ""
 #: templates/components/_history_gare_tab.html:14
 #: templates/components/_history_gare_tab.html:50
 #: templates/components/_player_statistics.html:32
-#: templates/player/history.html:25 templates/public/campionatos_list.html:53
+#: templates/components/_storico_seg.html:4 templates/player/history.html:25
+#: templates/public/campionatos_list.html:67
 #: templates/public/garas_list.html:51
 msgid "Gare"
 msgstr ""
@@ -9023,7 +9028,7 @@ msgid "Tipo"
 msgstr ""
 
 #: templates/components/_campionato_details_info.html:20
-#: templates/public/campionatos_list.html:51
+#: templates/public/campionatos_list.html:65
 msgid "Creato"
 msgstr ""
 
@@ -10592,7 +10597,7 @@ msgstr ""
 #: templates/components/_gara_my_match.html:29
 #: templates/components/_match_card.html:198
 #: templates/player/notifications.html:96
-#: templates/public/campionatos_list.html:57
+#: templates/public/campionatos_list.html:71
 #: templates/public/garas_list.html:39
 msgid "Apri"
 msgstr ""
@@ -10702,7 +10707,8 @@ msgstr ""
 #: templates/components/_history_campionati_tab.html:12
 #: templates/components/_player_statistics.html:28
 #: templates/components/_separated_dashboard_content.html:140
-#: templates/player/history.html:28 templates/public/campionatos_list.html:2
+#: templates/components/_storico_seg.html:5 templates/player/history.html:28
+#: templates/public/campionatos_list.html:2
 #: templates/public/campionatos_list.html:7
 msgid "Campionati"
 msgstr ""
@@ -10875,6 +10881,7 @@ msgstr ""
 #: templates/components/_history_filters.html:113
 #: templates/components/_player_recent_matches.html:24
 #: templates/gamification/dashboard.html:184
+#: templates/public/storico_gare.html:33
 msgid "Tutte"
 msgstr ""
 
@@ -11238,7 +11245,7 @@ msgstr ""
 #: templates/components/_match_card.html:135
 #: templates/components/_match_card.html:205
 #: templates/components/_match_card.html:209
-#: templates/public/campionatos_list.html:28
+#: templates/public/campionatos_list.html:35
 msgid "Azzera"
 msgstr ""
 
@@ -11836,6 +11843,7 @@ msgstr ""
 #: templates/components/_player_inscription_info.html:10
 #: templates/components/_tessera_campionato.html:57
 #: templates/components/_tessera_gara.html:102
+#: templates/public/campionatos_list.html:58
 msgid "Iscritto"
 msgstr ""
 
@@ -12292,8 +12300,9 @@ msgstr ""
 
 #: templates/components/_separated_dashboard_content.html:122
 #: templates/components/_separated_dashboard_content.html:158
-#: templates/player/history.html:4 templates/player/history.html:9
-#: templates/player/profile.html:15
+#: templates/components/_storico_seg.html:3 templates/player/history.html:4
+#: templates/player/history.html:9 templates/player/profile.html:15
+#: templates/public/storico_gare.html:2 templates/public/storico_gare.html:13
 msgid "Storico"
 msgstr ""
 
@@ -12312,7 +12321,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: templates/components/_separated_dashboard_content.html:149
-#: templates/public/campionatos_list.html:64
+#: templates/public/campionatos_list.html:78
 msgid "Nessun campionato"
 msgstr ""
 
@@ -12585,16 +12594,21 @@ msgstr ""
 
 #: templates/components/_tessera_campionato.html:53
 #: templates/components/_tessera_gara.html:95
+#: templates/public/campionatos_list.html:57
+#: templates/public/storico_gare.html:87
 msgid "Hai diretto"
 msgstr ""
 
 #: templates/components/_tessera_campionato.html:54
 #: templates/components/_tessera_gara.html:96
+#: templates/public/campionatos_list.html:58
+#: templates/public/storico_gare.html:89
 msgid "Hai giocato"
 msgstr ""
 
 #: templates/components/_tessera_campionato.html:56
 #: templates/components/_tessera_gara.html:98
+#: templates/public/campionatos_list.html:57
 msgid "Dirigi"
 msgstr ""
 
@@ -15005,7 +15019,7 @@ msgid "Periodo"
 msgstr ""
 
 #: templates/gamification/admin/quests.html:27
-#: templates/public/campionatos_list.html:21
+#: templates/public/campionatos_list.html:28
 msgid "Completati"
 msgstr ""
 
@@ -15287,7 +15301,7 @@ msgid "Cerca nella guida"
 msgstr ""
 
 #: templates/help/_ui.html:47 templates/help/search.html:5
-#: templates/public/campionatos_list.html:13
+#: templates/public/campionatos_list.html:20
 msgid "Cerca"
 msgstr ""
 
@@ -17491,6 +17505,7 @@ msgid "Nessuna gara ancora creata."
 msgstr ""
 
 #: templates/public/campionatos_list.html:5 templates/public/garas_list.html:49
+#: templates/public/storico_gare.html:11
 msgid "Torna alla home"
 msgstr ""
 
@@ -17498,22 +17513,22 @@ msgstr ""
 msgid "Lista pubblica: si consulta senza registrarsi."
 msgstr ""
 
-#: templates/public/campionatos_list.html:22 utils/status_ui.py:158
+#: templates/public/campionatos_list.html:29 utils/status_ui.py:158
 msgid "In attesa dei playoff"
 msgstr ""
 
-#: templates/public/campionatos_list.html:35
+#: templates/public/campionatos_list.html:42
 #, python-format
 msgid "%(num)s campionato"
 msgid_plural "%(num)s campionati"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/public/campionatos_list.html:66
+#: templates/public/campionatos_list.html:80
 msgid "Nessun campionato corrisponde ai filtri."
 msgstr ""
 
-#: templates/public/campionatos_list.html:66
+#: templates/public/campionatos_list.html:80
 msgid "Non ci sono campionati pubblicati al momento."
 msgstr ""
 
@@ -17556,6 +17571,85 @@ msgstr ""
 
 #: templates/public/invite_not_found.html:26
 msgid "Vedi le gare"
+msgstr ""
+
+#: templates/public/storico_gare.html:14
+msgid "Gare e campionati conclusi"
+msgstr ""
+
+#: templates/public/storico_gare.html:25
+msgid "Cerca per nome o sala"
+msgstr ""
+
+#: templates/public/storico_gare.html:33
+msgid "Che ho giocato"
+msgstr ""
+
+#: templates/public/storico_gare.html:33
+msgid "Che ho diretto"
+msgstr ""
+
+#: templates/public/storico_gare.html:37 templates/public/storico_gare.html:38
+msgid "Nei primi"
+msgstr ""
+
+#: templates/public/storico_gare.html:46
+msgid "Anno"
+msgstr ""
+
+#: templates/public/storico_gare.html:47
+msgid "Tutti gli anni"
+msgstr ""
+
+#: templates/public/storico_gare.html:57
+#, python-format
+msgid "%(num)s gara conclusa nel %(anno)s"
+msgid_plural "%(num)s gare concluse nel %(anno)s"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/public/storico_gare.html:59
+#, fuzzy, python-format
+msgid "%(num)s gara conclusa"
+msgid_plural "%(num)s gare concluse"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/public/storico_gare.html:63
+#, fuzzy, python-format
+msgid "%(num)s giocata"
+msgid_plural "%(num)s giocate"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/public/storico_gare.html:64
+#, fuzzy, python-format
+msgid "%(num)s diretta"
+msgid_plural "%(num)s dirette"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/public/storico_gare.html:99
+#, python-format
+msgid "Mostra un'altra"
+msgid_plural "Mostra altre %(num)s"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/public/storico_gare.html:106
+msgid "Nessuna gara conclusa"
+msgstr ""
+
+#: templates/public/storico_gare.html:109
+msgid "Nessuna gara corrisponde ai filtri."
+msgstr ""
+
+#: templates/public/storico_gare.html:110
+msgid "Togli i filtri"
+msgstr ""
+
+#: templates/public/storico_gare.html:112
+msgid "Quando una gara finisce, la trovi qui."
 msgstr ""
 
 #: templates/public/vetrina_campionato.html:51

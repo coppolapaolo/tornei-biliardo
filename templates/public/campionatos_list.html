@@ -8,6 +8,13 @@
 {% block page_sub %}{{ _('Lista pubblica: si consulta senza registrarsi.') }}{% endblock %}
 
 {% block content %}
+{# È lo storico dei campionati (regola 2 del 2026-09-10): i due segmenti in
+   testa rimandano a quello delle gare, e la spia sulla scheda dice quali
+   sono i miei — «Iscritto» / «Dirigi» finché è aperto, «Hai giocato» /
+   «Hai diretto» quando è concluso, le parole della tessera in dashboard. #}
+{% set seg_attivo = 'campionati' %}
+<div class="mb-3">{% include "components/_storico_seg.html" %}</div>
+
 <form method="get" class="c7-card" style="display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 20px;">
     <div>
         <label for="q" class="form-label">{{ _('Cerca') }}</label>
@@ -44,6 +51,13 @@
             </div>
             <span class="badge {{ campionato | status_badge_class }}">{{ campionato | status_text }}</span>
         </div>
+        {% set spia = spie.get(campionato.id) if spie else None %}
+        {% if spia and not spia.vuota %}
+        <div class="d-flex flex-wrap gap-2" style="margin-top: 10px;">
+            {% if spia.diretto %}<span class="c7-state c7-state--info">{{ _('Hai diretto') if spia.concluso else _('Dirigi') }}</span>{% endif %}
+            {% if spia.giocato %}<span class="c7-state c7-state--accent">{{ _('Hai giocato') if spia.concluso else _('Iscritto') }}</span>{% endif %}
+        </div>
+        {% endif %}
 
         <hr class="c7-divider">
 

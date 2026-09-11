@@ -56,6 +56,11 @@ shots:
     as: anonimo
     caption: "Il modulo di registrazione: nome utente, email e password."
 
+  - id: storico-gare
+    route: /storico
+    as: Marco Rossi
+    caption: "Lo storico delle gare concluse, con la ricerca, i filtri e la pastiglia «Hai giocato» sulle proprie."
+
   - id: campionati-pubblici
     route: /campionatos
     as: anonimo

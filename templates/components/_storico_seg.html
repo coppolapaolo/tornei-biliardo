@@ -1,0 +1,6 @@
+{# I due segmenti dello storico: le gare (pagina «Storico») e i campionati
+   (`/campionatos`, che c'era già). Chi include passa `seg_attivo`. #}
+<nav class="c7-seg" aria-label="{{ _('Storico') }}">
+  <a class="c7-seg__item{{ ' is-on' if seg_attivo == 'gare' }}" href="{{ url_for('main.storico_gare') }}">{{ _('Gare') }}</a>
+  <a class="c7-seg__item{{ ' is-on' if seg_attivo == 'campionati' }}" href="{{ url_for('main.public_campionatos_list', status='completati') }}">{{ _('Campionati') }}</a>
+</nav>
