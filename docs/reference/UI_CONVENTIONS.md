@@ -19,7 +19,8 @@ Questa documentazione raccoglie le convenzioni UI del progetto per mantenere coe
 9. [Form](#form-conventions)
 10. [**Mobile-First Design**](#mobile-first-design) ⭐
 11. [Responsive](#responsive-breakpoints)
-12. [Changelog Decisioni](#changelog-decisioni)
+12. [Movimento](#movimento)
+13. [Changelog Decisioni](#changelog-decisioni)
 
 ---
 
@@ -1080,6 +1081,39 @@ Quando sono presenti punteggi SSR, i badge sono ordinati:
 
 ---
 
+## Movimento
+
+Deciso l'11/09/2026 guardando i gesti a confronto
+(`docs/redesign-7c/movimento/`): il prototipo è statico e non poteva
+mostrarlo. La scala sta in `static/css/tokens-7c.css`, le regole nella skill
+`ui-7c`, il presidio in `tests/new/unit/test_motion_tokens.py`.
+
+| Token | Valore | Quando |
+|---|---|---|
+| `--c7-dur-base` | 250 ms | entra, si apre, cambia sotto gli occhi, cambio pagina |
+| `--c7-dur-quick` | 150 ms | esce, si chiude, torna dal tocco |
+| `--c7-ease` | `ease-out` | sempre |
+| `--c7-press` | `.94` | scala del comando premuto; la pressione è a 0 ms |
+
+Principi, in ordine di importanza:
+
+1. **Il movimento è informazione.** Spiega un cambio di stato, dà riscontro
+   al tocco, toglie i salti. Se non fa una di queste tre cose non si mette.
+   Niente hover (l'app è touch), niente blur, niente effetti che si ripetono
+   da soli salvo il pallino live.
+2. **Non fa aspettare.** L'azione parte al tocco e l'animazione accompagna;
+   lo schiacciamento è istantaneo, si vede il ritorno. Le uscite sono più
+   veloci delle entrate. Niente sopra i 250 ms, salvo i momenti di
+   celebrazione della gamification, che ha un lessico suo.
+3. **Non costa.** Solo `transform` e `opacity`, che stanno sul compositore.
+   L'altezza di una sezione che si apre è l'unica eccezione, un elemento
+   alla volta. Mai una cascata su una lista lunga.
+4. **Chi chiede meno movimento lo ottiene alla fonte**: con
+   `prefers-reduced-motion: reduce` le due durate vanno a zero in
+   `tokens-7c.css`. Solo i battiti (`infinite`) portano il proprio guard.
+
+---
+
 ## Changelog Decisioni
 
 | Data | Decisione | Motivazione |
@@ -1105,6 +1139,7 @@ Quando sono presenti punteggi SSR, i badge sono ordinati:
 | 2026-06-10 | fa-8-ball per "Ai tavoli adesso" | Card "In diretta ora": era fa-table-tennis-paddle-ball (racchetta ping pong!) — allineata alla convenzione biliardo |
 | 2026-08-16 | Immagini dei drill mai ritagliate (`.c7-diagram`) | L'immagine **è** l'esercizio: `object-fit: cover` toglieva fino al 43% della foto, cioè le teste del tavolo. Cinque superfici passano a `contain` su riquadro affossato, regola unica nel tema (ADR-044) |
 | 2026-09-11 | Segmenti (`.c7-seg`), ricerca con chip (`.c7-search`, `.c7-chips`) e chip di posizione (`.c7-pos`) nello storico | Introdotti con lo storico delle gare (#333): i segmenti scelgono fra Gare e Campionati, i chip sono filtri persistiti nell'URL, il chip di posizione è lo stesso del podio (#332). Linguette e chip sono controlli frequenti e rispettano `--c7-touch` (48px), il minimo del design system; i 44px della sezione «Touch Target» sono il limite storico Bootstrap, il token vince |
+| 2026-09-11 | Scala del movimento: 250 ms entra/apre, 150 ms esce/chiude/torna dal tocco, `ease-out`, tocco a `.94` istantaneo | Decisione utente guardando cinque gesti a tre durate affiancate (`docs/redesign-7c/movimento/confronto.html`). Il prototipo è statico e non poteva fissarla. Il tema aveva cinque durate diverse per lo stesso gesto e un `cubic-bezier` isolato; ora legge i token e `test_motion_tokens.py` fa rosso su una durata scritta a mano. Con «riduci movimento» le durate vanno a zero alla fonte |
 | 2026-07-28 | "L'azionabile va prima" esteso a admin/match e al turno finito Amalfi | Decisione utente: a punteggio definitivo il pulsante di ritorno sale in cima su mobile (`score_is_final`); a turno Amalfi finito la Gestione sale in cima **già aperta** con Avvia Turno/SSR/Termina (`round_action_ready`). Regressioni in `tests/new/integration/test_rilievi_20260728_mobile_azionabile.py` |
 
 ---

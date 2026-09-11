@@ -1,7 +1,8 @@
 /* ==========================================================================
    Design System 7c — token
    Caricare PRIMA di theme-7c.css e DOPO bootstrap/variables.css/main.css.
-   Non contiene regole: solo variabili. Nessun selettore oltre :root.
+   Non contiene regole: solo variabili. Nessun selettore oltre :root (anche
+   dentro la media query in fondo, che riscrive due token e basta).
    ========================================================================== */
 
 :root {
@@ -110,6 +111,19 @@
   --c7-bronzo-ink:   #4A2F16;
   --c7-shadow-frame: 0 26px 60px -30px rgba(27, 33, 36, .5);
 
+  /* --- Movimento ------------------------------------------------------- *
+     Due durate e una curva per tutto il tema (decisione dell'11/09/2026,
+     scelta guardando `docs/redesign-7c/movimento/confronto.html`). Il
+     movimento anima solo `transform` e `opacity` — sul compositore, quindi
+     senza costo anche su un telefono vecchio — con l'unica eccezione
+     dell'altezza di una sezione che si apre. Niente hover: l'app e' touch.
+     Il prototipo non dice nulla sul movimento perche' e' statico: questa
+     scala e' la parte del design system che non poteva mostrare. */
+  --c7-dur-base:  250ms;  /* entra, si apre, cambia sotto gli occhi, cambio pagina */
+  --c7-dur-quick: 150ms;  /* esce, si chiude, torna dal tocco */
+  --c7-ease:      ease-out;
+  --c7-press:     .94;    /* scala del comando premuto: la pressione e' a 0 ms, il ritorno a quick */
+
   /* --- Z-index --------------------------------------------------------- */
   --c7-z-head:     50;
   --c7-z-mobnav:   60;
@@ -117,4 +131,15 @@
      sotto ai toast: un traguardo o un errore devono comunque arrivare. */
   --c7-z-board:   900;
   --c7-z-toast:   1100;
+}
+
+/* Chi chiede meno movimento lo ottiene alla fonte: con le durate a zero ogni
+   transizione e animazione che legge i token finisce all'istante, senza che
+   ogni regola debba ricordarsi del proprio guard. I battiti (`infinite`) non
+   leggono la scala e tengono il loro `animation: none` nel tema. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --c7-dur-base:  0ms;
+    --c7-dur-quick: 0ms;
+  }
 }

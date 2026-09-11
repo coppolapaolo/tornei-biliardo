@@ -32,6 +32,20 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Una scala del movimento per tutta l'interfaccia.** Fino a oggi ogni
+  animazione del tema aveva i suoi tempi, scritti a mano e diversi fra loro:
+  il toast di Chalky entrava in 320 ms con una curva sua, il chevron delle
+  sezioni ruotava in 200, il riscontro sul tabellone durava 120 o 100 a
+  seconda del pezzo, e le sezioni richiudibili di Bootstrap si aprivano in
+  350. Ora le durate sono due, decise guardando i gesti a confronto
+  (`docs/redesign-7c/movimento/`): 250 ms per ciò che entra o si apre, 150
+  per ciò che esce, si chiude o torna dal tocco, una curva sola. I comandi
+  grossi del segnapunti si schiacciano leggermente sotto il dito, all'istante,
+  e tornano su in 150 ms. Chi ha «riduci movimento» attivo sul telefono ottiene
+  tutto fermo alla fonte, senza che ogni animazione debba ricordarsene: il
+  pallino live del tabellone orizzontale, che non lo faceva, ora si ferma
+  anche lui. Il tocco sul segnapunti è la prima applicazione; il cambio pagina
+  senza lampo bianco e la cifra del punteggio che si anima arrivano dopo.
 - **Aiuto contestuale dentro le prove** (ADR-058, quarta tappa). Le
   schermate di una competizione di prova si spiegano da sole: la prima volta
   che se ne apre una compare una breve presentazione, un passo alla volta,

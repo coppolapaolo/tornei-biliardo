@@ -73,6 +73,25 @@ decorativo: significa "confermato / pagato / completato".
 Le card si distinguono per **contrasto di superficie** (`#F5F7F6` su `#E4E8E7`), non per bordi né
 ombre. Niente gradienti, niente bordo colorato a sinistra.
 
+### 1.4 Movimento
+
+Aggiunto l'11/09/2026: il prototipo è statico e non poteva mostrarlo. Scelto
+guardando i gesti a confronto (`movimento/confronto.html`, decisione in
+`movimento/README.md`).
+
+| Token | Valore | Uso |
+|---|---|---|
+| `--c7-dur-base` | `250ms` | ciò che entra, si apre, cambia sotto gli occhi; cambio pagina |
+| `--c7-dur-quick` | `150ms` | ciò che esce, si chiude, torna dal tocco |
+| `--c7-ease` | `ease-out` | l'unica curva |
+| `--c7-press` | `.94` | scala del comando premuto: la pressione è a 0 ms, si vede il ritorno |
+
+Si animano solo `transform` e `opacity` (l'altezza di una sezione che si apre è
+l'unica eccezione). Niente hover, niente blur, niente durate scritte a mano:
+`test_motion_tokens.py` legge il tema e fa rosso. Con `prefers-reduced-motion`
+le durate vanno a zero alla fonte; i battiti (`infinite`) tengono il proprio
+`animation: none`.
+
 ---
 
 ## 2. Pattern con codice
