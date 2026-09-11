@@ -1,5 +1,20 @@
 # Changelog
 
+## [1.9.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.8.0...v1.9.0) (2026-09-11)
+
+
+### Funzioni nuove
+
+* la home dell'ospite parte da quello che sta succedendo ([#296](https://github.com/coppolapaolo/tornei-biliardo/issues/296)) ([85a9906](https://github.com/coppolapaolo/tornei-biliardo/commit/85a9906b0d87d5d92eba5a109de0358a36916118))
+* le dashboard di giocatore e direttore prendono la forma decisa disegnandola ([#295](https://github.com/coppolapaolo/tornei-biliardo/issues/295)) ([83bbfec](https://github.com/coppolapaolo/tornei-biliardo/commit/83bbfeca0d51df1b2cb0d87c6a259f1c5f08ab97))
+* lo storico delle gare concluse, con ricerca e filtri ([#333](https://github.com/coppolapaolo/tornei-biliardo/issues/333)) ([e6afc62](https://github.com/coppolapaolo/tornei-biliardo/commit/e6afc62ca2b67b49c5077505416d4de7ff9a29ca))
+
+
+### Correzioni
+
+* la classifica finale col playoff si vede in pagina e chiude il campionato ([#335](https://github.com/coppolapaolo/tornei-biliardo/issues/335)) ([7555c45](https://github.com/coppolapaolo/tornei-biliardo/commit/7555c4533096aa964520f6e5629ae06bd703a1e9))
+* podio e classifica usano lo stesso chip di posizione, e i «Vedi tutte» spariscono ([#332](https://github.com/coppolapaolo/tornei-biliardo/issues/332)) ([d34a368](https://github.com/coppolapaolo/tornei-biliardo/commit/d34a3683501a530ed335db6365797fc56252725e))
+
 ## [1.8.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.7.3...v1.8.0) (2026-09-09)
 
 
