@@ -436,7 +436,14 @@
                     var mezzo = voce[0], mio = voce[1], altrui = voce[2], lato = voce[3];
                     var cifra = mezzo.querySelector('.c7-board__num');
                     if (cifra) {
-                        cifra.textContent = mio;
+                        // La cifra che cambia salta (score_pop.js): solo se
+                        // e' cambiata davvero, il giro di polling che
+                        // riallinea un punteggio uguale non muove niente.
+                        if (window.c7ScorePop) {
+                            window.c7ScorePop.segna(cifra, mio);
+                        } else {
+                            cifra.textContent = mio;
+                        }
                         cifra.classList.toggle('c7-board__num--behind', mio < altrui);
                     }
                     var nome = mezzo.querySelector('.c7-board__name');

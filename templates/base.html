@@ -733,6 +733,10 @@
     <script src="{{ url_for('static', filename='js/gamification.js') }}?v={{ config.ASSET_VERSION }}"></script>
     <!-- Polling utility for real-time updates (replaces SSE) -->
     <script src="{{ url_for('static', filename='js/polling.js') }}?v={{ config.ASSET_VERSION }}"></script>
+    {# La cifra del punteggio che cambia salta: sul tabellone via
+       `c7ScorePop.segna`, sulla card verticale confrontando con quello che
+       c'era prima del ricaricamento (scala del movimento, tokens-7c.css). #}
+    <script src="{{ url_for('static', filename='js/score_pop.js') }}?v={{ config.ASSET_VERSION }}"></script>
 
     {# Modalità aiuto (ADR-058): la «?» accanto ai comandi e la presentazione
        della schermata. Il componente chiede i testi per endpoint, quindi il

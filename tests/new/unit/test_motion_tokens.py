@@ -245,3 +245,44 @@ def test_barra_e_nav_mobile_compaiono_una_volta_e_solo_nel_guscio(nome):
             f"{template.relative_to(TEMPLATES)}: `.{nome}` compare {occorrenze} volte, "
             f"attese {attese} — vive solo in base.html, una volta"
         )
+
+
+# ---------------------------------------------------------------------------
+# La cifra che cambia salta.
+#
+# Tre pezzi che devono stare insieme: la regola CSS che anima `.is-pop`, lo
+# script che mette la classe (score_pop.js, presidiato in jsdom da
+# tests/frontend/test_score_pop.cjs) incluso dal guscio, e il tabellone che
+# passa da `c7ScorePop.segna` invece di scrivere `textContent` da solo. Se
+# uno manca la cifra cambia senza muoversi, e nessun test di comportamento
+# lo vede.
+# ---------------------------------------------------------------------------
+
+
+def test_la_cifra_che_cambia_ha_la_sua_animazione():
+    css = _senza_commenti(THEME.read_text(encoding="utf-8"))
+    for classe in (".c7-score__num.is-pop", ".c7-board__num.is-pop"):
+        regola = re.search(rf"{re.escape(classe)}[^{{]*\{{([^}}]*)\}}", css)
+        assert regola and re.search(
+            r"animation:\s*c7-pop\s+var\(--c7-dur-base\)", regola.group(1)
+        ), f"{classe} non anima con c7-pop alla durata base"
+    assert re.search(r"@keyframes\s+c7-pop\s*\{", css), "manca il keyframe c7-pop"
+
+
+def test_lo_script_del_salto_e_incluso_dal_guscio():
+    base = (TEMPLATES / "base.html").read_text(encoding="utf-8")
+    assert "js/score_pop.js" in base, "score_pop.js non è incluso da base.html"
+    assert (
+        Path(__file__).resolve().parents[3] / "static" / "js" / "score_pop.js"
+    ).exists()
+
+
+def test_il_tabellone_passa_dal_salto():
+    """`aggiorna` scrive la cifra con `segna`, che salta solo se è cambiata."""
+    scoreboard = (TEMPLATES / "components" / "_match_scoreboard.html").read_text(
+        encoding="utf-8"
+    )
+    assert "c7ScorePop.segna(cifra, mio)" in scoreboard, (
+        "c7Board.aggiorna non passa da c7ScorePop.segna: la cifra del tabellone "
+        "cambierebbe senza muoversi"
+    )

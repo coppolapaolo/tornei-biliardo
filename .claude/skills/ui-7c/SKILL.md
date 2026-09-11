@@ -132,6 +132,11 @@ regole, presidiate da `tests/new/unit/test_motion_tokens.py`:
   guard `prefers-reduced-motion`; tutto il resto è coperto dai token, che con
   «riduci movimento» vanno a zero.
 - `gamification.css` ha un lessico suo, voluto: non lo si allinea.
+- **Una cifra che cambia sotto gli occhi salta** (`.is-pop`, keyframe
+  `c7-pop`): chi la riscrive in JavaScript passa da
+  `window.c7ScorePop.segna(el, valore)`, che anima solo se il valore è
+  cambiato e rigioca la seconda volta; chi la cambia con un ricaricamento non
+  fa niente, `score_pop.js` confronta da solo con quello che c'era prima.
 - **Il cambio pagina è una view transition cross-document**
   (`@view-transition` nel tema): la pagina vecchia resta finché la nuova
   non è pronta, poi dissolve a `base`; testata, barra laterale e nav mobile

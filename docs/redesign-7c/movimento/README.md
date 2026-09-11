@@ -55,10 +55,18 @@ sono mondi precedenti al tema, con guard propri.
    `pageswap`: link e `location.replace` transitano, `location.reload()` no.
    Dal browser pilotato non si vede: la scheda risulta `hidden` e ogni
    transizione viene saltata.
-3. La cifra del segnapunti che si anima quando cambia, al tocco e all'arrivo
-   di un evento live. Sulla card verticale il cambio passa da un
-   ricaricamento: per farlo transitare va sostituito `location.reload()` con
-   `location.replace(location.href)`.
+3. ~~La cifra del segnapunti che si anima quando cambia~~: `c7-pop` nel tema
+   su `.c7-score__num.is-pop` e `.c7-board__num.is-pop`; `score_pop.js` mette
+   la classe. Sul tabellone la chiama `c7Board.aggiorna` (tocco e polling,
+   solo se il valore è cambiato); sulla card verticale il cambio passa da un
+   ricaricamento, quindi lo script salva a `pagehide` cosa dicevano le cifre
+   e al caricamento successivo della stessa pagina, entro quindici secondi,
+   fa saltare quelle diverse. Presidi: `test_score_pop.cjs` (jsdom) e
+   `test_motion_tokens.py`.
+
+Il `location.reload()` dopo un'azione resta com'è: sostituirlo con
+`location.replace` farebbe transitare anche quel ricaricamento, ma perderebbe
+la posizione di scorrimento. Da valutare a parte, se mai.
 
 I tre fogli rimasti fuori scala (`gamification.css`, `main.css`,
 `drill-builder.css`) sono nella issue #340.
