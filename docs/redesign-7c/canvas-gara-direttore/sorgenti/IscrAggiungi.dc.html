@@ -1,0 +1,296 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@600;700;800&amp;family=JetBrains+Mono:wght@700;800&amp;display=swap">
+  <style>
+:root{
+  --c7-bg:#E4E8E7; --c7-card:#F5F7F6; --c7-sunken:#ECEEED;
+  --c7-ink:#1B2124; --c7-ink-soft:#3D474A; --c7-ink-muted:#6B7679; --c7-ink-faint:#9AA3A6;
+  --c7-on-ink:#F2F5F4; --c7-on-ink-muted:#9AA6A9;
+  --c7-line:#D3D8D7; --c7-line-soft:#E4E8E7;
+  --c7-accent:#2C4A52; --c7-accent-ink:#F2F8F7; --c7-accent-bright:#8FCDE8;
+  --c7-accent-dim:#A9C4C7; --c7-accent-tint:#DDE9EE; --c7-accent-tint-ink:#23404A;
+  --c7-ok-bg:#E4EDE9; --c7-ok-ink:#1D5F4A; --c7-ok-body:#37665A; --c7-ok:#2C8A6B;
+  --c7-err-bg:#F3E2E0; --c7-err-ink:#8A2C2C; --c7-err-body:#7A4A48; --c7-err:#B23B3B;
+  --c7-warn-bg:#F0E9D8; --c7-warn-ink:#6E5417; --c7-warn-body:#6E6047; --c7-warn:#8A6A1F;
+  --c7-font:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --c7-font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",monospace;
+  --c7-r-pill:999px; --c7-r-card:22px; --c7-r-card-lg:26px; --c7-r-field:18px;
+  --c7-r-control:14px; --c7-r-chip:12px;
+  --c7-gutter:18px; --c7-gutter-lg:28px; --c7-pad-card:16px; --c7-pad-card-lg:20px;
+  --c7-gap:12px; --c7-gap-lg:16px;
+  --c7-touch:48px; --c7-field-h:58px; --c7-btn-h:56px; --c7-side-w:244px;
+  --c7-shadow-pop:0 18px 36px -20px rgba(27,33,36,.75);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--c7-bg);color:var(--c7-ink);font-family:var(--c7-font);
+     font-weight:600;font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;
+     text-wrap:pretty}
+h1,h2,h3,h4,h5{margin:0;font-weight:800;letter-spacing:-.025em;color:var(--c7-ink)}
+h3{font-size:17px;letter-spacing:-.02em}
+h4{font-size:15px;letter-spacing:-.02em}
+p{margin:0}
+a{color:var(--c7-accent);text-decoration:none;font-weight:700}
+a:hover{color:var(--c7-ink)}
+svg{display:block}
+.num{font-family:var(--c7-font-mono);font-weight:700;letter-spacing:-.02em;
+     font-variant-numeric:tabular-nums}
+.num-lg{font-family:var(--c7-font-mono);font-weight:800;font-size:26px;letter-spacing:-.03em}
+.num-xl{font-family:var(--c7-font-mono);font-weight:800;font-size:32px;letter-spacing:-.04em}
+.kicker{font-size:10px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+        color:var(--c7-ink-muted)}
+.label{font-size:12px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+       color:var(--c7-ink-muted)}
+.muted{color:var(--c7-ink-muted)}
+.faint{color:var(--c7-ink-faint)}
+.stack{display:flex;flex-direction:column;gap:var(--c7-gap)}
+.row{display:flex;align-items:center;gap:10px}
+.grow{flex:1;min-width:0}
+
+/* --- card ------------------------------------------------------------- */
+.card{background:var(--c7-card);border:0;border-radius:var(--c7-r-card);
+      padding:var(--c7-pad-card)}
+.card--accent{background:var(--c7-accent);color:var(--c7-accent-ink)}
+.card--accent .kicker{color:var(--c7-accent-dim)}
+.card--accent h3,.card--accent h4{color:inherit}
+.card--locked{background:var(--c7-sunken);color:var(--c7-ink-muted)}
+.card--ok{background:var(--c7-ok-bg);color:var(--c7-ok-ink)}
+.card--warn{background:var(--c7-warn-bg);color:var(--c7-warn-ink)}
+.card--sunk{background:var(--c7-bg)}
+
+/* --- pill / stato ----------------------------------------------------- */
+.pill{height:38px;padding:0 16px;border-radius:var(--c7-r-pill);background:var(--c7-card);
+      color:var(--c7-ink-muted);font-size:13px;font-weight:700;display:inline-flex;
+      align-items:center;gap:8px;white-space:nowrap;border:0;flex-shrink:0}
+.pill.is-active{background:var(--c7-ink);color:#fff;font-weight:800}
+.state{height:26px;padding:0 11px;border-radius:var(--c7-r-pill);font-size:10px;
+       font-weight:800;letter-spacing:.04em;text-transform:uppercase;
+       display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
+.state--ok{background:var(--c7-ok-bg);color:var(--c7-ok-ink)}
+.state--warn{background:var(--c7-warn-bg);color:var(--c7-warn-ink)}
+.state--err{background:var(--c7-err-bg);color:var(--c7-err-ink)}
+.state--info{background:var(--c7-accent-tint);color:var(--c7-accent-tint-ink)}
+.state--accent{background:var(--c7-accent);color:var(--c7-accent-ink)}
+.state--muted{background:var(--c7-bg);color:var(--c7-ink-muted)}
+.state--onaccent{background:rgba(242,248,247,.14);color:var(--c7-accent-bright)}
+
+/* --- bottoni ---------------------------------------------------------- */
+.btn{height:var(--c7-btn-h);border:0;border-radius:var(--c7-r-field);padding:0 20px;
+     font-family:inherit;font-size:15px;font-weight:800;display:inline-flex;
+     align-items:center;justify-content:center;gap:9px;white-space:nowrap}
+.btn--primary{background:var(--c7-ink);color:#fff}
+.btn--secondary{background:var(--c7-bg);color:var(--c7-ink-soft);font-weight:700}
+.btn--success{background:var(--c7-ok);color:#fff}
+.btn--warn{background:var(--c7-warn-bg);color:var(--c7-warn-ink)}
+.btn--danger{background:var(--c7-err-bg);color:var(--c7-err-ink)}
+.btn--bright{background:var(--c7-accent-bright);color:#0D2A36}
+.btn--locked{background:var(--c7-sunken);color:var(--c7-ink-faint)}
+.card--accent .btn--locked{background:rgba(242,248,247,.12);color:var(--c7-accent-dim)}
+.btn--sm{height:40px;border-radius:var(--c7-r-chip);padding:0 15px;font-size:13px}
+.btn--w{width:100%}
+.iconbtn{width:34px;height:34px;border:0;border-radius:10px;background:var(--c7-bg);
+         color:var(--c7-ink-soft);display:grid;place-items:center}
+
+/* --- elenchi raggruppati / titoli / tessere --------------------------- */
+.rows{background:var(--c7-card);border-radius:var(--c7-r-card-lg);overflow:hidden}
+.rows__row{padding:15px 18px;display:flex;align-items:center;gap:12px}
+.rows__row + .rows__row{border-top:1px solid var(--c7-line-soft)}
+.rows__title{font-size:14px;font-weight:800}
+.rows__sub{margin-top:2px;font-size:11px;font-weight:700;color:var(--c7-ink-muted)}
+.sechead{display:flex;align-items:baseline;gap:10px}
+.sechead h3{margin:0}
+.sechead__more{margin-left:auto;font-size:13px;font-weight:700;color:var(--c7-accent)}
+.tile{width:44px;height:44px;border-radius:var(--c7-r-control);background:var(--c7-accent);
+      color:var(--c7-accent-bright);display:grid;place-items:center;flex-shrink:0}
+.tile--sm{width:40px;height:40px;border-radius:var(--c7-r-chip)}
+.tile--locked{background:var(--c7-bg);color:var(--c7-ink-faint)}
+.tile--warn{background:var(--c7-warn-bg);color:var(--c7-warn)}
+.tile--neutral{background:var(--c7-bg);color:var(--c7-ink-soft)}
+.tile--ok{background:var(--c7-ok-bg);color:var(--c7-ok)}
+.divider{height:1px;background:var(--c7-line-soft);border:0;margin:14px 0}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--c7-accent);color:#fff;
+        display:grid;place-items:center;font-size:11px;font-weight:800;flex-shrink:0}
+.avatar--lg{width:46px;height:46px;font-size:14px}
+
+/* --- barra di progresso ----------------------------------------------- */
+.bar{height:8px;border-radius:999px;background:var(--c7-line);overflow:hidden}
+.bar__fill{height:100%;background:var(--c7-accent)}
+.card--accent .bar{background:rgba(242,248,247,.18)}
+.card--accent .bar__fill{background:var(--c7-accent-bright)}
+
+/* --- flash ------------------------------------------------------------ */
+.flash{border-radius:var(--c7-r-field);padding:15px 16px;display:flex;gap:13px;
+       align-items:flex-start;font-size:13px;font-weight:600;line-height:1.45}
+.flash__ico{width:30px;height:30px;border-radius:50%;color:#fff;display:grid;
+            place-items:center;flex-shrink:0}
+.flash__title{font-size:14px;font-weight:800}
+.flash--ok{background:var(--c7-ok-bg);color:var(--c7-ok-body)}
+.flash--ok .flash__ico{background:var(--c7-ok)}
+.flash--ok .flash__title{color:var(--c7-ok-ink)}
+.flash--warn{background:var(--c7-warn-bg);color:var(--c7-warn-body)}
+.flash--warn .flash__ico{background:var(--c7-warn)}
+.flash--warn .flash__title{color:var(--c7-warn-ink)}
+.flash--info{background:var(--c7-accent-tint);color:#40606A}
+.flash--info .flash__ico{background:var(--c7-accent)}
+.flash--info .flash__title{color:var(--c7-accent-tint-ink)}
+
+/* --- guscio telefono --------------------------------------------------- */
+.phone{position:relative;width:390px;height:844px;overflow:hidden;background:var(--c7-bg)}
+.head{padding:20px var(--c7-gutter) 12px;display:flex;align-items:center;gap:12px}
+.head__back{width:46px;height:46px;border:0;border-radius:50%;background:var(--c7-card);
+            color:var(--c7-accent);display:grid;place-items:center;flex-shrink:0}
+.head__title{flex:1;min-width:0;display:flex;flex-direction:column}
+.head__title h1{font-size:18px;font-weight:800;letter-spacing:-.025em}
+.head__sub{font-size:12px;font-weight:600;color:var(--c7-ink-muted)}
+.vtabs{display:flex;gap:6px;padding:14px var(--c7-gutter) 12px;background:var(--c7-bg)}
+.vtab{flex:1;min-width:0;height:42px;border:0;border-radius:var(--c7-r-pill);
+      background:var(--c7-card);color:var(--c7-ink-muted);font-family:inherit;
+      font-size:13px;font-weight:700;display:grid;place-items:center;white-space:nowrap}
+.vtab.is-active{background:var(--c7-accent);color:var(--c7-accent-ink)}
+.content{padding:0 var(--c7-gutter) 28px}
+.mobilenav{position:absolute;left:12px;right:12px;bottom:14px;height:62px;padding:0 8px;
+           border-radius:var(--c7-r-pill);background:var(--c7-card);
+           box-shadow:var(--c7-shadow-pop);display:flex;align-items:center;
+           justify-content:space-around}
+.mobilenav a{flex:1;height:48px;border-radius:var(--c7-r-pill);display:flex;
+             flex-direction:column;align-items:center;justify-content:center;gap:3px;
+             color:var(--c7-ink-muted);font-size:10px;font-weight:700}
+.mobilenav a.is-active{color:var(--c7-ink)}
+.mobilenav a.is-active svg{color:var(--c7-accent)}
+.actionbar{position:absolute;left:0;right:0;bottom:90px;padding:12px var(--c7-gutter) 14px;
+           background:linear-gradient(to top,var(--c7-bg) 68%,rgba(228,232,231,0));
+           display:flex;gap:10px}
+.actionbar .btn{flex:1}
+
+/* --- guscio desktop ---------------------------------------------------- */
+.app{display:flex;width:1440px;height:900px;overflow:hidden;background:var(--c7-bg)}
+.side{width:var(--c7-side-w);flex-shrink:0;background:var(--c7-ink);color:var(--c7-bg);
+      padding:24px 16px;display:flex;flex-direction:column;gap:26px}
+.side__brand{display:flex;align-items:center;gap:11px;padding:0 6px}
+.side__mark{width:34px;height:34px;border-radius:10px;background:var(--c7-accent);
+            color:var(--c7-accent-bright);display:grid;place-items:center}
+.side__name{font-size:14px;font-weight:800;letter-spacing:-.01em}
+.side__role{font-size:11px;font-weight:600;color:#8A9599}
+.side__group{display:flex;flex-direction:column;gap:3px}
+.side__grouplabel{font-size:10px;font-weight:800;letter-spacing:.12em;color:#6E797C;
+                  padding:0 10px 8px}
+.side a{height:42px;border-radius:12px;padding:0 12px;display:flex;align-items:center;
+        gap:11px;font-size:13px;font-weight:600;color:#B6BEC0}
+.side a.is-active{background:var(--c7-accent);color:#EAF6F8;font-weight:700}
+.side__count{margin-left:auto;height:20px;min-width:20px;padding:0 6px;
+             border-radius:var(--c7-r-pill);background:var(--c7-err);color:#fff;
+             display:grid;place-items:center;font-family:var(--c7-font-mono);
+             font-size:11px;font-weight:700}
+.side__user{margin-top:auto;border-radius:var(--c7-r-control);background:#2A3033;
+            padding:12px;display:flex;align-items:center;gap:11px}
+.dmain{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.dhead{padding:22px var(--c7-gutter-lg) 20px;display:flex;align-items:center;gap:12px;
+       border-bottom:1px solid var(--c7-line);background:var(--c7-bg)}
+.dhead h1{font-size:22px;font-weight:800;letter-spacing:-.025em}
+.dhead__actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.dcontent{flex:1;padding:16px var(--c7-gutter-lg) 28px;overflow:hidden}
+.cols{display:grid;grid-template-columns:1fr 380px;gap:var(--c7-gap-lg);align-items:start}
+</style>
+</helmet>
+
+<div class="phone">
+  <header class="head">
+    <button class="head__back"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg></button>
+    <div class="head__title">
+      <h1>Gara 3 &middot; Gioved&igrave;</h1>
+      <div class="head__sub">Biliardo Mimmo &middot; Al 5</div>
+    </div>
+    <div class="avatar avatar--lg">PA</div>
+  </header>
+  <div class="vtabs"><button class="vtab">Gestione</button><button class="vtab is-active">Iscritti</button></div>
+  <main class="content">
+    <div class="stack">
+      
+      <div class="sechead">
+        <h3>Iscritti</h3>
+        <span class="state state--accent">7 attivi</span>
+      </div>
+      <div class="rows">
+        <div class="rows__row">
+          <div class="avatar">PA</div>
+          <div class="grow">
+            <div class="rows__title">pa</div>
+            <div class="rows__sub">iscritto il 28/08 &middot; A</div>
+          </div>
+          
+        </div>
+        <div class="rows__row">
+          <div class="avatar">MR</div>
+          <div class="grow">
+            <div class="rows__title">m.rossi</div>
+            <div class="rows__sub">iscritto il 28/08 &middot; A</div>
+          </div>
+          
+        </div></div>
+
+    </div>
+  </main>
+  
+  
+  <nav class="mobilenav">
+    <a class="is-active" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"></path><path d="M6.5 9.5V20h11V9.5"></path></svg>Dashboard</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3 12h18M12 5v14"></path></svg>Sale</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4l9 9M4 8V4h4M20 4l-9 9M20 8V4h-4"></path><path d="M14 14l6 6M10 14l-6 6"></path></svg>Sfide</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="1"></circle></svg>Esercizi</a>
+    <a href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6"></path><path d="M10.5 20a2 2 0 003 0"></path></svg>Notifiche</a>
+  </nav>
+
+  
+  <div style="position:absolute;inset:0;background:rgba(27,33,36,.5)"></div>
+  <div style="position:absolute;left:0;right:0;bottom:0;background:var(--c7-card);
+       border-radius:26px 26px 0 0;padding:14px 18px 24px;display:flex;
+       flex-direction:column;gap:14px">
+    <div style="width:44px;height:4px;border-radius:999px;background:var(--c7-line);
+         margin:0 auto"></div>
+    <h3>Iscrivi un giocatore</h3>
+    
+    
+    <div class="stack">
+      
+        <div>
+          <div class="label" style="margin-bottom:8px">Cognome, nome o username</div>
+          <div class="" style="height:58px;border-radius:var(--c7-r-field);
+               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
+               font-size:15px;font-weight:700">ferr<span class="faint">|</span></div>
+          
+        </div>
+      <div class="rows">
+        <div class="rows__row">
+          <div class="avatar">LF</div>
+          <div class="grow">
+            <div class="rows__title">l.ferrari</div>
+            <div class="rows__sub">Luca Ferrari &middot; Biliardo Mimmo</div>
+          </div>
+          <button class="btn btn--secondary btn--sm">Iscrivi</button>
+        </div>
+        <div class="rows__row">
+          <div class="avatar">AF</div>
+          <div class="grow">
+            <div class="rows__title">a.ferrero</div>
+            <div class="rows__sub">Anna Ferrero &middot; Sala Nuova</div>
+          </div>
+          <button class="btn btn--secondary btn--sm">Iscrivi</button>
+        </div></div>
+      <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);text-align:center">
+        2 giocatori trovati
+      </div>
+    </div>
+    
+  </div>
+
+</div>
+
+</x-dc>
+</body>
+</html>
