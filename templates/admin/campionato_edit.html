@@ -20,6 +20,11 @@
 
 <div class="row justify-content-center">
     <div class="col-md-8">
+        {% if campionato.is_prova %}
+        <div class="mb-4">
+          {% with prova_radice=campionato %}{% include "components/_prova_banner.html" %}{% endwith %}
+        </div>
+        {% endif %}
         {% include "components/_campionato_edit_form.html" %}
     </div>
 </div>

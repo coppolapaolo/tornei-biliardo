@@ -25,7 +25,6 @@ from models.competition.services import GaraService
 from models.dashboard.dashboard_service import (
     DashboardService,
     DASHBOARD_COMPLETED_LIMIT,
-    DASHBOARD_STANDALONE_COMPLETED_LIMIT,
 )
 from models.status_enum import GaraStatus, TournamentStatus
 
@@ -210,48 +209,6 @@ class TestDashboardStandaloneCompletedTail:
     restano accessibili tramite il campionato, non sono duplicate qui.
     """
 
-    def test_player_standalone_completed_tail_exposed(
-        self, db_session, isolated_director_user, isolated_players
-    ):
-        completed_gara = _make_standalone_gara(
-            isolated_director_user.id, 1, GaraStatus.COMPLETED.value
-        )
-        db_session.commit()
-
-        vm = DashboardService.for_player(isolated_players[0].id)
-        ids = [g.id for g in (vm.standalone_completed_recent or [])]
-        assert completed_gara.id in ids
-        assert vm.standalone_completed_total == 1
-
-    def test_player_standalone_completed_tail_caps(
-        self, db_session, isolated_director_user, isolated_players
-    ):
-        extra = DASHBOARD_STANDALONE_COMPLETED_LIMIT + 2
-        for i in range(extra):
-            _make_standalone_gara(
-                isolated_director_user.id, i + 1, GaraStatus.COMPLETED.value
-            )
-        db_session.commit()
-
-        vm = DashboardService.for_player(isolated_players[0].id)
-        assert vm.standalone_completed_total == extra
-        assert (
-            len(vm.standalone_completed_recent or [])
-            == DASHBOARD_STANDALONE_COMPLETED_LIMIT
-        )
-
-    def test_director_standalone_completed_tail_exposed(
-        self, db_session, isolated_director_user
-    ):
-        completed_gara = _make_standalone_gara(
-            isolated_director_user.id, 1, GaraStatus.COMPLETED.value
-        )
-        db_session.commit()
-
-        vm = DashboardService.for_director(isolated_director_user.id)
-        ids = [g.id for g in (vm.standalone_completed_recent or [])]
-        assert completed_gara.id in ids
-
     def test_active_standalone_not_in_completed_tail(
         self, db_session, isolated_director_user, isolated_players
     ):
@@ -261,9 +218,11 @@ class TestDashboardStandaloneCompletedTail:
         db_session.commit()
 
         vm = DashboardService.for_player(isolated_players[0].id)
-        ids = [g.id for g in (vm.standalone_completed_recent or [])]
+        # La coda delle standalone concluse non esiste più: le concluse sono
+        # un elenco di `gara_cards`, di tutti, con la finestra di un mese.
+        ids = [c.id for c in (vm.gare.concluse if vm.gare else [])]
         assert active.id not in ids
-        assert vm.standalone_completed_total == 0
+        assert (vm.gare.concluse_totali if vm.gare else 0) == 0
 
 
 @pytest.mark.integration

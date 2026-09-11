@@ -12,7 +12,7 @@ suite invece di sparire in silenzio.
 """
 
 import uuid
-from datetime import date
+from datetime import date, timedelta
 
 import pytest
 
@@ -24,7 +24,7 @@ from models.campionato.statistics_service import (
     compute_campionato_status,
 )
 from models.competition.models import Gara
-from models.status_enum import GaraStatus, TournamentStatus
+from models.status_enum import Discipline, GaraStatus, TournamentStatus
 from utils.status_ui import StatusPresenter
 
 
@@ -40,17 +40,26 @@ def _make_campionato(db_session, planned=2):
     return c
 
 
-def _make_gara(db_session, campionato, number, status):
+def _make_gara(
+    db_session,
+    campionato,
+    number,
+    status,
+    inscription_start=None,
+    inscription_end=None,
+):
     g = Gara(
         campionato_id=campionato.id,
         number=number,
         name=f"Gara {number}",
         date=date(2026, 1, number),
-        discipline="nine_ball",
+        discipline=Discipline.NINE_BALL.value,
         status=status,
         rounds_count=3,
         current_round=1,
         distance=5,
+        inscription_start=inscription_start,
+        inscription_end=inscription_end,
     )
     db_session.add(g)
     db_session.flush()
@@ -85,6 +94,107 @@ class TestGareEsauriteMaNonChiuso:
         db_session.flush()
 
         assert compute_campionato_status(c) == TournamentStatus.IN_PROGRESS.value
+
+
+class TestIscrizioniProgrammateNonSonoAperte:
+    """SPECIFICHE.md, «Stati di un campionato»: riga `REGISTRATION_OPEN`.
+
+    Lo stato vale quando almeno una gara **raccoglie** iscrizioni. Una gara con
+    l'apertura programmata per la settimana prossima ha `status = INSCRIPTION`
+    e non raccoglie niente: la distinzione la fa la finestra
+    (`inscription_start`/`inscription_end`), ed è la stessa che il badge della
+    gara mostra già come «Iscrizioni programmate» via `get_real_status()`.
+
+    Il difetto, visto in produzione il 2026-09-04: nella stessa schermata il
+    campionato diceva «Iscrizioni aperte» e le sue due gare «Iscrizioni
+    programmate». Una delle due risposte non aveva chiesto l'orario.
+    """
+
+    def test_apertura_futura_non_e_registration_open(self, db_session):
+        c = _make_campionato(db_session, planned=2)
+        _make_gara(
+            db_session,
+            c,
+            1,
+            GaraStatus.INSCRIPTION.value,
+            inscription_start=utc_now() + timedelta(days=7),
+        )
+        db_session.flush()
+
+        assert compute_campionato_status(c) != TournamentStatus.REGISTRATION_OPEN.value
+
+    def test_iscrizioni_gia_chiuse_non_sono_aperte(self, db_session):
+        c = _make_campionato(db_session, planned=2)
+        _make_gara(
+            db_session,
+            c,
+            1,
+            GaraStatus.INSCRIPTION.value,
+            inscription_end=utc_now() - timedelta(days=1),
+        )
+        db_session.flush()
+
+        assert compute_campionato_status(c) != TournamentStatus.REGISTRATION_OPEN.value
+
+    def test_finestra_aperta_adesso_e_registration_open(self, db_session):
+        c = _make_campionato(db_session, planned=2)
+        _make_gara(
+            db_session,
+            c,
+            1,
+            GaraStatus.INSCRIPTION.value,
+            inscription_start=utc_now() - timedelta(days=1),
+            inscription_end=utc_now() + timedelta(days=1),
+        )
+        db_session.flush()
+
+        assert compute_campionato_status(c) == TournamentStatus.REGISTRATION_OPEN.value
+
+    def test_senza_finestra_resta_registration_open(self, db_session):
+        """Nessuna data = nessun limite: è il comportamento storico e resta."""
+        c = _make_campionato(db_session, planned=2)
+        _make_gara(db_session, c, 1, GaraStatus.INSCRIPTION.value)
+        db_session.flush()
+
+        assert compute_campionato_status(c) == TournamentStatus.REGISTRATION_OPEN.value
+
+    def test_campionato_cominciato_con_le_prossime_ancora_da_aprire(self, db_session):
+        """Il caso di produzione: 2 gare giocate, 2 in calendario non aperte.
+
+        Non è `REGISTRATION_OPEN` — non si può iscrivere nessuno — ma nemmeno
+        `SETUP`: metà campionato è stato giocato. Sta ancora succedendo, quindi
+        `IN_PROGRESS`, che è anche ciò che lo tiene fra i «Campionati in corso»
+        della homepage invece di spedirlo fra quelli «in preparazione».
+        """
+        c = _make_campionato(db_session, planned=4)
+        for n in (1, 2):
+            _make_gara(db_session, c, n, GaraStatus.COMPLETED.value)
+        for n in (3, 4):
+            _make_gara(
+                db_session,
+                c,
+                n,
+                GaraStatus.INSCRIPTION.value,
+                inscription_start=utc_now() + timedelta(days=n),
+            )
+        db_session.flush()
+
+        assert compute_campionato_status(c) == TournamentStatus.IN_PROGRESS.value
+
+    def test_nessuna_gara_giocata_e_niente_di_aperto_resta_setup(self, db_session):
+        """Il ramo opposto: se il campionato non è mai cominciato, è ancora Setup."""
+        c = _make_campionato(db_session, planned=2)
+        for n in (1, 2):
+            _make_gara(
+                db_session,
+                c,
+                n,
+                GaraStatus.INSCRIPTION.value,
+                inscription_start=utc_now() + timedelta(days=7),
+            )
+        db_session.flush()
+
+        assert compute_campionato_status(c) == TournamentStatus.SETUP.value
 
 
 class TestNonEUnoStatoTerminale:

@@ -122,6 +122,12 @@ class Campionato(db.Model):
     deleted_at = db.Column(db.DateTime, nullable=True)
     deleted_reason = db.Column(db.String(255), nullable=True)
 
+    # Competizione di prova (ADR-058): vedi `Gara.is_prova`. Il campionato e'
+    # la radice, quindi porta la scadenza; le sue gare ereditano il flag.
+    is_prova = db.Column(db.Boolean, nullable=False, default=False, index=True)
+    prova_expires_at = db.Column(db.DateTime, nullable=True)
+    prova_avviso_inviato_at = db.Column(db.DateTime, nullable=True)
+
     # Relazioni
     gare = db.relationship(
         "Gara", backref="campionato", lazy=True, cascade="all, delete-orphan"

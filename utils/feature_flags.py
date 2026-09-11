@@ -81,12 +81,12 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "help.section": {"anonimo", "player", "director"},
     "help.page": {"anonimo", "player", "director"},
     "help.search": {"anonimo", "player", "director"},
-    # Catalogo dei micro-aiuti e API per schermata: predisposizione per
-    # l'interfaccia adattiva, materiale di lavoro per chi scrive la guida.
-    # `set()` esplicito = admin-only e deciso, non dimenticato: si aprono ai
-    # player quando l'interfaccia adattiva li consumerà davvero.
+    # Catalogo dei micro-aiuti: materiale di lavoro per chi scrive la guida.
+    # `set()` esplicito = admin-only e deciso, non dimenticato.
     "help.hints_index": set(),
-    "help.screen_api": set(),
+    # API per schermata: la chiama `static/js/help-hints.js` (modalità aiuto,
+    # ADR-058) da qualunque pagina, con gli stessi ruoli del mini-sito.
+    "help.screen_api": {"anonimo", "player", "director"},
     # === Logged-in (player or director) ===
     "auth.logout": {"player", "director"},
     # Il browser comunica il fuso di chi legge (ADR-043). Lo chiama il guscio da
@@ -228,6 +228,11 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Il direttore registra la risposta che il qualificato gli ha dato a voce,
     # e decide come il playoff entra nella classifica finale.
     "admin.campionato.playoff_respond_for_player": {"director"},
+    # Competizione di prova (ADR-058): il campionato di prova lo elimina e ne
+    # risponde agli inviti chi lo dirige.
+    "admin.campionato.prova_elimina": {"director"},
+    "admin.campionato.prova_rispondi_invito": {"director"},
+    "admin.campionato.prova_accetta_inviti": {"director"},
     "admin.campionato.playoff_update_scoring": {"director"},
     "admin.campionato.playoff_remove_player": {"director"},
     # Soft delete del campionato: admin-only (@admin_required). Set esplicito
@@ -262,6 +267,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.modify_inscription_dates": {"director"},
     "admin.competition.admin_inscribe_user": {"director"},
     "admin.competition.admin_uninscribe_user": {"director"},
+    # Competizione di prova (ADR-058): la popola e la elimina chi la dirige.
+    "admin.competition.prova_iscrivi_fittizi": {"director"},
+    "admin.competition.prova_simula": {"director"},
+    "admin.competition.prova_elimina": {"director"},
     # Squadre (US-2/3/8/9): l'elenco lo governa chi dirige la competizione,
     # la squadra della propria iscrizione la scrive anche il giocatore.
     "admin.competition.create_squadra": {"director"},
@@ -570,11 +579,8 @@ INFRASTRUCTURE_ALLOWLIST: set[str] = {
     "sse.poll_user",
     # Real-time sync per i match individuali (match_detail polling)
     "sse.poll_individual_match",
-    # Legacy SSE streams kept for backward compat (ADR-021)
-    "sse.gara_stream",
-    "sse.user_stream",
-    "sse.trio_stream",
-    "sse.individual_match_stream",
+    # Gli stream SSE (`sse.*_stream`) non esistono più: tenevano occupato un
+    # worker per connessione (ADR-021) e sono stati tolti con ADR-057.
 }
 
 

@@ -277,3 +277,120 @@ def test_merge_requires_admin_performer(app, db_session):
     non_admin = _user()
     with pytest.raises(ValidationError):
         UserService.merge_users(source.id, target.id, non_admin.id)
+
+
+def test_merge_fonde_le_iscrizioni_alla_stessa_gara(app, db_session):
+    """Regressione: due account iscritti alla stessa gara ne lasciavano due.
+
+    Il caso reale (produzione, gara 39): un giocatore iscritto dal direttore
+    con la categoria B si ricrea un account e si riscrive da solo, senza
+    categoria. Dopo l'unione la gara mostrava due volte lo stesso giocatore,
+    una volta con categoria e una senza.
+
+    La riga che sopravvive e' la piu' vecchia — quella che il direttore ha in
+    mano — e i campi vuoti si riempiono con quelli dell'altra.
+    """
+    from models.competition.models import Inscription
+    from models.categoria.models import Categoria
+
+    admin = _user("admin")
+    source = _user()
+    target = _user()
+    gara = _gara(admin.id, status=GaraStatus.INSCRIPTION.value)
+
+    categoria = Categoria(gara_id=gara.id, name="B")
+    db.session.add(categoria)
+    db.session.flush()
+
+    vecchia = Inscription(
+        user_id=source.id,
+        gara_id=gara.id,
+        categoria_id=categoria.id,
+        initial_order=3,
+        created_at=utc_now() - timedelta(days=2),
+    )
+    nuova = Inscription(
+        user_id=target.id,
+        gara_id=gara.id,
+        created_at=utc_now(),
+    )
+    db.session.add_all([vecchia, nuova])
+    db.session.commit()
+
+    vecchia_id, nuova_id = vecchia.id, nuova.id
+    UserService.merge_users(source.id, target.id, admin.id)
+
+    rimaste = (
+        db_session.query(Inscription)
+        .filter_by(gara_id=gara.id, user_id=target.id)
+        .all()
+    )
+    assert len(rimaste) == 1, "l'unione deve lasciare una sola iscrizione per gara"
+
+    sopravvissuta = rimaste[0]
+    assert sopravvissuta.id == vecchia_id, "sopravvive la piu' vecchia"
+    assert sopravvissuta.categoria_id == categoria.id, "la categoria non si perde"
+    assert sopravvissuta.initial_order == 3
+    assert db_session.get(Inscription, nuova_id) is None
+
+
+def test_merge_iscrizione_attiva_batte_lista_attesa(app, db_session):
+    """Fondendo, lo stato piu' avanzato vince: attivo > lista d'attesa.
+
+    Il posto in gara e' un fatto acquisito da uno dei due account: l'unione
+    non puo' rispedire il giocatore in lista d'attesa solo perche' la riga
+    piu' vecchia ci era finita.
+    """
+    from models.competition.models import Inscription, WaitlistReason
+
+    admin = _user("admin")
+    source = _user()
+    target = _user()
+    gara = _gara(admin.id, status=GaraStatus.INSCRIPTION.value)
+
+    db.session.add(
+        Inscription(
+            user_id=source.id,
+            gara_id=gara.id,
+            is_waitlist=True,
+            waitlist_position=1,
+            waitlist_reason=WaitlistReason.CAPACITY.value,
+            created_at=utc_now() - timedelta(days=2),
+        )
+    )
+    db.session.add(
+        Inscription(user_id=target.id, gara_id=gara.id, created_at=utc_now())
+    )
+    db.session.commit()
+
+    UserService.merge_users(source.id, target.id, admin.id)
+
+    rimaste = (
+        db_session.query(Inscription)
+        .filter_by(gara_id=gara.id, user_id=target.id)
+        .all()
+    )
+    assert len(rimaste) == 1
+    assert rimaste[0].is_waitlist is False
+    assert rimaste[0].waitlist_position is None
+    assert rimaste[0].waitlist_reason is None
+
+
+def test_merge_iscrizioni_a_gare_diverse_restano_due(app, db_session):
+    """La fusione tocca solo le iscrizioni alla **stessa** gara."""
+    from models.competition.models import Inscription
+
+    admin = _user("admin")
+    source = _user()
+    target = _user()
+    gara_a = _gara(admin.id, status=GaraStatus.INSCRIPTION.value)
+    gara_b = _gara(admin.id, status=GaraStatus.INSCRIPTION.value)
+
+    db.session.add(Inscription(user_id=source.id, gara_id=gara_a.id))
+    db.session.add(Inscription(user_id=target.id, gara_id=gara_b.id))
+    db.session.commit()
+
+    UserService.merge_users(source.id, target.id, admin.id)
+
+    rimaste = db_session.query(Inscription).filter_by(user_id=target.id).all()
+    assert {i.gara_id for i in rimaste} == {gara_a.id, gara_b.id}

@@ -17,7 +17,88 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ## [Non rilasciato]
 
+### Corretto
+
+- **Rilievi della revisione automatica sulle tappe della prova** (PR #305,
+  #314, #318, #319). «Simula il turno» contava come chiuse anche le partite
+  dispari già a distanza e in attesa del direttore, e il messaggio diceva
+  partite simulate che non lo erano: ora una partita conta solo se la
+  simulazione ci ha fatto qualcosa. I messaggi della simulazione hanno la
+  forma singolare («Simulata 1 partita»). Chiedere la data proposta per un
+  campionato inesistente solleva `NotFoundError` invece di rispondere una
+  data. Nel modale «Nuova gara» l'etichetta «Esercizio per la X» punta al
+  suo controllo, quindi toccarla porta il fuoco sulla tendina. Lo script di
+  riparazione delle iscrizioni duplicate propaga il codice di uscita.
+
 ### Aggiunto
+
+- **Aiuto contestuale dentro le prove** (ADR-058, quarta tappa). Le
+  schermate di una competizione di prova si spiegano da sole: la prima volta
+  che se ne apre una compare una breve presentazione, un passo alla volta,
+  che evidenzia i comandi principali; poi accanto a ogni comando importante
+  resta una «?» che apre due frasi e il collegamento alla pagina della guida.
+  I testi sono quelli di `hints.yaml`, scritti mesi fa come predisposizione e
+  finora letti solo dal catalogo `/aiuto/microaiuto`: ora ogni ancora ha il
+  suo elemento nei template (`data-help`), i suggerimenti mancanti per
+  campionato, playoff e prova sono stati scritti in italiano e inglese, e un
+  test statico tiene allineati i due lati del contratto. Il componente
+  (`static/js/help-hints.js`) non sa cos'è una prova: è una «modalità
+  aiuto» che si accende dove la pagina la offre — oggi il banner della prova,
+  con l'interruttore «Suggerimenti» — e resta accesa finché l'utente non la
+  spegne, per il suo browser. Nella guida nasce la pagina «Fare una prova
+  prima della serata vera», con le schermate catturate da un seed
+  dimostrativo esteso con due prove; «Chi fa cosa» e «Diventare direttore»
+  la indicano.
+- **Competizione di prova** (ADR-058, prima tappa). Un direttore appena
+  promosso deve poter capire le schermate di gestione prima di condurre una
+  serata vera, e finora poteva solo leggere la guida o fare esperimenti su
+  gare reali. Ora nel modulo della gara singola c'è la spunta «Competizione
+  di prova»: nasce la stessa gara di sempre, con un flag. La vede **solo chi
+  la dirige** (co-direttori e admin compresi), non ha link pubblico né
+  vetrina, non compare in nessun elenco. A iscrizioni aperte la si popola con
+  tre pulsanti — il minimo, fino al massimo, uno in più — che creano
+  **giocatori fittizi** con nomi generici e rating fissi e diversi; nessun
+  utente vero può iscriversi. Le partite di una prova non muovono l'ELO e
+  nessun evento di prova dà XP, badge o missioni a nessuno; le statistiche
+  del direttore la ignorano; le notifiche che genera arrivano con il prefisso
+  «Prova ·». Al massimo tre prove aperte per direttore. Si elimina in
+  qualunque stato dal banner in cima alla pagina, **fisicamente**, con
+  partite, iscrizioni e fittizi; una prova dimenticata sparisce da sola dopo
+  14 giorni, con un avviso in app tre giorni prima. L'invisibilità è un
+  filtro di sessione come il soft delete: una schermata nuova che se ne
+  dimentica non la mostra, invece di mostrarla per errore. Le tappe
+  successive — simulazione dei risultati, campionato di prova, aiuto
+  contestuale — sono in `docs/usecases/competizione-di-prova.md`.
+
+- **Competizione di prova, terza tappa: il campionato di prova.** Nel wizard
+  del campionato c'è la spunta «Competizione di prova», con lo stesso limite
+  di tre prove delle gare singole. Le gare del campionato nascono di prova da
+  sole, il modale «Nuova gara» propone le date nei prossimi giorni e in
+  ordine — domani la prima, il giorno dopo l'ultima le altre — e i giocatori
+  fittizi sono **del campionato**: la seconda gara riusa quelli della prima,
+  così la classifica generale si forma come in un campionato vero. Al
+  playoff il direttore accetta o rifiuta l'invito per ciascun fittizio, o
+  accetta tutti i rimanenti con un pulsante; un rifiuto fa scattare il primo
+  degli esclusi, come nella realtà. Il banner della prova sta anche sulle
+  pagine del campionato e da lì elimina tutto, gare e playoff compresi. Il
+  modale «Nuova gara» dei campionati veri ora propone la data che la
+  specifica prevedeva da sempre: oggi per la prima gara, una settimana dopo
+  l'ultima per le altre.
+
+- **Competizione di prova, seconda tappa: la simulazione dei risultati.** In
+  una prova avviata il pannello di gestione ha tre pulsanti — **Simula una
+  partita**, **Simula il turno**, **Simula tutta la gara** — con cui il
+  direttore fa andare avanti la gara senza giocatori veri. Le partite si
+  chiudono **nei due modi che deve imparare**: metà con la doppia conferma dei
+  giocatori, chiuse da sole; l'altra metà con il risultato segnato da un solo
+  giocatore, in attesa che lui le validi dal segnapunti, esattamente come gli
+  succederà con giocatori veri che non passano dal suo tavolo. «Tutta la gara»
+  chiude tutto, validando anche quelle. Ogni rack passa dal segnapunti vero con
+  l'id del fittizio che lo segna, quindi il tabellino è vero e il segnapunti
+  resta usabile dopo; i punteggi rispettano la distanza del turno, e in
+  «esattamente N» con N pari il pareggio esiste come nella realtà. Le vecchie
+  azioni di debug del footer di sviluppo usano lo stesso servizio: una sola
+  implementazione.
 
 - **Segnalare un problema dall'app.** Chi usa l'app non aveva nessun modo di
   dire che qualcosa non va: il backlog vive su GitHub, e i giocatori non hanno
@@ -34,6 +115,18 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
   > non è entrato in `docs/RELEASES.md` — vedi «Corretto» qui sotto.
 
 ### Corretto
+
+- **Gli aggiornamenti live arrivano sempre.** La pagina della gara, il tabellone
+  della partita e il badge delle notifiche chiedono al server ogni tre secondi
+  se è successo qualcosa, e a volte la risposta era «niente» anche quando un
+  rack era appena stato segnato: l'archivio degli eventi stava nella memoria
+  di **uno** dei tre processi che servono il sito, e solo le richieste capitate
+  su quello lo vedevano. Circa un evento su tre arrivava. Ora gli eventi
+  passano da una tabella condivisa, l'evento nasce insieme al fatto che lo
+  genera, il turno nuovo compare da solo sulla pagina della gara (prima non
+  si annunciava mai), e chi torna su una scheda rimasta chiusa per minuti la
+  vede aggiornata invece di vecchia. Non dipende più dall'orologio del
+  telefono (ADR-057).
 
 - **Un messaggio di commit con parentesi annidate spariva dal changelog.**
   Il corpo del commit della #287 conteneva `matchMedia('(min-width: 992px)')`:

@@ -8,7 +8,7 @@ from models import Campionato, db
 from models.base import utc_now
 from models.competition.models import Gara, Inscription
 from models.classification.models import Classification
-from models.status_enum import GaraStatus
+from models.status_enum import Discipline, GaraStatus
 from models.playoff.models import (
     PlayoffConfiguration,
     PlayoffQualification,
@@ -52,7 +52,7 @@ def terminated_campionato_with_playoff(db_session, admin_user):
         number=1,
         name="Gara 1",
         date=date(2026, 1, 15),
-        discipline="nine_ball",
+        discipline=Discipline.NINE_BALL.value,
         status=GaraStatus.COMPLETED.value,
         rounds_count=3,
         current_round=1,

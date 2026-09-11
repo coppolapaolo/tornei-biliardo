@@ -734,6 +734,31 @@
     <!-- Polling utility for real-time updates (replaces SSE) -->
     <script src="{{ url_for('static', filename='js/polling.js') }}?v={{ config.ASSET_VERSION }}"></script>
 
+    {# Modalità aiuto (ADR-058): la «?» accanto ai comandi e la presentazione
+       della schermata. Il componente chiede i testi per endpoint, quindi il
+       guscio gli dice qual è l'endpoint corrente e dove sta l'API; le
+       etichette passano di qui perché nessuna stringa visibile vive nel JS.
+       Si accende solo dove una pagina espone `[data-help-toggle]` (oggi il
+       banner della prova): caricarlo ovunque costa un file in cache. #}
+    <script type="application/json" id="help-hints-config">
+    {
+        "screen": {{ (request.endpoint or "") | tojson }},
+        "api": {{ (url_for('help.screen_api', screen=request.endpoint) if request.endpoint else "") | tojson }},
+        "debug": {{ (debug_info.debug_mode | default(false)) | tojson }},
+        "i18n": {
+            "help": {{ _("Aiuto") | tojson }},
+            "read_more": {{ _("Leggi nella guida") | tojson }},
+            "close": {{ _("Chiudi") | tojson }},
+            "next": {{ _("Avanti") | tojson }},
+            "done": {{ _("Ho capito") | tojson }},
+            "skip": {{ _("Salta") | tojson }},
+            "step_of": {{ _("{n} di {total}") | tojson }},
+            "presentation": {{ _("Presentazione") | tojson }}
+        }
+    }
+    </script>
+    <script src="{{ url_for('static', filename='js/help-hints.js') }}?v={{ config.ASSET_VERSION }}"></script>
+
     {% if debug_info.debug_mode %}
     <div class="modal fade" id="saveResetModal" tabindex="-1" aria-labelledby="saveResetModalLabel" aria-hidden="true">
         <div class="modal-dialog">

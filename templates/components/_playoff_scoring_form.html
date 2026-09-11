@@ -8,7 +8,7 @@
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="row g-2 align-items-end">
         <div class="col-md-6">
-            <label class="form-label">{{ _("Classifica finale del campionato") }}</label>
+            <label class="form-label" data-help="campionato-playoff-classifica-finale">{{ _("Classifica finale del campionato") }}</label>
             <select name="final_ranking_mode" class="form-select form-select-sm">
                 <option value="campionato_plus_playoff" {% if not cfg.decides_final_ranking %}selected{% endif %}>
                     {{ _("Campionato + gara di playoff") }}

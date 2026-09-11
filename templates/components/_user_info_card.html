@@ -6,6 +6,7 @@
     </div>
     <div class="card-body">
         <p><strong>{{ _("Username") }}:</strong> {{ user.username }}</p>
+        <p><strong>{{ _("Nome") }}:</strong> {{ user.full_name or _('Non specificato') }}</p>
         <p><strong>{{ _("Email") }}:</strong> {{ user.email }}</p>
         <p><strong>{{ _("Telefono") }}:</strong> {{ user.phone or _('Non specificato') }}</p>
         <p><strong>{{ _("Ruolo") }}:</strong>
@@ -120,6 +121,40 @@
             </button>
         </form>
         </p>
+        {% endif %}
+
+        {# Anagrafica (Admin Only). Nome e cognome nascono come campo del
+           proprio profilo (issue #156) e servono al direttore per iscrivere la
+           persona giusta fra username simili: chi non compila il profilo resta
+           indistinguibile, e l'admin che il nome lo sa deve poterlo scrivere.
+           Vuoti si cancellano: sono facoltativi. #}
+        {% if current_user.is_admin and not user.is_admin %}
+        <hr class="my-3">
+        <p><strong>{{ _("Nome e cognome") }}:</strong></p>
+        <form action="{{ url_for('admin.user.update_anagrafica', user_id=user.id) }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="row g-2 align-items-end">
+                <div class="col-5">
+                    <label class="visually-hidden" for="first_name">{{ _("Nome") }}</label>
+                    <input id="first_name" name="first_name" type="text" class="form-control form-control-sm"
+                           maxlength="100" placeholder="{{ _('Nome') }}" value="{{ user.first_name or '' }}">
+                </div>
+                <div class="col-5">
+                    <label class="visually-hidden" for="last_name">{{ _("Cognome") }}</label>
+                    <input id="last_name" name="last_name" type="text" class="form-control form-control-sm"
+                           maxlength="100" placeholder="{{ _('Cognome') }}" value="{{ user.last_name or '' }}">
+                </div>
+                <div class="col-2">
+                    <button type="submit" class="btn btn-outline-primary btn-sm w-100"
+                            title="{{ _('Salva nome e cognome') }}">
+                        <i class="fas fa-save"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="form-text text-muted">
+                {{ _("Facoltativi. Li vede il direttore delle gare a cui si iscrive, per non confondere due giocatori con username simili. Lasciandoli vuoti si cancellano.") }}
+            </div>
+        </form>
         {% endif %}
 
         {# Set Password (Admin Only) #}

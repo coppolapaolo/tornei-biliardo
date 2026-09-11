@@ -1,0 +1,220 @@
+title: "Running a trial before the real evening"
+section: organizzare
+kind: tutorial
+audience: [direttore]
+minutes: 6
+summary: "A competition or a championship only you can see, with fictitious players and simulated results: to learn the director's screens without touching anything real."
+screens: [admin.competition.create_gara_standalone, admin.competition.gara_detail, admin.campionato.wizard_start, admin.campionato.campionato_detail]
+related: [creare_una_gara, creare_un_campionato, condurre_la_gara, playoff]
+
+blocks:
+  - type: text
+    text: >-
+      You have just become a competition director and the first evening is a
+      week away. You have only seen the management screens in the guide, and
+      trying them on a real competition means registrations that really
+      open and results that end up in someone's statistics. The **trial
+      competition** is for this: it is a competition — or a whole
+      championship — identical to a real one in every way, except that only
+      you can see it and it leaves no trace anywhere.
+
+  - type: heading
+    id: perche
+    title: "What it is, and what it is not"
+
+  - type: list
+    title: "A trial"
+    items:
+      - "Is seen only by those who direct it: you, the co-directors you add, and the platform administrators. It appears in no list, has no public link and no showcase."
+      - "Is filled only with **fictitious players**, created by the app with generic names. No real player can register, not even you."
+      - "Moves nothing: neither the players' rating, nor your experience points, nor the count of competitions you have organised."
+      - "You can have **three at a time**. It disappears by itself after **14 days**, with a notice three days before; or you delete it when you are done."
+
+  - type: note
+    tone: info
+    text: >-
+      In every other respect it is a real competition: same options, same
+      rounds, same scoreboard, same standings. What you learn here applies
+      exactly on the evening of the competition.
+
+  - type: heading
+    id: creare
+    title: "Creating the trial"
+
+  - type: steps
+    items:
+      - title: "Open the usual form"
+        text: >-
+          From the home tap **New Competition** (or **New Championship**, if
+          you also want to try the overall standings and the playoffs). The
+          form is the same as for a real competition.
+        shot: dashboard-direttore
+      - title: "Switch on «Trial competition»"
+        text: >-
+          It is the first choice in the form. From there on fill it in as you
+          really would: name, date, venue, discipline, distance, and every
+          option you want to try. If you already have three open trials the
+          switch is off, and the note says why.
+        shot: prova-spunta
+      - title: "Recognise it by the banner"
+        text: >-
+          Every screen of the trial has a yellow panel at the top with the
+          label **Trial competition**, the date on which it will disappear
+          by itself, the tips switch and the button to delete it. If you do
+          not see it, you are not in a trial.
+        shot: prova-iscrizioni
+
+  - type: heading
+    id: iscrivere
+    title: "Filling it with players"
+
+  - type: text
+    text: >-
+      Open registrations as in a real competition. In the entrants panel,
+      instead of the player search, you find three buttons:
+
+  - type: options
+    items:
+      - name: "Register the minimum"
+        text: >-
+          Brings the entrants to the minimum number you set: enough to start
+          the competition.
+        hint: prova.fittizi
+      - name: "Register up to the maximum"
+        text: >-
+          Fills every place. It needs a maximum number of entrants in the
+          form, otherwise the button is off and a line reminds you.
+      - name: "Register one more"
+        text: >-
+          Adds a single player: it is the way to see what happens with an
+          odd number, that is the X by walkover.
+
+  - type: text
+    text: >-
+      Each button says how many players it adds and switches off when it
+      would add none. Fictitious players are recognisable by the **trial**
+      label next to the name; otherwise they are entrants like the others:
+      you can assign categories, form teams, withdraw one.
+
+  - type: heading
+    id: simulare
+    title: "Making the fictitious players play"
+
+  - type: text
+    text: >-
+      Start the first round as you really would. The fictitious players,
+      however, do not pick up the phone: you make the results appear, from
+      the **Management** panel, with three buttons.
+
+  - type: shot
+    shot: prova-simulazione
+
+  - type: options
+    items:
+      - name: "Simulate a match"
+        text: "Closes one match among those at a table, with a plausible score for the round's distance."
+        hint: prova.simulazione
+      - name: "Simulate the round"
+        text: "Closes every match still open in the current round."
+      - name: "Simulate the whole competition"
+        text: "Goes all the way: closes every match and starts the missing rounds, until the competition is finished."
+
+  - type: note
+    tone: tip
+    title: "Why half the matches stay «to validate»"
+    text: >-
+      With «a match» and «the round», half the results close as if both
+      players had confirmed them from their phone, and the other half stay
+      as they are when only one player has scored: they wait for you to
+      **validate them from the scoreboard**. This is deliberate: they are
+      the two paths a real match can take, and you need to see both. «The
+      whole competition» closes everything instead, because you asked to
+      reach the end.
+
+  - type: text
+    text: >-
+      The scoreboard and every other director action stay available: you can
+      score a match by hand, reset it, correct a result, assign tables. What
+      you are learning is the page described in
+      [Running the competition round by round](/aiuto/organizzare/condurre_la_gara).
+
+  - type: heading
+    id: campionato
+    title: "A trial championship, with playoffs"
+
+  - type: text
+    text: >-
+      If you tick the box in the championship wizard, every competition you
+      add is born as a trial, and the fictitious players belong to the
+      **championship**: the second competition reuses those of the first,
+      so the overall standings really take shape. The dates proposed for
+      the competitions are in the next few days, one after the other,
+      because you play them all in one session.
+
+  - type: text
+    text: >-
+      Once the championship is terminated and the playoffs started, the
+      invitations to the fictitious players find nobody to answer: on the
+      championship page, next to each pending invitation, you find
+      **Accept** and **Decline**, and at the top **Accept all remaining**. A
+      refusal triggers the same rule as in reality: the place goes to the
+      first of the excluded.
+
+  - type: heading
+    id: aiuto
+    title: "The tips on the screens"
+
+  - type: text
+    text: >-
+      Inside a trial the app explains by itself what you are looking at. The
+      first time you open a screen a short **introduction** appears, one
+      step at a time, highlighting the main controls; then next to every
+      important control a small **«?»** remains, which opens two sentences
+      and the link to the guide page that talks about it.
+
+  - type: shot
+    shot: prova-presentazione
+    caption: "The introduction on the first visit: «Next» moves to the next control, «Skip» closes it."
+
+  - type: shot
+    shot: prova-fumetto
+    caption: "An open «?»: the name of the control, the short explanation and «Read in the guide»."
+
+  - type: text
+    text: >-
+      The **Tips** switch in the banner turns them off and on again. The
+      choice applies to the browser you are using: switched off here, they
+      stay off in every trial of yours until you switch them back on.
+      Introductions are shown once per screen.
+
+  - type: heading
+    id: eliminare
+    title: "When you are done"
+
+  - type: text
+    text: >-
+      **Delete the trial**, in the banner, deletes everything at once: the
+      competition (or the championship with all its competitions), the
+      matches, the registrations, the notifications and the fictitious
+      players. It asks for confirmation and there is no going back. It works
+      in any state, even with a competition just created or halfway through.
+
+  - type: text
+    text: >-
+      If you forget, the trial disappears by itself on the date written in
+      the banner, fourteen days after creation. Three days before you
+      receive an in-app notification — like every notification born from a
+      trial, it carries the «Trial» prefix and never arrives by email.
+
+  - type: faq
+    items:
+      - q: "Can I register myself in my trial, to try the scoreboard from the player's side?"
+        a: "No: only fictitious players register in a trial. You still open the scoreboard from the competition page as director, and score the racks on their behalf."
+      - q: "I have three open trials and cannot create another."
+        a: "That is the limit: three at a time. Delete the one you no longer need from its banner, and the switch becomes available again."
+      - q: "Do fictitious players appear anywhere outside the trial?"
+        a: "No. They are not in searches, standings, profiles or statistics, and they disappear with the trial."
+      - q: "Can I show the trial to another director?"
+        a: "Yes, by adding them as co-director from the competition page, as you would in a real competition. From then on they see it too."
+      - q: "Can I have the «?» in real competitions as well?"
+        a: "For now the tips switch on only inside trials. The guide pages, on the other hand, are always available."

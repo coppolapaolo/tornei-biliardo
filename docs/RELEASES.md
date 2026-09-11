@@ -1,5 +1,50 @@
 # Changelog
 
+## [1.8.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.7.3...v1.8.0) (2026-09-09)
+
+
+### Funzioni nuove
+
+* aiuto contestuale nelle competizioni di prova ([#320](https://github.com/coppolapaolo/tornei-biliardo/issues/320)) ([45c3809](https://github.com/coppolapaolo/tornei-biliardo/commit/45c38098272ff1bae9bba15c4c495bb4db57045b))
+* campionato di prova con playoff simulato ([#319](https://github.com/coppolapaolo/tornei-biliardo/issues/319)) ([d286cf4](https://github.com/coppolapaolo/tornei-biliardo/commit/d286cf477ffa15b72671021aed95db0735eceb74))
+* competizione di prova per i direttori, prima tappa ([#315](https://github.com/coppolapaolo/tornei-biliardo/issues/315)) ([297542d](https://github.com/coppolapaolo/tornei-biliardo/commit/297542d49a22e5b57f00aa4fa834cd5ec2dcfa18))
+* simulazione dei risultati nella competizione di prova ([#318](https://github.com/coppolapaolo/tornei-biliardo/issues/318)) ([a10d83e](https://github.com/coppolapaolo/tornei-biliardo/commit/a10d83e89e851033f829c006681acb8d3c605f91))
+
+
+### Correzioni
+
+* la presentazione dell'aiuto è un dialogo modale davvero ([#322](https://github.com/coppolapaolo/tornei-biliardo/issues/322)) ([8de3998](https://github.com/coppolapaolo/tornei-biliardo/commit/8de3998f3fce724b6dc087dbb02d5d52db7c68ef))
+* recepiti i rilievi della revisione automatica sulle tappe della prova ([#324](https://github.com/coppolapaolo/tornei-biliardo/issues/324)) ([7989bf4](https://github.com/coppolapaolo/tornei-biliardo/commit/7989bf4caa60ed267dd5282ae8fc6dbd0db6705f))
+
+## [1.7.3](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.7.2...v1.7.3) (2026-09-04)
+
+
+### Correzioni
+
+* creare o modificare una gara non chiede più l'esercizio della X ([#314](https://github.com/coppolapaolo/tornei-biliardo/issues/314)) ([071cd10](https://github.com/coppolapaolo/tornei-biliardo/commit/071cd10bd7302c09701a6a61100ac495a3fb84ef))
+* il campionato non dice più "iscrizioni aperte" per una gara programmata ([#312](https://github.com/coppolapaolo/tornei-biliardo/issues/312)) ([47d08e0](https://github.com/coppolapaolo/tornei-biliardo/commit/47d08e0b08af58f74f6ed5afe321528998b62446))
+
+## [1.7.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.7.1...v1.7.2) (2026-09-02)
+
+
+### Correzioni
+
+* gli aggiornamenti live arrivano da qualunque worker ([#308](https://github.com/coppolapaolo/tornei-biliardo/issues/308)) ([26791e8](https://github.com/coppolapaolo/tornei-biliardo/commit/26791e85b85027cc159a9c0c5f6caccec07708ed))
+
+## [1.7.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.7.0...v1.7.1) (2026-09-01)
+
+
+### Correzioni
+
+* unire due account non lascia più il giocatore iscritto due volte ([#305](https://github.com/coppolapaolo/tornei-biliardo/issues/305)) ([588aab1](https://github.com/coppolapaolo/tornei-biliardo/commit/588aab10651be1df009d206c5c17406a7b18c32a))
+
+## [1.7.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.6.1...v1.7.0) (2026-08-31)
+
+
+### Funzioni nuove
+
+* chi iscrive un giocatore lo cerca per cognome, e l'admin può scriverlo ([#297](https://github.com/coppolapaolo/tornei-biliardo/issues/297)) ([f66f662](https://github.com/coppolapaolo/tornei-biliardo/commit/f66f66212bbc039364e1657b9193b38c42a1b628))
+
 ## [1.6.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.6.0...v1.6.1) (2026-08-30)
 
 

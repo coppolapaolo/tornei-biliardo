@@ -26,7 +26,7 @@
      un'informazione sola. #}
   {% set exam_challenges = exam.challenges.all() %}
   <div class="c7-sechead">
-    <h2>{{ _("Gli esercizi dell'esame") }}</h2>
+    <h2 data-help="esame-ordine-drill">{{ _("Gli esercizi dell'esame") }}</h2>
     <span class="c7-sechead__note">{{ exam_challenges|length }}</span>
   </div>
   {# Il tipo di drill e l'azione stanno su una **seconda riga**, non in coda al
@@ -108,7 +108,7 @@
     <form method="POST" action="{{ url_for('exam.start_self_practice', exam_id=exam.id) }}">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="c7-card">
-        <div class="c7-rows__title">{{ _("Prova da solo") }}</div>
+        <div class="c7-rows__title" data-help="esame-prova-da-solo">{{ _("Prova da solo") }}</div>
         <div class="c7-rows__sub">{{ _("Allenamento: non porta la certificazione.") }}</div>
         <button type="submit" class="btn btn-outline-primary" style="margin-top:12px">{{ _("Inizia") }}</button>
       </div>
@@ -123,7 +123,7 @@
         {{ _("Vedi la richiesta in corso") }}
       </a>
       {% elif examiners|length > 0 and feature_visible('exam.request_form') %}
-      <a class="btn btn-success" style="margin-top:12px"
+      <a class="btn btn-success" style="margin-top:12px" data-help="esame-appuntamento"
          href="{{ url_for('exam.request_form', exam_id=exam.id) }}">
         {{ _("Chiedi un appuntamento") }}
       </a>
@@ -145,10 +145,10 @@
     <label class="c7-label" for="challenge_id">{{ _("Esercizio") }}</label>
     <input class="form-control" type="number" id="challenge_id" name="challenge_id" required
            placeholder="{{ _('ID dell\'esercizio') }}">
-    <label class="c7-label" for="max_score" style="margin-top:12px">{{ _("Punteggio massimo") }}</label>
+    <label class="c7-label" for="max_score" style="margin-top:12px" data-help="esame-punteggio-massimo">{{ _("Punteggio massimo") }}</label>
     <input class="form-control" type="number" id="max_score" name="max_score" min="1"
            placeholder="{{ _('Vuoto per gli esercizi superato / non superato') }}">
-    <label class="c7-label" for="max_attempts" style="margin-top:12px">{{ _("Quante prove") }}</label>
+    <label class="c7-label" for="max_attempts" style="margin-top:12px" data-help="esame-quante-prove">{{ _("Quante prove") }}</label>
     <input class="form-control" type="number" id="max_attempts" name="max_attempts"
            min="1" max="{{ max_attempts_cap }}" value="1">
     <div class="c7-rows__sub" style="margin-top:6px">

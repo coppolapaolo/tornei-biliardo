@@ -1,38 +1,29 @@
 {# templates/components/_unified_dashboard_header.html — Design System 7c
-   Riga di intestazione della dashboard: titolo + azioni primarie.
-   Contratto invariato: incluso da dashboard/admin|director|player.html.
-   Le capability (vm.caps) e gli endpoint sono gli stessi di prima. #}
-<div class="d-flex align-items-center gap-3 flex-wrap mb-4">
-  <div class="flex-fill">
-    <div class="c7-kicker">
-      {% if current_user.is_admin %}{{ _('Amministratore') }}
-      {% elif current_user.is_director %}{{ _('Direttore di gara') }}
-      {% else %}{{ _('Giocatore') }}{% endif %}
-    </div>
-    <h1 class="mt-1 mb-0" style="font-size:24px">
-      {{ _('Ciao') }} {{ current_user.username }}
-    </h1>
-  </div>
 
-  <div class="d-flex gap-2 flex-wrap">
-    {% if vm.caps and vm.caps.can_create_standalone %}
-    <a class="btn btn-secondary btn-sm" href="{{ url_for('admin.competition.create_gara_standalone') }}">
-      <i class="fas fa-plus"></i>{{ _('Nuova Gara') }}
-    </a>
-    {% endif %}
+   Le azioni primarie della dashboard, e **solo** quelle: il saluto e il ruolo
+   stanno nella testata di `base.html` (vedi `dashboard/base.html`), che li
+   disegna per tutto il sito. Questo file riempie `page_actions`, quindi non
+   porta il proprio contenitore — lo mette la testata (`.c7-head__actions`).
 
-    {% if vm.caps and vm.caps.can_create_campionato %}
-    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newTournamentModal">
-      <i class="fas fa-wand-magic-sparkles"></i>{{ _('Nuovo Campionato') }}
-    </button>
-    {% endif %}
+   Incluso da `dashboard/base.html`: vale per admin, direttore e giocatore.
+   Le capability (`vm.caps`) e gli endpoint sono gli stessi di prima. #}
 
-    {% if current_user.is_player and not current_user.is_director and not current_user.is_admin %}
-      {% if vm.caps and vm.caps.can_create_match_proposal %}
-      <a class="btn btn-secondary btn-sm" href="{{ url_for('individual_match.create_proposal') }}">
-        <i class="fas fa-plus"></i>{{ _('Crea Match') }}
-      </a>
-      {% endif %}
-    {% endif %}
-  </div>
-</div>
+{% if vm.caps and vm.caps.can_create_standalone %}
+<a class="btn btn-secondary btn-sm" href="{{ url_for('admin.competition.create_gara_standalone') }}">
+  <i class="fas fa-plus"></i>{{ _('Nuova Gara') }}
+</a>
+{% endif %}
+
+{% if vm.caps and vm.caps.can_create_campionato %}
+<button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#newTournamentModal">
+  <i class="fas fa-wand-magic-sparkles"></i>{{ _('Nuovo Campionato') }}
+</button>
+{% endif %}
+
+{% if current_user.is_player and not current_user.is_director and not current_user.is_admin %}
+  {% if vm.caps and vm.caps.can_create_match_proposal %}
+  <a class="btn btn-secondary btn-sm" href="{{ url_for('individual_match.create_proposal') }}">
+    <i class="fas fa-plus"></i>{{ _('Crea Match') }}
+  </a>
+  {% endif %}
+{% endif %}

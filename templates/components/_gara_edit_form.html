@@ -90,7 +90,7 @@
        infatti non legge il campo quando manca il campionato. #}
     {% if gara.campionato_id %}
     <div class="mb-3">
-      <label for="weight" class="form-label">{{ _('Peso nella classifica') }}</label>
+      <label for="weight" class="form-label" data-help="gara-peso">{{ _('Peso nella classifica') }}</label>
       <input type="number" class="form-control" id="weight" name="weight"
              min="1" max="10" step="1" value="{{ gara.weight or 1 }}">
       <div class="form-text">
@@ -181,11 +181,20 @@
     </div>
 
     {# L'esercizio della X (issue #267). Visibile solo con «X con esercizio»:
-       altrove e' una domanda senza oggetto, e il parser non legge il campo. #}
-    <div class="mb-3" id="x_challenge_section" data-bracket-hide
+       altrove e' una domanda senza oggetto, e il parser non legge il campo.
+
+       Il `required` NON si scrive qui: lo mette e lo toglie
+       `x_challenge_section.js` insieme al display. Su un campo nascosto
+       bloccherebbe il salvataggio senza poter dire dove, ed e' esattamente
+       cosi' che nessuna gara si e' potuta modificare per una settimana.
+       Niente `data-bracket-hide`, per la stessa ragione: la sezione ha un
+       padrone solo, altrimenti `bracket_options.js` le riscrive il display
+       ignorando la politica scelta. #}
+    <div class="mb-3" id="x_challenge_section"
+         data-x-challenge-section="odd_number_policy"
          {% if gara.odd_number_policy != 'bye_with_challenge' %}style="display:none"{% endif %}>
       <label for="x_challenge_id" class="form-label">{{ _('Esercizio per la X') }}</label>
-      <select class="form-select" id="x_challenge_id" name="x_challenge_id" required>
+      <select class="form-select" id="x_challenge_id" name="x_challenge_id">
         <option value="" disabled {% if not gara.x_challenge_id %}selected{% endif %}>{{ _("Scegli un esercizio…") }}</option>
         {% for esercizio in x_challenges or [] %}
         <option value="{{ esercizio.id }}" {% if gara.x_challenge_id == esercizio.id %}selected{% endif %}>{{ esercizio.get_display_name() }}</option>
@@ -454,17 +463,4 @@
     });
 </script>
 <script src="{{ url_for('static', filename='js/x-challenge-picker.js') }}"></script>
-<script>
-(function () {
-  // La domanda «quale esercizio per la X» esiste solo con quella politica:
-  // lasciarla visibile altrove chiederebbe una cosa che non ha effetto.
-  var policy = document.getElementById('odd_number_policy');
-  var sezione = document.getElementById('x_challenge_section');
-  if (!policy || !sezione) return;
-  function aggiorna() {
-    sezione.style.display = policy.value === 'bye_with_challenge' ? '' : 'none';
-  }
-  policy.addEventListener('change', aggiorna);
-  aggiorna();
-})();
-</script>
+<script src="{{ url_for('static', filename='js/x_challenge_section.js') }}"></script>

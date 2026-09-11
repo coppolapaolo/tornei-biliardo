@@ -4,6 +4,10 @@
 **Stato**: Partially Superseded (transport layer)
 **Decisori**: Paolo, Claude
 
+> **Nota (2026-09-02)**: l'archivio in memoria (`_events`) descritto qui è stato
+> sostituito dalla tabella `live_event`: i worker di produzione sono tre processi
+> e non condividono la memoria. Vedi **ADR-057**. Il bridge resta com'è.
+
 > **Nota (2026-02-03)**: Il transport layer SSE è stato sostituito con polling HTTP.
 > Vedi **ADR-021** per i dettagli. L'architettura Event Bridge rimane valida,
 > ma i browser ora usano polling invece di EventSource.

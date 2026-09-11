@@ -1,478 +1,163 @@
 {# templates/components/_separated_dashboard_content.html — Design System 7c
-   Dashboard con sezioni separate per match, gare e campionati.
-   Logica invariata rispetto alla versione Bootstrap: stessi vm.*, stessi
-   GaraStatus, stessi filtri (discipline_display, format_distance, date_local,
-   datetime_local, status_badge_class, status_text) e stessi url_for.
-   Cambiano solo struttura e classi (.c7-*). #}
 
-{# La X da sostituire con una prova sta **sopra** i match: e' l'unica cosa da
-   fare che nessun'altra schermata annuncia — il match con la X nasce gia'
+   Le gare e i campionati della dashboard, nella forma decisa disegnandoli
+   (canvas del 2026-08-30, «giocatore C»; canvas «Tessera» del 2026-09-10).
+
+   Le tessere sono in `_tessera_gara.html` e `_tessera_campionato.html`, e sono
+   le stesse della home dell'ospite: qui si decide solo **quali sezioni** ci
+   sono e in che ordine. Chi finisce in quale sezione lo decidono
+   `models/dashboard/gara_cards.py` e `campionato_cards.py`, non questo file:
+   qui non si decide chi vede cosa, si disegna.
+
+   L'ordine risponde a cinque domande, dalla più urgente: cosa devo fare io
+   («Le tue gare», «Sfide a due»), cosa sta succedendo («In diretta ora»),
+   dove posso entrare («Aperte, puoi iscriverti»), cosa arriva («In arrivo»),
+   com'è andata («Concluse»: l'ultima più l'ultimo mese, di tutti, con «Hai
+   giocato» e «Hai diretto» — il resto è nello storico). Senza un fatto mio,
+   una gara sta in una delle ultime quattro con la tessera dell'ospite. #}
+
+{% from "components/_tessera_gara.html" import tessera_gara with context %}
+{% from "components/_tessera_campionato.html" import tessera_campionato with context %}
+
+{# La X da sostituire con una prova sta **sopra** tutto: è l'unica cosa da
+   fare che nessun'altra schermata annuncia — il match con la X nasce già
    concluso e non compare fra le partite in corso (issue #221). #}
 {% include "components/_bye_challenges.html" %}
 
-{# ===========================================================
-   Sezione 0 — I tuoi match (priorita' massima)
-   =========================================================== #}
-{% if not current_user.is_admin and vm.current_matches %}
+{% macro _titolo(testo, conteggio, link_url=None, link_testo=None, dot=False) %}
+  <div class="d-flex align-items-center gap-3 mb-3">
+    {% if dot %}<span class="c7-live__dot"></span>{% endif %}
+    <h2 class="mb-0 flex-fill" style="font-size:17px">
+      {{ testo }}
+      {% if conteggio %}<span class="c7-num ms-1" style="font-size:13px;color:var(--c7-ink-muted)">{{ conteggio }}</span>{% endif %}
+    </h2>
+    {% if link_url %}<a href="{{ link_url }}" style="font-size:12px">{{ link_testo }}</a>{% endif %}
+  </div>
+{% endmacro %}
+
+{% set gare = vm.gare %}
+{% set campionati = vm.campionati_tessere %}
+{% set griglia = 'grid-template-columns:repeat(auto-fill,minmax(300px,1fr))' %}
+
+{# ── Le tue gare ────────────────────────────────────────────────────── #}
+{% if gare and gare.mie %}
 <section class="mb-4">
-  <h2 class="mb-3" style="font-size:17px">{{ _('I tuoi match') }}</h2>
-  <div class="c7-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
-    {% for match in vm.current_matches|sort(attribute='round_number') %}
-      {# Entrambi gli stati finali, non solo la chiusura del direttore: una
-         partita confermata dai due giocatori e' finita quanto l'altra.
-         Il ramo e' comunque difensivo — `vm.current_matches` porta qui solo
-         partite attive (le tre query in dashboard_service/section_builders
-         filtrano PENDING|PLAYING, «le completate vanno nello storico»), quindi
-         oggi non si vede. Scritto giusto perche' il giorno che quella query
-         cambiasse, meta' delle partite finite sparirebbe senza un errore. #}
-      {% set is_completed = MatchStatus.is_finished(match.status) %}
-      {% set is_trio = match.is_trio and match.trio_match %}
-      {% set is_winner = (current_user.id == match.winner_id) if is_completed else false %}
-      <div class="c7-card d-flex flex-column gap-3">
-
-        <div class="d-flex align-items-start gap-2">
-          <div class="flex-fill">
-            <div class="c7-kicker">{{ _('Turno') }} {{ match.round_number }}</div>
-            {# `match.gara` puo' essere None — gara soft-deleted (il
-               with_loader_criteria smaterializza la relazione) o gara_id NULL
-               (il FK e' ON DELETE SET NULL). Oggi la query della dashboard fa
-               un join *inner* su Gara e quei match non arrivano fin qui, ma la
-               difesa sta anche nel componente: e' cosi' per il gemello
-               `_user_recent_matches_table.html`, dove l'accesso non protetto
-               costo' un 500 (GlitchTip TORNEI-BILIARDO-5G). #}
-            <div class="mt-1" style="font-size:15px;font-weight:800;letter-spacing:-.02em">
-              {{ match.gara.display_name if match.gara else '—' }}
-            </div>
-            {% if match.gara and match.gara.campionato %}
-            <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">{{ match.gara.campionato.name }}</div>
-            {% endif %}
-          </div>
-          {% if is_completed %}
-            <span class="c7-state {{ 'c7-state--ok' if is_winner else 'c7-state--warn' }}">
-              {{ _('Vinto') if is_winner else _('Perso') }}
-            </span>
-          {% else %}
-            <span class="c7-state c7-state--err">{{ _('In corso') }}</span>
-          {% endif %}
-        </div>
-
-        {# Avversari #}
-        <div style="font-size:14px;font-weight:700">
-          {% if is_trio %}
-            <span class="c7-state c7-state--info me-2">{{ _('Trio') }}</span>
-            {{ match.trio_match.player1.username }} · {{ match.trio_match.player2.username }} · {{ match.trio_match.player3.username }}
-          {% else %}
-            vs {{ match.player1.username if match.player2_id == current_user.id else match.player2.username }}
-          {% endif %}
-        </div>
-
-        {# Punteggio #}
-        {% if is_trio %}
-          {% set trio = match.trio_match %}
-          {% if trio.player1_racks or trio.player2_racks or trio.player3_racks %}
-          <div class="d-flex align-items-center gap-2">
-            <span class="c7-num" style="font-size:20px;{{ 'color:var(--c7-ok)' if match.winner_id == trio.player1_id }}">{{ trio.player1_racks }}</span>
-            <span class="c7-sep">·</span>
-            <span class="c7-num" style="font-size:20px;{{ 'color:var(--c7-ok)' if match.winner_id == trio.player2_id }}">{{ trio.player2_racks }}</span>
-            <span class="c7-sep">·</span>
-            <span class="c7-num" style="font-size:20px;{{ 'color:var(--c7-ok)' if match.winner_id == trio.player3_id }}">{{ trio.player3_racks }}</span>
-          </div>
-          {% endif %}
-        {% elif match.player1_score or match.player2_score %}
-          <div class="c7-num" style="font-size:22px">
-            {{ match.player1_score }} — {{ match.player2_score }}
-          </div>
-        {% endif %}
-
-        <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
-          {{ (match.discipline or match.gara.discipline)|discipline_display }} · {{ match.distance_config|format_distance }}
-          <br>
-          {% if match.table_assignment %}
-            {{ _('Tavolo') }} {{ match.table_assignment }}
-          {% else %}
-            {{ _('In attesa del tavolo') }}
-          {% endif %}
-        </div>
-
-        {% if is_completed %}
-          <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="btn btn-secondary btn-sm w-100">
-            {{ _('Vedi risultato') }}
-          </a>
-        {% elif match.table_assignment %}
-          <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="btn btn-primary btn-sm w-100">
-            <i class="fas fa-play"></i>{{ _('Gioca') }}
-          </a>
-        {% else %}
-          <span class="btn btn-secondary btn-sm w-100 disabled">{{ _('In attesa del tavolo') }}</span>
-        {% endif %}
-      </div>
-    {% endfor %}
+  {{ _titolo(_('Le tue gare'), gare.mie|length, url_for('main.public_garas_list'), _('Vedi tutte')) }}
+  <div class="c7-grid" style="{{ griglia }}">
+    {% for card in gare.mie %}{{ tessera_gara(card) }}{% endfor %}
   </div>
 </section>
 {% endif %}
 
-{# Sezione Challenge (solo per player con challenge disponibili) #}
+{# La sfida a due risponde alla stessa domanda — cosa devo giocare — ma resta
+   una sezione a sé: non ha una gara dentro cui stare. #}
+{% include "components/_sfide_in_corso.html" %}
+
 {% if vm.available_challenges %}
 <section class="mb-4">
   {% include "components/_player_challenges_dashboard.html" %}
 </section>
 {% endif %}
 
-{# ===========================================================
-   Sezione 1 — Gare
-   =========================================================== #}
+{# ── In diretta ora ─────────────────────────────────────────────────── #}
+{% if gare and gare.in_diretta %}
 <section class="mb-4">
-  {% set active_garas = [] %}
-  {% set live_states = [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value, 'inscription_closed', GaraStatus.PLAYING.value, 'round_completed', GaraStatus.AWAITING_SSR.value, 'campionato_completed'] %}
-
-  {% for item in vm.unified_items %}
-    {% if item.type == 'gara' and item.entity.get_real_status() in live_states %}
-      {% set _void = active_garas.append(item) %}
-    {% elif item.type == 'campionato' %}
-      {% for gara in item.entity.gare %}
-        {% if gara.get_real_status() in live_states %}
-          {% set _void = active_garas.append({
-            'type': 'gara',
-            'id': gara.id,
-            'name': gara.display_name,
-            'entity': gara,
-            'next_prova_date': gara.date,
-            'campionato_name': item.entity.name,
-            'can_manage': item.can_manage,
-            'can_view_details': item.can_manage or current_user.is_admin
-          }) %}
-        {% endif %}
-      {% endfor %}
-    {% endif %}
-  {% endfor %}
-
-  {% set active_garas = active_garas|sort(attribute='next_prova_date') %}
-
-  {% set completed_tail_entities = vm.standalone_completed_recent or [] %}
-  {% set completed_tail = [] %}
-  {% for gara in completed_tail_entities %}
-    {% set _void = completed_tail.append({
-      'type': 'gara',
-      'id': gara.id,
-      'name': gara.display_name,
-      'entity': gara,
-      'next_prova_date': gara.date,
-      'campionato_name': none,
-      'can_manage': current_user.is_admin,
-      'can_view_details': true,
-    }) %}
-  {% endfor %}
-
-  {% set available_garas = active_garas + completed_tail %}
-
-  <div class="d-flex align-items-center gap-3 mb-3">
-    <h2 class="mb-0 flex-fill" style="font-size:17px">
-      {{ _("Gare") }}
-      <span class="c7-num ms-1" style="font-size:13px;color:var(--c7-ink-muted)">
-        {{ ngettext("%(count)s attiva", "%(count)s attive", active_garas|length, count=active_garas|length) }}
-      </span>
-    </h2>
-    {% if available_garas %}
-    <a href="{{ url_for('main.public_garas_list') }}" style="font-size:12px">{{ _("Vedi tutte") }}</a>
-    {% endif %}
+  {{ _titolo(_('In diretta ora'), gare.in_diretta|length, url_for('main.public_garas_list'), _('Tutte le gare'), dot=True) }}
+  <div class="c7-grid" style="{{ griglia }}">
+    {% for card in gare.in_diretta %}{{ tessera_gara(card) }}{% endfor %}
   </div>
+</section>
+{% endif %}
 
-  {% if available_garas %}
-    <div class="c7-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
-      {% for item in available_garas %}
-        {% set ns = namespace(user_inscribed=false, is_waitlist=false, waitlist_position=0) %}
-        {% if not current_user.is_admin %}
-          {% for ins in item.entity.inscriptions %}
-            {% if ins.user_id == current_user.id %}
-              {% set ns.user_inscribed = true %}
-              {% if ins.is_waitlist %}
-                {% set ns.is_waitlist = true %}
-                {% set ns.waitlist_position = ins.waitlist_position %}
-              {% endif %}
-            {% endif %}
-          {% endfor %}
-        {% endif %}
-        {% set real_status = item.entity.get_real_status() %}
+{# ── Aperte, puoi iscriverti ────────────────────────────────────────── #}
+{% if gare and gare.aperte %}
+<section class="mb-4">
+  {{ _titolo(_('Aperte, puoi iscriverti') if not current_user.is_admin else _('Iscrizioni aperte'), gare.aperte|length, url_for('main.public_garas_list'), _('Vedi tutte')) }}
+  <div class="c7-grid" style="{{ griglia }}">
+    {% for card in gare.aperte %}{{ tessera_gara(card) }}{% endfor %}
+  </div>
+</section>
+{% endif %}
 
-        <div class="c7-card d-flex flex-column gap-3">
+{# ── In arrivo ──────────────────────────────────────────────────────── #}
+{% if gare and gare.in_arrivo %}
+<section class="mb-4">
+  {{ _titolo(_('In arrivo'), gare.in_arrivo|length) }}
+  <div class="c7-grid" style="{{ griglia }}">
+    {% for card in gare.in_arrivo %}{{ tessera_gara(card) }}{% endfor %}
+  </div>
+</section>
+{% endif %}
 
-          <div class="d-flex align-items-start gap-2">
-            <div class="flex-fill">
-              <div style="font-size:15px;font-weight:800;letter-spacing:-.02em">{{ item.name }}</div>
-              <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
-                {% if item.campionato_name %}{{ item.campionato_name }}
-                {% elif item.entity.is_standalone %}{{ _('Gara singola') }}{% endif %}
-              </div>
-              <div class="mt-1" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
-                {{ item.entity.discipline|discipline_display if item.entity.discipline }}
-                {% if item.entity.distance %} · {{ item.entity.distance_config|format_distance }}{% endif %}
-              </div>
-            </div>
-
-            <div class="d-flex flex-column align-items-end gap-1">
-              {% if ns.user_inscribed and not ns.is_waitlist %}
-                <span class="c7-state c7-state--accent">{{ _('Iscritto') }}</span>
-              {% elif ns.is_waitlist %}
-                <span class="c7-state c7-state--warn">{{ _("Lista d'attesa") }} #{{ ns.waitlist_position }}</span>
-              {% endif %}
-
-              {% if real_status in [GaraStatus.COMPLETED.value, 'campionato_completed'] %}
-                <span class="c7-state c7-state--muted">{{ _('Conclusa') }}</span>
-              {% elif real_status == 'round_completed' %}
-                <span class="c7-state c7-state--ok">{{ _('Turno completato') }}</span>
-              {% elif real_status == GaraStatus.PLAYING.value %}
-                <span class="c7-state c7-state--err">{{ _('In corso') }}</span>
-              {% elif real_status == GaraStatus.AWAITING_SSR.value %}
-                <span class="c7-state c7-state--warn">{{ _('Spareggi') }}</span>
-              {% elif real_status == GaraStatus.SETUP.value %}
-                <span class="c7-state c7-state--muted">{{ _('In preparazione') }}</span>
-              {% elif not ns.user_inscribed and not ns.is_waitlist %}
-                {% if item.entity.is_full() %}
-                  <span class="c7-state c7-state--warn">{{ _('Massimo raggiunto') }}</span>
-                {% else %}
-                  <span class="c7-state c7-state--ok">{{ _('Iscrizioni aperte') }}</span>
-                {% endif %}
-              {% endif %}
-            </div>
-          </div>
-
-          <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
-            {% if item.next_prova_date %}
-            <span class="c7-num" style="font-size:12px;color:var(--c7-ink)">{{ item.next_prova_date|date_local }}</span>
-            {% endif %}
-            {% if item.entity.location %}<br>{{ item.entity.location }}{% endif %}
-            {% if item.entity.inscription_end and real_status == GaraStatus.INSCRIPTION.value %}
-            <br><span style="color:var(--c7-warn)">{{ _('Scade') }}: {{ item.entity.inscription_end|datetime_local }}</span>
-            {% endif %}
-          </div>
-
-          {# Riga informativa in base allo stato #}
-          {% if item.entity.status == GaraStatus.COMPLETED.value %}
-            {% set podium = item.entity.get_podium() %}
-            {% if podium %}
-            <div class="d-flex gap-2">
-              {% for pos in [0, 1, 2] %}
-                {% if podium|length > pos %}
-                <div class="flex-fill text-center" style="background:var(--c7-bg);border-radius:var(--c7-r-chip);padding:8px 6px">
-                  <div class="c7-num" style="font-size:11px;color:var(--c7-ink-muted)">{{ pos + 1 }}°</div>
-                  <div class="text-truncate mt-1" style="font-size:12px;font-weight:800">{{ podium[pos].username }}</div>
-                </div>
-                {% endif %}
-              {% endfor %}
-            </div>
-            {% endif %}
-          {% elif real_status == GaraStatus.PLAYING.value %}
-            <div class="d-flex align-items-center gap-2" style="font-size:12px;font-weight:700">
-              {% if item.entity.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
-                {% set total_matches = item.entity.matches|length %}
-                {% set comp_count = item.entity.matches|selectattr('status', 'equalto', MatchStatus.CLOSED_UNILATERALLY.value)|list|length %}
-                {% set val_count = item.entity.matches|selectattr('status', 'equalto', MatchStatus.CONFIRMED_BY_BOTH.value)|list|length %}
-                <span class="flex-fill">{{ _('Match') }}
-                  <span class="c7-num">{{ comp_count + val_count }}/{{ total_matches }}</span>
-                </span>
-              {% else %}
-                <span class="flex-fill">{{ _('Turno') }}
-                  <span class="c7-num">{{ [item.entity.current_round, 1]|max }}{% if item.entity.total_rounds %}/{{ item.entity.total_rounds }}{% endif %}</span>
-                </span>
-              {% endif %}
-              <span style="color:var(--c7-ink-muted)">
-                <span class="c7-num">{{ item.entity.get_active_inscriptions_count() }}</span> {{ _('giocatori') }}
-              </span>
-            </div>
-          {% else %}
-            <div class="d-flex align-items-center gap-2" style="font-size:12px;font-weight:700">
-              <span class="flex-fill" style="color:var(--c7-ink-muted)">
-                {% if item.entity.entry_fee and item.entity.entry_fee > 0 %}
-                  {{ _('Quota') }} <span class="c7-num">€{{ "%.2f"|format(item.entity.entry_fee) }}</span>
-                {% else %}
-                  {{ _('Gratuita') }}
-                {% endif %}
-              </span>
-              <span style="color:var(--c7-ink-muted)">
-                <span class="c7-num">{{ item.entity.get_active_inscriptions_count() }}{% if item.entity.max_participants %}/{{ item.entity.max_participants }}{% endif %}</span>
-                {% if item.entity.get_waitlist_count() > 0 %}
-                <span style="color:var(--c7-warn)"> +{{ item.entity.get_waitlist_count() }}</span>
-                {% endif %}
-              </span>
-            </div>
-          {% endif %}
-
-          {# Azioni #}
-          <div class="d-flex gap-2">
-            {% if real_status in [GaraStatus.COMPLETED.value, 'campionato_completed'] %}
-              <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" class="btn btn-secondary btn-sm flex-fill">
-                {{ _('Vedi risultati') }}
-              </a>
-
-            {% elif real_status == GaraStatus.PLAYING.value %}
-              {% if item.can_view_details %}
-              <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" class="btn btn-secondary btn-sm flex-fill">
-                {{ _('Dettagli') }}
-              </a>
-              {% endif %}
-              {% if not current_user.is_admin %}
-                {% set player_matches = [] %}
-                {% for match in vm.current_matches|default([]) %}
-                  {% set is_player_in_match = (match.player1_id == current_user.id or match.player2_id == current_user.id) %}
-                  {% if match.is_trio and match.trio_match %}
-                    {% set is_player_in_match = is_player_in_match or match.trio_match.player3_id == current_user.id %}
-                  {% endif %}
-                  {% if match.gara_id == item.id and is_player_in_match %}
-                    {% set _void = player_matches.append(match) %}
-                  {% endif %}
-                {% endfor %}
-                {% set sorted_matches = player_matches|sort(attribute='round_number') %}
-                {% if sorted_matches %}
-                <a href="{{ url_for('admin.match.match_detail', match_id=sorted_matches[0].id) }}" class="btn btn-primary btn-sm flex-fill">
-                  <i class="fas fa-play"></i>{{ _('Turno') }} {{ sorted_matches[0].round_number }}
-                </a>
-                {% endif %}
-              {% endif %}
-
-            {% elif real_status == GaraStatus.AWAITING_SSR.value %}
-              {% if item.can_manage %}
-              <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" class="btn btn-primary btn-sm flex-fill">
-                {{ _('Gestisci spareggi') }}
-              </a>
-              {% elif item.can_view_details %}
-              <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" class="btn btn-secondary btn-sm flex-fill">
-                {{ _('Dettagli') }}
-              </a>
-              {% endif %}
-
-            {% elif real_status == GaraStatus.SETUP.value %}
-              {% if item.can_manage %}
-              <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" class="btn btn-secondary btn-sm flex-fill">
-                {{ _('Gestisci') }}
-              </a>
-              {% endif %}
-
-            {% else %}
-              {% if item.can_view_details %}
-              <a href="{{ url_for('admin.competition.gara_detail', gara_id=item.id) }}" class="btn btn-secondary btn-sm flex-fill">
-                {{ _('Dettagli') }}
-              </a>
-              {% endif %}
-              {% if not current_user.is_admin and real_status == GaraStatus.INSCRIPTION.value %}
-                {% if not ns.user_inscribed %}
-                  <a href="#" onclick="inscribeToGara({{ item.id }}); return false;"
-                     class="btn {{ 'btn-warning' if item.entity.is_full() else 'btn-success' }} btn-sm flex-fill">
-                    {{ _("Lista d'attesa") if item.entity.is_full() else _('Iscriviti') }}
-                  </a>
-                {% else %}
-                  <a href="#" onclick="unsubscribeFromGara({{ item.id }}); return false;" class="btn btn-danger btn-sm flex-fill">
-                    {% if ns.is_waitlist %}{{ _("Esci dalla lista") }}{% else %}{{ _('Disiscriviti') }}{% endif %}
-                  </a>
-                {% endif %}
-              {% endif %}
-            {% endif %}
-          </div>
-        </div>
-      {% endfor %}
+{# Quando non c'è né una gara tua, né una in corso, né una a cui iscriverti:
+   un vuoto solo, non tre. #}
+{% if not gare or (not gare.mie and not gare.in_diretta and not gare.aperte and not gare.in_arrivo) %}
+<section class="mb-4">
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-bullseye"></i></div>
+    <div class="c7-empty__title">{{ _('Nessuna gara per te, per ora') }}</div>
+    <p class="c7-empty__text">{{ _('Quando un direttore apre le iscrizioni a una gara la trovi qui.') }}</p>
+    <div class="c7-empty__actions">
+      <a href="{{ url_for('main.public_garas_list') }}" class="btn btn-secondary">{{ _('Guarda tutte le gare') }}</a>
     </div>
+  </div>
+</section>
+{% endif %}
 
-    {% if (vm.standalone_completed_total or 0) > (completed_tail|length) %}
-    <div class="text-center mt-3" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
-      {{ _("Mostrati %(shown)s di %(total)s gare completate", shown=completed_tail|length, total=vm.standalone_completed_total) }}
-    </div>
-    {% endif %}
+{# ── Concluse: l'ultima più l'ultimo mese, di tutti ─────────────────── #}
+{% if gare and gare.concluse %}
+<section class="mb-4">
+  {{ _titolo(_('Concluse'), gare.concluse|length, url_for('main.public_garas_list'), _('Storico')) }}
+  <div class="c7-grid" style="{{ griglia }}">
+    {% for card in gare.concluse %}{{ tessera_gara(card) }}{% endfor %}
+  </div>
+  {% set altre = gare.concluse_totali - gare.concluse|length %}
+  {% if altre > 0 %}
+  <div class="text-center mt-3" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+    {{ ngettext("L'ultima e quelle dell'ultimo mese: un'altra è nello storico.",
+                "L'ultima e quelle dell'ultimo mese: le altre %(num)s sono nello storico.",
+                altre, num=altre) }}
+  </div>
+  {% endif %}
+</section>
+{% endif %}
+
+{# ── Campionati ─────────────────────────────────────────────────────── #}
+<section class="mb-4">
+  {% set attivi = campionati.attivi if campionati else [] %}
+  {{ _titolo(_('Campionati'),
+             ngettext('%(count)s attivo', '%(count)s attivi', attivi|length, count=attivi|length),
+             url_for('main.public_campionatos_list') if attivi else None, _('Vedi tutti')) }}
+  {% if attivi %}
+  <div class="c7-grid" style="{{ griglia }}">
+    {% for card in attivi %}{{ tessera_campionato(card) }}{% endfor %}
+  </div>
   {% else %}
-    <div class="c7-empty">
-      <div class="c7-empty__ico"><i class="fas fa-bullseye"></i></div>
-      <div class="c7-empty__title">{{ _('Nessuna gara aperta') }}</div>
-      <p class="c7-empty__text">{{ _("Quando un direttore apre le iscrizioni la trovi qui.") }}</p>
-    </div>
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-trophy"></i></div>
+    <div class="c7-empty__title">{{ _('Nessun campionato') }}</div>
+    <p class="c7-empty__text">{{ _('Non ci sono campionati in corso al momento.') }}</p>
+  </div>
   {% endif %}
 </section>
 
-{# ===========================================================
-   Sezione 2 — Campionati
-   =========================================================== #}
+{% if campionati and campionati.conclusi %}
 <section class="mb-4">
-  {% set active_items = vm.campionati_active_items or [] %}
-  {% set completed_shown = vm.campionati_completed_shown_items or [] %}
-  {% set campionati = active_items + completed_shown %}
-
-  <div class="d-flex align-items-center gap-3 mb-3">
-    <h2 class="mb-0 flex-fill" style="font-size:17px">
-      {{ _("Campionati") }}
-      <span class="c7-num ms-1" style="font-size:13px;color:var(--c7-ink-muted)">
-        {{ ngettext("%(count)s attivo", "%(count)s attivi", active_items|length, count=active_items|length) }}
-      </span>
-    </h2>
-    {% if campionati %}
-    <a href="{{ url_for('main.public_campionatos_list') }}" style="font-size:12px">{{ _("Vedi tutti") }}</a>
-    {% endif %}
+  {{ _titolo(_('Campionati conclusi'), campionati.conclusi|length,
+             url_for('main.public_campionatos_list', status='completati'), _('Storico')) }}
+  <div class="c7-grid" style="{{ griglia }}">
+    {% for card in campionati.conclusi %}{{ tessera_campionato(card) }}{% endfor %}
   </div>
-
-  {% if campionati %}
-    <div class="c7-grid" style="grid-template-columns:repeat(auto-fill,minmax(300px,1fr))">
-      {% for item in campionati %}
-      <div class="c7-card d-flex flex-column gap-3{{ ' c7-card--locked' if not item.entity.is_active }}">
-
-        <div class="d-flex align-items-start gap-2">
-          <div class="flex-fill">
-            <div style="font-size:15px;font-weight:800;letter-spacing:-.02em">{{ item.name }}</div>
-            <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
-              {{ item.entity.campionato_type }} ·
-              {{ ngettext('%(num)s gara', '%(num)s gare', item.entity.gare|length, num=item.entity.gare|length) }}
-            </div>
-          </div>
-          <span class="badge {{ item.entity | status_badge_class }}">{{ item.entity | status_text }}</span>
-        </div>
-
-        <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
-          {% if item.next_prova_date %}
-            {{ _("Prossima") }}: <span class="c7-num" style="font-size:12px;color:var(--c7-ink)">{{ item.next_prova_date|date_local }}</span>
-          {% else %}
-            {{ _("Nessuna gara programmata") }}
-          {% endif %}
-        </div>
-
-        {% if item.entity.without_x or item.entity.final_playoffs or item.entity.challenge_mode %}
-        <div class="d-flex gap-2 flex-wrap">
-          {% if item.entity.without_x %}<span class="c7-state c7-state--info">{{ _("Senza X") }}</span>{% endif %}
-          {% if item.entity.final_playoffs %}<span class="c7-state c7-state--ok">{{ _("Playoff") }}</span>{% endif %}
-          {% if item.entity.challenge_mode %}<span class="c7-state c7-state--warn">{{ _("Esercizi") }}</span>{% endif %}
-        </div>
-        {% endif %}
-
-        <div class="d-flex gap-2">
-          {% if item.can_manage %}
-            <a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=item.id) }}" class="btn btn-secondary btn-sm flex-fill">
-              {{ _("Gestione") }}
-            </a>
-            {% if item.entity.can_be_modified() %}
-            <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=item.id) }}"
-               class="c7-iconbtn" style="width:40px;height:40px" aria-label="{{ _('Modifica') }}">
-              <i class="fas fa-pen"></i>
-            </a>
-            {% endif %}
-          {% elif item.can_view_details %}
-            <a href="{{ url_for('main.campionato_detail_public', campionato_id=item.id) }}" class="btn btn-secondary btn-sm flex-fill">
-              {{ _("Dettagli") }}
-            </a>
-          {% else %}
-            <span class="btn btn-secondary btn-sm flex-fill disabled">{{ _("Classifica") }}</span>
-          {% endif %}
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-
-    {% if (vm.campionati_completed_total or 0) > (completed_shown|length) %}
-    <div class="text-center mt-3" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
-      {{ _("Mostrati %(shown)s di %(total)s campionati completati", shown=completed_shown|length, total=vm.campionati_completed_total) }}
-    </div>
-    {% endif %}
-  {% else %}
-    <div class="c7-empty">
-      <div class="c7-empty__ico"><i class="fas fa-trophy"></i></div>
-      <div class="c7-empty__title">{{ _('Nessun campionato') }}</div>
-      <p class="c7-empty__text">{{ _("Non ci sono campionati disponibili al momento.") }}</p>
-    </div>
+  {% set altri = campionati.conclusi_totali - campionati.conclusi|length %}
+  {% if altri > 0 %}
+  <div class="text-center mt-3" style="font-size:12px;font-weight:600;color:var(--c7-ink-muted)">
+    {{ ngettext("L'ultimo e quelli dell'ultimo mese: un altro è nello storico.",
+                "L'ultimo e quelli dell'ultimo mese: gli altri %(num)s sono nello storico.",
+                altri, num=altri) }}
+  </div>
   {% endif %}
 </section>
+{% endif %}
 
 {# Iscrizione e disiscrizione: invariate. #}
 <script>

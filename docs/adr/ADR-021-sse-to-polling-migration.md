@@ -4,6 +4,11 @@
 **Stato**: Accepted
 **Decisori**: Paolo, Claude
 
+> **Nota (2026-09-02)**: il trasporto a polling resta. È cambiato ciò che sta fra
+> un poll e l'altro: l'archivio in memoria non reggeva i tre processi uWSGI, il
+> cursore non è più un timestamp, e gli stream SSE «deprecati» qui sotto sono
+> stati rimossi. Vedi **ADR-057**.
+
 ## Contesto
 
 L'applicazione usava Server-Sent Events (SSE) per aggiornamenti real-time (vedi ADR-006). Tuttavia, su PythonAnywhere con uWSGI sync workers, SSE causava gravi problemi di performance.

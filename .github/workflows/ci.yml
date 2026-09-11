@@ -19,24 +19,65 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+        with:
+          # Serve la storia per confrontare la PR con la sua base (vedi sotto).
+          fetch-depth: 0
+
+      # Una PR di sola documentazione non ha niente da provare, ma questo job
+      # e' un check obbligatorio della protezione di `main`: se non partisse,
+      # bloccherebbe il merge invece di sbloccarlo. Quindi parte sempre, e
+      # decide da solo se ha qualcosa da fare. «Sola documentazione» e'
+      # stretto di proposito: Markdown, testo, e `docs/` senza sorgenti
+      # Python. Un `.py` toccato per un docstring, un template, un YAML
+      # della guida (letto e validato dai test) contano come codice.
+      # Sul push su `main` gira sempre tutto: e' quello che il deploy aspetta.
+      - name: Decide what to run
+        id: scope
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --quiet origin "$BASE_REF"
+          CHANGED=$(git diff --name-only "origin/$BASE_REF...HEAD")
+          echo "File cambiati rispetto a $BASE_REF:"
+          echo "$CHANGED" | sed 's/^/  /'
+          if [ -z "$CHANGED" ]; then
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # Resta cio' che non e' documentazione: ne' Markdown o testo, ne'
+          # un file sotto docs/ che non sia un sorgente Python.
+          NON_DOCS=$(echo "$CHANGED" | awk '!/\.(md|txt)$/ && !(/^docs\// && !/\.py$/) && !/^LICENSE$/')
+          if [ -z "$NON_DOCS" ]; then
+            echo "Solo documentazione: test e type check saltati."
+            echo "docs_only=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "Codice toccato, si prova tutto:"
+            echo "$NON_DOCS" | sed 's/^/  /'
+            echo "docs_only=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Set up Python
+        if: steps.scope.outputs.docs_only != 'true'
         uses: actions/setup-python@v6
         with:
           python-version: "3.11"
           cache: "pip"
 
       - name: Install dependencies
+        if: steps.scope.outputs.docs_only != 'true'
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest pytest-xdist pyright
 
       - name: Run unit tests
+        if: steps.scope.outputs.docs_only != 'true'
         run: |
           PYTHONPATH=. pytest tests/new/unit/ -n auto --tb=short
 
       - name: Run type check
+        if: steps.scope.outputs.docs_only != 'true'
         run: pyright
 
   pr-title:

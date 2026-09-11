@@ -79,6 +79,12 @@ resta bloccata per sempre (le PR impilate vanno riportate su `main`); e sulle PR
 proposito — è **normale**, non va segnalato come problema né richiesto come
 status check. (`pr-title`, invece, sulle PR gira eccome: vedi il punto 4.)
 
+`test-and-typecheck` parte sempre, ma su una PR di **sola documentazione**
+(Markdown, testo, `docs/` senza sorgenti Python) salta test e pyright e chiude
+in pochi secondi: il passo «Decide what to run» lo scrive nel log. Un `.py`
+toccato per un docstring, un template o uno YAML della guida contano come
+codice, e allora dura i soliti 4-5 minuti.
+
 > ⚠️ **3. Non rimettere `PRAGMA journal_mode=WAL`** in `models/base.py`, nemmeno
 > condizionato a `FLASK_ENV`: su NFS la memoria condivisa del WAL non è coerente
 > fra processi e corrompe il DB (due incidenti `database disk image is
@@ -556,9 +562,11 @@ grafo anti-rematch. Non reimplementare algoritmi su grafi — usa `nx`, è già 
 | Stampare `tally.run_outs` come «runout totali» | Nel motore TPA i due contatori sono **disgiunti** (`is_run_out = not is_break_and_run and …`): il totale è `run_outs + break_and_runs`. Nel profilo invece runout è l'**insieme** e break and run un sottoinsieme — come parlano i giocatori. Chi confonde i due mondi mostra 17 invece di 26 (`models/user/runout_stats.py`) |
 | Dedurre chi apre dal solo vincitore dell'acchito | Sono **due** fatti: «Regole generali pool» 1.2 dice che chi vince l'acchito **sceglie chi** apre, e può mandare al tavolo l'avversario. Per questo `lag_winner_id` e `first_break_player_id` sono due colonne |
 | `first_break_player_id` NULL trattato come «apre il primo giocatore» | Dipende dalla regola: con `first_player` sì, con `lag` NULL vuol dire **non si sa ancora** — ed è il segnale che fa comparire le due domande sul tabellone (`breaker_of_first_rack`). Un ripiego lì cancellerebbe la domanda |
+| Contare su un `if` applicativo per l'unicità di una riga | `UserMergeService` decide **dallo schema** se spostare una colonna riga per riga o in blocco (`_is_constrained`): un'unicità che vive solo in Python — com'era «un giocatore, un'iscrizione per gara», dentro `inscribe_user` — gli è invisibile, e l'`UPDATE` di massa la viola in silenzio. È così che unendo due account il giocatore restava iscritto **due volte** alla stessa gara, una con la categoria del direttore e una senza (produzione, gara 39, settembre 2026). Se una tabella ha un'unicità logica, si dichiara con un `UniqueConstraint`. E il vincolo da solo non basta: la dedup generica tiene la riga del **destinatario**, quindi dove i dati vanno conservati serve una fusione esplicita (`models/competition/inscription_dedup.py`) |
 | `sess["_user_id"] = str(user.id)` in un test | `user.get_id()` (ADR-055): l'id di sessione porta un'impronta della credenziale, e l'id nudo produce un client **non autenticato** — i test falliscono con 302 verso il login senza dire perché |
 | Verificare in un test che una sessione sia caduta, senza ripulire `g` | In questa suite `g` **non è per-richiesta**: Flask-Login trova l'utente già in cache e non richiama mai `load_user`, quindi il test passa sempre — anche col controllo rimosso (verificato sabotandolo). Cancella `g._login_user` prima della verifica, come fa `_simula_richiesta_nuova()` in `test_recupero_password.py` |
 | Chiudere le righe di `user_session` per «buttare fuori» qualcuno | `user_session` è **analitica**: misura le permanenze, non autentica. Il cookie non la consulta, quindi chiuderne le righe cambia le statistiche e lascia l'intruso dov'è (ADR-055) |
+| Tenere in **memoria del processo** un dato che un'altra richiesta deve rileggere (dizionario a livello di modulo, cache «globale») | In produzione la web app sono **tre processi** uWSGI (pid diversi nel server log): ogni processo ha la sua copia e le richieste si distribuiscono a caso. L'archivio degli eventi live ha vissuto così per sette mesi facendone arrivare uno su tre, e in sviluppo — un processo solo — non si vedeva mai. Ciò che deve sopravvivere alla richiesta va nel DB (ADR-057, `live_event`); una cache in memoria è ammessa solo se perderla costa una query, non un dato |
 
 ---
 
@@ -601,6 +609,8 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [054](docs/adr/ADR-054-version-from-pull-request-titles.md) | la versione nasce dai titoli delle PR (Conventional Commits + release-please); `CHANGELOG.md` a mano, `docs/RELEASES.md` generato |
 | [055](docs/adr/ADR-055-session-bound-to-credential.md) | la sessione porta un'impronta della credenziale: cambiare password invalida le sessioni aperte |
 | [056](docs/adr/ADR-056-apertura-e-runout-sul-segnapunti.md) | acchito, regola di apertura ereditata campionato→gara, runout marcato sul trattino |
+| [057](docs/adr/ADR-057-live-events-shared-across-workers.md) | aggiornamenti live su tabella `live_event` condivisa fra i worker; cursore a id; evento atomico col fatto |
+| [058](docs/adr/ADR-058-competizione-di-prova.md) | competizione di prova: invisibile per default (filtro di sessione con opt-in), giocatori fittizi cancellati fisicamente, ELO e gamification fuori |
 
 ---
 

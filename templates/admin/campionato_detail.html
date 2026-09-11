@@ -24,7 +24,7 @@
   {# La locandina e il link che tutte le gare ereditano (issue #235). Non e'
      dentro «Modifica» perche' quella e' bloccata a campionato avviato,
      mentre una grafica si aggiunge anche dopo. #}
-  {% if feature_visible('admin.campionato.campionato_vetrina') %}
+  {% if feature_visible('admin.campionato.campionato_vetrina') and not campionato.is_prova %}
   <a href="{{ url_for('admin.campionato.campionato_vetrina', campionato_id=campionato.id) }}"
      class="btn btn-secondary btn-sm">
     <i class="fas fa-rectangle-ad"></i>&nbsp;{{ _("Vetrina") }}
@@ -32,11 +32,11 @@
   {% endif %}
   {% if not campionato.terminated_at %}
   {% if campionato.is_ready_for_playoff_transition() %}
-  <button type="button" class="btn btn-success btn-sm" id="btn-terminate-campionato">
+  <button type="button" class="btn btn-success btn-sm" id="btn-terminate-campionato" data-help="campionato-termina">
     <i class="fas fa-trophy"></i>&nbsp;{{ _("Passa ai playoff") }}
   </button>
   {% else %}
-  <button type="button" class="btn btn-danger btn-sm" id="btn-terminate-campionato">
+  <button type="button" class="btn btn-danger btn-sm" id="btn-terminate-campionato" data-help="campionato-termina">
     <i class="fas fa-stop"></i>&nbsp;{{ _("Termina") }}
   </button>
   {% endif %}
@@ -45,6 +45,13 @@
 {% endblock %}
 
 {% block content %}
+{# Competizione di prova (ADR-058): il banner sta in cima, come sulla gara. #}
+{% if campionato.is_prova %}
+<div class="mb-4">
+  {% with prova_radice=campionato %}{% include "components/_prova_banner.html" %}{% endwith %}
+</div>
+{% endif %}
+
 {# Su mobile le stesse azioni, in colonna: in testata non ci starebbero. #}
 <div class="d-lg-none c7-stack mb-4">
   {% if campionato.can_be_modified() %}
@@ -53,7 +60,7 @@
     <i class="fas fa-pencil"></i>&nbsp;{{ _("Modifica campionato") }}
   </a>
   {% endif %}
-  {% if feature_visible('admin.campionato.campionato_vetrina') %}
+  {% if feature_visible('admin.campionato.campionato_vetrina') and not campionato.is_prova %}
   <a href="{{ url_for('admin.campionato.campionato_vetrina', campionato_id=campionato.id) }}"
      class="btn btn-secondary w-100">
     <i class="fas fa-rectangle-ad"></i>&nbsp;{{ _("Vetrina del campionato") }}
@@ -61,11 +68,11 @@
   {% endif %}
   {% if not campionato.terminated_at %}
   {% if campionato.is_ready_for_playoff_transition() %}
-  <button type="button" class="btn btn-success w-100" id="btn-terminate-campionato-mobile">
+  <button type="button" class="btn btn-success w-100" id="btn-terminate-campionato-mobile" data-help="campionato-termina">
     <i class="fas fa-trophy"></i>&nbsp;{{ _("Passa alla fase playoff") }}
   </button>
   {% else %}
-  <button type="button" class="btn btn-danger w-100" id="btn-terminate-campionato-mobile">
+  <button type="button" class="btn btn-danger w-100" id="btn-terminate-campionato-mobile" data-help="campionato-termina">
     <i class="fas fa-stop"></i>&nbsp;{{ _("Termina campionato") }}
   </button>
   {% endif %}
@@ -227,7 +234,7 @@
             {# Avvia Playoff button #}
             <form method="POST" action='{{ url_for("admin.campionato.start_playoff", campionato_id=campionato.id) }}'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-success"
+                <button type="submit" class="btn btn-success" data-help="campionato-avvia-playoff"
                         onclick='return confirm({{ _("Avviare i playoff? Le configurazioni verranno bloccate e i giocatori qualificati riceveranno un invito.")|tojson }})'>
                     <i class="fas fa-play"></i> {{ _("Avvia Playoff") }}
                 </button>
@@ -238,17 +245,33 @@
             {% for cs in playoff_status.configurations %}
                 {% set cfg = cs.configuration %}
                 <div class="card mb-3">
-                    <div class="card-header">
+                    <div class="card-header d-flex align-items-center flex-wrap gap-2">
+                        <div class="flex-fill">
                         <strong>{{ cfg.name }}</strong>
                         <span class="badge bg-info ms-2">{{ cs.confirmed }} / {{ cfg.max_participants }} {{ _("confermati") }}</span>
                         {% if cs.pending > 0 %}
                         <span class="badge bg-warning ms-2">{{ cs.pending }} {{ _("in attesa") }}</span>
+                        {% endif %}
+                        </div>
+                        {# Competizione di prova (ADR-058): i fittizi non
+                           rispondono da soli. Il direttore risponde per
+                           ciascuno qui sotto, o accetta tutti insieme. #}
+                        {% if campionato.is_prova and cs.pending > 0 and feature_visible('admin.campionato.prova_accetta_inviti') %}
+                        <form method="POST" action='{{ url_for("admin.campionato.prova_accetta_inviti", campionato_id=campionato.id) }}'>
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button type="submit" class="btn btn-sm btn-success" data-help="playoff-accetta-tutti">
+                                <i class="fas fa-check-double"></i> {{ _("Accetta tutti i rimanenti") }}
+                            </button>
+                        </form>
                         {% endif %}
                     </div>
                     <div class="card-body">
                         {# Qualifications table #}
                         {% set quals = cfg.qualifications %}
                         {% if quals %}
+                        {# Sotto i 992px la tabella e' piu' larga dello schermo:
+                           scorre dentro il suo contenitore, la pagina no. #}
+                        <div class="c7-table-wrap">
                         <table class="table table-sm">
                             <thead>
                                 <tr>
@@ -283,13 +306,32 @@
                                         {# Rispondere per conto del giocatore: capita che la
                                            risposta arrivi a voce, in sala. Senza questa strada
                                            l'invito resterebbe appeso fino alla scadenza. #}
-                                        {% if q.status.value == 'pending' %}
+                                        {% if q.status.value == 'pending' and campionato.is_prova and q.user and q.user.is_fittizio and feature_visible('admin.campionato.prova_rispondi_invito') %}
+                                        {# Nella prova risponde «il fittizio»: stessi
+                                           servizi della route del giocatore, e sul
+                                           rifiuto scatta il primo degli esclusi. #}
+                                        <form method="POST" class="d-inline"
+                                              action='{{ url_for("admin.campionato.prova_rispondi_invito", campionato_id=campionato.id, qualification_id=q.id, risposta="accetta") }}'>
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-sm btn-success" data-help="playoff-risposta-invito">
+                                                <i class="fas fa-check"></i> {{ _("Accetta") }}
+                                            </button>
+                                        </form>
+                                        <form method="POST" class="d-inline"
+                                              action='{{ url_for("admin.campionato.prova_rispondi_invito", campionato_id=campionato.id, qualification_id=q.id, risposta="rifiuta") }}'>
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button type="submit" class="btn btn-sm btn-secondary"
+                                                    onclick='return confirm({{ _("Rifiutare il posto ai playoff? L'invito passera' al primo degli esclusi.")|tojson }})'>
+                                                <i class="fas fa-times"></i> {{ _("Rifiuta") }}
+                                            </button>
+                                        </form>
+                                        {% elif q.status.value == 'pending' %}
                                         <form method="POST" class="d-inline"
                                               action='{{ url_for("admin.campionato.playoff_respond_for_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                             <input type="hidden" name="qualification_id" value="{{ q.id }}">
                                             <input type="hidden" name="answer" value="accept">
-                                            <button type="submit" class="btn btn-sm btn-outline-success"
+                                            <button type="submit" class="btn btn-sm btn-outline-success" data-help="playoff-risposta-invito"
                                                     title='{{ _("Conferma per conto del giocatore") }}'
                                                     onclick='return confirm({{ _("Confermare la partecipazione per conto di questo giocatore?")|tojson }})'>
                                                 <i class="fas fa-check"></i>
@@ -323,6 +365,7 @@
                             {% endfor %}
                             </tbody>
                         </table>
+                        </div>
                         {% endif %}
 
                         {# Add player form (only if gara not yet created) #}

@@ -218,6 +218,9 @@ class TournamentStatisticsService:
                 if user_id not in player_totals:
                     player_totals[user_id] = {
                         "username": classification.user.username,
+                        # L'id accanto al nome: chi legge la classifica per
+                        # trovare la propria riga confronta l'id, non il nome.
+                        "user_id": user_id,
                         "total_matches_won": 0,
                         "total_racks_won": 0,
                         "total_rack_difference": 0,
@@ -395,6 +398,30 @@ class TournamentStatisticsService:
 # -----------------------------
 
 
+def _raccoglie_iscrizioni(gara: Any) -> bool:
+    """Se su questa gara ci si può iscrivere **adesso**.
+
+    `status == INSCRIPTION` dice che la gara è nella fase delle iscrizioni, non
+    che la finestra sia aperta: una con l'apertura programmata per la settimana
+    prossima ha quello stato e non accetta nessuno. La distinzione la fa già
+    `get_real_status()`, che in quel caso risponde `inscription_not_yet_open`
+    (ed è la stessa che il badge della gara mostra come «Iscrizioni
+    programmate»): la si chiede a lui invece di riscrivere qui un terzo
+    confronto sulle date.
+
+    Il controllo sullo status viene prima della chiamata per due ragioni: sulle
+    gare PLAYING il resolver scorre `gara.matches` — lazy, quindi una query per
+    gara sulla homepage anonima — e per tutte le altre la risposta è comunque
+    no.
+    """
+    if getattr(gara, "status", None) != GaraStatus.INSCRIPTION.value:
+        return False
+    reale = getattr(gara, "get_real_status", None)
+    if not callable(reale):
+        return True
+    return reale() == GaraStatus.INSCRIPTION.value
+
+
 def compute_campionato_status(campionato: Campionato) -> str:
     """Calcola lo stato derivato del campionato in base agli stati delle Gare.
 
@@ -408,9 +435,13 @@ def compute_campionato_status(campionato: Campionato) -> str:
       giocare, altrimenti COMPLETED
     - Se non ci sono Gare → SETUP
     - Se almeno una Gara è in PLAYING → IN_PROGRESS
-    - Altrimenti, se almeno una Gara è in INSCRIPTION → REGISTRATION_OPEN
+    - Altrimenti, se almeno una Gara raccoglie iscrizioni **adesso** →
+      REGISTRATION_OPEN (`status == INSCRIPTION` non basta: la finestra può
+      aprirsi la settimana prossima — vedi `_raccoglie_iscrizioni`)
     - Altrimenti, se tutte le gare previste esistono e sono COMPLETED →
       AWAITING_CLOSURE (finite le gare, non chiuso il campionato)
+    - Altrimenti, se almeno una Gara è COMPLETED → IN_PROGRESS: il campionato è
+      cominciato, la prossima gara non ha ancora aperto
     - In tutti gli altri casi → SETUP
 
     Ritorna la stringa dello stato (compat con UI/template esistenti).
@@ -450,7 +481,7 @@ def compute_campionato_status(campionato: Campionato) -> str:
 
     if any(v == GaraStatus.PLAYING.value for v in values):
         return TournamentStatus.IN_PROGRESS.value
-    if any(v == GaraStatus.INSCRIPTION.value for v in values):
+    if any(_raccoglie_iscrizioni(g) for g in gare):
         return TournamentStatus.REGISTRATION_OPEN.value
     if all(v == GaraStatus.COMPLETED.value for v in values):
         # "Tutte le gare esistenti sono completate" non basta: nel mezzo di un
@@ -469,6 +500,15 @@ def compute_campionato_status(campionato: Campionato) -> str:
         # il campionato resta fra gli attivi della dashboard, che è dove il
         # direttore lo ritrova.
         return TournamentStatus.AWAITING_CLOSURE.value
+
+    if any(v == GaraStatus.COMPLETED.value for v in values):
+        # Qualche gara è stata giocata e altre restano, ma nessuna raccoglie
+        # iscrizioni adesso — tipicamente la prossima ha l'apertura programmata
+        # fra qualche giorno. Non è REGISTRATION_OPEN (non si iscrive nessuno) e
+        # non è SETUP: metà campionato è già alle spalle. È IN_PROGRESS, che è
+        # anche ciò che lo tiene fra i «Campionati in corso» della homepage
+        # invece di spedirlo fra quelli «in preparazione».
+        return TournamentStatus.IN_PROGRESS.value
 
     return TournamentStatus.SETUP.value
 

@@ -74,6 +74,16 @@ class Gara(SoftDeleteMixin, db.Model):
     # Soft delete reason (optional)
     deleted_reason = db.Column(db.String(255), nullable=True)
 
+    # Competizione di prova (ADR-058): la stessa gara con un flag, visibile
+    # solo a chi la dirige (filtro di sessione in `models/prova/visibility.py`),
+    # popolata da giocatori fittizi, fuori da ELO e gamification. Le gare di
+    # un campionato di prova lo ereditano alla creazione, come la regola di
+    # apertura. `prova_expires_at` vive solo sulla radice — la gara singola —
+    # e per le gare di campionato resta NULL: la scadenza e' del campionato.
+    is_prova = db.Column(db.Boolean, nullable=False, default=False, index=True)
+    prova_expires_at = db.Column(db.DateTime, nullable=True)
+    prova_avviso_inviato_at = db.Column(db.DateTime, nullable=True)
+
     # FK nullable per supportare standalone competitions
     # RESOLVED: See docs/_archive/2025-12-architectural-decisions-pre-adr.md ADR-002.
     # Decision: Keep FK in Gara (natural direction, efficient queries).
@@ -989,6 +999,18 @@ class Inscription(db.Model):
     """Player registration to a competition round."""
 
     __tablename__ = "inscription"
+
+    # Un giocatore, un'iscrizione per gara. La regola c'è da sempre, ma stava
+    # solo in `InscriptionService.inscribe_user` (`if existing: return
+    # existing`) — cioè in un `if` di Python, invisibile a chi scrive in SQL.
+    # L'unione di due account riassegnava le iscrizioni con un UPDATE di massa
+    # e sulle gare comuni lasciava il giocatore iscritto due volte, una con la
+    # categoria e una senza. Il vincolo è anche ciò che insegna la regola alla
+    # dedup del merge, che deduce l'unicità logica dallo schema
+    # (`UserMergeService._is_constrained`).
+    __table_args__ = (
+        db.UniqueConstraint("gara_id", "user_id", name="uq_inscription_gara_user"),
+    )
 
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)

@@ -184,7 +184,7 @@
 
     <!-- Reset Match - Always available for completed matches or matches with scores -->
     {% if reset_visible %}
-    <button class="btn btn-danger" onclick="{% if match.is_trio and match.trio_match %}resetTrio({{ match.trio_match.id }}){% else %}resetMatch({{ match.id }}){% endif %}">
+    <button class="btn btn-danger" data-help="gara-reset-partita" onclick="{% if match.is_trio and match.trio_match %}resetTrio({{ match.trio_match.id }}){% else %}resetMatch({{ match.id }}){% endif %}">
         <i class="fas fa-undo"></i> {{ _('Reset Partita') }}
     </button>
     {% endif %}

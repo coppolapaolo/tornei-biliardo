@@ -14,7 +14,7 @@
   <button type="button" class="c7-vtabs__tab{{ ' is-active' if view == gara_view_active }}"
           role="tab" aria-controls="garaViews"
           aria-selected="{{ 'true' if view == gara_view_active else 'false' }}"
-          data-c7-tab-btn="{{ view }}">{{ label }}</button>
+          data-c7-tab-btn="{{ view }}"{% if view == 'turni' %} data-help="gara-turni"{% elif view == 'classifica' %} data-help="gara-classifica"{% endif %}>{{ label }}</button>
   {% endfor %}
 </nav>
 

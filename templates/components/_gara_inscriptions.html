@@ -18,21 +18,71 @@
   </div>
   {% endif %}
 
-  {# Aggiunta manuale (solo direttore/admin in fase iscrizione) #}
-  {% if available_users and available_users|length > 0 %}
+  {# Aggiunta manuale (solo direttore/admin in fase iscrizione).
+
+     Chi dirige spesso conosce la persona per nome e cognome, non per username:
+     la tendina mostra entrambi e il campo qui sopra cerca in tutti e tre i
+     campi (issue #156, `static/js/iscritti_ricerca.js`). La ricerca è nel
+     browser perché nome e cognome sono cifrati e in SQL non si filtrano; senza
+     JavaScript resta la tendina completa, che è il comportamento di prima. #}
+  {# Competizione di prova (ADR-058): niente utenti veri, si iscrivono
+     giocatori fittizi. Tre pulsanti, uno per misura — il minimo per far
+     partire la gara, fino al massimo per riempirla, uno in piu' per vedere
+     il caso dispari e la X — e ciascuno si spegne quando non aggiungerebbe
+     nessuno. Sono `c7-choice`-like ma restano pulsanti: l'azione e' un POST,
+     non una scelta da salvare. #}
+  {% if gara.is_prova and prova_iscrizioni and gara.status == GaraStatus.INSCRIPTION.value
+        and feature_visible('admin.competition.prova_iscrivi_fittizi') %}
+  <div class="mb-3">
+    <div class="c7-label mb-2" data-help="prova-fittizi"><i class="fas fa-flask me-1"></i>{{ _("Giocatori fittizi") }}</div>
+    <div class="c7-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+      {% for modalita, etichetta in [
+            ('minimo', _('Iscrivi il minimo')),
+            ('massimo', _('Iscrivi fino al massimo')),
+            ('uno', _('Iscrivine uno in più'))] %}
+      {% set quanti = prova_iscrizioni[modalita] %}
+      <form method="POST" action="{{ url_for('admin.competition.prova_iscrivi_fittizi', gara_id=gara.id, modalita=modalita) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-secondary w-100 h-100 d-flex flex-column align-items-center gap-1 py-2"
+                {% if quanti == 0 %}disabled{% endif %}
+                title="{% if quanti == 0 %}{{ _('Niente da aggiungere') }}{% else %}{{ _('Aggiunge %(n)s giocatori fittizi', n=quanti) }}{% endif %}">
+          <span style="font-size:12px;font-weight:700;line-height:1.15">{{ etichetta }}</span>
+          <span class="c7-num" style="font-size:13px">+{{ quanti }}</span>
+        </button>
+      </form>
+      {% endfor %}
+    </div>
+    {% if not gara.max_participants %}
+    <div class="form-text">{{ _("Imposta un massimo di iscritti per usare «fino al massimo».") }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if available_users and available_users|length > 0 and not gara.is_prova %}
   <form method="POST" action="{{ url_for('admin.competition.admin_inscribe_user', gara_id=gara.id) }}" class="mb-3">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="d-flex gap-2 mb-2">
+      <input type="search" class="form-control js-iscritti-cerca" autocomplete="off" data-help="gara-cerca-da-iscrivere"
+             placeholder="{{ _('Cerca cognome, nome o username…') }}"
+             aria-label="{{ _('Cerca il giocatore da iscrivere') }}">
+    </div>
     <div class="d-flex gap-2">
-      <select name="user_id" class="form-select flex-fill" required>
+      <select name="user_id" class="form-select flex-fill" required
+              aria-label="{{ _('Giocatore da iscrivere') }}">
         <option value="">{{ _('Seleziona giocatore…') }}</option>
         {% for user in available_users %}
-        <option value="{{ user.id }}">{{ user.username }}</option>
+        <option value="{{ user.id }}"
+                data-cerca="{{ (user.username ~ ' ' ~ (user.full_name or ''))|trim|lower }}">
+          {% if user.full_name %}{{ user.full_name }} · {{ user.username }}{% else %}{{ user.username }}{% endif %}
+        </option>
         {% endfor %}
       </select>
       <button type="submit" class="btn btn-primary" title="{{ _('Aggiungi iscritto') }}">
         <i class="fas fa-user-plus"></i>
       </button>
     </div>
+    <div class="js-iscritti-esito c7-kicker mt-1" aria-live="polite"
+         data-formato="{{ _('{n} giocatori trovati') }}"></div>
   </form>
   {% endif %}
 
@@ -97,7 +147,7 @@
       {% if gara.effective_has_handicap %}
       {% if user_can_manage and categorie_editable %}
       <div class="d-flex align-items-center gap-2" style="margin-top:10px">
-        <span class="c7-label">{{ _('Categoria') }}</span>
+        <span class="c7-label"{% if loop.first %} data-help="gara-categoria-iscritto"{% endif %}>{{ _('Categoria') }}</span>
         <input type="text" list="categorieGara{{ gara.id }}"
                class="form-control form-control-sm c7-categoria-input"
                style="width:110px;flex:0 0 auto"
@@ -109,7 +159,7 @@
       </div>
       {% elif inscription.categoria %}
       <div class="d-flex align-items-center gap-2" style="margin-top:8px">
-        <span class="c7-label">{{ _('Categoria') }}</span>
+        <span class="c7-label"{% if loop.first %} data-help="gara-categoria-iscritto"{% endif %}>{{ _('Categoria') }}</span>
         <span class="c7-state">{{ inscription.categoria.name }}</span>
       </div>
       {% endif %}
@@ -148,7 +198,7 @@
 
     {% set waitlist_inscriptions = inscriptions | selectattr('is_waitlist', 'equalto', true) | selectattr('is_withdrawn', 'equalto', false) | sort(attribute='waitlist_position') | list %}
     {% if waitlist_inscriptions %}
-    <div class="c7-kicker mt-4 mb-2" style="color:var(--c7-warn)">{{ _("Lista d'attesa") }}</div>
+    <div class="c7-kicker mt-4 mb-2" style="color:var(--c7-warn)" data-help="iscrizione-lista-attesa">{{ _("Lista d'attesa") }}</div>
     <div class="c7-stack" style="gap:8px">
       {% for inscription in waitlist_inscriptions %}
       <div class="d-flex align-items-center gap-3" style="background:var(--c7-warn-bg);border-radius:var(--c7-r-chip);padding:12px 14px">

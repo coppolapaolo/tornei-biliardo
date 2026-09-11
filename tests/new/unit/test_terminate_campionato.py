@@ -7,7 +7,7 @@ from datetime import date
 from models import Campionato
 from models.base import utc_now
 from models.competition.models import Gara
-from models.status_enum import TournamentStatus, GaraStatus
+from models.status_enum import Discipline, GaraStatus, TournamentStatus
 from models.campionato.services import TournamentService
 from models.campionato.statistics_service import compute_campionato_status
 from models.playoff.models import PlayoffConfiguration, PlayoffType
@@ -31,7 +31,7 @@ def _make_gara(db_session, campionato, number, status):
         number=number,
         name=f"Gara {number}",
         date=date(2026, 1, number),
-        discipline="nine_ball",
+        discipline=Discipline.NINE_BALL.value,
         status=status,
         rounds_count=3,
         current_round=1,

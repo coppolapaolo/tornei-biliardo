@@ -1,0 +1,351 @@
+{# templates/components/_tessera_gara.html — Design System 7c
+
+   La tessera della gara. Una sola, condivisa fra home dell'ospite e
+   dashboard: si disegna dai **fatti** di chi guarda — è iscritto, la dirige,
+   ha una partita aperta — e senza fatti è quella dell'ospite. Con due fatti i
+   pezzi si sommano (le pastiglie «Dirigi» e «Iscritto», la partita e il
+   comando di direzione); sul conflitto vince il direttore («Gestisci» al posto
+   di «Segui la diretta»). Regola 1 del 2026-09-10, canvas «Tessera».
+
+   Riceve una `GaraCardVM` (models/dashboard/gara_cards.py): qui non si decide
+   chi vede cosa, si disegna. Le scelte visibili, tutte del 10/09:
+
+   * iscrizioni aperte: la barra di riempimento **e** i numeri;
+   * in corso: la tessera è scura per chiunque la guardi;
+   * nessun pulsante piccolo (`btn-sm`): le azioni hanno l'altezza standard,
+     su una tessera si tappa;
+   * niente «Gioca la tua partita»: il bersaglio è il riquadro della propria
+     partita, che sta più in alto e ha già tutto;
+   * il podio porta le medaglie; sulle concluse «Hai giocato» / «Hai diretto»
+     al posto di «Iscritto», che a gara finita non dice più niente.
+
+   Gli stati si confrontano con `GaraStatus` e `ProvaDerivedStatus`, iniettati
+   da `inject_enums`. #}
+
+{% macro pastiglia_stato(card) %}
+  {% set st = card.real_status %}
+  {% if st in [GaraStatus.COMPLETED.value, ProvaDerivedStatus.TOURNAMENT_COMPLETED.value] %}
+    <span class="c7-state c7-state--muted">{{ _('Conclusa') }}</span>
+  {% elif st == ProvaDerivedStatus.ROUND_COMPLETED.value %}
+    <span class="c7-state c7-state--live">{{ _('Turno completato') }}</span>
+  {% elif st == GaraStatus.PLAYING.value %}
+    <span class="c7-state c7-state--live">{{ _('In corso') }}</span>
+  {% elif st == GaraStatus.AWAITING_SSR.value %}
+    <span class="c7-state c7-state--live">{{ _('Spareggi') }}</span>
+  {% elif st == GaraStatus.SETUP.value %}
+    <span class="c7-state c7-state--muted">{{ _('In preparazione') }}</span>
+  {% elif st == ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value %}
+    <span class="c7-state c7-state--muted">{{ _('Iscrizioni programmate') }}</span>
+  {% elif st == ProvaDerivedStatus.INSCRIPTION_CLOSED.value %}
+    <span class="c7-state c7-state--muted">{{ _('Iscrizioni chiuse') }}</span>
+  {% elif st == GaraStatus.INSCRIPTION.value %}
+    <span class="c7-state c7-state--ok">{{ _('Iscrizioni aperte') }}</span>
+  {% endif %}
+{% endmacro %}
+
+{% macro _riga_partita(altra) %}
+  <div class="d-flex align-items-center gap-2">
+    {% if altra.table_assignment %}
+    <span class="c7-num c7-tessera__muted" style="flex-shrink:0">T{{ altra.table_assignment }}</span>
+    {% endif %}
+    <span class="text-truncate">
+      {{ altra.player1.username if altra.player1 else '—' }}
+      <span class="c7-num">{{ altra.player1_score or 0 }}–{{ altra.player2_score or 0 }}</span>
+      {{ altra.player2.username if altra.player2 else '—' }}
+    </span>
+  </div>
+{% endmacro %}
+
+{% macro tessera_gara(card) %}
+{% set gara = card.gara %}
+{% set partita = card.prossima_partita %}
+{% set aperta = card.real_status == GaraStatus.INSCRIPTION.value %}
+{% set puo_iscriversi = current_user.is_authenticated and not current_user.is_admin and not gara.is_prova %}
+<article class="c7-card d-flex flex-column gap-3{{ ' c7-card--accent' if card.is_in_corso }}">
+
+  {# ── Testata ─────────────────────────────────────────────────────── #}
+  <div class="d-flex align-items-start gap-2">
+    <div class="flex-fill">
+      <div class="c7-tessera__title">{{ card.name }}</div>
+      <div class="c7-tessera__meta">
+        {% if card.campionato_name %}{{ card.campionato_name }}
+        {% elif gara.is_standalone %}{{ _('Gara singola') }}{% endif %}
+        {% if gara.discipline %}
+          <span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}
+        {% endif %}
+        {% if gara.distance %}
+          <span class="c7-sep">·</span> {{ gara.distance_config|format_distance }}
+        {% endif %}
+      </div>
+      <div class="c7-tessera__meta">
+        {% if card.date %}
+        <span class="c7-num" style="font-size:12px">{{ card.date|date_local }}</span>
+        {% endif %}
+        {% if gara.location %}<span class="c7-sep">·</span> {{ gara.location }}{% endif %}
+      </div>
+    </div>
+    <div class="c7-tessera__states">
+      {# I fatti di chi guarda, poi lo stato della gara. A gara finita
+         «Iscritto» e «Dirigi» diventano «Hai giocato» e «Hai diretto». #}
+      {% if card.is_conclusa %}
+        {% if card.hai_diretto %}<span class="c7-state c7-state--info">{{ _('Hai diretto') }}</span>{% endif %}
+        {% if card.hai_giocato %}<span class="c7-state c7-state--accent">{{ _('Hai giocato') }}</span>{% endif %}
+      {% else %}
+        {% if card.can_manage %}<span class="c7-state c7-state--info">{{ _('Dirigi') }}</span>{% endif %}
+        {% if card.is_waitlist %}
+          <span class="c7-state c7-state--warn">{{ _("Lista d'attesa") }} #{{ card.waitlist_position }}</span>
+        {% elif card.is_inscribed %}
+          <span class="c7-state c7-state--accent">{{ _('Iscritto') }}</span>
+        {% endif %}
+      {% endif %}
+      {# Una prova (ADR-058) la vede solo chi la dirige: la pastiglia dice
+         che i giocatori sono fittizi e i risultati non contano. #}
+      {% if gara.is_prova %}
+        <span class="c7-state c7-state--warn"><i class="fas fa-flask me-1"></i>{{ _('Di prova') }}</span>
+      {% endif %}
+      {{ pastiglia_stato(card) }}
+    </div>
+  </div>
+
+  {# ── Corpo, per stato ────────────────────────────────────────────── #}
+  {% if card.is_conclusa %}
+    {% set podio = gara.get_podium() %}
+    <div class="c7-inset">
+      <div class="c7-kicker">{{ _('Podio') }}</div>
+      {% if podio %}
+      <div class="c7-podio">
+        {% for pos in [0, 1, 2] %}
+          {% if podio|length > pos %}
+          <div>
+            <span class="c7-medal c7-medal--{{ pos + 1 }}"><i class="fas fa-medal"></i></span>
+            <div class="c7-podio__pos">{{ pos + 1 }}°</div>
+            <div class="c7-podio__name">{{ podio[pos].username }}</div>
+          </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="c7-tessera__meta mt-1">{{ _('La classifica finale non è ancora stata pubblicata.') }}</div>
+      {% endif %}
+      {% if card.piazzamento %}
+      <div class="c7-tessera__meta mt-2">
+        {{ _('Sei arrivato %(pos)s° su %(tot)s', pos=card.piazzamento.posizione, tot=card.piazzamento.su) }}
+        <span class="c7-sep">·</span>
+        {{ _('%(vinte)s vittorie su %(giocate)s', vinte=card.piazzamento.vinte, giocate=card.piazzamento.giocate) }}
+      </div>
+      {% endif %}
+    </div>
+
+  {% elif card.is_in_corso %}
+    <div class="d-flex align-items-center gap-2" style="font-size:12px;font-weight:700">
+      {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
+        {% set total_matches = gara.matches|length %}
+        {% set chiuse = gara.matches|selectattr('status', 'in', [MatchStatus.CLOSED_UNILATERALLY.value, MatchStatus.CONFIRMED_BY_BOTH.value])|list|length %}
+        <span class="flex-fill">{{ _('Partite') }} <span class="c7-num">{{ chiuse }}/{{ total_matches }}</span></span>
+      {% else %}
+        <span class="flex-fill">{{ _('Turno') }}
+          <span class="c7-num">{{ [gara.current_round, 1]|max }}{% if gara.total_rounds %}/{{ gara.total_rounds }}{% endif %}</span>
+        </span>
+      {% endif %}
+      <span class="c7-tessera__muted"><span class="c7-num">{{ gara.get_active_inscriptions_count() }}</span> {{ _('giocatori') }}</span>
+    </div>
+
+    {# La tua partita: il riquadro è il bersaglio, non c'è un pulsante a
+       parte. Sta dentro perché è un fatto **di questa gara**. #}
+    {% if partita %}
+    <a class="c7-inset c7-inset--go" href="{{ url_for('admin.match.match_detail', match_id=partita.id) }}">
+      <span class="flex-fill" style="min-width:0">
+        <span class="c7-kicker d-block">
+          {{ _('La tua partita') }}
+          <span class="c7-sep">·</span> {{ _('Turno') }} {{ partita.round_number }}
+          {% if partita.table_assignment %}
+            <span class="c7-sep">·</span> {{ _('Tavolo') }} {{ partita.table_assignment }}
+          {% endif %}
+        </span>
+        <span class="d-flex align-items-center gap-2 mt-1">
+          <span class="flex-fill" style="font-size:14px;font-weight:800">
+            {% if partita.is_trio and partita.trio_match %}
+              {{ partita.trio_match.player1.username }} <span class="c7-sep">·</span>
+              {{ partita.trio_match.player2.username }} <span class="c7-sep">·</span>
+              {{ partita.trio_match.player3.username }}
+            {% else %}
+              {# L'avversario può mancare: una X nasce senza player2, e un
+                 accesso non protetto qui è un 500 in dashboard (GlitchTip
+                 TORNEI-BILIARDO-5G). #}
+              {% set avversario = partita.player1 if partita.player2_id == current_user.id else partita.player2 %}
+              {% if avversario %}{{ _('vs') }} {{ avversario.username }}
+              {% else %}{{ _('Riposi questo turno') }}{% endif %}
+            {% endif %}
+          </span>
+          {% if partita.is_trio and partita.trio_match %}
+            {% set trio = partita.trio_match %}
+            <span class="c7-num" style="font-size:18px">{{ trio.player1_racks }} · {{ trio.player2_racks }} · {{ trio.player3_racks }}</span>
+          {% elif partita.player1_score or partita.player2_score %}
+            <span class="c7-num" style="font-size:20px">{{ partita.player1_score }} — {{ partita.player2_score }}</span>
+          {% endif %}
+        </span>
+        {% if not partita.table_assignment %}
+        <span class="c7-tessera__meta d-block mt-1">{{ _('Il tavolo non è ancora assegnato: lo assegna la gara appena se ne libera uno.') }}</span>
+        {% endif %}
+      </span>
+      <i class="fas fa-chevron-right c7-inset__chev"></i>
+    </a>
+    {% endif %}
+
+    {# Come sta andando: dove sei, e cosa stanno facendo gli altri. Senza
+       una partita mia, «gli altri» sono tutti: è la tessera dell'ospite. #}
+    {% if card.classifica or card.altre_partite %}
+    <div class="c7-inset">
+      {% if card.classifica %}
+      <div class="c7-kicker">{{ _('Classifica provvisoria dopo il turno %(n)s', n=card.classifica.turno) }}</div>
+      <div class="mt-1" style="font-size:14px;font-weight:800">
+        {{ _('Sei %(pos)s° su %(tot)s', pos=card.classifica.posizione, tot=card.classifica.su) }}
+      </div>
+      {% endif %}
+      {% if card.altre_partite %}
+      <div class="{{ 'mt-3 pt-3 c7-tessera__line' if card.classifica }}">
+        <div class="c7-kicker">{{ _('Altre partite del turno') if partita else _('Ai tavoli adesso') }}</div>
+        <div class="d-flex flex-column gap-1 mt-1" style="font-size:12px;font-weight:700">
+          {% for altra in card.altre_partite %}{{ _riga_partita(altra) }}{% endfor %}
+        </div>
+        {% if card.altre_restanti %}
+        <div class="c7-tessera__meta mt-1">
+          {{ ngettext("e un'altra partita", 'e altre %(num)s partite', card.altre_restanti, num=card.altre_restanti) }}
+        </div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+  {% else %}
+    {# Iscrizioni aperte, programmate o chiuse, in preparazione: la barra
+       di riempimento **e** i numeri. #}
+    {% set iscritti = gara.get_active_inscriptions_count() %}
+    <div>
+      {% if gara.max_participants %}
+      {% set pct = (iscritti / gara.max_participants * 100) if gara.max_participants else 0 %}
+      <div class="progress" style="height:8px">
+        <div class="progress-bar" role="progressbar" style="width:{{ pct if pct < 100 else 100 }}%"
+             aria-valuenow="{{ iscritti }}" aria-valuemin="0" aria-valuemax="{{ gara.max_participants }}"></div>
+      </div>
+      {% endif %}
+      <div class="d-flex align-items-center gap-2 {{ 'mt-2' if gara.max_participants }}" style="font-size:12px;font-weight:700">
+        <span class="flex-fill c7-tessera__muted">
+          {% if gara.entry_fee and gara.entry_fee > 0 %}
+            {{ _('Quota') }} <span class="c7-num">€{{ "%.2f"|format(gara.entry_fee) }}</span>
+          {% else %}
+            {{ _('Gratuita') }}
+          {% endif %}
+        </span>
+        <span class="c7-tessera__muted">
+          <span class="c7-num">{{ iscritti }}{% if gara.max_participants %}/{{ gara.max_participants }}{% endif %}</span>
+          {% if gara.max_participants and gara.get_waitlist_count() > 0 %}
+            <span style="color:var(--c7-warn)">+{{ gara.get_waitlist_count() }} {{ _('in lista') }}</span>
+          {% elif gara.max_participants and gara.max_participants > iscritti %}
+            <span class="c7-sep">·</span> {{ ngettext('%(num)s libero', '%(num)s liberi', gara.max_participants - iscritti, num=gara.max_participants - iscritti) }}
+          {% endif %}
+        </span>
+      </div>
+    </div>
+    {% if aperta and gara.inscription_end %}
+    <div class="c7-tessera__meta" style="color:var(--c7-warn)">
+      {{ _('Chiudono il') }} <span class="c7-num" style="font-size:12px">{{ gara.inscription_end|datetime_local }}</span>
+    </div>
+    {% elif card.real_status == ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value and gara.inscription_start %}
+    <div class="c7-tessera__meta">
+      {{ _('Le iscrizioni aprono il') }} <span class="c7-num" style="font-size:12px">{{ gara.inscription_start|datetime_local }}</span>
+    </div>
+    {% endif %}
+
+    {# Perché sei in lista d'attesa: sono due motivi diversi, e «Lista
+       d'attesa #1» su una gara mezza vuota si legge come un errore del sito. #}
+    {% if card.is_waitlist %}
+    <div class="c7-inset c7-inset--warn">
+      {% if card.waitlist_is_parity %}
+        <div class="c7-kicker">{{ _('Serve un numero pari') }}</div>
+        <p class="mb-0 mt-1" style="font-size:12px;font-weight:600;line-height:1.55">
+          {{ _("Questa gara non prevede la X, quindi i giocatori devono essere in numero pari e l'ultimo iscritto aspetta. Appena si iscrive qualcun altro entri tu.") }}
+        </p>
+      {% else %}
+        <div class="c7-kicker">{{ _('La gara è al completo') }}</div>
+        <p class="mb-0 mt-1" style="font-size:12px;font-weight:600;line-height:1.55">
+          {{ _("Se qualcuno si ritira entri tu, in ordine di posizione: succede da solo, non devi rifare l'iscrizione.") }}
+        </p>
+      {% endif %}
+    </div>
+    {% endif %}
+  {% endif %}
+
+  {# Perché il comando non si può ancora dare. Annunciarlo comunque è il
+     punto: il direttore deve sapere che quella gara aspetta lui. #}
+  {% if card.comando and card.comando.bloccato and card.comando.minimo %}
+  <div class="c7-inset c7-inset--warn">
+    <div class="c7-kicker">{{ _('Non ci sono ancora abbastanza iscritti') }}</div>
+    <p class="mb-0 mt-1" style="font-size:12px;font-weight:600;line-height:1.55">
+      {{ _('Ne servono almeno %(min)s, per ora sono %(now)s.', min=card.comando.minimo, now=card.comando.iscritti) }}
+    </p>
+  </div>
+  {% endif %}
+
+  {# ── Azioni ───────────────────────────────────────────────────────── #}
+  {% set dettaglio = url_for('admin.competition.gara_detail', gara_id=card.id) %}
+  <div class="c7-tessera__actions">
+    {% if card.is_conclusa %}
+      <a href="{{ dettaglio }}" class="btn btn-secondary">{{ _('Risultati') }}</a>
+
+    {% elif card.can_manage %}
+      {# Chi dirige ha la gestione, e accanto il comando che la gara aspetta
+         — annunciato qui, eseguito nella pagina della gara: il pannello di
+         gestione ha otto rami e dipende da variabili che calcola quella
+         route, quindi una seconda copia si staccherebbe al primo cambiamento. #}
+      <a href="{{ dettaglio }}" class="btn btn-primary">{{ _('Gestisci') }}</a>
+      {% if card.comando %}
+      <a href="{{ dettaglio }}" class="btn {{ 'btn-secondary' if card.comando.bloccato else 'btn-success' }}">
+        {% if card.comando.tipo == ComandoDirezione.APRI_ISCRIZIONI.value %}{{ _('Apri le iscrizioni') }}
+        {% elif card.comando.tipo == ComandoDirezione.AVVIA_GARA.value %}{{ _('Avvia la gara') }}
+        {% elif card.comando.tipo == ComandoDirezione.ESTENDI_ISCRIZIONI.value %}{{ _('Estendi le iscrizioni') }}
+        {% elif card.comando.tipo == ComandoDirezione.AVVIA_TURNO.value %}{{ _('Avvia il turno %(n)s', n=card.comando.turno) }}
+        {% elif card.comando.tipo == ComandoDirezione.AVVIA_SPAREGGIO.value %}{{ _('Avvia lo spareggio') }}
+        {% elif card.comando.tipo == ComandoDirezione.TERMINA_GARA.value %}{{ _('Termina la gara') }}
+        {% endif %}
+      </a>
+      {% elif aperta and puo_iscriversi %}
+        {# Il fatto da giocatore si somma: il direttore può iscriversi alla
+           propria gara, e da qui come chiunque altro. #}
+        {% if card.is_inscribed %}
+        <a href="#" onclick='unsubscribeFromGara({{ card.id|tojson }}); return false;' class="btn btn-danger">
+          {% if card.is_waitlist %}{{ _('Esci dalla lista') }}{% else %}{{ _('Disiscriviti') }}{% endif %}
+        </a>
+        {% else %}
+        <a href="#" onclick='inscribeToGara({{ card.id|tojson }}); return false;' class="btn {{ 'btn-warning' if gara.is_full() else 'btn-success' }}">
+          {{ _('Mettiti in lista') if gara.is_full() else _('Iscriviti') }}
+        </a>
+        {% endif %}
+      {% endif %}
+
+    {% elif card.is_in_corso %}
+      <a href="{{ dettaglio }}" class="btn btn-primary">{{ _('Segui la diretta') }}</a>
+
+    {% elif aperta %}
+      {% if card.can_view_details %}
+      <a href="{{ dettaglio }}" class="btn btn-secondary">{{ _('Dettagli') }}</a>
+      {% endif %}
+      {% if puo_iscriversi %}
+        {% if card.is_inscribed %}
+        <a href="#" onclick='unsubscribeFromGara({{ card.id|tojson }}); return false;' class="btn btn-danger">
+          {% if card.is_waitlist %}{{ _('Esci dalla lista') }}{% else %}{{ _('Disiscriviti') }}{% endif %}
+        </a>
+        {% else %}
+        <a href="#" onclick='inscribeToGara({{ card.id|tojson }}); return false;' class="btn {{ 'btn-warning' if gara.is_full() else 'btn-success' }}">
+          {{ _('Mettiti in lista') if gara.is_full() else _('Iscriviti') }}
+        </a>
+        {% endif %}
+      {% endif %}
+
+    {% elif card.can_view_details %}
+      <a href="{{ dettaglio }}" class="btn btn-secondary">{{ _('Dettagli') }}</a>
+    {% endif %}
+  </div>
+</article>
+{% endmacro %}

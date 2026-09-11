@@ -68,3 +68,10 @@ ruolo-richieste: "Incoming role requests: approved or rejected one at a time."
 # --- TPA scoresheet ------------------------------------------------------
 referto-tpa: "The TPA scoresheet during the match: the two players with their TPA, the inning box and the keypad."
 referto-tpa-foglio: "The scoresheet itself: each row is one visit to the table, with the balls pocketed and why the inning ended."
+
+# --- Trial competition (ADR-058) -------------------------------------------
+prova-spunta: "The «Trial competition» switch in the new competition form, with the explanation underneath."
+prova-presentazione: "The introduction shown the first time you open the page of a trial competition: a title, one step at a time, and the «Skip» and «Next» buttons."
+prova-iscrizioni: "The trial competition with registrations open: at the top the banner with the expiry date, the «Tips» switch and «Delete the trial»; below, the three fictitious-player buttons, each with its «?»."
+prova-fumetto: "The bubble that opens when you tap a «?»: the name of the control, two sentences, and the «Read in the guide» link."
+prova-simulazione: "The three simulation buttons in the Management panel of a started trial: one match, the round, the whole competition."

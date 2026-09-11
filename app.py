@@ -188,6 +188,11 @@ def create_app(config_name=None):
     limiter.init_app(app)
 
     register_soft_delete_filters(SASession)
+    # Le competizioni di prova e i loro giocatori fittizi si vedono solo da
+    # chi le dirige (ADR-058): stesso meccanismo del soft delete.
+    from models.prova import register_prova_filters
+
+    register_prova_filters(SASession)
 
     # Setup Login Manager
     login_manager = LoginManager()
@@ -355,9 +360,15 @@ def create_app(config_name=None):
             minimum_players_for,
         )
         from models.match.break_rules import BreakRule, StartRule
+        from models.dashboard.comandi import ComandoDirezione
 
         return {
             "GaraStatus": GaraStatus,
+            # Il comando che una gara aspetta dal suo direttore. Non sta in
+            # colonna e vive solo dentro una richiesta: e' qui per la stessa
+            # ragione degli altri — un template che deve nominarlo non deve
+            # riscriverne il valore a mano.
+            "ComandoDirezione": ComandoDirezione,
             "MatchStatus": MatchStatus,
             # `Gara.get_real_status()` restituisce sia valori di GaraStatus sia
             # stati *derivati* che non esistono su disco (iscrizioni non ancora

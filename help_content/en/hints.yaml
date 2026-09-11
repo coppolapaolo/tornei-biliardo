@@ -1,7 +1,9 @@
 # Micro-help and introductions: content ready for the adaptive interface.
 #
-# THIS FILE IS NOT USED BY THE APP YET. It mirrors `it/hints.yaml` one to one:
-# same ids, same `anchor` values, same screens. Only the wording is translated.
+# THE APP SHOWS THESE TEXTS: `static/js/help-hints.js` (the "help mode",
+# ADR-058) fetches them from /aiuto/api/schermata/<endpoint>. This file
+# mirrors `it/hints.yaml` one to one: same ids, same `anchor` values, same
+# screens. Only the wording is translated.
 #
 # The `anchor` values are NOT translated on purpose: they are the contract with
 # the app's templates (`data-help="..."`), and translating them would mean two
@@ -85,6 +87,7 @@ hints:
   anchor: gara-dispari
   screens:
   - admin.competition.create_gara_standalone
+  - admin.campionato.wizard_step2
   page: numero_dispari
   section: quale
 - id: gara.classifica_sistema
@@ -102,6 +105,7 @@ hints:
   anchor: gara-anti-rematch
   screens:
   - admin.competition.create_gara_standalone
+  - admin.campionato.wizard_step2
   page: abbinamenti
   section: amalfi
 - id: gara.separazione_squadre
@@ -138,8 +142,17 @@ hints:
   anchor: gara-handicap
   screens:
   - admin.competition.create_gara_standalone
+  - admin.campionato.wizard_step2
   page: formati_di_gioco
   section: handicap
+- id: gara.cerca_da_iscrivere
+  label: Search for the player to enter
+  short: 'Type a username, first name or last name: the list narrows as you type. Players who added their name to their profile show up with it.'
+  anchor: gara-cerca-da-iscrivere
+  screens:
+  - admin.competition.gara_detail
+  page: gestire_le_iscrizioni
+  section: durante
 - id: gara.categoria_iscritto
   label: Category
   short: The player's level in this competition. Type a new name and the category is created.
@@ -183,6 +196,7 @@ hints:
   screens:
   - admin.competition.create_gara_standalone
   - admin.competition.edit_gara
+  - admin.campionato.wizard_step2
   page: opzioni_della_gara
   section: formato
 - id: gara.chi_spacca
@@ -192,6 +206,7 @@ hints:
   screens:
   - admin.competition.create_gara_standalone
   - admin.competition.edit_gara
+  - admin.campionato.wizard_step2
   page: opzioni_della_gara
   section: formato
 - id: gara.spareggio
@@ -283,6 +298,7 @@ hints:
   anchor: partita-punteggio
   screens:
   - admin.match.match_detail
+  - individual_match.match_detail
   page: giocare_una_partita
   section: leggere
 - id: partita.segnapunti
@@ -291,6 +307,7 @@ hints:
   anchor: partita-segnapunti
   screens:
   - admin.match.match_detail
+  - individual_match.match_detail
   page: giocare_una_partita
   section: segnare
 - id: partita.rack
@@ -300,6 +317,7 @@ hints:
   anchor: partita-rack
   screens:
   - admin.match.match_detail
+  - individual_match.match_detail
   page: giocare_una_partita
   section: leggere
 - id: partita.forfait
@@ -308,6 +326,7 @@ hints:
   anchor: partita-forfait
   screens:
   - admin.match.match_detail
+  - individual_match.match_detail
   page: giocare_una_partita
   section: forfait
 - id: partita.tabellone
@@ -345,6 +364,7 @@ hints:
   anchor: profilo-runout
   screens:
   - player.profile
+  - player.view_profile
   page: profilo_e_statistiche
   section: cosa_contiene
 - id: profilo.rating
@@ -363,7 +383,6 @@ hints:
   anchor: profilo-livello
   screens:
   - gamification.dashboard
-  - player.profile
   page: progressi
   section: xp
 - id: campionato.classifica
@@ -383,6 +402,7 @@ hints:
   anchor: campionato-punti-posizione
   screens:
   - admin.campionato.edit_campionato
+  - admin.campionato.wizard_step2
   page: creare_un_campionato
   section: punti_posizione
 - id: esame.prova_da_solo
@@ -424,7 +444,8 @@ hints:
   section: comporre
 - id: esame.ordine_drill
   label: The order of the drills
-  short: Candidates face them in the sequence you set. You can reorder until the exam is what you wanted.
+  short: 'Candidates face them in the sequence you add them. They do not move: if the order is wrong,
+    remove the drill and put it back in the right place.'
   anchor: esame-ordine-drill
   screens:
   - exam.exam_detail
@@ -694,6 +715,137 @@ hints:
   - admin.campionato.campionato_vetrina
   page: far_conoscere_la_gara
   section: regolamento
+- id: campionato.gare_pianificate
+  label: Planned competitions
+  short: 'How many competitions you expect to play in the championship. It is a guide for those who
+    follow it: you add competitions one at a time, and you can have more or fewer.'
+  anchor: campionato-gare-pianificate
+  screens:
+  - admin.campionato.wizard_start
+  page: creare_un_campionato
+  section: passo1
+- id: campionato.modalita_esercizi
+  label: Drill mode
+  short: 'In the championship competitions players also face individual skill drills, with their own
+    standings. If you do not know what it is, leave it off.'
+  anchor: campionato-modalita-esercizi
+  screens:
+  - admin.campionato.wizard_start
+  page: creare_un_campionato
+  section: passo1
+- id: campionato.playoff_elite
+  label: Elite Playoff
+  short: At the end of the championship the top players in the overall standings play a final competition
+    among themselves. Here you decide whether to hold it and for how many players.
+  anchor: campionato-playoff-elite
+  screens:
+  - admin.campionato.wizard_start
+  page: playoff
+  section: qualificarsi
+- id: campionato.playoff_academy
+  label: Academy Playoff
+  short: 'A second final for those who come right after the top players: so even those not at the top
+    have a competition to play for at the end of the season.'
+  anchor: campionato-playoff-academy
+  screens:
+  - admin.campionato.wizard_start
+  page: playoff
+  section: qualificarsi
+- id: campionato.nuova_gara
+  label: New Competition
+  short: 'Adds a competition to the championship. It is born with the default settings chosen in the
+    wizard: change only what you need.'
+  anchor: campionato-nuova-gara
+  screens:
+  - admin.campionato.campionato_detail
+  page: creare_un_campionato
+  section: aggiungere_gare
+- id: campionato.termina
+  label: Terminate
+  short: 'Closes the championship: the overall standings become final and, if you planned playoffs,
+    you start them from here. There is no going back.'
+  anchor: campionato-termina
+  screens:
+  - admin.campionato.campionato_detail
+  page: creare_un_campionato
+  section: classifica_generale
+- id: campionato.avvia_playoff
+  label: Start Playoff
+  short: Sends the invitation to the qualified players. Whoever accepts enters the final competition;
+    whoever declines leaves the place to the first of the excluded.
+  anchor: campionato-avvia-playoff
+  screens:
+  - admin.campionato.campionato_detail
+  page: playoff
+  section: invito
+- id: playoff.risposta_invito
+  label: Accept / Decline
+  short: The answer to the invitation. Normally the player gives it from their phone; if they tell you
+    in person, or if the player is fictitious, you record it here.
+  anchor: playoff-risposta-invito
+  screens:
+  - admin.campionato.campionato_detail
+  page: playoff
+  section: invito
+- id: playoff.accetta_tutti
+  label: Accept all remaining
+  short: 'In a trial the fictitious players do not answer by themselves: this button accepts every
+    invitation still pending, and the final fills up in one tap.'
+  anchor: playoff-accetta-tutti
+  screens:
+  - admin.campionato.campionato_detail
+  page: fare_una_prova
+  section: campionato
+- id: prova.spunta
+  label: Trial competition
+  short: A competition only you can see, to fill with fictitious players and run like a real one. It
+    does not touch statistics or standings. At most three at a time.
+  anchor: prova-spunta
+  screens:
+  - admin.competition.create_gara_standalone
+  - admin.campionato.wizard_start
+  page: fare_una_prova
+  section: creare
+- id: prova.fittizi
+  label: Fictitious players
+  short: 'Three buttons to fill the trial: the minimum to get it started, up to the maximum to fill it,
+    one more to see what happens with an odd number.'
+  anchor: prova-fittizi
+  screens:
+  - admin.competition.gara_detail
+  page: fare_una_prova
+  section: iscrivere
+- id: prova.simulazione
+  label: Simulation
+  short: 'Makes the fictitious players play for you: one match, the whole round or the whole competition.
+    Half the matches close by themselves, the others wait for you to validate them.'
+  anchor: prova-simulazione
+  screens:
+  - admin.competition.gara_detail
+  page: fare_una_prova
+  section: simulare
+- id: prova.aiuto
+  label: Tips
+  short: 'Turns the «?» next to the controls and the screen introductions on or off. It applies to this
+    browser: switched off here, it stays off in every trial.'
+  anchor: prova-aiuto
+  screens:
+  - admin.competition.gara_detail
+  - admin.campionato.campionato_detail
+  - admin.campionato.edit_campionato
+  page: fare_una_prova
+  section: aiuto
+- id: prova.elimina
+  label: Delete the trial
+  short: 'Deletes everything, right away: competitions, matches, registrations and fictitious players.
+    If you do not, the trial disappears by itself on the expiry date written above.'
+  anchor: prova-elimina
+  screens:
+  - admin.competition.gara_detail
+  - admin.campionato.campionato_detail
+  - admin.campionato.edit_campionato
+  page: fare_una_prova
+  section: eliminare
 
 tours:
 - screen: dashboard.dashboard
@@ -782,3 +934,28 @@ tours:
   - title: What not to write
     text: 'The text ends up on GitHub, where we keep our list of work: do not put personal details in
       it, yours or another player''s.'
+- screen: admin.campionato.wizard_start
+  title: Creating a championship
+  intro: 'Two steps: first what the championship is, then the settings every competition will inherit.
+    If it is your first time, tick «Trial competition»: it is deleted with one tap.'
+  audience:
+  - direttore
+  steps:
+  - hint: campionato.gare_pianificate
+  - hint: campionato.classifica
+  - hint: gara.strategia
+  - hint: campionato.playoff_elite
+  - hint: prova.spunta
+- screen: admin.campionato.campionato_detail
+  title: The championship page
+  intro: From here you add competitions, follow the overall standings and, at the end of the season,
+    close the championship and start the playoffs.
+  audience:
+  - direttore
+  steps:
+  - hint: campionato.nuova_gara
+  - title: Overall standings
+    text: It adds up the results of every competition played, with the weight you gave each one. It
+      updates by itself every time a match is closed.
+  - hint: campionato.termina
+  - hint: campionato.avvia_playoff

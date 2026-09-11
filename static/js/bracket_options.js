@@ -128,6 +128,14 @@
       if (typeof window.updateDistancePreview === 'function') {
         window.updateDistancePreview();
       }
+
+      /* Quali strategie siano «a tabellone» lo sa solo questo file. Chi ha
+       * bisogno di reagire al formato si abbona invece di tenersi una copia
+       * dell'elenco, che prima o poi divergerebbe: vedi
+       * `x_challenge_section.js`. */
+      document.dispatchEvent(new CustomEvent('gara:formato', {
+        detail: { isBracket: isBracket }
+      }));
     }
 
     strategy.addEventListener('change', sync);

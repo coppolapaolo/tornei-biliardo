@@ -1,0 +1,516 @@
+<title>Casi della dashboard</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap">
+<style>
+  /* Documento nel design system dell'app (7c). Tema unico e dichiarato:
+     l'app non ha una variante scura, e un inventario che si ricolora
+     racconterebbe superfici che nel prodotto non esistono. Ogni colore e'
+     dipinto esplicitamente, quindi la pagina tiene su qualunque fondo. */
+  :root{
+    --bg:#E4E8E7; --card:#F5F7F6; --sunken:#ECEEED;
+    --ink:#1B2124; --ink-soft:#3D474A; --ink-muted:#6B7679; --ink-faint:#9AA3A6;
+    --line:#D3D8D7; --line-soft:#E4E8E7;
+    --accent:#2C4A52; --accent-ink:#F2F8F7; --accent-tint:#DDE9EE; --accent-tint-ink:#23404A;
+    --ok-bg:#E4EDE9; --ok-ink:#1D5F4A;
+    --err-bg:#F3E2E0; --err-ink:#8A2C2C;
+    --warn-bg:#F0E9D8; --warn-ink:#6E5417;
+    --font:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",monospace;
+    color-scheme:light;
+  }
+  *,*::before,*::after{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);
+    font-weight:600;font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:40px 20px 80px}
+
+  h1,h2,h3{margin:0;font-weight:800;letter-spacing:-.025em;text-wrap:balance}
+  h1{font-size:34px;line-height:1.15}
+  h2{font-size:23px;margin-top:8px}
+  h3{font-size:17px;letter-spacing:-.02em}
+  p{margin:0}
+  a{color:var(--accent);font-weight:700}
+
+  .kicker{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;
+    text-transform:uppercase;color:var(--ink-muted)}
+  .lede{margin-top:14px;max-width:62ch;font-size:16px;font-weight:600;color:var(--ink-soft)}
+  .note{font-size:13px;font-weight:600;color:var(--ink-muted)}
+  code{font-family:var(--mono);font-size:.88em;font-weight:600;background:var(--sunken);
+    padding:1px 5px;border-radius:5px;color:var(--accent-tint-ink);white-space:nowrap}
+
+  header.top{padding-bottom:28px;border-bottom:1px solid var(--line)}
+  section.block{margin-top:52px}
+  .sechead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;
+    padding-bottom:14px;border-bottom:2px solid var(--ink)}
+  .sechead .count{margin-left:auto;font-family:var(--mono);font-size:13px;
+    font-weight:700;color:var(--ink-muted)}
+  .intro{margin-top:16px;max-width:70ch}
+
+  /* Tabella dei blocchi: scorre da sola, la pagina non si sposta mai. */
+  .tablewrap{margin-top:18px;overflow-x:auto;border-radius:18px;background:var(--card)}
+  table{border-collapse:collapse;width:100%;min-width:760px}
+  th,td{text-align:left;vertical-align:top;padding:13px 16px;
+    border-top:1px solid var(--line-soft)}
+  thead th{border-top:0;font-size:11px;font-weight:800;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--ink-muted);padding-top:16px}
+  tbody tr:first-child td{border-top:1px solid var(--line)}
+  td.what{font-weight:800;font-size:14px;letter-spacing:-.01em;min-width:180px}
+  td.cond{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--ink-soft);
+    min-width:210px}
+  td.body{font-size:13.5px;font-weight:600;color:var(--ink-soft);min-width:230px}
+  td.klass{white-space:nowrap}
+
+  .chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;
+    border-radius:999px;font-size:10px;font-weight:800;letter-spacing:.05em;
+    text-transform:uppercase;white-space:nowrap}
+  .chip--scad{background:var(--err-bg);color:var(--err-ink)}
+  .chip--az{background:var(--ok-bg);color:var(--ok-ink)}
+  .chip--stato{background:var(--accent-tint);color:var(--accent-tint-ink)}
+  .chip--arch{background:var(--bg);color:var(--ink-muted)}
+  .chip--vuoto{background:var(--warn-bg);color:var(--warn-ink)}
+
+  .legend{display:grid;gap:10px;margin-top:22px;
+    grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+  .legend div{background:var(--card);border-radius:14px;padding:13px 15px;
+    font-size:13px;font-weight:600;color:var(--ink-soft);display:flex;
+    flex-direction:column;gap:7px;align-items:flex-start}
+
+  .sub{margin-top:26px}
+  .sub h3{margin-bottom:6px}
+
+  .cases{display:grid;gap:12px;margin-top:18px;
+    grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+  .case{background:var(--card);border-radius:18px;padding:16px 18px;
+    display:flex;flex-direction:column;gap:6px}
+  .case .id{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--accent)}
+  .case .t{font-size:15px;font-weight:800;letter-spacing:-.02em}
+  .case .d{font-size:13px;font-weight:600;color:var(--ink-muted);line-height:1.5}
+  .case--pri{background:var(--accent);color:var(--accent-ink)}
+  .case--pri .id{color:#8FCDE8}
+  .case--pri .d{color:#A9C4C7}
+
+  .asks{margin-top:18px;display:flex;flex-direction:column;gap:12px}
+  .ask{background:var(--card);border-radius:18px;padding:18px 20px}
+  .ask .q{font-size:16px;font-weight:800;letter-spacing:-.02em}
+  .ask .why{margin-top:6px;font-size:13.5px;font-weight:600;color:var(--ink-soft);max-width:72ch}
+  .ask .opts{margin:10px 0 0;padding-left:18px;font-size:13.5px;font-weight:600;color:var(--ink-soft)}
+  .ask .opts li{margin-top:4px}
+
+  footer{margin-top:56px;padding-top:20px;border-top:1px solid var(--line);
+    font-size:12.5px;font-weight:600;color:var(--ink-muted)}
+
+  @media (max-width:640px){
+    h1{font-size:27px}
+    .wrap{padding:28px 16px 60px}
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="top">
+    <div class="kicker">Redesign 7c &middot; inventario</div>
+    <h1>Casi della dashboard</h1>
+    <p class="lede">
+      Tutto quello che le tre dashboard possono mostrare, con la condizione esatta che
+      lo fa comparire. Serve a decidere cosa &egrave; utile, cosa &egrave; azionabile e
+      dove va messo &mdash; prima di ridisegnare qualcosa. Le condizioni non sono
+      dedotte dall&rsquo;aspetto: vengono da <code>models/dashboard/</code>,
+      <code>models/campionato/homepage_service.py</code> e dai componenti che le
+      disegnano.
+    </p>
+    <div class="legend">
+      <div><span class="chip chip--scad">Azione con scadenza</span>
+        Se non la fai entro un termine, qualcosa cambia senza di te.</div>
+      <div><span class="chip chip--az">Azione</span>
+        Puoi farla adesso, non scade.</div>
+      <div><span class="chip chip--stato">Stato</span>
+        Da guardare: dice come vanno le cose, non chiede niente.</div>
+      <div><span class="chip chip--arch">Contesto</span>
+        Serve a orientarsi, o &egrave; gi&agrave; successo.</div>
+    </div>
+  </header>
+
+  <!-- ============================ OSPITE ============================ -->
+  <section class="block">
+    <div class="sechead">
+      <h2>Ospite</h2>
+      <span class="note">la home pubblica &egrave; la sua dashboard</span>
+      <span class="count">7 casi</span>
+    </div>
+
+    <p class="intro">
+      <code>/</code> reindirizza a <code>/dashboard</code> chiunque sia autenticato:
+      <code>index.html</code> esiste <em>solo</em> per l&rsquo;ospite. I sei blocchi
+      arrivano tutti da una chiamata sola, <code>HomepageService.get_homepage_data()</code>,
+      che restituisce <code>None</code> quando non c&rsquo;&egrave; niente di pubblico da
+      mostrare &mdash; e allora la pagina &egrave; un&rsquo;altra.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Blocco</th><th>Compare quando</th><th>Cosa mostra e cosa si pu&ograve; fare</th><th>Classe</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="what">Come si partecipa</td>
+            <td class="cond">sempre, per l&rsquo;anonimo</td>
+            <td class="body">Tre passi (accedi &rarr; iscriviti &rarr; gioca). <strong>Accedi</strong>, <strong>Registrati</strong>.</td>
+            <td class="klass"><span class="chip chip--az">Azione</span></td>
+          </tr>
+          <tr>
+            <td class="what">In diretta ora</td>
+            <td class="cond">gare <code>playing</code> o <code>awaiting_ssr</code> pubbliche</td>
+            <td class="body">Turno, disciplina, sala, iscritti; le partite <em>con un tavolo assegnato</em> col punteggio vivo. <strong>Segui la diretta</strong>.<br><span class="note">Sotto-caso: gara live senza tavoli assegnati &rarr; niente elenco partite.</span></td>
+            <td class="klass"><span class="chip chip--stato">Stato</span></td>
+          </tr>
+          <tr>
+            <td class="what">Iscrizioni aperte</td>
+            <td class="cond"><code>gara.can_inscribe()</code></td>
+            <td class="body">Data, disciplina, sala, iscritti su massimo, barra di riempimento, posti liberi o &laquo;si entra in lista d&rsquo;attesa&raquo;, quando chiudono. <strong>Accedi per iscriverti</strong>.<br><span class="note">Sotto-casi: senza massimo (nessuna barra), senza data di chiusura.</span></td>
+            <td class="klass"><span class="chip chip--scad">Azione con scadenza</span></td>
+          </tr>
+          <tr>
+            <td class="what">Campionati in corso</td>
+            <td class="cond">stato <code>in_progress</code> o <code>registration_open</code></td>
+            <td class="body">Prossime gare, gare gi&agrave; giocate, classifica generale (primi 5). Il criterio dipende da <code>classification_system</code>: triangoli con RACK, vittorie altrimenti. <strong>Risultati</strong>.<br><span class="note">&Egrave; l&rsquo;unico blocco della home ancora in Bootstrap legacy.</span></td>
+            <td class="klass"><span class="chip chip--stato">Stato</span></td>
+          </tr>
+          <tr>
+            <td class="what">In arrivo</td>
+            <td class="cond">gare non live, non aperte, non concluse</td>
+            <td class="body">Data e sala. Nessuna azione: non c&rsquo;&egrave; ancora niente da fare.</td>
+            <td class="klass"><span class="chip chip--arch">Contesto</span></td>
+          </tr>
+          <tr>
+            <td class="what">Archivio</td>
+            <td class="cond">gare <code>completed</code> e campionati conclusi</td>
+            <td class="body">Coda recente (5). Porta ai risultati.</td>
+            <td class="klass"><span class="chip chip--arch">Contesto</span></td>
+          </tr>
+          <tr>
+            <td class="what">Niente da mostrare</td>
+            <td class="cond"><code>get_homepage_data() is None</code></td>
+            <td class="body">Pagina diversa (<code>no_campionato.html</code>): nessun contenuto pubblico esiste.</td>
+            <td class="klass"><span class="chip chip--vuoto">Vuoto</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================ GIOCATORE ============================ -->
+  <section class="block">
+    <div class="sechead">
+      <h2>Giocatore</h2>
+      <span class="note">due posti distinti: il saluto e le cose da fare</span>
+      <span class="count">9 + 8 casi</span>
+    </div>
+
+    <div class="sub">
+      <h3>Il posto in cima &mdash; una volta per sessione</h3>
+      <p class="intro">
+        <code>claim_activity_feedback_view()</code> concede quel posto <strong>al primo
+        ingresso in dashboard dopo il login</strong>, e da l&igrave; in poi non lo
+        concede pi&ugrave;: chi torna in dashboard dieci volte in un pomeriggio non
+        rilegge dieci volte com&rsquo;&egrave; andata. Il turno vale per l&rsquo;intero
+        posto, non per un componente: lo occupa il blocco &laquo;Come stai
+        andando&raquo; oppure la card dei tre passi, e spariscono insieme.
+        Il profilo lo sceglie <code>_classify()</code>, e cambia metriche, grafico e
+        striscia &mdash; sono nove disegni diversi, non uno.
+      </p>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th>Caso</th><th>Quando</th><th>Metriche, grafico, striscia</th><th>Classe</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="what">Tre passi</td>
+              <td class="cond">appena iscritto, nessuna attivit&agrave;</td>
+              <td class="body">Anello di completamento <code>N/3</code> e i tre passi verso il primo dato vero. Nessun numero inventato.</td>
+              <td class="klass"><span class="chip chip--az">Azione</span></td>
+            </tr>
+            <tr>
+              <td class="what">Pieno</td>
+              <td class="cond">ha Elo e TPA</td>
+              <td class="body">Elo + TPA di carriera; linea dell&rsquo;Elo con il TPA tratteggiato dietro; striscia delle ultime partite.</td>
+              <td class="klass"><span class="chip chip--stato">Stato</span></td>
+            </tr>
+            <tr>
+              <td class="what">Solo Elo</td>
+              <td class="cond">nessun TPA registrato</td>
+              <td class="body">Elo + ciambella dei risultati (vinte/pari/perse); linea dell&rsquo;Elo da sola.</td>
+              <td class="klass"><span class="chip chip--stato">Stato</span></td>
+            </tr>
+            <tr>
+              <td class="what">Solo gare</td>
+              <td class="cond">attivit&agrave; tutte di tipo gara</td>
+              <td class="body">&laquo;Elo gara&raquo; + miglior piazzamento; striscia dei piazzamenti.</td>
+              <td class="klass"><span class="chip chip--stato">Stato</span></td>
+            </tr>
+            <tr>
+              <td class="what">Solo esercizi</td>
+              <td class="cond">attivit&agrave; tutte di tipo drill</td>
+              <td class="body">Metriche dei drill e <strong>grafico a barre</strong> al posto della linea: qui l&rsquo;Elo non c&rsquo;entra.</td>
+              <td class="klass"><span class="chip chip--stato">Stato</span></td>
+            </tr>
+            <tr>
+              <td class="what">Super attivo</td>
+              <td class="cond">molte attivit&agrave; in 30 giorni</td>
+              <td class="body">Badge verde &laquo;N attivit&agrave; nel mese&raquo;; il delta si accorcia e pu&ograve; dire &laquo;massimo&raquo;.</td>
+              <td class="klass"><span class="chip chip--stato">Stato</span></td>
+            </tr>
+            <tr>
+              <td class="what">In calo</td>
+              <td class="cond">delta Elo negativo</td>
+              <td class="body">Delta in ambra (mai in rosso: &egrave; un dato, non un guasto); linea col tono discendente. Se il TPA sale, una nota lo dice.</td>
+              <td class="klass"><span class="chip chip--stato">Stato</span></td>
+            </tr>
+            <tr>
+              <td class="what">Di rientro</td>
+              <td class="cond">ultima attivit&agrave; oltre la soglia</td>
+              <td class="body">Titolo &laquo;Dove eri rimasto&raquo;, badge &laquo;N settimane fa&raquo;, Elo &laquo;invariato &mdash; ti aspetta l&igrave;&raquo;, proiezione tratteggiata. La nota della striscia sparisce.</td>
+              <td class="klass"><span class="chip chip--stato">Stato</span></td>
+            </tr>
+            <tr>
+              <td class="what">Direttore</td>
+              <td class="cond">l&rsquo;ultimo fatto &egrave; da direttore</td>
+              <td class="body">&laquo;Come vanno le tue gare&raquo;: gare organizzate + ciambella dei posti occupati, barre degli iscritti per gara, striscia del riempimento. Badge rosso &laquo;N da chiudere&raquo;.</td>
+              <td class="klass"><span class="chip chip--stato">Stato</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note" style="margin-top:12px">
+        Il profilo &laquo;direttore&raquo; non &egrave; permanente: segue l&rsquo;ultima
+        cosa fatta. Un direttore che ha appena giocato vede il proprio Elo, non il
+        riempimento delle sue gare.
+      </p>
+    </div>
+
+    <div class="sub">
+      <h3>Le cose da fare e le sezioni</h3>
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr><th>Blocco</th><th>Compare quando</th><th>Cosa mostra e cosa si pu&ograve; fare</th><th>Classe</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="what">Sei qualificato<br><span class="note">playoff</span></td>
+              <td class="cond">invito <code>PENDING</code> su configurazione attiva</td>
+              <td class="body">Posizione di qualifica, quando, sala, <em>rispondi entro</em>. <strong>Accetta</strong> / <strong>Rifiuta</strong> / Dettagli. Se non rispondi il posto passa al primo degli esclusi.</td>
+              <td class="klass"><span class="chip chip--scad">Azione con scadenza</span></td>
+            </tr>
+            <tr>
+              <td class="what">Hai un esercizio da giocare<br><span class="note">la X</span></td>
+              <td class="cond">X in gara <code>playing</code> con politica <code>bye_with_challenge</code></td>
+              <td class="body">Turno, gara, punteggio massimo (quello del <em>turno</em>). <strong>Gioca l&rsquo;esercizio</strong> o <strong>Continua</strong>.<br><span class="note">Terzo caso: il direttore non ha scelto l&rsquo;esercizio &rarr; nessun pulsante, solo la spiegazione.</span></td>
+              <td class="klass"><span class="chip chip--scad">Azione con scadenza</span></td>
+            </tr>
+            <tr>
+              <td class="what">I tuoi match</td>
+              <td class="cond">partite <code>pending</code> o <code>playing</code></td>
+              <td class="body">Turno, gara, campionato, avversario (o i tre nomi del trio), punteggio, disciplina e distanza, tavolo. <strong>Gioca</strong> se il tavolo c&rsquo;&egrave;; altrimenti &laquo;In attesa del tavolo&raquo;, spento.</td>
+              <td class="klass"><span class="chip chip--az">Azione</span></td>
+            </tr>
+            <tr>
+              <td class="what">Esercizi attivi</td>
+              <td class="cond">esercizi attivi nelle gare in cui &egrave; iscritto</td>
+              <td class="body">Nome, il tuo miglior punteggio, tentativi. Apre l&rsquo;esercizio.</td>
+              <td class="klass"><span class="chip chip--az">Azione</span></td>
+            </tr>
+            <tr>
+              <td class="what">Gare</td>
+              <td class="cond">sempre (anche vuota)</td>
+              <td class="body">Otto stati &mdash; in preparazione, iscrizioni aperte, iscrizioni chiuse, in corso, turno completato, spareggi, conclusa (col podio), campionato concluso &mdash; incrociati con tre stati tuoi: iscritto, in lista d&rsquo;attesa <code>#n</code>, non iscritto. Le azioni cambiano con lo stato: Iscriviti, Lista d&rsquo;attesa, Disiscriviti, Dettagli, Turno N, Vedi risultati.<br><span class="note">Vuoto: &laquo;Nessuna gara aperta&raquo;.</span></td>
+              <td class="klass"><span class="chip chip--az">Azione</span></td>
+            </tr>
+            <tr>
+              <td class="what">Campionati</td>
+              <td class="cond">sempre (anche vuota)</td>
+              <td class="body">Attivi, poi una coda dei conclusi. Tipo, numero di gare, prossima data, distintivi (senza X, playoff, esercizi). Non attivo &rarr; card affossata.<br><span class="note">Vuoto: &laquo;Nessun campionato&raquo;.</span></td>
+              <td class="klass"><span class="chip chip--arch">Contesto</span></td>
+            </tr>
+            <tr>
+              <td class="what">Gare vicine a te</td>
+              <td class="cond">caricata dopo la pagina, in base alle tue province</td>
+              <td class="body">Tre stati suoi: l&rsquo;elenco, &laquo;nessuna gara aperta in zona&raquo;, &laquo;dicci dove giochi&raquo; con <strong>Imposta disponibilit&agrave;</strong>.</td>
+              <td class="klass"><span class="chip chip--az">Azione</span></td>
+            </tr>
+            <tr>
+              <td class="what">Proposte aperte<br><span class="note">sfide a due</span></td>
+              <td class="cond">proposte compatibili, al massimo 5</td>
+              <td class="body">Chi propone, sala, quando, distanza, quota. <strong>Accetta il match</strong>. In fondo, <strong>Proponi un match</strong>.</td>
+              <td class="klass"><span class="chip chip--az">Azione</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ DIRETTORE ============================ -->
+  <section class="block">
+    <div class="sechead">
+      <h2>Direttore</h2>
+      <span class="note">tutto quello del giocatore, pi&ugrave; la direzione</span>
+      <span class="count">4 differenze</span>
+    </div>
+
+    <p class="intro">
+      La rotta smista al ruolo pi&ugrave; alto: un direttore non passa mai da
+      <code>dashboard/player.html</code>, quindi la sua dashboard deve contenere
+      <em>anche</em> tutto il giocatore &mdash; le sue partite, le sue iscrizioni, i
+      suoi inviti. Le differenze sono quattro.
+    </p>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Differenza</th><th>Compare quando</th><th>Cosa mostra e cosa si pu&ograve; fare</th><th>Classe</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="what">Comandi di creazione</td>
+            <td class="cond">capability del ruolo</td>
+            <td class="body"><strong>Nuova Gara</strong> e <strong>Nuovo Campionato</strong> in testata.</td>
+            <td class="klass"><span class="chip chip--az">Azione</span></td>
+          </tr>
+          <tr>
+            <td class="what">N da chiudere</td>
+            <td class="cond">gare che dirige in <code>playing</code> o <code>awaiting_ssr</code></td>
+            <td class="body">Oggi &egrave; un badge rosso dentro il blocco di feedback, e <strong>non porta da nessuna parte</strong>: quelle gare stanno nell&rsquo;elenco sotto con la stessa pastiglia che vede un giocatore qualunque.</td>
+            <td class="klass"><span class="chip chip--scad">Azione con scadenza</span></td>
+          </tr>
+          <tr>
+            <td class="what">Gare e campionati che dirige</td>
+            <td class="cond"><code>can_manage</code></td>
+            <td class="body">Sulle stesse card: <strong>Gestisci</strong>, <strong>Gestisci spareggi</strong>, <strong>Gestione</strong>, matita di modifica quando il campionato &egrave; ancora modificabile.</td>
+            <td class="klass"><span class="chip chip--az">Azione</span></td>
+          </tr>
+          <tr>
+            <td class="what">Blocco &laquo;Come vanno le tue gare&raquo;</td>
+            <td class="cond">l&rsquo;ultimo fatto &egrave; da direttore</td>
+            <td class="body">Riempimento invece di Elo: ciambella dei posti occupati, barre degli iscritti gara per gara, striscia con i toni aperta / al completo / quasi piena / senza massimo.</td>
+            <td class="klass"><span class="chip chip--stato">Stato</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ============================ SCHERMATE ============================ -->
+  <section class="block">
+    <div class="sechead">
+      <h2>Le schermate da disegnare</h2>
+      <span class="count">18 &mdash; 6 prioritarie</span>
+    </div>
+    <p class="intro">
+      I casi non si moltiplicano fra loro: si scelgono. Queste sono le combinazioni che
+      esistono davvero e che cambiano il disegno. In scuro le sei che disegnerei per
+      prime, perch&eacute; ognuna decide una regola che poi vale per tutte le altre.
+    </p>
+
+    <div class="cases">
+      <div class="case case--pri"><span class="id">G1</span><span class="t">Primo accesso, profilo pieno</span><span class="d">Saluto intero con Elo, TPA e striscia, e sotto le cose da fare. Decide il rapporto fra i due posti.</span></div>
+      <div class="case case--pri"><span class="id">G2</span><span class="t">Dalla seconda visita</span><span class="d">Il saluto non c&rsquo;&egrave;: cosa apre la pagina? &Egrave; la schermata che si vede quasi sempre.</span></div>
+      <div class="case case--pri"><span class="id">G3</span><span class="t">Partita in corso, tavolo assegnato</span><span class="d">Il caso pi&ugrave; urgente dell&rsquo;app. Decide dove va il comando che si usa al tavolo.</span></div>
+      <div class="case case--pri"><span class="id">G4</span><span class="t">Nessuna gara, nessun match</span><span class="d">Stati vuoti veri: due sezioni vuote e le gare vicine. Decide cosa si offre a chi non ha niente.</span></div>
+      <div class="case case--pri"><span class="id">D1</span><span class="t">Direttore con turni da chiudere</span><span class="d">Il badge diventa un percorso. Decide come si separa dirigere da giocare.</span></div>
+      <div class="case case--pri"><span class="id">O1</span><span class="t">Ospite a sistema pieno</span><span class="d">Diretta, iscrizioni aperte, campionato. Decide l&rsquo;ordine e dove si chiede l&rsquo;account.</span></div>
+
+      <div class="case"><span class="id">G5</span><span class="t">Appena iscritto</span><span class="d">Card dei tre passi, nessuna gara, nessun dato.</span></div>
+      <div class="case"><span class="id">G6</span><span class="t">Partita senza tavolo</span><span class="d">Comando spento e attesa: cosa si dice a chi non pu&ograve; ancora giocare.</span></div>
+      <div class="case"><span class="id">G7</span><span class="t">La X da sostituire</span><span class="d">Nelle tre varianti: da giocare, iniziata, esercizio non configurato.</span></div>
+      <div class="case"><span class="id">G8</span><span class="t">Invito ai playoff</span><span class="d">Accetta / rifiuta con scadenza, e cosa succede se non rispondi.</span></div>
+      <div class="case"><span class="id">G9</span><span class="t">Iscrizioni aperte, lista d&rsquo;attesa</span><span class="d">Gara piena, posizione in lista, disiscrizione.</span></div>
+      <div class="case"><span class="id">G10</span><span class="t">Gara conclusa e campionato concluso</span><span class="d">Podio, classifica finale, e cosa resta da fare (niente).</span></div>
+      <div class="case"><span class="id">G11</span><span class="t">Sfida a due</span><span class="d">Proposta ricevuta, match individuale in corso, disponibilit&agrave;.</span></div>
+      <div class="case"><span class="id">G12</span><span class="t">Di rientro</span><span class="d">&laquo;Dove eri rimasto&raquo;: saluto diverso, proiezione, striscia senza nota.</span></div>
+      <div class="case"><span class="id">G13</span><span class="t">Solo esercizi</span><span class="d">Il saluto a barre invece che a linea, e gli esercizi attivi in evidenza.</span></div>
+      <div class="case"><span class="id">D2</span><span class="t">Direttore agli spareggi</span><span class="d">Gara finita ma non chiusa: parimerito da risolvere.</span></div>
+      <div class="case"><span class="id">D3</span><span class="t">Direttore in preparazione</span><span class="d">Gara creata, iscrizioni non ancora aperte, nessun iscritto.</span></div>
+      <div class="case"><span class="id">O2</span><span class="t">Ospite senza diretta</span><span class="d">Solo iscrizioni aperte e archivio: la home quando non si gioca.</span></div>
+      <div class="case"><span class="id">O3</span><span class="t">Ospite a sistema vuoto</span><span class="d">La pagina che compare quando non c&rsquo;&egrave; nulla di pubblico.</span></div>
+    </div>
+  </section>
+
+  <!-- ============================ DECISIONI ============================ -->
+  <section class="block">
+    <div class="sechead">
+      <h2>Le decisioni da prendere</h2>
+      <span class="count">4</span>
+    </div>
+    <p class="intro">
+      Non sono scelte grafiche: cambiano cosa fa la dashboard. Le altre discendono da
+      queste quattro.
+    </p>
+
+    <div class="asks">
+      <div class="ask">
+        <div class="q">1. Cosa apre la pagina dalla seconda visita in poi?</div>
+        <div class="why">
+          Il saluto occupa il primo schermo <em>una volta sola</em>, per scelta. Tutte le
+          altre volte quel posto &egrave; libero, e oggi lo prende la prima sezione che
+          capita &mdash; inviti playoff se ci sono, altrimenti la X, altrimenti i match,
+          altrimenti direttamente l&rsquo;elenco delle gare.
+        </div>
+        <ul class="opts">
+          <li>Resta l&rsquo;ordine attuale, che &egrave; gi&agrave; per urgenza decrescente.</li>
+          <li>Un unico blocco &laquo;da fare&raquo; che raccoglie playoff, X, partite e scadenze in una lista sola.</li>
+          <li>Niente in cima: si parte dalle gare, e le cose da fare restano dove sono.</li>
+        </ul>
+      </div>
+
+      <div class="ask">
+        <div class="q">2. La partita compare una volta o due?</div>
+        <div class="why">
+          Una gara in corso in cui giochi compare oggi due volte: come card in &laquo;I
+          tuoi match&raquo; e come card in &laquo;Gare&raquo;, con due pulsanti che portano
+          quasi nello stesso posto.
+        </div>
+        <ul class="opts">
+          <li>Restano due sezioni: i match sono un&rsquo;altra cosa dalle gare.</li>
+          <li>Una sola card di gara che contiene la partita.</li>
+          <li>Due sezioni ma senza ripetizione: la gara con una partita in corso non compare in &laquo;Gare&raquo;.</li>
+        </ul>
+      </div>
+
+      <div class="ask">
+        <div class="q">3. Cosa si fa <em>dalla</em> dashboard e cosa si apre?</div>
+        <div class="why">
+          Oggi dalla dashboard si fanno davvero: iscriversi, disiscriversi, accettare o
+          rifiutare un playoff, accettare una sfida, avviare l&rsquo;esercizio della X.
+          Tutto il resto &egrave; un collegamento. Per il direttore, invece,
+          <em>nessuna</em> azione di direzione &egrave; sulla dashboard.
+        </div>
+        <ul class="opts">
+          <li>Resta cos&igrave;: la dashboard porta, la pagina della gara fa.</li>
+          <li>Anche le due mosse pi&ugrave; frequenti del direttore (chiudere il turno, assegnare i tavoli) si fanno da qui.</li>
+        </ul>
+      </div>
+
+      <div class="ask">
+        <div class="q">4. Il direttore che gioca: un elenco o due?</div>
+        <div class="why">
+          Oggi le gare che dirige e quelle in cui gioca stanno nello stesso elenco, con
+          le stesse pastiglie di stato: la differenza la fa solo il pulsante.
+        </div>
+        <ul class="opts">
+          <li>Un elenco solo, come adesso.</li>
+          <li>Due sezioni separate: &laquo;che dirigi&raquo; e &laquo;in cui giochi&raquo;.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    Condizioni e comportamenti verificati nel codice il 30 agosto 2026 &mdash;
+    <code>models/dashboard/</code>, <code>models/campionato/homepage_service.py</code>,
+    <code>utils/activity_feedback_view.py</code> e i componenti in
+    <code>templates/components/</code>. Nessuna condizione &egrave; dedotta
+    dall&rsquo;aspetto delle schermate.
+  </footer>
+
+</div>

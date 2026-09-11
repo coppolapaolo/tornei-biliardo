@@ -66,24 +66,32 @@ class TestCountableMetrics:
         from models.competition.models import Gara, Inscription
 
         uid = isolated_players[0].id
-        gara = Gara(
-            name="participation gara",
-            number=1,
-            date=date.today(),
-            distance=5,
-            discipline="9_ball",
-            matchmaking_strategy="amalfi",
-            status="playing",
-        )
-        db_session.add(gara)
-        db_session.flush()
 
-        db_session.add(Inscription(gara_id=gara.id, user_id=uid))  # attiva → conta
+        # Tre gare e non tre iscrizioni alla stessa: dal vincolo
+        # `uq_inscription_gara_user` un giocatore ha una sola iscrizione per
+        # gara, e i tre stati vanno messi dove possono davvero convivere.
+        def _gara(nome):
+            gara = Gara(
+                name=nome,
+                number=1,
+                date=date.today(),
+                distance=5,
+                discipline="9_ball",
+                matchmaking_strategy="amalfi",
+                status="playing",
+            )
+            db_session.add(gara)
+            db_session.flush()
+            return gara
+
         db_session.add(
-            Inscription(gara_id=gara.id, user_id=uid, is_withdrawn=True)
+            Inscription(gara_id=_gara("attiva").id, user_id=uid)
+        )  # attiva → conta
+        db_session.add(
+            Inscription(gara_id=_gara("ritirata").id, user_id=uid, is_withdrawn=True)
         )  # ritirata → non conta
         db_session.add(
-            Inscription(gara_id=gara.id, user_id=uid, is_waitlist=True)
+            Inscription(gara_id=_gara("attesa").id, user_id=uid, is_waitlist=True)
         )  # waitlist → non conta
         db_session.commit()
 

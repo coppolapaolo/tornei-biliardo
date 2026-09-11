@@ -212,6 +212,25 @@ anti-invasiveness intensity scale (§11/§11-quater).
   update, cap = 1 capped toast/session (with reset + privacy degrade),
   `prefers-reduced-motion` no-op, confetti only on strong events,
   welcome/nudge/unlock toasts. **26 checks**.
+- **File**: `tests/frontend/test_x_challenge_section.cjs` — carica i veri
+  `static/js/x_challenge_section.js` e `static/js/bracket_options.js` e verifica
+  `form.checkValidity()`, cioè la differenza fra «Salva funziona» e «Salva non
+  fa niente». Presidia il guasto del 2026-09-04: il campo dell'esercizio della X
+  era `required` dentro una sezione `display:none`, e il browser bloccava
+  l'invio senza poter mostrare il messaggio (l'elemento nascosto non riceve il
+  focus). **La forma HTML** — che il `required` non sia scritto nel template —
+  la presidia invece `tests/new/unit/test_x_challenge_section_template.py`:
+  sono due domande diverse, e il difetto stava nella seconda.
+- Gli altri due file (`test_iscritti_ricerca.cjs`, `test_polling_cursore.cjs`)
+  coprono la ricerca fra gli iscritti e il cursore del polling live.
+- **File**: `tests/frontend/test_help_hints.cjs` — la «modalità aiuto» di
+  `static/js/help-hints.js` (ADR-058): si accende solo dove la pagina espone
+  `[data-help-toggle]`, chiama `/aiuto/api/schermata/<endpoint>`, mette una
+  «?» per ogni `[data-help]` (dentro i titoli, *dopo* i pulsanti), apre il
+  fumetto, mostra la presentazione una volta per schermata, si spegne
+  dall'interruttore e regge senza `localStorage`. Il contratto ancora↔template
+  lo presidia invece `tests/new/unit/test_help_anchors.py` (statico), e il
+  giunto pagina↔API `tests/new/integration/test_help_hints_prova.py`.
 - **Run**: `cd tests/frontend && npm install && npm test`
   (jsdom is the only dependency; `node_modules` is gitignored).
 - **Standalone toolchain**: intentionally decoupled from pytest and not in CI
