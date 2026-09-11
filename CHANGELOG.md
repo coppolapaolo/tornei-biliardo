@@ -32,6 +32,13 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **La cifra del punteggio si vede cambiare.** Quando un triangolo viene
+  segnato, il numero grande della partita sale da sotto e si accende in un
+  quarto di secondo, invece di trovarsi già cambiato: sul tabellone da
+  tavolo al tocco, e sull'altro telefono quando arriva l'aggiornamento;
+  sulla card del punteggio anche dopo il ricaricamento della pagina, perché
+  lo script si ricorda cosa diceva prima e fa saltare solo la cifra diversa.
+  Un aggiornamento che porta lo stesso numero non muove niente.
 - **Il cambio pagina senza lampo bianco.** L'app è fatta di pagine intere:
   ogni tocco su un link ne chiede una nuova al server, e fra le due c'era un
   istante di bianco — su PythonAnywhere anche un terzo di secondo — che

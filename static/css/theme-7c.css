@@ -3081,3 +3081,18 @@ a.c7-rows__row:hover { background: var(--c7-sunken); }
 @media (prefers-reduced-motion: reduce) {
   @view-transition { navigation: none; }
 }
+
+/* La cifra del punteggio che cambia si vede cambiare: sale da sotto e si
+   accende in `base`. Sul tabellone la scrive `c7Board.aggiorna` tramite
+   `c7ScorePop.segna`; sulla card verticale il cambio passa da un
+   ricaricamento, e score_pop.js confronta con quello che c'era prima. Solo
+   transform e opacity: le due cifre stanno in colonne flex, quindi il
+   transform si applica anche se sono <span>. */
+.c7-score__num.is-pop,
+.c7-board__num.is-pop {
+  animation: c7-pop var(--c7-dur-base) var(--c7-ease) both;
+}
+@keyframes c7-pop {
+  from { opacity: 0; transform: translateY(.22em) scale(.94); }
+  to   { opacity: 1; transform: none; }
+}
