@@ -3053,3 +3053,31 @@ a.c7-rows__row:hover { background: var(--c7-sunken); }
 .modal.fade .modal-dialog {
   transition: transform var(--c7-dur-base) var(--c7-ease);
 }
+
+/* Il cambio pagina. L'app e' multipagina: ogni link e' una navigazione
+   intera, e fra le due pagine c'era un lampo bianco. Con la view transition
+   cross-document il browser tiene la pagina vecchia sullo schermo finche' la
+   nuova non e' pronta — i 350 ms che costa una richiesta in produzione si
+   passano guardando la pagina di prima — e poi dissolve alla durata `base`.
+   Testata, barra laterale e nav mobile hanno un nome: restano ferme e cambia
+   solo quello che sta in mezzo. Dove il browser non lo sa fare non succede
+   niente. Un nome che compare due volte nella stessa pagina fa saltare la
+   transizione in silenzio: la testata unica la tiene
+   test_single_page_header.py, gli altri due stanno solo in base.html. Il
+   `location.reload()` non e' una navigazione che transita: chi vuole la
+   dissolvenza dopo un'azione usa `location.replace(location.href)`. */
+@view-transition { navigation: auto; }
+::view-transition-group(*),
+::view-transition-old(*),
+::view-transition-new(*) {
+  animation-duration: var(--c7-dur-base);
+  animation-timing-function: var(--c7-ease);
+}
+.c7-head      { view-transition-name: c7-head; }
+.c7-side      { view-transition-name: c7-side; }
+.c7-mobilenav { view-transition-name: c7-mobilenav; }
+/* Le durate a zero non bastano: la transizione catturerebbe comunque le due
+   pagine, e su un telefono lento si vede. Con «riduci movimento» non parte. */
+@media (prefers-reduced-motion: reduce) {
+  @view-transition { navigation: none; }
+}

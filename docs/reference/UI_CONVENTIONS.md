@@ -1111,6 +1111,13 @@ Principi, in ordine di importanza:
 4. **Chi chiede meno movimento lo ottiene alla fonte**: con
    `prefers-reduced-motion: reduce` le due durate vanno a zero in
    `tokens-7c.css`. Solo i battiti (`infinite`) portano il proprio guard.
+5. **Il cambio pagina è una view transition cross-document.** L'app è
+   multipagina: `@view-transition { navigation: auto }` tiene la pagina
+   vecchia sullo schermo finché la nuova non è pronta e poi dissolve a
+   `base`; testata, barra laterale e nav mobile hanno un nome e restano
+   ferme. Un nome duplicato nella stessa pagina annulla la transizione in
+   silenzio; `location.reload()` non transita, si usa
+   `location.replace(location.href)`. Con «riduci movimento» non parte.
 
 ---
 
