@@ -19,10 +19,17 @@
 {% from "components/_tessera_gara.html" import tessera_gara with context %}
 {% from "components/_tessera_campionato.html" import tessera_campionato with context %}
 
+{# QUESTO FILE LO VEDE ANCHE L'OSPITE: `index.html` lo include, perché la
+   home pubblica è la sua dashboard e deve mostrare le stesse tessere. Le
+   sezioni che parlano di fatti suoi — la X, le sfide, gli esercizi, «Le tue
+   gare» — per lui sono vuote e non compaiono; i titoli e i vuoti cambiano
+   parola dove «puoi iscriverti» non sarebbe vero. #}
+{% set ospite = not current_user.is_authenticated %}
+
 {# La X da sostituire con una prova sta **sopra** tutto: è l'unica cosa da
    fare che nessun'altra schermata annuncia — il match con la X nasce già
    concluso e non compare fra le partite in corso (issue #221). #}
-{% include "components/_bye_challenges.html" %}
+{% if not ospite %}{% include "components/_bye_challenges.html" %}{% endif %}
 
 {% macro _titolo(testo, conteggio, link_url=None, link_testo=None, dot=False) %}
   <div class="d-flex align-items-center gap-3 mb-3">
@@ -51,7 +58,7 @@
 
 {# La sfida a due risponde alla stessa domanda — cosa devo giocare — ma resta
    una sezione a sé: non ha una gara dentro cui stare. #}
-{% include "components/_sfide_in_corso.html" %}
+{% if not ospite %}{% include "components/_sfide_in_corso.html" %}{% endif %}
 
 {% if vm.available_challenges %}
 <section class="mb-4">
@@ -72,7 +79,7 @@
 {# ── Aperte, puoi iscriverti ────────────────────────────────────────── #}
 {% if gare and gare.aperte %}
 <section class="mb-4">
-  {{ _titolo(_('Aperte, puoi iscriverti') if not current_user.is_admin else _('Iscrizioni aperte'), gare.aperte|length, url_for('main.public_garas_list'), _('Vedi tutte')) }}
+  {{ _titolo(_('Iscrizioni aperte') if (ospite or current_user.is_admin) else _('Aperte, puoi iscriverti'), gare.aperte|length, url_for('main.public_garas_list'), _('Vedi tutte')) }}
   <div class="c7-grid" style="{{ griglia }}">
     {% for card in gare.aperte %}{{ tessera_gara(card) }}{% endfor %}
   </div>
@@ -95,7 +102,7 @@
 <section class="mb-4">
   <div class="c7-empty">
     <div class="c7-empty__ico"><i class="fas fa-bullseye"></i></div>
-    <div class="c7-empty__title">{{ _('Nessuna gara per te, per ora') }}</div>
+    <div class="c7-empty__title">{{ _('Nessuna gara in programma') if ospite else _('Nessuna gara per te, per ora') }}</div>
     <p class="c7-empty__text">{{ _('Quando un direttore apre le iscrizioni a una gara la trovi qui.') }}</p>
     <div class="c7-empty__actions">
       <a href="{{ url_for('main.public_garas_list') }}" class="btn btn-secondary">{{ _('Guarda tutte le gare') }}</a>

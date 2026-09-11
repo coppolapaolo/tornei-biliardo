@@ -61,6 +61,7 @@
 {% set partita = card.prossima_partita %}
 {% set aperta = card.real_status == GaraStatus.INSCRIPTION.value %}
 {% set puo_iscriversi = current_user.is_authenticated and not current_user.is_admin and not gara.is_prova %}
+{% set ospite = not current_user.is_authenticated %}
 <article class="c7-card d-flex flex-column gap-3{{ ' c7-card--accent' if card.is_in_corso }}">
 
   {# ── Testata ─────────────────────────────────────────────────────── #}
@@ -143,8 +144,10 @@
         {% set chiuse = gara.matches|selectattr('status', 'in', [MatchStatus.CLOSED_UNILATERALLY.value, MatchStatus.CONFIRMED_BY_BOTH.value])|list|length %}
         <span class="flex-fill">{{ _('Partite') }} <span class="c7-num">{{ chiuse }}/{{ total_matches }}</span></span>
       {% else %}
+        {# `display_round`, non `current_round`: con i turni pre-generati il
+           secondo resta indietro rispetto al turno in gioco (issue #62). #}
         <span class="flex-fill">{{ _('Turno') }}
-          <span class="c7-num">{{ [gara.current_round, 1]|max }}{% if gara.total_rounds %}/{{ gara.total_rounds }}{% endif %}</span>
+          <span class="c7-num">{{ gara.display_round }}{% if gara.total_rounds %}/{{ gara.total_rounds }}{% endif %}</span>
         </span>
       {% endif %}
       <span class="c7-tessera__muted"><span class="c7-num">{{ gara.get_active_inscriptions_count() }}</span> {{ _('giocatori') }}</span>
@@ -289,7 +292,8 @@
   {% endif %}
 
   {# ── Azioni ───────────────────────────────────────────────────────── #}
-  {% set dettaglio = url_for('admin.competition.gara_detail', gara_id=card.id) %}
+  {# L'ospite ha la pagina pubblica della gara; chi è entrato quella completa. #}
+  {% set dettaglio = url_for('main.gara_detail_public', gara_id=card.id) if ospite else url_for('admin.competition.gara_detail', gara_id=card.id) %}
   <div class="c7-tessera__actions">
     {% if card.is_conclusa %}
       <a href="{{ dettaglio }}" class="btn btn-secondary">{{ _('Risultati') }}</a>
@@ -327,6 +331,15 @@
     {% elif card.is_in_corso %}
       <a href="{{ dettaglio }}" class="btn btn-primary">{{ _('Segui la diretta') }}</a>
 
+    {% elif aperta and ospite %}
+      {# Solo l'ospite arriva qui. Il comando resta «Iscriviti» — è la cosa
+         che si vuole fare — e la riga sotto dice che serve un account
+         gratuito, cioè l'unica informazione che toglie l'ostacolo. Il `next`
+         riporta qui, così dopo l'accesso non si è persa la gara. #}
+      <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-success">
+        {% if gara.is_full() %}{{ _("Mettiti in lista d'attesa") }}{% else %}{{ _('Iscriviti') }}{% endif %}
+      </a>
+
     {% elif aperta %}
       {% if card.can_view_details %}
       <a href="{{ dettaglio }}" class="btn btn-secondary">{{ _('Dettagli') }}</a>
@@ -347,5 +360,8 @@
       <a href="{{ dettaglio }}" class="btn btn-secondary">{{ _('Dettagli') }}</a>
     {% endif %}
   </div>
+  {% if aperta and ospite %}
+  <div class="c7-tessera__meta text-center" style="margin-top:-6px">{{ _('Serve un account gratuito: ci vogliono trenta secondi') }}</div>
+  {% endif %}
 </article>
 {% endmacro %}

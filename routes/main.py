@@ -22,13 +22,15 @@ def index():
     if current_user.is_authenticated:
         return redirect(url_for("dashboard.dashboard"))
 
-    from models.campionato.homepage_service import HomepageService
+    from models.dashboard.dashboard_service import DashboardService
 
-    data = HomepageService.get_homepage_data()
-    if data is None:
+    # La home dell'ospite è la sua dashboard: stessi elenchi, stesse tessere
+    # (regola 1 del 2026-09-10), senza nessun fatto suo.
+    vm = DashboardService.for_guest()
+    if not vm.ha_qualcosa_da_mostrare:
         return render_template("no_campionato.html")
 
-    return render_template("index.html", **data)
+    return render_template("index.html", vm=vm)
 
 
 @main_bp.route("/privacy")

@@ -850,8 +850,8 @@ hints:
 tours:
 - screen: dashboard.dashboard
   title: Your home
-  intro: 'Everything starts here: how you are doing, the competitions you are registered for, the championships
-    you follow and competitions near you.'
+  intro: 'Everything starts here: how you are doing, the competitions you are registered for, the ones
+    in progress, the championships and competitions near you.'
   audience:
   - giocatore
   steps:
@@ -865,9 +865,15 @@ tours:
   - title: Individual matches
     text: 'Matches outside a competition, scheduled or already started, have a section of their own just
       below your competitions.'
+  - title: Live now
+    text: The competitions being played right now, including those you are not in, with the scores
+      at the tables. The dark card is the live one.
   - title: Open, you can register
     text: 'The competitions you can still register for are in a separate section further down: one tap on
       the green button and you are in.'
+  - title: Finished
+    text: 'The latest finished competition and those of the last month, everyone''s: the ones you played
+      or directed are marked «You played» and «You directed». The others are in the history.'
   - title: At the bottom of the screen
     text: The bar with Dashboard, Venues, Matches, Challenges and Notifications takes you everywhere.
       On a computer it is the left-hand column.

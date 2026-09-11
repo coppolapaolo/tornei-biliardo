@@ -768,7 +768,7 @@ hints:
 tours:
   - screen: dashboard.dashboard
     title: "La tua home"
-    intro: "Da qui parte tutto: come stai andando, le gare a cui sei iscritto, i campionati che segui e le gare vicine a te."
+    intro: "Da qui parte tutto: come stai andando, le gare a cui sei iscritto, quelle in corso, i campionati e le gare vicine a te."
     audience: [giocatore]
     steps:
       - title: "Il riepilogo che ti accoglie"
@@ -777,8 +777,12 @@ tours:
         text: "Sotto «Le tue gare» c'è solo quello che ti riguarda: le gare a cui sei iscritto e quelle che dirigi. La tua partita di adesso sta dentro la scheda della sua gara."
       - title: "Sfide a due"
         text: "Le partite fuori gara, fissate o già iniziate, hanno una sezione tutta loro subito sotto le tue gare."
+      - title: "In diretta ora"
+        text: "Le gare che si stanno giocando adesso, anche quelle in cui non giochi, con i punteggi ai tavoli: la scheda scura è la diretta."
       - title: "Aperte, puoi iscriverti"
         text: "Le gare a cui puoi ancora iscriverti stanno in una sezione separata, più in basso: un tocco sul pulsante verde e sei dentro."
+      - title: "Concluse"
+        text: "L'ultima gara conclusa e quelle dell'ultimo mese, di tutti: quelle che hai giocato o diretto portano scritto «Hai giocato» e «Hai diretto». Le altre stanno nello storico."
       - title: "In fondo allo schermo"
         text: "La barra con Dashboard, Sale, Sfide, Esercizi e Notifiche ti porta ovunque. Su computer è la colonna di sinistra."
 

@@ -13,53 +13,25 @@
 {# QUESTA PAGINA LA VEDONO SOLO GLI OSPITI.
 
    `main.index` rimanda alla dashboard chiunque sia autenticato, prima ancora
-   di caricare i dati, e `index.html` non lo renderizza nessun altro. Quindi in
-   questo file e nei sei componenti che include un ramo
-   `current_user.is_authenticated` non si apre mai: erano rami morti che
-   raccontavano una pagina inesistente — su `_index_open_inscriptions.html`
-   c'era perfino un form di iscrizione che nessun iscritto poteva vedere.
-   Sono stati tolti; se un giorno servisse mostrare queste sezioni a chi e'
-   entrato, si riaggiungono sapendo cosa si sta aggiungendo.
+   di caricare i dati: `index.html` non lo renderizza nessun altro.
+
+   Dal 10/09 la home **è** la dashboard dell'ospite (regola 1 del canvas
+   «Tessera»): `DashboardService.for_guest()` produce gli stessi elenchi di
+   chi è entrato — in diretta, iscrizioni aperte, in arrivo, concluse,
+   campionati — e le tessere sono le stesse, senza nessun fatto suo. I sei
+   componenti `_index_*` che disegnavano la home a parte sono spariti: due
+   disegni per la stessa gara erano coerenti per intenzione, non per
+   costruzione.
 
    La pagina parte da quello che sta succedendo, non da come si partecipa.
+   Prima in cima c'era il blocco «Come si partecipa»: tre passi e due
+   pulsanti, che un visitatore incontrava **prima** di sapere se qui succede
+   qualcosa che gli interessa. L'account non sparisce: si chiede **dove
+   serve**, cioè sul pulsante «Iscriviti» di una gara precisa, con sotto una
+   riga che dice che è gratis (vedi `_tessera_gara.html`). Il blocco dei tre
+   passi resta, in fondo. #}
 
-   Prima in cima c'era il blocco «Come si partecipa»: tre passi e due pulsanti,
-   che un visitatore incontrava **prima** di sapere se qui succede qualcosa che
-   gli interessa. La domanda che si fa arrivando è l'altra — c'è del biliardo?
-   — e la risposta e' due sezioni piu' giu'.
-
-   L'account non sparisce: si chiede **dove serve**, cioè sul pulsante
-   «Iscriviti» di una gara precisa, con sotto una riga che dice che è gratis
-   (`_index_open_inscriptions.html`). Il blocco dei tre passi resta, in fondo:
-   chi ha scorso tutta la pagina ed è interessato lo trova, e nel frattempo
-   non si è messo in mezzo. #}
-
-{# 1. In diretta ora — gare playing/awaiting_ssr + match ai tavoli #}
-{% include "components/_index_live.html" %}
-
-{# 2. Iscrizioni aperte — posti e scadenza ben visibili #}
-{% include "components/_index_open_inscriptions.html" %}
-
-{# 3. Campionati in corso — con testa della classifica generale #}
-{% if active_campionati %}
-<section class="c7-stack" style="margin-top: 34px;">
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-        <div>
-            <div class="c7-kicker">{{ ngettext("%(count)s campionato", "%(count)s campionati", active_campionati_count, count=active_campionati_count) }}</div>
-            <h2 style="margin: 4px 0 0;">{{ _("Campionati in corso") }}</h2>
-        </div>
-        <a href="{{ url_for('main.public_campionatos_list') }}" class="btn btn-secondary btn-sm">{{ _("Vedi tutti") }}</a>
-    </div>
-    {% set tournaments_data = active_campionati %}
-    {% include "components/_index_campionato_cards.html" %}
-</section>
-{% endif %}
-
-{# 4. In arrivo — gare/campionati in preparazione #}
-{% include "components/_index_upcoming.html" %}
-
-{# 5. Archivio — campionati e gare concluse (coda recente) #}
-{% include "components/_index_archive.html" %}
+{% include "components/_separated_dashboard_content.html" %}
 
 {# 6. Come si partecipa — l'invito di chiusura, solo per chi non è entrato #}
 {% include "components/_index_registration_info.html" %}

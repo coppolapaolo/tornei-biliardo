@@ -8,11 +8,11 @@
 # is the fallback used when they do not.
 
 home-come-si-partecipa: "The «How to take part» panel at the bottom of the home page: the three steps and the Sign in and Register buttons."
-home-pubblica: "The Tornei Biliardo home page as seen by someone without an account: it opens with «Live now», then the competitions open for registration."
+home-pubblica: "The Tornei Biliardo home page as seen by someone without an account: it opens with «Live now», then the competitions open for registration, the ones finished in the last month and the championships. The cards are the same ones a signed-in user sees."
 registrazione: "The sign-up form: username, email and password."
 gare-aperte: "The public list of competitions, each with its status."
 campionati-pubblici: "The list of championships in progress."
-dashboard-giocatore: "A player's home right after coming in: the «How you are doing» panel at the top, then «Your competitions», «Individual matches», «Open, you can register», the championships, and competitions near you."
+dashboard-giocatore: "A player's home right after coming in: the «How you are doing» panel at the top, then «Your competitions», «Head-to-head matches», «Live now», «Open, you can register», the competitions finished in the last month, the championships, and competitions near you."
 gara-iscrizione: "A competition open for registration: the «Register» button is at the bottom of the card."
 gara-iscritto: "The same competition after registering: «Your registration» appears at the top, along with the list of entrants."
 gara-turni: "A competition in progress as a player sees it: the matches of the round, with the results already recorded."

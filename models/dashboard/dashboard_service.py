@@ -19,7 +19,7 @@ from models.user.models import DirectorAssignment
 from models.competition.models import Gara, Inscription
 from models.match.models import Match as TournamentMatch
 from models.user.models import User
-from models.status_enum import GaraStatus, MatchStatus
+from models.status_enum import MatchStatus
 
 from .activity_feedback import ActivityFeedbackService, has_any_activity
 from .campionato_cards import build_campionato_cards, enrich_with_classifica
@@ -516,15 +516,23 @@ class DashboardService:
         """Dashboard view model for guest (non-authenticated) users."""
         campionati = campionatos_q().all()
 
-        standalone_garas = (
-            Gara.query.filter_by(campionato_id=None)
-            .filter(Gara.status != GaraStatus.SETUP.value)
-            .order_by(Gara.date.desc())
-            .all()
-        )
+        # Le stesse gare standalone della dashboard: `build_unified_items`
+        # toglie da sé le SETUP con data passata (zombie) a chi non le
+        # gestisce, e quelle future sono «in arrivo» come per chi è entrato.
+        standalone_garas = standalone_q().all()
 
         unified_items = build_unified_items(
             campionati, standalone_garas, user_role=UserRole.GUEST.value, user_id=None
+        )
+
+        # La home dell'ospite è la sua dashboard (regola 1 del 2026-09-10):
+        # gli stessi elenchi e le stesse tessere di chi è entrato, senza
+        # nessun fatto suo — quindi in diretta, aperte, in arrivo, concluse.
+        gare = build_gara_cards(unified_items, None, None)
+        enrich_with_progress(gare.in_diretta, None)
+        campionati_tessere = build_campionato_cards(unified_items, None)
+        enrich_with_classifica(
+            campionati_tessere.attivi + campionati_tessere.conclusi, None
         )
 
         guest_caps = CapabilityVM(
@@ -538,6 +546,8 @@ class DashboardService:
             title=_("Vista Pubblica"),
             campionati=campionati,
             unified_items=unified_items,
+            gare=gare,
+            campionati_tessere=campionati_tessere,
             selected_campionato=None,
             selected_gara=None,
             selector_items=[],
