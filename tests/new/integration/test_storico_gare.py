@@ -174,13 +174,79 @@ def test_anno_e_ricerca_arrivano_dall_indirizzo(client, scenario):
 
 
 @pytest.mark.integration
-def test_la_dashboard_manda_allo_storico(client, scenario):
+def test_la_dashboard_manda_allo_storico(client, scenario, isolated_director_user):
     """Il link «Storico» delle concluse punta qui, non all'elenco delle sole
-    standalone."""
-    _login(client, scenario["p0"], "player123")
-    html = client.get("/dashboard").get_data(as_text=True)
-    assert 'href="/storico"' in html
-    assert 'href="/garas">Storico' not in html
+    standalone; e i vecchi «Vedi tutte» / «Vedi tutti» accanto ai titoli non
+    ci sono più, né per chi gioca né per chi dirige (#332)."""
+    for utente, password in (
+        (scenario["p0"], "player123"),
+        (isolated_director_user, "director123"),
+    ):
+        _login(client, utente, password)
+        html = client.get("/dashboard").get_data(as_text=True)
+        assert 'href="/storico"' in html
+        assert 'href="/garas">Storico' not in html
+        assert "Vedi tutt" not in html, utente.username
+        client.get("/auth/logout")
+
+
+@pytest.mark.integration
+def test_due_primi_a_pari_merito_non_hanno_un_vincitore(client, db_session, scenario):
+    """`StateService.complete` non designa un vincitore quando il primo posto
+    è conteso: lo storico non deve sceglierne uno a caso (rilievo #333)."""
+    vecchia, p0, p1 = scenario["vecchia"], scenario["p0"], scenario["p1"]
+    db_session.add(GaraClassification(gara_id=vecchia.id, user_id=p0.id, position=1))
+    db_session.commit()
+
+    html = client.get("/storico").get_data(as_text=True)
+    riga = html.split(vecchia.name, 1)[1].split("</a>", 1)[0]
+    assert p0.username not in riga
+    assert p1.username not in riga
+
+
+@pytest.mark.integration
+def test_conclusa_per_derivazione_prende_il_vincitore_dall_ultimo_turno(
+    client, db_session, scenario
+):
+    """Una gara `playing` coi turni finiti è conclusa (stato derivato) ma
+    nessuno ha premuto «Termina»: `GaraClassification` non c'è ancora. Il
+    vincitore si legge dalla classifica dell'ultimo turno (rilievo #333)."""
+    from models.classification.models import RoundClassification
+    from models.match.models import Match
+    from models.status_enum import MatchStatus
+
+    p0, p1 = scenario["p0"], scenario["p1"]
+    derivata = _gara(
+        f"Derivata {_uid()}",
+        date.today() - timedelta(days=1),
+        status=GaraStatus.PLAYING.value,
+    )
+    derivata.rounds_count = 1
+    db_session.add(derivata)
+    db_session.flush()
+    db_session.add_all(
+        [
+            Match(
+                gara_id=derivata.id,
+                round_number=1,
+                player1_id=p0.id,
+                player2_id=p1.id,
+                player1_score=5,
+                player2_score=1,
+                status=MatchStatus.CLOSED_UNILATERALLY.value,
+                winner_id=p0.id,
+            ),
+            RoundClassification(
+                gara_id=derivata.id, round_number=1, user_id=p0.id, position=1
+            ),
+        ]
+    )
+    db_session.commit()
+
+    html = client.get("/storico").get_data(as_text=True)
+    assert derivata.name in html
+    riga = html.split(derivata.name, 1)[1].split("</a>", 1)[0]
+    assert p0.username in riga
 
 
 @pytest.mark.integration

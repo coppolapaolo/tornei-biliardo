@@ -278,7 +278,11 @@ class TournamentStatisticsService:
                     user_id = classification.user_id
                     if user_id in player_totals:
                         points = position_points.get(classification.position, 0)
-                        player_totals[user_id]["total_points"] += points
+                        # Anche i punti per piazzamento seguono il peso della
+                        # gara (ADR-053), come nelle righe persistite.
+                        player_totals[user_id]["total_points"] += (
+                            gara.classification_weight * points
+                        )
 
         return player_totals
 

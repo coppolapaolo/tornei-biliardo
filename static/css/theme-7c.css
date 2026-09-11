@@ -2965,7 +2965,7 @@ a.c7-vt__ovr:hover { color: var(--c7-on-ink); }
    Le righe sono `.c7-rows`, l'elenco compatto che c'e' gia'. */
 .c7-seg { display: flex; background: var(--c7-card); border-radius: var(--c7-r-field); padding: 4px; gap: 4px; }
 .c7-seg__item {
-  flex: 1; height: 40px; border-radius: var(--c7-r-control);
+  flex: 1; min-height: var(--c7-touch); border-radius: var(--c7-r-control);
   display: flex; align-items: center; justify-content: center;
   font-size: 13px; font-weight: 800; color: var(--c7-ink-muted); text-decoration: none;
 }
@@ -2982,7 +2982,7 @@ a.c7-vt__ovr:hover { color: var(--c7-on-ink); }
 .c7-search input::placeholder { color: var(--c7-ink-faint); }
 .c7-chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .c7-chip {
-  height: 36px; padding: 0 14px; margin: 0; border-radius: var(--c7-r-pill);
+  min-height: var(--c7-touch); padding: 0 14px; margin: 0; border-radius: var(--c7-r-pill);
   background: var(--c7-card); color: var(--c7-ink-soft);
   font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; gap: 6px;
   white-space: nowrap; text-decoration: none; cursor: pointer;
