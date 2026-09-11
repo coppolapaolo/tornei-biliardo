@@ -28,7 +28,10 @@
     'use strict';
 
     var CHIAVE = 'c7-score-prima';
-    var SELETTORE = '.c7-score__num';
+    // Le due cifre della card verticale e, se la pagina ha il tabellone
+    // orizzontale, anche le sue: dopo un ricaricamento con il tabellone
+    // aperto (una partita arrivata al traguardo) saltano anche quelle.
+    var SELETTORE = '.c7-score__num, .c7-board__num';
     var FINESTRA_MS = 15000;
 
     /**
