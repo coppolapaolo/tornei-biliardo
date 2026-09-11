@@ -12,7 +12,6 @@ from models.status_enum import Discipline, GaraStatus
 from models.playoff.models import (
     PlayoffConfiguration,
     PlayoffQualification,
-    PlayoffTournament,
     PlayoffType,
     QualificationStatus,
 )
@@ -570,8 +569,8 @@ class TestGetGaraParams:
 
 
 class TestTerminatedToCompleted:
-    def test_terminated_stays_terminated_without_playoff_tournament(self, db_session):
-        """Campionato with playoff configs but no PlayoffTournament stays TERMINATED."""
+    def test_terminated_stays_terminated_without_playoff_gara(self, db_session):
+        """Campionato with playoff configs but no playoff gara stays TERMINATED."""
         c = _make_campionato(db_session, terminated=True)
         _make_config(db_session, c)
         db_session.commit()
@@ -579,7 +578,12 @@ class TestTerminatedToCompleted:
         assert c.get_status() == "terminated"
 
     def test_terminated_becomes_completed_when_all_playoffs_done(self, db_session):
-        """When all PlayoffTournaments are completed, campionato becomes COMPLETED."""
+        """When every playoff gara is COMPLETED, campionato becomes COMPLETED.
+
+        La fonte e' la gara di playoff, non il `PlayoffTournament` legacy:
+        quello lo chiudeva solo `complete_playoff_campionato`, che nessuna
+        route chiama, e il campionato restava «In attesa dei playoff».
+        """
         c = _make_campionato(db_session, terminated=True)
         cfg = _make_config(db_session, c)
         gara = _make_gara(db_session, c)
@@ -603,11 +607,10 @@ class TestTerminatedToCompleted:
         # Status is TERMINATED while playoff in progress
         assert c.get_status() == "terminated"
 
-        # Complete the playoff tournament
-        tournament = PlayoffTournament.query.filter_by(configuration_id=cfg.id).first()
-        PlayoffService.complete_playoff_campionato(
-            tournament.id, winner_id=players[0].id
-        )
+        # Chiude la gara di playoff
+        playoff_gara = Gara.query.filter_by(playoff_config_id=cfg.id).one()
+        playoff_gara.status = GaraStatus.COMPLETED.value
+        db_session.commit()
 
         # Now should be COMPLETED
         assert c.get_status() == "completed"
@@ -636,8 +639,10 @@ class TestTerminatedToCompleted:
             PlayoffService.confirm_qualification(qual.id, p.id)
 
         PlayoffService.create_playoff_gara(cfg1.id)
-        t1 = PlayoffTournament.query.filter_by(configuration_id=cfg1.id).first()
-        PlayoffService.complete_playoff_campionato(t1.id)
+        Gara.query.filter_by(playoff_config_id=cfg1.id).one().status = (
+            GaraStatus.COMPLETED.value
+        )
+        db_session.commit()
 
         # Config2 not yet done → TERMINATED
         assert c.get_status() == "terminated"

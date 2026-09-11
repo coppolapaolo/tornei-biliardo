@@ -181,6 +181,20 @@ chi non ha giocato resta a zero.
 - Un pari merito di campionato fra due giocatori promossi dal playoff viene
   **cancellato** (`tied_with=()`): lasciarlo scritto manderebbe lo spareggio a
   risolvere una parità che il campo ha già risolto.
+- **Emendamento 2026-09-11.** La classifica generale si calcola in due
+  posti: le righe `Classification` (profilo, export, avvio dei playoff) e
+  `calculate_general_classification` in `statistics_service.py`, che alimenta
+  la pagina del campionato, quella pubblica, la vetrina e la homepage. Questa
+  decisione era stata attuata solo nel primo: il direttore sceglieva «solo
+  playoff», la guida glielo prometteva, e la pagina continuava a mostrare la
+  classifica di stagione con peso 1. Ora il percorso al volo moltiplica per
+  `Gara.classification_weight` e riordina con gli stessi blocchi
+  (`ClassificationService.playoff_final_blocks`, resa pubblica per questo).
+  Nella stessa occasione: la chiusura di una gara di campionato ricalcola le
+  righe persistite, e lo stato del campionato passa a `COMPLETED` quando la
+  **gara** di playoff è chiusa — prima guardava il `PlayoffTournament`
+  legacy, che nessuna route chiudeva, e restava «In attesa dei playoff» per
+  sempre. Presidio in `test_playoff_classifica_finale_e_peso.py`.
 
 ## Riferimenti
 

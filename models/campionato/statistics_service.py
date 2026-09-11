@@ -212,6 +212,11 @@ class TournamentStatisticsService:
             gara_ssr_scores = ssr_by_gara.get(gara.id, {})
 
             gara_is_rack = gara.id in rack_gara_ids
+            # Il peso moltiplica ogni contributo della gara prima della somma
+            # (ADR-053, come `ScoreAggregator.aggregate_campionato_scores`).
+            # Vale 0 per la gara di un playoff che decide la classifica: chi
+            # l'ha giocata compare comunque, con contributo nullo.
+            peso = gara.classification_weight
 
             for classification in classifications:
                 user_id = classification.user_id
@@ -229,7 +234,7 @@ class TournamentStatisticsService:
                         "total_points": 0,
                     }
 
-                player_totals[user_id]["total_matches_won"] += (
+                player_totals[user_id]["total_matches_won"] += peso * (
                     classification.matches_won or 0
                 )
                 # Due colonne, due significati fissi (migration 20260728). Prima
@@ -238,15 +243,15 @@ class TournamentStatisticsService:
                 # conteneva il totale, cioè fino alla separazione — poi la stessa
                 # classifica ha iniziato a sommare differenze, con valori
                 # negativi e totali dimezzati (issue #89).
-                player_totals[user_id]["total_racks_won"] += _racks_won_of(
+                player_totals[user_id]["total_racks_won"] += peso * _racks_won_of(
                     classification, gara_is_rack
                 )
-                player_totals[user_id]["total_rack_difference"] += (
+                player_totals[user_id]["total_rack_difference"] += peso * (
                     classification.rack_difference or 0
                 )
-                player_totals[user_id]["total_spot_shot_wins"] += gara_ssr_scores.get(
-                    user_id, 0
-                )
+                player_totals[user_id][
+                    "total_spot_shot_wins"
+                ] += peso * gara_ssr_scores.get(user_id, 0)
                 player_totals[user_id]["participations"] += 1
 
         # Per il sistema a piazzamenti, calcola i punti.
@@ -276,6 +281,35 @@ class TournamentStatisticsService:
                         player_totals[user_id]["total_points"] += points
 
         return player_totals
+
+    @staticmethod
+    def _ordine_deciso_dal_playoff(
+        campionato: Campionato, ranking: List[tuple]
+    ) -> List[tuple]:
+        """Riordina `(posizione, user_id)` quando la classifica la decide il playoff.
+
+        Chi ha giocato il playoff occupa le prime posizioni nell'ordine deciso
+        lì; sotto vengono tutti gli altri nell'ordine che avevano. I blocchi
+        li dà `ClassificationService.playoff_final_blocks`, la stessa fonte
+        delle righe persistite: finché la finale non è chiusa sono vuoti e
+        la classifica resta quella del campionato.
+        """
+        from models.classification.campionato_classification import (
+            ClassificationService,
+        )
+
+        blocks = ClassificationService.playoff_final_blocks(campionato)
+        if not blocks:
+            return ranking
+
+        presenti = {user_id for _, user_id in ranking}
+        promossi: List[int] = []
+        for block in blocks:
+            for user_id in block:
+                if user_id in presenti and user_id not in promossi:
+                    promossi.append(user_id)
+        resto = [user_id for _, user_id in ranking if user_id not in promossi]
+        return [(pos, user_id) for pos, user_id in enumerate(promossi + resto, 1)]
 
     def _sort_and_rank_players(
         self,
@@ -340,13 +374,18 @@ class TournamentStatisticsService:
         if not campionato:
             return []
 
-        # Tutte le gare completate del campionato (incl. "playing" ma finite)
+        from sqlalchemy.orm import joinedload
+
+        # Tutte le gare completate del campionato (incl. "playing" ma finite).
+        # `playoff_config` serve a `classification_weight`: caricarla qui evita
+        # un lazy-load per gara sulla homepage.
         all_garas = (
             db.session.query(Gara)
             .filter_by(campionato_id=campionato_id)
             .filter(
                 Gara.status.in_([GaraStatus.COMPLETED.value, GaraStatus.PLAYING.value])
             )
+            .options(joinedload(Gara.playoff_config))
             .order_by(Gara.number)
             .all()
         )
@@ -381,6 +420,11 @@ class TournamentStatisticsService:
         # Calcola classifica attuale (tutte le gare)
         player_totals = self._aggregate_player_totals(completed_garas, system)
         current_ranking = self._sort_and_rank_players(player_totals, system)
+        # Quando la classifica finale la decide il playoff, l'ordine dei
+        # partecipanti lo detta la gara di playoff (ADR-053). Stessa regola
+        # delle righe `Classification`: questa pagina e il profilo devono
+        # dire la stessa cosa.
+        current_ranking = self._ordine_deciso_dal_playoff(campionato, current_ranking)
 
         # Costruisci risultato con posizione precedente
         result = []
@@ -451,11 +495,14 @@ def compute_campionato_status(campionato: Campionato) -> str:
             hasattr(campionato, "has_playoff_configurations")
             and campionato.has_playoff_configurations()
         ):
-            # AWAITING_PLAYOFF finché i playoff non sono tutti finiti.
-            # Usa le relationship (playoff_configurations + playoff_campionato
-            # scalar) invece di query fresche per-config: identico semanticamente
-            # (filter_by(is_active=True) ≡ list-comp; .first() ≡ scalar uselist),
-            # ma eager-loadabile dai chiamanti su lista (homepage) → no N+1.
+            # AWAITING_PLAYOFF finché le gare di playoff non sono tutte chiuse.
+            # La fonte è `PlayoffConfiguration.gara`, cioè la gara che il
+            # direttore chiude davvero. Fino all'11/09/2026 si guardava il
+            # `PlayoffTournament` legacy, che chiudeva solo
+            # `complete_playoff_campionato` — mai chiamato da una route — e
+            # il campionato restava «In attesa dei playoff» per sempre.
+            # Relationship, non query per-config: i chiamanti su lista
+            # (homepage, elenco pubblico) le caricano in eager → no N+1.
             active_configs = [
                 cfg
                 for cfg in getattr(campionato, "playoff_configurations", [])
@@ -463,8 +510,9 @@ def compute_campionato_status(campionato: Campionato) -> str:
             ]
             if active_configs:
                 all_completed = all(
-                    (t := cfg.playoff_campionato) is not None
-                    and t.status == "completed"
+                    (g := cfg.gara) is not None
+                    and not g.is_deleted
+                    and g.status == GaraStatus.COMPLETED.value
                     for cfg in active_configs
                 )
                 if all_completed:

@@ -112,7 +112,7 @@ class ClassificationService:
         ]
 
     @staticmethod
-    def _playoff_final_blocks(campionato) -> List[List[int]]:
+    def playoff_final_blocks(campionato) -> List[List[int]]:
         """I blocchi di giocatori il cui ordine lo detta una gara di playoff.
 
         Un blocco per ogni configurazione playoff che *decide* la classifica
@@ -122,6 +122,10 @@ class ClassificationService:
         Finché la gara di playoff non è chiusa la lista è vuota, e la
         classifica generale resta quella del campionato: è il comportamento
         giusto, non un caso da gestire a parte.
+
+        È pubblica perché la legge anche la classifica calcolata al volo per
+        la pagina del campionato (`calculate_general_classification`): i due
+        percorsi devono promuovere gli stessi giocatori nello stesso ordine.
         """
         configurations = getattr(campionato, "playoff_configurations", None) or []
         candidate = [
@@ -159,7 +163,7 @@ class ClassificationService:
         quelli che si vedono in tabella. A cambiare è solo la posizione, che
         è ciò che quella modalità dichiara di voler cambiare.
         """
-        blocks = ClassificationService._playoff_final_blocks(campionato)
+        blocks = ClassificationService.playoff_final_blocks(campionato)
         if not blocks:
             return result
 

@@ -5,10 +5,14 @@ Extracted from ProvaStateMachine to follow Single Responsibility Principle
 while maintaining the same simple interface and behavior.
 """
 
+import logging
+
 from models.base import db, transactional
 from models.status_enum import GaraStatus
 from models.exceptions import InvalidTransitionError
 from models.competition.models import Gara
+
+logger = logging.getLogger(__name__)
 
 
 class StateService:
@@ -258,5 +262,31 @@ class StateService:
             total_rounds=gara.current_round,
         )
         EventBus.publish(event)
+
+        # Le righe `Classification` del campionato (profilo, export, avvio dei
+        # playoff) si ricalcolavano solo su eventi rari — regole di punteggio,
+        # riassegnazione, unione di account, terminazione — quindi la chiusura
+        # della finale le lasciava alla classifica precedente. La pagina del
+        # campionato non le legge (calcola al volo), il profilo sì. Un errore
+        # qui non deve impedire la chiusura della gara: i fatti sono salvi e
+        # il prossimo ricalcolo li rilegge.
+        if gara.campionato_id:
+            from models.classification.campionato_classification import (
+                ClassificationService,
+            )
+
+            try:
+                ClassificationService.invalidate_campionato_cache(gara.campionato_id)
+                ClassificationService.update_campionato_classification(
+                    gara.campionato_id
+                )
+            except Exception:
+                logger.warning(
+                    "Classifica generale del campionato %d non aggiornata "
+                    "alla chiusura della gara %d",
+                    gara.campionato_id,
+                    gara.id,
+                    exc_info=True,
+                )
 
         return gara
