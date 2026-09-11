@@ -96,10 +96,12 @@
   --c7-shadow-toast: 0 10px 24px -18px rgba(27, 33, 36, .6);
   --c7-shadow-pop:   0 18px 36px -20px rgba(27, 33, 36, .75);
 
-  /* Le medaglie del podio (decisione del 2026-09-10, canvas «Tessera»):
+  /* I colori delle medaglie (decisione del 2026-09-10, canvas «Tessera»):
      oro, argento e bronzo, con la stessa saturazione bassa del resto della
-     palette. Tre colori nuovi perche' il podio li chiede: tre chip uguali
-     nel tono dell'accento non dicono chi ha vinto. */
+     palette. Colorano il chip di posizione dei primi tre — nel podio della
+     gara e nelle righe di classifica del campionato, che dall'11/09 sono lo
+     stesso chip — perche' tre chip uguali nel tono dell'accento non dicono
+     chi ha vinto. */
   --c7-oro:          #C9A84C;
   --c7-oro-ink:      #4A3A0E;
   --c7-argento:      #B4BDBF;

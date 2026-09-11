@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-11 06:42+0200\n"
+"POT-Creation-Date: 2026-09-11 07:57+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -74,7 +74,7 @@ msgstr ""
 #: templates/components/_match_result_row.html:106
 #: templates/components/_match_result_row.html:108
 #: templates/components/_match_scoreboard.html:252
-#: templates/components/_tessera_gara.html:28
+#: templates/components/_tessera_gara.html:31
 msgid "Conclusa"
 msgstr ""
 
@@ -95,7 +95,7 @@ msgstr ""
 #: templates/components/_multi_set_score_display.html:90
 #: templates/components/_round_navigation.html:26
 #: templates/components/_sfide_in_corso.html:59
-#: templates/components/_tessera_gara.html:32
+#: templates/components/_tessera_gara.html:35
 #: templates/individual_match/dashboard.html:115
 #: templates/individual_match/matches.html:38
 #: templates/individual_match/matches.html:99
@@ -187,8 +187,8 @@ msgstr ""
 #: models/competition/showcase_view.py:292
 #: models/competition/showcase_view.py:461
 #: templates/components/_nearby_gare.html:40
-#: templates/components/_separated_dashboard_content.html:82
-#: templates/components/_tessera_gara.html:42
+#: templates/components/_separated_dashboard_content.html:87
+#: templates/components/_tessera_gara.html:45
 #: templates/components/_unified_cards.html:71
 msgid "Iscrizioni aperte"
 msgstr ""
@@ -331,7 +331,7 @@ msgid "Iscrizioni non ancora aperte"
 msgstr ""
 
 #: models/competition/showcase_view.py:298 routes/main.py:430
-#: templates/components/_tessera_gara.html:40
+#: templates/components/_tessera_gara.html:43
 msgid "Iscrizioni chiuse"
 msgstr ""
 
@@ -363,7 +363,7 @@ msgstr ""
 #: templates/components/_campionato_garas.html:21
 #: templates/components/_gara_info.html:47
 #: templates/components/_player_dashboard_content.html:43
-#: templates/components/_tessera_gara.html:239
+#: templates/components/_tessera_gara.html:241
 msgid "Quota"
 msgstr ""
 
@@ -3957,7 +3957,7 @@ msgstr ""
 #: templates/components/_history_matches_tab.html:19
 #: templates/components/_history_matches_tab.html:57
 #: templates/components/_match_cards_mobile.html:8
-#: templates/components/_tessera_gara.html:145 templates/gara_bracket.html:21
+#: templates/components/_tessera_gara.html:147 templates/gara_bracket.html:21
 #: templates/individual_match/admin_overview.html:20
 #: templates/player/history.html:22
 msgid "Partite"
@@ -3974,8 +3974,8 @@ msgstr ""
 #: templates/components/_history_campionati_tab.html:105
 #: templates/components/_history_gare_tab.html:116
 #: templates/components/_playoff_invitations.html:58
-#: templates/components/_tessera_gara.html:345
-#: templates/components/_tessera_gara.html:360
+#: templates/components/_tessera_gara.html:347
+#: templates/components/_tessera_gara.html:362
 #: templates/components/_unified_cards.html:108
 #: templates/components/_unified_cards.html:120
 #: templates/gamification/dashboard.html:51 templates/gara_detail.html:12
@@ -4468,7 +4468,7 @@ msgstr ""
 #: templates/components/_match_header.html:80
 #: templates/components/_match_result_row.html:121
 #: templates/components/_match_result_row.html:146
-#: templates/components/_tessera_gara.html:165 templates/gara_detail.html:803
+#: templates/components/_tessera_gara.html:167 templates/gara_detail.html:803
 msgid "Tavolo"
 msgstr ""
 
@@ -6114,7 +6114,7 @@ msgstr[1] ""
 
 #: templates/admin/gara_challenge_classification.html:136
 #: templates/challenge/_challenge_card.html:63
-#: templates/components/_tessera_gara.html:153
+#: templates/components/_tessera_gara.html:155
 msgid "giocatori"
 msgstr ""
 
@@ -7651,7 +7651,7 @@ msgid "Dati incompleti"
 msgstr ""
 
 #: templates/admin/venues_list.html:111
-#: templates/components/_tessera_gara.html:306
+#: templates/components/_tessera_gara.html:308
 #: templates/player/venue_detail.html:17 templates/player/venues.html:42
 msgid "Gestisci"
 msgstr ""
@@ -8950,8 +8950,8 @@ msgstr ""
 #: templates/components/_match_scoreboard.html:240
 #: templates/components/_round_navigation.html:22
 #: templates/components/_round_navigation.html:34
-#: templates/components/_tessera_gara.html:149
-#: templates/components/_tessera_gara.html:163
+#: templates/components/_tessera_gara.html:151
+#: templates/components/_tessera_gara.html:165
 #: templates/components/_user_recent_matches_table.html:15
 #: templates/public/garas_list.html:14 templates/public/garas_list.html:37
 msgid "Turno"
@@ -9267,7 +9267,7 @@ msgstr ""
 #: templates/components/_campionato_garas.html:42
 #: templates/components/_campionato_garas.html:140
 #: templates/components/_gara_info.html:49
-#: templates/components/_tessera_gara.html:241
+#: templates/components/_tessera_gara.html:243
 #: templates/components/_unified_cards.html:57
 msgid "Gratuita"
 msgstr ""
@@ -9701,7 +9701,6 @@ msgid "Sfide individuali proposte"
 msgstr ""
 
 #: templates/components/_director_dashboard_content.html:18
-#: templates/components/_separated_dashboard_content.html:137
 msgid "Vedi tutti"
 msgstr ""
 
@@ -10203,7 +10202,7 @@ msgstr ""
 
 #: templates/components/_gara_header.html:57
 #: templates/components/_tessera_campionato.html:60
-#: templates/components/_tessera_gara.html:105
+#: templates/components/_tessera_gara.html:108
 msgid "Di prova"
 msgstr ""
 
@@ -10221,7 +10220,7 @@ msgid "Accoppiamento"
 msgstr ""
 
 #: templates/components/_gara_info.html:38
-#: templates/components/_tessera_gara.html:247
+#: templates/components/_tessera_gara.html:249
 msgid "in lista"
 msgstr ""
 
@@ -10356,7 +10355,7 @@ msgid "Senza squadra"
 msgstr ""
 
 #: templates/components/_gara_inscriptions.html:201
-#: templates/components/_tessera_gara.html:97
+#: templates/components/_tessera_gara.html:100
 #: templates/components/_unified_cards.html:139
 msgid "Lista d'attesa"
 msgstr ""
@@ -10687,9 +10686,9 @@ msgstr ""
 
 #: templates/components/_guest_info.html:29
 #: templates/components/_nearby_gare.html:43
-#: templates/components/_tessera_gara.html:326
-#: templates/components/_tessera_gara.html:340
-#: templates/components/_tessera_gara.html:354
+#: templates/components/_tessera_gara.html:328
+#: templates/components/_tessera_gara.html:342
+#: templates/components/_tessera_gara.html:356
 #: templates/components/_unified_cards.html:141
 #: templates/public/vetrina_gara.html:166
 msgid "Iscriviti"
@@ -10701,7 +10700,7 @@ msgstr ""
 
 #: templates/components/_history_campionati_tab.html:12
 #: templates/components/_player_statistics.html:28
-#: templates/components/_separated_dashboard_content.html:135
+#: templates/components/_separated_dashboard_content.html:140
 #: templates/player/history.html:28 templates/public/campionatos_list.html:2
 #: templates/public/campionatos_list.html:7
 msgid "Campionati"
@@ -11804,8 +11803,6 @@ msgid "Proposte aperte"
 msgstr ""
 
 #: templates/components/_player_dashboard_content.html:19
-#: templates/components/_separated_dashboard_content.html:52
-#: templates/components/_separated_dashboard_content.html:82
 #: templates/components/_sfide_in_corso.html:23
 msgid "Vedi tutte"
 msgstr ""
@@ -11837,7 +11834,7 @@ msgstr ""
 
 #: templates/components/_player_inscription_info.html:10
 #: templates/components/_tessera_campionato.html:57
-#: templates/components/_tessera_gara.html:99
+#: templates/components/_tessera_gara.html:102
 msgid "Iscritto"
 msgstr ""
 
@@ -12253,84 +12250,80 @@ msgstr ""
 msgid "Non iniziato"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:52
+#: templates/components/_separated_dashboard_content.html:57
 msgid "Le tue gare"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:72
+#: templates/components/_separated_dashboard_content.html:77
 msgid "In diretta ora"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:72
-msgid "Tutte le gare"
-msgstr ""
-
-#: templates/components/_separated_dashboard_content.html:82
+#: templates/components/_separated_dashboard_content.html:87
 msgid "Aperte, puoi iscriverti"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:92
+#: templates/components/_separated_dashboard_content.html:97
 #: templates/gamification/admin/quests.html:46
 #: templates/gamification/quests.html:91
 msgid "In arrivo"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:105
+#: templates/components/_separated_dashboard_content.html:110
 #: templates/public/garas_list.html:64
 msgid "Nessuna gara in programma"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:105
+#: templates/components/_separated_dashboard_content.html:110
 msgid "Nessuna gara per te, per ora"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:106
+#: templates/components/_separated_dashboard_content.html:111
 msgid "Quando un direttore apre le iscrizioni a una gara la trovi qui."
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:108
+#: templates/components/_separated_dashboard_content.html:113
 msgid "Guarda tutte le gare"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:117
+#: templates/components/_separated_dashboard_content.html:122
 msgid "Concluse"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:117
-#: templates/components/_separated_dashboard_content.html:154
+#: templates/components/_separated_dashboard_content.html:122
+#: templates/components/_separated_dashboard_content.html:158
 #: templates/player/history.html:4 templates/player/history.html:9
 #: templates/player/profile.html:15
 msgid "Storico"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:124
+#: templates/components/_separated_dashboard_content.html:129
 #, python-format
 msgid "L'ultima e quelle dell'ultimo mese: un'altra è nello storico."
 msgid_plural "L'ultima e quelle dell'ultimo mese: le altre %(num)s sono nello storico."
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/components/_separated_dashboard_content.html:136
+#: templates/components/_separated_dashboard_content.html:141
 #, python-format
 msgid "%(count)s attivo"
 msgid_plural "%(count)s attivi"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/components/_separated_dashboard_content.html:145
+#: templates/components/_separated_dashboard_content.html:149
 #: templates/public/campionatos_list.html:64
 msgid "Nessun campionato"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:146
+#: templates/components/_separated_dashboard_content.html:150
 msgid "Non ci sono campionati in corso al momento."
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:153
+#: templates/components/_separated_dashboard_content.html:157
 msgid "Campionati conclusi"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:161
+#: templates/components/_separated_dashboard_content.html:165
 #, python-format
 msgid "L'ultimo e quelli dell'ultimo mese: un altro è nello storico."
 msgid_plural "L'ultimo e quelli dell'ultimo mese: gli altri %(num)s sono nello storico."
@@ -12346,7 +12339,7 @@ msgid "Sfida a due"
 msgstr ""
 
 #: templates/components/_sfide_in_corso.html:46
-#: templates/components/_tessera_gara.html:179
+#: templates/components/_tessera_gara.html:181
 msgid "vs"
 msgstr ""
 
@@ -12590,17 +12583,17 @@ msgid "nessuna gara programmata"
 msgstr ""
 
 #: templates/components/_tessera_campionato.html:53
-#: templates/components/_tessera_gara.html:92
+#: templates/components/_tessera_gara.html:95
 msgid "Hai diretto"
 msgstr ""
 
 #: templates/components/_tessera_campionato.html:54
-#: templates/components/_tessera_gara.html:93
+#: templates/components/_tessera_gara.html:96
 msgid "Hai giocato"
 msgstr ""
 
 #: templates/components/_tessera_campionato.html:56
-#: templates/components/_tessera_gara.html:95
+#: templates/components/_tessera_gara.html:98
 msgid "Dirigi"
 msgstr ""
 
@@ -12630,7 +12623,7 @@ msgid "Le iscrizioni chiudono il"
 msgstr ""
 
 #: templates/components/_tessera_campionato.html:103
-#: templates/components/_tessera_gara.html:260
+#: templates/components/_tessera_gara.html:262
 msgid "Le iscrizioni aprono il"
 msgstr ""
 
@@ -12638,179 +12631,179 @@ msgstr ""
 msgid "Classifica e risultati"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:30
+#: templates/components/_tessera_gara.html:33
 msgid "Turno completato"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:34 utils/status_ui.py:101
+#: templates/components/_tessera_gara.html:37 utils/status_ui.py:101
 msgid "Spareggi"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:36
+#: templates/components/_tessera_gara.html:39
 msgid "In preparazione"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:38
+#: templates/components/_tessera_gara.html:41
 msgid "Iscrizioni programmate"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:73
+#: templates/components/_tessera_gara.html:76
 msgid "Gara singola"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:115
+#: templates/components/_tessera_gara.html:118
 #: templates/components/_unified_cards.html:88
 msgid "Podio"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:129
+#: templates/components/_tessera_gara.html:131
 msgid "La classifica finale non è ancora stata pubblicata."
-msgstr ""
-
-#: templates/components/_tessera_gara.html:133
-#, python-format
-msgid "Sei arrivato %(pos)s° su %(tot)s"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:135
 #, python-format
+msgid "Sei arrivato %(pos)s° su %(tot)s"
+msgstr ""
+
+#: templates/components/_tessera_gara.html:137
+#, python-format
 msgid "%(vinte)s vittorie su %(giocate)s"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:162
+#: templates/components/_tessera_gara.html:164
 msgid "La tua partita"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:180
+#: templates/components/_tessera_gara.html:182
 msgid "Riposi questo turno"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:191
+#: templates/components/_tessera_gara.html:193
 msgid ""
 "Il tavolo non è ancora assegnato: lo assegna la gara appena se ne libera "
 "uno."
 msgstr ""
 
-#: templates/components/_tessera_gara.html:203
+#: templates/components/_tessera_gara.html:205
 #, python-format
 msgid "Classifica provvisoria dopo il turno %(n)s"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:205
+#: templates/components/_tessera_gara.html:207
 #, python-format
 msgid "Sei %(pos)s° su %(tot)s"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:210
+#: templates/components/_tessera_gara.html:212
 msgid "Altre partite del turno"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:210
+#: templates/components/_tessera_gara.html:212
 msgid "Ai tavoli adesso"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:216
+#: templates/components/_tessera_gara.html:218
 #, python-format
 msgid "e un'altra partita"
 msgid_plural "e altre %(num)s partite"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/components/_tessera_gara.html:249
+#: templates/components/_tessera_gara.html:251
 #, python-format
 msgid "%(num)s libero"
 msgid_plural "%(num)s liberi"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/components/_tessera_gara.html:256
+#: templates/components/_tessera_gara.html:258
 #: templates/components/_unified_cards.html:74
 msgid "Chiudono il"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:269
+#: templates/components/_tessera_gara.html:271
 msgid "Serve un numero pari"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:271
+#: templates/components/_tessera_gara.html:273
 msgid ""
 "Questa gara non prevede la X, quindi i giocatori devono essere in numero "
 "pari e l'ultimo iscritto aspetta. Appena si iscrive qualcun altro entri "
 "tu."
 msgstr ""
 
-#: templates/components/_tessera_gara.html:274
+#: templates/components/_tessera_gara.html:276
 msgid "La gara è al completo"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:276
+#: templates/components/_tessera_gara.html:278
 msgid ""
 "Se qualcuno si ritira entri tu, in ordine di posizione: succede da solo, "
 "non devi rifare l'iscrizione."
 msgstr ""
 
-#: templates/components/_tessera_gara.html:287
+#: templates/components/_tessera_gara.html:289
 msgid "Non ci sono ancora abbastanza iscritti"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:289
+#: templates/components/_tessera_gara.html:291
 #, python-format
 msgid "Ne servono almeno %(min)s, per ora sono %(now)s."
 msgstr ""
 
-#: templates/components/_tessera_gara.html:299
+#: templates/components/_tessera_gara.html:301
 msgid "Risultati"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:309
+#: templates/components/_tessera_gara.html:311
 msgid "Apri le iscrizioni"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:310
+#: templates/components/_tessera_gara.html:312
 msgid "Avvia la gara"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:311
+#: templates/components/_tessera_gara.html:313
 msgid "Estendi le iscrizioni"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:312
+#: templates/components/_tessera_gara.html:314
 #, python-format
 msgid "Avvia il turno %(n)s"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:313
+#: templates/components/_tessera_gara.html:315
 msgid "Avvia lo spareggio"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:314
+#: templates/components/_tessera_gara.html:316
 msgid "Termina la gara"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:322
-#: templates/components/_tessera_gara.html:350
+#: templates/components/_tessera_gara.html:324
+#: templates/components/_tessera_gara.html:352
 msgid "Esci dalla lista"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:322
-#: templates/components/_tessera_gara.html:350
+#: templates/components/_tessera_gara.html:324
+#: templates/components/_tessera_gara.html:352
 msgid "Disiscriviti"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:326
-#: templates/components/_tessera_gara.html:354
+#: templates/components/_tessera_gara.html:328
+#: templates/components/_tessera_gara.html:356
 msgid "Mettiti in lista"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:332
+#: templates/components/_tessera_gara.html:334
 msgid "Segui la diretta"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:340
+#: templates/components/_tessera_gara.html:342
 msgid "Mettiti in lista d'attesa"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:364
+#: templates/components/_tessera_gara.html:366
 msgid "Serve un account gratuito: ci vogliono trenta secondi"
 msgstr ""
 

@@ -2954,20 +2954,22 @@ a.c7-vt__ovr:hover { color: var(--c7-on-ink); }
 }
 .c7-tessera__row.is-me .c7-tessera__muted { color: var(--c7-accent-dim); }
 
-/* Il podio con le medaglie. */
+/* Il podio della gara conclusa: tre caselle, una per posizione. */
 .c7-podio { display: flex; gap: 8px; margin-top: 10px; }
 .c7-podio > div { flex: 1; min-width: 0; text-align: center; background: var(--c7-card); border-radius: var(--c7-r-chip); padding: 8px 6px; }
-.c7-medal { width: 30px; height: 30px; margin: 0 auto; border-radius: 10px; display: grid; place-items: center; font-size: 14px; }
-.c7-medal--1 { background: var(--c7-oro);     color: var(--c7-oro-ink); }
-.c7-medal--2 { background: var(--c7-argento); color: var(--c7-argento-ink); }
-.c7-medal--3 { background: var(--c7-bronzo);  color: var(--c7-bronzo-ink); }
-.c7-podio__pos  { margin-top: 6px; font-family: var(--c7-font-mono); font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); }
-.c7-podio__name { margin-top: 2px; font-size: 12px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.c7-podio .c7-pos { margin: 0 auto; }
+.c7-podio__name { margin-top: 6px; font-size: 12px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 /* In classifica la riga di chi guarda e' scura (`.c7-tessera__row.is-me`):
    si riconosce dal fondo, non da un «sei tu» scritto accanto al nome. */
-/* Chip di posizione nelle righe di classifica della tessera. */
+/* Il chip di posizione: lo stesso nel podio della gara e nelle righe di
+   classifica del campionato (decisione del 2026-09-11). Il numero dentro, e
+   per i primi tre i colori delle medaglie — oro, argento, bronzo — perche'
+   tre chip uguali nel tono dell'accento non dicono chi ha vinto. Nel podio
+   e' piu' grande (`--lg`), ma e' lo stesso oggetto. */
 .c7-pos { width: 24px; height: 24px; border-radius: 8px; background: var(--c7-bg); display: grid; place-items: center; font-family: var(--c7-font-mono); font-size: 11px; font-weight: 800; color: var(--c7-ink-muted); flex-shrink: 0; }
-.c7-pos--1 { background: var(--c7-accent); color: var(--c7-accent-ink); }
-.c7-pos--2, .c7-pos--3 { background: var(--c7-accent-tint); color: var(--c7-accent-tint-ink); }
+.c7-pos--lg { width: 30px; height: 30px; border-radius: 10px; font-size: 13px; }
+.c7-pos--1 { background: var(--c7-oro);     color: var(--c7-oro-ink); }
+.c7-pos--2 { background: var(--c7-argento); color: var(--c7-argento-ink); }
+.c7-pos--3 { background: var(--c7-bronzo);  color: var(--c7-bronzo-ink); }
 

@@ -28,11 +28,11 @@ blocks:
           più in alto sotto **«Le tue gare»**: sono due elenchi separati
           apposta, così non devi cercare la tua fra quelle di tutti.
         shot: dashboard-giocatore
-      - title: "Oppure sfoglia tutte le gare"
+      - title: "Non c'è un altro elenco da sfogliare"
         text: >-
-          Il collegamento **Vedi tutte** porta all'elenco completo, comprese le
-          gare di circoli a cui non hai mai partecipato.
-        shot: gare-aperte
+          «Aperte, puoi iscriverti» le mostra **tutte**, comprese le gare di
+          circoli a cui non hai mai partecipato: se una gara con le iscrizioni
+          aperte non è lì, non esiste.
       - title: "Apri la gara che ti interessa"
         text: >-
           La scheda della gara dice tutto quello che serve per decidere: data e

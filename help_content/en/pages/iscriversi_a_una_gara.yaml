@@ -28,11 +28,11 @@ blocks:
           separate lists on purpose, so you never have to hunt for yours among
           everyone else's.
         shot: dashboard-giocatore
-      - title: "Or browse all competitions"
+      - title: "There is no other list to browse"
         text: >-
-          The **See all** link takes you to the full list, including clubs you
-          have never played at.
-        shot: gare-aperte
+          «Open, you can register» shows **all** of them, including
+          competitions at clubs you have never played at: if a competition
+          with open registration is not there, it does not exist.
       - title: "Open the one you are interested in"
         text: >-
           The competition card says everything you need to decide: date and
