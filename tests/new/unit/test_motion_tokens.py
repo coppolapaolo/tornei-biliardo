@@ -222,3 +222,26 @@ def test_con_riduci_movimento_il_cambio_pagina_non_parte():
     assert re.search(
         r"@view-transition\s*\{\s*navigation:\s*none", spenti
     ), "manca `@view-transition { navigation: none }` sotto prefers-reduced-motion"
+
+
+TEMPLATES = Path(__file__).resolve().parents[3] / "templates"
+
+
+@pytest.mark.parametrize("nome", sorted(NOMI_DEL_GUSCIO - {"c7-head"}))
+def test_barra_e_nav_mobile_compaiono_una_volta_e_solo_nel_guscio(nome):
+    """Un `view-transition-name` duplicato annulla la transizione in silenzio.
+
+    La testata la presidia `test_single_page_header.py`; barra laterale e nav
+    mobile non avevano nessuno: un include duplicato lascerebbe verdi tutti i
+    test e spegnerebbe il cambio pagina senza dirlo a nessuno.
+    """
+    marcatore = re.compile(rf"""class=["'][^"']*\b{nome}\b""")
+    for template in sorted(TEMPLATES.rglob("*.html")):
+        occorrenze = len(marcatore.findall(template.read_text(encoding="utf-8")))
+        attese = (
+            1 if template.name == "base.html" and template.parent == TEMPLATES else 0
+        )
+        assert occorrenze == attese, (
+            f"{template.relative_to(TEMPLATES)}: `.{nome}` compare {occorrenze} volte, "
+            f"attese {attese} — vive solo in base.html, una volta"
+        )
