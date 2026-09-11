@@ -31,6 +31,11 @@
    concluso e non compare fra le partite in corso (issue #221). #}
 {% if not ospite %}{% include "components/_bye_challenges.html" %}{% endif %}
 
+{# Il link accanto al titolo c'è solo dove porta a qualcosa in più: «Storico»
+   sulle concluse, che qui sono tagliate a una finestra. Gli altri elenchi
+   sono già completi — tutte le gare in diretta, tutte le aperte, tutti i
+   campionati attivi — e un «Vedi tutte» accanto portava a una pagina che
+   mostrava le stesse cose o meno (`/garas` ha le sole standalone). #}
 {% macro _titolo(testo, conteggio, link_url=None, link_testo=None, dot=False) %}
   <div class="d-flex align-items-center gap-3 mb-3">
     {% if dot %}<span class="c7-live__dot"></span>{% endif %}
@@ -49,7 +54,7 @@
 {# ── Le tue gare ────────────────────────────────────────────────────── #}
 {% if gare and gare.mie %}
 <section class="mb-4">
-  {{ _titolo(_('Le tue gare'), gare.mie|length, url_for('main.public_garas_list'), _('Vedi tutte')) }}
+  {{ _titolo(_('Le tue gare'), gare.mie|length) }}
   <div class="c7-grid" style="{{ griglia }}">
     {% for card in gare.mie %}{{ tessera_gara(card) }}{% endfor %}
   </div>
@@ -69,7 +74,7 @@
 {# ── In diretta ora ─────────────────────────────────────────────────── #}
 {% if gare and gare.in_diretta %}
 <section class="mb-4">
-  {{ _titolo(_('In diretta ora'), gare.in_diretta|length, url_for('main.public_garas_list'), _('Tutte le gare'), dot=True) }}
+  {{ _titolo(_('In diretta ora'), gare.in_diretta|length, dot=True) }}
   <div class="c7-grid" style="{{ griglia }}">
     {% for card in gare.in_diretta %}{{ tessera_gara(card) }}{% endfor %}
   </div>
@@ -79,7 +84,7 @@
 {# ── Aperte, puoi iscriverti ────────────────────────────────────────── #}
 {% if gare and gare.aperte %}
 <section class="mb-4">
-  {{ _titolo(_('Iscrizioni aperte') if (ospite or current_user.is_admin) else _('Aperte, puoi iscriverti'), gare.aperte|length, url_for('main.public_garas_list'), _('Vedi tutte')) }}
+  {{ _titolo(_('Iscrizioni aperte') if (ospite or current_user.is_admin) else _('Aperte, puoi iscriverti'), gare.aperte|length) }}
   <div class="c7-grid" style="{{ griglia }}">
     {% for card in gare.aperte %}{{ tessera_gara(card) }}{% endfor %}
   </div>
@@ -133,8 +138,7 @@
 <section class="mb-4">
   {% set attivi = campionati.attivi if campionati else [] %}
   {{ _titolo(_('Campionati'),
-             ngettext('%(count)s attivo', '%(count)s attivi', attivi|length, count=attivi|length),
-             url_for('main.public_campionatos_list') if attivi else None, _('Vedi tutti')) }}
+             ngettext('%(count)s attivo', '%(count)s attivi', attivi|length, count=attivi|length)) }}
   {% if attivi %}
   <div class="c7-grid" style="{{ griglia }}">
     {% for card in attivi %}{{ tessera_campionato(card) }}{% endfor %}

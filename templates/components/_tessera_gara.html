@@ -16,8 +16,11 @@
      su una tessera si tappa;
    * niente «Gioca la tua partita»: il bersaglio è il riquadro della propria
      partita, che sta più in alto e ha già tutto;
-   * il podio porta le medaglie; sulle concluse «Hai giocato» / «Hai diretto»
-     al posto di «Iscritto», che a gara finita non dice più niente.
+   * il podio usa il chip di posizione della classifica del campionato — il
+     numero, nei colori delle medaglie per i primi tre — così 1°, 2° e 3° si
+     leggono allo stesso modo nelle due tessere (2026-09-11); sulle concluse
+     «Hai giocato» / «Hai diretto» al posto di «Iscritto», che a gara finita
+     non dice più niente.
 
    Gli stati si confrontano con `GaraStatus` e `ProvaDerivedStatus`, iniettati
    da `inject_enums`. #}
@@ -118,8 +121,7 @@
         {% for pos in [0, 1, 2] %}
           {% if podio|length > pos %}
           <div>
-            <span class="c7-medal c7-medal--{{ pos + 1 }}"><i class="fas fa-medal"></i></span>
-            <div class="c7-podio__pos">{{ pos + 1 }}°</div>
+            <span class="c7-pos c7-pos--lg c7-pos--{{ pos + 1 }}">{{ pos + 1 }}</span>
             <div class="c7-podio__name">{{ podio[pos].username }}</div>
           </div>
           {% endif %}

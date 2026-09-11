@@ -4,8 +4,11 @@ Tre scelte che nessun test di comportamento vede, perché sono forma:
 
 * sulle tessere **nessun pulsante piccolo** (`btn-sm`, 40px): sono difficili
   da tappare, e su una tessera si tappa;
-* le medaglie del podio hanno i **loro token** — oro, argento, bronzo — e
-  non il tono dell'accento: tre chip uguali non dicono chi ha vinto;
+* il chip di posizione dei primi tre ha i **colori delle medaglie** — oro,
+  argento, bronzo — e non il tono dell'accento: tre chip uguali non dicono
+  chi ha vinto. Ed è **lo stesso chip** nel podio della gara e nelle righe
+  di classifica del campionato: 1°, 2° e 3° si leggono allo stesso modo
+  nelle due tessere (2026-09-11);
 * la riga di chi guarda in classifica è **scura** (`is-me`), senza un «sei
   tu» scritto accanto al nome.
 """
@@ -36,16 +39,31 @@ def test_sulle_tessere_non_ci_sono_pulsanti_piccoli(template: Path):
 
 
 @pytest.mark.unit
-def test_le_medaglie_hanno_i_loro_token():
+def test_i_primi_tre_hanno_i_colori_delle_medaglie():
     tokens = (ROOT / "static" / "css" / "tokens-7c.css").read_text(encoding="utf-8")
     for nome in ("--c7-oro", "--c7-argento", "--c7-bronzo"):
         assert f"{nome}:" in tokens, nome
         assert f"{nome}-ink:" in tokens, nome
     tema = (ROOT / "static" / "css" / "theme-7c.css").read_text(encoding="utf-8")
     for pos, token in ((1, "oro"), (2, "argento"), (3, "bronzo")):
-        regola = re.search(r"\.c7-medal--%d\s*\{([^}]*)\}" % pos, tema)
+        regola = re.search(r"\.c7-pos--%d\s*\{([^}]*)\}" % pos, tema)
         assert regola, pos
         assert f"var(--c7-{token})" in regola.group(1)
+
+
+@pytest.mark.unit
+def test_podio_e_classifica_usano_lo_stesso_chip_di_posizione():
+    """Un solo modo di dire 1°, 2°, 3°: il chip `c7-pos--N` col numero
+    dentro, nel podio della gara come nelle righe di classifica del
+    campionato. Niente icona-medaglia da una parte e numero dall'altra."""
+    gara, campionato = (
+        _senza_commenti(t.read_text(encoding="utf-8")) for t in TESSERE[:2]
+    )
+    assert "c7-pos--{{ pos + 1 }}" in gara
+    assert "c7-pos--' ~ riga.posizione" in campionato
+    for testo in (gara, campionato):
+        assert "fa-medal" not in testo
+        assert "c7-medal" not in testo
 
 
 @pytest.mark.unit
