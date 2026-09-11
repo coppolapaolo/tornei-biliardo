@@ -46,8 +46,10 @@ jobs:
             exit 0
           fi
           # Resta cio' che non e' documentazione: ne' Markdown o testo, ne'
-          # un file sotto docs/ che non sia un sorgente Python.
-          NON_DOCS=$(echo "$CHANGED" | awk '!/\.(md|txt)$/ && !(/^docs\// && !/\.py$/) && !/^LICENSE$/')
+          # un file sotto docs/ che non sia un sorgente Python. I manifesti
+          # delle dipendenze sono .txt ma sono codice: una PR che cambia una
+          # dipendenza deve installare e provare tutto.
+          NON_DOCS=$(echo "$CHANGED" | awk '/^requirements[^\/]*\.txt$/ || (!/\.(md|txt)$/ && !(/^docs\// && !/\.py$/) && !/^LICENSE$/)')
           if [ -z "$NON_DOCS" ]; then
             echo "Solo documentazione: test e type check saltati."
             echo "docs_only=true" >> "$GITHUB_OUTPUT"

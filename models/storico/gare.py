@@ -26,13 +26,14 @@ from dataclasses import dataclass
 from datetime import date as date_cls
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple
 
-from sqlalchemy import or_
+from sqlalchemy import func, or_, tuple_
 from sqlalchemy.orm import joinedload, selectinload
 
 from models.base import db
 from models.campionato.models import Campionato
-from models.classification.models import GaraClassification
+from models.classification.models import GaraClassification, RoundClassification
 from models.competition.models import Gara, Inscription
+from models.match.models import Match
 from models.dashboard.gara_cards import is_conclusa
 from models.status_enum import EntityType, GaraStatus
 from models.user.models import DirectorAssignment, User
@@ -322,14 +323,34 @@ def _fatti_di(user_id: int, gare: List[Gara]) -> Tuple[Set[int], Set[int]]:
 def _classifiche(
     gare: List[Gara], user_id: Optional[int]
 ) -> Tuple[Dict[int, str], Dict[int, int]]:
-    """Il vincitore di ogni gara e il piazzamento di chi guarda, in una query."""
+    """Il vincitore di ogni gara e il piazzamento di chi guarda.
+
+    La fonte è `GaraClassification`, che nasce quando il direttore preme
+    «Termina». Una gara conclusa **per derivazione** — turni finiti, nessuno
+    ha premuto — non ce l'ha ancora: per quelle si legge la classifica
+    dell'ultimo turno, la stessa da cui `StateService.complete` ricava il
+    vincitore. Due primi a pari merito non fanno un vincitore: come nella
+    chiusura della gara, la casella resta vuota invece di scegliere a caso.
+    """
     ids = [g.id for g in gare]
     if not ids:
         return {}, {}
+    primi: Dict[int, List[str]] = {}
+    piazzamenti: Dict[int, int] = {}
+    con_classifica: Set[int] = set()
+
+    def _accumula(righe: Iterable[Tuple[int, int, int, str]]) -> None:
+        for gara_id, posizione, uid, username in righe:
+            con_classifica.add(gara_id)
+            if posizione == 1:
+                primi.setdefault(gara_id, []).append(username)
+            if user_id is not None and uid == user_id:
+                piazzamenti[gara_id] = posizione
+
     condizioni = [GaraClassification.position == 1]
     if user_id is not None:
         condizioni.append(GaraClassification.user_id == user_id)
-    righe = (
+    _accumula(
         db.session.query(
             GaraClassification.gara_id,
             GaraClassification.position,
@@ -340,13 +361,48 @@ def _classifiche(
         .filter(GaraClassification.gara_id.in_(ids), or_(*condizioni))
         .all()
     )
-    vincitori: Dict[int, str] = {}
-    piazzamenti: Dict[int, int] = {}
-    for gara_id, posizione, uid, username in righe:
-        if posizione == 1:
-            vincitori[gara_id] = username
-        if user_id is not None and uid == user_id:
-            piazzamenti[gara_id] = posizione
+
+    # Il turno finale è quello su cui `StateService.complete` legge il
+    # vincitore: il più alto con partite (`effective_final_round`), non
+    # `rounds_count` — uno spareggio aggiunge un turno oltre il programma e
+    # la strategia casuale lascia `current_round` indietro. Una query per
+    # tutte le gare senza classifica, non una per gara.
+    ids_senza = [g.id for g in gare if g.id not in con_classifica]
+    senza: List[Tuple[int, int]] = []
+    if ids_senza:
+        ultimo_turno = dict(
+            db.session.query(Match.gara_id, func.max(Match.round_number))
+            .filter(Match.gara_id.in_(ids_senza))
+            .group_by(Match.gara_id)
+            .all()
+        )
+        senza = [
+            (g.id, ultimo_turno.get(g.id) or g.current_round or g.rounds_count)
+            for g in gare
+            if g.id in ids_senza
+        ]
+    if senza:
+        condizioni_turno = [RoundClassification.position == 1]
+        if user_id is not None:
+            condizioni_turno.append(RoundClassification.user_id == user_id)
+        _accumula(
+            db.session.query(
+                RoundClassification.gara_id,
+                RoundClassification.position,
+                RoundClassification.user_id,
+                User.username,
+            )
+            .join(User, User.id == RoundClassification.user_id)
+            .filter(
+                tuple_(
+                    RoundClassification.gara_id, RoundClassification.round_number
+                ).in_(senza),
+                or_(*condizioni_turno),
+            )
+            .all()
+        )
+
+    vincitori = {gid: nomi[0] for gid, nomi in primi.items() if len(nomi) == 1}
     return vincitori, piazzamenti
 
 

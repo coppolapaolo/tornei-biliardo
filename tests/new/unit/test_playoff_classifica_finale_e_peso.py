@@ -643,3 +643,64 @@ class TestLaChiusuraDellaGaraAggiornaLaClassificaPersistita:
         }
         assert per_id[b.id] == 1
         assert per_id[a.id] == 2
+
+
+# ── Il peso sui punti per posizione ─────────────────────────────────
+
+
+class TestPesoSuiPuntiPerPosizione:
+    """ADR-053: il peso moltiplica **tutti** i contributi della gara. I punti
+    per piazzamento erano rimasti fuori in entrambi i percorsi (rilievo di
+    Copilot sulla #335): un campionato a piazzamenti ignorava il peso.
+    """
+
+    def _campionato_a_piazzamenti(self, db_session, weight):
+        from models.classification.gara_classification import (
+            RoundClassificationService,
+        )
+
+        camp = _make_campionato(db_session)
+        camp.default_classification_system = "POSITION"
+        a = _make_user(db_session, "a")
+        b = _make_user(db_session, "b")
+        # Gara 1: vince A. Gara 2, pesata: vince B.
+        g1 = _make_gara(db_session, camp, 1, 10)
+        _make_match(db_session, g1, a, b, (5, 0))
+        g2 = _make_gara(db_session, camp, 2, 15, weight=weight)
+        _make_match(db_session, g2, b, a, (5, 0))
+        for g, primo, secondo in ((g1, a, b), (g2, b, a)):
+            RoundClassificationService.calculate_and_save_round_classification(g.id, 1)
+            db_session.add_all(
+                [
+                    GaraClassification(gara_id=g.id, user_id=primo.id, position=1),
+                    GaraClassification(gara_id=g.id, user_id=secondo.id, position=2),
+                ]
+            )
+        db_session.commit()
+        return camp, a, b
+
+    def test_le_righe_persistite_moltiplicano_i_punti(self, db_session):
+        camp, a, b = self._campionato_a_piazzamenti(db_session, weight=3)
+        righe = ClassificationService.update_campionato_classification(camp.id)
+        per_id = {r.user_id: r for r in righe}
+        # Tabella 25/18: A = 25 + 3*18 = 79, B = 18 + 3*25 = 93.
+        assert per_id[a.id].total_position_points == 79
+        assert per_id[b.id].total_position_points == 93
+        assert per_id[b.id].position == 1
+
+    def test_la_pagina_moltiplica_i_punti(self, db_session):
+        from models.campionato.tournament_service import TournamentService
+
+        camp, a, b = self._campionato_a_piazzamenti(db_session, weight=3)
+        righe = TournamentService().calculate_general_classification(camp.id)
+        punti = {dati["username"]: dati["total_points"] for _, dati in righe}
+        # Tabella della pagina 10/7: A = 10 + 3*7 = 31, B = 7 + 3*10 = 37.
+        assert punti[a.username] == 31
+        assert punti[b.username] == 37
+        assert _classifica_in_pagina(camp.id)[b.username] == 1
+
+    def test_con_peso_uno_e_pari(self, db_session):
+        camp, a, b = self._campionato_a_piazzamenti(db_session, weight=1)
+        righe = ClassificationService.update_campionato_classification(camp.id)
+        per_id = {r.user_id: r for r in righe}
+        assert per_id[a.id].total_position_points == per_id[b.id].total_position_points

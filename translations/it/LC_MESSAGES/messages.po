@@ -17609,21 +17609,21 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: templates/public/storico_gare.html:59
-#, fuzzy, python-format
+#, python-format
 msgid "%(num)s gara conclusa"
 msgid_plural "%(num)s gare concluse"
 msgstr[0] ""
 msgstr[1] ""
 
 #: templates/public/storico_gare.html:63
-#, fuzzy, python-format
+#, python-format
 msgid "%(num)s giocata"
 msgid_plural "%(num)s giocate"
 msgstr[0] ""
 msgstr[1] ""
 
 #: templates/public/storico_gare.html:64
-#, fuzzy, python-format
+#, python-format
 msgid "%(num)s diretta"
 msgid_plural "%(num)s dirette"
 msgstr[0] ""

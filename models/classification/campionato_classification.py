@@ -84,18 +84,23 @@ class ClassificationService:
         from models.competition.models import Gara
 
         table = points_table_for_campionato(campionato)
+        # La gara viaggia con la riga per `classification_weight` (ADR-053):
+        # il peso moltiplica anche i punti per piazzamento, non solo vittorie
+        # e triangoli. `playoff_config` in eager, perché è lei a dire se la
+        # gara di playoff vale zero.
         rows = (
-            db.session.query(GaraClassification)
+            db.session.query(GaraClassification, Gara)
             .join(Gara, GaraClassification.gara_id == Gara.id)
             .filter(Gara.campionato_id == campionato.id)
+            .options(joinedload(Gara.playoff_config))
             .all()
         )
 
         totals: Dict[int, int] = {}
-        for row in rows:
-            totals[row.user_id] = totals.get(row.user_id, 0) + points_for_position(
-                row.position, table
-            )
+        for row, gara in rows:
+            totals[row.user_id] = totals.get(
+                row.user_id, 0
+            ) + gara.classification_weight * points_for_position(row.position, table)
         return totals
 
     @staticmethod
