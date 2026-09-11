@@ -250,6 +250,60 @@ def test_conclusa_per_derivazione_prende_il_vincitore_dall_ultimo_turno(
 
 
 @pytest.mark.integration
+def test_il_turno_finale_e_quello_con_le_partite_non_il_programma(
+    client, db_session, scenario
+):
+    """Uno spareggio aggiunge un turno oltre `rounds_count`: il vincitore
+    si legge da lì, come fa `StateService.complete` con
+    `effective_final_round` (rilievo di Copilot sulla #336)."""
+    from models.classification.models import RoundClassification
+    from models.match.models import Match
+    from models.status_enum import MatchStatus
+
+    p0, p1 = scenario["p0"], scenario["p1"]
+    gara = _gara(
+        f"Con spareggio {_uid()}",
+        date.today() - timedelta(days=1),
+        status=GaraStatus.PLAYING.value,
+    )
+    gara.rounds_count = 1
+    gara.current_round = 2
+    db_session.add(gara)
+    db_session.flush()
+
+    def partita(turno, vincitore, perdente):
+        return Match(
+            gara_id=gara.id,
+            round_number=turno,
+            player1_id=vincitore.id,
+            player2_id=perdente.id,
+            player1_score=5,
+            player2_score=3,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
+            winner_id=vincitore.id,
+        )
+
+    db_session.add_all(
+        [
+            partita(1, p1, p0),
+            partita(2, p0, p1),
+            RoundClassification(
+                gara_id=gara.id, round_number=1, user_id=p1.id, position=1
+            ),
+            RoundClassification(
+                gara_id=gara.id, round_number=2, user_id=p0.id, position=1
+            ),
+        ]
+    )
+    db_session.commit()
+
+    html = client.get("/storico").get_data(as_text=True)
+    riga = html.split(gara.name, 1)[1].split("</a>", 1)[0]
+    assert p0.username in riga, "il turno di spareggio decide"
+    assert p1.username not in riga
+
+
+@pytest.mark.integration
 def test_l_elenco_dei_campionati_ha_la_spia_della_partecipazione(
     client, db_session, isolated_director_user, isolated_players
 ):

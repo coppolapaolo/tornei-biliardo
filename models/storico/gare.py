@@ -26,13 +26,14 @@ from dataclasses import dataclass
 from datetime import date as date_cls
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Set, Tuple
 
-from sqlalchemy import or_, tuple_
+from sqlalchemy import func, or_, tuple_
 from sqlalchemy.orm import joinedload, selectinload
 
 from models.base import db
 from models.campionato.models import Campionato
 from models.classification.models import GaraClassification, RoundClassification
 from models.competition.models import Gara, Inscription
+from models.match.models import Match
 from models.dashboard.gara_cards import is_conclusa
 from models.status_enum import EntityType, GaraStatus
 from models.user.models import DirectorAssignment, User
@@ -361,7 +362,25 @@ def _classifiche(
         .all()
     )
 
-    senza = [(g.id, g.rounds_count) for g in gare if g.id not in con_classifica]
+    # Il turno finale è quello su cui `StateService.complete` legge il
+    # vincitore: il più alto con partite (`effective_final_round`), non
+    # `rounds_count` — uno spareggio aggiunge un turno oltre il programma e
+    # la strategia casuale lascia `current_round` indietro. Una query per
+    # tutte le gare senza classifica, non una per gara.
+    ids_senza = [g.id for g in gare if g.id not in con_classifica]
+    senza: List[Tuple[int, int]] = []
+    if ids_senza:
+        ultimo_turno = dict(
+            db.session.query(Match.gara_id, func.max(Match.round_number))
+            .filter(Match.gara_id.in_(ids_senza))
+            .group_by(Match.gara_id)
+            .all()
+        )
+        senza = [
+            (g.id, ultimo_turno.get(g.id) or g.current_round or g.rounds_count)
+            for g in gare
+            if g.id in ids_senza
+        ]
     if senza:
         condizioni_turno = [RoundClassification.position == 1]
         if user_id is not None:
