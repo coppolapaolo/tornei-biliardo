@@ -540,7 +540,7 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
    chi scrive non sa se e' andata. Le classi di validazione di Bootstrap qui non
    si vedono (il tema azzera i bordi e non le stila), quindi il segnale e' un
    fondo semantico che sfuma da se'. */
-.c7-categoria-input { transition: background-color .18s ease; }
+.c7-categoria-input { transition: background-color var(--c7-dur-base) var(--c7-ease); }
 .c7-categoria-input.is-valid { background: var(--c7-ok-bg) !important; color: var(--c7-ok-ink); }
 .c7-categoria-input.is-invalid { background: var(--c7-err-bg) !important; color: var(--c7-err-ink); }
 
@@ -870,7 +870,7 @@ input[type="number"].form-control {
   display: flex; align-items: center; gap: 12px;
   box-shadow: var(--c7-shadow-toast);
   pointer-events: auto;
-  animation: c7-chalky-in .32s cubic-bezier(.2, .8, .3, 1) both;
+  animation: c7-chalky-in var(--c7-dur-base) var(--c7-ease) both;
 }
 .c7-chalky img { width: 68px; height: 68px; object-fit: contain; flex-shrink: 0; }
 .c7-chalky__body { flex: 1; min-width: 0; }
@@ -897,7 +897,7 @@ input[type="number"].form-control {
   from { opacity: 0; transform: translateY(-14px) scale(.97); }
   to   { opacity: 1; transform: none; }
 }
-@media (prefers-reduced-motion: reduce) { .c7-chalky { animation: none; } }
+/* Niente guard qui: con «riduci movimento» i token portano la durata a zero. */
 
 /* --------------------------------------------------------------------------
    11. Stato vuoto / blocco a pagina piena
@@ -1013,7 +1013,7 @@ input[type="number"].form-control {
 /* Chevron delle sezioni richiudibili: ruota quando la sezione e' aperta.
    Era un <style> dentro gara_detail.html, ma il motivo si ripete in ogni
    pagina che usa il collapse di Bootstrap. */
-.collapse-icon { transition: transform .2s ease; color: var(--c7-ink-faint); }
+.collapse-icon { transition: transform var(--c7-dur-base) var(--c7-ease); color: var(--c7-ink-faint); }
 [aria-expanded="true"] .collapse-icon { transform: rotate(180deg); }
 
 /* --------------------------------------------------------------------------
@@ -1298,6 +1298,7 @@ input[type="number"].form-control {
   animation: c7-livepulse 2s infinite;
 }
 @keyframes c7-livepulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .c7-board__live::before { animation: none; } }
 /* A partita ferma il pallino smette di pulsare: un tabellone che lampeggia
    su un risultato chiuso racconta una partita che non esiste piu'. */
 .c7-board__live--wait { color: var(--c7-accent-bright); }
@@ -1329,7 +1330,7 @@ input[type="number"].form-control {
   font-family: inherit; padding: 0;
   border-radius: var(--c7-r-card-lg);
   cursor: pointer;
-  transition: background-color .12s ease;
+  transition: background-color var(--c7-dur-quick) var(--c7-ease);
   -webkit-tap-highlight-color: transparent;
 }
 /* Il riscontro al tocco: `:active` per la pressione, `is-flash` per il tocco
@@ -1383,7 +1384,7 @@ input[type="number"].form-control {
   color: transparent; font-family: inherit; font-size: 11px; font-weight: 800;
   display: grid; place-items: center;
   pointer-events: auto; cursor: pointer;
-  transition: transform .1s ease;
+  transition: transform var(--c7-dur-quick) var(--c7-ease);
   -webkit-tap-highlight-color: transparent;
 }
 .c7-board__pip.is-on { background: var(--c7-accent-bright); color: #0D2A36; }
@@ -3016,3 +3017,39 @@ a.c7-rows__row:hover { background: var(--c7-sunken); }
 .c7-pos--2 { background: var(--c7-argento); color: var(--c7-argento-ink); }
 .c7-pos--3 { background: var(--c7-bronzo);  color: var(--c7-bronzo-ink); }
 
+
+/* --------------------------------------------------------------------------
+   19. Movimento
+   La scala sta in tokens-7c.css (due durate, una curva, la scala del tocco).
+   Qui le regole che la applicano ai componenti che non ne avevano una e ai
+   pezzi di Bootstrap che ne portano una propria. Presidio in
+   tests/new/unit/test_motion_tokens.py: una durata scritta a mano nel tema
+   fa rosso.
+   -------------------------------------------------------------------------- */
+
+/* Il tocco sui comandi grossi del segnapunti: lo schiacciamento e' a zero
+   millisecondi — il pulsante risponde al dito — ed e' il ritorno che si vede.
+   Solo `transform`, quindi sul compositore. */
+.c7-rackpad__btn,
+.c7-scorepad__btn,
+.c7-bigbtn {
+  transition: transform var(--c7-dur-quick) var(--c7-ease);
+}
+.c7-rackpad__btn:active:not(:disabled),
+.c7-scorepad__btn:active:not(:disabled),
+.c7-bigbtn:active:not(:disabled) {
+  transform: scale(var(--c7-press));
+  transition-duration: 0ms;
+}
+
+/* Bootstrap apre e chiude con i suoi tempi (`.collapsing` a 350 ms, il modal
+   a 300): li si riporta sulla scala. Il collapse ha una sola classe per le
+   due direzioni, quindi qui apre e chiude a `base`; i 150 della chiusura
+   valgono per i componenti nostri. */
+.collapsing {
+  transition-duration: var(--c7-dur-base);
+  transition-timing-function: var(--c7-ease);
+}
+.modal.fade .modal-dialog {
+  transition: transform var(--c7-dur-base) var(--c7-ease);
+}

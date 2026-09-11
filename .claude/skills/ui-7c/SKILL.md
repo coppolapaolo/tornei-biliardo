@@ -109,6 +109,30 @@ Allora **si interpreta**, non si inventa:
   (segnapunti e tabellone) · `c7-table-wrap` · `c7-flash` `c7-chalky` ·
   `c7-empty` `c7-avatar` `c7-divider` `c7-sep`.
 
+## Movimento
+
+Il prototipo è statico: sul movimento non dice niente, e la scala l'ha decisa
+l'utente guardando i gesti a confronto (`docs/redesign-7c/movimento/`). Le
+regole, presidiate da `tests/new/unit/test_motion_tokens.py`:
+
+- **Durate solo dai token**, mai millisecondi scritti a mano: `--c7-dur-base`
+  (250 ms) per ciò che entra, si apre o cambia sotto gli occhi;
+  `--c7-dur-quick` (150 ms) per ciò che esce, si chiude o torna dal tocco.
+  Una curva sola, `--c7-ease`. Le uscite sono più veloci delle entrate.
+- **Solo `transform` e `opacity`**: stanno sul compositore e non costano
+  niente su un telefono vecchio. Niente `box-shadow`, `filter`, colori su
+  molti elementi, cascate su liste lunghe. L'altezza di una sezione che si
+  apre è l'unica eccezione.
+- **Il tocco è istantaneo**: lo schiacciamento (`scale(var(--c7-press))`) ha
+  `transition-duration: 0ms`, è il ritorno che si vede. L'azione parte al
+  tocco, l'animazione accompagna, non fa aspettare.
+- **Niente hover, niente decorazione**: l'app è touch. Un movimento che non
+  spiega un cambio di stato o non dà riscontro non si mette. I battiti
+  (`infinite`) sono ammessi solo per il pallino live e portano il proprio
+  guard `prefers-reduced-motion`; tutto il resto è coperto dai token, che con
+  «riduci movimento» vanno a zero.
+- `gamification.css` ha un lessico suo, voluto: non lo si allinea.
+
 ## Trappole del progetto
 
 - **Ogni `<form method="POST">` vuole il token CSRF**, prima riga dentro il

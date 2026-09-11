@@ -1,0 +1,562 @@
+<title>Movimento 7c</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Token 7c, copiati da static/css/tokens-7c.css. Il tema e' a palette unica
+     (chiara): il fondo si dipinge esplicitamente, non si eredita. */
+  :root {
+    --c7-bg: #E4E8E7; --c7-card: #F5F7F6; --c7-sunken: #ECEEED;
+    --c7-ink: #1B2124; --c7-ink-soft: #3D474A; --c7-ink-muted: #6B7679; --c7-ink-faint: #9AA3A6;
+    --c7-on-ink: #F2F5F4;
+    --c7-line: #D3D8D7; --c7-line-soft: #E4E8E7;
+    --c7-accent: #2C4A52; --c7-accent-ink: #F2F8F7; --c7-accent-bright: #8FCDE8; --c7-accent-dim: #A9C4C7;
+    --c7-accent-tint: #DDE9EE; --c7-accent-tint-ink: #23404A;
+    --c7-ok-bg: #E4EDE9; --c7-ok-ink: #1D5F4A; --c7-ok: #2C8A6B;
+    --c7-err-bg: #F3E2E0; --c7-err-ink: #8A2C2C; --c7-err: #B23B3B;
+    --c7-warn-bg: #F0E9D8; --c7-warn-ink: #6E5417;
+    --c7-font: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --c7-font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+    --c7-r-pill: 999px; --c7-r-card: 22px; --c7-r-card-lg: 26px; --c7-r-field: 18px; --c7-r-control: 14px; --c7-r-chip: 12px;
+    --c7-gutter: 18px; --c7-pad-card: 16px; --c7-gap: 12px; --c7-btn-h: 56px;
+    --c7-shadow-toast: 0 10px 24px -18px rgba(27, 33, 36, .6);
+
+    /* Candidati in gara. La durata la fissa ogni colonna; l'easing lo
+       sceglie il selettore in cima e vale per tutta la pagina. */
+    --ease: cubic-bezier(.2, .8, .3, 1);
+    --latenza: 350ms; /* quanto costa oggi una richiesta su PythonAnywhere */
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--c7-bg); color: var(--c7-ink);
+    font-family: var(--c7-font); font-size: 14px; line-height: 1.45;
+    padding-block: 28px 80px; padding-inline: var(--c7-gutter);
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+
+  /* Testata e testo */
+  h1 { font-size: 30px; font-weight: 800; letter-spacing: -.03em; margin: 0; text-wrap: balance; }
+  .lede { margin: 8px 0 0; max-width: 62ch; color: var(--c7-ink-soft); font-weight: 600; }
+  .kicker { font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--c7-ink-muted); }
+  h2 { font-size: 20px; font-weight: 800; letter-spacing: -.02em; margin: 4px 0 0; }
+  .guarda { margin: 6px 0 0; max-width: 64ch; color: var(--c7-ink-muted); font-weight: 600; }
+  .guarda b { color: var(--c7-ink-soft); }
+  section { display: flex; flex-direction: column; gap: 16px; }
+  .sep { border: 0; border-top: 1px solid var(--c7-line); margin: 0; }
+
+  /* Selettore dell'easing: la scelta a poche opzioni e' una fila di card
+     selezionabili, come nel tema, non un select. */
+  .ctrl { display: flex; flex-wrap: wrap; gap: var(--c7-gap); }
+  .choice {
+    flex: 1 1 200px; border-radius: var(--c7-r-field); background: var(--c7-card);
+    padding: 14px 16px; display: flex; align-items: center; gap: 12px; cursor: pointer;
+    border: 0; text-align: left; font: inherit; color: inherit;
+  }
+  .choice:focus-visible { outline: 2px solid var(--c7-accent); outline-offset: 2px; }
+  .choice__title { font-size: 15px; font-weight: 800; }
+  .choice__desc { margin-top: 3px; font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); }
+  .choice__curve { width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px; background: var(--c7-bg); display: grid; place-items: center; }
+  .choice__curve svg { width: 24px; height: 24px; }
+  .choice__curve path { fill: none; stroke: var(--c7-accent); stroke-width: 2.2; stroke-linecap: round; }
+  .choice.is-selected { background: var(--c7-accent); color: var(--c7-accent-ink); }
+  .choice.is-selected .choice__desc { color: var(--c7-accent-dim); }
+  .choice.is-selected .choice__curve { background: rgba(242, 248, 247, .14); }
+  .choice.is-selected .choice__curve path { stroke: var(--c7-accent-bright); }
+
+  /* Le tre colonne di ogni confronto */
+  .cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--c7-gap); align-items: start; }
+  .col { display: flex; flex-direction: column; gap: 10px; }
+  .col__tag {
+    display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px;
+    border-radius: var(--c7-r-pill); background: var(--c7-card); color: var(--c7-ink-muted);
+    font-size: 12px; font-weight: 700; align-self: flex-start;
+  }
+  .col__tag .num { font-family: var(--c7-font-mono); font-weight: 800; color: var(--c7-ink); font-variant-numeric: tabular-nums; }
+  .col__tag.is-today { background: var(--c7-sunken); }
+
+  /* Bottoni del tema */
+  .btn {
+    height: var(--c7-btn-h); padding: 0 22px; border: 0; border-radius: var(--c7-r-pill);
+    font: inherit; font-size: 15px; font-weight: 800; cursor: pointer;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--c7-ink); color: #fff; -webkit-tap-highlight-color: transparent;
+  }
+  .btn--soft { background: var(--c7-card); color: var(--c7-ink-soft); }
+  .btn--ok { background: var(--c7-ok); color: #fff; }
+  .btn:focus-visible { outline: 2px solid var(--c7-accent); outline-offset: 2px; }
+  .btn--full { width: 100%; }
+  .row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+
+  /* ── 1. Cifra del punteggio (c7-score) ─────────────────────────────── */
+  .score { border-radius: var(--c7-r-card-lg); background: var(--c7-card); padding: 20px; text-align: center; }
+  .score__state {
+    display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 12px; border-radius: var(--c7-r-pill);
+    font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+    background: var(--c7-err-bg); color: var(--c7-err);
+  }
+  .score__state::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .score__row { margin-top: 18px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 12px; }
+  .score__side { display: flex; flex-direction: column; align-items: center; }
+  .score__num {
+    font-size: 64px; font-weight: 800; letter-spacing: -.06em; line-height: 1;
+    font-variant-numeric: tabular-nums; display: inline-block;
+  }
+  .score__num.is-behind { color: var(--c7-ink-muted); }
+  .score__dash { align-self: center; font-size: 24px; font-weight: 700; color: var(--c7-ink-faint); }
+  .score__name { margin-top: 6px; font-size: 13px; font-weight: 700; }
+  .score__name.is-behind { color: var(--c7-ink-muted); }
+  /* La cifra nuova sale da sotto e si accende: solo transform e opacity. */
+  .score__num.is-pop { animation: c7-pop var(--dur) var(--ease) both; }
+  @keyframes c7-pop {
+    from { opacity: 0; transform: translateY(.22em) scale(.94); }
+    to   { opacity: 1; transform: none; }
+  }
+
+  /* ── 2. Tocco (c7-rackpad) ─────────────────────────────────────────── */
+  .rackpad { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .rp {
+    height: 96px; border: 0; border-radius: var(--c7-r-card); background: var(--c7-card); color: var(--c7-ink);
+    font: inherit; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+    cursor: pointer; -webkit-tap-highlight-color: transparent; user-select: none;
+  }
+  .rp--mine { background: var(--c7-accent); color: var(--c7-accent-ink); }
+  .rp__plus { font-size: 26px; font-weight: 800; letter-spacing: -.03em; }
+  .rp__who { font-size: 12px; font-weight: 700; color: var(--c7-ink-muted); }
+  .rp--mine .rp__who { color: var(--c7-accent-dim); }
+  /* Lo schiacciamento e' istantaneo; e' il rilascio che ha una durata. */
+  .rp[data-press] { transition: transform var(--dur) var(--ease); }
+  .rp[data-press]:active, .rp[data-press].is-down { transform: scale(var(--press)); transition-duration: 0ms; }
+  .rp:focus-visible { outline: 2px solid var(--c7-accent); outline-offset: 2px; }
+
+  /* ── 3. Pastiglia di stato (c7-state) ──────────────────────────────── */
+  .tess { border-radius: var(--c7-r-card); background: var(--c7-card); padding: var(--c7-pad-card); display: flex; flex-direction: column; gap: 14px; }
+  .tess__head { display: flex; align-items: flex-start; gap: 8px; }
+  .tess__title { font-size: 15px; font-weight: 800; letter-spacing: -.02em; }
+  .tess__meta { font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); line-height: 1.6; }
+  .tess__meta .num, .mono { font-family: var(--c7-font-mono); font-weight: 700; font-variant-numeric: tabular-nums; }
+  .tess__states { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; max-width: 170px; margin-left: auto; }
+  .state {
+    height: 26px; padding: 0 11px; border-radius: var(--c7-r-pill); font-size: 10px; font-weight: 800; letter-spacing: .04em;
+    text-transform: uppercase; display: inline-flex; align-items: center; justify-content: center; white-space: nowrap;
+  }
+  .state--ok { background: var(--c7-ok-bg); color: var(--c7-ok-ink); }
+  .state--accent { background: var(--c7-accent); color: var(--c7-accent-ink); }
+  .state--info { background: var(--c7-accent-tint); color: var(--c7-accent-tint-ink); }
+  .state--muted { background: var(--c7-sunken); color: var(--c7-ink-muted); }
+  .state.is-hidden { display: none; }
+  .state.is-in  { animation: c7-state-in  var(--dur) var(--ease) both; }
+  .state.is-out { animation: c7-state-out 150ms ease-out both; }
+  @keyframes c7-state-in  { from { opacity: 0; transform: scale(.85); } to { opacity: 1; transform: none; } }
+  @keyframes c7-state-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(.85); } }
+  .fill { height: 8px; border-radius: 999px; background: var(--c7-bg); overflow: hidden; }
+  .fill > i { display: block; height: 100%; width: 62%; background: var(--c7-accent); border-radius: inherit; }
+
+  /* ── 4. Apri e chiudi ──────────────────────────────────────────────── */
+  .inset { background: var(--c7-bg); border-radius: var(--c7-r-field); padding: 12px 14px; }
+  .acc-btn {
+    width: 100%; border: 0; background: transparent; font: inherit; color: inherit; padding: 0;
+    display: flex; align-items: center; justify-content: space-between; gap: 8px; cursor: pointer; text-align: left;
+    font-size: 13px; font-weight: 800;
+  }
+  .acc-btn:focus-visible { outline: 2px solid var(--c7-accent); outline-offset: 4px; border-radius: 6px; }
+  .chev { width: 18px; height: 18px; color: var(--c7-ink-faint); transition: transform var(--dur) var(--ease); flex-shrink: 0; }
+  .chev path { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .acc-btn[aria-expanded="true"] .chev { transform: rotate(180deg); }
+  /* Unica eccezione alla regola «solo transform e opacity»: l'altezza di un
+     elemento solo, con grid-template-rows, che il browser interpola. */
+  .acc { display: grid; grid-template-rows: 0fr; transition: grid-template-rows var(--dur-close) var(--ease); }
+  .acc.is-open { grid-template-rows: 1fr; transition-duration: var(--dur); }
+  .acc > div { overflow: hidden; min-height: 0; }
+  .acc__list { padding-top: 10px; display: flex; flex-direction: column; }
+  .trow { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 13px; font-weight: 800; }
+  .trow + .trow { border-top: 1px solid var(--c7-line); }
+  .trow .t { color: var(--c7-ink-muted); flex-shrink: 0; }
+  .trow .sc { margin-left: auto; }
+
+  /* ── 5. Cambio pagina ──────────────────────────────────────────────── */
+  .phone {
+    border-radius: 28px; background: var(--c7-bg); box-shadow: inset 0 0 0 1.5px var(--c7-line);
+    padding: 12px; height: 420px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; position: relative;
+  }
+  .phone__head { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .phone__back { width: 40px; height: 40px; border-radius: 50%; background: var(--c7-card); display: grid; place-items: center; color: var(--c7-ink-soft); }
+  .phone__back svg { width: 16px; height: 16px; }
+  .phone__back path { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+  .phone__title { font-size: 17px; font-weight: 800; letter-spacing: -.02em; }
+  .phone__sub { font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); }
+  .phone__body { position: relative; flex: 1; min-height: 0; }
+  .page { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 10px; }
+  .page.is-off { opacity: 0; pointer-events: none; }
+  .page--b { opacity: 0; pointer-events: none; }
+  .page--b.is-on { opacity: 1; pointer-events: auto; }
+  .phone.is-fading .page { transition: opacity var(--dur) var(--ease); }
+  /* La pagina bianca: quello che si vede oggi fra una richiesta e l'altra. */
+  .phone__white { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; }
+  .phone.is-white .phone__white { opacity: 1; }
+  .tess--accent { background: var(--c7-accent); color: var(--c7-accent-ink); }
+  .tess--accent .tess__meta { color: var(--c7-accent-dim); }
+  .tess--accent .btn--soft { background: rgba(242, 248, 247, .14); color: var(--c7-accent-ink); }
+  .score--sm { padding: 14px; }
+  .score--sm .score__num { font-size: 48px; }
+  .rackpad--sm .rp { height: 72px; }
+  .rackpad--sm .rp__plus { font-size: 22px; }
+
+  /* Chi ha chiesto meno movimento vede la pagina ferma, e un avviso. */
+  .rm-note { display: none; background: var(--c7-warn-bg); color: var(--c7-warn-ink); border-radius: var(--c7-r-field); padding: 12px 14px; font-weight: 700; }
+  @media (prefers-reduced-motion: reduce) {
+    .rm-note { display: block; }
+    .is-pop, .is-in, .is-out { animation: none !important; }
+    .rp[data-press], .chev, .acc, .phone.is-fading .page { transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="kicker">Design system 7c · decisione</div>
+    <h1>Movimento 7c</h1>
+    <p class="lede">Cinque gesti dell'app, ognuno a tre durate affiancate. Si guarda, non si legge: premi il comando e scegli la colonna che sembra un'app e non un effetto. In cima decidi la curva, che vale per tutto.</p>
+    <p class="rm-note">Il sistema chiede meno movimento: qui le animazioni sono spente, come lo sarebbero nell'app. Per confrontarle, disattiva «Riduci movimento» nelle impostazioni di accessibilità.</p>
+  </header>
+
+  <section>
+    <div class="kicker">Curva</div>
+    <h2>Come rallenta il movimento</h2>
+    <p class="guarda">Vale per tutta la pagina. <b>Uscita morbida</b> è quella che il tema usa già per il toast; <b>rimbalzo</b> supera il punto d'arrivo e torna indietro.</p>
+    <div class="ctrl" id="ease-ctrl">
+      <button class="choice" type="button" data-ease="ease-out" id="ease-standard">
+        <span class="choice__curve"><svg viewBox="0 0 24 24"><path d="M3 21 C 6 6, 12 3, 21 3"/></svg></span>
+        <span><span class="choice__title">Standard</span><span class="choice__desc">ease-out del browser</span></span>
+      </button>
+      <button class="choice is-selected" type="button" data-ease="cubic-bezier(.2, .8, .3, 1)" id="ease-morbida">
+        <span class="choice__curve"><svg viewBox="0 0 24 24"><path d="M3 21 C 4 4, 10 3, 21 3"/></svg></span>
+        <span><span class="choice__title">Uscita morbida</span><span class="choice__desc">cubic-bezier .2 .8 .3 1 · già nel tema</span></span>
+      </button>
+      <button class="choice" type="button" data-ease="cubic-bezier(.34, 1.36, .64, 1)" id="ease-rimbalzo">
+        <span class="choice__curve"><svg viewBox="0 0 24 24"><path d="M3 21 C 6 2, 10 -1, 14 3 S 18 5, 21 3"/></svg></span>
+        <span><span class="choice__title">Rimbalzo</span><span class="choice__desc">cubic-bezier .34 1.36 .64 1</span></span>
+      </button>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <section>
+    <div class="kicker">1 · Segnapunti</div>
+    <h2>La cifra che cambia</h2>
+    <p class="guarda">Un solo pulsante segna il rack su tutte e tre. <b>Cosa guardare:</b> si capisce che il numero è cambiato senza sembrare un effetto? A 150 forse non si nota, a 250 forse si aspetta.</p>
+    <div class="cols" id="score-cols">
+      <div class="col" style="--dur: 150ms"><span class="col__tag"><span class="num">150</span> ms</span>
+        <div class="score"><span class="score__state">In corso</span>
+          <div class="score__row">
+            <div class="score__side"><span class="score__num" data-score="a">3</span><span class="score__name">Marco R.</span></div>
+            <span class="score__dash">–</span>
+            <div class="score__side"><span class="score__num is-behind" data-score="b">2</span><span class="score__name is-behind">Luca P.</span></div>
+          </div></div></div>
+      <div class="col" style="--dur: 200ms"><span class="col__tag"><span class="num">200</span> ms</span>
+        <div class="score"><span class="score__state">In corso</span>
+          <div class="score__row">
+            <div class="score__side"><span class="score__num" data-score="a">3</span><span class="score__name">Marco R.</span></div>
+            <span class="score__dash">–</span>
+            <div class="score__side"><span class="score__num is-behind" data-score="b">2</span><span class="score__name is-behind">Luca P.</span></div>
+          </div></div></div>
+      <div class="col" style="--dur: 250ms"><span class="col__tag"><span class="num">250</span> ms</span>
+        <div class="score"><span class="score__state">In corso</span>
+          <div class="score__row">
+            <div class="score__side"><span class="score__num" data-score="a">3</span><span class="score__name">Marco R.</span></div>
+            <span class="score__dash">–</span>
+            <div class="score__side"><span class="score__num is-behind" data-score="b">2</span><span class="score__name is-behind">Luca P.</span></div>
+          </div></div></div>
+    </div>
+    <div class="row">
+      <button class="btn" type="button" id="score-a">+1 Marco</button>
+      <button class="btn btn--soft" type="button" id="score-b">+1 Luca</button>
+      <button class="btn btn--soft" type="button" id="score-reset">Ricomincia 3–2</button>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <section>
+    <div class="kicker">2 · Rackpad</div>
+    <h2>Il tocco</h2>
+    <p class="guarda">Tieni premuto e rilascia. Lo schiacciamento è a zero millisecondi, la durata è del ritorno. <b>Cosa guardare:</b> il pulsante risponde al dito, o sembra di gomma?</p>
+    <div class="cols">
+      <div class="col"><span class="col__tag is-today">Oggi · nessuno</span>
+        <div class="rackpad">
+          <button class="rp rp--mine" type="button"><span class="rp__plus">+1</span><span class="rp__who">Marco R.</span></button>
+          <button class="rp" type="button"><span class="rp__plus">+1</span><span class="rp__who">Luca P.</span></button>
+        </div></div>
+      <div class="col" style="--dur: 100ms; --press: .96"><span class="col__tag"><span class="num">.96</span> · ritorno <span class="num">100</span> ms</span>
+        <div class="rackpad">
+          <button class="rp rp--mine" type="button" data-press><span class="rp__plus">+1</span><span class="rp__who">Marco R.</span></button>
+          <button class="rp" type="button" data-press><span class="rp__plus">+1</span><span class="rp__who">Luca P.</span></button>
+        </div></div>
+      <div class="col" style="--dur: 150ms; --press: .94"><span class="col__tag"><span class="num">.94</span> · ritorno <span class="num">150</span> ms</span>
+        <div class="rackpad">
+          <button class="rp rp--mine" type="button" data-press><span class="rp__plus">+1</span><span class="rp__who">Marco R.</span></button>
+          <button class="rp" type="button" data-press><span class="rp__plus">+1</span><span class="rp__who">Luca P.</span></button>
+        </div></div>
+    </div>
+  </section>
+
+  <hr class="sep">
+
+  <section>
+    <div class="kicker">3 · Tessera</div>
+    <h2>La pastiglia che compare</h2>
+    <p class="guarda">Iscriviti e la pastiglia «Iscritto» entra fra le altre. Sparisce sempre a 150, entra alla durata della colonna. <b>Cosa guardare:</b> l'occhio va sulla pastiglia nuova?</p>
+    <div class="cols" id="pill-cols">
+      <div class="col" style="--dur: 150ms"><span class="col__tag"><span class="num">150</span> ms</span>
+        <div class="tess">
+          <div class="tess__head">
+            <div><div class="tess__title">Gara 5 · 9-Ball</div><div class="tess__meta">Campionato d'autunno · Al 5</div><div class="tess__meta"><span class="num">gio 24 set</span> · Biliardo Centrale</div></div>
+            <div class="tess__states"><span class="state state--accent is-hidden" data-pill>Iscritto</span><span class="state state--ok">Iscrizioni aperte</span></div>
+          </div>
+          <div><div class="tess__meta"><span class="num">10</span> iscritti su <span class="num">16</span></div><div class="fill" style="margin-top:6px"><i></i></div></div>
+        </div></div>
+      <div class="col" style="--dur: 200ms"><span class="col__tag"><span class="num">200</span> ms</span>
+        <div class="tess">
+          <div class="tess__head">
+            <div><div class="tess__title">Gara 5 · 9-Ball</div><div class="tess__meta">Campionato d'autunno · Al 5</div><div class="tess__meta"><span class="num">gio 24 set</span> · Biliardo Centrale</div></div>
+            <div class="tess__states"><span class="state state--accent is-hidden" data-pill>Iscritto</span><span class="state state--ok">Iscrizioni aperte</span></div>
+          </div>
+          <div><div class="tess__meta"><span class="num">10</span> iscritti su <span class="num">16</span></div><div class="fill" style="margin-top:6px"><i></i></div></div>
+        </div></div>
+      <div class="col" style="--dur: 250ms"><span class="col__tag"><span class="num">250</span> ms</span>
+        <div class="tess">
+          <div class="tess__head">
+            <div><div class="tess__title">Gara 5 · 9-Ball</div><div class="tess__meta">Campionato d'autunno · Al 5</div><div class="tess__meta"><span class="num">gio 24 set</span> · Biliardo Centrale</div></div>
+            <div class="tess__states"><span class="state state--accent is-hidden" data-pill>Iscritto</span><span class="state state--ok">Iscrizioni aperte</span></div>
+          </div>
+          <div><div class="tess__meta"><span class="num">10</span> iscritti su <span class="num">16</span></div><div class="fill" style="margin-top:6px"><i></i></div></div>
+        </div></div>
+    </div>
+    <div class="row"><button class="btn btn--ok" type="button" id="pill-toggle">Iscriviti</button></div>
+  </section>
+
+  <hr class="sep">
+
+  <section>
+    <div class="kicker">4 · Sezione richiudibile</div>
+    <h2>Apri e chiudi</h2>
+    <p class="guarda">Le altre partite del turno, dentro la tessera. Chiude sempre a 150, apre alla durata della colonna. <b>Cosa guardare:</b> l'apertura accompagna l'occhio o lo fa aspettare?</p>
+    <div class="cols" id="acc-cols">
+      <div class="col" style="--dur: 150ms; --dur-close: 150ms"><span class="col__tag">apre <span class="num">150</span> · chiude <span class="num">150</span></span>
+        <div class="tess tess--accent">
+          <div class="tess__head"><div><div class="tess__title">Gara 4 · 9-Ball</div><div class="tess__meta">Turno 3 di 5 · <span class="num">4</span> tavoli</div></div><div class="tess__states"><span class="state state--info">In corso</span></div></div>
+          <div class="inset" style="background: rgba(242,248,247,.1)">
+            <button class="acc-btn" type="button" aria-expanded="false" data-acc>Altre partite del turno <svg class="chev" viewBox="0 0 18 18"><path d="M4 7l5 5 5-5"/></svg></button>
+            <div class="acc"><div><div class="acc__list">
+              <div class="trow"><span class="t mono">T1</span>Anna V. <span class="sc mono">4–1</span></div>
+              <div class="trow"><span class="t mono">T2</span>Giulio M. <span class="sc mono">2–2</span></div>
+              <div class="trow"><span class="t mono">T3</span>Sara B. <span class="sc mono">0–3</span></div>
+            </div></div></div>
+          </div>
+        </div></div>
+      <div class="col" style="--dur: 200ms; --dur-close: 150ms"><span class="col__tag">apre <span class="num">200</span> · chiude <span class="num">150</span></span>
+        <div class="tess tess--accent">
+          <div class="tess__head"><div><div class="tess__title">Gara 4 · 9-Ball</div><div class="tess__meta">Turno 3 di 5 · <span class="num">4</span> tavoli</div></div><div class="tess__states"><span class="state state--info">In corso</span></div></div>
+          <div class="inset" style="background: rgba(242,248,247,.1)">
+            <button class="acc-btn" type="button" aria-expanded="false" data-acc>Altre partite del turno <svg class="chev" viewBox="0 0 18 18"><path d="M4 7l5 5 5-5"/></svg></button>
+            <div class="acc"><div><div class="acc__list">
+              <div class="trow"><span class="t mono">T1</span>Anna V. <span class="sc mono">4–1</span></div>
+              <div class="trow"><span class="t mono">T2</span>Giulio M. <span class="sc mono">2–2</span></div>
+              <div class="trow"><span class="t mono">T3</span>Sara B. <span class="sc mono">0–3</span></div>
+            </div></div></div>
+          </div>
+        </div></div>
+      <div class="col" style="--dur: 250ms; --dur-close: 150ms"><span class="col__tag">apre <span class="num">250</span> · chiude <span class="num">150</span></span>
+        <div class="tess tess--accent">
+          <div class="tess__head"><div><div class="tess__title">Gara 4 · 9-Ball</div><div class="tess__meta">Turno 3 di 5 · <span class="num">4</span> tavoli</div></div><div class="tess__states"><span class="state state--info">In corso</span></div></div>
+          <div class="inset" style="background: rgba(242,248,247,.1)">
+            <button class="acc-btn" type="button" aria-expanded="false" data-acc>Altre partite del turno <svg class="chev" viewBox="0 0 18 18"><path d="M4 7l5 5 5-5"/></svg></button>
+            <div class="acc"><div><div class="acc__list">
+              <div class="trow"><span class="t mono">T1</span>Anna V. <span class="sc mono">4–1</span></div>
+              <div class="trow"><span class="t mono">T2</span>Giulio M. <span class="sc mono">2–2</span></div>
+              <div class="trow"><span class="t mono">T3</span>Sara B. <span class="sc mono">0–3</span></div>
+            </div></div></div>
+          </div>
+        </div></div>
+    </div>
+    <div class="row"><button class="btn btn--soft" type="button" id="acc-all">Apri e chiudi tutte insieme</button></div>
+  </section>
+
+  <hr class="sep">
+
+  <section>
+    <div class="kicker">5 · Fra una pagina e l'altra</div>
+    <h2>Il cambio pagina</h2>
+    <p class="guarda">Dalla tessera alla partita e ritorno. Tutte e tre aspettano i <span class="mono">350</span> ms che costa oggi una richiesta al server: la prima colonna li passa sul bianco, come adesso; le altre due sulla pagina di prima, e poi dissolvono. La testata resta ferma. <b>Cosa guardare:</b> quale sembra più veloce? Il tempo è quasi lo stesso.</p>
+    <div class="cols" id="page-cols">
+      <div class="col" style="--dur: 0ms"><span class="col__tag is-today">Oggi · lampo bianco</span>
+        <div class="phone" data-mode="white">
+          <div class="phone__head"><span class="phone__back"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg></span><div><div class="phone__title" data-title>Le tue gare</div><div class="phone__sub" data-sub>Giovedì 11 settembre</div></div></div>
+          <div class="phone__body">
+            <div class="page page--a">
+              <div class="tess tess--accent"><div class="tess__head"><div><div class="tess__title">Gara 4 · 9-Ball</div><div class="tess__meta">Turno 3 di 5 · Tavolo <span class="num">2</span></div></div><div class="tess__states"><span class="state state--info">In corso</span></div></div>
+                <div class="inset" style="background: rgba(242,248,247,.1); display:flex; align-items:center; gap:10px"><div><div class="tess__meta">La tua partita</div><div style="font-weight:800">Marco R. <span class="mono">3–2</span> Luca P.</div></div></div>
+                <button class="btn btn--soft btn--full" type="button" data-go>Apri la partita</button></div>
+              <div class="tess"><div class="tess__head"><div><div class="tess__title">Gara 5 · 9-Ball</div><div class="tess__meta"><span class="num">gio 24 set</span> · Biliardo Centrale</div></div><div class="tess__states"><span class="state state--ok">Iscrizioni aperte</span></div></div></div>
+            </div>
+            <div class="page page--b">
+              <div class="score score--sm"><span class="score__state">In corso</span>
+                <div class="score__row"><div class="score__side"><span class="score__num">3</span><span class="score__name">Marco R.</span></div><span class="score__dash">–</span><div class="score__side"><span class="score__num is-behind">2</span><span class="score__name is-behind">Luca P.</span></div></div></div>
+              <div class="rackpad rackpad--sm"><button class="rp rp--mine" type="button"><span class="rp__plus">+1</span><span class="rp__who">Marco R.</span></button><button class="rp" type="button"><span class="rp__plus">+1</span><span class="rp__who">Luca P.</span></button></div>
+              <button class="btn btn--soft btn--full" type="button" data-back>Torna alle gare</button>
+            </div>
+            <div class="phone__white"></div>
+          </div>
+        </div></div>
+      <div class="col" style="--dur: 150ms"><span class="col__tag">dissolvenza <span class="num">150</span> ms</span>
+        <div class="phone" data-mode="fade">
+          <div class="phone__head"><span class="phone__back"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg></span><div><div class="phone__title" data-title>Le tue gare</div><div class="phone__sub" data-sub>Giovedì 11 settembre</div></div></div>
+          <div class="phone__body">
+            <div class="page page--a">
+              <div class="tess tess--accent"><div class="tess__head"><div><div class="tess__title">Gara 4 · 9-Ball</div><div class="tess__meta">Turno 3 di 5 · Tavolo <span class="num">2</span></div></div><div class="tess__states"><span class="state state--info">In corso</span></div></div>
+                <div class="inset" style="background: rgba(242,248,247,.1); display:flex; align-items:center; gap:10px"><div><div class="tess__meta">La tua partita</div><div style="font-weight:800">Marco R. <span class="mono">3–2</span> Luca P.</div></div></div>
+                <button class="btn btn--soft btn--full" type="button" data-go>Apri la partita</button></div>
+              <div class="tess"><div class="tess__head"><div><div class="tess__title">Gara 5 · 9-Ball</div><div class="tess__meta"><span class="num">gio 24 set</span> · Biliardo Centrale</div></div><div class="tess__states"><span class="state state--ok">Iscrizioni aperte</span></div></div></div>
+            </div>
+            <div class="page page--b">
+              <div class="score score--sm"><span class="score__state">In corso</span>
+                <div class="score__row"><div class="score__side"><span class="score__num">3</span><span class="score__name">Marco R.</span></div><span class="score__dash">–</span><div class="score__side"><span class="score__num is-behind">2</span><span class="score__name is-behind">Luca P.</span></div></div></div>
+              <div class="rackpad rackpad--sm"><button class="rp rp--mine" type="button"><span class="rp__plus">+1</span><span class="rp__who">Marco R.</span></button><button class="rp" type="button"><span class="rp__plus">+1</span><span class="rp__who">Luca P.</span></button></div>
+              <button class="btn btn--soft btn--full" type="button" data-back>Torna alle gare</button>
+            </div>
+            <div class="phone__white"></div>
+          </div>
+        </div></div>
+      <div class="col" style="--dur: 250ms"><span class="col__tag">dissolvenza <span class="num">250</span> ms</span>
+        <div class="phone" data-mode="fade">
+          <div class="phone__head"><span class="phone__back"><svg viewBox="0 0 16 16"><path d="M10 3 5 8l5 5"/></svg></span><div><div class="phone__title" data-title>Le tue gare</div><div class="phone__sub" data-sub>Giovedì 11 settembre</div></div></div>
+          <div class="phone__body">
+            <div class="page page--a">
+              <div class="tess tess--accent"><div class="tess__head"><div><div class="tess__title">Gara 4 · 9-Ball</div><div class="tess__meta">Turno 3 di 5 · Tavolo <span class="num">2</span></div></div><div class="tess__states"><span class="state state--info">In corso</span></div></div>
+                <div class="inset" style="background: rgba(242,248,247,.1); display:flex; align-items:center; gap:10px"><div><div class="tess__meta">La tua partita</div><div style="font-weight:800">Marco R. <span class="mono">3–2</span> Luca P.</div></div></div>
+                <button class="btn btn--soft btn--full" type="button" data-go>Apri la partita</button></div>
+              <div class="tess"><div class="tess__head"><div><div class="tess__title">Gara 5 · 9-Ball</div><div class="tess__meta"><span class="num">gio 24 set</span> · Biliardo Centrale</div></div><div class="tess__states"><span class="state state--ok">Iscrizioni aperte</span></div></div></div>
+            </div>
+            <div class="page page--b">
+              <div class="score score--sm"><span class="score__state">In corso</span>
+                <div class="score__row"><div class="score__side"><span class="score__num">3</span><span class="score__name">Marco R.</span></div><span class="score__dash">–</span><div class="score__side"><span class="score__num is-behind">2</span><span class="score__name is-behind">Luca P.</span></div></div></div>
+              <div class="rackpad rackpad--sm"><button class="rp rp--mine" type="button"><span class="rp__plus">+1</span><span class="rp__who">Marco R.</span></button><button class="rp" type="button"><span class="rp__plus">+1</span><span class="rp__who">Luca P.</span></button></div>
+              <button class="btn btn--soft btn--full" type="button" data-back>Torna alle gare</button>
+            </div>
+            <div class="phone__white"></div>
+          </div>
+        </div></div>
+    </div>
+    <div class="row"><button class="btn" type="button" id="page-all">Apri la partita su tutte e tre</button></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  var root = document.documentElement;
+
+  // Curva: una per tutta la pagina.
+  var choices = document.querySelectorAll('#ease-ctrl .choice');
+  choices.forEach(function (c) {
+    c.addEventListener('click', function () {
+      choices.forEach(function (o) { o.classList.remove('is-selected'); });
+      c.classList.add('is-selected');
+      root.style.setProperty('--ease', c.dataset.ease);
+    });
+  });
+
+  // 1. Cifra: rimuovi, riflusso, riaggiungi — altrimenti la seconda volta non rigioca.
+  var score = { a: 3, b: 2 };
+  function paintScore(pop) {
+    document.querySelectorAll('[data-score]').forEach(function (el) {
+      var k = el.dataset.score, v = score[k];
+      var behind = v < score[k === 'a' ? 'b' : 'a'];
+      el.classList.toggle('is-behind', behind);
+      el.parentNode.querySelector('.score__name').classList.toggle('is-behind', behind);
+      if (pop === k) {
+        el.classList.remove('is-pop'); void el.offsetWidth;
+        el.textContent = v; el.classList.add('is-pop');
+      } else { el.textContent = v; }
+    });
+  }
+  document.getElementById('score-a').addEventListener('click', function () { score.a += 1; paintScore('a'); });
+  document.getElementById('score-b').addEventListener('click', function () { score.b += 1; paintScore('b'); });
+  document.getElementById('score-reset').addEventListener('click', function () { score = { a: 3, b: 2 }; paintScore(null); });
+
+  // 2. Tocco: `:active` basta col mouse; col dito su alcuni browser serve la classe.
+  document.querySelectorAll('.rp[data-press]').forEach(function (b) {
+    b.addEventListener('pointerdown', function () { b.classList.add('is-down'); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) {
+      b.addEventListener(ev, function () { b.classList.remove('is-down'); });
+    });
+  });
+
+  // 3. Pastiglia: entra alla durata della colonna, esce sempre a 150.
+  var inscribed = false, pillBtn = document.getElementById('pill-toggle');
+  pillBtn.addEventListener('click', function () {
+    inscribed = !inscribed;
+    pillBtn.textContent = inscribed ? 'Annulla iscrizione' : 'Iscriviti';
+    pillBtn.classList.toggle('btn--ok', !inscribed);
+    pillBtn.classList.toggle('btn--soft', inscribed);
+    document.querySelectorAll('[data-pill]').forEach(function (p) {
+      p.classList.remove('is-in', 'is-out');
+      if (inscribed) { p.classList.remove('is-hidden'); void p.offsetWidth; p.classList.add('is-in'); }
+      else {
+        p.classList.add('is-out');
+        p.addEventListener('animationend', function done() { p.classList.add('is-hidden'); p.classList.remove('is-out'); p.removeEventListener('animationend', done); });
+      }
+    });
+  });
+
+  // 4. Apri e chiudi.
+  function setAcc(btn, open) {
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    btn.nextElementSibling.classList.toggle('is-open', open);
+  }
+  document.querySelectorAll('[data-acc]').forEach(function (btn) {
+    btn.addEventListener('click', function () { setAcc(btn, btn.getAttribute('aria-expanded') !== 'true'); });
+  });
+  document.getElementById('acc-all').addEventListener('click', function () {
+    var btns = document.querySelectorAll('[data-acc]');
+    var open = btns[0].getAttribute('aria-expanded') !== 'true';
+    btns.forEach(function (b) { setAcc(b, open); });
+  });
+
+  // 5. Cambio pagina: 350 ms di latenza simulata, poi bianco secco o dissolvenza.
+  var LAT = 350;
+  function go(phone, toB) {
+    if (phone.dataset.busy) return;
+    phone.dataset.busy = '1';
+    var a = phone.querySelector('.page--a'), b = phone.querySelector('.page--b');
+    var title = phone.querySelector('[data-title]'), sub = phone.querySelector('[data-sub]');
+    var finish = function () {
+      title.textContent = toB ? 'Gara 4 · 9-Ball' : 'Le tue gare';
+      sub.textContent = toB ? 'Turno 3 · Tavolo 2' : 'Giovedì 11 settembre';
+      delete phone.dataset.busy;
+    };
+    if (phone.dataset.mode === 'white') {
+      phone.classList.add('is-white');
+      setTimeout(function () {
+        a.classList.toggle('is-off', toB); b.classList.toggle('is-on', toB);
+        phone.classList.remove('is-white'); finish();
+      }, LAT);
+    } else {
+      setTimeout(function () {
+        phone.classList.add('is-fading');
+        a.classList.toggle('is-off', toB); b.classList.toggle('is-on', toB);
+        var dur = parseFloat(getComputedStyle(phone.parentNode).getPropertyValue('--dur')) || 0;
+        setTimeout(function () { phone.classList.remove('is-fading'); finish(); }, dur + 20);
+      }, LAT);
+    }
+  }
+  document.querySelectorAll('.phone').forEach(function (phone) {
+    phone.querySelector('[data-go]').addEventListener('click', function () { go(phone, true); });
+    phone.querySelector('[data-back]').addEventListener('click', function () { go(phone, false); });
+  });
+  document.getElementById('page-all').addEventListener('click', function () {
+    var phones = document.querySelectorAll('.phone');
+    var toB = !phones[0].querySelector('.page--b').classList.contains('is-on');
+    phones.forEach(function (p) { go(p, toB); });
+  });
+})();
+</script>
