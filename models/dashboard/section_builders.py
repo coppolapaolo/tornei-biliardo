@@ -118,17 +118,34 @@ class DashboardSectionBuilder:
             user_id, include_expired=False
         )
 
-        # Get recent individual matches
-        recent_individual_matches = (
+        # Le sfide a due **da giocare**: fissate o gia' iniziate.
+        #
+        # Prima qui c'erano le ultime dieci di qualunque stato, e non le
+        # mostrava nessun template: zero occorrenze di `individual_matches` in
+        # `templates/`. Il risultato e' che una sfida a due in corso non
+        # compariva in nessuna dashboard, mentre la partita di gara si': eppure
+        # e' una partita da giocare esattamente come l'altra, e usa lo stesso
+        # `MatchStatus`.
+        #
+        # `SCHEDULED` e `IN_PROGRESS` sono l'equivalente di `PENDING`/`PLAYING`
+        # per le partite di gara — vedi il ciclo di vita in `MatchStatus`.
+        # La colonna e' un `db.Enum`, non una stringa: si filtra con i membri.
+        sfide_in_corso = (
             db.session.query(IndividualMatch)
             .filter(
                 or_(
                     IndividualMatch.player1_id == user_id,
                     IndividualMatch.player2_id == user_id,
-                )
+                ),
+                IndividualMatch.status.in_(
+                    [MatchStatus.SCHEDULED, MatchStatus.IN_PROGRESS]
+                ),
             )
-            .order_by(IndividualMatch.created_at.desc())
-            .limit(10)
+            .options(
+                joinedload(IndividualMatch.player1),
+                joinedload(IndividualMatch.player2),
+            )
+            .order_by(IndividualMatch.scheduled_at.asc())
             .all()
         )
 
@@ -138,7 +155,7 @@ class DashboardSectionBuilder:
 
         return {
             "match_proposals": proposals,
-            "individual_matches": recent_individual_matches,
+            "sfide_in_corso": sfide_in_corso,
             "match_opportunities": opportunities[:5],  # Limit to top 5 opportunities
         }
 

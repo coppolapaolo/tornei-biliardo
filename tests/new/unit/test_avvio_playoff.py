@@ -8,7 +8,7 @@ from models import Campionato
 from models.base import db, utc_now
 from models.competition.models import Gara, Inscription
 from models.classification.models import Classification
-from models.status_enum import GaraStatus
+from models.status_enum import Discipline, GaraStatus
 from models.playoff.models import (
     PlayoffConfiguration,
     PlayoffQualification,
@@ -51,7 +51,7 @@ def _make_gara(db_session, campionato, number=1, status=GaraStatus.COMPLETED.val
         number=number,
         name=f"Gara {number}",
         date=date(2026, month, day),
-        discipline="nine_ball",
+        discipline=Discipline.NINE_BALL.value,
         status=status,
         rounds_count=3,
         current_round=1,
@@ -451,7 +451,7 @@ class TestCreatePlayoffGara:
     def test_create_playoff_gara_inherits_params(self, db_session):
         c = _make_campionato(db_session, terminated=True)
         cfg = _make_config(db_session, c)
-        gara = _make_gara(db_session, c)  # discipline=nine_ball, distance=5
+        gara = _make_gara(db_session, c)  # discipline 9_ball, distance 5
         players = []
         for i in range(6):
             p = _make_user(db_session)
@@ -468,7 +468,7 @@ class TestCreatePlayoffGara:
             PlayoffService.confirm_qualification(qual.id, p.id)
 
         playoff_gara = PlayoffService.create_playoff_gara(cfg.id)
-        assert playoff_gara.discipline == "nine_ball"
+        assert playoff_gara.discipline == Discipline.NINE_BALL.value
         assert playoff_gara.distance == 5
 
     def test_create_playoff_gara_override_params(self, db_session):
@@ -538,11 +538,11 @@ class TestGetGaraParams:
     def test_inherits_from_campionato(self, db_session):
         c = _make_campionato(db_session)
         cfg = _make_config(db_session, c)
-        _make_gara(db_session, c)  # nine_ball, distance=5
+        _make_gara(db_session, c)  # 9_ball, distance 5
         db_session.commit()
 
         params = cfg.get_gara_params()
-        assert params["discipline"] == "nine_ball"
+        assert params["discipline"] == Discipline.NINE_BALL.value
         assert params["distance"] == 5
 
     def test_explicit_override(self, db_session):

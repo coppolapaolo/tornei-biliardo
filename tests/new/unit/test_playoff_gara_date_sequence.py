@@ -37,7 +37,7 @@ from models.playoff.models import (
     QualificationStatus,
 )
 from models.playoff.services import PlayoffService
-from models.status_enum import GaraStatus
+from models.status_enum import Discipline, GaraStatus
 from models.user.models import User
 
 
@@ -69,7 +69,7 @@ def _gara(
         name=f"Gara {numero}",
         date=giorno,
         time=time(20, 0),
-        discipline="nine_ball",
+        discipline=Discipline.NINE_BALL.value,
         status=status,
         rounds_count=3,
         current_round=1,

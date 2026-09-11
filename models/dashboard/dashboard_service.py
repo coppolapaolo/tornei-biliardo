@@ -22,6 +22,13 @@ from models.user.models import User
 from models.status_enum import GaraStatus, MatchStatus
 
 from .activity_feedback import ActivityFeedbackService, has_any_activity
+from .campionato_cards import build_campionato_cards, enrich_with_classifica
+from .gara_cards import (
+    build_gara_cards,
+    enrich_with_comandi,
+    enrich_with_piazzamento,
+    enrich_with_progress,
+)
 from .view_models import (
     _role_truthy,
     _user_is_match_participant,
@@ -54,9 +61,6 @@ def _needs_setup_card(user_id: int, user) -> bool:
 # Older completed campionati are accessible via /campionatos archive page.
 DASHBOARD_COMPLETED_LIMIT = 2
 
-# How many completed standalone gare to surface as "recent tail" in the
-# Gare section. Older completed gare live behind /garas archive.
-DASHBOARD_STANDALONE_COMPLETED_LIMIT = 2
 
 _TERMINAL_TOURNAMENT_STATUSES = frozenset(
     {
@@ -83,26 +87,6 @@ def _partition_campionato_items(unified_items):
         else:
             active.append(it)
     return active, completed[:DASHBOARD_COMPLETED_LIMIT], len(completed)
-
-
-def _standalone_completed_tail(standalones):
-    """Estrae le gare standalone COMPLETED come coda recente.
-
-    Ordina per data decrescente (più recenti prima), date NULL in fondo,
-    poi applica il cap. `standalones` arriva da `standalone_q` (date asc
-    nulls last), qui ribaltiamo per la sezione "coda recente".
-    """
-    from datetime import date as _date_cls
-
-    completed = [g for g in standalones if g.status == GaraStatus.COMPLETED.value]
-    completed.sort(
-        key=lambda g: g.date or _date_cls.min,
-        reverse=True,
-    )
-    return (
-        completed[:DASHBOARD_STANDALONE_COMPLETED_LIMIT],
-        len(completed),
-    )
 
 
 class DashboardService:
@@ -160,7 +144,7 @@ class DashboardService:
             caps=caps,
             debug_mode=False,
             match_proposals=None,
-            individual_matches=None,
+            sfide_in_corso=None,
             match_opportunities=None,
         )
 
@@ -284,8 +268,20 @@ class DashboardService:
             _partition_campionato_items(unified_items)
         )
 
-        standalone_completed_recent, standalone_completed_total = (
-            _standalone_completed_tail(standalones_all)
+        # Le gare divise fra «le tue» e «aperte»: la divisione e' una regola
+        # di dominio (chi vede cosa) e sta in `gara_cards`, non in Jinja.
+        # Tutti e tre gli argomenti sono gia' in memoria: nessuna query nuova.
+        gare = build_gara_cards(unified_items, all_my_inscriptions, all_current_matches)
+        # «Come sta andando»: posizione provvisoria e partite del turno, sulle
+        # mie e su quelle in diretta (dove le partite sono tutte «degli
+        # altri»). Sta in chiamate a parte perche' sono le uniche che toccano
+        # il database.
+        enrich_with_progress(gare.mie + gare.in_diretta, user_id)
+        enrich_with_comandi(gare.mie)
+        enrich_with_piazzamento(gare.concluse, user_id)
+        campionati_tessere = build_campionato_cards(unified_items, all_my_inscriptions)
+        enrich_with_classifica(
+            campionati_tessere.attivi + campionati_tessere.conclusi, user_id
         )
 
         # Il blocco di feedback vale anche qui: chi ha il ruolo di direttore
@@ -310,8 +306,8 @@ class DashboardService:
             campionati_active_items=active_items,
             campionati_completed_shown_items=completed_shown_items,
             campionati_completed_total=completed_total,
-            standalone_completed_recent=standalone_completed_recent,
-            standalone_completed_total=standalone_completed_total,
+            gare=gare,
+            campionati_tessere=campionati_tessere,
             unified_items=unified_items,
             selected_campionato=selected,
             selected_gara=selected_gara,
@@ -334,7 +330,7 @@ class DashboardService:
             can_manage_directors=can_manage_directors,
             caps=caps,
             match_proposals=individual_sections["match_proposals"],
-            individual_matches=individual_sections["individual_matches"],
+            sfide_in_corso=individual_sections["sfide_in_corso"],
             match_opportunities=individual_sections["match_opportunities"],
             playoff_invitations=DashboardSectionBuilder.build_playoff_invitations(
                 user_id
@@ -437,8 +433,20 @@ class DashboardService:
             _partition_campionato_items(unified_items)
         )
 
-        standalone_completed_recent, standalone_completed_total = (
-            _standalone_completed_tail(all_standalone_garas)
+        # Le gare divise fra «le tue» e «aperte»: la divisione e' una regola
+        # di dominio (chi vede cosa) e sta in `gara_cards`, non in Jinja.
+        # Tutti e tre gli argomenti sono gia' in memoria: nessuna query nuova.
+        gare = build_gara_cards(unified_items, all_my_inscriptions, all_current_matches)
+        # «Come sta andando»: posizione provvisoria e partite del turno, sulle
+        # mie e su quelle in diretta (dove le partite sono tutte «degli
+        # altri»). Sta in chiamate a parte perche' sono le uniche che toccano
+        # il database.
+        enrich_with_progress(gare.mie + gare.in_diretta, user_id)
+        enrich_with_comandi(gare.mie)
+        enrich_with_piazzamento(gare.concluse, user_id)
+        campionati_tessere = build_campionato_cards(unified_items, all_my_inscriptions)
+        enrich_with_classifica(
+            campionati_tessere.attivi + campionati_tessere.conclusi, user_id
         )
 
         # Il blocco si mostra una volta per sessione: quando il turno e' gia'
@@ -466,8 +474,8 @@ class DashboardService:
             campionati_active_items=active_items,
             campionati_completed_shown_items=completed_shown_items,
             campionati_completed_total=completed_total,
-            standalone_completed_recent=standalone_completed_recent,
-            standalone_completed_total=standalone_completed_total,
+            gare=gare,
+            campionati_tessere=campionati_tessere,
             unified_items=unified_items,
             selected_campionato=selected,
             selected_gara=selected_gara,
@@ -490,7 +498,7 @@ class DashboardService:
             can_manage_directors=False,
             caps=caps,
             match_proposals=individual_sections["match_proposals"],
-            individual_matches=individual_sections["individual_matches"],
+            sfide_in_corso=individual_sections["sfide_in_corso"],
             match_opportunities=individual_sections["match_opportunities"],
             playoff_invitations=DashboardSectionBuilder.build_playoff_invitations(
                 user_id
@@ -546,7 +554,7 @@ class DashboardService:
             can_manage_directors=False,
             caps=guest_caps,
             match_proposals=None,
-            individual_matches=None,
+            sfide_in_corso=None,
             match_opportunities=None,
             available_challenges=None,
             player_challenge_progress=None,

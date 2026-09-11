@@ -7,8 +7,12 @@ Extracted from services.py for maintainability (Round 4 P3).
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, List, Optional
+from typing import TYPE_CHECKING, Any, List, Optional
 from datetime import date as date_cls
+
+if TYPE_CHECKING:  # pragma: no cover
+    from .campionato_cards import ElenchiCampionati
+    from .gara_cards import ElenchiGare
 
 from sqlalchemy import or_, and_
 
@@ -147,7 +151,11 @@ class DashboardVM:
     match_proposals: Optional[dict[str, Any]] = (
         None  # {"created": [], "received": [], "available": []}
     )
-    individual_matches: Optional[List[Any]] = None  # Recent individual matches
+    #: Le sfide a due **da giocare**: fissate o gia' iniziate. Era
+    #: `individual_matches` — le ultime dieci di qualunque stato — e non la
+    #: disegnava nessun template: una sfida in corso non compariva in nessuna
+    #: dashboard, mentre la partita di gara si'.
+    sfide_in_corso: Optional[List[Any]] = None
     match_opportunities: Optional[List[Any]] = None  # Available match opportunities
 
     # Inviti ai playoff ancora senza risposta (PlayoffQualification PENDING):
@@ -190,9 +198,14 @@ class DashboardVM:
     campionati_completed_shown_items: Optional[List["UnifiedDashboardItem"]] = None
     campionati_completed_total: int = 0
 
-    # Coda recente di gare standalone COMPLETED per la sezione Gare in
-    # dashboard player/director (analogo del pattern campionati).
-    # Le gare-di-campionato completate restano accessibili tramite il
-    # campionato di appartenenza, non vengono duplicate qui.
-    standalone_completed_recent: Optional[List[Any]] = None
-    standalone_completed_total: int = 0
+    # Le gare della dashboard, divise per quello che chiedono
+    # (`models/dashboard/gara_cards.py`): le mie, in diretta, aperte, in
+    # arrivo, concluse. Sono `GaraCardVM`, cioè la gara più il posto che ci
+    # occupa chi guarda — iscrizione, partite aperte, direzione — e la tessera
+    # si disegna da quei fatti: senza, è quella dell'ospite (regola 1 del
+    # 2026-09-10). Le concluse sono di tutti, l'ultima più l'ultimo mese.
+    gare: Optional["ElenchiGare"] = None
+    # I campionati con la testa della classifica e la riga di chi guarda
+    # (`models/dashboard/campionato_cards.py`): attivi e conclusi, questi
+    # ultimi con la stessa finestra delle gare.
+    campionati_tessere: Optional["ElenchiCampionati"] = None

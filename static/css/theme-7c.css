@@ -306,6 +306,30 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
 .c7-card--err  { background: var(--c7-err-bg);  color: var(--c7-err-ink); }
 .c7-card--info { background: var(--c7-info-bg); color: var(--c7-info-ink); }
 
+/* Il fatto che sta DENTRO una cosa piu' grande: la tua partita dentro la card
+   della sua gara, l'invito ai playoff dentro il campionato che lo manda.
+   Non e' una card annidata — le card non si annidano, perche' due bordi
+   arrotondati concentrici leggono come un errore di impaginazione — ma un
+   incasso: lo stesso grigio del fondo pagina, che dice «questo sta dentro»
+   senza aggiungere una cornice.
+
+   Nessun valore nuovo: `--c7-bg` e' il fondo, `--c7-r-field` il raggio dei
+   campi. Le varianti colorate servono quando l'incasso porta un avviso, e
+   riusano le stesse terne dei `.c7-card--*` qui sopra. */
+.c7-inset {
+  background: var(--c7-bg);
+  border-radius: var(--c7-r-field);
+  padding: 12px 14px;
+}
+.c7-inset--warn { background: var(--c7-warn-bg); color: var(--c7-warn-body); }
+.c7-inset--warn .c7-kicker { color: var(--c7-warn-ink); }
+.c7-inset--ok   { background: var(--c7-ok-bg);   color: var(--c7-ok-body); }
+.c7-inset--ok .c7-kicker { color: var(--c7-ok-ink); }
+
+/* Dentro una card gia' incassata (`--c7-sunken`) il fondo pagina non si
+   distingue piu': li' l'incasso torna al bianco sporco della card. */
+.c7-card--locked .c7-inset { background: var(--c7-card); }
+
 .c7-grid { display: grid; gap: var(--c7-gap); }
 
 /* La fascia di numeri in cima a una schermata: due colonne sotto i 992px,
@@ -2878,3 +2902,72 @@ a.c7-vt__ovr:hover { color: var(--c7-on-ink); }
 }
 .c7-prova__aiuto .form-switch { padding: 0; min-height: 0; display: flex; }
 .c7-prova__aiuto .form-check-input { margin: 0; flex-shrink: 0; }
+
+/* --------------------------------------------------------------------------
+   Tessera della gara e del campionato (canvas «Tessera», 2026-09-10).
+   Una tessera sola, condivisa fra home dell'ospite e dashboard: si disegna dai
+   fatti di chi guarda — iscritto, dirige, ha una partita — e senza fatti e'
+   quella dell'ospite. I pezzi qui sotto sono quelli che il tema non aveva.
+   -------------------------------------------------------------------------- */
+
+/* La gara in corso e' scura per chiunque la guardi: la diretta si vede da
+   lontano. Dentro, gli incassi e i testi secondari passano ai toni accent. */
+.c7-card--accent .c7-inset { background: rgba(255, 255, 255, .08); color: inherit; }
+.c7-card--accent .c7-inset .c7-kicker,
+.c7-card--accent .c7-tessera__meta,
+.c7-card--accent .c7-tessera__muted { color: var(--c7-accent-dim); }
+.c7-card--accent .c7-tessera__title { color: var(--c7-accent-ink); }
+.c7-card--accent .c7-tessera__line { border-top-color: rgba(255, 255, 255, .12); }
+
+.c7-tessera__title { font-size: 15px; font-weight: 800; letter-spacing: -.02em; }
+.c7-tessera__meta  { font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); line-height: 1.6; }
+.c7-tessera__muted { color: var(--c7-ink-muted); }
+.c7-tessera__line  { border-top: 1px solid var(--c7-line-soft); }
+/* Le pastiglie possono essere tre («Dirigi» + «Iscritto» + lo stato): vanno
+   a capo invece di stringere il titolo fino a spezzarlo. */
+.c7-tessera__states { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; max-width: 170px; }
+/* Le azioni hanno l'altezza standard (`--c7-btn-h`): i 40px di `.btn-sm`
+   sono difficili da tappare, e su una tessera si tappa. */
+.c7-tessera__actions { display: flex; gap: 8px; }
+.c7-tessera__actions > .btn { flex: 1; }
+
+/* Il riquadro della propria partita e' il bersaglio: niente pulsante a parte. */
+.c7-inset--go {
+  display: flex; align-items: center; gap: 10px; color: inherit;
+  box-shadow: inset 0 0 0 1.5px var(--c7-accent-bright);
+}
+.c7-inset--go:hover, .c7-inset--go:focus { color: inherit; }
+.c7-inset--go .c7-inset__chev { color: var(--c7-accent-bright); flex-shrink: 0; }
+
+/* Sulla tessera scura i pulsanti prendono i toni dell'accento. */
+.c7-card--accent .btn-primary { background: var(--c7-accent-bright); color: var(--c7-accent); }
+.c7-card--accent .btn-secondary { background: rgba(255, 255, 255, .14); color: var(--c7-accent-ink); }
+.c7-card--accent .btn-secondary.is-disabled,
+.c7-card--accent .btn-secondary:disabled { background: rgba(255, 255, 255, .08); color: var(--c7-accent-dim); }
+
+/* Righe di classifica dentro la tessera del campionato. */
+.c7-tessera__row { display: flex; align-items: center; gap: 10px; padding: 8px 0; font-size: 13px; font-weight: 800; }
+.c7-tessera__row + .c7-tessera__row { border-top: 1px solid var(--c7-line); }
+.c7-tessera__row.is-me {
+  background: var(--c7-accent); color: var(--c7-accent-ink);
+  border-radius: var(--c7-r-chip); padding: 8px 10px; margin: 2px -10px 0; border-top: 0;
+}
+.c7-tessera__row.is-me .c7-tessera__muted { color: var(--c7-accent-dim); }
+
+/* Il podio con le medaglie. */
+.c7-podio { display: flex; gap: 8px; margin-top: 10px; }
+.c7-podio > div { flex: 1; min-width: 0; text-align: center; background: var(--c7-card); border-radius: var(--c7-r-chip); padding: 8px 6px; }
+.c7-medal { width: 30px; height: 30px; margin: 0 auto; border-radius: 10px; display: grid; place-items: center; font-size: 14px; }
+.c7-medal--1 { background: var(--c7-oro);     color: var(--c7-oro-ink); }
+.c7-medal--2 { background: var(--c7-argento); color: var(--c7-argento-ink); }
+.c7-medal--3 { background: var(--c7-bronzo);  color: var(--c7-bronzo-ink); }
+.c7-podio__pos  { margin-top: 6px; font-family: var(--c7-font-mono); font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); }
+.c7-podio__name { margin-top: 2px; font-size: 12px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* In classifica la riga di chi guarda e' scura (`.c7-tessera__row.is-me`):
+   si riconosce dal fondo, non da un «sei tu» scritto accanto al nome. */
+/* Chip di posizione nelle righe di classifica della tessera. */
+.c7-pos { width: 24px; height: 24px; border-radius: 8px; background: var(--c7-bg); display: grid; place-items: center; font-family: var(--c7-font-mono); font-size: 11px; font-weight: 800; color: var(--c7-ink-muted); flex-shrink: 0; }
+.c7-pos--1 { background: var(--c7-accent); color: var(--c7-accent-ink); }
+.c7-pos--2, .c7-pos--3 { background: var(--c7-accent-tint); color: var(--c7-accent-tint-ink); }
+
