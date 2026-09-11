@@ -209,3 +209,13 @@ class DashboardVM:
     # (`models/dashboard/campionato_cards.py`): attivi e conclusi, questi
     # ultimi con la stessa finestra delle gare.
     campionati_tessere: Optional["ElenchiCampionati"] = None
+
+    @property
+    def ha_qualcosa_da_mostrare(self) -> bool:
+        """C'è almeno una gara o un campionato in uno degli elenchi: se no la
+        home dell'ospite è un'altra pagina (`no_campionato.html`)."""
+        g, c = self.gare, self.campionati_tessere
+        return bool(
+            (g and (g.mie or g.in_diretta or g.aperte or g.in_arrivo or g.concluse))
+            or (c and (c.attivi or c.conclusi))
+        )

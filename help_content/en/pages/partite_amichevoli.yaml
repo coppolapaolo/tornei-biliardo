@@ -125,6 +125,12 @@ blocks:
 
   - type: text
     text: >-
+      You do not have to go back to the Matches section to find it: matches
+      that are scheduled or already started also show up on your home, under
+      **«Individual matches»**, right after your competitions.
+
+  - type: text
+    text: >-
       When it is time to play, open the match and press **Start**. The
       scoreboard is identical to the one in competitions: one button per
       player, pressed after each rack. See [Playing a

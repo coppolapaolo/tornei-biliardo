@@ -18,7 +18,9 @@ import pytest
 
 from models import Campionato
 from models.base import utc_now
-from models.campionato.homepage_service import _TERMINAL_CAMPIONATO_STATUSES
+from models.dashboard.campionato_cards import (
+    STATI_CONCLUSI as _TERMINAL_CAMPIONATO_STATUSES,
+)
 from models.campionato.statistics_service import (
     _TERMINAL_TOURNAMENT_STATUSES,
     compute_campionato_status,

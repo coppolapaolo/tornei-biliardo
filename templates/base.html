@@ -222,8 +222,13 @@
                 <span>
                     <span class="c7-side__name">{{ _('Tornei Biliardo') }}</span>
                     <span class="c7-side__role d-block">
-                        {% if current_user.is_authenticated and current_user.is_admin %}{{ _('amministrazione') }}
-                        {% elif current_user.is_authenticated and current_user.is_director %}{{ _('direzione gara') }}
+                        {# Chi non è entrato non è un giocatore: è un
+                           visitatore, e il sito non deve dargli un ruolo che
+                           non ha. Il ramo `else` lo chiamava «giocatore» per
+                           il solo fatto di non essere né admin né direttore. #}
+                        {% if not current_user.is_authenticated %}{{ _('vista pubblica') }}
+                        {% elif current_user.is_admin %}{{ _('amministrazione') }}
+                        {% elif current_user.is_director %}{{ _('direzione gara') }}
                         {% else %}{{ _('giocatore') }}{% endif %}
                     </span>
                 </span>

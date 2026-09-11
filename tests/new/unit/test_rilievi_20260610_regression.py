@@ -13,7 +13,6 @@
 """
 
 from datetime import date
-from types import SimpleNamespace
 
 import pytest
 from flask import render_template
@@ -27,46 +26,27 @@ from models.status_enum import Discipline, GaraStatus, MatchStatus
 class TestIndexLiveIconRegression:
     """Rilievo 1: icona biliardo, non ping pong, in 'Ai tavoli adesso'."""
 
-    def _live_card(self):
-        gara = SimpleNamespace(
-            id=1,
-            name="Gara Test",
-            discipline="8_ball",
-            location="Sala Prova",
-        )
-        live_match = SimpleNamespace(
-            table="Tavolo A",
-            is_trio=False,
-            player1="Alice",
-            player1_score=2,
-            player2="Bob",
-            player2_score=1,
-        )
-        return SimpleNamespace(
-            gara=gara,
-            campionato=None,
-            current_round=1,
-            rounds_count=3,
-            active_count=4,
-            live_matches=[live_match],
-        )
-
-    def test_ai_tavoli_adesso_non_usa_icone_di_altri_sport(self, app):
+    def test_ai_tavoli_adesso_non_usa_icone_di_altri_sport(self):
         """Il rilievo era la racchetta da ping pong su una card di biliardo.
 
         Il redesign 7c ha poi tolto le icone decorative dalla card e scrive la
-        disciplina a parole, quindi le due `fa-8-ball` di allora non ci sono
-        piu'. L'invariante che vale ancora e' quello: mai l'icona di un altro
-        sport. La presenza della sezione e' asserita perche' altrimenti un
-        template vuoto passerebbe per costruzione.
+        disciplina a parole; dal 10/09 la card e' la tessera condivisa fra home
+        e dashboard (`_tessera_gara.html`). L'invariante che vale ancora e'
+        quello: mai l'icona di un altro sport. La presenza della sezione e'
+        asserita perche' altrimenti un template vuoto passerebbe per
+        costruzione.
         """
-        with app.test_request_context("/"):
-            html = render_template(
-                "components/_index_live.html", live_garas=[self._live_card()]
-            )
-        assert "Ai tavoli adesso" in html
-        assert "table-tennis" not in html
-        assert "ping-pong" not in html
+        from pathlib import Path
+
+        tessera = (
+            Path(__file__).resolve().parents[3]
+            / "templates"
+            / "components"
+            / "_tessera_gara.html"
+        ).read_text(encoding="utf-8")
+        assert "Ai tavoli adesso" in tessera
+        assert "table-tennis" not in tessera
+        assert "ping-pong" not in tessera
 
 
 @pytest.mark.unit

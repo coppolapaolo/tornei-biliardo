@@ -227,7 +227,7 @@ blocks:
   - type: faq
     items:
       - q: "Non vedo la sezione Esercizi."
-        a: "È una funzione che si sblocca con l'uso della piattaforma, come la sezione Match. Se non compare ancora, comparirà."
+        a: "È una funzione che si sblocca con l'uso della piattaforma, come la sezione Sfide. Se non compare ancora, comparirà."
       - q: "Non vedo «Disegna l'esercizio» nel modulo di creazione."
         a: "È un comando da direttore di gara, e si sblocca dopo trenta esercizi completati. Finché non compare, l'esercizio si crea caricando la foto: è il modo normale, non un ripiego."
       - q: "Posso rifare la stesso esercizio più volte?"

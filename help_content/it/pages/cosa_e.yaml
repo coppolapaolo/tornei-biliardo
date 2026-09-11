@@ -19,7 +19,7 @@ blocks:
 
   - type: shot
     shot: home-pubblica
-    caption: "La pagina iniziale mostra subito le gare in corso e quelle con le iscrizioni aperte, anche a chi non ha ancora un account."
+    caption: "La pagina iniziale si apre con «In diretta ora» e subito sotto le gare con le iscrizioni aperte, anche per chi non ha ancora un account."
 
   - type: heading
     id: senza_account
@@ -38,6 +38,7 @@ blocks:
       - "L'elenco delle gare e dei campionati."
       - "Il dettaglio di una gara: iscritti, turni, partite e classifica."
       - "I punteggi che si aggiornano mentre si gioca."
+      - "La classifica generale di un campionato: sulla scheda del campionato, in pagina iniziale, il pulsante **Classifica e risultati**."
 
   - type: shot
     shot: campionati-pubblici
@@ -46,8 +47,11 @@ blocks:
   - type: text
     text: >-
       Per **iscriverti** a una gara, invece, serve un account: è gratuito e
-      bastano un nome utente, un indirizzo email e una password. Come si fa è
-      spiegato in [Primo accesso](/aiuto/introduzione/primo_accesso).
+      bastano un nome utente, un indirizzo email e una password. Le gare con
+      le iscrizioni aperte hanno il pulsante **Iscriviti** anche per chi non è
+      entrato: toccandolo l'app chiede prima l'accesso e poi ti riporta sulla
+      gara che ti interessava. Come si fa è spiegato in [Primo
+      accesso](/aiuto/introduzione/primo_accesso).
 
   - type: heading
     id: come_e_fatta

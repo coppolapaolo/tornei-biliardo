@@ -182,7 +182,9 @@ def _prossime(campionato: Campionato, oggi: Optional[date_cls]) -> List[Gara]:
     return future[:PROSSIME_MOSTRATE]
 
 
-def enrich_with_classifica(cards: Iterable[CampionatoCardVM], user_id: int) -> None:
+def enrich_with_classifica(
+    cards: Iterable[CampionatoCardVM], user_id: Optional[int]
+) -> None:
     """La testa della classifica generale e la riga di chi guarda.
 
     Una chiamata a `calculate_general_classification` per campionato: è la
@@ -208,14 +210,14 @@ def enrich_with_classifica(cards: Iterable[CampionatoCardVM], user_id: int) -> N
 
 
 def _riga(
-    posizione: int, dati: Dict[str, Any], is_rack: bool, user_id: int
+    posizione: int, dati: Dict[str, Any], is_rack: bool, user_id: Optional[int]
 ) -> RigaClassificaVM:
     valore = dati.get("total_racks_won" if is_rack else "total_matches_won", 0) or 0
     return RigaClassificaVM(
         posizione=posizione,
         username=str(dati.get("username", "")),
         valore=int(valore),
-        is_me=dati.get("user_id") == user_id,
+        is_me=user_id is not None and dati.get("user_id") == user_id,
     )
 
 

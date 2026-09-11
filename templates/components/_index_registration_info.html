@@ -1,6 +1,11 @@
-{# templates/components/_index_registration_info.html — 7c #}
+{# templates/components/_index_registration_info.html — 7c
+
+   Come si partecipa. Sta **in fondo** alla home e non più in cima: chi arriva
+   vuole prima sapere se qui succede qualcosa, e l'account glielo chiede il
+   pulsante «Iscriviti» della gara che gli interessa. Questo blocco è per chi
+   ha scorso tutta la pagina e vuole capire come funziona. #}
 {% if not current_user.is_authenticated %}
-<section class="c7-card c7-card--accent" style="padding: 24px 20px; margin-bottom: 28px;">
+<section id="come-si-partecipa" class="c7-card c7-card--accent" style="padding: 24px 20px; margin-top: 34px;">
     <div class="c7-kicker">{{ _("Come si partecipa") }}</div>
     <h2 style="margin: 6px 0 0; color: inherit; font-size: 22px;">{{ _("Iscriviti, gioca, scala la classifica") }}</h2>
 

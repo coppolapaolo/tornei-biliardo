@@ -19,9 +19,21 @@ blocks:
 
   - type: text
     text: >-
-      When the round starts, your match appears at the top of your home and on
-      the competition page, with the **Enter the result** button. You also get
-      a notification. Tap it and you are in.
+      When the round starts, your match appears on your home **inside the card
+      of its competition** — under **«Your competitions»**, with the round, the
+      opponent and the table — and the **Play your match** button takes you to
+      the scoreboard. You find it again on the competition page, where the
+      button is called **Enter the result**. You also get a notification. Tap
+      it and you are in.
+
+  - type: note
+    tone: info
+    title: "If the table is not assigned yet"
+    text: >-
+      The match opens all the same: instead of the number there is the line
+      «No table assigned yet», and the number shows up on its own as soon as one
+      frees up. There is nothing to wait for before you start
+      scoring.
 
   - type: shot
     shot: partita-segnapunti

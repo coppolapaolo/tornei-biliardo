@@ -22,8 +22,11 @@ blocks:
     items:
       - title: "Guarda la tua home"
         text: >-
-          Appena entri, le gare aperte alle iscrizioni sono già lì, con la
-          scritta **Iscrizioni aperte** e la data di scadenza.
+          Appena entri, le gare aperte alle iscrizioni sono già lì, nella
+          sezione **«Aperte, puoi iscriverti»**, con la data entro cui bisogna
+          decidere. Le gare a cui sei già iscritto, e quelle che dirigi, stanno
+          più in alto sotto **«Le tue gare»**: sono due elenchi separati
+          apposta, così non devi cercare la tua fra quelle di tutti.
         shot: dashboard-giocatore
       - title: "Oppure sfoglia tutte le gare"
         text: >-
@@ -82,6 +85,13 @@ blocks:
       coda. Se qualcuno si ritira prima dell'inizio, il primo della lista entra
       automaticamente e riceve una notifica.
 
+  - type: text
+    text: >-
+      Nella tua home, la gara in cui sei in lista dice anche **perché** ci sei,
+      che sono due motivi diversi: **«La gara è al completo»** — si aspetta che
+      qualcuno si ritiri — oppure **«Serve un numero pari»**, e allora basta
+      che si iscriva un'altra persona ed entrate in due.
+
   - type: note
     tone: info
     title: "Numero pari obbligatorio"
@@ -126,7 +136,7 @@ blocks:
   - type: faq
     items:
       - q: "Mi sono iscritto ma non vedo la gara nella mia home."
-        a: "La home mostra le gare attive. Se la gara è ancora lontana nel tempo la trovi comunque nell'elenco completo, e la ritroverai in home avvicinandosi la data."
+        a: "Guarda sotto **«Le tue gare»**: appena ti iscrivi la gara passa da «Aperte, puoi iscriverti» a lì. Se è ancora lontana nel tempo la trovi comunque nell'elenco completo, e tornerà in home avvicinandosi la data."
       - q: "Posso iscrivermi a due gare nello stesso giorno?"
         a: "Sì, l'app non lo impedisce. Sta a te controllare che gli orari non si sovrappongano."
       - q: "Devo pagare la quota nell'app?"

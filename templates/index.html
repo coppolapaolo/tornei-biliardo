@@ -2,34 +2,37 @@
 
 {% block title %}{{ _("Home - Tornei Biliardo") }}{% endblock %}
 
+{# In testata il nome del sito, non «Home». Il titolo della pagina serve alla
+   linguetta del browser; la testata la legge chi e' appena arrivato e non sa
+   ancora dove si trova, e «Home» non glielo dice. Il sottotitolo dichiara da
+   che parte sta guardando — la stessa parola della barra laterale. #}
+{% block page_title %}{{ _("Tornei Biliardo") }}{% endblock %}
+{% block page_sub %}{{ _("vista pubblica") }}{% endblock %}
+
 {% block content %}
-{# 1. Onboarding (solo ospiti) #}
+{# QUESTA PAGINA LA VEDONO SOLO GLI OSPITI.
+
+   `main.index` rimanda alla dashboard chiunque sia autenticato, prima ancora
+   di caricare i dati: `index.html` non lo renderizza nessun altro.
+
+   Dal 10/09 la home **è** la dashboard dell'ospite (regola 1 del canvas
+   «Tessera»): `DashboardService.for_guest()` produce gli stessi elenchi di
+   chi è entrato — in diretta, iscrizioni aperte, in arrivo, concluse,
+   campionati — e le tessere sono le stesse, senza nessun fatto suo. I sei
+   componenti `_index_*` che disegnavano la home a parte sono spariti: due
+   disegni per la stessa gara erano coerenti per intenzione, non per
+   costruzione.
+
+   La pagina parte da quello che sta succedendo, non da come si partecipa.
+   Prima in cima c'era il blocco «Come si partecipa»: tre passi e due
+   pulsanti, che un visitatore incontrava **prima** di sapere se qui succede
+   qualcosa che gli interessa. L'account non sparisce: si chiede **dove
+   serve**, cioè sul pulsante «Iscriviti» di una gara precisa, con sotto una
+   riga che dice che è gratis (vedi `_tessera_gara.html`). Il blocco dei tre
+   passi resta, in fondo. #}
+
+{% include "components/_separated_dashboard_content.html" %}
+
+{# 6. Come si partecipa — l'invito di chiusura, solo per chi non è entrato #}
 {% include "components/_index_registration_info.html" %}
-
-{# 2. In diretta ora — gare playing/awaiting_ssr + match ai tavoli #}
-{% include "components/_index_live.html" %}
-
-{# 3. Iscrizioni aperte — posti e scadenza ben visibili #}
-{% include "components/_index_open_inscriptions.html" %}
-
-{# 4. Campionati in corso — con testa della classifica generale #}
-{% if active_campionati %}
-<section class="c7-stack" style="margin-top: 34px;">
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-        <div>
-            <div class="c7-kicker">{{ ngettext("%(count)s campionato", "%(count)s campionati", active_campionati_count, count=active_campionati_count) }}</div>
-            <h2 style="margin: 4px 0 0;">{{ _("Campionati in corso") }}</h2>
-        </div>
-        <a href="{{ url_for('main.public_campionatos_list') }}" class="btn btn-secondary btn-sm">{{ _("Vedi tutti") }}</a>
-    </div>
-    {% set tournaments_data = active_campionati %}
-    {% include "components/_index_campionato_cards.html" %}
-</section>
-{% endif %}
-
-{# 5. In arrivo — gare/campionati in preparazione #}
-{% include "components/_index_upcoming.html" %}
-
-{# 6. Archivio — campionati e gare concluse (coda recente) #}
-{% include "components/_index_archive.html" %}
 {% endblock %}

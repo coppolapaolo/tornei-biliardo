@@ -14,7 +14,8 @@ blocks:
     text: >-
       Non tutto passa dalle gare. Se vuoi giocare due partite con un amico e
       tenerne traccia — nelle statistiche, nel rating, nei progressi — puoi
-      farlo dalla sezione **Match**.
+      farlo dalla sezione **Sfide** — su computer, nella colonna di sinistra,
+      si chiama **Sfide individuali**.
 
   - type: shot
     shot: match-individuali
@@ -27,14 +28,14 @@ blocks:
   - type: text
     text: >-
       Se l'avversario ce l'hai davanti e le stecche sono già in mano, non serve
-      proporre niente: tocca **Avvio rapido** nella sezione Match, scegli chi
+      proporre niente: tocca **Avvio rapido** nella sezione Sfide, scegli chi
       hai davanti e sei al segnapunti. Non si chiede quando (è adesso), e sala,
       disciplina e distanza arrivano già scritte, riprese dall'ultima partita
       che hai giocato.
 
   - type: steps
     items:
-      - title: "Apri Match e tocca «Avvio rapido»"
+      - title: "Apri Sfide e tocca «Avvio rapido»"
         text: >-
           È la prima voce della sezione, e la trovi anche in fondo alla pagina
           fra i collegamenti.
@@ -73,8 +74,8 @@ blocks:
 
   - type: steps
     items:
-      - title: "Apri Match e tocca «Nuova proposta»"
-        text: "Su telefono, «Match» è nella barra in fondo allo schermo."
+      - title: "Apri Sfide e tocca «Nuova proposta»"
+        text: "Su telefono, «Sfide» è nella barra in fondo allo schermo; su computer, «Sfide individuali» nella colonna di sinistra."
       - title: "Scegli l'avversario"
         text: >-
           Cerca il giocatore per nome. Puoi anche lasciare la proposta
@@ -119,6 +120,12 @@ blocks:
   - type: heading
     id: giocare
     title: "Giocare e registrare il risultato"
+
+  - type: text
+    text: >-
+      Non serve tornare nella sezione Sfide per trovarla: le partite fissate e
+      quelle già iniziate compaiono anche nella tua home, sotto **«Sfide a
+      due»**, subito dopo le tue gare.
 
   - type: text
     text: >-
@@ -310,7 +317,7 @@ blocks:
 
   - type: faq
     items:
-      - q: "Non vedo la sezione Match."
+      - q: "Non vedo la sezione Sfide."
         a: "È una funzione che si sblocca con l'uso della piattaforma. Se non compare, continua a giocare qualche gara: comparirà."
       - q: "L'avversario non conferma il risultato."
         a: "La partita resta in attesa. Sollecitalo: senza la conferma di entrambi il risultato non entra nelle statistiche."

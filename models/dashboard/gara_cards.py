@@ -31,7 +31,7 @@ from datetime import date as date_cls, timedelta
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from sqlalchemy import and_, func, or_
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from models.base import db
 from models.classification.models import GaraClassification, RoundClassification
@@ -463,16 +463,37 @@ def build_gara_cards(
 ALTRE_PARTITE_MOSTRATE = 3
 
 
-def enrich_with_progress(cards: Iterable[GaraCardVM], user_id: int) -> None:
+def enrich_with_progress(cards: Iterable[GaraCardVM], user_id: Optional[int]) -> None:
     """Riempie «come sta andando» sulle gare in corso: posizione e turno.
 
     Modifica le card sul posto. Sta separata da `build_gara_cards` perché
     quella non tocca il database — riordina roba già in memoria — mentre
     questa fa tre query, e vale la pena poter provare la divisione senza.
 
-    Le query sono **tre in tutto**, non tre per gara: una dashboard con
-    quattro gare in corso costava altrimenti dodici viaggi.
+    Le query sono **quattro in tutto**, non quattro per gara: una dashboard
+    con quattro gare in corso costava altrimenti sedici viaggi.
+
+    `user_id` è `None` per l'ospite: nessuna partita è sua, quindi «altre
+    partite» sono tutte, e la posizione in classifica non c'è.
     """
+    cards = list(cards)
+    # 0. `gara.matches` per tutte le gare che si stanno giocando, in una
+    #    query, **prima** di chiedere lo stato reale: `get_real_status()` li
+    #    scorre per capire se i turni sono finiti, e la tessera li rilegge
+    #    (`display_round`, il conteggio delle partite chiuse con la strategia
+    #    casuale). Senza, è un caricamento pigro per gara — la N+1 della
+    #    issue #62, già chiusa una volta nella home. Si filtra sulla colonna,
+    #    che non costa niente.
+    da_caricare = [
+        c.gara.id
+        for c in cards
+        if c.gara.id is not None and c.gara.status == GaraStatus.PLAYING.value
+    ]
+    if da_caricare:
+        db.session.query(Gara).options(selectinload(Gara.matches)).filter(
+            Gara.id.in_(da_caricare)
+        ).all()
+
     in_corso = [
         c
         for c in cards
@@ -597,14 +618,16 @@ def enrich_with_comandi(cards: Iterable[GaraCardVM]) -> None:
             card.comando = comando_per(card.gara)
 
 
-def enrich_with_piazzamento(cards: Iterable[GaraCardVM], user_id: int) -> None:
+def enrich_with_piazzamento(
+    cards: Iterable[GaraCardVM], user_id: Optional[int]
+) -> None:
     """Sulle concluse che hai giocato: dove sei arrivato, in una query.
 
     La classifica finale di gara (`GaraClassification`) ha una riga per
     giocatore; servono la tua e quante sono, cioè il «su quanti».
     """
     giocate = [c for c in cards if c.hai_giocato and c.gara.id is not None]
-    if not giocate:
+    if user_id is None or not giocate:
         return
     gara_ids = [c.gara.id for c in giocate]
     righe = (

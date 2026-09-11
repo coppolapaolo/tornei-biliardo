@@ -24,8 +24,7 @@ def campionatos_q():
     (`is_active=False` + `terminated_at IS NOT NULL`) perché vanno mostrati
     come archivio storico — il campionato esiste ancora, è solo concluso.
 
-    Coerente con `HomepageService.get_homepage_data` e
-    `routes/main.py:public_campionatos_list`.
+    Coerente con `routes/main.py:public_campionatos_list`.
     """
     return (
         db.session.query(Campionato)

@@ -14,6 +14,13 @@ blocks:
       una gerarchia di importanza: è una divisione di compiti. La maggior parte
       delle persone resta **giocatore** per sempre, e va benissimo così.
 
+  - type: text
+    text: >-
+      Con quale ruolo il sito ti sta trattando lo leggi in cima alla tua home:
+      sotto il saluto — **«Ciao»** e il tuo nome — c'è scritto *Giocatore*,
+      *Direttore di gara* o *Amministratore*. Chi non è entrato, e vede solo le
+      pagine pubbliche, trova invece *vista pubblica*.
+
   - type: heading
     id: giocatore
     title: "Giocatore"
@@ -71,6 +78,14 @@ blocks:
       Le **gare ancora da chiudere** non si perdono nel passaggio: qualunque
       dei due riquadri ti tocchi, accanto al titolo compare l'etichetta che
       le ricorda. È l'unica cosa lì dentro che ha una scadenza.
+
+  - type: text
+    text: >-
+      Più sotto, in **«Le tue gare»**, ogni gara che dirigi porta scritto sul
+      pulsante **il comando che sta aspettando** — «Apri le iscrizioni»,
+      «Avvia il turno 3», «Termina la gara» — così sai quale gara aspetta te,
+      e per fare cosa, senza aprirle una a una. Vedi [Condurre la
+      gara](/aiuto/organizzare/condurre_la_gara).
 
   - type: text
     text: >-

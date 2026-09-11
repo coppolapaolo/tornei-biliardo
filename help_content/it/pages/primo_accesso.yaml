@@ -21,9 +21,14 @@ blocks:
     items:
       - title: "Apri la registrazione"
         text: >-
-          Dalla pagina iniziale tocca **Registrati**. Se sei su computer, il
-          collegamento è nella colonna di sinistra.
-        shot: home-pubblica
+          Il pulsante **Registrati** è in fondo alla pagina iniziale, nel
+          riquadro **«Come si partecipa»**: scorri fino in fondo. Se sei su
+          computer, il collegamento è anche nella colonna di sinistra. Una
+          scorciatoia: se una gara ti interessa già, tocca il suo pulsante
+          **Iscriviti**; ti si apre la pagina di accesso, e lì in fondo c'è
+          **Registrati**. Finita l'iscrizione torni alla pagina da cui eri
+          partito, senza dover ricercare la gara.
+        shot: home-come-si-partecipa
       - title: "Compila i tre campi"
         text: >-
           **Nome utente**: è il nome con cui comparirai nelle classifiche e che
@@ -83,7 +88,7 @@ blocks:
 
   - type: shot
     shot: dashboard-giocatore
-    caption: "La tua home appena entrato: in cima il riquadro con il tuo andamento, sotto le gare a cui sei iscritto, i campionati e le gare vicine a te."
+    caption: "La tua home appena entrato: in cima il riquadro con il tuo andamento, sotto «Le tue gare» e le sfide a due, poi «In diretta ora» con le gare in corso, le gare aperte alle iscrizioni, quelle in arrivo, le concluse dell'ultimo mese — con «Hai giocato» su quelle tue —, i campionati e le gare vicine a te."
 
   - type: heading
     id: come_stai_andando

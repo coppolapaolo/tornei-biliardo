@@ -14,6 +14,13 @@ blocks:
       is not a ranking of importance: it is a division of duties. Most people
       stay a **player** forever, and that is perfectly fine.
 
+  - type: text
+    text: >-
+      Which role the site is treating you with is written at the top of your
+      home: under the greeting — **«Hi»** and your name — it says *Player*,
+      *Competition Director* or *Administrator*. Someone who is not signed in,
+      and sees only the public pages, gets *public view* instead.
+
   - type: heading
     id: giocatore
     title: "Player"
@@ -74,6 +81,14 @@ blocks:
       **Competitions still to be closed** are not lost in the switch: whichever
       of the two panels you get, the label next to the title reminds you of
       them. It is the only thing in there with a deadline.
+
+  - type: text
+    text: >-
+      Further down, under **«Your competitions»**, every competition you direct
+      spells **the command it is waiting for** out on its button — «Open
+      registrations», «Start round 3», «End the competition» — so you can see
+      which one is waiting for you, and what for, without opening them one by
+      one. See [Running the competition](/aiuto/organizzare/condurre_la_gara).
 
   - type: text
     text: >-

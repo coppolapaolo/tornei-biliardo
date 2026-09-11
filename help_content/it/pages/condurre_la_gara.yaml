@@ -14,6 +14,19 @@ blocks:
       guardare le partite che si concludono, avviare il turno dopo. Il resto lo
       fa l'app.
 
+  - type: note
+    tone: tip
+    title: "La home ti dice cosa aspetta te"
+    text: >-
+      Non devi aprire le gare una a una per sapere quale è ferma. Nella tua
+      home, sotto **«Le tue gare»**, ogni gara che dirigi porta scritto sul
+      pulsante il comando che sta aspettando: **Apri le iscrizioni**, **Avvia
+      la gara**, **Estendi le iscrizioni**, **Avvia il turno 3**, **Avvia lo
+      spareggio**, **Termina la gara**. Il pulsante ti porta sulla pagina della
+      gara, dove il comando si dà davvero. Se manca ancora qualcuno per
+      partire, al posto del comando trovi **«Non ci sono ancora abbastanza
+      iscritti»** con quanti ne servono.
+
   - type: shot
     shot: gara-gestione
     caption: "Il pannello «Gestione» durante una gara: lo stato del turno in corso e il pulsante per avviare il successivo."

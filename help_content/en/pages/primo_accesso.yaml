@@ -21,9 +21,14 @@ blocks:
     items:
       - title: "Open the sign-up page"
         text: >-
-          From the home page tap **Sign up**. On a computer the link is in the
-          left-hand column.
-        shot: home-pubblica
+          The **Register** button is at the bottom of the home page, in the
+          **«How to take part»** panel: scroll all the way down. On a computer
+          the link is also in the left-hand column. A shortcut: if a
+          competition already caught your eye, tap its **Register** button; the
+          sign-in page opens, and **Register** is at the bottom of it. Once you
+          are done you land back where you started, with no need to look for
+          the competition again.
+        shot: home-come-si-partecipa
       - title: "Fill in the three fields"
         text: >-
           **Username**: this is the name that appears in the standings and that
@@ -82,7 +87,7 @@ blocks:
 
   - type: shot
     shot: dashboard-giocatore
-    caption: "Your home right after you come in: at the top the panel with how you are doing, below the competitions you are registered for, the championships and competitions near you."
+    caption: "Your home right after you come in: at the top the panel with how you are doing, below «Your competitions» and the head-to-head matches, then «Live now» with the competitions in progress, the ones open for registration, the upcoming ones, those finished in the last month — with «You played» on yours —, the championships and competitions near you."
 
   - type: heading
     id: come_stai_andando
