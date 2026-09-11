@@ -501,3 +501,145 @@ class TestRispostaPerContoDelGiocatore:
             PlayoffService.respond_on_behalf(
                 qual.id, accept=False, responded_by_id=direttore.id
             )
+
+
+# ── La pagina del campionato ────────────────────────────────────────
+
+
+def _righe_di_turno(db_session, campionato):
+    """La pagina legge le `RoundClassification` dell'ultimo turno, non i match."""
+    from models.classification.gara_classification import RoundClassificationService
+
+    for g in Gara.query.filter_by(campionato_id=campionato.id).all():
+        RoundClassificationService.calculate_and_save_round_classification(g.id, 1)
+    db_session.commit()
+
+
+def _classifica_in_pagina(campionato_id):
+    from models.campionato.tournament_service import TournamentService
+
+    righe = TournamentService().calculate_general_classification(campionato_id)
+    return {dati["username"]: pos for pos, dati in righe}
+
+
+class TestLaPaginaDelCampionato:
+    """`calculate_general_classification` alimenta la pagina del campionato,
+    la pagina pubblica, la vetrina e la homepage; le righe `Classification`
+    alimentano profilo, export e avvio dei playoff. Fino all'11/09/2026 solo
+    le seconde conoscevano peso e modalita' (ADR-053): il direttore sceglieva
+    «solo playoff» e la pagina continuava a mostrare la classifica di stagione.
+    """
+
+    def _confronta(self, db_session, mode, weight=1):
+        dati = _campionato_con_playoff(db_session, mode, weight)
+        _righe_di_turno(db_session, dati["campionato"])
+        persistite = ClassificationService.update_campionato_classification(
+            dati["campionato"].id
+        )
+        per_id = {r.user_id: r.position for r in persistite}
+        pagina = _classifica_in_pagina(dati["campionato"].id)
+        for k in "abcd":
+            assert pagina[dati[k].username] == per_id[dati[k].id], k
+        return dati, pagina
+
+    def test_solo_playoff_la_pagina_mette_primo_chi_ha_vinto_il_playoff(
+        self, db_session
+    ):
+        dati, pagina = self._confronta(db_session, PlayoffRankingMode.PLAYOFF_ONLY)
+        assert pagina[dati["d"].username] == 1
+        assert pagina[dati["c"].username] == 2
+        assert pagina[dati["a"].username] == 3
+        assert pagina[dati["b"].username] == 4
+
+    def test_il_peso_conta_anche_in_pagina(self, db_session):
+        dati, pagina = self._confronta(
+            db_session, PlayoffRankingMode.CAMPIONATO_PLUS_PLAYOFF, weight=3
+        )
+        # D ha una vittoria in campionato piu' una che vale tre: scavalca A.
+        assert pagina[dati["d"].username] == 1
+
+    def test_con_peso_uno_la_pagina_e_quella_di_sempre(self, db_session):
+        dati, pagina = self._confronta(
+            db_session, PlayoffRankingMode.CAMPIONATO_PLUS_PLAYOFF
+        )
+        assert pagina[dati["a"].username] == 1
+        assert len(pagina) == 4
+
+
+# ── Il campionato si chiude con la gara di playoff ──────────────────
+
+
+class TestIlCampionatoSiChiudeConLaGaraDiPlayoff:
+    """Lo stato derivato guardava `PlayoffTournament`, un modello che nessuna
+    route chiude piu': il campionato restava «In attesa dei playoff» per
+    sempre. La fonte e' la gara di playoff, che e' cio' che il direttore
+    chiude davvero.
+    """
+
+    def test_in_attesa_finche_la_finale_e_aperta(self, db_session):
+        from models.status_enum import TournamentStatus
+
+        dati = _campionato_con_playoff(db_session, PlayoffRankingMode.PLAYOFF_ONLY)
+        dati["campionato"].terminated_at = utc_now()
+        dati["playoff"].status = GaraStatus.PLAYING.value
+        db_session.commit()
+
+        assert (
+            dati["campionato"].get_status() == TournamentStatus.AWAITING_PLAYOFF.value
+        )
+
+    def test_completato_quando_la_finale_e_chiusa(self, db_session):
+        from models.status_enum import TournamentStatus
+
+        dati = _campionato_con_playoff(db_session, PlayoffRankingMode.PLAYOFF_ONLY)
+        dati["campionato"].terminated_at = utc_now()
+        db_session.commit()
+
+        assert dati["campionato"].get_status() == TournamentStatus.COMPLETED.value
+
+
+# ── La chiusura di una gara aggiorna le righe persistite ────────────
+
+
+class TestLaChiusuraDellaGaraAggiornaLaClassificaPersistita:
+    """Le righe `Classification` si ricalcolavano solo cambiando le regole di
+    punteggio, riassegnando un partecipante, unendo due account o terminando
+    il campionato: chiusa la finale, profilo ed export restavano alla
+    classifica precedente.
+    """
+
+    def test_dopo_la_chiusura_le_righe_dicono_la_classifica_nuova(self, db_session):
+        from models.classification.gara_classification import (
+            RoundClassificationService,
+        )
+        from models.classification.models import Classification
+        from models.competition.state_service import StateService
+
+        camp = _make_campionato(db_session)
+        a = _make_user(db_session, "a")
+        b = _make_user(db_session, "b")
+        c = _make_user(db_session, "c")
+        g1 = _make_gara(db_session, camp, 1, 10)
+        _make_match(db_session, g1, a, b, (5, 0))
+        RoundClassificationService.calculate_and_save_round_classification(g1.id, 1)
+        db_session.commit()
+
+        righe = ClassificationService.update_campionato_classification(camp.id)
+        assert {r.user_id: r.position for r in righe}[a.id] == 1
+
+        g2 = _make_gara(db_session, camp, 2, 15)
+        g2.status = GaraStatus.PLAYING.value
+        _make_match(db_session, g2, b, a, (5, 0))
+        _make_match(db_session, g2, b, c, (5, 0))
+        RoundClassificationService.calculate_and_save_round_classification(g2.id, 1)
+        db_session.commit()
+
+        StateService.complete(g2)
+        db_session.commit()
+
+        per_id = {
+            r.user_id: r.position
+            for r in Classification.query.filter_by(campionato_id=camp.id).all()
+        }
+        assert per_id[b.id] == 1
+        assert per_id[a.id] == 2
