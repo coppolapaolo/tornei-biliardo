@@ -170,11 +170,18 @@ def public_campionatos_list():
         }[status_filter]
         campionatos = [c for c in campionatos if c.get_status() in wanted]
 
+    # La spia della partecipazione: è lo storico dei campionati, e chi
+    # guarda deve riconoscere i suoi fra quelli di tutti.
+    from models.storico.campionati import spie_partecipazione
+
+    user_id = current_user.id if current_user.is_authenticated else None
+
     return render_template(
         "public/campionatos_list.html",
         campionatos=campionatos,
         status_filter=status_filter,
         search_query=raw_query,
+        spie=spie_partecipazione(campionatos, user_id),
     )
 
 
@@ -248,6 +255,49 @@ def public_garas_list():
         "public/garas_list.html",
         active_garas=active_garas,
         completed_garas=completed_garas,
+    )
+
+
+@main_bp.route("/storico")
+def storico_gare():
+    """Lo storico delle gare concluse, di tutti (regola 2 del 2026-09-10).
+
+    La dashboard e la home tengono l'ultima conclusa e quelle dell'ultimo
+    mese; il resto sta qui, con la ricerca e i filtri. Le regole — cosa è
+    concluso, cosa vuol dire «mio» — stanno in `models/storico/gare.py`:
+    qui si leggono i parametri e si formano le etichette dei mesi, nella
+    lingua di chi legge.
+    """
+    from datetime import date as _date
+
+    from flask_babel import format_date, gettext
+
+    from models.storico.gare import (
+        SCELTE_PRIMI,
+        FiltriStorico,
+        costruisci_storico,
+    )
+
+    filtri = FiltriStorico.da_parametri(request.args)
+    user_id = current_user.id if current_user.is_authenticated else None
+    storico = costruisci_storico(filtri, user_id)
+    gruppi = [
+        (
+            (
+                format_date(_date(anno, mese, 1), "LLLL yyyy").capitalize()
+                if anno
+                else gettext("Senza data")
+            ),
+            righe,
+        )
+        for (anno, mese), righe in storico.gruppi
+    ]
+    return render_template(
+        "public/storico_gare.html",
+        storico=storico,
+        filtri=filtri,
+        gruppi=gruppi,
+        scelte_primi=SCELTE_PRIMI,
     )
 
 

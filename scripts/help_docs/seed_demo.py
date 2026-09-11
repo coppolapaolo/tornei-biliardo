@@ -923,6 +923,15 @@ def main() -> int:
 
         _open_and_fill(db, gara_conclusa, players)
         _play_rounds(db, gara_conclusa, rounds=3)
+        # Conclusa come nella realta': il direttore preme «Termina gara», e
+        # da li' nasce la classifica finale — quella che il podio, il
+        # piazzamento in dashboard e lo storico leggono. Senza, la gara
+        # risultava conclusa solo per stato derivato: niente vincitore.
+        from models.competition.services import GaraService
+
+        GaraService.complete(gara_conclusa.id)
+        db.session.commit()
+        log(f"«{gara_conclusa.name}»: terminata, classifica finale scritta")
 
         _open_and_fill(db, gara_in_corso, players)
         _play_rounds(db, gara_in_corso, rounds=2, leave_open_for=players[0])

@@ -4,7 +4,7 @@ kind: introduzione
 audience: [tutti]
 minutes: 3
 summary: "Un'app per giocare e organizzare tornei di biliardo americano: tiene il conto dei punti, abbina i giocatori e aggiorna le classifiche da sola."
-screens: [main.index, main.public_campionatos_list, main.campionato_detail_public]
+screens: [main.index, main.public_campionatos_list, main.campionato_detail_public, main.storico_gare]
 related: [parole_da_sapere, chi_fa_cosa]
 
 blocks:
@@ -39,10 +39,31 @@ blocks:
       - "Il dettaglio di una gara: iscritti, turni, partite e classifica."
       - "I punteggi che si aggiornano mentre si gioca."
       - "La classifica generale di un campionato: sulla scheda del campionato, in pagina iniziale, il pulsante **Classifica e risultati**."
+      - "Lo **storico**: tutte le gare concluse, mese per mese, con chi ha vinto ciascuna."
 
   - type: shot
     shot: campionati-pubblici
     caption: "L'elenco pubblico dei campionati: si apre a chiunque, senza account."
+
+  - type: heading
+    id: storico
+    title: "Lo storico"
+
+  - type: text
+    text: >-
+      In pagina iniziale, e nella home di chi è entrato, fra le gare concluse
+      ci sono solo l'ultima e quelle dell'ultimo mese. Tutte le altre stanno
+      nello **storico**: lo apri dal collegamento **Storico** accanto a
+      «Concluse». Si cerca per nome o per sala e si sceglie l'anno; in cima ci
+      sono due linguette, **Gare** e **Campionati**, e la seconda porta
+      all'elenco dei campionati. Se sei entrato, le gare che hai giocato e
+      quelle che hai diretto portano una pastiglia — **Hai giocato**, con il
+      posto in cui sei arrivato, e **Hai diretto** — e puoi tenere solo
+      quelle, o solo quelle in cui sei arrivato **nei primi** 3, 5 o 10.
+
+  - type: shot
+    shot: storico-gare
+    caption: "Lo storico delle gare concluse: la ricerca, i filtri e le gare mese per mese, con il vincitore e la pastiglia «Hai giocato» sulle tue."
 
   - type: text
     text: >-

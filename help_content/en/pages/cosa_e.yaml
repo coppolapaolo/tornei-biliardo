@@ -4,7 +4,7 @@ kind: introduzione
 audience: [tutti]
 minutes: 3
 summary: "An app for playing and organising American pool tournaments: it keeps score, pairs the players and updates the standings on its own."
-screens: [main.index, main.public_campionatos_list, main.campionato_detail_public]
+screens: [main.index, main.public_campionatos_list, main.campionato_detail_public, main.storico_gare]
 related: [parole_da_sapere, chi_fa_cosa]
 
 blocks:
@@ -39,10 +39,32 @@ blocks:
       - "A competition in detail: entrants, rounds, matches and standings."
       - "Scores updating while the matches are being played."
       - "A championship's overall standings: on the championship card, on the home page, the **Standings and results** button."
+      - "The **history**: every finished competition, month by month, with who won each one."
 
   - type: shot
     shot: campionati-pubblici
     caption: "The public list of championships: it opens for anyone, no account required."
+
+  - type: heading
+    id: storico
+    title: "The history"
+
+  - type: text
+    text: >-
+      On the home page, and on the home of those who are signed in, the
+      finished competitions are only the latest one and those of the last
+      month. All the others are in the **history**: you open it from the
+      **History** link next to «Finished». You can search by name or venue and
+      pick a year; at the top there are two tabs, **Competitions** and
+      **Championships**, and the second one takes you to the list of
+      championships. If you are signed in, the competitions you played and
+      those you directed carry a badge — **You played**, with the place you
+      finished in, and **You directed** — and you can keep only those, or
+      only the ones where you finished in the **top** 3, 5 or 10.
+
+  - type: shot
+    shot: storico-gare
+    caption: "The history of finished competitions: search, filters and the competitions month by month, with the winner and the «You played» badge on yours."
 
   - type: text
     text: >-
