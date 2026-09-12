@@ -217,6 +217,24 @@ Verificato nel codice, e applicato al canvas:
   campionato per chi lo dirige e la fase playoff, dagli inviti alla gara
   playoff. Da rivedere insieme come le altre.
 
+## Da rifare (rilievi del 12/09 notte, non ancora applicati)
+
+* **3.10 schermo in sala**: troppo spazio vuoto; la locandina **non è un
+  quadratino**, è il banner social della vetrina, 1200×630
+  (`gara_vetrina.html`, `og:image`): va in testa a tutta larghezza.
+* **3.9 desktop del gioco**: molto spazio vuoto, va riempito o compattato.
+* **3.3 da validare** e **3.4 assegna il tavolo**: la card in secondo piano
+  col nome piccolo e il numero accanto è «orribile»; niente username piccoli
+  con il numero di fianco, mai — nome sopra e numero grande sotto, come gli
+  stepper. E niente aree vuote nella parte dei giocatori.
+* **3.2 assegna il tavolo**: il bottone «Assegna il tavolo 2» è inutile,
+  si tocca direttamente la tessera libera.
+* Regola generale dell'utente: **lo spazio vuoto non è buon design**, va
+  riempito con ciò che serve o tolto.
+* Restano da revisionare dall'utente: 1.x, 2.x, 4.x, 5.x rifatte, la pagina
+  7 (campionato e playoff), e le due conferme aperte (gestione con la
+  striscia, testi degli esercizi).
+
 ## Non ancora disegnato
 
 Da chiedere prima di implementare, perché il canvas non li copre: squadre e
