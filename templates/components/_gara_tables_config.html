@@ -43,7 +43,15 @@
         </form>
     </div>
 </div>
-{% elif gara.status == GaraStatus.PLAYING.value and gara.get_available_tables() %}
+{% elif gara.status == GaraStatus.SETUP.value %}
+<div class="c7-card">
+  <h3 class="mb-2">{{ _('Tavoli della gara') }}</h3>
+  <div class="c7-nota">
+    {{ _('Si scelgono all’apertura delle iscrizioni, quando si sa quanti giocatori ci saranno.') }}
+    {% if gara.get_available_tables() %}{{ _('Per ora valgono quelli della sala: %(tavoli)s.', tavoli=gara.get_available_tables()|join(', ')) }}{% endif %}
+  </div>
+</div>
+{% elif gara.get_available_tables() %}
 <div class="card">
     <div class="card-header">
         <h5 class="mb-0"><i class="fas fa-table"></i> {{ _('Tavoli della gara') }}</h5>

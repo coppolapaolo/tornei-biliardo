@@ -59,11 +59,11 @@
 
     <div class="c7-rows">
       {{ d.riga('fa-list', _('Partite'), _('turno per turno'),
-                attrs='role="button" data-bs-toggle="collapse" data-bs-target="#sezionePartite" aria-expanded="false" aria-controls="sezionePartite"',
+                button=True, attrs='data-bs-toggle="collapse" data-bs-target="#sezionePartite" aria-expanded="false" aria-controls="sezionePartite"',
                 right='<i class="fas fa-chevron-down c7-rows__chev"></i>'|safe) }}
       {{ d.riga('fa-users', _('Iscritti'),
                 ngettext('%(n)d attivo', '%(n)d attivi', gara.get_active_inscriptions_count(), n=gara.get_active_inscriptions_count()),
-                attrs='role="button" data-bs-toggle="collapse" data-bs-target="#sezioneIscritti" aria-expanded="false" aria-controls="sezioneIscritti"',
+                button=True, attrs='data-bs-toggle="collapse" data-bs-target="#sezioneIscritti" aria-expanded="false" aria-controls="sezioneIscritti"',
                 right='<i class="fas fa-chevron-down c7-rows__chev"></i>'|safe) }}
     </div>
     <div class="collapse" id="sezionePartite">

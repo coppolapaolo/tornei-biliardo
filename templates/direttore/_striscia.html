@@ -21,9 +21,9 @@
   {% set etichetta, icona = _etichette[tacca.fase.value] %}
   {% if not loop.first %}<span class="c7-fasi__filo" aria-hidden="true"></span>{% endif %}
   <span class="c7-fasi__tacca c7-fasi__tacca--{{ tacca.stato.value }}"
-        title="{{ etichetta }}"{% if tacca.stato.value == 'attiva' %} aria-current="step"{% endif %}>
+        title="{{ etichetta }}" aria-label="{{ etichetta }}"{% if tacca.stato.value == 'attiva' %} aria-current="step"{% endif %}>
     <i class="fas {{ 'fa-check' if tacca.stato.value == 'fatta' else icona }}"></i>
-    <span class="c7-fasi__label">{{ etichetta }}</span>
+    <span class="c7-fasi__label" aria-hidden="true">{{ etichetta }}</span>
   </span>
   {% endfor %}
 </nav>

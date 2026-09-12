@@ -78,7 +78,7 @@
       {{ d.riga('fa-users', _('Iscritti'),
                 ngettext('elenco definitivo · %(n)d', 'elenco definitivo · %(n)d', gara.get_active_inscriptions_count(), n=gara.get_active_inscriptions_count()),
                 tone='locked',
-                attrs='role="button" data-bs-toggle="collapse" data-bs-target="#sezioneIscritti" aria-expanded="false" aria-controls="sezioneIscritti"',
+                button=True, attrs='data-bs-toggle="collapse" data-bs-target="#sezioneIscritti" aria-expanded="false" aria-controls="sezioneIscritti"',
                 right='<i class="fas fa-chevron-down c7-rows__chev"></i>'|safe) }}
     </div>
     <div class="collapse" id="sezioneIscritti">

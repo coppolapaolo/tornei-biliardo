@@ -110,12 +110,12 @@
   {% if reale == GaraStatus.INSCRIPTION.value and gara.can_modify_inscription_dates() %}
   {{ d.riga('fa-clock', _('Chiusura iscrizioni'),
             ((gara.inscription_end|datetime_local) if gara.inscription_end else _('senza scadenza')),
-            attrs='role="button" data-bs-toggle="modal" data-bs-target="#modifyDatesModal"',
+            button=True, attrs='data-bs-toggle="modal" data-bs-target="#modifyDatesModal"',
             right='<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe) }}
   {% endif %}
   {% if reale == GaraStatus.INSCRIPTION.value and iscritti == 0 %}
   {{ d.riga('fa-door-closed', _('Chiudi le iscrizioni'), _('la gara torna in preparazione'),
-            attrs='role="button" onclick="closeInscriptions(' ~ gara.id ~ ')"',
+            button=True, attrs='onclick="closeInscriptions(' ~ gara.id ~ ')"',
             right='<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe) }}
   {% endif %}
 </div>

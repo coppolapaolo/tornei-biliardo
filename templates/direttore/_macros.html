@@ -10,21 +10,24 @@
 
 {# Riga di elenco raggruppato: tessera, titolo, sottotitolo, e a destra un
    chevron (quando e' un collegamento) o quello che si passa. `tone` colora
-   la tessera: ok (fatto), warn (manca), neutral, locked, accent. #}
-{% macro riga(icona, titolo, sub='', tone='neutral', href='', right='', attrs='') -%}
+   la tessera: ok (fatto), warn (manca), neutral, locked, accent. Una riga
+   che agisce — apre un foglio, un collapse, chiama una funzione — e' un
+   `<button>` (`button=True`), non un div con `role="button"`: la tastiera e
+   il lettore di schermo la trovano e la attivano. #}
+{% macro riga(icona, titolo, sub='', tone='neutral', href='', right='', attrs='', button=False) -%}
 {%- set tile = {'neutral': 'c7-tile c7-tile--sm c7-tile--neutral',
                 'ok': 'c7-tile c7-tile--sm c7-tile--ok',
                 'warn': 'c7-tile c7-tile--sm c7-tile--warn',
                 'locked': 'c7-tile c7-tile--sm c7-tile--locked',
                 'accent': 'c7-tile c7-tile--sm'}[tone] -%}
-{%- if href -%}<a class="c7-rows__row" href="{{ href }}" {{ attrs|safe }}>{%- else -%}<div class="c7-rows__row" {{ attrs|safe }}>{%- endif %}
+{%- if href -%}<a class="c7-rows__row" href="{{ href }}" {{ attrs|safe }}>{%- elif button -%}<button type="button" class="c7-rows__row c7-rows__row--btn" {{ attrs|safe }}>{%- else -%}<div class="c7-rows__row" {{ attrs|safe }}>{%- endif %}
   <span class="{{ tile }}"><i class="fas {{ icona }}"></i></span>
   <span class="c7-rows__main">
     <span class="c7-rows__title d-block">{{ titolo }}</span>
     {% if sub %}<span class="c7-rows__sub d-block">{{ sub }}</span>{% endif %}
   </span>
   {% if right %}{{ right }}{% elif href %}<i class="fas fa-chevron-right c7-rows__chev"></i>{% endif %}
-{%- if href -%}</a>{%- else -%}</div>{%- endif %}
+{%- if href -%}</a>{%- elif button -%}</button>{%- else -%}</div>{%- endif %}
 {%- endmacro %}
 
 {# Nota sotto un comando. #}

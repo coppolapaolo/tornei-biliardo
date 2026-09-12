@@ -47,7 +47,7 @@
   {{ d.riga('fa-bullseye', _('Esercizi fra i turni'),
             (ngettext('%(n)d esercizio · classifica a parte', '%(n)d esercizi · classifica a parte', _esercizi, n=_esercizi) if _esercizi else _('nessuno — facoltativo')),
             tone=('ok' if _esercizi else 'neutral'),
-            attrs='role="button" data-bs-toggle="modal" data-bs-target="#challengeManagementModal"',
+            button=True, attrs='data-bs-toggle="modal" data-bs-target="#challengeManagementModal"',
             right='<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe) }}
   {% endif %}
   {% if not gara.is_prova and feature_visible('admin.competition.gara_vetrina') %}

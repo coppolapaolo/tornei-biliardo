@@ -3193,6 +3193,13 @@ a.c7-rows__row:hover { background: var(--c7-sunken); }
   .c7-sheet__grip { display: none; }
 }
 
+/* Una riga che agisce e' un pulsante vero: stessa forma della riga. */
+.c7-rows__row--btn {
+  width: 100%; border: 0; background: transparent; text-align: left;
+  font-family: inherit; color: inherit; cursor: pointer;
+}
+.c7-rows__row--btn:hover { background: var(--c7-sunken); }
+
 /* Il pulsante «⋯» dei menu: stessa tessera degli altri comandi a icona. */
 .c7-iconbtn--menu { background: var(--c7-card); }
 .c7-card .c7-iconbtn--menu { background: var(--c7-bg); }

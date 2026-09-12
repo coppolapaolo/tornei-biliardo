@@ -237,14 +237,23 @@ def _vista_direttore(
             occupied_tables,
         )
         # Il menu del turno: annullarne l'avvio, finche' nessuna partita ha un
-        # triangolo (`Gara.can_cancel_round`). Gli stessi rami del pannello.
+        # triangolo (`Gara.can_cancel_round`). Sta accanto al turno **che si
+        # vede** (`display_round`): con i turni pre-generati `current_round`
+        # resta indietro mentre il turno dopo e' gia' in gioco, e un menu
+        # agganciato al turno chiuso non lo troverebbe nessuno. Nella formula
+        # casuale l'unico annullamento e' quello dell'avvio della gara, che
+        # cancella tutti i turni insieme: si puo' finche' nessuna partita di
+        # nessun turno ha segnato.
         if gara.creates_all_rounds_at_startup():
             menu_turno = {
-                "turno": 1,
+                "turno": turno,
                 "tipo": "gara",
-                "annullabile": gara.can_cancel_round(1),
+                "annullabile": all(
+                    gara.can_cancel_round(n)
+                    for n in range(1, (gara.rounds_count or turno) + 1)
+                ),
             }
-        elif gara.current_round == 1:
+        elif turno == 1:
             menu_turno = {
                 "turno": 1,
                 "tipo": "primo",
@@ -252,9 +261,9 @@ def _vista_direttore(
             }
         else:
             menu_turno = {
-                "turno": gara.current_round,
+                "turno": turno,
                 "tipo": "turno",
-                "annullabile": gara.can_cancel_round(),
+                "annullabile": gara.can_cancel_round(turno),
             }
 
     return {
@@ -373,10 +382,14 @@ def gara_detail(gara_id):
         # For Random strategy: show overall classification if ANY matches are completed
         # For other strategies: show classification only for completed rounds
         if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value:
-            # Random: calcola classifica complessiva da tutti i match completati
-            completed_count = Match.query.filter_by(
-                gara_id=gara_id, status=MatchStatus.CLOSED_UNILATERALLY.value
-            ).count()
+            # Random: classifica complessiva da tutte le partite finite —
+            # chiuse dal direttore o confermate dai due giocatori, che sono
+            # finite quanto le altre (`finished_values`, CLAUDE.md).
+            completed_count = (
+                Match.query.filter_by(gara_id=gara_id)
+                .filter(Match.status.in_(MatchStatus.finished_values()))
+                .count()
+            )
 
             if completed_count > 0:
                 # Usa il numero massimo di turni (query dal database)

@@ -278,3 +278,55 @@ def test_la_pagina_del_direttore_porta_alle_impostazioni(admin_client, db_sessio
     gara = _gara(db_session, GaraStatus.SETUP.value)
     html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
     assert f"/admin/gara/{gara.id}/impostazioni" in html
+
+
+# ── Rilievi della revisione automatica (PR #343) ──────────────────────────────
+
+
+def test_il_menu_del_turno_segue_il_turno_che_si_vede_con_i_turni_pregenerati(
+    admin_client, db_session
+):
+    """Nella formula casuale i turni nascono tutti insieme: chiuso il turno 1,
+    `current_round` resta 1 mentre si gioca il 2. Il menu sta accanto al
+    turno che si vede, e l'annullamento e' quello dell'avvio della gara."""
+    gara = _gara(
+        db_session, GaraStatus.PLAYING.value, strategy="random", current_round=1
+    )
+    _match(db_session, gara, 5, 3, MatchStatus.CLOSED_UNILATERALLY.value, suffix="r1")
+    gara.current_round = 2
+    m2 = _match(db_session, gara, 0, 0, MatchStatus.PENDING.value, suffix="r2")
+    gara.current_round = 1
+    db_session.commit()
+    assert m2.round_number == 2
+
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert 'id="menuTurnoModal"' in html
+    assert "apriMenuTurno()" in html
+    # Il foglio e' del turno 2 (quello in gioco), e propone l'annullamento
+    # della gara — spento, perche' il turno 1 ha gia' dei triangoli.
+    assert ">Turno 2</h3>" in html
+    assert (
+        "Annulla l&#39;avvio della gara" in html or "Annulla l'avvio della gara" in html
+    )
+    assert "Non si può più" in html
+
+
+def test_a_gara_conclusa_il_vincitore_c_e_anche_con_le_partite_confermate_dai_due(
+    admin_client, db_session
+):
+    """Nella formula casuale la classifica si calcola sulle partite finite:
+    confermata dai due giocatori (`CONFIRMED_BY_BOTH`) e' finita quanto
+    chiusa dal direttore."""
+    gara = _gara(
+        db_session,
+        GaraStatus.COMPLETED.value,
+        strategy="random",
+        rounds_count=1,
+        current_round=1,
+    )
+    m = _match(db_session, gara, 5, 3, MatchStatus.CONFIRMED_BY_BOTH.value)
+    m.winner_id = m.player1_id
+    db_session.commit()
+
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert f"Ha vinto {m.player1.username}" in html
