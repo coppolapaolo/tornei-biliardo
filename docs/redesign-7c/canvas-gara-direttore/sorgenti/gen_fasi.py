@@ -168,8 +168,15 @@ def tavolo_chip(n, stato, occupato_da=""):
           </div>"""
 
 
-def stepper(nome, valore):
-    return base.score_side(nome, valore)
+def stepper(nome, valore, alla_distanza=False):
+    """Lo stepper delle card; alla distanza il + si spegne
+    (`match.effective_distance`, ADR-027: il limite e' quello del turno)."""
+    out = base.score_side(nome, valore)
+    if alla_distanza:
+        out = (out.replace("background:var(--c7-ink);", "background:var(--c7-sunken);")
+                  .replace('color:#fff"', 'color:var(--c7-ink-faint)"'))
+        assert "var(--c7-sunken)" in out, "il + non si e' spento"
+    return out
 
 
 def classifica(righe, header=True):
@@ -406,16 +413,6 @@ def setup_desktop():
     sintesi (la pagina 1.10 si apre da «Modifica»), direzione di gara con
     la ricerca aperta in linea, tavoli, vetrina. La colonna destra e' la
     lista di cosa manca: ogni riga porta alla sua sezione."""
-    def riga_tavolo(nome, nota):
-        return f"""
-            <div class="rows__row" style="gap:10px">
-              <span class="faint">{ICO_DRAG}</span>
-              <div class="num" style="width:110px;height:44px;border-radius:var(--c7-r-control);
-                   background:var(--c7-bg);padding:0 14px;display:flex;align-items:center;
-                   font-size:15px;font-weight:800">{nome}</div>
-              <span class="rows__sub grow" style="margin:0">{nota}</span>
-              <button class="iconbtn">{ICO_X}</button>
-            </div>"""
     sinistra = f"""
         <div class="stack" style="gap:18px">
           {_band_desktop("In preparazione", "Nessuno vede ancora la gara",
@@ -466,27 +463,16 @@ def setup_desktop():
           </div>
 
           <div>
-            {sec("Tavoli", "3 su 6 della sala")}
+            {sec("Tavoli", "la sala ne ha 6")}
             <section class="card" style="margin-top:12px">
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
-                <div class="rows" style="background:var(--c7-card);border:1px solid var(--c7-line-soft)">
-                  {riga_tavolo("3", "1&deg; &middot; alla partita di cartello")}
-                  {riga_tavolo("1", "2&deg;")}
-                  {riga_tavolo("2", "3&deg;")}
-                </div>
+                {field("Tavoli da usare, in ordine", CURSORE % "3, 1, 2", TAVOLI_HINT, mono=True)}
                 <div class="stack">
-                  <div>
-                    <div class="label" style="margin-bottom:8px">Altri tavoli della sala</div>
-                    <div style="display:flex;flex-wrap:wrap;gap:8px">
-                      {chip_tavolo("4")}{chip_tavolo("5")}{chip_tavolo("6")}
-                      <button class="pill" style="height:44px;gap:6px">{ico(I["plus"], 14)} Un altro nome</button>
-                    </div>
-                  </div>
                   {toggle("Assegna in base alla classifica", False,
                           "Dal secondo turno il primo tavolo va alla partita con il giocatore meglio piazzato. Solo con accoppiamento casuale.")}
                   <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
-                    Dall'alto in basso &egrave; l'ordine di assegnazione. Si cambiano anche a iscrizioni
-                    chiuse e fra un turno e l'altro.</div>
+                    Si cambiano anche a iscrizioni chiuse e fra un turno e l'altro.</div>
+                  {btn("Salva i tavoli", "secondary", "check", w=False)}
                 </div>
               </div>
             </section>
@@ -897,9 +883,12 @@ def _band_desktop(kicker, titolo, corpo, azione=""):
 
 
 def iscr_desktop():
+    """Iscrizioni su desktop: il campo per iscrivere sta in cima alla
+    colonna, sempre visibile, come in 2.2; la categoria e' il chip che si
+    tocca; la lista d'attesa entra da sola (nessun «Fai entrare»)."""
     elenco = "".join(
-        person(sigla, nome, f"iscritto il {data} &middot; {cat}",
-               f'<button class="iconbtn">{ico(I["minus"], 14)}</button>')
+        person(sigla, nome, f"iscritto il {data}",
+               _cat(cat) + f' <button class="iconbtn">{ico(I["minus"], 14)}</button>')
         for sigla, nome, data, cat in [
             ("PA", "pa", "28/08", "A"), ("MR", "m.rossi", "28/08", "A"),
             ("GV", "g.verdi", "29/08", "B"), ("DB", "d.bianchi", "29/08", "B"),
@@ -910,11 +899,11 @@ def iscr_desktop():
           {_band_desktop("Iscrizioni aperte", "7 iscritti su 16",
                          "Servono almeno 8 iscritti &middot; chiudono gioved&igrave; 19:30",
                          '<button class="btn btn--locked">Avvia la gara &middot; manca 1</button>')}
+          {field("Iscrivi un giocatore", '<span class="faint">Cognome, nome o username</span>')}
           <div class="sechead">
             <h3>Iscritti</h3>
             <span class="state state--accent">7 attivi</span>
             <span class="state state--warn">+1 in attesa</span>
-            <span class="sechead__more">Iscrivi un giocatore</span>
           </div>
           {rows(elenco)}
         </div>
@@ -932,12 +921,11 @@ def iscr_desktop():
           </section>
 
           {sec("Lista d'attesa", "1")}
-          {rows(person("SC", "s.conti", "in lista dal 30/08",
-                       '<button class="btn btn--secondary btn--sm">Fai entrare</button>'))}
+          {rows(person("SC", "s.conti", "in lista dal 30/08 &middot; entra se qualcuno si ritira"))}
 
           {sec("Da tenere d'occhio")}
           {rows(
-            row(I["table"], "Tavoli", "4 nella sala, tutti in uso", tone="neutral")
+            row(I["table"], "Tavoli", "3, 1, 2 &middot; la sala ne ha 6", tone="neutral")
             + row(I["clock"], "Chiusura iscrizioni", "gioved&igrave; 19:30 &mdash; estendi", tone="neutral"))}
         </div>
 """
@@ -1035,50 +1023,28 @@ def _nav(i):
                    PASSI[i + 1] if i + 1 < len(PASSI) else None)
 
 
-def chip_tavolo(nome, aggiungi=True):
-    """Un tavolo della sala non ancora nell'elenco: si tocca per aggiungerlo."""
-    return (f'<button class="pill" style="height:44px;gap:6px;background:var(--c7-card);'
-            f'color:var(--c7-accent);box-shadow:inset 0 0 0 2px var(--c7-accent-tint)">'
-            f'{ico(I["plus"], 14)}<span class="num" style="font-size:15px">{nome}</span></button>')
+TAVOLI_HINT = ("Separati da virgola, nell'ordine di assegnazione: il primo va alla "
+               "partita di cartello. La sala ha i tavoli 1&ndash;6; un nome che la "
+               "sala non conosce vale lo stesso.")
 
 
 def setup_tavoli():
-    """I tavoli della gara come elenco ordinato: il nome si scrive, l'ordine
-    si trascina, si toglie. Sotto, i tavoli della sala che non sono in
-    elenco (TableAssignmentService.get_table_names: nomi personalizzati
-    della sala o numeri) si aggiungono con un tocco; un tavolo con un altro
-    nome si aggiunge a mano. Oggi l'elenco e' un campo di testo «3, 1, 2»
-    e vuoto vuol dire «tutti i tavoli della sala»."""
-    def riga(nome, nota):
-        return f"""
-        <div class="rows__row" style="gap:10px">
-          <span class="faint">{ICO_DRAG}</span>
-          <div class="num grow" style="height:44px;border-radius:var(--c7-r-control);
-               background:var(--c7-bg);padding:0 14px;display:flex;align-items:center;
-               font-size:15px;font-weight:800">{nome}</div>
-          <span class="rows__sub" style="margin:0;width:64px">{nota}</span>
-          <button class="iconbtn">{ICO_X}</button>
-        </div>"""
+    """I tavoli della gara come oggi (_gara_tables_config.html): un campo di
+    testo con i nomi separati da virgola, nell'ordine di assegnazione. E'
+    la forma che l'utente ha confermato il 13/09 dopo due tentativi di
+    elenco: si scrive «3, 1, 2» e si e' fatto."""
     content = f"""
-      {sec("Tavoli della gara", "3 su 6 della sala")}
-      <div style="font-size:13px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
-        Dall'alto in basso &egrave; l'ordine di assegnazione: il primo va alla
-        partita di cartello. Trascina per riordinare, tocca il nome per cambiarlo.
-      </div>
-      {rows(riga("3", "1&deg;") + riga("1", "2&deg;") + riga("2", "3&deg;"))}
-      <div>
-        <div class="label" style="margin-bottom:8px">Altri tavoli della sala</div>
-        <div style="display:flex;flex-wrap:wrap;gap:8px">
-          {chip_tavolo("4")}{chip_tavolo("5")}{chip_tavolo("6")}
-          <button class="pill" style="height:44px;gap:6px">{ico(I["plus"], 14)} Un altro nome</button>
-        </div>
-      </div>
+      {sec("Tavoli della gara", "la sala ne ha 6")}
+      {field("Tavoli da usare, in ordine", CURSORE % "3, 1, 2", TAVOLI_HINT, mono=True)}
       <section class="card">
         {toggle("Assegna in base alla classifica", False,
                 "Dal secondo turno il primo tavolo va alla partita con il giocatore "
                 "meglio piazzato. Solo con accoppiamento casuale.")}
       </section>
       {btn("Salva i tavoli", "primary", "check")}
+      <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+        Si cambiano anche a iscrizioni chiuse e fra un turno e l'altro.
+      </div>
       {_nav(1)}
 """
     return doc(phone(SUB, TABS_SETUP, content))
@@ -1271,7 +1237,8 @@ def valida_card(compatto=False):
              line-height:1.45">
           Chiusa dal segnapunti dei giocatori senza la doppia conferma. Se il
           punteggio non &egrave; quello, correggilo con &minus; e + prima di
-          validare. Validare la completa: il tavolo 3 passa a s.conti vs p.marini.
+          validare: al 5 il + si spegne, &egrave; la distanza del turno. Validare
+          la completa: il tavolo 3 passa a s.conti vs p.marini.
         </div>"""
     return f"""
       <article class="card card--ok">
@@ -1280,7 +1247,7 @@ def valida_card(compatto=False):
           <span style="font-size:12px;font-weight:700">Tavolo <span class="num">3</span></span>
         </div>
         <div style="margin-top:12px;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">
-          {stepper("a.galli", "5")}
+          {stepper("a.galli", "5", alla_distanza=True)}
           {stepper("r.neri", "1")}
         </div>
         <div style="margin-top:12px">{btn("Valida il risultato", "success", "check")}</div>
@@ -1545,39 +1512,47 @@ def schermo_sala():
     Oggi non esiste: gara_detail_public rimanda alla pagina gara, la vetrina
     a gara in corso dice solo «Gara in corso» (SPECIFICHE.md 357)."""
     def tabellone(n, p1, s1, p2, s2, stato, tono):
+        """Un tavolo in una casella della griglia 2x2: la casella e' piena
+        — i due giocatori in due riquadri con nome e punteggio grandi —
+        e si legge a tre metri."""
+        testa = f"""
+              <div class="row" style="justify-content:space-between">
+                <div class="row" style="gap:10px">
+                  <div style="height:40px;padding:0 14px;border-radius:var(--c7-r-control);
+                       background:{'var(--c7-accent)' if p1 else 'var(--c7-bg)'};
+                       color:{'var(--c7-accent-bright)' if p1 else 'var(--c7-ink-faint)'};display:flex;align-items:center;gap:8px">
+                    <span class="kicker" style="color:inherit;font-size:11px">Tavolo</span>
+                    <span class="num" style="font-size:24px;font-weight:800;line-height:1">{n}</span>
+                  </div>
+                </div>
+                {f'<span class="state state--{tono}" style="height:30px;font-size:12px;padding:0 14px">{stato}</span>' if stato else
+                 '<span class="state state--muted" style="height:30px;font-size:12px;padding:0 14px">Libero</span>'}
+              </div>"""
         if p1 is None:
             return f"""
-            <section class="card" style="padding:16px 24px;display:flex;align-items:center;gap:20px;flex:1;min-height:0">
-              <div style="width:78px;align-self:stretch;border-radius:var(--c7-r-control);background:var(--c7-bg);
-                   color:var(--c7-ink-faint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
-                <div class="kicker" style="color:var(--c7-ink-faint);font-size:9px">Tavolo</div>
-                <div class="num" style="font-size:34px;font-weight:800;line-height:1">{n}</div>
-              </div>
-              <div class="grow">
-                <div class="kicker">Tavolo {n} &middot; libero</div>
-                <div style="margin-top:6px;font-size:24px;font-weight:800;color:var(--c7-ink-muted)">Prossima: {s1}</div>
-                <div style="margin-top:4px;font-size:14px;font-weight:700;color:var(--c7-ink-faint)">in attesa di tavolo</div>
+            <section class="card" style="padding:18px 22px;display:flex;flex-direction:column;gap:14px;min-height:0">
+              {testa}
+              <div style="flex:1;border-radius:var(--c7-r-field);background:var(--c7-bg);display:flex;
+                   flex-direction:column;align-items:center;justify-content:center;gap:8px;text-align:center;padding:16px">
+                <div class="kicker" style="font-size:12px">Prossima partita</div>
+                <div style="font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--c7-ink-muted)">{s1}</div>
+                <div style="font-size:15px;font-weight:700;color:var(--c7-ink-faint)">in attesa di un tavolo libero</div>
               </div>
             </section>"""
         def lato(nome, s, vince):
             col = "" if vince else "color:var(--c7-ink-muted)"
-            return (f'<div style="min-width:0">'
-                    f'<div style="font-size:20px;font-weight:800;white-space:nowrap;overflow:hidden;'
-                    f'text-overflow:ellipsis;{col}">{nome}</div>'
-                    f'<div class="num" style="margin-top:2px;font-size:56px;font-weight:800;line-height:1;'
-                    f'letter-spacing:-.04em;{col}">{s}</div></div>')
+            return (f'<div style="border-radius:var(--c7-r-field);background:var(--c7-bg);display:flex;'
+                    f'flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:14px 10px;min-width:0">'
+                    f'<div style="font-size:24px;font-weight:800;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;'
+                    f'text-overflow:ellipsis;max-width:100%;{col}">{nome}</div>'
+                    f'<div class="num" style="font-size:96px;font-weight:800;line-height:1;letter-spacing:-.05em;{col}">{s}</div></div>')
         return f"""
-            <section class="card" style="padding:16px 24px;display:flex;gap:20px;align-items:center;flex:1;min-height:0">
-              <div style="width:78px;align-self:stretch;border-radius:var(--c7-r-control);background:var(--c7-accent);
-                   color:var(--c7-accent-bright);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
-                <div class="kicker" style="color:var(--c7-accent-dim);font-size:9px">Tavolo</div>
-                <div class="num" style="font-size:34px;font-weight:800;line-height:1">{n}</div>
-              </div>
-              <div class="grow" style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:20px;align-items:center">
+            <section class="card" style="padding:18px 22px;display:flex;flex-direction:column;gap:14px;min-height:0">
+              {testa}
+              <div style="flex:1;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:14px;min-height:0">
                 {lato(p1, s1, int(s1) >= int(s2))}
                 {lato(p2, s2, int(s2) >= int(s1))}
               </div>
-              <span class="state state--{tono}" style="align-self:flex-start;height:30px;font-size:12px;padding:0 14px">{stato}</span>
             </section>"""
 
     righe = [("1", "r.neri", "1", "+5"), ("2", "l.ferrari", "1", "+4"), ("3", "m.rossi", "1", "+3"),
@@ -1618,7 +1593,7 @@ def schermo_sala():
     </div>
   </header>
   <div style="padding:20px 36px 24px;display:grid;grid-template-columns:1fr 440px;gap:20px;flex:1;min-height:0">
-    <div style="display:flex;flex-direction:column;gap:12px;min-height:0">
+    <div style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));grid-auto-rows:minmax(0, 1fr);gap:14px;min-height:0">
       {tabellone(1, "m.rossi", "4", "g.verdi", "2", "In corso", "accent")}
       {tabellone(2, "d.bianchi", "3", "l.ferrari", "3", "In corso", "accent")}
       {tabellone(3, "a.galli", "5", "r.neri", "1", "Alla distanza", "ok")}
@@ -1866,14 +1841,12 @@ NOTE_REVISIONE = {
         "gara.distance): quando i turni cambiano, la descrizione dovrebbe "
         "dirlo, per esempio «Palla 8 al 5 · turno 2: Palla 9 al 3»."),
     "SetupTavoli": (
-        "I tavoli della gara come elenco ordinato: il nome si scrive, "
-        "l'ordine si trascina, si toglie. Sotto, i tavoli della sala che non "
-        "sono in elenco (i nomi della sala, personalizzati o numerici: "
-        "TableAssignmentService.get_table_names) si aggiungono con un tocco; "
-        "«Un altro nome» aggiunge un tavolo che la sala non conosce. Oggi "
-        "l'elenco e' un campo di testo «3, 1, 2», e vuoto vuol dire tutti i "
-        "tavoli della sala: qui non c'e' uno stato vuoto, l'elenco parte "
-        "pieno.\n\nPROBLEMA VERO: oggi "
+        "I tavoli come oggi (_gara_tables_config.html): un campo di testo "
+        "con i nomi separati da virgola, nell'ordine di assegnazione — «3, "
+        "1, 2». Confermato dall'utente il 13/09 dopo due versioni a elenco: "
+        "e' la forma migliore. Il suggerimento sotto il campo dice quanti "
+        "tavoli ha la sala e che un nome nuovo vale lo stesso "
+        "(TableAssignmentService.get_table_names).\n\nPROBLEMA VERO: oggi "
         "si modificano solo a iscrizioni aperte, e lo vieta anche il servizio "
         "(update_tables_config → ConflictError). La regola: si scelgono "
         "sempre, anche a iscrizioni chiuse e fra un turno e l'altro."),
@@ -1915,7 +1888,9 @@ NOTE_REVISIONE = {
         "release_and_reassign_table): la card lo dice. L'alternativa a "
         "validare e' correggere: oggi sulla stessa card c'e' «Inserisci "
         "risultato» (openQuickResult) accanto alla spunta; qui sono gli "
-        "stessi stepper delle altre card, e si valida dopo. Le concluse "
+        "stessi stepper delle altre card, e si valida dopo. Il + si spegne "
+        "alla distanza del turno (match.effective_distance, ADR-027): non si "
+        "puo' scrivere un 6 in un turno al 5. Le concluse "
         "restano in sola lettura, nome sopra e numero grande sotto. Tutto il "
         "turno e' in pagina: la card verde e' l'unica che chiede qualcosa."),
     "GiocoClassifica": (
@@ -1950,6 +1925,14 @@ NOTE_REVISIONE = {
         "deciso; la freccia confronta con la classifica dopo l'ultimo turno, "
         "cosi' si vede dove lo spareggio ha cambiato l'ordine. La linguetta "
         "«Gestione» sparisce."),
+    "IscrDesktop": (
+        "Iscrizioni su desktop: il campo per iscrivere sta in cima alla "
+        "colonna, sempre visibile, come in 2.2 — nessun clic prima di poter "
+        "scrivere (ricerca per cognome, nome o username, PR #297). La "
+        "categoria e' il chip che si tocca; a destra il link da condividere, "
+        "la lista d'attesa, che entra da sola quando qualcuno si ritira, e "
+        "le due cose da tenere d'occhio. L'avvio resta spento finche' manca "
+        "il minimo."),
     "FineDesktop": (
         "Conclusa su desktop: il podio dentro la fascia, la classifica sotto "
         "con le medaglie e le frecce rispetto all'ultimo turno, a destra dove "
@@ -1958,8 +1941,8 @@ NOTE_REVISIONE = {
         "La preparazione su desktop e' una pagina sola che scorre (1560 px): "
         "la fascia, i turni in sintesi con gli esercizi fra i turni "
         "(«Modifica turni ed esercizi» apre la 1.10), la direzione di gara "
-        "con la ricerca dei co-direttori aperta in linea, i tavoli con "
-        "l'ordine e i chip della sala, la vetrina con lo spazio 1200x630. "
+        "con la ricerca dei co-direttori aperta in linea, i tavoli nel campo "
+        "di testo «3, 1, 2» come in 1.3, la vetrina con lo spazio 1200x630. "
         "La colonna destra e' la lista di cosa manca: ogni riga scorre alla "
         "sua sezione, senza pagine in piu'."),
     "CampionatoMobile": (
@@ -2134,8 +2117,9 @@ SCHERMATE = [
      "a destra «da fare adesso», i tavoli e la classifica dopo l'ultimo turno "
      "chiuso, fino in fondo. «Impostazioni gara» sale in testata: contiene "
      "solo direttori, vetrina e tavoli, le voci che si toccano in gioco. La "
-     "partita da validare ha gli stepper attivi per correggere e «Valida» "
-     "sotto, come oggi «Inserisci risultato» accanto alla spunta; e dice a "
+     "partita da validare ha gli stepper attivi per correggere — il + spento "
+     "alla distanza del turno — e «Valida» sotto, come oggi «Inserisci "
+     "risultato» accanto alla spunta; e dice a "
      "chi passa il tavolo (release_and_reassign_table)."),
 
     # --- fase 4 ---
@@ -2177,8 +2161,9 @@ SCHERMATE = [
      "«i risultati dei match in tempo reale». In testa la locandina della "
      "vetrina (il banner 1200x630 di admin/gara_vetrina.html) a tutta "
      "larghezza, ritagliata al centro come nelle anteprime social, con nome "
-     "della gara e turno sopra. Da leggere a tre metri: i tavoli riempiono "
-     "l'altezza con i punteggi grandi, la classifica dopo l'ultimo turno "
+     "della gara e turno sopra. Da leggere a tre metri: i quattro tavoli in "
+     "una griglia 2x2, ogni casella piena con i due giocatori in due "
+     "riquadri (nome e punteggio a 96 px); la classifica dopo l'ultimo turno "
      "chiuso e il turno prima stanno a destra. I dati arrivano dagli stessi "
      "eventi live della pagina gara (ADR-057). Per i tabelloni al posto "
      "della classifica va il tabellone: non disegnato."),

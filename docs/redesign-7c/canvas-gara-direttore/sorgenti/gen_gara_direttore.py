@@ -781,9 +781,12 @@ def console_mobile():
 
 
 
-def dscore_side(name, score):
+def dscore_side(name, score, alla_distanza=False):
     """Lato dello stepper su desktop: come score_side, ma riempie l'altezza
-    della casella (il numero e i comandi stanno al centro)."""
+    della casella (il numero e i comandi stanno al centro). Alla distanza
+    il + si spegne (match.effective_distance, ADR-027)."""
+    piu = ("background:var(--c7-sunken);color:var(--c7-ink-faint)" if alla_distanza
+           else "background:var(--c7-ink);color:#fff")
     return f"""
           <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:12px 12px 14px;
                display:flex;flex-direction:column;justify-content:center;gap:10px">
@@ -793,8 +796,7 @@ def dscore_side(name, score):
               <button class="iconbtn" style="width:44px;height:44px;background:var(--c7-card)"
                       >{ico(I["minus"], 16)}</button>
               <div class="num grow" style="text-align:center;font-size:32px;font-weight:800">{score}</div>
-              <button class="iconbtn" style="width:44px;height:44px;background:var(--c7-ink);
-                      color:#fff">{ico(I["plus"], 16)}</button>
+              <button class="iconbtn" style="width:44px;height:44px;{piu}">{ico(I["plus"], 16)}</button>
             </div>
           </div>
 """
@@ -879,7 +881,7 @@ def console_desktop():
           <div style="flex:1;min-height:0;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));
                grid-auto-rows:minmax(0, 1fr);gap:12px">
             {dcard('<span class="state state--ok">Da validare</span>', tavolo_txt(3),
-                   dscore_side("a.galli", "5") + dscore_side("r.neri", "1"),
+                   dscore_side("a.galli", "5", alla_distanza=True) + dscore_side("r.neri", "1"),
                    "card card--ok",
                    f'<button class="btn btn--success btn--sm btn--w">{ico(I["check"], 15)} Valida &middot; il tavolo 3 passa a s.conti vs p.marini</button>')}
             {dcard(live, tavolo_txt(1), dscore_side("m.rossi", "4") + dscore_side("g.verdi", "2"))}

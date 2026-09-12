@@ -598,7 +598,7 @@
       "x": 1120,
       "y": -260,
       "w": 470,
-      "text": "I tavoli della gara come elenco ordinato: il nome si scrive, l'ordine si trascina, si toglie. Sotto, i tavoli della sala che non sono in elenco (i nomi della sala, personalizzati o numerici: TableAssignmentService.get_table_names) si aggiungono con un tocco; «Un altro nome» aggiunge un tavolo che la sala non conosce. Oggi l'elenco e' un campo di testo «3, 1, 2», e vuoto vuol dire tutti i tavoli della sala: qui non c'e' uno stato vuoto, l'elenco parte pieno.\n\nPROBLEMA VERO: oggi si modificano solo a iscrizioni aperte, e lo vieta anche il servizio (update_tables_config → ConflictError). La regola: si scelgono sempre, anche a iscrizioni chiuse e fra un turno e l'altro."
+      "text": "I tavoli come oggi (_gara_tables_config.html): un campo di testo con i nomi separati da virgola, nell'ordine di assegnazione — «3, 1, 2». Confermato dall'utente il 13/09 dopo due versioni a elenco: e' la forma migliore. Il suggerimento sotto il campo dice quanti tavoli ha la sala e che un nome nuovo vale lo stesso (TableAssignmentService.get_table_names).\n\nPROBLEMA VERO: oggi si modificano solo a iscrizioni aperte, e lo vieta anche il servizio (update_tables_config → ConflictError). La regola: si scelgono sempre, anche a iscrizioni chiuse e fra un turno e l'altro."
     },
     {
       "id": "nota-setupesercizi",
@@ -646,7 +646,7 @@
       "x": 0,
       "y": 750,
       "w": 470,
-      "text": "La preparazione su desktop e' una pagina sola che scorre (1560 px): la fascia, i turni in sintesi con gli esercizi fra i turni («Modifica turni ed esercizi» apre la 1.10), la direzione di gara con la ricerca dei co-direttori aperta in linea, i tavoli con l'ordine e i chip della sala, la vetrina con lo spazio 1200x630. La colonna destra e' la lista di cosa manca: ogni riga scorre alla sua sezione, senza pagine in piu'."
+      "text": "La preparazione su desktop e' una pagina sola che scorre (1560 px): la fascia, i turni in sintesi con gli esercizi fra i turni («Modifica turni ed esercizi» apre la 1.10), la direzione di gara con la ricerca dei co-direttori aperta in linea, i tavoli nel campo di testo «3, 1, 2» come in 1.3, la vetrina con lo spazio 1200x630. La colonna destra e' la lista di cosa manca: ogni riga scorre alla sua sezione, senza pagine in piu'."
     },
     {
       "id": "nota-setupturnidesktop",
@@ -718,7 +718,7 @@
       "x": 1120,
       "y": -260,
       "w": 470,
-      "text": "La partita da validare: arrivata alla distanza dal segnapunti dei giocatori senza la doppia conferma (`is_at_distance and not is_player_validated`, _match_card.html). «Valida» la chiude e libera il tavolo, che passa da solo alla prima partita in attesa (MatchValidationService.validate_and_complete → release_and_reassign_table): la card lo dice. L'alternativa a validare e' correggere: oggi sulla stessa card c'e' «Inserisci risultato» (openQuickResult) accanto alla spunta; qui sono gli stessi stepper delle altre card, e si valida dopo. Le concluse restano in sola lettura, nome sopra e numero grande sotto. Tutto il turno e' in pagina: la card verde e' l'unica che chiede qualcosa."
+      "text": "La partita da validare: arrivata alla distanza dal segnapunti dei giocatori senza la doppia conferma (`is_at_distance and not is_player_validated`, _match_card.html). «Valida» la chiude e libera il tavolo, che passa da solo alla prima partita in attesa (MatchValidationService.validate_and_complete → release_and_reassign_table): la card lo dice. L'alternativa a validare e' correggere: oggi sulla stessa card c'e' «Inserisci risultato» (openQuickResult) accanto alla spunta; qui sono gli stessi stepper delle altre card, e si valida dopo. Il + si spegne alla distanza del turno (match.effective_distance, ADR-027): non si puo' scrivere un 6 in un turno al 5. Le concluse restano in sola lettura, nome sopra e numero grande sotto. Tutto il turno e' in pagina: la card verde e' l'unica che chiede qualcosa."
     },
     {
       "id": "nota-giococorreggi",
@@ -766,7 +766,7 @@
       "x": 0,
       "y": 750,
       "w": 470,
-      "text": "Artboard «ConsoleDesktop»: le partite del turno a sinistra, in sei caselle — le cinque partite e il turno prima — che riempiono l'altezza; a destra «da fare adesso», i tavoli e la classifica dopo l'ultimo turno chiuso, fino in fondo. «Impostazioni gara» sale in testata: contiene solo direttori, vetrina e tavoli, le voci che si toccano in gioco. La partita da validare ha gli stepper attivi per correggere e «Valida» sotto, come oggi «Inserisci risultato» accanto alla spunta; e dice a chi passa il tavolo (release_and_reassign_table)."
+      "text": "Artboard «ConsoleDesktop»: le partite del turno a sinistra, in sei caselle — le cinque partite e il turno prima — che riempiono l'altezza; a destra «da fare adesso», i tavoli e la classifica dopo l'ultimo turno chiuso, fino in fondo. «Impostazioni gara» sale in testata: contiene solo direttori, vetrina e tavoli, le voci che si toccano in gioco. La partita da validare ha gli stepper attivi per correggere — il + spento alla distanza del turno — e «Valida» sotto, come oggi «Inserisci risultato» accanto alla spunta; e dice a chi passa il tavolo (release_and_reassign_table)."
     },
     {
       "id": "nota-ssrrilevato",
@@ -814,7 +814,7 @@
       "x": 0,
       "y": 750,
       "w": 470,
-      "text": "Iscrizioni su desktop: l'elenco a sinistra con la categoria, a destra il link da condividere, la lista d'attesa e le due cose da tenere d'occhio. L'avvio resta spento finche' manca il minimo."
+      "text": "Iscrizioni su desktop: il campo per iscrivere sta in cima alla colonna, sempre visibile, come in 2.2 — nessun clic prima di poter scrivere (ricerca per cognome, nome o username, PR #297). La categoria e' il chip che si tocca; a destra il link da condividere, la lista d'attesa, che entra da sola quando qualcuno si ritira, e le due cose da tenere d'occhio. L'avvio resta spento finche' manca il minimo."
     },
     {
       "id": "nota-schermosala",
@@ -822,7 +822,7 @@
       "x": 1600,
       "y": 750,
       "w": 470,
-      "text": "NUOVO, non esiste nell'app: la pagina pubblica della gara oggi rimanda alla pagina gara (routes/main.py, gara_detail_public) e la vetrina a gara in corso dice solo «Gara in corso». SPECIFICHE.md riga 357 chiede «i risultati dei match in tempo reale». In testa la locandina della vetrina (il banner 1200x630 di admin/gara_vetrina.html) a tutta larghezza, ritagliata al centro come nelle anteprime social, con nome della gara e turno sopra. Da leggere a tre metri: i tavoli riempiono l'altezza con i punteggi grandi, la classifica dopo l'ultimo turno chiuso e il turno prima stanno a destra. I dati arrivano dagli stessi eventi live della pagina gara (ADR-057). Per i tabelloni al posto della classifica va il tabellone: non disegnato."
+      "text": "NUOVO, non esiste nell'app: la pagina pubblica della gara oggi rimanda alla pagina gara (routes/main.py, gara_detail_public) e la vetrina a gara in corso dice solo «Gara in corso». SPECIFICHE.md riga 357 chiede «i risultati dei match in tempo reale». In testa la locandina della vetrina (il banner 1200x630 di admin/gara_vetrina.html) a tutta larghezza, ritagliata al centro come nelle anteprime social, con nome della gara e turno sopra. Da leggere a tre metri: i quattro tavoli in una griglia 2x2, ogni casella piena con i due giocatori in due riquadri (nome e punteggio a 96 px); la classifica dopo l'ultimo turno chiuso e il turno prima stanno a destra. I dati arrivano dagli stessi eventi live della pagina gara (ADR-057). Per i tabelloni al posto della classifica va il tabellone: non disegnato."
     },
     {
       "id": "nota-ssrdesktop",

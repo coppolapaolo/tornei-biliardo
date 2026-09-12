@@ -301,6 +301,27 @@ Verificato nel codice e applicato al canvas:
   (gestione con la striscia, testi degli esercizi). Il canvas si apre sulla
   pagina 3.
 
+## Terzo giro del 13/09
+
+* **1.3 e 1.9 tavoli**: torna il **campo di testo** «3, 1, 2», separati da
+  virgola nell'ordine di assegnazione, come oggi in
+  `_gara_tables_config.html`: dopo due versioni a elenco l'utente ha
+  confermato che è la forma migliore. Sotto, il suggerimento dice quanti
+  tavoli ha la sala; resta l'interruttore «assegna in base alla classifica».
+* **2.6**: il campo per iscrivere sta in cima alla colonna, sempre
+  visibile, come in 2.2; via il «Fai entrare» dalla lista d'attesa e la
+  categoria è il chip.
+* **3.3 e 3.9**: confermato che si corregge con − e + prima di validare; il
+  **+ si spegne alla distanza** del turno (`match.effective_distance`,
+  ADR-027) e la card lo dice.
+* **3.10**: i quattro tavoli in **griglia 2×2**, ogni casella piena con i
+  due giocatori in due riquadri (nome a 24 px, punteggio a 96 px), il
+  tavolo libero con la prossima partita al centro. La classifica e il turno
+  1 a destra come prima.
+* Restano da revisionare dall'utente: 2.x (rifatta la 2.6), 4.x, e le due
+  conferme aperte (gestione con la striscia, testi degli esercizi). Il
+  canvas si apre sulla pagina 3.
+
 ## Non ancora disegnato
 
 Da chiedere prima di implementare, perché il canvas non li copre: squadre e
