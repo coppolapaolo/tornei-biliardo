@@ -10,8 +10,9 @@ related: [creare_una_gara, condurre_la_gara, numero_dispari]
 blocks:
   - type: text
     text: >-
-      Registrations are the phase in which the competition takes shape. All the
-      controls are in the **Management** panel of the competition page.
+      Registrations are the phase in which the competition takes shape. The
+      competition page shows the phase strip at the top and, in the dark band,
+      the one thing to do now: open registrations, start the competition, extend them.
 
   - type: heading
     id: stati
@@ -32,9 +33,9 @@ blocks:
 
   - type: steps
     items:
-      - title: "Go to Management"
-        text: "On a phone it is one of the tabs at the top of the competition page."
-        shot: gara-gestione
+      - title: "Open the competition page"
+        text: "In preparation the dark band at the top offers a single command: «Open registrations»."
+        shot: gara-bozza
       - title: "Tap «Open registrations»"
         text: >-
           Set the window. The closing date cannot be later than the date of the
@@ -42,7 +43,7 @@ blocks:
           competition's time and tells you.
       - title: "Circulate the link"
         text: >-
-          In the Management panel you will find the short invitation link:
+          In the **Share** box, under the band, you will find the short invitation link:
           whoever opens it registers directly.
 
   - type: heading
@@ -133,7 +134,7 @@ blocks:
     title: "In bracket competitions the button has a different name"
     text: >-
       With knockout and double elimination you find **Draw the bracket** in
-      place of **Start First Round**, and there the list of entrants counts
+      place of **Start the competition**, and there the list of entrants counts
       double: that one action creates everybody's path to the final, closes
       registrations and freezes the teams. A no-show removed a minute later
       costs you a bracket to redo. See [The bracket](/aiuto/giocare/tabellone).
@@ -145,6 +146,6 @@ blocks:
       - q: "An entrant has not paid the fee. Can I flag that?"
         a: "The app does not handle payments: the fee is information on the competition card. Takings are handled as they always have been."
       - q: "How do I register someone without a smartphone?"
-        a: "Add them by hand from the Management panel. They do need an account, though: you can create one together, it takes a minute."
+        a: "Add them by hand from the competition page, in the registered players box. They do need an account, though: you can create one together, it takes a minute."
       - q: "How many entrants do I need to start?"
         a: "The minimum you set when creating the competition. Below that threshold the start button stays disabled."

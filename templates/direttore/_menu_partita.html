@@ -1,0 +1,33 @@
+{# templates/direttore/_menu_partita.html — Design System 7c
+
+   Il menu di una partita del turno, dalla sua card (canvas, 2S · Il menu
+   della partita): cambiare il tavolo (3.2), azzerarla (`reset_match`, finche'
+   il turno dopo non e' avviato), aprire il segnapunti. Un foglio solo per
+   tutte le card: `apriMenuPartita(bottone)` lo riempie dagli attributi
+   `data-*` del pulsante che l'ha aperto (`_scripts.html`). #}
+<div class="modal fade c7-sheet" id="menuPartitaModal" tabindex="-1" aria-labelledby="menuPartitaTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="menuPartitaTitolo"></h3>
+        <div class="c7-sheet__sub" id="menuPartitaSotto"></div>
+      </div>
+      <div class="modal-body c7-stack">
+        <button type="button" class="btn btn-secondary w-100" id="menuPartitaTavolo">
+          <i class="fas fa-table"></i> <span></span>
+        </button>
+        <button type="button" class="btn btn-danger w-100" id="menuPartitaAzzera">
+          <i class="fas fa-rotate-left"></i> {{ _('Azzera la partita') }}
+        </button>
+        <div class="c7-nota" id="menuPartitaNota"></div>
+        <a class="btn btn-secondary w-100" id="menuPartitaApri" href="#">
+          <i class="fas fa-pen"></i> {{ _('Apri il segnapunti') }}
+        </a>
+        <div class="c7-nota" id="menuPartitaBloccata" hidden>
+          {{ _('Il turno dopo è già avviato: questa partita non si tocca più.') }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

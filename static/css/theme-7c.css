@@ -3096,3 +3096,117 @@ a.c7-rows__row:hover { background: var(--c7-sunken); }
   from { opacity: 0; transform: translateY(.22em) scale(.94); }
   to   { opacity: 1; transform: none; }
 }
+
+/* --------------------------------------------------------------------------
+   20. La pagina della gara per chi la dirige (canvas «Pagina gara del
+   direttore», approvato il 13/09/2026)
+   -------------------------------------------------------------------------- */
+
+/* La striscia di fase, al posto delle quattro linguette: fatte in verde,
+   attiva scura con l'etichetta, da fare con la sola icona. Sotto lg le
+   etichette delle inattive non ci stanno in 354px. */
+.c7-fasi {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: var(--c7-gap);
+}
+.c7-fasi__filo { height: 2px; flex: 1; background: var(--c7-line); }
+.c7-fasi__tacca {
+  height: 34px; min-width: 34px; padding: 0;
+  border-radius: var(--c7-r-pill); background: var(--c7-card); color: var(--c7-ink-faint);
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  font-size: 12px; font-weight: 800; white-space: nowrap; flex-shrink: 0;
+}
+.c7-fasi__tacca i { font-size: 12px; }
+.c7-fasi__label { display: none; }
+.c7-fasi__tacca--fatta { background: var(--c7-ok-bg); color: var(--c7-ok-ink); }
+.c7-fasi__tacca--attiva { background: var(--c7-ink); color: var(--c7-on-ink); padding: 0 14px; }
+.c7-fasi__tacca--attiva .c7-fasi__label { display: inline; }
+@media (min-width: 992px) {
+  .c7-fasi__tacca { padding: 0 14px; }
+  .c7-fasi__label { display: inline; }
+}
+
+/* La fascia scura: dove siamo e l'unica cosa da fare adesso. Sul telefono e'
+   una pila (kicker, titolo, corpo, comando); sul desktop il testo a sinistra
+   e il comando a destra. */
+.c7-fascia__titolo { margin-top: 5px; font-size: 19px; font-weight: 800; letter-spacing: -.025em; color: inherit; }
+.c7-fascia__corpo { margin-top: 10px; font-size: 13px; font-weight: 600; line-height: 1.45; color: var(--c7-accent-dim); }
+.c7-fascia__azione { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.c7-fascia__azione .btn { width: 100%; }
+.c7-fascia__nota { font-size: 12px; font-weight: 700; color: var(--c7-accent-dim); }
+.c7-fascia__progress { margin-top: 12px; display: flex; align-items: center; gap: 10px; }
+.c7-fascia__progress .c7-num { font-size: 13px; color: var(--c7-accent-bright); }
+/* Il comando spento resta leggibile sul fondo scuro: non il grigio di
+   Bootstrap, ma la stessa superficie translucida del prototipo. */
+.c7-fascia .btn:disabled, .c7-fascia .btn.disabled {
+  background: rgba(242, 248, 247, .12); color: var(--c7-accent-dim); opacity: 1;
+}
+@media (min-width: 992px) {
+  .c7-fascia { display: flex; align-items: center; gap: 22px; padding: 20px 22px; }
+  .c7-fascia__testo { flex: 1; min-width: 0; }
+  .c7-fascia__titolo { font-size: 20px; margin-top: 4px; }
+  .c7-fascia__corpo { margin-top: 6px; }
+  .c7-fascia__azione { margin-top: 0; flex-shrink: 0; align-items: flex-end; }
+  .c7-fascia__azione .btn { width: auto; }
+}
+
+/* La barra di avanzamento dentro la fascia e nella card della console. */
+.c7-bar { display: block; height: 8px; border-radius: 999px; background: var(--c7-line); overflow: hidden; flex: 1; }
+.c7-bar__fill { display: block; height: 100%; background: var(--c7-accent); }
+.c7-card--accent .c7-bar { background: rgba(242, 248, 247, .18); }
+.c7-card--accent .c7-bar__fill { background: var(--c7-accent-bright); }
+
+/* La card riassuntiva del turno (scelta 1B): scura come la fascia. */
+.c7-console { padding: 14px 16px; }
+.c7-console__row { display: flex; align-items: flex-start; gap: 16px; }
+.c7-console__cella { flex: 1; min-width: 0; }
+.c7-console__cella--destra { flex: 0 0 auto; text-align: right; }
+.c7-console__valore { margin-top: 4px; display: flex; align-items: baseline; gap: 8px; }
+.c7-console__valore .c7-num { font-size: 19px; font-weight: 800; }
+.c7-console__sotto { font-size: 13px; font-weight: 700; color: var(--c7-accent-dim); }
+.c7-console .c7-bar { margin-top: 10px; }
+@media (min-width: 992px) {
+  .c7-console { padding: 16px 22px; }
+  .c7-console__valore .c7-num { font-size: 28px; }
+}
+
+/* La nota sotto un comando. */
+.c7-nota { font-size: 12px; font-weight: 600; line-height: 1.45; color: var(--c7-ink-muted); }
+
+/* Il foglio ancorato in fondo (menu del turno, menu della partita): un
+   modale Bootstrap che sul telefono sale dal basso, con la maniglia, e sul
+   desktop sta al centro come gli altri. */
+.c7-sheet .modal-dialog { margin: 0; position: fixed; left: 0; right: 0; bottom: 0; max-width: none; }
+.c7-sheet.fade .modal-dialog { transform: translateY(40px); }
+.c7-sheet.show .modal-dialog { transform: none; }
+.c7-sheet .modal-content { border-radius: 26px 26px 0 0; padding-bottom: 8px; }
+.c7-sheet .modal-header { display: block; border: 0; padding: 14px 18px 4px; }
+.c7-sheet__grip { width: 44px; height: 4px; border-radius: 999px; background: var(--c7-line); margin: 0 auto 12px; }
+.c7-sheet .modal-title { font-size: 17px; }
+.c7-sheet__sub { margin-top: 2px; font-size: 13px; font-weight: 600; color: var(--c7-ink-muted); line-height: 1.45; }
+.c7-sheet .modal-body { padding: 10px 18px 18px; }
+@media (min-width: 576px) {
+  .c7-sheet .modal-dialog { position: relative; margin: 1.75rem auto; max-width: 420px; }
+  .c7-sheet.fade .modal-dialog { transform: translateY(-20px); }
+  .c7-sheet.show .modal-dialog { transform: none; }
+  .c7-sheet .modal-content { border-radius: var(--c7-r-card-lg); }
+  .c7-sheet__grip { display: none; }
+}
+
+/* Una riga che agisce e' un pulsante vero: stessa forma della riga. */
+.c7-rows__row--btn {
+  width: 100%; border: 0; background: transparent; text-align: left;
+  font-family: inherit; color: inherit; cursor: pointer;
+}
+.c7-rows__row--btn:hover { background: var(--c7-sunken); }
+
+/* Il pulsante «⋯» dei menu: stessa tessera degli altri comandi a icona. */
+.c7-iconbtn--menu { background: var(--c7-card); }
+.c7-card .c7-iconbtn--menu { background: var(--c7-bg); }
+
+/* Le tessere delle righe di fase dicono lo stato della voce con il tono:
+   fatto (ok), manca (warn), neutro, bloccato. Il tono accento resta quello
+   della tessera base. */
+.c7-tile--neutral { background: var(--c7-bg); color: var(--c7-ink-soft); }
+.c7-tile--ok { background: var(--c7-ok-bg); color: var(--c7-ok); }
+.c7-tile--warn { background: var(--c7-warn-bg); color: var(--c7-warn); }

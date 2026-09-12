@@ -1,11 +1,11 @@
 """Qual è il comando che una gara aspetta dal suo direttore.
 
-Presidia `models/dashboard/comandi.py`, che rispecchia i rami di
-`templates/components/_gara_management.html`. Le due cose stanno per forza in
-due posti — il pannello **esegue**, la dashboard **annuncia** — quindi questi
-test sono anche il punto in cui la divergenza si vede: se domani il pannello
-guadagna uno stato e questo no, la dashboard mostrerà «Gestisci» dove c'è
-qualcosa da fare, e il caso qui sotto che manca lo dirà.
+Presidia `models/dashboard/comandi.py`. Dal 2026-09-12 lo legge anche la
+pagina della gara del direttore (`templates/direttore/_fase_*.html`) per la
+fascia scura in cima — la pagina **esegue**, la dashboard **annuncia**, la
+macchina a stati e' questa — quindi questi test sono il punto in cui un caso
+mancante si vede: se domani la pagina guadagna uno stato e questo no, la
+dashboard mostrerà «Gestisci» dove c'è qualcosa da fare.
 
 Nota su ciò che **non** esiste: non ci sono comandi «chiudi il turno» né
 «assegna i tavoli». Un turno finisce quando finiscono le sue partite, e i

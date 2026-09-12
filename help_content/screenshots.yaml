@@ -177,7 +177,7 @@ shots:
   - id: gara-gestione
     route: /admin/gara/2
     as: Luca Bianchi
-    caption: "La gara vista dal direttore: il pannello «Gestione» con il pulsante per avviare il turno successivo."
+    caption: "La gara vista dal direttore: la striscia delle fasi in cima e la fascia scura con il pulsante per avviare il turno successivo."
     viewports: [mobile, desktop]
 
   - id: vetrina-pubblica
@@ -201,7 +201,6 @@ shots:
   - id: gara-iscritti
     route: /admin/gara/3
     as: Luca Bianchi
-    click: ['[data-c7-tab-btn="iscritti"]']
     caption: "L'elenco degli iscritti visto dal direttore, con la possibilità di iscrivere o togliere un giocatore."
 
   - id: campionato-gestione
@@ -378,7 +377,7 @@ shots:
   - id: gara-bozza
     route: /admin/gara/4
     as: Luca Bianchi
-    caption: "Una gara ancora in bozza: esiste, ma nessuno può iscriversi finché non si aprono le iscrizioni."
+    caption: "Una gara in preparazione: la fascia scura offre «Apri le iscrizioni» e sotto c'è l'elenco di cosa preparare."
 
   - id: tabellone
     route: /admin/gara/5/tabellone
@@ -394,15 +393,13 @@ shots:
   - id: gara-squadre
     route: /admin/gara/3
     as: Luca Bianchi
-    click: ['[data-c7-tab-btn="gestione"]']
-    clip: "#sectionSquadre"
+    clip: "#sezioneSquadre"
     caption: "Il pannello delle squadre: quali ci sono e chi ne fa parte in questa gara."
 
   - id: gara-turni-config
     route: /admin/gara/4
     as: Luca Bianchi
-    click: ['[data-c7-tab-btn="gestione"]']
-    clip: "#sectionTurni"
+    clip: "#sezioneTurni"
     caption: "La configurazione dei turni: disciplina e distanza si possono cambiare turno per turno."
 
 
@@ -428,26 +425,20 @@ shots:
   - id: prova-iscrizioni
     route: /admin/gara/6
     as: Luca Bianchi
-    click: ['[data-help-action="skip"]', '[data-c7-tab-btn="iscritti"]']
+    click: ['[data-help-action="skip"]']
     wait_for: ".c7-help-q"
     caption: "La gara di prova a iscrizioni aperte: in cima il banner con la scadenza, l'interruttore «Suggerimenti» e «Elimina la prova»; sotto i tre pulsanti dei giocatori fittizi, ciascuno con la sua «?»."
 
   - id: prova-fumetto
     route: /admin/gara/6
     as: Luca Bianchi
-    # La «?» da toccare e' quella del pannello mobile: il pannello iscritti
-    # desktop viene prima nel DOM ed e' nascosto, e un clic su un elemento
-    # nascosto aprirebbe il fumetto nell'angolo in alto.
-    click: ['[data-help-action="skip"]', '[data-c7-tab-btn="iscritti"]', '.d-lg-none .c7-help-q[data-help-for="prova-fittizi"]']
+    click: ['[data-help-action="skip"]', '.c7-help-q[data-help-for="prova-fittizi"]']
     wait_for: ".c7-help-pop"
     caption: "Il fumetto che si apre toccando una «?»: il nome del comando, due frasi, e il collegamento «Leggi nella guida»."
 
   - id: prova-simulazione
     route: /admin/gara/7
     as: Luca Bianchi
-    click: ['[data-help-action="skip"]', '[data-c7-tab-btn="gestione"]']
-    # Il selettore si àncora al pannello mobile (`#sectionGestioneMobile`):
-    # il primo `div:has(...)` della pagina è la copia desktop, nascosta, e
-    # Playwright non fotografa un elemento invisibile.
-    clip: '#sectionGestioneMobile div:has(> [data-help="prova-simulazione"])'
-    caption: "I tre pulsanti della simulazione nel pannello Gestione di una prova avviata: una partita, il turno, tutta la gara."
+    click: ['[data-help-action="skip"]']
+    clip: 'div.c7-card:has(> [data-help="prova-simulazione"])'
+    caption: "I tre pulsanti della simulazione, sotto la fascia, in una prova avviata: una partita, il turno, tutta la gara."

@@ -1,0 +1,1358 @@
+{# templates/direttore/_scripts.html — Design System 7c
+
+   La configurazione della pagina (GARA_CONFIG) e le funzioni della gestione:
+   avvio e annullamento dei turni, terminazione, spareggio, risultato rapido,
+   tavoli. Spostate qui da `gara_detail.html` quando la pagina del direttore
+   e' diventata un template a se'; endpoint e nomi invariati.
+
+   In coda: i due fogli nuovi del canvas, il menu della partita (riempito
+   dagli attributi data-* della card) e il menu del turno. #}
+<script type="application/json" id="gara-config">
+  {
+    "gara": {
+      "id": {{ gara.id }},
+      "number": {{ gara.number }},
+      "tiebreakerUntilPosition": {{ gara.tiebreaker_until_position or 3 }},
+      "campionatoId": {{ gara.campionato_id | tojson }},
+      "senzaCategoria": {{ (iscritti_senza_categoria or 0) | tojson }},
+      "discipline": {{ gara.discipline | tojson }},
+      "distance": {{ gara.distance }},
+      "isRaceTo": {{ (not gara.is_race_to) | tojson }},
+      "isMultiSet": {{ gara.is_multi_set | tojson }},
+      "matchDistance": {{ gara.match_distance or 2 }},
+      "isRaceToSets": {{ (gara.is_race_to_sets is not defined or gara.is_race_to_sets) | tojson }},
+      "dateIso": {{ gara.date.isoformat() | tojson }},
+      {# La finestra di iscrizione non passa più di qui: i campi del form di
+         modifica li compila il server, già in ora italiana. #}
+      "timeIso": {{ (gara.time.isoformat() if gara.time else "20:00:00") | tojson }}
+    },
+    "availableTables": {{ available_tables | tojson }},
+    "occupiedTables": {{ occupied_tables | tojson }},
+    "i18n": {
+      "confirmStartRandom": {{ _("Sei sicuro di voler avviare la gara? Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.") | tojson }},
+      "confirmStartStandard": {{ _("Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.") | tojson }},
+      {# Sul tabellone il sorteggio decide il percorso di tutti fino alla
+         finale e congela le squadre: vale la pena dirlo prima, non dopo. #}
+      "confirmStartBracket": {{ _("Sorteggiare il tabellone? Le iscrizioni si chiudono, le squadre si congelano e il percorso di ogni giocatore fino alla finale resta questo, salvo annullare il sorteggio.") | tojson }},
+      "startingScheduleMessage": {{ _("Calcolo dello schedule in corso… Per gare con trio (giocatori dispari) il calcolo può richiedere qualche secondo.") | tojson }},
+      "confirmCancelFirstRound": {{ _("Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite del primo turno verranno eliminate e la gara tornerà allo stato di iscrizioni.") | tojson }},
+      "confirmCancelCurrentRound": {{ _("Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.") | tojson }},
+      "confirmTerminate": {{ _("Sei sicuro di voler terminare la gara?\n\nDopo la conferma, i risultati saranno definitivi e non sarà più possibile modificarli.") | tojson }},
+      "confirmStartSsr": {{ _("Avviare la fase di spareggio (SSR)?\n\nDovrai inserire i punteggi per risolvere i parimerito nelle prime %(pos)s posizioni.", pos=gara.tiebreaker_until_position or 3) | tojson }},
+      "confirmCancelSsr": {{ _("Annullare la fase di spareggio (SSR)?\n\nI punteggi SSR già inseriti verranno azzerati e la gara tornerà in gioco, così potrai correggere i risultati.") | tojson }},
+      "errorSsrCancel": {{ _("Errore durante l'annullamento della fase SSR") | tojson }},
+      "confirmResetRound": {{ _("Sei sicuro di voler resettare l'ultimo turno?\n\nTutti i risultati del turno verranno azzerati e i match torneranno in stato 'In Attesa'.\n\nQuesta azione è IRREVERSIBILE!") | tojson }},
+      "confirmDeleteGara": {{ _("Sei SICURO di voler eliminare la Gara {number}?\n\nQuesta azione è IRREVERSIBILE!") | tojson }},
+      "confirmCancelGara": {{ _("Sei SICURO di voler cancellare la Gara {number}?\n\nTutti i player iscritti riceveranno una notifica della cancellazione.\nQuesta azione è IRREVERSIBILE!") | tojson }},
+      "confirmResetMatch": {{ _("Sei sicuro di voler resettare questa partita?") | tojson }},
+      "confirmResetTrio": {{ _("Sei sicuro di voler resettare questo trio?") | tojson }},
+      "confirmValidate": {{ _("Confermi di voler validare questo risultato? Il tavolo verrà liberato e assegnato alla prossima partita in attesa.") | tojson }},
+      "errorTitle": {{ _("Errore:") | tojson }},
+      "errorCancel": {{ _("Errore durante la cancellazione:") | tojson }},
+      "errorTermination": {{ _("Errore durante la terminazione:") | tojson }},
+      "errorTerminationWait": {{ _("Errore durante la terminazione della gara") | tojson }},
+      "errorSsrStart": {{ _("Errore durante l'avvio della fase SSR") | tojson }},
+      "errorSsrSave": {{ _("Errore durante il salvataggio dei punteggi") | tojson }},
+      "errorReset": {{ _("Errore durante il reset:") | tojson }},
+      "errorDelete": {{ _("Errore durante l'eliminazione della gara: ") | tojson }},
+      "errorNetworkDelete": {{ _("Errore di rete durante l'eliminazione") | tojson }},
+      "errorNetworkRound": {{ _("Errore di rete durante l'avvio del turno") | tojson }},
+      "errorRound": {{ _("Errore durante l'avvio del turno:")| tojson }},
+      "errorCreateRound": {{ _("Errore di rete durante la creazione del turno") | tojson }},
+      "errorQuickResult": {{ _("Errore durante l'impostazione del risultato") | tojson }},
+      "errorResetMatch": {{ _("Errore durante il reset") | tojson }},
+      "errorResetTrio": {{ _("Errore durante il reset del trio") | tojson }},
+      "errorValidation": {{ _("Errore:") | tojson }},
+      "errorValidationWait": {{ _("Errore durante la validazione") | tojson }},
+      "errorTableNetwork": {{ _("Errore di rete durante l'operazione sul tavolo") | tojson }},
+      "errorSsrScoreFormat": {{ _("Tutti i punteggi devono essere numeri interi non negativi") | tojson }},
+      "errorSsrDuplicates": {{ _("I punteggi devono essere tutti diversi per risolvere il parimerito") | tojson }},
+      "errorSsrGroupScores": {{ _("I punteggi devono essere numeri interi non negativi") | tojson }},
+      "errorSsrGroupDuplicates": {{ _("Serve un vincitore netto: il punteggio più alto del gruppo non può essere condiviso") | tojson }},
+      "infoSsrStart": {{ _("Usa 'Avvia SSR' per inserire i punteggi degli spareggi") | tojson }},
+      {# Composto dal server (`avviso_senza_categoria`) e **riscritto a ogni
+         salvataggio** dalla risposta dell'endpoint: il campo della categoria
+         salva senza ricaricare, quindi un testo fissato all'apertura direbbe
+         che mancano categorie appena assegnate. #}
+      "warnSenzaCategoria": {{ (avviso_categorie or "") | tojson }},
+      "infoUnknown": {{ _("Errore sconosciuto") | tojson }},
+      "infoValidateImpossible": {{ _("Impossibile validare il risultato") | tojson }},
+      "tieFor": {{ _("Pari merito per il") | tojson }},
+      "place": {{ _("posto") | tojson }},
+      "ssrPoints": {{ _("Punti SSR") | tojson }},
+      "swapTitle": {{ _("Click per scambiare con match occupante") | tojson }},
+      "tablePrefix": {{ _("Tavolo") | tojson }}
+    }
+  }
+</script>
+
+<script>
+  const GARA_CONFIG = JSON.parse(document.getElementById('gara-config').textContent);
+
+  function startFirstRound(provaId, strategy) {
+    // Quando c'e' una X da assegnare, la conferma secca lascia il posto al
+    // modale che chiede anche a chi tocca: e' la stessa domanda, con una
+    // scelta in piu'. Il form del modale posta da solo.
+    if (openXChoiceModal()) return;
+
+    let message;
+    if (strategy === {{ MatchmakingStrategy.RANDOM.value|tojson }}) {
+      message = GARA_CONFIG.i18n.confirmStartRandom;
+    } else if ({{ [MatchmakingStrategy.DIRECT_ELIMINATION.value, MatchmakingStrategy.DOUBLE_KNOCKOUT.value]|tojson }}.indexOf(strategy) >= 0) {
+      message = GARA_CONFIG.i18n.confirmStartBracket;
+    } else {
+      message = GARA_CONFIG.i18n.confirmStartStandard;
+    }
+
+    // Ultimo istante utile: dopo l'avvio le categorie hanno gia' deciso quali
+    // partite contano per l'Elo, e correggerle richiede uno script e un
+    // ricalcolo che sposta il rating di tutti.
+    // Il messaggio arriva gia' composto: il conteggio e' noto al server, e
+    // comporlo li' e' l'unico modo di avere il singolare giusto ("1 iscritto
+    // non ha", non "1 iscritti non hanno").
+    if (GARA_CONFIG.i18n.warnSenzaCategoria) {
+      message = GARA_CONFIG.i18n.warnSenzaCategoria + '\n\n' + message;
+    }
+
+    showConfirm(message, () => {
+      // Loading overlay durante il calcolo dello schedule (per la strategia
+      // Random il server pre-genera tutti i turni — per trio mode il
+      // branch-and-bound può richiedere qualche secondo).
+      showScheduleOverlay();
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/admin/gara/${provaId}/start_first_round`;
+      const csrf = document.createElement('input');
+      csrf.type = 'hidden';
+      csrf.name = 'csrf_token';
+      csrf.value = csrfToken();
+      form.appendChild(csrf);
+      document.body.appendChild(form);
+      form.submit();
+    });
+  }
+
+  // Apre il modale "a chi va la X", se questa gara ce l'ha. Ritorna false
+  // quando non c'e' (gare pari, trio, tabellone...): il chiamante prosegue
+  // con la conferma di sempre.
+  function openXChoiceModal() {
+    const modal = document.getElementById('xChoiceModal');
+    if (!modal) return false;
+
+    // Ultimo istante utile per le categorie: dopo l'avvio decidono gia' quali
+    // partite contano per l'Elo. Il testo arriva composto dal server ed e'
+    // riscritto a ogni salvataggio, quindi si legge ora e non all'apertura
+    // della pagina.
+    const warn = document.getElementById('xChoiceCategoriaWarn');
+    const warnText = document.getElementById('xChoiceCategoriaWarnText');
+    if (warn && warnText) {
+      warnText.textContent = GARA_CONFIG.i18n.warnSenzaCategoria || '';
+      warn.style.display = GARA_CONFIG.i18n.warnSenzaCategoria ? '' : 'none';
+    }
+
+    bootstrap.Modal.getOrCreateInstance(modal).show();
+    return true;
+  }
+
+  function showScheduleOverlay() {
+    if (document.getElementById('schedule-loading-overlay')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'schedule-loading-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:1080;background:rgba(0,0,0,0.55);' +
+      'display:flex;align-items:center;justify-content:center;flex-direction:column;color:#fff;';
+    const spinner = document.createElement('div');
+    spinner.className = 'spinner-border text-light';
+    spinner.style.cssText = 'width:3rem;height:3rem;';
+    spinner.setAttribute('role', 'status');
+    overlay.appendChild(spinner);
+    const label = document.createElement('div');
+    label.className = 'mt-3 px-3 text-center';
+    label.style.cssText = 'max-width:480px;';
+    label.textContent = GARA_CONFIG.i18n.startingScheduleMessage;
+    overlay.appendChild(label);
+    document.body.appendChild(overlay);
+  }
+
+  function cancelFirstRound(provaId) {
+    showConfirm(GARA_CONFIG.i18n.confirmCancelFirstRound, () => {
+      fetch(`/admin/gara/${provaId}/cancel_first_round`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken()}
+      }).then(response => {
+        if (response.ok) {
+          location.reload();
+        } else {
+          response.text().then(text => {
+            showError(GARA_CONFIG.i18n.errorCancel + ' ' + text);
+          });
+        }
+      });
+    });
+  }
+
+  function cancelCurrentRound(provaId) {
+    showConfirm(GARA_CONFIG.i18n.confirmCancelCurrentRound, () => {
+      fetch(`/admin/gara/${provaId}/cancel_current_round`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken()}
+      }).then(response => {
+        if (response.ok) {
+          location.reload();
+        } else {
+          response.text().then(text => {
+            showError(GARA_CONFIG.i18n.errorCancel + ' ' + text);
+          });
+        }
+      });
+    });
+  }
+
+  function terminateGara(garaId, btn) {
+    showConfirm(GARA_CONFIG.i18n.confirmTerminate, () => {
+      const restore = withLoading(btn);
+      fetch(`/admin/gara/${garaId}/terminate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': csrfToken()}
+      }).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else if (data.needs_tiebreaker) {
+            showInfo(data.message || GARA_CONFIG.i18n.infoSsrStart);
+            restore();
+          } else {
+            showError(GARA_CONFIG.i18n.errorTermination + ' ' + (data.error || data.message));
+            restore();
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showError(GARA_CONFIG.i18n.errorTerminationWait);
+          restore();
+        });
+    });
+  }
+
+  function startSsr(garaId, btn) {
+    const confirmMsg = GARA_CONFIG.i18n.confirmStartSsr;
+    showConfirm(confirmMsg, () => {
+      const restore = withLoading(btn);
+      fetch(`/admin/gara/${garaId}/start_ssr`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': csrfToken()}
+      }).then(response => {
+        return response.json();
+      }).then(data => {
+        if (data.success) {
+          location.reload();
+        } else {
+          showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || data.message));
+          restore();
+        }
+      }).catch(error => {
+        console.error('Fetch error:', error);
+        showError(GARA_CONFIG.i18n.errorSsrStart);
+        restore();
+      });
+    });
+  }
+
+  function cancelSsr(garaId, btn) {
+    showConfirm(GARA_CONFIG.i18n.confirmCancelSsr, () => {
+      const restore = withLoading(btn);
+      fetch(`/admin/gara/${garaId}/cancel_ssr`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest',
+        'X-CSRFToken': csrfToken()}
+      }).then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || data.message));
+            restore();
+          }
+        }).catch(error => {
+          console.error('Fetch error:', error);
+          showError(GARA_CONFIG.i18n.errorSsrCancel);
+          restore();
+        });
+    });
+  }
+
+  function showSsrModal(garaId, tiebreakers) {
+    const modal = document.getElementById('ssrModal');
+    const form = document.getElementById('ssrForm');
+    const groupsContainer = document.getElementById('ssrGroupsContainer');
+
+    // Store gara ID in form data attribute
+    form.dataset.garaId = garaId;
+
+    // Clear previous content
+    while (groupsContainer.firstChild) {
+      groupsContainer.removeChild(groupsContainer.firstChild);
+    }
+
+    const i18n = GARA_CONFIG.i18n;
+
+    // Build UI for each tiebreaker group using safe DOM methods
+    tiebreakers.forEach(function (group) {
+      // Card su fondo pagina: dentro il modal, che e' gia' superficie card,
+      // il gruppo si distingue per superficie e non per bordo.
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'c7-card';
+      groupDiv.style.background = 'var(--c7-bg)';
+
+      const header = document.createElement('div');
+      header.className = 'd-flex align-items-center gap-2 mb-3';
+
+      const title = document.createElement('div');
+      title.className = 'c7-kicker flex-fill';
+      title.textContent = i18n.tieFor + ' ' + group.position + '° ' + i18n.place;
+      header.appendChild(title);
+
+      const rackInfo = document.createElement('span');
+      rackInfo.className = 'c7-state c7-state--muted';
+      rackInfo.textContent = group.rack_totali + ' rack';
+      header.appendChild(rackInfo);
+
+      groupDiv.appendChild(header);
+
+      const players = document.createElement('div');
+      players.className = 'c7-stack';
+      players.style.gap = '8px';
+
+      group.players.forEach(function (player) {
+        const row = document.createElement('div');
+        row.className = 'd-flex align-items-center gap-3';
+
+        const name = document.createElement('span');
+        name.className = 'flex-fill';
+        name.style.cssText = 'font-size:14px;font-weight:700';
+        name.textContent = player.username;
+
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.className = 'form-control ssr-score-input text-center';
+        input.name = 'ssr_' + player.user_id;
+        input.dataset.userId = player.user_id;
+        input.min = '0';
+        input.step = '1';
+        input.style.width = '110px';
+        input.placeholder = i18n.ssrPoints;
+        input.required = true;
+        if (player.current_ssr_score != null) {
+          input.value = player.current_ssr_score;
+        }
+
+        row.appendChild(name);
+        row.appendChild(input);
+        players.appendChild(row);
+      });
+
+      groupDiv.appendChild(players);
+      groupsContainer.appendChild(groupDiv);
+    });
+
+    // Show modal
+    const bsModal = new bootstrap.Modal(modal);
+    bsModal.show();
+  }
+
+  function submitSsrScores() {
+    const form = document.getElementById('ssrForm');
+    const garaId = form.dataset.garaId;
+    const inputs = document.querySelectorAll('.ssr-score-input');
+
+    // Collect scores
+    const scores = {};
+    let hasErrors = false;
+
+    inputs.forEach(function (input) {
+      const userId = input.dataset.userId;
+      const value = parseInt(input.value, 10);
+
+      if (isNaN(value) || value < 0) {
+        input.classList.add('is-invalid');
+        hasErrors = true;
+      } else {
+        input.classList.remove('is-invalid');
+        scores[userId] = value;
+      }
+    });
+
+    if (hasErrors) {
+      showError(GARA_CONFIG.i18n.errorSsrScoreFormat);
+      return;
+    }
+
+    // Check for duplicates within each group
+    const scoreValues = Object.values(scores);
+    if (new Set(scoreValues).size !== scoreValues.length) {
+      showError(GARA_CONFIG.i18n.errorSsrDuplicates);
+      return;
+    }
+
+    // Submit scores
+    const removeOverlay = showModalLoading('#ssrModal');
+    fetch(`/admin/gara/${garaId}/save_ssr_scores`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': csrfToken()},
+      body: JSON.stringify({ scores: scores })
+    }).then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Close modal and reload
+          const modal = bootstrap.Modal.getInstance(document.getElementById('ssrModal'));
+          if (modal) modal.hide();
+          location.reload();
+        } else if (data.needs_tiebreaker) {
+          // Still have unresolved tiebreakers - update modal
+          removeOverlay();
+          showSsrModal(garaId, data.tiebreakers);
+          showInfo(data.message);
+        } else {
+          showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || data.message));
+          removeOverlay();
+        }
+      }).catch(error => {
+        console.error('Error:', error);
+        showError(GARA_CONFIG.i18n.errorSsrSave);
+        removeOverlay();
+      });
+  }
+
+  function saveSsrGroup(garaId, groupPosition, btn) {
+    // Collect scores for this specific group
+    // Filter to only VISIBLE inputs (avoid duplicate mobile/desktop inputs)
+    const allInputs = document.querySelectorAll(`.ssr-group-input[data-group-position="${groupPosition}"]`);
+    const inputs = Array.from(allInputs).filter(input => input.offsetParent !== null);
+    const scores = {};
+    let hasErrors = false;
+
+    inputs.forEach(function (input) {
+      const userId = input.dataset.userId;
+      const value = parseInt(input.value, 10);
+
+      if (isNaN(value) || value < 0) {
+        input.classList.add('is-invalid');
+        hasErrors = true;
+      } else {
+        input.classList.remove('is-invalid');
+        scores[userId] = value;
+      }
+    });
+
+    if (hasErrors) {
+      showError(GARA_CONFIG.i18n.errorSsrGroupScores);
+      return;
+    }
+
+    // Non tutti i punteggi devono differire: vanno separati solo i posti
+    // realmente contesi (issue #63). Quanti sono lo dice il server con
+    // data-needs-distinct-top; in assenza si ricade sul vecchio "tutti diversi".
+    const scoreValues = Object.values(scores);
+    const declaredTop = inputs.length ? parseInt(inputs[0].dataset.needsDistinctTop, 10) : NaN;
+    const distinctTop = isNaN(declaredTop) ? scoreValues.length - 1 : declaredTop;
+    const ordered = scoreValues.slice().sort((a, b) => b - a);
+    for (let i = 0; i < Math.min(distinctTop, ordered.length - 1); i++) {
+      if (ordered[i] <= ordered[i + 1]) {
+        showError(GARA_CONFIG.i18n.errorSsrGroupDuplicates);
+        return;
+      }
+    }
+
+    // Submit scores for this group
+    const restore = withLoading(btn);
+    fetch(`/admin/gara/${garaId}/save_ssr_group`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest',
+      'X-CSRFToken': csrfToken()},
+      body: JSON.stringify({
+        group_position: groupPosition,
+        scores: scores
+      })
+    }).then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showSuccess(data.message);
+          if (data.all_resolved) {
+            location.reload();
+          } else {
+            restore();
+          }
+        } else {
+          showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || data.message));
+          restore();
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showError(GARA_CONFIG.i18n.errorSsrSave);
+        restore();
+      });
+  }
+
+  function resetLastRound(garaId, roundNumber, btn) {
+    showConfirm(GARA_CONFIG.i18n.confirmResetRound, () => {
+      const restore = withLoading(btn);
+      fetch(`/admin/gara/${garaId}/round/${roundNumber}/bulk_reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken()}
+      }).then(response => {
+        if (response.ok) {
+          location.reload();
+        } else {
+          response.text().then(text => {
+            showError(GARA_CONFIG.i18n.errorReset + ' ' + text);
+            restore();
+          });
+        }
+      }).catch(error => {
+        console.error('Error:', error);
+        restore();
+      });
+    });
+  }
+
+  function deleteProva(provaId, provaNumber, btn) {
+    let confirmMsg = GARA_CONFIG.i18n.confirmDeleteGara;
+    confirmMsg = confirmMsg.replace('{number}', provaNumber);
+    showConfirm(confirmMsg, () => {
+      const restore = withLoading(btn);
+      fetch(`/admin/gara/${provaId}/delete`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken()}
+      }).then(response => {
+        if (response.ok) {
+          if (GARA_CONFIG.gara.campionatoId) {
+            window.location.href = `/admin/campionato/${GARA_CONFIG.gara.campionatoId}`;
+          } else {
+            window.location.href = '/dashboard';
+          }
+        } else {
+          response.text().then(text => {
+            showError(GARA_CONFIG.i18n.errorDelete + response.status);
+            console.error('Delete error:', text);
+            restore();
+          });
+        }
+      }).catch(err => {
+        showError(GARA_CONFIG.i18n.errorNetworkDelete);
+        console.error('Network error:', err);
+        restore();
+      });
+    });
+  }
+
+  function cancelProvaWithNotifications(provaId, provaNumber, btn) {
+    let confirmMsg = GARA_CONFIG.i18n.confirmCancelGara;
+    confirmMsg = confirmMsg.replace('{number}', provaNumber);
+    showConfirm(confirmMsg, () => {
+      const restore = withLoading(btn);
+      fetch(`/admin/gara/${provaId}/cancel`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken()}
+      }).then(response => {
+        if (response.ok) {
+          if (GARA_CONFIG.gara.campionatoId) {
+            window.location.href = `/admin/campionato/${GARA_CONFIG.gara.campionatoId}`;
+          } else {
+            window.location.href = '/dashboard';
+          }
+        } else {
+          response.text().then(text => {
+            showError(GARA_CONFIG.i18n.errorCancel + ' ' + text);
+            restore();
+          });
+        }
+      }).catch(error => {
+        console.error('Error:', error);
+        restore();
+      });
+    });
+  }
+
+  function dateToLocalString(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    // Appena iscritti a una gara con le squadre: si chiede subito con chi si
+    // gioca (US-8). Il modale si chiude anche senza rispondere — "senza
+    // squadra" è una scelta legittima, e resta cambiabile fino al sorteggio.
+    const squadraModal = document.getElementById('squadraChoiceModal');
+    if (squadraModal) {
+      if (window.bootstrap) {
+        new bootstrap.Modal(squadraModal).show();
+      } else {
+        // Senza Bootstrap JS il modale resterebbe invisibile, e la card inline
+        // è soppressa proprio perché c'è lui: la domanda sparirebbe del tutto.
+        // Il form è un POST normale, quindi mostrarlo a mano basta a farlo
+        // funzionare — manca solo il fondale.
+        squadraModal.classList.add('show');
+        squadraModal.style.display = 'block';
+      }
+    }
+
+    {# Il riempimento degli span `#user-timezone` è sparito con gli span stessi:
+       il fuso non si annuncia più al lettore, si applica agli orari lato
+       server (ADR-043). #}
+
+    const inscriptionStartInput = document.getElementById('inscription_start');
+    const inscriptionEndInput = document.getElementById('inscription_end');
+
+    function populateInscriptionDates() {
+      if (inscriptionStartInput && inscriptionEndInput) {
+        const now = new Date();
+        const garaStart = new Date(`${GARA_CONFIG.gara.dateIso}T${GARA_CONFIG.gara.timeIso}`);
+        // End is 30 minutes before gara start
+        const endTime = new Date(garaStart.getTime() - 30 * 60 * 1000);
+
+        inscriptionStartInput.value = dateToLocalString(now);
+        inscriptionEndInput.value = dateToLocalString(endTime);
+      }
+    }
+
+    // Initial population
+    populateInscriptionDates();
+
+    // Re-populate when modal is shown to have a fresh "now"
+    const openInscriptionsModal = document.getElementById('openInscriptionsModal');
+    if (openInscriptionsModal) {
+      openInscriptionsModal.addEventListener('shown.bs.modal', populateInscriptionDates);
+    }
+
+    // Il form di modifica arriva già compilato dal server (`|datetime_input`):
+    // qui si riempiono solo i campi ancora vuoti, che è il caso della gara mai
+    // aperta alle iscrizioni. Riscriverli sempre da JS significherebbe avere
+    // due sorgenti per lo stesso valore, e la conversione di fuso la fa il
+    // server — una volta sola, in ora italiana.
+    const modifyStartInput = document.getElementById('modify_inscription_start');
+    const modifyEndInput = document.getElementById('modify_inscription_end');
+
+    if (modifyStartInput && !modifyStartInput.value) {
+      modifyStartInput.value = dateToLocalString(new Date());
+    }
+    if (modifyEndInput && !modifyEndInput.value) {
+      const garaDateTime = new Date(`${GARA_CONFIG.gara.dateIso}T${GARA_CONFIG.gara.timeIso}`);
+      garaDateTime.setMinutes(garaDateTime.getMinutes() - 30);
+      modifyEndInput.value = dateToLocalString(garaDateTime);
+    }
+  });
+
+  function startAmalfiRound(roundNumber, btn) {
+    const restores = [];
+    document.querySelectorAll('button[onclick*="startAmalfiRound"]').forEach(function(b) {
+      restores.push(withLoading(b));
+    });
+
+    fetch(`/admin/gara/${GARA_CONFIG.gara.id}/amalfi/start_round/${roundNumber}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      'X-CSRFToken': csrfToken()}
+    })
+      .then(response => {
+        if (response.ok) {
+          location.reload();
+        } else {
+          response.text().then(text => {
+            showError(GARA_CONFIG.i18n.errorRound + ' ' + text);
+            restores.forEach(function(r) { r(); });
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showError(GARA_CONFIG.i18n.errorNetworkRound);
+        restores.forEach(function(r) { r(); });
+      });
+  }
+
+  function startRound(roundNumber, btn) {
+    const restores = [];
+    document.querySelectorAll('button[onclick*="startRound"]').forEach(function(b) {
+      restores.push(withLoading(b));
+    });
+
+    // Try to load full config from new format first
+    const storedConfig = localStorage.getItem(`roundConfig_${GARA_CONFIG.gara.id}_${roundNumber}`);
+    let config;
+
+    if (storedConfig) {
+      try {
+        config = JSON.parse(storedConfig);
+      } catch (e) {
+        console.error('Error parsing round config:', e);
+        config = null;
+      }
+    }
+
+    // Fall back to defaults if no stored config
+    if (!config) {
+      config = {
+        discipline: GARA_CONFIG.gara.discipline,
+        distance: GARA_CONFIG.gara.distance,
+        exactNumber: GARA_CONFIG.gara.isRaceTo,
+        isMultiSet: GARA_CONFIG.gara.isMultiSet,
+        matchDistance: GARA_CONFIG.gara.matchDistance,
+        isRaceToSets: GARA_CONFIG.gara.isRaceToSets
+      };
+    }
+
+    const formData = new URLSearchParams();
+    formData.append('discipline', config.discipline);
+    formData.append('distance', config.distance);
+    formData.append('exact_number', config.exactNumber ? '1' : '');
+    formData.append('is_multi_set', config.isMultiSet ? '1' : '');
+    formData.append('match_distance', config.matchDistance);
+    formData.append('is_race_to_sets', config.isRaceToSets ? '1' : '');
+
+    fetch(`/admin/gara/${GARA_CONFIG.gara.id}/start_round/${roundNumber}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      'X-CSRFToken': csrfToken()},
+      body: formData
+    })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          showSuccess(data.message + '\n' + data.details.join('\n'));
+          if (data.redirect) {
+            setTimeout(() => { window.location.href = data.redirect; }, 1500);
+          } else {
+            setTimeout(() => { location.reload(); }, 1500);
+          }
+        } else {
+          showError(GARA_CONFIG.i18n.errorTitle + ' ' + data.error);
+          restores.forEach(function(r) { r(); });
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        showError(GARA_CONFIG.i18n.errorCreateRound);
+        restores.forEach(function(r) { r(); });
+      });
+  }
+
+  function closeInscriptions(provaId) {
+    showConfirm({{ _("Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di setup.")| tojson }}, () => {
+      const form = document.createElement('form');
+      form.method = 'POST';
+      form.action = `/admin/gara/${provaId}/close_inscriptions`;
+      document.body.appendChild(form);
+      form.submit();
+    });
+  }
+
+  let currentMatchId = null;
+
+  /**
+   * Apre il modal Quick Result per match normali (2 giocatori)
+   * @param {string} startTime - Pre-fill start time (HH:MM format or empty)
+   * @param {number} effectiveDistance - Match-effective distance (B29: respects RoundConfiguration)
+   * @param {boolean} isRaceTo - True if race-to-N, false if exactly-N
+   */
+  /**
+   * Stepper dei punteggi del modal risultato rapido. Rispetta i limiti
+   * dell'input: `min` e il `max` che openQuickResult imposta sulla distanza
+   * effettiva del match (RoundConfiguration compresa).
+   */
+  function stepQuickScore(inputId, delta) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    const min = input.min === '' ? 0 : parseInt(input.min, 10);
+    const max = input.max === '' ? Infinity : parseInt(input.max, 10);
+    const current = parseInt(input.value, 10);
+    const next = (isNaN(current) ? min : current) + delta;
+    input.value = Math.min(max, Math.max(min, next));
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
+  function openQuickResult(matchId, player1Name, player2Name, player1Score, player2Score, startTime, effectiveDistance, isRaceTo) {
+    currentMatchId = matchId;
+    document.getElementById('quickMatchId').value = matchId;
+    document.getElementById('quickIsTrio').value = 'false';
+    document.getElementById('quickTrioId').value = '';
+
+    // Mostra input normali, nascondi trio. Stringa vuota = torna al display
+    // del foglio di stile (i contenitori sono `c7-stack`, cioe' flex column).
+    document.getElementById('quickResultNormalInfo').style.display = '';
+    document.getElementById('quickResultTrioInfo').style.display = 'none';
+    document.getElementById('quickResultNormalInputs').style.display = '';
+    document.getElementById('quickResultTrioInputs').style.display = 'none';
+
+    // B29: configure mode label + max via match-effective values (RoundConfiguration aware).
+    // Fallback to gara defaults if caller didn't pass them (back-compat).
+    const dist = (typeof effectiveDistance === 'number' && effectiveDistance > 0) ? effectiveDistance : {{ gara.distance }};
+    const raceTo = (typeof isRaceTo === 'boolean') ? isRaceTo : {{ 'true' if gara.is_race_to else 'false' }};
+    document.getElementById('quickResultModeRaceTo').style.display = raceTo ? 'inline' : 'none';
+    document.getElementById('quickResultModeExact').style.display = raceTo ? 'none' : 'inline';
+    document.querySelectorAll('#quickResultNormalInfo [data-modal-distance]').forEach(el => { el.textContent = dist; });
+    // For race-to, sum can reach 2*N - 1; for exact, max per player = dist.
+    document.getElementById('quickPlayer1Score').max = dist;
+    document.getElementById('quickPlayer2Score').max = dist;
+    // B15: store config on the form for live validation
+    const qrForm = document.getElementById('quickResultForm');
+    qrForm.dataset.distance = dist;
+    qrForm.dataset.raceTo = raceTo ? 'true' : 'false';
+    document.getElementById('quickResultValidationMsg').style.display = 'none';
+
+    // Popola i campi
+    document.getElementById('player1Label').textContent = player1Name;
+    document.getElementById('player2Label').textContent = player2Name;
+    document.getElementById('quickPlayer1Score').value = player1Score;
+    document.getElementById('quickPlayer2Score').value = player2Score;
+
+    // Pre-fill time fields
+    document.getElementById('quickStartTime').value = startTime || '';
+    // Pre-fill end time with current time
+    const now = new Date();
+    const endTime = now.toTimeString().slice(0, 5);  // HH:MM
+    document.getElementById('quickEndTime').value = endTime;
+
+    // Imposta required solo per input normali
+    document.getElementById('quickPlayer1Score').required = true;
+    document.getElementById('quickPlayer2Score').required = true;
+    document.getElementById('quickTrioPlayer1Score').required = false;
+    document.getElementById('quickTrioPlayer2Score').required = false;
+    document.getElementById('quickTrioPlayer3Score').required = false;
+
+    // Con il punteggio precaricato il tetto puo' essere gia' raggiunto: i «+»
+    // vanno spenti all'apertura, non al primo tocco.
+    validateQuickResultLive();
+  }
+
+  /**
+   * Apre il modal Quick Result per match trio (3 giocatori)
+   * @param {string} startTime - Pre-fill start time (HH:MM format or empty)
+   */
+  function openQuickResultTrio(matchId, trioId, player1Name, player2Name, player3Name, p1Racks, p2Racks, p3Racks, startTime) {
+    currentMatchId = matchId;
+    document.getElementById('quickMatchId').value = matchId;
+    document.getElementById('quickIsTrio').value = 'true';
+    document.getElementById('quickTrioId').value = trioId;
+
+    // Mostra input trio, nascondi normali
+    document.getElementById('quickResultNormalInfo').style.display = 'none';
+    document.getElementById('quickResultTrioInfo').style.display = '';
+    document.getElementById('quickResultNormalInputs').style.display = 'none';
+    document.getElementById('quickResultTrioInputs').style.display = '';
+
+    // Popola i campi
+    document.getElementById('trioPlayer1Label').textContent = player1Name;
+    document.getElementById('trioPlayer2Label').textContent = player2Name;
+    document.getElementById('trioPlayer3Label').textContent = player3Name;
+    document.getElementById('quickTrioPlayer1Score').value = p1Racks;
+    document.getElementById('quickTrioPlayer2Score').value = p2Racks;
+    document.getElementById('quickTrioPlayer3Score').value = p3Racks;
+
+    // Pre-fill time fields
+    document.getElementById('quickStartTime').value = startTime || '';
+    // Pre-fill end time with current time
+    const now = new Date();
+    const endTime = now.toTimeString().slice(0, 5);  // HH:MM
+    document.getElementById('quickEndTime').value = endTime;
+
+    // Imposta required solo per input trio
+    document.getElementById('quickPlayer1Score').required = false;
+    document.getElementById('quickPlayer2Score').required = false;
+    document.getElementById('quickTrioPlayer1Score').required = true;
+    document.getElementById('quickTrioPlayer2Score').required = true;
+    document.getElementById('quickTrioPlayer3Score').required = true;
+
+    // Il modal e' uno solo: i «+» spenti da un match precedente resterebbero
+    // spenti anche qui, dove il limite e' un altro (lo tiene l'attributo max).
+    ['quickPlayer1Score', 'quickPlayer2Score'].forEach(function (id) {
+      const piu = document.querySelector('[data-piu-per="' + id + '"]');
+      if (piu) piu.disabled = false;
+    });
+  }
+
+  /**
+   * B15: Live validation of quick-result inputs. Shows an inline error
+   * and disables the submit button when scores fall outside the valid
+   * range for the current match's effective distance + mode.
+   * Returns true if valid, false otherwise.
+   */
+  function validateQuickResultLive() {
+    const isTrio = document.getElementById('quickIsTrio').value === 'true';
+    const msgBox = document.getElementById('quickResultValidationMsg');
+    const msgText = document.getElementById('quickResultValidationText');
+    const submitBtn = document.querySelector('#quickResultForm button[type="submit"]');
+
+    if (isTrio) {
+      // Trio validation handled separately (max already enforced by HTML max attr)
+      msgBox.style.display = 'none';
+      if (submitBtn) submitBtn.disabled = false;
+      return true;
+    }
+
+    const form = document.getElementById('quickResultForm');
+    const dist = parseInt(form.dataset.distance || '0', 10);
+    const raceTo = form.dataset.raceTo === 'true';
+    const p1 = parseInt(document.getElementById('quickPlayer1Score').value || '0', 10);
+    const p2 = parseInt(document.getElementById('quickPlayer2Score').value || '0', 10);
+
+    let error = null;
+    if (p1 < 0 || p2 < 0) {
+      error = {{ _('I triangoli non possono essere negativi.')|tojson }};
+    } else if (p1 > dist || p2 > dist) {
+      error = {{ _('Nessun giocatore può avere più di %(d)s triangoli.', d='__D__')|tojson }}.replace('__D__', dist);
+    } else if (raceTo) {
+      // Race-to N: at least one of the two must reach N to finish; sum max = 2N-1.
+      if (p1 + p2 > (2 * dist - 1)) {
+        error = {{ _('Somma triangoli troppo alta: massimo %(d)s.', d='__D__')|tojson }}.replace('__D__', (2 * dist - 1));
+      } else if ((p1 + p2) > 0 && p1 < dist && p2 < dist) {
+        error = {{ _('Risultato incompleto: uno dei due deve raggiungere %(d)s.', d='__D__')|tojson }}.replace('__D__', dist);
+      }
+    } else {
+      // Exact N: sum must equal N to finish.
+      if (p1 + p2 > dist) {
+        error = {{ _('Somma triangoli troppo alta: il totale esatto è %(d)s.', d='__D__')|tojson }}.replace('__D__', dist);
+      } else if ((p1 + p2) > 0 && (p1 + p2) < dist) {
+        error = {{ _('Risultato incompleto: la somma deve essere esattamente %(d)s.', d='__D__')|tojson }}.replace('__D__', dist);
+      }
+    }
+
+    aggiornaLimitiQuickResult(dist, raceTo, p1, p2);
+
+    if (error) {
+      msgText.textContent = error;
+      msgBox.style.display = '';
+      if (submitBtn) submitBtn.disabled = true;
+      return false;
+    }
+    msgBox.style.display = 'none';
+    if (submitBtn) submitBtn.disabled = false;
+    return true;
+  }
+
+  /**
+   * Spegne i «+» quando il match non ammette altri rack.
+   *
+   * Il tetto non è per giocatore ma del match, e dipende dal formato:
+   * - «al N»: appena uno arriva a N la partita è decisa, e si fermano
+   *   entrambi.
+   * - «esattamente N»: conta la somma. Con un massimo di N a testa si
+   *   arrivava a 2N, e il limite si scopriva solo dal messaggio rosso a
+   *   pulsante «Imposta risultato» già spento — cioè dopo aver sbagliato,
+   *   invece che prima.
+   */
+  function aggiornaLimitiQuickResult(dist, raceTo, p1, p2) {
+    const stop = raceTo
+      ? (p1 >= dist || p2 >= dist)
+      : ((p1 + p2) >= dist);
+    ['quickPlayer1Score', 'quickPlayer2Score'].forEach(function (id) {
+      const piu = document.querySelector('[data-piu-per="' + id + '"]');
+      if (piu) piu.disabled = stop;
+    });
+  }
+
+  function submitQuickResult(event) {
+    event.preventDefault();
+
+    // B15: bail out if live validation failed
+    if (!validateQuickResultLive()) {
+      return false;
+    }
+
+    const removeOverlay = showModalLoading('#quickResultModal');
+    const isTrio = document.getElementById('quickIsTrio').value === 'true';
+    const matchId = document.getElementById('quickMatchId').value;
+
+    // Get time values
+    const startTime = document.getElementById('quickStartTime').value;
+    const endTime = document.getElementById('quickEndTime').value;
+
+    // Helper function to update times after result submission
+    function updateTimesIfProvided() {
+      if (!startTime && !endTime) {
+        return Promise.resolve();  // No times to update
+      }
+      const timeData = {};
+      if (startTime) timeData.start_time = startTime;
+      if (endTime) timeData.end_time = endTime;
+
+      return fetch(`/admin/match/${matchId}/update-times`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' , 'X-CSRFToken': csrfToken()},
+        body: JSON.stringify(timeData)
+      });
+    }
+
+    if (isTrio) {
+      // Submit trio result
+      const trioId = document.getElementById('quickTrioId').value;
+      const player1Racks = document.getElementById('quickTrioPlayer1Score').value;
+      const player2Racks = document.getElementById('quickTrioPlayer2Score').value;
+      const player3Racks = document.getElementById('quickTrioPlayer3Score').value;
+
+      const formData = new FormData();
+      formData.append('player1_racks', player1Racks);
+      formData.append('player2_racks', player2Racks);
+      formData.append('player3_racks', player3Racks);
+
+      fetch(`/admin/gara/trio/${trioId}/set_result`, {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrfToken()},
+        body: formData
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            return updateTimesIfProvided();
+          } else {
+            throw new Error(data.error || GARA_CONFIG.i18n.infoUnknown);
+          }
+        })
+        .then(() => {
+          bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
+          location.reload();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showError(GARA_CONFIG.i18n.errorTitle + ' ' + error.message);
+          removeOverlay();
+        });
+    } else {
+      // Submit normal match result
+      const player1Score = document.getElementById('quickPlayer1Score').value;
+      const player2Score = document.getElementById('quickPlayer2Score').value;
+
+      const formData = new FormData();
+      formData.append('player1_score', player1Score);
+      formData.append('player2_score', player2Score);
+
+      fetch(`/admin/match/${matchId}/set_result`, {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrfToken()},
+        body: formData
+      })
+        .then(response => {
+          if (response.ok) {
+            return updateTimesIfProvided();
+          } else {
+            throw new Error(GARA_CONFIG.i18n.errorQuickResult);
+          }
+        })
+        .then(() => {
+          bootstrap.Modal.getInstance(document.getElementById('quickResultModal')).hide();
+          location.reload();
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showError(error.message);
+          removeOverlay();
+        });
+    }
+
+    return false;
+  }
+
+  function resetMatchQuick(matchId, btn) {
+    showConfirm({{ _("Sei sicuro di voler resettare questa partita?")| tojson }}, () => {
+      var restore = withLoading(btn);
+      fetch(`/admin/match/${matchId}/reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken()}
+      })
+        .then(response => {
+          if (response.ok) {
+            location.reload();
+          } else {
+            showError(GARA_CONFIG.i18n.errorResetMatch);
+            restore();
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          restore();
+        });
+    });
+  }
+
+  function resetTrioQuick(trioId, btn) {
+    showConfirm({{ _("Sei sicuro di voler resettare questo trio?")| tojson }}, () => {
+      var restore = withLoading(btn);
+      fetch(`/admin/gara/trio/${trioId}/reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken()}
+      })
+        .then(response => {
+          if (response.ok) {
+            location.reload();
+          } else {
+            response.json().then(data => {
+              showError(data.error || GARA_CONFIG.i18n.errorResetTrio);
+            }).catch(() => {
+              showError(GARA_CONFIG.i18n.errorResetTrio);
+            });
+            restore();
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          restore();
+        });
+    });
+  }
+
+  function validateMatchQuick(matchId, btn) {
+    showConfirm({{ _("Confermi di voler validare questo risultato? Il tavolo verrà liberato e assegnato alla prossima partita in attesa.")| tojson }}, () => {
+      var restore = withLoading(btn);
+      fetch(`/admin/match/${matchId}/validate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': csrfToken()}
+      })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            location.reload();
+          } else {
+            showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || GARA_CONFIG.i18n.infoValidateImpossible));
+            restore();
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          showError(GARA_CONFIG.i18n.errorValidationWait);
+          restore();
+        });
+    });
+  }
+
+  // ============ TABLE ASSIGNMENT MODAL SYSTEM ============
+
+  let tableAssignmentMatchId = null;
+  let tableAssignmentCurrentTable = null;
+  const availableTables = GARA_CONFIG.availableTables;
+  const occupiedTables = GARA_CONFIG.occupiedTables || {};  // Maps table_name -> match_id
+
+  /**
+   * Apre il modal di assegnazione tavolo
+   * @param {number} matchId - ID del match
+   * @param {string|null} currentTable - Tavolo attualmente assegnato
+   * @param {string} playerDisplay - Stringa formattata dei giocatori (es: "P1 vs P2" o "P1 • P2 • P3")
+   * @param {string} _unused - Parametro legacy, non usato
+   */
+  function openTableAssignment(matchId, currentTable, playerDisplay, _unused) {
+    tableAssignmentMatchId = matchId;
+    tableAssignmentCurrentTable = currentTable;
+
+    // Aggiorna info partita nel modal
+    document.getElementById('tableModalMatchInfo').textContent = playerDisplay;
+
+    // Mostra/nascondi info tavolo attuale
+    if (currentTable) {
+      document.getElementById('currentTableInfo').style.display = '';
+      document.getElementById('currentTableDisplay').textContent = GARA_CONFIG.i18n.tablePrefix + ' ' + currentTable;
+    } else {
+      document.getElementById('currentTableInfo').style.display = 'none';
+    }
+
+    // Genera bottoni per i tavoli disponibili
+    generateTableButtons();
+  }
+
+  /**
+   * Genera i bottoni della griglia tavoli
+   */
+  function generateTableButtons() {
+    const tableGrid = document.getElementById('tableGrid');
+    tableGrid.innerHTML = ''; // Pulisci griglia
+
+    availableTables.forEach(tableName => {
+      const button = document.createElement('button');
+      button.className = 'btn table-btn';
+
+      // Determina lo stato del bottone
+      if (tableName === tableAssignmentCurrentTable) {
+        // Tavolo corrente
+        button.classList.add('table-btn-current');
+        button.innerHTML = `
+                <div class="table-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="table-name">${tableName}</div>
+            `;
+        button.disabled = true;
+      } else if (isTableOccupied(tableName)) {
+        // Tavolo occupato (swap possibile)
+        button.classList.add('table-btn-occupied');
+        button.innerHTML = `
+                <div class="table-icon"><i class="fas fa-exchange-alt"></i></div>
+                <div class="table-name">${tableName}</div>
+            `;
+        button.title = GARA_CONFIG.i18n.swapTitle;
+        button.onclick = function() { selectTableFromModal(tableName, this); };
+      } else {
+        // Tavolo disponibile
+        button.classList.add('table-btn-available');
+        button.innerHTML = `
+                <div class="table-icon"><i class="fas fa-table"></i></div>
+                <div class="table-name">${tableName}</div>
+            `;
+        button.onclick = function() { selectTableFromModal(tableName, this); };
+      }
+
+      tableGrid.appendChild(button);
+    });
+  }
+
+  /**
+   * Verifica se un tavolo è occupato da un altro match (non il corrente)
+   * @param {string} tableName - Nome del tavolo
+   * @returns {boolean} true se occupato da altro match
+   */
+  function isTableOccupied(tableName) {
+    const occupyingMatchId = occupiedTables[tableName];
+    // Occupato se: ha un match assegnato E non è il match corrente che stiamo editando
+    return occupyingMatchId !== undefined && occupyingMatchId !== tableAssignmentMatchId;
+  }
+
+  /**
+   * Gestisce la selezione di un tavolo dal modal
+   * @param {string|null} newTable - Tavolo selezionato, o null per rimuovere
+   */
+  function selectTableFromModal(newTable, btn) {
+    const tableValue = newTable;
+    const restore = withLoading(btn);
+
+    console.log(`selectTableFromModal called: matchId=${tableAssignmentMatchId}, newTable=${tableValue}`);
+
+    fetch(`/admin/match/${tableAssignmentMatchId}/assign-table`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken()},
+      body: JSON.stringify({
+        table_name: tableValue
+      })
+    })
+      .then(response => {
+        console.log('Response status:', response.status);
+        return response.json();
+      })
+      .then(data => {
+        console.log('Response data:', data);
+
+        if (data.success) {
+          console.log('Success! Message:', data.message);
+
+          // Nascondi modal
+          const modal = bootstrap.Modal.getInstance(document.getElementById('tableAssignmentModal'));
+          if (modal) modal.hide();
+
+          // Se c'è stato uno swap, mostra notifica più dettagliata
+          if (data.swapped_match_id) {
+            console.log('Swap detected, swapped_match_id:', data.swapped_match_id);
+            showSuccess(data.message);
+          }
+
+          // Ricarica la pagina per aggiornare la visualizzazione
+          console.log('Reloading page...');
+          location.reload();
+        } else {
+          console.error('Error from server:', data.message);
+          showError(GARA_CONFIG.i18n.errorTitle + ' ' + data.message);
+          restore();
+        }
+      })
+      .catch(error => {
+        console.error('Network error:', error);
+        showError(GARA_CONFIG.i18n.errorTableNetwork);
+        restore();
+      });
+  }
+</script>
+
+<script>
+  // ---- I fogli del canvas: menu della partita e menu del turno ----------
+
+  /**
+   * Apre il menu di una partita dalla sua card. Il foglio e' uno solo: lo
+   * riempie dagli attributi data-* del pulsante «⋯» che l'ha aperto.
+   */
+  function apriMenuPartita(btn) {
+    const d = btn.dataset;
+    const matchId = parseInt(d.matchId, 10);
+    const table = d.table || null;
+    const players = d.players || '';
+    const hasScores = d.hasScores === '1';
+    const finished = d.finished === '1';
+    const canModify = d.canModify !== '0';
+
+    document.getElementById('menuPartitaTitolo').textContent = players;
+    document.getElementById('menuPartitaSotto').textContent = d.sub || '';
+
+    const tavolo = document.getElementById('menuPartitaTavolo');
+    tavolo.querySelector('span').textContent = table
+      ? {{ _('Cambia tavolo')|tojson }}
+      : {{ _('Assegna un tavolo')|tojson }};
+    tavolo.hidden = finished || !canModify;
+    tavolo.onclick = function () {
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('menuPartitaModal')).hide();
+      openTableAssignment(matchId, table, players, '');
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('tableAssignmentModal')).show();
+    };
+
+    const azzera = document.getElementById('menuPartitaAzzera');
+    azzera.hidden = !(hasScores || finished) || !canModify;
+    azzera.onclick = function () {
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('menuPartitaModal')).hide();
+      resetMatchQuick(matchId, azzera);
+    };
+
+    const nota = document.getElementById('menuPartitaNota');
+    nota.hidden = azzera.hidden;
+    nota.textContent = {{ _('Torna da giocare e il tavolo si libera. Si può finché il turno dopo non è avviato.')|tojson }};
+
+    const apri = document.getElementById('menuPartitaApri');
+    apri.href = d.detailUrl || '#';
+
+    document.getElementById('menuPartitaBloccata').hidden = canModify;
+
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('menuPartitaModal')).show();
+  }
+
+  function apriMenuTurno() {
+    const modal = document.getElementById('menuTurnoModal');
+    if (modal) bootstrap.Modal.getOrCreateInstance(modal).show();
+  }
+</script>

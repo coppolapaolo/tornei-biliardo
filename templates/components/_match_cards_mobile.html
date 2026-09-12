@@ -42,6 +42,14 @@
       <div style="display: flex; align-items: center; gap: 10px;">
         <h3 style="margin: 0;">{{ _('Turno %(num)s', num=round_num) }}</h3>
         <span class="c7-state c7-state--accent" style="margin-left: auto;">{{ _('In corso') }}</span>
+        {# Il menu del turno (canvas, 2S): solo per chi dirige, sul turno che
+           si puo' ancora annullare. #}
+        {% if user_can_manage and menu_turno and menu_turno.turno == round_num %}
+        <button type="button" class="c7-iconbtn c7-iconbtn--menu" onclick="apriMenuTurno()"
+                aria-label="{{ _('Menu del turno %(num)s', num=round_num) }}" title="{{ _('Menu del turno') }}">
+          <i class="fas fa-ellipsis"></i>
+        </button>
+        {% endif %}
       </div>
       {% for match in round_matches %}
         {% include "components/_match_card.html" %}

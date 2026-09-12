@@ -94,7 +94,9 @@ def director_client(client, db_session):
     return client
 
 
-def test_direttore_in_gioco_ha_quattro_viste(director_client, db_session):
+def test_il_direttore_non_ha_linguette_ma_la_striscia(director_client, db_session):
+    """Dal 2026-09-12 chi dirige vede la pagina a fasi del canvas: la striscia
+    al posto delle linguette (`test_pagina_gara_direttore.py`)."""
     from models.user.services import UserService
 
     gara = _make_gara(db_session)
@@ -104,9 +106,8 @@ def test_direttore_in_gioco_ha_quattro_viste(director_client, db_session):
 
     html = director_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
 
-    assert _pills(html) == ["turni", "classifica", "iscritti", "gestione"]
-    # Le partite ci sono: si parte da lì.
-    assert _active(html) == "turni"
+    assert _pills(html) == []
+    assert 'class="c7-fasi"' in html
 
 
 def test_nessuna_sezione_irraggiungibile(director_client, db_session):
@@ -120,18 +121,6 @@ def test_nessuna_sezione_irraggiungibile(director_client, db_session):
 
     html = director_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
 
-    assert _tagged_views(html) <= set(_pills(html))
-
-
-def test_iscrizioni_senza_partite_parte_dalla_gestione(director_client, db_session):
-    """Nessun turno ancora: la linguetta Turni non esiste e non e' la vista
-    di partenza — l'azionabile del direttore e' avviare la gara."""
-    gara = _make_gara(db_session, GaraStatus.INSCRIPTION.value)
-
-    html = director_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
-
-    assert "turni" not in _pills(html)
-    assert _active(html) == "gestione"
     assert _tagged_views(html) <= set(_pills(html))
 
 
@@ -187,18 +176,20 @@ def test_niente_scorciatoia_a_partita_conclusa(client, db_session):
     assert "c7-shortcut" not in html
 
 
-def test_iscritti_non_sono_piu_dentro_le_partite(director_client, db_session):
+def test_iscritti_non_sono_piu_dentro_le_partite(client, db_session):
     """Compromesso della PR #36 chiuso: su mobile iscritti e informazioni
     stavano dentro la sezione Partite, e in fase di gioco risalivano con lei.
-    Ora sono una vista a sé, fuori da `#sectionPartite`."""
+    Ora sono una vista a sé, fuori da `#sectionPartite`. Vale per chi guarda:
+    il direttore ha la pagina a fasi."""
     from models.user.services import UserService
 
+    _login(client, db_session, "vtabs_i0", UserRole.PLAYER.value)
     gara = _make_gara(db_session)
     p1 = UserService.create_user("vtabs_i1", "vtabs_i1@test.local", "pw12345")
     p2 = UserService.create_user("vtabs_i2", "vtabs_i2@test.local", "pw12345")
     _make_match(db_session, gara, p1, p2, MatchStatus.PLAYING.value)
 
-    html = director_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    html = client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
 
     partite = html.index('id="sectionPartite"')
     iscritti = html.index('data-c7-tab="iscritti"')

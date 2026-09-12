@@ -6,12 +6,13 @@ Una gara diretta, in dashboard, non dice mai *cosa* aspetta: dice «In corso» o
 gare in mano, sapere quale delle cinque aspetta te e per fare cosa richiede di
 aprirle una a una.
 
-Qui la domanda si risolve una volta sola, in Python. Il pannello di gestione
-della gara (`templates/components/_gara_management.html`) resta l'unico posto
-in cui i comandi si **eseguono**: quel file ha otto rami, dipende da variabili
-che calcola la route della gara e da funzioni JavaScript che vivono su quella
-pagina. Riprodurlo in dashboard significherebbe tenerne allineate due copie, e
-la seconda si stacca al primo cambiamento senza che nessun test se ne accorga.
+Qui la domanda si risolve una volta sola, in Python. La pagina della gara del
+direttore (`templates/direttore/_fase_*.html`, una per fase) resta l'unico
+posto in cui i comandi si **eseguono**: dipende da variabili che calcola la
+route della gara e da funzioni JavaScript che vivono su quella pagina. Dal
+2026-09-12 e' lei a leggere da qui il comando che aspetta, per la fascia
+scura in cima (canvas «Pagina gara del direttore»): la dashboard lo annuncia,
+la pagina lo esegue, la macchina a stati e' una sola.
 
 Quello che si può portare in dashboard senza duplicare niente è **l'annuncio**:
 il nome del comando che tocca adesso. Il tocco porta alla gara, dove il
@@ -34,7 +35,7 @@ from models.status_enum import GaraStatus, MatchStatus, ProvaDerivedStatus
 
 
 class ComandoDirezione(str, Enum):
-    """I comandi che esistono davvero, presi dal pannello della gara.
+    """I comandi che esistono davvero, quelli della pagina della gara.
 
     Non ce ne sono altri, e in particolare **non** esistono «chiudi il turno»
     né «assegna i tavoli»: un turno finisce quando finiscono le sue partite, e
@@ -85,8 +86,8 @@ def comando_per(gara: Gara) -> Optional[ComandoVM]:
     direttore non ha nulla da fare, e annunciargli un comando qualsiasi
     varrebbe meno di zero.
 
-    Rispecchia i rami di `_gara_management.html`. Dove quelli offrono più di
-    un pulsante si sceglie **quello che fa andare avanti la gara**: è la
+    Rispecchia le fasi della pagina del direttore. Dove una fase offre più
+    di un pulsante si sceglie **quello che fa andare avanti la gara**: è la
     domanda a cui questa funzione risponde.
     """
     stato = gara.status
@@ -131,8 +132,8 @@ def comando_per(gara: Gara) -> Optional[ComandoVM]:
         # turno non c'e' un turno da avviare: `get_real_status()` risponde
         # comunque `round_completed`, ma la gara e' finita quando finiscono
         # le partite. Chiedere prima «e' finita?» e poi «c'e' un turno dopo?»
-        # e' lo stesso ordine del pannello, che nel ramo casuale valuta
-        # `completed_matches == total_matches` prima di tutto il resto.
+        # e' lo stesso ordine della pagina della gara, che nella formula
+        # casuale guarda prima se resta qualcosa da giocare.
         # Invertendoli — come faceva la prima stesura — una gara casuale
         # conclusa annunciava «Avvia il turno 2», che non esiste.
         finita = reale == ProvaDerivedStatus.TOURNAMENT_COMPLETED.value or (

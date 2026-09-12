@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% import "components/_gara_header.html" as gara_head with context %}
+{% import "direttore/_macros.html" as d with context %}
+
+{# La pagina della gara per chi la dirige — Design System 7c.
+
+   E' la pagina del canvas «Pagina gara del direttore» (docs/redesign-7c/
+   canvas-gara-direttore/, approvato il 13/09/2026): niente linguette, una
+   striscia mostra il ciclo della gara e il contenuto e' la fase in corso.
+   La fascia scura in cima dice dove siamo e l'unica cosa da fare adesso;
+   quello che si tocca in ogni fase — direttori, vetrina, tavoli — sta nella
+   pagina «Impostazioni gara».
+
+   Chi non dirige (iscritto, ospite) continua a vedere `gara_detail.html`:
+   la route `gara_detail` sceglie il template dal permesso.
+
+   Variabili: quelle di `gara_detail` (detail.py) piu' `fase`, `striscia`,
+   `comando`, `conteggi`, `menu_turno`. #}
+
+{% block title %}{{ _('Gestione Gara %(id)s - Admin', id=gara.number) }}{% endblock %}
+
+{# Testata: una sola per pagina, quella del guscio. #}
+{% block page_back %}{{ gara_head.back(gara) }}{% endblock %}
+{% block page_title %}{{ gara.display_name }}{% endblock %}
+{% block page_sub %}{{ gara_head.sub(gara) }}{% endblock %}
+{% block page_actions %}
+{{ gara_head.actions(gara) }}
+{# «Impostazioni gara» sale in testata sul desktop (canvas 3.9); sul telefono
+   e' una riga in fondo alla fase, dove la testata non ha piu' posto. #}
+{% if feature_visible('admin.competition.gara_impostazioni') %}
+<a href="{{ url_for('admin.competition.gara_impostazioni', gara_id=gara.id) }}"
+   class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-sliders"></i>&nbsp;{{ _('Impostazioni gara') }}
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+{# Competizione di prova (ADR-058): il banner viene prima di tutto. #}
+{% if gara.is_prova %}
+<div class="c7-stack" style="margin-bottom:14px">
+  {% include "components/_prova_banner.html" %}
+</div>
+{% endif %}
+
+{% include "direttore/_striscia.html" %}
+
+<div class="c7-stack c7-sections" id="garaDirettore" data-gara-id="{{ gara.id }}" data-fase="{{ fase.value }}">
+  {% if fase.value == 'preparazione' %}
+    {% include "direttore/_fase_preparazione.html" %}
+  {% elif fase.value == 'iscrizioni' %}
+    {% include "direttore/_fase_iscrizioni.html" %}
+  {% elif fase.value == 'gioco' %}
+    {% include "direttore/_fase_gioco.html" %}
+  {% elif fase.value == 'spareggio' %}
+    {% include "direttore/_fase_spareggio.html" %}
+  {% else %}
+    {% include "direttore/_fase_conclusa.html" %}
+  {% endif %}
+
+  {# Sul telefono la pagina delle impostazioni e' una riga in fondo, in ogni
+     fase: sul desktop sta in testata. #}
+  {% if feature_visible('admin.competition.gara_impostazioni') %}
+  <div class="c7-rows d-lg-none">
+    {{ d.riga('fa-sliders', _('Impostazioni gara'), _('direttori, vetrina, tavoli'),
+              href=url_for('admin.competition.gara_impostazioni', gara_id=gara.id)) }}
+  </div>
+  {% endif %}
+</div>
+
+{# ---------- Fogli e modali di gestione ---------- #}
+{% include "direttore/_menu_turno.html" %}
+{% include "direttore/_menu_partita.html" %}
+{% include "components/_open_inscriptions_modal.html" %}
+{% include "components/_modify_dates_modal.html" %}
+{% if x_choice_last_inscribed %}
+{% include "components/_x_choice_modal.html" %}
+{% endif %}
+{% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
+{% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value and challenge_enabled %}
+{% include "components/_challenge_management_modal.html" %}
+{% endif %}
+{% include "direttore/_modali_gioco.html" %}
+{% endblock %}
+
+{% block scripts %}
+{# La ricerca fra gli iscrivibili (issue #156). #}
+<script src="{{ url_for('static', filename='js/iscritti_ricerca.js') }}?v={{ config.ASSET_VERSION }}"></script>
+{% include "direttore/_scripts.html" %}
+{% if gara.status != GaraStatus.COMPLETED.value %}
+<script>
+  window.Polling.reloadOnEvents({
+    url: '/sse/poll/gara/' + GARA_CONFIG.gara.id,
+    reloadOn: ['match_completed', 'match_updated', 'round_started', 'inscription_added', 'gara_completed']
+  });
+</script>
+{% endif %}
+{% endblock %}

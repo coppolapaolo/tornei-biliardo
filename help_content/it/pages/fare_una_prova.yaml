@@ -103,8 +103,8 @@ blocks:
   - type: text
     text: >-
       Avvia il primo turno come faresti davvero. I fittizi però non prendono
-      in mano il telefono: i risultati li fai comparire tu, dal pannello
-      **Gestione**, con tre pulsanti.
+      in mano il telefono: i risultati li fai comparire tu, dal riquadro
+      **Simulazione** sotto la fascia, con tre pulsanti.
 
   - type: shot
     shot: prova-simulazione

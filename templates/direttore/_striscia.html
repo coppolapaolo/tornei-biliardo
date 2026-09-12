@@ -1,0 +1,29 @@
+{# templates/direttore/_striscia.html — Design System 7c
+
+   La striscia di fase della gara, al posto delle quattro linguette (canvas,
+   decisione 2 del 12/09/2026): preparazione → iscrizioni → in gioco →
+   [spareggio] → chiusura. Le fasi fatte sono una spunta verde, quella
+   attiva e' la pill scura con l'etichetta, quelle da fare hanno solo
+   l'icona. Sotto i 992px le etichette delle inattive non ci stanno: le
+   mostra solo il desktop. La tacca dello spareggio compare solo nelle gare
+   che ce l'hanno (`spareggio_nella_striscia`).
+
+   Attesa dal chiamante: `striscia`, una lista di `Tacca`. #}
+{% set _etichette = {
+  'preparazione': (_('Preparazione'), 'fa-gear'),
+  'iscrizioni': (_('Iscrizioni'), 'fa-users'),
+  'gioco': (_('In gioco'), 'fa-play'),
+  'spareggio': (_('Spareggio'), 'fa-scale-balanced'),
+  'conclusa': (_('Chiusura'), 'fa-flag-checkered'),
+} %}
+<nav class="c7-fasi" aria-label="{{ _('Fasi della gara') }}">
+  {% for tacca in striscia %}
+  {% set etichetta, icona = _etichette[tacca.fase.value] %}
+  {% if not loop.first %}<span class="c7-fasi__filo" aria-hidden="true"></span>{% endif %}
+  <span class="c7-fasi__tacca c7-fasi__tacca--{{ tacca.stato.value }}"
+        title="{{ etichetta }}" aria-label="{{ etichetta }}"{% if tacca.stato.value == 'attiva' %} aria-current="step"{% endif %}>
+    <i class="fas {{ 'fa-check' if tacca.stato.value == 'fatta' else icona }}"></i>
+    <span class="c7-fasi__label" aria-hidden="true">{{ etichetta }}</span>
+  </span>
+  {% endfor %}
+</nav>

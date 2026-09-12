@@ -1,0 +1,94 @@
+{# templates/direttore/_fase_preparazione.html — Design System 7c
+
+   Fase 1 del canvas: la gara e' appena nata e nessuno la vede. La fascia dice
+   che si e' in preparazione e offre l'unica azione conclusiva della fase,
+   aprire le iscrizioni; sotto, l'elenco di cosa preparare — turni ed
+   esercizi, direzione di gara, tavoli, vetrina — con ogni riga che porta
+   alla sua sezione o alla sua pagina. #}
+
+{% set _turni_configurabili = gara.rounds_count > 1 and gara.matchmaking_strategy in [MatchmakingStrategy.AMALFI.value, MatchmakingStrategy.RANDOM.value] %}
+{% set _co_direttori = gara.directors|length %}
+{% set _tavoli = gara.get_available_tables() %}
+{% set _esercizi = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length %}
+{% set _locandina = gara.effective_banner_path %}
+
+<section class="c7-card c7-card--accent c7-fascia">
+  <div class="c7-fascia__testo">
+    <div class="c7-kicker">{{ _('In preparazione') }}</div>
+    <h3 class="c7-fascia__titolo">{{ _('Nessuno vede ancora la gara') }}</h3>
+    <div class="c7-fascia__corpo">
+      {{ _('Quando apri le iscrizioni la gara diventa pubblica e chi è in zona riceve la notifica.') }}
+    </div>
+  </div>
+  <div class="c7-fascia__azione">
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#openInscriptionsModal">
+      <i class="fas fa-door-open"></i> {{ _('Apri le iscrizioni') }}
+    </button>
+  </div>
+</section>
+
+{{ d.sezione(_('Da preparare')) }}
+<div class="c7-rows">
+  {% if _turni_configurabili %}
+  {{ d.riga('fa-list-ol', _('Turni e distanze'),
+            _('%(n)s turni · %(disc)s · %(dist)s', n=gara.rounds_count, disc=gara.discipline|discipline_display, dist=gara.distance_config|format_distance),
+            tone='ok', href='#sezioneTurni') }}
+  {% endif %}
+  {{ d.riga('fa-users', _('Direzione di gara'),
+            (_('solo tu — aggiungi un co-direttore') if not _co_direttori else ngettext('tu e %(n)d co-direttore', 'tu e %(n)d co-direttori', _co_direttori, n=_co_direttori)),
+            tone='ok', href='#sezioneDirettori') }}
+  {% if feature_visible('admin.competition.gara_impostazioni') %}
+  {{ d.riga('fa-table', _('Tavoli'),
+            (_('%(n)s nella sala', n=_tavoli|length) if _tavoli else _('nessun tavolo: la sala non ne ha dichiarati')),
+            tone=('ok' if _tavoli else 'warn'),
+            href=url_for('admin.competition.gara_impostazioni', gara_id=gara.id) ~ '#sezioneTavoli') }}
+  {% endif %}
+  {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value and (not gara.campionato or gara.campionato.challenge_mode) %}
+  {{ d.riga('fa-bullseye', _('Esercizi fra i turni'),
+            (ngettext('%(n)d esercizio · classifica a parte', '%(n)d esercizi · classifica a parte', _esercizi, n=_esercizi) if _esercizi else _('nessuno — facoltativo')),
+            tone=('ok' if _esercizi else 'neutral'),
+            button=True, attrs='data-bs-toggle="modal" data-bs-target="#challengeManagementModal"',
+            right='<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe) }}
+  {% endif %}
+  {% if not gara.is_prova and feature_visible('admin.competition.gara_vetrina') %}
+  {{ d.riga('fa-share-nodes', _('Vetrina'),
+            (_('locandina caricata') if _locandina else _('nessuna locandina')),
+            tone=('ok' if _locandina else 'warn'),
+            href=url_for('admin.competition.gara_vetrina', gara_id=gara.id)) }}
+  {% endif %}
+</div>
+
+{{ d.sezione(_('Impostazioni di gioco'), more=(_('Modifica') if gara.can_be_modified() else ''), more_href=url_for('admin.competition.edit_gara', gara_id=gara.id)) }}
+<div class="c7-rows">
+  {{ d.riga('fa-diagram-project', _('Accoppiamento'),
+            gara.matchmaking_strategy.replace('_', ' ')|title ~ (' · ' ~ _('anti-reincontro attivo') if gara.anti_rematch_enabled else '')) }}
+  {% if gara.matchmaking_strategy not in bracket_minimum_players %}
+  {{ d.riga('fa-scale-balanced', _('Chi riposa'), gara.odd_number_policy.replace('_', ' ')|title) }}
+  {% endif %}
+  {{ d.riga('fa-calendar', _('Quando'), (gara.date|date_local) ~ ((' · ' ~ (gara.time|time_local)) if gara.time else '')) }}
+  {{ d.riga('fa-user-group', _('Partecipanti'),
+            (_('minimo %(min)s, fino a %(max)s', min=gara.min_participants, max=gara.max_participants) if gara.max_participants else _('minimo %(min)s, senza limite', min=gara.min_participants))) }}
+</div>
+
+{% if _turni_configurabili %}
+<div id="sezioneTurni">
+  {% include "components/_round_management.html" %}
+</div>
+{% endif %}
+
+<div id="sezioneDirettori">
+  {% include "components/_gara_directors.html" %}
+</div>
+
+{# Squadre e categorie si mostrano da se' solo quando la gara le usa. #}
+<div id="sezioneSquadre">{% include "components/_squadre_management.html" %}</div>
+{% include "components/_categorie_management.html" %}
+
+{# Il link pubblico ha senso gia' ora: si prepara la locandina prima di
+   aprire. E' lo stesso blocco della fase iscrizioni. #}
+{% if public_invite_url or gara.is_prova %}
+<div class="c7-card">
+  <div class="c7-kicker">{{ _('Condividi') }}</div>
+  {% include "components/_gara_public_link.html" %}
+</div>
+{% endif %}

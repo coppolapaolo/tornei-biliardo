@@ -362,3 +362,30 @@ Il canvas seminato (`pagina-gara-direttore.html`, 3 MB) **non è committato**:
 è l'editor impacchettato, e si rigenera dalle sorgenti. Gli `.dc.html` sì:
 sono piccoli, leggibili, e rendono la cartella comprensibile senza eseguire
 niente. Vedi `../canvas-dashboard/STATO.md` per lo stesso schema.
+
+## Implementazione
+
+Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
+
+* **A · Impalcatura comune** (PR `feat: la pagina gara del direttore per
+  fasi`, 2026-09-12). Chi dirige vede `templates/direttore/gara.html`: la
+  striscia di fase (`_striscia.html`) al posto delle quattro linguette, con
+  la tacca dello spareggio solo dove c'è (`spareggio_nella_striscia`); la
+  fascia scura per fase (`_fase_*.html`), che legge il comando da
+  `models/dashboard/comandi.py` — la stessa macchina a stati della
+  dashboard, non una seconda; la card della console a turno in corso, con i
+  conteggi di `models/competition/direttore_view.py`; il menu del turno
+  («⋯» accanto al titolo, `_menu_turno.html`) e il menu della partita (sulla
+  card, `_menu_partita.html`), entrambi fogli `c7-sheet`; la pagina
+  «Impostazioni gara» (`/admin/gara/<id>/impostazioni`, direttori, vetrina,
+  tavoli, squadre, categorie; turni e accoppiamento in sola lettura dopo
+  l'avvio). Chi guarda (iscritto, ospite) resta su `gara_detail.html`, che ha
+  perso i rami di gestione e il JavaScript del direttore.
+  Trovato strada facendo: la colonna laterale richiudibile (issue #153) era
+  **già implementata** dalla PR #281 (`c7-sidetoggle` in `base.html`), lo
+  STATO sopra diceva il contrario; `_gara_management.html` non ha più chi
+  lo includa ed è stato tolto; il seed della guida (`seed_demo.py`) falliva
+  la sera perché fissava un appuntamento d'esame «oggi alle 21».
+  Nelle fasi A i contenuti dentro la fase sono ancora i componenti di prima
+  (card partita, elenco iscritti, configurazione turni): li rifanno le fasi
+  B–G.

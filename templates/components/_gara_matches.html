@@ -47,6 +47,14 @@
                 <span class="c7-sep">·</span> {{ first_match.distance_config|format_distance }}
             </span>
             <span class="c7-state c7-state--accent" style="margin-left: auto;">{{ _('In corso') }}</span>
+            {# Il menu del turno (canvas, 2S): solo per chi dirige, sul turno
+               che si puo' ancora annullare. #}
+            {% if user_can_manage and menu_turno and menu_turno.turno == round_num %}
+            <button type="button" class="c7-iconbtn c7-iconbtn--menu" onclick="apriMenuTurno()"
+                    aria-label="{{ _('Menu del turno %(num)s', num=round_num) }}" title="{{ _('Menu del turno') }}">
+              <i class="fas fa-ellipsis"></i>
+            </button>
+            {% endif %}
         </div>
         <div class="c7-table-wrap table-responsive">
             <table class="table" style="table-layout: fixed;">

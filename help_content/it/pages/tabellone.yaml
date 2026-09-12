@@ -71,7 +71,7 @@ blocks:
     text: >-
       Un tabellone non si «avvia» come un turno: si **estrae**. Nel pannello
       Gestione il direttore trova il pulsante **Sorteggia il tabellone** (nelle
-      gare a turni lo stesso posto dice «Avvia Primo Turno»), e l'app chiede
+      gare a turni lo stesso posto dice «Avvia la gara»), e l'app chiede
       conferma prima di procedere.
 
   - type: note
