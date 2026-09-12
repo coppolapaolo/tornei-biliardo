@@ -37,7 +37,7 @@ console del primo giro riusata come panoramica, artboard «Main»).
 **Nessuna delle tre direzioni è stata scelta formalmente**: le fasi sono la
 proposta, e vanno guardate prima di scrivere codice.
 
-## Le cinque fasi, 36 schermate, più il campionato
+## Le cinque fasi, 33 schermate, più le 4 del campionato
 
 Ogni schermata mostra **comandi che esistono davvero**: etichette e
 condizioni vengono da `_gara_management.html`, `_round_management.html`,
