@@ -306,45 +306,72 @@ def dec2_striscia_gioco():
 
 
 def dec2_striscia_menu_turno():
-    """Il menu del turno, dai tre puntini accanto a «Turno 2»: i comandi che
-    oggi stanno nella Gestione (_gara_management.html, stato PLAYING)."""
+    """Il menu del turno, dai tre puntini accanto a «Turno 2»: l'unico
+    comando di turno che l'app ha durante il gioco e' annullarne l'avvio
+    (_gara_management.html, `gara.can_cancel_round()`: nessuna partita con un
+    punteggio > 0, X esclusa)."""
     corpo = f"""
     <div class="stack">
       {F.btn("Annulla l'avvio del turno 2", "secondary", "rotate")}
       <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
-        Si pu&ograve; solo finch&eacute; nessun risultato del turno &egrave; inserito.
+        Si pu&ograve; solo finch&eacute; nessuna partita del turno ha segnato un
+        triangolo (la X non conta). Gli abbinamenti si rifanno all'avvio.
       </div>
       <hr class="divider" style="margin:2px 0">
-      {F.btn("Azzera i risultati del turno 2", "danger", "rotate")}
       <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
-        Le partite tornano da giocare, gli abbinamenti restano.
+        Per una singola partita &mdash; cambiare il tavolo, azzerarla, correggere
+        un risultato chiuso &mdash; si tocca la sua card.
       </div>
     </div>"""
     return doc(phone(SUB, strip_bar("gioco"), striscia_gioco_content(), ACTIONBAR,
                      overlay=F.sheet("Turno 2", corpo, "", "In corso &middot; 2 partite chiuse su 5")))
 
 
+def dec2_striscia_menu_partita():
+    """Il menu di una partita del turno, dalla sua card: cambiare il tavolo
+    (3.2) e azzerarla (`reset_match`, use case 8: solo finche' il turno dopo
+    non e' avviato). Su una partita chiusa si aggiunge «Correggi il
+    risultato» (3.4, issue #90)."""
+    corpo = f"""
+    <div class="stack">
+      {F.btn("Cambia tavolo", "secondary", "table")}
+      {F.btn("Azzera la partita", "danger", "rotate")}
+      <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+        Torna da giocare e il tavolo si libera. Si pu&ograve; finch&eacute; il
+        turno 3 non &egrave; avviato.
+      </div>
+    </div>"""
+    return doc(phone(SUB, strip_bar("gioco"), striscia_gioco_content(), ACTIONBAR,
+                     overlay=F.sheet("m.rossi vs g.verdi", corpo, "",
+                                     "In corso &middot; 4&ndash;2 &middot; tavolo 1")))
+
+
 def dec2_striscia_impostazioni():
-    """«Impostazioni gara», dalla riga in fondo: cio' che oggi sta sotto la
-    linguetta Gestione e non riguarda il turno in corso."""
+    """«Impostazioni gara», dalla riga in fondo, a gara in gioco. Cio' che si
+    puo' toccare davvero e' poco, e la pagina lo dice: direttori e vetrina si
+    modificano in ogni stato (nessun guard di stato in _gara_directors.html e
+    in routes/admin/competition/vetrina.py); i tavoli oggi sono bloccati dopo
+    l'avvio e la regola vuole che si cambino fra un turno e l'altro; turni,
+    distanze, esercizi, squadre e categorie si fissano prima e qui si
+    leggono soltanto. La gara si modifica solo in preparazione senza iscritti
+    (`Gara.can_be_modified`) e si elimina solo fino alle iscrizioni."""
     content = f"""
-      {F.sec("Direzione")}
+      {F.sec("Si modifica anche adesso")}
       {F.rows(
         F.row(I["users"], "Direttori", "tu e m.neri", tone="neutral")
         + F.row(I["share"], "Vetrina", "locandina, indirizzo, link esterno", tone="neutral")
-        + F.row(I["link"], "Link pubblico", "torneibiliardo.it/g/gara-3-giovedi", tone="neutral"))}
+        + F.row(I["table"], "Tavoli", "1, 2, 3 in uso &mdash; cambia fra un turno e l'altro", tone="neutral"))}
+      <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+        Oggi i tavoli si bloccano all'avvio: cambiarli fra un turno e l'altro
+        &egrave; una regola nuova (12/09).
+      </div>
 
-      {F.sec("Gioco")}
+      {F.sec("Fissato all'avvio")}
       {F.rows(
-        F.row(I["table"], "Tavoli", "1, 2, 3 in uso &mdash; cambia prima del turno 3", tone="neutral")
-        + F.row(I["list"], "Turni e distanze", "4 turni &middot; al 5 &middot; turno 3 al 3", tone="neutral")
-        + F.row(I["target"], "Esercizi fra i turni", "nessuno", tone="neutral")
-        + F.row(I["grid"], "Squadre e categorie", "fissate all'avvio", tone="locked"))}
-
-      {F.sec("Gara")}
-      {F.rows(
-        F.row(I["flag"], "Termina la gara", "quando tutti i turni sono chiusi", tone="locked")
-        + F.row(I["minus"], "Elimina la gara", "iscritti e partite compresi", tone="locked"))}
+        F.row(I["list"], "Turni e distanze", "4 turni &middot; al 5 &middot; turno 3 al 3", tone="locked")
+        + F.row(I["grid"], "Accoppiamento", "Amalfi &middot; anti-reincontro", tone="locked")
+        + F.row(I["target"], "Esercizi fra i turni", "nessuno", tone="locked")
+        + F.row(I["scale"], "Chi riposa", "X a tavolino all'ultimo iscritto", tone="locked"))}
 """
     return doc(phone("Gara 3 &middot; Gioved&igrave;", "", content, title="Impostazioni gara"))
 
@@ -495,27 +522,31 @@ RIGHE = [
 
     ("dec-2",
      "DECISIONE 2 · LINGUETTE O STRISCIA DI FASE — stesso contenuto, cambia la navigazione\n"
-     "SCELTA (12/09): la striscia. APERTO: come si arriva alla gestione nelle altre "
-     "fasi, per esempio per annullare il turno. Proposta nelle tre schermate 2S in "
-     "mezzo:\n"
-     "• i comandi DEL TURNO (annulla l'avvio, azzera i risultati) stanno con il turno: "
-     "tre puntini accanto a «Turno 2» aprono il foglio con i due comandi, gli stessi "
-     "della 3.6 «Turno concluso»;\n"
-     "• i comandi DELLA GARA (direttori, vetrina, link, tavoli, turni e distanze, "
-     "esercizi, squadre e categorie, termina, elimina) stanno in «Impostazioni gara», "
-     "la riga in fondo alla pagina, che apre una pagina a righe;\n"
-     "• l'azione della fase (avvia il turno 3, termina la gara) resta nella barra in "
-     "fondo, come in 1B.\n"
-     "Lo spareggio ha la sua tacca nella striscia, fra il gioco e la chiusura, e "
-     "compare solo nelle gare che ce l'hanno (schermata 2S · Spareggio, contenuto "
-     "della 4.1).\n"
-     "2L · Linguette: Turni · Classifica · Iscritti · Gestione come oggi. Filtro CSS su "
-     "un solo DOM. 2S · Striscia: le quattro fasi con le etichette non ci stanno in "
-     "354 px, le inattive mostrano solo l'icona; classifica, iscritti e impostazioni "
-     "diventano righe in fondo.",
+     "SCELTA (12/09): la striscia. Corretto il 12/09 sera dopo le tue obiezioni, con il "
+     "codice alla mano:\n"
+     "• IL TURNO ha un solo comando durante il gioco: annullarne l'avvio, e solo finché "
+     "nessuna partita ha segnato un triangolo (X esclusa — `Gara.can_cancel_round`, "
+     "use case 8). Sta nei tre puntini accanto a «Turno 2».\n"
+     "• LA PARTITA ha i suoi comandi sulla card: cambia tavolo (3.2), azzera la partita "
+     "(`reset_match`, finché il turno dopo non è avviato), e su una chiusa «correggi il "
+     "risultato» (3.4). Il «da validare» è la 3.3: una partita arrivata alla distanza dal "
+     "segnapunti dei giocatori senza la doppia conferma mostra «Valida», che la chiude e "
+     "libera il tavolo (`MatchValidationService.validate_and_complete`).\n"
+     "• L'azzeramento in blocco del turno l'avevo messo io: nell'app c'è («Reset ultimo "
+     "turno», `bulk_reset_round_matches`) ma compare solo a gara finita, prima di "
+     "terminarla. Tolto dal disegno.\n"
+     "• «IMPOSTAZIONI GARA» in gioco contiene solo ciò che si tocca davvero: direttori e "
+     "vetrina (modificabili in ogni stato) e i tavoli (oggi bloccati dopo l'avvio; la "
+     "regola nuova li vuole modificabili fra un turno e l'altro). Il resto si legge. La "
+     "gara si modifica solo in preparazione senza iscritti, si elimina solo fino alle "
+     "iscrizioni: la prima versione di questa schermata li inventava.\n"
+     "• L'azione della fase (avvia il turno 3, termina la gara) resta nella barra in fondo.\n"
+     "Lo spareggio ha la sua tacca nella striscia, fra il gioco e la chiusura, e compare "
+     "solo nelle gare che ce l'hanno (schermata 2S · nello spareggio, contenuto della 4.1).",
      [("Dec2LGioco", dec2_linguette_gioco, "2L · Linguette — in gioco"),
       ("Dec2SGioco", dec2_striscia_gioco, "2S · Striscia — in gioco (scelta)"),
       ("Dec2SMenuTurno", dec2_striscia_menu_turno, "2S · Il menu del turno"),
+      ("Dec2SMenuPartita", dec2_striscia_menu_partita, "2S · Il menu della partita"),
       ("Dec2SImpostazioni", dec2_striscia_impostazioni, "2S · Impostazioni gara"),
       ("Dec2SSpareggio", dec2_striscia_spareggio, "2S · Striscia — nello spareggio"),
       ("Dec2LSetup", dec2_linguette_setup, "2L · Linguette — in preparazione"),

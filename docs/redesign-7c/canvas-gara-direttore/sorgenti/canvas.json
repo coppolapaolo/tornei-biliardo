@@ -256,6 +256,42 @@
       "h": 844
     },
     {
+      "file": "IscrDesktop.dc.html",
+      "title": "2.6 La stessa fase su desktop",
+      "page": "page-2",
+      "x": 0,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "SchermoSala.dc.html",
+      "title": "3.9 Schermo in sala (pubblico)",
+      "page": "page-3",
+      "x": 1600,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "SsrDesktop.dc.html",
+      "title": "4.4 La stessa fase su desktop",
+      "page": "page-4",
+      "x": 0,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "FineDesktop.dc.html",
+      "title": "5.3 La stessa fase su desktop",
+      "page": "page-5",
+      "x": 0,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
       "file": "RegiaMobile.dc.html",
       "title": "A &middot; Regia &mdash; telefono",
       "page": "page-6",
@@ -364,10 +400,19 @@
       "h": 844
     },
     {
+      "file": "Dec2SMenuPartita.dc.html",
+      "title": "2S · Il menu della partita",
+      "page": "page-0",
+      "x": 1680,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
       "file": "Dec2SImpostazioni.dc.html",
       "title": "2S · Impostazioni gara",
       "page": "page-0",
-      "x": 1680,
+      "x": 2240,
       "y": 1300,
       "w": 390,
       "h": 844
@@ -376,7 +421,7 @@
       "file": "Dec2SSpareggio.dc.html",
       "title": "2S · Striscia — nello spareggio",
       "page": "page-0",
-      "x": 2240,
+      "x": 2800,
       "y": 1300,
       "w": 390,
       "h": 844
@@ -385,7 +430,7 @@
       "file": "Dec2LSetup.dc.html",
       "title": "2L · Linguette — in preparazione",
       "page": "page-0",
-      "x": 2800,
+      "x": 3360,
       "y": 1300,
       "w": 390,
       "h": 844
@@ -394,7 +439,7 @@
       "file": "Dec2SSetup.dc.html",
       "title": "2S · Striscia — in preparazione",
       "page": "page-0",
-      "x": 3360,
+      "x": 3920,
       "y": 1300,
       "w": 390,
       "h": 844
@@ -656,6 +701,38 @@
       "text": "Dove sono finiti i punti, dov'e' la pagina pubblica, cosa non si tocca piu'. Serve a chiudere il ciclo invece di lasciare la pagina identica a prima ma spenta.\n\nScelta 5S del 12/09: le partite restano in pagina, turno per turno. La pagina pubblica mostra la classifica finale (vetrina_gara.html, `vetrina.conclusa`), per questo la riga lo dice."
     },
     {
+      "id": "nota-iscrdesktop",
+      "page": "page-2",
+      "x": 0,
+      "y": 750,
+      "w": 470,
+      "text": "Iscrizioni su desktop: l'elenco a sinistra con la categoria, a destra il link da condividere, la lista d'attesa e le due cose da tenere d'occhio. L'avvio resta spento finche' manca il minimo."
+    },
+    {
+      "id": "nota-schermosala",
+      "page": "page-3",
+      "x": 1600,
+      "y": 750,
+      "w": 470,
+      "text": "NUOVO, non esiste nell'app: la pagina pubblica della gara oggi rimanda alla pagina gara (routes/main.py, gara_detail_public) e la vetrina a gara in corso dice solo «Gara in corso». SPECIFICHE.md riga 357 chiede «i risultati dei match in tempo reale». Da leggere a tre metri: i tavoli con i punteggi grandi, la classifica dopo l'ultimo turno chiuso, il turno precedente. I dati arrivano dagli stessi eventi live della pagina gara (ADR-057). Per i tabelloni al posto della classifica va il tabellone: non disegnato."
+    },
+    {
+      "id": "nota-ssrdesktop",
+      "page": "page-4",
+      "x": 0,
+      "y": 750,
+      "w": 470,
+      "text": "Spareggio su desktop: gli stepper dei parimerito a sinistra, la classifica con la pastiglia PARI a destra. «Annulla lo spareggio» accanto a «Salva», come nell'app (riporta in gioco e azzera i punti SSR)."
+    },
+    {
+      "id": "nota-finedesktop",
+      "page": "page-5",
+      "x": 0,
+      "y": 750,
+      "w": 470,
+      "text": "Conclusa su desktop: il podio dentro la fascia, la classifica sotto, a destra dove sono finiti i punti e le partite turno per turno (scelta 5S)."
+    },
+    {
       "id": "nota-a",
       "x": 0,
       "y": -260,
@@ -701,7 +778,7 @@
       "x": 0,
       "y": 960,
       "w": 1060,
-      "text": "DECISIONE 2 · LINGUETTE O STRISCIA DI FASE — stesso contenuto, cambia la navigazione\nSCELTA (12/09): la striscia. APERTO: come si arriva alla gestione nelle altre fasi, per esempio per annullare il turno. Proposta nelle tre schermate 2S in mezzo:\n• i comandi DEL TURNO (annulla l'avvio, azzera i risultati) stanno con il turno: tre puntini accanto a «Turno 2» aprono il foglio con i due comandi, gli stessi della 3.6 «Turno concluso»;\n• i comandi DELLA GARA (direttori, vetrina, link, tavoli, turni e distanze, esercizi, squadre e categorie, termina, elimina) stanno in «Impostazioni gara», la riga in fondo alla pagina, che apre una pagina a righe;\n• l'azione della fase (avvia il turno 3, termina la gara) resta nella barra in fondo, come in 1B.\nLo spareggio ha la sua tacca nella striscia, fra il gioco e la chiusura, e compare solo nelle gare che ce l'hanno (schermata 2S · Spareggio, contenuto della 4.1).\n2L · Linguette: Turni · Classifica · Iscritti · Gestione come oggi. Filtro CSS su un solo DOM. 2S · Striscia: le quattro fasi con le etichette non ci stanno in 354 px, le inattive mostrano solo l'icona; classifica, iscritti e impostazioni diventano righe in fondo."
+      "text": "DECISIONE 2 · LINGUETTE O STRISCIA DI FASE — stesso contenuto, cambia la navigazione\nSCELTA (12/09): la striscia. Corretto il 12/09 sera dopo le tue obiezioni, con il codice alla mano:\n• IL TURNO ha un solo comando durante il gioco: annullarne l'avvio, e solo finché nessuna partita ha segnato un triangolo (X esclusa — `Gara.can_cancel_round`, use case 8). Sta nei tre puntini accanto a «Turno 2».\n• LA PARTITA ha i suoi comandi sulla card: cambia tavolo (3.2), azzera la partita (`reset_match`, finché il turno dopo non è avviato), e su una chiusa «correggi il risultato» (3.4). Il «da validare» è la 3.3: una partita arrivata alla distanza dal segnapunti dei giocatori senza la doppia conferma mostra «Valida», che la chiude e libera il tavolo (`MatchValidationService.validate_and_complete`).\n• L'azzeramento in blocco del turno l'avevo messo io: nell'app c'è («Reset ultimo turno», `bulk_reset_round_matches`) ma compare solo a gara finita, prima di terminarla. Tolto dal disegno.\n• «IMPOSTAZIONI GARA» in gioco contiene solo ciò che si tocca davvero: direttori e vetrina (modificabili in ogni stato) e i tavoli (oggi bloccati dopo l'avvio; la regola nuova li vuole modificabili fra un turno e l'altro). Il resto si legge. La gara si modifica solo in preparazione senza iscritti, si elimina solo fino alle iscrizioni: la prima versione di questa schermata li inventava.\n• L'azione della fase (avvia il turno 3, termina la gara) resta nella barra in fondo.\nLo spareggio ha la sua tacca nella striscia, fra il gioco e la chiusura, e compare solo nelle gare che ce l'hanno (schermata 2S · nello spareggio, contenuto della 4.1)."
     },
     {
       "id": "dec-3",

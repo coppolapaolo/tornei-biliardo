@@ -442,7 +442,7 @@ def setup_desktop():
           {rows(
             row(I["list"], "Turni e distanze", "4 turni &middot; Palla 8 &middot; al 5", tone="ok")
             + row(I["users"], "Direzione di gara", "solo tu", tone="ok")
-            + row(I["table"], "Tavoli", "con le iscrizioni aperte", tone="locked")
+            + row(I["table"], "Tavoli", "4 nella sala &middot; tutti in uso", tone="ok")
             + row(I["share"], "Vetrina", "nessuna locandina", tone="warn"))}
 
           {sec("Informazioni gara", "Modifica")}
@@ -952,6 +952,234 @@ def fine_dopo():
 
 
 # ==========================================================================
+# DESKTOP delle fasi 2, 4, 5 e lo schermo in sala (aggiunti il 12/09/2026:
+# in preparazione si usa quasi sempre il desktop, e qualche direttore lo
+# preferisce anche in gioco)
+# ==========================================================================
+
+def _band_desktop(kicker, titolo, corpo, azione=""):
+    return f"""
+          <section class="card card--accent" style="display:flex;align-items:center;
+                   gap:22px;padding:20px 22px">
+            <div class="grow">
+              <div class="kicker">{kicker}</div>
+              <h3 style="margin-top:4px;font-size:20px">{titolo}</h3>
+              <div style="margin-top:6px;font-size:13px;font-weight:600;
+                   color:var(--c7-accent-dim)">{corpo}</div>
+            </div>
+            {azione}
+          </section>"""
+
+
+def iscr_desktop():
+    elenco = "".join(
+        person(sigla, nome, f"iscritto il {data} &middot; {cat}",
+               f'<button class="iconbtn">{ico(I["minus"], 14)}</button>')
+        for sigla, nome, data, cat in [
+            ("PA", "pa", "28/08", "A"), ("MR", "m.rossi", "28/08", "A"),
+            ("GV", "g.verdi", "29/08", "B"), ("DB", "d.bianchi", "29/08", "B"),
+            ("LF", "l.ferrari", "30/08", "A"), ("AG", "a.galli", "30/08", "C"),
+            ("PM", "p.marini", "31/08", "B")])
+    sinistra = f"""
+        <div class="stack">
+          {_band_desktop("Iscrizioni aperte", "7 iscritti su 16",
+                         "Servono almeno 8 iscritti &middot; chiudono gioved&igrave; 19:30",
+                         '<button class="btn btn--locked">Avvia la gara &middot; manca 1</button>')}
+          <div class="sechead">
+            <h3>Iscritti</h3>
+            <span class="state state--accent">7 attivi</span>
+            <span class="state state--warn">+1 in attesa</span>
+            <span class="sechead__more">Iscrivi un giocatore</span>
+          </div>
+          {rows(elenco)}
+        </div>
+"""
+    destra = f"""
+        <div class="stack">
+          {sec("Condividi")}
+          <section class="card">
+            <div class="num" style="background:var(--c7-sunken);border-radius:var(--c7-r-field);
+                 padding:14px 16px;font-size:13px;font-weight:700;word-break:break-all;
+                 color:var(--c7-ink-soft)">torneibiliardo.it/g/gara-3-giovedi</div>
+            <div style="margin-top:10px;display:flex;gap:10px">
+              {btn("Copia", "secondary", "link")}{btn("Condividi", "primary", "share")}
+            </div>
+          </section>
+
+          {sec("Lista d'attesa", "1")}
+          {rows(person("SC", "s.conti", "in lista dal 30/08",
+                       '<button class="btn btn--secondary btn--sm">Fai entrare</button>'))}
+
+          {sec("Da tenere d'occhio")}
+          {rows(
+            row(I["table"], "Tavoli", "4 nella sala, tutti in uso", tone="neutral")
+            + row(I["clock"], "Chiusura iscrizioni", "gioved&igrave; 19:30 &mdash; estendi", tone="neutral"))}
+        </div>
+"""
+    actions = ('<button class="btn btn--secondary btn--sm">'
+               f'{ico(I["clock"], 15)} Modifica le date</button>')
+    return doc(desktop(actions, f'<div class="cols">{sinistra}{destra}</div>'))
+
+
+def ssr_desktop():
+    righe = [("1", "m.rossi", "4", "+11", ""), ("2", "a.galli", "3", "+6", ""),
+             ("3", "d.bianchi", "3", "+2", "PARI"), ("4", "l.ferrari", "3", "+2", "PARI"),
+             ("5", "g.verdi", "2", "-1", ""), ("6", "p.marini", "2", "-3", "")]
+    sinistra = f"""
+        <div class="stack">
+          {_band_desktop("Tutti i 4 turni conclusi", "Serve uno spareggio",
+                         "Due giocatori sono a pari merito per il 3&deg; posto. "
+                         "Lo spareggio si gioca a Spot Shot Rally: tu inserisci i punti.",
+                         '<button class="btn btn--locked">Termina la gara</button>')}
+          <section class="card">
+            <div class="row">
+              <h3 class="grow">Parimerito per il 3&deg; posto</h3>
+              <span class="state state--muted"><span class="num">2</span>&nbsp;giocatori</span>
+            </div>
+            <div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+              {stepper("d.bianchi", "4")}
+              {stepper("l.ferrari", "2")}
+            </div>
+            <div style="margin-top:14px;display:flex;gap:10px">
+              {btn("Salva i punti SSR", "primary", "check", w=False)}
+              {btn("Annulla lo spareggio", "secondary", "rotate", w=False)}
+            </div>
+          </section>
+          <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+            Lo spareggio decide solo l'ordine fra chi &egrave; a pari merito: vittorie e
+            differenza triangoli restano quelle della gara. Annullarlo riporta la gara
+            in gioco e azzera i punti SSR.
+          </div>
+        </div>
+"""
+    destra = f"""
+        <div class="stack">
+          {sec("Classifica dopo il turno 4", "fino al 3&deg; posto")}
+          {classifica(righe)}
+        </div>
+"""
+    return doc(desktop("", f'<div class="cols">{sinistra}{destra}</div>'))
+
+
+def fine_desktop():
+    righe = [("4", "l.ferrari", "3", "+2", "SSR"), ("5", "g.verdi", "2", "-1", ""),
+             ("6", "p.marini", "2", "-3", ""), ("7", "s.conti", "1", "-4", ""),
+             ("8", "f.costa", "1", "-6", "")]
+    podio = "".join(f"""
+              <div style="text-align:center">
+                <div class="avatar avatar--lg" style="margin:0 auto;{stile}">{sigla}</div>
+                <div style="margin-top:8px;font-size:{fs}px;font-weight:800">{nome}</div>
+                <div class="num" style="font-size:12px;color:var(--c7-accent-dim)">{pos}</div>
+              </div>""" for sigla, nome, pos, fs, stile in [
+        ("AG", "a.galli", "2&deg;", 13, "background:rgba(242,248,247,.16)"),
+        ("MR", "m.rossi", "1&deg;", 15, "background:var(--c7-accent-bright);color:#0D2A36;width:56px;height:56px;font-size:16px"),
+        ("DB", "d.bianchi", "3&deg; &middot; SSR", 13, "background:rgba(242,248,247,.16)")])
+    sinistra = f"""
+        <div class="stack">
+          <section class="card card--accent" style="display:flex;align-items:center;gap:24px;padding:20px 22px">
+            <div class="grow">
+              <div class="kicker">Gara conclusa</div>
+              <h3 style="margin-top:4px;font-size:20px">Ha vinto m.rossi</h3>
+              <div style="margin-top:6px;font-size:13px;font-weight:600;color:var(--c7-accent-dim)">
+                10 partecipanti &middot; 20 partite giocate &middot; 4 turni &middot;
+                spareggio per il 3&deg; posto.</div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;align-items:end">{podio}</div>
+          </section>
+          {sec("Classifica finale")}
+          {classifica(righe)}
+        </div>
+"""
+    destra = f"""
+        <div class="stack">
+          {sec("Dopo la gara")}
+          {rows(
+            row(I["trophy"], "Classifica del campionato", "aggiornata con questa gara", tone="neutral")
+            + row(I["share"], "Pagina pubblica", "con la classifica finale", tone="neutral"))}
+          {sec("Partite", "20, tutte validate")}
+          {partite_turno(4, T4)}
+        </div>
+"""
+    actions = ('<button class="btn btn--secondary btn--sm">'
+               f'{ico(I["share"], 15)} Pagina pubblica</button>')
+    return doc(desktop(actions, f'<div class="cols">{sinistra}{destra}</div>'))
+
+
+def schermo_sala():
+    """Lo schermo in sala: pubblico, senza menu, da leggere a tre metri.
+    Oggi non esiste: la pagina pubblica della gara rimanda alla pagina gara
+    (routes/main.py, gara_detail_public), e la vetrina a gara in corso dice
+    solo «Gara in corso». SPECIFICHE.md riga 357 la chiede."""
+    def tavolo(n, p1, s1, p2, s2, stato="In corso"):
+        if p1 is None:
+            return f"""
+            <section class="card" style="padding:22px 26px;display:flex;flex-direction:column;gap:10px">
+              <div class="row"><span class="kicker" style="font-size:12px">Tavolo {n}</span>
+                <span class="state state--muted" style="margin-left:auto">Libero</span></div>
+              <div style="font-size:18px;font-weight:800;color:var(--c7-ink-muted)">
+                Prossima: {s1}</div>
+            </section>"""
+        return f"""
+            <section class="card" style="padding:22px 26px">
+              <div class="row"><span class="kicker" style="font-size:12px">Tavolo {n}</span>
+                <span class="state state--accent" style="margin-left:auto">{stato}</span></div>
+              <div style="margin-top:12px;display:grid;grid-template-columns:1fr auto auto auto 1fr;
+                   align-items:center;gap:18px">
+                <div style="font-size:22px;font-weight:800;text-align:right">{p1}</div>
+                <div class="num" style="font-size:52px;font-weight:800;letter-spacing:-.04em">{s1}</div>
+                <div class="faint" style="font-size:20px;font-weight:800">&ndash;</div>
+                <div class="num" style="font-size:52px;font-weight:800;letter-spacing:-.04em">{s2}</div>
+                <div style="font-size:22px;font-weight:800">{p2}</div>
+              </div>
+            </section>"""
+
+    righe = [("1", "r.neri", "1", "+5"), ("2", "l.ferrari", "1", "+4"), ("3", "m.rossi", "1", "+3"),
+             ("4", "a.galli", "1", "+2"), ("5", "g.verdi", "1", "+1"), ("6", "p.marini", "0", "-1")]
+    class_rows = "".join(f"""
+            <div class="rows__row" style="padding:13px 18px">
+              <div class="num" style="width:22px;font-size:17px;font-weight:800">{pos}</div>
+              <div class="grow" style="font-size:17px;font-weight:800">{nome}</div>
+              <div class="num" style="font-size:17px;font-weight:800">{v}</div>
+              <div class="num muted" style="width:40px;text-align:right;font-size:14px">{d}</div>
+            </div>""" for pos, nome, v, d in righe)
+    turno1 = "".join(f"""
+            <div style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700">
+              <span class="grow" style="text-align:right">{p1}</span>
+              <span class="num" style="font-size:17px;font-weight:800">{s1}&ndash;{s2}</span>
+              <span class="grow">{p2}</span>
+            </div>""" for p1, s1, p2, s2, _ in base.R1)
+    return doc(f"""
+<div style="width:1440px;height:900px;overflow:hidden;background:var(--c7-bg);
+     padding:28px 36px;display:flex;flex-direction:column;gap:20px">
+  <header style="display:flex;align-items:center;gap:18px">
+    <div class="grow">
+      <h1 style="font-size:30px;font-weight:800;letter-spacing:-.025em">Gara 3 &middot; Gioved&igrave;</h1>
+      <div class="head__sub" style="font-size:15px">Biliardo Mimmo &middot; Palla 8 &middot; Al 5 &middot; Amalfi</div>
+    </div>
+    <span class="pill is-active" style="height:44px;font-size:15px;padding:0 20px">
+      <span style="width:10px;height:10px;border-radius:50%;background:var(--c7-accent-bright)"></span>
+      Turno 2 di 4 &middot; in corso</span>
+  </header>
+  <div style="display:grid;grid-template-columns:1fr 400px;gap:20px;flex:1;min-height:0">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      {tavolo(1, "m.rossi", "4", "g.verdi", "2")}
+      {tavolo(2, "d.bianchi", "3", "l.ferrari", "3")}
+      {tavolo(3, "r.neri", "5", "e.sala", "1", "Chiusa")}
+      {tavolo(4, None, "s.conti vs p.marini", None, None)}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="sechead"><h3 style="font-size:19px">Classifica dopo il turno 1</h3></div>
+      <div class="rows">{class_rows}</div>
+      <div class="sechead" style="margin-top:6px"><h3 class="muted" style="font-size:16px">Turno 1</h3>
+        <span class="state state--muted" style="margin-left:auto">Concluso</span></div>
+      <section class="card" style="display:flex;flex-direction:column;gap:8px;padding:14px 18px">{turno1}</section>
+    </div>
+  </div>
+</div>
+""")
+
+
+# ==========================================================================
 # Registro: file, pagine, posizioni, bigliettini
 # ==========================================================================
 
@@ -1097,6 +1325,28 @@ SCHERMATE = [
      "prima ma spenta.\n\nScelta 5S del 12/09: le partite restano in pagina, "
      "turno per turno. La pagina pubblica mostra la classifica finale "
      "(vetrina_gara.html, `vetrina.conclusa`), per questo la riga lo dice."),
+
+    # --- desktop delle altre fasi e schermo in sala (12/09) ---
+    ("IscrDesktop", iscr_desktop, "2.6 La stessa fase su desktop", "page-2", 0, 1,
+     "Iscrizioni su desktop: l'elenco a sinistra con la categoria, a destra il "
+     "link da condividere, la lista d'attesa e le due cose da tenere d'occhio. "
+     "L'avvio resta spento finche' manca il minimo."),
+    ("SchermoSala", schermo_sala, "3.9 Schermo in sala (pubblico)", "page-3", 1, 1,
+     "NUOVO, non esiste nell'app: la pagina pubblica della gara oggi rimanda "
+     "alla pagina gara (routes/main.py, gara_detail_public) e la vetrina a "
+     "gara in corso dice solo «Gara in corso». SPECIFICHE.md riga 357 chiede "
+     "«i risultati dei match in tempo reale». Da leggere a tre metri: i "
+     "tavoli con i punteggi grandi, la classifica dopo l'ultimo turno chiuso, "
+     "il turno precedente. I dati arrivano dagli stessi eventi live della "
+     "pagina gara (ADR-057). Per i tabelloni al posto della classifica va il "
+     "tabellone: non disegnato."),
+    ("SsrDesktop", ssr_desktop, "4.4 La stessa fase su desktop", "page-4", 0, 1,
+     "Spareggio su desktop: gli stepper dei parimerito a sinistra, la "
+     "classifica con la pastiglia PARI a destra. «Annulla lo spareggio» "
+     "accanto a «Salva», come nell'app (riporta in gioco e azzera i punti SSR)."),
+    ("FineDesktop", fine_desktop, "5.3 La stessa fase su desktop", "page-5", 0, 1,
+     "Conclusa su desktop: il podio dentro la fascia, la classifica sotto, a "
+     "destra dove sono finiti i punti e le partite turno per turno (scelta 5S)."),
 
     # --- pagina 6: le tre direzioni del primo giro ---
     (None, None, "A &middot; Regia &mdash; telefono", "page-6", 0, 0, None),

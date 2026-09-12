@@ -35,7 +35,7 @@ console del primo giro riusata come panoramica, artboard «Main»).
 **Nessuna delle tre direzioni è stata scelta formalmente**: le fasi sono la
 proposta, e vanno guardate prima di scrivere codice.
 
-## Le cinque fasi, 26 schermate
+## Le cinque fasi, 30 schermate
 
 Ogni schermata mostra **comandi che esistono davvero**: etichette e
 condizioni vengono da `_gara_management.html`, `_round_management.html`,
@@ -116,12 +116,35 @@ pagine 1–5:
    l'app li lascia modificare **solo a iscrizioni aperte**, e lo vieta anche
    il servizio (`GaraService.update_tables_config` → `ConflictError`), non
    solo il template.
-2. **La striscia di fase** al posto delle linguette. **Aperto**: come si
-   arriva alla gestione nelle altre fasi. Proposta disegnata (2S · Il menu
-   del turno, 2S · Impostazioni gara, 2S · nello spareggio): i comandi del
-   turno dai tre puntini accanto a «Turno N», quelli della gara dalla riga
-   «Impostazioni gara» in fondo, l'azione della fase nella barra; lo
-   spareggio ha la sua tacca, che compare solo nelle gare che ce l'hanno.
+2. **La striscia di fase** al posto delle linguette. **Da confermare**:
+   come si arriva alla gestione nelle altre fasi. Proposta disegnata e
+   corretta la sera del 12/09 col codice alla mano (2S · Il menu del turno,
+   2S · Il menu della partita, 2S · Impostazioni gara, 2S · nello
+   spareggio):
+   * il **turno** ha un solo comando in gioco, annullarne l'avvio, e solo
+     finché nessuna partita ha un punteggio > 0, X esclusa
+     (`Gara.can_cancel_round`, use case 8): sta nei tre puntini accanto a
+     «Turno N»;
+   * la **partita** ha i suoi sulla card: cambia tavolo (3.2), azzera
+     (`reset_match`, finché il turno dopo non è avviato), e su una chiusa
+     «correggi il risultato» (3.4). La partita **da validare** è la 3.3:
+     arrivata alla distanza dal segnapunti dei giocatori senza doppia
+     conferma, mostra «Valida» (`is_at_distance and not is_player_validated`
+     in `_match_card.html`), che la chiude e libera il tavolo
+     (`MatchValidationService.validate_and_complete`);
+   * l'**azzeramento in blocco del turno** era nella prima versione del
+     disegno: nell'app esiste («Reset ultimo turno»,
+     `bulk_reset_round_matches`) ma compare solo a gara finita, prima di
+     terminarla. Tolto dal disegno su indicazione dell'utente;
+   * «**Impostazioni gara**» in gioco contiene solo ciò che si tocca
+     davvero: direttori e vetrina (nessun guard di stato), e i tavoli, oggi
+     bloccati dopo l'avvio — la regola vuole che si cambino **anche a
+     iscrizioni chiuse e fra un turno e l'altro**. La gara si modifica solo
+     in preparazione senza iscritti (`Gara.can_be_modified`), si elimina
+     solo fino alle iscrizioni. La prima versione della schermata li
+     inventava;
+   * lo spareggio ha la sua tacca, che compare solo nelle gare che ce
+     l'hanno.
 3. **Il punteggio sulla card** (3C): la 3.3 «Segna il risultato» è uscita
    dalla pagina 3.
 4. **Gli esercizi** sono due cose, entrambe anche con Amalfi: gli **esercizi
@@ -135,6 +158,15 @@ pagine 1–5:
 5. **Le partite restano in pagina** a gara conclusa (5S). La pagina pubblica
    mostra la classifica finale (`vetrina_gara.html`, `vetrina.conclusa`):
    la riga lo dice.
+
+Aggiunte la sera del 12/09, su richiesta: il **desktop di ogni fase** (2.6,
+4.4, 5.3 accanto a 1.7 e 3.8 — in preparazione si usa quasi sempre, e
+qualche direttore lo preferisce anche in gioco) e lo **schermo in sala**
+(3.9): pubblico, senza menu, da leggere a tre metri, con i tavoli, la
+classifica dopo l'ultimo turno chiuso e il turno precedente. Non esiste
+nell'app: `gara_detail_public` rimanda alla pagina gara, la vetrina a gara in
+corso dice solo «Gara in corso»; SPECIFICHE.md riga 357 chiede «i risultati
+dei match in tempo reale». Per i tabelloni va disegnato col tabellone.
 
 ## Non ancora disegnato
 
