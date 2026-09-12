@@ -1,0 +1,952 @@
+{
+  "pages": [
+    {
+      "id": "page-0",
+      "name": "0 · Decisioni"
+    },
+    {
+      "id": "page-1",
+      "name": "1 · Preparazione"
+    },
+    {
+      "id": "page-2",
+      "name": "2 · Iscrizioni"
+    },
+    {
+      "id": "page-3",
+      "name": "3 · Gioco"
+    },
+    {
+      "id": "page-4",
+      "name": "4 · Spareggio"
+    },
+    {
+      "id": "page-5",
+      "name": "5 · Conclusa"
+    },
+    {
+      "id": "page-6",
+      "name": "Direzioni (primo giro)"
+    },
+    {
+      "id": "page-7",
+      "name": "7 · Campionato e playoff"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "SetupPanoramica.dc.html",
+      "title": "1.1 Panoramica &mdash; in preparazione",
+      "page": "page-1",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "SetupTurni.dc.html",
+      "title": "1.2 Turni e distanze",
+      "page": "page-1",
+      "x": 560,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "SetupTavoli.dc.html",
+      "title": "1.3 Tavoli",
+      "page": "page-1",
+      "x": 1120,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "SetupEsercizi.dc.html",
+      "title": "1.4 Esercizi fra i turni",
+      "page": "page-1",
+      "x": 1680,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "SetupEserciziAggiungi.dc.html",
+      "title": "1.5 Aggiungi un esercizio",
+      "page": "page-1",
+      "x": 2240,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "SetupDirettori.dc.html",
+      "title": "1.6 Co-direttori",
+      "page": "page-1",
+      "x": 2800,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "SetupVetrina.dc.html",
+      "title": "1.7 Vetrina",
+      "page": "page-1",
+      "x": 3360,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "SetupApri.dc.html",
+      "title": "1.8 Apri le iscrizioni",
+      "page": "page-1",
+      "x": 3920,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "SetupDesktop.dc.html",
+      "title": "1.9 La stessa fase su desktop",
+      "page": "page-1",
+      "x": 0,
+      "y": 1010,
+      "w": 1440,
+      "h": 1560
+    },
+    {
+      "file": "SetupTurniDesktop.dc.html",
+      "title": "1.10 Turni e distanze su desktop",
+      "page": "page-1",
+      "x": 1600,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "IscrPanoramica.dc.html",
+      "title": "2.1 Panoramica &mdash; iscrizioni aperte",
+      "page": "page-2",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "IscrElenco.dc.html",
+      "title": "2.2 Iscritti e lista d'attesa",
+      "page": "page-2",
+      "x": 560,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "IscrAggiungi.dc.html",
+      "title": "2.3 Iscrivi un giocatore",
+      "page": "page-2",
+      "x": 1120,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "IscrScadute.dc.html",
+      "title": "2.4 Iscrizioni scadute",
+      "page": "page-2",
+      "x": 1680,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "IscrAvvio.dc.html",
+      "title": "2.5 Avvia la gara",
+      "page": "page-2",
+      "x": 2240,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Main.dc.html",
+      "title": "3.1 Panoramica &mdash; turno in corso",
+      "page": "page-3",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "GiocoTavolo.dc.html",
+      "title": "3.2 Assegna o cambia il tavolo",
+      "page": "page-3",
+      "x": 560,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "GiocoValida.dc.html",
+      "title": "3.3 Valida un risultato",
+      "page": "page-3",
+      "x": 1120,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "GiocoCorreggi.dc.html",
+      "title": "3.4 Correggi un risultato chiuso",
+      "page": "page-3",
+      "x": 1680,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "GiocoClassifica.dc.html",
+      "title": "3.5 Classifica dopo il turno",
+      "page": "page-3",
+      "x": 2240,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "GiocoClassificaRack.dc.html",
+      "title": "3.6 Classifica (sistema RACK)",
+      "page": "page-3",
+      "x": 2800,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "GiocoTurnoDopo.dc.html",
+      "title": "3.7 Turno concluso",
+      "page": "page-3",
+      "x": 3360,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "GiocoMioMatch.dc.html",
+      "title": "3.8 Il direttore gioca",
+      "page": "page-3",
+      "x": 3920,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "ConsoleDesktop.dc.html",
+      "title": "3.9 Il turno su desktop",
+      "page": "page-3",
+      "x": 0,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "SsrRilevato.dc.html",
+      "title": "4.1 Serve uno spareggio",
+      "page": "page-4",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "SsrPunteggi.dc.html",
+      "title": "4.2 Inserisci i punti SSR",
+      "page": "page-4",
+      "x": 560,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "SsrTermina.dc.html",
+      "title": "4.3 Termina la gara",
+      "page": "page-4",
+      "x": 1120,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "FineClassifica.dc.html",
+      "title": "5.1 Classifica finale",
+      "page": "page-5",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "FineDopo.dc.html",
+      "title": "5.2 Cosa resta dopo",
+      "page": "page-5",
+      "x": 560,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "IscrDesktop.dc.html",
+      "title": "2.6 La stessa fase su desktop",
+      "page": "page-2",
+      "x": 0,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "SchermoSala.dc.html",
+      "title": "3.10 Schermo in sala (pubblico)",
+      "page": "page-3",
+      "x": 1600,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "SsrDesktop.dc.html",
+      "title": "4.4 La stessa fase su desktop",
+      "page": "page-4",
+      "x": 0,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "FineDesktop.dc.html",
+      "title": "5.3 La stessa fase su desktop",
+      "page": "page-5",
+      "x": 0,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "CampionatoMobile.dc.html",
+      "title": "7.1 Il campionato",
+      "page": "page-7",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "PlayoffMobile.dc.html",
+      "title": "7.2 La fase playoff",
+      "page": "page-7",
+      "x": 560,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "CampionatoDesktop.dc.html",
+      "title": "7.3 Il campionato su desktop",
+      "page": "page-7",
+      "x": 0,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "PlayoffDesktop.dc.html",
+      "title": "7.4 La fase playoff su desktop",
+      "page": "page-7",
+      "x": 1600,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "RegiaMobile.dc.html",
+      "title": "A &middot; Regia &mdash; telefono",
+      "page": "page-6",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "FasiMobile.dc.html",
+      "title": "C &middot; Fasi &mdash; telefono",
+      "page": "page-6",
+      "x": 560,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "RegiaDesktop.dc.html",
+      "title": "A &middot; Regia &mdash; desktop",
+      "page": "page-6",
+      "x": 0,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "FasiDesktop.dc.html",
+      "title": "C &middot; Fasi &mdash; desktop",
+      "page": "page-6",
+      "x": 1600,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "Dec1A.dc.html",
+      "title": "1A · Regia — in gioco",
+      "page": "page-0",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec1B.dc.html",
+      "title": "1B · Console — in gioco (scelta)",
+      "page": "page-0",
+      "x": 560,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec1C.dc.html",
+      "title": "1C · Fasi — in gioco",
+      "page": "page-0",
+      "x": 1120,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec1ASetup.dc.html",
+      "title": "1A · Regia — in preparazione",
+      "page": "page-0",
+      "x": 1680,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec1SSetup.dc.html",
+      "title": "1S · Sintesi — in preparazione (scelta)",
+      "page": "page-0",
+      "x": 2240,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2LGioco.dc.html",
+      "title": "2L · Linguette — in gioco",
+      "page": "page-0",
+      "x": 0,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2SGioco.dc.html",
+      "title": "2S · Striscia — in gioco (scelta)",
+      "page": "page-0",
+      "x": 560,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2SMenuTurno.dc.html",
+      "title": "2S · Il menu del turno",
+      "page": "page-0",
+      "x": 1120,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2SMenuPartita.dc.html",
+      "title": "2S · Il menu della partita",
+      "page": "page-0",
+      "x": 1680,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2SImpostazioni.dc.html",
+      "title": "2S · Impostazioni gara",
+      "page": "page-0",
+      "x": 2240,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2SSpareggio.dc.html",
+      "title": "2S · Striscia — nello spareggio",
+      "page": "page-0",
+      "x": 2800,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2LSetup.dc.html",
+      "title": "2L · Linguette — in preparazione",
+      "page": "page-0",
+      "x": 3360,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2SSetup.dc.html",
+      "title": "2S · Striscia — in preparazione",
+      "page": "page-0",
+      "x": 3920,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec3Card.dc.html",
+      "title": "3C · Sulla card (scelta)",
+      "page": "page-0",
+      "x": 0,
+      "y": 2600,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec3Foglio.dc.html",
+      "title": "3F · Dal foglio",
+      "page": "page-0",
+      "x": 560,
+      "y": 2600,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec3FoglioAperto.dc.html",
+      "title": "3F · Il foglio aperto",
+      "page": "page-0",
+      "x": 1120,
+      "y": 2600,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec4Due.dc.html",
+      "title": "4 · Le due forme, con Amalfi",
+      "page": "page-0",
+      "x": 0,
+      "y": 3900,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec5Link.dc.html",
+      "title": "5L · Link",
+      "page": "page-0",
+      "x": 0,
+      "y": 5200,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec5Sezione.dc.html",
+      "title": "5S · Sezione in pagina (scelta)",
+      "page": "page-0",
+      "x": 560,
+      "y": 5200,
+      "w": 390,
+      "h": 844
+    }
+  ],
+  "annotations": [
+    {
+      "id": "nota-setuppanoramica",
+      "page": "page-1",
+      "x": 0,
+      "y": -260,
+      "w": 470,
+      "text": "Il direttore apre la gara appena creata. La fascia dice dove siamo, l'elenco dice cosa manca prima di poter aprire le iscrizioni. Il verde e' l'unica azione conclusiva della fase.\n\nI tavoli sono una voce della preparazione con il numero della sala (12/09): si scelgono sempre, di solito prima di avviare un turno. Gli esercizi fra i turni sono facoltativi e valgono anche con Amalfi (vedi pagina 0, decisione 4)."
+    },
+    {
+      "id": "nota-setupturni",
+      "page": "page-1",
+      "x": 560,
+      "y": -260,
+      "w": 470,
+      "text": "Configurazione per turno (ADR-027). Il turno modificato si distingue dal default con la pastiglia.\n\nRILIEVO (12/09): la descrizione della gara — «Al 5 · Palla 8» in testa e nelle informazioni — prende sempre disciplina e distanza della creazione (gara_detail.html usa gara.distance): quando i turni cambiano, la descrizione dovrebbe dirlo, per esempio «Palla 8 al 5 · turno 2: Palla 9 al 3»."
+    },
+    {
+      "id": "nota-setuptavoli",
+      "page": "page-1",
+      "x": 1120,
+      "y": -260,
+      "w": 470,
+      "text": "I tavoli come oggi (_gara_tables_config.html): un campo di testo con i nomi separati da virgola, nell'ordine di assegnazione — «3, 1, 2». Confermato dall'utente il 13/09 dopo due versioni a elenco: e' la forma migliore. Il suggerimento sotto il campo dice quanti tavoli ha la sala e che un nome nuovo vale lo stesso (TableAssignmentService.get_table_names).\n\nPROBLEMA VERO: oggi si modificano solo a iscrizioni aperte, e lo vieta anche il servizio (update_tables_config → ConflictError). La regola: si scelgono sempre, anche a iscrizioni chiuse e fra un turno e l'altro."
+    },
+    {
+      "id": "nota-setupesercizi",
+      "page": "page-1",
+      "x": 1680,
+      "y": -260,
+      "w": 470,
+      "text": "Gli esercizi fra i turni (GaraChallenge): quale, dopo che turno, quanti tentativi. Fanno una classifica a parte. Oggi il bottone compare solo col casuale, ma il limite sta nei template: il servizio accetta qualunque strategia. La X con esercizio e' un'altra cosa: sta in «Chi riposa» (pagina 0, decisione 4)."
+    },
+    {
+      "id": "nota-setupeserciziaggiungi",
+      "page": "page-1",
+      "x": 2240,
+      "y": -260,
+      "w": 470,
+      "text": "Il foglio ha i tre campi del modale di oggi (_challenge_management_modal.html): l'esercizio, cercato per nome; dopo quale turno; quanti tentativi."
+    },
+    {
+      "id": "nota-setupdirettori",
+      "page": "page-1",
+      "x": 2800,
+      "y": -260,
+      "w": 470,
+      "text": "La ricerca mostra solo utenti con ruolo direttore vicini alla sede (GaraService.add_director rifiuta gli altri). Il titolare e' marcato: un co-direttore puo' fare tutto tranne togliere lui.\n\nOggi e' un select con tutti i direttori in zona e un bottone «Aggiungi»."
+    },
+    {
+      "id": "nota-setupvetrina",
+      "page": "page-1",
+      "x": 3360,
+      "y": -260,
+      "w": 470,
+      "text": "Locandina, indirizzo pubblico e link esterno: oggi vivono in una pagina separata (admin/gara_vetrina.html), raggiungibile dal menu. Qui e' una voce della preparazione, dove il direttore la cerca.\n\nLa locandina si vede intera (PR #292): niente ritaglio."
+    },
+    {
+      "id": "nota-setupapri",
+      "page": "page-1",
+      "x": 3920,
+      "y": -260,
+      "w": 470,
+      "text": "Il foglio di apertura: date nel fuso di chi scrive (ADR-043), minimo e massimo. La frase sotto il bottone dice cosa cambia per gli altri — e' il gesto che rende pubblica la gara.\n\nOggi il modale ha solo le due date; minimo e massimo stanno nella modifica gara, cioe' altrove."
+    },
+    {
+      "id": "nota-setupdesktop",
+      "page": "page-1",
+      "x": 0,
+      "y": 750,
+      "w": 470,
+      "text": "La preparazione su desktop e' una pagina sola che scorre (1560 px): la fascia, i turni in sintesi con gli esercizi fra i turni («Modifica turni ed esercizi» apre la 1.10), la direzione di gara con la ricerca dei co-direttori aperta in linea, i tavoli nel campo di testo «3, 1, 2» come in 1.3, la vetrina con lo spazio 1200x630. La colonna destra e' la lista di cosa manca: ogni riga scorre alla sua sezione, senza pagine in piu'."
+    },
+    {
+      "id": "nota-setupturnidesktop",
+      "page": "page-1",
+      "x": 1600,
+      "y": 750,
+      "w": 470,
+      "text": "La pagina che si apre da «Modifica turni ed esercizi» in 1.9: i quattro turni con disciplina e distanza (ADR-027), e sotto gli esercizi fra i turni con il modulo di aggiunta in linea — i tre campi di _challenge_management_modal.html (esercizio, dopo quale turno, tentativi). Oggi gli esercizi stanno in Gestione, in un modale, e compaiono solo col casuale: il limite e' nei template."
+    },
+    {
+      "id": "nota-iscrpanoramica",
+      "page": "page-2",
+      "x": 0,
+      "y": -260,
+      "w": 470,
+      "text": "Il numero che conta e' «7 su 16, ne servono 8»: e' cio' che decide se la gara parte. L'avvio resta spento con scritto perche'.\n\nIl link pubblico e' qui e non in fondo alla Gestione: in questa fase condividerlo e' il lavoro principale."
+    },
+    {
+      "id": "nota-iscrelenco",
+      "page": "page-2",
+      "x": 560,
+      "y": -260,
+      "w": 470,
+      "text": "Il campo per iscrivere sta in cima, sempre visibile: e' il gesto principale della fase. La categoria e' un chip che si tocca — oggi e' un combo per riga, e scrivere un nome nuovo crea la categoria (_gara_inscriptions.html). La lista d'attesa entra da sola quando un iscritto si ritira (InscriptionService._promote_and_notify): il «Fai entrare» della prima versione non esiste e non serve."
+    },
+    {
+      "id": "nota-iscraggiungi",
+      "page": "page-2",
+      "x": 1120,
+      "y": -260,
+      "w": 470,
+      "text": "Si scrive nel campo in cima e i risultati compaiono sotto, con «Iscrivi» sulla riga: nessun tocco prima di poter scrivere. Ricerca per cognome, nome o username (PR #297)."
+    },
+    {
+      "id": "nota-iscrscadute",
+      "page": "page-2",
+      "x": 1680,
+      "y": -260,
+      "w": 470,
+      "text": "Stato derivato, non salvato: la scadenza e' passata e gli iscritti non bastano. Le due uscite sono estendere o annullare, entrambe con notifica.\n\nSe invece il minimo e' raggiunto, la stessa schermata mostra «Avvia la gara» accanto a «Estendi»."
+    },
+    {
+      "id": "nota-iscravvio",
+      "page": "page-2",
+      "x": 2240,
+      "y": -260,
+      "w": 470,
+      "text": "Il foglio dice cosa succede prima che succeda: chi prende la X, che i 4 turni nascono tutti adesso, l'ordine dei tavoli.\n\nLa regola di oggi su turni, distanze, disciplina e X: si toccano solo in preparazione — la configurazione dei turni compare solo con status=setup (_round_management.html) e la gara si modifica solo senza iscritti (Gara.can_be_modified). Con le iscrizioni aperte nulla cambia sotto i piedi degli iscritti, e questo foglio riporta soltanto."
+    },
+    {
+      "id": "nota-main",
+      "page": "page-3",
+      "x": 0,
+      "y": -260,
+      "w": 470,
+      "text": "Artboard «Main»: la console del primo giro, riusata come panoramica della fase di gioco. Il punteggio si segna sulla card (scelta 3C del 12/09: niente foglio), il tavolo e' sulla card, in fondo l'azione della fase. La card riassuntiva e' scura come la fascia (scelta 1B)."
+    },
+    {
+      "id": "nota-giocotavolo",
+      "page": "page-3",
+      "x": 560,
+      "y": -260,
+      "w": 470,
+      "text": "Si tocca la tessera libera e il tavolo e' assegnato: come nel foglio di oggi (tableAssignmentModal in gara_detail.html, selectTableFromModal salva al tocco), senza bottone di conferma. Gli occupati mostrano i due giocatori. Un tavolo libero con una partita in attesa capita quando lo si aggiunge a turno avviato: alla validazione il tavolo liberato passa da solo alla prima in attesa (release_and_reassign_table). Senza tavolo i comandi di punteggio restano spenti: e' una regola dell'app."
+    },
+    {
+      "id": "nota-giocovalida",
+      "page": "page-3",
+      "x": 1120,
+      "y": -260,
+      "w": 470,
+      "text": "La partita da validare: arrivata alla distanza dal segnapunti dei giocatori senza la doppia conferma (`is_at_distance and not is_player_validated`, _match_card.html). «Valida» la chiude e libera il tavolo, che passa da solo alla prima partita in attesa (MatchValidationService.validate_and_complete → release_and_reassign_table): la card lo dice. L'alternativa a validare e' correggere: oggi sulla stessa card c'e' «Inserisci risultato» (openQuickResult) accanto alla spunta; qui sono gli stessi stepper delle altre card, e si valida dopo. Il + si spegne alla distanza del turno (match.effective_distance, ADR-027): non si puo' scrivere un 6 in un turno al 5. Le concluse restano in sola lettura, nome sopra e numero grande sotto. Tutto il turno e' in pagina: la card verde e' l'unica che chiede qualcosa."
+    },
+    {
+      "id": "nota-giococorreggi",
+      "page": "page-3",
+      "x": 1680,
+      "y": -260,
+      "w": 470,
+      "text": "Si puo' fare a gara in corso (issue #90). Dietro il foglio, il turno concluso con le card in sola lettura — nome sopra, numero grande sotto, chi ha vinto pieno — e «Correggi» sulla card da cui si parte. Il foglio dice le due conseguenze vere: i triangoli segnati uno per uno si cancellano, e la correzione resta scritta sulla partita. Il campo «perche'» e' facoltativo ma e' cio' che rende leggibile la correzione a chi aveva visto il risultato di prima."
+    },
+    {
+      "id": "nota-giococlassifica",
+      "page": "page-3",
+      "x": 2240,
+      "y": -260,
+      "w": 470,
+      "text": "Sistema a vittorie: vinte, poi differenza triangoli; la X vale una vittoria e zero differenza (SPECIFICHE.md 64 e 71). La freccia dice se la posizione e' salita, scesa o ferma rispetto al turno prima."
+    },
+    {
+      "id": "nota-giococlassificarack",
+      "page": "page-3",
+      "x": 2800,
+      "y": -260,
+      "w": 470,
+      "text": "Lo stesso elenco quando il campionato ordina a triangoli (ADR-047): vinti e persi al posto di vinte e differenza. La freccia confronta la posizione col turno prima, in entrambi i sistemi."
+    },
+    {
+      "id": "nota-giocoturnodopo",
+      "page": "page-3",
+      "x": 3360,
+      "y": -260,
+      "w": 470,
+      "text": "A turno concluso l'unico comando e' avviare il prossimo. Annullare l'avvio e avviare il turno dopo sono alternativi: si annulla finche' nessuna partita ha un triangolo (Gara.can_cancel_round; sta nel menu del turno), si avvia quando tutte sono alla distanza; in mezzo, nessuno dei due. L'azzeramento in blocco del turno della prima versione e' stato tolto: le partite si azzerano una per una, dalla loro card (reset_match)."
+    },
+    {
+      "id": "nota-giocomiomatch",
+      "page": "page-3",
+      "x": 3920,
+      "y": -260,
+      "w": 470,
+      "text": "Se dirige ed e' iscritto, la sua partita e' la prima cosa: card scura con i due giocatori nella geometria delle altre card — nome sopra, numero grande sotto, niente «vs» — e il segnapunti come unico comando. La scorciatoia esiste gia' (_gara_my_match.html)."
+    },
+    {
+      "id": "nota-consoledesktop",
+      "page": "page-3",
+      "x": 0,
+      "y": 750,
+      "w": 470,
+      "text": "Artboard «ConsoleDesktop»: le partite del turno a sinistra, in sei caselle — le cinque partite e il turno prima — che riempiono l'altezza; a destra «da fare adesso», i tavoli e la classifica dopo l'ultimo turno chiuso, fino in fondo. «Impostazioni gara» sale in testata: contiene solo direttori, vetrina e tavoli, le voci che si toccano in gioco. La partita da validare ha gli stepper attivi per correggere — il + spento alla distanza del turno — e «Valida» sotto, come oggi «Inserisci risultato» accanto alla spunta; e dice a chi passa il tavolo (release_and_reassign_table)."
+    },
+    {
+      "id": "nota-ssrrilevato",
+      "page": "page-4",
+      "x": 0,
+      "y": -260,
+      "w": 470,
+      "text": "L'app rileva i parimerito fino alla posizione configurata (qui la 3&ordf;). Prima di avviare lo spareggio la strada indietro c'e' ancora: azzerare il turno se un punteggio e' sbagliato."
+    },
+    {
+      "id": "nota-ssrpunteggi",
+      "page": "page-4",
+      "x": 560,
+      "y": -260,
+      "w": 470,
+      "text": "Un gruppo per posizione contesa. Gli stessi steppers del risultato: chi dirige usa un solo gesto in tutta l'app.\n\nLo spareggio ordina solo i pari merito — non tocca vittorie ne' differenza triangoli."
+    },
+    {
+      "id": "nota-ssrtermina",
+      "page": "page-4",
+      "x": 1120,
+      "y": -260,
+      "w": 470,
+      "text": "L'ultima azione, e cio' che comporta: classifica definitiva, punti al campionato, notifica ai giocatori. Accanto resta «Annulla lo spareggio», che riporta la gara in gioco azzerando i punti SSR."
+    },
+    {
+      "id": "nota-fineclassifica",
+      "page": "page-5",
+      "x": 0,
+      "y": -260,
+      "w": 470,
+      "text": "A gara conclusa il soggetto e' la classifica. Podio e posizioni 1-3 nei colori delle medaglie dell'app (--c7-oro, --c7-argento, --c7-bronzo, tokens-7c.css); la pastiglia SSR dove lo spareggio ha deciso; la freccia confronta con la classifica dopo l'ultimo turno, cosi' si vede dove lo spareggio ha cambiato l'ordine. La linguetta «Gestione» sparisce."
+    },
+    {
+      "id": "nota-finedopo",
+      "page": "page-5",
+      "x": 560,
+      "y": -260,
+      "w": 470,
+      "text": "Dove sono finiti i punti, dov'e' la pagina pubblica, cosa non si tocca piu'. Serve a chiudere il ciclo invece di lasciare la pagina identica a prima ma spenta.\n\nScelta 5S del 12/09: le partite restano in pagina, turno per turno. La pagina pubblica mostra la classifica finale (vetrina_gara.html, `vetrina.conclusa`), per questo la riga lo dice."
+    },
+    {
+      "id": "nota-iscrdesktop",
+      "page": "page-2",
+      "x": 0,
+      "y": 750,
+      "w": 470,
+      "text": "Iscrizioni su desktop: il campo per iscrivere sta in cima alla colonna, sempre visibile, come in 2.2 — nessun clic prima di poter scrivere (ricerca per cognome, nome o username, PR #297). La categoria e' il chip che si tocca; a destra il link da condividere, la lista d'attesa, che entra da sola quando qualcuno si ritira, e le due cose da tenere d'occhio. L'avvio resta spento finche' manca il minimo."
+    },
+    {
+      "id": "nota-schermosala",
+      "page": "page-3",
+      "x": 1600,
+      "y": 750,
+      "w": 470,
+      "text": "NUOVO, non esiste nell'app: la pagina pubblica della gara oggi rimanda alla pagina gara (routes/main.py, gara_detail_public) e la vetrina a gara in corso dice solo «Gara in corso». SPECIFICHE.md riga 357 chiede «i risultati dei match in tempo reale». In testa la locandina della vetrina (il banner 1200x630 di admin/gara_vetrina.html) a tutta larghezza, ritagliata al centro come nelle anteprime social, con nome della gara e turno sopra. Da leggere a tre metri: i quattro tavoli in una griglia 2x2, ogni casella piena con i due giocatori in due riquadri (nome e punteggio a 96 px); la classifica dopo l'ultimo turno chiuso e il turno prima stanno a destra. I dati arrivano dagli stessi eventi live della pagina gara (ADR-057). Per i tabelloni al posto della classifica va il tabellone: non disegnato."
+    },
+    {
+      "id": "nota-ssrdesktop",
+      "page": "page-4",
+      "x": 0,
+      "y": 750,
+      "w": 470,
+      "text": "Spareggio su desktop: gli stepper dei parimerito a sinistra, la classifica con la pastiglia PARI a destra. «Annulla lo spareggio» accanto a «Salva», come nell'app (riporta in gioco e azzera i punti SSR)."
+    },
+    {
+      "id": "nota-finedesktop",
+      "page": "page-5",
+      "x": 0,
+      "y": 750,
+      "w": 470,
+      "text": "Conclusa su desktop: il podio dentro la fascia, la classifica sotto con le medaglie e le frecce rispetto all'ultimo turno, a destra dove sono finiti i punti e le partite turno per turno (scelta 5S)."
+    },
+    {
+      "id": "nota-campionatomobile",
+      "page": "page-7",
+      "x": 0,
+      "y": -260,
+      "w": 470,
+      "text": "La pagina del campionato per chi lo dirige: a che punto e' la stagione, la classifica generale con le tendenze e la ZONA PLAYOFF — barra accento sulle prime 8, etichetta sopra, «fuori dai playoff» sotto l'ottava (NUOVO: oggi _campionato_general_classification.html non la segna; il numero e' playoff_elite_participants) — le gare, le righe di gestione."
+    },
+    {
+      "id": "nota-playoffmobile",
+      "page": "page-7",
+      "x": 560,
+      "y": -260,
+      "w": 470,
+      "text": "Dopo «Passa ai playoff» e «Avvia i playoff» (PlayoffService.start_playoff, scadenza 7 giorni): 8 inviti, chi rifiuta e' sostituito dal primo degli esclusi (find_replacement_player) e la riga lo dice. Su chi e' in attesa il direttore risponde per conto del giocatore dalla riga — «Accetta» e «Rifiuta», con conferma — come oggi in admin/campionato_detail.html (playoff_respond_for_player); la risposta resta registrata a suo nome. Con i confermati si crea la gara playoff (create_playoff_gara)."
+    },
+    {
+      "id": "nota-campionatodesktop",
+      "page": "page-7",
+      "x": 0,
+      "y": 750,
+      "w": 470,
+      "text": "Classifica generale con la zona playoff a sinistra, gare e gestione a destra. La zona e' NUOVA: oggi la classifica non la segna."
+    },
+    {
+      "id": "nota-playoffdesktop",
+      "page": "page-7",
+      "x": 1600,
+      "y": 750,
+      "w": 470,
+      "text": "Invitati a sinistra, con «Accetta» e «Rifiuta» sulle righe in attesa (playoff_respond_for_player, con conferma); a destra la regola della classifica finale e la classifica congelata da cui nascono gli inviti, con la zona playoff."
+    },
+    {
+      "id": "nota-a",
+      "x": 0,
+      "y": -260,
+      "w": 460,
+      "text": "A · REGIA\nLa pagina di oggi con una fascia in cima che dice a che punto e' il turno e cosa lo tiene aperto: tavoli da assegnare e risultati mancanti.\n\nPerche': il direttore non ha un comando da premere mentre il turno gira — ha lavoro sparso. La fascia lo raccoglie.\nCosto: aggiunge un blocco, non toglie niente. Le quattro linguette e le sezioni restano dove sono.",
+      "page": "page-6"
+    },
+    {
+      "id": "nota-b",
+      "x": 1120,
+      "y": -260,
+      "w": 460,
+      "text": "B · CONSOLE\nIl turno in corso diventa la pagina: punteggio segnato sulla card (niente modale), tavolo sulla card, e a destra «da fare adesso» con la mappa dei tavoli.\n\nPerche': e' la pagina che si tiene aperta mentre si dirige.\nCosto: il piu' grosso dei tre — tocca il segnapunti, non solo l'impaginazione.",
+      "page": "page-6"
+    },
+    {
+      "id": "nota-c",
+      "x": 560,
+      "y": -260,
+      "w": 460,
+      "text": "C · FASI\nNiente quattro linguette: una striscia mostra il ciclo (iscrizione → gioco → chiusura) e la pagina e' la fase in corso. Direttori, tavoli, squadre, categorie e configurazione turni finiscono sotto «Impostazioni gara».\n\nPerche': in gioco il 90% di quelle sezioni non serve.\nCosto: aggiungere un co-direttore a gara iniziata costa un tap in piu', e la striscia mangia spazio verticale sul telefono.",
+      "page": "page-6"
+    },
+    {
+      "id": "dec-come",
+      "page": "page-0",
+      "x": 0,
+      "y": -600,
+      "w": 1060,
+      "text": "COME SI SCEGLIE\nOgni riga è una decisione. Le schermate di una riga portano gli stessi dati: cambia solo dove stanno le cose e che comando hanno. Si risponde con la sigla, in chat o in un bigliettino qui accanto.\nIl 12/09 le cinque hanno avuto risposta (le righe «SCELTA»); le scelte sono applicate alle pagine 1–5, che restano la proposta completa. Restano aperti due punti: la gestione con la striscia (decisione 2) e i testi degli esercizi (decisione 4)."
+    },
+    {
+      "id": "dec-1",
+      "page": "page-0",
+      "x": 0,
+      "y": -340,
+      "w": 1060,
+      "text": "DECISIONE 1 · LA FORMA — in gioco (le prime tre) e in preparazione (le ultime due)\nSCELTA (12/09): 1B in gioco, con la card riassuntiva scura come la fascia; 1S in preparazione. Applicata alle pagine 1–5. Nota: i tavoli si scelgono sempre, di solito prima di avviare un turno; la riga mostra quanti ne ha la sala.\nStessi dati: turno 2 di 4, 2 partite chiuse su 5, m.rossi–g.verdi 4–2 al tavolo 1, d.bianchi–l.ferrari 3–3 al tavolo 2, s.conti–p.marini senza tavolo, turno 1 concluso.\n1A · Regia: la pagina di oggi più una fascia che dice cosa tiene aperto il turno.\n1B · Console: il turno è la pagina, il punteggio si segna sulla card, l'azione della fase sta nella barra in fondo.\n1C · Fasi: la striscia del ciclo al posto delle linguette, la fascia dice l'unica cosa da fare, classifica in un commutatore, iscritti e impostazioni come righe."
+    },
+    {
+      "id": "dec-2",
+      "page": "page-0",
+      "x": 0,
+      "y": 960,
+      "w": 1060,
+      "text": "DECISIONE 2 · LINGUETTE O STRISCIA DI FASE — stesso contenuto, cambia la navigazione\nSCELTA (12/09): la striscia. Corretto il 12/09 sera dopo le tue obiezioni, con il codice alla mano:\n• IL TURNO ha un solo comando durante il gioco: annullarne l'avvio, e solo finché nessuna partita ha segnato un triangolo (X esclusa — `Gara.can_cancel_round`, use case 8). Sta nei tre puntini accanto a «Turno 2».\n• LA PARTITA ha i suoi comandi sulla card: cambia tavolo (3.2), azzera la partita (`reset_match`, finché il turno dopo non è avviato), e su una chiusa «correggi il risultato» (3.4). Il «da validare» è la 3.3: una partita arrivata alla distanza dal segnapunti dei giocatori senza la doppia conferma mostra «Valida», che la chiude e libera il tavolo (`MatchValidationService.validate_and_complete`).\n• L'azzeramento in blocco del turno l'avevo messo io: nell'app c'è («Reset ultimo turno», `bulk_reset_round_matches`) ma compare solo a gara finita, prima di terminarla. Tolto dal disegno.\n• «IMPOSTAZIONI GARA» in gioco contiene solo ciò che si tocca davvero: direttori e vetrina (modificabili in ogni stato) e i tavoli (oggi bloccati dopo l'avvio; la regola nuova li vuole modificabili fra un turno e l'altro). Il resto si legge. La gara si modifica solo in preparazione senza iscritti, si elimina solo fino alle iscrizioni: la prima versione di questa schermata li inventava.\n• L'azione della fase (avvia il turno 3, termina la gara) resta nella barra in fondo.\nLo spareggio ha la sua tacca nella striscia, fra il gioco e la chiusura, e compare solo nelle gare che ce l'hanno (schermata 2S · nello spareggio, contenuto della 4.1)."
+    },
+    {
+      "id": "dec-3",
+      "page": "page-0",
+      "x": 0,
+      "y": 2260,
+      "w": 1060,
+      "text": "DECISIONE 3 · IL PUNTEGGIO — dove si segna il risultato di una partita del turno\nSCELTA (12/09): 3C, sulla card. La 3.3 «Segna il risultato» è uscita dalla pagina 3.\n3C · Sulla card: gli stepper stanno sulla card, ogni tocco scrive il punteggio; a 5 la partita si chiude e il tavolo si libera. Niente foglio, niente conferma. Tocca il segnapunti: una scrittura per tocco, la conferma da ripensare.\n3F · Dal foglio: la card mostra il punteggio e «Segna il risultato»; il foglio ha gli stepper e la riga che dice chi vince. Era il meccanismo di oggi (il «risultato rapido» dalla card), rivestito."
+    },
+    {
+      "id": "dec-4",
+      "page": "page-0",
+      "x": 0,
+      "y": 3560,
+      "w": 1060,
+      "text": "DECISIONE 4 · GLI ESERCIZI — le due forme, entrambe anche con Amalfi\nLa domanda «nascosta o spenta» era posta male: la spunta di oggi copre una sola forma. Ce ne sono due, e la schermata le mostra insieme su una gara Amalfi:\n• ESERCIZI FRA I TURNI: uno o più esercizi che si giocano dopo un turno (GaraChallenge.round_number), con tentativi contati e una classifica a parte accanto a quella della gara. Riga «Esercizi fra i turni» in «Da preparare», facoltativa. Oggi l'app li mostra solo con l'accoppiamento casuale, ma il limite sta nei template (_gara_management.html, _gara_challenges_display.html): il servizio non lo impone. Con Amalfi va aperto.\n• X CON ESERCIZIO: la policy dei dispari «Bye+Challenge», chi riposa gioca l'esercizio e prende una vittoria e una differenza pari al punteggio (SPECIFICHE.md riga 138). È una voce di «Chi riposa», non degli esercizi. Oggi l'app la offre con qualunque strategia tranne i tabelloni (x_challenge_section.js).\nDa confermare: i due testi delle righe."
+    },
+    {
+      "id": "dec-5",
+      "page": "page-0",
+      "x": 0,
+      "y": 4860,
+      "w": 1060,
+      "text": "DECISIONE 5 · «RIEPILOGO PARTITE» A GARA CONCLUSA — la pagina dopo la fine, vista Turni\nSCELTA (12/09): 5S, le partite restano in pagina. Applicata alla 5.2. La pagina pubblica a gara conclusa mostra la classifica finale (vetrina_gara.html, `vetrina.conclusa`): la riga ora lo dice.\n5L · Link: una riga che apre l'elenco, pagina corta. 5S · Sezione: le partite in pagina, turno per turno; è ciò che l'app fa oggi."
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-0"
+  }
+}
