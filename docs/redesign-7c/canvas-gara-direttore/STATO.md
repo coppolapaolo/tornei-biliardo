@@ -322,6 +322,20 @@ Verificato nel codice e applicato al canvas:
   conferme aperte (gestione con la striscia, testi degli esercizi). Il
   canvas si apre sulla pagina 3.
 
+## Approvato il 13/09: si implementa
+
+Revisione chiusa («va bene»): il canvas pubblicato — versione 9, con i tre
+giri del 13/09 — è approvato per intero, comprese la gestione con la striscia
+di fase (menu del turno «⋯», menu della partita, pagina «Impostazioni gara»,
+tacca dello spareggio) e le due forme degli esercizi. Da qui in poi il canvas
+**è la specifica**: si implementa una fase alla volta con la skill `ui-7c`,
+una PR `feat:` per fase da `main`, nell'ordine impalcatura comune →
+preparazione → iscrizioni → gioco → schermo in sala → spareggio e conclusa →
+campionato e playoff. Dove un dettaglio non è nel canvas valgono i
+bigliettini di questo file; dove manca anche qui si sceglie la soluzione più
+vicina al canvas e la si scrive nella PR. Lo stato dell'implementazione si
+aggiorna in fondo a questo file, fase per fase.
+
 ## Non ancora disegnato
 
 Da chiedere prima di implementare, perché il canvas non li copre: squadre e
