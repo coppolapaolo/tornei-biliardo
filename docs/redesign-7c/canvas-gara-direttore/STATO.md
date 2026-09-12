@@ -37,7 +37,7 @@ console del primo giro riusata come panoramica, artboard «Main»).
 **Nessuna delle tre direzioni è stata scelta formalmente**: le fasi sono la
 proposta, e vanno guardate prima di scrivere codice.
 
-## Le cinque fasi, 34 schermate, più il campionato
+## Le cinque fasi, 36 schermate, più il campionato
 
 Ogni schermata mostra **comandi che esistono davvero**: etichette e
 condizioni vengono da `_gara_management.html`, `_round_management.html`,
@@ -260,6 +260,46 @@ spazio vuoto non è buon design**, si riempie con ciò che serve o si toglie.
 * Restano da revisionare dall'utente: 1.x, 2.x, 4.x, 5.x rifatte, la pagina
   7 (campionato e playoff), e le due conferme aperte (gestione con la
   striscia, testi degli esercizi). Il canvas si apre sulla pagina 3.
+
+## Secondo giro del 13/09 (rilievi dell'utente su 1.x, 3.x, 5.x, 7.x)
+
+Verificato nel codice e applicato al canvas:
+
+* **1.3 tavoli**: via l'interruttore «usa tutti i tavoli della sala» (era
+  un'invenzione; nell'app l'elenco vuoto vale «tutti», qui l'elenco parte
+  pieno). «Dalla sala» — che voleva dire «prendi i nomi dei tavoli della
+  sala», `TableAssignmentService.get_table_names` — è diventato una riga
+  di chip «Altri tavoli della sala: +4 +5 +6», più «Un altro nome».
+* **1.9 desktop**: una pagina sola che scorre (artboard 1440×1560,
+  `ALTEZZE` nel registro): fascia; turni in sintesi con la riga degli
+  esercizi fra i turni; direzione di gara con la ricerca dei co-direttori
+  aperta in linea; tavoli con l'ordine e i chip; vetrina con lo spazio
+  1200×630 e i tre campi. La colonna destra è la lista di cosa manca, ogni
+  riga scorre alla sua sezione. Turni ed esercizi aprono la **1.10, nuova**:
+  i quattro turni e gli esercizi fra i turni con il modulo di aggiunta in
+  linea (i tre campi di `_challenge_management_modal.html`).
+* **3.3 e 3.9**: l'alternativa a validare è correggere. Oggi sulla stessa
+  card ci sono «Inserisci risultato» (`openQuickResult`) e la spunta
+  «Valida» (`_match_card.html`, riga 186 e 192): nel canvas la partita da
+  validare ha gli **stepper attivi** e «Valida» sotto, e la nota lo dice.
+* **3.8**: la card scura usa la geometria delle altre (nome sopra, numero
+  sotto, niente «vs»); anche la card «da giocare» del kit ora ha i due
+  riquadri con il trattino al posto del numero.
+* **3.10**: le tessere scure dicono «TAVOLO» sopra il numero.
+* **5.1 e 5.3**: frecce di tendenza rispetto alla classifica dopo l'ultimo
+  turno; dove lo spareggio ha invertito l'ordine, si vede.
+* **7.1 e 7.3**: la classifica generale segna la **zona playoff** — barra
+  accento sulle prime 8, etichetta sopra, «fuori dai playoff» dopo
+  l'ottava. NUOVO: oggi `_campionato_general_classification.html` non la
+  segna; il numero è `playoff_elite_participants`.
+* **7.2 e 7.4**: sulle righe in attesa il direttore risponde per conto del
+  giocatore, «Accetta» e «Rifiuta» con conferma: esiste già
+  (`playoff_respond_for_player`, `admin/campionato_detail.html`); la riga
+  di chi ha rifiutato dice chi è stato invitato al suo posto. Otto invitati
+  coerenti con «4 confermati su 8, 3 in attesa».
+* Restano da revisionare dall'utente: 2.x, 4.x, e le due conferme aperte
+  (gestione con la striscia, testi degli esercizi). Il canvas si apre sulla
+  pagina 3.
 
 ## Non ancora disegnato
 

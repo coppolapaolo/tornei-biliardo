@@ -113,6 +113,15 @@
       "x": 0,
       "y": 1010,
       "w": 1440,
+      "h": 1560
+    },
+    {
+      "file": "SetupTurniDesktop.dc.html",
+      "title": "1.10 Turni e distanze su desktop",
+      "page": "page-1",
+      "x": 1600,
+      "y": 1010,
+      "w": 1440,
       "h": 900
     },
     {
@@ -589,7 +598,7 @@
       "x": 1120,
       "y": -260,
       "w": 470,
-      "text": "I tavoli come elenco ordinato: il nome si scrive, l'ordine si trascina, si toglie e si aggiunge. I nomi arrivano dalla sala (BilliardHall.get_table_names) e la gara puo' aggiungerne di suoi: oggi `available_tables` e' gia' una lista di nomi liberi, scritta pero' come «3, 1, 2» in un campo di testo.\n\nPROBLEMA VERO: oggi si modificano solo a iscrizioni aperte, e lo vieta anche il servizio (update_tables_config → ConflictError). La regola: si scelgono sempre, anche a iscrizioni chiuse e fra un turno e l'altro."
+      "text": "I tavoli della gara come elenco ordinato: il nome si scrive, l'ordine si trascina, si toglie. Sotto, i tavoli della sala che non sono in elenco (i nomi della sala, personalizzati o numerici: TableAssignmentService.get_table_names) si aggiungono con un tocco; «Un altro nome» aggiunge un tavolo che la sala non conosce. Oggi l'elenco e' un campo di testo «3, 1, 2», e vuoto vuol dire tutti i tavoli della sala: qui non c'e' uno stato vuoto, l'elenco parte pieno.\n\nPROBLEMA VERO: oggi si modificano solo a iscrizioni aperte, e lo vieta anche il servizio (update_tables_config → ConflictError). La regola: si scelgono sempre, anche a iscrizioni chiuse e fra un turno e l'altro."
     },
     {
       "id": "nota-setupesercizi",
@@ -637,7 +646,15 @@
       "x": 0,
       "y": 750,
       "w": 470,
-      "text": "Su desktop la preparazione ci sta tutta: i quattro turni affiancati a sinistra, l'elenco di cosa manca a destra. Nessuna linguetta: sopra i 992px le viste non esistono."
+      "text": "La preparazione su desktop e' una pagina sola che scorre (1560 px): la fascia, i turni in sintesi con gli esercizi fra i turni («Modifica turni ed esercizi» apre la 1.10), la direzione di gara con la ricerca dei co-direttori aperta in linea, i tavoli con l'ordine e i chip della sala, la vetrina con lo spazio 1200x630. La colonna destra e' la lista di cosa manca: ogni riga scorre alla sua sezione, senza pagine in piu'."
+    },
+    {
+      "id": "nota-setupturnidesktop",
+      "page": "page-1",
+      "x": 1600,
+      "y": 750,
+      "w": 470,
+      "text": "La pagina che si apre da «Modifica turni ed esercizi» in 1.9: i quattro turni con disciplina e distanza (ADR-027), e sotto gli esercizi fra i turni con il modulo di aggiunta in linea — i tre campi di _challenge_management_modal.html (esercizio, dopo quale turno, tentativi). Oggi gli esercizi stanno in Gestione, in un modale, e compaiono solo col casuale: il limite e' nei template."
     },
     {
       "id": "nota-iscrpanoramica",
@@ -701,7 +718,7 @@
       "x": 1120,
       "y": -260,
       "w": 470,
-      "text": "La partita da validare: arrivata alla distanza dal segnapunti dei giocatori senza la doppia conferma (`is_at_distance and not is_player_validated`, _match_card.html). «Valida» la chiude e libera il tavolo, che passa da solo alla prima partita in attesa (MatchValidationService.validate_and_complete → release_and_reassign_table): la card lo dice. Nome sopra, numero grande sotto, il vincitore in evidenza: la stessa geometria degli stepper, anche sulle partite concluse. Tutto il turno e' in pagina: la card verde e' l'unica che chiede qualcosa."
+      "text": "La partita da validare: arrivata alla distanza dal segnapunti dei giocatori senza la doppia conferma (`is_at_distance and not is_player_validated`, _match_card.html). «Valida» la chiude e libera il tavolo, che passa da solo alla prima partita in attesa (MatchValidationService.validate_and_complete → release_and_reassign_table): la card lo dice. L'alternativa a validare e' correggere: oggi sulla stessa card c'e' «Inserisci risultato» (openQuickResult) accanto alla spunta; qui sono gli stessi stepper delle altre card, e si valida dopo. Le concluse restano in sola lettura, nome sopra e numero grande sotto. Tutto il turno e' in pagina: la card verde e' l'unica che chiede qualcosa."
     },
     {
       "id": "nota-giococorreggi",
@@ -741,7 +758,7 @@
       "x": 3920,
       "y": -260,
       "w": 470,
-      "text": "Se dirige ed e' iscritto, la sua partita e' la prima cosa: card scura con i due giocatori nella stessa forma delle altre card e il segnapunti come unico comando. La scorciatoia esiste gia' (_gara_my_match.html)."
+      "text": "Se dirige ed e' iscritto, la sua partita e' la prima cosa: card scura con i due giocatori nella geometria delle altre card — nome sopra, numero grande sotto, niente «vs» — e il segnapunti come unico comando. La scorciatoia esiste gia' (_gara_my_match.html)."
     },
     {
       "id": "nota-consoledesktop",
@@ -749,7 +766,7 @@
       "x": 0,
       "y": 750,
       "w": 470,
-      "text": "Artboard «ConsoleDesktop»: le partite del turno a sinistra, in sei caselle — le cinque partite e il turno prima — che riempiono l'altezza; a destra «da fare adesso», i tavoli e la classifica dopo l'ultimo turno chiuso, fino in fondo. «Impostazioni gara» sale in testata: contiene solo direttori, vetrina e tavoli, le voci che si toccano in gioco. La partita da validare dice a chi passa il tavolo (release_and_reassign_table)."
+      "text": "Artboard «ConsoleDesktop»: le partite del turno a sinistra, in sei caselle — le cinque partite e il turno prima — che riempiono l'altezza; a destra «da fare adesso», i tavoli e la classifica dopo l'ultimo turno chiuso, fino in fondo. «Impostazioni gara» sale in testata: contiene solo direttori, vetrina e tavoli, le voci che si toccano in gioco. La partita da validare ha gli stepper attivi per correggere e «Valida» sotto, come oggi «Inserisci risultato» accanto alla spunta; e dice a chi passa il tavolo (release_and_reassign_table)."
     },
     {
       "id": "nota-ssrrilevato",
@@ -781,7 +798,7 @@
       "x": 0,
       "y": -260,
       "w": 470,
-      "text": "A gara conclusa il soggetto e' la classifica. Podio e posizioni 1-3 nei colori delle medaglie dell'app (--c7-oro, --c7-argento, --c7-bronzo, tokens-7c.css); la pastiglia SSR dove lo spareggio ha deciso. La linguetta «Gestione» sparisce."
+      "text": "A gara conclusa il soggetto e' la classifica. Podio e posizioni 1-3 nei colori delle medaglie dell'app (--c7-oro, --c7-argento, --c7-bronzo, tokens-7c.css); la pastiglia SSR dove lo spareggio ha deciso; la freccia confronta con la classifica dopo l'ultimo turno, cosi' si vede dove lo spareggio ha cambiato l'ordine. La linguetta «Gestione» sparisce."
     },
     {
       "id": "nota-finedopo",
@@ -821,7 +838,7 @@
       "x": 0,
       "y": 750,
       "w": 470,
-      "text": "Conclusa su desktop: il podio dentro la fascia, la classifica sotto, a destra dove sono finiti i punti e le partite turno per turno (scelta 5S)."
+      "text": "Conclusa su desktop: il podio dentro la fascia, la classifica sotto con le medaglie e le frecce rispetto all'ultimo turno, a destra dove sono finiti i punti e le partite turno per turno (scelta 5S)."
     },
     {
       "id": "nota-campionatomobile",
@@ -829,7 +846,7 @@
       "x": 0,
       "y": -260,
       "w": 470,
-      "text": "La pagina del campionato per chi lo dirige: a che punto e' la stagione, la classifica generale con le tendenze, le gare, le righe di gestione. Oggi (campionato_detail.html) e' informazioni, direttori, statistiche, classifica, elenco gare in tabella, card playoff."
+      "text": "La pagina del campionato per chi lo dirige: a che punto e' la stagione, la classifica generale con le tendenze e la ZONA PLAYOFF — barra accento sulle prime 8, etichetta sopra, «fuori dai playoff» sotto l'ottava (NUOVO: oggi _campionato_general_classification.html non la segna; il numero e' playoff_elite_participants) — le gare, le righe di gestione."
     },
     {
       "id": "nota-playoffmobile",
@@ -837,7 +854,7 @@
       "x": 560,
       "y": -260,
       "w": 470,
-      "text": "Dopo «Passa ai playoff» (terminate_campionato) e «Avvia i playoff» (PlayoffService.start_playoff): gli inviti con scadenza a 7 giorni, chi rifiuta e' sostituito dal primo degli esclusi (find_replacement_player), il direttore puo' rispondere per un giocatore (playoff_respond_for_player). Con i confermati si crea la gara playoff (create_playoff_gara), che poi e' una gara come le altre; la modalita' di classifica finale e il peso sono di _playoff_scoring_form.html."
+      "text": "Dopo «Passa ai playoff» e «Avvia i playoff» (PlayoffService.start_playoff, scadenza 7 giorni): 8 inviti, chi rifiuta e' sostituito dal primo degli esclusi (find_replacement_player) e la riga lo dice. Su chi e' in attesa il direttore risponde per conto del giocatore dalla riga — «Accetta» e «Rifiuta», con conferma — come oggi in admin/campionato_detail.html (playoff_respond_for_player); la risposta resta registrata a suo nome. Con i confermati si crea la gara playoff (create_playoff_gara)."
     },
     {
       "id": "nota-campionatodesktop",
@@ -845,7 +862,7 @@
       "x": 0,
       "y": 750,
       "w": 470,
-      "text": "Classifica generale a sinistra, gare e gestione a destra."
+      "text": "Classifica generale con la zona playoff a sinistra, gare e gestione a destra. La zona e' NUOVA: oggi la classifica non la segna."
     },
     {
       "id": "nota-playoffdesktop",
@@ -853,7 +870,7 @@
       "x": 1600,
       "y": 750,
       "w": 470,
-      "text": "Invitati a sinistra; a destra la regola della classifica finale (campionato + playoff con peso, oppure solo il playoff) e la classifica congelata da cui nascono gli inviti."
+      "text": "Invitati a sinistra, con «Accetta» e «Rifiuta» sulle righe in attesa (playoff_respond_for_player, con conferma); a destra la regola della classifica finale e la classifica congelata da cui nascono gli inviti, con la zona playoff."
     },
     {
       "id": "nota-a",

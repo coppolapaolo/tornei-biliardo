@@ -316,10 +316,16 @@ svg{display:block}
           <span class="state state--warn">Da giocare</span>
           <button class="btn btn--warn btn--sm">Assegna tavolo</button>
         </div>
-        <div class="row" style="margin-top:12px">
-          <div class="grow" style="font-size:13px;font-weight:800">s.conti</div>
-          <div class="faint" style="font-size:12px;font-weight:800">vs</div>
-          <div class="grow" style="font-size:13px;font-weight:800;text-align:right">p.marini</div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">
+          
+          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:12px 10px 14px;text-align:center">
+            <div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">s.conti</div>
+            <div class="num" style="margin-top:8px;font-size:34px;font-weight:800;line-height:1;color:var(--c7-ink-faint)">&ndash;</div>
+          </div>
+          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:12px 10px 14px;text-align:center">
+            <div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">p.marini</div>
+            <div class="num" style="margin-top:8px;font-size:34px;font-weight:800;line-height:1;color:var(--c7-ink-faint)">&ndash;</div>
+          </div>
         </div>
       </article>
 

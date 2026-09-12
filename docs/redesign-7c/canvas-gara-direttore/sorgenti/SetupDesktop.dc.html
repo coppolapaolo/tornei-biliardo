@@ -206,7 +206,7 @@ svg{display:block}
 </style>
 </helmet>
 
-<div class="app">
+<div class="app" style="height:1560px">
   
   <aside class="side">
     <div class="side__brand">
@@ -245,156 +245,237 @@ svg{display:block}
       </div>
       <div class="dhead__actions"><button class="btn btn--secondary btn--sm"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1A1.6 1.6 0 008 19.4a1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H2a2 2 0 110-4h.1A1.6 1.6 0 003.6 8a1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H8a1.6 1.6 0 001-1.5V2a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V8a1.6 1.6 0 001.5 1H22a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"></path></svg> Modifica gara</button></div>
     </header>
-    <div class="dcontent">
-      <div class="cols">
-        <div class="stack">
+    <div class="dcontent" style="overflow:visible">
+      <div class="cols" style="align-items:start">
+        <div class="stack" style="gap:18px">
+          
           <section class="card card--accent" style="display:flex;align-items:center;
                    gap:22px;padding:20px 22px">
             <div class="grow">
               <div class="kicker">In preparazione</div>
               <h3 style="margin-top:4px;font-size:20px">Nessuno vede ancora la gara</h3>
               <div style="margin-top:6px;font-size:13px;font-weight:600;
-                   color:var(--c7-accent-dim)">
-                Resta da fare la vetrina. 4 tavoli nella sala, tutti in uso.</div>
+                   color:var(--c7-accent-dim)">Resta da fare la vetrina. Quando apri le iscrizioni la gara diventa pubblica e chi &egrave; in zona riceve la notifica.</div>
             </div>
             <button class="btn btn--success"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l12 8-12 8V4z"></path></svg> Apri iscrizioni</button>
           </section>
 
-          <div class="sechead"><h3>Configurazione turni</h3><span class="sechead__more">Ripristina i default</span></div>
-          <section class="card">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              
-              <div class="card--sunk" style="border-radius:var(--c7-r-card);padding:14px">
-                <div class="row"><strong class="grow" style="font-size:14px;white-space:nowrap">Turno 1</strong>
-                  <span class="state state--muted">default</span></div>
-                <div style="margin-top:10px;display:grid;
-                     grid-template-columns:1fr 92px;gap:10px">
-                  
-        <div>
-          <div class="label" style="margin-bottom:8px">Disciplina</div>
-          <div class="" style="height:58px;border-radius:var(--c7-r-field);
-               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
-               font-size:15px;font-weight:700">Palla 8</div>
-          
-        </div>
-                  
-        <div>
-          <div class="label" style="margin-bottom:8px">Triangoli</div>
-          <div class="num" style="height:58px;border-radius:var(--c7-r-field);
-               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
-               font-size:15px;font-weight:700">5</div>
-          
-        </div>
+          <div>
+            <div class="sechead"><h3>Turni e distanze</h3><span class="sechead__more">Modifica turni ed esercizi</span></div>
+            <section class="card" style="margin-top:12px">
+              <div style="display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:12px">
+                
+                <div class="card--sunk" style="border-radius:var(--c7-r-control);padding:12px 14px">
+                  <div class="row"><strong class="grow" style="font-size:13px">Turno 1</strong>
+                    <span class="state state--muted">default</span></div>
+                  <div style="margin-top:8px;font-size:15px;font-weight:800">Palla 8 <span class="muted">&middot;</span> al <span class="num">5</span></div>
+                </div>
+                <div class="card--sunk" style="border-radius:var(--c7-r-control);padding:12px 14px">
+                  <div class="row"><strong class="grow" style="font-size:13px">Turno 2</strong>
+                    <span class="state state--warn">modificato</span></div>
+                  <div style="margin-top:8px;font-size:15px;font-weight:800">Palla 9 <span class="muted">&middot;</span> al <span class="num">3</span></div>
+                </div>
+                <div class="card--sunk" style="border-radius:var(--c7-r-control);padding:12px 14px">
+                  <div class="row"><strong class="grow" style="font-size:13px">Turno 3</strong>
+                    <span class="state state--muted">default</span></div>
+                  <div style="margin-top:8px;font-size:15px;font-weight:800">Palla 8 <span class="muted">&middot;</span> al <span class="num">5</span></div>
+                </div>
+                <div class="card--sunk" style="border-radius:var(--c7-r-control);padding:12px 14px">
+                  <div class="row"><strong class="grow" style="font-size:13px">Turno 4</strong>
+                    <span class="state state--muted">default</span></div>
+                  <div style="margin-top:8px;font-size:15px;font-weight:800">Palla 8 <span class="muted">&middot;</span> al <span class="num">5</span></div>
                 </div>
               </div>
-              <div class="card--sunk" style="border-radius:var(--c7-r-card);padding:14px">
-                <div class="row"><strong class="grow" style="font-size:14px;white-space:nowrap">Turno 2</strong>
-                  <span class="state state--warn">modificato</span></div>
-                <div style="margin-top:10px;display:grid;
-                     grid-template-columns:1fr 92px;gap:10px">
-                  
-        <div>
-          <div class="label" style="margin-bottom:8px">Disciplina</div>
-          <div class="" style="height:58px;border-radius:var(--c7-r-field);
-               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
-               font-size:15px;font-weight:700">Palla 9</div>
-          
-        </div>
-                  
-        <div>
-          <div class="label" style="margin-bottom:8px">Triangoli</div>
-          <div class="num" style="height:58px;border-radius:var(--c7-r-field);
-               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
-               font-size:15px;font-weight:700">3</div>
-          
-        </div>
+              <div class="row" style="margin-top:12px;gap:12px">
+                <div class="tile tile--sm tile--neutral"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="1"></circle></svg></div>
+                <div class="grow">
+                  <div class="rows__title">Esercizi fra i turni</div>
+                  <div class="rows__sub">Stop shot dopo il turno 2 &middot; 2 tentativi &middot; classifica a parte</div>
                 </div>
               </div>
-              <div class="card--sunk" style="border-radius:var(--c7-r-card);padding:14px">
-                <div class="row"><strong class="grow" style="font-size:14px;white-space:nowrap">Turno 3</strong>
-                  <span class="state state--muted">default</span></div>
-                <div style="margin-top:10px;display:grid;
-                     grid-template-columns:1fr 92px;gap:10px">
-                  
-        <div>
-          <div class="label" style="margin-bottom:8px">Disciplina</div>
-          <div class="" style="height:58px;border-radius:var(--c7-r-field);
-               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
-               font-size:15px;font-weight:700">Palla 8</div>
-          
-        </div>
-                  
-        <div>
-          <div class="label" style="margin-bottom:8px">Triangoli</div>
-          <div class="num" style="height:58px;border-radius:var(--c7-r-field);
-               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
-               font-size:15px;font-weight:700">5</div>
-          
-        </div>
-                </div>
-              </div>
-              <div class="card--sunk" style="border-radius:var(--c7-r-card);padding:14px">
-                <div class="row"><strong class="grow" style="font-size:14px;white-space:nowrap">Turno 4</strong>
-                  <span class="state state--muted">default</span></div>
-                <div style="margin-top:10px;display:grid;
-                     grid-template-columns:1fr 92px;gap:10px">
-                  
-        <div>
-          <div class="label" style="margin-bottom:8px">Disciplina</div>
-          <div class="" style="height:58px;border-radius:var(--c7-r-field);
-               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
-               font-size:15px;font-weight:700">Palla 8</div>
-          
-        </div>
-                  
-        <div>
-          <div class="label" style="margin-bottom:8px">Triangoli</div>
-          <div class="num" style="height:58px;border-radius:var(--c7-r-field);
-               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
-               font-size:15px;font-weight:700">5</div>
-          
-        </div>
-                </div>
-              </div>
-            </div>
-          </section>
+            </section>
+          </div>
 
-          <div class="sechead"><h3>Impostazioni di gioco</h3><span class="sechead__more">Modifica gara</span></div>
-          <div class="rows">
+          <div>
+            <div class="sechead"><h3>Direzione di gara</h3></div>
+            <section class="card" style="margin-top:12px;padding:0;overflow:hidden">
+              <div class="rows" style="border-radius:0">
+                
         <div class="rows__row">
-          <div class="tile tile--neutral tile--sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="2"></rect><rect x="14" y="3" width="7" height="7" rx="2"></rect><rect x="3" y="14" width="7" height="7" rx="2"></rect><rect x="14" y="14" width="7" height="7" rx="2"></rect></svg></div>
+          <div class="avatar">PA</div>
           <div class="grow">
-            <div class="rows__title">Accoppiamento</div>
-            <div class="rows__sub">Amalfi &middot; anti-reincontro attivo</div>
+            <div class="rows__title">pa</div>
+            <div class="rows__sub">direttore &middot; sei tu</div>
           </div>
-          <span class="faint"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+          <span class="state state--accent">titolare</span>
         </div>
+                
         <div class="rows__row">
-          <div class="tile tile--neutral tile--sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M7 20h10M4 9l4-4 4 4"></path><path d="M4 9a4 4 0 008 0M12 9l4-4 4 4"></path><path d="M12 9a4 4 0 008 0"></path></svg></div>
+          <div class="avatar">MB</div>
           <div class="grow">
-            <div class="rows__title">Chi riposa</div>
-            <div class="rows__sub">X a tavolino all'ultimo iscritto</div>
+            <div class="rows__title">m.bruni</div>
+            <div class="rows__sub">co-direttore &middot; Biliardo Mimmo</div>
           </div>
-          <span class="faint"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+          <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
         </div>
+              </div>
+              <div style="padding:16px;border-top:1px solid var(--c7-line-soft)">
+                
+        <div>
+          <div class="label" style="margin-bottom:8px">Aggiungi un co-direttore</div>
+          <div class="" style="height:58px;border-radius:var(--c7-r-field);
+               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
+               font-size:15px;font-weight:700">bru<span class="faint">|</span></div>
+          <div style="margin-top:6px;font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.4">Solo utenti con ruolo direttore vicini alla sede. Un co-direttore pu&ograve; fare tutto quello che fai tu, tranne togliere te.</div>
+        </div>
+                <div class="rows" style="margin-top:12px">
+                  
         <div class="rows__row">
-          <div class="tile tile--neutral tile--sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 18h16M4 18L3 7l5 4 4-6 4 6 5-4-1 11"></path></svg></div>
+          <div class="avatar">GD</div>
           <div class="grow">
-            <div class="rows__title">Apertura</div>
-            <div class="rows__sub">acchito &mdash; chi vince sceglie chi apre</div>
+            <div class="rows__title">g.donati</div>
+            <div class="rows__sub">direttore &middot; Biliardo Centrale &middot; 4 km</div>
           </div>
-          <span class="faint"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
-        </div></div>
+          <button class="btn btn--secondary btn--sm">Aggiungi</button>
+        </div>
+                  
+        <div class="rows__row">
+          <div class="avatar">RS</div>
+          <div class="grow">
+            <div class="rows__title">r.sanna</div>
+            <div class="rows__sub">direttore &middot; Sala Nuova &middot; 11 km</div>
+          </div>
+          <button class="btn btn--secondary btn--sm">Aggiungi</button>
+        </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div>
+            <div class="sechead"><h3>Tavoli</h3><span class="sechead__more">3 su 6 della sala</span></div>
+            <section class="card" style="margin-top:12px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+                <div class="rows" style="background:var(--c7-card);border:1px solid var(--c7-line-soft)">
+                  
+            <div class="rows__row" style="gap:10px">
+              <span class="faint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>
+              <div class="num" style="width:110px;height:44px;border-radius:var(--c7-r-control);
+                   background:var(--c7-bg);padding:0 14px;display:flex;align-items:center;
+                   font-size:15px;font-weight:800">3</div>
+              <span class="rows__sub grow" style="margin:0">1&deg; &middot; alla partita di cartello</span>
+              <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+            </div>
+                  
+            <div class="rows__row" style="gap:10px">
+              <span class="faint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>
+              <div class="num" style="width:110px;height:44px;border-radius:var(--c7-r-control);
+                   background:var(--c7-bg);padding:0 14px;display:flex;align-items:center;
+                   font-size:15px;font-weight:800">1</div>
+              <span class="rows__sub grow" style="margin:0">2&deg;</span>
+              <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+            </div>
+                  
+            <div class="rows__row" style="gap:10px">
+              <span class="faint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>
+              <div class="num" style="width:110px;height:44px;border-radius:var(--c7-r-control);
+                   background:var(--c7-bg);padding:0 14px;display:flex;align-items:center;
+                   font-size:15px;font-weight:800">2</div>
+              <span class="rows__sub grow" style="margin:0">3&deg;</span>
+              <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+            </div>
+                </div>
+                <div class="stack">
+                  <div>
+                    <div class="label" style="margin-bottom:8px">Altri tavoli della sala</div>
+                    <div style="display:flex;flex-wrap:wrap;gap:8px">
+                      <button class="pill" style="height:44px;gap:6px;background:var(--c7-card);color:var(--c7-accent);box-shadow:inset 0 0 0 2px var(--c7-accent-tint)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg><span class="num" style="font-size:15px">4</span></button><button class="pill" style="height:44px;gap:6px;background:var(--c7-card);color:var(--c7-accent);box-shadow:inset 0 0 0 2px var(--c7-accent-tint)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg><span class="num" style="font-size:15px">5</span></button><button class="pill" style="height:44px;gap:6px;background:var(--c7-card);color:var(--c7-accent);box-shadow:inset 0 0 0 2px var(--c7-accent-tint)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg><span class="num" style="font-size:15px">6</span></button>
+                      <button class="pill" style="height:44px;gap:6px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg> Un altro nome</button>
+                    </div>
+                  </div>
+                  
+        <div>
+          <div class="row" style="gap:12px">
+            <div class="grow" style="font-size:14px;font-weight:700">Assegna in base alla classifica</div>
+            <div style="width:46px;height:26px;border-radius:999px;background:var(--c7-line);
+                 position:relative;flex-shrink:0">
+              <div style="position:absolute;top:2px;left:2px;width:22px;height:22px;
+                   border-radius:50%;background:#fff"></div>
+            </div>
+          </div>
+          <div style="margin-top:6px;font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.4">Dal secondo turno il primo tavolo va alla partita con il giocatore meglio piazzato. Solo con accoppiamento casuale.</div>
+        </div>
+                  <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+                    Dall'alto in basso &egrave; l'ordine di assegnazione. Si cambiano anche a iscrizioni
+                    chiuse e fra un turno e l'altro.</div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div>
+            <div class="sechead"><h3>Vetrina</h3><span class="sechead__more">Anteprima della pagina pubblica</span></div>
+            <section class="card" style="margin-top:12px">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+                <div>
+                  <div style="aspect-ratio:1200/630;border-radius:var(--c7-r-field);background:var(--c7-sunken);
+                       display:grid;place-items:center;color:var(--c7-ink-faint)">
+                    <div style="text-align:center"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="2.6"></circle><circle cx="6" cy="12" r="2.6"></circle><circle cx="18" cy="19" r="2.6"></circle><path d="M8.4 10.8l7.2-4.1M8.4 13.2l7.2 4.1"></path></svg>
+                      <div style="margin-top:8px;font-size:12px;font-weight:700">Nessuna locandina &middot; 1200&times;630</div></div>
+                  </div>
+                  <div style="margin-top:12px"><button class="btn btn--secondary btn--w"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg> Carica la locandina</button></div>
+                </div>
+                <div class="stack">
+                  
+        <div>
+          <div class="label" style="margin-bottom:8px">Indirizzo pubblico</div>
+          <div class="" style="height:58px;border-radius:var(--c7-r-field);
+               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
+               font-size:15px;font-weight:700">torneibiliardo.it/g/<strong>gara-3-giovedi</strong></div>
+          
+        </div>
+                  
+        <div>
+          <div class="label" style="margin-bottom:8px">Link esterno (facoltativo)</div>
+          <div class="" style="height:58px;border-radius:var(--c7-r-field);
+               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
+               font-size:15px;font-weight:700">regolamento.pdf</div>
+          
+        </div>
+                  
+        <div>
+          <div class="label" style="margin-bottom:8px">Etichetta del link</div>
+          <div class="" style="height:58px;border-radius:var(--c7-r-field);
+               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
+               font-size:15px;font-weight:700">Regolamento</div>
+          
+        </div>
+                  <div style="display:flex;gap:10px">
+                    <button class="btn btn--secondary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a4 4 0 006 .5l2-2a4 4 0 10-5.7-5.7l-1 1"></path><path d="M14 11a4 4 0 00-6-.5l-2 2A4 4 0 109.7 18.2l1-1"></path></svg> Copia il link</button>
+                    <button class="btn btn--primary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg> Salva</button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
         </div>
 
         <div class="stack">
-          <div class="sechead"><h3>Da preparare</h3><span class="sechead__more">3 di 4</span></div>
+          <div class="sechead"><h3>Da preparare</h3><span class="sechead__more">3 di 5</span></div>
           <div class="rows">
         <div class="rows__row">
           <div class="tile tile--ok tile--sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"></path></svg></div>
           <div class="grow">
             <div class="rows__title">Turni e distanze</div>
-            <div class="rows__sub">4 turni &middot; Palla 8 &middot; al 5</div>
+            <div class="rows__sub">4 turni &middot; Palla 8 al 5 &middot; turno 2 al 3</div>
+          </div>
+          <span class="faint"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
+        </div>
+        <div class="rows__row">
+          <div class="tile tile--ok tile--sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="1"></circle></svg></div>
+          <div class="grow">
+            <div class="rows__title">Esercizi fra i turni</div>
+            <div class="rows__sub">1 &middot; Stop shot dopo il turno 2</div>
           </div>
           <span class="faint"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
         </div>
@@ -402,7 +483,7 @@ svg{display:block}
           <div class="tile tile--ok tile--sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6S13.9 16 14.5 19"></path><path d="M16 6.5a3 3 0 010 6M18 19c-.2-1.6-.7-2.9-1.6-3.8"></path></svg></div>
           <div class="grow">
             <div class="rows__title">Direzione di gara</div>
-            <div class="rows__sub">solo tu</div>
+            <div class="rows__sub">tu e m.bruni</div>
           </div>
           <span class="faint"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
         </div>
@@ -410,7 +491,7 @@ svg{display:block}
           <div class="tile tile--ok tile--sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3 12h18M12 5v14"></path></svg></div>
           <div class="grow">
             <div class="rows__title">Tavoli</div>
-            <div class="rows__sub">4 nella sala &middot; tutti in uso</div>
+            <div class="rows__sub">3, 1, 2 &middot; 6 nella sala</div>
           </div>
           <span class="faint"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
         </div>
@@ -422,6 +503,9 @@ svg{display:block}
           </div>
           <span class="faint"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
         </div></div>
+          <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+            Ogni riga porta alla sua sezione, qui sotto. Turni ed esercizi aprono la loro pagina.
+          </div>
 
           <div class="sechead"><h3>Informazioni gara</h3><span class="sechead__more">Modifica</span></div>
           <section class="card">
@@ -431,6 +515,7 @@ svg{display:block}
               <span class="muted">Accoppiamento</span><span style="font-weight:800">Amalfi</span>
               <span class="muted">Partecipanti</span><span class="num">8&ndash;16</span>
               <span class="muted">Chi riposa</span><span style="font-weight:800">Ultimo iscritto</span>
+              <span class="muted">Apertura</span><span style="font-weight:800">acchito, chi vince sceglie</span>
             </div>
           </section>
         </div>

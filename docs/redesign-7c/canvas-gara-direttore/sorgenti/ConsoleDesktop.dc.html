@@ -289,18 +289,30 @@ svg{display:block}
         </div>
         <div style="flex:1;margin-top:12px;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">
           
-          <div style="border-radius:var(--c7-r-field);background:var(--c7-card);padding:12px 12px 14px;
-               display:flex;flex-direction:column;justify-content:center;gap:8px;text-align:center">
-            <div style="font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;
-                        text-overflow:ellipsis;">a.galli</div>
-            <div class="num" style="font-size:40px;font-weight:800;line-height:1;">5</div>
+          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:12px 12px 14px;
+               display:flex;flex-direction:column;justify-content:center;gap:10px">
+            <div style="font-size:13px;font-weight:800;text-align:center;
+                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">a.galli</div>
+            <div class="row" style="gap:8px">
+              <button class="iconbtn" style="width:44px;height:44px;background:var(--c7-card)"
+                      ><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
+              <div class="num grow" style="text-align:center;font-size:32px;font-weight:800">5</div>
+              <button class="iconbtn" style="width:44px;height:44px;background:var(--c7-ink);
+                      color:#fff"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button>
+            </div>
           </div>
 
-          <div style="border-radius:var(--c7-r-field);background:var(--c7-card);padding:12px 12px 14px;
-               display:flex;flex-direction:column;justify-content:center;gap:8px;text-align:center">
-            <div style="font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;
-                        text-overflow:ellipsis;color:var(--c7-ink-muted)">r.neri</div>
-            <div class="num" style="font-size:40px;font-weight:800;line-height:1;color:var(--c7-ink-muted)">1</div>
+          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:12px 12px 14px;
+               display:flex;flex-direction:column;justify-content:center;gap:10px">
+            <div style="font-size:13px;font-weight:800;text-align:center;
+                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">r.neri</div>
+            <div class="row" style="gap:8px">
+              <button class="iconbtn" style="width:44px;height:44px;background:var(--c7-card)"
+                      ><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
+              <div class="num grow" style="text-align:center;font-size:32px;font-weight:800">1</div>
+              <button class="iconbtn" style="width:44px;height:44px;background:var(--c7-ink);
+                      color:#fff"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button>
+            </div>
           </div>
 
         </div>

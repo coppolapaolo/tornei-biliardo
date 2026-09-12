@@ -464,17 +464,20 @@ def stepper_card(p1, s1, p2, s2, table, live=True):
 
 def pending_card(p1, p2):
     """Partita non ancora iniziata: niente segnapunti — non c'e' nulla da
-    segnare finche' non si gioca. Il comando e' assegnare il tavolo."""
+    segnare finche' non si gioca — ma la stessa geometria delle altre card
+    (nome sopra, il posto del numero sotto). Il comando e' assegnare il tavolo."""
     return f"""
       <article class="card">
         <div class="row" style="justify-content:space-between">
           <span class="state state--warn">Da giocare</span>
           <button class="btn btn--warn btn--sm">Assegna tavolo</button>
         </div>
-        <div class="row" style="margin-top:12px">
-          <div class="grow" style="font-size:13px;font-weight:800">{p1}</div>
-          <div class="faint" style="font-size:12px;font-weight:800">vs</div>
-          <div class="grow" style="font-size:13px;font-weight:800;text-align:right">{p2}</div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">
+          {"".join(f'''
+          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:12px 10px 14px;text-align:center">
+            <div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{p}</div>
+            <div class="num" style="margin-top:8px;font-size:34px;font-weight:800;line-height:1;color:var(--c7-ink-faint)">&ndash;</div>
+          </div>''' for p in (p1, p2))}
         </div>
       </article>
 """
@@ -876,7 +879,7 @@ def console_desktop():
           <div style="flex:1;min-height:0;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));
                grid-auto-rows:minmax(0, 1fr);gap:12px">
             {dcard('<span class="state state--ok">Da validare</span>', tavolo_txt(3),
-                   dread_side("a.galli", "5", True, "var(--c7-card)") + dread_side("r.neri", "1", False, "var(--c7-card)"),
+                   dscore_side("a.galli", "5") + dscore_side("r.neri", "1"),
                    "card card--ok",
                    f'<button class="btn btn--success btn--sm btn--w">{ico(I["check"], 15)} Valida &middot; il tavolo 3 passa a s.conti vs p.marini</button>')}
             {dcard(live, tavolo_txt(1), dscore_side("m.rossi", "4") + dscore_side("g.verdi", "2"))}
