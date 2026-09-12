@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.10.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.9.1...v1.10.0) (2026-09-12)
+
+
+### Funzioni nuove
+
+* il cambio pagina senza lampo bianco ([#341](https://github.com/coppolapaolo/tornei-biliardo/issues/341)) ([b9ffa9e](https://github.com/coppolapaolo/tornei-biliardo/commit/b9ffa9e92aba2ca4195cca01ccd5d2a77ff289f3))
+* la cifra del punteggio si vede cambiare ([#342](https://github.com/coppolapaolo/tornei-biliardo/issues/342)) ([9bf93da](https://github.com/coppolapaolo/tornei-biliardo/commit/9bf93da89eb547591b2bbc43da1aacbac5cb7d32))
+* una scala del movimento per tutta l'interfaccia ([#338](https://github.com/coppolapaolo/tornei-biliardo/issues/338)) ([65cd537](https://github.com/coppolapaolo/tornei-biliardo/commit/65cd5378e71ecc59939f3928203d8300567dfb2b))
+
 ## [1.9.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.9.0...v1.9.1) (2026-09-11)
 
 
