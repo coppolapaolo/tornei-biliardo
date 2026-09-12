@@ -27,6 +27,10 @@
     {
       "id": "page-6",
       "name": "Direzioni (primo giro)"
+    },
+    {
+      "id": "page-7",
+      "name": "7 · Campionato e playoff"
     }
   ],
   "artboards": [
@@ -58,8 +62,8 @@
       "h": 844
     },
     {
-      "file": "SetupDirettori.dc.html",
-      "title": "1.4 Co-direttori",
+      "file": "SetupEsercizi.dc.html",
+      "title": "1.4 Esercizi fra i turni",
       "page": "page-1",
       "x": 1680,
       "y": 0,
@@ -67,8 +71,8 @@
       "h": 844
     },
     {
-      "file": "SetupVetrina.dc.html",
-      "title": "1.5 Vetrina",
+      "file": "SetupEserciziAggiungi.dc.html",
+      "title": "1.5 Aggiungi un esercizio",
       "page": "page-1",
       "x": 2240,
       "y": 0,
@@ -76,8 +80,8 @@
       "h": 844
     },
     {
-      "file": "SetupApri.dc.html",
-      "title": "1.6 Apri le iscrizioni",
+      "file": "SetupDirettori.dc.html",
+      "title": "1.6 Co-direttori",
       "page": "page-1",
       "x": 2800,
       "y": 0,
@@ -85,8 +89,26 @@
       "h": 844
     },
     {
+      "file": "SetupVetrina.dc.html",
+      "title": "1.7 Vetrina",
+      "page": "page-1",
+      "x": 3360,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "SetupApri.dc.html",
+      "title": "1.8 Apri le iscrizioni",
+      "page": "page-1",
+      "x": 3920,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
       "file": "SetupDesktop.dc.html",
-      "title": "1.7 La stessa fase su desktop",
+      "title": "1.9 La stessa fase su desktop",
       "page": "page-1",
       "x": 0,
       "y": 1010,
@@ -184,8 +206,8 @@
       "h": 844
     },
     {
-      "file": "GiocoTurnoDopo.dc.html",
-      "title": "3.6 Turno concluso",
+      "file": "GiocoClassificaRack.dc.html",
+      "title": "3.6 Classifica (sistema RACK)",
       "page": "page-3",
       "x": 2800,
       "y": 0,
@@ -193,8 +215,8 @@
       "h": 844
     },
     {
-      "file": "GiocoMioMatch.dc.html",
-      "title": "3.7 Il direttore gioca",
+      "file": "GiocoTurnoDopo.dc.html",
+      "title": "3.7 Turno concluso",
       "page": "page-3",
       "x": 3360,
       "y": 0,
@@ -202,8 +224,17 @@
       "h": 844
     },
     {
+      "file": "GiocoMioMatch.dc.html",
+      "title": "3.8 Il direttore gioca",
+      "page": "page-3",
+      "x": 3920,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
       "file": "ConsoleDesktop.dc.html",
-      "title": "3.8 Il turno su desktop",
+      "title": "3.9 Il turno su desktop",
       "page": "page-3",
       "x": 0,
       "y": 1010,
@@ -266,7 +297,7 @@
     },
     {
       "file": "SchermoSala.dc.html",
-      "title": "3.9 Schermo in sala (pubblico)",
+      "title": "3.10 Schermo in sala (pubblico)",
       "page": "page-3",
       "x": 1600,
       "y": 1010,
@@ -287,6 +318,42 @@
       "title": "5.3 La stessa fase su desktop",
       "page": "page-5",
       "x": 0,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "CampionatoMobile.dc.html",
+      "title": "7.1 Il campionato",
+      "page": "page-7",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "PlayoffMobile.dc.html",
+      "title": "7.2 La fase playoff",
+      "page": "page-7",
+      "x": 560,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "CampionatoDesktop.dc.html",
+      "title": "7.3 Il campionato su desktop",
+      "page": "page-7",
+      "x": 0,
+      "y": 1010,
+      "w": 1440,
+      "h": 900
+    },
+    {
+      "file": "PlayoffDesktop.dc.html",
+      "title": "7.4 La fase playoff su desktop",
+      "page": "page-7",
+      "x": 1600,
       "y": 1010,
       "w": 1440,
       "h": 900
@@ -514,7 +581,7 @@
       "x": 560,
       "y": -260,
       "w": 470,
-      "text": "Configurazione per turno (ADR-027). Il turno modificato si distingue dal default con la pastiglia, non con un fondo giallo pieno.\n\nOggi e' una griglia di card con select e campi numerici; qui distanza e disciplina sono campi larghi 58px, e il ripristino e' un'icona per turno."
+      "text": "Configurazione per turno (ADR-027). Il turno modificato si distingue dal default con la pastiglia.\n\nRILIEVO (12/09): la descrizione della gara — «Al 5 · Palla 8» in testa e nelle informazioni — prende sempre disciplina e distanza della creazione (gara_detail.html usa gara.distance): quando i turni cambiano, la descrizione dovrebbe dirlo, per esempio «Palla 8 al 5 · turno 2: Palla 9 al 3»."
     },
     {
       "id": "nota-setuptavoli",
@@ -522,12 +589,28 @@
       "x": 1120,
       "y": -260,
       "w": 470,
-      "text": "PROBLEMA VERO, non del mockup: oggi i tavoli si possono scegliere **solo a iscrizioni aperte** — lo vieta il template (_gara_tables_config.html) e lo vieta il servizio (GaraService.update_tables_config solleva ConflictError) — e si scrivono come «3, 1, 2» in un campo di testo. La regola vera (12/09): i tavoli si scelgono **sempre**, di solito prima di avviare un turno, perche' e' allora che si sa quanti ne servono. Qui sono tessere che si toccano nell'ordine di assegnazione.\n\nL'interruttore «assegna in base alla classifica» esiste solo con accoppiamento casuale."
+      "text": "I tavoli come elenco ordinato: il nome si scrive, l'ordine si trascina, si toglie e si aggiunge. I nomi arrivano dalla sala (BilliardHall.get_table_names) e la gara puo' aggiungerne di suoi: oggi `available_tables` e' gia' una lista di nomi liberi, scritta pero' come «3, 1, 2» in un campo di testo.\n\nPROBLEMA VERO: oggi si modificano solo a iscrizioni aperte, e lo vieta anche il servizio (update_tables_config → ConflictError). La regola: si scelgono sempre, anche a iscrizioni chiuse e fra un turno e l'altro."
+    },
+    {
+      "id": "nota-setupesercizi",
+      "page": "page-1",
+      "x": 1680,
+      "y": -260,
+      "w": 470,
+      "text": "Gli esercizi fra i turni (GaraChallenge): quale, dopo che turno, quanti tentativi. Fanno una classifica a parte. Oggi il bottone compare solo col casuale, ma il limite sta nei template: il servizio accetta qualunque strategia. La X con esercizio e' un'altra cosa: sta in «Chi riposa» (pagina 0, decisione 4)."
+    },
+    {
+      "id": "nota-setupeserciziaggiungi",
+      "page": "page-1",
+      "x": 2240,
+      "y": -260,
+      "w": 470,
+      "text": "Il foglio ha i tre campi del modale di oggi (_challenge_management_modal.html): l'esercizio, cercato per nome; dopo quale turno; quanti tentativi."
     },
     {
       "id": "nota-setupdirettori",
       "page": "page-1",
-      "x": 1680,
+      "x": 2800,
       "y": -260,
       "w": 470,
       "text": "La ricerca mostra solo utenti con ruolo direttore vicini alla sede (GaraService.add_director rifiuta gli altri). Il titolare e' marcato: un co-direttore puo' fare tutto tranne togliere lui.\n\nOggi e' un select con tutti i direttori in zona e un bottone «Aggiungi»."
@@ -535,7 +618,7 @@
     {
       "id": "nota-setupvetrina",
       "page": "page-1",
-      "x": 2240,
+      "x": 3360,
       "y": -260,
       "w": 470,
       "text": "Locandina, indirizzo pubblico e link esterno: oggi vivono in una pagina separata (admin/gara_vetrina.html), raggiungibile dal menu. Qui e' una voce della preparazione, dove il direttore la cerca.\n\nLa locandina si vede intera (PR #292): niente ritaglio."
@@ -543,7 +626,7 @@
     {
       "id": "nota-setupapri",
       "page": "page-1",
-      "x": 2800,
+      "x": 3920,
       "y": -260,
       "w": 470,
       "text": "Il foglio di apertura: date nel fuso di chi scrive (ADR-043), minimo e massimo. La frase sotto il bottone dice cosa cambia per gli altri — e' il gesto che rende pubblica la gara.\n\nOggi il modale ha solo le due date; minimo e massimo stanno nella modifica gara, cioe' altrove."
@@ -570,7 +653,7 @@
       "x": 560,
       "y": -260,
       "w": 470,
-      "text": "Elenco raggruppato, non una card per iscritto. Categoria accanto al nome (serve con handicap, ADR-049); la lista d'attesa e' un gruppo a parte con «Fai entrare».\n\nLa disiscrizione manda una notifica: il mockup non mostra la conferma, che nell'app c'e'."
+      "text": "Il campo per iscrivere sta in cima, sempre visibile: e' il gesto principale della fase. La categoria e' un chip che si tocca — oggi e' un combo per riga, e scrivere un nome nuovo crea la categoria (_gara_inscriptions.html). La lista d'attesa entra da sola quando un iscritto si ritira (InscriptionService._promote_and_notify): il «Fai entrare» della prima versione non esiste e non serve."
     },
     {
       "id": "nota-iscraggiungi",
@@ -578,7 +661,7 @@
       "x": 1120,
       "y": -260,
       "w": 470,
-      "text": "Ricerca per cognome, nome o username (PR #297). Il risultato e' una riga con «Iscrivi», non un menu a tendina da scorrere."
+      "text": "Si scrive nel campo in cima e i risultati compaiono sotto, con «Iscrivi» sulla riga: nessun tocco prima di poter scrivere. Ricerca per cognome, nome o username (PR #297)."
     },
     {
       "id": "nota-iscrscadute",
@@ -594,7 +677,7 @@
       "x": 2240,
       "y": -260,
       "w": 470,
-      "text": "Il foglio dice cosa succede **prima** che succeda: chi prende la X a tavolino, che i 4 turni nascono tutti adesso (Amalfi e casuale creano l'intero calendario all'avvio), in che ordine vanno i tavoli.\n\nOggi e' una conferma generica: il direttore scopre chi riposa dopo."
+      "text": "Il foglio dice cosa succede prima che succeda: chi prende la X, che i 4 turni nascono tutti adesso, l'ordine dei tavoli.\n\nLa regola di oggi su turni, distanze, disciplina e X: si toccano solo in preparazione — la configurazione dei turni compare solo con status=setup (_round_management.html) e la gara si modifica solo senza iscritti (Gara.can_be_modified). Con le iscrizioni aperte nulla cambia sotto i piedi degli iscritti, e questo foglio riporta soltanto."
     },
     {
       "id": "nota-main",
@@ -610,7 +693,7 @@
       "x": 560,
       "y": -260,
       "w": 470,
-      "text": "I tavoli occupati mostrano da chi. Nell'app la griglia c'e' gia', ma il tavolo occupato appariva grigio come «non disponibile» invece che evidenziato.\n\nSenza tavolo assegnato i comandi di punteggio restano spenti: e' una regola dell'app, non del mockup."
+      "text": "I tavoli occupati mostrano i due giocatori. Senza tavolo assegnato i comandi di punteggio restano spenti: e' una regola dell'app."
     },
     {
       "id": "nota-giocovalida",
@@ -618,7 +701,7 @@
       "x": 1120,
       "y": -260,
       "w": 470,
-      "text": "Momento che nessuno dei tre mockup del primo giro mostrava. Quando i due giocatori chiudono la partita, il direttore valida: e' cio' che completa la partita e **libera il tavolo**.\n\nLa card verde e' l'unica che chiede qualcosa; le altre restano neutre."
+      "text": "La partita da validare: arrivata alla distanza dal segnapunti dei giocatori senza la doppia conferma (`is_at_distance and not is_player_validated`, _match_card.html). «Valida» la chiude e libera il tavolo (MatchValidationService.validate_and_complete). Nome sopra, numero grande sotto, il vincitore in evidenza: la stessa geometria degli stepper."
     },
     {
       "id": "nota-giococorreggi",
@@ -634,23 +717,31 @@
       "x": 2240,
       "y": -260,
       "w": 470,
-      "text": "Prime sei o tutti, come nell'app. La nota in fondo spiega l'ordinamento e il valore della X a tavolino (una vittoria, zero differenza — SPECIFICHE.md righe 64 e 71).\n\nCon sistema RACK l'ordinamento e' un altro: la nota va scritta dal sistema di classifica, non fissa."
+      "text": "Sistema a vittorie: vinte, poi differenza triangoli; la X vale una vittoria e zero differenza (SPECIFICHE.md 64 e 71). La freccia dice se la posizione e' salita, scesa o ferma rispetto al turno prima."
     },
     {
-      "id": "nota-giocoturnodopo",
+      "id": "nota-giococlassificarack",
       "page": "page-3",
       "x": 2800,
       "y": -260,
       "w": 470,
-      "text": "Le tre uscite del turno chiuso, separate per gravita': avviare il prossimo (verde), annullare l'avvio (possibile solo senza risultati), azzerare i risultati (distruttiva, fondo tenue).\n\nOggi sono tre bottoni della stessa forma, uno sotto l'altro."
+      "text": "Lo stesso elenco quando il campionato ordina a triangoli (ADR-047): vinti e persi al posto di vinte e differenza. La freccia confronta la posizione col turno prima, in entrambi i sistemi."
     },
     {
-      "id": "nota-giocomiomatch",
+      "id": "nota-giocoturnodopo",
       "page": "page-3",
       "x": 3360,
       "y": -260,
       "w": 470,
-      "text": "Se dirige ed e' iscritto, la sua partita e' la prima cosa: card scura con «Apri», che porta al segnapunti. Il resto del turno resta sotto, con i comandi da direttore.\n\nLa scorciatoia esiste gia' (_gara_my_match.html); qui convive con i comandi di direzione."
+      "text": "A turno concluso l'unico comando e' avviare il prossimo. Annullare l'avvio e avviare il turno dopo sono alternativi: si annulla finche' nessuna partita ha un triangolo (Gara.can_cancel_round; sta nel menu del turno), si avvia quando tutte sono alla distanza; in mezzo, nessuno dei due. L'azzeramento in blocco del turno della prima versione e' stato tolto: le partite si azzerano una per una, dalla loro card (reset_match)."
+    },
+    {
+      "id": "nota-giocomiomatch",
+      "page": "page-3",
+      "x": 3920,
+      "y": -260,
+      "w": 470,
+      "text": "Se dirige ed e' iscritto, la sua partita e' la prima cosa: card scura con i due giocatori nella stessa forma delle altre card e il segnapunti come unico comando. La scorciatoia esiste gia' (_gara_my_match.html)."
     },
     {
       "id": "nota-consoledesktop",
@@ -690,7 +781,7 @@
       "x": 0,
       "y": -260,
       "w": 470,
-      "text": "A gara conclusa il soggetto e' la classifica, non la gestione. Il podio in card accento, il resto come elenco; la pastiglia SSR dice dove lo spareggio ha deciso l'ordine.\n\nLa linguetta «Gestione» sparisce: non contiene piu' niente (rilievo aperto in STATO.md)."
+      "text": "A gara conclusa il soggetto e' la classifica. Podio e posizioni 1-3 nei colori delle medaglie dell'app (--c7-oro, --c7-argento, --c7-bronzo, tokens-7c.css); la pastiglia SSR dove lo spareggio ha deciso. La linguetta «Gestione» sparisce."
     },
     {
       "id": "nota-finedopo",
@@ -731,6 +822,38 @@
       "y": 750,
       "w": 470,
       "text": "Conclusa su desktop: il podio dentro la fascia, la classifica sotto, a destra dove sono finiti i punti e le partite turno per turno (scelta 5S)."
+    },
+    {
+      "id": "nota-campionatomobile",
+      "page": "page-7",
+      "x": 0,
+      "y": -260,
+      "w": 470,
+      "text": "La pagina del campionato per chi lo dirige: a che punto e' la stagione, la classifica generale con le tendenze, le gare, le righe di gestione. Oggi (campionato_detail.html) e' informazioni, direttori, statistiche, classifica, elenco gare in tabella, card playoff."
+    },
+    {
+      "id": "nota-playoffmobile",
+      "page": "page-7",
+      "x": 560,
+      "y": -260,
+      "w": 470,
+      "text": "Dopo «Passa ai playoff» (terminate_campionato) e «Avvia i playoff» (PlayoffService.start_playoff): gli inviti con scadenza a 7 giorni, chi rifiuta e' sostituito dal primo degli esclusi (find_replacement_player), il direttore puo' rispondere per un giocatore (playoff_respond_for_player). Con i confermati si crea la gara playoff (create_playoff_gara), che poi e' una gara come le altre; la modalita' di classifica finale e il peso sono di _playoff_scoring_form.html."
+    },
+    {
+      "id": "nota-campionatodesktop",
+      "page": "page-7",
+      "x": 0,
+      "y": 750,
+      "w": 470,
+      "text": "Classifica generale a sinistra, gare e gestione a destra."
+    },
+    {
+      "id": "nota-playoffdesktop",
+      "page": "page-7",
+      "x": 1600,
+      "y": 750,
+      "w": 470,
+      "text": "Invitati a sinistra; a destra la regola della classifica finale (campionato + playoff con peso, oppure solo il playoff) e la classifica congelata da cui nascono gli inviti."
     },
     {
       "id": "nota-a",

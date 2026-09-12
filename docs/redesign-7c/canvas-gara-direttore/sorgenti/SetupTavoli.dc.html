@@ -19,6 +19,8 @@
   --c7-ok-bg:#E4EDE9; --c7-ok-ink:#1D5F4A; --c7-ok-body:#37665A; --c7-ok:#2C8A6B;
   --c7-err-bg:#F3E2E0; --c7-err-ink:#8A2C2C; --c7-err-body:#7A4A48; --c7-err:#B23B3B;
   --c7-warn-bg:#F0E9D8; --c7-warn-ink:#6E5417; --c7-warn-body:#6E6047; --c7-warn:#8A6A1F;
+  --c7-oro:#C9A84C; --c7-oro-ink:#4A3A0E; --c7-argento:#B4BDBF; --c7-argento-ink:#39434B;
+  --c7-bronzo:#B98A5E; --c7-bronzo-ink:#4A2F16;
   --c7-font:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
   --c7-font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",monospace;
   --c7-r-pill:999px; --c7-r-card:22px; --c7-r-card-lg:26px; --c7-r-field:18px;
@@ -117,6 +119,11 @@ svg{display:block}
 .avatar{width:34px;height:34px;border-radius:50%;background:var(--c7-accent);color:#fff;
         display:grid;place-items:center;font-size:11px;font-weight:800;flex-shrink:0}
 .avatar--lg{width:46px;height:46px;font-size:14px}
+.pos{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;
+     font-weight:800;background:var(--c7-bg);color:var(--c7-ink);flex-shrink:0}
+.pos--1{background:var(--c7-oro);color:var(--c7-oro-ink)}
+.pos--2{background:var(--c7-argento);color:var(--c7-argento-ink)}
+.pos--3{background:var(--c7-bronzo);color:var(--c7-bronzo-ink)}
 
 /* --- barra di progresso ----------------------------------------------- */
 .bar{height:8px;border-radius:999px;background:var(--c7-line);overflow:hidden}
@@ -212,52 +219,74 @@ svg{display:block}
   <main class="content">
     <div class="stack">
       
-      <div class="sechead"><h3>Tavoli della gara</h3><span class="sechead__more">6 in sala</span></div>
+      <div class="sechead"><h3>Tavoli della gara</h3><span class="sechead__more">3 su 6 della sala</span></div>
       <div style="font-size:13px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
-        Tocca i tavoli da usare, nell'ordine in cui vuoi assegnarli.
-        Il primo scelto va alla partita di cartello.
+        Dall'alto in basso &egrave; l'ordine di assegnazione: il primo va alla
+        partita di cartello. Trascina per riordinare, tocca il nome per cambiarlo.
+      </div>
+      <div class="rows">
+        <div class="rows__row" style="gap:10px">
+          <span class="faint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>
+          <div class="num grow" style="height:44px;border-radius:var(--c7-r-control);
+               background:var(--c7-bg);padding:0 14px;display:flex;align-items:center;
+               font-size:15px;font-weight:800">3</div>
+          <span class="rows__sub" style="margin:0;width:64px">1&deg;</span>
+          <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <div class="rows__row" style="gap:10px">
+          <span class="faint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>
+          <div class="num grow" style="height:44px;border-radius:var(--c7-r-control);
+               background:var(--c7-bg);padding:0 14px;display:flex;align-items:center;
+               font-size:15px;font-weight:800">1</div>
+          <span class="rows__sub" style="margin:0;width:64px">2&deg;</span>
+          <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div>
+        <div class="rows__row" style="gap:10px">
+          <span class="faint"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg></span>
+          <div class="num grow" style="height:44px;border-radius:var(--c7-r-control);
+               background:var(--c7-bg);padding:0 14px;display:flex;align-items:center;
+               font-size:15px;font-weight:800">2</div>
+          <span class="rows__sub" style="margin:0;width:64px">3&deg;</span>
+          <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+        </div></div>
+      <div style="display:flex;gap:10px">
+        <button class="btn btn--secondary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3 12h18M12 5v14"></path></svg> Dalla sala</button>
+        <button class="btn btn--secondary"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg> Aggiungi un tavolo</button>
       </div>
       <section class="card">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-          <div style="border-radius:var(--c7-r-control);padding:12px 8px;text-align:center;background:var(--c7-ink);color:#fff">
-            <div class="num" style="font-size:19px;font-weight:800">3</div>
-            <div style="font-size:10px;font-weight:700;color:var(--c7-on-ink-muted)">1&deg; scelta</div>
-          </div>
-          <div style="border-radius:var(--c7-r-control);padding:12px 8px;text-align:center;background:var(--c7-ink);color:#fff">
-            <div class="num" style="font-size:19px;font-weight:800">1</div>
-            <div style="font-size:10px;font-weight:700;color:var(--c7-on-ink-muted)">2&deg; scelta</div>
-          </div>
-          <div style="border-radius:var(--c7-r-control);padding:12px 8px;text-align:center;background:var(--c7-ink);color:#fff">
-            <div class="num" style="font-size:19px;font-weight:800">2</div>
-            <div style="font-size:10px;font-weight:700;color:var(--c7-on-ink-muted)">3&deg; scelta</div>
-          </div>
-          <div style="border-radius:var(--c7-r-control);padding:12px 8px;text-align:center;background:var(--c7-bg);color:var(--c7-ink)">
-            <div class="num" style="font-size:19px;font-weight:800">4</div>
-            <div class="muted" style="font-size:10px;font-weight:700">tocca per usarlo</div>
-          </div>
-          <div style="border-radius:var(--c7-r-control);padding:12px 8px;text-align:center;background:var(--c7-sunken);color:var(--c7-ink-faint)">
-            <div class="num" style="font-size:19px;font-weight:800">5</div>
-            <div style="font-size:10px;font-weight:700">non usato</div>
-          </div>
-          <div style="border-radius:var(--c7-r-control);padding:12px 8px;text-align:center;background:var(--c7-sunken);color:var(--c7-ink-faint)">
-            <div class="num" style="font-size:19px;font-weight:800">6</div>
-            <div style="font-size:10px;font-weight:700">non usato</div>
-          </div></div>
-        <hr class="divider">
         
         <div>
           <div class="row" style="gap:12px">
-            <div class="grow" style="font-size:14px;font-weight:700">Assegna i tavoli in base alla classifica</div>
+            <div class="grow" style="font-size:14px;font-weight:700">Usa tutti i tavoli della sala</div>
             <div style="width:46px;height:26px;border-radius:999px;background:var(--c7-line);
                  position:relative;flex-shrink:0">
               <div style="position:absolute;top:2px;left:2px;width:22px;height:22px;
                    border-radius:50%;background:#fff"></div>
             </div>
           </div>
-          <div style="margin-top:6px;font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.4">Dal secondo turno il primo tavolo va al match con il giocatore meglio piazzato. Disponibile solo con accoppiamento casuale.</div>
+          <div style="margin-top:6px;font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.4">Sei tavoli: 1, 2, 3, 4, 5, 6. Con l'interruttore acceso l'elenco qui sopra non serve.</div>
+        </div>
+        <hr class="divider">
+        
+        <div>
+          <div class="row" style="gap:12px">
+            <div class="grow" style="font-size:14px;font-weight:700">Assegna in base alla classifica</div>
+            <div style="width:46px;height:26px;border-radius:999px;background:var(--c7-line);
+                 position:relative;flex-shrink:0">
+              <div style="position:absolute;top:2px;left:2px;width:22px;height:22px;
+                   border-radius:50%;background:#fff"></div>
+            </div>
+          </div>
+          <div style="margin-top:6px;font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.4">Dal secondo turno il primo tavolo va al match con il giocatore meglio piazzato. Solo con accoppiamento casuale.</div>
         </div>
       </section>
       <button class="btn btn--primary btn--w"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg> Salva i tavoli</button>
+      
+      <div class="row" style="justify-content:space-between;margin-top:4px">
+        <button class="btn btn--secondary btn--sm"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg> Turni</button>
+        <span class="num muted" style="font-size:12px">2 di 5</span>
+        <button class="btn btn--secondary btn--sm">Esercizi <span style="display:inline-block;transform:rotate(180deg)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"></path></svg></span></button>
+      </div>
 
     </div>
   </main>

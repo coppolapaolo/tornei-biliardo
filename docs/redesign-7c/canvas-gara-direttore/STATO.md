@@ -35,7 +35,7 @@ console del primo giro riusata come panoramica, artboard «Main»).
 **Nessuna delle tre direzioni è stata scelta formalmente**: le fasi sono la
 proposta, e vanno guardate prima di scrivere codice.
 
-## Le cinque fasi, 30 schermate
+## Le cinque fasi, 34 schermate, più il campionato
 
 Ogni schermata mostra **comandi che esistono davvero**: etichette e
 condizioni vengono da `_gara_management.html`, `_round_management.html`,
@@ -167,6 +167,55 @@ classifica dopo l'ultimo turno chiuso e il turno precedente. Non esiste
 nell'app: `gara_detail_public` rimanda alla pagina gara, la vetrina a gara in
 corso dice solo «Gara in corso»; SPECIFICHE.md riga 357 chiede «i risultati
 dei match in tempo reale». Per i tabelloni va disegnato col tabellone.
+
+## Revisione del 12/09 sera (rilievi dell'utente sulle pagine 1–5)
+
+Verificato nel codice, e applicato al canvas:
+
+* **1.2**: la descrizione della gara («Al 5 · Palla 8») prende sempre i
+  valori della creazione (`gara_detail.html` usa `gara.distance`): quando i
+  turni cambiano dovrebbe dirlo. Rilievo nuovo, sul bigliettino.
+* **1.3 tavoli**: elenco ordinato con il nome che si scrive, l'ordine che
+  si trascina, si toglie e si aggiunge; i nomi vengono dalla sala
+  (`BilliardHall.get_table_names`) e `available_tables` è già una lista di
+  nomi liberi. Fra i passi della preparazione (1.2–1.7) c'è ora avanti e
+  indietro, senza tornare alla 1.1.
+* **1.4–1.5 esercizi fra i turni**: elenco e foglio di aggiunta con i tre
+  campi del modale di oggi (esercizio, dopo quale turno, tentativi).
+* **1.9 e ogni desktop**: la colonna laterale ha il comando per nasconderla
+  (issue #153, chiusa ma non implementata: `base.html` non ha alcun
+  collapse); lo schermo in sala non la ha affatto.
+* **2.2**: il campo per iscrivere sta in cima, sempre visibile; la
+  categoria è un chip che si tocca (oggi un combo per riga, un nome nuovo
+  crea la categoria); la lista d'attesa entra da sola quando un iscritto si
+  ritira (`InscriptionService._promote_and_notify`): **«Fai entrare» non
+  esiste** ed è stato tolto.
+* **2.5**: turni, distanze, disciplina e X si toccano solo in preparazione
+  (`_round_management.html` solo con `status=setup`, `Gara.can_be_modified`
+  solo senza iscritti): con le iscrizioni aperte nulla cambia sotto i piedi
+  degli iscritti. Il foglio riporta soltanto.
+* **3.2**: i tavoli occupati mostrano i due giocatori.
+* **3.3 da validare**: rifatta con la geometria degli stepper (nome sopra,
+  numero grande sotto, vincitore in evidenza); la regola è
+  `is_at_distance and not is_player_validated`.
+* **3.5–3.6 classifica**: sistema a vittorie e sistema RACK (vinti/persi),
+  con la freccia di tendenza rispetto al turno prima.
+* **3.7 turno concluso**: solo «Avvia il turno 3». Annullare l'avvio e
+  avviare il turno dopo sono alternativi: si annulla finché nessuna partita
+  ha un triangolo (`Gara.can_cancel_round`), si avvia quando tutte sono alla
+  distanza, in mezzo nessuno dei due. Niente azzeramento in blocco: le
+  partite si azzerano una per una (`reset_match`).
+* **3.8 il direttore gioca**: card scura con i due giocatori nella forma
+  delle altre card, «Vai al segnapunti».
+* **3.9 desktop**: una partita da validare fra le card; nella colonna
+  destra solo ciò che si modifica in gioco.
+* **3.10 schermo in sala**: rifatto con la locandina in testa, i tavoli come
+  tabelloni, le medaglie in classifica.
+* **5.1 e 5.3**: podio e posizioni 1–3 nei colori delle medaglie dell'app
+  (`--c7-oro`, `--c7-argento`, `--c7-bronzo`).
+* **Pagina 7, campionato e playoff** (mobile e desktop): la pagina del
+  campionato per chi lo dirige e la fase playoff, dagli inviti alla gara
+  playoff. Da rivedere insieme come le altre.
 
 ## Non ancora disegnato
 

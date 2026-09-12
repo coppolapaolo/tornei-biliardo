@@ -19,6 +19,8 @@
   --c7-ok-bg:#E4EDE9; --c7-ok-ink:#1D5F4A; --c7-ok-body:#37665A; --c7-ok:#2C8A6B;
   --c7-err-bg:#F3E2E0; --c7-err-ink:#8A2C2C; --c7-err-body:#7A4A48; --c7-err:#B23B3B;
   --c7-warn-bg:#F0E9D8; --c7-warn-ink:#6E5417; --c7-warn-body:#6E6047; --c7-warn:#8A6A1F;
+  --c7-oro:#C9A84C; --c7-oro-ink:#4A3A0E; --c7-argento:#B4BDBF; --c7-argento-ink:#39434B;
+  --c7-bronzo:#B98A5E; --c7-bronzo-ink:#4A2F16;
   --c7-font:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
   --c7-font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",monospace;
   --c7-r-pill:999px; --c7-r-card:22px; --c7-r-card-lg:26px; --c7-r-field:18px;
@@ -117,6 +119,11 @@ svg{display:block}
 .avatar{width:34px;height:34px;border-radius:50%;background:var(--c7-accent);color:#fff;
         display:grid;place-items:center;font-size:11px;font-weight:800;flex-shrink:0}
 .avatar--lg{width:46px;height:46px;font-size:14px}
+.pos{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;
+     font-weight:800;background:var(--c7-bg);color:var(--c7-ink);flex-shrink:0}
+.pos--1{background:var(--c7-oro);color:var(--c7-oro-ink)}
+.pos--2{background:var(--c7-argento);color:var(--c7-argento-ink)}
+.pos--3{background:var(--c7-bronzo);color:var(--c7-bronzo-ink)}
 
 /* --- barra di progresso ----------------------------------------------- */
 .bar{height:8px;border-radius:999px;background:var(--c7-line);overflow:hidden}
@@ -212,6 +219,14 @@ svg{display:block}
   <main class="content">
     <div class="stack">
       
+      
+        <div>
+          <div class="label" style="margin-bottom:8px">Iscrivi un giocatore</div>
+          <div class="" style="height:58px;border-radius:var(--c7-r-field);
+               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
+               font-size:15px;font-weight:700"><span class="faint">Cognome, nome o username</span></div>
+          
+        </div>
       <div class="sechead">
         <h3>Iscritti</h3>
         <span class="state state--accent">7 attivi</span>
@@ -222,33 +237,33 @@ svg{display:block}
           <div class="avatar">PA</div>
           <div class="grow">
             <div class="rows__title">pa</div>
-            <div class="rows__sub">iscritto il 28/08 &middot; A</div>
+            <div class="rows__sub">iscritto il 28/08</div>
           </div>
-          <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
+          <span class="state state--info" style="height:24px;padding:0 9px">A <span class="faint">&#9662;</span></span> <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
         </div>
         <div class="rows__row">
           <div class="avatar">MR</div>
           <div class="grow">
             <div class="rows__title">m.rossi</div>
-            <div class="rows__sub">iscritto il 28/08 &middot; A</div>
+            <div class="rows__sub">iscritto il 28/08</div>
           </div>
-          <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
+          <span class="state state--info" style="height:24px;padding:0 9px">A <span class="faint">&#9662;</span></span> <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
         </div>
         <div class="rows__row">
           <div class="avatar">GV</div>
           <div class="grow">
             <div class="rows__title">g.verdi</div>
-            <div class="rows__sub">iscritto il 29/08 &middot; B</div>
+            <div class="rows__sub">iscritto il 29/08</div>
           </div>
-          <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
+          <span class="state state--info" style="height:24px;padding:0 9px">B <span class="faint">&#9662;</span></span> <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
         </div>
         <div class="rows__row">
           <div class="avatar">DB</div>
           <div class="grow">
             <div class="rows__title">d.bianchi</div>
-            <div class="rows__sub">iscritto il 29/08 &middot; B</div>
+            <div class="rows__sub">iscritto il 29/08</div>
           </div>
-          <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
+          <span class="state state--info" style="height:24px;padding:0 9px">B <span class="faint">&#9662;</span></span> <button class="iconbtn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
         </div></div>
 
       <div class="sechead" style="margin-top:4px">
@@ -259,12 +274,10 @@ svg{display:block}
           <div class="avatar">SC</div>
           <div class="grow">
             <div class="rows__title">s.conti</div>
-            <div class="rows__sub">in lista dal 30/08</div>
+            <div class="rows__sub">in lista dal 30/08 &middot; entra se qualcuno si ritira</div>
           </div>
-          <button class="btn btn--secondary btn--sm">Fai entrare</button>
+          
         </div></div>
-
-      <button class="btn btn--secondary btn--w"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg> Iscrivi un giocatore</button>
 
     </div>
   </main>

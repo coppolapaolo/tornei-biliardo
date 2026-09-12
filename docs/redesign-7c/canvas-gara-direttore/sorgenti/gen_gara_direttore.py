@@ -30,6 +30,8 @@ CSS = """
   --c7-ok-bg:#E4EDE9; --c7-ok-ink:#1D5F4A; --c7-ok-body:#37665A; --c7-ok:#2C8A6B;
   --c7-err-bg:#F3E2E0; --c7-err-ink:#8A2C2C; --c7-err-body:#7A4A48; --c7-err:#B23B3B;
   --c7-warn-bg:#F0E9D8; --c7-warn-ink:#6E5417; --c7-warn-body:#6E6047; --c7-warn:#8A6A1F;
+  --c7-oro:#C9A84C; --c7-oro-ink:#4A3A0E; --c7-argento:#B4BDBF; --c7-argento-ink:#39434B;
+  --c7-bronzo:#B98A5E; --c7-bronzo-ink:#4A2F16;
   --c7-font:"Manrope",system-ui,-apple-system,"Segoe UI",sans-serif;
   --c7-font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",monospace;
   --c7-r-pill:999px; --c7-r-card:22px; --c7-r-card-lg:26px; --c7-r-field:18px;
@@ -128,6 +130,11 @@ svg{display:block}
 .avatar{width:34px;height:34px;border-radius:50%;background:var(--c7-accent);color:#fff;
         display:grid;place-items:center;font-size:11px;font-weight:800;flex-shrink:0}
 .avatar--lg{width:46px;height:46px;font-size:14px}
+.pos{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:12px;
+     font-weight:800;background:var(--c7-bg);color:var(--c7-ink);flex-shrink:0}
+.pos--1{background:var(--c7-oro);color:var(--c7-oro-ink)}
+.pos--2{background:var(--c7-argento);color:var(--c7-argento-ink)}
+.pos--3{background:var(--c7-bronzo);color:var(--c7-bronzo-ink)}
 
 /* --- barra di progresso ----------------------------------------------- */
 .bar{height:8px;border-radius:999px;background:var(--c7-line);overflow:hidden}
@@ -333,10 +340,12 @@ SIDE = f"""
   <aside class="side">
     <div class="side__brand">
       <div class="side__mark">{ico(I["target"], 15)}</div>
-      <div>
+      <div class="grow">
         <div class="side__name">Tornei Biliardo</div>
         <div class="side__role">direzione gara</div>
       </div>
+      <button class="iconbtn" style="width:28px;height:28px;background:#2A3033;color:#B6BEC0"
+              title="Nascondi la colonna">{ico(I["back"], 13)}</button>
     </div>
     <div class="side__group">
       <div class="side__grouplabel">Generale</div>
@@ -803,16 +812,22 @@ def console_desktop():
             {stepper_card("m.rossi", "4", "g.verdi", "2", "1")}
             {stepper_card("d.bianchi", "3", "l.ferrari", "3", "2")}
             {pending_card("s.conti", "p.marini")}
-            <article class="card card--locked">
+            <article class="card card--ok">
               <div class="row" style="justify-content:space-between">
-                <span class="state state--ok">Conclusa</span>
-                <span style="font-size:12px">Tavolo <span class="num">3</span></span>
+                <span class="state state--ok">Da validare</span>
+                <span style="font-size:12px;font-weight:700">Tavolo <span class="num">3</span></span>
               </div>
-              <div class="row" style="margin-top:12px">
-                <div class="grow" style="font-size:13px;font-weight:800;color:var(--c7-ink)">
-                  a.galli <span class="num" style="font-size:17px">5</span></div>
-                <div style="font-size:13px;font-weight:800">r.neri <span class="num">1</span></div>
+              <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+                <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px;text-align:center">
+                  <div style="font-size:12px;font-weight:800">a.galli</div>
+                  <div class="num" style="margin-top:6px;font-size:30px;font-weight:800;line-height:1">5</div>
+                </div>
+                <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px;text-align:center;color:var(--c7-ink-muted)">
+                  <div style="font-size:12px;font-weight:800">r.neri</div>
+                  <div class="num" style="margin-top:6px;font-size:30px;font-weight:800;line-height:1">1</div>
+                </div>
               </div>
+              <div style="margin-top:12px"><button class="btn btn--success btn--sm btn--w">{ico(I["check"], 15)} Valida e libera il tavolo 3</button></div>
             </article>
           </div>
           {round1_rows()}
@@ -854,11 +869,11 @@ def console_desktop():
             </div>
           </section>
 
-          <div class="sechead" style="margin-top:4px"><h3>Gestione</h3></div>
+          <div class="sechead" style="margin-top:4px"><h3>Impostazioni gara</h3></div>
           <div class="rows">
-            {todo_row(I["rotate"], "Annulla avvio turno 2", "nessun risultato inserito", "neutral")}
             {todo_row(I["users"], "Direttori di gara", "solo tu", "neutral")}
-            {todo_row(I["gear"], "Impostazioni gara", "squadre, categorie, turni", "neutral")}
+            {todo_row(I["share"], "Vetrina", "locandina caricata", "neutral")}
+            {todo_row(I["table"], "Tavoli", "cambia fra un turno e l'altro", "neutral")}
           </div>
         </div>
 """

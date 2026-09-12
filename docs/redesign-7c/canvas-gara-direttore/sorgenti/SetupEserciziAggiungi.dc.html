@@ -215,193 +215,21 @@ svg{display:block}
     </div>
     <div class="avatar avatar--lg">PA</div>
   </header>
-  <div style="display:flex;align-items:center;gap:8px;padding:14px 18px 12px"><div class="pill" style="height:34px;width:34px;padding:0;justify-content:center;background:var(--c7-ok-bg);color:var(--c7-ok-ink)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></div><div style="height:2px;flex:1;background:var(--c7-line)"></div><div class="pill" style="height:34px;width:34px;padding:0;justify-content:center;background:var(--c7-ok-bg);color:var(--c7-ok-ink)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></div><div style="height:2px;flex:1;background:var(--c7-line)"></div><div class="pill is-active" style="height:34px;font-size:12px;padding:0 14px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l12 8-12 8V4z"></path></svg> In gioco</div><div style="height:2px;flex:1;background:var(--c7-line)"></div><div class="pill" style="height:34px;width:34px;padding:0;justify-content:center;color:var(--c7-ink-faint)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h13l-2.5 4L18 12H5"></path></svg></div></div>
+  <div class="vtabs"><button class="vtab is-active">Gestione</button><button class="vtab">Iscritti</button></div>
   <main class="content">
     <div class="stack">
-      
-      <section class="card card--accent" style="padding:14px 16px">
-        <div class="row">
-          <div class="grow">
-            <div class="kicker">Turno 2 di 4</div>
-            <div class="row" style="margin-top:4px;gap:8px">
-              <div class="num" style="font-size:19px;font-weight:800">2/5</div>
-              <div style="font-size:13px;font-weight:700;color:var(--c7-accent-dim)">partite chiuse</div>
-            </div>
-          </div>
-          <div style="text-align:right">
-            <div class="kicker">Tavoli</div>
-            <div class="num" style="margin-top:4px;font-size:19px;font-weight:800">2/4</div>
-          </div>
-        </div>
-        <div class="bar" style="margin-top:10px"><div class="bar__fill" style="width:40%"></div></div>
-      </section>
-
-      <div class="sechead" style="margin-top:4px;align-items:center">
-        <h3 class="">Turno 2</h3>
-        <span class="state state--accent" style="margin-left:auto">In corso</span>
-        <button class="iconbtn" style="background:var(--c7-card)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
-      </div>
-      <article class="card">
-        <div class="row" style="justify-content:space-between">
-          <span class="state state--accent">In corso</span>
-          <span class="pill" style="height:30px;padding:0 12px;font-size:12px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3 12h18M12 5v14"></path></svg> Tavolo <span class="num">1</span></span>
-        </div>
-        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          
-          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px 10px 12px">
-            <div style="font-size:12px;font-weight:800;text-align:center;
-                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">m.rossi</div>
-            <div class="row" style="margin-top:8px;gap:6px">
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-card)"
-                      ><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
-              <div class="num grow" style="text-align:center;font-size:26px;font-weight:800">4</div>
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-ink);
-                      color:#fff"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button>
-            </div>
-          </div>
-
-          
-          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px 10px 12px">
-            <div style="font-size:12px;font-weight:800;text-align:center;
-                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">g.verdi</div>
-            <div class="row" style="margin-top:8px;gap:6px">
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-card)"
-                      ><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
-              <div class="num grow" style="text-align:center;font-size:26px;font-weight:800">2</div>
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-ink);
-                      color:#fff"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button>
-            </div>
-          </div>
-
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="row" style="justify-content:space-between">
-          <span class="state state--accent">In corso</span>
-          <span class="pill" style="height:30px;padding:0 12px;font-size:12px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3 12h18M12 5v14"></path></svg> Tavolo <span class="num">2</span></span>
-        </div>
-        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          
-          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px 10px 12px">
-            <div style="font-size:12px;font-weight:800;text-align:center;
-                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">d.bianchi</div>
-            <div class="row" style="margin-top:8px;gap:6px">
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-card)"
-                      ><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
-              <div class="num grow" style="text-align:center;font-size:26px;font-weight:800">3</div>
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-ink);
-                      color:#fff"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button>
-            </div>
-          </div>
-
-          
-          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px 10px 12px">
-            <div style="font-size:12px;font-weight:800;text-align:center;
-                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">l.ferrari</div>
-            <div class="row" style="margin-top:8px;gap:6px">
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-card)"
-                      ><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
-              <div class="num grow" style="text-align:center;font-size:26px;font-weight:800">3</div>
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-ink);
-                      color:#fff"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button>
-            </div>
-          </div>
-
-        </div>
-      </article>
-
-      <article class="card">
-        <div class="row" style="justify-content:space-between">
-          <span class="state state--warn">Da giocare</span>
-          <button class="btn btn--warn btn--sm">Assegna tavolo</button>
-        </div>
-        <div class="row" style="margin-top:12px">
-          <div class="grow" style="font-size:13px;font-weight:800">s.conti</div>
-          <div class="faint" style="font-size:12px;font-weight:800">vs</div>
-          <div class="grow" style="font-size:13px;font-weight:800;text-align:right">p.marini</div>
-        </div>
-      </article>
-
-      <div class="sechead" style="margin-top:4px">
-        <h3 class="muted">Turno 1</h3>
-        <span class="state state--muted" style="margin-left:auto">Concluso</span>
-      </div>
-      <div class="rows">
+      <div class="sechead"><h3>Esercizi fra i turni</h3><span class="sechead__more">0</span></div><div class="rows">
         <div class="rows__row">
+          <div class="tile tile--locked tile--sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="1"></circle></svg></div>
           <div class="grow">
-            <div class="rows__title muted">m.rossi <span class="faint">vs</span> d.bianchi</div>
+            <div class="rows__title">Nessun esercizio</div>
+            <div class="rows__sub">facoltativo</div>
           </div>
-          <div class="num" style="font-size:14px;color:var(--c7-ink-soft)">5&ndash;2</div>
-          <div class="rows__sub" style="width:58px;text-align:right">Tavolo 1</div>
-        </div>
-        <div class="rows__row">
-          <div class="grow">
-            <div class="rows__title muted">a.galli <span class="faint">vs</span> s.conti</div>
-          </div>
-          <div class="num" style="font-size:14px;color:var(--c7-ink-soft)">5&ndash;3</div>
-          <div class="rows__sub" style="width:58px;text-align:right">Tavolo 2</div>
-        </div>
-        <div class="rows__row">
-          <div class="grow">
-            <div class="rows__title muted">l.ferrari <span class="faint">vs</span> f.costa</div>
-          </div>
-          <div class="num" style="font-size:14px;color:var(--c7-ink-soft)">5&ndash;1</div>
-          <div class="rows__sub" style="width:58px;text-align:right">Tavolo 3</div>
-        </div>
-        <div class="rows__row">
-          <div class="grow">
-            <div class="rows__title muted">g.verdi <span class="faint">vs</span> p.marini</div>
-          </div>
-          <div class="num" style="font-size:14px;color:var(--c7-ink-soft)">5&ndash;4</div>
-          <div class="rows__sub" style="width:58px;text-align:right">Tavolo 1</div>
-        </div>
-        <div class="rows__row">
-          <div class="grow">
-            <div class="rows__title muted">r.neri <span class="faint">vs</span> e.sala</div>
-          </div>
-          <div class="num" style="font-size:14px;color:var(--c7-ink-soft)">5&ndash;0</div>
-          <div class="rows__sub" style="width:58px;text-align:right">Tavolo 2</div>
+          <span class="faint"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
         </div></div>
-      <div class="rows">
-        
-        <div class="rows__row">
-          <div class="tile tile--neutral tile--sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v5a5 5 0 01-10 0V4z"></path><path d="M7 6H4.5v1A3.5 3.5 0 007 10.5M17 6h2.5v1A3.5 3.5 0 0117 10.5"></path><path d="M10 14v3M14 14v3M8.5 20h7"></path></svg></div>
-          <div class="grow">
-            <div class="rows__title">Classifica</div>
-            <div class="rows__sub">m.rossi in testa con 4 vinte</div>
-          </div>
-          <span class="faint"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
-        </div>
-
-        
-        <div class="rows__row">
-          <div class="tile tile--neutral tile--sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"></circle><path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6S13.9 16 14.5 19"></path><path d="M16 6.5a3 3 0 010 6M18 19c-.2-1.6-.7-2.9-1.6-3.8"></path></svg></div>
-          <div class="grow">
-            <div class="rows__title">Iscritti</div>
-            <div class="rows__sub">10 attivi, nessuna riserva</div>
-          </div>
-          <span class="faint"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
-        </div>
-
-        
-        <div class="rows__row">
-          <div class="tile tile--neutral tile--sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1A1.6 1.6 0 008 19.4a1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H2a2 2 0 110-4h.1A1.6 1.6 0 003.6 8a1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H8a1.6 1.6 0 001-1.5V2a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V8a1.6 1.6 0 001.5 1H22a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"></path></svg></div>
-          <div class="grow">
-            <div class="rows__title">Impostazioni gara</div>
-            <div class="rows__sub">direttori, tavoli, vetrina, esercizi, turni</div>
-          </div>
-          <span class="faint"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
-        </div>
-
-      </div>
     </div>
   </main>
   
-  <div class="actionbar">
-    <button class="btn btn--locked"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l12 8-12 8V4z"></path></svg> Avvia turno 3 &middot; 3 aperte</button>
-  </div>
-
   
   <nav class="mobilenav">
     <a class="is-active" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7"></path><path d="M6.5 9.5V20h11V9.5"></path></svg>Dashboard</a>
@@ -418,18 +246,55 @@ svg{display:block}
        flex-direction:column;gap:14px">
     <div style="width:44px;height:4px;border-radius:999px;background:var(--c7-line);
          margin:0 auto"></div>
-    <h3>m.rossi vs g.verdi</h3>
-    <div style="font-size:13px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">In corso &middot; 4&ndash;2 &middot; tavolo 1</div>
+    <h3>Aggiungi un esercizio</h3>
+    
     
     <div class="stack">
-      <button class="btn btn--secondary btn--w"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3 12h18M12 5v14"></path></svg> Cambia tavolo</button>
-      <button class="btn btn--danger btn--w"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a8 8 0 0113.7-4.2L20 8"></path><path d="M20 4v4h-4"></path></svg> Azzera la partita</button>
-      <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
-        Torna da giocare e il tavolo si libera. Si pu&ograve; finch&eacute; il
-        turno 3 non &egrave; avviato.
+      
+        <div>
+          <div class="label" style="margin-bottom:8px">Esercizio</div>
+          <div class="" style="height:58px;border-radius:var(--c7-r-field);
+               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
+               font-size:15px;font-weight:700">sto<span class="faint">|</span></div>
+          
+        </div>
+      <div class="rows">
+        <div class="rows__row">
+          <div class="avatar">SS</div>
+          <div class="grow">
+            <div class="rows__title">Stop shot</div>
+            <div class="rows__sub">punteggio 0&ndash;10 &middot; 12 hanno provato</div>
+          </div>
+          <span class="state state--accent">scelto</span>
+        </div>
+        <div class="rows__row">
+          <div class="avatar">TL</div>
+          <div class="grow">
+            <div class="rows__title">Tiro lungo in sponda</div>
+            <div class="rows__sub">s&igrave;/no &middot; 30 hanno provato</div>
+          </div>
+          
+        </div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        
+        <div>
+          <div class="label" style="margin-bottom:8px">Dopo il turno</div>
+          <div class="" style="height:58px;border-radius:var(--c7-r-field);
+               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
+               font-size:15px;font-weight:700">2 <span class="faint" style="margin-left:auto">&#9662;</span></div>
+          
+        </div>
+        
+        <div>
+          <div class="label" style="margin-bottom:8px">Tentativi</div>
+          <div class="num" style="height:58px;border-radius:var(--c7-r-field);
+               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
+               font-size:15px;font-weight:700">2</div>
+          
+        </div>
       </div>
     </div>
-    
+    <button class="btn btn--primary btn--w"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg> Aggiungi</button>
   </div>
 
 </div>
