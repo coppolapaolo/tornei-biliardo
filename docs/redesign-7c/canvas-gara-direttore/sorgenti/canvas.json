@@ -693,7 +693,7 @@
       "x": 560,
       "y": -260,
       "w": 470,
-      "text": "I tavoli occupati mostrano i due giocatori. Senza tavolo assegnato i comandi di punteggio restano spenti: e' una regola dell'app."
+      "text": "Si tocca la tessera libera e il tavolo e' assegnato: come nel foglio di oggi (tableAssignmentModal in gara_detail.html, selectTableFromModal salva al tocco), senza bottone di conferma. Gli occupati mostrano i due giocatori. Un tavolo libero con una partita in attesa capita quando lo si aggiunge a turno avviato: alla validazione il tavolo liberato passa da solo alla prima in attesa (release_and_reassign_table). Senza tavolo i comandi di punteggio restano spenti: e' una regola dell'app."
     },
     {
       "id": "nota-giocovalida",
@@ -701,7 +701,7 @@
       "x": 1120,
       "y": -260,
       "w": 470,
-      "text": "La partita da validare: arrivata alla distanza dal segnapunti dei giocatori senza la doppia conferma (`is_at_distance and not is_player_validated`, _match_card.html). «Valida» la chiude e libera il tavolo (MatchValidationService.validate_and_complete). Nome sopra, numero grande sotto, il vincitore in evidenza: la stessa geometria degli stepper."
+      "text": "La partita da validare: arrivata alla distanza dal segnapunti dei giocatori senza la doppia conferma (`is_at_distance and not is_player_validated`, _match_card.html). «Valida» la chiude e libera il tavolo, che passa da solo alla prima partita in attesa (MatchValidationService.validate_and_complete → release_and_reassign_table): la card lo dice. Nome sopra, numero grande sotto, il vincitore in evidenza: la stessa geometria degli stepper, anche sulle partite concluse. Tutto il turno e' in pagina: la card verde e' l'unica che chiede qualcosa."
     },
     {
       "id": "nota-giococorreggi",
@@ -709,7 +709,7 @@
       "x": 1680,
       "y": -260,
       "w": 470,
-      "text": "Si puo' fare a gara in corso (issue #90). Il foglio dice le due conseguenze vere: i triangoli segnati uno per uno si cancellano, e la correzione resta scritta sulla partita.\n\nIl campo «perche'» e' facoltativo ma e' cio' che rende leggibile la correzione a chi aveva visto il risultato di prima."
+      "text": "Si puo' fare a gara in corso (issue #90). Dietro il foglio, il turno concluso con le card in sola lettura — nome sopra, numero grande sotto, chi ha vinto pieno — e «Correggi» sulla card da cui si parte. Il foglio dice le due conseguenze vere: i triangoli segnati uno per uno si cancellano, e la correzione resta scritta sulla partita. Il campo «perche'» e' facoltativo ma e' cio' che rende leggibile la correzione a chi aveva visto il risultato di prima."
     },
     {
       "id": "nota-giococlassifica",
@@ -749,7 +749,7 @@
       "x": 0,
       "y": 750,
       "w": 470,
-      "text": "Artboard «ConsoleDesktop»: le partite a sinistra, «da fare adesso» e i tavoli a destra."
+      "text": "Artboard «ConsoleDesktop»: le partite del turno a sinistra, in sei caselle — le cinque partite e il turno prima — che riempiono l'altezza; a destra «da fare adesso», i tavoli e la classifica dopo l'ultimo turno chiuso, fino in fondo. «Impostazioni gara» sale in testata: contiene solo direttori, vetrina e tavoli, le voci che si toccano in gioco. La partita da validare dice a chi passa il tavolo (release_and_reassign_table)."
     },
     {
       "id": "nota-ssrrilevato",
@@ -805,7 +805,7 @@
       "x": 1600,
       "y": 750,
       "w": 470,
-      "text": "NUOVO, non esiste nell'app: la pagina pubblica della gara oggi rimanda alla pagina gara (routes/main.py, gara_detail_public) e la vetrina a gara in corso dice solo «Gara in corso». SPECIFICHE.md riga 357 chiede «i risultati dei match in tempo reale». Da leggere a tre metri: i tavoli con i punteggi grandi, la classifica dopo l'ultimo turno chiuso, il turno precedente. I dati arrivano dagli stessi eventi live della pagina gara (ADR-057). Per i tabelloni al posto della classifica va il tabellone: non disegnato."
+      "text": "NUOVO, non esiste nell'app: la pagina pubblica della gara oggi rimanda alla pagina gara (routes/main.py, gara_detail_public) e la vetrina a gara in corso dice solo «Gara in corso». SPECIFICHE.md riga 357 chiede «i risultati dei match in tempo reale». In testa la locandina della vetrina (il banner 1200x630 di admin/gara_vetrina.html) a tutta larghezza, ritagliata al centro come nelle anteprime social, con nome della gara e turno sopra. Da leggere a tre metri: i tavoli riempiono l'altezza con i punteggi grandi, la classifica dopo l'ultimo turno chiuso e il turno prima stanno a destra. I dati arrivano dagli stessi eventi live della pagina gara (ADR-057). Per i tabelloni al posto della classifica va il tabellone: non disegnato."
     },
     {
       "id": "nota-ssrdesktop",

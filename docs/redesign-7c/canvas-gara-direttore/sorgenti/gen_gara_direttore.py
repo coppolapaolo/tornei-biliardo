@@ -745,16 +745,16 @@ CONSOLE_HEAD = f"""
           <div class="grow">
             <div class="kicker">Turno 2 di 4</div>
             <div class="row" style="margin-top:4px;gap:8px">
-              <div class="num" style="font-size:19px;font-weight:800">2/5</div>
+              <div class="num" style="font-size:19px;font-weight:800">1/5</div>
               <div style="font-size:13px;font-weight:700;color:var(--c7-accent-dim)">partite chiuse</div>
             </div>
           </div>
           <div style="text-align:right">
             <div class="kicker">Tavoli</div>
-            <div class="num" style="margin-top:4px;font-size:19px;font-weight:800">2/4</div>
+            <div class="num" style="margin-top:4px;font-size:19px;font-weight:800">3/4</div>
           </div>
         </div>
-        <div class="bar" style="margin-top:10px"><div class="bar__fill" style="width:40%"></div></div>
+        <div class="bar" style="margin-top:10px"><div class="bar__fill" style="width:20%"></div></div>
       </section>
 """
 
@@ -769,7 +769,7 @@ def console_mobile():
 """
     bar = f"""
   <div class="actionbar">
-    <button class="btn btn--locked">{ico(I["play"], 16)} Avvia turno 3 &middot; 3 aperte</button>
+    <button class="btn btn--locked">{ico(I["play"], 16)} Avvia turno 3 &middot; 4 aperte</button>
   </div>
 """
     return doc(phone("Biliardo Mimmo &middot; Al 5",
@@ -777,10 +777,68 @@ def console_mobile():
                      content, bar))
 
 
+
+def dscore_side(name, score):
+    """Lato dello stepper su desktop: come score_side, ma riempie l'altezza
+    della casella (il numero e i comandi stanno al centro)."""
+    return f"""
+          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:12px 12px 14px;
+               display:flex;flex-direction:column;justify-content:center;gap:10px">
+            <div style="font-size:13px;font-weight:800;text-align:center;
+                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{name}</div>
+            <div class="row" style="gap:8px">
+              <button class="iconbtn" style="width:44px;height:44px;background:var(--c7-card)"
+                      >{ico(I["minus"], 16)}</button>
+              <div class="num grow" style="text-align:center;font-size:32px;font-weight:800">{score}</div>
+              <button class="iconbtn" style="width:44px;height:44px;background:var(--c7-ink);
+                      color:#fff">{ico(I["plus"], 16)}</button>
+            </div>
+          </div>
+"""
+
+
+def dread_side(name, score, winner, bg="var(--c7-bg)"):
+    col = "" if winner else "color:var(--c7-ink-muted)"
+    return f"""
+          <div style="border-radius:var(--c7-r-field);background:{bg};padding:12px 12px 14px;
+               display:flex;flex-direction:column;justify-content:center;gap:8px;text-align:center">
+            <div style="font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;
+                        text-overflow:ellipsis;{col}">{name}</div>
+            <div class="num" style="font-size:40px;font-weight:800;line-height:1;{col}">{score}</div>
+          </div>
+"""
+
+
+def dcard(pill, right, corpo, cls="card", coda=""):
+    """Card partita del desktop: riempie la casella della griglia."""
+    coda_html = f'<div style="margin-top:12px">{coda}</div>' if coda else ""
+    return f"""
+      <article class="{cls}" style="display:flex;flex-direction:column;min-height:0">
+        <div class="row" style="justify-content:space-between">
+          {pill}
+          {right}
+        </div>
+        <div style="flex:1;margin-top:12px;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">
+          {corpo}
+        </div>
+        {coda_html}
+      </article>
+"""
+
+
+def tavolo_txt(n, extra=""):
+    return (f'<span style="font-size:12px;font-weight:700;{extra}">Tavolo '
+            f'<span class="num">{n}</span></span>')
+
+
 def console_desktop():
+    """Il turno su desktop: le partite riempiono la colonna sinistra in sei
+    caselle (le cinque partite e il turno prima), la colonna destra arriva
+    in fondo con «da fare adesso», i tavoli e la classifica dopo l'ultimo
+    turno chiuso. Le impostazioni della gara stanno in testata."""
     strip = f"""
       <section class="card card--accent" style="display:flex;align-items:center;gap:24px;
-               padding:18px 22px">
+               padding:16px 22px;flex-shrink:0">
         <div>
           <div class="kicker">Turno in corso</div>
           <div class="num" style="margin-top:2px;font-size:28px;font-weight:800">2<span
@@ -789,113 +847,114 @@ def console_desktop():
         <div style="width:1px;height:44px;background:rgba(242,248,247,.18)"></div>
         <div>
           <div class="kicker">Partite chiuse</div>
-          <div class="num" style="margin-top:2px;font-size:28px;font-weight:800">2<span
+          <div class="num" style="margin-top:2px;font-size:28px;font-weight:800">1<span
              style="font-size:16px;color:var(--c7-accent-dim)">/5</span></div>
         </div>
         <div style="width:1px;height:44px;background:rgba(242,248,247,.18)"></div>
         <div>
           <div class="kicker">Tavoli occupati</div>
-          <div class="num" style="margin-top:2px;font-size:28px;font-weight:800">2<span
+          <div class="num" style="margin-top:2px;font-size:28px;font-weight:800">3<span
              style="font-size:16px;color:var(--c7-accent-dim)">/4</span></div>
         </div>
         <div class="grow"></div>
-        <button class="btn btn--locked">{ico(I["play"], 16)} Avvia turno 3</button>
+        <button class="btn btn--locked">{ico(I["play"], 16)} Avvia turno 3 &middot; 4 aperte</button>
       </section>
 """
+    turno1 = "".join(f"""
+            <div class="row" style="gap:10px;font-size:13px;font-weight:700">
+              <span class="grow" style="text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{p1}</span>
+              <span class="num" style="font-size:14px;font-weight:800;width:40px;text-align:center;color:var(--c7-ink-soft)">{s1}&ndash;{s2}</span>
+              <span class="grow" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--c7-ink-muted)">{p2}</span>
+            </div>""" for p1, s1, p2, s2, _ in R1)
+    live = '<span class="state state--accent">In corso</span>'
     board = f"""
-        <div class="stack">
+        <div style="display:flex;flex-direction:column;gap:12px;min-height:0">
           <div class="sechead">
             <h3>Partite del turno 2</h3>
             <span class="sechead__more">Palla 8 &middot; Al 5</span>
           </div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            {stepper_card("m.rossi", "4", "g.verdi", "2", "1")}
-            {stepper_card("d.bianchi", "3", "l.ferrari", "3", "2")}
-            {pending_card("s.conti", "p.marini")}
-            <article class="card card--ok">
+          <div style="flex:1;min-height:0;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));
+               grid-auto-rows:minmax(0, 1fr);gap:12px">
+            {dcard('<span class="state state--ok">Da validare</span>', tavolo_txt(3),
+                   dread_side("a.galli", "5", True, "var(--c7-card)") + dread_side("r.neri", "1", False, "var(--c7-card)"),
+                   "card card--ok",
+                   f'<button class="btn btn--success btn--sm btn--w">{ico(I["check"], 15)} Valida &middot; il tavolo 3 passa a s.conti vs p.marini</button>')}
+            {dcard(live, tavolo_txt(1), dscore_side("m.rossi", "4") + dscore_side("g.verdi", "2"))}
+            {dcard(live, tavolo_txt(2), dscore_side("d.bianchi", "3") + dscore_side("l.ferrari", "3"))}
+            {dcard('<span class="state state--warn">In attesa di tavolo</span>',
+                   '<button class="btn btn--warn btn--sm">Assegna il tavolo 4</button>',
+                   dread_side("s.conti", "&ndash;", True) + dread_side("p.marini", "&ndash;", True))}
+            {dcard('<span class="state state--muted">Conclusa</span>', tavolo_txt(3, "color:var(--c7-ink-muted)"),
+                   dread_side("f.costa", "5", True, "var(--c7-card)") + dread_side("e.sala", "3", False, "var(--c7-card)"),
+                   "card card--locked")}
+            <article class="card card--locked" style="display:flex;flex-direction:column;min-height:0">
               <div class="row" style="justify-content:space-between">
-                <span class="state state--ok">Da validare</span>
-                <span style="font-size:12px;font-weight:700">Tavolo <span class="num">3</span></span>
+                <span class="state state--muted">Turno 1 &middot; concluso</span>
+                <span style="font-size:12px;font-weight:700">5 partite</span>
               </div>
-              <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
-                <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px;text-align:center">
-                  <div style="font-size:12px;font-weight:800">a.galli</div>
-                  <div class="num" style="margin-top:6px;font-size:30px;font-weight:800;line-height:1">5</div>
-                </div>
-                <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px;text-align:center;color:var(--c7-ink-muted)">
-                  <div style="font-size:12px;font-weight:800">r.neri</div>
-                  <div class="num" style="margin-top:6px;font-size:30px;font-weight:800;line-height:1">1</div>
-                </div>
+              <div style="flex:1;margin-top:10px;display:flex;flex-direction:column;justify-content:space-evenly;gap:4px">
+                {turno1}
               </div>
-              <div style="margin-top:12px"><button class="btn btn--success btn--sm btn--w">{ico(I["check"], 15)} Valida e libera il tavolo 3</button></div>
             </article>
           </div>
-          {round1_rows()}
         </div>
 """
+    righe = [("1", "r.neri", "1", "+5"), ("2", "l.ferrari", "1", "+4"), ("3", "m.rossi", "1", "+3"),
+             ("4", "a.galli", "1", "+2"), ("5", "g.verdi", "1", "+1"), ("6", "p.marini", "0", "-1"),
+             ("7", "e.sala", "0", "-2"), ("8", "s.conti", "0", "-2"), ("9", "d.bianchi", "0", "-3"),
+             ("10", "f.costa", "0", "-4")]
+    class_rows = "".join(f"""
+            <div class="rows__row" style="padding:0 16px;flex:1;min-height:0;gap:10px">
+              <div class="num pos" style="width:24px;height:24px;font-size:11px">{pos}</div>
+              <div class="grow" style="font-size:13px;font-weight:800">{nome}</div>
+              <div class="num" style="font-size:14px;font-weight:800">{v}</div>
+              <div class="num muted" style="width:32px;text-align:right;font-size:12px">{d}</div>
+            </div>""" for pos, nome, v, d in righe)
+    tessera = lambda n, chi, occ: (
+        f'<div class="card--sunk" style="border-radius:var(--c7-r-control);padding:10px;text-align:center;'
+        + ("background:var(--c7-accent);color:var(--c7-accent-ink)" if occ else "") + '">'
+        f'<div class="num" style="font-size:17px;font-weight:800">{n}</div>'
+        f'<div style="font-size:10px;font-weight:700;line-height:1.3;'
+        + ("color:var(--c7-accent-dim)" if occ else "color:var(--c7-ink-muted)") + f'">{chi}</div></div>')
     rail = f"""
-        <div class="stack">
+        <div style="display:flex;flex-direction:column;gap:12px;min-height:0">
           <div class="sechead"><h3>Da fare adesso</h3></div>
           <div class="rows">
-            {todo_row(I["table"], "1 tavolo da assegnare", "s.conti vs p.marini")}
-            {todo_row(I["clock"], "2 risultati aperti", "tavoli 1 e 2")}
-            {todo_row(I["scale"], "Nessun parimerito", "ultimo controllo al turno 1", "locked")}
+            {todo_row(I["check"], "1 risultato da validare", "tavolo 3 · a.galli 5–1 r.neri", "ok")}
+            {todo_row(I["table"], "1 partita aspetta un tavolo", "s.conti vs p.marini · il 4 e' libero")}
           </div>
 
-          <div class="sechead" style="margin-top:4px"><h3>Tavoli</h3>
-            <span class="sechead__more">Configura</span></div>
-          <section class="card">
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
-              <div class="card--sunk" style="border-radius:var(--c7-r-control);padding:10px;
-                   text-align:center;background:var(--c7-accent);color:var(--c7-accent-ink)">
-                <div class="num" style="font-size:17px;font-weight:800">1</div>
-                <div style="font-size:10px;font-weight:700;color:var(--c7-accent-dim)">m.rossi</div>
-              </div>
-              <div class="card--sunk" style="border-radius:var(--c7-r-control);padding:10px;
-                   text-align:center;background:var(--c7-accent);color:var(--c7-accent-ink)">
-                <div class="num" style="font-size:17px;font-weight:800">2</div>
-                <div style="font-size:10px;font-weight:700;color:var(--c7-accent-dim)">d.bianchi</div>
-              </div>
-              <div class="card--sunk" style="border-radius:var(--c7-r-control);padding:10px;
-                   text-align:center">
-                <div class="num" style="font-size:17px;font-weight:800">3</div>
-                <div class="muted" style="font-size:10px;font-weight:700">libero</div>
-              </div>
-              <div class="card--sunk" style="border-radius:var(--c7-r-control);padding:10px;
-                   text-align:center">
-                <div class="num" style="font-size:17px;font-weight:800">4</div>
-                <div class="muted" style="font-size:10px;font-weight:700">libero</div>
-              </div>
+          <div class="sechead" style="margin-top:2px"><h3>Tavoli</h3>
+            <span class="sechead__more">Modifica</span></div>
+          <section class="card" style="padding:12px">
+            <div style="display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));gap:8px">
+              {tessera(1, "m.rossi<br>g.verdi", True)}
+              {tessera(2, "d.bianchi<br>l.ferrari", True)}
+              {tessera(3, "a.galli<br>r.neri", True)}
+              {tessera(4, "libero", False)}
             </div>
           </section>
 
-          <div class="sechead" style="margin-top:4px"><h3>Impostazioni gara</h3></div>
-          <div class="rows">
-            {todo_row(I["users"], "Direttori di gara", "solo tu", "neutral")}
-            {todo_row(I["share"], "Vetrina", "locandina caricata", "neutral")}
-            {todo_row(I["table"], "Tavoli", "cambia fra un turno e l'altro", "neutral")}
-          </div>
+          <div class="sechead" style="margin-top:2px"><h3>Classifica dopo il turno 1</h3>
+            <span class="sechead__more">Vinte &middot; diff</span></div>
+          <div class="rows" style="flex:1;min-height:0;display:flex;flex-direction:column">{class_rows}</div>
         </div>
 """
     content = f"""
-      <div class="stack">
+      <div style="height:100%;display:flex;flex-direction:column;gap:var(--c7-gap)">
         {strip}
-        <div class="cols">
+        <div class="cols" style="flex:1;min-height:0;align-items:stretch">
           {board}
           {rail}
         </div>
       </div>
 """
     actions = ('<button class="btn btn--secondary btn--sm">'
-               f'{ico(I["trophy"], 15)} Classifica</button>'
+               f'{ico(I["users"], 15)} Iscritti <span class="num">10</span></button>'
                '<button class="btn btn--secondary btn--sm">'
-               f'{ico(I["users"], 15)} Iscritti <span class="num">10</span></button>')
+               f'{ico(I["gear"], 15)} Impostazioni gara</button>')
     return doc(desktop(actions, content))
 
-
-# --------------------------------------------------------------------------
-# C · FASI — la pagina mostra la fase; il resto va in Impostazioni
-# --------------------------------------------------------------------------
 
 PHASE_STRIP = f"""
       <section style="display:flex;align-items:center;gap:8px">

@@ -538,12 +538,16 @@ def iscr_avvio():
 
 
 
+
 def gioco_correggi():
+    """Un risultato del turno 1 registrato al contrario (g.verdi 5-4
+    p.marini, scritto 4-5): il foglio lo raddrizza. Dietro, il turno
+    concluso con le card in sola lettura, la corretta in cima."""
     corpo = f"""
     <div class="stack">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        {stepper("a.galli", "5")}
-        {stepper("r.neri", "1")}
+      <div style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">
+        {stepper("g.verdi", "5")}
+        {stepper("p.marini", "4")}
       </div>
       {field("Perch&eacute; (facoltativo)", CURSORE % "punteggio invertito")}
       <div class="flash flash--warn">
@@ -556,34 +560,17 @@ def gioco_correggi():
     </div>"""
     content = f"""
       {sec("Turno 1", "Concluso")}
-      <article class="card card--locked">
-        <div class="row" style="justify-content:space-between">
-          <span class="state state--ok">Conclusa</span>
-          <span style="font-size:12px">Tavolo <span class="num">3</span></span>
-        </div>
-        <div class="row" style="margin-top:12px">
-          <div class="grow" style="font-size:14px;font-weight:800;color:var(--c7-ink)">a.galli
-            <span class="num" style="font-size:19px">1</span></div>
-          <div style="font-size:14px;font-weight:800">r.neri
-            <span class="num" style="font-size:19px">5</span></div>
-        </div>
-      </article>
+      {closed_card("g.verdi", "4", "p.marini", "5", "1",
+                   right='<button class="btn btn--secondary btn--sm">Correggi</button>')}
+      {closed_card("m.rossi", "5", "d.bianchi", "2", "1")}
+      {closed_card("a.galli", "5", "s.conti", "3", "2")}
+      {closed_card("l.ferrari", "5", "f.costa", "1", "3")}
 """
     return doc(phone(SUB, TABS_GIOCO, content,
                      overlay=sheet("Correggi il risultato", corpo,
                                    btn("Correggi il risultato", "primary", "check"),
-                                   "a.galli vs r.neri &middot; turno 1")))
+                                   "g.verdi vs p.marini &middot; turno 1 &middot; tavolo 1")))
 
-
-
-
-
-
-
-
-# ==========================================================================
-# FASE 4 — SPAREGGIO (gara.status = awaiting_ssr)
-# ==========================================================================
 
 def ssr_rilevato():
     corpo = ("""
@@ -1013,66 +1000,127 @@ def iscr_aggiungi():
     return doc(phone(SUB, TABS_ISCR2, content))
 
 
-def gioco_tavolo():
-    griglia = "".join([
-        tavolo_chip("3", "occupato", "m.rossi<br>g.verdi"),
-        tavolo_chip("1", "occupato", "d.bianchi<br>l.ferrari"),
-        tavolo_chip("2", "libero"),
-    ])
-    corpo = f"""
-    <div class="stack">
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">{griglia}</div>
-      <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
-        I tavoli occupati si liberano quando il risultato &egrave; validato.
-      </div>
-    </div>"""
-    content = f"""
-      {sec("Turno 2")}
-      {base.stepper_card("m.rossi", "4", "g.verdi", "2", "3")}
-"""
-    return doc(phone(SUB, TABS_GIOCO, content,
-                     overlay=sheet("Assegna il tavolo", corpo,
-                                   btn("Assegna il tavolo 2", "primary", "check"),
-                                   "s.conti vs p.marini")))
 
-
-def score_read(name, score, winner=False):
-    """Punteggio in sola lettura, stessa geometria degli stepper."""
-    col = "" if winner else "color:var(--c7-ink-muted)"
+def tessera_tavolo(n, stato, chi=""):
+    """Tessera del foglio «Assegna il tavolo»: la libera e' il comando."""
+    if stato == "occupato":
+        style = "background:var(--c7-accent);color:var(--c7-accent-ink)"
+        sub = f'<div style="margin-top:4px;font-size:11px;font-weight:700;color:var(--c7-accent-dim);line-height:1.35">{chi}</div>'
+    elif stato == "attuale":
+        style = "background:var(--c7-ink);color:#fff"
+        sub = '<div style="margin-top:4px;font-size:11px;font-weight:700;color:var(--c7-on-ink-muted)">tavolo attuale</div>'
+    else:
+        style = ("background:var(--c7-card);color:var(--c7-accent);"
+                 "box-shadow:inset 0 0 0 2px var(--c7-accent)")
+        sub = '<div style="margin-top:4px;font-size:11px;font-weight:800">libero &middot; tocca per assegnare</div>'
     return f"""
-          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px 10px 12px;text-align:center">
-            <div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;
-                        text-overflow:ellipsis;{col}">{name}</div>
-            <div class="num" style="margin-top:6px;font-size:30px;font-weight:800;line-height:1;{col}">{score}</div>
+          <div style="border-radius:var(--c7-r-field);padding:14px 10px 12px;text-align:center;
+               min-height:84px;display:flex;flex-direction:column;justify-content:center;{style}">
+            <div class="num" style="font-size:24px;font-weight:800;line-height:1">{n}</div>
+            {sub}
           </div>"""
 
 
-def gioco_valida():
-    """Una partita arrivata alla distanza dal segnapunti dei giocatori, senza
-    la doppia conferma: `is_at_distance and not is_player_validated`
-    (_match_card.html). «Valida» la chiude e libera il tavolo
-    (MatchValidationService.validate_and_complete)."""
+def gioco_tavolo():
+    """Il foglio di oggi (tableAssignmentModal in gara_detail.html) salva al
+    tocco della tessera: selectTableFromModal fa subito la POST. Il bottone
+    di conferma della prima versione non esisteva nell'app e non serviva."""
+    griglia = "".join([
+        tessera_tavolo("1", "occupato", "m.rossi<br>g.verdi"),
+        tessera_tavolo("2", "occupato", "d.bianchi<br>l.ferrari"),
+        tessera_tavolo("3", "occupato", "a.galli<br>r.neri"),
+        tessera_tavolo("4", "libero"),
+    ])
+    corpo = f"""
+    <div class="stack">
+      <div style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">{griglia}</div>
+      <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+        Gli occupati si liberano quando il risultato &egrave; validato, e passano da soli
+        alla prima partita in attesa.
+      </div>
+    </div>"""
     content = f"""
-      {sec("Turno 2", "1 da validare")}
+      {sec("Turno 2", "1 in attesa")}
+      {base.pending_card("s.conti", "p.marini")}
+      {valida_card()}
+      {base.stepper_card("m.rossi", "4", "g.verdi", "2", "1")}
+      {base.stepper_card("d.bianchi", "3", "l.ferrari", "3", "2")}
+"""
+    return doc(phone(SUB, TABS_GIOCO, content,
+                     overlay=sheet("Assegna il tavolo", corpo, "",
+                                   "s.conti vs p.marini &middot; in attesa")))
 
+
+def score_read(name, score, winner=False, bg="var(--c7-bg)"):
+    """Punteggio in sola lettura: nome sopra, numero grande sotto, la stessa
+    geometria degli stepper. Chi ha vinto resta pieno, l'altro si spegne."""
+    col = "" if winner else "color:var(--c7-ink-muted)"
+    return f"""
+          <div style="border-radius:var(--c7-r-field);background:{bg};padding:12px 10px 14px;text-align:center">
+            <div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;
+                        text-overflow:ellipsis;{col}">{name}</div>
+            <div class="num" style="margin-top:8px;font-size:34px;font-weight:800;line-height:1;{col}">{score}</div>
+          </div>"""
+
+
+def closed_card(p1, s1, p2, s2, table, right=""):
+    """Partita chiusa: stessa card, punteggio in sola lettura."""
+    w1, w2 = int(s1) > int(s2), int(s2) > int(s1)
+    right_html = right or (f'<span style="font-size:12px;font-weight:700">'
+                           f'Tavolo <span class="num">{table}</span></span>')
+    return f"""
+      <article class="card card--locked">
+        <div class="row" style="justify-content:space-between">
+          <span class="state state--muted">Conclusa</span>
+          {right_html}
+        </div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">
+          {score_read(p1, s1, w1, bg="var(--c7-card)")}
+          {score_read(p2, s2, w2, bg="var(--c7-card)")}
+        </div>
+      </article>
+"""
+
+
+def valida_card(compatto=False):
+    """La partita arrivata alla distanza dal segnapunti dei giocatori senza
+    la doppia conferma (`is_at_distance and not is_player_validated`,
+    _match_card.html). «Valida» la chiude e libera il tavolo, che passa da
+    solo alla prima partita in attesa (MatchValidationService
+    .validate_and_complete → release_and_reassign_table)."""
+    nota = "" if compatto else """
+        <div style="margin-top:8px;font-size:12px;font-weight:600;color:var(--c7-ok-body);
+             line-height:1.45">
+          Chiusa dal segnapunti dei giocatori, senza la doppia conferma. Validare la
+          completa: il tavolo 3 passa a s.conti vs p.marini, che aspettano.
+        </div>"""
+    return f"""
       <article class="card card--ok">
         <div class="row" style="justify-content:space-between">
           <span class="state state--ok">Da validare</span>
           <span style="font-size:12px;font-weight:700">Tavolo <span class="num">3</span></span>
         </div>
-        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          {score_read("m.rossi", "5", winner=True)}
-          {score_read("g.verdi", "2")}
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">
+          {score_read("a.galli", "5", winner=True, bg="var(--c7-card)")}
+          {score_read("r.neri", "1", bg="var(--c7-card)")}
         </div>
         <div style="margin-top:12px">{btn("Valida il risultato", "success", "check")}</div>
-        <div style="margin-top:8px;font-size:12px;font-weight:600;color:var(--c7-ok-body);
-             line-height:1.45">
-          Chiusa dal segnapunti dei giocatori, senza la doppia conferma.
-          Validare la completa e libera il tavolo 3.
-        </div>
+        {nota}
       </article>
+"""
 
-      {base.stepper_card("d.bianchi", "3", "l.ferrari", "3", "1")}
+
+def gioco_valida():
+    """Tutto il turno 2 in pagina: la card verde e' l'unica che chiede
+    qualcosa e sta in cima; sotto le due in corso, quella in attesa di
+    tavolo e la conclusa, in sola lettura."""
+    content = f"""
+      {sec("Turno 2", "1 da validare")}
+      {valida_card()}
+      {base.stepper_card("m.rossi", "4", "g.verdi", "2", "1")}
+      {base.stepper_card("d.bianchi", "3", "l.ferrari", "3", "2")}
+      {base.pending_card("s.conti", "p.marini")}
+      {closed_card("f.costa", "5", "e.sala", "3", "3")}
 """
     return doc(phone(SUB, TABS_GIOCO, content))
 
@@ -1297,99 +1345,105 @@ def fine_desktop():
     return doc(desktop(actions, f'<div class="cols">{sinistra}{destra}</div>'))
 
 
+
 def schermo_sala():
     """Lo schermo in sala, pubblico e senza menu (issue #153 chiedeva proprio
     di togliere la colonna quando si proietta). In testa la locandina della
-    vetrina, se c'e'; sotto, i tavoli come tabelloni e la classifica con le
-    medaglie. Oggi non esiste: gara_detail_public rimanda alla pagina gara,
-    la vetrina a gara in corso dice solo «Gara in corso» (SPECIFICHE.md 357)."""
+    vetrina — il banner 1200x630 di admin/gara_vetrina.html — a tutta
+    larghezza, ritagliata al centro come fanno le anteprime social; sopra,
+    il nome della gara e il turno. Sotto, i tavoli riempiono l'altezza e la
+    classifica dopo l'ultimo turno chiuso sta a destra, con il turno prima.
+    Oggi non esiste: gara_detail_public rimanda alla pagina gara, la vetrina
+    a gara in corso dice solo «Gara in corso» (SPECIFICHE.md 357)."""
     def tabellone(n, p1, s1, p2, s2, stato, tono):
         if p1 is None:
             return f"""
-            <section class="card" style="padding:18px 22px;display:flex;align-items:center;gap:16px;flex:1">
-              <div class="num" style="font-size:34px;font-weight:800;color:var(--c7-ink-faint)">{n}</div>
+            <section class="card" style="padding:16px 24px;display:flex;align-items:center;gap:20px;flex:1;min-height:0">
+              <div style="width:72px;align-self:stretch;border-radius:var(--c7-r-control);background:var(--c7-bg);
+                   color:var(--c7-ink-faint);display:grid;place-items:center">
+                <div class="num" style="font-size:34px;font-weight:800">{n}</div>
+              </div>
               <div class="grow">
                 <div class="kicker">Tavolo {n} &middot; libero</div>
-                <div style="margin-top:4px;font-size:17px;font-weight:800;color:var(--c7-ink-muted)">Prossima: {s1}</div>
+                <div style="margin-top:6px;font-size:24px;font-weight:800;color:var(--c7-ink-muted)">Prossima: {s1}</div>
+                <div style="margin-top:4px;font-size:14px;font-weight:700;color:var(--c7-ink-faint)">in attesa di tavolo</div>
               </div>
             </section>"""
-        def riga(nome, s, vince):
+        def lato(nome, s, vince):
             col = "" if vince else "color:var(--c7-ink-muted)"
-            return (f'<div class="row" style="justify-content:space-between;gap:16px">'
-                    f'<div style="font-size:21px;font-weight:800;{col}">{nome}</div>'
-                    f'<div class="num" style="font-size:40px;font-weight:800;line-height:1;'
+            return (f'<div style="min-width:0">'
+                    f'<div style="font-size:20px;font-weight:800;white-space:nowrap;overflow:hidden;'
+                    f'text-overflow:ellipsis;{col}">{nome}</div>'
+                    f'<div class="num" style="margin-top:2px;font-size:56px;font-weight:800;line-height:1;'
                     f'letter-spacing:-.04em;{col}">{s}</div></div>')
         return f"""
-            <section class="card" style="padding:18px 22px;display:flex;gap:18px;align-items:stretch;flex:1">
-              <div style="width:64px;border-radius:var(--c7-r-control);background:var(--c7-accent);
+            <section class="card" style="padding:16px 24px;display:flex;gap:20px;align-items:center;flex:1;min-height:0">
+              <div style="width:72px;align-self:stretch;border-radius:var(--c7-r-control);background:var(--c7-accent);
                    color:var(--c7-accent-bright);display:grid;place-items:center">
-                <div class="num" style="font-size:30px;font-weight:800">{n}</div>
+                <div class="num" style="font-size:34px;font-weight:800">{n}</div>
               </div>
-              <div class="grow" style="display:flex;flex-direction:column;gap:6px;justify-content:center">
-                {riga(p1, s1, int(s1) >= int(s2))}
-                {riga(p2, s2, int(s2) > int(s1))}
+              <div class="grow" style="display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:20px;align-items:center">
+                {lato(p1, s1, int(s1) >= int(s2))}
+                {lato(p2, s2, int(s2) >= int(s1))}
               </div>
-              <span class="state state--{tono}" style="align-self:flex-start">{stato}</span>
+              <span class="state state--{tono}" style="align-self:flex-start;height:30px;font-size:12px;padding:0 14px">{stato}</span>
             </section>"""
 
     righe = [("1", "r.neri", "1", "+5"), ("2", "l.ferrari", "1", "+4"), ("3", "m.rossi", "1", "+3"),
              ("4", "a.galli", "1", "+2"), ("5", "g.verdi", "1", "+1"), ("6", "p.marini", "0", "-1"),
-             ("7", "d.bianchi", "0", "-3")]
+             ("7", "e.sala", "0", "-2"), ("8", "s.conti", "0", "-2"), ("9", "d.bianchi", "0", "-3"),
+             ("10", "f.costa", "0", "-4")]
     turno1 = "".join(f"""
-            <div style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700">
-              <span class="grow" style="text-align:right">{p1}</span>
-              <span class="num" style="font-size:17px;font-weight:800">{s1}&ndash;{s2}</span>
-              <span class="grow">{p2}</span>
+            <div style="display:flex;align-items:center;gap:12px;font-size:15px;font-weight:700">
+              <span class="grow" style="text-align:right;color:{'inherit' if int(s1) > int(s2) else 'var(--c7-ink-muted)'}">{p1}</span>
+              <span class="num" style="font-size:17px;font-weight:800;width:52px;text-align:center">{s1}&ndash;{s2}</span>
+              <span class="grow" style="color:{'inherit' if int(s2) > int(s1) else 'var(--c7-ink-muted)'}">{p2}</span>
             </div>""" for p1, s1, p2, s2, _ in base.R1)
     class_rows = "".join(f"""
-            <div class="rows__row" style="padding:11px 18px">
+            <div class="rows__row" style="padding:0 18px;flex:1;min-height:0">
               {_pos(pos)}
-              <div class="grow" style="font-size:16px;font-weight:800">{nome}</div>
-              <div class="num" style="font-size:16px;font-weight:800">{v}</div>
-              <div class="num muted" style="width:40px;text-align:right;font-size:13px">{d}</div>
+              <div class="grow" style="font-size:17px;font-weight:800">{nome}</div>
+              <div class="num" style="font-size:18px;font-weight:800">{v}</div>
+              <div class="num muted" style="width:44px;text-align:right;font-size:14px">{d}</div>
             </div>""" for pos, nome, v, d in righe)
     return doc(f"""
 <div style="width:1440px;height:900px;overflow:hidden;background:var(--c7-bg);display:flex;flex-direction:column">
-  <header style="background:var(--c7-ink);color:var(--c7-on-ink);padding:22px 36px;display:flex;
-          align-items:center;gap:22px">
-    <div style="width:92px;height:92px;border-radius:var(--c7-r-control);background:var(--c7-accent);
-         display:grid;place-items:center;color:var(--c7-accent-bright);flex-shrink:0">
-      <div style="text-align:center;font-size:10px;font-weight:800;letter-spacing:.1em">LOCANDINA</div>
+  <header style="flex-shrink:0">
+    <div style="height:230px;overflow:hidden;background:var(--c7-ink)">
+      <img src="locandina.png" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
     </div>
-    <div class="grow">
-      <div class="kicker" style="color:var(--c7-on-ink-muted)">Biliardo Mimmo &middot; gioved&igrave; 3 settembre</div>
-      <h1 style="margin-top:4px;font-size:34px;font-weight:800;letter-spacing:-.025em;color:inherit">Gara 3 &middot; Gioved&igrave;</h1>
-      <div style="margin-top:4px;font-size:15px;font-weight:600;color:var(--c7-on-ink-muted)">
-        Palla 8 &middot; Al 5 &middot; Amalfi &middot; 10 giocatori</div>
-    </div>
-    <div style="text-align:right">
-      <div class="kicker" style="color:var(--c7-on-ink-muted)">Turno</div>
-      <div class="num" style="font-size:44px;font-weight:800;line-height:1">2<span style="font-size:20px;color:var(--c7-on-ink-muted)">/4</span></div>
-      <span class="state state--onaccent" style="margin-top:6px">in corso</span>
+    <div style="height:72px;background:var(--c7-ink);color:var(--c7-on-ink);padding:0 36px;display:flex;
+         align-items:center;gap:28px">
+      <div class="grow" style="display:flex;align-items:baseline;gap:16px;min-width:0">
+        <h1 style="font-size:28px;font-weight:800;letter-spacing:-.025em;color:inherit;white-space:nowrap">Gara 3 &middot; Gioved&igrave;</h1>
+        <div style="font-size:15px;font-weight:600;color:var(--c7-on-ink-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+          Biliardo Mimmo &middot; gioved&igrave; 3 settembre &middot; Palla 8 &middot; Al 5 &middot; Amalfi &middot; 10 giocatori</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="kicker" style="color:var(--c7-accent-dim);font-size:12px">Turno</div>
+        <div class="num" style="font-size:34px;font-weight:800;line-height:1">2<span style="font-size:18px;color:var(--c7-on-ink-muted)">/4</span></div>
+        <span class="state state--onaccent" style="height:30px;font-size:12px;padding:0 14px">in corso</span>
+      </div>
     </div>
   </header>
-  <div style="padding:22px 36px 28px;display:grid;grid-template-columns:1fr 420px;gap:22px;flex:1;min-height:0">
-    <div style="display:flex;flex-direction:column;gap:12px">
+  <div style="padding:20px 36px 24px;display:grid;grid-template-columns:1fr 440px;gap:20px;flex:1;min-height:0">
+    <div style="display:flex;flex-direction:column;gap:12px;min-height:0">
       {tabellone(1, "m.rossi", "4", "g.verdi", "2", "In corso", "accent")}
       {tabellone(2, "d.bianchi", "3", "l.ferrari", "3", "In corso", "accent")}
-      {tabellone(3, "r.neri", "5", "e.sala", "1", "Chiusa", "ok")}
+      {tabellone(3, "a.galli", "5", "r.neri", "1", "Alla distanza", "ok")}
       {tabellone(4, None, "s.conti vs p.marini", None, None, "", "")}
     </div>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <div class="sechead"><h3 style="font-size:19px">Classifica dopo il turno 1</h3></div>
-      <div class="rows">{class_rows}</div>
-      <div class="sechead" style="margin-top:6px"><h3 class="muted" style="font-size:16px">Turno 1</h3>
+    <div style="display:flex;flex-direction:column;gap:12px;min-height:0">
+      <div class="sechead"><h3 style="font-size:20px">Classifica dopo il turno 1</h3></div>
+      <div class="rows" style="flex:1;min-height:0;display:flex;flex-direction:column">{class_rows}</div>
+      <div class="sechead" style="margin-top:2px"><h3 class="muted" style="font-size:16px">Turno 1</h3>
         <span class="state state--muted" style="margin-left:auto">Concluso</span></div>
-      <section class="card" style="display:flex;flex-direction:column;gap:8px;padding:14px 18px">{turno1}</section>
+      <section class="card" style="display:flex;flex-direction:column;gap:6px;padding:12px 18px">{turno1}</section>
     </div>
   </div>
 </div>
 """)
 
-
-# --------------------------------------------------------------------------
-# Pagina 7 — il campionato e la fase playoff
-# --------------------------------------------------------------------------
 
 def _gara_tessera(nome, quando, stato, tono, sub):
     return row(I["flag"] if stato == "Conclusa" else I["play"] if stato == "In corso" else I["clock"],
@@ -1591,15 +1645,24 @@ NOTE_REVISIONE = {
         "nulla cambia sotto i piedi degli iscritti, e questo foglio riporta "
         "soltanto."),
     "GiocoTavolo": (
-        "I tavoli occupati mostrano i due giocatori. Senza tavolo assegnato i "
-        "comandi di punteggio restano spenti: e' una regola dell'app."),
+        "Si tocca la tessera libera e il tavolo e' assegnato: come nel foglio "
+        "di oggi (tableAssignmentModal in gara_detail.html, "
+        "selectTableFromModal salva al tocco), senza bottone di conferma. Gli "
+        "occupati mostrano i due giocatori. Un tavolo libero con una partita "
+        "in attesa capita quando lo si aggiunge a turno avviato: alla "
+        "validazione il tavolo liberato passa da solo alla prima in attesa "
+        "(release_and_reassign_table). Senza tavolo i comandi di punteggio "
+        "restano spenti: e' una regola dell'app."),
     "GiocoValida": (
         "La partita da validare: arrivata alla distanza dal segnapunti dei "
         "giocatori senza la doppia conferma (`is_at_distance and not "
         "is_player_validated`, _match_card.html). «Valida» la chiude e libera "
-        "il tavolo (MatchValidationService.validate_and_complete). Nome sopra, "
-        "numero grande sotto, il vincitore in evidenza: la stessa geometria "
-        "degli stepper."),
+        "il tavolo, che passa da solo alla prima partita in attesa "
+        "(MatchValidationService.validate_and_complete → "
+        "release_and_reassign_table): la card lo dice. Nome sopra, numero "
+        "grande sotto, il vincitore in evidenza: la stessa geometria degli "
+        "stepper, anche sulle partite concluse. Tutto il turno e' in pagina: "
+        "la card verde e' l'unica che chiede qualcosa."),
     "GiocoClassifica": (
         "Sistema a vittorie: vinte, poi differenza triangoli; la X vale una "
         "vittoria e zero differenza (SPECIFICHE.md 64 e 71). La freccia dice "
@@ -1617,6 +1680,14 @@ NOTE_REVISIONE = {
         "scura con i due giocatori nella stessa forma delle altre card e il "
         "segnapunti come unico comando. La scorciatoia esiste gia' "
         "(_gara_my_match.html)."),
+    "GiocoCorreggi": (
+        "Si puo' fare a gara in corso (issue #90). Dietro il foglio, il turno "
+        "concluso con le card in sola lettura — nome sopra, numero grande "
+        "sotto, chi ha vinto pieno — e «Correggi» sulla card da cui si parte. "
+        "Il foglio dice le due conseguenze vere: i triangoli segnati uno per "
+        "uno si cancellano, e la correzione resta scritta sulla partita. Il "
+        "campo «perche'» e' facoltativo ma e' cio' che rende leggibile la "
+        "correzione a chi aveva visto il risultato di prima."),
     "FineClassifica": (
         "A gara conclusa il soggetto e' la classifica. Podio e posizioni 1-3 "
         "nei colori delle medaglie dell'app (--c7-oro, --c7-argento, "
@@ -1756,8 +1827,13 @@ SCHERMATE = [
      "con i comandi da direttore.\n\nLa scorciatoia esiste gia' "
      "(_gara_my_match.html); qui convive con i comandi di direzione."),
     (None, None, "3.9 Il turno su desktop", "page-3", 0, 1,
-     "Artboard «ConsoleDesktop»: le partite a sinistra, «da fare adesso» e i "
-     "tavoli a destra."),
+     "Artboard «ConsoleDesktop»: le partite del turno a sinistra, in sei "
+     "caselle — le cinque partite e il turno prima — che riempiono l'altezza; "
+     "a destra «da fare adesso», i tavoli e la classifica dopo l'ultimo turno "
+     "chiuso, fino in fondo. «Impostazioni gara» sale in testata: contiene "
+     "solo direttori, vetrina e tavoli, le voci che si toccano in gioco. La "
+     "partita da validare dice a chi passa il tavolo "
+     "(release_and_reassign_table)."),
 
     # --- fase 4 ---
     ("SsrRilevato", ssr_rilevato, "4.1 Serve uno spareggio", "page-4", 0, 0,
@@ -1795,11 +1871,14 @@ SCHERMATE = [
      "NUOVO, non esiste nell'app: la pagina pubblica della gara oggi rimanda "
      "alla pagina gara (routes/main.py, gara_detail_public) e la vetrina a "
      "gara in corso dice solo «Gara in corso». SPECIFICHE.md riga 357 chiede "
-     "«i risultati dei match in tempo reale». Da leggere a tre metri: i "
-     "tavoli con i punteggi grandi, la classifica dopo l'ultimo turno chiuso, "
-     "il turno precedente. I dati arrivano dagli stessi eventi live della "
-     "pagina gara (ADR-057). Per i tabelloni al posto della classifica va il "
-     "tabellone: non disegnato."),
+     "«i risultati dei match in tempo reale». In testa la locandina della "
+     "vetrina (il banner 1200x630 di admin/gara_vetrina.html) a tutta "
+     "larghezza, ritagliata al centro come nelle anteprime social, con nome "
+     "della gara e turno sopra. Da leggere a tre metri: i tavoli riempiono "
+     "l'altezza con i punteggi grandi, la classifica dopo l'ultimo turno "
+     "chiuso e il turno prima stanno a destra. I dati arrivano dagli stessi "
+     "eventi live della pagina gara (ADR-057). Per i tabelloni al posto "
+     "della classifica va il tabellone: non disegnato."),
     ("SsrDesktop", ssr_desktop, "4.4 La stessa fase su desktop", "page-4", 0, 1,
      "Spareggio su desktop: gli stepper dei parimerito a sinistra, la "
      "classifica con la pastiglia PARI a destra. «Annulla lo spareggio» "
@@ -1893,7 +1972,7 @@ def main():
         note.append(n)
 
     canvas = {"pages": PAGINE, "artboards": artboards, "annotations": note,
-              "launch": {"view": "canvas", "page": "page-1"}}
+              "launch": {"view": "canvas", "page": "page-3"}}
     (SRC / "canvas.json").write_text(
         json.dumps(canvas, ensure_ascii=False, indent=2), encoding="utf-8")
 

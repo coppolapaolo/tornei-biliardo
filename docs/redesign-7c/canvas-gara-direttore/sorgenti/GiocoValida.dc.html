@@ -220,31 +220,32 @@ svg{display:block}
     <div class="stack">
       
       <div class="sechead"><h3>Turno 2</h3><span class="sechead__more">1 da validare</span></div>
-
+      
       <article class="card card--ok">
         <div class="row" style="justify-content:space-between">
           <span class="state state--ok">Da validare</span>
           <span style="font-size:12px;font-weight:700">Tavolo <span class="num">3</span></span>
         </div>
-        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">
           
-          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px 10px 12px;text-align:center">
+          <div style="border-radius:var(--c7-r-field);background:var(--c7-card);padding:12px 10px 14px;text-align:center">
             <div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;
-                        text-overflow:ellipsis;">m.rossi</div>
-            <div class="num" style="margin-top:6px;font-size:30px;font-weight:800;line-height:1;">5</div>
+                        text-overflow:ellipsis;">a.galli</div>
+            <div class="num" style="margin-top:8px;font-size:34px;font-weight:800;line-height:1;">5</div>
           </div>
           
-          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px 10px 12px;text-align:center">
+          <div style="border-radius:var(--c7-r-field);background:var(--c7-card);padding:12px 10px 14px;text-align:center">
             <div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;
-                        text-overflow:ellipsis;color:var(--c7-ink-muted)">g.verdi</div>
-            <div class="num" style="margin-top:6px;font-size:30px;font-weight:800;line-height:1;color:var(--c7-ink-muted)">2</div>
+                        text-overflow:ellipsis;color:var(--c7-ink-muted)">r.neri</div>
+            <div class="num" style="margin-top:8px;font-size:34px;font-weight:800;line-height:1;color:var(--c7-ink-muted)">1</div>
           </div>
         </div>
         <div style="margin-top:12px"><button class="btn btn--success btn--w"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg> Valida il risultato</button></div>
+        
         <div style="margin-top:8px;font-size:12px;font-weight:600;color:var(--c7-ok-body);
              line-height:1.45">
-          Chiusa dal segnapunti dei giocatori, senza la doppia conferma.
-          Validare la completa e libera il tavolo 3.
+          Chiusa dal segnapunti dei giocatori, senza la doppia conferma. Validare la
+          completa: il tavolo 3 passa a s.conti vs p.marini, che aspettano.
         </div>
       </article>
 
@@ -253,6 +254,42 @@ svg{display:block}
         <div class="row" style="justify-content:space-between">
           <span class="state state--accent">In corso</span>
           <span class="pill" style="height:30px;padding:0 12px;font-size:12px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3 12h18M12 5v14"></path></svg> Tavolo <span class="num">1</span></span>
+        </div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          
+          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px 10px 12px">
+            <div style="font-size:12px;font-weight:800;text-align:center;
+                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">m.rossi</div>
+            <div class="row" style="margin-top:8px;gap:6px">
+              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-card)"
+                      ><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
+              <div class="num grow" style="text-align:center;font-size:26px;font-weight:800">4</div>
+              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-ink);
+                      color:#fff"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button>
+            </div>
+          </div>
+
+          
+          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px 10px 12px">
+            <div style="font-size:12px;font-weight:800;text-align:center;
+                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">g.verdi</div>
+            <div class="row" style="margin-top:8px;gap:6px">
+              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-card)"
+                      ><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
+              <div class="num grow" style="text-align:center;font-size:26px;font-weight:800">2</div>
+              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-ink);
+                      color:#fff"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button>
+            </div>
+          </div>
+
+        </div>
+      </article>
+
+      
+      <article class="card">
+        <div class="row" style="justify-content:space-between">
+          <span class="state state--accent">In corso</span>
+          <span class="pill" style="height:30px;padding:0 12px;font-size:12px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3 12h18M12 5v14"></path></svg> Tavolo <span class="num">2</span></span>
         </div>
         <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
           
@@ -281,6 +318,41 @@ svg{display:block}
             </div>
           </div>
 
+        </div>
+      </article>
+
+      
+      <article class="card">
+        <div class="row" style="justify-content:space-between">
+          <span class="state state--warn">Da giocare</span>
+          <button class="btn btn--warn btn--sm">Assegna tavolo</button>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <div class="grow" style="font-size:13px;font-weight:800">s.conti</div>
+          <div class="faint" style="font-size:12px;font-weight:800">vs</div>
+          <div class="grow" style="font-size:13px;font-weight:800;text-align:right">p.marini</div>
+        </div>
+      </article>
+
+      
+      <article class="card card--locked">
+        <div class="row" style="justify-content:space-between">
+          <span class="state state--muted">Conclusa</span>
+          <span style="font-size:12px;font-weight:700">Tavolo <span class="num">3</span></span>
+        </div>
+        <div style="margin-top:12px;display:grid;grid-template-columns:repeat(2, minmax(0, 1fr));gap:10px">
+          
+          <div style="border-radius:var(--c7-r-field);background:var(--c7-card);padding:12px 10px 14px;text-align:center">
+            <div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;
+                        text-overflow:ellipsis;">f.costa</div>
+            <div class="num" style="margin-top:8px;font-size:34px;font-weight:800;line-height:1;">5</div>
+          </div>
+          
+          <div style="border-radius:var(--c7-r-field);background:var(--c7-card);padding:12px 10px 14px;text-align:center">
+            <div style="font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;
+                        text-overflow:ellipsis;color:var(--c7-ink-muted)">e.sala</div>
+            <div class="num" style="margin-top:8px;font-size:34px;font-weight:800;line-height:1;color:var(--c7-ink-muted)">3</div>
+          </div>
         </div>
       </article>
 

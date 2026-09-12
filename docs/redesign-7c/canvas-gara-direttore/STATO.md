@@ -5,7 +5,9 @@ Canvas: <https://claude.ai/code/artifact/2a185d1b-19e1-4e16-8456-b866787dcc1c>
 `sorgenti/`: `gen_gara_direttore.py` (il kit — token 7c copiati alla lettera
 da `tokens-7c.css` e `theme-7c.css` — e le tre direzioni del primo giro),
 `gen_fasi.py` (le schermate delle cinque fasi e il `canvas.json` completo),
-`gen_decisioni.py` (la pagina «0 · Decisioni», vedi sotto). Si rigenera con
+`gen_decisioni.py` (la pagina «0 · Decisioni», vedi sotto),
+`gen_locandina.py` (la locandina di prova 1200×630 dello schermo in sala,
+`locandina.png`, con Pillow). Si rigenera con
 `python3 sorgenti/gen_decisioni.py`, che richiama gli altri due; il canvas seminato
 (`pagina-gara-direttore.html`, 3 MB) non è committato, vedi «Nota sui file».
 
@@ -217,23 +219,47 @@ Verificato nel codice, e applicato al canvas:
   campionato per chi lo dirige e la fase playoff, dagli inviti alla gara
   playoff. Da rivedere insieme come le altre.
 
-## Da rifare (rilievi del 12/09 notte, non ancora applicati)
+## Rifatte il 13/09 (rilievi del 12/09 notte)
 
-* **3.10 schermo in sala**: troppo spazio vuoto; la locandina **non è un
-  quadratino**, è il banner social della vetrina, 1200×630
-  (`gara_vetrina.html`, `og:image`): va in testa a tutta larghezza.
-* **3.9 desktop del gioco**: molto spazio vuoto, va riempito o compattato.
-* **3.3 da validare** e **3.4 assegna il tavolo**: la card in secondo piano
-  col nome piccolo e il numero accanto è «orribile»; niente username piccoli
-  con il numero di fianco, mai — nome sopra e numero grande sotto, come gli
-  stepper. E niente aree vuote nella parte dei giocatori.
-* **3.2 assegna il tavolo**: il bottone «Assegna il tavolo 2» è inutile,
-  si tocca direttamente la tessera libera.
-* Regola generale dell'utente: **lo spazio vuoto non è buon design**, va
-  riempito con ciò che serve o tolto.
+Applicate al canvas e ripubblicate. La regola generale dell'utente: **lo
+spazio vuoto non è buon design**, si riempie con ciò che serve o si toglie.
+
+* **3.10 schermo in sala**: la locandina è il banner social della vetrina,
+  1200×630 (`admin/gara_vetrina.html`), in testa **a tutta larghezza**,
+  ritagliata al centro come fanno le anteprime social; sotto, una barra
+  scura con nome della gara, dati e turno. I quattro tavoli riempiono
+  l'altezza (`flex:1`), la classifica dopo il turno 1 arriva in fondo con
+  tutti e dieci i giocatori, il turno 1 sotto. La locandina di prova la
+  genera `gen_locandina.py`; nel seed va passata con `--image`.
+* **3.9 desktop del gioco**: la colonna sinistra è una griglia di sei
+  caselle che riempiono l'altezza — le cinque partite del turno (da
+  validare, due in corso, una in attesa di tavolo, una conclusa) e il turno
+  1 compatto; la destra arriva in fondo con «da fare adesso», i tavoli e la
+  classifica dopo il turno 1 (dieci righe). «Impostazioni gara» sale in
+  testata accanto a «Iscritti»: direttori, vetrina, tavoli.
+* **3.3 e 3.4**: le card in sola lettura (da validare, concluse) usano la
+  geometria degli stepper — nome sopra, numero grande sotto, chi ha vinto
+  pieno e l'altro spento (`score_read`, `closed_card`). In 3.3 c'è tutto il
+  turno 2, e la card verde dice a chi passa il tavolo. In 3.4 dietro il
+  foglio c'è il turno 1 concluso, con la card da cui si parte in cima e
+  «Correggi» sulla card; il risultato corretto è coerente con il turno 1
+  mostrato ovunque (g.verdi 5–4 p.marini, registrato al contrario).
+* **3.2**: via il bottone «Assegna il tavolo 2»: si tocca la tessera libera,
+  che è evidenziata. È già così nell'app: `selectTableFromModal` in
+  `gara_detail.html` salva al tocco. I tavoli sono quattro e le tessere
+  più grandi, due per riga.
+* **Storia unica del turno 2** su tutta la pagina 3 (Main compreso): 10
+  giocatori, 4 tavoli, 5 partite — m.rossi 4–2 g.verdi al tavolo 1,
+  d.bianchi 3–3 l.ferrari al 2, a.galli 5–1 r.neri al 3 da validare,
+  f.costa 5–3 e.sala conclusa, s.conti vs p.marini in attesa del tavolo 4
+  appena aggiunto. Verificato nel codice: alla validazione il tavolo
+  liberato passa da solo alla prima partita in attesa
+  (`MatchValidationService.validate_and_complete` →
+  `TableAssignmentService.release_and_reassign_table`), e le card lo dicono.
+  La card riassuntiva di Main ora dice 1/5 chiuse e 3/4 tavoli.
 * Restano da revisionare dall'utente: 1.x, 2.x, 4.x, 5.x rifatte, la pagina
   7 (campionato e playoff), e le due conferme aperte (gestione con la
-  striscia, testi degli esercizi).
+  striscia, testi degli esercizi). Il canvas si apre sulla pagina 3.
 
 ## Non ancora disegnato
 
@@ -249,7 +275,9 @@ di prova (ADR-058, arrivata dopo il canvas).
 ```bash
 cd docs/redesign-7c/canvas-gara-direttore
 python3 sorgenti/gen_decisioni.py   # riscrive tutti gli artboard e canvas.json
-# poi si semina il canvas con seed-canvas.mjs della skill `design`
+# poi si semina il canvas con seed-canvas.mjs della skill `design`, passando
+# anche `--image sorgenti/locandina.png` (la locandina dello schermo in sala;
+# `python3 sorgenti/gen_locandina.py` la rigenera, serve Pillow)
 # (stesso file → stesso URL dell'artefatto)
 ```
 
