@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% import "direttore/_macros.html" as d with context %}
+
+{# «Impostazioni gara» — Design System 7c (canvas, 2S · Impostazioni gara).
+
+   Cio' che si puo' toccare davvero, in ogni fase: la direzione di gara e la
+   vetrina (nessun guard di stato), i tavoli. Turni, distanze, esercizi,
+   accoppiamento e chi riposa si fissano prima dell'avvio e da li' in poi
+   qui si leggono soltanto. La gara si modifica solo in preparazione senza
+   iscritti (`Gara.can_be_modified`): il collegamento c'e' quando serve.
+
+   Variabili: quelle della direzione (`users`, `can_manage_directors`,
+   `show_*`, `inherited_directors`, squadre e categorie) e `in_preparazione`. #}
+
+{% block title %}{{ _('Impostazioni gara') }} - {{ gara.display_name }}{% endblock %}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" aria-label="{{ _('Torna alla gara') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _('Impostazioni gara') }}{% endblock %}
+{% block page_sub %}{{ gara.display_name }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i>&nbsp;{{ gara.display_name|truncate(28, True, '…') }}
+</a>
+{% if gara.can_be_modified() %}
+<a href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" class="btn btn-secondary btn-sm" aria-label="{{ _('Modifica') }}">
+  <i class="fas fa-pen"></i><span class="d-none d-lg-inline">&nbsp;{{ _('Modifica gara') }}</span>
+</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="c7-stack c7-sections">
+
+  {{ d.sezione(_('Si modifica anche adesso')) }}
+
+  <div id="sezioneDirettori">
+    {% include "components/_gara_directors.html" %}
+  </div>
+
+  {% if not gara.is_prova and feature_visible('admin.competition.gara_vetrina') %}
+  <div class="c7-rows">
+    {{ d.riga('fa-share-nodes', _('Vetrina'), _('locandina, indirizzo pubblico, link esterno'),
+              href=url_for('admin.competition.gara_vetrina', gara_id=gara.id)) }}
+  </div>
+  {% endif %}
+
+  <div id="sezioneTavoli">
+    {% include "components/_gara_tables_config.html" %}
+  </div>
+
+  {# Squadre e categorie si mostrano da se' solo quando la gara le usa. #}
+  <div id="sezioneSquadre">{% include "components/_squadre_management.html" %}</div>
+  {% include "components/_categorie_management.html" %}
+
+  {% if in_preparazione %}
+  {# In preparazione turni ed esercizi si modificano: sono nella pagina
+     della gara, dove la fase li elenca. Qui il rimando. #}
+  <div class="c7-rows">
+    {{ d.riga('fa-list-ol', _('Turni e distanze'), _('si modificano dalla pagina della gara, fino all’apertura delle iscrizioni'),
+              href=url_for('admin.competition.gara_detail', gara_id=gara.id) ~ '#sezioneTurni') }}
+  </div>
+  {% else %}
+  {{ d.sezione(_("Fissato all'avvio")) }}
+  {% set _esercizi = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length %}
+  <div class="c7-rows">
+    {{ d.riga('fa-list-ol', _('Turni e distanze'),
+              _('%(n)s turni · %(disc)s · %(dist)s', n=gara.rounds_count, disc=gara.discipline|discipline_display, dist=gara.distance_config|format_distance),
+              tone='locked') }}
+    {{ d.riga('fa-diagram-project', _('Accoppiamento'),
+              gara.matchmaking_strategy.replace('_', ' ')|title ~ (' · ' ~ _('anti-reincontro attivo') if gara.anti_rematch_enabled else ''),
+              tone='locked') }}
+    {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
+    {{ d.riga('fa-bullseye', _('Esercizi fra i turni'),
+              (ngettext('%(n)d esercizio', '%(n)d esercizi', _esercizi, n=_esercizi) if _esercizi else _('nessuno')),
+              tone='locked') }}
+    {% endif %}
+    {% if gara.matchmaking_strategy not in bracket_minimum_players %}
+    {{ d.riga('fa-scale-balanced', _('Chi riposa'), gara.odd_number_policy.replace('_', ' ')|title, tone='locked') }}
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% include "components/_gara_info.html" %}
+</div>
+{% endblock %}

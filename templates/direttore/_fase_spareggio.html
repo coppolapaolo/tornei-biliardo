@@ -1,0 +1,77 @@
+{# templates/direttore/_fase_spareggio.html — Design System 7c
+
+   Fase 4 del canvas: la gara e' in `awaiting_ssr`. Finche' c'e' un pari
+   merito da sciogliere la fascia chiede i punti; sciolti tutti, l'ultima
+   azione e' terminare, con accanto la strada indietro («Annulla lo
+   spareggio», che riporta la gara in gioco e azzera i punti SSR). #}
+
+<section class="c7-card c7-card--accent c7-fascia">
+  <div class="c7-fascia__testo">
+    {% if has_unresolved_tiebreakers %}
+    <div class="c7-kicker">{{ _('Spareggio (Spot Shot Rally)') }}</div>
+    <h3 class="c7-fascia__titolo">{{ _('Inserisci i punti') }}</h3>
+    <div class="c7-fascia__corpo">
+      {{ _('Un gruppo per posizione contesa: il punteggio più alto prende il posto migliore. Lo spareggio decide solo l’ordine fra chi è a pari merito.') }}
+    </div>
+    {% else %}
+    <div class="c7-kicker">{{ _('Spareggi risolti') }}</div>
+    <h3 class="c7-fascia__titolo">{{ _('Puoi chiudere la gara') }}</h3>
+    <div class="c7-fascia__corpo">
+      {{ _('La classifica diventa definitiva, i punti vanno al campionato e i giocatori ricevono la notifica.') }}
+    </div>
+    {% endif %}
+  </div>
+  {% if not has_unresolved_tiebreakers %}
+  <div class="c7-fascia__azione">
+    <button type="button" class="btn btn-success" onclick="terminateGara({{ gara.id }}, this)">
+      <i class="fas fa-flag-checkered"></i> {{ _('Termina la gara') }}
+    </button>
+  </div>
+  {% endif %}
+</section>
+
+<div class="c7-cols">
+  <div class="c7-stack">
+    {% include "components/_ssr_section.html" %}
+
+    {% if feature_visible('admin.competition.cancel_ssr') %}
+    {{ d.sezione(_('Se serve tornare indietro')) }}
+    <div class="c7-card c7-stack">
+      <button type="button" class="btn btn-secondary w-100" onclick="cancelSsr({{ gara.id }}, this)">
+        <i class="fas fa-rotate-left"></i> {{ _('Annulla lo spareggio') }}
+      </button>
+      {{ d.nota(_('Riporta la gara in gioco per correggere i risultati. I punti SSR inseriti vengono azzerati.')) }}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="c7-stack">
+    {% if has_scores %}
+    {% with classification=current_round_classification, round_number=latest_round_with_classification %}
+    <div class="d-lg-none" data-help="gara-classifica">
+      {% include "components/_classification_mobile.html" %}
+    </div>
+    <div class="d-none d-lg-block">
+      {% include "components/_detailed_classification.html" %}
+    </div>
+    {% endwith %}
+    {% endif %}
+
+    <div class="c7-rows">
+      {{ d.riga('fa-list', _('Partite'), _('turno per turno'),
+                attrs='role="button" data-bs-toggle="collapse" data-bs-target="#sezionePartite" aria-expanded="false" aria-controls="sezionePartite"',
+                right='<i class="fas fa-chevron-down c7-rows__chev"></i>'|safe) }}
+      {{ d.riga('fa-users', _('Iscritti'),
+                ngettext('%(n)d attivo', '%(n)d attivi', gara.get_active_inscriptions_count(), n=gara.get_active_inscriptions_count()),
+                attrs='role="button" data-bs-toggle="collapse" data-bs-target="#sezioneIscritti" aria-expanded="false" aria-controls="sezioneIscritti"',
+                right='<i class="fas fa-chevron-down c7-rows__chev"></i>'|safe) }}
+    </div>
+    <div class="collapse" id="sezionePartite">
+      <div class="d-lg-none">{% include "components/_match_cards_mobile.html" %}</div>
+      <div class="d-none d-lg-block">{% include "components/_gara_matches.html" %}</div>
+    </div>
+    <div class="collapse" id="sezioneIscritti">
+      {% include "components/_gara_inscriptions.html" %}
+    </div>
+  </div>
+</div>

@@ -242,6 +242,7 @@ hints:
     screens:
       - admin.competition.create_gara_standalone
       - admin.competition.gara_detail
+      - admin.competition.gara_impostazioni
     page: opzioni_della_gara
     section: informazioni
 
@@ -254,7 +255,7 @@ hints:
     section: correggere
 
   - id: gara.avvia_turno
-    label: "Avvia turno successivo"
+    label: "Avvia il turno"
     short: "Si accende quando tutte le partite del turno sono concluse. Avviandolo, i risultati del turno precedente si bloccano."
     anchor: gara-avvia-turno
     screens: [admin.competition.gara_detail]
@@ -271,7 +272,7 @@ hints:
 
   - id: gara.sorteggia_tabellone
     label: "Sorteggia il tabellone"
-    short: "Nelle gare a tabellone sostituisce «Avvia Primo Turno»: chiude le iscrizioni, congela le squadre e fissa il percorso di tutti fino alla finale."
+    short: "Nelle gare a tabellone sostituisce «Avvia la gara»: chiude le iscrizioni, congela le squadre e fissa il percorso di tutti fino alla finale."
     anchor: gara-sorteggia-tabellone
     screens: [admin.competition.gara_detail]
     page: tabellone
@@ -791,6 +792,8 @@ tours:
     intro: "Tutto quello che riguarda una gara sta qui: chi gioca contro chi, come va la classifica e chi partecipa."
     audience: [giocatore, direttore]
     steps:
+      - title: "Dove siamo"
+        text: "Chi dirige vede in cima la striscia delle fasi — preparazione, iscrizioni, in gioco, chiusura — e una fascia scura con l'unica cosa da fare adesso; il resto della gestione sta in «Impostazioni gara». Chi gioca ha le linguette Turni, Classifica e Iscritti."
       - hint: gara.turni
       - hint: gara.classifica
       - title: "Iscritti"

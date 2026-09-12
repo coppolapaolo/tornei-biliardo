@@ -29,7 +29,7 @@ blocks:
 
   - type: shot
     shot: gara-gestione
-    caption: "Il pannello «Gestione» durante una gara: lo stato del turno in corso e il pulsante per avviare il successivo."
+    caption: "La pagina della gara vista dal direttore: in cima la striscia delle fasi, sotto la fascia scura che dice l'unica cosa da fare adesso — qui, avviare il turno successivo."
 
   - type: heading
     id: primo_turno
@@ -39,7 +39,7 @@ blocks:
     items:
       - title: "Chiudi le iscrizioni"
         text: "Controlla che l'elenco corrisponda a chi è davvero in sala."
-      - title: "Tocca «Avvia Primo Turno»"
+      - title: "Tocca «Avvia la gara»"
         text: >-
           L'app sorteggia le coppie e crea le partite. Tutti i giocatori
           ricevono una notifica con il nome dell'avversario. Nelle gare a
@@ -122,7 +122,7 @@ blocks:
 
   - type: text
     text: >-
-      Il pulsante **Avvia turno successivo** si accende solo quando **tutte**
+      Il pulsante **Avvia il turno** compare nella fascia solo quando **tutte**
       le partite del turno in corso sono concluse. È un vincolo voluto: le
       coppie del turno nuovo nascono dalla classifica, e una classifica
       incompleta produrrebbe abbinamenti sbagliati.
@@ -200,18 +200,18 @@ blocks:
       - >-
         **Spareggi**: se ci sono pari merito nelle posizioni che hai deciso di
         spareggiare, la gara resta in attesa finché non li fai giocare. Puoi
-        avviare lo spareggio dal pannello Gestione.
+        avviare lo spareggio dalla fascia in cima alla pagina della gara.
       - >-
         **Classifica del campionato**: se la gara ne fa parte, i risultati
         vengono sommati alla classifica generale non appena la gara è conclusa.
 
   - type: faq
     items:
-      - q: "Il pulsante «Avvia turno successivo» è spento."
+      - q: "Nella fascia non compare «Avvia il turno»."
         a: "Manca almeno una partita da concludere. Nella vista Turni, le partite ancora aperte sono quelle senza etichetta «Conclusa»."
       - q: "Un giocatore se ne va a metà gara."
         a: "Registra il forfait sulla partita in corso. Per i turni successivi, la regola che hai scelto alla creazione decide se resta negli abbinamenti (perdendo a tavolino) o se ne esce. Nelle gare a tabellone non c'è nulla da scegliere: chi si ritira lascia passare l'avversario a tavolino, e il tabellone resta com'è."
-      - q: "Perché il mio torneo a eliminazione non dice «Avvia Primo Turno»?"
+      - q: "Perché il mio torneo a eliminazione non dice «Avvia la gara»?"
         a: "Perché lì l'azione è un'altra: il pulsante dice «Sorteggia il tabellone». Estrarre il tabellone chiude le iscrizioni e fissa il percorso di tutti fino alla finale, quindi il nome dice quello che succede davvero."
       - q: "Posso dirigere la gara e giocarla?"
         a: "No: un direttore non può iscriversi alla gara che dirige. Se vuoi giocare, aggiungi un co-direttore che conduca la serata."

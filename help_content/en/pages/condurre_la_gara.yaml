@@ -30,7 +30,7 @@ blocks:
 
   - type: shot
     shot: gara-gestione
-    caption: "The «Management» panel during a competition: the state of the current round and the button to start the next."
+    caption: "The competition page as the director sees it: the phase strip at the top, then the dark band that says the one thing to do now — here, start the next round."
 
   - type: heading
     id: primo_turno
@@ -40,7 +40,7 @@ blocks:
     items:
       - title: "Close registrations"
         text: "Check the list matches who is actually in the venue."
-      - title: "Tap «Start First Round»"
+      - title: "Tap «Start the competition»"
         text: >-
           The app draws the pairs and creates the matches. Every player gets a
           notification with their opponent's name. In bracket competitions the
@@ -197,7 +197,7 @@ blocks:
       - >-
         **Tie-breaks**: if players are level in the positions you chose to
         break, the competition waits until you have them played. You start the
-        tie-break from the Management panel.
+        tie-break from the band at the top of the competition page.
       - >-
         **Championship standings**: if the competition is part of one, the
         results are added to the overall standings as soon as it finishes.
@@ -208,7 +208,7 @@ blocks:
         a: "At least one match is still open. In the Rounds view, the open matches are the ones without the «Finished» label."
       - q: "A player leaves halfway through the competition."
         a: "Record a forfeit on the match in progress. For the following rounds, the rule you chose at creation decides whether they stay in the pairings (losing by walkover) or drop out. In bracket competitions there is nothing to choose: whoever withdraws lets their opponent through by walkover, and the bracket stays as it is."
-      - q: "Why does my knockout not say «Start First Round»?"
+      - q: "Why does my knockout not say «Start the competition»?"
         a: "Because the action there is a different one: the button says «Draw the bracket». Drawing the bracket closes registrations and fixes everybody's path to the final, so the name says what actually happens."
       - q: "Can I run a competition and play in it?"
         a: "No: a director cannot register for the competition they run. If you want to play, add a co-director to run the evening."

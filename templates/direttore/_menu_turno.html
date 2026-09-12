@@ -1,0 +1,54 @@
+{# templates/direttore/_menu_turno.html — Design System 7c
+
+   Il menu del turno, dai tre puntini accanto a «Turno N» (canvas, 2S · Il
+   menu del turno). L'unico comando di turno che l'app ha durante il gioco e'
+   annullarne l'avvio, e solo finche' nessuna partita ha segnato un
+   triangolo, X esclusa (`Gara.can_cancel_round`, use case 8). Il foglio lo
+   dice anche quando non si puo', invece di sparire: cosi' il direttore sa
+   perche'.
+
+   Attesa dal chiamante: `menu_turno`, un dizionario con `turno`, `tipo`
+   (`gara` | `primo` | `turno`) e `annullabile`; `None` fuori dal gioco. #}
+{% if menu_turno %}
+<div class="modal fade c7-sheet" id="menuTurnoModal" tabindex="-1" aria-labelledby="menuTurnoTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="menuTurnoTitolo">{{ _('Turno %(n)s', n=menu_turno.turno) }}</h3>
+        {% if conteggi %}
+        <div class="c7-sheet__sub">
+          {{ _('In corso') }} · {{ _('%(chiuse)s partite chiuse su %(totali)s', chiuse=conteggi.chiuse, totali=conteggi.totali) }}
+        </div>
+        {% endif %}
+      </div>
+      <div class="modal-body c7-stack">
+        {% if menu_turno.tipo == 'gara' %}
+        <button type="button" class="btn btn-secondary w-100" onclick="cancelFirstRound({{ gara.id }})" {% if not menu_turno.annullabile %}disabled{% endif %}>
+          <i class="fas fa-rotate-left"></i> {{ _("Annulla l'avvio della gara") }}
+        </button>
+        {% elif menu_turno.tipo == 'primo' %}
+        <button type="button" class="btn btn-secondary w-100" onclick="cancelFirstRound({{ gara.id }})" {% if not menu_turno.annullabile %}disabled{% endif %}>
+          <i class="fas fa-rotate-left"></i> {{ _("Annulla l'avvio del turno 1") }}
+        </button>
+        {% else %}
+        <button type="button" class="btn btn-secondary w-100" onclick="cancelCurrentRound({{ gara.id }})" {% if not menu_turno.annullabile %}disabled{% endif %}>
+          <i class="fas fa-rotate-left"></i> {{ _("Annulla l'avvio del turno %(n)s", n=menu_turno.turno) }}
+        </button>
+        {% endif %}
+        <div class="c7-nota">
+          {% if menu_turno.annullabile %}
+          {{ _('Si può finché nessuna partita del turno ha segnato un triangolo (la X non conta). Gli abbinamenti si rifanno all’avvio.') }}
+          {% else %}
+          {{ _('Non si può più: una partita del turno ha già segnato un triangolo. Per tornare indietro si azzera quella partita dalla sua card.') }}
+          {% endif %}
+        </div>
+        <hr class="c7-divider" style="margin:2px 0">
+        <div class="c7-nota">
+          {{ _('Per una singola partita — cambiare il tavolo, azzerarla, correggere un risultato chiuso — si tocca la sua card.') }}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}

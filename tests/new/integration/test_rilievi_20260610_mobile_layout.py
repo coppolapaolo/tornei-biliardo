@@ -60,7 +60,10 @@ def _make_gara(db_session, status):
     return gara
 
 
-def test_playing_phase_mobile_order_actionable_first(admin_client, db_session):
+def test_playing_phase_console_before_matches(admin_client, db_session):
+    """In gioco l'azionabile viene prima: dal 2026-09-12 la pagina del
+    direttore e' quella a fasi, e la card della console (o la fascia col
+    comando) sta sopra le partite, per mobile e desktop insieme."""
     from models.user.services import UserService
 
     gara = _make_gara(db_session, GaraStatus.PLAYING.value)
@@ -80,28 +83,19 @@ def test_playing_phase_mobile_order_actionable_first(admin_client, db_session):
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
 
-    # Ordine visivo mobile: partite(1) -> turni(2) -> gestione(3) -> direttori(4)
-    assert "order-1" in _classes_of(html, "sectionPartite")
-    assert "order-2" in _classes_of(html, "sectionTurni")
-    gestione = _classes_of(html, "sectionGestioneMobile")
-    assert "order-3" in gestione and "d-lg-none" in gestione
-    # Niente header "Gestione" duplicato: dentro il collapse mobile il
-    # componente e' incluso headerless (restano l'header desktop e quello
-    # del collapse stesso) — rilievo Copilot PR #36
-    assert html.count(GESTIONE_HEADING) == 2
-    assert "order-4" in _classes_of(html, "sectionDirettori")
-    # Desktop invariato: ordine ripristinato dalle classi order-lg-*
-    assert "order-lg-1" in _classes_of(html, "sectionDirettori")
-    assert "order-lg-3" in _classes_of(html, "sectionPartite")
+    assert "c7-console" in html
+    assert html.index("c7-console") < html.index('id="sezioneIscritti"')
+    assert 'id="sectionGestioneMobile"' not in html
 
 
-def test_inscription_phase_keeps_default_layout(admin_client, db_session):
+def test_inscription_phase_fascia_first(admin_client, db_session):
     gara = _make_gara(db_session, GaraStatus.INSCRIPTION.value)
 
     resp = admin_client.get(f"/admin/gara/{gara.id}")
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
 
-    # Fuori dalla fase di gioco l'azionabile e' la gestione: niente riordino
-    assert 'id="sectionGestioneMobile"' not in html
-    assert "order-1" not in _classes_of(html, "sectionPartite")
+    # Fuori dalla fase di gioco l'azionabile e' avviare la gara: sta nella
+    # fascia, prima dell'elenco degli iscritti.
+    assert "Iscrizioni aperte" in html
+    assert html.index("c7-fascia") < html.index("Nessun iscritto")

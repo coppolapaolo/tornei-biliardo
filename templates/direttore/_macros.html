@@ -1,0 +1,72 @@
+{# templates/direttore/_macros.html — Design System 7c
+
+   I mattoni della pagina gara del direttore (canvas «Pagina gara del
+   direttore», approvato il 13/09/2026): la riga di un elenco raggruppato con
+   la tessera a sinistra, la nota sotto un comando, i pulsanti che avviano la
+   gara. Le condizioni sono quelle di `_gara_management.html`: qui cambia la
+   forma, non la macchina a stati.
+
+   Si importa `with context`: le macro usano `_`, `url_for` e `gara`. #}
+
+{# Riga di elenco raggruppato: tessera, titolo, sottotitolo, e a destra un
+   chevron (quando e' un collegamento) o quello che si passa. `tone` colora
+   la tessera: ok (fatto), warn (manca), neutral, locked, accent. #}
+{% macro riga(icona, titolo, sub='', tone='neutral', href='', right='', attrs='') -%}
+{%- set tile = {'neutral': 'c7-tile c7-tile--sm c7-tile--neutral',
+                'ok': 'c7-tile c7-tile--sm c7-tile--ok',
+                'warn': 'c7-tile c7-tile--sm c7-tile--warn',
+                'locked': 'c7-tile c7-tile--sm c7-tile--locked',
+                'accent': 'c7-tile c7-tile--sm'}[tone] -%}
+{%- if href -%}<a class="c7-rows__row" href="{{ href }}" {{ attrs|safe }}>{%- else -%}<div class="c7-rows__row" {{ attrs|safe }}>{%- endif %}
+  <span class="{{ tile }}"><i class="fas {{ icona }}"></i></span>
+  <span class="c7-rows__main">
+    <span class="c7-rows__title d-block">{{ titolo }}</span>
+    {% if sub %}<span class="c7-rows__sub d-block">{{ sub }}</span>{% endif %}
+  </span>
+  {% if right %}{{ right }}{% elif href %}<i class="fas fa-chevron-right c7-rows__chev"></i>{% endif %}
+{%- if href -%}</a>{%- else -%}</div>{%- endif %}
+{%- endmacro %}
+
+{# Nota sotto un comando. #}
+{% macro nota(testo) -%}
+<div class="c7-nota">{{ testo }}</div>
+{%- endmacro %}
+
+{# Il pulsante che avvia la gara. Sui tabelloni non si «avvia un turno» ma si
+   **estrae il tabellone**: da li' il percorso di tutti e' fissato fino alla
+   finale. `bloccato` lo spegne (mancano iscritti) senza nasconderlo: il
+   direttore deve sapere che quella gara aspetta lui e cosa le manca. #}
+{% macro pulsante_avvio(gara, bloccato=False, classe='btn btn-success') -%}
+{%- set is_bracket = gara.matchmaking_strategy in bracket_minimum_players -%}
+<button type="button" class="{{ classe }}" onclick="startFirstRound({{ gara.id }}, '{{ gara.matchmaking_strategy }}')"
+        {% if bloccato %}disabled{% endif %}{% if is_bracket %} data-help="gara-sorteggia-tabellone"{% endif %}>
+  <i class="fas {{ 'fa-sitemap' if is_bracket else 'fa-play' }}"></i>
+  {% if is_bracket %}{{ _('Sorteggia il tabellone') }}{% else %}{{ _('Avvia la gara') }}{% endif %}
+</button>
+{%- endmacro %}
+
+{# Il pulsante degli esercizi fra i turni: oggi il modale esiste solo con
+   l'accoppiamento casuale (`_challenge_management_modal.html`), e il limite
+   sta nei template — il servizio accetta qualunque strategia. Aprirlo anche
+   ad Amalfi e' la fase B del canvas. #}
+{% macro pulsante_esercizi(gara, classe='btn btn-secondary w-100') -%}
+{%- if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value -%}
+{%- set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode -%}
+{%- if challenge_enabled -%}
+{%- set has_challenges = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length > 0 -%}
+<button type="button" class="{{ classe }}" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
+  <i class="fas fa-bullseye"></i>
+  {{ _('Gestisci gli esercizi') if has_challenges else _('Aggiungi esercizi') }}
+</button>
+{%- endif -%}
+{%- endif -%}
+{%- endmacro %}
+
+{# Testata di sezione: titolo a sinistra, nota o comando a destra. #}
+{% macro sezione(titolo, nota='', more='', more_href='', attrs='') -%}
+<div class="c7-sechead" {{ attrs|safe }}>
+  <h3>{{ titolo }}</h3>
+  {% if nota %}<span class="c7-sechead__note">{{ nota }}</span>{% endif %}
+  {% if more %}<a class="c7-sechead__more" href="{{ more_href or '#' }}">{{ more }}</a>{% endif %}
+</div>
+{%- endmacro %}

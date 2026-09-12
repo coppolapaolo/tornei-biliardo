@@ -245,6 +245,7 @@ hints:
   screens:
   - admin.competition.create_gara_standalone
   - admin.competition.gara_detail
+  - admin.competition.gara_impostazioni
   page: opzioni_della_gara
   section: informazioni
 - id: gara.reset_partita
@@ -275,7 +276,7 @@ hints:
   section: primo_turno
 - id: gara.sorteggia_tabellone
   label: Draw the bracket
-  short: 'In bracket competitions it replaces «Start First Round»: it closes registrations, freezes teams
+  short: 'In bracket competitions it replaces «Start the competition»: it closes registrations, freezes teams
     and fixes everybody''s path to the final.'
   anchor: gara-sorteggia-tabellone
   screens:
@@ -885,6 +886,8 @@ tours:
   - giocatore
   - direttore
   steps:
+  - title: Where we are
+    text: Whoever directs sees the phase strip at the top — preparation, registrations, in play, closing — and a dark band with the one thing to do now; the rest of the management lives in «Competition settings». Players get the Rounds, Standings and Registered tabs.
   - hint: gara.turni
   - hint: gara.classifica
   - title: Entrants

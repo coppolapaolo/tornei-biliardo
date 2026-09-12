@@ -1,0 +1,126 @@
+{# templates/direttore/_fase_iscrizioni.html — Design System 7c
+
+   Fase 2 del canvas. Il numero che conta e' «7 iscritti su 16, ne servono
+   8»: e' cio' che decide se la gara parte, e l'avvio resta spento con
+   scritto perche'. Le iscrizioni non ancora aperte e quelle scadute sono
+   stati derivati (`get_real_status`) e cambiano solo la fascia: estendere o
+   annullare, o avviare se il minimo c'e'. Il link pubblico sta qui, perche'
+   in questa fase condividerlo e' il lavoro principale. #}
+
+{% set reale = gara.get_real_status() %}
+{% set iscritti = gara.get_active_inscriptions_count() %}
+{% set minimo = gara.min_participants or 0 %}
+{% set massimo = gara.max_participants %}
+{% set mancano = minimo - iscritti if iscritti < minimo else 0 %}
+{% set _tavoli = gara.get_available_tables() %}
+
+<section class="c7-card c7-card--accent c7-fascia">
+  <div class="c7-fascia__testo">
+    {% if reale == ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value %}
+    <div class="c7-kicker">{{ _('Iscrizioni non ancora aperte') }}</div>
+    <h3 class="c7-fascia__titolo">{{ _('Aprono da sole') }}
+      {% if gara.inscription_start %}<span class="c7-num">{{ gara.inscription_start|datetime_local }}</span>{% endif %}</h3>
+    <div class="c7-fascia__corpo">{{ _('La gara è già pubblica: chi la trova legge quando potrà iscriversi.') }}</div>
+    {% elif reale == ProvaDerivedStatus.INSCRIPTION_CLOSED.value %}
+    <div class="c7-kicker">{{ _('Iscrizioni scadute') }}</div>
+    <h3 class="c7-fascia__titolo">
+      {% if gara.inscription_end %}{{ _('Chiuse il %(quando)s', quando=gara.inscription_end|datetime_local) }}{% else %}{{ _('Chiuse') }}{% endif %}
+    </h3>
+    <div class="c7-fascia__corpo">
+      {% if mancano %}
+      {{ _('Sono arrivati %(n)s iscritti sugli %(min)s che servono. Puoi allungare i tempi o annullare la gara: in entrambi i casi gli iscritti ricevono la notifica.', n=iscritti, min=minimo) }}
+      {% else %}
+      {{ _('%(n)s iscritti, il minimo c’è: puoi avviare la gara o riaprire le iscrizioni.', n=iscritti) }}
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="c7-kicker">{{ _('Iscrizioni aperte') }}</div>
+    <h3 class="c7-fascia__titolo">
+      {% if massimo %}{{ _('%(n)s iscritti su %(max)s', n=iscritti, max=massimo) }}{% else %}{{ ngettext('%(n)d iscritto', '%(n)d iscritti', iscritti, n=iscritti) }}{% endif %}
+    </h3>
+    {% set _tot = massimo or (minimo if minimo > iscritti else iscritti) or 1 %}
+    <div class="c7-fascia__progress">
+      <span class="c7-num">{{ iscritti }}/{{ _tot }}</span>
+      <span class="c7-bar"><span class="c7-bar__fill" style="width:{{ [100, (iscritti * 100 / _tot)|round|int]|min }}%"></span></span>
+    </div>
+    <div class="c7-fascia__corpo">
+      {{ _('Servono almeno %(min)s iscritti', min=minimo) }}{% if gara.inscription_end %} · {{ _('chiudono %(quando)s', quando=gara.inscription_end|datetime_local) }}{% endif %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="c7-fascia__azione">
+    {% if reale == ProvaDerivedStatus.INSCRIPTION_NOT_YET_OPEN.value %}
+      {% if gara.can_modify_inscription_dates() %}
+      <button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
+        <i class="fas fa-calendar"></i> {{ _('Modifica le date') }}
+      </button>
+      {% endif %}
+    {% elif reale == ProvaDerivedStatus.INSCRIPTION_CLOSED.value %}
+      {% if not mancano %}
+      {{ d.pulsante_avvio(gara) }}
+      {% endif %}
+      {% if gara.can_modify_inscription_dates() %}
+      <button type="button" class="btn btn-{{ 'primary' if mancano else 'secondary' }}" data-bs-toggle="modal" data-bs-target="#modifyDatesModal">
+        <i class="fas fa-clock"></i> {{ _('Estendi le iscrizioni') }}
+      </button>
+      {% endif %}
+    {% else %}
+      {% if mancano %}
+      <div class="c7-fascia__nota">{{ ngettext('Manca %(n)d iscritto', 'Mancano %(n)d iscritti', mancano, n=mancano) }}</div>
+      {% endif %}
+      {{ d.pulsante_avvio(gara, bloccato=(mancano > 0)) }}
+    {% endif %}
+  </div>
+</section>
+
+{# Iscrizioni scadute senza il minimo: la seconda uscita, annullare, e'
+   distruttiva e sta a parte con la sua nota. #}
+{% if reale == ProvaDerivedStatus.INSCRIPTION_CLOSED.value and mancano and gara.can_modify_inscription_dates() %}
+<div class="c7-card c7-stack">
+  <button type="button" class="btn btn-danger w-100" onclick="cancelProvaWithNotifications({{ gara.id }}, {{ gara.number }}, this)">
+    <i class="fas fa-circle-xmark"></i> {{ _('Annulla la gara') }}
+  </button>
+  {{ d.nota(ngettext('L’iscritto riceve la notifica dell’annullamento.', 'I %(n)d iscritti ricevono la notifica dell’annullamento.', iscritti, n=iscritti)) }}
+</div>
+{% endif %}
+
+{# Il link da condividere: in questa fase e' il lavoro principale. #}
+{% if public_invite_url or gara.is_prova %}
+<div class="c7-card">
+  <div class="c7-kicker">{{ _('Condividi') }}</div>
+  {% include "components/_gara_public_link.html" %}
+</div>
+{% endif %}
+
+{% include "components/_gara_inscriptions.html" %}
+
+{{ d.sezione(_("Da tenere d'occhio")) }}
+<div class="c7-rows">
+  {% if feature_visible('admin.competition.gara_impostazioni') %}
+  {{ d.riga('fa-table', _('Tavoli'),
+            ((_tavoli|join(', ')) ~ ' — ' ~ _('cambia prima di avviare')) if _tavoli else _('nessun tavolo: la sala non ne ha dichiarati'),
+            tone=('neutral' if _tavoli else 'warn'),
+            href=url_for('admin.competition.gara_impostazioni', gara_id=gara.id) ~ '#sezioneTavoli') }}
+  {% endif %}
+  {% if gara.get_waitlist_count() > 0 %}
+  {{ d.riga('fa-user-clock', ngettext('%(n)d in lista d’attesa', '%(n)d in lista d’attesa', gara.get_waitlist_count(), n=gara.get_waitlist_count()),
+            _('entra se qualcuno si ritira'), tone='warn') }}
+  {% endif %}
+  {% if reale == GaraStatus.INSCRIPTION.value and gara.can_modify_inscription_dates() %}
+  {{ d.riga('fa-clock', _('Chiusura iscrizioni'),
+            ((gara.inscription_end|datetime_local) if gara.inscription_end else _('senza scadenza')),
+            attrs='role="button" data-bs-toggle="modal" data-bs-target="#modifyDatesModal"',
+            right='<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe) }}
+  {% endif %}
+  {% if reale == GaraStatus.INSCRIPTION.value and iscritti == 0 %}
+  {{ d.riga('fa-door-closed', _('Chiudi le iscrizioni'), _('la gara torna in preparazione'),
+            attrs='role="button" onclick="closeInscriptions(' ~ gara.id ~ ')"',
+            right='<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe) }}
+  {% endif %}
+</div>
+
+<div id="sezioneSquadre">{% include "components/_squadre_management.html" %}</div>
+{% include "components/_categorie_management.html" %}
+
+{% include "components/_gara_info.html" %}

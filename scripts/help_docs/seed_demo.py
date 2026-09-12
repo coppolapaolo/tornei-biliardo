@@ -747,7 +747,9 @@ def _create_esami(db, director, players, challenges, venue):
     appuntamento = ExamRequestService.create_request(
         actor=sara,
         exam_id=esame.id,
-        scheduled_at=datetime.combine(date.today(), time(21, 0)),
+        # Domani, non oggi: «oggi alle 21» e' gia' passato per chi lancia il
+        # seed di sera, e `create_request` rifiuta un appuntamento nel passato.
+        scheduled_at=datetime.combine(date.today() + timedelta(days=1), time(21, 0)),
         billiard_hall_id=venue.id,
         recipient_ids=[director.id],
     )

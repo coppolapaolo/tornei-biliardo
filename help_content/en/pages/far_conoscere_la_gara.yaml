@@ -22,8 +22,8 @@ blocks:
   - type: steps
     items:
       - title: "Open the competition page"
-        text: "The **Management** panel, on the right, or in the tab at the top if you are on a phone."
-        shot: gara-gestione
+        text: "While registrations are open the **Share** box sits right under the dark band, with the full address."
+        shot: gara-iscritti
       - title: "Tap «Copy link»"
         text: >-
           The address goes to your clipboard: paste it into a message, a post

@@ -60,7 +60,7 @@ blocks:
         text: >-
           Finito l'ultimo turno, se ci sono pari merito da sciogliere la gara
           non si chiude: aspetta. La classifica mostra i giocatori appaiati.
-      - title: "Avvia lo spareggio dal pannello Gestione"
+      - title: "Avvia lo spareggio dalla fascia in cima"
         text: >-
           L'app propone i giocatori coinvolti. Sono quelli a pari merito nelle
           posizioni che avevi indicato, non tutti gli appaiati della gara.
@@ -77,7 +77,8 @@ blocks:
     tone: info
     title: "Si può annullare"
     text: >-
-      Uno spareggio avviato per errore si annulla dal pannello Gestione. Finché
+      Uno spareggio avviato per errore si annulla dalla pagina della gara
+      («Annulla lo spareggio», sotto i punteggi). Finché
       c'è uno spareggio attivo, però, i risultati della gara non sono
       modificabili: lo spareggio li dà per definitivi, e cambiarli sotto lo
       renderebbe insensato.
@@ -101,7 +102,7 @@ blocks:
   - type: faq
     items:
       - q: "La gara non si chiude e non capisco perché."
-        a: "Quasi sempre c'è uno spareggio in attesa: guarda il pannello Gestione. Se non vuoi giocarlo, si può annullare e la classifica resta a pari merito."
+        a: "Quasi sempre c'è uno spareggio in attesa: lo dice la fascia in cima alla pagina della gara. Se non vuoi giocarlo, si può annullare e la classifica resta a pari merito."
       - q: "Posso correggere un risultato mentre lo spareggio è attivo?"
         a: "No. Va prima annullato lo spareggio: certifica implicitamente i risultati della gara."
       - q: "Quanti giocatori possono essere in uno spareggio?"

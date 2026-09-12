@@ -1,0 +1,195 @@
+{# templates/direttore/_fase_gioco.html — Design System 7c
+
+   Fase 3 del canvas: la console. In cima la card scura dice a che punto e'
+   il turno (partite chiuse, tavoli occupati) o, a turno concluso, l'unica
+   cosa da fare: avviare il turno dopo, lo spareggio, o terminare. Sotto le
+   partite del turno, la classifica dopo l'ultimo turno chiuso e gli iscritti.
+   Il menu del turno («⋯», annullarne l'avvio) sta accanto al titolo del
+   turno; quello della partita sulla sua card.
+
+   `comando` viene da `models/dashboard/comandi.py` (lo stesso della
+   dashboard): e' lui a dire se la gara aspetta qualcosa dal direttore. #}
+
+{% set reale = gara.get_real_status() %}
+{% set casuale = gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
+{% set tipo_comando = comando.tipo.value if comando else none %}
+
+{% if tipo_comando in ('avvia_spareggio', 'termina_gara') %}
+{# ---- Gara finita: spareggio o chiusura ---- #}
+<section class="c7-card c7-card--accent c7-fascia">
+  <div class="c7-fascia__testo">
+    <div class="c7-kicker">
+      {% if casuale %}{{ _('Tutte le %(n)s partite concluse', n=all_matches|rejectattr('is_bye')|list|length) }}
+      {% else %}{{ _('Tutti i %(n)s turni conclusi', n=gara.rounds_count) }}{% endif %}
+    </div>
+    {% if tipo_comando == 'avvia_spareggio' %}
+    <h3 class="c7-fascia__titolo">{{ _('Serve uno spareggio') }}</h3>
+    <div class="c7-fascia__corpo">
+      {{ _('Ci sono giocatori a pari merito fino al %(pos)s° posto. Lo spareggio si gioca a Spot Shot Rally: tu inserisci i punti.', pos=gara.tiebreaker_until_position or 3) }}
+    </div>
+    {% else %}
+    <h3 class="c7-fascia__titolo">{{ _('Puoi chiudere la gara') }}</h3>
+    <div class="c7-fascia__corpo">
+      {{ _('La classifica diventa definitiva, i punti vanno al campionato e i giocatori ricevono la notifica.') }}
+    </div>
+    {% endif %}
+  </div>
+  <div class="c7-fascia__azione">
+    {% if tipo_comando == 'avvia_spareggio' %}
+    <button type="button" class="btn btn-primary" onclick="startSsr({{ gara.id }}, this)">
+      <i class="fas fa-scale-balanced"></i> {{ _('Avvia lo spareggio') }}
+    </button>
+    {% else %}
+    <button type="button" class="btn btn-success" onclick="terminateGara({{ gara.id }}, this)">
+      <i class="fas fa-flag-checkered"></i> {{ _('Termina la gara') }}
+    </button>
+    {% endif %}
+  </div>
+</section>
+
+{% if not casuale %}
+<div class="c7-card c7-stack">
+  <button type="button" class="btn btn-secondary w-100" onclick="resetLastRound({{ gara.id }}, {{ gara.current_round }}, this)">
+    <i class="fas fa-rotate-left"></i> {{ _('Azzera i risultati del turno %(n)s', n=gara.current_round) }}
+  </button>
+  {{ d.nota(_('Se un punteggio è sbagliato, correggilo prima dello spareggio o della chiusura.')) }}
+</div>
+{% endif %}
+
+{% elif tipo_comando == 'avvia_turno' %}
+{# ---- Turno concluso: l'unico comando e' avviare il prossimo ---- #}
+<section class="c7-card c7-card--accent c7-fascia">
+  <div class="c7-fascia__testo">
+    <div class="c7-kicker">{{ _('Turno %(n)s di %(tot)s · concluso', n=gara.current_round, tot=gara.rounds_count) }}</div>
+    <h3 class="c7-fascia__titolo">{{ _('Puoi avviare il turno %(n)s', n=comando.turno) }}</h3>
+    <div class="c7-fascia__corpo">
+      {{ _('Tutte le partite del turno sono chiuse.') }}
+      {% if gara.creates_all_rounds_at_startup() %}{{ _('Gli abbinamenti del turno %(n)s sono già fissati dal sorteggio iniziale.', n=comando.turno) }}
+      {% else %}{{ _('Gli abbinamenti del turno %(n)s si calcolano all’avvio, sulla classifica di adesso.', n=comando.turno) }}{% endif %}
+    </div>
+  </div>
+  <div class="c7-fascia__azione">
+    <button type="button" class="btn btn-success" data-help="gara-avvia-turno" onclick="startRound({{ comando.turno }}, this)">
+      <i class="fas fa-forward"></i> {{ _('Avvia il turno %(n)s', n=comando.turno) }}
+    </button>
+  </div>
+</section>
+
+{% else %}
+{# ---- Turno in corso: la card riassuntiva (scelta 1B, scura come la fascia) ---- #}
+<section class="c7-card c7-card--accent c7-console">
+  <div class="c7-console__row">
+    <div class="c7-console__cella">
+      <div class="c7-kicker">{{ _('Turno %(n)s di %(tot)s', n=conteggi.turno, tot=conteggi.turni_totali) }}</div>
+      <div class="c7-console__valore">
+        <span class="c7-num">{{ conteggi.chiuse }}/{{ conteggi.totali }}</span>
+        <span class="c7-console__sotto">{{ _('partite chiuse') }}</span>
+      </div>
+    </div>
+    <div class="c7-console__cella c7-console__cella--destra">
+      <div class="c7-kicker">{{ _('Tavoli') }}</div>
+      <div class="c7-console__valore">
+        <span class="c7-num">{{ conteggi.tavoli_occupati }}/{{ conteggi.tavoli_totali }}</span>
+      </div>
+    </div>
+  </div>
+  <div class="c7-bar"><div class="c7-bar__fill" style="width:{{ conteggi.percentuale }}%"></div></div>
+</section>
+{% endif %}
+
+{# Competizione di prova (ADR-058): i risultati li simula il direttore. #}
+{% if gara.is_prova and feature_visible('admin.competition.prova_simula') %}
+<div class="c7-card">
+  <div class="c7-label mb-2" data-help="prova-simulazione"><i class="fas fa-flask me-1"></i>{{ _("Simulazione") }}</div>
+  <div class="c7-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+    {% for azione, etichetta, icona in [
+          ('partita', _('Simula una partita'), 'fa-dice'),
+          ('turno', _('Simula il turno'), 'fa-forward-step'),
+          ('gara', _('Simula tutta la gara'), 'fa-forward-fast')] %}
+    <form method="POST" action="{{ url_for('admin.competition.prova_simula', gara_id=gara.id, azione=azione) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-secondary w-100 h-100 d-flex flex-column align-items-center gap-1 py-2">
+        <i class="fas {{ icona }}"></i>
+        <span style="font-size:12px;font-weight:700;line-height:1.15">{{ etichetta }}</span>
+      </button>
+    </form>
+    {% endfor %}
+  </div>
+  <div class="mt-2">{{ d.nota(_("Metà delle partite si chiudono con la doppia conferma dei giocatori, le altre aspettano che tu le validi dal segnapunti. «Tutta la gara» chiude tutto.")) }}</div>
+</div>
+{% endif %}
+
+<div class="c7-cols">
+  <div class="c7-stack">
+    {# Da fare adesso: le sole cose che il turno chiede al direttore. #}
+    {% if conteggi and (conteggi.da_validare or conteggi.senza_tavolo) and not tipo_comando %}
+    {{ d.sezione(_('Da fare adesso')) }}
+    <div class="c7-rows">
+      {% if conteggi.da_validare %}
+      {{ d.riga('fa-check', ngettext('%(n)d risultato da validare', '%(n)d risultati da validare', conteggi.da_validare, n=conteggi.da_validare),
+                _('chiuso dal segnapunti dei giocatori senza la doppia conferma'), tone='ok') }}
+      {% endif %}
+      {% if conteggi.senza_tavolo %}
+      {{ d.riga('fa-table', ngettext('%(n)d partita aspetta un tavolo', '%(n)d partite aspettano un tavolo', conteggi.senza_tavolo, n=conteggi.senza_tavolo),
+                (_('nessun tavolo libero: si assegna da sé quando uno si libera') if conteggi.tavoli_occupati >= conteggi.tavoli_totali else _('c’è un tavolo libero: assegnalo dalla card')),
+                tone='warn') }}
+      {% endif %}
+    </div>
+    {% endif %}
+
+    {# Il tabellone ha una pagina sua. #}
+    {% if has_bracket_view and feature_visible('admin.competition.gara_bracket') %}
+    <div class="c7-rows">
+      {{ d.riga('fa-sitemap', _('Tabellone'), _('Il percorso della gara, turno per turno'), tone='accent',
+                href=url_for('admin.competition.gara_bracket', gara_id=gara.id)) }}
+    </div>
+    {% endif %}
+
+    {# Partite: card sul telefono, tabella sul desktop. #}
+    <div class="d-lg-none" data-help="gara-turni">
+      {% include "components/_match_cards_mobile.html" %}
+    </div>
+    <div class="d-none d-lg-block">
+      {% include "components/_gara_matches.html" %}
+    </div>
+
+    {% if show_ssr_section %}
+    {% include "components/_ssr_section.html" %}
+    {% endif %}
+
+    {% if gara_challenges %}
+    {% include "components/_public_challenges.html" %}
+    {% endif %}
+  </div>
+
+  <div class="c7-stack">
+    {% if has_scores %}
+    {% with classification=current_round_classification, round_number=latest_round_with_classification %}
+    <div class="d-lg-none" data-help="gara-classifica">
+      {% include "components/_classification_mobile.html" %}
+    </div>
+    <div class="d-none d-lg-block">
+      {% include "components/_detailed_classification.html" %}
+    </div>
+    {% endwith %}
+    {% endif %}
+
+    {% if challenge_classification %}
+    {% include "components/_gara_challenge_classification_compact.html" %}
+    {% endif %}
+
+    {# Gli iscritti: in gioco sono un elenco da consultare, non da toccare,
+       quindi stanno chiusi dietro la loro riga. #}
+    <div class="c7-rows">
+      {{ d.riga('fa-users', _('Iscritti'),
+                ngettext('%(n)d attivo', '%(n)d attivi', gara.get_active_inscriptions_count(), n=gara.get_active_inscriptions_count()),
+                attrs='role="button" data-bs-toggle="collapse" data-bs-target="#sezioneIscritti" aria-expanded="false" aria-controls="sezioneIscritti"',
+                right='<i class="fas fa-chevron-down c7-rows__chev"></i>'|safe) }}
+    </div>
+    <div class="collapse" id="sezioneIscritti">
+      {% include "components/_gara_inscriptions.html" %}
+    </div>
+
+    {% include "components/_gara_info.html" %}
+  </div>
+</div>

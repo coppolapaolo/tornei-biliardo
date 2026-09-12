@@ -1,0 +1,280 @@
+"""La pagina della gara per chi la dirige: la striscia di fase e la fascia.
+
+Canvas «Pagina gara del direttore» (docs/redesign-7c/canvas-gara-direttore/,
+approvato il 13/09/2026), decisione 2: niente linguette per il direttore,
+una striscia mostra il ciclo della gara e la pagina e' la fase in corso. Chi
+non dirige continua a vedere la pagina a linguette.
+
+Qui si verifica la scelta del template dal permesso, la striscia per ogni
+stato persistito, la tacca dello spareggio solo dove serve, la fascia con il
+comando giusto, la pagina «Impostazioni gara» e il menu del turno.
+"""
+
+from __future__ import annotations
+
+from datetime import date
+
+import pytest
+
+from models import Gara, Match
+from models.status_enum import Discipline, GaraStatus, MatchStatus
+from models.user.role_enum import UserRole
+
+pytestmark = pytest.mark.integration
+
+
+@pytest.fixture
+def admin_client(client, db_session):
+    from models.user.services import UserService
+
+    user = UserService.create_user("fasi_admin", "fasi_admin@test.local", "pw12345")
+    user.role = UserRole.ADMIN.value
+    db_session.commit()
+    resp = client.post(
+        "/auth/login", data={"username": "fasi_admin", "password": "pw12345"}
+    )
+    assert resp.status_code in (200, 302)
+    return client
+
+
+def _gara(db_session, status, *, strategy="amalfi", rounds_count=3, current_round=0):
+    gara = Gara(
+        number=1,
+        name="Gara a fasi",
+        date=date.today(),
+        discipline=Discipline.EIGHT_BALL.value,
+        distance=5,
+        is_race_to=True,
+        matchmaking_strategy=strategy,
+        status=status,
+        current_round=current_round,
+        rounds_count=rounds_count,
+        min_participants=4,
+    )
+    db_session.add(gara)
+    db_session.commit()
+    return gara
+
+
+def _match(db_session, gara, p1_score, p2_score, status, suffix=""):
+    from models.user.services import UserService
+
+    p1 = UserService.create_user(
+        f"fasi_p1{suffix}", f"fasi_p1{suffix}@test.local", "pw12345"
+    )
+    p2 = UserService.create_user(
+        f"fasi_p2{suffix}", f"fasi_p2{suffix}@test.local", "pw12345"
+    )
+    match = Match(
+        gara_id=gara.id,
+        round_number=gara.current_round,
+        player1_id=p1.id,
+        player2_id=p2.id,
+        player1_score=p1_score,
+        player2_score=p2_score,
+        status=status,
+    )
+    if status == MatchStatus.CLOSED_UNILATERALLY.value:
+        match.winner_id = p1.id if p1_score > p2_score else p2.id
+    db_session.add(match)
+    db_session.commit()
+    return match
+
+
+def _tacche(html: str) -> list[str]:
+    """Le tacche della striscia, nell'ordine, dal loro stato."""
+    import re
+
+    return re.findall(
+        r'c7-fasi__tacca--(fatta|attiva|da_fare)"\s+title="([^"]+)"', html
+    )
+
+
+# ── La scelta del template ────────────────────────────────────────────────────
+
+
+def test_chi_dirige_vede_la_striscia_e_non_le_linguette(admin_client, db_session):
+    gara = _gara(db_session, GaraStatus.SETUP.value)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert 'class="c7-fasi"' in html
+    assert "c7-vtabs" not in html
+    assert 'id="garaDirettore"' in html
+
+
+def test_chi_guarda_vede_le_linguette_e_non_la_striscia(client, db_session):
+    from models.user.services import UserService
+
+    UserService.create_user("fasi_player", "fasi_player@test.local", "pw12345")
+    db_session.commit()
+    client.post("/auth/login", data={"username": "fasi_player", "password": "pw12345"})
+    gara = _gara(db_session, GaraStatus.PLAYING.value, current_round=1)
+    _match(db_session, gara, 2, 1, MatchStatus.PLAYING.value)
+
+    html = client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert 'class="c7-fasi"' not in html
+    assert 'id="garaDirettore"' not in html
+    assert "c7-fascia" not in html
+    # Niente comandi del direttore nella pagina di chi guarda.
+    assert "apriMenuPartita" not in html
+    assert 'id="menuTurnoModal"' not in html
+
+
+# ── La striscia ───────────────────────────────────────────────────────────────
+
+
+@pytest.mark.parametrize(
+    "status, attiva",
+    [
+        (GaraStatus.SETUP.value, "Preparazione"),
+        (GaraStatus.INSCRIPTION.value, "Iscrizioni"),
+        (GaraStatus.COMPLETED.value, "Chiusura"),
+    ],
+)
+def test_la_tacca_attiva_segue_lo_stato(admin_client, db_session, status, attiva):
+    gara = _gara(db_session, status)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    tacche = _tacche(html)
+    assert [t for s, t in tacche if s == "attiva"] == [attiva]
+    # Senza spareggio la striscia ha quattro tacche.
+    assert [t for _, t in tacche] == [
+        "Preparazione",
+        "Iscrizioni",
+        "In gioco",
+        "Chiusura",
+    ]
+
+
+def test_in_gioco_le_fasi_prima_sono_fatte(admin_client, db_session):
+    gara = _gara(db_session, GaraStatus.PLAYING.value, current_round=1)
+    _match(db_session, gara, 2, 1, MatchStatus.PLAYING.value)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert _tacche(html) == [
+        ("fatta", "Preparazione"),
+        ("fatta", "Iscrizioni"),
+        ("attiva", "In gioco"),
+        ("da_fare", "Chiusura"),
+    ]
+
+
+def test_nello_spareggio_la_striscia_ha_la_sua_tacca(admin_client, db_session):
+    gara = _gara(
+        db_session, GaraStatus.AWAITING_SSR.value, rounds_count=1, current_round=1
+    )
+    _match(db_session, gara, 5, 3, MatchStatus.CLOSED_UNILATERALLY.value)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert [t for _, t in _tacche(html)] == [
+        "Preparazione",
+        "Iscrizioni",
+        "In gioco",
+        "Spareggio",
+        "Chiusura",
+    ]
+    assert ("attiva", "Spareggio") in _tacche(html)
+
+
+# ── La fascia ─────────────────────────────────────────────────────────────────
+
+
+def test_in_preparazione_la_fascia_apre_le_iscrizioni(admin_client, db_session):
+    gara = _gara(db_session, GaraStatus.SETUP.value)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert "Nessuno vede ancora la gara" in html
+    assert 'data-bs-target="#openInscriptionsModal"' in html
+    assert "Da preparare" in html
+
+
+def test_a_iscrizioni_aperte_l_avvio_e_spento_finche_manca_il_minimo(
+    admin_client, db_session
+):
+    gara = _gara(db_session, GaraStatus.INSCRIPTION.value)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert "Iscrizioni aperte" in html
+    assert "Mancano 4 iscritti" in html
+    # Il pulsante c'e', spento: il direttore deve sapere che la gara aspetta lui.
+    assert "startFirstRound(" in html
+    assert "disabled" in html.split("startFirstRound(")[1].split(">")[0]
+
+
+def test_a_gara_conclusa_la_fascia_dice_chi_ha_vinto(admin_client, db_session):
+    gara = _gara(
+        db_session, GaraStatus.COMPLETED.value, rounds_count=1, current_round=1
+    )
+    m = _match(db_session, gara, 5, 3, MatchStatus.CLOSED_UNILATERALLY.value)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert "Gara conclusa" in html
+    assert f"Ha vinto {m.player1.username}" in html
+    assert "Resta bloccato" in html
+    # Niente comandi di gioco a gara conclusa.
+    assert "Termina la gara" not in html
+    assert 'id="menuTurnoModal"' not in html
+
+
+# ── Il menu del turno ─────────────────────────────────────────────────────────
+
+
+def test_il_menu_del_turno_annulla_l_avvio_solo_senza_triangoli(
+    admin_client, db_session
+):
+    gara = _gara(db_session, GaraStatus.PLAYING.value, current_round=1)
+    _match(db_session, gara, 0, 0, MatchStatus.PENDING.value)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert 'id="menuTurnoModal"' in html
+    assert "apriMenuTurno()" in html
+    assert "Annulla l'avvio del turno 1" in html
+    assert "Non si può più" not in html
+
+
+def test_il_menu_del_turno_dice_perche_non_si_annulla_piu(admin_client, db_session):
+    gara = _gara(db_session, GaraStatus.PLAYING.value, current_round=1)
+    _match(db_session, gara, 2, 1, MatchStatus.PLAYING.value)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert 'id="menuTurnoModal"' in html
+    assert "Non si può più" in html
+
+
+def test_la_card_della_partita_porta_il_suo_menu(admin_client, db_session):
+    gara = _gara(db_session, GaraStatus.PLAYING.value, current_round=1)
+    m = _match(db_session, gara, 2, 1, MatchStatus.PLAYING.value)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert 'id="menuPartitaModal"' in html
+    assert f'data-match-id="{m.id}"' in html
+    assert 'data-has-scores="1"' in html
+
+
+# ── Impostazioni gara ─────────────────────────────────────────────────────────
+
+
+def test_impostazioni_gara_per_chi_dirige(admin_client, db_session):
+    gara = _gara(db_session, GaraStatus.PLAYING.value, current_round=1)
+    resp = admin_client.get(f"/admin/gara/{gara.id}/impostazioni")
+    assert resp.status_code == 200
+    html = resp.get_data(as_text=True)
+    assert "Si modifica anche adesso" in html
+    assert "Direttori di gara" in html
+    assert "Fissato all'avvio" in html
+    assert 'id="sezioneTavoli"' in html
+
+
+def test_impostazioni_gara_in_preparazione_rimanda_ai_turni(admin_client, db_session):
+    gara = _gara(db_session, GaraStatus.SETUP.value)
+    html = admin_client.get(f"/admin/gara/{gara.id}/impostazioni").get_data(
+        as_text=True
+    )
+    assert "Fissato all'avvio" not in html
+    assert "#sezioneTurni" in html
+
+
+def test_impostazioni_gara_negate_a_chi_non_dirige(client, db_session):
+    from models.user.services import UserService
+
+    UserService.create_user("fasi_player2", "fasi_player2@test.local", "pw12345")
+    db_session.commit()
+    client.post("/auth/login", data={"username": "fasi_player2", "password": "pw12345"})
+    gara = _gara(db_session, GaraStatus.SETUP.value)
+    assert client.get(f"/admin/gara/{gara.id}/impostazioni").status_code in (302, 403)
+
+
+def test_la_pagina_del_direttore_porta_alle_impostazioni(admin_client, db_session):
+    gara = _gara(db_session, GaraStatus.SETUP.value)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert f"/admin/gara/{gara.id}/impostazioni" in html

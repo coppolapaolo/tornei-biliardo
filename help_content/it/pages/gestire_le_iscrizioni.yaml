@@ -10,8 +10,9 @@ related: [creare_una_gara, condurre_la_gara, numero_dispari]
 blocks:
   - type: text
     text: >-
-      Le iscrizioni sono la fase in cui la gara prende forma. Tutti i comandi
-      stanno nel pannello **Gestione** della pagina della gara.
+      Le iscrizioni sono la fase in cui la gara prende forma. La pagina della
+      gara mostra in cima la striscia delle fasi e, nella fascia scura, l'unica
+      cosa da fare adesso: aprire le iscrizioni, avviare la gara, estenderle.
 
   - type: heading
     id: stati
@@ -32,18 +33,18 @@ blocks:
 
   - type: steps
     items:
-      - title: "Vai su Gestione"
-        text: "Su telefono è una delle linguette in cima alla pagina della gara."
-        shot: gara-gestione
-      - title: "Tocca «Apri iscrizioni»"
+      - title: "Apri la pagina della gara"
+        text: "In preparazione la fascia scura in cima offre un solo comando: «Apri le iscrizioni»."
+        shot: gara-bozza
+      - title: "Tocca «Apri le iscrizioni»"
         text: >-
           Indica da quando a quando. La data di chiusura non può essere
           successiva alla data della gara: se sbagli, l'app la riporta
           all'orario della gara e ti avvisa.
       - title: "Diffondi il collegamento"
         text: >-
-          Nel pannello Gestione trovi il collegamento breve di invito: chi lo
-          apre si iscrive direttamente.
+          Nel riquadro **Condividi**, sotto la fascia, trovi il collegamento
+          breve di invito: chi lo apre si iscrive direttamente.
 
   - type: heading
     id: durante
@@ -131,7 +132,7 @@ blocks:
     tone: info
     title: "Nelle gare a tabellone il pulsante si chiama diversamente"
     text: >-
-      Con eliminazione diretta e doppio KO al posto di **Avvia Primo Turno**
+      Con eliminazione diretta e doppio KO al posto di **Avvia la gara**
       trovi **Sorteggia il tabellone**, e lì l'elenco degli iscritti conta il
       doppio: da quel gesto nasce il percorso di tutti fino alla finale, si
       chiudono le iscrizioni e le squadre si congelano. Un assente tolto un
@@ -145,6 +146,6 @@ blocks:
       - q: "Un iscritto non ha pagato la quota. Posso segnarlo?"
         a: "L'app non gestisce i pagamenti: la quota è un'informazione sulla scheda della gara. Gli incassi si tengono come si è sempre fatto."
       - q: "Come faccio a iscrivere chi non ha lo smartphone?"
-        a: "Iscrivilo tu a mano dal pannello Gestione. Serve però che abbia un account: puoi crearglielo insieme, ci vuole un minuto."
+        a: "Iscrivilo tu a mano dalla pagina della gara, nel riquadro degli iscritti. Serve però che abbia un account: puoi crearglielo insieme, ci vuole un minuto."
       - q: "Quanti iscritti servono per far partire la gara?"
         a: "Il minimo che hai indicato alla creazione. Sotto quella soglia il pulsante di avvio resta bloccato."

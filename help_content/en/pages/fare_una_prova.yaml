@@ -104,7 +104,7 @@ blocks:
     text: >-
       Start the first round as you really would. The fictitious players,
       however, do not pick up the phone: you make the results appear, from
-      the **Management** panel, with three buttons.
+      the **Simulation** box under the band, with three buttons.
 
   - type: shot
     shot: prova-simulazione

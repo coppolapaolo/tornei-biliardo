@@ -22,8 +22,8 @@ blocks:
   - type: steps
     items:
       - title: "Apri la pagina della gara"
-        text: "Il pannello **Gestione**, sulla destra o nella linguetta in cima se sei al telefono."
-        shot: gara-gestione
+        text: "A iscrizioni aperte il riquadro **Condividi** sta subito sotto la fascia scura, con l'indirizzo per esteso."
+        shot: gara-iscritti
       - title: "Tocca «Copia link»"
         text: >-
           L'indirizzo finisce negli appunti: puoi incollarlo in un messaggio,

@@ -111,20 +111,20 @@ blocks:
 
   - type: text
     text: >-
-      From the competition page, in the **Management** panel, tap **Open
+      From the competition page, in the dark band at the top, tap **Open
       registrations** and set the window during which people can sign up. From
       then on the competition appears in the public lists and players can
       register.
 
   - type: shot
-    shot: gara-gestione
-    caption: "The «Management» panel: this is where you open registrations, start the round and run the evening."
+    shot: gara-bozza
+    caption: "The competition page in preparation: the phase strip, the band with «Open registrations» and the list of what to prepare."
 
   - type: note
     tone: info
     text: >-
       In bracket competitions the same panel shows **Draw the bracket** instead
-      of **Start First Round**: it is the same stage of the evening, but a
+      of **Start the competition**: it is the same stage of the evening, but a
       different action, and it is worth knowing before you get there. See [The
       bracket](/aiuto/giocare/tabellone).
 
@@ -142,8 +142,8 @@ blocks:
 
   - type: text
     text: >-
-      Every competition has a short link, which you will find in the Management
-      panel. Send it to the club's group chat: whoever taps it registers
+      Every competition has a short link, which you will find in the «Share»
+      box of the competition page. Send it to the club's group chat: whoever taps it registers
       directly, and anyone without an account is guided through creating one
       and then registered automatically.
 
@@ -176,4 +176,4 @@ blocks:
       - q: "How many players do I need?"
         a: "The minimum you set, and at least four for a rounds-based competition to make sense. Below the minimum the app will not start the first round."
       - q: "Can I let someone else run the competition?"
-        a: "Yes: in the Management panel, «Competition Directors» section, you can add co-directors. Handy if you are playing that evening yourself. The list only offers directors close to the competition venue, because a co-director is needed at the venue: if there is nobody, the choice reads «No other director nearby»."
+        a: "Yes: in «Competition settings» — from the header on a computer, from the row at the bottom of the page on a phone — in the «Competition Directors» section you can add co-directors. Handy if you are playing that evening yourself. The list only offers directors close to the competition venue, because a co-director is needed at the venue: if there is nobody, the choice reads «No other director nearby»."

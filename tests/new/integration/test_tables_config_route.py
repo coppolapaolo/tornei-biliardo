@@ -1,8 +1,9 @@
 """Integration test per la route admin.competition.update_tables_config.
 
-Sezione "Tavoli della gara" in gara_detail: salvataggio della lista tavoli
-(in ordine di pregio) e del flag "assegna tavoli in base alla classifica",
-consentito solo tra apertura iscrizioni e avvio gara.
+Sezione "Tavoli della gara" in «Impostazioni gara» (dal 2026-09-12 la pagina
+del direttore e' a fasi e i tavoli stanno li'): salvataggio della lista
+tavoli (in ordine di pregio) e del flag "assegna tavoli in base alla
+classifica", consentito solo tra apertura iscrizioni e avvio gara.
 """
 
 import pytest
@@ -31,17 +32,17 @@ class TestTablesConfigRoute:
         db_session.commit()
         return gara
 
-    def test_section_visible_in_gara_detail_during_inscription(
+    def test_section_visible_in_impostazioni_during_inscription(
         self, logged_in_client, db_session
     ):
         client, _ = logged_in_client(role="admin")
         gara = self._make_gara(db_session)
 
-        response = client.get(f"/admin/gara/{gara.id}")
+        response = client.get(f"/admin/gara/{gara.id}/impostazioni")
 
         assert response.status_code == 200
         html = response.get_data(as_text=True)
-        assert 'id="sectionTavoli"' in html
+        assert 'id="sezioneTavoli"' in html
         assert "assign_tables_by_ranking" in html  # checkbox (strategia random)
         assert f"/admin/gara/{gara.id}/tables-config" in html
 
@@ -67,11 +68,11 @@ class TestTablesConfigRoute:
         db_session.commit()
         assert gara.get_available_tables() == ["Alpha", "Beta"]  # fallback attivo
 
-        response = client.get(f"/admin/gara/{gara.id}")
+        response = client.get(f"/admin/gara/{gara.id}/impostazioni")
 
         assert response.status_code == 200
         html = response.get_data(as_text=True)
-        assert 'id="sectionTavoli"' in html
+        assert 'id="sezioneTavoli"' in html
         assert 'value="Alpha, Beta"' not in html
 
     def test_admin_saves_tables_and_flag(self, logged_in_client, db_session):

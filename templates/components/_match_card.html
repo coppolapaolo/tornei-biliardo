@@ -33,7 +33,7 @@
       {% endif %}
     </div>
 
-    <div>
+    <div style="display: flex; align-items: center; gap: 6px;">
       {% if match.is_bye %}
       {% elif is_finished %}
         {# Conclusa: il tavolo dove si è giocato, se lo sappiamo (issue #154) #}
@@ -59,6 +59,23 @@
         {% endif %}
       {% elif match.table_assignment %}
         <span class="text-muted" style="font-size: 12px;">{{ _('Tavolo') }} <span class="c7-num">{{ match.table_assignment }}</span></span>
+      {% endif %}
+      {# Il menu della partita (canvas, 2S): cambia tavolo, azzera, apri il
+         segnapunti. Il foglio e' uno solo e legge questi attributi. #}
+      {% if user_can_manage and not match.is_bye and not match.is_trio %}
+      {% set _has_scores = (match.player1_score > 0 or match.player2_score > 0) %}
+      <button type="button" class="c7-iconbtn c7-iconbtn--menu" onclick="apriMenuPartita(this)"
+              aria-label="{{ _('Menu della partita') }}" title="{{ _('Menu della partita') }}"
+              data-match-id="{{ match.id }}"
+              data-players="{{ match.player1.username }} – {{ match.player2.username }}"
+              data-sub="{{ _('Turno %(num)s', num=match.round_number) }}{% if match.table_assignment %} · {{ _('Tavolo') }} {{ match.table_assignment }}{% endif %}{% if _has_scores or is_finished %} · {{ match.player1_score }}–{{ match.player2_score }}{% endif %}"
+              data-table="{{ match.table_assignment or '' }}"
+              data-has-scores="{{ '1' if _has_scores else '0' }}"
+              data-finished="{{ '1' if is_finished else '0' }}"
+              data-can-modify="{{ '1' if match_can_modify.get(match.id, True) else '0' }}"
+              data-detail-url="{{ url_for('admin.match.match_detail', match_id=match.id) }}">
+        <i class="fas fa-ellipsis"></i>
+      </button>
       {% endif %}
     </div>
   </div>

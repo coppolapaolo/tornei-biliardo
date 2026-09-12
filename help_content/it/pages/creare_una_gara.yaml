@@ -110,19 +110,19 @@ blocks:
 
   - type: text
     text: >-
-      Dalla pagina della gara, nel pannello **Gestione**, tocca **Apri
+      Dalla pagina della gara, nella fascia scura in cima, tocca **Apri le
       iscrizioni** e indica da quando a quando si può aderire. Da quel momento
       la gara compare negli elenchi pubblici e i giocatori possono iscriversi.
 
   - type: shot
-    shot: gara-gestione
-    caption: "Il pannello «Gestione»: da qui si aprono le iscrizioni, si avvia il turno e si conduce la serata."
+    shot: gara-bozza
+    caption: "La pagina della gara in preparazione: la striscia delle fasi, la fascia con «Apri le iscrizioni» e l'elenco di cosa preparare."
 
   - type: note
     tone: info
     text: >-
-      Nelle gare a tabellone, al posto di **Avvia Primo Turno** lo stesso
-      pannello mostra **Sorteggia il tabellone**: è la stessa fase della serata,
+      Nelle gare a tabellone, al posto di **Avvia la gara** la stessa
+      fascia mostra **Sorteggia il tabellone**: è la stessa fase della serata,
       ma il gesto è diverso e vale la pena saperlo prima di arrivarci. Vedi [Il
       tabellone](/aiuto/giocare/tabellone).
 
@@ -140,7 +140,8 @@ blocks:
 
   - type: text
     text: >-
-      Ogni gara ha un collegamento breve, che trovi nel pannello Gestione.
+      Ogni gara ha un collegamento breve, che trovi nel riquadro «Condividi»
+      della pagina della gara.
       Mandalo nella chat del circolo: chi lo tocca si iscrive direttamente, e
       se non ha un account viene guidato a crearne uno e poi iscritto in
       automatico.
@@ -174,4 +175,4 @@ blocks:
       - q: "Quanti giocatori servono?"
         a: "Il minimo che hai impostato, e comunque almeno quattro perché una gara a turni abbia senso. Sotto il minimo l'app non fa partire il primo turno."
       - q: "Posso far dirigere la gara a qualcun altro?"
-        a: "Sì: nel pannello Gestione, sezione «Direttori di gara», puoi aggiungere co-direttori. Utile se sei tu stesso a giocare quella sera. L'elenco propone solo i direttori vicini alla sede della gara, perché un co-direttore serve in sala: se non ce n'è nessuno la scelta dice «Nessun altro direttore in zona»."
+        a: "Sì: in «Impostazioni gara» — dalla testata sul computer, dalla riga in fondo alla pagina sul telefono — nella sezione «Direttori di gara» puoi aggiungere co-direttori. Utile se sei tu stesso a giocare quella sera. L'elenco propone solo i direttori vicini alla sede della gara, perché un co-direttore serve in sala: se non ce n'è nessuno la scelta dice «Nessun altro direttore in zona»."

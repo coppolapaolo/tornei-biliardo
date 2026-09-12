@@ -1,0 +1,90 @@
+{# templates/direttore/_fase_conclusa.html — Design System 7c
+
+   Fase 5 del canvas: il soggetto e' la classifica, non la gestione. La
+   fascia dice chi ha vinto e i numeri della serata; «Dopo la gara» dice
+   dove sono finiti i punti e dov'e' la pagina pubblica; le partite restano
+   in pagina, turno per turno (scelta 5S); in fondo cosa non si tocca piu'.
+   Una gara annullata e' finita quanto una conclusa, e lo dice. #}
+
+{% set annullata = gara.status == GaraStatus.CANCELLED.value %}
+{% set partite_giocate = (all_matches or [])|rejectattr('is_bye')|list|length %}
+{% set vincitore = current_round_classification[0].user.username if current_round_classification else none %}
+
+<section class="c7-card c7-card--accent c7-fascia">
+  <div class="c7-fascia__testo">
+    {% if annullata %}
+    <div class="c7-kicker">{{ _('Gara annullata') }}</div>
+    <h3 class="c7-fascia__titolo">{{ _('Non si è giocata') }}</h3>
+    {% else %}
+    <div class="c7-kicker">{{ _('Gara conclusa') }}</div>
+    <h3 class="c7-fascia__titolo">{% if vincitore %}{{ _('Ha vinto %(nome)s', nome=vincitore) }}{% else %}{{ _('Classifica definitiva') }}{% endif %}</h3>
+    <div class="c7-fascia__corpo">
+      {{ ngettext('%(n)d partecipante', '%(n)d partecipanti', gara.get_active_inscriptions_count(), n=gara.get_active_inscriptions_count()) }}
+      · {{ ngettext('%(n)d partita giocata', '%(n)d partite giocate', partite_giocate, n=partite_giocate) }}
+      · {{ ngettext('%(n)d turno', '%(n)d turni', gara.rounds_count, n=gara.rounds_count) }}
+      {% if has_ssr_data %} · {{ _('spareggio') }}{% endif %}
+    </div>
+    {% endif %}
+  </div>
+</section>
+
+<div class="c7-cols">
+  <div class="c7-stack">
+    {% if has_scores %}
+    {% with classification=current_round_classification, round_number=latest_round_with_classification %}
+    <div class="d-lg-none" data-help="gara-classifica">
+      {% include "components/_classification_mobile.html" %}
+    </div>
+    <div class="d-none d-lg-block">
+      {% include "components/_detailed_classification.html" %}
+    </div>
+    {% endwith %}
+    {% endif %}
+
+    {% if show_ssr_section %}
+    {% include "components/_ssr_section.html" %}
+    {% endif %}
+
+    {% if challenge_classification %}
+    {% include "components/_gara_challenge_classification_compact.html" %}
+    {% endif %}
+  </div>
+
+  <div class="c7-stack">
+    {{ d.sezione(_('Dopo la gara')) }}
+    <div class="c7-rows">
+      {% if gara.campionato_id and gara.campionato %}
+      {{ d.riga('fa-trophy', _('Classifica del campionato'), _('aggiornata con questa gara'),
+                href=url_for('admin.campionato.campionato_detail', campionato_id=gara.campionato_id)) }}
+      {% endif %}
+      {% if public_invite_url %}
+      {{ d.riga('fa-share-nodes', _('Pagina pubblica'), _('con la classifica finale'), href=public_invite_url) }}
+      {% endif %}
+      {% if has_bracket_view and feature_visible('admin.competition.gara_bracket') %}
+      {{ d.riga('fa-sitemap', _('Tabellone'), _('Il percorso della gara, turno per turno'),
+                href=url_for('admin.competition.gara_bracket', gara_id=gara.id)) }}
+      {% endif %}
+    </div>
+
+    {% if all_matches %}
+    {{ d.sezione(_('Partite'), nota=ngettext('%(n)d, tutte validate', '%(n)d, tutte validate', partite_giocate, n=partite_giocate)) }}
+    <div class="d-lg-none">{% include "components/_match_cards_mobile.html" %}</div>
+    <div class="d-none d-lg-block">{% include "components/_gara_matches.html" %}</div>
+    {% endif %}
+
+    {{ d.sezione(_('Resta bloccato')) }}
+    <div class="c7-rows">
+      {{ d.riga('fa-lock', _('Punteggi'), _('non si modificano a gara conclusa'), tone='locked') }}
+      {{ d.riga('fa-users', _('Iscritti'),
+                ngettext('elenco definitivo · %(n)d', 'elenco definitivo · %(n)d', gara.get_active_inscriptions_count(), n=gara.get_active_inscriptions_count()),
+                tone='locked',
+                attrs='role="button" data-bs-toggle="collapse" data-bs-target="#sezioneIscritti" aria-expanded="false" aria-controls="sezioneIscritti"',
+                right='<i class="fas fa-chevron-down c7-rows__chev"></i>'|safe) }}
+    </div>
+    <div class="collapse" id="sezioneIscritti">
+      {% include "components/_gara_inscriptions.html" %}
+    </div>
+
+    {% include "components/_gara_info.html" %}
+  </div>
+</div>

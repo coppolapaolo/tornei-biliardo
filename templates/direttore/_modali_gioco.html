@@ -1,0 +1,193 @@
+{# templates/direttore/_modali_gioco.html — Design System 7c
+
+   I modali della fase di gioco — risultato rapido, assegnazione del tavolo,
+   spareggio — spostati qui da `gara_detail.html`: li usa solo chi dirige.
+   Id, campi e handler sono invariati, li legge `_scripts.html`. #}
+
+{# Punteggio di un giocatore nel modal del risultato rapido: stepper, non
+   campo numerico (regola 7c per i numeri piccoli e frequenti). #}
+{% macro score_stepper(input_id, label, label_id, max_value=None) %}
+<div>
+  <div class="c7-label" id="{{ label_id }}">{{ label }}</div>
+  <div class="c7-stepper c7-stepper--sunk">
+    <div class="c7-stepper__row">
+      <button type="button" onclick="stepQuickScore('{{ input_id }}', -1)" aria-label="{{ _('Un triangolo in meno') }}">
+        <i class="fas fa-minus"></i>
+      </button>
+      <input type="number" class="c7-stepper__value" id="{{ input_id }}" min="0"{% if max_value %} max="{{ max_value }}"{% endif %}
+             oninput="validateQuickResultLive()" style="border: 0; background: transparent; width: 100%;">
+      <button type="button" data-piu-per="{{ input_id }}" onclick="stepQuickScore('{{ input_id }}', 1)" aria-label="{{ _('Un triangolo in più') }}">
+        <i class="fas fa-plus"></i>
+      </button>
+    </div>
+  </div>
+</div>
+{% endmacro %}
+
+{# Modal Risultato Rapido #}
+<div class="modal fade" id="quickResultModal" tabindex="-1">
+  <div class="modal-dialog modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ _('Imposta Risultato Rapido') }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
+      </div>
+      <form id="quickResultForm" onsubmit="return submitQuickResult(event)">
+        <div class="modal-body">
+          <div class="c7-stack">
+
+            {# B29: Info modalità per match normali — populated dynamically by JS
+               so per-round overrides (RoundConfiguration) are respected. #}
+            <div class="alert alert-info" id="quickResultNormalInfo">
+              <div>
+                <strong>{{ _('Modalità:') }}</strong>
+                <span id="quickResultModeRaceTo" style="display: none;">
+                  {{ _('Race to') }} <span class="c7-num" data-modal-distance></span>
+                  ({{ _('vince chi vince') }} <span class="c7-num" data-modal-distance></span> {{ _('triangoli') }})
+                </span>
+                <span id="quickResultModeExact" style="display: none;">
+                  {{ _('Esattamente') }} <span class="c7-num" data-modal-distance></span> {{ _('triangoli') }}
+                  ({{ _('somma triangoli =') }} <span class="c7-num" data-modal-distance></span>)
+                </span>
+              </div>
+            </div>
+
+            {# Info modalità per trio - calculated from TrioConfig #}
+            {% set trio_config = gara.distance|trio_config_for_distance %}
+            <div class="alert alert-info" id="quickResultTrioInfo" style="display: none;">
+              <div>
+                <strong>{{ _('Trio (Round-Robin):') }}</strong>
+                {% if trio_config %}
+                {{ _('%(gironi)s gironi, max %(max_racks)s triangoli per giocatore', gironi=trio_config.num_rounds,
+                max_racks=trio_config.max_racks_per_player) }}
+                {% if trio_config.bonus_racks > 0 %}
+                <br>{{ _('Bonus: +%(bonus)s triangoli equamente distribuiti', bonus=trio_config.bonus_racks) }}
+                {% endif %}
+                {% else %}
+                {{ _('Distanza %(d)s', d=gara.distance) }}
+                {% endif %}
+              </div>
+            </div>
+
+            {# Punteggi: stepper, non campi numerici (regola 7c). Il max lo
+               imposta JS sulla distanza effettiva del match. #}
+            <div class="c7-stack" id="quickResultNormalInputs">
+              {{ score_stepper('quickPlayer1Score', _('Giocatore 1'), 'player1Label') }}
+              {{ score_stepper('quickPlayer2Score', _('Giocatore 2'), 'player2Label') }}
+            </div>
+
+            {# B15: live validation message — populated by validateQuickResultLive() #}
+            <div id="quickResultValidationMsg" class="alert alert-danger" style="display: none;" role="alert">
+              <div><span id="quickResultValidationText"></span></div>
+            </div>
+
+            {# Layout per trio (3 giocatori) #}
+            {# Max racks = distance (or default 5 if trio not configured) #}
+            {% set trio_max_racks = trio_config.max_racks_per_player if trio_config else gara.distance %}
+            <div class="c7-stack" id="quickResultTrioInputs" style="display: none;">
+              {{ score_stepper('quickTrioPlayer1Score', _('Giocatore 1'), 'trioPlayer1Label', trio_max_racks) }}
+              {{ score_stepper('quickTrioPlayer2Score', _('Giocatore 2'), 'trioPlayer2Label', trio_max_racks) }}
+              {{ score_stepper('quickTrioPlayer3Score', _('Giocatore 3'), 'trioPlayer3Label', trio_max_racks) }}
+            </div>
+
+            <input type="hidden" id="quickMatchId">
+            <input type="hidden" id="quickTrioId">
+            <input type="hidden" id="quickIsTrio" value="false">
+
+            {# Time fields for statistics #}
+            <hr class="c7-divider">
+            <div>
+              <div class="c7-kicker">{{ _('Tempi partita (opzionale)') }}</div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px;">
+                <div>
+                  <label class="form-label" for="quickStartTime">{{ _('Inizio') }}</label>
+                  <input type="time" class="form-control" id="quickStartTime">
+                </div>
+                <div>
+                  <label class="form-label" for="quickEndTime">{{ _('Fine') }}</label>
+                  <input type="time" class="form-control" id="quickEndTime">
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-save"></i> {{ _('Imposta Risultato') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# Modal Assegnazione Tavolo #}
+<div class="modal fade" id="tableAssignmentModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ _('Assegna Tavolo') }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
+      </div>
+      <div class="modal-body">
+        <div class="c7-stack">
+          {# Info partita #}
+          <div class="alert alert-info">
+            <strong id="tableModalMatchInfo"></strong>
+          </div>
+
+          {# Tavolo attuale #}
+          <div id="currentTableInfo" style="display: none; font-size: 12px; font-weight: 600; color: var(--c7-ink-muted);">
+            {{ _('Tavolo attuale:') }} <strong class="c7-num" id="currentTableDisplay"></strong>
+          </div>
+
+          {# Griglia tavoli — i bottoni li genera il JS #}
+          <div class="table-grid" id="tableGrid"></div>
+
+          <button class="btn btn-danger w-100" onclick="selectTableFromModal(null, this)">
+            <i class="fas fa-circle-xmark"></i> {{ _('Rimuovi Tavolo') }}
+          </button>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Modal Spareggio (SSR) #}
+<div class="modal fade" id="ssrModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">{{ _('Risolvi Spareggi') }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
+      </div>
+      <div class="modal-body">
+        <div class="c7-stack">
+          <div class="alert alert-warning">
+            <div>
+              {{ _('Ci sono parimerito nelle prime %(pos)s posizioni. Inserire il punteggio finale dello Spot Shot Rally (SSR) per ogni giocatore.', pos=gara.tiebreaker_until_position or 3) }}
+              <div style="margin-top: 4px; color: var(--c7-ink-muted);">{{ _('Punteggi più alti = posizione migliore') }}</div>
+            </div>
+          </div>
+
+          <form id="ssrForm">
+            <div class="c7-stack" id="ssrGroupsContainer">
+              {# I gruppi li inserisce showSsrModal() #}
+            </div>
+          </form>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
+        <button type="button" class="btn btn-primary" onclick="submitSsrScores()">
+          <i class="fas fa-check"></i> {{ _('Conferma e Termina Gara') }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

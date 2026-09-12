@@ -70,7 +70,7 @@ blocks:
     text: >-
       A bracket is not «started» like a round: it is **drawn**. In the
       Management panel the director finds the **Draw the bracket** button (in
-      round-based competitions the same place says «Start First Round»), and
+      round-based competitions the same place says «Start the competition»), and
       the app asks for confirmation before going ahead.
 
   - type: note
