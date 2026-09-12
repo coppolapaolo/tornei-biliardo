@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.11.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.10.0...v1.11.0) (2026-09-12)
+
+
+### Funzioni nuove
+
+* la pagina gara del direttore per fasi ([#343](https://github.com/coppolapaolo/tornei-biliardo/issues/343)) ([22854e7](https://github.com/coppolapaolo/tornei-biliardo/commit/22854e7f2fc172ed6e8759e130e550406a1f056d))
+
 ## [1.10.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.9.1...v1.10.0) (2026-09-12)
 
 
