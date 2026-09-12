@@ -1,0 +1,207 @@
+{# templates/direttore/preparazione/_esercizi.html — Design System 7c
+
+   Gli esercizi fra i turni (canvas 1.4 e 1.5): quali ci sono, dopo quale
+   turno si giocano e con quanti tentativi, e il foglio per aggiungerne uno
+   — l'esercizio cercato per nome, il turno, i tentativi. Fanno una
+   classifica a parte. Valgono con ogni formula a turni
+   (`Gara.ammette_esercizi_fra_i_turni`) e si aggiungono fino all'avvio.
+
+   Gli indirizzi sono quelli di `routes/admin/competition/challenges.py`;
+   l'elenco degli esercizi disponibili arriva via fetch e si filtra qui.
+   Una sola inclusione per pagina: contiene id e uno script. #}
+{% import "components/_challenge_bits.html" as ch with context %}
+
+{% set _esercizi = gara.gara_challenges|selectattr("is_active", "equalto", true)|sort(attribute='round_number')|list %}
+{% set _aggiungibile = gara.status in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value] %}
+
+<div class="c7-stack" id="sezioneEsercizi">
+  {{ d.sezione(_('Esercizi fra i turni'), nota=(_esercizi|length|string)) }}
+  <div class="c7-nota">
+    {{ _('Si giocano dopo il turno indicato, mentre gli altri finiscono. Fanno una classifica a parte, accanto a quella della gara.') }}
+  </div>
+
+  <div class="c7-rows" id="elencoEsercizi">
+    {% for gc in _esercizi %}
+    {% set challenge = gc.challenge %}
+    <div class="c7-rows__row" data-gara-challenge="{{ gc.id }}">
+      {{ ch.thumb(challenge, 40, 'var(--c7-r-chip)') }}
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ challenge.get_display_name() }}</div>
+        <div class="c7-rows__sub">
+          {{ _('dopo il turno %(n)s', n=gc.round_number) }}
+          <span class="c7-sep">·</span>
+          {{ ngettext('%(n)s tentativo', '%(n)s tentativi', gc.max_attempts, n=gc.max_attempts) }}
+          <span class="c7-sep">·</span>
+          {% if challenge.pass_fail_only %}{{ _('riuscita o no') }}{% else %}{{ _('a punteggio') }}{% endif %}
+        </div>
+      </div>
+      {% if _aggiungibile %}
+      <button type="button" class="c7-iconbtn" style="background:var(--c7-err-bg);color:var(--c7-err-ink)"
+              onclick="togliEsercizio({{ gc.id }}, this)" title="{{ _('Togli dalla gara') }}" aria-label="{{ _('Togli %(nome)s dalla gara', nome=challenge.get_display_name()) }}">
+        <i class="fas fa-xmark"></i>
+      </button>
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="c7-rows__row c7-rows__row--dim">
+      <span class="c7-tile c7-tile--sm c7-tile--locked"><i class="fas fa-bullseye"></i></span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ _('Nessun esercizio') }}</div>
+        <div class="c7-rows__sub">{{ _('facoltativo') }}</div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+  {% if _aggiungibile %}
+  <button type="button" class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#aggiungiEsercizioModal">
+    <i class="fas fa-plus"></i> {{ _('Aggiungi un esercizio') }}
+  </button>
+  {% endif %}
+</div>
+
+{% if _aggiungibile %}
+<div class="modal fade c7-sheet" id="aggiungiEsercizioModal" tabindex="-1" aria-labelledby="aggiungiEsercizioTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="aggiungiEsercizioTitolo">{{ _('Aggiungi un esercizio') }}</h3>
+      </div>
+      <form class="modal-body c7-stack" id="aggiungiEsercizioForm" onsubmit="return aggiungiEsercizio(event)">
+        <div>
+          <label class="c7-label" for="cercaEsercizio">{{ _('Esercizio') }}</label>
+          <input type="search" class="form-control" id="cercaEsercizio" autocomplete="off"
+                 placeholder="{{ _('Cerca per nome…') }}" oninput="filtraEsercizi()">
+        </div>
+        <div class="c7-rows c7-esercizi-scelta" id="esercizioScelte" aria-live="polite">
+          <div class="c7-rows__row c7-rows__row--dim"><div class="c7-rows__sub">{{ _('Caricamento…') }}</div></div>
+        </div>
+        <input type="hidden" id="esercizioScelto" name="challenge_id">
+        <div class="c7-grid" style="grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label class="c7-label" for="esercizioTurno">{{ _('Dopo il turno') }}</label>
+            <select class="form-select" id="esercizioTurno" name="round_number">
+              {% for i in range(1, gara.rounds_count + 1) %}
+              <option value="{{ i }}">{{ i }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="c7-label" for="esercizioTentativi">{{ _('Tentativi') }}</label>
+            <input type="number" class="form-control c7-num" id="esercizioTentativi" name="max_attempts" value="2" min="1" max="10">
+          </div>
+        </div>
+        <div class="c7-nota">
+          {{ _('Non trovi l’esercizio?') }}
+          <a href="{{ url_for('challenge.create_challenge') }}">{{ _('Creane uno nuovo') }}</a>{{ _(', poi torna qui.') }}
+        </div>
+        <button type="submit" class="btn btn-primary w-100" id="esercizioAggiungi" disabled>
+          <i class="fas fa-check"></i> {{ _('Aggiungi') }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const URLS = {
+    available: {{ url_for('admin.competition.get_available_challenges_for_gara', gara_id=gara.id)|tojson }},
+    add: {{ url_for('admin.competition.add_challenge_to_gara', gara_id=gara.id)|tojson }},
+    remove: {{ url_for('admin.competition.remove_challenge_from_gara', gara_id=gara.id)|tojson }}
+  };
+  const I18N = {
+    none: {{ _('Nessun esercizio con questo nome.')|tojson }},
+    noneAvailable: {{ _('Non ci sono altri esercizi da aggiungere.')|tojson }},
+    loadError: {{ _('Non è stato possibile caricare gli esercizi.')|tojson }},
+    addError: {{ _('Non è stato possibile aggiungere l’esercizio.')|tojson }},
+    removeConfirm: {{ _('Togliere questo esercizio dalla gara?')|tojson }},
+    removeError: {{ _('Non è stato possibile togliere l’esercizio.')|tojson }},
+    passFail: {{ _('riuscita o no')|tojson }},
+    scored: {{ _('a punteggio')|tojson }},
+    chosen: {{ _('scelto')|tojson }}
+  };
+  let disponibili = [];
+
+  function esc(v) {
+    return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  function challengeThumb(url) {
+    const box = 'width:40px;height:40px;border-radius:var(--c7-r-chip)';
+    if (!url) return `<span class="c7-diagram" style="${box}"><i class="fas fa-bullseye"></i></span>`;
+    return `<span class="c7-diagram" style="${box}"><img class="c7-diagram__img" src="${esc(url)}" alt=""></span>`;
+  }
+
+  function disegna() {
+    const box = document.getElementById('esercizioScelte');
+    const q = (document.getElementById('cercaEsercizio').value || '').trim().toLowerCase();
+    const scelto = document.getElementById('esercizioScelto').value;
+    const lista = disponibili.filter(c => !q || (c.name || '').toLowerCase().includes(q) || (c.description || '').toLowerCase().includes(q));
+    if (!disponibili.length) {
+      box.innerHTML = `<div class="c7-rows__row c7-rows__row--dim"><div class="c7-rows__sub">${esc(I18N.noneAvailable)}</div></div>`;
+      return;
+    }
+    if (!lista.length) {
+      box.innerHTML = `<div class="c7-rows__row c7-rows__row--dim"><div class="c7-rows__sub">${esc(I18N.none)}</div></div>`;
+      return;
+    }
+    box.innerHTML = lista.slice(0, 8).map(c => `
+      <button type="button" class="c7-rows__row c7-esercizi-scelta__riga${String(c.id) === scelto ? ' is-selected' : ''}" onclick="scegliEsercizio(${c.id})">
+        ${challengeThumb(c.image_url)}
+        <span class="c7-rows__main">
+          <span class="c7-rows__title d-block">${esc(c.name)}</span>
+          <span class="c7-rows__sub d-block">${c.pass_fail_only ? esc(I18N.passFail) : esc(I18N.scored)}</span>
+        </span>
+        ${String(c.id) === scelto ? `<span class="c7-state c7-state--accent">${esc(I18N.chosen)}</span>` : ''}
+      </button>`).join('');
+  }
+
+  window.filtraEsercizi = disegna;
+
+  window.scegliEsercizio = function (id) {
+    document.getElementById('esercizioScelto').value = id;
+    document.getElementById('esercizioAggiungi').disabled = false;
+    disegna();
+  };
+
+  window.aggiungiEsercizio = function (ev) {
+    ev.preventDefault();
+    const form = document.getElementById('aggiungiEsercizioForm');
+    const data = new FormData(form);
+    if (!data.get('challenge_id')) return false;
+    fetch(URLS.add, { method: 'POST', headers: { 'X-CSRFToken': csrfToken() }, body: data })
+      .then(r => r.json())
+      .then(d => {
+        if (d.success) { location.reload(); } else { showError(d.error || I18N.addError); }
+      })
+      .catch(() => showError(I18N.addError));
+    return false;
+  };
+
+  window.togliEsercizio = function (garaChallengeId, btn) {
+    showConfirm(I18N.removeConfirm, () => {
+      const restore = withLoading(btn);
+      fetch(URLS.remove, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() },
+        body: JSON.stringify({ gara_challenge_id: garaChallengeId })
+      })
+        .then(r => r.json())
+        .then(d => { if (d.success) { location.reload(); } else { showError(d.error || I18N.removeError); restore(); } })
+        .catch(() => { showError(I18N.removeError); restore(); });
+    });
+  };
+
+  const modal = document.getElementById('aggiungiEsercizioModal');
+  modal.addEventListener('show.bs.modal', function () {
+    fetch(URLS.available)
+      .then(r => r.json())
+      .then(d => { disponibili = d.success ? d.challenges : []; disegna(); })
+      .catch(() => { disponibili = []; document.getElementById('esercizioScelte').innerHTML = `<div class="c7-rows__row c7-rows__row--dim"><div class="c7-rows__sub">${esc(I18N.loadError)}</div></div>`; });
+  });
+  modal.addEventListener('shown.bs.modal', function () { document.getElementById('cercaEsercizio').focus(); });
+})();
+</script>
+{% endif %}

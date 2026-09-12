@@ -61,6 +61,13 @@
   <span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}
   <span class="c7-sep">·</span> <span class="c7-num">{{ gara.date|date_local }}</span>
 </span>
+{#- I turni configurati diversamente (ADR-027): la descrizione della gara e'
+    il default, e quando un turno se ne discosta lo dice — «turno 2: Palla 9
+    al 3». Rilievo del canvas (12/09/2026): prima la testata mostrava sempre
+    i valori della creazione. #}
+{%- for rc in gara.round_configurations|sort(attribute='round_number') if rc.has_overrides() %}
+<span class="c7-head__override"><span class="c7-sep">·</span> {{ _('turno %(n)s', n=rc.round_number) }}: {{ rc.get_effective_discipline(gara.discipline)|discipline_display }} {{ rc.distanza_effettiva(gara)|format_distance|lower }}</span>
+{%- endfor %}
 {%- endmacro %}
 
 {# Comandi della testata, nell'ordine: prima si risale, poi si modifica. #}

@@ -45,6 +45,19 @@ def _inscription_window():
     return start, end
 
 
+def _intero(valore):
+    """Un intero dal form, `None` se il campo manca; il vuoto vale 0."""
+    if valore is None:
+        return None
+    valore = valore.strip()
+    if valore == "":
+        return 0
+    try:
+        return int(valore)
+    except ValueError as errore:
+        raise ValueError("Minimo e massimo devono essere numeri interi") from errore
+
+
 @competition_bp.route("/<int:gara_id>/open_inscriptions", methods=["POST"])
 @login_required
 @gara_manager_required
@@ -54,7 +67,11 @@ def open_inscriptions(gara_id):
     def action():
         inscription_start, inscription_end = _inscription_window()
         gara = InscriptionService.open_inscriptions(
-            gara_id, inscription_start, inscription_end
+            gara_id,
+            inscription_start,
+            inscription_end,
+            min_participants=_intero(request.form.get("min_participants")),
+            max_participants=_intero(request.form.get("max_participants")),
         )
 
         # Il service accorcia la finestra all'inizio della gara. È un

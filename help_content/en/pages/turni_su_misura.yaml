@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [direttore]
 minutes: 3
 summary: "A competition can change discipline or distance from one round to the next: first two rounds at 8-ball, final at 9-ball."
-screens: [admin.competition.list_round_configs]
+screens: [admin.competition.list_round_configs, admin.competition.gara_preparazione]
 related: [formati_di_gioco, creare_una_gara, opzioni_della_gara]
 
 blocks:

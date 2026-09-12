@@ -56,7 +56,9 @@ blocks:
         text: >-
           Quali tavoli della sala userete davvero stasera. Se la sala ne ha
           otto ma stasera ne avete quattro, indica quelli: l'app assegnerà le
-          partite solo a quelli.
+          partite solo a quelli. Si cambiano in ogni momento — in
+          preparazione, a iscrizioni aperte, fra un turno e l'altro — dal
+          passo «Tavoli» o da «Impostazioni gara».
         hint: gara.tavoli
       - name: "Quota iscrizione"
         text: "Informativa: compare sulla scheda. L'app non gestisce pagamenti."

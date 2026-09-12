@@ -26,7 +26,7 @@ ROOT = Path(__file__).resolve().parents[3]
 #: superficie nuova è il modo per non ripetere il ritaglio.
 SURFACES = (
     "templates/components/_challenge_bits.html",
-    "templates/components/_challenge_management_modal.html",
+    "templates/direttore/preparazione/_esercizi.html",
     "templates/challenge/_challenge_detail.html",
     "templates/challenge/_challenge_card.html",
     "templates/player/challenge_attempt_detail.html",

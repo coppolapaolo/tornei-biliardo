@@ -148,4 +148,4 @@ blocks:
       - q: "How do I register someone without a smartphone?"
         a: "Add them by hand from the competition page, in the registered players box. They do need an account, though: you can create one together, it takes a minute."
       - q: "How many entrants do I need to start?"
-        a: "The minimum you set when creating the competition. Below that threshold the start button stays disabled."
+        a: "The minimum you set when creating the competition, or in the «Open registrations» sheet, where you can change it together with the maximum. Below that threshold the start button stays off."

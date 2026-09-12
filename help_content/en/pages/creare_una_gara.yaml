@@ -61,7 +61,8 @@ blocks:
         text: >-
           The minimum is the threshold below which the competition will not
           start. The maximum is optional: if you set it, latecomers go on the
-          waitlist. On bracket formats the maximum becomes required, because it
+          waitlist. Both can still be changed in the «Open registrations»
+          sheet. On bracket formats the maximum becomes required, because it
           declares the capacity of the bracket.
       - title: "Save"
         text: >-

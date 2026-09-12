@@ -3,7 +3,7 @@
 Sezione "Tavoli della gara" in «Impostazioni gara» (dal 2026-09-12 la pagina
 del direttore e' a fasi e i tavoli stanno li'): salvataggio della lista
 tavoli (in ordine di pregio) e del flag "assegna tavoli in base alla
-classifica", consentito solo tra apertura iscrizioni e avvio gara.
+classifica", in ogni stato della gara (canvas, decisione 1).
 """
 
 import pytest
@@ -107,20 +107,39 @@ class TestTablesConfigRoute:
         refreshed = db_session.get(Gara, gara.id)
         assert refreshed.assign_tables_by_ranking is False
 
-    def test_rejected_when_gara_is_playing(self, logged_in_client, db_session):
+    def test_accepted_when_gara_is_playing(self, logged_in_client, db_session):
+        """Fra un turno e l'altro i tavoli si cambiano: la sala puo' averne
+        liberato uno. Fino al 2026-09-12 la route rifiutava."""
         client, _ = logged_in_client(role="admin")
         gara = self._make_gara(db_session, status=GaraStatus.PLAYING.value)
 
         response = client.post(
             f"/admin/gara/{gara.id}/tables-config",
-            data={"available_tables": "1"},
+            data={
+                "available_tables": "1",
+                "next": f"/admin/gara/{gara.id}/impostazioni",
+            },
             follow_redirects=False,
         )
 
-        # La route fa flash dell'errore e redirige al dettaglio gara
         assert response.status_code == 302
+        assert response.headers["Location"].endswith(
+            f"/admin/gara/{gara.id}/impostazioni"
+        )
         refreshed = db_session.get(Gara, gara.id)
-        assert refreshed.available_tables is None
+        assert refreshed.get_available_tables() == ["1"]
+
+    def test_next_esterno_ignorato(self, logged_in_client, db_session):
+        client, _ = logged_in_client(role="admin")
+        gara = self._make_gara(db_session)
+
+        response = client.post(
+            f"/admin/gara/{gara.id}/tables-config",
+            data={"available_tables": "1", "next": "https://evil.example/"},
+        )
+
+        assert response.status_code == 302
+        assert response.headers["Location"].endswith(f"/admin/gara/{gara.id}")
 
     def test_player_cannot_save(self, logged_in_client, db_session):
         client, _ = logged_in_client(role="player")

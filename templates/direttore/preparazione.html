@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% import "direttore/_macros.html" as d with context %}
+
+{# Un passo della preparazione — Design System 7c (canvas 1.2–1.6).
+
+   Sul telefono ogni passo e' una pagina: turni e distanze, tavoli, esercizi
+   fra i turni, direzione di gara; la vetrina e' l'ultimo passo e ha la sua
+   pagina (`admin/gara_vetrina.html`). In fondo, avanti e indietro. Sul
+   desktop la preparazione e' una pagina sola che scorre (1.9) e da li' si
+   apre solo questa, per turni ed esercizi (1.10).
+
+   Variabili: `passo`, `nav` (`preparazione.navigazione`), il contesto della
+   direzione, `discipline_choices`, `in_preparazione`. #}
+
+{% set _titoli = {
+  'turni': _('Turni e distanze'),
+  'tavoli': _('Tavoli della gara'),
+  'esercizi': _('Esercizi fra i turni'),
+  'direttori': _('Direzione di gara'),
+} %}
+
+{% block title %}{{ _titoli[passo] }} - {{ gara.display_name }}{% endblock %}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" aria-label="{{ _('Torna alla gara') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _titoli[passo] }}{% endblock %}
+{% block page_sub %}{{ gara.display_name }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i>&nbsp;{{ _('Preparazione') }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="c7-stack c7-sections">
+  {% if passo == 'turni' %}
+    {% include "direttore/preparazione/_turni.html" %}
+  {% elif passo == 'tavoli' %}
+    <div id="sezioneTavoli">{% include "components/_gara_tables_config.html" %}</div>
+  {% elif passo == 'esercizi' %}
+    {% include "direttore/preparazione/_esercizi.html" %}
+  {% elif passo == 'direttori' %}
+    <div id="sezioneDirettori">{% include "direttore/preparazione/_direttori.html" %}</div>
+  {% endif %}
+
+  {{ d.stepnav(nav, gara) }}
+</div>
+{% endblock %}

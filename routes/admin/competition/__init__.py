@@ -13,6 +13,7 @@ This package organizes competition routes by responsibility:
 - squadre: Elenco squadre della competizione e squadra degli iscritti
 - vetrina: Locandina, link esterno e indirizzo leggibile della pagina pubblica
 - impostazioni: «Impostazioni gara», cio' che il direttore tocca in ogni fase
+- preparazione: i passi della preparazione (turni, tavoli, esercizi, direttori)
 """
 
 from flask import Blueprint
@@ -34,6 +35,7 @@ from . import categorie  # noqa: E402, F401
 from . import vetrina  # noqa: E402, F401
 from . import prova  # noqa: E402, F401
 from . import impostazioni  # noqa: E402, F401
+from . import preparazione  # noqa: E402, F401
 
 # Export blueprint for parent package
 __all__ = ["competition_bp"]

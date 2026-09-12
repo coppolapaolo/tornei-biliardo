@@ -764,9 +764,19 @@ class InscriptionService:
     @staticmethod
     @transactional(domain="competition")
     def open_inscriptions(
-        gara_id: int, inscription_start: datetime, inscription_end: datetime
+        gara_id: int,
+        inscription_start: datetime,
+        inscription_end: datetime,
+        min_participants: Optional[int] = None,
+        max_participants: Optional[int] = None,
     ) -> "Gara":
         """Apre le iscrizioni per una gara con validazione delle date.
+
+        Minimo e massimo si decidono qui, nello stesso foglio delle date
+        (canvas 1.8): sono i numeri che dicono se la gara parte e quando e'
+        piena, e fino al 2026-09-12 stavano nella modifica della gara, cioe'
+        altrove. `None` lascia quello che c'e'; il massimo accetta anche
+        «senza limite» (0 o vuoto, che qui arriva come `max_participants=0`).
 
         Una fine oltre l'inizio della gara viene **accorciata** a quell'istante:
         iscriversi a partita cominciata non vuol dire niente. L'aggiustamento è
@@ -792,6 +802,20 @@ class InscriptionService:
         gara = db.session.get(Gara, gara_id)
         if not gara:
             raise NotFoundError(f"Gara {gara_id} non trovata")
+
+        if min_participants is not None:
+            if min_participants < 2:
+                raise ValidationError("Servono almeno 2 iscritti per giocare")
+            gara.min_participants = min_participants
+        if max_participants is not None:
+            if max_participants <= 0:
+                gara.max_participants = None
+            elif max_participants < (gara.min_participants or 0):
+                raise ValidationError(
+                    "Il massimo degli iscritti non puo' essere sotto il minimo"
+                )
+            else:
+                gara.max_participants = max_participants
 
         if gara.date and gara.time:
             from datetime import datetime as dt

@@ -2,7 +2,7 @@
    Le challenge configurate sulla gara, come le vede chi la dirige. #}
 {% import "components/_challenge_bits.html" as ch with context %}
 
-{% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
+{% if gara.ammette_esercizi_fra_i_turni %}
   {% set active_challenges = gara.gara_challenges|selectattr("is_active", "equalto", true)|list %}
   {% if active_challenges %}
   <section class="c7-stack">

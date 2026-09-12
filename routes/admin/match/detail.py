@@ -16,7 +16,6 @@ from models import (
 from utils import match_manager_required
 from models.match.services import MatchService
 from models.status_enum import GaraStatus, MatchStatus
-from models.matchmaking.configuration import MatchmakingStrategy
 from routes.sse import emit_gara_event
 from utils.route_helpers import safe_json_error
 
@@ -90,12 +89,12 @@ def match_detail(match_id):
 
     racks = Rack.query.filter_by(match_id=match_id).order_by(Rack.rack_number).all()
 
-    # Get available challenges for this match if it's a Random gara
+    # Gli esercizi fra i turni di questa gara, se li ammette
     available_challenges = []
     player_challenge_progress = {}
     if (
         match.gara
-        and match.gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value
+        and match.gara.ammette_esercizi_fra_i_turni
         and match.gara.status in [GaraStatus.PLAYING.value, GaraStatus.COMPLETED.value]
     ):
 

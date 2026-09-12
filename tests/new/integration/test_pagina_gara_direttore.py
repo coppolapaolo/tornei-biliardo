@@ -250,7 +250,7 @@ def test_impostazioni_gara_per_chi_dirige(admin_client, db_session):
     assert resp.status_code == 200
     html = resp.get_data(as_text=True)
     assert "Si modifica anche adesso" in html
-    assert "Direttori di gara" in html
+    assert "Direzione di gara" in html
     assert "Fissato all'avvio" in html
     assert 'id="sezioneTavoli"' in html
 

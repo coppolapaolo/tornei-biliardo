@@ -48,23 +48,6 @@
 </button>
 {%- endmacro %}
 
-{# Il pulsante degli esercizi fra i turni: oggi il modale esiste solo con
-   l'accoppiamento casuale (`_challenge_management_modal.html`), e il limite
-   sta nei template — il servizio accetta qualunque strategia. Aprirlo anche
-   ad Amalfi e' la fase B del canvas. #}
-{% macro pulsante_esercizi(gara, classe='btn btn-secondary w-100') -%}
-{%- if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value -%}
-{%- set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode -%}
-{%- if challenge_enabled -%}
-{%- set has_challenges = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length > 0 -%}
-<button type="button" class="{{ classe }}" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
-  <i class="fas fa-bullseye"></i>
-  {{ _('Gestisci gli esercizi') if has_challenges else _('Aggiungi esercizi') }}
-</button>
-{%- endif -%}
-{%- endif -%}
-{%- endmacro %}
-
 {# Testata di sezione: titolo a sinistra, nota o comando a destra. #}
 {% macro sezione(titolo, nota='', more='', more_href='', attrs='') -%}
 <div class="c7-sechead" {{ attrs|safe }}>
@@ -72,4 +55,33 @@
   {% if nota %}<span class="c7-sechead__note">{{ nota }}</span>{% endif %}
   {% if more %}<a class="c7-sechead__more" href="{{ more_href or '#' }}">{{ more }}</a>{% endif %}
 </div>
+{%- endmacro %}
+
+{# Avanti e indietro fra i passi della preparazione (canvas 1.2–1.7): «n di
+   N», senza tornare alla panoramica. Attende `nav` da
+   `routes/admin/competition/preparazione.navigazione`. #}
+{% macro stepnav(nav, gara) -%}
+{% if nav %}
+<nav class="c7-stepnav" aria-label="{{ _('Passi della preparazione') }}">
+  {% if nav.precedente %}
+  <a class="btn btn-secondary btn-sm" href="{{ nav.precedente.url }}">
+    <i class="fas fa-arrow-left"></i>&nbsp;{{ nav.precedente.etichetta }}
+  </a>
+  {% else %}
+  <a class="btn btn-secondary btn-sm" href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}">
+    <i class="fas fa-arrow-left"></i>&nbsp;{{ _('Panoramica') }}
+  </a>
+  {% endif %}
+  <span class="c7-num c7-stepnav__conta">{{ _('%(i)s di %(n)s', i=nav.indice, n=nav.totale) }}</span>
+  {% if nav.successivo %}
+  <a class="btn btn-secondary btn-sm" href="{{ nav.successivo.url }}">
+    {{ nav.successivo.etichetta }}&nbsp;<i class="fas fa-arrow-right"></i>
+  </a>
+  {% else %}
+  <a class="btn btn-secondary btn-sm" href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}">
+    {{ _('Panoramica') }}&nbsp;<i class="fas fa-arrow-right"></i>
+  </a>
+  {% endif %}
+</nav>
+{% endif %}
 {%- endmacro %}

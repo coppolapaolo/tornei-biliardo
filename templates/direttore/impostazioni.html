@@ -35,7 +35,7 @@
   {{ d.sezione(_('Si modifica anche adesso')) }}
 
   <div id="sezioneDirettori">
-    {% include "components/_gara_directors.html" %}
+    {% include "direttore/preparazione/_direttori.html" %}
   </div>
 
   {% if not gara.is_prova and feature_visible('admin.competition.gara_vetrina') %}
@@ -70,7 +70,7 @@
     {{ d.riga('fa-diagram-project', _('Accoppiamento'),
               gara.matchmaking_strategy.replace('_', ' ')|title ~ (' · ' ~ _('anti-reincontro attivo') if gara.anti_rematch_enabled else ''),
               tone='locked') }}
-    {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
+    {% if gara.ammette_esercizi_fra_i_turni %}
     {{ d.riga('fa-bullseye', _('Esercizi fra i turni'),
               (ngettext('%(n)d esercizio', '%(n)d esercizi', _esercizi, n=_esercizi) if _esercizi else _('nessuno')),
               tone='locked') }}

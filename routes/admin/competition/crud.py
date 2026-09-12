@@ -388,9 +388,12 @@ def update_tables_config(gara_id):
     """Salva i tavoli della gara (in ordine di pregio) e il flag di
     assegnazione in base alla classifica (solo strategia random).
 
-    Disponibile solo tra apertura iscrizioni e avvio gara (lo stato è
-    validato da GaraService.update_tables_config).
+    In ogni stato della gara (canvas, decisione 1). Il form sta in piu'
+    pagine — la preparazione, «Impostazioni gara» — e `next` riporta a
+    quella da cui si e' salvato.
     """
+    from utils.safe_redirect import safe_next_url
+
     db.get_or_404(Gara, gara_id)
 
     tables_input = request.form.get("available_tables", "").strip()
@@ -403,11 +406,14 @@ def update_tables_config(gara_id):
             tables=tables,
             assign_tables_by_ranking=assign_by_ranking,
         )
-        flash(_("Configurazione tavoli salvata!"), "success")
+        flash(_("Tavoli salvati."), "success")
     except ValueError as e:
         flash(str(e), "error")
 
-    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+    ritorno = safe_next_url(request.form.get("next"))
+    return redirect(
+        ritorno or url_for("admin.competition.gara_detail", gara_id=gara_id)
+    )
 
 
 @competition_bp.route("/<int:gara_id>/delete", methods=["POST"])

@@ -243,6 +243,7 @@ hints:
       - admin.competition.create_gara_standalone
       - admin.competition.gara_detail
       - admin.competition.gara_impostazioni
+      - admin.competition.gara_preparazione
     page: opzioni_della_gara
     section: informazioni
 

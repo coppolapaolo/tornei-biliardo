@@ -801,6 +801,27 @@ class Gara(SoftDeleteMixin, db.Model):
         """
         return self.get_strategy_behavior().can_use_trio(self.distance)
 
+    @property
+    def ammette_esercizi_fra_i_turni(self) -> bool:
+        """Questa gara puo' avere esercizi fra i turni (`GaraChallenge`).
+
+        Valgono con ogni formula **a turni** — Amalfi e casuale — e non sui
+        tabelloni, dove i turni non sono un momento della serata ma un ramo
+        dell'albero. In un campionato decide `challenge_mode`.
+
+        Fino al 2026-09-12 erano offerti solo con l'accoppiamento casuale: il
+        limite stava nei template e nelle route, non nel servizio (canvas
+        «Pagina gara del direttore», decisione 4).
+        """
+        from models.matchmaking.configuration import BRACKET_STRATEGIES
+
+        if self.matchmaking_strategy in BRACKET_STRATEGIES:
+            return False
+        campionato = getattr(self, "campionato", None)
+        if campionato is not None and not getattr(campionato, "challenge_mode", True):
+            return False
+        return True
+
     def creates_all_rounds_at_startup(self) -> bool:
         """Check if this strategy creates all rounds at tournament startup.
 

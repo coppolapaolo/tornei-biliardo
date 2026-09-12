@@ -252,6 +252,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # anonimi qui sopra — e deve restarci, altrimenti lo scraper del social
     # riceve 404 e l'anteprima non compare mai.
     "admin.competition.gara_impostazioni": {"director"},
+    "admin.competition.gara_preparazione": {"director"},
     "admin.competition.gara_vetrina": {"director"},
     "admin.competition.salva_gara_vetrina": {"director"},
     "admin.competition.carica_banner_gara": {"director"},

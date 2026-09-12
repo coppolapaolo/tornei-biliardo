@@ -1,76 +1,70 @@
-{# templates/components/_gara_tables_config.html #}
-{# Sezione tavoli della gara (solo admin/director, vedi gara_detail.html).
-   Editabile tra apertura iscrizioni e avvio gara: il direttore elenca i
-   tavoli da usare in ordine di pregio; con strategia random può attivare
-   l'assegnazione in base alla classifica provvisoria. Dopo l'avvio la
-   sezione diventa di sola lettura. #}
-{% if gara.status == GaraStatus.INSCRIPTION.value %}
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-table"></i> {{ _('Tavoli della gara') }}</h5>
-    </div>
-    <div class="card-body">
-        <form method="POST" action="{{ url_for('admin.competition.update_tables_config', gara_id=gara.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <div class="mb-3">
-                <label for="available_tables" class="form-label" data-help="gara-tavoli">{{ _('Tavoli da usare (in ordine)') }}</label>
-                {# Prefill SOLO con la lista specifica della gara: se available_tables
-                   è vuoto NON mostrare il fallback della sala, altrimenti un submit
-                   senza modifiche lo persisterebbe perdendo il fallback dinamico
-                   (stesso pattern di _gara_edit_form.html, rilievo Copilot PR #37) #}
-                <input type="text" class="form-control" id="available_tables" name="available_tables"
-                    value="{% if gara.available_tables %}{{ gara.get_available_tables()|join(', ') }}{% endif %}"
-                    placeholder="{{ _('es: 2, 3, 5') }}">
-                <small class="text-muted">
-                    {{ _("Elenco separato da virgole: l'assegnazione automatica userà solo questi tavoli, nell'ordine indicato. Lascia vuoto per usare tutti i tavoli della sala.") }}
-                </small>
-            </div>
-            {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
-            <div class="form-check mb-3">
-                <input class="form-check-input" type="checkbox" id="assign_tables_by_ranking"
-                    name="assign_tables_by_ranking" {% if gara.assign_tables_by_ranking %}checked{% endif %}>
-                <label class="form-check-label" for="assign_tables_by_ranking">
-                    {{ _('Assegna tavoli in base alla classifica') }}
-                </label>
-                <small class="text-muted d-block">
-                    {{ _("Dal secondo turno in poi attende la fine di tutte le partite del turno precedente, poi assegna il primo tavolo della lista al match con il giocatore meglio piazzato in classifica provvisoria, e così via.") }}
-                </small>
-            </div>
-            {% endif %}
-            <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> {{ _('Salva tavoli') }}
-            </button>
-        </form>
-    </div>
-</div>
-{% elif gara.status == GaraStatus.SETUP.value %}
-<div class="c7-card">
-  <h3 class="mb-2">{{ _('Tavoli della gara') }}</h3>
-  <div class="c7-nota">
-    {{ _('Si scelgono all’apertura delle iscrizioni, quando si sa quanti giocatori ci saranno.') }}
-    {% if gara.get_available_tables() %}{{ _('Per ora valgono quelli della sala: %(tavoli)s.', tavoli=gara.get_available_tables()|join(', ')) }}{% endif %}
+{# templates/components/_gara_tables_config.html — Design System 7c
+
+   I tavoli della gara (canvas 1.3): un campo di testo con i nomi separati
+   da virgola, nell'ordine di assegnazione — «3, 1, 2» — piu', con
+   l'accoppiamento casuale, l'interruttore che assegna in base alla
+   classifica. Si scelgono **in ogni stato**: in preparazione, a iscrizioni
+   aperte, fra un turno e l'altro (`GaraService.update_tables_config`, dal
+   2026-09-12 senza guard di stato). Le partite gia' al tavolo lo tengono.
+   A gara conclusa si leggono e basta.
+
+   Lo includono la preparazione (passo «Tavoli» sul telefono, sezione in
+   linea sul desktop) e «Impostazioni gara»: una sola copia per pagina, il
+   form ha un id. `next` riporta alla pagina da cui si salva. #}
+
+{% set _tavoli_gara = gara.get_available_tables() if gara.available_tables else [] %}
+{% set _tavoli_sala = gara.billiard_hall.get_table_names() if gara.billiard_hall else [] %}
+{% set _conclusa = gara.status in [GaraStatus.COMPLETED.value, GaraStatus.CANCELLED.value] %}
+
+<section class="c7-card">
+  <div class="c7-sechead" style="margin-bottom:12px">
+    <h3>{{ _('Tavoli della gara') }}</h3>
+    {% if _tavoli_sala %}<span class="c7-sechead__note">{{ ngettext('la sala ne ha %(n)d', 'la sala ne ha %(n)d', _tavoli_sala|length, n=_tavoli_sala|length) }}</span>{% endif %}
   </div>
-</div>
-{% elif gara.get_available_tables() %}
-<div class="card">
-    <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-table"></i> {{ _('Tavoli della gara') }}</h5>
-    </div>
-    <div class="card-body">
-        <p class="mb-1">
-            <strong>{{ _('Tavoli in uso (in ordine):') }}</strong>
-            {{ gara.get_available_tables()|join(', ') }}
-        </p>
-        {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
-        <p class="mb-0">
-            <strong>{{ _('Assegnazione in base alla classifica:') }}</strong>
-            {% if gara.assign_tables_by_ranking %}
-            <span class="text-success">{{ _('Abilitata') }}</span>
-            {% else %}
-            <span class="text-muted">{{ _('Disabilitata') }}</span>
-            {% endif %}
-        </p>
+
+  {% if _conclusa %}
+  <div style="font-size:15px;font-weight:800" class="c7-num">{{ gara.get_available_tables()|join(', ') or '—' }}</div>
+  <div class="c7-nota" style="margin-top:6px">{{ _('I tavoli usati, nell’ordine di assegnazione.') }}</div>
+  {% else %}
+  <form method="POST" action="{{ url_for('admin.competition.update_tables_config', gara_id=gara.id) }}" class="c7-stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ request.path }}">
+    <div>
+      <label for="available_tables" class="c7-label" data-help="gara-tavoli">{{ _('Tavoli da usare, in ordine') }}</label>
+      {# Prefill SOLO con la lista specifica della gara: se available_tables
+         è vuoto NON mostrare il fallback della sala, altrimenti un submit
+         senza modifiche lo persisterebbe perdendo il fallback dinamico
+         (stesso pattern di _gara_edit_form.html, rilievo Copilot PR #37) #}
+      <input type="text" class="form-control c7-num" id="available_tables" name="available_tables"
+             value="{{ _tavoli_gara|join(', ') }}"
+             placeholder="{{ _tavoli_sala|join(', ') if _tavoli_sala else _('es: 3, 1, 2') }}" autocomplete="off">
+      <div class="c7-nota" style="margin-top:8px">
+        {{ _("Separati da virgola, nell'ordine di assegnazione: il primo va alla partita di cartello.") }}
+        {% if _tavoli_sala %}
+        {{ _('La sala ha i tavoli %(tavoli)s; un nome che la sala non conosce vale lo stesso. Vuoto: tutti quelli della sala.', tavoli=_tavoli_sala|join(', ')) }}
+        {% else %}
+        {{ _('La sala non ha dichiarato tavoli: qui scrivi i nomi che usate.') }}
         {% endif %}
+      </div>
     </div>
-</div>
-{% endif %}
+
+    {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
+    <label class="c7-card d-flex align-items-center gap-3" style="background:var(--c7-bg)">
+      <span class="flex-fill">
+        <span class="c7-choice__title d-block">{{ _('Assegna in base alla classifica') }}</span>
+        <span class="c7-choice__desc d-block">{{ _('Dal secondo turno il primo tavolo va alla partita con il giocatore meglio piazzato. Solo con accoppiamento casuale.') }}</span>
+      </span>
+      <span class="form-check form-switch m-0">
+        <input class="form-check-input m-0" type="checkbox" role="switch" id="assign_tables_by_ranking"
+               name="assign_tables_by_ranking" {% if gara.assign_tables_by_ranking %}checked{% endif %}>
+      </span>
+    </label>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary w-100">
+      <i class="fas fa-check"></i> {{ _('Salva i tavoli') }}
+    </button>
+    <div class="c7-nota">{{ _('Si cambiano anche a iscrizioni chiuse e fra un turno e l’altro: le partite già al tavolo lo tengono.') }}</div>
+  </form>
+  {% endif %}
+</section>

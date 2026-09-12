@@ -1,7 +1,10 @@
 """Test per GaraService.update_tables_config.
 
 La configurazione tavoli (lista in ordine di pregio + flag assegnazione per
-classifica) è consentita SOLO tra apertura iscrizioni e avvio della gara.
+classifica) si fa **in ogni stato** della gara: in preparazione, a iscrizioni
+aperte, fra un turno e l'altro (canvas «Pagina gara del direttore»,
+decisione 1, 2026-09-12). Fino ad allora era ammessa solo a iscrizioni
+aperte, e lo vietava anche il servizio.
 """
 
 import pytest
@@ -10,7 +13,7 @@ from datetime import date
 from models import Gara
 from models.status_enum import GaraStatus, Discipline
 from models.competition.services import GaraService
-from models.exceptions import ConflictError, NotFoundError
+from models.exceptions import NotFoundError
 
 
 @pytest.mark.unit
@@ -61,21 +64,27 @@ class TestUpdateTablesConfig:
 
     @pytest.mark.parametrize(
         "status",
-        [GaraStatus.SETUP.value, GaraStatus.PLAYING.value, GaraStatus.COMPLETED.value],
+        [
+            GaraStatus.SETUP.value,
+            GaraStatus.INSCRIPTION.value,
+            GaraStatus.PLAYING.value,
+            GaraStatus.COMPLETED.value,
+        ],
     )
-    def test_rejected_outside_inscription_phase(self, db_session, status):
+    def test_si_scelgono_in_ogni_stato(self, db_session, status):
+        """Regola del canvas: i tavoli si scelgono sempre, di solito prima di
+        avviare un turno, perche' e' allora che si sa quanti ne servono."""
         gara = self._make_gara(db_session, status)
 
-        with pytest.raises(ConflictError):
-            GaraService.update_tables_config(
-                gara_id=gara.id,
-                tables=["1"],
-                assign_tables_by_ranking=True,
-            )
+        GaraService.update_tables_config(
+            gara_id=gara.id,
+            tables=["1"],
+            assign_tables_by_ranking=True,
+        )
 
         refreshed = db_session.get(Gara, gara.id)
-        assert refreshed.available_tables is None
-        assert refreshed.assign_tables_by_ranking is False
+        assert refreshed.get_available_tables() == ["1"]
+        assert refreshed.assign_tables_by_ranking is True
 
     def test_not_found(self, db_session):
         with pytest.raises(NotFoundError):

@@ -389,3 +389,22 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   Nelle fasi A i contenuti dentro la fase sono ancora i componenti di prima
   (card partita, elenco iscritti, configurazione turni): li rifanno le fasi
   B–G.
+* **B · Preparazione** (PR `feat: la preparazione della gara, passo per
+  passo`, 2026-09-13). Le schermate 1.1–1.10: sul telefono la panoramica
+  con «Da preparare» e i passi come pagine con avanti e indietro
+  (`/admin/gara/<id>/preparazione/<passo>`: turni, tavoli, esercizi,
+  direttori; la vetrina e' il quinto passo sulla sua pagina); sul desktop la
+  pagina lunga (1.9) con turni in sintesi, direzione di gara con la ricerca
+  in linea, tavoli nel campo «3, 1, 2», vetrina; la pagina dei turni ed
+  esercizi (1.10). I tavoli si scelgono **in ogni stato**
+  (`GaraService.update_tables_config` senza guard, test aggiornati). Il
+  foglio «Apri le iscrizioni» ha minimo e massimo
+  (`InscriptionService.open_inscriptions`). Gli esercizi fra i turni valgono
+  con ogni formula a turni (`Gara.ammette_esercizi_fra_i_turni`): il limite
+  al casuale stava nelle route (challenges.py, match/challenges.py,
+  match/detail.py) oltre che nei template, non solo nei template come
+  diceva il canvas. La testata dice i turni modificati («turno 2: Palla 9 al
+  3 triangoli», rilievo del 12/09). Co-direttori con ricerca client-side sui
+  candidati (`_direttori.html`, usato anche da «Impostazioni gara»). Via
+  `_round_management.html`, `_gara_directors.html` e il modale degli
+  esercizi, sostituiti dai passi.

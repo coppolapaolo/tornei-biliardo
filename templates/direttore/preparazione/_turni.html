@@ -1,0 +1,355 @@
+{# templates/direttore/preparazione/_turni.html — Design System 7c
+
+   Turni e distanze (canvas 1.2 sul telefono, 1.10 sul desktop): una card
+   per turno con disciplina e triangoli, la pastiglia che dice se il turno
+   e' «modificato» o «default», l'icona che lo ripristina. A fianco, sul
+   desktop, «Come si gioca»: strategia, turni, anti-reincontro, dispari.
+   Sotto, sul desktop, gli esercizi fra i turni (`_esercizi.html`); sul
+   telefono sono il passo dopo.
+
+   La configurazione per turno e' persistita server-side (ADR-027):
+   GET/POST/DELETE `/admin/gara/<id>/round-config[/<n>]`, come prima. Il
+   markup era in `components/_round_management.html`; endpoint, id e
+   funzioni JavaScript sono invariati. Si modifica fino all'apertura delle
+   iscrizioni: dopo, la pagina mostra i turni in sola lettura.
+
+   Attende `gara`, `discipline_choices`, `in_preparazione`. Una sola
+   inclusione per pagina: contiene id e uno script. #}
+
+{% set _configurabile = gara.rounds_count > 1 and gara.matchmaking_strategy in [MatchmakingStrategy.AMALFI.value, MatchmakingStrategy.RANDOM.value] %}
+{% set _is_bracket = gara.matchmaking_strategy in bracket_minimum_players %}
+
+<div class="c7-cols c7-prep-turni">
+  <div class="c7-stack">
+    {{ d.sezione(_('Configurazione turni'), nota=(_('%(n)s turni', n=gara.rounds_count)),
+                 more=(_('Ripristina i default') if _configurabile and in_preparazione else ''),
+                 attrs='id="turniTestata"') }}
+
+    {% if not _configurabile %}
+    <div class="c7-card">
+      <div class="c7-nota">
+        {% if _is_bracket %}
+        {{ _('Sul tabellone i turni sono un ramo dell’albero: si gioca sempre alla distanza della gara.') }}
+        {% else %}
+        {{ _('Un turno solo: si gioca alla distanza della gara.') }}
+        {% endif %}
+      </div>
+      <div style="margin-top:10px;font-size:15px;font-weight:800">{{ gara.discipline|discipline_display }} <span class="c7-sep">·</span> {{ gara.distance_config|format_distance }}</div>
+    </div>
+    {% elif not in_preparazione %}
+    {# A iscrizioni aperte nulla cambia sotto i piedi degli iscritti: si legge. #}
+    <div class="c7-turni-griglia" id="turniSolaLettura">
+      {% for round_num in range(1, gara.rounds_count + 1) %}
+      {% set rc = gara.round_configurations|selectattr('round_number', 'equalto', round_num)|first %}
+      <div class="c7-turno-card c7-turno-card--letto">
+        <div class="c7-turno-card__testa">
+          <strong>{{ _('Turno %(num)s', num=round_num) }}</strong>
+          {% if rc and rc.has_overrides() %}<span class="c7-state c7-state--warn">{{ _('modificato') }}</span>{% else %}<span class="c7-state c7-state--muted">{{ _('default') }}</span>{% endif %}
+        </div>
+        <div class="c7-turno-card__valore">
+          {{ (rc.get_effective_discipline(gara.discipline) if rc else gara.discipline)|discipline_display }}
+          <span class="c7-sep">·</span>
+          {{ (rc.distanza_effettiva(gara) if rc else gara.distance_config)|format_distance }}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="c7-nota">{{ _('Con le iscrizioni aperte i turni non si toccano più: gli iscritti si sono iscritti a questa gara.') }}</div>
+    {% else %}
+    <div class="c7-nota">
+      {{ _('Disciplina e distanza diverse per ciascun turno. Si modificano fino all’apertura delle iscrizioni; ogni cambio si salva da solo.') }}
+    </div>
+
+    <div class="c7-turni-griglia">
+      {% for round_num in range(1, gara.rounds_count + 1) %}
+      <div class="c7-turno-card c7-round-card" data-turno="{{ round_num }}">
+        <div class="c7-turno-card__testa">
+          <strong>{{ _('Turno %(num)s', num=round_num) }}</strong>
+          <span class="c7-state c7-state--muted" id="roundPreview{{ round_num }}">{{ gara.distance_config|format_distance }}</span>
+          <button type="button" class="c7-iconbtn c7-iconbtn--menu" onclick="resetRoundToDefault({{ round_num }})"
+                  title="{{ _('Ripristina il default') }}" aria-label="{{ _('Ripristina il turno %(num)s al default', num=round_num) }}">
+            <i class="fas fa-rotate-left"></i>
+          </button>
+        </div>
+
+        <div class="c7-turno-card__campi">
+          <div>
+            <label class="c7-label" for="roundDiscipline{{ round_num }}">{{ _('Disciplina') }}</label>
+            <select class="form-select" id="roundDiscipline{{ round_num }}" onchange="updateRoundConfig({{ round_num }})">
+              <option value="{{ gara.discipline }}">{{ gara.discipline|discipline_display }} {{ _('(default)') }}</option>
+              {% for value, label in discipline_choices %}
+                {% if value != gara.discipline %}<option value="{{ value }}">{{ label }}</option>{% endif %}
+              {% endfor %}
+            </select>
+          </div>
+          <div>
+            <label class="c7-label" for="roundDistance{{ round_num }}">{{ _('Triangoli') }}</label>
+            <input type="number" class="form-control c7-num" id="roundDistance{{ round_num }}"
+                   min="1" max="15" value="{{ gara.distance }}" onchange="updateRoundConfig({{ round_num }})">
+          </div>
+        </div>
+
+        <div class="c7-turno-card__opzioni">
+          {# Sul tabellone il numero esatto non si sceglie, nemmeno per un solo
+             turno: la casella resta nel DOM perche' `updateRoundConfig` la
+             legge, ma nascosta e sempre spenta; il server rifiuta comunque
+             l'override (`upsert_round_config`). #}
+          <label class="c7-pill c7-turno-card__opzione"{% if _is_bracket %} hidden{% endif %}>
+            <input class="form-check-input m-0 me-2" type="checkbox" id="roundExactNumber{{ round_num }}"
+                   onchange="updateRoundConfig({{ round_num }})"
+                   {% if not gara.is_race_to and not _is_bracket %}checked{% endif %}>
+            {{ _('Esatto') }}
+          </label>
+          <label class="c7-pill c7-turno-card__opzione">
+            <input class="form-check-input m-0 me-2" type="checkbox" id="roundIsMultiSet{{ round_num }}"
+                   onchange="toggleRoundMultiSet({{ round_num }})" {% if gara.is_multi_set %}checked{% endif %}>
+            {{ _('Multi-set') }}
+          </label>
+        </div>
+
+        <div id="roundMultiSetConfig{{ round_num }}" class="c7-turno-card__set" style="display: {% if gara.is_multi_set %}block{% else %}none{% endif %};">
+          <div class="c7-turno-card__campi">
+            <div>
+              <label class="c7-label" for="roundMatchDistance{{ round_num }}">{{ _('Set') }}</label>
+              <input type="number" class="form-control c7-num" id="roundMatchDistance{{ round_num }}"
+                     min="1" max="9" value="{{ gara.match_distance or 2 }}" onchange="updateRoundConfig({{ round_num }})">
+            </div>
+            <label class="c7-pill c7-turno-card__opzione" style="align-self:end">
+              <input class="form-check-input m-0 me-2" type="checkbox" id="roundIsRaceToSets{{ round_num }}"
+                     onchange="updateRoundConfig({{ round_num }})"
+                     {% if gara.is_race_to_sets is not defined or gara.is_race_to_sets %}checked{% endif %}>
+              {{ _('Al N') }}
+            </label>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div id="roundConfigStatus{{ gara.id }}" class="c7-nota" style="text-align:right" aria-live="polite"></div>
+    {% endif %}
+
+    {# Sul desktop gli esercizi fra i turni stanno sotto i turni (canvas
+       1.10); sul telefono sono il passo dopo. #}
+    {% if gara.ammette_esercizi_fra_i_turni %}
+    <div class="d-none d-lg-block">
+      {% include "direttore/preparazione/_esercizi.html" %}
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="c7-stack">
+    {{ d.sezione(_('Come si gioca')) }}
+    <section class="c7-card c7-comesigioca">
+      <div><div class="c7-kicker">{{ _('Strategia') }}</div>
+        <div class="c7-comesigioca__valore">{{ gara.matchmaking_strategy.replace("_", " ")|title }}</div></div>
+      <div><div class="c7-kicker">{{ _('Turni') }}</div>
+        <div class="c7-comesigioca__valore c7-num">{{ gara.rounds_count }}</div></div>
+      <div><div class="c7-kicker">{{ _('Disciplina') }}</div>
+        <div class="c7-comesigioca__valore">{{ gara.discipline|discipline_display }}</div></div>
+      <div><div class="c7-kicker">{{ _('Distanza') }}</div>
+        <div class="c7-comesigioca__valore">{{ gara.distance_config|format_distance }}</div></div>
+      {% if not _is_bracket %}
+      <div><div class="c7-kicker">{{ _('Anti-reincontro') }}</div>
+        <div class="c7-comesigioca__valore" style="color:{{ 'var(--c7-ok)' if gara.anti_rematch_enabled else 'var(--c7-ink-muted)' }}">
+          {{ _('Attivo') if gara.anti_rematch_enabled else _('Non attivo') }}</div></div>
+      <div><div class="c7-kicker">{{ _('Dispari') }}</div>
+        <div class="c7-comesigioca__valore">{{ gara.odd_number_policy.replace("_", " ")|title }}</div></div>
+      {% endif %}
+    </section>
+    <div class="c7-nota">
+      {{ _('Il turno modificato si distingue con la pastiglia. Gli esercizi si giocano dopo il turno indicato, mentre gli altri finiscono, e fanno una classifica a parte.') }}
+    </div>
+  </div>
+</div>
+
+{% if _configurabile and in_preparazione %}
+<script>
+// ADR-027: la configurazione per turno è persistita server-side via API.
+//   GET    /admin/gara/{id}/round-config
+//   POST   /admin/gara/{id}/round-config/{n}
+//   DELETE /admin/gara/{id}/round-config/{n}
+(function() {
+    const garaId = {{ gara.id }};
+    const roundsCount = {{ gara.rounds_count }};
+    const baseUrl = `/admin/gara/${garaId}/round-config`;
+    const statusEl = document.getElementById(`roundConfigStatus${garaId}`);
+    const csrfToken = {{ csrf_token()|tojson }};
+    const i18n = {
+        exact: {{ _('%(n)s triangoli esatti', n='{n}')|tojson }},
+        raceTo: {{ _('Al %(n)s', n='{n}')|tojson }},
+        sets: {{ _('%(s)s set, %(r)s', s='{s}', r='{r}')|tojson }},
+        saved: {{ _('Turno %(n)s salvato', n='{n}')|tojson }},
+        restored: {{ _('Turno %(n)s ripristinato al default', n='{n}')|tojson }},
+        errorSave: {{ _('Errore %(code)s nel salvataggio del turno %(n)s', code='{code}', n='{n}')|tojson }},
+        errorNet: {{ _('Errore di rete nel salvataggio del turno %(n)s', n='{n}')|tojson }},
+        errorLoad: {{ _('Impossibile caricare la configurazione (%(code)s)', code='{code}')|tojson }},
+        modified: {{ _('modificato')|tojson }},
+        deflt: {{ _('default')|tojson }}
+    };
+
+    const garaDefaults = {
+        discipline: {{ gara.discipline|tojson }},
+        distance: {{ gara.distance }},
+        isRaceTo: {{ 'true' if gara.is_race_to else 'false' }},
+        isMultiSet: {{ 'true' if gara.is_multi_set else 'false' }},
+        matchDistance: {{ gara.match_distance or 2 }},
+        isRaceToSets: {{ 'true' if gara.is_race_to_sets is not defined or gara.is_race_to_sets else 'false' }}
+    };
+
+    for (let n = 1; n <= roundsCount; n++) {
+        try { localStorage.removeItem(`roundConfig_${garaId}_${n}`); } catch (e) { /* ignore */ }
+    }
+
+    function setStatus(message, isError) {
+        if (!statusEl) return;
+        statusEl.textContent = message;
+        statusEl.style.color = isError ? 'var(--c7-err-ink)' : 'var(--c7-ink-muted)';
+        if (message && !isError) {
+            setTimeout(() => { if (statusEl.textContent === message) statusEl.textContent = ''; }, 1500);
+        }
+    }
+
+    function readForm(n) {
+        const isMultiSet = document.getElementById(`roundIsMultiSet${n}`).checked;
+        return {
+            discipline: document.getElementById(`roundDiscipline${n}`).value,
+            distance: parseInt(document.getElementById(`roundDistance${n}`).value, 10) || garaDefaults.distance,
+            exactNumber: document.getElementById(`roundExactNumber${n}`).checked,
+            isMultiSet: isMultiSet,
+            matchDistance: parseInt(document.getElementById(`roundMatchDistance${n}`).value, 10) || garaDefaults.matchDistance,
+            isRaceToSets: document.getElementById(`roundIsRaceToSets${n}`).checked
+        };
+    }
+
+    function isDefault(form) {
+        return (
+            form.discipline === garaDefaults.discipline &&
+            form.distance === garaDefaults.distance &&
+            form.exactNumber === !garaDefaults.isRaceTo &&
+            form.isMultiSet === garaDefaults.isMultiSet &&
+            (!form.isMultiSet || (
+                form.matchDistance === garaDefaults.matchDistance &&
+                form.isRaceToSets === garaDefaults.isRaceToSets
+            ))
+        );
+    }
+
+    function toApiPayload(form) {
+        return {
+            discipline: form.discipline,
+            distance: form.distance,
+            is_race_to: !form.exactNumber,
+            is_multi_set: form.isMultiSet,
+            match_distance: form.isMultiSet ? form.matchDistance : null,
+            is_race_to_sets: form.isMultiSet ? form.isRaceToSets : null
+        };
+    }
+
+    function updatePreview(n, form) {
+        const preview = document.getElementById(`roundPreview${n}`);
+        if (!preview) return;
+        const isOverride = !isDefault(form);
+        preview.textContent = isOverride ? i18n.modified : i18n.deflt;
+        preview.classList.toggle('c7-state--warn', isOverride);
+        preview.classList.toggle('c7-state--muted', !isOverride);
+        const card = preview.closest('.c7-turno-card');
+        if (card) card.classList.toggle('c7-turno-card--modificato', isOverride);
+    }
+
+    function applyOverrideToForm(n, override) {
+        const o = override || {};
+        const set = (id, value) => { const el = document.getElementById(id); if (el !== null) el.value = value; };
+        const setChecked = (id, value) => { const el = document.getElementById(id); if (el !== null) el.checked = value; };
+        set(`roundDiscipline${n}`, o.discipline ?? garaDefaults.discipline);
+        set(`roundDistance${n}`, o.distance ?? garaDefaults.distance);
+        const isRaceTo = o.is_race_to ?? garaDefaults.isRaceTo;
+        setChecked(`roundExactNumber${n}`, !isRaceTo);
+        const isMultiSet = o.is_multi_set ?? garaDefaults.isMultiSet;
+        setChecked(`roundIsMultiSet${n}`, isMultiSet);
+        set(`roundMatchDistance${n}`, o.match_distance ?? garaDefaults.matchDistance);
+        const isRaceToSets = o.is_race_to_sets ?? garaDefaults.isRaceToSets;
+        setChecked(`roundIsRaceToSets${n}`, isRaceToSets);
+        const cfgEl = document.getElementById(`roundMultiSetConfig${n}`);
+        if (cfgEl !== null) cfgEl.style.display = isMultiSet ? 'block' : 'none';
+        updatePreview(n, readForm(n));
+    }
+
+    async function persistRoundConfig(n) {
+        const form = readForm(n);
+        try {
+            let resp;
+            if (isDefault(form)) {
+                resp = await fetch(`${baseUrl}/${n}`, { method: 'DELETE', headers: { 'X-CSRFToken': csrfToken } });
+            } else {
+                resp = await fetch(`${baseUrl}/${n}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+                    body: JSON.stringify(toApiPayload(form))
+                });
+            }
+            if (!resp.ok) {
+                const data = await resp.json().catch(() => ({}));
+                setStatus(data.error || i18n.errorSave.replace('{code}', resp.status).replace('{n}', n), true);
+                return;
+            }
+            setStatus(i18n.saved.replace('{n}', n), false);
+        } catch (err) {
+            console.error('Errore salvataggio config turno', err);
+            setStatus(i18n.errorNet.replace('{n}', n), true);
+        }
+    }
+
+    window.toggleRoundMultiSet = function(n) {
+        const isMultiSet = document.getElementById(`roundIsMultiSet${n}`).checked;
+        document.getElementById(`roundMultiSetConfig${n}`).style.display = isMultiSet ? 'block' : 'none';
+        updateRoundConfig(n);
+    };
+
+    window.updateRoundConfig = function(n) {
+        updatePreview(n, readForm(n));
+        persistRoundConfig(n);
+    };
+
+    window.resetRoundToDefault = async function(n) {
+        applyOverrideToForm(n, null);
+        try {
+            await fetch(`${baseUrl}/${n}`, { method: 'DELETE', headers: { 'X-CSRFToken': csrfToken } });
+            setStatus(i18n.restored.replace('{n}', n), false);
+        } catch (err) {
+            console.error('Errore reset config turno', err);
+            setStatus(i18n.errorNet.replace('{n}', n), true);
+        }
+    };
+
+    // «Ripristina i default» in testata: tutti i turni insieme.
+    const ripristina = document.querySelector('#turniTestata .c7-sechead__more');
+    if (ripristina) {
+        ripristina.addEventListener('click', function (ev) {
+            ev.preventDefault();
+            for (let n = 1; n <= roundsCount; n++) window.resetRoundToDefault(n);
+        });
+    }
+
+    async function loadServerConfigs() {
+        try {
+            const resp = await fetch(baseUrl);
+            if (!resp.ok) {
+                setStatus(i18n.errorLoad.replace('{code}', resp.status), true);
+                for (let n = 1; n <= roundsCount; n++) applyOverrideToForm(n, null);
+                return;
+            }
+            const data = await resp.json();
+            const byRound = {};
+            (data.overrides || []).forEach(o => { byRound[o.round_number] = o; });
+            for (let n = 1; n <= roundsCount; n++) applyOverrideToForm(n, byRound[n] || null);
+        } catch (err) {
+            console.error('Errore caricamento round-config', err);
+            for (let n = 1; n <= roundsCount; n++) applyOverrideToForm(n, null);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', loadServerConfigs);
+})();
+</script>
+{% endif %}

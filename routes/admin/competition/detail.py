@@ -466,7 +466,7 @@ def gara_detail(gara_id):
     gara_challenges = None
     user_challenge_data = None
 
-    if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value:
+    if gara.ammette_esercizi_fra_i_turni:
         from models.competition.gara_challenge_service import GaraChallengeService
 
         if GaraChallengeService.has_active_challenges(gara_id):
@@ -704,13 +704,24 @@ def gara_detail(gara_id):
     # con l'unica cosa da fare, il resto della gestione in «Impostazioni».
     vista = {}
     if user_can_manage:
-        vista = _vista_direttore(
-            gara,
-            all_matches,
-            available_tables,
-            occupied_tables,
-            has_ssr_data=has_ssr_data,
-            has_unresolved_tiebreakers=has_unresolved_tiebreakers,
+        # In preparazione il desktop porta in linea il modulo della vetrina e
+        # i passi (canvas 1.9): servono il contesto della vetrina e le tendine.
+        if gara.status == GaraStatus.SETUP.value:
+            from .preparazione import passi_della_preparazione
+            from .vetrina import contesto_vetrina
+
+            vista["passi"] = passi_della_preparazione(gara)
+            if not gara.is_prova:
+                vista.update(contesto_vetrina(gara))
+        vista.update(
+            _vista_direttore(
+                gara,
+                all_matches,
+                available_tables,
+                occupied_tables,
+                has_ssr_data=has_ssr_data,
+                has_unresolved_tiebreakers=has_unresolved_tiebreakers,
+            )
         )
 
     contesto_pagina = dict(

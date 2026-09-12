@@ -6,7 +6,6 @@ from flask import (
 )
 from flask_login import current_user, login_required
 
-from models.matchmaking.configuration import MatchmakingStrategy
 from utils.route_helpers import safe_json_error
 
 from . import match_bp
@@ -70,13 +69,13 @@ def record_challenge_attempt():
         if forbidden:
             return forbidden
 
-        # Verify it's a Random tournament
-        if gara_challenge.gara.matchmaking_strategy != MatchmakingStrategy.RANDOM.value:
+        # Gli esercizi fra i turni valgono con ogni formula a turni.
+        if not gara_challenge.gara.ammette_esercizi_fra_i_turni:
             return (
                 jsonify(
                     {
                         "success": False,
-                        "error": "Challenge disponibili solo per tornei Random",
+                        "error": "Gli esercizi fra i turni non valgono in questa gara",
                     }
                 ),
                 400,

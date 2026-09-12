@@ -3210,3 +3210,53 @@ a.c7-rows__row:hover { background: var(--c7-sunken); }
 .c7-tile--neutral { background: var(--c7-bg); color: var(--c7-ink-soft); }
 .c7-tile--ok { background: var(--c7-ok-bg); color: var(--c7-ok); }
 .c7-tile--warn { background: var(--c7-warn-bg); color: var(--c7-warn); }
+
+/* --------------------------------------------------------------------------
+   21. La preparazione della gara (canvas 1.2–1.10)
+   -------------------------------------------------------------------------- */
+
+/* Avanti e indietro fra i passi, «n di N» nel mezzo. */
+.c7-stepnav { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 4px; }
+.c7-stepnav__conta { font-size: 12px; color: var(--c7-ink-muted); }
+
+/* La card di un turno: testata con pastiglia e ripristino, i due campi
+   affiancati, le opzioni come pill. Un turno modificato si distingue anche
+   dal fondo tenue, oltre che dalla pastiglia. */
+.c7-turni-griglia { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.c7-turno-card { background: var(--c7-card); border-radius: var(--c7-r-card); padding: 16px; }
+.c7-turno-card--letto { background: var(--c7-bg); border-radius: var(--c7-r-control); padding: 12px 14px; }
+.c7-turno-card--modificato { background: var(--c7-warn-bg); }
+.c7-turno-card__testa { display: flex; align-items: center; gap: 8px; }
+.c7-turno-card__testa strong { flex: 1; min-width: 0; font-size: 14px; }
+.c7-turno-card__valore { margin-top: 8px; font-size: 15px; font-weight: 800; }
+.c7-turno-card__campi { margin-top: 12px; display: grid; grid-template-columns: 1fr 96px; gap: 10px; }
+.c7-turno-card .form-select, .c7-turno-card .form-control { background: var(--c7-bg); height: var(--c7-field-h); }
+.c7-turno-card__opzioni { margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap; }
+.c7-turno-card__opzione { height: 40px; background: var(--c7-bg); cursor: pointer; }
+.c7-turno-card__set { margin-top: 10px; }
+.c7-turni-sintesi { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+@media (min-width: 992px) {
+  .c7-turni-griglia { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .c7-turni-sintesi { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+/* «Come si gioca»: due colonne di kicker + valore. */
+.c7-comesigioca { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 10px; }
+.c7-comesigioca__valore { margin-top: 2px; font-size: 14px; font-weight: 800; }
+
+/* Il foglio degli esercizi: le righe scelte sono pulsanti. */
+.c7-esercizi-scelta { max-height: 280px; overflow-y: auto; background: var(--c7-bg); }
+.c7-esercizi-scelta__riga { width: 100%; border: 0; background: transparent; text-align: left; font-family: inherit; color: inherit; cursor: pointer; }
+.c7-esercizi-scelta__riga.is-selected { background: var(--c7-accent-tint); }
+
+/* La vetrina senza locandina: lo spazio 1200×630 che aspetta l'immagine. */
+.c7-vetrina__vuota {
+  aspect-ratio: 1200 / 630; border-radius: var(--c7-r-field); background: var(--c7-sunken);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  color: var(--c7-ink-faint); font-size: 12px; font-weight: 700;
+}
+.c7-vetrina__vuota i { font-size: 26px; }
+
+/* La descrizione in testata: gli override per turno, uno per riga sotto lg. */
+.c7-head__override { display: block; }
+@media (min-width: 992px) { .c7-head__override { display: inline; } }
