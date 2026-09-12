@@ -157,8 +157,8 @@
       "h": 844
     },
     {
-      "file": "GiocoRisultato.dc.html",
-      "title": "3.3 Segna il risultato",
+      "file": "GiocoValida.dc.html",
+      "title": "3.3 Valida un risultato",
       "page": "page-3",
       "x": 1120,
       "y": 0,
@@ -166,8 +166,8 @@
       "h": 844
     },
     {
-      "file": "GiocoValida.dc.html",
-      "title": "3.4 Valida un risultato",
+      "file": "GiocoCorreggi.dc.html",
+      "title": "3.4 Correggi un risultato chiuso",
       "page": "page-3",
       "x": 1680,
       "y": 0,
@@ -175,8 +175,8 @@
       "h": 844
     },
     {
-      "file": "GiocoCorreggi.dc.html",
-      "title": "3.5 Correggi un risultato chiuso",
+      "file": "GiocoClassifica.dc.html",
+      "title": "3.5 Classifica dopo il turno",
       "page": "page-3",
       "x": 2240,
       "y": 0,
@@ -184,8 +184,8 @@
       "h": 844
     },
     {
-      "file": "GiocoClassifica.dc.html",
-      "title": "3.6 Classifica dopo il turno",
+      "file": "GiocoTurnoDopo.dc.html",
+      "title": "3.6 Turno concluso",
       "page": "page-3",
       "x": 2800,
       "y": 0,
@@ -193,8 +193,8 @@
       "h": 844
     },
     {
-      "file": "GiocoTurnoDopo.dc.html",
-      "title": "3.7 Turno concluso",
+      "file": "GiocoMioMatch.dc.html",
+      "title": "3.7 Il direttore gioca",
       "page": "page-3",
       "x": 3360,
       "y": 0,
@@ -202,17 +202,8 @@
       "h": 844
     },
     {
-      "file": "GiocoMioMatch.dc.html",
-      "title": "3.8 Il direttore gioca",
-      "page": "page-3",
-      "x": 3920,
-      "y": 0,
-      "w": 390,
-      "h": 844
-    },
-    {
       "file": "ConsoleDesktop.dc.html",
-      "title": "3.9 Il turno su desktop",
+      "title": "3.8 Il turno su desktop",
       "page": "page-3",
       "x": 0,
       "y": 1010,
@@ -311,7 +302,7 @@
     },
     {
       "file": "Dec1B.dc.html",
-      "title": "1B · Console — in gioco (la sintesi)",
+      "title": "1B · Console — in gioco (scelta)",
       "page": "page-0",
       "x": 560,
       "y": 0,
@@ -338,7 +329,7 @@
     },
     {
       "file": "Dec1SSetup.dc.html",
-      "title": "1S · Sintesi — in preparazione",
+      "title": "1S · Sintesi — in preparazione (scelta)",
       "page": "page-0",
       "x": 2240,
       "y": 0,
@@ -356,9 +347,36 @@
     },
     {
       "file": "Dec2SGioco.dc.html",
-      "title": "2S · Striscia di fase — in gioco",
+      "title": "2S · Striscia — in gioco (scelta)",
       "page": "page-0",
       "x": 560,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2SMenuTurno.dc.html",
+      "title": "2S · Il menu del turno",
+      "page": "page-0",
+      "x": 1120,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2SImpostazioni.dc.html",
+      "title": "2S · Impostazioni gara",
+      "page": "page-0",
+      "x": 1680,
+      "y": 1300,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Dec2SSpareggio.dc.html",
+      "title": "2S · Striscia — nello spareggio",
+      "page": "page-0",
+      "x": 2240,
       "y": 1300,
       "w": 390,
       "h": 844
@@ -367,23 +385,23 @@
       "file": "Dec2LSetup.dc.html",
       "title": "2L · Linguette — in preparazione",
       "page": "page-0",
-      "x": 1120,
+      "x": 2800,
       "y": 1300,
       "w": 390,
       "h": 844
     },
     {
       "file": "Dec2SSetup.dc.html",
-      "title": "2S · Striscia di fase — in preparazione",
+      "title": "2S · Striscia — in preparazione",
       "page": "page-0",
-      "x": 1680,
+      "x": 3360,
       "y": 1300,
       "w": 390,
       "h": 844
     },
     {
       "file": "Dec3Card.dc.html",
-      "title": "3C · Sulla card",
+      "title": "3C · Sulla card (scelta)",
       "page": "page-0",
       "x": 0,
       "y": 2600,
@@ -409,19 +427,10 @@
       "h": 844
     },
     {
-      "file": "Dec4Nascosta.dc.html",
-      "title": "4N · Nascosta",
+      "file": "Dec4Due.dc.html",
+      "title": "4 · Le due forme, con Amalfi",
       "page": "page-0",
       "x": 0,
-      "y": 3900,
-      "w": 390,
-      "h": 844
-    },
-    {
-      "file": "Dec4Spenta.dc.html",
-      "title": "4S · Spenta",
-      "page": "page-0",
-      "x": 560,
       "y": 3900,
       "w": 390,
       "h": 844
@@ -437,7 +446,7 @@
     },
     {
       "file": "Dec5Sezione.dc.html",
-      "title": "5S · Sezione in pagina",
+      "title": "5S · Sezione in pagina (scelta)",
       "page": "page-0",
       "x": 560,
       "y": 5200,
@@ -452,7 +461,7 @@
       "x": 0,
       "y": -260,
       "w": 470,
-      "text": "Il direttore apre la gara appena creata. La fascia dice dove siamo, l'elenco dice cosa manca prima di poter aprire le iscrizioni. Il verde e' l'unica azione conclusiva della fase.\n\nDa decidere: la spunta «Esercizi» compare solo con accoppiamento casuale — qui e' Amalfi, quindi andrebbe nascosta del tutto invece che spenta."
+      "text": "Il direttore apre la gara appena creata. La fascia dice dove siamo, l'elenco dice cosa manca prima di poter aprire le iscrizioni. Il verde e' l'unica azione conclusiva della fase.\n\nI tavoli sono una voce della preparazione con il numero della sala (12/09): si scelgono sempre, di solito prima di avviare un turno. Gli esercizi fra i turni sono facoltativi e valgono anche con Amalfi (vedi pagina 0, decisione 4)."
     },
     {
       "id": "nota-setupturni",
@@ -468,7 +477,7 @@
       "x": 1120,
       "y": -260,
       "w": 470,
-      "text": "PROBLEMA VERO, non del mockup: oggi i tavoli si possono scegliere **solo a iscrizioni aperte** (_gara_tables_config.html: `status == INSCRIPTION`), e si scrivono come «3, 1, 2» in un campo di testo. Qui sono tessere che si toccano nell'ordine di assegnazione, e la fase e' quella giusta: la preparazione.\n\nL'interruttore «assegna in base alla classifica» esiste solo con accoppiamento casuale."
+      "text": "PROBLEMA VERO, non del mockup: oggi i tavoli si possono scegliere **solo a iscrizioni aperte** — lo vieta il template (_gara_tables_config.html) e lo vieta il servizio (GaraService.update_tables_config solleva ConflictError) — e si scrivono come «3, 1, 2» in un campo di testo. La regola vera (12/09): i tavoli si scelgono **sempre**, di solito prima di avviare un turno, perche' e' allora che si sa quanti ne servono. Qui sono tessere che si toccano nell'ordine di assegnazione.\n\nL'interruttore «assegna in base alla classifica» esiste solo con accoppiamento casuale."
     },
     {
       "id": "nota-setupdirettori",
@@ -548,7 +557,7 @@
       "x": 0,
       "y": -260,
       "w": 470,
-      "text": "Artboard «Main»: la console del primo giro, riusata come panoramica della fase di gioco. Il punteggio si segna sulla card, il tavolo e' sulla card, in fondo l'azione della fase."
+      "text": "Artboard «Main»: la console del primo giro, riusata come panoramica della fase di gioco. Il punteggio si segna sulla card (scelta 3C del 12/09: niente foglio), il tavolo e' sulla card, in fondo l'azione della fase. La card riassuntiva e' scura come la fascia (scelta 1B)."
     },
     {
       "id": "nota-giocotavolo",
@@ -559,17 +568,9 @@
       "text": "I tavoli occupati mostrano da chi. Nell'app la griglia c'e' gia', ma il tavolo occupato appariva grigio come «non disponibile» invece che evidenziato.\n\nSenza tavolo assegnato i comandi di punteggio restano spenti: e' una regola dell'app, non del mockup."
     },
     {
-      "id": "nota-giocorisultato",
-      "page": "page-3",
-      "x": 1120,
-      "y": -260,
-      "w": 470,
-      "text": "Steppers, non campi numerici. La riga verde dice chi vince secondo la regola del turno («al 5»), cosi' l'errore si vede prima di salvare — oggi l'app lo dice dopo, con un avviso rosso.\n\nI tempi partita sono facoltativi e restano in fondo."
-    },
-    {
       "id": "nota-giocovalida",
       "page": "page-3",
-      "x": 1680,
+      "x": 1120,
       "y": -260,
       "w": 470,
       "text": "Momento che nessuno dei tre mockup del primo giro mostrava. Quando i due giocatori chiudono la partita, il direttore valida: e' cio' che completa la partita e **libera il tavolo**.\n\nLa card verde e' l'unica che chiede qualcosa; le altre restano neutre."
@@ -577,7 +578,7 @@
     {
       "id": "nota-giococorreggi",
       "page": "page-3",
-      "x": 2240,
+      "x": 1680,
       "y": -260,
       "w": 470,
       "text": "Si puo' fare a gara in corso (issue #90). Il foglio dice le due conseguenze vere: i triangoli segnati uno per uno si cancellano, e la correzione resta scritta sulla partita.\n\nIl campo «perche'» e' facoltativo ma e' cio' che rende leggibile la correzione a chi aveva visto il risultato di prima."
@@ -585,7 +586,7 @@
     {
       "id": "nota-giococlassifica",
       "page": "page-3",
-      "x": 2800,
+      "x": 2240,
       "y": -260,
       "w": 470,
       "text": "Prime sei o tutti, come nell'app. La nota in fondo spiega l'ordinamento e il valore della X a tavolino (una vittoria, zero differenza — SPECIFICHE.md righe 64 e 71).\n\nCon sistema RACK l'ordinamento e' un altro: la nota va scritta dal sistema di classifica, non fissa."
@@ -593,7 +594,7 @@
     {
       "id": "nota-giocoturnodopo",
       "page": "page-3",
-      "x": 3360,
+      "x": 2800,
       "y": -260,
       "w": 470,
       "text": "Le tre uscite del turno chiuso, separate per gravita': avviare il prossimo (verde), annullare l'avvio (possibile solo senza risultati), azzerare i risultati (distruttiva, fondo tenue).\n\nOggi sono tre bottoni della stessa forma, uno sotto l'altro."
@@ -601,7 +602,7 @@
     {
       "id": "nota-giocomiomatch",
       "page": "page-3",
-      "x": 3920,
+      "x": 3360,
       "y": -260,
       "w": 470,
       "text": "Se dirige ed e' iscritto, la sua partita e' la prima cosa: card scura con «Apri», che porta al segnapunti. Il resto del turno resta sotto, con i comandi da direttore.\n\nLa scorciatoia esiste gia' (_gara_my_match.html); qui convive con i comandi di direzione."
@@ -652,7 +653,7 @@
       "x": 560,
       "y": -260,
       "w": 470,
-      "text": "Dove sono finiti i punti, dov'e' la pagina pubblica, cosa non si tocca piu'. Serve a chiudere il ciclo invece di lasciare la pagina identica a prima ma spenta.\n\nDa decidere: «Riepilogo partite» qui e' un link — nell'app la sezione partite resta in pagina."
+      "text": "Dove sono finiti i punti, dov'e' la pagina pubblica, cosa non si tocca piu'. Serve a chiudere il ciclo invece di lasciare la pagina identica a prima ma spenta.\n\nScelta 5S del 12/09: le partite restano in pagina, turno per turno. La pagina pubblica mostra la classifica finale (vetrina_gara.html, `vetrina.conclusa`), per questo la riga lo dice."
     },
     {
       "id": "nota-a",
@@ -682,49 +683,49 @@
       "id": "dec-come",
       "page": "page-0",
       "x": 0,
-      "y": -580,
+      "y": -600,
       "w": 1060,
-      "text": "COME SI SCEGLIE\nOgni riga è una decisione. Le schermate di una riga portano gli stessi dati: cambia solo dove stanno le cose e che comando hanno. Si risponde con la sigla (1B, 2S, …), in chat o in un bigliettino qui accanto.\nLe decisioni 1 e 2 vengono prima: le altre tre si posano sulla forma scelta. Le pagine 1–5 restano la proposta completa, fase per fase."
+      "text": "COME SI SCEGLIE\nOgni riga è una decisione. Le schermate di una riga portano gli stessi dati: cambia solo dove stanno le cose e che comando hanno. Si risponde con la sigla, in chat o in un bigliettino qui accanto.\nIl 12/09 le cinque hanno avuto risposta (le righe «SCELTA»); le scelte sono applicate alle pagine 1–5, che restano la proposta completa. Restano aperti due punti: la gestione con la striscia (decisione 2) e i testi degli esercizi (decisione 4)."
     },
     {
       "id": "dec-1",
       "page": "page-0",
       "x": 0,
-      "y": -320,
+      "y": -340,
       "w": 1060,
-      "text": "DECISIONE 1 · LA FORMA — in gioco (le prime tre) e in preparazione (le ultime due)\nStessi dati: turno 2 di 4, 2 partite chiuse su 5, m.rossi–g.verdi 4–2 al tavolo 1, d.bianchi–l.ferrari 3–3 al tavolo 2, s.conti–p.marini senza tavolo, turno 1 concluso.\n1A · Regia: la pagina di oggi (card partita con il tavolo, le quattro linguette) più una fascia che dice cosa tiene aperto il turno. Costa poco e non toglie niente; il punteggio resta fuori pagina (decisione 3).\n1B · Console: il turno è la pagina, il punteggio si segna sulla card, l'azione della fase sta nella barra in fondo. È ciò che le pagine 1–5 usano in gioco («la sintesi»). Costa il segnapunti.\n1C · Fasi: la striscia del ciclo al posto delle linguette, la fascia dice l'unica cosa da fare, la classifica in un commutatore, iscritti e impostazioni come righe. Costa un tap in più per tutto ciò che non è la fase.\nIn preparazione: 1A è la Gestione di oggi (bottoni, select dei direttori, card dei turni) con la fascia sopra; 1S è la sintesi già disegnata nella pagina 1 (righe «da preparare» e impostazioni).\nDomanda: la sintesi (1B in gioco, fascia e righe nelle altre fasi) va bene, o una delle tre da sola?"
+      "text": "DECISIONE 1 · LA FORMA — in gioco (le prime tre) e in preparazione (le ultime due)\nSCELTA (12/09): 1B in gioco, con la card riassuntiva scura come la fascia; 1S in preparazione. Applicata alle pagine 1–5. Nota: i tavoli si scelgono sempre, di solito prima di avviare un turno; la riga mostra quanti ne ha la sala.\nStessi dati: turno 2 di 4, 2 partite chiuse su 5, m.rossi–g.verdi 4–2 al tavolo 1, d.bianchi–l.ferrari 3–3 al tavolo 2, s.conti–p.marini senza tavolo, turno 1 concluso.\n1A · Regia: la pagina di oggi più una fascia che dice cosa tiene aperto il turno.\n1B · Console: il turno è la pagina, il punteggio si segna sulla card, l'azione della fase sta nella barra in fondo.\n1C · Fasi: la striscia del ciclo al posto delle linguette, la fascia dice l'unica cosa da fare, classifica in un commutatore, iscritti e impostazioni come righe."
     },
     {
       "id": "dec-2",
       "page": "page-0",
       "x": 0,
-      "y": 980,
+      "y": 960,
       "w": 1060,
-      "text": "DECISIONE 2 · LINGUETTE O STRISCIA DI FASE — stesso contenuto (la sintesi), cambia solo la navigazione\n2L · Linguette: Turni · Classifica · Iscritti · Gestione come oggi (in preparazione solo Gestione · Iscritti). Sono un filtro CSS su un solo DOM: le sezioni ci sono tutte, la linguetta nasconde le altre. La classifica è a un tap, sempre nello stesso posto.\n2S · Striscia: dice in che fase è la gara (fatto ✓ · in corso · da fare); classifica, iscritti e impostazioni diventano righe in fondo. Le quattro fasi con le etichette non ci stanno in 354 px: le inattive mostrano solo l'icona. Cambia anche il meccanismo: non più un filtro, ma pagine o sezioni separate.\nOggi: linguette. Domanda: striscia al posto delle linguette, o linguette con la fascia di fase dentro la pagina?"
+      "text": "DECISIONE 2 · LINGUETTE O STRISCIA DI FASE — stesso contenuto, cambia la navigazione\nSCELTA (12/09): la striscia. APERTO: come si arriva alla gestione nelle altre fasi, per esempio per annullare il turno. Proposta nelle tre schermate 2S in mezzo:\n• i comandi DEL TURNO (annulla l'avvio, azzera i risultati) stanno con il turno: tre puntini accanto a «Turno 2» aprono il foglio con i due comandi, gli stessi della 3.6 «Turno concluso»;\n• i comandi DELLA GARA (direttori, vetrina, link, tavoli, turni e distanze, esercizi, squadre e categorie, termina, elimina) stanno in «Impostazioni gara», la riga in fondo alla pagina, che apre una pagina a righe;\n• l'azione della fase (avvia il turno 3, termina la gara) resta nella barra in fondo, come in 1B.\nLo spareggio ha la sua tacca nella striscia, fra il gioco e la chiusura, e compare solo nelle gare che ce l'hanno (schermata 2S · Spareggio, contenuto della 4.1).\n2L · Linguette: Turni · Classifica · Iscritti · Gestione come oggi. Filtro CSS su un solo DOM. 2S · Striscia: le quattro fasi con le etichette non ci stanno in 354 px, le inattive mostrano solo l'icona; classifica, iscritti e impostazioni diventano righe in fondo."
     },
     {
       "id": "dec-3",
       "page": "page-0",
       "x": 0,
-      "y": 2280,
+      "y": 2260,
       "w": 1060,
-      "text": "DECISIONE 3 · IL PUNTEGGIO — dove si segna il risultato di una partita del turno\n3C · Sulla card: gli stepper stanno sulla card, ogni tocco scrive il punteggio; a 5 la partita si chiude e il tavolo si libera. Niente foglio, niente conferma. È la scelta più costosa: tocca il segnapunti (una scrittura per tocco, la conferma da ripensare).\n3F · Dal foglio: la card mostra il punteggio e «Segna il risultato»; il foglio ha gli stepper, la riga che dice chi vince secondo la regola del turno, «Imposta il risultato». È il meccanismo di oggi (il «risultato rapido» dalla card), rivestito.\nOggi: bottone sulla card → modale del risultato rapido; il segnapunti a triangoli sta nella pagina della partita.\nDomanda: card o foglio?"
+      "text": "DECISIONE 3 · IL PUNTEGGIO — dove si segna il risultato di una partita del turno\nSCELTA (12/09): 3C, sulla card. La 3.3 «Segna il risultato» è uscita dalla pagina 3.\n3C · Sulla card: gli stepper stanno sulla card, ogni tocco scrive il punteggio; a 5 la partita si chiude e il tavolo si libera. Niente foglio, niente conferma. Tocca il segnapunti: una scrittura per tocco, la conferma da ripensare.\n3F · Dal foglio: la card mostra il punteggio e «Segna il risultato»; il foglio ha gli stepper e la riga che dice chi vince. Era il meccanismo di oggi (il «risultato rapido» dalla card), rivestito."
     },
     {
       "id": "dec-4",
       "page": "page-0",
       "x": 0,
-      "y": 3580,
+      "y": 3560,
       "w": 1060,
-      "text": "DECISIONE 4 · «ESERCIZI» CON AMALFI — in preparazione, gli esercizi di gara esistono solo con l'accoppiamento casuale (oggi il bottone non compare affatto con Amalfi)\n4N · Nascosta: la riga non c'è, «da preparare» conta quattro voci. Chi non sa che gli esercizi esistono non lo scopre qui.\n4S · Spenta: la riga c'è, grigia, e dice perché non si può: «solo con accoppiamento casuale». Un rigo in più per sempre, per una funzione che con Amalfi non si accenderà mai.\nDomanda: nascosta o spenta?"
+      "text": "DECISIONE 4 · GLI ESERCIZI — le due forme, entrambe anche con Amalfi\nLa domanda «nascosta o spenta» era posta male: la spunta di oggi copre una sola forma. Ce ne sono due, e la schermata le mostra insieme su una gara Amalfi:\n• ESERCIZI FRA I TURNI: uno o più esercizi che si giocano dopo un turno (GaraChallenge.round_number), con tentativi contati e una classifica a parte accanto a quella della gara. Riga «Esercizi fra i turni» in «Da preparare», facoltativa. Oggi l'app li mostra solo con l'accoppiamento casuale, ma il limite sta nei template (_gara_management.html, _gara_challenges_display.html): il servizio non lo impone. Con Amalfi va aperto.\n• X CON ESERCIZIO: la policy dei dispari «Bye+Challenge», chi riposa gioca l'esercizio e prende una vittoria e una differenza pari al punteggio (SPECIFICHE.md riga 138). È una voce di «Chi riposa», non degli esercizi. Oggi l'app la offre con qualunque strategia tranne i tabelloni (x_challenge_section.js).\nDa confermare: i due testi delle righe."
     },
     {
       "id": "dec-5",
       "page": "page-0",
       "x": 0,
-      "y": 4880,
+      "y": 4860,
       "w": 1060,
-      "text": "DECISIONE 5 · «RIEPILOGO PARTITE» A GARA CONCLUSA — la pagina dopo la fine, vista Turni\n5L · Link: una riga «Riepilogo partite · 20 partite, tutte validate» che apre l'elenco. La pagina resta corta: fascia, dove sono finiti i punti, cosa non si tocca più.\n5S · Sezione: le partite restano in pagina, turno per turno, sotto le righe. È ciò che l'app fa oggi (la sezione Turni non sparisce). La pagina si allunga, ma chi cerca «chi ha giocato con chi» lo trova senza cambiare pagina.\nDomanda: link o sezione?"
+      "text": "DECISIONE 5 · «RIEPILOGO PARTITE» A GARA CONCLUSA — la pagina dopo la fine, vista Turni\nSCELTA (12/09): 5S, le partite restano in pagina. Applicata alla 5.2. La pagina pubblica a gara conclusa mostra la classifica finale (vetrina_gara.html, `vetrina.conclusa`): la riga ora lo dice.\n5L · Link: una riga che apre l'elenco, pagina corta. 5S · Sezione: le partite in pagina, turno per turno; è ciò che l'app fa oggi."
     }
   ],
   "launch": {

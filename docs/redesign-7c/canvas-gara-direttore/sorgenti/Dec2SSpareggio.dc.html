@@ -208,47 +208,49 @@ svg{display:block}
     </div>
     <div class="avatar avatar--lg">PA</div>
   </header>
-  <div class="vtabs"><button class="vtab is-active">Turni</button><button class="vtab">Classifica</button><button class="vtab">Iscritti</button><button class="vtab">Gestione</button></div>
+  <div style="display:flex;align-items:center;gap:8px;padding:14px 18px 12px"><div class="pill" style="height:34px;width:34px;padding:0;justify-content:center;background:var(--c7-ok-bg);color:var(--c7-ok-ink)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></div><div style="height:2px;flex:1;background:var(--c7-line)"></div><div class="pill" style="height:34px;width:34px;padding:0;justify-content:center;background:var(--c7-ok-bg);color:var(--c7-ok-ink)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></div><div style="height:2px;flex:1;background:var(--c7-line)"></div><div class="pill" style="height:34px;width:34px;padding:0;justify-content:center;background:var(--c7-ok-bg);color:var(--c7-ok-ink)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></div><div style="height:2px;flex:1;background:var(--c7-line)"></div><div class="pill is-active" style="height:34px;font-size:12px;padding:0 14px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M7 20h10M4 9l4-4 4 4"></path><path d="M4 9a4 4 0 008 0M12 9l4-4 4 4"></path><path d="M12 9a4 4 0 008 0"></path></svg> Spareggio</div><div style="height:2px;flex:1;background:var(--c7-line)"></div><div class="pill" style="height:34px;width:34px;padding:0;justify-content:center;color:var(--c7-ink-faint)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h13l-2.5 4L18 12H5"></path></svg></div></div>
   <main class="content">
     <div class="stack">
       
-      <div class="sechead"><h3>Turno 2</h3></div>
       
-      <article class="card">
-        <div class="row" style="justify-content:space-between">
-          <span class="state state--accent">In corso</span>
-          <span class="pill" style="height:30px;padding:0 12px;font-size:12px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><path d="M3 12h18M12 5v14"></path></svg> Tavolo <span class="num">3</span></span>
+      <section class="card card--accent">
+        <div class="kicker">Tutti i 4 turni conclusi</div>
+        <h3 style="margin-top:5px;font-size:19px">Serve uno spareggio</h3>
+        
+        <div style="margin-top:10px;font-size:13px;font-weight:600;
+             color:var(--c7-accent-dim);line-height:1.45">
+          Due giocatori sono a pari merito per il 3&deg; posto. Lo spareggio
+          si gioca a Spot Shot Rally: tu inserisci i punti.</div>
+        <div style="margin-top:14px"><button class="btn btn--primary btn--w"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M7 20h10M4 9l4-4 4 4"></path><path d="M4 9a4 4 0 008 0M12 9l4-4 4 4"></path><path d="M12 9a4 4 0 008 0"></path></svg> Avvia lo spareggio</button></div>
+      </section>
+
+
+      <div class="sechead"><h3>Parimerito</h3><span class="sechead__more">fino al 3&deg; posto</span></div>
+      <div class="rows">
+        <div class="rows__row">
+          <div class="num" style="width:20px;font-size:15px;font-weight:800">3</div>
+          <div class="avatar">DB</div>
+          <div class="grow"><div class="rows__title">d.bianchi</div></div>
+          <span class="state state--warn">pari</span>
+          <div class="num" style="font-size:15px;font-weight:800">3</div>
+          <div class="num muted" style="width:34px;text-align:right;font-size:13px">+2</div>
         </div>
-        <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          
-          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px 10px 12px">
-            <div style="font-size:12px;font-weight:800;text-align:center;
-                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">m.rossi</div>
-            <div class="row" style="margin-top:8px;gap:6px">
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-card)"
-                      ><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
-              <div class="num grow" style="text-align:center;font-size:26px;font-weight:800">4</div>
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-ink);
-                      color:#fff"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button>
-            </div>
-          </div>
+        <div class="rows__row">
+          <div class="num" style="width:20px;font-size:15px;font-weight:800">4</div>
+          <div class="avatar">LF</div>
+          <div class="grow"><div class="rows__title">l.ferrari</div></div>
+          <span class="state state--warn">pari</span>
+          <div class="num" style="font-size:15px;font-weight:800">3</div>
+          <div class="num muted" style="width:34px;text-align:right;font-size:13px">+2</div>
+        </div></div>
 
-          
-          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px 10px 12px">
-            <div style="font-size:12px;font-weight:800;text-align:center;
-                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">g.verdi</div>
-            <div class="row" style="margin-top:8px;gap:6px">
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-card)"
-                      ><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
-              <div class="num grow" style="text-align:center;font-size:26px;font-weight:800">2</div>
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-ink);
-                      color:#fff"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button>
-            </div>
-          </div>
-
+      <div class="sechead"><h3>Oppure</h3></div>
+      <section class="card stack">
+        <button class="btn btn--secondary btn--w"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a8 8 0 0113.7-4.2L20 8"></path><path d="M20 4v4h-4"></path></svg> Azzera i risultati del turno 4</button>
+        <div style="font-size:12px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">
+          Se un punteggio &egrave; sbagliato, correggilo prima dello spareggio.
         </div>
-      </article>
-
+      </section>
 
     </div>
   </main>
@@ -263,61 +265,6 @@ svg{display:block}
   </nav>
 
   
-  <div style="position:absolute;inset:0;background:rgba(27,33,36,.5)"></div>
-  <div style="position:absolute;left:0;right:0;bottom:0;background:var(--c7-card);
-       border-radius:26px 26px 0 0;padding:14px 18px 24px;display:flex;
-       flex-direction:column;gap:14px">
-    <div style="width:44px;height:4px;border-radius:999px;background:var(--c7-line);
-         margin:0 auto"></div>
-    <h3>Imposta il risultato</h3>
-    <div style="font-size:13px;font-weight:600;color:var(--c7-ink-muted);line-height:1.45">s.conti vs p.marini &middot; tavolo 2</div>
-    
-    <div class="stack">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        
-          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px 10px 12px">
-            <div style="font-size:12px;font-weight:800;text-align:center;
-                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">s.conti</div>
-            <div class="row" style="margin-top:8px;gap:6px">
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-card)"
-                      ><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
-              <div class="num grow" style="text-align:center;font-size:26px;font-weight:800">5</div>
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-ink);
-                      color:#fff"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button>
-            </div>
-          </div>
-
-        
-          <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:10px 10px 12px">
-            <div style="font-size:12px;font-weight:800;text-align:center;
-                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis">p.marini</div>
-            <div class="row" style="margin-top:8px;gap:6px">
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-card)"
-                      ><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg></button>
-              <div class="num grow" style="text-align:center;font-size:26px;font-weight:800">3</div>
-              <button class="iconbtn" style="width:38px;height:38px;background:var(--c7-ink);
-                      color:#fff"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"></path></svg></button>
-            </div>
-          </div>
-
-      </div>
-      <div class="flash flash--info">
-        <span class="flash__ico"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></span>
-        <div><div class="flash__title">Vince s.conti</div>
-          <div>Al 5: vince chi arriva a 5 triangoli.</div></div>
-      </div>
-      
-        <div>
-          <div class="label" style="margin-bottom:8px">Tempi partita (facoltativo)</div>
-          <div class="num" style="height:58px;border-radius:var(--c7-r-field);
-               background:var(--c7-bg);padding:0 16px;display:flex;align-items:center;
-               font-size:15px;font-weight:700">20:40 &rarr; 21:15</div>
-          
-        </div>
-    </div>
-    <button class="btn btn--primary btn--w"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg> Imposta il risultato</button>
-  </div>
-
 </div>
 
 </x-dc>

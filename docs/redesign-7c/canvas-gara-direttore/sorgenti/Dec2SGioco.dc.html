@@ -208,17 +208,17 @@ svg{display:block}
     </div>
     <div class="avatar avatar--lg">PA</div>
   </header>
-  
+  <div style="display:flex;align-items:center;gap:8px;padding:14px 18px 12px"><div class="pill" style="height:34px;width:34px;padding:0;justify-content:center;background:var(--c7-ok-bg);color:var(--c7-ok-ink)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></div><div style="height:2px;flex:1;background:var(--c7-line)"></div><div class="pill" style="height:34px;width:34px;padding:0;justify-content:center;background:var(--c7-ok-bg);color:var(--c7-ok-ink)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></div><div style="height:2px;flex:1;background:var(--c7-line)"></div><div class="pill is-active" style="height:34px;font-size:12px;padding:0 14px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l12 8-12 8V4z"></path></svg> In gioco</div><div style="height:2px;flex:1;background:var(--c7-line)"></div><div class="pill" style="height:34px;width:34px;padding:0;justify-content:center;color:var(--c7-ink-faint)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h13l-2.5 4L18 12H5"></path></svg></div></div>
   <main class="content">
     <div class="stack">
-      <section style="display:flex;align-items:center;gap:8px;padding-top:14px"><div class="pill" style="height:34px;width:34px;padding:0;justify-content:center;background:var(--c7-ok-bg);color:var(--c7-ok-ink)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></div><div style="height:2px;flex:1;background:var(--c7-line)"></div><div class="pill" style="height:34px;width:34px;padding:0;justify-content:center;background:var(--c7-ok-bg);color:var(--c7-ok-ink)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg></div><div style="height:2px;flex:1;background:var(--c7-line)"></div><div class="pill is-active" style="height:34px;font-size:12px;padding:0 14px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4l12 8-12 8V4z"></path></svg> In gioco</div><div style="height:2px;flex:1;background:var(--c7-line)"></div><div class="pill" style="height:34px;width:34px;padding:0;justify-content:center;color:var(--c7-ink-faint)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V4h13l-2.5 4L18 12H5"></path></svg></div></section>
-      <section class="card" style="padding:14px 16px">
+      
+      <section class="card card--accent" style="padding:14px 16px">
         <div class="row">
           <div class="grow">
             <div class="kicker">Turno 2 di 4</div>
             <div class="row" style="margin-top:4px;gap:8px">
               <div class="num" style="font-size:19px;font-weight:800">2/5</div>
-              <div style="font-size:13px;font-weight:700" class="muted">partite chiuse</div>
+              <div style="font-size:13px;font-weight:700;color:var(--c7-accent-dim)">partite chiuse</div>
             </div>
           </div>
           <div style="text-align:right">
@@ -229,6 +229,11 @@ svg{display:block}
         <div class="bar" style="margin-top:10px"><div class="bar__fill" style="width:40%"></div></div>
       </section>
 
+      <div class="sechead" style="margin-top:4px;align-items:center">
+        <h3 class="">Turno 2</h3>
+        <span class="state state--accent" style="margin-left:auto">In corso</span>
+        <button class="iconbtn" style="background:var(--c7-card)"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg></button>
+      </div>
       <article class="card">
         <div class="row" style="justify-content:space-between">
           <span class="state state--accent">In corso</span>
@@ -314,7 +319,8 @@ svg{display:block}
       <div class="sechead" style="margin-top:4px">
         <h3 class="muted">Turno 1</h3>
         <span class="state state--muted" style="margin-left:auto">Concluso</span>
-      </div><div class="rows">
+      </div>
+      <div class="rows">
         <div class="rows__row">
           <div class="grow">
             <div class="rows__title muted">m.rossi <span class="faint">vs</span> d.bianchi</div>
@@ -376,7 +382,7 @@ svg{display:block}
           <div class="tile tile--neutral tile--sm"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1A1.6 1.6 0 008 19.4a1.6 1.6 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 00-1.5-1H2a2 2 0 110-4h.1A1.6 1.6 0 003.6 8a1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.6 1.6 0 001.8.3H8a1.6 1.6 0 001-1.5V2a2 2 0 114 0v.1a1.6 1.6 0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 00-.3 1.8V8a1.6 1.6 0 001.5 1H22a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"></path></svg></div>
           <div class="grow">
             <div class="rows__title">Impostazioni gara</div>
-            <div class="rows__sub">direttori, tavoli, squadre, turni</div>
+            <div class="rows__sub">direttori, tavoli, vetrina, esercizi, turni</div>
           </div>
           <span class="faint"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></span>
         </div>

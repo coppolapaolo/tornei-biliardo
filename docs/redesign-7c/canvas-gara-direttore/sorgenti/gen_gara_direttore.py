@@ -728,15 +728,16 @@ def regia_desktop():
 # B · CONSOLE — il turno in corso e' la pagina; a destra cosa manca
 # --------------------------------------------------------------------------
 
-def console_mobile():
-    content = f"""
-      <section class="card" style="padding:14px 16px">
+# La card riassuntiva del turno: scura come la fascia di fase (scelta 1B
+# del 12/09/2026), perche' e' lei a dire dove siamo.
+CONSOLE_HEAD = f"""
+      <section class="card card--accent" style="padding:14px 16px">
         <div class="row">
           <div class="grow">
             <div class="kicker">Turno 2 di 4</div>
             <div class="row" style="margin-top:4px;gap:8px">
               <div class="num" style="font-size:19px;font-weight:800">2/5</div>
-              <div style="font-size:13px;font-weight:700" class="muted">partite chiuse</div>
+              <div style="font-size:13px;font-weight:700;color:var(--c7-accent-dim)">partite chiuse</div>
             </div>
           </div>
           <div style="text-align:right">
@@ -746,6 +747,12 @@ def console_mobile():
         </div>
         <div class="bar" style="margin-top:10px"><div class="bar__fill" style="width:40%"></div></div>
       </section>
+"""
+
+
+def console_mobile():
+    content = f"""
+      {CONSOLE_HEAD}
 
       {stepper_card("m.rossi", "4", "g.verdi", "2", "1")}
       {stepper_card("d.bianchi", "3", "l.ferrari", "3", "2")}

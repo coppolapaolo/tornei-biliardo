@@ -35,7 +35,7 @@ console del primo giro riusata come panoramica, artboard «Main»).
 **Nessuna delle tre direzioni è stata scelta formalmente**: le fasi sono la
 proposta, e vanno guardate prima di scrivere codice.
 
-## Le cinque fasi, 27 schermate
+## Le cinque fasi, 26 schermate
 
 Ogni schermata mostra **comandi che esistono davvero**: etichette e
 condizioni vengono da `_gara_management.html`, `_round_management.html`,
@@ -58,8 +58,8 @@ accanto all'artboard.
    **prima** chi prende la X, che i turni nascono tutti adesso, l'ordine dei
    tavoli.
 3. **Gioco** — panoramica del turno (la console); assegna o cambia il tavolo
-   (gli occupati mostrano da chi); segna il risultato con gli stepper e la
-   riga verde che dice chi vince secondo la regola del turno; valida un
+   (gli occupati mostrano da chi); segna il risultato con gli stepper sulla
+   card (scelta 3C); valida un
    risultato chiuso dai giocatori (è ciò che libera il tavolo); correggi un
    risultato chiuso a gara in corso (issue #90) con le due conseguenze
    scritte; classifica dopo il turno con la nota sull'ordinamento e sul
@@ -101,32 +101,40 @@ Superato dopo il canvas: il badge «N da chiudere» in dashboard, che non
 portava da nessuna parte — dalla #295 la tessera della gara annuncia il
 comando che aspetta («Termina la gara», «Avvia il turno N»).
 
-## Da decidere
+## Deciso il 12/09/2026 (pagina «0 · Decisioni»)
 
 Le cinque decisioni stanno **a confronto nella pagina «0 · Decisioni»** del
-canvas (aggiunta l'11/09/2026, `gen_decisioni.py`): una riga per decisione,
-le alternative fianco a fianco con **gli stessi dati** — cambia solo la
-forma — e un bigliettino per riga con motivazione e costo di ciascuna. Le
-schermate hanno una sigla (1A/1B/1C/1S, 2L/2S, 3C/3F, 4N/4S, 5L/5S) ed è con
-quella che si risponde. In attesa di risposta.
+canvas (`gen_decisioni.py`): una riga per decisione, le alternative fianco a
+fianco con **gli stessi dati** — cambia solo la forma — e un bigliettino per
+riga con motivazione, costo e la risposta. Le scelte sono già applicate alle
+pagine 1–5:
 
-Le due segnate sul canvas:
-
-1. **La spunta «Esercizi» in preparazione** compare solo con accoppiamento
-   casuale: con Amalfi va nascosta del tutto o lasciata spenta?
-2. **«Riepilogo partite» a gara conclusa**: sul canvas è un link, nell'app la
-   sezione partite resta in pagina. Quale delle due?
-
-E le tre che vengono prima di tutto:
-
-3. **La forma** — la sintesi fasi + console va bene, o si torna a una delle
-   tre direzioni? Da guardare per fase, come per la dashboard.
-4. **La striscia di fase sul telefono** sostituisce le quattro linguette
-   Turni · Classifica · Iscritti · Gestione? Le linguette sono un filtro CSS
-   su un solo DOM (STATO generale del redesign): cambiare la forma cambia
-   anche quel meccanismo.
-5. **Cosa si fa dalla pagina e cosa si apre**: la console segna il punteggio
-   sulla card, senza modale. È la scelta più costosa (tocca il segnapunti).
+1. **La forma**: 1B Console in gioco, con la **card riassuntiva scura** come
+   la fascia di fase; 1S Sintesi in preparazione. Regola corretta: **i tavoli
+   si scelgono sempre**, di solito prima di avviare un turno, perché è allora
+   che si sa quanti ne servono; la riga mostra quanti ne ha la sala. Oggi
+   l'app li lascia modificare **solo a iscrizioni aperte**, e lo vieta anche
+   il servizio (`GaraService.update_tables_config` → `ConflictError`), non
+   solo il template.
+2. **La striscia di fase** al posto delle linguette. **Aperto**: come si
+   arriva alla gestione nelle altre fasi. Proposta disegnata (2S · Il menu
+   del turno, 2S · Impostazioni gara, 2S · nello spareggio): i comandi del
+   turno dai tre puntini accanto a «Turno N», quelli della gara dalla riga
+   «Impostazioni gara» in fondo, l'azione della fase nella barra; lo
+   spareggio ha la sua tacca, che compare solo nelle gare che ce l'hanno.
+3. **Il punteggio sulla card** (3C): la 3.3 «Segna il risultato» è uscita
+   dalla pagina 3.
+4. **Gli esercizi** sono due cose, entrambe anche con Amalfi: gli **esercizi
+   fra i turni** (`GaraChallenge.round_number`, tentativi contati,
+   classifica a parte) — oggi mostrati solo col casuale, ma il limite sta
+   nei template, non nel servizio — e la **X con esercizio** (policy
+   «Bye+Challenge», SPECIFICHE.md riga 138), che è una voce di «Chi riposa»
+   e oggi vale con qualunque strategia tranne i tabelloni
+   (`x_challenge_section.js`). **Aperto**: i testi delle due righe
+   (schermata 4 · Le due forme).
+5. **Le partite restano in pagina** a gara conclusa (5S). La pagina pubblica
+   mostra la classifica finale (`vetrina_gara.html`, `vetrina.conclusa`):
+   la riga lo dice.
 
 ## Non ancora disegnato
 

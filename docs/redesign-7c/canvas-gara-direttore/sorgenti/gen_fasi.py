@@ -222,12 +222,12 @@ def setup_panoramica():
     content = f"""
       {band("In preparazione", "Nessuno vede ancora la gara", corpo, azione)}
 
-      {sec("Da preparare", "3 di 5")}
+      {sec("Da preparare", "3 di 4")}
       {rows(
         row(I["list"], "Turni e distanze", "4 turni &middot; Palla 8 &middot; al 5", tone="ok")
         + row(I["users"], "Direzione di gara", "solo tu &mdash; aggiungi un co-direttore", tone="ok")
-        + row(I["table"], "Tavoli", "si scelgono con le iscrizioni aperte", tone="locked")
-        + row(I["target"], "Esercizi di gara", "nessuno &mdash; facoltativo", tone="locked")
+        + row(I["table"], "Tavoli", "4 nella sala &middot; tutti in uso", tone="ok")
+        + row(I["target"], "Esercizi fra i turni", "nessuno &mdash; facoltativo", tone="neutral")
         + row(I["share"], "Vetrina", "nessuna locandina", tone="warn"))}
 
       {sec("Impostazioni di gioco")}
@@ -408,7 +408,7 @@ def setup_desktop():
               <h3 style="margin-top:4px;font-size:20px">Nessuno vede ancora la gara</h3>
               <div style="margin-top:6px;font-size:13px;font-weight:600;
                    color:var(--c7-accent-dim)">
-                Restano da fare: la vetrina. I tavoli si scelgono con le iscrizioni aperte.</div>
+                Resta da fare la vetrina. 4 tavoli nella sala, tutti in uso.</div>
             </div>
             <button class="btn btn--success">{ico(I["play"], 16)} Apri iscrizioni</button>
           </section>
@@ -438,7 +438,7 @@ def setup_desktop():
 """
     destra = f"""
         <div class="stack">
-          {sec("Da preparare", "3 di 5")}
+          {sec("Da preparare", "3 di 4")}
           {rows(
             row(I["list"], "Turni e distanze", "4 turni &middot; Palla 8 &middot; al 5", tone="ok")
             + row(I["users"], "Direzione di gara", "solo tu", tone="ok")
@@ -489,9 +489,9 @@ def iscr_panoramica():
         </div>
       </section>
 
-      {sec("Da sistemare", "2")}
+      {sec("Da tenere d'occhio", "2")}
       {rows(
-        row(I["table"], "Tavoli non scelti", "usa tutti i tavoli della sala", tone="warn")
+        row(I["table"], "Tavoli", "4 nella sala, tutti in uso &mdash; cambia prima di avviare", tone="neutral")
         + row(I["users"], "1 in lista d'attesa", "entra se qualcuno si ritira", tone="warn"))}
 """
     return doc(phone(SUB, TABS_ISCR, content))
@@ -627,30 +627,6 @@ def gioco_tavolo():
                      overlay=sheet("Assegna il tavolo", corpo,
                                    btn("Assegna il tavolo 2", "primary", "check"),
                                    "s.conti vs p.marini")))
-
-
-def gioco_risultato():
-    corpo = f"""
-    <div class="stack">
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        {stepper("s.conti", "5")}
-        {stepper("p.marini", "3")}
-      </div>
-      <div class="flash flash--info">
-        <span class="flash__ico">{ico(I["check"], 14)}</span>
-        <div><div class="flash__title">Vince s.conti</div>
-          <div>Al 5: vince chi arriva a 5 triangoli.</div></div>
-      </div>
-      {field("Tempi partita (facoltativo)", "20:40 &rarr; 21:15", mono=True)}
-    </div>"""
-    content = f"""
-      {sec("Turno 2")}
-      {base.stepper_card("m.rossi", "4", "g.verdi", "2", "3")}
-"""
-    return doc(phone(SUB, TABS_GIOCO, content,
-                     overlay=sheet("Imposta il risultato", corpo,
-                                   btn("Imposta il risultato", "primary", "check"),
-                                   "s.conti vs p.marini &middot; tavolo 2")))
 
 
 def gioco_valida():
@@ -925,6 +901,31 @@ def fine_classifica():
     return doc(phone(SUB, vtabs(["Turni", "Classifica", "Iscritti"], "Classifica"), content))
 
 
+T4 = [("m.rossi", "5", "a.galli", "3", "1"), ("d.bianchi", "5", "l.ferrari", "4", "2"),
+      ("g.verdi", "5", "p.marini", "2", "3"), ("s.conti", "5", "f.costa", "1", "1"),
+      ("r.neri", "5", "e.sala", "3", "2")]
+
+
+def partite_turno(n, righe):
+    """Un turno concluso come elenco raggruppato (come round1_rows del kit)."""
+    out = ""
+    for p1, s1, p2, s2, tbl in righe:
+        out += f"""
+        <div class="rows__row">
+          <div class="grow">
+            <div class="rows__title muted">{p1} <span class="faint">vs</span> {p2}</div>
+          </div>
+          <div class="num" style="font-size:14px;color:var(--c7-ink-soft)">{s1}&ndash;{s2}</div>
+          <div class="rows__sub" style="width:58px;text-align:right">Tavolo {tbl}</div>
+        </div>"""
+    return f"""
+      <div class="sechead" style="margin-top:4px">
+        <h3 class="muted">Turno {n}</h3>
+        <span class="state state--muted" style="margin-left:auto">Concluso</span>
+      </div>
+      <div class="rows">{out}</div>"""
+
+
 def fine_dopo():
     corpo = ("""
         <div style="margin-top:10px;font-size:13px;font-weight:600;
@@ -936,8 +937,11 @@ def fine_dopo():
       {sec("Dopo la gara")}
       {rows(
         row(I["trophy"], "Classifica del campionato", "aggiornata con questa gara", tone="neutral")
-        + row(I["share"], "Pagina pubblica", "torneibiliardo.it/g/gara-3-giovedi", tone="neutral")
-        + row(I["list"], "Riepilogo partite", "20 partite, tutte validate", tone="neutral"))}
+        + row(I["share"], "Pagina pubblica", "con la classifica finale", tone="neutral"))}
+
+      {sec("Partite", "20, tutte validate")}
+      {partite_turno(4, T4)}
+      {partite_turno(3, base.R1)}
 
       {sec("Resta bloccato")}
       {rows(
@@ -961,9 +965,11 @@ SCHERMATE = [
     ("SetupPanoramica", setup_panoramica, "1.1 Panoramica &mdash; in preparazione", "page-1", 0, 0,
      "Il direttore apre la gara appena creata. La fascia dice dove siamo, "
      "l'elenco dice cosa manca prima di poter aprire le iscrizioni. Il verde "
-     "e' l'unica azione conclusiva della fase.\n\nDa decidere: la spunta "
-     "«Esercizi» compare solo con accoppiamento casuale — qui e' Amalfi, "
-     "quindi andrebbe nascosta del tutto invece che spenta."),
+     "e' l'unica azione conclusiva della fase.\n\nI tavoli sono una voce "
+     "della preparazione con il numero della sala (12/09): si scelgono "
+     "sempre, di solito prima di avviare un turno. Gli esercizi fra i turni "
+     "sono facoltativi e valgono anche con Amalfi (vedi pagina 0, "
+     "decisione 4)."),
     ("SetupTurni", setup_turni, "1.2 Turni e distanze", "page-1", 1, 0,
      "Configurazione per turno (ADR-027). Il turno modificato si distingue "
      "dal default con la pastiglia, non con un fondo giallo pieno.\n\nOggi "
@@ -971,10 +977,13 @@ SCHERMATE = [
      "disciplina sono campi larghi 58px, e il ripristino e' un'icona per turno."),
     ("SetupTavoli", setup_tavoli, "1.3 Tavoli", "page-1", 2, 0,
      "PROBLEMA VERO, non del mockup: oggi i tavoli si possono scegliere "
-     "**solo a iscrizioni aperte** (_gara_tables_config.html: "
-     "`status == INSCRIPTION`), e si scrivono come «3, 1, 2» in un campo di "
-     "testo. Qui sono tessere che si toccano nell'ordine di assegnazione, e "
-     "la fase e' quella giusta: la preparazione.\n\nL'interruttore "
+     "**solo a iscrizioni aperte** — lo vieta il template "
+     "(_gara_tables_config.html) e lo vieta il servizio "
+     "(GaraService.update_tables_config solleva ConflictError) — e si "
+     "scrivono come «3, 1, 2» in un campo di testo. La regola vera (12/09): "
+     "i tavoli si scelgono **sempre**, di solito prima di avviare un turno, "
+     "perche' e' allora che si sa quanti ne servono. Qui sono tessere che si "
+     "toccano nell'ordine di assegnazione.\n\nL'interruttore "
      "«assegna in base alla classifica» esiste solo con accoppiamento casuale."),
     ("SetupDirettori", setup_direttori, "1.4 Co-direttori", "page-1", 3, 0,
      "La ricerca mostra solo utenti con ruolo direttore vicini alla sede "
@@ -1024,45 +1033,41 @@ SCHERMATE = [
     # --- fase 3 ---
     (None, None, "3.1 Panoramica &mdash; turno in corso", "page-3", 0, 0,
      "Artboard «Main»: la console del primo giro, riusata come panoramica "
-     "della fase di gioco. Il punteggio si segna sulla card, il tavolo e' "
-     "sulla card, in fondo l'azione della fase."),
+     "della fase di gioco. Il punteggio si segna sulla card (scelta 3C del "
+     "12/09: niente foglio), il tavolo e' sulla card, in fondo l'azione "
+     "della fase. La card riassuntiva e' scura come la fascia (scelta 1B)."),
     ("GiocoTavolo", gioco_tavolo, "3.2 Assegna o cambia il tavolo", "page-3", 1, 0,
      "I tavoli occupati mostrano da chi. Nell'app la griglia c'e' gia', ma "
      "il tavolo occupato appariva grigio come «non disponibile» invece che "
      "evidenziato.\n\nSenza tavolo assegnato i comandi di punteggio restano "
      "spenti: e' una regola dell'app, non del mockup."),
-    ("GiocoRisultato", gioco_risultato, "3.3 Segna il risultato", "page-3", 2, 0,
-     "Steppers, non campi numerici. La riga verde dice chi vince secondo la "
-     "regola del turno («al 5»), cosi' l'errore si vede prima di salvare — "
-     "oggi l'app lo dice dopo, con un avviso rosso.\n\nI tempi partita sono "
-     "facoltativi e restano in fondo."),
-    ("GiocoValida", gioco_valida, "3.4 Valida un risultato", "page-3", 3, 0,
+    ("GiocoValida", gioco_valida, "3.3 Valida un risultato", "page-3", 2, 0,
      "Momento che nessuno dei tre mockup del primo giro mostrava. Quando i "
      "due giocatori chiudono la partita, il direttore valida: e' cio' che "
      "completa la partita e **libera il tavolo**.\n\nLa card verde e' l'unica "
      "che chiede qualcosa; le altre restano neutre."),
-    ("GiocoCorreggi", gioco_correggi, "3.5 Correggi un risultato chiuso", "page-3", 4, 0,
+    ("GiocoCorreggi", gioco_correggi, "3.4 Correggi un risultato chiuso", "page-3", 3, 0,
      "Si puo' fare a gara in corso (issue #90). Il foglio dice le due "
      "conseguenze vere: i triangoli segnati uno per uno si cancellano, e la "
      "correzione resta scritta sulla partita.\n\nIl campo «perche'» e' "
      "facoltativo ma e' cio' che rende leggibile la correzione a chi aveva "
      "visto il risultato di prima."),
-    ("GiocoClassifica", gioco_classifica, "3.6 Classifica dopo il turno", "page-3", 5, 0,
+    ("GiocoClassifica", gioco_classifica, "3.5 Classifica dopo il turno", "page-3", 4, 0,
      "Prime sei o tutti, come nell'app. La nota in fondo spiega l'ordinamento "
      "e il valore della X a tavolino (una vittoria, zero differenza — "
      "SPECIFICHE.md righe 64 e 71).\n\nCon sistema RACK l'ordinamento e' un "
      "altro: la nota va scritta dal sistema di classifica, non fissa."),
-    ("GiocoTurnoDopo", gioco_turno_dopo, "3.7 Turno concluso", "page-3", 6, 0,
+    ("GiocoTurnoDopo", gioco_turno_dopo, "3.6 Turno concluso", "page-3", 5, 0,
      "Le tre uscite del turno chiuso, separate per gravita': avviare il "
      "prossimo (verde), annullare l'avvio (possibile solo senza risultati), "
      "azzerare i risultati (distruttiva, fondo tenue).\n\nOggi sono tre "
      "bottoni della stessa forma, uno sotto l'altro."),
-    ("GiocoMioMatch", gioco_mio_match, "3.8 Il direttore gioca", "page-3", 7, 0,
+    ("GiocoMioMatch", gioco_mio_match, "3.7 Il direttore gioca", "page-3", 6, 0,
      "Se dirige ed e' iscritto, la sua partita e' la prima cosa: card scura "
      "con «Apri», che porta al segnapunti. Il resto del turno resta sotto, "
      "con i comandi da direttore.\n\nLa scorciatoia esiste gia' "
      "(_gara_my_match.html); qui convive con i comandi di direzione."),
-    (None, None, "3.9 Il turno su desktop", "page-3", 0, 1,
+    (None, None, "3.8 Il turno su desktop", "page-3", 0, 1,
      "Artboard «ConsoleDesktop»: le partite a sinistra, «da fare adesso» e i "
      "tavoli a destra."),
 
@@ -1089,8 +1094,9 @@ SCHERMATE = [
     ("FineDopo", fine_dopo, "5.2 Cosa resta dopo", "page-5", 1, 0,
      "Dove sono finiti i punti, dov'e' la pagina pubblica, cosa non si tocca "
      "piu'. Serve a chiudere il ciclo invece di lasciare la pagina identica a "
-     "prima ma spenta.\n\nDa decidere: «Riepilogo partite» qui e' un link — "
-     "nell'app la sezione partite resta in pagina."),
+     "prima ma spenta.\n\nScelta 5S del 12/09: le partite restano in pagina, "
+     "turno per turno. La pagina pubblica mostra la classifica finale "
+     "(vetrina_gara.html, `vetrina.conclusa`), per questo la riga lo dice."),
 
     # --- pagina 6: le tre direzioni del primo giro ---
     (None, None, "A &middot; Regia &mdash; telefono", "page-6", 0, 0, None),
