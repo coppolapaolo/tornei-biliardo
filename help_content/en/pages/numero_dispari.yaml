@@ -76,6 +76,9 @@ blocks:
       cannot be closed, just like a match still waiting for validation; in
       random-draw competitions it does not wait.
 
+  - type: shot
+    shot: gara-x-card
+
   - type: list
     items:
       - "**For**: nobody sits out, and the round stays fair even on racks."
@@ -123,6 +126,9 @@ blocks:
       - name: "With distance 4 or 5"
         values: "6 racks in total"
         text: "Two laps: the same three contests repeated."
+      - name: "With distance 6 or 7"
+        values: "9 racks in total"
+        text: "Three laps."
       - name: "Who wins"
         text: >-
           Whoever won the most racks. If two or more end level at the top,
@@ -133,6 +139,9 @@ blocks:
       - "**For**: everybody plays, and a three-way match goes down well."
       - "**Against**: it lasts longer than a normal match and occupies a table for longer."
       - "**Only available** with distances from 2 to 7, and not in bracket competitions."
+
+  - type: shot
+    shot: gara-trio-card
 
   - type: note
     tone: info

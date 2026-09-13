@@ -491,3 +491,57 @@ shots:
     wait_for: "#simulazioneModal.show"
     clip: "#simulazioneModal .modal-content"
     caption: "Il foglio «Simulazione» di una prova avviata, aperto dalla riga sotto la fascia: una partita, il turno, tutta la gara, e la nota sulle partite da validare."
+
+  # --- Trio, partite a set e X con esercizio ------------------------------
+  # Le gare 8-11 sono le quattro prove di `_create_prove_forme` in
+  # `seed_demo.py`: 8 trio chiuso, 9 trio in corso, 10 partite a set, 11 X con
+  # esercizio da convalidare. Sono prove, per restare fuori dalle altre
+  # schermate, e le dirige Franco Galli, un secondo direttore: con Luca
+  # Bianchi sarebbero comparse nella sua dashboard e nel modulo della gara
+  # nuova. Da prove, la prima visita apre la presentazione e il primo `click`
+  # la chiude. Gli id delle partite cambiano col seed: si ritaglia per forma.
+  - id: gara-trio-card
+    route: /admin/gara/9
+    as: Franco Galli
+    click: ['[data-help-action="skip"]']
+    clip: ".c7-partita--trio"
+    caption: "La card di un trio in corso: tre nomi, e sotto ognuno i triangoli vinti con − e +."
+
+  - id: gara-trio-correggi
+    route: /admin/gara/8
+    as: Franco Galli
+    click: ['[data-help-action="skip"]', '.c7-partita--trio [onclick="apriCorrezione(this)"]']
+    wait_for: "#correggiRisultatoModal.show"
+    clip: "#correggiRisultatoModal .modal-content"
+    caption: "Il foglio «Correggi» di un trio già chiuso: i triangoli vinti da ciascuno dei tre giocatori."
+
+  - id: gara-set-card
+    route: /admin/gara/10
+    as: Franco Galli
+    click: ['[data-help-action="skip"]']
+    clip: ".c7-partita--set.c7-partita--in_corso"
+    caption: "La card di una partita a set: in alto i set vinti, sotto il set che si gioca con − e +."
+
+  - id: gara-set-correggi
+    route: /admin/gara/10
+    as: Franco Galli
+    click: ['[data-help-action="skip"]', '.c7-partita--set.c7-partita--conclusa [onclick="apriCorrezione(this)"]']
+    wait_for: "#correggiRisultatoModal.show"
+    clip: "#correggiRisultatoModal .modal-content"
+    caption: "Il foglio «Correggi» di una partita a set già chiusa: un blocco per set con il suo punteggio, e i comandi per aggiungere o togliere un set."
+
+  - id: gara-x-card
+    route: /admin/gara/11
+    as: Franco Galli
+    click: ['[data-help-action="skip"]']
+    clip: ".c7-partita--prova"
+    caption: "La card della X con esercizio: il giocatore che riposa, il punteggio che ha dichiarato con − e + per correggerlo, e «Convalida»."
+
+  - id: gara-turno-bloccato
+    route: /admin/gara/11
+    as: Franco Galli
+    # Il secondo click spegne i suggerimenti della prova: la «?» sotto il
+    # pulsante e' della modalita' aiuto, non della fascia che si vuole mostrare.
+    click: ['[data-help-action="skip"]', '[data-help-toggle]']
+    clip: "section.c7-fascia"
+    caption: "La fascia a turno concluso quando manca ancora la convalida della prova della X: «Prima di avviare il turno 2», cosa manca, e il pulsante spento."

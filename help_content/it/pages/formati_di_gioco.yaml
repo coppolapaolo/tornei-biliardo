@@ -88,9 +88,12 @@ blocks:
   - type: text
     text: >-
       Il segnapunti mostra il set in corso e il punteggio dei set già chiusi.
-      Fra un set e l'altro c'è il pulsante per avviare il successivo. È un
+      Fra un set e l'altro compare **Inizia il set** per il successivo. È un
       formato lungo: adatto a una finale, meno a una serata con dodici
       partecipanti.
+
+  - type: shot
+    shot: gara-set-card
 
   - type: heading
     id: discipline

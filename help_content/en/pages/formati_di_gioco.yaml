@@ -87,8 +87,11 @@ blocks:
   - type: text
     text: >-
       The scoreboard shows the set in progress and the score of completed sets.
-      Between sets there is a button to start the next. It is a long format:
+      Between sets **Start set** appears for the next one. It is a long format:
       suitable for a final, less so for an evening with twelve entrants.
+
+  - type: shot
+    shot: gara-set-card
 
   - type: heading
     id: discipline
