@@ -499,11 +499,18 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   classifica: `_campionato_general_classification.html` passa alle righe
   della classifica di gara (freccia, avatar, colonne dal sistema, gare
   giocate, prime dieci e tutti) e segna la **zona playoff**: barra sulle
-  righe dentro, etichetta sopra, «Fuori dai playoff» dopo l'ultima. Il
-  numero non e' `playoff_elite_participants`, che non esiste: la zona la
-  decide il dominio (`models/playoff/zona.py`) — prima degli inviti chi
+  righe dentro, etichetta sopra, «Fuori dai playoff» dopo l'ultima.
+  `playoff_elite_participants` e' il campo del wizard, non una colonna: alla
+  creazione del campionato diventa `max_participants` della configurazione
+  «Playoff Elite» (`_create_playoff_config`), che quindi c'e' gia' durante
+  la stagione. La zona la decide il dominio (`models/playoff/zona.py`) —
+  prima degli inviti chi
   `evaluate_qualifications` sceglierebbe, dopo chi ha un invito in attesa o
   confermato, quindi chi rifiuta esce e chi subentra entra. Il test confronta
   la zona (righe `Classification`) con i primi della pagina
   (`calculate_general_classification`), i due percorsi della classifica
   generale. Vale per la pagina del direttore e per quella pubblica.
+  Trovato strada facendo: la scheda informazioni del campionato leggeva
+  `campionato.playoff_elite_enabled` e `playoff_elite_participants`, cioe' i
+  campi del wizard, e il blocco dei playoff non compariva mai; ora legge le
+  configurazioni attive.

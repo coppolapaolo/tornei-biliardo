@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 08:47+0200\n"
+"POT-Creation-Date: 2026-09-13 08:51+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -384,7 +384,7 @@ msgstr "%(n)s rounds"
 
 #: models/competition/showcase_view.py:375
 #: templates/admin/gara_create_standalone.html:458
-#: templates/components/_campionato_details_info.html:86
+#: templates/components/_campionato_details_info.html:87
 #: templates/components/_campionato_garas.html:21
 #: templates/components/_gara_info.html:47
 #: templates/components/_player_dashboard_content.html:43
@@ -4118,7 +4118,7 @@ msgstr "Public Details"
 #: templates/admin/campionato_wizard_step2.html:82
 #: templates/admin/gara_create_standalone.html:455
 #: templates/admin/gara_create_standalone.html:519
-#: templates/components/_campionato_details_info.html:92
+#: templates/components/_campionato_details_info.html:93
 #: templates/components/_gara_edit_form.html:357
 #: templates/components/_gara_info.html:26
 #: templates/components/_round_navigation.html:4
@@ -5117,7 +5117,7 @@ msgid "Campionato completato"
 msgstr "Championship completed"
 
 #: templates/admin/campionato_detail.html:119
-#: templates/components/_campionato_details_info.html:54
+#: templates/components/_campionato_details_info.html:59
 #: templates/components/_history_campionati_tab.html:91
 #: templates/components/_history_campionati_tab.html:92
 #: templates/components/_playoff_invitations.html:10
@@ -5852,7 +5852,7 @@ msgid "Chi spacca"
 msgstr "Who breaks"
 
 #: templates/admin/campionato_wizard_step2.html:158
-#: templates/components/_campionato_details_info.html:114
+#: templates/components/_campionato_details_info.html:115
 #: templates/components/_gara_edit_form.html:116
 msgid "Anti-rematch"
 msgstr "Rematch avoidance"
@@ -9015,7 +9015,7 @@ msgid "Opzioni"
 msgstr "Options"
 
 #: templates/components/_campionato_details_info.html:42
-#: templates/components/_campionato_details_info.html:116
+#: templates/components/_campionato_details_info.html:117
 #: templates/components/_gara_info.html:58
 #: templates/components/_history_campionati_tab.html:26
 #: templates/direttore/preparazione/_turni.html:155
@@ -9031,46 +9031,46 @@ msgstr "Active"
 msgid "Inattivo"
 msgstr "Inactive"
 
-#: templates/components/_campionato_details_info.html:57
+#: templates/components/_campionato_details_info.html:63
 #, python-format
-msgid "Top %(n)s"
-msgstr "Top %(n)s"
+msgid "posizioni %(da)s–%(a)s"
+msgstr "positions %(da)s–%(a)s"
 
-#: templates/components/_campionato_details_info.html:62
+#: templates/components/_campionato_details_info.html:63
 #, python-format
-msgid "%(n)s giocatori"
-msgstr "%(n)s players"
+msgid "%(n)s posti"
+msgstr "%(n)s places"
 
-#: templates/components/_campionato_details_info.html:74
+#: templates/components/_campionato_details_info.html:75
 msgid "Default Gare"
 msgstr "Competition Defaults"
 
-#: templates/components/_campionato_details_info.html:80
+#: templates/components/_campionato_details_info.html:81
 msgid "Sede"
 msgstr "Venue"
 
-#: templates/components/_campionato_details_info.html:98
+#: templates/components/_campionato_details_info.html:99
 #: templates/components/_new_gara_modal.html:262
 msgid "Gestione Dispari"
 msgstr "Odd Player Handling"
 
-#: templates/components/_campionato_details_info.html:101
+#: templates/components/_campionato_details_info.html:102
 #: templates/components/_new_gara_modal.html:265
 msgid "X (vinto a tavolino)"
 msgstr "Bye (won by walkover)"
 
-#: templates/components/_campionato_details_info.html:103
+#: templates/components/_campionato_details_info.html:104
 #: templates/components/_gara_edit_form.html:173
 #: templates/components/_new_gara_modal.html:268
 msgid "X con esercizio"
 msgstr "X with drill"
 
-#: templates/components/_campionato_details_info.html:105
+#: templates/components/_campionato_details_info.html:106
 #: templates/components/_gara_edit_form.html:174
 msgid "Match a 3"
 msgstr "Three-player match"
 
-#: templates/components/_campionato_details_info.html:118
+#: templates/components/_campionato_details_info.html:119
 msgid "Disattivo"
 msgstr "Disabled"
 
