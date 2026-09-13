@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.13.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.12.0...v1.13.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* le iscrizioni, con il campo per iscrivere in cima ([#347](https://github.com/coppolapaolo/tornei-biliardo/issues/347)) ([31edc28](https://github.com/coppolapaolo/tornei-biliardo/commit/31edc28ff54cad47404e14f9b3f8631c69f41da8))
+
 ## [1.12.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.11.0...v1.12.0) (2026-09-13)
 
 
