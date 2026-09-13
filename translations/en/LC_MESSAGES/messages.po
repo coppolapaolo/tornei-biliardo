@@ -5910,7 +5910,7 @@ msgstr "Move to the playoffs"
 #: templates/admin/campionato_detail.html:41
 #: templates/gamification/admin/quests.html:75
 msgid "Termina"
-msgstr "Ends"
+msgstr "Terminate"
 
 #: templates/admin/campionato_detail.html:68
 #: templates/direttore/_striscia.html:16
