@@ -712,9 +712,22 @@ def update_playoff_min(campionato_id):
 @login_required
 @campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def start_playoff(campionato_id):
-    """Avvia i playoff: genera qualificazioni dalla classifica."""
+    """Avvia i playoff: genera qualificazioni dalla classifica.
+
+    Data dei playoff e scadenza degli inviti arrivano dal foglio «Avvia i
+    playoff», nel fuso di chi scrive (ADR-043). Il foglio le chiede entrambe;
+    senza, il servizio tiene i valori di sempre.
+    """
+    from utils.local_time import parse_local_datetime
+
     try:
-        results = campionato_service.start_playoff(campionato_id)
+        results = campionato_service.start_playoff(
+            campionato_id,
+            scheduled_date=parse_local_datetime(request.form.get("scheduled_date")),
+            response_deadline=parse_local_datetime(
+                request.form.get("response_deadline")
+            ),
+        )
         total = sum(len(qs) for qs in results.values())
         if total == 0:
             flash(
@@ -737,6 +750,38 @@ def start_playoff(campionato_id):
             flash(msg, "info")
         else:
             flash(msg, "error")
+
+    return redirect(
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    )
+
+
+@campionato_bp.route(
+    "/<int:campionato_id>/playoff/<int:config_id>/calendario", methods=["POST"]
+)
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def playoff_calendario(campionato_id, config_id):
+    """Sposta la data dei playoff o la scadenza degli inviti, fino all'avvio."""
+    from models.playoff.models import PlayoffConfiguration
+    from models.playoff.services import PlayoffService
+    from utils.local_time import parse_local_datetime
+
+    config = db.session.get(PlayoffConfiguration, config_id)
+    if not config or config.campionato_id != campionato_id:
+        flash(_("Configurazione playoff non trovata."), "error")
+    else:
+        try:
+            PlayoffService.aggiorna_calendario(
+                config_id,
+                scheduled_date=parse_local_datetime(request.form.get("scheduled_date")),
+                response_deadline=parse_local_datetime(
+                    request.form.get("response_deadline")
+                ),
+            )
+            flash(_("Data e scadenza del playoff aggiornate."), "success")
+        except ValueError as errore:
+            flash(str(errore), "error")
 
     return redirect(
         url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)

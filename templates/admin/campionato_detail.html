@@ -114,6 +114,8 @@
         {% endfor %}
         {% set _scadenza = _configurazioni | map(attribute='configuration') | selectattr('response_deadline') | map(attribute='response_deadline') | first %}
         {% if _scadenza and _configurazioni | sum(attribute='pending') %}{{ _('Gli inviti scadono il %(quando)s.', quando=_scadenza|datetime_local) }}{% endif %}
+        {% set _quando = _configurazioni | map(attribute='configuration') | selectattr('scheduled_date') | map(attribute='scheduled_date') | first %}
+        {% if _quando %}{{ _('Si gioca il %(quando)s.', quando=_quando|datetime_local) }}{% endif %}
       {% else %}
         {{ _('Controlla chi è qualificato e avvia i playoff: i giocatori ricevono l’invito.') }}
       {% endif %}
@@ -141,13 +143,12 @@
   </div>
   <div class="c7-fascia__azione">
     {% if _fase_playoff and not _playoff_avviati and playoff_status and playoff_status.has_playoffs %}
-    <form method="POST" action='{{ url_for("admin.campionato.start_playoff", campionato_id=campionato.id) }}'>
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn btn-success" data-help="campionato-avvia-playoff"
-              onclick='return confirm({{ _("Avviare i playoff? Le configurazioni verranno bloccate e i giocatori qualificati riceveranno un invito.")|tojson }})'>
-        <i class="fas fa-play"></i> {{ _("Avvia i playoff") }}
-      </button>
-    </form>
+    {# Il foglio chiede quando si gioca e fino a quando si risponde, prima
+       che partano gli inviti: sta in fondo alla pagina. #}
+    <button type="button" class="btn btn-success" data-help="campionato-avvia-playoff"
+            data-bs-toggle="modal" data-bs-target="#avviaPlayoffModal">
+      <i class="fas fa-play"></i> {{ _("Avvia i playoff") }}
+    </button>
     {% elif _fase_playoff and _playoff_avviati and _una_sola %}
       {% set cs = _configurazioni[0] %}
       {% if cs.configuration.gara is none %}
@@ -328,6 +329,19 @@
           </form>
           {% endif %}
         </div>
+        {# Quando si gioca e fino a quando si risponde: scelti all'avvio dei
+           playoff, si spostano fino all'avvio della gara. Il foglio sta in
+           fondo alla pagina. #}
+        {% if feature_visible('admin.campionato.playoff_calendario') %}
+        <div class="c7-rows">
+          {{ d.riga('fa-calendar', _('Data e scadenza'),
+                    ((_('si gioca il %(quando)s', quando=cfg.scheduled_date|datetime_local) if cfg.scheduled_date else _('data da decidere'))
+                     ~ ' · ' ~
+                     (_('risposte entro il %(quando)s', quando=cfg.response_deadline|datetime_local) if cfg.response_deadline else _('risposte senza scadenza'))),
+                    button=True, attrs=('data-bs-toggle="modal" data-bs-target="#calendarioPlayoff' ~ cfg.id ~ '"'),
+                    right='<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe) }}
+        </div>
+        {% endif %}
         {% if quals %}
         <div class="c7-rows">
           {% for q in quals %}
@@ -601,6 +615,74 @@
   </div>
 </div>
 
+{# ---------- Fogli dei playoff: fuori dalle colonne a linguette ---------- #}
+{% if _fase_playoff and not _playoff_avviati and playoff_status and playoff_status.has_playoffs %}
+{% set _cfg_prima = _cfg_attive[0] if _cfg_attive else none %}
+<div class="modal fade c7-sheet" id="avviaPlayoffModal" tabindex="-1" aria-labelledby="avviaPlayoffTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="avviaPlayoffTitolo">{{ _("Avvia i playoff") }}</h3>
+      </div>
+      <form method="POST" action="{{ url_for('admin.campionato.start_playoff', campionato_id=campionato.id) }}" class="modal-body c7-stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div>
+          <label for="avviaPlayoffData" class="c7-label">{{ _("Quando si gioca il playoff") }}</label>
+          <input type="datetime-local" class="form-control c7-num" name="scheduled_date" id="avviaPlayoffData" required
+                 value="{{ (_cfg_prima.scheduled_date if _cfg_prima else none)|datetime_input }}">
+          <div class="c7-nota mt-1">{{ _("Nel tuo fuso orario.") }}</div>
+        </div>
+        <div>
+          <label for="avviaPlayoffScadenza" class="c7-label">{{ _("Gli invitati rispondono entro") }}</label>
+          <input type="datetime-local" class="form-control c7-num" name="response_deadline" id="avviaPlayoffScadenza" required
+                 value="{{ (_cfg_prima.response_deadline if _cfg_prima else none)|datetime_input }}">
+        </div>
+        <button type="submit" class="btn btn-success w-100">
+          <i class="fas fa-play"></i> {{ _("Avvia i playoff e invia gli inviti") }}
+        </button>
+        <div class="c7-nota" style="text-align:center">
+          {{ _("I qualificati ricevono l’invito e le configurazioni si bloccano. Data e scadenza restano modificabili fino all’avvio della gara.") }}
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% if _fase_playoff and _playoff_avviati and not _playoff_in_corso and feature_visible('admin.campionato.playoff_calendario') %}
+{% for cs in _configurazioni %}
+{% set cfg = cs.configuration %}
+<div class="modal fade c7-sheet" id="calendarioPlayoff{{ cfg.id }}" tabindex="-1" aria-labelledby="calendarioPlayoffTitolo{{ cfg.id }}">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="calendarioPlayoffTitolo{{ cfg.id }}">{{ _("Data e scadenza") }}</h3>
+        <div class="c7-sheet__sub">{{ cfg.name }}</div>
+      </div>
+      <form method="POST" action="{{ url_for('admin.campionato.playoff_calendario', campionato_id=campionato.id, config_id=cfg.id) }}" class="modal-body c7-stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div>
+          <label for="calendarioData{{ cfg.id }}" class="c7-label">{{ _("Quando si gioca il playoff") }}</label>
+          <input type="datetime-local" class="form-control c7-num" name="scheduled_date" id="calendarioData{{ cfg.id }}"
+                 value="{{ cfg.scheduled_date|datetime_input }}">
+          <div class="c7-nota mt-1">{{ _("Nel tuo fuso orario. Se la gara di playoff esiste già, cambia anche la sua data.") }}</div>
+        </div>
+        <div>
+          <label for="calendarioScadenza{{ cfg.id }}" class="c7-label">{{ _("Gli invitati rispondono entro") }}</label>
+          <input type="datetime-local" class="form-control c7-num" name="response_deadline" id="calendarioScadenza{{ cfg.id }}"
+                 value="{{ cfg.response_deadline|datetime_input }}">
+          <div class="c7-nota mt-1">{{ _("Vale per chi non ha ancora risposto.") }}</div>
+        </div>
+        <button type="submit" class="btn btn-success w-100">
+          <i class="fas fa-check"></i> {{ _("Salva") }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endfor %}
+{% endif %}
 {% include "components/_new_gara_modal.html" %}
 {% include "components/_soft_delete_modal.html" %}
 
