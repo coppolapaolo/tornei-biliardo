@@ -117,14 +117,20 @@ blocks:
           triangoli che ha vinto. I triangoli si giocano in un ordine fisso —
           il primo fra il primo e il secondo giocatore, il secondo fra il primo
           e il terzo — quindi un + resta spento finché quel giocatore non può
-          ancora aver vinto. Giocati tutti i triangoli, la partita si chiude.
-          Per correggere un trio già chiuso apri il segnapunti dal menu «⋯».
+          ancora aver vinto. Giocati tutti i triangoli, la partita si chiude:
+          vince chi ne ha vinti di più, e se il punteggio più alto è di due
+          giocatori nessuno vince la partita. Per correggere un trio già chiuso
+          tocca **Correggi**, come per le partite a due: tre numeri, che insieme
+          fanno i triangoli del trio.
       - name: "Segnare una partita a set"
         text: >-
           In alto ci sono i set vinti, sotto il set che si gioca con i suoi
           − e +. Alla distanza del set il set si chiude, e compare **Inizia il
           set** per il successivo; quando uno arriva ai set che servono, la
-          partita si chiude da sola.
+          partita si chiude da sola. Per correggere una partita a set già
+          chiusa tocca **Correggi**: il foglio mostra un blocco per set con il
+          suo punteggio, e puoi aggiungere o togliere un set. Set vinti e
+          vincitore si ricalcolano dai set.
       - name: "Convalidare l'esercizio al posto della X"
         text: >-
           Nelle gare con la X sostituita da un esercizio, la card di chi

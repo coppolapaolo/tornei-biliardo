@@ -13,6 +13,7 @@ from models.match.trio_punteggio import (
     assegna_vincitori,
     massimo_per_giocatore,
     piu_ammessi,
+    vincitore_del_trio,
 )
 
 pytestmark = pytest.mark.unit
@@ -61,3 +62,23 @@ def test_punteggi_negativi_o_malformati_non_esistono():
     config = TrioConfig(distance=3)
     assert assegna_vincitori(config, (-1, 1, 0)) is None
     assert assegna_vincitori(config, (1, 0)) is None
+
+
+class TestIlVincitoreDelTrio:
+    """`SPECIFICHE.md` riga 164: vince il totale più alto, se è uno solo."""
+
+    def test_vince_il_totale_piu_alto(self):
+        assert vincitore_del_trio({10: 4, 20: 1, 30: 1}) == 10
+
+    def test_il_pari_in_testa_non_ha_vincitore(self):
+        assert vincitore_del_trio({10: 4, 20: 4, 30: 1}) is None
+
+    def test_il_pari_a_tre_non_ha_vincitore(self):
+        assert vincitore_del_trio({10: 3, 20: 3, 30: 3}) is None
+
+    def test_il_pari_in_fondo_non_toglie_il_vincitore(self):
+        assert vincitore_del_trio({10: 1, 20: 4, 30: 1}) == 20
+
+    def test_chi_si_ritira_non_vince_e_non_conta_per_il_pari(self):
+        assert vincitore_del_trio({10: 2, 20: 3, 30: 4}, escluso=30) == 20
+        assert vincitore_del_trio({10: 3, 20: 3, 30: 4}, escluso=30) is None

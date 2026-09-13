@@ -679,17 +679,21 @@ class TestCompetizioneDiProva:
 
 @pytest.mark.unit
 class TestIlTrioInClassifica:
-    """`SPECIFICHE.md` riga 160.
+    """`SPECIFICHE.md` riga 164.
 
     > Per il sistema WINS, nel trio vince chi ha il punteggio più alto (1
-    > vittoria), gli altri ottengono 0 vittorie. Se c'è pareggio, tutti
-    > ottengono 0 vittorie.
+    > vittoria), gli altri ottengono 0 vittorie. Se il punteggio più alto è di
+    > due o tre giocatori, nessuno prende la vittoria.
+
+    Il pari in testa è stato una divergenza fino al 2026-09-13: lo scioglieva lo
+    scontro diretto, e con 4-4-1 alla distanza 6 la vittoria andava a uno dei
+    due a quattro. La regola vale su ogni strada che chiude un trio, quindi
+    ognuna ha il suo caso qui sotto.
     """
 
     @staticmethod
-    def _trio(db_session, distanza: int, punti: tuple[int, int, int]):
+    def _nuovo_trio(db_session, distanza: int):
         from models.match.models import TrioMatch
-        from models.match.trio_scoring_service import TrioScoringService
 
         gara = _gara(db_session, distanza=distanza)
         gara.odd_number_policy = "trio"
@@ -712,10 +716,20 @@ class TestIlTrioInClassifica:
         )
         db_session.add(trio)
         db_session.flush()
-        TrioScoringService.set_result_direct(trio.id, *punti)
-        db_session.commit()
+        return gara, giocatori, trio
+
+    @staticmethod
+    def _vittorie(gara, giocatori) -> list[int]:
         voci = _punteggi(gara.id)
         return [voci[g.id].matches_won for g in giocatori]
+
+    def _trio(self, db_session, distanza: int, punti: tuple[int, int, int]):
+        from models.match.trio_scoring_service import TrioScoringService
+
+        gara, giocatori, trio = self._nuovo_trio(db_session, distanza)
+        TrioScoringService.set_result_direct(trio.id, *punti)
+        db_session.commit()
+        return self._vittorie(gara, giocatori)
 
     def test_vince_solo_il_punteggio_piu_alto(self, db_session):
         assert self._trio(db_session, 4, (4, 1, 1)) == [1, 0, 0]
@@ -723,19 +737,95 @@ class TestIlTrioInClassifica:
     def test_il_pareggio_a_tre_non_da_vittorie(self, db_session):
         assert self._trio(db_session, 6, (3, 3, 3)) == [0, 0, 0]
 
-    @pytest.mark.xfail(
-        strict=True,
-        reason=(
-            "Divergenza aperta, trovata il 2026-09-13: a pari punteggio in testa "
-            "il vincitore lo decide lo scontro diretto, `determine_trio_winner` "
-            "con Schulze, e con 4-4-1 alla distanza 6 uno dei due a quattro "
-            "prende la vittoria. La specifica dice zero a tutti; la scelta del "
-            "10/05 in docs/_archive/2026-05-10-test-session.md dice scontro "
-            "diretto. Da decidere quale delle due vince."
-        ),
-    )
     def test_il_pareggio_in_testa_non_da_vittorie(self, db_session):
+        """Il risultato secco del direttore."""
         assert self._trio(db_session, 6, (4, 4, 1)) == [0, 0, 0]
+
+    def test_il_pareggio_in_testa_segnato_triangolo_per_triangolo(self, db_session):
+        """Il segnapunti. Nell'ordine del girone — 1–2, 1–3, 2–3 — il primo
+        batte il secondo 2-1 e il terzo 2-1: per lo scontro diretto vinceva
+        lui. Per la specifica, a 4-4-1, nessuno."""
+        from models.match.trio_scoring_service import TrioScoringService
+
+        gara, giocatori, trio = self._nuovo_trio(db_session, 6)
+        sequenza = [0, 0, 1, 0, 0, 1, 1, 2, 1]
+        for numero, indice in enumerate(sequenza, start=1):
+            TrioScoringService.add_rack_win(
+                trio.id,
+                giocatori[indice].id,
+                authoritative=numero == len(sequenza),
+            )
+        db_session.commit()
+
+        assert trio.player_racks_list == [4, 4, 1]
+        assert self._vittorie(gara, giocatori) == [0, 0, 0]
+
+    def test_il_pareggio_in_testa_dalla_card_del_direttore(self, db_session):
+        """Gli stepper della card, che segnano a totali."""
+        from models.match.trio_scoring_service import TrioScoringService
+
+        gara, giocatori, trio = self._nuovo_trio(db_session, 6)
+        TrioScoringService.set_racks_won(trio.id, (4, 4, 1), giocatori[0].id)
+        db_session.commit()
+
+        assert self._vittorie(gara, giocatori) == [0, 0, 0]
+
+    @pytest.mark.parametrize(
+        "sequenza, totali, vittorie",
+        [
+            ([0, 2, 1, 0, 2, 2, 1], [3, 3, 3], [0, 0, 0]),
+            ([0, 2, 2, 0, 2, 2, 1], [3, 2, 4], [1, 0, 0]),
+        ],
+        ids=["tre-tre-tre-nessuno-vince", "tre-due-quattro-vince-marco"],
+    )
+    def test_chi_si_ritira_non_vince_e_il_pari_resta_fra_gli_altri_due(
+        self, db_session, sequenza, totali, vittorie
+    ):
+        """`SPECIFICHE.md` riga 164, la regola del ritiro (decisa il 2026-09-13).
+
+        > Chi si ritira dal trio non vince mai, nemmeno col totale più alto, e
+        > il pari si guarda solo fra gli altri due. Esempi alla distanza 6,
+        > nove triangoli: Marco 3, Luca 3 e Gianni ritirato con 3, nessuno
+        > vince; Marco 3, Luca 2 e Gianni ritirato con 4, vince Marco, anche se
+        > Gianni ha il totale più alto.
+
+        Una partita vera, passando dal ritiro nel trio. I gironi sono tre, in
+        ordine fisso Marco–Luca, Marco–Gianni, Luca–Gianni: si giocano sette
+        triangoli, poi Gianni si ritira e gli ultimi due, entrambi contro di
+        lui, vanno uno a Marco e uno a Luca.
+        """
+        from models.match.trio_scoring_service import TrioScoringService
+
+        gara, giocatori, trio = self._nuovo_trio(db_session, 6)
+        marco, luca, gianni = giocatori
+        for indice in sequenza:
+            TrioScoringService.add_rack_win(trio.id, giocatori[indice].id)
+        db_session.commit()
+        assert trio.handle_forfeit(gianni.id)
+        trio.confirm_result_by_admin()
+        db_session.commit()
+
+        assert trio.player_racks_list == totali
+        assert trio.winner_id == (marco.id if vittorie[0] else None)
+        assert self._vittorie(gara, [marco, luca, gianni]) == vittorie
+
+    def test_il_pareggio_in_testa_dopo_un_ritiro(self, db_session):
+        """Il ritiro nel trio: chi si ritira non vince, e fra gli altri due vale
+        la stessa regola. Qui il primo batte il secondo 2-0, ma a totali sono
+        2 e 2; e i due triangoli di chi si ritira non contano."""
+        from models.match.trio_scoring_service import TrioScoringService
+
+        gara, giocatori, trio = self._nuovo_trio(db_session, 4)
+        for indice in (0, 2, 1, 0, 2):
+            TrioScoringService.add_rack_win(trio.id, giocatori[indice].id)
+        db_session.commit()
+        assert trio.handle_forfeit(giocatori[2].id)
+        trio.confirm_result_by_admin()
+        db_session.commit()
+
+        assert trio.player_racks_list == [2, 2, 2]
+        assert trio.winner_id is None
+        assert self._vittorie(gara, giocatori) == [0, 0, 0]
 
 
 class TestCosaChiudeIlTurno:

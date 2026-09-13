@@ -1,5 +1,7 @@
 """Match scoring, validation, reset, and rack management routes."""
 
+from typing import Optional
+
 from flask import (
     request,
     redirect,
@@ -355,6 +357,25 @@ def reset_match(match_id):
         return redirect(url_for("admin.match.match_detail", match_id=match_id))
 
 
+def _set_dal_form(form) -> Optional[list]:
+    """I set della partita a set: `set_N_player1` e `set_N_player2`, in ordine.
+
+    Li mandano il foglio della pagina della gara e il form della pagina della
+    partita, che ha una riga per ogni set possibile: ci si ferma alla prima
+    riga vuota. `None` quando il form non parla di set.
+    """
+    sets = []
+    numero = 1
+    while f"set_{numero}_player1" in form:
+        primo = (form.get(f"set_{numero}_player1") or "").strip()
+        secondo = (form.get(f"set_{numero}_player2") or "").strip()
+        if not primo and not secondo:
+            break
+        sets.append((int(primo), int(secondo)))
+        numero += 1
+    return sets or None
+
+
 @match_bp.route("/<int:match_id>/correct", methods=["POST"])
 @login_required
 @match_manager_required
@@ -369,20 +390,43 @@ def correct_match_result(match_id):
     from models.match.correction_service import MatchCorrectionService
 
     try:
-        player1_score = int(request.form["player1_score"])
-        player2_score = int(request.form["player2_score"])
+        # La partita a set manda i set, e i set vinti discendono da quelli.
+        sets = _set_dal_form(request.form)
+        if sets is None:
+            player1_score = int(request.form["player1_score"])
+            player2_score = int(request.form["player2_score"])
+        else:
+            player1_score = sum(1 for a, b in sets if a > b)
+            player2_score = sum(1 for a, b in sets if b > a)
     except (KeyError, ValueError):
         flash(_("Punteggio non valido."), "error")
         return redirect(url_for("admin.match.match_detail", match_id=match_id))
+    # Il trio manda anche il terzo numero; la partita a due non ce l'ha.
+    player3_score = request.form.get("player3_score", type=int)
 
     try:
         MatchCorrectionService.correct_result(
             match_id=match_id,
             player1_score=player1_score,
             player2_score=player2_score,
+            player3_score=player3_score,
+            sets=sets,
             corrected_by_id=current_user.id,
             note=request.form.get("note"),
         )
+        # L'evento live, come le route della card: chi guarda la classifica o
+        # lo schermo in sala vede il risultato corretto senza ricaricare. Parte
+        # dopo il servizio, e fuori da una transazione gestita si committa
+        # insieme alle ultime scritture della correzione: mai prima del fatto
+        # (ADR-057). Una correzione rifiutata non annuncia niente.
+        from utils.card_partita import annuncia_punteggio
+
+        corretta = db.session.get(Match, match_id)
+        if corretta is not None:
+            extra: dict = {"corretto": True}
+            if corretta.is_trio and corretta.trio_match is not None:
+                extra["trio_id"] = corretta.trio_match.id
+            annuncia_punteggio(corretta, current_user.id, **extra)
         flash(
             _("Risultato corretto. La correzione resta visibile sulla partita."),
             "success",

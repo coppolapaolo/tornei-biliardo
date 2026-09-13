@@ -18,15 +18,25 @@
     </div>
     <div class="c7-stack" style="gap: 10px;">
         {% for correction in corrections|sort(attribute='created_at') %}
+        {# Il trio ha il terzo numero, prima e dopo. #}
+        {% set _tre = correction.new_player3_score is not none or correction.previous_player3_score is not none %}
         <div class="c7-subrow" style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
             <span class="c7-num" style="color: var(--c7-ink-muted); text-decoration: line-through;">
-                {{ correction.previous_player1_score if correction.previous_player1_score is not none else '—' }}–{{ correction.previous_player2_score if correction.previous_player2_score is not none else '—' }}
+                {{ correction.previous_player1_score if correction.previous_player1_score is not none else '—' }}–{{ correction.previous_player2_score if correction.previous_player2_score is not none else '—' }}{% if _tre %}–{{ correction.previous_player3_score if correction.previous_player3_score is not none else '—' }}{% endif %}
             </span>
             <i class="fas fa-arrow-right" style="font-size: 10px; color: var(--c7-ink-faint);"></i>
-            <span class="c7-num">{{ correction.new_player1_score }}–{{ correction.new_player2_score }}</span>
+            <span class="c7-num">{{ correction.new_player1_score }}–{{ correction.new_player2_score }}{% if _tre %}–{{ correction.new_player3_score if correction.new_player3_score is not none else '—' }}{% endif %}</span>
             <span style="font-size: 12px; font-weight: 600; color: var(--c7-ink-muted);">
                 {{ _('da %(chi)s il %(quando)s', chi=correction.corrected_by.username, quando=correction.created_at|datetime_local) }}
             </span>
+            {% if correction.previous_detail or correction.new_detail %}
+            {# La partita a set: i set, prima e dopo. #}
+            <div style="flex-basis: 100%; font-size: 12px; font-weight: 600; color: var(--c7-ink-muted);">
+                {{ _('Set') }} <span class="c7-num" style="text-decoration: line-through;">{{ correction.previous_detail or '—' }}</span>
+                <i class="fas fa-arrow-right" style="font-size: 10px; color: var(--c7-ink-faint);"></i>
+                <span class="c7-num">{{ correction.new_detail or '—' }}</span>
+            </div>
+            {% endif %}
             {% if correction.note %}
             <div style="flex-basis: 100%; font-size: 13px; font-weight: 600;">{{ correction.note }}</div>
             {% endif %}

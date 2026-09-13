@@ -151,7 +151,11 @@
    stepper della card, il perche' facoltativo, e le due conseguenze scritte
    prima del clic — i triangoli segnati uno per uno si cancellano, la
    correzione resta scritta sulla partita. Posta a `correct_match_result` con
-   `next` verso questa pagina. #}
+   `next` verso questa pagina. Il trio usa lo stesso foglio con tre lati:
+   `apriCorrezione` accende il terzo e il suo campo. La partita a set ha un
+   blocco per set, con gli stessi stepper fermi alla distanza del set, e i
+   comandi per aggiungere o togliere un set: i campi `set_N_player1/2` li
+   scrive `inviaCorrezione`. #}
 <div class="modal fade c7-sheet" id="correggiRisultatoModal" tabindex="-1" aria-labelledby="correggiTitolo">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -160,6 +164,7 @@
         <input type="hidden" name="next" value="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}">
         <input type="hidden" name="player1_score" id="correggiP1">
         <input type="hidden" name="player2_score" id="correggiP2">
+        <input type="hidden" name="player3_score" id="correggiP3" disabled>
         <div class="modal-header">
           <div class="c7-sheet__grip" aria-hidden="true"></div>
           <h3 class="modal-title" id="correggiTitolo">{{ _('Correggi il risultato') }}</h3>
@@ -167,8 +172,8 @@
         </div>
         <div class="modal-body c7-stack">
           <div class="c7-partita__lati c7-partita__lati--foglio" id="correggiLati" data-tipo="due" data-punti="0,0" data-max="0" data-race-to="1">
-            {% for n in (1, 2) %}
-            <div class="c7-partita__lato c7-partita__lato--stepper">
+            {% for n in (1, 2, 3) %}
+            <div class="c7-partita__lato c7-partita__lato--stepper" id="correggiLato{{ n }}"{% if n == 3 %} hidden{% endif %}>
               <div class="c7-partita__nome" id="correggiNome{{ n }}"></div>
               <div class="c7-partita__step">
                 <button type="button" class="c7-partita__meno" data-lato="{{ n }}" onclick="passoCorrezione({{ n }}, -1)" aria-label="{{ _('Un triangolo in meno') }}"><i class="fas fa-minus"></i></button>
@@ -177,6 +182,19 @@
               </div>
             </div>
             {% endfor %}
+          </div>
+          <div class="c7-stack c7-correzione-set" id="correggiSet" hidden>
+            <div class="c7-partita__settesta" id="correggiSetRegola"></div>
+            <div class="c7-stack" id="correggiSetElenco"></div>
+            <div class="c7-correzione-set__comandi">
+              <button type="button" class="btn btn-secondary" id="correggiSetMeno" onclick="cambiaSetCorrezione(-1)">
+                <i class="fas fa-minus"></i> {{ _("Togli l'ultimo set") }}
+              </button>
+              <button type="button" class="btn btn-secondary" id="correggiSetPiu" onclick="cambiaSetCorrezione(1)">
+                <i class="fas fa-plus"></i> {{ _('Aggiungi un set') }}
+              </button>
+            </div>
+            <div id="correggiSetCampi" hidden></div>
           </div>
           <div class="c7-partita__hint" id="correggiHint"></div>
           <div>

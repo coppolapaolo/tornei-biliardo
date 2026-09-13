@@ -22,7 +22,13 @@
      data-match-id="{{ match.id }}" data-p1="{{ match.player1_score }}" data-p2="{{ match.player2_score }}"
      data-p1-name="{{ match.player1.username }}" data-p2-name="{{ match.player2.username if match.player2 else '' }}"
      data-max="{{ match.effective_distance }}" data-race-to="{{ '1' if match.effective_is_race_to else '0' }}"
-     data-sub="{{ _('Turno %(num)s', num=match.round_number) }}{% if match.played_on_table or match.table_assignment %} · {{ _('Tavolo') }} {{ match.played_on_table or match.table_assignment }}{% endif %}">
+     {% if match.is_trio and match.trio_match %}{% set _cfg = match.trio_match.trio_config %}data-correzione="trio" data-punti-trio="{{ match.trio_match.player_racks_list|join(',') }}"
+     data-p3-name="{{ match.trio_match.player3.username }}" data-totale="{{ _cfg.total_played_racks }}" data-massimo="{{ _cfg.racks_played_per_player }}"
+     {% elif match.is_multi_set %}{% set _sets = match.sets|sort(attribute='set_number') %}{% set _dc = match.distance_config %}data-correzione="set"
+     data-set-punti="{% for s in _sets %}{{ s.player1_racks }}-{{ s.player2_racks }}{% if not loop.last %},{% endif %}{% endfor %}"
+     data-set-distanza="{{ _sets[0].distance if _sets else _dc.racks }}" data-set-race-to="{{ '1' if (_sets[0].is_race_to if _sets else _dc.is_race_to_racks) else '0' }}"
+     data-set-da-vincere="{{ _dc.get_winning_sets() }}" data-set-race-to-sets="{{ '1' if _dc.is_race_to_sets else '0' }}"
+     {% endif %}data-sub="{{ _('Turno %(num)s', num=match.round_number) }}{% if match.played_on_table or match.table_assignment %} · {{ _('Tavolo') }} {{ match.played_on_table or match.table_assignment }}{% endif %}">
   <div class="c7-rows__main">
     <div class="c7-rows__title c7-riga-partita__nomi">
       {% if match.is_trio and match.trio_match %}
@@ -55,9 +61,9 @@
   {% if match.played_on_table or match.table_assignment %}
   <span class="c7-rows__sub c7-riga-partita__tavolo">{{ _('Tavolo') }} <span class="c7-num">{{ match.played_on_table or match.table_assignment }}</span></span>
   {% endif %}
-  {% if correggibile and _finita and not match.is_trio and not match.is_multi_set %}
+  {% if correggibile and _finita %}
   <button type="button" class="c7-iconbtn" onclick="apriCorrezione(this)"
-          aria-label="{{ _('Correggi il risultato di %(p1)s – %(p2)s', p1=match.player1.username, p2=match.player2.username) }}" title="{{ _('Correggi il risultato') }}">
+          aria-label="{% if match.is_trio and match.trio_match %}{{ _('Correggi il risultato di %(p1)s – %(p2)s – %(p3)s', p1=match.trio_match.player1.username, p2=match.trio_match.player2.username, p3=match.trio_match.player3.username) }}{% else %}{{ _('Correggi il risultato di %(p1)s – %(p2)s', p1=match.player1.username, p2=match.player2.username) }}{% endif %}" title="{{ _('Correggi il risultato') }}">
     <i class="fas fa-pen"></i>
   </button>
   {% endif %}

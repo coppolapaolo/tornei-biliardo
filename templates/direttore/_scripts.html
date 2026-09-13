@@ -1272,8 +1272,8 @@
     };
     tavolo.hidden = tavolo.hidden || !(GARA_CONFIG.availableTables || []).length;
 
-    // Il trio e la partita a set si correggono dal segnapunti: il foglio
-    // scrive due numeri come fossero triangoli.
+    // Il foglio della correzione ha una forma per partita: due lati, tre
+    // per il trio, un blocco per set.
     const correggi = document.getElementById('menuPartitaCorreggi');
     correggi.hidden = !(finished && canModify) || d.correggibile === '0';
     correggi.onclick = function () {
@@ -1458,13 +1458,29 @@
     const sorgente = el.closest('.c7-partita, .c7-riga-partita');
     if (!sorgente) return;
     const d = sorgente.dataset;
+    const trio = d.correzione === 'trio';
+    const aSet = d.correzione === 'set';
     const lati = document.getElementById('correggiLati');
-    lati.dataset.punti = (d.p1 || '0') + ',' + (d.p2 || '0');
+    lati.hidden = aSet;
+    document.getElementById('correggiSet').hidden = !aSet;
+    if (aSet) apriCorrezioneSet(d);
+    // Il trio: tre lati, e i limiti del trio giocato per intero
+    // (`CardPartita.limiti`, forma `trio` senza `data-piu`).
+    lati.dataset.tipo = trio ? 'trio' : 'due';
+    lati.classList.toggle('c7-partita__lati--tre', trio);
+    lati.dataset.punti = trio ? (d.puntiTrio || '0,0,0') : (d.p1 || '0') + ',' + (d.p2 || '0');
     lati.dataset.max = d.max || '0';
     lati.dataset.raceTo = d.raceTo || '1';
+    lati.dataset.massimo = d.massimo || '0';
+    lati.dataset.totale = d.totale || '0';
+    document.getElementById('correggiLato3').hidden = !trio;
+    document.getElementById('correggiP3').disabled = !trio;
     document.getElementById('correggiNome1').textContent = d.p1Name || '';
     document.getElementById('correggiNome2').textContent = d.p2Name || '';
-    document.getElementById('correggiSotto').textContent = (d.p1Name || '') + ' – ' + (d.p2Name || '') + (d.sub ? ' · ' + d.sub : '');
+    document.getElementById('correggiNome3').textContent = trio ? (d.p3Name || '') : '';
+    const nomi = [d.p1Name, d.p2Name].concat(trio ? [d.p3Name] : [])
+      .map(function (n) { return n || ''; }).join(' – ');
+    document.getElementById('correggiSotto').textContent = nomi + (d.sub ? ' · ' + d.sub : '');
     document.getElementById('correggiForm').action = '/admin/match/' + d.matchId + '/correct';
     document.getElementById('correggiNota').value = '';
     aggiornaCorrezione();
@@ -1483,7 +1499,15 @@
    *  pretende, e dirlo prima evita il messaggio rosso dopo. */
   function aggiornaCorrezione() {
     const lati = document.getElementById('correggiLati');
+    if (!document.getElementById('correggiSet').hidden) {
+      aggiornaCorrezioneSet();
+      return;
+    }
     window.CardPartita.aggiorna(lati);
+    if (lati.dataset.tipo === 'trio') {
+      aggiornaCorrezioneTrio(lati);
+      return;
+    }
     const [p1, p2] = window.CardPartita.punti(lati);
     const max = parseInt(lati.dataset.max || '0', 10);
     const raceTo = lati.dataset.raceTo === '1';
@@ -1498,10 +1522,192 @@
           : {{ _('La somma deve essere esattamente %(n)s.', n='__N__')|tojson }}.replace('__N__', max));
   }
 
+  /** Il trio corretto e' giocato per intero: la somma fa i triangoli del
+   *  trio. Il vincitore segue SPECIFICHE riga 164 — il totale piu' alto, se
+   *  e' uno solo — cosi' il foglio dice prima quello che il server fara'. */
+  function aggiornaCorrezioneTrio(lati) {
+    const punti = window.CardPartita.punti(lati);
+    const totale = parseInt(lati.dataset.totale || '0', 10);
+    const somma = punti.reduce(function (a, b) { return a + b; }, 0);
+    const completo = somma === totale;
+    const alto = Math.max.apply(null, punti);
+    const primi = punti.filter(function (p) { return p === alto; }).length;
+    document.getElementById('correggiInvia').disabled = !completo;
+    document.getElementById('correggiHint').textContent = completo
+      ? (primi > 1
+          ? {{ _('Pari in testa: nessuno vince la partita.')|tojson }}
+          : {{ _('Vince %(nome)s.', nome='__N__')|tojson }}.replace('__N__', document.getElementById('correggiNome' + (punti.indexOf(alto) + 1)).textContent))
+      : {{ _('Nel trio si giocano %(n)s triangoli: la somma dei tre punteggi deve fare %(n)s', n='__N__')|tojson }}.split('__N__').join(totale);
+  }
+
+  // ---- La partita a set: un blocco per set ---------------------------------
+
+  /** La regola della partita che si sta correggendo, dai data-* della card. */
+  let correzioneSet = null;
+
+  function apriCorrezioneSet(d) {
+    correzioneSet = {
+      distanza: parseInt(d.setDistanza || '0', 10),
+      raceTo: d.setRaceTo === '1',
+      daVincere: parseInt(d.setDaVincere || '1', 10),
+      raceToSets: d.setRaceToSets === '1',
+      nomi: [d.p1Name || '', d.p2Name || '']
+    };
+    const regola = correzioneSet.raceToSets
+      ? {{ _('Si vince a %(n)s set', n='__N__')|tojson }}.replace('__N__', correzioneSet.daVincere)
+      : {{ _('Si giocano esattamente %(n)s set', n='__N__')|tojson }}.replace('__N__', correzioneSet.daVincere);
+    const set = correzioneSet.raceTo
+      ? {{ _('ogni set al %(n)s', n='__N__')|tojson }}.replace('__N__', correzioneSet.distanza)
+      : {{ _('ogni set di esattamente %(n)s triangoli', n='__N__')|tojson }}.replace('__N__', correzioneSet.distanza);
+    document.getElementById('correggiSetRegola').textContent = regola + ' · ' + set;
+    const elenco = document.getElementById('correggiSetElenco');
+    elenco.replaceChildren();
+    (d.setPunti || '').split(',').filter(Boolean).forEach(function (coppia, i) {
+      const punti = coppia.split('-').map(function (n) { return parseInt(n, 10) || 0; });
+      elenco.appendChild(bloccoSetCorrezione(i + 1, punti));
+    });
+    if (!elenco.children.length) elenco.appendChild(bloccoSetCorrezione(1, [0, 0]));
+  }
+
+  /** Un set: il suo numero, poi i due lati con gli stepper di `CardPartita`,
+   *  forma `due`, fermi alla distanza del set. */
+  function bloccoSetCorrezione(numero, punti) {
+    const blocco = document.createElement('div');
+    blocco.className = 'c7-correzione-set__set';
+    const testa = document.createElement('div');
+    testa.className = 'c7-partita__settesta';
+    testa.textContent = {{ _('Set %(num)s', num='__N__')|tojson }}.replace('__N__', numero);
+    blocco.appendChild(testa);
+    const lati = document.createElement('div');
+    lati.className = 'c7-partita__lati c7-partita__lati--set';
+    lati.dataset.tipo = 'due';
+    lati.dataset.punti = punti.join(',');
+    lati.dataset.max = String(correzioneSet.distanza);
+    lati.dataset.raceTo = correzioneSet.raceTo ? '1' : '0';
+    [1, 2].forEach(function (lato) {
+      const colonna = document.createElement('div');
+      colonna.className = 'c7-partita__lato c7-partita__lato--stepper';
+      const nome = document.createElement('div');
+      nome.className = 'c7-partita__nome';
+      nome.textContent = correzioneSet.nomi[lato - 1];
+      const step = document.createElement('div');
+      step.className = 'c7-partita__step';
+      const numeroLato = document.createElement('span');
+      numeroLato.className = 'c7-partita__num c7-num';
+      numeroLato.dataset.num = String(lato);
+      step.append(
+        bottoneSetCorrezione(lati, lato, -1),
+        numeroLato,
+        bottoneSetCorrezione(lati, lato, 1)
+      );
+      colonna.append(nome, step);
+      lati.appendChild(colonna);
+    });
+    blocco.appendChild(lati);
+    window.CardPartita.aggiorna(lati);
+    return blocco;
+  }
+
+  function bottoneSetCorrezione(lati, lato, delta) {
+    const bottone = document.createElement('button');
+    bottone.type = 'button';
+    bottone.className = delta > 0 ? 'c7-partita__piu' : 'c7-partita__meno';
+    bottone.dataset.lato = String(lato);
+    bottone.setAttribute('aria-label', delta > 0
+      ? {{ _('Un triangolo in più')|tojson }}
+      : {{ _('Un triangolo in meno')|tojson }});
+    const icona = document.createElement('i');
+    icona.className = delta > 0 ? 'fas fa-plus' : 'fas fa-minus';
+    bottone.appendChild(icona);
+    bottone.onclick = function () {
+      const limiti = window.CardPartita.limiti(lati);
+      if (delta > 0 && !limiti.piu[lato - 1]) return;
+      if (delta < 0 && !limiti.meno[lato - 1]) return;
+      const punti = window.CardPartita.punti(lati);
+      punti[lato - 1] = Math.max(0, punti[lato - 1] + delta);
+      lati.dataset.punti = punti.join(',');
+      window.CardPartita.aggiorna(lati);
+      aggiornaCorrezioneSet();
+    };
+    return bottone;
+  }
+
+  /** Un set in più o in meno: dal primo al massimo che la partita ammette. */
+  function cambiaSetCorrezione(delta) {
+    const elenco = document.getElementById('correggiSetElenco');
+    if (delta > 0) elenco.appendChild(bloccoSetCorrezione(elenco.children.length + 1, [0, 0]));
+    else if (elenco.children.length > 1) elenco.lastElementChild.remove();
+    aggiornaCorrezioneSet();
+  }
+
+  function puntiSetCorrezione() {
+    return Array.from(document.querySelectorAll('#correggiSetElenco .c7-partita__lati'))
+      .map(function (lati) { return window.CardPartita.punti(lati); });
+  }
+
+  /** Le stesse regole del servizio, dette prima: ogni set chiuso, la partita
+   *  finita all'ultimo set, e chi vince. */
+  function aggiornaCorrezioneSet() {
+    const r = correzioneSet;
+    const sets = puntiSetCorrezione();
+    const massimoSet = r.raceToSets ? 2 * r.daVincere - 1 : r.daVincere;
+    document.getElementById('correggiSetPiu').disabled = sets.length >= massimoSet;
+    document.getElementById('correggiSetMeno').disabled = sets.length <= 1;
+    let vinti = [0, 0];
+    let problema = null;
+    sets.forEach(function (p, i) {
+      if (problema) return;
+      if (r.raceToSets && Math.max(vinti[0], vinti[1]) >= r.daVincere) {
+        problema = {{ _('La partita è decisa al set %(num)s: i set dopo non si giocano', num='__N__')|tojson }}.replace('__N__', i);
+        return;
+      }
+      const chiuso = r.raceTo
+        ? Math.max(p[0], p[1]) === r.distanza && Math.min(p[0], p[1]) < r.distanza
+        : p[0] + p[1] === r.distanza && p[0] !== p[1];
+      if (!chiuso) {
+        problema = {{ _('Il set %(num)s non è ancora finito.', num='__N__')|tojson }}.replace('__N__', i + 1);
+        return;
+      }
+      vinti[p[0] > p[1] ? 0 : 1] += 1;
+    });
+    if (!problema && r.raceToSets && Math.max(vinti[0], vinti[1]) < r.daVincere) {
+      problema = {{ _('Nessuno arriva a %(n)s set: la partita non è finita', n='__N__')|tojson }}.replace('__N__', r.daVincere);
+    }
+    if (!problema && !r.raceToSets && sets.length !== r.daVincere) {
+      problema = {{ _('Si giocano esattamente %(n)s set', n='__N__')|tojson }}.replace('__N__', r.daVincere);
+    }
+    document.getElementById('correggiInvia').disabled = Boolean(problema);
+    document.getElementById('correggiHint').textContent = problema || (vinti[0] === vinti[1]
+      ? {{ _('Pareggio: nessun vincitore.')|tojson }}
+      : {{ _('Vince %(nome)s, %(a)s set a %(b)s.', nome='__NOME__', a='__A__', b='__B__')|tojson }}
+          .replace('__NOME__', r.nomi[vinti[0] > vinti[1] ? 0 : 1])
+          .replace('__A__', Math.max(vinti[0], vinti[1]))
+          .replace('__B__', Math.min(vinti[0], vinti[1])));
+  }
+
   function inviaCorrezione(event) {
+    const campi = document.getElementById('correggiSetCampi');
+    campi.replaceChildren();
+    if (!document.getElementById('correggiSet').hidden) {
+      const sets = puntiSetCorrezione();
+      sets.forEach(function (p, i) {
+        [0, 1].forEach(function (lato) {
+          const campo = document.createElement('input');
+          campo.type = 'hidden';
+          campo.name = 'set_' + (i + 1) + '_player' + (lato + 1);
+          campo.value = p[lato];
+          campi.appendChild(campo);
+        });
+      });
+      document.getElementById('correggiP1').value = sets.filter(function (p) { return p[0] > p[1]; }).length;
+      document.getElementById('correggiP2').value = sets.filter(function (p) { return p[1] > p[0]; }).length;
+      document.getElementById('correggiP3').disabled = true;
+      return true;
+    }
     const punti = window.CardPartita.punti(document.getElementById('correggiLati'));
     document.getElementById('correggiP1').value = punti[0];
     document.getElementById('correggiP2').value = punti[1];
+    document.getElementById('correggiP3').value = punti.length > 2 ? punti[2] : '';
     return true;
   }
 

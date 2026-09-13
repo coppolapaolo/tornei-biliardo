@@ -115,14 +115,20 @@ blocks:
           the racks that player won. Racks are played in a fixed order — the
           first between the first and second player, the second between the
           first and third — so a + stays off until that player could have won
-          it. Once every rack is played, the match closes. To correct a trio
-          that is already closed, open the scoreboard from the «⋯» menu.
+          it. Once every rack is played, the match closes: whoever won the
+          most racks wins, and if two players share the highest score nobody
+          wins the match. To correct a trio that is already closed, tap
+          **Correct** as for a two-player match: three numbers that together
+          make up the trio's racks.
       - name: "Score a match played in sets"
         text: >-
           The sets won are at the top, and under them the set being played
           with its own − and +. At the set's distance the set closes and
           **Start set** appears for the next one; when a player reaches the
-          sets needed, the match closes by itself.
+          sets needed, the match closes by itself. To correct a match played
+          in sets that is already closed, tap **Correct**: the sheet shows one
+          block per set with its score, and you can add or remove a set. Sets
+          won and winner are worked out again from the sets.
       - name: "Validate the drill played instead of the X"
         text: >-
           In competitions where the X is replaced by a drill, the card of the

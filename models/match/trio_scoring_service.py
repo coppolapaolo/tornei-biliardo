@@ -20,7 +20,7 @@ from flask_babel import gettext as _
 from models.base import db
 from models.status_enum import MatchStatus
 from models.transaction.manager import transactional
-from models.match.trio_schulze import determine_trio_winner
+from models.match.trio_punteggio import vincitore_del_trio
 
 if TYPE_CHECKING:
     from .models import TrioMatch, TrioRack
@@ -299,22 +299,17 @@ class TrioScoringService:
         # Flush to ensure computed properties work
         db.session.flush()
 
-        # Determine winner: with explicit totals from direct-entry, the natural
-        # interpretation is "highest total wins". Schulze on synthetic racks can
-        # report a tie even when totals are clearly dominant, because the greedy
-        # synthetic distribution often equalizes pairwise matchups.
-        # Only fall back to Schulze when totals themselves are tied.
-        totals = {
-            trio.player1_id: player1_racks,
-            trio.player2_id: player2_racks,
-            trio.player3_id: player3_racks,
-        }
-        max_racks = max(totals.values())
-        top_players = [pid for pid, r in totals.items() if r == max_racks]
-        if len(top_players) == 1:
-            trio.winner_id = top_players[0]
-        else:
-            trio.winner_id = determine_trio_winner(trio.active_racks, trio.player_ids)
+        # Il totale piu' alto, se e' uno solo (SPECIFICHE.md riga 164). I
+        # triangoli qui sopra li distribuisce l'applicazione: chi ha battuto
+        # chi non e' un dato, e non deve decidere niente.
+        trio.winner_id = vincitore_del_trio(
+            {
+                trio.player1_id: player1_racks,
+                trio.player2_id: player2_racks,
+                trio.player3_id: player3_racks,
+            },
+            escluso=trio.forfeit_player_id,
+        )
 
         # Update associated match and complete via service (emits SSE)
         match_obj = db.session.get(Match, trio.match_id)
@@ -549,8 +544,12 @@ class TrioScoringService:
         # Flush to ensure computed properties see all racks
         db.session.flush()
 
-        # Determine winner using Condorcet/Schulze pairwise comparison
-        trio.winner_id = determine_trio_winner(trio.active_racks, trio.player_ids)
+        # Il totale piu' alto, se e' uno solo (SPECIFICHE.md riga 164): a pari
+        # totale in testa nessuno vince, qualunque sia lo scontro diretto.
+        trio.winner_id = vincitore_del_trio(
+            dict(zip(trio.player_ids, trio.player_racks_list)),
+            escluso=trio.forfeit_player_id,
+        )
 
         # Enter awaiting confirmation state (don't complete yet)
         trio.awaiting_confirmation = True
