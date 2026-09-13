@@ -5,9 +5,10 @@
  * stringa cercata peschi in username, nome e cognome — il caso che ha motivato
  * la funzione: il direttore conosce la persona, non il suo soprannome.
  *
- * Il componente degli iscritti è incluso due volte nella pagina della gara
- * (mobile e desktop): le due copie devono filtrare in modo indipendente, ed è
- * la ragione per cui il codice non usa `id` né `getElementById`.
+ * Dal 2026-09-13 i candidati sono righe con «Iscrivi» (canvas 2.2/2.3), non
+ * una tendina: nascoste finché non si scrive, compaiono quelle che
+ * corrispondono, con il conteggio. Due copie del componente nella stessa
+ * pagina filtrano in modo indipendente: il codice non usa `id`.
  *
  * Run:  cd tests/frontend && npm install && npm test
  */
@@ -28,31 +29,30 @@ const GIOCATORI = [
   { id: "4", username: "solitario", nome: "" },
 ];
 
-function opzioni(giocatori) {
+function righe(giocatori) {
   return giocatori
     .map(function (g) {
       const chiave = (g.username + " " + g.nome).trim().toLowerCase();
       const etichetta = g.nome ? g.nome + " · " + g.username : g.username;
-      return `<option value="${g.id}" data-cerca="${chiave}">${etichetta}</option>`;
+      return `<form class="js-iscrivibile" data-cerca="${chiave}" data-username="${g.username}">
+        <span>${etichetta}</span><button type="submit">Iscrivi</button></form>`;
     })
     .join("\n");
 }
 
-function form() {
+function blocco(massimo) {
   return `
-  <form>
+  <div data-iscrivibili${massimo ? ` data-massimo="${massimo}"` : ""}>
     <input type="search" class="js-iscritti-cerca">
-    <select name="user_id">
-      <option value="">Seleziona giocatore…</option>
-      ${opzioni(GIOCATORI)}
-    </select>
     <div class="js-iscritti-esito" data-formato="{n} giocatori trovati"></div>
-  </form>`;
+    <div class="js-iscritti-nessuno" hidden>Nessuno</div>
+    ${righe(GIOCATORI)}
+  </div>`;
 }
 
-function ambiente() {
+function ambiente(massimo) {
   // Due copie del componente, come nella pagina della gara.
-  const dom = new JSDOM(`<!doctype html><body>${form()}${form()}</body>`, {
+  const dom = new JSDOM(`<!doctype html><body>${blocco(massimo)}${blocco(massimo)}</body>`, {
     runScripts: "outside-only",
   });
   dom.window.eval(SRC);
@@ -60,109 +60,84 @@ function ambiente() {
 }
 
 function cerca(window, indiceCopia, testo) {
-  const modulo = window.document.querySelectorAll("form")[indiceCopia];
-  const campo = modulo.querySelector(".js-iscritti-cerca");
+  const contenitore = window.document.querySelectorAll("[data-iscrivibili]")[indiceCopia];
+  const campo = contenitore.querySelector(".js-iscritti-cerca");
   campo.value = testo;
   campo.dispatchEvent(new window.Event("input", { bubbles: true }));
-  return modulo.querySelector('select[name="user_id"]');
+  return contenitore;
 }
 
-function username(tendina) {
-  return Array.from(tendina.options)
-    .filter(function (o) {
-      return o.value;
-    })
-    .map(function (o) {
-      return GIOCATORI[Number(o.value) - 1].username;
-    });
+function visibili(contenitore) {
+  return Array.from(contenitore.querySelectorAll(".js-iscrivibile"))
+    .filter(function (r) { return !r.hidden; })
+    .map(function (r) { return r.dataset.username; });
 }
 
 const prove = [];
-function prova(nome, fn) {
-  prove.push([nome, fn]);
-}
+function prova(nome, corpo) { prove.push({ nome, corpo }); }
+
+prova("all'apertura le righe sono nascoste", function () {
+  const window = ambiente();
+  assert.deepStrictEqual(visibili(window.document.querySelector("[data-iscrivibili]")), []);
+});
+
+prova("cerca per cognome", function () {
+  const window = ambiente();
+  assert.deepStrictEqual(visibili(cerca(window, 0, "rossi")), ["marcob"]);
+});
 
 prova("cerca per username", function () {
   const window = ambiente();
-  assert.deepStrictEqual(username(cerca(window, 0, "marco_b")), ["marco_b"]);
+  assert.deepStrictEqual(visibili(cerca(window, 0, "marco_b")), ["marco_b"]);
 });
 
-prova("cerca per nome", function () {
+prova("cerca senza accenti", function () {
   const window = ambiente();
-  assert.deepStrictEqual(username(cerca(window, 0, "marco")), [
-    "marco_b",
-    "marcob",
-  ]);
+  assert.deepStrictEqual(visibili(cerca(window, 0, "nicolo")), ["nick"]);
 });
 
-prova("cerca per cognome — il caso di chi non conosce lo username", function () {
+prova("nessun risultato: nessuna riga e il messaggio", function () {
   const window = ambiente();
-  assert.deepStrictEqual(username(cerca(window, 0, "rossi")), ["marcob"]);
+  const contenitore = cerca(window, 0, "inesistente");
+  assert.deepStrictEqual(visibili(contenitore), []);
+  assert.strictEqual(contenitore.querySelector(".js-iscritti-nessuno").hidden, false);
 });
 
-prova("nome e cognome insieme", function () {
-  const window = ambiente();
-  assert.deepStrictEqual(username(cerca(window, 0, "marco bianchi")), ["marco_b"]);
-});
-
-prova("gli accenti non contano: «nicolo» trova «Nicolò»", function () {
-  const window = ambiente();
-  assert.deepStrictEqual(username(cerca(window, 0, "nicolo")), ["nick"]);
-});
-
-prova("chi non ha anagrafica si trova per username", function () {
-  const window = ambiente();
-  assert.deepStrictEqual(username(cerca(window, 0, "solit")), ["solitario"]);
-});
-
-prova("un solo superstite viene preselezionato", function () {
-  const window = ambiente();
-  const tendina = cerca(window, 0, "rossi");
-  assert.strictEqual(tendina.value, "2");
-});
-
-prova("nessun risultato: tendina vuota e niente selezione", function () {
-  const window = ambiente();
-  const tendina = cerca(window, 0, "inesistente");
-  assert.deepStrictEqual(username(tendina), []);
-  assert.strictEqual(tendina.value, "");
-});
-
-prova("il segnaposto resta sempre", function () {
-  const window = ambiente();
-  const tendina = cerca(window, 0, "inesistente");
-  assert.strictEqual(tendina.options.length, 1);
-  assert.strictEqual(tendina.options[0].value, "");
-});
-
-prova("svuotare il campo rimette tutti", function () {
+prova("svuotare il campo nasconde di nuovo tutto", function () {
   const window = ambiente();
   cerca(window, 0, "rossi");
-  assert.strictEqual(username(cerca(window, 0, "")).length, GIOCATORI.length);
+  const contenitore = cerca(window, 0, "");
+  assert.deepStrictEqual(visibili(contenitore), []);
+  assert.strictEqual(contenitore.querySelector(".js-iscritti-esito").textContent, "");
 });
 
 prova("le due copie del componente non si disturbano", function () {
   const window = ambiente();
   const prima = cerca(window, 0, "rossi");
-  const seconda = window.document.querySelectorAll("form")[1].querySelector("select");
-  assert.deepStrictEqual(username(prima), ["marcob"]);
-  assert.strictEqual(username(seconda).length, GIOCATORI.length);
+  const seconda = window.document.querySelectorAll("[data-iscrivibili]")[1];
+  assert.deepStrictEqual(visibili(prima), ["marcob"]);
+  assert.deepStrictEqual(visibili(seconda), []);
 });
 
 prova("il conteggio dice quanti ne restano", function () {
   const window = ambiente();
-  cerca(window, 0, "marco");
-  const esito = window.document.querySelectorAll(".js-iscritti-esito")[0];
-  assert.strictEqual(esito.textContent, "2 giocatori trovati");
+  const contenitore = cerca(window, 0, "marco");
+  assert.strictEqual(contenitore.querySelector(".js-iscritti-esito").textContent, "2 giocatori trovati");
 });
 
-prova("senza data-cerca si ripiega sull'etichetta, non si esclude tutto", function () {
+prova("oltre il massimo le righe in piu' restano nascoste ma contate", function () {
+  const window = ambiente(1);
+  const contenitore = cerca(window, 0, "marco");
+  assert.deepStrictEqual(visibili(contenitore), ["marco_b"]);
+  assert.strictEqual(contenitore.querySelector(".js-iscritti-esito").textContent, "2 giocatori trovati");
+});
+
+prova("senza data-cerca si ripiega sul testo della riga", function () {
   const window = ambiente();
-  const tendina = window.document.querySelector('select[name="user_id"]');
-  Array.from(tendina.options).forEach(function (o) {
-    o.removeAttribute("data-cerca");
+  window.document.querySelectorAll(".js-iscrivibile").forEach(function (r) {
+    r.removeAttribute("data-cerca");
   });
-  assert.deepStrictEqual(username(cerca(window, 0, "rossi")), ["marcob"]);
+  assert.deepStrictEqual(visibili(cerca(window, 0, "rossi")), ["marcob"]);
 });
 
 prova("Invio nel campo non manda il form a metà", function () {
@@ -178,16 +153,14 @@ prova("Invio nel campo non manda il form a metà", function () {
 });
 
 let falliti = 0;
-prove.forEach(function ([nome, fn]) {
+prove.forEach(function ({ nome, corpo }) {
   try {
-    fn();
+    corpo();
     console.log("  ok   " + nome);
   } catch (errore) {
     falliti += 1;
-    console.log("  FAIL " + nome + "\n       " + errore.message);
+    console.log("  FAIL " + nome + "\n       " + (errore && errore.message));
   }
 });
-console.log(
-  `\n${prove.length - falliti} passed, ${falliti} failed (iscritti_ricerca)`
-);
-process.exit(falliti ? 1 : 0);
+console.log(`\n${prove.length - falliti} passed, ${falliti} failed (iscritti_ricerca)`);
+if (falliti) process.exit(1);

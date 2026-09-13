@@ -66,10 +66,13 @@ class RoundService:
         if bye_to_last_inscribed is not None:
             gara.bye_to_last_inscribed = bool(bye_to_last_inscribed)
 
-        # Verifica numero minimo partecipanti (escludi lista d'attesa)
+        # Verifica numero minimo partecipanti: gli attivi, cioe' ne' in lista
+        # d'attesa ne' ritirati. Un ritirato contava ancora per il minimo e
+        # finiva nell'ordine di partenza (rilievo della revisione automatica
+        # sulla PR #347).
         inscriptions = (
             db.session.query(Inscription)
-            .filter_by(gara_id=gara_id, is_waitlist=False)
+            .filter_by(gara_id=gara_id, is_waitlist=False, is_withdrawn=False)
             .all()
         )
         if len(inscriptions) < gara.min_participants:

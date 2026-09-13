@@ -73,8 +73,8 @@
 {% include "direttore/_menu_partita.html" %}
 {% include "components/_open_inscriptions_modal.html" %}
 {% include "components/_modify_dates_modal.html" %}
-{% if x_choice_last_inscribed %}
-{% include "components/_x_choice_modal.html" %}
+{% if gara.status == GaraStatus.INSCRIPTION.value %}
+{% include "direttore/_avvia_gara.html" %}
 {% endif %}
 {% include "direttore/_modali_gioco.html" %}
 {% endblock %}

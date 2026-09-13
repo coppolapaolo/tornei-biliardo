@@ -1,40 +1,36 @@
-<!-- Modify Dates Modal Component -->
-<div class="modal fade" id="modifyDatesModal" tabindex="-1">
-    <div class="modal-dialog modal-fullscreen-sm-down">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">{{ _("Modifica Date Iscrizioni") }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ url_for('admin.competition.modify_inscription_dates', gara_id=gara.id) }}" method="POST" id="modifyDatesForm">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="modal-body">
-                    {# Il fuso e' fissato: la piattaforma mostra da sempre in ora
-                       italiana, e il server rilegge questi campi con la stessa
-                       assunzione. Prima qui compariva il fuso del *browser*, che
-                       prometteva una cosa che nessuno faceva. #}
-                    <div class="alert alert-info">
-                        <small><i class="fas fa-clock"></i> {{ _("Gli orari sono nel tuo fuso orario.") }}</small>
-                    </div>
-                    <div class="mb-3">
-                        <label for="modify_inscription_start" class="form-label">{{ _("Inizio Iscrizioni") }}</label>
-                        {# Ripopolato lato server: il naive del DB e' UTC, e stamparlo
-                           grezzo qui farebbe arretrare l'orario di un'ora a ogni
-                           salvataggio confermato senza modifiche. #}
-                        <input type="datetime-local" class="form-control" name="inscription_start" id="modify_inscription_start"
-                               value="{{ gara.inscription_start|datetime_input }}" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="modify_inscription_end" class="form-label">{{ _("Fine Iscrizioni") }}</label>
-                        <input type="datetime-local" class="form-control" name="inscription_end" id="modify_inscription_end"
-                               value="{{ gara.inscription_end|datetime_input }}" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("Annulla") }}</button>
-                    <button type="submit" class="btn btn-warning">{{ _("Aggiorna Date") }}</button>
-                </div>
-            </form>
+{# templates/components/_modify_dates_modal.html — Design System 7c
+
+   Il foglio che sposta la finestra delle iscrizioni (canvas 2.4): estendere
+   una scadenza passata, o cambiare le date prima che scattino. Gli orari sono
+   nel fuso di chi scrive (ADR-043) e arrivano gia' compilati dal server
+   (`|datetime_input`), che li rilegge con la stessa assunzione. #}
+<div class="modal fade c7-sheet" id="modifyDatesModal" tabindex="-1" aria-labelledby="modifyDatesTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="modifyDatesTitolo">
+          {% if gara.get_real_status() == ProvaDerivedStatus.INSCRIPTION_CLOSED.value %}{{ _("Estendi le iscrizioni") }}{% else %}{{ _("Le date delle iscrizioni") }}{% endif %}
+        </h3>
+        <div class="c7-sheet__sub">{{ _("Sposta la scadenza: la pagina pubblica torna ad accettare iscrizioni.") }}</div>
+      </div>
+      <form action="{{ url_for('admin.competition.modify_inscription_dates', gara_id=gara.id) }}" method="POST" id="modifyDatesForm" class="modal-body c7-stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div>
+          <label for="modify_inscription_start" class="c7-label">{{ _("Le iscrizioni aprono") }}</label>
+          <input type="datetime-local" class="form-control c7-num" name="inscription_start" id="modify_inscription_start"
+                 value="{{ gara.inscription_start|datetime_input }}" required>
+          <div class="c7-nota mt-1">{{ _("Nel tuo fuso orario.") }}</div>
         </div>
+        <div>
+          <label for="modify_inscription_end" class="c7-label">{{ _("Le iscrizioni chiudono") }}</label>
+          <input type="datetime-local" class="form-control c7-num" name="inscription_end" id="modify_inscription_end"
+                 value="{{ gara.inscription_end|datetime_input }}" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">
+          <i class="fas fa-clock"></i> {{ _("Salva le date") }}
+        </button>
+      </form>
     </div>
+  </div>
 </div>

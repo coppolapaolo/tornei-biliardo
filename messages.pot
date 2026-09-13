@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 00:05+0200\n"
+"POT-Creation-Date: 2026-09-13 04:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -191,7 +191,7 @@ msgstr ""
 #: templates/components/_separated_dashboard_content.html:87
 #: templates/components/_tessera_gara.html:45
 #: templates/components/_unified_cards.html:71
-#: templates/direttore/_fase_iscrizioni.html:37
+#: templates/direttore/_fase_iscrizioni.html:42
 msgid "Iscrizioni aperte"
 msgstr ""
 
@@ -330,7 +330,7 @@ msgstr ""
 
 #: models/competition/showcase_view.py:297 routes/main.py:469
 #: templates/components/_unified_cards.html:79
-#: templates/direttore/_fase_iscrizioni.html:20
+#: templates/direttore/_fase_iscrizioni.html:25
 msgid "Iscrizioni non ancora aperte"
 msgstr ""
 
@@ -382,7 +382,7 @@ msgid "%(fee)s €"
 msgstr ""
 
 #: models/competition/showcase_view.py:390
-#: templates/direttore/_fase_iscrizioni.html:111
+#: templates/direttore/_fase_iscrizioni.html:126
 msgid "Chiusura iscrizioni"
 msgstr ""
 
@@ -2574,18 +2574,18 @@ msgstr ""
 msgid "Tavoli salvati."
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:84
+#: routes/admin/competition/inscriptions.py:90
 #, python-format
 msgid ""
 "Le iscrizioni non possono restare aperte oltre l'inizio della gara: la "
 "chiusura è stata anticipata al %(quando)s."
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:197
+#: routes/admin/competition/inscriptions.py:203
 msgid "In una competizione di prova si iscrivono solo i giocatori fittizi."
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:205
+#: routes/admin/competition/inscriptions.py:211
 msgid "Un giocatore fittizio gioca solo nella sua prova."
 msgstr ""
 
@@ -3677,7 +3677,6 @@ msgstr ""
 #: templates/components/_page_modal.html:17
 #: templates/components/_player_activity_feedback.html:211
 #: templates/components/_soft_delete_modal.html:7
-#: templates/components/_x_choice_modal.html:22
 #: templates/direttore/_modali_gioco.html:33
 #: templates/direttore/_modali_gioco.html:132
 #: templates/direttore/_modali_gioco.html:167 templates/gara_detail.html:251
@@ -3775,7 +3774,7 @@ msgstr ""
 msgid "Fill Gara"
 msgstr ""
 
-#: templates/base.html:651
+#: templates/base.html:651 templates/components/_gara_inscriptions.html:52
 msgid "Iscrivi"
 msgstr ""
 
@@ -3820,10 +3819,8 @@ msgstr ""
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:235
 #: templates/components/_gara_edit_form.html:392
-#: templates/components/_modify_dates_modal.html:34
 #: templates/components/_new_gara_modal.html:423
 #: templates/components/_soft_delete_modal.html:48
-#: templates/components/_x_choice_modal.html:73
 #: templates/direttore/_modali_gioco.html:116
 #: templates/direttore/_modali_gioco.html:155
 #: templates/direttore/_modali_gioco.html:186
@@ -4027,7 +4024,7 @@ msgstr ""
 
 #: templates/components/_campionato_garas.html:22
 #: templates/components/_gara_info.html:34
-#: templates/components/_gara_inscriptions.html:11
+#: templates/components/_gara_inscriptions.html:96
 #: templates/components/_nearby_gare.html:137
 #: templates/direttore/_fase_conclusa.html:78
 #: templates/direttore/_fase_gioco.html:184
@@ -4266,7 +4263,7 @@ msgid ""
 "risultati verranno cancellati."
 msgstr ""
 
-#: templates/direttore/_scripts.html:49 templates/direttore/_scripts.html:1137
+#: templates/direttore/_scripts.html:49 templates/direttore/_scripts.html:1089
 #: templates/match_detail.html:660
 msgid ""
 "Confermi di voler validare questo risultato? Il tavolo verrà liberato e "
@@ -4475,7 +4472,7 @@ msgstr ""
 msgid "Ultimo aggiornamento: agosto 2026."
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:91
+#: templates/direttore/_fase_iscrizioni.html:105
 #: templates/direttore/_fase_preparazione.html:152
 #: templates/direttore/_fase_preparazione.html:157
 #: templates/public/vetrina_campionato.html:42
@@ -5038,7 +5035,7 @@ msgid "confermati"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:253
-#: templates/components/_gara_inscriptions.html:16
+#: templates/components/_gara_inscriptions.html:98
 msgid "in attesa"
 msgstr ""
 
@@ -6104,7 +6101,7 @@ msgid "Partecipanti"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:457
-#: templates/components/_gara_inscriptions.html:116
+#: templates/components/_gara_inscriptions.html:127
 #: templates/components/_match_result_row.html:24
 #: templates/components/_match_result_row.html:28
 #: templates/components/_match_result_row.html:32
@@ -7265,7 +7262,7 @@ msgstr ""
 #: templates/components/_gara_edit_form.html:232
 #: templates/components/_new_gara_modal.html:124
 #: templates/direttore/_fase_gioco.html:90
-#: templates/direttore/_fase_iscrizioni.html:101
+#: templates/direttore/_fase_iscrizioni.html:120
 #: templates/direttore/_fase_preparazione.html:122
 #: templates/player/venues.html:29
 msgid "Tavoli"
@@ -9837,6 +9834,7 @@ msgid "Non attivo"
 msgstr ""
 
 #: templates/components/_gara_info.html:61
+#: templates/direttore/_avvia_gara.html:57
 msgid "Numero dispari"
 msgstr ""
 
@@ -9851,133 +9849,155 @@ msgstr ""
 msgid "Direzione di gara"
 msgstr ""
 
+#: templates/components/_gara_inscriptions.html:34
+msgid "Iscrivi un giocatore"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:36
+msgid "Cognome, nome o username"
+msgstr ""
+
 #: templates/components/_gara_inscriptions.html:37
-msgid "Giocatori fittizi"
-msgstr ""
-
-#: templates/components/_gara_inscriptions.html:40
-msgid "Iscrivi il minimo"
-msgstr ""
-
-#: templates/components/_gara_inscriptions.html:41
-msgid "Iscrivi fino al massimo"
-msgstr ""
-
-#: templates/components/_gara_inscriptions.html:42
-msgid "Iscrivine uno in più"
-msgstr ""
-
-#: templates/components/_gara_inscriptions.html:48
-msgid "Niente da aggiungere"
-msgstr ""
-
-#: templates/components/_gara_inscriptions.html:48
-#, python-format
-msgid "Aggiunge %(n)s giocatori fittizi"
-msgstr ""
-
-#: templates/components/_gara_inscriptions.html:56
-msgid "Imposta un massimo di iscritti per usare «fino al massimo»."
-msgstr ""
-
-#: templates/components/_gara_inscriptions.html:66
-msgid "Cerca cognome, nome o username…"
-msgstr ""
-
-#: templates/components/_gara_inscriptions.html:67
 msgid "Cerca il giocatore da iscrivere"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:71
-msgid "Giocatore da iscrivere"
-msgstr ""
-
-#: templates/components/_gara_inscriptions.html:72
-msgid "Seleziona giocatore…"
-msgstr ""
-
-#: templates/components/_gara_inscriptions.html:80
+#: templates/components/_gara_inscriptions.html:51
 msgid "Aggiungi iscritto"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:85
+#: templates/components/_gara_inscriptions.html:57
+msgid ""
+"Nessun giocatore con questo nome. Serve un account: puoi crearglielo "
+"insieme."
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:60
 #, python-brace-format
 msgid "{n} giocatori trovati"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:93
-msgid "Iscritti attivi"
+#: templates/components/_gara_inscriptions.html:69
+msgid "Giocatori fittizi"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:112
+#: templates/components/_gara_inscriptions.html:72
+msgid "Iscrivi il minimo"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:73
+msgid "Iscrivi fino al massimo"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:74
+msgid "Iscrivine uno in più"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:80
+msgid "Niente da aggiungere"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:80
 #, python-format
-msgid "Iscritto il %(date)s"
+msgid "Aggiunge %(n)s giocatori fittizi"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:116
+#: templates/components/_gara_inscriptions.html:88
+msgid "Imposta un massimo di iscritti per usare «fino al massimo»."
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:97
+#: templates/direttore/_fase_gioco.html:185
+#: templates/direttore/_fase_spareggio.html:65
+#, python-format
+msgid "%(n)d attivo"
+msgid_plural "%(n)d attivi"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/components/_gara_inscriptions.html:120
+#, python-format
+msgid "iscritto il %(date)s"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:127
 msgid "Ha dato forfait"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:123
-#, python-format
-msgid "Disiscrivere %(username)s? Riceverà una notifica."
+#: templates/components/_gara_inscriptions.html:137
+msgid "cat."
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:126
-msgid "Disiscrive il giocatore"
-msgstr ""
-
-#: templates/components/_gara_inscriptions.html:150
-#: templates/components/_gara_inscriptions.html:162
-#: templates/gamification/admin/achievement_form.html:41
-#: templates/gamification/admin/achievements.html:25
-msgid "Categoria"
-msgstr ""
-
-#: templates/components/_gara_inscriptions.html:158
+#: templates/components/_gara_inscriptions.html:139
 #, python-format
 msgid "Categoria di %(username)s in questa gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:178
+#: templates/components/_gara_inscriptions.html:154
 #, python-format
 msgid "Squadra di %(username)s in questa gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:179
+#: templates/components/_gara_inscriptions.html:155
 msgid "Senza squadra"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:201
+#: templates/components/_gara_inscriptions.html:171
+#, python-format
+msgid "Disiscrivere %(username)s? Riceverà una notifica."
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:174
+msgid "Disiscrive il giocatore"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:174
+#, python-format
+msgid "Disiscrive %(username)s"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:185
+msgid "Nessun iscritto"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:186
+msgid "Appena qualcuno si iscrive lo trovi qui."
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:199
+msgid "Limite massimo raggiunto"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:200
+msgid "Chi arriva adesso finisce in lista d’attesa."
+msgstr ""
+
+#: templates/components/_gara_lista_attesa.html:17
 #: templates/components/_tessera_gara.html:100
 #: templates/components/_unified_cards.html:139
 msgid "Lista d'attesa"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:210
-#, python-format
-msgid "In lista dal %(date)s"
+#: templates/components/_gara_lista_attesa.html:18
+msgid "entra quando si libera un posto"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:216
+#: templates/components/_gara_lista_attesa.html:26
+#, python-format
+msgid "in lista dal %(date)s"
+msgstr ""
+
+#: templates/components/_gara_lista_attesa.html:31
 #, python-format
 msgid "Rimuovere %(username)s dalla lista d'attesa?"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:219
+#: templates/components/_gara_lista_attesa.html:34
 msgid "Rimuove dalla lista d'attesa"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:232
-msgid "Nessun iscritto"
-msgstr ""
-
-#: templates/components/_gara_inscriptions.html:233
-msgid "Appena qualcuno si iscrive lo trovi qui."
-msgstr ""
-
-#: templates/components/_gara_inscriptions.html:240
-msgid "Limite massimo raggiunto"
+#: templates/components/_gara_lista_attesa.html:34
+#, python-format
+msgid "Rimuove %(username)s dalla lista d’attesa"
 msgstr ""
 
 #: templates/components/_gara_matches.html:54
@@ -10870,7 +10890,7 @@ msgid "Azzera il risultato"
 msgstr ""
 
 #: templates/components/_match_result_row.html:200
-#: templates/direttore/_scripts.html:1327
+#: templates/direttore/_scripts.html:1279
 msgid "Assegna un tavolo"
 msgstr ""
 
@@ -10978,24 +10998,37 @@ msgstr ""
 msgid "Annullato"
 msgstr ""
 
-#: templates/components/_modify_dates_modal.html:6
-msgid "Modifica Date Iscrizioni"
+#: templates/components/_modify_dates_modal.html:13
+#: templates/components/_tessera_gara.html:313
+#: templates/direttore/_fase_iscrizioni.html:70
+msgid "Estendi le iscrizioni"
 msgstr ""
 
-#: templates/components/_modify_dates_modal.html:17
-msgid "Gli orari sono nel tuo fuso orario."
+#: templates/components/_modify_dates_modal.html:13
+msgid "Le date delle iscrizioni"
+msgstr ""
+
+#: templates/components/_modify_dates_modal.html:15
+msgid "Sposta la scadenza: la pagina pubblica torna ad accettare iscrizioni."
 msgstr ""
 
 #: templates/components/_modify_dates_modal.html:20
-msgid "Inizio Iscrizioni"
+#: templates/components/_open_inscriptions_modal.html:20
+msgid "Le iscrizioni aprono"
 msgstr ""
 
-#: templates/components/_modify_dates_modal.html:28
-msgid "Fine Iscrizioni"
+#: templates/components/_modify_dates_modal.html:23
+#: templates/components/_open_inscriptions_modal.html:22
+msgid "Nel tuo fuso orario."
 msgstr ""
 
-#: templates/components/_modify_dates_modal.html:35
-msgid "Aggiorna Date"
+#: templates/components/_modify_dates_modal.html:26
+#: templates/components/_open_inscriptions_modal.html:25
+msgid "Le iscrizioni chiudono"
+msgstr ""
+
+#: templates/components/_modify_dates_modal.html:31
+msgid "Salva le date"
 msgstr ""
 
 #: templates/components/_multi_set_score_display.html:14
@@ -11250,18 +11283,6 @@ msgstr ""
 #: templates/components/_tessera_gara.html:311
 #: templates/direttore/_fase_preparazione.html:40
 msgid "Apri le iscrizioni"
-msgstr ""
-
-#: templates/components/_open_inscriptions_modal.html:20
-msgid "Le iscrizioni aprono"
-msgstr ""
-
-#: templates/components/_open_inscriptions_modal.html:22
-msgid "Nel tuo fuso orario."
-msgstr ""
-
-#: templates/components/_open_inscriptions_modal.html:25
-msgid "Le iscrizioni chiudono"
 msgstr ""
 
 #: templates/components/_open_inscriptions_modal.html:30
@@ -12234,13 +12255,9 @@ msgid "Risultati"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:312
-#: templates/direttore/_macros.html:47
+#: templates/direttore/_avvia_gara.html:26
+#: templates/direttore/_avvia_gara.html:90 templates/direttore/_macros.html:47
 msgid "Avvia la gara"
-msgstr ""
-
-#: templates/components/_tessera_gara.html:313
-#: templates/direttore/_fase_iscrizioni.html:65
-msgid "Estendi le iscrizioni"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:314
@@ -12796,53 +12813,6 @@ msgstr ""
 msgid "Nessuna partita giocata"
 msgstr ""
 
-#: templates/components/_x_choice_modal.html:20
-#: templates/components/_x_choice_modal.html:76
-msgid "Avvia la Gara"
-msgstr ""
-
-#: templates/components/_x_choice_modal.html:20
-#: templates/components/_x_choice_modal.html:76
-msgid "Avvia il Primo Turno"
-msgstr ""
-
-#: templates/components/_x_choice_modal.html:44
-msgid ""
-"Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse "
-"definitivamente."
-msgstr ""
-
-#: templates/components/_x_choice_modal.html:46
-msgid "Le iscrizioni verranno chiuse definitivamente."
-msgstr ""
-
-#: templates/components/_x_choice_modal.html:51
-msgid ""
-"Gli iscritti sono in numero dispari: uno di loro riceve la X e non gioca "
-"in questo turno. Gli altri abbinamenti restano casuali in ogni caso."
-msgstr ""
-
-#: templates/components/_x_choice_modal.html:56
-msgid "A chi va la X del primo turno?"
-msgstr ""
-
-#: templates/components/_x_choice_modal.html:60
-msgid "A sorteggio"
-msgstr ""
-
-#: templates/components/_x_choice_modal.html:61
-msgid "La decide l'algoritmo insieme agli abbinamenti, come sempre."
-msgstr ""
-
-#: templates/components/_x_choice_modal.html:64
-#, python-format
-msgid "A %(username)s"
-msgstr ""
-
-#: templates/components/_x_choice_modal.html:65
-msgid "L'ultimo iscritto alla gara."
-msgstr ""
-
 #: templates/dashboard/admin.html:12
 msgid "Sei sicuro di voler cambiare lo stato del campionato?"
 msgstr ""
@@ -12857,6 +12827,119 @@ msgstr ""
 
 #: templates/dashboard/base.html:15
 msgid "Ciao"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:26
+#: templates/direttore/_avvia_gara.html:90 templates/direttore/_macros.html:47
+msgid "Sorteggia il tabellone"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:40
+#: templates/direttore/_fase_iscrizioni.html:44
+#, python-format
+msgid "%(n)d iscritto"
+msgid_plural "%(n)d iscritti"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/direttore/_avvia_gara.html:41
+msgid "tutti gli attivi entrano in gara; le iscrizioni si chiudono"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:43
+msgid "Il tabellone si sorteggia adesso"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:44
+msgid ""
+"il percorso di ognuno resta fissato fino alla finale, salvo annullare il "
+"sorteggio"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:46
+#, python-format
+msgid "%(n)d turno generato adesso"
+msgid_plural "%(n)d turni generati adesso"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/direttore/_avvia_gara.html:47
+msgid "la formula casuale crea tutti i turni all’avvio"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:49
+msgid "Il turno 1 si sorteggia adesso"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:50
+msgid "i turni dopo nascono dai risultati, uno alla volta"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:54
+msgid "Un giocatore riposa"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:55
+msgid ""
+"gli iscritti sono dispari: uno prende la X del primo turno, scegli chi "
+"qui sotto"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:58
+#, python-format
+msgid "chi riposa lo decide la formula: %(policy)s"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:60
+msgid "Numero pari"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:60
+msgid "nessuno riposa al primo turno"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:63
+#, python-format
+msgid "Tavoli %(tavoli)s"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:63
+msgid "Nessun tavolo"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:64
+msgid "in quest’ordine: il primo alla partita di cartello"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:64
+msgid "le partite si avviano dal segnapunti, senza assegnazione"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:72
+msgid "A chi va la X del primo turno?"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:74
+msgid "A sorteggio"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:75
+msgid "La decide l'algoritmo insieme agli abbinamenti, come sempre."
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:77
+#, python-format
+msgid "A %(username)s"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:78
+msgid "L'ultimo iscritto alla gara."
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:86
+msgid ""
+"Da qui le iscrizioni si chiudono e gli abbinamenti sono fissati. Finché "
+"nessun risultato è inserito puoi ancora annullare l’avvio."
 msgstr ""
 
 #: templates/direttore/_fase_conclusa.html:17
@@ -13075,36 +13158,28 @@ msgstr ""
 msgid "c’è un tavolo libero: assegnalo dalla card"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:185
-#: templates/direttore/_fase_spareggio.html:65
-#, python-format
-msgid "%(n)d attivo"
-msgid_plural "%(n)d attivi"
-msgstr[0] ""
-msgstr[1] ""
-
-#: templates/direttore/_fase_iscrizioni.html:21
+#: templates/direttore/_fase_iscrizioni.html:26
 msgid "Aprono da sole"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:23
+#: templates/direttore/_fase_iscrizioni.html:28
 msgid "La gara è già pubblica: chi la trova legge quando potrà iscriversi."
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:25
+#: templates/direttore/_fase_iscrizioni.html:30
 msgid "Iscrizioni scadute"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:27
+#: templates/direttore/_fase_iscrizioni.html:32
 #, python-format
 msgid "Chiuse il %(quando)s"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:27
+#: templates/direttore/_fase_iscrizioni.html:32
 msgid "Chiuse"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:31
+#: templates/direttore/_fase_iscrizioni.html:36
 #, python-format
 msgid ""
 "Sono arrivati %(n)s iscritti sugli %(min)s che servono. Puoi allungare i "
@@ -13112,90 +13187,72 @@ msgid ""
 "notifica."
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:33
+#: templates/direttore/_fase_iscrizioni.html:38
 #, python-format
 msgid ""
 "%(n)s iscritti, il minimo c’è: puoi avviare la gara o riaprire le "
 "iscrizioni."
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:39
+#: templates/direttore/_fase_iscrizioni.html:44
 #, python-format
 msgid "%(n)s iscritti su %(max)s"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:39
-#, python-format
-msgid "%(n)d iscritto"
-msgid_plural "%(n)d iscritti"
-msgstr[0] ""
-msgstr[1] ""
-
-#: templates/direttore/_fase_iscrizioni.html:47
+#: templates/direttore/_fase_iscrizioni.html:52
 #, python-format
 msgid "Servono almeno %(min)s iscritti"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:47
+#: templates/direttore/_fase_iscrizioni.html:52
 #, python-format
 msgid "chiudono %(quando)s"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:56
+#: templates/direttore/_fase_iscrizioni.html:61
 msgid "Modifica le date"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:70
+#: templates/direttore/_fase_iscrizioni.html:75
 #, python-format
 msgid "Manca %(n)d iscritto"
 msgid_plural "Mancano %(n)d iscritti"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_iscrizioni.html:82
+#: templates/direttore/_fase_iscrizioni.html:87
 msgid "Annulla la gara"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:84
+#: templates/direttore/_fase_iscrizioni.html:89
 #, python-format
 msgid "L’iscritto riceve la notifica dell’annullamento."
 msgid_plural "I %(n)d iscritti ricevono la notifica dell’annullamento."
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_iscrizioni.html:98
+#: templates/direttore/_fase_iscrizioni.html:117
 msgid "Da tenere d'occhio"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:102
+#: templates/direttore/_fase_iscrizioni.html:121
 msgid "cambia prima di avviare"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:102
+#: templates/direttore/_fase_iscrizioni.html:121
 #: templates/direttore/_fase_preparazione.html:123
 msgid "nessun tavolo: la sala non ne ha dichiarati"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:107
-#, python-format
-msgid "%(n)d in lista d’attesa"
-msgid_plural "%(n)d in lista d’attesa"
-msgstr[0] ""
-msgstr[1] ""
-
-#: templates/direttore/_fase_iscrizioni.html:108
-msgid "entra se qualcuno si ritira"
-msgstr ""
-
-#: templates/direttore/_fase_iscrizioni.html:112
+#: templates/direttore/_fase_iscrizioni.html:127
 msgid "senza scadenza"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:117
+#: templates/direttore/_fase_iscrizioni.html:132
 msgid "Chiudi le iscrizioni"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:117
+#: templates/direttore/_fase_iscrizioni.html:132
 msgid "la gara torna in preparazione"
 msgstr ""
 
@@ -13354,10 +13411,6 @@ msgstr ""
 
 #: templates/direttore/_fase_spareggio.html:61
 msgid "turno per turno"
-msgstr ""
-
-#: templates/direttore/_macros.html:47
-msgid "Sorteggia il tabellone"
 msgstr ""
 
 #: templates/direttore/_macros.html:65
@@ -13596,11 +13649,11 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/direttore/_scripts.html:47 templates/direttore/_scripts.html:1085
+#: templates/direttore/_scripts.html:47 templates/direttore/_scripts.html:1037
 msgid "Sei sicuro di voler resettare questa partita?"
 msgstr ""
 
-#: templates/direttore/_scripts.html:48 templates/direttore/_scripts.html:1109
+#: templates/direttore/_scripts.html:48 templates/direttore/_scripts.html:1061
 msgid "Sei sicuro di voler resettare questo trio?"
 msgstr ""
 
@@ -13690,46 +13743,46 @@ msgstr ""
 msgid "Click per scambiare con match occupante"
 msgstr ""
 
-#: templates/direttore/_scripts.html:770
+#: templates/direttore/_scripts.html:722
 msgid ""
 "Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di"
 " setup."
 msgstr ""
 
-#: templates/direttore/_scripts.html:930
+#: templates/direttore/_scripts.html:882
 msgid "I triangoli non possono essere negativi."
 msgstr ""
 
-#: templates/direttore/_scripts.html:932
+#: templates/direttore/_scripts.html:884
 #, python-format
 msgid "Nessun giocatore può avere più di %(d)s triangoli."
 msgstr ""
 
-#: templates/direttore/_scripts.html:936
+#: templates/direttore/_scripts.html:888
 #, python-format
 msgid "Somma triangoli troppo alta: massimo %(d)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:938
+#: templates/direttore/_scripts.html:890
 #, python-format
 msgid "Risultato incompleto: uno dei due deve raggiungere %(d)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:943
+#: templates/direttore/_scripts.html:895
 #, python-format
 msgid "Somma triangoli troppo alta: il totale esatto è %(d)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:945
+#: templates/direttore/_scripts.html:897
 #, python-format
 msgid "Risultato incompleto: la somma deve essere esattamente %(d)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1326
+#: templates/direttore/_scripts.html:1278
 msgid "Cambia tavolo"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1344
+#: templates/direttore/_scripts.html:1296
 msgid ""
 "Torna da giocare e il tavolo si libera. Si può finché il turno dopo non è"
 " avviato."
@@ -15163,6 +15216,11 @@ msgstr ""
 
 #: templates/gamification/admin/achievement_form.html:36
 msgid "Vinci la tua prima partita"
+msgstr ""
+
+#: templates/gamification/admin/achievement_form.html:41
+#: templates/gamification/admin/achievements.html:25
+msgid "Categoria"
 msgstr ""
 
 #: templates/gamification/admin/achievement_form.html:51

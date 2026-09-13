@@ -1,39 +1,71 @@
 {# templates/components/_gara_inscriptions.html — Design System 7c
-   Elenco iscritti + lista d'attesa. Endpoint, capability e conferme invariati.
 
-   inscriptions_headerless: sopprime card e testata quando il componente e'
-   dentro un contenitore che ha gia' titolo e conteggio (su mobile la sezione
-   richiudibile in fondo alla pagina della gara). Stessa convenzione di
-   `management_headerless` in _gara_management.html. #}
-<div class="{{ '' if inscriptions_headerless else 'c7-card' }}">
-  {% if not inscriptions_headerless %}
-  <div class="d-flex align-items-center gap-2 mb-3">
-    <h3 class="mb-0 flex-fill">{{ _('Iscritti') }}</h3>
-    <span class="c7-num" style="color:var(--c7-ink-muted)">
-      {{ gara.get_active_inscriptions_count() }}{% if gara.max_participants %}/{{ gara.max_participants }}{% endif %}
-    </span>
-    {% if gara.get_waitlist_count() > 0 %}
-    <span class="c7-state c7-state--warn">+{{ gara.get_waitlist_count() }} {{ _("in attesa") }}</span>
-    {% endif %}
+   Iscritti e lista d'attesa (canvas 2.2 e 2.3). Per chi dirige, a iscrizioni
+   aperte, il campo per iscrivere sta in cima, sempre visibile: e' il gesto
+   principale della fase. Si scrive e i candidati compaiono sotto, ognuno con
+   «Iscrivi» sulla riga (`static/js/iscritti_ricerca.js`; ricerca per
+   cognome, nome o username, nel browser perche' nome e cognome sono
+   cifrati). L'elenco e' raggruppato: avatar, nome, quando si e' iscritto, la
+   categoria come chip (ADR-049), la squadra dove serve, e il comando per
+   togliere. La lista d'attesa e' un gruppo a parte ed entra da sola quando
+   qualcuno si ritira (`InscriptionService._promote_and_notify`).
+
+   Per chi guarda (iscritto, ospite) e' lo stesso elenco in sola lettura.
+   Endpoint, capability e conferme invariati.
+
+   inscriptions_headerless: sopprime la testata quando il contenitore ha gia'
+   titolo e conteggio. Niente `id` (la pagina di chi guarda lo include due
+   volte, mobile e desktop): il combo delle categorie e il `<datalist>` stanno
+   in `_categorie_management.html`. #}
+
+{% set _attivi = inscriptions | selectattr('is_waitlist', 'equalto', false) | selectattr('is_withdrawn', 'equalto', false) | list %}
+{% set _attesa = inscriptions | selectattr('is_waitlist', 'equalto', true) | selectattr('is_withdrawn', 'equalto', false) | sort(attribute='waitlist_position') | list %}
+{# Lo stato derivato, non quello persistito: a scadenza passata le
+   iscrizioni sono chiuse anche se la gara e' ancora INSCRIPTION, e il
+   servizio rifiuterebbe l'iscrizione. #}
+{% set _puo_iscrivere = user_can_manage and gara.get_real_status() == GaraStatus.INSCRIPTION.value %}
+
+<section class="c7-stack">
+
+  {# ---- Iscrivi un giocatore: il campo in cima ---- #}
+  {% if _puo_iscrivere and available_users and available_users|length > 0 and not gara.is_prova %}
+  <div class="c7-stack" data-iscrivibili data-massimo="8" style="gap:8px">
+    <div>
+      <label class="c7-label" data-help="gara-cerca-da-iscrivere">{{ _('Iscrivi un giocatore') }}</label>
+      <input type="search" class="form-control js-iscritti-cerca" autocomplete="off"
+             placeholder="{{ _('Cognome, nome o username') }}"
+             aria-label="{{ _('Cerca il giocatore da iscrivere') }}">
+    </div>
+    <div class="c7-rows c7-iscrivibili">
+      {% for user in available_users %}
+      <form method="POST" action="{{ url_for('admin.competition.admin_inscribe_user', gara_id=gara.id) }}"
+            class="c7-rows__row js-iscrivibile"
+            data-cerca="{{ (user.username ~ ' ' ~ (user.full_name or ''))|trim|lower }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="user_id" value="{{ user.id }}">
+        <span class="c7-avatar">{{ user.username[:2]|upper }}</span>
+        <span class="c7-rows__main">
+          <span class="c7-rows__title d-block">{{ user.username }}</span>
+          {% if user.full_name %}<span class="c7-rows__sub d-block">{{ user.full_name }}{% if user.home_city %} <span class="c7-sep">·</span> {{ user.home_city }}{% endif %}</span>{% endif %}
+        </span>
+        <button type="submit" class="btn btn-primary btn-sm" title="{{ _('Aggiungi iscritto') }}">
+          <i class="fas fa-user-plus"></i>&nbsp;{{ _('Iscrivi') }}
+        </button>
+      </form>
+      {% endfor %}
+      <div class="c7-rows__row c7-rows__row--dim js-iscritti-nessuno" hidden>
+        <div class="c7-rows__sub">{{ _('Nessun giocatore con questo nome. Serve un account: puoi crearglielo insieme.') }}</div>
+      </div>
+    </div>
+    <div class="js-iscritti-esito c7-kicker" aria-live="polite" data-formato="{{ _('{n} giocatori trovati') }}"></div>
   </div>
   {% endif %}
 
-  {# Aggiunta manuale (solo direttore/admin in fase iscrizione).
-
-     Chi dirige spesso conosce la persona per nome e cognome, non per username:
-     la tendina mostra entrambi e il campo qui sopra cerca in tutti e tre i
-     campi (issue #156, `static/js/iscritti_ricerca.js`). La ricerca è nel
-     browser perché nome e cognome sono cifrati e in SQL non si filtrano; senza
-     JavaScript resta la tendina completa, che è il comportamento di prima. #}
   {# Competizione di prova (ADR-058): niente utenti veri, si iscrivono
-     giocatori fittizi. Tre pulsanti, uno per misura — il minimo per far
-     partire la gara, fino al massimo per riempirla, uno in piu' per vedere
-     il caso dispari e la X — e ciascuno si spegne quando non aggiungerebbe
-     nessuno. Sono `c7-choice`-like ma restano pulsanti: l'azione e' un POST,
-     non una scelta da salvare. #}
+     giocatori fittizi. Tre pulsanti, uno per misura. #}
   {% if gara.is_prova and prova_iscrizioni and gara.status == GaraStatus.INSCRIPTION.value
         and feature_visible('admin.competition.prova_iscrivi_fittizi') %}
-  <div class="mb-3">
+  <div>
     <div class="c7-label mb-2" data-help="prova-fittizi"><i class="fas fa-flask me-1"></i>{{ _("Giocatori fittizi") }}</div>
     <div class="c7-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
       {% for modalita, etichetta in [
@@ -53,191 +85,119 @@
       {% endfor %}
     </div>
     {% if not gara.max_participants %}
-    <div class="form-text">{{ _("Imposta un massimo di iscritti per usare «fino al massimo».") }}</div>
+    <div class="c7-nota mt-1">{{ _("Imposta un massimo di iscritti per usare «fino al massimo».") }}</div>
     {% endif %}
   </div>
   {% endif %}
 
-  {% if available_users and available_users|length > 0 and not gara.is_prova %}
-  <form method="POST" action="{{ url_for('admin.competition.admin_inscribe_user', gara_id=gara.id) }}" class="mb-3">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <div class="d-flex gap-2 mb-2">
-      <input type="search" class="form-control js-iscritti-cerca" autocomplete="off" data-help="gara-cerca-da-iscrivere"
-             placeholder="{{ _('Cerca cognome, nome o username…') }}"
-             aria-label="{{ _('Cerca il giocatore da iscrivere') }}">
-    </div>
-    <div class="d-flex gap-2">
-      <select name="user_id" class="form-select flex-fill" required
-              aria-label="{{ _('Giocatore da iscrivere') }}">
-        <option value="">{{ _('Seleziona giocatore…') }}</option>
-        {% for user in available_users %}
-        <option value="{{ user.id }}"
-                data-cerca="{{ (user.username ~ ' ' ~ (user.full_name or ''))|trim|lower }}">
-          {% if user.full_name %}{{ user.full_name }} · {{ user.username }}{% else %}{{ user.username }}{% endif %}
-        </option>
-        {% endfor %}
-      </select>
-      <button type="submit" class="btn btn-primary" title="{{ _('Aggiungi iscritto') }}">
-        <i class="fas fa-user-plus"></i>
-      </button>
-    </div>
-    <div class="js-iscritti-esito c7-kicker mt-1" aria-live="polite"
-         data-formato="{{ _('{n} giocatori trovati') }}"></div>
-  </form>
+  {# ---- Gli iscritti ---- #}
+  {% if not inscriptions_headerless %}
+  <div class="c7-sechead">
+    <h3>{{ _('Iscritti') }}</h3>
+    <span class="c7-state c7-state--accent">{{ ngettext('%(n)d attivo', '%(n)d attivi', _attivi|length, n=_attivi|length) }}</span>
+    {% if _attesa %}<span class="c7-state c7-state--warn">+{{ _attesa|length }} {{ _("in attesa") }}</span>{% endif %}
+    {% if gara.max_participants %}<span class="c7-sechead__note c7-num">{{ _attivi|length }}/{{ gara.max_participants }}</span>{% endif %}
+  </div>
   {% endif %}
 
-  {% if inscriptions %}
-    {% set active_inscriptions = inscriptions | selectattr('is_waitlist', 'equalto', false) | selectattr('is_withdrawn', 'equalto', false) | list %}
-
-    {% if active_inscriptions %}
-    <div class="c7-kicker mb-2">{{ _('Iscritti attivi') }}</div>
-    <div class="c7-stack" style="gap:8px">
-      {% for inscription in active_inscriptions %}
-      <div class="c7-subrow">
-      <div class="d-flex align-items-center gap-3">
-        <span class="c7-avatar {{ 'c7-card--locked' if inscription.is_forfeit }}">{{ inscription.user.username[:2] | upper }}</span>
-        <div class="flex-fill min-width-0">
-          <a href="{{ url_for('player.view_profile', user_id=inscription.user_id) }}"
-             style="font-size:14px;font-weight:700;color:var(--c7-ink){% if inscription.is_forfeit %};text-decoration:line-through;color:var(--c7-ink-muted){% endif %}">
-            {{ inscription.user.username }}
-          </a>
-          <div style="font-size:11px;font-weight:600;color:var(--c7-ink-muted)">
-            {# Nome e cognome li vede **chi dirige la gara**, ed esistono per
-               una ragione sola: distinguere due iscritti con username simili
-               prima di disiscriverne uno per sbaglio (issue #156). Non
-               sostituiscono lo username, che resta il nome sotto cui si gioca,
-               e non compaiono a chi guarda la gara da fuori. #}
-            {% if user_can_manage and inscription.user.full_name %}{{ inscription.user.full_name }}
-            <span class="c7-sep">·</span>{% endif %}
-            {{ _('Iscritto il %(date)s', date=inscription.created_at|datetime_local) }}
-          </div>
+  {% if _attivi %}
+  <div class="c7-rows">
+    {% for inscription in _attivi %}
+    <div class="c7-rows__row c7-iscritto">
+      <span class="c7-avatar {{ 'c7-card--locked' if inscription.is_forfeit }}">{{ inscription.user.username[:2] | upper }}</span>
+      <div class="c7-rows__main">
+        <a href="{{ url_for('player.view_profile', user_id=inscription.user_id) }}"
+           class="c7-rows__title d-block" style="color:var(--c7-ink){% if inscription.is_forfeit %};text-decoration:line-through;color:var(--c7-ink-muted){% endif %}">
+          {{ inscription.user.username }}
+        </a>
+        <div class="c7-rows__sub">
+          {# Nome e cognome li vede chi dirige, per distinguere due iscritti
+             con username simili prima di toglierne uno per sbaglio (issue
+             #156). Non compaiono a chi guarda la gara da fuori. #}
+          {# Non si ripete quando coincide con lo username, come per i
+             giocatori fittizi della prova. #}
+          {% if user_can_manage and inscription.user.full_name and inscription.user.full_name|lower != inscription.user.username|lower %}{{ inscription.user.full_name }} <span class="c7-sep">·</span> {% endif %}
+          {{ _('iscritto il %(date)s', date=inscription.created_at|date_local) }}
+          {% if inscription.squadra and not (user_can_manage and squadre_editable and gara.separate_teammates) %}
+          <span class="c7-sep">·</span> {{ inscription.squadra.name }}
+          {% endif %}
         </div>
-        {% if inscription.is_forfeit %}
-        <span class="c7-state c7-state--muted" title="{{ _('Ha dato forfait') }}">{{ _('Forfait') }}</span>
-        {% endif %}
-        {# user_can_manage, non "e' un direttore qualunque": e' la stessa
-           capability che il server verifica sulla POST. #}
-        {% if user_can_manage and gara.status == GaraStatus.INSCRIPTION.value %}
-        <form method="POST"
-              action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
-              onsubmit='return confirmSubmit(this, {{ _('Disiscrivere %(username)s? Riceverà una notifica.', username=inscription.user.username)|tojson }})'>
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="c7-iconbtn" style="background:var(--c7-card);color:var(--c7-err-ink)"
-                  title="{{ _('Disiscrive il giocatore') }}">
-            <i class="fas fa-user-minus"></i>
-          </button>
-        </form>
-        {% endif %}
       </div>
+      {% if inscription.is_forfeit %}
+      <span class="c7-state c7-state--muted" title="{{ _('Ha dato forfait') }}">{{ _('Forfait') }}</span>
+      {% endif %}
 
-      {# Categoria dell'iscritto (ADR-049): decide se le sue partite contano per
-         l'Elo in una gara con handicap — contano solo quelle fra giocatori
-         della stessa categoria.
-
-         Il campo è un combo: un nome già in elenco si completa da solo, uno
-         nuovo crea la categoria. Definire l'elenco e assegnare sono quindi lo
-         stesso gesto, e non serve preparare niente prima.
-
-         Sta su una riga propria e non accanto al nome perché questo pannello è
-         largo 380px: con avatar, nome e pulsante di disiscrizione un campo
-         affiancato faceva andare a capo il pulsante.
-
-         Salva senza ricaricare (fetch): con 32 iscritti un invio di form per
-         riga significherebbe 32 ritorni in cima alla pagina. #}
+      {# Categoria dell'iscritto (ADR-049), come chip: un nome gia' in elenco
+         si completa da solo, uno nuovo crea la categoria. Salva da se'. #}
       {% if gara.effective_has_handicap %}
       {% if user_can_manage and categorie_editable %}
-      <div class="d-flex align-items-center gap-2" style="margin-top:10px">
-        <span class="c7-label"{% if loop.first %} data-help="gara-categoria-iscritto"{% endif %}>{{ _('Categoria') }}</span>
-        <input type="text" list="categorieGara{{ gara.id }}"
-               class="form-control form-control-sm c7-categoria-input"
-               style="width:110px;flex:0 0 auto"
+      <span class="c7-chip c7-chip--cat"{% if loop.first %} data-help="gara-categoria-iscritto"{% endif %}>
+        <input type="text" list="categorieGara{{ gara.id }}" class="c7-categoria-input"
                value="{{ inscription.categoria.name if inscription.categoria else '' }}"
-               placeholder="—"
-               maxlength="50"
+               placeholder="{{ _('cat.') }}" maxlength="50"
                data-categoria-url="{{ url_for('admin.competition.set_inscription_categoria', gara_id=gara.id, inscription_id=inscription.id) }}"
                aria-label="{{ _('Categoria di %(username)s in questa gara', username=inscription.user.username) }}">
-      </div>
+        <i class="fas fa-caret-down c7-chip__caret"></i>
+      </span>
       {% elif inscription.categoria %}
-      <div class="d-flex align-items-center gap-2" style="margin-top:8px">
-        <span class="c7-label"{% if loop.first %} data-help="gara-categoria-iscritto"{% endif %}>{{ _('Categoria') }}</span>
-        <span class="c7-state">{{ inscription.categoria.name }}</span>
-      </div>
+      <span class="c7-state c7-state--info"{% if loop.first %} data-help="gara-categoria-iscritto"{% endif %}>{{ inscription.categoria.name }}</span>
       {% endif %}
       {% endif %}
 
-      {# Squadra dell'iscritto (US-9): il direttore la corregge da qui, perché
-         è lui a sapere chi rappresenta chi quella sera. Solo dove le squadre
-         sono attive, e solo finché il primo turno non è partito — dopo il
-         tabellone è estratto e resta la sola etichetta. #}
-      {% if gara.separate_teammates %}
-      {% if user_can_manage and squadre_editable %}
-      <form method="POST" style="margin-top:10px"
-            action="{{ url_for('admin.competition.set_inscription_squadra', gara_id=gara.id, inscription_id=inscription.id) }}">
+      {# Squadra dell'iscritto (US-9): il direttore la corregge da qui, finche'
+         il primo turno non e' partito. #}
+      {% if gara.separate_teammates and user_can_manage and squadre_editable %}
+      <form method="POST" action="{{ url_for('admin.competition.set_inscription_squadra', gara_id=gara.id, inscription_id=inscription.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <select name="squadra_id" class="form-select form-select-sm" onchange="this.form.submit()"
-                aria-label="{{ _('Squadra di %(username)s in questa gara', username=inscription.user.username) }}">
-          <option value="" {% if not inscription.squadra_id %}selected{% endif %}>{{ _('Senza squadra') }}</option>
-          {% for squadra in squadre %}
-          <option value="{{ squadra.id }}" {% if inscription.squadra_id == squadra.id %}selected{% endif %}>{{ squadra.name }}</option>
-          {% endfor %}
-          {% if inscription.squadra and inscription.squadra not in squadre %}
-          <option value="{{ inscription.squadra_id }}" selected>{{ inscription.squadra.name }}</option>
-          {% endif %}
-        </select>
+        <span class="c7-chip">
+          <select name="squadra_id" onchange="this.form.submit()"
+                  aria-label="{{ _('Squadra di %(username)s in questa gara', username=inscription.user.username) }}">
+            <option value="" {% if not inscription.squadra_id %}selected{% endif %}>{{ _('Senza squadra') }}</option>
+            {% for squadra in squadre %}
+            <option value="{{ squadra.id }}" {% if inscription.squadra_id == squadra.id %}selected{% endif %}>{{ squadra.name }}</option>
+            {% endfor %}
+            {% if inscription.squadra and inscription.squadra not in squadre %}
+            <option value="{{ inscription.squadra_id }}" selected>{{ inscription.squadra.name }}</option>
+            {% endif %}
+          </select>
+          <i class="fas fa-caret-down c7-chip__caret"></i>
+        </span>
       </form>
-      {% elif inscription.squadra %}
-      <div style="margin-top:8px">
-        <span class="c7-state c7-state--muted">{{ inscription.squadra.name }}</span>
-      </div>
       {% endif %}
+
+      {% if _puo_iscrivere %}
+      <form method="POST"
+            action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
+            onsubmit='return confirmSubmit(this, {{ _('Disiscrivere %(username)s? Riceverà una notifica.', username=inscription.user.username)|tojson }})'>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="c7-iconbtn" style="background:var(--c7-bg);color:var(--c7-err-ink)"
+                title="{{ _('Disiscrive il giocatore') }}" aria-label="{{ _('Disiscrive %(username)s', username=inscription.user.username) }}">
+          <i class="fas fa-minus"></i>
+        </button>
+      </form>
       {% endif %}
-      </div>
-      {% endfor %}
     </div>
-    {% endif %}
-
-    {% set waitlist_inscriptions = inscriptions | selectattr('is_waitlist', 'equalto', true) | selectattr('is_withdrawn', 'equalto', false) | sort(attribute='waitlist_position') | list %}
-    {% if waitlist_inscriptions %}
-    <div class="c7-kicker mt-4 mb-2" style="color:var(--c7-warn)" data-help="iscrizione-lista-attesa">{{ _("Lista d'attesa") }}</div>
-    <div class="c7-stack" style="gap:8px">
-      {% for inscription in waitlist_inscriptions %}
-      <div class="d-flex align-items-center gap-3" style="background:var(--c7-warn-bg);border-radius:var(--c7-r-chip);padding:12px 14px">
-        <span class="c7-num" style="width:22px;text-align:center;color:var(--c7-warn-ink)">{{ inscription.waitlist_position }}</span>
-        <div class="flex-fill">
-          <a href="{{ url_for('player.view_profile', user_id=inscription.user_id) }}"
-             style="font-size:14px;font-weight:700;color:var(--c7-warn-ink)">{{ inscription.user.username }}</a>
-          <div style="font-size:11px;font-weight:600;color:var(--c7-warn-body)">
-            {{ _('In lista dal %(date)s', date=inscription.created_at|datetime_local) }}
-          </div>
-        </div>
-        {% if user_can_manage and gara.status == GaraStatus.INSCRIPTION.value %}
-        <form method="POST"
-              action="{{ url_for('admin.competition.admin_uninscribe_user', gara_id=gara.id, user_id=inscription.user_id) }}"
-              onsubmit='return confirmSubmit(this, {{ _('Rimuovere %(username)s dalla lista d\'attesa?', username=inscription.user.username)|tojson }})'>
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="c7-iconbtn" style="background:var(--c7-card);color:var(--c7-err-ink)"
-                  title="{{ _('Rimuove dalla lista d\'attesa') }}">
-            <i class="fas fa-user-minus"></i>
-          </button>
-        </form>
-        {% endif %}
-      </div>
-      {% endfor %}
-    </div>
-    {% endif %}
-
-  {% else %}
-    <div class="c7-empty" style="background:var(--c7-bg)">
-      <div class="c7-empty__ico"><i class="fas fa-user-group"></i></div>
-      <div class="c7-empty__title">{{ _('Nessun iscritto') }}</div>
-      <p class="c7-empty__text">{{ _('Appena qualcuno si iscrive lo trovi qui.') }}</p>
-    </div>
-  {% endif %}
-
-  {% if gara.max_participants and gara.is_full() %}
-  <div class="c7-flash c7-flash--warning mt-3">
-    <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
-    <div class="c7-flash__body"><div class="c7-flash__title">{{ _('Limite massimo raggiunto') }}</div></div>
+    {% endfor %}
+  </div>
+  {% elif not _attesa %}
+  <div class="c7-empty" style="background:var(--c7-card)">
+    <div class="c7-empty__ico"><i class="fas fa-user-group"></i></div>
+    <div class="c7-empty__title">{{ _('Nessun iscritto') }}</div>
+    <p class="c7-empty__text">{{ _('Appena qualcuno si iscrive lo trovi qui.') }}</p>
   </div>
   {% endif %}
-</div>
+
+  {# ---- La lista d'attesa: sul desktop della fase iscrizioni sta nella
+     colonna di destra (attesa_a_parte), qui resta per il telefono ---- #}
+  <div{% if attesa_a_parte %} class="d-lg-none"{% endif %}>
+    {% include "components/_gara_lista_attesa.html" %}
+  </div>
+
+  {% if gara.max_participants and gara.is_full() %}
+  <div class="c7-flash c7-flash--warning">
+    <span class="c7-flash__ico"><i class="fas fa-exclamation"></i></span>
+    <div class="c7-flash__body"><div class="c7-flash__title">{{ _('Limite massimo raggiunto') }}</div>
+      <div class="c7-flash__text">{{ _('Chi arriva adesso finisce in lista d’attesa.') }}</div></div>
+  </div>
+  {% endif %}
+</section>

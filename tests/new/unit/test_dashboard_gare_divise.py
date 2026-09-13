@@ -30,6 +30,7 @@ from models.base import utc_now
 from models.campionato.models import Campionato
 from models.competition.models import Gara, Inscription, WaitlistReason
 from models.dashboard.gara_cards import (
+    _ordine_delle_altre,
     FINESTRA_CONCLUSE,
     build_gara_cards,
     finestra_concluse,
@@ -428,3 +429,47 @@ def test_le_gare_di_un_campionato_arrivano_srotolate_col_nome_del_campionato():
     assert mie[0].campionato_name == "Sociale 2026"
     assert [c.id for c in aperte] == [2]
     assert aperte[0].campionato_name == "Sociale 2026"
+
+
+# --------------------------------------------------------------------------
+# Le partite degli altri nella card in corso
+# --------------------------------------------------------------------------
+
+
+def _altra(id_, tavolo, p1=0, p2=0):
+    m = Match(gara_id=1, round_number=1, status=MatchStatus.PLAYING.value)
+    m.id = id_
+    m.table_assignment = tavolo
+    m.player1_score = p1
+    m.player2_score = p2
+    return m
+
+
+@pytest.mark.unit
+def test_un_tavolo_con_la_lettera_e_uno_mancante_non_fanno_cadere_la_dashboard():
+    """Regressione: `table_assignment` è testo e può mancare; la chiave
+    d'ordine confrontava «A» con un intero e la dashboard rispondeva 500
+    (2026-09-13, dataset della guida)."""
+    partite = [_altra(3, None), _altra(2, "A"), _altra(1, "2")]
+
+    partite.sort(key=_ordine_delle_altre)
+
+    assert [m.id for m in partite] == [1, 2, 3]
+
+
+@pytest.mark.unit
+def test_i_tavoli_numerici_si_ordinano_per_numero_non_per_lettera():
+    partite = [_altra(1, "10"), _altra(2, "2")]
+
+    partite.sort(key=_ordine_delle_altre)
+
+    assert [m.table_assignment for m in partite] == ["2", "10"]
+
+
+@pytest.mark.unit
+def test_prima_le_partite_con_un_punteggio():
+    partite = [_altra(1, "1"), _altra(2, "5", p1=2)]
+
+    partite.sort(key=_ordine_delle_altre)
+
+    assert [m.id for m in partite] == [2, 1]

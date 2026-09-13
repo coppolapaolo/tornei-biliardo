@@ -408,3 +408,22 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   candidati (`_direttori.html`, usato anche da «Impostazioni gara»). Via
   `_round_management.html`, `_gara_directors.html` e il modale degli
   esercizi, sostituiti dai passi.
+* **C · Iscrizioni** (PR `feat: le iscrizioni, con il campo per iscrivere
+  in cima`, 2026-09-13). Le schermate 2.1–2.6: il campo per iscrivere sta
+  in cima, sempre visibile, e i candidati compaiono sotto mentre si scrive,
+  ognuno con «Iscrivi» sulla riga (via la tendina;
+  `static/js/iscritti_ricerca.js` riscritto, test jsdom in
+  `tests/frontend/`); l'elenco con avatar, nome, data, la categoria come
+  chip (ADR-049) e la squadra dove serve; la lista d'attesa a parte
+  (`_gara_lista_attesa.html`), che entra da sola — nessun «Fai entrare».
+  Le iscrizioni scadute sono stato derivato: la fascia propone «Estendi le
+  iscrizioni» (foglio `_modify_dates_modal.html` rifatto) o «Annulla la
+  gara», e «Avvia» se il minimo c'e'. Il foglio «Avvia la gara»
+  (`_avvia_gara.html`) dice cosa succede — iscritti, turno 1 o tabellone,
+  chi riposa con la scelta dell'ultimo iscritto, i tavoli nell'ordine
+  scelto — e sostituisce il `confirm()` e `_x_choice_modal.html`. Desktop
+  2.6 a due colonne (elenco a sinistra; link, attesa e «Da tenere
+  d'occhio» a destra; squadre, categorie e informazioni sotto l'elenco).
+  Trovato strada facendo: la dashboard cadeva con `TypeError` quando un
+  turno aveva un tavolo con la lettera e uno senza
+  (`gara_cards._ordine_delle_altre`, con test).

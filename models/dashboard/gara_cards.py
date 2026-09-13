@@ -595,13 +595,7 @@ def enrich_with_progress(cards: Iterable[GaraCardVM], user_id: Optional[int]) ->
         altre = per_gara.get(card.gara.id, [])
         # Prima quelle che dicono qualcosa: una partita ancora a zero non
         # aggiunge niente a «come sta andando il turno».
-        altre.sort(
-            key=lambda m: (
-                not _ha_un_punteggio(m),
-                m.table_assignment if m.table_assignment is not None else 10**6,
-                m.id or 0,
-            )
-        )
+        altre.sort(key=_ordine_delle_altre)
         card.altre_partite = altre[:ALTRE_PARTITE_MOSTRATE]
         card.altre_restanti = max(0, len(altre) - ALTRE_PARTITE_MOSTRATE)
 
@@ -657,6 +651,25 @@ def enrich_with_piazzamento(
                 vinte=vinte,
                 giocate=giocate_n,
             )
+
+
+def _ordine_delle_altre(match: TournamentMatch) -> Tuple[bool, int, int, str, int]:
+    """Prima le partite che dicono qualcosa, poi per tavolo, poi per id.
+
+    `table_assignment` è una stringa («3», «A», «sala rossa») e può mancare:
+    confrontarla con un intero sentinella faceva cadere la dashboard con
+    `TypeError` appena un turno aveva un tavolo con la lettera e uno senza
+    (trovato il 2026-09-13 sul dataset della guida). I tavoli numerici si
+    ordinano per numero, gli altri per nome dopo di loro, i mancanti in coda.
+    """
+    tavolo = match.table_assignment
+    if tavolo is None:
+        rango, numero, nome = 2, 0, ""
+    elif tavolo.strip().isdigit():
+        rango, numero, nome = 0, int(tavolo), ""
+    else:
+        rango, numero, nome = 1, 0, tavolo
+    return (not _ha_un_punteggio(match), rango, numero, nome, match.id or 0)
 
 
 def _ha_un_punteggio(match: TournamentMatch) -> bool:
