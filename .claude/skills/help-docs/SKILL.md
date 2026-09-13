@@ -198,9 +198,21 @@ python scripts/help_docs/capture_screenshots.py --serve --only gara-gestione
 python scripts/help_docs/capture_screenshots.py --serve --lang it
 ```
 
-Il seed **fissa il generatore casuale** (`SEED`): senza, il sorteggio del primo
-turno cambierebbe a ogni esecuzione e ogni ricattura riscriverebbe tutte le
-immagini anche a interfaccia identica. Se tocchi il seed, ricontrolla gli id
+Il seed **fissa il generatore casuale** (`SEED`) e **il seme del sorteggio** di
+ogni gara prima di avviarla (`_avvia_primo_turno`, perché l'app lo sceglie con
+`secrets` e il tabellone ne ricava gli accoppiamenti). Senza uno dei due gli
+abbinamenti cambierebbero a ogni esecuzione e ogni ricattura riscriverebbe
+immagini a interfaccia identica. Se aggiungi un avvio di gara al seed, passa da
+`_avvia_primo_turno`: il presidio è
+`tests/new/integration/test_help_seed_riproducibile.py`.
+
+Le **date** invece sono relative a oggi e non si possono fissare: l'app rifiuta
+gare nel passato e iscrizioni fuori finestra. Due catture in giorni diversi
+cambiano le immagini che mostrano una data, anche a interfaccia identica:
+per capire quali schermate sono cambiate davvero, confronta catture fatte lo
+stesso giorno, e riporta a `main` le immagini che differiscono solo per la data.
+
+Se tocchi il seed, ricontrolla gli id
 nei percorsi del manifest (gara 1/2/3, match 18): la cattura si ferma con un
 errore se un percorso sparisce, ma una gara diversa da quella attesa passerebbe
 inosservata.

@@ -9,11 +9,17 @@ cambia: si rilancia il seed, si ricattura, e le immagini tornano allineate.
 Il dataset e' **deterministico** perche' due catture successive senza modifiche
 all'app devono produrre immagini identiche: altrimenti ogni rigenerazione
 sporcherebbe il diff con rumore e nessuno saprebbe piu' quali schermate sono
-davvero cambiate. Deterministico significa tre cose: nomi e date scritti qui,
-punteggi decisi dalla parita' dell'id del match, e **il generatore casuale
-fissato** (`SEED`) — il sorteggio del primo turno e le strategie di
-abbinamento pescano dal `random` globale, quindi senza fissarlo ogni
-esecuzione produrrebbe accoppiamenti diversi e tutte le immagini cambierebbero.
+davvero cambiate. Deterministico significa quattro cose: nomi e date scritti
+qui, punteggi decisi dalla parita' dell'id del match, **il generatore casuale
+fissato** (`SEED`) — l'ordine di partenza e le strategie a turni pescano dal
+`random` globale — e **il seme del sorteggio fissato** su ogni gara prima di
+avviarla (`_avvia_primo_turno`): l'app lo sceglie con `secrets`, e il
+tabellone ne ricava gli accoppiamenti.
+
+Resta una cosa che il seed non puo' fissare: le date sono relative a oggi,
+perche' l'app rifiuta gare nel passato e iscrizioni fuori finestra. Due
+catture fatte in giorni diversi cambiano quindi le immagini che mostrano una
+data; due catture nello stesso giorno danno le stesse immagini.
 
 Uso:
     python scripts/help_docs/seed_demo.py            # ricrea da zero
@@ -46,9 +52,11 @@ DEMO_PASSWORD = "demo1234"
 
 # Seme del generatore casuale. Il valore non conta, conta che sia **fisso**:
 # `RoundService.start_first_round` mescola gli iscritti con `random.shuffle` e
-# le strategie di abbinamento pescano dallo stesso generatore. Senza questa
-# riga ogni esecuzione del seed darebbe un tabellone diverso e la ricattura
-# cambierebbe tutte le immagini anche a interfaccia identica.
+# le strategie a turni pescano dallo stesso generatore. Non basta da solo: il
+# seme del sorteggio della gara nasce da `secrets`, e lo fissa
+# `_avvia_primo_turno`. Senza uno dei due ogni esecuzione darebbe abbinamenti
+# diversi e la ricattura cambierebbe immagini a interfaccia identica
+# (presidio: `tests/new/integration/test_help_seed_riproducibile.py`).
 SEED = 20260815
 
 # Il direttore e i giocatori del dataset. L'ordine conta: `capture_screenshots`
@@ -272,6 +280,23 @@ def _open_and_fill(db, gara, players):
     log(f"«{gara.name}»: {len(players)} iscritti")
 
 
+def _avvia_primo_turno(db, gara) -> None:
+    """Avvia il primo turno con un seme del sorteggio fisso.
+
+    Nell'app il seme lo sceglie `RoundService.start_first_round` con `secrets`,
+    solo se la gara non ne ha gia' uno, e da quel seme il tabellone ricava gli
+    accoppiamenti. Qui lo si scrive prima dell'avvio, derivato da `SEED` e
+    dall'id della gara, che nel dataset e' sempre lo stesso: la casualita' vera
+    dell'app resta com'e', il dataset dimostrativo diventa riproducibile.
+    """
+    from models.competition.round_service import RoundService
+
+    gara.draw_seed = SEED + gara.id
+    db.session.commit()
+    RoundService.start_first_round(gara.id)
+    db.session.commit()
+
+
 def _play_rounds(db, gara, rounds: int, leave_open_for=None):
     """Gioca `rounds` turni assegnando punteggi deterministici.
 
@@ -285,8 +310,7 @@ def _play_rounds(db, gara, rounds: int, leave_open_for=None):
     from models.match.models import Match
     from models.status_enum import MatchStatus
 
-    RoundService.start_first_round(gara.id)
-    db.session.commit()
+    _avvia_primo_turno(db, gara)
 
     for round_number in range(1, rounds + 1):
         if round_number > 1:
@@ -840,7 +864,6 @@ def _create_prove(db, director, venue):
     manifest delle schermate e non devono spostarsi.
     """
     from models.competition.inscription_service import InscriptionService
-    from models.competition.round_service import RoundService
     from models.competition.services import GaraService
     from models.base import utc_now
     from models.prova.service import ProvaService
@@ -885,8 +908,7 @@ def _create_prove(db, director, venue):
             iscritti = ProvaService.iscrivi_fittizi(gara.id, "minimo")
             db.session.commit()
             if giocata:
-                RoundService.start_first_round(gara.id)
-                db.session.commit()
+                _avvia_primo_turno(db, gara)
                 esito = SimulationService.simula_turno(gara.id)
                 db.session.commit()
                 log(
@@ -989,8 +1011,7 @@ def _create_prove_forme(db, venue, challenges):
         db.session.commit()
         ProvaService.iscrivi_fittizi(gara.id, "minimo")
         db.session.commit()
-        RoundService.start_first_round(gara.id)
-        db.session.commit()
+        _avvia_primo_turno(db, gara)
         return gara
 
     def partite(gara):
