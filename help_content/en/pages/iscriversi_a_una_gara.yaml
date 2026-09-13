@@ -66,6 +66,16 @@ blocks:
           [Teams](/aiuto/organizzare/squadre).
 
   - type: note
+    tone: info
+    title: "If you are the director of the competition"
+    text: >-
+      You can still play it. On your home, under **«Your competitions»**, the
+      card of a competition you direct has **Manage** and the command the
+      competition is waiting for at the top, and below them, while
+      registrations are open, **Register** or **Withdraw**. The playoff is the
+      exception: there you join only by accepting the invitation.
+
+  - type: note
     tone: tip
     title: "The invitation link"
     text: >-
