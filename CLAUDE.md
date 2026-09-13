@@ -500,7 +500,8 @@ grafo anti-rematch. Non reimplementare algoritmi su grafi — usa `nx`, è già 
 | `EventBus._handlers = {}` in tests | Preserve and restore handlers (breaks notifications/gamification) |
 | Manual SMTP sending | Use `EmailService` for all emails |
 | `max(rack_number) WHERE is_deleted=False` | Include ALL records for sequential IDs with UNIQUE constraints |
-| `@transactional` on facade AND inner service | Only decorate the innermost method (nested causes rollback) |
+| Contare su un `@transactional` interno per salvare, o temere di annidarne due | Dal 2026-09-13 l'annidamento è sicuro e **il salvataggio lo fa solo il più esterno**: l'interno apre e chiude un savepoint. Se l'esterno fallisce si annulla anche l'interno; se fallisce l'interno e l'esterno cattura e prosegue, si perde solo il lavoro dell'interno. Prima era il contrario in entrambi i casi — una gara scritta a metà, o il risultato di una partita perso perché un handler dell'EventBus era fallito (ADR-061, presidio `test_transazioni_annidate.py`) |
+| `with db.session.begin_nested():` scritto a mano (schema ADR-025) | `with savepoint():` da `models.transaction.manager`. Fuori da un `@transactional`, dopo sole letture, il driver `sqlite3` non ha ancora aperto la transazione: il `SAVEPOINT` la apre lui e il suo `RELEASE` vale un commit, quindi un annullamento successivo non trova più niente. `savepoint()` emette prima il `BEGIN` (ADR-061, presidio statico in `test_savepoint_a_mano.py`) |
 | `match.gara.distance` in scoring/validation | Use `match.distance_config` or `match.effective_*` (ADR-027) |
 | Cercare *tutte* le partite di un giocatore nella sola tabella `match` | Le sfide individuali stanno su `individual_match`: sono due tabelle. `PlayerHistoryService.get_unified_match_history` le unisce nella stessa forma — interrogarne una sola non dà errore, mostra meno partite di quelle giocate. **Ci sono ricascati i due profili** (proprio e altrui) fino al 2026-08-20: query sul solo `match` e conteggio del solo `CLOSED_UNILATERALLY`, quindi una sfida individuale non compariva né fra le partite recenti né nelle statistiche, mentre lo storico completo la mostrava. Il profilo altrui filtra le voci con `PlayerHistoryService.filter_visible_entries`, che guarda la **provenienza**: gli id delle due tabelle si sovrappongono, e nascondere la partita di gara 7 nascondeva anche la sfida 7 |
 | `Match.status == CLOSED_UNILATERALLY` per «partita giocata» | `MatchStatus.finished_values()`: `CONFIRMED_BY_BOTH` è la chiusura **dei due giocatori**, ed è giocata quanto l'altra. Filtrare solo la prima è il bug che teneva monco lo storico |
@@ -614,6 +615,7 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [058](docs/adr/ADR-058-competizione-di-prova.md) | competizione di prova: invisibile per default (filtro di sessione con opt-in), giocatori fittizi cancellati fisicamente, ELO e gamification fuori |
 | [059](docs/adr/ADR-059-pagina-gara-del-direttore-per-fasi.md) | la pagina del direttore è la fase in corso: striscia di fase, due template, comando da `comandi.py` |
 | [060](docs/adr/ADR-060-tavoli-scelti-in-ogni-stato.md) | i tavoli si scelgono in ogni stato; la lista nuova vale per le assegnazioni successive |
+| [061](docs/adr/ADR-061-transactional-annidato-salva-solo-il-piu-esterno.md) | un `@transactional` annidato chiude il proprio savepoint, salva solo il più esterno; `BEGIN` su SQLite prima del savepoint |
 
 ---
 

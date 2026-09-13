@@ -7,9 +7,9 @@ route non contengono logica sui ruoli, chiedono a ``can_grant``/``can_revoke``.
 Estendere il meccanismo a un altro ruolo domani è una riga in ``GRANT_POLICY``.
 
 Transazioni: ``@transactional`` solo sui metodi **esterni**; il corpo condiviso
-``_grant_unchecked`` è deliberatamente **non** decorato, perché annidare
-``@transactional`` crea savepoint che su SQLite possono non persistere (vedi
-``models/transaction/CLAUDE.md``).
+``_grant_unchecked`` non è decorato perché gira sempre dentro uno di essi. Il
+timore di un tempo — savepoint annidati che su SQLite non persistono — non vale
+più dal 2026-09-13 (ADR-061).
 """
 
 from __future__ import annotations
@@ -28,7 +28,7 @@ from models.exceptions import (
     ValidationError,
 )
 from models.status_enum import RoleRequestStatus, RoleRequestRecipientStatus
-from models.transaction.manager import transactional
+from models.transaction.manager import savepoint, transactional
 from models.user.models import User
 from models.user.role_enum import GrantableRole, UserRole
 from models.user.role_grant import RoleGrant, RoleRequest, RoleRequestRecipient
@@ -156,8 +156,8 @@ class RoleGrantService:
 
     # NB: i metodi di lettura restano **non decorati**. ``@read_only`` è pur
     # sempre un ``@transactional``: chiamarli da dentro ``create_request``
-    # aprirebbe un savepoint annidato, che su SQLite è la ricetta nota per i
-    # rollback silenziosi (models/transaction/CLAUDE.md).
+    # aprirebbe un savepoint annidato per una lettura, che non serve. (Il
+    # rollback silenzioso che si temeva è corretto dal 2026-09-13, ADR-061.)
     @staticmethod
     def list_holders(role: GrantableRole) -> List[RoleGrant]:
         """Titolari attivi del ruolo, con l'utente e il concedente caricati.
@@ -280,7 +280,7 @@ class RoleGrantService:
         # parziale se un altro concedente ha vinto la corsa (TOCTOU), così il
         # perdente riceve un ConflictError invece di un 500 opaco (ADR-025).
         try:
-            with db.session.begin_nested():
+            with savepoint():
                 db.session.flush()
         except IntegrityError as exc:
             raise ConflictError("L'utente ha già questo ruolo") from exc
@@ -432,7 +432,7 @@ class RoleGrantService:
         db.session.add(request)
 
         try:
-            with db.session.begin_nested():
+            with savepoint():
                 db.session.flush()
         except IntegrityError as exc:
             raise ConflictError(

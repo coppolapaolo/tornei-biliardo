@@ -17,6 +17,8 @@ from threading import local, Lock
 
 from ..base import db
 from sqlalchemy import text
+from sqlalchemy.exc import ResourceClosedError
+from sqlalchemy.orm import SessionTransaction
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -25,6 +27,78 @@ logger = logging.getLogger(__name__)
 _transaction_local = local()
 
 T = TypeVar("T")
+
+
+def _apri_transazione_sqlite() -> None:
+    """Apre la transazione sul database prima di un savepoint, se non c'e'.
+
+    Il driver `sqlite3` apre la transazione solo davanti a una scrittura: le
+    letture girano fuori da ogni transazione. Se la sessione ha soltanto letto,
+    un `SAVEPOINT` e' il primo comando della transazione per SQLite, e il suo
+    `RELEASE` equivale a un commit — un annullamento successivo non troverebbe
+    piu' niente.
+
+    Dove serve davvero: `savepoint()` chiamato fuori da un `@transactional`
+    (una route, un servizio non decorato). Dentro un decoratore il caso non
+    capita, perche' il piu' esterno apre subito il proprio savepoint — con
+    SQLAlchemy 2.0 `db.session.is_active` e' vero anche senza transazione,
+    quindi prende sempre il ramo «pseudo-nested» — e SQLite e' gia' in
+    transazione. Nel ramo annidato del gestore resta come difesa, per un
+    decoratore esterno che trovasse la sessione non attiva.
+
+    Il `BEGIN` e' quello che il driver emetterebbe comunque alla prima
+    scrittura, e senza `IMMEDIATE`: i lock restano quelli di prima.
+    """
+    connessione = db.session.connection()
+    if connessione.dialect.name != "sqlite":
+        return
+    dbapi = connessione.connection.dbapi_connection
+    if dbapi is not None and not getattr(dbapi, "in_transaction", True):
+        connessione.exec_driver_sql("BEGIN")
+
+
+@contextmanager
+def savepoint():
+    """Un savepoint scritto a mano, al posto di ``db.session.begin_nested()``.
+
+    Serve allo schema di ADR-025: far emergere al flush un ``IntegrityError``
+    per tradurlo, senza rovinare la transazione del chiamante. Si comporta
+    come ``with db.session.begin_nested():`` — rilascia all'uscita, annulla e
+    propaga su un'eccezione — con in piu' l'apertura della transazione SQLite
+    (`_apri_transazione_sqlite`): dopo sole letture, il ``RELEASE`` di un
+    ``begin_nested`` nudo e' un commit, e l'annullamento del chiamante non
+    troverebbe piu' niente (ADR-061). Presidio:
+    ``tests/new/unit/test_savepoint_a_mano.py``.
+    """
+    _apri_transazione_sqlite()
+    with db.session.begin_nested() as transazione:
+        yield transazione
+
+
+def _chiudi_savepoint(
+    savepoint: Optional[SessionTransaction], transaction_id: str, salva: bool
+) -> None:
+    """Rilascia o annulla il savepoint, e soltanto quello.
+
+    `db.session.commit()` e `db.session.rollback()` agiscono sulla transazione
+    piu' esterna: e' il difetto corretto il 2026-09-13 (ADR-061).
+
+    Un savepoint gia' chiuso vuol dire che il codice interno ha chiamato a mano
+    `db.session.commit()` o `rollback()`, che il progetto vieta: non c'e' piu'
+    niente da chiudere, e lo si scrive nel log invece di sollevare.
+    """
+    if savepoint is None:
+        return
+    try:
+        if salva:
+            savepoint.commit()
+        else:
+            savepoint.rollback()
+    except ResourceClosedError:
+        logger.warning(
+            f"Savepoint of {transaction_id} already closed: the inner code "
+            "committed or rolled back the session by hand"
+        )
 
 
 class TransactionIsolationLevel(Enum):
@@ -169,11 +243,17 @@ class TransactionManager:
             f"Starting transaction {transaction_id} (true_nested: {is_true_nested})"
         )
 
+        # Il savepoint di una transazione annidata. Si chiude e si annulla
+        # **questo**, mai la sessione: `db.session.commit()` e `rollback()`
+        # agiscono sulla transazione piu' esterna (vedi `_chiudi_savepoint`).
+        savepoint: Optional[SessionTransaction] = None
+
         try:
             if is_true_nested:
                 # Create savepoint for truly nested transaction
                 savepoint_name = savepoint_name or f"sp_{transaction_id}"
-                db.session.begin_nested()
+                _apri_transazione_sqlite()
+                savepoint = db.session.begin_nested()
                 context.add_savepoint(savepoint_name)
                 logger.debug(f"Created savepoint {savepoint_name}")
             else:
@@ -235,9 +315,12 @@ class TransactionManager:
 
             # Commit the transaction/savepoint
             if is_true_nested:
-                # For truly nested transactions, just release the savepoint
+                # Si rilascia il solo savepoint: il salvataggio vero lo fa il
+                # decoratore piu' esterno. Fino al 2026-09-13 qui c'era
+                # `db.session.commit()`, che da SQLAlchemy 1.4 chiude la
+                # transazione esterna (ADR-061).
                 try:
-                    db.session.commit()  # This releases the savepoint in SQLAlchemy
+                    _chiudi_savepoint(savepoint, transaction_id, salva=True)
                     logger.debug(
                         f"Nested transaction (savepoint) {transaction_id} released"
                     )
@@ -245,20 +328,10 @@ class TransactionManager:
                     logger.warning(
                         f"Failed to release nested transaction {transaction_id}: {e}"
                     )
-                    try:
-                        db.session.rollback()
-                        logger.warning(
-                            f"Rolled back to savepoint {transaction_id} due to "
-                            "release failure"
-                        )
-                    except Exception as rollback_error:
-                        logger.error(
-                            f"Failed to rollback to savepoint {transaction_id}: "
-                            f"{rollback_error}"
-                        )
                     # Re-raise: un commit fallito NON deve essere spacciato per
                     # successo. Senza questo il chiamante riceve un ritorno OK
                     # mentre il DB ha annullato i dati (perdita dati silenziosa).
+                    # L'annullamento del savepoint lo fa l'except esterno.
                     raise
             elif is_pseudo_nested:
                 # For pseudo-nested (autobegin), release savepoint AND commit parent
@@ -310,12 +383,22 @@ class TransactionManager:
             context.rollback_reason = str(e)
 
             try:
-                if is_true_nested or is_pseudo_nested:
-                    # Rollback to savepoint (and parent for pseudo-nested)
+                if is_true_nested:
+                    # Solo il savepoint: il lavoro del chiamante resta, e decide
+                    # lui se proseguire o propagare. Con `db.session.rollback()`
+                    # si perdeva anche quello, in silenzio, quando il chiamante
+                    # catturava l'eccezione e andava avanti (EventBus).
+                    _chiudi_savepoint(savepoint, transaction_id, salva=False)
+                    logger.warning(
+                        f"Nested transaction {transaction_id} rolled back to "
+                        f"savepoint: {str(e)}"
+                    )
+                elif is_pseudo_nested:
+                    # Rollback to savepoint and parent: e' la transazione esterna
                     db.session.rollback()
                     logger.warning(
-                        f"{'Nested' if is_true_nested else 'Pseudo-nested'} "
-                        f"transaction {transaction_id} rolled back: {str(e)}"
+                        f"Pseudo-nested transaction {transaction_id} rolled back: "
+                        f"{str(e)}"
                     )
                 else:
                     db.session.rollback()

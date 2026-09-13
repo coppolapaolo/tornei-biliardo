@@ -110,20 +110,62 @@ class GaraService:
 
 ## Nested Transactions
 
-Nested `@transactional` calls use savepoints:
+Nested `@transactional` calls use savepoints, and **only the outermost
+decorator saves** (ADR-061, 2026-09-13):
 
 ```python
 @transactional(domain="match")
 def outer_operation():
     # Opens transaction
     create_match()  # Uses savepoint
-    update_scores()  # Uses savepoint
-    # All committed together
+    try:
+        update_scores()  # Uses savepoint
+    except ValueError:
+        pass  # only update_scores' work is undone; create_match's stays
+    # All committed together, here and nowhere else
 
 @transactional(domain="match")
 def create_match():
     # Creates savepoint, not new transaction
     pass
+```
+
+Le regole, verificate sul database da `tests/new/unit/test_transazioni_annidate.py`:
+
+- **l'esterna fallisce** dopo l'interna: si annulla tutto, interna compresa;
+- **l'interna fallisce** e l'esterna cattura e prosegue: si annulla solo il
+  savepoint dell'interna, il lavoro dell'esterna fatto prima resta.
+
+Fino al 2026-09-13 era il contrario in entrambi i casi. Il ramo annidato
+chiudeva il savepoint con `db.session.commit()` e lo annullava con
+`db.session.rollback()`, che da SQLAlchemy 1.4 agiscono sulla transazione **più
+esterna**.
+
+C'è poi un difetto del driver `sqlite3`: apre la transazione solo davanti a una
+scrittura, quindi se la sessione ha soltanto letto un `SAVEPOINT` è il primo
+comando, e il suo `RELEASE` vale un commit. Dentro un `@transactional` non
+capita — il decoratore più esterno apre subito il proprio savepoint, perché con
+SQLAlchemy 2.0 `db.session.is_active` è vero anche senza transazione — ma
+capita a un savepoint scritto a mano fuori da un decoratore. Per questo prima
+del savepoint si apre la transazione con `BEGIN` (`_apri_transazione_sqlite`).
+
+**Un savepoint scritto a mano** — lo schema di ADR-025, per tradurre un
+`IntegrityError` — si apre con `with savepoint():` da
+`models.transaction.manager`, **mai** con `db.session.begin_nested()` nudo: per
+la stessa ragione, dopo sole letture il suo `RELEASE` sarebbe un commit.
+Presidio statico e di comportamento in `tests/new/unit/test_savepoint_a_mano.py`.
+
+```python
+from models.transaction.manager import savepoint, transactional
+
+@transactional(domain="user")
+def grant(...):
+    db.session.add(grant)
+    try:
+        with savepoint():
+            db.session.flush()
+    except IntegrityError as exc:
+        raise ConflictError("L'utente ha già questo ruolo") from exc
 ```
 
 ---
@@ -165,41 +207,34 @@ See `docs/adr/ADR-012-transactional-circular-import-fix.md` for details.
 - **Do not import from `models.base`** - Import from `models.transaction.manager`
 - **Do not use isolation levels on SQLite** - They're ignored (SQLite limitation)
 - **Do not forget decorator on write methods** - Data won't persist without `@transactional`
-- **Do not decorate facade methods that delegate to decorated services** - Double `@transactional` causes nested savepoints that silently rollback on SQLite
+- **Do not count on an inner `@transactional` to save** - only the outermost one commits (ADR-061)
 
 ---
 
 ## Facade/Wrapper Pattern
 
-When creating facade methods that delegate to other services, **only the innermost method should have `@transactional`**:
+A facade that only delegates does not need its own `@transactional`: the inner
+service already has one. Adding it is no longer harmful (ADR-061): the inner
+call becomes a savepoint and the facade commits. Decorate the facade when it
+**composes** several writes that must succeed or fail together.
 
 ```python
-# ❌ WRONG - Double decoration causes silent rollback on SQLite
 class FacadeService:
-    @transactional  # ← REMOVE THIS
+    @transactional()  # composes two writes: both or neither
     def wrapper_method(self, match_id: int):
-        return InnerService.actual_method(match_id)  # Already has @transactional
+        InnerService.actual_method(match_id)   # savepoint
+        OtherService.follow_up(match_id)       # savepoint
 
 class InnerService:
-    @transactional
-    def actual_method(self, match_id: int):
-        # ... actual logic
-        pass
-
-# ✅ CORRECT - Only innermost has decorator
-class FacadeService:
-    def wrapper_method(self, match_id: int):
-        # No decorator - delegates to decorated method
-        return InnerService.actual_method(match_id)
-
-class InnerService:
-    @transactional
+    @transactional()
     def actual_method(self, match_id: int):
         # ... actual logic
         pass
 ```
 
-**Why**: Nested `@transactional` creates savepoints. On SQLite, if the outer transaction commits but inner savepoint had issues, data may not persist. The symptom is: API returns success, but database shows no changes.
+**Storia**: fino al 2026-09-13 questa sezione vietava il doppio decoratore
+perché «su SQLite i savepoint annidati annullano in silenzio». Il sintomo era
+vero, la causa era il gestore: vedi «Nested Transactions» sopra e ADR-061.
 
 ---
 

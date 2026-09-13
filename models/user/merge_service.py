@@ -46,7 +46,7 @@ from models.base import db
 from models.exceptions import ConflictError, NotFoundError, ValidationError
 from models.user.models import User
 from models.user.role_enum import UserRole
-from models.transaction.manager import transactional
+from models.transaction.manager import savepoint, transactional
 
 logger = logging.getLogger(__name__)
 
@@ -281,7 +281,7 @@ class UserMergeService:
         for row in rows:
             where = and_(*[pk == row[pk.name] for pk in pk_cols])
             try:
-                with db.session.begin_nested():
+                with savepoint():
                     db.session.execute(
                         update(table).where(where).values({col.name: target_id})
                     )

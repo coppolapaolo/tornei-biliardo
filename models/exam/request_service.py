@@ -18,8 +18,8 @@ ragione sta nel docstring di ``request_models.py``, il test in
 
 Transazioni: ``@transactional`` solo sui metodi esterni; i corpi condivisi
 (``_close_other_recipients``, le notifiche) girano dentro la transazione già
-aperta dal chiamante — annidare crea savepoint che su SQLite sanno di rollback
-silenziosi (``models/transaction/CLAUDE.md``).
+aperta dal chiamante. Annidare decoratori, dal 2026-09-13, sarebbe comunque
+sicuro (ADR-061).
 """
 
 from __future__ import annotations
@@ -39,7 +39,7 @@ from ..exceptions import (
     ValidationError,
 )
 from ..status_enum import ExamRequestRecipientStatus, ExamRequestStatus
-from ..transaction.manager import transactional
+from ..transaction.manager import savepoint, transactional
 from ..user.models import User
 from .request_models import ExamRequest, ExamRequestRecipient, ExamTimeProposal
 
@@ -386,7 +386,7 @@ class ExamRequestService:
         # ``(request_id) WHERE status='accepted'``. Il savepoint fa emergere la
         # violazione al flush per poterla tradurre (ADR-025).
         try:
-            with db.session.begin_nested():
+            with savepoint():
                 winner_row.status = ExamRequestRecipientStatus.ACCEPTED.value
                 winner_row.responded_at = now
                 db.session.flush()

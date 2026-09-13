@@ -707,8 +707,8 @@ class SpareggioService:
         posizione e statistiche, che il prossimo ricalcolo riscrive.
 
         Senza `@transactional`: è sempre chiamato dentro un contesto
-        transazionale (`StateService.cancel_ssr`), e annidare i decoratori
-        provoca rollback del savepoint esterno.
+        transazionale (`StateService.cancel_ssr`), che salva. Annidare i
+        decoratori non provoca più rollback dal 2026-09-13 (ADR-061).
         """
         rows = db.session.query(GaraClassification).filter_by(gara_id=gara_id).all()
         for row in rows:
@@ -759,9 +759,8 @@ class SpareggioService:
         merito: un cambiamento di comportamento per gare che non hanno mai
         avuto uno spareggio, e che nessuno ha chiesto.
 
-        Senza `@transactional`: è chiamata dentro contesti già transazionali, e
-        annidare i decoratori provoca il rollback del savepoint esterno (stessa
-        ragione di `clear_ssr_scores`).
+        Senza `@transactional`: è chiamata dentro contesti già transazionali,
+        che salvano (stessa ragione di `clear_ssr_scores`).
 
         Returns:
             True se le posizioni sono state riapplicate.

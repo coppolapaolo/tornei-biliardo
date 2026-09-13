@@ -102,6 +102,12 @@ Quindi due modalità, entrambe oneste:
   copiando il file `.db` e lanciando lo script con `--database` su quella copia.
   Con SQLite la copia del file è anche il backup.
 
+*(nota 2026-09-13)* Il difetto è **corretto** (ADR-061): un `@transactional`
+annidato rilascia o annulla il proprio savepoint, e salva solo il più esterno.
+Le due modalità restano come sono — `plan()` è comunque più economico di un
+«esegui e annulla», e la copia del file resta il backup — ma il motivo scritto
+sopra non vale più.
+
 ### 5. La classifica persistita si rinfresca, non si crea
 
 *(emendamento 2026-08-19, dall'applicazione al caso reale)*
@@ -165,7 +171,10 @@ risultato in mano**: sul `return []` da aggregato vuoto non tocca niente, perch�
 - Il difetto del `@transactional` annidato descritto al punto 4 **non è stato
   corretto**: tocca il gestore di transazione di tutta l'applicazione ed è un
   intervento a sé. Qui è stato aggirato, e documentato perché non venga
-  riscoperto come «strano» la prossima volta.
+  riscoperto come «strano» la prossima volta. *(nota 2026-09-13: corretto da
+  ADR-061. Era peggio di come è descritto qui: oltre a salvare il lavoro
+  interno quando l'esterno falliva, un guasto interno catturato dall'esterno
+  cancellava il lavoro fatto prima.)*
 
 ## Alternative scartate
 

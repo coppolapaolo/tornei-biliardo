@@ -10,8 +10,9 @@ sono forzati. Completare la pagina = onboarding fatto.
 
 NB: la creazione delle ``UserLocationAvailability`` è **inlinata** qui (non
 delega ad ``AvailabilityService.set_venue_availability``, che è a sua volta
-``@transactional``) per evitare l'annidamento di savepoint che su SQLite può
-fare rollback silenzioso (vedi models/transaction/CLAUDE.md, pattern facade).
+``@transactional``). Il motivo di allora — savepoint annidati con rollback
+silenzioso su SQLite — è stato corretto il 2026-09-13 (ADR-061): delegare oggi
+sarebbe sicuro.
 """
 
 from typing import Iterable, List, Optional
