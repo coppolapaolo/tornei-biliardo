@@ -36,7 +36,7 @@ però il punteggio non esiste fuori dai triangoli — classifica ed Elo li
 leggono uno per uno — quindi i triangoli non si cancellano soltanto: si
 riscrivono nell'ordine del girone, come fa la card del direttore
 (`trio_punteggio.assegna_vincitori`). Il vincitore segue `SPECIFICHE.md` riga
-160: il totale più alto, se è uno solo.
+164: il totale più alto, se è uno solo.
 
 **E la partita a set, set per set.** Su `match` i suoi punteggi sono i set
 vinti: correggerli a mano lascerebbe i set com'erano. Si riscrivono i set,

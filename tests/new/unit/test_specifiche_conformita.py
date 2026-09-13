@@ -679,7 +679,7 @@ class TestCompetizioneDiProva:
 
 @pytest.mark.unit
 class TestIlTrioInClassifica:
-    """`SPECIFICHE.md` riga 160.
+    """`SPECIFICHE.md` riga 164.
 
     > Per il sistema WINS, nel trio vince chi ha il punteggio più alto (1
     > vittoria), gli altri ottengono 0 vittorie. Se il punteggio più alto è di
@@ -781,7 +781,7 @@ class TestIlTrioInClassifica:
     def test_chi_si_ritira_non_vince_e_il_pari_resta_fra_gli_altri_due(
         self, db_session, sequenza, totali, vittorie
     ):
-        """`SPECIFICHE.md` riga 160, la regola del ritiro (decisa il 2026-09-13).
+        """`SPECIFICHE.md` riga 164, la regola del ritiro (decisa il 2026-09-13).
 
         > Chi si ritira dal trio non vince mai, nemmeno col totale più alto, e
         > il pari si guarda solo fra gli altri due. Esempi alla distanza 6,

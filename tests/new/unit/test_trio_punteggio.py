@@ -65,7 +65,7 @@ def test_punteggi_negativi_o_malformati_non_esistono():
 
 
 class TestIlVincitoreDelTrio:
-    """`SPECIFICHE.md` riga 160: vince il totale più alto, se è uno solo."""
+    """`SPECIFICHE.md` riga 164: vince il totale più alto, se è uno solo."""
 
     def test_vince_il_totale_piu_alto(self):
         assert vincitore_del_trio({10: 4, 20: 1, 30: 1}) == 10

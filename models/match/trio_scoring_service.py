@@ -299,7 +299,7 @@ class TrioScoringService:
         # Flush to ensure computed properties work
         db.session.flush()
 
-        # Il totale piu' alto, se e' uno solo (SPECIFICHE.md riga 160). I
+        # Il totale piu' alto, se e' uno solo (SPECIFICHE.md riga 164). I
         # triangoli qui sopra li distribuisce l'applicazione: chi ha battuto
         # chi non e' un dato, e non deve decidere niente.
         trio.winner_id = vincitore_del_trio(
@@ -544,7 +544,7 @@ class TrioScoringService:
         # Flush to ensure computed properties see all racks
         db.session.flush()
 
-        # Il totale piu' alto, se e' uno solo (SPECIFICHE.md riga 160): a pari
+        # Il totale piu' alto, se e' uno solo (SPECIFICHE.md riga 164): a pari
         # totale in testa nessuno vince, qualunque sia lo scontro diretto.
         trio.winner_id = vincitore_del_trio(
             dict(zip(trio.player_ids, trio.player_racks_list)),

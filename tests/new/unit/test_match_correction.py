@@ -360,7 +360,7 @@ class TestIlTrioSiCorregge:
     def test_il_pari_in_testa_non_ha_vincitore(
         self, db_session, trio_chiuso, isolated_players
     ):
-        """`SPECIFICHE.md` riga 160, anche per chi corregge."""
+        """`SPECIFICHE.md` riga 164, anche per chi corregge."""
         from models.match.models import Match, TrioMatch
 
         match_id, trio_id = trio_chiuso

@@ -97,7 +97,7 @@ def vincitore_del_trio(
 ) -> Optional[int]:
     """Chi vince il trio: il totale piu' alto, se e' uno solo.
 
-    `SPECIFICHE.md` riga 160: se il totale piu' alto e' di due o tre
+    `SPECIFICHE.md` riga 164: se il totale piu' alto e' di due o tre
     giocatori, nessuno prende la vittoria. Fino al 2026-09-13 il pari in testa
     si scioglieva con lo scontro diretto, che la specifica non prevede; ed era
     anche un dato inventato quando il direttore segnava a totali, perche' chi
