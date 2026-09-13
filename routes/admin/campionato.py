@@ -479,6 +479,7 @@ def campionato_detail(campionato_id):
 
     # La zona playoff nella classifica generale (canvas 7.1): chi verrebbe
     # invitato, o chi lo e' stato. Senza configurazioni non c'e' zona.
+    from models.playoff.fase import FasePlayoff, fase_playoff
     from models.playoff.zona import zone_playoff
 
     zone = (
@@ -506,6 +507,9 @@ def campionato_detail(campionato_id):
         default_discipline=Discipline.NINE_BALL.value,
         playoff_feasibility=playoff_feasibility,
         playoff_status=playoff_status,
+        # A che punto sono i playoff: la fascia e gli invitati ne dipendono.
+        fase_playoff=fase_playoff(campionato),
+        FasePlayoff=FasePlayoff,
         campionato_players=campionato_players,
         # La data con cui il modale «Nuova gara» si presenta: oggi o una
         # settimana dopo l'ultima; in una prova, domani o il giorno dopo
