@@ -3299,8 +3299,10 @@ a.c7-rows__row:hover { background: var(--c7-sunken); }
    -------------------------------------------------------------------------- */
 
 /* Una geometria sola per ogni stato: nome sopra, numero grande sotto. */
-.c7-partita__testa { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.c7-partita__destra { display: flex; align-items: center; gap: 8px; }
+/* Nella griglia a due colonne del desktop la testata (stato, tavolo,
+   Correggi, menu) non sta su una riga: va a capo invece di schiacciarsi. */
+.c7-partita__testa { display: flex; align-items: center; justify-content: space-between; gap: 8px 10px; flex-wrap: wrap; }
+.c7-partita__destra { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-end; margin-left: auto; }
 .c7-partita__tavolo { font-size: 12px; font-weight: 700; white-space: nowrap; }
 .c7-partita__tavolo--btn {
   height: 30px; padding: 0 12px; border: 0; border-radius: var(--c7-r-pill);
@@ -3319,7 +3321,14 @@ a.c7-rows__row:hover { background: var(--c7-sunken); }
 .c7-partita__step { margin-top: 8px; display: flex; align-items: center; gap: 4px; }
 /* Bersagli tattili da 48px (ui-7c): per starci a 390px il lato con gli
    stepper stringe il suo margine orizzontale. */
-.c7-partita__lato--stepper { padding: 10px 6px 12px; }
+.c7-partita__lato--stepper { padding: 10px 6px 12px; container-type: inline-size; }
+/* Quando il lato e' piu' stretto di «− numero +» con due bersagli da 48px,
+   come nelle card affiancate del desktop, il + sale sopra il numero e il −
+   scende sotto: la stessa soluzione del trio, invece di sbordare. */
+@container (max-width: 150px) {
+  .c7-partita__step { flex-direction: column-reverse; gap: 6px; }
+  .c7-partita__step .c7-partita__num { flex: none; font-size: 28px; }
+}
 .c7-partita__step .c7-partita__num { margin-top: 0; flex: 1; font-size: 26px; }
 .c7-partita__step button {
   width: 48px; height: 48px; border: 0; border-radius: var(--c7-r-control); flex-shrink: 0;
@@ -3351,10 +3360,13 @@ a.c7-rows__row:hover { background: var(--c7-sunken); }
 .c7-partita--x .c7-partita__lati { grid-template-columns: 1fr; }
 .c7-partita--x .c7-partita__num { font-size: 14px; color: var(--c7-ink-muted); text-transform: uppercase; letter-spacing: .08em; }
 
-/* Le partite del turno: pila sul telefono, griglia a due colonne sul desktop (3.9). */
+/* Le partite del turno: pila sul telefono, griglia sul desktop (3.9). Le
+   colonne sono due solo dove ci stanno: sotto i 340px una card taglia i nomi e
+   manda a capo la testata, come succedeva a 1024 e 1280 con la colonna
+   laterale aperta. */
 .c7-partite { display: flex; flex-direction: column; gap: var(--c7-gap); }
 @media (min-width: 992px) {
-  .c7-partite { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .c7-partite { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); align-items: start; }
   .c7-partita--mia { grid-column: 1 / -1; }
 }
 
