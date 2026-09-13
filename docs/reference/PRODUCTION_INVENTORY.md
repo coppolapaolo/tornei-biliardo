@@ -503,6 +503,7 @@ cosa che il rating decide da solo è **quali partite entrano nell'Elo**:
 | `/gara/<int:gara_id>` | GET | `main.gara_detail_public` | None (public) | UI page | Dettaglio gara (redirect a unified view) |
 | `/public/gara/<int:gara_id>` | GET | `main.gara_detail_public` | None (public) | UI page | Dettaglio gara (deprecated, redirects) |
 | `/g/<token>` | GET | `main.gara_invite` | None (public) | Vetrina / Redirect | Link pubblico di una gara (#61, #235). Per l'anonimo — e quindi per lo scraper dei social — è la **vetrina**: locandina, quando, dove, formato, quota, posti liberi e una chiamata all'azione. L'autenticato prosegue al flusso di iscrizione; `?anteprima=1` mostra la vetrina anche a lui. Accetta il token o l'indirizzo leggibile |
+| `/g/<token>/sala` | GET | `main.schermo_sala` | — (pubblica) | UI page | Schermo in sala: tavoli, classifica e turno prima da proiettare |
 | `/c/<identificatore>` | GET | `main.campionato_invite` | None (public) | Vetrina | Link pubblico di un campionato (#235, secondo lotto): descrizione, periodo, calendario delle prove con quella aperta in rilievo, classifica generale, e l'iscrizione che punta alla prova aperta. Uguale per tutti — su un campionato non c'è un'azione da compiere |
 
 **Debug Routes (only if DEBUG_MODE):**
@@ -528,6 +529,7 @@ cosa che il rating decide da solo è **quali partite entrano nell'Elo**:
 |-----------|--------|----------|-----------|------|-------------|
 | `/sse/poll/trio/<int:trio_id>` | GET | `sse.poll_trio` | `@login_required` | JSON API (polling) | Poll trio updates |
 | `/sse/poll/gara/<int:gara_id>` | GET | `sse.poll_gara` | `@login_required` | JSON API (polling) | Poll gara updates |
+| `/sse/poll/sala/<token>` | GET | `sse.poll_sala` | — (pubblica) | JSON | Poll degli eventi della gara per lo schermo in sala |
 | `/sse/poll/user/<int:user_id>` | GET | `sse.poll_user` | `@login_required` | JSON API (polling) | Poll user updates (security: own user only) |
 | `/sse/poll/individual_match/<int:match_id>` | GET | `sse.poll_individual_match` | `@login_required` | JSON API (polling) | Poll individual match updates |
 | `/sse/poll/match/<int:match_id>` | GET | `sse.poll_match` | `@login_required` | JSON API (polling) | Poll gara match (tournament match) updates |

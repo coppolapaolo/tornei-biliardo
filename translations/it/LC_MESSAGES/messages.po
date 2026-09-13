@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 08:11+0200\n"
+"POT-Creation-Date: 2026-09-13 08:21+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -106,6 +106,7 @@ msgstr ""
 #: templates/individual_match/quick_match.html:60
 #: templates/player/challenge_attempt_detail.html:24
 #: templates/public/campionatos_list.html:27
+#: templates/public/schermo_sala.html:92
 msgid "In corso"
 msgstr ""
 
@@ -4042,7 +4043,7 @@ msgstr ""
 #: templates/components/_gara_inscriptions.html:96
 #: templates/components/_nearby_gare.html:137
 #: templates/direttore/_fase_conclusa.html:78
-#: templates/direttore/_fase_gioco.html:207
+#: templates/direttore/_fase_gioco.html:218
 #: templates/direttore/_fase_spareggio.html:64 templates/gara_detail.html:52
 msgid "Iscritti"
 msgstr ""
@@ -4883,7 +4884,7 @@ msgstr ""
 #: templates/components/_tessera_campionato.html:116
 #: templates/components/_unified_cards.html:112
 #: templates/components/_unified_cards.html:123
-#: templates/direttore/_fase_gioco.html:175
+#: templates/direttore/_fase_gioco.html:186
 #: templates/direttore/_fase_preparazione.html:135
 #: templates/direttore/impostazioni.html:26
 #: templates/gamification/admin/config_dashboard.html:75
@@ -7280,10 +7281,10 @@ msgstr ""
 #: templates/components/_gara_edit_form.html:232
 #: templates/components/_new_gara_modal.html:124
 #: templates/direttore/_fase_gioco.html:90
-#: templates/direttore/_fase_gioco.html:175
+#: templates/direttore/_fase_gioco.html:186
 #: templates/direttore/_fase_iscrizioni.html:120
 #: templates/direttore/_fase_preparazione.html:122
-#: templates/player/venues.html:29
+#: templates/player/venues.html:29 templates/public/schermo_sala.html:83
 msgid "Tavoli"
 msgstr ""
 
@@ -7875,9 +7876,9 @@ msgstr ""
 #: templates/direttore/_card_partita.html:104
 #: templates/direttore/_card_partita.html:111
 #: templates/direttore/_card_partita.html:114
-#: templates/direttore/_fase_gioco.html:180
+#: templates/direttore/_fase_gioco.html:191
 #: templates/direttore/_partite.html:24 templates/direttore/_partite.html:49
-#: templates/direttore/_scripts.html:87
+#: templates/direttore/_scripts.html:87 templates/public/schermo_sala.html:88
 msgid "Tavolo"
 msgstr ""
 
@@ -8561,6 +8562,7 @@ msgstr ""
 #: templates/direttore/_partite.html:24 templates/direttore/_partite.html:63
 #: templates/direttore/preparazione/_turni.html:46
 #: templates/direttore/preparazione/_turni.html:67
+#: templates/public/schermo_sala.html:148
 #, python-format
 msgid "Turno %(num)s"
 msgstr ""
@@ -8640,6 +8642,7 @@ msgstr ""
 #: templates/components/_tessera_gara.html:165
 #: templates/components/_user_recent_matches_table.html:15
 #: templates/public/garas_list.html:14 templates/public/garas_list.html:37
+#: templates/public/schermo_sala.html:41
 msgid "Turno"
 msgstr ""
 
@@ -9186,6 +9189,7 @@ msgid ""
 msgstr ""
 
 #: templates/components/_detailed_classification.html:10
+#: templates/public/schermo_sala.html:125
 msgid "Classifica complessiva"
 msgstr ""
 
@@ -9934,7 +9938,7 @@ msgid "Imposta un massimo di iscritti per usare «fino al massimo»."
 msgstr ""
 
 #: templates/components/_gara_inscriptions.html:97
-#: templates/direttore/_fase_gioco.html:208
+#: templates/direttore/_fase_gioco.html:219
 #: templates/direttore/_fase_spareggio.html:65
 #, python-format
 msgid "%(n)d attivo"
@@ -10056,6 +10060,7 @@ msgstr ""
 #: templates/direttore/_partite.html:68
 #: templates/individual_match/match_detail.html:229
 #: templates/individual_match/matches.html:102
+#: templates/public/schermo_sala.html:149
 msgid "Concluso"
 msgstr ""
 
@@ -12142,6 +12147,7 @@ msgid "Dirigi"
 msgstr ""
 
 #: templates/components/_tessera_campionato.html:68
+#: templates/public/schermo_sala.html:124
 #: templates/public/vetrina_gara.html:103
 msgid "Classifica finale"
 msgstr ""
@@ -13350,7 +13356,16 @@ msgstr ""
 msgid "c’è un tavolo libero: assegnalo dalla card"
 msgstr ""
 
-#: templates/direttore/_fase_gioco.html:182
+#: templates/direttore/_fase_gioco.html:176
+#: templates/public/schermo_sala.html:17
+msgid "Schermo in sala"
+msgstr ""
+
+#: templates/direttore/_fase_gioco.html:176
+msgid "da aprire sulla TV della sala: tavoli e classifica, senza menu"
+msgstr ""
+
+#: templates/direttore/_fase_gioco.html:193
 msgid "libero"
 msgstr ""
 
@@ -16677,6 +16692,7 @@ msgstr ""
 #: templates/individual_match/edit_match.html:74
 #: templates/individual_match/match_detail.html:201
 #: templates/individual_match/quick_match.html:166
+#: templates/public/schermo_sala.html:93
 msgid "Libero"
 msgstr ""
 
@@ -18528,6 +18544,90 @@ msgstr ""
 msgid "Vedi le gare"
 msgstr ""
 
+#: templates/public/schermo_sala.html:27 templates/public/vetrina_gara.html:56
+#, python-format
+msgid "Locandina di %(gara)s"
+msgstr ""
+
+#: templates/public/schermo_sala.html:36
+#, python-format
+msgid "%(n)d giocatore"
+msgid_plural "%(n)d giocatori"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/public/schermo_sala.html:43
+msgid "in corso"
+msgstr ""
+
+#: templates/public/schermo_sala.html:45
+msgid "spareggio in corso"
+msgstr ""
+
+#: templates/public/schermo_sala.html:47
+msgid "conclusa"
+msgstr ""
+
+#: templates/public/schermo_sala.html:49
+msgid "non ancora cominciata"
+msgstr ""
+
+#: templates/public/schermo_sala.html:59
+msgid "Lo schermo in sala per le gare a tabellone non è ancora disponibile"
+msgstr ""
+
+#: templates/public/schermo_sala.html:60
+msgid "Per ora il percorso della gara si segue dalla pagina del tabellone."
+msgstr ""
+
+#: templates/public/schermo_sala.html:63
+msgid "Apri il tabellone"
+msgstr ""
+
+#: templates/public/schermo_sala.html:73
+msgid "La gara non è ancora cominciata"
+msgstr ""
+
+#: templates/public/schermo_sala.html:75
+msgid ""
+"Appena il direttore avvia il primo turno, qui compaiono i tavoli con le "
+"partite."
+msgstr ""
+
+#: templates/public/schermo_sala.html:91
+msgid "Alla distanza"
+msgstr ""
+
+#: templates/public/schermo_sala.html:107
+msgid "Prossima partita"
+msgstr ""
+
+#: templates/public/schermo_sala.html:109
+msgid "in attesa di un tavolo libero"
+msgstr ""
+
+#: templates/public/schermo_sala.html:111
+#, python-format
+msgid "nessuna partita in attesa"
+msgstr ""
+
+#: templates/public/schermo_sala.html:126
+#, python-format
+msgid "Classifica dopo il turno %(n)s"
+msgstr ""
+
+#: templates/public/schermo_sala.html:128
+msgid "Vinti · persi"
+msgstr ""
+
+#: templates/public/schermo_sala.html:128
+msgid "Vinte · diff"
+msgstr ""
+
+#: templates/public/schermo_sala.html:142
+msgid "La classifica compare alla fine del primo turno."
+msgstr ""
+
 #: templates/public/storico_gare.html:14
 msgid "Gare e campionati conclusi"
 msgstr ""
@@ -18647,11 +18747,6 @@ msgstr ""
 #: templates/public/vetrina_campionato.html:198
 #: templates/public/vetrina_gara.html:199
 msgid "Organizza"
-msgstr ""
-
-#: templates/public/vetrina_gara.html:56
-#, python-format
-msgid "Locandina di %(gara)s"
 msgstr ""
 
 #: templates/public/vetrina_gara.html:104

@@ -560,3 +560,13 @@ def test_la_correzione_dalla_pagina_della_gara_torna_alla_gara(
         },
     )
     assert "altrove" not in r.headers["Location"]
+
+
+def test_in_gioco_la_pagina_porta_allo_schermo_in_sala(admin_client, db_session):
+    """Canvas 3.10: il direttore apre lo schermo dalla pagina della gara."""
+    gara = _gara(db_session, GaraStatus.PLAYING.value, current_round=1)
+    gara.public_token = "salatoken1"
+    db_session.commit()
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert "/g/salatoken1/sala" in html
+    assert "Schermo in sala" in html

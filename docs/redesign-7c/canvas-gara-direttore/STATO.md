@@ -464,3 +464,19 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   Una forma sola su telefono e desktop; chi guarda resta sui componenti di
   prima. Le fasi spareggio e conclusa passano a questa classifica, con le
   medaglie, nella fase F.
+  proponeva di avviare un turno gia' avviato (`seed_demo.py`).
+* **E · Schermo in sala** (PR `feat: lo schermo in sala`, 2026-09-13). La
+  schermata 3.10 e' una route nuova, pubblica e senza menu:
+  `/g/<indirizzo>/sala` (`main.schermo_sala`), dallo stesso indirizzo della
+  vetrina, quindi una prova risponde 404 e gli id non si enumerano. In testa
+  la locandina 1200×630 a tutta larghezza e la barra scura con nome, dati e
+  turno; sotto i tavoli come caselle con i due giocatori, nome grande e
+  punteggio grandissimo, il tavolo libero con la prossima partita in attesa;
+  a destra la classifica gia' calcolata con le medaglie (`c7-pos--1..3`) e il
+  turno prima. Non scrive sul database (`classifica_gia_calcolata`). Si
+  ricarica agli eventi della gara con un poll pubblico per indirizzo
+  (`sse.poll_sala`, ADR-057). Le gare a tabellone dicono «non ancora
+  disponibile» e rimandano al tabellone: issue #352. Dati in
+  `models/competition/schermo_sala.py`; il direttore la apre dalla pagina
+  della gara in gioco («Schermo in sala»). Il seed della guida da' uno slug
+  alla gara 2, perche' la schermata abbia un indirizzo stabile.

@@ -186,6 +186,12 @@ shots:
     caption: "La vetrina di una gara vista da chi arriva dal link: quando si gioca, la sede, il formato, la quota, quanti si sono iscritti e il pulsante per iscriversi."
     viewports: [mobile]
 
+  - id: schermo-sala
+    route: /g/seconda-prova-palla-9/sala
+    as: anonimo
+    caption: "Lo schermo in sala di una gara in corso: la locandina in testa, i tavoli con i due giocatori e il punteggio, la classifica con le medaglie e il turno prima."
+    viewports: [desktop]
+
   - id: vetrina-cura
     route: /admin/gara/3/vetrina
     as: Luca Bianchi

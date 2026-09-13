@@ -207,6 +207,9 @@ def _create_gare(db, campionato, director, venue):
     # schermate ha bisogno di un percorso stabile — il token, generato con
     # `secrets`, cambia a ogni seed e non si potrebbe scrivere lì.
     gare[-1].slug = "terza-prova-palla-8"
+    # La gara in corso ha lo schermo in sala nella guida (canvas 3.10), che
+    # sta sullo stesso indirizzo della vetrina: stessa ragione, slug fisso.
+    gare[1].slug = "seconda-prova-palla-9"
     # Stessa ragione per il campionato, che dal secondo lotto ha una vetrina
     # sua: anche il suo token nasce da `secrets` e cambierebbe a ogni seed.
     gare[-1].campionato.slug = "campionato-sociale"
