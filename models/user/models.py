@@ -105,6 +105,17 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     # maggioranza dei giocatori e che era il comportamento di prima.
     timezone = db.Column(db.String(64), nullable=True)
 
+    # Lingua in cui scrivere a questo utente: codice che l'app parla ("it",
+    # "en"). Gemella del fuso, per la stessa ragione (ADR-062): una notifica
+    # composta mentre un direttore preme un pulsante, o da uno scheduled task,
+    # va scritta nella lingua di chi la **riceve**, e fuori da una pagina quella
+    # lingua esiste solo se è scritta qui.
+    #
+    # La scrive il selettore della lingua, che è una scelta; oppure la deduzione
+    # dal browser, che riempie solo un vuoto e non scavalca mai una scelta.
+    # NULL = mai dedotta: si ripiega sull'italiano, il comportamento di prima.
+    language = db.Column(db.String(8), nullable=True)
+
     # Onboarding obbligatorio (una volta sola) — ADR-035. Default False per
     # tutti, inclusi gli account esistenti (backfill): ognuno esegue
     # l'onboarding al primo login successivo al rilascio.

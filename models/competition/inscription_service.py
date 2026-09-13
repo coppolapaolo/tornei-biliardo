@@ -17,10 +17,8 @@ Created: 2025-01-18
 from __future__ import annotations
 
 import logging
-from typing import Optional
+from typing import Any, Optional
 from datetime import datetime
-
-from flask_babel import gettext as _
 
 from models.base import db, utc_now
 from models.status_enum import GaraStatus
@@ -38,6 +36,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from models.competition.models import Gara
+    from utils.lingua import TestoNotifica
 
 logger = logging.getLogger(__name__)
 
@@ -554,16 +553,18 @@ class InscriptionService:
         for i, insc in enumerate(remaining, 1):
             insc.waitlist_position = i
 
-        # Invia notifica
-        gara_display = gara.name or f"Gara {gara.number}"
-        msg = (
-            f"Sei stato promosso dalla lista d'attesa " f"per la gara '{gara_display}'"
-        )
+        # Invia notifica, nella lingua del promosso (ADR-062)
+        from flask_babel import lazy_gettext as _l
+
+        gara_display = gara.name or _l("Gara %(numero)s", numero=gara.number)
         try:
             NotificationFactory.create_account_update_notification(
                 user_id=inscription.user_id,
-                title="Posto disponibile!",
-                message=msg,
+                title=_l("Posto disponibile!"),
+                message=_l(
+                    "Sei stato promosso dalla lista d'attesa per la gara " "'%(gara)s'",
+                    gara=gara_display,
+                ),
                 priority=NotificationPriority.HIGH,
                 update_type="waitlist_promotion",
                 related_entities={"gara_id": gara.id, "gara_name": gara.name},
@@ -582,35 +583,49 @@ class InscriptionService:
             )
 
     @staticmethod
-    def nome_gara(gara: "Gara") -> str:
-        """Il nome della gara come lo legge un giocatore in una notifica."""
-        return gara.name or _("Gara %(numero)s", numero=gara.number)
+    def nome_gara(gara: "Gara") -> Any:
+        """Il nome della gara come lo legge un giocatore in una notifica.
+
+        Pigro quando la gara non ha un nome: il ripiego «Gara N» si traduce
+        nella lingua di chi riceve la notifica, non di chi la manda (ADR-062).
+        """
+        from flask_babel import lazy_gettext as _l
+
+        return gara.name or _l("Gara %(numero)s", numero=gara.number)
 
     @staticmethod
-    def notifica_di_gara(user_id: int, gara: "Gara", messaggio: str) -> None:
+    def notifica_di_gara(
+        user_id: int, gara: "Gara", messaggio: "TestoNotifica"
+    ) -> None:
         """Una notifica a un iscritto su quello che il direttore ha fatto.
 
         Passa da `create_bulk_notification` e non da
         `create_tournament_notification`, che rilegge il testo con
         `str.format`: uno username con una graffa lo farebbe saltare. Il
         riferimento `gara_id` fa riconoscere la competizione di prova.
+
+        `messaggio` arriva **da comporre** (stringa pigra o funzione): il
+        servizio lo traduce nella lingua del destinatario (ADR-062). Qui non si
+        cattura niente: chi chiama dentro un'operazione atomica decide.
         """
+        from flask_babel import lazy_gettext as _l
         from models.notification.factory import NotificationFactory
         from models.notification.models import NotificationPriority, NotificationType
 
         NotificationFactory.create_bulk_notification(
             user_ids=[user_id],
             notification_type=NotificationType.TOURNAMENT_REGISTRATION,
-            title=_("Aggiornamento gara"),
+            title=_l("Aggiornamento gara"),
             message=messaggio,
             priority=NotificationPriority.HIGH,
             related_entities={
                 "gara_id": gara.id,
                 "tournament_id": gara.id,
-                "tournament_name": InscriptionService.nome_gara(gara),
+                # Metadato in JSON: una stringa, non un testo pigro.
+                "tournament_name": str(InscriptionService.nome_gara(gara)),
             },
             action_url=f"/gara/{gara.id}",
-            action_text=_("Vedi la gara"),
+            action_text=_l("Vedi la gara"),
         )
 
     @staticmethod
@@ -641,23 +656,25 @@ class InscriptionService:
 
             # Invia notifica all'utente discritto. Fino al 2026-09-13 era una
             # f-string non tradotta che scriveva «L'direttore di gara»: ora
-            # dice chi, per nome.
+            # dice chi, per nome, e nella lingua di chi la riceve (ADR-062).
             try:
+                from flask_babel import lazy_gettext as _l
+
                 if inscription.is_waitlist:
-                    message = _(
+                    message = _l(
                         "%(direttore)s ti ha tolto dalla lista d'attesa della "
                         "gara %(gara)s.",
                         direttore=admin_user.username,
                         gara=InscriptionService.nome_gara(gara),
                     )
                 else:
-                    message = _(
+                    message = _l(
                         "%(direttore)s ha annullato la tua iscrizione alla gara "
                         "%(gara)s.",
                         direttore=admin_user.username,
                         gara=InscriptionService.nome_gara(gara),
                     )
-                InscriptionService.notifica_di_gara(user_id, gara, str(message))
+                InscriptionService.notifica_di_gara(user_id, gara, message)
             except Exception:
                 logger.error(
                     "Notifica di disiscrizione non inviata " "(utente=%s, gara=%s)",
@@ -706,15 +723,17 @@ class InscriptionService:
                         from models.notification.factory import NotificationFactory
                         from models.notification.models import NotificationPriority
 
-                        promo_msg = (
-                            f"Sei stato promosso dalla lista d'attesa "
-                            f"per {gara_name}"
-                        )
+                        from flask_babel import lazy_gettext as _l
+
                         notification_result = (
                             NotificationFactory.create_tournament_notification(
                                 user_ids=[first_waitlist.user_id],
                                 tournament_name=gara_name,
-                                message_template=promo_msg,
+                                message_template=_l(
+                                    "Sei stato promosso dalla lista d'attesa "
+                                    "per %(gara)s",
+                                    gara=gara_name,
+                                ),
                                 priority=NotificationPriority.HIGH,
                                 tournament_id=gara_id,
                             )

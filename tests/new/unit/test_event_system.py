@@ -18,6 +18,14 @@ from models.events.user_events import (
 from models.events.match_events import MatchProposalCreatedEvent, MatchAcceptedEvent
 from models.events.notification_handlers import NotificationEventHandlers
 from models.notification.models import NotificationType, NotificationPriority
+from utils.lingua import componi
+from flask_babel import force_locale
+
+
+def _testo(valore):
+    """Il testo come lo compone il servizio per un destinatario italiano (ADR-062)."""
+    with force_locale("it"):
+        return componi(valore)
 
 
 class TestDomainEvent:
@@ -405,8 +413,8 @@ class TestNotificationEventHandlers:
         first_call = calls[0][1]  # kwargs
         assert first_call["user_id"] == 1
         assert first_call["notification_type"] == NotificationType.SYSTEM_ANNOUNCEMENT
-        assert first_call["title"] == "Nuova Richiesta Direttore"
-        assert "testuser" in first_call["message"]
+        assert _testo(first_call["title"]) == "Nuova Richiesta Direttore"
+        assert "testuser" in _testo(first_call["message"])
         assert first_call["priority"] == NotificationPriority.HIGH
 
         # Verify second admin notification
@@ -437,9 +445,9 @@ class TestNotificationEventHandlers:
 
         assert call_kwargs["user_id"] == 123
         assert call_kwargs["notification_type"] == NotificationType.ACCOUNT_UPDATE
-        assert "Approvata" in call_kwargs["title"]
-        assert "Congratulazioni" in call_kwargs["message"]
-        assert "Well qualified" in call_kwargs["message"]
+        assert "Approvata" in _testo(call_kwargs["title"])
+        assert "Congratulazioni" in _testo(call_kwargs["message"])
+        assert "Well qualified" in _testo(call_kwargs["message"])
         assert call_kwargs["priority"] == NotificationPriority.HIGH
 
     @patch(
@@ -466,9 +474,9 @@ class TestNotificationEventHandlers:
 
         assert call_kwargs["user_id"] == 123
         assert call_kwargs["notification_type"] == NotificationType.ACCOUNT_UPDATE
-        assert "Rifiutata" in call_kwargs["title"]
-        assert "rifiutata" in call_kwargs["message"]
-        assert "Insufficient experience" in call_kwargs["message"]
+        assert "Rifiutata" in _testo(call_kwargs["title"])
+        assert "rifiutata" in _testo(call_kwargs["message"])
+        assert "Insufficient experience" in _testo(call_kwargs["message"])
         assert call_kwargs["priority"] == NotificationPriority.NORMAL
 
     @patch(
@@ -495,9 +503,9 @@ class TestNotificationEventHandlers:
 
         assert call_kwargs["user_id"] == 123
         assert call_kwargs["notification_type"] == NotificationType.ACCOUNT_UPDATE
-        assert "Approvata" in call_kwargs["title"]
-        assert "Test Pool Hall" in call_kwargs["title"]
-        assert "Congratulazioni" in call_kwargs["message"]
+        assert "Approvata" in _testo(call_kwargs["title"])
+        assert "Test Pool Hall" in _testo(call_kwargs["title"])
+        assert "Congratulazioni" in _testo(call_kwargs["message"])
         assert call_kwargs["priority"] == NotificationPriority.HIGH
 
     @patch(
@@ -522,8 +530,8 @@ class TestNotificationEventHandlers:
         call_kwargs = mock_create_notification.call_args[1]
 
         assert call_kwargs["priority"] == NotificationPriority.HIGH
-        assert "(CONTESA)" in call_kwargs["title"]
-        assert "ATTENZIONE" in call_kwargs["message"]
+        assert "(CONTESA)" in _testo(call_kwargs["title"])
+        assert "ATTENZIONE" in _testo(call_kwargs["message"])
 
     @patch(
         "models.events.notification_handlers.NotificationService.create_notification"
@@ -548,10 +556,10 @@ class TestNotificationEventHandlers:
 
         assert call_kwargs["user_id"] == 789
         assert call_kwargs["notification_type"] == NotificationType.MATCH_PROPOSAL
-        assert call_kwargs["title"] == "Nuova Proposta di Partita"
-        assert "Player1" in call_kwargs["message"]
-        assert "Pool Hall" in call_kwargs["message"]
-        assert "Let's play!" in call_kwargs["message"]
+        assert _testo(call_kwargs["title"]) == "Nuova Proposta di Partita"
+        assert "Player1" in _testo(call_kwargs["message"])
+        assert "Pool Hall" in _testo(call_kwargs["message"])
+        assert "Let's play!" in _testo(call_kwargs["message"])
 
     @patch(
         "models.events.notification_handlers.NotificationService.create_notification"
@@ -594,6 +602,6 @@ class TestNotificationEventHandlers:
 
         assert call_kwargs["user_id"] == 123  # Notify proposer
         assert call_kwargs["notification_type"] == NotificationType.MATCH_ACCEPTED
-        assert call_kwargs["title"] == "Proposta di Partita Accettata!"
-        assert "Player2" in call_kwargs["message"]
-        assert "accettato" in call_kwargs["message"]
+        assert _testo(call_kwargs["title"]) == "Proposta di Partita Accettata!"
+        assert "Player2" in _testo(call_kwargs["message"])
+        assert "accettato" in _testo(call_kwargs["message"])

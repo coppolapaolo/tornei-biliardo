@@ -11,7 +11,7 @@ from __future__ import annotations
 from datetime import timedelta
 from typing import List, Optional, Tuple
 
-from flask_babel import gettext as _
+from flask_babel import lazy_gettext as _l
 
 from models.base import db, utc_now
 from models.transaction.manager import transactional
@@ -260,14 +260,14 @@ class DemandSignalService:
             return False
 
         if zone:
-            message = _(
+            message = _l(
                 "%(count)s giocatori vorrebbero una gara a %(city)s, una zona "
                 "senza un direttore di gara. Valuta di reclutarne o promuoverne uno.",
                 count=count,
                 city=zone,
             )
         else:
-            message = _(
+            message = _l(
                 "%(count)s giocatori vorrebbero una gara in una zona senza un "
                 "direttore di gara. Valuta di reclutarne o promuoverne uno.",
                 count=count,
@@ -276,7 +276,7 @@ class DemandSignalService:
         NotificationFactory.create_bulk_notification(
             user_ids=admin_ids,
             notification_type=NotificationType.DEMAND_ZONE_NO_DIRECTOR,
-            title=_("Domanda in una zona senza direttore di gara"),
+            title=_l("Domanda in una zona senza direttore di gara"),
             message=message,
             priority=NotificationPriority.NORMAL,
             related_entities={"zone": zone, "zone_key": zone_key, "count": count},
@@ -342,8 +342,8 @@ class DemandSignalService:
             NotificationService.create_notification(
                 user_id=director.id,
                 notification_type=NotificationType.DEMAND_THRESHOLD_REACHED,
-                title=_("C'è domanda nella tua zona!"),
-                message=_(
+                title=_l("C'è domanda nella tua zona!"),
+                message=_l(
                     "%(count)s giocatori vorrebbero una gara vicino a te. "
                     "Potrebbe essere il momento di organizzarne una.",
                     count=count,
@@ -403,15 +403,15 @@ class DemandSignalService:
         NotificationFactory.create_bulk_notification(
             user_ids=user_ids,
             notification_type=NotificationType.DEMAND_GARA_NEARBY,
-            title=_("Una gara è stata aperta vicino a te!"),
-            message=_(
+            title=_l("Una gara è stata aperta vicino a te!"),
+            message=_l(
                 "La gara che aspettavi nella tua zona è stata pubblicata: "
                 "dai un'occhiata e iscriviti."
             ),
             priority=NotificationPriority.HIGH,
             related_entities={"gara_id": gara_id},
             action_url=action_url,
-            action_text=_("Vedi la gara"),
+            action_text=_l("Vedi la gara"),
         )
 
     # ── ciclo di vita scadenza (ADR-036 open item 3) ─────────────────────────
@@ -442,8 +442,8 @@ class DemandSignalService:
             NotificationFactory.create_bulk_notification(
                 user_ids=[signal.user_id],
                 notification_type=NotificationType.DEMAND_SIGNAL_EXPIRING,
-                title=_("La tua richiesta sta per scadere"),
-                message=_(
+                title=_l("La tua richiesta sta per scadere"),
+                message=_l(
                     "La tua richiesta di una gara nella tua zona sta per "
                     "scadere. Confermala se ti interessa ancora."
                 ),

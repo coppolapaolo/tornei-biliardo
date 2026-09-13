@@ -367,6 +367,10 @@ class ProvaService:
         )
         from models.notification.services import NotificationService
 
+        # Testi pigri: lo scheduled task scrive a ciascun direttore nella sua
+        # lingua (ADR-062).
+        from flask_babel import lazy_gettext as _l, lazy_ngettext
+
         adesso = adesso or utc_now()
         avvisate = 0
         with prova_visibili():
@@ -377,10 +381,14 @@ class ProvaService:
                     NotificationService.create_notification(
                         user_id=user_id,
                         notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
-                        title="La tua prova sta per scadere",
-                        message=(
-                            f"«{radice.name}» sparirà da sola fra {giorni} "
-                            f"giorni. Se hai finito puoi eliminarla tu."
+                        title=_l("La tua prova sta per scadere"),
+                        message=lazy_ngettext(
+                            "«%(nome)s» sparirà da sola fra %(num)s giorno. "
+                            "Se hai finito puoi eliminarla tu.",
+                            "«%(nome)s» sparirà da sola fra %(num)s giorni. "
+                            "Se hai finito puoi eliminarla tu.",
+                            giorni,
+                            nome=radice.name,
                         ),
                         priority=NotificationPriority.NORMAL,
                         related_entities={chiave: radice.id},

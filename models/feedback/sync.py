@@ -22,8 +22,6 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict, List, Optional
 
-from flask_babel import gettext as _
-
 from models.base import db, utc_now
 from models.transaction.manager import transactional
 
@@ -186,16 +184,20 @@ class FeedbackSync:
         """
         from models.notification.models import NotificationPriority, NotificationType
         from models.notification.services import NotificationService
+        from flask_babel import lazy_gettext as _l
 
+        # Pigre: il giro giornaliero non ha una richiesta, e ogni utente legge
+        # nella sua lingua (ADR-062). La nota pubblica resta com'è: la scrive
+        # una persona, non si traduce.
         etichette = {
-            FeedbackStatus.PRESA_IN_CARICO.value: _(
+            FeedbackStatus.PRESA_IN_CARICO.value: _l(
                 "La tua segnalazione è stata presa in considerazione"
             ),
-            FeedbackStatus.RISOLTA.value: _("La tua segnalazione è stata risolta"),
-            FeedbackStatus.NON_PREVISTA.value: _(
+            FeedbackStatus.RISOLTA.value: _l("La tua segnalazione è stata risolta"),
+            FeedbackStatus.NON_PREVISTA.value: _l(
                 "Sulla tua segnalazione abbiamo deciso di non intervenire"
             ),
-            FeedbackStatus.RICEVUTA.value: _("Ci sono novità sulla tua segnalazione"),
+            FeedbackStatus.RICEVUTA.value: _l("Ci sono novità sulla tua segnalazione"),
         }
 
         try:
@@ -203,12 +205,12 @@ class FeedbackSync:
                 user_id=segnalazione.user_id,
                 notification_type=NotificationType.FEEDBACK_UPDATE,
                 title=etichette.get(
-                    segnalazione.stato, _("Novità sulla tua segnalazione")
+                    segnalazione.stato, _l("Novità sulla tua segnalazione")
                 ),
                 message=segnalazione.nota_pubblica or segnalazione.titolo,
                 priority=NotificationPriority.NORMAL,
                 action_url="/segnalazioni/",
-                action_text=_("Vedi le tue segnalazioni"),
+                action_text=_l("Vedi le tue segnalazioni"),
                 related_entities={"feedback_report_id": segnalazione.id},
             )
             return True

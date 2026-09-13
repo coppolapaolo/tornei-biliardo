@@ -41,6 +41,16 @@ blocks:
       - name: "Nuovi ruoli"
         text: "Quando ti viene assegnato un ruolo che non avevi chiesto, come quello di beta tester."
 
+  - type: note
+    tone: info
+    title: "In che lingua arrivano"
+    text: >-
+      Le notifiche arrivano nella **tua** lingua, anche quando a mandarle è un
+      direttore che usa l'app in un'altra. È la lingua che hai scelto col
+      collegamento **English** o **Italiano** in fondo alla pagina; finché non
+      ne scegli una, l'app usa quella del tuo browser. Le notifiche già ricevute restano nella lingua in cui sono
+      arrivate.
+
   - type: heading
     id: gestire
     title: "Tenere pulito l'elenco"

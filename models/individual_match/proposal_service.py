@@ -112,19 +112,15 @@ class ProposalService:
                 db.session.add(invitation)
 
                 try:
-                    proposer_name = proposer.username if proposer else "Un giocatore"
-                    scheduled_time_str = (
-                        scheduled_at.strftime("%d/%m/%Y alle %H:%M")
-                        if scheduled_at
-                        else None
-                    )
-
+                    # Nome e orario grezzi: la fabbrica li compone nella lingua
+                    # e nel fuso dell'invitato (ADR-062, ADR-043). Qui prima
+                    # l'orario usciva in UTC, con «alle» scritto in italiano.
                     NotificationFactory.create_match_notification(
                         user_id=user_id,
                         match_type="proposal",
-                        player_names=[proposer_name],
+                        player_names=[proposer.username if proposer else ""],
                         location_name=location,
-                        scheduled_time=scheduled_time_str,
+                        scheduled_time=scheduled_at,
                         proposal_id=proposal.id,
                     )
                 except Exception:
@@ -217,27 +213,36 @@ class ProposalService:
                 )
 
             if eligible_user_ids:
-                scheduled_str = scheduled_at.strftime("%d/%m/%Y alle %H:%M")
-                # Suffisso località tradotto a parte: pybabel non estrae le
-                # chiamate _() annidate negli argomenti di un altro _().
-                loc_suffix = (
-                    " " + _("a %(loc)s", loc=location_text) if location_text else ""
-                )
-                NotificationFactory.create_bulk_notification(
-                    user_ids=eligible_user_ids,
-                    notification_type=NotificationType.MATCH_PROPOSAL,
-                    title=_("Nuova proposta di sfida"),
-                    message=_(
+                from flask_babel import lazy_gettext as _l
+                from utils.lingua import data_ora_per
+
+                def messaggio(destinatario: int) -> str:
+                    # Nella lingua e nel fuso di chi riceve (ADR-062, ADR-043):
+                    # prima l'orario usciva in UTC con «alle» in italiano.
+                    # Suffisso località tradotto a parte: pybabel non estrae le
+                    # chiamate _() annidate negli argomenti di un altro _().
+                    loc_suffix = (
+                        " " + _("a %(loc)s", loc=location_text) if location_text else ""
+                    )
+                    return _(
                         "%(username)s propone una sfida aperta%(location)s il %(date)s",
                         username=proposer_name,
                         location=loc_suffix,
-                        date=scheduled_str,
-                    ),
-                    priority=NotificationPriority.NORMAL,
-                    action_url=f"/match/proposals/{proposal.id}",
-                    action_text=_("Visualizza"),
-                    continue_on_error=True,
-                )
+                        date=data_ora_per(destinatario, scheduled_at),
+                    )
+
+                # Una notifica per giocatore: l'orario dipende da chi lo legge.
+                for destinatario in eligible_user_ids:
+                    NotificationFactory.create_bulk_notification(
+                        user_ids=[destinatario],
+                        notification_type=NotificationType.MATCH_PROPOSAL,
+                        title=_l("Nuova proposta di sfida"),
+                        message=lambda uid=destinatario: messaggio(uid),
+                        priority=NotificationPriority.NORMAL,
+                        action_url=f"/match/proposals/{proposal.id}",
+                        action_text=_l("Visualizza"),
+                        continue_on_error=True,
+                    )
         except Exception:
             pass  # Notification failure shouldn't block proposal creation
 
@@ -488,26 +493,31 @@ class ProposalService:
         except IntegrityError as exc:
             raise ValueError(_("Proposta già accettata")) from exc
 
+        from flask_babel import lazy_gettext as _l
+
         location_text = proposal.location_display or ""
-        loc_suffix = " " + _("a %(loc)s", loc=location_text) if location_text else ""
+
+        def loc_suffix() -> str:
+            # Tradotto nella lingua di chi riceve: si chiama dentro la notifica.
+            return " " + _("a %(loc)s", loc=location_text) if location_text else ""
 
         # Notify proposer that their proposal was accepted
         try:
             accepter = db.session.get(User, user_id)
-            accepter_name = accepter.username if accepter else _("Un giocatore")
+            accepter_name = accepter.username if accepter else None
 
             NotificationFactory.create_bulk_notification(
                 user_ids=[proposal.proposer_id],
                 notification_type=NotificationType.MATCH_ACCEPTED,
-                title=_("Proposta accettata!"),
-                message=_(
+                title=_l("Proposta accettata!"),
+                message=lambda: _(
                     "%(player)s ha accettato la tua proposta di sfida%(location)s",
-                    player=accepter_name,
-                    location=loc_suffix,
+                    player=accepter_name or _("Un giocatore"),
+                    location=loc_suffix(),
                 ),
                 priority=NotificationPriority.HIGH,
                 action_url=f"/match/matches/{individual_match.id}",
-                action_text=_("Vai alla sfida"),
+                action_text=_l("Vai alla sfida"),
             )
         except Exception:
             pass  # Notification failure shouldn't block acceptance
@@ -522,11 +532,11 @@ class ProposalService:
                 NotificationFactory.create_bulk_notification(
                     user_ids=discarded_ids,
                     notification_type=NotificationType.MATCH_DECLINED,
-                    title=_("Proposta di sfida chiusa"),
-                    message=_(
+                    title=_l("Proposta di sfida chiusa"),
+                    message=lambda: _(
                         "La proposta di sfida%(location)s è stata accettata "
                         "da un altro giocatore.",
-                        location=loc_suffix,
+                        location=loc_suffix(),
                     ),
                     priority=NotificationPriority.NORMAL,
                     continue_on_error=True,
@@ -641,22 +651,22 @@ class ProposalService:
 
             # Notify proposer that their proposal expired
             try:
+                from flask_babel import lazy_gettext as _l
+
                 location_text = proposal.location or ""
-                loc_suffix = (
-                    " " + _("a %(loc)s", loc=location_text) if location_text else ""
-                )
                 NotificationFactory.create_bulk_notification(
                     user_ids=[proposal.proposer_id],
                     notification_type=NotificationType.MATCH_DECLINED,
-                    title=_("Proposta scaduta"),
-                    message=_(
+                    title=_l("Proposta scaduta"),
+                    # Composto nella lingua di chi ha proposto (ADR-062).
+                    message=lambda luogo=location_text: _(
                         "La tua proposta di sfida%(location)s è scaduta "
                         "senza accettazioni.",
-                        location=loc_suffix,
+                        location=(" " + _("a %(loc)s", loc=luogo) if luogo else ""),
                     ),
                     priority=NotificationPriority.NORMAL,
                     action_url=f"/match/proposals/{proposal.id}",
-                    action_text=_("Visualizza"),
+                    action_text=_l("Visualizza"),
                     continue_on_error=True,
                 )
             except Exception:
@@ -686,22 +696,22 @@ class ProposalService:
 
             # Notify proposer that their proposal expired
             try:
+                from flask_babel import lazy_gettext as _l
+
                 location_text = proposal.location or ""
-                loc_suffix = (
-                    " " + _("a %(loc)s", loc=location_text) if location_text else ""
-                )
                 NotificationFactory.create_bulk_notification(
                     user_ids=[proposal.proposer_id],
                     notification_type=NotificationType.MATCH_DECLINED,
-                    title=_("Proposta scaduta"),
-                    message=_(
+                    title=_l("Proposta scaduta"),
+                    # Composto nella lingua di chi ha proposto (ADR-062).
+                    message=lambda luogo=location_text: _(
                         "La tua proposta di sfida%(location)s è scaduta "
                         "senza accettazioni.",
-                        location=loc_suffix,
+                        location=(" " + _("a %(loc)s", loc=luogo) if luogo else ""),
                     ),
                     priority=NotificationPriority.NORMAL,
                     action_url=f"/match/proposals/{proposal.id}",
-                    action_text=_("Visualizza"),
+                    action_text=_l("Visualizza"),
                     continue_on_error=True,
                 )
             except Exception:
@@ -748,8 +758,6 @@ class ProposalService:
         proposal_id: int, proposer_id: int, accepted_player_id: int
     ) -> Dict[str, Any]:
         """Accept an interest expressed for an open invitation."""
-        from flask_babel import _
-
         proposal = db.session.get(MatchProposal, proposal_id)
         if not proposal:
             raise ValueError(f"Proposal {proposal_id} not found")
@@ -775,15 +783,21 @@ class ProposalService:
             from ..notification.factory import NotificationFactory
             from ..notification.models import NotificationPriority, NotificationType
 
-            proposal_title = getattr(proposal, "title", "Open match proposal")
+            from flask_babel import lazy_gettext as _l
+
+            # Pigri: ogni invitato legge nella sua lingua (ADR-062), compreso il
+            # nome di ripiego della proposta, che prima era scritto in inglese.
+            proposal_title = getattr(proposal, "title", None) or _l(
+                "Proposta di sfida aperta"
+            )
             invited_user_ids = [inv.invited_user_id for inv in other_invitations]
 
             try:
                 NotificationFactory.create_bulk_notification(
                     user_ids=invited_user_ids,
                     notification_type=NotificationType.MATCH_DECLINED,
-                    title=_("Proposta di sfida conclusa"),
-                    message=_(
+                    title=_l("Proposta di sfida conclusa"),
+                    message=_l(
                         "La proposta di sfida '%(title)s' è stata accettata "
                         "da un altro giocatore.",
                         title=proposal_title,

@@ -14,8 +14,17 @@ Ciclo completo di traduzione per l'app Flask con Flask-Babel. L'app è Italian-f
 ### 1. Extract
 
 ```bash
-pybabel extract -F babel.cfg --ignore-dirs 'venv .* _* node_modules' -o messages.pot .
+pybabel extract -F babel.cfg --ignore-dirs 'venv .* _* node_modules' \
+  -k _l -k lazy_gettext -k lazy_ngettext:1,2 -o messages.pot .
 ```
+
+**IMPORTANTE**: le parole chiave `-k` sono obbligatorie. Babel riconosce da
+solo `_`, `gettext` e `ngettext`, ma **non** `lazy_gettext` né l'alias `_l`: le
+stringhe pigre restano fuori dal catalogo, e in inglese escono in italiano
+senza che niente lo segnali. È così che le etichette di
+`models/notification/templates.py` non sono mai state tradotte. Dal 2026-09-13
+i testi delle notifiche sono tutti pigri (ADR-062), quindi senza `-k` sparirebbe
+un intero dominio.
 
 **IMPORTANTE**: `--ignore-dirs` è obbligatorio. Senza, `pybabel` scansiona
 anche `venv/` ed estrae migliaia di stringhe di librerie terze (click,

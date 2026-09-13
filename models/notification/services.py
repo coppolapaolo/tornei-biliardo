@@ -9,12 +9,13 @@ from __future__ import annotations
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 
+from utils.lingua import TestoNotifica, componi, nella_lingua_di
+
 from ..base import db, utc_now
 from ..transaction.manager import transactional
 from .models import (
     Notification,
     NotificationPreference,
-    NotificationTemplate,
     NotificationType,
     NotificationPriority,
     NotificationStatus,
@@ -63,17 +64,23 @@ class NotificationService:
     def create_notification(
         user_id: int,
         notification_type: NotificationType,
-        title: str,
-        message: str,
+        title: TestoNotifica,
+        message: TestoNotifica,
         priority: NotificationPriority = NotificationPriority.NORMAL,
         related_entities: Optional[Dict[str, Any]] = None,
         action_url: Optional[str] = None,
-        action_text: Optional[str] = None,
+        action_text: Optional[TestoNotifica] = None,
         expires_at: Optional[datetime] = None,
         template_key: Optional[str] = None,
         template_params: Optional[Dict[str, Any]] = None,
     ) -> Optional[Notification]:
         """Create a new notification if user preferences allow it.
+
+        Titolo, messaggio e pulsante si compongono **nella lingua di chi riceve**
+        (ADR-062), non in quella di chi ha premuto il pulsante: vanno passati
+        da comporre, come ``lazy_gettext`` o come funzione senza argomenti. Una
+        stringa semplice passa com'è, ed è giusto solo per il testo scritto da
+        un utente, che non si traduce.
 
         Args:
             template_key: Optional key to NOTIFICATION_TEMPLATES for i18n support.
@@ -93,21 +100,31 @@ class NotificationService:
         if preference and not preference.can_send_notification():
             return None
 
-        # Una notifica nata dentro una competizione di prova lo dice nel
-        # titolo (ADR-058): il direttore impara cosa gli arriva, e non lo
-        # scambia per una gara vera.
-        if related_entities and _riguarda_una_prova(related_entities):
-            title = f"Prova · {title}"
+        # Il testo si compone qui, nella lingua del destinatario (ADR-062): chi
+        # ha premuto il pulsante può parlarne un'altra, e uno scheduled task
+        # non ne parla nessuna. All'uscita la lingua della pagina torna com'era.
+        with nella_lingua_di(user_id):
+            testo_titolo = componi(title) or ""
+            testo_messaggio = componi(message) or ""
+            testo_pulsante = componi(action_text)
+
+            # Una notifica nata dentro una competizione di prova lo dice nel
+            # titolo (ADR-058): il direttore impara cosa gli arriva, e non lo
+            # scambia per una gara vera.
+            if related_entities and _riguarda_una_prova(related_entities):
+                from flask_babel import gettext as _
+
+                testo_titolo = _("Prova · %(titolo)s", titolo=testo_titolo)
 
         # Create notification
         notification = Notification(
             user_id=user_id,
             notification_type=notification_type,
-            title=title,
-            message=message,
+            title=testo_titolo,
+            message=testo_messaggio,
             priority=priority,
             action_url=action_url,
-            action_text=action_text,
+            action_text=testo_pulsante,
             expires_at=expires_at,
             template_key=template_key,
         )
@@ -134,43 +151,6 @@ class NotificationService:
         _annuncia_non_letti(user_id, new_count)
 
         return notification
-
-    @staticmethod
-    def create_from_template(
-        user_id: int,
-        notification_type: NotificationType,
-        context: Dict[str, Any],
-        priority_override: Optional[NotificationPriority] = None,
-        expires_override: Optional[datetime] = None,
-    ) -> Optional[Notification]:
-        """Create notification from template with context variables."""
-
-        template = NotificationTemplate.query.filter_by(
-            notification_type=notification_type
-        ).first()
-
-        if not template:
-            # No template found, cannot create notification
-            return None
-
-        # Render content
-        rendered = template.render_notification(context)
-
-        # Use template defaults or overrides
-        priority = priority_override or template.default_priority
-        expires_at = expires_override or template.get_expiry_datetime()
-
-        return NotificationService.create_notification(
-            user_id=user_id,
-            notification_type=notification_type,
-            title=rendered["title"],
-            message=rendered["message"],
-            priority=priority,
-            related_entities=context,
-            action_url=rendered["action_url"],
-            action_text=rendered["action_text"],
-            expires_at=expires_at,
-        )
 
     @staticmethod
     def get_user_notifications(
@@ -541,145 +521,3 @@ class NotificationService:
             db.session.delete(notification)
 
         return count
-
-    # Specific notification creators for common use cases
-
-    @staticmethod
-    def notify_match_proposal(
-        proposer_id: int, target_user_id: int, match_details: Dict[str, Any]
-    ) -> Optional[Notification]:
-        """Notify user about a match proposal."""
-        return NotificationService.create_from_template(
-            user_id=target_user_id,
-            notification_type=NotificationType.MATCH_PROPOSAL,
-            context={
-                "proposer_name": match_details.get("proposer_name", "Someone"),
-                "location": match_details.get("location", "TBD"),
-                "scheduled_time": match_details.get("scheduled_time", "TBD"),
-                "proposal_id": match_details.get("proposal_id"),
-            },
-        )
-
-    @staticmethod
-    def notify_match_accepted(
-        proposer_id: int, accepter_name: str, match_details: Dict[str, Any]
-    ) -> Optional[Notification]:
-        """Notify proposer that their match was accepted."""
-        return NotificationService.create_from_template(
-            user_id=proposer_id,
-            notification_type=NotificationType.MATCH_ACCEPTED,
-            context={
-                "accepter_name": accepter_name,
-                "location": match_details.get("location", "TBD"),
-                "scheduled_time": match_details.get("scheduled_time", "TBD"),
-                "match_id": match_details.get("match_id"),
-            },
-        )
-
-    @staticmethod
-    def notify_campionato_registration(
-        user_ids: List[int], campionato_name: str, campionato_id: int
-    ) -> List[Notification]:
-        """Notify multiple users about campionato registration opening."""
-        notifications = []
-
-        for user_id in user_ids:
-            notification = NotificationService.create_from_template(
-                user_id=user_id,
-                notification_type=NotificationType.TOURNAMENT_REGISTRATION,
-                context={
-                    "campionato_name": campionato_name,
-                    "campionato_id": campionato_id,
-                },
-            )
-            if notification:
-                notifications.append(notification)
-
-        return notifications
-
-    @staticmethod
-    def notify_playoff_invitation(
-        user_id: int, playoff_name: str, campionato_name: str, deadline: datetime
-    ) -> Optional[Notification]:
-        """Notify user about playoff invitation."""
-        return NotificationService.create_from_template(
-            user_id=user_id,
-            notification_type=NotificationType.PLAYOFF_INVITATION,
-            context={
-                "playoff_name": playoff_name,
-                "campionato_name": campionato_name,
-                "deadline": deadline.strftime("%Y-%m-%d %H:%M"),
-            },
-            expires_override=deadline,
-        )
-
-    @staticmethod
-    @transactional(domain="notification")
-    def create_default_templates() -> List[NotificationTemplate]:
-        """Create default notification templates."""
-        templates_data = [
-            {
-                "type": NotificationType.MATCH_PROPOSAL,
-                "title": "New Match Proposal",
-                "message": (
-                    "{proposer_name} has proposed a match at {location} "
-                    "on {scheduled_time}"
-                ),
-                "action_text": "View Proposal",
-                "action_url": "/player/proposals/{proposal_id}",
-                "expires_hours": 48,
-            },
-            {
-                "type": NotificationType.MATCH_ACCEPTED,
-                "title": "Match Accepted!",
-                "message": (
-                    "{accepter_name} has accepted your match proposal for "
-                    "{location} on {scheduled_time}"
-                ),
-                "action_text": "View Match",
-                "action_url": "/player/matches/{match_id}",
-                "expires_hours": 24,
-            },
-            {
-                "type": NotificationType.TOURNAMENT_REGISTRATION,
-                "title": "Campionato Registration Open",
-                "message": "Registration is now open for {campionato_name}",
-                "action_text": "Register Now",
-                "action_url": "/campionati/{campionato_id}",
-                "expires_hours": 168,  # 1 week
-            },
-            {
-                "type": NotificationType.PLAYOFF_INVITATION,
-                "title": "Playoff Invitation",
-                "message": (
-                    "You've qualified for {playoff_name} in {campionato_name}! "
-                    "Please respond by {deadline}"
-                ),
-                "action_text": "Respond",
-                "action_url": "/playoffs/respond",
-                "priority": NotificationPriority.HIGH,
-            },
-        ]
-
-        templates = []
-        for template_data in templates_data:
-            existing = NotificationTemplate.query.filter_by(
-                notification_type=template_data["type"]
-            ).first()
-
-            if not existing:
-                template = NotificationTemplate(
-                    notification_type=template_data["type"],
-                    title_template=template_data["title"],
-                    message_template=template_data["message"],
-                    action_text_template=template_data.get("action_text"),
-                    action_url_template=template_data.get("action_url"),
-                    default_priority=template_data.get(
-                        "priority", NotificationPriority.NORMAL
-                    ),
-                    default_expires_hours=template_data.get("expires_hours"),
-                )
-                db.session.add(template)
-                templates.append(template)
-
-        return templates

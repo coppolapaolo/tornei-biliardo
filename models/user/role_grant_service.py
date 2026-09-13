@@ -547,15 +547,16 @@ class RoleGrantService:
     # Notifiche (best-effort: non devono mai bloccare l'operazione)
     # ────────────────────────────────────────────────────────────────────
     @staticmethod
-    def _role_label(role: GrantableRole) -> str:
-        from flask_babel import _
+    def _role_label(role: GrantableRole) -> Any:
+        from flask_babel import lazy_gettext as _l
 
         # Senza una voce qui la notifica direbbe «Hai ottenuto il ruolo di
         # beta_tester»: il valore grezzo dell'enum, non tradotto, letto da chi
-        # il ruolo l'ha appena ricevuto.
+        # il ruolo l'ha appena ricevuto. Pigra perché finisce dentro testi che
+        # si compongono nella lingua del destinatario (ADR-062).
         labels = {
-            GrantableRole.EXAMINER: _("Esaminatore"),
-            GrantableRole.BETA_TESTER: _("Beta tester"),
+            GrantableRole.EXAMINER: _l("Esaminatore"),
+            GrantableRole.BETA_TESTER: _l("Beta tester"),
         }
         return labels.get(role, role.value)
 
@@ -580,14 +581,14 @@ class RoleGrantService:
     def _notify_request_created(
         request: RoleRequest, requester: User, recipient_ids: Sequence[int]
     ) -> None:
-        from flask_babel import _
+        from flask_babel import lazy_gettext as _l
         from models.notification.models import NotificationPriority, NotificationType
 
         RoleGrantService._notify(
             recipient_ids,
             notification_type=NotificationType.ROLE_REQUEST_RECEIVED,
-            title=_("Richiesta di ruolo"),
-            message=_(
+            title=_l("Richiesta di ruolo"),
+            message=_l(
                 "%(user)s chiede il ruolo di %(role)s.",
                 user=requester.username,
                 role=RoleGrantService._role_label(
@@ -596,27 +597,27 @@ class RoleGrantService:
             ),
             priority=NotificationPriority.NORMAL,
             action_url="/roles/requests",
-            action_text=_("Vedi le richieste"),
+            action_text=_l("Vedi le richieste"),
         )
 
     @staticmethod
     def _notify_request_processed(
         request: RoleRequest, actor: User, approve: bool
     ) -> None:
-        from flask_babel import _
+        from flask_babel import lazy_gettext as _l
         from models.notification.models import NotificationPriority, NotificationType
 
         role_label = RoleGrantService._role_label(
             RoleGrantService.parse_role(request.role)
         )
         if approve:
-            message = _(
+            message = _l(
                 "%(actor)s ha approvato la tua richiesta: ora sei %(role)s.",
                 actor=actor.username,
                 role=role_label,
             )
         else:
-            message = _(
+            message = _l(
                 "La tua richiesta per il ruolo di %(role)s non è stata accolta.",
                 role=role_label,
             )
@@ -624,7 +625,7 @@ class RoleGrantService:
         RoleGrantService._notify(
             [request.user_id],
             notification_type=NotificationType.ROLE_REQUEST_PROCESSED,
-            title=_("Richiesta di ruolo processata"),
+            title=_l("Richiesta di ruolo processata"),
             message=message,
             priority=NotificationPriority.HIGH,
         )
@@ -633,14 +634,14 @@ class RoleGrantService:
     def _notify_recipients_closed(
         request: RoleRequest, recipient_ids: Sequence[int]
     ) -> None:
-        from flask_babel import _
+        from flask_babel import lazy_gettext as _l
         from models.notification.models import NotificationPriority, NotificationType
 
         RoleGrantService._notify(
             recipient_ids,
             notification_type=NotificationType.ROLE_REQUEST_CLOSED,
-            title=_("Richiesta di ruolo chiusa"),
-            message=_(
+            title=_l("Richiesta di ruolo chiusa"),
+            message=_l(
                 "La richiesta per il ruolo di %(role)s è stata presa in carico "
                 "da un altro titolare.",
                 role=RoleGrantService._role_label(
@@ -652,14 +653,14 @@ class RoleGrantService:
 
     @staticmethod
     def _notify_role_granted(user: User, role: GrantableRole) -> None:
-        from flask_babel import _
+        from flask_babel import lazy_gettext as _l
         from models.notification.models import NotificationPriority, NotificationType
 
         RoleGrantService._notify(
             [user.id],
             notification_type=NotificationType.ROLE_GRANTED,
-            title=_("Nuovo ruolo"),
-            message=_(
+            title=_l("Nuovo ruolo"),
+            message=_l(
                 "Hai ottenuto il ruolo di %(role)s.",
                 role=RoleGrantService._role_label(role),
             ),

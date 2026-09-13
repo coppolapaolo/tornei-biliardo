@@ -399,27 +399,33 @@ class QuickMatchService:
         from ..notification.models import NotificationPriority, NotificationType
         from ..user.models import User
 
+        from flask_babel import lazy_gettext as _l
+
         try:
             starter = db.session.get(User, user_id)
-            starter_name = starter.username if starter else _("Un giocatore")
+            starter_name = starter.username if starter else None
             location_text = match.location_display or ""
-            loc_suffix = (
-                " " + _("a %(loc)s", loc=location_text) if location_text else ""
-            )
+
+            def messaggio() -> str:
+                # Composto nella lingua dell'avversario (ADR-062).
+                loc_suffix = (
+                    " " + _("a %(loc)s", loc=location_text) if location_text else ""
+                )
+                return _(
+                    "%(player)s ha aperto una partita con te%(location)s. "
+                    "A fine partita dovrai confermare il risultato.",
+                    player=starter_name or _("Un giocatore"),
+                    location=loc_suffix,
+                )
 
             NotificationFactory.create_bulk_notification(
                 user_ids=[opponent_id],
                 notification_type=NotificationType.MATCH_ACCEPTED,
-                title=_("Partita iniziata!"),
-                message=_(
-                    "%(player)s ha aperto una partita con te%(location)s. "
-                    "A fine partita dovrai confermare il risultato.",
-                    player=starter_name,
-                    location=loc_suffix,
-                ),
+                title=_l("Partita iniziata!"),
+                message=messaggio,
                 priority=NotificationPriority.HIGH,
                 action_url=f"/match/matches/{match.id}",
-                action_text=_("Vai alla partita"),
+                action_text=_l("Vai alla partita"),
             )
         except Exception:  # pragma: no cover - la notifica non blocca il gioco
             logger.warning(

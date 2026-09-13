@@ -8,6 +8,7 @@ standardization of notification creation patterns and error handling.
 from unittest.mock import patch, MagicMock
 from models.notification.factory import NotificationFactory
 from models.notification.models import NotificationType, NotificationPriority
+from utils.lingua import componi
 
 
 class TestNotificationFactory:
@@ -175,9 +176,12 @@ class TestNotificationFactory:
         call_kwargs = mock_create.call_args[1]
         assert call_kwargs["notification_type"] == NotificationType.MATCH_PROPOSAL
         assert call_kwargs["title"] == "Nuova Proposta di Partita"
-        assert "Player1 vs Player2" in call_kwargs["message"]
-        assert "Pool Hall" in call_kwargs["message"]
-        assert "Let's play!" in call_kwargs["message"]
+        # Il messaggio arriva da comporre nella lingua del destinatario
+        # (ADR-062): qui lo si compone come farebbe il servizio.
+        messaggio = componi(call_kwargs["message"])
+        assert "Player1 vs Player2" in messaggio
+        assert "Pool Hall" in messaggio
+        assert "Let's play!" in messaggio
         assert call_kwargs["action_url"] == "/match/proposals/456"
 
     @patch("models.notification.factory.NotificationService.create_notification")

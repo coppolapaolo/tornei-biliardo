@@ -231,6 +231,11 @@ class MatchLifecycleService:
                 # nel fuso di **chi lo legge** (ADR-043). Due giocatori in fusi
                 # diversi hanno bisogno di due frasi diverse, e qui non c'è
                 # nessun `current_user` da cui dedurlo — è uno scheduled task.
+                # E nella **lingua** di chi lo legge (ADR-062): il testo è una
+                # funzione, che il servizio delle notifiche chiama dentro la
+                # lingua del destinatario.
+                from flask_babel import lazy_gettext as _l
+
                 created = []
                 for player_id in player_ids:
                     when = format_datetime_local_text(
@@ -241,13 +246,15 @@ class MatchLifecycleService:
                         NotificationFactory.create_bulk_notification(
                             user_ids=[player_id],
                             notification_type=NotificationType.MATCH_REMINDER,
-                            title=_("Promemoria sfida"),
-                            message=_(
+                            title=_l("Promemoria sfida"),
+                            message=lambda when=when: _(
                                 "La tua sfida è programmata per il "
                                 "%(when)s%(location)s",
                                 when=when,
                                 location=(
-                                    f" presso {location_text}" if location_text else ""
+                                    " " + _("presso %(luogo)s", luogo=location_text)
+                                    if location_text
+                                    else ""
                                 ),
                             ),
                             priority=NotificationPriority.HIGH,
@@ -256,7 +263,7 @@ class MatchLifecycleService:
                                 f"{MatchLifecycleService.REMINDER_URL_PREFIX}"
                                 f"{match.id}"
                             ),
-                            action_text=_("Visualizza"),
+                            action_text=_l("Visualizza"),
                             continue_on_error=True,
                         )
                     )

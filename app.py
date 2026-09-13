@@ -447,6 +447,20 @@ def create_app(config_name=None):
         touch_user_activity(current_user)
         return None
 
+    # La lingua in cui scrivere le notifiche a un utente (ADR-062): chi non ne
+    # ha ancora una la riceve dalla prima pagina che apre, dedotta da sessione
+    # o browser. Scrive una volta sola per utente, poi il controllo è una
+    # lettura di attributo. Skip nei test come il tracciamento qui sopra: la
+    # funzione è provata direttamente in `test_lingua_utente.py`.
+    from utils.lingua import ricorda_lingua_dedotta
+
+    @app.before_request
+    def ricorda_lingua_utente():
+        if app.config.get("TESTING", False):
+            return None
+        ricorda_lingua_dedotta(current_user)
+        return None
+
     @app.context_processor
     def inject_endpoint_visibility():
         def feature_visible(endpoint: str) -> bool:

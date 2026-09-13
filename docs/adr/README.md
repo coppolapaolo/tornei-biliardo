@@ -75,6 +75,7 @@ Crea un ADR quando:
 | ADR-059 | [La pagina gara del direttore è la fase in corso](ADR-059-pagina-gara-del-direttore-per-fasi.md) | Accepted | 2026-09-13 |
 | ADR-060 | [I tavoli della gara si scelgono in ogni stato](ADR-060-tavoli-scelti-in-ogni-stato.md) | Accepted | 2026-09-13 |
 | ADR-061 | [Un `@transactional` annidato rilascia il proprio savepoint: salva solo il più esterno](ADR-061-transactional-annidato-salva-solo-il-piu-esterno.md) | Accepted | 2026-09-13 |
+| ADR-062 | [Le notifiche si scrivono nella lingua di chi le riceve](ADR-062-notifiche-nella-lingua-di-chi-riceve.md) | Accepted | 2026-09-13 |
 
 ## Come Creare un Nuovo ADR
 

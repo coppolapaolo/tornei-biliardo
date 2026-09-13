@@ -415,7 +415,7 @@ def _collect_user_data(user_id: int) -> Dict[str, Any]:
 
 
 def _generate_gdpr_export(
-    app, user_id: int, username: str, i18n_strings: dict[str, str]
+    app, user_id: int, username: str, i18n_strings: dict[str, Any]
 ) -> None:
     """Background task to generate GDPR export.
 
@@ -423,9 +423,9 @@ def _generate_gdpr_export(
         app: Flask application instance
         user_id: User ID to export data for
         username: Username for filename
-        i18n_strings: Pre-translated strings (translated before thread spawn
-            because Flask-Babel requires request context which is unavailable in
-                threads)
+        i18n_strings: testi **pigri** della notifica. Li compone il servizio
+            delle notifiche, nella lingua dell'utente, dentro il contesto
+            dell'app aperto qui sotto (ADR-062)
     """
     with app.app_context():
         try:
@@ -536,16 +536,19 @@ def request_gdpr_export():
             )
             return redirect(url_for("player.privacy_settings"))
 
-    # Pre-translate strings while we still have request context
-    # (Flask-Babel requires request context, unavailable in background threads)
-    i18n_strings = {
-        "success_title": _("Export GDPR Pronto"),
-        "success_message": _(
+    # Stringhe pigre: le compone il servizio delle notifiche, dentro il thread,
+    # nella lingua dell'utente (ADR-062). Tradurle qui le avrebbe fissate
+    # nella lingua della pagina da cui è partito l'export.
+    from flask_babel import lazy_gettext as _l
+
+    i18n_strings: Dict[str, Any] = {
+        "success_title": _l("Export GDPR Pronto"),
+        "success_message": _l(
             "Il tuo archivio dati è pronto per il download. Il link scadrà tra 24 ore."
         ),
-        "success_action": _("Scarica"),
-        "error_title": _("Errore Export GDPR"),
-        "error_message": _(
+        "success_action": _l("Scarica"),
+        "error_title": _l("Errore Export GDPR"),
+        "error_message": _l(
             (
                 "Si è verificato un errore durante la generazione dell'archivio. "
                 "Riprova più tardi."
