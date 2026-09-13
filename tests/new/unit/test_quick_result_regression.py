@@ -93,7 +93,7 @@ class TestTrioQuickResultValidation:
 
         # THEN: Error message explains the issue
         assert (
-            "totale dei rack" in str(exc_info.value).lower()
+            "totale dei triangoli" in str(exc_info.value).lower()
             or "total" in str(exc_info.value).lower()
         )
         assert "6" in str(exc_info.value)  # Expected total for distance 5 trio

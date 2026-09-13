@@ -217,7 +217,7 @@ def request_availability_match(target_user_id):
 
     if not location:
         return _availability_error(
-            _("La località è obbligatoria per richiedere un match"),
+            _("La località è obbligatoria per richiedere una sfida"),
             redirect_endpoint="individual_match.discover_players",
         )
 
@@ -259,7 +259,7 @@ def request_availability_match(target_user_id):
     if _wants_json():
         return ajax_success()
 
-    flash(_("Richiesta di match inviata a %(name)s", name=target_name), "success")
+    flash(_("Richiesta di sfida inviata a %(name)s", name=target_name), "success")
     return redirect(url_for("individual_match.discover_players"))
 
 

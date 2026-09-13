@@ -39,8 +39,8 @@ def admin_feature_detail(code: str):
 
     # Available metrics for dropdown
     available_metrics = [
-        {"name": "total_matches", "label": _("Match totali giocati")},
-        {"name": "scores_inserted", "label": _("Match con punteggio inserito")},
+        {"name": "total_matches", "label": _("Partite totali giocate")},
+        {"name": "scores_inserted", "label": _("Partite con punteggio inserito")},
         {"name": "tournaments_played", "label": _("Gare/tornei giocati")},
         {"name": "campionati_played", "label": _("Campionati giocati")},
         {"name": "individual_matches_played", "label": _("Sfide individuali concluse")},
@@ -76,7 +76,7 @@ def admin_feature_detail(code: str):
     # Roles
     roles = [
         {"value": "ADMIN", "label": _("Admin")},
-        {"value": "DIRECTOR", "label": _("Director")},
+        {"value": "DIRECTOR", "label": _("Direttore di gara")},
         {"value": "VENUE_MANAGER", "label": _("Gestore Sala")},
         {"value": "EXAMINER", "label": _("Esaminatore")},
     ]

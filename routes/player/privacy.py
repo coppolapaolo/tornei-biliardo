@@ -52,7 +52,7 @@ def hide_match(match_id):
 
     try:
         PrivacyService.hide_match(current_user.id, match_id)
-        return jsonify({"success": True, "message": _("Match nascosto")})
+        return jsonify({"success": True, "message": _("Partita nascosta")})
     except ValueError as e:
         return jsonify({"success": False, "error": str(e)}), 400
 
@@ -65,8 +65,8 @@ def show_match(match_id):
     from models.user.privacy_service import PrivacyService
 
     if PrivacyService.show_match(current_user.id, match_id):
-        return jsonify({"success": True, "message": _("Match visibile")})
-    return jsonify({"success": False, "error": _("Match non era nascosto")}), 400
+        return jsonify({"success": True, "message": _("Partita visibile")})
+    return jsonify({"success": False, "error": _("La partita non era nascosta")}), 400
 
 
 @player_bp.route("/hide/inscription/<int:inscription_id>", methods=["POST"])

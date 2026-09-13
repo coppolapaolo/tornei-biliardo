@@ -8,6 +8,8 @@ Handles all state transitions: pending → playing → completed.
 from __future__ import annotations
 
 
+from flask_babel import gettext as _
+
 from models.base import db, utc_now
 from models.status_enum import MatchStatus
 from models.transaction.manager import transactional
@@ -160,7 +162,7 @@ class MatchStateService:
             and not closed_by_director
         ):
             raise InvalidTransitionError(
-                "Non è possibile completare un match che non è ancora iniziato"
+                _("Non è possibile completare una partita che non è ancora iniziata")
             )
 
         # Quale dei due stati finali. Non e' una sfumatura di etichetta: da qui

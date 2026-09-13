@@ -240,7 +240,7 @@ blocks:
   - type: list
     items:
       - "Nel tuo **profilo**, accanto all'Elo: il TPA di tutte le partite messe insieme."
-      - "Nelle **statistiche** dei match amichevoli, con il dettaglio di dove nascono i tuoi errori e l'elenco delle partite con referto."
+      - "Nelle **statistiche** delle sfide individuali, con il dettaglio di dove nascono i tuoi errori e l'elenco delle partite con referto."
 
   - type: note
     tone: info

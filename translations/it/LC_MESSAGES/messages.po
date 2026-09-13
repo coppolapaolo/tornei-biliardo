@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 13:16+0200\n"
+"POT-Creation-Date: 2026-09-13 13:34+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -255,6 +255,10 @@ msgstr ""
 msgid "Serve un punteggio: la prova non ne ha ancora uno registrato."
 msgstr ""
 
+#: models/competition/gara_challenge_service.py:79
+msgid "Esercizio già presente per questo turno della gara"
+msgstr ""
+
 #: models/competition/models.py:571
 #: templates/admin/amalfi_classification.html:23
 #: templates/components/_new_gara_modal.html:69
@@ -272,7 +276,7 @@ msgstr ""
 #: models/competition/round_manager.py:135
 msgid ""
 "Gara certificata da spareggio: annulla prima lo spareggio per modificare "
-"i match"
+"le partite"
 msgstr ""
 
 #: models/competition/round_manager.py:163
@@ -323,7 +327,7 @@ msgstr ""
 
 #: models/competition/showcase_view.py:212
 #, python-format
-msgid "%(disciplina)s — %(n)s rack esatti"
+msgid "%(disciplina)s — %(n)s triangoli esatti"
 msgstr ""
 
 #: models/competition/showcase_view.py:277
@@ -582,7 +586,8 @@ msgid "Il tuo profilo è attivo"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:1263
-msgid "Gioca il primo match"
+#, python-format
+msgid "Gioca la prima partita"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:1264
@@ -668,12 +673,14 @@ msgstr ""
 
 #: models/dashboard/activity_feedback.py:1396 templates/admin/kpi.html:194
 #: templates/admin/kpi.html:254 templates/admin/kpi.html:859
-msgid "Match giocati"
+#: templates/gamification/admin/quest_form.html:55
+#, python-format
+msgid "Partite giocate"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:1399
 #, python-format
-msgid "%(won)s vinti"
+msgid "%(won)s vinte"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:1414
@@ -709,6 +716,7 @@ msgid "L'Elo è scivolato, ma la tua precisione al tavolo continua a crescere."
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:1473
+#: templates/gamification/admin/quest_form.html:56
 msgid "Partite vinte"
 msgstr ""
 
@@ -919,18 +927,18 @@ msgstr ""
 #, python-format
 msgid ""
 "%(count)s giocatori vorrebbero una gara a %(city)s, una zona senza un "
-"director. Valuta di reclutarne o promuoverne uno."
+"direttore di gara. Valuta di reclutarne o promuoverne uno."
 msgstr ""
 
 #: models/demand/service.py:269
 #, python-format
 msgid ""
-"%(count)s giocatori vorrebbero una gara in una zona senza un director. "
-"Valuta di reclutarne o promuoverne uno."
+"%(count)s giocatori vorrebbero una gara in una zona senza un direttore di"
+" gara. Valuta di reclutarne o promuoverne uno."
 msgstr ""
 
 #: models/demand/service.py:277
-msgid "Domanda in una zona senza director"
+msgid "Domanda in una zona senza direttore di gara"
 msgstr ""
 
 #: models/demand/service.py:343
@@ -1319,109 +1327,114 @@ msgid "Partita non trovata."
 msgstr ""
 
 #: models/individual_match/match_lifecycle_service.py:244
-msgid "Promemoria match"
+msgid "Promemoria sfida"
 msgstr ""
 
 #: models/individual_match/match_lifecycle_service.py:246
 #, python-format
-msgid "Il tuo match è programmato per il %(when)s%(location)s"
+msgid "La tua sfida è programmata per il %(when)s%(location)s"
 msgstr ""
 
 #: models/individual_match/match_lifecycle_service.py:259
-#: models/individual_match/proposal_service.py:236
-#: models/individual_match/proposal_service.py:657
-#: models/individual_match/proposal_service.py:702
+#: models/individual_match/proposal_service.py:238
+#: models/individual_match/proposal_service.py:659
+#: models/individual_match/proposal_service.py:704
 msgid "Visualizza"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:196
-#: models/individual_match/proposal_service.py:495
+#: models/individual_match/proposal_service.py:77
+#: models/individual_match/proposal_service.py:170
+msgid "Non è possibile programmare una sfida nel passato"
+msgstr ""
+
+#: models/individual_match/proposal_service.py:198
+#: models/individual_match/proposal_service.py:497
 #: models/individual_match/quick_match_service.py:404
 #: models/individual_match/services.py:181
 msgid "Un giocatore"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:222
-#: models/individual_match/proposal_service.py:490
-#: models/individual_match/proposal_service.py:644
-#: models/individual_match/proposal_service.py:689
+#: models/individual_match/proposal_service.py:224
+#: models/individual_match/proposal_service.py:492
+#: models/individual_match/proposal_service.py:646
+#: models/individual_match/proposal_service.py:691
 #: models/individual_match/quick_match_service.py:407
 #: models/individual_match/services.py:183
 #, python-format
 msgid "a %(loc)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:227
-msgid "Nuova proposta di match"
-msgstr ""
-
 #: models/individual_match/proposal_service.py:229
-#, python-format
-msgid "%(username)s propone un match aperto%(location)s il %(date)s"
+msgid "Nuova proposta di sfida"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:313
+#: models/individual_match/proposal_service.py:231
+#, python-format
+msgid "%(username)s propone una sfida aperta%(location)s il %(date)s"
+msgstr ""
+
+#: models/individual_match/proposal_service.py:315
 msgid "Giocatore già invitato a questa proposta"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:487
+#: models/individual_match/proposal_service.py:489
 msgid "Proposta già accettata"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:500
+#: models/individual_match/proposal_service.py:502
 msgid "Proposta accettata!"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:502
+#: models/individual_match/proposal_service.py:504
 #, python-format
-msgid "%(player)s ha accettato la tua proposta di match%(location)s"
+msgid "%(player)s ha accettato la tua proposta di sfida%(location)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:508
-msgid "Vai al match"
-msgstr ""
-
-#: models/individual_match/proposal_service.py:523
-msgid "Proposta di match chiusa"
+#: models/individual_match/proposal_service.py:510
+msgid "Vai alla sfida"
 msgstr ""
 
 #: models/individual_match/proposal_service.py:525
-#, python-format
-msgid "La proposta di match%(location)s è stata accettata da un altro giocatore."
+msgid "Proposta di sfida chiusa"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:591
+#: models/individual_match/proposal_service.py:527
+#, python-format
+msgid "La proposta di sfida%(location)s è stata accettata da un altro giocatore."
+msgstr ""
+
+#: models/individual_match/proposal_service.py:593
 msgid "Proposta non trovata"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:594
+#: models/individual_match/proposal_service.py:596
 msgid "La proposta la cancella chi l'ha fatta."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:604
+#: models/individual_match/proposal_service.py:606
 msgid ""
 "Da questa proposta è nata una partita: per farla sparire annulla prima "
 "quella."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:649
-#: models/individual_match/proposal_service.py:694
+#: models/individual_match/proposal_service.py:651
+#: models/individual_match/proposal_service.py:696
 msgid "Proposta scaduta"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:651
-#: models/individual_match/proposal_service.py:696
+#: models/individual_match/proposal_service.py:653
+#: models/individual_match/proposal_service.py:698
 #, python-format
-msgid "La tua proposta di match%(location)s è scaduta senza accettazioni."
-msgstr ""
-
-#: models/individual_match/proposal_service.py:783
-msgid "Proposta Match Conclusa"
+msgid "La tua proposta di sfida%(location)s è scaduta senza accettazioni."
 msgstr ""
 
 #: models/individual_match/proposal_service.py:785
+msgid "Proposta di sfida conclusa"
+msgstr ""
+
+#: models/individual_match/proposal_service.py:787
 #, python-format
-msgid "La proposta di match '%(title)s' è stata accettata da un altro giocatore."
+msgid "La proposta di sfida '%(title)s' è stata accettata da un altro giocatore."
 msgstr ""
 
 #: models/individual_match/quick_match_service.py:188
@@ -1496,7 +1509,7 @@ msgstr ""
 
 #: models/individual_match/services.py:190
 #, python-format
-msgid "%(player)s ha rifiutato la tua proposta di match%(location)s"
+msgid "%(player)s ha rifiutato la tua proposta di sfida%(location)s"
 msgstr ""
 
 #: models/individual_match/services.py:196
@@ -1515,12 +1528,14 @@ msgstr ""
 
 #: models/kpi/notifications.py:52
 #, python-format
-msgid "Milestone: %(value)s match!"
+msgid "Milestone: %(value)s partite!"
 msgstr ""
 
 #: models/kpi/notifications.py:54
 #, python-format
-msgid "Sono stati giocati %(value)s match sulla piattaforma. La community cresce!"
+msgid ""
+"Sono state giocate %(value)s partite sulla piattaforma. La community "
+"cresce!"
 msgstr ""
 
 #: models/kpi/notifications.py:59
@@ -1552,18 +1567,18 @@ msgstr ""
 
 #: models/kpi/notifications.py:116
 msgid ""
-"Non sono stati giocati match negli ultimi 3 giorni. Potrebbe essere utile"
-" stimolare la community."
+"Non sono state giocate partite negli ultimi 3 giorni. Potrebbe essere "
+"utile stimolare la community."
 msgstr ""
 
 #: models/kpi/notifications.py:121
-msgid "Attenzione: nessun match da 7 giorni"
+msgid "Attenzione: nessuna partita da 7 giorni"
 msgstr ""
 
 #: models/kpi/notifications.py:123
 msgid ""
-"Non sono stati giocati match negli ultimi 7 giorni. La community potrebbe"
-" aver bisogno di attenzione."
+"Non sono state giocate partite negli ultimi 7 giorni. La community "
+"potrebbe aver bisogno di attenzione."
 msgstr ""
 
 #: models/kpi/notifications.py:128
@@ -1638,7 +1653,7 @@ msgid "Apre chi ha perso il triangolo prima."
 msgstr ""
 
 #: models/match/correction_service.py:61
-#: models/match/trio_scoring_service.py:357
+#: models/match/trio_scoring_service.py:362 models/tpa/services.py:165
 #: routes/admin/competition/matches.py:190 routes/admin/match/scoring.py:123
 #: routes/admin/match/scoring.py:146 routes/admin/match/scoring.py:202
 msgid "Partita non trovata"
@@ -1760,16 +1775,61 @@ msgid ""
 "gara"
 msgstr ""
 
-#: models/match/trio_scoring_service.py:360
+#: models/match/scoring_service.py:334
+msgid "La partita a tre si segna dal suo tabellino, non dai triangoli a due"
+msgstr ""
+
+#: models/match/scoring_service.py:340
+msgid "La partita è già finita, non è possibile aggiungere altri punti"
+msgstr ""
+
+#: models/match/scoring_service.py:546
+#, python-format
+msgid "Partita già completata - limite raggiunto per '%(distanza)s'"
+msgstr ""
+
+#: models/match/scoring_service.py:555
+#, python-format
+msgid ""
+"Non è possibile superare il limite di %(n)s triangoli totali per questa "
+"partita"
+msgstr ""
+
+#: models/match/scoring_service.py:616
+#, python-format
+msgid ""
+"In una partita 'al %(n)s', entrambi i giocatori non possono avere %(n)s o"
+" più punti!"
+msgstr ""
+
+#: models/match/scoring_service.py:626
+#, python-format
+msgid ""
+"In modalità 'esatto numero', il totale dei triangoli (%(totale)s) deve "
+"essere esattamente %(n)s!"
+msgstr ""
+
+#: models/match/state_service.py:165
+msgid "Non è possibile completare una partita che non è ancora iniziata"
+msgstr ""
+
+#: models/match/trio_scoring_service.py:226
+#, python-format
+msgid ""
+"Il totale dei triangoli (%(totale)s) deve essere %(attesi)s per un trio "
+"con distanza %(distanza)s"
+msgstr ""
+
+#: models/match/trio_scoring_service.py:365
 msgid "La partita è chiusa: si cambia azzerandola dal segnapunti."
 msgstr ""
 
-#: models/match/trio_scoring_service.py:371
+#: models/match/trio_scoring_service.py:376
 #, python-format
 msgid "Nel trio ognuno gioca %(n)s triangoli: non se ne vincono di più."
 msgstr ""
 
-#: models/match/trio_scoring_service.py:378
+#: models/match/trio_scoring_service.py:383
 msgid ""
 "Questo punteggio non torna con l'ordine del girone: il primo triangolo è "
 "fra il primo e il secondo giocatore, il secondo fra il primo e il terzo."
@@ -1789,7 +1849,7 @@ msgid "Il referto lo tiene uno dei due giocatori."
 msgstr ""
 
 #: models/tpa/services.py:78
-msgid "Il referto si apre a match iniziato."
+msgid "Il referto si apre a partita iniziata."
 msgstr ""
 
 #: models/tpa/services.py:94
@@ -1799,21 +1859,17 @@ msgid ""
 msgstr ""
 
 #: models/tpa/services.py:99
-msgid "Il referto TPA non copre i match a set."
+msgid "Il referto TPA non copre le partite a set."
 msgstr ""
 
 #: models/tpa/services.py:103
 msgid ""
-"Questo match ha gia' dei triangoli segnati: il referto va aperto prima "
+"Questa partita ha gia' dei triangoli segnati: il referto va aperto prima "
 "del primo triangolo."
 msgstr ""
 
-#: models/tpa/services.py:165
-msgid "Match non trovato"
-msgstr ""
-
 #: models/tpa/services.py:168
-msgid "Il referto di questo match e' gia' aperto."
+msgid "Il referto di questa partita e' gia' aperto."
 msgstr ""
 
 #: models/tpa/services.py:189 models/tpa/services.py:289
@@ -1858,7 +1914,7 @@ msgstr ""
 
 #: models/tpa/services.py:362
 msgid ""
-"Il match ha raggiunto la distanza: prima di continuare il risultato va "
+"La partita ha raggiunto la distanza: prima di continuare il risultato va "
 "confermato o rifiutato."
 msgstr ""
 
@@ -2172,9 +2228,10 @@ msgstr ""
 msgid "Giocatore"
 msgstr ""
 
-#: routes/help.py:59 templates/admin/accessi.html:85
-#: templates/admin/accessi.html:139 templates/admin/users_list.html:105
-#: templates/admin/users_list.html:175
+#: routes/gamification/features.py:79 routes/help.py:59
+#: templates/admin/accessi.html:85 templates/admin/accessi.html:139
+#: templates/admin/kpi.html:587 templates/admin/users_list.html:105
+#: templates/admin/users_list.html:175 templates/admin/venue_detail.html:237
 #: templates/admin/venue_manager_requests.html:46
 #: templates/components/_user_info_card.html:14
 #: templates/dashboard/base.html:18 templates/player/profile.html:79
@@ -2491,11 +2548,11 @@ msgid "Locandina rimossa."
 msgstr ""
 
 #: routes/admin/kpi.py:204
-msgid "Nessun match giocato negli ultimi 3 giorni"
+msgid "Nessuna partita giocata negli ultimi 3 giorni"
 msgstr ""
 
 #: routes/admin/kpi.py:211
-msgid "Nessun match giocato negli ultimi 7 giorni"
+msgid "Nessuna partita giocata negli ultimi 7 giorni"
 msgstr ""
 
 #: routes/admin/kpi.py:218
@@ -2509,7 +2566,7 @@ msgstr ""
 
 #: routes/admin/kpi.py:250
 #, python-format
-msgid "Milestone raggiunta: %(value)s match giocati!"
+msgid "Milestone raggiunta: %(value)s partite giocate!"
 msgstr ""
 
 #: routes/admin/kpi.py:259
@@ -3122,11 +3179,12 @@ msgid "Feature non trovata"
 msgstr ""
 
 #: routes/gamification/features.py:42
-msgid "Match totali giocati"
+#, python-format
+msgid "Partite totali giocate"
 msgstr ""
 
 #: routes/gamification/features.py:43
-msgid "Match con punteggio inserito"
+msgid "Partite con punteggio inserito"
 msgstr ""
 
 #: routes/gamification/features.py:44
@@ -3200,11 +3258,6 @@ msgstr ""
 msgid "Admin"
 msgstr ""
 
-#: routes/gamification/features.py:79 templates/admin/kpi.html:587
-#: templates/admin/venue_detail.html:237
-msgid "Director"
-msgstr ""
-
 #: routes/gamification/features.py:80
 msgid "Gestore Sala"
 msgstr ""
@@ -3244,7 +3297,7 @@ msgid "Disponibilità aggiornata per %(loc)s"
 msgstr ""
 
 #: routes/individual_match/availability.py:220
-msgid "La località è obbligatoria per richiedere un match"
+msgid "La località è obbligatoria per richiedere una sfida"
 msgstr ""
 
 #: routes/individual_match/availability.py:239
@@ -3258,7 +3311,7 @@ msgstr ""
 
 #: routes/individual_match/availability.py:262
 #, python-format
-msgid "Richiesta di match inviata a %(name)s"
+msgid "Richiesta di sfida inviata a %(name)s"
 msgstr ""
 
 #: routes/individual_match/availability.py:283
@@ -3275,7 +3328,7 @@ msgstr ""
 
 #: routes/individual_match/matches.py:54 routes/individual_match/matches.py:558
 #: routes/individual_match/matches.py:735 routes/individual_match/tpa.py:134
-msgid "Accesso negato a questo match."
+msgid "Accesso negato a questa sfida."
 msgstr ""
 
 #: routes/individual_match/matches.py:126
@@ -3283,7 +3336,7 @@ msgid "Sfida avviata: il referto è tuo."
 msgstr ""
 
 #: routes/individual_match/matches.py:128
-msgid "Match avviato con successo!"
+msgid "Sfida avviata con successo!"
 msgstr ""
 
 #: routes/individual_match/matches.py:167
@@ -3301,7 +3354,7 @@ msgstr ""
 
 #: routes/individual_match/matches.py:418
 #: routes/individual_match/matches.py:507
-msgid "Match completato con successo!"
+msgid "Sfida completata con successo!"
 msgstr ""
 
 #: routes/individual_match/matches.py:421
@@ -3314,7 +3367,7 @@ msgid "Risultato rifiutato. Ultimo triangolo rimosso."
 msgstr ""
 
 #: routes/individual_match/matches.py:529
-msgid "Match annullato con successo!"
+msgid "Sfida annullata con successo!"
 msgstr ""
 
 #: routes/individual_match/matches.py:563
@@ -3334,11 +3387,11 @@ msgid "Forfait dichiarato"
 msgstr ""
 
 #: routes/individual_match/matches.py:712
-msgid "Forfait dichiarato. Match terminato."
+msgid "Forfait dichiarato. Sfida terminata."
 msgstr ""
 
 #: routes/individual_match/matches.py:740
-msgid "Solo i match completati permettono di giocarne un altro."
+msgid "Solo le sfide completate permettono di giocarne un'altra."
 msgstr ""
 
 #: routes/individual_match/proposals.py:59
@@ -3346,7 +3399,7 @@ msgid "Accesso negato a questa proposta."
 msgstr ""
 
 #: routes/individual_match/proposals.py:293
-msgid "Proposta di match creata con successo!"
+msgid "Proposta di sfida creata con successo!"
 msgstr ""
 
 #: routes/individual_match/proposals.py:325
@@ -3522,15 +3575,15 @@ msgid "Impostazioni privacy aggiornate con successo."
 msgstr ""
 
 #: routes/player/privacy.py:55
-msgid "Match nascosto"
+msgid "Partita nascosta"
 msgstr ""
 
 #: routes/player/privacy.py:68
-msgid "Match visibile"
+msgid "Partita visibile"
 msgstr ""
 
 #: routes/player/privacy.py:69
-msgid "Match non era nascosto"
+msgid "La partita non era nascosta"
 msgstr ""
 
 #: routes/player/privacy.py:81
@@ -3885,15 +3938,16 @@ msgid "Iscrivi"
 msgstr ""
 
 #: templates/base.html:655
-msgid "Completare i match in corso del turno attuale con risultati random?"
+msgid "Completare le partite in corso del turno attuale con risultati random?"
 msgstr ""
 
 #: templates/base.html:656
-msgid "Complete Round"
+msgid "Completa turno"
 msgstr ""
 
 #: templates/base.html:660
-msgid "Complete Match"
+#, python-format
+msgid "Completa partita"
 msgstr ""
 
 #: templates/base.html:664
@@ -4070,8 +4124,8 @@ msgstr ""
 msgid "Torna alla gara"
 msgstr ""
 
-#: templates/admin/users_list.html:140 templates/admin/users_list.html:234
-#: templates/admin/venues_list.html:35
+#: templates/admin/kpi.html:802 templates/admin/users_list.html:140
+#: templates/admin/users_list.html:234 templates/admin/venues_list.html:35
 #: templates/components/_gamification_labels.html:50
 #: templates/components/_gara_matches.html:6
 #: templates/components/_history_matches_tab.html:19
@@ -4194,8 +4248,8 @@ msgstr ""
 msgid "Non hai un account?"
 msgstr ""
 
-#: templates/admin/kpi.html:802 templates/match_detail.html:6
-msgid "Match"
+#: templates/match_detail.html:6
+msgid "Partita"
 msgstr ""
 
 #: templates/match_detail.html:117
@@ -4203,7 +4257,7 @@ msgid "Esercizi disponibili"
 msgstr ""
 
 #: templates/match_detail.html:119
-msgid "Gli esercizi sono prove tecniche che puoi completare durante il match."
+msgid "Gli esercizi sono prove tecniche che puoi completare durante la partita."
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:359
@@ -4418,7 +4472,7 @@ msgid "Le sale dove giochi (opzionale)"
 msgstr ""
 
 #: templates/onboarding.html:44
-msgid "Selezionale per ricevere proposte di match in quelle sale."
+msgid "Selezionale per ricevere proposte di sfida in quelle sale."
 msgstr ""
 
 #: templates/onboarding.html:66
@@ -5538,12 +5592,14 @@ msgid ""
 msgstr ""
 
 #: templates/admin/campionato_detail.html:684
+#: templates/admin/gara_edit.html:164
 #: templates/components/_new_gara_modal.html:666
 #, python-brace-format
 msgid "Esatto numero: {distance} triangoli totali"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:685
+#: templates/admin/gara_edit.html:166
 #: templates/components/_new_gara_modal.html:667
 #, python-brace-format
 msgid "Al {distance} (si vince a {distance} triangoli)"
@@ -5682,12 +5738,12 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:43
 #: templates/components/_gara_edit_form.html:82
-msgid "Vittorie — match vinti, poi differenza triangoli"
+msgid "Vittorie — partite vinte, poi differenza triangoli"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:44
 #: templates/components/_gara_edit_form.html:83
-msgid "Triangoli totali — ogni triangoli conta"
+msgid "Triangoli totali — ogni triangolo conta"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:45
@@ -5696,8 +5752,8 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:50
 msgid ""
-"Ordina per vittorie, poi differenza triangoli. Ideale quando vincere il "
-"match è prioritario."
+"Ordina per vittorie, poi differenza triangoli. Ideale quando vincere la "
+"partita è prioritario."
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:54
@@ -6298,8 +6354,8 @@ msgstr ""
 #: templates/components/_gara_edit_form.html:156
 #: templates/components/_new_gara_modal.html:347
 msgid ""
-"I match con handicap non aggiornano il rating Elo quando i giocatori sono"
-" di categorie diverse."
+"Le partite con handicap non aggiornano il rating Elo quando i giocatori "
+"sono di categorie diverse."
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:316
@@ -6335,7 +6391,7 @@ msgstr ""
 
 #: templates/admin/gara_create_standalone.html:346
 #: templates/components/_campionato_edit_form.html:68
-msgid "Vittorie (match vinti → diff triangoli)"
+msgid "Vittorie (partite vinte → diff triangoli)"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:349
@@ -6379,7 +6435,7 @@ msgid "Fino al 3° posto"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:395
-msgid "Formato del Match"
+msgid "Formato della partita"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:396
@@ -6660,7 +6716,7 @@ msgid "Registrati ma mai attivi"
 msgstr ""
 
 #: templates/admin/kpi.html:384
-msgid "Match totali"
+msgid "Partite totali"
 msgstr ""
 
 #: templates/admin/kpi.html:392
@@ -6676,7 +6732,7 @@ msgid "Gare completate"
 msgstr ""
 
 #: templates/admin/kpi.html:429
-msgid "Match/utente attivo"
+msgid "Partite per utente attivo"
 msgstr ""
 
 #: templates/admin/kpi.html:437
@@ -6688,7 +6744,7 @@ msgid "XP erogati"
 msgstr ""
 
 #: templates/admin/kpi.html:453
-msgid "Match giornalieri"
+msgid "Partite giornaliere"
 msgstr ""
 
 #: templates/admin/kpi.html:466
@@ -6753,7 +6809,7 @@ msgid "activity"
 msgstr ""
 
 #: templates/admin/kpi.html:580
-msgid "Performance Directors"
+msgid "Rendimento dei direttori di gara"
 msgstr ""
 
 #: templates/admin/kpi.html:588
@@ -6769,7 +6825,7 @@ msgid "complete"
 msgstr ""
 
 #: templates/admin/kpi.html:624
-msgid "Nessun dato director disponibile"
+msgid "Nessun dato sui direttori di gara"
 msgstr ""
 
 #: templates/admin/kpi.html:639
@@ -6975,11 +7031,11 @@ msgid "Nessuna"
 msgstr ""
 
 #: templates/admin/users_list.html:257
-msgid "Rimuovere il ruolo director a questo utente?"
+msgid "Togliere a questo utente il ruolo di direttore di gara?"
 msgstr ""
 
 #: templates/admin/users_list.html:260
-msgid "Rimuovi director"
+msgid "Rimuovi direttore di gara"
 msgstr ""
 
 #: templates/admin/users_list.html:275
@@ -8969,6 +9025,12 @@ msgstr ""
 msgid "Tipo"
 msgstr ""
 
+#: templates/components/_campionato_details_info.html:15
+#: templates/components/_tabellone_macros.html:128
+#: templates/components/_trio_rack_input.html:55
+msgid "Girone all'italiana"
+msgstr ""
+
 #: templates/components/_campionato_details_info.html:20
 #: templates/public/campionatos_list.html:65
 msgid "Creato"
@@ -9133,7 +9195,7 @@ msgstr ""
 
 #: templates/components/_campionato_edit_form.html:219
 msgid ""
-"I match si giocano con handicap: il rating Elo si aggiorna solo fra "
+"Le partite si giocano con handicap: il rating Elo si aggiorna solo fra "
 "giocatori della stessa categoria. Ereditato da gare e partite."
 msgstr ""
 
@@ -9236,7 +9298,7 @@ msgstr ""
 
 #: templates/components/_campionato_general_classification.html:104
 msgid ""
-"Classifica generale: ordinata per match vinti, poi per differenza "
+"Classifica generale: ordinata per partite vinte, poi per differenza "
 "triangoli totale."
 msgstr ""
 
@@ -9271,7 +9333,8 @@ msgid "Giocatori Iscritti:"
 msgstr ""
 
 #: templates/components/_campionato_statistics.html:21
-msgid "Match Totali Giocati:"
+#, python-format
+msgid "Partite totali giocate:"
 msgstr ""
 
 #: templates/components/_campionato_statistics.html:22
@@ -9492,7 +9555,8 @@ msgstr ""
 
 #: templates/components/_director_dashboard_content.html:51
 #: templates/components/_player_dashboard_content.html:57
-msgid "Proponi un match"
+#: templates/individual_match/statistics.html:137
+msgid "Proponi una sfida"
 msgstr ""
 
 #: templates/components/_directors_management.html:17
@@ -9592,12 +9656,12 @@ msgstr ""
 
 #: templates/components/_distance_configurator.html:135
 #, python-brace-format
-msgid "Si giocano esattamente {n} rack"
+msgid "Si giocano esattamente {n} triangoli"
 msgstr ""
 
 #: templates/components/_distance_configurator.html:136
 #, python-brace-format
-msgid "Si vince a {n} rack"
+msgid "Si vince a {n} triangoli"
 msgstr ""
 
 #: templates/components/_distance_configurator.html:139
@@ -9612,7 +9676,7 @@ msgstr ""
 
 #: templates/components/_distance_configurator.html:142
 #, python-brace-format
-msgid "esattamente {n} rack"
+msgid "esattamente {n} triangoli"
 msgstr ""
 
 #: templates/components/_distance_configurator.html:143
@@ -9900,7 +9964,7 @@ msgid "Forfait — vittoria all'avversario"
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:319
-msgid "Vale per tutti i match della gara: sul singolo match non si cambia."
+msgid "Vale per tutte le partite della gara: sulla singola partita non si cambia."
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:330
@@ -10230,7 +10294,9 @@ msgid "Concluso"
 msgstr ""
 
 #: templates/components/_gara_my_match.html:13
-msgid "Il tuo match"
+#: templates/components/_tessera_gara.html:164
+#: templates/direttore/_card_partita.html:192
+msgid "La tua partita"
 msgstr ""
 
 #: templates/components/_gara_my_match.html:29
@@ -10869,8 +10935,8 @@ msgstr ""
 
 #: templates/components/_match_admin_controls.html:302
 msgid ""
-"In un match 'al N', entrambi i giocatori non possono avere il punteggio "
-"vincente!"
+"In una partita 'al N', entrambi i giocatori non possono avere il "
+"punteggio vincente!"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:307
@@ -11591,7 +11657,8 @@ msgid "Esatto numero"
 msgstr ""
 
 #: templates/components/_player_dashboard_content.html:50
-msgid "Accetta il match"
+#: templates/individual_match/proposals.html:219
+msgid "Accetta la sfida"
 msgstr ""
 
 #: templates/components/_player_inscription_info.html:6
@@ -11923,11 +11990,11 @@ msgid "Aggiornamento:"
 msgstr ""
 
 #: templates/components/_random_algorithm_info.html:13
-msgid "Dopo ogni match"
+msgid "Dopo ogni partita"
 msgstr ""
 
 #: templates/components/_random_algorithm_info.html:17
-msgid "Match Completati:"
+msgid "Partite completate:"
 msgstr ""
 
 #: templates/components/_random_algorithm_info.html:24
@@ -11936,7 +12003,7 @@ msgstr ""
 
 #: templates/components/_random_algorithm_info.html:26
 msgid ""
-"I match possono essere giocati in qualsiasi ordine. La classifica si "
+"Le partite possono essere giocate in qualsiasi ordine. La classifica si "
 "aggiorna in tempo reale."
 msgstr ""
 
@@ -12053,7 +12120,7 @@ msgid "Fissata"
 msgstr ""
 
 #: templates/components/_soft_delete_modal.html:17
-msgid "Cosa fare con i match esistenti"
+msgid "Cosa fare con le partite esistenti"
 msgstr ""
 
 #: templates/components/_soft_delete_modal.html:22
@@ -12061,11 +12128,11 @@ msgid "Elimina tutto"
 msgstr ""
 
 #: templates/components/_soft_delete_modal.html:23
-msgid "I match spariscono insieme alla gara."
+msgid "Le partite spariscono insieme alla gara."
 msgstr ""
 
 #: templates/components/_soft_delete_modal.html:29
-msgid "Mantieni i match"
+msgid "Mantieni le partite"
 msgstr ""
 
 #: templates/components/_soft_delete_modal.html:30
@@ -12479,11 +12546,6 @@ msgstr ""
 msgid "Amalfi"
 msgstr ""
 
-#: templates/components/_tabellone_macros.html:128
-#: templates/components/_trio_rack_input.html:55
-msgid "Girone all'italiana"
-msgstr ""
-
 #: templates/components/_tessera_campionato.html:21
 msgid "triangolo"
 msgid_plural "triangoli"
@@ -12603,11 +12665,6 @@ msgstr ""
 #: templates/components/_tessera_gara.html:137
 #, python-format
 msgid "%(vinte)s vittorie su %(giocate)s"
-msgstr ""
-
-#: templates/components/_tessera_gara.html:164
-#: templates/direttore/_card_partita.html:192
-msgid "La tua partita"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:182
@@ -12926,7 +12983,7 @@ msgid "Crea una gara"
 msgstr ""
 
 #: templates/components/_unified_dashboard_header.html:26
-msgid "Crea Match"
+msgid "Crea sfida"
 msgstr ""
 
 #: templates/components/_unified_match_score.html:63
@@ -13536,7 +13593,7 @@ msgid "Il turno dopo è già avviato: questa partita non si tocca più."
 msgstr ""
 
 #: templates/direttore/_classifica.html:24
-msgid "Classifica (rack)"
+msgid "Classifica (triangoli)"
 msgstr ""
 
 #: templates/direttore/_classifica.html:26
@@ -13558,8 +13615,8 @@ msgstr ""
 
 #: templates/direttore/_classifica.html:79
 msgid ""
-"Sistema RACK: ordinata per triangoli vinti in tutta la gara, poi punti "
-"SSR. La X a tavolino vale zero triangoli."
+"Sistema a triangoli: ordinata per triangoli vinti in tutta la gara, poi "
+"punti SSR. La X a tavolino vale zero triangoli."
 msgstr ""
 
 #: templates/direttore/_classifica.html:80
@@ -13677,7 +13734,6 @@ msgstr ""
 
 #: templates/direttore/_esercizi_turni.html:55
 #: templates/direttore/_foglio_esercizio.html:34
-#, python-format
 msgid "Non riuscito"
 msgstr ""
 
@@ -14479,7 +14535,7 @@ msgid "somma triangoli ="
 msgstr ""
 
 #: templates/direttore/_modali_gioco.html:60
-msgid "Trio (Round-Robin):"
+msgid "Trio (tutti contro tutti):"
 msgstr ""
 
 #: templates/direttore/_modali_gioco.html:62
@@ -14607,7 +14663,7 @@ msgstr ""
 
 #: templates/direttore/_scripts.html:40
 msgid ""
-"Calcolo dello schedule in corso… Per gare con trio (giocatori dispari) il"
+"Calcolo del calendario in corso… Per gare con trio (giocatori dispari) il"
 " calcolo può richiedere qualche secondo."
 msgstr ""
 
@@ -14657,7 +14713,7 @@ msgstr ""
 msgid ""
 "Sei sicuro di voler resettare l'ultimo turno?\n"
 "\n"
-"Tutti i risultati del turno verranno azzerati e i match torneranno in "
+"Tutti i risultati del turno verranno azzerati e le partite torneranno in "
 "stato 'In Attesa'.\n"
 "\n"
 "Questa azione è IRREVERSIBILE!"
@@ -14759,7 +14815,7 @@ msgid "Punti SSR"
 msgstr ""
 
 #: templates/direttore/_scripts.html:83
-msgid "Click per scambiare con match occupante"
+msgid "Tocca per scambiare con la partita che occupa il tavolo"
 msgstr ""
 
 #: templates/direttore/_scripts.html:709
@@ -16696,6 +16752,10 @@ msgstr ""
 msgid "Identificatore univoco (es: create_match_direct)"
 msgstr ""
 
+#: templates/gamification/admin/feature_create.html:34
+msgid "es: Sfide individuali"
+msgstr ""
+
 #: templates/gamification/admin/feature_create.html:40
 msgid "Descrizione per gli utenti"
 msgstr ""
@@ -16730,7 +16790,7 @@ msgid "Metriche"
 msgstr ""
 
 #: templates/gamification/admin/feature_create.html:70
-msgid "Match giocati, gare completate, ecc."
+msgid "Partite giocate, gare completate, ecc."
 msgstr ""
 
 #: templates/gamification/admin/feature_create.html:71
@@ -16738,7 +16798,7 @@ msgid "Ruoli"
 msgstr ""
 
 #: templates/gamification/admin/feature_create.html:71
-msgid "Admin, Director, Gestore Sala"
+msgid "Admin, Direttore di gara, Gestore Sala"
 msgstr ""
 
 #: templates/gamification/admin/feature_create.html:72
@@ -16794,7 +16854,7 @@ msgid "ROLE"
 msgstr ""
 
 #: templates/gamification/admin/feature_detail.html:99
-msgid "Ruolo utente (Admin, Director, Gestore Sala)"
+msgid "Ruolo utente (Admin, Direttore di gara, Gestore Sala)"
 msgstr ""
 
 #: templates/gamification/admin/feature_detail.html:101
@@ -16966,7 +17026,7 @@ msgid "Nome Quest"
 msgstr ""
 
 #: templates/gamification/admin/quest_form.html:20
-msgid "Es: Sfida Settimanale Match"
+msgid "Es: Sfida settimanale delle partite"
 msgstr ""
 
 #: templates/gamification/admin/quest_form.html:26
@@ -16979,14 +17039,6 @@ msgstr ""
 
 #: templates/gamification/admin/quest_form.html:40
 msgid "Evento Speciale"
-msgstr ""
-
-#: templates/gamification/admin/quest_form.html:55
-msgid "Match Giocati"
-msgstr ""
-
-#: templates/gamification/admin/quest_form.html:56
-msgid "Match Vinti"
 msgstr ""
 
 #: templates/gamification/admin/quest_form.html:57
@@ -17212,7 +17264,8 @@ msgid "Esempi Calcolo XP"
 msgstr ""
 
 #: templates/gamification/admin/xp_config.html:80
-msgid "Match Completato"
+#, python-format
+msgid "Partita completata"
 msgstr ""
 
 #: templates/gamification/admin/xp_config.html:82
@@ -18413,10 +18466,6 @@ msgstr ""
 msgid "%(user)s cerca un avversario"
 msgstr ""
 
-#: templates/individual_match/proposals.html:219
-msgid "Accetta la sfida"
-msgstr ""
-
 #: templates/individual_match/proposals.html:222
 msgid "Non più disponibile"
 msgstr ""
@@ -18583,10 +18632,6 @@ msgstr ""
 msgid "Le statistiche compaiono dopo la prima partita individuale conclusa."
 msgstr ""
 
-#: templates/individual_match/statistics.html:137
-msgid "Proponi una sfida"
-msgstr ""
-
 #: templates/individual_match/statistics.html:159
 msgid "Triangoli vinti su giocati"
 msgstr ""
@@ -18634,8 +18679,8 @@ msgstr ""
 #: templates/individual_match/statistics.html:271
 #: templates/individual_match/statistics.html:293
 #, python-format
-msgid "%(n)s match"
-msgid_plural "%(n)s match"
+msgid "%(n)s sfida"
+msgid_plural "%(n)s sfide"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -18654,8 +18699,8 @@ msgstr ""
 
 #: templates/individual_match/statistics.html:294
 #, python-format
-msgid "%(n)s vinto"
-msgid_plural "%(n)s vinti"
+msgid "%(n)s vinta"
+msgid_plural "%(n)s vinte"
 msgstr[0] ""
 msgstr[1] ""
 
@@ -18696,7 +18741,7 @@ msgstr ""
 #: templates/individual_match/tpa_referto.html:31
 msgid ""
 "Il referto lo tiene chi lo apre; l'altro giocatore lo vede aggiornarsi. I"
-" triangoli vinti finiscono da soli nel punteggio del match: non c'e' "
+" triangoli vinti finiscono da soli nel punteggio della partita: non c'e' "
 "niente da segnare due volte."
 msgstr ""
 

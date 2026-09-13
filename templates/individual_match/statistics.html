@@ -242,7 +242,7 @@
         <div class="c7-rows__main">
           <div class="c7-rows__title">{{ stat.discipline|discipline_display }}</div>
           <div class="c7-rows__sub">
-            {{ ngettext("%(n)s match", "%(n)s match", stat.total_matches, n=stat.total_matches) }} <span class="c7-sep">·</span>
+            {{ ngettext("%(n)s sfida", "%(n)s sfide", stat.total_matches, n=stat.total_matches) }} <span class="c7-sep">·</span>
             <span class="c7-num">{{ stat.wins }}–{{ stat.losses }}</span>
           </div>
         </div>
@@ -268,7 +268,7 @@
         <span class="c7-avatar">{{ h2h.opponent_username[:2]|upper }}</span>
         <div class="c7-rows__main">
           <div class="c7-rows__title">{{ h2h.opponent_username }}</div>
-          <div class="c7-rows__sub">{{ ngettext("%(n)s match", "%(n)s match", h2h.total_matches, n=h2h.total_matches) }}</div>
+          <div class="c7-rows__sub">{{ ngettext("%(n)s sfida", "%(n)s sfide", h2h.total_matches, n=h2h.total_matches) }}</div>
         </div>
         <span class="c7-num" style="font-size:15px;font-weight:800;
               color:{{ 'var(--c7-ok)' if h2h.wins > h2h.losses else 'var(--c7-err)' if h2h.wins < h2h.losses else 'inherit' }}">
@@ -290,8 +290,8 @@
         <div class="c7-rows__main">
           <div class="c7-rows__title">{{ month_stat.month_name }}</div>
           <div class="c7-rows__sub">
-            {{ ngettext("%(n)s match", "%(n)s match", month_stat.total_matches, n=month_stat.total_matches) }} <span class="c7-sep">·</span>
-            {{ ngettext("%(n)s vinto", "%(n)s vinti", month_stat.wins, n=month_stat.wins) }}
+            {{ ngettext("%(n)s sfida", "%(n)s sfide", month_stat.total_matches, n=month_stat.total_matches) }} <span class="c7-sep">·</span>
+            {{ ngettext("%(n)s vinta", "%(n)s vinte", month_stat.wins, n=month_stat.wins) }}
           </div>
         </div>
         <span class="c7-num" style="font-size:15px;font-weight:800">{{ "%.0f"|format(month_stat.win_percentage) }}%</span>

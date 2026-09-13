@@ -131,7 +131,7 @@ def tpa_referto(match_id: int):
     """La pagina del referto: si compila o si guarda, secondo chi sei."""
     match, referto, is_player = _load(match_id)
     if not is_player:
-        flash(_("Accesso negato a questo match."), "danger")
+        flash(_("Accesso negato a questa sfida."), "danger")
         return redirect(url_for("individual_match.match_list"))
     if not _may_read(referto):
         abort(403)

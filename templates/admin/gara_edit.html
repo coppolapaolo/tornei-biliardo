@@ -161,9 +161,9 @@
             const isExactNumber = exactNumberCheckbox.checked;
 
             if (isExactNumber && !exactNumberCheckbox.disabled) {
-                gameModeText.textContent = 'Esatto numero: ' + distance + ' rack totali';
+                gameModeText.textContent = {{ _('Esatto numero: {distance} triangoli totali')|tojson }}.replace('{distance}', distance);
             } else {
-                gameModeText.textContent = 'Al ' + distance + ' (si vince a ' + distance + ' rack)';
+                gameModeText.textContent = {{ _('Al {distance} (si vince a {distance} triangoli)')|tojson }}.replaceAll('{distance}', distance);
             }
         }
 

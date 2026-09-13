@@ -23,7 +23,7 @@
 {% if current_user.is_player and not current_user.is_director and not current_user.is_admin %}
   {% if vm.caps and vm.caps.can_create_match_proposal %}
   <a class="btn btn-secondary btn-sm" href="{{ url_for('individual_match.create_proposal') }}">
-    <i class="fas fa-plus"></i>{{ _('Crea Match') }}
+    <i class="fas fa-plus"></i>{{ _('Crea sfida') }}
   </a>
   {% endif %}
 {% endif %}

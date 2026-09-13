@@ -17,7 +17,7 @@
               <label for="name" class="form-label">{{ _('Nome Quest') }} *</label>
               <input type="text" class="form-control" id="name" name="name" required
                      value="{{ quest.name if quest else '' }}"
-                     placeholder="{{ _('Es: Sfida Settimanale Match') }}">
+                     placeholder="{{ _('Es: Sfida settimanale delle partite') }}">
             </div>
 
             <div class="mb-3">
@@ -52,8 +52,8 @@
               <div class="col-md-6 mb-3">
                 <label for="requirement_type" class="form-label">{{ _('Tipo Requisito') }}</label>
                 <select class="form-select" id="requirement_type" name="requirement_type">
-                  <option value="matches_played">{{ _('Match Giocati') }}</option>
-                  <option value="matches_won">{{ _('Match Vinti') }}</option>
+                  <option value="matches_played">{{ _('Partite giocate') }}</option>
+                  <option value="matches_won">{{ _('Partite vinte') }}</option>
                   <option value="tournaments_registered">{{ _('Iscrizioni Tornei') }}</option>
                   <option value="tournaments_completed">{{ _('Tornei Completati') }}</option>
                 </select>

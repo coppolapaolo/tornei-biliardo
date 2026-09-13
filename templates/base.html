@@ -652,12 +652,12 @@
                         </a>
                         <a href="{{ url_for('main.debug_complete_current_round', gara_id=gara.id) }}"
                             class="btn btn-info quick-login-btn"
-                            onclick='return confirmLink(this, {{ _("Completare i match in corso del turno attuale con risultati random?")|tojson }})'>
-                            {{ _('Complete Round') }}
+                            onclick='return confirmLink(this, {{ _("Completare le partite in corso del turno attuale con risultati random?")|tojson }})'>
+                            {{ _('Completa turno') }}
                         </a>
                         <a href="{{ url_for('main.debug_complete_next_match', gara_id=gara.id) }}"
                             class="btn btn-info quick-login-btn">
-                            {{ _('Complete Match') }}
+                            {{ _('Completa partita') }}
                         </a>
                         <a href="{{ url_for('main.debug_complete_gara', gara_id=gara.id) }}"
                             class="btn btn-danger quick-login-btn"

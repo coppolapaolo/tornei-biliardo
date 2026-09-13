@@ -47,14 +47,14 @@
 
       <form method="POST" action="{{ url_for('individual_match.accept_proposal', proposal_id=proposal.id) }}" style="margin-top: 16px;">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-success w-100">{{ _('Accetta il match') }}</button>
+        <button type="submit" class="btn btn-success w-100">{{ _('Accetta la sfida') }}</button>
       </form>
     </article>
     {% endfor %}
   </div>
 
   <a href="{{ url_for('individual_match.create_proposal') }}" class="btn btn-primary">
-    <i class="fas fa-plus"></i> {{ _('Proponi un match') }}
+    <i class="fas fa-plus"></i> {{ _('Proponi una sfida') }}
   </a>
 </section>
 {% endif %}

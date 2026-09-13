@@ -116,7 +116,7 @@ def partita_mai_iniziata(db_session, partita) -> Match:
 
 @pytest.mark.unit
 def test_una_partita_mai_iniziata_non_si_chiude_da_sola(partita_mai_iniziata):
-    with pytest.raises(InvalidTransitionError, match="non è ancora iniziato"):
+    with pytest.raises(InvalidTransitionError, match="non è ancora iniziata"):
         MatchStateService.to_completed(partita_mai_iniziata.id)
 
 
@@ -143,7 +143,7 @@ def test_appiccicare_l_attributo_non_apre_piu_il_varco(partita_mai_iniziata):
     """
     setattr(partita_mai_iniziata, "validated_by_admin", True)
 
-    with pytest.raises(InvalidTransitionError, match="non è ancora iniziato"):
+    with pytest.raises(InvalidTransitionError, match="non è ancora iniziata"):
         MatchStateService.to_completed(partita_mai_iniziata.id)
 
 

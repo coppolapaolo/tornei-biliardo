@@ -17,6 +17,8 @@ from __future__ import annotations
 import logging
 from typing import List, Dict, Any, Optional
 
+from flask_babel import gettext as _
+
 from ..base import db
 from ..challenge.models import Challenge
 from .gara_challenge import (
@@ -74,7 +76,7 @@ class GaraChallengeService:
         ).first()
 
         if existing:
-            raise ConflictError("Challenge già presente per questo round della gara")
+            raise ConflictError(_("Esercizio già presente per questo turno della gara"))
 
         # Verify challenge exists
         challenge = Challenge.query.get(challenge_id)

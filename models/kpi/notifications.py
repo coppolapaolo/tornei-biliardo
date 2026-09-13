@@ -49,9 +49,9 @@ class KpiNotificationService:
                 value=value,
             )
         elif milestone_type == MilestoneType.MATCHES_TOTAL:
-            title = _("Milestone: %(value)s match!", value=value)
+            title = _("Milestone: %(value)s partite!", value=value)
             message = _(
-                "Sono stati giocati %(value)s match sulla piattaforma. "
+                "Sono state giocate %(value)s partite sulla piattaforma. "
                 "La community cresce!",
                 value=value,
             )
@@ -113,14 +113,14 @@ class KpiNotificationService:
         if alert_type == AlertType.NO_MATCH_3_DAYS:
             title = _("Attenzione: calo attivita")
             message = _(
-                "Non sono stati giocati match negli ultimi 3 giorni. "
+                "Non sono state giocate partite negli ultimi 3 giorni. "
                 "Potrebbe essere utile stimolare la community."
             )
             priority = NotificationPriority.NORMAL
         elif alert_type == AlertType.NO_MATCH_7_DAYS:
-            title = _("Attenzione: nessun match da 7 giorni")
+            title = _("Attenzione: nessuna partita da 7 giorni")
             message = _(
-                "Non sono stati giocati match negli ultimi 7 giorni. "
+                "Non sono state giocate partite negli ultimi 7 giorni. "
                 "La community potrebbe aver bisogno di attenzione."
             )
             priority = NotificationPriority.HIGH

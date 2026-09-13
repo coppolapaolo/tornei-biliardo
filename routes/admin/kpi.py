@@ -201,14 +201,14 @@ def api_check_alerts():
             alert_messages.append(
                 {
                     "type": "warning",
-                    "message": _("Nessun match giocato negli ultimi 3 giorni"),
+                    "message": _("Nessuna partita giocata negli ultimi 3 giorni"),
                 }
             )
         elif alert.value == "no_match_7_days":
             alert_messages.append(
                 {
                     "type": "danger",
-                    "message": _("Nessun match giocato negli ultimi 7 giorni"),
+                    "message": _("Nessuna partita giocata negli ultimi 7 giorni"),
                 }
             )
         elif alert.value == "no_registration_7_days":
@@ -247,7 +247,7 @@ def api_check_milestones():
                 {
                     "type": "success",
                     "message": _(
-                        "Milestone raggiunta: %(value)s match giocati!", value=value
+                        "Milestone raggiunta: %(value)s partite giocate!", value=value
                     ),
                 }
             )

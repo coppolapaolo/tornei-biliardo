@@ -31,7 +31,7 @@
             <div class="mb-3">
               <label class="form-label">{{ _('Nome') }} <span class="text-danger">*</span></label>
               <input type="text" class="form-control" name="name" required
-                     placeholder="es: Match Individuali">
+                     placeholder="{{ _('es: Sfide individuali') }}">
             </div>
 
             <div class="mb-3">
@@ -67,8 +67,8 @@
           </p>
           <ul class="text-muted">
             <li><strong>{{ _('Livello') }}</strong> - {{ _('Livello gamification minimo') }}</li>
-            <li><strong>{{ _('Metriche') }}</strong> - {{ _('Match giocati, gare completate, ecc.') }}</li>
-            <li><strong>{{ _('Ruoli') }}</strong> - {{ _('Admin, Director, Gestore Sala') }}</li>
+            <li><strong>{{ _('Metriche') }}</strong> - {{ _('Partite giocate, gare completate, ecc.') }}</li>
+            <li><strong>{{ _('Ruoli') }}</strong> - {{ _('Admin, Direttore di gara, Gestore Sala') }}</li>
             <li><strong>{{ _('Achievement') }}</strong> - {{ _('Badge sbloccati') }}</li>
           </ul>
         </div>

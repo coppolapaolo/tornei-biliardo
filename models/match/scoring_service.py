@@ -331,13 +331,16 @@ class ScoringService:
         # Nessuna schermata lo fa, ma l'endpoint lo accettava.
         if match.is_trio:
             raise ValueError(
-                "Il match a tre si segna dal suo tabellino, non dai rack a due"
+                _(
+                    "La partita a tre si segna dal suo tabellino, "
+                    "non dai triangoli a due"
+                )
             )
 
         # Validate match not already complete
         if match.rack_score.is_complete():
             raise ValueError(
-                "Il match è già finito, non è possibile aggiungere altri punti"
+                _("La partita è già finita, non è possibile aggiungere altri punti")
             )
 
         # Validate score limits before adding
@@ -542,15 +545,20 @@ class ScoringService:
             winning_racks = distance.get_winning_racks()
             if temp_p1_score > winning_racks or temp_p2_score > winning_racks:
                 raise ValueError(
-                    f"Match già completato - limite raggiunto per "
-                    f"'{distance.to_display_string()}'"
+                    _(
+                        "Partita già completata - limite raggiunto per '%(distanza)s'",
+                        distanza=distance.to_display_string(),
+                    )
                 )
         else:
             total_racks = temp_p1_score + temp_p2_score
             if total_racks > distance.racks:
                 raise ValueError(
-                    f"Non è possibile superare il limite di {distance.racks} "
-                    f"rack totali per questo match"
+                    _(
+                        "Non è possibile superare il limite di %(n)s triangoli "
+                        "totali per questa partita",
+                        n=distance.racks,
+                    )
                 )
 
     @staticmethod
@@ -607,15 +615,22 @@ class ScoringService:
             winning_score = distance.get_winning_racks()
             if player1_score >= winning_score and player2_score >= winning_score:
                 raise ValueError(
-                    f"In un match 'al {winning_score}', entrambi i giocatori "
-                    f"non possono avere {winning_score} o più punti!"
+                    _(
+                        "In una partita 'al %(n)s', entrambi i giocatori "
+                        "non possono avere %(n)s o più punti!",
+                        n=winning_score,
+                    )
                 )
         else:
             total_racks = player1_score + player2_score
             if total_racks != distance.racks:
                 raise ValueError(
-                    f"In modalità 'esatto numero', il totale dei rack ({total_racks}) "
-                    f"deve essere esattamente {distance.racks}!"
+                    _(
+                        "In modalità 'esatto numero', il totale dei triangoli "
+                        "(%(totale)s) deve essere esattamente %(n)s!",
+                        totale=total_racks,
+                        n=distance.racks,
+                    )
                 )
 
     @staticmethod

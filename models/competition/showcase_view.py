@@ -209,7 +209,7 @@ def _formato_di_gioco(gara: Gara) -> str:
             "%(disciplina)s — al %(n)s", disciplina=nome_disciplina, n=gara.distance
         )
     return _(
-        "%(disciplina)s — %(n)s rack esatti",
+        "%(disciplina)s — %(n)s triangoli esatti",
         disciplina=nome_disciplina,
         n=gara.distance,
     )

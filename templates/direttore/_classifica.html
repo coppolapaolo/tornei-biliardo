@@ -21,7 +21,7 @@
 {% set _prime = 6 %}
 <section class="c7-stack c7-classifica" style="gap:10px" id="classificaDirettore">
   <div class="c7-sechead">
-    <h3>{% if titolo_classifica is defined and titolo_classifica %}{{ titolo_classifica }}{% else %}{{ _('Classifica (rack)') if _rack else _('Classifica') }}{% endif %}</h3>
+    <h3>{% if titolo_classifica is defined and titolo_classifica %}{{ titolo_classifica }}{% else %}{{ _('Classifica (triangoli)') if _rack else _('Classifica') }}{% endif %}</h3>
     <span class="c7-sechead__note">
       {% if nota_testa is defined and nota_testa %}{{ nota_testa }}{% elif _casuale or not round_number %}{{ _('complessiva') }}{% else %}{{ _('dopo il turno %(n)s', n=round_number) }}{% endif %}
     </span>
@@ -76,7 +76,7 @@
     {% endfor %}
   </div>
   <div class="c7-nota">
-    {% if _rack %}{{ _('Sistema RACK: ordinata per triangoli vinti in tutta la gara, poi punti SSR. La X a tavolino vale zero triangoli.') }}
+    {% if _rack %}{{ _('Sistema a triangoli: ordinata per triangoli vinti in tutta la gara, poi punti SSR. La X a tavolino vale zero triangoli.') }}
     {% elif _posizione %}{{ _('Ordinata per piazzamento nel tabellone.') }}
     {% else %}{{ _('Ordinata per vittorie, poi differenza triangoli. La X a tavolino vale una vittoria e zero differenza.') }}{% endif %}
     {% if medaglie is defined and medaglie and round_number and round_number > 1 %}{{ _('La freccia confronta con la classifica dopo il turno %(n)s.', n=round_number - 1) }}

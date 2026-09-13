@@ -10,7 +10,7 @@
    href="{{ url_for('admin.match.match_detail', match_id=m.id) }}">
   <span class="c7-shortcut__body">
     <span class="c7-kicker">
-      {{ _('Il tuo match') }}
+      {{ _('La tua partita') }}
       {%- if m.table_assignment %} <span class="c7-sep">·</span> {{ _('Tavolo') }} {{ m.table_assignment }}
       {%- endif %}
     </span>

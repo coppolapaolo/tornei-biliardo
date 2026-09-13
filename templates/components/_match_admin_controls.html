@@ -299,7 +299,7 @@ function validateScoreForm(form) {
 
     // For "race to n": both players cannot have winning score or higher
     if (isRaceTo && p1Score >= winningScore && p2Score >= winningScore) {
-        showError({{ _("In un match 'al N', entrambi i giocatori non possono avere il punteggio vincente!")|tojson }});
+        showError({{ _("In una partita 'al N', entrambi i giocatori non possono avere il punteggio vincente!")|tojson }});
         return false;
     }
 

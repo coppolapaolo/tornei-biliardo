@@ -260,21 +260,21 @@ class DemandSignalService:
         if zone:
             message = _(
                 "%(count)s giocatori vorrebbero una gara a %(city)s, una zona "
-                "senza un director. Valuta di reclutarne o promuoverne uno.",
+                "senza un direttore di gara. Valuta di reclutarne o promuoverne uno.",
                 count=count,
                 city=zone,
             )
         else:
             message = _(
                 "%(count)s giocatori vorrebbero una gara in una zona senza un "
-                "director. Valuta di reclutarne o promuoverne uno.",
+                "direttore di gara. Valuta di reclutarne o promuoverne uno.",
                 count=count,
             )
 
         NotificationFactory.create_bulk_notification(
             user_ids=admin_ids,
             notification_type=NotificationType.DEMAND_ZONE_NO_DIRECTOR,
-            title=_("Domanda in una zona senza director"),
+            title=_("Domanda in una zona senza direttore di gara"),
             message=message,
             priority=NotificationPriority.NORMAL,
             related_entities={"zone": zone, "zone_key": zone_key, "count": count},

@@ -241,9 +241,9 @@ class MatchLifecycleService:
                         NotificationFactory.create_bulk_notification(
                             user_ids=[player_id],
                             notification_type=NotificationType.MATCH_REMINDER,
-                            title=_("Promemoria match"),
+                            title=_("Promemoria sfida"),
                             message=_(
-                                "Il tuo match è programmato per il "
+                                "La tua sfida è programmata per il "
                                 "%(when)s%(location)s",
                                 when=when,
                                 location=(

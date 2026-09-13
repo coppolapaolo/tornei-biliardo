@@ -290,7 +290,7 @@ def create_proposal():
                 }
             )
         else:
-            flash(_("Proposta di match creata con successo!"), "success")
+            flash(_("Proposta di sfida creata con successo!"), "success")
             return redirect(
                 url_for("individual_match.proposal_detail", proposal_id=proposal.id)
             )

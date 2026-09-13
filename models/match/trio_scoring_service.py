@@ -222,8 +222,13 @@ class TrioScoringService:
         total = player1_racks + player2_racks + player3_racks
         if total != config.total_played_racks:
             raise ValueError(
-                f"Il totale dei rack ({total}) deve essere {config.total_played_racks} "
-                f"per un trio con distanza {config.distance}"
+                _(
+                    "Il totale dei triangoli (%(totale)s) deve essere %(attesi)s "
+                    "per un trio con distanza %(distanza)s",
+                    totale=total,
+                    attesi=config.total_played_racks,
+                    distanza=config.distance,
+                )
             )
 
         # Validate per-player maximum (each player plays 2 racks per round)

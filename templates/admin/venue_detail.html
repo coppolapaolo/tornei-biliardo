@@ -234,7 +234,7 @@
                                 {% for user in eligible_users %}
                                     <option value="{{ user.id }}">
                                         {{ user.username }}
-                                        {% if user.is_admin %}({{ _("Admin") }}){% elif user.is_director %}({{ _("Director") }}){% endif %}
+                                        {% if user.is_admin %}({{ _("Admin") }}){% elif user.is_director %}({{ _("Direttore di gara") }}){% endif %}
                                     </option>
                                 {% endfor %}
                             </select>
