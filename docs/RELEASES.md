@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.25.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.24.0...v1.25.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* squadre, categorie, ritiro ed eliminazione nella pagina del direttore ([#379](https://github.com/coppolapaolo/tornei-biliardo/issues/379)) ([aa230f9](https://github.com/coppolapaolo/tornei-biliardo/commit/aa230f9b9df3a8b19d746dbcd07d8cf4104ce03d))
+
 ## [1.24.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.23.1...v1.24.0) (2026-09-13)
 
 
