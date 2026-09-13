@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 11:28+0200\n"
+"POT-Creation-Date: 2026-09-13 12:04+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -18,23 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:710 templates/errors/403.html:3
+#: app.py:712 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
-#: app.py:728
+#: app.py:730
 msgid "Non è il tuo turno"
 msgstr ""
 
-#: app.py:729
+#: app.py:731
 msgid "Colpo irregolare"
 msgstr ""
 
-#: app.py:748
+#: app.py:750
 msgid "Operazione non consentita"
 msgstr ""
 
-#: app.py:762
+#: app.py:764
 msgid "Tiro non valido"
 msgstr ""
 
@@ -3386,6 +3386,26 @@ msgstr ""
 msgid "Non è stato possibile cancellare la prova."
 msgstr ""
 
+#: routes/player/exports.py:82 templates/components/_bracket_view.html:41
+#: templates/components/_bracket_view.html:60
+#: templates/components/_match_bye.html:8
+#: templates/components/_match_card.html:22
+#: templates/components/_match_card.html:47
+#: templates/components/_match_card.html:120
+#: templates/components/_match_header.html:60
+#: templates/components/_match_result_row.html:56
+#: templates/components/_match_result_row.html:130
+#: templates/components/_match_scoreboard.html:155
+#: templates/components/_unified_match_score.html:23
+#: templates/components/_unified_rack_input.html:23
+#: templates/direttore/_card_partita.html:43
+#: templates/direttore/_partite.html:33 templates/direttore/_tabellino.html:38
+#: templates/match_detail.html:13 templates/match_detail.html:50
+#: templates/match_detail.html:106 templates/public/schermo_sala.html:98
+#: utils/jinja.py:438
+msgid "X a tavolino"
+msgstr ""
+
 #: routes/player/exports.py:542
 msgid "Export GDPR Pronto"
 msgstr ""
@@ -4109,25 +4129,6 @@ msgstr ""
 
 #: templates/admin/kpi.html:802 templates/match_detail.html:6
 msgid "Match"
-msgstr ""
-
-#: templates/components/_bracket_view.html:41
-#: templates/components/_bracket_view.html:60
-#: templates/components/_match_bye.html:8
-#: templates/components/_match_card.html:22
-#: templates/components/_match_card.html:47
-#: templates/components/_match_card.html:120
-#: templates/components/_match_header.html:60
-#: templates/components/_match_result_row.html:56
-#: templates/components/_match_result_row.html:130
-#: templates/components/_match_scoreboard.html:155
-#: templates/components/_unified_match_score.html:23
-#: templates/components/_unified_rack_input.html:23
-#: templates/direttore/_card_partita.html:43
-#: templates/direttore/_partite.html:33 templates/direttore/_tabellino.html:38
-#: templates/match_detail.html:13 templates/match_detail.html:50
-#: templates/match_detail.html:106 templates/public/schermo_sala.html:98
-msgid "X a tavolino"
 msgstr ""
 
 #: templates/match_detail.html:117
@@ -10208,7 +10209,7 @@ msgstr ""
 
 #: templates/components/_gara_lista_attesa.html:17
 #: templates/components/_tessera_gara.html:100
-#: templates/components/_unified_cards.html:139
+#: templates/components/_unified_cards.html:139 utils/jinja.py:437
 msgid "Lista d'attesa"
 msgstr ""
 
@@ -19468,6 +19469,14 @@ msgstr ""
 #: utils/jinja.py:200 utils/jinja.py:232 utils/jinja.py:242 utils/jinja.py:278
 #: utils/jinja.py:296 utils/jinja.py:308 utils/jinja.py:325
 msgid "N/A"
+msgstr ""
+
+#: utils/jinja.py:439
+msgid "X a tavolino con esercizio"
+msgstr ""
+
+#: utils/jinja.py:440
+msgid "Trio, partita a tre"
 msgstr ""
 
 #: utils/status_ui.py:79
