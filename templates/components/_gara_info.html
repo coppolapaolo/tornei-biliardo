@@ -68,7 +68,7 @@
         {% set challenge_count = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length %}
         <dt class="text-muted" style="font-weight: 700;">{{ _('Esercizi') }}</dt>
         <dd style="margin: 0; text-align: right;">
-            {% if challenge_count > 0 %}<span style="color: var(--c7-ok);"><span class="c7-num">{{ challenge_count }}</span> {{ _('attive') }}</span>{% else %}<span style="color: var(--c7-ink-muted);">{{ _('Nessuna') }}</span>{% endif %}
+            {% if challenge_count > 0 %}<span style="color: var(--c7-ok);">{{ ngettext('%(n)d attivo', '%(n)d attivi', challenge_count, n=challenge_count) }}</span>{% else %}<span style="color: var(--c7-ink-muted);">{{ _('Nessuna') }}</span>{% endif %}
         </dd>
         {% endif %}
 

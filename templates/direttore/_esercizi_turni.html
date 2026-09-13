@@ -1,0 +1,105 @@
+{# templates/direttore/_esercizi_turni.html — Design System 7c
+
+   Gli esercizi fra i turni a gara in corso, per chi dirige. Il canvas ne
+   disegna solo la preparazione (1.4–1.5, 1.10): qui si registrano, con la
+   grammatica della pagina — una sezione per esercizio, una riga per
+   giocatore, il tocco apre un foglio (`_foglio_esercizio.html`).
+
+   Un esercizio si gioca «dopo il turno N» (`GaraChallenge.round_number`),
+   quindi le righe compaiono quando quel turno e' concluso. Dove stanno:
+
+   - `da_registrare` — sopra le partite, **fra un turno e l'altro**, gli
+     esercizi in cui qualcuno non ha ancora nessun tentativo: e' la cosa che
+     la serata chiede adesso;
+   - `registrati` — sotto le partite gli altri: mentre un turno si gioca
+     anche quelli da registrare (le card delle partite vengono prima, e otto
+     righe sopra le spingerebbero giu' di una schermata), poi quelli gia'
+     tentati da tutti, e in coda, in sola lettura, quelli il cui turno non e'
+     ancora chiuso.
+
+   Nessuna regola ferma il turno dopo con un esercizio da registrare: la
+   fascia non lo annuncia. Attende `esercizi_turni`
+   (`direttore_view.esercizi_fra_i_turni`). Nessun id: si puo' importare in
+   piu' punti. #}
+{% import "direttore/_macros.html" as d with context %}
+
+{% macro _riga(esercizio, g) -%}
+{%- if esercizio.a_esito -%}
+  {%- set tile = 'c7-tile--ok' if g.riuscito else ('c7-tile--warn' if g.fatti == 0 else 'c7-tile--neutral') -%}
+  {%- set icona = 'fa-check' if g.riuscito else 'fa-bullseye' -%}
+{%- else -%}
+  {%- set tile = 'c7-tile--warn' if g.fatti == 0 else ('c7-tile--locked' if not g.puo_tentare else 'c7-tile--neutral') -%}
+  {%- set icona = 'fa-check' if not g.puo_tentare else 'fa-bullseye' -%}
+{%- endif -%}
+{%- set tag = 'button' if g.puo_tentare else 'div' -%}
+<{{ tag }}{% if g.puo_tentare %} type="button"{% endif %} class="c7-rows__row{% if g.puo_tentare %} c7-rows__row--btn{% endif %} c7-esercizio-riga"
+  {%- if g.puo_tentare %} onclick="apriTentativoEsercizio(this)"
+  data-esercizio-id="{{ esercizio.id }}" data-esercizio-nome="{{ esercizio.nome }}"
+  data-user-id="{{ g.user_id }}" data-nome="{{ g.nome }}"
+  data-fatti="{{ g.fatti }}" data-massimo="{{ g.massimo }}"
+  data-a-esito="{{ 1 if esercizio.a_esito else 0 }}"
+  data-punteggio-massimo="{{ esercizio.punteggio_massimo or '' }}"{% endif %}>
+  <span class="c7-tile c7-tile--sm {{ tile }}"><i class="fas {{ icona }}"></i></span>
+  <span class="c7-rows__main">
+    <span class="c7-rows__title d-block">{{ g.nome }}</span>
+    <span class="c7-rows__sub d-block">
+      {%- if g.fatti == 0 %}{{ _('nessun tentativo') }}
+      {%- else %}{{ ngettext('%(n)d tentativo su %(tot)d', '%(n)d tentativi su %(tot)d', g.fatti, n=g.fatti, tot=g.massimo) }}{% endif %}
+      {%- if not g.puo_tentare %} <span class="c7-sep">·</span> {{ _('finiti') }}{% endif %}
+    </span>
+  </span>
+  <span class="c7-esercizio-riga__destra">
+    {%- if g.fatti == 0 %}<span class="c7-state c7-state--warn">{{ _('da fare') }}</span>
+    {%- elif esercizio.a_esito %}
+      {%- if g.riuscito %}<span class="c7-state c7-state--ok">{{ _('Riuscito') }}</span>
+      {%- else %}<span class="c7-state c7-state--muted">{{ _('Non riuscito') }}</span>{% endif %}
+    {%- else %}<span class="c7-esercizio-riga__punti c7-num" title="{{ _('il migliore') }}">{{ g.migliore }}</span>{% endif %}
+    {%- if g.puo_tentare %}<i class="fas fa-plus c7-rows__chev" aria-hidden="true"></i>{% endif %}
+  </span>
+</{{ tag }}>
+{%- endmacro %}
+
+{% macro _sezione(esercizio) -%}
+<section class="c7-stack c7-esercizio" data-gara-challenge="{{ esercizio.id }}">
+  <div>
+    {{ d.sezione(_('Esercizio dopo il turno %(n)s', n=esercizio.turno),
+                 nota=(ngettext('%(n)d da registrare', '%(n)d da registrare', esercizio.da_registrare, n=esercizio.da_registrare) if esercizio.da_registrare else '')) }}
+    <div class="c7-nota">
+      {{ esercizio.nome }}
+      <span class="c7-sep">·</span>
+      {{ ngettext('%(n)s tentativo', '%(n)s tentativi', esercizio.tentativi, n=esercizio.tentativi) }}
+      <span class="c7-sep">·</span>
+      {% if esercizio.a_esito %}{{ _('riuscito o no') }}
+      {% elif esercizio.punteggio_massimo %}{{ _('a punteggio, fino a %(n)s', n=esercizio.punteggio_massimo) }}
+      {% else %}{{ _('a punteggio, conta il migliore') }}{% endif %}
+    </div>
+  </div>
+  <div class="c7-rows">
+    {% for g in esercizio.giocatori %}{{ _riga(esercizio, g) }}{% endfor %}
+  </div>
+</section>
+{%- endmacro %}
+
+{# Sopra le partite: gli esercizi dovuti con qualcuno ancora senza tentativi. #}
+{% macro da_registrare(esercizi) -%}
+{% for e in esercizi if e.dovuto and e.da_registrare %}{{ _sezione(e) }}{% endfor %}
+{%- endmacro %}
+
+{# Sotto le partite: i dovuti (quelli da registrare solo se
+   `anche_da_registrare`), poi quelli in arrivo. #}
+{% macro registrati(esercizi, anche_da_registrare=False) -%}
+{% for e in esercizi if e.dovuto and (anche_da_registrare or not e.da_registrare) %}{{ _sezione(e) }}{% endfor %}
+{% set in_arrivo = esercizi|rejectattr('dovuto')|list %}
+{% if in_arrivo %}
+<section class="c7-stack">
+  {{ d.sezione(_('Esercizi fra i turni'), nota=(in_arrivo|length|string)) }}
+  <div class="c7-rows">
+    {% for e in in_arrivo %}
+    {{ d.riga('fa-bullseye', e.nome,
+              _('dopo il turno %(n)s', n=e.turno) ~ ' · ' ~ ngettext('%(n)s tentativo', '%(n)s tentativi', e.tentativi, n=e.tentativi),
+              tone='locked') }}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{%- endmacro %}

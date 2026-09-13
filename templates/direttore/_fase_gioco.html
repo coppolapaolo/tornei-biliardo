@@ -17,6 +17,10 @@
    fissato dall'albero, e al posto della classifica c'e' il tabellone. #}
 {% set _tabellone = is_tabellone is defined and is_tabellone %}
 {% import "components/_tabellone_macros.html" as t with context %}
+{# Gli esercizi fra i turni: fra un turno e l'altro quelli da registrare
+   stanno sopra le partite, mentre si gioca sotto (`_esercizi_turni.html`). #}
+{% import "direttore/_esercizi_turni.html" as es with context %}
+{% set _esercizi = esercizi_turni if esercizi_turni is defined else [] %}
 
 {% if tipo_comando in ('avvia_spareggio', 'termina_gara') %}
 {# ---- Gara finita: spareggio o chiusura ---- #}
@@ -166,6 +170,7 @@
 <div class="c7-cols">
   <div class="c7-stack">
     <div class="d-lg-none">{{ da_fare_adesso() }}</div>
+    {% if tipo_comando %}{{ es.da_registrare(_esercizi) }}{% endif %}
 
     {# Il tabellone ha una pagina sua: ci porta il tabellone compatto nella
        colonna accanto, e qui resta solo se quello non c'e'. #}
@@ -183,9 +188,7 @@
     {% include "components/_ssr_section.html" %}
     {% endif %}
 
-    {% if gara_challenges %}
-    {% include "components/_public_challenges.html" %}
-    {% endif %}
+    {{ es.registrati(_esercizi, anche_da_registrare=not tipo_comando) }}
   </div>
 
   <div class="c7-stack">

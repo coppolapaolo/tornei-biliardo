@@ -199,6 +199,52 @@ def _prova_iscrizioni(gara: Gara):
     }
 
 
+def _esercizi_turni(gara: Gara, all_matches) -> list:
+    """Gli esercizi fra i turni da registrare dalla pagina, a gara in corso.
+
+    Uno per `GaraChallenge` attivo; quelli il cui turno e' concluso portano
+    una riga per iscritto attivo con tentativi e migliore
+    (`direttore_view.esercizi_fra_i_turni`). Fuori dal gioco, o in una gara
+    che non li ammette, niente.
+    """
+    if gara.status != GaraStatus.PLAYING.value or not gara.ammette_esercizi_fra_i_turni:
+        return []
+    from models.competition.direttore_view import (
+        esercizi_fra_i_turni,
+        turni_conclusi,
+    )
+    from models.competition.gara_challenge import GaraChallengeAttempt
+    from models.competition.gara_challenge_service import GaraChallengeService
+
+    esercizi = GaraChallengeService.get_gara_challenges(gara.id)
+    if not esercizi:
+        return []
+
+    iscrizioni = (
+        Inscription.query.filter_by(gara_id=gara.id, is_withdrawn=False)
+        .filter(Inscription.is_waitlist.is_(False))
+        .all()
+    )
+    giocatori = sorted(
+        ((i.user_id, i.user.username) for i in iscrizioni if i.user),
+        key=lambda g: g[1].lower(),
+    )
+    tentativi: dict = {}
+    for t in GaraChallengeAttempt.query.filter(
+        GaraChallengeAttempt.gara_challenge_id.in_([e.id for e in esercizi]),
+        GaraChallengeAttempt.completed.is_(True),
+    ).order_by(GaraChallengeAttempt.attempt_number):
+        tentativi.setdefault((t.gara_challenge_id, t.user_id), []).append(
+            (t.score, t.passed)
+        )
+    return esercizi_fra_i_turni(
+        esercizi,
+        turni_chiusi=turni_conclusi(all_matches),
+        giocatori=giocatori,
+        tentativi=tentativi,
+    )
+
+
 def _vista_direttore(
     gara: Gara,
     all_matches,
@@ -293,6 +339,7 @@ def _vista_direttore(
 
     return {
         **_vista_tabellone(gara, all_matches or []),
+        "esercizi_turni": _esercizi_turni(gara, all_matches or []),
         "fase": fase,
         "striscia": striscia(fase, con_spareggio=con_spareggio),
         "comando": comando,

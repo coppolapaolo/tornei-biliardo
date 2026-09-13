@@ -347,13 +347,13 @@ di prova (ADR-058, arrivata dopo il canvas). Il tabellone a eliminazione
 la soluzione piu' vicina alla grammatica del canvas — vedi «Tabellone al
 posto della classifica» in fondo. Lo stesso giorno anche lo schermo in sala
 per le gare a tabellone (issue #352) — vedi «Schermo in sala per le gare a
-tabellone».
-E allo stesso modo la gara dentro un campionato (peso, playoff) e la
-competizione di prova: vedi «La gara del campionato e la prova» in fondo.
-
-posto della classifica» in fondo. Anche trio e multi-set, con la X con
-esercizio, sono stati fatti il 13/09 sulla card della partita — vedi «Trio,
-multi-set e X con esercizio» in fondo.
+tabellone»; trio e multi-set, con la X con esercizio, sulla card della
+partita — vedi «Trio, multi-set e X con esercizio»; la gara dentro un
+campionato (peso, playoff) e la competizione di prova — vedi «La gara del
+campionato e la prova»; e gli esercizi di gara a gara in corso, cioe'
+registrare i tentativi degli esercizi fra i turni, sulla pagina del
+direttore — vedi «Esercizi fra i turni». La loro preparazione era gia' nel
+canvas.
 
 ## Come ricostruire
 
@@ -674,3 +674,44 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   della gara, e resta com'e'. Sulle sottopagine di una prova l'aiuto non si
   accendeva e «Elimina la prova» mancava. `deleteProva` in `_scripts.html`
   era codice morto, tolto con le sue tre stringhe.
+
+* **Esercizi fra i turni** (PR `feat: gli esercizi fra i turni si segnano
+  dalla pagina della gara`, 2026-09-13). Il canvas disegnava solo la loro
+  preparazione (1.4–1.5, 1.10): a gara in corso i tentativi si registravano
+  soltanto dalla pagina della partita, e la pagina del direttore aveva
+  un elenco in sola lettura che diceva «dal turno N» mentre la regola e'
+  «dopo il turno N». Ora, a turno N concluso, ogni `GaraChallenge` di quel
+  turno e' una sezione «Esercizio dopo il turno N» con una riga per iscritto
+  attivo: tentativi fatti sul massimo, il migliore o l'esito, «da fare» per
+  chi non ha ancora tirato. Il tocco apre un foglio `c7-sheet` con i due tasti
+  grandi dell'allenamento, «Riuscito» e «Non riuscito», che registrano al
+  tocco, oppure lo stepper da 48px della card, forma `x` di
+  `static/js/card_partita.js`, e «Registra il tentativo»; salva con
+  l'endpoint JSON di chi dirige, `admin.match.record_challenge_attempt`, e
+  la pagina si rifa' con `location.replace`. Finiti i tentativi la riga non
+  si tocca piu'. Gli esercizi del turno non ancora concluso restano in una
+  sezione in sola lettura sotto le partite: un elenco solo. Dati in
+  `direttore_view.esercizi_fra_i_turni` e `turni_conclusi`, query in
+  `detail._esercizi_turni`; CSS nella sezione 33. La fascia non cambia:
+  nessuna regola ferma il turno dopo con un esercizio da registrare, e
+  `comando_per` non ne inventa una. Scelte dove il canvas tace: fra un turno
+  e l'altro gli esercizi con qualcuno ancora senza tentativi stanno sopra
+  le partite, mentre un turno si gioca stanno sotto, perche' otto righe
+  spingerebbero giu' di una schermata le card che servono adesso; il numero
+  del turno registrato col tentativo e' quello che si vede; senza tetto
+  `Challenge.max_score` lo stepper non si ferma; nessun comando per togliere
+  un tentativo, perche' il servizio non ne ha uno.
+  Trovato strada facendo: la pagina della partita mandava un direttore non
+  admin all'endpoint del giocatore, che registra sempre per chi chiama, quindi
+  403, e se il direttore era iscritto il tentativo dell'altro finiva a lui; ora
+  sceglie dal permesso sulla gara. L'endpoint del direttore accettava un
+  `user_id` qualsiasi, anche di chi non gioca la gara, che restava fuori dalla
+  classifica ma prendeva gli XP del tentativo: ora vuole un iscritto attivo.
+  `GaraChallengeService` non applicava il tetto `max_score` che l'allenamento
+  applica, ne' rifiutava un punteggio negativo, e un esercizio a esito senza
+  esito diventava «non riuscito» in silenzio: ora rifiuta tutti e tre. Le
+  informazioni della gara dicevano «1 attive» degli esercizi. Il seed della
+  guida aggancia un esercizio alla gara in corso, ma il suo campionato ha
+  `challenge_mode` spento e `Gara.ammette_esercizi_fra_i_turni` lo nasconde
+  ovunque: la guida ha il testo e nessuna schermata nuova, e accendere il
+  flag cambierebbe altre schermate del campionato.

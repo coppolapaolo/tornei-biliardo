@@ -661,7 +661,126 @@ def contesto_campionato(gara, gare: Optional[Iterable] = None):
     )
 
 
+# ---------------------------------------------------------------------------
+# Gli esercizi fra i turni, a gara in corso
+# ---------------------------------------------------------------------------
+#
+# Il canvas disegna solo la loro preparazione (1.4–1.5, 1.10): qui la pagina
+# del direttore li **registra**. Un esercizio fra i turni (`GaraChallenge`) si
+# gioca «dopo il turno N», quindi si registra quando quel turno e' concluso;
+# prima resta in elenco, in sola lettura. Nessuna regola impedisce di avviare
+# il turno dopo con un esercizio ancora da registrare: la pagina lo mostra e
+# basta, la fascia non lo annuncia.
+
+
+def turni_conclusi(matches: Iterable) -> set:
+    """I turni con partite, tutte concluse (la X compresa).
+
+    E' la stessa domanda che la pagina fa per il turno che si vede
+    (`turno_concluso` nella route), posta a ogni turno: con i turni
+    pre-generati della formula casuale un turno puo' essere chiuso mentre
+    `current_round` e' ancora quello prima.
+    """
+    per_turno: dict = {}
+    for m in matches:
+        chiusa = stato_partita(m) in (StatoPartita.CONCLUSA, StatoPartita.X)
+        per_turno[m.round_number] = per_turno.get(m.round_number, True) and chiusa
+    return {turno for turno, chiuso in per_turno.items() if chiuso}
+
+
+@dataclass(frozen=True)
+class TentativiGiocatore:
+    """A che punto e' un giocatore su un esercizio."""
+
+    user_id: int
+    nome: str
+    fatti: int
+    massimo: int
+    #: Il punteggio migliore, `None` senza tentativi.
+    migliore: Optional[int]
+    #: Negli esercizi a esito: riuscito almeno una volta, `False` se tentato
+    #: e mai riuscito, `None` senza tentativi.
+    riuscito: Optional[bool]
+
+    @property
+    def puo_tentare(self) -> bool:
+        return self.fatti < self.massimo
+
+
+@dataclass(frozen=True)
+class EsercizioFraITurni:
+    id: int
+    turno: int
+    nome: str
+    a_esito: bool
+    punteggio_massimo: Optional[int]
+    tentativi: int
+    #: Il suo turno e' concluso: si registra adesso.
+    dovuto: bool
+    #: Una riga per giocatore attivo, solo quando `dovuto`.
+    giocatori: tuple = ()
+
+    @property
+    def da_registrare(self) -> int:
+        """Quanti giocatori non hanno ancora nessun tentativo."""
+        return sum(1 for g in self.giocatori if g.fatti == 0)
+
+
+def esercizi_fra_i_turni(
+    esercizi: Iterable,
+    *,
+    turni_chiusi: set,
+    giocatori: Sequence,
+    tentativi: Mapping,
+) -> list:
+    """Gli esercizi della gara, nell'ordine dei turni, con le righe dei dovuti.
+
+    `esercizi` sono i `GaraChallenge` attivi; `giocatori` le coppie
+    ``(user_id, nome)`` degli iscritti attivi; `tentativi` mappa
+    ``(gara_challenge_id, user_id)`` sui tentativi completati come coppie
+    ``(score, passed)``.
+    """
+    risultato = []
+    for gc in sorted(esercizi, key=lambda e: (e.round_number, e.id)):
+        sfida = gc.challenge
+        a_esito = bool(sfida.pass_fail_only)
+        dovuto = gc.round_number in turni_chiusi
+        righe = []
+        if dovuto:
+            for user_id, nome in giocatori:
+                fatti = list(tentativi.get((gc.id, user_id), ()))
+                punteggi = [score or 0 for score, _passed in fatti]
+                esiti = [bool(passed) for _score, passed in fatti]
+                righe.append(
+                    TentativiGiocatore(
+                        user_id=user_id,
+                        nome=nome,
+                        fatti=len(fatti),
+                        massimo=gc.max_attempts,
+                        migliore=max(punteggi) if punteggi else None,
+                        riuscito=any(esiti) if fatti else None,
+                    )
+                )
+        risultato.append(
+            EsercizioFraITurni(
+                id=gc.id,
+                turno=gc.round_number,
+                nome=sfida.get_display_name(),
+                a_esito=a_esito,
+                punteggio_massimo=None if a_esito else sfida.max_score,
+                tentativi=gc.max_attempts,
+                dovuto=dovuto,
+                giocatori=tuple(righe),
+            )
+        )
+    return risultato
+
+
 __all__ = [
+    "TentativiGiocatore",
+    "EsercizioFraITurni",
+    "turni_conclusi",
+    "esercizi_fra_i_turni",
     "FaseGara",
     "StatoTacca",
     "Tacca",

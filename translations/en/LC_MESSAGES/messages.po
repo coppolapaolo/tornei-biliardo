@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 12:29+0200\n"
+"POT-Creation-Date: 2026-09-13 12:49+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -423,7 +423,7 @@ msgstr "lost"
 
 #: models/dashboard/activity_feedback.py:164
 #: templates/direttore/_classifica.html:65
-#: templates/direttore/_fase_gioco.html:64
+#: templates/direttore/_fase_gioco.html:68
 #: templates/individual_match/statistics.html:185
 msgid "pari"
 msgstr "drawn"
@@ -1708,7 +1708,9 @@ msgstr ""
 msgid ""
 "Le partite a set si correggono dal loro segnapunti, che tiene il "
 "punteggio di ogni set"
-msgstr "Set matches are corrected from their own scoreboard, which keeps the score of every set"
+msgstr ""
+"Set matches are corrected from their own scoreboard, which keeps the "
+"score of every set"
 
 #: models/match/correction_service.py:87
 msgid "Questa partita non appartiene a una gara"
@@ -1825,7 +1827,9 @@ msgstr "In a trio each player plays %(n)s racks: nobody can win more."
 msgid ""
 "Questo punteggio non torna con l'ordine del girone: il primo triangolo è "
 "fra il primo e il secondo giocatore, il secondo fra il primo e il terzo."
-msgstr "This score does not fit the order of the group: the first rack is between the first and second player, the second between the first and third."
+msgstr ""
+"This score does not fit the order of the group: the first rack is between"
+" the first and second player, the second between the first and third."
 
 #: models/notification/factory.py:386
 #, python-format
@@ -2864,6 +2868,10 @@ msgid "Locandina rimossa: la gara torna a usare quella del campionato, se c'è."
 msgstr ""
 "Poster removed: the competition goes back to the championship one, if "
 "there is one."
+
+#: routes/admin/match/challenges.py:37
+msgid "Il giocatore non gioca questa gara"
+msgstr "The player is not playing in this competition"
 
 #: routes/admin/match/multi_set.py:215
 msgid "La partita è chiusa: si cambia dal segnapunti."
@@ -4122,7 +4130,7 @@ msgid "Salva"
 msgstr "Save"
 
 #: templates/direttore/_fase_conclusa.html:101
-#: templates/direttore/_fase_gioco.html:174
+#: templates/direttore/_fase_gioco.html:179
 #: templates/direttore/_fase_iscrizioni.html:129
 #: templates/direttore/_fase_preparazione.html:141
 #: templates/direttore/_tabellino.html:46 templates/gara_bracket.html:4
@@ -4203,13 +4211,13 @@ msgstr "Standings"
 #: templates/components/_gara_inscriptions.html:96
 #: templates/components/_nearby_gare.html:137
 #: templates/direttore/_fase_conclusa.html:116
-#: templates/direttore/_fase_gioco.html:243
+#: templates/direttore/_fase_gioco.html:246
 #: templates/direttore/_fase_spareggio.html:86 templates/gara_detail.html:52
 msgid "Iscritti"
 msgstr "Registered"
 
 #: templates/direttore/_fase_conclusa.html:101
-#: templates/direttore/_fase_gioco.html:174
+#: templates/direttore/_fase_gioco.html:179
 #: templates/direttore/_tabellino.html:74 templates/gara_detail.html:143
 msgid "Il percorso della gara, turno per turno"
 msgstr "The competition path, round by round"
@@ -5099,7 +5107,7 @@ msgstr "Back to championships"
 #: templates/components/_unified_cards.html:112
 #: templates/components/_unified_cards.html:123
 #: templates/direttore/_dal_campionato.html:23
-#: templates/direttore/_fase_gioco.html:209
+#: templates/direttore/_fase_gioco.html:212
 #: templates/direttore/_fase_preparazione.html:136
 #: templates/direttore/impostazioni.html:26
 #: templates/gamification/admin/config_dashboard.html:75
@@ -6230,7 +6238,7 @@ msgstr "Show the details"
 #: templates/admin/gara_challenge_classification.html:61
 #: templates/admin/gara_challenge_classification.html:132
 #: templates/challenge/_challenge_card.html:65
-#: templates/components/_match_challenge_input.html:38
+#: templates/components/_match_challenge_input.html:40
 #: templates/components/_player_challenges.html:27
 #: templates/components/_player_challenges_dashboard.html:26
 #: templates/player/gara_challenge_detail.html:59
@@ -6238,7 +6246,7 @@ msgid "tentativi"
 msgstr "attempts"
 
 #: templates/admin/gara_challenge_classification.html:67
-#: templates/components/_match_challenge_input.html:39
+#: templates/components/_match_challenge_input.html:41
 msgid "migliore"
 msgstr "best"
 
@@ -6273,8 +6281,10 @@ msgstr "The tournament drills"
 
 #: templates/admin/gara_challenge_classification.html:120
 #: templates/components/_gara_challenges_display.html:24
-#: templates/components/_match_challenge_input.html:93
+#: templates/components/_match_challenge_input.html:95
+#: templates/components/_public_challenges.html:19
 #: templates/direttore/_classifica.html:26
+#: templates/direttore/_esercizi_turni.html:99
 #: templates/direttore/_fase_preparazione.html:76
 #: templates/direttore/preparazione/_esercizi.html:31
 #: templates/player/gara_challenge_detail.html:14
@@ -6285,10 +6295,12 @@ msgstr "after round %(n)s"
 
 #: templates/admin/gara_challenge_classification.html:122
 #: templates/components/_gara_challenges_display.html:26
-#: templates/components/_match_challenge_input.html:95
+#: templates/components/_match_challenge_input.html:97
 #: templates/components/_player_challenges_dashboard.html:30
 #: templates/components/_player_training.html:43
 #: templates/components/_public_challenges.html:21
+#: templates/direttore/_esercizi_turni.html:70
+#: templates/direttore/_esercizi_turni.html:99
 #: templates/direttore/preparazione/_esercizi.html:33
 #: templates/player/gara_challenge_detail.html:46
 #, python-format
@@ -7808,8 +7820,8 @@ msgstr "All Billiard Venues"
 #: templates/admin/venues_list.html:33
 #: templates/components/_gara_edit_form.html:231
 #: templates/components/_new_gara_modal.html:124
-#: templates/direttore/_fase_gioco.html:119
-#: templates/direttore/_fase_gioco.html:209
+#: templates/direttore/_fase_gioco.html:123
+#: templates/direttore/_fase_gioco.html:212
 #: templates/direttore/_fase_iscrizioni.html:121
 #: templates/direttore/_fase_preparazione.html:123
 #: templates/player/venues.html:29 templates/public/schermo_sala.html:103
@@ -8173,7 +8185,7 @@ msgstr "Best"
 #: templates/challenge/training.html:95 templates/challenge/training.html:150
 #: templates/challenge/training.html:193
 #: templates/components/_history_drills_tab.html:133
-#: templates/components/_match_challenge_input.html:52
+#: templates/components/_match_challenge_input.html:54
 #: templates/components/_player_challenge_statistics.html:55
 #: templates/components/_player_challenges.html:38
 #: templates/player/challenge_attempt_detail.html:78
@@ -8189,7 +8201,7 @@ msgstr "Passed"
 #: templates/challenge/training.html:99 templates/challenge/training.html:150
 #: templates/challenge/training.html:194
 #: templates/components/_history_drills_tab.html:133
-#: templates/components/_match_challenge_input.html:53
+#: templates/components/_match_challenge_input.html:55
 #: templates/components/_player_challenge_statistics.html:55
 #: templates/components/_player_challenges.html:38
 #: templates/player/challenge_attempt_detail.html:88
@@ -8217,7 +8229,7 @@ msgid "Aumenta"
 msgstr "Increase"
 
 #: templates/challenge/_training_board.html:84
-#: templates/components/_match_challenge_input.html:61
+#: templates/components/_match_challenge_input.html:63
 #: templates/exam/session.html:111
 msgid "Registra"
 msgstr "Record"
@@ -8409,7 +8421,7 @@ msgstr "Finish line"
 #: templates/direttore/_card_partita.html:199
 #: templates/direttore/_card_partita.html:206
 #: templates/direttore/_card_partita.html:209
-#: templates/direttore/_fase_gioco.html:214
+#: templates/direttore/_fase_gioco.html:217
 #: templates/direttore/_partite.html:25 templates/direttore/_partite.html:56
 #: templates/direttore/_scripts.html:84 templates/public/schermo_sala.html:89
 #: templates/public/schermo_sala.html:108
@@ -8945,7 +8957,7 @@ msgstr "just now"
 
 #: templates/challenge/training.html:196
 #: templates/components/_match_card.html:160
-#: templates/components/_match_challenge_input.html:57
+#: templates/components/_match_challenge_input.html:59
 #: templates/exam/session.html:109
 msgid "Punteggio"
 msgstr "Score"
@@ -10401,8 +10413,14 @@ msgid "Numero dispari"
 msgstr "Odd number"
 
 #: templates/components/_gara_info.html:71
-msgid "attive"
-msgstr "active"
+#: templates/components/_gara_inscriptions.html:97
+#: templates/direttore/_fase_gioco.html:247
+#: templates/direttore/_fase_spareggio.html:87
+#, python-format
+msgid "%(n)d attivo"
+msgid_plural "%(n)d attivi"
+msgstr[0] "%(n)d active"
+msgstr[1] "%(n)d active"
 
 #: templates/components/_gara_info.html:96
 #: templates/direttore/_fase_preparazione.html:120
@@ -10468,15 +10486,6 @@ msgstr "Adds %(n)s dummy players"
 #: templates/components/_gara_inscriptions.html:88
 msgid "Imposta un massimo di iscritti per usare «fino al massimo»."
 msgstr "Set a maximum number of entries to use \"fill to the maximum\"."
-
-#: templates/components/_gara_inscriptions.html:97
-#: templates/direttore/_fase_gioco.html:244
-#: templates/direttore/_fase_spareggio.html:87
-#, python-format
-msgid "%(n)d attivo"
-msgid_plural "%(n)d attivi"
-msgstr[0] "%(n)d active"
-msgstr[1] "%(n)d active"
 
 #: templates/components/_gara_inscriptions.html:98
 msgid "in attesa"
@@ -11394,45 +11403,47 @@ msgstr "Enter the result"
 msgid "Valida"
 msgstr "Validate"
 
-#: templates/components/_match_challenge_input.html:40
+#: templates/components/_match_challenge_input.html:42
+#: templates/direttore/_esercizi_turni.html:46
 msgid "nessun tentativo"
 msgstr "no attempts"
 
-#: templates/components/_match_challenge_input.html:46
+#: templates/components/_match_challenge_input.html:48
 #: templates/components/_player_challenges.html:52
 #: templates/player/gara_challenge_detail.html:113
 msgid "Tentativi finiti"
 msgstr "No attempts left"
 
-#: templates/components/_match_challenge_input.html:51
+#: templates/components/_match_challenge_input.html:53
 msgid "Esito…"
 msgstr "Outcome…"
 
-#: templates/components/_match_challenge_input.html:66
+#: templates/components/_match_challenge_input.html:68
 #, python-format
 msgid "I tentativi li registra %(who)s."
 msgstr "%(who)s records their own attempts."
 
-#: templates/components/_match_challenge_input.html:74
+#: templates/components/_match_challenge_input.html:76
 #: templates/components/_player_challenges.html:9
 #: templates/components/_public_challenges.html:8
 msgid "Esercizi della gara"
 msgstr "Tournament drills"
 
-#: templates/components/_match_challenge_input.html:127
+#: templates/components/_match_challenge_input.html:129
 msgid "Scrivi un punteggio."
 msgstr "Type a score."
 
-#: templates/components/_match_challenge_input.html:133
+#: templates/components/_match_challenge_input.html:135
 msgid "Scegli l'esito."
 msgstr "Choose the outcome."
 
-#: templates/components/_match_challenge_input.html:158
+#: templates/components/_match_challenge_input.html:165
+#: templates/direttore/_foglio_esercizio.html:76
 #: templates/player/gara_challenge_detail.html:213
 msgid "Non è stato possibile registrare il tentativo."
 msgstr "The attempt could not be recorded."
 
-#: templates/components/_match_challenge_input.html:164
+#: templates/components/_match_challenge_input.html:171
 #: templates/player/gara_challenge_detail.html:219
 msgid "Errore di rete: il tentativo non è stato registrato."
 msgstr "Network error: the attempt was not recorded."
@@ -11957,7 +11968,6 @@ msgstr "the 10 most recent out of %(n)s"
 
 #: templates/components/_player_challenges.html:24
 #: templates/components/_player_challenges_dashboard.html:28
-#: templates/components/_public_challenges.html:19
 #, python-format
 msgid "dal turno %(n)s"
 msgstr "from round %(n)s"
@@ -12821,7 +12831,7 @@ msgstr "Losers round %(num)s ready"
 #: templates/components/_tabellone_macros.html:52
 #: templates/components/_tabellone_macros.html:60
 #: templates/components/_tessera_gara.html:314
-#: templates/direttore/_fase_gioco.html:102
+#: templates/direttore/_fase_gioco.html:106
 #, python-format
 msgid "Avvia il turno %(n)s"
 msgstr "Start round %(n)s"
@@ -13234,12 +13244,12 @@ msgid "Avvia la gara"
 msgstr "Start the competition"
 
 #: templates/components/_tessera_gara.html:315
-#: templates/direttore/_fase_gioco.html:46
+#: templates/direttore/_fase_gioco.html:50
 msgid "Avvia lo spareggio"
 msgstr "Start the tiebreaker"
 
 #: templates/components/_tessera_gara.html:316
-#: templates/direttore/_fase_gioco.html:50
+#: templates/direttore/_fase_gioco.html:54
 #: templates/direttore/_fase_spareggio.html:38
 msgid "Termina la gara"
 msgstr "End the competition"
@@ -13961,7 +13971,9 @@ msgstr "In the standings it counts as a win and a rack difference of %(n)s."
 msgid ""
 "Il giocatore ha dichiarato questo punteggio. Finché non lo convalidi, il "
 "turno vale zero."
-msgstr "The player declared this score. Until you validate it, the round counts zero."
+msgstr ""
+"The player declared this score. Until you validate it, the round counts "
+"zero."
 
 #: templates/direttore/_card_partita.html:140
 msgid ""
@@ -14021,12 +14033,14 @@ msgid "Vai al segnapunti"
 msgstr "Go to the scoreboard"
 
 #: templates/direttore/_card_partita.html:290
-#, python-format
 msgid ""
 "Giocati tutti i triangoli dal segnapunti dei giocatori, senza le tre "
 "conferme. Se il punteggio non è quello, correggilo con − e + prima di "
 "validare."
-msgstr "All racks played from the players’ scoreboard, without the three confirmations. If the score is not right, fix it with − and + before validating."
+msgstr ""
+"All racks played from the players’ scoreboard, without the three "
+"confirmations. If the score is not right, fix it with − and + before "
+"validating."
 
 #: templates/direttore/_card_partita.html:291
 msgid "Così è un pareggio: nessuno vince la partita."
@@ -14213,6 +14227,69 @@ msgstr "Allowed dates"
 msgid "Pagina del campionato"
 msgstr "Championship page"
 
+#: templates/direttore/_esercizi_turni.html:47
+#, python-format
+msgid "%(n)d tentativo su %(tot)d"
+msgid_plural "%(n)d tentativi su %(tot)d"
+msgstr[0] "%(n)d attempt of %(tot)d"
+msgstr[1] "%(n)d attempts of %(tot)d"
+
+#: templates/direttore/_esercizi_turni.html:48
+msgid "finiti"
+msgstr "used up"
+
+#: templates/direttore/_esercizi_turni.html:52
+msgid "da fare"
+msgstr "to do"
+
+#: templates/direttore/_esercizi_turni.html:54
+#: templates/direttore/_foglio_esercizio.html:30
+msgid "Riuscito"
+msgstr "Made it"
+
+#: templates/direttore/_esercizi_turni.html:55
+#: templates/direttore/_foglio_esercizio.html:34
+msgid "Non riuscito"
+msgstr "Missed"
+
+#: templates/direttore/_esercizi_turni.html:56
+msgid "il migliore"
+msgstr "best"
+
+#: templates/direttore/_esercizi_turni.html:65
+#, python-format
+msgid "Esercizio dopo il turno %(n)s"
+msgstr "Drill after round %(n)s"
+
+#: templates/direttore/_esercizi_turni.html:66
+#, python-format
+msgid "%(n)d da registrare"
+msgid_plural "%(n)d da registrare"
+msgstr[0] "%(n)d to record"
+msgstr[1] "%(n)d to record"
+
+#: templates/direttore/_esercizi_turni.html:72
+msgid "riuscito o no"
+msgstr "made or missed"
+
+#: templates/direttore/_esercizi_turni.html:73
+#, python-format
+msgid "a punteggio, fino a %(n)s"
+msgstr "scored, up to %(n)s"
+
+#: templates/direttore/_esercizi_turni.html:74
+msgid "a punteggio, conta il migliore"
+msgstr "scored, best one counts"
+
+#: templates/direttore/_esercizi_turni.html:95
+#: templates/direttore/_fase_preparazione.html:73
+#: templates/direttore/_fase_preparazione.html:116
+#: templates/direttore/impostazioni.html:75
+#: templates/direttore/preparazione.html:18
+#: templates/direttore/preparazione/_esercizi.html:18
+msgid "Esercizi fra i turni"
+msgstr "Drills between rounds"
+
 #: templates/direttore/_fase_conclusa.html:24
 msgid "Non si è giocata"
 msgstr "It was not played"
@@ -14296,28 +14373,28 @@ msgid_plural "elenco definitivo · %(n)d"
 msgstr[0] "final list · %(n)d"
 msgstr[1] "final list · %(n)d"
 
-#: templates/direttore/_fase_gioco.html:26
+#: templates/direttore/_fase_gioco.html:30
 #, python-format
 msgid "Tutte le %(n)s partite concluse"
 msgstr "All %(n)s matches finished"
 
-#: templates/direttore/_fase_gioco.html:27
+#: templates/direttore/_fase_gioco.html:31
 #, python-format
 msgid "Tabellone concluso · %(n)d turno giocato"
 msgid_plural "Tabellone concluso · %(n)d turni giocati"
 msgstr[0] "Bracket finished · %(n)d round played"
 msgstr[1] "Bracket finished · %(n)d rounds played"
 
-#: templates/direttore/_fase_gioco.html:28
+#: templates/direttore/_fase_gioco.html:32
 #, python-format
 msgid "Tutti i %(n)s turni conclusi"
 msgstr "All %(n)s rounds finished"
 
-#: templates/direttore/_fase_gioco.html:31
+#: templates/direttore/_fase_gioco.html:35
 msgid "Serve uno spareggio"
 msgstr "A tiebreaker is needed"
 
-#: templates/direttore/_fase_gioco.html:33
+#: templates/direttore/_fase_gioco.html:37
 #, python-format
 msgid ""
 "Ci sono giocatori a pari merito fino al %(pos)s° posto. Lo spareggio si "
@@ -14326,53 +14403,55 @@ msgstr ""
 "Some players are tied up to %(pos)s place. The tiebreaker is a Spot Shot "
 "Rally: you enter the points."
 
-#: templates/direttore/_fase_gioco.html:36
+#: templates/direttore/_fase_gioco.html:40
 #: templates/direttore/_fase_spareggio.html:25
 msgid "Puoi chiudere la gara"
 msgstr "You can close the competition"
 
-#: templates/direttore/_fase_gioco.html:38
+#: templates/direttore/_fase_gioco.html:42
 #: templates/direttore/_fase_spareggio.html:67
 msgid "La classifica diventa definitiva e i giocatori ricevono la notifica."
 msgstr "The standings become final and the players are notified."
+"The standings become final, the points go to the championship and the "
+"players are notified."
 
-#: templates/direttore/_fase_gioco.html:60
+#: templates/direttore/_fase_gioco.html:64
 msgid "Parimerito"
 msgstr "Tied"
 
-#: templates/direttore/_fase_gioco.html:60
+#: templates/direttore/_fase_gioco.html:64
 #: templates/direttore/_fase_spareggio.html:76
 #, python-format
 msgid "fino al %(pos)s° posto"
 msgstr "up to place %(pos)s"
 
-#: templates/direttore/_fase_gioco.html:63
+#: templates/direttore/_fase_gioco.html:67
 #, python-format
 msgid "%(pos)s° posto a pari merito"
 msgstr "tied for place %(pos)s"
 
-#: templates/direttore/_fase_gioco.html:73
+#: templates/direttore/_fase_gioco.html:77
 #, python-format
 msgid "Azzera i risultati del turno %(n)s"
 msgstr "Reset the results of round %(n)s"
 
-#: templates/direttore/_fase_gioco.html:75
+#: templates/direttore/_fase_gioco.html:79
 msgid ""
 "Se un punteggio è sbagliato, correggilo prima dello spareggio o della "
 "chiusura."
 msgstr "If a score is wrong, fix it before the tiebreaker or the closing."
 
-#: templates/direttore/_fase_gioco.html:85
+#: templates/direttore/_fase_gioco.html:89
 #, python-format
 msgid "Turno %(n)s di %(tot)s · concluso"
 msgstr "Round %(n)s of %(tot)s · finished"
 
-#: templates/direttore/_fase_gioco.html:86
+#: templates/direttore/_fase_gioco.html:90
 #, python-format
 msgid "Puoi avviare il turno %(n)s"
 msgstr "You can start round %(n)s"
 
-#: templates/direttore/_fase_gioco.html:89
+#: templates/direttore/_fase_gioco.html:93
 msgid ""
 "La finale l’ha vinta chi arrivava dai ripescati. Nel doppio KO si esce "
 "alla seconda sconfitta, quindi i due si rigiocano la partita da pari."
@@ -14381,21 +14460,21 @@ msgstr ""
 " elimination you are out at the second defeat, so the two replay the "
 "match on level terms."
 
-#: templates/direttore/_fase_gioco.html:91
-#: templates/direttore/_fase_gioco.html:93
+#: templates/direttore/_fase_gioco.html:95
+#: templates/direttore/_fase_gioco.html:97
 msgid "Tutte le partite del turno sono chiuse."
 msgstr "Every match of the round is closed."
 
-#: templates/direttore/_fase_gioco.html:91
+#: templates/direttore/_fase_gioco.html:95
 msgid "Gli incroci sono già fissati dal tabellone."
 msgstr "The pairings are already fixed by the bracket."
 
-#: templates/direttore/_fase_gioco.html:96
+#: templates/direttore/_fase_gioco.html:100
 #, python-format
 msgid "Gli abbinamenti del turno %(n)s sono già fissati dal sorteggio iniziale."
 msgstr "The pairings of round %(n)s were already fixed by the initial draw."
 
-#: templates/direttore/_fase_gioco.html:97
+#: templates/direttore/_fase_gioco.html:101
 #, python-format
 msgid ""
 "Gli abbinamenti del turno %(n)s si calcolano all’avvio, sulla classifica "
@@ -14404,73 +14483,73 @@ msgstr ""
 "The pairings of round %(n)s are computed at the start, on the current "
 "standings."
 
-#: templates/direttore/_fase_gioco.html:112
+#: templates/direttore/_fase_gioco.html:116
 #: templates/public/schermo_sala.html:53
 #, python-format
 msgid "Turno %(n)s di %(tot)s"
 msgstr "Round %(n)s of %(tot)s"
 
-#: templates/direttore/_fase_gioco.html:115
+#: templates/direttore/_fase_gioco.html:119
 msgid "partite chiuse"
 msgstr "matches closed"
 
-#: templates/direttore/_fase_gioco.html:135
+#: templates/direttore/_fase_gioco.html:139
 #: templates/direttore/_simulazione.html:17
 msgid "Simulazione"
 msgstr "Simulation"
 
-#: templates/direttore/_fase_gioco.html:135
+#: templates/direttore/_fase_gioco.html:139
 msgid "solo nelle prove"
 msgstr "trials only"
 
-#: templates/direttore/_fase_gioco.html:137
+#: templates/direttore/_fase_gioco.html:141
 msgid "Fai giocare i fittizi"
 msgstr "Make the fictitious players play"
 
-#: templates/direttore/_fase_gioco.html:137
+#: templates/direttore/_fase_gioco.html:141
 msgid "una partita, il turno o tutta la gara"
 msgstr "one match, the round or the whole competition"
 
-#: templates/direttore/_fase_gioco.html:150
+#: templates/direttore/_fase_gioco.html:154
 msgid "Da fare adesso"
 msgstr "To do now"
 
-#: templates/direttore/_fase_gioco.html:153
+#: templates/direttore/_fase_gioco.html:157
 #, python-format
 msgid "%(n)d risultato da validare"
 msgid_plural "%(n)d risultati da validare"
 msgstr[0] "%(n)d result to validate"
 msgstr[1] "%(n)d results to validate"
 
-#: templates/direttore/_fase_gioco.html:154
+#: templates/direttore/_fase_gioco.html:158
 msgid "chiuso dal segnapunti dei giocatori senza la doppia conferma"
 msgstr "closed from the players’ scoreboard without the double confirmation"
 
-#: templates/direttore/_fase_gioco.html:157
+#: templates/direttore/_fase_gioco.html:161
 #, python-format
 msgid "%(n)d partita aspetta un tavolo"
 msgid_plural "%(n)d partite aspettano un tavolo"
 msgstr[0] "%(n)d match is waiting for a table"
 msgstr[1] "%(n)d matches are waiting for a table"
 
-#: templates/direttore/_fase_gioco.html:158
+#: templates/direttore/_fase_gioco.html:162
 msgid "nessun tavolo libero: si assegna da sé quando uno si libera"
 msgstr "no free table: it gets assigned on its own when one frees up"
 
-#: templates/direttore/_fase_gioco.html:158
+#: templates/direttore/_fase_gioco.html:162
 msgid "c’è un tavolo libero: assegnalo dalla card"
 msgstr "there is a free table: assign it from the card"
 
-#: templates/direttore/_fase_gioco.html:199
+#: templates/direttore/_fase_gioco.html:202
 #: templates/public/schermo_sala.html:22
 msgid "Schermo in sala"
 msgstr "Room screen"
 
-#: templates/direttore/_fase_gioco.html:199
+#: templates/direttore/_fase_gioco.html:202
 msgid "da aprire sulla TV della sala: tavoli e classifica, senza menu"
 msgstr "to open on the venue TV: tables and standings, no menus"
 
-#: templates/direttore/_fase_gioco.html:216
+#: templates/direttore/_fase_gioco.html:219
 msgid "libero"
 msgstr "free"
 
@@ -14615,14 +14694,6 @@ msgstr "Edit rounds and drills"
 msgid "modificato"
 msgstr "changed"
 
-#: templates/direttore/_fase_preparazione.html:73
-#: templates/direttore/_fase_preparazione.html:116
-#: templates/direttore/impostazioni.html:75
-#: templates/direttore/preparazione.html:18
-#: templates/direttore/preparazione/_esercizi.html:18
-msgid "Esercizi fra i turni"
-msgstr "Drills between rounds"
-
 #: templates/direttore/_fase_preparazione.html:77
 msgid "classifica a parte"
 msgstr "separate standings"
@@ -14766,6 +14837,45 @@ msgstr ""
 #: templates/direttore/_fase_spareggio.html:66
 msgid "Terminare blocca la gara"
 msgstr "Ending locks the competition"
+
+#: templates/direttore/_foglio_esercizio.html:40
+msgid "Punteggio del tentativo"
+msgstr "Attempt score"
+
+#: templates/direttore/_foglio_esercizio.html:43
+msgid "Un punto in meno"
+msgstr "One point less"
+
+#: templates/direttore/_foglio_esercizio.html:48
+msgid "Un punto in più"
+msgstr "One point more"
+
+#: templates/direttore/_foglio_esercizio.html:55
+#: templates/player/gara_challenge_detail.html:152
+msgid "Registra il tentativo"
+msgstr "Record the attempt"
+
+#: templates/direttore/_foglio_esercizio.html:71
+#, python-brace-format
+msgid "tentativo {n} di {tot}"
+msgstr "attempt {n} of {tot}"
+
+#: templates/direttore/_foglio_esercizio.html:72
+#, python-brace-format
+msgid "da 0 a {n}"
+msgstr "from 0 to {n}"
+
+#: templates/direttore/_foglio_esercizio.html:73
+msgid "da 0 in su"
+msgstr "from 0 up"
+
+#: templates/direttore/_foglio_esercizio.html:74
+msgid "Conta il migliore dei tentativi. Un tentativo registrato non si toglie."
+msgstr "The best attempt counts. A recorded attempt cannot be removed."
+
+#: templates/direttore/_foglio_esercizio.html:75
+msgid "Tocca l’esito: il tentativo si registra subito, e non si toglie."
+msgstr "Tap the result: the attempt is recorded at once and cannot be removed."
 
 #: templates/direttore/_macros.html:58
 msgid "Il playoff decide la classifica finale del campionato."
@@ -19343,10 +19453,6 @@ msgstr "How it went…"
 #: templates/player/gara_challenge_detail.html:114
 msgid "Hai usato tutti i tentativi previsti per questo esercizio."
 msgstr "You have used every attempt allowed for this drill."
-
-#: templates/player/gara_challenge_detail.html:152
-msgid "Registra il tentativo"
-msgstr "Record the attempt"
 
 #: templates/player/gara_challenge_detail.html:201
 #: templates/player/notifications.html:116

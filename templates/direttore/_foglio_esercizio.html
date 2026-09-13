@@ -1,0 +1,137 @@
+{# templates/direttore/_foglio_esercizio.html — Design System 7c
+
+   Il foglio per registrare un tentativo di un esercizio fra i turni, dalla
+   riga del giocatore (`_esercizi_turni.html`). Un foglio solo per tutte le
+   righe: `apriTentativoEsercizio(riga)` lo riempie dai suoi `data-*`, come
+   il menu della partita.
+
+   Due forme, le stesse dell'allenamento: a esito i due tasti grandi
+   «Riuscito» / «Non riuscito» registrano al tocco; a punteggio lo stepper
+   da 48px della card (`static/js/card_partita.js`, forma `x`, che non salva
+   da sola) e «Registra il tentativo». Il tetto e' `Challenge.max_score`;
+   senza tetto il + non si spegne mai (9999 fa da infinito).
+
+   Salva con l'endpoint di chi dirige, `admin.match.record_challenge_attempt`,
+   che passa da `GaraChallengeService.record_challenge_attempt`: tentativi
+   massimi e tetto li controlla il servizio. Una sola inclusione per pagina:
+   contiene id e uno script. #}
+<div class="modal fade c7-sheet" id="tentativoEsercizioModal" tabindex="-1" aria-labelledby="tentativoEsercizioTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="tentativoEsercizioTitolo"></h3>
+        <div class="c7-sheet__sub" id="tentativoEsercizioSotto"></div>
+      </div>
+      <div class="modal-body c7-stack">
+        <div class="c7-grid c7-esercizio-esito" id="tentativoEsito" hidden>
+          <button type="button" class="c7-bigbtn c7-bigbtn--ok" data-esito="true" onclick="registraTentativoEsercizio(this)">
+            <i class="fas fa-check"></i>
+            <span>{{ _('Riuscito') }}</span>
+          </button>
+          <button type="button" class="c7-bigbtn c7-bigbtn--no" data-esito="false" onclick="registraTentativoEsercizio(this)">
+            <i class="fas fa-xmark"></i>
+            <span>{{ _('Non riuscito') }}</span>
+          </button>
+        </div>
+
+        <div id="tentativoPunteggio" hidden>
+          <div class="c7-partita__lato c7-partita__lato--stepper c7-esercizio-stepper" data-tipo="x" data-punti="0" data-max="9999">
+            <div class="c7-kicker">{{ _('Punteggio del tentativo') }}</div>
+            <div class="c7-partita__step">
+              <button type="button" class="c7-partita__meno" data-lato="1" onclick="passoPunteggio(this, -1)"
+                      aria-label="{{ _('Un punto in meno') }}" disabled>
+                <i class="fas fa-minus"></i>
+              </button>
+              <span class="c7-partita__num c7-num" data-num="1">0</span>
+              <button type="button" class="c7-partita__piu" data-lato="1" onclick="passoPunteggio(this, 1)"
+                      aria-label="{{ _('Un punto in più') }}">
+                <i class="fas fa-plus"></i>
+              </button>
+            </div>
+            <div class="c7-partita__etichetta" id="tentativoTetto"></div>
+          </div>
+          <button type="button" class="btn btn-success w-100" style="margin-top:12px" onclick="registraTentativoEsercizio(this)">
+            <i class="fas fa-check"></i> {{ _('Registra il tentativo') }}
+          </button>
+        </div>
+
+        <div class="c7-nota" id="tentativoNota"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  const URL_TENTATIVO = {{ url_for('admin.match.record_challenge_attempt')|tojson }};
+  const TURNO = {{ (gara.display_round or gara.current_round or 0)|tojson }};
+  const I18N = {
+    // Segnaposto in stile JS: li sostituisce lo script, non Babel.
+    tentativo: {{ _('tentativo {n} di {tot}')|tojson }},
+    tetto: {{ _('da 0 a {n}')|tojson }},
+    senzaTetto: {{ _('da 0 in su')|tojson }},
+    notaPunteggio: {{ _('Conta il migliore dei tentativi. Un tentativo registrato non si toglie.')|tojson }},
+    notaEsito: {{ _('Tocca l’esito: il tentativo si registra subito, e non si toglie.')|tojson }},
+    errore: {{ _('Non è stato possibile registrare il tentativo.')|tojson }}
+  };
+  let corrente = null;
+
+  function foglio() {
+    return bootstrap.Modal.getOrCreateInstance(document.getElementById('tentativoEsercizioModal'));
+  }
+
+  function stepper() {
+    return document.querySelector('#tentativoPunteggio [data-tipo]');
+  }
+
+  window.apriTentativoEsercizio = function (riga) {
+    const d = riga.dataset;
+    const aEsito = d.aEsito === '1';
+    corrente = { esercizio: parseInt(d.esercizioId, 10), utente: parseInt(d.userId, 10), aEsito: aEsito };
+
+    document.getElementById('tentativoEsercizioTitolo').textContent = d.nome;
+    document.getElementById('tentativoEsercizioSotto').textContent = d.esercizioNome + ' · ' +
+      I18N.tentativo.replace('{n}', String(parseInt(d.fatti, 10) + 1)).replace('{tot}', d.massimo);
+    document.getElementById('tentativoEsito').hidden = !aEsito;
+    document.getElementById('tentativoPunteggio').hidden = aEsito;
+    document.getElementById('tentativoNota').textContent = aEsito ? I18N.notaEsito : I18N.notaPunteggio;
+
+    const lato = stepper();
+    lato.dataset.punti = '0';
+    lato.dataset.max = d.punteggioMassimo || '9999';
+    document.getElementById('tentativoTetto').textContent = d.punteggioMassimo
+      ? I18N.tetto.replace('{n}', d.punteggioMassimo) : I18N.senzaTetto;
+    window.CardPartita.aggiorna(lato);
+
+    foglio().show();
+  };
+
+  window.registraTentativoEsercizio = function (btn) {
+    if (!corrente) return;
+    const dati = { gara_challenge_id: corrente.esercizio, user_id: corrente.utente, round_when_attempted: TURNO };
+    if (corrente.aEsito) dati.passed = btn.dataset.esito === 'true';
+    else dati.score = window.CardPartita.punti(stepper())[0] || 0;
+
+    const restore = withLoading(btn);
+    fetch(URL_TENTATIVO, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
+      body: JSON.stringify(dati)
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (esito) {
+        if (esito.ok && esito.d && esito.d.success) {
+          location.replace(location.href);
+        } else {
+          showError((esito.d && esito.d.error) || I18N.errore);
+          restore();
+        }
+      })
+      .catch(function () {
+        showError(I18N.errore);
+        restore();
+      });
+  };
+})();
+</script>

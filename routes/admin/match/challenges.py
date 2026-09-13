@@ -4,11 +4,42 @@ from flask import (
     request,
     jsonify,
 )
+from flask_babel import _
 from flask_login import current_user, login_required
 
 from utils.route_helpers import safe_json_error
 
 from . import match_bp
+
+
+def _rifiuto_se_non_gioca(gara_challenge, user_id):
+    """400 JSON se `user_id` non e' un iscritto attivo della gara.
+
+    Chi dirige registra il tentativo **per** un giocatore, e l'id arriva nel
+    payload: senza questo controllo un tentativo poteva finire su chiunque,
+    anche su chi non e' iscritto — fuori da ogni classifica, ma con l'evento
+    di gamification che gli assegna XP.
+    """
+    from models.competition.models import Inscription
+
+    iscritto = (
+        Inscription.query.filter_by(
+            gara_id=gara_challenge.gara_id, user_id=user_id, is_withdrawn=False
+        )
+        .filter(Inscription.is_waitlist.is_(False))
+        .first()
+    )
+    if iscritto is None:
+        return (
+            jsonify(
+                {
+                    "success": False,
+                    "error": _("Il giocatore non gioca questa gara"),
+                }
+            ),
+            400,
+        )
+    return None
 
 
 def _forbidden_unless_gara_manager(gara_id):
@@ -68,6 +99,10 @@ def record_challenge_attempt():
         forbidden = _forbidden_unless_gara_manager(gara_challenge.gara_id)
         if forbidden:
             return forbidden
+
+        rifiuto = _rifiuto_se_non_gioca(gara_challenge, data["user_id"])
+        if rifiuto:
+            return rifiuto
 
         # Gli esercizi fra i turni valgono con ogni formula a turni.
         if not gara_challenge.gara.ammette_esercizi_fra_i_turni:
@@ -166,6 +201,13 @@ def record_challenge_attempts():
             forbidden = _forbidden_unless_gara_manager(gara_challenge.gara_id)
             if forbidden:
                 return forbidden
+            for attempt_data in attempts_data:
+                if attempt_data["gara_challenge_id"] == gc_id:
+                    rifiuto = _rifiuto_se_non_gioca(
+                        gara_challenge, attempt_data["user_id"]
+                    )
+                    if rifiuto:
+                        return rifiuto
 
         # Record all attempts
         recorded_attempts = GaraChallengeService.record_multiple_attempts(
