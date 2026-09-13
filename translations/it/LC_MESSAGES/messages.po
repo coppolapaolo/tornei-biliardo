@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 12:13+0200\n"
+"POT-Creation-Date: 2026-09-13 12:20+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -77,7 +77,7 @@ msgstr ""
 #: templates/components/_match_result_row.html:108
 #: templates/components/_match_scoreboard.html:252
 #: templates/components/_tessera_gara.html:31
-#: templates/direttore/_card_partita.html:105
+#: templates/direttore/_card_partita.html:188
 msgid "Conclusa"
 msgstr ""
 
@@ -100,8 +100,8 @@ msgstr ""
 #: templates/components/_round_navigation.html:26
 #: templates/components/_sfide_in_corso.html:59
 #: templates/components/_tessera_gara.html:35
-#: templates/direttore/_card_partita.html:104
-#: templates/direttore/_menu_turno.html:24 templates/direttore/_partite.html:71
+#: templates/direttore/_card_partita.html:187
+#: templates/direttore/_menu_turno.html:24 templates/direttore/_partite.html:77
 #: templates/individual_match/dashboard.html:115
 #: templates/individual_match/matches.html:38
 #: templates/individual_match/matches.html:99
@@ -134,8 +134,8 @@ msgstr ""
 #: templates/components/_match_result_row.html:94
 #: templates/components/_match_result_row.html:96
 #: templates/components/_match_status_labels.html:22
-#: templates/direttore/_card_partita.html:106
-#: templates/direttore/_partite.html:73
+#: templates/direttore/_card_partita.html:189
+#: templates/direttore/_partite.html:79
 #: templates/individual_match/dashboard.html:103
 #: templates/individual_match/matches.html:37
 #: templates/individual_match/matches.html:107 utils/status_ui.py:180
@@ -301,6 +301,7 @@ msgid ""
 msgstr ""
 
 #: models/competition/showcase_view.py:196
+#: templates/direttore/_card_partita.html:261
 #, python-format
 msgid "al %(n)s"
 msgstr ""
@@ -1636,7 +1637,9 @@ msgstr ""
 msgid "Apre chi ha perso il triangolo prima."
 msgstr ""
 
-#: models/match/correction_service.py:61 routes/admin/match/scoring.py:123
+#: models/match/correction_service.py:61
+#: models/match/trio_scoring_service.py:357
+#: routes/admin/competition/matches.py:190 routes/admin/match/scoring.py:123
 #: routes/admin/match/scoring.py:146
 msgid "Partita non trovata"
 msgstr ""
@@ -1651,24 +1654,30 @@ msgid ""
 "dei tre giocatori"
 msgstr ""
 
-#: models/match/correction_service.py:75
+#: models/match/correction_service.py:81
+msgid ""
+"Le partite a set si correggono dal loro segnapunti, che tiene il "
+"punteggio di ogni set"
+msgstr ""
+
+#: models/match/correction_service.py:87
 msgid "Questa partita non appartiene a una gara"
 msgstr ""
 
-#: models/match/correction_service.py:161
+#: models/match/correction_service.py:173
 msgid "I triangoli non possono essere negativi"
 msgstr ""
 
-#: models/match/correction_service.py:171
+#: models/match/correction_service.py:183
 #, python-format
 msgid "In una partita al %(n)s la vince chi arriva a %(n)s triangoli"
 msgstr ""
 
-#: models/match/correction_service.py:179
+#: models/match/correction_service.py:191
 msgid "Non possono arrivarci tutti e due: uno solo vince"
 msgstr ""
 
-#: models/match/correction_service.py:189
+#: models/match/correction_service.py:201
 #, python-format
 msgid ""
 "Si giocano esattamente %(n)s triangoli: la somma dei due punteggi deve "
@@ -1705,6 +1714,25 @@ msgstr ""
 msgid "ogni set esattamente %(n)s triangoli"
 msgstr ""
 
+#: models/match/match_service.py:698 routes/admin/match/multi_set.py:204
+msgid "Questa non è una partita a set."
+msgstr ""
+
+#: models/match/match_service.py:701
+msgid "Il set non è in corso: inizia il prossimo."
+msgstr ""
+
+#: models/match/match_service.py:705 routes/admin/competition/matches.py:199
+#: routes/admin/match/multi_set.py:211 routes/admin/match/scoring.py:115
+#: routes/admin/match/scoring.py:284
+msgid "Punteggio non valido."
+msgstr ""
+
+#: models/match/match_service.py:713
+#, python-format
+msgid "Il set si gioca al %(n)s: il punteggio va oltre."
+msgstr ""
+
 #: models/match/opening_service.py:48
 msgid "Questa partita non si decide con l'acchito: apre il primo giocatore."
 msgstr ""
@@ -1730,6 +1758,21 @@ msgstr ""
 msgid ""
 "Il risultato è già stato validato: per correggerlo serve il direttore di "
 "gara"
+msgstr ""
+
+#: models/match/trio_scoring_service.py:360
+msgid "La partita è chiusa: si cambia azzerandola dal segnapunti."
+msgstr ""
+
+#: models/match/trio_scoring_service.py:371
+#, python-format
+msgid "Nel trio ognuno gioca %(n)s triangoli: non se ne vincono di più."
+msgstr ""
+
+#: models/match/trio_scoring_service.py:378
+msgid ""
+"Questo punteggio non torna con l'ordine del girone: il primo triangolo è "
+"fra il primo e il secondo giocatore, il secondo fra il primo e il terzo."
 msgstr ""
 
 #: models/notification/factory.py:386
@@ -2585,6 +2628,11 @@ msgstr ""
 msgid "Un giocatore fittizio gioca solo nella sua prova."
 msgstr ""
 
+#: routes/admin/competition/matches.py:144
+#: routes/admin/competition/matches.py:204
+msgid "La partita è chiusa: per cambiarla azzerala dal segnapunti."
+msgstr ""
+
 #: routes/admin/competition/prova.py:47
 msgid "Niente da aggiungere: gli iscritti sono già quelli."
 msgstr ""
@@ -2646,15 +2694,15 @@ msgstr ""
 msgid "Errore interno del server"
 msgstr ""
 
-#: routes/admin/competition/rounds.py:1120
+#: routes/admin/competition/rounds.py:1121
 msgid "Il punteggio deve essere un numero."
 msgstr ""
 
-#: routes/admin/competition/rounds.py:1131
+#: routes/admin/competition/rounds.py:1147
 msgid "Prova convalidata: il punteggio è in classifica."
 msgstr ""
 
-#: routes/admin/competition/rounds.py:1152
+#: routes/admin/competition/rounds.py:1194
 msgid "Prova azzerata: il turno torna a valere zero."
 msgstr ""
 
@@ -2723,15 +2771,15 @@ msgstr ""
 msgid "Locandina rimossa: la gara torna a usare quella del campionato, se c'è."
 msgstr ""
 
-#: routes/admin/match/scoring.py:115 routes/admin/match/scoring.py:284
-msgid "Punteggio non valido."
+#: routes/admin/match/multi_set.py:215
+msgid "La partita è chiusa: si cambia dal segnapunti."
 msgstr ""
 
 #: routes/admin/match/scoring.py:130
 msgid "Questa partita si segna dal suo segnapunti."
 msgstr ""
 
-#: routes/admin/match/scoring.py:133
+#: routes/admin/match/scoring.py:133 utils/card_partita.py:28
 msgid "La partita è chiusa: si cambia con «Correggi il risultato»."
 msgstr ""
 
@@ -3385,8 +3433,10 @@ msgstr ""
 #: templates/components/_unified_rack_input.html:23
 #: templates/components/_user_recent_matches_table.html:32
 #: templates/components/_user_recent_matches_table.html:73
-#: templates/direttore/_card_partita.html:43
-#: templates/direttore/_partite.html:33 templates/direttore/_tabellino.html:38
+#: templates/direttore/_card_partita.html:70
+#: templates/direttore/_card_partita.html:93
+#: templates/direttore/_card_partita.html:103
+#: templates/direttore/_partite.html:39 templates/direttore/_tabellino.html:38
 #: templates/match_detail.html:13 templates/match_detail.html:50
 #: templates/match_detail.html:106 templates/public/schermo_sala.html:98
 #: utils/jinja.py:438
@@ -8084,12 +8134,12 @@ msgstr ""
 #: templates/components/_match_result_row.html:121
 #: templates/components/_match_result_row.html:146
 #: templates/components/_tessera_gara.html:167
-#: templates/direttore/_card_partita.html:99
-#: templates/direttore/_card_partita.html:110
-#: templates/direttore/_card_partita.html:117
-#: templates/direttore/_card_partita.html:120
+#: templates/direttore/_card_partita.html:181
+#: templates/direttore/_card_partita.html:199
+#: templates/direttore/_card_partita.html:206
+#: templates/direttore/_card_partita.html:209
 #: templates/direttore/_fase_gioco.html:220
-#: templates/direttore/_partite.html:25 templates/direttore/_partite.html:50
+#: templates/direttore/_partite.html:25 templates/direttore/_partite.html:56
 #: templates/direttore/_scripts.html:87 templates/public/schermo_sala.html:89
 #: templates/public/schermo_sala.html:108
 msgid "Tavolo"
@@ -8621,7 +8671,7 @@ msgstr ""
 #: templates/challenge/training.html:196
 #: templates/components/_match_card.html:160
 #: templates/components/_match_challenge_input.html:57
-#: templates/direttore/_card_partita.html:76 templates/exam/session.html:109
+#: templates/exam/session.html:109
 msgid "Punteggio"
 msgstr ""
 
@@ -10171,9 +10221,10 @@ msgstr ""
 #: templates/components/_match_cards_mobile.html:43
 #: templates/components/_match_cards_mobile.html:64
 #: templates/components/_tabellone_macros.html:25
-#: templates/direttore/_card_partita.html:99
+#: templates/direttore/_card_partita.html:104
+#: templates/direttore/_card_partita.html:181
 #: templates/direttore/_fase_preparazione.html:58
-#: templates/direttore/_partite.html:25 templates/direttore/_partite.html:67
+#: templates/direttore/_partite.html:25 templates/direttore/_partite.html:73
 #: templates/direttore/preparazione/_turni.html:46
 #: templates/direttore/preparazione/_turni.html:67
 #: templates/public/schermo_sala.html:234
@@ -10183,14 +10234,14 @@ msgstr ""
 
 #: templates/components/_gara_matches.html:54
 #: templates/components/_match_cards_mobile.html:49
-#: templates/direttore/_partite.html:76
+#: templates/direttore/_partite.html:82
 #, python-format
 msgid "Menu del turno %(num)s"
 msgstr ""
 
 #: templates/components/_gara_matches.html:54
 #: templates/components/_match_cards_mobile.html:49
-#: templates/direttore/_partite.html:76
+#: templates/direttore/_partite.html:82
 msgid "Menu del turno"
 msgstr ""
 
@@ -10206,7 +10257,7 @@ msgstr ""
 #: templates/components/_history_campionati_tab.html:26
 #: templates/components/_match_cards_mobile.html:65
 #: templates/components/_match_status_labels.html:24
-#: templates/direttore/_partite.html:72
+#: templates/direttore/_partite.html:78
 #: templates/individual_match/match_detail.html:229
 #: templates/individual_match/matches.html:102
 #: templates/public/schermo_sala.html:235
@@ -10788,7 +10839,7 @@ msgstr ""
 #: templates/direttore/_menu_partita.html:22
 #: templates/direttore/_modali_gioco.html:165
 #: templates/direttore/_modali_gioco.html:194
-#: templates/direttore/_partite.html:54
+#: templates/direttore/_partite.html:60
 msgid "Correggi il risultato"
 msgstr ""
 
@@ -10906,52 +10957,48 @@ msgid "Trio"
 msgstr ""
 
 #: templates/components/_match_card.html:57
-#: templates/direttore/_card_partita.html:123
+#: templates/direttore/_card_partita.html:212
 msgid "Assegna tavolo"
 msgstr ""
 
 #: templates/components/_match_card.html:68
-#: templates/direttore/_card_partita.html:128
+#: templates/direttore/_card_partita.html:101
+#: templates/direttore/_card_partita.html:218
 msgid "Menu della partita"
 msgstr ""
 
 #: templates/components/_match_card.html:143
-#: templates/direttore/_card_partita.html:60
 msgid "Prova al posto della X"
 msgstr ""
 
 #: templates/components/_match_card.html:146
-#: templates/direttore/_card_partita.html:63
+#: templates/direttore/_card_partita.html:95
 msgid "Convalidata"
 msgstr ""
 
 #: templates/components/_match_card.html:152
-#: templates/direttore/_card_partita.html:68
 msgid "Azzerare la prova? Il turno torna a valere zero."
 msgstr ""
 
 #: templates/components/_match_card.html:152
 #: templates/components/_match_card.html:222
 #: templates/components/_match_card.html:226
-#: templates/direttore/_card_partita.html:68
 #: templates/public/campionatos_list.html:35
 msgid "Azzera"
 msgstr ""
 
 #: templates/components/_match_card.html:166
-#: templates/direttore/_card_partita.html:81
+#: templates/direttore/_card_partita.html:136
 msgid "Convalida"
 msgstr ""
 
 #: templates/components/_match_card.html:170
-#: templates/direttore/_card_partita.html:84
 msgid ""
 "Il giocatore ha dichiarato un punteggio. Finché non lo convalidi, il "
 "turno vale zero."
 msgstr ""
 
 #: templates/components/_match_card.html:172
-#: templates/direttore/_card_partita.html:85
 msgid ""
 "Il giocatore non ha ancora registrato la prova. Puoi farlo tu al posto "
 "suo."
@@ -11054,15 +11101,15 @@ msgid "Informazioni partita"
 msgstr ""
 
 #: templates/components/_match_result_row.html:76
-#: templates/direttore/_card_partita.html:196
+#: templates/direttore/_card_partita.html:317
 msgid ""
 "Il risultato è stato corretto dopo la chiusura: apri la partita per "
 "vedere da cosa a cosa"
 msgstr ""
 
 #: templates/components/_match_result_row.html:77
-#: templates/direttore/_card_partita.html:197
-#: templates/direttore/_partite.html:38
+#: templates/direttore/_card_partita.html:318
+#: templates/direttore/_partite.html:44
 msgid "corretto"
 msgstr ""
 
@@ -11097,7 +11144,7 @@ msgid "Risultato rapido"
 msgstr ""
 
 #: templates/components/_match_result_row.html:177
-#: templates/direttore/_card_partita.html:178
+#: templates/direttore/_card_partita.html:286
 msgid "Valida il risultato"
 msgstr ""
 
@@ -11121,7 +11168,7 @@ msgid "spacca"
 msgstr ""
 
 #: templates/components/_match_scoreboard.html:127
-#: templates/direttore/_card_partita.html:148
+#: templates/direttore/_card_partita.html:238
 msgid "tu"
 msgstr ""
 
@@ -11268,6 +11315,7 @@ msgstr ""
 
 #: templates/components/_multi_set_score_display.html:40
 #: templates/components/_multi_set_score_display.html:50
+#: templates/direttore/_card_partita.html:248
 msgid "set vinti"
 msgstr ""
 
@@ -12658,7 +12706,7 @@ msgid "%(vinte)s vittorie su %(giocate)s"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:164
-#: templates/direttore/_card_partita.html:102
+#: templates/direttore/_card_partita.html:185
 msgid "La tua partita"
 msgstr ""
 
@@ -13412,46 +13460,131 @@ msgid ""
 "nessun risultato è inserito puoi ancora annullare l’avvio."
 msgstr ""
 
-#: templates/direttore/_card_partita.html:48
-msgid "passa il turno"
-msgstr ""
-
-#: templates/direttore/_card_partita.html:48
-msgid "riposa"
-msgstr ""
-
-#: templates/direttore/_card_partita.html:103
-msgid "Da validare"
-msgstr ""
-
-#: templates/direttore/_card_partita.html:112
-msgid "Correggi"
-msgstr ""
-
-#: templates/direttore/_card_partita.html:116
-#: templates/direttore/_scripts.html:1300
-msgid "Cambia tavolo"
-msgstr ""
-
-#: templates/direttore/_card_partita.html:149
-msgid "Ha vinto"
-msgstr ""
-
-#: templates/direttore/_card_partita.html:154
+#: templates/direttore/_card_partita.html:56
 #, python-format
 msgid "Un triangolo in meno a %(nome)s"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:159
+#: templates/direttore/_card_partita.html:56
+#, python-format
+msgid "Un punto in meno a %(nome)s"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:61
 #, python-format
 msgid "Un triangolo in più a %(nome)s"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:174
+#: templates/direttore/_card_partita.html:61
+#, python-format
+msgid "Un punto in più a %(nome)s"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:75
+msgid "passa il turno"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:75
+msgid "riposa"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:94
+msgid "Da convalidare"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:96
+msgid "Da registrare"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:116
+msgid "punteggio dell'esercizio"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:123
+#, python-format
+msgid "punteggio dell'esercizio, da 0 a %(n)s"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:129
+#, python-format
+msgid "In classifica vale una vittoria e %(n)s di differenza triangoli."
+msgstr ""
+
+#: templates/direttore/_card_partita.html:139
+msgid ""
+"Il giocatore ha dichiarato questo punteggio. Finché non lo convalidi, il "
+"turno vale zero."
+msgstr ""
+
+#: templates/direttore/_card_partita.html:140
+msgid ""
+"Il giocatore non ha ancora registrato la prova: puoi farlo tu al posto "
+"suo."
+msgstr ""
+
+#: templates/direttore/_card_partita.html:186
+msgid "Da validare"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:191
+msgid "Trio · un girone"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:191
+#, python-format
+msgid "Trio · %(num)s gironi"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:193
+#: templates/direttore/_card_partita.html:260
+#, python-format
+msgid "Set %(num)s"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:193
+msgid "A set"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:201
+msgid "Correggi"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:205
+#: templates/direttore/_scripts.html:1300
+msgid "Cambia tavolo"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:239
+msgid "Ha vinto"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:261
+#: templates/direttore/_card_partita.html:310
+#, python-format
+msgid "esattamente %(n)s triangoli"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:274
+#, python-format
+msgid "Inizia il set %(num)s"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:281
 msgid "Vai al segnapunti"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:181
+#: templates/direttore/_card_partita.html:290
+msgid ""
+"Giocati tutti i triangoli dal segnapunti dei giocatori, senza le tre "
+"conferme. Se il punteggio non è quello, correggilo con − e + prima di "
+"validare."
+msgstr ""
+
+#: templates/direttore/_card_partita.html:291
+msgid "Così è un pareggio: nessuno vince la partita."
+msgstr ""
+
+#: templates/direttore/_card_partita.html:293
 #, python-format
 msgid ""
 "Chiusa dal segnapunti dei giocatori senza la doppia conferma. Se il "
@@ -13459,31 +13592,46 @@ msgid ""
 "il + si spegne, è la distanza del turno."
 msgstr ""
 
-#: templates/direttore/_card_partita.html:183
+#: templates/direttore/_card_partita.html:296
 #, python-format
 msgid "Validare la completa: il tavolo %(t)s passa a %(p1)s – %(p2)s."
 msgstr ""
 
-#: templates/direttore/_card_partita.html:185
+#: templates/direttore/_card_partita.html:298
 msgid "Validare la completa e libera il tavolo."
 msgstr ""
 
-#: templates/direttore/_card_partita.html:190
+#: templates/direttore/_card_partita.html:304
+#, python-format
+msgid "%(n)s triangoli, ognuno ne gioca %(m)s"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:305
+msgid "l'ordine del girone decide quali + sono accesi"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:307
+#, python-format
+msgid "si vince a %(n)s set"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:307
+#, python-format
+msgid "esattamente %(n)s set"
+msgstr ""
+
+#: templates/direttore/_card_partita.html:309
 #, python-format
 msgid "si vince a %(n)s"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:190
-#, python-format
-msgid "esattamente %(n)s triangoli"
-msgstr ""
-
-#: templates/direttore/_card_partita.html:191
+#: templates/direttore/_card_partita.html:309
+#: templates/direttore/_card_partita.html:310
 msgid "alla distanza la partita si chiude e il tavolo si libera"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:201
-#: templates/direttore/_menu_partita.html:32
+#: templates/direttore/_card_partita.html:322
+#: templates/direttore/_menu_partita.html:36
 msgid "Il turno dopo è già avviato: questa partita non si tocca più."
 msgstr ""
 
@@ -14107,6 +14255,10 @@ msgid "Azzera la partita"
 msgstr ""
 
 #: templates/direttore/_menu_partita.html:29
+msgid "Azzera la prova"
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:33
 msgid "Apri il segnapunti"
 msgstr ""
 
@@ -14266,24 +14418,24 @@ msgstr ""
 msgid "Conferma e Termina Gara"
 msgstr ""
 
-#: templates/direttore/_partite.html:54
+#: templates/direttore/_partite.html:60
 #, python-format
 msgid "Correggi il risultato di %(p1)s – %(p2)s"
 msgstr ""
 
-#: templates/direttore/_partite.html:69
+#: templates/direttore/_partite.html:75
 #, python-format
 msgid "turno %(num)s"
 msgstr ""
 
-#: templates/direttore/_partite.html:94
+#: templates/direttore/_partite.html:100
 #, python-format
 msgid ""
 "Per correggere una partita si tocca la sua riga: si può finché il turno "
 "%(n)s non è avviato."
 msgstr ""
 
-#: templates/direttore/_partite.html:96
+#: templates/direttore/_partite.html:102
 msgid ""
 "Per correggere una partita si tocca la sua riga: si può finché la gara "
 "non è chiusa."
@@ -14516,27 +14668,31 @@ msgstr ""
 msgid "libero · tocca per assegnare"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1326
+#: templates/direttore/_scripts.html:1329
 msgid ""
 "Torna da giocare e il tavolo si libera. Si può finché il turno dopo non è"
 " avviato."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1466
+#: templates/direttore/_scripts.html:1344
+msgid "Il turno torna a valere zero e l'esercizio torna da registrare."
+msgstr ""
+
+#: templates/direttore/_scripts.html:1480
 msgid "Pareggio: nessun vincitore."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1467
+#: templates/direttore/_scripts.html:1481
 #, python-format
 msgid "Vince %(nome)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1469
+#: templates/direttore/_scripts.html:1483
 #, python-format
 msgid "Uno dei due deve arrivare a %(n)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1470
+#: templates/direttore/_scripts.html:1484
 #, python-format
 msgid "La somma deve essere esattamente %(n)s."
 msgstr ""

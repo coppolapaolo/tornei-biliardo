@@ -111,6 +111,27 @@ blocks:
           ma senza la conferma di entrambi, compare in una card verde con
           «Valida il risultato». Se il punteggio non è quello, correggilo con
           − e + prima di validare: la card dice a chi passa il tavolo.
+      - name: "Segnare un trio"
+        text: >-
+          La card del trio ha tre nomi, e sotto ognuno **+** e **−** per i
+          triangoli che ha vinto. I triangoli si giocano in un ordine fisso —
+          il primo fra il primo e il secondo giocatore, il secondo fra il primo
+          e il terzo — quindi un + resta spento finché quel giocatore non può
+          ancora aver vinto. Giocati tutti i triangoli, la partita si chiude.
+          Per correggere un trio già chiuso apri il segnapunti dal menu «⋯».
+      - name: "Segnare una partita a set"
+        text: >-
+          In alto ci sono i set vinti, sotto il set che si gioca con i suoi
+          − e +. Alla distanza del set il set si chiude, e compare **Inizia il
+          set** per il successivo; quando uno arriva ai set che servono, la
+          partita si chiude da sola.
+      - name: "Convalidare l'esercizio al posto della X"
+        text: >-
+          Nelle gare con la X sostituita da un esercizio, la card di chi
+          riposa ha un solo nome e il punteggio dell'esercizio, da zero alla
+          distanza del turno. Se il giocatore l'ha già dichiarato la card è
+          verde; altrimenti lo scrivi tu con − e +. Il punteggio conta solo
+          dopo **Convalida**. Per azzerarlo, menu «⋯» e **Azzera la prova**.
       - name: "Cambiare il tavolo a una partita"
         text: >-
           Tocca il tavolo sulla card: si apre il foglio con le tessere dei

@@ -214,6 +214,7 @@ def _vista_direttore(
         fase_della_gara,
         partite_del_turno,
         prima_in_attesa,
+        scheda_partita,
         spareggio_nella_striscia,
         stato_partita,
         striscia,
@@ -304,6 +305,9 @@ def _vista_direttore(
             t.nome: " – ".join(t.giocatori) for t in tavoli_turno if not t.libero
         },
         "stati_partite": stati_partite,
+        # La forma di ogni card del turno che si vede: trio, set, X con
+        # esercizio (i turni chiusi sono righe e non ne hanno bisogno).
+        "schede_partite": {m.id: scheda_partita(m) for m in partite_turno},
     }
 
 

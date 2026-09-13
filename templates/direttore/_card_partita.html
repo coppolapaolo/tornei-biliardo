@@ -4,40 +4,67 @@
    Una geometria sola: nome sopra, numero grande sotto, niente «vs». Cambia
    forma con lo stato (`stati_partite`, da `direttore_view.stato_partita`):
 
-   - in corso      → gli stepper: − e + segnano il punteggio dalla card, e il
-                     + si spegne alla distanza del turno (`effective_distance`,
-                     ADR-027). Alla distanza la partita si chiude e il tavolo
-                     passa alla prima in attesa;
+   - in corso      → gli stepper: − e + segnano il punteggio dalla card e
+                     salvano al tocco; il + si spegne al limite (distanza del
+                     turno, `effective_distance`, ADR-027). Al limite la
+                     partita si chiude e il tavolo passa alla prima in attesa;
    - da validare   → card verde: arrivata alla distanza dal segnapunti dei
-                     giocatori senza la doppia conferma. Si corregge con − e +
-                     e poi «Valida», che la completa e libera il tavolo;
+                     giocatori senza le conferme. Si corregge con − e + e poi
+                     «Valida», che la completa e libera il tavolo;
    - da giocare    → nessun punteggio, il comando e' assegnare il tavolo;
-   - conclusa      → sola lettura, chi ha vinto pieno e l'altro spento, e
+   - conclusa      → sola lettura, chi ha vinto pieno e gli altri spenti, e
                      «Correggi» dove la correzione e' ammessa (issue #90);
    - la partita di chi dirige e gioca → card scura, «Vai al segnapunti».
 
-   Le partite a tre e quelle a set restano sulla card di prima: hanno il
-   loro segnapunti, e gli stepper qui ragionano su un set solo. Attese: `match`,
-   `stati_partite`, `match_can_modify`, `forfeit_user_ids`,
-   `prossima_in_attesa`, `available_tables`. #}
+   E cambia quanti lati ha con la forma (`schede_partite`, da
+   `direttore_view.scheda_partita`):
+
+   - due        → due lati, gli stepper segnano i triangoli;
+   - trio       → tre lati, triangoli vinti da ciascuno; quali + sono accesi
+                  lo dice il server, perche' dipende dall'ordine del girone.
+                  Si corregge dal segnapunti, non dal foglio;
+   - set        → sopra i set vinti in sola lettura, sotto gli stepper del set
+                  in corso; a set chiuso «Inizia il set N»;
+   - x          → la X a tavolino: un lato, «riposa» o «passa il turno»;
+   - x_esercizio → la X con esercizio (SPECIFICHE riga 65): un lato con lo
+                  stepper del punteggio fino alla distanza del turno, e
+                  «Convalida». Non salva al tocco: il punteggio arriva in
+                  classifica solo convalidato.
+
+   Gli stepper stanno in `static/js/card_partita.js`: il punteggio in
+   `data-punti`, i campi in `data-campi`, l'indirizzo in `data-url`. Attese:
+   `match`, `stati_partite`, `schede_partite`, `match_can_modify`,
+   `forfeit_user_ids`, `prossima_in_attesa`, `available_tables`. #}
 
 {% set stato = stati_partite.get(match.id, 'da_giocare') %}
+{% set scheda = schede_partite.get(match.id) if schede_partite is defined and schede_partite else none %}
+{% set forma = scheda.forma.value if scheda else ('x' if match.is_bye else 'due') %}
 {% set finita = stato == 'conclusa' %}
 {% set can_modify = match_can_modify.get(match.id, True) %}
-{% set mia = current_user.is_authenticated and not finita and (match.player1_id == current_user.id or match.player2_id == current_user.id) %}
-{% set p1_forfeit = forfeit_user_ids is defined and match.player1_id in forfeit_user_ids %}
-{% set p2_forfeit = forfeit_user_ids is defined and match.player2_id in forfeit_user_ids %}
-{% set p1_wins = finita and match.winner_id == match.player1_id %}
-{% set p2_wins = finita and match.winner_id == match.player2_id %}
+{% set _trio = scheda.trio if scheda and scheda.trio else none %}
+{% set _set = scheda.set if scheda and scheda.set else none %}
+{% set mia = current_user.is_authenticated and not finita and (match.player1_id == current_user.id or match.player2_id == current_user.id or (_trio and current_user.id in _trio.ids)) %}
 {% set con_stepper = not mia and can_modify and stato in ('in_corso', 'da_validare') %}
 {% set distanza = match.effective_distance %}
 {# Nei tabelloni la card dice dove va chi vince (issue #240). #}
 {% set _dest = destinazioni.get(match.id) if destinazioni is defined and destinazioni else none %}
 {% import "components/_tabellone_macros.html" as t with context %}
 
-{% if (match.is_trio and match.trio_match) or match.is_multi_set %}
-  {% include "components/_match_card.html" %}
-{% elif stato == 'x' %}
+{% macro stepper(n, nome, punti, piu_acceso, unita) -%}
+<div class="c7-partita__step">
+  <button type="button" class="c7-partita__meno" data-lato="{{ n }}" onclick="passoPunteggio(this, -1)"
+          aria-label="{{ _('Un triangolo in meno a %(nome)s', nome=nome) if unita == 'triangoli' else _('Un punto in meno a %(nome)s', nome=nome) }}"{% if punti <= 0 %} disabled{% endif %}>
+    <i class="fas fa-minus"></i>
+  </button>
+  <span class="c7-partita__num c7-num" data-num="{{ n }}">{{ punti }}</span>
+  <button type="button" class="c7-partita__piu" data-lato="{{ n }}" onclick="passoPunteggio(this, 1)"
+          aria-label="{{ _('Un triangolo in più a %(nome)s', nome=nome) if unita == 'triangoli' else _('Un punto in più a %(nome)s', nome=nome) }}"{% if not piu_acceso %} disabled{% endif %}>
+    <i class="fas fa-plus"></i>
+  </button>
+</div>
+{%- endmacro %}
+
+{% if forma == 'x' %}
 <article class="c7-card c7-card--locked c7-partita c7-partita--x">
   <div class="c7-partita__testa">
     <span class="c7-state c7-state--info">{{ _('X a tavolino') }}</span>
@@ -51,64 +78,126 @@
   {% if _dest %}
   <div class="c7-partita__nota c7-partita__dove"><i class="fas fa-sitemap" aria-hidden="true"></i> {{ t.destinazione(_dest, match) }}</div>
   {% endif %}
-  {# La X con esercizio (SPECIFICHE riga 65): il punteggio della prova arriva
-     in classifica solo da qui, e il direttore lo registra per chi non usa
-     l'app (issue #221). #}
-  {% if match.is_x_with_challenge %}
-  {% set ponte = match.bye_challenge %}
-  <div style="margin-top:12px">
-    <div class="c7-kicker">{{ _('Prova al posto della X') }}</div>
-    {% if ponte and ponte.is_validated %}
-    <div class="d-flex align-items-center" style="gap:8px;margin-top:8px">
-      <span class="c7-state c7-state--ok"><i class="fas fa-check"></i>&nbsp;{{ _('Convalidata') }}</span>
-      <span class="c7-num" style="margin-left:auto">{{ match.player1_score }}</span>
-      <form method="POST" action="{{ url_for('admin.competition.reset_x_replacement', gara_id=match.gara_id, round_number=match.round_number, user_id=match.player1_id) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-secondary btn-sm"
-                onclick='return confirm({{ _("Azzerare la prova? Il turno torna a valere zero.")|tojson }})'>{{ _('Azzera') }}</button>
-      </form>
+</article>
+
+{% elif forma == 'x_esercizio' %}
+{# La X con esercizio: il punteggio della prova arriva in classifica solo da
+   qui, e il direttore lo registra per chi non usa l'app (issue #221). #}
+{% set prova = scheda.prova %}
+{% set convalidata = prova.stato.value == 'convalidata' %}
+{% set dichiarata = prova.stato.value == 'dichiarata' %}
+<article class="c7-card c7-partita c7-partita--x c7-partita--prova{% if dichiarata %} c7-card--ok c7-partita--da_validare{% elif convalidata %} c7-card--locked c7-partita--conclusa{% endif %}"
+         id="partita{{ match.id }}" data-match-id="{{ match.id }}" data-stato="{{ 'da_validare' if dichiarata else ('conclusa' if convalidata else 'in_corso') }}">
+  <div class="c7-partita__testa">
+    <div class="c7-partita__sinistra">
+      <span class="c7-state c7-state--info">{{ _('X a tavolino') }}</span>
+      {% if dichiarata %}<span class="c7-state c7-state--ok">{{ _('Da convalidare') }}</span>
+      {% elif convalidata %}<span class="c7-state c7-state--muted">{{ _('Convalidata') }}</span>
+      {% else %}<span class="c7-state c7-state--warn">{{ _('Da registrare') }}</span>{% endif %}
     </div>
-    {% else %}
-    <form method="POST" class="d-flex align-items-end" style="gap:8px;margin-top:8px"
-          action="{{ url_for('admin.competition.validate_x_replacement', gara_id=match.gara_id, round_number=match.round_number, user_id=match.player1_id) }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div style="flex:1">
-        <label class="form-label" style="font-size:12px;margin-bottom:2px">{{ _('Punteggio') }}</label>
-        <input type="number" name="score" class="form-control form-control-sm" min="0" max="{{ distanza }}" step="1"
-               value="{{ ponte.challenge_attempt.score if ponte and ponte.challenge_attempt and ponte.challenge_attempt.score is not none else '' }}"
-               placeholder="0–{{ distanza }}">
-      </div>
-      <button type="submit" class="btn btn-sm btn-primary">{{ _('Convalida') }}</button>
-    </form>
-    <div class="c7-partita__nota">
-      {% if ponte and ponte.is_completed %}{{ _('Il giocatore ha dichiarato un punteggio. Finché non lo convalidi, il turno vale zero.') }}
-      {% else %}{{ _('Il giocatore non ha ancora registrato la prova. Puoi farlo tu al posto suo.') }}{% endif %}
+    {% if convalidata %}
+    <div class="c7-partita__destra">
+      <button type="button" class="c7-iconbtn c7-iconbtn--menu" onclick="apriMenuPartita(this)"
+              aria-label="{{ _('Menu della partita') }}" title="{{ _('Menu della partita') }}"
+              data-match-id="{{ match.id }}"
+              data-players="{{ match.player1.username }} – {{ _('X a tavolino') }}"
+              data-sub="{{ _('Turno %(num)s', num=match.round_number) }}"
+              data-prova-reset-url="{{ url_for('admin.competition.reset_x_replacement', gara_id=match.gara_id, round_number=match.round_number, user_id=match.player1_id) }}">
+        <i class="fas fa-ellipsis"></i>
+      </button>
     </div>
     {% endif %}
   </div>
+  <div class="c7-partita__lati">
+    {% if convalidata %}
+    <div class="c7-partita__lato c7-partita__lato--letto">
+      <div class="c7-partita__nome">{{ match.player1.username }}</div>
+      <div class="c7-partita__num c7-num">{{ prova.punteggio }}</div>
+      <div class="c7-partita__etichetta">{{ _("punteggio dell'esercizio") }}</div>
+    </div>
+    {% else %}
+    <div class="c7-partita__lato c7-partita__lato--stepper"
+         data-tipo="x" data-punti="{{ prova.punteggio }}" data-max="{{ prova.massimo }}">
+      <div class="c7-partita__nome">{{ match.player1.username }}</div>
+      {{ stepper(1, match.player1.username, prova.punteggio, prova.punteggio < prova.massimo, 'punti') }}
+      <div class="c7-partita__etichetta">{{ _("punteggio dell'esercizio, da 0 a %(n)s", n=prova.massimo) }}</div>
+    </div>
+    {% endif %}
+  </div>
+  {% if convalidata %}
+  <div class="c7-partita__nota">
+    {{ _('In classifica vale una vittoria e %(n)s di differenza triangoli.', n=prova.punteggio) }}
+    {% if prova.esercizio %}<span class="c7-sep">·</span> {{ prova.esercizio }}{% endif %}
+  </div>
+  {% else %}
+  <button type="button" class="btn btn-success w-100 c7-partita__valida" style="margin-top:12px"
+          data-url="{{ url_for('admin.competition.validate_x_replacement', gara_id=match.gara_id, round_number=match.round_number, user_id=match.player1_id) }}"
+          onclick="convalidaProvaX(this)">
+    <i class="fas fa-check"></i> {{ _('Convalida') }}
+  </button>
+  <div class="c7-partita__nota">
+    {% if dichiarata %}{{ _('Il giocatore ha dichiarato questo punteggio. Finché non lo convalidi, il turno vale zero.') }}
+    {% else %}{{ _('Il giocatore non ha ancora registrato la prova: puoi farlo tu al posto suo.') }}{% endif %}
+    {% if prova.esercizio %}<span class="c7-sep">·</span> {{ prova.esercizio }}{% endif %}
+  </div>
   {% endif %}
 </article>
+
 {% else %}
-<article class="c7-card c7-partita c7-partita--{{ stato }}{% if mia %} c7-card--accent c7-partita--mia{% elif stato == 'da_validare' %} c7-card--ok{% elif finita %} c7-card--locked{% endif %}"
+{# Le partite che si giocano: a due, a tre, a set. #}
+{% if _trio %}
+  {% set lati = [] %}
+  {% for i in range(3) %}
+    {% set _vince = (finita or stato == 'da_validare') and _trio.vincitore_id is not none and _trio.vincitore_id == _trio.ids[i] %}
+    {% set _ = lati.append((i + 1, _trio.nomi[i], _trio.punti[i], forfeit_user_ids is defined and _trio.ids[i] in forfeit_user_ids, _vince, _trio.ids[i] == current_user.id, _trio.piu[i])) %}
+  {% endfor %}
+  {% set ha_punti = _trio.punti|sum > 0 %}
+{% elif _set %}
+  {% set ha_punti = _set.chiusi or _set.in_corso %}
+  {% set lati = [
+        (1, match.player1.username, _set.set_vinti[0], forfeit_user_ids is defined and match.player1_id in forfeit_user_ids, finita and match.winner_id == match.player1_id, match.player1_id == current_user.id, false),
+        (2, match.player2.username, _set.set_vinti[1], forfeit_user_ids is defined and match.player2_id in forfeit_user_ids, finita and match.winner_id == match.player2_id, match.player2_id == current_user.id, false)] %}
+{% else %}
+  {% set ha_punti = match.player1_score > 0 or match.player2_score > 0 %}
+  {% set _stop = (match.player1_score >= distanza or match.player2_score >= distanza) if match.effective_is_race_to else (match.player1_score + match.player2_score >= distanza) %}
+  {% set lati = [
+        (1, match.player1.username, match.player1_score, forfeit_user_ids is defined and match.player1_id in forfeit_user_ids, finita and match.winner_id == match.player1_id, match.player1_id == current_user.id, not _stop),
+        (2, match.player2.username, match.player2_score, forfeit_user_ids is defined and match.player2_id in forfeit_user_ids, finita and match.winner_id == match.player2_id, match.player2_id == current_user.id, not _stop)] %}
+{% endif %}
+{% set _nomi = lati|map(attribute=1)|join(' – ') %}
+<article class="c7-card c7-partita c7-partita--{{ stato }} c7-partita--{{ forma }}{% if mia %} c7-card--accent c7-partita--mia{% elif stato == 'da_validare' %} c7-card--ok{% elif finita %} c7-card--locked{% endif %}"
          id="partita{{ match.id }}"
          data-match-id="{{ match.id }}" data-stato="{{ stato }}"
          data-p1="{{ match.player1_score }}" data-p2="{{ match.player2_score }}"
-         data-p1-name="{{ match.player1.username }}" data-p2-name="{{ match.player2.username }}"
+         data-p1-name="{{ match.player1.username }}" data-p2-name="{{ match.player2.username if match.player2 else '' }}"
          data-max="{{ distanza }}" data-race-to="{{ '1' if match.effective_is_race_to else '0' }}"
+         {% if forma == 'due' and con_stepper %}data-tipo="due" data-punti="{{ match.player1_score }},{{ match.player2_score }}"
+         data-url="{{ url_for('admin.match.punteggio_partita', match_id=match.id) }}" data-campi="player1_score,player2_score"
+         {% elif forma == 'trio' and con_stepper %}data-tipo="trio" data-punti="{{ _trio.punti|join(',') }}"
+         data-piu="{% for p in _trio.piu %}{{ '1' if p else '0' }}{% if not loop.last %},{% endif %}{% endfor %}"
+         data-url="{{ url_for('admin.competition.trio_punteggio', trio_id=_trio.trio_id) }}" data-campi="player1_racks,player2_racks,player3_racks"
+         {% endif %}
          data-table="{{ match.table_assignment or match.played_on_table or '' }}"
          data-sub="{{ _('Turno %(num)s', num=match.round_number) }}{% if match.table_assignment or match.played_on_table %} · {{ _('Tavolo') }} {{ match.table_assignment or match.played_on_table }}{% endif %}"
          data-detail-url="{{ url_for('admin.match.match_detail', match_id=match.id) }}">
   <div class="c7-partita__testa">
-    {% if mia %}<span class="c7-state c7-state--onaccent">{{ _('La tua partita') }}</span>
-    {% elif stato == 'da_validare' %}<span class="c7-state c7-state--ok">{{ _('Da validare') }}</span>
-    {% elif stato == 'in_corso' %}<span class="c7-state c7-state--accent">{{ _('In corso') }}</span>
-    {% elif finita %}<span class="c7-state c7-state--muted">{{ _('Conclusa') }}</span>
-    {% else %}<span class="c7-state c7-state--warn">{{ _('Da giocare') }}</span>{% endif %}
+    <div class="c7-partita__sinistra">
+      {% if mia %}<span class="c7-state c7-state--onaccent">{{ _('La tua partita') }}</span>
+      {% elif stato == 'da_validare' %}<span class="c7-state c7-state--ok">{{ _('Da validare') }}</span>
+      {% elif stato == 'in_corso' %}<span class="c7-state c7-state--accent">{{ _('In corso') }}</span>
+      {% elif finita %}<span class="c7-state c7-state--muted">{{ _('Conclusa') }}</span>
+      {% else %}<span class="c7-state c7-state--warn">{{ _('Da giocare') }}</span>{% endif %}
+      {% if _trio %}
+      <span class="c7-partita__forma">{{ _('Trio · un girone') if _trio.gironi == 1 else _('Trio · %(num)s gironi', num=_trio.gironi) }}</span>
+      {% elif _set %}
+      <span class="c7-partita__forma">{{ _('Set %(num)s', num=_set.numero) if _set.in_corso else _('A set') }}</span>
+      {% endif %}
+    </div>
 
     <div class="c7-partita__destra">
       {% if finita %}
         {% if match.played_on_table %}<span class="c7-partita__tavolo">{{ _('Tavolo') }} <span class="c7-num">{{ match.played_on_table }}</span></span>{% endif %}
-        {% if can_modify %}
+        {% if can_modify and forma == 'due' %}
         <button type="button" class="btn btn-secondary btn-sm" onclick="apriCorrezione(this)">{{ _('Correggi') }}</button>
         {% endif %}
       {% elif match.table_assignment %}
@@ -123,62 +212,86 @@
         <button type="button" class="btn btn-warning btn-sm" onclick="apriAssegnaTavolo(this)">{{ _('Assegna tavolo') }}</button>
       {% endif %}
       {# Il menu della partita (canvas 2S): cambia tavolo, azzera, correggi,
-         segnapunti. Un foglio solo, riempito dai data-* della card. #}
+         segnapunti. Un foglio solo, riempito dai data-* della card. Il trio e
+         la partita a set si correggono dal segnapunti, non dal foglio. #}
       <button type="button" class="c7-iconbtn c7-iconbtn--menu" onclick="apriMenuPartita(this)"
               aria-label="{{ _('Menu della partita') }}" title="{{ _('Menu della partita') }}"
               data-match-id="{{ match.id }}"
-              data-players="{{ match.player1.username }} – {{ match.player2.username }}"
+              data-players="{{ _nomi }}"
               data-table="{{ match.table_assignment or '' }}"
-              data-has-scores="{{ '1' if (match.player1_score > 0 or match.player2_score > 0) else '0' }}"
+              data-has-scores="{{ '1' if ha_punti else '0' }}"
               data-finished="{{ '1' if finita else '0' }}"
               data-can-modify="{{ '1' if can_modify else '0' }}"
+              data-correggibile="{{ '1' if forma == 'due' else '0' }}"
+              {% if _trio %}data-trio-id="{{ _trio.trio_id }}"{% endif %}
               data-detail-url="{{ url_for('admin.match.match_detail', match_id=match.id) }}">
         <i class="fas fa-ellipsis"></i>
       </button>
     </div>
   </div>
 
-  <div class="c7-partita__lati">
-    {% for lato in [
-          (1, match.player1, match.player1_score, p1_forfeit, p1_wins, match.player1_id == current_user.id),
-          (2, match.player2, match.player2_score, p2_forfeit, p2_wins, match.player2_id == current_user.id)] %}
-    {% set n, giocatore, punti, forfeit, vince, tu = lato %}
-    <div class="c7-partita__lato{% if con_stepper %} c7-partita__lato--stepper{% else %} c7-partita__lato--letto{% endif %}{% if finita and not vince %} c7-partita__lato--spento{% endif %}">
+  {% set _stepper_ai_lati = con_stepper and forma in ('due', 'trio') %}
+  <div class="c7-partita__lati{% if _trio %} c7-partita__lati--tre{% endif %}">
+    {% for n, nome, punti, forfeit, vince, tu, piu_acceso in lati %}
+    <div class="c7-partita__lato{% if _stepper_ai_lati %} c7-partita__lato--stepper{% else %} c7-partita__lato--letto{% endif %}{% if finita and not vince %} c7-partita__lato--spento{% endif %}">
       <div class="c7-partita__nome{% if forfeit %} c7-partita__nome--forfait{% endif %}">
-        {{ giocatore.username }}{% if mia and tu %} <span class="c7-partita__tu">({{ _('tu') }})</span>{% endif %}
+        {{ nome }}{% if mia and tu %} <span class="c7-partita__tu">({{ _('tu') }})</span>{% endif %}
         {% if vince %}<i class="fas fa-crown c7-partita__corona" title="{{ _('Ha vinto') }}"></i>{% endif %}
       </div>
-      {% if con_stepper %}
-      <div class="c7-partita__step">
-        <button type="button" class="c7-partita__meno" data-lato="{{ n }}" onclick="passoPunteggio(this, -1)"
-                aria-label="{{ _('Un triangolo in meno a %(nome)s', nome=giocatore.username) }}"{% if punti <= 0 %} disabled{% endif %}>
-          <i class="fas fa-minus"></i>
-        </button>
-        <span class="c7-partita__num c7-num" data-num="{{ n }}">{{ punti }}</span>
-        <button type="button" class="c7-partita__piu" data-lato="{{ n }}" onclick="passoPunteggio(this, 1)"
-                aria-label="{{ _('Un triangolo in più a %(nome)s', nome=giocatore.username) }}">
-          <i class="fas fa-plus"></i>
-        </button>
-      </div>
-      {% elif stato == 'da_giocare' %}
+      {% if _stepper_ai_lati %}
+      {{ stepper(n, nome, punti, piu_acceso, 'triangoli') }}
+      {% elif stato == 'da_giocare' and not _set %}
       <div class="c7-partita__num c7-num c7-partita__num--vuoto">–</div>
       {% else %}
-      <div class="c7-partita__num c7-num" data-num="{{ n }}">{{ punti }}</div>
+      <div class="c7-partita__num c7-num">{{ punti }}</div>
       {% endif %}
+      {% if _set %}<div class="c7-partita__etichetta">{{ _('set vinti') }}</div>{% endif %}
     </div>
     {% endfor %}
   </div>
+
+  {# La partita a set: sotto i set vinti, il set che si gioca. #}
+  {% if _set and not finita and not mia %}
+    {% if _set.in_corso and con_stepper %}
+    <div class="c7-partita__set" data-tipo="set" data-stato="{{ stato }}"
+         data-punti="{{ _set.punti|join(',') }}" data-max="{{ _set.distanza }}" data-race-to="{{ '1' if _set.race_to else '0' }}"
+         data-url="{{ url_for('admin.match.set_punteggio', match_id=match.id) }}" data-campi="player1_racks,player2_racks">
+      <div class="c7-partita__settesta">
+        {{ _('Set %(num)s', num=_set.numero) }} <span class="c7-sep">·</span>
+        {{ _('al %(n)s', n=_set.distanza) if _set.race_to else _('esattamente %(n)s triangoli', n=_set.distanza) }}
+      </div>
+      <div class="c7-partita__lati c7-partita__lati--set">
+        {% set _stop_set = (_set.punti[0] >= _set.distanza or _set.punti[1] >= _set.distanza) if _set.race_to else (_set.punti|sum >= _set.distanza) %}
+        {% for n in (1, 2) %}
+        <div class="c7-partita__lato c7-partita__lato--stepper">
+          {{ stepper(n, lati[n - 1][1], _set.punti[n - 1], not _stop_set, 'triangoli') }}
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% elif _set.prossimo and can_modify and stato == 'in_corso' %}
+    <button type="button" class="btn btn-primary w-100" style="margin-top:12px" onclick="iniziaSet({{ match.id }}, this)">
+      <i class="fas fa-play"></i> {{ _('Inizia il set %(num)s', num=_set.prossimo) }}
+    </button>
+    {% endif %}
+  {% endif %}
 
   {% if mia %}
   <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="btn btn-primary w-100" style="margin-top:12px">
     <i class="fas fa-play"></i> {{ _('Vai al segnapunti') }}
   </a>
   {% elif stato == 'da_validare' and can_modify %}
-  <button type="button" class="btn btn-success w-100 c7-partita__valida" style="margin-top:12px" onclick="validaDallaCard({{ match.id }}, this)">
+  <button type="button" class="btn btn-success w-100 c7-partita__valida" style="margin-top:12px"
+          {% if _trio %}onclick="validaTrio({{ _trio.trio_id }}, this)"{% else %}onclick="validaDallaCard({{ match.id }}, this)"{% endif %}>
     <i class="fas fa-check"></i> {{ _('Valida il risultato') }}
   </button>
   <div class="c7-partita__nota">
+    {% if _trio %}
+    {{ _('Giocati tutti i triangoli dal segnapunti dei giocatori, senza le tre conferme. Se il punteggio non è quello, correggilo con − e + prima di validare.') }}
+    {% if _trio.vincitore_id is none %}{{ _('Così è un pareggio: nessuno vince la partita.') }}{% endif %}
+    {% else %}
     {{ _('Chiusa dal segnapunti dei giocatori senza la doppia conferma. Se il punteggio non è quello, correggilo con − e + prima di validare: al %(n)s il + si spegne, è la distanza del turno.', n=distanza) }}
+    {% endif %}
     {% if prossima_in_attesa and match.table_assignment %}
     {{ _('Validare la completa: il tavolo %(t)s passa a %(p1)s – %(p2)s.', t=match.table_assignment, p1=prossima_in_attesa.player1.username, p2=prossima_in_attesa.player2.username) }}
     {% else %}
@@ -187,9 +300,17 @@
   </div>
   {% elif stato == 'in_corso' and con_stepper %}
   <div class="c7-partita__hint">
-    {% if match.effective_is_race_to %}{{ _('si vince a %(n)s', n=distanza) }}{% else %}{{ _('esattamente %(n)s triangoli', n=distanza) }}{% endif %}
-    · {{ _('alla distanza la partita si chiude e il tavolo si libera') }}
+    {% if _trio %}
+    {{ _('%(n)s triangoli, ognuno ne gioca %(m)s', n=_trio.totale, m=_trio.massimo) }}
+    · {{ _("l'ordine del girone decide quali + sono accesi") }}
+    {% elif _set %}
+    {{ _('si vince a %(n)s set', n=_set.set_da_vincere) if _set.race_to_set else _('esattamente %(n)s set', n=_set.set_da_vincere) }}
+    {% if _set.chiusi %}· {% for num, a, b in _set.chiusi %}{{ a }}–{{ b }}{% if not loop.last %} <span class="c7-sep">·</span> {% endif %}{% endfor %}{% endif %}
+    {% elif match.effective_is_race_to %}{{ _('si vince a %(n)s', n=distanza) }} · {{ _('alla distanza la partita si chiude e il tavolo si libera') }}
+    {% else %}{{ _('esattamente %(n)s triangoli', n=distanza) }} · {{ _('alla distanza la partita si chiude e il tavolo si libera') }}{% endif %}
   </div>
+  {% elif finita and _set and _set.chiusi %}
+  <div class="c7-partita__hint">{% for num, a, b in _set.chiusi %}{{ a }}–{{ b }}{% if not loop.last %} <span class="c7-sep">·</span> {% endif %}{% endfor %}</div>
   {% elif stato == 'da_giocare' and not can_modify %}
   {% elif finita and match.corrections %}
   <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="c7-partita__corretto"

@@ -69,8 +69,9 @@ blocks:
       way there is in a match. That is why the score a player records **does not
       reach the standings on its own**: until the director validates it, that
       round counts zero. The director does it from the competition page, on the
-      card of the player with the X — and from there they can also enter it
-      for someone who does not use the app, correct it, or clear it.
+      card of the player with the X: they adjust the score with − and + (also
+      for someone who does not use the app) and tap **Validate**. To clear it,
+      **Reset the drill** is in the card's «⋯» menu.
 
   - type: list
     items:

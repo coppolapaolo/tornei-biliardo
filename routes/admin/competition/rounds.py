@@ -1111,28 +1111,60 @@ def validate_x_replacement(gara_id, round_number, user_id):
     controllo che una partita ha nell'avversario.
     """
     from models.challenge.services import ChallengeService
-    from models.exceptions import ValidationError
+    from models.exceptions import ValidationError, http_status_for_exception
 
+    in_json = _vuole_json()
     raw = (request.form.get("score") or "").strip()
     try:
         score = int(raw) if raw else None
     except ValueError:
-        flash(_("Il punteggio deve essere un numero."), "danger")
+        messaggio = _("Il punteggio deve essere un numero.")
+        if in_json:
+            return jsonify({"success": False, "error": str(messaggio)}), 400
+        flash(messaggio, "danger")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     try:
-        ChallengeService.validate_x_replacement(
+        attempt = ChallengeService.validate_x_replacement(
             gara_id=gara_id,
             round_number=round_number,
             user_id=user_id,
             actor_id=current_user.id,
             score=score,
         )
-        flash(_("Prova convalidata: il punteggio è in classifica."), "success")
     except (ValidationError, ValueError) as e:
+        if in_json:
+            return (
+                jsonify({"success": False, "error": str(e)}),
+                http_status_for_exception(e) if isinstance(e, ValidationError) else 400,
+            )
         flash(str(e), "danger")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
+    _annuncia_prova_x(gara_id, round_number, user_id)
+    if in_json:
+        return jsonify({"success": True, "punteggio": attempt.score})
+    flash(_("Prova convalidata: il punteggio è in classifica."), "success")
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+def _vuole_json() -> bool:
+    """La card del direttore chiede JSON; il form di prima vuole il redirect."""
+    from utils.route_helpers import is_ajax_request
+
+    return is_ajax_request() or request.accept_mimetypes.best == "application/json"
+
+
+def _annuncia_prova_x(gara_id: int, round_number: int, user_id: int) -> None:
+    """L'evento live della prova: la classifica di chi guarda cambia."""
+    from models.match.models import Match
+    from utils.card_partita import annuncia_punteggio
+
+    x = Match.query.filter_by(
+        gara_id=gara_id, round_number=round_number, player1_id=user_id, is_bye=True
+    ).first()
+    if x is not None:
+        annuncia_punteggio(x, current_user.id)
 
 
 @competition_bp.route(
@@ -1145,12 +1177,19 @@ def reset_x_replacement(gara_id, round_number, user_id):
     """Azzera la prova: il match torna a zero e l'esercizio torna da giocare."""
     from models.challenge.services import ChallengeService
 
+    in_json = _vuole_json()
     try:
         ChallengeService.reset_x_replacement(
             gara_id=gara_id, round_number=round_number, user_id=user_id
         )
-        flash(_("Prova azzerata: il turno torna a valere zero."), "success")
     except ValueError as e:
+        if in_json:
+            return jsonify({"success": False, "error": str(e)}), 400
         flash(str(e), "danger")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
+    _annuncia_prova_x(gara_id, round_number, user_id)
+    if in_json:
+        return jsonify({"success": True})
+    flash(_("Prova azzerata: il turno torna a valere zero."), "success")
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))

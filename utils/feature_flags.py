@@ -351,6 +351,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.match.start_next_set": {"director"},
     "admin.match.add_set_rack": {"director"},
     "admin.match.remove_set_rack": {"director"},
+    # Gli stepper della card del direttore per il set in corso e per il trio
+    # (2026-09-13): stesso perimetro del punteggio della partita a due.
+    "admin.match.set_punteggio": {"director"},
+    "admin.competition.trio_punteggio": {"director"},
     "admin.competition.trio_add_rack": {"director"},
     "admin.competition.trio_remove_rack": {"director"},
     "admin.competition.trio_confirm": {"director"},

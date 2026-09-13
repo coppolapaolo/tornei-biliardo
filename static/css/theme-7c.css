@@ -3741,3 +3741,38 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
   .c7-sala__bande .c7-sala__riga { min-height: 0; max-height: 64px; padding-top: 0; padding-bottom: 0; }
   .c7-sala__bande--due { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; grid-template-rows: repeat(var(--righe), minmax(0, 1fr)); column-gap: 0; }
 }
+
+/* --------------------------------------------------------------------------
+   31. Trio, partita a set e X con esercizio sulla card del direttore
+   Il canvas disegna solo la partita a due: le altre forme tengono la sua
+   geometria (nome sopra, numero grande sotto, lo stato cambia la superficie)
+   e cambiano solo quanti lati hanno e cosa segnano gli stepper.
+   -------------------------------------------------------------------------- */
+
+/* Nella testata, accanto allo stato, la forma: «Trio · 2 gironi», «Set 2». */
+.c7-partita__sinistra { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 8px; min-width: 0; }
+.c7-partita__forma { font-size: 11px; font-weight: 800; color: var(--c7-ink-muted); white-space: nowrap; }
+.c7-partita--mia .c7-partita__forma { color: var(--c7-accent-dim); }
+.c7-partita__etichetta { margin-top: 6px; font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); }
+
+/* Il trio: tre lati. Lo stepper va in colonna, + sopra e − sotto, cosi' i
+   bersagli restano da 48px anche con tre lati in 390px. */
+.c7-partita__lati--tre { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.c7-partita__lati--tre .c7-partita__lato--stepper { padding: 10px 4px 12px; }
+.c7-partita__lati--tre .c7-partita__step { flex-direction: column-reverse; gap: 6px; }
+.c7-partita__lati--tre .c7-partita__step .c7-partita__num { flex: none; font-size: 28px; }
+
+/* La partita a set: sopra i set vinti, sotto il set che si gioca. */
+.c7-partita__set { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--c7-line-soft); }
+.c7-partita__settesta {
+  font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--c7-ink-muted); text-align: center;
+}
+.c7-partita__lati--set { margin-top: 8px; }
+
+/* La X con esercizio: un lato solo, col numero vero e lo stepper al centro. */
+.c7-partita--x.c7-partita--prova .c7-partita__num {
+  font-size: 34px; color: var(--c7-ink); text-transform: none; letter-spacing: -.03em;
+}
+.c7-partita--prova .c7-partita__step { max-width: 280px; margin-left: auto; margin-right: auto; }
+.c7-partita--prova .c7-partita__step .c7-partita__num { font-size: 30px; }

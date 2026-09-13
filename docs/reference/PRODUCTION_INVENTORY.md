@@ -126,7 +126,7 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/admin/gara/<int:gara_id>/match/<int:match_id>/reset_advanced` | POST | `admin.competition.reset_match_advanced` | `@gara_manager_required` | JSON action | Azzera una singola partita già iniziata |
 | `/admin/gara/<int:gara_id>/round/<int:round_number>/cancel` | POST | `admin.competition.cancel_round_advanced` | `@gara_manager_required` | JSON action | Annulla un turno specifico |
 | `/admin/gara/<int:gara_id>/round/<int:round_number>/bulk_reset` | POST | `admin.competition.bulk_reset_round_matches` | `@gara_manager_required` | JSON action | Azzera tutte le partite del turno |
-| `/admin/gara/<int:gara_id>/round/<int:round_number>/prova-x/<int:user_id>/valida` | POST | `admin.competition.validate_x_replacement` | `@gara_manager_required` | form | Registra e convalida la prova giocata al posto della X: è da qui che il punteggio entra in classifica |
+| `/admin/gara/<int:gara_id>/round/<int:round_number>/prova-x/<int:user_id>/valida` | POST | `admin.competition.validate_x_replacement` | `@gara_manager_required` | form / JSON | Registra e convalida la prova giocata al posto della X: è da qui che il punteggio entra in classifica. Con `X-Requested-With` o `Accept: application/json` risponde in JSON (card del direttore) |
 | `/admin/gara/<int:gara_id>/round/<int:round_number>/prova-x/<int:user_id>/azzera` | POST | `admin.competition.reset_x_replacement` | `@gara_manager_required` | form | Azzera la prova: il turno torna a valere zero |
 | `/admin/gara/challenges/per-la-x` | GET | `admin.competition.x_challenges_json` | `@director_or_admin_required` | JSON | Esercizi offribili per la X: alimenta il ricaricamento dell'elenco nel modulo gara |
 | `/admin/gara/<int:gara_id>/round-config` | GET | `admin.competition.list_round_configs` | `@gara_manager_required` | JSON API | Elenca gli override di configurazione per turno |
@@ -157,6 +157,8 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/admin/match/<int:match_id>/start-next-set` | POST | `admin.match.start_next_set` | `@match_manager_required` | action | Avvia set successivo (multi-set) |
 | `/admin/match/<int:match_id>/set/add_rack` | POST | `admin.match.add_set_rack` | `@match_manager_required` | action | Aggiunge rack a set |
 | `/admin/match/<int:match_id>/set/remove_rack` | POST | `admin.match.remove_set_rack` | `@match_manager_required` | action | Rimuove rack da set |
+| `/admin/match/<int:match_id>/set/punteggio` | POST | `admin.match.set_punteggio` | `@match_manager_required` | action | Triangoli del set in corso dagli stepper della card, risposta JSON |
+| `/admin/gara/trio/<int:trio_id>/punteggio` | POST | `admin.competition.trio_punteggio` | `@trio_manager_required` | action | Triangoli vinti dei tre giocatori dagli stepper della card, risposta JSON |
 | `/admin/gara/trio/<int:trio_id>/add_rack` | POST | `admin.competition.trio_add_rack` | `@trio_manager_required` | action | Aggiunge rack a trio match |
 | `/admin/gara/trio/<int:trio_id>/remove_rack` | POST | `admin.competition.trio_remove_rack` | `@trio_manager_required` | action | Rimuove rack da trio |
 | `/admin/gara/trio/<int:trio_id>/confirm` | POST | `admin.competition.trio_confirm` | `@trio_manager_required` | action | Conferma risultato trio |

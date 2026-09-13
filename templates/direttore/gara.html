@@ -82,6 +82,8 @@
 {% block scripts %}
 {# La ricerca fra gli iscrivibili (issue #156). #}
 <script src="{{ url_for('static', filename='js/iscritti_ricerca.js') }}?v={{ config.ASSET_VERSION }}"></script>
+{# Gli stepper della card, nelle quattro forme (due, trio, set, X). #}
+<script src="{{ url_for('static', filename='js/card_partita.js') }}?v={{ config.ASSET_VERSION }}"></script>
 {% include "direttore/_scripts.html" %}
 {% if gara.status != GaraStatus.COMPLETED.value %}
 <script>

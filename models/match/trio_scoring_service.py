@@ -328,6 +328,107 @@ class TrioScoringService:
         return True
 
     # -----------------------------
+    # TOTALI DALLA CARD DEL DIRETTORE
+    # -----------------------------
+
+    @staticmethod
+    @transactional(domain="match")
+    def set_racks_won(trio_id: int, punti: tuple, set_by_id: int) -> "TrioMatch":
+        """Porta il trio ai triangoli vinti `punti` (uno per giocatore).
+
+        E' il gesto degli stepper della card: un tocco cambia un totale di uno.
+        I triangoli gia' registrati restano dove possono (`assegna_vincitori`
+        cambia il minimo), quelli in piu' si annullano come l'annulla del
+        segnapunti, quelli che mancano si aggiungono. Chi segna dirige: al
+        totale dei triangoli la partita si chiude senza chiedere firme, come
+        `add_trio_rack` con `authoritative`.
+
+        Raises:
+            ConflictError: il trio e' gia' chiuso.
+            ValidationError: nessuna sequenza del girone da' quei totali.
+        """
+        from models.exceptions import ConflictError, ValidationError
+
+        from .models import TrioMatch, TrioRack
+        from .trio_punteggio import assegna_vincitori, massimo_per_giocatore
+
+        trio = db.session.get(TrioMatch, trio_id)
+        if trio is None:
+            raise ValidationError(_("Partita non trovata"))
+        if trio.is_completed:
+            raise ConflictError(
+                _("La partita è chiusa: si cambia azzerandola dal segnapunti.")
+            )
+
+        config = trio.trio_config
+        attivi = sorted(trio.active_racks, key=lambda r: r.rack_number)
+        esistenti = [trio.get_player_index(r.winner_id) for r in attivi]
+        vincitori = assegna_vincitori(config, punti, esistenti)
+        if vincitori is None:
+            if any(p > massimo_per_giocatore(config) for p in punti):
+                raise ValidationError(
+                    _(
+                        "Nel trio ognuno gioca %(n)s triangoli: non se ne "
+                        "vincono di più.",
+                        n=massimo_per_giocatore(config),
+                    )
+                )
+            raise ValidationError(
+                _(
+                    "Questo punteggio non torna con l'ordine del girone: "
+                    "il primo triangolo è fra il primo e il secondo giocatore, "
+                    "il secondo fra il primo e il terzo."
+                )
+            )
+
+        # Quelli che restano: il vincitore si corregge sul posto.
+        for rack, vincitore in zip(attivi, vincitori):
+            nuovo_id = trio.player_ids[vincitore]
+            if rack.winner_id != nuovo_id:
+                rack.winner_id = nuovo_id
+        # Quelli in piu': annullati come dal segnapunti, restano nello storico.
+        for rack in attivi[len(vincitori) :]:
+            rack.soft_delete(set_by_id)
+        # Quelli che mancano. Il numero segue il massimo di sempre, annullati
+        # compresi, come per i triangoli della partita a due.
+        prossimo = max((r.rack_number for r in trio.racks.all()), default=0) + 1
+        for posizione in range(len(attivi), len(vincitori)):
+            incontro = config.get_matchup_for_rack(posizione + 1)
+            assert incontro is not None
+            primo, secondo, attende = incontro
+            db.session.add(
+                TrioRack(
+                    trio_match_id=trio.id,
+                    rack_number=prossimo,
+                    winner_id=trio.player_ids[vincitori[posizione]],
+                    player1_id=trio.player_ids[primo],
+                    player2_id=trio.player_ids[secondo],
+                    waiting_player_id=trio.player_ids[attende],
+                    added_by_id=set_by_id,
+                )
+            )
+            prossimo += 1
+        db.session.flush()
+
+        # Sotto il totale non c'e' niente da confermare: le firme raccolte sul
+        # punteggio di prima non valgono per questo.
+        if trio.awaiting_confirmation:
+            trio.awaiting_confirmation = False
+            trio.bonus_applied = False
+            trio.winner_id = None
+            trio.player1_confirmed = False
+            trio.player2_confirmed = False
+            trio.player3_confirmed = False
+
+        TrioScoringService._update_current_players(trio)
+
+        if len(vincitori) >= config.total_played_racks:
+            TrioScoringService._apply_bonus_and_complete(
+                trio, added_by_id=set_by_id, authoritative=True
+            )
+        return trio
+
+    # -----------------------------
     # RESET
     # -----------------------------
 

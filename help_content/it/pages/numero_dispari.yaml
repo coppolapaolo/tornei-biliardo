@@ -69,8 +69,9 @@ blocks:
       risultato come succede in una partita. Per questo il punteggio registrato
       dal giocatore **non entra in classifica da solo**: finché il direttore non
       lo convalida, quel turno vale zero. Il direttore lo fa dalla pagina della
-      gara, sulla scheda del giocatore in riposo — e da lì può anche scriverlo
-      lui al posto di chi non usa l'applicazione, correggerlo, o azzerarlo.
+      gara, sulla card del giocatore in riposo: sistema il punteggio con − e +
+      (anche al posto di chi non usa l'applicazione) e tocca **Convalida**.
+      Per azzerarlo c'è **Azzera la prova** nel menu «⋯» della card.
 
   - type: list
     items:

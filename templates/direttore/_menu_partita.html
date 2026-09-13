@@ -24,6 +24,10 @@
         <button type="button" class="btn btn-danger w-100" id="menuPartitaAzzera">
           <i class="fas fa-rotate-left"></i> {{ _('Azzera la partita') }}
         </button>
+        {# La X con esercizio convalidata: si azzera la prova, non la partita. #}
+        <button type="button" class="btn btn-danger w-100" id="menuPartitaAzzeraProva" hidden>
+          <i class="fas fa-rotate-left"></i> {{ _('Azzera la prova') }}
+        </button>
         <div class="c7-nota" id="menuPartitaNota"></div>
         <a class="btn btn-secondary w-100" id="menuPartitaApri" href="#">
           <i class="fas fa-pen"></i> {{ _('Apri il segnapunti') }}

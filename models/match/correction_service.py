@@ -71,6 +71,18 @@ class MatchCorrectionService:
                 )
             )
 
+        # Nella partita a set `player1_score` sono i set vinti: il foglio della
+        # correzione scrive due numeri come fossero triangoli, e i set col loro
+        # punteggio resterebbero quelli di prima. Fino al 2026-09-13 lo
+        # impediva solo il template, che non mostrava la matita.
+        if match.is_multi_set:
+            return False, str(
+                _(
+                    "Le partite a set si correggono dal loro segnapunti, "
+                    "che tiene il punteggio di ogni set"
+                )
+            )
+
         if not match.gara_id:
             return False, str(_("Questa partita non appartiene a una gara"))
 
