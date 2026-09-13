@@ -3,7 +3,8 @@
    Il menu di una partita del turno, dalla sua card (canvas, 2S · Il menu
    della partita): cambiare il tavolo (3.2), azzerarla (`reset_match`, finche'
    il turno dopo non e' avviato), correggere un risultato chiuso (3.4, issue
-   #90), aprire il segnapunti. Un foglio solo per
+   #90), registrare il ritiro di un giocatore (il foglio «Ritiro» qui
+   sotto), aprire il segnapunti. Un foglio solo per
    tutte le card: `apriMenuPartita(bottone)` lo riempie dagli attributi
    `data-*` del pulsante che l'ha aperto (`_scripts.html`). #}
 <div class="modal fade c7-sheet" id="menuPartitaModal" tabindex="-1" aria-labelledby="menuPartitaTitolo">
@@ -21,6 +22,9 @@
         <button type="button" class="btn btn-secondary w-100" id="menuPartitaCorreggi">
           <i class="fas fa-pen"></i> {{ _('Correggi il risultato') }}
         </button>
+        {# Il ritiro di un giocatore: un comando per giocatore, creato da
+           `apriMenuPartita` dagli attributi della card. #}
+        <div class="c7-stack c7-menu-ritiri" id="menuPartitaRitiri" hidden></div>
         <button type="button" class="btn btn-danger w-100" id="menuPartitaAzzera">
           <i class="fas fa-rotate-left"></i> {{ _('Azzera la partita') }}
         </button>
@@ -35,6 +39,55 @@
         <div class="c7-nota" id="menuPartitaBloccata" hidden>
           {{ _('Il turno dopo è già avviato: questa partita non si tocca più.') }}
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Il foglio «Ritiro di …» (il canvas non lo disegna). Prima di confermare dice
+   cosa succede, con la regola della gara sui ritiri (`gara.withdraw_policy`)
+   in parole semplici. La conferma posta a `admin.match.ritiro_partita` — o al
+   ritiro del trio, che non passa dalla regola della gara: `apriRitiro`
+   (`_scripts.html`) sceglie quali righe mostrare. #}
+{% set _ritiro_tabellone = gara.matchmaking_strategy in bracket_minimum_players %}
+{% set _ritiro_esclude = gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value %}
+<div class="modal fade c7-sheet" id="ritiroModal" tabindex="-1" aria-labelledby="ritiroTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="ritiroTitolo">{{ _('Ritiro') }}</h3>
+        <div class="c7-sheet__sub" id="ritiroSotto"></div>
+      </div>
+      <div class="modal-body c7-stack">
+        <div class="c7-rows js-ritiro-due">
+          <div class="c7-rows__row">
+            <span class="c7-tile c7-tile--sm c7-tile--warn"><i class="fas fa-flag-checkered"></i></span>
+            <span class="c7-rows__main">
+              <span class="c7-rows__title d-block" id="ritiroVince"></span>
+              <span class="c7-rows__sub d-block">{{ _('la partita si chiude a tavolino; chi si ritira tiene i triangoli già vinti') }}</span>
+            </span>
+          </div>
+          {{ d.riga('fa-list-check', _('Le sue altre partite aperte'), _('si chiudono a tavolino anche quelle'), tone='warn') }}
+          {% if _ritiro_esclude %}
+          {{ d.riga('fa-user-minus', _('Esce dalla gara'), _('la sua iscrizione si toglie: dal turno dopo non entra negli abbinamenti'), tone='warn') }}
+          {% elif _ritiro_tabellone %}
+          {{ d.riga('fa-sitemap', _('Il tabellone resta com’è'), _('chi lo avrebbe incontrato passa il turno a tavolino'), tone='warn') }}
+          {% else %}
+          {{ d.riga('fa-user-clock', _('Resta negli abbinamenti'), _('nei turni dopo perde a tavolino ogni partita, e resta in classifica'), tone='warn') }}
+          {% endif %}
+        </div>
+        <div class="c7-nota js-ritiro-due">
+          {% if _ritiro_esclude %}{{ _('Lo decide la regola della gara sui ritiri. Azzerare la partita non lo rimette in gara.') }}
+          {% else %}{{ _('Lo decide la regola della gara sui ritiri. Azzerando questa partita torna in gara; le altre partite chiuse a tavolino restano chiuse.') }}{% endif %}
+        </div>
+        <div class="c7-rows js-ritiro-trio" hidden>
+          {{ d.riga('fa-flag-checkered', _('I triangoli che gli restano vanno agli avversari'), _('poi la partita a tre aspetta la conferma del risultato'), tone='warn') }}
+        </div>
+        <div class="c7-nota js-ritiro-trio" hidden>{{ _('Nel trio il ritiro vale per questa partita: la regola della gara sui ritiri non si applica.') }}</div>
+        <button type="button" class="btn btn-danger w-100" id="ritiroConferma">
+          <i class="fas fa-flag"></i> {{ _('Registra il ritiro') }}
+        </button>
       </div>
     </div>
   </div>

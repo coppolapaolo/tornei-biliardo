@@ -1281,6 +1281,30 @@
       apriCorrezione(btn);
     };
 
+    // Il ritiro: un comando per giocatore (i due lati, o i tre del trio), che
+    // apre il foglio con le conseguenze prima di confermare.
+    const ritiri = document.getElementById('menuPartitaRitiri');
+    ritiri.innerHTML = '';
+    const giocatori = d.ritiri ? JSON.parse(d.ritiri) : [];
+    ritiri.hidden = !(d.ritiroUrl && giocatori.length && canModify && !finished);
+    if (!ritiri.hidden) {
+      giocatori.forEach(function (chi) {
+        const comando = document.createElement('button');
+        comando.type = 'button';
+        comando.className = 'btn btn-secondary w-100';
+        const icona = document.createElement('i');
+        icona.className = 'fas fa-person-walking-arrow-right';
+        comando.appendChild(icona);
+        comando.appendChild(document.createTextNode(
+          ' ' + {{ _('Ritiro di %(nome)s…', nome='{nome}')|tojson }}.replace('{nome}', chi.nome)));
+        comando.onclick = function () {
+          bootstrap.Modal.getOrCreateInstance(document.getElementById('menuPartitaModal')).hide();
+          apriRitiro(d, chi, giocatori);
+        };
+        ritiri.appendChild(comando);
+      });
+    }
+
     const azzera = document.getElementById('menuPartitaAzzera');
     azzera.hidden = !(hasScores || finished) || !canModify;
     azzera.onclick = function () {
@@ -1305,6 +1329,7 @@
       correggi.hidden = true;
       azzera.hidden = true;
       apri.hidden = true;
+      ritiri.hidden = true;
       nota.hidden = false;
       nota.textContent = {{ _("Il turno torna a valere zero e l'esercizio torna da registrare.")|tojson }};
       azzeraProva.onclick = function () {
@@ -1316,6 +1341,30 @@
     document.getElementById('menuPartitaBloccata').hidden = canModify;
 
     bootstrap.Modal.getOrCreateInstance(document.getElementById('menuPartitaModal')).show();
+  }
+
+  /**
+   * Il foglio «Ritiro di …»: chi vince a tavolino e cosa succede dopo, poi la
+   * conferma. Nel trio le righe sono altre, e la regola della gara sui ritiri
+   * non si applica (`TrioMatch.handle_forfeit`).
+   */
+  function apriRitiro(d, chi, giocatori) {
+    const trio = !!d.trioId;
+    const altri = giocatori.filter(function (g) { return g.id !== chi.id; }).map(function (g) { return g.nome; });
+    document.getElementById('ritiroTitolo').textContent =
+      {{ _('Ritiro di %(nome)s', nome='{nome}')|tojson }}.replace('{nome}', chi.nome);
+    document.getElementById('ritiroSotto').textContent = d.players || '';
+    document.getElementById('ritiroVince').textContent =
+      {{ _('%(nome)s vince a tavolino', nome='{nome}')|tojson }}.replace('{nome}', altri.join(', '));
+    document.querySelectorAll('#ritiroModal .js-ritiro-due').forEach(function (el) { el.hidden = trio; });
+    document.querySelectorAll('#ritiroModal .js-ritiro-trio').forEach(function (el) { el.hidden = !trio; });
+    const conferma = document.getElementById('ritiroConferma');
+    conferma.onclick = function () {
+      const dati = new FormData();
+      dati.append('player_id', chi.id);
+      inviaAllaCard(d.ritiroUrl, conferma, dati);
+    };
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('ritiroModal')).show();
   }
 
   // ---- Il punteggio dalla card (canvas 3C) ----------------------------------

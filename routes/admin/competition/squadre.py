@@ -16,6 +16,7 @@ from models import db, Gara, Inscription
 from models.exceptions import DomainError
 from models.squadra.service import SquadraService
 from utils import gara_manager_required
+from utils.safe_redirect import safe_next_url
 from utils.route_helpers import handle_service_action
 
 from . import competition_bp
@@ -25,7 +26,15 @@ NEW_SQUADRA = "__new__"
 
 
 def _back_to_gara(gara_id: int) -> str:
-    return url_for("admin.competition.gara_detail", gara_id=gara_id)
+    """Dove tornare: la pagina da cui si e' partiti, altrimenti la gara.
+
+    I fogli di squadre e categorie stanno sia nella pagina della gara sia in
+    «Impostazioni gara»: chi invia un form da li' manda `next` (con l'ancora
+    che riapre il foglio). Solo percorsi interni (`safe_next_url`).
+    """
+    return safe_next_url(request.form.get("next")) or url_for(
+        "admin.competition.gara_detail", gara_id=gara_id
+    )
 
 
 @competition_bp.route("/<int:gara_id>/squadre/create", methods=["POST"])
@@ -163,14 +172,17 @@ def set_inscription_squadra(gara_id, inscription_id):
         SquadraService.set_inscription_squadra(
             gara, inscription, squadra_id, current_user
         )
-        flash(
-            (
-                _("Squadra aggiornata")
-                if squadra_id
-                else _("Giocherai senza squadra in questa gara")
-            ),
-            "success",
-        )
+        if squadra_id:
+            messaggio = _("Squadra aggiornata")
+        elif current_user.id == inscription.user_id:
+            messaggio = _("Giocherai senza squadra in questa gara")
+        else:
+            # Chi dirige non gioca: la frase parla del giocatore, non a lui.
+            messaggio = _(
+                "%(username)s gioca senza squadra in questa gara",
+                username=inscription.user.username,
+            )
+        flash(messaggio, "success")
     except DomainError as errore:
         flash(str(errore), "error")
     except ValueError as errore:

@@ -361,6 +361,7 @@ def create_app(config_name=None):
         )
         from models.match.break_rules import BreakRule, StartRule
         from models.dashboard.comandi import ComandoDirezione
+        from models.competition.models import WithdrawPolicy
 
         return {
             "GaraStatus": GaraStatus,
@@ -386,6 +387,9 @@ def create_app(config_name=None):
             # sempre e solo questo; l'altro vive dietro `_MATCHMAKING_MAP` e
             # non deve arrivare fino a un template.
             "MatchmakingStrategy": MatchmakingStrategy,
+            # La regola della gara sui ritiri: il foglio «Ritiro di …» della
+            # pagina del direttore la dice prima di confermare.
+            "WithdrawPolicy": WithdrawPolicy,
             # Su cosa si ordina una classifica. E' una scelta **indipendente**
             # dalla formula di gara qui sopra: la classifica generale le
             # confondeva, e mostrava la differenza triangoli sotto l'etichetta

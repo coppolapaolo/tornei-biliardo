@@ -4,7 +4,7 @@ kind: tutorial
 audience: [direttore]
 minutes: 6
 summary: "Dalla creazione all'avvio: nome, data, sala, formato di gioco e apertura delle iscrizioni. Con i valori consigliati se è la prima volta."
-screens: [admin.competition.create_gara_standalone]
+screens: [admin.competition.create_gara_standalone, admin.competition.gara_detail]
 related: [opzioni_della_gara, gestire_le_iscrizioni, condurre_la_gara]
 
 blocks:
@@ -104,6 +104,24 @@ blocks:
       Al loro posto compare il riquadro **Opzioni del tabellone**. Tutto
       l'elenco è in [Tutte le
       opzioni](/aiuto/organizzare/opzioni_della_gara).
+
+  - type: heading
+    id: eliminare
+    title: "Eliminare una gara in preparazione"
+
+  - type: text
+    text: >-
+      Finché la gara è in preparazione e nessuno è iscritto puoi cancellarla
+      del tutto: in fondo alla pagina della gara c'è la riga **Elimina la
+      gara**. Il foglio che si apre dice cosa sparisce — i turni, gli
+      esercizi, i tavoli e la direzione di gara — e, se la gara sta in un
+      campionato, ricorda che le altre gare restano come sono. Non si può
+      annullare. Aperte le iscrizioni la gara non si elimina più: si annulla,
+      e gli iscritti ricevono la notifica. Una competizione di prova si
+      elimina dal suo banner.
+
+  - type: shot
+    shot: gara-elimina
 
   - type: heading
     id: aprire

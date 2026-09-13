@@ -3836,3 +3836,43 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 .c7-esercizio-stepper { padding: 14px 10px 14px; }
 .c7-esercizio-stepper .c7-partita__step { max-width: 280px; margin-left: auto; margin-right: auto; }
 .c7-esercizio-stepper .c7-partita__step .c7-partita__num { font-size: 34px; }
+
+/* --------------------------------------------------------------------------
+   34. Squadre, categorie, ritiro ed eliminazione nella pagina del direttore
+   Il canvas non le disegna: righe che aprono fogli, come il resto della
+   pagina. Nel foglio ogni voce dell'elenco e' un `<details>` con la riga per
+   sommario e i comandi sotto; la squadra di un iscritto e' un chip che apre
+   il suo foglio; il comando distruttivo ha la tessera sul fondo tenue
+   dell'errore, mai un pulsante rosso in vista.
+   -------------------------------------------------------------------------- */
+
+.c7-tile--err { background: var(--c7-err-bg); color: var(--c7-err); }
+.c7-rows__row--err .c7-rows__title { color: var(--c7-err-ink); }
+
+/* L'elenco nel foglio: affossato, perche' il foglio e' gia' una superficie. */
+.c7-elenco { background: var(--c7-bg); }
+.c7-elenco .c7-rows__row + .c7-rows__row,
+.c7-voce + .c7-voce { border-top: 1px solid var(--c7-line); }
+
+/* La voce: la riga apre i comandi. */
+.c7-voce > summary { list-style: none; cursor: pointer; }
+.c7-voce > summary::-webkit-details-marker { display: none; }
+.c7-voce__chev { transition: transform var(--c7-dur-quick) var(--c7-ease); }
+.c7-voce[open] .c7-voce__chev { transform: rotate(180deg); transition-duration: var(--c7-dur-base); }
+.c7-voce__corpo { gap: 8px; padding: 0 18px 15px; }
+/* Sul fondo affossato campi e pulsanti tornano superficie, o spariscono. */
+.c7-voce__corpo .form-control,
+.c7-voce__corpo .form-select,
+.c7-voce__corpo .btn-secondary { background-color: var(--c7-card); }
+.c7-elenco__campo { display: flex; gap: 8px; }
+.c7-elenco__campo .form-control,
+.c7-elenco__campo .form-select { flex: 1; min-width: 0; }
+
+/* La squadra dell'iscritto: un chip che apre il foglio. */
+.c7-chip--squadra { border: 0; font-family: inherit; }
+.c7-chip--squadra .c7-chip__testo { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* Nel foglio della squadra la scelta di adesso ha la spunta. */
+.c7-scelta__check { color: var(--c7-accent); visibility: hidden; flex-shrink: 0; }
+.c7-scelta.is-on .c7-scelta__check { visibility: visible; }
+.c7-scelta.is-on .c7-rows__title { color: var(--c7-accent); }

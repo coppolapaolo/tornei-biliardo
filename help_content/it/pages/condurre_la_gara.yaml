@@ -150,16 +150,25 @@ blocks:
           tavoli. Gli occupati mostrano chi ci sta giocando, il libero è
           evidenziato e si assegna con un tocco. Serve se un tavolo si guasta
           o due coppie si accordano diversamente.
-      - name: "Registrare un forfait"
+      - name: "Registrare il ritiro di un giocatore"
         text: >-
-          Chi abbandona lascia all'avversario tutti i triangoli che mancano alla
-          distanza.
+          Dal menu «⋯» della partita scegli **Ritiro di …** accanto al nome di
+          chi abbandona. Prima di confermare il foglio dice cosa succede:
+          l'avversario vince a tavolino, le altre partite aperte di chi si
+          ritira si chiudono allo stesso modo, e la regola della gara sui
+          ritiri decide se resta negli abbinamenti, perdendo a tavolino, o se
+          esce dalla gara. Nel trio i triangoli che gli restano vanno agli
+          avversari. Il comando c'è finché la partita è aperta e il turno dopo
+          non è avviato.
         hint: partita.forfait
       - name: "Azzerare una partita sbagliata"
         text: >-
           Riporta il punteggio a zero mantenendo la stessa coppia, che rigioca.
           È la correzione da usare quando il risultato è stato inserito male.
         hint: gara.reset_partita
+
+  - type: shot
+    shot: gara-ritiro
 
   - type: text
     text: >-
@@ -381,7 +390,7 @@ blocks:
       - q: "Nella fascia non compare «Avvia il turno»."
         a: "Manca almeno una partita da concludere. Nella vista Turni, le partite ancora aperte sono quelle senza etichetta «Conclusa»."
       - q: "Un giocatore se ne va a metà gara."
-        a: "Registra il forfait sulla partita in corso. Per i turni successivi, la regola che hai scelto alla creazione decide se resta negli abbinamenti (perdendo a tavolino) o se ne esce. Nelle gare a tabellone non c'è nulla da scegliere: chi si ritira lascia passare l'avversario a tavolino, e il tabellone resta com'è."
+        a: "Tocca «⋯» sulla card della sua partita e scegli **Ritiro di …**: il foglio ti dice cosa succede prima di confermare. Per i turni successivi, la regola che hai scelto alla creazione decide se resta negli abbinamenti (perdendo a tavolino) o se ne esce. Nelle gare a tabellone non c'è nulla da scegliere: chi si ritira lascia passare l'avversario a tavolino, e il tabellone resta com'è."
       - q: "Perché il mio torneo a eliminazione non dice «Avvia la gara»?"
         a: "Perché lì l'azione è un'altra: il pulsante dice «Sorteggia il tabellone». Estrarre il tabellone chiude le iscrizioni e fissa il percorso di tutti fino alla finale, quindi il nome dice quello che succede davvero."
       - q: "Posso dirigere la gara e giocarla?"

@@ -454,7 +454,11 @@ class ScoringService:
             raise ValueError("User is not a player in this match")
         if match.is_bye:
             raise ValueError("Cannot forfeit a bye match - it's an automatic win")
-        if match.status == MatchStatus.CLOSED_UNILATERALLY.value:
+        # Chiusa vuol dire tutte e due le chiusure: fino al 2026-09-13 qui si
+        # guardava solo `CLOSED_UNILATERALLY`, e una partita confermata dai due
+        # giocatori lasciava passare il forfait, che ne riscriveva punteggio e
+        # vincitore.
+        if MatchStatus.is_finished(match.status):
             raise ValueError("Cannot forfeit a completed match")
 
     @staticmethod

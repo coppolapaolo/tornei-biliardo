@@ -1,0 +1,418 @@
+{# templates/direttore/_squadre_categorie.html — Design System 7c
+
+   Squadre (ADR-039) e categorie (ADR-049) nella pagina del direttore. Il
+   canvas non le disegnava: la forma piu' vicina alla sua grammatica e' una
+   riga per elenco, «Squadre» e «Categorie», che apre un foglio `c7-sheet`
+   con l'elenco e i comandi di prima — stesse route, stessi form. Dopo il
+   sorteggio (`SquadraService.is_editable`, `CategoriaService.
+   can_edit_inscription`) la riga resta con la tessera bloccata e il foglio
+   si legge soltanto: le categorie non spariscono piu'.
+
+   Tre macro, da importare `with context`:
+
+   * `righe(quali)` — le righe, senza contenitore, per un `.c7-rows` del
+     chiamante; `quali` e' 'tutte', 'modificabili' o 'bloccate';
+   * `senza_categoria()` — « · 2 senza categoria» per la fascia delle
+     iscrizioni, riscritto dallo script del combo a ogni salvataggio;
+   * `fogli()` — i due fogli, il foglio della squadra di un iscritto (il
+     chip di `_gara_inscriptions.html`), il `<datalist>` e lo script del
+     combo delle categorie. Una volta per pagina: contengono id.
+
+   Ogni form manda `next`, la pagina da cui parte con l'ancora che riapre il
+   foglio (`#squadre`, `#categorie`): le route tornano li' e non alla gara.
+
+   Attese: il contesto della direzione (`squadre`, `squadre_all`,
+   `squadra_counts`, `squadre_editable`, `categorie*`,
+   `iscritti_senza_categoria`, `*_owner_is_campionato`) e `user_can_manage`. #}
+{% import "direttore/_macros.html" as d with context %}
+{% set _con_squadre = gara.separate_teammates and user_can_manage %}
+{% set _con_categorie = gara.effective_has_handicap and user_can_manage %}
+{% set _chev = '<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe %}
+
+{# ---- Le righe ---- #}
+{% macro righe(quali='tutte') -%}
+{%- if _con_squadre and (quali == 'tutte' or (quali == 'modificabili') == squadre_editable) -%}
+{%- set _n = squadre_all|length -%}
+{%- set _sub -%}
+{%- if _n %}{{ ngettext('%(num)d squadra', '%(num)d squadre', _n) }}{% else %}{{ _('nessuna squadra') }}{% endif -%}
+{%- if squadra_owner_is_campionato %} · {{ _('elenco del campionato') }}{% endif -%}
+{%- if not squadre_editable %} · {{ _('fissate dal sorteggio') }}{% endif -%}
+{%- endset -%}
+{{ d.riga('fa-people-group', _('Squadre'), _sub,
+          tone=('locked' if not squadre_editable else ('ok' if _n else 'neutral')),
+          button=True, right=_chev,
+          attrs='data-bs-toggle="modal" data-bs-target="#squadreModal" data-help="gara-squadre"') }}
+{%- endif -%}
+{%- if _con_categorie and (quali == 'tutte' or (quali == 'modificabili') == categorie_editable) -%}
+{%- set _n = categorie_all|length -%}
+{%- set _k = iscritti_senza_categoria or 0 -%}
+{%- set _sub -%}
+{%- if _n %}{{ ngettext('%(num)d categoria', '%(num)d categorie', _n) }}{% else %}{{ _('nessuna categoria') }}{% endif -%}
+{%- if categorie_editable %}{{ senza_categoria() }}{% else %} · {{ _('fissate dal sorteggio') }}{% endif -%}
+{%- endset -%}
+{{ d.riga('fa-layer-group', _('Categorie'), _sub,
+          tone=('locked' if not categorie_editable else ('warn' if _k else ('ok' if _n else 'neutral'))),
+          button=True, right=_chev,
+          attrs='data-bs-toggle="modal" data-bs-target="#categorieModal"') }}
+{%- endif -%}
+{%- endmacro %}
+
+{# ---- « · k senza categoria» ---- #}
+{% macro senza_categoria() -%}
+{%- if gara.effective_has_handicap -%}
+<span class="js-senza-categoria" data-formato="{{ _('%(n)s senza categoria', n='{n}') }}"{% if not iscritti_senza_categoria %} hidden{% endif %}> · {{ _('%(n)s senza categoria', n=(iscritti_senza_categoria or 0)) }}</span>
+{%- endif -%}
+{%- endmacro %}
+
+{# Il nome della voce, quanti iscritti ha qui, se e' disattivata. #}
+{% macro _sotto(iscritti, attiva) -%}
+{%- if iscritti %}{{ ngettext('%(num)s iscritto in questa gara', '%(num)s iscritti in questa gara', iscritti) }}{% else %}{{ _('Nessun iscritto in questa gara') }}{% endif -%}
+{%- if not attiva %} · {{ _('Disattivata') }}{% endif -%}
+{%- endmacro %}
+
+{# La testa di una voce dell'elenco: la stessa riga, da leggere o da aprire. #}
+{% macro _voce(icona, nome, iscritti, attiva, apribile) -%}
+<span class="c7-tile c7-tile--sm {{ 'c7-tile--neutral' if attiva else 'c7-tile--locked' }}"><i class="fas {{ icona }}"></i></span>
+<span class="c7-rows__main">
+  <span class="c7-rows__title d-block">{{ nome }}</span>
+  <span class="c7-rows__sub d-block">{{ _sotto(iscritti, attiva) }}</span>
+</span>
+{% if apribile %}<i class="fas fa-chevron-down c7-rows__chev c7-voce__chev" aria-hidden="true"></i>{% endif %}
+{%- endmacro %}
+
+{# ---- I fogli ---- #}
+{% macro fogli() -%}
+{% set _ritorno = request.path %}
+
+{% if _con_squadre %}
+<div class="modal fade c7-sheet" id="squadreModal" tabindex="-1" aria-labelledby="squadreTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="squadreTitolo">{{ _('Squadre') }}</h3>
+        <div class="c7-sheet__sub">
+          {% if squadra_owner_is_campionato %}{{ _('Elenco del campionato: le modifiche valgono per tutte le sue gare.') }}{% else %}{{ _('Elenco di questa gara.') }}{% endif %}
+        </div>
+      </div>
+      <div class="modal-body c7-stack">
+        {% if squadre_editable %}
+        <form method="POST" action="{{ url_for('admin.competition.create_squadra', gara_id=gara.id) }}" class="c7-elenco__campo">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ _ritorno }}#squadre">
+          <input type="text" name="name" class="form-control" maxlength="100" required
+                 placeholder="{{ _('Nuova squadra') }}" aria-label="{{ _('Nome della nuova squadra') }}">
+          <button type="submit" class="btn btn-primary" aria-label="{{ _('Aggiungi squadra') }}" title="{{ _('Aggiungi squadra') }}">
+            <i class="fas fa-plus"></i>
+          </button>
+        </form>
+        {% endif %}
+
+        {% if squadre_all %}
+        <div class="c7-rows c7-elenco">
+          {% for squadra in squadre_all %}
+          {% set iscritti = squadra_counts.get(squadra.id, 0) %}
+          {% if squadre_editable %}
+          <details class="c7-voce">
+            <summary class="c7-rows__row">{{ _voce('fa-people-group', squadra.name, iscritti, squadra.is_active, true) }}</summary>
+            <div class="c7-voce__corpo c7-stack">
+              <form method="POST" action="{{ url_for('admin.competition.rename_squadra', gara_id=gara.id, squadra_id=squadra.id) }}" class="c7-elenco__campo">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ _ritorno }}#squadre">
+                <input type="text" name="name" class="form-control" maxlength="100" required
+                       value="{{ squadra.name }}" aria-label="{{ _('Nuovo nome della squadra') }}">
+                <button type="submit" class="btn btn-secondary">{{ _('Rinomina') }}</button>
+              </form>
+              {% if squadre_all|length > 1 %}
+              <form method="POST" action="{{ url_for('admin.competition.merge_squadra', gara_id=gara.id, squadra_id=squadra.id) }}" class="c7-elenco__campo"
+                    onsubmit='return confirmSubmit(this, {{ _("Unire «%(nome)s» in un’altra squadra? Le iscrizioni passano alla squadra scelta e questa voce sparisce dall’elenco.", nome=squadra.name)|tojson }})'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ _ritorno }}#squadre">
+                <select name="target_id" class="form-select" required aria-label="{{ _('Squadra in cui unire questa voce') }}">
+                  <option value="">{{ _('Unisci in…') }}</option>
+                  {% for altra in squadre_all if altra.id != squadra.id %}
+                  <option value="{{ altra.id }}">{{ altra.name }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="btn btn-secondary">{{ _('Unisci') }}</button>
+              </form>
+              {% endif %}
+              <form method="POST" action="{{ url_for('admin.competition.toggle_squadra', gara_id=gara.id, squadra_id=squadra.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ _ritorno }}#squadre">
+                {% if squadra.is_active %}
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-eye-slash"></i> {{ _('Togli dalle scelte') }}</button>
+                {% else %}
+                <input type="hidden" name="active" value="on">
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-eye"></i> {{ _('Rimetti fra le scelte') }}</button>
+                {% endif %}
+              </form>
+            </div>
+          </details>
+          {% else %}
+          <div class="c7-rows__row">{{ _voce('fa-people-group', squadra.name, iscritti, squadra.is_active, false) }}</div>
+          {% endif %}
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="c7-nota">{{ _('Nessuna squadra in elenco. Le squadre si aggiungono qui, oppure nascono da sole quando un iscritto indica la propria.') }}</div>
+        {% endif %}
+
+        <div class="c7-nota">
+          {% if squadre_editable %}{{ _('Togliere una squadra dalle scelte non cambia le iscrizioni che la usano.') }}{% endif %}
+          {{ _('Il sorteggio tiene lontani i compagni di squadra il più a lungo possibile; con squadre molto numerose l’incontro viene rinviato, non evitato.') }}
+        </div>
+        {% if not squadre_editable %}
+        <div class="c7-nota">{{ _('Il primo turno è partito: il tabellone è già estratto, quindi l’elenco non si modifica più.') }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if squadre_editable %}
+{# La squadra di un iscritto, dal chip dell'elenco: un foglio per tutte le
+   righe, riempito da `apriSquadraIscritto(chip)`. #}
+<div class="modal fade c7-sheet" id="squadraIscrittoModal" tabindex="-1" aria-labelledby="squadraIscrittoTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="squadraIscrittoTitolo">{{ _('Squadra') }}</h3>
+        <div class="c7-sheet__sub">{{ _('La squadra con cui gioca questa gara: il sorteggio la usa per tenere lontani i compagni.') }}</div>
+      </div>
+      <form method="POST" action="" id="squadraIscrittoForm" class="modal-body c7-stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ _ritorno }}">
+        <div class="c7-rows">
+          <button type="submit" name="squadra_id" value="" class="c7-rows__row c7-rows__row--btn c7-scelta" data-squadra-id="">
+            <span class="c7-tile c7-tile--sm c7-tile--neutral"><i class="fas fa-user"></i></span>
+            <span class="c7-rows__main"><span class="c7-rows__title d-block">{{ _('Senza squadra') }}</span></span>
+            <i class="fas fa-check c7-scelta__check" aria-hidden="true"></i>
+          </button>
+          {% for squadra in squadre %}
+          <button type="submit" name="squadra_id" value="{{ squadra.id }}" class="c7-rows__row c7-rows__row--btn c7-scelta" data-squadra-id="{{ squadra.id }}">
+            <span class="c7-tile c7-tile--sm"><i class="fas fa-people-group"></i></span>
+            <span class="c7-rows__main"><span class="c7-rows__title d-block">{{ squadra.name }}</span></span>
+            <i class="fas fa-check c7-scelta__check" aria-hidden="true"></i>
+          </button>
+          {% endfor %}
+        </div>
+        <div class="c7-nota">{{ _('Una squadra nuova si aggiunge dall’elenco «Squadre».') }}</div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endif %}
+
+{% if _con_categorie %}
+<div class="modal fade c7-sheet" id="categorieModal" tabindex="-1" aria-labelledby="categorieTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="categorieTitolo">{{ _('Categorie') }}</h3>
+        <div class="c7-sheet__sub">
+          {% if categoria_owner_is_campionato %}{{ _('Elenco del campionato: le modifiche valgono per tutte le sue gare.') }}{% else %}{{ _('Elenco di questa gara.') }}{% endif %}
+        </div>
+      </div>
+      <div class="modal-body c7-stack">
+        {% if categorie_all %}
+        <div class="c7-rows c7-elenco">
+          {% for categoria in categorie_all %}
+          {% set iscritti = categoria_counts.get(categoria.id, 0) %}
+          {% if categorie_editable %}
+          <details class="c7-voce">
+            <summary class="c7-rows__row">{{ _voce('fa-layer-group', categoria.name, iscritti, categoria.is_active, true) }}</summary>
+            <div class="c7-voce__corpo c7-stack">
+              <form method="POST" action="{{ url_for('admin.competition.rename_categoria', gara_id=gara.id, categoria_id=categoria.id) }}" class="c7-elenco__campo">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ _ritorno }}#categorie">
+                <input type="text" name="name" class="form-control" maxlength="50" required
+                       value="{{ categoria.name }}" aria-label="{{ _('Nuovo nome della categoria') }}">
+                <button type="submit" class="btn btn-secondary">{{ _('Rinomina') }}</button>
+              </form>
+              <form method="POST" action="{{ url_for('admin.competition.toggle_categoria', gara_id=gara.id, categoria_id=categoria.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ _ritorno }}#categorie">
+                {% if categoria.is_active %}
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-eye-slash"></i> {{ _('Togli dalle scelte') }}</button>
+                {% else %}
+                <input type="hidden" name="active" value="1">
+                <button type="submit" class="btn btn-secondary w-100"><i class="fas fa-eye"></i> {{ _('Rimetti fra le scelte') }}</button>
+                {% endif %}
+              </form>
+              {% if not iscritti %}
+              <form method="POST" action="{{ url_for('admin.competition.delete_categoria', gara_id=gara.id, categoria_id=categoria.id) }}"
+                    onsubmit='return confirmSubmit(this, {{ _("Eliminare la categoria «%(name)s»? Non è assegnata a nessuno.", name=categoria.name)|tojson }})'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ _ritorno }}#categorie">
+                <button type="submit" class="btn btn-danger w-100"><i class="fas fa-trash-can"></i> {{ _('Elimina') }}</button>
+              </form>
+              {% endif %}
+            </div>
+          </details>
+          {% else %}
+          <div class="c7-rows__row">{{ _voce('fa-layer-group', categoria.name, iscritti, categoria.is_active, false) }}</div>
+          {% endif %}
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="c7-nota">{{ _('Nessuna categoria. Scrivine una accanto a un iscritto e comparirà qui.') }}</div>
+        {% endif %}
+
+        <div class="c7-nota">
+          {{ _('In una gara con handicap l’Elo si aggiorna solo nelle partite fra giocatori della stessa categoria.') }}
+          {% if categorie_editable %}{{ _('Le categorie si scrivono accanto a ogni iscritto: un nome nuovo entra da solo in elenco. Da qui si riparano i refusi.') }}{% endif %}
+        </div>
+        {% if not categorie_editable %}
+        <div class="c7-nota">{{ _('Il primo turno è partito: le categorie hanno già deciso quali partite contano per l’Elo e non si modificano più.') }}</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if categorie_editable %}
+{# Le voci proposte dal combo di ogni riga dell'elenco iscritti. #}
+<datalist id="categorieGara{{ gara.id }}">
+  {% for categoria in categorie %}
+  <option value="{{ categoria.name }}"></option>
+  {% endfor %}
+</datalist>
+{% endif %}
+{% endif %}
+
+<script>
+  (function () {
+    // Una pagina tornata da un form del foglio (`next` con l'ancora) lo
+    // riapre: chi ha rinominato una squadra vuole vedere l'elenco, non
+    // ritrovarsi in cima alla pagina.
+    document.addEventListener('DOMContentLoaded', function () {
+      var fogli = { '#squadre': 'squadreModal', '#categorie': 'categorieModal' };
+      var foglio = fogli[location.hash] && document.getElementById(fogli[location.hash]);
+      if (foglio) bootstrap.Modal.getOrCreateInstance(foglio).show();
+    });
+  })();
+
+  {% if _con_squadre and squadre_editable %}
+  /** Il foglio della squadra di un iscritto, dal chip della sua riga. */
+  function apriSquadraIscritto(chip) {
+    var foglio = document.getElementById('squadraIscrittoModal');
+    var form = document.getElementById('squadraIscrittoForm');
+    form.action = chip.dataset.url;
+    document.getElementById('squadraIscrittoTitolo').textContent =
+      {{ _('Squadra di %(username)s', username='{nome}')|tojson }}.replace('{nome}', chip.dataset.username);
+    form.querySelectorAll('.c7-scelta').forEach(function (scelta) {
+      scelta.classList.toggle('is-on', scelta.dataset.squadraId === (chip.dataset.squadraId || ''));
+    });
+    bootstrap.Modal.getOrCreateInstance(foglio).show();
+  }
+  {% endif %}
+
+  {% if _con_categorie and categorie_editable %}
+  (function () {
+    // Il combo della categoria salva da sé: con 32 iscritti un invio di form
+    // per riga significherebbe 32 ricariche che riportano ogni volta in cima.
+    const GARA_ID = {{ gara.id|tojson }};
+    const MESSAGGI = {
+      errore: {{ _('Categoria non salvata')|tojson }}
+    };
+
+    function aggiornaElenco(nomi) {
+      const lista = document.getElementById('categorieGara' + GARA_ID);
+      if (!lista) return;
+      lista.innerHTML = '';
+      nomi.forEach(function (nome) {
+        const opzione = document.createElement('option');
+        opzione.value = nome;
+        lista.appendChild(opzione);
+      });
+    }
+
+    // «2 senza categoria» nella fascia e nella riga: il conteggio cambia a
+    // ogni salvataggio, e la pagina non si ricarica.
+    function aggiornaSenzaCategoria(quanti) {
+      document.querySelectorAll('.js-senza-categoria').forEach(function (el) {
+        el.hidden = !quanti;
+        el.textContent = ' · ' + el.dataset.formato.replace('{n}', quanti);
+      });
+    }
+
+    function segnala(campo, esito) {
+      campo.classList.remove('is-valid', 'is-invalid');
+      campo.classList.add(esito ? 'is-valid' : 'is-invalid');
+      if (esito) {
+        setTimeout(function () { campo.classList.remove('is-valid'); }, 1500);
+      }
+    }
+
+    async function salva(campo) {
+      const url = campo.dataset.categoriaUrl;
+      if (!url || campo.dataset.inCorso === '1') return;
+      // Il combo puo' esistere due volte (mobile e desktop): dopo il
+      // salvataggio vanno allineati entrambi.
+      const gemelli = document.querySelectorAll(
+        '.c7-categoria-input[data-categoria-url="' + url + '"]'
+      );
+      campo.dataset.inCorso = '1';
+      try {
+        const risposta = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken()
+          },
+          body: JSON.stringify({ name: campo.value })
+        });
+        const dati = await risposta.json().catch(function () { return {}; });
+        if (!risposta.ok || !dati.success) {
+          segnala(campo, false);
+          campo.title = dati.error || MESSAGGI.errore;
+          return;
+        }
+        const nome = dati.categoria ? dati.categoria.name : '';
+        gemelli.forEach(function (gemello) {
+          gemello.value = nome;
+          gemello.title = '';
+        });
+        if (dati.elenco) aggiornaElenco(dati.elenco);
+        // L'avviso dell'avvio lo compone il server e va riscritto qui: un
+        // conteggio fissato all'apertura continuerebbe a dire che mancano
+        // categorie appena assegnate.
+        if (typeof GARA_CONFIG !== 'undefined' && dati.avviso_senza_categoria !== undefined) {
+          GARA_CONFIG.i18n.warnSenzaCategoria = dati.avviso_senza_categoria;
+          GARA_CONFIG.gara.senzaCategoria = dati.senza_categoria;
+        }
+        if (dati.senza_categoria !== undefined) aggiornaSenzaCategoria(dati.senza_categoria);
+        segnala(campo, true);
+      } catch (e) {
+        segnala(campo, false);
+        campo.title = MESSAGGI.errore;
+      } finally {
+        campo.dataset.inCorso = '';
+      }
+    }
+
+    document.addEventListener('change', function (evento) {
+      const campo = evento.target;
+      if (campo && campo.classList && campo.classList.contains('c7-categoria-input')) {
+        salva(campo);
+      }
+    });
+
+    // Invio da tastiera: `change` non scatta se il valore non e' cambiato,
+    // ma chi preme Invio si aspetta comunque un salvataggio.
+    document.addEventListener('keydown', function (evento) {
+      const campo = evento.target;
+      if (evento.key === 'Enter' && campo && campo.classList
+          && campo.classList.contains('c7-categoria-input')) {
+        evento.preventDefault();
+        campo.blur();
+      }
+    });
+  })();
+  {% endif %}
+</script>
+{%- endmacro %}

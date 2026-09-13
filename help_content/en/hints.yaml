@@ -161,6 +161,15 @@ hints:
   - admin.competition.gara_detail
   page: categorie
   section: assegnare
+- id: gara.squadre
+  label: Teams
+  short: The list of teams for this competition, or for the championship. Tap it to add, rename or merge; after the draw it is read-only.
+  anchor: gara-squadre
+  screens:
+  - admin.competition.gara_detail
+  - admin.competition.gara_impostazioni
+  page: squadre
+  section: attivare
 - id: gara.forfait
   label: Forfeit handling
   short: 'Whoever abandons stays in the pairings losing by walkover, or drops out. Not asked on brackets:

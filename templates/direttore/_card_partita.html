@@ -165,6 +165,13 @@
         (2, match.player2.username, match.player2_score, forfeit_user_ids is defined and match.player2_id in forfeit_user_ids, finita and match.winner_id == match.player2_id, match.player2_id == current_user.id, not _stop)] %}
 {% endif %}
 {% set _nomi = lati|map(attribute=1)|join(' – ') %}
+{# Chi si puo' ritirare da questa partita: il menu propone un comando per
+   giocatore. Solo a partita aperta e non bloccata dal turno dopo; nel trio
+   una volta sola (`TrioMatch.handle_forfeit`). #}
+{% set _ids = _trio.ids if _trio else (match.player1_id, match.player2_id) %}
+{% set _ritirabile = can_modify and stato in ('da_giocare', 'in_corso') and not (_trio and match.trio_match and match.trio_match.forfeit_player_id) %}
+{% set _ritiri = [] %}
+{% if _ritirabile %}{% for l in lati %}{% set _ = _ritiri.append({'id': _ids[loop.index0], 'nome': l[1]}) %}{% endfor %}{% endif %}
 <article class="c7-card c7-partita c7-partita--{{ stato }} c7-partita--{{ forma }}{% if mia %} c7-card--accent c7-partita--mia{% elif stato == 'da_validare' %} c7-card--ok{% elif finita %} c7-card--locked{% endif %}"
          id="partita{{ match.id }}"
          data-match-id="{{ match.id }}" data-stato="{{ stato }}"
@@ -224,6 +231,8 @@
               data-can-modify="{{ '1' if can_modify else '0' }}"
               data-correggibile="{{ '1' if forma == 'due' else '0' }}"
               {% if _trio %}data-trio-id="{{ _trio.trio_id }}"{% endif %}
+              {% if _ritiri %}data-ritiro-url="{{ url_for('admin.competition.trio_forfeit', trio_id=_trio.trio_id) if _trio else url_for('admin.match.ritiro_partita', match_id=match.id) }}"
+              data-ritiri='{{ _ritiri|tojson }}'{% endif %}
               data-detail-url="{{ url_for('admin.match.match_detail', match_id=match.id) }}">
         <i class="fas fa-ellipsis"></i>
       </button>

@@ -174,6 +174,88 @@ def punteggio_partita(match_id):
     )
 
 
+@match_bp.route("/<int:match_id>/forfeit", methods=["POST"])
+@login_required
+@match_manager_required
+def ritiro_partita(match_id):
+    """Il ritiro di un giocatore deciso dal direttore, dal menu della partita.
+
+    Stessa strada di dominio del forfait che dichiara il giocatore
+    (`MatchService.forfeit_match`): la partita si chiude a tavolino, le altre
+    partite aperte di chi si ritira pure, e la regola della gara
+    (`withdraw_policy`) decide se resta negli abbinamenti o ne esce. Cambia
+    solo chi puo' chiederlo: al posto di «e' un giocatore della partita»
+    (`match_player_required`) c'e' il permesso del direttore, e il giocatore
+    si passa in `player_id`.
+
+    Prima del servizio i rifiuti della card (`rifiuto_punteggio_card`): una
+    partita chiusa non si riscrive, un turno bloccato dal turno dopo non si
+    tocca. La X non ha avversario, il trio ha il suo ritiro
+    (`/admin/gara/trio/<id>/forfeit`).
+    """
+    from models.match.services import MatchService
+    from routes.sse import emit_match_event
+    from utils.card_partita import rifiuto_del_dominio, rifiuto_punteggio_card
+
+    match = db.session.get(Match, match_id)
+    if match is None:
+        return jsonify({"success": False, "error": str(_("Partita non trovata"))}), 404
+    if match.is_bye:
+        errore = _(
+            "La X a tavolino non ha un avversario: non c'è ritiro da registrare."
+        )
+        return jsonify({"success": False, "error": str(errore)}), 400
+    if match.is_trio:
+        errore = _("Il ritiro nella partita a tre si registra dal trio.")
+        return jsonify({"success": False, "error": str(errore)}), 400
+    player_id = request.form.get("player_id", type=int)
+    if player_id not in (match.player1_id, match.player2_id) or player_id is None:
+        errore = _("Scegli uno dei due giocatori della partita.")
+        return jsonify({"success": False, "error": str(errore)}), 400
+    rifiuto = rifiuto_punteggio_card(
+        match, _("La partita è chiusa: il ritiro non si registra più.")
+    )
+    if rifiuto is not None:
+        return rifiuto
+
+    try:
+        match = MatchService.forfeit_match(match_id=match_id, user_id=player_id)
+    except ValueError as errore:
+        return rifiuto_del_dominio(errore)
+
+    gara_id = match.gara_id
+    if gara_id:
+        from models.competition.round_service import RoundService
+
+        RoundService.update_round_progression(gara_id)
+    # Gli stessi due eventi del forfait del giocatore, con `autore`.
+    emit_match_event(
+        match_id,
+        "forfeit",
+        {
+            "match_id": match_id,
+            "forfeit_by": player_id,
+            "winner_id": match.winner_id,
+            "status": match.status,
+            "autore": current_user.id,
+        },
+    )
+    if gara_id:
+        emit_gara_event(
+            gara_id,
+            "match_completed",
+            {
+                "match_id": match_id,
+                "winner_id": match.winner_id,
+                "forfeit": True,
+                "autore": current_user.id,
+            },
+        )
+    return jsonify(
+        {"success": True, "status": match.status, "winner_id": match.winner_id}
+    )
+
+
 @match_bp.route("/<int:match_id>/validate", methods=["POST"])
 @login_required
 @match_manager_required

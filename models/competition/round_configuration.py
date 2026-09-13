@@ -45,7 +45,16 @@ class RoundConfiguration(BaseModel):
 
     notes = db.Column(db.Text, nullable=True)
 
-    gara = db.relationship("Gara", backref="round_configurations")
+    # Cancellare la gara cancella le sue configurazioni per turno: senza
+    # cascata l'ORM annullava `gara_id` prima che il DB applicasse il suo
+    # ON DELETE CASCADE, e la colonna e' NOT NULL (eliminare una gara in
+    # preparazione con un turno modificato rispondeva 500).
+    gara = db.relationship(
+        "Gara",
+        backref=db.backref(
+            "round_configurations", cascade="all, delete-orphan", passive_deletes=True
+        ),
+    )
 
     __table_args__ = (
         db.UniqueConstraint(

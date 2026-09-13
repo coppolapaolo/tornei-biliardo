@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [direttore, giocatore]
 minutes: 4
 summary: "Nelle gare con handicap le categorie decidono quali partite contano per il rating: solo quelle fra giocatori dello stesso livello."
-screens: [admin.competition.gara_detail]
+screens: [admin.competition.gara_detail, admin.competition.gara_impostazioni]
 related: [opzioni_della_gara, gestire_le_iscrizioni, profilo_e_statistiche]
 
 blocks:
@@ -83,11 +83,20 @@ blocks:
 
   - type: text
     text: >-
-      Nella linguetta **Gestione** il riquadro «Categorie» mostra l'elenco della
-      competizione con **quanti iscritti** ha ciascuna. È lì che si riconosce un
-      errore di battitura: se «BB» ha un solo giocatore mentre «B» ne ha otto,
-      «BB» è un refuso. Da lì puoi rinominarla, eliminarla se non la usa
-      nessuno, oppure toglierla dalle scelte future senza cancellarla.
+      La riga **Categorie** — nella pagina della gara mentre la prepari e a
+      iscrizioni aperte, e in **Impostazioni gara** — dice quante categorie ci
+      sono e quanti iscritti ne sono ancora senza; lo stesso numero compare
+      nella fascia scura, prima di «Avvia la gara». Toccala: si apre l'elenco
+      della competizione con **quanti iscritti** ha ciascuna. È lì che si
+      riconosce un errore di battitura: se «BB» ha un solo giocatore mentre «B»
+      ne ha otto, «BB» è un refuso. Tocca la voce per rinominarla, eliminarla
+      se non la usa nessuno, oppure toglierla dalle scelte future senza
+      cancellarla.
+
+  - type: text
+    text: >-
+      Dopo l'avvio del primo turno la riga resta, con la tessera grigia:
+      l'elenco si apre ancora, ma solo per leggerlo.
 
   - type: heading
     id: quando

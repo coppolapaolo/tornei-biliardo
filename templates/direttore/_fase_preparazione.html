@@ -3,7 +3,8 @@
    Fase 1 del canvas. La fascia dice che si e' in preparazione e offre
    l'unica azione conclusiva, aprire le iscrizioni; sotto, «Da preparare»:
    turni e distanze, esercizi fra i turni, direzione di gara, tavoli,
-   vetrina, ogni riga con lo stato della voce.
+   vetrina, squadre e categorie dove la gara le usa, ogni riga con lo stato
+   della voce. In fondo, finche' nessuno e' iscritto, «Elimina la gara».
 
    Sul telefono (1.1) ogni riga porta al suo passo, una pagina con avanti e
    indietro (`gara_preparazione`, `gara_vetrina`). Sul desktop (1.9) la
@@ -18,6 +19,8 @@
    contesto della direzione. #}
 
 {% import "components/_tabellone_macros.html" as t with context %}
+{% import "direttore/_squadre_categorie.html" as sc with context %}
+{% set _eliminabile = gara.can_be_deleted() and not gara.is_prova and feature_visible('admin.competition.delete_gara') %}
 {% set _turni_configurabili = gara.rounds_count > 1 and gara.matchmaking_strategy in [MatchmakingStrategy.AMALFI.value, MatchmakingStrategy.RANDOM.value] %}
 {% set _co_direttori = gara.directors|length %}
 {% set _tavoli = gara.get_available_tables() %}
@@ -98,8 +101,6 @@
     </div>
     {% endif %}
 
-    <div id="sezioneSquadre">{% include "components/_squadre_management.html" %}</div>
-    {% include "components/_categorie_management.html" %}
   </div>
 
   {# ---- Colonna destra (sul telefono: la sola cosa che c'e') ---- #}
@@ -123,6 +124,8 @@
       {{ d.riga('fa-table', _('Tavoli'),
                 ((_tavoli|join(', ')) ~ ((' · ' ~ ngettext('%(n)d nella sala', '%(n)d nella sala', _tavoli_sala|length, n=_tavoli_sala|length)) if _tavoli_sala else '')) if _tavoli else _('nessun tavolo: la sala non ne ha dichiarati'),
                 tone=('ok' if _tavoli else 'warn'), href=_url_passo.get('tavoli', '#'), attrs='data-desktop-href="#sezioneTavoli"') }}
+      {# Squadre e categorie aprono il loro foglio, anche sul desktop. #}
+      {{ sc.righe() }}
       {% if not gara.is_prova and feature_visible('admin.competition.gara_vetrina') %}
       {{ d.riga('fa-share-nodes', _('Vetrina'),
                 (_('locandina caricata') if _locandina else _('nessuna locandina')),
@@ -164,8 +167,46 @@
       {% include "components/_gara_public_link.html" %}
     </div>
     {% endif %}
+
+    {# Distruttiva e in fondo: fondo tenue, mai un pulsante rosso in vista.
+       La prova si elimina dal suo banner. #}
+    {% if _eliminabile %}
+    <div class="c7-rows">
+      {{ d.riga('fa-trash-can', _('Elimina la gara'), _('si può finché nessuno è iscritto'),
+                tone='err', button=True, attrs='data-bs-toggle="modal" data-bs-target="#eliminaGaraModal"') }}
+    </div>
+    {% endif %}
   </div>
 </div>
+
+{{ sc.fogli() }}
+
+{% if _eliminabile %}
+<div class="modal fade c7-sheet" id="eliminaGaraModal" tabindex="-1" aria-labelledby="eliminaGaraTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="eliminaGaraTitolo">{{ _('Elimina la gara') }}</h3>
+        <div class="c7-sheet__sub">{{ gara.display_name }}</div>
+      </div>
+      <form method="POST" action="{{ url_for('admin.competition.delete_gara', gara_id=gara.id) }}" class="modal-body c7-stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="c7-rows">
+          {{ d.riga('fa-trash-can', _('La gara sparisce'), _('con i turni, gli esercizi, i tavoli e la direzione di gara'), tone='err') }}
+          {% if gara.campionato %}
+          {{ d.riga('fa-trophy', _('Il campionato resta'), _('«%(nome)s» perde questa gara; le altre non cambiano', nome=gara.campionato.name)) }}
+          {% endif %}
+        </div>
+        <div class="c7-nota">{{ _('Non si può annullare. Si può solo finché nessuno è iscritto: dopo, la gara si annulla e gli iscritti ricevono la notifica.') }}</div>
+        <button type="submit" class="btn btn-danger w-100">
+          <i class="fas fa-trash-can"></i> {{ _('Elimina la gara') }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
 
 <script>
   // Sul desktop le righe di «Da preparare» scorrono alla sezione in linea;

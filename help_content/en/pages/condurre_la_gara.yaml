@@ -149,16 +149,25 @@ blocks:
           Occupied tiles show who is playing there, the free one is
           highlighted and a tap assigns it. Useful when a table breaks down
           or two pairs agree otherwise.
-      - name: "Record a forfeit"
+      - name: "Record a player's withdrawal"
         text: >-
-          Whoever abandons leaves their opponent all the racks missing to the
-          distance.
+          From the match «⋯» menu choose **… withdraws** next to the name of
+          whoever is leaving. Before you confirm, the sheet tells you what
+          happens: the opponent wins by walkover, that player's other open
+          matches close the same way, and the competition's withdrawal rule
+          decides whether they stay in the pairings, losing by walkover, or
+          leave the competition. In a trio, the racks they still had go to the
+          opponents. The command is there while the match is open and the next
+          round has not started.
         hint: partita.forfait
       - name: "Reset a wrong match"
         text: >-
           Puts the score back to zero keeping the same pair, who replay. This
           is the correction to use when a result was entered wrongly.
         hint: gara.reset_partita
+
+  - type: shot
+    shot: gara-ritiro
 
   - type: text
     text: >-
@@ -381,7 +390,7 @@ blocks:
       - q: "The «Start next round» button is greyed out."
         a: "At least one match is still open. In the Rounds view, the open matches are the ones without the «Finished» label."
       - q: "A player leaves halfway through the competition."
-        a: "Record a forfeit on the match in progress. For the following rounds, the rule you chose at creation decides whether they stay in the pairings (losing by walkover) or drop out. In bracket competitions there is nothing to choose: whoever withdraws lets their opponent through by walkover, and the bracket stays as it is."
+        a: "Tap «⋯» on their match card and choose **… withdraws**: the sheet tells you what happens before you confirm. For the following rounds, the rule you chose at creation decides whether they stay in the pairings (losing by walkover) or drop out. In bracket competitions there is nothing to choose: whoever withdraws lets their opponent through by walkover, and the bracket stays as it is."
       - q: "Why does my knockout not say «Start the competition»?"
         a: "Because the action there is a different one: the button says «Draw the bracket». Drawing the bracket closes registrations and fixes everybody's path to the final, so the name says what actually happens."
       - q: "Can I run a competition and play in it?"

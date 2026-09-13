@@ -405,8 +405,33 @@ shots:
   - id: gara-squadre
     route: /admin/gara/3
     as: Luca Bianchi
-    clip: "#sezioneSquadre"
-    caption: "Il pannello delle squadre: quali ci sono e chi ne fa parte in questa gara."
+    click: ['[data-bs-target="#squadreModal"]']
+    wait_for: "#squadreModal.show"
+    clip: "#squadreModal .modal-content"
+    caption: "Il foglio «Squadre» aperto dalla riga della pagina della gara: le squadre in elenco, quanti iscritti hanno in questa gara e il campo per aggiungerne una."
+
+  - id: gara-impostazioni
+    route: /admin/gara/3/impostazioni
+    as: Luca Bianchi
+    full_page: true
+    caption: "«Impostazioni gara» a iscrizioni aperte: direzione di gara, vetrina, tavoli e, in fondo, la riga «Squadre»."
+    viewports: [mobile, desktop]
+
+  - id: gara-ritiro
+    route: /admin/gara/2
+    as: Luca Bianchi
+    click: ['[data-ritiro-url]', '#menuPartitaRitiri button']
+    wait_for: "#ritiroModal.show"
+    clip: "#ritiroModal .modal-content"
+    caption: "Il foglio «Ritiro di …» aperto dal menu della partita: chi vince a tavolino, cosa succede alle sue altre partite e la regola della gara sui ritiri, prima di confermare."
+
+  - id: gara-elimina
+    route: /admin/gara/4
+    as: Luca Bianchi
+    click: ['[data-bs-target="#eliminaGaraModal"]']
+    wait_for: "#eliminaGaraModal.show"
+    clip: "#eliminaGaraModal .modal-content"
+    caption: "Il foglio «Elimina la gara» di una gara in preparazione: cosa sparisce, che il campionato resta, e che non si può annullare."
 
   - id: gara-turni-config
     route: /admin/gara/4/preparazione/turni

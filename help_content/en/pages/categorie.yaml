@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [direttore, giocatore]
 minutes: 4
 summary: "In handicap competitions, categories decide which matches count towards the rating: only those between players of the same level."
-screens: [admin.competition.gara_detail]
+screens: [admin.competition.gara_detail, admin.competition.gara_impostazioni]
 related: [opzioni_della_gara, gestire_le_iscrizioni, profilo_e_statistiche]
 
 blocks:
@@ -84,11 +84,19 @@ blocks:
 
   - type: text
     text: >-
-      On the **Management** tab the "Categories" panel shows the competition's
-      list with **how many entrants** each one has. That is where a typo shows
-      up: if "BB" has a single player while "B" has eight, "BB" is a slip. From
-      there you can rename it, delete it if nobody uses it, or take it out of
-      future choices without deleting it.
+      The **Categories** row — on the competition page while you prepare it
+      and while registrations are open, and in **Competition settings** — says
+      how many categories there are and how many entrants still have none; the
+      same number appears in the dark band, before «Start the competition».
+      Tap it: the competition's list opens with **how many entrants** each one
+      has. That is where a typo shows up: if "BB" has a single player while
+      "B" has eight, "BB" is a slip. Tap the entry to rename it, delete it if
+      nobody uses it, or take it out of future choices without deleting it.
+
+  - type: text
+    text: >-
+      Once the first round has started the row stays, with a grey tile: the
+      list still opens, but only to read it.
 
   - type: heading
     id: quando

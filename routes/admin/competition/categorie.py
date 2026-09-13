@@ -26,13 +26,22 @@ from models import db, Gara, Inscription
 from models.categoria.service import CategoriaService
 from models.exceptions import DomainError, http_status_for_exception
 from utils import gara_manager_required
+from utils.safe_redirect import safe_next_url
 from utils.route_helpers import get_or_ajax_404, handle_service_action
 
 from . import competition_bp
 
 
 def _back_to_gara(gara_id: int) -> str:
-    return url_for("admin.competition.gara_detail", gara_id=gara_id)
+    """Dove tornare: la pagina da cui si e' partiti, altrimenti la gara.
+
+    I fogli di squadre e categorie stanno sia nella pagina della gara sia in
+    «Impostazioni gara»: chi invia un form da li' manda `next` (con l'ancora
+    che riapre il foglio). Solo percorsi interni (`safe_next_url`).
+    """
+    return safe_next_url(request.form.get("next")) or url_for(
+        "admin.competition.gara_detail", gara_id=gara_id
+    )
 
 
 def avviso_senza_categoria(gara) -> str:
