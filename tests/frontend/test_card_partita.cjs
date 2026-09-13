@@ -127,6 +127,20 @@ async function un_rifiuto_rimette_la_card_com_era() {
   assert.strictEqual(a.piu(1).disabled, false);
 }
 
+async function il_foglio_del_trio_si_ferma_ai_triangoli_del_trio() {
+  // Il foglio della correzione: nessun indirizzo e nessun `data-piu` dal
+  // server. Il limite è quello del trio finito: quattro a testa, sei in tutto.
+  const a = ambiente('data-tipo="trio" data-punti="4,1,0" data-massimo="4" data-totale="6"', 3, []);
+  assert.strictEqual(a.piu(1).disabled, true, "nessuno vince più dei triangoli che gioca");
+  assert.strictEqual(a.piu(2).disabled, false);
+  await a.tocca(2, 1);
+  assert.strictEqual(a.card.dataset.punti, "4,2,0");
+  assert.strictEqual(a.inviati.length, 0, "il foglio non salva al tocco");
+  assert.strictEqual(a.piu(2).disabled, true, "a somma piena i + si spengono");
+  assert.strictEqual(a.piu(3).disabled, true);
+  assert.strictEqual(a.meno(3).disabled, true);
+}
+
 async function la_x_non_salva_al_tocco() {
   const a = ambiente('data-tipo="x" data-punti="2" data-max="3"', 1, []);
   await a.tocca(1, 1);
@@ -143,6 +157,7 @@ async function la_x_non_salva_al_tocco() {
     il_trio_segue_i_piu_del_server,
     alla_chiusura_la_pagina_si_ricarica,
     un_rifiuto_rimette_la_card_com_era,
+    il_foglio_del_trio_si_ferma_ai_triangoli_del_trio,
     la_x_non_salva_al_tocco,
   ];
   for (const prova of prove) {

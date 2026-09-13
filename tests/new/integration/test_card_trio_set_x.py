@@ -247,7 +247,7 @@ def test_la_card_del_trio_ha_tre_stepper(client, admin, db_session, isolated_pla
     assert 'data-piu="1,1,0"' in card
     assert "Trio · 2 gironi" in card
     assert f"/admin/gara/trio/{trio.id}/punteggio" in card
-    assert 'data-correggibile="0"' in card
+    assert 'data-correggibile="1"' in card
     assert "Inserisci risultato" not in html
 
 
@@ -270,7 +270,7 @@ def test_il_trio_giocato_dai_giocatori_e_da_validare(
     assert "fa-crown" in card
 
 
-def test_a_turno_concluso_il_trio_e_una_riga_con_tre_nomi_senza_matita(
+def test_a_turno_concluso_il_trio_e_una_riga_con_tre_nomi_e_la_matita(
     client, admin, db_session, isolated_players
 ):
     gara = _gara(db_session, distance=4)
@@ -282,7 +282,92 @@ def test_a_turno_concluso_il_trio_e_una_riga_con_tre_nomi_senza_matita(
     for giocatore in isolated_players[:3]:
         assert giocatore.username in riga
     assert "4–2–0" in riga
-    assert "apriCorrezione" not in riga
+    assert "apriCorrezione(this)" in riga
+    assert 'data-correzione="trio"' in riga
+    assert 'data-punti-trio="4,2,0"' in riga
+    assert 'data-totale="6"' in riga
+    assert 'data-massimo="4"' in riga
+
+
+def test_il_trio_chiuso_a_turno_in_corso_ha_correggi_sulla_card(
+    client, admin, db_session, isolated_players
+):
+    gara = _gara(db_session, distance=4)
+    match, trio = _trio(db_session, gara, isolated_players)
+    db_session.add(
+        Match(
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=isolated_players[3].id,
+            player2_id=isolated_players[4].id,
+            status=MatchStatus.PENDING.value,
+        )
+    )
+    db_session.commit()
+    assert _punti_trio(client, trio.id, 4, 2, 0).status_code == 200
+
+    card = _card(client.get(f"/admin/gara/{gara.id}").get_data(as_text=True), match.id)
+    assert 'data-stato="conclusa"' in card
+    assert "apriCorrezione(this)" in card
+    assert 'data-correggibile="1"' in card
+    assert 'data-correzione="trio"' in card
+
+
+def test_la_correzione_del_trio_riscrive_triangoli_vincitore_e_classifica(
+    client, admin, db_session, isolated_players
+):
+    from models.classification.score_aggregator import ScoreAggregator
+    from models.match.models import MatchCorrection
+
+    gara = _gara(db_session, distance=4)
+    match, trio = _trio(db_session, gara, isolated_players)
+    assert _punti_trio(client, trio.id, 4, 2, 0).status_code == 200
+    p1, p2, p3 = isolated_players[:3]
+
+    r = client.post(
+        f"/admin/match/{match.id}/correct",
+        data={
+            "player1_score": 1,
+            "player2_score": 3,
+            "player3_score": 2,
+            "note": "nomi scambiati",
+            "next": f"/admin/gara/{gara.id}",
+        },
+    )
+    assert r.status_code == 302
+    assert r.headers["Location"].endswith(f"/admin/gara/{gara.id}")
+
+    riletto = db_session.get(TrioMatch, trio.id)
+    assert riletto.player_racks_list == [1, 3, 2]
+    assert riletto.winner_id == p2.id
+    traccia = MatchCorrection.query.filter_by(match_id=match.id).one()
+    assert (traccia.previous_player3_score, traccia.new_player3_score) == (0, 2)
+
+    voci = {
+        v.player_id: v for v in ScoreAggregator().aggregate_round_scores(gara.id, 1)
+    }
+    assert [voci[g.id].matches_won for g in (p1, p2, p3)] == [0, 1, 0]
+
+    pagina = client.get(f"/admin/match/{match.id}").get_data(as_text=True)
+    assert "4–2–0" in pagina and "1–3–2" in pagina
+
+
+def test_il_trio_di_un_turno_bloccato_non_si_corregge(
+    client, admin, db_session, isolated_players
+):
+    from models.match.models import MatchCorrection
+
+    gara = _gara(db_session, distance=4)
+    match, trio = _trio(db_session, gara, isolated_players)
+    assert _punti_trio(client, trio.id, 4, 2, 0).status_code == 200
+    _blocca_il_turno_1(db_session, gara, isolated_players)
+
+    client.post(
+        f"/admin/match/{match.id}/correct",
+        data={"player1_score": 1, "player2_score": 3, "player3_score": 2},
+    )
+    assert db_session.get(TrioMatch, trio.id).player_racks_list == [4, 2, 0]
+    assert MatchCorrection.query.filter_by(match_id=match.id).count() == 0
 
 
 # ── Partita a set ─────────────────────────────────────────────────────────────
@@ -398,27 +483,160 @@ def test_la_card_della_partita_a_set_mostra_il_set_in_corso(
     assert f"/admin/match/{match.id}/punteggio" not in card
 
 
-def test_la_partita_a_set_non_si_corregge_dal_foglio(
+def _gioca_a_set(client, match_id, *punteggi):
+    for a, b in punteggi:
+        assert client.post(f"/admin/match/{match_id}/start-next-set").status_code == 200
+        assert _punti_set(client, match_id, a, b).status_code == 200
+
+
+def _campi_set(sets, **altri):
+    dati = dict(altri)
+    for numero, (a, b) in enumerate(sets, start=1):
+        dati[f"set_{numero}_player1"] = a
+        dati[f"set_{numero}_player2"] = b
+    return dati
+
+
+def test_a_turno_concluso_la_partita_a_set_e_una_riga_che_si_corregge(
     client, admin, db_session, isolated_players
 ):
-    """Il servizio rifiuta: fino al 2026-09-13 lo impediva solo il template."""
-    from models.match.correction_service import MatchCorrectionService
+    gara = _gara(db_session, distance=4)
+    match = _a_set(db_session, gara, isolated_players)
+    _gioca_a_set(client, match.id, (4, 1), (4, 2))
+
+    html = client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    riga = html.split(f'data-match-id="{match.id}"')[1].split("c7-rows__row")[0]
+    assert "apriCorrezione(this)" in riga
+    assert 'data-correzione="set"' in riga
+    assert 'data-set-punti="4-1,4-2"' in riga
+    assert 'data-set-distanza="4"' in riga
+    assert 'data-set-da-vincere="2"' in riga
+
+
+def test_la_partita_a_set_chiusa_a_turno_in_corso_ha_correggi_sulla_card(
+    client, admin, db_session, isolated_players
+):
+    gara = _gara(db_session, distance=4)
+    match = _a_set(db_session, gara, isolated_players)
+    db_session.add(
+        Match(
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=isolated_players[0].id,
+            player2_id=isolated_players[1].id,
+            status=MatchStatus.PENDING.value,
+        )
+    )
+    db_session.commit()
+    _gioca_a_set(client, match.id, (4, 1), (4, 2))
+
+    card = _card(client.get(f"/admin/gara/{gara.id}").get_data(as_text=True), match.id)
+    assert 'data-stato="conclusa"' in card
+    assert "apriCorrezione(this)" in card
+    assert 'data-correggibile="1"' in card
+    assert 'data-correzione="set"' in card
+
+
+def test_la_partita_a_set_si_corregge_set_per_set(
+    client, admin, db_session, isolated_players
+):
+    """Un set in più e il vincitore che cambia: set, vincitore e classifica."""
+    from models.classification.score_aggregator import ScoreAggregator
+    from models.match.models import MatchCorrection
+    from models.match.set_models import Set
 
     gara = _gara(db_session, distance=4)
-    match = _a_set(db_session, gara, isolated_players, sets=1)
-    client.post(f"/admin/match/{match.id}/start-next-set")
-    assert _punti_set(client, match.id, 4, 1).get_json()["finished"] is True
+    match = _a_set(db_session, gara, isolated_players)
+    _gioca_a_set(client, match.id, (4, 1), (4, 2))
+    primo, secondo = isolated_players[3], isolated_players[4]
 
-    consentito, motivo = MatchCorrectionService.can_correct(match.id)
-    assert consentito is False
-    assert "set" in motivo
+    r = client.post(
+        f"/admin/match/{match.id}/correct",
+        data=_campi_set(
+            [(4, 1), (2, 4), (1, 4)],
+            player1_score=1,
+            player2_score=2,
+            next=f"/admin/gara/{gara.id}",
+        ),
+    )
+    assert r.status_code == 302
+
+    riletta = db_session.get(Match, match.id)
+    assert (riletta.player1_score, riletta.player2_score) == (1, 2)
+    assert riletta.winner_id == secondo.id
+    sets = Set.query.filter_by(match_id=match.id).order_by(Set.set_number).all()
+    assert [(s.player1_racks, s.player2_racks) for s in sets] == [
+        (4, 1),
+        (2, 4),
+        (1, 4),
+    ]
+    traccia = MatchCorrection.query.filter_by(match_id=match.id).one()
+    assert (traccia.previous_detail, traccia.new_detail) == (
+        "4–1 · 4–2",
+        "4–1 · 2–4 · 1–4",
+    )
+
+    voci = {
+        v.player_id: v for v in ScoreAggregator().aggregate_round_scores(gara.id, 1)
+    }
+    assert (voci[primo.id].matches_won, voci[secondo.id].matches_won) == (0, 1)
+    assert (voci[primo.id].racks_won, voci[secondo.id].racks_won) == (7, 9)
+
+    pagina = client.get(f"/admin/match/{match.id}").get_data(as_text=True)
+    assert "4–1 · 2–4 · 1–4" in pagina
+
+
+def test_la_partita_a_set_si_corregge_con_un_set_in_meno(
+    client, admin, db_session, isolated_players
+):
+    gara = _gara(db_session, distance=4)
+    match = _a_set(db_session, gara, isolated_players)
+    _gioca_a_set(client, match.id, (4, 1), (2, 4), (4, 3))
+
     client.post(
         f"/admin/match/{match.id}/correct",
-        data={"player1_score": 0, "player2_score": 1},
+        data=_campi_set([(4, 1), (4, 3)], player1_score=2, player2_score=0),
     )
     riletta = db_session.get(Match, match.id)
-    assert (riletta.player1_score, riletta.player2_score) == (1, 0)
-    assert not riletta.corrections
+    assert (riletta.player1_score, riletta.player2_score) == (2, 0)
+    assert riletta.winner_id == isolated_players[3].id
+
+
+def test_una_partita_a_set_impossibile_non_si_scrive(
+    client, admin, db_session, isolated_players
+):
+    from models.match.models import MatchCorrection
+
+    gara = _gara(db_session, distance=4)
+    match = _a_set(db_session, gara, isolated_players)
+    _gioca_a_set(client, match.id, (4, 1), (4, 2))
+
+    client.post(
+        f"/admin/match/{match.id}/correct",
+        data=_campi_set([(4, 1), (4, 2), (4, 0)], player1_score=3, player2_score=0),
+    )
+    riletta = db_session.get(Match, match.id)
+    assert (riletta.player1_score, riletta.player2_score) == (2, 0)
+    assert MatchCorrection.query.filter_by(match_id=match.id).count() == 0
+
+
+def test_la_partita_a_set_di_un_turno_bloccato_non_si_corregge(
+    client, admin, db_session, isolated_players
+):
+    from models.match.models import MatchCorrection
+
+    gara = _gara(db_session, distance=4)
+    match = _a_set(db_session, gara, isolated_players)
+    _gioca_a_set(client, match.id, (4, 1), (4, 2))
+    _blocca_il_turno_1(db_session, gara, isolated_players)
+
+    client.post(
+        f"/admin/match/{match.id}/correct",
+        data=_campi_set([(4, 1), (2, 4), (1, 4)], player1_score=1, player2_score=2),
+    )
+    riletta = db_session.get(Match, match.id)
+    assert (riletta.player1_score, riletta.player2_score) == (2, 0)
+    assert MatchCorrection.query.filter_by(match_id=match.id).count() == 0
 
 
 def test_a_set_pari_con_i_triangoli_esatti_la_partita_non_e_alla_distanza(

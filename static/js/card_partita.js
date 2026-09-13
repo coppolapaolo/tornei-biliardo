@@ -18,7 +18,9 @@
  * inviare in `data-campi`, l'indirizzo in `data-url`. I pulsanti portano
  * `data-lato` (da 1) e i numeri `data-num` (da 1).
  *
- * Il foglio della correzione usa le stesse funzioni sui suoi lati (`due`).
+ * Il foglio della correzione usa le stesse funzioni sui suoi lati: `due`, o
+ * `trio` senza `data-piu` e con `data-massimo` e `data-totale`, i limiti del
+ * trio giocato per intero.
  */
 (function (root) {
   'use strict';
@@ -41,9 +43,17 @@
     const max = parseInt(el.dataset.max || '0', 10);
     const meno = p.map(function (v) { return v > 0; });
     let piu;
-    if (tipo === 'trio') {
+    if (tipo === 'trio' && el.dataset.piu !== undefined) {
       const accesi = numeri(el.dataset.piu);
       piu = p.map(function (_, i) { return accesi[i] === 1; });
+    } else if (tipo === 'trio') {
+      // Il foglio della correzione: il trio e' gia' giocato per intero, quindi
+      // l'ordine del girone non spegne niente. Restano i due limiti: i
+      // triangoli che ognuno gioca e quelli del trio.
+      const massimo = parseInt(el.dataset.massimo || '0', 10);
+      const totale = parseInt(el.dataset.totale || '0', 10);
+      const somma = p.reduce(function (a, b) { return a + b; }, 0);
+      piu = p.map(function (v) { return v < massimo && somma < totale; });
     } else if (tipo === 'x') {
       piu = [p[0] < max];
     } else {

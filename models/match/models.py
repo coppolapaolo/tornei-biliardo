@@ -1086,11 +1086,14 @@ class TrioMatch(db.Model):
 
         db.session.flush()
 
-        # Determine winner using Condorcet/Schulze (excluding forfeit player)
-        from models.match.trio_schulze import determine_trio_winner
+        # Il totale piu' alto fra chi resta, se e' uno solo (SPECIFICHE.md riga
+        # 160): chi si ritira non vince, e fra gli altri due il pari e' pari.
+        from models.match.trio_punteggio import vincitore_del_trio
 
-        remaining = [pid for pid in self.player_ids if pid != self.forfeit_player_id]
-        self.winner_id = determine_trio_winner(self.active_racks, remaining)
+        self.winner_id = vincitore_del_trio(
+            dict(zip(self.player_ids, self.player_racks_list)),
+            escluso=self.forfeit_player_id,
+        )
 
         self.awaiting_confirmation = True
 
@@ -1212,6 +1215,18 @@ class MatchCorrection(TimestampMixin, db.Model):
     #: renderebbe illeggibile la catena.
     new_player1_score = db.Column(db.Integer, nullable=False)
     new_player2_score = db.Column(db.Integer, nullable=False)
+
+    #: Il terzo giocatore del trio, prima e dopo. Vuoti nella partita a due:
+    #: il trio si corregge dal 2026-09-13, e sul match i suoi triangoli non ci
+    #: stanno, quindi la traccia deve tenerli da sé.
+    previous_player3_score = db.Column(db.Integer, nullable=True)
+    new_player3_score = db.Column(db.Integer, nullable=True)
+
+    #: I set della partita a set, prima e dopo («4–1 · 2–4 · 1–4»). Sul
+    #: match ci sono solo i set vinti, che possono restare uguali mentre un set
+    #: cambia: senza il dettaglio la traccia direbbe «2–1 → 2–1».
+    previous_detail = db.Column(db.String(120), nullable=True)
+    new_detail = db.Column(db.String(120), nullable=True)
 
     #: Il perché, scritto dal direttore. Facoltativo: obbligarlo produrrebbe
     #: «errore» ripetuto mille volte, che non spiega niente più del fatto in

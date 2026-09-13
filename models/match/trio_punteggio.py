@@ -23,7 +23,7 @@ I triangoli sono al massimo nove (tre gironi): la ricerca e' esaustiva.
 from __future__ import annotations
 
 from itertools import product
-from typing import Optional, Sequence
+from typing import Mapping, Optional, Sequence
 
 from models.match.trio_config import TrioConfig
 
@@ -92,4 +92,35 @@ def piu_ammessi(config: TrioConfig, punti: Sequence[int]) -> list[bool]:
     return ammessi
 
 
-__all__ = ["assegna_vincitori", "massimo_per_giocatore", "piu_ammessi"]
+def vincitore_del_trio(
+    totali: Mapping[int, int], escluso: Optional[int] = None
+) -> Optional[int]:
+    """Chi vince il trio: il totale piu' alto, se e' uno solo.
+
+    `SPECIFICHE.md` riga 160: se il totale piu' alto e' di due o tre
+    giocatori, nessuno prende la vittoria. Fino al 2026-09-13 il pari in testa
+    si scioglieva con lo scontro diretto, che la specifica non prevede; ed era
+    anche un dato inventato quando il direttore segnava a totali, perche' chi
+    ha battuto chi lo ricostruiva l'applicazione.
+
+    `escluso` e' chi si e' ritirato: non vince, e il suo totale non conta per
+    il pari fra gli altri due.
+    """
+    in_gara = {
+        giocatore: vinti
+        for giocatore, vinti in totali.items()
+        if giocatore is not None and giocatore != escluso
+    }
+    if not in_gara:
+        return None
+    massimo = max(in_gara.values())
+    primi = [giocatore for giocatore, vinti in in_gara.items() if vinti == massimo]
+    return primi[0] if len(primi) == 1 else None
+
+
+__all__ = [
+    "assegna_vincitori",
+    "massimo_per_giocatore",
+    "piu_ammessi",
+    "vincitore_del_trio",
+]

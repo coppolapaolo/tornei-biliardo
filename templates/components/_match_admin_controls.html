@@ -138,7 +138,8 @@
        nata: lì il punteggio non si poteva più reinserire da nessuna parte.
        Quando non si può correggere si dice **perché**: di solito il turno
        successivo è già partito, e la via d'uscita è annullare quello. #}
-    {% if not match.is_bye and not match.is_trio and (MatchStatus.is_finished(match.status) or match.status == MatchStatus.PENDING.value) %}
+    {% if not match.is_bye and (MatchStatus.is_finished(match.status) or match.status == MatchStatus.PENDING.value) %}
+    {% set _tm = match.trio_match if match.is_trio else none %}
     <hr class="c7-divider">
     <div class="c7-stack" style="gap: 10px;">
         <h3 class="mb-0">{{ _('Correggi il risultato') }}</h3>
@@ -147,6 +148,37 @@
               onsubmit='return confirm({{ _("I triangoli segnati uno per uno vengono cancellati: resta solo il punteggio finale. La correzione resterà visibile sulla partita. Procedere?")|tojson }})'>
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
+                {% if _tm %}
+                {# Il trio: tre numeri, che insieme fanno i triangoli del trio. #}
+                {% for n, giocatore, vinti in [(1, _tm.player1, _tm.player1_racks), (2, _tm.player2, _tm.player2_racks), (3, _tm.player3, _tm.player3_racks)] %}
+                <div>
+                    <label class="c7-label" for="correctScore{{ n }}">{{ giocatore.username }}</label>
+                    <input type="number" min="0" class="form-control" id="correctScore{{ n }}"
+                           name="player{{ n }}_score" value="{{ vinti }}" required>
+                </div>
+                {% endfor %}
+                {% elif match.is_multi_set %}
+                {# La partita a set: una riga per ogni set possibile, i set non
+                   giocati restano vuoti. Set vinti e vincitore li calcola il
+                   servizio dai set. #}
+                {% set _sets = match.sets|sort(attribute='set_number') %}
+                {% set _dc = match.distance_config %}
+                {% set _quanti = (2 * _dc.get_winning_sets() - 1) if _dc.is_race_to_sets else _dc.get_winning_sets() %}
+                {% for n in range(1, _quanti + 1) %}
+                {% set _s = _sets[n - 1] if n <= _sets|length else none %}
+                <div>
+                    <div class="c7-label">{{ _('Set %(num)s', num=n) }}</div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                        <input type="number" min="0" class="form-control" name="set_{{ n }}_player1"
+                               aria-label="{{ _('Set %(num)s', num=n) }} · {{ match.player1.username }}"
+                               placeholder="{{ match.player1.username }}" value="{{ _s.player1_racks if _s else '' }}">
+                        <input type="number" min="0" class="form-control" name="set_{{ n }}_player2"
+                               aria-label="{{ _('Set %(num)s', num=n) }} · {{ match.player2.username if match.player2 else '' }}"
+                               placeholder="{{ match.player2.username if match.player2 else '' }}" value="{{ _s.player2_racks if _s else '' }}">
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
                 <div>
                     <label class="c7-label" for="correctScore1">{{ match.player1.username }}</label>
                     <input type="number" min="0" class="form-control" id="correctScore1"
@@ -157,6 +189,7 @@
                     <input type="number" min="0" class="form-control" id="correctScore2"
                            name="player2_score" value="{{ match.player2_score or 0 }}" required>
                 </div>
+                {% endif %}
             </div>
             <div>
                 <label class="c7-label" for="correctNote">{{ _('Perché (facoltativo)') }}</label>

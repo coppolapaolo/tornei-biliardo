@@ -94,8 +94,8 @@ tornei-biliardo/
 │   │   ├── distance.py            # Value Object Distance (race-to-N)
 │   │   ├── score.py               # Value Object Score
 │   │   ├── trio_config.py         # Configurazione match trio
-│   │   ├── trio_scoring_service.py # Scoring trio (Schulze method)
-│   │   ├── trio_schulze.py        # Algoritmo Schulze per trio
+│   │   ├── trio_punteggio.py      # Trio a totali: sequenze del girone e vincitore
+│   │   ├── trio_scoring_service.py # Scoring trio
 │   │   └── trio_state_serializer.py
 │   │
 │   ├── matchmaking/                # ★ Strategie di accoppiamento

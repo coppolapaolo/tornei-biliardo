@@ -3876,3 +3876,16 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 .c7-scelta__check { color: var(--c7-accent); visibility: hidden; flex-shrink: 0; }
 .c7-scelta.is-on .c7-scelta__check { visibility: visible; }
 .c7-scelta.is-on .c7-rows__title { color: var(--c7-accent); }
+
+/* ==========================================================================
+   35. Il foglio «Correggi il risultato» per il trio e la partita a set
+   Il trio riusa i lati a tre della card (sezione 31). La partita a set ha un
+   blocco per set, con la testata e i lati del set in corso della card; fra
+   un blocco e l'altro la linea delle righe, sotto i due comandi affiancati.
+   ========================================================================== */
+.c7-correzione-set__set + .c7-correzione-set__set {
+  padding-top: 12px;
+  border-top: 1px solid var(--c7-line-soft);
+}
+.c7-correzione-set__comandi { display: flex; gap: 8px; }
+.c7-correzione-set__comandi .btn { flex: 1; min-height: 48px; }

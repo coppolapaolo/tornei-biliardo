@@ -22,9 +22,11 @@
    - due        → due lati, gli stepper segnano i triangoli;
    - trio       → tre lati, triangoli vinti da ciascuno; quali + sono accesi
                   lo dice il server, perche' dipende dall'ordine del girone.
-                  Si corregge dal segnapunti, non dal foglio;
+                  Chiuso, si corregge dal foglio come la partita a due, con
+                  tre numeri;
    - set        → sopra i set vinti in sola lettura, sotto gli stepper del set
-                  in corso; a set chiuso «Inizia il set N»;
+                  in corso; a set chiuso «Inizia il set N». Chiusa, si corregge
+                  dal foglio set per set;
    - x          → la X a tavolino: un lato, «riposa» o «passa il turno»;
    - x_esercizio → la X con esercizio (SPECIFICHE riga 65): un lato con lo
                   stepper del punteggio fino alla distanza del turno, e
@@ -184,6 +186,12 @@
          data-piu="{% for p in _trio.piu %}{{ '1' if p else '0' }}{% if not loop.last %},{% endif %}{% endfor %}"
          data-url="{{ url_for('admin.competition.trio_punteggio', trio_id=_trio.trio_id) }}" data-campi="player1_racks,player2_racks,player3_racks"
          {% endif %}
+         {% if _trio %}data-correzione="trio" data-punti-trio="{{ _trio.punti|join(',') }}" data-p3-name="{{ _trio.nomi[2] }}"
+         data-totale="{{ _trio.totale }}" data-massimo="{{ _trio.massimo }}"
+         {% elif _set %}data-correzione="set" data-set-punti="{% for num, a, b in _set.chiusi %}{{ a }}-{{ b }}{% if not loop.last %},{% endif %}{% endfor %}"
+         data-set-distanza="{{ _set.distanza }}" data-set-race-to="{{ '1' if _set.race_to else '0' }}"
+         data-set-da-vincere="{{ _set.set_da_vincere }}" data-set-race-to-sets="{{ '1' if _set.race_to_set else '0' }}"
+         {% endif %}
          data-table="{{ match.table_assignment or match.played_on_table or '' }}"
          data-sub="{{ _('Turno %(num)s', num=match.round_number) }}{% if match.table_assignment or match.played_on_table %} · {{ _('Tavolo') }} {{ match.table_assignment or match.played_on_table }}{% endif %}"
          data-detail-url="{{ url_for('admin.match.match_detail', match_id=match.id) }}">
@@ -204,7 +212,7 @@
     <div class="c7-partita__destra">
       {% if finita %}
         {% if match.played_on_table %}<span class="c7-partita__tavolo">{{ _('Tavolo') }} <span class="c7-num">{{ match.played_on_table }}</span></span>{% endif %}
-        {% if can_modify and forma == 'due' %}
+        {% if can_modify and forma in ('due', 'trio', 'set') %}
         <button type="button" class="btn btn-secondary btn-sm" onclick="apriCorrezione(this)">{{ _('Correggi') }}</button>
         {% endif %}
       {% elif match.table_assignment %}
@@ -219,8 +227,8 @@
         <button type="button" class="btn btn-warning btn-sm" onclick="apriAssegnaTavolo(this)">{{ _('Assegna tavolo') }}</button>
       {% endif %}
       {# Il menu della partita (canvas 2S): cambia tavolo, azzera, correggi,
-         segnapunti. Un foglio solo, riempito dai data-* della card. Il trio e
-         la partita a set si correggono dal segnapunti, non dal foglio. #}
+         segnapunti. Un foglio solo, riempito dai data-* della card, con una
+         forma per partita: due lati, tre per il trio, un blocco per set. #}
       <button type="button" class="c7-iconbtn c7-iconbtn--menu" onclick="apriMenuPartita(this)"
               aria-label="{{ _('Menu della partita') }}" title="{{ _('Menu della partita') }}"
               data-match-id="{{ match.id }}"
@@ -229,7 +237,7 @@
               data-has-scores="{{ '1' if ha_punti else '0' }}"
               data-finished="{{ '1' if finita else '0' }}"
               data-can-modify="{{ '1' if can_modify else '0' }}"
-              data-correggibile="{{ '1' if forma == 'due' else '0' }}"
+              data-correggibile="{{ '1' if forma in ('due', 'trio', 'set') else '0' }}"
               {% if _trio %}data-trio-id="{{ _trio.trio_id }}"{% endif %}
               {% if _ritiri %}data-ritiro-url="{{ url_for('admin.competition.trio_forfeit', trio_id=_trio.trio_id) if _trio else url_for('admin.match.ritiro_partita', match_id=match.id) }}"
               data-ritiri='{{ _ritiri|tojson }}'{% endif %}
