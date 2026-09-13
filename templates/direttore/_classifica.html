@@ -4,7 +4,8 @@
    3.6): righe con la posizione, la freccia di tendenza rispetto al turno
    prima (`previous_position`), l'avatar e il nome, e le colonne del
    sistema di classifica (ADR-047, `gara.classification_system`): a vittorie
-   «Vinte» e «Diff», a RACK «Vinti» e «Persi». Le prime sei e poi tutti,
+   «Vinte» e «Diff», a RACK «Vinti» e «Persi»; a piazzamento (tabelloni)
+   le stesse colonne della gara a vittorie, ma la nota dice l'ordine vero. Le prime sei e poi tutti,
    con due pillole. La nota sotto dice come si ordina e quanto vale la X
    (SPECIFICHE.md righe 64 e 71).
 
@@ -13,6 +14,7 @@
    `ssr_scores_map`. Chi guarda usa `_classification_mobile.html`. #}
 {% if classification %}
 {% set _rack = classification[0].is_rack_ranking %}
+{% set _posizione = classification[0].is_position_ranking %}
 {% set _casuale = gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
 {% set _prime = 6 %}
 <section class="c7-stack c7-classifica" style="gap:10px" id="classificaDirettore">
@@ -24,8 +26,8 @@
   </div>
   {% if classification|length > _prime %}
   <div class="c7-classifica__pillole">
-    <button type="button" class="c7-pill is-active" data-classifica-vista="prime" onclick="mostraClassifica('prime')">{{ _('Prime %(n)s', n=_prime) }}</button>
-    <button type="button" class="c7-pill" data-classifica-vista="tutti" onclick="mostraClassifica('tutti')">{{ _('Tutti (%(n)s)', n=classification|length) }}</button>
+    <button type="button" class="c7-pill is-active" aria-pressed="true" data-classifica-vista="prime" onclick="mostraClassifica('prime')">{{ _('Prime %(n)s', n=_prime) }}</button>
+    <button type="button" class="c7-pill" aria-pressed="false" data-classifica-vista="tutti" onclick="mostraClassifica('tutti')">{{ _('Tutti (%(n)s)', n=classification|length) }}</button>
   </div>
   {% endif %}
   <div class="c7-rows">
@@ -41,7 +43,7 @@
     {% set _mov = (riga.previous_position - riga.position) if riga.previous_position else none %}
     <div class="c7-rows__row c7-classifica__riga{% if loop.index > _prime %} c7-classifica__riga--oltre{% endif %}" data-oltre="{{ '1' if loop.index > _prime else '0' }}"{% if loop.index > _prime %} hidden{% endif %}>
       <span class="c7-num c7-classifica__pos{% if riga.position <= 3 %} c7-classifica__pos--podio{% endif %}">{{ riga.position }}</span>
-      <span class="c7-classifica__trend" aria-label="{% if _mov is none %}{{ _('primo turno') }}{% elif _mov > 0 %}{{ _('sale di %(n)s', n=_mov) }}{% elif _mov < 0 %}{{ _('scende di %(n)s', n=-_mov) }}{% else %}{{ _('stabile') }}{% endif %}">
+      <span class="c7-classifica__trend" role="img" aria-label="{% if _mov is none %}{{ _('primo turno') }}{% elif _mov > 0 %}{{ _('sale di %(n)s', n=_mov) }}{% elif _mov < 0 %}{{ _('scende di %(n)s', n=-_mov) }}{% else %}{{ _('stabile') }}{% endif %}">
         {% if _mov is none %}<span class="c7-classifica__trend-eq" aria-hidden="true"></span>
         {% elif _mov > 0 %}<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l8 12H4z" fill="var(--c7-ok)"/></svg>
         {% elif _mov < 0 %}<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19L4 7h16z" fill="var(--c7-err)"/></svg>
@@ -66,6 +68,7 @@
   </div>
   <div class="c7-nota">
     {% if _rack %}{{ _('Sistema RACK: ordinata per triangoli vinti in tutta la gara, poi punti SSR. La X a tavolino vale zero triangoli.') }}
+    {% elif _posizione %}{{ _('Ordinata per piazzamento nel tabellone.') }}
     {% else %}{{ _('Ordinata per vittorie, poi differenza triangoli. La X a tavolino vale una vittoria e zero differenza.') }}{% endif %}
     {{ _('La freccia confronta con il turno prima.') }}
   </div>
@@ -75,7 +78,9 @@
     var tutti = vista === 'tutti';
     document.querySelectorAll('#classificaDirettore [data-oltre="1"]').forEach(function (r) { r.hidden = !tutti; });
     document.querySelectorAll('#classificaDirettore [data-classifica-vista]').forEach(function (b) {
-      b.classList.toggle('is-active', b.dataset.classificaVista === vista);
+      var attiva = b.dataset.classificaVista === vista;
+      b.classList.toggle('is-active', attiva);
+      b.setAttribute('aria-pressed', attiva ? 'true' : 'false');
     });
   }
 </script>

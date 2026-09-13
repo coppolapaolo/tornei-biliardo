@@ -19,7 +19,7 @@ pytestmark = pytest.mark.unit
 TEMPLATE = "direttore/_classifica.html"
 
 
-def _riga(username, pos, prev, vinte, diff, racks, *, rack=False):
+def _riga(username, pos, prev, vinte, diff, racks, *, rack=False, posizione=False):
     return SimpleNamespace(
         user=SimpleNamespace(username=username),
         user_id=hash(username) % 1000,
@@ -29,6 +29,7 @@ def _riga(username, pos, prev, vinte, diff, racks, *, rack=False):
         rack_difference=diff,
         racks_won=racks,
         is_rack_ranking=rack,
+        is_position_ranking=posizione,
         ranking_rack_value=racks if rack else diff,
         total_racks_value=racks,
     )
@@ -95,3 +96,19 @@ def test_con_la_formula_casuale_e_complessiva(app):
         app, [_riga("cl_a", 1, None, 1, 1, 1)], round_number=0, strategy="random"
     )
     assert "complessiva" in html
+
+
+def test_a_piazzamento_la_nota_non_parla_di_vittorie(app):
+    """Rilievo della revisione automatica sulla PR #351: nei tabelloni
+    l'ordine viene dal piazzamento (ADR-047), non da vittorie e differenza."""
+    html = _render(app, [_riga("cl_a", 1, None, 2, 3, 5, posizione=True)])
+    assert "piazzamento nel tabellone" in html
+    assert "vale una vittoria" not in html
+
+
+def test_frecce_e_pillole_sono_leggibili_da_chi_non_vede(app):
+    righe = [_riga(f"cl_{n}", n, n + 1, 0, 0, 0) for n in range(1, 9)]
+    html = _render(app, righe)
+    assert 'role="img" aria-label="sale di 1"' in html
+    assert 'aria-pressed="true" data-classifica-vista="prime"' in html
+    assert 'aria-pressed="false" data-classifica-vista="tutti"' in html

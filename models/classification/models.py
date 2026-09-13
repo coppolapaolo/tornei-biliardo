@@ -135,6 +135,22 @@ class RoundClassification(db.Model):
         return system == ClassificationSystem.RACK
 
     @property
+    def is_position_ranking(self) -> bool:
+        """True se la gara classifica per piazzamento (formati a tabellone).
+
+        Gemello di `is_rack_ranking`, e per la stessa ragione passa da
+        `ClassificationSystem.resolve`: chi mostra la classifica deve sapere
+        che qui l'ordine non viene da vittorie e differenza (ADR-047).
+        """
+        gara = self.gara
+        if gara is None:
+            return False
+        system = ClassificationSystem.resolve(
+            getattr(gara, "classification_system", None)
+        )
+        return system == ClassificationSystem.POSITION
+
+    @property
     def ranking_rack_value(self) -> int:
         """Il numero di rack da mostrare in classifica per questa gara.
 

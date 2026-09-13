@@ -130,7 +130,8 @@ blocks:
     text: >-
       Next to the matches you find the **standings after the last closed
       round**. The arrow beside the position says whether the player moved up
-      or down since the previous round; the dash, that they stayed put. The
+      or down since the previous round; a dash means they stayed where they
+      were, or that it is the first round and there is nothing to compare yet. The
       columns follow the competition's system: wins and rack difference, or
       racks won and lost.
 

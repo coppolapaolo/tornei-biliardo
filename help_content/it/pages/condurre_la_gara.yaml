@@ -132,7 +132,8 @@ blocks:
     text: >-
       Accanto alle partite trovi la **classifica dopo l'ultimo turno chiuso**.
       La freccia vicino alla posizione dice se il giocatore è salito o sceso
-      rispetto al turno prima; il trattino, che è rimasto dov'era. Le colonne
+      rispetto al turno prima; il trattino vuol dire che è rimasto dov'era,
+      oppure che è il primo turno e non c'è ancora niente da confrontare. Le colonne
       seguono il sistema della gara: vinte e differenza triangoli, oppure
       triangoli vinti e persi.
 

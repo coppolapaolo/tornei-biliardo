@@ -3396,7 +3396,7 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
    24. La classifica per chi dirige (canvas 3.5–3.6, 5.1–5.3)
    -------------------------------------------------------------------------- */
 .c7-classifica__pillole { display: flex; gap: 6px; }
-.c7-classifica__pillole .c7-pill { flex: 1; justify-content: center; }
+.c7-classifica__pillole .c7-pill { flex: 1; justify-content: center; height: 48px; min-height: 48px; }
 .c7-classifica__riga { padding: 11px 16px; gap: 10px; }
 .c7-classifica__testa { padding: 10px 16px; }
 .c7-classifica__pos { width: 20px; font-size: 15px; font-weight: 800; color: var(--c7-ink-faint); text-align: center; flex-shrink: 0; }
