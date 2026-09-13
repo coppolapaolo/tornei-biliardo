@@ -90,13 +90,13 @@ class RackService:
     @staticmethod
     @transactional(domain="match")
     def set_match_result_direct(
-        match_id: int, player1_score: int, player2_score: int
+        match_id: int, player1_score: int, player2_score: int, parziale: bool = False
     ) -> None:
         """Set match result directly (delegates to ScoringService)."""
         from .scoring_service import ScoringService
 
         return ScoringService.set_match_result_direct(
-            match_id, player1_score, player2_score
+            match_id, player1_score, player2_score, parziale=parziale
         )
 
     @staticmethod

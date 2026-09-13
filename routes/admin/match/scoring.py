@@ -137,7 +137,12 @@ def punteggio_partita(match_id):
         return jsonify({"success": False, "error": str(motivo)}), 409
 
     try:
-        RackService.set_match_result_direct(match_id, player1_score, player2_score)
+        # Gli stepper mandano un punteggio a ogni tocco: a meta' partita il
+        # totale non e' ancora la distanza, e con «esattamente N» il controllo
+        # del risultato secco rifiutava ogni triangolo (2026-09-13).
+        RackService.set_match_result_direct(
+            match_id, player1_score, player2_score, parziale=True
+        )
     except ValueError as ve:
         return jsonify({"success": False, "error": str(ve)}), 400
 
