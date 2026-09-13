@@ -211,6 +211,6 @@ blocks:
       - q: "Posso partecipare a entrambi i playoff?"
         a: "No: la qualificazione ti assegna a uno dei due, in base alla tua posizione in classifica."
       - q: "Ho accettato ma poi non posso venire."
-        a: "Avvisa il direttore di gara: può toglierti dagli iscritti come per qualsiasi altra gara."
+        a: "Avvisa il direttore di gara: fino all'avvio può toglierti dalla lista del playoff, nella pagina del campionato."
       - q: "Il mio campionato non ha playoff."
         a: "È normale: sono facoltativi e si decidono alla creazione del campionato."

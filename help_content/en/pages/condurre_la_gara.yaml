@@ -368,6 +368,18 @@ blocks:
 
   - type: text
     text: >-
+      The playoff competition **has no registrations**: the entrants are the
+      players who accepted the invitation. It is born in preparation and the
+      strip skips the registrations phase. The band says how many accepted
+      and offers **Start the competition** straight away, greyed out with
+      «2 players missing» until the minimum is reached; below it is the list
+      of who is in. Whoever accepts later is added automatically until the
+      start; to add or remove a qualified player, use the playoff list on the
+      championship page. At the start, invitations still unanswered expire.
+      If you cancel the start, the competition goes back to preparation.
+
+  - type: text
+    text: >-
       While preparing, and always in **Competition settings**, the **From the
       championship** group gathers what the competition receives from the
       championship:

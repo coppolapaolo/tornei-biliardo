@@ -903,7 +903,7 @@ tours:
   - direttore
   steps:
   - title: Where we are
-    text: Whoever directs sees the phase strip at the top — preparation, registrations, in play, closing — and a dark band with the one thing to do now; the rest of the management lives in «Competition settings». Players get the Rounds, Standings and Registered tabs.
+    text: Whoever directs sees the phase strip at the top — preparation, registrations (the playoff has none), in play, closing — and a dark band with the one thing to do now; the rest of the management lives in «Competition settings». Players get the Rounds, Standings and Registered tabs.
   - hint: gara.turni
   - hint: gara.classifica
   - title: Entrants

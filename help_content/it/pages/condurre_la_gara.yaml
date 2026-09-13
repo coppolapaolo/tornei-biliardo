@@ -370,6 +370,18 @@ blocks:
 
   - type: text
     text: >-
+      La gara dei playoff **non ha iscrizioni**: i partecipanti sono chi ha
+      accettato l'invito. Nasce in preparazione e la striscia salta la fase
+      delle iscrizioni. La fascia dice quanti hanno accettato e offre subito
+      **Avvia la gara**, spento con «Mancano 2 giocatori» finché non si
+      arriva al minimo; sotto c'è l'elenco di chi è dentro. Chi accetta dopo
+      entra da solo fino all'avvio; per aggiungere o togliere un qualificato
+      usa la lista del playoff nella pagina del campionato. All'avvio gli
+      inviti ancora senza risposta scadono. Se annulli l'avvio, la gara torna
+      in preparazione.
+
+  - type: text
+    text: >-
       In preparazione, e sempre in **Impostazioni gara**, il gruppo **Dal
       campionato** raccoglie quello che la gara riceve dal campionato:
 
