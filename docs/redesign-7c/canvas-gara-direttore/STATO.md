@@ -354,6 +354,10 @@ campionato e la prova»; e gli esercizi di gara a gara in corso, cioe'
 registrare i tentativi degli esercizi fra i turni, sulla pagina del
 direttore — vedi «Esercizi fra i turni». La loro preparazione era gia' nel
 canvas.
+Squadre e categorie, il ritiro deciso dal direttore e l'eliminazione della
+gara in preparazione sono stati fatti lo stesso giorno: vedi «Squadre,
+categorie, ritiro ed eliminazione» in fondo. Resta fuori la riassegnazione
+(ADR-048), che per scelta resta uno script da console.
 
 ## Come ricostruire
 
@@ -715,3 +719,36 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   `challenge_mode` spento e `Gara.ammette_esercizi_fra_i_turni` lo nasconde
   ovunque: la guida ha il testo e nessuna schermata nuova, e accendere il
   flag cambierebbe altre schermate del campionato.
+* **Squadre, categorie, ritiro ed eliminazione** (PR `feat: squadre,
+  categorie, ritiro ed eliminazione nella pagina del direttore`,
+  2026-09-13). Il canvas non le disegnava. Squadre (ADR-039) e categorie
+  (ADR-049) sono righe, «Squadre» e «Categorie», che aprono un foglio
+  `c7-sheet` con l'elenco e i comandi di prima, stesse route e stessi form
+  (`direttore/_squadre_categorie.html`): in preparazione fra le righe di «Da
+  preparare», a iscrizioni aperte in «Da tenere d'occhio», in «Impostazioni
+  gara» fra cio' che si modifica e dopo il sorteggio fra cio' che e' fissato.
+  Dopo il sorteggio la riga resta con la tessera bloccata e il foglio si
+  legge soltanto: le categorie non spariscono piu'. La squadra di un iscritto
+  e' un chip che apre un foglio, al posto della tendina che inviava al
+  cambio; la fascia delle iscrizioni dice «k senza categoria», e il numero si
+  riscrive a ogni salvataggio del combo. Il ritiro: nel menu della partita
+  «Ritiro di …» per ogni giocatore, con un foglio che dice la regola della
+  gara sui ritiri prima di confermare; `POST /admin/match/<id>/forfeit`
+  (`ritiro_partita`) passa dallo stesso dominio del forfait del giocatore,
+  con i rifiuti della card — X, partita chiusa, turno bloccato — e gli stessi
+  eventi; il trio usa il suo ritiro dallo stesso comando. «Elimina la gara»
+  e' una riga distruttiva in fondo alla preparazione, finche'
+  `can_be_deleted()`, con il suo foglio; la prova si elimina dal banner.
+  Scelte dove il canvas tace: nel foglio ogni voce e' un `<details>` con la
+  riga per sommario; i form mandano `next` con l'ancora `#squadre` o
+  `#categorie`, che riapre il foglio al ritorno; il ritiro si propone solo a
+  partita da giocare o in corso, non da validare. Trovato strada facendo:
+  eliminare una gara in preparazione con un turno modificato rispondeva 500,
+  perche' l'ORM annullava `round_configuration.gara_id` (NOT NULL) prima del
+  CASCADE del DB, e lo stesso valeva per esercizi e X con esercizio; il
+  forfait del giocatore passava su una partita confermata dai due e ne
+  riscriveva il risultato; togliendo la squadra a un iscritto il direttore
+  leggeva «Giocherai senza squadra»; il messaggio dell'eliminazione non era
+  tradotto. Domande aperte: se il ritiro nel trio debba applicare la regola
+  della gara, e se il forfait del giocatore debba rispettare il turno
+  bloccato come quello del direttore.

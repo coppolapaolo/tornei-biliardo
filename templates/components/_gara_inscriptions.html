@@ -15,8 +15,8 @@
 
    inscriptions_headerless: sopprime la testata quando il contenitore ha gia'
    titolo e conteggio. Niente `id` (la pagina di chi guarda lo include due
-   volte, mobile e desktop): il combo delle categorie e il `<datalist>` stanno
-   in `_categorie_management.html`. #}
+   volte, mobile e desktop): il combo delle categorie, il `<datalist>` e il
+   foglio della squadra stanno in `direttore/_squadre_categorie.html`. #}
 
 {% set _attivi = inscriptions | selectattr('is_waitlist', 'equalto', false) | selectattr('is_withdrawn', 'equalto', false) | list %}
 {% set _attesa = inscriptions | selectattr('is_waitlist', 'equalto', true) | selectattr('is_withdrawn', 'equalto', false) | sort(attribute='waitlist_position') | list %}
@@ -145,24 +145,18 @@
       {% endif %}
 
       {# Squadra dell'iscritto (US-9): il direttore la corregge da qui, finche'
-         il primo turno non e' partito. #}
+         il primo turno non e' partito. Un chip come quello della categoria,
+         che apre il foglio della squadra (`direttore/_squadre_categorie.html`,
+         `apriSquadraIscritto`): la tendina che inviava al cambio non era 7c. #}
       {% if gara.separate_teammates and user_can_manage and squadre_editable %}
-      <form method="POST" action="{{ url_for('admin.competition.set_inscription_squadra', gara_id=gara.id, inscription_id=inscription.id) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <span class="c7-chip">
-          <select name="squadra_id" onchange="this.form.submit()"
-                  aria-label="{{ _('Squadra di %(username)s in questa gara', username=inscription.user.username) }}">
-            <option value="" {% if not inscription.squadra_id %}selected{% endif %}>{{ _('Senza squadra') }}</option>
-            {% for squadra in squadre %}
-            <option value="{{ squadra.id }}" {% if inscription.squadra_id == squadra.id %}selected{% endif %}>{{ squadra.name }}</option>
-            {% endfor %}
-            {% if inscription.squadra and inscription.squadra not in squadre %}
-            <option value="{{ inscription.squadra_id }}" selected>{{ inscription.squadra.name }}</option>
-            {% endif %}
-          </select>
-          <i class="fas fa-caret-down c7-chip__caret"></i>
-        </span>
-      </form>
+      <button type="button" class="c7-chip c7-chip--squadra" onclick="apriSquadraIscritto(this)"
+              data-url="{{ url_for('admin.competition.set_inscription_squadra', gara_id=gara.id, inscription_id=inscription.id) }}"
+              data-squadra-id="{{ inscription.squadra_id or '' }}"
+              data-username="{{ inscription.user.username }}"
+              aria-label="{{ _('Squadra di %(username)s in questa gara', username=inscription.user.username) }}">
+        <span class="c7-chip__testo">{{ inscription.squadra.name if inscription.squadra else _('Senza squadra') }}</span>
+        <i class="fas fa-caret-down c7-chip__caret"></i>
+      </button>
       {% endif %}
 
       {% if _puo_iscrivere %}

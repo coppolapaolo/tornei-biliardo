@@ -97,7 +97,13 @@ class GaraByeChallenge(BaseModel):
     validated_at = db.Column(db.DateTime, nullable=True)
 
     # Relationships (Competition → Challenge direction)
-    gara = db.relationship("Gara", backref="bye_challenges")
+    # Stessa cascata di `RoundConfiguration.gara`: vedi li'.
+    gara = db.relationship(
+        "Gara",
+        backref=db.backref(
+            "bye_challenges", cascade="all, delete-orphan", passive_deletes=True
+        ),
+    )
     challenge_attempt = db.relationship("ChallengeAttempt")
     user = db.relationship("User", foreign_keys=[user_id])
     match = db.relationship("Match")

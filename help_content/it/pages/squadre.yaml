@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [direttore, giocatore]
 minutes: 4
 summary: "Quando i partecipanti arrivano da circoli diversi, si può chiedere all'app di non far incontrare subito i compagni di squadra."
-screens: [admin.competition.gara_detail]
+screens: [admin.competition.gara_detail, admin.competition.gara_impostazioni]
 related: [abbinamenti, opzioni_della_gara, profilo_e_statistiche]
 
 blocks:
@@ -48,12 +48,22 @@ blocks:
       in bozza. È una scelta che va fatta prima, non dopo: accendendola a
       iscrizioni avviate ti ritroveresti metà iscritti senza squadra.
 
+  - type: text
+    text: >-
+      Quando le squadre sono attive, la riga **Squadre** compare nella pagina
+      della gara — fra le cose da preparare, e a iscrizioni aperte in «Da
+      tenere d'occhio» — e in **Impostazioni gara**. Toccala e si apre il
+      foglio con l'elenco.
+
+  - type: shot
+    shot: gara-impostazioni
+    variant: desktop
+
   - type: shot
     shot: gara-squadre
-    caption: "Il pannello delle squadre nella gestione della gara: quali esistono e quanti iscritti ne fanno parte."
 
   - type: options
-    title: "Cosa puoi fare dal pannello"
+    title: "Cosa puoi fare dal foglio"
     items:
       - name: "Creare una squadra"
         text: "Le squadre nascono nella gara: non c'è un elenco globale da mantenere."
@@ -67,6 +77,16 @@ blocks:
         text: >-
           La toglie dalle scelte possibili senza toccare chi l'ha già
           selezionata.
+      - name: "Cambiare la squadra di un iscritto"
+        text: >-
+          Nell'elenco degli iscritti ogni giocatore ha un chip con la sua
+          squadra: toccalo e scegli dal foglio che si apre.
+
+  - type: note
+    tone: info
+    text: >-
+      Dopo il sorteggio del primo turno la riga resta, con la tessera grigia:
+      il foglio si apre ancora, ma l'elenco si legge soltanto.
 
   - type: heading
     id: iscriversi

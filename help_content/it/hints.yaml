@@ -171,6 +171,14 @@ hints:
     page: categorie
     section: assegnare
 
+  - id: gara.squadre
+    label: "Squadre"
+    short: "L'elenco delle squadre di questa gara, o del campionato. Toccalo per aggiungere, rinominare o unire; dopo il sorteggio si legge soltanto."
+    anchor: gara-squadre
+    screens: [admin.competition.gara_detail, admin.competition.gara_impostazioni]
+    page: squadre
+    section: attivare
+
   - id: gara.forfait
     label: "Gestione forfait"
     short: "Chi abbandona resta negli abbinamenti perdendo a tavolino, oppure ne esce. Sui tabelloni non si chiede: è sempre a tavolino."

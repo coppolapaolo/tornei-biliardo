@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 12:49+0200\n"
+"POT-Creation-Date: 2026-09-13 13:16+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -18,23 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:715 templates/errors/403.html:3
+#: app.py:719 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
-#: app.py:733
+#: app.py:737
 msgid "Non è il tuo turno"
 msgstr ""
 
-#: app.py:734
+#: app.py:738
 msgid "Colpo irregolare"
 msgstr ""
 
-#: app.py:753
+#: app.py:757
 msgid "Operazione non consentita"
 msgstr ""
 
-#: app.py:767
+#: app.py:771
 msgid "Tiro non valido"
 msgstr ""
 
@@ -77,7 +77,7 @@ msgstr ""
 #: templates/components/_match_result_row.html:108
 #: templates/components/_match_scoreboard.html:252
 #: templates/components/_tessera_gara.html:31
-#: templates/direttore/_card_partita.html:188
+#: templates/direttore/_card_partita.html:195
 msgid "Conclusa"
 msgstr ""
 
@@ -100,7 +100,7 @@ msgstr ""
 #: templates/components/_round_navigation.html:26
 #: templates/components/_sfide_in_corso.html:59
 #: templates/components/_tessera_gara.html:35
-#: templates/direttore/_card_partita.html:187
+#: templates/direttore/_card_partita.html:194
 #: templates/direttore/_menu_turno.html:24 templates/direttore/_partite.html:77
 #: templates/individual_match/dashboard.html:115
 #: templates/individual_match/matches.html:38
@@ -134,7 +134,7 @@ msgstr ""
 #: templates/components/_match_result_row.html:94
 #: templates/components/_match_result_row.html:96
 #: templates/components/_match_status_labels.html:22
-#: templates/direttore/_card_partita.html:189
+#: templates/direttore/_card_partita.html:196
 #: templates/direttore/_partite.html:79
 #: templates/individual_match/dashboard.html:103
 #: templates/individual_match/matches.html:37
@@ -200,7 +200,7 @@ msgstr ""
 #: templates/components/_separated_dashboard_content.html:87
 #: templates/components/_tessera_gara.html:45
 #: templates/components/_unified_cards.html:71
-#: templates/direttore/_fase_iscrizioni.html:43
+#: templates/direttore/_fase_iscrizioni.html:44
 msgid "Iscrizioni aperte"
 msgstr ""
 
@@ -301,7 +301,7 @@ msgid ""
 msgstr ""
 
 #: models/competition/showcase_view.py:196
-#: templates/direttore/_card_partita.html:261
+#: templates/direttore/_card_partita.html:270
 #, python-format
 msgid "al %(n)s"
 msgstr ""
@@ -340,7 +340,7 @@ msgstr ""
 
 #: models/competition/showcase_view.py:297 routes/main.py:480
 #: templates/components/_unified_cards.html:79
-#: templates/direttore/_fase_iscrizioni.html:26
+#: templates/direttore/_fase_iscrizioni.html:27
 msgid "Iscrizioni non ancora aperte"
 msgstr ""
 
@@ -391,7 +391,7 @@ msgid "%(fee)s €"
 msgstr ""
 
 #: models/competition/showcase_view.py:390
-#: templates/direttore/_fase_iscrizioni.html:132
+#: templates/direttore/_fase_iscrizioni.html:136
 msgid "Chiusura iscrizioni"
 msgstr ""
 
@@ -1640,7 +1640,7 @@ msgstr ""
 #: models/match/correction_service.py:61
 #: models/match/trio_scoring_service.py:357
 #: routes/admin/competition/matches.py:190 routes/admin/match/scoring.py:123
-#: routes/admin/match/scoring.py:146
+#: routes/admin/match/scoring.py:146 routes/admin/match/scoring.py:202
 msgid "Partita non trovata"
 msgstr ""
 
@@ -1724,7 +1724,7 @@ msgstr ""
 
 #: models/match/match_service.py:705 routes/admin/competition/matches.py:199
 #: routes/admin/match/multi_set.py:211 routes/admin/match/scoring.py:115
-#: routes/admin/match/scoring.py:284
+#: routes/admin/match/scoring.py:366
 msgid "Punteggio non valido."
 msgstr ""
 
@@ -2130,7 +2130,7 @@ msgid "Cerchi una funzione e non la trovi"
 msgstr ""
 
 #: routes/help.py:50 templates/admin/kpi.html:112
-#: templates/direttore/_macros.html:85 templates/direttore/_macros.html:95
+#: templates/direttore/_macros.html:88 templates/direttore/_macros.html:98
 msgid "Panoramica"
 msgstr ""
 
@@ -2553,7 +2553,7 @@ msgstr ""
 msgid "Anagrafica aggiornata."
 msgstr ""
 
-#: routes/admin/competition/categorie.py:68
+#: routes/admin/competition/categorie.py:77
 #, python-format
 msgid ""
 "%(num)s iscritto su %(tot)s non ha una categoria: le sue partite non "
@@ -2564,19 +2564,19 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: routes/admin/competition/categorie.py:147
+#: routes/admin/competition/categorie.py:156
 msgid "Categoria rinominata"
 msgstr ""
 
-#: routes/admin/competition/categorie.py:168
+#: routes/admin/competition/categorie.py:177
 msgid "Categoria riattivata"
 msgstr ""
 
-#: routes/admin/competition/categorie.py:168
+#: routes/admin/competition/categorie.py:177
 msgid "Categoria disattivata"
 msgstr ""
 
-#: routes/admin/competition/categorie.py:186
+#: routes/admin/competition/categorie.py:195
 msgid "Categoria eliminata"
 msgstr ""
 
@@ -2611,6 +2611,11 @@ msgstr ""
 
 #: routes/admin/competition/crud.py:409
 msgid "Tavoli salvati."
+msgstr ""
+
+#: routes/admin/competition/crud.py:434
+#, python-format
+msgid "Gara «%(nome)s» eliminata."
 msgstr ""
 
 #: routes/admin/competition/inscriptions.py:90
@@ -2706,51 +2711,56 @@ msgstr ""
 msgid "Prova azzerata: il turno torna a valere zero."
 msgstr ""
 
-#: routes/admin/competition/squadre.py:43
+#: routes/admin/competition/squadre.py:52
 msgid "Squadra aggiunta all'elenco"
 msgstr ""
 
-#: routes/admin/competition/squadre.py:61
+#: routes/admin/competition/squadre.py:70
 msgid "Squadra rinominata"
 msgstr ""
 
-#: routes/admin/competition/squadre.py:76
+#: routes/admin/competition/squadre.py:85
 msgid "Scegli la squadra in cui unire questa voce"
 msgstr ""
 
-#: routes/admin/competition/squadre.py:82
+#: routes/admin/competition/squadre.py:91
 msgid "Squadre unite: le iscrizioni sono state riassegnate"
 msgstr ""
 
-#: routes/admin/competition/squadre.py:103
+#: routes/admin/competition/squadre.py:112
 msgid "Squadra riattivata"
 msgstr ""
 
-#: routes/admin/competition/squadre.py:103
+#: routes/admin/competition/squadre.py:112
 msgid "Squadra disattivata"
 msgstr ""
 
-#: routes/admin/competition/squadre.py:123
+#: routes/admin/competition/squadre.py:132
 msgid "Iscrizione non trovata in questa gara"
 msgstr ""
 
-#: routes/admin/competition/squadre.py:135
+#: routes/admin/competition/squadre.py:144
 msgid "Scrivi il nome della squadra da aggiungere"
 msgstr ""
 
-#: routes/admin/competition/squadre.py:150
+#: routes/admin/competition/squadre.py:159
 #, python-format
 msgid ""
 "In elenco ci sono già nomi simili: %(nomi)s. Scegli la voce giusta, "
 "oppure conferma di volerne creare una nuova."
 msgstr ""
 
-#: routes/admin/competition/squadre.py:168
+#: routes/admin/competition/squadre.py:176
 msgid "Squadra aggiornata"
 msgstr ""
 
-#: routes/admin/competition/squadre.py:170
+#: routes/admin/competition/squadre.py:178
 msgid "Giocherai senza squadra in questa gara"
+msgstr ""
+
+#: routes/admin/competition/squadre.py:182
+#, python-format
+msgid "%(username)s gioca senza squadra in questa gara"
 msgstr ""
 
 #: routes/admin/competition/vetrina.py:100
@@ -2787,7 +2797,23 @@ msgstr ""
 msgid "La partita è chiusa: si cambia con «Correggi il risultato»."
 msgstr ""
 
-#: routes/admin/match/scoring.py:296
+#: routes/admin/match/scoring.py:205
+msgid "La X a tavolino non ha un avversario: non c'è ritiro da registrare."
+msgstr ""
+
+#: routes/admin/match/scoring.py:209
+msgid "Il ritiro nella partita a tre si registra dal trio."
+msgstr ""
+
+#: routes/admin/match/scoring.py:213
+msgid "Scegli uno dei due giocatori della partita."
+msgstr ""
+
+#: routes/admin/match/scoring.py:216
+msgid "La partita è chiusa: il ritiro non si registra più."
+msgstr ""
+
+#: routes/admin/match/scoring.py:378
 msgid "Risultato corretto. La correzione resta visibile sulla partita."
 msgstr ""
 
@@ -4029,8 +4055,8 @@ msgstr ""
 
 #: templates/direttore/_fase_conclusa.html:101
 #: templates/direttore/_fase_gioco.html:179
-#: templates/direttore/_fase_iscrizioni.html:129
-#: templates/direttore/_fase_preparazione.html:141
+#: templates/direttore/_fase_iscrizioni.html:133
+#: templates/direttore/_fase_preparazione.html:144
 #: templates/direttore/_tabellino.html:46 templates/gara_bracket.html:4
 #: templates/gara_bracket.html:12 templates/gara_detail.html:142
 #: templates/public/schermo_sala.html:147
@@ -4038,7 +4064,7 @@ msgid "Tabellone"
 msgstr ""
 
 #: templates/admin/gara_vetrina.html:12
-#: templates/direttore/impostazioni.html:17
+#: templates/direttore/impostazioni.html:18
 #: templates/direttore/preparazione.html:24 templates/gara_bracket.html:10
 #: templates/player/gara_challenge_detail.html:10
 msgid "Torna alla gara"
@@ -4121,7 +4147,7 @@ msgid "Il percorso della gara, turno per turno"
 msgstr ""
 
 #: templates/components/_gara_info.html:13
-#: templates/direttore/_fase_preparazione.html:136
+#: templates/direttore/_fase_preparazione.html:139
 #: templates/gara_detail.html:205
 msgid "Informazioni gara"
 msgstr ""
@@ -4539,9 +4565,9 @@ msgstr ""
 msgid "Ultimo aggiornamento: agosto 2026."
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:106
-#: templates/direttore/_fase_preparazione.html:158
-#: templates/direttore/_fase_preparazione.html:163
+#: templates/direttore/_fase_iscrizioni.html:107
+#: templates/direttore/_fase_preparazione.html:161
+#: templates/direttore/_fase_preparazione.html:166
 #: templates/public/vetrina_campionato.html:42
 #: templates/public/vetrina_campionato.html:176
 #: templates/public/vetrina_gara.html:47 templates/public/vetrina_gara.html:169
@@ -4936,8 +4962,8 @@ msgstr ""
 #: templates/components/_unified_cards.html:123
 #: templates/direttore/_dal_campionato.html:23
 #: templates/direttore/_fase_gioco.html:212
-#: templates/direttore/_fase_preparazione.html:136
-#: templates/direttore/impostazioni.html:26
+#: templates/direttore/_fase_preparazione.html:139
+#: templates/direttore/impostazioni.html:27
 #: templates/gamification/admin/config_dashboard.html:75
 #: templates/gamification/admin/config_dashboard.html:101
 #: templates/gamification/admin/config_dashboard.html:132
@@ -4949,9 +4975,9 @@ msgstr ""
 #: templates/admin/campionato_detail.html:532
 #: templates/admin/campionato_vetrina.html:8
 #: templates/admin/gara_vetrina.html:10 templates/admin/gara_vetrina.html:14
-#: templates/direttore/_fase_preparazione.html:96
-#: templates/direttore/_fase_preparazione.html:127
-#: templates/direttore/impostazioni.html:44
+#: templates/direttore/_fase_preparazione.html:99
+#: templates/direttore/_fase_preparazione.html:130
+#: templates/direttore/impostazioni.html:45
 msgid "Vetrina"
 msgstr ""
 
@@ -4984,7 +5010,7 @@ msgstr ""
 
 #: templates/admin/campionato_detail.html:71
 #: templates/components/_tessera_gara.html:39
-#: templates/direttore/_fase_preparazione.html:33
+#: templates/direttore/_fase_preparazione.html:36
 msgid "In preparazione"
 msgstr ""
 
@@ -5409,7 +5435,7 @@ msgstr ""
 
 #: templates/admin/campionato_detail.html:494
 #: templates/direttore/_avvia_gara.html:41
-#: templates/direttore/_fase_iscrizioni.html:45
+#: templates/direttore/_fase_iscrizioni.html:46
 #, python-format
 msgid "%(n)d iscritto"
 msgid_plural "%(n)d iscritti"
@@ -5425,9 +5451,9 @@ msgstr ""
 #: templates/admin/campionato_detail.html:509
 #: templates/challenge/_challenge_card.html:76
 #: templates/challenge/builder.html:64
-#: templates/components/_categorie_management.html:107
 #: templates/components/_soft_delete_modal.html:6
 #: templates/components/_soft_delete_modal.html:49
+#: templates/direttore/_squadre_categorie.html:251
 #: templates/gamification/admin/quests.html:84
 msgid "Elimina"
 msgstr ""
@@ -6061,7 +6087,7 @@ msgstr ""
 #: templates/components/_public_challenges.html:19
 #: templates/direttore/_classifica.html:26
 #: templates/direttore/_esercizi_turni.html:99
-#: templates/direttore/_fase_preparazione.html:76
+#: templates/direttore/_fase_preparazione.html:79
 #: templates/direttore/preparazione/_esercizi.html:31
 #: templates/player/gara_challenge_detail.html:14
 #: templates/player/gara_challenge_detail.html:48
@@ -6375,7 +6401,7 @@ msgstr ""
 #: templates/admin/gara_create_standalone.html:455
 #: templates/components/_gara_info.html:43
 #: templates/components/_new_gara_modal.html:39
-#: templates/direttore/_fase_preparazione.html:148
+#: templates/direttore/_fase_preparazione.html:151
 #: templates/gamification/admin/quests.html:26
 #: templates/public/campionato_detail.html:74
 msgid "Partecipanti"
@@ -6840,7 +6866,7 @@ msgid "Destinazione (account da tenere)"
 msgstr ""
 
 #: templates/admin/users_list.html:64
-#: templates/components/_squadre_management.html:112
+#: templates/direttore/_squadre_categorie.html:137
 msgid "Unisci"
 msgstr ""
 
@@ -7089,8 +7115,7 @@ msgstr ""
 
 #: templates/admin/venue_detail.html:62 templates/admin/venue_form.html:245
 #: templates/admin/venue_form.html:311 templates/admin/venues_list.html:87
-#: templates/components/_categorie_management.html:65
-#: templates/components/_squadre_management.html:56
+#: templates/direttore/_squadre_categorie.html:70
 msgid "Disattivata"
 msgstr ""
 
@@ -7449,7 +7474,7 @@ msgstr ""
 #: templates/components/_nearby_gare.html:125
 #: templates/components/_player_dashboard_content.html:36
 #: templates/components/_playoff_invitations.html:36
-#: templates/direttore/_fase_preparazione.html:147
+#: templates/direttore/_fase_preparazione.html:150
 #: templates/exam/request_form.html:55
 #: templates/individual_match/match_detail.html:211
 #: templates/player/my_venue_requests.html:21
@@ -7564,8 +7589,8 @@ msgstr ""
 #: templates/components/_new_gara_modal.html:124
 #: templates/direttore/_fase_gioco.html:123
 #: templates/direttore/_fase_gioco.html:212
-#: templates/direttore/_fase_iscrizioni.html:121
-#: templates/direttore/_fase_preparazione.html:123
+#: templates/direttore/_fase_iscrizioni.html:122
+#: templates/direttore/_fase_preparazione.html:124
 #: templates/player/venues.html:29 templates/public/schermo_sala.html:103
 msgid "Tavoli"
 msgstr ""
@@ -8143,10 +8168,10 @@ msgstr ""
 #: templates/components/_match_result_row.html:121
 #: templates/components/_match_result_row.html:146
 #: templates/components/_tessera_gara.html:167
-#: templates/direttore/_card_partita.html:181
-#: templates/direttore/_card_partita.html:199
+#: templates/direttore/_card_partita.html:188
 #: templates/direttore/_card_partita.html:206
-#: templates/direttore/_card_partita.html:209
+#: templates/direttore/_card_partita.html:213
+#: templates/direttore/_card_partita.html:216
 #: templates/direttore/_fase_gioco.html:217
 #: templates/direttore/_partite.html:25 templates/direttore/_partite.html:56
 #: templates/direttore/_scripts.html:84 templates/public/schermo_sala.html:89
@@ -8188,7 +8213,7 @@ msgstr ""
 
 #: templates/challenge/builder.html:146
 #: templates/components/_tabellone_macros.html:73
-#: templates/direttore/impostazioni.html:76 templates/player/venues.html:33
+#: templates/direttore/impostazioni.html:79 templates/player/venues.html:33
 msgid "nessuno"
 msgstr ""
 
@@ -9253,74 +9278,6 @@ msgstr ""
 msgid "Triangoli Totali Giocati:"
 msgstr ""
 
-#: templates/components/_categorie_management.html:33
-msgid "Categorie"
-msgstr ""
-
-#: templates/components/_categorie_management.html:39
-#: templates/components/_squadre_management.html:24
-msgid "Elenco del campionato: le modifiche valgono per tutte le sue gare."
-msgstr ""
-
-#: templates/components/_categorie_management.html:41
-#: templates/components/_squadre_management.html:26
-msgid "Elenco di questa gara."
-msgstr ""
-
-#: templates/components/_categorie_management.html:43
-msgid ""
-"In una gara con handicap l’Elo si aggiorna solo nelle partite fra "
-"giocatori della stessa categoria. Le categorie si scrivono accanto a ogni"
-" iscritto: un nome nuovo entra da solo in elenco."
-msgstr ""
-
-#: templates/components/_categorie_management.html:48
-msgid "Nessuna categoria. Scrivine una accanto a un iscritto e comparirà qui."
-msgstr ""
-
-#: templates/components/_categorie_management.html:63
-#: templates/components/_squadre_management.html:54
-#, python-format
-msgid "%(num)s iscritto in questa gara"
-msgid_plural "%(num)s iscritti in questa gara"
-msgstr[0] ""
-msgstr[1] ""
-
-#: templates/components/_categorie_management.html:64
-#: templates/components/_squadre_management.html:55
-msgid "Nessun iscritto in questa gara"
-msgstr ""
-
-#: templates/components/_categorie_management.html:74
-msgid "Toglie la categoria dalle scelte, senza toccare le iscrizioni che la usano"
-msgstr ""
-
-#: templates/components/_categorie_management.html:80
-msgid "Rimette la categoria fra le scelte"
-msgstr ""
-
-#: templates/components/_categorie_management.html:91
-msgid "Rinomina o elimina"
-msgstr ""
-
-#: templates/components/_categorie_management.html:98
-msgid "Nuovo nome della categoria"
-msgstr ""
-
-#: templates/components/_categorie_management.html:99
-#: templates/components/_squadre_management.html:94
-msgid "Rinomina"
-msgstr ""
-
-#: templates/components/_categorie_management.html:104
-#, python-format
-msgid "Eliminare la categoria «%(name)s»? Non è assegnata a nessuno."
-msgstr ""
-
-#: templates/components/_categorie_management.html:125
-msgid "Categoria non salvata"
-msgstr ""
-
 #: templates/components/_classification_mobile.html:12
 msgid "Prime 6"
 msgstr ""
@@ -9827,7 +9784,7 @@ msgid "Diverso dal campionato"
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:74
-#: templates/direttore/_fase_preparazione.html:59
+#: templates/direttore/_fase_preparazione.html:62
 #: templates/direttore/preparazione/_turni.html:47
 #: templates/direttore/preparazione/_turni.html:188
 msgid "default"
@@ -10015,8 +9972,8 @@ msgid "stima"
 msgstr ""
 
 #: templates/components/_gara_info.html:32
-#: templates/direttore/_fase_preparazione.html:138
-#: templates/direttore/impostazioni.html:71
+#: templates/direttore/_fase_preparazione.html:141
+#: templates/direttore/impostazioni.html:74
 msgid "Accoppiamento"
 msgstr ""
 
@@ -10070,7 +10027,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: templates/components/_gara_info.html:96
-#: templates/direttore/_fase_preparazione.html:120
+#: templates/direttore/_fase_preparazione.html:121
 #: templates/direttore/preparazione.html:19
 #: templates/direttore/preparazione/_direttori.html:20
 msgid "Direzione di gara"
@@ -10154,42 +10111,43 @@ msgstr ""
 msgid "Categoria di %(username)s in questa gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:154
+#: templates/components/_gara_inscriptions.html:156
 #, python-format
 msgid "Squadra di %(username)s in questa gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:155
+#: templates/components/_gara_inscriptions.html:157
+#: templates/direttore/_squadre_categorie.html:190
 msgid "Senza squadra"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:171
+#: templates/components/_gara_inscriptions.html:165
 #, python-format
 msgid "Disiscrivere %(username)s? Riceverà una notifica."
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:174
+#: templates/components/_gara_inscriptions.html:168
 msgid "Disiscrive il giocatore"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:174
+#: templates/components/_gara_inscriptions.html:168
 #, python-format
 msgid "Disiscrive %(username)s"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:185
+#: templates/components/_gara_inscriptions.html:179
 msgid "Nessun iscritto"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:186
+#: templates/components/_gara_inscriptions.html:180
 msgid "Appena qualcuno si iscrive lo trovi qui."
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:199
+#: templates/components/_gara_inscriptions.html:193
 msgid "Limite massimo raggiunto"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:200
+#: templates/components/_gara_inscriptions.html:194
 msgid "Chi arriva adesso finisce in lista d’attesa."
 msgstr ""
 
@@ -10229,8 +10187,8 @@ msgstr ""
 #: templates/components/_match_cards_mobile.html:64
 #: templates/components/_tabellone_macros.html:25
 #: templates/direttore/_card_partita.html:104
-#: templates/direttore/_card_partita.html:181
-#: templates/direttore/_fase_preparazione.html:58
+#: templates/direttore/_card_partita.html:188
+#: templates/direttore/_fase_preparazione.html:61
 #: templates/direttore/_partite.html:25 templates/direttore/_partite.html:73
 #: templates/direttore/preparazione/_turni.html:46
 #: templates/direttore/preparazione/_turni.html:67
@@ -10843,7 +10801,7 @@ msgstr ""
 
 #: templates/components/_match_admin_controls.html:144
 #: templates/components/_match_admin_controls.html:167
-#: templates/direttore/_menu_partita.html:22
+#: templates/direttore/_menu_partita.html:23
 #: templates/direttore/_modali_gioco.html:165
 #: templates/direttore/_modali_gioco.html:194
 #: templates/direttore/_partite.html:60
@@ -10964,13 +10922,13 @@ msgid "Trio"
 msgstr ""
 
 #: templates/components/_match_card.html:57
-#: templates/direttore/_card_partita.html:212
+#: templates/direttore/_card_partita.html:219
 msgid "Assegna tavolo"
 msgstr ""
 
 #: templates/components/_match_card.html:68
 #: templates/direttore/_card_partita.html:101
-#: templates/direttore/_card_partita.html:218
+#: templates/direttore/_card_partita.html:225
 msgid "Menu della partita"
 msgstr ""
 
@@ -11110,14 +11068,14 @@ msgid "Informazioni partita"
 msgstr ""
 
 #: templates/components/_match_result_row.html:76
-#: templates/direttore/_card_partita.html:317
+#: templates/direttore/_card_partita.html:326
 msgid ""
 "Il risultato è stato corretto dopo la chiusura: apri la partita per "
 "vedere da cosa a cosa"
 msgstr ""
 
 #: templates/components/_match_result_row.html:77
-#: templates/direttore/_card_partita.html:318
+#: templates/direttore/_card_partita.html:327
 #: templates/direttore/_partite.html:44
 msgid "corretto"
 msgstr ""
@@ -11153,7 +11111,7 @@ msgid "Risultato rapido"
 msgstr ""
 
 #: templates/components/_match_result_row.html:177
-#: templates/direttore/_card_partita.html:286
+#: templates/direttore/_card_partita.html:295
 msgid "Valida il risultato"
 msgstr ""
 
@@ -11177,7 +11135,7 @@ msgid "spacca"
 msgstr ""
 
 #: templates/components/_match_scoreboard.html:127
-#: templates/direttore/_card_partita.html:238
+#: templates/direttore/_card_partita.html:247
 msgid "tu"
 msgstr ""
 
@@ -11274,7 +11232,7 @@ msgstr ""
 
 #: templates/components/_modify_dates_modal.html:13
 #: templates/components/_tessera_gara.html:313
-#: templates/direttore/_fase_iscrizioni.html:71
+#: templates/direttore/_fase_iscrizioni.html:72
 msgid "Estendi le iscrizioni"
 msgstr ""
 
@@ -11324,7 +11282,7 @@ msgstr ""
 
 #: templates/components/_multi_set_score_display.html:40
 #: templates/components/_multi_set_score_display.html:50
-#: templates/direttore/_card_partita.html:248
+#: templates/direttore/_card_partita.html:257
 msgid "set vinti"
 msgstr ""
 
@@ -11547,7 +11505,7 @@ msgstr ""
 #: templates/components/_open_inscriptions_modal.html:15
 #: templates/components/_open_inscriptions_modal.html:41
 #: templates/components/_tessera_gara.html:311
-#: templates/direttore/_fase_preparazione.html:41
+#: templates/direttore/_fase_preparazione.html:44
 msgid "Apri le iscrizioni"
 msgstr ""
 
@@ -11621,7 +11579,7 @@ msgstr ""
 
 #: templates/components/_player_dashboard_content.html:38
 #: templates/components/_playoff_invitations.html:32
-#: templates/direttore/_fase_preparazione.html:146
+#: templates/direttore/_fase_preparazione.html:149
 #: templates/feedback/tutte.html:13
 #: templates/individual_match/create_proposal.html:61
 #: templates/player/playoff_invitation.html:23
@@ -11696,6 +11654,7 @@ msgid "Non indicata"
 msgstr ""
 
 #: templates/components/_player_personal_info.html:27
+#: templates/direttore/_squadre_categorie.html:181
 #: templates/player/profile_edit.html:69
 msgid "Squadra"
 msgstr ""
@@ -12148,6 +12107,9 @@ msgstr ""
 #: templates/components/_soft_delete_modal.html:79
 #: templates/components/_unified_cards.html:169
 #: templates/components/_unified_cards.html:175
+#: templates/direttore/_fase_preparazione.html:175
+#: templates/direttore/_fase_preparazione.html:190
+#: templates/direttore/_fase_preparazione.html:203
 msgid "Elimina la gara"
 msgstr ""
 
@@ -12205,76 +12167,6 @@ msgstr ""
 msgid ""
 "Il primo turno è partito: il tabellone è già estratto, quindi le squadre "
 "non si cambiano più."
-msgstr ""
-
-#: templates/components/_squadre_management.html:18
-msgid "Squadre"
-msgstr ""
-
-#: templates/components/_squadre_management.html:28
-msgid ""
-"Il sorteggio tiene lontani i compagni di squadra il più a lungo "
-"possibile; con squadre molto numerose l’incontro viene rinviato, non "
-"evitato."
-msgstr ""
-
-#: templates/components/_squadre_management.html:36
-msgid "Nuova squadra"
-msgstr ""
-
-#: templates/components/_squadre_management.html:36
-msgid "Nome della nuova squadra"
-msgstr ""
-
-#: templates/components/_squadre_management.html:37
-msgid "Aggiungi squadra"
-msgstr ""
-
-#: templates/components/_squadre_management.html:66
-msgid "Toglie la squadra dalle scelte, senza toccare le iscrizioni che la usano"
-msgstr ""
-
-#: templates/components/_squadre_management.html:72
-msgid "Rimette la squadra fra le scelte"
-msgstr ""
-
-#: templates/components/_squadre_management.html:85
-msgid "Rinomina o unisci"
-msgstr ""
-
-#: templates/components/_squadre_management.html:93
-msgid "Nuovo nome della squadra"
-msgstr ""
-
-#: templates/components/_squadre_management.html:103
-#, python-format
-msgid ""
-"Unire «%(nome)s» in un’altra squadra? Le iscrizioni passano alla squadra "
-"scelta e questa voce sparisce dall’elenco."
-msgstr ""
-
-#: templates/components/_squadre_management.html:106
-msgid "Squadra in cui unire questa voce"
-msgstr ""
-
-#: templates/components/_squadre_management.html:107
-msgid "Unisci in…"
-msgstr ""
-
-#: templates/components/_squadre_management.html:126
-msgid "Nessuna squadra in elenco"
-msgstr ""
-
-#: templates/components/_squadre_management.html:128
-msgid ""
-"Le squadre si aggiungono qui, oppure nascono da sole quando un iscritto "
-"indica la propria."
-msgstr ""
-
-#: templates/components/_squadre_management.html:135
-msgid ""
-"Il primo turno è partito: il tabellone è già estratto, quindi l’elenco "
-"non si modifica più."
 msgstr ""
 
 #: templates/components/_ssr_section.html:14
@@ -12714,7 +12606,7 @@ msgid "%(vinte)s vittorie su %(giocate)s"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:164
-#: templates/direttore/_card_partita.html:185
+#: templates/direttore/_card_partita.html:192
 msgid "La tua partita"
 msgstr ""
 
@@ -12801,7 +12693,7 @@ msgstr ""
 
 #: templates/components/_tessera_gara.html:312
 #: templates/direttore/_avvia_gara.html:27
-#: templates/direttore/_avvia_gara.html:94 templates/direttore/_macros.html:47
+#: templates/direttore/_avvia_gara.html:94 templates/direttore/_macros.html:50
 msgid "Avvia la gara"
 msgstr ""
 
@@ -13360,7 +13252,7 @@ msgid "Ciao"
 msgstr ""
 
 #: templates/direttore/_avvia_gara.html:27
-#: templates/direttore/_avvia_gara.html:94 templates/direttore/_macros.html:47
+#: templates/direttore/_avvia_gara.html:94 templates/direttore/_macros.html:50
 msgid "Sorteggia il tabellone"
 msgstr ""
 
@@ -13530,69 +13422,69 @@ msgid ""
 "suo."
 msgstr ""
 
-#: templates/direttore/_card_partita.html:186
+#: templates/direttore/_card_partita.html:193
 msgid "Da validare"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:191
+#: templates/direttore/_card_partita.html:198
 msgid "Trio · un girone"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:191
+#: templates/direttore/_card_partita.html:198
 #, python-format
 msgid "Trio · %(num)s gironi"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:193
-#: templates/direttore/_card_partita.html:260
+#: templates/direttore/_card_partita.html:200
+#: templates/direttore/_card_partita.html:269
 #, python-format
 msgid "Set %(num)s"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:193
+#: templates/direttore/_card_partita.html:200
 msgid "A set"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:201
+#: templates/direttore/_card_partita.html:208
 msgid "Correggi"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:205
+#: templates/direttore/_card_partita.html:212
 #: templates/direttore/_scripts.html:1265
 msgid "Cambia tavolo"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:239
+#: templates/direttore/_card_partita.html:248
 msgid "Ha vinto"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:261
-#: templates/direttore/_card_partita.html:310
+#: templates/direttore/_card_partita.html:270
+#: templates/direttore/_card_partita.html:319
 #, python-format
 msgid "esattamente %(n)s triangoli"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:274
+#: templates/direttore/_card_partita.html:283
 #, python-format
 msgid "Inizia il set %(num)s"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:281
+#: templates/direttore/_card_partita.html:290
 msgid "Vai al segnapunti"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:290
+#: templates/direttore/_card_partita.html:299
 msgid ""
 "Giocati tutti i triangoli dal segnapunti dei giocatori, senza le tre "
 "conferme. Se il punteggio non è quello, correggilo con − e + prima di "
 "validare."
 msgstr ""
 
-#: templates/direttore/_card_partita.html:291
+#: templates/direttore/_card_partita.html:300
 msgid "Così è un pareggio: nessuno vince la partita."
 msgstr ""
 
-#: templates/direttore/_card_partita.html:293
+#: templates/direttore/_card_partita.html:302
 #, python-format
 msgid ""
 "Chiusa dal segnapunti dei giocatori senza la doppia conferma. Se il "
@@ -13600,46 +13492,46 @@ msgid ""
 "il + si spegne, è la distanza del turno."
 msgstr ""
 
-#: templates/direttore/_card_partita.html:296
+#: templates/direttore/_card_partita.html:305
 #, python-format
 msgid "Validare la completa: il tavolo %(t)s passa a %(p1)s – %(p2)s."
 msgstr ""
 
-#: templates/direttore/_card_partita.html:298
+#: templates/direttore/_card_partita.html:307
 msgid "Validare la completa e libera il tavolo."
 msgstr ""
 
-#: templates/direttore/_card_partita.html:304
+#: templates/direttore/_card_partita.html:313
 #, python-format
 msgid "%(n)s triangoli, ognuno ne gioca %(m)s"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:305
+#: templates/direttore/_card_partita.html:314
 msgid "l'ordine del girone decide quali + sono accesi"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:307
+#: templates/direttore/_card_partita.html:316
 #, python-format
 msgid "si vince a %(n)s set"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:307
+#: templates/direttore/_card_partita.html:316
 #, python-format
 msgid "esattamente %(n)s set"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:309
+#: templates/direttore/_card_partita.html:318
 #, python-format
 msgid "si vince a %(n)s"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:309
-#: templates/direttore/_card_partita.html:310
+#: templates/direttore/_card_partita.html:318
+#: templates/direttore/_card_partita.html:319
 msgid "alla distanza la partita si chiude e il tavolo si libera"
 msgstr ""
 
-#: templates/direttore/_card_partita.html:322
-#: templates/direttore/_menu_partita.html:36
+#: templates/direttore/_card_partita.html:331
+#: templates/direttore/_menu_partita.html:40
 msgid "Il turno dopo è già avviato: questa partita non si tocca più."
 msgstr ""
 
@@ -13710,7 +13602,6 @@ msgid ""
 msgstr ""
 
 #: templates/direttore/_dal_campionato.html:23
-#, python-format
 msgid "Dal campionato"
 msgstr ""
 
@@ -13761,7 +13652,6 @@ msgid "Date ammesse"
 msgstr ""
 
 #: templates/direttore/_dal_campionato.html:52
-#, python-format
 msgid "Pagina del campionato"
 msgstr ""
 
@@ -13787,6 +13677,7 @@ msgstr ""
 
 #: templates/direttore/_esercizi_turni.html:55
 #: templates/direttore/_foglio_esercizio.html:34
+#, python-format
 msgid "Non riuscito"
 msgstr ""
 
@@ -13820,9 +13711,9 @@ msgid "a punteggio, conta il migliore"
 msgstr ""
 
 #: templates/direttore/_esercizi_turni.html:95
-#: templates/direttore/_fase_preparazione.html:73
-#: templates/direttore/_fase_preparazione.html:116
-#: templates/direttore/impostazioni.html:75
+#: templates/direttore/_fase_preparazione.html:76
+#: templates/direttore/_fase_preparazione.html:117
+#: templates/direttore/impostazioni.html:78
 #: templates/direttore/preparazione.html:18
 #: templates/direttore/preparazione/_esercizi.html:18
 msgid "Esercizi fra i turni"
@@ -14082,28 +13973,28 @@ msgstr ""
 msgid "libero"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:27
+#: templates/direttore/_fase_iscrizioni.html:28
 msgid "Aprono da sole"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:29
+#: templates/direttore/_fase_iscrizioni.html:30
 msgid "La gara è già pubblica: chi la trova legge quando potrà iscriversi."
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:31
+#: templates/direttore/_fase_iscrizioni.html:32
 msgid "Iscrizioni scadute"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:33
+#: templates/direttore/_fase_iscrizioni.html:34
 #, python-format
 msgid "Chiuse il %(quando)s"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:33
+#: templates/direttore/_fase_iscrizioni.html:34
 msgid "Chiuse"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:37
+#: templates/direttore/_fase_iscrizioni.html:38
 #, python-format
 msgid ""
 "Sono arrivati %(n)s iscritti sugli %(min)s che servono. Puoi allungare i "
@@ -14111,196 +14002,223 @@ msgid ""
 "notifica."
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:39
+#: templates/direttore/_fase_iscrizioni.html:40
 #, python-format
 msgid ""
 "%(n)s iscritti, il minimo c’è: puoi avviare la gara o riaprire le "
 "iscrizioni."
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:45
+#: templates/direttore/_fase_iscrizioni.html:46
 #, python-format
 msgid "%(n)s iscritti su %(max)s"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:53
+#: templates/direttore/_fase_iscrizioni.html:54
 #, python-format
 msgid "Servono almeno %(min)s iscritti"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:53
+#: templates/direttore/_fase_iscrizioni.html:54
 #, python-format
 msgid "chiudono %(quando)s"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:62
+#: templates/direttore/_fase_iscrizioni.html:63
 msgid "Modifica le date"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:76
+#: templates/direttore/_fase_iscrizioni.html:77
 #, python-format
 msgid "Manca %(n)d iscritto"
 msgid_plural "Mancano %(n)d iscritti"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_iscrizioni.html:88
+#: templates/direttore/_fase_iscrizioni.html:89
 msgid "Annulla la gara"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:90
+#: templates/direttore/_fase_iscrizioni.html:91
 #, python-format
 msgid "L’iscritto riceve la notifica dell’annullamento."
 msgid_plural "I %(n)d iscritti ricevono la notifica dell’annullamento."
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_iscrizioni.html:118
+#: templates/direttore/_fase_iscrizioni.html:119
 msgid "Da tenere d'occhio"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:122
+#: templates/direttore/_fase_iscrizioni.html:123
 msgid "cambia prima di avviare"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:122
-#: templates/direttore/_fase_preparazione.html:124
+#: templates/direttore/_fase_iscrizioni.html:123
+#: templates/direttore/_fase_preparazione.html:125
 msgid "nessun tavolo: la sala non ne ha dichiarati"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:129
-#: templates/direttore/_fase_preparazione.html:141
+#: templates/direttore/_fase_iscrizioni.html:133
+#: templates/direttore/_fase_preparazione.html:144
 #, python-format
 msgid "se si arriva a %(n)s iscritti"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:133
+#: templates/direttore/_fase_iscrizioni.html:137
 msgid "senza scadenza"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:138
+#: templates/direttore/_fase_iscrizioni.html:142
 msgid "Chiudi le iscrizioni"
 msgstr ""
 
-#: templates/direttore/_fase_iscrizioni.html:138
+#: templates/direttore/_fase_iscrizioni.html:142
 msgid "la gara torna in preparazione"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:34
+#: templates/direttore/_fase_preparazione.html:37
 msgid "Nessuno vede ancora la gara"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:36
+#: templates/direttore/_fase_preparazione.html:39
 msgid ""
 "Quando apri le iscrizioni la gara diventa pubblica e chi è in zona riceve"
 " la notifica."
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:50
-#: templates/direttore/_fase_preparazione.html:110
-#: templates/direttore/impostazioni.html:61
-#: templates/direttore/impostazioni.html:68
+#: templates/direttore/_fase_preparazione.html:53
+#: templates/direttore/_fase_preparazione.html:111
+#: templates/direttore/impostazioni.html:64
+#: templates/direttore/impostazioni.html:71
 #: templates/direttore/preparazione.html:16
 msgid "Turni e distanze"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:50
+#: templates/direttore/_fase_preparazione.html:53
 msgid "Modifica turni ed esercizi"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:59
+#: templates/direttore/_fase_preparazione.html:62
 #: templates/direttore/preparazione/_turni.html:47
 #: templates/direttore/preparazione/_turni.html:187
 msgid "modificato"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:77
+#: templates/direttore/_fase_preparazione.html:80
 msgid "classifica a parte"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:78
-#: templates/direttore/_fase_preparazione.html:117
+#: templates/direttore/_fase_preparazione.html:81
+#: templates/direttore/_fase_preparazione.html:118
 msgid "nessuno — facoltativo"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:96
+#: templates/direttore/_fase_preparazione.html:99
 msgid "Anteprima della pagina pubblica"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:107
+#: templates/direttore/_fase_preparazione.html:108
 msgid "Da preparare"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:111
-#: templates/direttore/impostazioni.html:69
+#: templates/direttore/_fase_preparazione.html:112
+#: templates/direttore/impostazioni.html:72
 #, python-format
 msgid "%(n)s turni · %(disc)s · %(dist)s"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:112
+#: templates/direttore/_fase_preparazione.html:113
 #, python-format
 msgid "%(n)d turno modificato"
 msgid_plural "%(n)d turni modificati"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_preparazione.html:117
+#: templates/direttore/_fase_preparazione.html:118
 #, python-format
 msgid "%(n)d esercizio · classifica a parte"
 msgid_plural "%(n)d esercizi · classifica a parte"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_preparazione.html:121
+#: templates/direttore/_fase_preparazione.html:122
 msgid "solo tu — aggiungi un co-direttore"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:121
+#: templates/direttore/_fase_preparazione.html:122
 #, python-format
 msgid "tu e %(n)d co-direttore"
 msgid_plural "tu e %(n)d co-direttori"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_preparazione.html:124
+#: templates/direttore/_fase_preparazione.html:125
 #, python-format
 msgid "%(n)d nella sala"
 msgid_plural "%(n)d nella sala"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_preparazione.html:128
+#: templates/direttore/_fase_preparazione.html:131
 msgid "locandina caricata"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:128
+#: templates/direttore/_fase_preparazione.html:131
 msgid "nessuna locandina"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:133
+#: templates/direttore/_fase_preparazione.html:136
 msgid ""
 "Ogni riga porta alla sua sezione, qui a fianco. Turni ed esercizi aprono "
 "la loro pagina."
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:139
-#: templates/direttore/impostazioni.html:72
+#: templates/direttore/_fase_preparazione.html:142
+#: templates/direttore/impostazioni.html:75
 msgid "anti-reincontro attivo"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:144
-#: templates/direttore/impostazioni.html:80
+#: templates/direttore/_fase_preparazione.html:147
+#: templates/direttore/impostazioni.html:83
 msgid "Chi riposa"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:149
+#: templates/direttore/_fase_preparazione.html:152
 #, python-format
 msgid "minimo %(min)s, fino a %(max)s"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:149
+#: templates/direttore/_fase_preparazione.html:152
 #, python-format
 msgid "minimo %(min)s, senza limite"
+msgstr ""
+
+#: templates/direttore/_fase_preparazione.html:175
+msgid "si può finché nessuno è iscritto"
+msgstr ""
+
+#: templates/direttore/_fase_preparazione.html:196
+msgid "La gara sparisce"
+msgstr ""
+
+#: templates/direttore/_fase_preparazione.html:196
+msgid "con i turni, gli esercizi, i tavoli e la direzione di gara"
+msgstr ""
+
+#: templates/direttore/_fase_preparazione.html:198
+msgid "Il campionato resta"
+msgstr ""
+
+#: templates/direttore/_fase_preparazione.html:198
+#, python-format
+msgid "«%(nome)s» perde questa gara; le altre non cambiano"
+msgstr ""
+
+#: templates/direttore/_fase_preparazione.html:201
+msgid ""
+"Non si può annullare. Si può solo finché nessuno è iscritto: dopo, la "
+"gara si annulla e gli iscritti ricevono la notifica."
 msgstr ""
 
 #: templates/direttore/_fase_spareggio.html:19
@@ -14389,34 +14307,104 @@ msgstr ""
 msgid "Tocca l’esito: il tentativo si registra subito, e non si toglie."
 msgstr ""
 
-#: templates/direttore/_macros.html:58
+#: templates/direttore/_macros.html:61
 msgid "Il playoff decide la classifica finale del campionato."
 msgstr ""
 
-#: templates/direttore/_macros.html:59
+#: templates/direttore/_macros.html:62
 #, python-format
 msgid "La gara vale ×%(n)s nella classifica del campionato."
 msgstr ""
 
-#: templates/direttore/_macros.html:78
+#: templates/direttore/_macros.html:81
 msgid "Passi della preparazione"
 msgstr ""
 
-#: templates/direttore/_macros.html:88
+#: templates/direttore/_macros.html:91
 #, python-format
 msgid "%(i)s di %(n)s"
 msgstr ""
 
-#: templates/direttore/_menu_partita.html:25
+#: templates/direttore/_menu_partita.html:29
 msgid "Azzera la partita"
 msgstr ""
 
-#: templates/direttore/_menu_partita.html:29
+#: templates/direttore/_menu_partita.html:33
 msgid "Azzera la prova"
 msgstr ""
 
-#: templates/direttore/_menu_partita.html:33
+#: templates/direttore/_menu_partita.html:37
 msgid "Apri il segnapunti"
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:59
+msgid "Ritiro"
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:68
+msgid "la partita si chiude a tavolino; chi si ritira tiene i triangoli già vinti"
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:71
+msgid "Le sue altre partite aperte"
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:71
+msgid "si chiudono a tavolino anche quelle"
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:73
+msgid "Esce dalla gara"
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:73
+msgid "la sua iscrizione si toglie: dal turno dopo non entra negli abbinamenti"
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:75
+msgid "Il tabellone resta com’è"
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:75
+msgid "chi lo avrebbe incontrato passa il turno a tavolino"
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:77
+msgid "Resta negli abbinamenti"
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:77
+msgid "nei turni dopo perde a tavolino ogni partita, e resta in classifica"
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:81
+msgid ""
+"Lo decide la regola della gara sui ritiri. Azzerare la partita non lo "
+"rimette in gara."
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:82
+msgid ""
+"Lo decide la regola della gara sui ritiri. Azzerando questa partita torna"
+" in gara; le altre partite chiuse a tavolino restano chiuse."
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:85
+msgid "I triangoli che gli restano vanno agli avversari"
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:85
+msgid "poi la partita a tre aspetta la conferma del risultato"
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:87
+msgid ""
+"Nel trio il ritiro vale per questa partita: la regola della gara sui "
+"ritiri non si applica."
+msgstr ""
+
+#: templates/direttore/_menu_partita.html:89
+msgid "Registra il ritiro"
 msgstr ""
 
 #: templates/direttore/_menu_turno.html:21
@@ -14817,31 +14805,46 @@ msgstr ""
 msgid "libero · tocca per assegnare"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1294
+#: templates/direttore/_scripts.html:1299
+#, python-format
+msgid "Ritiro di %(nome)s…"
+msgstr ""
+
+#: templates/direttore/_scripts.html:1318
 msgid ""
 "Torna da giocare e il tavolo si libera. Si può finché il turno dopo non è"
 " avviato."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1309
+#: templates/direttore/_scripts.html:1334
 msgid "Il turno torna a valere zero e l'esercizio torna da registrare."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1445
+#: templates/direttore/_scripts.html:1355
+#, python-format
+msgid "Ritiro di %(nome)s"
+msgstr ""
+
+#: templates/direttore/_scripts.html:1358
+#, python-format
+msgid "%(nome)s vince a tavolino"
+msgstr ""
+
+#: templates/direttore/_scripts.html:1494
 msgid "Pareggio: nessun vincitore."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1446
+#: templates/direttore/_scripts.html:1495
 #, python-format
 msgid "Vince %(nome)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1448
+#: templates/direttore/_scripts.html:1497
 #, python-format
 msgid "Uno dei due deve arrivare a %(n)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1449
+#: templates/direttore/_scripts.html:1498
 #, python-format
 msgid "La somma deve essere esattamente %(n)s."
 msgstr ""
@@ -14881,6 +14884,192 @@ msgid ""
 "tutto."
 msgstr ""
 
+#: templates/direttore/_squadre_categorie.html:37
+#, python-format
+msgid "%(num)d squadra"
+msgid_plural "%(num)d squadre"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/direttore/_squadre_categorie.html:37
+msgid "nessuna squadra"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:38
+msgid "elenco del campionato"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:39
+#: templates/direttore/_squadre_categorie.html:51
+msgid "fissate dal sorteggio"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:41
+#: templates/direttore/_squadre_categorie.html:93
+msgid "Squadre"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:50
+#, python-format
+msgid "%(num)d categoria"
+msgid_plural "%(num)d categorie"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/direttore/_squadre_categorie.html:50
+msgid "nessuna categoria"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:53
+#: templates/direttore/_squadre_categorie.html:215
+msgid "Categorie"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:63
+#, python-format
+msgid "%(n)s senza categoria"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:69
+#, python-format
+msgid "%(num)s iscritto in questa gara"
+msgid_plural "%(num)s iscritti in questa gara"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/direttore/_squadre_categorie.html:69
+msgid "Nessun iscritto in questa gara"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:95
+#: templates/direttore/_squadre_categorie.html:217
+msgid "Elenco del campionato: le modifiche valgono per tutte le sue gare."
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:95
+#: templates/direttore/_squadre_categorie.html:217
+msgid "Elenco di questa gara."
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:104
+msgid "Nuova squadra"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:104
+msgid "Nome della nuova squadra"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:105
+msgid "Aggiungi squadra"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:123
+msgid "Nuovo nome della squadra"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:124
+#: templates/direttore/_squadre_categorie.html:234
+msgid "Rinomina"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:128
+#, python-format
+msgid ""
+"Unire «%(nome)s» in un’altra squadra? Le iscrizioni passano alla squadra "
+"scelta e questa voce sparisce dall’elenco."
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:131
+msgid "Squadra in cui unire questa voce"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:132
+msgid "Unisci in…"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:144
+#: templates/direttore/_squadre_categorie.html:240
+msgid "Togli dalle scelte"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:147
+#: templates/direttore/_squadre_categorie.html:243
+msgid "Rimetti fra le scelte"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:158
+msgid ""
+"Nessuna squadra in elenco. Le squadre si aggiungono qui, oppure nascono "
+"da sole quando un iscritto indica la propria."
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:162
+msgid "Togliere una squadra dalle scelte non cambia le iscrizioni che la usano."
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:163
+msgid ""
+"Il sorteggio tiene lontani i compagni di squadra il più a lungo "
+"possibile; con squadre molto numerose l’incontro viene rinviato, non "
+"evitato."
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:166
+msgid ""
+"Il primo turno è partito: il tabellone è già estratto, quindi l’elenco "
+"non si modifica più."
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:182
+msgid ""
+"La squadra con cui gioca questa gara: il sorteggio la usa per tenere "
+"lontani i compagni."
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:201
+msgid "Una squadra nuova si aggiunge dall’elenco «Squadre»."
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:233
+msgid "Nuovo nome della categoria"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:248
+#, python-format
+msgid "Eliminare la categoria «%(name)s»? Non è assegnata a nessuno."
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:262
+msgid "Nessuna categoria. Scrivine una accanto a un iscritto e comparirà qui."
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:266
+msgid ""
+"In una gara con handicap l’Elo si aggiorna solo nelle partite fra "
+"giocatori della stessa categoria."
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:267
+msgid ""
+"Le categorie si scrivono accanto a ogni iscritto: un nome nuovo entra da "
+"solo in elenco. Da qui si riparano i refusi."
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:270
+msgid ""
+"Il primo turno è partito: le categorie hanno già deciso quali partite "
+"contano per l’Elo e non si modificano più."
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:306
+#, python-format
+msgid "Squadra di %(username)s"
+msgstr ""
+
+#: templates/direttore/_squadre_categorie.html:320
+msgid "Categoria non salvata"
+msgstr ""
+
 #: templates/direttore/_striscia.html:13
 #: templates/direttore/preparazione.html:30
 msgid "Preparazione"
@@ -14908,8 +15097,8 @@ msgid "Gestione Gara %(id)s - Admin"
 msgstr ""
 
 #: templates/direttore/gara.html:33 templates/direttore/gara.html:76
-#: templates/direttore/impostazioni.html:15
-#: templates/direttore/impostazioni.html:19
+#: templates/direttore/impostazioni.html:16
+#: templates/direttore/impostazioni.html:20
 msgid "Impostazioni gara"
 msgstr ""
 
@@ -14922,27 +15111,27 @@ msgstr ""
 msgid "direttori, vetrina, tavoli"
 msgstr ""
 
-#: templates/direttore/impostazioni.html:27
+#: templates/direttore/impostazioni.html:28
 msgid "Modifica gara"
 msgstr ""
 
-#: templates/direttore/impostazioni.html:36
+#: templates/direttore/impostazioni.html:37
 msgid "Si modifica anche adesso"
 msgstr ""
 
-#: templates/direttore/impostazioni.html:44
+#: templates/direttore/impostazioni.html:45
 msgid "locandina, indirizzo pubblico, link esterno"
 msgstr ""
 
-#: templates/direttore/impostazioni.html:61
+#: templates/direttore/impostazioni.html:64
 msgid "si modificano dalla pagina della gara, fino all’apertura delle iscrizioni"
 msgstr ""
 
-#: templates/direttore/impostazioni.html:65
+#: templates/direttore/impostazioni.html:68
 msgid "Fissato all'avvio"
 msgstr ""
 
-#: templates/direttore/impostazioni.html:76
+#: templates/direttore/impostazioni.html:79
 #, python-format
 msgid "%(n)d esercizio"
 msgid_plural "%(n)d esercizi"

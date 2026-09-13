@@ -13,6 +13,7 @@
    lettura, con la lista d'attesa subito sotto gli iscritti. #}
 
 {% import "components/_tabellone_macros.html" as t with context %}
+{% import "direttore/_squadre_categorie.html" as sc with context %}
 {% set reale = gara.get_real_status() %}
 {% set iscritti = gara.get_active_inscriptions_count() %}
 {% set minimo = gara.min_participants or 0 %}
@@ -36,7 +37,7 @@
       {% if mancano %}
       {{ _('Sono arrivati %(n)s iscritti sugli %(min)s che servono. Puoi allungare i tempi o annullare la gara: in entrambi i casi gli iscritti ricevono la notifica.', n=iscritti, min=minimo) }}
       {% else %}
-      {{ _('%(n)s iscritti, il minimo c’è: puoi avviare la gara o riaprire le iscrizioni.', n=iscritti) }}
+      {{ _('%(n)s iscritti, il minimo c’è: puoi avviare la gara o riaprire le iscrizioni.', n=iscritti) }}{{ sc.senza_categoria() }}
       {% endif %}
     </div>
     {% else %}
@@ -50,7 +51,7 @@
       <span class="c7-bar"><span class="c7-bar__fill" style="width:{{ [100, (iscritti * 100 / _tot)|round|int]|min }}%"></span></span>
     </div>
     <div class="c7-fascia__corpo">
-      {{ _('Servono almeno %(min)s iscritti', min=minimo) }}{% if gara.inscription_end %} · {{ _('chiudono %(quando)s', quando=gara.inscription_end|datetime_local) }}{% endif %}
+      {{ _('Servono almeno %(min)s iscritti', min=minimo) }}{% if gara.inscription_end %} · {{ _('chiudono %(quando)s', quando=gara.inscription_end|datetime_local) }}{% endif %}{{ sc.senza_categoria() }}
     </div>
     {% endif %}
   </div>
@@ -123,6 +124,9 @@
                   tone=('neutral' if _tavoli else 'warn'),
                   href=url_for('admin.competition.gara_impostazioni', gara_id=gara.id) ~ '#sezioneTavoli') }}
         {% endif %}
+        {# Squadre e categorie: si fissano al sorteggio, quindi si guardano
+           adesso. Ogni riga apre il suo foglio. #}
+        {{ sc.righe() }}
         {# La forma del tabellone con gli iscritti di adesso: cambia a ogni
            iscritto, ed e' cio' che il direttore sta raccogliendo (#240). #}
         {% if forma %}
@@ -143,11 +147,10 @@
     </div>
   </div>
 
-  {# ---- Sotto l'elenco (desktop) e in coda (telefono): squadre,
-     categorie e le informazioni ---- #}
+  {# ---- Sotto l'elenco (desktop) e in coda (telefono): le informazioni ---- #}
   <div class="c7-stack" style="gap:18px">
-    <div id="sezioneSquadre">{% include "components/_squadre_management.html" %}</div>
-    {% include "components/_categorie_management.html" %}
     {% include "components/_gara_info.html" %}
   </div>
 </div>
+
+{{ sc.fogli() }}

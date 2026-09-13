@@ -55,7 +55,13 @@ class GaraChallenge(BaseModel):
     added_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
 
     # Relationships
-    gara = db.relationship("Gara", backref="gara_challenges")
+    # Stessa cascata di `RoundConfiguration.gara`: vedi li'.
+    gara = db.relationship(
+        "Gara",
+        backref=db.backref(
+            "gara_challenges", cascade="all, delete-orphan", passive_deletes=True
+        ),
+    )
     challenge = db.relationship("Challenge")
     added_by = db.relationship("User", foreign_keys=[added_by_id])
     attempts = db.relationship(

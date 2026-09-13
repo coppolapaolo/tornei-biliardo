@@ -431,7 +431,7 @@ def delete_gara(gara_id):
     # Usa il service layer invece del direct database access
     try:
         GaraService.delete_gara(gara_id)
-        flash(f"{gara_name} cancellata con successo!")
+        flash(_("Gara «%(nome)s» eliminata.", nome=gara_name), "success")
     except ValueError as ve:
         flash(str(ve), "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))

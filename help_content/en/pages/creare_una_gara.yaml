@@ -4,7 +4,7 @@ kind: tutorial
 audience: [direttore]
 minutes: 6
 summary: "From creation to kick-off: name, date, venue, match format and opening registrations. With the recommended values if it is your first time."
-screens: [admin.competition.create_gara_standalone]
+screens: [admin.competition.create_gara_standalone, admin.competition.gara_detail]
 related: [opzioni_della_gara, gestire_le_iscrizioni, condurre_la_gara]
 
 blocks:
@@ -105,6 +105,25 @@ blocks:
       on a bracket, and they used to be asked and then ignored. In their place
       you get the **Bracket options** panel. The whole list is in [All the
       options](/aiuto/organizzare/opzioni_della_gara).
+
+  - type: heading
+    id: eliminare
+    title: "Deleting a competition in preparation"
+
+  - type: text
+    text: >-
+      While the competition is in preparation and nobody has registered you
+      can delete it entirely: at the bottom of the competition page there is
+      the **Delete the competition** row. The sheet that opens says what goes
+      away — rounds, exercises, tables and competition direction — and, if the
+      competition belongs to a championship, reminds you that the other
+      competitions stay as they are. It cannot be undone. Once registrations
+      are open the competition can no longer be deleted: it is cancelled, and
+      the entrants get a notification. A trial competition is deleted from its
+      banner.
+
+  - type: shot
+    shot: gara-elimina
 
   - type: heading
     id: aprire

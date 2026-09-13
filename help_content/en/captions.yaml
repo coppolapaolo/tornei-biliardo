@@ -53,7 +53,10 @@ tabellone: "The knockout bracket: winners move up, losers are out."
 gara-tabellone-dettaglio: "A knockout competition: its page links through to the bracket."
 gara-tabellone-direttore: "A knockout competition seen by its director: the quarter-finals are over, the band offers «Start the semi-finals» and the compact bracket is on the right."
 gara-bozza: "A competition in preparation: the dark band offers «Open registrations» and below it the list of what to prepare."
-gara-squadre: "The teams panel in competition management: which teams exist and how many entrants belong to each."
+gara-squadre: "The «Teams» sheet opened from the row on the competition page: the teams on the list, how many entrants each has in this competition and the field to add one."
+gara-impostazioni: "«Competition settings» while registrations are open: competition direction, showcase, tables and, at the bottom, the «Teams» row."
+gara-ritiro: "The «… withdraws» sheet opened from the match menu: who wins by walkover, what happens to their other matches and the competition's withdrawal rule, before confirming."
+gara-elimina: "The «Delete the competition» sheet of a competition in preparation: what goes away, that the championship stays, and that it cannot be undone."
 gara-turni-config: "Per-round setup: each round can have its own discipline and distance."
 
 # --- Exams ---------------------------------------------------------------

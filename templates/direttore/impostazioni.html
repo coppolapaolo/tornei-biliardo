@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% import "direttore/_macros.html" as d with context %}
+{% import "direttore/_squadre_categorie.html" as sc with context %}
 
 {# «Impostazioni gara» — Design System 7c (canvas, 2S · Impostazioni gara).
 
@@ -50,9 +51,11 @@
     {% include "components/_gara_tables_config.html" %}
   </div>
 
-  {# Squadre e categorie si mostrano da se' solo quando la gara le usa. #}
-  <div id="sezioneSquadre">{% include "components/_squadre_management.html" %}</div>
-  {% include "components/_categorie_management.html" %}
+  {# Squadre e categorie, quando la gara le usa: una riga che apre il foglio.
+     Finche' si modificano stanno qui; dopo il sorteggio fra cio' che e'
+     fissato, con il foglio in sola lettura. #}
+  {% set _elenchi_aperti = sc.righe('modificabili')|trim %}
+  {% if _elenchi_aperti %}<div class="c7-rows">{{ _elenchi_aperti }}</div>{% endif %}
 
   {% if in_preparazione %}
   {# In preparazione turni ed esercizi si modificano: sono nella pagina
@@ -79,6 +82,7 @@
     {% if gara.matchmaking_strategy not in bracket_minimum_players %}
     {{ d.riga('fa-scale-balanced', _('Chi riposa'), gara.odd_number_policy|etichetta_dispari, tone='locked') }}
     {% endif %}
+    {{ sc.righe('bloccate') }}
   </div>
   {% endif %}
 
@@ -86,4 +90,6 @@
 
   {% include "components/_gara_info.html" %}
 </div>
+
+{{ sc.fogli() }}
 {% endblock %}

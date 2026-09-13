@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [direttore, giocatore]
 minutes: 4
 summary: "When entrants come from different clubs, you can ask the app not to pair team-mates against each other straight away."
-screens: [admin.competition.gara_detail]
+screens: [admin.competition.gara_detail, admin.competition.gara_impostazioni]
 related: [abbinamenti, opzioni_della_gara, profilo_e_statistiche]
 
 blocks:
@@ -48,12 +48,22 @@ blocks:
       has to be decided beforehand, not after: turning it on with registrations
       under way would leave half the entrants with no team.
 
+  - type: text
+    text: >-
+      When teams are on, the **Teams** row appears on the competition page —
+      among the things to prepare, and while registrations are open under
+      «Worth keeping an eye on» — and in **Competition settings**. Tap it and
+      the sheet with the list opens.
+
+  - type: shot
+    shot: gara-impostazioni
+    variant: desktop
+
   - type: shot
     shot: gara-squadre
-    caption: "The teams panel in competition management: which teams exist and how many entrants belong to each."
 
   - type: options
-    title: "What the panel lets you do"
+    title: "What the sheet lets you do"
     items:
       - name: "Create a team"
         text: "Teams are born inside the competition: there is no global list to maintain."
@@ -67,6 +77,16 @@ blocks:
         text: >-
           Removes it from the available choices without touching anyone who has
           already selected it.
+      - name: "Change an entrant's team"
+        text: >-
+          In the list of entrants each player has a chip with their team: tap
+          it and choose from the sheet that opens.
+
+  - type: note
+    tone: info
+    text: >-
+      After the first-round draw the row stays, with a grey tile: the sheet
+      still opens, but the list is read-only.
 
   - type: heading
     id: iscriversi
