@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.18.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.17.0...v1.18.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* la zona playoff nella classifica generale ([#358](https://github.com/coppolapaolo/tornei-biliardo/issues/358)) ([5fd1ec3](https://github.com/coppolapaolo/tornei-biliardo/commit/5fd1ec309b6e1e9a4e94acc16be3ef25b75fb6e9))
+
 ## [1.17.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.16.0...v1.17.0) (2026-09-13)
 
 
