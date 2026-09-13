@@ -281,6 +281,24 @@ def poll_gara(gara_id: int):
     return _poll_response(EventScope.GARA, gara_id)
 
 
+@sse_bp.route("/poll/sala/<token>")
+def poll_sala(token: str):
+    """Il poll dello schermo in sala: pubblico, per indirizzo e non per id.
+
+    Lo schermo lo apre chiunque abbia il link della vetrina, spesso un
+    computer della sala senza nessuno collegato, quindi niente login. Si
+    passa dall'indirizzo pubblico e non dall'id: una prova (ADR-058) risponde
+    404 come la sua vetrina, e gli id delle gare non si enumerano. Gli eventi
+    della gara dicono punteggi e turni, gli stessi che lo schermo mostra.
+    """
+    from models.competition.showcase_service import resolve_public_identifier
+
+    gara = resolve_public_identifier(token)
+    if gara is None:
+        abort(404)
+    return _poll_response(EventScope.GARA, gara.id)
+
+
 @sse_bp.route("/poll/user/<int:user_id>")
 @login_required
 def poll_user(user_id: int):

@@ -1,0 +1,180 @@
+{% extends "public_base.html" %}
+{# templates/public/schermo_sala.html — Design System 7c
+
+   Lo schermo in sala (canvas «Pagina gara del direttore», 3.10): la gara da
+   proiettare sulla TV. Pubblico, senza menu e senza footer, da leggere a tre
+   metri. In testa la locandina della vetrina (1200×630, ritagliata al centro
+   come le anteprime social) e una barra scura con nome, dati e turno. Sotto,
+   i tavoli riempiono l'altezza — due giocatori per casella, nome grande e
+   punteggio grandissimo, il tavolo libero con la prossima partita — e a
+   destra la classifica dopo l'ultimo turno chiuso, con le medaglie, e il
+   turno prima.
+
+   Si ricarica da sola a ogni evento della gara (`sse.poll_sala`). Le gare a
+   tabellone hanno una forma ancora da disegnare (issue #352): lo schermo lo
+   dice. Dati da `models/competition/schermo_sala.py`. #}
+
+{% block title %}{{ _('Schermo in sala') }} · {{ vetrina.titolo }}{% endblock %}
+{% block body_class %}c7-public c7-sala-page{% endblock %}
+{% block head_extra %}<meta name="robots" content="noindex">{% endblock %}
+
+{% block content %}
+{% set _fase = schermo.fase.value %}
+{% set _formato = (vetrina.righe | selectattr('icona', 'equalto', 'fa-trophy') | first) %}
+<div class="c7-sala" id="schermoSala" data-fase="{{ _fase }}">
+  <header class="c7-sala__testa">
+    <div class="c7-sala__locandina">
+      <img src="{{ vetrina.banner_url }}" alt="{{ _('Locandina di %(gara)s', gara=vetrina.titolo) }}">
+    </div>
+    <div class="c7-sala__barra">
+      <div class="c7-sala__titoli">
+        <h1 class="c7-sala__nome">{{ vetrina.titolo }}</h1>
+        <div class="c7-sala__dati">
+          {% if gara.location %}{{ gara.location }} <span class="c7-sep">·</span> {% endif %}
+          {{ vetrina.data_testo }}{% if vetrina.ora_testo %} {{ vetrina.ora_testo }}{% endif %}
+          {% if _formato %} <span class="c7-sep">·</span> {{ _formato.valore }}{% endif %}
+          <span class="c7-sep">·</span> {{ ngettext('%(n)d giocatore', '%(n)d giocatori', schermo.iscritti, n=schermo.iscritti) }}
+        </div>
+      </div>
+      <div class="c7-sala__turno">
+        {% if _fase == 'gioco' and schermo.turni %}
+        <span class="c7-kicker">{{ _('Turno') }}</span>
+        <span class="c7-num c7-sala__turno-num">{{ schermo.turno }}<small>/{{ schermo.turni }}</small></span>
+        <span class="c7-state c7-state--onaccent">{{ _('in corso') }}</span>
+        {% elif _fase == 'spareggio' %}
+        <span class="c7-state c7-state--onaccent">{{ _('spareggio in corso') }}</span>
+        {% elif _fase == 'conclusa' %}
+        <span class="c7-state c7-state--onaccent">{{ _('conclusa') }}</span>
+        {% elif _fase == 'attesa' %}
+        <span class="c7-state c7-state--onaccent">{{ _('non ancora cominciata') }}</span>
+        {% endif %}
+      </div>
+    </div>
+  </header>
+
+  {% if _fase == 'tabellone' %}
+  <main class="c7-sala__corpo c7-sala__corpo--solo">
+    <section class="c7-card c7-sala__avviso">
+      <div class="c7-empty__ico"><i class="fas fa-sitemap"></i></div>
+      <h2 class="c7-sala__avviso-titolo">{{ _('Lo schermo in sala per le gare a tabellone non è ancora disponibile') }}</h2>
+      <p class="c7-sala__avviso-testo">{{ _('Per ora il percorso della gara si segue dalla pagina del tabellone.') }}</p>
+      {% if feature_visible('admin.competition.gara_bracket') %}
+      <a class="btn btn-primary" href="{{ url_for('admin.competition.gara_bracket', gara_id=gara.id) }}">
+        <i class="fas fa-sitemap"></i> {{ _('Apri il tabellone') }}
+      </a>
+      {% endif %}
+    </section>
+  </main>
+
+  {% elif _fase == 'attesa' %}
+  <main class="c7-sala__corpo c7-sala__corpo--solo">
+    <section class="c7-card c7-sala__avviso">
+      <div class="c7-empty__ico"><i class="fas fa-clock"></i></div>
+      <h2 class="c7-sala__avviso-titolo">{{ _('La gara non è ancora cominciata') }}</h2>
+      <p class="c7-sala__avviso-testo">
+        {{ _('Appena il direttore avvia il primo turno, qui compaiono i tavoli con le partite.') }}
+      </p>
+    </section>
+  </main>
+
+  {% else %}
+  <main class="c7-sala__corpo{% if not schermo.tavoli %} c7-sala__corpo--solo{% endif %}">
+    {% if schermo.tavoli %}
+    <section class="c7-sala__tavoli{% if schermo.tavoli|length > 4 %} c7-sala__tavoli--molti{% endif %}" aria-label="{{ _('Tavoli') }}">
+      {% for t in schermo.tavoli %}
+      <article class="c7-card c7-sala__tavolo{% if t.libero %} c7-sala__tavolo--libero{% endif %}">
+        <div class="c7-sala__tavolo-testa">
+          <div class="c7-sala__tessera{% if not t.libero %} is-occupato{% endif %}">
+            <span class="c7-kicker">{{ _('Tavolo') }}</span>
+            <span class="c7-num">{{ t.nome }}</span>
+          </div>
+          {% if t.alla_distanza %}<span class="c7-state c7-state--ok">{{ _('Alla distanza') }}</span>
+          {% elif not t.libero %}<span class="c7-state c7-state--accent">{{ _('In corso') }}</span>
+          {% else %}<span class="c7-state c7-state--muted">{{ _('Libero') }}</span>{% endif %}
+        </div>
+        {% if not t.libero %}
+        <div class="c7-sala__lati{% if t.lati|length > 2 %} c7-sala__lati--tre{% endif %}">
+          {% for lato in t.lati %}
+          <div class="c7-sala__lato{% if not lato.avanti %} is-dietro{% endif %}">
+            <div class="c7-sala__gioc">{{ lato.nome }}</div>
+            <div class="c7-sala__punti c7-num">{{ lato.punti }}</div>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="c7-sala__vuoto">
+          {% if t.prossima %}
+          <div class="c7-kicker">{{ _('Prossima partita') }}</div>
+          <div class="c7-sala__prossima">{{ t.prossima }}</div>
+          <div class="c7-sala__attesa">{{ _('in attesa di un tavolo libero') }}</div>
+          {% else %}
+          <div class="c7-sala__attesa">{{ _('nessuna partita in attesa') }}</div>
+          {% endif %}
+        </div>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <aside class="c7-sala__destra">
+      {% if schermo.classifica %}
+      <div class="c7-sechead">
+        <h3>
+          {% if _fase == 'conclusa' %}{{ _('Classifica finale') }}
+          {% elif not schermo.turno_classifica %}{{ _('Classifica complessiva') }}
+          {% else %}{{ _('Classifica dopo il turno %(n)s', n=schermo.turno_classifica) }}{% endif %}
+        </h3>
+        <span class="c7-sechead__note">{{ _('Vinti · persi') if schermo.rack else _('Vinte · diff') }}</span>
+      </div>
+      <div class="c7-rows c7-sala__classifica">
+        {% for r in schermo.classifica %}
+        <div class="c7-rows__row c7-sala__riga">
+          <span class="c7-pos c7-pos--lg{% if r.posizione <= 3 %} c7-pos--{{ r.posizione }}{% endif %}">{{ r.posizione }}</span>
+          <span class="c7-sala__riga-nome">{{ r.nome }}</span>
+          <span class="c7-num c7-sala__riga-val">{{ r.valore }}</span>
+          <span class="c7-num c7-sala__riga-sec">{{ r.secondo }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <section class="c7-card c7-sala__avviso c7-sala__avviso--piccolo">
+        <p class="c7-sala__avviso-testo">{{ _('La classifica compare alla fine del primo turno.') }}</p>
+      </section>
+      {% endif %}
+
+      {% if schermo.turno_prima %}
+      <div class="c7-sechead">
+        <h3 class="c7-dim">{{ _('Turno %(num)s', num=schermo.numero_turno_prima) }}</h3>
+        <span class="c7-state c7-state--muted c7-sechead__stato">{{ _('Concluso') }}</span>
+      </div>
+      <section class="c7-card c7-sala__turno-prima">
+        {% for p in schermo.turno_prima %}
+        <div class="c7-sala__partita-chiusa">
+          <span{% if not p.vince1 %} class="c7-dim"{% endif %}>{{ p.p1 }}</span>
+          <span class="c7-num">{{ p.s1 }}–{{ p.s2 }}</span>
+          <span{% if not p.vince2 %} class="c7-dim"{% endif %}>{{ p.p2 }}</span>
+        </div>
+        {% endfor %}
+      </section>
+      {% endif %}
+    </aside>
+  </main>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+{% if schermo.fase.value != 'conclusa' %}
+<script>
+  // Lo schermo non si tocca: si ricarica da solo a ogni fatto della gara, e
+  // se la scheda e' rimasta nascosta piu' a lungo della conservazione degli
+  // eventi (`onGap`). Per indirizzo, non per id: vedi `sse.poll_sala`.
+  window.Polling.reloadOnEvents({
+    url: {{ url_for('sse.poll_sala', token=identificatore)|tojson }},
+    reloadOn: ['match_completed', 'match_updated', 'round_started', 'inscription_added', 'gara_completed']
+  });
+</script>
+{% endif %}
+{% endblock %}

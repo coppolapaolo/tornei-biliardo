@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [direttore]
 minutes: 6
 summary: "La serata dal vivo: avviare i turni, assegnare i tavoli, correggere i risultati sbagliati e chiudere la gara."
-screens: [admin.competition.gara_detail, admin.competition.amalfi_classification]
+screens: [admin.competition.gara_detail, admin.competition.amalfi_classification, main.schermo_sala]
 related: [gestire_le_iscrizioni, abbinamenti, numero_dispari]
 
 blocks:
@@ -190,6 +190,32 @@ blocks:
           successivo**: le sue partite vengono eliminate e le coppie si
           liberano. Poi correggi, e riavvii. I giocatori del turno annullato
           dovranno rigiocare, quindi valuta se ne vale la pena.
+
+  - type: heading
+    id: schermo_sala
+    title: "Lo schermo in sala"
+
+  - type: text
+    text: >-
+      Se la sala ha una TV o un proiettore, apri **Schermo in sala** dalla
+      pagina della gara, sul computer collegato allo schermo. È una pagina
+      pubblica e senza menu: in alto la locandina della gara, sotto i tavoli
+      con i due giocatori e il punteggio in grande, a destra la classifica
+      dopo l'ultimo turno chiuso e i risultati del turno prima. Si aggiorna
+      da sola a ogni risultato: nessuno deve toccarla.
+
+  - type: shot
+    shot: schermo-sala
+    variant: desktop
+    caption: "Lo schermo in sala: la locandina, i tavoli con le partite in corso, la classifica e il turno prima."
+
+  - type: note
+    tone: info
+    title: "Quando non c'è"
+    text: >-
+      Nelle gare a tabellone lo schermo dice che non è ancora disponibile e
+      rimanda alla pagina del tabellone. Le gare di prova non hanno uno
+      schermo in sala: da fuori non esistono.
 
   - type: heading
     id: dispari

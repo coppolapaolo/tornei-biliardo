@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [direttore]
 minutes: 6
 summary: "The evening itself: starting rounds, assigning tables, correcting wrong results and closing the competition."
-screens: [admin.competition.gara_detail, admin.competition.amalfi_classification]
+screens: [admin.competition.gara_detail, admin.competition.amalfi_classification, main.schermo_sala]
 related: [gestire_le_iscrizioni, abbinamenti, numero_dispari]
 
 blocks:
@@ -186,6 +186,32 @@ blocks:
           round**: its matches are deleted and the pairs are freed. Then you
           correct, and start again. The players in the cancelled round will
           have to replay, so weigh up whether it is worth it.
+
+  - type: heading
+    id: schermo_sala
+    title: "The room screen"
+
+  - type: text
+    text: >-
+      If the venue has a TV or a projector, open **Room screen** from the
+      competition page, on the computer connected to the screen. It is a
+      public page with no menus: the competition poster at the top, the
+      tables below with both players and a large score, and on the right the
+      standings after the last closed round with the results of the previous
+      round. It updates by itself at every result: nobody needs to touch it.
+
+  - type: shot
+    shot: schermo-sala
+    variant: desktop
+    caption: "The room screen: the poster, the tables with the matches under way, the standings and the previous round."
+
+  - type: note
+    tone: info
+    title: "When it is not there"
+    text: >-
+      For bracket competitions the screen says it is not yet available and
+      points to the bracket page. Trial competitions have no room screen:
+      from outside they do not exist.
 
   - type: heading
     id: dispari

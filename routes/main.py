@@ -577,6 +577,58 @@ def campionato_invite(identificatore):
     )
 
 
+@main_bp.route("/g/<token>/sala")
+def schermo_sala(token):
+    """Lo schermo in sala (canvas 3.10): la gara da proiettare sulla TV.
+
+    Pubblico e senza menu: lo apre il direttore sul computer collegato alla
+    TV della sala, e chi guarda non tocca niente. Si raggiunge dallo stesso
+    indirizzo della vetrina, per slug o per token, quindi una prova (ADR-058)
+    risponde 404 come la sua vetrina — il resolver passa dal filtro di
+    sessione — e gli id delle gare non si enumerano.
+
+    Non scrive sul database: la classifica e' quella gia' calcolata
+    (`classifica_gia_calcolata`), perche' la pagina e' anonima e si ricarica
+    a ogni evento live (`sse.poll_sala`).
+    """
+    from models.competition.schermo_sala import schermo_sala as costruisci_schermo
+    from models.competition.showcase_service import (
+        classifica_gia_calcolata,
+        resolve_public_identifier,
+    )
+    from models.competition.showcase_view import costruisci_vetrina, descrizione_social
+    from models.match.models import Match
+
+    gara = resolve_public_identifier(token)
+    if gara is None:
+        return render_template("public/invite_not_found.html"), 404
+
+    partite = (
+        Match.query.filter_by(gara_id=gara.id)
+        .order_by(Match.round_number, Match.id)
+        .all()
+    )
+    vetrina = costruisci_vetrina(gara)
+    schermo = costruisci_schermo(
+        gara,
+        partite,
+        classifica_gia_calcolata(gara.id),
+        gara.get_available_tables(),
+        vetrina.iscritti,
+    )
+    return render_template(
+        "public/schermo_sala.html",
+        gara=gara,
+        vetrina=vetrina,
+        schermo=schermo,
+        identificatore=token,
+        social_title=vetrina.titolo,
+        social_description=descrizione_social(vetrina),
+        social_image=urljoin(request.url_root, vetrina.banner_url.lstrip("/")),
+        social_url=url_for("main.gara_invite", token=token, _external=True),
+    )
+
+
 @main_bp.route("/gara/<int:gara_id>")
 @main_bp.route("/public/gara/<int:gara_id>")
 def gara_detail_public(gara_id):

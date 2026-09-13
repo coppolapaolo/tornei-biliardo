@@ -168,6 +168,17 @@
   <div class="c7-stack">
     <div class="d-none d-lg-block">{{ da_fare_adesso() }}</div>
 
+    {# Lo schermo in sala (canvas 3.10): la pagina pubblica da aprire sulla TV
+       della sala, dallo stesso indirizzo della vetrina. Una prova non ce l'ha:
+       da fuori non esiste (ADR-058). #}
+    {% if not gara.is_prova and gara.public_slug_or_token and feature_visible('main.schermo_sala') %}
+    <div class="c7-rows">
+      {{ d.riga('fa-tv', _('Schermo in sala'), _('da aprire sulla TV della sala: tavoli e classifica, senza menu'),
+                href=url_for('main.schermo_sala', token=gara.public_slug_or_token),
+                attrs='target="_blank" rel="noopener"') }}
+    </div>
+    {% endif %}
+
     {# I tavoli, sul desktop (canvas 3.9): chi c'e' sopra, o libero. Sul
        telefono stanno nel foglio della card. #}
     {% if tavoli_turno and not tipo_comando %}

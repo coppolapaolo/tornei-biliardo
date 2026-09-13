@@ -61,6 +61,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Link pubblico di iscrizione (issue #61): nasce per essere seguito da
     # chi non ha ancora un account, quindi "anonimo" non è opzionale.
     "main.gara_invite": {"anonimo", "player", "director"},
+    # Lo schermo in sala (canvas 3.10) e il suo poll: pubblici come la vetrina,
+    # dallo stesso indirizzo. Lo apre un computer della sala senza login.
+    "main.schermo_sala": {"anonimo", "player", "director"},
+    "sse.poll_sala": {"anonimo", "player", "director"},
     # La vetrina pubblica di un campionato (issue #235, secondo lotto).
     # Aperta agli anonimi per la stessa ragione della gara: lo scraper del
     # social è un client senza cookie, e un 404 qui vuol dire nessuna
