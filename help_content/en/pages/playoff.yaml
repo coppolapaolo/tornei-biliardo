@@ -1,10 +1,10 @@
 title: "End-of-championship play-offs"
 section: giocare
 kind: approfondimento
-audience: [giocatore]
-minutes: 3
-summary: "The final competitions reserved for the best-placed players: how you qualify, how to accept the invitation and what happens if you decline."
-screens: [player.playoff_invitation]
+audience: [giocatore, direttore]
+minutes: 4
+summary: "The final competitions reserved for the best-placed players: how you qualify, how to accept the invitation, what happens if you decline and how directors start them."
+screens: [player.playoff_invitation, admin.campionato.campionato_detail]
 related: [creare_un_campionato, notifiche]
 
 blocks:
@@ -56,9 +56,8 @@ blocks:
 
   - type: text
     text: >-
-      If you qualify you get a **notification**. Opening it shows the play-off
-      — date and venue, if the organisers have already set them — and two
-      buttons: accept or decline.
+      If you qualify you get a **notification**. Opening it shows the play-off,
+      with the day and time it is played, and two buttons: accept or decline.
 
   - type: text
     text: >-
@@ -95,8 +94,10 @@ blocks:
           again until its deadline.
       - title: "Answer in time"
         text: >-
-          The invitation has a deadline. Not answering counts as declining, and
-          the place goes to someone else.
+          The invitation has a deadline, chosen by the director when sending
+          the invitations. Not answering counts as declining, and the place
+          goes to someone else. If the director moves the deadline, the new
+          one applies to you too as long as you have not answered.
 
   - type: note
     tone: tip
@@ -202,6 +203,57 @@ blocks:
     text: >-
       If nobody changes anything the first way applies, with weight 1: the
       play-off counts exactly like any other competition of the championship.
+
+  - type: heading
+    id: avviare
+    title: "For directors: starting and following the play-offs"
+
+  - type: text
+    text: >-
+      This part is for whoever directs the championship. Everything happens
+      on the championship page: the band at the top always says where the
+      play-offs stand and what the next thing to do is.
+
+  - type: steps
+    items:
+      - title: "Terminate the championship"
+        text: >-
+          With **Terminate** the overall standings become final and the band
+          switches to «Playoffs to start».
+      - title: "Choose the date and the deadline, and send the invitations"
+        text: >-
+          Tap **Start the playoffs**: a sheet opens asking **When the playoff
+          is played** and **Invited players reply by**, in your time zone.
+          Both dates must be in the future. With **Start the playoffs and send
+          the invitations** the qualified players receive the invitation and
+          the configurations are locked.
+      - title: "Move the date and the deadline, if needed"
+        text: >-
+          Above the list of invited players of each play-off there is the
+          **Date and deadline** row. Tap it to change them, until the play-off
+          competition starts. The new deadline applies to whoever has not
+          answered yet; the new date also moves the competition, if you have
+          already created it.
+      - title: "Create the competition"
+        text: >-
+          When there are enough answers, **Create the playoff competition**
+          creates it and enters everyone who accepted. From then on the
+          button becomes **Go to playoff competition**.
+      - title: "Play"
+        text: >-
+          As soon as the play-off competition starts, the band says **Playoffs
+          in progress**: invitations are closed and the play-off is played by
+          whoever is in. Instead of the invited players you find **Playoff
+          competitions**, with a link to each one.
+
+  - type: note
+    tone: info
+    title: "The championship closes by itself"
+    text: >-
+      When every play-off competition is finished, the band says
+      **Championship finished · Final standings**, with the winner of each
+      play-off and the **Final results** button. There is nothing to press:
+      the championship is marked completed by itself.
 
   - type: faq
     items:
