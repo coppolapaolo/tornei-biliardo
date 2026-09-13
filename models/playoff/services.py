@@ -201,8 +201,15 @@ class PlayoffService:
         return (gara.current_round or 0) > 0 or (gara.status or "") not in in_attesa
 
     @staticmethod
-    def _iscrivi_alla_gara(qualification: PlayoffQualification) -> None:
-        """Iscrive alla gara di playoff, se esiste già, un qualificato confermato."""
+    def _iscrivi_alla_gara(
+        qualification: PlayoffQualification, *, d_ufficio: bool = False
+    ) -> None:
+        """Iscrive alla gara di playoff, se esiste già, un qualificato confermato.
+
+        `d_ufficio` è l'aggiunta decisa dal direttore: entra anche oltre i
+        posti. Chi arriva da un invito rispetta i posti, e trovandoli pieni va
+        in lista d'attesa come in ogni gara.
+        """
         from ..competition.inscription_service import InscriptionService
 
         gara = qualification.configuration.gara
@@ -212,6 +219,7 @@ class PlayoffService:
             user_id=qualification.user_id,
             gara_id=gara.id,
             _bypass_playoff_check=True,
+            _d_ufficio=d_ufficio,
         )
 
     @staticmethod
@@ -231,6 +239,41 @@ class PlayoffService:
         for qualification in in_attesa:
             qualification.expire_qualification()
         return len(in_attesa)
+
+    @staticmethod
+    def riapri_inviti_all_annullo(gara) -> int:
+        """Annullato l'avvio della finale, gli inviti chiusi dall'avvio si riaprono.
+
+        Tornano in attesa solo gli inviti che l'avvio aveva fatto scadere. Si
+        riconoscono senza una colonna in più: **nessuno li ha sostituiti** e
+        **la loro scadenza non è ancora passata**. Un invito scaduto per la sua
+        scadenza la ha per forza già alle spalle — il job lo chiude solo
+        allora — e uno sostituito ha già ceduto il posto: restano come sono.
+
+        Chiamato da ogni strada che riporta la gara in iscrizione, dentro la
+        sua transazione. Restituisce quanti inviti ha riaperto.
+        """
+        config_id = getattr(gara, "playoff_config_id", None)
+        if not config_id:
+            return 0
+        config = db.session.get(PlayoffConfiguration, config_id)
+        if config is None:
+            return 0
+
+        adesso = utc_now()
+        scaduti = PlayoffQualification.query.filter_by(
+            configuration_id=config_id,
+            status=QualificationStatus.EXPIRED,
+            replaced_by_id=None,
+        ).all()
+        riaperti = 0
+        for qualification in scaduti:
+            scadenza = qualification.expires_at or config.response_deadline
+            if scadenza is not None and scadenza <= adesso:
+                continue
+            qualification.status = QualificationStatus.PENDING
+            riaperti += 1
+        return riaperti
 
     @staticmethod
     @transactional(domain="playoff")
@@ -1002,11 +1045,16 @@ class PlayoffService:
             .all()
         )
 
+        # D'ufficio, cioè senza lista d'attesa: gli inviti vivi non superano
+        # mai i posti, perché la cascata chiama un sostituto solo per chi esce,
+        # quindi un confermato oltre i posti può essere solo un giocatore
+        # aggiunto dal direttore — ed entra comunque.
         for qual in confirmed:
             InscriptionService.inscribe_user(
                 user_id=qual.user_id,
                 gara_id=gara.id,
                 _bypass_playoff_check=True,
+                _d_ufficio=True,
             )
 
         # Update PlayoffTournament if exists, or create one
@@ -1093,7 +1141,8 @@ class PlayoffService:
         )
         db.session.add(qual)
         db.session.flush()
-        PlayoffService._iscrivi_alla_gara(qual)
+        # Una scelta esplicita del direttore: entra anche oltre i posti.
+        PlayoffService._iscrivi_alla_gara(qual, d_ufficio=True)
         return qual
 
     @staticmethod

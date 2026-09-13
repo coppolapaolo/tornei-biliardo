@@ -51,6 +51,7 @@ class InscriptionService:
         user_id: int,
         gara_id: int,
         _bypass_playoff_check: bool = False,
+        _d_ufficio: bool = False,
     ) -> Optional[Inscription]:
         """Registra un utente a una gara se non già iscritto.
 
@@ -65,6 +66,10 @@ class InscriptionService:
         Args:
             _bypass_playoff_check: Internal flag used by PlayoffService
                 to inscribe qualified players into playoff gare.
+            _d_ufficio: iscrizione decisa esplicitamente dal direttore di un
+                playoff: entra sempre fra gli attivi, senza lista d'attesa né
+                per capienza né per parità. Il limite dei posti vale per la
+                cascata degli inviti, non per una scelta del direttore.
         """
         from models.competition.models import Gara, WaitlistReason
         from models.user.models import User
@@ -144,7 +149,7 @@ class InscriptionService:
         waitlist_position = None
 
         # 1. Verifica capacità (max_participants)
-        if gara.max_participants and gara.max_participants > 0:
+        if not _d_ufficio and gara.max_participants and gara.max_participants > 0:
             if total_count >= gara.max_participants:
                 is_waitlist = True
                 waitlist_reason = WaitlistReason.CAPACITY.value
@@ -157,7 +162,7 @@ class InscriptionService:
         # 2. Verifica parità (odd_number_policy="no")
         # Solo se non siamo già in waitlist per capacità
         # E solo se ci sarà più di 1 giocatore (il primo deve sempre essere accettato)
-        if not is_waitlist and gara.odd_number_policy == "no":
+        if not is_waitlist and not _d_ufficio and gara.odd_number_policy == "no":
             new_active_count = active_count + 1
 
             # Conta chi è già in parity waitlist
@@ -422,8 +427,14 @@ class InscriptionService:
                     .count()
                 )
 
-                # Caso 1: Promuovi dalla waitlist capacità se c'è spazio
-                if gara.max_participants and gara.max_participants > 0:
+                # Caso 1: Promuovi dalla waitlist capacità se c'è spazio. Lo
+                # spazio va contato: in un playoff il direttore può iscrivere
+                # oltre i posti, e allora un'uscita non libera un posto.
+                if (
+                    gara.max_participants
+                    and gara.max_participants > 0
+                    and active_count < gara.max_participants
+                ):
                     first_capacity_waitlist = (
                         db.session.query(Inscription)
                         .filter_by(
@@ -479,7 +490,17 @@ class InscriptionService:
                         .first()
                     )
 
-                    if first_waitlist:
+                    # Stessa condizione del caso 1: si promuove solo se
+                    # l'uscita ha liberato davvero un posto. In una gara
+                    # normale gli attivi non superano mai il massimo, quindi
+                    # dopo un'uscita il posto c'è sempre; in un playoff con
+                    # aggiunte d'ufficio oltre i posti no.
+                    posti_pieni = bool(
+                        gara.max_participants
+                        and gara.max_participants > 0
+                        and active_count >= gara.max_participants
+                    )
+                    if first_waitlist and not posti_pieni:
                         InscriptionService._promote_and_notify(first_waitlist, gara)
 
             return True

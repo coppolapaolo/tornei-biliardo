@@ -552,6 +552,62 @@ class TestIlPlayoffSiGiocaConChiHaAccettato:
             == 4
         )
 
+    def test_annullato_l_avvio_gli_inviti_chiusi_dall_avvio_si_riaprono(
+        self, db_session
+    ):
+        """Riga 284: «Se il direttore annulla l'avvio, gli inviti chiusi
+        proprio da quell'avvio tornano in attesa, purché la loro scadenza non
+        sia ancora passata»."""
+        from models.competition.round_cancellation import RoundCancellationService
+
+        campionato, configurazione, giocatori = (
+            TestCascataDeiRifiutiAiPlayoff._campionato_con_playoff(
+                db_session, posti=5, iscritti=8
+            )
+        )
+        PlayoffService.start_playoff(campionato.id)
+        for giocatore in giocatori[:4]:
+            PlayoffService.confirm_qualification(
+                self._invito(configurazione, giocatore).id, giocatore.id
+            )
+        gara = PlayoffService.create_playoff_gara(configurazione.id)
+        self._avvia(gara.id)
+        assert (
+            self._invito(configurazione, giocatori[4]).status
+            == QualificationStatus.EXPIRED
+        )
+
+        RoundCancellationService.cancel_first_round_startup(gara.id)
+
+        assert (
+            self._invito(configurazione, giocatori[4]).status
+            == QualificationStatus.PENDING
+        )
+
+    def test_il_giocatore_aggiunto_dal_direttore_entra_oltre_i_posti(self, db_session):
+        """Riga 284: «Un giocatore aggiunto a mano dal direttore entra invece
+        sempre […] anche oltre i posti, e il massimo della gara non ne blocca
+        l'avvio»."""
+        campionato, configurazione, giocatori = (
+            TestCascataDeiRifiutiAiPlayoff._campionato_con_playoff(
+                db_session, posti=4, iscritti=6
+            )
+        )
+        PlayoffService.start_playoff(campionato.id)
+        for giocatore in giocatori[:4]:
+            PlayoffService.confirm_qualification(
+                self._invito(configurazione, giocatore).id, giocatore.id
+            )
+        gara = PlayoffService.create_playoff_gara(configurazione.id)
+
+        PlayoffService.admin_add_player(configurazione.id, giocatori[5].id, "direttore")
+
+        attivi = Inscription.query.filter_by(
+            gara_id=gara.id, is_waitlist=False, is_withdrawn=False
+        ).count()
+        assert attivi == 5
+        assert self._avvia(gara.id).current_round == 1
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # APERTURA E RUNOUT (SPECIFICHE.md, sezione «Match», righe 131-144 — ADR-056)

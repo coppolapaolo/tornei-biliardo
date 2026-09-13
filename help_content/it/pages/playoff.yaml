@@ -87,7 +87,9 @@ blocks:
         text: >-
           Si può accettare finché il primo turno della gara di playoff non è
           cominciato. Quando parte, gli inviti rimasti senza risposta scadono
-          e il playoff si gioca con chi c'è, anche se sono meno dei posti.
+          e il playoff si gioca con chi c'è, anche se sono meno dei posti. Se
+          il direttore annulla l'avvio, l'invito torna valido fino alla sua
+          scadenza.
       - title: "Rispondi in tempo"
         text: >-
           L'invito ha una scadenza. Non rispondere equivale a rifiutare, e il

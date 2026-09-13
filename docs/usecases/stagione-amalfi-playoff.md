@@ -252,10 +252,16 @@ senza categoria il rating non si muove: «non lo so» non è «sono uguali».
    serve aspettare tutte le risposte: chi accetta **dopo** — anche il primo
    degli esclusi chiamato da un rifiuto — entra fra gli iscritti, e il
    direttore può ancora aggiungere o togliere qualificati.
+   Chi il direttore aggiunge a mano entra **sempre**, anche oltre gli otto
+   posti: il limite vale per la cascata degli inviti, e chi accetta tardi
+   trovando i posti pieni va in lista d'attesa.
 7. **Avvia** la finale. Da quel momento la lista è chiusa: gli inviti rimasti
    senza risposta scadono, nessuno viene più chiamato, e si gioca con chi
    c'è anche se sono meno degli otto posti — la gara di playoff chiede almeno
-   due iscritti, non i sei delle serate.
+   due iscritti, non i sei delle serate — o più, se il direttore ne ha
+   aggiunti. Se **annulla l'avvio**, gli inviti chiusi da quell'avvio tornano
+   in attesa fino alla loro scadenza; quelli scaduti per scadenza o già
+   sostituiti no.
 
 **Variante**: il direttore può saltare del tutto gli inviti e comporre la lista
 a mano dall'inizio. È il percorso di chi la finale se la organizza al telefono.

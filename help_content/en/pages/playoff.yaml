@@ -89,7 +89,8 @@ blocks:
           You can accept until the first round of the play-off competition has
           started. When it starts, invitations still unanswered expire and the
           play-off is played by whoever is in, even if that is fewer than the
-          places.
+          places. If the director cancels the start, the invitation is valid
+          again until its deadline.
       - title: "Answer in time"
         text: >-
           The invitation has a deadline. Not answering counts as declining, and
