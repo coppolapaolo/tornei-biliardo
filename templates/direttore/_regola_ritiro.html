@@ -1,0 +1,14 @@
+{# templates/direttore/_regola_ritiro.html — Design System 7c
+
+   La riga che dice cosa decide la regola della gara sui ritiri
+   (`gara.withdraw_policy`), in parole semplici. Una sola fonte per i due fogli
+   che la mostrano: il ritiro dal menu della partita, a due o nel trio
+   (`_menu_partita.html`), e il ritiro di un iscritto dalla sua riga
+   (`_ritiro_iscritto.html`). Vuole `gara` e le macro `d` nel contesto. #}
+{% if gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value %}
+{{ d.riga('fa-user-minus', _('Esce dalla gara'), _('la sua iscrizione si toglie: dal turno dopo non entra negli abbinamenti'), tone='warn') }}
+{% elif gara.matchmaking_strategy in bracket_minimum_players %}
+{{ d.riga('fa-sitemap', _('Il tabellone resta com’è'), _('chi lo avrebbe incontrato passa il turno a tavolino'), tone='warn') }}
+{% else %}
+{{ d.riga('fa-user-clock', _('Resta negli abbinamenti'), _('nei turni dopo perde a tavolino ogni partita, e resta in classifica'), tone='warn') }}
+{% endif %}

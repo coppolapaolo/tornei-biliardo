@@ -258,7 +258,9 @@ blocks:
       If a player cannot continue — has to leave, gets injured, did not turn up
       — you use **Declare forfeit**. The opponent receives all the racks that
       were missing to the distance: if you were at 3-2 in a race to 5, the
-      result becomes 5-2.
+      result becomes 5-2. A forfeit can be declared until the next round has
+      started: from then on the match belongs to a closed round, and you need
+      the competition director.
 
   - type: note
     tone: warning

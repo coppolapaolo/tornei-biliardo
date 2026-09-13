@@ -5,14 +5,192 @@ This service centralizes the logic for handling player forfeits based on
 the competition's withdraw_policy setting.
 """
 
+import logging
+
+from flask_babel import gettext as _
+
 from models.base import db, utc_now
 from models.transaction.manager import transactional
 from .models import Gara, Inscription, WithdrawPolicy
 from .inscription_service import InscriptionService
 
+logger = logging.getLogger(__name__)
+
 
 class WithdrawPolicyService:
     """Service for handling forfait and withdrawal policies."""
+
+    @staticmethod
+    def ritira_iscritto(gara_id: int, user_id: int, direttore_id: int) -> str:
+        """Il direttore ritira un iscritto a gara in corso.
+
+        Serve per chi se ne va senza dirlo all'app, quando nessuno puo'
+        dichiarare il forfait al posto suo. A gara in corso questa
+        cancellazione **e'** il forfait di quel giocatore, e passa dalla stessa
+        strada: la sua partita aperta si chiude a tavolino tenendo i triangoli
+        gia' vinti, le altre si chiudono come vuole la regola della gara, trio
+        compresi, e la regola decide se resta negli abbinamenti o esce. In piu'
+        il giocatore riceve una notifica che dice chi l'ha ritirato e cosa
+        comporta.
+
+        Prima dell'avvio la strada e' la disiscrizione
+        (`InscriptionService.admin_uninscribe_user`); a gara conclusa o in
+        spareggio non c'e' piu' niente da ritirare.
+
+        Non ha `@transactional`: compone servizi che lo hanno gia', e il
+        decoratore va solo sul piu' interno.
+
+        Returns: l'azione della regola, ``"forfeit_marked"`` o ``"excluded"``.
+        """
+        from models.exceptions import ConflictError, NotFoundError
+        from models.status_enum import GaraStatus
+        from models.user.models import User
+
+        gara = db.session.get(Gara, gara_id)
+        if gara is None:
+            raise NotFoundError(_("Gara non trovata"))
+        utente = db.session.get(User, user_id)
+        nome = utente.username if utente else str(user_id)
+
+        if gara.status != GaraStatus.PLAYING.value:
+            if gara.status in (GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value):
+                raise ConflictError(
+                    _(
+                        "La gara non è ancora partita: %(nome)s si toglie "
+                        "dagli iscritti.",
+                        nome=nome,
+                    )
+                )
+            raise ConflictError(
+                _("A gara conclusa o in spareggio il ritiro non si registra più.")
+            )
+
+        iscrizione = (
+            db.session.query(Inscription)
+            .filter_by(gara_id=gara_id, user_id=user_id, is_withdrawn=False)
+            .first()
+        )
+        if iscrizione is None:
+            raise NotFoundError(_("%(nome)s non è iscritto a questa gara.", nome=nome))
+        if iscrizione.is_waitlist:
+            raise ConflictError(
+                _(
+                    "%(nome)s è in lista d'attesa: non gioca, e non c'è un "
+                    "ritiro da registrare.",
+                    nome=nome,
+                )
+            )
+        if iscrizione.is_forfeit:
+            raise ConflictError(
+                _("%(nome)s si è già ritirato da questa gara.", nome=nome)
+            )
+
+        esclude = gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value
+        partita = WithdrawPolicyService._partita_da_chiudere(gara_id, user_id)
+        if partita is not None and partita.is_trio:
+            from .trio_service import TrioMatchService
+
+            TrioMatchService.forfeit_trio(partita.trio_match.id, user_id, direttore_id)
+        elif partita is not None:
+            from models.match.services import MatchService
+
+            MatchService.forfeit_match(match_id=partita.id, user_id=user_id)
+        else:
+            # Fra un turno e l'altro, o con la X: niente da chiudere a mano,
+            # resta la regola per i turni dopo.
+            WithdrawPolicyService.handle_forfeit(gara_id=gara_id, user_id=user_id)
+
+        WithdrawPolicyService._notifica_ritiro(gara, user_id, direttore_id, esclude)
+        return "excluded" if esclude else "forfeit_marked"
+
+    @staticmethod
+    def _partita_da_chiudere(gara_id: int, user_id: int):
+        """La partita aperta da cui parte il ritiro, o `None`.
+
+        La prima del turno piu' basso che si puo' ancora toccare. Da li' il
+        forfait tiene i triangoli gia' vinti da chi si ritira, come quello dal
+        menu della partita; le altre le chiude `handle_forfeit`, a zero.
+        """
+        from sqlalchemy import or_
+
+        from models.competition.round_manager import AdvancedRoundManager
+        from models.match.models import Match, TrioMatch
+        from models.status_enum import MatchStatus
+
+        aperte = (
+            db.session.query(Match)
+            .outerjoin(TrioMatch, TrioMatch.match_id == Match.id)
+            .filter(
+                Match.gara_id == gara_id,
+                Match.status.in_(
+                    [MatchStatus.PENDING.value, MatchStatus.PLAYING.value]
+                ),
+                Match.is_bye == False,  # noqa: E712
+                or_(
+                    Match.player1_id == user_id,
+                    Match.player2_id == user_id,
+                    TrioMatch.player3_id == user_id,
+                ),
+            )
+            .order_by(Match.round_number, Match.id)
+            .all()
+        )
+        for match in aperte:
+            if match.is_trio:
+                trio = match.trio_match
+                if trio is None or trio.is_completed or trio.awaiting_confirmation:
+                    continue
+            if AdvancedRoundManager.motivo_turno_superato(match) is None:
+                return match
+        return None
+
+    @staticmethod
+    def _notifica_ritiro(
+        gara: Gara, user_id: int, direttore_id: int, esclude: bool
+    ) -> None:
+        """Dice al giocatore chi l'ha ritirato e cosa comporta la regola.
+
+        La notifica e' trasparenza, non parte del ritiro: se non parte il
+        ritiro resta, ma l'errore arriva a GlitchTip.
+        """
+        from models.matchmaking.configuration import BRACKET_STRATEGIES
+        from models.user.models import User
+
+        direttore = db.session.get(User, direttore_id)
+        valori = {
+            "direttore": direttore.username if direttore else "",
+            "gara": InscriptionService.nome_gara(gara),
+        }
+        if esclude:
+            messaggio = _(
+                "%(direttore)s ti ha ritirato dalla gara %(gara)s. Le tue "
+                "partite aperte si chiudono a tavolino e la tua iscrizione è "
+                "stata tolta: dal turno dopo non entri più negli abbinamenti.",
+                **valori,
+            )
+        elif gara.matchmaking_strategy in BRACKET_STRATEGIES:
+            messaggio = _(
+                "%(direttore)s ti ha ritirato dalla gara %(gara)s. Le tue "
+                "partite aperte si chiudono a tavolino e il tabellone resta "
+                "com'è: chi ti avrebbe incontrato passa il turno a tavolino.",
+                **valori,
+            )
+        else:
+            messaggio = _(
+                "%(direttore)s ti ha ritirato dalla gara %(gara)s. Le tue "
+                "partite aperte si chiudono a tavolino: resti in classifica, e "
+                "nei turni dopo perdi a tavolino ogni partita.",
+                **valori,
+            )
+        try:
+            InscriptionService.notifica_di_gara(user_id, gara, str(messaggio))
+        except Exception:
+            logger.error(
+                "Notifica di ritiro non inviata (utente=%s, gara=%s)",
+                user_id,
+                gara.id,
+                exc_info=True,
+            )
 
     @staticmethod
     @transactional(domain="competition")

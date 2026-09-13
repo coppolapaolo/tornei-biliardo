@@ -259,8 +259,11 @@
     {% include "components/_gara_challenge_classification_compact.html" %}
     {% endif %}
 
-    {# Gli iscritti: in gioco sono un elenco da consultare, non da toccare,
-       quindi stanno chiusi dietro la loro riga. #}
+    {# Gli iscritti: in gioco sono un elenco da consultare, quindi stanno
+       chiusi dietro la loro riga. L'unico comando e' il ritiro di chi se ne
+       va senza dirlo all'app (`ritiro_iscritti`, foglio qui sotto). #}
+    {% set ritiro_iscritti = true %}
+    {% include "direttore/_ritiro_iscritto.html" %}
     <div class="c7-rows">
       {{ d.riga('fa-users', _('Iscritti'),
                 ngettext('%(n)d attivo', '%(n)d attivi', gara.get_active_inscriptions_count(), n=gara.get_active_inscriptions_count()),

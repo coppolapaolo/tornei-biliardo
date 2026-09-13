@@ -266,20 +266,23 @@ def admin_uninscribe_user(gara_id, user_id):
         # Verifica che l'utente esista
         user = db.session.get(User, user_id)
         if not user:
-            flash("Utente non trovato.", "error")
+            flash(_("Utente non trovato."), "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
         # Verifica che la gara esista
         gara = db.session.get(Gara, gara_id)
         if not gara:
-            flash("Gara non trovata.", "error")
+            flash(_("Gara non trovata."), "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
-        # Verifica che la gara sia ancora in fase di iscrizioni
+        # Verifica che la gara sia ancora in fase di iscrizioni. A gara in
+        # corso chi se ne va si ritira: e' `ritira_iscritto`, qui sotto.
         if gara.status != GaraStatus.INSCRIPTION.value:
             flash(
-                "Non è possibile disiscrivere utenti quando il primo turno "
-                "è già iniziato.",
+                _(
+                    "Non è possibile disiscrivere utenti quando il primo turno "
+                    "è già iniziato."
+                ),
                 "error",
             )
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
@@ -290,14 +293,56 @@ def admin_uninscribe_user(gara_id, user_id):
         )
 
         if success:
-            flash(f"Utente {user.username} discritto con successo.", "success")
+            flash(
+                _("%(username)s non è più iscritto.", username=user.username),
+                "success",
+            )
         else:
-            flash("Errore: utente non iscritto a questa gara.", "error")
+            flash(_("Errore: utente non iscritto a questa gara."), "error")
 
     except Exception as e:
-        flash(f"Errore durante la disiscrizione: {str(e)}", "error")
+        flash(_("Errore durante la disiscrizione: %(errore)s", errore=str(e)), "error")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+@competition_bp.route("/<int:gara_id>/ritira/<int:user_id>", methods=["POST"])
+@login_required
+@gara_manager_required
+def ritira_iscritto(gara_id, user_id):
+    """Il direttore ritira un iscritto a gara in corso.
+
+    Per il giocatore che se ne va senza dirlo all'app: la cancellazione a gara
+    in corso *e'* il suo forfait, con la regola della gara sui ritiri, e il
+    giocatore riceve una notifica (`WithdrawPolicyService.ritira_iscritto`).
+    Prima dell'avvio la strada resta `admin_uninscribe_user`.
+    """
+    from models.competition.withdraw_policy_service import WithdrawPolicyService
+    from models.user.models import User
+    from routes.sse import emit_gara_event
+
+    destinazione = url_for("admin.competition.gara_detail", gara_id=gara_id)
+    try:
+        WithdrawPolicyService.ritira_iscritto(gara_id, user_id, current_user.id)
+    except ValueError as errore:
+        flash(str(errore), "danger")
+        return redirect(destinazione)
+
+    # Le pagine aperte sulla gara si rifanno: partite chiuse, iscritto barrato.
+    emit_gara_event(
+        gara_id,
+        "match_completed",
+        {"forfeit": True, "user_id": user_id, "autore": current_user.id},
+    )
+    user = db.session.get(User, user_id)
+    flash(
+        _(
+            "Ritiro di %(username)s registrato: gli è arrivata una notifica.",
+            username=user.username if user else user_id,
+        ),
+        "success",
+    )
+    return redirect(destinazione)
 
 
 # ────────────────────────────────────────────────────────────────────────────────

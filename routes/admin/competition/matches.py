@@ -97,7 +97,8 @@ def trio_forfeit(trio_id):
         return jsonify(result)
 
     except ValueError as ve:
-        return jsonify({"error": str(ve)}), 400
+        # Un turno superato e' un conflitto, 409: il resto resta 400.
+        return jsonify({"error": str(ve)}), http_status_for_exception(ve)
     except Exception as e:
         return safe_json_error(e, "trio forfeit")
 

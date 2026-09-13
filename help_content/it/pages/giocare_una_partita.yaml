@@ -256,7 +256,9 @@ blocks:
       Se un giocatore non può proseguire — deve andare via, si infortuna, non
       si è presentato — si usa **Dichiara forfait**. L'avversario riceve tutti
       i triangoli che mancavano alla distanza: se eravate 3-2 in una gara al 5, il
-      risultato diventa 5-2.
+      risultato diventa 5-2. Il forfait si dichiara finché il turno dopo non è
+      partito: da lì la partita appartiene a un turno chiuso, e serve il
+      direttore di gara.
 
   - type: note
     tone: warning
