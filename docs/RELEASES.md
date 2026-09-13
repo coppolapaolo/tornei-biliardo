@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.21.0...v1.21.1) (2026-09-13)
+
+
+### Correzioni
+
+* la X a tavolino si chiama così ovunque ([#367](https://github.com/coppolapaolo/tornei-biliardo/issues/367)) ([d2fd75a](https://github.com/coppolapaolo/tornei-biliardo/commit/d2fd75a57f7c650bcfe3d762c84541647e937425))
+
 ## [1.21.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.20.0...v1.21.0) (2026-09-13)
 
 
