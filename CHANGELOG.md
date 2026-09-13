@@ -19,6 +19,41 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **Sul telefono le righe delle partite troncavano nome e cognome**: ora i
+  due nomi vanno uno sopra l'altro (PR #364).
+- **La formula dei dispari compariva col valore grezzo inglese** («Bye With
+  Challenge») in cinque schermate; ora ha i suoi nomi: lista d'attesa, X a
+  tavolino, X a tavolino con esercizio, trio. Tutti i moduli di gare e
+  campionati leggono le stesse voci (PR #364, #367).
+- **L'export CSV del profilo perdeva le partite confermate dai due
+  giocatori**: contava solo quelle chiuse dal direttore (PR #364).
+- **Il modulo di modifica del campionato non aveva la lista d'attesa**: un
+  campionato nato così, salvato, passava in silenzio alla X (PR #367).
+- **Trio**: il risultato inserito dal direttore ignorava i turni bloccati e
+  i trio già chiusi e non avvisava gli altri telefoni; l'azzeramento
+  rispondeva con un errore del server; la correzione delle partite a set
+  era bloccata solo nel template; una partita al meglio dei set a triangoli
+  esatti risultava «alla distanza» a 1–1 (PR #368).
+- **Doppio KO**: fra la finale e la bella la fascia proponeva di avviare un
+  turno che non esiste (PR #363).
+- **Una gara di un campionato si poteva spostare prima della precedente**
+  modificandola: l'ordine delle date si controllava solo alla creazione
+  (ADR-016, PR #373).
+- **Sul desktop le card delle partite si schiacciavano** a 1024 e 1280: nomi
+  troncati, il + fuori dal lato, stato e tavolo attaccati. Ora le card vanno
+  affiancate solo dove ci stanno (PR #375).
+- **Esercizi**: il direttore che non è amministratore, dalla pagina della
+  partita, finiva sull'indirizzo del giocatore e riceveva un rifiuto, o
+  registrava a proprio nome il tentativo dell'avversario; l'indirizzo del
+  direttore accettava tentativi di chi non gioca la gara; il punteggio
+  massimo dell'esercizio non era applicato, i negativi passavano, e un
+  «riuscito/non riuscito» senza esito diventava «non riuscito» in silenzio
+  (PR #377).
+- **Eliminare una gara in preparazione con un turno modificato o degli
+  esercizi rispondeva con un errore del server**; il forfait di un giocatore
+  poteva sovrascrivere una partita già confermata da entrambi; togliendo la
+  squadra a un iscritto il direttore leggeva «Giocherai senza squadra»
+  (PR #379).
 - **Difetti trovati rifacendo la pagina gara del direttore** (PR #345,
   #347, #349, #358, #360). All'avvio della gara un giocatore ritirato
   contava per il minimo e finiva nell'ordine di partenza: ora contano solo
@@ -43,6 +78,46 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Nelle gare a eliminazione il tabellone prende il posto della classifica.**
+  Sulla pagina del direttore, a gara in gioco, la colonna laterale mostra il
+  turno che si gioca con quello prima e quello dopo, i posti futuri già
+  disegnati dal sorteggio («chi vince A – B»). Le intestazioni dicono Quarti,
+  Semifinali, Finale, Recupero; la card di chi passa il turno lo dice; ogni
+  partita dice dove va chi vince. Prima del sorteggio c'è la forma del
+  tabellone («Tabellone da 8 · 2 passano il turno · 3 turni»). A gara
+  conclusa la classifica è per bande, 3°–4°, 5°–8°, con il turno d'uscita,
+  senza vittorie e differenza triangoli che nel tabellone non ordinano
+  niente. Il tabellone completo disegna anche i posti futuri (PR #363).
+- **Lo schermo in sala anche per le gare a tabellone.** Accanto ai tavoli,
+  il turno del tabellone in corso e quello dopo, i due tabelloni del doppio
+  KO insieme, il podio a gara conclusa; niente con i puntini, perché si
+  legge a tre metri (PR #365).
+- **Trio, partite a set e X con esercizio sulla card del direttore.** Tre
+  lati con − e + per il trio, i set vinti sopra e gli stepper del set in
+  corso per le partite a set, uno stepper da zero alla distanza del turno
+  per l'esercizio della X; niente più finestre di conferma del browser
+  (PR #368).
+- **La gara di un campionato lo dice.** Sopra la striscia di fase «Gara 4 di
+  6 · Campionato», con il peso o «Playoff»; nella preparazione e nelle
+  impostazioni il gruppo «Dal campionato» con peso, regola di apertura
+  ereditata e date ammesse. A gara conclusa il testo sui punti dipende dalla
+  gara: niente per una gara singola, «vale ×N» per una gara del campionato,
+  «il playoff decide la classifica finale» se il playoff pesa zero. Nella
+  prova il banner con la modalità aiuto e «Elimina la prova» c'è anche nei
+  passi della preparazione e nelle impostazioni, e la simulazione sta in un
+  foglio (PR #373).
+- **Gli esercizi fra i turni si segnano dalla pagina della gara.** Finito il
+  turno, «Esercizio dopo il turno N» elenca i giocatori con i tentativi e il
+  migliore; toccando la riga si registra il tentativo con − e + o con
+  «Riuscito» / «Non riuscito» (PR #377).
+- **Squadre, categorie, ritiro ed eliminazione nella pagina del direttore.**
+  Squadre e categorie sono righe che aprono un foglio, e dopo il sorteggio
+  restano visibili in sola lettura invece di sparire; la squadra di un
+  iscritto si cambia da un chip. Il direttore registra il ritiro di un
+  giocatore dal menu della partita, e il foglio dice prima cosa comporta la
+  regola della gara sui ritiri. In preparazione, finché la gara non ha
+  iscritti, «Elimina la gara» sta in fondo, con un foglio che avvisa che non
+  si torna indietro (PR #379).
 - **La pagina della gara per chi la dirige, fase per fase.** Chi dirige una
   gara non vede più le quattro linguette di prima: in cima una striscia
   dice in che fase è la gara — preparazione, iscrizioni, in gioco,

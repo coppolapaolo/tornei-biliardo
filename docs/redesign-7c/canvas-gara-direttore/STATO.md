@@ -338,26 +338,15 @@ aggiorna in fondo a questo file, fase per fase.
 
 ## Non ancora disegnato
 
-Da chiedere prima di implementare, perché il canvas non li copre: squadre e
-categorie (ADR-039, ADR-049), esercizi di gara,
-forfait/ritiro a gara in corso e riassegnazione (ADR-048), gara dentro
-un campionato (peso, playoff, ADR-053), eliminazione della gara, competizione
-di prova (ADR-058, arrivata dopo il canvas). Il tabellone a eliminazione
-(ADR-038) era in questo elenco: e' stato fatto il 13/09 senza disegno, con
-la soluzione piu' vicina alla grammatica del canvas — vedi «Tabellone al
-posto della classifica» in fondo. Lo stesso giorno anche lo schermo in sala
-per le gare a tabellone (issue #352) — vedi «Schermo in sala per le gare a
-tabellone»; trio e multi-set, con la X con esercizio, sulla card della
-partita — vedi «Trio, multi-set e X con esercizio»; la gara dentro un
-campionato (peso, playoff) e la competizione di prova — vedi «La gara del
-campionato e la prova»; e gli esercizi di gara a gara in corso, cioe'
-registrare i tentativi degli esercizi fra i turni, sulla pagina del
-direttore — vedi «Esercizi fra i turni». La loro preparazione era gia' nel
-canvas.
-Squadre e categorie, il ritiro deciso dal direttore e l'eliminazione della
-gara in preparazione sono stati fatti lo stesso giorno: vedi «Squadre,
-categorie, ritiro ed eliminazione» in fondo. Resta fuori la riassegnazione
-(ADR-048), che per scelta resta uno script da console.
+Il canvas non copriva squadre e categorie (ADR-039, ADR-049), esercizi di
+gara, trio e multi-set, forfait e ritiro a gara in corso con la
+riassegnazione (ADR-048), tabellone a eliminazione (ADR-038), gara dentro un
+campionato (peso, playoff, ADR-053), eliminazione della gara, competizione
+di prova (ADR-058, arrivata dopo il canvas), e lo schermo in sala per le
+gare a tabellone (issue #352). Sono stati fatti tutti il 13/09, senza
+disegno, con la soluzione piu' vicina alla grammatica del canvas scritta in
+ogni PR: vedi le voci dopo «H · Chiusura» in fondo. Resta fuori per scelta
+la riassegnazione (ADR-048), che resta uno script da console.
 
 ## Come ricostruire
 
@@ -383,10 +372,11 @@ niente. Vedi `../canvas-dashboard/STATO.md` per lo stesso schema.
 alla 1.19.0. Le decisioni con conseguenze durature stanno in ADR-059 (la
 pagina del direttore e' la fase in corso) e ADR-060 (i tavoli si scelgono in
 ogni stato); i pattern nuovi in `docs/reference/UI_CONVENTIONS.md`, sezione
-«Pagina gara del direttore». Restano fuori, perche' il canvas non le
-disegna, le voci di «Non ancora disegnato» qui sopra, che restano sulle
-schermate di prima; lo schermo in sala per le gare a tabellone (issue #352),
-anche lui fuori dal canvas, e' stato fatto dopo — vedi in fondo.
+«Pagina gara del direttore». La seconda tornata, lo stesso giorno, ha fatto
+anche tutte le voci di «Non ancora disegnato» (PR dalla #363 alla #379,
+rilasci dalla 1.20.0), ciascuna registrata in fondo; resta fuori per scelta
+la riassegnazione, e restano aperte due decisioni di dominio scritte nella
+voce di chiusura.
 
 Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
 
@@ -752,3 +742,14 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   tradotto. Domande aperte: se il ritiro nel trio debba applicare la regola
   della gara, e se il forfait del giocatore debba rispettare il turno
   bloccato come quello del direttore.
+* **Chiusura della seconda tornata** (PR `docs: la chiusura della seconda
+  tornata della pagina gara del direttore`, 2026-09-13). CHANGELOG, righe
+  datate di `UI_CONVENTIONS.md`, questo file riordinato. Decisioni di
+  dominio lasciate aperte, con la variante prudente implementata:
+  il trio a pari punteggio in testa (4-4-1 alla distanza 6 da' la vittoria
+  per scontro diretto, la specifica riga 160 dice zero a tutti: xfail strict
+  in `test_specifiche_conformita.py::TestIlTrioInClassifica`); se il blocco
+  dei turni successivi valga anche per l'esercizio della X; se il ritiro in
+  un trio applichi la regola della gara sui ritiri; se il forfait dichiarato
+  dal giocatore e quello del trio rispettino il turno bloccato, come gia' fa
+  quello del direttore.

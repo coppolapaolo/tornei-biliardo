@@ -1254,6 +1254,14 @@ Principi, in ordine di importanza:
 | 2026-09-13 | Podio finale `.c7-podio-finale`, distinto da `.c7-podio` | Canvas 5.1: il nome `.c7-podio` era già del podio compatto in dashboard, e le sue regole sui figli nascondevano i nomi. Una classe nuova invece di sovrascrivere (#355) |
 | 2026-09-13 | Zona playoff come barra d'accento sulle righe, con etichetta sopra e «Fuori dai playoff» dopo | Canvas 7.1, 7.3: la zona si legge senza una colonna in più. Chi è dentro lo decide il dominio, con la stessa funzione che manda gli inviti (#358) |
 | 2026-09-13 | Pagina del campionato con fascia, linguette `classifica` / `gare` / `gestione` o `playoff`, gare e invitati in righe | Canvas 7.1–7.4: la stessa grammatica della pagina gara, così il direttore non impara due pagine. Gli invitati dicono chi ha preso il posto di chi (#360) |
+| 2026-09-13 | Tabellone compatto al posto della classifica nelle gare a eliminazione, posti futuri disegnati dal sorteggio, classifica finale per bande | Nel tabellone non si scala, si esce: vittorie e differenza triangoli non ordinano niente e la sezione classifica sembrava sbagliata (#240, PR #363) |
+| 2026-09-13 | Sotto lg le righe delle partite impilano i due nomi | Il canvas aveva nomi utente corti; con nome e cognome veri si troncavano (PR #364) |
+| 2026-09-13 | Schermo in sala dei tabelloni: turno in corso e successivo, doppio KO a due rami, niente puntini | Da tre metri un tabellone da 16 intero non si legge; una parola troncata non si legge affatto (#352, PR #365) |
+| 2026-09-13 | Card a tre lati per il trio (+ sopra, − sotto) e card a set con gli stepper del set in corso | Tre colonne da 48px stanno in 390px solo impilando i due comandi; la geometria resta quella della card a due (PR #368) |
+| 2026-09-13 | Occhiello del campionato sopra la striscia di fase e gruppo di righe «Dal campionato» | Il direttore di una gara di campionato non vedeva né il peso né le regole ereditate, e i testi sui punti valevano anche per una gara singola (PR #373) |
+| 2026-09-13 | Griglia delle partite `repeat(auto-fill, minmax(340px, 1fr))` e lato con gli stepper come contenitore che impila sotto i 150px | Due colonne fisse a 1024 e 1280, con la colonna laterale, facevano card da 160px (PR #375) |
+| 2026-09-13 | Esercizio fra i turni come sezione di righe, un foglio per registrare il tentativo | Stessa grammatica delle partite: riga con lo stato, foglio con − e + o due scelte grandi; fra un turno e l'altro sta sopra le partite, durante il turno sotto (PR #377) |
+| 2026-09-13 | Squadre e categorie come righe con foglio, chip della squadra, foglio del ritiro con le conseguenze, riga distruttiva «Elimina la gara» in fondo alla preparazione | Ciò che non appartiene a una fase segue una grammatica sola, riga e foglio; il ritiro dice cosa comporta prima della conferma; l'eliminazione non è mai un pulsante rosso in vista (PR #379) |
 
 ---
 
