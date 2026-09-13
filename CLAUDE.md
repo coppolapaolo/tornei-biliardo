@@ -526,6 +526,7 @@ grafo anti-rematch. Non reimplementare algoritmi su grafi — usa `nx`, è già 
 | `datetime.strptime`/`fromisoformat` su un `datetime-local` | `utils.local_time.parse_local_datetime` — l'input arriva nell'**ora di chi scrive**, il DB tiene naive-UTC: salvarlo grezzo sposta l'orario, in silenzio (ADR-043) |
 | `ZoneInfo("Europe/Rome")` scritto in un filtro o in una route | `resolve_timezone()` da `utils.local_time` — il fuso è quello del lettore, e un solo modulo lo sa (ADR-043) |
 | Orario formattato una volta per N destinatari | Se il testo contiene un'ora, si compone **per destinatario** col suo `tz`: due giocatori in due fusi leggono due frasi diverse |
+| `title=_("...")`, `message=f"..."` o un letterale passati a una notifica | Si passano **da comporre**: `lazy_gettext` o una funzione senza argomenti, che `create_notification` risolve nella lingua di chi **riceve** (`User.language`). Un `_()` sul posto traduce nella lingua di chi preme il pulsante, e in sviluppo non si vede mai: chi preme e chi riceve parlano italiano entrambi. Presidio in `test_notifiche_testi_non_tradotti_da_chi_preme.py` (ADR-062) |
 | `request.form.get("next")` passato a `redirect()` | `utils.safe_redirect.safe_next_url` — altrimenti è un open redirect |
 | Disciplina come stringa scritta a mano (`"palla_8"`, `"8_ball"`) | `Discipline.*.value` da `models/status_enum.py` — **unico** vocabolario; per dati storici/esterni `Discipline.normalize()` (torna `None` sull'ignoto). Il nome mostrato è `display_name`, tradotto. Presidiato da `test_discipline_single_vocabulary.py` |
 | Scheduled task PythonAnywhere lanciato con `python script.py` | `venv/bin/python script.py`: `python` nudo è l'interprete **di sistema** — non ha i pacchetti del progetto, ha quelli di PythonAnywhere (da cui il guasto `pyOpenSSL`), e un `pip install` da lì fallisce per permessi (incidente 2026-08-17, `/aiuto` in 500 per due giorni) |
@@ -616,6 +617,7 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [059](docs/adr/ADR-059-pagina-gara-del-direttore-per-fasi.md) | la pagina del direttore è la fase in corso: striscia di fase, due template, comando da `comandi.py` |
 | [060](docs/adr/ADR-060-tavoli-scelti-in-ogni-stato.md) | i tavoli si scelgono in ogni stato; la lista nuova vale per le assegnazioni successive |
 | [061](docs/adr/ADR-061-transactional-annidato-salva-solo-il-piu-esterno.md) | un `@transactional` annidato chiude il proprio savepoint, salva solo il più esterno; `BEGIN` su SQLite prima del savepoint |
+| [062](docs/adr/ADR-062-notifiche-nella-lingua-di-chi-riceve.md) | le notifiche nella lingua di **chi riceve**, salvata su `User.language`; testi passati da comporre, nessun backfill |
 
 ---
 

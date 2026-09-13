@@ -903,6 +903,7 @@ class PlayoffService:
         specifica di ciascun giocatore.
         """
         import logging
+        from flask_babel import lazy_gettext as _l
         from ..notification.services import NotificationService
         from ..notification.models import NotificationType, NotificationPriority
 
@@ -913,18 +914,20 @@ class PlayoffService:
 
         for qual in qualifications:
             try:
+                # Ogni invitato legge l'invito nella sua lingua (ADR-062).
                 NotificationService.create_notification(
                     user_id=qual.user_id,
                     notification_type=NotificationType.PLAYOFF_INVITATION,
-                    title=f"Invito Playoff — {config.name}",
-                    message=(
-                        f"Sei stato qualificato per {config.name} "
-                        f"del campionato {campionato_name}. "
-                        f"Conferma o rifiuta la partecipazione."
+                    title=_l("Invito Playoff — %(nome)s", nome=config.name),
+                    message=_l(
+                        "Sei stato qualificato per %(nome)s del campionato "
+                        "%(campionato)s. Conferma o rifiuta la partecipazione.",
+                        nome=config.name,
+                        campionato=campionato_name,
                     ),
                     priority=NotificationPriority.HIGH,
                     action_url=f"/player/playoff/invitation/{qual.id}",
-                    action_text="Conferma o rifiuta",
+                    action_text=_l("Conferma o rifiuta"),
                     related_entities={
                         "campionato_id": config.campionato_id,
                         "configuration_id": config.id,

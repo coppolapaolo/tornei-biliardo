@@ -821,14 +821,15 @@ class ExamService:
 
     @staticmethod
     def _notify_session_opened(attempt: ExamAttempt) -> None:
-        from flask_babel import _
+        # Testi pigri: si compongono nella lingua del candidato (ADR-062).
+        from flask_babel import lazy_gettext as _l
         from ..notification.models import NotificationPriority, NotificationType
 
         ExamService._notify(
             [attempt.user_id],
             notification_type=NotificationType.EXAM_SESSION_OPENED,
-            title=_("L'esame sta per iniziare"),
-            message=_(
+            title=_l("L'esame sta per iniziare"),
+            message=_l(
                 "L'esaminatore ha aperto la sessione di «%(exam)s»: accetta "
                 "l'inizio per far partire la valutazione.",
                 exam=attempt.exam.name,
@@ -836,32 +837,32 @@ class ExamService:
             priority=NotificationPriority.HIGH,
             # Le route dell'esame arrivano in Fase 5: URL da tenere allineato.
             action_url=f"/exam/sessions/{attempt.id}",
-            action_text=_("Accetta l'inizio"),
+            action_text=_l("Accetta l'inizio"),
         )
 
     @staticmethod
     def _notify_certified(attempt: ExamAttempt) -> None:
-        from flask_babel import _
+        from flask_babel import lazy_gettext as _l
         from ..notification.models import NotificationPriority, NotificationType
 
-        outcome = _("superato") if attempt.passed else _("non superato")
+        outcome = _l("superato") if attempt.passed else _l("non superato")
         ExamService._notify(
             [attempt.user_id],
             notification_type=NotificationType.EXAM_CERTIFIED,
-            title=_("Esame certificato"),
-            message=_(
+            title=_l("Esame certificato"),
+            message=_l(
                 "«%(exam)s»: esito %(outcome)s, certificato da %(examiner)s.",
                 exam=attempt.exam.name,
                 outcome=outcome,
                 examiner=(
                     attempt.examiner.username
                     if attempt.examiner
-                    else _("l'esaminatore")
+                    else _l("l'esaminatore")
                 ),
             ),
             priority=NotificationPriority.HIGH,
             action_url=f"/exam/sessions/{attempt.id}",
-            action_text=_("Vedi l'esito"),
+            action_text=_l("Vedi l'esito"),
         )
 
     # ────────────────────────────────────────────────────────────────────

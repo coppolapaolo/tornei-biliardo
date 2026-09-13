@@ -47,6 +47,7 @@
 | `home_city` | VARCHAR(100) | YES |  |  |  |
 | `squadra` | VARCHAR(100) | YES |  |  |  |
 | `timezone` | VARCHAR(64) | YES |  |  |  |
+| `language` | VARCHAR(8) | YES |  |  |  |
 | `onboarding_completed` | BOOLEAN | NO |  | False |  |
 | `onboarding_interests` | VARCHAR(100) | YES |  |  |  |
 | `signal_radius_km` | INTEGER | NO |  | 30 |  |

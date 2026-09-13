@@ -41,6 +41,16 @@ blocks:
       - name: "New roles"
         text: "When you are given a role you never asked for, such as beta tester."
 
+  - type: note
+    tone: info
+    title: "Which language they arrive in"
+    text: >-
+      Notifications arrive in **your** language, even when they are sent by a
+      director who uses the app in another one. It is the language you chose
+      with the **English** or **Italiano** link at the bottom of the page; until
+      you choose one, the app uses your browser's. Notifications you have already received stay in the
+      language they arrived in.
+
   - type: heading
     id: gestire
     title: "Keeping the list tidy"

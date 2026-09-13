@@ -218,8 +218,11 @@ def admin_inscribe_user(gara_id):
 
         if inscription:
             # Formatta la data per la notifica
+            from flask_babel import lazy_gettext as _l
+
+            # Pigro: la notifica si compone nella lingua dell'iscritto (ADR-062).
             gara_date_str = (
-                gara.date.strftime("%d/%m/%Y") if gara.date else "data da definire"
+                gara.date.strftime("%d/%m/%Y") if gara.date else _l("data da definire")
             )
             gara_name = gara.name or f"Gara {gara.number}"
 

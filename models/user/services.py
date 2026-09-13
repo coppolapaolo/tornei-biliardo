@@ -364,6 +364,39 @@ class UserService:
         return True
 
     @staticmethod
+    @transactional(domain="user")
+    def remember_language(
+        user_id: int, valore: Optional[str], esplicita: bool = False
+    ) -> bool:
+        """Registra la lingua in cui scrivere all'utente. True se è cambiata.
+
+        Due provenienze, con pesi diversi (ADR-062):
+
+        * ``esplicita=True`` — l'utente ha scelto col selettore: si scrive
+          sempre, anche sopra una lingua già salvata;
+        * ``esplicita=False`` — dedotta da sessione o browser: riempie solo un
+          vuoto. Un utente che ha scelto l'inglese e apre l'app da un computer
+          in italiano deve continuare a ricevere le notifiche in inglese.
+
+        Il valore arriva da un client, quindi si normalizza: una lingua che
+        l'app non parla si scarta in silenzio, e resta quella di prima.
+        """
+        from utils.lingua import normalizza_lingua
+
+        lingua = normalizza_lingua(valore)
+        if lingua is None:
+            return False
+
+        user = db.session.get(User, user_id)
+        if not user or user.language == lingua:
+            return False
+        if user.language and not esplicita:
+            return False
+
+        user.language = lingua
+        return True
+
+    @staticmethod
     def request_director_promotion(
         user_id: int, notes: Optional[str] = None
     ) -> DirectorRequest:

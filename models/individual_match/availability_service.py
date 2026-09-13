@@ -251,16 +251,25 @@ class AvailabilityService:
             location, exclude_user_id=user_id
         )
 
+        from flask_babel import gettext as _, lazy_gettext as _l
+
         requesting_user = db.session.get(User, user_id)
-        requester_name = requesting_user.username if requesting_user else "Un giocatore"
-        default_message = f"{requester_name} è disponibile a giocare presso {location}"
-        notification_message = message or default_message
+        requester_name = requesting_user.username if requesting_user else None
+
+        def messaggio_predefinito() -> str:
+            # Composto nella lingua di ciascun giocatore avvisato (ADR-062).
+            return _(
+                "%(nome)s è disponibile a giocare presso %(luogo)s",
+                nome=requester_name or _("Un giocatore"),
+                luogo=location,
+            )
 
         notifications = NotificationFactory.create_bulk_notification(
             user_ids=user_ids,
             notification_type=NotificationType.MATCH_PROPOSAL,
-            title="Giocatore Disponibile",
-            message=notification_message,
+            title=_l("Giocatore Disponibile"),
+            # Un messaggio scritto dal giocatore passa com'è: non si traduce.
+            message=message or messaggio_predefinito,
             priority=NotificationPriority.NORMAL,
             continue_on_error=True,
         )

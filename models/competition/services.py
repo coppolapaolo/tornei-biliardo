@@ -446,10 +446,27 @@ class GaraService:
                 NotificationType,
             )
 
-            message = f"La {gara_name}"
-            if gara.campionato:
-                message += f" del campionato '{campionato_name}'"
-            message += f" del {gara.date.strftime('%d/%m/%Y')} è stata cancellata."
+            from flask_babel import gettext as _, lazy_gettext as _l
+
+            # Il testo si compone per ciascun partecipante, nella sua lingua
+            # (ADR-062): qui si fissano solo i fatti, prima che la gara sparisca.
+            nome_campionato = campionato_name if gara.campionato else None
+            data_gara = gara.date.strftime("%d/%m/%Y")
+
+            def message() -> str:
+                if nome_campionato:
+                    return _(
+                        "La %(gara)s del campionato '%(campionato)s' del "
+                        "%(data)s è stata cancellata.",
+                        gara=gara_name,
+                        campionato=nome_campionato,
+                        data=data_gara,
+                    )
+                return _(
+                    "La %(gara)s del %(data)s è stata cancellata.",
+                    gara=gara_name,
+                    data=data_gara,
+                )
 
             # Use NotificationFactory for bulk notifications with error handling
             from models.notification.factory import NotificationFactory
@@ -457,7 +474,7 @@ class GaraService:
             NotificationFactory.create_bulk_notification(
                 user_ids=participant_ids,
                 notification_type=NotificationType.TOURNAMENT_REGISTRATION,
-                title="Gara Cancellata",
+                title=_l("Gara Cancellata"),
                 message=message,
                 priority=NotificationPriority.HIGH,
                 continue_on_error=True,

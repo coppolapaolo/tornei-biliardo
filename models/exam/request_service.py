@@ -429,12 +429,12 @@ class ExamRequestService:
             request.negotiating_with_id = None
 
         if not request.pending_recipients():
-            from flask_babel import _
+            from flask_babel import lazy_gettext as _l
 
             request.status = ExamRequestStatus.EXPIRED.value
             ExamRequestService._notify_requester_closed(
                 request,
-                _("Nessun esaminatore ha potuto accogliere la tua richiesta."),
+                _l("Nessun esaminatore ha potuto accogliere la tua richiesta."),
             )
         db.session.flush()
         return request
@@ -449,13 +449,13 @@ class ExamRequestService:
         if actor_id != request.requester_id and not getattr(actor, "is_admin", False):
             raise PermissionDeniedError("Solo chi l'ha inviata può ritirarla")
 
-        from flask_babel import _
+        from flask_babel import lazy_gettext as _l
 
         request.status = ExamRequestStatus.CANCELLED.value
         ExamRequestService._close_other_recipients(
             request,
             winner_id=None,
-            message=_("Il candidato ha ritirato la richiesta d'esame."),
+            message=_l("Il candidato ha ritirato la richiesta d'esame."),
         )
         db.session.flush()
         return request
@@ -469,7 +469,7 @@ class ExamRequestService:
         trattativa mai conclusa resterebbe aperta per sempre e bloccherebbe le
         richieste successive per lo stesso esame.
         """
-        from flask_babel import _
+        from flask_babel import lazy_gettext as _l
 
         now = utc_now()
         expired = ExamRequest.query.filter(
@@ -477,7 +477,7 @@ class ExamRequestService:
             ExamRequest.expires_at <= now,
         ).all()
 
-        closed_message = _("La richiesta d'esame è scaduta senza accordo.")
+        closed_message = _l("La richiesta d'esame è scaduta senza accordo.")
         for request in expired:
             request.status = ExamRequestStatus.EXPIRED.value
             ExamRequestService._close_other_recipients(
@@ -485,7 +485,7 @@ class ExamRequestService:
             )
             ExamRequestService._notify_requester_closed(
                 request,
-                _(
+                _l(
                     "La tua richiesta d'esame è scaduta senza che si trovasse "
                     "un accordo su data e ora."
                 ),
@@ -537,7 +537,7 @@ class ExamRequestService:
     def _close_other_recipients(
         request: ExamRequest,
         winner_id: Optional[int],
-        message: Optional[str] = None,
+        message: Optional[Any] = None,
     ) -> None:
         """Chiude i destinatari rimasti in attesa e li avvisa (US-E4b).
 
@@ -568,21 +568,29 @@ class ExamRequestService:
         fuso di chi lo legge (ADR-043). Due esaminatori in due paesi diversi
         ricevono lo stesso invito con due ore diverse — che è il punto.
 
-        Con un messaggio già fatto (una stringa) resta una chiamata sola, come
-        prima: la maggior parte delle notifiche un orario non ce l'ha.
+        Con un messaggio senza orario resta una chiamata sola, come prima: la
+        maggior parte delle notifiche un orario non ce l'ha.
+
+        La lingua invece non chiede niente di tutto questo (ADR-062): i testi
+        arrivano da comporre e il servizio delle notifiche li traduce per
+        ciascun destinatario. Anche la funzione dell'id la chiama il servizio,
+        dentro la lingua di chi riceve.
         """
         if not user_ids:
             return
 
         message = kwargs.pop("message", None)
         try:
+            from flask_babel.speaklater import LazyString
+
             from ..notification.factory import NotificationFactory
 
-            if callable(message):
+            if callable(message) and not isinstance(message, LazyString):
+                per_destinatario = message
                 for user_id in user_ids:
                     NotificationFactory.create_bulk_notification(
                         user_ids=[user_id],
-                        message=message(user_id),
+                        message=lambda uid=user_id: per_destinatario(uid),
                         continue_on_error=True,
                         **kwargs,
                     )
@@ -629,7 +637,7 @@ class ExamRequestService:
         recipient_ids: Sequence[int],
         notes: Optional[str],
     ) -> None:
-        from flask_babel import _
+        from flask_babel import gettext as _, lazy_gettext as _l
         from ..notification.models import NotificationPriority, NotificationType
 
         def message(recipient_id: int) -> str:
@@ -644,16 +652,16 @@ class ExamRequestService:
         ExamRequestService._notify(
             recipient_ids,
             notification_type=NotificationType.EXAM_REQUEST_RECEIVED,
-            title=_("Richiesta d'esame"),
+            title=_l("Richiesta d'esame"),
             message=message,
             priority=NotificationPriority.NORMAL,
             action_url=ExamRequestService._request_url(request),
-            action_text=_("Vedi la richiesta"),
+            action_text=_l("Vedi la richiesta"),
         )
 
     @staticmethod
     def _notify_counter_proposal(request: ExamRequest, actor: User) -> None:
-        from flask_babel import _
+        from flask_babel import gettext as _, lazy_gettext as _l
         from ..notification.models import NotificationPriority, NotificationType
 
         if actor.id == request.requester_id:
@@ -669,7 +677,7 @@ class ExamRequestService:
         ExamRequestService._notify(
             [t for t in targets if t],
             notification_type=NotificationType.EXAM_TIME_PROPOSED,
-            title=_("Nuova proposta di appuntamento"),
+            title=_l("Nuova proposta di appuntamento"),
             message=lambda recipient_id: _(
                 "%(user)s propone «%(exam)s»: %(slot)s.",
                 user=actor.username,
@@ -678,20 +686,20 @@ class ExamRequestService:
             ),
             priority=NotificationPriority.NORMAL,
             action_url=ExamRequestService._request_url(request),
-            action_text=_("Rispondi"),
+            action_text=_l("Rispondi"),
         )
 
     @staticmethod
     def _notify_accepted(request: ExamRequest, actor_id: int, winner_id: int) -> None:
         """Conferma alla controparte: chi accetta sa già com'è andata."""
-        from flask_babel import _
+        from flask_babel import gettext as _, lazy_gettext as _l
         from ..notification.models import NotificationPriority, NotificationType
 
         target = winner_id if actor_id == request.requester_id else request.requester_id
         ExamRequestService._notify(
             [target],
             notification_type=NotificationType.EXAM_REQUEST_ACCEPTED,
-            title=_("Appuntamento d'esame confermato"),
+            title=_l("Appuntamento d'esame confermato"),
             message=lambda recipient_id: _(
                 "«%(exam)s»: appuntamento confermato per %(slot)s.",
                 exam=request.exam.name,
@@ -699,22 +707,24 @@ class ExamRequestService:
             ),
             priority=NotificationPriority.HIGH,
             action_url=ExamRequestService._request_url(request),
-            action_text=_("Vedi l'appuntamento"),
+            action_text=_l("Vedi l'appuntamento"),
         )
 
     @staticmethod
     def _notify_recipients_closed(
-        request: ExamRequest, recipient_ids: Sequence[int], message: Optional[str]
+        request: ExamRequest, recipient_ids: Sequence[int], message: Optional[Any]
     ) -> None:
-        from flask_babel import _
+        # ``message`` arriva pigro dai chiamanti: si compone nella lingua di
+        # ciascun esaminatore (ADR-062).
+        from flask_babel import lazy_gettext as _l
         from ..notification.models import NotificationPriority, NotificationType
 
         ExamRequestService._notify(
             recipient_ids,
             notification_type=NotificationType.EXAM_REQUEST_CLOSED,
-            title=_("Richiesta d'esame chiusa"),
+            title=_l("Richiesta d'esame chiusa"),
             message=message
-            or _(
+            or _l(
                 "La richiesta per «%(exam)s» è stata presa in carico da un "
                 "altro esaminatore.",
                 exam=request.exam.name,
@@ -723,14 +733,14 @@ class ExamRequestService:
         )
 
     @staticmethod
-    def _notify_requester_closed(request: ExamRequest, message: str) -> None:
-        from flask_babel import _
+    def _notify_requester_closed(request: ExamRequest, message: Any) -> None:
+        from flask_babel import lazy_gettext as _l
         from ..notification.models import NotificationPriority, NotificationType
 
         ExamRequestService._notify(
             [request.requester_id],
             notification_type=NotificationType.EXAM_REQUEST_CLOSED,
-            title=_("Richiesta d'esame chiusa"),
+            title=_l("Richiesta d'esame chiusa"),
             message=message,
             priority=NotificationPriority.NORMAL,
         )

@@ -196,7 +196,13 @@ class WithdrawPolicyService:
         tabellone. Si chiama dentro l'operazione atomica e non cattura niente:
         una notifica che fallisce annulla il ritiro, invece di lasciarlo scritto
         senza avviso.
+
+        I testi sono pigri: li compone il servizio delle notifiche nella lingua
+        del giocatore, non del direttore (ADR-062). La composizione non apre
+        transazioni e non cattura eccezioni, quindi l'atomicita' resta intatta.
         """
+        from flask_babel import lazy_gettext as _l
+
         from models.matchmaking.configuration import BRACKET_STRATEGIES
         from models.user.models import User
 
@@ -206,27 +212,27 @@ class WithdrawPolicyService:
             "gara": InscriptionService.nome_gara(gara),
         }
         if gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
-            messaggio = _(
+            messaggio = _l(
                 "%(direttore)s ti ha ritirato dalla gara %(gara)s. Le tue "
                 "partite aperte si chiudono a tavolino e la tua iscrizione è "
                 "stata tolta: dal turno dopo non entri più negli abbinamenti.",
                 **valori,
             )
         elif gara.matchmaking_strategy in BRACKET_STRATEGIES:
-            messaggio = _(
+            messaggio = _l(
                 "%(direttore)s ti ha ritirato dalla gara %(gara)s. Le tue "
                 "partite aperte si chiudono a tavolino e il tabellone resta "
                 "com'è: chi ti avrebbe incontrato passa il turno a tavolino.",
                 **valori,
             )
         else:
-            messaggio = _(
+            messaggio = _l(
                 "%(direttore)s ti ha ritirato dalla gara %(gara)s. Le tue "
                 "partite aperte si chiudono a tavolino: resti in classifica, e "
                 "nei turni dopo perdi a tavolino ogni partita.",
                 **valori,
             )
-        InscriptionService.notifica_di_gara(user_id, gara, str(messaggio))
+        InscriptionService.notifica_di_gara(user_id, gara, messaggio)
 
     @staticmethod
     @transactional(domain="competition")

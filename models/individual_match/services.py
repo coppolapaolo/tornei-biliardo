@@ -176,24 +176,30 @@ class MatchProposalService:
         from ..notification.models import NotificationPriority, NotificationType
         from ..user.models import User
 
+        from flask_babel import lazy_gettext as _l
+
         try:
             rejecter = db.session.get(User, rejecter_id)
-            nome = rejecter.username if rejecter else _("Un giocatore")
+            nome = rejecter.username if rejecter else None
             luogo = proposal.location_display or ""
-            dove = " " + _("a %(loc)s", loc=luogo) if luogo else ""
+
+            def messaggio() -> str:
+                # Composto nella lingua di chi ha proposto (ADR-062).
+                dove = " " + _("a %(loc)s", loc=luogo) if luogo else ""
+                return _(
+                    "%(player)s ha rifiutato la tua proposta di sfida%(location)s",
+                    player=nome or _("Un giocatore"),
+                    location=dove,
+                )
 
             NotificationFactory.create_bulk_notification(
                 user_ids=[proposal.proposer_id],
                 notification_type=NotificationType.MATCH_DECLINED,
-                title=_("Proposta rifiutata"),
-                message=_(
-                    "%(player)s ha rifiutato la tua proposta di sfida%(location)s",
-                    player=nome,
-                    location=dove,
-                ),
+                title=_l("Proposta rifiutata"),
+                message=messaggio,
                 priority=NotificationPriority.NORMAL,
                 action_url=f"/match/proposals/{proposal.id}",
-                action_text=_("Vedi la proposta"),
+                action_text=_l("Vedi la proposta"),
             )
         except Exception:  # pragma: no cover - la notifica non blocca il rifiuto
             pass

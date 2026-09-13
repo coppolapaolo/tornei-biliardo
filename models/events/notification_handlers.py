@@ -4,11 +4,20 @@ Event handlers for notification generation.
 This module contains event handlers that listen to domain events and
 generate appropriate notifications using the NotificationService.
 This decouples domains from direct notification dependencies.
+
+I testi si compongono nella lingua del destinatario (ADR-062): titoli e
+pulsanti sono pigri, i messaggi fatti di pezzi sono funzioni che il servizio
+delle notifiche chiama dentro quella lingua. Un orario si mostra nel fuso del
+destinatario (ADR-043).
 """
 
 from __future__ import annotations
 
 import logging
+
+from flask_babel import gettext as _, lazy_gettext as _l
+
+from utils.lingua import data_ora_per
 
 from ..notification.services import NotificationService
 from ..notification.models import NotificationType, NotificationPriority
@@ -33,6 +42,32 @@ from .availability_events import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _iscrizioni_aperte(event: CompetitionRegistrationOpenedEvent, user_id: int) -> str:
+    """Il messaggio delle iscrizioni aperte, per un destinatario preciso."""
+    dove = (
+        " " + _("presso %(luogo)s", luogo=event.location_name)
+        if event.location_name
+        else ""
+    )
+    quando = (
+        " " + _("il %(quando)s", quando=data_ora_per(user_id, event.scheduled_time))
+        if event.scheduled_time
+        else ""
+    )
+    testo = _(
+        "Le iscrizioni per '%(nome)s'%(dove)s%(quando)s sono ora aperte!",
+        nome=event.name,
+        dove=dove,
+        quando=quando,
+    )
+    if event.registration_deadline:
+        testo += " " + _(
+            "Scadenza iscrizioni: %(scadenza)s.",
+            scadenza=data_ora_per(user_id, event.registration_deadline),
+        )
+    return testo
 
 
 class NotificationEventHandlers:
@@ -117,10 +152,10 @@ class NotificationEventHandlers:
                 NotificationService.create_notification(
                     user_id=admin_id,
                     notification_type=NotificationType.SYSTEM_ANNOUNCEMENT,
-                    title="Nuova Richiesta Direttore",
-                    message=(
-                        f"L'utente {event.username} ha richiesto di "
-                        f"diventare direttore."
+                    title=_l("Nuova Richiesta Direttore"),
+                    message=_l(
+                        "L'utente %(username)s ha richiesto di diventare direttore.",
+                        username=event.username,
                     ),
                     priority=NotificationPriority.HIGH,
                     related_entities={
@@ -129,7 +164,7 @@ class NotificationEventHandlers:
                         "username": event.username,
                     },
                     action_url="/admin/director_requests",
-                    action_text="Gestisci Richiesta",
+                    action_text=_l("Gestisci Richiesta"),
                 )
             logger.info(
                 f"Sent director request notifications for request {event.request_id}"
@@ -145,22 +180,31 @@ class NotificationEventHandlers:
         try:
             from models.status_enum import DirectorRequestStatus
 
-            if event.status == DirectorRequestStatus.APPROVED.value:
-                title = "Richiesta Direttore Approvata"
-                message = (
-                    "Congratulazioni! La tua richiesta di diventare "
-                    "direttore è stata approvata."
-                )
-                if event.notes:
-                    message += f" Note: {event.notes}"
+            approvata = event.status == DirectorRequestStatus.APPROVED.value
+            if approvata:
+                title = _l("Richiesta Direttore Approvata")
                 priority = NotificationPriority.HIGH
             else:  # rejected
-                title = "Richiesta Direttore Rifiutata"
-                message = "La tua richiesta di diventare direttore è stata rifiutata."
-                if event.notes:
-                    message += f" Motivo: {event.notes}"
-                message += " Per maggiori informazioni, contatta l'amministratore."
+                title = _l("Richiesta Direttore Rifiutata")
                 priority = NotificationPriority.NORMAL
+
+            def message() -> str:
+                if approvata:
+                    testo = _(
+                        "Congratulazioni! La tua richiesta di diventare "
+                        "direttore è stata approvata."
+                    )
+                    if event.notes:
+                        testo += " " + _("Note: %(note)s", note=event.notes)
+                    return testo
+                testo = _("La tua richiesta di diventare direttore è stata rifiutata.")
+                if event.notes:
+                    testo += " " + _("Motivo: %(motivo)s", motivo=event.notes)
+                return (
+                    testo
+                    + " "
+                    + _("Per maggiori informazioni, contatta l'amministratore.")
+                )
 
             NotificationService.create_notification(
                 user_id=event.user_id,
@@ -194,21 +238,28 @@ class NotificationEventHandlers:
                 if event.is_contested
                 else NotificationPriority.NORMAL
             )
-            title = "Nuova Richiesta Gestore"
-            if event.is_contested:
-                title += " (CONTESA)"
-
-            message = (
-                f"L'utente {event.username} ha richiesto di gestire la sede "
-                f"'{event.venue_name}'. "
+            title = (
+                _l("Nuova Richiesta Gestore (CONTESA)")
+                if event.is_contested
+                else _l("Nuova Richiesta Gestore")
             )
-            message += f"Motivazione: {event.motivation}"
 
-            if event.is_contested:
-                message += (
-                    " ATTENZIONE: Questa richiesta è contesa da altri "
-                    "gestori esistenti."
+            def message() -> str:
+                testo = _(
+                    "L'utente %(username)s ha richiesto di gestire la sede "
+                    "'%(sede)s'.",
+                    username=event.username,
+                    sede=event.venue_name,
                 )
+                testo += " " + _(
+                    "Motivazione: %(motivazione)s", motivazione=event.motivation
+                )
+                if event.is_contested:
+                    testo += " " + _(
+                        "ATTENZIONE: Questa richiesta è contesa da altri "
+                        "gestori esistenti."
+                    )
+                return testo
 
             # Notify all admins about the new venue manager request
             for admin_id in event.admin_user_ids:
@@ -227,7 +278,7 @@ class NotificationEventHandlers:
                         "is_contested": event.is_contested,
                     },
                     action_url="/admin/manager-requests",
-                    action_text="Gestisci Richiesta",
+                    action_text=_l("Gestisci Richiesta"),
                 )
             logger.info(
                 f"Sent venue manager request notifications for request "
@@ -244,41 +295,47 @@ class NotificationEventHandlers:
         event: VenueManagerRequestProcessedEvent,
     ) -> None:
         """Handle venue manager request processed by notifying the requester."""
-        contact_admin = " Per maggiori informazioni, contatta l'amministratore."
         try:
+            sede = event.venue_name
             if event.status == "approved":
-                title = f"Richiesta Gestore '{event.venue_name}' Approvata"
-                message = (
-                    f"Congratulazioni! La tua richiesta di gestire la sede "
-                    f"'{event.venue_name}' è stata approvata."
-                )
-                if event.notes:
-                    message += f" Note: {event.notes}"
+                title = _l("Richiesta Gestore '%(sede)s' Approvata", sede=sede)
                 priority = NotificationPriority.HIGH
             elif event.status == "revoked":
                 # Revoca di una gestione già attiva (non un rifiuto di richiesta):
                 # VenueManagerService.revoke_venue_manager pubblica
                 # status="revoked". Prima cadeva nell'else "rejected" → messaggio
                 # fuorviante "richiesta ... rifiutata".
-                title = f"Gestione Sede '{event.venue_name}' Revocata"
-                message = (
-                    f"La gestione della sede '{event.venue_name}' ti è stata "
-                    f"revocata."
-                )
-                if event.notes:
-                    message += f" Motivo: {event.notes}"
-                message += contact_admin
+                title = _l("Gestione Sede '%(sede)s' Revocata", sede=sede)
                 priority = NotificationPriority.NORMAL
             else:  # rejected
-                title = f"Richiesta Gestore '{event.venue_name}' Rifiutata"
-                message = (
-                    f"La tua richiesta di gestire la sede '{event.venue_name}' "
-                    f"è stata rifiutata."
-                )
-                if event.notes:
-                    message += f" Motivo: {event.notes}"
-                message += contact_admin
+                title = _l("Richiesta Gestore '%(sede)s' Rifiutata", sede=sede)
                 priority = NotificationPriority.NORMAL
+
+            def message() -> str:
+                contatta = _("Per maggiori informazioni, contatta l'amministratore.")
+                if event.status == "approved":
+                    testo = _(
+                        "Congratulazioni! La tua richiesta di gestire la sede "
+                        "'%(sede)s' è stata approvata.",
+                        sede=sede,
+                    )
+                    if event.notes:
+                        testo += " " + _("Note: %(note)s", note=event.notes)
+                    return testo
+                if event.status == "revoked":
+                    testo = _(
+                        "La gestione della sede '%(sede)s' ti è stata revocata.",
+                        sede=sede,
+                    )
+                else:
+                    testo = _(
+                        "La tua richiesta di gestire la sede '%(sede)s' è stata "
+                        "rifiutata.",
+                        sede=sede,
+                    )
+                if event.notes:
+                    testo += " " + _("Motivo: %(motivo)s", motivo=event.notes)
+                return testo + " " + contatta
 
             NotificationService.create_notification(
                 user_id=event.user_id,
@@ -313,27 +370,38 @@ class NotificationEventHandlers:
             # Public proposal, no specific target to notify
             return
 
-        try:
-            location_text = (
-                f" presso {event.location_name}" if event.location_name else ""
+        destinatario = event.target_user_id
+
+        def message() -> str:
+            dove = (
+                " " + _("presso %(luogo)s", luogo=event.location_name)
+                if event.location_name
+                else ""
             )
-            time_text = (
-                f" il {event.scheduled_time.strftime('%d/%m/%Y alle %H:%M')}"
+            quando = (
+                " "
+                + _(
+                    "il %(quando)s",
+                    quando=data_ora_per(destinatario, event.scheduled_time),
+                )
                 if event.scheduled_time
                 else ""
             )
-
-            message = (
-                f"{event.proposer_name} ti ha proposto una "
-                f"partita{location_text}{time_text}."
+            testo = _(
+                "%(proposer)s ti ha proposto una partita%(dove)s%(quando)s.",
+                proposer=event.proposer_name,
+                dove=dove,
+                quando=quando,
             )
             if event.notes:
-                message += f" Note: {event.notes}"
+                testo += " " + _("Note: %(note)s", note=event.notes)
+            return testo
 
+        try:
             NotificationService.create_notification(
-                user_id=event.target_user_id,
+                user_id=destinatario,
                 notification_type=NotificationType.MATCH_PROPOSAL,
-                title="Nuova Proposta di Partita",
+                title=_l("Nuova Proposta di Partita"),
                 message=message,
                 priority=NotificationPriority.NORMAL,
                 related_entities={
@@ -344,11 +412,9 @@ class NotificationEventHandlers:
                     "location_name": event.location_name,
                 },
                 action_url=f"/player/proposals/{event.proposal_id}",
-                action_text="Visualizza Proposta",
+                action_text=_l("Visualizza Proposta"),
             )
-            logger.info(
-                f"Sent match proposal notification to user {event.target_user_id}"
-            )
+            logger.info(f"Sent match proposal notification to user {destinatario}")
         except Exception as e:
             logger.error(
                 f"Error handling match proposal created event: {e}", exc_info=True
@@ -357,25 +423,36 @@ class NotificationEventHandlers:
     @staticmethod
     def handle_match_accepted(event: MatchAcceptedEvent) -> None:
         """Handle match accepted by notifying the proposer."""
-        try:
-            location_text = (
-                f" presso {event.location_name}" if event.location_name else ""
+        destinatario = event.proposer_id
+
+        def message() -> str:
+            dove = (
+                " " + _("presso %(luogo)s", luogo=event.location_name)
+                if event.location_name
+                else ""
             )
-            time_text = (
-                f" per il {event.scheduled_time.strftime('%d/%m/%Y alle %H:%M')}"
+            quando = (
+                " "
+                + _(
+                    "per il %(quando)s",
+                    quando=data_ora_per(destinatario, event.scheduled_time),
+                )
                 if event.scheduled_time
                 else ""
             )
-
-            message = (
-                f"{event.accepter_name} ha accettato la tua proposta di "
-                f"partita{location_text}{time_text}."
+            return _(
+                "%(accepter)s ha accettato la tua proposta di partita"
+                "%(dove)s%(quando)s.",
+                accepter=event.accepter_name,
+                dove=dove,
+                quando=quando,
             )
 
+        try:
             NotificationService.create_notification(
-                user_id=event.proposer_id,
+                user_id=destinatario,
                 notification_type=NotificationType.MATCH_ACCEPTED,
-                title="Proposta di Partita Accettata!",
+                title=_l("Proposta di Partita Accettata!"),
                 message=message,
                 priority=NotificationPriority.NORMAL,
                 related_entities={
@@ -387,9 +464,9 @@ class NotificationEventHandlers:
                     "location_name": event.location_name,
                 },
                 action_url=f"/player/matches/{event.match_id}",
-                action_text="Visualizza Partita",
+                action_text=_l("Visualizza Partita"),
             )
-            logger.info(f"Sent match accepted notification to user {event.proposer_id}")
+            logger.info(f"Sent match accepted notification to user {destinatario}")
         except Exception as e:
             logger.error(f"Error handling match accepted event: {e}", exc_info=True)
 
@@ -405,31 +482,14 @@ class NotificationEventHandlers:
             return
 
         try:
-            location_text = (
-                f" presso {event.location_name}" if event.location_name else ""
-            )
-            time_text = (
-                f" il {event.scheduled_time.strftime('%d/%m/%Y alle %H:%M')}"
-                if event.scheduled_time
-                else ""
-            )
-            deadline_text = ""
-            if event.registration_deadline:
-                deadline = event.registration_deadline.strftime("%d/%m/%Y alle %H:%M")
-                deadline_text = f" Scadenza iscrizioni: {deadline}."
-
-            message = (
-                f"Le iscrizioni per '{event.name}'{location_text}{time_text} "
-                f"sono ora aperte!{deadline_text}"
-            )
-
-            # Notify eligible users
+            # Notify eligible users: un messaggio per ciascuno, nella sua lingua
+            # e con gli orari nel suo fuso.
             for user_id in event.eligible_user_ids:
                 NotificationService.create_notification(
                     user_id=user_id,
                     notification_type=NotificationType.TOURNAMENT_REGISTRATION,
-                    title="Iscrizioni Aperte",
-                    message=message,
+                    title=_l("Iscrizioni Aperte"),
+                    message=lambda uid=user_id: _iscrizioni_aperte(event, uid),
                     priority=NotificationPriority.NORMAL,
                     related_entities={
                         "gara_id": event.gara_id,
@@ -438,7 +498,7 @@ class NotificationEventHandlers:
                         "location_name": event.location_name,
                     },
                     action_url=f"/gara/{event.gara_id}",
-                    action_text="Iscriviti Ora",
+                    action_text=_l("Iscriviti Ora"),
                 )
             logger.info(
                 f"Sent competition registration notifications for gara {event.gara_id}"
@@ -455,26 +515,28 @@ class NotificationEventHandlers:
     def handle_director_assignment_added(event: DirectorAssignmentAddedEvent) -> None:
         """Handle director assignment added by notifying the director."""
         try:
-            entity_label = "gara" if event.entity_type == "gara" else "campionato"
-            title = "Nominato co-direttore"
-            message = (
-                f"Sei stato nominato co-direttore "
-                f"della {entity_label} '{event.entity_name}'"
-            )
-
-            # Determine action URL based on entity type
-            # Co-directors have admin access, so link to admin routes
+            # Due frasi e non un'etichetta inserita: «della gara», ma «del
+            # campionato». Prima usciva «della campionato».
             if event.entity_type == "gara":
+                message = _l(
+                    "Sei stato nominato co-direttore della gara '%(nome)s'",
+                    nome=event.entity_name,
+                )
+                # Co-directors have admin access, so link to admin routes
                 action_url = f"/admin/gara/{event.entity_id}"
-                action_text = "Gestisci Gara"
+                action_text = _l("Gestisci Gara")
             else:
+                message = _l(
+                    "Sei stato nominato co-direttore del campionato '%(nome)s'",
+                    nome=event.entity_name,
+                )
                 action_url = f"/admin/campionato/{event.entity_id}"
-                action_text = "Gestisci Campionato"
+                action_text = _l("Gestisci Campionato")
 
             NotificationService.create_notification(
                 user_id=event.user_id,
                 notification_type=NotificationType.ACCOUNT_UPDATE,
-                title=title,
+                title=_l("Nominato co-direttore"),
                 message=message,
                 priority=NotificationPriority.NORMAL,
                 related_entities={
@@ -501,26 +563,27 @@ class NotificationEventHandlers:
     ) -> None:
         """Handle director assignment removed by notifying the director."""
         try:
-            entity_label = "gara" if event.entity_type == "gara" else "campionato"
-            title = "Rimosso da co-direttore"
-            message = (
-                f"Sei stato rimosso dal ruolo di co-direttore "
-                f"della {entity_label} '{event.entity_name}'"
-            )
-
-            # Determine action URL based on entity type
-            # Link to public view since user no longer has admin access
             if event.entity_type == "gara":
+                message = _l(
+                    "Sei stato rimosso dal ruolo di co-direttore della gara '%(nome)s'",
+                    nome=event.entity_name,
+                )
+                # Link to public view since user no longer has admin access
                 action_url = f"/gara/{event.entity_id}"
-                action_text = "Visualizza Gara"
+                action_text = _l("Visualizza Gara")
             else:
+                message = _l(
+                    "Sei stato rimosso dal ruolo di co-direttore del campionato "
+                    "'%(nome)s'",
+                    nome=event.entity_name,
+                )
                 action_url = f"/campionato/{event.entity_id}"
-                action_text = "Visualizza Campionato"
+                action_text = _l("Visualizza Campionato")
 
             NotificationService.create_notification(
                 user_id=event.user_id,
                 notification_type=NotificationType.ACCOUNT_UPDATE,
-                title=title,
+                title=_l("Rimosso da co-direttore"),
                 message=message,
                 priority=NotificationPriority.NORMAL,
                 related_entities={
@@ -552,12 +615,12 @@ class NotificationEventHandlers:
                 NotificationService.create_notification(
                     user_id=user_id,
                     notification_type=NotificationType.MATCH_PROPOSAL,
-                    title="Giocatore Disponibile",
+                    title=_l("Giocatore Disponibile"),
                     message=event.notification_message,
                     priority=NotificationPriority.NORMAL,
                     related_entities=event.notification_context,
                     action_url=f"/player/availability/{event.location_id}",
-                    action_text="Visualizza Disponibilità",
+                    action_text=_l("Visualizza Disponibilità"),
                 )
             logger.info(
                 f"Sent availability notifications for location {event.location_id}"

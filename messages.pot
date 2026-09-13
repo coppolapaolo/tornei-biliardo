@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 18:51+0200\n"
+"POT-Creation-Date: 2026-09-13 18:59+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,23 +17,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:719 templates/errors/403.html:3
+#: app.py:733 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
-#: app.py:737
+#: app.py:751
 msgid "Non è il tuo turno"
 msgstr ""
 
-#: app.py:738
+#: app.py:752
 msgid "Colpo irregolare"
 msgstr ""
 
-#: app.py:757
+#: app.py:771
 msgid "Operazione non consentita"
 msgstr ""
 
-#: app.py:771
+#: app.py:785
 msgid "Tiro non valido"
 msgstr ""
 
@@ -274,27 +274,42 @@ msgid ""
 "%(prima)s non si tolgono più."
 msgstr ""
 
-#: models/competition/inscription_service.py:587
+#: models/competition/inscription_service.py:559
+#: models/competition/inscription_service.py:594
 #, python-format
 msgid "Gara %(numero)s"
 msgstr ""
 
-#: models/competition/inscription_service.py:604
+#: models/competition/inscription_service.py:563
+msgid "Posto disponibile!"
+msgstr ""
+
+#: models/competition/inscription_service.py:565
+#, python-format
+msgid "Sei stato promosso dalla lista d'attesa per la gara '%(gara)s'"
+msgstr ""
+
+#: models/competition/inscription_service.py:618
 msgid "Aggiornamento gara"
 msgstr ""
 
-#: models/competition/inscription_service.py:613 models/demand/service.py:414
+#: models/competition/inscription_service.py:628 models/demand/service.py:414
 msgid "Vedi la gara"
 msgstr ""
 
-#: models/competition/inscription_service.py:648
+#: models/competition/inscription_service.py:665
 #, python-format
 msgid "%(direttore)s ti ha tolto dalla lista d'attesa della gara %(gara)s."
 msgstr ""
 
-#: models/competition/inscription_service.py:655
+#: models/competition/inscription_service.py:672
 #, python-format
 msgid "%(direttore)s ha annullato la tua iscrizione alla gara %(gara)s."
+msgstr ""
+
+#: models/competition/inscription_service.py:733
+#, python-format
+msgid "Sei stato promosso dalla lista d'attesa per %(gara)s"
 msgstr ""
 
 #: models/competition/models.py:571
@@ -375,6 +390,22 @@ msgid ""
 "il turno"
 msgstr ""
 
+#: models/competition/services.py:459
+#, python-format
+msgid ""
+"La %(gara)s del campionato '%(campionato)s' del %(data)s è stata "
+"cancellata."
+msgstr ""
+
+#: models/competition/services.py:466
+#, python-format
+msgid "La %(gara)s del %(data)s è stata cancellata."
+msgstr ""
+
+#: models/competition/services.py:477
+msgid "Gara Cancellata"
+msgstr ""
+
 #: models/competition/showcase_view.py:196
 #: templates/direttore/_card_partita.html:278
 #, python-format
@@ -452,7 +483,7 @@ msgstr ""
 #: templates/components/_campionato_details_info.html:87
 #: templates/components/_gara_info.html:48
 #: templates/components/_player_dashboard_content.html:43
-#: templates/components/_tessera_gara.html:241
+#: templates/components/_tessera_gara.html:258
 msgid "Quota"
 msgstr ""
 
@@ -505,7 +536,7 @@ msgstr ""
 msgid "%(nome)s si è già ritirato da questa gara."
 msgstr ""
 
-#: models/competition/withdraw_policy_service.py:210
+#: models/competition/withdraw_policy_service.py:216
 #, python-format
 msgid ""
 "%(direttore)s ti ha ritirato dalla gara %(gara)s. Le tue partite aperte "
@@ -513,7 +544,7 @@ msgid ""
 "non entri più negli abbinamenti."
 msgstr ""
 
-#: models/competition/withdraw_policy_service.py:217
+#: models/competition/withdraw_policy_service.py:223
 #, python-format
 msgid ""
 "%(direttore)s ti ha ritirato dalla gara %(gara)s. Le tue partite aperte "
@@ -521,7 +552,7 @@ msgid ""
 "incontrato passa il turno a tavolino."
 msgstr ""
 
-#: models/competition/withdraw_policy_service.py:224
+#: models/competition/withdraw_policy_service.py:230
 #, python-format
 msgid ""
 "%(direttore)s ti ha ritirato dalla gara %(gara)s. Le tue partite aperte "
@@ -1095,6 +1126,232 @@ msgid ""
 "se ti interessa ancora."
 msgstr ""
 
+#: models/events/notification_handlers.py:50
+#: models/events/notification_handlers.py:377
+#: models/events/notification_handlers.py:430
+#: models/notification/factory.py:269
+#, python-format
+msgid "presso %(luogo)s"
+msgstr ""
+
+#: models/events/notification_handlers.py:55
+#: models/events/notification_handlers.py:384
+#: models/notification/factory.py:272
+#, python-format
+msgid "il %(quando)s"
+msgstr ""
+
+#: models/events/notification_handlers.py:60
+#, python-format
+msgid "Le iscrizioni per '%(nome)s'%(dove)s%(quando)s sono ora aperte!"
+msgstr ""
+
+#: models/events/notification_handlers.py:67
+#, python-format
+msgid "Scadenza iscrizioni: %(scadenza)s."
+msgstr ""
+
+#: models/events/notification_handlers.py:155
+msgid "Nuova Richiesta Direttore"
+msgstr ""
+
+#: models/events/notification_handlers.py:157
+#, python-format
+msgid "L'utente %(username)s ha richiesto di diventare direttore."
+msgstr ""
+
+#: models/events/notification_handlers.py:167
+#: models/events/notification_handlers.py:281
+msgid "Gestisci Richiesta"
+msgstr ""
+
+#: models/events/notification_handlers.py:185
+msgid "Richiesta Direttore Approvata"
+msgstr ""
+
+#: models/events/notification_handlers.py:188
+msgid "Richiesta Direttore Rifiutata"
+msgstr ""
+
+#: models/events/notification_handlers.py:194
+msgid ""
+"Congratulazioni! La tua richiesta di diventare direttore è stata "
+"approvata."
+msgstr ""
+
+#: models/events/notification_handlers.py:198
+#: models/events/notification_handlers.py:323
+#: models/events/notification_handlers.py:397
+#, python-format
+msgid "Note: %(note)s"
+msgstr ""
+
+#: models/events/notification_handlers.py:200
+msgid "La tua richiesta di diventare direttore è stata rifiutata."
+msgstr ""
+
+#: models/events/notification_handlers.py:202
+#: models/events/notification_handlers.py:337
+#, python-format
+msgid "Motivo: %(motivo)s"
+msgstr ""
+
+#: models/events/notification_handlers.py:206
+#: models/events/notification_handlers.py:315
+msgid "Per maggiori informazioni, contatta l'amministratore."
+msgstr ""
+
+#: models/events/notification_handlers.py:242
+msgid "Nuova Richiesta Gestore (CONTESA)"
+msgstr ""
+
+#: models/events/notification_handlers.py:244
+msgid "Nuova Richiesta Gestore"
+msgstr ""
+
+#: models/events/notification_handlers.py:249
+#, python-format
+msgid "L'utente %(username)s ha richiesto di gestire la sede '%(sede)s'."
+msgstr ""
+
+#: models/events/notification_handlers.py:255
+#, python-format
+msgid "Motivazione: %(motivazione)s"
+msgstr ""
+
+#: models/events/notification_handlers.py:259
+msgid "ATTENZIONE: Questa richiesta è contesa da altri gestori esistenti."
+msgstr ""
+
+#: models/events/notification_handlers.py:301
+#, python-format
+msgid "Richiesta Gestore '%(sede)s' Approvata"
+msgstr ""
+
+#: models/events/notification_handlers.py:308
+#, python-format
+msgid "Gestione Sede '%(sede)s' Revocata"
+msgstr ""
+
+#: models/events/notification_handlers.py:311
+#, python-format
+msgid "Richiesta Gestore '%(sede)s' Rifiutata"
+msgstr ""
+
+#: models/events/notification_handlers.py:318
+#, python-format
+msgid ""
+"Congratulazioni! La tua richiesta di gestire la sede '%(sede)s' è stata "
+"approvata."
+msgstr ""
+
+#: models/events/notification_handlers.py:327
+#, python-format
+msgid "La gestione della sede '%(sede)s' ti è stata revocata."
+msgstr ""
+
+#: models/events/notification_handlers.py:332
+#, python-format
+msgid "La tua richiesta di gestire la sede '%(sede)s' è stata rifiutata."
+msgstr ""
+
+#: models/events/notification_handlers.py:391
+#, python-format
+msgid "%(proposer)s ti ha proposto una partita%(dove)s%(quando)s."
+msgstr ""
+
+#: models/events/notification_handlers.py:404
+#: models/notification/factory.py:254
+msgid "Nuova Proposta di Partita"
+msgstr ""
+
+#: models/events/notification_handlers.py:415
+#: models/notification/factory.py:285
+msgid "Visualizza Proposta"
+msgstr ""
+
+#: models/events/notification_handlers.py:437
+#, python-format
+msgid "per il %(quando)s"
+msgstr ""
+
+#: models/events/notification_handlers.py:444
+#, python-format
+msgid "%(accepter)s ha accettato la tua proposta di partita%(dove)s%(quando)s."
+msgstr ""
+
+#: models/events/notification_handlers.py:455
+msgid "Proposta di Partita Accettata!"
+msgstr ""
+
+#: models/events/notification_handlers.py:467
+#: models/notification/factory.py:282
+msgid "Visualizza Partita"
+msgstr ""
+
+#: models/events/notification_handlers.py:491 utils/status_ui.py:99
+#: utils/status_ui.py:146
+msgid "Iscrizioni Aperte"
+msgstr ""
+
+#: models/events/notification_handlers.py:501
+msgid "Iscriviti Ora"
+msgstr ""
+
+#: models/events/notification_handlers.py:522
+#, python-format
+msgid "Sei stato nominato co-direttore della gara '%(nome)s'"
+msgstr ""
+
+#: models/events/notification_handlers.py:527
+msgid "Gestisci Gara"
+msgstr ""
+
+#: models/events/notification_handlers.py:530
+#, python-format
+msgid "Sei stato nominato co-direttore del campionato '%(nome)s'"
+msgstr ""
+
+#: models/events/notification_handlers.py:534
+msgid "Gestisci Campionato"
+msgstr ""
+
+#: models/events/notification_handlers.py:539
+msgid "Nominato co-direttore"
+msgstr ""
+
+#: models/events/notification_handlers.py:568
+#, python-format
+msgid "Sei stato rimosso dal ruolo di co-direttore della gara '%(nome)s'"
+msgstr ""
+
+#: models/events/notification_handlers.py:573
+#: models/notification/factory.py:213
+msgid "Visualizza Gara"
+msgstr ""
+
+#: models/events/notification_handlers.py:576
+#, python-format
+msgid "Sei stato rimosso dal ruolo di co-direttore del campionato '%(nome)s'"
+msgstr ""
+
+#: models/events/notification_handlers.py:581
+msgid "Visualizza Campionato"
+msgstr ""
+
+#: models/events/notification_handlers.py:586
+msgid "Rimosso da co-direttore"
+msgstr ""
+
+#: models/events/notification_handlers.py:618
+#: models/individual_match/availability_service.py:270
+msgid "Giocatore Disponibile"
+msgstr ""
+
+#: models/events/notification_handlers.py:623
+msgid "Visualizza Disponibilità"
+msgstr ""
+
 #: models/exam/request_service.py:437
 msgid "Nessun esaminatore ha potuto accogliere la tua richiesta."
 msgstr ""
@@ -1113,89 +1370,93 @@ msgid ""
 "data e ora."
 msgstr ""
 
-#: models/exam/request_service.py:637
+#: models/exam/request_service.py:645
 #, python-format
 msgid "%(user)s chiede di sostenere «%(exam)s»: %(slot)s."
 msgstr ""
 
-#: models/exam/request_service.py:647
+#: models/exam/request_service.py:655
 msgid "Richiesta d'esame"
 msgstr ""
 
-#: models/exam/request_service.py:651
+#: models/exam/request_service.py:659
 msgid "Vedi la richiesta"
 msgstr ""
 
-#: models/exam/request_service.py:672
+#: models/exam/request_service.py:680
 msgid "Nuova proposta di appuntamento"
 msgstr ""
 
-#: models/exam/request_service.py:674
+#: models/exam/request_service.py:682
 #, python-format
 msgid "%(user)s propone «%(exam)s»: %(slot)s."
 msgstr ""
 
-#: models/exam/request_service.py:681 templates/exam/request_detail.html:101
+#: models/exam/request_service.py:689 templates/exam/request_detail.html:101
 msgid "Rispondi"
 msgstr ""
 
-#: models/exam/request_service.py:694
+#: models/exam/request_service.py:702
 msgid "Appuntamento d'esame confermato"
 msgstr ""
 
-#: models/exam/request_service.py:696
+#: models/exam/request_service.py:704
 #, python-format
 msgid "«%(exam)s»: appuntamento confermato per %(slot)s."
 msgstr ""
 
-#: models/exam/request_service.py:702
+#: models/exam/request_service.py:710
 msgid "Vedi l'appuntamento"
 msgstr ""
 
-#: models/exam/request_service.py:715 models/exam/request_service.py:733
+#: models/exam/request_service.py:725 models/exam/request_service.py:743
 msgid "Richiesta d'esame chiusa"
 msgstr ""
 
-#: models/exam/request_service.py:718
+#: models/exam/request_service.py:728
 #, python-format
 msgid ""
 "La richiesta per «%(exam)s» è stata presa in carico da un altro "
 "esaminatore."
 msgstr ""
 
-#: models/exam/services.py:830
+#: models/exam/services.py:831
 msgid "L'esame sta per iniziare"
 msgstr ""
 
-#: models/exam/services.py:832
+#: models/exam/services.py:833
 #, python-format
 msgid ""
 "L'esaminatore ha aperto la sessione di «%(exam)s»: accetta l'inizio per "
 "far partire la valutazione."
 msgstr ""
 
-#: models/exam/services.py:839
+#: models/exam/services.py:840
 msgid "Accetta l'inizio"
 msgstr ""
 
-#: models/exam/services.py:847
+#: models/exam/services.py:848
 msgid "superato"
 msgstr ""
 
-#: models/exam/services.py:847
+#: models/exam/services.py:848
 msgid "non superato"
 msgstr ""
 
-#: models/exam/services.py:851
+#: models/exam/services.py:852
+#: tests/new/unit/test_notifiche_lingua_destinatario.py:92
+#: tests/new/unit/test_notifiche_lingua_destinatario.py:122
+#: tests/new/unit/test_notifiche_lingua_destinatario.py:125
+#: tests/new/unit/test_notifiche_lingua_destinatario.py:140
 msgid "Esame certificato"
 msgstr ""
 
-#: models/exam/services.py:853
+#: models/exam/services.py:854
 #, python-format
 msgid "«%(exam)s»: esito %(outcome)s, certificato da %(examiner)s."
 msgstr ""
 
-#: models/exam/services.py:864
+#: models/exam/services.py:865
 msgid "Vedi l'esito"
 msgstr ""
 
@@ -1221,27 +1482,27 @@ msgstr ""
 msgid "Il racconto è troppo lungo: al massimo %(max)s caratteri."
 msgstr ""
 
-#: models/feedback/sync.py:192
+#: models/feedback/sync.py:194
 msgid "La tua segnalazione è stata presa in considerazione"
 msgstr ""
 
-#: models/feedback/sync.py:194
+#: models/feedback/sync.py:196
 msgid "La tua segnalazione è stata risolta"
 msgstr ""
 
-#: models/feedback/sync.py:196
+#: models/feedback/sync.py:198
 msgid "Sulla tua segnalazione abbiamo deciso di non intervenire"
 msgstr ""
 
-#: models/feedback/sync.py:198
+#: models/feedback/sync.py:200
 msgid "Ci sono novità sulla tua segnalazione"
 msgstr ""
 
-#: models/feedback/sync.py:206
+#: models/feedback/sync.py:208
 msgid "Novità sulla tua segnalazione"
 msgstr ""
 
-#: models/feedback/sync.py:211
+#: models/feedback/sync.py:213
 msgid "Vedi le tue segnalazioni"
 msgstr ""
 
@@ -1435,6 +1696,20 @@ msgstr ""
 msgid "Conquista almeno una vittoria questa settimana."
 msgstr ""
 
+#: models/individual_match/availability_service.py:262
+#, python-format
+msgid "%(nome)s è disponibile a giocare presso %(luogo)s"
+msgstr ""
+
+#: models/individual_match/availability_service.py:263
+#: models/individual_match/proposal_service.py:194
+#: models/individual_match/proposal_service.py:515
+#: models/individual_match/quick_match_service.py:417
+#: models/individual_match/services.py:191 models/notification/factory.py:264
+#: models/notification/factory.py:265
+msgid "Un giocatore"
+msgstr ""
+
 #: models/individual_match/individual_rack_service.py:59
 msgid "La partita è arrivata alla distanza: non si segna più."
 msgstr ""
@@ -1445,113 +1720,113 @@ msgstr ""
 msgid "Partita non trovata."
 msgstr ""
 
-#: models/individual_match/match_lifecycle_service.py:244
+#: models/individual_match/match_lifecycle_service.py:249
+#: tests/new/unit/test_notifiche_lingua_destinatario.py:77
+#: tests/new/unit/test_notifiche_lingua_destinatario.py:93
+#: tests/new/unit/test_notifiche_lingua_destinatario.py:109
+#: tests/new/unit/test_notifiche_lingua_destinatario.py:123
+#: tests/new/unit/test_notifiche_lingua_destinatario.py:141
 msgid "Promemoria sfida"
 msgstr ""
 
-#: models/individual_match/match_lifecycle_service.py:246
+#: models/individual_match/match_lifecycle_service.py:251
 #, python-format
 msgid "La tua sfida è programmata per il %(when)s%(location)s"
 msgstr ""
 
-#: models/individual_match/match_lifecycle_service.py:259
-#: models/individual_match/proposal_service.py:238
-#: models/individual_match/proposal_service.py:659
-#: models/individual_match/proposal_service.py:704
+#: models/individual_match/match_lifecycle_service.py:266
+#: models/individual_match/proposal_service.py:243
+#: models/individual_match/proposal_service.py:669
+#: models/individual_match/proposal_service.py:714
 msgid "Visualizza"
 msgstr ""
 
 #: models/individual_match/proposal_service.py:77
-#: models/individual_match/proposal_service.py:170
+#: models/individual_match/proposal_service.py:166
 msgid "Non è possibile programmare una sfida nel passato"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:198
-#: models/individual_match/proposal_service.py:497
-#: models/individual_match/quick_match_service.py:404
-#: models/individual_match/services.py:181
-msgid "Un giocatore"
-msgstr ""
-
-#: models/individual_match/proposal_service.py:224
-#: models/individual_match/proposal_service.py:492
-#: models/individual_match/proposal_service.py:646
-#: models/individual_match/proposal_service.py:691
-#: models/individual_match/quick_match_service.py:407
-#: models/individual_match/services.py:183
+#: models/individual_match/proposal_service.py:225
+#: models/individual_match/proposal_service.py:502
+#: models/individual_match/quick_match_service.py:412
+#: models/individual_match/services.py:188
 #, python-format
 msgid "a %(loc)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:229
-msgid "Nuova proposta di sfida"
-msgstr ""
-
-#: models/individual_match/proposal_service.py:231
+#: models/individual_match/proposal_service.py:228
 #, python-format
 msgid "%(username)s propone una sfida aperta%(location)s il %(date)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:315
+#: models/individual_match/proposal_service.py:239
+msgid "Nuova proposta di sfida"
+msgstr ""
+
+#: models/individual_match/proposal_service.py:320
 msgid "Giocatore già invitato a questa proposta"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:489
+#: models/individual_match/proposal_service.py:494
 msgid "Proposta già accettata"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:502
+#: models/individual_match/proposal_service.py:512
 msgid "Proposta accettata!"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:504
+#: models/individual_match/proposal_service.py:514
 #, python-format
 msgid "%(player)s ha accettato la tua proposta di sfida%(location)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:510
+#: models/individual_match/proposal_service.py:520
 msgid "Vai alla sfida"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:525
+#: models/individual_match/proposal_service.py:535
 msgid "Proposta di sfida chiusa"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:527
+#: models/individual_match/proposal_service.py:537
 #, python-format
 msgid "La proposta di sfida%(location)s è stata accettata da un altro giocatore."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:593
+#: models/individual_match/proposal_service.py:603
 msgid "Proposta non trovata"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:596
+#: models/individual_match/proposal_service.py:606
 msgid "La proposta la cancella chi l'ha fatta."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:606
+#: models/individual_match/proposal_service.py:616
 msgid ""
 "Da questa proposta è nata una partita: per farla sparire annulla prima "
 "quella."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:651
-#: models/individual_match/proposal_service.py:696
+#: models/individual_match/proposal_service.py:660
+#: models/individual_match/proposal_service.py:705
 msgid "Proposta scaduta"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:653
-#: models/individual_match/proposal_service.py:698
+#: models/individual_match/proposal_service.py:663
+#: models/individual_match/proposal_service.py:708
 #, python-format
 msgid "La tua proposta di sfida%(location)s è scaduta senza accettazioni."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:785
+#: models/individual_match/proposal_service.py:791
+msgid "Proposta di sfida aperta"
+msgstr ""
+
+#: models/individual_match/proposal_service.py:799
 msgid "Proposta di sfida conclusa"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:787
+#: models/individual_match/proposal_service.py:801
 #, python-format
 msgid "La proposta di sfida '%(title)s' è stata accettata da un altro giocatore."
 msgstr ""
@@ -1603,10 +1878,6 @@ msgstr ""
 msgid "Il numero di %(field)s deve essere almeno 1."
 msgstr ""
 
-#: models/individual_match/quick_match_service.py:413
-msgid "Partita iniziata!"
-msgstr ""
-
 #: models/individual_match/quick_match_service.py:415
 #, python-format
 msgid ""
@@ -1614,16 +1885,14 @@ msgid ""
 "dovrai confermare il risultato."
 msgstr ""
 
-#: models/individual_match/quick_match_service.py:422
+#: models/individual_match/quick_match_service.py:424
+msgid "Partita iniziata!"
+msgstr ""
+
+#: models/individual_match/quick_match_service.py:428
 #: templates/components/_match_card.html:241
 #: templates/individual_match/proposal_detail.html:105
 msgid "Vai alla partita"
-msgstr ""
-
-#: models/individual_match/services.py:188
-#: templates/individual_match/proposal_detail.html:203
-#: templates/individual_match/proposals.html:266
-msgid "Proposta rifiutata"
 msgstr ""
 
 #: models/individual_match/services.py:190
@@ -1631,90 +1900,98 @@ msgstr ""
 msgid "%(player)s ha rifiutato la tua proposta di sfida%(location)s"
 msgstr ""
 
-#: models/individual_match/services.py:196
+#: models/individual_match/services.py:198
+#: templates/individual_match/proposal_detail.html:203
+#: templates/individual_match/proposals.html:266
+#: tests/new/unit/test_notifiche_lingua_destinatario.py:76
+#: tests/new/unit/test_notifiche_lingua_destinatario.py:108
+msgid "Proposta rifiutata"
+msgstr ""
+
+#: models/individual_match/services.py:202
 msgid "Vedi la proposta"
-msgstr ""
-
-#: models/kpi/notifications.py:45
-#, python-format
-msgid "Milestone: %(value)s utenti!"
-msgstr ""
-
-#: models/kpi/notifications.py:47
-#, python-format
-msgid "La community ha raggiunto %(value)s utenti registrati. Congratulazioni!"
 msgstr ""
 
 #: models/kpi/notifications.py:52
 #, python-format
-msgid "Milestone: %(value)s partite!"
+msgid "Milestone: %(value)s utenti!"
 msgstr ""
 
 #: models/kpi/notifications.py:54
+#, python-format
+msgid "La community ha raggiunto %(value)s utenti registrati. Congratulazioni!"
+msgstr ""
+
+#: models/kpi/notifications.py:59
+#, python-format
+msgid "Milestone: %(value)s partite!"
+msgstr ""
+
+#: models/kpi/notifications.py:61
 #, python-format
 msgid ""
 "Sono state giocate %(value)s partite sulla piattaforma. La community "
 "cresce!"
 msgstr ""
 
-#: models/kpi/notifications.py:59
+#: models/kpi/notifications.py:66
 #, python-format
 msgid "Milestone: %(value)s gare completate!"
 msgstr ""
 
-#: models/kpi/notifications.py:61
+#: models/kpi/notifications.py:68
 #, python-format
 msgid "Sono state completate %(value)s gare. Ottimo lavoro!"
 msgstr ""
 
-#: models/kpi/notifications.py:65
+#: models/kpi/notifications.py:72
 msgid "Milestone raggiunta!"
 msgstr ""
 
-#: models/kpi/notifications.py:67
+#: models/kpi/notifications.py:74
 #, python-format
 msgid "Una nuova milestone e stata raggiunta: %(type)s = %(value)s"
 msgstr ""
 
-#: models/kpi/notifications.py:86 models/kpi/notifications.py:150
+#: models/kpi/notifications.py:93 models/kpi/notifications.py:159
 msgid "Visualizza KPI"
 msgstr ""
 
-#: models/kpi/notifications.py:114
+#: models/kpi/notifications.py:123
 msgid "Attenzione: calo attivita"
 msgstr ""
 
-#: models/kpi/notifications.py:116
+#: models/kpi/notifications.py:125
 msgid ""
 "Non sono state giocate partite negli ultimi 3 giorni. Potrebbe essere "
 "utile stimolare la community."
 msgstr ""
 
-#: models/kpi/notifications.py:121
+#: models/kpi/notifications.py:130
 msgid "Attenzione: nessuna partita da 7 giorni"
 msgstr ""
 
-#: models/kpi/notifications.py:123
+#: models/kpi/notifications.py:132
 msgid ""
 "Non sono state giocate partite negli ultimi 7 giorni. La community "
 "potrebbe aver bisogno di attenzione."
 msgstr ""
 
-#: models/kpi/notifications.py:128
+#: models/kpi/notifications.py:137
 msgid "Attenzione: nessuna registrazione"
 msgstr ""
 
-#: models/kpi/notifications.py:130
+#: models/kpi/notifications.py:139
 msgid ""
 "Non ci sono state nuove registrazioni negli ultimi 7 giorni. Considera "
 "strategie di promozione."
 msgstr ""
 
-#: models/kpi/notifications.py:135
+#: models/kpi/notifications.py:144
 msgid "Alert attivita"
 msgstr ""
 
-#: models/kpi/notifications.py:136
+#: models/kpi/notifications.py:145
 msgid "Si e verificato un calo di attivita sulla piattaforma."
 msgstr ""
 
@@ -2000,22 +2277,127 @@ msgid ""
 "fra il primo e il secondo giocatore, il secondo fra il primo e il terzo."
 msgstr ""
 
-#: models/notification/factory.py:386
+#: models/notification/factory.py:204
+msgid "Aggiornamento Gara"
+msgstr ""
+
+#: models/notification/factory.py:255
+msgid "Proposta Accettata!"
+msgstr ""
+
+#: models/notification/factory.py:256
+msgid "Partita Completata"
+msgstr ""
+
+#: models/notification/factory.py:260
+msgid "Aggiornamento Partita"
+msgstr ""
+
+#: models/notification/factory.py:410
 #, python-format
 msgid "%(enrolled_by)s ti ha iscritto alla gara %(gara_name)s del %(gara_date)s"
 msgstr ""
 
-#: models/notification/factory.py:396
+#: models/notification/factory.py:420
 msgid "Iscrizione a Gara"
+msgstr ""
+
+#: models/notification/services.py:117
+#, python-format
+msgid "Prova · %(titolo)s"
+msgstr ""
+
+#: models/notification/templates.py:135
+msgid "Livello Comune"
+msgstr ""
+
+#: models/notification/templates.py:136
+msgid "Livello Non Comune"
+msgstr ""
+
+#: models/notification/templates.py:137
+msgid "Livello Raro"
+msgstr ""
+
+#: models/notification/templates.py:138
+msgid "Livello Epico"
+msgstr ""
+
+#: models/notification/templates.py:139
+msgid "Livello Leggendario"
+msgstr ""
+
+#: models/notification/templates.py:145
+msgid "attività"
+msgstr ""
+
+#: models/notification/templates.py:146
+msgid "partite"
+msgstr ""
+
+#: models/notification/templates.py:147
+msgid "tornei"
+msgstr ""
+
+#: models/notification/templates.py:148
+msgid "allenamenti"
+msgstr ""
+
+#: models/notification/templates.py:154
+#: templates/components/_gamification_labels.html:36
+#: templates/gamification/admin/quest_form.html:34
+msgid "Settimanale"
+msgstr ""
+
+#: models/notification/templates.py:155
+#: templates/components/_gamification_labels.html:37
+#: templates/gamification/admin/quest_form.html:37
+msgid "Mensile"
+msgstr ""
+
+#: models/notification/templates.py:156
+#: templates/gamification/admin/quest_form.html:40
+msgid "Evento Speciale"
 msgstr ""
 
 #: models/playoff/services.py:174
 msgid "La gara di playoff è già cominciata: l'invito non si può più accettare."
 msgstr ""
 
-#: models/playoff/services.py:1104 models/playoff/services.py:1161
+#: models/playoff/services.py:921
+#, python-format
+msgid "Invito Playoff — %(nome)s"
+msgstr ""
+
+#: models/playoff/services.py:923
+#, python-format
+msgid ""
+"Sei stato qualificato per %(nome)s del campionato %(campionato)s. "
+"Conferma o rifiuta la partecipazione."
+msgstr ""
+
+#: models/playoff/services.py:930
+msgid "Conferma o rifiuta"
+msgstr ""
+
+#: models/playoff/services.py:1107 models/playoff/services.py:1164
 msgid "La gara di playoff è già cominciata: la lista non si modifica più."
 msgstr ""
+
+#: models/prova/service.py:384
+msgid "La tua prova sta per scadere"
+msgstr ""
+
+#: models/prova/service.py:386
+#, python-format
+msgid ""
+"«%(nome)s» sparirà da sola fra %(num)s giorno. Se hai finito puoi "
+"eliminarla tu."
+msgid_plural ""
+"«%(nome)s» sparirà da sola fra %(num)s giorni. Se hai finito puoi "
+"eliminarla tu."
+msgstr[0] ""
+msgstr[1] ""
 
 #: models/tpa/services.py:74
 msgid "Il referto lo tiene uno dei due giocatori."
@@ -2092,7 +2474,7 @@ msgid ""
 msgstr ""
 
 #: models/user/profile_service.py:200
-#: routes/admin/competition/inscriptions.py:269
+#: routes/admin/competition/inscriptions.py:272
 msgid "Utente non trovato."
 msgstr ""
 
@@ -2117,58 +2499,58 @@ msgstr ""
 msgid "Lo username «%(nome)s» è già in uso."
 msgstr ""
 
-#: models/user/role_grant_service.py:557 routes/gamification/features.py:81
+#: models/user/role_grant_service.py:558 routes/gamification/features.py:81
 #: templates/admin/users_list.html:133 templates/admin/users_list.html:180
 msgid "Esaminatore"
 msgstr ""
 
-#: models/user/role_grant_service.py:558
+#: models/user/role_grant_service.py:559
 msgid "Beta tester"
 msgstr ""
 
-#: models/user/role_grant_service.py:589
+#: models/user/role_grant_service.py:590
 msgid "Richiesta di ruolo"
 msgstr ""
 
-#: models/user/role_grant_service.py:591
+#: models/user/role_grant_service.py:592
 #, python-format
 msgid "%(user)s chiede il ruolo di %(role)s."
 msgstr ""
 
-#: models/user/role_grant_service.py:599
+#: models/user/role_grant_service.py:600
 msgid "Vedi le richieste"
 msgstr ""
 
-#: models/user/role_grant_service.py:614
+#: models/user/role_grant_service.py:615
 #, python-format
 msgid "%(actor)s ha approvato la tua richiesta: ora sei %(role)s."
 msgstr ""
 
-#: models/user/role_grant_service.py:620
+#: models/user/role_grant_service.py:621
 #, python-format
 msgid "La tua richiesta per il ruolo di %(role)s non è stata accolta."
 msgstr ""
 
-#: models/user/role_grant_service.py:627
+#: models/user/role_grant_service.py:628
 msgid "Richiesta di ruolo processata"
 msgstr ""
 
-#: models/user/role_grant_service.py:642
+#: models/user/role_grant_service.py:643
 msgid "Richiesta di ruolo chiusa"
 msgstr ""
 
-#: models/user/role_grant_service.py:644
+#: models/user/role_grant_service.py:645
 #, python-format
 msgid ""
 "La richiesta per il ruolo di %(role)s è stata presa in carico da un altro"
 " titolare."
 msgstr ""
 
-#: models/user/role_grant_service.py:661
+#: models/user/role_grant_service.py:662
 msgid "Nuovo ruolo"
 msgstr ""
 
-#: models/user/role_grant_service.py:663
+#: models/user/role_grant_service.py:664
 #, python-format
 msgid "Hai ottenuto il ruolo di %(role)s."
 msgstr ""
@@ -2543,6 +2925,27 @@ msgstr ""
 msgid "Ruolo concesso (debug)."
 msgstr ""
 
+#: routes/admin/campionato.py:60
+#: templates/components/_tabellone_macros.html:126
+msgid "Amalfi"
+msgstr ""
+
+#: routes/admin/campionato.py:61
+msgid "Random"
+msgstr ""
+
+#: routes/admin/campionato.py:62
+#: templates/admin/campionato_wizard_step1.html:88
+#: templates/components/_tabellone_macros.html:129
+msgid "Eliminazione diretta"
+msgstr ""
+
+#: routes/admin/campionato.py:63
+#: templates/admin/campionato_wizard_step1.html:95
+#: templates/components/_tabellone_macros.html:130
+msgid "Doppio KO"
+msgstr ""
+
 #: routes/admin/campionato.py:119 routes/admin/campionato.py:356
 msgid "Il nome del campionato è obbligatorio"
 msgstr ""
@@ -2864,29 +3267,33 @@ msgstr ""
 msgid "Un giocatore fittizio gioca solo nella sua prova."
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:275
+#: routes/admin/competition/inscriptions.py:225
+msgid "data da definire"
+msgstr ""
+
+#: routes/admin/competition/inscriptions.py:278
 msgid "Gara non trovata."
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:283
+#: routes/admin/competition/inscriptions.py:286
 msgid "Non è possibile disiscrivere utenti quando il primo turno è già iniziato."
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:297
+#: routes/admin/competition/inscriptions.py:300
 #, python-format
 msgid "%(username)s non è più iscritto."
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:301
+#: routes/admin/competition/inscriptions.py:304
 msgid "Errore: utente non iscritto a questa gara."
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:304
+#: routes/admin/competition/inscriptions.py:307
 #, python-format
 msgid "Errore durante la disiscrizione: %(errore)s"
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:340
+#: routes/admin/competition/inscriptions.py:343
 #, python-format
 msgid "Ritiro di %(username)s registrato: gli è arrivata una notifica."
 msgstr ""
@@ -2894,6 +3301,59 @@ msgstr ""
 #: routes/admin/competition/matches.py:152
 #: routes/admin/competition/matches.py:212
 msgid "La partita è chiusa: per cambiarla azzerala dal segnapunti."
+msgstr ""
+
+#: routes/admin/competition/preparazione.py:29
+#: templates/admin/campionato_detail.html:234
+#: templates/admin/campionato_wizard_step2.html:82
+#: templates/admin/gara_create_standalone.html:454
+#: templates/admin/gara_create_standalone.html:518
+#: templates/components/_campionato_details_info.html:93
+#: templates/components/_gara_edit_form.html:356
+#: templates/components/_gara_info.html:27
+#: templates/components/_round_navigation.html:4
+#: templates/direttore/preparazione/_turni.html:146
+#: templates/gara_detail.html:47
+msgid "Turni"
+msgstr ""
+
+#: routes/admin/competition/preparazione.py:30
+#: templates/admin/venues_list.html:33
+#: templates/components/_gara_edit_form.html:231
+#: templates/components/_new_gara_modal.html:124
+#: templates/direttore/_fase_gioco.html:146
+#: templates/direttore/_fase_gioco.html:235
+#: templates/direttore/_fase_iscrizioni.html:122
+#: templates/direttore/_fase_preparazione.html:124
+#: templates/player/venues.html:29 templates/public/schermo_sala.html:103
+msgid "Tavoli"
+msgstr ""
+
+#: routes/admin/competition/preparazione.py:31 templates/base.html:256
+#: templates/base.html:545 templates/challenge/catalog.html:3
+#: templates/challenge/catalog.html:8 templates/components/_gara_info.html:69
+#: templates/components/_history_campionati_tab.html:96
+#: templates/components/_history_campionati_tab.html:97
+#: templates/components/_player_challenge_statistics.html:13
+#: templates/components/_unified_cards.html:52
+#: templates/player/challenge_detail.html:3 templates/player/history.html:31
+msgid "Esercizi"
+msgstr ""
+
+#: routes/admin/competition/preparazione.py:32
+#: templates/admin/campionato_detail.html:528
+msgid "Direttori"
+msgstr ""
+
+#: routes/admin/competition/preparazione.py:33
+#: templates/admin/campionato_detail.html:31
+#: templates/admin/campionato_detail.html:533
+#: templates/admin/campionato_vetrina.html:8
+#: templates/admin/gara_vetrina.html:10 templates/admin/gara_vetrina.html:14
+#: templates/direttore/_fase_preparazione.html:99
+#: templates/direttore/_fase_preparazione.html:130
+#: templates/direttore/impostazioni.html:45
+msgid "Vetrina"
 msgstr ""
 
 #: routes/admin/competition/prova.py:47
@@ -3726,31 +4186,31 @@ msgstr ""
 msgid "X a tavolino"
 msgstr ""
 
-#: routes/player/exports.py:542
+#: routes/player/exports.py:545
 msgid "Export GDPR Pronto"
 msgstr ""
 
-#: routes/player/exports.py:544
+#: routes/player/exports.py:547
 msgid "Il tuo archivio dati è pronto per il download. Il link scadrà tra 24 ore."
 msgstr ""
 
-#: routes/player/exports.py:546
+#: routes/player/exports.py:549
 msgid "Scarica"
 msgstr ""
 
-#: routes/player/exports.py:547
+#: routes/player/exports.py:550
 msgid "Errore Export GDPR"
 msgstr ""
 
-#: routes/player/exports.py:566
+#: routes/player/exports.py:569
 msgid "Export avviato. Riceverai una notifica quando sarà pronto per il download."
 msgstr ""
 
-#: routes/player/exports.py:591
+#: routes/player/exports.py:594
 msgid "Il file di export non esiste o è scaduto."
 msgstr ""
 
-#: routes/player/exports.py:598
+#: routes/player/exports.py:601
 msgid "Il file di export è scaduto. Richiedi un nuovo export."
 msgstr ""
 
@@ -3903,17 +4363,6 @@ msgstr ""
 
 #: templates/base.html:251
 msgid "Sale Biliardo"
-msgstr ""
-
-#: templates/base.html:256 templates/base.html:545
-#: templates/challenge/catalog.html:3 templates/challenge/catalog.html:8
-#: templates/components/_gara_info.html:69
-#: templates/components/_history_campionati_tab.html:96
-#: templates/components/_history_campionati_tab.html:97
-#: templates/components/_player_challenge_statistics.html:13
-#: templates/components/_unified_cards.html:52
-#: templates/player/challenge_detail.html:3 templates/player/history.html:31
-msgid "Esercizi"
 msgstr ""
 
 #: templates/base.html:261 templates/exam/catalog.html:3
@@ -4330,7 +4779,7 @@ msgstr ""
 #: templates/components/_history_matches_tab.html:19
 #: templates/components/_history_matches_tab.html:57
 #: templates/components/_match_cards_mobile.html:8
-#: templates/components/_tessera_gara.html:147
+#: templates/components/_tessera_gara.html:164
 #: templates/direttore/_fase_conclusa.html:108 templates/gara_bracket.html:21
 #: templates/individual_match/admin_overview.html:20
 #: templates/player/history.html:22
@@ -4342,8 +4791,8 @@ msgstr ""
 #: templates/components/_history_campionati_tab.html:105
 #: templates/components/_history_gare_tab.html:116
 #: templates/components/_playoff_invitations.html:58
-#: templates/components/_tessera_gara.html:356
-#: templates/components/_tessera_gara.html:371
+#: templates/components/_tessera_gara.html:361
+#: templates/components/_tessera_gara.html:366
 #: templates/components/_unified_cards.html:108
 #: templates/components/_unified_cards.html:120
 #: templates/gamification/dashboard.html:51 templates/gara_detail.html:18
@@ -4357,19 +4806,6 @@ msgstr ""
 
 #: templates/gara_detail.html:20
 msgid "Dettaglio Pubblico"
-msgstr ""
-
-#: templates/admin/campionato_detail.html:234
-#: templates/admin/campionato_wizard_step2.html:82
-#: templates/admin/gara_create_standalone.html:454
-#: templates/admin/gara_create_standalone.html:518
-#: templates/components/_campionato_details_info.html:93
-#: templates/components/_gara_edit_form.html:356
-#: templates/components/_gara_info.html:27
-#: templates/components/_round_navigation.html:4
-#: templates/direttore/preparazione/_turni.html:146
-#: templates/gara_detail.html:47
-msgid "Turni"
 msgstr ""
 
 #: templates/admin/amalfi_classification.html:17
@@ -5224,16 +5660,6 @@ msgstr ""
 msgid "Modifica"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:31
-#: templates/admin/campionato_detail.html:533
-#: templates/admin/campionato_vetrina.html:8
-#: templates/admin/gara_vetrina.html:10 templates/admin/gara_vetrina.html:14
-#: templates/direttore/_fase_preparazione.html:99
-#: templates/direttore/_fase_preparazione.html:130
-#: templates/direttore/impostazioni.html:45
-msgid "Vetrina"
-msgstr ""
-
 #: templates/admin/campionato_detail.html:37
 msgid "Passa ai playoff"
 msgstr ""
@@ -5734,10 +6160,6 @@ msgstr ""
 msgid "nessun playoff previsto"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:528
-msgid "Direttori"
-msgstr ""
-
 #: templates/admin/campionato_detail.html:529
 #, python-format
 msgid "%(n)d direttore"
@@ -5799,14 +6221,14 @@ msgid ""
 "raggiungibile. Vuoi terminare comunque?"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:685
+#: templates/admin/campionato_detail.html:686
 #: templates/admin/gara_edit.html:164
 #: templates/components/_new_gara_modal.html:666
 #, python-brace-format
 msgid "Esatto numero: {distance} triangoli totali"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:686
+#: templates/admin/campionato_detail.html:687
 #: templates/admin/gara_edit.html:166
 #: templates/components/_new_gara_modal.html:667
 #, python-brace-format
@@ -5987,20 +6409,10 @@ msgstr ""
 msgid "Abbinamenti casuali con anti-rematch."
 msgstr ""
 
-#: templates/admin/campionato_wizard_step1.html:88
-#: templates/components/_tabellone_macros.html:129
-msgid "Eliminazione diretta"
-msgstr ""
-
 #: templates/admin/campionato_wizard_step1.html:89
 msgid ""
 "Chi perde è fuori. Il tabellone si dimensiona sugli iscritti e le teste "
 "di serie restano lontane fino in fondo."
-msgstr ""
-
-#: templates/admin/campionato_wizard_step1.html:95
-#: templates/components/_tabellone_macros.html:130
-msgid "Doppio KO"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:96
@@ -6377,7 +6789,7 @@ msgstr[1] ""
 
 #: templates/admin/gara_challenge_classification.html:136
 #: templates/challenge/_challenge_card.html:63
-#: templates/components/_tessera_gara.html:155
+#: templates/components/_tessera_gara.html:172
 msgid "giocatori"
 msgstr ""
 
@@ -7848,17 +8260,6 @@ msgstr ""
 msgid "Tutte le Sale Biliardo"
 msgstr ""
 
-#: templates/admin/venues_list.html:33
-#: templates/components/_gara_edit_form.html:231
-#: templates/components/_new_gara_modal.html:124
-#: templates/direttore/_fase_gioco.html:146
-#: templates/direttore/_fase_gioco.html:235
-#: templates/direttore/_fase_iscrizioni.html:122
-#: templates/direttore/_fase_preparazione.html:124
-#: templates/player/venues.html:29 templates/public/schermo_sala.html:103
-msgid "Tavoli"
-msgstr ""
-
 #: templates/admin/venues_list.html:34 templates/player/venue_detail.html:198
 msgid "Utenti Attivi"
 msgstr ""
@@ -7889,7 +8290,7 @@ msgid "Dati incompleti"
 msgstr ""
 
 #: templates/admin/venues_list.html:111
-#: templates/components/_tessera_gara.html:317
+#: templates/components/_tessera_gara.html:334
 #: templates/player/venue_detail.html:17 templates/player/venues.html:42
 msgid "Gestisci"
 msgstr ""
@@ -8431,7 +8832,7 @@ msgstr ""
 #: templates/components/_match_header.html:80
 #: templates/components/_match_result_row.html:121
 #: templates/components/_match_result_row.html:146
-#: templates/components/_tessera_gara.html:167
+#: templates/components/_tessera_gara.html:184
 #: templates/direttore/_card_partita.html:196
 #: templates/direttore/_card_partita.html:214
 #: templates/direttore/_card_partita.html:221
@@ -9161,8 +9562,8 @@ msgstr ""
 #: templates/components/_match_scoreboard.html:240
 #: templates/components/_round_navigation.html:22
 #: templates/components/_round_navigation.html:34
-#: templates/components/_tessera_gara.html:151
-#: templates/components/_tessera_gara.html:165
+#: templates/components/_tessera_gara.html:168
+#: templates/components/_tessera_gara.html:182
 #: templates/components/_user_recent_matches_table.html:15
 #: templates/public/garas_list.html:14 templates/public/garas_list.html:37
 #: templates/public/schermo_sala.html:48
@@ -9945,16 +10346,6 @@ msgstr ""
 msgid "Esercizi settimanali"
 msgstr ""
 
-#: templates/components/_gamification_labels.html:36
-#: templates/gamification/admin/quest_form.html:34
-msgid "Settimanale"
-msgstr ""
-
-#: templates/components/_gamification_labels.html:37
-#: templates/gamification/admin/quest_form.html:37
-msgid "Mensile"
-msgstr ""
-
 #: templates/components/_gamification_labels.html:38
 msgid "Speciale"
 msgstr ""
@@ -10224,7 +10615,7 @@ msgstr ""
 
 #: templates/components/_gara_header.html:57
 #: templates/components/_tessera_campionato.html:60
-#: templates/components/_tessera_gara.html:108
+#: templates/components/_tessera_gara.html:125
 msgid "Di prova"
 msgstr ""
 
@@ -10249,7 +10640,7 @@ msgid "Accoppiamento"
 msgstr ""
 
 #: templates/components/_gara_info.html:39
-#: templates/components/_tessera_gara.html:249
+#: templates/components/_tessera_gara.html:266
 msgid "in lista"
 msgstr ""
 
@@ -10267,7 +10658,7 @@ msgid "senza limite"
 msgstr ""
 
 #: templates/components/_gara_info.html:50
-#: templates/components/_tessera_gara.html:243
+#: templates/components/_tessera_gara.html:260
 #: templates/components/_unified_cards.html:57
 msgid "Gratuita"
 msgstr ""
@@ -10432,7 +10823,7 @@ msgid "Chi arriva adesso finisce in lista d’attesa."
 msgstr ""
 
 #: templates/components/_gara_lista_attesa.html:17
-#: templates/components/_tessera_gara.html:100
+#: templates/components/_tessera_gara.html:117
 #: templates/components/_unified_cards.html:139 utils/jinja.py:437
 msgid "Lista d'attesa"
 msgstr ""
@@ -10510,7 +10901,7 @@ msgid "Concluso"
 msgstr ""
 
 #: templates/components/_gara_my_match.html:13
-#: templates/components/_tessera_gara.html:164
+#: templates/components/_tessera_gara.html:181
 #: templates/direttore/_card_partita.html:200
 msgid "La tua partita"
 msgstr ""
@@ -10623,9 +11014,8 @@ msgstr ""
 
 #: templates/components/_guest_info.html:29
 #: templates/components/_nearby_gare.html:43
-#: templates/components/_tessera_gara.html:337
-#: templates/components/_tessera_gara.html:351
-#: templates/components/_tessera_gara.html:365
+#: templates/components/_tessera_gara.html:72
+#: templates/components/_tessera_gara.html:356
 #: templates/components/_unified_cards.html:141
 #: templates/public/vetrina_gara.html:166
 msgid "Iscriviti"
@@ -11534,7 +11924,7 @@ msgid "Annullato"
 msgstr ""
 
 #: templates/components/_modify_dates_modal.html:13
-#: templates/components/_tessera_gara.html:322
+#: templates/components/_tessera_gara.html:339
 #: templates/direttore/_fase_iscrizioni.html:72
 msgid "Estendi le iscrizioni"
 msgstr ""
@@ -11799,7 +12189,7 @@ msgstr ""
 
 #: templates/components/_open_inscriptions_modal.html:15
 #: templates/components/_open_inscriptions_modal.html:41
-#: templates/components/_tessera_gara.html:320
+#: templates/components/_tessera_gara.html:337
 #: templates/direttore/_fase_preparazione.html:44
 msgid "Apri le iscrizioni"
 msgstr ""
@@ -11901,7 +12291,7 @@ msgstr ""
 
 #: templates/components/_player_inscription_info.html:10
 #: templates/components/_tessera_campionato.html:57
-#: templates/components/_tessera_gara.html:102
+#: templates/components/_tessera_gara.html:119
 #: templates/public/campionatos_list.html:58
 msgid "Iscritto"
 msgstr ""
@@ -12336,7 +12726,7 @@ msgid "Sfida a due"
 msgstr ""
 
 #: templates/components/_sfide_in_corso.html:46
-#: templates/components/_tessera_gara.html:181
+#: templates/components/_tessera_gara.html:198
 msgid "vs"
 msgstr ""
 
@@ -12586,7 +12976,7 @@ msgstr ""
 
 #: templates/components/_tabellone_macros.html:52
 #: templates/components/_tabellone_macros.html:60
-#: templates/components/_tessera_gara.html:323
+#: templates/components/_tessera_gara.html:340
 #: templates/direttore/_fase_gioco.html:129
 #, python-format
 msgid "Avvia il turno %(n)s"
@@ -12771,10 +13161,6 @@ msgstr ""
 msgid "esce al turno %(num)s"
 msgstr ""
 
-#: templates/components/_tabellone_macros.html:126
-msgid "Amalfi"
-msgstr ""
-
 #: templates/components/_tessera_campionato.html:21
 msgid "triangolo"
 msgid_plural "triangoli"
@@ -12807,21 +13193,21 @@ msgid "nessuna gara programmata"
 msgstr ""
 
 #: templates/components/_tessera_campionato.html:53
-#: templates/components/_tessera_gara.html:95
+#: templates/components/_tessera_gara.html:112
 #: templates/public/campionatos_list.html:57
 #: templates/public/storico_gare.html:87
 msgid "Hai diretto"
 msgstr ""
 
 #: templates/components/_tessera_campionato.html:54
-#: templates/components/_tessera_gara.html:96
+#: templates/components/_tessera_gara.html:113
 #: templates/public/campionatos_list.html:58
 #: templates/public/storico_gare.html:89
 msgid "Hai giocato"
 msgstr ""
 
 #: templates/components/_tessera_campionato.html:56
-#: templates/components/_tessera_gara.html:98
+#: templates/components/_tessera_gara.html:115
 #: templates/public/campionatos_list.html:57
 msgid "Dirigi"
 msgstr ""
@@ -12853,7 +13239,7 @@ msgid "Le iscrizioni chiudono il"
 msgstr ""
 
 #: templates/components/_tessera_campionato.html:103
-#: templates/components/_tessera_gara.html:262
+#: templates/components/_tessera_gara.html:279
 msgid "Le iscrizioni aprono il"
 msgstr ""
 
@@ -12873,165 +13259,162 @@ msgstr ""
 msgid "Iscrizioni programmate"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:76
+#: templates/components/_tessera_gara.html:68
+msgid "Esci dalla lista"
+msgstr ""
+
+#: templates/components/_tessera_gara.html:68
+msgid "Disiscriviti"
+msgstr ""
+
+#: templates/components/_tessera_gara.html:72
+msgid "Mettiti in lista"
+msgstr ""
+
+#: templates/components/_tessera_gara.html:93
 msgid "Gara singola"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:118
+#: templates/components/_tessera_gara.html:135
 #: templates/components/_unified_cards.html:88
 msgid "Podio"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:131
+#: templates/components/_tessera_gara.html:148
 msgid "La classifica finale non è ancora stata pubblicata."
 msgstr ""
 
-#: templates/components/_tessera_gara.html:135
+#: templates/components/_tessera_gara.html:152
 #, python-format
 msgid "Sei arrivato %(pos)s° su %(tot)s"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:137
+#: templates/components/_tessera_gara.html:154
 #, python-format
 msgid "%(vinte)s vittorie su %(giocate)s"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:182
+#: templates/components/_tessera_gara.html:199
 msgid "Riposi questo turno"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:193
+#: templates/components/_tessera_gara.html:210
 msgid ""
 "Il tavolo non è ancora assegnato: lo assegna la gara appena se ne libera "
 "uno."
 msgstr ""
 
-#: templates/components/_tessera_gara.html:205
+#: templates/components/_tessera_gara.html:222
 #, python-format
 msgid "Classifica provvisoria dopo il turno %(n)s"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:207
+#: templates/components/_tessera_gara.html:224
 #, python-format
 msgid "Sei %(pos)s° su %(tot)s"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:212
+#: templates/components/_tessera_gara.html:229
 msgid "Altre partite del turno"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:212
+#: templates/components/_tessera_gara.html:229
 msgid "Ai tavoli adesso"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:218
+#: templates/components/_tessera_gara.html:235
 #, python-format
 msgid "e un'altra partita"
 msgid_plural "e altre %(num)s partite"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/components/_tessera_gara.html:251
+#: templates/components/_tessera_gara.html:268
 #, python-format
 msgid "%(num)s libero"
 msgid_plural "%(num)s liberi"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/components/_tessera_gara.html:258
+#: templates/components/_tessera_gara.html:275
 #: templates/components/_unified_cards.html:74
 msgid "Chiudono il"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:271
+#: templates/components/_tessera_gara.html:288
 msgid "Serve un numero pari"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:273
+#: templates/components/_tessera_gara.html:290
 msgid ""
 "Questa gara non prevede la X, quindi i giocatori devono essere in numero "
 "pari e l'ultimo iscritto aspetta. Appena si iscrive qualcun altro entri "
 "tu."
 msgstr ""
 
-#: templates/components/_tessera_gara.html:276
+#: templates/components/_tessera_gara.html:293
 msgid "La gara è al completo"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:278
+#: templates/components/_tessera_gara.html:295
 msgid ""
 "Se qualcuno si ritira entri tu, in ordine di posizione: succede da solo, "
 "non devi rifare l'iscrizione."
 msgstr ""
 
-#: templates/components/_tessera_gara.html:289
+#: templates/components/_tessera_gara.html:306
 msgid "Non ci sono ancora abbastanza iscritti"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:291
+#: templates/components/_tessera_gara.html:308
 #, python-format
 msgid "Ne servono almeno %(min)s, per ora sono %(now)s."
 msgstr ""
 
-#: templates/components/_tessera_gara.html:298
+#: templates/components/_tessera_gara.html:315
 #, python-format
 msgid "Il turno %(n)s aspetta"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:298
+#: templates/components/_tessera_gara.html:315
 msgid "La chiusura della gara aspetta"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:300
+#: templates/components/_tessera_gara.html:317
 #, python-format
 msgid "Mancano ancora: %(cosa)s."
 msgstr ""
 
-#: templates/components/_tessera_gara.html:310
+#: templates/components/_tessera_gara.html:327
 msgid "Risultati"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:321
+#: templates/components/_tessera_gara.html:338
 #: templates/direttore/_avvia_gara.html:27
 #: templates/direttore/_avvia_gara.html:94 templates/direttore/_macros.html:50
 msgid "Avvia la gara"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:324
+#: templates/components/_tessera_gara.html:341
 #: templates/direttore/_fase_gioco.html:59
 msgid "Avvia lo spareggio"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:325
+#: templates/components/_tessera_gara.html:342
 #: templates/direttore/_fase_gioco.html:63
 #: templates/direttore/_fase_spareggio.html:38
 msgid "Termina la gara"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:333
-#: templates/components/_tessera_gara.html:361
-msgid "Esci dalla lista"
-msgstr ""
-
-#: templates/components/_tessera_gara.html:333
-#: templates/components/_tessera_gara.html:361
-msgid "Disiscriviti"
-msgstr ""
-
-#: templates/components/_tessera_gara.html:337
-#: templates/components/_tessera_gara.html:365
-msgid "Mettiti in lista"
-msgstr ""
-
-#: templates/components/_tessera_gara.html:343
+#: templates/components/_tessera_gara.html:348
 msgid "Segui la diretta"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:351
+#: templates/components/_tessera_gara.html:356
 msgid "Mettiti in lista d'attesa"
 msgstr ""
 
-#: templates/components/_tessera_gara.html:375
+#: templates/components/_tessera_gara.html:377
 msgid "Serve un account gratuito: ci vogliono trenta secondi"
 msgstr ""
 
@@ -17424,10 +17807,6 @@ msgstr ""
 msgid "Tipo Quest"
 msgstr ""
 
-#: templates/gamification/admin/quest_form.html:40
-msgid "Evento Speciale"
-msgstr ""
-
 #: templates/gamification/admin/quest_form.html:57
 msgid "Iscrizioni Tornei"
 msgstr ""
@@ -20377,10 +20756,6 @@ msgstr ""
 
 #: utils/status_ui.py:98 utils/status_ui.py:143
 msgid "Setup"
-msgstr ""
-
-#: utils/status_ui.py:99 utils/status_ui.py:146
-msgid "Iscrizioni Aperte"
 msgstr ""
 
 #: utils/status_ui.py:100 utils/status_ui.py:148 utils/status_ui.py:173

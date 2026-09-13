@@ -4,14 +4,23 @@ Notification Factory for standardizing notification creation patterns.
 This module provides a centralized factory for creating notifications with
 standardized error handling, logging, and common patterns used throughout
 the application.
+
+I testi arrivano **da comporre** (ADR-062): stringhe pigre (``lazy_gettext``)
+o funzioni senza argomenti, che ``NotificationService.create_notification``
+risolve nella lingua di ciascun destinatario. Un testo solo per N destinatari
+produce così N traduzioni, e nessuno legge nella lingua di chi ha premuto il
+pulsante.
 """
 
 from __future__ import annotations
 
 import logging
+from datetime import datetime
 from typing import List, Optional, Dict, Any, Union, TYPE_CHECKING
 
-from flask_babel import _
+from flask_babel import gettext as _, lazy_gettext as _l
+
+from utils.lingua import TestoNotifica, data_ora_per
 
 from .services import NotificationService
 from .models import NotificationType, NotificationPriority
@@ -34,20 +43,20 @@ class NotificationFactory:
     @staticmethod
     def create_admin_notification(
         admin_user_ids: List[int],
-        title: str,
-        message: str,
+        title: TestoNotifica,
+        message: TestoNotifica,
         priority: NotificationPriority = NotificationPriority.NORMAL,
         related_entities: Optional[Dict[str, Any]] = None,
         action_url: Optional[str] = None,
-        action_text: Optional[str] = None,
+        action_text: Optional[TestoNotifica] = None,
     ) -> List[Optional[Notification]]:
         """
         Create notifications for multiple admin users.
 
         Args:
             admin_user_ids: List of admin user IDs to notify
-            title: Notification title
-            message: Notification message
+            title: Notification title, da comporre per ciascun destinatario
+            message: Notification message, da comporre per ciascun destinatario
             priority: Notification priority level
             related_entities: Optional related data
             action_url: Optional action URL
@@ -71,7 +80,7 @@ class NotificationFactory:
                     action_text=action_text,
                 )
                 notifications.append(notification)
-                logger.debug(f"Created admin notification for user {admin_id}: {title}")
+                logger.debug("Created admin notification for user %s", admin_id)
             except Exception as e:
                 logger.error(
                     f"Failed to create admin notification for user {admin_id}: {e}",
@@ -85,12 +94,12 @@ class NotificationFactory:
     def create_bulk_notification(
         user_ids: List[int],
         notification_type: NotificationType,
-        title: str,
-        message: str,
+        title: TestoNotifica,
+        message: TestoNotifica,
         priority: NotificationPriority = NotificationPriority.NORMAL,
         related_entities: Optional[Dict[str, Any]] = None,
         action_url: Optional[str] = None,
-        action_text: Optional[str] = None,
+        action_text: Optional[TestoNotifica] = None,
         continue_on_error: bool = True,
     ) -> List[Optional[Notification]]:
         """
@@ -99,8 +108,8 @@ class NotificationFactory:
         Args:
             user_ids: List of user IDs to notify
             notification_type: Type of notification
-            title: Notification title
-            message: Notification message
+            title: Notification title, da comporre per ciascun destinatario
+            message: Notification message, da comporre per ciascun destinatario
             priority: Notification priority level
             related_entities: Optional related data
             action_url: Optional action URL
@@ -126,7 +135,9 @@ class NotificationFactory:
                     action_text=action_text,
                 )
                 notifications.append(notification)
-                logger.debug(f"Created notification for user {user_id}: {title}")
+                logger.debug(
+                    "Created %s notification for user %s", notification_type, user_id
+                )
             except Exception as e:
                 failed_count += 1
                 logger.error(
@@ -162,7 +173,7 @@ class NotificationFactory:
     def create_tournament_notification(
         user_ids: List[int],
         tournament_name: str,
-        message_template: str,
+        message_template: TestoNotifica,
         priority: NotificationPriority = NotificationPriority.NORMAL,
         tournament_id: Optional[int] = None,
     ) -> List[Optional[Notification]]:
@@ -172,20 +183,25 @@ class NotificationFactory:
         Args:
             user_ids: List of user IDs to notify
             tournament_name: Name of the tournament
-            message_template: Message template (will be formatted with tournament_name)
+            message_template: il messaggio. Una stringa semplice con
+                ``{tournament_name}`` viene formattata col nome della gara; un
+                testo pigro o una funzione porta già i suoi parametri e si
+                compone nella lingua di ciascun destinatario (ADR-062)
             priority: Notification priority level
             tournament_id: Optional tournament ID for action URL
 
         Returns:
             List of created notifications
         """
-        message = message_template.format(tournament_name=tournament_name)
+        message: TestoNotifica = message_template
+        if isinstance(message_template, str):
+            message = message_template.format(tournament_name=tournament_name)
         action_url = f"/gara/{tournament_id}" if tournament_id else None
 
         return NotificationFactory.create_bulk_notification(
             user_ids=user_ids,
             notification_type=NotificationType.TOURNAMENT_REGISTRATION,
-            title="Aggiornamento Gara",
+            title=_l("Aggiornamento Gara"),
             message=message,
             priority=priority,
             related_entities=(
@@ -194,7 +210,7 @@ class NotificationFactory:
                 else None
             ),
             action_url=action_url,
-            action_text="Visualizza Gara" if action_url else None,
+            action_text=_l("Visualizza Gara") if action_url else None,
         )
 
     @staticmethod
@@ -203,7 +219,7 @@ class NotificationFactory:
         match_type: str,  # "proposal", "accepted", "completed", etc.
         player_names: List[str],
         location_name: Optional[str] = None,
-        scheduled_time: Optional[str] = None,
+        scheduled_time: Optional[Union[str, datetime]] = None,
         notes: Optional[str] = None,
         match_id: Optional[int] = None,
         proposal_id: Optional[int] = None,
@@ -214,9 +230,12 @@ class NotificationFactory:
         Args:
             user_id: User ID to notify
             match_type: Type of match event ("proposal", "accepted", "completed")
-            player_names: Names of players involved
+            player_names: Names of players involved; un nome vuoto diventa
+                «Un giocatore», nella lingua del destinatario
             location_name: Optional location name
-            scheduled_time: Optional scheduled time
+            scheduled_time: orario della partita. Un ``datetime`` (naive UTC)
+                si mostra nel fuso del destinatario (ADR-043); una stringa passa
+                com'è
             notes: Optional additional notes
             match_id: Optional match ID for action URL
             proposal_id: Optional proposal ID for action URL
@@ -231,35 +250,39 @@ class NotificationFactory:
             "completed": NotificationType.TOURNAMENT_RESULTS,  # closest available
         }
 
-        title_map = {
-            "proposal": "Nuova Proposta di Partita",
-            "accepted": "Proposta Accettata!",
-            "completed": "Partita Completata",
+        titoli = {
+            "proposal": _l("Nuova Proposta di Partita"),
+            "accepted": _l("Proposta Accettata!"),
+            "completed": _l("Partita Completata"),
         }
 
         notification_type = type_map.get(match_type, NotificationType.MATCH_PROPOSAL)
-        title = title_map.get(match_type, "Aggiornamento Partita")
+        title = titoli.get(match_type, _l("Aggiornamento Partita"))
 
-        # Build message
-        players_text = (
-            " vs ".join(player_names) if len(player_names) > 1 else player_names[0]
-        )
-        location_text = f" presso {location_name}" if location_name else ""
-        time_text = f" il {scheduled_time}" if scheduled_time else ""
-
-        message = f"{players_text}{location_text}{time_text}"
-        if notes:
-            message += f". {notes}"
+        def message() -> str:
+            # Si compone per il destinatario: lingua (ADR-062) e fuso (ADR-043).
+            nomi = [nome or _("Un giocatore") for nome in player_names] or [
+                _("Un giocatore")
+            ]
+            parti = [" vs ".join(nomi)]
+            if location_name:
+                parti.append(_("presso %(luogo)s", luogo=location_name))
+            if scheduled_time:
+                parti.append(
+                    _("il %(quando)s", quando=data_ora_per(user_id, scheduled_time))
+                )
+            testo = " ".join(parti)
+            return f"{testo}. {notes}" if notes else testo
 
         # Determine action URL
         action_url = None
         action_text = None
         if match_id:
             action_url = f"/match/matches/{match_id}"
-            action_text = "Visualizza Partita"
+            action_text = _l("Visualizza Partita")
         elif proposal_id:
             action_url = f"/match/proposals/{proposal_id}"
-            action_text = "Visualizza Proposta"
+            action_text = _l("Visualizza Proposta")
 
         try:
             return NotificationService.create_notification(
@@ -288,8 +311,8 @@ class NotificationFactory:
     @staticmethod
     def create_account_update_notification(
         user_id: int,
-        title: str,
-        message: str,
+        title: TestoNotifica,
+        message: TestoNotifica,
         priority: NotificationPriority = NotificationPriority.NORMAL,
         update_type: Optional[str] = None,
         related_entities: Optional[Dict[str, Any]] = None,
@@ -299,8 +322,8 @@ class NotificationFactory:
 
         Args:
             user_id: User ID to notify
-            title: Notification title
-            message: Notification message
+            title: Notification title, da comporre per il destinatario
+            message: Notification message, da comporre per il destinatario
             priority: Notification priority level
             update_type: Type of account update
             related_entities: Optional related data
@@ -331,19 +354,19 @@ class NotificationFactory:
     @staticmethod
     def create_system_announcement(
         user_ids: List[int],
-        title: str,
-        message: str,
+        title: TestoNotifica,
+        message: TestoNotifica,
         priority: NotificationPriority = NotificationPriority.NORMAL,
         action_url: Optional[str] = None,
-        action_text: Optional[str] = None,
+        action_text: Optional[TestoNotifica] = None,
     ) -> List[Optional[Notification]]:
         """
         Create system announcement for multiple users.
 
         Args:
             user_ids: List of user IDs to notify
-            title: Announcement title
-            message: Announcement message
+            title: Announcement title, da comporre per ciascun destinatario
+            message: Announcement message, da comporre per ciascun destinatario
             priority: Notification priority level
             action_url: Optional action URL
             action_text: Optional action button text
@@ -366,7 +389,7 @@ class NotificationFactory:
         user_id: int,
         gara_id: int,
         gara_name: str,
-        gara_date: str,
+        gara_date: TestoNotifica,
         enrolled_by: str,
     ) -> Optional[Notification]:
         """
@@ -376,13 +399,14 @@ class NotificationFactory:
             user_id: ID dell'utente iscritto
             gara_id: ID della gara
             gara_name: Nome della gara
-            gara_date: Data della gara (formattata)
+            gara_date: Data della gara (formattata), o un testo pigro quando
+                la data non c'è ancora
             enrolled_by: Nome del director che ha iscritto l'utente
 
         Returns:
             Notifica creata o None se fallito
         """
-        message = _(
+        message = _l(
             "%(enrolled_by)s ti ha iscritto alla gara %(gara_name)s del %(gara_date)s",
             enrolled_by=enrolled_by,
             gara_name=gara_name,
@@ -393,7 +417,7 @@ class NotificationFactory:
             return NotificationService.create_notification(
                 user_id=user_id,
                 notification_type=NotificationType.TOURNAMENT_REGISTRATION,
-                title=_("Iscrizione a Gara"),
+                title=_l("Iscrizione a Gara"),
                 message=message,
                 priority=NotificationPriority.NORMAL,
                 related_entities={
