@@ -5,10 +5,18 @@ from flask import (
     request,
     jsonify,
 )
+from flask_babel import gettext as _
 from flask_login import current_user, login_required
 
+from models.base import db
 from models.competition.trio_service import TrioMatchService
+from models.exceptions import http_status_for_exception
 from utils import trio_manager_required
+from utils.card_partita import (
+    annuncia_punteggio,
+    rifiuto_del_dominio,
+    rifiuto_punteggio_card,
+)
 from utils.route_helpers import safe_json_error
 
 from . import competition_bp
@@ -105,9 +113,21 @@ def trio_reset(trio_id):
         return jsonify({"success": True, "message": "Trio resettato con successo"})
 
     except ValueError as ve:
-        return jsonify({"error": str(ve)}), 500
+        # Un rifiuto del dominio e' una risposta, non un guasto del server:
+        # fino al 2026-09-13 qui usciva un 500.
+        return (
+            jsonify({"success": False, "error": str(ve)}),
+            http_status_for_exception(ve),
+        )
     except Exception as e:
         return safe_json_error(e, "trio reset")
+
+
+def _trio_e_match(trio_id):
+    from models.match.models import TrioMatch
+
+    trio = db.session.get(TrioMatch, trio_id)
+    return trio, (trio.match if trio else None)
 
 
 @competition_bp.route("/trio/<int:trio_id>/set_result", methods=["POST"])
@@ -115,6 +135,16 @@ def trio_reset(trio_id):
 @trio_manager_required
 def trio_set_result(trio_id):
     """Imposta risultato diretto per trio (Quick Result)"""
+    trio, match = _trio_e_match(trio_id)
+    if match is not None:
+        # Fino al 2026-09-13 questa route non guardava ne' il turno bloccato ne'
+        # la partita chiusa: un risultato secco riscriveva un trio agli atti.
+        rifiuto = rifiuto_punteggio_card(
+            match,
+            _("La partita è chiusa: per cambiarla azzerala dal segnapunti."),
+        )
+        if rifiuto is not None:
+            return rifiuto
     try:
         player1_racks = int(request.form["player1_racks"])
         player2_racks = int(request.form["player2_racks"])
@@ -125,13 +155,12 @@ def trio_set_result(trio_id):
         )
 
         # Aggiorna progressione turno
-        from models.match.models import TrioMatch
-
-        trio = TrioMatch.query.get(trio_id)
-        if trio and trio.match and trio.match.gara_id:
+        trio, match = _trio_e_match(trio_id)
+        if match is not None and match.gara_id:
             from models.competition.round_service import RoundService
 
-            RoundService.update_round_progression(trio.match.gara_id)
+            RoundService.update_round_progression(match.gara_id)
+            annuncia_punteggio(match, current_user.id, trio_id=trio_id)
 
         return jsonify(result)
 
@@ -139,3 +168,66 @@ def trio_set_result(trio_id):
         return jsonify({"error": str(ve)}), 400
     except Exception as e:
         return safe_json_error(e, "trio set result")
+
+
+@competition_bp.route("/trio/<int:trio_id>/punteggio", methods=["POST"])
+@login_required
+@trio_manager_required
+def trio_punteggio(trio_id):
+    """I triangoli vinti dagli stepper della card del trio: risponde in JSON.
+
+    Stesse guardie di `punteggio_partita`: partita chiusa o turno bloccato 409,
+    punteggio impossibile 400. Al totale dei triangoli il trio si chiude e il
+    tavolo si libera. La risposta dice anche quali «+» restano accesi
+    (`piu`), perche' dipendono dall'ordine del girone e non solo dai numeri.
+    """
+    from models.match.trio_punteggio import piu_ammessi
+    from models.match.trio_scoring_service import TrioScoringService
+    from models.status_enum import MatchStatus
+
+    trio, match = _trio_e_match(trio_id)
+    if trio is None or match is None:
+        return jsonify({"success": False, "error": str(_("Partita non trovata"))}), 404
+    try:
+        punti = (
+            int(request.form["player1_racks"]),
+            int(request.form["player2_racks"]),
+            int(request.form["player3_racks"]),
+        )
+    except (KeyError, ValueError):
+        return (
+            jsonify({"success": False, "error": str(_("Punteggio non valido."))}),
+            400,
+        )
+
+    rifiuto = rifiuto_punteggio_card(
+        match, _("La partita è chiusa: per cambiarla azzerala dal segnapunti.")
+    )
+    if rifiuto is not None:
+        return rifiuto
+
+    try:
+        TrioScoringService.set_racks_won(trio_id, punti, current_user.id)
+    except ValueError as ve:
+        return rifiuto_del_dominio(ve)
+
+    trio, match = _trio_e_match(trio_id)
+    assert trio is not None and match is not None
+    finita = MatchStatus.is_finished(match.status)
+    if finita and match.gara_id:
+        from models.competition.round_service import RoundService
+
+        RoundService.update_round_progression(match.gara_id)
+    annuncia_punteggio(match, current_user.id, trio_id=trio_id)
+    attuali = trio.player_racks_list
+    return jsonify(
+        {
+            "success": True,
+            "match_id": match.id,
+            "punti": attuali,
+            "piu": piu_ammessi(trio.trio_config, attuali),
+            "finished": finita,
+            "at_distance": match.is_at_distance and not finita,
+            "winner_id": trio.winner_id,
+        }
+    )

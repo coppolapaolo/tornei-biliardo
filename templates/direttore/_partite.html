@@ -26,7 +26,13 @@
   <div class="c7-rows__main">
     <div class="c7-rows__title c7-riga-partita__nomi">
       {% if match.is_trio and match.trio_match %}
-      {{ match.trio_match.player1.username }} · {{ match.trio_match.player2.username }} · {{ match.trio_match.player3.username }}
+      {# Il trio: tre nomi, uno sopra l'altro sul telefono come le coppie. Chi
+         non ha vinto si spegne; nel pareggio nessuno. #}
+      {% set _tm = match.trio_match %}
+      {% for _g in (_tm.player1, _tm.player2, _tm.player3) %}
+      {% if not loop.first %}<span class="c7-riga-partita__sep">·</span>{% endif %}
+      <span{% if _finita and match.winner_id and match.winner_id != _g.id %} class="c7-dim"{% endif %}>{{ _g.username }}</span>
+      {% endfor %}
       {% else %}
       <span{% if _finita and match.winner_id == match.player2_id %} class="c7-dim"{% endif %}>{{ match.player1.username }}</span>
       <span class="c7-riga-partita__sep">–</span>
@@ -40,7 +46,7 @@
   </div>
   {% if _stato == 'x' %}
   {% elif match.is_trio and match.trio_match %}
-  <span class="c7-num c7-riga-partita__punti">{{ match.trio_match.player1_racks }}-{{ match.trio_match.player2_racks }}-{{ match.trio_match.player3_racks }}</span>
+  <span class="c7-num c7-riga-partita__punti">{{ match.trio_match.player1_racks }}–{{ match.trio_match.player2_racks }}–{{ match.trio_match.player3_racks }}</span>
   {% elif _finita or match.player1_score > 0 or match.player2_score > 0 %}
   <span class="c7-num c7-riga-partita__punti">{{ match.player1_score }}–{{ match.player2_score }}</span>
   {% else %}

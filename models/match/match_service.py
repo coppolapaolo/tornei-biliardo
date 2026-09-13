@@ -670,6 +670,98 @@ class MatchService:
 
     @staticmethod
     @transactional(domain="match")
+    def set_current_set_racks(match_id: int, player1_racks: int, player2_racks: int):
+        """Porta il set in corso a `player1_racks`–`player2_racks`.
+
+        E' il gesto degli stepper della card del direttore: un tocco cambia un
+        numero di uno. Un triangolo in meno toglie **l'ultimo vinto da quel
+        giocatore** (non l'ultimo del set, che puo' essere dell'altro) e
+        ricompatta la numerazione; uno in piu' passa da `Set.add_rack_result`,
+        che chiude il set alla sua distanza e la partita ai set.
+
+        Returns:
+            Il set su cui si e' segnato.
+
+        Raises:
+            ValidationError: non e' una partita a set, o il punteggio supera la
+                distanza del set.
+            ConflictError: il set non e' in corso (va iniziato il prossimo).
+        """
+        from flask_babel import gettext as _
+
+        from models.exceptions import ConflictError, ValidationError
+
+        from .set_models import SetRack
+
+        match = db.session.get(Match, match_id)
+        if match is None or not match.is_multi_set:
+            raise ValidationError(_("Questa non è una partita a set."))
+        corrente = match.get_current_set()
+        if corrente is None or corrente.status != MatchStatus.PLAYING.value:
+            raise ConflictError(_("Il set non è in corso: inizia il prossimo."))
+
+        distanza = corrente.distance
+        if player1_racks < 0 or player2_racks < 0:
+            raise ValidationError(_("Punteggio non valido."))
+        if corrente.is_race_to:
+            fuori = player1_racks > distanza or player2_racks > distanza
+            fuori = fuori or (player1_racks == distanza and player2_racks == distanza)
+        else:
+            fuori = player1_racks + player2_racks > distanza
+        if fuori:
+            raise ValidationError(
+                _("Il set si gioca al %(n)s: il punteggio va oltre.", n=distanza)
+            )
+
+        lati = [
+            (match.player1_id, "player1_racks", player1_racks),
+            (match.player2_id, "player2_racks", player2_racks),
+        ]
+        # Prima si tolgono i triangoli in piu'.
+        for giocatore_id, campo, obiettivo in lati:
+            while getattr(corrente, campo) > obiettivo:
+                ultimo = (
+                    SetRack.query.filter_by(set_id=corrente.id, winner_id=giocatore_id)
+                    .order_by(SetRack.rack_number.desc())
+                    .first()
+                )
+                if ultimo is None:
+                    setattr(corrente, campo, obiettivo)
+                    break
+                numero = ultimo.rack_number
+                db.session.delete(ultimo)
+                db.session.flush()
+                dopo = (
+                    SetRack.query.filter(
+                        SetRack.set_id == corrente.id, SetRack.rack_number > numero
+                    )
+                    .order_by(SetRack.rack_number.asc())
+                    .all()
+                )
+                for rack in dopo:
+                    rack.rack_number -= 1
+                    db.session.flush()
+                setattr(corrente, campo, getattr(corrente, campo) - 1)
+
+        # Poi quelli che mancano, per ultimo il lato che chiude il set: se lo
+        # chiudesse prima, l'altro troverebbe il set gia' finito.
+        def chiude(lato) -> bool:
+            return corrente.is_race_to and lato[2] >= distanza
+
+        for giocatore_id, campo, obiettivo in sorted(lati, key=chiude):
+            while (
+                getattr(corrente, campo) < obiettivo
+                and corrente.status == MatchStatus.PLAYING.value
+            ):
+                corrente.add_rack_result(winner_id=giocatore_id)
+                db.session.flush()
+
+        db.session.add(corrente)
+        db.session.add(match)
+        return corrente
+
+    @staticmethod
+    @transactional(domain="match")
     def remove_rack_from_current_set(match_id: int) -> None:
         """Remove the last rack from the current set in a multi-set match.
 

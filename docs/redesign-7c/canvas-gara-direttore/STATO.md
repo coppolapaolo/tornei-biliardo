@@ -339,7 +339,7 @@ aggiorna in fondo a questo file, fase per fase.
 ## Non ancora disegnato
 
 Da chiedere prima di implementare, perché il canvas non li copre: squadre e
-categorie (ADR-039, ADR-049), esercizi di gara, trio e multi-set,
+categorie (ADR-039, ADR-049), esercizi di gara,
 forfait/ritiro a gara in corso e riassegnazione (ADR-048), gara dentro
 un campionato (peso, playoff, ADR-053), eliminazione della gara, competizione
 di prova (ADR-058, arrivata dopo il canvas). Il tabellone a eliminazione
@@ -348,6 +348,10 @@ la soluzione piu' vicina alla grammatica del canvas — vedi «Tabellone al
 posto della classifica» in fondo. Lo stesso giorno anche lo schermo in sala
 per le gare a tabellone (issue #352) — vedi «Schermo in sala per le gare a
 tabellone».
+
+posto della classifica» in fondo. Anche trio e multi-set, con la X con
+esercizio, sono stati fatti il 13/09 sulla card della partita — vedi «Trio,
+multi-set e X con esercizio» in fondo.
 
 ## Come ricostruire
 
@@ -603,3 +607,36 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   futuro dice «chi vince» o «chi perde» con sotto i due nomi, oppure «Tavolo
   N» quando quella partita si gioca a un tavolo e lo spazio e' poco, cioe'
   oltre quattro righe o con i due rami del doppio KO (`TabelloneSala.stretto`).
+
+* **Trio, multi-set e X con esercizio** (PR `feat: trio, multi-set e X con
+  esercizio sulla card della partita`, 2026-09-13). Il canvas disegnava solo
+  la partita a due: le altre forme restavano sulla card di prima, con il
+  risultato secco in un modale e, per la X, un campo numerico e un
+  `confirm()`. Ora la card ha una forma per partita
+  (`direttore_view.scheda_partita`: due, trio, set, x, x_esercizio) e la
+  stessa geometria. Il **trio** ha tre lati con − e + dei triangoli vinti,
+  che salvano al tocco (`POST /admin/gara/trio/<id>/punteggio`); quali +
+  sono accesi lo dice il server (`models/match/trio_punteggio.py`), perche'
+  l'ordine del girone rende impossibili certi totali, per esempio un
+  triangolo al terzo giocatore dopo un solo triangolo giocato; al totale dei
+  triangoli si chiude, «da validare» quando l'hanno giocato i giocatori senza
+  le tre firme, con la corona al vincitore e a nessuno nel pareggio. La
+  **partita a set** mostra i set vinti in sola lettura e sotto gli stepper
+  del set in corso (`POST /admin/match/<id>/set/punteggio`); a set chiuso
+  «Inizia il set N». La **X con esercizio** ha un lato solo, lo stepper da
+  0 alla distanza del turno (ADR-027) e «Convalida»; «Azzera la prova» sta
+  nel menu. A turno concluso il trio e' una riga con tre nomi e tre numeri,
+  senza matita. Le regole degli stepper stanno in un modulo solo,
+  `static/js/card_partita.js`, con il suo test jsdom; anche il foglio della
+  correzione le usa. Scelte dove il canvas tace: lo stepper del trio va in
+  colonna, + sopra e − sotto, per tenere i bersagli da 48px su tre lati a
+  390px; la X non salva al tocco, perche' non esiste un punteggio
+  «registrato ma non convalidato» scritto dal direttore; un triangolo tolto
+  nel trio resta nello storico come l'annulla del segnapunti, e nel set si
+  toglie l'ultimo vinto da quel giocatore. Trovato strada facendo:
+  `trio_set_result` non guardava il turno bloccato ne' la partita chiusa e
+  non annunciava niente; `trio_reset` rispondeva 500 a un rifiuto del
+  dominio; la correzione della partita a set era vietata solo dal template,
+  ora la rifiuta `MatchCorrectionService.can_correct`; `Match.is_at_distance`
+  usava la modalita' dei triangoli anche per i set, e con i triangoli
+  «esattamente» una partita al 2 set risultava alla distanza a 1–1.

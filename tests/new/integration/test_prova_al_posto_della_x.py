@@ -443,7 +443,9 @@ class TestIComandiSonoNellaPaginaDellaGara:
         )
 
         assert "prova-x" in pagina
-        assert 'name="score"' in pagina
+        # Dal 2026-09-13 il punteggio si segna con lo stepper della card e
+        # parte con «Convalida» (`test_card_trio_set_x.py`), non da un campo.
+        assert "convalidaProvaX(this)" in pagina
 
     def test_dopo_la_convalida_compare_l_azzeramento(
         self, client, db_session, gara_con_x

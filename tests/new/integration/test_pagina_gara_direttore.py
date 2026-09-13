@@ -512,8 +512,10 @@ def test_il_punteggio_dalla_card_non_riscrive_una_partita_chiusa(
 
 
 def test_il_multi_set_non_passa_dalla_card_degli_stepper(admin_client, db_session):
-    """Rilievo della revisione automatica sulla PR #349: gli stepper ragionano
-    su un set solo, il multi-set ha il suo segnapunti."""
+    """Rilievo della revisione automatica sulla PR #349: gli stepper della
+    partita a due ragionano su un set solo. Dal 2026-09-13 la partita a set ha
+    la sua card, con gli stepper del set in corso sul loro endpoint
+    (`test_card_trio_set_x.py`): quello a due continua a rifiutarla."""
     gara = _gara_in_gioco(db_session, distance=5)
     match = _match(db_session, gara, 1, 0, MatchStatus.PLAYING.value, suffix="_ms")
     match.table_assignment = "1"
@@ -525,7 +527,9 @@ def test_il_multi_set_non_passa_dalla_card_degli_stepper(admin_client, db_sessio
     )
     assert r.status_code == 400
     html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
-    assert f'id="partita{match.id}"' not in html
+    card = html.split(f'id="partita{match.id}"')[1].split("</article>")[0]
+    assert f"/admin/match/{match.id}/punteggio" not in card
+    assert 'data-tipo="due"' not in card
 
 
 def test_la_correzione_dalla_pagina_della_gara_torna_alla_gara(

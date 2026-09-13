@@ -219,11 +219,24 @@ class StatoPartita(str, Enum):
 
 
 def stato_partita(match) -> StatoPartita:
+    """Lo stato della card, per ogni forma di partita.
+
+    * la X — anche quella con esercizio — resta `X`: non si gioca e non
+      trattiene il turno; lo stato della prova lo dice `scheda_prova_x`;
+    * il **trio** e' da validare quando i triangoli sono tutti giocati e il
+      trio aspetta le conferme dei tre (`awaiting_confirmation`);
+    * la partita **a set** non e' mai da validare: ogni set si chiude alla
+      sua distanza e la partita ai set, senza firme da raccogliere.
+    """
     if getattr(match, "is_bye", False):
         return StatoPartita.X
     if MatchStatus.is_finished(match.status):
         return StatoPartita.CONCLUSA
-    if _e_da_validare(match):
+    trio = match_trio(match)
+    if trio is not None:
+        if getattr(trio, "awaiting_confirmation", False) and _e_da_validare(match):
+            return StatoPartita.DA_VALIDARE
+    elif not getattr(match, "is_multi_set", False) and _e_da_validare(match):
         return StatoPartita.DA_VALIDARE
     if match.table_assignment:
         return StatoPartita.IN_CORSO
@@ -340,12 +353,229 @@ def _nomi(match) -> tuple:
     return tuple(p.username for p in (match.player1, match.player2) if p)
 
 
+# ---------------------------------------------------------------------------
+# Le forme della card: trio, partita a set, X con esercizio
+# ---------------------------------------------------------------------------
+
+
+class FormaPartita(str, Enum):
+    """Quale card disegna la partita. La geometria e' una sola (nome sopra,
+    numero grande sotto): cambia quanti lati ha e cosa segnano gli stepper."""
+
+    DUE = "due"
+    TRIO = "trio"
+    SET = "set"
+    X = "x"
+    X_ESERCIZIO = "x_esercizio"
+
+
+def forma_partita(match) -> FormaPartita:
+    if getattr(match, "is_bye", False):
+        if getattr(match, "is_x_with_challenge", False):
+            return FormaPartita.X_ESERCIZIO
+        return FormaPartita.X
+    if match_trio(match) is not None:
+        return FormaPartita.TRIO
+    if getattr(match, "is_multi_set", False):
+        return FormaPartita.SET
+    return FormaPartita.DUE
+
+
+@dataclass(frozen=True)
+class SchedaTrio:
+    """I tre lati del trio: triangoli vinti e quali «+» hanno senso.
+
+    `massimo` sono i triangoli che ognuno gioca (due per girone), `totale`
+    quelli del trio. Il bonus delle distanze dispari non si segna: non e' un
+    triangolo giocato. `piu` dipende dall'ordine del girone
+    (`models/match/trio_punteggio.py`), non solo dai due limiti.
+    """
+
+    trio_id: int
+    ids: tuple
+    nomi: tuple
+    punti: tuple
+    gironi: int
+    massimo: int
+    totale: int
+    piu: tuple
+    vincitore_id: Optional[int]
+
+
+def scheda_trio(match) -> Optional[SchedaTrio]:
+    from models.match.trio_punteggio import massimo_per_giocatore, piu_ammessi
+
+    trio = match_trio(match)
+    if trio is None:
+        return None
+    config = trio.trio_config
+    punti = tuple(trio.player_racks_list)
+    giocatori = (trio.player1, trio.player2, trio.player3)
+    return SchedaTrio(
+        trio_id=trio.id,
+        ids=tuple(trio.player_ids),
+        nomi=tuple(p.username if p else "" for p in giocatori),
+        punti=punti,
+        gironi=config.num_rounds,
+        massimo=massimo_per_giocatore(config),
+        totale=config.total_played_racks,
+        piu=tuple(piu_ammessi(config, punti)),
+        vincitore_id=trio.winner_id,
+    )
+
+
+@dataclass(frozen=True)
+class SchedaSet:
+    """La partita a set: i set vinti sopra, il set in corso sotto.
+
+    `numero` e' il set che si gioca (None se nessuno e' in corso), `prossimo`
+    quello da iniziare quando il set e' chiuso e la partita no. `chiusi` sono
+    i set finiti come `(numero, triangoli 1, triangoli 2)`.
+    """
+
+    set_vinti: tuple
+    set_da_vincere: int
+    race_to_set: bool
+    numero: Optional[int]
+    punti: tuple
+    distanza: int
+    race_to: bool
+    prossimo: Optional[int]
+    chiusi: tuple
+
+    @property
+    def in_corso(self) -> bool:
+        return self.numero is not None
+
+
+def scheda_set(match) -> Optional[SchedaSet]:
+    if not getattr(match, "is_multi_set", False) or getattr(match, "is_bye", False):
+        return None
+    sets = sorted(getattr(match, "sets", None) or [], key=lambda s: s.set_number)
+    in_corso = next((s for s in sets if s.status == MatchStatus.PLAYING.value), None)
+    chiusi = tuple(
+        (s.set_number, s.player1_racks, s.player2_racks)
+        for s in sets
+        if s.status == MatchStatus.CLOSED_UNILATERALLY.value
+    )
+    distanza = match.distance_config
+    finita = MatchStatus.is_finished(match.status)
+    prossimo = None
+    if in_corso is None and not finita:
+        prossimo = len(sets) + 1
+    riferimento = in_corso or (sets[-1] if sets else None)
+    return SchedaSet(
+        set_vinti=(match.player1_score or 0, match.player2_score or 0),
+        set_da_vincere=distanza.get_winning_sets(),
+        race_to_set=bool(distanza.is_race_to_sets),
+        numero=in_corso.set_number if in_corso is not None else None,
+        punti=(
+            (in_corso.player1_racks, in_corso.player2_racks)
+            if in_corso is not None
+            else (0, 0)
+        ),
+        distanza=riferimento.distance if riferimento is not None else distanza.racks,
+        race_to=(
+            bool(riferimento.is_race_to)
+            if riferimento is not None
+            else bool(distanza.is_race_to_racks)
+        ),
+        prossimo=prossimo,
+        chiusi=chiusi,
+    )
+
+
+class StatoProvaX(str, Enum):
+    """A che punto e' l'esercizio giocato al posto della X."""
+
+    DA_REGISTRARE = "da_registrare"
+    DICHIARATA = "dichiarata"
+    CONVALIDATA = "convalidata"
+
+
+@dataclass(frozen=True)
+class SchedaProvaX:
+    """L'unico lato della X con esercizio.
+
+    Il massimo e' la distanza **del turno** (`effective_distance`, ADR-027):
+    la differenza piu' ampia che una partita di quel turno puo' dare
+    (SPECIFICHE riga 65). Il punteggio di partenza e' quello convalidato, o
+    quello dichiarato dal giocatore, o zero.
+    """
+
+    stato: StatoProvaX
+    punteggio: int
+    massimo: int
+    esercizio: Optional[str]
+
+
+def scheda_prova_x(match) -> Optional[SchedaProvaX]:
+    if forma_partita(match) != FormaPartita.X_ESERCIZIO:
+        return None
+    ponte = getattr(match, "bye_challenge", None)
+    tentativo = getattr(ponte, "challenge_attempt", None) if ponte else None
+    dichiarato = getattr(tentativo, "score", None) if tentativo else None
+    if ponte is not None and ponte.is_validated:
+        stato = StatoProvaX.CONVALIDATA
+        punteggio = dichiarato if dichiarato is not None else match.player1_score
+    elif ponte is not None and ponte.is_completed and dichiarato is not None:
+        stato = StatoProvaX.DICHIARATA
+        punteggio = dichiarato
+    else:
+        stato = StatoProvaX.DA_REGISTRARE
+        punteggio = 0
+    massimo = match.effective_distance
+    esercizio = None
+    sfida = getattr(tentativo, "challenge", None) if tentativo else None
+    if sfida is None and getattr(match, "gara", None) is not None:
+        sfida = getattr(match.gara, "x_challenge", None)
+    if sfida is not None:
+        esercizio = sfida.get_display_name()
+    return SchedaProvaX(
+        stato=stato,
+        punteggio=max(0, min(int(punteggio or 0), massimo)),
+        massimo=massimo,
+        esercizio=esercizio,
+    )
+
+
+@dataclass(frozen=True)
+class SchedaPartita:
+    forma: FormaPartita
+    trio: Optional[SchedaTrio] = None
+    set: Optional[SchedaSet] = None
+    prova: Optional[SchedaProvaX] = None
+
+
+def scheda_partita(match) -> SchedaPartita:
+    """Tutto quello che la card chiede alla partita, per la sua forma."""
+    forma = forma_partita(match)
+    if forma == FormaPartita.TRIO:
+        return SchedaPartita(forma, trio=scheda_trio(match))
+    if forma == FormaPartita.SET:
+        return SchedaPartita(forma, set=scheda_set(match))
+    if forma == FormaPartita.X_ESERCIZIO:
+        return SchedaPartita(forma, prova=scheda_prova_x(match))
+    return SchedaPartita(forma)
+
+
 __all__ = [
     "FaseGara",
     "StatoTacca",
     "Tacca",
     "ConteggiTurno",
     "StatoPartita",
+    "FormaPartita",
+    "StatoProvaX",
+    "SchedaTrio",
+    "SchedaSet",
+    "SchedaProvaX",
+    "SchedaPartita",
+    "forma_partita",
+    "scheda_trio",
+    "scheda_set",
+    "scheda_prova_x",
+    "scheda_partita",
     "Tavolo",
     "fase_della_gara",
     "spareggio_nella_striscia",

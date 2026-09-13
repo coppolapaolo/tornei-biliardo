@@ -109,6 +109,28 @@ blocks:
           but without both confirmations, shows up in a green card with
           «Validate the result». If the score is not right, fix it with − and
           + before validating: the card says who gets the table next.
+      - name: "Score a trio"
+        text: >-
+          A trio card has three names, and under each one **+** and **−** for
+          the racks that player won. Racks are played in a fixed order — the
+          first between the first and second player, the second between the
+          first and third — so a + stays off until that player could have won
+          it. Once every rack is played, the match closes. To correct a trio
+          that is already closed, open the scoreboard from the «⋯» menu.
+      - name: "Score a match played in sets"
+        text: >-
+          The sets won are at the top, and under them the set being played
+          with its own − and +. At the set's distance the set closes and
+          **Start set** appears for the next one; when a player reaches the
+          sets needed, the match closes by itself.
+      - name: "Validate the drill played instead of the X"
+        text: >-
+          In competitions where the X is replaced by a drill, the card of the
+          player who sits out has one name and the drill score, from zero to
+          the round's distance. If the player already declared it the card is
+          green; otherwise you enter it with − and +. The score counts only
+          after **Validate**. To clear it, use the «⋯» menu and **Reset the
+          drill**.
       - name: "Change a match's table"
         text: >-
           Tap the table on the card: the sheet opens with one tile per table.

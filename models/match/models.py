@@ -250,6 +250,17 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
             config = self.trio_match.trio_config
             return self.trio_match.total_racks_played >= config.total_played_racks
 
+        # Multi-set: i punteggi sono set vinti, e la regola e' quella dei set.
+        # Fino al 2026-09-13 cadeva nel ramo sotto, che usa la modalita' dei
+        # **triangoli**: con i set «al 2» e i triangoli «esattamente», a 1–1
+        # la partita risultava alla distanza — e la card del direttore la
+        # dava «da validare» a meta' partita.
+        if self.is_multi_set:
+            sets = self.distance_config.get_winning_sets()
+            if self.effective_is_race_to_sets:
+                return self.player1_score >= sets or self.player2_score >= sets
+            return self.player1_score + self.player2_score >= sets
+
         # Regular 2-player match — usa Distance VO per rispettare gli override
         # per match/turno (ADR-027). Niente accesso diretto a self.gara.distance.
         distance = self.effective_distance
