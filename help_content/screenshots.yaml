@@ -447,9 +447,16 @@ shots:
     wait_for: ".c7-help-pop"
     caption: "Il fumetto che si apre toccando una «?»: il nome del comando, due frasi, e il collegamento «Leggi nella guida»."
 
+  - id: gara-dal-campionato
+    route: /admin/gara/4
+    as: Luca Bianchi
+    clip: ".c7-dal-campionato"
+    caption: "Il gruppo «Dal campionato» di una gara in preparazione: il peso nella classifica, chi spacca ereditato dal campionato, le date ammesse fra le gare vicine e la riga alla pagina del campionato."
+
   - id: prova-simulazione
     route: /admin/gara/7
     as: Luca Bianchi
-    click: ['[data-help-action="skip"]']
-    clip: 'div.c7-card:has(> [data-help="prova-simulazione"])'
-    caption: "I tre pulsanti della simulazione, sotto la fascia, in una prova avviata: una partita, il turno, tutta la gara."
+    click: ['[data-help-action="skip"]', '[data-bs-target="#simulazioneModal"]']
+    wait_for: "#simulazioneModal.show"
+    clip: "#simulazioneModal .modal-content"
+    caption: "Il foglio «Simulazione» di una prova avviata, aperto dalla riga sotto la fascia: una partita, il turno, tutta la gara, e la nota sulle partite da validare."

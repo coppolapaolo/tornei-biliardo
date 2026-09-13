@@ -1,0 +1,43 @@
+{# templates/direttore/_simulazione.html — Design System 7c
+
+   Il foglio «Simulazione» di una competizione di prova (ADR-058), aperto
+   dalla riga sotto la fascia in gioco. Prima era una card a tre colonne
+   copiata dal vecchio pannello di gestione: il canvas non disegna la prova,
+   e la forma piu' vicina alla sua grammatica e' quella dei menu del turno e
+   della partita, un `c7-sheet` con i comandi in righe. Ogni riga e' un POST
+   verso `prova_simula`; la nota sulla doppia conferma resta sotto.
+
+   Incluso da `direttore/gara.html` solo in fase di gioco e solo in una
+   prova. #}
+<div class="modal fade c7-sheet" id="simulazioneModal" tabindex="-1" aria-labelledby="simulazioneTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="simulazioneTitolo"><i class="fas fa-flask me-1"></i>{{ _('Simulazione') }}</h3>
+        <div class="c7-sheet__sub">{{ _('I fittizi giocano al posto tuo: scegli fin dove.') }}</div>
+      </div>
+      <div class="modal-body c7-stack">
+        <div class="c7-rows c7-simulazione">
+          {% for azione, etichetta, sotto, icona in [
+                ('partita', _('Simula una partita'), _('ne chiude una fra quelle al tavolo'), 'fa-dice'),
+                ('turno', _('Simula il turno'), _('chiude le partite ancora aperte del turno'), 'fa-forward-step'),
+                ('gara', _('Simula tutta la gara'), _('chiude ogni partita e avvia i turni che mancano'), 'fa-forward-fast')] %}
+          <form method="POST" action="{{ url_for('admin.competition.prova_simula', gara_id=gara.id, azione=azione) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="c7-rows__row c7-rows__row--btn">
+              <span class="c7-tile c7-tile--sm c7-tile--warn"><i class="fas {{ icona }}"></i></span>
+              <span class="c7-rows__main">
+                <span class="c7-rows__title d-block">{{ etichetta }}</span>
+                <span class="c7-rows__sub d-block">{{ sotto }}</span>
+              </span>
+              <i class="fas fa-chevron-right c7-rows__chev"></i>
+            </button>
+          </form>
+          {% endfor %}
+        </div>
+        <div class="c7-nota">{{ _("Metà delle partite si chiudono con la doppia conferma dei giocatori, le altre aspettano che tu le validi dal segnapunti. «Tutta la gara» chiude tutto.") }}</div>
+      </div>
+    </div>
+  </div>
+</div>

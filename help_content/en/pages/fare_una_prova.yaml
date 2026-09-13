@@ -60,8 +60,9 @@ blocks:
         text: >-
           Every screen of the trial has a yellow panel at the top with the
           label **Trial competition**, the date on which it will disappear
-          by itself, the tips switch and the button to delete it. If you do
-          not see it, you are not in a trial.
+          by itself, the tips switch and the button to delete it: on the
+          competition page, on the preparation steps and in **Competition
+          settings**. If you do not see it, you are not in a trial.
         shot: prova-iscrizioni
 
   - type: heading
@@ -103,8 +104,9 @@ blocks:
   - type: text
     text: >-
       Start the first round as you really would. The fictitious players,
-      however, do not pick up the phone: you make the results appear, from
-      the **Simulation** box under the band, with three buttons.
+      however, do not pick up the phone: you make the results appear. Under
+      the band there is the **Make the fictitious players play** row: tap it
+      and the **Simulation** sheet opens, with three commands.
 
   - type: shot
     shot: prova-simulazione

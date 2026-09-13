@@ -67,12 +67,12 @@
     {% endwith %}
     {% endif %}
 
-    {% if not annullata and gara.campionato_id %}
+    {% if not annullata and campionato_ctx %}
     <div class="c7-flash c7-flash--success">
       <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
       <div class="c7-flash__body">
         <div class="c7-flash__title">{{ _('Gara conclusa') }}</div>
-        <div class="c7-flash__text">{{ _('I punti sono andati alla classifica del campionato. I punteggi non si modificano più.') }}</div>
+        <div class="c7-flash__text">{{ d.punti_campionato(campionato_ctx) }} {{ _('I punteggi non si modificano più.') }}</div>
       </div>
     </div>
     {% endif %}

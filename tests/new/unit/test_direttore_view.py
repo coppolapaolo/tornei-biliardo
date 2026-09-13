@@ -261,3 +261,128 @@ def test_le_tessere_dei_tavoli_dicono_chi_c_e_sopra():
     ]
     assert tessere[0].giocatori == ("u1", "u2")
     assert tessere[0].match_id == 1
+
+
+# ---------------------------------------------------------------------------
+# La gara dentro un campionato (peso, playoff, apertura ereditata, date)
+# ---------------------------------------------------------------------------
+
+
+def _campionato(**kw):
+    base = dict(
+        id=9,
+        name="Campionato Sociale",
+        planned_gare_count=6,
+        default_break_rule=None,
+        gare=[],
+    )
+    base.update(kw)
+    return SimpleNamespace(**base)
+
+
+def _gara_di(campionato, numero, *, weight=1, peso_effettivo=None, config=None, **kw):
+    from datetime import date as _date, time as _time
+
+    base = dict(
+        id=100 + numero,
+        number=numero,
+        campionato=campionato,
+        campionato_id=campionato.id if campionato else None,
+        weight=weight,
+        classification_weight=weight if peso_effettivo is None else peso_effettivo,
+        playoff_config=config,
+        is_playoff=config is not None,
+        break_rule=None,
+        date=_date(2026, 10, numero),
+        time=_time(20, 0),
+    )
+    base.update(kw)
+    gara = SimpleNamespace(**base)
+    if campionato is not None:
+        campionato.gare.append(gara)
+    return gara
+
+
+def _con_regola(gara):
+    from models.match.break_rules import BreakRule
+
+    campionato = gara.campionato
+    scelta = BreakRule.normalize(gara.break_rule)
+    ereditata = (
+        BreakRule.normalize(campionato.default_break_rule) if campionato else None
+    )
+    gara.effective_break_rule = scelta or ereditata or BreakRule.ALTERNATE
+    return gara
+
+
+def test_una_gara_singola_non_ha_contesto_di_campionato():
+    from models.competition.direttore_view import contesto_campionato
+
+    gara = _con_regola(_gara_di(None, 1))
+    assert contesto_campionato(gara) is None
+
+
+def test_il_contesto_dice_numero_gare_previste_e_peso():
+    from models.competition.direttore_view import contesto_campionato
+
+    camp = _campionato()
+    _gara_di(camp, 3)
+    gara = _con_regola(_gara_di(camp, 4, weight=3))
+    _gara_di(camp, 5)
+    cc = contesto_campionato(gara)
+    assert cc is not None
+    assert (cc.nome, cc.numero, cc.gare_previste) == ("Campionato Sociale", 4, 6)
+    assert cc.peso == 3 and cc.peso_effettivo == 3
+    assert not cc.is_playoff and not cc.decide_il_playoff
+    assert cc.modalita is None
+
+
+def test_il_playoff_che_decide_la_classifica_pesa_zero():
+    from models.competition.direttore_view import contesto_campionato
+    from models.playoff.models import PlayoffRankingMode
+
+    camp = _campionato()
+    config = SimpleNamespace(
+        ranking_mode=PlayoffRankingMode.PLAYOFF_ONLY, decides_final_ranking=True
+    )
+    gara = _con_regola(_gara_di(camp, 7, weight=2, peso_effettivo=0, config=config))
+    cc = contesto_campionato(gara)
+    assert cc.is_playoff and cc.decide_il_playoff
+    assert cc.peso == 2 and cc.peso_effettivo == 0
+    assert cc.modalita == PlayoffRankingMode.PLAYOFF_ONLY.value
+    # Il playoff viene dopo le gare previste: il numero non sfora il totale.
+    assert cc.gare_previste >= cc.numero
+
+
+def test_la_regola_di_apertura_ereditata_dal_campionato():
+    from models.competition.direttore_view import contesto_campionato
+    from models.match.break_rules import BreakRule
+
+    camp = _campionato(default_break_rule=BreakRule.WINNER_BREAKS.value)
+    ereditata = contesto_campionato(_con_regola(_gara_di(camp, 1)))
+    assert ereditata.regola_apertura is BreakRule.WINNER_BREAKS
+    assert ereditata.apertura_ereditata
+
+    propria = contesto_campionato(
+        _con_regola(_gara_di(camp, 2, break_rule=BreakRule.LOSER_BREAKS.value))
+    )
+    assert propria.regola_apertura is BreakRule.LOSER_BREAKS
+    assert not propria.apertura_ereditata
+
+
+def test_la_finestra_delle_date_viene_dalle_gare_vicine():
+    """ADR-016: la gara N sta fra la gara con numero piu' alto < N e quella
+    con numero piu' basso > N, non fra N-1 e N+1."""
+    from models.competition.direttore_view import contesto_campionato
+
+    camp = _campionato()
+    _gara_di(camp, 1)
+    _gara_di(camp, 2)
+    gara = _con_regola(_gara_di(camp, 4))
+    _gara_di(camp, 6)
+    cc = contesto_campionato(gara)
+    assert cc.precedente.numero == 2
+    assert cc.successiva.numero == 6
+
+    prima = contesto_campionato(_con_regola(camp.gare[0]))
+    assert prima.precedente is None and prima.successiva.numero == 2

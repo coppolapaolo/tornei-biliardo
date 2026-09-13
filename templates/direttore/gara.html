@@ -37,10 +37,21 @@
 
 {% block content %}
 {# Competizione di prova (ADR-058): il banner viene prima di tutto. #}
-{% if gara.is_prova %}
-<div class="c7-stack" style="margin-bottom:14px">
-  {% include "components/_prova_banner.html" %}
-</div>
+{% include "direttore/_prova_in_testa.html" %}
+
+{# La gara dentro un campionato: da dove viene e quanto pesa, sopra la
+   striscia. Il titolo e' della gara; qui il campionato, che la testata dice
+   solo sul desktop e senza numero. #}
+{% if campionato_ctx %}
+{% set cc = campionato_ctx %}
+<a href="{{ url_for('admin.campionato.campionato_detail', campionato_id=cc.campionato_id) }}" class="c7-gara-campionato">
+  <span class="c7-kicker c7-gara-campionato__testo">
+    {%- if not cc.is_playoff %}{{ _('Gara %(n)s di %(tot)s', n=cc.numero, tot=cc.gare_previste) }} · {% endif %}{{ cc.nome -}}
+  </span>
+  {% if cc.is_playoff %}<span class="c7-state c7-state--accent">{{ _('Playoff') }}</span>{% endif %}
+  {% if cc.peso_effettivo > 1 %}<span class="c7-state c7-state--warn c7-num">×{{ cc.peso_effettivo }}</span>{% endif %}
+  <i class="fas fa-chevron-right c7-gara-campionato__chev" aria-hidden="true"></i>
+</a>
 {% endif %}
 
 {% include "direttore/_striscia.html" %}
@@ -77,6 +88,9 @@
 {% include "direttore/_avvia_gara.html" %}
 {% endif %}
 {% include "direttore/_modali_gioco.html" %}
+{% if fase.value == 'gioco' and gara.is_prova and feature_visible('admin.competition.prova_simula') %}
+{% include "direttore/_simulazione.html" %}
+{% endif %}
 {% endblock %}
 
 {% block scripts %}

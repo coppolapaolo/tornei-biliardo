@@ -191,3 +191,60 @@ class TestGaraNuova:
         assert "prova-spunta" in in_pagina
         serviti = _anchors_serviti(client, "admin.competition.create_gara_standalone")
         assert in_pagina <= serviti, sorted(in_pagina - serviti)
+
+
+class TestSottopagineDellaProva:
+    """Preparazione e «Impostazioni gara» sono pagine a se': fino al
+    2026-09-13 non includevano il banner, quindi li' la modalita' aiuto non
+    si accendeva e «Elimina la prova» non c'era."""
+
+    @pytest.mark.parametrize(
+        "endpoint, extra",
+        [
+            ("admin.competition.gara_preparazione", {"passo": "tavoli"}),
+            ("admin.competition.gara_impostazioni", {}),
+        ],
+    )
+    def test_il_banner_accende_l_aiuto(self, direttore_loggato, endpoint, extra):
+        client, direttore = direttore_loggato
+        gara_id = _prova(direttore).id
+        _pulisci_stato_fra_richieste()
+        html = client.get(url_for(endpoint, gara_id=gara_id, **extra)).get_data(
+            as_text=True
+        )
+        assert "data-help-toggle" in html
+        assert html.count("data-help-toggle") == 1, "un banner solo"
+        assert _config_screen(html) == endpoint
+        in_pagina = _anchors_in_pagina(html)
+        assert {"prova-aiuto", "prova-elimina"} <= in_pagina
+        serviti = _anchors_serviti(client, endpoint)
+        assert in_pagina <= serviti, sorted(in_pagina - serviti)
+
+    @pytest.mark.parametrize(
+        "endpoint, extra",
+        [
+            ("admin.competition.gara_preparazione", {"passo": "tavoli"}),
+            ("admin.competition.gara_impostazioni", {}),
+        ],
+    )
+    def test_una_gara_vera_non_ha_l_interruttore(
+        self, direttore_loggato, endpoint, extra
+    ):
+        client, direttore = direttore_loggato
+        vera = GaraService.create_gara(
+            campionato_id=None,
+            number=1,
+            name="Vera",
+            date=date.today() + timedelta(days=1),
+            discipline=Discipline.NINE_BALL.value,
+            distance=5,
+            director_id=direttore.id,
+            status=GaraStatus.INSCRIPTION.value,
+        )
+        db.session.commit()
+        vera_id = vera.id
+        _pulisci_stato_fra_richieste()
+        html = client.get(url_for(endpoint, gara_id=vera_id, **extra)).get_data(
+            as_text=True
+        )
+        assert "data-help-toggle" not in html

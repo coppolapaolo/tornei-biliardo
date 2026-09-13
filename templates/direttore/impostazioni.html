@@ -30,6 +30,7 @@
 {% endblock %}
 
 {% block content %}
+{% include "direttore/_prova_in_testa.html" %}
 <div class="c7-stack c7-sections">
 
   {{ d.sezione(_('Si modifica anche adesso')) }}
@@ -80,6 +81,8 @@
     {% endif %}
   </div>
   {% endif %}
+
+  {% include "direttore/_dal_campionato.html" %}
 
   {% include "components/_gara_info.html" %}
 </div>

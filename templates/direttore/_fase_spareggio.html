@@ -64,7 +64,7 @@
       <span class="c7-flash__ico"><i class="fas fa-flag-checkered"></i></span>
       <div class="c7-flash__body">
         <div class="c7-flash__title">{{ _('Terminare blocca la gara') }}</div>
-        <div class="c7-flash__text">{{ _('La classifica diventa definitiva, i punti vanno al campionato e i giocatori ricevono la notifica.') }}</div>
+        <div class="c7-flash__text">{{ _('La classifica diventa definitiva e i giocatori ricevono la notifica.') }} {{ d.punti_campionato(campionato_ctx) }}</div>
       </div>
     </div>
     {% endif %}

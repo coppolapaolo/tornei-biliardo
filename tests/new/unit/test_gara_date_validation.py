@@ -250,3 +250,59 @@ class TestStandaloneGaraNoSequentialValidation:
 
         assert gara is not None
         assert gara.campionato_id is None
+
+
+class TestSequentialDateValidationOnUpdate:
+    """ADR-016 vale anche quando la data si cambia dopo, dalla modifica gara.
+
+    L'ADR mette la regola nel servizio perche' «garantisce sempre la validita'
+    dei dati»: fino al 2026-09-13 `update_gara` la ignorava, e una gara 2
+    spostata prima della gara 1 passava senza errori.
+    """
+
+    @pytest.fixture
+    def tre_gare(self, db_session, isolated_director_user):
+        campionato = TournamentService().create_campionato_with_director(
+            name="Campionato Modifica Date",
+            creator_user_id=isolated_director_user.id,
+        )
+        db_session.commit()
+        gare = []
+        for n, giorni in ((1, 1), (2, 5), (3, 9)):
+            gare.append(
+                GaraService.create_gara(
+                    number=n,
+                    name=f"Gara {n}",
+                    date=date.today() + timedelta(days=giorni),
+                    time=time(20, 0),
+                    discipline="8_ball",
+                    distance=5,
+                    campionato_id=campionato.id,
+                )
+            )
+            db_session.commit()
+        return gare
+
+    def test_spostare_la_gara_2_prima_della_gara_1_e_rifiutato(
+        self, db_session, tre_gare
+    ):
+        _, gara2, _ = tre_gare
+        with pytest.raises(ValueError, match="successiva"):
+            GaraService.update_gara(gara2.id, date=date.today())
+
+    def test_spostare_la_gara_2_dopo_la_gara_3_e_rifiutato(self, db_session, tre_gare):
+        _, gara2, _ = tre_gare
+        with pytest.raises(ValueError, match="precedente"):
+            GaraService.update_gara(gara2.id, date=date.today() + timedelta(days=10))
+
+    def test_una_data_dentro_la_finestra_passa(self, db_session, tre_gare):
+        _, gara2, _ = tre_gare
+        nuova = date.today() + timedelta(days=7)
+        aggiornata = GaraService.update_gara(gara2.id, date=nuova)
+        assert aggiornata.date == nuova
+
+    def test_cambiare_altro_non_ricontrolla_le_date(self, db_session, tre_gare):
+        """Un campionato con date gia' storte (dati storici) non deve impedire
+        di correggere il nome: la regola scatta su data e ora."""
+        _, gara2, _ = tre_gare
+        assert GaraService.update_gara(gara2.id, name="Nuovo nome").name == "Nuovo nome"

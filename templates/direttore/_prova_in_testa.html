@@ -1,0 +1,14 @@
+{# templates/direttore/_prova_in_testa.html — Design System 7c
+
+   Il banner della competizione di prova (ADR-058) in cima alle pagine del
+   direttore: la pagina della gara, i passi della preparazione e
+   «Impostazioni gara». Porta l'interruttore della modalita' aiuto
+   (`[data-help-toggle]`, static/js/help-hints.js) ed «Elimina la prova»:
+   una sottopagina senza banner spegneva l'aiuto e toglieva l'eliminazione.
+   Uno per pagina: il banner non ha id, ma due interruttori si
+   contraddirebbero. #}
+{% if gara.is_prova %}
+<div class="c7-prova-testa">
+  {% include "components/_prova_banner.html" %}
+</div>
+{% endif %}

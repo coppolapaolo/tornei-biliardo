@@ -1,0 +1,57 @@
+{# templates/direttore/_dal_campionato.html — Design System 7c
+
+   «Dal campionato»: cio' che una gara riceve dal campionato che la contiene,
+   in preparazione (pagina della gara) e in «Impostazioni gara». Il canvas
+   non disegna la gara di campionato: sono righe `.c7-rows` come «Informazioni
+   gara», perche' sono dati da leggere prima di aprire le iscrizioni.
+
+   * il peso nella classifica generale (ADR-053): quello **efficace**
+     (`Gara.classification_weight`), che per il playoff che decide la
+     classifica finale vale 0 e allora non si scrive «×N»;
+   * chi spacca, con «eredita» quando la gara non ha una regola sua (ADR-056);
+   * la finestra di date ammessa dalle gare vicine (ADR-016);
+   * la riga alla pagina del campionato.
+
+   Attende `campionato_ctx` (`direttore_view.contesto_campionato`), `None`
+   per una gara singola: allora non disegna niente. Nessun id: sta in una
+   pagina sola per volta. #}
+{% import "direttore/_macros.html" as d with context %}
+{% if campionato_ctx %}
+{% set cc = campionato_ctx %}
+{% macro quando(v) -%}{{ v.data|date_local }}{% if v.ora %} {{ v.ora|time_local }}{% endif %}{%- endmacro %}
+<div class="c7-stack c7-dal-campionato">
+  {{ d.sezione(_('Dal campionato'), more=(_('Modifica') if gara.can_be_modified() and not cc.is_playoff else ''),
+               more_href=url_for('admin.competition.edit_gara', gara_id=gara.id)) }}
+  <div class="c7-rows">
+    {% if cc.decide_il_playoff %}
+      {% set _peso = _('non si somma: il playoff decide la classifica finale') %}
+    {% elif cc.peso_effettivo == 1 %}
+      {% set _peso = _('×1, come le altre gare') %}
+    {% else %}
+      {% set _peso = _('×%(n)s: il punteggio conta %(n)s volte', n=cc.peso_effettivo) %}
+    {% endif %}
+    {% if cc.is_playoff and not cc.decide_il_playoff %}
+      {% set _peso = _peso ~ ' · ' ~ _('il playoff si somma alla stagione') %}
+    {% endif %}
+    {{ d.riga('fa-scale-unbalanced', _('Peso nella classifica'), _peso,
+              tone=('accent' if cc.peso_effettivo != 1 else 'neutral'), attrs='data-help="gara-peso"') }}
+    {{ d.riga('fa-arrows-rotate', _('Chi spacca'),
+              (_('eredita: %(regola)s', regola=cc.regola_apertura.display_name) if cc.apertura_ereditata
+               else _('%(regola)s · scelta per questa gara', regola=cc.regola_apertura.display_name))) }}
+    {% if cc.precedente or cc.successiva %}
+    {% if cc.precedente and cc.successiva %}
+      {% set _date = _('fra la gara %(a)s (%(da)s) e la gara %(b)s (%(db)s)', a=cc.precedente.numero, da=quando(cc.precedente), b=cc.successiva.numero, db=quando(cc.successiva)) %}
+    {% elif cc.precedente %}
+      {% set _date = _('dalla gara %(a)s (%(da)s) in poi', a=cc.precedente.numero, da=quando(cc.precedente)) %}
+    {% else %}
+      {% set _date = _('fino alla gara %(b)s (%(db)s)', b=cc.successiva.numero, db=quando(cc.successiva)) %}
+    {% endif %}
+    {{ d.riga('fa-calendar-days', _('Date ammesse'), _date) }}
+    {% endif %}
+    {% if feature_visible('admin.campionato.campionato_detail') %}
+    {{ d.riga('fa-trophy', _('Pagina del campionato'), cc.nome,
+              href=url_for('admin.campionato.campionato_detail', campionato_id=cc.campionato_id)) }}
+    {% endif %}
+  </div>
+</div>
+{% endif %}

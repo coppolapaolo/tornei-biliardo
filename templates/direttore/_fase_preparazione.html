@@ -149,6 +149,8 @@
                 (_('minimo %(min)s, fino a %(max)s', min=gara.min_participants, max=gara.max_participants) if gara.max_participants else _('minimo %(min)s, senza limite', min=gara.min_participants))) }}
     </div>
 
+    {% include "direttore/_dal_campionato.html" %}
+
     {# Il link pubblico ha senso gia' ora: si prepara la locandina prima di
        aprire. Sul desktop sta nella vetrina in linea. #}
     {% if gara.is_prova %}

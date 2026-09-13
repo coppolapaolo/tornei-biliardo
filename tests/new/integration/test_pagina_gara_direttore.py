@@ -574,3 +574,175 @@ def test_in_gioco_la_pagina_porta_allo_schermo_in_sala(admin_client, db_session)
     html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
     assert "/g/salatoken1/sala" in html
     assert "Schermo in sala" in html
+
+
+# ── La gara dentro un campionato ──────────────────────────────────────────────
+
+
+def _campionato(db_session, planned=6):
+    from models import Campionato
+
+    campionato = Campionato(name="Campionato Sociale Fasi", planned_gare_count=planned)
+    db_session.add(campionato)
+    db_session.commit()
+    return campionato
+
+
+def _gara_campionato(
+    db_session, campionato, number, status, *, weight=1, playoff_only=None, **kw
+):
+    from datetime import timedelta
+
+    config = None
+    if playoff_only is not None:
+        from models.playoff.models import (
+            PlayoffConfiguration,
+            PlayoffRankingMode,
+            PlayoffType,
+        )
+
+        config = PlayoffConfiguration(
+            campionato_id=campionato.id,
+            name="Playoff Elite",
+            playoff_type=PlayoffType.TOP_N,
+            max_participants=4,
+            final_ranking_mode=(
+                PlayoffRankingMode.PLAYOFF_ONLY.value
+                if playoff_only
+                else PlayoffRankingMode.CAMPIONATO_PLUS_PLAYOFF.value
+            ),
+        )
+        db_session.add(config)
+        db_session.flush()
+    gara = Gara(
+        number=number,
+        name=f"Gara {number} del campionato",
+        date=date.today() + timedelta(days=number),
+        discipline=Discipline.EIGHT_BALL.value,
+        distance=5,
+        is_race_to=True,
+        matchmaking_strategy="amalfi",
+        status=status,
+        current_round=kw.pop("current_round", 0),
+        rounds_count=kw.pop("rounds_count", 3),
+        min_participants=4,
+        campionato_id=campionato.id,
+        weight=weight,
+        playoff_config_id=config.id if config else None,
+        **kw,
+    )
+    db_session.add(gara)
+    db_session.commit()
+    return gara
+
+
+def test_il_kicker_dice_la_gara_del_campionato_e_il_peso(admin_client, db_session):
+    campionato = _campionato(db_session)
+    _gara_campionato(db_session, campionato, 3, GaraStatus.COMPLETED.value)
+    gara = _gara_campionato(db_session, campionato, 4, GaraStatus.SETUP.value, weight=2)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    kicker = html.split('class="c7-gara-campionato"', 1)[1].split("</a>", 1)[0]
+    assert "Gara 4 di 6" in kicker
+    assert "Campionato Sociale Fasi" in kicker
+    assert "×2" in kicker
+    assert (
+        f'href="/admin/campionato/{campionato.id}"'
+        in html.split('class="c7-gara-campionato"', 1)[0][-200:]
+    )
+    # Sopra la striscia di fase.
+    assert html.index('class="c7-gara-campionato"') < html.index('class="c7-fasi"')
+
+
+def test_il_kicker_del_playoff_dice_playoff(admin_client, db_session):
+    campionato = _campionato(db_session)
+    gara = _gara_campionato(
+        db_session, campionato, 7, GaraStatus.SETUP.value, playoff_only=True
+    )
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    kicker = html.split('class="c7-gara-campionato"', 1)[1].split("</a>", 1)[0]
+    assert "Playoff" in kicker
+    assert "×" not in kicker
+    assert "di 6" not in kicker
+
+
+def test_una_gara_singola_non_ha_kicker_ne_peso(admin_client, db_session):
+    gara = _gara(db_session, GaraStatus.SETUP.value)
+    for url in (f"/admin/gara/{gara.id}", f"/admin/gara/{gara.id}/impostazioni"):
+        html = admin_client.get(url).get_data(as_text=True)
+        assert 'class="c7-gara-campionato"' not in html
+        assert "Dal campionato" not in html
+        assert 'data-help="gara-peso"' not in html
+
+
+@pytest.mark.parametrize("url", ["/admin/gara/{id}", "/admin/gara/{id}/impostazioni"])
+def test_dal_campionato_peso_apertura_e_date(admin_client, db_session, url):
+    from models.match.break_rules import BreakRule
+
+    campionato = _campionato(db_session)
+    campionato.default_break_rule = BreakRule.WINNER_BREAKS.value
+    _gara_campionato(db_session, campionato, 3, GaraStatus.COMPLETED.value)
+    gara = _gara_campionato(db_session, campionato, 4, GaraStatus.SETUP.value, weight=2)
+    _gara_campionato(db_session, campionato, 5, GaraStatus.SETUP.value)
+    html = admin_client.get(url.format(id=gara.id)).get_data(as_text=True)
+    assert "Dal campionato" in html
+    assert 'data-help="gara-peso"' in html
+    assert "eredita: Spacca chi ha vinto" in html
+    assert "fra la gara 3" in html and "e la gara 5" in html
+
+
+def _chiusa(db_session, gara):
+    _match(
+        db_session,
+        gara,
+        5,
+        3,
+        MatchStatus.CLOSED_UNILATERALLY.value,
+        suffix=f"c{gara.id}",
+    )
+
+
+@pytest.mark.parametrize(
+    "status", [GaraStatus.COMPLETED.value, GaraStatus.AWAITING_SSR.value]
+)
+def test_i_testi_di_chiusura_seguono_il_campionato(admin_client, db_session, status):
+    # Gara singola: niente punti al campionato.
+    singola = _gara(db_session, status, rounds_count=1, current_round=1)
+    _chiusa(db_session, singola)
+    html = admin_client.get(f"/admin/gara/{singola.id}").get_data(as_text=True)
+    assert "al campionato" not in html
+    assert "classifica del campionato" not in html
+
+    campionato = _campionato(db_session)
+    pesata = _gara_campionato(
+        db_session, campionato, 2, status, weight=3, rounds_count=1, current_round=1
+    )
+    _chiusa(db_session, pesata)
+    html = admin_client.get(f"/admin/gara/{pesata.id}").get_data(as_text=True)
+    assert "vale ×3 nella classifica del campionato" in html
+    assert "il playoff decide" not in html.lower()
+
+    playoff = _gara_campionato(
+        db_session,
+        campionato,
+        7,
+        status,
+        weight=2,
+        playoff_only=True,
+        rounds_count=1,
+        current_round=1,
+    )
+    _chiusa(db_session, playoff)
+    html = admin_client.get(f"/admin/gara/{playoff.id}").get_data(as_text=True)
+    assert "Il playoff decide la classifica finale del campionato" in html
+    assert "vale ×" not in html
+    assert f"/admin/campionato/{campionato.id}" in html
+
+
+def test_in_gioco_la_fascia_di_chiusura_non_promette_punti_a_una_gara_singola(
+    admin_client, db_session
+):
+    gara = _gara(db_session, GaraStatus.PLAYING.value, rounds_count=1, current_round=1)
+    _chiusa(db_session, gara)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert "Termina la gara" in html
+    assert "al campionato" not in html
