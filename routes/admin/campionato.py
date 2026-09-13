@@ -33,6 +33,7 @@ from models.matchmaking.configuration import (
 )
 from models.competition.constants import DEFAULT_DISTANCE
 from models.status_enum import Discipline, GaraStatus
+from utils.jinja import opzioni_dispari
 from utils import (
     campionato_manager_required,
     admin_required,
@@ -187,29 +188,12 @@ def wizard_step2():
         BilliardHall.query.filter_by(is_active=True).order_by(BilliardHall.name).all()
     )
 
-    # Filter odd policies based on classification system
+    # Le formule dei dispari compatibili col sistema scelto al passo 1, coi
+    # nomi che la gara mostrera' poi (unica fonte: utils.jinja).
     classification_system = session[WIZARD_SESSION_KEY].get(
         "default_classification_system", "WINS"
     )
-
-    # All available policies with their compatible systems
-    all_odd_policies = [
-        (OddNumberPolicy.NO.value, _("Lista Attesa (solo pari)"), ["WINS", "RACK"]),
-        (OddNumberPolicy.BYE.value, _("Bye (riposo)"), ["WINS"]),
-        (
-            OddNumberPolicy.BYE_WITH_CHALLENGE.value,
-            _("Bye con esercizio"),
-            ["WINS", "RACK"],
-        ),
-        (OddNumberPolicy.TRIO.value, _("Trio (match a 3)"), ["WINS", "RACK"]),
-    ]
-
-    # Filter to only show compatible policies
-    odd_policies = [
-        (value, label)
-        for value, label, systems in all_odd_policies
-        if classification_system in systems
-    ]
+    odd_policies = opzioni_dispari(classification_system)
 
     return render_template(
         "admin/campionato_wizard_step2.html",
@@ -583,11 +567,10 @@ def edit_campionato(campionato_id):
     # GET: Prepare data for template
     venues = BilliardHall.query.order_by(BilliardHall.name).all()
     matchmaking_strategies = CAMPIONATO_TYPES
-    odd_policies = [
-        ("bye", "X (vinto a tavolino)"),
-        ("bye_with_challenge", "X con Challenge"),
-        ("trio", "Match a 3 Giocatori"),
-    ]
+    # Tutte e quattro: il sistema di classifica si cambia nella stessa pagina,
+    # e un campionato nato con la lista d'attesa deve ritrovarla nel menu —
+    # senza la voce, il salvataggio la sostituiva in silenzio con la X.
+    odd_policies = opzioni_dispari()
 
     return render_template(
         "admin/campionato_edit.html",

@@ -29,7 +29,7 @@
                         <td>{{ match.round_number }}</td>
                         <td>
                             {% if match.is_bye %}
-                            <em class="text-muted">{{ _('Bye') }}</em>
+                            <em class="text-muted">{{ _('X a tavolino') }}</em>
                             {% elif match.is_trio and match.trio_match %}
                             {# Trio match: show all 3 players except current user #}
                             {% set trio = match.trio_match %}
@@ -70,7 +70,7 @@
                         </td>
                         <td>
                             {% if match.is_bye %}
-                            <span class="badge bg-info">{{ _('Bye') }}</span>
+                            <span class="badge bg-info">{{ _('X a tavolino') }}</span>
                             {% elif match.is_trio and match.trio_match %}
                             {# Trio match: check if user won #}
                             {% if match.winner_id == user.id %}

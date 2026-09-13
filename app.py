@@ -478,6 +478,7 @@ def create_app(config_name=None):
         player_name_with_forfeit,
         trio_config_for_distance,
         etichetta_dispari,
+        opzioni_dispari,
     )
 
     app.jinja_env.filters["format_distance"] = format_distance
@@ -487,6 +488,8 @@ def create_app(config_name=None):
     app.jinja_env.filters["player_name_with_forfeit"] = player_name_with_forfeit
     app.jinja_env.filters["trio_config_for_distance"] = trio_config_for_distance
     app.jinja_env.filters["etichetta_dispari"] = etichetta_dispari
+    # Le voci dei menu «giocatori dispari»: stessi nomi del filtro qui sopra.
+    app.jinja_env.globals["opzioni_dispari"] = opzioni_dispari
 
     # Register image path template functions
     from utils.image_paths import challenge_image_url, challenge_image_filename

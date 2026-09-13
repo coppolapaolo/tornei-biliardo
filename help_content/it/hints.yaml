@@ -101,7 +101,7 @@ hints:
 
   - id: gara.dispari
     label: "Se i giocatori sono dispari"
-    short: "Riposo, riposo con esercizio, partita a tre o lista d'attesa. Sui tabelloni non si chiede: chi resta fuori dal conto passa il turno."
+    short: "X a tavolino, X a tavolino con esercizio, partita a tre o lista d'attesa. Sui tabelloni non si chiede: chi resta fuori dal conto passa il turno."
     anchor: gara-dispari
     screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2]
     page: numero_dispari

@@ -152,7 +152,7 @@ blocks:
           uses the championship standings.
         hint: gara.primo_turno
       - name: "If players are odd"
-        values: "Bye · Bye with challenge · Trio · Waitlist"
+        values: "X by walkover · X by walkover with drill · Trio · Waitlist"
         text: >-
           What happens when the number of players is odd and someone would be
           left without an opponent. Explained one by one in [When the number of
@@ -329,7 +329,7 @@ blocks:
   - type: faq
     items:
       - q: "What do I pick if I have no idea?"
-        a: "Amalfi, 3 rounds, distance 4, Wins standings, odd numbers with «Bye», avoid rematches on. That is the club-evening setup."
+        a: "Amalfi, 3 rounds, distance 4, Wins standings, odd numbers with «X by walkover», avoid rematches on. That is the club-evening setup."
       - q: "I want a knockout tournament: what changes?"
         a: "Choose «Knockout» and the form gets shorter: number of rounds, forfeit handling, odd number of players, avoid rematches, standings system, tie-break and exact number of racks all disappear. The «Bracket options» panel appears instead. Maximum entrants becomes required, and the standings go by position."
       - q: "I picked a bracket and half the options vanished. Have I broken something?"

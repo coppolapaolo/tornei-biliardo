@@ -23,7 +23,7 @@ blocks:
 
   - type: heading
     id: riposo
-    title: "1. Riposo — «X a tavolino»"
+    title: "1. X a tavolino"
 
   - type: text
     text: >-
@@ -40,13 +40,13 @@ blocks:
   - type: note
     tone: warning
     text: >-
-      Con il sistema «Triangoli» il riposo semplice **non va bene**: chi non gioca
+      Con il sistema «Triangoli» la X a tavolino semplice **non va bene**: chi non gioca
       accumulerebbe zero triangoli e verrebbe penalizzato pesantemente. In quel caso
-      si usa il riposo con esercizio.
+      si usa la X a tavolino con esercizio.
 
   - type: heading
     id: riposo_challenge
-    title: "2. Riposo con esercizio"
+    title: "2. X a tavolino con esercizio"
 
   - type: text
     text: >-
@@ -171,11 +171,11 @@ blocks:
   - type: options
     items:
       - name: "Serata normale, classifica a vittorie"
-        values: "Riposo"
+        values: "X a tavolino"
         text: "La scelta predefinita: non allunga la serata e non complica niente."
       - name: "Classifica a triangoli"
-        values: "Riposo con esercizio"
-        text: "Obbligatorio nei fatti: il riposo semplice falserebbe la classifica."
+        values: "X a tavolino con esercizio"
+        text: "Obbligatorio nei fatti: la X a tavolino semplice falserebbe la classifica."
       - name: "Gruppo affiatato, tempo a disposizione"
         values: "Trio"
         text: "Nessuno sta fermo ed è il più divertente. Serve un tavolo in più di tempo."
@@ -206,7 +206,7 @@ blocks:
   - type: faq
     items:
       - q: "Ho ricevuto una vittoria senza giocare. È un errore?"
-        a: "No: è l'X a tavolino, e tocca a turno a chi resta senza avversario. Vale una vittoria con zero differenza triangoli."
+        a: "No: è la X a tavolino, e tocca a turno a chi resta senza avversario. Vale una vittoria con zero differenza triangoli."
       - q: "Perché sono in lista d'attesa se ci sono ancora posti?"
         a: "Perché la gara richiede un numero pari di giocatori e la tua iscrizione lo renderebbe dispari. Entrerai appena si iscrive qualcun altro."
       - q: "Il trio non è selezionabile."

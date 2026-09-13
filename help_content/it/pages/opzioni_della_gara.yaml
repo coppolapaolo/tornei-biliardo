@@ -151,7 +151,7 @@ blocks:
           incontrino subito. **Classifica** usa la classifica del campionato.
         hint: gara.primo_turno
       - name: "Se giocatori dispari"
-        values: "Riposo · Riposo con esercizio · Trio · Lista d'attesa"
+        values: "X a tavolino · X a tavolino con esercizio · Trio · Lista d'attesa"
         text: >-
           Cosa succede quando i giocatori sono in numero dispari e uno
           resterebbe senza avversario. Spiegate una per una in [Quando i
@@ -331,7 +331,7 @@ blocks:
   - type: faq
     items:
       - q: "Cosa scelgo se non ho idea?"
-        a: "Amalfi, 3 turni, distanza 4, classifica Vittorie, dispari con «Riposo», evita reincontri attivo. È la configurazione da serata di circolo."
+        a: "Amalfi, 3 turni, distanza 4, classifica Vittorie, dispari con «X a tavolino», evita reincontri attivo. È la configurazione da serata di circolo."
       - q: "Voglio un torneo a eliminazione: cosa cambia?"
         a: "Scegli «Eliminazione diretta» e il modulo si accorcia: spariscono numero di turni, gestione forfait, giocatori dispari, evita reincontri, sistema di classifica, spareggio e numero esatto di triangoli. Compare invece il riquadro «Opzioni del tabellone». Il massimo iscritti diventa obbligatorio, e la classifica è per posizione."
       - q: "Ho scelto il tabellone e metà delle opzioni è sparita. Ho fatto un danno?"
