@@ -770,6 +770,29 @@ class TestIlTrioInClassifica:
 
         assert self._vittorie(gara, giocatori) == [0, 0, 0]
 
+    def test_chi_si_ritira_non_vince_e_il_pari_resta_fra_gli_altri_due(self):
+        """`SPECIFICHE.md` riga 160, la regola del ritiro (decisa il 2026-09-13).
+
+        > Chi si ritira dal trio non vince mai, nemmeno col totale più alto, e
+        > il pari si guarda solo fra gli altri due. Esempi: Marco 3, Luca 3 e
+        > Gianni ritirato con 3, nessuno vince; Marco 4, Luca 3 e Gianni
+        > ritirato con 4, vince Marco.
+
+        Si prova sulla regola, `vincitore_del_trio`, da cui passano tutte le
+        strade che chiudono un trio: il secondo esempio fa undici triangoli, e
+        un trio ne gioca al massimo nove. Il ritiro giocato davvero è il test
+        qui sotto.
+        """
+        from models.match.trio_punteggio import vincitore_del_trio
+
+        marco, luca, gianni = 1, 2, 3
+        assert (
+            vincitore_del_trio({marco: 3, luca: 3, gianni: 3}, escluso=gianni) is None
+        )
+        assert (
+            vincitore_del_trio({marco: 4, luca: 3, gianni: 4}, escluso=gianni) == marco
+        )
+
     def test_il_pareggio_in_testa_dopo_un_ritiro(self, db_session):
         """Il ritiro nel trio: chi si ritira non vince, e fra gli altri due vale
         la stessa regola. Qui il primo batte il secondo 2-0, ma a totali sono

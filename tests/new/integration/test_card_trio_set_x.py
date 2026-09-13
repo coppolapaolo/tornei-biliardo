@@ -351,6 +351,15 @@ def test_la_correzione_del_trio_riscrive_triangoli_vincitore_e_classifica(
     pagina = client.get(f"/admin/match/{match.id}").get_data(as_text=True)
     assert "4–2–0" in pagina and "1–3–2" in pagina
 
+    eventi = _eventi_della_correzione(gara.id, match.id)
+    assert len(eventi) == 1
+    dati = eventi[0]["data"]
+    assert (dati["autore"], dati["trio_id"], dati["winner_id"]) == (
+        admin.id,
+        trio.id,
+        p2.id,
+    )
+
 
 def test_il_trio_di_un_turno_bloccato_non_si_corregge(
     client, admin, db_session, isolated_players
@@ -368,6 +377,80 @@ def test_il_trio_di_un_turno_bloccato_non_si_corregge(
     )
     assert db_session.get(TrioMatch, trio.id).player_racks_list == [4, 2, 0]
     assert MatchCorrection.query.filter_by(match_id=match.id).count() == 0
+    assert not _eventi_della_correzione(gara.id, match.id)
+
+
+def _eventi_della_correzione(gara_id, match_id):
+    """Gli eventi live che annunciano la correzione di quella partita."""
+    return [
+        e
+        for e in _eventi(gara_id)
+        if e["type"] == "match_completed"
+        and e["data"].get("corretto")
+        and e["data"].get("match_id") == match_id
+    ]
+
+
+def test_la_correzione_della_partita_a_due_si_annuncia(
+    client, admin, db_session, isolated_players
+):
+    """Fino al 2026-09-13 la correzione non emetteva niente: classifica e
+    schermo in sala restavano sul risultato di prima fino a un ricaricamento."""
+    gara = _gara(db_session, distance=4)
+    primo, secondo = isolated_players[5], isolated_players[6]
+    match = Match(
+        gara_id=gara.id,
+        round_number=1,
+        player1_id=primo.id,
+        player2_id=secondo.id,
+        player1_score=4,
+        player2_score=1,
+        winner_id=primo.id,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
+    )
+    db_session.add(match)
+    db_session.commit()
+
+    r = client.post(
+        f"/admin/match/{match.id}/correct",
+        data={"player1_score": 1, "player2_score": 4},
+    )
+    assert r.status_code == 302
+
+    eventi = _eventi_della_correzione(gara.id, match.id)
+    assert len(eventi) == 1
+    dati = eventi[0]["data"]
+    assert dati["autore"] == admin.id
+    assert (dati["player1_score"], dati["player2_score"], dati["winner_id"]) == (
+        1,
+        4,
+        secondo.id,
+    )
+
+
+def test_una_correzione_rifiutata_non_si_annuncia(
+    client, admin, db_session, isolated_players
+):
+    gara = _gara(db_session, distance=4)
+    match = Match(
+        gara_id=gara.id,
+        round_number=1,
+        player1_id=isolated_players[5].id,
+        player2_id=isolated_players[6].id,
+        player1_score=4,
+        player2_score=1,
+        winner_id=isolated_players[5].id,
+        status=MatchStatus.CLOSED_UNILATERALLY.value,
+    )
+    db_session.add(match)
+    db_session.commit()
+
+    client.post(
+        f"/admin/match/{match.id}/correct",
+        data={"player1_score": 4, "player2_score": 4},
+    )
+    assert db_session.get(Match, match.id).player1_score == 4
+    assert not _eventi_della_correzione(gara.id, match.id)
 
 
 # ── Partita a set ─────────────────────────────────────────────────────────────
@@ -585,6 +668,16 @@ def test_la_partita_a_set_si_corregge_set_per_set(
     pagina = client.get(f"/admin/match/{match.id}").get_data(as_text=True)
     assert "4–1 · 2–4 · 1–4" in pagina
 
+    eventi = _eventi_della_correzione(gara.id, match.id)
+    assert len(eventi) == 1
+    dati = eventi[0]["data"]
+    assert dati["autore"] == admin.id
+    assert (dati["player1_score"], dati["player2_score"], dati["winner_id"]) == (
+        1,
+        2,
+        secondo.id,
+    )
+
 
 def test_la_partita_a_set_si_corregge_con_un_set_in_meno(
     client, admin, db_session, isolated_players
@@ -637,6 +730,7 @@ def test_la_partita_a_set_di_un_turno_bloccato_non_si_corregge(
     riletta = db_session.get(Match, match.id)
     assert (riletta.player1_score, riletta.player2_score) == (2, 0)
     assert MatchCorrection.query.filter_by(match_id=match.id).count() == 0
+    assert not _eventi_della_correzione(gara.id, match.id)
 
 
 def test_a_set_pari_con_i_triangoli_esatti_la_partita_non_e_alla_distanza(

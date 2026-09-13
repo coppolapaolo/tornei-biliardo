@@ -414,6 +414,19 @@ def correct_match_result(match_id):
             corrected_by_id=current_user.id,
             note=request.form.get("note"),
         )
+        # L'evento live, come le route della card: chi guarda la classifica o
+        # lo schermo in sala vede il risultato corretto senza ricaricare. Parte
+        # dopo il servizio, e fuori da una transazione gestita si committa
+        # insieme alle ultime scritture della correzione: mai prima del fatto
+        # (ADR-057). Una correzione rifiutata non annuncia niente.
+        from utils.card_partita import annuncia_punteggio
+
+        corretta = db.session.get(Match, match_id)
+        if corretta is not None:
+            extra: dict = {"corretto": True}
+            if corretta.is_trio and corretta.trio_match is not None:
+                extra["trio_id"] = corretta.trio_match.id
+            annuncia_punteggio(corretta, current_user.id, **extra)
         flash(
             _("Risultato corretto. La correzione resta visibile sulla partita."),
             "success",
