@@ -10,11 +10,11 @@
             <div class="col-md-6">
                 <strong>{{ _("Criterio Classifica:") }}</strong><br>
                 <small class="text-muted">{{ _("1. Triangoli Totali Vinti (desc) → 2. Diff. Triangoli (desc)") }}</small><br><br>
-                <strong>{{ _("Aggiornamento:") }}</strong> <span class="badge bg-info">{{ _("Dopo ogni match") }}</span>
+                <strong>{{ _("Aggiornamento:") }}</strong> <span class="badge bg-info">{{ _("Dopo ogni partita") }}</span>
             </div>
             <div class="col-md-6">
                 <strong>{{ _("Giocatori Totali:") }}</strong> {{ total_players }}<br>
-                <strong>{{ _("Match Completati:") }}</strong>
+                <strong>{{ _("Partite completate:") }}</strong>
                 {# Finite = chiuse dal direttore + confermate dai giocatori #}
                 {% set comp_matches = matches|selectattr("status", "equalto", MatchStatus.CLOSED_UNILATERALLY.value)|list|length %}
                 {% set val_matches = matches|selectattr("status", "equalto", MatchStatus.CONFIRMED_BY_BOTH.value)|list|length %}
@@ -23,7 +23,7 @@
                 {{ completed_matches }}/{{ total_matches }}<br>
                 <strong>{{ _("Note:") }}</strong><br>
                 <small class="text-muted">
-                    {{ _("I match possono essere giocati in qualsiasi ordine. La classifica si aggiorna in tempo reale.") }}
+                    {{ _("Le partite possono essere giocate in qualsiasi ordine. La classifica si aggiorna in tempo reale.") }}
                 </small>
             </div>
         </div>

@@ -17,7 +17,7 @@ blocks:
 
   - type: shot
     shot: gara-nuova
-    caption: "I quattro passaggi: informazioni pubbliche, struttura, formato del match, riepilogo."
+    caption: "I quattro passaggi: informazioni pubbliche, struttura, formato della partita, riepilogo."
 
   - type: heading
     id: informazioni
@@ -223,7 +223,7 @@ blocks:
 
   - type: heading
     id: formato
-    title: "3. Formato del match"
+    title: "3. Formato della partita"
 
   - type: text
     text: >-

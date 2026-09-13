@@ -69,10 +69,12 @@ class ProposalService:
             is_multi_set: Whether match is multi-set
             match_distance: Number of sets to win (only for multi-set)
         """
+        from flask_babel import _
+
         from models.base import utc_now
 
         if scheduled_at < utc_now():
-            raise ValueError("Non è possibile programmare un match nel passato")
+            raise ValueError(_("Non è possibile programmare una sfida nel passato"))
 
         if expires_at is None:
             expires_at = scheduled_at - timedelta(hours=2)
@@ -165,7 +167,7 @@ class ProposalService:
         from models.base import utc_now
 
         if scheduled_at < utc_now():
-            raise ValueError("Non è possibile programmare un match nel passato")
+            raise ValueError(_("Non è possibile programmare una sfida nel passato"))
 
         if expires_at is None:
             expires_at = scheduled_at - timedelta(hours=2)
@@ -224,9 +226,9 @@ class ProposalService:
                 NotificationFactory.create_bulk_notification(
                     user_ids=eligible_user_ids,
                     notification_type=NotificationType.MATCH_PROPOSAL,
-                    title=_("Nuova proposta di match"),
+                    title=_("Nuova proposta di sfida"),
                     message=_(
-                        "%(username)s propone un match aperto%(location)s il %(date)s",
+                        "%(username)s propone una sfida aperta%(location)s il %(date)s",
                         username=proposer_name,
                         location=loc_suffix,
                         date=scheduled_str,
@@ -499,13 +501,13 @@ class ProposalService:
                 notification_type=NotificationType.MATCH_ACCEPTED,
                 title=_("Proposta accettata!"),
                 message=_(
-                    "%(player)s ha accettato la tua proposta di match%(location)s",
+                    "%(player)s ha accettato la tua proposta di sfida%(location)s",
                     player=accepter_name,
                     location=loc_suffix,
                 ),
                 priority=NotificationPriority.HIGH,
                 action_url=f"/match/matches/{individual_match.id}",
-                action_text=_("Vai al match"),
+                action_text=_("Vai alla sfida"),
             )
         except Exception:
             pass  # Notification failure shouldn't block acceptance
@@ -520,9 +522,9 @@ class ProposalService:
                 NotificationFactory.create_bulk_notification(
                     user_ids=discarded_ids,
                     notification_type=NotificationType.MATCH_DECLINED,
-                    title=_("Proposta di match chiusa"),
+                    title=_("Proposta di sfida chiusa"),
                     message=_(
-                        "La proposta di match%(location)s è stata accettata "
+                        "La proposta di sfida%(location)s è stata accettata "
                         "da un altro giocatore.",
                         location=loc_suffix,
                     ),
@@ -648,7 +650,7 @@ class ProposalService:
                     notification_type=NotificationType.MATCH_DECLINED,
                     title=_("Proposta scaduta"),
                     message=_(
-                        "La tua proposta di match%(location)s è scaduta "
+                        "La tua proposta di sfida%(location)s è scaduta "
                         "senza accettazioni.",
                         location=loc_suffix,
                     ),
@@ -693,7 +695,7 @@ class ProposalService:
                     notification_type=NotificationType.MATCH_DECLINED,
                     title=_("Proposta scaduta"),
                     message=_(
-                        "La tua proposta di match%(location)s è scaduta "
+                        "La tua proposta di sfida%(location)s è scaduta "
                         "senza accettazioni.",
                         location=loc_suffix,
                     ),
@@ -780,9 +782,9 @@ class ProposalService:
                 NotificationFactory.create_bulk_notification(
                     user_ids=invited_user_ids,
                     notification_type=NotificationType.MATCH_DECLINED,
-                    title=_("Proposta Match Conclusa"),
+                    title=_("Proposta di sfida conclusa"),
                     message=_(
-                        "La proposta di match '%(title)s' è stata accettata "
+                        "La proposta di sfida '%(title)s' è stata accettata "
                         "da un altro giocatore.",
                         title=proposal_title,
                     ),

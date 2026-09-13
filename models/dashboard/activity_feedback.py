@@ -1260,7 +1260,7 @@ class ActivityFeedbackService:
             },
             {
                 "done": played,
-                "title": _("Gioca il primo match"),
+                "title": _("Gioca la prima partita"),
                 "subtitle": _("Da qui parte il tuo Elo"),
             },
             {
@@ -1393,10 +1393,10 @@ def _build_player(
         )
     elif profile == "returning":
         block["secondary"] = _metric(
-            _("Match giocati"),
+            _("Partite giocate"),
             str(len(matches)),
             delta=_(
-                "%(won)s vinti",
+                "%(won)s vinte",
                 won=sum(1 for a in matches if a.outcome == "win"),
             ),
         )

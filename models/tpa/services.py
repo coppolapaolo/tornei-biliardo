@@ -75,7 +75,7 @@ class TpaRefertoService:
 
         status = match.status.value if hasattr(match.status, "value") else match.status
         if status != MatchStatus.IN_PROGRESS.value:
-            return _("Il referto si apre a match iniziato.")
+            return _("Il referto si apre a partita iniziata.")
 
         return TpaRefertoService._match_blocking_reason(match)
 
@@ -96,11 +96,11 @@ class TpaRefertoService:
             )
 
         if match.is_multi_set:
-            return _("Il referto TPA non copre i match a set.")
+            return _("Il referto TPA non copre le partite a set.")
 
         if (match.player1_score or 0) + (match.player2_score or 0) > 0:
             return _(
-                "Questo match ha gia' dei triangoli segnati: il referto va aperto "
+                "Questa partita ha gia' dei triangoli segnati: il referto va aperto "
                 "prima del primo triangolo."
             )
 
@@ -162,10 +162,10 @@ class TpaRefertoService:
         """Apre il referto e ne fa compilatore chi lo ha aperto."""
         match = db.session.get(IndividualMatch, match_id)
         if match is None:
-            raise NotFoundError(_("Match non trovato"))
+            raise NotFoundError(_("Partita non trovata"))
 
         if TpaRefertoService.get_for_match(match_id) is not None:
-            raise ConflictError(_("Il referto di questo match e' gia' aperto."))
+            raise ConflictError(_("Il referto di questa partita e' gia' aperto."))
 
         reason = TpaRefertoService.blocking_reason(match, user_id)
         if reason:
@@ -359,7 +359,7 @@ class TpaRefertoService:
                 if not match.can_add_rack():
                     raise ConflictError(
                         _(
-                            "Il match ha raggiunto la distanza: prima di continuare "
+                            "La partita ha raggiunto la distanza: prima di continuare "
                             "il risultato va confermato o rifiutato."
                         )
                     )

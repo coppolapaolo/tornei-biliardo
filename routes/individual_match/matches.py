@@ -51,7 +51,7 @@ def match_detail(match_id):
 
         # Verify user is part of this match
         if current_user.id not in (match.player1_id, match.player2_id):
-            flash(_("Accesso negato a questo match."), "danger")
+            flash(_("Accesso negato a questa sfida."), "danger")
             return redirect(url_for("individual_match.match_list"))
 
         from flask import render_template
@@ -125,7 +125,7 @@ def start_match(match_id):
                 (
                     _("Sfida avviata: il referto è tuo.")
                     if col_referto
-                    else _("Match avviato con successo!")
+                    else _("Sfida avviata con successo!")
                 ),
                 "success",
             )
@@ -415,7 +415,7 @@ def confirm_result(match_id):
             )
         else:
             if fully_confirmed:
-                flash(_("Match completato con successo!"), "success")
+                flash(_("Sfida completata con successo!"), "success")
             else:
                 flash(
                     _("Risultato confermato! In attesa dell'altro giocatore."), "info"
@@ -504,7 +504,7 @@ def complete_match(match_id):
                 }
             )
         else:
-            flash(_("Match completato con successo!"), "success")
+            flash(_("Sfida completata con successo!"), "success")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     except ValueError as e:
@@ -526,7 +526,7 @@ def cancel_match(match_id):
         if request.is_json:
             return jsonify({"success": True, "message": "Match cancelled successfully"})
         else:
-            flash(_("Match annullato con successo!"), "success")
+            flash(_("Sfida annullata con successo!"), "success")
             return redirect(url_for("individual_match.match_list"))
 
     except ValueError as e:
@@ -555,7 +555,7 @@ def edit_match(match_id):
     match = IndividualMatch.query.get_or_404(match_id)
 
     if not match.is_player(current_user.id):
-        flash(_("Accesso negato a questo match."), "danger")
+        flash(_("Accesso negato a questa sfida."), "danger")
         return redirect(url_for("individual_match.match_list"))
 
     if not match.can_be_revised():
@@ -709,7 +709,7 @@ def forfeit_match(match_id):
                 }
             )
         else:
-            flash(_("Forfait dichiarato. Match terminato."), "warning")
+            flash(_("Forfait dichiarato. Sfida terminata."), "warning")
             return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     except ValueError as e:
@@ -732,12 +732,12 @@ def rematch(match_id):
 
     # Verify user is part of this match
     if current_user.id not in (match.player1_id, match.player2_id):
-        flash(_("Accesso negato a questo match."), "danger")
+        flash(_("Accesso negato a questa sfida."), "danger")
         return redirect(url_for("individual_match.match_list"))
 
     # Match must be completed
     if match.status.value not in ["completed", "validated"]:
-        flash(_("Solo i match completati permettono di giocarne un altro."), "warning")
+        flash(_("Solo le sfide completate permettono di giocarne un'altra."), "warning")
         return redirect(url_for("individual_match.match_detail", match_id=match_id))
 
     # Determine opponent

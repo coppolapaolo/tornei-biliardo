@@ -3,7 +3,7 @@
 
 {# Lo spazio dopo "Match" e' significativo: con `{%- if -%}` veniva mangiato
    e la linguetta del browser leggeva "Matchplayer2 vs player3". #}
-{% block title %}{{ _('Match') }}
+{% block title %}{{ _('Partita') }}
 {% if match.is_trio and match.trio_match %}
 {# Trio match title #}
 {{ match.trio_match.player1.username }} • {{ match.trio_match.player2.username }} • {{ match.trio_match.player3.username
@@ -116,7 +116,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         <div class="c7-card">
             <h3 class="mb-1">{{ _('Esercizi disponibili') }}</h3>
             <p class="text-muted mb-3" style="font-size: 13px; font-weight: 600;">
-                {{ _('Gli esercizi sono prove tecniche che puoi completare durante il match.') }}
+                {{ _('Gli esercizi sono prove tecniche che puoi completare durante la partita.') }}
             </p>
             <div class="c7-stack" style="gap: 8px;">
                 {% for gara_challenge in available_challenges %}

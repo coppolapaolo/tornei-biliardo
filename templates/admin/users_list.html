@@ -254,10 +254,10 @@
                                 {% if user.is_director %}
                                 <form action="{{ url_for('admin.user.demote_director', user_id=user.id) }}"
                                     method="POST" style="display: inline;"
-                                    onsubmit='return confirmSubmit(this, {{ _("Rimuovere il ruolo director a questo utente?")|tojson }})'>
+                                    onsubmit='return confirmSubmit(this, {{ _("Togliere a questo utente il ruolo di direttore di gara?")|tojson }})'>
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                     <button type="submit" class="btn btn-sm btn-outline-danger">
-                                        <i class="fas fa-user-minus"></i> {{ _("Rimuovi director") }}
+                                        <i class="fas fa-user-minus"></i> {{ _("Rimuovi direttore di gara") }}
                                     </button>
                                 </form>
                                 {% endif %}

@@ -37,14 +37,14 @@
       {# Sul tabellone il sorteggio decide il percorso di tutti fino alla
          finale e congela le squadre: vale la pena dirlo prima, non dopo. #}
       "confirmStartBracket": {{ _("Sorteggiare il tabellone? Le iscrizioni si chiudono, le squadre si congelano e il percorso di ogni giocatore fino alla finale resta questo, salvo annullare il sorteggio.") | tojson }},
-      "startingScheduleMessage": {{ _("Calcolo dello schedule in corso… Per gare con trio (giocatori dispari) il calcolo può richiedere qualche secondo.") | tojson }},
+      "startingScheduleMessage": {{ _("Calcolo del calendario in corso… Per gare con trio (giocatori dispari) il calcolo può richiedere qualche secondo.") | tojson }},
       "confirmCancelFirstRound": {{ _("Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite del primo turno verranno eliminate e la gara tornerà allo stato di iscrizioni.") | tojson }},
       "confirmCancelCurrentRound": {{ _("Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.") | tojson }},
       "confirmTerminate": {{ _("Sei sicuro di voler terminare la gara?\n\nDopo la conferma, i risultati saranno definitivi e non sarà più possibile modificarli.") | tojson }},
       "confirmStartSsr": {{ _("Avviare la fase di spareggio (SSR)?\n\nDovrai inserire i punteggi per risolvere i parimerito nelle prime %(pos)s posizioni.", pos=gara.tiebreaker_until_position or 3) | tojson }},
       "confirmCancelSsr": {{ _("Annullare la fase di spareggio (SSR)?\n\nI punteggi SSR già inseriti verranno azzerati e la gara tornerà in gioco, così potrai correggere i risultati.") | tojson }},
       "errorSsrCancel": {{ _("Errore durante l'annullamento della fase SSR") | tojson }},
-      "confirmResetRound": {{ _("Sei sicuro di voler resettare l'ultimo turno?\n\nTutti i risultati del turno verranno azzerati e i match torneranno in stato 'In Attesa'.\n\nQuesta azione è IRREVERSIBILE!") | tojson }},
+      "confirmResetRound": {{ _("Sei sicuro di voler resettare l'ultimo turno?\n\nTutti i risultati del turno verranno azzerati e le partite torneranno in stato 'In Attesa'.\n\nQuesta azione è IRREVERSIBILE!") | tojson }},
       "confirmCancelGara": {{ _("Sei SICURO di voler cancellare la Gara {number}?\n\nTutti i player iscritti riceveranno una notifica della cancellazione.\nQuesta azione è IRREVERSIBILE!") | tojson }},
       "confirmResetMatch": {{ _("Sei sicuro di voler resettare questa partita?") | tojson }},
       "confirmResetTrio": {{ _("Sei sicuro di voler resettare questo trio?") | tojson }},
@@ -80,7 +80,7 @@
       "tieFor": {{ _("Pari merito per il") | tojson }},
       "place": {{ _("posto") | tojson }},
       "ssrPoints": {{ _("Punti SSR") | tojson }},
-      "swapTitle": {{ _("Click per scambiare con match occupante") | tojson }},
+      "swapTitle": {{ _("Tocca per scambiare con la partita che occupa il tavolo") | tojson }},
       "tablePrefix": {{ _("Tavolo") | tojson }}
     }
   }

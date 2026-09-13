@@ -65,7 +65,7 @@
                 <label for="default_classification_system" class="form-label">{{ _("Sistema di Classifica") }}</label>
                 <select class="form-select" id="default_classification_system" name="default_classification_system">
                     <option value="WINS" {% if campionato.default_classification_system == "WINS" %}selected{% endif %}>
-                        {{ _("Vittorie (match vinti → diff triangoli)") }}
+                        {{ _("Vittorie (partite vinte → diff triangoli)") }}
                     </option>
                     <option value="RACK" {% if campionato.default_classification_system == "RACK" %}selected{% endif %}>
                         {{ _("Triangoli Totali (triangoli accumulati)") }}
@@ -216,7 +216,7 @@
                         <strong>{{ _("Gioco con handicap") }}</strong>
                     </label>
                 </div>
-                <small class="text-muted">{{ _("I match si giocano con handicap: il rating Elo si aggiorna solo fra giocatori della stessa categoria. Ereditato da gare e partite.") }}</small>
+                <small class="text-muted">{{ _("Le partite si giocano con handicap: il rating Elo si aggiorna solo fra giocatori della stessa categoria. Ereditato da gare e partite.") }}</small>
             </div>
 
             {# Punti per posizione (US-17): solo sui campionati a tabellone.

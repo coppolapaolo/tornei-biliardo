@@ -187,7 +187,7 @@ class MatchProposalService:
                 notification_type=NotificationType.MATCH_DECLINED,
                 title=_("Proposta rifiutata"),
                 message=_(
-                    "%(player)s ha rifiutato la tua proposta di match%(location)s",
+                    "%(player)s ha rifiutato la tua proposta di sfida%(location)s",
                     player=nome,
                     location=dove,
                 ),

@@ -133,7 +133,7 @@ class AdvancedRoundManager:
                 str(
                     _(
                         "Gara certificata da spareggio: annulla prima lo "
-                        "spareggio per modificare i match"
+                        "spareggio per modificare le partite"
                     )
                 ),
             )

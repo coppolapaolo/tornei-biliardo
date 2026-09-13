@@ -132,14 +132,14 @@ function updateDistancePreview() {
      * verrebbe interpolato da Python e arriverebbe qui gia' consumato. */
     if (!isMultiSet) {
         previewText.textContent = (exactNumber
-            ? {{ _('Si giocano esattamente {n} rack')|tojson }}
-            : {{ _('Si vince a {n} rack')|tojson }}).replace('{n}', distance);
+            ? {{ _('Si giocano esattamente {n} triangoli')|tojson }}
+            : {{ _('Si vince a {n} triangoli')|tojson }}).replace('{n}', distance);
     } else {
         const sets = (isRaceToSets
             ? {{ _('Si vince a {n} set')|tojson }}
             : {{ _('Si giocano {n} set')|tojson }}).replace('{n}', matchDistance);
         const racks = (exactNumber
-            ? {{ _('esattamente {n} rack')|tojson }}
+            ? {{ _('esattamente {n} triangoli')|tojson }}
             : {{ _('al {n}')|tojson }}).replace('{n}', distance);
         previewText.textContent = {{ _('{sets}, ogni set {racks}')|tojson }}
             .replace('{sets}', sets)

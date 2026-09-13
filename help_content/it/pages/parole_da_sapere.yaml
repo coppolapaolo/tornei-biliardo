@@ -30,8 +30,7 @@ blocks:
         values: "un giocatore contro un altro"
         text: >-
           Una partita è fatta di più triangoli. Finisce quando uno dei due arriva al
-          numero di triangoli stabilito, che si chiama **distanza**. In alcune
-          schermate la partita è chiamata anche «match».
+          numero di triangoli stabilito, che si chiama **distanza**.
       - name: "Distanza"
         values: "es. «Al 4»"
         text: >-

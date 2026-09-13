@@ -191,7 +191,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ metrics.matches_played.current }}</div>
-                    <div class="metric-label"><i class="fas fa-gamepad"></i> {{ _('Match giocati') }}</div>
+                    <div class="metric-label"><i class="fas fa-gamepad"></i> {{ _('Partite giocate') }}</div>
                     <small class="trend-{{ metrics.matches_played.trend_direction }}">
                         {% if metrics.matches_played.trend_direction == 'up' %}
                             <i class="fas fa-arrow-up"></i>
@@ -251,7 +251,7 @@
         <div class="col-lg-6">
             <div class="card">
                 <div class="card-header">
-                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ _('Match giocati') }}</h5>
+                    <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ _('Partite giocate') }}</h5>
                 </div>
                 <div class="card-body">
                     <div class="chart-container">
@@ -381,7 +381,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ total_matches }}</div>
-                    <div class="metric-label"><i class="fas fa-gamepad"></i> {{ _('Match totali') }}</div>
+                    <div class="metric-label"><i class="fas fa-gamepad"></i> {{ _('Partite totali') }}</div>
                 </div>
             </div>
         </div>
@@ -426,7 +426,7 @@
             <div class="card kpi-card h-100">
                 <div class="card-body text-center">
                     <div class="metric-value">{{ matches_per_user }}</div>
-                    <div class="metric-label"><i class="fas fa-user"></i> {{ _('Match/utente attivo') }}</div>
+                    <div class="metric-label"><i class="fas fa-user"></i> {{ _('Partite per utente attivo') }}</div>
                 </div>
             </div>
         </div>
@@ -450,7 +450,7 @@
 
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ _('Match giornalieri') }}</h5>
+            <h5 class="mb-0"><i class="fas fa-chart-line"></i> {{ _('Partite giornaliere') }}</h5>
         </div>
         <div class="card-body">
             <div class="chart-container">
@@ -577,14 +577,14 @@
         <div class="col-lg-8">
             <div class="card h-100">
                 <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="fas fa-id-badge"></i> {{ _('Performance Directors') }}</h5>
+                    <h5 class="mb-0"><i class="fas fa-id-badge"></i> {{ _('Rendimento dei direttori di gara') }}</h5>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table table-hover mb-0 align-middle">
                             <thead class="table-light">
                                 <tr>
-                                    <th>{{ _('Director') }}</th>
+                                    <th>{{ _('Direttore di gara') }}</th>
                                     <th class="text-center">{{ _('Gare Gestite') }}</th>
                                     <th class="text-center">{{ _('Saturazione Avg') }}</th>
                                 </tr>
@@ -621,7 +621,7 @@
                                 {% else %}
                                 <tr>
                                     <td colspan="3" class="text-center py-4 text-muted">
-                                        {{ _('Nessun dato director disponibile') }}
+                                        {{ _('Nessun dato sui direttori di gara') }}
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -799,7 +799,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
             labels: dailyMatches.map(d => d.date),
             datasets: [{
-                label: {{ _('Match')|tojson }},
+                label: {{ _('Partite')|tojson }},
                 data: dailyMatches.map(d => d.count),
                 borderColor: C7.bright,
                 backgroundColor: C7.brightSoft,
@@ -856,7 +856,7 @@ document.addEventListener('DOMContentLoaded', function() {
         data: {
             labels: matchesData.map(d => d.date),
             datasets: [{
-                label: {{ _('Match giocati')|tojson }},
+                label: {{ _('Partite giocate')|tojson }},
                 data: matchesData.map(d => d.count),
                 backgroundColor: C7.bright,
                 borderColor: C7.bright,

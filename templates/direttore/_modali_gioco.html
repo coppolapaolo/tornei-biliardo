@@ -57,7 +57,7 @@
             {% set trio_config = gara.distance|trio_config_for_distance %}
             <div class="alert alert-info" id="quickResultTrioInfo" style="display: none;">
               <div>
-                <strong>{{ _('Trio (Round-Robin):') }}</strong>
+                <strong>{{ _('Trio (tutti contro tutti):') }}</strong>
                 {% if trio_config %}
                 {{ _('%(gironi)s gironi, max %(max_racks)s triangoli per giocatore', gironi=trio_config.num_rounds,
                 max_racks=trio_config.max_racks_per_player) }}
