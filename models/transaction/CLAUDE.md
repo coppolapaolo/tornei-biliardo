@@ -139,15 +139,34 @@ Le regole, verificate sul database da `tests/new/unit/test_transazioni_annidate.
 Fino al 2026-09-13 era il contrario in entrambi i casi. Il ramo annidato
 chiudeva il savepoint con `db.session.commit()` e lo annullava con
 `db.session.rollback()`, che da SQLAlchemy 1.4 agiscono sulla transazione **più
-esterna**. E con SQLite serviva un secondo accorgimento: il driver `sqlite3`
-apre la transazione solo davanti a una scrittura, quindi se l'esterna aveva
-soltanto letto, il `SAVEPOINT` dell'interna era il primo comando e il suo
-`RELEASE` valeva un commit. Il gestore ora apre la transazione con `BEGIN`
-prima del savepoint (`_apri_transazione_sqlite`).
+esterna**.
 
-**Non vale per i `with db.session.begin_nested()` scritti a mano** dentro i
-servizi (ADR-025): chiudono il savepoint giusto, ma se prima non c'è stata
-nessuna scrittura il loro `RELEASE` resta un commit su SQLite.
+C'è poi un difetto del driver `sqlite3`: apre la transazione solo davanti a una
+scrittura, quindi se la sessione ha soltanto letto un `SAVEPOINT` è il primo
+comando, e il suo `RELEASE` vale un commit. Dentro un `@transactional` non
+capita — il decoratore più esterno apre subito il proprio savepoint, perché con
+SQLAlchemy 2.0 `db.session.is_active` è vero anche senza transazione — ma
+capita a un savepoint scritto a mano fuori da un decoratore. Per questo prima
+del savepoint si apre la transazione con `BEGIN` (`_apri_transazione_sqlite`).
+
+**Un savepoint scritto a mano** — lo schema di ADR-025, per tradurre un
+`IntegrityError` — si apre con `with savepoint():` da
+`models.transaction.manager`, **mai** con `db.session.begin_nested()` nudo: per
+la stessa ragione, dopo sole letture il suo `RELEASE` sarebbe un commit.
+Presidio statico e di comportamento in `tests/new/unit/test_savepoint_a_mano.py`.
+
+```python
+from models.transaction.manager import savepoint, transactional
+
+@transactional(domain="user")
+def grant(...):
+    db.session.add(grant)
+    try:
+        with savepoint():
+            db.session.flush()
+    except IntegrityError as exc:
+        raise ConflictError("L'utente ha già questo ruolo") from exc
+```
 
 ---
 

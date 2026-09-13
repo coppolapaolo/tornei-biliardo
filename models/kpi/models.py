@@ -43,10 +43,11 @@ class KpiFeatureUsage(BaseModel):
 
         if not record:
             from sqlalchemy.exc import IntegrityError
+            from ..transaction.manager import savepoint
 
             # Use a savepoint to protect the outer transaction
             try:
-                with db.session.begin_nested():
+                with savepoint():
                     record = cls(
                         feature_name=feature_name.value,
                         date=for_date,
@@ -120,10 +121,11 @@ class KpiDailySnapshot(BaseModel):
 
         if not snapshot:
             from sqlalchemy.exc import IntegrityError
+            from ..transaction.manager import savepoint
 
             # Use a savepoint to protect the outer transaction
             try:
-                with db.session.begin_nested():
+                with savepoint():
                     snapshot = cls(date=for_date)
                     db.session.add(snapshot)
             except IntegrityError:

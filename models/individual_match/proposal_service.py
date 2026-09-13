@@ -12,7 +12,7 @@ from datetime import datetime, timedelta, date, time as time_obj
 from sqlalchemy.exc import IntegrityError
 
 from ..base import db, utc_now
-from ..transaction.manager import transactional
+from ..transaction.manager import savepoint, transactional
 from .models import (
     MatchProposal,
     ProposalInvitation,
@@ -308,7 +308,7 @@ class ProposalService:
         from flask_babel import _
 
         try:
-            with db.session.begin_nested():
+            with savepoint():
                 db.session.add(invitation)
                 db.session.flush()
         except IntegrityError as exc:
@@ -482,7 +482,7 @@ class ProposalService:
         # another transaction accepted first (TOCTOU). Outer @transactional
         # still rolls back — correct, the partial acceptance must not persist.
         try:
-            with db.session.begin_nested():
+            with savepoint():
                 individual_match = proposal.accept(user_id)
                 db.session.flush()
         except IntegrityError as exc:

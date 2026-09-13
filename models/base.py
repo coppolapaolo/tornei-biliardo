@@ -284,10 +284,11 @@ def get_or_create(model_class, **kwargs):
         return instance, False
     else:
         from sqlalchemy.exc import IntegrityError
+        from .transaction.manager import savepoint
 
         # Use a savepoint to protect the outer transaction from the IntegrityError
         try:
-            with db.session.begin_nested():
+            with savepoint():
                 instance = model_class(**kwargs)
                 db.session.add(instance)
             return instance, True

@@ -39,7 +39,7 @@ from ..exceptions import (
     ValidationError,
 )
 from ..status_enum import ExamRequestRecipientStatus, ExamRequestStatus
-from ..transaction.manager import transactional
+from ..transaction.manager import savepoint, transactional
 from ..user.models import User
 from .request_models import ExamRequest, ExamRequestRecipient, ExamTimeProposal
 
@@ -386,7 +386,7 @@ class ExamRequestService:
         # ``(request_id) WHERE status='accepted'``. Il savepoint fa emergere la
         # violazione al flush per poterla tradurre (ADR-025).
         try:
-            with db.session.begin_nested():
+            with savepoint():
                 winner_row.status = ExamRequestRecipientStatus.ACCEPTED.value
                 winner_row.responded_at = now
                 db.session.flush()

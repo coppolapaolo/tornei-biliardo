@@ -38,7 +38,7 @@ from ..exceptions import (
     ValidationError,
 )
 from ..status_enum import ExamAttemptMode, ExamAttemptStatus
-from ..transaction.manager import transactional
+from ..transaction.manager import savepoint, transactional
 from ..user.models import User
 from .models import Exam, ExamAttempt, ExamChallenge, ExamChallengeResult, ExamExaminer
 
@@ -551,7 +551,7 @@ class ExamService:
         # flush se una sessione per questo appuntamento esiste già, e va
         # tradotto invece di uscire come 500 opaco (ADR-025).
         try:
-            with db.session.begin_nested():
+            with savepoint():
                 db.session.flush()
         except IntegrityError as exc:
             raise ConflictError(

@@ -151,12 +151,15 @@ def test_tre_livelli_il_guasto_in_cima_annulla_tutto(tabella):
 
 
 def test_l_esterna_che_ha_solo_letto_annulla_comunque_l_interna(tabella):
-    """Con SQLite il caso subdolo: nessuna scrittura prima del savepoint.
+    """Nessuna scrittura dell'esterna prima della chiamata interna.
 
-    Il driver `sqlite3` apre la transazione solo davanti a una scrittura. Se
-    l'esterna ha soltanto letto, il `SAVEPOINT` dell'interna è il primo
-    comando della transazione per SQLite, e il suo `RELEASE` equivale a un
-    commit: un annullamento successivo non troverebbe più niente.
+    Il driver `sqlite3` apre la transazione solo davanti a una scrittura, e un
+    `SAVEPOINT` come primo comando renderebbe il suo `RELEASE` un commit. Qui
+    non succede: il decoratore esterno apre subito il proprio savepoint. Il
+    test resta perché è il caso in cui le due cause si confondono — prima del
+    2026-09-13 era rosso per il `db.session.commit()` interno, non per il
+    driver. Il caso del driver, fuori da un decoratore, sta in
+    `test_savepoint_a_mano.py`.
     """
 
     @transactional()

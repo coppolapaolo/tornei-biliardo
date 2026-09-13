@@ -35,10 +35,19 @@ sull'«isolamento per-handler dell'EventBus», che quindi non reggeva.
 
 Correggendo il gestore è emerso un secondo difetto, del driver. `sqlite3` in
 modalità predefinita apre la transazione solo davanti a una scrittura: le
-letture girano fuori da ogni transazione. Se l'esterna aveva soltanto letto, il
-`SAVEPOINT` dell'interna era per SQLite il primo comando, cioè l'inizio della
-transazione, e il suo `RELEASE` equivaleva a un commit. Chiudere il savepoint
-giusto non basta: l'annullamento successivo non trova più niente.
+letture girano fuori da ogni transazione. Se la sessione ha soltanto letto, un
+`SAVEPOINT` è per SQLite il primo comando, cioè l'inizio della transazione, e
+il suo `RELEASE` equivale a un commit: l'annullamento successivo non trova più
+niente.
+
+Dentro un `@transactional` questo non capita. Con SQLAlchemy 2.0
+`db.session.is_active` è vero anche quando non c'è nessuna transazione, quindi
+il decoratore più esterno prende sempre il ramo «pseudo-nested» e apre subito
+un savepoint: SQLite è già in transazione quando arriva quello interno. Verificato
+togliendo l'apertura esplicita: i test dell'annidamento restano verdi. Capita
+invece ai savepoint scritti a mano (lo schema di ADR-025) quando il codice gira
+**fuori** da un decoratore — una route, un servizio non decorato, un
+`get_or_create` chiamato dopo delle letture.
 
 ## Decisione
 
@@ -50,10 +59,25 @@ annulla **quello** (`_chiudi_savepoint`):
 - l'interna fallisce → si annulla il suo savepoint; il chiamante decide se
   propagare o proseguire, e se prosegue il suo lavoro resta.
 
-**Su SQLite, prima del savepoint annidato si apre la transazione con `BEGIN`**
-se il driver non ne ha una (`_apri_transazione_sqlite`). È lo stesso `BEGIN`
+**Su SQLite, prima di un savepoint si apre la transazione con `BEGIN`** se il
+driver non ne ha una (`_apri_transazione_sqlite`). È lo stesso `BEGIN`
 differito che il driver emetterebbe alla prima scrittura, quindi i lock non
-cambiano.
+cambiano. Serve a `savepoint()` usato fuori da un decoratore; nel ramo annidato
+del gestore è una difesa, per un decoratore esterno che trovasse la sessione
+non attiva.
+
+**I savepoint scritti a mano passano dal gestore.** Lo schema di ADR-025 apriva
+`with db.session.begin_nested():` dentro i servizi, e aveva lo stesso difetto
+del driver. Ora si apre `with savepoint():` da `models.transaction.manager`,
+che fa la stessa apertura della transazione prima del savepoint. Gli undici usi
+nei servizi e nei modelli sono passati tutti di lì, e un test legge il codice e
+rifiuta un `begin_nested()` nudo fuori dal gestore.
+
+**La valutazione della zona alla promozione a direttore usa la variante
+decorata** (`DemandSignalService.evaluate_zone_for_new_director`). Quella non
+decorata era stata scelta proprio per evitare l'annidamento; ma dentro il
+`try/except` che deve isolare la promozione, un errore di flush catturato
+lasciava la sessione da annullare, e la promozione falliva al salvataggio.
 
 Un savepoint già chiuso — il codice interno ha chiamato `db.session.commit()`
 o `rollback()` a mano, cosa che il progetto vieta — produce un warning nel log,
@@ -118,21 +142,29 @@ transazione esterna.
 
 ### Rischi
 
-- **I `with db.session.begin_nested()` scritti a mano** (una dozzina, per lo
-  schema di ADR-025) non passano dal gestore: se prima non c'è stata nessuna
-  scrittura, il loro `RELEASE` resta un commit su SQLite. In quegli usi il
-  savepoint serve a catturare un `IntegrityError`, quindi il danno è limitato,
-  ma non è corretto.
 - **Codice che chiama `db.session.commit()` dentro un `@transactional`**: salva
   tutto e chiude il savepoint. Ora lascia un warning nel log, che è il modo di
   trovarlo.
+- **Un `begin_nested()` nudo scritto domani** rimette il difetto del driver: lo
+  ferma il presidio statico in `test_savepoint_a_mano.py`.
 
 ## Note Implementative
 
 - `models/transaction/manager.py`: `_apri_transazione_sqlite`,
-  `_chiudi_savepoint`, rami annidati di commit e rollback.
-- Presidio: `tests/new/unit/test_transazioni_annidate.py` rilegge il database
-  dopo aver annullato la sessione, quindi vede solo ciò che è salvato davvero:
-  i due casi del contesto, l'esterna che ha solo letto, tre livelli, la sessione
-  già aperta.
+  `_chiudi_savepoint`, rami annidati di commit e rollback, e `savepoint()` per
+  i savepoint scritti a mano.
+- Usi passati a `savepoint()`: `models/base.py` (`get_or_create`),
+  `models/kpi/models.py` (due), `models/user/privacy_models.py`,
+  `models/user/merge_service.py`, `models/user/role_grant_service.py` (due),
+  `models/exam/services.py`, `models/exam/request_service.py`,
+  `models/competition/participant_reassign_service.py`,
+  `models/individual_match/proposal_service.py` (due).
+- `models/user/permission_service.py`: la promozione chiama
+  `evaluate_zone_for_new_director`.
+- Presidi, tutti rileggono il database dopo aver annullato la sessione:
+  `tests/new/unit/test_transazioni_annidate.py` (i due casi del contesto,
+  l'esterna che ha solo letto, tre livelli, la sessione già aperta),
+  `tests/new/unit/test_savepoint_a_mano.py` (il savepoint dopo sole letture, il
+  conflitto catturato, un `get_or_create` vero, il presidio statico),
+  `tests/new/unit/test_promozione_valutazione_zona_isolata.py`.
 - Emendati con una nota datata: ADR-036, ADR-048, ADR-052.

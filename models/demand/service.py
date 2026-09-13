@@ -183,20 +183,22 @@ class DemandSignalService:
     def evaluate_zone_for_new_director(director_id: int) -> bool:
         """Re-eval alla promozione player→director (ADR-036 open item 1).
 
-        Wrapper transazionale per chiamate *standalone* (es. test). Quando la
-        valutazione avviene già dentro una transazione (la promozione in
-        ``UserPermissionService``), usare invece ``evaluate_zone_unmanaged``
-        per non innescare un ``@transactional`` annidato (anti-pattern: su
-        SQLite il savepoint annidato può non persistere — vedi
-        ``models/transaction/CLAUDE.md``).
+        Si usa anche dentro una transazione già aperta, come la promozione in
+        ``UserPermissionService``: lì diventa un savepoint, e un guasto della
+        valutazione annulla solo quello (ADR-061). Fino al 2026-09-13 la
+        promozione chiamava ``evaluate_zone_unmanaged`` per paura
+        dell'annidamento.
         """
         return DemandSignalService.evaluate_zone_unmanaged(director_id)
 
     @staticmethod
     def evaluate_zone_unmanaged(director_id: int) -> bool:
-        """Come ``evaluate_zone_for_new_director`` ma **senza** ``@transactional``:
-        esegue le scritture (notifica + ``signal_notified_at``) nella
-        transazione del chiamante. Ritorna True se ha notificato.
+        """Il corpo di ``evaluate_zone_for_new_director``, **senza**
+        ``@transactional``: esegue le scritture (notifica +
+        ``signal_notified_at``) nella transazione del chiamante. Ritorna True
+        se ha notificato. Chi lo chiama da un ``try/except`` che deve isolare
+        il proprio lavoro usi la variante decorata: un errore di flush
+        catturato qui lascia la sessione da annullare.
         """
         from models.user.models import User
 

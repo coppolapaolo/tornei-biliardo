@@ -28,7 +28,7 @@ from models.exceptions import (
     ValidationError,
 )
 from models.status_enum import RoleRequestStatus, RoleRequestRecipientStatus
-from models.transaction.manager import transactional
+from models.transaction.manager import savepoint, transactional
 from models.user.models import User
 from models.user.role_enum import GrantableRole, UserRole
 from models.user.role_grant import RoleGrant, RoleRequest, RoleRequestRecipient
@@ -280,7 +280,7 @@ class RoleGrantService:
         # parziale se un altro concedente ha vinto la corsa (TOCTOU), così il
         # perdente riceve un ConflictError invece di un 500 opaco (ADR-025).
         try:
-            with db.session.begin_nested():
+            with savepoint():
                 db.session.flush()
         except IntegrityError as exc:
             raise ConflictError("L'utente ha già questo ruolo") from exc
@@ -432,7 +432,7 @@ class RoleGrantService:
         db.session.add(request)
 
         try:
-            with db.session.begin_nested():
+            with savepoint():
                 db.session.flush()
         except IntegrityError as exc:
             raise ConflictError(

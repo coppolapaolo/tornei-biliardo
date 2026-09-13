@@ -80,10 +80,11 @@ class UserPrivacySetting(BaseModel):
         setting = cls.query.filter_by(user_id=user_id).first()
         if not setting:
             from sqlalchemy.exc import IntegrityError
+            from ..transaction.manager import savepoint
 
             # Use a savepoint to protect the outer transaction from the IntegrityError
             try:
-                with db.session.begin_nested():
+                with savepoint():
                     setting = cls(user_id=user_id)
                     db.session.add(setting)
             except IntegrityError:

@@ -33,10 +33,18 @@ def _apri_transazione_sqlite() -> None:
     """Apre la transazione sul database prima di un savepoint, se non c'e'.
 
     Il driver `sqlite3` apre la transazione solo davanti a una scrittura: le
-    letture girano fuori da ogni transazione. Se l'operazione esterna ha
-    soltanto letto, il `SAVEPOINT` dell'interna e' il primo comando della
-    transazione per SQLite, e il suo `RELEASE` equivale a un commit — un
-    annullamento successivo dell'esterna non troverebbe piu' niente.
+    letture girano fuori da ogni transazione. Se la sessione ha soltanto letto,
+    un `SAVEPOINT` e' il primo comando della transazione per SQLite, e il suo
+    `RELEASE` equivale a un commit — un annullamento successivo non troverebbe
+    piu' niente.
+
+    Dove serve davvero: `savepoint()` chiamato fuori da un `@transactional`
+    (una route, un servizio non decorato). Dentro un decoratore il caso non
+    capita, perche' il piu' esterno apre subito il proprio savepoint — con
+    SQLAlchemy 2.0 `db.session.is_active` e' vero anche senza transazione,
+    quindi prende sempre il ramo «pseudo-nested» — e SQLite e' gia' in
+    transazione. Nel ramo annidato del gestore resta come difesa, per un
+    decoratore esterno che trovasse la sessione non attiva.
 
     Il `BEGIN` e' quello che il driver emetterebbe comunque alla prima
     scrittura, e senza `IMMEDIATE`: i lock restano quelli di prima.
@@ -47,6 +55,24 @@ def _apri_transazione_sqlite() -> None:
     dbapi = connessione.connection.dbapi_connection
     if dbapi is not None and not getattr(dbapi, "in_transaction", True):
         connessione.exec_driver_sql("BEGIN")
+
+
+@contextmanager
+def savepoint():
+    """Un savepoint scritto a mano, al posto di ``db.session.begin_nested()``.
+
+    Serve allo schema di ADR-025: far emergere al flush un ``IntegrityError``
+    per tradurlo, senza rovinare la transazione del chiamante. Si comporta
+    come ``with db.session.begin_nested():`` — rilascia all'uscita, annulla e
+    propaga su un'eccezione — con in piu' l'apertura della transazione SQLite
+    (`_apri_transazione_sqlite`): dopo sole letture, il ``RELEASE`` di un
+    ``begin_nested`` nudo e' un commit, e l'annullamento del chiamante non
+    troverebbe piu' niente (ADR-061). Presidio:
+    ``tests/new/unit/test_savepoint_a_mano.py``.
+    """
+    _apri_transazione_sqlite()
+    with db.session.begin_nested() as transazione:
+        yield transazione
 
 
 def _chiudi_savepoint(
