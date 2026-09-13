@@ -72,9 +72,13 @@
 <div>
   {{ d.sezione(_('Parimerito'), nota=_('fino al %(pos)s° posto', pos=gara.tiebreaker_until_position or 3)) }}
   <div class="c7-rows" style="margin-top:10px">
+    {# La pastiglia e' un blocco, non una concatenazione: `_('pari')` e' gia'
+       Markup, e incollarlo a una stringa ne proteggeva l'HTML, che la pagina
+       mostrava come testo (2026-09-13). #}
+    {% set pastiglia_pari %}<span class="c7-state c7-state--warn">{{ _('pari') }}</span>{% endset %}
     {% for g in ssr_groups %}{% for p in g.players %}
     {{ d.riga('fa-scale-balanced', p.username, _('%(pos)s° posto a pari merito', pos=g.position), tone='warn',
-              right=('<span class="c7-state c7-state--warn">' ~ _('pari') ~ '</span>')|safe) }}
+              right=pastiglia_pari) }}
     {% endfor %}{% endfor %}
   </div>
 </div>
