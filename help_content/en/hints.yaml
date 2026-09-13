@@ -754,7 +754,7 @@ hints:
   page: playoff
   section: qualificarsi
 - id: campionato.nuova_gara
-  label: New Competition
+  label: New competition
   short: 'Adds a competition to the championship. It is born with the default settings chosen in the
     wizard: change only what you need.'
   anchor: campionato-nuova-gara
@@ -772,7 +772,7 @@ hints:
   page: creare_un_campionato
   section: classifica_generale
 - id: campionato.avvia_playoff
-  label: Start Playoff
+  label: Start the playoffs
   short: Sends the invitation to the qualified players. Whoever accepts enters the final competition;
     whoever declines leaves the place to the first of the excluded.
   anchor: campionato-avvia-playoff

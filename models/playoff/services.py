@@ -189,7 +189,7 @@ class PlayoffService:
         # prima decline_participation() chiamava un metodo inesistente su
         # PlayoffConfiguration via hasattr (sempre False) → nessun sostituto.
         replacement = PlayoffService.find_replacement_player(
-            qualification.configuration_id
+            qualification.configuration_id, sostituisce=qualification
         )
 
         # Notify replacement if found
@@ -291,8 +291,16 @@ class PlayoffService:
     @transactional(domain="playoff")
     def find_replacement_player(
         configuration_id: int,
+        sostituisce: Optional[PlayoffQualification] = None,
     ) -> Optional[PlayoffQualification]:
-        """Find the next eligible player for playoff replacement."""
+        """Find the next eligible player for playoff replacement.
+
+        `sostituisce` e' la qualificazione rifiutata o scaduta che il
+        sostituto va a coprire: quando c'e', le si scrive chi e' subentrato e
+        in che posizione (`replaced_by_id`, `replacement_position`). Le due
+        colonne esistevano dall'inizio ma nessuno le scriveva, quindi la
+        pagina del campionato non poteva dire «al suo posto X» (canvas 7.2).
+        """
         configuration = db.session.get(PlayoffConfiguration, configuration_id)
         if configuration is None:
             raise NotFoundError("Configurazione playoff non trovata")
@@ -338,6 +346,9 @@ class PlayoffService:
                     ),
                 )
                 db.session.add(replacement)
+                if sostituisce is not None:
+                    sostituisce.replaced_by_id = player_data["user_id"]
+                    sostituisce.replacement_position = player_data["position"]
                 return replacement
 
         return None
@@ -364,7 +375,9 @@ class PlayoffService:
                 expired_count += 1
 
                 # Find replacement and notify
-                replacement = PlayoffService.find_replacement_player(config.id)
+                replacement = PlayoffService.find_replacement_player(
+                    config.id, sostituisce=qualification
+                )
                 if replacement:
                     replacement.invited_at = utc_now()
                     replacement.expires_at = config.response_deadline

@@ -687,7 +687,7 @@ hints:
     section: qualificarsi
 
   - id: campionato.nuova_gara
-    label: "Nuova Gara"
+    label: "Nuova gara"
     short: "Aggiunge una gara al campionato. Nasce già con le impostazioni predefinite scelte nel wizard: cambia solo quello che serve."
     anchor: campionato-nuova-gara
     screens: [admin.campionato.campionato_detail]
@@ -703,7 +703,7 @@ hints:
     section: classifica_generale
 
   - id: campionato.avvia_playoff
-    label: "Avvia Playoff"
+    label: "Avvia i playoff"
     short: "Manda l'invito ai giocatori qualificati. Chi accetta entra nella gara finale; chi rifiuta lascia il posto al primo degli esclusi."
     anchor: campionato-avvia-playoff
     screens: [admin.campionato.campionato_detail]

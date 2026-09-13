@@ -486,6 +486,11 @@ class TestRispostaPerContoDelGiocatore:
         )
         assert sostituto is not None
         assert sostituto.user_id == secondo.id
+        # Chi ha rifiutato sa chi e' entrato al suo posto (canvas 7.2): la
+        # colonna c'era, ma nessuno la scriveva.
+        rifiutata = db.session.get(PlayoffQualification, qual.id)
+        assert rifiutata.replaced_by_id == secondo.id
+        assert rifiutata.replacement_position == sostituto.qualifying_position
 
     def test_non_si_risponde_due_volte(self, db_session):
         camp = _make_campionato(db_session)

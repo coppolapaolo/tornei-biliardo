@@ -514,3 +514,18 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   `campionato.playoff_elite_enabled` e `playoff_elite_participants`, cioe' i
   campi del wizard, e il blocco dei playoff non compariva mai; ora legge le
   configurazioni attive.
+* **G2 · La pagina del campionato** (PR `feat: la pagina del campionato per
+  chi lo dirige`, 2026-09-13). Le schermate 7.1–7.4 in `admin/campionato_detail.html`:
+  in cima una fascia scura con la stagione («Gara 3 conclusa · 3 gare giocate
+  su 6, poi il playoff fra i primi 8 · prossima gara 4») e «Nuova gara», che
+  a campionato terminato diventa la fase playoff («Avvia i playoff», poi
+  «Crea la gara playoff · N confermati»); sul telefono tre linguette
+  (Classifica, Gare, Gestione o Playoff), sul desktop due colonne. Le gare
+  sono righe con stato, peso e comandi; la gestione e' fatta di righe
+  (Playoff, Direttori, Vetrina, Impostazioni) che aprono le schede di prima.
+  Gli invitati sono righe: su chi e' in attesa «Accetta» e «Rifiuta» per
+  conto del giocatore, chi ha rifiutato dice «al suo posto X» e chi e'
+  subentrato «invitato al posto di Y». Trovato strada facendo: le colonne
+  `replaced_by_id` e `replacement_position` di `PlayoffQualification`
+  esistevano ma nessuno le scriveva; ora `find_replacement_player` le scrive
+  sulla qualificazione rifiutata o scaduta. Via `_campionato_garas.html`.

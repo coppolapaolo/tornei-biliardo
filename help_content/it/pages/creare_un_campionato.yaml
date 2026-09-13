@@ -181,7 +181,7 @@ blocks:
 
   - type: shot
     shot: campionato-gestione
-    caption: "La pagina del campionato: le sue gare in ordine, la classifica generale e le impostazioni."
+    caption: "La pagina del campionato: in cima a che punto è la stagione e «Nuova gara», poi la classifica generale con la zona playoff, le gare e la gestione."
 
   - type: steps
     items:

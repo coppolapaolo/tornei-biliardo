@@ -179,7 +179,7 @@ blocks:
 
   - type: shot
     shot: campionato-gestione
-    caption: "The championship page: its competitions in order, the overall standings and the settings."
+    caption: "The championship page: at the top where the season stands and «New competition», then the overall standings with the playoff zone, the competitions and the management rows."
 
   - type: steps
     items:
