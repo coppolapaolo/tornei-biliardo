@@ -373,10 +373,10 @@ alla 1.19.0. Le decisioni con conseguenze durature stanno in ADR-059 (la
 pagina del direttore e' la fase in corso) e ADR-060 (i tavoli si scelgono in
 ogni stato); i pattern nuovi in `docs/reference/UI_CONVENTIONS.md`, sezione
 «Pagina gara del direttore». La seconda tornata, lo stesso giorno, ha fatto
-anche tutte le voci di «Non ancora disegnato» (PR dalla #363 alla #379,
-rilasci dalla 1.20.0), ciascuna registrata in fondo; resta fuori per scelta
-la riassegnazione, e restano aperte due decisioni di dominio scritte nella
-voce di chiusura.
+anche tutte le voci di «Non ancora disegnato» (PR dalla #363 alla #383,
+rilasci dalla 1.20.0 alla 1.25.1), ciascuna registrata in fondo; resta fuori
+per scelta la riassegnazione. Le quattro decisioni di dominio lasciate aperte
+dalla voce di chiusura sono state prese la sera del 13/09: vedi l'ultima voce.
 
 Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
 
@@ -739,9 +739,10 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   forfait del giocatore passava su una partita confermata dai due e ne
   riscriveva il risultato; togliendo la squadra a un iscritto il direttore
   leggeva «Giocherai senza squadra»; il messaggio dell'eliminazione non era
-  tradotto. Domande aperte: se il ritiro nel trio debba applicare la regola
-  della gara, e se il forfait del giocatore debba rispettare il turno
-  bloccato come quello del direttore.
+  tradotto. Domande aperte, tre: se il ritiro nel trio debba applicare la
+  regola della gara; se il forfait del giocatore debba rispettare il turno
+  bloccato come quello del direttore; se lo debba rispettare anche il ritiro
+  nel trio registrato dal direttore. La chiusura ha unito le ultime due.
 * **Chiusura della seconda tornata** (PR `docs: la chiusura della seconda
   tornata della pagina gara del direttore`, 2026-09-13). CHANGELOG, righe
   datate di `UI_CONVENTIONS.md`, questo file riordinato. Decisioni di
@@ -752,4 +753,34 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   dei turni successivi valga anche per l'esercizio della X; se il ritiro in
   un trio applichi la regola della gara sui ritiri; se il forfait dichiarato
   dal giocatore e quello del trio rispettino il turno bloccato, come gia' fa
-  quello del direttore.
+  quello del direttore. Imprecisione di questa voce: la variante rimasta per
+  il trio non era «prudente», era quella che divergeva dalla specifica.
+* **Decisioni del 13/09 sera** (dall'utente, dopo la chiusura). Ciascuna ha
+  la sua PR, successiva a questa:
+  - **Trio a pari punteggio in testa: vince la specifica.** Se il totale piu'
+    alto e' di due o tre giocatori nessuno prende la vittoria, su tutte le
+    strade. La scelta del 10/05 per lo scontro diretto e' superata. Nella
+    stessa PR il trio a turno concluso si corregge come una partita a due,
+    non piu' solo dal segnapunti.
+  - **La prova della X non convalidata blocca il turno successivo**, come una
+    partita non validata: stabilisce la differenza triangoli. Lo stesso per
+    gli esercizi fra i turni non registrati. Con la strategia casuale nessuno
+    dei due blocca, perche' i turni esistono gia'. Nella stessa PR si puo'
+    togliere un tentativo di esercizio registrato per sbaglio.
+  - **Il ritiro nel trio applica la regola della gara.** In piu' il direttore
+    puo' cancellare un iscritto anche a gara in corso: e' una dichiarazione di
+    forfait di quel giocatore, trattata con la regola della gara, e il
+    giocatore riceve una notifica.
+  - **Il turno superato blocca tutte le strade del ritiro**: anche il forfait
+    del giocatore e il ritiro nel trio.
+  - **Fuori per scelta, confermati**: la riassegnazione dopo la fine della
+    gara resta uno script (ADR-048); il ritiro si propone solo a partita da
+    giocare o in corso; nessun aggiornamento dei vecchi playoff.
+  - **Da fare, non piu' rimandati**: la guida per trio, partita a set e X con
+    esercizio, con le schermate; il difetto del `@transactional` annidato
+    (ADR-048 punto 4), che una prova ha mostrato peggiore di come era
+    descritto: se l'operazione esterna fallisce restano scritti i passi
+    interni, e se fallisce un passo interno catturato si perde in silenzio il
+    lavoro fatto prima dall'esterna.
+  - **Resta aperto**: la partita a set ha lo stesso rifiuto della correzione
+    che aveva il trio.
