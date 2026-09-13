@@ -3742,6 +3742,7 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
   .c7-sala__bande--due { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; grid-template-rows: repeat(var(--righe), minmax(0, 1fr)); column-gap: 0; }
 }
 
+/* --------------------------------------------------------------------------
    31. Trio, partita a set e X con esercizio sulla card del direttore
    Il canvas disegna solo la partita a due: le altre forme tengono la sua
    geometria (nome sopra, numero grande sotto, lo stato cambia la superficie)
