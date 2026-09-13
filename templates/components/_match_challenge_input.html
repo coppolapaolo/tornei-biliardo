@@ -25,7 +25,9 @@
 {% macro player_block(gara_challenge, player) %}
 {% set progress = player_challenge_progress.get(player.id, {}) if player_challenge_progress else {} %}
 {% set data = (progress.challenges | selectattr("gara_challenge.id", "equalto", gara_challenge.id) | first) if progress else None %}
-{% set can_record = current_user.is_admin or current_user.is_director or current_user.id == player.id %}
+{# Chi gestisce la gara registra per chiunque; un giocatore solo per sé. Il
+   solo ruolo di direttore non basta: diretta da un altro, l'endpoint dice 403. #}
+{% set can_record = user_can_manage or current_user.id == player.id %}
 {% set slot = "%s-%s"|format(gara_challenge.id, player.id) %}
 
 <div class="c7-card" style="background:var(--c7-bg)">
@@ -136,7 +138,12 @@ function recordChallengeAttempt(garaChallengeId, playerId, slot) {
         data.passed = passedSelect.value === 'true';
     }
 
-    {% if current_user.is_admin %}
+    {# Chi dirige passa dall'endpoint della gara, che registra per il
+       giocatore indicato. Fino al 2026-09-13 lo usava solo l'admin: un
+       direttore finiva sull'endpoint del giocatore, che registra sempre per
+       chi chiama — 403 se non iscritto, e se iscritto il tentativo
+       dell'altro finiva a lui. #}
+    {% if user_can_manage %}
     const url = {{ url_for('admin.match.record_challenge_attempt')|tojson }};
     {% else %}
     // L'indirizzo lo scrive il server con un id segnaposto, che qui si

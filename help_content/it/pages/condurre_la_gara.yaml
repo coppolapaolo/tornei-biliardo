@@ -132,6 +132,18 @@ blocks:
           distanza del turno. Se il giocatore l'ha già dichiarato la card è
           verde; altrimenti lo scrivi tu con − e +. Il punteggio conta solo
           dopo **Convalida**. Per azzerarlo, menu «⋯» e **Azzera la prova**.
+      - name: "Registrare gli esercizi fra i turni"
+        text: >-
+          Se la gara ha un esercizio dopo un turno, quando quel turno è
+          concluso compare la sezione **«Esercizio dopo il turno N»**, con una
+          riga per ogni giocatore: quanti tentativi ha fatto e il migliore.
+          Fra un turno e l'altro la trovi sopra le partite, mentre si gioca
+          sotto. Tocca la riga di chi ha appena tirato: se l'esercizio è a
+          punteggio imposti il numero con − e + e tocchi **Registra il
+          tentativo**; se conta solo riuscire, basta toccare **Riuscito** o
+          **Non riuscito**. Finiti i tentativi, la riga non si tocca più, e un
+          tentativo registrato non si toglie. Il turno dopo si avvia anche se
+          qualcuno deve ancora tirare.
       - name: "Cambiare il tavolo a una partita"
         text: >-
           Tocca il tavolo sulla card: si apre il foglio con le tessere dei

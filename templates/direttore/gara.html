@@ -91,6 +91,9 @@
 {% if fase.value == 'gioco' and gara.is_prova and feature_visible('admin.competition.prova_simula') %}
 {% include "direttore/_simulazione.html" %}
 {% endif %}
+{% if esercizi_turni is defined and esercizi_turni|selectattr('dovuto')|list %}
+{% include "direttore/_foglio_esercizio.html" %}
+{% endif %}
 {% endblock %}
 
 {% block scripts %}

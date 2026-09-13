@@ -3819,3 +3819,20 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 
 /* Nel foglio ogni riga e' un form: il filetto fra le righe salta il form. */
 .c7-simulazione form + form .c7-rows__row { border-top: 1px solid var(--c7-line-soft); }
+
+/* --------------------------------------------------------------------------
+   33. Gli esercizi fra i turni sulla pagina del direttore
+   Il canvas ne disegna solo la preparazione: a gara in corso sono righe,
+   una per giocatore, e il tocco apre il foglio del tentativo con i tasti
+   dell'allenamento o lo stepper della card.
+   -------------------------------------------------------------------------- */
+
+.c7-esercizio-riga { min-height: 64px; }
+.c7-esercizio-riga__destra { display: inline-flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.c7-esercizio-riga__punti { font-size: 20px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+
+/* Il foglio: due tasti grandi a esito, lo stepper al centro a punteggio. */
+.c7-esercizio-esito { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.c7-esercizio-stepper { padding: 14px 10px 14px; }
+.c7-esercizio-stepper .c7-partita__step { max-width: 280px; margin-left: auto; margin-right: auto; }
+.c7-esercizio-stepper .c7-partita__step .c7-partita__num { font-size: 34px; }

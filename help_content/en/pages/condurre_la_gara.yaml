@@ -131,6 +131,18 @@ blocks:
           green; otherwise you enter it with − and +. The score counts only
           after **Validate**. To clear it, use the «⋯» menu and **Reset the
           drill**.
+      - name: "Record the drills between rounds"
+        text: >-
+          If the competition has a drill after a round, once that round is over
+          the section **"Drill after round N"** appears, with one row for each
+          player: how many attempts they have made and their best score.
+          Between rounds you find it above the matches, while a round is being
+          played below them. Tap the row of whoever has just played: for a
+          scored drill set the number with − and + and tap **Record the
+          attempt**; if the drill is only made or missed, just tap **Made it**
+          or **Missed**. Once the attempts are used up the row can no longer be
+          tapped, and a recorded attempt cannot be removed. The next round can
+          start even if someone still has to play.
       - name: "Change a match's table"
         text: >-
           Tap the table on the card: the sheet opens with one tile per table.

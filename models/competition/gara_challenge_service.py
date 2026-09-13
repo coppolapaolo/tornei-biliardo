@@ -24,7 +24,7 @@ from .gara_challenge import (
     GaraChallengeAttempt,
     GaraChallengeClassification,
 )
-from ..exceptions import ConflictError, NotFoundError
+from ..exceptions import ConflictError, NotFoundError, ValidationError
 from ..transaction.manager import transactional
 
 logger = logging.getLogger(__name__)
@@ -217,6 +217,23 @@ class GaraChallengeService:
                     f"({gara_challenge.max_attempts})"
                 )
             )
+
+        # Lo stesso tetto dell'allenamento: il punteggio di una gara finisce
+        # nella classifica degli esercizi, e un 40 su una prova che arriva a
+        # 15 la falserebbe per sempre. Senza esito, una prova a esito
+        # diventerebbe in silenzio «non riuscita».
+        challenge = gara_challenge.challenge
+        if challenge.pass_fail_only:
+            if passed is None:
+                raise ValidationError("Specificare se l'esercizio è riuscito")
+        elif score is None:
+            raise ValidationError("Specificare il punteggio")
+        else:
+            from ..challenge.services import ChallengeService
+
+            if challenge.max_score is None and score < 0:
+                raise ValidationError("Il punteggio non può essere negativo")
+            ChallengeService._validate_score_against_max(challenge, score)
 
         # Get next attempt number for this user
         attempt_number = gara_challenge.get_user_attempts_count(user_id) + 1

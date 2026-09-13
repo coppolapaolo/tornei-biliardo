@@ -12,7 +12,7 @@ import pytest
 from models import Challenge
 from models.base import utc_now
 from models.competition.gara_challenge import GaraChallenge
-from models.competition.models import Gara
+from models.competition.models import Gara, Inscription
 from models.status_enum import GaraStatus
 from models.user.models import User
 
@@ -86,6 +86,11 @@ def random_gara_with_challenge(db_session, director_user, player_user):
         added_by_id=director_user.id,
     )
     db_session.add(gara_challenge)
+    # Il tentativo si registra per chi gioca la gara: dal 2026-09-13 l'endpoint
+    # del direttore rifiuta un giocatore che non vi e' iscritto.
+    db_session.add(
+        Inscription(user_id=player_user.id, gara_id=gara.id, is_waitlist=False)
+    )
     db_session.commit()
     return gara, gara_challenge
 
