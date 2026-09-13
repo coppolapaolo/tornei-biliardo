@@ -67,9 +67,11 @@ class InscriptionService:
             _bypass_playoff_check: Internal flag used by PlayoffService
                 to inscribe qualified players into playoff gare.
             _d_ufficio: iscrizione decisa esplicitamente dal direttore di un
-                playoff: entra sempre fra gli attivi, senza lista d'attesa né
-                per capienza né per parità. Il limite dei posti vale per la
-                cascata degli inviti, non per una scelta del direttore.
+                playoff: supera i posti, perché il limite dei posti vale per
+                la cascata degli inviti e non per una sua scelta. La parità
+                invece resta: in una gara che non ammette dispari chi
+                renderebbe dispari gli iscritti aspetta in lista d'attesa un
+                secondo giocatore, come chiunque, e la gara resta avviabile.
         """
         from models.competition.models import Gara, WaitlistReason
         from models.user.models import User
@@ -162,7 +164,7 @@ class InscriptionService:
         # 2. Verifica parità (odd_number_policy="no")
         # Solo se non siamo già in waitlist per capacità
         # E solo se ci sarà più di 1 giocatore (il primo deve sempre essere accettato)
-        if not is_waitlist and not _d_ufficio and gara.odd_number_policy == "no":
+        if not is_waitlist and gara.odd_number_policy == "no":
             new_active_count = active_count + 1
 
             # Conta chi è già in parity waitlist

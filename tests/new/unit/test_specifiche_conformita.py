@@ -608,6 +608,37 @@ class TestIlPlayoffSiGiocaConChiHaAccettato:
         assert attivi == 5
         assert self._avvia(gara.id).current_round == 1
 
+    def test_l_aggiunta_del_direttore_rispetta_la_parita(self, db_session):
+        """Riga 284: «La parità invece vale anche per lui: se la gara non
+        ammette un numero dispari di giocatori […] chi renderebbe dispari gli
+        iscritti aspetta in lista d'attesa come gli altri, finché non arriva
+        un secondo giocatore»."""
+        campionato, configurazione, giocatori = (
+            TestCascataDeiRifiutiAiPlayoff._campionato_con_playoff(
+                db_session, posti=4, iscritti=7
+            )
+        )
+        configurazione.odd_number_policy = "no"
+        db_session.commit()
+        PlayoffService.start_playoff(campionato.id)
+        for giocatore in giocatori[:4]:
+            PlayoffService.confirm_qualification(
+                self._invito(configurazione, giocatore).id, giocatore.id
+            )
+        gara = PlayoffService.create_playoff_gara(configurazione.id)
+
+        PlayoffService.admin_add_player(configurazione.id, giocatori[5].id, "direttore")
+        primo = Inscription.query.filter_by(
+            gara_id=gara.id, user_id=giocatori[5].id
+        ).first()
+        assert primo is not None and primo.is_waitlist
+
+        PlayoffService.admin_add_player(configurazione.id, giocatori[6].id, "direttore")
+        attivi = Inscription.query.filter_by(
+            gara_id=gara.id, is_waitlist=False, is_withdrawn=False
+        ).count()
+        assert attivi == 6
+
 
 # ──────────────────────────────────────────────────────────────────────────────
 # APERTURA E RUNOUT (SPECIFICHE.md, sezione «Match», righe 131-144 — ADR-056)

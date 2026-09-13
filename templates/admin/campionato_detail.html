@@ -373,7 +373,7 @@
         </div>
         {% endif %}
         {{ d.nota(_('Chi rifiuta lascia il posto al primo degli esclusi. Se un giocatore te lo dice a voce, rispondi tu dalla sua riga: la risposta resta registrata a tuo nome.')) }}
-        {{ d.nota(_('Puoi creare la gara anche con inviti in attesa: chi accetta dopo entra fra gli iscritti, finché ci sono posti. Chi aggiungi tu entra sempre, anche oltre i posti. Quando avvii la gara gli inviti senza risposta scadono e si gioca con chi c’è; se annulli l’avvio, tornano validi.')) }}
+        {{ d.nota(_('Puoi creare la gara anche con inviti in attesa: chi accetta dopo entra fra gli iscritti, finché ci sono posti. Chi aggiungi tu entra anche oltre i posti; se la gara non ammette dispari, aspetta un secondo giocatore. Quando avvii la gara gli inviti senza risposta scadono e si gioca con chi c’è; se annulli l’avvio, tornano validi.')) }}
 
         {% if cfg.gara is none and campionato_players %}
         <form method="POST" class="d-flex align-items-center gap-2"

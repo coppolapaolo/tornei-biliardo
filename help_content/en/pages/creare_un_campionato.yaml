@@ -68,7 +68,10 @@ blocks:
           best-placed players. You can plan an «Elite» play-off for the top
           finishers and an «Academy» one for those below. Qualifiers receive an
           invitation to accept — and if they answer in person, you can record
-          their answer yourself.
+          their answer yourself. Until the final starts you can add players
+          even beyond the places; if the competition does not allow an odd
+          number, a player who would be left over waits on the waiting list
+          for a second one.
         hint: campionato.playoff_classifica_finale
 
   - type: note

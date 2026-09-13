@@ -252,9 +252,11 @@ senza categoria il rating non si muove: «non lo so» non è «sono uguali».
    serve aspettare tutte le risposte: chi accetta **dopo** — anche il primo
    degli esclusi chiamato da un rifiuto — entra fra gli iscritti, e il
    direttore può ancora aggiungere o togliere qualificati.
-   Chi il direttore aggiunge a mano entra **sempre**, anche oltre gli otto
-   posti: il limite vale per la cascata degli inviti, e chi accetta tardi
-   trovando i posti pieni va in lista d'attesa.
+   Chi il direttore aggiunge a mano entra anche oltre gli otto posti: il
+   limite vale per la cascata degli inviti, e chi accetta tardi trovando i
+   posti pieni va in lista d'attesa. La parità invece vale per tutti: se la
+   finale non ammette dispari, chi il direttore aggiunge da solo aspetta un
+   secondo giocatore, e la gara intanto resta avviabile.
 7. **Avvia** la finale. Da quel momento la lista è chiusa: gli inviti rimasti
    senza risposta scadono, nessuno viene più chiamato, e si gioca con chi
    c'è anche se sono meno degli otto posti — la gara di playoff chiede almeno

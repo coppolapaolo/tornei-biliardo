@@ -147,3 +147,58 @@ class TestIlDirettoreAggiungeOltreIPosti:
         # Una seconda uscita libera un posto vero, e chi aspettava entra.
         PlayoffService.admin_remove_player(_invito(cfg, giocatori[1]).id, "direttore")
         assert giocatori[3].id in _iscritti(gara.id)
+
+
+class TestLAggiuntaDelDirettoreRispettaLaParita:
+    """L'aggiunta del direttore supera i posti, ma non la lista d'attesa per parità.
+
+    Decisione del 2026-09-13: se la gara di playoff non ammette dispari —
+    niente X e niente trio — chi resterebbe in più aspetta come gli altri
+    finché non arriva un secondo giocatore, così la gara resta avviabile.
+    """
+
+    @staticmethod
+    def _finale_senza_dispari(db_session):
+        _c, cfg, giocatori = _playoff(db_session, posti=4, classificati=7)
+        cfg.odd_number_policy = "no"
+        db.session.commit()
+        _accetta(cfg, *giocatori[:4])
+        gara = PlayoffService.create_playoff_gara(cfg.id)
+        assert gara.odd_number_policy == "no"
+        return cfg, gara, giocatori
+
+    def test_due_aggiunte_oltre_i_posti_con_numero_pari_entrano(self, db_session):
+        cfg, gara, giocatori = self._finale_senza_dispari(db_session)
+
+        for aggiunto in giocatori[5:7]:
+            PlayoffService.admin_add_player(cfg.id, aggiunto.id, "direttore")
+
+        assert _iscritti(gara.id) == {g.id for g in giocatori[:4]} | {
+            giocatori[5].id,
+            giocatori[6].id,
+        }
+        assert _avvia(gara.id).current_round == 1
+
+    def test_l_aggiunta_che_renderebbe_dispari_aspetta_e_entra_col_secondo(
+        self, db_session
+    ):
+        cfg, gara, giocatori = self._finale_senza_dispari(db_session)
+
+        PlayoffService.admin_add_player(cfg.id, giocatori[5].id, "direttore")
+
+        riga = Inscription.query.filter_by(
+            gara_id=gara.id, user_id=giocatori[5].id
+        ).first()
+        assert riga is not None and riga.is_waitlist
+        assert len(_iscritti(gara.id)) == 4
+
+        PlayoffService.admin_add_player(cfg.id, giocatori[6].id, "direttore")
+
+        assert {giocatori[5].id, giocatori[6].id} <= _iscritti(gara.id)
+
+    def test_con_uno_in_attesa_per_parita_la_gara_resta_avviabile(self, db_session):
+        cfg, gara, giocatori = self._finale_senza_dispari(db_session)
+        PlayoffService.admin_add_player(cfg.id, giocatori[5].id, "direttore")
+
+        assert _avvia(gara.id).current_round == 1
+        assert giocatori[5].id not in _iscritti(gara.id)
