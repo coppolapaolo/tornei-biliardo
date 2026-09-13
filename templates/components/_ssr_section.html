@@ -1,16 +1,17 @@
-{# templates/components/_ssr_section.html — 7c
-   Spareggio SSR (Spot Shot Rally). Expects: ssr_groups,
-   has_unresolved_tiebreakers, can_edit_ssr, gara.
+{# templates/components/_ssr_section.html — Design System 7c
 
-   E' l'unica resa dello spareggio: la pagina della gara la usa sia su mobile
-   sia su desktop (prima il desktop aveva una copia scritta a mano dentro
-   gara_detail.html, che era gia' divergente). Le due copie possono coesistere
-   nel DOM — una nascosta — e `saveSsrGroup` legge solo i campi visibili. #}
+   Spareggio SSR (Spot Shot Rally), canvas 4.2–4.4. Un gruppo per posizione
+   contesa, e per ogni giocatore gli stessi stepper delle card delle partite
+   (48px, ui-7c): il numero e' un campo vero, quindi si puo' anche scrivere,
+   e `saveSsrGroup` lo legge come prima (`.ssr-group-input`, solo i campi
+   visibili). A gruppo sciolto, o a gara conclusa, i punti restano in sola
+   lettura. Attese: ssr_groups, has_unresolved_tiebreakers, can_edit_ssr,
+   gara. #}
 
 {% if ssr_groups %}
-<section class="c7-stack">
-  <div class="d-flex align-items-center gap-2">
-    <div class="c7-kicker flex-fill">{{ _('Spareggio (Spot Shot Rally)') }}</div>
+<section class="c7-stack c7-ssr">
+  <div class="c7-sechead">
+    <div class="c7-kicker" style="flex:1">{{ _('Spareggio (Spot Shot Rally)') }}</div>
     {% if has_unresolved_tiebreakers %}
     <span class="c7-state c7-state--warn">{{ _('In attesa di punteggi') }}</span>
     {% else %}
@@ -19,40 +20,47 @@
   </div>
 
   {% for group in ssr_groups %}
-  <div class="c7-card">
-    <div class="d-flex align-items-center gap-2 mb-3">
-      <h3 class="mb-0 flex-fill">{{ _('Parimerito per il %(pos)s° posto', pos=group.position) }}</h3>
-      <span class="c7-state c7-state--muted"><span class="c7-num">{{ group.rack_totali }}</span>&nbsp;{{ _('triangoli') }}</span>
+  <div class="c7-card" data-ssr-gruppo="{{ group.position }}">
+    <div class="c7-sechead">
+      <h3 style="flex:1">{{ _('Parimerito per il %(pos)s° posto', pos=group.position) }}</h3>
+      <span class="c7-state c7-state--muted">{{ ngettext('%(n)d giocatore', '%(n)d giocatori', group.players|length, n=group.players|length) }}</span>
     </div>
 
-    <div class="c7-stack" style="gap: 8px;">
+    <div class="c7-ssr__lati">
       {% for player in group.players %}
-      <div class="d-flex align-items-center gap-3"
-           style="background: var(--c7-bg); border-radius: var(--c7-r-chip); padding: 10px 14px;">
-        <span class="flex-fill" style="font-size: 14px; font-weight: 700;">{{ player.username }}</span>
+      {% set _punti = player.current_ssr_score %}
+      <div class="c7-ssr__lato">
+        <div class="c7-partita__nome">{{ player.username }}</div>
         {% if can_edit_ssr %}
-        <input type="number"
-               class="form-control text-center ssr-group-input"
-               aria-label="{{ _('Punti SSR di %(name)s', name=player.username) }}"
-               data-user-id="{{ player.user_id }}"
-               data-group-position="{{ group.position }}"
-               data-needs-distinct-top="{{ group.needs_distinct_top }}"
-               value="{{ player.current_ssr_score if player.current_ssr_score is not none else '' }}"
-               min="0"
-               style="width: 96px;">
-        {% elif player.current_ssr_score is not none %}
-        <span class="c7-num">{{ player.current_ssr_score }}</span>
+        <div class="c7-partita__step">
+          <button type="button" class="c7-partita__meno" onclick="passoSsr(this, -1)"
+                  aria-label="{{ _('Un punto SSR in meno a %(nome)s', nome=player.username) }}"{% if not _punti %} disabled{% endif %}>
+            <i class="fas fa-minus"></i>
+          </button>
+          <input type="number" inputmode="numeric" min="0" step="1"
+                 class="ssr-group-input c7-ssr__valore c7-num"
+                 aria-label="{{ _('Punti SSR di %(name)s', name=player.username) }}"
+                 data-user-id="{{ player.user_id }}"
+                 data-group-position="{{ group.position }}"
+                 data-needs-distinct-top="{{ group.needs_distinct_top }}"
+                 value="{{ _punti if _punti is not none else '' }}" placeholder="0"
+                 oninput="passoSsr(this, 0)">
+          <button type="button" class="c7-partita__piu" onclick="passoSsr(this, 1)"
+                  aria-label="{{ _('Un punto SSR in più a %(nome)s', nome=player.username) }}">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
         {% else %}
-        <span style="color: var(--c7-ink-faint);">–</span>
+        <div class="c7-partita__num c7-num{% if _punti is none %} c7-partita__num--vuoto{% endif %}">{{ _punti if _punti is not none else '–' }}</div>
         {% endif %}
       </div>
       {% endfor %}
     </div>
 
     {% if can_edit_ssr %}
-    <button type="button" class="btn btn-primary w-100 mt-3"
+    <button type="button" class="btn btn-primary w-100" style="margin-top:12px"
             onclick='saveSsrGroup({{ gara.id }}, {{ group.position }}, this)'>
-      <i class="fas fa-floppy-disk"></i> {{ _('Salva punti SSR') }}
+      <i class="fas fa-check"></i> {{ _('Salva i punti SSR') }}
     </button>
     {% endif %}
   </div>

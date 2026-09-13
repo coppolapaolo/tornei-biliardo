@@ -10,8 +10,10 @@
    (SPECIFICHE.md righe 64 e 71).
 
    Attese: `classification` (righe `RoundClassification` in ordine di
-   estrazione), `round_number` (0 = complessiva, formula casuale); opzionale
-   `ssr_scores_map`. Chi guarda usa `_classification_mobile.html`. #}
+   estrazione), `round_number` (0 = complessiva, formula casuale). Opzionali:
+   `ssr_scores_map` (la pastiglia SSR), `pari_ids` (la pastiglia «pari» sui
+   parimerito ancora aperti, 4.4), `medaglie` (le posizioni 1–3 nei colori
+   delle medaglie, 5.1), `titolo_classifica` e `nota_testa`. Chi guarda usa `_classification_mobile.html`. #}
 {% if classification %}
 {% set _rack = classification[0].is_rack_ranking %}
 {% set _posizione = classification[0].is_position_ranking %}
@@ -19,9 +21,9 @@
 {% set _prime = 6 %}
 <section class="c7-stack c7-classifica" style="gap:10px" id="classificaDirettore">
   <div class="c7-sechead">
-    <h3>{{ _('Classifica (rack)') if _rack else _('Classifica') }}</h3>
+    <h3>{% if titolo_classifica is defined and titolo_classifica %}{{ titolo_classifica }}{% else %}{{ _('Classifica (rack)') if _rack else _('Classifica') }}{% endif %}</h3>
     <span class="c7-sechead__note">
-      {% if _casuale or not round_number %}{{ _('complessiva') }}{% else %}{{ _('dopo il turno %(n)s', n=round_number) }}{% endif %}
+      {% if nota_testa is defined and nota_testa %}{{ nota_testa }}{% elif _casuale or not round_number %}{{ _('complessiva') }}{% else %}{{ _('dopo il turno %(n)s', n=round_number) }}{% endif %}
     </span>
   </div>
   {% if classification|length > _prime %}
@@ -35,14 +37,17 @@
       <span class="c7-classifica__pos"></span>
       <span class="c7-classifica__trend"></span>
       <span class="c7-classifica__gioc c7-label">{{ _('Giocatore') }}</span>
-      {% if ssr_scores_map %}<span class="c7-classifica__col c7-label" title="{{ _('Spot Shot Rally') }}">SSR</span>{% endif %}
       <span class="c7-classifica__col c7-label">{{ _('Vinti') if _rack else _('Vinte') }}</span>
       <span class="c7-classifica__col c7-classifica__col--sec c7-label">{{ _('Persi') if _rack else _('Diff') }}</span>
     </div>
     {% for riga in classification %}
     {% set _mov = (riga.previous_position - riga.position) if riga.previous_position else none %}
     <div class="c7-rows__row c7-classifica__riga{% if loop.index > _prime %} c7-classifica__riga--oltre{% endif %}" data-oltre="{{ '1' if loop.index > _prime else '0' }}"{% if loop.index > _prime %} hidden{% endif %}>
+      {% if medaglie is defined and medaglie %}
+      <span class="c7-pos c7-pos--lg c7-classifica__medaglia{% if riga.position <= 3 %} c7-pos--{{ riga.position }}{% endif %}">{{ riga.position }}</span>
+      {% else %}
       <span class="c7-num c7-classifica__pos{% if riga.position <= 3 %} c7-classifica__pos--podio{% endif %}">{{ riga.position }}</span>
+      {% endif %}
       <span class="c7-classifica__trend" role="img" aria-label="{% if _mov is none %}{{ _('primo turno') }}{% elif _mov > 0 %}{{ _('sale di %(n)s', n=_mov) }}{% elif _mov < 0 %}{{ _('scende di %(n)s', n=-_mov) }}{% else %}{{ _('stabile') }}{% endif %}">
         {% if _mov is none %}<span class="c7-classifica__trend-eq" aria-hidden="true"></span>
         {% elif _mov > 0 %}<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l8 12H4z" fill="var(--c7-ok)"/></svg>
@@ -51,9 +56,13 @@
       </span>
       <span class="c7-avatar c7-avatar--sm">{{ riga.user.username[:2]|upper }}</span>
       <span class="c7-classifica__gioc c7-rows__title">{{ riga.user.username }}</span>
-      {% if ssr_scores_map %}
-      {% set _ssr = ssr_scores_map.get(riga.user_id) %}
-      <span class="c7-classifica__col c7-num">{% if _ssr is not none %}{{ _ssr }}{% else %}–{% endif %}</span>
+      {# Dove lo spareggio ha deciso l'ordine, la pastiglia lo dice (canvas
+         5.1); dove il pari merito e' ancora da sciogliere, anche (4.4). #}
+      {% if ssr_scores_map and ssr_scores_map.get(riga.user_id) is not none %}
+      <span class="c7-state c7-state--warn c7-classifica__pill" title="{{ _('Spot Shot Rally: %(punti)s punti', punti=ssr_scores_map.get(riga.user_id)) }}">SSR</span>
+      {% endif %}
+      {% if pari_ids is defined and riga.user_id in pari_ids %}
+      <span class="c7-state c7-state--warn c7-classifica__pill">{{ _('pari') }}</span>
       {% endif %}
       {% if _rack %}
       <span class="c7-classifica__col c7-num">{{ riga.total_racks_value }}</span>
@@ -70,7 +79,9 @@
     {% if _rack %}{{ _('Sistema RACK: ordinata per triangoli vinti in tutta la gara, poi punti SSR. La X a tavolino vale zero triangoli.') }}
     {% elif _posizione %}{{ _('Ordinata per piazzamento nel tabellone.') }}
     {% else %}{{ _('Ordinata per vittorie, poi differenza triangoli. La X a tavolino vale una vittoria e zero differenza.') }}{% endif %}
-    {{ _('La freccia confronta con il turno prima.') }}
+    {% if medaglie is defined and medaglie and round_number and round_number > 1 %}{{ _('La freccia confronta con la classifica dopo il turno %(n)s.', n=round_number - 1) }}
+    {% else %}{{ _('La freccia confronta con il turno prima.') }}{% endif %}
+    {% if ssr_scores_map %}{{ _('SSR segna chi è stato messo in ordine dallo spareggio.') }}{% endif %}
   </div>
 </section>
 <script>

@@ -392,6 +392,25 @@
       });
   }
 
+  /**
+   * Gli stepper dei punti SSR (canvas 4.2): − e + cambiano il campo, che
+   * resta scrivibile. Con delta 0 si limita a riallineare il «−» dopo che
+   * il direttore ha scritto a mano. Nessun tetto: lo Spot Shot Rally non ne
+   * ha uno.
+   */
+  function passoSsr(el, delta) {
+    const lato = el.closest('.c7-ssr__lato');
+    if (!lato) return;
+    const campo = lato.querySelector('.ssr-group-input');
+    const attuale = parseInt(campo.value, 10);
+    if (delta !== 0) {
+      campo.value = Math.max(0, (isNaN(attuale) ? 0 : attuale) + delta);
+    }
+    const valore = parseInt(campo.value, 10);
+    const meno = lato.querySelector('.c7-partita__meno');
+    if (meno) meno.disabled = isNaN(valore) || valore <= 0;
+  }
+
   function saveSsrGroup(garaId, groupPosition, btn) {
     // Collect scores for this specific group
     // Filter to only VISIBLE inputs (avoid duplicate mobile/desktop inputs)
