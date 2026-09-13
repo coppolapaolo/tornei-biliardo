@@ -272,18 +272,44 @@ class Tabellone:
 
     def compatto(self, turno: int, ampiezza: int = 1) -> List[Lavagna]:
         """Le sole colonne dei turni da `turno - ampiezza` a `turno + ampiezza`."""
+        return self.finestra(turno - ampiezza, turno + ampiezza)
+
+    def finestra(self, da: int, a: int) -> List[Lavagna]:
+        """Le sole colonne dei turni di gara da `da` ad `a`, estremi compresi.
+
+        Sezioni e lavagne senza colonne nella finestra spariscono: nel doppio
+        KO, a un turno di soli recuperi, resta la sola sezione dei ripescati.
+        """
         vicine: List[Lavagna] = []
         for lavagna in self.lavagne:
             sezioni = []
             for sezione in lavagna.sections:
-                colonne = [
-                    c for c in sezione.columns if abs(c.turno - turno) <= ampiezza
-                ]
+                colonne = [c for c in sezione.columns if da <= c.turno <= a]
                 if colonne:
                     sezioni.append(Sezione(sezione.key, colonne))
             if sezioni:
                 vicine.append(Lavagna(lavagna.group, sezioni))
         return vicine
+
+
+def nome_del_nodo(tabellone: Tabellone, nodo: Nodo) -> NomeRound:
+    """Il nome di una partita fuori dal disegno del tabellone.
+
+    Sulla casella di un tavolo non c'e' la colonna intorno a dire di che ramo
+    si tratta: nel doppio KO «Turno 2» dei vincenti si confonderebbe con il
+    turno di gara, quindi si dice «Turno 2 dei vincenti», come nel nome del
+    turno (`nomi_turni`). La finalina invece si nomina, perche' sul tavolo
+    accanto si gioca la finale.
+    """
+    if nodo.gruppo is not None:
+        return NomeRound("gironi", nodo.turno)
+    if (
+        tabellone.doppio_ko
+        and not tabellone.con_gironi
+        and nodo.bracket_type == BRACKET_WINNERS
+    ):
+        return NomeRound("vincenti", nodo.bracket_round)
+    return nodo.nome
 
 
 def _nome_nel_turno(
@@ -819,4 +845,5 @@ __all__ = [
     "destinazioni",
     "forma_tabellone",
     "nome_colonna",
+    "nome_del_nodo",
 ]

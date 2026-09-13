@@ -600,8 +600,11 @@ def schermo_sala(token):
 
     Non scrive sul database: la classifica e' quella gia' calcolata
     (`classifica_gia_calcolata`), perche' la pagina e' anonima e si ricarica
-    a ogni evento live (`sse.poll_sala`).
+    a ogni evento live (`sse.poll_sala`). Nelle gare a tabellone (issue #352)
+    la classifica finale viene dalle posizioni del tabellone, che si leggono
+    e basta (`bracket_positions`).
     """
+    from models.classification.bracket_standings import bracket_positions
     from models.competition.schermo_sala import schermo_sala as costruisci_schermo
     from models.competition.showcase_service import (
         classifica_gia_calcolata,
@@ -609,6 +612,8 @@ def schermo_sala(token):
     )
     from models.competition.showcase_view import costruisci_vetrina, descrizione_social
     from models.match.models import Match
+    from models.matchmaking.configuration import BRACKET_STRATEGIES
+    from models.status_enum import GaraStatus
 
     gara = resolve_public_identifier(token)
     if gara is None:
@@ -619,6 +624,12 @@ def schermo_sala(token):
         .order_by(Match.round_number, Match.id)
         .all()
     )
+    posizioni = None
+    if (
+        gara.matchmaking_strategy in BRACKET_STRATEGIES
+        and gara.status == GaraStatus.COMPLETED.value
+    ):
+        posizioni = bracket_positions(gara)
     vetrina = costruisci_vetrina(gara)
     schermo = costruisci_schermo(
         gara,
@@ -626,6 +637,7 @@ def schermo_sala(token):
         classifica_gia_calcolata(gara.id),
         gara.get_available_tables(),
         vetrina.iscritti,
+        posizioni=posizioni,
     )
     return render_template(
         "public/schermo_sala.html",

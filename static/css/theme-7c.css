@@ -3649,3 +3649,95 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 .c7-banda__pos--2 { background: var(--c7-argento); color: var(--c7-argento-ink); }
 .c7-banda__pos--3 { background: var(--c7-bronzo); color: var(--c7-bronzo-ink); }
 .c7-podio-finale__nomi { display: block; }
+
+/* --------------------------------------------------------------------------
+   30. Lo schermo in sala per le gare a tabellone (issue #352)
+   La sezione 25 con il tabellone al posto della classifica. Nella colonna
+   destra il turno che si gioca e quello dopo, i nodi del tabellone compatto
+   (sezione 29) ingranditi per i tre metri; nel doppio KO vincenti sopra e
+   ripescati sotto, ciascuno alto quanto i suoi nodi. A gara conclusa il podio
+   della 26 ingrandito e le bande nelle righe della 25.
+   -------------------------------------------------------------------------- */
+.c7-sala__turno-testo { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-width: 0; }
+.c7-sala__turno-nome { font-size: clamp(22px, 2.2vw, 32px); font-weight: 800; line-height: 1.05; letter-spacing: -.02em; }
+/* Il nome del round in una riga sua sotto la testa della casella: a tre
+   metri niente finisce coi puntini, e se non ci sta va a capo. */
+.c7-sala__round { margin-top: -6px; font-size: 14px; line-height: 1.25; color: var(--c7-ink-muted); overflow-wrap: anywhere; }
+.c7-sala__tavolo-testa .c7-sala__tessera,
+.c7-sala__tavolo-testa .c7-state { flex-shrink: 0; white-space: nowrap; }
+
+.c7-sala-tab { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.c7-sala-tab__card { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.c7-sala-tab__girone { font-size: 12px; }
+.c7-sala-tab__ramo { display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+.c7-sala-tab__ramo-nome { display: flex; align-items: center; gap: 8px; }
+.c7-sala-tab__ramo-nome .c7-label { margin: 0; font-size: 12px; }
+.c7-sala-tab__ramo-nome::after { content: ""; flex: 1; border-top: 1px solid var(--c7-line-soft); }
+.c7-sala-tab__colonne { flex: 1; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 12px; min-height: 0; }
+.c7-sala-tab__col { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.c7-sala-tab__testa {
+  font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--c7-ink-faint); margin-bottom: 6px; line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.c7-sala-tab__col.is-attuale .c7-sala-tab__testa { color: var(--c7-accent); }
+/* Righe uguali e nodo al centro della cella: il nodo del turno dopo cade a
+   meta' fra i suoi due alimentatori, come nella sezione 18. */
+.c7-sala-tab__nodi { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: minmax(0, 1fr); min-height: 0; }
+.c7-sala-tab__cella { display: flex; align-items: center; padding: 4px 0; min-width: 0; min-height: 0; }
+.c7-sala-tab__nodo { width: 100%; min-width: 0; border-radius: var(--c7-r-field); background: var(--c7-bg); padding: 6px 12px; }
+.c7-sala-tab__nodo.is-concluso,
+.c7-sala-tab__nodo.is-x { background: var(--c7-sunken); }
+.c7-sala-tab__nodo.is-in_corso { background: var(--c7-accent); color: var(--c7-accent-ink); }
+.c7-sala-tab__nodo.is-vuoto { background: transparent; box-shadow: inset 0 0 0 1.5px var(--c7-line); }
+.c7-sala-tab__posto { display: flex; align-items: center; gap: 10px; min-height: 30px; }
+.c7-sala-tab__posto + .c7-sala-tab__posto { border-top: 1px solid var(--c7-line-soft); }
+.c7-sala-tab__nodo.is-in_corso .c7-sala-tab__posto + .c7-sala-tab__posto { border-top-color: rgba(242, 248, 247, .18); }
+/* Nessun nome coi puntini: i nomi lunghi e le frasi dei posti futuri vanno a
+   capo, e la cella del nodo cresce. */
+.c7-sala-tab__chi {
+  flex: 1; min-width: 0; padding: 3px 0;
+  font-size: clamp(16px, 1.35vw, 21px); font-weight: 700; line-height: 1.2; color: var(--c7-ink-muted);
+  overflow-wrap: anywhere;
+}
+/* Chi arrivera': il kicker «chi vince», sotto i due nomi uno per riga. */
+.c7-sala-tab__arrivo { display: flex; flex-direction: column; }
+.c7-sala-tab__esito { font-size: 11px; color: var(--c7-ink-faint); margin-bottom: 1px; }
+.c7-sala-tab__nodo.is-vuoto .c7-sala-tab__chi { font-size: clamp(14px, 1.1vw, 17px); }
+.c7-sala-tab__nodo.is-in_corso .c7-sala-tab__chi { color: inherit; }
+.c7-sala-tab__posto.is-winner .c7-sala-tab__chi { font-weight: 800; color: var(--c7-ink); }
+.c7-sala-tab__posto.is-attesa .c7-sala-tab__chi { color: var(--c7-ink-faint); font-weight: 600; }
+.c7-sala-tab__punti { font-size: clamp(18px, 1.5vw, 24px); font-weight: 800; font-variant-numeric: tabular-nums; color: var(--c7-ink-faint); }
+.c7-sala-tab__posto.is-winner .c7-sala-tab__punti,
+.c7-sala-tab__nodo.is-in_corso .c7-sala-tab__punti { color: inherit; }
+/* Tante righe impilate (16 al primo turno, o i due rami del doppio KO): il
+   nodo si stringe prima del nome. */
+.c7-sala-tab--fitto .c7-sala-tab__nodo { padding: 2px 10px; }
+.c7-sala-tab--fitto .c7-sala-tab__posto { min-height: 22px; }
+.c7-sala-tab--fitto .c7-sala-tab__chi { font-size: clamp(14px, 1.05vw, 17px); }
+.c7-sala-tab--fitto .c7-sala-tab__punti { font-size: clamp(15px, 1.1vw, 18px); }
+.c7-sala-tab--fitto .c7-sala-tab__cella { padding: 2px 0; }
+
+/* Gara conclusa: il podio grande e le bande. */
+.c7-sala__podio { padding: 22px 24px; }
+.c7-sala__podio .c7-podio-finale { gap: 18px; }
+.c7-sala__podio .c7-podio-finale__avatar { width: 64px; height: 64px; font-size: 20px; }
+.c7-sala__podio .c7-podio-finale__avatar--oro { width: 80px; height: 80px; font-size: 24px; }
+.c7-sala__podio .c7-podio-finale__nome { font-size: clamp(18px, 1.6vw, 24px); }
+.c7-sala__podio .c7-podio-finale__posto--oro .c7-podio-finale__nome { font-size: clamp(21px, 1.9vw, 28px); }
+.c7-sala__podio .c7-podio-finale__pos { font-size: 15px; }
+.c7-sala__bande .c7-banda__pos { min-width: 64px; height: 34px; font-size: 15px; }
+.c7-sala__riga-uscita { flex-shrink: 0; max-width: 45%; font-size: 14px; font-weight: 700; color: var(--c7-ink-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+@media (min-width: 992px) {
+  .c7-sala__turno-testo { align-items: flex-end; }
+  .c7-sala__turno-nome { text-align: right; }
+  .c7-sala__corpo--tabellone { grid-template-columns: minmax(0, 1fr) 560px; }
+  .c7-sala-tab { flex: 1; }
+  .c7-sala-tab__card { flex: 1 1 0; }
+  .c7-sala-tab__ramo { flex: 1 1 0; }
+  .c7-sala__corpo--solo .c7-sala__destra--conclusa { max-width: 1040px; }
+  .c7-sala__bande { flex: 1; min-height: 0; display: grid; grid-auto-rows: minmax(0, 1fr); overflow: hidden; }
+  .c7-sala__bande .c7-sala__riga { min-height: 0; max-height: 64px; padding-top: 0; padding-bottom: 0; }
+  .c7-sala__bande--due { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-flow: column; grid-template-rows: repeat(var(--righe), minmax(0, 1fr)); column-gap: 0; }
+}
