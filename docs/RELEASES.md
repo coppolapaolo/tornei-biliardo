@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.22.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.21.1...v1.22.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* trio, multi-set e X con esercizio sulla card della partita ([#368](https://github.com/coppolapaolo/tornei-biliardo/issues/368)) ([25ee965](https://github.com/coppolapaolo/tornei-biliardo/commit/25ee9659a0e903897da7d96b8de8d9d52d8ff1b7))
+
 ## [1.21.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.21.0...v1.21.1) (2026-09-13)
 
 
