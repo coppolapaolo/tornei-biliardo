@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.20.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.19.0...v1.20.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* il tabellone al posto della classifica nelle gare a eliminazione ([#363](https://github.com/coppolapaolo/tornei-biliardo/issues/363)) ([51c92fc](https://github.com/coppolapaolo/tornei-biliardo/commit/51c92fc326ad1ed9b6d42e74118ad8b0202db206))
+
+
+### Correzioni
+
+* nomi interi nelle righe delle partite, la formula dei dispari tradotta e l'export completo ([#364](https://github.com/coppolapaolo/tornei-biliardo/issues/364)) ([a59aeeb](https://github.com/coppolapaolo/tornei-biliardo/commit/a59aeeb0a8cf93cd804cab5d49e2c0e54fdc0c32))
+
 ## [1.19.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.18.0...v1.19.0) (2026-09-13)
 
 
