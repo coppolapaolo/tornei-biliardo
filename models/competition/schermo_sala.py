@@ -121,12 +121,22 @@ class StatoNodo(str, Enum):
 
 @dataclass(frozen=True)
 class LatoNodo:
-    """Un posto di un nodo. Senza `nome` si dice chi arrivera' (`posto`)."""
+    """Un posto di un nodo. Senza `nome` si dice chi arrivera'.
+
+    Se chi arrivera' esce da una partita gia' nata, `esito` («vincitore» o
+    «perdente») e `da` (i due nomi) lo dicono per esteso, e `tavolo` e' il
+    tavolo su cui quella partita si sta giocando: lo schermo lo scrive in una
+    riga sola quando lo spazio non basta per due nomi. Altrimenti resta il
+    `posto` del tabellone, che il template racconta a parole.
+    """
 
     nome: Optional[str] = None
     punti: Optional[int] = None
     vince: bool = False
     posto: Optional[Posto] = None
+    esito: Optional[str] = None
+    da: Tuple[str, ...] = ()
+    tavolo: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -178,6 +188,16 @@ class TabelloneSala:
             for lavagna in self.lavagne
             for ramo in lavagna.rami
         )
+
+    @property
+    def stretto(self) -> bool:
+        """Poco spazio per nodo: piu' di quattro righe, o i due rami del doppio KO.
+
+        Allora un posto futuro che esce da una partita in corso si scrive col
+        tavolo invece che con i due nomi, che stanno gia' in grande sulla sua
+        casella.
+        """
+        return self.righe > 4 or any(lavagna.con_ripescati for lavagna in self.lavagne)
 
 
 @dataclass(frozen=True)
@@ -335,19 +355,36 @@ def _ultimo_turno_chiuso(matches: List, prima_di: int) -> Optional[int]:
     return None
 
 
+def _lato_futuro(posto: Posto) -> LatoNodo:
+    """Il posto di un nodo non ancora nato: chi c'e', o da quale partita."""
+    if posto.noto:
+        return LatoNodo(nome=posto.giocatore.username)
+    fonte = posto.fonte
+    partita = fonte.nodo.match if fonte is not None else None
+    if (
+        fonte is not None
+        and partita is not None
+        and partita.player1 is not None
+        and partita.player2 is not None
+    ):
+        in_gioco = stato_partita(partita) in (
+            StatoPartita.IN_CORSO,
+            StatoPartita.DA_VALIDARE,
+        )
+        return LatoNodo(
+            esito=fonte.esito,
+            da=(_nome(partita.player1), _nome(partita.player2)),
+            tavolo=partita.table_assignment if in_gioco else None,
+        )
+    return LatoNodo(posto=posto)
+
+
 def _nodo_sala(nodo: Nodo) -> NodoSala:
     m = nodo.match
     if m is None:
         return NodoSala(
             stato=StatoNodo.VUOTO,
-            lati=tuple(
-                LatoNodo(
-                    nome=p.giocatore.username if p.noto else None,
-                    posto=None if p.noto else p,
-                )
-                for p in nodo.posti
-                if not p.vuoto
-            ),
+            lati=tuple(_lato_futuro(p) for p in nodo.posti if not p.vuoto),
             x=nodo.is_x,
         )
     if getattr(m, "is_bye", False):

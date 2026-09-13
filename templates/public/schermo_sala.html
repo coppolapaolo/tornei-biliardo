@@ -81,7 +81,17 @@
   <div class="c7-sala-tab__nodo is-{{ n.stato.value }}">
     {% for lato in n.lati %}
     <div class="c7-sala-tab__posto{% if lato.vince %} is-winner{% endif %}{% if not lato.nome %} is-attesa{% endif %}">
+      {% if lato.da %}
+      {# Chi arrivera', senza puntini: «chi vince» e sotto i due nomi, o il
+         tavolo quando lo spazio e' poco e quella partita si sta giocando. #}
+      <span class="c7-sala-tab__chi c7-sala-tab__arrivo">
+        <span class="c7-kicker c7-sala-tab__esito">{{ _('chi vince') if lato.esito == 'vincitore' else _('chi perde') }}</span>
+        {% if _tab.stretto and lato.tavolo %}<span>{{ _('Tavolo') }} {{ lato.tavolo }}</span>
+        {% else %}{% for nome in lato.da %}<span>{{ nome }}</span>{% endfor %}{% endif %}
+      </span>
+      {% else %}
       <span class="c7-sala-tab__chi">{% if lato.nome %}{{ lato.nome }}{% elif lato.posto %}{{ tb.posto(lato.posto) }}{% else %}{{ _('da definire') }}{% endif %}</span>
+      {% endif %}
       {% if lato.punti is not none %}<span class="c7-sala-tab__punti c7-num">{{ lato.punti }}</span>{% endif %}
     </div>
     {% endfor %}
@@ -98,11 +108,11 @@
             <span class="c7-kicker">{{ _('Tavolo') }}</span>
             <span class="c7-num">{{ t.nome }}</span>
           </div>
-          {% if t.round %}<span class="c7-kicker c7-sala__round">{{ tb.nome_round(t.round) }}</span>{% endif %}
           {% if t.alla_distanza %}<span class="c7-state c7-state--ok">{{ _('Alla distanza') }}</span>
           {% elif not t.libero %}<span class="c7-state c7-state--accent">{{ _('In corso') }}</span>
           {% else %}<span class="c7-state c7-state--muted">{{ _('Libero') }}</span>{% endif %}
         </div>
+        {% if t.round %}<div class="c7-kicker c7-sala__round">{{ tb.nome_round(t.round) }}</div>{% endif %}
         {% if not t.libero %}
         <div class="c7-sala__lati{% if t.lati|length > 2 %} c7-sala__lati--tre{% endif %}">
           {% for lato in t.lati %}

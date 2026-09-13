@@ -598,3 +598,8 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   `_classifica_bande.html`, che porta la nota per il direttore; a gara
   conclusa con piu' di otto giocatori le bande vanno su due colonne; nella
   formula a gironi le lavagne dei gironi si impilano tutte, fitte.
+  Secondo giro, a tre metri niente coi puntini: il nome del round sta in
+  una riga sua sotto la testa della casella, i nomi vanno a capo, e un posto
+  futuro dice «chi vince» o «chi perde» con sotto i due nomi, oppure «Tavolo
+  N» quando quella partita si gioca a un tavolo e lo spazio e' poco, cioe'
+  oltre quattro righe o con i due rami del doppio KO (`TabelloneSala.stretto`).

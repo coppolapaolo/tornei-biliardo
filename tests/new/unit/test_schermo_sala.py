@@ -291,7 +291,22 @@ def test_eliminazione_da_8_il_turno_e_quello_dopo_senza_la_finale():
     # Le semifinali non sono nate: nodi vuoti che dicono da dove arriva chi.
     quarti, semi = s.tabellone.lavagne[0].rami[0].colonne
     assert all(n.stato == StatoNodo.VUOTO for n in semi.nodi)
-    assert all(lato.nome is None and lato.posto for lato in semi.nodi[0].lati)
+    # Chi arriva esce da un quarto gia' nato: «chi vince» e i due nomi, e il
+    # tavolo solo per il quarto che si sta giocando.
+    primo, secondo = semi.nodi[0].lati
+    assert (primo.esito, primo.da, primo.tavolo) == (
+        "vincitore",
+        (partite[0].player1.username, partite[0].player2.username),
+        "1",
+    )
+    assert (secondo.esito, secondo.da, secondo.tavolo) == (
+        "vincitore",
+        (partite[1].player1.username, partite[1].player2.username),
+        None,
+    )
+    assert primo.nome is None and primo.posto is None
+    # Quattro righe, un ramo solo: c'e' spazio per i due nomi.
+    assert not s.tabellone.stretto
     # Il quarto al tavolo 1 e' in corso col punteggio; lo 0-0 degli altri no.
     assert quarti.nodi[0].stato == StatoNodo.IN_CORSO
     assert quarti.nodi[0].lati[0].punti == 1
@@ -371,6 +386,15 @@ def test_doppio_ko_vincenti_sopra_e_ripescati_sotto():
         ]
     ]
     assert s.tabellone.lavagne[0].con_ripescati
+    # Due rami: poco spazio, un posto che esce da una partita al tavolo si
+    # dice col tavolo. Il recupero 2, slot 0, riceve chi vince il recupero 1
+    # al tavolo 2 e chi perde la seconda partita dei vincenti, senza tavolo.
+    assert s.tabellone.stretto
+    recupero2 = s.tabellone.lavagne[0].rami[1].colonne[1].nodi[0]
+    assert [(lato.esito, lato.da, lato.tavolo) for lato in recupero2.lati] == [
+        ("vincitore", (per[0].username, per[1].username), "2"),
+        ("perdente", (vin[2].username, vin[3].username), None),
+    ]
     assert s.tabellone.nomi_turno == (
         NomeRound("vincenti", 2),
         NomeRound("recupero", 1),

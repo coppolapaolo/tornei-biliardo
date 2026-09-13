@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 11:20+0200\n"
+"POT-Creation-Date: 2026-09-13 11:28+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -108,7 +108,7 @@ msgstr ""
 #: templates/individual_match/quick_match.html:60
 #: templates/player/challenge_attempt_detail.html:24
 #: templates/public/campionatos_list.html:27
-#: templates/public/schermo_sala.html:103
+#: templates/public/schermo_sala.html:112
 msgid "In corso"
 msgstr ""
 
@@ -3972,7 +3972,7 @@ msgstr ""
 #: templates/direttore/_fase_preparazione.html:141
 #: templates/direttore/_tabellino.html:46 templates/gara_bracket.html:4
 #: templates/gara_bracket.html:12 templates/gara_detail.html:142
-#: templates/public/schermo_sala.html:137
+#: templates/public/schermo_sala.html:147
 msgid "Tabellone"
 msgstr ""
 
@@ -4126,7 +4126,7 @@ msgstr ""
 #: templates/direttore/_card_partita.html:43
 #: templates/direttore/_partite.html:33 templates/direttore/_tabellino.html:38
 #: templates/match_detail.html:13 templates/match_detail.html:50
-#: templates/match_detail.html:106 templates/public/schermo_sala.html:88
+#: templates/match_detail.html:106 templates/public/schermo_sala.html:98
 msgid "X a tavolino"
 msgstr ""
 
@@ -7529,7 +7529,7 @@ msgstr ""
 #: templates/direttore/_fase_gioco.html:215
 #: templates/direttore/_fase_iscrizioni.html:121
 #: templates/direttore/_fase_preparazione.html:123
-#: templates/player/venues.html:29 templates/public/schermo_sala.html:93
+#: templates/player/venues.html:29 templates/public/schermo_sala.html:103
 msgid "Tavoli"
 msgstr ""
 
@@ -8112,7 +8112,8 @@ msgstr ""
 #: templates/direttore/_card_partita.html:120
 #: templates/direttore/_fase_gioco.html:220
 #: templates/direttore/_partite.html:25 templates/direttore/_partite.html:50
-#: templates/direttore/_scripts.html:87 templates/public/schermo_sala.html:98
+#: templates/direttore/_scripts.html:87 templates/public/schermo_sala.html:89
+#: templates/public/schermo_sala.html:108
 msgid "Tavolo"
 msgstr ""
 
@@ -8777,13 +8778,13 @@ msgstr ""
 
 #: templates/components/_bracket_view.html:82
 #: templates/direttore/_tabellino.html:55
-#: templates/public/schermo_sala.html:150
+#: templates/public/schermo_sala.html:160
 msgid "Vincenti"
 msgstr ""
 
 #: templates/components/_bracket_view.html:82
 #: templates/direttore/_tabellino.html:55
-#: templates/public/schermo_sala.html:150
+#: templates/public/schermo_sala.html:160
 msgid "Ripescati"
 msgstr ""
 
@@ -8799,7 +8800,7 @@ msgstr ""
 
 #: templates/components/_bracket_view.html:120
 #: templates/direttore/_tabellino.html:51
-#: templates/public/schermo_sala.html:144
+#: templates/public/schermo_sala.html:154
 #, python-format
 msgid "Girone %(num)s"
 msgstr ""
@@ -8810,7 +8811,7 @@ msgstr ""
 
 #: templates/components/_bracket_view.html:125
 #: templates/direttore/_tabellino.html:52
-#: templates/public/schermo_sala.html:145
+#: templates/public/schermo_sala.html:155
 msgid "Tabellone finale"
 msgstr ""
 
@@ -9367,7 +9368,7 @@ msgid ""
 msgstr ""
 
 #: templates/components/_detailed_classification.html:10
-#: templates/public/schermo_sala.html:201
+#: templates/public/schermo_sala.html:211
 msgid "Classifica complessiva"
 msgstr ""
 
@@ -10245,7 +10246,7 @@ msgstr ""
 #: templates/direttore/_partite.html:25 templates/direttore/_partite.html:67
 #: templates/direttore/preparazione/_turni.html:46
 #: templates/direttore/preparazione/_turni.html:67
-#: templates/public/schermo_sala.html:224
+#: templates/public/schermo_sala.html:234
 #, python-format
 msgid "Turno %(num)s"
 msgstr ""
@@ -10278,7 +10279,7 @@ msgstr ""
 #: templates/direttore/_partite.html:72
 #: templates/individual_match/match_detail.html:229
 #: templates/individual_match/matches.html:102
-#: templates/public/schermo_sala.html:225
+#: templates/public/schermo_sala.html:235
 msgid "Concluso"
 msgstr ""
 
@@ -12480,7 +12481,7 @@ msgid "chi vince la finale"
 msgstr ""
 
 #: templates/components/_tabellone_macros.html:79
-#: templates/direttore/_tabellino.html:30 templates/public/schermo_sala.html:84
+#: templates/direttore/_tabellino.html:30 templates/public/schermo_sala.html:93
 msgid "da definire"
 msgstr ""
 
@@ -12674,8 +12675,8 @@ msgstr ""
 #: templates/direttore/_classifica_bande.html:18
 #: templates/direttore/_fase_conclusa.html:47
 #: templates/direttore/_fase_conclusa.html:63
-#: templates/public/schermo_sala.html:180
-#: templates/public/schermo_sala.html:200
+#: templates/public/schermo_sala.html:190
+#: templates/public/schermo_sala.html:210
 #: templates/public/vetrina_gara.html:103
 msgid "Classifica finale"
 msgstr ""
@@ -13621,7 +13622,7 @@ msgid "SSR segna chi è stato messo in ordine dallo spareggio."
 msgstr ""
 
 #: templates/direttore/_classifica_bande.html:19
-#: templates/public/schermo_sala.html:181
+#: templates/public/schermo_sala.html:191
 msgid "dal tabellone"
 msgstr ""
 
@@ -17271,7 +17272,7 @@ msgstr ""
 #: templates/individual_match/edit_match.html:74
 #: templates/individual_match/match_detail.html:201
 #: templates/individual_match/quick_match.html:166
-#: templates/public/schermo_sala.html:104
+#: templates/public/schermo_sala.html:113
 msgid "Libero"
 msgstr ""
 
@@ -19154,44 +19155,52 @@ msgid ""
 "partite."
 msgstr ""
 
-#: templates/public/schermo_sala.html:102
+#: templates/public/schermo_sala.html:88
+msgid "chi vince"
+msgstr ""
+
+#: templates/public/schermo_sala.html:88
+msgid "chi perde"
+msgstr ""
+
+#: templates/public/schermo_sala.html:111
 msgid "Alla distanza"
 msgstr ""
 
-#: templates/public/schermo_sala.html:118
+#: templates/public/schermo_sala.html:128
 msgid "Prossima partita"
 msgstr ""
 
-#: templates/public/schermo_sala.html:120
+#: templates/public/schermo_sala.html:130
 msgid "in attesa di un tavolo libero"
 msgstr ""
 
-#: templates/public/schermo_sala.html:122
+#: templates/public/schermo_sala.html:132
 msgid "nessuna partita in attesa"
 msgstr ""
 
-#: templates/public/schermo_sala.html:138
+#: templates/public/schermo_sala.html:148
 msgid "il turno che si gioca e quello dopo"
 msgstr ""
 
-#: templates/public/schermo_sala.html:169
+#: templates/public/schermo_sala.html:179
 msgid "Il tabellone compare dopo il sorteggio."
 msgstr ""
 
-#: templates/public/schermo_sala.html:202
+#: templates/public/schermo_sala.html:212
 #, python-format
 msgid "Classifica dopo il turno %(n)s"
 msgstr ""
 
-#: templates/public/schermo_sala.html:204
+#: templates/public/schermo_sala.html:214
 msgid "Vinti · persi"
 msgstr ""
 
-#: templates/public/schermo_sala.html:204
+#: templates/public/schermo_sala.html:214
 msgid "Vinte · diff"
 msgstr ""
 
-#: templates/public/schermo_sala.html:218
+#: templates/public/schermo_sala.html:228
 msgid "La classifica compare alla fine del primo turno."
 msgstr ""
 
