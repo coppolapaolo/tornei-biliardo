@@ -122,6 +122,7 @@ blocks:
           giocatori nessuno vince la partita. Per correggere un trio già chiuso
           tocca **Correggi**, come per le partite a due: tre numeri, che insieme
           fanno i triangoli del trio.
+        shot: gara-trio-card
       - name: "Segnare una partita a set"
         text: >-
           In alto ci sono i set vinti, sotto il set che si gioca con i suoi
@@ -131,6 +132,7 @@ blocks:
           chiusa tocca **Correggi**: il foglio mostra un blocco per set con il
           suo punteggio, e puoi aggiungere o togliere un set. Set vinti e
           vincitore si ricalcolano dai set.
+        shot: gara-set-card
       - name: "Convalidare l'esercizio al posto della X"
         text: >-
           Nelle gare con la X sostituita da un esercizio, la card di chi
@@ -140,6 +142,7 @@ blocks:
           dopo **Convalida**. Per azzerarlo, menu «⋯» e **Azzera la prova**.
           Finché non convalidi, il turno dopo non si avvia: quel punteggio fa
           parte della classifica su cui si formano le coppie.
+        shot: gara-x-card
       - name: "Registrare gli esercizi fra i turni"
         text: >-
           Se la gara ha un esercizio dopo un turno, quando quel turno è
@@ -233,6 +236,9 @@ blocks:
       sorteggio casuale i turni esistono già tutti, e nessuno di questi
       aspetta.
 
+  - type: shot
+    shot: gara-turno-bloccato
+
   - type: note
     tone: warning
     title: "Avviare un turno blocca quello precedente"
@@ -283,6 +289,18 @@ blocks:
           successivo**: le sue partite vengono eliminate e le coppie si
           liberano. Poi correggi, e riavvii. I giocatori del turno annullato
           dovranno rigiocare, quindi valuta se ne vale la pena.
+
+  - type: text
+    text: >-
+      Trio e partite a set si correggono dallo stesso **Correggi**, con il
+      foglio adatto: tre numeri per il trio, un blocco per ogni set per la
+      partita a set.
+
+  - type: shot
+    shot: gara-trio-correggi
+
+  - type: shot
+    shot: gara-set-correggi
 
   - type: heading
     id: schermo_sala

@@ -120,6 +120,7 @@ blocks:
           wins the match. To correct a trio that is already closed, tap
           **Correct** as for a two-player match: three numbers that together
           make up the trio's racks.
+        shot: gara-trio-card
       - name: "Score a match played in sets"
         text: >-
           The sets won are at the top, and under them the set being played
@@ -129,6 +130,7 @@ blocks:
           in sets that is already closed, tap **Correct**: the sheet shows one
           block per set with its score, and you can add or remove a set. Sets
           won and winner are worked out again from the sets.
+        shot: gara-set-card
       - name: "Validate the drill played instead of the X"
         text: >-
           In competitions where the X is replaced by a drill, the card of the
@@ -138,6 +140,7 @@ blocks:
           after **Validate**. To clear it, use the «⋯» menu and **Reset the
           drill**. Until you validate it the next round cannot start: that
           score is part of the standings the pairs are built from.
+        shot: gara-x-card
       - name: "Record the drills between rounds"
         text: >-
           If the competition has a drill after a round, once that round is over
@@ -232,6 +235,9 @@ blocks:
       and how many things are missing. In random-draw competitions all rounds
       already exist, and none of this waits.
 
+  - type: shot
+    shot: gara-turno-bloccato
+
   - type: note
     tone: warning
     title: "Starting a round locks the previous one"
@@ -280,6 +286,18 @@ blocks:
           round**: its matches are deleted and the pairs are freed. Then you
           correct, and start again. The players in the cancelled round will
           have to replay, so weigh up whether it is worth it.
+
+  - type: text
+    text: >-
+      Trios and matches played in sets are corrected from the same
+      **Correct**, with the sheet to match: three numbers for a trio, one
+      block per set for a match played in sets.
+
+  - type: shot
+    shot: gara-trio-correggi
+
+  - type: shot
+    shot: gara-set-correggi
 
   - type: heading
     id: schermo_sala

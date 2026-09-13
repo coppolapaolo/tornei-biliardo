@@ -899,6 +899,183 @@ def _create_prove(db, director, venue):
     return prove
 
 
+DEMO_DIRECTOR_PROVE = ("Franco Galli", "franco.galli@example.com")
+
+
+def _create_prove_forme(db, venue, challenges):
+    """Quattro prove per le card che il resto del dataset non produce.
+
+    La guida spiega come il direttore segna un trio, una partita a set e la
+    prova al posto della X, e come li corregge: senza queste gare quelle card
+    non esistono da nessuna parte e le figure non si possono generare.
+
+    Sono **prove** (ADR-058) per non toccare le schermate che c'erano gia':
+    una gara vera in corso comparirebbe fra le gare «In diretta ora» della
+    home e delle dashboard, e cambierebbe immagini che non c'entrano. Una
+    prova e' invisibile fuori dalla sua pagina. Nascono per ultime, come le
+    altre due, perche' gli id delle gare precedenti stanno nel manifest.
+
+    Le dirige un **secondo direttore**, non Luca Bianchi: le prove aperte di un
+    direttore compaiono nella sua dashboard e oltre la terza il modulo della
+    gara nuova avvisa che non se ne possono aprire altre, quindi con Luca
+    sarebbero cambiate la sua dashboard e le schermate della nuova gara.
+
+    - gara 8, trio chiuso con l'altra partita del turno ancora aperta: la card
+      del trio concluso ha «Correggi»;
+    - gara 9, trio a meta': la card con i tre lati e gli stepper;
+    - gara 10, partite a set: una chiusa, da correggere, e una al secondo set;
+    - gara 11, X con esercizio: le partite del turno chiuse e la prova
+      dichiarata dal giocatore ma non convalidata, quindi la fascia dice
+      «Prima di avviare il turno 2».
+    """
+    from models.base import utc_now
+    from models.challenge.services import ChallengeService
+    from models.competition.inscription_service import InscriptionService
+    from models.competition.round_service import RoundService
+    from models.competition.services import GaraService
+    from models.match.match_service import MatchService
+    from models.match.models import Match
+    from models.match.trio_scoring_service import TrioScoringService
+    from models.prova.service import ProvaService
+    from models.prova.visibility import prova_visibili
+    from models.status_enum import Discipline
+
+    from models import User
+    from models.user.role_enum import UserRole
+
+    numeriche = [c for c in challenges if not c.pass_fail_only]
+    if not numeriche:
+        log("prove con trio, set e X non create: nessun esercizio a punteggio")
+        return []
+
+    director = User(
+        username=DEMO_DIRECTOR_PROVE[0],
+        email=DEMO_DIRECTOR_PROVE[1],
+        role=UserRole.DIRECTOR.value,
+    )
+    director.set_password(DEMO_PASSWORD)
+    director.is_verified = True
+    director.onboarding_completed = True
+    db.session.add(director)
+    db.session.commit()
+
+    def nuova(name: str, iscritti: int, **opzioni):
+        gara = GaraService.create_gara(
+            number=1,
+            name=name,
+            date=date.today() + timedelta(days=1),
+            discipline=Discipline.EIGHT_BALL.value,
+            campionato_id=None,
+            director_id=director.id,
+            creator_id=director.id,
+            time=time(21, 0),
+            rounds_count=3,
+            min_participants=iscritti,
+            max_participants=iscritti,
+            billiard_hall_id=venue.id,
+            location=venue.name,
+            is_race_to=True,
+            classification_system="WINS",
+            **ProvaService.campi_di_creazione(),
+            **opzioni,
+        )
+        db.session.commit()
+        now = utc_now()
+        InscriptionService.open_inscriptions(
+            gara_id=gara.id,
+            inscription_start=now - timedelta(days=1),
+            inscription_end=datetime.combine(gara.date, time(17, 0)),
+        )
+        db.session.commit()
+        ProvaService.iscrivi_fittizi(gara.id, "minimo")
+        db.session.commit()
+        RoundService.start_first_round(gara.id)
+        db.session.commit()
+        return gara
+
+    def partite(gara):
+        return (
+            Match.query.filter_by(gara_id=gara.id, round_number=1)
+            .order_by(Match.id)
+            .all()
+        )
+
+    gare = []
+    with prova_visibili():
+        # Trio chiuso, con l'altra partita del turno ancora aperta.
+        gara = nuova("Prova - Trio", 5, distance=4, odd_number_policy="trio")
+        for match in partite(gara):
+            if match.is_trio:
+                TrioScoringService.set_racks_won(
+                    match.trio_match.id, (3, 2, 1), director.id
+                )
+            elif not match.is_bye:
+                _score_match(db, match, partial=True)
+        db.session.commit()
+        gare.append(gara)
+
+        # Trio a meta' del primo girone.
+        gara = nuova("Prova - Trio in corso", 5, distance=4, odd_number_policy="trio")
+        for match in partite(gara):
+            if match.is_trio:
+                TrioScoringService.set_racks_won(
+                    match.trio_match.id, (2, 1, 0), director.id
+                )
+            elif not match.is_bye:
+                _score_match(db, match, partial=True)
+        db.session.commit()
+        gare.append(gara)
+
+        # Partite a set: la prima chiusa, la seconda al secondo set.
+        gara = nuova(
+            "Prova - Set",
+            4,
+            distance=3,
+            is_multi_set=True,
+            match_distance=2,
+            is_race_to_sets=True,
+        )
+        chiusa, aperta = partite(gara)[:2]
+        for match, set_giocati in (
+            (chiusa, ((3, 1), (3, 2))),
+            (aperta, ((3, 2), (1, 1))),
+        ):
+            for p1, p2 in set_giocati:
+                MatchService.start_next_set(match.id)
+                db.session.commit()
+                MatchService.set_current_set_racks(match.id, p1, p2)
+                db.session.commit()
+        gare.append(gara)
+
+        # X con esercizio: partite chiuse, prova dichiarata e non convalidata.
+        gara = nuova(
+            "Prova - X con esercizio",
+            5,
+            distance=4,
+            odd_number_policy="bye_with_challenge",
+            x_challenge_id=numeriche[0].id,
+        )
+        for match in partite(gara):
+            if match.is_bye:
+                tentativo = ChallengeService.create_x_replacement_attempt(
+                    user_id=match.player1_id, gara_id=gara.id, round_number=1
+                )
+                db.session.commit()
+                ChallengeService.complete_x_replacement_attempt(tentativo.id, 3)
+            else:
+                _score_match(db, match)
+        db.session.commit()
+        RoundService.update_round_progression(gara.id)
+        db.session.commit()
+        gare.append(gara)
+
+    log(
+        "prove per trio, set e X: "
+        + ", ".join(f"«{g.name}» (gara {g.id})" for g in gare)
+    )
+    return gare
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -962,6 +1139,7 @@ def main() -> int:
         _create_esami(db, director, players, challenges, venue)
         _create_tpa_referto(db, players)
         _create_prove(db, director, venue)
+        _create_prove_forme(db, venue, challenges)
 
         print("\nFatto. Credenziali dimostrative:")
         print(f"  direttore: {DEMO_DIRECTOR[0]} / {DEMO_PASSWORD}")

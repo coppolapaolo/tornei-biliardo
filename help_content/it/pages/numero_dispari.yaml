@@ -76,6 +76,9 @@ blocks:
       non si chiude, come se fosse una partita ancora da validare; nelle gare
       a sorteggio casuale non aspetta.
 
+  - type: shot
+    shot: gara-x-card
+
   - type: list
     items:
       - "**Pro**: nessuno sta fermo, e il turno resta equo anche a triangoli."
@@ -122,6 +125,9 @@ blocks:
       - name: "Con distanza 4 o 5"
         values: "6 triangoli in tutto"
         text: "Due giri: le stesse tre sfide ripetute."
+      - name: "Con distanza 6 o 7"
+        values: "9 triangoli in tutto"
+        text: "Tre giri."
       - name: "Chi vince"
         text: >-
           Chi ha vinto più triangoli. Se due o più arrivano appaiati al punteggio
@@ -133,6 +139,9 @@ blocks:
       - "**Pro**: giocano tutti, e la partita a tre piace."
       - "**Contro**: dura più di una partita normale e occupa un tavolo più a lungo."
       - "**Disponibile solo** con distanze da 2 a 7, e non nelle gare a tabellone."
+
+  - type: shot
+    shot: gara-trio-card
 
   - type: note
     tone: info
