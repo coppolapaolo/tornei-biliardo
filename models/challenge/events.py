@@ -49,6 +49,11 @@ class ChallengeAttemptCompletedEvent(DomainEvent):
     #: Progressivo del tentativo sulla stessa prova. In gara conta: dal
     #: catalogo vale sempre 1, perché ogni tentativo è una sessione a sé.
     attempt_number: int = 1
+    #: Il `GaraChallenge` del tentativo, solo per gli esercizi fra i turni.
+    #: Dice **da quale tabella** viene `attempt_id`: gli id di
+    #: `challenge_attempt` e di `gara_challenge_attempt` si sovrappongono, e
+    #: chi restituisce l'XP deve riconoscere il movimento giusto.
+    gara_challenge_id: Optional[int] = None
 
     def __post_init__(self):
         super().__post_init__()
@@ -77,6 +82,7 @@ class ChallengeAttemptCompletedEvent(DomainEvent):
             "passed": self.passed,
             "gara_id": self.gara_id,
             "attempt_number": self.attempt_number,
+            "gara_challenge_id": self.gara_challenge_id,
         }
 
 

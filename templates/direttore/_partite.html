@@ -92,8 +92,16 @@
   <div class="c7-stack" style="gap:10px">
     {{ testata_turno(_turno, 'concluso' if _concluso else 'in_corso', con_menu=True) }}
     {% if _concluso %}
+    {# La prova della X ancora da convalidare resta card: il turno dopo la
+       aspetta (`pendenze_turno`), e da riga non si convaliderebbe. #}
+    {% set _x_aperte = x_da_convalidare if x_da_convalidare is defined else [] %}
+    {% if _x_aperte %}
+    <div class="c7-partite">
+      {% for match in partite_turno if match.id in _x_aperte %}{% include "direttore/_card_partita.html" %}{% endfor %}
+    </div>
+    {% endif %}
     <div class="c7-rows">
-      {% for match in partite_turno %}{{ riga_partita(match, match_can_modify.get(match.id, True)) }}{% endfor %}
+      {% for match in partite_turno if match.id not in _x_aperte %}{{ riga_partita(match, match_can_modify.get(match.id, True)) }}{% endfor %}
     </div>
     <div class="c7-nota">
       {% if _turno < (gara.rounds_count or _turno) %}

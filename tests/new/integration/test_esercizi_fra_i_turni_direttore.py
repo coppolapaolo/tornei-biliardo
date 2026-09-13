@@ -208,9 +208,13 @@ def test_i_tentativi_si_fermano_al_massimo(client, db_session):
     assert secondo.status_code == 400
     assert GaraChallengeAttempt.query.filter_by(gara_challenge_id=gc.id).count() == 1
 
-    # La riga non si tocca piu'.
+    # Nuovi tentativi no; la riga si apre ancora, ma solo per togliere quello
+    # registrato per sbaglio (dal 2026-09-13, finche' il turno dopo non parte).
     html = _pagina(client, gara)
-    assert f'data-user-id="{giocatori[1].id}"' not in html
+    inizio = html.index(f'data-user-id="{giocatori[1].id}"')
+    riga = html[html.rindex("<button", 0, inizio) : html.index(">", inizio)]
+    assert 'data-puo-tentare="0"' in riga
+    assert '"id": ' in riga
     assert "finiti" in html
 
 

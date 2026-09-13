@@ -349,6 +349,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # facoltà del direttore, come il reset con cui condivide il perimetro.
     "admin.match.correct_match_result": {"director"},
     "admin.match.record_challenge_attempt": {"director"},
+    "admin.match.remove_challenge_attempt": {"director"},
     "admin.match.record_challenge_attempts": {"director"},
     "admin.match.start_next_set": {"director"},
     "admin.match.add_set_rack": {"director"},

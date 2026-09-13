@@ -132,6 +132,8 @@ blocks:
           distanza del turno. Se il giocatore l'ha già dichiarato la card è
           verde; altrimenti lo scrivi tu con − e +. Il punteggio conta solo
           dopo **Convalida**. Per azzerarlo, menu «⋯» e **Azzera la prova**.
+          Finché non convalidi, il turno dopo non si avvia: quel punteggio fa
+          parte della classifica su cui si formano le coppie.
       - name: "Registrare gli esercizi fra i turni"
         text: >-
           Se la gara ha un esercizio dopo un turno, quando quel turno è
@@ -141,9 +143,12 @@ blocks:
           sotto. Tocca la riga di chi ha appena tirato: se l'esercizio è a
           punteggio imposti il numero con − e + e tocchi **Registra il
           tentativo**; se conta solo riuscire, basta toccare **Riuscito** o
-          **Non riuscito**. Finiti i tentativi, la riga non si tocca più, e un
-          tentativo registrato non si toglie. Il turno dopo si avvia anche se
-          qualcuno deve ancora tirare.
+          **Non riuscito**. Se hai registrato un tentativo per sbaglio, tocca
+          la riga: sotto trovi i tentativi già registrati, e **Togli il
+          tentativo** lo cancella dopo averti chiesto conferma. Si può finché
+          il turno dopo non è partito. Il turno dopo, invece, non parte finché
+          ogni giocatore ancora in gara non ha almeno un tentativo; nelle gare
+          a sorteggio casuale non aspetta nessuno.
         shot: gara-esercizio-turno
       - name: "Cambiare il tavolo a una partita"
         text: >-
@@ -204,7 +209,12 @@ blocks:
       Il pulsante **Avvia il turno** compare nella fascia solo quando **tutte**
       le partite del turno in corso sono concluse. È un vincolo voluto: le
       coppie del turno nuovo nascono dalla classifica, e una classifica
-      incompleta produrrebbe abbinamenti sbagliati.
+      incompleta produrrebbe abbinamenti sbagliati. Per la stessa ragione il
+      pulsante resta **spento** se manca ancora la convalida dell'esercizio al
+      posto della X o un esercizio fra i turni da registrare: la fascia dice
+      «Prima di avviare il turno N» e quante cose mancano. Nelle gare a
+      sorteggio casuale i turni esistono già tutti, e nessuno di questi
+      aspetta.
 
   - type: note
     tone: warning
@@ -364,6 +374,11 @@ blocks:
       definitiva: al posto di «Avvia turno» compare il pulsante per terminarla.
       Fa eccezione il doppio KO, dove dopo la Finale può comparire un turno in
       più — la Bella, spiegata nella pagina del [tabellone](/aiuto/giocare/tabellone).
+      Il pulsante resta **spento** finché l'ultimo turno ha ancora l'esercizio
+      al posto della X da convalidare o un esercizio fra i turni da
+      registrare: sono punteggi della classifica finale, e la fascia dice
+      «Prima di chiudere la gara» con quante cose mancano. Vale anche per lo
+      spareggio. Nelle gare a sorteggio casuale non aspetta niente.
       Due cose possono ancora accadere:
 
   - type: list
@@ -390,6 +405,8 @@ blocks:
     items:
       - q: "Nella fascia non compare «Avvia il turno»."
         a: "Manca almeno una partita da concludere. Nella vista Turni, le partite ancora aperte sono quelle senza etichetta «Conclusa»."
+      - q: "«Avvia il turno» c'è, ma è spento."
+        a: "Le partite sono chiuse, ma il turno aspetta ancora qualcosa: la fascia dice cosa. Può essere l'esercizio al posto della X da convalidare, sulla card di chi riposa, o un esercizio fra i turni che qualcuno non ha ancora registrato, nella sezione «Esercizio dopo il turno»."
       - q: "Un giocatore se ne va a metà gara."
         a: "Tocca «⋯» sulla card della sua partita e scegli **Ritiro di …**: il foglio ti dice cosa succede prima di confermare. Per i turni successivi, la regola che hai scelto alla creazione decide se resta negli abbinamenti (perdendo a tavolino) o se ne esce. Nelle gare a tabellone non c'è nulla da scegliere: chi si ritira lascia passare l'avversario a tavolino, e il tabellone resta com'è."
       - q: "Perché il mio torneo a eliminazione non dice «Avvia la gara»?"

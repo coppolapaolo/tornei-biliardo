@@ -199,6 +199,7 @@ class SimulationService:
                     break
                 prossimo = gara.current_round + 1
                 try:
+                    SimulationService._chiudi_pendenze(gara, gara.current_round, rng)
                     RoundService.start_next_round(gara.id, prossimo)
                     turni_avviati += 1
                 except Exception as errore:  # noqa: BLE001 — l'errore va in pagina
@@ -217,6 +218,77 @@ class SimulationService:
                 turni_avviati=turni_avviati,
                 fermata=fermata,
             )
+
+    @staticmethod
+    def _chiudi_pendenze(gara: Any, turno: int, rng: Sorteggio) -> None:
+        """Convalida la prova della X e registra gli esercizi del turno.
+
+        Il turno dopo li aspetta (SPECIFICHE.md, «Cosa deve essere chiuso prima
+        del turno successivo»): senza, «simula tutta la gara» si fermerebbe al
+        primo turno di ogni prova con la X con esercizio o con un esercizio
+        fra i turni. Passa dagli stessi servizi del direttore, con i punteggi
+        sorteggiati nella scala di ognuno.
+        """
+        from models.challenge.services import ChallengeService
+        from models.competition.gara_challenge import GaraChallenge
+        from models.competition.gara_challenge_service import GaraChallengeService
+        from models.competition.models import Inscription
+        from models.competition.pendenze_turno import pendenze_del_turno
+        from models.competition.withdraw_policy_service import WithdrawPolicyService
+        from models.match.models import Match
+
+        pendenze = pendenze_del_turno(gara, turno)
+        if not (pendenze.prove_x or pendenze.esercizi):
+            return
+
+        fuori = WithdrawPolicyService.get_forfeit_user_ids(gara.id)
+        if pendenze.prove_x:
+            for x in Match.query.filter_by(
+                gara_id=gara.id, round_number=turno, is_bye=True
+            ).all():
+                ponte = x.bye_challenge
+                if x.player1_id is None or x.player1_id in fuori:
+                    continue
+                if ponte is not None and ponte.is_validated:
+                    continue
+                ChallengeService.validate_x_replacement(
+                    gara_id=gara.id,
+                    round_number=turno,
+                    user_id=x.player1_id,
+                    actor_id=gara.director_id,
+                    score=rng.randint(0, x.effective_distance),
+                )
+
+        if pendenze.esercizi:
+            in_gara = [
+                i.user_id
+                for i in Inscription.query.filter_by(gara_id=gara.id)
+                .filter(Inscription.is_withdrawn.isnot(True))
+                .filter(Inscription.is_waitlist.isnot(True))
+                .filter(Inscription.is_forfeit.isnot(True))
+            ]
+            for esercizio in GaraChallenge.query.filter_by(
+                gara_id=gara.id, round_number=turno, is_active=True
+            ).all():
+                sfida = esercizio.challenge
+                for user_id in in_gara:
+                    if esercizio.get_user_attempts_count(user_id):
+                        continue
+                    if sfida.pass_fail_only:
+                        GaraChallengeService.record_challenge_attempt(
+                            esercizio.id,
+                            user_id,
+                            passed=rng.choice([True, False]),
+                            round_when_attempted=turno,
+                        )
+                    else:
+                        GaraChallengeService.record_challenge_attempt(
+                            esercizio.id,
+                            user_id,
+                            score=rng.randint(0, sfida.max_score or 10),
+                            round_when_attempted=turno,
+                        )
+        db.session.commit()
 
     # ------------------------------------------------------------ playoff
 

@@ -100,6 +100,49 @@ def test_tentativi_fatti_migliore_e_chi_non_puo_piu_tentare():
     assert esercizio.da_registrare == 1
 
 
+def test_i_tentativi_registrati_portano_id_e_numero_per_toglierli():
+    (esercizio,) = esercizi_fra_i_turni(
+        [_esercizio(10, 1, tentativi=3)],
+        turni_chiusi={1},
+        giocatori=GIOCATORI,
+        tentativi={(10, 1): [(4, None, 71), (9, None, 72)]},
+        turno_avviato=1,
+    )
+    anna, bruno, _carla = esercizio.giocatori
+    assert [(t.id, t.numero, t.punteggio) for t in anna.registrati] == [
+        (71, 1, 4),
+        (72, 2, 9),
+    ]
+    assert bruno.registrati == ()
+    # Con tentativi da togliere la riga si apre anche a tentativi finiti.
+    assert anna.si_apre
+
+
+def test_a_turno_dopo_partito_non_si_toglie_niente():
+    esercizi = esercizi_fra_i_turni(
+        [_esercizio(10, 1), _esercizio(11, 2)],
+        turni_chiusi={1, 2},
+        giocatori=GIOCATORI,
+        tentativi={(10, 1): [(4, None, 71)]},
+        turno_avviato=2,
+    )
+    dopo_uno, dopo_due = esercizi
+    assert dopo_uno.si_toglie is False
+    assert dopo_due.si_toglie is True
+
+
+def test_col_casuale_si_toglie_sempre():
+    (esercizio,) = esercizi_fra_i_turni(
+        [_esercizio(10, 1)],
+        turni_chiusi={1},
+        giocatori=GIOCATORI,
+        tentativi={},
+        turno_avviato=3,
+        casuale=True,
+    )
+    assert esercizio.si_toglie is True
+
+
 def test_a_esito_conta_se_almeno_un_tentativo_e_riuscito():
     (esercizio,) = esercizi_fra_i_turni(
         [_esercizio(10, 1, a_esito=True)],

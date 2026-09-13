@@ -736,3 +736,140 @@ class TestIlTrioInClassifica:
     )
     def test_il_pareggio_in_testa_non_da_vittorie(self, db_session):
         assert self._trio(db_session, 6, (4, 4, 1)) == [0, 0, 0]
+
+
+class TestCosaChiudeIlTurno:
+    """`SPECIFICHE.md` righe 102 e 104 (2026-09-13).
+
+    > Il turno successivo si avvia solo quando il turno precedente è chiuso
+    > davvero: tutte le sue partite concluse, la prova giocata al posto della X
+    > convalidata dal direttore [...] e ogni esercizio fra i turni agganciato a
+    > quel turno registrato, con almeno un tentativo, per ogni iscritto ancora
+    > in gara. [...] con la strategia _casuale_ [...] né la prova della X né gli
+    > esercizi bloccano qualcosa.
+
+    > Un tentativo di esercizio fra i turni registrato per sbaglio si può
+    > togliere, a gara in corso e finché il turno successivo non è partito.
+    """
+
+    @staticmethod
+    def _turno_chiuso_con_esercizio(db_session, strategia="amalfi"):
+        from models.challenge.models import Challenge
+        from models.competition.gara_challenge import GaraChallenge
+
+        gara = _gara(db_session)
+        gara.matchmaking_strategy = strategia
+        a, b = _utente(db_session), _utente(db_session)
+        for u in (a, b):
+            db_session.add(Inscription(user_id=u.id, gara_id=gara.id))
+        db_session.add(
+            Match(
+                gara_id=gara.id,
+                round_number=1,
+                player1_id=a.id,
+                player2_id=b.id,
+                player1_score=5,
+                player2_score=1,
+                winner_id=a.id,
+                status=MatchStatus.CLOSED_UNILATERALLY.value,
+            )
+        )
+        sfida = Challenge(
+            description="Esercizio",
+            image_path="/x.png",
+            is_active=True,
+            created_by_id=a.id,
+        )
+        db_session.add(sfida)
+        db_session.flush()
+        gc = GaraChallenge(
+            gara_id=gara.id,
+            challenge_id=sfida.id,
+            round_number=1,
+            max_attempts=1,
+            added_by_id=a.id,
+        )
+        db_session.add(gc)
+        db_session.commit()
+        return gara, gc, a, b
+
+    def test_un_esercizio_non_registrato_blocca_il_turno_dopo(self, db_session):
+        from models.competition.pendenze_turno import pendenze_del_turno
+
+        gara, _gc, _a, _b = self._turno_chiuso_con_esercizio(db_session)
+        assert pendenze_del_turno(gara, 1).esercizi == 2
+        assert pendenze_del_turno(gara, 1).bloccano
+
+    def test_col_casuale_non_blocca(self, db_session):
+        from models.competition.pendenze_turno import pendenze_del_turno
+
+        gara, _gc, _a, _b = self._turno_chiuso_con_esercizio(
+            db_session, strategia="random"
+        )
+        assert not pendenze_del_turno(gara, 1).bloccano
+
+    def test_il_tentativo_si_toglie_finche_il_turno_dopo_non_parte(self, db_session):
+        from models.competition.gara_challenge_service import GaraChallengeService
+        from models.exceptions import ConflictError
+
+        gara, gc, a, b = self._turno_chiuso_con_esercizio(db_session)
+        primo = GaraChallengeService.record_challenge_attempt(gc.id, a.id, score=3)
+        GaraChallengeService.remove_challenge_attempt(primo.id)
+        secondo = GaraChallengeService.record_challenge_attempt(gc.id, a.id, score=3)
+        db_session.add(
+            Match(
+                gara_id=gara.id,
+                round_number=2,
+                player1_id=a.id,
+                player2_id=b.id,
+                status=MatchStatus.PLAYING.value,
+            )
+        )
+        db_session.commit()
+        with pytest.raises(ConflictError):
+            GaraChallengeService.remove_challenge_attempt(secondo.id)
+
+    def test_anche_la_chiusura_aspetta_l_ultimo_turno(self, db_session):
+        """Riga 102: «Termina la gara» e lo spareggio non partono finché
+        l'ultimo turno ha esercizi da registrare."""
+        from models.competition.pendenze_turno import pendenze_della_chiusura
+        from models.competition.state_service import StateService
+        from models.exceptions import ConflictError
+
+        gara, _gc, _a, _b = self._turno_chiuso_con_esercizio(db_session)
+        assert pendenze_della_chiusura(gara).esercizi == 2
+        with pytest.raises(ConflictError):
+            StateService.complete(gara)
+
+    def test_l_xp_segue_i_tentativi_rimasti(self, db_session):
+        """Riga 104: finché resta un tentativo l'esercizio è fatto, senza
+        tentativi l'XP torna indietro, in qualunque ordine si tolgano."""
+        import json
+
+        from models.competition.gara_challenge_service import GaraChallengeService
+        from models.gamification.models import XPTransaction, XPTransactionType
+
+        gara, gc, a, _b = self._turno_chiuso_con_esercizio(db_session)
+        gc.max_attempts = 2
+        db_session.commit()
+
+        def xp():
+            return sum(
+                m.xp_amount
+                for m in XPTransaction.query.filter_by(
+                    user_id=a.id,
+                    transaction_type=XPTransactionType.CHALLENGE_COMPLETION,
+                )
+                if json.loads(m.related_entities or "{}").get("gara_id") == gara.id
+            )
+
+        primo = GaraChallengeService.record_challenge_attempt(gc.id, a.id, score=1)
+        secondo = GaraChallengeService.record_challenge_attempt(gc.id, a.id, score=2)
+        db_session.commit()
+        tariffa = xp()
+        GaraChallengeService.remove_challenge_attempt(primo.id)
+        db_session.commit()
+        assert xp() == tariffa
+        GaraChallengeService.remove_challenge_attempt(secondo.id)
+        db_session.commit()
+        assert xp() == 0

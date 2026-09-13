@@ -30,6 +30,10 @@ from enum import Enum
 from typing import Optional
 
 from models.competition.models import Gara
+from models.competition.pendenze_turno import (
+    pendenze_del_turno,
+    pendenze_della_chiusura,
+)
 from models.matchmaking.configuration import MatchmakingStrategy
 from models.status_enum import GaraStatus, MatchStatus, ProvaDerivedStatus
 
@@ -63,6 +67,10 @@ class ComandoVM:
     bloccato: bool = False
     iscritti: Optional[int] = None
     minimo: Optional[int] = None
+    #: Per `AVVIA_TURNO` bloccato: prove della X da convalidare ed esercizi
+    #: da registrare del turno appena concluso (`pendenze_turno`).
+    prove_x: Optional[int] = None
+    esercizi: Optional[int] = None
 
 
 def _partite_tutte_chiuse(gara: Gara) -> bool:
@@ -143,9 +151,15 @@ def comando_per(gara: Gara) -> Optional[ComandoVM]:
             return _chiusura(gara)
 
         if reale == ProvaDerivedStatus.ROUND_COMPLETED.value and not casuale:
+            # Le partite sono chiuse, ma il turno puo' aspettare ancora la
+            # prova della X e gli esercizi: il comando c'e', bloccato.
+            pendenze = pendenze_del_turno(gara, gara.current_round or 0)
             return ComandoVM(
                 tipo=ComandoDirezione.AVVIA_TURNO,
                 turno=(gara.current_round or 0) + 1,
+                bloccato=pendenze.bloccano,
+                prove_x=pendenze.prove_x,
+                esercizi=pendenze.esercizi,
             )
 
         # Turno in corso: non tocca a lui.
@@ -166,9 +180,20 @@ def _chiusura(gara: Gara) -> ComandoVM:
     """
     from models.competition.spareggio_service import SpareggioService
 
-    if SpareggioService.has_unresolved_tiebreakers(gara.id):
-        return ComandoVM(tipo=ComandoDirezione.AVVIA_SPAREGGIO)
-    return ComandoVM(tipo=ComandoDirezione.TERMINA_GARA)
+    tipo = (
+        ComandoDirezione.AVVIA_SPAREGGIO
+        if SpareggioService.has_unresolved_tiebreakers(gara.id)
+        else ComandoDirezione.TERMINA_GARA
+    )
+    # Come il turno dopo, la chiusura aspetta la prova della X e gli esercizi
+    # dell'ultimo turno: il comando c'e', bloccato.
+    pendenze = pendenze_della_chiusura(gara)
+    return ComandoVM(
+        tipo=tipo,
+        bloccato=pendenze.bloccano,
+        prove_x=pendenze.prove_x,
+        esercizi=pendenze.esercizi,
+    )
 
 
 __all__ = ["ComandoDirezione", "ComandoVM", "comando_per"]

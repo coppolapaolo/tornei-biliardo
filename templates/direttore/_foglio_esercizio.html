@@ -1,20 +1,24 @@
 {# templates/direttore/_foglio_esercizio.html — Design System 7c
 
-   Il foglio per registrare un tentativo di un esercizio fra i turni, dalla
-   riga del giocatore (`_esercizi_turni.html`). Un foglio solo per tutte le
-   righe: `apriTentativoEsercizio(riga)` lo riempie dai suoi `data-*`, come
-   il menu della partita.
+   Il foglio di un giocatore su un esercizio fra i turni, dalla sua riga
+   (`_esercizi_turni.html`). Un foglio solo per tutte le righe:
+   `apriTentativoEsercizio(riga)` lo riempie dai suoi `data-*`, come il menu
+   della partita.
 
-   Due forme, le stesse dell'allenamento: a esito i due tasti grandi
-   «Riuscito» / «Non riuscito» registrano al tocco; a punteggio lo stepper
-   da 48px della card (`static/js/card_partita.js`, forma `x`, che non salva
-   da sola) e «Registra il tentativo». Il tetto e' `Challenge.max_score`;
-   senza tetto il + non si spegne mai (9999 fa da infinito).
+   Registrare, due forme, le stesse dell'allenamento: a esito i due tasti
+   grandi «Riuscito» / «Non riuscito» registrano al tocco; a punteggio lo
+   stepper da 48px della card (`static/js/card_partita.js`, forma `x`, che non
+   salva da sola) e «Registra il tentativo». Il tetto e' `Challenge.max_score`;
+   senza tetto il + non si spegne mai (9999 fa da infinito). Salva con
+   `admin.match.record_challenge_attempt`: tentativi massimi e tetto li
+   controlla il servizio.
 
-   Salva con l'endpoint di chi dirige, `admin.match.record_challenge_attempt`,
-   che passa da `GaraChallengeService.record_challenge_attempt`: tentativi
-   massimi e tetto li controlla il servizio. Una sola inclusione per pagina:
-   contiene id e uno script. #}
+   Togliere (dal 2026-09-13): sotto, i tentativi gia' registrati, ognuno una
+   riga che chiede conferma **nel foglio** — mai `confirm()` — e poi posta a
+   `admin.match.remove_challenge_attempt`. Ci sono finche' il turno dopo non e'
+   partito (`data-tentativi` vuoto altrimenti). A tentativi finiti il foglio
+   serve solo a questo. Una sola inclusione per pagina: contiene id e uno
+   script. #}
 <div class="modal fade c7-sheet" id="tentativoEsercizioModal" tabindex="-1" aria-labelledby="tentativoEsercizioTitolo">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -57,6 +61,27 @@
         </div>
 
         <div class="c7-nota" id="tentativoNota"></div>
+
+        {# I tentativi gia' registrati: il tocco chiede di toglierlo. #}
+        <div class="c7-stack" id="tentativiRegistrati" hidden>
+          <div class="c7-kicker">{{ _('Registrati per sbaglio?') }}</div>
+          <div class="c7-rows" id="tentativiElenco"></div>
+        </div>
+
+        <div class="c7-stack" id="togliConferma" hidden>
+          <div class="c7-inset c7-inset--warn">
+            <div class="c7-kicker" id="togliTitolo"></div>
+            <p class="mb-0 mt-1" style="font-size:12px;font-weight:600;line-height:1.55">
+              {{ _('Esce dalla classifica degli esercizi e i tentativi dopo scalano di un posto. Se era l’unico, torna indietro anche l’XP.') }}
+            </p>
+          </div>
+          <button type="button" class="btn btn-danger w-100" onclick="togliTentativoEsercizio(this)">
+            <i class="fas fa-trash-can"></i> {{ _('Togli il tentativo') }}
+          </button>
+          <button type="button" class="btn btn-secondary w-100" onclick="annullaTogliTentativo()">
+            {{ _('Lascialo com’è') }}
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -65,15 +90,24 @@
 <script>
 (function () {
   const URL_TENTATIVO = {{ url_for('admin.match.record_challenge_attempt')|tojson }};
+  const URL_TOGLI = {{ url_for('admin.match.remove_challenge_attempt', attempt_id=0)|tojson }};
   const TURNO = {{ (gara.display_round or gara.current_round or 0)|tojson }};
   const I18N = {
     // Segnaposto in stile JS: li sostituisce lo script, non Babel.
     tentativo: {{ _('tentativo {n} di {tot}')|tojson }},
+    finiti: {{ _('{n} tentativi su {tot}, finiti')|tojson }},
     tetto: {{ _('da 0 a {n}')|tojson }},
     senzaTetto: {{ _('da 0 in su')|tojson }},
-    notaPunteggio: {{ _('Conta il migliore dei tentativi. Un tentativo registrato non si toglie.')|tojson }},
-    notaEsito: {{ _('Tocca l’esito: il tentativo si registra subito, e non si toglie.')|tojson }},
-    errore: {{ _('Non è stato possibile registrare il tentativo.')|tojson }}
+    notaPunteggio: {{ _('Conta il migliore dei tentativi.')|tojson }},
+    notaEsito: {{ _('Tocca l’esito: il tentativo si registra subito.')|tojson }},
+    numero: {{ _('Tentativo {n}')|tojson }},
+    punti: {{ _('{n} punti')|tojson }},
+    riuscito: {{ _('Riuscito')|tojson }},
+    nonRiuscito: {{ _('Non riuscito')|tojson }},
+    togli: {{ _('Togli')|tojson }},
+    togliTitolo: {{ _('Togliere il tentativo {n} di {nome}?')|tojson }},
+    errore: {{ _('Non è stato possibile registrare il tentativo.')|tojson }},
+    erroreTogli: {{ _('Non è stato possibile togliere il tentativo.')|tojson }}
   };
   let corrente = null;
 
@@ -85,17 +119,80 @@
     return document.querySelector('#tentativoPunteggio [data-tipo]');
   }
 
+  function testoTentativo(t) {
+    if (corrente.aEsito) return t.riuscito ? I18N.riuscito : I18N.nonRiuscito;
+    return I18N.punti.replace('{n}', String(t.punteggio == null ? 0 : t.punteggio));
+  }
+
+  function elencoRegistrati() {
+    const elenco = document.getElementById('tentativiElenco');
+    elenco.replaceChildren();
+    corrente.tentativi.forEach(function (t) {
+      const riga = document.createElement('button');
+      riga.type = 'button';
+      riga.className = 'c7-rows__row c7-rows__row--btn';
+      riga.addEventListener('click', function () { chiediTogli(t); });
+
+      const tile = document.createElement('span');
+      tile.className = 'c7-tile c7-tile--sm c7-tile--neutral';
+      tile.innerHTML = '<i class="fas fa-bullseye"></i>';
+
+      const main = document.createElement('span');
+      main.className = 'c7-rows__main';
+      const titolo = document.createElement('span');
+      titolo.className = 'c7-rows__title d-block';
+      titolo.textContent = I18N.numero.replace('{n}', String(t.numero));
+      const sotto = document.createElement('span');
+      sotto.className = 'c7-rows__sub d-block';
+      sotto.textContent = testoTentativo(t);
+      main.append(titolo, sotto);
+
+      const destra = document.createElement('span');
+      destra.className = 'c7-state c7-state--warn';
+      destra.textContent = I18N.togli;
+
+      riga.append(tile, main, destra);
+      elenco.append(riga);
+    });
+    document.getElementById('tentativiRegistrati').hidden = corrente.tentativi.length === 0;
+  }
+
+  function chiediTogli(t) {
+    corrente.daTogliere = t;
+    document.getElementById('togliTitolo').textContent = I18N.togliTitolo
+      .replace('{n}', String(t.numero)).replace('{nome}', corrente.nome);
+    document.getElementById('togliConferma').hidden = false;
+    document.getElementById('tentativiRegistrati').hidden = true;
+  }
+
+  window.annullaTogliTentativo = function () {
+    if (!corrente) return;
+    corrente.daTogliere = null;
+    document.getElementById('togliConferma').hidden = true;
+    elencoRegistrati();
+  };
+
   window.apriTentativoEsercizio = function (riga) {
     const d = riga.dataset;
     const aEsito = d.aEsito === '1';
-    corrente = { esercizio: parseInt(d.esercizioId, 10), utente: parseInt(d.userId, 10), aEsito: aEsito };
+    const puoTentare = d.puoTentare === '1';
+    let tentativi = [];
+    try { tentativi = JSON.parse(d.tentativi || '[]'); } catch (e) { tentativi = []; }
+    corrente = {
+      esercizio: parseInt(d.esercizioId, 10), utente: parseInt(d.userId, 10),
+      aEsito: aEsito, nome: d.nome, tentativi: tentativi, daTogliere: null
+    };
 
     document.getElementById('tentativoEsercizioTitolo').textContent = d.nome;
-    document.getElementById('tentativoEsercizioSotto').textContent = d.esercizioNome + ' · ' +
-      I18N.tentativo.replace('{n}', String(parseInt(d.fatti, 10) + 1)).replace('{tot}', d.massimo);
-    document.getElementById('tentativoEsito').hidden = !aEsito;
-    document.getElementById('tentativoPunteggio').hidden = aEsito;
-    document.getElementById('tentativoNota').textContent = aEsito ? I18N.notaEsito : I18N.notaPunteggio;
+    document.getElementById('tentativoEsercizioSotto').textContent = d.esercizioNome + ' · ' + (puoTentare
+      ? I18N.tentativo.replace('{n}', String(parseInt(d.fatti, 10) + 1)).replace('{tot}', d.massimo)
+      : I18N.finiti.replace('{n}', d.fatti).replace('{tot}', d.massimo));
+    document.getElementById('tentativoEsito').hidden = !(puoTentare && aEsito);
+    document.getElementById('tentativoPunteggio').hidden = !(puoTentare && !aEsito);
+    const nota = document.getElementById('tentativoNota');
+    nota.hidden = !puoTentare;
+    nota.textContent = aEsito ? I18N.notaEsito : I18N.notaPunteggio;
+    document.getElementById('togliConferma').hidden = true;
 
     const lato = stepper();
     lato.dataset.punti = '0';
@@ -104,34 +201,48 @@
       ? I18N.tetto.replace('{n}', d.punteggioMassimo) : I18N.senzaTetto;
     window.CardPartita.aggiorna(lato);
 
+    elencoRegistrati();
     foglio().show();
   };
+
+  function posta(url, corpo, btn, messaggio) {
+    const restore = withLoading(btn);
+    const opzioni = {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken(), 'X-Requested-With': 'XMLHttpRequest' }
+    };
+    if (corpo) {
+      opzioni.headers['Content-Type'] = 'application/json';
+      opzioni.body = JSON.stringify(corpo);
+    }
+    fetch(url, opzioni)
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (esito) {
+        if (esito.ok && esito.d && esito.d.success) {
+          location.replace(location.href);
+        } else {
+          showError((esito.d && esito.d.error) || messaggio);
+          restore();
+        }
+      })
+      .catch(function () {
+        showError(messaggio);
+        restore();
+      });
+  }
 
   window.registraTentativoEsercizio = function (btn) {
     if (!corrente) return;
     const dati = { gara_challenge_id: corrente.esercizio, user_id: corrente.utente, round_when_attempted: TURNO };
     if (corrente.aEsito) dati.passed = btn.dataset.esito === 'true';
     else dati.score = window.CardPartita.punti(stepper())[0] || 0;
+    posta(URL_TENTATIVO, dati, btn, I18N.errore);
+  };
 
-    const restore = withLoading(btn);
-    fetch(URL_TENTATIVO, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
-      body: JSON.stringify(dati)
-    })
-      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
-      .then(function (esito) {
-        if (esito.ok && esito.d && esito.d.success) {
-          location.replace(location.href);
-        } else {
-          showError((esito.d && esito.d.error) || I18N.errore);
-          restore();
-        }
-      })
-      .catch(function () {
-        showError(I18N.errore);
-        restore();
-      });
+  window.togliTentativoEsercizio = function (btn) {
+    if (!corrente || !corrente.daTogliere) return;
+    const url = URL_TOGLI.replace(/\/0\/togli$/, '/' + corrente.daTogliere.id + '/togli');
+    posta(url, null, btn, I18N.erroreTogli);
   };
 })();
 </script>

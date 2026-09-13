@@ -20,6 +20,8 @@
 {# Gli esercizi fra i turni: fra un turno e l'altro quelli da registrare
    stanno sopra le partite, mentre si gioca sotto (`_esercizi_turni.html`). #}
 {% import "direttore/_esercizi_turni.html" as es with context %}
+{# Cosa tiene fermo il comando: la prova della X e gli esercizi del turno. #}
+{% import "components/_turno_cosa_manca.html" as manca %}
 {% set _esercizi = esercizi_turni if esercizi_turni is defined else [] %}
 
 {% if tipo_comando in ('avvia_spareggio', 'termina_gara') %}
@@ -31,7 +33,14 @@
       {% elif _tabellone %}{{ ngettext('Tabellone concluso · %(n)d turno giocato', 'Tabellone concluso · %(n)d turni giocati', turni_giocati, n=turni_giocati) }}
       {% else %}{{ _('Tutti i %(n)s turni conclusi', n=gara.rounds_count) }}{% endif %}
     </div>
-    {% if tipo_comando == 'avvia_spareggio' %}
+    {% if comando.bloccato %}
+    {# La chiusura aspetta l'ultimo turno: prova della X ed esercizi. #}
+    <h3 class="c7-fascia__titolo">{{ _('Prima di chiudere la gara') }}</h3>
+    <div class="c7-fascia__corpo">
+      {{ _('Le partite sono chiuse, ma mancano ancora: %(cosa)s.', cosa=manca.cosa_manca(comando)) }}
+      {{ _('Sono punteggi della classifica finale: li trovi qui sotto.') }}
+    </div>
+    {% elif tipo_comando == 'avvia_spareggio' %}
     <h3 class="c7-fascia__titolo">{{ _('Serve uno spareggio') }}</h3>
     <div class="c7-fascia__corpo">
       {{ _('Ci sono giocatori a pari merito fino al %(pos)s° posto. Lo spareggio si gioca a Spot Shot Rally: tu inserisci i punti.', pos=gara.tiebreaker_until_position or 3) }}
@@ -46,11 +55,11 @@
   </div>
   <div class="c7-fascia__azione">
     {% if tipo_comando == 'avvia_spareggio' %}
-    <button type="button" class="btn btn-primary" onclick="startSsr({{ gara.id }}, this)">
+    <button type="button" class="btn btn-primary"{% if comando.bloccato %} disabled{% endif %} onclick="startSsr({{ gara.id }}, this)">
       <i class="fas fa-scale-balanced"></i> {{ _('Avvia lo spareggio') }}
     </button>
     {% else %}
-    <button type="button" class="btn btn-success" onclick="terminateGara({{ gara.id }}, this)">
+    <button type="button" class="btn btn-success"{% if comando.bloccato %} disabled{% endif %} onclick="terminateGara({{ gara.id }}, this)">
       <i class="fas fa-flag-checkered"></i> {{ _('Termina la gara') }}
     </button>
     {% endif %}
@@ -81,12 +90,21 @@
 {% endif %}
 
 {% elif tipo_comando == 'avvia_turno' %}
-{# ---- Turno concluso: l'unico comando e' avviare il prossimo ---- #}
+{# ---- Turno concluso: l'unico comando e' avviare il prossimo ----
+   Bloccato quando il turno aspetta ancora la prova della X o gli esercizi
+   fra i turni: il comando si annuncia lo stesso, spento, con cosa manca. #}
 <section class="c7-card c7-card--accent c7-fascia">
   <div class="c7-fascia__testo">
     {% set _nomi_prossimo = nomi_turni.get(comando.turno, []) if _tabellone else [] %}
     {% set _nomi_chiuso = nomi_turni.get(gara.current_round, []) if _tabellone else [] %}
     <div class="c7-kicker">{% if _nomi_chiuso %}{{ t.nome_turno(_nomi_chiuso) }} · {% endif %}{{ _('Turno %(n)s di %(tot)s · concluso', n=gara.current_round, tot=gara.rounds_count) }}</div>
+    {% if comando.bloccato %}
+    <h3 class="c7-fascia__titolo">{{ _('Prima di avviare il turno %(n)s', n=comando.turno) }}</h3>
+    <div class="c7-fascia__corpo">
+      {{ _('Le partite sono chiuse, ma mancano ancora: %(cosa)s.', cosa=manca.cosa_manca(comando)) }}
+      {{ _('Il turno dopo si abbina sulla classifica, e quei punteggi ne fanno parte: li trovi qui sotto.') }}
+    </div>
+    {% else %}
     <h3 class="c7-fascia__titolo">{% if _nomi_prossimo %}{{ t.turno_pronto(_nomi_prossimo, comando.turno) }}{% else %}{{ _('Puoi avviare il turno %(n)s', n=comando.turno) }}{% endif %}</h3>
     <div class="c7-fascia__corpo">
       {% if _nomi_prossimo|length == 1 and _nomi_prossimo[0].chiave == 'bella' %}
@@ -100,9 +118,10 @@
       {% elif gara.creates_all_rounds_at_startup() %}{{ _('Gli abbinamenti del turno %(n)s sono già fissati dal sorteggio iniziale.', n=comando.turno) }}
       {% else %}{{ _('Gli abbinamenti del turno %(n)s si calcolano all’avvio, sulla classifica di adesso.', n=comando.turno) }}{% endif %}
     </div>
+    {% endif %}
   </div>
   <div class="c7-fascia__azione">
-    <button type="button" class="btn btn-success" data-help="gara-avvia-turno" onclick="startRound({{ comando.turno }}, this)">
+    <button type="button" class="btn btn-success" data-help="gara-avvia-turno"{% if comando.bloccato %} disabled{% endif %} onclick="startRound({{ comando.turno }}, this)">
       <i class="fas fa-forward"></i> {% if _nomi_prossimo %}{{ t.avvia_turno(_nomi_prossimo, comando.turno) }}{% else %}{{ _('Avvia il turno %(n)s', n=comando.turno) }}{% endif %}
     </button>
   </div>

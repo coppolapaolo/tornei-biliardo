@@ -646,6 +646,17 @@ class TournamentService(TournamentStatisticsService):
                 is not None
             )
             if has_played_matches:
+                # Una gara con la prova della X o gli esercizi dell'ultimo
+                # turno ancora da registrare non si chiude: resta com'e', coi
+                # suoi dati. Si controlla prima invece di lasciar sollevare
+                # `complete`, perche' un rifiuto dentro questa transazione ne
+                # annullerebbe anche il lavoro fatto sulle gare prima.
+                from models.competition.pendenze_turno import (
+                    pendenze_della_chiusura,
+                )
+
+                if pendenze_della_chiusura(gara).bloccano:
+                    continue
                 try:
                     StateService.complete(gara)
                 except Exception:

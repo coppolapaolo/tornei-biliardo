@@ -265,6 +265,178 @@ class GaraChallengeService:
         return attempt
 
     @staticmethod
+    @transactional(domain="competition")
+    def remove_challenge_attempt(
+        attempt_id: int, autore_id: Optional[int] = None
+    ) -> int:
+        """Toglie un tentativo registrato per sbaglio.
+
+        `SPECIFICHE.md`, «Cosa deve essere chiuso prima del turno successivo»:
+        si toglie a gara in corso e finche' il turno dopo non e' partito — con
+        la strategia casuale per tutta la gara. E' la stessa soglia che rende
+        gli esercizi obbligatori prima del turno dopo: quel turno si e' formato
+        sulla classifica di allora, e un tentativo tolto dopo la cambierebbe
+        alle sue spalle.
+
+        Cosa si disfa:
+
+        * il tentativo, e i tentativi rimasti dello stesso giocatore si
+          rinumerano, perche' il limite `max_attempts` li conta;
+        * la classifica degli esercizi, ricalcolata;
+        * l'XP, quando non resta nessun tentativo: finche' ne resta uno
+          l'esercizio e' fatto e l'XP resta, qualunque tentativo si tolga —
+          anche quello che l'aveva pagato. Tolto l'ultimo, torna indietro il
+          saldo dell'esercizio con un movimento compensativo, come per il
+          drill dell'allenamento (`ChallengeService.delete_attempt`);
+        * serie e traguardi, ricalcolati (best-effort).
+
+        Returns:
+            L'id del `GaraChallenge` a cui il tentativo apparteneva.
+
+        Raises:
+            NotFoundError: il tentativo non esiste
+            ConflictError: la gara non e' in corso, o il turno dopo e' partito
+        """
+        from models.competition.pendenze_turno import turno_successivo_partito
+        from models.status_enum import GaraStatus
+
+        attempt = db.session.get(GaraChallengeAttempt, attempt_id)
+        if attempt is None:
+            raise NotFoundError(_("Tentativo non trovato"))
+        gara_challenge = attempt.gara_challenge
+        gara = gara_challenge.gara
+
+        if gara.status != GaraStatus.PLAYING.value:
+            raise ConflictError(
+                _("La gara non è in corso: i tentativi non si tolgono più.")
+            )
+        if turno_successivo_partito(gara, gara_challenge.round_number):
+            raise ConflictError(
+                _(
+                    "Il turno %(n)s è già partito: i tentativi dell'esercizio "
+                    "dopo il turno %(prima)s non si tolgono più.",
+                    n=gara_challenge.round_number + 1,
+                    prima=gara_challenge.round_number,
+                )
+            )
+
+        user_id = attempt.user_id
+        rimasti = [
+            t for t in gara_challenge.get_user_attempts(user_id) if t.id != attempt.id
+        ]
+        if not any(t.completed for t in rimasti) and not gara.is_prova:
+            GaraChallengeService._rimborsa_xp(attempt, gara_challenge)
+
+        db.session.delete(attempt)
+        db.session.flush()
+        # In ordine crescente ogni tentativo scende nel posto appena liberato:
+        # il vincolo di unicita' sul numero non vede mai due righe uguali.
+        for numero, tentativo in enumerate(
+            sorted(rimasti, key=lambda t: t.attempt_number), start=1
+        ):
+            if tentativo.attempt_number != numero:
+                tentativo.attempt_number = numero
+                db.session.flush()
+
+        GaraChallengeService.update_gara_classification(gara.id)
+
+        if not gara.is_prova:
+            try:
+                from models.gamification.recalc_service import (
+                    GamificationRecalcService,
+                )
+
+                GamificationRecalcService.recompute_after_drill_removed(user_id)
+            except Exception:  # pragma: no cover - la gamification non blocca mai
+                logger.warning(
+                    "Ricalcolo di serie e traguardi non riuscito per %s",
+                    user_id,
+                    exc_info=True,
+                )
+
+        from routes.sse import emit_gara_event
+
+        emit_gara_event(
+            gara.id,
+            "challenge_attempt_removed",
+            {
+                "gara_challenge_id": gara_challenge.id,
+                "user_id": user_id,
+                "autore": autore_id,
+            },
+        )
+        return gara_challenge.id
+
+    @staticmethod
+    def _rimborsa_xp(
+        attempt: GaraChallengeAttempt, gara_challenge: GaraChallenge
+    ) -> None:
+        """Restituisce il saldo XP dell'esercizio, tolto l'ultimo tentativo.
+
+        Il saldo e' dell'**esercizio**, non del tentativo: il movimento pagato
+        porta l'id del primo tentativo, che puo' essere gia' stato tolto
+        mentre ne restava un altro. Cercare il movimento del solo tentativo
+        che si toglie adesso lascerebbe quell'XP al giocatore per sempre.
+
+        Si riconoscono i movimenti dalla provenienza, `gara_challenge_id`: gli
+        id dei tentativi di gara e quelli dell'allenamento vivono in due
+        tabelle e si sovrappongono, quindi l'id da solo prenderebbe anche
+        movimenti di un allenamento. I movimenti scritti prima della
+        provenienza esplicita — 2026-09-13 — si riconoscono dall'id del
+        tentativo con gara ed esercizio. Best-effort: il tentativo sbagliato
+        tolto vale piu' di un saldo perfetto.
+        """
+        try:
+            import json
+
+            from models.gamification.level_service import LevelService
+            from models.gamification.models import XPTransaction, XPTransactionType
+
+            movimenti = XPTransaction.query.filter(
+                XPTransaction.user_id == attempt.user_id,
+                XPTransaction.transaction_type
+                == XPTransactionType.CHALLENGE_COMPLETION,
+                XPTransaction.related_entities.isnot(None),
+            ).all()
+            saldo = 0
+            for movimento in movimenti:
+                try:
+                    legami = json.loads(movimento.related_entities or "{}")
+                except ValueError:
+                    continue
+                if "gara_challenge_id" in legami:
+                    del_esercizio = legami["gara_challenge_id"] == gara_challenge.id
+                else:
+                    del_esercizio = (
+                        legami.get("challenge_attempt_id") == attempt.id
+                        and legami.get("gara_id") == gara_challenge.gara_id
+                        and legami.get("challenge_id")
+                        in (None, gara_challenge.challenge_id)
+                    )
+                if del_esercizio:
+                    saldo += movimento.xp_amount
+            if saldo <= 0:
+                return
+            LevelService.award_xp(
+                user_id=attempt.user_id,
+                xp_amount=-saldo,
+                transaction_type=XPTransactionType.CHALLENGE_COMPLETION,
+                reason="Tentativo di esercizio tolto",
+                related_entities={
+                    "challenge_id": gara_challenge.challenge_id,
+                    "challenge_attempt_id": attempt.id,
+                    "gara_id": gara_challenge.gara_id,
+                    "gara_challenge_id": gara_challenge.id,
+                },
+            )
+        except Exception:
+            logger.warning(
+                "Restituzione XP non riuscita per il tentativo %s",
+                attempt.id,
+                exc_info=True,
+            )
+
+    @staticmethod
     def _publish_attempt_completed(
         attempt: GaraChallengeAttempt, gara_challenge: GaraChallenge
     ) -> None:
@@ -294,6 +466,7 @@ class GaraChallengeService:
                     passed=attempt.passed,
                     gara_id=gara_challenge.gara_id,
                     attempt_number=attempt.attempt_number,
+                    gara_challenge_id=gara_challenge.id,
                 )
             )
         except Exception:  # pragma: no cover - la gamification non blocca mai
