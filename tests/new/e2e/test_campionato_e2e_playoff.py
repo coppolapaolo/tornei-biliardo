@@ -52,9 +52,10 @@ GARE = 4
 TURNI = 3
 #: Rack di ogni partita, in formato «esattamente N» (non «al N»).
 DISTANZA = 5
-#: Quanti ne porta ai playoff la configurazione Elite del wizard. Sei e non
-#: quattro perché `DEFAULT_MIN_PARTICIPANTS` è 6: una finale con meno iscritti
-#: si crea ma non si avvia, e questi test la finale la giocano davvero.
+#: Quanti ne porta ai playoff la configurazione Elite del wizard. Fino al
+#: 2026-09-13 la finale nasceva col minimo di sei iscritti e con meno non si
+#: avviava, per questo sei; oggi le basta due, ma sei resta un numero pari che
+#: lascia fuori due giocatori da ripescare.
 QUALIFICATI = 6
 
 
@@ -436,23 +437,49 @@ class TestListaSceltaDalDirettore:
         assert silenzioso.user_id not in iscritti
         assert len(iscritti) == QUALIFICATI
 
-    def test_a_gara_creata_la_lista_non_si_tocca_piu(
+    def test_la_lista_resta_aperta_fino_all_avvio_della_finale(
         self, campionato: CampionatoDriver, campionato_breve
     ):
+        """La lista si chiude all'avvio della gara di playoff, non alla creazione.
+
+        Fino al 2026-09-13 si congelava alla creazione: chi il direttore
+        aggiungeva dopo — o chi accettava l'invito in ritardo — restava fuori
+        dalla gara, senza modo di rientrare (SPECIFICHE.md, «Playoff»).
+        """
         campionato_id, direttore, giocatori = campionato_breve
+        fuori_lista = giocatori[QUALIFICATI:]
+        assert len(fuori_lista) >= 2, "servono due giocatori fuori dalla lista"
 
         campionato.entra(direttore)
         (configurazione,) = campionato.configurazioni_playoff(campionato_id)
         for giocatore in giocatori[:QUALIFICATI]:
             campionato.aggiungi_al_playoff(campionato_id, configurazione.id, giocatore)
-        campionato.crea_gara_playoff(campionato_id, configurazione.id)
+        gara_playoff = campionato.crea_gara_playoff(campionato_id, configurazione.id)
+
+        # A gara creata il direttore toglie uno e ne mette un altro: il primo
+        # esce dalla gara, il secondo ci entra. I posti restano quelli: un
+        # aggiunto oltre i posti andrebbe in lista d'attesa, come in ogni gara.
+        (uscente,) = [
+            q
+            for q in campionato.qualificazioni(configurazione.id)
+            if q.user_id == giocatori[0].id
+        ]
+        campionato.rimuovi_dal_playoff(campionato_id, configurazione.id, uscente.id)
+        campionato.aggiungi_al_playoff(campionato_id, configurazione.id, fuori_lista[0])
+        iscritti = campionato.iscritti(gara_playoff)
+        assert fuori_lista[0].id in iscritti
+        assert giocatori[0].id not in iscritti
+
+        campionato.apri_iscrizioni(gara_playoff)
+        campionato.avvia_primo_turno(gara_playoff)
+        assert campionato.gara(gara_playoff).current_round == 1
 
         html = campionato.aggiungi_al_playoff(
-            campionato_id, configurazione.id, giocatori[-1]
+            campionato_id, configurazione.id, fuori_lista[1]
         )
 
-        assert "dopo creazione gara" in html
-        assert len(campionato.qualificazioni(configurazione.id)) == QUALIFICATI
+        assert "già cominciata" in html
+        assert len(campionato.qualificazioni(configurazione.id)) == QUALIFICATI + 1
 
 
 @pytest.mark.e2e

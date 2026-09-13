@@ -57,7 +57,8 @@ blocks:
   - type: text
     text: >-
       If you qualify you get a **notification**. Opening it shows the play-off
-      competition — date, venue, format — and two buttons: accept or decline.
+      — date and venue, if the organisers have already set them — and two
+      buttons: accept or decline.
 
   - type: text
     text: >-
@@ -78,9 +79,18 @@ blocks:
           and there is often no rearranging it.
       - title: "Accept or decline"
         text: >-
-          Accepting puts you among the entrants of the play-off competition.
-          Declining gives up your place: depending on how the championship is
-          organised, it may pass to the first player left out.
+          Accepting puts you among the participants: when the director creates
+          the play-off competition you are already entered, and if they created
+          it before your answer you join it straight away. Declining gives up
+          your place: depending on how the championship is organised, it may
+          pass to the first player left out.
+      - title: "Until the final starts"
+        text: >-
+          You can accept until the first round of the play-off competition has
+          started. When it starts, invitations still unanswered expire and the
+          play-off is played by whoever is in, even if that is fewer than the
+          places. If the director cancels the start, the invitation is valid
+          again until its deadline.
       - title: "Answer in time"
         text: >-
           The invitation has a deadline. Not answering counts as declining, and

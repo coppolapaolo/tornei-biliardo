@@ -110,6 +110,12 @@ class RoundCancellationService:
         if gara.status == GaraStatus.PLAYING.value:
             gara.status = GaraStatus.INSCRIPTION.value
 
+        # Gara di playoff: gli inviti chiusi dall'avvio tornano in attesa.
+        if gara.playoff_config_id:
+            from models.playoff.services import PlayoffService
+
+            PlayoffService.riapri_inviti_all_annullo(gara)
+
         # Niente `db.session.add(gara)`: `gara` è già persistente, quindi la
         # modifica viene salvata comunque dal flush. L'unico effetto di quella
         # riga era propagare il cascade *save-update* su `gara.matches` — la
@@ -211,6 +217,12 @@ class RoundCancellationService:
             from models.classification.seeding_service import SeedingService
 
             SeedingService.clear_seeding(gara_id)
+
+            # Gara di playoff: gli inviti chiusi dall'avvio tornano in attesa.
+            if gara.playoff_config_id:
+                from models.playoff.services import PlayoffService
+
+                PlayoffService.riapri_inviti_all_annullo(gara)
 
         db.session.add(gara)
         return gara

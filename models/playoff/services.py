@@ -10,8 +10,10 @@ import logging
 from typing import Tuple, List, Optional, Dict, Any
 from datetime import datetime, timedelta
 
+from flask_babel import gettext as _
+
 from ..base import db, utc_now
-from ..exceptions import NotFoundError
+from ..exceptions import ConflictError, NotFoundError
 from .models import (
     PlayoffConfiguration,
     PlayoffQualification,
@@ -23,6 +25,9 @@ from .models import (
 from ..transaction.manager import transactional
 
 logger = logging.getLogger(__name__)
+
+#: Il minimo della gara di playoff: due giocatori bastano per una finale.
+PLAYOFF_MIN_PARTICIPANTS = 2
 
 
 class PlayoffService:
@@ -163,12 +168,112 @@ class PlayoffService:
             id=qualification_id, user_id=user_id
         ).first_or_404()
 
+        if PlayoffService._gara_avviata(qualification.configuration):
+            raise ConflictError(
+                _(
+                    "La gara di playoff è già cominciata: l'invito non si può "
+                    "più accettare."
+                )
+            )
+
         qualification.confirm_participation(responded_by_id=responded_by_id)
+
+        # Chi accetta dopo che la gara è nata ci entra, fino all'avvio: gli
+        # inviti partono prima della gara e le risposte non arrivano tutte
+        # insieme. Senza, il sì di un ritardatario — o del sostituto chiamato
+        # da un rifiuto — restava confermato ma fuori dalla gara.
+        PlayoffService._iscrivi_alla_gara(qualification)
 
         # Check if we can start the playoff campionato
         PlayoffService._check_playoff_readiness(qualification.configuration_id)
 
         return qualification
+
+    @staticmethod
+    def _gara_avviata(config: Optional[PlayoffConfiguration]) -> bool:
+        """La gara di playoff esiste e il primo turno è partito."""
+        from ..status_enum import GaraStatus
+
+        gara = config.gara if config is not None else None
+        if gara is None:
+            return False
+        in_attesa = (GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value)
+        return (gara.current_round or 0) > 0 or (gara.status or "") not in in_attesa
+
+    @staticmethod
+    def _iscrivi_alla_gara(
+        qualification: PlayoffQualification, *, d_ufficio: bool = False
+    ) -> None:
+        """Iscrive alla gara di playoff, se esiste già, un qualificato confermato.
+
+        `d_ufficio` è l'aggiunta decisa dal direttore: entra anche oltre i
+        posti. Chi arriva da un invito rispetta i posti, e trovandoli pieni va
+        in lista d'attesa come in ogni gara.
+        """
+        from ..competition.inscription_service import InscriptionService
+
+        gara = qualification.configuration.gara
+        if gara is None:
+            return
+        InscriptionService.inscribe_user(
+            user_id=qualification.user_id,
+            gara_id=gara.id,
+            _bypass_playoff_check=True,
+            _d_ufficio=d_ufficio,
+        )
+
+    @staticmethod
+    def chiudi_inviti_all_avvio(gara) -> int:
+        """All'avvio della gara di playoff gli inviti senza risposta scadono.
+
+        Nessun sostituto: la finale è cominciata e un posto non si riempie più.
+        Chiamato dalla transizione `inscription → playing`, dentro la sua
+        transazione. Restituisce quanti inviti ha chiuso.
+        """
+        if not getattr(gara, "playoff_config_id", None):
+            return 0
+        in_attesa = PlayoffQualification.query.filter_by(
+            configuration_id=gara.playoff_config_id,
+            status=QualificationStatus.PENDING,
+        ).all()
+        for qualification in in_attesa:
+            qualification.expire_qualification()
+        return len(in_attesa)
+
+    @staticmethod
+    def riapri_inviti_all_annullo(gara) -> int:
+        """Annullato l'avvio della finale, gli inviti chiusi dall'avvio si riaprono.
+
+        Tornano in attesa solo gli inviti che l'avvio aveva fatto scadere. Si
+        riconoscono senza una colonna in più: **nessuno li ha sostituiti** e
+        **la loro scadenza non è ancora passata**. Un invito scaduto per la sua
+        scadenza la ha per forza già alle spalle — il job lo chiude solo
+        allora — e uno sostituito ha già ceduto il posto: restano come sono.
+
+        Chiamato da ogni strada che riporta la gara in iscrizione, dentro la
+        sua transazione. Restituisce quanti inviti ha riaperto.
+        """
+        config_id = getattr(gara, "playoff_config_id", None)
+        if not config_id:
+            return 0
+        config = db.session.get(PlayoffConfiguration, config_id)
+        if config is None:
+            return 0
+
+        adesso = utc_now()
+        scaduti = PlayoffQualification.query.filter_by(
+            configuration_id=config_id,
+            status=QualificationStatus.EXPIRED,
+            replaced_by_id=None,
+        ).all()
+        riaperti = 0
+        for qualification in scaduti:
+            scadenza = qualification.expires_at or config.response_deadline
+            if scadenza is not None and scadenza <= adesso:
+                continue
+            qualification.status = QualificationStatus.PENDING
+            riaperti += 1
+        return riaperti
 
     @staticmethod
     @transactional(domain="playoff")
@@ -906,6 +1011,11 @@ class PlayoffService:
             time=gara_time,
             rounds_count=params.get("rounds_count", 1),
             max_participants=config.max_participants,
+            # Il playoff si gioca con chi ha accettato, anche se sono meno dei
+            # posti (SPECIFICHE.md, «Playoff»: «oppure sono finiti i
+            # giocatori»). Senza, la gara prendeva il minimo di default delle
+            # gare di serata, sei, e un playoff da quattro non partiva mai.
+            min_participants=PLAYOFF_MIN_PARTICIPANTS,
             playoff_config_id=config.id,
             # Il peso vive sulla gara, che è ciò che l'aggregatore legge; la
             # configurazione è il valore scelto dal direttore prima che la
@@ -935,11 +1045,16 @@ class PlayoffService:
             .all()
         )
 
+        # D'ufficio, cioè senza lista d'attesa: gli inviti vivi non superano
+        # mai i posti, perché la cascata chiama un sostituto solo per chi esce,
+        # quindi un confermato oltre i posti può essere solo un giocatore
+        # aggiunto dal direttore — ed entra comunque.
         for qual in confirmed:
             InscriptionService.inscribe_user(
                 user_id=qual.user_id,
                 gara_id=gara.id,
                 _bypass_playoff_check=True,
+                _d_ufficio=True,
             )
 
         # Update PlayoffTournament if exists, or create one
@@ -981,9 +1096,13 @@ class PlayoffService:
         if config is None:
             raise NotFoundError("Configurazione playoff non trovata")
 
-        # Block if gara already created
-        if config.gara is not None:
-            raise ValueError("Non modificabile dopo creazione gara playoff")
+        # La lista si chiude all'avvio, non alla creazione: fino ad allora chi
+        # entra dall'invito entra anche in gara, e il direttore deve poter fare
+        # lo stesso.
+        if PlayoffService._gara_avviata(config):
+            raise ConflictError(
+                _("La gara di playoff è già cominciata: la lista non si modifica più.")
+            )
 
         # Check player already present
         existing = PlayoffQualification.query.filter_by(
@@ -1021,6 +1140,9 @@ class PlayoffService:
             responded_at=utc_now(),
         )
         db.session.add(qual)
+        db.session.flush()
+        # Una scelta esplicita del direttore: entra anche oltre i posti.
+        PlayoffService._iscrivi_alla_gara(qual, d_ufficio=True)
         return qual
 
     @staticmethod
@@ -1034,8 +1156,17 @@ class PlayoffService:
             raise NotFoundError("Qualificazione non trovata")
 
         config = qual.configuration
+        if PlayoffService._gara_avviata(config):
+            raise ConflictError(
+                _("La gara di playoff è già cominciata: la lista non si modifica più.")
+            )
+
+        # A gara creata e non ancora avviata chi esce dalla lista esce anche
+        # dalla gara, come chi ci entra ci entra.
         if config.gara is not None:
-            raise ValueError("Non modificabile dopo creazione gara playoff")
+            from ..competition.inscription_service import InscriptionService
+
+            InscriptionService.uninscribe_user(qual.user_id, config.gara.id)
 
         qual.status = QualificationStatus.DECLINED
         original_reason = qual.qualification_reason

@@ -464,6 +464,182 @@ class TestCascataDeiRifiutiAiPlayoff:
         assert quinto.id in {q.user_id for q in invitati}
 
 
+class TestIlPlayoffSiGiocaConChiHaAccettato:
+    """`SPECIFICHE.md`, sezione «Playoff», righe 286 e 288.
+
+    > […] fino a quando un numero di giocatori pari ai posti disponibili ha
+    > dato l'ok oppure sono finiti i giocatori.
+
+    > Il playoff si gioca con chi ha accettato, anche se sono meno dei posti
+    > […] chi accetta dopo la creazione […] entra fra gli iscritti fino
+    > all'avvio del primo turno […]. All'avvio gli inviti ancora senza
+    > risposta scadono e nessun altro viene chiamato.
+    """
+
+    @staticmethod
+    def _avvia(gara_id: int):
+        from datetime import timedelta
+
+        from models.base import utc_now
+        from models.competition.inscription_service import InscriptionService
+        from models.competition.round_service import RoundService
+
+        adesso = utc_now()
+        InscriptionService.open_inscriptions(
+            gara_id, adesso, adesso + timedelta(hours=1)
+        )
+        return RoundService.start_first_round(gara_id)
+
+    @staticmethod
+    def _invito(configurazione, giocatore):
+        return PlayoffQualification.query.filter_by(
+            configuration_id=configurazione.id, user_id=giocatore.id
+        ).first()
+
+    def test_con_meno_si_dei_posti_la_finale_parte(self, db_session):
+        campionato, configurazione, giocatori = (
+            TestCascataDeiRifiutiAiPlayoff._campionato_con_playoff(
+                db_session, posti=4, iscritti=4
+            )
+        )
+        PlayoffService.start_playoff(campionato.id)
+        for giocatore in giocatori[:3]:
+            PlayoffService.confirm_qualification(
+                self._invito(configurazione, giocatore).id, giocatore.id
+            )
+        ultimo = giocatori[3]
+        # Sono finiti i giocatori: il rifiuto non chiama nessuno.
+        assert (
+            PlayoffService.decline_qualification(
+                self._invito(configurazione, ultimo).id, ultimo.id
+            )
+            is None
+        )
+
+        gara = PlayoffService.create_playoff_gara(configurazione.id)
+
+        assert self._avvia(gara.id).current_round == 1
+
+    def test_chi_accetta_prima_dell_avvio_entra_e_all_avvio_gli_inviti_scadono(
+        self, db_session
+    ):
+        campionato, configurazione, giocatori = (
+            TestCascataDeiRifiutiAiPlayoff._campionato_con_playoff(
+                db_session, posti=4, iscritti=8
+            )
+        )
+        PlayoffService.start_playoff(campionato.id)
+        for giocatore in giocatori[:2]:
+            PlayoffService.confirm_qualification(
+                self._invito(configurazione, giocatore).id, giocatore.id
+            )
+        gara = PlayoffService.create_playoff_gara(configurazione.id)
+
+        tardivo = giocatori[2]
+        PlayoffService.confirm_qualification(
+            self._invito(configurazione, tardivo).id, tardivo.id
+        )
+        assert Inscription.query.filter_by(gara_id=gara.id, user_id=tardivo.id).first()
+
+        self._avvia(gara.id)
+
+        silenzioso = self._invito(configurazione, giocatori[3])
+        assert silenzioso.status == QualificationStatus.EXPIRED
+        assert (
+            PlayoffQualification.query.filter_by(
+                configuration_id=configurazione.id
+            ).count()
+            == 4
+        )
+
+    def test_annullato_l_avvio_gli_inviti_chiusi_dall_avvio_si_riaprono(
+        self, db_session
+    ):
+        """Riga 288: «Se il direttore annulla l'avvio, gli inviti chiusi
+        proprio da quell'avvio tornano in attesa, purché la loro scadenza non
+        sia ancora passata»."""
+        from models.competition.round_cancellation import RoundCancellationService
+
+        campionato, configurazione, giocatori = (
+            TestCascataDeiRifiutiAiPlayoff._campionato_con_playoff(
+                db_session, posti=5, iscritti=8
+            )
+        )
+        PlayoffService.start_playoff(campionato.id)
+        for giocatore in giocatori[:4]:
+            PlayoffService.confirm_qualification(
+                self._invito(configurazione, giocatore).id, giocatore.id
+            )
+        gara = PlayoffService.create_playoff_gara(configurazione.id)
+        self._avvia(gara.id)
+        assert (
+            self._invito(configurazione, giocatori[4]).status
+            == QualificationStatus.EXPIRED
+        )
+
+        RoundCancellationService.cancel_first_round_startup(gara.id)
+
+        assert (
+            self._invito(configurazione, giocatori[4]).status
+            == QualificationStatus.PENDING
+        )
+
+    def test_il_giocatore_aggiunto_dal_direttore_entra_oltre_i_posti(self, db_session):
+        """Riga 288: «Un giocatore aggiunto a mano dal direttore entra invece
+        sempre […] anche oltre i posti, e il massimo della gara non ne blocca
+        l'avvio»."""
+        campionato, configurazione, giocatori = (
+            TestCascataDeiRifiutiAiPlayoff._campionato_con_playoff(
+                db_session, posti=4, iscritti=6
+            )
+        )
+        PlayoffService.start_playoff(campionato.id)
+        for giocatore in giocatori[:4]:
+            PlayoffService.confirm_qualification(
+                self._invito(configurazione, giocatore).id, giocatore.id
+            )
+        gara = PlayoffService.create_playoff_gara(configurazione.id)
+
+        PlayoffService.admin_add_player(configurazione.id, giocatori[5].id, "direttore")
+
+        attivi = Inscription.query.filter_by(
+            gara_id=gara.id, is_waitlist=False, is_withdrawn=False
+        ).count()
+        assert attivi == 5
+        assert self._avvia(gara.id).current_round == 1
+
+    def test_l_aggiunta_del_direttore_rispetta_la_parita(self, db_session):
+        """Riga 288: «La parità invece vale anche per lui: se la gara non
+        ammette un numero dispari di giocatori […] chi renderebbe dispari gli
+        iscritti aspetta in lista d'attesa come gli altri, finché non arriva
+        un secondo giocatore»."""
+        campionato, configurazione, giocatori = (
+            TestCascataDeiRifiutiAiPlayoff._campionato_con_playoff(
+                db_session, posti=4, iscritti=7
+            )
+        )
+        configurazione.odd_number_policy = "no"
+        db_session.commit()
+        PlayoffService.start_playoff(campionato.id)
+        for giocatore in giocatori[:4]:
+            PlayoffService.confirm_qualification(
+                self._invito(configurazione, giocatore).id, giocatore.id
+            )
+        gara = PlayoffService.create_playoff_gara(configurazione.id)
+
+        PlayoffService.admin_add_player(configurazione.id, giocatori[5].id, "direttore")
+        primo = Inscription.query.filter_by(
+            gara_id=gara.id, user_id=giocatori[5].id
+        ).first()
+        assert primo is not None and primo.is_waitlist
+
+        PlayoffService.admin_add_player(configurazione.id, giocatori[6].id, "direttore")
+        attivi = Inscription.query.filter_by(
+            gara_id=gara.id, is_waitlist=False, is_withdrawn=False
+        ).count()
+        assert attivi == 6
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # APERTURA E RUNOUT (SPECIFICHE.md, sezione «Match», righe 131-144 — ADR-056)
 # ──────────────────────────────────────────────────────────────────────────────

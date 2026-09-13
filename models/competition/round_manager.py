@@ -401,6 +401,12 @@ class AdvancedRoundManager:
             if gara.current_round == 0:
                 gara.status = GaraStatus.INSCRIPTION.value
 
+                # Gara di playoff: gli inviti chiusi dall'avvio tornano in attesa.
+                if gara.playoff_config_id:
+                    from models.playoff.services import PlayoffService
+
+                    PlayoffService.riapri_inviti_all_annullo(gara)
+
         # Transaction managed by @transactional decorator
         return True, f"Turno {round_number} cancellato con successo"
 
