@@ -220,9 +220,12 @@ def _esercizi_turni(gara: Gara, all_matches) -> list:
     if not esercizi:
         return []
 
+    # Chi ha dato forfait non e' piu' al tavolo: non ha esercizi da registrare,
+    # e non blocca il turno dopo (`pendenze_turno`).
     iscrizioni = (
         Inscription.query.filter_by(gara_id=gara.id, is_withdrawn=False)
         .filter(Inscription.is_waitlist.is_(False))
+        .filter(Inscription.is_forfeit.isnot(True))
         .all()
     )
     giocatori = sorted(
@@ -235,13 +238,15 @@ def _esercizi_turni(gara: Gara, all_matches) -> list:
         GaraChallengeAttempt.completed.is_(True),
     ).order_by(GaraChallengeAttempt.attempt_number):
         tentativi.setdefault((t.gara_challenge_id, t.user_id), []).append(
-            (t.score, t.passed)
+            (t.score, t.passed, t.id)
         )
     return esercizi_fra_i_turni(
         esercizi,
         turni_chiusi=turni_conclusi(all_matches),
         giocatori=giocatori,
         tentativi=tentativi,
+        turno_avviato=max((m.round_number for m in all_matches or []), default=0),
+        casuale=gara.creates_all_rounds_at_startup(),
     )
 
 
@@ -337,9 +342,22 @@ def _vista_direttore(
                 "annullabile": gara.can_cancel_round(turno),
             }
 
+    schede_partite = {m.id: scheda_partita(m) for m in partite_turno}
+    # A turno concluso le partite sono righe, ma la prova della X ancora da
+    # convalidare trattiene il turno dopo (`pendenze_turno`): resta card, con
+    # «Convalida», altrimenti il direttore non avrebbe dove sbloccarlo.
+    x_da_convalidare = [
+        m.id
+        for m in partite_turno
+        if turno_concluso
+        and schede_partite[m.id].prova is not None
+        and schede_partite[m.id].prova.stato.value != "convalidata"
+    ]
+
     return {
         **_vista_tabellone(gara, all_matches or []),
         "esercizi_turni": _esercizi_turni(gara, all_matches or []),
+        "x_da_convalidare": x_da_convalidare,
         "fase": fase,
         "striscia": striscia(fase, con_spareggio=con_spareggio),
         "comando": comando,
@@ -355,7 +373,7 @@ def _vista_direttore(
         "stati_partite": stati_partite,
         # La forma di ogni card del turno che si vede: trio, set, X con
         # esercizio (i turni chiusi sono righe e non ne hanno bisogno).
-        "schede_partite": {m.id: scheda_partita(m) for m in partite_turno},
+        "schede_partite": schede_partite,
         # La gara dentro un campionato: kicker, «Dal campionato», testi di
         # chiusura. `None` per una gara singola.
         "campionato_ctx": contesto_campionato(gara),

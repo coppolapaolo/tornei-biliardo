@@ -668,9 +668,10 @@ def contesto_campionato(gara, gare: Optional[Iterable] = None):
 # Il canvas disegna solo la loro preparazione (1.4–1.5, 1.10): qui la pagina
 # del direttore li **registra**. Un esercizio fra i turni (`GaraChallenge`) si
 # gioca «dopo il turno N», quindi si registra quando quel turno e' concluso;
-# prima resta in elenco, in sola lettura. Nessuna regola impedisce di avviare
-# il turno dopo con un esercizio ancora da registrare: la pagina lo mostra e
-# basta, la fascia non lo annuncia.
+# prima resta in elenco, in sola lettura. Dal 2026-09-13 il turno dopo non
+# parte con un esercizio ancora da registrare (`pendenze_turno`, tranne che
+# con la formula casuale), e un tentativo registrato per sbaglio si toglie
+# finche' quel turno non e' partito.
 
 
 def turni_conclusi(matches: Iterable) -> set:
@@ -689,6 +690,16 @@ def turni_conclusi(matches: Iterable) -> set:
 
 
 @dataclass(frozen=True)
+class TentativoRegistrato:
+    """Un tentativo gia' registrato, per poterlo togliere dal foglio."""
+
+    id: Optional[int]
+    numero: int
+    punteggio: Optional[int]
+    riuscito: Optional[bool]
+
+
+@dataclass(frozen=True)
 class TentativiGiocatore:
     """A che punto e' un giocatore su un esercizio."""
 
@@ -701,10 +712,34 @@ class TentativiGiocatore:
     #: Negli esercizi a esito: riuscito almeno una volta, `False` se tentato
     #: e mai riuscito, `None` senza tentativi.
     riuscito: Optional[bool]
+    registrati: tuple = ()
+    #: I tentativi di questo esercizio si tolgono ancora.
+    si_toglie: bool = False
 
     @property
     def puo_tentare(self) -> bool:
         return self.fatti < self.massimo
+
+    @property
+    def si_apre(self) -> bool:
+        """La riga apre il foglio: per registrare, o per togliere."""
+        return self.puo_tentare or (self.si_toglie and bool(self.registrati))
+
+    @property
+    def registrati_dati(self) -> list:
+        """I tentativi da togliere, per il foglio (`data-tentativi`)."""
+        if not self.si_toglie:
+            return []
+        return [
+            {
+                "id": t.id,
+                "numero": t.numero,
+                "punteggio": t.punteggio,
+                "riuscito": t.riuscito,
+            }
+            for t in self.registrati
+            if t.id is not None
+        ]
 
 
 @dataclass(frozen=True)
@@ -719,6 +754,9 @@ class EsercizioFraITurni:
     dovuto: bool
     #: Una riga per giocatore attivo, solo quando `dovuto`.
     giocatori: tuple = ()
+    #: Il turno dopo non e' ancora partito (o la formula e' casuale): i
+    #: tentativi registrati si tolgono.
+    si_toglie: bool = True
 
     @property
     def da_registrare(self) -> int:
@@ -732,25 +770,30 @@ def esercizi_fra_i_turni(
     turni_chiusi: set,
     giocatori: Sequence,
     tentativi: Mapping,
+    turno_avviato: int = 0,
+    casuale: bool = False,
 ) -> list:
     """Gli esercizi della gara, nell'ordine dei turni, con le righe dei dovuti.
 
     `esercizi` sono i `GaraChallenge` attivi; `giocatori` le coppie
     ``(user_id, nome)`` degli iscritti attivi; `tentativi` mappa
-    ``(gara_challenge_id, user_id)`` sui tentativi completati come coppie
-    ``(score, passed)``.
+    ``(gara_challenge_id, user_id)`` sui tentativi completati, in ordine, come
+    ``(score, passed)`` o ``(score, passed, attempt_id)``. `turno_avviato` e'
+    il turno piu' avanti con partite: oltre il turno dell'esercizio i suoi
+    tentativi non si tolgono piu', tranne con la formula `casuale`.
     """
     risultato = []
     for gc in sorted(esercizi, key=lambda e: (e.round_number, e.id)):
         sfida = gc.challenge
         a_esito = bool(sfida.pass_fail_only)
         dovuto = gc.round_number in turni_chiusi
+        si_toglie = casuale or turno_avviato <= gc.round_number
         righe = []
         if dovuto:
             for user_id, nome in giocatori:
                 fatti = list(tentativi.get((gc.id, user_id), ()))
-                punteggi = [score or 0 for score, _passed in fatti]
-                esiti = [bool(passed) for _score, passed in fatti]
+                punteggi = [t[0] or 0 for t in fatti]
+                esiti = [bool(t[1]) for t in fatti]
                 righe.append(
                     TentativiGiocatore(
                         user_id=user_id,
@@ -759,6 +802,16 @@ def esercizi_fra_i_turni(
                         massimo=gc.max_attempts,
                         migliore=max(punteggi) if punteggi else None,
                         riuscito=any(esiti) if fatti else None,
+                        registrati=tuple(
+                            TentativoRegistrato(
+                                id=t[2] if len(t) > 2 else None,
+                                numero=numero,
+                                punteggio=t[0],
+                                riuscito=t[1],
+                            )
+                            for numero, t in enumerate(fatti, start=1)
+                        ),
+                        si_toglie=si_toglie,
                     )
                 )
         risultato.append(
@@ -771,12 +824,14 @@ def esercizi_fra_i_turni(
                 tentativi=gc.max_attempts,
                 dovuto=dovuto,
                 giocatori=tuple(righe),
+                si_toglie=si_toglie,
             )
         )
     return risultato
 
 
 __all__ = [
+    "TentativoRegistrato",
     "TentativiGiocatore",
     "EsercizioFraITurni",
     "turni_conclusi",

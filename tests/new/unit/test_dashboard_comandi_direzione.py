@@ -165,6 +165,35 @@ def test_a_turno_finito_si_avvia_il_turno_dopo(monkeypatch):
     assert comando is not None
     assert comando.tipo == ComandoDirezione.AVVIA_TURNO
     assert comando.turno == 3
+    assert not comando.bloccato
+
+
+@pytest.mark.unit
+def test_a_turno_finito_con_prove_ed_esercizi_in_sospeso_il_turno_aspetta(
+    monkeypatch,
+):
+    """SPECIFICHE.md, «Cosa deve essere chiuso prima del turno successivo»."""
+    from models.competition.pendenze_turno import PendenzeTurno
+    from models.dashboard import comandi
+
+    gara = _gara(status=GaraStatus.PLAYING.value, turno=2)
+    monkeypatch.setattr(
+        Gara,
+        "get_real_status",
+        lambda self: ProvaDerivedStatus.ROUND_COMPLETED.value,
+    )
+    monkeypatch.setattr(
+        comandi,
+        "pendenze_del_turno",
+        lambda g, turno: PendenzeTurno(turno=turno, prove_x=1, esercizi=2),
+    )
+
+    comando = comando_per(gara)
+    assert comando is not None
+    assert comando.tipo == ComandoDirezione.AVVIA_TURNO
+    assert comando.turno == 3
+    assert comando.bloccato
+    assert (comando.prove_x, comando.esercizi) == (1, 2)
 
 
 @pytest.mark.unit

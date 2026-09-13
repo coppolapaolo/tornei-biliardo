@@ -141,6 +141,44 @@ def record_challenge_attempt():
         return safe_json_error(e, "recording challenge attempt")
 
 
+@match_bp.route("/challenge_attempt/<int:attempt_id>/togli", methods=["POST"])
+@login_required
+def remove_challenge_attempt(attempt_id):
+    """Toglie un tentativo di esercizio registrato per sbaglio (JSON).
+
+    Dal foglio del tentativo nella pagina del direttore. Le regole — gara in
+    corso, turno dopo non ancora partito — le decide
+    `GaraChallengeService.remove_challenge_attempt`: qui solo chi puo'
+    chiederlo, cioe' chi dirige la gara di quel tentativo.
+    """
+    from models.base import db
+    from models.competition.gara_challenge import GaraChallengeAttempt
+    from models.competition.gara_challenge_service import GaraChallengeService
+    from models.exceptions import DomainError, http_status_for_exception
+
+    attempt = db.session.get(GaraChallengeAttempt, attempt_id)
+    if attempt is None:
+        errore = _("Tentativo non trovato")
+        return jsonify({"success": False, "error": str(errore)}), 404
+
+    forbidden = _forbidden_unless_gara_manager(attempt.gara_challenge.gara_id)
+    if forbidden:
+        return forbidden
+
+    try:
+        GaraChallengeService.remove_challenge_attempt(
+            attempt_id, autore_id=current_user.id
+        )
+    except DomainError as errore:
+        return (
+            jsonify({"success": False, "error": str(errore)}),
+            http_status_for_exception(errore),
+        )
+    except Exception as e:
+        return safe_json_error(e, "removing challenge attempt")
+    return jsonify({"success": True})
+
+
 @match_bp.route("/record_challenge_attempts", methods=["POST"])
 @login_required
 def record_challenge_attempts():

@@ -130,7 +130,8 @@ blocks:
           the round's distance. If the player already declared it the card is
           green; otherwise you enter it with − and +. The score counts only
           after **Validate**. To clear it, use the «⋯» menu and **Reset the
-          drill**.
+          drill**. Until you validate it the next round cannot start: that
+          score is part of the standings the pairs are built from.
       - name: "Record the drills between rounds"
         text: >-
           If the competition has a drill after a round, once that round is over
@@ -140,9 +141,12 @@ blocks:
           played below them. Tap the row of whoever has just played: for a
           scored drill set the number with − and + and tap **Record the
           attempt**; if the drill is only made or missed, just tap **Made it**
-          or **Missed**. Once the attempts are used up the row can no longer be
-          tapped, and a recorded attempt cannot be removed. The next round can
-          start even if someone still has to play.
+          or **Missed**. If you recorded an attempt by mistake, tap the row:
+          below you find the attempts already recorded, and **Remove the
+          attempt** deletes it after asking you to confirm. You can do it until
+          the next round has started. The next round, in turn, does not start
+          until every player still in the competition has at least one
+          attempt; in random-draw competitions it waits for nobody.
         shot: gara-esercizio-turno
       - name: "Change a match's table"
         text: >-
@@ -204,7 +208,11 @@ blocks:
       The **Start next round** button only lights up when **every** match in
       the current round is finished. That is deliberate: the new pairs come
       from the standings, and incomplete standings would produce wrong
-      pairings.
+      pairings. For the same reason the button stays **greyed out** while the
+      drill played instead of the X still needs validating, or a drill between
+      rounds still has to be recorded: the band says «Before starting round N»
+      and how many things are missing. In random-draw competitions all rounds
+      already exist, and none of this waits.
 
   - type: note
     tone: warning
@@ -389,7 +397,7 @@ blocks:
   - type: faq
     items:
       - q: "The «Start next round» button is greyed out."
-        a: "At least one match is still open. In the Rounds view, the open matches are the ones without the «Finished» label."
+        a: "At least one match is still open. In the Rounds view, the open matches are the ones without the «Finished» label. If every match is finished, the band says what the round is still waiting for: the drill played instead of the X to validate, on the card of the player sitting out, or a drill between rounds someone has not recorded yet, in the «Drill after round» section."
       - q: "A player leaves halfway through the competition."
         a: "Tap «⋯» on their match card and choose **… withdraws**: the sheet tells you what happens before you confirm. For the following rounds, the rule you chose at creation decides whether they stay in the pairings (losing by walkover) or drop out. In bracket competitions there is nothing to choose: whoever withdraws lets their opponent through by walkover, and the bracket stays as it is."
       - q: "Why does my knockout not say «Start the competition»?"

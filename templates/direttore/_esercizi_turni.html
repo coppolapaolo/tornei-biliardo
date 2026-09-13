@@ -17,8 +17,11 @@
      tentati da tutti, e in coda, in sola lettura, quelli il cui turno non e'
      ancora chiuso.
 
-   Nessuna regola ferma il turno dopo con un esercizio da registrare: la
-   fascia non lo annuncia. Attende `esercizi_turni`
+   Dal 2026-09-13 il turno dopo aspetta gli esercizi registrati (tranne con la
+   formula casuale): la fascia annuncia il comando spento e quanti ne mancano
+   (`pendenze_turno`). La riga di chi ha gia' tentato apre il foglio anche a
+   tentativi finiti, per togliere quello registrato per sbaglio, finche' il
+   turno dopo non e' partito (`si_toglie`). Attende `esercizi_turni`
    (`direttore_view.esercizi_fra_i_turni`). Nessun id: si puo' importare in
    piu' punti. #}
 {% import "direttore/_macros.html" as d with context %}
@@ -31,12 +34,14 @@
   {%- set tile = 'c7-tile--warn' if g.fatti == 0 else ('c7-tile--locked' if not g.puo_tentare else 'c7-tile--neutral') -%}
   {%- set icona = 'fa-check' if not g.puo_tentare else 'fa-bullseye' -%}
 {%- endif -%}
-{%- set tag = 'button' if g.puo_tentare else 'div' -%}
-<{{ tag }}{% if g.puo_tentare %} type="button"{% endif %} class="c7-rows__row{% if g.puo_tentare %} c7-rows__row--btn{% endif %} c7-esercizio-riga"
-  {%- if g.puo_tentare %} onclick="apriTentativoEsercizio(this)"
+{%- set tag = 'button' if g.si_apre else 'div' -%}
+<{{ tag }}{% if g.si_apre %} type="button"{% endif %} class="c7-rows__row{% if g.si_apre %} c7-rows__row--btn{% endif %} c7-esercizio-riga"
+  {%- if g.si_apre %} onclick="apriTentativoEsercizio(this)"
   data-esercizio-id="{{ esercizio.id }}" data-esercizio-nome="{{ esercizio.nome }}"
   data-user-id="{{ g.user_id }}" data-nome="{{ g.nome }}"
   data-fatti="{{ g.fatti }}" data-massimo="{{ g.massimo }}"
+  data-puo-tentare="{{ 1 if g.puo_tentare else 0 }}"
+  data-tentativi='{{ g.registrati_dati|tojson }}'
   data-a-esito="{{ 1 if esercizio.a_esito else 0 }}"
   data-punteggio-massimo="{{ esercizio.punteggio_massimo or '' }}"{% endif %}>
   <span class="c7-tile c7-tile--sm {{ tile }}"><i class="fas {{ icona }}"></i></span>
@@ -54,7 +59,7 @@
       {%- if g.riuscito %}<span class="c7-state c7-state--ok">{{ _('Riuscito') }}</span>
       {%- else %}<span class="c7-state c7-state--muted">{{ _('Non riuscito') }}</span>{% endif %}
     {%- else %}<span class="c7-esercizio-riga__punti c7-num" title="{{ _('il migliore') }}">{{ g.migliore }}</span>{% endif %}
-    {%- if g.puo_tentare %}<i class="fas fa-plus c7-rows__chev" aria-hidden="true"></i>{% endif %}
+    {%- if g.si_apre %}<i class="fas {{ 'fa-plus' if g.puo_tentare else 'fa-ellipsis' }} c7-rows__chev" aria-hidden="true"></i>{% endif %}
   </span>
 </{{ tag }}>
 {%- endmacro %}

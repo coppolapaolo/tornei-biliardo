@@ -396,6 +396,61 @@ class TestSimulaTuttaLaGara:
                 == ProvaDerivedStatus.TOURNAMENT_COMPLETED.value
             )
 
+    def test_convalida_la_prova_della_x_e_registra_gli_esercizi(self, db_session):
+        """Il turno dopo aspetta prova della X ed esercizi (SPECIFICHE.md riga
+        102): la simulazione li fa come farebbe il direttore, altrimenti una
+        prova con la X con esercizio si fermerebbe al primo turno."""
+        from models.challenge.models import Challenge
+        from models.competition.gara_bye_challenge import GaraByeChallenge
+        from models.competition.gara_challenge import (
+            GaraChallenge,
+            GaraChallengeAttempt,
+        )
+
+        direttore = _direttore(db_session)
+        sfida = Challenge(
+            description="Spot shot",
+            image_path="/x.png",
+            is_active=True,
+            created_by_id=direttore.id,
+        )
+        db_session.add(sfida)
+        db_session.commit()
+        gara_id = _prova_avviata(
+            db_session,
+            direttore,
+            iscritti=5,
+            turni=3,
+            odd_number_policy="bye_with_challenge",
+            x_challenge_id=sfida.id,
+        )
+        with prova_visibili():
+            db_session.add(
+                GaraChallenge(
+                    gara_id=gara_id,
+                    challenge_id=sfida.id,
+                    round_number=1,
+                    max_attempts=1,
+                    added_by_id=direttore.id,
+                )
+            )
+            db_session.commit()
+
+            esito = SimulationService.simula_gara(gara_id, rng=random.Random(4))
+
+            assert esito.fermata is None
+            gara = db.session.get(Gara, gara_id)
+            assert gara is not None and gara.current_round == 3
+            # Le prove dei turni 1 e 2 le aspettava un turno dopo; quella
+            # dell'ultimo turno resta al direttore, come la chiusura della gara.
+            convalidate = {
+                p.round_number
+                for p in GaraByeChallenge.query.filter_by(gara_id=gara_id)
+                if p.is_validated
+            }
+            assert convalidate == {1, 2}
+            assert GaraChallengeAttempt.query.count() == 5
+
     def test_riprende_da_un_turno_lasciato_a_meta(self, db_session):
         gara_id = _prova_avviata(db_session, _direttore(db_session), turni=2)
         with prova_visibili():

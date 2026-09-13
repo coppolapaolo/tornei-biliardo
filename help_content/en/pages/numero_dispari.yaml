@@ -71,7 +71,9 @@ blocks:
       round counts zero. The director does it from the competition page, on the
       card of the player with the X: they adjust the score with − and + (also
       for someone who does not use the app) and tap **Validate**. To clear it,
-      **Reset the drill** is in the card's «⋯» menu.
+      **Reset the drill** is in the card's «⋯» menu. Until it is validated
+      the next round cannot start, just like a match still waiting for
+      validation; in random-draw competitions it does not wait.
 
   - type: list
     items:

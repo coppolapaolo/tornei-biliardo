@@ -99,6 +99,18 @@ def test_anche_il_turno_successivo_si_annuncia(db_session):
         db_session, MatchmakingStrategy.ROUND_ROBIN.value, giocatori=4, turni=3
     )
     RoundService.start_first_round(gara.id)
+    # Il turno dopo parte solo a turno chiuso: dal 2026-09-13 lo controlla il
+    # servizio, non piu' solo le route (SPECIFICHE.md, «Cosa deve essere chiuso
+    # prima del turno successivo»).
+    from models.match.models import Match
+    from models.status_enum import MatchStatus
+
+    for partita in Match.query.filter_by(gara_id=gara.id, round_number=1).all():
+        if not partita.is_bye:
+            partita.player1_score, partita.player2_score = 5, 2
+            partita.winner_id = partita.player1_id
+            partita.status = MatchStatus.CLOSED_UNILATERALLY.value
+    db_session.commit()
     RoundService.start_next_round(gara.id, 2)
     assert _turni_annunciati(gara.id) == [1, 2]
 

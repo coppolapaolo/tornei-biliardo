@@ -337,8 +337,17 @@ class RoundCreationService:
         Returns:
             Tuple: (total, normal, bye, trio, tables_assigned)
         """
+        from models.competition.pendenze_turno import verifica_turno_chiuso
         from models.competition.state_service import StateService
         from models.match.table_assignment_service import TableAssignmentService
+
+        # Il turno prima dev'essere chiuso davvero: partite, prova della X
+        # convalidata, esercizi registrati (SPECIFICHE.md, «Cosa deve essere
+        # chiuso prima del turno successivo»). Qui e non nelle route, cosi'
+        # vale per ogni strada che avvia un turno.
+        gara_da_verificare = db.session.get(Gara, gara_id)
+        if gara_da_verificare is not None:
+            verifica_turno_chiuso(gara_da_verificare, round_number)
 
         total, n_normal, n_bye, n_trio = RoundCreationService._create_round_impl(
             gara_id, round_number, discipline_override

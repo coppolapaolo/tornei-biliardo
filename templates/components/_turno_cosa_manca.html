@@ -1,0 +1,13 @@
+{# templates/components/_turno_cosa_manca.html — Design System 7c
+
+   Cosa tiene fermo il turno dopo, in parole: la prova della X da convalidare
+   e gli esercizi fra i turni da registrare (SPECIFICHE.md, «Cosa deve essere
+   chiuso prima del turno successivo»). Lo usano la fascia della pagina del
+   direttore e la tessera della dashboard, dal `ComandoVM` di
+   `models/dashboard/comandi.py`. #}
+{% macro cosa_manca(comando) -%}
+{%- set parti = [] -%}
+{%- if comando.prove_x %}{% if parti.append(ngettext('%(num)d prova della X da convalidare', '%(num)d prove della X da convalidare', comando.prove_x)) %}{% endif %}{% endif -%}
+{%- if comando.esercizi %}{% if parti.append(ngettext('%(num)d esercizio da registrare', '%(num)d esercizi da registrare', comando.esercizi)) %}{% endif %}{% endif -%}
+{{ parti|join(', ') }}
+{%- endmacro %}

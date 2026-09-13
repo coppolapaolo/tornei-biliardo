@@ -292,6 +292,15 @@
     </p>
   </div>
   {% endif %}
+  {% if card.comando and card.comando.bloccato and (card.comando.prove_x or card.comando.esercizi) %}
+  {% import "components/_turno_cosa_manca.html" as manca %}
+  <div class="c7-inset c7-inset--warn">
+    <div class="c7-kicker">{{ _('Il turno %(n)s aspetta', n=card.comando.turno) }}</div>
+    <p class="mb-0 mt-1" style="font-size:12px;font-weight:600;line-height:1.55">
+      {{ _('Mancano ancora: %(cosa)s.', cosa=manca.cosa_manca(card.comando)) }}
+    </p>
+  </div>
+  {% endif %}
 
   {# ── Azioni ───────────────────────────────────────────────────────── #}
   {# L'ospite ha la pagina pubblica della gara; chi è entrato quella completa. #}

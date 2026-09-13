@@ -99,6 +99,10 @@ Un turno è legato ad una gara. È dato da un abbinamento di giocatori che gioca
 Una possibile **strategia di abbinamento** è **_amalfi_**. Un'altra possibile strategia di abbinamento è _round robin_. 
 Una volta che tutti i match del turno sono terminati, è possibile modificare la classifica della gara. Quindi un turno prende la classifica precedente al turno, i risultati dei match e restituisce la classifica aggiornata.
 
+**Cosa deve essere chiuso prima del turno successivo** (2026-09-13). Il turno successivo si avvia solo quando il turno precedente è chiuso davvero: tutte le sue partite concluse, **la prova giocata al posto della X convalidata dal direttore** — è come una partita non ancora validata, perché il suo punteggio è la differenza rack di quel turno — e **ogni esercizio fra i turni agganciato a quel turno registrato**, con almeno un tentativo, per ogni iscritto ancora in gara. Chi ha dato forfait non ha esercizi da registrare. La regola vale per le strategie che costruiscono ogni turno sulla classifica: con la strategia _casuale_, dove i turni nascono tutti all'avvio, né la prova della X né gli esercizi bloccano qualcosa.
+
+Un tentativo di esercizio fra i turni registrato per sbaglio si può **togliere** (2026-09-13), a gara in corso e finché il turno successivo non è partito; con la strategia _casuale_ per tutta la gara. Il tentativo esce dalla classifica degli esercizi, i tentativi rimasti si rinumerano e, se era l'unico tentativo del giocatore su quell'esercizio, l'XP che aveva pagato torna indietro.
+
 #### Strategia di abbinamento
 
 Una **strategia di abbinamento** abbina un elenco di giocatori in match. 
