@@ -19,6 +19,36 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **Un'operazione che salvava dentro un'altra poteva lasciare i dati a
+  metà o perderli**: se falliva l'esterna restavano scritti i passi interni,
+  e se falliva un passo interno si perdeva il lavoro fatto prima. Ora salva
+  solo l'operazione più esterna, e le reazioni automatiche a un risultato,
+  come notifiche e punti, non possono più cancellarlo (ADR-061, PR #385).
+- **Trio**: se il punteggio più alto è di due o tre giocatori nessuno prende
+  la vittoria, come dice la specifica; prima decideva lo scontro diretto,
+  anche quando il direttore inseriva solo i totali (PR #388).
+- **Con la distanza «esattamente N» la card del direttore rifiutava ogni
+  triangolo** perché pretendeva subito il totale finale (PR #389).
+- **Un playoff con meno accettazioni dei posti non partiva**, perché la gara
+  nasceva col minimo di sei iscritti; e chi accettava dopo la creazione della
+  gara restava fuori in silenzio (PR #390).
+- **Le notifiche arrivavano nella lingua di chi aveva premuto il pulsante**,
+  con gli orari in UTC in alcune di esse; ora nella lingua e nel fuso di chi
+  le riceve (ADR-062, PR #391).
+- **Nella lista dei parimerito compariva l'HTML della pastiglia «pari»** al
+  posto della pastiglia (PR #393).
+- **Nel wizard di una nuova gara di campionato l'auto-copia degli iscritti
+  nasceva accesa** e copiava gli iscritti se il direttore non la toglieva
+  (PR #394).
+- **Il direttore non vedeva «Iscriviti» sulle gare che dirige**; e sul
+  playoff la tessera mostrava «Disiscriviti» anche a chi ci entra solo per
+  invito (PR #395).
+- **Il tavolo liberato non passava alla partita in attesa** quando la
+  partita si chiudeva con la doppia firma, per esempio dal segnapunti del
+  direttore che gioca (PR #396).
+- **Annullando un allenamento un giocatore poteva tenere punti non suoi**,
+  scambiati con quelli di un esercizio di gara (PR #387).
+
 - **Sul telefono le righe delle partite troncavano nome e cognome**: ora i
   due nomi vanno uno sopra l'altro (PR #364).
 - **La formula dei dispari compariva col valore grezzo inglese** («Bye With
@@ -78,6 +108,22 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+- **Il direttore ritira chi se ne va.** Dalla lista degli iscritti, a gara in
+  corso, il ritiro di un giocatore vale come il suo forfait, con la regola
+  della gara; il ritiro nel trio applica la stessa regola; nessun ritiro
+  passa su un turno già superato. Ogni ritiro deciso dal direttore riesce per
+  intero o non lascia traccia, e il giocatore riceve una notifica (PR #386).
+- **Il turno dopo aspetta la prova della X e gli esercizi.** Il turno
+  successivo, la chiusura e lo spareggio non partono finché la prova della X
+  non è convalidata e gli esercizi del turno non sono registrati, tranne col
+  sorteggio casuale; la fascia dice cosa manca. Un tentativo registrato per
+  sbaglio si toglie (PR #387).
+- **Trio e partita a set si correggono come le partite a due**, anche a
+  turno concluso: il foglio mostra tre punteggi o i set uno per uno, e
+  classifica e schermo in sala si aggiornano senza ricaricare (PR #388).
+- **Nei playoff chi accetta tardi entra fino all'avvio**, e il direttore può
+  aggiungere un giocatore anche oltre i posti; se annulla l'avvio, gli inviti
+  tornano in attesa (PR #390).
 - **Nelle gare a eliminazione il tabellone prende il posto della classifica.**
   Sulla pagina del direttore, a gara in gioco, la colonna laterale mostra il
   turno che si gioca con quello prima e quello dopo, i posti futuri già
