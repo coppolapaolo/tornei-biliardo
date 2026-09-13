@@ -44,6 +44,20 @@ def test_ogni_stato_persistito_ha_la_sua_fase(status, fase):
     assert fase_della_gara(status) == fase
 
 
+def test_nessuno_stato_della_gara_resta_senza_fase():
+    """Uno stato nuovo in `GaraStatus` va messo esplicitamente in una fase.
+
+    `fase_della_gara` ripiega in silenzio su «preparazione» per uno stato che
+    non conosce (ADR-059): senza questo presidio uno stato aggiunto
+    all'enum mostrerebbe la striscia sbagliata senza nessun test rosso,
+    perche' l'elenco del test sopra e' scritto a mano.
+    """
+    from models.competition.direttore_view import _FASE_PER_STATO
+
+    mancanti = [s.value for s in GaraStatus if s.value not in _FASE_PER_STATO]
+    assert mancanti == []
+
+
 def test_uno_stato_ignoto_vale_preparazione():
     assert fase_della_gara("boh") == FaseGara.PREPARAZIONE
 

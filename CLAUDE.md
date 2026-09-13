@@ -612,6 +612,8 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [056](docs/adr/ADR-056-apertura-e-runout-sul-segnapunti.md) | acchito, regola di apertura ereditata campionato→gara, runout marcato sul trattino |
 | [057](docs/adr/ADR-057-live-events-shared-across-workers.md) | aggiornamenti live su tabella `live_event` condivisa fra i worker; cursore a id; evento atomico col fatto |
 | [058](docs/adr/ADR-058-competizione-di-prova.md) | competizione di prova: invisibile per default (filtro di sessione con opt-in), giocatori fittizi cancellati fisicamente, ELO e gamification fuori |
+| [059](docs/adr/ADR-059-pagina-gara-del-direttore-per-fasi.md) | la pagina del direttore è la fase in corso: striscia di fase, due template, comando da `comandi.py` |
+| [060](docs/adr/ADR-060-tavoli-scelti-in-ogni-stato.md) | i tavoli si scelgono in ogni stato; la lista nuova vale per le assegnazioni successive |
 
 ---
 

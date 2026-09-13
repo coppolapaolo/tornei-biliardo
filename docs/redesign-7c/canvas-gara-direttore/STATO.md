@@ -365,6 +365,14 @@ niente. Vedi `../canvas-dashboard/STATO.md` per lo stesso schema.
 
 ## Implementazione
 
+**Implementato** il 13/09/2026: tutte le fasi sono su `main`, dalla 1.11.0
+alla 1.19.0. Le decisioni con conseguenze durature stanno in ADR-059 (la
+pagina del direttore e' la fase in corso) e ADR-060 (i tavoli si scelgono in
+ogni stato); i pattern nuovi in `docs/reference/UI_CONVENTIONS.md`, sezione
+«Pagina gara del direttore». Resta fuori, perche' il canvas non lo disegna:
+lo schermo in sala per le gare a tabellone (issue #352) e le voci di «Non
+ancora disegnato» qui sopra, che restano sulle schermate di prima.
+
 Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
 
 * **A · Impalcatura comune** (PR `feat: la pagina gara del direttore per
@@ -464,7 +472,6 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   Una forma sola su telefono e desktop; chi guarda resta sui componenti di
   prima. Le fasi spareggio e conclusa passano a questa classifica, con le
   medaglie, nella fase F.
-  proponeva di avviare un turno gia' avviato (`seed_demo.py`).
 * **E · Schermo in sala** (PR `feat: lo schermo in sala`, 2026-09-13). La
   schermata 3.10 e' una route nuova, pubblica e senza menu:
   `/g/<indirizzo>/sala` (`main.schermo_sala`), dallo stesso indirizzo della
@@ -529,3 +536,10 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   `replaced_by_id` e `replacement_position` di `PlayoffQualification`
   esistevano ma nessuno le scriveva; ora `find_replacement_player` le scrive
   sulla qualificazione rifiutata o scaduta. Via `_campionato_garas.html`.
+* **H · Chiusura** (PR `docs: la chiusura del canvas della pagina gara del
+  direttore`, 2026-09-13). ADR-059 e ADR-060, i pattern nuovi in
+  `UI_CONVENTIONS.md` con le righe datate del registro, la voce in
+  `CHANGELOG.md`, questo file segnato «implementato». Trovato strada
+  facendo: `fase_della_gara` ripiega su «preparazione» per uno stato che non
+  conosce, e il test elencava gli stati a mano; ora un `GaraStatus` senza
+  fase fa rosso (`test_nessuno_stato_della_gara_resta_senza_fase`).

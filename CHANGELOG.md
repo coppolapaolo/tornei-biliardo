@@ -19,6 +19,17 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **Difetti trovati rifacendo la pagina gara del direttore** (PR #345,
+  #347, #349, #358, #360). All'avvio della gara un giocatore ritirato
+  contava per il minimo e finiva nell'ordine di partenza: ora contano solo
+  gli attivi. La dashboard cadeva quando un turno aveva un tavolo con la
+  lettera e uno senza. Nel foglio «Apri le iscrizioni» un minimo lasciato
+  vuoto diventava zero invece di lasciare quello che c'era. La scheda
+  informazioni del campionato non mostrava mai il blocco dei playoff,
+  perché leggeva i campi del modulo di creazione invece delle
+  configurazioni. Quando un invitato ai playoff rifiutava o lasciava
+  scadere l'invito, nessuno scriveva chi aveva preso il suo posto: ora la
+  qualificazione lo ricorda, e la pagina del campionato lo dice.
 - **Rilievi della revisione automatica sulle tappe della prova** (PR #305,
   #314, #318, #319). «Simula il turno» contava come chiuse anche le partite
   dispari già a distanza e in attesa del direttore, e il messaggio diceva
@@ -31,6 +42,32 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
   riparazione delle iscrizioni duplicate propaga il codice di uscita.
 
 ### Aggiunto
+
+- **La pagina della gara per chi la dirige, fase per fase.** Chi dirige una
+  gara non vede più le quattro linguette di prima: in cima una striscia
+  dice in che fase è la gara — preparazione, iscrizioni, in gioco,
+  spareggio, chiusura — e sotto c'è solo quella fase, con una fascia scura
+  che dice l'unica cosa da fare adesso (la stessa che propone la
+  dashboard). La preparazione è fatta di passi con avanti e indietro, e i
+  tavoli si possono cambiare in ogni momento, anche a serata iniziata. Le
+  iscrizioni hanno il campo per iscrivere in cima, con i candidati che
+  compaiono mentre si scrive, e il foglio «Avvia la gara» racconta cosa
+  succederà. In gioco il punteggio si segna sulla card della partita con
+  − e +, il tavolo si assegna toccando una tessera libera, e un risultato
+  chiuso si corregge scrivendo il perché. La classifica ha le frecce di chi
+  sale e scende. Lo spareggio si segna con gli stessi pulsanti, e a gara
+  conclusa c'è il podio con le medaglie. Chi guarda la gara — giocatori e
+  ospiti — continua a vedere la pagina di sempre (ADR-059, ADR-060; PR
+  #343, #345, #347, #349, #351, #355).
+- **Lo schermo in sala.** Un indirizzo da aprire sulla TV del locale, a
+  partire da quello della vetrina (`/g/<indirizzo>/sala`): la locandina, i
+  tavoli con i nomi e i punteggi leggibili a tre metri, la classifica. Si
+  aggiorna da solo quando un risultato cambia. Per le gare a tabellone non
+  c'è ancora, issue #352 (PR #354).
+- **La classifica generale mostra la zona playoff**, e la pagina del
+  campionato ha la stessa forma di quella della gara: una fascia che dice a
+  che punto è la stagione, le gare in righe con stato e peso, gli invitati
+  ai playoff con chi ha preso il posto di chi (PR #358, #360).
 
 - **La cifra del punteggio si vede cambiare.** Quando un triangolo viene
   segnato, il numero grande della partita sale da sotto e si accende in un
