@@ -1,6 +1,7 @@
 # routes/admin/competition/crud.py
 """CRUD operations for Gara (competition) management."""
 
+import logging
 from typing import Optional
 from flask import (
     render_template,
@@ -31,8 +32,12 @@ from models.matchmaking.configuration import get_available_strategies
 from models.location.models import BilliardHall
 from models.location.services import LocationService
 from models.kpi import track_gara_create
+from models.exceptions import http_status_for_exception
+from utils.route_helpers import ajax_error, ajax_success, is_ajax_request
 
 from . import competition_bp
+
+logger = logging.getLogger(__name__)
 
 
 def _handle_venue_creation(
@@ -499,30 +504,45 @@ def soft_delete_gara(gara_id):
 @login_required
 @gara_manager_required
 def cancel_gara(gara_id):
-    """Cancella gara con notifiche ai partecipanti"""
+    """Annulla la gara avvisando gli iscritti.
+
+    La chiama il pulsante «Annulla la gara» con `fetch`, che su errore mostra il
+    corpo della risposta: per quella chiamata si risponde in JSON anche quando
+    il servizio fallisce. Prima un errore imprevisto usciva come pagina di
+    Werkzeug e finiva incollato, HTML compreso, nel messaggio all'utente.
+    """
     gara = db.get_or_404(Gara, gara_id)
 
-    campionato_id = gara.campionato_id
     gara_name = gara.name
-
-    # Verifica che la gara possa essere cancellata
-    if gara.status not in ["setup", "inscription"]:
-        flash("La gara non può essere cancellata in questo stato!", "error")
-        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+    if gara.campionato_id:
+        destinazione = url_for(
+            "admin.campionato.campionato_detail", campionato_id=gara.campionato_id
+        )
+    else:
+        destinazione = url_for("dashboard.dashboard")
+    pagina_gara = url_for("admin.competition.gara_detail", gara_id=gara_id)
+    vuole_json = is_ajax_request() or request.is_json
 
     try:
-        # Usa il service layer per cancellare con notifiche
+        # Lo stato ammesso lo verifica il servizio, che solleva ValueError.
         GaraService.cancel_gara_with_notifications(gara_id, current_user.id)
-        flash(
-            f"{gara_name} cancellata con successo! "
-            f"I partecipanti sono stati notificati."
-        )
-    except ValueError as ve:
+    except (ValueError, PermissionError) as ve:
+        if vuole_json:
+            return ajax_error(str(ve), status=http_status_for_exception(ve))
         flash(str(ve), "error")
-        return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+        return redirect(pagina_gara)
+    except Exception as e:
+        logger.error("Annullo della gara %s fallito: %s", gara_id, e, exc_info=True)
+        messaggio = _("La gara non è stata annullata per un errore imprevisto.")
+        if vuole_json:
+            return ajax_error(messaggio, status=500)
+        flash(messaggio, "error")
+        return redirect(pagina_gara)
 
-    if not campionato_id:
-        return redirect(url_for("dashboard.dashboard"))
-    return redirect(
-        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    messaggio = _(
+        "«%(nome)s» annullata: gli iscritti ricevono la notifica.", nome=gara_name
     )
+    flash(messaggio, "success")
+    if vuole_json:
+        return ajax_success(message=messaggio, data={"redirect": destinazione})
+    return redirect(destinazione)
