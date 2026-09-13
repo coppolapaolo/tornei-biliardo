@@ -19,8 +19,9 @@ Questa documentazione raccoglie le convenzioni UI del progetto per mantenere coe
 9. [Form](#form-conventions)
 10. [**Mobile-First Design**](#mobile-first-design) ⭐
 11. [Responsive](#responsive-breakpoints)
-12. [Movimento](#movimento)
-13. [Changelog Decisioni](#changelog-decisioni)
+12. [Pagina gara del direttore](#pagina-gara-del-direttore)
+13. [Movimento](#movimento)
+14. [Changelog Decisioni](#changelog-decisioni)
 
 ---
 
@@ -1017,6 +1018,13 @@ I modali frequentemente usati su mobile devono avere `modal-fullscreen-sm-down` 
 
 ## Ordine Dinamico Sezioni (Mobile)
 
+> **Superata per chi dirige dal 12/09/2026 (ADR-059).** Il direttore non
+> apre più `gara_detail.html` ma `direttore/gara.html`, dove la pagina *è*
+> la fase in corso: vedi «Pagina gara del direttore» più sotto. Le regole
+> che seguono raccontano come si riordinava la pagina di prima e restano
+> come storia delle decisioni; lo spareggio oggi è la fase «Spareggio»
+> della striscia.
+
 ### Gara Detail - Ordine Sezioni per Fase (Director View)
 
 Su mobile, le sezioni vengono riordinate in base alla fase della gara per mostrare prima il contenuto più rilevante per l'azione corrente. Il principio guida è: **l'azione principale della fase deve essere immediatamente visibile**.
@@ -1078,6 +1086,86 @@ Quando sono presenti punteggi SSR, i badge sono ordinati:
   <span class="badge bg-secondary">{{ rack_difference }}</span>
 </td>
 ```
+
+---
+
+## Pagina gara del direttore
+
+Implementata dal canvas approvato il 13/09/2026
+(`docs/redesign-7c/canvas-gara-direttore/`, ADR-059). Le regole CSS stanno
+in `static/css/theme-7c.css`, sezioni 20–28; qui la forma e il perché.
+
+### Striscia di fase e fascia scura
+
+| Elemento | Classe | Regola |
+|---|---|---|
+| Striscia | `.c7-fasi`, `.c7-fasi__tacca--fatta` / `--attiva` | Preparazione → Iscrizioni → In gioco → [Spareggio] → Chiusura. Fatta = spunta verde; attiva = pill scura con etichetta; da fare = sola icona. Sotto 992px l'etichetta ce l'ha solo l'attiva |
+| Icone delle fasi | `fa-gear`, `fa-users`, `fa-play`, `fa-scale-balanced`, `fa-flag-checkered` | Una per fase; la tacca fatta mostra `fa-check` |
+| Fascia | `.c7-fascia` | Dove siamo e **l'unica** cosa da fare adesso. Telefono: pila kicker, titolo, corpo, comando; desktop: testo a sinistra, comando a destra. Il comando viene da `comando_per`, lo stesso della dashboard |
+
+Ciò che non appartiene a una fase (direttori, vetrina, tavoli, squadre,
+categorie) sta in «Impostazioni gara», non in una linguetta.
+
+### Card della partita
+
+`direttore/_card_partita.html`, `.c7-partita`. **Una geometria sola**: nome
+sopra, numero grande sotto, niente «vs». Lo stato cambia la superficie, non
+la forma: in corso bianca con gli stepper (`.c7-partita__meno` /
+`__piu`, 48px, salvano al tocco); da validare verde (`--da_validare`); da
+giocare con il tavolo da assegnare (`__tavolo--btn`); conclusa in sola
+lettura con chi ha vinto pieno (`--conclusa`); la partita di chi dirige e
+gioca in cima, scura (`--mia`). Il + si spegne a `match.effective_distance`
+(ADR-027). A turno concluso le partite diventano righe
+(`.c7-riga-partita`) con la matita.
+
+### Tessere dei tavoli
+
+`.c7-tavoli` (due colonne, quattro sul desktop con `--quattro`) e
+`.c7-tavolo`: libero chiaro con «libero», occupato in accento con i due
+giocatori, quello della partita che si sta assegnando scuro (`--attuale`).
+Si assegna **toccando la tessera libera**, non scegliendo da una tendina.
+
+### Righe di classifica
+
+`direttore/_classifica.html`, `.c7-classifica__riga`: posizione, freccia di
+tendenza rispetto al turno prima (`__trend`, trattino se fermo; `role="img"`
+con etichetta), avatar, nome e due colonne che seguono
+`classification_system` (ADR-047). Medaglie con `c7-pos--1..3`. Pastiglie in
+riga: «SSR» dove lo spareggio ha deciso, «pari» sul parimerito aperto
+(`__pill`). Le prime sei e «tutti» con due pillole da 48px (`__pillole`,
+`aria-pressed`). La stessa riga serve la classifica generale del campionato.
+
+### Schermo in sala
+
+`/g/<indirizzo>/sala`, `.c7-sala`: da leggere a tre metri su una TV 16:9.
+Locandina 1200×630 a tutta larghezza, barra scura con nome e turno, tavoli
+come caselle con nome grande e punteggio grandissimo, classifica a destra.
+Sul desktop occupa esattamente lo schermo; sotto lg si impila. Nessun menu,
+nessun comando.
+
+### Podio finale
+
+`direttore/_podio.html`, `.c7-podio-finale`: il primo al centro e più
+grande, i tre nei colori delle medaglie (`--oro`, `--argento`, `--bronzo`).
+**Non** `.c7-podio`, che è il podio compatto della tessera in dashboard: le
+sue regole sui figli rendevano invisibili i nomi.
+
+### Zona playoff
+
+Nella classifica generale: barra d'accento a sinistra sulle righe dentro la
+zona (`.c7-cg__riga--zona`), etichetta sopra la prima (`.c7-cg__etichetta`)
+e «Fuori dai playoff» dopo l'ultima (`--fuori`). La zona la decide il
+dominio (`models/playoff/zona.py`), non il template.
+
+### Pagina del campionato
+
+`admin/campionato_detail.html`: la stessa fascia scura della gara, poi sul
+telefono tre linguette (`data-c7-view` = `classifica`, `gare`, `gestione` o
+`playoff`) e sul desktop due colonne. Le gare sono righe (`.c7-cgara`) con
+stato, peso (`__peso`) e comandi che vanno a capo prima di stringere il
+nome; gli invitati ai playoff sono righe (`.c7-invitato`) che dicono «al suo
+posto» e «invitato al posto di»; la gestione è fatta di righe che aprono le
+schede.
 
 ---
 
@@ -1158,6 +1246,14 @@ Principi, in ordine di importanza:
 | 2026-09-11 | Il cambio pagina è una view transition cross-document (`@view-transition`), con testata, barra laterale e nav mobile ferme | L'app è multipagina e il lampo bianco fra le pagine era il punto in cui sembrava un sito: la pagina vecchia resta finché la nuova è pronta, poi dissolve a `--c7-dur-base`. Scelta guardando la colonna «dissolvenza 250 ms» contro «lampo bianco» nella pagina di confronto. Spenta con «riduci movimento»; `location.reload()` non transita, si usa `location.replace(location.href)` (#341) |
 | 2026-09-11 | Scala del movimento: 250 ms entra/apre, 150 ms esce/chiude/torna dal tocco, `ease-out`, tocco a `.94` istantaneo | Decisione utente guardando cinque gesti a tre durate affiancate (`docs/redesign-7c/movimento/confronto.html`). Il prototipo è statico e non poteva fissarla. Il tema aveva cinque durate diverse per lo stesso gesto e un `cubic-bezier` isolato; ora legge i token e `test_motion_tokens.py` fa rosso su una durata scritta a mano. Con «riduci movimento» le durate vanno a zero alla fonte |
 | 2026-07-28 | "L'azionabile va prima" esteso a admin/match e al turno finito Amalfi | Decisione utente: a punteggio definitivo il pulsante di ritorno sale in cima su mobile (`score_is_final`); a turno Amalfi finito la Gestione sale in cima **già aperta** con Avvia Turno/SSR/Termina (`round_action_ready`). Regressioni in `tests/new/integration/test_rilievi_20260728_mobile_azionabile.py` |
+| 2026-09-12 | Striscia di fase (`.c7-fasi`) e fascia scura (`.c7-fascia`) al posto delle quattro linguette nella pagina gara del direttore | Decisione 2 del canvas, direzione «C · Fasi»: in gioco il 90% delle linguette non serviva e il comando stava in fondo a Gestione. La pagina è la fase in corso, la fascia dice l'unica cosa da fare e legge il comando dalla stessa macchina a stati della dashboard (ADR-059, #343) |
+| 2026-09-13 | Card della partita con una geometria sola e gli stepper − / + da 48px che salvano al tocco | Canvas 3.1–3.4: il direttore segna dalla card senza aprire il segnapunti. Nome sopra e numero sotto in ogni stato, così lo sguardo non cerca; lo stato cambia la superficie, non la forma. 48px è `--c7-touch`, rilievo della revisione automatica (#349) |
+| 2026-09-13 | Tavolo assegnato toccando la tessera libera (`.c7-tavolo`), gli occupati con i due giocatori | Canvas 3.2: la tendina dei tavoli non diceva chi c'era sopra, e sul telefono erano due tocchi in più (#349) |
+| 2026-09-13 | Righe di classifica con freccia di tendenza, medaglie e pillole «Prime 6 / Tutti» | Canvas 3.5–3.6: la tabella non stava in 354px e non diceva chi saliva. Le colonne seguono il sistema di classifica (ADR-047); la riga è la stessa in gara e nel campionato (#351, #358) |
+| 2026-09-13 | Schermo in sala su route pubblica senza menu (`.c7-sala`) | Canvas 3.10: una pagina pensata per la TV, non la vetrina ingrandita. Dall'indirizzo della vetrina, quindi la prova risponde 404 (ADR-058). Le gare a tabellone rimandano al tabellone: issue #352 (#354) |
+| 2026-09-13 | Podio finale `.c7-podio-finale`, distinto da `.c7-podio` | Canvas 5.1: il nome `.c7-podio` era già del podio compatto in dashboard, e le sue regole sui figli nascondevano i nomi. Una classe nuova invece di sovrascrivere (#355) |
+| 2026-09-13 | Zona playoff come barra d'accento sulle righe, con etichetta sopra e «Fuori dai playoff» dopo | Canvas 7.1, 7.3: la zona si legge senza una colonna in più. Chi è dentro lo decide il dominio, con la stessa funzione che manda gli inviti (#358) |
+| 2026-09-13 | Pagina del campionato con fascia, linguette `classifica` / `gare` / `gestione` o `playoff`, gare e invitati in righe | Canvas 7.1–7.4: la stessa grammatica della pagina gara, così il direttore non impara due pagine. Gli invitati dicono chi ha preso il posto di chi (#360) |
 
 ---
 
