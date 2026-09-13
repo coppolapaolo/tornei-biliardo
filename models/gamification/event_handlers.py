@@ -685,6 +685,14 @@ class GamificationEventHandlers:
                         "challenge_id": event.challenge_id,
                         "challenge_attempt_id": event.attempt_id,
                         "gara_id": event.gara_id,
+                        # La provenienza: presente solo per gli esercizi fra
+                        # i turni, i cui id si sovrappongono a quelli
+                        # dell'allenamento.
+                        **(
+                            {"gara_challenge_id": event.gara_challenge_id}
+                            if event.gara_challenge_id is not None
+                            else {}
+                        ),
                     },
                 )
 

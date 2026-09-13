@@ -374,6 +374,11 @@ blocks:
       definitiva: al posto di «Avvia turno» compare il pulsante per terminarla.
       Fa eccezione il doppio KO, dove dopo la Finale può comparire un turno in
       più — la Bella, spiegata nella pagina del [tabellone](/aiuto/giocare/tabellone).
+      Il pulsante resta **spento** finché l'ultimo turno ha ancora l'esercizio
+      al posto della X da convalidare o un esercizio fra i turni da
+      registrare: sono punteggi della classifica finale, e la fascia dice
+      «Prima di chiudere la gara» con quante cose mancano. Vale anche per lo
+      spareggio. Nelle gare a sorteggio casuale non aspetta niente.
       Due cose possono ancora accadere:
 
   - type: list

@@ -81,7 +81,7 @@ def _esercizio(db_session, autore, *, a_esito=False):
     return sfida
 
 
-def _gara(db_session, *, giocatori, strategia="amalfi", dispari="bye", x=None):
+def _gara(db_session, *, giocatori, strategia="amalfi", dispari="bye", x=None, turni=3):
     """Una gara standalone avviata al turno 1, con `giocatori` iscritti."""
     direttore = _utente(db_session, "dir", UserRole.DIRECTOR.value)
     iscritti = [_utente(db_session, f"p{i}") for i in range(giocatori)]
@@ -95,7 +95,7 @@ def _gara(db_session, *, giocatori, strategia="amalfi", dispari="bye", x=None):
         date=date.today() + timedelta(days=7),
         location="Test",
         description="",
-        rounds_count=3,
+        rounds_count=turni,
         min_participants=3,
         max_participants=8,
         entry_fee=0.0,
@@ -335,3 +335,136 @@ class TestLaFasciaDelDirettore:
         assert risposta["success"] is False
         assert "prova della X" in risposta["error"]
         assert Match.query.filter_by(gara_id=gara.id, round_number=2).count() == 0
+
+
+class TestLaChiusuraDellaGara:
+    """Anche la chiusura aspetta l'ultimo turno (SPECIFICHE.md riga 102).
+
+    La prova della X e gli esercizi dell'**ultimo** turno non li aspetta
+    nessun turno dopo: senza questa regola la gara si chiudeva con quel
+    punteggio fuori classifica. «Termina la gara» e lo spareggio, che porta
+    alla chiusura, non partono finche' mancano.
+    """
+
+    def _ultimo_turno_con_x(self, db_session):
+        gara, direttore, giocatori = _gara(
+            db_session, giocatori=5, dispari="bye_with_challenge", x=True, turni=2
+        )
+        _chiudi_turno(gara.id)
+        _convalida_x(gara.id, 1, direttore)
+        RoundService.start_next_round(gara.id, 2)
+        db_session.commit()
+        _chiudi_turno(gara.id, turno=2)
+        return gara, direttore, giocatori
+
+    def test_la_prova_da_convalidare_blocca_termina_e_spareggio(self, db_session):
+        from models.competition.pendenze_turno import pendenze_della_chiusura
+        from models.competition.services import GaraService
+        from models.competition.state_service import StateService
+        from models.status_enum import GaraStatus
+
+        gara, _dir, _g = self._ultimo_turno_con_x(db_session)
+        assert pendenze_della_chiusura(_gara_letta(gara.id)).prove_x == 1
+
+        with pytest.raises(ConflictError):
+            GaraService.complete(gara.id)
+        db.session.rollback()
+        with pytest.raises(ConflictError):
+            StateService.start_ssr(_gara_letta(gara.id))
+        db.session.rollback()
+        assert _gara_letta(gara.id).status == GaraStatus.PLAYING.value
+
+    def test_convalidata_la_gara_si_chiude(self, db_session):
+        from models.competition.services import GaraService
+        from models.status_enum import GaraStatus
+
+        gara, direttore, _g = self._ultimo_turno_con_x(db_session)
+        _convalida_x(gara.id, 2, direttore)
+
+        GaraService.complete(gara.id)
+        db_session.commit()
+        assert _gara_letta(gara.id).status == GaraStatus.COMPLETED.value
+
+    def test_un_esercizio_dell_ultimo_turno_blocca_la_chiusura(self, db_session):
+        from models.competition.services import GaraService
+
+        gara, direttore, _giocatori = _gara(db_session, giocatori=4, turni=1)
+        sfida = _esercizio(db_session, direttore)
+        GaraChallengeService.add_challenge_to_gara(
+            gara_id=gara.id,
+            challenge_id=sfida.id,
+            round_number=1,
+            added_by_id=direttore.id,
+        )
+        db_session.commit()
+        _chiudi_turno(gara.id)
+
+        with pytest.raises(ConflictError):
+            GaraService.complete(gara.id)
+        db.session.rollback()
+
+    def test_col_casuale_la_chiusura_non_aspetta(self, db_session):
+        from models.competition.pendenze_turno import pendenze_della_chiusura
+
+        gara, direttore, _giocatori = _gara(
+            db_session, giocatori=4, strategia="random", turni=1
+        )
+        sfida = _esercizio(db_session, direttore)
+        GaraChallengeService.add_challenge_to_gara(
+            gara_id=gara.id,
+            challenge_id=sfida.id,
+            round_number=1,
+            added_by_id=direttore.id,
+        )
+        db_session.commit()
+        _chiudi_turno(gara.id)
+        assert not pendenze_della_chiusura(_gara_letta(gara.id)).bloccano
+
+    def test_la_fascia_annuncia_la_chiusura_bloccata(self, client, db_session):
+        gara, direttore, _g = self._ultimo_turno_con_x(db_session)
+
+        comando = comando_per(_gara_letta(gara.id))
+        assert comando is not None
+        assert comando.tipo in (
+            ComandoDirezione.TERMINA_GARA,
+            ComandoDirezione.AVVIA_SPAREGGIO,
+        )
+        assert comando.bloccato
+        assert (comando.prove_x, comando.esercizi) == (1, 0)
+
+        _login(client, direttore)
+        html = client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+        assert "Prima di chiudere la gara" in html
+        assert "1 prova della X da convalidare" in html
+        for comando_js in ('onclick="terminateGara(', 'onclick="startSsr('):
+            if comando_js in html:
+                inizio = html.index(comando_js)
+                tag = html[html.rindex("<button", 0, inizio) : html.index(">", inizio)]
+                assert "disabled" in tag
+
+    def test_le_route_rifiutano_con_il_motivo(self, client, db_session):
+        from models.status_enum import GaraStatus
+
+        gara, direttore, _g = self._ultimo_turno_con_x(db_session)
+        _login(client, direttore)
+
+        for azione in ("terminate", "start_ssr"):
+            risposta = client.post(
+                f"/admin/gara/{gara.id}/{azione}",
+                headers={"X-Requested-With": "XMLHttpRequest"},
+            )
+            assert risposta.status_code == 409, azione
+            assert "prova della X" in risposta.get_json()["error"]
+        assert _gara_letta(gara.id).status == GaraStatus.PLAYING.value
+
+
+def _convalida_x(gara_id, turno, direttore):
+    x = Match.query.filter_by(gara_id=gara_id, round_number=turno, is_bye=True).one()
+    ChallengeService.validate_x_replacement(
+        gara_id=gara_id,
+        round_number=turno,
+        user_id=x.player1_id,
+        actor_id=direttore.id,
+        score=2,
+    )
+    db.session.commit()

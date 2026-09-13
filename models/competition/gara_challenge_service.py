@@ -283,11 +283,11 @@ class GaraChallengeService:
         * il tentativo, e i tentativi rimasti dello stesso giocatore si
           rinumerano, perche' il limite `max_attempts` li conta;
         * la classifica degli esercizi, ricalcolata;
-        * l'XP, **solo** se era l'unico tentativo del giocatore su
-          quell'esercizio: in gara paga il primo tentativo, e finche' ne resta
-          uno l'esercizio l'ha fatto comunque. La restituzione e' un movimento
-          compensativo, come per il drill dell'allenamento
-          (`ChallengeService.delete_attempt`);
+        * l'XP, quando non resta nessun tentativo: finche' ne resta uno
+          l'esercizio e' fatto e l'XP resta, qualunque tentativo si tolga —
+          anche quello che l'aveva pagato. Tolto l'ultimo, torna indietro il
+          saldo dell'esercizio con un movimento compensativo, come per il
+          drill dell'allenamento (`ChallengeService.delete_attempt`);
         * serie e traguardi, ricalcolati (best-effort).
 
         Returns:
@@ -371,12 +371,20 @@ class GaraChallengeService:
     def _rimborsa_xp(
         attempt: GaraChallengeAttempt, gara_challenge: GaraChallenge
     ) -> None:
-        """Restituisce l'XP pagato per questo tentativo, se l'aveva pagato.
+        """Restituisce il saldo XP dell'esercizio, tolto l'ultimo tentativo.
 
-        Il movimento si riconosce da `challenge_attempt_id` **e** `gara_id`:
-        gli id dei tentativi di gara e quelli dell'allenamento vivono in due
-        tabelle e si sovrappongono, quindi l'id da solo non basta. Best-effort:
-        il tentativo sbagliato tolto vale piu' di un saldo perfetto.
+        Il saldo e' dell'**esercizio**, non del tentativo: il movimento pagato
+        porta l'id del primo tentativo, che puo' essere gia' stato tolto
+        mentre ne restava un altro. Cercare il movimento del solo tentativo
+        che si toglie adesso lascerebbe quell'XP al giocatore per sempre.
+
+        Si riconoscono i movimenti dalla provenienza, `gara_challenge_id`: gli
+        id dei tentativi di gara e quelli dell'allenamento vivono in due
+        tabelle e si sovrappongono, quindi l'id da solo prenderebbe anche
+        movimenti di un allenamento. I movimenti scritti prima della
+        provenienza esplicita — 2026-09-13 — si riconoscono dall'id del
+        tentativo con gara ed esercizio. Best-effort: il tentativo sbagliato
+        tolto vale piu' di un saldo perfetto.
         """
         try:
             import json
@@ -384,39 +392,41 @@ class GaraChallengeService:
             from models.gamification.level_service import LevelService
             from models.gamification.models import XPTransaction, XPTransactionType
 
-            movimenti = (
-                XPTransaction.query.filter(
-                    XPTransaction.user_id == attempt.user_id,
-                    XPTransaction.transaction_type
-                    == XPTransactionType.CHALLENGE_COMPLETION,
-                    XPTransaction.related_entities.isnot(None),
-                )
-                .order_by(XPTransaction.id.desc())
-                .limit(200)
-                .all()
-            )
-            pagato = 0
+            movimenti = XPTransaction.query.filter(
+                XPTransaction.user_id == attempt.user_id,
+                XPTransaction.transaction_type
+                == XPTransactionType.CHALLENGE_COMPLETION,
+                XPTransaction.related_entities.isnot(None),
+            ).all()
+            saldo = 0
             for movimento in movimenti:
                 try:
                     legami = json.loads(movimento.related_entities or "{}")
                 except ValueError:
                     continue
-                if (
-                    legami.get("challenge_attempt_id") == attempt.id
-                    and legami.get("gara_id") == gara_challenge.gara_id
-                ):
-                    pagato += movimento.xp_amount
-            if pagato <= 0:
+                if "gara_challenge_id" in legami:
+                    del_esercizio = legami["gara_challenge_id"] == gara_challenge.id
+                else:
+                    del_esercizio = (
+                        legami.get("challenge_attempt_id") == attempt.id
+                        and legami.get("gara_id") == gara_challenge.gara_id
+                        and legami.get("challenge_id")
+                        in (None, gara_challenge.challenge_id)
+                    )
+                if del_esercizio:
+                    saldo += movimento.xp_amount
+            if saldo <= 0:
                 return
             LevelService.award_xp(
                 user_id=attempt.user_id,
-                xp_amount=-pagato,
+                xp_amount=-saldo,
                 transaction_type=XPTransactionType.CHALLENGE_COMPLETION,
                 reason="Tentativo di esercizio tolto",
                 related_entities={
                     "challenge_id": gara_challenge.challenge_id,
                     "challenge_attempt_id": attempt.id,
                     "gara_id": gara_challenge.gara_id,
+                    "gara_challenge_id": gara_challenge.id,
                 },
             )
         except Exception:
@@ -456,6 +466,7 @@ class GaraChallengeService:
                     passed=attempt.passed,
                     gara_id=gara_challenge.gara_id,
                     attempt_number=attempt.attempt_number,
+                    gara_challenge_id=gara_challenge.id,
                 )
             )
         except Exception:  # pragma: no cover - la gamification non blocca mai

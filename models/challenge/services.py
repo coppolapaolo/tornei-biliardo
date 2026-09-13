@@ -528,6 +528,16 @@ class ChallengeService:
                     continue
                 if legami.get("challenge_attempt_id") != attempt.id:
                     continue
+                # Gli id dei tentativi di gara si sovrappongono a questi: un
+                # movimento di un esercizio fra i turni — o la sua
+                # restituzione — non e' di questa prova. Fino al 2026-09-13 lo
+                # si prendeva, e una restituzione di gara faceva credere «gia'
+                # restituito» anche all'allenamento. I movimenti scritti prima
+                # della provenienza esplicita si distinguono dall'esercizio.
+                if "gara_challenge_id" in legami:
+                    continue
+                if legami.get("challenge_id") not in (None, attempt.challenge_id):
+                    continue
                 if movimento.xp_amount <= 0:
                     return  # gia' restituito: non si rende due volte
                 LevelService.award_xp(

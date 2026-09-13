@@ -372,7 +372,13 @@ blocks:
       final: the «Start round» button is replaced by the one that closes the
       competition. Double elimination is the exception — after the Final one
       more round may appear, the Decider, explained on the
-      [bracket](/aiuto/giocare/tabellone) page. Two things can still happen:
+      [bracket](/aiuto/giocare/tabellone) page. The button stays **greyed
+      out** while the last round still has the drill played instead of the X
+      to validate or a drill between rounds to record: those scores are part
+      of the final standings, and the band says «Before closing the
+      competition» with how many things are missing. The tiebreaker waits
+      too. In random-draw competitions nothing waits. Two things can still
+      happen:
 
   - type: list
     items:

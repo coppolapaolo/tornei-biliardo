@@ -313,3 +313,59 @@ class TestLaPagina:
         assert f'"id": {tentativo.id}' in html
         assert "Togli il tentativo" in html
         assert "Un tentativo registrato non si toglie" not in html
+
+
+def _xp_della_gara(user_id, gara_id):
+    """L'XP degli esercizi di questa gara per il giocatore, al netto."""
+    totale = 0
+    for m in XPTransaction.query.filter_by(
+        user_id=user_id, transaction_type=XPTransactionType.CHALLENGE_COMPLETION
+    ).all():
+        if json.loads(m.related_entities or "{}").get("gara_id") == gara_id:
+            totale += m.xp_amount
+    return totale
+
+
+class TestL_XPInOgniOrdine:
+    """L'XP dell'esercizio segue i tentativi rimasti, in qualunque ordine si
+    tolgano: finche' ne resta uno l'esercizio e' fatto e l'XP resta; senza
+    tentativi torna indietro. Anche togliendo prima quello che l'aveva pagato
+    e poi l'ultimo — il caso che la prima stesura sbagliava."""
+
+    @pytest.mark.parametrize(
+        "ordine",
+        [(0, 1, 2), (0, 2, 1), (1, 0, 2), (1, 2, 0), (2, 0, 1), (2, 1, 0)],
+    )
+    def test_ogni_ordine_di_rimozione(self, db_session, ordine):
+        gara, _dir, giocatori, gc = _scenario(db_session)
+        anna = giocatori[0]
+        for punti in (4, 9, 6):
+            GaraChallengeService.record_challenge_attempt(gc.id, anna.id, score=punti)
+        db_session.commit()
+        tariffa = _xp_della_gara(anna.id, gara.id)
+        assert tariffa > 0, "il primo tentativo deve pagare, o il test non prova niente"
+        ids = [t.id for t in _tentativi(gc.id, anna.id)]
+
+        for passo, indice in enumerate(ordine, start=1):
+            GaraChallengeService.remove_challenge_attempt(ids[indice])
+            db_session.commit()
+            rimasti = len(ids) - passo
+            atteso = tariffa if rimasti else 0
+            assert _xp_della_gara(anna.id, gara.id) == atteso, (ordine, passo)
+
+    def test_tolti_tutti_e_registrato_di_nuovo_paga_una_volta(self, db_session):
+        gara, _dir, giocatori, gc = _scenario(db_session)
+        anna = giocatori[0]
+        GaraChallengeService.record_challenge_attempt(gc.id, anna.id, score=4)
+        GaraChallengeService.record_challenge_attempt(gc.id, anna.id, score=5)
+        db_session.commit()
+        tariffa = _xp_della_gara(anna.id, gara.id)
+        for t in _tentativi(gc.id, anna.id):
+            GaraChallengeService.remove_challenge_attempt(t.id)
+            db_session.commit()
+        assert _xp_della_gara(anna.id, gara.id) == 0
+
+        GaraChallengeService.record_challenge_attempt(gc.id, anna.id, score=7)
+        GaraChallengeService.record_challenge_attempt(gc.id, anna.id, score=8)
+        db_session.commit()
+        assert _xp_della_gara(anna.id, gara.id) == tariffa

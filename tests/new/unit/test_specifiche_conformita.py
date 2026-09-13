@@ -828,3 +828,48 @@ class TestCosaChiudeIlTurno:
         db_session.commit()
         with pytest.raises(ConflictError):
             GaraChallengeService.remove_challenge_attempt(secondo.id)
+
+    def test_anche_la_chiusura_aspetta_l_ultimo_turno(self, db_session):
+        """Riga 102: «Termina la gara» e lo spareggio non partono finché
+        l'ultimo turno ha esercizi da registrare."""
+        from models.competition.pendenze_turno import pendenze_della_chiusura
+        from models.competition.state_service import StateService
+        from models.exceptions import ConflictError
+
+        gara, _gc, _a, _b = self._turno_chiuso_con_esercizio(db_session)
+        assert pendenze_della_chiusura(gara).esercizi == 2
+        with pytest.raises(ConflictError):
+            StateService.complete(gara)
+
+    def test_l_xp_segue_i_tentativi_rimasti(self, db_session):
+        """Riga 104: finché resta un tentativo l'esercizio è fatto, senza
+        tentativi l'XP torna indietro, in qualunque ordine si tolgano."""
+        import json
+
+        from models.competition.gara_challenge_service import GaraChallengeService
+        from models.gamification.models import XPTransaction, XPTransactionType
+
+        gara, gc, a, _b = self._turno_chiuso_con_esercizio(db_session)
+        gc.max_attempts = 2
+        db_session.commit()
+
+        def xp():
+            return sum(
+                m.xp_amount
+                for m in XPTransaction.query.filter_by(
+                    user_id=a.id,
+                    transaction_type=XPTransactionType.CHALLENGE_COMPLETION,
+                )
+                if json.loads(m.related_entities or "{}").get("gara_id") == gara.id
+            )
+
+        primo = GaraChallengeService.record_challenge_attempt(gc.id, a.id, score=1)
+        secondo = GaraChallengeService.record_challenge_attempt(gc.id, a.id, score=2)
+        db_session.commit()
+        tariffa = xp()
+        GaraChallengeService.remove_challenge_attempt(primo.id)
+        db_session.commit()
+        assert xp() == tariffa
+        GaraChallengeService.remove_challenge_attempt(secondo.id)
+        db_session.commit()
+        assert xp() == 0

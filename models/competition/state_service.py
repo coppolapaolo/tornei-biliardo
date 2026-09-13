@@ -111,6 +111,12 @@ class StateService:
         if pending_matches:
             raise InvalidTransitionError("Match ancora in corso")
 
+        # Lo spareggio porta alla chiusura: aspetta anche lui la prova della X
+        # e gli esercizi dell'ultimo turno (SPECIFICHE.md riga 102).
+        from models.competition.pendenze_turno import verifica_gara_chiudibile
+
+        verifica_gara_chiudibile(gara)
+
         gara.status = GaraStatus.AWAITING_SSR.value
         db.session.add(gara)
         return gara
@@ -174,6 +180,12 @@ class StateService:
 
         if pending_matches:
             raise InvalidTransitionError("Match ancora in corso")
+
+        # La prova della X e gli esercizi dell'ultimo turno: come una partita
+        # non validata (SPECIFICHE.md riga 102).
+        from models.competition.pendenze_turno import verifica_gara_chiudibile
+
+        verifica_gara_chiudibile(gara)
 
         gara.status = GaraStatus.COMPLETED.value
         db.session.add(gara)

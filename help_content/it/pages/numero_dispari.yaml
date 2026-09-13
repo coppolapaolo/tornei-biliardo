@@ -72,8 +72,9 @@ blocks:
       gara, sulla card del giocatore in riposo: sistema il punteggio con − e +
       (anche al posto di chi non usa l'applicazione) e tocca **Convalida**.
       Per azzerarlo c'è **Azzera la prova** nel menu «⋯» della card. Finché
-      non è convalidato il turno dopo non si avvia, come se fosse una partita
-      ancora da validare; nelle gare a sorteggio casuale non aspetta.
+      non è convalidato il turno dopo non si avvia, e all'ultimo turno la gara
+      non si chiude, come se fosse una partita ancora da validare; nelle gare
+      a sorteggio casuale non aspetta.
 
   - type: list
     items:

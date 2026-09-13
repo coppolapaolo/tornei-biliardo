@@ -104,6 +104,27 @@ def cancel_current_round(gara_id):
     )
 
 
+def _rifiuto_chiusura(gara, is_ajax: bool):
+    """409 se l'ultimo turno tiene ancora aperta la gara, altrimenti `None`.
+
+    Prima dello spareggio e della chiusura: la prova della X e gli esercizi
+    dell'ultimo turno (SPECIFICHE.md riga 102). Il servizio lo rifiuta
+    comunque; qui si risponde col motivo prima di cercare i parimerito, che
+    altrimenti coprirebbero la risposta.
+    """
+    from models.competition.pendenze_turno import verifica_gara_chiudibile
+    from models.exceptions import ConflictError
+
+    try:
+        verifica_gara_chiudibile(gara)
+    except ConflictError as errore:
+        if is_ajax:
+            return jsonify({"success": False, "error": str(errore)}), 409
+        flash(str(errore), "error")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
+    return None
+
+
 @competition_bp.route("/<int:gara_id>/terminate", methods=["POST"])
 @login_required
 @gara_manager_required
@@ -143,6 +164,10 @@ def terminate_gara(gara_id):
                 )
             flash("Non tutti i turni sono ancora completati!", "error")
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+    rifiuto = _rifiuto_chiusura(gara, is_ajax)
+    if rifiuto is not None:
+        return rifiuto
 
     try:
         # Check for unresolved tiebreakers
@@ -239,6 +264,10 @@ def start_ssr(gara_id):
             )
         flash("Non tutti i turni sono ancora completati!", "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+    rifiuto = _rifiuto_chiusura(gara, is_ajax)
+    if rifiuto is not None:
+        return rifiuto
 
     # Check for tiebreakers
     tiebreakers = SpareggioService.detect_tiebreakers(gara_id)

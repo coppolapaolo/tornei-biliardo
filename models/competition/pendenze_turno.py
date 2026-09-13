@@ -208,10 +208,42 @@ def verifica_turno_chiuso(gara: Any, turno_da_avviare: int) -> None:
     )
 
 
+def pendenze_della_chiusura(gara: Any) -> PendenzeTurno:
+    """Cosa tiene aperto l'**ultimo** turno, prima di chiudere la gara.
+
+    La prova della X e gli esercizi dell'ultimo turno non li aspetta nessun
+    turno dopo: senza questa domanda la gara si chiudeva con quei punteggi
+    fuori classifica. L'ultimo turno e' quello su cui la classifica finale
+    viene scritta (`SpareggioService.effective_final_round`).
+    """
+    from models.competition.spareggio_service import SpareggioService
+
+    return pendenze_del_turno(gara, SpareggioService.effective_final_round(gara) or 0)
+
+
+def verifica_gara_chiudibile(gara: Any) -> None:
+    """Solleva `ConflictError` se l'ultimo turno tiene ancora aperta la gara.
+
+    La chiamano «Termina la gara» e l'avvio dello spareggio, che porta alla
+    chiusura: `StateService.complete` e `StateService.start_ssr`.
+    """
+    pendenze = pendenze_della_chiusura(gara)
+    if not pendenze.bloccano:
+        return
+    raise ConflictError(
+        _(
+            "Prima di chiudere la gara: %(cosa)s.",
+            cosa=", ".join(descrivi(pendenze)),
+        )
+    )
+
+
 __all__ = [
     "PendenzeTurno",
     "descrivi",
     "pendenze_del_turno",
+    "pendenze_della_chiusura",
     "turno_successivo_partito",
+    "verifica_gara_chiudibile",
     "verifica_turno_chiuso",
 ]
