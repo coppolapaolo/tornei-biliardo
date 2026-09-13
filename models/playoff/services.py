@@ -7,7 +7,7 @@ Requirements: SPECIFICHE.md - Playoff management and qualification system
 from __future__ import annotations
 
 import logging
-from typing import List, Optional, Dict, Any
+from typing import Tuple, List, Optional, Dict, Any
 from datetime import datetime, timedelta
 
 from ..base import db, utc_now
@@ -606,6 +606,67 @@ class PlayoffService:
     # ── Avvio playoff ────────────────────────────────────────────
 
     @staticmethod
+    def candidati_per_posizione(
+        config: PlayoffConfiguration, classifications: List[Any]
+    ) -> List[Tuple[int, int, str]]:
+        """Chi invita una configurazione a posizioni: (utente, posizione, motivo).
+
+        La fascia `positions_from`–`positions_to`, fino a `max_participants`;
+        chi non ha il minimo di gare giocate resta fuori, e i posti rimasti si
+        coprono con chi viene **dopo** la fascia. E' la scelta di
+        `start_playoff`, messa qui perche' la zona playoff della classifica
+        generale (`models/playoff/zona.py`) segni esattamente chi verra'
+        invitato: prima leggeva `evaluate_qualifications`, che ignora la
+        fascia, e l'Academy 7–12 avrebbe segnato i primi sei (rilievo della
+        revisione automatica sulla PR #358).
+
+        Le gare giocate si leggono dalle righe `Classification` gia' in mano:
+        `_meets_minimum_requirements` rifaceva la stessa query per ogni
+        candidato.
+        """
+
+        def idoneo(riga: Any) -> bool:
+            if not config.min_garas_played:
+                return True
+            return (riga.gare_played or 0) >= config.min_garas_played
+
+        scelti: List[Tuple[int, int, str]] = []
+        for riga in classifications:
+            if riga.position is None:
+                continue
+            if config.positions_from <= riga.position <= config.positions_to:
+                if not idoneo(riga):
+                    logger.info(
+                        "Player %d excluded: min_garas_played not met", riga.user_id
+                    )
+                    continue
+                if len(scelti) < config.max_participants:
+                    scelti.append(
+                        (
+                            riga.user_id,
+                            riga.position,
+                            f"Posizione {riga.position} in classifica",
+                        )
+                    )
+        if len(scelti) < config.max_participants:
+            dentro = {user_id for user_id, _pos, _motivo in scelti}
+            for riga in classifications:
+                if riga.position is None or riga.position <= config.positions_to:
+                    continue
+                if riga.user_id in dentro or not idoneo(riga):
+                    continue
+                scelti.append(
+                    (
+                        riga.user_id,
+                        riga.position,
+                        f"Rimpiazzo — posizione {riga.position}",
+                    )
+                )
+                if len(scelti) >= config.max_participants:
+                    break
+        return scelti
+
+    @staticmethod
     @transactional(domain="playoff")
     def start_playoff(
         campionato_id: int,
@@ -674,55 +735,24 @@ class PlayoffService:
             qualifications: List[PlayoffQualification] = []
 
             if config.positions_from is not None and config.positions_to is not None:
-                # Position-based qualification
-                for cls in classifications:
-                    if cls.position is None:
-                        continue
-                    if config.positions_from <= cls.position <= config.positions_to:
-                        if config._meets_minimum_requirements(cls.user_id):
-                            if len(qualifications) < config.max_participants:
-                                qual = PlayoffQualification(
-                                    configuration_id=config.id,
-                                    user_id=cls.user_id,
-                                    qualifying_position=cls.position,
-                                    qualification_reason=(
-                                        f"Posizione {cls.position} in classifica"
-                                    ),
-                                    invited_at=now,
-                                    expires_at=config.response_deadline,
-                                )
-                                db.session.add(qual)
-                                qualifications.append(qual)
-                        else:
-                            logger.info(
-                                "Player %d excluded: min_garas_played not met",
-                                cls.user_id,
-                            )
-                            # Try next in line beyond positions_to
-                # If we need replacements (some excluded by min_garas)
-                if len(qualifications) < config.max_participants:
-                    next_pos = config.positions_to + 1
-                    already_qualified = {q.user_id for q in qualifications}
-                    for cls in classifications:
-                        if cls.position is None or cls.position < next_pos:
-                            continue
-                        if cls.user_id in already_qualified:
-                            continue
-                        if config._meets_minimum_requirements(cls.user_id):
-                            qual = PlayoffQualification(
-                                configuration_id=config.id,
-                                user_id=cls.user_id,
-                                qualifying_position=cls.position,
-                                qualification_reason=(
-                                    f"Rimpiazzo — posizione {cls.position}"
-                                ),
-                                invited_at=now,
-                                expires_at=config.response_deadline,
-                            )
-                            db.session.add(qual)
-                            qualifications.append(qual)
-                            if len(qualifications) >= config.max_participants:
-                                break
+                # Position-based qualification: la scelta sta in
+                # `candidati_per_posizione`, che usa anche la zona playoff
+                # della classifica generale (canvas 7.1).
+                for (
+                    user_id,
+                    posizione,
+                    motivo,
+                ) in PlayoffService.candidati_per_posizione(config, classifications):
+                    qual = PlayoffQualification(
+                        configuration_id=config.id,
+                        user_id=user_id,
+                        qualifying_position=posizione,
+                        qualification_reason=motivo,
+                        invited_at=now,
+                        expires_at=config.response_deadline,
+                    )
+                    db.session.add(qual)
+                    qualifications.append(qual)
             else:
                 # Fallback to evaluate_qualifications (legacy JSON criteria)
                 qualifications = list(config.generate_qualifications())

@@ -12,8 +12,11 @@ from __future__ import annotations
 import uuid
 from datetime import date, time
 
+from datetime import timedelta
+
 from models.base import db, utc_now
 from models.campionato.models import Campionato
+from models.classification.models import Classification
 from models.classification.campionato_classification import ClassificationService
 from models.competition.models import Gara
 from models.match.models import Match
@@ -39,7 +42,7 @@ def _utente(db_session, prefisso):
     return u
 
 
-def _campionato_a_quattro(db_session):
+def _campionato_a_quattro(db_session, **cfg):
     """Due gare, quattro giocatori, ordine A > B > C > D."""
     from models.classification.gara_classification import RoundClassificationService
 
@@ -88,15 +91,16 @@ def _campionato_a_quattro(db_session):
         RoundClassificationService.calculate_and_save_round_classification(gara.id, 1)
     db_session.commit()
     ClassificationService.update_campionato_classification(camp.id)
+    impostazioni = dict(
+        max_participants=2, positions_from=1, positions_to=2, min_garas_played=0
+    )
+    impostazioni.update(cfg)
     cfg = PlayoffConfiguration(
         campionato_id=camp.id,
         name="Finale",
         playoff_type=PlayoffType.TOP_N,
-        max_participants=2,
-        positions_from=1,
-        positions_to=2,
         is_active=True,
-        min_garas_played=0,
+        **impostazioni,
     )
     db_session.add(cfg)
     db_session.commit()
@@ -150,3 +154,96 @@ def test_senza_configurazioni_non_ci_sono_zone(db_session):
     db_session.add(camp)
     db_session.commit()
     assert zone_playoff(camp) == []
+
+
+def _invito(dati, utente, stato, posizione, **campi):
+    q = PlayoffQualification(
+        configuration_id=dati["cfg"].id,
+        user_id=utente.id,
+        qualifying_position=posizione,
+        qualification_reason="test",
+        status=stato,
+        **campi,
+    )
+    db.session.add(q)
+    return q
+
+
+def test_la_fascia_academy_segna_le_sue_posizioni_non_i_primi(db_session):
+    """Rilievo della revisione automatica sulla PR #358: la fascia 3–4 non
+    e' «i primi due»."""
+    dati = _campionato_a_quattro(db_session, positions_from=3, positions_to=4)
+    (zona,) = zone_playoff(dati["campionato"])
+    assert zona.user_ids == {dati["c"].id, dati["d"].id}
+
+
+def test_chi_non_ha_le_gare_minime_lascia_il_posto_a_chi_viene_dopo(db_session):
+    """Come `start_playoff`: il posto rimasto si copre dopo la fascia."""
+    dati = _campionato_a_quattro(db_session, min_garas_played=2)
+    riga_b = Classification.query.filter_by(
+        campionato_id=dati["campionato"].id, user_id=dati["b"].id
+    ).one()
+    riga_b.gare_played = 1
+    db.session.commit()
+
+    (zona,) = zone_playoff(dati["campionato"])
+
+    assert zona.user_ids == {dati["a"].id, dati["c"].id}
+
+
+def test_la_zona_e_start_playoff_scelgono_gli_stessi_giocatori(db_session):
+    from models.playoff.services import PlayoffService
+
+    dati = _campionato_a_quattro(db_session, positions_from=2, positions_to=3)
+    righe = (
+        Classification.query.filter_by(campionato_id=dati["campionato"].id)
+        .order_by(Classification.position)
+        .all()
+    )
+    (zona,) = zone_playoff(dati["campionato"])
+    scelti = {
+        u for u, _p, _m in PlayoffService.candidati_per_posizione(dati["cfg"], righe)
+    }
+    assert zona.user_ids == scelti == {dati["b"].id, dati["c"].id}
+
+
+def test_un_invito_scaduto_non_e_nella_zona(db_session):
+    """Rilievo della revisione automatica: la pagina pubblica non fa scadere
+    gli inviti, quindi la scadenza si guarda nella zona."""
+    dati = _campionato_a_quattro(db_session)
+    adesso = utc_now()
+    _invito(
+        dati,
+        dati["a"],
+        QualificationStatus.PENDING,
+        1,
+        invited_at=adesso,
+        expires_at=adesso - timedelta(days=1),
+    )
+    _invito(
+        dati,
+        dati["b"],
+        QualificationStatus.PENDING,
+        2,
+        invited_at=adesso,
+        expires_at=adesso + timedelta(days=3),
+    )
+    db.session.commit()
+
+    (zona,) = zone_playoff(dati["campionato"])
+
+    assert zona.inviti_partiti
+    assert zona.user_ids == {dati["b"].id}
+
+
+def test_qualificazioni_non_ancora_inviate_non_sono_inviti_partiti(db_session):
+    """Rilievo della revisione automatica: le righe possono esistere prima
+    della notifica, e allora vale ancora la classifica."""
+    dati = _campionato_a_quattro(db_session)
+    _invito(dati, dati["c"], QualificationStatus.PENDING, 3, invited_at=None)
+    db.session.commit()
+
+    (zona,) = zone_playoff(dati["campionato"])
+
+    assert not zona.inviti_partiti
+    assert zona.user_ids == {dati["a"].id, dati["b"].id}

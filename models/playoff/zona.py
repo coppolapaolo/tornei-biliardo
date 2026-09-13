@@ -30,12 +30,27 @@ class ZonaPlayoff:
 
 
 def zone_playoff(campionato) -> List[ZonaPlayoff]:
-    """Una zona per ogni configurazione playoff attiva del campionato."""
+    """Una zona per ogni configurazione playoff attiva del campionato.
+
+    Prima degli inviti la zona e' chi `PlayoffService.candidati_per_posizione`
+    sceglierebbe adesso — la stessa funzione di `start_playoff`, fascia di
+    posizioni e rimpiazzi compresi — dalle righe `Classification` gia'
+    calcolate, senza scrivere niente. Le configurazioni senza fascia (criteri
+    JSON) ripiegano su `evaluate_qualifications`, come `start_playoff`.
+
+    Gli inviti sono «partiti» quando almeno una qualificazione ha `invited_at`:
+    le righe possono esistere prima della notifica. Dopo, la zona e' chi ha un
+    invito valido: confermato, o in attesa e non ancora scaduto — la pagina
+    pubblica non fa scadere gli inviti, quindi la scadenza si guarda qui.
+    """
+    from models.base import utc_now
+    from models.classification.models import Classification
     from models.playoff.models import (
         PlayoffConfiguration,
         PlayoffQualification,
         QualificationStatus,
     )
+    from models.playoff.services import PlayoffService
 
     configurazioni = (
         PlayoffConfiguration.query.filter_by(
@@ -44,19 +59,40 @@ def zone_playoff(campionato) -> List[ZonaPlayoff]:
         .order_by(PlayoffConfiguration.id)
         .all()
     )
+    adesso = utc_now()
+    classifica = None
     zone: List[ZonaPlayoff] = []
     for cfg in configurazioni:
-        qualificazioni = PlayoffQualification.query.filter_by(
-            configuration_id=cfg.id
-        ).all()
-        if qualificazioni:
+        invitate = [
+            q
+            for q in PlayoffQualification.query.filter_by(configuration_id=cfg.id).all()
+            if q.invited_at is not None
+        ]
+        if invitate:
             dentro = frozenset(
                 q.user_id
-                for q in qualificazioni
-                if q.status
-                in (QualificationStatus.PENDING, QualificationStatus.CONFIRMED)
+                for q in invitate
+                if q.status == QualificationStatus.CONFIRMED
+                or (
+                    q.status == QualificationStatus.PENDING
+                    and (q.expires_at is None or q.expires_at > adesso)
+                )
             )
             partiti = True
+        elif cfg.positions_from is not None and cfg.positions_to is not None:
+            if classifica is None:
+                classifica = (
+                    Classification.query.filter_by(campionato_id=campionato.id)
+                    .order_by(Classification.position)
+                    .all()
+                )
+            dentro = frozenset(
+                user_id
+                for user_id, _pos, _motivo in PlayoffService.candidati_per_posizione(
+                    cfg, classifica
+                )
+            )
+            partiti = False
         else:
             dentro = frozenset(d["user_id"] for d in cfg.evaluate_qualifications())
             partiti = False
