@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.23.0...v1.23.1) (2026-09-13)
+
+
+### Correzioni
+
+* le card delle partite non sbordano nelle colonne strette del desktop ([#375](https://github.com/coppolapaolo/tornei-biliardo/issues/375)) ([7eb58ed](https://github.com/coppolapaolo/tornei-biliardo/commit/7eb58edf2e9b3d9018fcb82e2716548ad0557056))
+
 ## [1.23.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.22.0...v1.23.0) (2026-09-13)
 
 
