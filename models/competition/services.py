@@ -402,6 +402,29 @@ class GaraService:
         return gara
 
     @staticmethod
+    def _sgancia_dal_playoff(gara: Gara) -> None:
+        """Riporta il playoff di questa gara a «gara non ancora creata».
+
+        La riga legacy `PlayoffTournament` (tabella `playoff_campionato`) punta
+        alla gara con una chiave esterna senza `ON DELETE`, e
+        `PlayoffService.create_playoff_gara` la scrive sempre: senza questo
+        passo nessuna gara di playoff si poteva cancellare, `FOREIGN KEY
+        constraint failed` (segnalazione del 2026-09-13).
+
+        Si sgancia e non si cancella: la specifica tace sull'annullo della gara
+        di playoff, e gli inviti vengono **prima** della gara (SPECIFICHE.md,
+        «Playoff»). Le qualificazioni restano come sono, e ricreando la gara
+        `create_playoff_gara` riusa questa riga e reiscrive i confermati.
+        """
+        from models.playoff.models import PlayoffTournament
+
+        for torneo in PlayoffTournament.query.filter_by(gara_id=gara.id):
+            torneo.gara_id = None
+            torneo.status = "setup"
+            torneo.registration_start = None
+            torneo.confirmed_participants = 0
+
+    @staticmethod
     @transactional(domain="competition")
     def delete_gara(gara_id: int) -> None:
         """Cancella una gara se possibile."""
@@ -414,6 +437,7 @@ class GaraService:
                 "Impossibile cancellare la gara: ci sono già delle iscrizioni!"
             )
 
+        GaraService._sgancia_dal_playoff(gara)
         db.session.delete(gara)
 
     @staticmethod
@@ -425,7 +449,7 @@ class GaraService:
             raise ValueError(f"Gara {gara_id} non trovata")
 
         # Verifica che la gara possa essere cancellata
-        if gara.status not in ["setup", "inscription"]:
+        if gara.status not in (GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value):
             raise ValueError("La gara non può essere cancellata in questo stato!")
 
         # Ottieni tutti gli iscritti prima di cancellare
@@ -436,8 +460,13 @@ class GaraService:
         gara_name = gara.name
         campionato_name = gara.campionato.name if gara.campionato else "Standalone"
 
-        # Cancella la gara
+        # Cancella la gara. Il flush subito: un vincolo violato deve fermare qui
+        # l'annullo, non esplodere dentro le notifiche, che proseguono sugli
+        # errori (`continue_on_error`) e lo trasformavano in una catena di
+        # `PendingRollbackError` lontana dalla causa.
+        GaraService._sgancia_dal_playoff(gara)
         db.session.delete(gara)
+        db.session.flush()
 
         # Invia notifiche a tutti i partecipanti
         if participant_ids:

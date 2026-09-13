@@ -518,20 +518,28 @@
         method: 'POST',
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
+          'X-Requested-With': 'XMLHttpRequest',
         'X-CSRFToken': csrfToken()}
       }).then(response => {
-        if (response.ok) {
-          if (GARA_CONFIG.gara.campionatoId) {
-            window.location.href = `/admin/campionato/${GARA_CONFIG.gara.campionatoId}`;
+        // La route risponde in JSON, anche sugli errori: il messaggio si
+        // legge da `error`. Il testo grezzo resta solo come ripiego per le
+        // risposte che non passano dalla route, come un 403 del decoratore.
+        return response.text().then(text => {
+          let data = null;
+          try { data = JSON.parse(text); } catch (e) { data = null; }
+          if (response.ok) {
+            if (data && data.redirect) {
+              window.location.href = data.redirect;
+            } else if (GARA_CONFIG.gara.campionatoId) {
+              window.location.href = `/admin/campionato/${GARA_CONFIG.gara.campionatoId}`;
+            } else {
+              window.location.href = '/dashboard';
+            }
           } else {
-            window.location.href = '/dashboard';
-          }
-        } else {
-          response.text().then(text => {
-            showError(GARA_CONFIG.i18n.errorCancel + ' ' + text);
+            showError(GARA_CONFIG.i18n.errorCancel + ' ' + ((data && data.error) || text));
             restore();
-          });
-        }
+          }
+        });
       }).catch(error => {
         console.error('Error:', error);
         restore();

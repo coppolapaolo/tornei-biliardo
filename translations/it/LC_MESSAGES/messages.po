@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 18:59+0200\n"
+"POT-Creation-Date: 2026-09-13 21:36+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -391,19 +391,19 @@ msgid ""
 "il turno"
 msgstr ""
 
-#: models/competition/services.py:459
+#: models/competition/services.py:488
 #, python-format
 msgid ""
 "La %(gara)s del campionato '%(campionato)s' del %(data)s è stata "
 "cancellata."
 msgstr ""
 
-#: models/competition/services.py:466
+#: models/competition/services.py:495
 #, python-format
 msgid "La %(gara)s del %(data)s è stata cancellata."
 msgstr ""
 
-#: models/competition/services.py:477
+#: models/competition/services.py:506
 msgid "Gara Cancellata"
 msgstr ""
 
@@ -1287,7 +1287,6 @@ msgstr ""
 
 #: models/events/notification_handlers.py:467
 #: models/notification/factory.py:282
-#, python-format
 msgid "Visualizza Partita"
 msgstr ""
 
@@ -1315,12 +1314,10 @@ msgid "Sei stato nominato co-direttore del campionato '%(nome)s'"
 msgstr ""
 
 #: models/events/notification_handlers.py:534
-#, python-format
 msgid "Gestisci Campionato"
 msgstr ""
 
 #: models/events/notification_handlers.py:539
-#, python-format
 msgid "Nominato co-direttore"
 msgstr ""
 
@@ -1340,12 +1337,10 @@ msgid "Sei stato rimosso dal ruolo di co-direttore del campionato '%(nome)s'"
 msgstr ""
 
 #: models/events/notification_handlers.py:581
-#, python-format
 msgid "Visualizza Campionato"
 msgstr ""
 
 #: models/events/notification_handlers.py:586
-#, python-format
 msgid "Rimosso da co-direttore"
 msgstr ""
 
@@ -2088,7 +2083,7 @@ msgid "I triangoli non possono essere negativi"
 msgstr ""
 
 #: models/match/correction_service.py:398
-#: templates/direttore/_scripts.html:1661
+#: templates/direttore/_scripts.html:1669
 #, python-format
 msgid "La partita è decisa al set %(num)s: i set dopo non si giocano"
 msgstr ""
@@ -2106,20 +2101,20 @@ msgid ""
 msgstr ""
 
 #: models/match/correction_service.py:435
-#: templates/direttore/_scripts.html:1674
+#: templates/direttore/_scripts.html:1682
 #, python-format
 msgid "Nessuno arriva a %(n)s set: la partita non è finita"
 msgstr ""
 
 #: models/match/correction_service.py:441
-#: templates/direttore/_scripts.html:1558
-#: templates/direttore/_scripts.html:1677
+#: templates/direttore/_scripts.html:1566
+#: templates/direttore/_scripts.html:1685
 #, python-format
 msgid "Si giocano esattamente %(n)s set"
 msgstr ""
 
 #: models/match/correction_service.py:462
-#: templates/direttore/_scripts.html:1540
+#: templates/direttore/_scripts.html:1548
 #, python-format
 msgid ""
 "Nel trio si giocano %(n)s triangoli: la somma dei tre punteggi deve fare "
@@ -2182,21 +2177,21 @@ msgstr ""
 msgid "ogni set esattamente %(n)s triangoli"
 msgstr ""
 
-#: models/match/match_service.py:698 routes/admin/match/multi_set.py:204
+#: models/match/match_service.py:692 routes/admin/match/multi_set.py:204
 msgid "Questa non è una partita a set."
 msgstr ""
 
-#: models/match/match_service.py:701
+#: models/match/match_service.py:695
 msgid "Il set non è in corso: inizia il prossimo."
 msgstr ""
 
-#: models/match/match_service.py:705 routes/admin/competition/matches.py:207
+#: models/match/match_service.py:699 routes/admin/competition/matches.py:207
 #: routes/admin/match/multi_set.py:211 routes/admin/match/scoring.py:117
 #: routes/admin/match/scoring.py:402
 msgid "Punteggio non valido."
 msgstr ""
 
-#: models/match/match_service.py:713
+#: models/match/match_service.py:707
 #, python-format
 msgid "Il set si gioca al %(n)s: il punteggio va oltre."
 msgstr ""
@@ -2292,7 +2287,6 @@ msgid "Proposta Accettata!"
 msgstr ""
 
 #: models/notification/factory.py:256
-#, python-format
 msgid "Partita Completata"
 msgstr ""
 
@@ -2975,7 +2969,7 @@ msgstr ""
 msgid "Playoff Academy"
 msgstr ""
 
-#: routes/admin/campionato.py:289 routes/admin/competition/crud.py:110
+#: routes/admin/campionato.py:289 routes/admin/competition/crud.py:115
 #, python-format
 msgid "Prova «%(name)s» creata: solo tu la vedi."
 msgstr ""
@@ -3221,42 +3215,51 @@ msgstr ""
 msgid "Categoria eliminata"
 msgstr ""
 
-#: routes/admin/competition/crud.py:119
+#: routes/admin/competition/crud.py:124
 #, python-format
 msgid "Gara singola '%(name)s' creata con successo!"
 msgstr ""
 
-#: routes/admin/competition/crud.py:206
+#: routes/admin/competition/crud.py:211
 msgid "Non è possibile creare gare in un campionato terminato."
 msgstr ""
 
-#: routes/admin/competition/crud.py:270
+#: routes/admin/competition/crud.py:275
 #, python-format
 msgid "Gara %(number)d creata con successo!"
 msgstr ""
 
-#: routes/admin/competition/crud.py:280
+#: routes/admin/competition/crud.py:285
 msgid "Nessuna gara precedente da cui copiare gli iscritti."
 msgstr ""
 
-#: routes/admin/competition/crud.py:290
+#: routes/admin/competition/crud.py:295
 #, python-format
 msgid "%(num)d iscritto copiato dalla gara precedente."
 msgid_plural "%(num)d iscritti copiati dalla gara precedente."
 msgstr[0] ""
 msgstr[1] ""
 
-#: routes/admin/competition/crud.py:298
+#: routes/admin/competition/crud.py:303
 msgid "Nessun iscritto da copiare dalla gara precedente."
 msgstr ""
 
-#: routes/admin/competition/crud.py:409
+#: routes/admin/competition/crud.py:414
 msgid "Tavoli salvati."
 msgstr ""
 
-#: routes/admin/competition/crud.py:434
+#: routes/admin/competition/crud.py:439
 #, python-format
 msgid "Gara «%(nome)s» eliminata."
+msgstr ""
+
+#: routes/admin/competition/crud.py:536
+msgid "La gara non è stata annullata per un errore imprevisto."
+msgstr ""
+
+#: routes/admin/competition/crud.py:543
+#, python-format
+msgid "«%(nome)s» annullata: gli iscritti ricevono la notifica."
 msgstr ""
 
 #: routes/admin/competition/inscriptions.py:90
@@ -5052,7 +5055,7 @@ msgid ""
 "risultati verranno cancellati."
 msgstr ""
 
-#: templates/direttore/_scripts.html:51 templates/direttore/_scripts.html:1076
+#: templates/direttore/_scripts.html:51 templates/direttore/_scripts.html:1084
 #: templates/match_detail.html:660
 msgid ""
 "Confermi di voler validare questo risultato? Il tavolo verrà liberato e "
@@ -11411,14 +11414,14 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:15
 #: templates/direttore/_modali_gioco.html:15
 #: templates/direttore/_modali_gioco.html:179
-#: templates/direttore/_scripts.html:1618
+#: templates/direttore/_scripts.html:1626
 msgid "Un triangolo in meno"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:21
 #: templates/direttore/_modali_gioco.html:20
 #: templates/direttore/_modali_gioco.html:181
-#: templates/direttore/_scripts.html:1617
+#: templates/direttore/_scripts.html:1625
 msgid "Un triangolo in più"
 msgstr ""
 
@@ -11501,7 +11504,7 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:176
 #: templates/direttore/_card_partita.html:208
 #: templates/direttore/_card_partita.html:277
-#: templates/direttore/_scripts.html:1579
+#: templates/direttore/_scripts.html:1587
 #, python-format
 msgid "Set %(num)s"
 msgstr ""
@@ -11821,7 +11824,7 @@ msgid "Azzera il risultato"
 msgstr ""
 
 #: templates/components/_match_result_row.html:200
-#: templates/direttore/_scripts.html:1266
+#: templates/direttore/_scripts.html:1274
 msgid "Assegna un tavolo"
 msgstr ""
 
@@ -14134,7 +14137,7 @@ msgid "Correggi"
 msgstr ""
 
 #: templates/direttore/_card_partita.html:220
-#: templates/direttore/_scripts.html:1265
+#: templates/direttore/_scripts.html:1273
 msgid "Cambia tavolo"
 msgstr ""
 
@@ -15478,11 +15481,11 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/direttore/_scripts.html:49 templates/direttore/_scripts.html:1024
+#: templates/direttore/_scripts.html:49 templates/direttore/_scripts.html:1032
 msgid "Sei sicuro di voler resettare questa partita?"
 msgstr ""
 
-#: templates/direttore/_scripts.html:50 templates/direttore/_scripts.html:1048
+#: templates/direttore/_scripts.html:50 templates/direttore/_scripts.html:1056
 msgid "Sei sicuro di voler resettare questo trio?"
 msgstr ""
 
@@ -15568,120 +15571,120 @@ msgstr ""
 msgid "Tocca per scambiare con la partita che occupa il tavolo"
 msgstr ""
 
-#: templates/direttore/_scripts.html:709
+#: templates/direttore/_scripts.html:717
 msgid ""
 "Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di"
 " setup."
 msgstr ""
 
-#: templates/direttore/_scripts.html:869
+#: templates/direttore/_scripts.html:877
 msgid "I triangoli non possono essere negativi."
 msgstr ""
 
-#: templates/direttore/_scripts.html:871
+#: templates/direttore/_scripts.html:879
 #, python-format
 msgid "Nessun giocatore può avere più di %(d)s triangoli."
 msgstr ""
 
-#: templates/direttore/_scripts.html:875
+#: templates/direttore/_scripts.html:883
 #, python-format
 msgid "Somma triangoli troppo alta: massimo %(d)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:877
+#: templates/direttore/_scripts.html:885
 #, python-format
 msgid "Risultato incompleto: uno dei due deve raggiungere %(d)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:882
+#: templates/direttore/_scripts.html:890
 #, python-format
 msgid "Somma triangoli troppo alta: il totale esatto è %(d)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:884
+#: templates/direttore/_scripts.html:892
 #, python-format
 msgid "Risultato incompleto: la somma deve essere esattamente %(d)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1161
+#: templates/direttore/_scripts.html:1169
 msgid "tavolo attuale"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1170
+#: templates/direttore/_scripts.html:1178
 msgid "libero · tocca per assegnare"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1299
+#: templates/direttore/_scripts.html:1307
 #, python-format
 msgid "Ritiro di %(nome)s…"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1318
+#: templates/direttore/_scripts.html:1326
 msgid ""
 "Torna da giocare e il tavolo si libera. Si può finché il turno dopo non è"
 " avviato."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1334
+#: templates/direttore/_scripts.html:1342
 msgid "Il turno torna a valere zero e l'esercizio torna da registrare."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1355
+#: templates/direttore/_scripts.html:1363
 #, python-format
 msgid "Ritiro di %(nome)s"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1358
+#: templates/direttore/_scripts.html:1366
 #, python-format
 msgid "%(nome)s vince a tavolino"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1518
-#: templates/direttore/_scripts.html:1681
+#: templates/direttore/_scripts.html:1526
+#: templates/direttore/_scripts.html:1689
 msgid "Pareggio: nessun vincitore."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1519
-#: templates/direttore/_scripts.html:1539
+#: templates/direttore/_scripts.html:1527
+#: templates/direttore/_scripts.html:1547
 #, python-format
 msgid "Vince %(nome)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1521
+#: templates/direttore/_scripts.html:1529
 #, python-format
 msgid "Uno dei due deve arrivare a %(n)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1522
+#: templates/direttore/_scripts.html:1530
 #, python-format
 msgid "La somma deve essere esattamente %(n)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1538
+#: templates/direttore/_scripts.html:1546
 msgid "Pari in testa: nessuno vince la partita."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1557
+#: templates/direttore/_scripts.html:1565
 #, python-format
 msgid "Si vince a %(n)s set"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1560
+#: templates/direttore/_scripts.html:1568
 #, python-format
 msgid "ogni set al %(n)s"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1561
+#: templates/direttore/_scripts.html:1569
 #, python-format
 msgid "ogni set di esattamente %(n)s triangoli"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1668
+#: templates/direttore/_scripts.html:1676
 #, python-format
 msgid "Il set %(num)s non è ancora finito."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1682
+#: templates/direttore/_scripts.html:1690
 #, python-format
 msgid "Vince %(nome)s, %(a)s set a %(b)s."
 msgstr ""
