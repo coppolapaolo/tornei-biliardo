@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.19.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.18.0...v1.19.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* la pagina del campionato per chi lo dirige ([#360](https://github.com/coppolapaolo/tornei-biliardo/issues/360)) ([980fc9d](https://github.com/coppolapaolo/tornei-biliardo/commit/980fc9d0e93f7294680aac8983373bd53cf35e7e))
+
 ## [1.18.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.17.0...v1.18.0) (2026-09-13)
 
 
