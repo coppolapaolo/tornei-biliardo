@@ -128,7 +128,8 @@ blocks:
       Un giocatore iscritto che non si presenta è il problema più comune della
       serata. Toglilo **prima** di avviare il primo turno: un secondo di
       lavoro. Dopo l'avvio, l'unica strada è annullare il turno e risorteggiare
-      — oppure lasciare che il suo avversario vinca per forfait.
+      — oppure ritirarlo dalla sua riga negli **Iscritti**: vale come il suo
+      forfait, e il suo avversario vince a tavolino.
 
   - type: note
     tone: info

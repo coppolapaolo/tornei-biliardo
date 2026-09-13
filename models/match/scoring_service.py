@@ -471,6 +471,15 @@ class ScoringService:
         # vincitore.
         if MatchStatus.is_finished(match.status):
             raise ValueError("Cannot forfeit a completed match")
+        # Un turno superato non si tocca da nessuna strada: fino al 2026-09-13
+        # lo rifiutava solo il ritiro deciso dal direttore, mentre il forfait
+        # dichiarato dal giocatore passava.
+        from models.competition.round_manager import AdvancedRoundManager
+        from models.exceptions import ConflictError
+
+        motivo = AdvancedRoundManager.motivo_turno_superato(match)
+        if motivo:
+            raise ConflictError(motivo)
 
     @staticmethod
     def _determine_forfeit_outcome(

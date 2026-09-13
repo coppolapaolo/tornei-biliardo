@@ -274,6 +274,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.competition.modify_inscription_dates": {"director"},
     "admin.competition.admin_inscribe_user": {"director"},
     "admin.competition.admin_uninscribe_user": {"director"},
+    # Il ritiro di un iscritto a gara in corso, per chi se ne va senza dirlo.
+    "admin.competition.ritira_iscritto": {"director"},
     # Competizione di prova (ADR-058): la popola e la elimina chi la dirige.
     "admin.competition.prova_iscrivi_fittizi": {"director"},
     "admin.competition.prova_simula": {"director"},

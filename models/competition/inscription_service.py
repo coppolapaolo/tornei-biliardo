@@ -20,6 +20,8 @@ import logging
 from typing import Optional
 from datetime import datetime
 
+from flask_babel import gettext as _
+
 from models.base import db, utc_now
 from models.status_enum import GaraStatus
 from models.exceptions import (
@@ -550,6 +552,38 @@ class InscriptionService:
             )
 
     @staticmethod
+    def nome_gara(gara: "Gara") -> str:
+        """Il nome della gara come lo legge un giocatore in una notifica."""
+        return gara.name or _("Gara %(numero)s", numero=gara.number)
+
+    @staticmethod
+    def notifica_di_gara(user_id: int, gara: "Gara", messaggio: str) -> None:
+        """Una notifica a un iscritto su quello che il direttore ha fatto.
+
+        Passa da `create_bulk_notification` e non da
+        `create_tournament_notification`, che rilegge il testo con
+        `str.format`: uno username con una graffa lo farebbe saltare. Il
+        riferimento `gara_id` fa riconoscere la competizione di prova.
+        """
+        from models.notification.factory import NotificationFactory
+        from models.notification.models import NotificationPriority, NotificationType
+
+        NotificationFactory.create_bulk_notification(
+            user_ids=[user_id],
+            notification_type=NotificationType.TOURNAMENT_REGISTRATION,
+            title=_("Aggiornamento gara"),
+            message=messaggio,
+            priority=NotificationPriority.HIGH,
+            related_entities={
+                "gara_id": gara.id,
+                "tournament_id": gara.id,
+                "tournament_name": InscriptionService.nome_gara(gara),
+            },
+            action_url=f"/gara/{gara.id}",
+            action_text=_("Vedi la gara"),
+        )
+
+    @staticmethod
     @transactional(domain="competition")
     def admin_uninscribe_user(user_id: int, gara_id: int, admin_user_id: int) -> bool:
         """Disiscrive un utente dalla gara da parte di admin/direttore.
@@ -574,37 +608,26 @@ class InscriptionService:
 
             was_active = not inscription.is_waitlist and not inscription.is_withdrawn
             gara_name = gara.name or f"Gara {gara.number}"
-            admin_role = "admin" if admin_user.is_admin else "direttore di gara"
 
-            # Invia notifica all'utente discritto
+            # Invia notifica all'utente discritto. Fino al 2026-09-13 era una
+            # f-string non tradotta che scriveva «L'direttore di gara»: ora
+            # dice chi, per nome.
             try:
-                from models.notification.factory import NotificationFactory
-                from models.notification.models import NotificationPriority
-
-                message = (
-                    f"L'{admin_role} ha annullato la tua iscrizione "
-                    f"alla {gara_name}"
-                )
                 if inscription.is_waitlist:
-                    message = (
-                        f"L'{admin_role} ti ha rimosso dalla lista "
-                        f"d'attesa per la {gara_name}"
+                    message = _(
+                        "%(direttore)s ti ha tolto dalla lista d'attesa della "
+                        "gara %(gara)s.",
+                        direttore=admin_user.username,
+                        gara=InscriptionService.nome_gara(gara),
                     )
-
-                notification_result = (
-                    NotificationFactory.create_tournament_notification(
-                        user_ids=[user_id],
-                        tournament_name=gara_name,
-                        message_template=message,
-                        priority=NotificationPriority.HIGH,
-                        tournament_id=gara_id,
+                else:
+                    message = _(
+                        "%(direttore)s ha annullato la tua iscrizione alla gara "
+                        "%(gara)s.",
+                        direttore=admin_user.username,
+                        gara=InscriptionService.nome_gara(gara),
                     )
-                )
-                logger.debug(
-                    "Notifica di disiscrizione creata (utente=%s): %s",
-                    user_id,
-                    notification_result,
-                )
+                InscriptionService.notifica_di_gara(user_id, gara, str(message))
             except Exception:
                 logger.error(
                     "Notifica di disiscrizione non inviata " "(utente=%s, gara=%s)",

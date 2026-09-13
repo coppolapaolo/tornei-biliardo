@@ -83,6 +83,46 @@ class AdvancedRoundManager:
         return RoundLockStatus.LOCKED
 
     @staticmethod
+    def _messaggio_turno_bloccato() -> str:
+        # Il messaggio dice anche **come uscirne**: il turno seguente si è
+        # costruito su questa classifica, quindi la strada è annullarlo e
+        # rifarlo. Senza la seconda frase chi legge sa solo di non poter
+        # fare quel che voleva, e la partita resta lì (issue #90).
+        return str(
+            _(
+                "Il turno è bloccato perché un turno successivo è già "
+                "iniziato: quel turno si è formato su questa "
+                "classifica. Per intervenire qui, annulla prima il "
+                "turno successivo."
+            )
+        )
+
+    @staticmethod
+    def motivo_turno_superato(match: Match) -> Optional[str]:
+        """Perché la partita sta in un turno ormai superato, o `None`.
+
+        Il ritiro ha piu' strade: il direttore dal menu della partita, il
+        giocatore dal suo telefono, il trio da una parte e dall'altra. Dal
+        2026-09-13 un turno superato non si tocca da nessuna di queste, e la
+        domanda sta qui perche' ognuna la faccia allo stesso modo.
+
+        Guarda solo le gare in corso. Fuori, lo stato della gara ha i suoi
+        rifiuti; e `get_round_lock_status` risponde LOCKED a qualunque gara non
+        in corso, che per il ritiro vorrebbe dire un motivo sbagliato.
+        """
+        if not match.gara_id:
+            return None
+        gara = db.session.get(Gara, match.gara_id)
+        if gara is None or gara.status != GaraStatus.PLAYING.value:
+            return None
+        stato = AdvancedRoundManager.get_round_lock_status(
+            match.gara_id, match.round_number
+        )
+        if stato == RoundLockStatus.LOCKED:
+            return AdvancedRoundManager._messaggio_turno_bloccato()
+        return None
+
+    @staticmethod
     def can_modify_match(match_id: int) -> Tuple[bool, str]:
         """Check if a match can be modified based on round locking rules."""
         match = db.session.get(Match, match_id)
@@ -107,21 +147,7 @@ class AdvancedRoundManager:
         )
 
         if lock_status == RoundLockStatus.LOCKED:
-            # Il messaggio dice anche **come uscirne**: il turno seguente si è
-            # costruito su questa classifica, quindi la strada è annullarlo e
-            # rifarlo. Senza la seconda frase chi legge sa solo di non poter
-            # fare quel che voleva, e la partita resta lì (issue #90).
-            return (
-                False,
-                str(
-                    _(
-                        "Il turno è bloccato perché un turno successivo è già "
-                        "iniziato: quel turno si è formato su questa "
-                        "classifica. Per intervenire qui, annulla prima il "
-                        "turno successivo."
-                    )
-                ),
-            )
+            return False, AdvancedRoundManager._messaggio_turno_bloccato()
 
         # ADR-026 residuo: lo spareggio (SSR/rally/playoff) certifica
         # implicitamente l'integrità dei match della gara. Qualsiasi
@@ -493,7 +519,7 @@ class AdvancedRoundManager:
             # Check if matches can be modified
             modifiable_matches = []
             for match in round_matches:
-                can_modify, _ = AdvancedRoundManager.can_modify_match(match.id)
+                can_modify, _motivo = AdvancedRoundManager.can_modify_match(match.id)
                 if can_modify:
                     modifiable_matches.append(match.id)
 

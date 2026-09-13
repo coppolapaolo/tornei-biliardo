@@ -162,9 +162,21 @@ blocks:
           matches close the same way, and the competition's withdrawal rule
           decides whether they stay in the pairings, losing by walkover, or
           leave the competition. In a trio, the racks they still had go to the
-          opponents. The command is there while the match is open and the next
-          round has not started.
+          opponents, and the competition's rule applies in the same way. The
+          player gets a notification saying who withdrew them and what it means.
+          The command is there while the match is open and the next round has
+          not started.
         hint: partita.forfait
+      - name: "Withdraw someone who left without saying"
+        text: >-
+          If a player leaves the venue without declaring a forfeit, open
+          **Registered** at the bottom of the page and tap the flag on their row.
+          The **… withdraws from the competition** sheet tells you what happens
+          before you confirm: it counts as if they had declared the forfeit
+          themselves, with the same withdrawal rule, and their open matches
+          close by walkover. The player gets a notification saying who withdrew
+          them and what it means. Before the start, a player is removed with the
+          minus sign instead.
       - name: "Reset a wrong match"
         text: >-
           Puts the score back to zero keeping the same pair, who replay. This
@@ -405,7 +417,7 @@ blocks:
       - q: "The «Start next round» button is greyed out."
         a: "At least one match is still open. In the Rounds view, the open matches are the ones without the «Finished» label. If every match is finished, the band says what the round is still waiting for: the drill played instead of the X to validate, on the card of the player sitting out, or a drill between rounds someone has not recorded yet, in the «Drill after round» section."
       - q: "A player leaves halfway through the competition."
-        a: "Tap «⋯» on their match card and choose **… withdraws**: the sheet tells you what happens before you confirm. For the following rounds, the rule you chose at creation decides whether they stay in the pairings (losing by walkover) or drop out. In bracket competitions there is nothing to choose: whoever withdraws lets their opponent through by walkover, and the bracket stays as it is."
+        a: "Tap «⋯» on their match card and choose **… withdraws**: the sheet tells you what happens before you confirm. For the following rounds, the rule you chose at creation decides whether they stay in the pairings (losing by walkover) or drop out. In bracket competitions there is nothing to choose: whoever withdraws lets their opponent through by walkover, and the bracket stays as it is. If they left without saying and are not playing, withdraw them from their row under **Registered**."
       - q: "Why does my knockout not say «Start the competition»?"
         a: "Because the action there is a different one: the button says «Draw the bracket». Drawing the bracket closes registrations and fixes everybody's path to the final, so the name says what actually happens."
       - q: "Can I run a competition and play in it?"

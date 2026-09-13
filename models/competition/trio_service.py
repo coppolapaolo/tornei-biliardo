@@ -325,6 +325,14 @@ class TrioMatchService:
         Auto-completes remaining racks where the forfeiting player would play,
         awarding those racks to their opponents.
 
+        Dal 2026-09-13 il ritiro nel trio vale come quello in una partita a
+        due: rifiuta un turno superato e applica la regola della gara sui
+        ritiri (`WithdrawPolicyService.handle_forfeit`), che chiude le altre
+        partite aperte e marca o toglie l'iscrizione. Quella regola richiude
+        anche i trii aperti di chi si ritira, questo compreso: non gli arriva
+        un secondo giro di triangoli perche' `TrioMatch.handle_forfeit`
+        rifiuta un trio che ha gia' il suo ritiro.
+
         Args:
             trio_id: ID of the trio match
             forfeiting_player_id: ID of the player forfeiting
@@ -333,15 +341,41 @@ class TrioMatchService:
         Returns:
             Dict with updated trio state
         """
+        from models.competition.models import Inscription
+        from models.competition.round_manager import AdvancedRoundManager
+        from models.competition.withdraw_policy_service import WithdrawPolicyService
+        from models.exceptions import ConflictError
         from models.match.models import TrioMatch
 
         trio = db.session.get(TrioMatch, trio_id)
         if not trio:
             raise ValueError("Trio match non trovato")
 
+        match = trio.match
+        motivo = AdvancedRoundManager.motivo_turno_superato(match) if match else None
+        if motivo:
+            raise ConflictError(motivo)
+
         success = trio.handle_forfeit(forfeiting_player_id, added_by_id)
         if not success:
             raise ValueError("Impossibile registrare il forfait")
+
+        # La regola della gara vale per chi e' ancora in gara: chi ne e' gia'
+        # uscito non ha un'iscrizione da marcare o da togliere.
+        if match is not None and match.gara_id:
+            in_gara = (
+                db.session.query(Inscription)
+                .filter_by(
+                    gara_id=match.gara_id,
+                    user_id=forfeiting_player_id,
+                    is_withdrawn=False,
+                )
+                .first()
+            )
+            if in_gara is not None:
+                WithdrawPolicyService.handle_forfeit(
+                    gara_id=match.gara_id, user_id=forfeiting_player_id
+                )
 
         result = {
             "success": True,

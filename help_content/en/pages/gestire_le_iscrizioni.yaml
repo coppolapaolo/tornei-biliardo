@@ -130,7 +130,8 @@ blocks:
       A registered player who does not turn up is the most common problem of
       the evening. Remove them **before** starting the first round: a second's
       work. After the start, the only routes are cancelling the round and
-      redrawing — or letting their opponent win by forfeit.
+      redrawing — or withdrawing them from their row under **Registered**: it
+      counts as their forfeit, and their opponent wins by walkover.
 
   - type: note
     tone: info

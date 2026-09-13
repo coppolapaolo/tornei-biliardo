@@ -8,6 +8,7 @@ from flask_login import login_required, current_user
 from models import db, Match
 from models.match.services import MatchService
 from models.competition.trio_service import TrioMatchService
+from models.exceptions import http_status_for_exception
 from utils import match_player_required, trio_player_required
 from utils.route_helpers import safe_json_error
 
@@ -139,7 +140,8 @@ def forfeit_trio(match_id):
         return jsonify(result)
 
     except ValueError as ve:
-        return jsonify({"error": str(ve)}), 400
+        # Un turno superato e' un conflitto, 409: il resto resta 400.
+        return jsonify({"error": str(ve)}), http_status_for_exception(ve)
     except Exception as e:
         return safe_json_error(e, "player forfeit")
 
@@ -504,6 +506,7 @@ def forfeit_match(match_id):
         )
 
     except ValueError as e:
-        return jsonify({"error": str(e)}), 400
+        # Un turno superato e' un conflitto, 409: il resto resta 400.
+        return jsonify({"error": str(e)}), http_status_for_exception(e)
     except Exception as e:
         return safe_json_error(e, "player match operation")

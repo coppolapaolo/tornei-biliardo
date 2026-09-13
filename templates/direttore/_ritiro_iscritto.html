@@ -1,0 +1,42 @@
+{# templates/direttore/_ritiro_iscritto.html — Design System 7c
+
+   Il foglio «Ritiro di … dalla gara», aperto dal comando sulla riga di un
+   iscritto a gara in corso (`components/_gara_inscriptions.html`). Serve per
+   chi se ne va senza dirlo all'app: la cancellazione a gara in corso *e'* il
+   suo forfait. Stessa grammatica del foglio del ritiro dal menu della
+   partita: prima di confermare dice cosa succede, con la regola della gara in
+   parole semplici, e che il giocatore ricevera' una notifica. Un solo foglio
+   per tutte le righe: `apriRitiroIscritto(bottone)` ne scrive titolo e
+   destinazione dagli attributi del comando. #}
+<div class="modal fade c7-sheet" id="ritiroIscrittoModal" tabindex="-1" aria-labelledby="ritiroIscrittoTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="ritiroIscrittoTitolo">{{ _('Ritiro dalla gara') }}</h3>
+        <div class="c7-sheet__sub">{{ _('Per chi se ne va senza dirlo all’app') }}</div>
+      </div>
+      <form method="POST" action="#" id="ritiroIscrittoForm" class="modal-body c7-stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="c7-rows">
+          {{ d.riga('fa-flag-checkered', _('Le sue partite aperte'), _('si chiudono a tavolino; i triangoli già vinti restano suoi'), tone='warn') }}
+          {% include "direttore/_regola_ritiro.html" %}
+          {{ d.riga('fa-bell', _('Riceve una notifica'), _('gli dice chi l’ha ritirato e cosa comporta la regola della gara'), tone='warn') }}
+        </div>
+        <div class="c7-nota">{{ _('Vale come se il forfait l’avesse dichiarato lui, e lo decide la regola della gara sui ritiri.') }}</div>
+        <button type="submit" class="btn btn-danger w-100">
+          <i class="fas fa-flag"></i> {{ _('Registra il ritiro') }}
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+  function apriRitiroIscritto(bottone) {
+    const nome = bottone.dataset.username || '';
+    document.getElementById('ritiroIscrittoTitolo').textContent =
+      {{ _('Ritiro di %(nome)s dalla gara', nome='{nome}')|tojson }}.replace('{nome}', nome);
+    document.getElementById('ritiroIscrittoForm').action = bottone.dataset.ritiraUrl;
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('ritiroIscrittoModal')).show();
+  }
+</script>

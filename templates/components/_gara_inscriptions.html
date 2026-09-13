@@ -20,6 +20,7 @@
 
 {% set _attivi = inscriptions | selectattr('is_waitlist', 'equalto', false) | selectattr('is_withdrawn', 'equalto', false) | list %}
 {% set _attesa = inscriptions | selectattr('is_waitlist', 'equalto', true) | selectattr('is_withdrawn', 'equalto', false) | sort(attribute='waitlist_position') | list %}
+{% set _puo_ritirare = user_can_manage and ritiro_iscritti is defined and ritiro_iscritti and gara.status == GaraStatus.PLAYING.value %}
 {# Lo stato derivato, non quello persistito: a scadenza passata le
    iscrizioni sono chiuse anche se la gara e' ancora INSCRIPTION, e il
    servizio rifiuterebbe l'iscrizione. #}
@@ -156,6 +157,19 @@
               aria-label="{{ _('Squadra di %(username)s in questa gara', username=inscription.user.username) }}">
         <span class="c7-chip__testo">{{ inscription.squadra.name if inscription.squadra else _('Senza squadra') }}</span>
         <i class="fas fa-caret-down c7-chip__caret"></i>
+      </button>
+      {% endif %}
+
+      {# A gara in corso chi se ne va senza dirlo all'app si ritira dalla sua
+         riga: il foglio «Ritiro di … dalla gara» (`direttore/_ritiro_iscritto.html`,
+         incluso solo dalla fase di gioco, che accende `ritiro_iscritti`). #}
+      {% if _puo_ritirare and not inscription.is_forfeit %}
+      <button type="button" class="c7-iconbtn" style="background:var(--c7-bg);color:var(--c7-err-ink)"
+              onclick="apriRitiroIscritto(this)"
+              data-ritira-url="{{ url_for('admin.competition.ritira_iscritto', gara_id=gara.id, user_id=inscription.user_id) }}"
+              data-username="{{ inscription.user.username }}"
+              title="{{ _('Ritira dalla gara') }}" aria-label="{{ _('Ritira %(username)s dalla gara', username=inscription.user.username) }}">
+        <i class="fas fa-flag"></i>
       </button>
       {% endif %}
 
