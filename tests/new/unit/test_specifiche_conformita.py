@@ -770,28 +770,44 @@ class TestIlTrioInClassifica:
 
         assert self._vittorie(gara, giocatori) == [0, 0, 0]
 
-    def test_chi_si_ritira_non_vince_e_il_pari_resta_fra_gli_altri_due(self):
+    @pytest.mark.parametrize(
+        "sequenza, totali, vittorie",
+        [
+            ([0, 2, 1, 0, 2, 2, 1], [3, 3, 3], [0, 0, 0]),
+            ([0, 2, 2, 0, 2, 2, 1], [3, 2, 4], [1, 0, 0]),
+        ],
+        ids=["tre-tre-tre-nessuno-vince", "tre-due-quattro-vince-marco"],
+    )
+    def test_chi_si_ritira_non_vince_e_il_pari_resta_fra_gli_altri_due(
+        self, db_session, sequenza, totali, vittorie
+    ):
         """`SPECIFICHE.md` riga 160, la regola del ritiro (decisa il 2026-09-13).
 
         > Chi si ritira dal trio non vince mai, nemmeno col totale più alto, e
-        > il pari si guarda solo fra gli altri due. Esempi: Marco 3, Luca 3 e
-        > Gianni ritirato con 3, nessuno vince; Marco 4, Luca 3 e Gianni
-        > ritirato con 4, vince Marco.
+        > il pari si guarda solo fra gli altri due. Esempi alla distanza 6,
+        > nove triangoli: Marco 3, Luca 3 e Gianni ritirato con 3, nessuno
+        > vince; Marco 3, Luca 2 e Gianni ritirato con 4, vince Marco, anche se
+        > Gianni ha il totale più alto.
 
-        Si prova sulla regola, `vincitore_del_trio`, da cui passano tutte le
-        strade che chiudono un trio: il secondo esempio fa undici triangoli, e
-        un trio ne gioca al massimo nove. Il ritiro giocato davvero è il test
-        qui sotto.
+        Una partita vera, passando dal ritiro nel trio. I gironi sono tre, in
+        ordine fisso Marco–Luca, Marco–Gianni, Luca–Gianni: si giocano sette
+        triangoli, poi Gianni si ritira e gli ultimi due, entrambi contro di
+        lui, vanno uno a Marco e uno a Luca.
         """
-        from models.match.trio_punteggio import vincitore_del_trio
+        from models.match.trio_scoring_service import TrioScoringService
 
-        marco, luca, gianni = 1, 2, 3
-        assert (
-            vincitore_del_trio({marco: 3, luca: 3, gianni: 3}, escluso=gianni) is None
-        )
-        assert (
-            vincitore_del_trio({marco: 4, luca: 3, gianni: 4}, escluso=gianni) == marco
-        )
+        gara, giocatori, trio = self._nuovo_trio(db_session, 6)
+        marco, luca, gianni = giocatori
+        for indice in sequenza:
+            TrioScoringService.add_rack_win(trio.id, giocatori[indice].id)
+        db_session.commit()
+        assert trio.handle_forfeit(gianni.id)
+        trio.confirm_result_by_admin()
+        db_session.commit()
+
+        assert trio.player_racks_list == totali
+        assert trio.winner_id == (marco.id if vittorie[0] else None)
+        assert self._vittorie(gara, [marco, luca, gianni]) == vittorie
 
     def test_il_pareggio_in_testa_dopo_un_ritiro(self, db_session):
         """Il ritiro nel trio: chi si ritira non vince, e fra gli altri due vale
