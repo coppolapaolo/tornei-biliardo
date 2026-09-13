@@ -748,7 +748,7 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   datate di `UI_CONVENTIONS.md`, questo file riordinato. Decisioni di
   dominio lasciate aperte, con la variante prudente implementata:
   il trio a pari punteggio in testa (4-4-1 alla distanza 6 da' la vittoria
-  per scontro diretto, la specifica riga 160 dice zero a tutti: xfail strict
+  per scontro diretto, la specifica riga 160, oggi 164, dice zero a tutti: xfail strict
   in `test_specifiche_conformita.py::TestIlTrioInClassifica`); se il blocco
   dei turni successivi valga anche per l'esercizio della X; se il ritiro in
   un trio applichi la regola della gara sui ritiri; se il forfait dichiarato
@@ -782,5 +782,30 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
     descritto: se l'operazione esterna fallisce restano scritti i passi
     interni, e se fallisce un passo interno catturato si perde in silenzio il
     lavoro fatto prima dall'esterna.
-  - **Resta aperto**: la partita a set ha lo stesso rifiuto della correzione
-    che aveva il trio.
+  - **Poi deciso**: la partita a set ha lo stesso rifiuto della correzione
+    che aveva il trio, e si corregge allo stesso modo, set per set. Nel trio
+    chi si ritira non vince mai, e il pari si guarda solo fra gli altri due.
+* **Implementazione delle decisioni del 13/09 sera** (PR dalla #385 alla
+  #396, tutte unite il 2026-09-13). Una PR per blocco, scritte in parallelo e
+  unite in serie, riallineando i cataloghi delle traduzioni dopo ogni unione:
+  - #385: il `@transactional` annidato salva solo l'esterno (ADR-061); anche
+    i savepoint scritti a mano passano dal gestore;
+  - #386: ritiro nel trio con la regola della gara, ritiro di un iscritto a
+    gara in corso, turno superato che blocca ogni ritiro; ogni ritiro deciso
+    dal direttore è tutto o niente e avvisa il giocatore;
+  - #387: prova della X ed esercizi fra i turni bloccano il turno dopo e la
+    chiusura della gara, tranne col sorteggio casuale; un tentativo di
+    esercizio si toglie;
+  - #388: vincitore del trio secondo la specifica; trio e partita a set chiusi
+    si correggono dal foglio, con l'aggiornamento live;
+  - #390: il playoff si gioca con chi ha accettato, anche se sono meno dei
+    posti; chi accetta tardi entra fino all'avvio;
+  - #391: le notifiche nella lingua di chi le riceve (ADR-062);
+  - bug trovati provando, corretti nello stesso giro: #389 card con
+    «esattamente N», #393 pastiglia «pari» come testo, #394 auto-copia
+    iscritti spenta nel wizard, #395 iscriviti per il direttore sulla
+    tessera, #396 tavolo non riassegnato dopo la doppia firma.
+  Resta fuori, per scelta: la riassegnazione di un iscritto sbagliato dopo la
+  fine della gara, che resta uno script (ADR-048). Le schermate della guida
+  per trio, partita a set e X con esercizio, che il seed dimostrativo non
+  conteneva, arrivano con la PR della guida che segue questa.
