@@ -469,35 +469,63 @@ def test_a_turno_concluso_le_partite_sono_righe_da_toccare(admin_client, db_sess
 
 
 def test_il_punteggio_dalla_card_salva_e_alla_distanza_chiude(admin_client, db_session):
-    """L'endpoint degli stepper: JSON, e alla distanza la partita si chiude."""
+    """L'endpoint degli stepper: JSON, rifiuta l'eccesso, alla distanza chiude."""
     gara = _gara_in_gioco(db_session, distance=5)
     match = _match(db_session, gara, 3, 1, MatchStatus.PLAYING.value, suffix="_ep")
     match.table_assignment = "1"
     db_session.commit()
+    url = f"/admin/match/{match.id}/punteggio"
 
-    r = admin_client.post(
-        f"/admin/match/{match.id}/punteggio",
-        data={"player1_score": 4, "player2_score": 1},
-    )
+    r = admin_client.post(url, data={"player1_score": 9, "player2_score": 1})
+    assert r.status_code == 400
+    assert r.get_json()["success"] is False
+
+    r = admin_client.post(url, data={"player1_score": 4, "player2_score": 1})
     assert r.status_code == 200
     assert r.get_json()["finished"] is False
     assert r.get_json()["player1_score"] == 4
 
-    r = admin_client.post(
-        f"/admin/match/{match.id}/punteggio",
-        data={"player1_score": 5, "player2_score": 1},
-    )
+    r = admin_client.post(url, data={"player1_score": 5, "player2_score": 1})
     assert r.get_json()["finished"] is True
     riletta = db_session.get(Match, match.id)
     assert MatchStatus.is_finished(riletta.status)
     assert riletta.winner_id == match.player1_id
 
+
+def test_il_punteggio_dalla_card_non_riscrive_una_partita_chiusa(
+    admin_client, db_session
+):
+    """Rilievo della revisione automatica sulla PR #349: una partita chiusa si
+    cambia solo con la correzione, che ne lascia traccia (issue #90)."""
+    gara = _gara_in_gioco(db_session, distance=5)
+    match = _match(
+        db_session, gara, 5, 2, MatchStatus.CLOSED_UNILATERALLY.value, suffix="_ch"
+    )
     r = admin_client.post(
         f"/admin/match/{match.id}/punteggio",
-        data={"player1_score": 9, "player2_score": 1},
+        data={"player1_score": 2, "player2_score": 5},
+    )
+    assert r.status_code == 409
+    riletta = db_session.get(Match, match.id)
+    assert (riletta.player1_score, riletta.player2_score) == (5, 2)
+    assert not riletta.corrections
+
+
+def test_il_multi_set_non_passa_dalla_card_degli_stepper(admin_client, db_session):
+    """Rilievo della revisione automatica sulla PR #349: gli stepper ragionano
+    su un set solo, il multi-set ha il suo segnapunti."""
+    gara = _gara_in_gioco(db_session, distance=5)
+    match = _match(db_session, gara, 1, 0, MatchStatus.PLAYING.value, suffix="_ms")
+    match.table_assignment = "1"
+    match.is_multi_set = True
+    db_session.commit()
+    r = admin_client.post(
+        f"/admin/match/{match.id}/punteggio",
+        data={"player1_score": 2, "player2_score": 0},
     )
     assert r.status_code == 400
-    assert r.get_json()["success"] is False
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert f'id="partita{match.id}"' not in html
 
 
 def test_la_correzione_dalla_pagina_della_gara_torna_alla_gara(

@@ -16,7 +16,8 @@
                      «Correggi» dove la correzione e' ammessa (issue #90);
    - la partita di chi dirige e gioca → card scura, «Vai al segnapunti».
 
-   Le partite a tre restano sulla card di prima. Attese: `match`,
+   Le partite a tre e quelle a set restano sulla card di prima: hanno il
+   loro segnapunti, e gli stepper qui ragionano su un set solo. Attese: `match`,
    `stati_partite`, `match_can_modify`, `forfeit_user_ids`,
    `prossima_in_attesa`, `available_tables`. #}
 
@@ -31,7 +32,7 @@
 {% set con_stepper = not mia and can_modify and stato in ('in_corso', 'da_validare') %}
 {% set distanza = match.effective_distance %}
 
-{% if match.is_trio and match.trio_match %}
+{% if (match.is_trio and match.trio_match) or match.is_multi_set %}
   {% include "components/_match_card.html" %}
 {% elif stato == 'x' %}
 <article class="c7-card c7-card--locked c7-partita c7-partita--x">

@@ -116,6 +116,26 @@ def punteggio_partita(match_id):
             400,
         )
 
+    from models.competition.round_manager import AdvancedRoundManager
+
+    corrente = db.session.get(Match, match_id)
+    if corrente is None:
+        return jsonify({"success": False, "error": str(_("Partita non trovata"))}), 404
+    # La card segna solo partite aperte, a due giocatori e a set singolo: la
+    # X, il trio e il multi-set hanno il loro segnapunti, e una partita chiusa
+    # si cambia solo con la correzione, che ne lascia traccia (issue #90).
+    # Nascondere gli stepper non basta: e' la route che rifiuta (rilievo della
+    # revisione automatica sulla PR #349).
+    if corrente.is_bye or corrente.is_trio or corrente.is_multi_set:
+        errore = _("Questa partita si segna dal suo segnapunti.")
+        return jsonify({"success": False, "error": str(errore)}), 400
+    if MatchStatus.is_finished(corrente.status):
+        errore = _("La partita è chiusa: si cambia con «Correggi il risultato».")
+        return jsonify({"success": False, "error": str(errore)}), 409
+    consentito, motivo = AdvancedRoundManager.can_modify_match(match_id)
+    if not consentito:
+        return jsonify({"success": False, "error": str(motivo)}), 409
+
     try:
         RackService.set_match_result_direct(match_id, player1_score, player2_score)
     except ValueError as ve:

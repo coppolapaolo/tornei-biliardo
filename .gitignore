@@ -140,3 +140,6 @@ graphify-out/
 # file .dc.html che gli stanno accanto (skill `design`). I sorgenti si
 # versionano, il pacchetto no.
 docs/redesign-7c/**/vetrina-gare-campionati.html
+
+# Log del server di sviluppo avviato con nohup: contiene il PIN del debugger.
+nohup.out

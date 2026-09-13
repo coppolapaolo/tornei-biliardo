@@ -3313,10 +3313,13 @@ a.c7-rows__row:hover { background: var(--c7-sunken); }
 .c7-partita__corona { color: var(--c7-warn); font-size: 11px; margin-left: 3px; }
 .c7-partita__num { margin-top: 8px; font-size: 34px; font-weight: 800; line-height: 1; letter-spacing: -.03em; }
 .c7-partita__num--vuoto { color: var(--c7-ink-faint); }
-.c7-partita__step { margin-top: 8px; display: flex; align-items: center; gap: 6px; }
+.c7-partita__step { margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+/* Bersagli tattili da 48px (ui-7c): per starci a 390px il lato con gli
+   stepper stringe il suo margine orizzontale. */
+.c7-partita__lato--stepper { padding: 10px 6px 12px; }
 .c7-partita__step .c7-partita__num { margin-top: 0; flex: 1; font-size: 26px; }
 .c7-partita__step button {
-  width: 38px; height: 38px; border: 0; border-radius: var(--c7-r-control); flex-shrink: 0;
+  width: 48px; height: 48px; border: 0; border-radius: var(--c7-r-control); flex-shrink: 0;
   display: grid; place-items: center; font-size: 14px;
 }
 .c7-partita__meno { background: var(--c7-card); color: var(--c7-ink); }

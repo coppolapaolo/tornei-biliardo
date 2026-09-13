@@ -48,7 +48,7 @@
   {% if match.played_on_table or match.table_assignment %}
   <span class="c7-rows__sub c7-riga-partita__tavolo">{{ _('Tavolo') }} <span class="c7-num">{{ match.played_on_table or match.table_assignment }}</span></span>
   {% endif %}
-  {% if correggibile and _finita and not match.is_trio %}
+  {% if correggibile and _finita and not match.is_trio and not match.is_multi_set %}
   <button type="button" class="c7-iconbtn" onclick="apriCorrezione(this)"
           aria-label="{{ _('Correggi il risultato di %(p1)s – %(p2)s', p1=match.player1.username, p2=match.player2.username) }}" title="{{ _('Correggi il risultato') }}">
     <i class="fas fa-pen"></i>
