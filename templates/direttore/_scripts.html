@@ -28,6 +28,9 @@
     },
     "availableTables": {{ available_tables | tojson }},
     "occupiedTables": {{ occupied_tables | tojson }},
+    {# Chi c'e' su ogni tavolo, per le tessere del foglio (canvas 3.2). #}
+    "tavoliOccupanti": {{ (tavoli_occupanti or {}) | tojson }},
+    "utenteId": {{ (current_user.id if current_user.is_authenticated else None) | tojson }},
     "i18n": {
       "confirmStartRandom": {{ _("Sei sicuro di voler avviare la gara? Tutti i turni verranno creati contemporaneamente e le iscrizioni chiuse definitivamente.") | tojson }},
       "confirmStartStandard": {{ _("Sei sicuro di voler avviare il primo turno? Le iscrizioni verranno chiuse definitivamente.") | tojson }},
@@ -1128,62 +1131,62 @@
   function openTableAssignment(matchId, currentTable, playerDisplay, _unused) {
     tableAssignmentMatchId = matchId;
     tableAssignmentCurrentTable = currentTable;
-
-    // Aggiorna info partita nel modal
     document.getElementById('tableModalMatchInfo').textContent = playerDisplay;
-
-    // Mostra/nascondi info tavolo attuale
-    if (currentTable) {
-      document.getElementById('currentTableInfo').style.display = '';
-      document.getElementById('currentTableDisplay').textContent = GARA_CONFIG.i18n.tablePrefix + ' ' + currentTable;
-    } else {
-      document.getElementById('currentTableInfo').style.display = 'none';
-    }
-
-    // Genera bottoni per i tavoli disponibili
+    document.getElementById('tableModalRimuovi').hidden = !currentTable;
     generateTableButtons();
   }
 
   /**
-   * Genera i bottoni della griglia tavoli
+   * Apre il foglio del tavolo dalla card (canvas 3.2): i dati stanno sui
+   * data-* dell'articolo che contiene il pulsante.
+   */
+  function apriAssegnaTavolo(btn) {
+    const card = btn.closest('.c7-partita');
+    if (!card) return;
+    const d = card.dataset;
+    openTableAssignment(parseInt(d.matchId, 10), d.table || null, d.p1Name + ' – ' + d.p2Name, '');
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('tableAssignmentModal')).show();
+  }
+
+  /**
+   * Le tessere dei tavoli (canvas 3.2): la libera e' il comando, evidenziata;
+   * l'occupata mostra i due giocatori e, toccata, scambia i tavoli; quella
+   * attuale della partita e' scura e non si tocca.
    */
   function generateTableButtons() {
     const tableGrid = document.getElementById('tableGrid');
-    tableGrid.innerHTML = ''; // Pulisci griglia
+    tableGrid.innerHTML = '';
+    const occupanti = GARA_CONFIG.tavoliOccupanti || {};
 
     availableTables.forEach(tableName => {
-      const button = document.createElement('button');
-      button.className = 'btn table-btn';
+      const tessera = document.createElement('button');
+      tessera.type = 'button';
+      tessera.className = 'c7-tavolo';
+      const num = document.createElement('div');
+      num.className = 'c7-tavolo__kicker';
+      num.textContent = GARA_CONFIG.i18n.tablePrefix;
+      const n = document.createElement('div');
+      n.className = 'c7-tavolo__num c7-num';
+      n.textContent = tableName;
+      const chi = document.createElement('div');
+      chi.className = 'c7-tavolo__chi';
+      tessera.append(num, n, chi);
 
-      // Determina lo stato del bottone
       if (tableName === tableAssignmentCurrentTable) {
-        // Tavolo corrente
-        button.classList.add('table-btn-current');
-        button.innerHTML = `
-                <div class="table-icon"><i class="fas fa-check-circle"></i></div>
-                <div class="table-name">${tableName}</div>
-            `;
-        button.disabled = true;
+        tessera.classList.add('c7-tavolo--attuale');
+        chi.textContent = {{ _('tavolo attuale')|tojson }};
+        tessera.disabled = true;
       } else if (isTableOccupied(tableName)) {
-        // Tavolo occupato (swap possibile)
-        button.classList.add('table-btn-occupied');
-        button.innerHTML = `
-                <div class="table-icon"><i class="fas fa-exchange-alt"></i></div>
-                <div class="table-name">${tableName}</div>
-            `;
-        button.title = GARA_CONFIG.i18n.swapTitle;
-        button.onclick = function() { selectTableFromModal(tableName, this); };
+        tessera.classList.add('c7-tavolo--occupato');
+        chi.textContent = occupanti[tableName] || '';
+        tessera.title = GARA_CONFIG.i18n.swapTitle;
+        tessera.onclick = function () { selectTableFromModal(tableName, this); };
       } else {
-        // Tavolo disponibile
-        button.classList.add('table-btn-available');
-        button.innerHTML = `
-                <div class="table-icon"><i class="fas fa-table"></i></div>
-                <div class="table-name">${tableName}</div>
-            `;
-        button.onclick = function() { selectTableFromModal(tableName, this); };
+        tessera.classList.add('c7-tavolo--libero');
+        chi.textContent = {{ _('libero · tocca per assegnare')|tojson }};
+        tessera.onclick = function () { selectTableFromModal(tableName, this); };
       }
-
-      tableGrid.appendChild(button);
+      tableGrid.appendChild(tessera);
     });
   }
 
@@ -1283,6 +1286,14 @@
       openTableAssignment(matchId, table, players, '');
       bootstrap.Modal.getOrCreateInstance(document.getElementById('tableAssignmentModal')).show();
     };
+    tavolo.hidden = tavolo.hidden || !(GARA_CONFIG.availableTables || []).length;
+
+    const correggi = document.getElementById('menuPartitaCorreggi');
+    correggi.hidden = !(finished && canModify);
+    correggi.onclick = function () {
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('menuPartitaModal')).hide();
+      apriCorrezione(btn);
+    };
 
     const azzera = document.getElementById('menuPartitaAzzera');
     azzera.hidden = !(hasScores || finished) || !canModify;
@@ -1301,6 +1312,150 @@
     document.getElementById('menuPartitaBloccata').hidden = canModify;
 
     bootstrap.Modal.getOrCreateInstance(document.getElementById('menuPartitaModal')).show();
+  }
+
+  // ---- Il punteggio dalla card (canvas 3C) ----------------------------------
+
+  /** Regola del tetto: «al N» ferma entrambi quando uno arriva a N,
+   *  «esattamente N» ferma alla somma. E' la stessa di `_calculate_result`. */
+  function allaDistanza(p1, p2, max, raceTo) {
+    return raceTo ? (p1 >= max || p2 >= max) : (p1 + p2 >= max);
+  }
+
+  function leggiPunti(el) {
+    return [parseInt(el.dataset.p1 || '0', 10), parseInt(el.dataset.p2 || '0', 10),
+            parseInt(el.dataset.max || '0', 10), el.dataset.raceTo === '1'];
+  }
+
+  /** Accende e spegne − e + di una card (o del foglio) dal suo punteggio. */
+  function aggiornaStepper(el) {
+    const [p1, p2, max, raceTo] = leggiPunti(el);
+    const stop = allaDistanza(p1, p2, max, raceTo);
+    el.querySelectorAll('.c7-partita__piu').forEach(function (b) { b.disabled = stop; });
+    el.querySelectorAll('.c7-partita__meno').forEach(function (b) {
+      b.disabled = (b.dataset.lato === '1' ? p1 : p2) <= 0;
+    });
+    el.querySelectorAll('[data-num="1"]').forEach(function (n) { n.textContent = p1; });
+    el.querySelectorAll('[data-num="2"]').forEach(function (n) { n.textContent = p2; });
+  }
+
+  /**
+   * Un tocco su − o +: salva subito (`punteggio_partita`) e aggiorna la card
+   * sul posto. Alla distanza la partita si chiude e il tavolo passa alla
+   * prima in attesa: la pagina si ricarica per mostrarlo. Se la card cambia
+   * stato (una «da validare» che scende sotto la distanza), idem.
+   */
+  function passoPunteggio(btn, delta) {
+    const card = btn.closest('.c7-partita');
+    if (!card || card.dataset.inCorso === '1') return;
+    let [p1, p2, max, raceTo] = leggiPunti(card);
+    if (btn.dataset.lato === '1') p1 = Math.max(0, p1 + delta); else p2 = Math.max(0, p2 + delta);
+    if (delta > 0 && allaDistanza(parseInt(card.dataset.p1, 10), parseInt(card.dataset.p2, 10), max, raceTo)) return;
+
+    card.dataset.inCorso = '1';
+    card.querySelectorAll('.c7-partita__step button').forEach(function (b) { b.disabled = true; });
+    const dati = new FormData();
+    dati.append('player1_score', p1);
+    dati.append('player2_score', p2);
+    fetch('/admin/match/' + card.dataset.matchId + '/punteggio', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken() },
+      body: dati
+    })
+      .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
+      .then(function (esito) {
+        const d = esito.d || {};
+        if (!esito.ok || !d.success) throw new Error(d.error || GARA_CONFIG.i18n.errorQuickResult);
+        const eraDaValidare = card.dataset.stato === 'da_validare';
+        if (d.finished || d.at_distance !== eraDaValidare) {
+          location.reload();
+          return;
+        }
+        card.dataset.p1 = d.player1_score;
+        card.dataset.p2 = d.player2_score;
+        delete card.dataset.inCorso;
+        aggiornaStepper(card);
+      })
+      .catch(function (errore) {
+        delete card.dataset.inCorso;
+        aggiornaStepper(card);
+        showError(errore.message);
+      });
+  }
+
+  /** «Valida il risultato» dalla card verde: la nota sulla card ha gia'
+   *  detto cosa succede, non serve una seconda domanda. */
+  function validaDallaCard(matchId, btn) {
+    var restore = withLoading(btn);
+    fetch('/admin/match/' + matchId + '/validate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken() }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.success) {
+          location.reload();
+        } else {
+          showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || GARA_CONFIG.i18n.infoValidateImpossible));
+          restore();
+        }
+      })
+      .catch(function () {
+        showError(GARA_CONFIG.i18n.errorValidationWait);
+        restore();
+      });
+  }
+
+  // ---- Correggere un risultato chiuso (canvas 3.4, issue #90) --------------
+
+  /** Apre il foglio dalla card o dalla riga che contiene `el`. */
+  function apriCorrezione(el) {
+    const sorgente = el.closest('.c7-partita, .c7-riga-partita');
+    if (!sorgente) return;
+    const d = sorgente.dataset;
+    const lati = document.getElementById('correggiLati');
+    lati.dataset.p1 = d.p1 || '0';
+    lati.dataset.p2 = d.p2 || '0';
+    lati.dataset.max = d.max || '0';
+    lati.dataset.raceTo = d.raceTo || '1';
+    document.getElementById('correggiNome1').textContent = d.p1Name || '';
+    document.getElementById('correggiNome2').textContent = d.p2Name || '';
+    document.getElementById('correggiSotto').textContent = (d.p1Name || '') + ' – ' + (d.p2Name || '') + (d.sub ? ' · ' + d.sub : '');
+    document.getElementById('correggiForm').action = '/admin/match/' + d.matchId + '/correct';
+    document.getElementById('correggiNota').value = '';
+    aggiornaCorrezione();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('correggiRisultatoModal')).show();
+  }
+
+  function passoCorrezione(lato, delta) {
+    const lati = document.getElementById('correggiLati');
+    const chiave = lato === 1 ? 'p1' : 'p2';
+    lati.dataset[chiave] = Math.max(0, parseInt(lati.dataset[chiave] || '0', 10) + delta);
+    aggiornaCorrezione();
+  }
+
+  /** Il foglio accetta solo un risultato completo: e' cio' che il servizio
+   *  pretende, e dirlo prima evita il messaggio rosso dopo. */
+  function aggiornaCorrezione() {
+    const lati = document.getElementById('correggiLati');
+    aggiornaStepper(lati);
+    const [p1, p2, max, raceTo] = leggiPunti(lati);
+    const completo = raceTo ? (p1 >= max || p2 >= max) && Math.max(p1, p2) === max : (p1 + p2 === max);
+    document.getElementById('correggiInvia').disabled = !completo;
+    document.getElementById('correggiHint').textContent = completo
+      ? (p1 === p2
+          ? {{ _('Pareggio: nessun vincitore.')|tojson }}
+          : {{ _('Vince %(nome)s.', nome='__N__')|tojson }}.replace('__N__', p1 > p2 ? document.getElementById('correggiNome1').textContent : document.getElementById('correggiNome2').textContent))
+      : (raceTo
+          ? {{ _('Uno dei due deve arrivare a %(n)s.', n='__N__')|tojson }}.replace('__N__', max)
+          : {{ _('La somma deve essere esattamente %(n)s.', n='__N__')|tojson }}.replace('__N__', max));
+  }
+
+  function inviaCorrezione(event) {
+    const lati = document.getElementById('correggiLati');
+    document.getElementById('correggiP1').value = lati.dataset.p1;
+    document.getElementById('correggiP2').value = lati.dataset.p2;
+    return true;
   }
 
   function apriMenuTurno() {

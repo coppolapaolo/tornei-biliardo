@@ -2,7 +2,8 @@
 
    Il menu di una partita del turno, dalla sua card (canvas, 2S · Il menu
    della partita): cambiare il tavolo (3.2), azzerarla (`reset_match`, finche'
-   il turno dopo non e' avviato), aprire il segnapunti. Un foglio solo per
+   il turno dopo non e' avviato), correggere un risultato chiuso (3.4, issue
+   #90), aprire il segnapunti. Un foglio solo per
    tutte le card: `apriMenuPartita(bottone)` lo riempie dagli attributi
    `data-*` del pulsante che l'ha aperto (`_scripts.html`). #}
 <div class="modal fade c7-sheet" id="menuPartitaModal" tabindex="-1" aria-labelledby="menuPartitaTitolo">
@@ -16,6 +17,9 @@
       <div class="modal-body c7-stack">
         <button type="button" class="btn btn-secondary w-100" id="menuPartitaTavolo">
           <i class="fas fa-table"></i> <span></span>
+        </button>
+        <button type="button" class="btn btn-secondary w-100" id="menuPartitaCorreggi">
+          <i class="fas fa-pen"></i> {{ _('Correggi il risultato') }}
         </button>
         <button type="button" class="btn btn-danger w-100" id="menuPartitaAzzera">
           <i class="fas fa-rotate-left"></i> {{ _('Azzera la partita') }}

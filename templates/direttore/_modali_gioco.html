@@ -1,8 +1,9 @@
 {# templates/direttore/_modali_gioco.html — Design System 7c
 
-   I modali della fase di gioco — risultato rapido, assegnazione del tavolo,
-   spareggio — spostati qui da `gara_detail.html`: li usa solo chi dirige.
-   Id, campi e handler sono invariati, li legge `_scripts.html`. #}
+   I fogli della fase di gioco: il risultato rapido (resta per le partite a
+   tre; le altre segnano dalla card, canvas 3C), il tavolo (3.2), la
+   correzione di un risultato chiuso (3.4), lo spareggio. Li legge
+   `_scripts.html`. #}
 
 {# Punteggio di un giocatore nel modal del risultato rapido: stepper, non
    campo numerico (regola 7c per i numeri piccoli e frequenti). #}
@@ -123,42 +124,81 @@
   </div>
 </div>
 
-{# Modal Assegnazione Tavolo #}
-<div class="modal fade" id="tableAssignmentModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+{# Il foglio «Assegna il tavolo» (canvas 3.2): le tessere dei tavoli, con i
+   due giocatori sugli occupati; la libera e' il comando, si tocca e salva
+   subito (`selectTableFromModal`). Le tessere le disegna `generateTableButtons`
+   da GARA_CONFIG (tavoli, occupati, chi c'e' sopra). #}
+<div class="modal fade c7-sheet" id="tableAssignmentModal" tabindex="-1" aria-labelledby="tableModalTitolo">
+  <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title">{{ _('Assegna Tavolo') }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="tableModalTitolo">{{ _('Assegna il tavolo') }}</h3>
+        <div class="c7-sheet__sub" id="tableModalMatchInfo"></div>
       </div>
-      <div class="modal-body">
-        <div class="c7-stack">
-          {# Info partita #}
-          <div class="alert alert-info">
-            <strong id="tableModalMatchInfo"></strong>
-          </div>
-
-          {# Tavolo attuale #}
-          <div id="currentTableInfo" style="display: none; font-size: 12px; font-weight: 600; color: var(--c7-ink-muted);">
-            {{ _('Tavolo attuale:') }} <strong class="c7-num" id="currentTableDisplay"></strong>
-          </div>
-
-          {# Griglia tavoli — i bottoni li genera il JS #}
-          <div class="table-grid" id="tableGrid"></div>
-
-          <button class="btn btn-danger w-100" onclick="selectTableFromModal(null, this)">
-            <i class="fas fa-circle-xmark"></i> {{ _('Rimuovi Tavolo') }}
-          </button>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
+      <div class="modal-body c7-stack">
+        <div class="c7-tavoli" id="tableGrid"></div>
+        <div class="c7-nota">{{ _('Gli occupati si liberano quando il risultato è validato, e passano da soli alla prima partita in attesa. Toccare un occupato scambia i tavoli delle due partite.') }}</div>
+        <button type="button" class="btn btn-secondary w-100" id="tableModalRimuovi" onclick="selectTableFromModal(null, this)">
+          <i class="fas fa-circle-xmark"></i> {{ _('Togli il tavolo') }}
+        </button>
       </div>
     </div>
   </div>
 </div>
 
-{# Modal Spareggio (SSR) #}
+{# Il foglio «Correggi il risultato» (canvas 3.4, issue #90): gli stessi
+   stepper della card, il perche' facoltativo, e le due conseguenze scritte
+   prima del clic — i triangoli segnati uno per uno si cancellano, la
+   correzione resta scritta sulla partita. Posta a `correct_match_result` con
+   `next` verso questa pagina. #}
+<div class="modal fade c7-sheet" id="correggiRisultatoModal" tabindex="-1" aria-labelledby="correggiTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form method="POST" id="correggiForm" action="#" onsubmit="return inviaCorrezione(event)">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next" value="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}">
+        <input type="hidden" name="player1_score" id="correggiP1">
+        <input type="hidden" name="player2_score" id="correggiP2">
+        <div class="modal-header">
+          <div class="c7-sheet__grip" aria-hidden="true"></div>
+          <h3 class="modal-title" id="correggiTitolo">{{ _('Correggi il risultato') }}</h3>
+          <div class="c7-sheet__sub" id="correggiSotto"></div>
+        </div>
+        <div class="modal-body c7-stack">
+          <div class="c7-partita__lati c7-partita__lati--foglio" id="correggiLati" data-max="0" data-race-to="1">
+            {% for n in (1, 2) %}
+            <div class="c7-partita__lato c7-partita__lato--stepper">
+              <div class="c7-partita__nome" id="correggiNome{{ n }}"></div>
+              <div class="c7-partita__step">
+                <button type="button" class="c7-partita__meno" data-lato="{{ n }}" onclick="passoCorrezione({{ n }}, -1)" aria-label="{{ _('Un triangolo in meno') }}"><i class="fas fa-minus"></i></button>
+                <span class="c7-partita__num c7-num" id="correggiNum{{ n }}" data-num="{{ n }}">0</span>
+                <button type="button" class="c7-partita__piu" data-lato="{{ n }}" onclick="passoCorrezione({{ n }}, 1)" aria-label="{{ _('Un triangolo in più') }}"><i class="fas fa-plus"></i></button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          <div class="c7-partita__hint" id="correggiHint"></div>
+          <div>
+            <label class="c7-label" for="correggiNota">{{ _('Perché (facoltativo)') }}</label>
+            <input type="text" class="form-control" name="note" id="correggiNota" maxlength="200" placeholder="{{ _('punteggio invertito') }}">
+          </div>
+          <div class="c7-flash c7-flash--warning">
+            <span class="c7-flash__ico"><i class="fas fa-clock"></i></span>
+            <div class="c7-flash__body">
+              <div class="c7-flash__title">{{ _('I triangoli segnati uno per uno si cancellano') }}</div>
+              <div class="c7-flash__text">{{ _('Resta il punteggio finale. La correzione rimane scritta sulla partita: chi aveva visto il risultato di prima capisce perché è cambiato.') }}</div>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100" id="correggiInvia">
+            <i class="fas fa-check"></i> {{ _('Correggi il risultato') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div class="modal fade" id="ssrModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
     <div class="modal-content">

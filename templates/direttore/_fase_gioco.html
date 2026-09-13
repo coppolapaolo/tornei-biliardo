@@ -119,23 +119,31 @@
 </div>
 {% endif %}
 
+{# Da fare adesso: le sole cose che il turno chiede al direttore. Sul
+   telefono sta sopra le partite, sul desktop in cima alla colonna destra
+   (canvas 3.9): la stessa macro, due posti. #}
+{% macro da_fare_adesso() -%}
+{% if conteggi and (conteggi.da_validare or conteggi.senza_tavolo) and not tipo_comando %}
+<div>
+  {{ d.sezione(_('Da fare adesso')) }}
+  <div class="c7-rows" style="margin-top:10px">
+    {% if conteggi.da_validare %}
+    {{ d.riga('fa-check', ngettext('%(n)d risultato da validare', '%(n)d risultati da validare', conteggi.da_validare, n=conteggi.da_validare),
+              _('chiuso dal segnapunti dei giocatori senza la doppia conferma'), tone='ok') }}
+    {% endif %}
+    {% if conteggi.senza_tavolo %}
+    {{ d.riga('fa-table', ngettext('%(n)d partita aspetta un tavolo', '%(n)d partite aspettano un tavolo', conteggi.senza_tavolo, n=conteggi.senza_tavolo),
+              (_('nessun tavolo libero: si assegna da sé quando uno si libera') if conteggi.tavoli_occupati >= conteggi.tavoli_totali else _('c’è un tavolo libero: assegnalo dalla card')),
+              tone='warn') }}
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+{%- endmacro %}
+
 <div class="c7-cols">
   <div class="c7-stack">
-    {# Da fare adesso: le sole cose che il turno chiede al direttore. #}
-    {% if conteggi and (conteggi.da_validare or conteggi.senza_tavolo) and not tipo_comando %}
-    {{ d.sezione(_('Da fare adesso')) }}
-    <div class="c7-rows">
-      {% if conteggi.da_validare %}
-      {{ d.riga('fa-check', ngettext('%(n)d risultato da validare', '%(n)d risultati da validare', conteggi.da_validare, n=conteggi.da_validare),
-                _('chiuso dal segnapunti dei giocatori senza la doppia conferma'), tone='ok') }}
-      {% endif %}
-      {% if conteggi.senza_tavolo %}
-      {{ d.riga('fa-table', ngettext('%(n)d partita aspetta un tavolo', '%(n)d partite aspettano un tavolo', conteggi.senza_tavolo, n=conteggi.senza_tavolo),
-                (_('nessun tavolo libero: si assegna da sé quando uno si libera') if conteggi.tavoli_occupati >= conteggi.tavoli_totali else _('c’è un tavolo libero: assegnalo dalla card')),
-                tone='warn') }}
-      {% endif %}
-    </div>
-    {% endif %}
+    <div class="d-lg-none">{{ da_fare_adesso() }}</div>
 
     {# Il tabellone ha una pagina sua. #}
     {% if has_bracket_view and feature_visible('admin.competition.gara_bracket') %}
@@ -145,13 +153,8 @@
     </div>
     {% endif %}
 
-    {# Partite: card sul telefono, tabella sul desktop. #}
-    <div class="d-lg-none" data-help="gara-turni">
-      {% include "components/_match_cards_mobile.html" %}
-    </div>
-    <div class="d-none d-lg-block">
-      {% include "components/_gara_matches.html" %}
-    </div>
+    {# Le partite: card del turno in corso, righe per i turni chiusi. #}
+    {% include "direttore/_partite.html" %}
 
     {% if show_ssr_section %}
     {% include "components/_ssr_section.html" %}
@@ -163,6 +166,27 @@
   </div>
 
   <div class="c7-stack">
+    <div class="d-none d-lg-block">{{ da_fare_adesso() }}</div>
+
+    {# I tavoli, sul desktop (canvas 3.9): chi c'e' sopra, o libero. Sul
+       telefono stanno nel foglio della card. #}
+    {% if tavoli_turno and not tipo_comando %}
+    <div class="d-none d-lg-block">
+      {{ d.sezione(_('Tavoli'), more=_('Modifica'), more_href=url_for('admin.competition.gara_impostazioni', gara_id=gara.id) ~ '#sezioneTavoli') }}
+      <div class="c7-card c7-tavoli-card" style="margin-top:10px">
+        <div class="c7-tavoli c7-tavoli--quattro">
+          {% for t in tavoli_turno %}
+          <div class="c7-tavolo{% if not t.libero %} c7-tavolo--occupato{% else %} c7-tavolo--libero{% endif %}">
+            <div class="c7-tavolo__kicker">{{ _('Tavolo') }}</div>
+            <div class="c7-tavolo__num c7-num">{{ t.nome }}</div>
+            <div class="c7-tavolo__chi">{% if t.libero %}{{ _('libero') }}{% else %}{% for g in t.giocatori %}{{ g }}{% if not loop.last %}<br>{% endif %}{% endfor %}{% endif %}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
     {% if has_scores %}
     {% with classification=current_round_classification, round_number=latest_round_with_classification %}
     <div class="d-lg-none" data-help="gara-classifica">

@@ -85,10 +85,21 @@
 {% include "direttore/_scripts.html" %}
 {% if gara.status != GaraStatus.COMPLETED.value %}
 <script>
-  window.Polling.reloadOnEvents({
-    url: '/sse/poll/gara/' + GARA_CONFIG.gara.id,
-    reloadOn: ['match_completed', 'match_updated', 'round_started', 'inscription_added', 'gara_completed']
-  });
+  // Come `Polling.reloadOnEvents`, ma un fatto scritto da questa stessa
+  // persona (il punteggio dagli stepper, canvas 3C) la card lo ha gia'
+  // mostrato: ricaricare rifarebbe la pagina sotto il dito.
+  (function () {
+    var tipi = ['match_completed', 'match_updated', 'round_started', 'inscription_added', 'gara_completed'];
+    window.Polling.create({
+      url: '/sse/poll/gara/' + GARA_CONFIG.gara.id,
+      onEvent: function (evento) {
+        if (!tipi.includes(evento.type)) return;
+        if (evento.data && evento.data.autore === GARA_CONFIG.utenteId && evento.type === 'match_updated') return;
+        location.reload();
+      },
+      onGap: function () { location.reload(); }
+    }).start();
+  })();
 </script>
 {% endif %}
 {% endblock %}

@@ -1,6 +1,8 @@
 # routes/admin/competition/detail.py
 """Gara detail view - unified for all user roles."""
 
+from typing import Optional
+
 from flask import (
     render_template,
     request,
@@ -204,13 +206,18 @@ def _vista_direttore(
     occupied_tables,
     has_ssr_data: bool,
     has_unresolved_tiebreakers: bool,
+    user_id: Optional[int] = None,
 ) -> dict:
-    """Fase, striscia, comando e conteggi per `direttore/gara.html`."""
+    """Fase, striscia, comando, conteggi e partite per `direttore/gara.html`."""
     from models.competition.direttore_view import (
         conteggi_turno,
         fase_della_gara,
+        partite_del_turno,
+        prima_in_attesa,
         spareggio_nella_striscia,
+        stato_partita,
         striscia,
+        tavoli_del_turno,
     )
     from models.dashboard.comandi import comando_per
 
@@ -227,8 +234,24 @@ def _vista_direttore(
 
     conteggi = None
     menu_turno = None
+    partite_turno = []
+    turno_concluso = False
+    prossima_in_attesa = None
+    tavoli_turno = []
+    # Lo stato di ogni card (canvas 3.2–3.4), per ogni turno: i turni chiusi
+    # restano in pagina come righe.
+    stati_partite = {m.id: stato_partita(m).value for m in (all_matches or [])}
     if gara.status == GaraStatus.PLAYING.value:
         turno = gara.display_round or 1
+        partite_turno = partite_del_turno(all_matches or [], turno, user_id)
+        # Il turno che si vede e' concluso quando ogni sua partita lo e' (la X
+        # compresa): con i turni pre-generati `comando` parla del turno di
+        # `current_round`, che puo' essere quello prima.
+        turno_concluso = bool(partite_turno) and all(
+            stati_partite[m.id] in ("conclusa", "x") for m in partite_turno
+        )
+        prossima_in_attesa = prima_in_attesa(all_matches or [], turno)
+        tavoli_turno = tavoli_del_turno(all_matches or [], available_tables)
         conteggi = conteggi_turno(
             all_matches or [],
             turno,
@@ -272,6 +295,14 @@ def _vista_direttore(
         "comando": comando,
         "conteggi": conteggi,
         "menu_turno": menu_turno,
+        "partite_turno": partite_turno,
+        "turno_concluso": turno_concluso,
+        "prossima_in_attesa": prossima_in_attesa,
+        "tavoli_turno": tavoli_turno,
+        "tavoli_occupanti": {
+            t.nome: " – ".join(t.giocatori) for t in tavoli_turno if not t.libero
+        },
+        "stati_partite": stati_partite,
     }
 
 
@@ -721,6 +752,7 @@ def gara_detail(gara_id):
                 occupied_tables,
                 has_ssr_data=has_ssr_data,
                 has_unresolved_tiebreakers=has_unresolved_tiebreakers,
+                user_id=current_user.id if current_user.is_authenticated else None,
             )
         )
 

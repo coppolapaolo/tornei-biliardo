@@ -20,9 +20,11 @@ from utils import (
     rack_manager_required,
 )
 from models.match.services import RackService
+from models.status_enum import MatchStatus
 from models.kpi import track_match_played
 from routes.sse import emit_gara_event
 from utils.route_helpers import handle_service_action, safe_json_error
+from utils.safe_redirect import safe_next_url
 
 from . import match_bp
 
@@ -88,6 +90,87 @@ def set_match_result_direct(match_id):
         redirect_url=url_for("admin.match.match_detail", match_id=match_id),
         success_message="Risultato impostato con successo!",
         error_prefix=None,
+    )
+
+
+@match_bp.route("/<int:match_id>/punteggio", methods=["POST"])
+@login_required
+@match_manager_required
+def punteggio_partita(match_id):
+    """Il punteggio dagli stepper della card (canvas 3C): risponde in JSON.
+
+    Stesso servizio del risultato secco (`set_match_result_direct`): alla
+    distanza del turno la partita si chiude e il tavolo passa alla prima in
+    attesa. La card si aggiorna sul posto con quello che torna; l'evento
+    live porta `autore`, cosi' la pagina di chi ha toccato non si ricarica
+    per un fatto che ha gia' visto.
+    """
+    from models.competition.round_service import RoundService
+
+    try:
+        player1_score = int(request.form["player1_score"])
+        player2_score = int(request.form["player2_score"])
+    except (KeyError, ValueError):
+        return (
+            jsonify({"success": False, "error": str(_("Punteggio non valido."))}),
+            400,
+        )
+
+    from models.competition.round_manager import AdvancedRoundManager
+
+    corrente = db.session.get(Match, match_id)
+    if corrente is None:
+        return jsonify({"success": False, "error": str(_("Partita non trovata"))}), 404
+    # La card segna solo partite aperte, a due giocatori e a set singolo: la
+    # X, il trio e il multi-set hanno il loro segnapunti, e una partita chiusa
+    # si cambia solo con la correzione, che ne lascia traccia (issue #90).
+    # Nascondere gli stepper non basta: e' la route che rifiuta (rilievo della
+    # revisione automatica sulla PR #349).
+    if corrente.is_bye or corrente.is_trio or corrente.is_multi_set:
+        errore = _("Questa partita si segna dal suo segnapunti.")
+        return jsonify({"success": False, "error": str(errore)}), 400
+    if MatchStatus.is_finished(corrente.status):
+        errore = _("La partita è chiusa: si cambia con «Correggi il risultato».")
+        return jsonify({"success": False, "error": str(errore)}), 409
+    consentito, motivo = AdvancedRoundManager.can_modify_match(match_id)
+    if not consentito:
+        return jsonify({"success": False, "error": str(motivo)}), 409
+
+    try:
+        RackService.set_match_result_direct(match_id, player1_score, player2_score)
+    except ValueError as ve:
+        return jsonify({"success": False, "error": str(ve)}), 400
+
+    match = db.session.get(Match, match_id)
+    if match is None:
+        return jsonify({"success": False, "error": str(_("Partita non trovata"))}), 404
+    if match.gara_id:
+        RoundService.update_round_progression(match.gara_id)
+        emit_gara_event(
+            match.gara_id,
+            (
+                "match_completed"
+                if MatchStatus.is_finished(match.status)
+                else "match_updated"
+            ),
+            {
+                "match_id": match_id,
+                "player1_score": match.player1_score,
+                "player2_score": match.player2_score,
+                "winner_id": match.winner_id,
+                "autore": current_user.id,
+            },
+        )
+    return jsonify(
+        {
+            "success": True,
+            "match_id": match_id,
+            "player1_score": match.player1_score,
+            "player2_score": match.player2_score,
+            "finished": MatchStatus.is_finished(match.status),
+            "at_distance": match.is_at_distance,
+            "table_assignment": match.table_assignment,
+        }
     )
 
 
@@ -216,7 +299,12 @@ def correct_match_result(match_id):
     except ValueError as e:
         flash(str(e), "error")
 
-    return redirect(url_for("admin.match.match_detail", match_id=match_id))
+    # Dalla pagina della gara si torna alla pagina della gara (canvas 3.4):
+    # `next` e' un percorso interno o niente.
+    return redirect(
+        safe_next_url(request.form.get("next"))
+        or url_for("admin.match.match_detail", match_id=match_id)
+    )
 
 
 # ============ GESTIONE RACK ADMIN ============
