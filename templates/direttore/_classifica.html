@@ -59,7 +59,7 @@
       {# Dove lo spareggio ha deciso l'ordine, la pastiglia lo dice (canvas
          5.1); dove il pari merito e' ancora da sciogliere, anche (4.4). #}
       {% if ssr_scores_map and ssr_scores_map.get(riga.user_id) is not none %}
-      <span class="c7-state c7-state--warn c7-classifica__pill" title="{{ _('Spot Shot Rally: %(punti)s punti', punti=ssr_scores_map.get(riga.user_id)) }}">SSR</span>
+      <span class="c7-state c7-state--warn c7-classifica__pill" title="{{ _('Spot Shot Rally: %(punti)s punti', punti=ssr_scores_map.get(riga.user_id)) }}">SSR {{ ssr_scores_map.get(riga.user_id) }}</span>
       {% endif %}
       {% if pari_ids is defined and riga.user_id in pari_ids %}
       <span class="c7-state c7-state--warn c7-classifica__pill">{{ _('pari') }}</span>
