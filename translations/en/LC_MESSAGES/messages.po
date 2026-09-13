@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 07:52+0200\n"
+"POT-Creation-Date: 2026-09-13 08:11+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -482,6 +482,7 @@ msgid "invariato %(suffix)s"
 msgstr "unchanged %(suffix)s"
 
 #: models/dashboard/activity_feedback.py:616
+#: templates/direttore/_classifica.html:46
 msgid "stabile"
 msgstr "steady"
 
@@ -2179,7 +2180,8 @@ msgstr "All"
 #: templates/components/_campionato_general_classification.html:24
 #: templates/components/_detailed_classification.html:19
 #: templates/components/_user_info_card.html:26
-#: templates/dashboard/base.html:19 templates/player/profile.html:80
+#: templates/dashboard/base.html:19 templates/direttore/_classifica.html:37
+#: templates/player/profile.html:80
 msgid "Giocatore"
 msgstr "Player"
 
@@ -4128,7 +4130,8 @@ msgstr "Rounds"
 #: templates/admin/gara_create_standalone.html:321
 #: templates/components/_classification_mobile.html:10
 #: templates/components/_tessera_campionato.html:123
-#: templates/gara_detail.html:49 templates/public/vetrina_campionato.html:131
+#: templates/direttore/_classifica.html:22 templates/gara_detail.html:49
+#: templates/public/vetrina_campionato.html:131
 msgid "Classifica"
 msgstr "Standings"
 
@@ -4137,7 +4140,7 @@ msgstr "Standings"
 #: templates/components/_gara_inscriptions.html:96
 #: templates/components/_nearby_gare.html:137
 #: templates/direttore/_fase_conclusa.html:78
-#: templates/direttore/_fase_gioco.html:208
+#: templates/direttore/_fase_gioco.html:207
 #: templates/direttore/_fase_spareggio.html:64 templates/gara_detail.html:52
 msgid "Iscritti"
 msgstr "Registered"
@@ -5995,6 +5998,7 @@ msgstr "The tournament drills"
 #: templates/admin/gara_challenge_classification.html:120
 #: templates/components/_gara_challenges_display.html:24
 #: templates/components/_match_challenge_input.html:93
+#: templates/direttore/_classifica.html:24
 #: templates/direttore/_fase_preparazione.html:75
 #: templates/direttore/preparazione/_esercizi.html:31
 #: templates/player/gara_challenge_detail.html:14
@@ -9436,6 +9440,7 @@ msgstr "Top 6"
 
 #: templates/components/_classification_mobile.html:26
 #: templates/components/_classification_mobile.html:52
+#: templates/direttore/_classifica.html:38
 msgid "Spot Shot Rally"
 msgstr "Spot Shot Rally"
 
@@ -10275,7 +10280,7 @@ msgid "Imposta un massimo di iscritti per usare «fino al massimo»."
 msgstr "Set a maximum number of entries to use \"fill to the maximum\"."
 
 #: templates/components/_gara_inscriptions.html:97
-#: templates/direttore/_fase_gioco.html:209
+#: templates/direttore/_fase_gioco.html:208
 #: templates/direttore/_fase_spareggio.html:65
 #, python-format
 msgid "%(n)d attivo"
@@ -13501,6 +13506,78 @@ msgstr "at the distance the match closes and the table frees up"
 #: templates/direttore/_menu_partita.html:32
 msgid "Il turno dopo è già avviato: questa partita non si tocca più."
 msgstr "The next round has already started: this match can no longer be touched."
+
+#: templates/direttore/_classifica.html:22
+msgid "Classifica (rack)"
+msgstr "Standings (racks)"
+
+#: templates/direttore/_classifica.html:24
+msgid "complessiva"
+msgstr "overall"
+
+#: templates/direttore/_classifica.html:29
+#, python-format
+msgid "Prime %(n)s"
+msgstr "Top %(n)s"
+
+#: templates/direttore/_classifica.html:30
+#, python-format
+msgid "Tutti (%(n)s)"
+msgstr "All (%(n)s)"
+
+#: templates/direttore/_classifica.html:39
+msgid "Vinti"
+msgstr "Won"
+
+#: templates/direttore/_classifica.html:39
+msgid "Vinte"
+msgstr "Won"
+
+#: templates/direttore/_classifica.html:40
+msgid "Persi"
+msgstr "Lost"
+
+#: templates/direttore/_classifica.html:40
+msgid "Diff"
+msgstr "Diff"
+
+#: templates/direttore/_classifica.html:46
+msgid "primo turno"
+msgstr "first round"
+
+#: templates/direttore/_classifica.html:46
+#, python-format
+msgid "sale di %(n)s"
+msgstr "up by %(n)s"
+
+#: templates/direttore/_classifica.html:46
+#, python-format
+msgid "scende di %(n)s"
+msgstr "down by %(n)s"
+
+#: templates/direttore/_classifica.html:70
+msgid ""
+"Sistema RACK: ordinata per triangoli vinti in tutta la gara, poi punti "
+"SSR. La X a tavolino vale zero triangoli."
+msgstr ""
+"RACK system: sorted by racks won across the whole competition, then SSR "
+"points. An X by walkover is worth zero racks."
+
+#: templates/direttore/_classifica.html:71
+msgid "Ordinata per piazzamento nel tabellone."
+msgstr "Sorted by placement in the bracket."
+
+#: templates/direttore/_classifica.html:72
+msgid ""
+"Ordinata per vittorie, poi differenza triangoli. La X a tavolino vale una"
+" vittoria e zero differenza."
+msgstr ""
+"Sorted by wins, then rack difference. An X by walkover is worth one win "
+"and zero difference."
+
+#: templates/direttore/_classifica.html:73
+msgid "La freccia confronta con il turno prima."
+msgstr "The arrow compares with the previous round."
 
 #: templates/direttore/_fase_conclusa.html:17
 msgid "Non si è giocata"
