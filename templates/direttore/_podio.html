@@ -34,7 +34,7 @@
     <div class="c7-podio-finale__pos c7-num">
       {% if gradino|length > 1 %}{{ riga.position }}°–{{ riga.position + gradino|length - 1 }}°
       {% else %}{{ riga.position }}°{% endif %}
-      {%- if ssr_scores_map is defined and ssr_scores_map and ssr_scores_map.get(riga.user_id) is not none %} · SSR{% endif %}
+      {%- if ssr_scores_map is defined and ssr_scores_map and ssr_scores_map.get(riga.user_id) is not none %} · SSR {{ ssr_scores_map.get(riga.user_id) }}{% endif %}
     </div>
   </div>
   {% endfor %}

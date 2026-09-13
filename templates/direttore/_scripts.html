@@ -418,7 +418,11 @@
 
     inputs.forEach(function (input) {
       const userId = input.dataset.userId;
-      const value = parseInt(input.value, 10);
+      // Un campo mai toccato è vuoto, ma a schermo mostra lo 0 del
+      // placeholder: vale quello che si vede. Senza, «Salva» rifiutava lo
+      // zero finché non lo si portava a 1 e di nuovo a 0.
+      const testo = input.value.trim();
+      const value = testo === '' ? 0 : parseInt(testo, 10);
 
       if (isNaN(value) || value < 0) {
         input.classList.add('is-invalid');

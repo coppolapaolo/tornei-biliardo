@@ -48,8 +48,9 @@ def test_il_podio_mette_il_primo_al_centro_con_le_medaglie(app):
         "c7-podio-finale__avatar--argento" in html
         and "c7-podio-finale__avatar--bronzo" in html
     )
-    # Il terzo posto l'ha deciso lo spareggio.
-    assert "3° · SSR" in html
+    # Il terzo posto l'ha deciso lo spareggio, e il numero dice come: senza,
+    # «SSR» non spiega chi l'ha vinto (rilievo del 2026-09-13).
+    assert "3° · SSR 4" in html
 
 
 def test_la_classifica_finale_ha_medaglie_e_pastiglia_ssr(app):
@@ -71,7 +72,8 @@ def test_la_classifica_finale_ha_medaglie_e_pastiglia_ssr(app):
     )
     assert "Classifica finale" in html
     assert "c7-pos c7-pos--lg c7-classifica__medaglia c7-pos--1" in html
-    assert html.count(">SSR<") == 2
+    # La pastiglia porta i punti: è quel che spiega l'ordine fra i parimerito.
+    assert ">SSR 4<" in html and ">SSR 2<" in html
     assert "dopo il turno 3" in html
 
 
