@@ -1,135 +1,120 @@
-{# templates/components/_campionato_general_classification.html #}
-{# Le colonne discendono dal **sistema di classifica** del campionato, non dal
-   suo tipo: sono due configurazioni indipendenti, e usare il tipo mostrava
-   "Triangoli Totali" sopra una differenza (issue #89, ADR-047). #}
+{# templates/components/_campionato_general_classification.html — Design System 7c
+
+   La classifica generale del campionato (canvas 7.1 e 7.3), in righe come la
+   classifica di gara: posizione, freccia rispetto alla gara prima
+   (`previous_position`), avatar e nome, le colonne del **sistema di
+   classifica** del campionato — non del suo tipo: sono due configurazioni
+   indipendenti, e usare il tipo mostrava «Triangoli Totali» sopra una
+   differenza (issue #89, ADR-047) — e le gare giocate.
+
+   La zona playoff (opzionale, `zone_playoff` da `models/playoff/zona.py`):
+   una barra sulle righe di chi andrebbe ai playoff, o e' stato invitato,
+   l'etichetta sopra la prima riga e «Fuori dai playoff» dopo l'ultima
+   dentro. La zona la decide il dominio, non la posizione in pagina.
+
+   Attesi: campionato, general_classification, last_completed_gara_number;
+   opzionale zone_playoff. Lo includono la pagina del campionato del
+   direttore e quella pubblica. #}
 {% set classification_sys = campionato.classification_system %}
+{% set _zone = zone_playoff if zone_playoff is defined and zone_playoff else [] %}
+{% set _prime = 10 %}
 {% if general_classification %}
-<div class="card mb-4">
-    {# Intestazione come quella degli altri box della pagina: inchiostro scuro
-       su fondo trasparente. `bg-primary text-white` ci dipingeva sopra una
-       fascia piena color accento — l'unica della pagina — e faceva sembrare
-       la classifica un elemento di un'altra interfaccia (issue #162). Il
-       tema 7c dà già a `.card > .card-header` l'aspetto giusto. #}
-    <div class="card-header">
-        <h5 class="mb-0">
-            <i class="fas fa-trophy"></i> {{ _("Classifica dopo Gara %(num)s", num=last_completed_gara_number) }}
-        </h5>
+{% set _in_zona = [] %}
+{% for z in _zone %}{% for uid in z.user_ids %}{% set _ = _in_zona.append(uid) %}{% endfor %}{% endfor %}
+{% set _ultima = namespace(indice=0) %}
+{% for position, dati in general_classification %}{% if dati.user_id in _in_zona %}{% set _ultima.indice = loop.index %}{% endif %}{% endfor %}
+<section class="c7-stack c7-cg" id="classificaGenerale" style="gap:10px">
+  <div class="c7-sechead">
+    <h3>{{ _('Classifica generale') }}</h3>
+    {% if last_completed_gara_number %}
+    <span class="c7-sechead__note">{{ _('dopo la gara %(num)s', num=last_completed_gara_number) }}</span>
+    {% endif %}
+  </div>
+  {% if general_classification|length > _prime %}
+  <div class="c7-classifica__pillole">
+    <button type="button" class="c7-pill is-active" aria-pressed="true" data-cg-vista="prime" onclick="mostraClassificaGenerale('prime')">{{ _('Prime %(n)s', n=_prime) }}</button>
+    <button type="button" class="c7-pill" aria-pressed="false" data-cg-vista="tutti" onclick="mostraClassificaGenerale('tutti')">{{ _('Tutti (%(n)s)', n=general_classification|length) }}</button>
+  </div>
+  {% endif %}
+  <div class="c7-rows">
+    <div class="c7-rows__row c7-classifica__testa">
+      <span class="c7-classifica__pos"></span>
+      <span class="c7-classifica__trend"></span>
+      <span class="c7-classifica__gioc c7-label">{{ _('Giocatore') }}</span>
+      {% if classification_sys == ClassificationSystem.RACK %}
+      <span class="c7-classifica__col c7-label">{{ _('Triangoli') }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-label">SSR</span>
+      {% elif classification_sys == ClassificationSystem.POSITION %}
+      <span class="c7-classifica__col c7-label">{{ _('Punti') }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-label">{{ _('Diff') }}</span>
+      {% else %}
+      <span class="c7-classifica__col c7-label">{{ _('Vinte') }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-label">{{ _('Diff') }}</span>
+      {% endif %}
+      <span class="c7-classifica__col c7-classifica__col--sec c7-label">{{ _('Gare') }}</span>
     </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-sm table-hover">
-                <thead>
-                    <tr>
-                        <th width="10%">{{ _("Pos.") }}</th>
-                        <th width="30%">{{ _("Giocatore") }}</th>
-                        {% if classification_sys == ClassificationSystem.RACK %}
-                            <th width="15%">{{ _("Triangoli Totali") }}</th>
-                            <th width="15%">{{ _("Punti SSR") }}</th>
-                        {% elif classification_sys == ClassificationSystem.POSITION %}
-                            <th width="15%">{{ _("Punti Totali") }}</th>
-                            <th width="15%">{{ _("Diff. Triangoli Tot.") }}</th>
-                        {% else %}
-                            <th width="15%">{{ _("Match Vinti") }}</th>
-                            <th width="15%">{{ _("Diff. Triangoli") }}</th>
-                        {% endif %}
-                        <th width="15%">{{ _("Partecipazioni") }}</th>
-                        <th width="15%">{{ _("Trend") }}</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for position, player_data in general_classification %}
-                        <tr class="{% if position <= 3 %}table-warning{% endif %}">
-                            <td>
-                                <strong>{{ position }}°</strong>
-                                {% if position == 1 %}
-                                    <i class="fas fa-medal text-warning"></i>
-                                {% elif position == 2 %}
-                                    <i class="fas fa-medal text-secondary"></i>
-                                {% elif position == 3 %}
-                                    <i class="fas fa-medal text-danger"></i>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <strong>{{ player_data.username }}</strong>
-                            </td>
-                            {% if classification_sys == ClassificationSystem.RACK %}
-                                <td>
-                                    <span class="badge bg-primary">{{ player_data.total_racks_won }}</span>
-                                </td>
-                                <td>
-                                    {% if player_data.total_spot_shot_wins|default(0) > 0 %}
-                                        <span class="badge bg-warning">{{ player_data.total_spot_shot_wins }}</span>
-                                    {% else %}
-                                        <span class="text-muted">-</span>
-                                    {% endif %}
-                                </td>
-                            {% elif classification_sys == ClassificationSystem.POSITION %}
-                                <td>
-                                    <span class="badge bg-primary">{{ player_data.total_points|default(0) }}</span>
-                                </td>
-                                <td>
-                                    {% if player_data.total_rack_difference > 0 %}
-                                        <span class="text-success">+{{ player_data.total_rack_difference }}</span>
-                                    {% elif player_data.total_rack_difference < 0 %}
-                                        <span class="text-danger">{{ player_data.total_rack_difference }}</span>
-                                    {% else %}
-                                        <span class="text-muted">0</span>
-                                    {% endif %}
-                                </td>
-                            {% else %}
-                                <td>
-                                    <span class="badge bg-success">{{ player_data.total_matches_won }}</span>
-                                </td>
-                                <td>
-                                    {% if player_data.total_rack_difference > 0 %}
-                                        <span class="text-success">+{{ player_data.total_rack_difference }}</span>
-                                    {% elif player_data.total_rack_difference < 0 %}
-                                        <span class="text-danger">{{ player_data.total_rack_difference }}</span>
-                                    {% else %}
-                                        <span class="text-muted">0</span>
-                                    {% endif %}
-                                </td>
-                            {% endif %}
-                            <td>
-                                {{ player_data.participations }}
-                            </td>
-                            <td>
-                                {% if player_data.previous_position %}
-                                    {% set diff = player_data.previous_position - position %}
-                                    {% if diff > 0 %}
-                                        <span class="text-success">
-                                            <i class="fas fa-arrow-up"></i> {{ diff }}
-                                        </span>
-                                    {% elif diff < 0 %}
-                                        <span class="text-danger">
-                                            <i class="fas fa-arrow-down"></i> {{ -diff }}
-                                        </span>
-                                    {% else %}
-                                        <span class="text-muted">
-                                            <i class="fas fa-minus"></i>
-                                        </span>
-                                    {% endif %}
-                                {% else %}
-                                    <span class="text-muted">-</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        
-        <div class="mt-3 text-muted small">
-            <i class="fas fa-info-circle"></i>
-            {% if classification_sys == ClassificationSystem.RACK %}
-                {{ _("Classifica generale: ordinata per triangoli totali, poi per punti spareggio (SSR).") }}
-            {% elif classification_sys == ClassificationSystem.POSITION %}
-                {{ _("Classifica generale basata sui punti ottenuti in tutte le gare completate.") }}
-                {{ _("Sistema di punteggio: posizioni 1-10 assegnano punti decrescenti.") }}
-            {% else %}
-                {{ _("Classifica generale: ordinata per match vinti, poi per differenza triangoli totale.") }}
-            {% endif %}
-        </div>
+
+    {% for position, dati in general_classification %}
+    {% set _oltre = loop.index > _prime %}
+    {% if _zone and loop.first %}
+    <div class="c7-rows__row c7-cg__etichetta" data-oltre="0">
+      <span class="c7-kicker">
+        {% if _zone|length == 1 %}{{ _('Zona playoff · primi %(n)s', n=_zone[0].posti) }}
+        {% else %}{{ _('Zona playoff') }} · {{ _zone|map(attribute='nome')|join(' · ') }}{% endif %}
+        {% if _zone[0].inviti_partiti %} · {{ _('inviti partiti') }}{% endif %}
+      </span>
     </div>
-</div>
+    {% endif %}
+    {% if _zone and _ultima.indice and loop.index == _ultima.indice + 1 %}
+    <div class="c7-rows__row c7-cg__etichetta c7-cg__etichetta--fuori" data-oltre="{{ '1' if _oltre else '0' }}"{% if _oltre %} hidden{% endif %}>
+      <span class="c7-kicker">{{ _('Fuori dai playoff') }}</span>
+    </div>
+    {% endif %}
+    {% set _mov = (dati.previous_position - position) if dati.previous_position else none %}
+    <div class="c7-rows__row c7-classifica__riga{% if dati.user_id in _in_zona %} c7-cg__riga--zona{% endif %}"
+         data-oltre="{{ '1' if _oltre else '0' }}"{% if _oltre %} hidden{% endif %}>
+      <span class="c7-num c7-classifica__pos{% if position <= 3 %} c7-classifica__pos--podio{% endif %}">{{ position }}</span>
+      <span class="c7-classifica__trend" role="img" aria-label="{% if _mov is none %}{{ _('primo turno') }}{% elif _mov > 0 %}{{ _('sale di %(n)s', n=_mov) }}{% elif _mov < 0 %}{{ _('scende di %(n)s', n=-_mov) }}{% else %}{{ _('stabile') }}{% endif %}">
+        {% if _mov is none or _mov == 0 %}<span class="c7-classifica__trend-eq" aria-hidden="true"></span>
+        {% elif _mov > 0 %}<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l8 12H4z" fill="var(--c7-ok)"/></svg>
+        {% else %}<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19L4 7h16z" fill="var(--c7-err)"/></svg>{% endif %}
+      </span>
+      <span class="c7-avatar c7-avatar--sm">{{ dati.username[:2]|upper }}</span>
+      <span class="c7-classifica__gioc c7-rows__title">{{ dati.username }}</span>
+      {% if classification_sys == ClassificationSystem.RACK %}
+      <span class="c7-classifica__col c7-num">{{ dati.total_racks_won }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-num">{{ dati.total_spot_shot_wins or '–' }}</span>
+      {% elif classification_sys == ClassificationSystem.POSITION %}
+      <span class="c7-classifica__col c7-num">{{ dati.total_points or 0 }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-num">{% if dati.total_rack_difference > 0 %}+{% endif %}{{ dati.total_rack_difference }}</span>
+      {% else %}
+      <span class="c7-classifica__col c7-num">{{ dati.total_matches_won }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-num">{% if dati.total_rack_difference > 0 %}+{% endif %}{{ dati.total_rack_difference }}</span>
+      {% endif %}
+      <span class="c7-classifica__col c7-classifica__col--sec c7-num">{{ dati.participations }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="c7-nota">
+    {% if classification_sys == ClassificationSystem.RACK %}
+    {{ _("Classifica generale: ordinata per triangoli totali, poi per punti spareggio (SSR).") }}
+    {% elif classification_sys == ClassificationSystem.POSITION %}
+    {{ _("Classifica generale basata sui punti ottenuti in tutte le gare completate.") }}
+    {% else %}
+    {{ _("Classifica generale: ordinata per match vinti, poi per differenza triangoli totale.") }}
+    {% endif %}
+    {% if _zone %}{{ _('La barra segna chi va ai playoff: prima degli inviti chi verrebbe invitato adesso, dopo chi ha un invito valido.') }}{% endif %}
+  </div>
+</section>
+<script>
+  function mostraClassificaGenerale(vista) {
+    var tutti = vista === 'tutti';
+    document.querySelectorAll('#classificaGenerale [data-oltre="1"]').forEach(function (r) { r.hidden = !tutti; });
+    document.querySelectorAll('#classificaGenerale [data-cg-vista]').forEach(function (b) {
+      var attiva = b.dataset.cgVista === vista;
+      b.classList.toggle('is-active', attiva);
+      b.setAttribute('aria-pressed', attiva ? 'true' : 'false');
+    });
+  }
+</script>
 {% endif %}

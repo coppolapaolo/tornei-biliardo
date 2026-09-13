@@ -493,6 +493,16 @@ def campionato_detail(campionato_id):
             .all()
         )
 
+    # La zona playoff nella classifica generale (canvas 7.1): chi verrebbe
+    # invitato, o chi lo e' stato. Senza configurazioni non c'e' zona.
+    from models.playoff.zona import zone_playoff
+
+    zone = (
+        zone_playoff(campionato)
+        if general_classification and campionato.has_playoff_configurations()
+        else []
+    )
+
     return render_template(
         "admin/campionato_detail.html",
         campionato=campionato,
@@ -505,6 +515,7 @@ def campionato_detail(campionato_id):
         campionato_stats=campionato_stats,
         general_classification=general_classification,
         last_completed_gara_number=last_completed_gara_number,
+        zone_playoff=zone,
         verified_venues=verified_venues,
         default_distance=DEFAULT_DISTANCE,
         discipline_choices=Discipline.get_choices(),

@@ -34,6 +34,16 @@ blocks:
           everyone who missed the podium, and it is usually the better attended
           of the two.
 
+  - type: text
+    text: >-
+      During the season the championship's overall standings mark the
+      **play-off zone**: a bar next to whoever would be invited if the
+      championship ended now, and an «Out of the playoffs» row right after
+      the last of them. It follows the criteria chosen by the organiser, such
+      as the minimum number of competitions played. Once the invitations have
+      been sent, the bar moves to whoever holds a valid invitation: those who
+      declined drop out, and whoever took their place shows up.
+
   - type: note
     tone: info
     text: >-
