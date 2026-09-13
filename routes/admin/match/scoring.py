@@ -198,7 +198,7 @@ def ritiro_partita(match_id):
     tocca. La X non ha avversario, il trio ha il suo ritiro
     (`/admin/gara/trio/<id>/forfeit`).
     """
-    from models.match.services import MatchService
+    from models.competition.withdraw_policy_service import WithdrawPolicyService
     from routes.sse import emit_match_event
     from utils.card_partita import rifiuto_del_dominio, rifiuto_punteggio_card
 
@@ -223,8 +223,12 @@ def ritiro_partita(match_id):
     if rifiuto is not None:
         return rifiuto
 
+    # Un'operazione sola, tutto o niente: il forfait, la regola della gara e
+    # la notifica al giocatore. Gli eventi live partono dopo il salvataggio.
     try:
-        match = MatchService.forfeit_match(match_id=match_id, user_id=player_id)
+        match = WithdrawPolicyService.ritira_dalla_partita(
+            match_id, player_id, current_user.id
+        )
     except ValueError as errore:
         return rifiuto_del_dominio(errore)
 

@@ -5,8 +5,6 @@ This service centralizes the logic for handling player forfeits based on
 the competition's withdraw_policy setting.
 """
 
-import logging
-
 from flask_babel import gettext as _
 
 from models.base import db, utc_now
@@ -14,13 +12,62 @@ from models.transaction.manager import transactional
 from .models import Gara, Inscription, WithdrawPolicy
 from .inscription_service import InscriptionService
 
-logger = logging.getLogger(__name__)
-
 
 class WithdrawPolicyService:
     """Service for handling forfait and withdrawal policies."""
 
+    # ── I ritiri decisi dal direttore ───────────────────────────────────────
+    #
+    # Tre strade, un'operazione atomica ciascuna: il menu della partita, il
+    # trio, la riga dell'iscritto. Ognuna chiude cio' che va chiuso, applica la
+    # regola della gara e avvisa il giocatore con `_notifica_ritiro`, dentro un
+    # solo `@transactional`. Tutto o niente: se la notifica fallisce il ritiro
+    # non resta a meta', e un ritiro fallito non manda notifiche. Il forfait
+    # dichiarato dal giocatore non passa di qui e non manda notifiche.
+    #
+    # L'annidamento dei `@transactional` interni e' sicuro da ADR-061: salva
+    # solo il piu' esterno.
+
     @staticmethod
+    @transactional(domain="competition")
+    def ritira_dalla_partita(match_id: int, user_id: int, direttore_id: int):
+        """Il ritiro deciso dal direttore dal menu della partita a due.
+
+        Stessa strada del forfait del giocatore (`MatchService.forfeit_match`,
+        che applica la regola della gara), piu' la notifica.
+        """
+        from models.match.services import MatchService
+
+        match = MatchService.forfeit_match(match_id=match_id, user_id=user_id)
+        gara = db.session.get(Gara, match.gara_id) if match.gara_id else None
+        if gara is not None:
+            WithdrawPolicyService._notifica_ritiro(gara, user_id, direttore_id)
+        return match
+
+    @staticmethod
+    @transactional(domain="competition")
+    def ritira_dal_trio(trio_id: int, user_id: int, direttore_id: int) -> dict:
+        """Il ritiro nel trio registrato dal direttore.
+
+        Stessa strada del ritiro dichiarato dal giocatore
+        (`TrioMatchService.forfeit_trio`, che applica la regola della gara),
+        piu' la notifica.
+        """
+        from models.match.models import TrioMatch
+
+        from .trio_service import TrioMatchService
+
+        risultato = TrioMatchService.forfeit_trio(trio_id, user_id, direttore_id)
+        trio = db.session.get(TrioMatch, trio_id)
+        match = trio.match if trio is not None else None
+        if match is not None and match.gara_id:
+            gara = db.session.get(Gara, match.gara_id)
+            if gara is not None:
+                WithdrawPolicyService._notifica_ritiro(gara, user_id, direttore_id)
+        return risultato
+
+    @staticmethod
+    @transactional(domain="competition")
     def ritira_iscritto(gara_id: int, user_id: int, direttore_id: int) -> str:
         """Il direttore ritira un iscritto a gara in corso.
 
@@ -29,16 +76,13 @@ class WithdrawPolicyService:
         cancellazione **e'** il forfait di quel giocatore, e passa dalla stessa
         strada: la sua partita aperta si chiude a tavolino tenendo i triangoli
         gia' vinti, le altre si chiudono come vuole la regola della gara, trio
-        compresi, e la regola decide se resta negli abbinamenti o esce. In piu'
-        il giocatore riceve una notifica che dice chi l'ha ritirato e cosa
-        comporta.
+        compresi, e la regola decide se resta negli abbinamenti o esce. Il
+        giocatore riceve la notifica una volta sola: dalla strada della partita
+        o del trio quando ce n'e' una aperta, altrimenti da qui.
 
         Prima dell'avvio la strada e' la disiscrizione
         (`InscriptionService.admin_uninscribe_user`); a gara conclusa o in
         spareggio non c'e' piu' niente da ritirare.
-
-        Non ha `@transactional`: compone servizi che lo hanno gia', e il
-        decoratore va solo sul piu' interno.
 
         Returns: l'azione della regola, ``"forfeit_marked"`` o ``"excluded"``.
         """
@@ -88,19 +132,18 @@ class WithdrawPolicyService:
         esclude = gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value
         partita = WithdrawPolicyService._partita_da_chiudere(gara_id, user_id)
         if partita is not None and partita.is_trio:
-            from .trio_service import TrioMatchService
-
-            TrioMatchService.forfeit_trio(partita.trio_match.id, user_id, direttore_id)
+            WithdrawPolicyService.ritira_dal_trio(
+                partita.trio_match.id, user_id, direttore_id
+            )
         elif partita is not None:
-            from models.match.services import MatchService
-
-            MatchService.forfeit_match(match_id=partita.id, user_id=user_id)
+            WithdrawPolicyService.ritira_dalla_partita(
+                partita.id, user_id, direttore_id
+            )
         else:
             # Fra un turno e l'altro, o con la X: niente da chiudere a mano,
             # resta la regola per i turni dopo.
             WithdrawPolicyService.handle_forfeit(gara_id=gara_id, user_id=user_id)
-
-        WithdrawPolicyService._notifica_ritiro(gara, user_id, direttore_id, esclude)
+            WithdrawPolicyService._notifica_ritiro(gara, user_id, direttore_id)
         return "excluded" if esclude else "forfeit_marked"
 
     @staticmethod
@@ -145,13 +188,14 @@ class WithdrawPolicyService:
         return None
 
     @staticmethod
-    def _notifica_ritiro(
-        gara: Gara, user_id: int, direttore_id: int, esclude: bool
-    ) -> None:
+    def _notifica_ritiro(gara: Gara, user_id: int, direttore_id: int) -> None:
         """Dice al giocatore chi l'ha ritirato e cosa comporta la regola.
 
-        La notifica e' trasparenza, non parte del ritiro: se non parte il
-        ritiro resta, ma l'errore arriva a GlitchTip.
+        L'unico punto che compone la notifica di un ritiro deciso dal
+        direttore, in tre varianti: resta negli abbinamenti, esce dalla gara,
+        tabellone. Si chiama dentro l'operazione atomica e non cattura niente:
+        una notifica che fallisce annulla il ritiro, invece di lasciarlo scritto
+        senza avviso.
         """
         from models.matchmaking.configuration import BRACKET_STRATEGIES
         from models.user.models import User
@@ -161,7 +205,7 @@ class WithdrawPolicyService:
             "direttore": direttore.username if direttore else "",
             "gara": InscriptionService.nome_gara(gara),
         }
-        if esclude:
+        if gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value:
             messaggio = _(
                 "%(direttore)s ti ha ritirato dalla gara %(gara)s. Le tue "
                 "partite aperte si chiudono a tavolino e la tua iscrizione è "
@@ -182,15 +226,7 @@ class WithdrawPolicyService:
                 "nei turni dopo perdi a tavolino ogni partita.",
                 **valori,
             )
-        try:
-            InscriptionService.notifica_di_gara(user_id, gara, str(messaggio))
-        except Exception:
-            logger.error(
-                "Notifica di ritiro non inviata (utente=%s, gara=%s)",
-                user_id,
-                gara.id,
-                exc_info=True,
-            )
+        InscriptionService.notifica_di_gara(user_id, gara, str(messaggio))
 
     @staticmethod
     @transactional(domain="competition")

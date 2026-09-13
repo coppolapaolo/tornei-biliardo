@@ -163,8 +163,9 @@ blocks:
           decides whether they stay in the pairings, losing by walkover, or
           leave the competition. In a trio, the racks they still had go to the
           opponents, and the competition's rule applies in the same way. The
-          command is there while the match is open and the next round has not
-          started.
+          player gets a notification saying who withdrew them and what it means.
+          The command is there while the match is open and the next round has
+          not started.
         hint: partita.forfait
       - name: "Withdraw someone who left without saying"
         text: >-

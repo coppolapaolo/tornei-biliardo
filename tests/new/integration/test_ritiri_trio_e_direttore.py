@@ -469,6 +469,200 @@ def test_a_iscrizioni_aperte_resta_la_disiscrizione(admin_client, db_session):
     assert "/ritira/" not in html
 
 
+def _guasto_alla_notifica(monkeypatch):
+    """Fa fallire l'ultimo passo del ritiro, dopo che gli altri hanno scritto."""
+    from models.competition.inscription_service import InscriptionService
+
+    def guasto(*_args, **_kwargs):
+        raise RuntimeError("guasto simulato alla notifica")
+
+    monkeypatch.setattr(InscriptionService, "notifica_di_gara", guasto)
+
+
+def test_il_ritiro_dell_iscritto_e_tutto_o_niente(db_session, direttore, monkeypatch):
+    """Se un passo fallisce dopo che la partita e la regola hanno scritto, non
+    resta scritto niente: partita aperta, iscrizione intatta, nessuna
+    notifica. Si rilegge il database dopo aver annullato la sessione.
+
+    Dipende dalla #385: prima un servizio annidato salvava da solo, e la
+    partita restava chiusa a tavolino con il giocatore marcato."""
+    from models.competition.withdraw_policy_service import WithdrawPolicyService
+
+    gara = _gara(db_session, WithdrawPolicy.FORFEIT.value)
+    a, b = _iscritti(db_session, gara, 2)
+    match = _partita(db_session, gara, a, b, player1_score=1)
+    ids = (gara.id, a.id, match.id)
+    _guasto_alla_notifica(monkeypatch)
+
+    with pytest.raises(RuntimeError):
+        WithdrawPolicyService.ritira_iscritto(gara.id, a.id, direttore.id)
+    db_session.rollback()
+    db_session.expire_all()
+
+    gara_id, a_id, match_id = ids
+    riletta = db_session.get(Match, match_id)
+    assert not MatchStatus.is_finished(riletta.status)
+    assert riletta.winner_id is None
+    assert riletta.player2_score == 0
+    iscrizione = Inscription.query.filter_by(gara_id=gara_id, user_id=a_id).one()
+    assert iscrizione.is_forfeit is not True
+    assert Notification.query.filter_by(user_id=a_id).count() == 0
+
+
+def test_il_ritiro_dell_iscritto_nel_trio_e_tutto_o_niente(
+    db_session, direttore, monkeypatch
+):
+    """Stessa garanzia sulla strada del trio: triangoli a tavolino, ritiro del
+    trio e regola della gara si annullano insieme."""
+    from models.competition.withdraw_policy_service import WithdrawPolicyService
+
+    gara = _gara(db_session, WithdrawPolicy.EXCLUDE.value)
+    a, b, c = _iscritti(db_session, gara, 3)
+    _match, trio = _trio(db_session, gara, (a, b, c))
+    ids = (gara.id, a.id, trio.id)
+    _guasto_alla_notifica(monkeypatch)
+
+    with pytest.raises(RuntimeError):
+        WithdrawPolicyService.ritira_iscritto(gara.id, a.id, direttore.id)
+    db_session.rollback()
+    db_session.expire_all()
+
+    gara_id, a_id, trio_id = ids
+    assert db_session.get(TrioMatch, trio_id).forfeit_player_id is None
+    assert TrioRack.query.filter_by(trio_match_id=trio_id).count() == 0
+    iscrizione = Inscription.query.filter_by(
+        gara_id=gara_id, user_id=a_id, is_withdrawn=False
+    ).first()
+    assert iscrizione is not None
+    assert iscrizione.is_forfeit is not True
+
+
+@pytest.mark.parametrize("strada", ["partita", "trio"])
+def test_il_ritiro_dal_menu_del_direttore_e_tutto_o_niente(
+    db_session, direttore, monkeypatch, strada
+):
+    """Il ritiro dal menu della partita e quello nel trio registrato dal
+    direttore: se la notifica fallisce, non resta scritto niente."""
+    from models.competition.withdraw_policy_service import WithdrawPolicyService
+
+    gara = _gara(db_session, WithdrawPolicy.FORFEIT.value)
+    if strada == "partita":
+        a, b = _iscritti(db_session, gara, 2)
+        match = _partita(db_session, gara, a, b)
+        operazione = WithdrawPolicyService.ritira_dalla_partita
+        bersaglio = match.id
+    else:
+        a, b, c = _iscritti(db_session, gara, 3)
+        match, trio = _trio(db_session, gara, (a, b, c))
+        operazione = WithdrawPolicyService.ritira_dal_trio
+        bersaglio = trio.id
+    ids = (gara.id, a.id, match.id)
+    _guasto_alla_notifica(monkeypatch)
+
+    with pytest.raises(RuntimeError):
+        operazione(bersaglio, a.id, direttore.id)
+    db_session.rollback()
+    db_session.expire_all()
+
+    gara_id, a_id, match_id = ids
+    riletta = db_session.get(Match, match_id)
+    assert not MatchStatus.is_finished(riletta.status)
+    if strada == "trio":
+        assert riletta.trio_match.forfeit_player_id is None
+        assert (
+            TrioRack.query.filter_by(trio_match_id=riletta.trio_match.id).count() == 0
+        )
+    iscrizione = Inscription.query.filter_by(gara_id=gara_id, user_id=a_id).one()
+    assert iscrizione.is_forfeit is not True
+    assert Notification.query.filter_by(user_id=a_id).count() == 0
+
+
+# ── La notifica arriva per ogni ritiro deciso dal direttore ─────────────────
+
+
+def _notifiche_di_ritiro(user):
+    return [n for n in _notifiche(user) if "ti ha ritirato" in n.message]
+
+
+def test_il_ritiro_dal_menu_della_partita_avvisa_il_giocatore(
+    admin_client, db_session, direttore
+):
+    gara = _gara(db_session, WithdrawPolicy.FORFEIT.value)
+    a, b = _iscritti(db_session, gara, 2)
+    match = _partita(db_session, gara, a, b)
+
+    resp = admin_client.post(
+        f"/admin/match/{match.id}/forfeit", data={"player_id": str(a.id)}
+    )
+    assert resp.status_code == 200, resp.get_data(as_text=True)
+    notifiche = _notifiche_di_ritiro(a)
+    assert len(notifiche) == 1
+    assert direttore.username in notifiche[0].message
+    assert "tavolino" in notifiche[0].message
+    assert _notifiche_di_ritiro(b) == []
+
+
+def test_il_ritiro_nel_trio_del_direttore_avvisa_il_giocatore(
+    admin_client, db_session, direttore
+):
+    gara = _gara(db_session, WithdrawPolicy.EXCLUDE.value)
+    a, b, c = _iscritti(db_session, gara, 3)
+    _match, trio = _trio(db_session, gara, (a, b, c))
+
+    resp = admin_client.post(
+        f"/admin/gara/trio/{trio.id}/forfeit", data={"player_id": str(c.id)}
+    )
+    assert resp.status_code == 200, resp.get_data(as_text=True)
+    notifiche = _notifiche_di_ritiro(c)
+    assert len(notifiche) == 1
+    assert direttore.username in notifiche[0].message
+    assert "abbinamenti" in notifiche[0].message
+
+
+def test_il_ritiro_dalla_lista_manda_una_notifica_sola(admin_client, db_session):
+    """La lista compone il ritiro dalla partita: la notifica non si ripete."""
+    gara = _gara(db_session, WithdrawPolicy.FORFEIT.value)
+    a, b = _iscritti(db_session, gara, 2)
+    _partita(db_session, gara, a, b)
+
+    assert _ritira(admin_client, gara, a).status_code == 302
+    assert len(_notifiche_di_ritiro(a)) == 1
+
+
+def test_il_forfait_dichiarato_dal_giocatore_non_manda_notifiche(client, db_session):
+    gara = _gara(db_session, WithdrawPolicy.FORFEIT.value)
+    a, b = _iscritti(db_session, gara, 2)
+    match = _partita(db_session, gara, a, b)
+    _entra(client, a)
+
+    resp = client.post(f"/player/match/{match.id}/forfeit")
+    assert resp.status_code == 200, resp.get_data(as_text=True)
+    assert _notifiche_di_ritiro(a) == []
+    assert _notifiche_di_ritiro(b) == []
+
+
+def test_il_ritiro_dal_trio_dichiarato_dal_giocatore_non_manda_notifiche(
+    client, db_session
+):
+    gara = _gara(db_session, WithdrawPolicy.FORFEIT.value)
+    a, b, c = _iscritti(db_session, gara, 3)
+    match, _trio_ = _trio(db_session, gara, (a, b, c))
+    _entra(client, c)
+
+    resp = client.post(f"/player/match/{match.id}/trio/forfeit")
+    assert resp.status_code == 200, resp.get_data(as_text=True)
+    assert _notifiche_di_ritiro(c) == []
+
+
+def test_il_foglio_del_ritiro_dal_menu_dice_la_notifica(admin_client, db_session):
+    gara = _gara(db_session, WithdrawPolicy.FORFEIT.value)
+    a, b = _iscritti(db_session, gara, 2)
+    _partita(db_session, gara, a, b)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    foglio = html.split('id="ritiroModal"', 1)[1].split('id="ritiroIscrittoModal"')[0]
+    assert "Riceve una notifica" in foglio
+
+
 def test_la_notifica_della_disiscrizione_parla_bene_del_direttore(
     admin_client, db_session
 ):

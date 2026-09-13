@@ -48,7 +48,8 @@
    cosa succede, con la regola della gara sui ritiri (`gara.withdraw_policy`)
    in parole semplici. La conferma posta a `admin.match.ritiro_partita` — o al
    ritiro del trio: `apriRitiro` (`_scripts.html`) sceglie la prima riga, a due
-   o a tre. La regola vale per entrambi dal 2026-09-13. #}
+   o a tre. La regola vale per entrambi dal 2026-09-13, e in entrambi il
+   giocatore riceve una notifica. #}
 {% set _ritiro_esclude = gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value %}
 <div class="modal fade c7-sheet" id="ritiroModal" tabindex="-1" aria-labelledby="ritiroTitolo">
   <div class="modal-dialog">
@@ -72,6 +73,7 @@
           </div>
           {{ d.riga('fa-list-check', _('Le sue altre partite aperte'), _('si chiudono a tavolino anche quelle'), tone='warn') }}
           {% include "direttore/_regola_ritiro.html" %}
+          {{ d.riga('fa-bell', _('Riceve una notifica'), _('gli dice chi l’ha ritirato e cosa comporta la regola della gara'), tone='warn') }}
         </div>
         <div class="c7-nota js-ritiro-due">
           {% if _ritiro_esclude %}{{ _('Lo decide la regola della gara sui ritiri. Azzerare la partita non lo rimette in gara.') }}

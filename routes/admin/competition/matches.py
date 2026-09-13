@@ -85,13 +85,20 @@ def trio_confirm(trio_id):
 @login_required
 @trio_manager_required
 def trio_forfeit(trio_id):
-    """Handle player forfeit in trio match (admin endpoint)."""
+    """Il ritiro nel trio registrato dal direttore.
+
+    Un'operazione sola, tutto o niente: il ritiro del trio, la regola della
+    gara e la notifica al giocatore (`WithdrawPolicyService.ritira_dal_trio`).
+    Il ritiro dichiarato dal giocatore ha la sua route e non manda notifiche.
+    """
+    from models.competition.withdraw_policy_service import WithdrawPolicyService
+
     try:
         forfeiting_player_id = request.form.get("player_id", type=int)
         if not forfeiting_player_id:
             return jsonify({"error": "Player ID richiesto"}), 400
 
-        result = TrioMatchService.forfeit_trio(
+        result = WithdrawPolicyService.ritira_dal_trio(
             trio_id, forfeiting_player_id, current_user.id
         )
         return jsonify(result)

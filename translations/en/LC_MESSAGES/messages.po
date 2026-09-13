@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 16:17+0200\n"
+"POT-Creation-Date: 2026-09-13 18:31+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -277,7 +277,32 @@ msgstr "The competition is not in progress: attempts can no longer be removed."
 msgid ""
 "Il turno %(n)s è già partito: i tentativi dell'esercizio dopo il turno "
 "%(prima)s non si tolgono più."
-msgstr "Round %(n)s has already started: attempts at the drill after round %(prima)s can no longer be removed."
+msgstr ""
+"Round %(n)s has already started: attempts at the drill after round "
+"%(prima)s can no longer be removed."
+
+#: models/competition/inscription_service.py:557
+#, python-format
+msgid "Gara %(numero)s"
+msgstr "Competition %(numero)s"
+
+#: models/competition/inscription_service.py:574
+msgid "Aggiornamento gara"
+msgstr "Competition update"
+
+#: models/competition/inscription_service.py:583 models/demand/service.py:414
+msgid "Vedi la gara"
+msgstr "View the tournament"
+
+#: models/competition/inscription_service.py:618
+#, python-format
+msgid "%(direttore)s ti ha tolto dalla lista d'attesa della gara %(gara)s."
+msgstr "%(direttore)s removed you from the waiting list of the competition %(gara)s."
+
+#: models/competition/inscription_service.py:625
+#, python-format
+msgid "%(direttore)s ha annullato la tua iscrizione alla gara %(gara)s."
+msgstr "%(direttore)s cancelled your registration for the competition %(gara)s."
 
 #: models/competition/models.py:571
 #: templates/admin/amalfi_classification.html:23
@@ -319,7 +344,7 @@ msgstr "Before starting round %(n)s: %(cosa)s."
 msgid "Prima di chiudere la gara: %(cosa)s."
 msgstr "Before closing the competition: %(cosa)s."
 
-#: models/competition/round_manager.py:118
+#: models/competition/round_manager.py:93
 msgid ""
 "Il turno è bloccato perché un turno successivo è già iniziato: quel turno"
 " si è formato su questa classifica. Per intervenire qui, annulla prima il"
@@ -329,7 +354,7 @@ msgstr ""
 "round was drawn from these standings. To change something here, cancel "
 "the later round first."
 
-#: models/competition/round_manager.py:135
+#: models/competition/round_manager.py:161
 msgid ""
 "Gara certificata da spareggio: annulla prima lo spareggio per modificare "
 "le partite"
@@ -337,7 +362,7 @@ msgstr ""
 "Competition certified by tiebreaker: cancel the tiebreaker first to "
 "modify the matches"
 
-#: models/competition/round_manager.py:163
+#: models/competition/round_manager.py:189
 msgid ""
 "Gara in fase di spareggio (SSR): concludi lo spareggio prima di "
 "modificare i risultati"
@@ -345,20 +370,20 @@ msgstr ""
 "Competition in tiebreaker phase (SSR): finish the tiebreaker before "
 "modifying results"
 
-#: models/competition/round_manager.py:168
+#: models/competition/round_manager.py:194
 msgid "La gara è già completata"
 msgstr "The competition is already completed"
 
-#: models/competition/round_manager.py:170
+#: models/competition/round_manager.py:196
 msgid "La gara è ancora in fase di iscrizione"
 msgstr "The competition is still in the registration phase"
 
-#: models/competition/round_manager.py:171
+#: models/competition/round_manager.py:197
 #, python-format
 msgid "La gara non è in corso (stato: %(status)s)"
 msgstr "The competition is not in progress (status: %(status)s)"
 
-#: models/competition/round_manager.py:290
+#: models/competition/round_manager.py:316
 msgid ""
 "Gara certificata da spareggio: annulla prima lo spareggio per cancellare "
 "il turno"
@@ -465,6 +490,60 @@ msgstr "Registration closes"
 #, python-format
 msgid "Iscrizioni aperte — %(n)s posti liberi"
 msgstr "Registration open — %(n)s seats left"
+
+#: models/competition/withdraw_policy_service.py:95
+msgid "Gara non trovata"
+msgstr "Competition not found"
+
+#: models/competition/withdraw_policy_service.py:103
+#, python-format
+msgid "La gara non è ancora partita: %(nome)s si toglie dagli iscritti."
+msgstr "The competition has not started yet: remove %(nome)s from the registered players."
+
+#: models/competition/withdraw_policy_service.py:109
+msgid "A gara conclusa o in spareggio il ritiro non si registra più."
+msgstr "Once the competition is over or in the tiebreak, a withdrawal can no longer be recorded."
+
+#: models/competition/withdraw_policy_service.py:118
+#, python-format
+msgid "%(nome)s non è iscritto a questa gara."
+msgstr "%(nome)s is not registered for this competition."
+
+#: models/competition/withdraw_policy_service.py:122
+#, python-format
+msgid ""
+"%(nome)s è in lista d'attesa: non gioca, e non c'è un ritiro da "
+"registrare."
+msgstr "%(nome)s is on the waiting list: they are not playing, so there is no withdrawal to record."
+
+#: models/competition/withdraw_policy_service.py:129
+#, python-format
+msgid "%(nome)s si è già ritirato da questa gara."
+msgstr "%(nome)s has already withdrawn from this competition."
+
+#: models/competition/withdraw_policy_service.py:210
+#, python-format
+msgid ""
+"%(direttore)s ti ha ritirato dalla gara %(gara)s. Le tue partite aperte "
+"si chiudono a tavolino e la tua iscrizione è stata tolta: dal turno dopo "
+"non entri più negli abbinamenti."
+msgstr "%(direttore)s withdrew you from the competition %(gara)s. Your open matches close by walkover and your registration has been removed: from the next round you are no longer in the pairings."
+
+#: models/competition/withdraw_policy_service.py:217
+#, python-format
+msgid ""
+"%(direttore)s ti ha ritirato dalla gara %(gara)s. Le tue partite aperte "
+"si chiudono a tavolino e il tabellone resta com'è: chi ti avrebbe "
+"incontrato passa il turno a tavolino."
+msgstr "%(direttore)s withdrew you from the competition %(gara)s. Your open matches close by walkover and the bracket stays as it is: whoever would have played you goes through by walkover."
+
+#: models/competition/withdraw_policy_service.py:224
+#, python-format
+msgid ""
+"%(direttore)s ti ha ritirato dalla gara %(gara)s. Le tue partite aperte "
+"si chiudono a tavolino: resti in classifica, e nei turni dopo perdi a "
+"tavolino ogni partita."
+msgstr "%(direttore)s withdrew you from the competition %(gara)s. Your open matches close by walkover: you stay in the standings, and in the following rounds you lose every match by walkover."
 
 #: models/dashboard/activity_feedback.py:162
 msgid "vinta"
@@ -983,7 +1062,7 @@ msgstr "Player Dashboard"
 msgid "Vista Pubblica"
 msgstr "Public View"
 
-#: models/demand/service.py:262
+#: models/demand/service.py:264
 #, python-format
 msgid ""
 "%(count)s giocatori vorrebbero una gara a %(city)s, una zona senza un "
@@ -992,7 +1071,7 @@ msgstr ""
 "%(count)s players would like a tournament in %(city)s, an area without a "
 "director. Consider recruiting or promoting one."
 
-#: models/demand/service.py:269
+#: models/demand/service.py:271
 #, python-format
 msgid ""
 "%(count)s giocatori vorrebbero una gara in una zona senza un direttore di"
@@ -1001,15 +1080,15 @@ msgstr ""
 "%(count)s players would like a tournament in an area without a director. "
 "Consider recruiting or promoting one."
 
-#: models/demand/service.py:277
+#: models/demand/service.py:279
 msgid "Domanda in una zona senza direttore di gara"
 msgstr "Demand in an area without a director"
 
-#: models/demand/service.py:343
+#: models/demand/service.py:345
 msgid "C'è domanda nella tua zona!"
 msgstr "There's demand in your area!"
 
-#: models/demand/service.py:345
+#: models/demand/service.py:347
 #, python-format
 msgid ""
 "%(count)s giocatori vorrebbero una gara vicino a te. Potrebbe essere il "
@@ -1018,11 +1097,11 @@ msgstr ""
 "%(count)s players would like a tournament near you. It might be a good "
 "time to organize one."
 
-#: models/demand/service.py:404
+#: models/demand/service.py:406
 msgid "Una gara è stata aperta vicino a te!"
 msgstr "A tournament has opened near you!"
 
-#: models/demand/service.py:406
+#: models/demand/service.py:408
 msgid ""
 "La gara che aspettavi nella tua zona è stata pubblicata: dai un'occhiata "
 "e iscriviti."
@@ -1030,15 +1109,11 @@ msgstr ""
 "The tournament you were waiting for in your area has been published: take"
 " a look and sign up."
 
-#: models/demand/service.py:412
-msgid "Vedi la gara"
-msgstr "View the tournament"
-
-#: models/demand/service.py:443
+#: models/demand/service.py:445
 msgid "La tua richiesta sta per scadere"
 msgstr "Your request is about to expire"
 
-#: models/demand/service.py:445
+#: models/demand/service.py:447
 msgid ""
 "La tua richiesta di una gara nella tua zona sta per scadere. Confermala "
 "se ti interessa ancora."
@@ -1746,8 +1821,8 @@ msgstr "The loser of the previous rack breaks."
 
 #: models/match/correction_service.py:61
 #: models/match/trio_scoring_service.py:362 models/tpa/services.py:165
-#: routes/admin/competition/matches.py:190 routes/admin/match/scoring.py:123
-#: routes/admin/match/scoring.py:146 routes/admin/match/scoring.py:202
+#: routes/admin/competition/matches.py:198 routes/admin/match/scoring.py:123
+#: routes/admin/match/scoring.py:151 routes/admin/match/scoring.py:207
 msgid "Partita non trovata"
 msgstr "Match not found"
 
@@ -1833,9 +1908,9 @@ msgstr "This is not a set match."
 msgid "Il set non è in corso: inizia il prossimo."
 msgstr "The set is not in progress: start the next one."
 
-#: models/match/match_service.py:705 routes/admin/competition/matches.py:199
+#: models/match/match_service.py:705 routes/admin/competition/matches.py:207
 #: routes/admin/match/multi_set.py:211 routes/admin/match/scoring.py:115
-#: routes/admin/match/scoring.py:366
+#: routes/admin/match/scoring.py:375
 msgid "Punteggio non valido."
 msgstr "Invalid score."
 
@@ -1849,7 +1924,7 @@ msgid "Questa partita non si decide con l'acchito: apre il primo giocatore."
 msgstr "This match is not decided by a lag: the first player breaks."
 
 #: models/match/opening_service.py:52 routes/individual_match/matches.py:267
-#: routes/player/matches.py:317
+#: routes/player/matches.py:319
 msgid "Scegli uno dei due giocatori."
 msgstr "Choose one of the two players."
 
@@ -1883,26 +1958,26 @@ msgstr ""
 msgid "La partita è già finita, non è possibile aggiungere altri punti"
 msgstr "The match is already over, no more points can be added"
 
-#: models/match/scoring_service.py:549
+#: models/match/scoring_service.py:566
 #, python-format
 msgid "Partita già completata - limite raggiunto per '%(distanza)s'"
 msgstr "Match already complete - limit reached for '%(distanza)s'"
 
-#: models/match/scoring_service.py:558
+#: models/match/scoring_service.py:575 models/match/scoring_service.py:652
 #, python-format
 msgid ""
 "Non è possibile superare il limite di %(n)s triangoli totali per questa "
 "partita"
 msgstr "The limit of %(n)s total racks for this match cannot be exceeded"
 
-#: models/match/scoring_service.py:619
+#: models/match/scoring_service.py:641
 #, python-format
 msgid ""
 "In una partita 'al %(n)s', entrambi i giocatori non possono avere %(n)s o"
 " più punti!"
 msgstr "In a 'race to %(n)s' match, both players cannot have %(n)s or more points!"
 
-#: models/match/scoring_service.py:629
+#: models/match/scoring_service.py:660
 #, python-format
 msgid ""
 "In modalità 'esatto numero', il totale dei triangoli (%(totale)s) deve "
@@ -2029,6 +2104,7 @@ msgstr ""
 "rejected before play continues."
 
 #: models/user/profile_service.py:200
+#: routes/admin/competition/inscriptions.py:269
 msgid "Utente non trovato."
 msgstr "User not found."
 
@@ -2818,8 +2894,35 @@ msgstr "Only dummy players can enter a trial competition."
 msgid "Un giocatore fittizio gioca solo nella sua prova."
 msgstr "A dummy player only plays in their own trial."
 
-#: routes/admin/competition/matches.py:144
-#: routes/admin/competition/matches.py:204
+#: routes/admin/competition/inscriptions.py:275
+msgid "Gara non trovata."
+msgstr "Competition not found."
+
+#: routes/admin/competition/inscriptions.py:283
+msgid "Non è possibile disiscrivere utenti quando il primo turno è già iniziato."
+msgstr "Players cannot be removed once the first round has started."
+
+#: routes/admin/competition/inscriptions.py:297
+#, python-format
+msgid "%(username)s non è più iscritto."
+msgstr "%(username)s is no longer registered."
+
+#: routes/admin/competition/inscriptions.py:301
+msgid "Errore: utente non iscritto a questa gara."
+msgstr "Error: this user is not registered for this competition."
+
+#: routes/admin/competition/inscriptions.py:304
+#, python-format
+msgid "Errore durante la disiscrizione: %(errore)s"
+msgstr "Error while removing the registration: %(errore)s"
+
+#: routes/admin/competition/inscriptions.py:340
+#, python-format
+msgid "Ritiro di %(username)s registrato: gli è arrivata una notifica."
+msgstr "%(username)s has been withdrawn and has been notified."
+
+#: routes/admin/competition/matches.py:152
+#: routes/admin/competition/matches.py:212
 msgid "La partita è chiusa: per cambiarla azzerala dal segnapunti."
 msgstr "The match is closed: to change it, reset it from the scoreboard."
 
@@ -3000,23 +3103,23 @@ msgstr "This match is scored from its own scoreboard."
 msgid "La partita è chiusa: si cambia con «Correggi il risultato»."
 msgstr "The match is closed: change it with «Correct the result»."
 
-#: routes/admin/match/scoring.py:205
+#: routes/admin/match/scoring.py:210
 msgid "La X a tavolino non ha un avversario: non c'è ritiro da registrare."
 msgstr "An X by walkover has no opponent: there is no withdrawal to record."
 
-#: routes/admin/match/scoring.py:209
+#: routes/admin/match/scoring.py:214
 msgid "Il ritiro nella partita a tre si registra dal trio."
 msgstr "A withdrawal in a three-player match is recorded from the trio."
 
-#: routes/admin/match/scoring.py:213
+#: routes/admin/match/scoring.py:218
 msgid "Scegli uno dei due giocatori della partita."
 msgstr "Choose one of the two players in the match."
 
-#: routes/admin/match/scoring.py:216
+#: routes/admin/match/scoring.py:221
 msgid "La partita è chiusa: il ritiro non si registra più."
 msgstr "The match is closed: the withdrawal can no longer be recorded."
 
-#: routes/admin/match/scoring.py:378
+#: routes/admin/match/scoring.py:387
 msgid "Risultato corretto. La correzione resta visibile sulla partita."
 msgstr "Result corrected. The correction stays visible on the match."
 
@@ -3699,7 +3802,7 @@ msgstr "The export file does not exist or has expired."
 msgid "Il file di export è scaduto. Richiedi un nuovo export."
 msgstr "The export file has expired. Request a new export."
 
-#: routes/player/matches.py:130
+#: routes/player/matches.py:131
 msgid "Puoi ritirare solo te stesso da questo trio"
 msgstr "You can only forfeit yourself from this trio"
 
@@ -4082,7 +4185,7 @@ msgstr "Player"
 msgid "Fill Gara"
 msgstr "Fill Competition"
 
-#: templates/base.html:651 templates/components/_gara_inscriptions.html:52
+#: templates/base.html:651 templates/components/_gara_inscriptions.html:53
 msgid "Iscrivi"
 msgstr "Enroll"
 
@@ -4334,10 +4437,10 @@ msgid "Classifica"
 msgstr "Standings"
 
 #: templates/components/_gara_info.html:35
-#: templates/components/_gara_inscriptions.html:96
+#: templates/components/_gara_inscriptions.html:97
 #: templates/components/_nearby_gare.html:137
 #: templates/direttore/_fase_conclusa.html:116
-#: templates/direttore/_fase_gioco.html:265
+#: templates/direttore/_fase_gioco.html:268
 #: templates/direttore/_fase_spareggio.html:86 templates/gara_detail.html:52
 msgid "Iscritti"
 msgstr "Registered"
@@ -6739,7 +6842,7 @@ msgid "Partecipanti"
 msgstr "Participants"
 
 #: templates/admin/gara_create_standalone.html:456
-#: templates/components/_gara_inscriptions.html:127
+#: templates/components/_gara_inscriptions.html:128
 #: templates/components/_match_result_row.html:24
 #: templates/components/_match_result_row.html:28
 #: templates/components/_match_result_row.html:32
@@ -10474,8 +10577,8 @@ msgid "Numero dispari"
 msgstr "Odd number"
 
 #: templates/components/_gara_info.html:71
-#: templates/components/_gara_inscriptions.html:97
-#: templates/direttore/_fase_gioco.html:266
+#: templates/components/_gara_inscriptions.html:98
+#: templates/direttore/_fase_gioco.html:269
 #: templates/direttore/_fase_spareggio.html:87
 #, python-format
 msgid "%(n)d attivo"
@@ -10490,23 +10593,23 @@ msgstr[1] "%(n)d active"
 msgid "Direzione di gara"
 msgstr "Tournament direction"
 
-#: templates/components/_gara_inscriptions.html:34
+#: templates/components/_gara_inscriptions.html:35
 msgid "Iscrivi un giocatore"
 msgstr "Add a player"
 
-#: templates/components/_gara_inscriptions.html:36
+#: templates/components/_gara_inscriptions.html:37
 msgid "Cognome, nome o username"
 msgstr "Last name, first name or username"
 
-#: templates/components/_gara_inscriptions.html:37
+#: templates/components/_gara_inscriptions.html:38
 msgid "Cerca il giocatore da iscrivere"
 msgstr "Search for the player to enter"
 
-#: templates/components/_gara_inscriptions.html:51
+#: templates/components/_gara_inscriptions.html:52
 msgid "Aggiungi iscritto"
 msgstr "Add participant"
 
-#: templates/components/_gara_inscriptions.html:57
+#: templates/components/_gara_inscriptions.html:58
 msgid ""
 "Nessun giocatore con questo nome. Serve un account: puoi crearglielo "
 "insieme."
@@ -10514,99 +10617,108 @@ msgstr ""
 "No player with this name. They need an account: you can create one "
 "together."
 
-#: templates/components/_gara_inscriptions.html:60
+#: templates/components/_gara_inscriptions.html:61
 #, python-brace-format
 msgid "{n} giocatori trovati"
 msgstr "{n} players found"
 
-#: templates/components/_gara_inscriptions.html:69
+#: templates/components/_gara_inscriptions.html:70
 msgid "Giocatori fittizi"
 msgstr "Dummy players"
 
-#: templates/components/_gara_inscriptions.html:72
+#: templates/components/_gara_inscriptions.html:73
 msgid "Iscrivi il minimo"
 msgstr "Enter the minimum"
 
-#: templates/components/_gara_inscriptions.html:73
+#: templates/components/_gara_inscriptions.html:74
 msgid "Iscrivi fino al massimo"
 msgstr "Fill to the maximum"
 
-#: templates/components/_gara_inscriptions.html:74
+#: templates/components/_gara_inscriptions.html:75
 msgid "Iscrivine uno in più"
 msgstr "Enter one more"
 
-#: templates/components/_gara_inscriptions.html:80
+#: templates/components/_gara_inscriptions.html:81
 msgid "Niente da aggiungere"
 msgstr "Nothing to add"
 
-#: templates/components/_gara_inscriptions.html:80
+#: templates/components/_gara_inscriptions.html:81
 #, python-format
 msgid "Aggiunge %(n)s giocatori fittizi"
 msgstr "Adds %(n)s dummy players"
 
-#: templates/components/_gara_inscriptions.html:88
+#: templates/components/_gara_inscriptions.html:89
 msgid "Imposta un massimo di iscritti per usare «fino al massimo»."
 msgstr "Set a maximum number of entries to use \"fill to the maximum\"."
 
-#: templates/components/_gara_inscriptions.html:98
+#: templates/components/_gara_inscriptions.html:99
 msgid "in attesa"
 msgstr "pending"
 
-#: templates/components/_gara_inscriptions.html:120
+#: templates/components/_gara_inscriptions.html:121
 #, python-format
 msgid "iscritto il %(date)s"
 msgstr "registered on %(date)s"
 
-#: templates/components/_gara_inscriptions.html:127
+#: templates/components/_gara_inscriptions.html:128
 msgid "Ha dato forfait"
 msgstr "Forfeited"
 
-#: templates/components/_gara_inscriptions.html:137
+#: templates/components/_gara_inscriptions.html:138
 msgid "cat."
 msgstr "cat."
 
-#: templates/components/_gara_inscriptions.html:139
+#: templates/components/_gara_inscriptions.html:140
 #, python-format
 msgid "Categoria di %(username)s in questa gara"
 msgstr "%(username)s's category in this competition"
 
-#: templates/components/_gara_inscriptions.html:156
+#: templates/components/_gara_inscriptions.html:157
 #, python-format
 msgid "Squadra di %(username)s in questa gara"
 msgstr "%(username)s's team in this competition"
 
-#: templates/components/_gara_inscriptions.html:157
+#: templates/components/_gara_inscriptions.html:158
 #: templates/direttore/_squadre_categorie.html:190
 msgid "Senza squadra"
 msgstr "No team"
 
-#: templates/components/_gara_inscriptions.html:165
+#: templates/components/_gara_inscriptions.html:171
+msgid "Ritira dalla gara"
+msgstr "Withdraw from the competition"
+
+#: templates/components/_gara_inscriptions.html:171
+#, python-format
+msgid "Ritira %(username)s dalla gara"
+msgstr "Withdraw %(username)s from the competition"
+
+#: templates/components/_gara_inscriptions.html:179
 #, python-format
 msgid "Disiscrivere %(username)s? Riceverà una notifica."
 msgstr "Remove %(username)s? They will get a notification."
 
-#: templates/components/_gara_inscriptions.html:168
+#: templates/components/_gara_inscriptions.html:182
 msgid "Disiscrive il giocatore"
 msgstr "Removes the player"
 
-#: templates/components/_gara_inscriptions.html:168
+#: templates/components/_gara_inscriptions.html:182
 #, python-format
 msgid "Disiscrive %(username)s"
 msgstr "Removes %(username)s"
 
-#: templates/components/_gara_inscriptions.html:179
+#: templates/components/_gara_inscriptions.html:193
 msgid "Nessun iscritto"
 msgstr "No registered players"
 
-#: templates/components/_gara_inscriptions.html:180
+#: templates/components/_gara_inscriptions.html:194
 msgid "Appena qualcuno si iscrive lo trovi qui."
 msgstr "As soon as someone signs up you will find them here."
 
-#: templates/components/_gara_inscriptions.html:193
+#: templates/components/_gara_inscriptions.html:207
 msgid "Limite massimo raggiunto"
 msgstr "Maximum limit reached"
 
-#: templates/components/_gara_inscriptions.html:194
+#: templates/components/_gara_inscriptions.html:208
 msgid "Chi arriva adesso finisce in lista d’attesa."
 msgstr "Anyone arriving now goes on the waiting list."
 
@@ -14459,7 +14571,9 @@ msgstr "Before starting round %(n)s"
 msgid ""
 "Il turno dopo si abbina sulla classifica, e quei punteggi ne fanno parte:"
 " li trovi qui sotto."
-msgstr "The next round is paired on the standings, and those scores are part of them: you find them below."
+msgstr ""
+"The next round is paired on the standings, and those scores are part of "
+"them: you find them below."
 
 #: templates/direttore/_fase_gioco.html:108
 #, python-format
@@ -14908,7 +15022,9 @@ msgstr "Recorded by mistake?"
 msgid ""
 "Esce dalla classifica degli esercizi e i tentativi dopo scalano di un "
 "posto. Se era l’unico, torna indietro anche l’XP."
-msgstr "It leaves the drill standings and the later attempts move up one place. If it was the only one, the XP is taken back too."
+msgstr ""
+"It leaves the drill standings and the later attempts move up one place. "
+"If it was the only one, the XP is taken back too."
 
 #: templates/direttore/_foglio_esercizio.html:79
 msgid "Togli il tentativo"
@@ -15009,41 +15125,33 @@ msgstr ""
 "the match closes by walkover; whoever withdraws keeps the racks already "
 "won"
 
-#: templates/direttore/_menu_partita.html:71
+#: templates/direttore/_menu_partita.html:72
+msgid "I triangoli che gli restano vanno agli avversari"
+msgstr "The racks they still had go to the opponents"
+
+#: templates/direttore/_menu_partita.html:72
+msgid "poi la partita a tre aspetta la conferma del risultato"
+msgstr "then the three-player match waits for the result to be confirmed"
+
+#: templates/direttore/_menu_partita.html:74
 msgid "Le sue altre partite aperte"
 msgstr "Their other open matches"
 
-#: templates/direttore/_menu_partita.html:71
+#: templates/direttore/_menu_partita.html:74
 msgid "si chiudono a tavolino anche quelle"
 msgstr "close by walkover too"
 
-#: templates/direttore/_menu_partita.html:73
-msgid "Esce dalla gara"
-msgstr "Leaves the competition"
+#: templates/direttore/_menu_partita.html:76
+#: templates/direttore/_ritiro_iscritto.html:24
+msgid "Riceve una notifica"
+msgstr "They get a notification"
 
-#: templates/direttore/_menu_partita.html:73
-msgid "la sua iscrizione si toglie: dal turno dopo non entra negli abbinamenti"
-msgstr "their registration is removed: from the next round they are not paired"
+#: templates/direttore/_menu_partita.html:76
+#: templates/direttore/_ritiro_iscritto.html:24
+msgid "gli dice chi l’ha ritirato e cosa comporta la regola della gara"
+msgstr "it says who withdrew them and what the withdrawal rule means"
 
-#: templates/direttore/_menu_partita.html:75
-msgid "Il tabellone resta com’è"
-msgstr "The bracket stays as it is"
-
-#: templates/direttore/_menu_partita.html:75
-msgid "chi lo avrebbe incontrato passa il turno a tavolino"
-msgstr "whoever would have faced them goes through by walkover"
-
-#: templates/direttore/_menu_partita.html:77
-msgid "Resta negli abbinamenti"
-msgstr "Stays in the pairings"
-
-#: templates/direttore/_menu_partita.html:77
-msgid "nei turni dopo perde a tavolino ogni partita, e resta in classifica"
-msgstr ""
-"in the next rounds they lose every match by walkover, and stay in the "
-"standings"
-
-#: templates/direttore/_menu_partita.html:81
+#: templates/direttore/_menu_partita.html:79
 msgid ""
 "Lo decide la regola della gara sui ritiri. Azzerare la partita non lo "
 "rimette in gara."
@@ -15051,7 +15159,7 @@ msgstr ""
 "The competition's withdrawal rule decides this. Resetting the match does "
 "not bring them back."
 
-#: templates/direttore/_menu_partita.html:82
+#: templates/direttore/_menu_partita.html:80
 msgid ""
 "Lo decide la regola della gara sui ritiri. Azzerando questa partita torna"
 " in gara; le altre partite chiuse a tavolino restano chiuse."
@@ -15059,23 +15167,12 @@ msgstr ""
 "The competition's withdrawal rule decides this. Resetting this match "
 "brings them back; the other matches closed by walkover stay closed."
 
-#: templates/direttore/_menu_partita.html:85
-msgid "I triangoli che gli restano vanno agli avversari"
-msgstr "The racks they still had go to the opponents"
+#: templates/direttore/_menu_partita.html:82
+msgid "Lo decide la regola della gara sui ritiri, come in una partita a due."
+msgstr "The competition's withdrawal rule decides this, as in a two-player match."
 
-#: templates/direttore/_menu_partita.html:85
-msgid "poi la partita a tre aspetta la conferma del risultato"
-msgstr "then the three-player match waits for the result to be confirmed"
-
-#: templates/direttore/_menu_partita.html:87
-msgid ""
-"Nel trio il ritiro vale per questa partita: la regola della gara sui "
-"ritiri non si applica."
-msgstr ""
-"In a trio the withdrawal applies to this match: the competition's "
-"withdrawal rule does not apply."
-
-#: templates/direttore/_menu_partita.html:89
+#: templates/direttore/_menu_partita.html:84
+#: templates/direttore/_ritiro_iscritto.html:28
 msgid "Registra il ritiro"
 msgstr "Record the withdrawal"
 
@@ -15272,6 +15369,59 @@ msgid ""
 "Per correggere una partita si tocca la sua riga: si può finché la gara "
 "non è chiusa."
 msgstr "To correct a match tap its row: possible until the competition is closed."
+
+#: templates/direttore/_regola_ritiro.html:9
+msgid "Esce dalla gara"
+msgstr "Leaves the competition"
+
+#: templates/direttore/_regola_ritiro.html:9
+msgid "la sua iscrizione si toglie: dal turno dopo non entra negli abbinamenti"
+msgstr "their registration is removed: from the next round they are not paired"
+
+#: templates/direttore/_regola_ritiro.html:11
+msgid "Il tabellone resta com’è"
+msgstr "The bracket stays as it is"
+
+#: templates/direttore/_regola_ritiro.html:11
+msgid "chi lo avrebbe incontrato passa il turno a tavolino"
+msgstr "whoever would have faced them goes through by walkover"
+
+#: templates/direttore/_regola_ritiro.html:13
+msgid "Resta negli abbinamenti"
+msgstr "Stays in the pairings"
+
+#: templates/direttore/_regola_ritiro.html:13
+msgid "nei turni dopo perde a tavolino ogni partita, e resta in classifica"
+msgstr ""
+"in the next rounds they lose every match by walkover, and stay in the "
+"standings"
+
+#: templates/direttore/_ritiro_iscritto.html:16
+msgid "Ritiro dalla gara"
+msgstr "Withdrawal from the competition"
+
+#: templates/direttore/_ritiro_iscritto.html:17
+msgid "Per chi se ne va senza dirlo all’app"
+msgstr "For players who leave without saying so in the app"
+
+#: templates/direttore/_ritiro_iscritto.html:22
+msgid "Le sue partite aperte"
+msgstr "Their open matches"
+
+#: templates/direttore/_ritiro_iscritto.html:22
+msgid "si chiudono a tavolino; i triangoli già vinti restano suoi"
+msgstr "they close by walkover; they keep the racks already won"
+
+#: templates/direttore/_ritiro_iscritto.html:26
+msgid ""
+"Vale come se il forfait l’avesse dichiarato lui, e lo decide la regola "
+"della gara sui ritiri."
+msgstr "It counts as if they had declared the forfeit themselves, and the competition's withdrawal rule decides the rest."
+
+#: templates/direttore/_ritiro_iscritto.html:38
+#, python-format
+msgid "Ritiro di %(nome)s dalla gara"
+msgstr "%(nome)s withdraws from the competition"
 
 #: templates/direttore/_scripts.html:35
 msgid ""

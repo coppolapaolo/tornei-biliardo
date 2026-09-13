@@ -164,8 +164,9 @@ blocks:
           ritira si chiudono allo stesso modo, e la regola della gara sui
           ritiri decide se resta negli abbinamenti, perdendo a tavolino, o se
           esce dalla gara. Nel trio i triangoli che gli restano vanno agli
-          avversari, e la regola della gara vale allo stesso modo. Il comando
-          c'è finché la partita è aperta e il turno dopo non è avviato.
+          avversari, e la regola della gara vale allo stesso modo. Il giocatore
+          riceve una notifica che dice chi l'ha ritirato e cosa comporta. Il
+          comando c'è finché la partita è aperta e il turno dopo non è avviato.
         hint: partita.forfait
       - name: "Ritirare chi se ne va senza dirlo"
         text: >-
