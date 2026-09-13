@@ -76,7 +76,7 @@
               tone='locked') }}
     {% endif %}
     {% if gara.matchmaking_strategy not in bracket_minimum_players %}
-    {{ d.riga('fa-scale-balanced', _('Chi riposa'), gara.odd_number_policy.replace('_', ' ')|title, tone='locked') }}
+    {{ d.riga('fa-scale-balanced', _('Chi riposa'), gara.odd_number_policy|etichetta_dispari, tone='locked') }}
     {% endif %}
   </div>
   {% endif %}
