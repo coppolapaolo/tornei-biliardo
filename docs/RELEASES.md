@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.14.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.13.0...v1.14.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* il punteggio sulla card della partita ([#349](https://github.com/coppolapaolo/tornei-biliardo/issues/349)) ([fbfe423](https://github.com/coppolapaolo/tornei-biliardo/commit/fbfe42373886d4053b0dc98d07fb15661b88ddb3))
+
 ## [1.13.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.12.0...v1.13.0) (2026-09-13)
 
 
