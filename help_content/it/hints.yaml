@@ -802,7 +802,7 @@ tours:
     audience: [giocatore, direttore]
     steps:
       - title: "Dove siamo"
-        text: "Chi dirige vede in cima la striscia delle fasi — preparazione, iscrizioni, in gioco, chiusura — e una fascia scura con l'unica cosa da fare adesso; il resto della gestione sta in «Impostazioni gara». Chi gioca ha le linguette Turni, Classifica e Iscritti."
+        text: "Chi dirige vede in cima la striscia delle fasi — preparazione, iscrizioni (il playoff non le ha), in gioco, chiusura — e una fascia scura con l'unica cosa da fare adesso; il resto della gestione sta in «Impostazioni gara». Chi gioca ha le linguette Turni, Classifica e Iscritti."
       - hint: gara.turni
       - hint: gara.classifica
       - title: "Iscritti"

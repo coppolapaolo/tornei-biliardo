@@ -29,6 +29,7 @@ from models.competition.models import Inscription
 from models.competition.round_service import RoundService
 from models.dashboard.section_builders import DashboardSectionBuilder
 from models.exceptions import ConflictError
+from models.status_enum import GaraStatus
 from models.playoff.models import PlayoffQualification, QualificationStatus
 from models.playoff.services import PlayoffService
 from tests.new.unit.test_avvio_playoff import (
@@ -83,13 +84,8 @@ def _iscritti(gara_id: int) -> set[int]:
     }
 
 
-def _avvia(gara_id: int, *, iscrizioni_chiuse: bool = False):
-    adesso = utc_now()
-    if iscrizioni_chiuse:
-        inizio, fine = adesso - timedelta(hours=2), adesso - timedelta(hours=1)
-    else:
-        inizio, fine = adesso, adesso + timedelta(hours=2)
-    InscriptionService.open_inscriptions(gara_id, inizio, fine)
+def _avvia(gara_id: int):
+    """Dalla preparazione: il playoff non ha iscrizioni da aprire."""
     return RoundService.start_first_round(gara_id)
 
 
@@ -154,10 +150,13 @@ class TestChiAccettaDopoLaCreazioneEntra:
         _c, cfg, giocatori = _playoff(db_session, posti=6)
         _accetta(cfg, *giocatori[:4])
         gara = PlayoffService.create_playoff_gara(cfg.id)
+        # Oggi la gara di playoff non ha finestra; una nata prima del
+        # 2026-09-13 poteva averla, anche scaduta, e l'invito vale lo stesso.
         adesso = utc_now()
-        InscriptionService.open_inscriptions(
-            gara.id, adesso - timedelta(hours=2), adesso - timedelta(hours=1)
-        )
+        gara.status = GaraStatus.INSCRIPTION.value
+        gara.inscription_start = adesso - timedelta(hours=2)
+        gara.inscription_end = adesso - timedelta(hours=1)
+        db.session.commit()
 
         _accetta(cfg, giocatori[4])
 
@@ -205,6 +204,12 @@ class TestAllAvvioGliInvitiSiChiudono:
         for giocatore in giocatori[4:8]:
             _make_inscription(db_session, giocatore, serata)
         db_session.commit()
+        # Una gara di serata le iscrizioni le apre: il salto vale solo per il
+        # playoff.
+        adesso = utc_now()
+        InscriptionService.open_inscriptions(
+            serata.id, adesso, adesso + timedelta(hours=2)
+        )
 
         _avvia(serata.id)
 

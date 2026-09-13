@@ -393,9 +393,6 @@ class TestAdminPlayerManagement:
         restava confermato ma fuori dalla gara. Il caso completo sta in
         `test_playoff_con_meno_accettazioni.py`.
         """
-        from datetime import timedelta
-
-        from models.competition.inscription_service import InscriptionService
         from models.competition.round_service import RoundService
         from models.exceptions import ConflictError
 
@@ -408,10 +405,7 @@ class TestAdminPlayerManagement:
             PlayoffService.confirm_qualification(qual.id, p.id)
 
         playoff = PlayoffService.create_playoff_gara(cfg.id)
-        adesso = utc_now()
-        InscriptionService.open_inscriptions(
-            playoff.id, adesso, adesso + timedelta(hours=1)
-        )
+        # Dalla preparazione: il playoff non ha iscrizioni da aprire.
         RoundService.start_first_round(playoff.id)
 
         qual = PlayoffQualification.query.filter_by(

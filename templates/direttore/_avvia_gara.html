@@ -39,7 +39,7 @@
 
         <div class="c7-rows">
           {{ d.riga('fa-users', ngettext('%(n)d iscritto', '%(n)d iscritti', _iscritti, n=_iscritti),
-                    _('tutti gli attivi entrano in gara; le iscrizioni si chiudono'), tone='ok') }}
+                    (_('tutti quelli che hanno accettato entrano in gara; gli inviti senza risposta scadono') if gara.is_playoff else _('tutti gli attivi entrano in gara; le iscrizioni si chiudono')), tone='ok') }}
           {% if _is_bracket %}
           {{ d.riga('fa-sitemap', _('Il tabellone si sorteggia adesso'),
                     _('il percorso di ognuno resta fissato fino alla finale, salvo annullare il sorteggio'), tone='ok') }}
@@ -87,7 +87,11 @@
         {% endif %}
 
         <div class="c7-nota">
+          {% if gara.is_playoff %}
+          {{ _('Da qui gli inviti senza risposta scadono e gli abbinamenti sono fissati. Finché nessun risultato è inserito puoi ancora annullare l’avvio.') }}
+          {% else %}
           {{ _('Da qui le iscrizioni si chiudono e gli abbinamenti sono fissati. Finché nessun risultato è inserito puoi ancora annullare l’avvio.') }}
+          {% endif %}
         </div>
         <button type="submit" class="btn btn-success w-100"{% if _is_bracket %} data-help="gara-sorteggia-tabellone"{% endif %}>
           <i class="fas {{ 'fa-sitemap' if _is_bracket else 'fa-play' }}"></i>

@@ -1,7 +1,10 @@
 {# templates/direttore/_fase_preparazione.html — Design System 7c
 
    Fase 1 del canvas. La fascia dice che si e' in preparazione e offre
-   l'unica azione conclusiva, aprire le iscrizioni; sotto, «Da preparare»:
+   l'unica azione conclusiva, aprire le iscrizioni — o, per la gara di
+   playoff, che non ha iscrizioni, avviarla: gli iscritti sono chi ha
+   accettato l'invito (SPECIFICHE.md, «Playoff», nota del 2026-09-13).
+   Sotto, «Da preparare»:
    turni e distanze, esercizi fra i turni, direzione di gara, tavoli,
    vetrina, squadre e categorie dove la gara le usa, ogni riga con lo stato
    della voce. In fondo, finche' nessuno e' iscritto, «Elimina la gara».
@@ -31,6 +34,26 @@
 {% set _url_passo = {} %}
 {% for p in passi %}{% set _void = _url_passo.update({p.chiave: p.url}) %}{% endfor %}
 
+{% if gara.is_playoff %}
+{% set _accettati = gara.get_active_inscriptions_count() %}
+{% set _minimo = gara.min_participants or 0 %}
+{% set _mancano = _minimo - _accettati if _accettati < _minimo else 0 %}
+<section class="c7-card c7-card--accent c7-fascia">
+  <div class="c7-fascia__testo">
+    <div class="c7-kicker">{{ _('Playoff') }}</div>
+    <h3 class="c7-fascia__titolo">{{ ngettext('%(n)d ha accettato l’invito', '%(n)d hanno accettato l’invito', _accettati, n=_accettati) }}</h3>
+    <div class="c7-fascia__corpo">
+      {{ _('Al playoff si entra dall’invito: non ci sono iscrizioni da aprire. Chi accetta entra fino all’avvio; all’avvio gli inviti ancora senza risposta scadono.') }}
+    </div>
+  </div>
+  <div class="c7-fascia__azione">
+    {% if _mancano %}
+    <div class="c7-fascia__nota">{{ ngettext('Manca %(n)d giocatore', 'Mancano %(n)d giocatori', _mancano, n=_mancano) }}</div>
+    {% endif %}
+    {{ d.pulsante_avvio(gara, bloccato=(_mancano > 0)) }}
+  </div>
+</section>
+{% else %}
 <section class="c7-card c7-card--accent c7-fascia">
   <div class="c7-fascia__testo">
     <div class="c7-kicker">{{ _('In preparazione') }}</div>
@@ -45,6 +68,17 @@
     </button>
   </div>
 </section>
+{% endif %}
+
+{# Gli iscritti del playoff sono chi ha accettato l'invito: il direttore li
+   vede qui, prima di avviare. Si aggiungono e si tolgono dalla lista dei
+   qualificati del campionato, non da questo elenco. #}
+{% if gara.is_playoff %}
+<div class="c7-stack" style="gap:8px">
+  {% include "components/_gara_inscriptions.html" %}
+  {{ d.nota(_('Chi accetta l’invito entra da solo. Per aggiungere o togliere un qualificato usa la lista del playoff nella pagina del campionato.')) }}
+</div>
+{% endif %}
 
 <div class="c7-cols c7-prep">
   {# ---- Colonna sinistra: sul desktop le sezioni in linea ---- #}

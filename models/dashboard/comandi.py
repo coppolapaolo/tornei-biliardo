@@ -101,6 +101,25 @@ def comando_per(gara: Gara) -> Optional[ComandoVM]:
     stato = gara.status
     reale = gara.get_real_status()
 
+    # La gara di playoff non ha iscrizioni da aprire: ci si entra accettando
+    # l'invito, e prima dell'avvio l'unico comando è avviarla (SPECIFICHE.md,
+    # «Playoff», nota del 2026-09-13). Vale anche per quelle nate prima e
+    # rimaste in iscrizione, con una finestra magari scaduta: estenderla non
+    # porterebbe nessuno.
+    if (
+        gara.is_playoff
+        and not gara.current_round
+        and stato in (GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value)
+    ):
+        iscritti = gara.get_active_inscriptions_count()
+        minimo = gara.min_participants or 0
+        return ComandoVM(
+            tipo=ComandoDirezione.AVVIA_GARA,
+            bloccato=iscritti < minimo,
+            iscritti=iscritti,
+            minimo=minimo,
+        )
+
     if stato == GaraStatus.SETUP.value:
         return ComandoVM(tipo=ComandoDirezione.APRI_ISCRIZIONI)
 

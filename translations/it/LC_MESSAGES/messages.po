@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 22:08+0200\n"
+"POT-Creation-Date: 2026-09-13 22:16+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -507,6 +507,10 @@ msgstr ""
 #: models/competition/showcase_view.py:459
 #, python-format
 msgid "Iscrizioni aperte — %(n)s posti liberi"
+msgstr ""
+
+#: models/competition/state_service.py:52
+msgid "Al playoff si entra accettando l'invito: non ci sono iscrizioni da aprire."
 msgstr ""
 
 #: models/competition/withdraw_policy_service.py:95
@@ -3336,7 +3340,7 @@ msgstr ""
 #: templates/direttore/_fase_gioco.html:146
 #: templates/direttore/_fase_gioco.html:235
 #: templates/direttore/_fase_iscrizioni.html:122
-#: templates/direttore/_fase_preparazione.html:124
+#: templates/direttore/_fase_preparazione.html:158
 #: templates/player/venues.html:29 templates/public/schermo_sala.html:103
 msgid "Tavoli"
 msgstr ""
@@ -3362,8 +3366,8 @@ msgstr ""
 #: templates/admin/campionato_detail.html:533
 #: templates/admin/campionato_vetrina.html:8
 #: templates/admin/gara_vetrina.html:10 templates/admin/gara_vetrina.html:14
-#: templates/direttore/_fase_preparazione.html:99
-#: templates/direttore/_fase_preparazione.html:130
+#: templates/direttore/_fase_preparazione.html:133
+#: templates/direttore/_fase_preparazione.html:164
 #: templates/direttore/impostazioni.html:45
 msgid "Vetrina"
 msgstr ""
@@ -4770,7 +4774,7 @@ msgstr ""
 #: templates/direttore/_fase_conclusa.html:101
 #: templates/direttore/_fase_gioco.html:202
 #: templates/direttore/_fase_iscrizioni.html:133
-#: templates/direttore/_fase_preparazione.html:144
+#: templates/direttore/_fase_preparazione.html:178
 #: templates/direttore/_tabellino.html:46 templates/gara_bracket.html:4
 #: templates/gara_bracket.html:12 templates/gara_detail.html:142
 #: templates/public/schermo_sala.html:147
@@ -4850,7 +4854,7 @@ msgid "Il percorso della gara, turno per turno"
 msgstr ""
 
 #: templates/components/_gara_info.html:13
-#: templates/direttore/_fase_preparazione.html:139
+#: templates/direttore/_fase_preparazione.html:173
 #: templates/gara_detail.html:205
 msgid "Informazioni gara"
 msgstr ""
@@ -5269,8 +5273,8 @@ msgid "Ultimo aggiornamento: agosto 2026."
 msgstr ""
 
 #: templates/direttore/_fase_iscrizioni.html:107
-#: templates/direttore/_fase_preparazione.html:161
-#: templates/direttore/_fase_preparazione.html:166
+#: templates/direttore/_fase_preparazione.html:195
+#: templates/direttore/_fase_preparazione.html:200
 #: templates/public/vetrina_campionato.html:42
 #: templates/public/vetrina_campionato.html:176
 #: templates/public/vetrina_gara.html:47 templates/public/vetrina_gara.html:169
@@ -5665,7 +5669,7 @@ msgstr ""
 #: templates/components/_unified_cards.html:123
 #: templates/direttore/_dal_campionato.html:23
 #: templates/direttore/_fase_gioco.html:235
-#: templates/direttore/_fase_preparazione.html:139
+#: templates/direttore/_fase_preparazione.html:173
 #: templates/direttore/impostazioni.html:27
 #: templates/gamification/admin/config_dashboard.html:75
 #: templates/gamification/admin/config_dashboard.html:101
@@ -5703,7 +5707,7 @@ msgstr ""
 
 #: templates/admin/campionato_detail.html:71
 #: templates/components/_tessera_gara.html:39
-#: templates/direttore/_fase_preparazione.html:36
+#: templates/direttore/_fase_preparazione.html:59
 msgid "In preparazione"
 msgstr ""
 
@@ -5840,7 +5844,9 @@ msgstr ""
 #: templates/components/_history_campionati_tab.html:92
 #: templates/components/_playoff_invitations.html:10
 #: templates/components/_tessera_playoff.html:27
-#: templates/components/_unified_cards.html:51 templates/direttore/gara.html:51
+#: templates/components/_unified_cards.html:51
+#: templates/direttore/_fase_preparazione.html:43
+#: templates/direttore/gara.html:51
 msgid "Playoff"
 msgstr ""
 
@@ -6778,7 +6784,7 @@ msgstr ""
 #: templates/components/_public_challenges.html:19
 #: templates/direttore/_classifica.html:26
 #: templates/direttore/_esercizi_turni.html:104
-#: templates/direttore/_fase_preparazione.html:79
+#: templates/direttore/_fase_preparazione.html:113
 #: templates/direttore/preparazione/_esercizi.html:31
 #: templates/player/gara_challenge_detail.html:14
 #: templates/player/gara_challenge_detail.html:48
@@ -7092,7 +7098,7 @@ msgstr ""
 #: templates/admin/gara_create_standalone.html:455
 #: templates/components/_gara_info.html:43
 #: templates/components/_new_gara_modal.html:39
-#: templates/direttore/_fase_preparazione.html:151
+#: templates/direttore/_fase_preparazione.html:185
 #: templates/gamification/admin/quests.html:26
 #: templates/public/campionato_detail.html:74
 msgid "Partecipanti"
@@ -8165,7 +8171,7 @@ msgstr ""
 #: templates/components/_nearby_gare.html:125
 #: templates/components/_player_dashboard_content.html:36
 #: templates/components/_playoff_invitations.html:36
-#: templates/direttore/_fase_preparazione.html:150
+#: templates/direttore/_fase_preparazione.html:184
 #: templates/exam/request_form.html:55
 #: templates/individual_match/match_detail.html:211
 #: templates/player/my_venue_requests.html:21
@@ -10461,7 +10467,7 @@ msgid "Diverso dal campionato"
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:74
-#: templates/direttore/_fase_preparazione.html:62
+#: templates/direttore/_fase_preparazione.html:96
 #: templates/direttore/preparazione/_turni.html:47
 #: templates/direttore/preparazione/_turni.html:188
 msgid "default"
@@ -10650,7 +10656,7 @@ msgid "stima"
 msgstr ""
 
 #: templates/components/_gara_info.html:32
-#: templates/direttore/_fase_preparazione.html:141
+#: templates/direttore/_fase_preparazione.html:175
 #: templates/direttore/impostazioni.html:74
 msgid "Accoppiamento"
 msgstr ""
@@ -10706,7 +10712,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: templates/components/_gara_info.html:96
-#: templates/direttore/_fase_preparazione.html:121
+#: templates/direttore/_fase_preparazione.html:155
 #: templates/direttore/preparazione.html:19
 #: templates/direttore/preparazione/_direttori.html:20
 msgid "Direzione di gara"
@@ -10877,7 +10883,7 @@ msgstr ""
 #: templates/components/_tabellone_macros.html:25
 #: templates/direttore/_card_partita.html:106
 #: templates/direttore/_card_partita.html:196
-#: templates/direttore/_fase_preparazione.html:61
+#: templates/direttore/_fase_preparazione.html:95
 #: templates/direttore/_partite.html:31 templates/direttore/_partite.html:79
 #: templates/direttore/preparazione/_turni.html:46
 #: templates/direttore/preparazione/_turni.html:67
@@ -12208,7 +12214,7 @@ msgstr ""
 #: templates/components/_open_inscriptions_modal.html:15
 #: templates/components/_open_inscriptions_modal.html:41
 #: templates/components/_tessera_gara.html:337
-#: templates/direttore/_fase_preparazione.html:44
+#: templates/direttore/_fase_preparazione.html:67
 msgid "Apri le iscrizioni"
 msgstr ""
 
@@ -12282,7 +12288,7 @@ msgstr ""
 
 #: templates/components/_player_dashboard_content.html:38
 #: templates/components/_playoff_invitations.html:32
-#: templates/direttore/_fase_preparazione.html:149
+#: templates/direttore/_fase_preparazione.html:183
 #: templates/feedback/tutte.html:13
 #: templates/individual_match/create_proposal.html:61
 #: templates/player/playoff_invitation.html:23
@@ -12812,9 +12818,9 @@ msgstr ""
 #: templates/components/_soft_delete_modal.html:79
 #: templates/components/_unified_cards.html:169
 #: templates/components/_unified_cards.html:175
-#: templates/direttore/_fase_preparazione.html:175
-#: templates/direttore/_fase_preparazione.html:190
-#: templates/direttore/_fase_preparazione.html:203
+#: templates/direttore/_fase_preparazione.html:209
+#: templates/direttore/_fase_preparazione.html:224
+#: templates/direttore/_fase_preparazione.html:237
 msgid "Elimina la gara"
 msgstr ""
 
@@ -13413,7 +13419,7 @@ msgstr ""
 
 #: templates/components/_tessera_gara.html:338
 #: templates/direttore/_avvia_gara.html:27
-#: templates/direttore/_avvia_gara.html:94 templates/direttore/_macros.html:50
+#: templates/direttore/_avvia_gara.html:98 templates/direttore/_macros.html:50
 msgid "Avvia la gara"
 msgstr ""
 
@@ -13992,8 +13998,14 @@ msgid "Ciao"
 msgstr ""
 
 #: templates/direttore/_avvia_gara.html:27
-#: templates/direttore/_avvia_gara.html:94 templates/direttore/_macros.html:50
+#: templates/direttore/_avvia_gara.html:98 templates/direttore/_macros.html:50
 msgid "Sorteggia il tabellone"
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:42
+msgid ""
+"tutti quelli che hanno accettato entrano in gara; gli inviti senza "
+"risposta scadono"
 msgstr ""
 
 #: templates/direttore/_avvia_gara.html:42
@@ -14094,7 +14106,13 @@ msgstr ""
 msgid "L'ultimo iscritto alla gara."
 msgstr ""
 
-#: templates/direttore/_avvia_gara.html:90
+#: templates/direttore/_avvia_gara.html:91
+msgid ""
+"Da qui gli inviti senza risposta scadono e gli abbinamenti sono fissati. "
+"Finché nessun risultato è inserito puoi ancora annullare l’avvio."
+msgstr ""
+
+#: templates/direttore/_avvia_gara.html:93
 msgid ""
 "Da qui le iscrizioni si chiudono e gli abbinamenti sono fissati. Finché "
 "nessun risultato è inserito puoi ancora annullare l’avvio."
@@ -14446,8 +14464,8 @@ msgid "a punteggio, conta il migliore"
 msgstr ""
 
 #: templates/direttore/_esercizi_turni.html:100
-#: templates/direttore/_fase_preparazione.html:76
-#: templates/direttore/_fase_preparazione.html:117
+#: templates/direttore/_fase_preparazione.html:110
+#: templates/direttore/_fase_preparazione.html:151
 #: templates/direttore/impostazioni.html:78
 #: templates/direttore/preparazione.html:18
 #: templates/direttore/preparazione/_esercizi.html:18
@@ -14815,12 +14833,12 @@ msgid "cambia prima di avviare"
 msgstr ""
 
 #: templates/direttore/_fase_iscrizioni.html:123
-#: templates/direttore/_fase_preparazione.html:125
+#: templates/direttore/_fase_preparazione.html:159
 msgid "nessun tavolo: la sala non ne ha dichiarati"
 msgstr ""
 
 #: templates/direttore/_fase_iscrizioni.html:133
-#: templates/direttore/_fase_preparazione.html:144
+#: templates/direttore/_fase_preparazione.html:178
 #, python-format
 msgid "se si arriva a %(n)s iscritti"
 msgstr ""
@@ -14837,145 +14855,172 @@ msgstr ""
 msgid "la gara torna in preparazione"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:37
+#: templates/direttore/_fase_preparazione.html:44
+#, python-format
+msgid "%(n)d ha accettato l’invito"
+msgid_plural "%(n)d hanno accettato l’invito"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/direttore/_fase_preparazione.html:46
+msgid ""
+"Al playoff si entra dall’invito: non ci sono iscrizioni da aprire. Chi "
+"accetta entra fino all’avvio; all’avvio gli inviti ancora senza risposta "
+"scadono."
+msgstr ""
+
+#: templates/direttore/_fase_preparazione.html:51
+#, python-format
+msgid "Manca %(n)d giocatore"
+msgid_plural "Mancano %(n)d giocatori"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/direttore/_fase_preparazione.html:60
 msgid "Nessuno vede ancora la gara"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:39
+#: templates/direttore/_fase_preparazione.html:62
 msgid ""
 "Quando apri le iscrizioni la gara diventa pubblica e chi è in zona riceve"
 " la notifica."
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:53
-#: templates/direttore/_fase_preparazione.html:111
+#: templates/direttore/_fase_preparazione.html:79
+msgid ""
+"Chi accetta l’invito entra da solo. Per aggiungere o togliere un "
+"qualificato usa la lista del playoff nella pagina del campionato."
+msgstr ""
+
+#: templates/direttore/_fase_preparazione.html:87
+#: templates/direttore/_fase_preparazione.html:145
 #: templates/direttore/impostazioni.html:64
 #: templates/direttore/impostazioni.html:71
 #: templates/direttore/preparazione.html:16
 msgid "Turni e distanze"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:53
+#: templates/direttore/_fase_preparazione.html:87
 msgid "Modifica turni ed esercizi"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:62
+#: templates/direttore/_fase_preparazione.html:96
 #: templates/direttore/preparazione/_turni.html:47
 #: templates/direttore/preparazione/_turni.html:187
 msgid "modificato"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:80
+#: templates/direttore/_fase_preparazione.html:114
 msgid "classifica a parte"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:81
-#: templates/direttore/_fase_preparazione.html:118
+#: templates/direttore/_fase_preparazione.html:115
+#: templates/direttore/_fase_preparazione.html:152
 msgid "nessuno — facoltativo"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:99
+#: templates/direttore/_fase_preparazione.html:133
 msgid "Anteprima della pagina pubblica"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:108
+#: templates/direttore/_fase_preparazione.html:142
 msgid "Da preparare"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:112
+#: templates/direttore/_fase_preparazione.html:146
 #: templates/direttore/impostazioni.html:72
 #, python-format
 msgid "%(n)s turni · %(disc)s · %(dist)s"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:113
+#: templates/direttore/_fase_preparazione.html:147
 #, python-format
 msgid "%(n)d turno modificato"
 msgid_plural "%(n)d turni modificati"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_preparazione.html:118
+#: templates/direttore/_fase_preparazione.html:152
 #, python-format
 msgid "%(n)d esercizio · classifica a parte"
 msgid_plural "%(n)d esercizi · classifica a parte"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_preparazione.html:122
+#: templates/direttore/_fase_preparazione.html:156
 msgid "solo tu — aggiungi un co-direttore"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:122
+#: templates/direttore/_fase_preparazione.html:156
 #, python-format
 msgid "tu e %(n)d co-direttore"
 msgid_plural "tu e %(n)d co-direttori"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_preparazione.html:125
+#: templates/direttore/_fase_preparazione.html:159
 #, python-format
 msgid "%(n)d nella sala"
 msgid_plural "%(n)d nella sala"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_fase_preparazione.html:131
+#: templates/direttore/_fase_preparazione.html:165
 msgid "locandina caricata"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:131
+#: templates/direttore/_fase_preparazione.html:165
 msgid "nessuna locandina"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:136
+#: templates/direttore/_fase_preparazione.html:170
 msgid ""
 "Ogni riga porta alla sua sezione, qui a fianco. Turni ed esercizi aprono "
 "la loro pagina."
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:142
+#: templates/direttore/_fase_preparazione.html:176
 #: templates/direttore/impostazioni.html:75
 msgid "anti-reincontro attivo"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:147
+#: templates/direttore/_fase_preparazione.html:181
 #: templates/direttore/impostazioni.html:83
 msgid "Chi riposa"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:152
+#: templates/direttore/_fase_preparazione.html:186
 #, python-format
 msgid "minimo %(min)s, fino a %(max)s"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:152
+#: templates/direttore/_fase_preparazione.html:186
 #, python-format
 msgid "minimo %(min)s, senza limite"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:175
+#: templates/direttore/_fase_preparazione.html:209
 msgid "si può finché nessuno è iscritto"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:196
+#: templates/direttore/_fase_preparazione.html:230
 msgid "La gara sparisce"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:196
+#: templates/direttore/_fase_preparazione.html:230
 msgid "con i turni, gli esercizi, i tavoli e la direzione di gara"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:198
+#: templates/direttore/_fase_preparazione.html:232
 msgid "Il campionato resta"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:198
+#: templates/direttore/_fase_preparazione.html:232
 #, python-format
 msgid "«%(nome)s» perde questa gara; le altre non cambiano"
 msgstr ""
 
-#: templates/direttore/_fase_preparazione.html:201
+#: templates/direttore/_fase_preparazione.html:235
 msgid ""
 "Non si può annullare. Si può solo finché nessuno è iscritto: dopo, la "
 "gara si annulla e gli iscritti ricevono la notifica."

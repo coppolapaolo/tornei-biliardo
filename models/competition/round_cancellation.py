@@ -108,7 +108,13 @@ class RoundCancellationService:
         gara.current_round = 0
 
         if gara.status == GaraStatus.PLAYING.value:
-            gara.status = GaraStatus.INSCRIPTION.value
+            # Il playoff non ha iscrizioni: torna in preparazione, da dove
+            # si avvia (SPECIFICHE.md, «Playoff», nota del 2026-09-13).
+            gara.status = (
+                GaraStatus.SETUP.value
+                if gara.is_playoff
+                else GaraStatus.INSCRIPTION.value
+            )
 
         # Gara di playoff: gli inviti chiusi dall'avvio tornano in attesa.
         if gara.playoff_config_id:
@@ -208,7 +214,12 @@ class RoundCancellationService:
 
         # Se torniamo al turno 0, riporta allo stato inscription
         if gara.current_round == 0:
-            gara.status = GaraStatus.INSCRIPTION.value
+            # Il playoff torna in preparazione: non ha iscrizioni da riaprire.
+            gara.status = (
+                GaraStatus.SETUP.value
+                if gara.is_playoff
+                else GaraStatus.INSCRIPTION.value
+            )
 
             # La classifica di partenza vale solo a gara avviata: se restasse,
             # un cambio di iscritti prima del riavvio lascerebbe un seeding

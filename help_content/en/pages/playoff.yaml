@@ -214,6 +214,6 @@ blocks:
       - q: "Can I play in both play-offs?"
         a: "No: qualifying assigns you to one of the two, based on your position in the standings."
       - q: "I accepted but now I cannot come."
-        a: "Tell the competition director: they can remove you from the entrants as with any other competition."
+        a: "Tell the competition director: until the start they can remove you from the playoff list, on the championship page."
       - q: "My championship has no play-offs."
         a: "That is normal: they are optional and decided when the championship is created."

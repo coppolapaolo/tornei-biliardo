@@ -478,16 +478,9 @@ class TestIlPlayoffSiGiocaConChiHaAccettato:
 
     @staticmethod
     def _avvia(gara_id: int):
-        from datetime import timedelta
-
-        from models.base import utc_now
-        from models.competition.inscription_service import InscriptionService
+        """Dalla preparazione: la gara di playoff non ha iscrizioni da aprire."""
         from models.competition.round_service import RoundService
 
-        adesso = utc_now()
-        InscriptionService.open_inscriptions(
-            gara_id, adesso, adesso + timedelta(hours=1)
-        )
         return RoundService.start_first_round(gara_id)
 
     @staticmethod
