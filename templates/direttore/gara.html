@@ -76,10 +76,6 @@
 {% if x_choice_last_inscribed %}
 {% include "components/_x_choice_modal.html" %}
 {% endif %}
-{% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
-{% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value and challenge_enabled %}
-{% include "components/_challenge_management_modal.html" %}
-{% endif %}
 {% include "direttore/_modali_gioco.html" %}
 {% endblock %}
 

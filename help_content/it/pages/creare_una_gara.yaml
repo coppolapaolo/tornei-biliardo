@@ -60,7 +60,8 @@ blocks:
           Il minimo è la soglia sotto la quale la gara non parte. Il massimo è
           facoltativo: se lo imposti, chi arriva dopo finisce in lista
           d'attesa. Sui formati a tabellone il massimo diventa obbligatorio,
-          perché dichiara la capienza del tabellone.
+          perché dichiara la capienza del tabellone. Entrambi si possono
+          ancora cambiare nel foglio «Apri le iscrizioni».
       - title: "Salva"
         text: >-
           La gara nasce in stato **Bozza**: esiste, è tua, ma nessuno può ancora

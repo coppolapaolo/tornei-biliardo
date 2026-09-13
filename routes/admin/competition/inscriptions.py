@@ -45,6 +45,25 @@ def _inscription_window():
     return start, end
 
 
+def _intero(valore, vuoto=None):
+    """Un intero dal form; `None` se il campo manca, `vuoto` se e' vuoto.
+
+    I due numeri del foglio leggono il vuoto in modo diverso: un massimo
+    vuoto vuol dire «senza limite» (0 per il servizio), un minimo vuoto vuol
+    dire «lascia quello che c'e'» (`None`). Rilievo della revisione
+    automatica sulla PR #345.
+    """
+    if valore is None:
+        return None
+    valore = valore.strip()
+    if valore == "":
+        return vuoto
+    try:
+        return int(valore)
+    except ValueError as errore:
+        raise ValueError("Minimo e massimo devono essere numeri interi") from errore
+
+
 @competition_bp.route("/<int:gara_id>/open_inscriptions", methods=["POST"])
 @login_required
 @gara_manager_required
@@ -54,7 +73,11 @@ def open_inscriptions(gara_id):
     def action():
         inscription_start, inscription_end = _inscription_window()
         gara = InscriptionService.open_inscriptions(
-            gara_id, inscription_start, inscription_end
+            gara_id,
+            inscription_start,
+            inscription_end,
+            min_participants=_intero(request.form.get("min_participants")),
+            max_participants=_intero(request.form.get("max_participants"), vuoto=0),
         )
 
         # Il service accorcia la finestra all'inizio della gara. È un

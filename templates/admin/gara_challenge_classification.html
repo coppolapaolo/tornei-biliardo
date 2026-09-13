@@ -147,19 +147,16 @@
     </section>
     {% endif %}
 
-    {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
-    {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value and challenge_enabled %}
-    <button class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#challengeManagementModal">
-      <i class="fas fa-cog"></i>&nbsp;{{ _("Gestisci gli esercizi") }}
-    </button>
+    {# Gli esercizi si aggiungono e si tolgono nel passo della preparazione,
+       finche' la gara non e' avviata. #}
+    {% if gara.ammette_esercizi_fra_i_turni and gara.status in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value] %}
+    <a class="btn btn-secondary w-100" href="{{ url_for('admin.competition.gara_preparazione', gara_id=gara.id, passo='esercizi') }}">
+      <i class="fas fa-bullseye"></i>&nbsp;{{ _("Gestisci gli esercizi") }}
+    </a>
     {% endif %}
   </div>
 </div>
 
-{% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
-{% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value and challenge_enabled %}
-{% include "components/_challenge_management_modal.html" %}
-{% endif %}
 {% endblock %}
 
 {% block scripts %}

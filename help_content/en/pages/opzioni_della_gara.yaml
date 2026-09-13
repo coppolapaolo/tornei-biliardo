@@ -56,7 +56,9 @@ blocks:
         text: >-
           Which of the venue's tables you will actually use tonight. If the
           venue has eight but you have four tonight, list those: the app will
-          only assign matches to them.
+          only assign matches to them. You can change them at any time — in
+          preparation, with registrations open, between rounds — from the
+          «Tables» step or from «Competition settings».
         hint: gara.tavoli
       - name: "Entry fee"
         values: "informational"

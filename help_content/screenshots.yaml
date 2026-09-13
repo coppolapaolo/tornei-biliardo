@@ -397,9 +397,8 @@ shots:
     caption: "Il pannello delle squadre: quali ci sono e chi ne fa parte in questa gara."
 
   - id: gara-turni-config
-    route: /admin/gara/4
+    route: /admin/gara/4/preparazione/turni
     as: Luca Bianchi
-    clip: "#sezioneTurni"
     caption: "La configurazione dei turni: disciplina e distanza si possono cambiare turno per turno."
 
 

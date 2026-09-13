@@ -148,4 +148,4 @@ blocks:
       - q: "Come faccio a iscrivere chi non ha lo smartphone?"
         a: "Iscrivilo tu a mano dalla pagina della gara, nel riquadro degli iscritti. Serve però che abbia un account: puoi crearglielo insieme, ci vuole un minuto."
       - q: "Quanti iscritti servono per far partire la gara?"
-        a: "Il minimo che hai indicato alla creazione. Sotto quella soglia il pulsante di avvio resta bloccato."
+        a: "Il minimo che hai indicato alla creazione, o nel foglio «Apri le iscrizioni», dove si cambia insieme al massimo. Sotto quella soglia il pulsante di avvio resta spento."

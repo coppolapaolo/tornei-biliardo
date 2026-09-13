@@ -1,34 +1,49 @@
-<!-- Open Inscriptions Modal Component -->
-<div class="modal fade" id="openInscriptionsModal" tabindex="-1">
-    <div class="modal-dialog modal-fullscreen-sm-down">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">{{ _("Apri Iscrizioni") }}</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ url_for('admin.competition.open_inscriptions', gara_id=gara.id) }}" method="POST" id="inscriptionForm">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <div class="modal-body">
-                    {# Gli orari si leggono e si scrivono nel fuso di chi sta
-                       compilando (ADR-043): il server li converte con
-                       `parse_local_datetime`. #}
-                    <div class="alert alert-info">
-                        <small><i class="fas fa-clock"></i> {{ _("Gli orari sono nel tuo fuso orario.") }}</small>
-                    </div>
-                    <div class="mb-3">
-                        <label for="inscription_start" class="form-label">{{ _("Inizio Iscrizioni") }}</label>
-                        <input type="datetime-local" class="form-control" name="inscription_start" id="inscription_start" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="inscription_end" class="form-label">{{ _("Fine Iscrizioni") }}</label>
-                        <input type="datetime-local" class="form-control" name="inscription_end" id="inscription_end" required>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _("Annulla") }}</button>
-                    <button type="submit" class="btn btn-success">{{ _("Apri Iscrizioni") }}</button>
-                </div>
-            </form>
+{# templates/components/_open_inscriptions_modal.html — Design System 7c
+
+   Il foglio «Apri le iscrizioni» (canvas 1.8): le due date nel fuso di chi
+   scrive (ADR-043), minimo e massimo degli iscritti — che fino al 2026-09-12
+   stavano nella modifica della gara, cioe' altrove — e la frase che dice
+   cosa cambia per gli altri: e' il gesto che rende pubblica la gara.
+
+   I campi delle date li riempie `_scripts.html` (`populateInscriptionDates`)
+   con «adesso» e mezz'ora prima della gara. #}
+<div class="modal fade c7-sheet" id="openInscriptionsModal" tabindex="-1" aria-labelledby="openInscriptionsTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="openInscriptionsTitolo">{{ _("Apri le iscrizioni") }}</h3>
+      </div>
+      <form action="{{ url_for('admin.competition.open_inscriptions', gara_id=gara.id) }}" method="POST" id="inscriptionForm" class="modal-body c7-stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div>
+          <label for="inscription_start" class="c7-label">{{ _("Le iscrizioni aprono") }}</label>
+          <input type="datetime-local" class="form-control c7-num" name="inscription_start" id="inscription_start" required>
+          <div class="c7-nota mt-1">{{ _("Nel tuo fuso orario.") }}</div>
         </div>
+        <div>
+          <label for="inscription_end" class="c7-label">{{ _("Le iscrizioni chiudono") }}</label>
+          <input type="datetime-local" class="form-control c7-num" name="inscription_end" id="inscription_end" required>
+        </div>
+        <div class="c7-grid" style="grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label for="min_participants" class="c7-label">{{ _("Minimo") }}</label>
+            <input type="number" class="form-control c7-num" name="min_participants" id="min_participants"
+                   min="2" value="{{ gara.min_participants or 2 }}" required>
+          </div>
+          <div>
+            <label for="max_participants" class="c7-label">{{ _("Massimo") }}</label>
+            <input type="number" class="form-control c7-num" name="max_participants" id="max_participants"
+                   min="2" value="{{ gara.max_participants or '' }}" placeholder="{{ _('senza limite') }}">
+          </div>
+        </div>
+        <button type="submit" class="btn btn-success w-100">
+          <i class="fas fa-door-open"></i> {{ _("Apri le iscrizioni") }}
+        </button>
+        <div class="c7-nota" style="text-align:center">
+          {{ _("Da qui la gara è pubblica: compare nell'elenco e chi è in zona riceve la notifica.") }}
+        </div>
+      </form>
     </div>
+  </div>
 </div>

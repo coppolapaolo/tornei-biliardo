@@ -1,0 +1,123 @@
+{# templates/direttore/preparazione/_direttori.html — Design System 7c
+
+   La direzione di gara (canvas 1.6): chi dirige — il titolare e' marcato,
+   i co-direttori si tolgono — e sotto la ricerca di un co-direttore fra i
+   direttori della zona (`direttori_candidati`: solo utenti con ruolo
+   direttore vicini alla sede). Si scrive e le righe si filtrano; ogni riga
+   ha «Aggiungi». Un co-direttore puo' fare tutto quello che fa il titolare,
+   tranne togliere lui.
+
+   Endpoint invariati: `add_director` e `remove_director`. Lo includono la
+   preparazione (passo «Direttori» sul telefono, in linea sul desktop) e
+   «Impostazioni gara»: una sola copia per pagina, contiene uno script.
+   Attende il contesto della direzione (`contesto_direzione`). #}
+
+{% set _titolare = gara.director if gara.is_standalone else none %}
+{% set _puo = can_manage_directors %}
+
+<section class="c7-card">
+  <div class="c7-sechead" style="margin-bottom:12px">
+    <h3>{{ _('Direzione di gara') }}</h3>
+  </div>
+
+  <div class="c7-rows c7-rows--sunk">
+    {% for dir_user in inherited_directors %}
+    <div class="c7-rows__row">
+      <span class="c7-avatar">{{ dir_user.username[:2]|upper }}</span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ dir_user.username }}{% if dir_user.id == current_user.id %} <span class="c7-dim">{{ _('· sei tu') }}</span>{% endif %}</div>
+        <div class="c7-rows__sub">{{ _('direttore del campionato') }}</div>
+      </div>
+      <span class="c7-state c7-state--accent">{{ _('campionato') }}</span>
+    </div>
+    {% endfor %}
+    {% if _titolare %}
+    <div class="c7-rows__row">
+      <span class="c7-avatar">{{ _titolare.username[:2]|upper }}</span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ _titolare.username }}{% if _titolare.id == current_user.id %} <span class="c7-dim">{{ _('· sei tu') }}</span>{% endif %}</div>
+        <div class="c7-rows__sub">{{ _('direttore') }}</div>
+      </div>
+      <span class="c7-state c7-state--accent">{{ _('titolare') }}</span>
+    </div>
+    {% endif %}
+    {% for dir_user in gara.directors %}
+    {% if not _titolare or dir_user.id != _titolare.id %}
+    <div class="c7-rows__row">
+      <span class="c7-avatar">{{ dir_user.username[:2]|upper }}</span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ dir_user.username }}{% if dir_user.id == current_user.id %} <span class="c7-dim">{{ _('· sei tu') }}</span>{% endif %}</div>
+        <div class="c7-rows__sub">{{ _('co-direttore') }}{% if dir_user.home_city %} <span class="c7-sep">·</span> {{ dir_user.home_city }}{% endif %}</div>
+      </div>
+      {% if _puo and dir_user.id != current_user.id %}
+      <form method="POST" action="{{ url_for('admin.competition.remove_director', gara_id=gara.id) }}"
+            onsubmit='return confirmSubmit(this, {{ _("Togliere %(nome)s dalla direzione di gara?", nome=dir_user.username)|tojson }})'>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="user_id" value="{{ dir_user.id }}">
+        <button type="submit" class="c7-iconbtn" style="background:var(--c7-card);color:var(--c7-err-ink)"
+                title="{{ _('Togli dalla direzione') }}" aria-label="{{ _('Togli %(nome)s dalla direzione', nome=dir_user.username) }}">
+          <i class="fas fa-minus"></i>
+        </button>
+      </form>
+      {% endif %}
+    </div>
+    {% endif %}
+    {% endfor %}
+    {% if not inherited_directors and not gara.directors and not _titolare %}
+    <div class="c7-rows__row c7-rows__row--dim">
+      <div class="c7-rows__sub">{{ _('Nessun co-direttore: la gara la stai dirigendo da solo.') }}</div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if _puo %}
+  <div class="c7-stack" style="margin-top:16px" id="direzioneRicerca">
+    <div>
+      <label class="c7-label" for="cercaDirettore">{{ _('Aggiungi un co-direttore') }}</label>
+      <input type="search" class="form-control" id="cercaDirettore" autocomplete="off"
+             placeholder="{{ _('Cerca fra i direttori della zona…') }}" oninput="filtraDirettori()"
+             {% if not users %}disabled{% endif %}>
+    </div>
+    <div class="c7-rows" id="direzioneCandidati">
+      {% for user in users %}
+      <div class="c7-rows__row" data-cerca="{{ (user.username ~ ' ' ~ (user.full_name or '') ~ ' ' ~ (user.home_city or ''))|lower }}">
+        <span class="c7-avatar">{{ user.username[:2]|upper }}</span>
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ user.username }}</div>
+          <div class="c7-rows__sub">{{ _('direttore') }}{% if user.home_city %} <span class="c7-sep">·</span> {{ user.home_city }}{% endif %}</div>
+        </div>
+        <form method="POST" action="{{ url_for('admin.competition.add_director', gara_id=gara.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="user_id" value="{{ user.id }}">
+          <button type="submit" class="btn btn-secondary btn-sm">{{ _('Aggiungi') }}</button>
+        </form>
+      </div>
+      {% else %}
+      <div class="c7-rows__row c7-rows__row--dim">
+        <div class="c7-rows__sub">{{ _('Nessun altro direttore in zona.') }}</div>
+      </div>
+      {% endfor %}
+      <div class="c7-rows__row c7-rows__row--dim" id="direzioneNessuno" hidden>
+        <div class="c7-rows__sub">{{ _('Nessun direttore con questo nome.') }}</div>
+      </div>
+    </div>
+    <div class="c7-nota">
+      {{ _('Solo utenti con ruolo direttore vicini alla sede della gara. Un co-direttore può fare tutto quello che fai tu, tranne togliere te dalla direzione.') }}
+    </div>
+  </div>
+
+  <script>
+    window.filtraDirettori = function () {
+      const q = (document.getElementById('cercaDirettore').value || '').trim().toLowerCase();
+      let visibili = 0;
+      document.querySelectorAll('#direzioneCandidati [data-cerca]').forEach(function (riga) {
+        const ok = !q || riga.dataset.cerca.includes(q);
+        riga.hidden = !ok;
+        if (ok) visibili += 1;
+      });
+      const nessuno = document.getElementById('direzioneNessuno');
+      if (nessuno) nessuno.hidden = !(q && visibili === 0);
+    };
+  </script>
+  {% endif %}
+</section>

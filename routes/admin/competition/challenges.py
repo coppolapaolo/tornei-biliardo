@@ -19,7 +19,6 @@ from models import (
     Gara,
 )
 from models.status_enum import GaraStatus
-from models.matchmaking.configuration import MatchmakingStrategy
 from utils import gara_manager_required, admin_required
 from utils.permissions import director_or_admin_required
 from utils.route_helpers import get_or_ajax_404, safe_json_error
@@ -28,8 +27,14 @@ from utils.image_paths import challenge_image_url
 from . import competition_bp
 
 # ────────────────────────────────────────────────────────────────────────────────
-# CHALLENGE MANAGEMENT (Random Tournaments only)
+# CHALLENGE MANAGEMENT — gli esercizi fra i turni
+#
+# Valgono con ogni formula a turni (`Gara.ammette_esercizi_fra_i_turni`): fino
+# al 2026-09-12 le route li negavano fuori dal casuale, mentre il servizio non
+# ha mai avuto quel limite.
 # ────────────────────────────────────────────────────────────────────────────────
+
+ESERCIZI_NON_AMMESSI = "Gli esercizi fra i turni non valgono in questa gara"
 
 
 @competition_bp.route("/<int:gara_id>/challenges")
@@ -41,17 +46,8 @@ def get_gara_challenges(gara_id):
 
     gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
-    # Solo per gare Random
-    if gara.matchmaking_strategy != MatchmakingStrategy.RANDOM.value:
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "error": "Challenge disponibili solo per tornei Random",
-                }
-            ),
-            400,
-        )
+    if not gara.ammette_esercizi_fra_i_turni:
+        return jsonify({"success": False, "error": ESERCIZI_NON_AMMESSI}), 400
 
     try:
         gara_challenges = GaraChallengeService.get_gara_challenges(gara_id)
@@ -92,17 +88,8 @@ def add_challenge_to_gara(gara_id):
 
     gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
-    # Solo per gare Random
-    if gara.matchmaking_strategy != MatchmakingStrategy.RANDOM.value:
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "error": "Challenge disponibili solo per tornei Random",
-                }
-            ),
-            400,
-        )
+    if not gara.ammette_esercizi_fra_i_turni:
+        return jsonify({"success": False, "error": ESERCIZI_NON_AMMESSI}), 400
 
     # Solo se la gara non è ancora iniziata (SETUP o INSCRIPTION)
     if gara.status not in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value]:
@@ -162,17 +149,8 @@ def remove_challenge_from_gara(gara_id):
 
     gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
-    # Solo per gare Random
-    if gara.matchmaking_strategy != MatchmakingStrategy.RANDOM.value:
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "error": "Challenge disponibili solo per tornei Random",
-                }
-            ),
-            400,
-        )
+    if not gara.ammette_esercizi_fra_i_turni:
+        return jsonify({"success": False, "error": ESERCIZI_NON_AMMESSI}), 400
 
     try:
         data = request.get_json()
@@ -414,9 +392,8 @@ def get_gara_challenge_classification(gara_id):
 
     gara = db.get_or_404(Gara, gara_id)
 
-    # Solo per gare Random
-    if gara.matchmaking_strategy != MatchmakingStrategy.RANDOM.value:
-        flash("Classifica challenge disponibile solo per tornei Random", "error")
+    if not gara.ammette_esercizi_fra_i_turni:
+        flash(ESERCIZI_NON_AMMESSI, "error")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
     # Verifica se ci sono challenge attive

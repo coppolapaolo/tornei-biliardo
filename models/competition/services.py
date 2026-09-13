@@ -364,22 +364,22 @@ class GaraService:
     ) -> Gara:
         """Configura tavoli (in ordine di pregio) e flag assegnazione per classifica.
 
-        A differenza di update_gara (bloccata appena esistono iscrizioni), questa
-        configurazione è pensata proprio per la fase di iscrizione: il direttore
-        sceglie quali tavoli usare quando sa quanti giocatori partecipano.
-        Consentita SOLO tra apertura iscrizioni e avvio della gara.
+        A differenza di update_gara (bloccata appena esistono iscrizioni), i
+        tavoli si scelgono **in ogni stato** della gara: in preparazione, a
+        iscrizioni aperte, e fra un turno e l'altro — perche' e' allora che si
+        sa quanti ne servono, e una sala puo' liberare o perdere un tavolo a
+        serata iniziata. Fino al 2026-09-12 erano ammessi solo a iscrizioni
+        aperte (canvas «Pagina gara del direttore», decisione 1): il guard e'
+        stato tolto qui e nel template.
+
+        Le partite gia' avviate tengono il loro tavolo: la lista nuova vale per
+        le assegnazioni successive (`TableAssignmentService`).
         """
-        from models.exceptions import NotFoundError, ConflictError
+        from models.exceptions import NotFoundError
 
         gara = db.session.get(Gara, gara_id)
         if not gara:
             raise NotFoundError(f"Gara {gara_id} non trovata")
-
-        if gara.status != GaraStatus.INSCRIPTION.value:
-            raise ConflictError(
-                "I tavoli si configurano tra l'apertura delle iscrizioni "
-                "e l'avvio della gara"
-            )
 
         gara.set_available_tables(tables)
         gara.assign_tables_by_ranking = assign_tables_by_ranking

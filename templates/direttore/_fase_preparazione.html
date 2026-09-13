@@ -1,16 +1,31 @@
 {# templates/direttore/_fase_preparazione.html — Design System 7c
 
-   Fase 1 del canvas: la gara e' appena nata e nessuno la vede. La fascia dice
-   che si e' in preparazione e offre l'unica azione conclusiva della fase,
-   aprire le iscrizioni; sotto, l'elenco di cosa preparare — turni ed
-   esercizi, direzione di gara, tavoli, vetrina — con ogni riga che porta
-   alla sua sezione o alla sua pagina. #}
+   Fase 1 del canvas. La fascia dice che si e' in preparazione e offre
+   l'unica azione conclusiva, aprire le iscrizioni; sotto, «Da preparare»:
+   turni e distanze, esercizi fra i turni, direzione di gara, tavoli,
+   vetrina, ogni riga con lo stato della voce.
+
+   Sul telefono (1.1) ogni riga porta al suo passo, una pagina con avanti e
+   indietro (`gara_preparazione`, `gara_vetrina`). Sul desktop (1.9) la
+   preparazione e' una pagina sola che scorre: direzione di gara, tavoli e
+   vetrina stanno qui in linea, e le righe scorrono alla loro sezione; turni
+   ed esercizi aprono la loro pagina (1.10). Le sezioni in linea si rendono
+   una volta e si nascondono sotto lg: contengono id.
+
+   Attende, oltre al contesto della gara: `passi`
+   (`preparazione.passi_della_preparazione`), il contesto della vetrina
+   (`banner_*`, `url_pubblica`, `url_anteprima`, assente nelle prove) e il
+   contesto della direzione. #}
 
 {% set _turni_configurabili = gara.rounds_count > 1 and gara.matchmaking_strategy in [MatchmakingStrategy.AMALFI.value, MatchmakingStrategy.RANDOM.value] %}
 {% set _co_direttori = gara.directors|length %}
 {% set _tavoli = gara.get_available_tables() %}
-{% set _esercizi = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length %}
+{% set _tavoli_sala = gara.billiard_hall.get_table_names() if gara.billiard_hall else [] %}
+{% set _esercizi = gara.gara_challenges|selectattr("is_active", "equalto", true)|list %}
 {% set _locandina = gara.effective_banner_path %}
+{% set _override = gara.round_configurations|selectattr('has_overrides')|list %}
+{% set _url_passo = {} %}
+{% for p in passi %}{% set _void = _url_passo.update({p.chiave: p.url}) %}{% endfor %}
 
 <section class="c7-card c7-card--accent c7-fascia">
   <div class="c7-fascia__testo">
@@ -27,68 +42,132 @@
   </div>
 </section>
 
-{{ d.sezione(_('Da preparare')) }}
-<div class="c7-rows">
-  {% if _turni_configurabili %}
-  {{ d.riga('fa-list-ol', _('Turni e distanze'),
-            _('%(n)s turni · %(disc)s · %(dist)s', n=gara.rounds_count, disc=gara.discipline|discipline_display, dist=gara.distance_config|format_distance),
-            tone='ok', href='#sezioneTurni') }}
-  {% endif %}
-  {{ d.riga('fa-users', _('Direzione di gara'),
-            (_('solo tu — aggiungi un co-direttore') if not _co_direttori else ngettext('tu e %(n)d co-direttore', 'tu e %(n)d co-direttori', _co_direttori, n=_co_direttori)),
-            tone='ok', href='#sezioneDirettori') }}
-  {% if feature_visible('admin.competition.gara_impostazioni') %}
-  {{ d.riga('fa-table', _('Tavoli'),
-            (_('%(n)s nella sala', n=_tavoli|length) if _tavoli else _('nessun tavolo: la sala non ne ha dichiarati')),
-            tone=('ok' if _tavoli else 'warn'),
-            href=url_for('admin.competition.gara_impostazioni', gara_id=gara.id) ~ '#sezioneTavoli') }}
-  {% endif %}
-  {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value and (not gara.campionato or gara.campionato.challenge_mode) %}
-  {{ d.riga('fa-bullseye', _('Esercizi fra i turni'),
-            (ngettext('%(n)d esercizio · classifica a parte', '%(n)d esercizi · classifica a parte', _esercizi, n=_esercizi) if _esercizi else _('nessuno — facoltativo')),
-            tone=('ok' if _esercizi else 'neutral'),
-            button=True, attrs='data-bs-toggle="modal" data-bs-target="#challengeManagementModal"',
-            right='<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe) }}
-  {% endif %}
-  {% if not gara.is_prova and feature_visible('admin.competition.gara_vetrina') %}
-  {{ d.riga('fa-share-nodes', _('Vetrina'),
-            (_('locandina caricata') if _locandina else _('nessuna locandina')),
-            tone=('ok' if _locandina else 'warn'),
-            href=url_for('admin.competition.gara_vetrina', gara_id=gara.id)) }}
-  {% endif %}
+<div class="c7-cols c7-prep">
+  {# ---- Colonna sinistra: sul desktop le sezioni in linea ---- #}
+  <div class="c7-stack d-none d-lg-flex" style="gap:18px">
+    <div>
+      {{ d.sezione(_('Turni e distanze'), more=(_('Modifica turni ed esercizi') if _turni_configurabili or gara.ammette_esercizi_fra_i_turni else ''), more_href=_url_passo.get('turni', '#')) }}
+      <section class="c7-card" style="margin-top:12px" id="sezioneTurniSintesi">
+        <div class="c7-turni-sintesi">
+          {% for round_num in range(1, gara.rounds_count + 1) %}
+          {% set rc = gara.round_configurations|selectattr('round_number', 'equalto', round_num)|first %}
+          {% set mod = rc and rc.has_overrides() %}
+          <div class="c7-turno-card c7-turno-card--letto{% if mod %} c7-turno-card--modificato{% endif %}">
+            <div class="c7-turno-card__testa">
+              <strong>{{ _('Turno %(num)s', num=round_num) }}</strong>
+              <span class="c7-state {{ 'c7-state--warn' if mod else 'c7-state--muted' }}">{{ _('modificato') if mod else _('default') }}</span>
+            </div>
+            <div class="c7-turno-card__valore">
+              {{ (rc.get_effective_discipline(gara.discipline) if rc else gara.discipline)|discipline_display }}
+              <span class="c7-sep">·</span>
+              {{ (rc.effective_distance_config(gara) if rc else gara.distance_config)|format_distance }}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% if gara.ammette_esercizi_fra_i_turni %}
+        <div class="c7-rows__row" style="padding:12px 0 0">
+          <span class="c7-tile c7-tile--sm {{ 'c7-tile--ok' if _esercizi else 'c7-tile--neutral' }}"><i class="fas fa-bullseye"></i></span>
+          <div class="c7-rows__main">
+            <div class="c7-rows__title">{{ _('Esercizi fra i turni') }}</div>
+            <div class="c7-rows__sub">
+              {% if _esercizi %}
+              {% for gc in _esercizi %}{{ gc.challenge.get_display_name() }} {{ _('dopo il turno %(n)s', n=gc.round_number) }}{% if not loop.last %} <span class="c7-sep">·</span> {% endif %}{% endfor %}
+              <span class="c7-sep">·</span> {{ _('classifica a parte') }}
+              {% else %}{{ _('nessuno — facoltativo') }}{% endif %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+      </section>
+    </div>
+
+    <div id="sezioneDirettori">
+      {% include "direttore/preparazione/_direttori.html" %}
+    </div>
+
+    <div id="sezioneTavoli">
+      {% include "components/_gara_tables_config.html" %}
+    </div>
+
+    {% if not gara.is_prova and url_pubblica is defined %}
+    <div>
+      {{ d.sezione(_('Vetrina'), more=_('Anteprima della pagina pubblica'), more_href=url_anteprima) }}
+      <div style="margin-top:12px">{% include "admin/_vetrina_form.html" %}</div>
+    </div>
+    {% endif %}
+
+    <div id="sezioneSquadre">{% include "components/_squadre_management.html" %}</div>
+    {% include "components/_categorie_management.html" %}
+  </div>
+
+  {# ---- Colonna destra (sul telefono: la sola cosa che c'e') ---- #}
+  <div class="c7-stack">
+    {{ d.sezione(_('Da preparare')) }}
+    <div class="c7-rows" id="daPreparare">
+      {% if _turni_configurabili %}
+      {{ d.riga('fa-list-ol', _('Turni e distanze'),
+                (_('%(n)s turni · %(disc)s · %(dist)s', n=gara.rounds_count, disc=gara.discipline|discipline_display, dist=gara.distance_config|format_distance)
+                 ~ (' · ' ~ ngettext('%(n)d turno modificato', '%(n)d turni modificati', _override|length, n=_override|length) if _override else '')),
+                tone='ok', href=_url_passo.get('turni', '#')) }}
+      {% endif %}
+      {% if gara.ammette_esercizi_fra_i_turni %}
+      {{ d.riga('fa-bullseye', _('Esercizi fra i turni'),
+                (ngettext('%(n)d esercizio · classifica a parte', '%(n)d esercizi · classifica a parte', _esercizi|length, n=_esercizi|length) if _esercizi else _('nessuno — facoltativo')),
+                tone=('ok' if _esercizi else 'neutral'), href=_url_passo.get('esercizi', '#')) }}
+      {% endif %}
+      {{ d.riga('fa-users', _('Direzione di gara'),
+                (_('solo tu — aggiungi un co-direttore') if not _co_direttori else ngettext('tu e %(n)d co-direttore', 'tu e %(n)d co-direttori', _co_direttori, n=_co_direttori)),
+                tone='ok', href=_url_passo.get('direttori', '#'), attrs='data-desktop-href="#sezioneDirettori"') }}
+      {{ d.riga('fa-table', _('Tavoli'),
+                ((_tavoli|join(', ')) ~ ((' · ' ~ ngettext('%(n)d nella sala', '%(n)d nella sala', _tavoli_sala|length, n=_tavoli_sala|length)) if _tavoli_sala else '')) if _tavoli else _('nessun tavolo: la sala non ne ha dichiarati'),
+                tone=('ok' if _tavoli else 'warn'), href=_url_passo.get('tavoli', '#'), attrs='data-desktop-href="#sezioneTavoli"') }}
+      {% if not gara.is_prova and feature_visible('admin.competition.gara_vetrina') %}
+      {{ d.riga('fa-share-nodes', _('Vetrina'),
+                (_('locandina caricata') if _locandina else _('nessuna locandina')),
+                tone=('ok' if _locandina else 'warn'), href=_url_passo.get('vetrina', '#'), attrs='data-desktop-href="#sezioneVetrina"') }}
+      {% endif %}
+    </div>
+    <div class="c7-nota d-none d-lg-block">
+      {{ _('Ogni riga porta alla sua sezione, qui a fianco. Turni ed esercizi aprono la loro pagina.') }}
+    </div>
+
+    {{ d.sezione(_('Informazioni gara'), more=(_('Modifica') if gara.can_be_modified() else ''), more_href=url_for('admin.competition.edit_gara', gara_id=gara.id)) }}
+    <div class="c7-rows">
+      {{ d.riga('fa-diagram-project', _('Accoppiamento'),
+                gara.matchmaking_strategy.replace('_', ' ')|title ~ (' · ' ~ _('anti-reincontro attivo') if gara.anti_rematch_enabled else '')) }}
+      {% if gara.matchmaking_strategy not in bracket_minimum_players %}
+      {{ d.riga('fa-scale-balanced', _('Chi riposa'), gara.odd_number_policy.replace('_', ' ')|title) }}
+      {% endif %}
+      {{ d.riga('fa-calendar', _('Quando'), (gara.date|date_local) ~ ((' · ' ~ (gara.time|time_local)) if gara.time else '')) }}
+      {% if gara.location %}{{ d.riga('fa-location-dot', _('Sala'), gara.location) }}{% endif %}
+      {{ d.riga('fa-user-group', _('Partecipanti'),
+                (_('minimo %(min)s, fino a %(max)s', min=gara.min_participants, max=gara.max_participants) if gara.max_participants else _('minimo %(min)s, senza limite', min=gara.min_participants))) }}
+    </div>
+
+    {# Il link pubblico ha senso gia' ora: si prepara la locandina prima di
+       aprire. Sul desktop sta nella vetrina in linea. #}
+    {% if gara.is_prova %}
+    <div class="c7-card">
+      <div class="c7-kicker">{{ _('Condividi') }}</div>
+      {% include "components/_gara_public_link.html" %}
+    </div>
+    {% elif public_invite_url %}
+    <div class="c7-card d-lg-none">
+      <div class="c7-kicker">{{ _('Condividi') }}</div>
+      {% include "components/_gara_public_link.html" %}
+    </div>
+    {% endif %}
+  </div>
 </div>
 
-{{ d.sezione(_('Impostazioni di gioco'), more=(_('Modifica') if gara.can_be_modified() else ''), more_href=url_for('admin.competition.edit_gara', gara_id=gara.id)) }}
-<div class="c7-rows">
-  {{ d.riga('fa-diagram-project', _('Accoppiamento'),
-            gara.matchmaking_strategy.replace('_', ' ')|title ~ (' · ' ~ _('anti-reincontro attivo') if gara.anti_rematch_enabled else '')) }}
-  {% if gara.matchmaking_strategy not in bracket_minimum_players %}
-  {{ d.riga('fa-scale-balanced', _('Chi riposa'), gara.odd_number_policy.replace('_', ' ')|title) }}
-  {% endif %}
-  {{ d.riga('fa-calendar', _('Quando'), (gara.date|date_local) ~ ((' · ' ~ (gara.time|time_local)) if gara.time else '')) }}
-  {{ d.riga('fa-user-group', _('Partecipanti'),
-            (_('minimo %(min)s, fino a %(max)s', min=gara.min_participants, max=gara.max_participants) if gara.max_participants else _('minimo %(min)s, senza limite', min=gara.min_participants))) }}
-</div>
-
-{% if _turni_configurabili %}
-<div id="sezioneTurni">
-  {% include "components/_round_management.html" %}
-</div>
-{% endif %}
-
-<div id="sezioneDirettori">
-  {% include "components/_gara_directors.html" %}
-</div>
-
-{# Squadre e categorie si mostrano da se' solo quando la gara le usa. #}
-<div id="sezioneSquadre">{% include "components/_squadre_management.html" %}</div>
-{% include "components/_categorie_management.html" %}
-
-{# Il link pubblico ha senso gia' ora: si prepara la locandina prima di
-   aprire. E' lo stesso blocco della fase iscrizioni. #}
-{% if public_invite_url or gara.is_prova %}
-<div class="c7-card">
-  <div class="c7-kicker">{{ _('Condividi') }}</div>
-  {% include "components/_gara_public_link.html" %}
-</div>
-{% endif %}
+<script>
+  // Sul desktop le righe di «Da preparare» scorrono alla sezione in linea;
+  // sul telefono aprono il passo. La stessa riga, due destinazioni.
+  document.addEventListener('DOMContentLoaded', function () {
+    if (!window.matchMedia('(min-width: 992px)').matches) return;
+    document.querySelectorAll('#daPreparare [data-desktop-href]').forEach(function (a) {
+      a.setAttribute('href', a.dataset.desktopHref);
+    });
+  });
+</script>

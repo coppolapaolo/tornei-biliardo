@@ -66,6 +66,7 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/admin/gara/create_standalone` | GET, POST | `admin.competition.create_gara_standalone` | `@director_or_admin_required` | UI page + action | Crea gara standalone |
 | `/admin/gara/create` | POST | `admin.competition.create_gara` | `@login_required` (permessi sul campionato verificati inline) | action | Crea gara entro campionato (POST via wizard) |
 | `/admin/gara/<int:gara_id>/edit` | GET, POST | `admin.competition.edit_gara` | `@gara_manager_required` | UI page + action | Modifica configurazione gara |
+| `/admin/gara/<int:gara_id>/preparazione/<passo>` | GET | `admin.competition.gara_preparazione` | `@gara_manager_required` | UI page | I passi della preparazione della gara — turni, tavoli, esercizi, direttori — uno per pagina sul telefono (canvas 1.2–1.6) |
 | `/admin/gara/<int:gara_id>/impostazioni` | GET | `admin.competition.gara_impostazioni` | `@gara_manager_required` | UI page | «Impostazioni gara»: direttori, vetrina, tavoli, squadre e categorie in ogni fase; turni e accoppiamento in sola lettura dopo l'avvio (canvas pagina gara a fasi) |
 | `/admin/gara/<int:gara_id>/vetrina` | GET | `admin.competition.gara_vetrina` | `@gara_manager_required` | UI page | Vetrina social: locandina, link esterno, indirizzo leggibile (issue #235) |
 | `/admin/gara/<int:gara_id>/vetrina` | POST | `admin.competition.salva_gara_vetrina` | `@gara_manager_required` | action | Salva indirizzo leggibile e link esterno |

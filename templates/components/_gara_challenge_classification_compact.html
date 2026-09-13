@@ -1,6 +1,6 @@
 {# templates/components/_gara_challenge_classification_compact.html — 7c
    La classifica challenge dentro la pagina gara: le prime dieci posizioni. #}
-{% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value
+{% if gara.ammette_esercizi_fra_i_turni
       and challenge_classification
       and challenge_classification|selectattr("challenges_completed", "greaterthan", 0)|list|length > 0 %}
 <section class="c7-stack">

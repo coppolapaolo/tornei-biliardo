@@ -26,6 +26,7 @@ from werkzeug.utils import secure_filename
 
 from models import db, Gara
 from models.base import utc_now
+from models.status_enum import GaraStatus
 from models.competition.showcase_service import (
     set_gara_banner,
     update_gara_showcase,
@@ -44,7 +45,45 @@ MISURA_BANNER = (1200, 630)
 
 
 def _torna_alla_vetrina(gara_id: int) -> str:
-    return url_for("admin.competition.gara_vetrina", gara_id=gara_id)
+    """Dopo un salvataggio si torna dove si era: la vetrina, oppure la pagina
+    della preparazione che porta lo stesso modulo in linea (`next`)."""
+    from utils.safe_redirect import safe_next_url
+
+    return safe_next_url(request.form.get("next")) or url_for(
+        "admin.competition.gara_vetrina", gara_id=gara_id
+    )
+
+
+def contesto_vetrina(gara: Gara) -> dict:
+    """Locandina, indirizzo e anteprima: quello che il modulo della vetrina
+    mostra. Lo usano la pagina della vetrina e la preparazione della gara
+    sul desktop, che porta lo stesso modulo in linea (canvas 1.9).
+    """
+    from models.competition.services import GaraService
+
+    token = gara.public_token or GaraService.ensure_public_token(gara.id)
+    indirizzo = gara.slug or token
+
+    banner_proprio = (
+        ImagePathManager.url_from_db_path(gara.banner_path)
+        if gara.banner_path
+        else None
+    )
+    banner_effettivo = (
+        ImagePathManager.url_from_db_path(gara.effective_banner_path)
+        if gara.effective_banner_path
+        else None
+    )
+    return {
+        "banner_proprio": banner_proprio,
+        "banner_effettivo": banner_effettivo,
+        # Il banner **ereditato** si distingue da quello proprio: il direttore
+        # deve sapere se sta guardando la grafica del campionato o una scelta
+        # sua, altrimenti «Rimuovi» sembra non funzionare.
+        "banner_ereditato": banner_effettivo is not None and banner_proprio is None,
+        "url_pubblica": url_for("main.gara_invite", token=indirizzo, _external=True),
+        "url_anteprima": url_for("main.gara_invite", token=indirizzo, anteprima=1),
+    }
 
 
 @competition_bp.route("/<int:gara_id>/vetrina")
@@ -65,33 +104,18 @@ def gara_vetrina(gara_id):
         )
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
-    from models.competition.services import GaraService
+    # In preparazione la vetrina e' l'ultimo passo, con avanti e indietro.
+    nav = None
+    if gara.status in (GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value):
+        from .preparazione import navigazione
 
-    token = gara.public_token or GaraService.ensure_public_token(gara_id)
-    indirizzo = gara.slug or token
-
-    banner_proprio = (
-        ImagePathManager.url_from_db_path(gara.banner_path)
-        if gara.banner_path
-        else None
-    )
-    banner_effettivo = (
-        ImagePathManager.url_from_db_path(gara.effective_banner_path)
-        if gara.effective_banner_path
-        else None
-    )
+        nav = navigazione(gara, "vetrina")
 
     return render_template(
         "admin/gara_vetrina.html",
         gara=gara,
-        banner_proprio=banner_proprio,
-        banner_effettivo=banner_effettivo,
-        # Il banner **ereditato** si distingue da quello proprio: il direttore
-        # deve sapere se sta guardando la grafica del campionato o una scelta
-        # sua, altrimenti «Rimuovi» sembra non funzionare.
-        banner_ereditato=banner_effettivo is not None and banner_proprio is None,
-        url_pubblica=url_for("main.gara_invite", token=indirizzo, _external=True),
-        url_anteprima=url_for("main.gara_invite", token=indirizzo, anteprima=1),
+        nav=nav,
+        **contesto_vetrina(gara),
     )
 
 

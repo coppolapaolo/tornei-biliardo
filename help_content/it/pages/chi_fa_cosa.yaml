@@ -111,8 +111,9 @@ blocks:
     text: >-
       Una gara può avere più di un direttore. È utile per le serate lunghe:
       chi è al tavolo a giocare non può anche condurre la gara, e un
-      co-direttore fa avanzare i turni al posto suo. Si aggiunge dalla sezione
-      **Direttori di gara** del pannello Gestione, scegliendo fra i direttori
+      co-direttore fa avanzare i turni al posto suo. Si aggiunge dal passo
+      **Direttori** della preparazione, o da «Impostazioni gara» in ogni altro
+      momento, cercando fra i direttori
       **vicini alla sede della gara**: il co-direttore lo si chiama perché quella
       sera è in sala, non perché è iscritto alla piattaforma.
 

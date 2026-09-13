@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [direttore]
 minutes: 3
 summary: "Una gara può cambiare disciplina o distanza da un turno all'altro: primi due turni a palla 8, finale a palla 9."
-screens: [admin.competition.list_round_configs]
+screens: [admin.competition.list_round_configs, admin.competition.gara_preparazione]
 related: [formati_di_gioco, creare_una_gara, opzioni_della_gara]
 
 blocks:

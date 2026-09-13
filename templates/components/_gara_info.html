@@ -62,9 +62,8 @@
         <dd style="margin: 0; text-align: right;">{{ gara.odd_number_policy.replace('_', ' ').title() }}</dd>
         {% endif %}
 
-        {# Challenge solo con strategia random e modalità abilitata #}
-        {% set challenge_enabled = not gara.campionato or gara.campionato.challenge_mode %}
-        {% if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value and challenge_enabled %}
+        {# Gli esercizi fra i turni, dove la gara li ammette #}
+        {% if gara.ammette_esercizi_fra_i_turni %}
         {% set challenge_count = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length %}
         <dt class="text-muted" style="font-weight: 700;">{{ _('Esercizi') }}</dt>
         <dd style="margin: 0; text-align: right;">
