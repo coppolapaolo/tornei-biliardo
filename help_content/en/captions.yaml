@@ -81,3 +81,4 @@ prova-iscrizioni: "The trial competition with registrations open: at the top the
 prova-fumetto: "The bubble that opens when you tap a «?»: the name of the control, two sentences, and the «Read in the guide» link."
 prova-simulazione: "The «Simulation» sheet of a started trial, opened from the row under the band: one match, the round, the whole competition, and the note on the matches left to validate."
 schermo-sala: "The room screen of a competition under way: the poster at the top, the tables with both players and the score, the standings with medals and the previous round."
+gara-esercizio-turno: "The drill after round 1 on the director's page: one row per player with the attempts made and the best one, «to do» for whoever has not shot yet."

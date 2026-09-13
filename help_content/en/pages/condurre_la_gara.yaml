@@ -143,6 +143,7 @@ blocks:
           or **Missed**. Once the attempts are used up the row can no longer be
           tapped, and a recorded attempt cannot be removed. The next round can
           start even if someone still has to play.
+        shot: gara-esercizio-turno
       - name: "Change a match's table"
         text: >-
           Tap the table on the card: the sheet opens with one tile per table.
