@@ -10,7 +10,9 @@ che la pagina fa prima di disegnare:
 * in che fase è la gara (`fase_della_gara`);
 * quali tacche mostra la striscia e in che stato (`striscia`);
 * quanto del turno è fatto: partite chiuse, tavoli occupati, risultati da
-  validare, partite senza tavolo (`conteggi_turno`).
+  validare, partite senza tavolo (`conteggi_turno`);
+* cosa la gara riceve dal campionato che la contiene: numero, peso, playoff,
+  regola di apertura ereditata, finestra delle date (`contesto_campionato`).
 
 Il **comando** che la gara aspetta dal direttore (apri le iscrizioni, avvia
 il turno, termina) non è calcolato qui: lo sa già `models/dashboard/
@@ -25,6 +27,7 @@ Canvas di riferimento: `docs/redesign-7c/canvas-gara-direttore/` (decisione
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date, time
 from enum import Enum
 from typing import Iterable, Mapping, Optional, Sequence
 
@@ -559,11 +562,112 @@ def scheda_partita(match) -> SchedaPartita:
     return SchedaPartita(forma)
 
 
+# ---------------------------------------------------------------------------
+# La gara dentro un campionato
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class GaraVicina:
+    """Una gara del campionato che fissa un estremo della finestra di date."""
+
+    numero: int
+    data: Optional[date]
+    ora: Optional[time]
+
+
+@dataclass(frozen=True)
+class ContestoCampionato:
+    """Cio' che una gara riceve dal campionato, per la pagina del direttore.
+
+    `peso` e' il valore scritto sulla gara (`Gara.weight`), `peso_effettivo`
+    quello che la classifica generale usa davvero
+    (`Gara.classification_weight`, ADR-053): vale 0 per il playoff che decide
+    la classifica finale, e allora la pagina non deve dire «vale ×N».
+    `precedente` e `successiva` sono le gare che fissano la finestra di date
+    ammessa dall'ADR-016: la gara con il numero piu' alto sotto e quella con
+    il numero piu' basso sopra, non per forza N-1 e N+1.
+    """
+
+    campionato_id: int
+    nome: str
+    numero: int
+    gare_previste: int
+    peso: int
+    peso_effettivo: int
+    is_playoff: bool
+    modalita: Optional[str]
+    regola_apertura: object
+    apertura_ereditata: bool
+    precedente: Optional[GaraVicina]
+    successiva: Optional[GaraVicina]
+
+    @property
+    def decide_il_playoff(self) -> bool:
+        """Il playoff decide la classifica finale: la gara non si somma."""
+        return self.is_playoff and self.peso_effettivo == 0
+
+
+def _vicina(gara) -> GaraVicina:
+    return GaraVicina(
+        numero=gara.number,
+        data=getattr(gara, "date", None),
+        ora=getattr(gara, "time", None),
+    )
+
+
+def contesto_campionato(gara, gare: Optional[Iterable] = None):
+    """Il contesto di campionato di `gara`, o `None` per una gara singola.
+
+    `gare` sono le gare del campionato; senza, si leggono dalla relazione
+    `campionato.gare`. Nessuna query oltre a quella: numero, peso, playoff e
+    regola di apertura stanno gia' sulla gara.
+    """
+    from models.match.break_rules import BreakRule
+
+    campionato = getattr(gara, "campionato", None)
+    if campionato is None:
+        return None
+    if gare is None:
+        gare = getattr(campionato, "gare", None) or []
+    altre = [g for g in gare if g is not gara and g.number is not None]
+    prima = [g for g in altre if g.number < gara.number]
+    dopo = [g for g in altre if g.number > gara.number]
+
+    config = getattr(gara, "playoff_config", None)
+    modalita = None
+    if config is not None:
+        modo = getattr(config, "ranking_mode", None)
+        modalita = getattr(modo, "value", modo)
+
+    peso = 1 if getattr(gara, "weight", None) is None else int(gara.weight)
+    numero = gara.number or 0
+    return ContestoCampionato(
+        campionato_id=campionato.id,
+        nome=campionato.name,
+        numero=numero,
+        # Il playoff nasce dopo le gare previste, con il numero successivo:
+        # «gara 7 di 6» non si scrive.
+        gare_previste=max(int(campionato.planned_gare_count or 0), numero),
+        peso=peso,
+        peso_effettivo=int(gara.classification_weight),
+        is_playoff=config is not None,
+        modalita=modalita,
+        regola_apertura=gara.effective_break_rule,
+        apertura_ereditata=BreakRule.normalize(getattr(gara, "break_rule", None))
+        is None,
+        precedente=_vicina(max(prima, key=lambda g: g.number)) if prima else None,
+        successiva=_vicina(min(dopo, key=lambda g: g.number)) if dopo else None,
+    )
+
+
 __all__ = [
     "FaseGara",
     "StatoTacca",
     "Tacca",
     "ConteggiTurno",
+    "ContestoCampionato",
+    "GaraVicina",
     "StatoPartita",
     "FormaPartita",
     "StatoProvaX",
@@ -581,6 +685,7 @@ __all__ = [
     "spareggio_nella_striscia",
     "striscia",
     "conteggi_turno",
+    "contesto_campionato",
     "stato_partita",
     "partite_del_turno",
     "prima_in_attesa",

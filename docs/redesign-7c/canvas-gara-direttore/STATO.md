@@ -348,6 +348,8 @@ la soluzione piu' vicina alla grammatica del canvas — vedi «Tabellone al
 posto della classifica» in fondo. Lo stesso giorno anche lo schermo in sala
 per le gare a tabellone (issue #352) — vedi «Schermo in sala per le gare a
 tabellone».
+E allo stesso modo la gara dentro un campionato (peso, playoff) e la
+competizione di prova: vedi «La gara del campionato e la prova» in fondo.
 
 posto della classifica» in fondo. Anche trio e multi-set, con la X con
 esercizio, sono stati fatti il 13/09 sulla card della partita — vedi «Trio,
@@ -640,3 +642,35 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   ora la rifiuta `MatchCorrectionService.can_correct`; `Match.is_at_distance`
   usava la modalita' dei triangoli anche per i set, e con i triangoli
   «esattamente» una partita al 2 set risultava alla distanza a 1–1.
+* **La gara del campionato e la prova** (PR `feat: la gara del campionato
+  e la prova nella pagina del direttore`, 2026-09-13). Il canvas non
+  disegnava ne' la gara dentro un campionato ne' la competizione di prova.
+  Un contesto puro, `direttore_view.contesto_campionato`, dice cosa la gara
+  riceve dal campionato: numero sulle gare previste, peso scritto e peso
+  efficace (`Gara.classification_weight`, 0 per il playoff che decide la
+  classifica finale, ADR-053), se e' il playoff e con quale modalita', chi
+  spacca e se e' ereditato (ADR-056), le gare vicine che fissano la finestra
+  di date (ADR-016). Sulla pagina del direttore: sopra la striscia il kicker
+  «Gara 4 di 6 · Campionato» che porta al campionato, con le pastiglie «×2»
+  o «Playoff»; in preparazione e in «Impostazioni gara» il gruppo «Dal
+  campionato» in righe (peso con la «?» di `gara-peso`, chi spacca con
+  «eredita», date ammesse, pagina del campionato); i testi di chiusura in
+  gioco, nello spareggio e a gara conclusa vengono dal contesto — niente
+  punti per una gara singola, «vale ×N» per una gara che si somma, «il
+  playoff decide la classifica finale» quando il peso efficace e' 0. Prova:
+  il banner sta anche sui passi della preparazione e in «Impostazioni gara»
+  (`direttore/_prova_in_testa.html`), con le schermate aggiunte ai `screens`
+  di `prova.aiuto` e `prova.elimina`; la simulazione e' un foglio `c7-sheet`
+  (`direttore/_simulazione.html`) aperto dalla riga «Fai giocare i fittizi»
+  sotto la fascia, solo in gioco. Scelte dove il canvas tace: il kicker e'
+  un collegamento a tutta riga e non una seconda testata; la «?» della
+  simulazione sta sul titolo di sezione, perche' su una riga-pulsante
+  cadrebbe dentro l'elenco; il gruppo «Dal campionato» sta sotto
+  «Informazioni gara», nella colonna che sul telefono e' l'unica. Trovato
+  strada facendo: `GaraService.update_gara` non applicava l'ADR-016, e una
+  gara di campionato spostata prima della precedente passava senza errori;
+  ora il controllo scatta quando cambiano data o ora, con test. Il foglio
+  «Estendi le iscrizioni» cambia solo le date d'iscrizione, non la data
+  della gara, e resta com'e'. Sulle sottopagine di una prova l'aiuto non si
+  accendeva e «Elimina la prova» mancava. `deleteProva` in `_scripts.html`
+  era codice morto, tolto con le sue tre stringhe.

@@ -125,7 +125,26 @@ class TestIPulsanti:
             .get_data(as_text=True)
         )
         assert "Simula una partita" not in html
+        assert 'id="simulazioneModal"' not in html
         assert "Iscrivi il minimo" in html
+
+    def test_stanno_in_un_foglio_aperto_da_una_riga(self, scenario):
+        """La simulazione non e' piu' una card a tre colonne sotto la fascia:
+        una riga apre il foglio «Simulazione», come i menu del turno e della
+        partita."""
+        html = (
+            scenario["client"]
+            .get(url_for("admin.competition.gara_detail", gara_id=scenario["gara_id"]))
+            .get_data(as_text=True)
+        )
+        assert html.count('id="simulazioneModal"') == 1
+        assert 'data-bs-target="#simulazioneModal"' in html
+        prima, foglio = html.split('id="simulazioneModal"', 1)
+        assert "c7-sheet" in prima[-200:]
+        for azione in ("partita", "turno", "gara"):
+            assert f"/prova/simula/{azione}" in foglio
+        assert "doppia conferma" in foglio
+        assert 'data-help="prova-simulazione"' in html
 
     def test_una_gara_vera_non_li_ha(self, scenario):
         vera = GaraService.create_gara(

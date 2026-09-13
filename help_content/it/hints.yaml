@@ -223,7 +223,7 @@ hints:
     label: "Peso nella classifica"
     short: "Quante volte il punteggio di questa gara conta nella classifica del campionato. 1 = come tutte le altre. Fuori da un campionato non compare."
     anchor: gara-peso
-    screens: [admin.campionato.campionato_detail, admin.competition.edit_gara]
+    screens: [admin.campionato.campionato_detail, admin.competition.edit_gara, admin.competition.gara_detail, admin.competition.gara_impostazioni]
     page: opzioni_della_gara
     section: struttura
 
@@ -755,7 +755,7 @@ hints:
     label: "Suggerimenti"
     short: "Accende o spegne le «?» accanto ai comandi e la presentazione delle schermate. Vale per questo browser: spento qui, resta spento in ogni prova."
     anchor: prova-aiuto
-    screens: [admin.competition.gara_detail, admin.campionato.campionato_detail, admin.campionato.edit_campionato]
+    screens: [admin.competition.gara_detail, admin.competition.gara_preparazione, admin.competition.gara_impostazioni, admin.campionato.campionato_detail, admin.campionato.edit_campionato]
     page: fare_una_prova
     section: aiuto
 
@@ -763,7 +763,7 @@ hints:
     label: "Elimina la prova"
     short: "Cancella tutto, subito: gare, partite, iscrizioni e giocatori fittizi. Se non lo fai tu, la prova sparisce da sola alla scadenza scritta qui sopra."
     anchor: prova-elimina
-    screens: [admin.competition.gara_detail, admin.campionato.campionato_detail, admin.campionato.edit_campionato]
+    screens: [admin.competition.gara_detail, admin.competition.gara_preparazione, admin.competition.gara_impostazioni, admin.campionato.campionato_detail, admin.campionato.edit_campionato]
     page: fare_una_prova
     section: eliminare
 

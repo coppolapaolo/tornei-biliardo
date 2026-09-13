@@ -3776,3 +3776,34 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 }
 .c7-partita--prova .c7-partita__step { max-width: 280px; margin-left: auto; margin-right: auto; }
 .c7-partita--prova .c7-partita__step .c7-partita__num { font-size: 30px; }
+
+/* --------------------------------------------------------------------------
+   32. La gara dentro un campionato e la competizione di prova
+   Il canvas non disegna ne' l'una ne' l'altra: le forme sono quelle della
+   pagina. Il campionato e' un kicker sopra la striscia di fase, un
+   collegamento con le pastiglie del peso o del playoff; il banner della prova
+   sta in cima anche alle sottopagine; la simulazione e' un foglio con i
+   comandi in righe, come i menu del turno e della partita.
+   -------------------------------------------------------------------------- */
+
+/* Kicker del campionato: tutta la riga e' il collegamento (≥ 48px). */
+.c7-gara-campionato {
+  display: flex; align-items: center; gap: 8px;
+  min-height: 48px; margin-bottom: 4px;
+  color: var(--c7-ink-muted); text-decoration: none;
+}
+.c7-gara-campionato__testo {
+  min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.c7-gara-campionato .c7-state { flex-shrink: 0; }
+.c7-gara-campionato__chev { margin-left: auto; font-size: 11px; color: var(--c7-ink-faint); }
+
+/* Il banner della prova, prima di tutto il resto della pagina. */
+.c7-prova-testa { margin-bottom: var(--c7-gap); }
+
+/* Titolo di sezione e righe: la pila stretta dei gruppi della pagina. */
+.c7-dal-campionato,
+.c7-simula-riga { gap: 10px; }
+
+/* Nel foglio ogni riga e' un form: il filetto fra le righe salta il form. */
+.c7-simulazione form + form .c7-rows__row { border-top: 1px solid var(--c7-line-soft); }

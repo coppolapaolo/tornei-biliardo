@@ -226,6 +226,8 @@ hints:
   screens:
   - admin.campionato.campionato_detail
   - admin.competition.edit_gara
+  - admin.competition.gara_detail
+  - admin.competition.gara_impostazioni
   page: opzioni_della_gara
   section: struttura
 - id: gara.numero_turni
@@ -833,6 +835,8 @@ hints:
   anchor: prova-aiuto
   screens:
   - admin.competition.gara_detail
+  - admin.competition.gara_preparazione
+  - admin.competition.gara_impostazioni
   - admin.campionato.campionato_detail
   - admin.campionato.edit_campionato
   page: fare_una_prova
@@ -844,6 +848,8 @@ hints:
   anchor: prova-elimina
   screens:
   - admin.competition.gara_detail
+  - admin.competition.gara_preparazione
+  - admin.competition.gara_impostazioni
   - admin.campionato.campionato_detail
   - admin.campionato.edit_campionato
   page: fare_una_prova

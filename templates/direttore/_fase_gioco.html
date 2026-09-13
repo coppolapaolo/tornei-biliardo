@@ -35,7 +35,8 @@
     {% else %}
     <h3 class="c7-fascia__titolo">{{ _('Puoi chiudere la gara') }}</h3>
     <div class="c7-fascia__corpo">
-      {{ _('La classifica diventa definitiva, i punti vanno al campionato e i giocatori ricevono la notifica.') }}
+      {{ _('La classifica diventa definitiva e i giocatori ricevono la notifica.') }}
+      {{ d.punti_campionato(campionato_ctx) }}
     </div>
     {% endif %}
   </div>
@@ -125,25 +126,18 @@
 </section>
 {% endif %}
 
-{# Competizione di prova (ADR-058): i risultati li simula il direttore. #}
+{# Competizione di prova (ADR-058): i risultati li simula il direttore. Una
+   riga sotto la fascia apre il foglio «Simulazione» (`_simulazione.html`,
+   incluso da `gara.html`): i comandi stanno li', come nei menu del turno e
+   della partita. La «?» dell'aiuto si aggancia al titolo di sezione. #}
 {% if gara.is_prova and feature_visible('admin.competition.prova_simula') %}
-<div class="c7-card">
-  <div class="c7-label mb-2" data-help="prova-simulazione"><i class="fas fa-flask me-1"></i>{{ _("Simulazione") }}</div>
-  <div class="c7-grid" style="grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
-    {% for azione, etichetta, icona in [
-          ('partita', _('Simula una partita'), 'fa-dice'),
-          ('turno', _('Simula il turno'), 'fa-forward-step'),
-          ('gara', _('Simula tutta la gara'), 'fa-forward-fast')] %}
-    <form method="POST" action="{{ url_for('admin.competition.prova_simula', gara_id=gara.id, azione=azione) }}">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <button type="submit" class="btn btn-secondary w-100 h-100 d-flex flex-column align-items-center gap-1 py-2">
-        <i class="fas {{ icona }}"></i>
-        <span style="font-size:12px;font-weight:700;line-height:1.15">{{ etichetta }}</span>
-      </button>
-    </form>
-    {% endfor %}
+<div class="c7-stack c7-simula-riga">
+  {{ d.sezione(_('Simulazione'), nota=_('solo nelle prove'), attrs='data-help="prova-simulazione"') }}
+  <div class="c7-rows">
+    {{ d.riga('fa-flask', _('Fai giocare i fittizi'), _('una partita, il turno o tutta la gara'), tone='warn',
+              button=True, attrs='data-bs-toggle="modal" data-bs-target="#simulazioneModal"',
+              right='<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe) }}
   </div>
-  <div class="mt-2">{{ d.nota(_("Metà delle partite si chiudono con la doppia conferma dei giocatori, le altre aspettano che tu le validi dal segnapunti. «Tutta la gara» chiude tutto.")) }}</div>
 </div>
 {% endif %}
 

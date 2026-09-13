@@ -15,6 +15,7 @@ from flask import render_template
 from flask_login import login_required
 
 from models import db, Gara
+from models.competition.direttore_view import contesto_campionato
 from models.status_enum import GaraStatus
 from utils import gara_manager_required
 
@@ -33,5 +34,6 @@ def gara_impostazioni(gara_id):
         gara=gara,
         user_can_manage=True,
         in_preparazione=gara.status == GaraStatus.SETUP.value,
+        campionato_ctx=contesto_campionato(gara),
         **contesto,
     )

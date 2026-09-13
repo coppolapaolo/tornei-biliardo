@@ -45,7 +45,6 @@
       "confirmCancelSsr": {{ _("Annullare la fase di spareggio (SSR)?\n\nI punteggi SSR già inseriti verranno azzerati e la gara tornerà in gioco, così potrai correggere i risultati.") | tojson }},
       "errorSsrCancel": {{ _("Errore durante l'annullamento della fase SSR") | tojson }},
       "confirmResetRound": {{ _("Sei sicuro di voler resettare l'ultimo turno?\n\nTutti i risultati del turno verranno azzerati e i match torneranno in stato 'In Attesa'.\n\nQuesta azione è IRREVERSIBILE!") | tojson }},
-      "confirmDeleteGara": {{ _("Sei SICURO di voler eliminare la Gara {number}?\n\nQuesta azione è IRREVERSIBILE!") | tojson }},
       "confirmCancelGara": {{ _("Sei SICURO di voler cancellare la Gara {number}?\n\nTutti i player iscritti riceveranno una notifica della cancellazione.\nQuesta azione è IRREVERSIBILE!") | tojson }},
       "confirmResetMatch": {{ _("Sei sicuro di voler resettare questa partita?") | tojson }},
       "confirmResetTrio": {{ _("Sei sicuro di voler resettare questo trio?") | tojson }},
@@ -57,8 +56,6 @@
       "errorSsrStart": {{ _("Errore durante l'avvio della fase SSR") | tojson }},
       "errorSsrSave": {{ _("Errore durante il salvataggio dei punteggi") | tojson }},
       "errorReset": {{ _("Errore durante il reset:") | tojson }},
-      "errorDelete": {{ _("Errore durante l'eliminazione della gara: ") | tojson }},
-      "errorNetworkDelete": {{ _("Errore di rete durante l'eliminazione") | tojson }},
       "errorNetworkRound": {{ _("Errore di rete durante l'avvio del turno") | tojson }},
       "errorRound": {{ _("Errore durante l'avvio del turno:")| tojson }},
       "errorCreateRound": {{ _("Errore di rete durante la creazione del turno") | tojson }},
@@ -503,38 +500,6 @@
         }
       }).catch(error => {
         console.error('Error:', error);
-        restore();
-      });
-    });
-  }
-
-  function deleteProva(provaId, provaNumber, btn) {
-    let confirmMsg = GARA_CONFIG.i18n.confirmDeleteGara;
-    confirmMsg = confirmMsg.replace('{number}', provaNumber);
-    showConfirm(confirmMsg, () => {
-      const restore = withLoading(btn);
-      fetch(`/admin/gara/${provaId}/delete`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded',
-        'X-CSRFToken': csrfToken()}
-      }).then(response => {
-        if (response.ok) {
-          if (GARA_CONFIG.gara.campionatoId) {
-            window.location.href = `/admin/campionato/${GARA_CONFIG.gara.campionatoId}`;
-          } else {
-            window.location.href = '/dashboard';
-          }
-        } else {
-          response.text().then(text => {
-            showError(GARA_CONFIG.i18n.errorDelete + response.status);
-            console.error('Delete error:', text);
-            restore();
-          });
-        }
-      }).catch(err => {
-        showError(GARA_CONFIG.i18n.errorNetworkDelete);
-        console.error('Network error:', err);
         restore();
       });
     });

@@ -48,6 +48,19 @@
 </button>
 {%- endmacro %}
 
+{# Dove vanno i punti di una gara che si chiude, detto dal contesto di
+   campionato (`direttore_view.contesto_campionato`): niente per una gara
+   singola; «vale ×N» per una gara che si somma; per il playoff che decide
+   la classifica finale (peso efficace 0, ADR-053) nessun «×N», che sarebbe
+   falso. #}
+{% macro punti_campionato(cc) -%}
+{%- if cc -%}
+{%- if cc.decide_il_playoff -%}{{ _('Il playoff decide la classifica finale del campionato.') }}
+{%- else -%}{{ _('La gara vale ×%(n)s nella classifica del campionato.', n=cc.peso_effettivo) }}
+{%- endif -%}
+{%- endif -%}
+{%- endmacro %}
+
 {# Testata di sezione: titolo a sinistra, nota o comando a destra. #}
 {% macro sezione(titolo, nota='', more='', more_href='', attrs='') -%}
 <div class="c7-sechead" {{ attrs|safe }}>

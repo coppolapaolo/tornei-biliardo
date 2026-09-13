@@ -290,6 +290,49 @@ blocks:
       tabellone si costruisce già così.
 
   - type: heading
+    id: campionato
+    title: "La gara dentro un campionato"
+
+  - type: text
+    text: >-
+      Se la gara fa parte di un campionato, sopra la striscia delle fasi una
+      riga dice quale gara è — «Gara 4 di 6 · Campionato Sociale 2026» — e la
+      tocchi per tornare alla pagina del campionato. Accanto compare **×2**
+      quando la gara pesa più delle altre, oppure **Playoff** quando è la
+      gara dei playoff.
+
+  - type: text
+    text: >-
+      In preparazione, e sempre in **Impostazioni gara**, il gruppo **Dal
+      campionato** raccoglie quello che la gara riceve dal campionato:
+
+  - type: shot
+    shot: gara-dal-campionato
+
+  - type: options
+    items:
+      - name: "Peso nella classifica"
+        text: >-
+          Quante volte il punteggio della gara conta nella classifica del
+          campionato. Se è la gara dei playoff e il campionato ha scelto che
+          sia il playoff a decidere la classifica finale, il punteggio non si
+          somma e la riga lo dice.
+        hint: gara.peso
+      - name: "Chi spacca"
+        text: >-
+          La regola di apertura. «Eredita» vuol dire che la gara usa quella
+          scelta per tutto il campionato; se nella modifica della gara ne hai
+          scelta un'altra, la riga lo dice.
+      - name: "Date ammesse"
+        text: >-
+          Le gare di un campionato stanno in ordine: la gara 4 non può
+          giocarsi prima della gara 3 né dopo la gara 5. La riga mostra fra
+          quali date può stare, e la modifica della gara rifiuta una data
+          fuori da lì.
+      - name: "Pagina del campionato"
+        text: "Porta alla classifica generale e alle altre gare."
+
+  - type: heading
     id: chiudere
     title: "Chiudere la gara"
 
@@ -309,7 +352,11 @@ blocks:
         avviare lo spareggio dalla fascia in cima alla pagina della gara.
       - >-
         **Classifica del campionato**: se la gara ne fa parte, i risultati
-        vengono sommati alla classifica generale non appena la gara è conclusa.
+        vengono sommati alla classifica generale, moltiplicati per il peso,
+        non appena la gara è conclusa. La fascia lo dice prima che tu la
+        chiuda: «la gara vale ×2 nella classifica del campionato». Se è il
+        playoff a decidere la classifica finale, dice quello. Per una gara
+        singola non parla di punti.
 
   - type: text
     text: >-

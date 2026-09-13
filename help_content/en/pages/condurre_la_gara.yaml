@@ -289,6 +289,50 @@ blocks:
       built that way from the start.
 
   - type: heading
+    id: campionato
+    title: "A competition inside a championship"
+
+  - type: text
+    text: >-
+      If the competition is part of a championship, a line above the phase
+      strip says which one it is — «Competition 4 of 6 · Campionato Sociale
+      2026» — and tapping it takes you back to the championship page. Next to
+      it you see **×2** when the competition weighs more than the others, or
+      **Playoff** when it is the playoff competition.
+
+  - type: text
+    text: >-
+      While preparing, and always in **Competition settings**, the **From the
+      championship** group gathers what the competition receives from the
+      championship:
+
+  - type: shot
+    shot: gara-dal-campionato
+
+  - type: options
+    items:
+      - name: "Weight in the standings"
+        text: >-
+          How many times the competition's score counts in the championship
+          standings. If it is the playoff and the championship chose to let
+          the playoff decide the final standings, the score is not added and
+          the row says so.
+        hint: gara.peso
+      - name: "Who breaks"
+        text: >-
+          The break rule. «Inherits» means the competition uses the one chosen
+          for the whole championship; if you picked another one when editing
+          the competition, the row says so.
+      - name: "Allowed dates"
+        text: >-
+          The competitions of a championship stay in order: competition 4
+          cannot be played before competition 3 or after competition 5. The
+          row shows the dates it can sit between, and editing the competition
+          refuses a date outside them.
+      - name: "Championship page"
+        text: "Takes you to the overall standings and the other competitions."
+
+  - type: heading
     id: chiudere
     title: "Closing the competition"
 
@@ -308,7 +352,11 @@ blocks:
         tie-break from the band at the top of the competition page.
       - >-
         **Championship standings**: if the competition is part of one, the
-        results are added to the overall standings as soon as it finishes.
+        results are added to the overall standings, multiplied by the weight,
+        as soon as it finishes. The band tells you before you close it: «the
+        competition counts ×2 in the championship standings». If the playoff
+        decides the final standings, it says that instead. A standalone
+        competition says nothing about points.
 
   - type: text
     text: >-

@@ -211,6 +211,7 @@ def _vista_direttore(
     """Fase, striscia, comando, conteggi e partite per `direttore/gara.html`."""
     from models.competition.direttore_view import (
         conteggi_turno,
+        contesto_campionato,
         fase_della_gara,
         partite_del_turno,
         prima_in_attesa,
@@ -308,6 +309,9 @@ def _vista_direttore(
         # La forma di ogni card del turno che si vede: trio, set, X con
         # esercizio (i turni chiusi sono righe e non ne hanno bisogno).
         "schede_partite": {m.id: scheda_partita(m) for m in partite_turno},
+        # La gara dentro un campionato: kicker, «Dal campionato», testi di
+        # chiusura. `None` per una gara singola.
+        "campionato_ctx": contesto_campionato(gara),
     }
 
 

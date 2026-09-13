@@ -44,8 +44,10 @@ class TestRitornoAlCampionato:
         html = client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
 
         url = f"/admin/campionato/{campionato.id}"
-        # Due volte: la freccia sotto lg e il pulsante da lg in su.
-        assert html.count(f'href="{url}"') == 2
+        # Tre volte: la freccia sotto lg, il pulsante da lg in su e, per chi
+        # dirige, il kicker «Gara N di M · Campionato» sopra la striscia.
+        assert html.count(f'href="{url}"') == 3
+        assert 'class="c7-gara-campionato"' in html
         assert "Campionato di prova" in html
 
     def test_gara_standalone_non_lo_mostra(self, logged_in_client, db_session):

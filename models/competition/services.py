@@ -336,6 +336,22 @@ class GaraService:
 
             gara.time = datetime.strptime(kwargs["time_str"], "%H:%M").time()
 
+        # ADR-016 vale anche sulla modifica, non solo alla creazione: il
+        # servizio e' il garante della regola. Scatta solo se cambiano data o
+        # ora, cosi' un campionato con date storiche gia' storte non blocca la
+        # correzione del nome.
+        if (
+            gara.campionato_id
+            and gara.date
+            and ({"date", "time", "date_str", "time_str"} & kwargs.keys())
+        ):
+            GaraService._validate_sequential_date(
+                campionato_id=gara.campionato_id,
+                number=gara.number,
+                gara_date=gara.date,
+                gara_time=gara.time,
+            )
+
         # Valida la configurazione classificazione dopo le modifiche
         from models.competition.validators import validate_gara
 

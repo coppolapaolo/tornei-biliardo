@@ -61,7 +61,8 @@ blocks:
           Ogni schermata della prova ha in cima un riquadro giallo con
           l'etichetta **Competizione di prova**, la data in cui sparirà da
           sola, l'interruttore dei suggerimenti e il pulsante per
-          eliminarla. Se non lo vedi, non sei in una prova.
+          eliminarla: la pagina della gara, i passi della preparazione e
+          **Impostazioni gara**. Se non lo vedi, non sei in una prova.
         shot: prova-iscrizioni
 
   - type: heading
@@ -103,8 +104,9 @@ blocks:
   - type: text
     text: >-
       Avvia il primo turno come faresti davvero. I fittizi però non prendono
-      in mano il telefono: i risultati li fai comparire tu, dal riquadro
-      **Simulazione** sotto la fascia, con tre pulsanti.
+      in mano il telefono: i risultati li fai comparire tu. Sotto la fascia
+      c'è la riga **Fai giocare i fittizi**: toccala e si apre il foglio
+      **Simulazione**, con tre comandi.
 
   - type: shot
     shot: prova-simulazione
