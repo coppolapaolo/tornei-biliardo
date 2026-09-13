@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.26.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.26.0...v1.26.1) (2026-09-13)
+
+
+### Correzioni
+
+* il seed della guida produce due volte gli stessi tabelloni ([#399](https://github.com/coppolapaolo/tornei-biliardo/issues/399)) ([5bb2859](https://github.com/coppolapaolo/tornei-biliardo/commit/5bb28596c2ff7a6baf805add943d1f1c150b41f3))
+
 ## [1.26.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.25.1...v1.26.0) (2026-09-13)
 
 
