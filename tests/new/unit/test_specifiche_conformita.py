@@ -672,3 +672,67 @@ class TestCompetizioneDiProva:
         db_session.flush()
 
         assert RatingEligibility.exclusion_reason(match) is RatingExclusion.PROVA
+
+
+# ══ Il trio in classifica ════════════════════════════════════════════════
+
+
+@pytest.mark.unit
+class TestIlTrioInClassifica:
+    """`SPECIFICHE.md` riga 160.
+
+    > Per il sistema WINS, nel trio vince chi ha il punteggio più alto (1
+    > vittoria), gli altri ottengono 0 vittorie. Se c'è pareggio, tutti
+    > ottengono 0 vittorie.
+    """
+
+    @staticmethod
+    def _trio(db_session, distanza: int, punti: tuple[int, int, int]):
+        from models.match.models import TrioMatch
+        from models.match.trio_scoring_service import TrioScoringService
+
+        gara = _gara(db_session, distanza=distanza)
+        gara.odd_number_policy = "trio"
+        giocatori = [_utente(db_session) for _ in range(3)]
+        partita = Match(
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=giocatori[0].id,
+            player2_id=giocatori[1].id,
+            is_trio=True,
+            status=MatchStatus.PLAYING.value,
+        )
+        db_session.add(partita)
+        db_session.flush()
+        trio = TrioMatch(
+            match_id=partita.id,
+            player1_id=giocatori[0].id,
+            player2_id=giocatori[1].id,
+            player3_id=giocatori[2].id,
+        )
+        db_session.add(trio)
+        db_session.flush()
+        TrioScoringService.set_result_direct(trio.id, *punti)
+        db_session.commit()
+        voci = _punteggi(gara.id)
+        return [voci[g.id].matches_won for g in giocatori]
+
+    def test_vince_solo_il_punteggio_piu_alto(self, db_session):
+        assert self._trio(db_session, 4, (4, 1, 1)) == [1, 0, 0]
+
+    def test_il_pareggio_a_tre_non_da_vittorie(self, db_session):
+        assert self._trio(db_session, 6, (3, 3, 3)) == [0, 0, 0]
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason=(
+            "Divergenza aperta, trovata il 2026-09-13: a pari punteggio in testa "
+            "il vincitore lo decide lo scontro diretto, `determine_trio_winner` "
+            "con Schulze, e con 4-4-1 alla distanza 6 uno dei due a quattro "
+            "prende la vittoria. La specifica dice zero a tutti; la scelta del "
+            "10/05 in docs/_archive/2026-05-10-test-session.md dice scontro "
+            "diretto. Da decidere quale delle due vince."
+        ),
+    )
+    def test_il_pareggio_in_testa_non_da_vittorie(self, db_session):
+        assert self._trio(db_session, 6, (4, 4, 1)) == [0, 0, 0]
