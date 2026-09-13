@@ -285,6 +285,10 @@ Per i dettagli completi sul sistema di classificazione, vincoli e combinazioni v
 I **playoff** sono una **gara** speciale a cui per iscriversi occorre avere alcune caratteristiche. Ad esempio un campionato può definire un playoff per i primi 6 classificati. Oppure un playoff Elite per i primi 6 e Academy per i secondi 6. Oppure, ancora, un playoff solo per i giocatori dal terzo posto in giù che hanno partecipato ad almeno 5 gare del campionato.
 Alla fine del campionato i giocatori che soddisfano i criteri del playoff ricevono una notifica di accesso ai playoff e possono iscriversi o rifiutare. Nei playoff con un numero limitato di partecipanti (ad esempio i primi 6), se un giocatore rifiuta, la notifica passa al primo degli esclusi e così via fino a quando un numero di giocatori pari ai posti disponibili ha dato l'ok oppure sono finiti i giocatori. 
 
+Il playoff si gioca con chi ha accettato, anche se sono meno dei posti: la gara di playoff chiede almeno **due** iscritti, non il minimo delle gare di serata. Gli inviti partono prima che il direttore crei la gara, e le risposte non arrivano tutte insieme: chi accetta dopo la creazione — compreso il primo degli esclusi chiamato da un rifiuto — **entra fra gli iscritti** fino all'avvio del primo turno, e allo stesso modo il direttore aggiunge o toglie qualificati fino all'avvio. **All'avvio** gli inviti ancora senza risposta scadono e nessun altro viene chiamato: la finale è cominciata.
+
+> **Nota (2026-09-13).** Fino a questa data la gara di playoff nasceva col minimo di sei iscritti, quindi un playoff da quattro posti non partiva nemmeno con quattro sì; e la lista si congelava alla **creazione** della gara, per cui chi accettava dopo restava confermato ma fuori, senza modo di rientrare. L'ordine «prima gli inviti, poi la gara» resta: cambia il momento in cui la lista si chiude.
+
 ### Challenge
 
 Una **challenge** è una gara di abilità che un giocatore può affrontare da solo. Consiste in una immagine, che mostra la disposizione delle biglie sul tavolo e un testo di spiegazione. È identificata da un nome. 

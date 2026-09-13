@@ -386,7 +386,19 @@ class TestAdminPlayerManagement:
         assert "Rimosso da admin" in updated.qualification_reason
         assert "era:" in updated.qualification_reason
 
-    def test_admin_remove_blocked_after_gara(self, db_session):
+    def test_admin_remove_blocked_after_start(self, db_session):
+        """La lista si chiude all'avvio della gara di playoff, non alla creazione.
+
+        Fino al 2026-09-13 si chiudeva alla creazione: chi accettava dopo
+        restava confermato ma fuori dalla gara. Il caso completo sta in
+        `test_playoff_con_meno_accettazioni.py`.
+        """
+        from datetime import timedelta
+
+        from models.competition.inscription_service import InscriptionService
+        from models.competition.round_service import RoundService
+        from models.exceptions import ConflictError
+
         c, cfg, gara, players = self._start(db_session)
         # Confirm all, then create gara
         for p in players[:6]:
@@ -395,12 +407,17 @@ class TestAdminPlayerManagement:
             ).first()
             PlayoffService.confirm_qualification(qual.id, p.id)
 
-        PlayoffService.create_playoff_gara(cfg.id)
+        playoff = PlayoffService.create_playoff_gara(cfg.id)
+        adesso = utc_now()
+        InscriptionService.open_inscriptions(
+            playoff.id, adesso, adesso + timedelta(hours=1)
+        )
+        RoundService.start_first_round(playoff.id)
 
         qual = PlayoffQualification.query.filter_by(
             configuration_id=cfg.id, user_id=players[0].id
         ).first()
-        with pytest.raises(ValueError, match="dopo creazione gara"):
+        with pytest.raises(ConflictError, match="già cominciata"):
             PlayoffService.admin_remove_player(qual.id, "admin")
 
 

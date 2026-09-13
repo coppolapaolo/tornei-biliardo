@@ -111,8 +111,15 @@ class InscriptionService:
         # Validazione: Verifica periodo di iscrizione
         # IMPORTANT: Use UTC for all datetime comparisons
         # Database stores naive datetimes which are treated as UTC
+        # Chi entra in un playoff dall'invito non passa dalla finestra: la
+        # finestra serve alle gare aperte a tutti, qui il biglietto è l'invito,
+        # e un sì arrivato a finestra chiusa ma prima dell'avvio vale.
         now = utc_now()
-        if gara.inscription_start and gara.inscription_end:
+        if (
+            gara.inscription_start
+            and gara.inscription_end
+            and not _bypass_playoff_check
+        ):
             if now < gara.inscription_start:
                 raise ConflictError("Iscrizioni non ancora aperte")
             if now > gara.inscription_end:

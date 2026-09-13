@@ -56,8 +56,9 @@ blocks:
 
   - type: text
     text: >-
-      Se ti qualifichi ricevi una **notifica**. Aprendola trovi la gara di
-      playoff — data, sala, formato — e due pulsanti: accettare o rifiutare.
+      Se ti qualifichi ricevi una **notifica**. Aprendola trovi il playoff —
+      data e sala, se chi organizza le ha già fissate — e due pulsanti:
+      accettare o rifiutare.
 
   - type: text
     text: >-
@@ -78,9 +79,15 @@ blocks:
           spesso non si recupera.
       - title: "Accetta o rifiuta"
         text: >-
-          Accettando entri fra gli iscritti della gara di playoff.
-          Rifiutando lasci il posto: a seconda di come è organizzato il
-          campionato, può scalare al primo escluso.
+          Accettando entri fra i partecipanti: quando il direttore crea la
+          gara di playoff ci sei già iscritto, e se l'ha creata prima della
+          tua risposta ci entri subito. Rifiutando lasci il posto: a seconda
+          di come è organizzato il campionato, può scalare al primo escluso.
+      - title: "Fino all'inizio della finale"
+        text: >-
+          Si può accettare finché il primo turno della gara di playoff non è
+          cominciato. Quando parte, gli inviti rimasti senza risposta scadono
+          e il playoff si gioca con chi c'è, anche se sono meno dei posti.
       - title: "Rispondi in tempo"
         text: >-
           L'invito ha una scadenza. Non rispondere equivale a rifiutare, e il

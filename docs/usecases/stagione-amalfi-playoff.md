@@ -248,14 +248,26 @@ senza categoria il rating non si muove: «non lo so» non è «sono uguali».
 5. Il direttore **completa la lista da sé**: toglie chi non ha risposto e
    aggiunge chi ha detto di sì a voce. Chi aggiunge lui entra **già
    confermato**, senza passare dall'invito.
-6. Crea la **gara di playoff**, che nasce con i confermati già iscritti.
+6. Crea la **gara di playoff**, che nasce con i confermati già iscritti. Non
+   serve aspettare tutte le risposte: chi accetta **dopo** — anche il primo
+   degli esclusi chiamato da un rifiuto — entra fra gli iscritti, e il
+   direttore può ancora aggiungere o togliere qualificati.
+7. **Avvia** la finale. Da quel momento la lista è chiusa: gli inviti rimasti
+   senza risposta scadono, nessuno viene più chiamato, e si gioca con chi
+   c'è anche se sono meno degli otto posti — la gara di playoff chiede almeno
+   due iscritti, non i sei delle serate.
 
 **Variante**: il direttore può saltare del tutto gli inviti e comporre la lista
 a mano dall'inizio. È il percorso di chi la finale se la organizza al telefono.
 
 **Casi limite coperti**: lo stesso giocatore aggiunto due volte; un giocatore
-che il campionato non l'ha giocato; la lista che si congela appena la gara di
-playoff è creata; un giocatore che prova ad avviare i playoff (403).
+che il campionato non l'ha giocato; la lista che si chiude all'avvio della
+gara di playoff, non alla sua creazione; un giocatore che prova ad avviare i
+playoff (403).
+
+> *Emendato il 2026-09-13*: fino ad allora la lista si congelava alla creazione
+> della gara, e la gara nasceva col minimo di sei iscritti. Chi accettava tardi
+> restava fuori e un playoff con meno di sei sì non partiva.
 
 → `tests/new/e2e/test_stagione_e2e_stagione.py`, classe `TestIPlayoffDeiPrimiOtto`
 → `tests/new/e2e/test_campionato_e2e_playoff.py` per le varianti della lista

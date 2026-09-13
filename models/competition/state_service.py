@@ -83,6 +83,12 @@ class StateService:
         gara.status = GaraStatus.PLAYING.value
         gara.current_round = 1
         db.session.add(gara)
+
+        # Gara di playoff: all'avvio gli inviti ancora senza risposta scadono.
+        if gara.playoff_config_id:
+            from models.playoff.services import PlayoffService
+
+            PlayoffService.chiudi_inviti_all_avvio(gara)
         return gara
 
     @staticmethod
