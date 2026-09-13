@@ -210,6 +210,25 @@ def test_apri_le_iscrizioni_senza_massimo(admin_client, db_session):
     assert refreshed.max_participants is None
 
 
+def test_un_minimo_vuoto_lascia_quello_che_c_e(admin_client, db_session):
+    """Rilievo della revisione automatica: un minimo vuoto non e' zero."""
+    gara = _gara(db_session)
+    inizio = date.today().strftime("%Y-%m-%dT10:00")
+    fine = (date.today() + timedelta(days=2)).strftime("%Y-%m-%dT19:30")
+    admin_client.post(
+        f"/admin/gara/{gara.id}/open_inscriptions",
+        data={
+            "inscription_start": inizio,
+            "inscription_end": fine,
+            "min_participants": "",
+            "max_participants": "",
+        },
+    )
+    refreshed = db_session.get(Gara, gara.id)
+    assert refreshed.status == GaraStatus.INSCRIPTION.value
+    assert refreshed.min_participants == 4
+
+
 def test_un_massimo_sotto_il_minimo_non_apre(admin_client, db_session):
     gara = _gara(db_session)
     inizio = date.today().strftime("%Y-%m-%dT10:00")

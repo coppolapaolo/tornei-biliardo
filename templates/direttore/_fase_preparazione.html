@@ -60,7 +60,7 @@
             <div class="c7-turno-card__valore">
               {{ (rc.get_effective_discipline(gara.discipline) if rc else gara.discipline)|discipline_display }}
               <span class="c7-sep">·</span>
-              {{ (rc.distanza_effettiva(gara) if rc else gara.distance_config)|format_distance }}
+              {{ (rc.effective_distance_config(gara) if rc else gara.distance_config)|format_distance }}
             </div>
           </div>
           {% endfor %}

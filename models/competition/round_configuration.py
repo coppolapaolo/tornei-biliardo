@@ -138,7 +138,7 @@ class RoundConfiguration(BaseModel):
     def get_effective_best_of(self, fallback_best_of: bool) -> bool:
         return self.get_effective_is_race_to(fallback_best_of)
 
-    def distanza_effettiva(self, gara):
+    def effective_distance_config(self, gara):
         """La distanza di questo turno come `Distance`, con i ripieghi della gara.
 
         Serve a descrivere il turno dove si descrive la gara — testata e
