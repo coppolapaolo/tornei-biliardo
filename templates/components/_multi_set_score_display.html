@@ -11,7 +11,7 @@ Parameters:
 #}
 
 {% set p1_name = player1_name|default(match.player1.username) %}
-{% set p2_name = player2_name|default(match.player2.username if match.player2 else _('Bye')) %}
+{% set p2_name = player2_name|default(match.player2.username if match.player2 else _('X a tavolino')) %}
 
 {% if match.is_multi_set %}
 <div class="card mb-4">

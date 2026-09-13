@@ -97,17 +97,7 @@
             {% if campionato.default_odd_policy %}
             <div class="col-md-3">
                 <small class="text-muted">{{ _("Gestione Dispari") }}:</small><br>
-                <span>
-                    {% if campionato.default_odd_policy == 'bye' %}
-                        {{ _("X (vinto a tavolino)") }}
-                    {% elif campionato.default_odd_policy == 'bye_with_challenge' %}
-                        {{ _("X con esercizio") }}
-                    {% elif campionato.default_odd_policy == 'trio' %}
-                        {{ _("Match a 3") }}
-                    {% else %}
-                        {{ campionato.default_odd_policy }}
-                    {% endif %}
-                </span>
+                <span>{{ campionato.default_odd_policy|etichetta_dispari }}</span>
             </div>
             {% endif %}
             {% if campionato.default_anti_rematch is not none %}

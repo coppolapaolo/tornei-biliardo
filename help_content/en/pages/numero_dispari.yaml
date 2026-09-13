@@ -23,7 +23,7 @@ blocks:
 
   - type: heading
     id: riposo
-    title: "1. Bye — «X by walkover»"
+    title: "1. X by walkover"
 
   - type: text
     text: >-
@@ -40,13 +40,13 @@ blocks:
   - type: note
     tone: warning
     text: >-
-      With the «Racks» system a plain bye **does not work**: whoever does not
+      With the «Racks» system a plain X by walkover **does not work**: whoever does not
       play would collect zero racks and be heavily penalised. In that case use
-      the bye with challenge.
+      the X by walkover with drill.
 
   - type: heading
     id: riposo_challenge
-    title: "2. Bye with challenge"
+    title: "2. X by walkover with drill"
 
   - type: text
     text: >-
@@ -57,7 +57,7 @@ blocks:
 
   - type: text
     text: >-
-      Whoever has the bye sees it on their board: a card reading «You have a
+      Whoever has the X sees it on their board: a card reading «You have a
       drill to play» takes them to the drill and to the box where they write
       their score.
 
@@ -69,20 +69,20 @@ blocks:
       way there is in a match. That is why the score a player records **does not
       reach the standings on its own**: until the director validates it, that
       round counts zero. The director does it from the competition page, on the
-      card of the player with the bye — and from there they can also enter it
+      card of the player with the X — and from there they can also enter it
       for someone who does not use the app, correct it, or clear it.
 
   - type: list
     items:
       - "**For**: nobody sits out, and the round stays fair even on racks."
-      - "**Against**: the competition needs at least one challenge configured, and the director has to validate the scores."
+      - "**Against**: the competition needs at least one drill configured, and the director has to validate the scores."
 
   - type: text
     text: >-
       **Which** drill is played is your choice, made when you create the
       competition: a «Drill for the X» field appears as soon as you pick this
       option. It is the same for every round, and that is deliberate — with an
-      odd number a different person has the bye each round, and a drill that
+      odd number a different person gets the X each round, and a drill that
       changed would have two players facing tests of different difficulty with
       their scores in the same standings. If you cannot find the right one you
       can create it on the spot: it stays in the catalogue, available to other
@@ -96,7 +96,7 @@ blocks:
       Deactivating it — or deleting it — means «stop offering it for new
       choices», not removing it from the competitions that already picked it.
       Competitions that have not finished move automatically to an active copy
-      of the same drill, so whoever has the bye always finds something to play
+      of the same drill, so whoever has the X always finds something to play
       and nobody ends up with a different test from the one the director chose.
       This holds for both routes: a drill chosen by a competition is never
       really deleted.
@@ -172,11 +172,11 @@ blocks:
   - type: options
     items:
       - name: "Normal evening, standings on wins"
-        values: "Bye"
+        values: "X by walkover"
         text: "The default choice: it does not lengthen the evening and complicates nothing."
       - name: "Standings on racks"
-        values: "Bye with challenge"
-        text: "Effectively compulsory: a plain bye would distort the standings."
+        values: "X by walkover with drill"
+        text: "Effectively compulsory: a plain X by walkover would distort the standings."
       - name: "Close-knit group, time to spare"
         values: "Trio"
         text: "Nobody sits out and it is the most enjoyable. It costs one extra table-hour."

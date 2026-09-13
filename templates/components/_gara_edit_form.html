@@ -168,14 +168,13 @@
       <div class="flex-fill" style="min-width:200px" data-bracket-hide>
         <label for="odd_number_policy" class="form-label">{{ _('Giocatori dispari') }}</label>
         <select class="form-select" id="odd_number_policy" name="odd_number_policy">
-          <option value="no" {% if gara.odd_number_policy == 'no' %}selected{% endif %}>{{ _("Lista d'attesa — solo pari") }}</option>
-          <option value="bye" {% if (gara.odd_number_policy or 'bye') == 'bye' %}selected{% endif %}>{{ _('X — vinto a tavolino') }}</option>
-          <option value="bye_with_challenge" {% if gara.odd_number_policy == 'bye_with_challenge' %}selected{% endif %}>{{ _('X con esercizio') }}</option>
-          <option value="trio" {% if gara.odd_number_policy == 'trio' %}selected{% endif %}>{{ _('Match a 3') }}</option>
+          {% for valore, nome in opzioni_dispari() %}
+          <option value="{{ valore }}" {% if (gara.odd_number_policy or 'bye') == valore %}selected{% endif %}>{{ nome }}</option>
+          {% endfor %}
         </select>
         <div id="trio_warning" class="form-text" style="display:none;color:var(--c7-err-ink)">
           <i class="fas fa-circle-exclamation" style="font-size:10px"></i>
-          {{ _('Il match a 3 vale solo per distanze da 2 a 7') }}
+          {{ _('La partita a tre vale solo per distanze da 2 a 7') }}
         </div>
       </div>
     </div>
@@ -257,7 +256,7 @@
         <label for="withdraw_policy" class="form-label">{{ _('Gestione ritiri') }}</label>
         <select class="form-select" id="withdraw_policy" name="withdraw_policy" required>
           <option value="{{ WithdrawPolicy.EXCLUDE.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value else '' }}>
-            {{ _('Escludi — X o match a 3') }}
+            {{ _('Escludi — X a tavolino o partita a tre') }}
           </option>
           <option value="{{ WithdrawPolicy.FORFEIT.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.FORFEIT.value else '' }}>
             {{ _("Forfait — vittoria all'avversario") }}

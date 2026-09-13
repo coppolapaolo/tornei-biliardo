@@ -218,12 +218,12 @@ shots:
   - id: challenge-catalogo
     route: /challenges/
     as: Marco Rossi
-    caption: "Il catalogo delle challenge: le prove di abilità disponibili, con la disposizione delle bilie."
+    caption: "Il catalogo degli esercizi: le prove di abilità disponibili, con la disposizione delle bilie."
 
   - id: challenge-nuova
     route: /challenges/create
     as: Luca Bianchi
-    caption: "Il modulo per creare una challenge: titolo, descrizione, tipo di punteggio, foto della disposizione e, in fondo, «Disegna il drill» per chi la foto non ce l'ha."
+    caption: "Il modulo per creare un esercizio: titolo, descrizione, tipo di punteggio, foto della disposizione e, in fondo, «Disegna l'esercizio» per chi la foto non ce l'ha."
     # Pagina intera: «Non hai una foto? / Disegna il drill» sta in fondo, sotto
     # la piega, ed e' il punto da cui la guida fa partire il builder. Senza,
     # la didascalia prometterebbe un pulsante che nell'immagine non c'e'.
@@ -235,7 +235,7 @@ shots:
   - id: drill-builder
     route: /challenges/builder
     as: Luca Bianchi
-    caption: "Il builder dei drill: a sinistra gli strumenti, a destra il tavolo con le bilie disposte."
+    caption: "Lo strumento per disegnare un esercizio: a sinistra gli strumenti, a destra il tavolo con le bilie disposte."
     viewports: [mobile, desktop]
     click: ['[data-preset="lshape"]']
 
@@ -275,12 +275,12 @@ shots:
   - id: esame-catalogo
     route: /exam/
     as: Marco Rossi
-    caption: "Il catalogo degli esami: le sequenze di drill che si possono sostenere."
+    caption: "Il catalogo degli esami: le sequenze di esercizi che si possono sostenere."
 
   - id: esame-dettaglio
     route: /exam/1
     as: Marco Rossi
-    caption: "La pagina di un esame: i drill che lo compongono con il punteggio massimo e il numero di prove, chi lo somministra e i due modi di sostenerlo."
+    caption: "La pagina di un esame: gli esercizi che lo compongono con il punteggio massimo e il numero di prove, chi lo somministra e i due modi di sostenerlo."
     viewports: [mobile, desktop]
     # I due pulsanti stanno sotto la piega: senza la pagina intera la didascalia
     # prometterebbe qualcosa che nell'immagine non c'e'.

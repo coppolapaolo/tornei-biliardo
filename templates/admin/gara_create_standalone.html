@@ -250,7 +250,7 @@
                                     <select class="form-select" id="withdraw_policy" name="withdraw_policy" required>
                                         <option value="{{ WithdrawPolicy.FORFEIT.value }}" selected>{{ _("Vincita a tavolino avversario") }}
                                         </option>
-                                        <option value="{{ WithdrawPolicy.EXCLUDE.value }}">{{ _("Escludi dal turno (X o Trio)") }}
+                                        <option value="{{ WithdrawPolicy.EXCLUDE.value }}">{{ _("Escludi — X a tavolino o partita a tre") }}
                                         </option>
                                     </select>
                                 </div>
@@ -325,13 +325,12 @@
                                             <label for="odd_number_policy" class="form-label small" data-help="gara-dispari">{{ _("Se Giocatori Dispari") }}</label>
                                             <select class="form-select form-select-sm" id="odd_number_policy"
                                                 name="odd_number_policy">
-                                                <option value="bye">{{ _("Riposo (punto gratis)") }}</option>
-                                                <option value="bye_with_challenge">{{ _("Riposo con esercizio") }}</option>
-                                                <option value="trio">{{ _("Match a 3 (Trio)") }}</option>
-                                                <option value="no">{{ _("Lista d'Attesa") }}</option>
+                                                {% for valore, nome in opzioni_dispari() %}
+                                                <option value="{{ valore }}" {% if valore == 'bye' %}selected{% endif %}>{{ nome }}</option>
+                                                {% endfor %}
                                             </select>
                                             <small id="trio_warning" class="text-warning small" style="display: none;">
-                                                <i class="fas fa-exclamation-triangle"></i> {{ _("Il Trio è disponibile solo per distanze da 2 a 7") }}
+                                                <i class="fas fa-exclamation-triangle"></i> {{ _("La partita a tre vale solo per distanze da 2 a 7") }}
                                             </small>
                                         </div>
                                     </div>

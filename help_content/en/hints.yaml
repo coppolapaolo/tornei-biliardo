@@ -82,7 +82,7 @@ hints:
   section: primo_turno
 - id: gara.dispari
   label: If players are odd
-  short: 'Bye, bye with challenge, three-way match or waitlist. Not asked on brackets: whoever is left
+  short: 'X by walkover, X by walkover with drill, three-player match or waitlist. Not asked on brackets: whoever is left
     over goes straight through.'
   anchor: gara-dispari
   screens:

@@ -440,3 +440,32 @@ def etichetta_dispari(policy) -> str:
         OddNumberPolicy.TRIO.value: _("Trio, partita a tre"),
     }
     return etichette.get(valore, valore or "")
+
+
+def opzioni_dispari(classification_system=None) -> list[tuple[str, str]]:
+    """Le formule dei dispari come voci di un menu: `(valore, nome tradotto)`.
+
+    E' l'unica fonte delle opzioni dei moduli — creazione e modifica di gare e
+    campionati — cosi' il nome letto nel menu e' lo stesso che poi compare
+    nella pagina della gara (`etichetta_dispari`). Prima ogni modulo aveva il
+    suo: «Bye (riposo)», «Riposo (punto gratis)», «X (vinto a tavolino)»,
+    «Match a 3 Giocatori».
+
+    Con un sistema di classifica si tolgono le formule che con quel sistema
+    non reggono: la X a tavolino semplice col sistema RACK darebbe zero
+    triangoli a chi riposa (`validators._validate_rack_system`). Senza, le
+    formule ci sono tutte: serve ai moduli in cui il sistema si cambia nella
+    stessa pagina.
+    """
+    from models.matchmaking.configuration import OddNumberPolicy
+    from models.status_enum import ClassificationSystem
+
+    sistema = getattr(classification_system, "value", classification_system)
+    escluse = {
+        ClassificationSystem.RACK.value: {OddNumberPolicy.BYE.value},
+    }.get(sistema, set())
+    return [
+        (policy.value, etichetta_dispari(policy.value))
+        for policy in OddNumberPolicy
+        if policy.value not in escluse
+    ]

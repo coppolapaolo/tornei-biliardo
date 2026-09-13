@@ -154,17 +154,21 @@
                     {% endfor %}
                 </select>
                 <div class="mt-2">
+                    <div id="policy-description-no" class="alert alert-info py-2 mb-0 small {% if campionato.default_odd_policy != 'no' %}d-none{% endif %}">
+                        <i class="fas fa-list-ol"></i>
+                        {{ _("Chi rende il numero dispari va in lista d'attesa. Appena si iscrive un altro giocatore entrano entrambi.") }}
+                    </div>
                     <div id="policy-description-bye" class="alert alert-info py-2 mb-0 small {% if campionato.default_odd_policy != 'bye' %}d-none{% endif %}">
                         <i class="fas fa-user-clock"></i>
-                        {{ _("Il giocatore piu' basso in classifica riceve un bye (riposo) e vince automaticamente.") }}
+                        {{ _("Il giocatore più basso in classifica riposa e vince a tavolino.") }}
                     </div>
                     <div id="policy-description-bye_with_challenge" class="alert alert-info py-2 mb-0 small {% if campionato.default_odd_policy != 'bye_with_challenge' %}d-none{% endif %}">
                         <i class="fas fa-bullseye"></i>
-                        {{ _("Il giocatore riceve bye ma deve completare un esercizio per guadagnare punti extra.") }}
+                        {{ _("Il giocatore riposa ma deve completare un esercizio per guadagnare punti.") }}
                     </div>
                     <div id="policy-description-trio" class="alert alert-info py-2 mb-0 small {% if campionato.default_odd_policy != 'trio' %}d-none{% endif %}">
                         <i class="fas fa-users"></i>
-                        {{ _("I tre giocatori piu' bassi giocano un match a 3.") }}
+                        {{ _("I tre giocatori più bassi giocano una partita a tre.") }}
                     </div>
                 </div>
             </div>
@@ -296,12 +300,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Toggle odd policy descriptions
     const policySelect = document.getElementById('default_odd_policy');
+    const descNo = document.getElementById('policy-description-no');
     const descBye = document.getElementById('policy-description-bye');
     const descByeChallenge = document.getElementById('policy-description-bye_with_challenge');
     const descTrio = document.getElementById('policy-description-trio');
 
     function updatePolicyDescription() {
         const policy = policySelect.value;
+        descNo.classList.toggle('d-none', policy !== 'no');
         descBye.classList.toggle('d-none', policy !== 'bye');
         descByeChallenge.classList.toggle('d-none', policy !== 'bye_with_challenge');
         descTrio.classList.toggle('d-none', policy !== 'trio');

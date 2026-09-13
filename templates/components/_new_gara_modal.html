@@ -261,21 +261,13 @@
                                 <div class="mb-3">
                                     <label for="odd_number_policy" class="form-label">{{ _("Gestione Dispari") }}</label>
                                     <select class="form-control" name="odd_number_policy" id="create_odd_number_policy">
-                                        <option value="bye" {% if not campionato.default_odd_policy or campionato.default_odd_policy == 'bye' %}selected{% endif %}>
-                                            {{ _("X (vinto a tavolino)") }}
-                                        </option>
-                                        <option value="bye_with_challenge" {% if campionato.default_odd_policy == 'bye_with_challenge' %}selected{% endif %}>
-                                            {{ _("X con esercizio") }}
-                                        </option>
-                                        <option value="trio" {% if campionato.default_odd_policy == 'trio' %}selected{% endif %}>
-                                            {{ _("Match a 3 Giocatori") }}
-                                        </option>
-                                        <option value="no" {% if campionato.default_odd_policy == 'no' %}selected{% endif %}>
-                                            {{ _("Lista d'Attesa") }}
-                                        </option>
+                                        {% set scelta_dispari = campionato.default_odd_policy or 'bye' %}
+                                        {% for valore, nome in opzioni_dispari() %}
+                                        <option value="{{ valore }}" {% if scelta_dispari == valore %}selected{% endif %}>{{ nome }}</option>
+                                        {% endfor %}
                                     </select>
                                     <small id="create_trio_warning" class="form-text text-warning" style="display: none;">
-                                        <i class="fas fa-exclamation-triangle"></i> {{ _("Trio disponibile solo per distanze 2-7") }}
+                                        <i class="fas fa-exclamation-triangle"></i> {{ _("La partita a tre vale solo per distanze da 2 a 7") }}
                                     </small>
                                 </div>
                             </div>
