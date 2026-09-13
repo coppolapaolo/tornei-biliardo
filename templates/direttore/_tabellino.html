@@ -1,0 +1,79 @@
+{# templates/direttore/_tabellino.html — Design System 7c
+
+   Il tabellone compatto nella colonna laterale della fase di gioco, al posto
+   della classifica (issue #240). A tabellone in corso la classifica per
+   posizione e' un blocco di pari merito — chi e' ancora in gioco condivide il
+   primo posto — e la domanda del direttore e' un'altra: chi incontrera' chi.
+
+   Il canvas non disegna le gare a tabellone: la forma e' la piu' vicina alla
+   sua grammatica. Sechead come la classifica, una card con le colonne del
+   turno prima, di quello che si vede e del turno dopo, i nodi futuri vuoti
+   con chi arrivera', e sotto la riga che apre il tabellone intero. Nel doppio
+   KO i vincenti sopra e i ripescati sotto, come nella pagina del tabellone.
+
+   Atteso: `tabellino` (lavagne di `Tabellone.compatto`), `conteggi` o
+   `gara.display_round` per il turno che si vede. Classi nella sezione 29 di
+   theme-7c.css. #}
+{% import "components/_tabellone_macros.html" as t with context %}
+{% set _turno_visto = conteggi.turno if conteggi else gara.display_round %}
+
+{% macro nodo_compatto(n) -%}
+{% set m = n.match %}
+{% set finita = m and MatchStatus.is_finished(m.status) %}
+{% set viva = m and m.status == MatchStatus.PLAYING.value %}
+<div class="c7-tabellino__nodo{% if not m %} is-vuoto{% elif finita %} is-done{% elif viva %} is-live{% endif %}">
+  {% if m and m.is_bye %}
+  <div class="c7-tabellino__posto is-winner"><span class="c7-tabellino__chi">{{ m.player1.username }}</span><span class="c7-tabellino__punti">X</span></div>
+  {% elif m %}
+    {% for giocatore, punti in [(m.player1, m.player1_score), (m.player2, m.player2_score)] %}
+    <div class="c7-tabellino__posto{% if finita and giocatore and m.winner_id == giocatore.id %} is-winner{% endif %}">
+      <span class="c7-tabellino__chi">{{ giocatore.username if giocatore else _('da definire') }}</span>
+      {% if finita or (punti or 0) > 0 %}<span class="c7-tabellino__punti c7-num">{{ punti }}</span>{% endif %}
+    </div>
+    {% endfor %}
+  {% else %}
+    {% for p in n.posti %}{% if not p.vuoto %}
+    <div class="c7-tabellino__posto{% if not p.giocatore %} is-attesa{% endif %}"><span class="c7-tabellino__chi">{{ t.posto(p) }}</span></div>
+    {% endif %}{% endfor %}
+    {% if n.is_x %}<div class="c7-tabellino__posto is-attesa"><span class="c7-tabellino__chi">{{ _('X a tavolino') }}</span></div>{% endif %}
+  {% endif %}
+</div>
+{%- endmacro %}
+
+{% if tabellino %}
+<section class="c7-stack c7-tabellino" style="gap:10px">
+  <div class="c7-sechead">
+    <h3>{{ _('Tabellone') }}</h3>
+    <span class="c7-sechead__note">{{ _('il turno che si vede, quello prima e quello dopo') }}</span>
+  </div>
+  {% for board in tabellino %}
+  <div class="c7-card c7-tabellino__card">
+    {% if board.is_group %}<div class="c7-kicker c7-tabellino__girone">{{ _('Girone %(num)s', num=board.group + 1) }}</div>
+    {% elif tabellino|length > 1 %}<div class="c7-kicker c7-tabellino__girone">{{ _('Tabellone finale') }}</div>{% endif %}
+    {% for section in board.sections %}
+    {% if board.has_losers %}
+    <div class="c7-tabellino__ramo"><span class="c7-label">{{ _('Vincenti') if section.key == 'winners' else _('Ripescati') }}</span></div>
+    {% endif %}
+    <div class="c7-tabellino__colonne">
+      {% for column in section.columns %}
+      <div class="c7-tabellino__col{% if column.turno == _turno_visto %} is-attuale{% endif %}">
+        <div class="c7-tabellino__testa">{{ t.nome_round(column.nome) }}</div>
+        <div class="c7-tabellino__nodi">
+          {% for n in column.nodi %}
+          <div class="c7-tabellino__cella">{{ nodo_compatto(n) }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+  {% if feature_visible('admin.competition.gara_bracket') %}
+  <div class="c7-rows">
+    {{ d.riga('fa-sitemap', _('Tutto il tabellone'), _('Il percorso della gara, turno per turno'), tone='accent',
+              href=url_for('admin.competition.gara_bracket', gara_id=gara.id)) }}
+  </div>
+  {% endif %}
+</section>
+{% endif %}

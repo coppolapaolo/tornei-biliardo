@@ -11,7 +11,10 @@
 
 {% set annullata = gara.status == GaraStatus.CANCELLED.value %}
 {% set partite_giocate = (all_matches or [])|rejectattr('is_bye')|list|length %}
-{% set vincitore = current_round_classification[0].user.username if current_round_classification else none %}
+{# Nei tabelloni il podio e la classifica vengono dalle bande (issue #240). #}
+{% set _bande = bande_finali if bande_finali is defined and bande_finali else [] %}
+{% set _podio_bande = (_bande|selectattr('posizione', 'le', 3)|map(attribute='righe')|list) if _bande else none %}
+{% set vincitore = _bande[0].righe[0].user.username if _bande else (current_round_classification[0].user.username if current_round_classification else none) %}
 {% set _posti_spareggio = (ssr_groups or []) | map(attribute='position') | list %}
 
 <section class="c7-card c7-card--accent c7-fascia">
@@ -32,25 +35,29 @@
     </div>
     {% endif %}
   </div>
-  {% if not annullata and current_round_classification %}
+  {% if not annullata and (_bande or current_round_classification) %}
   <div class="c7-fascia__azione d-none d-lg-flex">
-    {% with classification=current_round_classification %}{% include "direttore/_podio.html" %}{% endwith %}
+    {% with classification=current_round_classification, bande_podio=_podio_bande %}{% include "direttore/_podio.html" %}{% endwith %}
   </div>
   {% endif %}
 </section>
 
-{% if not annullata and current_round_classification %}
+{% if not annullata and (_bande or current_round_classification) %}
 <section class="c7-card c7-card--accent d-lg-none">
   <div class="c7-kicker">{{ _('Classifica finale') }}</div>
   <div style="margin-top:12px">
-    {% with classification=current_round_classification %}{% include "direttore/_podio.html" %}{% endwith %}
+    {% with classification=current_round_classification, bande_podio=_podio_bande %}{% include "direttore/_podio.html" %}{% endwith %}
   </div>
 </section>
 {% endif %}
 
 <div class="c7-cols">
   <div class="c7-stack">
-    {% if has_scores %}
+    {% if _bande %}
+    <div data-help="gara-classifica">
+      {% include "direttore/_classifica_bande.html" %}
+    </div>
+    {% elif has_scores %}
     {% set _nota_freccia = _('freccia: rispetto al turno %(n)s', n=latest_round_with_classification - 1) if latest_round_with_classification and latest_round_with_classification > 1 else '' %}
     {% with classification=current_round_classification, round_number=latest_round_with_classification,
             medaglie=true, titolo_classifica=_('Classifica finale'), nota_testa=_nota_freccia %}

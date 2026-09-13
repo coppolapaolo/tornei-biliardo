@@ -135,6 +135,22 @@ blocks:
       columns follow the competition's system: wins and rack difference, or
       racks won and lost.
 
+  - type: note
+    tone: info
+    title: "Bracket competitions show the bracket"
+    text: >-
+      In place of the standings you find the **compact bracket**: the round
+      on screen, the one before and the one after, with empty slots showing
+      who will get there. Every card says where the winner goes — «Winner:
+      Semi-finals against whoever wins Rossi – Bianchi» — and, in double
+      elimination, where the loser drops. A player going through without
+      playing has a «goes through» card.
+
+  - type: shot
+    shot: gara-tabellone-direttore
+    variant: desktop
+    caption: "A knockout competition seen by its director: the quarter-finals are over, the band offers «Start the semi-finals» and the compact bracket is on the right."
+
   - type: heading
     id: turni_successivi
     title: "Starting the following rounds"
@@ -153,6 +169,14 @@ blocks:
       As soon as the new round starts, the previous round's matches become
       **Locked**: they can no longer be corrected, because the pairings just
       created are based on those results. Check the scores **before** pressing.
+
+  - type: text
+    text: >-
+      In bracket competitions the button carries the name of the round:
+      **Start the semi-finals**, **Start the final** and, in double
+      elimination if needed, **Start the decider**. The pairings do not come
+      from the standings: the draw already fixed them. From the «⋯» menu of the
+      first round, as long as nobody has scored, you can **cancel the draw**.
 
   - type: heading
     id: correggere
@@ -252,6 +276,12 @@ blocks:
       - >-
         **Championship standings**: if the competition is part of one, the
         results are added to the overall standings as soon as it finishes.
+
+  - type: text
+    text: >-
+      In bracket competitions the final standings are **in bands** — 1st, 2nd,
+      3rd–4th, 5th–8th — with where each player went out: whoever goes out in
+      the same round shares the place and the points, with no tie-break.
 
   - type: faq
     items:

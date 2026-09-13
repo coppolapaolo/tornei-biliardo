@@ -15,10 +15,7 @@ from flask import abort, render_template
 from flask_login import current_user
 
 from models import db, Gara, Inscription, Match
-from models.matchmaking.bracket_view import (
-    build_bracket_boards,
-    has_bracket_coordinates,
-)
+from models.competition.tabellone_view import costruisci_tabellone
 from models.matchmaking.configuration import BRACKET_STRATEGIES
 
 from . import competition_bp
@@ -54,11 +51,19 @@ def gara_bracket(gara_id):
         if inscription.is_forfeit
     }
 
+    # L'albero intero, con i nodi dei turni non ancora nati (issue #240): dopo
+    # il sorteggio il percorso di ciascuno si legge in anticipo.
+    tabellone = costruisci_tabellone(
+        matches,
+        strategy=gara.matchmaking_strategy,
+        finalina=bool(gara.third_place_match),
+    )
+
     return render_template(
         "gara_bracket.html",
         gara=gara,
-        boards=build_bracket_boards(matches),
-        has_bracket=has_bracket_coordinates(matches),
+        boards=tabellone.lavagne if tabellone else [],
+        has_bracket=tabellone is not None,
         user_can_manage=user_can_manage,
         forfeit_user_ids=forfeit_user_ids,
     )

@@ -13,6 +13,10 @@
 {% set reale = gara.get_real_status() %}
 {% set casuale = gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
 {% set tipo_comando = comando.tipo.value if comando else none %}
+{# Gare a tabellone (issue #240): i turni hanno un nome, il turno dopo e' gia'
+   fissato dall'albero, e al posto della classifica c'e' il tabellone. #}
+{% set _tabellone = is_tabellone is defined and is_tabellone %}
+{% import "components/_tabellone_macros.html" as t with context %}
 
 {% if tipo_comando in ('avvia_spareggio', 'termina_gara') %}
 {# ---- Gara finita: spareggio o chiusura ---- #}
@@ -20,6 +24,7 @@
   <div class="c7-fascia__testo">
     <div class="c7-kicker">
       {% if casuale %}{{ _('Tutte le %(n)s partite concluse', n=all_matches|rejectattr('is_bye')|list|length) }}
+      {% elif _tabellone %}{{ ngettext('Tabellone concluso · %(n)d turno giocato', 'Tabellone concluso · %(n)d turni giocati', turni_giocati, n=turni_giocati) }}
       {% else %}{{ _('Tutti i %(n)s turni conclusi', n=gara.rounds_count) }}{% endif %}
     </div>
     {% if tipo_comando == 'avvia_spareggio' %}
@@ -74,17 +79,26 @@
 {# ---- Turno concluso: l'unico comando e' avviare il prossimo ---- #}
 <section class="c7-card c7-card--accent c7-fascia">
   <div class="c7-fascia__testo">
-    <div class="c7-kicker">{{ _('Turno %(n)s di %(tot)s · concluso', n=gara.current_round, tot=gara.rounds_count) }}</div>
-    <h3 class="c7-fascia__titolo">{{ _('Puoi avviare il turno %(n)s', n=comando.turno) }}</h3>
+    {% set _nomi_prossimo = nomi_turni.get(comando.turno, []) if _tabellone else [] %}
+    {% set _nomi_chiuso = nomi_turni.get(gara.current_round, []) if _tabellone else [] %}
+    <div class="c7-kicker">{% if _nomi_chiuso %}{{ t.nome_turno(_nomi_chiuso) }} · {% endif %}{{ _('Turno %(n)s di %(tot)s · concluso', n=gara.current_round, tot=gara.rounds_count) }}</div>
+    <h3 class="c7-fascia__titolo">{% if _nomi_prossimo %}{{ t.turno_pronto(_nomi_prossimo, comando.turno) }}{% else %}{{ _('Puoi avviare il turno %(n)s', n=comando.turno) }}{% endif %}</h3>
     <div class="c7-fascia__corpo">
+      {% if _nomi_prossimo|length == 1 and _nomi_prossimo[0].chiave == 'bella' %}
+      {{ _('La finale l’ha vinta chi arrivava dai ripescati. Nel doppio KO si esce alla seconda sconfitta, quindi i due si rigiocano la partita da pari.') }}
+      {% elif _tabellone %}
+      {{ _('Tutte le partite del turno sono chiuse.') }} {{ _('Gli incroci sono già fissati dal tabellone.') }}
+      {% else %}
       {{ _('Tutte le partite del turno sono chiuse.') }}
-      {% if gara.creates_all_rounds_at_startup() %}{{ _('Gli abbinamenti del turno %(n)s sono già fissati dal sorteggio iniziale.', n=comando.turno) }}
+      {% endif %}
+      {% if _tabellone %}
+      {% elif gara.creates_all_rounds_at_startup() %}{{ _('Gli abbinamenti del turno %(n)s sono già fissati dal sorteggio iniziale.', n=comando.turno) }}
       {% else %}{{ _('Gli abbinamenti del turno %(n)s si calcolano all’avvio, sulla classifica di adesso.', n=comando.turno) }}{% endif %}
     </div>
   </div>
   <div class="c7-fascia__azione">
     <button type="button" class="btn btn-success" data-help="gara-avvia-turno" onclick="startRound({{ comando.turno }}, this)">
-      <i class="fas fa-forward"></i> {{ _('Avvia il turno %(n)s', n=comando.turno) }}
+      <i class="fas fa-forward"></i> {% if _nomi_prossimo %}{{ t.avvia_turno(_nomi_prossimo, comando.turno) }}{% else %}{{ _('Avvia il turno %(n)s', n=comando.turno) }}{% endif %}
     </button>
   </div>
 </section>
@@ -94,7 +108,7 @@
 <section class="c7-card c7-card--accent c7-console">
   <div class="c7-console__row">
     <div class="c7-console__cella">
-      <div class="c7-kicker">{{ _('Turno %(n)s di %(tot)s', n=conteggi.turno, tot=conteggi.turni_totali) }}</div>
+      <div class="c7-kicker">{% if _tabellone and nomi_turni.get(conteggi.turno) %}{{ t.nome_turno(nomi_turni.get(conteggi.turno)) }} · {% endif %}{{ _('Turno %(n)s di %(tot)s', n=conteggi.turno, tot=conteggi.turni_totali) }}</div>
       <div class="c7-console__valore">
         <span class="c7-num">{{ conteggi.chiuse }}/{{ conteggi.totali }}</span>
         <span class="c7-console__sotto">{{ _('partite chiuse') }}</span>
@@ -159,8 +173,9 @@
   <div class="c7-stack">
     <div class="d-lg-none">{{ da_fare_adesso() }}</div>
 
-    {# Il tabellone ha una pagina sua. #}
-    {% if has_bracket_view and feature_visible('admin.competition.gara_bracket') %}
+    {# Il tabellone ha una pagina sua: ci porta il tabellone compatto nella
+       colonna accanto, e qui resta solo se quello non c'e'. #}
+    {% if has_bracket_view and not tabellino and feature_visible('admin.competition.gara_bracket') %}
     <div class="c7-rows">
       {{ d.riga('fa-sitemap', _('Tabellone'), _('Il percorso della gara, turno per turno'), tone='accent',
                 href=url_for('admin.competition.gara_bracket', gara_id=gara.id)) }}
@@ -214,7 +229,9 @@
 
     {# La classifica dopo l'ultimo turno chiuso, con la freccia di tendenza
        (canvas 3.5–3.6): una forma sola, telefono e desktop. #}
-    {% if has_scores %}
+    {% if _tabellone and tabellino %}
+    {% include "direttore/_tabellino.html" %}
+    {% elif has_scores %}
     {% with classification=current_round_classification, round_number=latest_round_with_classification %}
     <div data-help="gara-classifica">
       {% include "direttore/_classifica.html" %}

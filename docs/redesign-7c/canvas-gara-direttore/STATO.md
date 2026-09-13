@@ -340,10 +340,12 @@ aggiorna in fondo a questo file, fase per fase.
 
 Da chiedere prima di implementare, perché il canvas non li copre: squadre e
 categorie (ADR-039, ADR-049), esercizi di gara, trio e multi-set,
-forfait/ritiro a gara in corso e riassegnazione (ADR-048), tabellone a
-eliminazione (dove l'avvio è «Sorteggia il tabellone», ADR-038), gara dentro
+forfait/ritiro a gara in corso e riassegnazione (ADR-048), gara dentro
 un campionato (peso, playoff, ADR-053), eliminazione della gara, competizione
-di prova (ADR-058, arrivata dopo il canvas).
+di prova (ADR-058, arrivata dopo il canvas). Il tabellone a eliminazione
+(ADR-038) era in questo elenco: e' stato fatto il 13/09 senza disegno, con
+la soluzione piu' vicina alla grammatica del canvas — vedi «Tabellone al
+posto della classifica» in fondo.
 
 ## Come ricostruire
 
@@ -543,3 +545,31 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   facendo: `fase_della_gara` ripiega su «preparazione» per uno stato che non
   conosce, e il test elencava gli stati a mano; ora un `GaraStatus` senza
   fase fa rosso (`test_nessuno_stato_della_gara_resta_senza_fase`).
+* **Tabellone al posto della classifica** (PR `feat: il tabellone al posto
+  della classifica nelle gare a eliminazione`, 2026-09-13, issue #240). Il
+  canvas non disegnava le gare a tabellone. Un modulo di vista puro,
+  `models/competition/tabellone_view.py`, costruisce l'albero intero con i
+  nodi futuri gia' dal sorteggio: le regole di avanzamento di ADR-038 stanno
+  in una funzione sola, `_uscite`, da cui discendono sia i posti dei nodi
+  futuri sia la nota della card «Chi vince: Semifinali contro chi vince A –
+  B». La pagina del tabellone disegna i nodi vuoti
+  (`.c7-bracket__node--vuoto`). Sulla pagina del direttore: in preparazione
+  e a iscrizioni aperte la riga «Tabellone da 8 · 2 passano il turno · 3
+  turni» dagli iscritti, stimata sulla capienza quando non bastano, e il nome
+  leggibile della formula; fra un turno e l'altro «Semifinali pronte» e
+  «Avvia le semifinali», con gli incroci gia' fissati dal tabellone; il menu
+  del turno 1 dice «Annulla il sorteggio»; in gioco il nome del turno nella
+  card scura e nelle testate, la card della X «passa il turno», e nella
+  colonna laterale **al posto della classifica** il tabellone compatto del
+  turno visto, di quello prima e di quello dopo, vincenti sopra e ripescati
+  sotto, con la riga al tabellone intero; a gara finita «Tabellone concluso
+  · N turni giocati», che conta la bella se c'e'; a gara conclusa podio e
+  classifica **a bande** («3°–4°», «5°–8°») dal tabellone, con il turno
+  d'uscita e il pari merito dichiarato. Le gare a turni restano come prima.
+  Scelte dove il canvas tace: nel doppio KO il turno si chiama con i due
+  round che contiene («Turno 2 dei vincenti · Recupero 1»); sul podio senza
+  finalina i due terzi stanno sullo stesso gradino; la finalina sta nella
+  colonna accanto alla finale anche nel tabellone compatto. Trovato strada
+  facendo: la riga «Accoppiamento» e la scheda informazioni mostravano il
+  valore grezzo in colonna («Direct Elimination»); ora un nome tradotto
+  (`nome_formula`).

@@ -396,6 +396,12 @@ shots:
     as: anonimo
     caption: "Una gara a eliminazione diretta: le partite del turno con il collegamento al tabellone."
 
+  - id: gara-tabellone-direttore
+    route: /admin/gara/5
+    as: Luca Bianchi
+    caption: "Una gara a eliminazione vista dal direttore: i quarti sono chiusi, la fascia propone «Avvia le semifinali» e a destra c'è il tabellone compatto."
+    viewports: [mobile, desktop]
+
   - id: gara-squadre
     route: /admin/gara/3
     as: Luca Bianchi

@@ -290,6 +290,7 @@ def _vista_direttore(
             }
 
     return {
+        **_vista_tabellone(gara, all_matches or []),
         "fase": fase,
         "striscia": striscia(fase, con_spareggio=con_spareggio),
         "comando": comando,
@@ -304,6 +305,82 @@ def _vista_direttore(
         },
         "stati_partite": stati_partite,
     }
+
+
+def _vista_tabellone(gara: Gara, all_matches) -> dict:
+    """Il tabellone al posto della classifica, nelle gare a eliminazione (#240).
+
+    Prima del sorteggio la forma che il tabellone avra' con gli iscritti di
+    adesso; dopo, l'albero intero con i nodi futuri, i nomi dei turni
+    («Semifinali»), dove va chi vince ogni partita e il tabellone compatto dei
+    turni vicini a quello che si vede; a gara conclusa la classifica a bande
+    (ADR-040). Niente di tutto questo per le gare a turni, che restano come
+    sono.
+    """
+    from models.competition.tabellone_view import (
+        bande_finali,
+        costruisci_tabellone,
+        destinazioni,
+        forma_tabellone,
+    )
+    from models.matchmaking.configuration import BRACKET_STRATEGIES
+
+    vista: dict = {
+        "is_tabellone": gara.matchmaking_strategy in BRACKET_STRATEGIES,
+        "nomi_turni": {},
+        "tabellino": [],
+        "destinazioni": {},
+        "forma": None,
+        "forma_stima": False,
+        "bande_finali": [],
+        "righe_bande": [],
+        "turni_giocati": max((m.round_number or 0 for m in all_matches), default=0),
+    }
+    if not vista["is_tabellone"]:
+        return vista
+
+    if gara.status in (GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value):
+        forma = forma_tabellone(
+            gara.get_active_inscriptions_count(),
+            gara.matchmaking_strategy,
+            double_ko_rounds=gara.double_ko_rounds,
+        )
+        # Senza abbastanza iscritti la forma si stima sulla capienza: e' cio'
+        # che il direttore sta preparando, e la riga lo dice.
+        if forma is None and gara.max_participants:
+            forma = forma_tabellone(
+                gara.max_participants,
+                gara.matchmaking_strategy,
+                double_ko_rounds=gara.double_ko_rounds,
+            )
+            vista["forma_stima"] = forma is not None
+        vista["forma"] = forma
+
+    tabellone = costruisci_tabellone(
+        all_matches,
+        strategy=gara.matchmaking_strategy,
+        finalina=bool(gara.third_place_match),
+    )
+    if tabellone is None:
+        return vista
+
+    turno = (
+        gara.display_round or 1
+        if gara.status == GaraStatus.PLAYING.value
+        else vista["turni_giocati"]
+    )
+    vista["nomi_turni"] = tabellone.nomi_turni()
+    vista["tabellino"] = tabellone.compatto(turno)
+    vista["destinazioni"] = destinazioni(
+        tabellone, [m for m in all_matches if not MatchStatus.is_finished(m.status)]
+    )
+    if gara.status == GaraStatus.COMPLETED.value:
+        from models.classification.bracket_standings import bracket_positions
+
+        bande = bande_finali(bracket_positions(gara), tabellone)
+        vista["bande_finali"] = bande
+        vista["righe_bande"] = [riga for banda in bande for riga in banda.righe]
+    return vista
 
 
 @competition_bp.route("/<int:gara_id>")

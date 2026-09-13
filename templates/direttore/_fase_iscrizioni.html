@@ -12,6 +12,7 @@
    d'occhio». Sul telefono (2.2) e' una colonna sola nello stesso ordine di
    lettura, con la lista d'attesa subito sotto gli iscritti. #}
 
+{% import "components/_tabellone_macros.html" as t with context %}
 {% set reale = gara.get_real_status() %}
 {% set iscritti = gara.get_active_inscriptions_count() %}
 {% set minimo = gara.min_participants or 0 %}
@@ -121,6 +122,11 @@
                   ((_tavoli|join(', ')) ~ ' — ' ~ _('cambia prima di avviare')) if _tavoli else _('nessun tavolo: la sala non ne ha dichiarati'),
                   tone=('neutral' if _tavoli else 'warn'),
                   href=url_for('admin.competition.gara_impostazioni', gara_id=gara.id) ~ '#sezioneTavoli') }}
+        {% endif %}
+        {# La forma del tabellone con gli iscritti di adesso: cambia a ogni
+           iscritto, ed e' cio' che il direttore sta raccogliendo (#240). #}
+        {% if forma %}
+        {{ d.riga('fa-sitemap', _('Tabellone'), t.forma(forma) ~ ((' · ' ~ _('se si arriva a %(n)s iscritti', n=forma.iscritti)) if forma_stima else '')) }}
         {% endif %}
         {% if reale == GaraStatus.INSCRIPTION.value and gara.can_modify_inscription_dates() %}
         {{ d.riga('fa-clock', _('Chiusura iscrizioni'),

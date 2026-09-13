@@ -10,6 +10,7 @@
 
    Sul desktop (3.9) le card stanno in una griglia a due colonne. #}
 
+{% import "components/_tabellone_macros.html" as t with context %}
 {% set _turno = conteggi.turno if conteggi else (gara.display_round or 1) %}
 {% set _concluso = turno_concluso %}
 {% set _tutte = all_matches if all_matches else matches %}
@@ -60,9 +61,12 @@
 {% macro testata_turno(n, stato_turno, con_menu=False) -%}
 {% set _prime = _tutte | selectattr('round_number', 'equalto', n) | list %}
 <div class="c7-sechead">
-  <h3{% if stato_turno != 'in_corso' %} class="c7-dim"{% endif %}>{{ _('Turno %(num)s', num=n) }}</h3>
+  {# Nei tabelloni il turno ha un nome («Quarti», «Recupero 2»): il numero
+     passa nella nota. #}
+  {% set _nomi = nomi_turni.get(n) if nomi_turni is defined and nomi_turni else none %}
+  <h3{% if stato_turno != 'in_corso' %} class="c7-dim"{% endif %}>{% if _nomi %}{{ t.nome_turno(_nomi) }}{% else %}{{ _('Turno %(num)s', num=n) }}{% endif %}</h3>
   {% if _prime %}
-  <span class="c7-sechead__note">{{ _prime[0].get_effective_discipline()|discipline_display }} <span class="c7-sep">·</span> {{ _prime[0].distance_config|format_distance }}</span>
+  <span class="c7-sechead__note">{% if _nomi %}{{ _('turno %(num)s', num=n) }} <span class="c7-sep">·</span> {% endif %}{{ _prime[0].get_effective_discipline()|discipline_display }} <span class="c7-sep">·</span> {{ _prime[0].distance_config|format_distance }}</span>
   {% endif %}
   {% if stato_turno == 'in_corso' %}<span class="c7-state c7-state--accent c7-sechead__stato">{{ _('In corso') }}</span>
   {% elif stato_turno == 'concluso' %}<span class="c7-state c7-state--muted c7-sechead__stato">{{ _('Concluso') }}</span>

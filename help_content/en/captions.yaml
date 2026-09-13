@@ -50,6 +50,7 @@ statistiche-amichevoli: "Statistics for friendly matches, kept separate from com
 richieste-gestore: "The status of your requests to become the manager of a venue."
 tabellone: "The knockout bracket: winners move up, losers are out."
 gara-tabellone-dettaglio: "A knockout competition: its page links through to the bracket."
+gara-tabellone-direttore: "A knockout competition seen by its director: the quarter-finals are over, the band offers «Start the semi-finals» and the compact bracket is on the right."
 gara-bozza: "A competition in preparation: the dark band offers «Open registrations» and below it the list of what to prepare."
 gara-squadre: "The teams panel in competition management: which teams exist and how many entrants belong to each."
 gara-turni-config: "Per-round setup: each round can have its own discipline and distance."

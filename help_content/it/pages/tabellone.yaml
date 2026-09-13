@@ -17,7 +17,7 @@ blocks:
 
   - type: shot
     shot: tabellone
-    caption: "Il tabellone di una gara a eliminazione diretta: i quarti, con i vincitori in grassetto."
+    caption: "Il tabellone di una gara a eliminazione diretta: i quarti giocati, con i vincitori in grassetto, e le semifinali e la finale già disegnate."
 
   - type: heading
     id: aprirlo
@@ -28,6 +28,12 @@ blocks:
       Dalla pagina della gara, l'icona in alto a destra apre il tabellone. È
       **pubblico**: si può mandare il collegamento a chiunque, e si aggiorna da
       solo mentre si gioca.
+
+  - type: text
+    text: >-
+      Chi dirige la gara lo trova anche sulla pagina della gara, **al posto
+      della classifica**: un tabellone compatto con il turno in corso, quello
+      prima e quello dopo. Una riga sotto apre il tabellone intero.
 
   - type: shot
     shot: gara-tabellone-dettaglio
@@ -52,8 +58,11 @@ blocks:
         text: "Il punteggio in triangoli della partita."
       - name: "Le caselle vuote"
         text: >-
-          Partite non ancora giocate: si riempiono man mano che i turni
-          precedenti si concludono.
+          Partite non ancora giocate. Il tabellone è disegnato per intero già
+          dal sorteggio, quindi nelle caselle vuote c'è chi ci arriverà: il
+          nome, se ha già passato il turno o vinto la partita prima,
+          altrimenti «chi vince» quella partita. La Bella del doppio KO porta
+          scritto «se serve».
 
   - type: note
     tone: tip
@@ -180,6 +189,14 @@ blocks:
       entrambi terzi, i quattro quartifinalisti tutti quinti. Non è
       un'ambiguità da sciogliere, è quello che dice il percorso — e infatti nelle
       gare a tabellone lo spareggio non viene nemmeno proposto alla creazione.
+
+  - type: text
+    text: >-
+      A gara conclusa la pagina della gara mostra la classifica **per bande**:
+      1°, 2°, 3°–4°, 5°–8° e così via, con accanto a ogni nome dove è uscito
+      («esce ai quarti», «perde la finale»). Chi sta nella stessa banda ha lo
+      stesso posto e gli stessi punti di campionato. Sul podio, se non si è
+      giocata la finalina, i terzi sono due.
 
   - type: faq
     items:

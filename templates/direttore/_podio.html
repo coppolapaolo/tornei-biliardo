@@ -5,21 +5,36 @@
    `--c7-bronzo`), il primo al centro e piu' grande. Sotto il nome, la
    posizione, e «SSR» dove l'ha decisa lo spareggio.
 
-   Atteso: `classification` (righe in ordine di estrazione); opzionale
-   `ssr_scores_map`. Sta dentro una card accento. Non e' `.c7-podio`: quello
-   e' il podio compatto della tessera in dashboard, con le sue caselle. #}
-{% set _podio = classification[:3] %}
-{% if _podio %}
-{% set _ordine = [1, 0, 2] if _podio|length == 3 else ([1, 0] if _podio|length == 2 else [0]) %}
-<div class="c7-podio-finale c7-podio-finale--{{ _podio|length }}">
+   Atteso: `classification` (righe in ordine di estrazione); opzionali
+   `ssr_scores_map` e `bande_podio`. Nelle gare a tabellone (issue #240) il
+   podio viene dalle bande — le righe di 1°, 2° e 3° posto — e sul gradino
+   del bronzo possono stare in due: senza finalina i due semifinalisti
+   sconfitti sono terzi a pari merito (ADR-040), e il podio li mostra tutti e
+   due invece di sceglierne uno. Sta dentro una card accento. Non e'
+   `.c7-podio`: quello e' il podio compatto della tessera in dashboard, con le
+   sue caselle. #}
+{% if bande_podio is defined and bande_podio %}
+  {% set _gradini = bande_podio[:3] %}
+{% else %}
+  {% set _gradini = [] %}
+  {% for riga in (classification or [])[:3] %}{% set _void = _gradini.append([riga]) %}{% endfor %}
+{% endif %}
+{% if _gradini %}
+{% set _ordine = [1, 0, 2] if _gradini|length == 3 else ([1, 0] if _gradini|length == 2 else [0]) %}
+<div class="c7-podio-finale c7-podio-finale--{{ _gradini|length }}">
   {% for i in _ordine %}
-  {% set riga = _podio[i] %}
+  {% set gradino = _gradini[i] %}
+  {% set riga = gradino[0] %}
   {% set _metallo = ['oro', 'argento', 'bronzo'][i] %}
   <div class="c7-podio-finale__posto c7-podio-finale__posto--{{ _metallo }}">
     <span class="c7-avatar c7-podio-finale__avatar c7-podio-finale__avatar--{{ _metallo }}">{{ riga.user.username[:2]|upper }}</span>
-    <div class="c7-podio-finale__nome">{{ riga.user.username }}</div>
+    <div class="c7-podio-finale__nome">
+      {% for r in gradino %}<span class="c7-podio-finale__nomi">{{ r.user.username }}</span>{% endfor %}
+    </div>
     <div class="c7-podio-finale__pos c7-num">
-      {{ riga.position }}°{% if ssr_scores_map is defined and ssr_scores_map and ssr_scores_map.get(riga.user_id) is not none %} · SSR{% endif %}
+      {% if gradino|length > 1 %}{{ riga.position }}°–{{ riga.position + gradino|length - 1 }}°
+      {% else %}{{ riga.position }}°{% endif %}
+      {%- if ssr_scores_map is defined and ssr_scores_map and ssr_scores_map.get(riga.user_id) is not none %} · SSR{% endif %}
     </div>
   </div>
   {% endfor %}
