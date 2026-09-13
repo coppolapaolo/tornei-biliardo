@@ -23,6 +23,7 @@ from models.status_enum import MatchStatus
 
 from .activity_feedback import ActivityFeedbackService, has_any_activity
 from .campionato_cards import build_campionato_cards, enrich_with_classifica
+from .playoff_cards import build_playoff_cards, unisci_schede_playoff
 from .gara_cards import (
     build_gara_cards,
     enrich_with_comandi,
@@ -279,6 +280,10 @@ class DashboardService:
         enrich_with_progress(gare.mie + gare.in_diretta, user_id)
         enrich_with_comandi(gare.mie)
         enrich_with_piazzamento(gare.concluse, user_id)
+        # Il playoff dopo l'invito — iscritto, in lista, iscrizioni chiuse —
+        # entra negli stessi elenchi: dopo gli arricchimenti, che lavorano
+        # sulle tessere delle gare.
+        unisci_schede_playoff(gare, build_playoff_cards(user_id))
         campionati_tessere = build_campionato_cards(unified_items, all_my_inscriptions)
         enrich_with_classifica(
             campionati_tessere.attivi + campionati_tessere.conclusi, user_id
@@ -444,6 +449,10 @@ class DashboardService:
         enrich_with_progress(gare.mie + gare.in_diretta, user_id)
         enrich_with_comandi(gare.mie)
         enrich_with_piazzamento(gare.concluse, user_id)
+        # Il playoff dopo l'invito — iscritto, in lista, iscrizioni chiuse —
+        # entra negli stessi elenchi: dopo gli arricchimenti, che lavorano
+        # sulle tessere delle gare.
+        unisci_schede_playoff(gare, build_playoff_cards(user_id))
         campionati_tessere = build_campionato_cards(unified_items, all_my_inscriptions)
         enrich_with_classifica(
             campionati_tessere.attivi + campionati_tessere.conclusi, user_id

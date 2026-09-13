@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 21:36+0200\n"
+"POT-Creation-Date: 2026-09-13 22:08+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -196,7 +196,7 @@ msgstr ""
 #: models/competition/showcase_view.py:292
 #: models/competition/showcase_view.py:461
 #: templates/components/_nearby_gare.html:40
-#: templates/components/_separated_dashboard_content.html:87
+#: templates/components/_separated_dashboard_content.html:90
 #: templates/components/_tessera_gara.html:45
 #: templates/components/_unified_cards.html:71
 #: templates/direttore/_fase_iscrizioni.html:44
@@ -452,6 +452,7 @@ msgstr ""
 
 #: models/competition/showcase_view.py:298 routes/main.py:491
 #: templates/components/_tessera_gara.html:43
+#: templates/components/_tessera_playoff.html:52
 msgid "Iscrizioni chiuse"
 msgstr ""
 
@@ -484,6 +485,7 @@ msgstr ""
 #: templates/components/_gara_info.html:48
 #: templates/components/_player_dashboard_content.html:43
 #: templates/components/_tessera_gara.html:258
+#: templates/components/_tessera_playoff.html:69
 msgid "Quota"
 msgstr ""
 
@@ -1061,19 +1063,19 @@ msgid_plural "%(num)s da riempire"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/dashboard/dashboard_service.py:122
+#: models/dashboard/dashboard_service.py:123
 msgid "Dashboard Amministratore"
 msgstr ""
 
-#: models/dashboard/dashboard_service.py:298
+#: models/dashboard/dashboard_service.py:303
 msgid "Dashboard Direttore"
 msgstr ""
 
-#: models/dashboard/dashboard_service.py:462
+#: models/dashboard/dashboard_service.py:471
 msgid "Dashboard Giocatore"
 msgstr ""
 
-#: models/dashboard/dashboard_service.py:546
+#: models/dashboard/dashboard_service.py:555
 msgid "Vista Pubblica"
 msgstr ""
 
@@ -2082,7 +2084,7 @@ msgid "I triangoli non possono essere negativi"
 msgstr ""
 
 #: models/match/correction_service.py:398
-#: templates/direttore/_scripts.html:1669
+#: templates/direttore/_scripts.html:1673
 #, python-format
 msgid "La partita è decisa al set %(num)s: i set dopo non si giocano"
 msgstr ""
@@ -2100,20 +2102,20 @@ msgid ""
 msgstr ""
 
 #: models/match/correction_service.py:435
-#: templates/direttore/_scripts.html:1682
+#: templates/direttore/_scripts.html:1686
 #, python-format
 msgid "Nessuno arriva a %(n)s set: la partita non è finita"
 msgstr ""
 
 #: models/match/correction_service.py:441
-#: templates/direttore/_scripts.html:1566
-#: templates/direttore/_scripts.html:1685
+#: templates/direttore/_scripts.html:1570
+#: templates/direttore/_scripts.html:1689
 #, python-format
 msgid "Si giocano esattamente %(n)s set"
 msgstr ""
 
 #: models/match/correction_service.py:462
-#: templates/direttore/_scripts.html:1548
+#: templates/direttore/_scripts.html:1552
 #, python-format
 msgid ""
 "Nel trio si giocano %(n)s triangoli: la somma dei tre punteggi deve fare "
@@ -4802,6 +4804,8 @@ msgstr ""
 #: templates/components/_playoff_invitations.html:58
 #: templates/components/_tessera_gara.html:361
 #: templates/components/_tessera_gara.html:366
+#: templates/components/_tessera_playoff.html:113
+#: templates/components/_tessera_playoff.html:115
 #: templates/components/_unified_cards.html:108
 #: templates/components/_unified_cards.html:120
 #: templates/gamification/dashboard.html:51 templates/gara_detail.html:18
@@ -5054,7 +5058,7 @@ msgid ""
 "risultati verranno cancellati."
 msgstr ""
 
-#: templates/direttore/_scripts.html:51 templates/direttore/_scripts.html:1084
+#: templates/direttore/_scripts.html:51 templates/direttore/_scripts.html:1088
 #: templates/match_detail.html:660
 msgid ""
 "Confermi di voler validare questo risultato? Il tavolo verrà liberato e "
@@ -5834,6 +5838,7 @@ msgstr ""
 #: templates/components/_history_campionati_tab.html:91
 #: templates/components/_history_campionati_tab.html:92
 #: templates/components/_playoff_invitations.html:10
+#: templates/components/_tessera_playoff.html:27
 #: templates/components/_unified_cards.html:51 templates/direttore/gara.html:51
 msgid "Playoff"
 msgstr ""
@@ -10625,6 +10630,7 @@ msgstr ""
 #: templates/components/_gara_header.html:57
 #: templates/components/_tessera_campionato.html:60
 #: templates/components/_tessera_gara.html:125
+#: templates/components/_tessera_playoff.html:49
 msgid "Di prova"
 msgstr ""
 
@@ -10668,6 +10674,7 @@ msgstr ""
 
 #: templates/components/_gara_info.html:50
 #: templates/components/_tessera_gara.html:260
+#: templates/components/_tessera_playoff.html:71
 #: templates/components/_unified_cards.html:57
 msgid "Gratuita"
 msgstr ""
@@ -10833,6 +10840,7 @@ msgstr ""
 
 #: templates/components/_gara_lista_attesa.html:17
 #: templates/components/_tessera_gara.html:117
+#: templates/components/_tessera_playoff.html:44
 #: templates/components/_unified_cards.html:139 utils/jinja.py:437
 msgid "Lista d'attesa"
 msgstr ""
@@ -11036,7 +11044,7 @@ msgstr ""
 
 #: templates/components/_history_campionati_tab.html:12
 #: templates/components/_player_statistics.html:28
-#: templates/components/_separated_dashboard_content.html:140
+#: templates/components/_separated_dashboard_content.html:144
 #: templates/components/_storico_seg.html:5 templates/player/history.html:28
 #: templates/public/campionatos_list.html:2
 #: templates/public/campionatos_list.html:7
@@ -11413,14 +11421,14 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:15
 #: templates/direttore/_modali_gioco.html:15
 #: templates/direttore/_modali_gioco.html:179
-#: templates/direttore/_scripts.html:1626
+#: templates/direttore/_scripts.html:1630
 msgid "Un triangolo in meno"
 msgstr ""
 
 #: templates/components/_match_admin_controls.html:21
 #: templates/direttore/_modali_gioco.html:20
 #: templates/direttore/_modali_gioco.html:181
-#: templates/direttore/_scripts.html:1625
+#: templates/direttore/_scripts.html:1629
 msgid "Un triangolo in più"
 msgstr ""
 
@@ -11503,7 +11511,7 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:176
 #: templates/direttore/_card_partita.html:208
 #: templates/direttore/_card_partita.html:277
-#: templates/direttore/_scripts.html:1587
+#: templates/direttore/_scripts.html:1591
 #, python-format
 msgid "Set %(num)s"
 msgstr ""
@@ -11823,7 +11831,7 @@ msgid "Azzera il risultato"
 msgstr ""
 
 #: templates/components/_match_result_row.html:200
-#: templates/direttore/_scripts.html:1274
+#: templates/direttore/_scripts.html:1278
 msgid "Assegna un tavolo"
 msgstr ""
 
@@ -12301,6 +12309,7 @@ msgstr ""
 #: templates/components/_player_inscription_info.html:10
 #: templates/components/_tessera_campionato.html:57
 #: templates/components/_tessera_gara.html:119
+#: templates/components/_tessera_playoff.html:46
 #: templates/public/campionatos_list.html:58
 msgid "Iscritto"
 msgstr ""
@@ -12645,81 +12654,81 @@ msgstr ""
 msgid "Non iniziato"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:57
+#: templates/components/_separated_dashboard_content.html:58
 msgid "Le tue gare"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:77
+#: templates/components/_separated_dashboard_content.html:80
 msgid "In diretta ora"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:87
+#: templates/components/_separated_dashboard_content.html:90
 msgid "Aperte, puoi iscriverti"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:97
+#: templates/components/_separated_dashboard_content.html:100
 #: templates/gamification/admin/quests.html:46
 #: templates/gamification/quests.html:91
 msgid "In arrivo"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:110
+#: templates/components/_separated_dashboard_content.html:114
 #: templates/public/garas_list.html:64
 msgid "Nessuna gara in programma"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:110
+#: templates/components/_separated_dashboard_content.html:114
 msgid "Nessuna gara per te, per ora"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:111
+#: templates/components/_separated_dashboard_content.html:115
 msgid "Quando un direttore apre le iscrizioni a una gara la trovi qui."
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:113
+#: templates/components/_separated_dashboard_content.html:117
 msgid "Guarda tutte le gare"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:122
+#: templates/components/_separated_dashboard_content.html:126
 msgid "Concluse"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:122
-#: templates/components/_separated_dashboard_content.html:158
+#: templates/components/_separated_dashboard_content.html:126
+#: templates/components/_separated_dashboard_content.html:162
 #: templates/components/_storico_seg.html:3 templates/player/history.html:4
 #: templates/player/history.html:9 templates/player/profile.html:15
 #: templates/public/storico_gare.html:2 templates/public/storico_gare.html:13
 msgid "Storico"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:129
+#: templates/components/_separated_dashboard_content.html:133
 #, python-format
 msgid "L'ultima e quelle dell'ultimo mese: un'altra è nello storico."
 msgid_plural "L'ultima e quelle dell'ultimo mese: le altre %(num)s sono nello storico."
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/components/_separated_dashboard_content.html:141
+#: templates/components/_separated_dashboard_content.html:145
 #, python-format
 msgid "%(count)s attivo"
 msgid_plural "%(count)s attivi"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/components/_separated_dashboard_content.html:149
+#: templates/components/_separated_dashboard_content.html:153
 #: templates/public/campionatos_list.html:78
 msgid "Nessun campionato"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:150
+#: templates/components/_separated_dashboard_content.html:154
 msgid "Non ci sono campionati in corso al momento."
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:157
+#: templates/components/_separated_dashboard_content.html:161
 msgid "Campionati conclusi"
 msgstr ""
 
-#: templates/components/_separated_dashboard_content.html:165
+#: templates/components/_separated_dashboard_content.html:169
 #, python-format
 msgid "L'ultimo e quelli dell'ultimo mese: un altro è nello storico."
 msgid_plural "L'ultimo e quelli dell'ultimo mese: gli altri %(num)s sono nello storico."
@@ -13339,6 +13348,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: templates/components/_tessera_gara.html:268
+#: templates/components/_tessera_playoff.html:77
 #, python-format
 msgid "%(num)s libero"
 msgid_plural "%(num)s liberi"
@@ -13362,10 +13372,12 @@ msgid ""
 msgstr ""
 
 #: templates/components/_tessera_gara.html:293
+#: templates/components/_tessera_playoff.html:87
 msgid "La gara è al completo"
 msgstr ""
 
 #: templates/components/_tessera_gara.html:295
+#: templates/components/_tessera_playoff.html:89
 msgid ""
 "Se qualcuno si ritira entri tu, in ordine di posizione: succede da solo, "
 "non devi rifare l'iscrizione."
@@ -13425,6 +13437,41 @@ msgstr ""
 
 #: templates/components/_tessera_gara.html:377
 msgid "Serve un account gratuito: ci vogliono trenta secondi"
+msgstr ""
+
+#: templates/components/_tessera_playoff.html:54
+msgid "Inviti in corso"
+msgstr ""
+
+#: templates/components/_tessera_playoff.html:92
+msgid "Sei fuori dalla zona playoff"
+msgstr ""
+
+#: templates/components/_tessera_playoff.html:94
+msgid ""
+"Se un qualificato rifiuta, l'invito passa al primo degli esclusi, e così "
+"via. Quando tocca a te ricevi l'invito da accettare."
+msgstr ""
+
+#: templates/components/_tessera_playoff.html:100
+msgid "Hai rifiutato l'invito."
+msgstr ""
+
+#: templates/components/_tessera_playoff.html:101
+msgid "L'invito è scaduto senza risposta."
+msgstr ""
+
+#: templates/components/_tessera_playoff.html:102
+msgid "Il tuo posto è passato a un altro giocatore."
+msgstr ""
+
+#: templates/components/_tessera_playoff.html:103
+#, python-format
+msgid "Per essere chiamati servono almeno %(n)s gare del campionato."
+msgstr ""
+
+#: templates/components/_tessera_playoff.html:104
+msgid "Non rientri fra i giocatori che questo playoff può chiamare."
 msgstr ""
 
 #: templates/components/_trio_rack_input.html:23
@@ -14136,7 +14183,7 @@ msgid "Correggi"
 msgstr ""
 
 #: templates/direttore/_card_partita.html:220
-#: templates/direttore/_scripts.html:1273
+#: templates/direttore/_scripts.html:1277
 msgid "Cambia tavolo"
 msgstr ""
 
@@ -15480,11 +15527,11 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/direttore/_scripts.html:49 templates/direttore/_scripts.html:1032
+#: templates/direttore/_scripts.html:49 templates/direttore/_scripts.html:1036
 msgid "Sei sicuro di voler resettare questa partita?"
 msgstr ""
 
-#: templates/direttore/_scripts.html:50 templates/direttore/_scripts.html:1056
+#: templates/direttore/_scripts.html:50 templates/direttore/_scripts.html:1060
 msgid "Sei sicuro di voler resettare questo trio?"
 msgstr ""
 
@@ -15570,120 +15617,120 @@ msgstr ""
 msgid "Tocca per scambiare con la partita che occupa il tavolo"
 msgstr ""
 
-#: templates/direttore/_scripts.html:717
+#: templates/direttore/_scripts.html:721
 msgid ""
 "Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di"
 " setup."
 msgstr ""
 
-#: templates/direttore/_scripts.html:877
+#: templates/direttore/_scripts.html:881
 msgid "I triangoli non possono essere negativi."
-msgstr ""
-
-#: templates/direttore/_scripts.html:879
-#, python-format
-msgid "Nessun giocatore può avere più di %(d)s triangoli."
 msgstr ""
 
 #: templates/direttore/_scripts.html:883
 #, python-format
+msgid "Nessun giocatore può avere più di %(d)s triangoli."
+msgstr ""
+
+#: templates/direttore/_scripts.html:887
+#, python-format
 msgid "Somma triangoli troppo alta: massimo %(d)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:885
+#: templates/direttore/_scripts.html:889
 #, python-format
 msgid "Risultato incompleto: uno dei due deve raggiungere %(d)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:890
+#: templates/direttore/_scripts.html:894
 #, python-format
 msgid "Somma triangoli troppo alta: il totale esatto è %(d)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:892
+#: templates/direttore/_scripts.html:896
 #, python-format
 msgid "Risultato incompleto: la somma deve essere esattamente %(d)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1169
+#: templates/direttore/_scripts.html:1173
 msgid "tavolo attuale"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1178
+#: templates/direttore/_scripts.html:1182
 msgid "libero · tocca per assegnare"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1307
+#: templates/direttore/_scripts.html:1311
 #, python-format
 msgid "Ritiro di %(nome)s…"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1326
+#: templates/direttore/_scripts.html:1330
 msgid ""
 "Torna da giocare e il tavolo si libera. Si può finché il turno dopo non è"
 " avviato."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1342
+#: templates/direttore/_scripts.html:1346
 msgid "Il turno torna a valere zero e l'esercizio torna da registrare."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1363
+#: templates/direttore/_scripts.html:1367
 #, python-format
 msgid "Ritiro di %(nome)s"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1366
+#: templates/direttore/_scripts.html:1370
 #, python-format
 msgid "%(nome)s vince a tavolino"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1526
-#: templates/direttore/_scripts.html:1689
+#: templates/direttore/_scripts.html:1530
+#: templates/direttore/_scripts.html:1693
 msgid "Pareggio: nessun vincitore."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1527
-#: templates/direttore/_scripts.html:1547
+#: templates/direttore/_scripts.html:1531
+#: templates/direttore/_scripts.html:1551
 #, python-format
 msgid "Vince %(nome)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1529
+#: templates/direttore/_scripts.html:1533
 #, python-format
 msgid "Uno dei due deve arrivare a %(n)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1530
+#: templates/direttore/_scripts.html:1534
 #, python-format
 msgid "La somma deve essere esattamente %(n)s."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1546
+#: templates/direttore/_scripts.html:1550
 msgid "Pari in testa: nessuno vince la partita."
-msgstr ""
-
-#: templates/direttore/_scripts.html:1565
-#, python-format
-msgid "Si vince a %(n)s set"
-msgstr ""
-
-#: templates/direttore/_scripts.html:1568
-#, python-format
-msgid "ogni set al %(n)s"
 msgstr ""
 
 #: templates/direttore/_scripts.html:1569
 #, python-format
+msgid "Si vince a %(n)s set"
+msgstr ""
+
+#: templates/direttore/_scripts.html:1572
+#, python-format
+msgid "ogni set al %(n)s"
+msgstr ""
+
+#: templates/direttore/_scripts.html:1573
+#, python-format
 msgid "ogni set di esattamente %(n)s triangoli"
 msgstr ""
 
-#: templates/direttore/_scripts.html:1676
+#: templates/direttore/_scripts.html:1680
 #, python-format
 msgid "Il set %(num)s non è ancora finito."
 msgstr ""
 
-#: templates/direttore/_scripts.html:1690
+#: templates/direttore/_scripts.html:1694
 #, python-format
 msgid "Vince %(nome)s, %(a)s set a %(b)s."
 msgstr ""

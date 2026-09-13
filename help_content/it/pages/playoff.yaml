@@ -64,8 +64,9 @@ blocks:
     text: >-
       Lo stesso invito compare anche in cima alla tua **pagina iniziale**, in
       una scheda «Sei qualificato», con gli stessi due pulsanti. Non devi
-      cercarlo fra le notifiche: finché non rispondi resta lì, e sparisce
-      appena hai risposto.
+      cercarlo fra le notifiche: finché non rispondi resta lì. Quando hai
+      risposto l'invito sparisce, ma il playoff no: lo ritrovi fra le gare
+      della home, come spiegato più sotto in «Il playoff nella tua home».
 
   - type: shot
     shot: notifiche
@@ -113,6 +114,52 @@ blocks:
       subito è un favore a chi organizza.
 
   - type: heading
+    id: nella_home
+    title: "Il playoff nella tua home"
+
+  - type: text
+    text: >-
+      Da quando partono gli inviti fino al primo turno della gara di playoff,
+      nella tua home c'è una scheda del playoff. La vede chi ha ricevuto un
+      invito e anche chi ha giocato il campionato senza qualificarsi. Dove la
+      trovi, e cosa c'è scritto, dipende da dove sei tu:
+
+  - type: options
+    items:
+      - name: "Hai accettato"
+        values: "Le tue gare · Iscritto"
+        text: >-
+          La trovi sotto **«Le tue gare»**, come ogni gara a cui sei iscritto.
+          La barra conta quanti hanno già accettato sui posti del playoff. Se
+          hai accettato quando i posti erano già pieni leggi invece **«Lista
+          d'attesa»** con il tuo numero: se qualcuno si ritira entri tu, da
+          solo.
+      - name: "Sei fuori dalla zona playoff"
+        values: "Le tue gare · Lista d'attesa #N"
+        text: >-
+          Non hai un invito, ma puoi ancora riceverlo. Il numero è il tuo posto
+          in coda fra gli esclusi: se un qualificato rifiuta, l'invito passa al
+          primo di loro, e così via. Quando tocca a te ricevi l'invito da
+          accettare, in cima alla home.
+      - name: "Hai rifiutato, o non puoi entrare"
+        values: "In arrivo · Iscrizioni chiuse"
+        text: >-
+          La scheda sta fra le gare **«In arrivo»**, e sotto dice perché: hai
+          rifiutato l'invito, l'invito è scaduto senza risposta, il tuo posto è
+          passato a un altro giocatore, oppure non hai giocato abbastanza gare
+          del campionato per essere chiamato.
+
+  - type: text
+    text: >-
+      Accanto al nome, la scheda dice anche a che punto sono gli inviti:
+      **Inviti in corso** finché qualcuno deve ancora rispondere, poi
+      **Iscrizioni chiuse**. **Dettagli** apre la gara di playoff, se il
+      direttore l'ha già creata; altrimenti la pagina del campionato, con la
+      zona playoff in classifica. Quando comincia il primo turno la scheda
+      lascia il posto a quella normale della gara, con partite, classifica e
+      diretta.
+
+  - type: heading
     id: come_si_gioca
     title: "Come si gioca un playoff"
 
@@ -156,7 +203,9 @@ blocks:
   - type: faq
     items:
       - q: "Come faccio a sapere se mi sono qualificato?"
-        a: "Ricevi una notifica, e trovi la scheda «Sei qualificato» sulla tua pagina iniziale. Se non c'è nessuna delle due, non ti sei qualificato oppure il campionato non prevede playoff."
+        a: "Ricevi una notifica, e trovi la scheda «Sei qualificato» sulla tua pagina iniziale. Se invece il playoff compare sotto «Le tue gare» con «Lista d'attesa», non ti sei qualificato ma puoi ancora entrare se qualcuno rinuncia. Se non c'è niente, gli inviti non sono ancora partiti oppure il campionato non prevede playoff."
+      - q: "Ho accettato: dove ritrovo il playoff?"
+        a: "Nella tua home, sotto «Le tue gare», con scritto «Iscritto». Dal primo turno è la scheda normale della gara, con la tua partita dentro."
       - q: "Vincere il playoff vuol dire vincere il campionato?"
         a: "Dipende da come è impostato. Con «Solo i playoff» sì; con «Campionato + gara di playoff» il punteggio si somma a quello della stagione, e può non bastare. Chiedi al direttore di gara come ha impostato il suo."
       - q: "Posso partecipare a entrambi i playoff?"

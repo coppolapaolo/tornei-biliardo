@@ -64,8 +64,10 @@ blocks:
     text: >-
       The same invitation also appears at the top of your **home page**, in a
       "You have qualified" card with the same two buttons. You do not have to
-      dig through your notifications: it stays there until you answer, and
-      disappears as soon as you do.
+      dig through your notifications: it stays there until you answer. Once
+      you have answered the invitation disappears, but the play-off does not:
+      you find it among the competitions on your home, as explained below in
+      «The play-off on your home».
 
   - type: shot
     shot: notifiche
@@ -114,6 +116,53 @@ blocks:
       it, saying so straight away is a favour to whoever organises.
 
   - type: heading
+    id: nella_home
+    title: "The play-off on your home"
+
+  - type: text
+    text: >-
+      From the moment the invitations go out until the first round of the
+      play-off competition, your home shows a play-off card. It is shown to
+      whoever received an invitation, and also to anyone who played the
+      championship without qualifying. Where you find it, and what it says,
+      depends on where you stand:
+
+  - type: options
+    items:
+      - name: "You accepted"
+        values: "Your competitions · Registered"
+        text: >-
+          You find it under **«Your competitions»**, like any competition you
+          are registered for. The bar counts how many have already accepted
+          out of the play-off places. If you accepted when the places were
+          already full you read **«Waitlist»** with your number instead: if
+          someone withdraws you get in, automatically.
+      - name: "You are outside the play-off zone"
+        values: "Your competitions · Waitlist #N"
+        text: >-
+          You have no invitation, but you can still get one. The number is
+          your place in the queue of those left out: if a qualifier declines,
+          the invitation passes to the first of them, and so on. When your turn
+          comes you receive the invitation to accept, at the top of your home.
+      - name: "You declined, or cannot get in"
+        values: "Upcoming · Registration closed"
+        text: >-
+          The card sits among the **«Upcoming»** competitions, and underneath
+          it says why: you declined the invitation, the invitation expired
+          without a reply, your place went to another player, or you have not
+          played enough competitions of the championship to be called.
+
+  - type: text
+    text: >-
+      Next to the name, the card also shows where the invitations stand:
+      **Invitations open** while someone still has to answer, then
+      **Registration closed**. **Details** opens the play-off competition, if
+      the director has already created it; otherwise the championship page,
+      with the play-off zone in the standings. When the first round starts,
+      the card gives way to the competition's normal card, with matches,
+      standings and live scores.
+
+  - type: heading
     id: come_si_gioca
     title: "How a play-off is played"
 
@@ -157,7 +206,9 @@ blocks:
   - type: faq
     items:
       - q: "How do I know whether I qualified?"
-        a: "You get a notification, and a \"You have qualified\" card on your home page. If neither is there, you did not qualify or the championship has no play-offs."
+        a: "You get a notification, and a \"You have qualified\" card on your home page. If instead the play-off shows up under \"Your competitions\" with \"Waitlist\", you did not qualify but can still get in if someone drops out. If there is nothing at all, the invitations have not gone out yet or the championship has no play-offs."
+      - q: "I accepted: where do I find the play-off?"
+        a: "On your home, under \"Your competitions\", marked \"Registered\". From the first round it is the competition's normal card, with your match inside."
       - q: "Does winning the play-off mean winning the championship?"
         a: "It depends on the setup. With \"Play-offs only\" yes; with \"Championship + play-off event\" the score is added to the season's, and it may not be enough. Ask the competition director how theirs is set up."
       - q: "Can I play in both play-offs?"
