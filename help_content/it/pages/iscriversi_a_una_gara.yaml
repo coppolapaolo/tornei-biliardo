@@ -66,6 +66,16 @@ blocks:
           squadre](/aiuto/organizzare/squadre).
 
   - type: note
+    tone: info
+    title: "Se la gara la dirigi tu"
+    text: >-
+      Puoi giocarla lo stesso. Nella tua home, sotto **«Le tue gare»**, la
+      scheda della gara che dirigi ha in alto **Gestisci** e il comando che la
+      gara aspetta, e sotto, finché le iscrizioni sono aperte, **Iscriviti**
+      oppure **Disiscriviti**. Fa eccezione il playoff: lì si entra solo
+      accettando l'invito.
+
+  - type: note
     tone: tip
     title: "Il collegamento di invito"
     text: >-

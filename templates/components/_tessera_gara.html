@@ -59,11 +59,28 @@
   </div>
 {% endmacro %}
 
+{# Il pulsante da giocatore: «Iscriviti», «Mettiti in lista» a gara piena,
+   oppure «Disiscriviti» / «Esci dalla lista» per chi c'è già. Uno solo, mai
+   i due insieme. #}
+{% macro _azione_giocatore(card, gara) %}
+  {% if card.is_inscribed %}
+  <a href="#" onclick='unsubscribeFromGara({{ card.id|tojson }}); return false;' class="btn btn-danger">
+    {% if card.is_waitlist %}{{ _('Esci dalla lista') }}{% else %}{{ _('Disiscriviti') }}{% endif %}
+  </a>
+  {% else %}
+  <a href="#" onclick='inscribeToGara({{ card.id|tojson }}); return false;' class="btn {{ 'btn-warning' if gara.is_full() else 'btn-success' }}">
+    {{ _('Mettiti in lista') if gara.is_full() else _('Iscriviti') }}
+  </a>
+  {% endif %}
+{% endmacro %}
+
 {% macro tessera_gara(card) %}
 {% set gara = card.gara %}
 {% set partita = card.prossima_partita %}
 {% set aperta = card.real_status == GaraStatus.INSCRIPTION.value %}
-{% set puo_iscriversi = current_user.is_authenticated and not current_user.is_admin and not gara.is_prova %}
+{# Al playoff si entra accettando l'invito: l'iscrizione diretta il servizio
+   la rifiuta, e disiscriversi lascerebbe l'invito confermato. #}
+{% set puo_iscriversi = current_user.is_authenticated and not current_user.is_admin and not gara.is_prova and not gara.is_playoff %}
 {% set ospite = not current_user.is_authenticated %}
 <article class="c7-card d-flex flex-column gap-3{{ ' c7-card--accent' if card.is_in_corso }}">
 
@@ -325,18 +342,6 @@
         {% elif card.comando.tipo == ComandoDirezione.TERMINA_GARA.value %}{{ _('Termina la gara') }}
         {% endif %}
       </a>
-      {% elif aperta and puo_iscriversi %}
-        {# Il fatto da giocatore si somma: il direttore può iscriversi alla
-           propria gara, e da qui come chiunque altro. #}
-        {% if card.is_inscribed %}
-        <a href="#" onclick='unsubscribeFromGara({{ card.id|tojson }}); return false;' class="btn btn-danger">
-          {% if card.is_waitlist %}{{ _('Esci dalla lista') }}{% else %}{{ _('Disiscriviti') }}{% endif %}
-        </a>
-        {% else %}
-        <a href="#" onclick='inscribeToGara({{ card.id|tojson }}); return false;' class="btn {{ 'btn-warning' if gara.is_full() else 'btn-success' }}">
-          {{ _('Mettiti in lista') if gara.is_full() else _('Iscriviti') }}
-        </a>
-        {% endif %}
       {% endif %}
 
     {% elif card.is_in_corso %}
@@ -355,22 +360,19 @@
       {% if card.can_view_details %}
       <a href="{{ dettaglio }}" class="btn btn-secondary">{{ _('Dettagli') }}</a>
       {% endif %}
-      {% if puo_iscriversi %}
-        {% if card.is_inscribed %}
-        <a href="#" onclick='unsubscribeFromGara({{ card.id|tojson }}); return false;' class="btn btn-danger">
-          {% if card.is_waitlist %}{{ _('Esci dalla lista') }}{% else %}{{ _('Disiscriviti') }}{% endif %}
-        </a>
-        {% else %}
-        <a href="#" onclick='inscribeToGara({{ card.id|tojson }}); return false;' class="btn {{ 'btn-warning' if gara.is_full() else 'btn-success' }}">
-          {{ _('Mettiti in lista') if gara.is_full() else _('Iscriviti') }}
-        </a>
-        {% endif %}
-      {% endif %}
+      {% if puo_iscriversi %}{{ _azione_giocatore(card, gara) }}{% endif %}
 
     {% elif card.can_view_details %}
       <a href="{{ dettaglio }}" class="btn btn-secondary">{{ _('Dettagli') }}</a>
     {% endif %}
   </div>
+  {# Il direttore è anche un giocatore. A iscrizioni aperte il comando c'è
+     sempre, «Avvia la gara», e resta in prima riga con «Gestisci»: il
+     pulsante da giocatore va in una riga sua, sotto, a tutta larghezza, così
+     non gli ruba il posto e non si stringono tre pulsanti sul telefono. #}
+  {% if card.can_manage and not card.is_conclusa and aperta and puo_iscriversi %}
+  <div class="c7-tessera__actions">{{ _azione_giocatore(card, gara) }}</div>
+  {% endif %}
   {% if aperta and ospite %}
   <div class="c7-tessera__meta text-center" style="margin-top:-6px">{{ _('Serve un account gratuito: ci vogliono trenta secondi') }}</div>
   {% endif %}
