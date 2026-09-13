@@ -478,6 +478,12 @@ shots:
     clip: ".c7-dal-campionato"
     caption: "Il gruppo «Dal campionato» di una gara in preparazione: il peso nella classifica, chi spacca ereditato dal campionato, le date ammesse fra le gare vicine e la riga alla pagina del campionato."
 
+  - id: gara-esercizio-turno
+    route: /admin/gara/2
+    as: Luca Bianchi
+    clip: "section.c7-esercizio"
+    caption: "L'esercizio dopo il turno 1 nella pagina del direttore: una riga per giocatore con i tentativi fatti e il migliore, «da fare» per chi non ha ancora tirato."
+
   - id: prova-simulazione
     route: /admin/gara/7
     as: Luca Bianchi

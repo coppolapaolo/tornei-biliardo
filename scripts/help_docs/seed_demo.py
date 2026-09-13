@@ -145,6 +145,9 @@ def _create_campionato(db, director, venue):
         default_entry_fee=10.0,
         default_rounds_count=3,
         default_classification_system="WINS",
+        # Con gli esercizi accesi l'esercizio agganciato alla gara in corso
+        # compare davvero fra i turni: spento, la guida non aveva la schermata.
+        challenge_mode=True,
     )
     db.session.commit()
     log(f"campionato: {campionato.name}")

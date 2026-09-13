@@ -144,6 +144,7 @@ blocks:
           **Non riuscito**. Finiti i tentativi, la riga non si tocca più, e un
           tentativo registrato non si toglie. Il turno dopo si avvia anche se
           qualcuno deve ancora tirare.
+        shot: gara-esercizio-turno
       - name: "Cambiare il tavolo a una partita"
         text: >-
           Tocca il tavolo sulla card: si apre il foglio con le tessere dei
