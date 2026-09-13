@@ -1,5 +1,26 @@
 # Changelog
 
+## [1.26.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.25.1...v1.26.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* il ritiro vale uguale su ogni strada, e il direttore ritira chi se ne va ([#386](https://github.com/coppolapaolo/tornei-biliardo/issues/386)) ([8d73f76](https://github.com/coppolapaolo/tornei-biliardo/commit/8d73f764fe662cf2f7cf33cbd403afea51dadc31))
+* il trio segue la specifica, trio e partita a set si correggono dal foglio ([#388](https://github.com/coppolapaolo/tornei-biliardo/issues/388)) ([3676bfa](https://github.com/coppolapaolo/tornei-biliardo/commit/3676bfae96101779a7382ab2f78a2a2d8d0fcea7))
+* il turno dopo aspetta la prova della X e gli esercizi, e un tentativo si toglie ([#387](https://github.com/coppolapaolo/tornei-biliardo/issues/387)) ([c3c9197](https://github.com/coppolapaolo/tornei-biliardo/commit/c3c91978b33f700efd347da915c680ea75325253))
+
+
+### Correzioni
+
+* il direttore si iscrive e si disiscrive dalla tessera delle sue gare ([#395](https://github.com/coppolapaolo/tornei-biliardo/issues/395)) ([fb855d2](https://github.com/coppolapaolo/tornei-biliardo/commit/fb855d23108572daf2f34539b7f43718c6e11c64))
+* il playoff si gioca con chi ha accettato, anche se sono meno dei posti ([#390](https://github.com/coppolapaolo/tornei-biliardo/issues/390)) ([d1466f8](https://github.com/coppolapaolo/tornei-biliardo/commit/d1466f8e82ee07dd2e241ffbaa8a09812d5bd677))
+* il tavolo passa alla partita in attesa anche quando chiude la doppia firma ([#396](https://github.com/coppolapaolo/tornei-biliardo/issues/396)) ([a73538e](https://github.com/coppolapaolo/tornei-biliardo/commit/a73538e737157542621f592cb091fd7599dee12e))
+* la card segna i triangoli anche con la distanza esattamente N ([#389](https://github.com/coppolapaolo/tornei-biliardo/issues/389)) ([03a2263](https://github.com/coppolapaolo/tornei-biliardo/commit/03a22637134bf275adf576f3dffc6d278a2bff4b))
+* la lista dei parimerito mostra la pastiglia e non il suo HTML ([#393](https://github.com/coppolapaolo/tornei-biliardo/issues/393)) ([f52e1a1](https://github.com/coppolapaolo/tornei-biliardo/commit/f52e1a135a7cee2bfb5d0bb9bf99ffd2583ccea1))
+* le notifiche arrivano nella lingua di chi le riceve ([#391](https://github.com/coppolapaolo/tornei-biliardo/issues/391)) ([3ae45e4](https://github.com/coppolapaolo/tornei-biliardo/commit/3ae45e40f4182fe755493e0fa4a88670bac9ff2c))
+* nella nuova gara di un campionato l'auto-copia iscritti nasce spenta ([#394](https://github.com/coppolapaolo/tornei-biliardo/issues/394)) ([e31e96f](https://github.com/coppolapaolo/tornei-biliardo/commit/e31e96fd3608519ecdf83d51cd23c8a7a268c121))
+* un salvataggio dentro un altro non salva più da solo ([#385](https://github.com/coppolapaolo/tornei-biliardo/issues/385)) ([045e931](https://github.com/coppolapaolo/tornei-biliardo/commit/045e931322c7f87c94b18ec1d72c657e479e36bb))
+
 ## [1.25.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.25.0...v1.25.1) (2026-09-13)
 
 
