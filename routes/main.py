@@ -208,12 +208,23 @@ def campionato_detail_public(campionato_id):
     if gare_concluse:
         last_completed_gara_number = max(g.number for g in gare_concluse)
 
+    # La stessa zona playoff della pagina del direttore: e' un fatto pubblico
+    # quanto la classifica (canvas 7.1).
+    from models.playoff.zona import zone_playoff
+
+    zone = (
+        zone_playoff(campionato)
+        if general_classification and campionato.has_playoff_configurations()
+        else []
+    )
+
     return render_template(
         "public/campionato_detail.html",
         campionato=campionato,
         gare=gare,
         general_classification=general_classification,
         last_completed_gara_number=last_completed_gara_number,
+        zone_playoff=zone,
     )
 
 

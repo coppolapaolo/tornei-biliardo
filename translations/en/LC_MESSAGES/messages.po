@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 08:38+0200\n"
+"POT-Creation-Date: 2026-09-13 08:51+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -342,19 +342,19 @@ msgid "%(campionato)s · gara %(n)s"
 msgstr "%(campionato)s · competition %(n)s"
 
 #: models/competition/showcase_view.py:288
-#: models/competition/showcase_view.py:455 routes/main.py:499
+#: models/competition/showcase_view.py:455 routes/main.py:510
 #: templates/direttore/_fase_conclusa.html:23
 #: templates/direttore/_fase_conclusa.html:67
 msgid "Gara conclusa"
 msgstr "Competition finished"
 
-#: models/competition/showcase_view.py:297 routes/main.py:469
+#: models/competition/showcase_view.py:297 routes/main.py:480
 #: templates/components/_unified_cards.html:79
 #: templates/direttore/_fase_iscrizioni.html:25
 msgid "Iscrizioni non ancora aperte"
 msgstr "Registrations not yet open"
 
-#: models/competition/showcase_view.py:298 routes/main.py:480
+#: models/competition/showcase_view.py:298 routes/main.py:491
 #: templates/components/_tessera_gara.html:43
 msgid "Iscrizioni chiuse"
 msgstr "Registration closed"
@@ -384,7 +384,7 @@ msgstr "%(n)s rounds"
 
 #: models/competition/showcase_view.py:375
 #: templates/admin/gara_create_standalone.html:458
-#: templates/components/_campionato_details_info.html:86
+#: templates/components/_campionato_details_info.html:87
 #: templates/components/_campionato_garas.html:21
 #: templates/components/_gara_info.html:47
 #: templates/components/_player_dashboard_content.html:43
@@ -486,6 +486,7 @@ msgid "invariato %(suffix)s"
 msgstr "unchanged %(suffix)s"
 
 #: models/dashboard/activity_feedback.py:616
+#: templates/components/_campionato_general_classification.html:77
 #: templates/direttore/_classifica.html:51
 msgid "stabile"
 msgstr "steady"
@@ -2180,7 +2181,7 @@ msgstr "All"
 #: templates/admin/accessi.html:141 templates/admin/campionato_detail.html:278
 #: templates/admin/users_list.html:106 templates/admin/users_list.html:177
 #: templates/admin/venue_manager_requests.html:48
-#: templates/components/_campionato_general_classification.html:24
+#: templates/components/_campionato_general_classification.html:43
 #: templates/components/_detailed_classification.html:19
 #: templates/components/_user_info_card.html:26
 #: templates/dashboard/base.html:19 templates/direttore/_classifica.html:39
@@ -2202,39 +2203,39 @@ msgstr "Competition Director"
 msgid "Amministratore"
 msgstr "Administrator"
 
-#: routes/main.py:289
+#: routes/main.py:300
 msgid "Senza data"
 msgstr "No date"
 
-#: routes/main.py:421
+#: routes/main.py:432
 #, python-format
 msgid "Iscrizioni dal %(start)s al %(end)s."
 msgstr "Registration open from %(start)s to %(end)s."
 
-#: routes/main.py:427
+#: routes/main.py:438
 #, python-format
 msgid "Iscrizioni aperte fino al %(end)s."
 msgstr "Registration open until %(end)s."
 
-#: routes/main.py:432
+#: routes/main.py:443
 #, python-format
 msgid "Iscrizioni aperte dal %(start)s."
 msgstr "Registration open from %(start)s."
 
-#: routes/main.py:438
+#: routes/main.py:449
 msgid "Sei già iscritto"
 msgstr "You're already registered"
 
-#: routes/main.py:439
+#: routes/main.py:450
 #, python-format
 msgid "Risulti iscritto a %(gara)s."
 msgstr "You are registered for %(gara)s."
 
-#: routes/main.py:445
+#: routes/main.py:456
 msgid "Sei in lista d'attesa"
 msgstr "You're on the waiting list"
 
-#: routes/main.py:447
+#: routes/main.py:458
 #, python-format
 msgid ""
 "Sei in lista d'attesa per %(gara)s, in posizione %(position)s. Se si "
@@ -2243,30 +2244,30 @@ msgstr ""
 "You're on the waiting list for %(gara)s, in position %(position)s. If a "
 "place frees up, you're moved in automatically."
 
-#: routes/main.py:457
+#: routes/main.py:468
 msgid "Puoi iscriverti"
 msgstr "You can register"
 
-#: routes/main.py:459
+#: routes/main.py:470
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono aperte: premi «Iscriviti» per confermare."
 msgstr "Registration for %(gara)s is open: press “Register” to confirm."
 
-#: routes/main.py:471
+#: routes/main.py:482
 #, python-format
 msgid "Le iscrizioni a %(gara)s non sono ancora aperte."
 msgstr "Registration for %(gara)s is not open yet."
 
-#: routes/main.py:481
+#: routes/main.py:492
 #, python-format
 msgid "Le iscrizioni a %(gara)s sono chiuse."
 msgstr "Registration for %(gara)s is closed."
 
-#: routes/main.py:488
+#: routes/main.py:499
 msgid "Gara già iniziata"
 msgstr "Competition already started"
 
-#: routes/main.py:490
+#: routes/main.py:501
 #, python-format
 msgid ""
 "%(gara)s è già iniziata: non è più possibile iscriversi, ma puoi seguire "
@@ -2275,25 +2276,25 @@ msgstr ""
 "%(gara)s has already started: you can no longer register, but you can "
 "follow the results from this page."
 
-#: routes/main.py:501
+#: routes/main.py:512
 #, python-format
 msgid "%(gara)s è conclusa: qui trovi la classifica finale."
 msgstr "%(gara)s is over: here are the final standings."
 
-#: routes/main.py:509 templates/direttore/_fase_conclusa.html:20
+#: routes/main.py:520 templates/direttore/_fase_conclusa.html:20
 msgid "Gara annullata"
 msgstr "Competition cancelled"
 
-#: routes/main.py:510
+#: routes/main.py:521
 #, python-format
 msgid "%(gara)s è stata annullata."
 msgstr "%(gara)s has been cancelled."
 
-#: routes/main.py:516
+#: routes/main.py:527
 msgid "Iscrizione non riuscita"
 msgstr "Registration failed"
 
-#: routes/main.py:518
+#: routes/main.py:529
 #, python-format
 msgid ""
 "Non è stato possibile iscriverti a %(gara)s. Riprova dal pulsante "
@@ -2395,91 +2396,91 @@ msgstr "Championship creation cancelled"
 msgid "Non hai i permessi per creare un campionato."
 msgstr "You do not have permission to create a championship."
 
-#: routes/admin/campionato.py:670
+#: routes/admin/campionato.py:681
 #, python-format
 msgid "Campionato \"%(name)s\" terminato con successo."
 msgstr "Championship \"%(name)s\" terminated successfully."
 
-#: routes/admin/campionato.py:676
+#: routes/admin/campionato.py:687
 msgid "Il campionato è già stato terminato."
 msgstr "The championship has already been terminated."
 
-#: routes/admin/campionato.py:694
+#: routes/admin/campionato.py:705
 msgid "Parametri non validi."
 msgstr "Invalid parameters."
 
-#: routes/admin/campionato.py:701
+#: routes/admin/campionato.py:712
 msgid "Requisito minimo gare aggiornato."
 msgstr "Minimum competition requirement updated."
 
-#: routes/admin/campionato.py:733
+#: routes/admin/campionato.py:744
 #, python-format
 msgid "Playoff avviati: %(count)s giocatori qualificati."
 msgstr "Playoffs started: %(count)s players qualified."
 
-#: routes/admin/campionato.py:760
+#: routes/admin/campionato.py:771
 msgid "Configurazione playoff non trovata."
 msgstr "Playoff configuration not found."
 
-#: routes/admin/campionato.py:774
+#: routes/admin/campionato.py:785
 #, python-format
 msgid "Gara playoff \"%(name)s\" creata con successo."
 msgstr "Playoff gara \"%(name)s\" created successfully."
 
-#: routes/admin/campionato.py:796
+#: routes/admin/campionato.py:807
 msgid "Seleziona un giocatore."
 msgstr "Select a player."
 
-#: routes/admin/campionato.py:803
+#: routes/admin/campionato.py:814
 msgid "Giocatore aggiunto ai playoff."
 msgstr "Player added to playoffs."
 
-#: routes/admin/campionato.py:823
+#: routes/admin/campionato.py:834
 msgid "Qualificazione non specificata."
 msgstr "Qualification not specified."
 
-#: routes/admin/campionato.py:830
+#: routes/admin/campionato.py:841
 msgid "Giocatore rimosso dai playoff."
 msgstr "Player removed from playoffs."
 
-#: routes/admin/campionato.py:852
+#: routes/admin/campionato.py:863
 msgid "Risposta non valida."
 msgstr "Invalid answer."
 
-#: routes/admin/campionato.py:870
+#: routes/admin/campionato.py:881
 msgid "Partecipazione confermata per conto del giocatore."
 msgstr "Participation confirmed on the player’s behalf."
 
-#: routes/admin/campionato.py:874 routes/admin/campionato.py:1232
+#: routes/admin/campionato.py:885 routes/admin/campionato.py:1243
 #, python-format
 msgid "Rifiuto registrato: l'invito passa a %(name)s."
 msgstr "Refusal recorded: the invitation passes to %(name)s."
 
-#: routes/admin/campionato.py:881 routes/admin/campionato.py:1239
+#: routes/admin/campionato.py:892 routes/admin/campionato.py:1250
 msgid "Rifiuto registrato. Nessun altro giocatore idoneo da invitare."
 msgstr "Refusal recorded. No other eligible player left to invite."
 
-#: routes/admin/campionato.py:905
+#: routes/admin/campionato.py:916
 msgid "Regole della classifica finale aggiornate."
 msgstr "Final standings rules updated."
 
-#: routes/admin/campionato.py:961
+#: routes/admin/campionato.py:972
 msgid "Configurazione playoff aggiornata."
 msgstr "Playoff configuration updated."
 
-#: routes/admin/campionato.py:983
+#: routes/admin/campionato.py:994
 msgid "Tutti i campi obbligatori devono essere compilati."
 msgstr "All required fields must be filled."
 
-#: routes/admin/campionato.py:1002
+#: routes/admin/campionato.py:1013
 msgid "Configurazione playoff aggiunta."
 msgstr "Playoff configuration added."
 
-#: routes/admin/campionato.py:1022
+#: routes/admin/campionato.py:1033
 msgid "Configurazione playoff disattivata."
 msgstr "Playoff configuration deactivated."
 
-#: routes/admin/campionato.py:1122
+#: routes/admin/campionato.py:1133
 msgid ""
 "Una competizione di prova non ha vetrina né link pubblico: in un "
 "campionato vero qui trovi il link da condividere."
@@ -2487,46 +2488,46 @@ msgstr ""
 "A trial competition has no showcase or public link: in a real "
 "championship this is where you find the link to share."
 
-#: routes/admin/campionato.py:1187 routes/admin/competition/prova.py:134
+#: routes/admin/campionato.py:1198 routes/admin/competition/prova.py:134
 #, python-format
 msgid "Prova «%(nome)s» eliminata."
 msgstr "Trial \"%(nome)s\" deleted."
 
-#: routes/admin/campionato.py:1228
+#: routes/admin/campionato.py:1239
 msgid "Invito accettato."
 msgstr "Invitation accepted."
 
-#: routes/admin/campionato.py:1264
+#: routes/admin/campionato.py:1275
 msgid "Nessun invito in attesa."
 msgstr "No pending invitation."
 
-#: routes/admin/campionato.py:1266
+#: routes/admin/campionato.py:1277
 #, python-format
 msgid "%(quanti)s inviti accettati."
 msgstr "%(quanti)s invitations accepted."
 
-#: routes/admin/campionato.py:1286
+#: routes/admin/campionato.py:1297
 msgid "Vetrina del campionato aggiornata."
 msgstr "Championship showcase updated."
 
-#: routes/admin/campionato.py:1315 routes/admin/competition/vetrina.py:150
+#: routes/admin/campionato.py:1326 routes/admin/competition/vetrina.py:150
 msgid "Nessuna immagine selezionata."
 msgstr "No image selected."
 
-#: routes/admin/campionato.py:1318 routes/admin/competition/vetrina.py:154
+#: routes/admin/campionato.py:1329 routes/admin/competition/vetrina.py:154
 msgid "Formato non supportato. Usa JPG, PNG o GIF."
 msgstr "Unsupported format. Use JPG, PNG or GIF."
 
-#: routes/admin/campionato.py:1331
+#: routes/admin/campionato.py:1342
 msgid "Locandina caricata: la useranno tutte le gare senza una propria."
 msgstr "Poster uploaded: every competition without one of its own will use it."
 
-#: routes/admin/campionato.py:1336 routes/admin/competition/vetrina.py:172
+#: routes/admin/campionato.py:1347 routes/admin/competition/vetrina.py:172
 #, python-format
 msgid "Non è stato possibile caricare l'immagine: %(errore)s"
 msgstr "The image could not be uploaded: %(errore)s"
 
-#: routes/admin/campionato.py:1350
+#: routes/admin/campionato.py:1361
 msgid "Locandina rimossa."
 msgstr "Poster removed."
 
@@ -4117,7 +4118,7 @@ msgstr "Public Details"
 #: templates/admin/campionato_wizard_step2.html:82
 #: templates/admin/gara_create_standalone.html:455
 #: templates/admin/gara_create_standalone.html:519
-#: templates/components/_campionato_details_info.html:92
+#: templates/components/_campionato_details_info.html:93
 #: templates/components/_gara_edit_form.html:357
 #: templates/components/_gara_info.html:26
 #: templates/components/_round_navigation.html:4
@@ -5116,7 +5117,7 @@ msgid "Campionato completato"
 msgstr "Championship completed"
 
 #: templates/admin/campionato_detail.html:119
-#: templates/components/_campionato_details_info.html:54
+#: templates/components/_campionato_details_info.html:59
 #: templates/components/_history_campionati_tab.html:91
 #: templates/components/_history_campionati_tab.html:92
 #: templates/components/_playoff_invitations.html:10
@@ -5735,6 +5736,7 @@ msgid "Strategia"
 msgstr "Strategy"
 
 #: templates/admin/campionato_wizard_step2.html:40
+#: templates/components/_campionato_general_classification.html:54
 #: templates/components/_gamification_labels.html:51
 #: templates/components/_history_gare_tab.html:14
 #: templates/components/_history_gare_tab.html:50
@@ -5850,7 +5852,7 @@ msgid "Chi spacca"
 msgstr "Who breaks"
 
 #: templates/admin/campionato_wizard_step2.html:158
-#: templates/components/_campionato_details_info.html:114
+#: templates/components/_campionato_details_info.html:115
 #: templates/components/_gara_edit_form.html:116
 msgid "Anti-rematch"
 msgstr "Rematch avoidance"
@@ -6643,7 +6645,6 @@ msgid "Utenti unici"
 msgstr "Unique users"
 
 #: templates/admin/kpi.html:476
-#: templates/components/_campionato_general_classification.html:36
 msgid "Trend"
 msgstr "Trend"
 
@@ -9014,7 +9015,7 @@ msgid "Opzioni"
 msgstr "Options"
 
 #: templates/components/_campionato_details_info.html:42
-#: templates/components/_campionato_details_info.html:116
+#: templates/components/_campionato_details_info.html:117
 #: templates/components/_gara_info.html:58
 #: templates/components/_history_campionati_tab.html:26
 #: templates/direttore/preparazione/_turni.html:155
@@ -9030,46 +9031,46 @@ msgstr "Active"
 msgid "Inattivo"
 msgstr "Inactive"
 
-#: templates/components/_campionato_details_info.html:57
+#: templates/components/_campionato_details_info.html:63
 #, python-format
-msgid "Top %(n)s"
-msgstr "Top %(n)s"
+msgid "posizioni %(da)s–%(a)s"
+msgstr "positions %(da)s–%(a)s"
 
-#: templates/components/_campionato_details_info.html:62
+#: templates/components/_campionato_details_info.html:63
 #, python-format
-msgid "%(n)s giocatori"
-msgstr "%(n)s players"
+msgid "%(n)s posti"
+msgstr "%(n)s places"
 
-#: templates/components/_campionato_details_info.html:74
+#: templates/components/_campionato_details_info.html:75
 msgid "Default Gare"
 msgstr "Competition Defaults"
 
-#: templates/components/_campionato_details_info.html:80
+#: templates/components/_campionato_details_info.html:81
 msgid "Sede"
 msgstr "Venue"
 
-#: templates/components/_campionato_details_info.html:98
+#: templates/components/_campionato_details_info.html:99
 #: templates/components/_new_gara_modal.html:262
 msgid "Gestione Dispari"
 msgstr "Odd Player Handling"
 
-#: templates/components/_campionato_details_info.html:101
+#: templates/components/_campionato_details_info.html:102
 #: templates/components/_new_gara_modal.html:265
 msgid "X (vinto a tavolino)"
 msgstr "Bye (won by walkover)"
 
-#: templates/components/_campionato_details_info.html:103
+#: templates/components/_campionato_details_info.html:104
 #: templates/components/_gara_edit_form.html:173
 #: templates/components/_new_gara_modal.html:268
 msgid "X con esercizio"
 msgstr "X with drill"
 
-#: templates/components/_campionato_details_info.html:105
+#: templates/components/_campionato_details_info.html:106
 #: templates/components/_gara_edit_form.html:174
 msgid "Match a 3"
 msgstr "Three-player match"
 
-#: templates/components/_campionato_details_info.html:118
+#: templates/components/_campionato_details_info.html:119
 msgid "Disattivo"
 msgstr "Disabled"
 
@@ -9273,65 +9274,107 @@ msgstr ""
 "Use the \"New Competition\" button in the header to add the first "
 "competition."
 
-#: templates/components/_campionato_general_classification.html:15
-#, python-format
-msgid "Classifica dopo Gara %(num)s"
-msgstr "Standings after Competition %(num)s"
-
-#: templates/components/_campionato_general_classification.html:23
-#: templates/components/_detailed_classification.html:18
-msgid "Pos."
-msgstr "Pos."
-
-#: templates/components/_campionato_general_classification.html:26
-msgid "Triangoli Totali"
-msgstr "Total Racks"
-
-#: templates/components/_campionato_general_classification.html:27
-#: templates/direttore/_scripts.html:85
-msgid "Punti SSR"
-msgstr "SSR Points"
-
-#: templates/components/_campionato_general_classification.html:29
-msgid "Punti Totali"
-msgstr "Total Points"
+#: templates/components/_campionato_general_classification.html:28
+#: templates/components/_tessera_campionato.html:68
+msgid "Classifica generale"
+msgstr "Overall standings"
 
 #: templates/components/_campionato_general_classification.html:30
-msgid "Diff. Triangoli Tot."
-msgstr "Total Rack Diff."
-
-#: templates/components/_campionato_general_classification.html:32
-#: templates/gamification/admin/quest_form.html:56
-msgid "Match Vinti"
-msgstr "Matches Won"
-
-#: templates/components/_campionato_general_classification.html:33
-msgid "Diff. Triangoli"
-msgstr "Rack diff."
+#, python-format
+msgid "dopo la gara %(num)s"
+msgstr "after competition %(num)s"
 
 #: templates/components/_campionato_general_classification.html:35
-msgid "Partecipazioni"
-msgstr "Appearances"
+#: templates/direttore/_classifica.html:31
+#, python-format
+msgid "Prime %(n)s"
+msgstr "Top %(n)s"
 
-#: templates/components/_campionato_general_classification.html:125
+#: templates/components/_campionato_general_classification.html:36
+#: templates/direttore/_classifica.html:32
+#, python-format
+msgid "Tutti (%(n)s)"
+msgstr "All (%(n)s)"
+
+#: templates/components/_campionato_general_classification.html:45
+#: templates/components/_unified_rack_history.html:61
+#: templates/direttore/preparazione/_turni.html:86
+#: templates/individual_match/tpa_referto.html:139
+msgid "Triangoli"
+msgstr "Racks"
+
+#: templates/components/_campionato_general_classification.html:48
+msgid "Punti"
+msgstr "Points"
+
+#: templates/components/_campionato_general_classification.html:49
+#: templates/components/_campionato_general_classification.html:52
+#: templates/direttore/_classifica.html:41
+msgid "Diff"
+msgstr "Diff"
+
+#: templates/components/_campionato_general_classification.html:51
+#: templates/direttore/_classifica.html:40
+msgid "Vinte"
+msgstr "Won"
+
+#: templates/components/_campionato_general_classification.html:62
+#, python-format
+msgid "Zona playoff · primi %(n)s"
+msgstr "Playoff zone · top %(n)s"
+
+#: templates/components/_campionato_general_classification.html:63
+msgid "Zona playoff"
+msgstr "Playoff zone"
+
+#: templates/components/_campionato_general_classification.html:64
+msgid "inviti partiti"
+msgstr "invitations sent"
+
+#: templates/components/_campionato_general_classification.html:70
+msgid "Fuori dai playoff"
+msgstr "Out of the playoffs"
+
+#: templates/components/_campionato_general_classification.html:77
+#: templates/direttore/_classifica.html:51
+msgid "primo turno"
+msgstr "first round"
+
+#: templates/components/_campionato_general_classification.html:77
+#: templates/direttore/_classifica.html:51
+#, python-format
+msgid "sale di %(n)s"
+msgstr "up by %(n)s"
+
+#: templates/components/_campionato_general_classification.html:77
+#: templates/direttore/_classifica.html:51
+#, python-format
+msgid "scende di %(n)s"
+msgstr "down by %(n)s"
+
+#: templates/components/_campionato_general_classification.html:100
 msgid ""
 "Classifica generale: ordinata per triangoli totali, poi per punti "
 "spareggio (SSR)."
 msgstr "General standings: sorted by total racks, then by tiebreaker points (SSR)."
 
-#: templates/components/_campionato_general_classification.html:127
+#: templates/components/_campionato_general_classification.html:102
 msgid "Classifica generale basata sui punti ottenuti in tutte le gare completate."
 msgstr "General standings based on points earned in all completed competitions."
 
-#: templates/components/_campionato_general_classification.html:128
-msgid "Sistema di punteggio: posizioni 1-10 assegnano punti decrescenti."
-msgstr "Scoring system: positions 1-10 assign decreasing points."
-
-#: templates/components/_campionato_general_classification.html:130
+#: templates/components/_campionato_general_classification.html:104
 msgid ""
 "Classifica generale: ordinata per match vinti, poi per differenza "
 "triangoli totale."
 msgstr "General standings: sorted by matches won, then by total rack difference."
+
+#: templates/components/_campionato_general_classification.html:106
+msgid ""
+"La barra segna chi va ai playoff: prima degli inviti chi verrebbe "
+"invitato adesso, dopo chi ha un invito valido."
+msgstr ""
+"The bar marks who goes to the playoffs: before the invitations, who would"
+" be invited now; after them, who holds a valid invitation."
 
 #: templates/components/_campionato_statistics.html:9
 msgid "Gare Totali:"
@@ -9507,6 +9550,10 @@ msgstr "Overall standings"
 #, python-format
 msgid "Classifica dopo il turno %(num)s"
 msgstr "Standings after round %(num)s"
+
+#: templates/components/_detailed_classification.html:18
+msgid "Pos."
+msgstr "Pos."
 
 #: templates/components/_detailed_classification.html:21
 msgid "Diff. triangoli"
@@ -12595,10 +12642,6 @@ msgstr "Directing"
 msgid "Classifica finale"
 msgstr "Final standings"
 
-#: templates/components/_tessera_campionato.html:68
-msgid "Classifica generale"
-msgstr "Overall standings"
-
 #: templates/components/_tessera_campionato.html:76
 msgid "La classifica finale non è disponibile."
 msgstr "The final standings are not available."
@@ -13053,12 +13096,6 @@ msgstr "Racks removed"
 #: templates/components/_unified_rack_history.html:56
 msgid "Registro completo, utile in caso di contestazione."
 msgstr "A full log, useful if there is a dispute."
-
-#: templates/components/_unified_rack_history.html:61
-#: templates/direttore/preparazione/_turni.html:86
-#: templates/individual_match/tpa_referto.html:139
-msgid "Triangoli"
-msgstr "Racks"
 
 #: templates/components/_unified_rack_history.html:62
 msgid "Vinto da"
@@ -13541,45 +13578,13 @@ msgstr "Standings (racks)"
 msgid "complessiva"
 msgstr "overall"
 
-#: templates/direttore/_classifica.html:31
-#, python-format
-msgid "Prime %(n)s"
-msgstr "Top %(n)s"
-
-#: templates/direttore/_classifica.html:32
-#, python-format
-msgid "Tutti (%(n)s)"
-msgstr "All (%(n)s)"
-
 #: templates/direttore/_classifica.html:40
 msgid "Vinti"
-msgstr "Won"
-
-#: templates/direttore/_classifica.html:40
-msgid "Vinte"
 msgstr "Won"
 
 #: templates/direttore/_classifica.html:41
 msgid "Persi"
 msgstr "Lost"
-
-#: templates/direttore/_classifica.html:41
-msgid "Diff"
-msgstr "Diff"
-
-#: templates/direttore/_classifica.html:51
-msgid "primo turno"
-msgstr "first round"
-
-#: templates/direttore/_classifica.html:51
-#, python-format
-msgid "sale di %(n)s"
-msgstr "up by %(n)s"
-
-#: templates/direttore/_classifica.html:51
-#, python-format
-msgid "scende di %(n)s"
-msgstr "down by %(n)s"
 
 #: templates/direttore/_classifica.html:62
 #, python-format
@@ -14578,6 +14583,10 @@ msgstr "Tie for"
 #: templates/direttore/_scripts.html:84
 msgid "posto"
 msgstr "place"
+
+#: templates/direttore/_scripts.html:85
+msgid "Punti SSR"
+msgstr "SSR Points"
 
 #: templates/direttore/_scripts.html:86
 msgid "Click per scambiare con match occupante"
@@ -16613,6 +16622,10 @@ msgstr "Special Event"
 #: templates/gamification/admin/quest_form.html:55
 msgid "Match Giocati"
 msgstr "Matches Played"
+
+#: templates/gamification/admin/quest_form.html:56
+msgid "Match Vinti"
+msgstr "Matches Won"
 
 #: templates/gamification/admin/quest_form.html:57
 msgid "Iscrizioni Tornei"

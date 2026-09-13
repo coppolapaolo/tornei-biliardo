@@ -494,3 +494,23 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   podio compatto della tessera in dashboard); la classifica finale ha le
   medaglie, la freccia rispetto al turno prima e la pastiglia SSR dove lo
   spareggio ha deciso; le partite restano in righe, tutti i turni (5S).
+* **G1 · Classifica generale e zona playoff** (PR `feat: la zona playoff
+  nella classifica generale`, 2026-09-13). Le schermate 7.1 e 7.3, parte
+  classifica: `_campionato_general_classification.html` passa alle righe
+  della classifica di gara (freccia, avatar, colonne dal sistema, gare
+  giocate, prime dieci e tutti) e segna la **zona playoff**: barra sulle
+  righe dentro, etichetta sopra, «Fuori dai playoff» dopo l'ultima.
+  `playoff_elite_participants` e' il campo del wizard, non una colonna: alla
+  creazione del campionato diventa `max_participants` della configurazione
+  «Playoff Elite» (`_create_playoff_config`), che quindi c'e' gia' durante
+  la stagione. La zona la decide il dominio (`models/playoff/zona.py`) —
+  prima degli inviti chi
+  `evaluate_qualifications` sceglierebbe, dopo chi ha un invito in attesa o
+  confermato, quindi chi rifiuta esce e chi subentra entra. Il test confronta
+  la zona (righe `Classification`) con i primi della pagina
+  (`calculate_general_classification`), i due percorsi della classifica
+  generale. Vale per la pagina del direttore e per quella pubblica.
+  Trovato strada facendo: la scheda informazioni del campionato leggeva
+  `campionato.playoff_elite_enabled` e `playoff_elite_participants`, cioe' i
+  campi del wizard, e il blocco dei playoff non compariva mai; ora legge le
+  configurazioni attive.

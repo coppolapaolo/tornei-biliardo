@@ -34,6 +34,16 @@ blocks:
           chi non è arrivato sul podio, e di solito è la gara più partecipata
           delle due.
 
+  - type: text
+    text: >-
+      Durante la stagione la classifica generale del campionato segna la
+      **zona playoff**: una barra accanto a chi, se il campionato finisse
+      adesso, verrebbe invitato, e la riga «Fuori dai playoff» subito dopo
+      l'ultimo. Tiene conto dei criteri scelti da chi organizza, come il
+      minimo di gare giocate. Quando gli inviti sono partiti, la barra passa a
+      chi ha un invito valido: chi ha rifiutato esce, chi è entrato al suo
+      posto compare.
+
   - type: note
     tone: info
     text: >-
