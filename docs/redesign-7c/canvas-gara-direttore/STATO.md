@@ -427,3 +427,25 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   Trovato strada facendo: la dashboard cadeva con `TypeError` quando un
   turno aveva un tavolo con la lettera e uno senza
   (`gara_cards._ordine_delle_altre`, con test).
+* **D1 · Gioco, le partite** (PR `feat: il punteggio sulla card della
+  partita`, 2026-09-13). Le schermate 3.1–3.4, 3.7–3.9: la card della
+  partita (`direttore/_card_partita.html`) con una geometria sola — nome
+  sopra, numero sotto, niente «vs» — e la forma dello stato
+  (`direttore_view.stato_partita`): in corso con gli stepper − e + che
+  salvano al tocco (`POST /admin/match/<id>/punteggio`, JSON; il + si
+  spegne a `match.effective_distance`, alla distanza la partita si chiude
+  e il tavolo passa alla prima in attesa), da validare (card verde, si
+  corregge con − e + e poi «Valida», la nota dice a chi passa il tavolo),
+  da giocare (tavolo da assegnare), conclusa (sola lettura, chi ha vinto
+  pieno, «Correggi»). La partita di chi dirige e gioca sta in cima, scura
+  (3.8). Il tavolo si assegna toccando la tessera libera nel foglio (3.2,
+  gli occupati mostrano i due giocatori). La correzione di un risultato
+  chiuso ha il suo foglio (3.4, issue #90): stepper, il perche', le due
+  conseguenze scritte, `next` per tornare alla gara. A turno concluso le
+  partite sono righe con la matita (3.7). Desktop 3.9: griglia a due
+  colonne, a destra «da fare adesso», le tessere dei tavoli e la
+  classifica. Il poll live ignora i fatti scritti da chi guarda
+  (`autore` nell'evento). Via il tavolo dei turni e le card di prima dalla
+  fase di gioco (restano a chi guarda). Trovato strada facendo: il seed
+  della guida lasciava `current_round=1` col turno 2 in gioco, e la fascia
+  proponeva di avviare un turno gia' avviato (`seed_demo.py`).

@@ -389,3 +389,146 @@ def test_il_foglio_di_avvio_dice_i_tavoli_nell_ordine_scelto(admin_client, db_se
     assert "in quest’ordine" in foglio
     assert "Il turno 1 si sorteggia adesso" in foglio
     assert "Da qui le iscrizioni si chiudono" in foglio
+
+
+# ── Fase 3, il gioco (canvas 3C, 3.2–3.4, 3.7) ────────────────────────────────
+
+
+def _gara_in_gioco(db_session, *, distance=5):
+    """Una gara al turno 1, con due tavoli."""
+    gara = _gara(db_session, GaraStatus.PLAYING.value, current_round=1)
+    gara.distance = distance
+    gara.available_tables = '["1", "2"]'
+    db_session.commit()
+    return gara
+
+
+def test_la_card_in_corso_ha_gli_stepper_con_la_distanza_del_turno(
+    admin_client, db_session
+):
+    """ADR-027: il + si spegne alla distanza del **turno**, non della gara.
+
+    La distanza del turno la porta `match.match_distance`, scritta alla
+    creazione del turno dall'override di `RoundConfiguration`.
+    """
+    gara = _gara_in_gioco(db_session, distance=5)
+    match = _match(db_session, gara, 1, 0, MatchStatus.PLAYING.value, suffix="_st")
+    match.table_assignment = "1"
+    match.match_distance = 3
+    db_session.commit()
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    card = html.split(f'id="partita{match.id}"')[1].split("</article>")[0]
+    assert 'data-max="3"' in card
+    assert "passoPunteggio(this, 1)" in card
+    assert "si vince a 3" in card
+    assert "Inserisci risultato" not in html
+
+
+def test_la_partita_alla_distanza_senza_doppia_conferma_e_da_validare(
+    admin_client, db_session
+):
+    gara = _gara_in_gioco(db_session, distance=5)
+    match = _match(db_session, gara, 5, 1, MatchStatus.PLAYING.value, suffix="_dv")
+    match.table_assignment = "1"
+    db_session.commit()
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    card = html.split(f'id="partita{match.id}"')[1].split("</article>")[0]
+    assert 'data-stato="da_validare"' in card
+    assert "Valida il risultato" in card
+    assert "correggilo con − e + prima di validare" in card
+
+
+def test_la_partita_conclusa_e_in_sola_lettura_con_correggi(admin_client, db_session):
+    gara = _gara_in_gioco(db_session, distance=5)
+    match = _match(
+        db_session, gara, 5, 2, MatchStatus.CLOSED_UNILATERALLY.value, suffix="_cc"
+    )
+    altra = _match(db_session, gara, 1, 1, MatchStatus.PLAYING.value, suffix="_cc2")
+    altra.table_assignment = "2"
+    db_session.commit()
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    card = html.split(f'id="partita{match.id}"')[1].split("</article>")[0]
+    assert 'data-stato="conclusa"' in card
+    assert "passoPunteggio" not in card
+    assert "apriCorrezione(this)" in card
+    assert "fa-crown" in card
+    assert 'id="correggiRisultatoModal"' in html
+
+
+def test_a_turno_concluso_le_partite_sono_righe_da_toccare(admin_client, db_session):
+    """3.7: solo «Avvia il turno 2»; le partite del turno sono righe."""
+    gara = _gara_in_gioco(db_session, distance=5)
+    match = _match(
+        db_session, gara, 5, 2, MatchStatus.CLOSED_UNILATERALLY.value, suffix="_tc"
+    )
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert "Puoi avviare il turno 2" in html
+    assert f'id="partita{match.id}"' not in html
+    assert "c7-riga-partita" in html
+    assert "si tocca la sua riga" in html
+
+
+def test_il_punteggio_dalla_card_salva_e_alla_distanza_chiude(admin_client, db_session):
+    """L'endpoint degli stepper: JSON, e alla distanza la partita si chiude."""
+    gara = _gara_in_gioco(db_session, distance=5)
+    match = _match(db_session, gara, 3, 1, MatchStatus.PLAYING.value, suffix="_ep")
+    match.table_assignment = "1"
+    db_session.commit()
+
+    r = admin_client.post(
+        f"/admin/match/{match.id}/punteggio",
+        data={"player1_score": 4, "player2_score": 1},
+    )
+    assert r.status_code == 200
+    assert r.get_json()["finished"] is False
+    assert r.get_json()["player1_score"] == 4
+
+    r = admin_client.post(
+        f"/admin/match/{match.id}/punteggio",
+        data={"player1_score": 5, "player2_score": 1},
+    )
+    assert r.get_json()["finished"] is True
+    riletta = db_session.get(Match, match.id)
+    assert MatchStatus.is_finished(riletta.status)
+    assert riletta.winner_id == match.player1_id
+
+    r = admin_client.post(
+        f"/admin/match/{match.id}/punteggio",
+        data={"player1_score": 9, "player2_score": 1},
+    )
+    assert r.status_code == 400
+    assert r.get_json()["success"] is False
+
+
+def test_la_correzione_dalla_pagina_della_gara_torna_alla_gara(
+    admin_client, db_session
+):
+    gara = _gara_in_gioco(db_session, distance=5)
+    match = _match(
+        db_session, gara, 5, 2, MatchStatus.CLOSED_UNILATERALLY.value, suffix="_cx"
+    )
+    r = admin_client.post(
+        f"/admin/match/{match.id}/correct",
+        data={
+            "player1_score": 2,
+            "player2_score": 5,
+            "note": "invertito",
+            "next": f"/admin/gara/{gara.id}",
+        },
+    )
+    assert r.status_code == 302
+    assert r.headers["Location"].endswith(f"/admin/gara/{gara.id}")
+    riletta = db_session.get(Match, match.id)
+    assert (riletta.player1_score, riletta.player2_score) == (2, 5)
+    assert riletta.corrections
+
+    # Un `next` esterno non si segue.
+    r = admin_client.post(
+        f"/admin/match/{match.id}/correct",
+        data={
+            "player1_score": 5,
+            "player2_score": 2,
+            "next": "https://altrove.example",
+        },
+    )
+    assert "altrove" not in r.headers["Location"]

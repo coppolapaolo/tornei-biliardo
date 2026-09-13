@@ -1,0 +1,128 @@
+{# templates/direttore/_partite.html — Design System 7c
+
+   Le partite della gara per chi dirige (canvas 3.1–3.9). Il turno che si
+   vede (`conteggi.turno`) e' fatto di card (`_card_partita.html`)
+   nell'ordine di `direttore_view.partite_del_turno`: prima cio' che chiede
+   qualcosa, la partita del direttore in cima. A turno concluso (3.7) le
+   partite sono righe: si tocca la riga per correggere, finche' il turno dopo
+   non e' avviato. I turni prima restano in pagina come righe, l'ultimo per
+   primo; con i turni pre-generati quelli dopo sono righe «da giocare».
+
+   Sul desktop (3.9) le card stanno in una griglia a due colonne. #}
+
+{% set _turno = conteggi.turno if conteggi else (gara.display_round or 1) %}
+{% set _concluso = turno_concluso %}
+{% set _tutte = all_matches if all_matches else matches %}
+
+{% macro riga_partita(match, correggibile) -%}
+{% set _stato = stati_partite.get(match.id, 'conclusa') %}
+{% set _finita = _stato == 'conclusa' %}
+<div class="c7-rows__row c7-riga-partita{% if _stato == 'x' %} c7-riga-partita--x{% endif %}"
+     data-match-id="{{ match.id }}" data-p1="{{ match.player1_score }}" data-p2="{{ match.player2_score }}"
+     data-p1-name="{{ match.player1.username }}" data-p2-name="{{ match.player2.username if match.player2 else '' }}"
+     data-max="{{ match.effective_distance }}" data-race-to="{{ '1' if match.effective_is_race_to else '0' }}"
+     data-sub="{{ _('Turno %(num)s', num=match.round_number) }}{% if match.played_on_table or match.table_assignment %} · {{ _('Tavolo') }} {{ match.played_on_table or match.table_assignment }}{% endif %}">
+  <div class="c7-rows__main">
+    <div class="c7-rows__title c7-riga-partita__nomi">
+      {% if match.is_trio and match.trio_match %}
+      {{ match.trio_match.player1.username }} · {{ match.trio_match.player2.username }} · {{ match.trio_match.player3.username }}
+      {% else %}
+      <span{% if _finita and match.winner_id == match.player2_id %} class="c7-dim"{% endif %}>{{ match.player1.username }}</span>
+      <span class="c7-riga-partita__sep">–</span>
+      {% if _stato == 'x' %}<span class="c7-dim">{{ _('X a tavolino') }}</span>
+      {% else %}<span{% if _finita and match.winner_id == match.player1_id %} class="c7-dim"{% endif %}>{{ match.player2.username }}</span>{% endif %}
+      {% endif %}
+    </div>
+    {% if _finita and match.corrections %}
+    <div class="c7-rows__sub"><i class="fas fa-pen" style="font-size:9px"></i> {{ _('corretto') }}</div>
+    {% endif %}
+  </div>
+  {% if _stato == 'x' %}
+  {% elif match.is_trio and match.trio_match %}
+  <span class="c7-num c7-riga-partita__punti">{{ match.trio_match.player1_racks }}-{{ match.trio_match.player2_racks }}-{{ match.trio_match.player3_racks }}</span>
+  {% elif _finita or match.player1_score > 0 or match.player2_score > 0 %}
+  <span class="c7-num c7-riga-partita__punti">{{ match.player1_score }}–{{ match.player2_score }}</span>
+  {% else %}
+  <span class="c7-num c7-riga-partita__punti c7-dim">–</span>
+  {% endif %}
+  {% if match.played_on_table or match.table_assignment %}
+  <span class="c7-rows__sub c7-riga-partita__tavolo">{{ _('Tavolo') }} <span class="c7-num">{{ match.played_on_table or match.table_assignment }}</span></span>
+  {% endif %}
+  {% if correggibile and _finita and not match.is_trio %}
+  <button type="button" class="c7-iconbtn" onclick="apriCorrezione(this)"
+          aria-label="{{ _('Correggi il risultato di %(p1)s – %(p2)s', p1=match.player1.username, p2=match.player2.username) }}" title="{{ _('Correggi il risultato') }}">
+    <i class="fas fa-pen"></i>
+  </button>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+{% macro testata_turno(n, stato_turno, con_menu=False) -%}
+{% set _prime = _tutte | selectattr('round_number', 'equalto', n) | list %}
+<div class="c7-sechead">
+  <h3{% if stato_turno != 'in_corso' %} class="c7-dim"{% endif %}>{{ _('Turno %(num)s', num=n) }}</h3>
+  {% if _prime %}
+  <span class="c7-sechead__note">{{ _prime[0].get_effective_discipline()|discipline_display }} <span class="c7-sep">·</span> {{ _prime[0].distance_config|format_distance }}</span>
+  {% endif %}
+  {% if stato_turno == 'in_corso' %}<span class="c7-state c7-state--accent c7-sechead__stato">{{ _('In corso') }}</span>
+  {% elif stato_turno == 'concluso' %}<span class="c7-state c7-state--muted c7-sechead__stato">{{ _('Concluso') }}</span>
+  {% else %}<span class="c7-state c7-state--warn c7-sechead__stato">{{ _('Da giocare') }}</span>{% endif %}
+  {% if con_menu and menu_turno and menu_turno.turno == n %}
+  <button type="button" class="c7-iconbtn c7-iconbtn--menu" onclick="apriMenuTurno()"
+          aria-label="{{ _('Menu del turno %(num)s', num=n) }}" title="{{ _('Menu del turno') }}">
+    <i class="fas fa-ellipsis"></i>
+  </button>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+<section class="c7-stack c7-partite-turni" data-help="gara-turni">
+  {# ---- Il turno che si vede ---- #}
+  {% if partite_turno %}
+  <div class="c7-stack" style="gap:10px">
+    {{ testata_turno(_turno, 'concluso' if _concluso else 'in_corso', con_menu=True) }}
+    {% if _concluso %}
+    <div class="c7-rows">
+      {% for match in partite_turno %}{{ riga_partita(match, match_can_modify.get(match.id, True)) }}{% endfor %}
+    </div>
+    <div class="c7-nota">
+      {% if _turno < (gara.rounds_count or _turno) %}
+      {{ _('Per correggere una partita si tocca la sua riga: si può finché il turno %(n)s non è avviato.', n=_turno + 1) }}
+      {% else %}
+      {{ _('Per correggere una partita si tocca la sua riga: si può finché la gara non è chiusa.') }}
+      {% endif %}
+    </div>
+    {% else %}
+    <div class="c7-partite">
+      {% for match in partite_turno %}{% include "direttore/_card_partita.html" %}{% endfor %}
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# ---- I turni prima, conclusi: l'ultimo per primo ---- #}
+  {% for n in range(_turno - 1, 0, -1) %}
+  {% set _del_turno = _tutte | selectattr('round_number', 'equalto', n) | list %}
+  {% if _del_turno %}
+  <div class="c7-stack" style="gap:10px">
+    {{ testata_turno(n, 'concluso') }}
+    <div class="c7-rows">
+      {% for match in _del_turno %}{{ riga_partita(match, match_can_modify.get(match.id, False)) }}{% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+
+  {# ---- I turni dopo, pre-generati (formula casuale): da giocare ---- #}
+  {% for n in range(_turno + 1, (gara.rounds_count or _turno) + 1) %}
+  {% set _del_turno = _tutte | selectattr('round_number', 'equalto', n) | list %}
+  {% if _del_turno %}
+  <div class="c7-stack" style="gap:10px">
+    {{ testata_turno(n, 'da_giocare') }}
+    <div class="c7-rows c7-rows--spenta">
+      {% for match in _del_turno %}{{ riga_partita(match, False) }}{% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {% endfor %}
+</section>

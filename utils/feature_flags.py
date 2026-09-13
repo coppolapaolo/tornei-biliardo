@@ -335,6 +335,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.match.add_rack_result": {"director"},
     "admin.match.remove_rack_admin": {"director"},
     "admin.match.set_match_result_direct": {"director"},
+    "admin.match.punteggio_partita": {"director"},
     "admin.match.validate_match": {"director"},
     "admin.match.validate_rack_admin": {"director"},
     "admin.match.reset_match": {"director"},

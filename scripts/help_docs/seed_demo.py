@@ -287,6 +287,11 @@ def _play_rounds(db, gara, rounds: int, leave_open_for=None):
             RoundService.create_round_with_strategy(
                 gara_id=gara.id, round_number=round_number
             )
+            # Come fa `start_next_round` nell'app: il turno avviato e' il
+            # turno corrente. Senza, la gara restava a `current_round=1` con
+            # il turno 2 in gioco, e la pagina del direttore proponeva di
+            # avviare un turno gia' avviato.
+            gara.current_round = round_number
             db.session.commit()
 
         matches = (

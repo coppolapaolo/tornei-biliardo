@@ -197,13 +197,162 @@ def conteggi_turno(
     )
 
 
+# ---------------------------------------------------------------------------
+# Le partite del turno (canvas 3.1–3.9)
+# ---------------------------------------------------------------------------
+
+
+class StatoPartita(str, Enum):
+    """Lo stato con cui la card della partita si presenta al direttore.
+
+    Non è lo stato persistito (`MatchStatus`): «da validare» è una partita
+    ancora in corso arrivata alla distanza dal segnapunti dei giocatori senza
+    la doppia conferma, e «da giocare» è una partita senza tavolo. La card
+    cambia forma per ognuno (canvas 3.2–3.4).
+    """
+
+    X = "x"
+    DA_VALIDARE = "da_validare"
+    IN_CORSO = "in_corso"
+    DA_GIOCARE = "da_giocare"
+    CONCLUSA = "conclusa"
+
+
+def stato_partita(match) -> StatoPartita:
+    if getattr(match, "is_bye", False):
+        return StatoPartita.X
+    if MatchStatus.is_finished(match.status):
+        return StatoPartita.CONCLUSA
+    if _e_da_validare(match):
+        return StatoPartita.DA_VALIDARE
+    if match.table_assignment:
+        return StatoPartita.IN_CORSO
+    return StatoPartita.DA_GIOCARE
+
+
+# L'ordine in pagina: prima cio' che chiede qualcosa al direttore, poi cio'
+# che si gioca, poi cio' che aspetta, in coda cio' che e' chiuso; la X per
+# ultima, non si gioca.
+_ORDINE_CARD = {
+    StatoPartita.DA_VALIDARE: 0,
+    StatoPartita.IN_CORSO: 1,
+    StatoPartita.DA_GIOCARE: 2,
+    StatoPartita.CONCLUSA: 3,
+    StatoPartita.X: 4,
+}
+
+
+def _gioca(match, user_id: Optional[int]) -> bool:
+    if user_id is None:
+        return False
+    if match.player1_id == user_id or match.player2_id == user_id:
+        return True
+    trio = getattr(match, "trio_match", None)
+    return bool(
+        getattr(match, "is_trio", False) and trio and trio.player3_id == user_id
+    )
+
+
+def partite_del_turno(
+    matches: Iterable, turno: int, user_id: Optional[int] = None
+) -> list:
+    """Le partite del turno nell'ordine della pagina (canvas 3.3 e 3.8).
+
+    La partita del direttore che gioca sta in cima, qualunque sia il suo
+    stato, finche' non e' chiusa: e' la sua. Poi le altre per stato, e a
+    parita' per id, che e' l'ordine di creazione.
+    """
+    del_turno = [m for m in matches if m.round_number == turno]
+
+    def chiave(m):
+        stato = stato_partita(m)
+        mia = _gioca(m, user_id) and stato != StatoPartita.CONCLUSA
+        return (0 if mia else 1, _ORDINE_CARD[stato], m.id or 0)
+
+    return sorted(del_turno, key=chiave)
+
+
+def prima_in_attesa(matches: Iterable, turno: int):
+    """La prima partita del turno che aspetta un tavolo, o `None`.
+
+    E' quella a cui passa il tavolo che si libera
+    (`TableAssignmentService.release_and_reassign_table`): la card «da
+    validare» lo dice prima che succeda.
+    """
+    in_attesa = [
+        m
+        for m in matches
+        if m.round_number == turno and stato_partita(m) == StatoPartita.DA_GIOCARE
+    ]
+    in_attesa.sort(key=lambda m: m.id or 0)
+    return in_attesa[0] if in_attesa else None
+
+
+def match_trio(match):
+    return (
+        getattr(match, "trio_match", None) if getattr(match, "is_trio", False) else None
+    )
+
+
+@dataclass(frozen=True)
+class Tavolo:
+    """Una tessera del foglio «Assegna il tavolo» e della colonna dei tavoli."""
+
+    nome: str
+    match_id: Optional[int] = None
+    giocatori: tuple = ()
+
+    @property
+    def libero(self) -> bool:
+        return self.match_id is None
+
+
+def tavoli_del_turno(matches: Iterable, tavoli: Sequence[str]) -> list:
+    """Le tessere dei tavoli: chi c'e' sopra, o libero.
+
+    Un tavolo e' occupato dalla partita in corso che lo ha assegnato, in
+    qualunque turno (con i turni pre-generati ne girano due insieme).
+    """
+    occupanti = {}
+    for m in matches:
+        if (
+            m.table_assignment
+            and not getattr(m, "is_bye", False)
+            and not MatchStatus.is_finished(m.status)
+        ):
+            occupanti[str(m.table_assignment)] = m
+    tessere = []
+    for nome in tavoli:
+        m = occupanti.get(str(nome))
+        if m is None:
+            tessere.append(Tavolo(nome=str(nome)))
+        else:
+            tessere.append(Tavolo(nome=str(nome), match_id=m.id, giocatori=_nomi(m)))
+    return tessere
+
+
+def _nomi(match) -> tuple:
+    trio = match_trio(match)
+    if trio is not None:
+        return tuple(
+            p.username for p in (trio.player1, trio.player2, trio.player3) if p
+        )
+    return tuple(p.username for p in (match.player1, match.player2) if p)
+
+
 __all__ = [
     "FaseGara",
     "StatoTacca",
     "Tacca",
     "ConteggiTurno",
+    "StatoPartita",
+    "Tavolo",
     "fase_della_gara",
     "spareggio_nella_striscia",
     "striscia",
     "conteggi_turno",
+    "stato_partita",
+    "partite_del_turno",
+    "prima_in_attesa",
+    "tavoli_del_turno",
 ]

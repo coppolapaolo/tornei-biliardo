@@ -153,6 +153,7 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/admin/match/<int:match_id>` | GET | `admin.match.match_detail` | `@match_manager_required` | UI page | Dettaglio match con scoring |
 | `/admin/match/<int:match_id>/update-times` | POST | `admin.match.update_match_times` | `@match_manager_required` | action | Modifica orari match |
 | `/admin/match/<int:match_id>/assign-table` | POST | `admin.match.assign_table` | `@match_manager_required` | action | Assegna tavolo |
+| `/admin/match/<int:match_id>/punteggio` | POST | `admin.match.punteggio_partita` | `@match_manager_required` | action | Punteggio dagli stepper della card, risposta JSON |
 | `/admin/match/<int:match_id>/start-next-set` | POST | `admin.match.start_next_set` | `@match_manager_required` | action | Avvia set successivo (multi-set) |
 | `/admin/match/<int:match_id>/set/add_rack` | POST | `admin.match.add_set_rack` | `@match_manager_required` | action | Aggiunge rack a set |
 | `/admin/match/<int:match_id>/set/remove_rack` | POST | `admin.match.remove_set_rack` | `@match_manager_required` | action | Rimuove rack da set |

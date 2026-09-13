@@ -97,12 +97,24 @@ blocks:
   - type: options
     title: "What you can do during the round"
     items:
-      - name: "Enter a result on the players' behalf"
+      - name: "Keep score on the players' behalf"
         text: >-
-          If a table has no smartphone, open the match and record the racks
-          yourself: the scoreboard is the same.
+          If a table has no smartphone, you keep score from the match card:
+          under each name there are **−** and **+**. At the round's distance
+          the + switches off, the match closes by itself and the table goes
+          to the first match waiting for one.
+      - name: "Validate a result"
+        text: >-
+          A match that reached the distance from the players' scoreboard,
+          but without both confirmations, shows up in a green card with
+          «Validate the result». If the score is not right, fix it with − and
+          + before validating: the card says who gets the table next.
       - name: "Change a match's table"
-        text: "If a table breaks down or two pairs agree otherwise."
+        text: >-
+          Tap the table on the card: the sheet opens with one tile per table.
+          Occupied tiles show who is playing there, the free one is
+          highlighted and a tap assigns it. Useful when a table breaks down
+          or two pairs agree otherwise.
       - name: "Record a forfeit"
         text: >-
           Whoever abandons leaves their opponent all the racks missing to the
@@ -147,13 +159,17 @@ blocks:
       - name: "The round is still under way"
         values: "easy"
         text: >-
-          Open the match and reset it: the pair stays the same and replays, or
-          you enter the correct score yourself.
+          If the match is still open, fix the score with − and + on the card.
+          If it is already closed, tap **Correct** on the card: enter the
+          right score and, if you like, why. The correction stays written on
+          the match, so whoever saw the earlier result understands what
+          changed. Alternatively, from the card's menu, **Reset the match**:
+          the same pair replays.
       - name: "The round is over but the next has not started"
         values: "still easy"
         text: >-
-          Same thing. Until you start the following round, results are
-          editable.
+          The round's matches are rows: tap the pencil on the row and
+          correct. Until you start the next round, results can be changed.
       - name: "The next round has already started"
         values: "think it over"
         text: >-

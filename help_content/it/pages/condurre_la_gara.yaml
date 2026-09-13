@@ -99,12 +99,24 @@ blocks:
   - type: options
     title: "Quello che puoi fare durante il turno"
     items:
-      - name: "Inserire un risultato al posto dei giocatori"
+      - name: "Segnare il punteggio al posto dei giocatori"
         text: >-
-          Se un tavolo non ha lo smartphone, apri la partita e segna tu i triangoli:
-          il segnapunti è lo stesso.
+          Se un tavolo non ha lo smartphone, segni tu dalla card della
+          partita: sotto ogni nome ci sono **−** e **+**. Alla distanza del
+          turno il + si spegne, la partita si chiude da sola e il tavolo passa
+          alla prima partita in attesa.
+      - name: "Validare un risultato"
+        text: >-
+          Una partita arrivata alla distanza dal segnapunti dei giocatori,
+          ma senza la conferma di entrambi, compare in una card verde con
+          «Valida il risultato». Se il punteggio non è quello, correggilo con
+          − e + prima di validare: la card dice a chi passa il tavolo.
       - name: "Cambiare il tavolo a una partita"
-        text: "Se un tavolo si guasta o due coppie si accordano diversamente."
+        text: >-
+          Tocca il tavolo sulla card: si apre il foglio con le tessere dei
+          tavoli. Gli occupati mostrano chi ci sta giocando, il libero è
+          evidenziato e si assegna con un tocco. Serve se un tavolo si guasta
+          o due coppie si accordano diversamente.
       - name: "Registrare un forfait"
         text: >-
           Chi abbandona lascia all'avversario tutti i triangoli che mancano alla
@@ -150,12 +162,17 @@ blocks:
       - name: "Il turno è ancora in corso"
         values: "facile"
         text: >-
-          Apri la partita e azzerala: la coppia resta la stessa e rigioca, o
-          reinserisci tu il punteggio giusto.
+          Se la partita è ancora aperta, sistemi il punteggio con − e + sulla
+          card. Se è già chiusa, tocca **Correggi** sulla card: scrivi il
+          punteggio giusto e, se vuoi, il perché. La correzione resta scritta
+          sulla partita, così chi aveva visto il risultato di prima capisce
+          cosa è cambiato. In alternativa, dal menu della card, **Azzera la
+          partita**: la coppia resta la stessa e rigioca.
       - name: "Il turno è finito ma il successivo non è partito"
         values: "ancora facile"
         text: >-
-          Stessa cosa. Finché non avvii il turno dopo, i risultati sono
+          Le partite del turno sono righe: tocca la matita sulla riga e
+          correggi. Finché non avvii il turno dopo, i risultati sono
           modificabili.
       - name: "Il turno successivo è già partito"
         values: "da valutare"

@@ -1,0 +1,110 @@
+2026-09-13 04:21:22,567 - models.gamification.event_handlers - INFO - Registered all gamification event handlers
+2026-09-13 04:21:22,568 - models.gamification.frontend_bridge - INFO - Registered gamification frontend bridge handlers
+2026-09-13 04:21:22,662 - utils.encryption - WARNING - Using default encryption key. Set ENCRYPTION_KEY environment variable in production.
+ * Serving Flask app 'app'
+ * Debug mode: on
+2026-09-13 04:21:22,709 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5002
+2026-09-13 04:21:22,709 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-09-13 04:21:22,709 - werkzeug - INFO -  * Restarting with stat
+2026-09-13 04:21:23,119 - models.gamification.event_handlers - INFO - Registered all gamification event handlers
+2026-09-13 04:21:23,119 - models.gamification.frontend_bridge - INFO - Registered gamification frontend bridge handlers
+2026-09-13 04:21:23,215 - utils.encryption - WARNING - Using default encryption key. Set ENCRYPTION_KEY environment variable in production.
+2026-09-13 04:21:23,259 - werkzeug - WARNING -  * Debugger is active!
+2026-09-13 04:21:23,264 - werkzeug - INFO -  * Debugger PIN: 514-632-980
+2026-09-13 04:21:30,271 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:30] "GET / HTTP/1.1" 200 -
+2026-09-13 04:21:38,628 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:38] "[32mGET /debug/login/Luca%20Bianchi HTTP/1.1[0m" 302 -
+2026-09-13 04:21:38,780 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:38] "GET /dashboard HTTP/1.1" 200 -
+2026-09-13 04:21:38,803 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:38] "GET /static/js/notifications.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:38,806 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:38] "GET /static/js/gamification.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:38,809 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:38] "GET /static/js/polling.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:38,814 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:38] "GET /static/js/score_pop.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:38,817 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:38] "GET /static/css/tokens-7c.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:38,817 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:38] "GET /static/css/variables.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:38,818 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:38] "GET /static/css/gamification.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:38,819 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:38] "GET /static/css/theme-7c.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:38,819 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:38] "GET /static/css/main.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:38,821 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:38] "GET /static/js/help-hints.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:39,329 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /admin/gara/2 HTTP/1.1" 200 -
+2026-09-13 04:21:39,337 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /static/js/iscritti_ricerca.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:39,476 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "[32mGET /debug/login/Luca%20Bianchi HTTP/1.1[0m" 302 -
+2026-09-13 04:21:39,512 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /dashboard HTTP/1.1" 200 -
+2026-09-13 04:21:39,561 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /static/css/gamification.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:39,561 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /static/css/theme-7c.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:39,561 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /static/css/tokens-7c.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:39,562 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /static/css/variables.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:39,570 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /static/css/main.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:39,572 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /static/js/polling.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:39,572 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /static/js/gamification.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:39,573 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /static/js/notifications.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:39,577 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /static/js/score_pop.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:39,577 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /static/js/help-hints.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:39,740 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /admin/gara/2 HTTP/1.1" 200 -
+2026-09-13 04:21:39,747 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /static/js/iscritti_ricerca.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:39,864 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "[32mGET /debug/login/Luca%20Bianchi HTTP/1.1[0m" 302 -
+2026-09-13 04:21:39,898 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /dashboard HTTP/1.1" 200 -
+2026-09-13 04:21:39,935 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:39] "GET /admin/gara/2 HTTP/1.1" 200 -
+2026-09-13 04:21:42,602 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:42] "[32mGET /debug/login/Luca%20Bianchi HTTP/1.1[0m" 302 -
+2026-09-13 04:21:42,640 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:42] "GET /dashboard HTTP/1.1" 200 -
+2026-09-13 04:21:42,654 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:42] "GET /static/css/variables.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:42,655 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:42] "GET /static/css/theme-7c.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:42,656 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:42] "GET /static/css/gamification.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:42,658 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:42] "GET /static/css/tokens-7c.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:42,660 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:42] "GET /static/css/main.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:42,663 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:42] "GET /static/js/notifications.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:42,664 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:42] "GET /static/js/gamification.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:42,666 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:42] "GET /static/js/polling.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:42,667 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:42] "GET /static/js/score_pop.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:42,668 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:42] "GET /static/js/help-hints.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:42,988 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:42] "GET /admin/gara/2 HTTP/1.1" 200 -
+2026-09-13 04:21:42,994 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:42] "GET /static/js/iscritti_ricerca.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:43,516 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:43] "GET /sse/poll/user/2 HTTP/1.1" 200 -
+2026-09-13 04:21:43,516 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:43] "GET /sse/poll/gara/2 HTTP/1.1" 200 -
+2026-09-13 04:21:43,773 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:43] "[32mGET /debug/login/Luca%20Bianchi HTTP/1.1[0m" 302 -
+2026-09-13 04:21:43,808 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:43] "GET /dashboard HTTP/1.1" 200 -
+2026-09-13 04:21:43,822 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:43] "GET /static/css/variables.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:43,822 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:43] "GET /static/css/theme-7c.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:43,823 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:43] "GET /static/css/tokens-7c.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:43,823 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:43] "GET /static/css/gamification.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:43,824 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:43] "GET /static/css/main.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:43,832 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:43] "GET /static/js/gamification.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:43,832 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:43] "GET /static/js/score_pop.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:43,834 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:43] "GET /static/js/notifications.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:43,834 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:43] "GET /static/js/polling.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:43,835 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:43] "GET /static/js/help-hints.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:44,076 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:44] "GET /admin/gara/2 HTTP/1.1" 200 -
+2026-09-13 04:21:44,084 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:44] "GET /static/js/iscritti_ricerca.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:44,606 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:44] "GET /sse/poll/user/2 HTTP/1.1" 200 -
+2026-09-13 04:21:44,608 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:44] "GET /sse/poll/gara/2 HTTP/1.1" 200 -
+2026-09-13 04:21:45,058 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "[32mGET /debug/login/Luca%20Bianchi HTTP/1.1[0m" 302 -
+2026-09-13 04:21:45,096 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /dashboard HTTP/1.1" 200 -
+2026-09-13 04:21:45,111 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /static/css/variables.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:45,114 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /static/css/tokens-7c.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:45,116 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /static/css/theme-7c.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:45,118 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /static/css/gamification.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:45,118 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /static/js/notifications.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:45,118 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /static/css/main.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:45,120 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /static/js/gamification.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:45,124 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /static/js/polling.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:45,125 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /static/js/score_pop.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:45,127 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /static/js/help-hints.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:45,454 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /admin/gara/2 HTTP/1.1" 200 -
+2026-09-13 04:21:45,462 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /static/js/iscritti_ricerca.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:45,983 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /sse/poll/user/2 HTTP/1.1" 200 -
+2026-09-13 04:21:45,984 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:45] "GET /sse/poll/gara/2 HTTP/1.1" 200 -
+2026-09-13 04:21:46,240 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:46] "[32mGET /debug/login/Luca%20Bianchi HTTP/1.1[0m" 302 -
+2026-09-13 04:21:46,275 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:46] "GET /dashboard HTTP/1.1" 200 -
+2026-09-13 04:21:46,290 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:46] "GET /static/css/main.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:46,290 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:46] "GET /static/js/notifications.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:46,290 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:46] "GET /static/css/tokens-7c.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:46,290 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:46] "GET /static/css/gamification.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:46,291 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:46] "GET /static/css/variables.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:46,298 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:46] "GET /static/js/gamification.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:46,299 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:46] "GET /static/js/polling.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:46,300 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:46] "GET /static/css/theme-7c.css?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:46,301 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:46] "GET /static/js/score_pop.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:46,303 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:46] "GET /static/js/help-hints.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:46,524 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:46] "GET /admin/gara/2 HTTP/1.1" 200 -
+2026-09-13 04:21:46,531 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:46] "GET /static/js/iscritti_ricerca.js?v=1789266032409100337 HTTP/1.1" 200 -
+2026-09-13 04:21:47,051 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:47] "GET /sse/poll/gara/2 HTTP/1.1" 200 -
+2026-09-13 04:21:47,051 - werkzeug - INFO - 127.0.0.1 - - [13/Sep/2026 04:21:47] "GET /sse/poll/user/2 HTTP/1.1" 200 -
