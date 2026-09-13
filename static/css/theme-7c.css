@@ -3360,9 +3360,17 @@ a.c7-rows__row:hover { background: var(--c7-sunken); }
 
 /* Il turno concluso e i turni prima: righe. */
 .c7-riga-partita { gap: 10px; }
-.c7-riga-partita__nomi { display: flex; gap: 6px; min-width: 0; }
-.c7-riga-partita__nomi > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.c7-riga-partita__sep { color: var(--c7-ink-faint); flex-shrink: 0; }
+/* Sul telefono i due nomi vanno uno sopra l'altro: con nome e cognome veri,
+   in 354px accanto a punteggio, tavolo e matita, si troncavano a
+   «Andrea F…». Dal desktop tornano sulla stessa riga. */
+.c7-riga-partita__nomi { display: flex; flex-direction: column; min-width: 0; }
+.c7-riga-partita__nomi > span { overflow-wrap: anywhere; }
+.c7-riga-partita__sep { display: none; color: var(--c7-ink-faint); flex-shrink: 0; }
+@media (min-width: 992px) {
+  .c7-riga-partita__nomi { flex-direction: row; gap: 6px; }
+  .c7-riga-partita__nomi > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .c7-riga-partita__sep { display: inline; }
+}
 .c7-riga-partita__punti { font-size: 14px; font-weight: 800; color: var(--c7-ink-soft); flex-shrink: 0; }
 .c7-riga-partita__tavolo { width: 68px; text-align: right; flex-shrink: 0; }
 .c7-rows--spenta .c7-rows__title { color: var(--c7-ink-muted); }

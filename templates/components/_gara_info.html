@@ -60,7 +60,7 @@
         </dd>
 
         <dt class="text-muted" style="font-weight: 700;">{{ _('Numero dispari') }}</dt>
-        <dd style="margin: 0; text-align: right;">{{ gara.odd_number_policy.replace('_', ' ').title() }}</dd>
+        <dd style="margin: 0; text-align: right;">{{ gara.odd_number_policy|etichetta_dispari }}</dd>
         {% endif %}
 
         {# Gli esercizi fra i turni, dove la gara li ammette #}

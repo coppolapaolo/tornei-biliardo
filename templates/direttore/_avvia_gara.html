@@ -59,7 +59,7 @@
                       _('gli iscritti sono dispari: uno prende la X del primo turno, scegli chi qui sotto'), tone='warn') }}
             {% elif _dispari %}
             {{ d.riga('fa-scale-balanced', _('Numero dispari'),
-                      (_('chi riposa lo decide la formula: %(policy)s', policy=gara.odd_number_policy.replace('_', ' ')|title)), tone='warn') }}
+                      (_('chi riposa lo decide la formula: %(policy)s', policy=gara.odd_number_policy|etichetta_dispari)), tone='warn') }}
             {% else %}
             {{ d.riga('fa-scale-balanced', _('Numero pari'), _('nessuno riposa al primo turno'), tone='neutral') }}
             {% endif %}

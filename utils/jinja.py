@@ -421,3 +421,22 @@ def format_tpa(value) -> str:
     if millesimi >= 1000:
         return f"{millesimi // 1000}.{millesimi % 1000:03d}"
     return f".{millesimi:03d}"
+
+
+def etichetta_dispari(policy) -> str:
+    """Il nome, tradotto, della formula che decide chi riposa coi dispari.
+
+    Le schermate mostravano il valore della colonna ripulito a mano
+    («Bye With Challenge»): inglese in una pagina italiana, e con la parola
+    «bye» che l'interfaccia non usa mai. Un valore sconosciuto torna com'e'.
+    """
+    from models.matchmaking.configuration import OddNumberPolicy
+
+    valore = getattr(policy, "value", policy)
+    etichette = {
+        OddNumberPolicy.NO.value: _("Lista d'attesa"),
+        OddNumberPolicy.BYE.value: _("X a tavolino"),
+        OddNumberPolicy.BYE_WITH_CHALLENGE.value: _("X a tavolino con esercizio"),
+        OddNumberPolicy.TRIO.value: _("Trio, partita a tre"),
+    }
+    return etichette.get(valore, valore or "")

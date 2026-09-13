@@ -154,7 +154,7 @@
         <div class="c7-comesigioca__valore" style="color:{{ 'var(--c7-ok)' if gara.anti_rematch_enabled else 'var(--c7-ink-muted)' }}">
           {{ _('Attivo') if gara.anti_rematch_enabled else _('Non attivo') }}</div></div>
       <div><div class="c7-kicker">{{ _('Dispari') }}</div>
-        <div class="c7-comesigioca__valore">{{ gara.odd_number_policy.replace("_", " ")|title }}</div></div>
+        <div class="c7-comesigioca__valore">{{ gara.odd_number_policy|etichetta_dispari }}</div></div>
       {% endif %}
     </section>
     <div class="c7-nota">

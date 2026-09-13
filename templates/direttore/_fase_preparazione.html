@@ -141,7 +141,7 @@
       {{ d.riga('fa-sitemap', _('Tabellone'), t.forma(forma) ~ ((' · ' ~ _('se si arriva a %(n)s iscritti', n=forma.iscritti)) if forma_stima else '')) }}
       {% endif %}
       {% if gara.matchmaking_strategy not in bracket_minimum_players %}
-      {{ d.riga('fa-scale-balanced', _('Chi riposa'), gara.odd_number_policy.replace('_', ' ')|title) }}
+      {{ d.riga('fa-scale-balanced', _('Chi riposa'), gara.odd_number_policy|etichetta_dispari) }}
       {% endif %}
       {{ d.riga('fa-calendar', _('Quando'), (gara.date|date_local) ~ ((' · ' ~ (gara.time|time_local)) if gara.time else '')) }}
       {% if gara.location %}{{ d.riga('fa-location-dot', _('Sala'), gara.location) }}{% endif %}
