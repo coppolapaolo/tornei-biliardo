@@ -330,3 +330,62 @@ def test_a_gara_conclusa_il_vincitore_c_e_anche_con_le_partite_confermate_dai_du
 
     html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
     assert f"Ha vinto {m.player1.username}" in html
+
+
+# ── Fase 2, le iscrizioni (canvas 2.1–2.6) ────────────────────────────────────
+
+
+def test_il_campo_per_iscrivere_sta_in_cima_e_i_candidati_sono_righe(
+    admin_client, db_session
+):
+    """2.2: si scrive in cima, i candidati compaiono sotto con «Iscrivi» sulla
+    riga; niente tendina."""
+    from models.user.services import UserService
+
+    UserService.create_user("fasi_cand", "fasi_cand@test.local", "pw12345")
+    db_session.commit()
+    gara = _gara(db_session, GaraStatus.INSCRIPTION.value)
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert "data-iscrivibili" in html
+    assert 'js-iscrivibile"' in html
+    assert 'name="user_id"' in html
+    assert "<select" not in html.split("data-iscrivibili")[1].split("c7-sechead")[0]
+    # Il campo precede l'elenco.
+    assert html.index("data-iscrivibili") < html.index("c7-sechead")
+
+
+def test_a_iscrizioni_scadute_senza_il_minimo_la_fascia_propone_di_estendere(
+    admin_client, db_session
+):
+    """2.4: lo stato e' derivato dalla scadenza, non persistito."""
+    from datetime import timedelta
+
+    from models.base import utc_now
+
+    gara = _gara(db_session, GaraStatus.INSCRIPTION.value)
+    gara.inscription_start = utc_now() - timedelta(days=3)
+    gara.inscription_end = utc_now() - timedelta(hours=1)
+    db_session.commit()
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    assert "Iscrizioni scadute" in html
+    assert "Estendi le iscrizioni" in html
+    assert "Annulla la gara" in html
+    assert (
+        "startFirstRound("
+        not in html.split("c7-fascia__azione")[1].split("</section>")[0]
+    )
+
+
+def test_il_foglio_di_avvio_dice_i_tavoli_nell_ordine_scelto(admin_client, db_session):
+    """2.5: prima di avviare si legge cosa succede, tavoli compresi."""
+    import json
+
+    gara = _gara(db_session, GaraStatus.INSCRIPTION.value)
+    gara.available_tables = json.dumps(["3", "1", "2"])
+    db_session.commit()
+    html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    foglio = html.split('id="avviaGaraModal"')[1].split("</form>")[0]
+    assert "Tavoli 3, 1, 2" in foglio
+    assert "in quest’ordine" in foglio
+    assert "Il turno 1 si sorteggia adesso" in foglio
+    assert "Da qui le iscrizioni si chiudono" in foglio

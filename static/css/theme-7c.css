@@ -3260,3 +3260,33 @@ a.c7-rows__row:hover { background: var(--c7-sunken); }
 /* La descrizione in testata: gli override per turno, uno per riga sotto lg. */
 .c7-head__override { display: block; }
 @media (min-width: 992px) { .c7-head__override { display: inline; } }
+
+/* --------------------------------------------------------------------------
+   22. Le iscrizioni (canvas 2.2–2.6)
+   -------------------------------------------------------------------------- */
+
+/* Sul desktop (2.6) la colonna di destra — link, attesa, da tenere d'occhio
+   — copre due righe della griglia: cosi' il terzo blocco (squadre,
+   categorie, informazioni) sale sotto l'elenco degli iscritti invece di
+   lasciare la colonna sinistra vuota. Sul telefono e' l'ordine del DOM. */
+@media (min-width: 992px) { .c7-cols > .c7-cols__alta { grid-column: 2; grid-row: 1 / span 2; } }
+
+/* I candidati da iscrivere: righe-form nascoste finche' non si scrive. */
+.c7-iscrivibili { background: var(--c7-card); }
+.c7-iscrivibili:empty { display: none; }
+.c7-iscrivibili .js-iscrivibile { margin: 0; }
+/* Il chip della categoria ospita il combo: si legge come un chip, si scrive
+   come un campo. */
+.c7-chip--cat { padding-right: 8px; }
+.c7-chip--cat .c7-categoria-input {
+  width: 48px; border: 0; background: transparent; font: inherit; font-weight: 800;
+  color: inherit; padding: 0; text-align: center; outline: none;
+}
+.c7-chip--cat .c7-categoria-input.is-valid { color: var(--c7-ok); }
+.c7-chip--cat .c7-categoria-input.is-invalid { color: var(--c7-err); }
+/* Il nome ha la precedenza sui chip: su un telefono stretto il chip della
+   squadra si accorcia (con i puntini) invece di spezzare il nome su due
+   righe. */
+.c7-iscritto .c7-chip { flex: 0 3 150px; min-width: 72px; overflow: hidden; }
+.c7-iscritto .c7-chip select { width: 100%; min-width: 0; text-overflow: ellipsis; }
+.c7-iscritto .c7-rows__main { flex: 1 1 auto; }

@@ -59,11 +59,12 @@ blocks:
     items:
       - name: "Register a player by hand"
         text: >-
-          For people who do not use the app or did not make it in time. Type
-          into the search box whatever you know about them — their username,
-          their first name or their last name: the list narrows as you type.
-          Players who added their name to their profile show up with it, so
-          you do not pick a namesake by mistake. They still need an account.
+          For people who do not use the app or did not make it in time. In
+          the box at the top of the page type whatever you know about them —
+          their last name, first name or username: the candidates appear
+          below as you type, each with «Enroll» on its row. Players who added
+          their name to their profile show up with it, so you do not pick a
+          namesake by mistake. They still need an account.
       - name: "Remove an entrant"
         text: >-
           For people who say they cannot come. The player is notified, and if
@@ -71,7 +72,9 @@ blocks:
       - name: "Change the dates"
         text: >-
           Extend the closing time if entries are thin, or bring it forward if
-          you are already full.
+          you are already full. If the deadline has passed without the
+          minimum, the band at the top says so and offers «Extend
+          registrations».
       - name: "Close early"
         text: >-
           **Close registrations** locks the list without waiting for the

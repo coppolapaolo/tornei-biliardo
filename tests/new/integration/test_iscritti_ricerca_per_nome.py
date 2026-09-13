@@ -89,9 +89,12 @@ def _pagina_da_direttore(client, direttore, gara):
 
 
 def _chiavi_di_ricerca(html, user_id):
-    """I `data-cerca` delle option di quell'utente (una per copia del componente)."""
+    """I `data-cerca` delle righe di quell'utente (una per copia del componente).
+
+    Dal 2026-09-13 i candidati sono righe-form con «Iscrivi» (canvas 2.2),
+    non option di una tendina: la chiave sta sul form, dopo l'`user_id`."""
     return re.findall(
-        rf'<option value="{user_id}"[^>]*data-cerca="([^"]*)"',
+        rf'data-cerca="([^"]*)"[^>]*>\s*<input[^>]*csrf_token[^>]*>\s*<input type="hidden" name="user_id" value="{user_id}"',
         html,
     )
 
@@ -140,9 +143,11 @@ def test_la_tendina_mostra_il_nome_accanto_allo_username(
     """
     html = _pagina_da_direttore(client, direttore, gara_in_iscrizione)
 
+    # La riga del candidato: username come titolo, nome e cognome sotto.
     etichette = re.findall(
-        rf'<option value="{giocatore_con_anagrafica.id}"[^>]*>([^<]*)</option>',
+        rf'name="user_id" value="{giocatore_con_anagrafica.id}">(.*?)</form>',
         html,
+        flags=re.S,
     )
     assert etichette
     for etichetta in etichette:

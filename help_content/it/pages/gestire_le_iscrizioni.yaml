@@ -59,11 +59,12 @@ blocks:
     items:
       - name: "Iscrivere un giocatore a mano"
         text: >-
-          Per chi non usa l'app o non ce la fa in tempo. Nel campo di ricerca
-          scrivi quello che sai di lui — il nome che usa nell'app, il suo nome
-          o il cognome: l'elenco si accorcia mentre scrivi. Chi ha aggiunto
-          nome e cognome al proprio profilo compare con quelli, così non
-          rischi di scegliere un omonimo. Deve comunque avere un account.
+          Per chi non usa l'app o non ce la fa in tempo. Nel campo in cima
+          alla pagina scrivi quello che sai di lui — il cognome, il nome o il
+          nome che usa nell'app: i candidati compaiono sotto mentre scrivi,
+          ognuno con «Iscrivi» sulla riga. Chi ha aggiunto nome e cognome al
+          proprio profilo compare con quelli, così non rischi di scegliere un
+          omonimo. Deve comunque avere un account.
       - name: "Togliere un iscritto"
         text: >-
           Per chi avvisa che non viene. Il giocatore riceve una notifica, e se
@@ -71,7 +72,8 @@ blocks:
       - name: "Cambiare le date"
         text: >-
           Prorogare la chiusura se gli iscritti sono pochi, o anticiparla se
-          siete già al completo.
+          siete già al completo. Se la scadenza è passata e il minimo non
+          c'è, la fascia in cima lo dice e propone «Estendi le iscrizioni».
       - name: "Chiudere in anticipo"
         text: >-
           **Chiudi iscrizioni** blocca l'elenco senza aspettare la scadenza.

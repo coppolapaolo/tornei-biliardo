@@ -384,7 +384,9 @@ def test_la_pagina_mostra_il_modale_quando_c_e_una_x(db_session, client):
 
     body = client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
 
-    assert 'id="xChoiceModal"' in body
+    # Il foglio «Avvia la gara» (canvas 2.5) porta la scelta della X.
+    assert 'id="avviaGaraModal"' in body
+    assert 'name="bye_to_last_inscribed"' in body
     assert players[-1].username in body
 
 
@@ -396,4 +398,5 @@ def test_la_pagina_non_mostra_il_modale_con_giocatori_pari(db_session, client):
 
     body = client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
 
-    assert 'id="xChoiceModal"' not in body
+    assert 'id="avviaGaraModal"' in body
+    assert 'name="bye_to_last_inscribed"' not in body

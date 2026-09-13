@@ -5,7 +5,12 @@
    scritto perche'. Le iscrizioni non ancora aperte e quelle scadute sono
    stati derivati (`get_real_status`) e cambiano solo la fascia: estendere o
    annullare, o avviare se il minimo c'e'. Il link pubblico sta qui, perche'
-   in questa fase condividerlo e' il lavoro principale. #}
+   in questa fase condividerlo e' il lavoro principale.
+
+   Sul desktop (2.6) due colonne: a sinistra il campo per iscrivere, sempre
+   in cima, e l'elenco; a destra il link, la lista d'attesa e «Da tenere
+   d'occhio». Sul telefono (2.2) e' una colonna sola nello stesso ordine di
+   lettura, con la lista d'attesa subito sotto gli iscritti. #}
 
 {% set reale = gara.get_real_status() %}
 {% set iscritti = gara.get_active_inscriptions_count() %}
@@ -85,42 +90,58 @@
 </div>
 {% endif %}
 
-{# Il link da condividere: in questa fase e' il lavoro principale. #}
-{% if public_invite_url or gara.is_prova %}
-<div class="c7-card">
-  <div class="c7-kicker">{{ _('Condividi') }}</div>
-  {% include "components/_gara_public_link.html" %}
+<div class="c7-cols">
+  {# ---- Colonna sinistra: iscrivere e l'elenco ---- #}
+  <div class="c7-stack" style="gap:18px">
+    {% set attesa_a_parte = true %}
+    {% include "components/_gara_inscriptions.html" %}
+  </div>
+
+  {# ---- Colonna destra: il link, l'attesa, cosa tenere d'occhio ---- #}
+  <div class="c7-stack c7-cols__alta" style="gap:18px">
+    {# Il link da condividere: in questa fase e' il lavoro principale. #}
+    {% if public_invite_url or gara.is_prova %}
+    <div>
+      {{ d.sezione(_('Condividi')) }}
+      <div class="c7-card" style="margin-top:12px">
+        {% include "components/_gara_public_link.html" %}
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="d-none d-lg-block">
+      {% include "components/_gara_lista_attesa.html" %}
+    </div>
+
+    <div>
+      {{ d.sezione(_("Da tenere d'occhio")) }}
+      <div class="c7-rows" style="margin-top:12px">
+        {% if feature_visible('admin.competition.gara_impostazioni') %}
+        {{ d.riga('fa-table', _('Tavoli'),
+                  ((_tavoli|join(', ')) ~ ' — ' ~ _('cambia prima di avviare')) if _tavoli else _('nessun tavolo: la sala non ne ha dichiarati'),
+                  tone=('neutral' if _tavoli else 'warn'),
+                  href=url_for('admin.competition.gara_impostazioni', gara_id=gara.id) ~ '#sezioneTavoli') }}
+        {% endif %}
+        {% if reale == GaraStatus.INSCRIPTION.value and gara.can_modify_inscription_dates() %}
+        {{ d.riga('fa-clock', _('Chiusura iscrizioni'),
+                  ((gara.inscription_end|datetime_local) if gara.inscription_end else _('senza scadenza')),
+                  button=True, attrs='data-bs-toggle="modal" data-bs-target="#modifyDatesModal"',
+                  right='<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe) }}
+        {% endif %}
+        {% if reale == GaraStatus.INSCRIPTION.value and iscritti == 0 %}
+        {{ d.riga('fa-door-closed', _('Chiudi le iscrizioni'), _('la gara torna in preparazione'),
+                  button=True, attrs='onclick="closeInscriptions(' ~ gara.id ~ ')"',
+                  right='<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe) }}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# ---- Sotto l'elenco (desktop) e in coda (telefono): squadre,
+     categorie e le informazioni ---- #}
+  <div class="c7-stack" style="gap:18px">
+    <div id="sezioneSquadre">{% include "components/_squadre_management.html" %}</div>
+    {% include "components/_categorie_management.html" %}
+    {% include "components/_gara_info.html" %}
+  </div>
 </div>
-{% endif %}
-
-{% include "components/_gara_inscriptions.html" %}
-
-{{ d.sezione(_("Da tenere d'occhio")) }}
-<div class="c7-rows">
-  {% if feature_visible('admin.competition.gara_impostazioni') %}
-  {{ d.riga('fa-table', _('Tavoli'),
-            ((_tavoli|join(', ')) ~ ' — ' ~ _('cambia prima di avviare')) if _tavoli else _('nessun tavolo: la sala non ne ha dichiarati'),
-            tone=('neutral' if _tavoli else 'warn'),
-            href=url_for('admin.competition.gara_impostazioni', gara_id=gara.id) ~ '#sezioneTavoli') }}
-  {% endif %}
-  {% if gara.get_waitlist_count() > 0 %}
-  {{ d.riga('fa-user-clock', ngettext('%(n)d in lista d’attesa', '%(n)d in lista d’attesa', gara.get_waitlist_count(), n=gara.get_waitlist_count()),
-            _('entra se qualcuno si ritira'), tone='warn') }}
-  {% endif %}
-  {% if reale == GaraStatus.INSCRIPTION.value and gara.can_modify_inscription_dates() %}
-  {{ d.riga('fa-clock', _('Chiusura iscrizioni'),
-            ((gara.inscription_end|datetime_local) if gara.inscription_end else _('senza scadenza')),
-            button=True, attrs='data-bs-toggle="modal" data-bs-target="#modifyDatesModal"',
-            right='<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe) }}
-  {% endif %}
-  {% if reale == GaraStatus.INSCRIPTION.value and iscritti == 0 %}
-  {{ d.riga('fa-door-closed', _('Chiudi le iscrizioni'), _('la gara torna in preparazione'),
-            button=True, attrs='onclick="closeInscriptions(' ~ gara.id ~ ')"',
-            right='<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe) }}
-  {% endif %}
-</div>
-
-<div id="sezioneSquadre">{% include "components/_squadre_management.html" %}</div>
-{% include "components/_categorie_management.html" %}
-
-{% include "components/_gara_info.html" %}

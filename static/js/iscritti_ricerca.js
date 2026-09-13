@@ -1,4 +1,4 @@
-/* static/js/iscritti_ricerca.js — filtra la tendina «chi iscrivere».
+/* static/js/iscritti_ricerca.js — la ricerca di chi iscrivere.
  *
  * Il direttore che aggiunge un iscritto spesso conosce la persona per nome e
  * cognome, non per username: la stringa cercata deve pescare in tutti e tre i
@@ -6,13 +6,15 @@
  * sono cifrati in modo non deterministico — in chiaro esistono solo nella
  * pagina già resa, dove peraltro l'elenco completo c'è già tutto.
  *
- * Il componente degli iscritti è incluso **due volte** (mobile e desktop):
- * niente `id`, niente `getElementById`. Un solo ascoltatore delegato sul
- * documento serve entrambe le copie, e ogni copia lavora sulla propria
- * tendina risalendo con `closest`.
+ * Dal 2026-09-13 (canvas «Pagina gara del direttore», 2.2 e 2.3) i candidati
+ * non stanno in una tendina ma in righe con «Iscrivi», dentro un contenitore
+ * `[data-iscrivibili]`: le righe restano nascoste finché non si scrive, e
+ * compaiono quelle che corrispondono, con il conteggio sotto al campo. Si
+ * lavora per contenitore, risalendo con `closest`, così più copie del
+ * componente nella stessa pagina non si disturbano; niente `id`.
  *
- * Senza JavaScript resta la tendina completa di prima: il campo di ricerca è
- * un miglioramento, non un prerequisito.
+ * Senza JavaScript le righe restano tutte visibili: il campo di ricerca è un
+ * miglioramento, non un prerequisito.
  */
 (function () {
   "use strict";
@@ -22,62 +24,51 @@
     return (testo || "")
       .toLowerCase()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
+      .replace(/[̀-ͯ]/g, "");
   }
 
-  /* Le `option` si conservano al primo filtro e si ricostruiscono ogni volta.
-     Nasconderle con `hidden` sarebbe più corto, ma su Safari le option
-     nascoste restano visibili: la tendina mostrerebbe risultati che il campo
-     dice di aver escluso. */
-  function opzioniOriginali(tendina) {
-    if (!tendina._opzioniIscritti) {
-      tendina._opzioniIscritti = Array.prototype.slice.call(tendina.options);
-    }
-    return tendina._opzioniIscritti;
+  function righe(contenitore) {
+    return Array.prototype.slice.call(contenitore.querySelectorAll(".js-iscrivibile"));
   }
 
   function filtra(campo) {
-    var contenitore = campo.closest("form");
+    var contenitore = campo.closest("[data-iscrivibili]");
     if (!contenitore) return;
-    var tendina = contenitore.querySelector('select[name="user_id"]');
-    if (!tendina) return;
 
     var cercato = normalizza(campo.value).trim();
-    var opzioni = opzioniOriginali(tendina);
-    var selezionato = tendina.value;
+    var massimo = parseInt(contenitore.dataset.massimo || "8", 10);
+    var trovati = 0;
 
-    var superstiti = opzioni.filter(function (opzione) {
-      // Il segnaposto («Seleziona giocatore…») non ha valore e resta sempre.
-      if (!opzione.value) return true;
-      if (!cercato) return true;
-      return normalizza(opzione.dataset.cerca || opzione.text).indexOf(cercato) !== -1;
+    righe(contenitore).forEach(function (riga) {
+      var chiave = normalizza(riga.dataset.cerca || riga.textContent);
+      var corrisponde = cercato !== "" && chiave.indexOf(cercato) !== -1;
+      if (corrisponde) trovati += 1;
+      // Le prime `massimo` corrispondenze: una lista di trenta righe sotto il
+      // campo non aiuta nessuno, e il conteggio dice quante ce ne sono.
+      riga.hidden = !corrisponde || trovati > massimo;
     });
-
-    tendina.replaceChildren.apply(tendina, superstiti);
-
-    var giocatori = superstiti.filter(function (opzione) {
-      return opzione.value;
-    });
-
-    // Un solo superstite: è quello che si voleva. Preselezionarlo risparmia il
-    // passaggio dalla tendina, che è il gesto che si stava cercando di evitare.
-    if (giocatori.length === 1) {
-      tendina.value = giocatori[0].value;
-    } else if (
-      giocatori.some(function (opzione) {
-        return opzione.value === selezionato;
-      })
-    ) {
-      tendina.value = selezionato;
-    } else {
-      tendina.value = "";
-    }
 
     var stato = contenitore.querySelector(".js-iscritti-esito");
     if (stato) {
-      stato.textContent = cercato ? stato.dataset.formato.replace("{n}", giocatori.length) : "";
+      stato.textContent = cercato ? stato.dataset.formato.replace("{n}", trovati) : "";
+    }
+    var vuoto = contenitore.querySelector(".js-iscritti-nessuno");
+    if (vuoto) {
+      vuoto.hidden = !(cercato && trovati === 0);
     }
   }
+
+  // All'apertura le righe sono nascoste: si scrive, e compaiono. Con lo
+  // script spento restano visibili, quindi il nascondere lo fa lo script.
+  function nascondiTutte() {
+    Array.prototype.forEach.call(document.querySelectorAll("[data-iscrivibili]"), function (contenitore) {
+      righe(contenitore).forEach(function (riga) { riga.hidden = true; });
+    });
+  }
+  // Subito, per i contenitori gia' nel DOM, e di nuovo a documento pronto
+  // per quelli che lo script precede: nascondere due volte non costa niente.
+  nascondiTutte();
+  document.addEventListener("DOMContentLoaded", nascondiTutte);
 
   document.addEventListener("input", function (evento) {
     var campo = evento.target.closest && evento.target.closest(".js-iscritti-cerca");

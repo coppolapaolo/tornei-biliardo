@@ -89,69 +89,21 @@
 <script>
   const GARA_CONFIG = JSON.parse(document.getElementById('gara-config').textContent);
 
+  // Avviare la gara passa dal foglio (canvas 2.5): dice cosa succede prima
+  // che succeda — chi entra, i turni, chi prende la X, i tavoli — e il suo
+  // form posta a start_first_round. Niente conferma secca: il foglio e' la
+  // conferma. La categoria mancante (ADR-049) si legge all'apertura, perche'
+  // il combo delle categorie salva senza ricaricare.
   function startFirstRound(provaId, strategy) {
-    // Quando c'e' una X da assegnare, la conferma secca lascia il posto al
-    // modale che chiede anche a chi tocca: e' la stessa domanda, con una
-    // scelta in piu'. Il form del modale posta da solo.
-    if (openXChoiceModal()) return;
-
-    let message;
-    if (strategy === {{ MatchmakingStrategy.RANDOM.value|tojson }}) {
-      message = GARA_CONFIG.i18n.confirmStartRandom;
-    } else if ({{ [MatchmakingStrategy.DIRECT_ELIMINATION.value, MatchmakingStrategy.DOUBLE_KNOCKOUT.value]|tojson }}.indexOf(strategy) >= 0) {
-      message = GARA_CONFIG.i18n.confirmStartBracket;
-    } else {
-      message = GARA_CONFIG.i18n.confirmStartStandard;
-    }
-
-    // Ultimo istante utile: dopo l'avvio le categorie hanno gia' deciso quali
-    // partite contano per l'Elo, e correggerle richiede uno script e un
-    // ricalcolo che sposta il rating di tutti.
-    // Il messaggio arriva gia' composto: il conteggio e' noto al server, e
-    // comporlo li' e' l'unico modo di avere il singolare giusto ("1 iscritto
-    // non ha", non "1 iscritti non hanno").
-    if (GARA_CONFIG.i18n.warnSenzaCategoria) {
-      message = GARA_CONFIG.i18n.warnSenzaCategoria + '\n\n' + message;
-    }
-
-    showConfirm(message, () => {
-      // Loading overlay durante il calcolo dello schedule (per la strategia
-      // Random il server pre-genera tutti i turni — per trio mode il
-      // branch-and-bound può richiedere qualche secondo).
-      showScheduleOverlay();
-      const form = document.createElement('form');
-      form.method = 'POST';
-      form.action = `/admin/gara/${provaId}/start_first_round`;
-      const csrf = document.createElement('input');
-      csrf.type = 'hidden';
-      csrf.name = 'csrf_token';
-      csrf.value = csrfToken();
-      form.appendChild(csrf);
-      document.body.appendChild(form);
-      form.submit();
-    });
-  }
-
-  // Apre il modale "a chi va la X", se questa gara ce l'ha. Ritorna false
-  // quando non c'e' (gare pari, trio, tabellone...): il chiamante prosegue
-  // con la conferma di sempre.
-  function openXChoiceModal() {
-    const modal = document.getElementById('xChoiceModal');
-    if (!modal) return false;
-
-    // Ultimo istante utile per le categorie: dopo l'avvio decidono gia' quali
-    // partite contano per l'Elo. Il testo arriva composto dal server ed e'
-    // riscritto a ogni salvataggio, quindi si legge ora e non all'apertura
-    // della pagina.
-    const warn = document.getElementById('xChoiceCategoriaWarn');
-    const warnText = document.getElementById('xChoiceCategoriaWarnText');
+    const modal = document.getElementById('avviaGaraModal');
+    if (!modal) return;
+    const warn = document.getElementById('avviaGaraCategoriaWarn');
+    const warnText = document.getElementById('avviaGaraCategoriaWarnText');
     if (warn && warnText) {
       warnText.textContent = GARA_CONFIG.i18n.warnSenzaCategoria || '';
-      warn.style.display = GARA_CONFIG.i18n.warnSenzaCategoria ? '' : 'none';
+      warn.hidden = !GARA_CONFIG.i18n.warnSenzaCategoria;
     }
-
     bootstrap.Modal.getOrCreateInstance(modal).show();
-    return true;
   }
 
   function showScheduleOverlay() {
