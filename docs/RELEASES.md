@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.21.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.20.0...v1.21.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* lo schermo in sala per le gare a tabellone ([#365](https://github.com/coppolapaolo/tornei-biliardo/issues/365)) ([2146b17](https://github.com/coppolapaolo/tornei-biliardo/commit/2146b1778913454a14d891d4b62fc221f33160ef))
+
 ## [1.20.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.19.0...v1.20.0) (2026-09-13)
 
 
