@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-13 07:52+0200\n"
+"POT-Creation-Date: 2026-09-13 07:54+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -468,6 +468,7 @@ msgid "invariato %(suffix)s"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:616
+#: templates/direttore/_classifica.html:44
 msgid "stabile"
 msgstr ""
 
@@ -2118,7 +2119,8 @@ msgstr ""
 #: templates/components/_campionato_general_classification.html:24
 #: templates/components/_detailed_classification.html:19
 #: templates/components/_user_info_card.html:26
-#: templates/dashboard/base.html:19 templates/player/profile.html:80
+#: templates/dashboard/base.html:19 templates/direttore/_classifica.html:35
+#: templates/player/profile.html:80
 msgid "Giocatore"
 msgstr ""
 
@@ -4029,7 +4031,8 @@ msgstr ""
 #: templates/admin/gara_create_standalone.html:321
 #: templates/components/_classification_mobile.html:10
 #: templates/components/_tessera_campionato.html:123
-#: templates/gara_detail.html:49 templates/public/vetrina_campionato.html:131
+#: templates/direttore/_classifica.html:20 templates/gara_detail.html:49
+#: templates/public/vetrina_campionato.html:131
 msgid "Classifica"
 msgstr ""
 
@@ -4038,7 +4041,7 @@ msgstr ""
 #: templates/components/_gara_inscriptions.html:96
 #: templates/components/_nearby_gare.html:137
 #: templates/direttore/_fase_conclusa.html:78
-#: templates/direttore/_fase_gioco.html:208
+#: templates/direttore/_fase_gioco.html:207
 #: templates/direttore/_fase_spareggio.html:64 templates/gara_detail.html:52
 msgid "Iscritti"
 msgstr ""
@@ -5779,6 +5782,7 @@ msgstr ""
 #: templates/admin/gara_challenge_classification.html:120
 #: templates/components/_gara_challenges_display.html:24
 #: templates/components/_match_challenge_input.html:93
+#: templates/direttore/_classifica.html:22
 #: templates/direttore/_fase_preparazione.html:75
 #: templates/direttore/preparazione/_esercizi.html:31
 #: templates/player/gara_challenge_detail.html:14
@@ -9134,6 +9138,7 @@ msgstr ""
 
 #: templates/components/_classification_mobile.html:26
 #: templates/components/_classification_mobile.html:52
+#: templates/direttore/_classifica.html:36
 msgid "Spot Shot Rally"
 msgstr ""
 
@@ -9928,7 +9933,7 @@ msgid "Imposta un massimo di iscritti per usare «fino al massimo»."
 msgstr ""
 
 #: templates/components/_gara_inscriptions.html:97
-#: templates/direttore/_fase_gioco.html:209
+#: templates/direttore/_fase_gioco.html:208
 #: templates/direttore/_fase_spareggio.html:65
 #, python-format
 msgid "%(n)d attivo"
@@ -13058,6 +13063,70 @@ msgstr ""
 #: templates/direttore/_card_partita.html:195
 #: templates/direttore/_menu_partita.html:32
 msgid "Il turno dopo è già avviato: questa partita non si tocca più."
+msgstr ""
+
+#: templates/direttore/_classifica.html:20
+msgid "Classifica (rack)"
+msgstr ""
+
+#: templates/direttore/_classifica.html:22
+msgid "complessiva"
+msgstr ""
+
+#: templates/direttore/_classifica.html:27
+#, python-format
+msgid "Prime %(n)s"
+msgstr ""
+
+#: templates/direttore/_classifica.html:28
+#, python-format
+msgid "Tutti (%(n)s)"
+msgstr ""
+
+#: templates/direttore/_classifica.html:37
+msgid "Vinti"
+msgstr ""
+
+#: templates/direttore/_classifica.html:37
+msgid "Vinte"
+msgstr ""
+
+#: templates/direttore/_classifica.html:38
+msgid "Persi"
+msgstr ""
+
+#: templates/direttore/_classifica.html:38
+msgid "Diff"
+msgstr ""
+
+#: templates/direttore/_classifica.html:44
+msgid "primo turno"
+msgstr ""
+
+#: templates/direttore/_classifica.html:44
+#, python-format
+msgid "sale di %(n)s"
+msgstr ""
+
+#: templates/direttore/_classifica.html:44
+#, python-format
+msgid "scende di %(n)s"
+msgstr ""
+
+#: templates/direttore/_classifica.html:68
+msgid ""
+"Sistema RACK: ordinata per triangoli vinti in tutta la gara, poi punti "
+"SSR. La X a tavolino vale zero triangoli."
+msgstr ""
+
+#: templates/direttore/_classifica.html:69
+msgid ""
+"Ordinata per vittorie, poi differenza triangoli. La X a tavolino vale una"
+" vittoria e zero differenza."
+msgstr ""
+
+#: templates/direttore/_classifica.html:70
+msgid "La freccia confronta con il turno prima."
 msgstr ""
 
 #: templates/direttore/_fase_conclusa.html:17

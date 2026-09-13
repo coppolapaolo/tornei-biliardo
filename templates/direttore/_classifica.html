@@ -1,0 +1,82 @@
+{# templates/direttore/_classifica.html — Design System 7c
+
+   La classifica dopo l'ultimo turno chiuso, per chi dirige (canvas 3.5 e
+   3.6): righe con la posizione, la freccia di tendenza rispetto al turno
+   prima (`previous_position`), l'avatar e il nome, e le colonne del
+   sistema di classifica (ADR-047, `gara.classification_system`): a vittorie
+   «Vinte» e «Diff», a RACK «Vinti» e «Persi». Le prime sei e poi tutti,
+   con due pillole. La nota sotto dice come si ordina e quanto vale la X
+   (SPECIFICHE.md righe 64 e 71).
+
+   Attese: `classification` (righe `RoundClassification` in ordine di
+   estrazione), `round_number` (0 = complessiva, formula casuale); opzionale
+   `ssr_scores_map`. Chi guarda usa `_classification_mobile.html`. #}
+{% if classification %}
+{% set _rack = classification[0].is_rack_ranking %}
+{% set _casuale = gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
+{% set _prime = 6 %}
+<section class="c7-stack c7-classifica" style="gap:10px" id="classificaDirettore">
+  <div class="c7-sechead">
+    <h3>{{ _('Classifica (rack)') if _rack else _('Classifica') }}</h3>
+    <span class="c7-sechead__note">
+      {% if _casuale or not round_number %}{{ _('complessiva') }}{% else %}{{ _('dopo il turno %(n)s', n=round_number) }}{% endif %}
+    </span>
+  </div>
+  {% if classification|length > _prime %}
+  <div class="c7-classifica__pillole">
+    <button type="button" class="c7-pill is-active" data-classifica-vista="prime" onclick="mostraClassifica('prime')">{{ _('Prime %(n)s', n=_prime) }}</button>
+    <button type="button" class="c7-pill" data-classifica-vista="tutti" onclick="mostraClassifica('tutti')">{{ _('Tutti (%(n)s)', n=classification|length) }}</button>
+  </div>
+  {% endif %}
+  <div class="c7-rows">
+    <div class="c7-rows__row c7-classifica__testa">
+      <span class="c7-classifica__pos"></span>
+      <span class="c7-classifica__trend"></span>
+      <span class="c7-classifica__gioc c7-label">{{ _('Giocatore') }}</span>
+      {% if ssr_scores_map %}<span class="c7-classifica__col c7-label" title="{{ _('Spot Shot Rally') }}">SSR</span>{% endif %}
+      <span class="c7-classifica__col c7-label">{{ _('Vinti') if _rack else _('Vinte') }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-label">{{ _('Persi') if _rack else _('Diff') }}</span>
+    </div>
+    {% for riga in classification %}
+    {% set _mov = (riga.previous_position - riga.position) if riga.previous_position else none %}
+    <div class="c7-rows__row c7-classifica__riga{% if loop.index > _prime %} c7-classifica__riga--oltre{% endif %}" data-oltre="{{ '1' if loop.index > _prime else '0' }}"{% if loop.index > _prime %} hidden{% endif %}>
+      <span class="c7-num c7-classifica__pos{% if riga.position <= 3 %} c7-classifica__pos--podio{% endif %}">{{ riga.position }}</span>
+      <span class="c7-classifica__trend" aria-label="{% if _mov is none %}{{ _('primo turno') }}{% elif _mov > 0 %}{{ _('sale di %(n)s', n=_mov) }}{% elif _mov < 0 %}{{ _('scende di %(n)s', n=-_mov) }}{% else %}{{ _('stabile') }}{% endif %}">
+        {% if _mov is none %}<span class="c7-classifica__trend-eq" aria-hidden="true"></span>
+        {% elif _mov > 0 %}<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5l8 12H4z" fill="var(--c7-ok)"/></svg>
+        {% elif _mov < 0 %}<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19L4 7h16z" fill="var(--c7-err)"/></svg>
+        {% else %}<span class="c7-classifica__trend-eq" aria-hidden="true"></span>{% endif %}
+      </span>
+      <span class="c7-avatar c7-avatar--sm">{{ riga.user.username[:2]|upper }}</span>
+      <span class="c7-classifica__gioc c7-rows__title">{{ riga.user.username }}</span>
+      {% if ssr_scores_map %}
+      {% set _ssr = ssr_scores_map.get(riga.user_id) %}
+      <span class="c7-classifica__col c7-num">{% if _ssr is not none %}{{ _ssr }}{% else %}–{% endif %}</span>
+      {% endif %}
+      {% if _rack %}
+      <span class="c7-classifica__col c7-num">{{ riga.total_racks_value }}</span>
+      <span class="c7-classifica__col c7-classifica__col--sec c7-num">{% if riga.racks_won is not none %}{{ riga.racks_won - (riga.rack_difference or 0) }}{% else %}–{% endif %}</span>
+      {% else %}
+      <span class="c7-classifica__col c7-num">{{ riga.matches_won }}</span>
+      {% set _diff = riga.ranking_rack_value %}
+      <span class="c7-classifica__col c7-classifica__col--sec c7-num">{% if _diff > 0 %}+{% endif %}{{ _diff }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  <div class="c7-nota">
+    {% if _rack %}{{ _('Sistema RACK: ordinata per triangoli vinti in tutta la gara, poi punti SSR. La X a tavolino vale zero triangoli.') }}
+    {% else %}{{ _('Ordinata per vittorie, poi differenza triangoli. La X a tavolino vale una vittoria e zero differenza.') }}{% endif %}
+    {{ _('La freccia confronta con il turno prima.') }}
+  </div>
+</section>
+<script>
+  function mostraClassifica(vista) {
+    var tutti = vista === 'tutti';
+    document.querySelectorAll('#classificaDirettore [data-oltre="1"]').forEach(function (r) { r.hidden = !tutti; });
+    document.querySelectorAll('#classificaDirettore [data-classifica-vista]').forEach(function (b) {
+      b.classList.toggle('is-active', b.dataset.classificaVista === vista);
+    });
+  }
+</script>
+{% endif %}

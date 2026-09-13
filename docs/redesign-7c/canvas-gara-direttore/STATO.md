@@ -448,4 +448,19 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   (`autore` nell'evento). Via il tavolo dei turni e le card di prima dalla
   fase di gioco (restano a chi guarda). Trovato strada facendo: il seed
   della guida lasciava `current_round=1` col turno 2 in gioco, e la fascia
-  proponeva di avviare un turno gia' avviato (`seed_demo.py`).
+  proponeva di avviare un turno gia' avviato (`seed_demo.py`). Recepiti
+  quattro rilievi della revisione automatica: l'endpoint del punteggio
+  rifiuta partite chiuse, bloccate, a tre, a set o X; il multi-set resta
+  sulla card di prima; stepper a 48px; il log del server fuori dal
+  repository.
+* **D2 · Gioco, la classifica** (PR `feat: la classifica del direttore con
+  le frecce`, 2026-09-13). Le schermate 3.5 e 3.6: la classifica dopo
+  l'ultimo turno chiuso (`direttore/_classifica.html`) in righe con
+  posizione, freccia di tendenza rispetto al turno prima
+  (`previous_position`, trattino se fermo o al primo turno), avatar e nome;
+  le colonne seguono `gara.classification_system` (ADR-047): «Vinte · Diff»
+  a vittorie, «Vinti · Persi» a RACK, con la nota su come si ordina e quanto
+  vale la X (SPECIFICHE righe 64 e 71). Prime sei e tutti con due pillole.
+  Una forma sola su telefono e desktop; chi guarda resta sui componenti di
+  prima. Le fasi spareggio e conclusa passano a questa classifica, con le
+  medaglie, nella fase F.

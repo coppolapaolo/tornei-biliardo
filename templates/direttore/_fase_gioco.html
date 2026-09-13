@@ -187,13 +187,12 @@
     </div>
     {% endif %}
 
+    {# La classifica dopo l'ultimo turno chiuso, con la freccia di tendenza
+       (canvas 3.5–3.6): una forma sola, telefono e desktop. #}
     {% if has_scores %}
     {% with classification=current_round_classification, round_number=latest_round_with_classification %}
-    <div class="d-lg-none" data-help="gara-classifica">
-      {% include "components/_classification_mobile.html" %}
-    </div>
-    <div class="d-none d-lg-block">
-      {% include "components/_detailed_classification.html" %}
+    <div data-help="gara-classifica">
+      {% include "direttore/_classifica.html" %}
     </div>
     {% endwith %}
     {% endif %}
