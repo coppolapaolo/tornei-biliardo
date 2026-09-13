@@ -381,7 +381,10 @@ class ScoringService:
     @staticmethod
     @transactional(domain="match")
     def set_match_result_direct(
-        match_id: int, player1_score: int, player2_score: int
+        match_id: int,
+        player1_score: int,
+        player2_score: int,
+        parziale: bool = False,
     ) -> None:
         """Set complete match result directly (admin operation).
 
@@ -391,6 +394,9 @@ class ScoringService:
             match_id: ID of the match
             player1_score: Final score for player 1
             player2_score: Final score for player 2
+            parziale: il punteggio arriva dagli stepper della card, un tocco
+                alla volta, e puo' essere a meta' partita. Vedi
+                `_validate_score_limits`.
 
         Raises:
             ValueError: If invalid scores
@@ -403,7 +409,9 @@ class ScoringService:
             raise ValueError("Non puoi modificare una partita bye!")
 
         # Validate scores
-        ScoringService._validate_score_limits(match, player1_score, player2_score)
+        ScoringService._validate_score_limits(
+            match, player1_score, player2_score, parziale=parziale
+        )
 
         # Determine winner and completion status
         is_complete, winner_id = ScoringService._calculate_result(
@@ -594,13 +602,18 @@ class ScoringService:
 
     @staticmethod
     def _validate_score_limits(
-        match: Match, player1_score: int, player2_score: int
+        match: Match, player1_score: int, player2_score: int, parziale: bool = False
     ) -> None:
         """Validate score limits for direct result setting.
 
         For "race to n" matches, validates that both players cannot have
         the winning score simultaneously (logically impossible - match
         ends when first player reaches winning score).
+
+        Con «esattamente N» il risultato secco deve dare N triangoli in totale:
+        un totale diverso e' un errore di battitura, che altrimenti lascerebbe
+        la partita aperta in silenzio. Con `parziale` il punteggio arriva dagli
+        stepper della card a meta' partita, e basta che non superi N.
         """
         if player1_score < 0 or player2_score < 0:
             raise ValueError("I punteggi non possono essere negativi!")
@@ -623,7 +636,16 @@ class ScoringService:
                 )
         else:
             total_racks = player1_score + player2_score
-            if total_racks != distance.racks:
+            if parziale:
+                if total_racks > distance.racks:
+                    raise ValueError(
+                        _(
+                            "Non è possibile superare il limite di %(n)s triangoli "
+                            "totali per questa partita",
+                            n=distance.racks,
+                        )
+                    )
+            elif total_racks != distance.racks:
                 raise ValueError(
                     _(
                         "In modalità 'esatto numero', il totale dei triangoli "
