@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% import "direttore/_macros.html" as d with context %}
 
 {% block title %}{{ campionato.name }} - Admin{% endblock %}
 
@@ -45,6 +46,31 @@
 {% endblock %}
 
 {% block content %}
+{# La pagina del campionato per chi lo dirige — Design System 7c (canvas
+   «Pagina gara del direttore», pagina 7: 7.1–7.4).
+
+   In cima una fascia scura dice a che punto e' la stagione e l'unica cosa da
+   fare: una gara nuova durante la stagione, avviare i playoff o creare la
+   gara di playoff quando il campionato e' terminato. Sotto, sul desktop, due
+   colonne: a sinistra la classifica generale con la zona playoff (e, in fase
+   playoff, gli invitati), a destra le gare e la gestione. Sul telefono tre
+   linguette: Classifica, Gare, Gestione (o Playoff).
+
+   Gli invitati sono righe: su chi e' in attesa il direttore risponde per
+   conto del giocatore (`playoff_respond_for_player`); chi ha rifiutato dice
+   chi e' entrato al suo posto, e chi e' entrato dice al posto di chi
+   (`PlayoffQualification.replaced_by`). #}
+
+{% macro stato_gara(gara) -%}
+{% set s = gara.status %}
+{% if s == GaraStatus.COMPLETED.value %}<span class="c7-state c7-state--ok">{{ _('Conclusa') }}</span>
+{% elif s == GaraStatus.PLAYING.value %}<span class="c7-state c7-state--accent">{{ _('In corso') }}</span>
+{% elif s == GaraStatus.AWAITING_SSR.value %}<span class="c7-state c7-state--warn">{{ _('Spareggio') }}</span>
+{% elif s == GaraStatus.INSCRIPTION.value %}<span class="c7-state c7-state--info">{{ _('Iscrizioni') }}</span>
+{% elif s == GaraStatus.CANCELLED.value %}<span class="c7-state c7-state--muted">{{ _('Annullata') }}</span>
+{% else %}<span class="c7-state c7-state--muted">{{ _('In preparazione') }}</span>{% endif %}
+{%- endmacro %}
+
 {# Competizione di prova (ADR-058): il banner sta in cima, come sulla gara. #}
 {% if campionato.is_prova %}
 <div class="mb-4">
@@ -52,81 +78,101 @@
 </div>
 {% endif %}
 
-{# Su mobile le stesse azioni, in colonna: in testata non ci starebbero. #}
-<div class="d-lg-none c7-stack mb-4">
-  {% if campionato.can_be_modified() %}
-  <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}"
-     class="btn btn-secondary w-100">
-    <i class="fas fa-pencil"></i>&nbsp;{{ _("Modifica campionato") }}
-  </a>
-  {% endif %}
-  {% if feature_visible('admin.campionato.campionato_vetrina') and not campionato.is_prova %}
-  <a href="{{ url_for('admin.campionato.campionato_vetrina', campionato_id=campionato.id) }}"
-     class="btn btn-secondary w-100">
-    <i class="fas fa-rectangle-ad"></i>&nbsp;{{ _("Vetrina del campionato") }}
-  </a>
-  {% endif %}
-  {% if not campionato.terminated_at %}
-  {% if campionato.is_ready_for_playoff_transition() %}
-  <button type="button" class="btn btn-success w-100" id="btn-terminate-campionato-mobile" data-help="campionato-termina">
-    <i class="fas fa-trophy"></i>&nbsp;{{ _("Passa alla fase playoff") }}
-  </button>
-  {% else %}
-  <button type="button" class="btn btn-danger w-100" id="btn-terminate-campionato-mobile" data-help="campionato-termina">
-    <i class="fas fa-stop"></i>&nbsp;{{ _("Termina campionato") }}
-  </button>
-  {% endif %}
-  {% endif %}
-</div>
+{% set _giocate = gare | selectattr('status', 'equalto', GaraStatus.COMPLETED.value) | sort(attribute='number') | list %}
+{% set _in_corso = gare | selectattr('status', 'in', [GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value]) | sort(attribute='number') | list %}
+{% set _prossime = gare | selectattr('status', 'in', [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value]) | sort(attribute='number') | list %}
+{% set _previste = campionato.planned_gare_count or gare|length %}
+{% set _cfg_attive = (campionato.playoff_configurations or []) | selectattr('is_active') | list %}
+{% set _fase_playoff = campionato.terminated_at and campionato.has_playoff_configurations() %}
+{% set _playoff_avviati = playoff_status and playoff_status.total_qualified > 0 %}
+{% set _configurazioni = playoff_status.configurations if playoff_status else [] %}
+{% set _una_sola = _configurazioni|length == 1 %}
 
-<!-- Info Campionato -->
-<div class="row mb-4">
-    <div class="col-md-8">
-        {% include "components/_campionato_details_info.html" %}
-        {% include "components/_campionato_directors.html" %}
+{# ---------- La fascia ---------- #}
+<section class="c7-card c7-card--accent c7-fascia">
+  <div class="c7-fascia__testo">
+    {% if _fase_playoff %}
+    <div class="c7-kicker">{{ _('Fase playoff') }}</div>
+    <h3 class="c7-fascia__titolo">
+      {% if not _playoff_avviati %}{{ _('Playoff da avviare') }}
+      {% elif _configurazioni | sum(attribute='pending') %}{{ _('Inviti in attesa') }}
+      {% else %}{{ _('Inviti chiusi') }}{% endif %}
+    </h3>
+    <div class="c7-fascia__corpo">
+      {{ ngettext('%(n)d gara conclusa.', '%(n)d gare concluse.', _giocate|length, n=_giocate|length) }}
+      {% if _playoff_avviati %}
+        {% for cs in _configurazioni %}
+        {{ _('%(nome)s: %(c)s confermati su %(tot)s.', nome=cs.configuration.name, c=cs.confirmed, tot=cs.configuration.max_participants) }}
+        {% endfor %}
+        {% set _scadenza = _configurazioni | map(attribute='configuration') | selectattr('response_deadline') | map(attribute='response_deadline') | first %}
+        {% if _scadenza and _configurazioni | sum(attribute='pending') %}{{ _('Gli inviti scadono il %(quando)s.', quando=_scadenza|datetime_local) }}{% endif %}
+      {% else %}
+        {{ _('Controlla chi è qualificato e avvia i playoff: i giocatori ricevono l’invito.') }}
+      {% endif %}
     </div>
-    <div class="col-md-4">
-        {% include "components/_campionato_statistics.html" %}
+    {% elif campionato.terminated_at %}
+    <div class="c7-kicker">{{ _('Campionato concluso') }}</div>
+    <h3 class="c7-fascia__titolo">{{ _('Classifica definitiva') }}</h3>
+    <div class="c7-fascia__corpo">{{ ngettext('%(n)d gara conclusa.', '%(n)d gare concluse.', _giocate|length, n=_giocate|length) }}</div>
+    {% else %}
+    <div class="c7-kicker">{{ _('Stagione in corso') }}</div>
+    <h3 class="c7-fascia__titolo">
+      {% if _in_corso %}{{ _('Gara %(num)s in corso', num=_in_corso[0].number) }}
+      {% elif _giocate %}{{ _('Gara %(num)s conclusa', num=_giocate[-1].number) }}
+      {% else %}{{ _('Nessuna gara ancora giocata') }}{% endif %}
+    </h3>
+    <div class="c7-fascia__corpo">
+      {{ ngettext('%(n)d gara giocata su %(tot)s', '%(n)d gare giocate su %(tot)s', _giocate|length, n=_giocate|length, tot=_previste) }}{% if _cfg_attive %}{{ _(', poi il playoff fra i primi %(n)s', n=_cfg_attive[0].positions_to or _cfg_attive[0].max_participants) }}{% endif %}.
+      {% if _prossime %}{{ _('Prossima: gara %(num)s, %(quando)s.', num=_prossime[0].number, quando=_prossime[0].date|date_local) }}{% endif %}
     </div>
-</div>
+    {% endif %}
+  </div>
+  <div class="c7-fascia__azione">
+    {% if _fase_playoff and not _playoff_avviati and playoff_status and playoff_status.has_playoffs %}
+    <form method="POST" action='{{ url_for("admin.campionato.start_playoff", campionato_id=campionato.id) }}'>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-success" data-help="campionato-avvia-playoff"
+              onclick='return confirm({{ _("Avviare i playoff? Le configurazioni verranno bloccate e i giocatori qualificati riceveranno un invito.")|tojson }})'>
+        <i class="fas fa-play"></i> {{ _("Avvia i playoff") }}
+      </button>
+    </form>
+    {% elif _fase_playoff and _playoff_avviati and _una_sola %}
+      {% set cs = _configurazioni[0] %}
+      {% if cs.configuration.gara is none %}
+      <form method="POST" action='{{ url_for("admin.campionato.create_playoff_gara", campionato_id=campionato.id, config_id=cs.configuration.id) }}'>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-success"
+                onclick='return confirm({{ _("Creare la gara playoff e iscrivere i giocatori confermati?")|tojson }})'>
+          <i class="fas fa-trophy"></i> {{ ngettext('Crea la gara playoff · %(n)d confermato', 'Crea la gara playoff · %(n)d confermati', cs.confirmed, n=cs.confirmed) }}
+        </button>
+      </form>
+      {% else %}
+      <a href='{{ url_for("admin.competition.gara_detail", gara_id=cs.configuration.gara.id) }}' class="btn btn-success">
+        <i class="fas fa-arrow-right"></i> {{ _("Vai alla gara playoff") }}
+      </a>
+      {% endif %}
+    {% elif not campionato.terminated_at %}
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newProvaModal" data-help="campionato-nuova-gara">
+      <i class="fas fa-plus"></i> {{ _("Nuova gara") }}
+    </button>
+    {% endif %}
+  </div>
+</section>
 
-<!-- Classifica Generale del Campionato -->
-{% include "components/_campionato_general_classification.html" %}
+{# ---------- Le linguette (telefono) ---------- #}
+{% set gara_views = [('classifica', _('Classifica')), ('gare', _('Gare')), (('playoff', _('Playoff')) if _fase_playoff else ('gestione', _('Gestione')))] %}
+{% set gara_view_active = 'playoff' if _fase_playoff else 'classifica' %}
+{% set viste_aria = _('Viste del campionato') %}
+{% include "components/_gara_view_tabs.html" %}
 
-{% if campionato.terminated_at %}
-<div class="alert alert-dark d-flex align-items-center mb-4" role="alert">
-    <i class="fas fa-stop-circle me-2"></i>
-    <div>
-        {# Il banner diceva "Campionato terminato" anche quando il badge, a pochi
-           pixel di distanza, diceva "Completato": due parole per lo stesso fatto
-           (issue #242). Ora ciascun ramo usa la parola del proprio stato. #}
-        {% if campionato.has_playoff_configurations() %}
-        <strong>{{ _("Campionato terminato") }}</strong>
-        — {% if playoff_status and (playoff_status.total_confirmed > 0 or playoff_status.total_qualified > 0) %}{{ _("Playoff in corso") }}{% else %}{{ _("Playoff in attesa di avvio") }}{% endif %}
-        {% else %}
-        <strong>{{ _("Campionato completato") }}</strong>
-        {% endif %}
-    </div>
-</div>
-{% endif %}
+<div id="garaViews" class="c7-cols" data-c7-view="{{ gara_view_active }}" data-gara-id="campionato-{{ campionato.id }}">
+  {# ================= colonna sinistra ================= #}
+  <div class="c7-stack c7-tabflat">
 
-{# La stessa condizione del banner qui sopra: senza configurazioni playoff
-   questa card cadeva nel ramo `else` e invitava a configurare un playoff per un
-   campionato gia' chiuso (issue #242). #}
-{% if campionato.terminated_at and campionato.has_playoff_configurations() %}
-<div class="card mb-4">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0"><i class="fas fa-medal"></i> {{ _("Playoff") }}</h5>
-    </div>
-    <div class="card-body">
-
-        {# playoff_started: avvio già fatto, lock UI di modifica config #}
-        {% set playoff_started = playoff_status and playoff_status.total_qualified > 0 %}
-
-        {% if playoff_status and playoff_status.has_playoffs %}
-
-            {% if not playoff_started %}
-            {# ── PRE-AVVIO: config management ── #}
+    {% if _fase_playoff %}
+    <section class="c7-stack" data-c7-tab="playoff">
+      {% if playoff_status and playoff_status.has_playoffs and not _playoff_avviati %}
+      {{ d.sezione(_('Configurazioni dei playoff'), nota=_('si modificano fino all’avvio')) }}
             {% for cs in playoff_status.configurations %}
                 {% set cfg = cs.configuration %}
                 <div class="card mb-3">
@@ -195,7 +241,6 @@
                             </form>
                         </div>
 
-                        {% include "components/_playoff_scoring_form.html" %}
                     </div>
                 </div>
             {% endfor %}
@@ -231,193 +276,138 @@
                 </div>
             </div>
 
-            {# Avvia Playoff button #}
-            <form method="POST" action='{{ url_for("admin.campionato.start_playoff", campionato_id=campionato.id) }}'>
+
+      {% elif playoff_status and playoff_status.has_playoffs %}
+      {% for cs in _configurazioni %}
+      {% set cfg = cs.configuration %}
+      {% set quals = cfg.qualifications | sort(attribute='qualifying_position') %}
+      {% set _al_posto_di = {} %}
+      {% for q in quals %}{% if q.replaced_by_id %}{% set _ = _al_posto_di.update({q.replaced_by_id: q.user.username}) %}{% endif %}{% endfor %}
+      <div class="c7-stack" style="gap:10px">
+        <div class="c7-sechead" style="flex-wrap:wrap">
+          <h3>{{ _('Invitati') }}{% if not _una_sola %} · {{ cfg.name }}{% endif %}</h3>
+          <span class="c7-state c7-state--ok">{{ ngettext('%(n)d sì', '%(n)d sì', cs.confirmed, n=cs.confirmed) }}</span>
+          {% if cs.pending %}<span class="c7-state c7-state--warn">{{ ngettext('%(n)d in attesa', '%(n)d in attesa', cs.pending, n=cs.pending) }}</span>{% endif %}
+          {# Competizione di prova (ADR-058): i fittizi non rispondono da soli. #}
+          {% if campionato.is_prova and cs.pending > 0 and feature_visible('admin.campionato.prova_accetta_inviti') %}
+          <form method="POST" action='{{ url_for("admin.campionato.prova_accetta_inviti", campionato_id=campionato.id) }}' style="margin-left:auto">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-sm btn-success" data-help="playoff-accetta-tutti">
+              <i class="fas fa-check-double"></i> {{ _("Accetta tutti i rimanenti") }}
+            </button>
+          </form>
+          {% endif %}
+        </div>
+        {% if quals %}
+        <div class="c7-rows">
+          {% for q in quals %}
+          {% set _stato = q.status.value %}
+          <div class="c7-rows__row c7-invitato">
+            <span class="c7-avatar c7-avatar--sm">{{ q.user.username[:2]|upper }}</span>
+            <div class="c7-rows__main">
+              <div class="c7-rows__title">{{ q.user.username }}</div>
+              <div class="c7-rows__sub">
+                {{ _('%(pos)s° in classifica', pos=q.qualifying_position) }}
+                {% if _stato == 'declined' and q.replaced_by %} · {{ _('al suo posto %(nome)s', nome=q.replaced_by.username) }}{% endif %}
+                {% if _stato == 'expired' and q.replaced_by %} · {{ _('scaduto, al suo posto %(nome)s', nome=q.replaced_by.username) }}{% endif %}
+                {% if q.user_id in _al_posto_di %} · {{ _('invitato al posto di %(nome)s', nome=_al_posto_di[q.user_id]) }}{% endif %}
+                {% if q.answered_on_behalf %} · {{ _("registrato da %(name)s", name=q.responded_by.username if q.responded_by else _("direzione")) }}{% endif %}
+              </div>
+            </div>
+            <div class="c7-invitato__azioni">
+              {% if _stato == 'pending' and campionato.is_prova and q.user and q.user.is_fittizio and feature_visible('admin.campionato.prova_rispondi_invito') %}
+              <form method="POST" action='{{ url_for("admin.campionato.prova_rispondi_invito", campionato_id=campionato.id, qualification_id=q.id, risposta="accetta") }}'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                <button type="submit" class="btn btn-success" data-help="campionato-avvia-playoff"
-                        onclick='return confirm({{ _("Avviare i playoff? Le configurazioni verranno bloccate e i giocatori qualificati riceveranno un invito.")|tojson }})'>
-                    <i class="fas fa-play"></i> {{ _("Avvia Playoff") }}
+                <button type="submit" class="btn btn-sm btn-success" data-help="playoff-risposta-invito">
+                  <i class="fas fa-check"></i> {{ _("Accetta") }}
                 </button>
-            </form>
+              </form>
+              <form method="POST" action='{{ url_for("admin.campionato.prova_rispondi_invito", campionato_id=campionato.id, qualification_id=q.id, risposta="rifiuta") }}'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-sm btn-secondary"
+                        onclick='return confirm({{ _("Rifiutare il posto ai playoff? L'invito passera' al primo degli esclusi.")|tojson }})'>
+                  <i class="fas fa-times"></i> {{ _("Rifiuta") }}
+                </button>
+              </form>
+              {% elif _stato == 'pending' %}
+              {# Rispondere per conto del giocatore: capita che la risposta
+                 arrivi a voce, in sala. Senza questa strada l'invito resterebbe
+                 appeso fino alla scadenza. #}
+              <form method="POST" action='{{ url_for("admin.campionato.playoff_respond_for_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="qualification_id" value="{{ q.id }}">
+                <input type="hidden" name="answer" value="accept">
+                <button type="submit" class="btn btn-sm btn-success" data-help="playoff-risposta-invito"
+                        title='{{ _("Conferma per conto del giocatore") }}'
+                        onclick='return confirm({{ _("Confermare la partecipazione per conto di questo giocatore?")|tojson }})'>
+                  <i class="fas fa-check"></i> {{ _("Accetta") }}
+                </button>
+              </form>
+              <form method="POST" action='{{ url_for("admin.campionato.playoff_respond_for_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="qualification_id" value="{{ q.id }}">
+                <input type="hidden" name="answer" value="decline">
+                <button type="submit" class="btn btn-sm btn-secondary"
+                        title='{{ _("Rifiuta per conto del giocatore") }}'
+                        onclick='return confirm({{ _("Registrare il rifiuto? L'invito passera' al primo degli esclusi.")|tojson }})'>
+                  <i class="fas fa-times"></i> {{ _("Rifiuta") }}
+                </button>
+              </form>
+              {% elif _stato == 'confirmed' %}<span class="c7-state c7-state--ok">{{ _("Confermato") }}</span>
+              {% elif _stato == 'declined' %}<span class="c7-state c7-state--err">{{ _("Rifiutato") }}</span>
+              {% elif _stato == 'expired' %}<span class="c7-state c7-state--muted">{{ _("Scaduto") }}</span>
+              {% endif %}
+              {% if cfg.gara is none and _stato in ('pending', 'confirmed') %}
+              <form method="POST" action='{{ url_for("admin.campionato.playoff_remove_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="qualification_id" value="{{ q.id }}">
+                <button type="submit" class="c7-iconbtn" title="{{ _('Rimuovi dai playoff') }}" aria-label="{{ _('Rimuovi %(nome)s dai playoff', nome=q.user.username) }}"
+                        onclick='return confirm({{ _("Rimuovere questo giocatore?")|tojson }})'>
+                  <i class="fas fa-user-minus"></i>
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {{ d.nota(_('Chi rifiuta lascia il posto al primo degli esclusi. Se un giocatore te lo dice a voce, rispondi tu dalla sua riga: la risposta resta registrata a tuo nome.')) }}
 
-            {% else %}
-            {# ── POST-AVVIO: qualifications management ── #}
-            {% for cs in playoff_status.configurations %}
-                {% set cfg = cs.configuration %}
-                <div class="card mb-3">
-                    <div class="card-header d-flex align-items-center flex-wrap gap-2">
-                        <div class="flex-fill">
-                        <strong>{{ cfg.name }}</strong>
-                        <span class="badge bg-info ms-2">{{ cs.confirmed }} / {{ cfg.max_participants }} {{ _("confermati") }}</span>
-                        {% if cs.pending > 0 %}
-                        <span class="badge bg-warning ms-2">{{ cs.pending }} {{ _("in attesa") }}</span>
-                        {% endif %}
-                        </div>
-                        {# Competizione di prova (ADR-058): i fittizi non
-                           rispondono da soli. Il direttore risponde per
-                           ciascuno qui sotto, o accetta tutti insieme. #}
-                        {% if campionato.is_prova and cs.pending > 0 and feature_visible('admin.campionato.prova_accetta_inviti') %}
-                        <form method="POST" action='{{ url_for("admin.campionato.prova_accetta_inviti", campionato_id=campionato.id) }}'>
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <button type="submit" class="btn btn-sm btn-success" data-help="playoff-accetta-tutti">
-                                <i class="fas fa-check-double"></i> {{ _("Accetta tutti i rimanenti") }}
-                            </button>
-                        </form>
-                        {% endif %}
-                    </div>
-                    <div class="card-body">
-                        {# Qualifications table #}
-                        {% set quals = cfg.qualifications %}
-                        {% if quals %}
-                        {# Sotto i 992px la tabella e' piu' larga dello schermo:
-                           scorre dentro il suo contenitore, la pagina no. #}
-                        <div class="c7-table-wrap">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>{{ _("Giocatore") }}</th>
-                                    <th>{{ _("Posizione") }}</th>
-                                    <th>{{ _("Stato") }}</th>
-                                    <th>{{ _("Motivo") }}</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            {% for q in quals %}
-                                <tr class="{% if q.status.value == 'confirmed' %}table-success{% elif q.status.value == 'declined' %}table-danger{% elif q.status.value == 'expired' %}table-secondary{% endif %}">
-                                    <td>{{ q.user.username }}</td>
-                                    <td>{{ q.qualifying_position }}</td>
-                                    <td>
-                                        {% if q.status.value == 'pending' %}
-                                            <span class="badge bg-warning">{{ _("In attesa") }}</span>
-                                        {% elif q.status.value == 'confirmed' %}
-                                            <span class="badge bg-success">{{ _("Confermato") }}</span>
-                                        {% elif q.status.value == 'declined' %}
-                                            <span class="badge bg-danger">{{ _("Rifiutato") }}</span>
-                                        {% elif q.status.value == 'expired' %}
-                                            <span class="badge bg-secondary">{{ _("Scaduto") }}</span>
-                                        {% endif %}
-                                        {% if q.answered_on_behalf %}
-                                        <br><small class="text-muted">{{ _("registrato da %(name)s", name=q.responded_by.username if q.responded_by else _("direzione")) }}</small>
-                                        {% endif %}
-                                    </td>
-                                    <td><small class="text-muted">{{ q.qualification_reason }}</small></td>
-                                    <td>
-                                        {# Rispondere per conto del giocatore: capita che la
-                                           risposta arrivi a voce, in sala. Senza questa strada
-                                           l'invito resterebbe appeso fino alla scadenza. #}
-                                        {% if q.status.value == 'pending' and campionato.is_prova and q.user and q.user.is_fittizio and feature_visible('admin.campionato.prova_rispondi_invito') %}
-                                        {# Nella prova risponde «il fittizio»: stessi
-                                           servizi della route del giocatore, e sul
-                                           rifiuto scatta il primo degli esclusi. #}
-                                        <form method="POST" class="d-inline"
-                                              action='{{ url_for("admin.campionato.prova_rispondi_invito", campionato_id=campionato.id, qualification_id=q.id, risposta="accetta") }}'>
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                            <button type="submit" class="btn btn-sm btn-success" data-help="playoff-risposta-invito">
-                                                <i class="fas fa-check"></i> {{ _("Accetta") }}
-                                            </button>
-                                        </form>
-                                        <form method="POST" class="d-inline"
-                                              action='{{ url_for("admin.campionato.prova_rispondi_invito", campionato_id=campionato.id, qualification_id=q.id, risposta="rifiuta") }}'>
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                            <button type="submit" class="btn btn-sm btn-secondary"
-                                                    onclick='return confirm({{ _("Rifiutare il posto ai playoff? L'invito passera' al primo degli esclusi.")|tojson }})'>
-                                                <i class="fas fa-times"></i> {{ _("Rifiuta") }}
-                                            </button>
-                                        </form>
-                                        {% elif q.status.value == 'pending' %}
-                                        <form method="POST" class="d-inline"
-                                              action='{{ url_for("admin.campionato.playoff_respond_for_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                            <input type="hidden" name="qualification_id" value="{{ q.id }}">
-                                            <input type="hidden" name="answer" value="accept">
-                                            <button type="submit" class="btn btn-sm btn-outline-success" data-help="playoff-risposta-invito"
-                                                    title='{{ _("Conferma per conto del giocatore") }}'
-                                                    onclick='return confirm({{ _("Confermare la partecipazione per conto di questo giocatore?")|tojson }})'>
-                                                <i class="fas fa-check"></i>
-                                            </button>
-                                        </form>
-                                        <form method="POST" class="d-inline"
-                                              action='{{ url_for("admin.campionato.playoff_respond_for_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                            <input type="hidden" name="qualification_id" value="{{ q.id }}">
-                                            <input type="hidden" name="answer" value="decline">
-                                            <button type="submit" class="btn btn-sm btn-outline-warning"
-                                                    title='{{ _("Rifiuta per conto del giocatore") }}'
-                                                    onclick='return confirm({{ _("Registrare il rifiuto? L'invito passera' al primo degli esclusi.")|tojson }})'>
-                                                <i class="fas fa-times"></i>
-                                            </button>
-                                        </form>
-                                        {% endif %}
-                                        {% if cfg.gara is none and q.status.value in ('pending', 'confirmed') %}
-                                        <form method="POST" class="d-inline"
-                                              action='{{ url_for("admin.campionato.playoff_remove_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
-                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                            <input type="hidden" name="qualification_id" value="{{ q.id }}">
-                                            <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                    onclick='return confirm({{ _("Rimuovere questo giocatore?")|tojson }})'>
-                                                <i class="fas fa-user-minus"></i>
-                                            </button>
-                                        </form>
-                                        {% endif %}
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                        </div>
-                        {% endif %}
-
-                        {# Add player form (only if gara not yet created) #}
-                        {% if cfg.gara is none and campionato_players %}
-                        <form method="POST" class="d-inline-flex align-items-center gap-2 mt-2"
-                              action='{{ url_for("admin.campionato.playoff_add_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <select name="user_id" class="form-select form-select-sm" style="width: auto;" required>
-                                <option value="">{{ _("Aggiungi giocatore...") }}</option>
-                                {% for p in campionato_players %}
-                                <option value="{{ p.id }}">{{ p.username }}</option>
-                                {% endfor %}
-                            </select>
-                            <button type="submit" class="btn btn-sm btn-outline-success">
-                                <i class="fas fa-user-plus"></i>
-                            </button>
-                        </form>
-                        {% endif %}
-
-                        {# Create gara button #}
-                        {% if cfg.gara is none %}
-                        <div class="mt-3">
-                            <form method="POST"
-                                  action='{{ url_for("admin.campionato.create_playoff_gara", campionato_id=campionato.id, config_id=cfg.id) }}'>
-                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <button type="submit" class="btn btn-primary"
-                                        onclick='return confirm({{ _("Creare la gara playoff e iscrivere i giocatori confermati?")|tojson }})'>
-                                    <i class="fas fa-trophy"></i> {{ _("Crea Gara Playoff") }}
-                                </button>
-                            </form>
-                        </div>
-                        {% else %}
-                        <div class="mt-3">
-                            <a href='{{ url_for("admin.competition.gara_detail", gara_id=cfg.gara.id) }}' class="btn btn-outline-primary">
-                                <i class="fas fa-external-link-alt"></i> {{ _("Vai alla gara playoff") }}
-                            </a>
-                        </div>
-                        {% endif %}
-
-                        {# Le regole di punteggio restano modificabili anche dopo
-                           l'avvio: i criteri di qualificazione no (chi e' dentro
-                           e' dentro), ma quanto pesa la gara e chi decide la
-                           classifica sono decisioni del direttore fino alla fine. #}
-                        {% include "components/_playoff_scoring_form.html" %}
-                    </div>
-                </div>
+        {% if cfg.gara is none and campionato_players %}
+        <form method="POST" class="d-flex align-items-center gap-2"
+              action='{{ url_for("admin.campionato.playoff_add_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <select name="user_id" class="form-select" required aria-label="{{ _('Aggiungi un giocatore ai playoff') }}">
+            <option value="">{{ _("Aggiungi giocatore...") }}</option>
+            {% for p in campionato_players %}
+            <option value="{{ p.id }}">{{ p.username }}</option>
             {% endfor %}
-            {% endif %}
+          </select>
+          <button type="submit" class="btn btn-secondary" aria-label="{{ _('Aggiungi') }}"><i class="fas fa-user-plus"></i></button>
+        </form>
+        {% endif %}
 
-        {% else %}
-            <p class="text-muted">{{ _("Nessuna configurazione playoff attiva.") }}</p>
-
+        {% if not _una_sola %}
+          {% if cfg.gara is none %}
+          <form method="POST" action='{{ url_for("admin.campionato.create_playoff_gara", campionato_id=campionato.id, config_id=cfg.id) }}'>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button type="submit" class="btn btn-primary w-100"
+                    onclick='return confirm({{ _("Creare la gara playoff e iscrivere i giocatori confermati?")|tojson }})'>
+              <i class="fas fa-trophy"></i> {{ ngettext('Crea la gara playoff · %(n)d confermato', 'Crea la gara playoff · %(n)d confermati', cs.confirmed, n=cs.confirmed) }}
+            </button>
+          </form>
+          {% else %}
+          <a href='{{ url_for("admin.competition.gara_detail", gara_id=cfg.gara.id) }}' class="btn btn-secondary w-100">
+            <i class="fas fa-arrow-right"></i> {{ _("Vai alla gara playoff") }}
+          </a>
+          {% endif %}
+        {% endif %}
+      </div>
+      {% endfor %}
+      {% else %}
+      <div class="c7-card">
+        <p class="c7-nota" style="margin:0">{{ _("Nessuna configurazione playoff attiva.") }}</p>
             {# Permetti di aggiungere comunque una nuova configurazione,
                sia che non sia mai stata creata, sia dopo cancellazione.
                Bottone visibile solo se i playoff non sono ancora stati avviati. #}
@@ -452,13 +442,133 @@
                 </div>
             </div>
             {% endif %}
-        {% endif %}
-    </div>
-</div>
-{% endif %}
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
 
-<!-- Gare del Campionato -->
-{% include "components/_campionato_garas.html" %}
+    <section data-c7-tab="classifica">
+      {% if general_classification %}
+      {% include "components/_campionato_general_classification.html" %}
+      {% else %}
+      {{ d.sezione(_('Classifica generale')) }}
+      <div class="c7-card" style="margin-top:10px">
+        <p class="c7-nota" style="margin:0">{{ _('La classifica generale compare dopo la prima gara conclusa.') }}</p>
+      </div>
+      {% endif %}
+    </section>
+  </div>
+
+  {# ================= colonna destra ================= #}
+  <div class="c7-stack c7-tabflat">
+
+    {% if _fase_playoff and playoff_status and playoff_status.has_playoffs %}
+    <section data-c7-tab="playoff">
+      {{ d.sezione(_('Classifica finale del campionato')) }}
+      {% for cs in _configurazioni %}
+      {% set cfg = cs.configuration %}
+      <div class="c7-card" style="margin-top:10px">
+        {% if not _una_sola %}<div class="c7-kicker">{{ cfg.name }}</div>{% endif %}
+        {% include "components/_playoff_scoring_form.html" %}
+      </div>
+      {% endfor %}
+    </section>
+    {% endif %}
+
+    <section data-c7-tab="gare">
+      {{ d.sezione(_('Gare'), nota=_('%(n)s di %(tot)s', n=_giocate|length, tot=_previste)) }}
+      {% if gare %}
+      <div class="c7-rows" style="margin-top:10px">
+        {% for gara in gare | sort(attribute='number', reverse=true) %}
+        <div class="c7-rows__row c7-cgara">
+          <span class="c7-tile c7-tile--sm c7-tile--neutral">
+            <i class="fas {{ 'fa-flag-checkered' if gara.status == GaraStatus.COMPLETED.value else ('fa-play' if gara.status in (GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value) else 'fa-clock') }}"></i>
+          </span>
+          <a class="c7-rows__main c7-cgara__link" href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}">
+            <span class="c7-rows__title d-block">
+              {{ gara.display_name }}
+              {%- if gara.classification_weight > 1 %} <span class="c7-state c7-state--warn c7-cgara__peso" title="{{ _('Il punteggio di questa prova conta %(n)s volte nella classifica del campionato', n=gara.classification_weight) }}">&times;{{ gara.classification_weight }}</span>{% endif %}
+            </span>
+            <span class="c7-rows__sub d-block">
+              {{ gara.date|date_local }}{% if gara.location %} · {{ gara.location }}{% endif %}
+              · {{ ngettext('%(n)d iscritto', '%(n)d iscritti', gara.get_active_inscriptions_count(), n=gara.get_active_inscriptions_count()) }}
+            </span>
+          </a>
+          {{ stato_gara(gara) }}
+          {% if gara.can_be_modified() %}
+          <a class="c7-iconbtn" href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}"
+             title="{{ _('Modifica') }}" aria-label="{{ _('Modifica %(gara)s', gara=gara.display_name) }}"><i class="fas fa-pencil"></i></a>
+          {% endif %}
+          {% if gara.can_be_deleted() and not current_user.is_admin %}
+          <button type="button" class="c7-iconbtn" onclick="deleteProva({{ gara.id }}, {{ gara.number }}, this)"
+                  title="{{ _('Elimina') }}" aria-label="{{ _('Elimina %(gara)s', gara=gara.display_name) }}"><i class="fas fa-trash"></i></button>
+          {% endif %}
+          {% if current_user.is_admin %}
+          <button type="button" class="c7-iconbtn"
+                  onclick="showSoftDeleteModal('gara', {{ gara.id }}, '{{ gara.name|e }}', '{{ url_for('admin.competition.soft_delete_gara', gara_id=gara.id) }}')"
+                  title="{{ _('Elimina') }}" aria-label="{{ _('Elimina %(gara)s', gara=gara.display_name) }}"><i class="fas fa-trash-alt"></i></button>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="c7-card" style="margin-top:10px">
+        <p class="c7-nota" style="margin:0">{{ _('Nessuna gara ancora: la prima si crea da «Nuova gara».') }}</p>
+      </div>
+      {% endif %}
+    </section>
+
+    <section data-c7-tab="{{ 'playoff' if _fase_playoff else 'gestione' }}">
+      {{ d.sezione(_('Gestione')) }}
+      <div class="c7-rows" style="margin-top:10px">
+        {{ d.riga('fa-trophy', _('Playoff'),
+                  (_cfg_attive | map(attribute='name') | join(' · ')) if _cfg_attive else _('nessun playoff previsto'),
+                  tone='neutral') }}
+        {{ d.riga('fa-users', _('Direttori'),
+                  ngettext('%(n)d direttore', '%(n)d direttori', campionato.directors|length, n=campionato.directors|length),
+                  button=True, attrs='data-bs-toggle="collapse" data-bs-target="#gestioneDirettori" aria-expanded="false" aria-controls="gestioneDirettori"',
+                  right='<i class="fas fa-chevron-down c7-rows__chev"></i>'|safe) }}
+        {% if feature_visible('admin.campionato.campionato_vetrina') and not campionato.is_prova %}
+        {{ d.riga('fa-rectangle-ad', _('Vetrina'), _('locandina e link che tutte le gare ereditano'),
+                  href=url_for('admin.campionato.campionato_vetrina', campionato_id=campionato.id)) }}
+        {% endif %}
+        {{ d.riga('fa-sliders', _('Impostazioni'),
+                  ngettext('%(n)d gara prevista', '%(n)d gare previste', _previste, n=_previste),
+                  button=True, attrs='data-bs-toggle="collapse" data-bs-target="#gestioneImpostazioni" aria-expanded="false" aria-controls="gestioneImpostazioni"',
+                  right='<i class="fas fa-chevron-down c7-rows__chev"></i>'|safe) }}
+      </div>
+      <div class="collapse" id="gestioneDirettori" style="margin-top:10px">
+        {% include "components/_campionato_directors.html" %}
+      </div>
+      <div class="collapse" id="gestioneImpostazioni" style="margin-top:10px">
+        <div class="c7-stack">
+          {% include "components/_campionato_details_info.html" %}
+          {% include "components/_campionato_statistics.html" %}
+          {% if campionato.can_be_modified() %}
+          <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}" class="btn btn-secondary w-100">
+            <i class="fas fa-pencil"></i>&nbsp;{{ _("Modifica campionato") }}
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      {# Sul telefono chiudere il campionato sta qui: la testata non ha posto. #}
+      {% if not campionato.terminated_at %}
+      <div class="d-lg-none" style="margin-top:12px">
+        {% if campionato.is_ready_for_playoff_transition() %}
+        <button type="button" class="btn btn-success w-100" id="btn-terminate-campionato-mobile" data-help="campionato-termina">
+          <i class="fas fa-trophy"></i>&nbsp;{{ _("Passa alla fase playoff") }}
+        </button>
+        {% else %}
+        <button type="button" class="btn btn-danger w-100" id="btn-terminate-campionato-mobile" data-help="campionato-termina">
+          <i class="fas fa-stop"></i>&nbsp;{{ _("Termina campionato") }}
+        </button>
+        {% endif %}
+      </div>
+      {% endif %}
+    </section>
+  </div>
+</div>
 
 {% include "components/_new_gara_modal.html" %}
 {% include "components/_soft_delete_modal.html" %}

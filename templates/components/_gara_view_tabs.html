@@ -9,12 +9,12 @@
    `#garaViews` con `data-c7-view` e `data-gara-id`. #}
 
 {% if gara_views %}
-<nav class="c7-vtabs" role="tablist" aria-label="{{ _('Viste della gara') }}">
+<nav class="c7-vtabs" role="tablist" aria-label="{{ viste_aria if viste_aria is defined and viste_aria else _('Viste della gara') }}">
   {% for view, label in gara_views %}
   <button type="button" class="c7-vtabs__tab{{ ' is-active' if view == gara_view_active }}"
           role="tab" aria-controls="garaViews"
           aria-selected="{{ 'true' if view == gara_view_active else 'false' }}"
-          data-c7-tab-btn="{{ view }}"{% if view == 'turni' %} data-help="gara-turni"{% elif view == 'classifica' %} data-help="gara-classifica"{% endif %}>{{ label }}</button>
+          data-c7-tab-btn="{{ view }}"{% if not (viste_aria is defined and viste_aria) %}{% if view == 'turni' %} data-help="gara-turni"{% elif view == 'classifica' %} data-help="gara-classifica"{% endif %}{% endif %}>{{ label }}</button>
   {% endfor %}
 </nav>
 
