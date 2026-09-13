@@ -20,7 +20,10 @@
 
 {% set _attivi = inscriptions | selectattr('is_waitlist', 'equalto', false) | selectattr('is_withdrawn', 'equalto', false) | list %}
 {% set _attesa = inscriptions | selectattr('is_waitlist', 'equalto', true) | selectattr('is_withdrawn', 'equalto', false) | sort(attribute='waitlist_position') | list %}
-{% set _puo_iscrivere = user_can_manage and gara.status == GaraStatus.INSCRIPTION.value %}
+{# Lo stato derivato, non quello persistito: a scadenza passata le
+   iscrizioni sono chiuse anche se la gara e' ancora INSCRIPTION, e il
+   servizio rifiuterebbe l'iscrizione. #}
+{% set _puo_iscrivere = user_can_manage and gara.get_real_status() == GaraStatus.INSCRIPTION.value %}
 
 <section class="c7-stack">
 

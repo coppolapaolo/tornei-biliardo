@@ -1,17 +1,21 @@
 {# templates/components/_gara_lista_attesa.html — Design System 7c
 
-   La lista d'attesa (canvas 2.3): entra da sola quando qualcuno si ritira
+   La lista d'attesa (canvas 2.3): entra da sola quando si libera un posto
+   — un ritiro, o un nuovo iscritto che ripristina la parita'
    (`InscriptionService._promote_and_notify`), quindi non c'e' nessun «Fai
    entrare»; resta solo il comando per togliere. Sta a parte dall'elenco
    perche' sul desktop (2.6) vive nella colonna di destra, mentre sul
    telefono segue gli iscritti: chi include decide dove. Niente `id`. #}
 
 {% set _attesa = inscriptions | selectattr('is_waitlist', 'equalto', true) | selectattr('is_withdrawn', 'equalto', false) | sort(attribute='waitlist_position') | list %}
-{% set _puo_iscrivere = user_can_manage and gara.status == GaraStatus.INSCRIPTION.value %}
+{# Lo stato derivato, non quello persistito: a scadenza passata le
+   iscrizioni sono chiuse anche se la gara e' ancora INSCRIPTION, e il
+   servizio rifiuterebbe l'iscrizione. #}
+{% set _puo_iscrivere = user_can_manage and gara.get_real_status() == GaraStatus.INSCRIPTION.value %}
 {% if _attesa %}
 <div class="c7-sechead" style="margin-top:4px">
   <h3 class="c7-dim" data-help="iscrizione-lista-attesa">{{ _("Lista d'attesa") }}</h3>
-  <span class="c7-sechead__note">{{ _('entra se qualcuno si ritira') }}</span>
+  <span class="c7-sechead__note">{{ _('entra quando si libera un posto') }}</span>
 </div>
 <div class="c7-rows">
   {% for inscription in _attesa %}
