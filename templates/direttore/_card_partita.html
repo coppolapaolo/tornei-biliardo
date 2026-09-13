@@ -31,6 +31,9 @@
 {% set p2_wins = finita and match.winner_id == match.player2_id %}
 {% set con_stepper = not mia and can_modify and stato in ('in_corso', 'da_validare') %}
 {% set distanza = match.effective_distance %}
+{# Nei tabelloni la card dice dove va chi vince (issue #240). #}
+{% set _dest = destinazioni.get(match.id) if destinazioni is defined and destinazioni else none %}
+{% import "components/_tabellone_macros.html" as t with context %}
 
 {% if (match.is_trio and match.trio_match) or match.is_multi_set %}
   {% include "components/_match_card.html" %}
@@ -42,9 +45,12 @@
   <div class="c7-partita__lati">
     <div class="c7-partita__lato c7-partita__lato--letto">
       <div class="c7-partita__nome">{{ match.player1.username }}</div>
-      <div class="c7-partita__num c7-num">{{ _('riposa') }}</div>
+      <div class="c7-partita__num c7-num">{{ _('passa il turno') if match.bracket_type else _('riposa') }}</div>
     </div>
   </div>
+  {% if _dest %}
+  <div class="c7-partita__nota c7-partita__dove"><i class="fas fa-sitemap" aria-hidden="true"></i> {{ t.destinazione(_dest, match) }}</div>
+  {% endif %}
   {# La X con esercizio (SPECIFICHE riga 65): il punteggio della prova arriva
      in classifica solo da qui, e il direttore lo registra per chi non usa
      l'app (issue #221). #}
@@ -193,6 +199,9 @@
   {% endif %}
   {% if not can_modify and not finita and not mia %}
   <div class="c7-partita__nota"><i class="fas fa-lock"></i> {{ _('Il turno dopo è già avviato: questa partita non si tocca più.') }}</div>
+  {% endif %}
+  {% if _dest and not finita %}
+  <div class="c7-partita__nota c7-partita__dove"><i class="fas fa-sitemap" aria-hidden="true"></i> {{ t.destinazione(_dest, match) }}</div>
   {% endif %}
 </article>
 {% endif %}

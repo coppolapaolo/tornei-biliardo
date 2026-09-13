@@ -17,6 +17,7 @@
    (`banner_*`, `url_pubblica`, `url_anteprima`, assente nelle prove) e il
    contesto della direzione. #}
 
+{% import "components/_tabellone_macros.html" as t with context %}
 {% set _turni_configurabili = gara.rounds_count > 1 and gara.matchmaking_strategy in [MatchmakingStrategy.AMALFI.value, MatchmakingStrategy.RANDOM.value] %}
 {% set _co_direttori = gara.directors|length %}
 {% set _tavoli = gara.get_available_tables() %}
@@ -135,7 +136,10 @@
     {{ d.sezione(_('Informazioni gara'), more=(_('Modifica') if gara.can_be_modified() else ''), more_href=url_for('admin.competition.edit_gara', gara_id=gara.id)) }}
     <div class="c7-rows">
       {{ d.riga('fa-diagram-project', _('Accoppiamento'),
-                gara.matchmaking_strategy.replace('_', ' ')|title ~ (' · ' ~ _('anti-reincontro attivo') if gara.anti_rematch_enabled else '')) }}
+                t.nome_formula(gara.matchmaking_strategy) ~ (' · ' ~ _('anti-reincontro attivo') if gara.anti_rematch_enabled and not is_tabellone else '')) }}
+      {% if forma %}
+      {{ d.riga('fa-sitemap', _('Tabellone'), t.forma(forma) ~ ((' · ' ~ _('se si arriva a %(n)s iscritti', n=forma.iscritti)) if forma_stima else '')) }}
+      {% endif %}
       {% if gara.matchmaking_strategy not in bracket_minimum_players %}
       {{ d.riga('fa-scale-balanced', _('Chi riposa'), gara.odd_number_policy.replace('_', ' ')|title) }}
       {% endif %}

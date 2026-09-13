@@ -10,6 +10,9 @@
    Attesa dal chiamante: `menu_turno`, un dizionario con `turno`, `tipo`
    (`gara` | `primo` | `turno`) e `annullabile`; `None` fuori dal gioco. #}
 {% if menu_turno %}
+{# Sui tabelloni il turno 1 e' il sorteggio: il foglio «Sorteggia il
+   tabellone» promette che si puo' annullare, e qui lo si chiama cosi'. #}
+{% set _sorteggio = menu_turno.tipo == 'primo' and gara.matchmaking_strategy in bracket_minimum_players %}
 <div class="modal fade c7-sheet" id="menuTurnoModal" tabindex="-1" aria-labelledby="menuTurnoTitolo">
   <div class="modal-dialog">
     <div class="modal-content">
@@ -29,7 +32,7 @@
         </button>
         {% elif menu_turno.tipo == 'primo' %}
         <button type="button" class="btn btn-secondary w-100" onclick="cancelFirstRound({{ gara.id }})" {% if not menu_turno.annullabile %}disabled{% endif %}>
-          <i class="fas fa-rotate-left"></i> {{ _("Annulla l'avvio del turno 1") }}
+          <i class="fas fa-rotate-left"></i> {% if _sorteggio %}{{ _('Annulla il sorteggio') }}{% else %}{{ _("Annulla l'avvio del turno 1") }}{% endif %}
         </button>
         {% else %}
         <button type="button" class="btn btn-secondary w-100" onclick="cancelCurrentRound({{ gara.id }})" {% if not menu_turno.annullabile %}disabled{% endif %}>
@@ -38,7 +41,8 @@
         {% endif %}
         <div class="c7-nota">
           {% if menu_turno.annullabile %}
-          {{ _('Si può finché nessuna partita del turno ha segnato un triangolo (la X non conta). Gli abbinamenti si rifanno all’avvio.') }}
+          {% if _sorteggio %}{{ _('Si può finché nessuna partita del turno ha segnato un triangolo (la X non conta). Il tabellone si risorteggia da capo al prossimo avvio.') }}
+          {% else %}{{ _('Si può finché nessuna partita del turno ha segnato un triangolo (la X non conta). Gli abbinamenti si rifanno all’avvio.') }}{% endif %}
           {% else %}
           {{ _('Non si può più: una partita del turno ha già segnato un triangolo. Per tornare indietro si azzera quella partita dalla sua card.') }}
           {% endif %}

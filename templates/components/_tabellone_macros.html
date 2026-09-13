@@ -1,0 +1,133 @@
+{# templates/components/_tabellone_macros.html — Design System 7c
+
+   Le parole del tabellone, in un posto solo (issue #240). I nomi arrivano
+   simbolici da `models/competition/tabellone_view.py` (`NomeRound`: chiave
+   e numero) e qui diventano frasi: il nome di un round, il titolo della
+   fascia fra un turno e l'altro, il comando che lo avvia, chi arriva in un
+   posto del tabellone, dove va chi vince, perche' uno e' uscito.
+
+   Li usano la pagina del tabellone e la pagina gara del direttore. Si
+   importa `with context`: le macro usano `_`, `ngettext` e
+   `MatchmakingStrategy`. #}
+
+{# Il nome di un round o di una colonna: «Semifinali», «Recupero 2». #}
+{% macro nome_round(n) -%}
+{%- if n.chiave == 'finale' -%}{{ _('Finale') }}
+{%- elif n.chiave == 'semifinali' -%}{{ _('Semifinali') }}
+{%- elif n.chiave == 'quarti' -%}{{ _('Quarti') }}
+{%- elif n.chiave == 'ottavi' -%}{{ _('Ottavi') }}
+{%- elif n.chiave == 'sedicesimi' -%}{{ _('Sedicesimi') }}
+{%- elif n.chiave == 'finalina' -%}{{ _('Finale 3°/4°') }}
+{%- elif n.chiave == 'bella' -%}{{ _('Bella') }}
+{%- elif n.chiave == 'recupero' -%}{{ _('Recupero %(num)s', num=n.numero) }}
+{%- elif n.chiave == 'vincenti' -%}{{ _('Turno %(num)s dei vincenti', num=n.numero) }}
+{%- elif n.chiave == 'gironi' -%}{{ _('Gironi, turno %(num)s', num=n.numero) }}
+{%- else -%}{{ _('Turno %(num)s', num=n.numero) }}
+{%- endif -%}
+{%- endmacro %}
+
+{# Il nome di un turno di gara: nel doppio KO un turno contiene due round. #}
+{% macro nome_turno(parti) -%}
+{%- for p in parti -%}{{ nome_round(p) }}{% if not loop.last %} · {% endif %}{%- endfor -%}
+{%- endmacro %}
+
+{# Il titolo della fascia quando il turno dopo aspetta solo di partire. #}
+{% macro turno_pronto(parti, turno) -%}
+{%- set n = parti[0] if parti|length == 1 else none -%}
+{%- if not n -%}{{ _('Il turno %(n)s è pronto', n=turno) }}
+{%- elif n.chiave == 'finale' -%}{{ _('Finale pronta') }}
+{%- elif n.chiave == 'semifinali' -%}{{ _('Semifinali pronte') }}
+{%- elif n.chiave == 'quarti' -%}{{ _('Quarti pronti') }}
+{%- elif n.chiave == 'ottavi' -%}{{ _('Ottavi pronti') }}
+{%- elif n.chiave == 'sedicesimi' -%}{{ _('Sedicesimi pronti') }}
+{%- elif n.chiave == 'bella' -%}{{ _('Serve la bella') }}
+{%- elif n.chiave == 'recupero' -%}{{ _('Recupero %(num)s pronto', num=n.numero) }}
+{%- else -%}{{ _('Il turno %(n)s è pronto', n=turno) }}
+{%- endif -%}
+{%- endmacro %}
+
+{# Il comando che avvia il turno: «Avvia le semifinali». #}
+{% macro avvia_turno(parti, turno) -%}
+{%- set n = parti[0] if parti|length == 1 else none -%}
+{%- if not n -%}{{ _('Avvia il turno %(n)s', n=turno) }}
+{%- elif n.chiave == 'finale' -%}{{ _('Avvia la finale') }}
+{%- elif n.chiave == 'semifinali' -%}{{ _('Avvia le semifinali') }}
+{%- elif n.chiave == 'quarti' -%}{{ _('Avvia i quarti') }}
+{%- elif n.chiave == 'ottavi' -%}{{ _('Avvia gli ottavi') }}
+{%- elif n.chiave == 'sedicesimi' -%}{{ _('Avvia i sedicesimi') }}
+{%- elif n.chiave == 'bella' -%}{{ _('Avvia la bella') }}
+{%- elif n.chiave == 'recupero' -%}{{ _('Avvia il recupero %(num)s', num=n.numero) }}
+{%- else -%}{{ _('Avvia il turno %(n)s', n=turno) }}
+{%- endif -%}
+{%- endmacro %}
+
+{# Chi arriva in un posto: il giocatore, o la partita da cui arrivera'. Se
+   anche quella partita e' ancora da giocare si nomina il round, dove il
+   nome basta a dirlo («chi vince il recupero 4», l'avversario della finale
+   del doppio KO); altrimenti «da definire». #}
+{% macro posto(p) -%}
+{%- set m = p.fonte.nodo.match if p.fonte else none -%}
+{%- set nr = p.fonte.nodo.nome if p.fonte else none -%}
+{%- set vince = p.fonte and p.fonte.esito == 'vincitore' -%}
+{%- if p.giocatore -%}{{ p.giocatore.username }}
+{%- elif p.vuoto -%}{{ _('nessuno') }}
+{%- elif m and m.player1 and m.player2 -%}
+  {%- if vince -%}{{ _('chi vince %(a)s – %(b)s', a=m.player1.username, b=m.player2.username) }}
+  {%- else -%}{{ _('chi perde %(a)s – %(b)s', a=m.player1.username, b=m.player2.username) }}{%- endif -%}
+{%- elif vince and nr and nr.chiave == 'recupero' -%}{{ _('chi vince il recupero %(num)s', num=nr.numero) }}
+{%- elif vince and nr and nr.chiave == 'finale' -%}{{ _('chi vince la finale') }}
+{%- else -%}{{ _('da definire') }}
+{%- endif -%}
+{%- endmacro %}
+
+{# Dove va chi vince la partita, e dove scende chi perde (la nota della card). #}
+{% macro destinazione(dest, match) -%}
+{%- if dest.tipo == 'nodo' -%}
+  {%- if dest.avversario.vuoto -%}{{ _('Chi vince: %(round)s, senza avversario.', round=nome_round(dest.nome)) }}
+  {%- else -%}{{ _('Chi vince: %(round)s contro %(avv)s.', round=nome_round(dest.nome), avv=posto(dest.avversario)) }}{%- endif -%}
+{%- elif dest.tipo == 'campione' -%}{{ _('Chi vince, vince la gara.') }}
+{%- elif dest.tipo == 'terzo' -%}{{ _('Chi vince è terzo, chi perde quarto.') }}
+{%- elif dest.tipo == 'qualificato' -%}{{ _('Chi vince passa al tabellone finale.') }}
+{%- elif dest.tipo == 'finale_doppio' and match.player1 and match.player2 -%}
+  {{ _('Se vince %(p1)s la gara è finita; se vince %(p2)s, che arriva dai ripescati, si gioca la bella.', p1=match.player1.username, p2=match.player2.username) }}
+{%- endif -%}
+{%- if dest.perdente %} {{ _('Chi perde: %(round)s.', round=nome_round(dest.perdente)) }}{% endif -%}
+{%- endmacro %}
+
+{# La forma che il sorteggio darebbe: «Tabellone da 8 · 2 passano il turno · 3 turni». #}
+{% macro forma(f) -%}
+{%- if f.gironi -%}
+{{ ngettext('%(n)d girone da %(g)s', '%(n)d gironi da %(g)s', f.gironi, n=f.gironi, g=f.posti_girone) }} · {{ _('tabellone finale da %(s)s', s=f.posti_finale) }} · {{ ngettext('%(n)d turno', '%(n)d turni', f.turni, n=f.turni) }}
+{%- else -%}
+{{ _('Tabellone da %(s)s', s=f.posti) }} · {% if f.passano %}{{ ngettext('%(n)d passa il turno', '%(n)d passano il turno', f.passano, n=f.passano) }}{% else %}{{ _('nessuno passa il turno') }}{% endif %} · {{ ngettext('%(n)d turno', '%(n)d turni', f.turni, n=f.turni) }}{% if f.con_bella %}, {{ _('più la bella se serve') }}{% endif %}
+{%- endif -%}
+{%- endmacro %}
+
+{# Perche' uno e' in quella banda della classifica finale: dove e' uscito. #}
+{% macro uscita(riga) -%}
+{%- set n = riga.uscita -%}
+{%- if not n -%}
+{%- elif riga.position == 1 -%}{{ _('vince la gara') }}
+{%- elif n.chiave == 'finalina' -%}{{ _('vince la finale 3°/4°') if riga.vinta else _('perde la finale 3°/4°') }}
+{%- elif n.chiave == 'finale' -%}{{ _('perde la finale') }}
+{%- elif n.chiave == 'bella' -%}{{ _('perde la bella') }}
+{%- elif riga.gruppo is not none -%}{{ _('esce nel girone %(g)s', g=riga.gruppo + 1) }}
+{%- elif n.chiave == 'semifinali' -%}{{ _('esce in semifinale') }}
+{%- elif n.chiave == 'quarti' -%}{{ _('esce ai quarti') }}
+{%- elif n.chiave == 'ottavi' -%}{{ _('esce agli ottavi') }}
+{%- elif n.chiave == 'sedicesimi' -%}{{ _('esce ai sedicesimi') }}
+{%- elif n.chiave == 'recupero' -%}{{ _('esce al recupero %(num)s', num=n.numero) }}
+{%- else -%}{{ _('esce al turno %(num)s', num=n.numero) }}
+{%- endif -%}
+{%- endmacro %}
+
+{# Il nome della formula di gara, al posto del valore grezzo in colonna. #}
+{% macro nome_formula(strategy) -%}
+{%- if strategy == MatchmakingStrategy.AMALFI.value -%}{{ _('Amalfi') }}
+{%- elif strategy == MatchmakingStrategy.RANDOM.value -%}{{ _('Casuale') }}
+{%- elif strategy == MatchmakingStrategy.ROUND_ROBIN.value -%}{{ _("Girone all'italiana") }}
+{%- elif strategy == MatchmakingStrategy.DIRECT_ELIMINATION.value -%}{{ _('Eliminazione diretta') }}
+{%- elif strategy == MatchmakingStrategy.DOUBLE_KNOCKOUT.value -%}{{ _('Doppio KO') }}
+{%- else -%}{{ (strategy or '').replace('_', ' ')|title }}
+{%- endif -%}
+{%- endmacro %}

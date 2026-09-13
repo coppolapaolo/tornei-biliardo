@@ -1,0 +1,40 @@
+{# templates/direttore/_classifica_bande.html — Design System 7c
+
+   La classifica finale di una gara a tabellone (issue #240, ADR-040): non si
+   conta per vittorie ne' per triangoli, si legge da dove ciascuno e' uscito.
+   Chi esce allo stesso turno condivide il posto, e la riga lo dichiara:
+   «5°–8°» su tutti e quattro i quartifinalisti, con il turno d'uscita come
+   testo secondario. Niente colonne «Vinte» e «Diff», che qui non ordinano
+   niente. I punti di campionato seguono la banda, e non cambiano.
+
+   Il canvas disegna la classifica finale delle gare a turni (5.1): qui le
+   stesse righe, con la posizione come pastiglia che contiene la banda.
+
+   Atteso: `bande_finali` (`tabellone_view.bande_finali`). #}
+{% import "components/_tabellone_macros.html" as t with context %}
+{% if bande_finali %}
+<section class="c7-stack c7-classifica" style="gap:10px" id="classificaDirettore">
+  <div class="c7-sechead">
+    <h3>{{ _('Classifica finale') }}</h3>
+    <span class="c7-sechead__note">{{ _('dal tabellone') }}</span>
+  </div>
+  <div class="c7-rows">
+    {% for banda in bande_finali %}
+    {% set _etichetta = (banda.posizione ~ '°–' ~ banda.ultima ~ '°') if banda.condivisa else (banda.posizione ~ '°') %}
+    {% for riga in banda.righe %}
+    <div class="c7-rows__row c7-classifica__riga c7-banda__riga" data-banda="{{ banda.posizione }}">
+      <span class="c7-banda__pos c7-num{% if banda.posizione <= 3 %} c7-banda__pos--{{ banda.posizione }}{% endif %}">{{ _etichetta }}</span>
+      <span class="c7-avatar c7-avatar--sm">{{ riga.user.username[:2]|upper }}</span>
+      <span class="c7-rows__main">
+        <span class="c7-rows__title d-block c7-classifica__gioc">{{ riga.user.username }}</span>
+        <span class="c7-rows__sub d-block">{{ t.uscita(riga) }}{% if banda.condivisa %} <span class="c7-sep">·</span> {{ _('pari merito') }}{% endif %}</span>
+      </span>
+    </div>
+    {% endfor %}
+    {% endfor %}
+  </div>
+  <div class="c7-nota">
+    {{ _('Nel tabellone la classifica è il percorso: chi esce allo stesso turno condivide il posto, e non si spareggia. I punti di campionato vanno a ogni posto della banda.') }}
+  </div>
+</section>
+{% endif %}

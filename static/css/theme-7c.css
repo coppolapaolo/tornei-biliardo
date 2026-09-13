@@ -3558,3 +3558,86 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 .c7-invitato { gap: 10px; flex-wrap: wrap; }
 .c7-invitato__azioni { display: flex; align-items: center; gap: 6px; margin-left: auto; }
 .c7-invitato__azioni form { margin: 0; }
+
+/* --------------------------------------------------------------------------
+   29. Il tabellone al posto della classifica (issue #240)
+   Il canvas non disegna le gare a tabellone: le forme qui sotto sono le piu'
+   vicine alla sua grammatica. Il nodo vuoto e' il posto bianco di un
+   tabellone stampato; il tabellone compatto e' la sezione 18 in piccolo,
+   dentro una card della colonna laterale; la classifica a bande riusa le
+   righe della 24 con la posizione come pastiglia che contiene la banda.
+   -------------------------------------------------------------------------- */
+
+/* Pagina del tabellone: i nodi dei turni non ancora nati. */
+.c7-bracket__node--vuoto {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--c7-line);
+}
+.c7-bracket__seat.is-attesa .c7-bracket__who { color: var(--c7-ink-faint); font-weight: 600; }
+
+/* La nota della card: dove va chi vince. */
+.c7-partita__dove .fas { font-size: 10px; margin-right: 2px; }
+
+/* Il tabellone compatto: tre colonne che si spartiscono la card. */
+.c7-tabellino__card { padding: 14px; }
+.c7-tabellino__girone { margin-bottom: 8px; }
+.c7-tabellino__ramo { display: flex; align-items: center; gap: 8px; margin: 12px 0 8px; }
+.c7-tabellino__ramo:first-child { margin-top: 0; }
+.c7-tabellino__ramo .c7-label { margin: 0; }
+.c7-tabellino__ramo::after { content: ""; flex: 1; border-top: 1px solid var(--c7-line-soft); }
+.c7-tabellino__colonne {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+  gap: 8px;
+}
+.c7-tabellino__col { display: flex; flex-direction: column; min-width: 0; }
+.c7-tabellino__testa {
+  font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--c7-ink-faint); margin-bottom: 6px;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.c7-tabellino__col.is-attuale .c7-tabellino__testa { color: var(--c7-accent); }
+/* Come nella sezione 18: righe uguali, il nodo al centro della sua cella,
+   quindi il nodo dopo cade a meta' fra i suoi due alimentatori. */
+/* `minmax(0, 1fr)` anche in larghezza: senza, la traccia implicita e' larga
+   quanto il nome piu' lungo e il nodo sborda nella colonna accanto. */
+.c7-tabellino__nodi { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr); grid-auto-rows: minmax(0, 1fr); }
+.c7-tabellino__cella { display: flex; align-items: center; padding: 3px 0; min-width: 0; }
+.c7-tabellino__nodo {
+  width: 100%;
+  min-width: 0;
+  border-radius: var(--c7-r-field);
+  background: var(--c7-bg);
+  padding: 5px 8px;
+}
+.c7-tabellino__nodo.is-done { background: var(--c7-sunken); }
+.c7-tabellino__nodo.is-live { background: var(--c7-accent); color: var(--c7-accent-ink); }
+.c7-tabellino__nodo.is-vuoto { background: transparent; box-shadow: inset 0 0 0 1.5px var(--c7-line); }
+.c7-tabellino__posto { display: flex; align-items: center; gap: 6px; min-height: 20px; }
+.c7-tabellino__posto + .c7-tabellino__posto { border-top: 1px solid var(--c7-line-soft); }
+.c7-tabellino__nodo.is-live .c7-tabellino__posto + .c7-tabellino__posto { border-top-color: rgba(242, 248, 247, .18); }
+.c7-tabellino__chi {
+  flex: 1; min-width: 0;
+  font-size: 12px; font-weight: 600; color: var(--c7-ink-muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.c7-tabellino__nodo.is-live .c7-tabellino__chi { color: inherit; }
+.c7-tabellino__posto.is-winner .c7-tabellino__chi { font-weight: 800; color: var(--c7-ink); }
+.c7-tabellino__posto.is-attesa .c7-tabellino__chi { color: var(--c7-ink-faint); }
+.c7-tabellino__punti { font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--c7-ink-faint); }
+.c7-tabellino__posto.is-winner .c7-tabellino__punti,
+.c7-tabellino__nodo.is-live .c7-tabellino__punti { color: inherit; }
+
+/* La classifica a bande: la posizione e' una pastiglia che contiene la banda. */
+.c7-banda__riga { gap: 10px; }
+.c7-banda__pos {
+  min-width: 52px; height: 30px; padding: 0 8px;
+  border-radius: 10px; background: var(--c7-bg);
+  display: inline-grid; place-items: center; flex-shrink: 0;
+  font-size: 13px; font-weight: 800; color: var(--c7-ink-muted);
+}
+.c7-banda__pos--1 { background: var(--c7-oro); color: var(--c7-oro-ink); }
+.c7-banda__pos--2 { background: var(--c7-argento); color: var(--c7-argento-ink); }
+.c7-banda__pos--3 { background: var(--c7-bronzo); color: var(--c7-bronzo-ink); }
+.c7-podio-finale__nomi { display: block; }

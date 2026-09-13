@@ -137,6 +137,21 @@ blocks:
       seguono il sistema della gara: vinte e differenza triangoli, oppure
       triangoli vinti e persi.
 
+  - type: note
+    tone: info
+    title: "Nelle gare a tabellone c'è il tabellone"
+    text: >-
+      Al posto della classifica trovi il **tabellone compatto**: il turno che
+      si vede, quello prima e quello dopo, con le caselle vuote di chi ci
+      arriverà. Ogni card dice dove va chi vince — «Chi vince: Semifinali
+      contro chi vince Rossi – Bianchi» — e nel doppio KO dove scende chi
+      perde. Chi passa il turno senza giocare ha la card «passa il turno».
+
+  - type: shot
+    shot: gara-tabellone-direttore
+    variant: desktop
+    caption: "Una gara a eliminazione vista dal direttore: i quarti sono chiusi, la fascia propone «Avvia le semifinali» e a destra c'è il tabellone compatto."
+
   - type: heading
     id: turni_successivi
     title: "Avviare i turni successivi"
@@ -156,6 +171,14 @@ blocks:
       **Bloccate**: non sono più correggibili, perché gli abbinamenti appena
       creati si basano su quei risultati. Controlla i punteggi **prima** di
       premere.
+
+  - type: text
+    text: >-
+      Nelle gare a tabellone il pulsante porta il nome del turno: **Avvia le
+      semifinali**, **Avvia la finale**, e nel doppio KO, se serve, **Avvia la
+      bella**. Gli incroci non vengono dalla classifica: li ha già fissati il
+      sorteggio. Dal menu «⋯» del primo turno, finché nessuno ha segnato, puoi
+      **annullare il sorteggio**.
 
   - type: heading
     id: correggere
@@ -256,6 +279,12 @@ blocks:
       - >-
         **Classifica del campionato**: se la gara ne fa parte, i risultati
         vengono sommati alla classifica generale non appena la gara è conclusa.
+
+  - type: text
+    text: >-
+      Nelle gare a tabellone la classifica finale è **per bande** — 1°, 2°,
+      3°–4°, 5°–8° — con dove ciascuno è uscito: chi esce allo stesso turno
+      condivide il posto e i punti, senza spareggi.
 
   - type: faq
     items:

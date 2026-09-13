@@ -17,7 +17,7 @@ blocks:
 
   - type: shot
     shot: tabellone
-    caption: "The bracket of a knockout competition: the quarter-finals, with winners in bold."
+    caption: "The bracket of a knockout competition: the quarter-finals played, with winners in bold, and the semi-finals and final already drawn."
 
   - type: heading
     id: aprirlo
@@ -28,6 +28,12 @@ blocks:
       From the competition page, the icon at the top right opens the bracket. It
       is **public**: you can send the link to anyone, and it updates itself
       while play is under way.
+
+  - type: text
+    text: >-
+      Whoever directs the competition also finds it on the competition page,
+      **in place of the standings**: a compact bracket with the current round,
+      the one before and the one after. A row below opens the whole bracket.
 
   - type: shot
     shot: gara-tabellone-dettaglio
@@ -52,7 +58,11 @@ blocks:
         text: "The match score in racks."
       - name: "Empty slots"
         text: >-
-          Matches not yet played: they fill in as the previous rounds finish.
+          Matches not yet played. The whole bracket is drawn from the moment of
+          the draw, so an empty slot shows who will get there: the name, if
+          they already went through or won the previous match, otherwise
+          «whoever wins» that match. The double elimination Decider says «if
+          needed».
 
   - type: note
     tone: tip
@@ -177,6 +187,15 @@ blocks:
       third, the four quarter-finalists all fifth. That is not an ambiguity to
       settle, it is what the path says — and indeed bracket competitions are not
       even offered a tie-break at creation time.
+
+  - type: text
+    text: >-
+      Once the competition is over, its page shows the standings **in bands**:
+      1st, 2nd, 3rd–4th, 5th–8th and so on, with where each player went out
+      next to the name («out in the quarter-finals», «loses the final»).
+      Players in the same band share the place and the championship points.
+      On the podium, if no third-place match was played, there are two
+      thirds.
 
   - type: faq
     items:

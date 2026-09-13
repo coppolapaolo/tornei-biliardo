@@ -1,35 +1,23 @@
 {# templates/components/_bracket_view.html — 7c
 
    Il tabellone di una gara a eliminazione diretta o doppio KO (US-13).
-   Una colonna per turno, un nodo per partita, i rami vuoti non disegnati.
+   Una colonna per turno, un nodo per partita. Dall'issue #240 il tabellone
+   si disegna **intero** subito dopo il sorteggio: i nodi dei turni non ancora
+   nati sono vuoti, con i posti gia' riempiti per quanto si sa (chi ha
+   passato il turno, chi vince un quarto chiuso) e altrimenti con la partita
+   da cui arrivera' il giocatore. I rami che non esisteranno mai — i ripescati
+   di due X a tavolino — non si disegnano.
 
-   Attese dal chiamante: `gara`, `boards` (da
-   `models/matchmaking/bracket_view.build_bracket_boards`), `has_bracket`,
+   Attese dal chiamante: `gara`, `boards` (le lavagne di
+   `models/competition/tabellone_view.costruisci_tabellone`), `has_bracket`,
    `user_can_manage`, `forfeit_user_ids`.
 
    Il prototipo non ha questa schermata — `#8b` e' il segnapunti da tavolo,
    non un tabellone di torneo — quindi la forma e' interpretata da `#8a`: la
    partita come card chiara con il nome a sinistra e il punteggio a destra,
-   ripetuta in colonne. Le classi sono nella sezione 18 di theme-7c.css. #}
-
-{# Etichetta di una colonna. Nell'eliminazione diretta il nome del turno lo
-   da' quante partite contiene (una sola = la finale); nel doppio KO e nei
-   gironi no — li' un turno di vincenti non elimina nessuno — quindi resta il
-   numero del turno. #}
-{% macro column_label(board, column) -%}
-{%- if column.bracket_type == 'GF' -%}{{ _('Finale') }}
-{%- elif column.bracket_type == 'GFR' -%}{{ _('Bella') }}
-{%- elif column.bracket_type == '3P' -%}{{ _('Finale 3°/4°') }}
-{%- elif column.bracket_type == 'L' -%}{{ _('Recupero %(num)s', num=column.bracket_round) }}
-{%- elif board.has_losers or board.is_group -%}{{ _('Turno %(num)s', num=column.bracket_round) }}
-{%- elif column.size == 1 -%}{{ _('Finale') }}
-{%- elif column.size == 2 -%}{{ _('Semifinali') }}
-{%- elif column.size == 4 -%}{{ _('Quarti') }}
-{%- elif column.size == 8 -%}{{ _('Ottavi') }}
-{%- elif column.size == 16 -%}{{ _('Sedicesimi') }}
-{%- else -%}{{ _('Turno %(num)s', num=column.bracket_round) }}
-{%- endif -%}
-{%- endmacro %}
+   ripetuta in colonne. Le classi sono nella sezione 18 di theme-7c.css, il
+   nodo vuoto nella 29. #}
+{% import "components/_tabellone_macros.html" as t with context %}
 
 {# Un posto del nodo: chi gioca e quanto ha fatto. #}
 {% macro seat(player, score, is_winner, is_finished) -%}
@@ -64,6 +52,58 @@
 </{{ tag }}>
 {%- endmacro %}
 
+{# Un nodo che non si e' ancora giocato: i posti dicono chi c'e' gia' o da
+   dove arrivera'. La bella c'e' «se serve». #}
+{% macro nodo_futuro(nodo) -%}
+<article class="c7-bracket__node c7-bracket__node--vuoto">
+  {% if nodo.condizionale or nodo.is_x %}
+  <div class="c7-bracket__meta">{% if nodo.condizionale %}{{ _('Se serve') }}{% else %}{{ _('X a tavolino') }}{% endif %}</div>
+  {% endif %}
+  {% for p in nodo.posti %}{% if not p.vuoto %}
+  <div class="c7-bracket__seat{% if not p.giocatore %} is-attesa{% endif %}">
+    <span class="c7-bracket__who">{{ t.posto(p) }}</span>
+  </div>
+  {% endif %}{% endfor %}
+</article>
+{%- endmacro %}
+
+{# Il nodo, giocato o futuro. #}
+{% macro nodo(n) -%}
+{% if n.match %}{{ bracket_node(n.match) }}{% else %}{{ nodo_futuro(n) }}{% endif %}
+{%- endmacro %}
+
+{# Una sezione del tabellone: la rotaia di colonne, con l'etichetta del ramo
+   quando i rami sono due. #}
+{% macro rotaia(board, section) -%}
+<div>
+  {% if board.has_losers %}
+  <div class="c7-bracket__branch">
+    <span class="c7-kicker">
+      {{ _('Vincenti') if section.key == 'winners' else _('Ripescati') }}
+    </span>
+  </div>
+  {% endif %}
+
+  <div class="c7-bracket">
+    <div class="c7-bracket__rail">
+      {% for column in section.columns %}
+      <div class="c7-bracket__col">
+        <div class="c7-bracket__colhead">
+          <span class="c7-kicker">{{ t.nome_round(column.nome) }}</span>
+          <span class="c7-bracket__count">{{ column.size }}</span>
+        </div>
+        <div class="c7-bracket__nodes">
+          {% for n in column.nodi %}
+          <div class="c7-bracket__cell">{{ nodo(n) }}</div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{%- endmacro %}
+
 {% if not has_bracket %}
 <div class="c7-empty">
   <div class="c7-empty__ico"><i class="fas fa-sitemap"></i></div>
@@ -88,33 +128,7 @@
   {% endif %}
 
   {% for section in board.sections %}
-  <div>
-    {% if board.has_losers %}
-    <div class="c7-bracket__branch">
-      <span class="c7-kicker">
-        {{ _('Vincenti') if section.key == 'winners' else _('Ripescati') }}
-      </span>
-    </div>
-    {% endif %}
-
-    <div class="c7-bracket">
-      <div class="c7-bracket__rail">
-        {% for column in section.columns %}
-        <div class="c7-bracket__col">
-          <div class="c7-bracket__colhead">
-            <span class="c7-kicker">{{ column_label(board, column) }}</span>
-            <span class="c7-bracket__count">{{ column.size }}</span>
-          </div>
-          <div class="c7-bracket__nodes">
-            {% for match in column.matches %}
-            <div class="c7-bracket__cell">{{ bracket_node(match) }}</div>
-            {% endfor %}
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-    </div>
-  </div>
+  {{ rotaia(board, section) }}
   {% endfor %}
 </section>
 {% endfor %}

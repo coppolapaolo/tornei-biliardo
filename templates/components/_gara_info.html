@@ -5,6 +5,7 @@
    in fondo alla pagina della gara). Stessa convenzione di
    `management_headerless` in _gara_management.html. #}
 
+{% import "components/_tabellone_macros.html" as t_info with context %}
 {% set gara_is_bracket = gara.matchmaking_strategy in bracket_minimum_players %}
 
 <section class="{{ '' if info_headerless else 'c7-card' }}">
@@ -29,7 +30,7 @@
         </dd>
 
         <dt class="text-muted" style="font-weight: 700;">{{ _('Accoppiamento') }}</dt>
-        <dd style="margin: 0; text-align: right;">{{ gara.matchmaking_strategy.replace('_', ' ').title() }}</dd>
+        <dd style="margin: 0; text-align: right;">{{ t_info.nome_formula(gara.matchmaking_strategy) }}</dd>
 
         <dt class="text-muted" style="font-weight: 700;">{{ _('Iscritti') }}</dt>
         <dd style="margin: 0; text-align: right;">

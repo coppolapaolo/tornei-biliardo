@@ -13,6 +13,7 @@
    `start_first_round`; `x_choice_last_inscribed` viene da `detail.py`. #}
 {% from "components/_form_macros.html" import choice, form_macros_scripts %}
 
+{% import "components/_tabellone_macros.html" as t with context %}
 {% set _is_bracket = gara.matchmaking_strategy in bracket_minimum_players %}
 {% set _iscritti = gara.get_active_inscriptions_count() %}
 {% set _tavoli = gara.get_available_tables() %}
@@ -42,6 +43,9 @@
           {% if _is_bracket %}
           {{ d.riga('fa-sitemap', _('Il tabellone si sorteggia adesso'),
                     _('il percorso di ognuno resta fissato fino alla finale, salvo annullare il sorteggio'), tone='ok') }}
+          {% if forma is defined and forma and not forma_stima %}
+          {{ d.riga('fa-diagram-project', t.forma(forma), _('con gli iscritti di adesso'), tone='ok') }}
+          {% endif %}
           {% elif gara.creates_all_rounds_at_startup() %}
           {{ d.riga('fa-diagram-project', ngettext('%(n)d turno generato adesso', '%(n)d turni generati adesso', gara.rounds_count, n=gara.rounds_count),
                     _('la formula casuale crea tutti i turni all’avvio'), tone='ok') }}
