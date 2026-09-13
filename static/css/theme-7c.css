@@ -3491,3 +3491,44 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
   .c7-sala__classifica { flex: 1; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
   .c7-sala__classifica .c7-sala__riga { flex: 1 1 0; min-height: 0; padding-top: 0; padding-bottom: 0; max-height: 64px; }
 }
+
+/* --------------------------------------------------------------------------
+   26. Spareggio e gara conclusa (canvas 4.1–4.4, 5.1–5.3)
+   -------------------------------------------------------------------------- */
+/* Le pastiglie in riga di classifica: SSR dove lo spareggio ha deciso,
+   «pari» dove il parimerito e' ancora aperto. */
+.c7-classifica__pill { height: 22px; padding: 0 8px; font-size: 10px; flex-shrink: 0; }
+.c7-classifica__medaglia { flex-shrink: 0; }
+
+/* Il podio: il primo al centro e piu' grande, i tre nei colori delle medaglie. */
+.c7-podio-finale { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; align-items: end; }
+.c7-podio-finale--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.c7-podio-finale--1 { grid-template-columns: minmax(0, 1fr); }
+.c7-podio-finale__posto { text-align: center; min-width: 0; }
+.c7-podio-finale__avatar { width: 46px; height: 46px; font-size: 14px; margin: 0 auto; }
+.c7-podio-finale__avatar--oro { width: 56px; height: 56px; font-size: 16px; background: var(--c7-oro); color: var(--c7-oro-ink); }
+.c7-podio-finale__avatar--argento { background: var(--c7-argento); color: var(--c7-argento-ink); }
+.c7-podio-finale__avatar--bronzo { background: var(--c7-bronzo); color: var(--c7-bronzo-ink); }
+.c7-podio-finale__nome { margin-top: 8px; font-size: 15px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.c7-podio-finale__posto--oro .c7-podio-finale__nome { font-size: 17px; }
+.c7-podio-finale__pos { font-size: 12px; font-weight: 800; }
+.c7-podio-finale__posto--oro .c7-podio-finale__pos { color: var(--c7-oro); }
+.c7-podio-finale__posto--argento .c7-podio-finale__pos { color: var(--c7-argento); }
+.c7-podio-finale__posto--bronzo .c7-podio-finale__pos { color: var(--c7-bronzo); }
+@media (min-width: 992px) {
+  .c7-fascia__azione .c7-podio-finale { min-width: 300px; gap: 18px; }
+  .c7-fascia__azione .c7-podio-finale__nome { font-size: 13px; }
+  .c7-fascia__azione .c7-podio-finale__posto--oro .c7-podio-finale__nome { font-size: 15px; }
+}
+
+/* I punti SSR: gli stepper delle card, con un campo vero al posto del numero. */
+.c7-ssr__lati { margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.c7-ssr__lato { border-radius: var(--c7-r-field); background: var(--c7-bg); padding: 10px 6px 12px; text-align: center; min-width: 0; }
+.c7-ssr__valore {
+  flex: 1; min-width: 0; width: 100%; border: 0; background: transparent; text-align: center;
+  font-size: 26px; font-weight: 800; color: var(--c7-ink); padding: 0; -moz-appearance: textfield;
+}
+.c7-ssr__valore::-webkit-outer-spin-button,
+.c7-ssr__valore::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.c7-ssr__valore:focus { outline: 2px solid var(--c7-accent); outline-offset: 2px; border-radius: 8px; }
+.c7-ssr__valore.is-invalid { color: var(--c7-err); }

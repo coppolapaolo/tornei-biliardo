@@ -101,7 +101,9 @@
   {% endif %}
 
   {# ---- I turni prima, conclusi: l'ultimo per primo ---- #}
-  {% for n in range(_turno - 1, 0, -1) %}
+  {# Fuori dal gioco (spareggio, conclusa) non c'e' un turno in card: tutti i
+     turni sono righe, a partire dall'ultimo. #}
+  {% for n in range((_turno - 1) if partite_turno else _turno, 0, -1) %}
   {% set _del_turno = _tutte | selectattr('round_number', 'equalto', n) | list %}
   {% if _del_turno %}
   <div class="c7-stack" style="gap:10px">

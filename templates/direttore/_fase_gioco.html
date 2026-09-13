@@ -47,6 +47,20 @@
   </div>
 </section>
 
+{# Chi e' a pari merito, prima di avviare lo spareggio (canvas 4.1): la
+   fascia dice che serve, qui si vede fra chi. #}
+{% if tipo_comando == 'avvia_spareggio' and ssr_groups %}
+<div>
+  {{ d.sezione(_('Parimerito'), nota=_('fino al %(pos)s° posto', pos=gara.tiebreaker_until_position or 3)) }}
+  <div class="c7-rows" style="margin-top:10px">
+    {% for g in ssr_groups %}{% for p in g.players %}
+    {{ d.riga('fa-scale-balanced', p.username, _('%(pos)s° posto a pari merito', pos=g.position), tone='warn',
+              right=('<span class="c7-state c7-state--warn">' ~ _('pari') ~ '</span>')|safe) }}
+    {% endfor %}{% endfor %}
+  </div>
+</div>
+{% endif %}
+
 {% if not casuale %}
 <div class="c7-card c7-stack">
   <button type="button" class="btn btn-secondary w-100" onclick="resetLastRound({{ gara.id }}, {{ gara.current_round }}, this)">

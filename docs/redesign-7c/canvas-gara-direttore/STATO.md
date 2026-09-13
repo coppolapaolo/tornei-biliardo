@@ -480,3 +480,17 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   `models/competition/schermo_sala.py`; il direttore la apre dalla pagina
   della gara in gioco («Schermo in sala»). Il seed della guida da' uno slug
   alla gara 2, perche' la schermata abbia un indirizzo stabile.
+* **F · Spareggio e gara conclusa** (PR `feat: lo spareggio e la gara
+  conclusa`, 2026-09-13). Le schermate 4.1–4.4 e 5.1–5.3. In gioco, quando
+  serve uno spareggio, la fascia elenca i parimerito con la pastiglia
+  «pari» (4.1). In spareggio i punti SSR si segnano con gli stepper da 48px
+  delle card (`_ssr_section.html`): il numero e' un campo vero, che
+  `saveSsrGroup` legge come prima; «Termina» resta spento finche' i gruppi
+  non sono sciolti, poi la fascia dice chi ha preso quale posto, con
+  «Annulla lo spareggio» e cosa comporta chiudere (4.2–4.4). La classifica
+  a destra ha la pastiglia «pari» sui parimerito aperti. A gara conclusa la
+  fascia dice chi ha vinto, con il podio nei colori delle medaglie
+  (`direttore/_podio.html`, classi `c7-podio-finale`: `.c7-podio` e' gia' il
+  podio compatto della tessera in dashboard); la classifica finale ha le
+  medaglie, la freccia rispetto al turno prima e la pastiglia SSR dove lo
+  spareggio ha deciso; le partite restano in righe, tutti i turni (5S).
