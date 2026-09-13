@@ -519,6 +519,14 @@ class SimulationService:
         if corrente is None or not corrente.is_at_distance:
             return False
 
+        # Il ciclo può aver già chiuso la partita: su una partita aperta a mano
+        # la sequenza non conosce il punteggio, e il rack decisivo può toccare
+        # a chi perde — che firmando il rack firma anche il risultato, e con la
+        # firma automatica del vincitore fa due. Validarla dopo sarebbe un
+        # `ValueError` («già completato») e un 500 dal footer di debug.
+        if MatchStatus.is_finished(corrente.status):
+            return fatto
+
         if SimulationService.chiusa_dai_giocatori(corrente):
             for giocatore in (corrente.player1_id, corrente.player2_id):
                 corrente = db.session.get(Match, match_id)

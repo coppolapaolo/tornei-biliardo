@@ -311,6 +311,52 @@ class TestSimulaIlTurno:
             rack = Rack.query.filter_by(match_id=partita.id, is_deleted=False).count()
             assert rack == partita.player1_score + partita.player2_score
 
+    def test_una_dispari_chiusa_dai_giocatori_mentre_si_segna_non_fa_500(
+        self, db_session
+    ):
+        """Bug del 2026-09-13, footer di debug «completa il turno» → 500.
+
+        Il direttore aveva segnato a mano 3-1 su una dispari in «esattamente
+        5». La sequenza simulata riparte da zero e non sa del punteggio: il
+        quinto rack va a chi era sotto, che perde 3-2. Chi perde e segna il
+        rack decisivo firma anche per sé (`add_rack_for_player`), quindi la
+        partita si chiude con la doppia conferma **dentro** il ciclo dei
+        rack, e subito dopo `validate_and_complete` la trovava già chiusa.
+        """
+        gara_id = _prova_avviata(db_session, _direttore(db_session), is_race_to=False)
+        with prova_visibili():
+            dispari = next(
+                m
+                for m in _partite(gara_id, 1)
+                if not SimulationService.chiusa_dai_giocatori(m)
+            )
+            p1, p2 = dispari.player1_id, dispari.player2_id
+            for vincitore in (p1, p1, p1, p2):
+                ScoringService.add_rack_for_player(
+                    dispari.id, user_id=vincitore, winner_id=vincitore
+                )
+
+            class _RngAlPerdente:
+                """`randint` al minimo: il primo rack simulato va a p2."""
+
+                @staticmethod
+                def randint(a: int, b: int) -> int:
+                    return a
+
+                @staticmethod
+                def choice(seq):
+                    return seq[0]
+
+            esito = SimulationService.simula_turno(
+                gara_id, rng=_RngAlPerdente(), chiudi_tutto=True
+            )
+
+            partita = db.session.get(Match, dispari.id)
+            assert partita is not None
+            assert (partita.player1_score, partita.player2_score) == (3, 2)
+            assert MatchStatus.is_finished(partita.status)
+            assert esito.partite_chiuse == len(_partite(gara_id, 1))
+
     def test_rispetta_la_distanza_del_turno(self, db_session):
         """ADR-027: un turno «al 3» dentro una gara «al 5» chiude a 3."""
         gara_id = _prova_avviata(
