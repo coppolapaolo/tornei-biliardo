@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.24.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.23.1...v1.24.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* gli esercizi fra i turni si segnano dalla pagina della gara ([#377](https://github.com/coppolapaolo/tornei-biliardo/issues/377)) ([c73e00e](https://github.com/coppolapaolo/tornei-biliardo/commit/c73e00edf93c18ddba0512fec9fbd53c83642f05))
+
 ## [1.23.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.23.0...v1.23.1) (2026-09-13)
 
 
