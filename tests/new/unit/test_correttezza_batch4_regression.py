@@ -6,8 +6,6 @@
   vittoria a player2 anche in parità (exact-sets). Ora None su tie.
 - dashboard/section_builders: player_challenge_progress sovrascritto per gara
   (sopravviveva solo l'ultima). Ora unione delle challenge di tutte le gare.
-- playoff/services: notify_qualified_players usava notified_at (deprecato) →
-  ri-processava tutti i pending. Ora invited_at.
 """
 
 import uuid
@@ -99,51 +97,6 @@ def test_multi_set_clear_winner(db_session):
     m.player2_score = 1
     m._check_multi_set_completion()
     assert m.winner_id == 1
-
-
-# -------------------------------------------- playoff notify invited_at
-@pytest.mark.unit
-def test_notify_qualified_players_does_not_reprocess_invited(db_session):
-    """Chiamate ripetute non ri-processano i pending gia' invitati."""
-    from models.campionato.models import Campionato
-    from models.playoff.models import (
-        PlayoffConfiguration,
-        PlayoffQualification,
-        PlayoffType,
-        QualificationStatus,
-    )
-    from models.playoff.services import PlayoffService
-
-    suffix = uuid.uuid4().hex[:8]
-    camp = Campionato(name=f"C {suffix}", campionato_type="amalfi")
-    db.session.add(camp)
-    db.session.flush()
-    config = PlayoffConfiguration(
-        campionato_id=camp.id,
-        name="Elite",
-        playoff_type=PlayoffType.TOP_N,
-        max_participants=4,
-    )
-    db.session.add(config)
-    db.session.flush()
-    for i in range(2):
-        u = _make_user(suffix, i)
-        db.session.add(
-            PlayoffQualification(
-                configuration_id=config.id,
-                user_id=u.id,
-                qualifying_position=i + 1,
-                qualification_reason="test",
-                status=QualificationStatus.PENDING,
-            )
-        )
-    db.session.commit()
-
-    first = PlayoffService.notify_qualified_players(config.id)
-    assert first == 2  # entrambi invitati
-    # invited_at ora valorizzato → seconda chiamata non li ri-processa
-    second = PlayoffService.notify_qualified_players(config.id)
-    assert second == 0
 
 
 # -------------------------------------- dashboard challenge progress merge

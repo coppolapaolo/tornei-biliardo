@@ -29,6 +29,9 @@ logger = logging.getLogger(__name__)
 #: Il minimo della gara di playoff: due giocatori bastano per una finale.
 PLAYOFF_MIN_PARTICIPANTS = 2
 
+#: I giorni per rispondere a un invito, quando non c'è una scadenza davanti.
+PLAYOFF_RESPONSE_DAYS = 7
+
 
 class PlayoffService:
     """Service for playoff management and business logic."""
@@ -124,32 +127,6 @@ class PlayoffService:
             results[config.name] = qualifications
 
         return results
-
-    @staticmethod
-    @transactional(domain="playoff")
-    def notify_qualified_players(configuration_id: int) -> int:
-        """Send notifications to qualified players non ancora invitati.
-
-        Usa invited_at (campo attivo) come marcatore: notified_at e' deprecato
-        e non viene mai popolato dal flusso di invito (start_playoff /
-        _send_playoff_invitations usano invited_at). Filtrando su notified_at
-        questo metodo ri-processava TUTTI i pending — anche i gia' invitati —
-        ad ogni chiamata (es. dopo un decline+replacement).
-        """
-        qualifications = PlayoffQualification.query.filter_by(
-            configuration_id=configuration_id,
-            status=QualificationStatus.PENDING,
-            invited_at=None,
-        ).all()
-
-        # In a real implementation, this would send actual notifications.
-        # For now, just mark as invited.
-        count = 0
-        for qualification in qualifications:
-            qualification.invited_at = utc_now()
-            count += 1
-
-        return count
 
     @staticmethod
     @transactional(domain="playoff")
@@ -289,19 +266,13 @@ class PlayoffService:
 
         qualification.decline_participation(responded_by_id=responded_by_id)
 
-        # Cerca il sostituto a livello servizio (flusso documentato:
+        # Cerca e invita il sostituto a livello servizio (flusso documentato:
         # decline → invita il prossimo idoneo). Il modello non lo fa più:
         # prima decline_participation() chiamava un metodo inesistente su
         # PlayoffConfiguration via hasattr (sempre False) → nessun sostituto.
-        replacement = PlayoffService.find_replacement_player(
-            qualification.configuration_id, sostituisce=qualification
+        return PlayoffService._invita_sostituto(
+            qualification.configuration, qualification
         )
-
-        # Notify replacement if found
-        if replacement:
-            PlayoffService.notify_qualified_players(qualification.configuration_id)
-
-        return replacement
 
     @staticmethod
     @transactional(domain="playoff")
@@ -463,9 +434,10 @@ class PlayoffService:
     def expire_old_qualifications() -> int:
         """Expire qualifications that have passed their deadline."""
         expired_count = 0
+        adesso = utc_now()
 
         configurations = PlayoffConfiguration.query.filter(
-            PlayoffConfiguration.response_deadline <= utc_now(),
+            PlayoffConfiguration.response_deadline <= adesso,
             PlayoffConfiguration.is_active.is_(True),
         ).all()
 
@@ -476,19 +448,62 @@ class PlayoffService:
             ).all()
 
             for qualification in expired_qualifications:
+                # Un sostituto chiamato a scadenza generale già passata ha
+                # una scadenza sua, più avanti: si rispetta quella.
+                if (
+                    qualification.expires_at is not None
+                    and qualification.expires_at > adesso
+                ):
+                    continue
                 qualification.expire_qualification()
                 expired_count += 1
-
-                # Find replacement and notify
-                replacement = PlayoffService.find_replacement_player(
-                    config.id, sostituisce=qualification
-                )
-                if replacement:
-                    replacement.invited_at = utc_now()
-                    replacement.expires_at = config.response_deadline
-                    PlayoffService._send_playoff_invitations(config, [replacement])
+                PlayoffService._invita_sostituto(config, qualification)
 
         return expired_count
+
+    @staticmethod
+    def _scadenza_invito_sostituto(
+        config: PlayoffConfiguration, adesso: datetime
+    ) -> datetime:
+        """La scadenza dell'invito a un sostituto.
+
+        È la scadenza di tutti, `config.response_deadline`, finché è ancora
+        davanti. Se è già passata o manca, il sostituto riceve gli stessi
+        sette giorni che `start_playoff` dà quando la configurazione non ne
+        fissa una: un invito nato scaduto non si potrebbe accettare, e il job
+        delle scadenze lo chiuderebbe alla prima occasione, facendo scorrere
+        la cascata senza che nessuno abbia potuto rispondere.
+        """
+        scadenza = config.response_deadline
+        if scadenza is not None and scadenza > adesso:
+            return scadenza
+        return adesso + timedelta(days=PLAYOFF_RESPONSE_DAYS)
+
+    @staticmethod
+    def _invita_sostituto(
+        config: PlayoffConfiguration, sostituisce: PlayoffQualification
+    ) -> Optional[PlayoffQualification]:
+        """Chiama il primo degli esclusi al posto di `sostituisce` e lo invita.
+
+        Una sola strada per tutti i sostituti, dal rifiuto — del giocatore o
+        detto al direttore — e dalla scadenza: il sostituto riceve data
+        d'invito, scadenza e notifica come gli invitati iniziali
+        (SPECIFICHE.md, sezione «Playoff»: «la notifica passa al primo degli
+        esclusi»). Fino al 2026-09-13 il rifiuto creava la qualificazione
+        senza avvisare nessuno e senza scadenza.
+        """
+        sostituto = PlayoffService.find_replacement_player(
+            config.id, sostituisce=sostituisce
+        )
+        if sostituto is None:
+            return None
+        adesso = utc_now()
+        sostituto.invited_at = adesso
+        sostituto.expires_at = PlayoffService._scadenza_invito_sostituto(config, adesso)
+        # L'id serve al link della notifica.
+        db.session.flush()
+        PlayoffService._send_playoff_invitations(config, [sostituto])
+        return sostituto
 
     @staticmethod
     @transactional(domain="playoff")
@@ -848,7 +863,7 @@ class PlayoffService:
         for config in configs:
             # Set deadline if not explicitly configured
             if config.response_deadline is None:
-                config.response_deadline = now + timedelta(days=7)
+                config.response_deadline = now + timedelta(days=PLAYOFF_RESPONSE_DAYS)
 
             qualifications: List[PlayoffQualification] = []
 

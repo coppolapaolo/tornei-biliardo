@@ -373,7 +373,7 @@ class TestPareggio:
 
 @pytest.mark.unit
 class TestCascataDeiRifiutiAiPlayoff:
-    """`SPECIFICHE.md` riga 177."""
+    """`SPECIFICHE.md` riga 286."""
 
     @staticmethod
     def _campionato_con_playoff(db_session, posti: int, iscritti: int):
@@ -425,7 +425,7 @@ class TestCascataDeiRifiutiAiPlayoff:
         return campionato, configurazione, giocatori
 
     def test_chi_rifiuta_lascia_il_posto_al_primo_degli_esclusi(self, db_session):
-        """`SPECIFICHE.md` riga 177.
+        """`SPECIFICHE.md` riga 286.
 
         > Nei playoff con un numero limitato di partecipanti (ad esempio i
         > primi 6), se un giocatore rifiuta, la notifica passa al primo degli
@@ -462,6 +462,75 @@ class TestCascataDeiRifiutiAiPlayoff:
         # Il sostituto è il quinto della classifica, cioè il primo escluso.
         quinto = giocatori[4]
         assert quinto.id in {q.user_id for q in invitati}
+
+    @staticmethod
+    def _verifica_invito_ricevuto(sostituto: PlayoffQualification) -> None:
+        """Il sostituto è invitato come gli altri: data, scadenza, notifica."""
+        from models.base import utc_now
+        from models.notification.models import Notification, NotificationType
+
+        assert sostituto.invited_at is not None, "il sostituto non risulta invitato"
+        assert sostituto.expires_at is not None, "l'invito del sostituto non scade"
+        assert sostituto.expires_at > utc_now(), "l'invito del sostituto è già scaduto"
+        notifica = Notification.query.filter_by(
+            user_id=sostituto.user_id,
+            notification_type=NotificationType.PLAYOFF_INVITATION,
+        ).first()
+        assert notifica is not None, "al primo degli esclusi non arriva nessun invito"
+        assert notifica.action_url == f"/player/playoff/invitation/{sostituto.id}"
+
+    def test_il_primo_degli_esclusi_riceve_la_notifica_d_invito(self, db_session):
+        """`SPECIFICHE.md` riga 286.
+
+        > se un giocatore rifiuta, la notifica passa al primo degli esclusi
+
+        Non basta creargli la qualificazione: fino al 2026-09-13 il sostituto
+        compariva in lista senza che nessuno glielo dicesse, e senza scadenza.
+        """
+        campionato, configurazione, giocatori = self._campionato_con_playoff(
+            db_session, posti=4, iscritti=8
+        )
+        PlayoffService.start_playoff(campionato.id)
+        db_session.commit()
+        rinuncia = PlayoffQualification.query.filter_by(
+            configuration_id=configurazione.id, user_id=giocatori[0].id
+        ).one()
+
+        sostituto = PlayoffService.decline_qualification(rinuncia.id, rinuncia.user_id)
+        db_session.commit()
+
+        assert sostituto is not None
+        assert sostituto.user_id == giocatori[4].id
+        self._verifica_invito_ricevuto(
+            db_session.get(PlayoffQualification, sostituto.id)
+        )
+
+    def test_anche_il_rifiuto_detto_al_direttore_avvisa_il_sostituto(self, db_session):
+        """`SPECIFICHE.md` riga 286, rifiuto registrato dal direttore.
+
+        Il giocatore che dice no a voce passa dalla stessa cascata: il primo
+        degli esclusi va avvisato anche lì.
+        """
+        campionato, configurazione, giocatori = self._campionato_con_playoff(
+            db_session, posti=4, iscritti=8
+        )
+        direttore = _utente(db_session)
+        PlayoffService.start_playoff(campionato.id)
+        db_session.commit()
+        rinuncia = PlayoffQualification.query.filter_by(
+            configuration_id=configurazione.id, user_id=giocatori[1].id
+        ).one()
+
+        sostituto = PlayoffService.respond_on_behalf(
+            rinuncia.id, accept=False, responded_by_id=direttore.id
+        )
+        db_session.commit()
+
+        assert sostituto is not None
+        assert sostituto.user_id == giocatori[4].id
+        self._verifica_invito_ricevuto(
+            db_session.get(PlayoffQualification, sostituto.id)
+        )
 
 
 class TestIlPlayoffSiGiocaConChiHaAccettato:
