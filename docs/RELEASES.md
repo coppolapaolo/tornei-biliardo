@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.25.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.25.0...v1.25.1) (2026-09-13)
+
+
+### Correzioni
+
+* l'interfaccia dice partita, mai match ([#381](https://github.com/coppolapaolo/tornei-biliardo/issues/381)) ([9774b90](https://github.com/coppolapaolo/tornei-biliardo/commit/9774b903ee28ed12f7c05e709ace808abcb7d90d))
+
 ## [1.25.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.24.0...v1.25.0) (2026-09-13)
 
 
