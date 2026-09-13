@@ -465,7 +465,7 @@ class TestCascataDeiRifiutiAiPlayoff:
 
 
 class TestIlPlayoffSiGiocaConChiHaAccettato:
-    """`SPECIFICHE.md`, sezione «Playoff», righe 282 e 284.
+    """`SPECIFICHE.md`, sezione «Playoff», righe 286 e 288.
 
     > […] fino a quando un numero di giocatori pari ai posti disponibili ha
     > dato l'ok oppure sono finiti i giocatori.
@@ -555,7 +555,7 @@ class TestIlPlayoffSiGiocaConChiHaAccettato:
     def test_annullato_l_avvio_gli_inviti_chiusi_dall_avvio_si_riaprono(
         self, db_session
     ):
-        """Riga 284: «Se il direttore annulla l'avvio, gli inviti chiusi
+        """Riga 288: «Se il direttore annulla l'avvio, gli inviti chiusi
         proprio da quell'avvio tornano in attesa, purché la loro scadenza non
         sia ancora passata»."""
         from models.competition.round_cancellation import RoundCancellationService
@@ -585,7 +585,7 @@ class TestIlPlayoffSiGiocaConChiHaAccettato:
         )
 
     def test_il_giocatore_aggiunto_dal_direttore_entra_oltre_i_posti(self, db_session):
-        """Riga 284: «Un giocatore aggiunto a mano dal direttore entra invece
+        """Riga 288: «Un giocatore aggiunto a mano dal direttore entra invece
         sempre […] anche oltre i posti, e il massimo della gara non ne blocca
         l'avvio»."""
         campionato, configurazione, giocatori = (
@@ -609,7 +609,7 @@ class TestIlPlayoffSiGiocaConChiHaAccettato:
         assert self._avvia(gara.id).current_round == 1
 
     def test_l_aggiunta_del_direttore_rispetta_la_parita(self, db_session):
-        """Riga 284: «La parità invece vale anche per lui: se la gara non
+        """Riga 288: «La parità invece vale anche per lui: se la gara non
         ammette un numero dispari di giocatori […] chi renderebbe dispari gli
         iscritti aspetta in lista d'attesa come gli altri, finché non arriva
         un secondo giocatore»."""
