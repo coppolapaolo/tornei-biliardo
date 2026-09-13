@@ -59,13 +59,21 @@ _FASE_PER_STATO = {
 _ORDINE = list(FaseGara)
 
 
-def fase_della_gara(status: str) -> FaseGara:
+def fase_della_gara(status: str, *, playoff: bool = False) -> FaseGara:
     """La fase della striscia per uno `Gara.status`.
 
     Uno stato sconosciuto vale «in preparazione»: è la fase in cui la gara
     non è ancora visibile a nessuno, quindi l'errore meno costoso.
+
+    `playoff`: la gara di playoff non ha una fase di iscrizioni — ci si entra
+    accettando l'invito — e resta in preparazione fino all'avvio. Una gara di
+    playoff nata prima del 2026-09-13 può essere rimasta «in iscrizione»: per
+    la striscia è ancora preparazione.
     """
-    return _FASE_PER_STATO.get(status, FaseGara.PREPARAZIONE)
+    fase = _FASE_PER_STATO.get(status, FaseGara.PREPARAZIONE)
+    if playoff and fase == FaseGara.ISCRIZIONI:
+        return FaseGara.PREPARAZIONE
+    return fase
 
 
 class StatoTacca(str, Enum):
@@ -102,12 +110,20 @@ def spareggio_nella_striscia(
     return turni_conclusi and parimerito_aperti
 
 
-def striscia(fase: FaseGara, *, con_spareggio: bool) -> list[Tacca]:
-    """Le tacche della striscia con il loro stato rispetto alla fase attiva."""
+def striscia(
+    fase: FaseGara, *, con_spareggio: bool, con_iscrizioni: bool = True
+) -> list[Tacca]:
+    """Le tacche della striscia con il loro stato rispetto alla fase attiva.
+
+    `con_iscrizioni=False` per la gara di playoff, che non ha iscrizioni da
+    aprire: preparazione → gioco → [spareggio] → chiusura.
+    """
     attiva = _ORDINE.index(fase)
     tacche: list[Tacca] = []
     for i, f in enumerate(_ORDINE):
         if f == FaseGara.SPAREGGIO and not con_spareggio:
+            continue
+        if f == FaseGara.ISCRIZIONI and not con_iscrizioni:
             continue
         if i < attiva:
             stato = StatoTacca.FATTA

@@ -84,7 +84,10 @@
 {% include "direttore/_menu_partita.html" %}
 {% include "components/_open_inscriptions_modal.html" %}
 {% include "components/_modify_dates_modal.html" %}
-{% if gara.status == GaraStatus.INSCRIPTION.value %}
+{# Il foglio serve dove si avvia: a iscrizioni aperte e, per il playoff che
+   non ha iscrizioni, già in preparazione. Senza, `startFirstRound` non trova
+   il foglio ed esce in silenzio. #}
+{% if gara.status == GaraStatus.INSCRIPTION.value or (gara.is_playoff and gara.status == GaraStatus.SETUP.value) %}
 {% include "direttore/_avvia_gara.html" %}
 {% endif %}
 {% include "direttore/_modali_gioco.html" %}

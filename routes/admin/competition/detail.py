@@ -274,7 +274,7 @@ def _vista_direttore(
     )
     from models.dashboard.comandi import comando_per
 
-    fase = fase_della_gara(gara.status)
+    fase = fase_della_gara(gara.status, playoff=gara.is_playoff)
     reale = gara.get_real_status()
     turni_conclusi = reale == ProvaDerivedStatus.TOURNAMENT_COMPLETED.value
     con_spareggio = spareggio_nella_striscia(
@@ -359,7 +359,9 @@ def _vista_direttore(
         "esercizi_turni": _esercizi_turni(gara, all_matches or []),
         "x_da_convalidare": x_da_convalidare,
         "fase": fase,
-        "striscia": striscia(fase, con_spareggio=con_spareggio),
+        "striscia": striscia(
+            fase, con_spareggio=con_spareggio, con_iscrizioni=not gara.is_playoff
+        ),
         "comando": comando,
         "conteggi": conteggi,
         "menu_turno": menu_turno,

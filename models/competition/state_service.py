@@ -40,6 +40,20 @@ class StateService:
         """
         StateService._require(gara, GaraStatus.SETUP)
 
+        # Al playoff si entra accettando l'invito: aprire le iscrizioni a una
+        # gara a cui non si iscrive nessuno era un passaggio senza scopo, che
+        # il direttore doveva fare con date inventate (SPECIFICHE.md,
+        # «Playoff», nota del 2026-09-13).
+        if gara.is_playoff:
+            from flask_babel import gettext as _
+
+            raise InvalidTransitionError(
+                _(
+                    "Al playoff si entra accettando l'invito: non ci sono "
+                    "iscrizioni da aprire."
+                )
+            )
+
         # Validazione: le date di iscrizione devono essere impostate
         if not gara.inscription_start or not gara.inscription_end:
             raise InvalidTransitionError("Date di iscrizione non impostate")
@@ -59,12 +73,16 @@ class StateService:
 
     @staticmethod
     def start_playing(gara: Gara) -> Gara:
-        """inscription → playing
+        """inscription → playing (setup → playing per la gara di playoff)
 
         No @transactional: always called within a transactional context
         (RoundService.start_first_round, RoundCreation).
+
+        La gara di playoff parte dalla preparazione: non ha una fase di
+        iscrizioni, perché gli iscritti sono chi ha accettato l'invito.
         """
-        StateService._require(gara, GaraStatus.INSCRIPTION)
+        if not (gara.is_playoff and gara.status == GaraStatus.SETUP.value):
+            StateService._require(gara, GaraStatus.INSCRIPTION)
 
         # Controllo sul numero di iscritti attivi vs minimo richiesto
         min_required = gara.min_participants or 2
