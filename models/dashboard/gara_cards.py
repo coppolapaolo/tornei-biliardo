@@ -186,6 +186,10 @@ class GaraCardVM:
     #: `enrich_with_piazzamento`.
     piazzamento: Optional["PiazzamentoVM"] = None
 
+    #: Negli elenchi può stare anche una `PlayoffCardVM` (il playoff prima del
+    #: primo turno): il template le distingue da qui.
+    is_scheda_playoff = False
+
     # -- scorciatoie per il template ------------------------------------
     # Tutte derivate: nessuno stato in più da tenere allineato.
 

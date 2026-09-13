@@ -17,6 +17,7 @@
    una gara sta in una delle ultime quattro con la tessera dell'ospite. #}
 
 {% from "components/_tessera_gara.html" import tessera_gara with context %}
+{% from "components/_tessera_playoff.html" import tessera_playoff with context %}
 {% from "components/_tessera_campionato.html" import tessera_campionato with context %}
 
 {# QUESTO FILE LO VEDE ANCHE L'OSPITE: `index.html` lo include, perché la
@@ -56,7 +57,9 @@
 <section class="mb-4">
   {{ _titolo(_('Le tue gare'), gare.mie|length) }}
   <div class="c7-grid" style="{{ griglia }}">
-    {% for card in gare.mie %}{{ tessera_gara(card) }}{% endfor %}
+    {# Il playoff dopo l'invito sta qui come una gara a cui sei iscritto o
+       in lista (`models/dashboard/playoff_cards.py`). #}
+    {% for card in gare.mie %}{% if card.is_scheda_playoff %}{{ tessera_playoff(card) }}{% else %}{{ tessera_gara(card) }}{% endif %}{% endfor %}
   </div>
 </section>
 {% endif %}
@@ -96,7 +99,8 @@
 <section class="mb-4">
   {{ _titolo(_('In arrivo'), gare.in_arrivo|length) }}
   <div class="c7-grid" style="{{ griglia }}">
-    {% for card in gare.in_arrivo %}{{ tessera_gara(card) }}{% endfor %}
+    {# …e qui, a iscrizioni chiuse, per chi ha rifiutato. #}
+    {% for card in gare.in_arrivo %}{% if card.is_scheda_playoff %}{{ tessera_playoff(card) }}{% else %}{{ tessera_gara(card) }}{% endif %}{% endfor %}
   </div>
 </section>
 {% endif %}

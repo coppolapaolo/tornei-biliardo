@@ -1,0 +1,119 @@
+{# templates/components/_tessera_playoff.html — Design System 7c
+
+   Il playoff in dashboard dopo l'invito, fino al primo turno. Riceve una
+   `PlayoffCardVM` (models/dashboard/playoff_cards.py) e si disegna come la
+   tessera della gara che le corrisponde, con lo stesso lessico di pastiglie:
+
+   * ha accettato → «Iscritto», come una gara a cui si è iscritti;
+   * fuori zona → «Lista d'attesa #N», e il riquadro dice come si entra;
+   * ha rifiutato, l'invito è scaduto o è stato sostituito → «Iscrizioni
+     chiuse», come una gara a cui non si è iscritti.
+
+   Nessun pulsante per entrare: al playoff si entra solo accettando l'invito,
+   che ha la sua sezione in cima alla dashboard. La barra conta chi ha
+   accettato sui posti, come quella degli iscritti. Nessun `id` e nessuno
+   `<script>`. #}
+
+{% macro tessera_playoff(card) %}
+{% set gara = card.gara %}
+<article class="c7-card d-flex flex-column gap-3">
+
+  {# ── Testata ─────────────────────────────────────────────────────── #}
+  <div class="d-flex align-items-start gap-2">
+    <div class="flex-fill">
+      <div class="c7-tessera__title">{{ card.name }}</div>
+      <div class="c7-tessera__meta">
+        {% if card.campionato_name %}{{ card.campionato_name }} <span class="c7-sep">·</span>{% endif %}
+        {{ _('Playoff') }}
+        {% if card.discipline %}
+          <span class="c7-sep">·</span> {{ card.discipline|discipline_display }}
+        {% endif %}
+        {% if gara and gara.distance %}
+          <span class="c7-sep">·</span> {{ gara.distance_config|format_distance }}
+        {% endif %}
+      </div>
+      <div class="c7-tessera__meta">
+        {% if card.date %}
+        <span class="c7-num" style="font-size:12px">{{ card.date|date_local }}</span>
+        {% endif %}
+        {% if card.location %}{% if card.date %}<span class="c7-sep">·</span> {% endif %}{{ card.location }}{% endif %}
+      </div>
+    </div>
+    <div class="c7-tessera__states">
+      {% if card.is_in_lista %}
+        <span class="c7-state c7-state--warn">{{ _("Lista d'attesa") }} #{{ card.posizione_in_lista }}</span>
+      {% elif card.is_iscritto %}
+        <span class="c7-state c7-state--accent">{{ _('Iscritto') }}</span>
+      {% endif %}
+      {% if card.is_prova %}
+        <span class="c7-state c7-state--warn"><i class="fas fa-flask me-1"></i>{{ _('Di prova') }}</span>
+      {% endif %}
+      {% if card.is_chiuso or not card.inviti_aperti %}
+        <span class="c7-state c7-state--muted">{{ _('Iscrizioni chiuse') }}</span>
+      {% else %}
+        <span class="c7-state c7-state--ok">{{ _('Inviti in corso') }}</span>
+      {% endif %}
+    </div>
+  </div>
+
+  {# ── Posti: chi ha accettato, sui posti del playoff ─────────────── #}
+  <div>
+    {% set pct = (card.confermati / card.posti * 100) if card.posti else 0 %}
+    <div class="progress" style="height:8px">
+      <div class="progress-bar" role="progressbar" style="width:{{ pct if pct < 100 else 100 }}%"
+           aria-valuenow="{{ card.confermati }}" aria-valuemin="0" aria-valuemax="{{ card.posti }}"></div>
+    </div>
+    <div class="d-flex align-items-center gap-2 mt-2" style="font-size:12px;font-weight:700">
+      <span class="flex-fill c7-tessera__muted">
+        {% if card.quota %}
+          {{ _('Quota') }} <span class="c7-num">€{{ "%.2f"|format(card.quota) }}</span>
+        {% else %}
+          {{ _('Gratuita') }}
+        {% endif %}
+      </span>
+      <span class="c7-tessera__muted">
+        <span class="c7-num">{{ card.confermati }}/{{ card.posti }}</span>
+        {% if card.liberi %}
+          <span class="c7-sep">·</span> {{ ngettext('%(num)s libero', '%(num)s liberi', card.liberi, num=card.liberi) }}
+        {% endif %}
+      </span>
+    </div>
+  </div>
+
+  {# ── Perché sei dove sei ─────────────────────────────────────────── #}
+  {% if card.is_in_lista %}
+  <div class="c7-inset c7-inset--warn">
+    {% if card.lista_per_posti %}
+      <div class="c7-kicker">{{ _('La gara è al completo') }}</div>
+      <p class="mb-0 mt-1" style="font-size:12px;font-weight:600;line-height:1.55">
+        {{ _("Se qualcuno si ritira entri tu, in ordine di posizione: succede da solo, non devi rifare l'iscrizione.") }}
+      </p>
+    {% else %}
+      <div class="c7-kicker">{{ _('Sei fuori dalla zona playoff') }}</div>
+      <p class="mb-0 mt-1" style="font-size:12px;font-weight:600;line-height:1.55">
+        {{ _("Se un qualificato rifiuta, l'invito passa al primo degli esclusi, e così via. Quando tocca a te ricevi l'invito da accettare.") }}
+      </p>
+    {% endif %}
+  </div>
+  {% elif card.is_chiuso %}
+  <div class="c7-tessera__meta">
+    {% if card.per_rifiuto %}{{ _("Hai rifiutato l'invito.") }}
+    {% elif card.per_scadenza %}{{ _("L'invito è scaduto senza risposta.") }}
+    {% elif card.per_sostituzione %}{{ _('Il tuo posto è passato a un altro giocatore.') }}
+    {% elif card.config.min_garas_played %}{{ _('Per essere chiamati servono almeno %(n)s gare del campionato.', n=card.config.min_garas_played) }}
+    {% else %}{{ _('Non rientri fra i giocatori che questo playoff può chiamare.') }}{% endif %}
+  </div>
+  {% endif %}
+
+  {# ── Azioni ───────────────────────────────────────────────────────── #}
+  {# Con la gara creata, la sua pagina; prima, il campionato, dove la
+     classifica generale segna la zona playoff. #}
+  <div class="c7-tessera__actions">
+    {% if gara %}
+      <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary">{{ _('Dettagli') }}</a>
+    {% else %}
+      <a href="{{ url_for('main.campionato_detail_public', campionato_id=card.config.campionato_id) }}" class="btn btn-secondary">{{ _('Dettagli') }}</a>
+    {% endif %}
+  </div>
+</article>
+{% endmacro %}
