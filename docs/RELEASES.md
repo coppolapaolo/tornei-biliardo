@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.12.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.11.0...v1.12.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* la preparazione della gara, passo per passo ([#345](https://github.com/coppolapaolo/tornei-biliardo/issues/345)) ([4d26dc4](https://github.com/coppolapaolo/tornei-biliardo/commit/4d26dc487f7d9ad9510b0d6bc90dd9133377061f))
+
 ## [1.11.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.10.0...v1.11.0) (2026-09-12)
 
 
