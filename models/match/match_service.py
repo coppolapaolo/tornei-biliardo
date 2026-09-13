@@ -505,16 +505,10 @@ class MatchService:
         if not match.is_ready_for_validation():
             raise ValueError("Match is not ready for validation")
 
-        # confirm_result returns True if match is now completed (both confirmed)
-        is_completed = match.confirm_result(user_id)
-
-        # Se il match è completato, libera e riassegna il tavolo
-        if is_completed and match.table_assignment:
-            from models.match.table_assignment_service import TableAssignmentService
-
-            TableAssignmentService.release_and_reassign_table(match.id)
-            # Sincronizza l'oggetto match locale
-            match.table_assignment = None
+        # Con la seconda firma la partita si chiude e il tavolo passa alla
+        # partita in attesa: lo fa `Match._complete_match_after_confirmation`,
+        # che vale per ogni strada che firma, non solo per questa.
+        match.confirm_result(user_id)
 
         return match
 

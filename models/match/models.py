@@ -502,6 +502,26 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
 
         SetLifecycleService.complete_set(self, set_number, winner_id)
 
+    def _complete_match_after_confirmation(self) -> None:
+        """La seconda firma chiude la partita, e il tavolo passa a chi aspetta.
+
+        Il posto giusto per liberare il tavolo e' questo, dove la partita
+        finisce: la seconda firma la danno strade diverse. La conferma
+        esplicita di chi perde passa da `MatchService.confirm_match_result`,
+        ma il direttore che gioca e chi perde quando segna il triangolo
+        decisivo firmano dentro `ScoringService.add_rack_for_player`. Fino al
+        2026-09-13 solo la prima strada liberava il tavolo: con le altre la
+        partita si chiudeva, il tavolo risultava libero perche' non piu' di una
+        partita in gioco, e la partita in attesa restava senza, finche' un'altra
+        chiusura non lo ripescava.
+        """
+        super()._complete_match_after_confirmation()
+        if not self.gara_id:
+            return
+        from .table_assignment_service import TableAssignmentService
+
+        TableAssignmentService.release_and_reassign_table(self.id)
+
     def _remove_last_rack(self, user_id: int) -> None:
         """
         Implementation of BaseMatch abstract method.
