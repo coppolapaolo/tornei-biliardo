@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.23.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.22.0...v1.23.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* la gara del campionato e la prova nella pagina del direttore ([#373](https://github.com/coppolapaolo/tornei-biliardo/issues/373)) ([d6c936d](https://github.com/coppolapaolo/tornei-biliardo/commit/d6c936dc47031e220abd2edc5f4a121e0da111a9))
+
 ## [1.22.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.21.1...v1.22.0) (2026-09-13)
 
 
