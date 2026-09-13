@@ -110,21 +110,44 @@ class GaraService:
 
 ## Nested Transactions
 
-Nested `@transactional` calls use savepoints:
+Nested `@transactional` calls use savepoints, and **only the outermost
+decorator saves** (ADR-061, 2026-09-13):
 
 ```python
 @transactional(domain="match")
 def outer_operation():
     # Opens transaction
     create_match()  # Uses savepoint
-    update_scores()  # Uses savepoint
-    # All committed together
+    try:
+        update_scores()  # Uses savepoint
+    except ValueError:
+        pass  # only update_scores' work is undone; create_match's stays
+    # All committed together, here and nowhere else
 
 @transactional(domain="match")
 def create_match():
     # Creates savepoint, not new transaction
     pass
 ```
+
+Le regole, verificate sul database da `tests/new/unit/test_transazioni_annidate.py`:
+
+- **l'esterna fallisce** dopo l'interna: si annulla tutto, interna compresa;
+- **l'interna fallisce** e l'esterna cattura e prosegue: si annulla solo il
+  savepoint dell'interna, il lavoro dell'esterna fatto prima resta.
+
+Fino al 2026-09-13 era il contrario in entrambi i casi. Il ramo annidato
+chiudeva il savepoint con `db.session.commit()` e lo annullava con
+`db.session.rollback()`, che da SQLAlchemy 1.4 agiscono sulla transazione **più
+esterna**. E con SQLite serviva un secondo accorgimento: il driver `sqlite3`
+apre la transazione solo davanti a una scrittura, quindi se l'esterna aveva
+soltanto letto, il `SAVEPOINT` dell'interna era il primo comando e il suo
+`RELEASE` valeva un commit. Il gestore ora apre la transazione con `BEGIN`
+prima del savepoint (`_apri_transazione_sqlite`).
+
+**Non vale per i `with db.session.begin_nested()` scritti a mano** dentro i
+servizi (ADR-025): chiudono il savepoint giusto, ma se prima non c'è stata
+nessuna scrittura il loro `RELEASE` resta un commit su SQLite.
 
 ---
 
@@ -165,41 +188,34 @@ See `docs/adr/ADR-012-transactional-circular-import-fix.md` for details.
 - **Do not import from `models.base`** - Import from `models.transaction.manager`
 - **Do not use isolation levels on SQLite** - They're ignored (SQLite limitation)
 - **Do not forget decorator on write methods** - Data won't persist without `@transactional`
-- **Do not decorate facade methods that delegate to decorated services** - Double `@transactional` causes nested savepoints that silently rollback on SQLite
+- **Do not count on an inner `@transactional` to save** - only the outermost one commits (ADR-061)
 
 ---
 
 ## Facade/Wrapper Pattern
 
-When creating facade methods that delegate to other services, **only the innermost method should have `@transactional`**:
+A facade that only delegates does not need its own `@transactional`: the inner
+service already has one. Adding it is no longer harmful (ADR-061): the inner
+call becomes a savepoint and the facade commits. Decorate the facade when it
+**composes** several writes that must succeed or fail together.
 
 ```python
-# ❌ WRONG - Double decoration causes silent rollback on SQLite
 class FacadeService:
-    @transactional  # ← REMOVE THIS
+    @transactional()  # composes two writes: both or neither
     def wrapper_method(self, match_id: int):
-        return InnerService.actual_method(match_id)  # Already has @transactional
+        InnerService.actual_method(match_id)   # savepoint
+        OtherService.follow_up(match_id)       # savepoint
 
 class InnerService:
-    @transactional
-    def actual_method(self, match_id: int):
-        # ... actual logic
-        pass
-
-# ✅ CORRECT - Only innermost has decorator
-class FacadeService:
-    def wrapper_method(self, match_id: int):
-        # No decorator - delegates to decorated method
-        return InnerService.actual_method(match_id)
-
-class InnerService:
-    @transactional
+    @transactional()
     def actual_method(self, match_id: int):
         # ... actual logic
         pass
 ```
 
-**Why**: Nested `@transactional` creates savepoints. On SQLite, if the outer transaction commits but inner savepoint had issues, data may not persist. The symptom is: API returns success, but database shows no changes.
+**Storia**: fino al 2026-09-13 questa sezione vietava il doppio decoratore
+perché «su SQLite i savepoint annidati annullano in silenzio». Il sintomo era
+vero, la causa era il gestore: vedi «Nested Transactions» sopra e ADR-061.
 
 ---
 

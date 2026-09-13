@@ -207,13 +207,12 @@ class GaraParticipantReassignService:
         Esegue le stesse validazioni di ``reassign`` — quindi solleva sugli
         stessi conflitti — e poi conta le righe senza toccarne nessuna.
 
-        **Perché non è una simulazione completa.** Far girare lo spostamento e
-        poi annullare non funziona in questa applicazione: un ``@transactional``
-        annidato chiama ``db.session.commit()``, e da SQLAlchemy 1.4 quel commit
-        chiude la transazione **esterna** invece di rilasciare il savepoint. Il
-        ricalcolo della gamification committerebbe per davvero, e l'annullamento
-        finale non troverebbe più niente da annullare. La prova completa si fa
-        su una **copia del file .db** (vedi lo script), non con un rollback.
+        **Perché non è una simulazione completa.** Fino al 2026-09-13 far girare
+        lo spostamento e poi annullare non funzionava: un ``@transactional``
+        annidato chiudeva la transazione **esterna** invece del savepoint, e il
+        ricalcolo della gamification committava per davvero. Il difetto è
+        corretto (ADR-061), ma la prova completa resta su una **copia del file
+        .db** (vedi lo script): è anche il backup.
 
         Raises:
             NotFoundError: gara o utente inesistente.

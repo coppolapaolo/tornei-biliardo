@@ -74,6 +74,7 @@ Crea un ADR quando:
 | ADR-058 | [La competizione di prova è invisibile per default e si cancella fisicamente](ADR-058-competizione-di-prova.md) | Accepted | 2026-09-04 |
 | ADR-059 | [La pagina gara del direttore è la fase in corso](ADR-059-pagina-gara-del-direttore-per-fasi.md) | Accepted | 2026-09-13 |
 | ADR-060 | [I tavoli della gara si scelgono in ogni stato](ADR-060-tavoli-scelti-in-ogni-stato.md) | Accepted | 2026-09-13 |
+| ADR-061 | [Un `@transactional` annidato rilascia il proprio savepoint: salva solo il più esterno](ADR-061-transactional-annidato-salva-solo-il-piu-esterno.md) | Accepted | 2026-09-13 |
 
 ## Come Creare un Nuovo ADR
 

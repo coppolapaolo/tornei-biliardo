@@ -7,9 +7,9 @@ route non contengono logica sui ruoli, chiedono a ``can_grant``/``can_revoke``.
 Estendere il meccanismo a un altro ruolo domani è una riga in ``GRANT_POLICY``.
 
 Transazioni: ``@transactional`` solo sui metodi **esterni**; il corpo condiviso
-``_grant_unchecked`` è deliberatamente **non** decorato, perché annidare
-``@transactional`` crea savepoint che su SQLite possono non persistere (vedi
-``models/transaction/CLAUDE.md``).
+``_grant_unchecked`` non è decorato perché gira sempre dentro uno di essi. Il
+timore di un tempo — savepoint annidati che su SQLite non persistono — non vale
+più dal 2026-09-13 (ADR-061).
 """
 
 from __future__ import annotations
@@ -156,8 +156,8 @@ class RoleGrantService:
 
     # NB: i metodi di lettura restano **non decorati**. ``@read_only`` è pur
     # sempre un ``@transactional``: chiamarli da dentro ``create_request``
-    # aprirebbe un savepoint annidato, che su SQLite è la ricetta nota per i
-    # rollback silenziosi (models/transaction/CLAUDE.md).
+    # aprirebbe un savepoint annidato per una lettura, che non serve. (Il
+    # rollback silenzioso che si temeva è corretto dal 2026-09-13, ADR-061.)
     @staticmethod
     def list_holders(role: GrantableRole) -> List[RoleGrant]:
         """Titolari attivi del ruolo, con l'utente e il concedente caricati.

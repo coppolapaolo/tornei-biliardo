@@ -397,10 +397,10 @@ class UserPermissionService:
             from models.demand.service import DemandSignalService
 
             # Variante NON @transactional: la valutazione gira nella
-            # transazione di promozione già aperta. Usare la versione
-            # decorata qui creerebbe un @transactional annidato (savepoint
-            # che su SQLite può non persistere — vedi
-            # models/transaction/CLAUDE.md).
+            # transazione di promozione già aperta. La versione decorata,
+            # dal 2026-09-13 (ADR-061), sarebbe preferibile: un suo guasto
+            # annullerebbe solo il proprio savepoint, mentre qui un errore
+            # di flush catturato lascia la sessione da annullare.
             DemandSignalService.evaluate_zone_unmanaged(director_id)
         except Exception:
             import logging

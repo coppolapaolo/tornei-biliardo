@@ -91,6 +91,9 @@ dev/test l'allowlist è pass-through.
 - **Nesting transazionale**: il consumo gira come handler dentro la transazione
   di `create_gara` (savepoint). Mitigato: handler idempotente + isolamento
   per-handler dell'EventBus (un fallimento non rompe la creazione gara).
+  *(nota 2026-09-13: fino a questa data l'isolamento non reggeva — un handler
+  decorato che falliva annullava l'intera sessione, creazione della gara
+  compresa, e l'EventBus proseguiva come se niente fosse. Corretto da ADR-061.)*
 - **home_city non geocodificata**: se nessuna sala della città ha coordinate, la
   zona del director non è calcolabile → nessuna notifica (accettato).
 

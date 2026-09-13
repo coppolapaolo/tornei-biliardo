@@ -738,8 +738,9 @@ class InscriptionService:
         finisce in lista d'attesa) e gli eventi di dominio sono emessi come per
         un'iscrizione manuale del director.
 
-        Senza ``@transactional``: ogni ``inscribe_user`` porta il proprio (i
-        decoratori annidati provocano rollback del savepoint esterno).
+        Senza ``@transactional``: ogni ``inscribe_user`` porta il proprio, quindi
+        un'iscrizione fallita non annulla quelle già copiate. (Il vecchio timore
+        dei decoratori annidati non vale più dal 2026-09-13, ADR-061.)
         """
         source_inscriptions = (
             db.session.query(Inscription)

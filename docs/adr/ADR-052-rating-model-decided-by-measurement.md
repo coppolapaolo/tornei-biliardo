@@ -238,6 +238,8 @@ piaciuto di più.
   file `.db`**, per la stessa ragione documentata in ADR-048: un
   `@transactional` annidato committa la transazione esterna, e un rollback non
   annullerebbe nulla. Copiare il file è più semplice che essere prudenti.
+  *(nota 2026-09-13: il difetto è corretto da ADR-061; la copia del file resta
+  la via più semplice e sicura per un backtest.)*
 - **Esito nullo.** È possibile — e va accettato — che la differenza fra i tre
   modelli non sia distinguibile dal rumore con i dati che abbiamo. In quel caso
   la risposta è «non ancora», e l'ADR si rilegge quando i rack saranno il

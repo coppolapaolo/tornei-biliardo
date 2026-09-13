@@ -18,8 +18,8 @@ ragione sta nel docstring di ``request_models.py``, il test in
 
 Transazioni: ``@transactional`` solo sui metodi esterni; i corpi condivisi
 (``_close_other_recipients``, le notifiche) girano dentro la transazione già
-aperta dal chiamante — annidare crea savepoint che su SQLite sanno di rollback
-silenziosi (``models/transaction/CLAUDE.md``).
+aperta dal chiamante. Annidare decoratori, dal 2026-09-13, sarebbe comunque
+sicuro (ADR-061).
 """
 
 from __future__ import annotations
