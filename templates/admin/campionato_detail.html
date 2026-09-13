@@ -639,7 +639,6 @@
 
     // Auto-popolamento dinamico + logica modalità di gioco
     document.addEventListener('DOMContentLoaded', function () {
-        const copyFromPreviousCheck = document.getElementById('copy_from_previous');
         const createDistanceInput = document.getElementById('create_distance');
         const createExactNumberCheck = document.getElementById('create_exact_number');
         const createGameModeText = document.getElementById('create-game-mode-text');
@@ -662,9 +661,11 @@
     const lastProva = null;
     {% endif %}
 
-    // Funzione per copiare valori dalla gara precedente
+    // Parametri della gara precedente (sede, quota, disciplina...). Non
+    // dipende da «Auto-copia iscritti»: quella casella, spenta di default dal
+    // 2026-09-13, decide solo se copiare gli iscritti.
     function copyFromPrevious() {
-        if (copyFromPreviousCheck.checked && lastProva) {
+        if (lastProva) {
             document.getElementById('create_location').value = lastProva.location;
             document.getElementById('create_min_participants').value = lastProva.min_participants;
             document.getElementById('create_max_participants').value = lastProva.max_participants;
@@ -700,15 +701,10 @@
     }
 
     // Event listeners
-    if (copyFromPreviousCheck) {
-        copyFromPreviousCheck.addEventListener('change', copyFromPrevious);
-
-        // Auto-copia all'apertura del modal se è checked
-        document.getElementById('newProvaModal').addEventListener('shown.bs.modal', function () {
-            if (copyFromPreviousCheck.checked) {
-                copyFromPrevious();
-            }
-        });
+    const newProvaModal = document.getElementById('newProvaModal');
+    if (newProvaModal) {
+        // I parametri della gara precedente si propongono a ogni apertura.
+        newProvaModal.addEventListener('shown.bs.modal', copyFromPrevious);
     }
 
     if (createDistanceInput && createExactNumberCheck && createGameModeText) {

@@ -209,3 +209,72 @@ def test_create_gara_route_honours_copy_from_previous(
     )
     assert created is not None, "la gara 2 non è stata creata"
     assert Inscription.active_count_for_gara(created.id) == 3
+
+
+def _login_direttore(client, director):
+    login = client.post(
+        "/auth/login",
+        data={"username": director.username, "password": "director123"},
+        follow_redirects=True,
+    )
+    assert login.status_code == 200
+
+
+@pytest.mark.integration
+def test_auto_copia_iscritti_spenta_di_default_nel_modale(
+    db_session, isolated_director_user, client
+):
+    """Richiesta del 2026-09-13: nella nuova gara di un campionato l'opzione
+    «Auto-copia iscritti» nasce spenta, anche quando esiste gia' una gara da
+    cui copiare. Fino a oggi era spuntata appena il campionato aveva una gara."""
+    campionato = _make_campionato(db_session, isolated_director_user.id)
+    _make_gara(campionato.id, 1, isolated_director_user.id)
+    db_session.commit()
+    _login_direttore(client, isolated_director_user)
+
+    html = client.get(f"/admin/campionato/{campionato.id}").get_data(as_text=True)
+
+    assert 'id="copy_from_previous"' in html
+    casella = html.split('id="copy_from_previous"')[1].split(">")[0]
+    assert "checked" not in casella
+
+
+@pytest.mark.integration
+def test_create_gara_route_senza_flag_non_copia(
+    db_session, isolated_director_user, isolated_players, client
+):
+    """Un invio senza la casella spuntata non porta gli iscritti."""
+    campionato = _make_campionato(db_session, isolated_director_user.id)
+    gara1 = _make_gara(campionato.id, 1, isolated_director_user.id)
+    for player in isolated_players[:3]:
+        InscriptionService.inscribe_user(player.id, gara1.id)
+    db_session.commit()
+    _login_direttore(client, isolated_director_user)
+
+    response = client.post(
+        "/admin/gara/create",
+        data={
+            "campionato_id": str(campionato.id),
+            "number": "2",
+            "name": "Gara 2",
+            "date": (date.today() + timedelta(days=5)).isoformat(),
+            "time": "20:00",
+            "location": "Test Venue",
+            "available_tables": "2",
+            "min_participants": "2",
+            "entry_fee": "0",
+            "discipline": "9_ball",
+            "distance": "5",
+            "rounds_count": "1",
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code in (301, 302)
+
+    created = (
+        db.session.query(Gara)
+        .filter_by(campionato_id=campionato.id, number=2)
+        .one_or_none()
+    )
+    assert created is not None, "la gara 2 non è stata creata"
+    assert Inscription.active_count_for_gara(created.id) == 0
