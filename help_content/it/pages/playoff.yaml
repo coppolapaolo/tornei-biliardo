@@ -1,10 +1,10 @@
 title: "I playoff di fine campionato"
 section: giocare
 kind: approfondimento
-audience: [giocatore]
-minutes: 3
-summary: "Le gare finali riservate ai migliori classificati: come ci si qualifica, come si accetta l'invito e cosa succede se si rifiuta."
-screens: [player.playoff_invitation]
+audience: [giocatore, direttore]
+minutes: 4
+summary: "Le gare finali riservate ai migliori classificati: come ci si qualifica, come si accetta l'invito, cosa succede se si rifiuta e come li avvia chi dirige."
+screens: [player.playoff_invitation, admin.campionato.campionato_detail]
 related: [creare_un_campionato, notifiche]
 
 blocks:
@@ -56,9 +56,9 @@ blocks:
 
   - type: text
     text: >-
-      Se ti qualifichi ricevi una **notifica**. Aprendola trovi il playoff —
-      data e sala, se chi organizza le ha già fissate — e due pulsanti:
-      accettare o rifiutare.
+      Se ti qualifichi ricevi una **notifica**. Aprendola trovi il playoff,
+      con il giorno e l'ora in cui si gioca, e due pulsanti: accettare o
+      rifiutare.
 
   - type: text
     text: >-
@@ -93,8 +93,10 @@ blocks:
           scadenza.
       - title: "Rispondi in tempo"
         text: >-
-          L'invito ha una scadenza. Non rispondere equivale a rifiutare, e il
-          posto va a qualcun altro.
+          L'invito ha una scadenza, scelta dal direttore quando manda gli
+          inviti. Non rispondere equivale a rifiutare, e il posto va a
+          qualcun altro. Se il direttore sposta la scadenza, quella nuova vale
+          anche per te finché non hai risposto.
 
   - type: note
     tone: tip
@@ -199,6 +201,56 @@ blocks:
     text: >-
       Se nessuno tocca niente vale il primo modo, con peso 1: il playoff conta
       esattamente come una gara qualsiasi del campionato.
+
+  - type: heading
+    id: avviare
+    title: "Per chi dirige: avviare e seguire i playoff"
+
+  - type: text
+    text: >-
+      Questa parte è per chi dirige il campionato. Tutto passa dalla pagina
+      del campionato: la fascia in cima dice sempre a che punto sono i
+      playoff e qual è la prossima cosa da fare.
+
+  - type: steps
+    items:
+      - title: "Termina il campionato"
+        text: >-
+          Con **Termina** la classifica generale diventa definitiva e la
+          fascia passa a «Playoff da avviare».
+      - title: "Scegli data e scadenza, e manda gli inviti"
+        text: >-
+          Tocca **Avvia i playoff**: si apre un foglio che chiede **Quando si
+          gioca il playoff** e **Gli invitati rispondono entro**, nel tuo fuso
+          orario. Tutte e due le date devono essere nel futuro. Con **Avvia i
+          playoff e invia gli inviti** i qualificati ricevono l'invito e le
+          configurazioni si bloccano.
+      - title: "Sposta data e scadenza, se serve"
+        text: >-
+          Sopra l'elenco degli invitati di ogni playoff c'è la riga **Data e
+          scadenza**. Toccala per cambiarle, fino a quando la gara di playoff
+          comincia. La scadenza nuova vale per chi non ha ancora risposto; la
+          data nuova sposta anche la gara, se l'hai già creata.
+      - title: "Crea la gara"
+        text: >-
+          Quando le risposte bastano, **Crea la gara playoff** crea la gara e
+          ci iscrive chi ha accettato. Da lì il pulsante diventa **Vai alla
+          gara playoff**.
+      - title: "Si gioca"
+        text: >-
+          Appena la gara di playoff comincia, la fascia dice **Playoff in
+          corso**: gli inviti sono chiusi e si gioca con chi è entrato. Al
+          posto degli invitati trovi **Gare di playoff**, con il collegamento
+          a ciascuna.
+
+  - type: note
+    tone: info
+    title: "Il campionato si chiude da solo"
+    text: >-
+      Quando tutte le gare di playoff sono concluse, la fascia dice
+      **Campionato concluso · Classifica definitiva**, con il vincitore di
+      ogni playoff e il pulsante **Risultati della finale**. Non c'è niente da
+      premere: il campionato risulta completato da solo.
 
   - type: faq
     items:

@@ -7,6 +7,7 @@ Inherits statistics methods from TournamentStatisticsService.
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import List, Optional, Dict, Any
 from models.user.models import User
 from models.match.models import Match
@@ -744,11 +745,22 @@ class TournamentService(TournamentStatisticsService):
             raise ValueError("Configurazione non appartiene a questo campionato")
         config.min_garas_played = new_min
 
-    def start_playoff(self, campionato_id: int) -> Dict[str, Any]:
+    def start_playoff(
+        self,
+        campionato_id: int,
+        *,
+        scheduled_date: Optional[datetime] = None,
+        response_deadline: Optional[datetime] = None,
+    ) -> Dict[str, Any]:
         """Facade: start playoffs for a terminated campionato.
 
-        Delegates to PlayoffService.start_playoff().
+        Delegates to PlayoffService.start_playoff(), con la data dei playoff e
+        la scadenza degli inviti scelte dal direttore.
         """
         from models.playoff.services import PlayoffService
 
-        return PlayoffService.start_playoff(campionato_id)
+        return PlayoffService.start_playoff(
+            campionato_id,
+            scheduled_date=scheduled_date,
+            response_deadline=response_deadline,
+        )

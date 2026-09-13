@@ -224,6 +224,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Fase playoff: è il seguito diretto di terminate_campionato, quindi va
     # promossa nello stesso blocco (ADR-028, "promote whole feature areas").
     "admin.campionato.start_playoff": {"director"},
+    # Data dei playoff e scadenza degli inviti, spostabili fino all'avvio.
+    "admin.campionato.playoff_calendario": {"director"},
     "admin.campionato.create_playoff_gara": {"director"},
     "admin.campionato.update_playoff_min": {"director"},
     "admin.campionato.playoff_add_config": {"director"},

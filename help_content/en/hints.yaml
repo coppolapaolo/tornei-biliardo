@@ -784,13 +784,13 @@ hints:
   section: classifica_generale
 - id: campionato.avvia_playoff
   label: Start the playoffs
-  short: Sends the invitation to the qualified players. Whoever accepts enters the final competition;
-    whoever declines leaves the place to the first of the excluded.
+  short: Asks when the playoff is played and until when players can reply, then sends the invitation
+    to the qualified players. Whoever declines leaves the place to the first of the excluded.
   anchor: campionato-avvia-playoff
   screens:
   - admin.campionato.campionato_detail
   page: playoff
-  section: invito
+  section: avviare
 - id: playoff.risposta_invito
   label: Accept / Decline
   short: The answer to the invitation. Normally the player gives it from their phone; if they tell you

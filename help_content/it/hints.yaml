@@ -712,11 +712,11 @@ hints:
 
   - id: campionato.avvia_playoff
     label: "Avvia i playoff"
-    short: "Manda l'invito ai giocatori qualificati. Chi accetta entra nella gara finale; chi rifiuta lascia il posto al primo degli esclusi."
+    short: "Chiede quando si gioca e fino a quando si risponde, poi manda l'invito ai qualificati. Chi rifiuta lascia il posto al primo degli esclusi."
     anchor: campionato-avvia-playoff
     screens: [admin.campionato.campionato_detail]
     page: playoff
-    section: invito
+    section: avviare
 
   - id: playoff.risposta_invito
     label: "Accetta / Rifiuta"

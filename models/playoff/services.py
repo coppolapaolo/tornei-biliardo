@@ -13,7 +13,7 @@ from datetime import datetime, timedelta
 from flask_babel import gettext as _
 
 from ..base import db, utc_now
-from ..exceptions import ConflictError, NotFoundError
+from ..exceptions import ConflictError, NotFoundError, ValidationError
 from .models import (
     PlayoffConfiguration,
     PlayoffQualification,
@@ -800,16 +800,111 @@ class PlayoffService:
         return scelti
 
     @staticmethod
+    def _valida_calendario(
+        scheduled_date: Optional[datetime], response_deadline: Optional[datetime]
+    ) -> None:
+        """Data dei playoff e scadenza degli inviti stanno nel futuro."""
+        adesso = utc_now()
+        if response_deadline is not None and response_deadline <= adesso:
+            raise ValidationError(_("La scadenza degli inviti deve essere nel futuro."))
+        if scheduled_date is not None and scheduled_date <= adesso:
+            raise ValidationError(_("La data dei playoff deve essere nel futuro."))
+
+    @staticmethod
+    @transactional(domain="playoff")
+    def aggiorna_calendario(
+        config_id: int,
+        *,
+        scheduled_date: Optional[datetime] = None,
+        response_deadline: Optional[datetime] = None,
+    ) -> PlayoffConfiguration:
+        """Il direttore sposta la data dei playoff o la scadenza degli inviti.
+
+        Si può fino all'avvio della gara di playoff: dopo, la finale è
+        cominciata e gli inviti sono chiusi. La scadenza nuova vale per gli
+        inviti ancora senza risposta — chi ha risposto non ne ha più bisogno —
+        e la data nuova va anche sulla gara, se il direttore l'ha già creata,
+        con lo stesso controllo d'ordine delle gare del campionato (ADR-016).
+
+        Un valore uguale a quello salvato non cambia niente: il foglio li
+        rimanda tutti e due, e chi sposta solo la data non deve vedersi
+        rifiutare una scadenza già passata che non ha toccato.
+        """
+        config = db.session.get(PlayoffConfiguration, config_id)
+        if config is None:
+            raise NotFoundError("Configurazione playoff non trovata")
+        if PlayoffService._gara_avviata(config):
+            raise ConflictError(
+                _(
+                    "La gara di playoff è già cominciata: data e scadenza non si "
+                    "cambiano più."
+                )
+            )
+
+        def _invariato(nuovo: Optional[datetime], attuale: Optional[datetime]) -> bool:
+            return (
+                nuovo is not None
+                and attuale is not None
+                and nuovo.replace(second=0, microsecond=0)
+                == attuale.replace(second=0, microsecond=0)
+            )
+
+        if _invariato(response_deadline, config.response_deadline):
+            response_deadline = None
+        if _invariato(scheduled_date, config.scheduled_date):
+            scheduled_date = None
+        PlayoffService._valida_calendario(scheduled_date, response_deadline)
+
+        if response_deadline is not None:
+            config.response_deadline = response_deadline
+            in_attesa = PlayoffQualification.query.filter_by(
+                configuration_id=config.id, status=QualificationStatus.PENDING
+            ).all()
+            for qualification in in_attesa:
+                qualification.expires_at = response_deadline
+
+        if scheduled_date is not None:
+            gara = config.gara
+            if gara is not None:
+                from ..competition.services import GaraService
+
+                try:
+                    GaraService._validate_sequential_date(
+                        campionato_id=gara.campionato_id,
+                        number=gara.number,
+                        gara_date=scheduled_date.date(),
+                        gara_time=scheduled_date.time(),
+                    )
+                except ValueError as errore:
+                    raise ValidationError(str(errore)) from errore
+                gara.date = scheduled_date.date()
+                gara.time = scheduled_date.time()
+            config.scheduled_date = scheduled_date
+
+        return config
+
+    @staticmethod
     @transactional(domain="playoff")
     def start_playoff(
         campionato_id: int,
+        *,
+        scheduled_date: Optional[datetime] = None,
+        response_deadline: Optional[datetime] = None,
     ) -> Dict[str, List[PlayoffQualification]]:
         """Start playoffs: generate qualifications from classification.
 
         Iterates over all active configs of the campionato. Sets
         response_deadline (default 7 days) and sends notifications.
         Returns dict of config_name → list of new qualifications.
+
+        `scheduled_date` e `response_deadline` li sceglie il direttore nel
+        foglio «Avvia i playoff» e valgono per tutte le configurazioni attive;
+        dopo si spostano con `aggiorna_calendario`. Senza valori resta la
+        scadenza di configurazione o, se manca, sette giorni: la competizione
+        di prova e gli altri chiamanti non cambiano.
         """
+        PlayoffService._valida_calendario(scheduled_date, response_deadline)
+
         from ..campionato.models import Campionato
         from ..status_enum import TournamentStatus
         from ..classification.models import Classification
@@ -861,6 +956,11 @@ class PlayoffService:
         now = utc_now()
 
         for config in configs:
+            # Quel che il direttore ha scelto nel foglio vale per tutte.
+            if scheduled_date is not None:
+                config.scheduled_date = scheduled_date
+            if response_deadline is not None:
+                config.response_deadline = response_deadline
             # Set deadline if not explicitly configured
             if config.response_deadline is None:
                 config.response_deadline = now + timedelta(days=PLAYOFF_RESPONSE_DAYS)
