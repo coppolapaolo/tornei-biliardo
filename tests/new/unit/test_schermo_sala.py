@@ -2,16 +2,31 @@
 
 `models/competition/schermo_sala.py` decide cosa si proietta a partire da
 partite, righe di classifica e tavoli: qui si fissano le caselle dei tavoli,
-le colonne della classifica, il turno prima e la fase per ogni stato.
+le colonne della classifica, il turno prima e la fase per ogni stato; per le
+gare a tabellone (issue #352) quali nodi vanno nella colonna laterale, i
+vincenti e i ripescati del doppio KO, il podio e le bande a gara conclusa.
 """
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from types import SimpleNamespace
+from typing import Optional
 
 import pytest
 
-from models.competition.schermo_sala import FaseSchermo, fase_schermo, schermo_sala
+from models.competition.schermo_sala import (
+    FaseSchermo,
+    StatoNodo,
+    fase_schermo,
+    schermo_sala,
+)
+from models.competition.tabellone_view import NomeRound
+from models.matchmaking.bracket import (
+    BRACKET_LOSERS,
+    BRACKET_WINNERS,
+    standard_bracket_order,
+)
 from models.status_enum import GaraStatus, MatchStatus
 
 pytestmark = pytest.mark.unit
@@ -86,8 +101,12 @@ CHIUSA = MatchStatus.CLOSED_UNILATERALLY.value
         (GaraStatus.INSCRIPTION.value, "direct_elimination", FaseSchermo.ATTESA),
         (GaraStatus.PLAYING.value, "amalfi", FaseSchermo.GIOCO),
         (GaraStatus.PLAYING.value, "direct_elimination", FaseSchermo.TABELLONE),
+        (GaraStatus.PLAYING.value, "double_knockout", FaseSchermo.TABELLONE),
         (GaraStatus.AWAITING_SSR.value, "amalfi", FaseSchermo.SPAREGGIO),
         (GaraStatus.COMPLETED.value, "amalfi", FaseSchermo.CONCLUSA),
+        # Un tabellone concluso ha podio e bande, non piu' il turno in corso.
+        (GaraStatus.COMPLETED.value, "direct_elimination", FaseSchermo.CONCLUSA),
+        (GaraStatus.COMPLETED.value, "double_knockout", FaseSchermo.CONCLUSA),
     ],
 )
 def test_la_fase_segue_lo_stato_e_il_formato(status, strategy, fase):
@@ -167,3 +186,235 @@ def test_fuori_dal_gioco_non_ci_sono_tavoli():
     for status in (GaraStatus.INSCRIPTION.value, GaraStatus.COMPLETED.value):
         s = schermo_sala(_gara(status=status), partite, [], ["1"], 4)
         assert s.tavoli == [] and s.turno_prima == []
+
+
+# ── Le gare a tabellone (issue #352) ──────────────────────────────────────
+
+
+@dataclass
+class U:
+    id: int
+    username: str
+
+
+@dataclass
+class B:
+    """Un match con le coordinate del tabellone."""
+
+    id: int
+    bracket_type: str
+    bracket_round: int
+    bracket_slot: int
+    round_number: int
+    player1: Optional[U]
+    player2: Optional[U] = None
+    status: str = PENDING
+    winner_id: Optional[int] = None
+    is_bye: bool = False
+    bracket_group: Optional[int] = None
+    table_assignment: Optional[str] = None
+    player1_score: int = 0
+    player2_score: int = 0
+    is_at_distance: bool = False
+    is_player_validated: bool = False
+    is_trio: bool = False
+    trio_match: None = None
+
+    @property
+    def player1_id(self):
+        return self.player1.id if self.player1 else None
+
+    @property
+    def player2_id(self):
+        return self.player2.id if self.player2 else None
+
+
+def _primo_turno(n, taglia):
+    """Il turno 1 come lo sorteggia la strategia: seed sugli slot canonici."""
+    utenti = {i: U(i, f"g{i}") for i in range(1, n + 1)}
+    ordine = standard_bracket_order(taglia)
+    return [
+        B(
+            j + 1,
+            BRACKET_WINNERS,
+            1,
+            j,
+            1,
+            utenti[ordine[2 * j]],
+            utenti[ordine[2 * j + 1]],
+        )
+        for j in range(taglia // 2)
+    ]
+
+
+def _chiudi(m):
+    """Vince `player1`, 2-0."""
+    m.status = CHIUSA
+    m.player1_score, m.player2_score = 2, 0
+    m.winner_id = m.player1_id
+
+
+def _gara_tab(strategy="direct_elimination", *, finalina=False, **kw):
+    gara = _gara(strategy=strategy, **kw)
+    gara.third_place_match = finalina
+    return gara
+
+
+def _colonne(schermo):
+    return [
+        [
+            (
+                ramo.key,
+                [
+                    (c.nome.chiave, c.nome.numero, len(c.nodi), c.attuale)
+                    for c in ramo.colonne
+                ],
+            )
+            for ramo in lavagna.rami
+        ]
+        for lavagna in schermo.tabellone.lavagne
+    ]
+
+
+def test_eliminazione_da_8_il_turno_e_quello_dopo_senza_la_finale():
+    partite = _primo_turno(8, 8)
+    partite[0].table_assignment = "1"
+    partite[0].status = PLAYING
+    partite[0].player1_score = 1
+    s = schermo_sala(_gara_tab(turno=1), partite, [], ["1", "2"], 8)
+
+    assert s.fase == FaseSchermo.TABELLONE
+    assert _colonne(s) == [
+        [("winners", [("quarti", None, 4, True), ("semifinali", None, 2, False)])]
+    ]
+    assert s.tabellone.nomi_turno == (NomeRound("quarti"),)
+    # Le semifinali non sono nate: nodi vuoti che dicono da dove arriva chi.
+    quarti, semi = s.tabellone.lavagne[0].rami[0].colonne
+    assert all(n.stato == StatoNodo.VUOTO for n in semi.nodi)
+    assert all(lato.nome is None and lato.posto for lato in semi.nodi[0].lati)
+    # Il quarto al tavolo 1 e' in corso col punteggio; lo 0-0 degli altri no.
+    assert quarti.nodi[0].stato == StatoNodo.IN_CORSO
+    assert quarti.nodi[0].lati[0].punti == 1
+    assert quarti.nodi[1].stato == StatoNodo.DA_GIOCARE
+    assert quarti.nodi[1].lati[0].punti is None
+    # Le caselle dei tavoli portano il nome del round, anche la prossima.
+    uno, due = s.tavoli
+    assert uno.round == NomeRound("quarti") and not uno.libero
+    assert due.libero and due.prossima and due.round == NomeRound("quarti")
+    # Nel tabellone non c'e' il turno prima delle gare a turni.
+    assert s.turno_prima == [] and s.numero_turno_prima is None
+
+
+def test_eliminazione_da_16_ottavi_e_quarti():
+    s = schermo_sala(_gara_tab(turno=1, turni=4), _primo_turno(16, 16), [], ["1"], 16)
+
+    assert _colonne(s) == [
+        [("winners", [("ottavi", None, 8, True), ("quarti", None, 4, False)])]
+    ]
+    assert s.tabellone.righe == 8
+
+
+def test_fra_un_turno_e_l_altro_il_turno_dopo_ha_i_vincitori():
+    partite = _primo_turno(8, 8)
+    for m in partite:
+        _chiudi(m)
+    s = schermo_sala(_gara_tab(turno=1), partite, [], ["1"], 8)
+
+    assert s.turno_concluso
+    semi = s.tabellone.lavagne[0].rami[0].colonne[1].nodi
+    assert [lato.nome for lato in semi[0].lati] == [
+        partite[0].player1.username,
+        partite[1].player1.username,
+    ]
+    assert all(t.libero and t.prossima is None for t in s.tavoli)
+
+
+def test_con_la_finalina_finale_e_finalina_stanno_nel_turno_dopo():
+    s = schermo_sala(
+        _gara_tab(turno=1, turni=2, finalina=True), _primo_turno(4, 4), [], ["1"], 4
+    )
+
+    (ramo,) = s.tabellone.lavagne[0].rami
+    assert [(c.nome.chiave, c.attuale) for c in ramo.colonne] == [
+        ("semifinali", True),
+        ("finale", False),
+        ("finalina", False),
+    ]
+
+
+def test_doppio_ko_vincenti_sopra_e_ripescati_sotto():
+    w1 = _primo_turno(8, 8)
+    for m in w1:
+        _chiudi(m)
+    vin = [m.player1 for m in w1]
+    per = [m.player2 for m in w1]
+    w2 = [
+        B(11, BRACKET_WINNERS, 2, 0, 2, vin[0], vin[1], PLAYING, table_assignment="1"),
+        B(12, BRACKET_WINNERS, 2, 1, 2, vin[2], vin[3]),
+    ]
+    l1 = [
+        B(21, BRACKET_LOSERS, 1, 0, 2, per[0], per[1], PLAYING, table_assignment="2"),
+        B(22, BRACKET_LOSERS, 1, 1, 2, per[2], per[3]),
+    ]
+    s = schermo_sala(
+        _gara_tab("double_knockout", turno=2, turni=7),
+        w1 + w2 + l1,
+        [],
+        ["1", "2"],
+        8,
+    )
+
+    assert _colonne(s) == [
+        [
+            ("winners", [("turno", 2, 2, True), ("turno", 3, 1, False)]),
+            ("losers", [("recupero", 1, 2, True), ("recupero", 2, 2, False)]),
+        ]
+    ]
+    assert s.tabellone.lavagne[0].con_ripescati
+    assert s.tabellone.nomi_turno == (
+        NomeRound("vincenti", 2),
+        NomeRound("recupero", 1),
+    )
+    # Sul tavolo non c'e' la colonna intorno: il ramo si dice per esteso.
+    uno, due = s.tavoli
+    assert uno.round == NomeRound("vincenti", 2)
+    assert due.round == NomeRound("recupero", 1)
+
+
+def test_a_gara_conclusa_podio_e_bande_dalle_posizioni():
+    semi = _primo_turno(4, 4)
+    for m in semi:
+        _chiudi(m)
+    finale = B(9, BRACKET_WINNERS, 2, 0, 2, semi[0].player1, semi[1].player1)
+    _chiudi(finale)
+    campione, secondo = finale.player1, finale.player2
+    terzi = [semi[0].player2, semi[1].player2]
+    posizioni = {campione.id: 1, secondo.id: 2, terzi[0].id: 3, terzi[1].id: 3}
+
+    s = schermo_sala(
+        _gara_tab(status=GaraStatus.COMPLETED.value, turno=2, turni=2),
+        semi + [finale],
+        [],
+        ["1"],
+        4,
+        posizioni=posizioni,
+    )
+
+    assert s.fase == FaseSchermo.CONCLUSA
+    assert s.tabellone is None and s.tavoli == []
+    podio = [[r.user.username for r in gradino] for gradino in s.podio]
+    assert podio[:2] == [[campione.username], [secondo.username]]
+    # Senza finalina i due semifinalisti sconfitti stanno sullo stesso gradino.
+    assert sorted(podio[2]) == sorted(u.username for u in terzi)
+    assert [(b.posizione, b.ultima) for b in s.bande] == [(1, 1), (2, 2), (3, 4)]
+
+
+def test_a_gara_conclusa_senza_posizioni_resta_la_classifica():
+    s = schermo_sala(
+        _gara_tab(status=GaraStatus.COMPLETED.value, turno=1, turni=2),
+        _primo_turno(4, 4),
+        [_riga(1, "rossi")],
+        ["1"],
+        4,
+    )
+    assert s.bande == [] and s.podio == [] and len(s.classifica) == 1

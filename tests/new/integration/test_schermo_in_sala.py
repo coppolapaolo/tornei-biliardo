@@ -3,23 +3,28 @@
 La pagina `/g/<indirizzo>/sala` e il suo poll sono pubblici: li apre un
 computer della sala senza login. Qui si difendono le quattro cose che non
 devono cambiare in silenzio: l'anonimo la vede, una prova (ADR-058) no, una
-gara a tabellone dice che non e' ancora disponibile (issue #352), e la
-pagina non scrive sul database.
+gara a tabellone mostra tavoli, turno del tabellone e a gara conclusa podio e
+bande (issue #352), e la pagina non scrive sul database.
 """
 
 from __future__ import annotations
 
 import json
 import uuid
+from contextlib import contextmanager
 from datetime import date, timedelta
 
 import pytest
 from flask import g
+from sqlalchemy import event
 
 from models import Gara, Match
-from models.base import db
+from models.base import db, utc_now
 from models.classification.models import RoundClassification
+from models.competition.inscription_service import InscriptionService
+from models.competition.round_service import RoundService
 from models.competition.services import GaraService
+from models.match.services import RackService
 from models.prova.service import ProvaService
 from models.status_enum import Discipline, GaraStatus, MatchStatus
 from models.user.models import User
@@ -141,13 +146,167 @@ def test_la_pagina_non_ricalcola_la_classifica(client, db_session, monkeypatch):
     assert client.get(f"/g/{gara.public_token}/sala").status_code == 200
 
 
-def test_una_gara_a_tabellone_dice_che_non_e_ancora_disponibile(client, db_session):
-    gara = _gara(strategy="direct_elimination")
+def _tabellone(db_session, n: int = 8, *, strategy="direct_elimination") -> Gara:
+    """Una gara a tabellone con `n` iscritti e il sorteggio fatto."""
+    batch = uuid.uuid4().hex[:6]
+    giocatori = []
+    for i in range(n):
+        u = User(
+            username=f"sala{i}_{batch}",
+            email=f"sala{i}_{batch}@test.local",
+            role=UserRole.PLAYER.value,
+        )
+        u.set_password("secret123")
+        giocatori.append(u)
+    db_session.add_all(giocatori)
+    gara = Gara(
+        number=1,
+        name=f"Tabellone in sala {batch}",
+        date=date.today() + timedelta(days=7),
+        discipline=Discipline.NINE_BALL.value,
+        distance=2,
+        is_race_to=True,
+        rounds_count=3,
+        min_participants=4,
+        max_participants=16,
+        matchmaking_strategy=strategy,
+        classification_system="POSITION",
+        first_round_policy="random",
+        available_tables=json.dumps(["1", "2", "3", "4"]),
+        public_token=uuid.uuid4().hex[:10],
+    )
+    db_session.add(gara)
+    db_session.commit()
+    InscriptionService.open_inscriptions(
+        gara.id, utc_now() - timedelta(hours=1), utc_now() + timedelta(hours=1)
+    )
+    for u in giocatori:
+        InscriptionService.inscribe_user(u.id, gara.id)
+    db_session.commit()
+    RoundService.start_first_round(gara.id)
+    return db_session.get(Gara, gara.id)
 
-    html = client.get(f"/g/{gara.public_token}/sala").get_data(as_text=True)
 
-    assert "non è ancora disponibile" in html
-    assert 'class="c7-sala__tavoli' not in html
+def _gioca_turno(db_session, gara_id: int, turno: int) -> None:
+    """Chiude il turno: vince sempre `player1`."""
+    for match in Match.query.filter_by(gara_id=gara_id, round_number=turno):
+        if match.is_bye or MatchStatus.is_finished(match.status):
+            continue
+        for _ in range(match.match_distance):
+            RackService.add_rack_with_score_update(
+                match_id=match.id,
+                winner_id=match.player1_id,
+                reported_by_id=match.player1_id,
+                validated_by_admin=True,
+            )
+    db_session.commit()
+
+
+class TestGaraATabellone:
+    """Issue #352: tavoli, turno del tabellone, podio e bande."""
+
+    def test_in_gioco_i_tavoli_e_il_turno_del_tabellone(self, client, db_session):
+        gara = _tabellone(db_session, 8)
+
+        html = client.get(f"/g/{gara.public_token}/sala").get_data(as_text=True)
+
+        assert "non è ancora disponibile" not in html
+        assert 'class="c7-sala__tavoli' in html
+        # Al posto della classifica il turno che si gioca e quello dopo.
+        assert "c7-sala-tab" in html
+        assert "c7-sala__classifica" not in html
+        assert html.count('class="c7-sala-tab__col is-attuale"') == 1
+        assert "Quarti" in html and "Semifinali" in html
+        # Le due semifinali non sono ancora nate: nodi vuoti, con chi arrivera'.
+        assert html.count("c7-sala-tab__nodo is-vuoto") == 2
+        assert "chi vince" in html
+        # La finale e' due turni avanti: a tre metri non serve.
+        assert ">Finale<" not in html
+
+    def test_fra_un_turno_e_l_altro_il_turno_dopo_ha_gia_i_nomi(
+        self, client, db_session
+    ):
+        gara = _tabellone(db_session, 8)
+        _gioca_turno(db_session, gara.id, 1)
+        vincitori = [
+            m.player1.username
+            for m in Match.query.filter_by(gara_id=gara.id, round_number=1)
+        ]
+
+        html = client.get(f"/g/{gara.public_token}/sala").get_data(as_text=True)
+
+        assert "concluso" in html
+        assert html.count("c7-sala-tab__nodo is-vuoto") == 2
+        assert all(nome in html for nome in vincitori)
+
+    def test_doppio_ko_vincenti_sopra_e_ripescati_sotto(self, client, db_session):
+        gara = _tabellone(db_session, 8, strategy="double_knockout")
+        _gioca_turno(db_session, gara.id, 1)
+        RoundService.start_next_round(gara.id, 2)
+
+        html = client.get(f"/g/{gara.public_token}/sala").get_data(as_text=True)
+
+        assert html.index(">Vincenti<") < html.index(">Ripescati<")
+        assert "Turno 2 dei vincenti · Recupero 1" in html
+
+    def test_a_gara_conclusa_podio_e_bande(self, client, db_session):
+        gara = _tabellone(db_session, 8)
+        for turno in (1, 2, 3):
+            if turno > 1:
+                RoundService.start_next_round(gara.id, turno)
+            _gioca_turno(db_session, gara.id, turno)
+        gara = db_session.get(Gara, gara.id)
+        gara.status = GaraStatus.COMPLETED.value
+        db_session.commit()
+
+        html = client.get(f"/g/{gara.public_token}/sala").get_data(as_text=True)
+
+        assert "c7-podio-finale" in html
+        assert html.count("5°–8°") == 4
+        assert html.count("esce ai quarti") == 4
+        assert "c7-sala-tab" not in html
+        # Conclusa: niente poll.
+        assert "/sse/poll/sala/" not in html
+
+    def test_la_pagina_non_scrive_sul_database(self, client, db_session):
+        """Anonima e ricaricata a ogni evento: in gioco e a gara conclusa."""
+        gara = _tabellone(db_session, 4)
+
+        with _scritture() as in_gioco:
+            assert client.get(f"/g/{gara.public_token}/sala").status_code == 200
+
+        _gioca_turno(db_session, gara.id, 1)
+        RoundService.start_next_round(gara.id, 2)
+        _gioca_turno(db_session, gara.id, 2)
+        conclusa = db_session.get(Gara, gara.id)
+        conclusa.status = GaraStatus.COMPLETED.value
+        db_session.commit()
+
+        with _scritture() as a_gara_conclusa:
+            html = client.get(f"/g/{gara.public_token}/sala").get_data(as_text=True)
+
+        assert "c7-podio-finale" in html
+        assert in_gioco == [] and a_gara_conclusa == []
+
+
+@contextmanager
+def _scritture():
+    """Le istruzioni INSERT/UPDATE/DELETE eseguite dentro il blocco."""
+    viste: list = []
+
+    def spia(conn, cursor, statement, *args):
+        if statement.lstrip().split(" ", 1)[0].upper() in (
+            "INSERT",
+            "UPDATE",
+            "DELETE",
+        ):
+            viste.append(statement)
+
+    event.listen(db.engine, "before_cursor_execute", spia)
+    try:
+        yield viste
+    finally:
+        event.remove(db.engine, "before_cursor_execute", spia)
 
 
 def test_un_indirizzo_sconosciuto_e_404(client, db_session):

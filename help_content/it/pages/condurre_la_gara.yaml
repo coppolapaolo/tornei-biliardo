@@ -233,12 +233,22 @@ blocks:
     caption: "Lo schermo in sala: la locandina, i tavoli con le partite in corso, la classifica e il turno prima."
 
   - type: note
+    tone: tip
+    title: "Nelle gare a tabellone"
+    text: >-
+      I tavoli restano uguali, con il nome del turno sopra ogni partita
+      («Quarti», «Recupero 1»). A destra, al posto della classifica, c'è il
+      **tabellone**: il turno che si gioca e quello dopo, con i posti ancora
+      vuoti e chi li occuperà. Il tabellone intero non ci sta: da tre metri
+      non si leggerebbe. Nel doppio KO i vincenti stanno sopra e i ripescati
+      sotto, tutti e due insieme. A gara conclusa lo schermo mostra il podio
+      e la classifica finale, con il turno in cui è uscito ciascuno.
+
+  - type: note
     tone: info
     title: "Quando non c'è"
     text: >-
-      Nelle gare a tabellone lo schermo dice che non è ancora disponibile e
-      rimanda alla pagina del tabellone. Le gare di prova non hanno uno
-      schermo in sala: da fuori non esistono.
+      Le gare di prova non hanno uno schermo in sala: da fuori non esistono.
 
   - type: heading
     id: dispari

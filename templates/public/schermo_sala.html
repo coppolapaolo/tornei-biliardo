@@ -10,16 +10,23 @@
    destra la classifica dopo l'ultimo turno chiuso, con le medaglie, e il
    turno prima.
 
-   Si ricarica da sola a ogni evento della gara (`sse.poll_sala`). Le gare a
-   tabellone hanno una forma ancora da disegnare (issue #352): lo schermo lo
-   dice. Dati da `models/competition/schermo_sala.py`. #}
+   Nelle gare a tabellone (issue #352) i tavoli restano, con il nome del
+   round, e a destra al posto della classifica c'e' il turno del tabellone
+   che si gioca con il turno dopo, i nodi futuri vuoti; nel doppio KO i
+   vincenti sopra e i ripescati sotto. A gara conclusa podio e bande
+   (ADR-040). Il canvas non le disegna: e' la forma piu' vicina alla 3.10.
+
+   Si ricarica da sola a ogni evento della gara (`sse.poll_sala`). Dati da
+   `models/competition/schermo_sala.py`. #}
 
 {% block title %}{{ _('Schermo in sala') }} · {{ vetrina.titolo }}{% endblock %}
 {% block body_class %}c7-public c7-sala-page{% endblock %}
 {% block head_extra %}<meta name="robots" content="noindex">{% endblock %}
 
 {% block content %}
+{% import "components/_tabellone_macros.html" as tb with context %}
 {% set _fase = schermo.fase.value %}
+{% set _tab = schermo.tabellone %}
 {% set _formato = (vetrina.righe | selectattr('icona', 'equalto', 'fa-trophy') | first) %}
 <div class="c7-sala" id="schermoSala" data-fase="{{ _fase }}">
   <header class="c7-sala__testa">
@@ -41,6 +48,12 @@
         <span class="c7-kicker">{{ _('Turno') }}</span>
         <span class="c7-num c7-sala__turno-num">{{ schermo.turno }}<small>/{{ schermo.turni }}</small></span>
         <span class="c7-state c7-state--onaccent">{{ _('in corso') }}</span>
+        {% elif _fase == 'tabellone' and schermo.turni %}
+        <span class="c7-sala__turno-testo">
+          <span class="c7-kicker">{{ _('Turno %(n)s di %(tot)s', n=schermo.turno, tot=schermo.turni) }}</span>
+          {% if _tab and _tab.nomi_turno %}<span class="c7-sala__turno-nome">{{ tb.nome_turno(_tab.nomi_turno) }}</span>{% endif %}
+        </span>
+        <span class="c7-state c7-state--onaccent">{{ _('concluso') if schermo.turno_concluso else _('in corso') }}</span>
         {% elif _fase == 'spareggio' %}
         <span class="c7-state c7-state--onaccent">{{ _('spareggio in corso') }}</span>
         {% elif _fase == 'conclusa' %}
@@ -52,21 +65,7 @@
     </div>
   </header>
 
-  {% if _fase == 'tabellone' %}
-  <main class="c7-sala__corpo c7-sala__corpo--solo">
-    <section class="c7-card c7-sala__avviso">
-      <div class="c7-empty__ico"><i class="fas fa-sitemap"></i></div>
-      <h2 class="c7-sala__avviso-titolo">{{ _('Lo schermo in sala per le gare a tabellone non è ancora disponibile') }}</h2>
-      <p class="c7-sala__avviso-testo">{{ _('Per ora il percorso della gara si segue dalla pagina del tabellone.') }}</p>
-      {% if feature_visible('admin.competition.gara_bracket') %}
-      <a class="btn btn-primary" href="{{ url_for('admin.competition.gara_bracket', gara_id=gara.id) }}">
-        <i class="fas fa-sitemap"></i> {{ _('Apri il tabellone') }}
-      </a>
-      {% endif %}
-    </section>
-  </main>
-
-  {% elif _fase == 'attesa' %}
+  {% if _fase == 'attesa' %}
   <main class="c7-sala__corpo c7-sala__corpo--solo">
     <section class="c7-card c7-sala__avviso">
       <div class="c7-empty__ico"><i class="fas fa-clock"></i></div>
@@ -78,7 +77,18 @@
   </main>
 
   {% else %}
-  <main class="c7-sala__corpo{% if not schermo.tavoli %} c7-sala__corpo--solo{% endif %}">
+  {% macro nodo_sala(n) -%}
+  <div class="c7-sala-tab__nodo is-{{ n.stato.value }}">
+    {% for lato in n.lati %}
+    <div class="c7-sala-tab__posto{% if lato.vince %} is-winner{% endif %}{% if not lato.nome %} is-attesa{% endif %}">
+      <span class="c7-sala-tab__chi">{% if lato.nome %}{{ lato.nome }}{% elif lato.posto %}{{ tb.posto(lato.posto) }}{% else %}{{ _('da definire') }}{% endif %}</span>
+      {% if lato.punti is not none %}<span class="c7-sala-tab__punti c7-num">{{ lato.punti }}</span>{% endif %}
+    </div>
+    {% endfor %}
+    {% if n.x %}<div class="c7-sala-tab__posto is-attesa"><span class="c7-sala-tab__chi">{{ _('X a tavolino') }}</span></div>{% endif %}
+  </div>
+  {%- endmacro %}
+  <main class="c7-sala__corpo{% if not schermo.tavoli %} c7-sala__corpo--solo{% endif %}{% if _tab %} c7-sala__corpo--tabellone{% endif %}">
     {% if schermo.tavoli %}
     <section class="c7-sala__tavoli{% if schermo.tavoli|length > 4 %} c7-sala__tavoli--molti{% endif %}" aria-label="{{ _('Tavoli') }}">
       {% for t in schermo.tavoli %}
@@ -88,6 +98,7 @@
             <span class="c7-kicker">{{ _('Tavolo') }}</span>
             <span class="c7-num">{{ t.nome }}</span>
           </div>
+          {% if t.round %}<span class="c7-kicker c7-sala__round">{{ tb.nome_round(t.round) }}</span>{% endif %}
           {% if t.alla_distanza %}<span class="c7-state c7-state--ok">{{ _('Alla distanza') }}</span>
           {% elif not t.libero %}<span class="c7-state c7-state--accent">{{ _('In corso') }}</span>
           {% else %}<span class="c7-state c7-state--muted">{{ _('Libero') }}</span>{% endif %}
@@ -117,8 +128,73 @@
     </section>
     {% endif %}
 
-    <aside class="c7-sala__destra">
-      {% if schermo.classifica %}
+    <aside class="c7-sala__destra{% if _tab %} c7-sala__destra--tabellone{% elif schermo.bande %} c7-sala__destra--conclusa{% endif %}">
+      {% if _fase == 'tabellone' %}
+      {# Il turno del tabellone che si gioca e quello dopo, al posto della
+         classifica: nel tabellone chi e' ancora in gioco e' primo a pari
+         merito, e la domanda della sala e' chi incontrera' chi. #}
+      <div class="c7-sechead">
+        <h3>{{ _('Tabellone') }}</h3>
+        <span class="c7-sechead__note">{{ _('il turno che si gioca e quello dopo') }}</span>
+      </div>
+      {% if _tab and _tab.lavagne %}
+      <div class="c7-sala-tab{% if _tab.righe > 8 %} c7-sala-tab--fitto{% endif %}">
+        {% for lavagna in _tab.lavagne %}
+        <section class="c7-card c7-sala-tab__card">
+          {% if lavagna.girone is not none %}<div class="c7-kicker c7-sala-tab__girone">{{ _('Girone %(num)s', num=lavagna.girone + 1) }}</div>
+          {% elif _tab.lavagne|length > 1 %}<div class="c7-kicker c7-sala-tab__girone">{{ _('Tabellone finale') }}</div>{% endif %}
+          {% for ramo in lavagna.rami %}
+          {% set _alti = ramo.colonne|map(attribute='nodi')|map('length')|max %}
+          <div class="c7-sala-tab__ramo" style="flex-grow: {{ _alti }}">
+            {% if lavagna.con_ripescati %}
+            <div class="c7-sala-tab__ramo-nome"><span class="c7-label">{{ _('Vincenti') if ramo.key == 'winners' else _('Ripescati') }}</span></div>
+            {% endif %}
+            <div class="c7-sala-tab__colonne">
+              {% for colonna in ramo.colonne %}
+              <div class="c7-sala-tab__col{% if colonna.attuale %} is-attuale{% endif %}">
+                <div class="c7-sala-tab__testa">{{ tb.nome_round(colonna.nome) }}</div>
+                <div class="c7-sala-tab__nodi">
+                  {% for n in colonna.nodi %}<div class="c7-sala-tab__cella">{{ nodo_sala(n) }}</div>{% endfor %}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          {% endfor %}
+        </section>
+        {% endfor %}
+      </div>
+      {% else %}
+      <section class="c7-card c7-sala__avviso c7-sala__avviso--piccolo">
+        <p class="c7-sala__avviso-testo">{{ _('Il tabellone compare dopo il sorteggio.') }}</p>
+      </section>
+      {% endif %}
+
+      {% elif schermo.bande %}
+      {# Gara a tabellone conclusa: il podio dalle posizioni del tabellone e
+         le bande di pari merito, con il turno d'uscita (ADR-040). #}
+      <section class="c7-card c7-card--accent c7-sala__podio">
+        {% with classification=none, bande_podio=schermo.podio %}{% include "direttore/_podio.html" %}{% endwith %}
+      </section>
+      <div class="c7-sechead">
+        <h3>{{ _('Classifica finale') }}</h3>
+        <span class="c7-sechead__note">{{ _('dal tabellone') }}</span>
+      </div>
+      {% set _righe_bande = schermo.bande|map(attribute='righe')|map('length')|sum %}
+      <div class="c7-rows c7-sala__bande{% if _righe_bande > 8 %} c7-sala__bande--due{% endif %}" style="--righe: {{ ((_righe_bande + 1) // 2) }}">
+        {% for banda in schermo.bande %}
+        {% set _etichetta = (banda.posizione ~ '°–' ~ banda.ultima ~ '°') if banda.condivisa else (banda.posizione ~ '°') %}
+        {% for riga in banda.righe %}
+        <div class="c7-rows__row c7-sala__riga" data-banda="{{ banda.posizione }}">
+          <span class="c7-banda__pos c7-num{% if banda.posizione <= 3 %} c7-banda__pos--{{ banda.posizione }}{% endif %}">{{ _etichetta }}</span>
+          <span class="c7-sala__riga-nome">{{ riga.user.username }}</span>
+          <span class="c7-sala__riga-uscita">{{ tb.uscita(riga) }}</span>
+        </div>
+        {% endfor %}
+        {% endfor %}
+      </div>
+
+      {% elif schermo.classifica %}
       <div class="c7-sechead">
         <h3>
           {% if _fase == 'conclusa' %}{{ _('Classifica finale') }}

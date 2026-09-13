@@ -345,7 +345,9 @@ un campionato (peso, playoff, ADR-053), eliminazione della gara, competizione
 di prova (ADR-058, arrivata dopo il canvas). Il tabellone a eliminazione
 (ADR-038) era in questo elenco: e' stato fatto il 13/09 senza disegno, con
 la soluzione piu' vicina alla grammatica del canvas — vedi «Tabellone al
-posto della classifica» in fondo.
+posto della classifica» in fondo. Lo stesso giorno anche lo schermo in sala
+per le gare a tabellone (issue #352) — vedi «Schermo in sala per le gare a
+tabellone».
 
 ## Come ricostruire
 
@@ -371,9 +373,10 @@ niente. Vedi `../canvas-dashboard/STATO.md` per lo stesso schema.
 alla 1.19.0. Le decisioni con conseguenze durature stanno in ADR-059 (la
 pagina del direttore e' la fase in corso) e ADR-060 (i tavoli si scelgono in
 ogni stato); i pattern nuovi in `docs/reference/UI_CONVENTIONS.md`, sezione
-«Pagina gara del direttore». Resta fuori, perche' il canvas non lo disegna:
-lo schermo in sala per le gare a tabellone (issue #352) e le voci di «Non
-ancora disegnato» qui sopra, che restano sulle schermate di prima.
+«Pagina gara del direttore». Restano fuori, perche' il canvas non le
+disegna, le voci di «Non ancora disegnato» qui sopra, che restano sulle
+schermate di prima; lo schermo in sala per le gare a tabellone (issue #352),
+anche lui fuori dal canvas, e' stato fatto dopo — vedi in fondo.
 
 Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
 
@@ -573,3 +576,25 @@ Una fase per PR, nell'ordine fissato sopra. Qui lo stato e le trappole.
   facendo: la riga «Accoppiamento» e la scheda informazioni mostravano il
   valore grezzo in colonna («Direct Elimination»); ora un nome tradotto
   (`nome_formula`).
+* **Schermo in sala per le gare a tabellone** (PR `feat: lo schermo in sala
+  per le gare a tabellone`, 2026-09-13, issue #352). Prima lo schermo diceva
+  «non ancora disponibile». Ora i tavoli restano quelli della 3.10, con il
+  nome del round accanto alla tessera e nel kicker della barra scura
+  («Turno 1 di 3 · Quarti»); nella colonna destra, **al posto della
+  classifica**, il turno del tabellone che si gioca e il turno dopo, con i
+  nodi futuri vuoti che dicono chi arrivera'; nel doppio KO vincenti sopra e
+  ripescati sotto, insieme e senza rotazione; fra un turno e l'altro la
+  colonna del turno chiuso accanto a quella dopo, gia' fissata dall'albero; a
+  gara conclusa il podio dalle posizioni del tabellone e sotto le bande con
+  il turno d'uscita. Niente albero intero: a tre metri un 16 o un 32 non si
+  legge. Dati puri in `schermo_sala.py`, l'albero da `tabellone_view`
+  riusato con una finestra nuova, `Tabellone.finestra`, e `nome_del_nodo`
+  per nominare il ramo sulla casella di un tavolo, dove la colonna intorno
+  non c'e'. La pagina resta senza scritture: `bracket_positions` si legge
+  nella route, solo a gara conclusa. CSS nella sezione 30. Scelte dove il
+  canvas tace: la colonna destra si allarga a 560px sul desktop; i nodi si
+  stringono quando le righe impilate superano otto; il podio e' quello di
+  `_podio.html` ingrandito, le bande sono righe dello schermo e non
+  `_classifica_bande.html`, che porta la nota per il direttore; a gara
+  conclusa con piu' di otto giocatori le bande vanno su due colonne; nella
+  formula a gironi le lavagne dei gironi si impilano tutte, fitte.
