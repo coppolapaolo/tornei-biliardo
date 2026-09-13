@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.17.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.16.0...v1.17.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* lo spareggio e la gara conclusa ([#355](https://github.com/coppolapaolo/tornei-biliardo/issues/355)) ([cccce0c](https://github.com/coppolapaolo/tornei-biliardo/commit/cccce0cdaddbe2cc8bf0e50f2932784ea8f2ba0f))
+
 ## [1.16.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.15.0...v1.16.0) (2026-09-13)
 
 
