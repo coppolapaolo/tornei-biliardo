@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.15.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.14.0...v1.15.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* la classifica del direttore con le frecce ([#351](https://github.com/coppolapaolo/tornei-biliardo/issues/351)) ([e5c61d9](https://github.com/coppolapaolo/tornei-biliardo/commit/e5c61d9ccd133fa0228d28a0053665f8e9065cb2))
+
 ## [1.14.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.13.0...v1.14.0) (2026-09-13)
 
 
