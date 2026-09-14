@@ -38,7 +38,7 @@ blocks:
       - "The list of competitions and championships."
       - "A competition in detail: entrants, rounds, matches and standings."
       - "Scores updating while the matches are being played."
-      - "A championship's overall standings: on the championship card, on the home page, the **Standings and results** button."
+      - "A championship's page: how far the season has got, the overall standings with who would make the playoffs, the competitions with who won each one and, once the championship is over, the champion. You reach it from the championship card on the home page, with the **Standings and results** button."
       - "The **history**: every finished competition, month by month, with who won each one."
 
   - type: shot

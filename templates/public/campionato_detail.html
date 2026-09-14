@@ -1,133 +1,93 @@
 {% extends "base.html" %}
+{% import "direttore/_macros.html" as d with context %}
 
 {% block title %}{{ campionato.name }}{% endblock %}
 
-{% block content %}
-<div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1><i class="fas fa-trophy text-warning"></i> {{ campionato.name }}</h1>
-            <p class="text-muted mb-0">
-                {{ campionato.campionato_type }}
-                <span class="badge {{ campionato | status_badge_class }}">{{ campionato | status_text }}</span>
-            </p>
-        </div>
-        <div>
-            {% if current_user.is_authenticated %}
-            <a href="{{ url_for('dashboard.dashboard') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> {{ _('Torna alla Dashboard') }}
-            </a>
-            {% else %}
-            <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
-                <i class="fas fa-arrow-left"></i> {{ _('Torna alla Home') }}
-            </a>
-            {% endif %}
-        </div>
-    </div>
+{# La pagina del campionato per chi usa l'app — Design System 7c (canvas
+   «campionato-concluso», `PubblicaMobile` e `PubblicaDesktop`).
 
-    <div class="row">
-        <!-- Info Campionato -->
-        <div class="col-md-8">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-info-circle"></i> {{ _('Informazioni') }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>{{ _('Tipo:') }}</strong> {{ campionato.campionato_type }}</p>
-                            <p><strong>{{ _('Gare:') }}</strong> {{ campionato.conteggio_gare.numero_testo }}</p>
-                        </div>
-                        <div class="col-md-6">
-                            {% if campionato.start_date %}
-                            <p><strong>{{ _('Inizio:') }}</strong> {{ campionato.start_date|date_local }}</p>
-                            {% endif %}
-                            {% if campionato.end_date %}
-                            <p><strong>{{ _('Fine:') }}</strong> {{ campionato.end_date|date_local }}</p>
-                            {% endif %}
-                        </div>
-                    </div>
-                    {% if campionato.description %}
-                    <hr>
-                    <p class="mb-0">{{ campionato.description }}</p>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
+   Un campionato ha due pagine pubbliche con ruoli diversi (decisione del
+   2026-09-14): la vetrina `/c/<identificatore>`, fuori dall'app, per chi
+   arriva da un link condiviso; e questa, per chi e' dentro l'app. E' l'unico
+   posto in cui un giocatore vede la classifica completa e la zona playoff:
+   le tessere campionato e playoff della dashboard portano qui.
 
-        <!-- Statistiche -->
-        <div class="col-md-4">
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5><i class="fas fa-chart-bar"></i> {{ _('Statistiche') }}</h5>
-                </div>
-                <div class="card-body">
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>{{ _('Gare totali') }}</span>
-                        <strong>{{ campionato.conteggio_gare.numero_testo }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>{{ _('Gare completate') }}</span>
-                        <strong>{{ gare|selectattr('status', 'equalto', GaraStatus.COMPLETED.value)|list|length }}</strong>
-                    </div>
-                    <div class="d-flex justify-content-between">
-                        <span>{{ _('Partecipanti') }}</span>
-                        <strong>{{ general_classification|length if general_classification else 0 }}</strong>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+   E' la pagina del direttore in sola lettura: stessa testata, stessa fascia
+   (`_campionato_fascia.html`), stessa classifica, stesse gare
+   (`_campionato_gare.html`). Al posto di «Gestione» la sezione «Il
+   campionato»: formula, sala, giocatori e il link alla vetrina. Nessun
+   comando di chi dirige, nemmeno quando a guardare e' lui: la sua pagina e'
+   l'altra. Due colonne da lg, tre linguette sul telefono. #}
 
-    <!-- Classifica Generale -->
-    {% include "components/_campionato_general_classification.html" %}
-
-    <!-- Lista Gare -->
-    <div class="card">
-        <div class="card-header">
-            <h5><i class="fas fa-list"></i> {{ _('Gare del Campionato') }}</h5>
-        </div>
-        <div class="card-body">
-            {% if gare %}
-            <div class="table-responsive">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>{{ _('Nome') }}</th>
-                            <th>{{ _('Data') }}</th>
-                            <th>{{ _('Disciplina') }}</th>
-                            <th>{{ _('Stato') }}</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for gara in gare %}
-                        <tr>
-                            <td>{{ gara.number }}</td>
-                            <td>{{ gara.name }}</td>
-                            <td>{{ gara.date|date_local }}</td>
-                            <td>{{ gara.discipline|discipline_display }}</td>
-                            <td>
-                                <span class="badge {{ gara | status_badge_class }}">
-                                    {{ gara | status_text }}
-                                </span>
-                            </td>
-                            <td>
-                                <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}"
-                                   class="btn btn-sm btn-outline-primary">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-            {% else %}
-            <p class="text-muted mb-0">{{ _('Nessuna gara ancora creata.') }}</p>
-            {% endif %}
-        </div>
-    </div>
+{% block page_back %}
+<a class="c7-head__back d-lg-none"
+   href="{{ url_for('dashboard.dashboard') if current_user.is_authenticated else url_for('main.public_campionatos_list') }}"
+   aria-label="{{ _('Torna indietro') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ campionato.name }}{% endblock %}
+{% block page_sub %}
+{{ campionato.campionato_type }} <span class="c7-sep">·</span> {{ campionato | status_text }}
+<span class="d-none d-lg-inline">
+  {%- if sede %} <span class="c7-sep">·</span> {{ sede }}{% endif %}
+  {%- if gare %} <span class="c7-sep">·</span> {{ campionato.conteggio_gare.gare_testo }}{% endif %}
+</span>
+{% endblock %}
+{% block page_actions %}
+{% if vetrina_url and feature_visible('main.campionato_invite') %}
+<div class="d-none d-lg-flex align-items-center gap-2">
+  <a href="{{ vetrina_url }}" class="btn btn-secondary btn-sm">
+    <i class="fas fa-rectangle-ad"></i>&nbsp;{{ _("Vetrina") }}
+  </a>
 </div>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="c7-stack" data-campionato-pubblico>
+
+{% with sola_lettura=true %}{% include "components/_campionato_fascia.html" %}{% endwith %}
+
+{# ---------- Le linguette (telefono) ---------- #}
+{% set gara_views = [('classifica', _('Classifica')), ('gare', _('Gare')), ('campionato', _('Il campionato'))] %}
+{% set gara_view_active = 'classifica' %}
+{% set viste_aria = _('Viste del campionato') %}
+{% include "components/_gara_view_tabs.html" %}
+
+<div id="garaViews" class="c7-cols" data-c7-view="{{ gara_view_active }}" data-gara-id="campionato-pubblico-{{ campionato.id }}">
+  {# ================= colonna sinistra ================= #}
+  <div class="c7-stack c7-tabflat">
+    <section data-c7-tab="classifica">
+      {% if general_classification %}
+      {% with classifica_finale=concluso %}{% include "components/_campionato_general_classification.html" %}{% endwith %}
+      {% else %}
+      {{ d.sezione(_('Classifica generale')) }}
+      <div class="c7-card" style="margin-top:10px">
+        <p class="c7-nota" style="margin:0">{{ _('La classifica generale compare dopo la prima gara conclusa.') }}</p>
+      </div>
+      {% endif %}
+    </section>
+  </div>
+
+  {# ================= colonna destra ================= #}
+  <div class="c7-stack c7-tabflat">
+    {% with sola_lettura=true %}{% include "components/_campionato_gare.html" %}{% endwith %}
+
+    <section data-c7-tab="campionato">
+      {{ d.sezione(_('Il campionato')) }}
+      <div class="c7-rows" style="margin-top:10px">
+        {{ d.riga('fa-trophy', _('Formula'), (campionato.campionato_type or '')|replace('_', ' ')|capitalize ~ ' · ' ~ formula) }}
+        {% if sede %}
+        {{ d.riga('fa-map-marker-alt', _('Dove'), sede) }}
+        {% endif %}
+        {{ d.riga('fa-users', _('Giocatori'),
+                  ((ngettext('%(n)d giocatore', '%(n)d giocatori', giocatori, n=giocatori) ~ ' · ') if giocatori else '') ~ campionato.conteggio_gare.gare_testo) }}
+        {% if vetrina_url and feature_visible('main.campionato_invite') %}
+        {{ d.riga('fa-rectangle-ad', _('Vetrina'), _('locandina e link da condividere'), href=vetrina_url) }}
+        {% endif %}
+      </div>
+    </section>
+  </div>
+</div>
+
+</div>{# fine della pila #}
 {% endblock %}

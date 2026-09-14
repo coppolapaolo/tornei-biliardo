@@ -66,11 +66,37 @@ Bootstrap.
    struttura dell'app, senza barra laterale né navigazione, e le sue gare
    passano da `/g/<token>`.
 
-   Decisione aperta:
+   Le due strade erano:
    - **arricchire la vetrina** (classifica completa, zona playoff, link diretti
      per chi è entrato) e poi reindirizzare;
    - **tenere le due pagine** con ruoli distinti: la vetrina per chi arriva da
      fuori, la pubblica portata in 7c per chi usa l'app.
 
-   Nel frattempo si corregge un difetto trovato strada facendo: la pagina
-   pubblica di un campionato eliminato rispondeva 200.
+   Nel frattempo si è corretto un difetto trovato strada facendo: la pagina
+   pubblica di un campionato eliminato rispondeva 200 (#415).
+
+   **Deciso il 14/09: due pagine, due ruoli.**
+   - La **vetrina** (`/c/<identificatore>`) resta la pagina per chi arriva da
+     un link condiviso: fuori dall'app, otto righe di classifica, le gare
+     passano da `/g/<token>`.
+   - La **pagina pubblica** (`main.campionato_detail_public`) è la vista del
+     campionato per chi usa l'app, ed è la pagina del direttore in sola
+     lettura come nel disegno `Pubblica*`. Stessa testata con «Vetrina»
+     quando c'è il link pubblico, stessa fascia, stessa classifica con la zona
+     playoff, stesse gare. Al posto di «Gestione» c'è «Il campionato»:
+     formula, sala, giocatori e vetrina.
+
+   Il disegno copriva solo il concluso. Negli altri stati la pagina toglie
+   ogni comando a quella del direttore:
+   - in stagione, la fascia dice le gare giocate e la prossima;
+   - in fase playoff dice a che punto sono gli inviti, i confermati e la data,
+     senza pulsanti né l'elenco degli invitati: chi c'è lo dice la zona in
+     classifica.
+
+   Fascia, righe delle gare e regole di fase stanno in componenti condivisi
+   con la pagina del direttore:
+   - `components/_campionato_fascia.html`;
+   - `components/_campionato_gare.html`;
+   - `components/_campionato_stato.html`.
+
+   PR: *in apertura*.

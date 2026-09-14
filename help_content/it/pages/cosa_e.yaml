@@ -38,7 +38,7 @@ blocks:
       - "L'elenco delle gare e dei campionati."
       - "Il dettaglio di una gara: iscritti, turni, partite e classifica."
       - "I punteggi che si aggiornano mentre si gioca."
-      - "La classifica generale di un campionato: sulla scheda del campionato, in pagina iniziale, il pulsante **Classifica e risultati**."
+      - "La pagina di un campionato: a che punto è la stagione, la classifica generale con chi andrebbe ai playoff, le gare con chi le ha vinte e, a campionato finito, il campione. Ci arrivi dalla scheda del campionato in pagina iniziale, con il pulsante **Classifica e risultati**."
       - "Lo **storico**: tutte le gare concluse, mese per mese, con chi ha vinto ciascuna."
 
   - type: shot
