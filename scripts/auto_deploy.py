@@ -68,6 +68,7 @@ import re
 import subprocess
 import sys
 import urllib.request
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -82,6 +83,24 @@ PA_DOMAIN = "www.torneibiliardo.it"  # domain_name della webapp (vedi WSGI file)
 # FLASK_ENV, credenziali mail...). Questo script NON le eredita: gira in un
 # processo separato che il file WSGI non esegue mai.
 WSGI_FILE = Path("/var/www") / f"{PA_DOMAIN.replace('.', '_')}_wsgi.py"
+
+
+def log(msg: str = "") -> None:
+    """Stampa con l'orario UTC davanti a ogni riga.
+
+    Senza orari il log del task non diceva quanto dura ogni passo: nelle notti
+    con migration i worker risultano fermati da uno a quattro secondi dopo la
+    fine del task, segno che il `disable` dell'API e' asincrono, ma senza un
+    orario per riga il ritardo non si misura. UTC come i log di
+    PythonAnywhere, cosi' le righe si incrociano senza conti.
+
+    Niente `utc_now()` da `models.base`: questo script non importa l'app, e non
+    deve — le env di produzione si leggono solo dopo, e le dipendenze che l'app
+    importa sono proprio quelle che lo script deve ancora controllare.
+    """
+    orario = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    for riga in msg.splitlines() or [""]:
+        print(f"{orario}  {riga}" if riga else "", flush=True)
 
 
 def venv_python() -> str:
@@ -100,7 +119,7 @@ def venv_python() -> str:
     candidato = PROJECT_DIR / "venv" / "bin" / "python"
     if candidato.exists():
         return str(candidato)
-    print(
+    log(
         f"WARNING: nessun interprete in {candidato}. Uso {sys.executable}: "
         "se questa e' la produzione, pip installera' fuori dal virtualenv "
         "della web app e le dipendenze nuove non arriveranno mai."
@@ -124,7 +143,7 @@ def run_command(cmd: list, cwd: Path = None) -> tuple:
 
 def git_pull() -> tuple:
     """Pull latest code from remote."""
-    print(f"Pulling from {REMOTE}/{BRANCH}...")
+    log(f"Pulling from {REMOTE}/{BRANCH}...")
 
     # Fetch first
     success, output = run_command(["git", "fetch", REMOTE])
@@ -144,30 +163,38 @@ def git_pull() -> tuple:
 
 
 def deps_in_sync() -> bool:
-    """Check if all requirements.txt packages are installed."""
+    """I pacchetti di requirements.txt sono tutti nel venv, alla versione giusta?
+
+    Risponde `scripts/requirements_check.py`, lanciato con l'interprete del
+    venv perche' i pacchetti che contano sono quelli da cui importa la web app.
+    Fino al 2026-09-14 qui c'era `pip install --dry-run -q` con la ricerca di
+    «Would install» nell'output, e ha sbagliato nei due sensi: pip 22 non
+    conosceva l'opzione, il comando falliva e ogni notte si reinstallava e
+    ricaricava tutto; pip 26 la conosce, ma `-q` zittisce proprio quella frase,
+    quindi un pacchetto mancante risultava installato.
+
+    Se il controllo non riesce a rispondere la risposta e' «fuori sync»: una
+    reinstallazione in piu' costa un reload, una dipendenza mai installata
+    costa la web app in 500. Il motivo si stampa sempre.
+    """
     requirements = PROJECT_DIR / "requirements.txt"
     if not requirements.exists():
         return True
 
-    success, output = run_command(
-        [
-            venv_python(),
-            "-m",
-            "pip",
-            "install",
-            "--dry-run",
-            "-q",
-            "-r",
-            str(requirements),
-        ],
+    checker = PROJECT_DIR / "scripts" / "requirements_check.py"
+    success, output = run_command([venv_python(), str(checker), str(requirements)])
+    if success:
+        return True
+    log(
+        "Dipendenze da installare nel venv:\n"
+        + (output or "controllo non riuscito senza messaggio: installo per prudenza")
     )
-    # pip --dry-run outputs "Would install ..." if something is missing
-    return success and "Would install" not in output
+    return False
 
 
 def install_dependencies() -> tuple:
     """Install/update Python dependencies."""
-    print("Installing dependencies...")
+    log("Installing dependencies...")
 
     requirements = PROJECT_DIR / "requirements.txt"
     if not requirements.exists():
@@ -244,7 +271,7 @@ def load_wsgi_env() -> Dict[str, str]:
 
 def run_migrations() -> tuple:
     """Run pending database migrations."""
-    print("Running migrations...")
+    log("Running migrations...")
 
     migrations_runner = PROJECT_DIR / "migrations" / "runner.py"
     if not migrations_runner.exists():
@@ -314,7 +341,7 @@ def run_migrations_safely() -> tuple:
     un deploy fermo che un DB corrotto da writer concorrenti.
     """
     ok, msg = webapp_api("disable")
-    print(f"Disable web app: {msg}")
+    log(f"Disable web app: {msg}")
     if not ok:
         return False, (
             "web app NON disabilitata: migrations NON eseguite per evitare "
@@ -326,7 +353,7 @@ def run_migrations_safely() -> tuple:
     finally:
         # L'enable gira anche se run_migrations solleva un'eccezione.
         ok_enable, msg_enable = webapp_api("enable")
-        print(f"Enable web app: {msg_enable}")
+        log(f"Enable web app: {msg_enable}")
     if not ok_enable:
         return False, (
             f"web app NON riabilitata dopo le migrations ({msg_enable}): "
@@ -337,7 +364,7 @@ def run_migrations_safely() -> tuple:
 
 def reload_webapp() -> tuple:
     """Reload the PythonAnywhere web app via touch."""
-    print("Reloading web app...")
+    log("Reloading web app...")
 
     # On PythonAnywhere, touching the WSGI file reloads the app
     wsgi_file = WSGI_FILE
@@ -353,11 +380,11 @@ def reload_webapp() -> tuple:
 
 
 def main():
-    print("=" * 60)
-    print("Auto-Deploy Script")
-    print("=" * 60)
-    print(f"Project: {PROJECT_DIR}")
-    print()
+    log("=" * 60)
+    log("Auto-Deploy Script")
+    log("=" * 60)
+    log(f"Project: {PROJECT_DIR}")
+    log()
 
     # Step 0: env di produzione dal file WSGI. Va fatto PRIMA di qualunque
     # invocazione del runner delle migrations (anche `--status`, che importa i
@@ -365,9 +392,9 @@ def main():
     wsgi_env = load_wsgi_env()
     if wsgi_env:
         # Solo i NOMI: i valori sono segreti (SECRET_KEY, MAIL_PASSWORD, ...).
-        print(f"Env dal WSGI: {', '.join(sorted(wsgi_env))}")
+        log(f"Env dal WSGI: {', '.join(sorted(wsgi_env))}")
     else:
-        print(f"Env dal WSGI: nessuna letta da {WSGI_FILE}")
+        log(f"Env dal WSGI: nessuna letta da {WSGI_FILE}")
 
     # Con FLASK_ENV=production e senza chiave, il primo import dei modelli
     # solleverebbe (fail-fast in utils/encryption.py): meglio dirlo qui che
@@ -375,19 +402,19 @@ def main():
     if os.environ.get("FLASK_ENV") == "production" and not os.environ.get(
         "ENCRYPTION_KEY"
     ):
-        print(
+        log(
             "ERROR: FLASK_ENV=production ma ENCRYPTION_KEY non disponibile. "
             "Ogni import dei modelli fallirebbe. Deploy interrotto."
         )
         sys.exit(1)
 
-    print()
+    log()
 
     # Step 1: Git pull
     success, output = git_pull()
-    print(f"Git pull: {output}")
+    log(f"Git pull: {output}")
     if not success:
-        print("ERROR: Git pull failed, aborting")
+        log("ERROR: Git pull failed, aborting")
         sys.exit(1)
 
     has_new_code = "Already up to date" not in output
@@ -396,15 +423,17 @@ def main():
         # No new commits, but check if deps are out of sync
         # (e.g. manual git pull without pip install)
         if deps_in_sync():
-            print("\nNo changes to deploy.")
+            log()
+            log("No changes to deploy.")
             return
-        print("\nNo new commits, but dependencies are out of sync.")
+        log()
+        log("No new commits, but dependencies are out of sync.")
 
-    print()
+    log()
 
     # Step 2: Install dependencies
     success, output = install_dependencies()
-    print(f"Dependencies: {output}")
+    log(f"Dependencies: {output}")
     if not success:
         # Prima era un WARNING e il deploy proseguiva: la web app ripartiva
         # con il codice nuovo e le dipendenze vecchie, e l'unica traccia era
@@ -412,7 +441,7 @@ def main():
         # senza cio' che importa e' peggio di un'app ferma su codice vecchio:
         # la seconda continua a funzionare, la prima risponde 500 su tutto
         # quello che tocca il pacchetto mancante.
-        print(
+        log(
             "ERROR: installazione delle dipendenze fallita. Deploy interrotto "
             "senza reload: la web app resta sul codice precedente, che con le "
             "dipendenze attuali funziona.\n"
@@ -421,15 +450,15 @@ def main():
         )
         sys.exit(1)
 
-    print()
+    log()
 
     # Step 3: Run migrations — solo se pendenti, e MAI con la web app accesa
     pending = count_pending_migrations()
     if pending == 0:
-        print("Migrations: nessuna pendente, step saltato")
+        log("Migrations: nessuna pendente, step saltato")
     else:
         if pending is None:
-            print("WARNING: stato migrations non determinabile, assumo pendenti")
+            log("WARNING: stato migrations non determinabile, assumo pendenti")
         # Una migration che tocca PII (decrypt/compute_email_hash) con la
         # chiave di sviluppo NON solleva: la decifratura fallisce, il guard
         # salta la riga e il backfill resta vuoto lasciando la migration
@@ -437,7 +466,7 @@ def main():
         # 20260625_add_email_hash: 0 hash su 37 utenti, recupero password muto
         # per cinque settimane. Meglio un deploy fermo di un guasto invisibile.
         if not os.environ.get("ENCRYPTION_KEY"):
-            print(
+            log(
                 "ERROR: migrations pendenti ma ENCRYPTION_KEY non disponibile "
                 f"(non letta da {WSGI_FILE}). Una migration sui PII fallirebbe "
                 "in silenzio. Deploy interrotto. Procedura manuale: tab Web -> "
@@ -446,21 +475,21 @@ def main():
             )
             sys.exit(1)
         success, output = run_migrations_safely()
-        print(f"Migrations: {output}")
+        log(f"Migrations: {output}")
         if not success:
-            print("ERROR: migrations non eseguite/fallite, deploy interrotto")
+            log("ERROR: migrations non eseguite/fallite, deploy interrotto")
             sys.exit(1)
 
-    print()
+    log()
 
     # Step 4: Reload web app
     success, output = reload_webapp()
-    print(f"Reload: {output}")
+    log(f"Reload: {output}")
 
-    print()
-    print("=" * 60)
-    print("Deploy complete!")
-    print("=" * 60)
+    log()
+    log("=" * 60)
+    log("Deploy complete!")
+    log("=" * 60)
 
 
 if __name__ == "__main__":

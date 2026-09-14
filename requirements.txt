@@ -14,3 +14,7 @@ Flask-Limiter>=3.5.0,<4.0.0
 # Contenuti del mini-sito di aiuto (help_content/*.yaml). Serve in produzione:
 # le pagine di /aiuto si costruiscono leggendo quei file a ogni avvio.
 PyYAML>=6.0,<7.0
+# Lo usa scripts/requirements_check.py, che auto_deploy lancia col venv per
+# sapere se mancano dipendenze. Arrivava gia' per via transitiva da
+# Flask-Limiter, ma un controllo non deve reggersi su una dipendenza altrui.
+packaging>=22.0

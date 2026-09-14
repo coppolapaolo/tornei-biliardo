@@ -52,6 +52,20 @@ python migrations/runner.py
   > importa l'app col python di sistema si porta dietro i pacchetti di sistema
   > di PythonAnywhere. È da lì che veniva il «set di pacchetti diverso» citato
   > più sotto a proposito di `pyOpenSSL`/`pymongo`.
+
+  > ⚠️ **Nelle notti senza commit nuovi lo script decide se reinstallare con
+  > `scripts/requirements_check.py`**, lanciato col venv: confronta
+  > `requirements.txt` coi metadati dei pacchetti installati usando `packaging`.
+  > Fino al 2026-09-14 lo chiedeva a `pip install --dry-run -q`, e sbagliava nei
+  > due sensi: con pip 22 l'opzione non esisteva, il comando falliva e ogni
+  > notte c'erano `pip install` e reload inutili; con pip 26 esiste, ma `-q`
+  > zittisce «Would install» e un pacchetto mancante risultava installato. Se
+  > il controllo non riesce a rispondere si reinstalla, e il log dice perché.
+  > Presidio: `tests/new/unit/test_requirements_check.py`.
+  >
+  > **Ogni riga del log porta l'orario UTC** (`log()`), come i log della web
+  > app: serve a incrociarlo col server log, per esempio per misurare quanto
+  > dopo il `disable` i worker si fermano davvero.
 - `scripts/backup_db.py`: backup giornaliero del DB (rotazione 7 copie in
   `backups/`).
 - `scripts/daily_jobs.py`: **punto d'ingresso unico dei lavori di dominio
