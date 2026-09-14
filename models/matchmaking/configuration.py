@@ -660,3 +660,82 @@ def validate_strategy_change(
             return False, "Non è possibile passare da eliminazione a girone"
 
     return True, None
+
+
+def bracket_derived_fields(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Campi che sul tabellone non sono una scelta, ma una conseguenza.
+
+    Sei impostazioni del form non hanno alcun effetto su una gara a
+    tabellone, e chiederle significava solo far credere che decidessero
+    qualcosa:
+
+    * **gestione forfait** — nessuna delle due strategie legge
+      ``withdraw_policy``. Dopo il sorteggio il tabellone non si tocca più:
+      chi si ritira lascia avanzare l'avversario a tavolino, e "escludi dal
+      turno" lascerebbe un nodo senza giocatori.
+    * **giocatori dispari** — nemmeno ``odd_number_policy`` viene letto. I bye
+      sono strutturali (``S - n`` buchi ai primi seed), non una politica: un
+      trio o una lista d'attesa non hanno un posto nell'albero.
+    * **spareggio SSR** — le strategie POSITION dichiarano
+      ``requires_tiebreaker=False``, perché i pari merito per banda sono
+      l'esito voluto. Il flag acceso non produceva alcuno spareggio.
+    * **numero di turni** — lo riscrive il sorteggio sugli iscritti effettivi
+      (ADR-038). Qui vale la stima da ``max_participants``, che è anche il
+      tetto massimo: il valore digitato dal director veniva buttato comunque.
+    * **numero esatto di rack (e di set)** — sul tabellone conta solo chi passa
+      il turno. Il vincitore è deciso appena uno arriva a ``(N+1)/2``, e i rack
+      dopo quel punto non cambiano né il tabellone né la classifica, che è per
+      posizione e non guarda i rack: sono solo partite più lunghe a parità di
+      risultato. Con un numero pari è anche peggio, perché la partita può finire
+      in parità e il nodo resterebbe senza vincitore.
+    * **anti-reincontro** — nemmeno ``anti_rematch_enabled`` viene letto, e non
+      avrebbe cosa fare: nel tabellone due giocatori non possono reincontrarsi,
+      perché chi perde esce. Nel doppio KO il reincontro fra un ripescato e chi
+      lo aveva battuto è previsto dal formato, e l'incrocio del losers bracket
+      lo allontana già per costruzione.
+
+    Il minimo iscritti viene alzato al pavimento del formato: il default del
+    form è 6, che per il doppio KO (che ne vuole 8) avrebbe dato una gara
+    impossibile da avviare.
+    """
+    from models.status_enum import WithdrawPolicy
+
+    from .bracket import group_format_total_rounds
+
+    strategy = data["matchmaking_strategy"]
+    if strategy not in BRACKET_STRATEGIES:
+        return {}
+
+    derived: Dict[str, Any] = {
+        "withdraw_policy": WithdrawPolicy.FORFEIT.value,
+        "odd_number_policy": OddNumberPolicy.BYE.value,
+        "tiebreaker_enabled": False,
+        # Sempre "a chi arriva prima", sui rack e sui set.
+        "is_race_to": True,
+        "is_race_to_sets": True,
+        "anti_rematch_enabled": False,
+    }
+
+    floor = minimum_players_for(strategy)
+    derived["min_participants"] = max(data.get("min_participants") or floor, floor)
+
+    capienza = data.get("max_participants")
+    if capienza:
+        # Con una fase a gironi i turni sono `2w - 1` di girone piu' quelli del
+        # tabellone finale fra i qualificati: molti meno del doppio KO pieno
+        # sulla stessa capienza (6 invece di 8 con 16 iscritti, 8 invece di 12
+        # con 48). Il sorteggio lo sa gia' — `DoubleKnockoutStrategy` fissa
+        # `rounds_count` sugli iscritti effettivi con la stessa funzione — ma
+        # fino a quel momento il direttore leggeva la stima del formato
+        # sbagliato, in creazione e sulla pagina della gara.
+        gruppi = data.get("double_ko_rounds")
+        if gruppi:
+            derived["rounds_count"] = group_format_total_rounds(
+                int(capienza), int(gruppi)
+            )
+        else:
+            derived["rounds_count"] = calculate_rounds_for_strategy(
+                MatchmakingStrategy(strategy), int(capienza)
+            )
+
+    return derived

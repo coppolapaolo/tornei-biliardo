@@ -162,13 +162,51 @@
                                 </div>
                                 <div class="row g-2 mt-1">
                                     <div class="col-md-2">
-                                        <label class="form-label">{{ _("Distance") }}</label>
+                                        <label class="form-label">{{ _("Distanza") }}</label>
                                         <input type="number" name="distance" class="form-control form-control-sm" value="{{ cfg.distance or '' }}" min="1" placeholder="{{ _('Eredita') }}">
                                     </div>
                                     <div class="col-md-2">
                                         <label class="form-label">{{ _("Turni") }}</label>
                                         <input type="number" name="rounds_count" class="form-control form-control-sm" value="{{ cfg.rounds_count or '' }}" min="1" placeholder="{{ _('Eredita') }}">
                                     </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">{{ _("Disciplina") }}</label>
+                                        <select name="discipline" class="form-select form-select-sm">
+                                            <option value="">{{ _("Eredita") }}</option>
+                                            {% for value, label in discipline_choices %}
+                                            <option value="{{ value }}" {% if cfg.discipline == value %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">{{ _("Formula") }}</label>
+                                        <select name="strategy_type" class="form-select form-select-sm">
+                                            <option value="">{{ _("Eredita") }}</option>
+                                            {% for value, label in strategie_playoff %}
+                                            <option value="{{ value }}" {% if cfg.strategy_type == value %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">{{ _("Dispari") }}</label>
+                                        <select name="odd_number_policy" class="form-select form-select-sm">
+                                            <option value="">{{ _("Eredita") }}</option>
+                                            {% for value, label in opzioni_dispari() %}
+                                            <option value="{{ value }}" {% if cfg.odd_number_policy == value %}selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2">
+                                        <label class="form-label">{{ _("Sistema di classifica") }}</label>
+                                        <select name="classification_system" class="form-select form-select-sm">
+                                            <option value="">{{ _("Eredita") }}</option>
+                                            <option value="WINS" {% if cfg.classification_system == 'WINS' %}selected{% endif %}>{{ _("Vittorie") }}</option>
+                                            <option value="RACK" {% if cfg.classification_system == 'RACK' %}selected{% endif %}>{{ _("Triangoli totali") }}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-text">
+                                    {{ _("Vuoto vuol dire che la finale lo prende dalla stagione. Con «Campionato + gara di playoff» la finale deve usare il sistema di classifica del campionato; un tabellone si può scegliere solo con «Solo i playoff», o se è a tabellone anche il campionato.") }}
                                 </div>
                                 <button type="submit" class="btn btn-sm btn-primary mt-2">
                                     <i class="fas fa-save"></i> {{ _("Salva") }}

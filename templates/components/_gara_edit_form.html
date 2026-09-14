@@ -58,14 +58,16 @@
       {% if gara.campionato_id %}
         {% set campionato_default = gara.campionato.default_classification_system or 'WINS' %}
         {% set gara_system = gara.classification_system or 'WINS' %}
-        {% set is_inherited = (gara_system == campionato_default) or (gara_system == 'RACKS' and campionato_default == 'RACK') %}
+        {# La finale dei playoff ha il suo sistema, scelto nella configurazione:
+           diverso dal campionato non è un'anomalia da segnalare. #}
+        {% set is_inherited = gara.is_playoff or (gara_system == campionato_default) or (gara_system == 'RACKS' and campionato_default == 'RACK') %}
         <div class="c7-card c7-card--locked d-flex align-items-center gap-2"
              style="height:56px;padding:0 16px;font-size:15px;font-weight:700">
           <i class="fas fa-lock" style="font-size:12px"></i>
           {% if gara_system == 'WINS' %}{{ _('Vittorie') }}
           {% elif gara_system in ['RACK', 'RACKS'] %}{{ _('Triangoli totali') }}
           {% else %}{{ gara_system }}{% endif %}
-          <span class="ms-auto" style="font-size:11px;color:var(--c7-ink-faint)">{{ _('dal campionato') }}</span>
+          <span class="ms-auto" style="font-size:11px;color:var(--c7-ink-faint)">{{ _('dai playoff') if gara.is_playoff else _('dal campionato') }}</span>
         </div>
         <input type="hidden" name="classification_system" value="{{ gara_system }}">
         {% if not is_inherited %}

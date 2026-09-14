@@ -288,6 +288,54 @@ class TestConfigManagementRoute:
         assert updated.name == "Super Elite"
         assert updated.positions_to == 8
 
+    def test_edit_config_salva_le_opzioni_della_finale(
+        self, client, db_session, admin_user, terminated_campionato_with_playoff
+    ):
+        """Le opzioni della finale arrivano dal form fino alla colonna, e un
+        campo lasciato vuoto torna a ereditare."""
+        c, cfg, _, _ = terminated_campionato_with_playoff
+        cfg.final_ranking_mode = "playoff_only"
+        cfg.odd_number_policy = "trio"
+        db_session.commit()
+        _login(client, admin_user)
+
+        resp = client.post(
+            f"/admin/campionato/{c.id}/playoff/config/{cfg.id}/edit",
+            data={
+                "discipline": Discipline.TEN_BALL.value,
+                "strategy_type": "random",
+                "odd_number_policy": "",
+                "classification_system": "RACK",
+            },
+            follow_redirects=True,
+        )
+        assert resp.status_code == 200
+
+        db.session.expire_all()
+        updated = db.session.get(PlayoffConfiguration, cfg.id)
+        assert updated.discipline == Discipline.TEN_BALL.value
+        assert updated.strategy_type == "random"
+        assert updated.odd_number_policy is None
+        assert updated.classification_system == "RACK"
+
+    def test_la_pagina_mostra_le_opzioni_della_finale(
+        self, client, db_session, admin_user, terminated_campionato_with_playoff
+    ):
+        """Prima dell'avvio la configurazione chiede tutte le opzioni della
+        finale, non solo distanza e turni."""
+        c, _, _, _ = terminated_campionato_with_playoff
+        _login(client, admin_user)
+
+        html = client.get(f"/admin/campionato/{c.id}").get_data(as_text=True)
+
+        for campo in (
+            "discipline",
+            "strategy_type",
+            "odd_number_policy",
+            "classification_system",
+        ):
+            assert f'name="{campo}"' in html, campo
+
     def test_add_config(
         self, client, db_session, admin_user, terminated_campionato_with_playoff
     ):

@@ -257,6 +257,27 @@ blocks:
           whoever is in. Instead of the invited players you find **Playoff
           competitions**, with a link to each one.
 
+  - type: options
+    title: "Final options"
+    items:
+      - name: "Distance, rounds, discipline, format, odd numbers"
+        text: >-
+          In the configuration of each play-off, with **Edit**. Left on
+          **Inherit**, the final is played like the first completed
+          competition of the season, including "race to N" or "exactly N". You
+          can change all of them, but only before starting the play-offs.
+      - name: "Standings system"
+        text: >-
+          With "Championship + play-off event" the final uses the
+          championship's, because the points are added up. With "Play-offs
+          only" you can choose another one: only the finishing order of the
+          final counts.
+      - name: "Bracket final"
+        text: >-
+          Single elimination or double knockout can be chosen with "Play-offs
+          only", or when the championship is a bracket too. A bracket is always
+          played "race to N".
+
   - type: note
     tone: info
     title: "The championship closes by itself"

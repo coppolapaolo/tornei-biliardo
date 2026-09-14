@@ -21,13 +21,10 @@ from models.matchmaking.configuration import (
     MatchmakingStrategy,
     FirstRoundPolicy,
     OddNumberPolicy,
-    calculate_rounds_for_strategy,
-    minimum_players_for,
+    bracket_derived_fields,
     resolve_classification_system,
 )
-from models.matchmaking.bracket import group_format_total_rounds
 from models.match.break_rules import BreakRule, StartRule
-from models.status_enum import WithdrawPolicy
 
 # Ri-esportato: `BRACKET_STRATEGIES` vive nel dominio
 # (`models/matchmaking/configuration.py`) perché la domanda "questa gara ha un
@@ -59,79 +56,9 @@ def _third_place_applies(strategy: str, double_ko_rounds: Optional[int]) -> bool
     return False
 
 
-def _bracket_derived_fields(data: Dict[str, Any]) -> Dict[str, Any]:
-    """Campi che sul tabellone non sono una scelta, ma una conseguenza.
-
-    Sei impostazioni del form non hanno alcun effetto su una gara a
-    tabellone, e chiederle significava solo far credere che decidessero
-    qualcosa:
-
-    * **gestione forfait** — nessuna delle due strategie legge
-      ``withdraw_policy``. Dopo il sorteggio il tabellone non si tocca più:
-      chi si ritira lascia avanzare l'avversario a tavolino, e "escludi dal
-      turno" lascerebbe un nodo senza giocatori.
-    * **giocatori dispari** — nemmeno ``odd_number_policy`` viene letto. I bye
-      sono strutturali (``S - n`` buchi ai primi seed), non una politica: un
-      trio o una lista d'attesa non hanno un posto nell'albero.
-    * **spareggio SSR** — le strategie POSITION dichiarano
-      ``requires_tiebreaker=False``, perché i pari merito per banda sono
-      l'esito voluto. Il flag acceso non produceva alcuno spareggio.
-    * **numero di turni** — lo riscrive il sorteggio sugli iscritti effettivi
-      (ADR-038). Qui vale la stima da ``max_participants``, che è anche il
-      tetto massimo: il valore digitato dal director veniva buttato comunque.
-    * **numero esatto di rack (e di set)** — sul tabellone conta solo chi passa
-      il turno. Il vincitore è deciso appena uno arriva a ``(N+1)/2``, e i rack
-      dopo quel punto non cambiano né il tabellone né la classifica, che è per
-      posizione e non guarda i rack: sono solo partite più lunghe a parità di
-      risultato. Con un numero pari è anche peggio, perché la partita può finire
-      in parità e il nodo resterebbe senza vincitore.
-    * **anti-reincontro** — nemmeno ``anti_rematch_enabled`` viene letto, e non
-      avrebbe cosa fare: nel tabellone due giocatori non possono reincontrarsi,
-      perché chi perde esce. Nel doppio KO il reincontro fra un ripescato e chi
-      lo aveva battuto è previsto dal formato, e l'incrocio del losers bracket
-      lo allontana già per costruzione.
-
-    Il minimo iscritti viene alzato al pavimento del formato: il default del
-    form è 6, che per il doppio KO (che ne vuole 8) avrebbe dato una gara
-    impossibile da avviare.
-    """
-    strategy = data["matchmaking_strategy"]
-    if strategy not in BRACKET_STRATEGIES:
-        return {}
-
-    derived: Dict[str, Any] = {
-        "withdraw_policy": WithdrawPolicy.FORFEIT.value,
-        "odd_number_policy": OddNumberPolicy.BYE.value,
-        "tiebreaker_enabled": False,
-        # Sempre "a chi arriva prima", sui rack e sui set.
-        "is_race_to": True,
-        "is_race_to_sets": True,
-        "anti_rematch_enabled": False,
-    }
-
-    floor = minimum_players_for(strategy)
-    derived["min_participants"] = max(data.get("min_participants") or floor, floor)
-
-    capienza = data.get("max_participants")
-    if capienza:
-        # Con una fase a gironi i turni sono `2w - 1` di girone piu' quelli del
-        # tabellone finale fra i qualificati: molti meno del doppio KO pieno
-        # sulla stessa capienza (6 invece di 8 con 16 iscritti, 8 invece di 12
-        # con 48). Il sorteggio lo sa gia' — `DoubleKnockoutStrategy` fissa
-        # `rounds_count` sugli iscritti effettivi con la stessa funzione — ma
-        # fino a quel momento il direttore leggeva la stima del formato
-        # sbagliato, in creazione e sulla pagina della gara.
-        gruppi = data.get("double_ko_rounds")
-        if gruppi:
-            derived["rounds_count"] = group_format_total_rounds(
-                int(capienza), int(gruppi)
-            )
-        else:
-            derived["rounds_count"] = calculate_rounds_for_strategy(
-                MatchmakingStrategy(strategy), int(capienza)
-            )
-
-    return derived
+# La regola vive nel dominio: la usa anche la finale dei playoff, che nasce
+# senza passare da questo form.
+_bracket_derived_fields = bracket_derived_fields
 
 
 class GaraFormParser:
@@ -144,8 +71,14 @@ class GaraFormParser:
         # data contains all kwargs ready for GaraService.create_gara()
     """
 
-    def __init__(self, campionato: Optional[Any] = None) -> None:
+    def __init__(
+        self, campionato: Optional[Any] = None, gara: Optional[Any] = None
+    ) -> None:
         self.campionato = campionato
+        # La gara che si sta modificando, se c'è. Serve a una sola cosa: la
+        # finale dei playoff ha strategia e sistema suoi, scelti nella
+        # configurazione, e il form non deve imporle quelli del campionato.
+        self.gara = gara
 
     def parse(self) -> Dict[str, Any]:
         """Parse the current Flask request form and return a dict of gara fields.
@@ -234,8 +167,11 @@ class GaraFormParser:
                 data[campo] = scelta.value if scelta is not None else None
 
         # ── Strategy ─────────────────────────────────────────────
+        finale = self.gara if getattr(self.gara, "is_playoff", False) else None
         if camp:
-            data["matchmaking_strategy"] = camp.campionato_type
+            data["matchmaking_strategy"] = (
+                finale.matchmaking_strategy if finale else camp.campionato_type
+            )
             default_anti = (
                 camp.default_anti_rematch
                 if camp.default_anti_rematch is not None
@@ -253,7 +189,11 @@ class GaraFormParser:
             data["first_round_policy"] = request.form.get(
                 "first_round_policy", "random"
             )
-            data["classification_system"] = camp.default_classification_system or "WINS"
+            data["classification_system"] = (
+                finale.classification_system
+                if finale
+                else camp.default_classification_system
+            ) or "WINS"
         else:
             data["matchmaking_strategy"] = request.form.get(
                 "matchmaking_strategy", "amalfi"

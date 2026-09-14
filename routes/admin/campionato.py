@@ -516,6 +516,8 @@ def campionato_detail(campionato_id):
         default_distance=DEFAULT_DISTANCE,
         discipline_choices=Discipline.get_choices(),
         default_discipline=Discipline.NINE_BALL.value,
+        # Le formule che la finale dei playoff può scegliere.
+        strategie_playoff=CAMPIONATO_TYPES,
         playoff_feasibility=playoff_feasibility,
         playoff_status=playoff_status,
         # A che punto sono i playoff: la fascia e gli invitati ne dipendono.
@@ -991,6 +993,7 @@ def playoff_edit_config(campionato_id, config_id):
         "rounds_count",
         "strategy_type",
         "odd_number_policy",
+        "classification_system",
     ):
         val = request.form.get(key)
         if val is not None and val != "":
@@ -1009,6 +1012,7 @@ def playoff_edit_config(campionato_id, config_id):
             "discipline",
             "strategy_type",
             "odd_number_policy",
+            "classification_system",
             "min_garas_played",
             "distance",
             "rounds_count",
