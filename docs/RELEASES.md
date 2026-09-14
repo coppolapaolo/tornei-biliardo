@@ -1,5 +1,19 @@
 # Changelog
 
+## [1.30.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.29.1...v1.30.0) (2026-09-14)
+
+
+### Funzioni nuove
+
+* l'admin viene scollegato dopo 30 minuti di inattività ([#429](https://github.com/coppolapaolo/tornei-biliardo/issues/429)) ([26d9f5f](https://github.com/coppolapaolo/tornei-biliardo/commit/26d9f5f4465b15d7e7b594d73cd24bcfd0cae566))
+
+
+### Correzioni
+
+* il messaggio che chiede di accedere è tradotto ([#431](https://github.com/coppolapaolo/tornei-biliardo/issues/431)) ([95551a0](https://github.com/coppolapaolo/tornei-biliardo/commit/95551a0173bee330f583adda00f84e61637cd158))
+* l'admin non riceve più l'avviso di account non verificato ([#428](https://github.com/coppolapaolo/tornei-biliardo/issues/428)) ([005a80f](https://github.com/coppolapaolo/tornei-biliardo/commit/005a80f6bb9111d264447d51f24fb20a89d9ea74))
+* l'error log di produzione torna davvero a WARNING ([#432](https://github.com/coppolapaolo/tornei-biliardo/issues/432)) ([b101947](https://github.com/coppolapaolo/tornei-biliardo/commit/b1019479fc9fb3c118d1079b2a03d1e4c77910b3))
+
 ## [1.29.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.29.0...v1.29.1) (2026-09-14)
 
 
