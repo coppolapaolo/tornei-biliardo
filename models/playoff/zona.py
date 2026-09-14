@@ -10,15 +10,22 @@ la da' il dominio, non un «primi N» scritto nel template:
 * **dopo gli inviti** e' chi ha un invito ancora valido, in attesa o
   confermato: chi ha rifiutato esce, e chi e' entrato al suo posto c'e'.
 
-`evaluate_qualifications` legge le righe `Classification`, la pagina mostra
-`calculate_general_classification`: sono i due percorsi della classifica
-generale, e il test li confronta (vedi `test_zona_playoff.py`).
+La zona si calcola dalla **stessa classifica che la pagina mostra**,
+`calculate_general_classification`, e non dalle righe `Classification`
+persistite — che sono l'altro percorso della classifica generale, quello da
+cui partono gli inviti (`start_playoff` le ricalcola prima di leggerle).
+Fino al 14/09/2026 leggeva le righe: in produzione erano ferme alla gara 1,
+perche' la gara 2 era stata chiusa prima che la chiusura le ricalcolasse
+(PR #335), e la barra saltava il quarto in classifica per segnare il
+quattordicesimo. Un dato derivato e persistito e' coerente solo se ogni
+evento che lo cambia lo ricalcola; la barra e' disegnata sulla classifica in
+pagina e deve dipendere solo da quella (vedi `test_zona_playoff.py`).
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import FrozenSet, List
+from typing import Any, FrozenSet, List, Optional
 
 
 @dataclass(frozen=True)
@@ -29,14 +36,46 @@ class ZonaPlayoff:
     inviti_partiti: bool
 
 
+@dataclass(frozen=True)
+class RigaClassifica:
+    """Una riga della classifica in pagina, nella forma che leggono
+    `PlayoffService.candidati_per_posizione` e
+    `PlayoffConfiguration.evaluate_qualifications`: gli stessi attributi di
+    `Classification`, ma calcolati al volo."""
+
+    user_id: int
+    position: int
+    gare_played: int
+    total_matches_won: int
+    total_point_difference: int
+
+
+def righe_della_classifica_in_pagina(campionato: Any) -> List[RigaClassifica]:
+    """La classifica generale come la vede la pagina, riga per riga."""
+    from models.campionato.tournament_service import TournamentService
+
+    pagina = TournamentService().calculate_general_classification(campionato.id)
+    return [
+        RigaClassifica(
+            user_id=dati["user_id"],
+            position=posizione,
+            gare_played=dati.get("participations", 0),
+            total_matches_won=dati.get("total_matches_won", 0),
+            total_point_difference=dati.get("total_rack_difference", 0),
+        )
+        for posizione, dati in pagina
+    ]
+
+
 def zone_playoff(campionato) -> List[ZonaPlayoff]:
     """Una zona per ogni configurazione playoff attiva del campionato.
 
     Prima degli inviti la zona e' chi `PlayoffService.candidati_per_posizione`
     sceglierebbe adesso — la stessa funzione di `start_playoff`, fascia di
-    posizioni e rimpiazzi compresi — dalle righe `Classification` gia'
-    calcolate, senza scrivere niente. Le configurazioni senza fascia (criteri
-    JSON) ripiegano su `evaluate_qualifications`, come `start_playoff`.
+    posizioni e rimpiazzi compresi — applicata alla classifica calcolata al
+    volo per la pagina, senza scrivere niente. Le configurazioni senza fascia
+    (criteri JSON) ripiegano su `evaluate_qualifications`, come
+    `start_playoff`, sulle stesse righe.
 
     Gli inviti sono «partiti» quando almeno una qualificazione ha `invited_at`:
     le righe possono esistere prima della notifica. Dopo, la zona e' chi ha un
@@ -44,7 +83,6 @@ def zone_playoff(campionato) -> List[ZonaPlayoff]:
     pubblica non fa scadere gli inviti, quindi la scadenza si guarda qui.
     """
     from models.base import utc_now
-    from models.classification.models import Classification
     from models.playoff.models import (
         PlayoffConfiguration,
         PlayoffQualification,
@@ -60,7 +98,7 @@ def zone_playoff(campionato) -> List[ZonaPlayoff]:
         .all()
     )
     adesso = utc_now()
-    classifica = None
+    classifica: Optional[List[RigaClassifica]] = None
     zone: List[ZonaPlayoff] = []
     for cfg in configurazioni:
         invitate = [
@@ -79,22 +117,17 @@ def zone_playoff(campionato) -> List[ZonaPlayoff]:
                 )
             )
             partiti = True
-        elif cfg.positions_from is not None and cfg.positions_to is not None:
-            if classifica is None:
-                classifica = (
-                    Classification.query.filter_by(campionato_id=campionato.id)
-                    .order_by(Classification.position)
-                    .all()
-                )
-            dentro = frozenset(
-                user_id
-                for user_id, _pos, _motivo in PlayoffService.candidati_per_posizione(
-                    cfg, classifica
-                )
-            )
-            partiti = False
         else:
-            dentro = frozenset(d["user_id"] for d in cfg.evaluate_qualifications())
+            if classifica is None:
+                classifica = righe_della_classifica_in_pagina(campionato)
+            if cfg.positions_from is not None and cfg.positions_to is not None:
+                scelti = PlayoffService.candidati_per_posizione(cfg, classifica)
+                dentro = frozenset(user_id for user_id, _pos, _motivo in scelti)
+            else:
+                dentro = frozenset(
+                    d["user_id"]
+                    for d in cfg.evaluate_qualifications(classifications=classifica)
+                )
             partiti = False
         zone.append(
             ZonaPlayoff(
@@ -107,4 +140,9 @@ def zone_playoff(campionato) -> List[ZonaPlayoff]:
     return zone
 
 
-__all__ = ["ZonaPlayoff", "zone_playoff"]
+__all__ = [
+    "RigaClassifica",
+    "ZonaPlayoff",
+    "righe_della_classifica_in_pagina",
+    "zone_playoff",
+]
