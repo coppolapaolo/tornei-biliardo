@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.31.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.30.3...v1.31.0) (2026-09-14)
+
+
+### Funzioni nuove
+
+* la finale dei playoff si configura in ogni opzione ([#439](https://github.com/coppolapaolo/tornei-biliardo/issues/439)) ([d84ec4c](https://github.com/coppolapaolo/tornei-biliardo/commit/d84ec4ca13be61200873072def1152e2ee80d2e2))
+
 ## [1.30.3](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.30.2...v1.30.3) (2026-09-14)
 
 
