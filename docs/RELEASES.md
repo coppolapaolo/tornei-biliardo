@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.29.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.28.0...v1.29.0) (2026-09-14)
+
+
+### Funzioni nuove
+
+* la pagina pubblica del campionato nel nuovo stile, per chi usa l'app ([#419](https://github.com/coppolapaolo/tornei-biliardo/issues/419)) ([e090865](https://github.com/coppolapaolo/tornei-biliardo/commit/e0908653463def5d5f1eede2706e4739cf2a242f))
+
 ## [1.28.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.27.1...v1.28.0) (2026-09-14)
 
 
