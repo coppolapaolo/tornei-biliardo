@@ -6,6 +6,22 @@ This document details the authentication system, including new features for emai
 
 The application uses standard session-based authentication via `Flask-Login`. Passwords are hashed using `scrypt` (via `werkzeug.security`).
 
+## Session Lifetime
+
+- **Credential-bound sessions** (ADR-055): the session id carries a
+  fingerprint of the password hash, so changing the password invalidates every
+  open session.
+- **No "remember me"** and no server-side lifetime for directors and players:
+  a session lasts as long as the browser keeps its cookie.
+- **Admin idle timeout** (ADR-063): the admin is logged out after
+  `ADMIN_IDLE_TIMEOUT` (30 minutes, `config.py`) without opening a page. The
+  last activity lives in the signed session cookie (`_admin_ultima_attivita`),
+  not in `user_session`, which is analytics only. Live-update polls
+  (`/sse/poll/*`) do **not** count as activity: an expired poll gets 401 and
+  the page shows the "session expired" notice. Pages redirect to the login
+  with a flash message and, for GET requests, a `next` back to where the admin
+  was.
+
 ## Email Verification
 
 New users must verify their email address before their account is fully activated (though currently they can still login, but with a warning).

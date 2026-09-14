@@ -620,6 +620,7 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [060](docs/adr/ADR-060-tavoli-scelti-in-ogni-stato.md) | i tavoli si scelgono in ogni stato; la lista nuova vale per le assegnazioni successive |
 | [061](docs/adr/ADR-061-transactional-annidato-salva-solo-il-piu-esterno.md) | un `@transactional` annidato chiude il proprio savepoint, salva solo il più esterno; `BEGIN` su SQLite prima del savepoint |
 | [062](docs/adr/ADR-062-notifiche-nella-lingua-di-chi-riceve.md) | le notifiche nella lingua di **chi riceve**, salvata su `User.language`; testi passati da comporre, nessun backfill |
+| [063](docs/adr/ADR-063-admin-scollegato-dopo-inattivita.md) | l'**admin** viene scollegato dopo 30 minuti senza aprire pagine; ultima attività nel cookie, i poll non contano |
 
 ---
 
