@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-14 11:05+0200\n"
+"POT-Creation-Date: 2026-09-14 11:49+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,23 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:732 templates/errors/403.html:3
+#: app.py:802 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr "Access denied"
 
-#: app.py:750
+#: app.py:820
 msgid "Non è il tuo turno"
 msgstr "Not your turn yet"
 
-#: app.py:751
+#: app.py:821
 msgid "Colpo irregolare"
 msgstr "Illegal shot"
 
-#: app.py:770
+#: app.py:840
 msgid "Operazione non consentita"
 msgstr "That shot isn't allowed."
 
-#: app.py:784
+#: app.py:854
 msgid "Tiro non valido"
 msgstr "Foul shot"
 
@@ -21781,6 +21781,11 @@ msgstr "Competitive Elo"
 #: utils/elo_visibility.py:77
 msgid "Elo globale"
 msgstr "Global Elo"
+
+#: utils/inattivita_admin.py:96
+#, python-format
+msgid "Sessione chiusa dopo %(minuti)s minuti di inattività: accedi di nuovo."
+msgstr "Signed out after %(minuti)s minutes of inactivity: please sign in again."
 
 #: utils/jinja.py:33 utils/jinja.py:80 utils/jinja.py:143 utils/jinja.py:177
 #: utils/jinja.py:200 utils/jinja.py:232 utils/jinja.py:242 utils/jinja.py:278

@@ -1,5 +1,6 @@
 # config.py - Configurazioni dell'applicazione
 import os
+from datetime import timedelta
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -145,6 +146,11 @@ class Config:
     # servirebbe comunque il cookie di sessione della vittima, che è il vero
     # segreto, e quello scade per conto suo.
     WTF_CSRF_TIME_LIMIT = None
+
+    # Dopo quanto tempo senza aprire pagine l'admin viene scollegato (ADR-063).
+    # Solo l'admin: direttori e giocatori non hanno un limite. I poll degli
+    # aggiornamenti live non contano come attività.
+    ADMIN_IDLE_TIMEOUT = timedelta(minutes=30)
 
     @classmethod
     def environment_settings(cls) -> dict:
