@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-14 15:06+0200\n"
+"POT-Creation-Date: 2026-09-14 16:38+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -254,8 +254,8 @@ msgid ""
 "Il sistema di classifica non si può più cambiare: la gara «%(gara)s» ha "
 "già aperto le iscrizioni o ha degli iscritti."
 msgstr ""
-"The standings system can no longer be changed: the competition "
-"«%(gara)s» has already opened registrations or has registered players."
+"The standings system can no longer be changed: the competition «%(gara)s»"
+" has already opened registrations or has registered players."
 
 #: models/campionato/tournament_service.py:291
 #, python-format
@@ -2502,26 +2502,39 @@ msgstr ""
 "The play-off competition has already started: the invitation can no "
 "longer be accepted."
 
-#: models/playoff/services.py:809
+#: models/playoff/services.py:416
+msgid ""
+"Con «Campionato + gara di playoff» il punteggio della finale si somma a "
+"quello del campionato, quindi deve usare lo stesso sistema di classifica,"
+" e una finale a tabellone non si somma a un campionato che non lo è. "
+"Scegli «Solo i playoff», dove della finale conta solo l'ordine d'arrivo."
+msgstr ""
+"With \"Championship + play-off event\" the score of the final is added to "
+"the championship score, so it must use the same standings system, and a "
+"bracket final cannot be added to a championship that is not a bracket. "
+"Choose \"Play-offs only\", where only the finishing order of the final "
+"counts."
+
+#: models/playoff/services.py:877
 msgid "La scadenza degli inviti deve essere nel futuro."
 msgstr "The invitation deadline must be in the future."
 
-#: models/playoff/services.py:811
+#: models/playoff/services.py:879
 msgid "La data dei playoff deve essere nel futuro."
 msgstr "The playoff date must be in the future."
 
-#: models/playoff/services.py:839
+#: models/playoff/services.py:907
 msgid "La gara di playoff è già cominciata: data e scadenza non si cambiano più."
 msgstr ""
 "The playoff competition has already started: the date and deadline can no"
 " longer be changed."
 
-#: models/playoff/services.py:1036
+#: models/playoff/services.py:1104
 #, python-format
 msgid "Invito Playoff — %(nome)s"
 msgstr "Playoff invitation — %(nome)s"
 
-#: models/playoff/services.py:1038
+#: models/playoff/services.py:1106
 #, python-format
 msgid ""
 "Sei stato qualificato per %(nome)s del campionato %(campionato)s. "
@@ -2530,11 +2543,11 @@ msgstr ""
 "You've qualified for %(nome)s in the championship %(campionato)s. Confirm"
 " or decline your participation."
 
-#: models/playoff/services.py:1045 templates/individual_match/matches.html:160
+#: models/playoff/services.py:1113 templates/individual_match/matches.html:160
 msgid "Conferma o rifiuta"
 msgstr "Confirm or decline"
 
-#: models/playoff/services.py:1238 models/playoff/services.py:1295
+#: models/playoff/services.py:1300 models/playoff/services.py:1357
 msgid "La gara di playoff è già cominciata: la lista non si modifica più."
 msgstr ""
 "The play-off competition has already started: the list can no longer be "

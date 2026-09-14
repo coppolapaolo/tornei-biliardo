@@ -169,7 +169,9 @@ class TestPlayoffATabellone:
             "il caso si raggiunge solo scrivendo la configurazione a mano."
         ),
     )
-    def test_nasce_a_posizioni_anche_in_un_campionato_a_vittorie(self, db_session):
+    def test_con_solo_playoff_nasce_a_posizioni_in_un_campionato_a_vittorie(
+        self, db_session
+    ):
         campionato = _campionato(db_session, "WINS")
         _gara(
             db_session,
@@ -189,6 +191,8 @@ class TestPlayoffATabellone:
             auto_generate=True,
             min_garas_played=0,
             strategy_type="direct_elimination",
+            # Nella modalità sommata il tabellone è rifiutato: si può solo qui.
+            final_ranking_mode="playoff_only",
         )
         db_session.add(configurazione)
         db_session.commit()

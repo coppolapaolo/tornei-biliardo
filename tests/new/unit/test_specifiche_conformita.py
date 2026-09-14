@@ -1348,3 +1348,137 @@ class TestUnSoloSistemaDiClassificaPerCampionato:
         aggiornato = db_session.get(Campionato, campionato_id)
         assert aggiornato.default_classification_system == "RACK"
         assert {g.classification_system for g in aggiornato.gare} == {"RACK"}
+
+
+def _configurazione(db_session, campionato, **campi) -> PlayoffConfiguration:
+    configurazione = PlayoffConfiguration(
+        campionato_id=campionato.id,
+        name="Finale",
+        playoff_type=PlayoffType.TOP_N,
+        max_participants=8,
+        positions_from=1,
+        positions_to=8,
+        is_active=True,
+        auto_generate=True,
+        min_garas_played=0,
+        **campi,
+    )
+    db_session.add(configurazione)
+    db_session.flush()
+    return configurazione
+
+
+def _finale(db_session, campionato, configurazione, *, sistema: str) -> Gara:
+    gara = _gara_del_campionato(
+        db_session, campionato, numero=9, stato=GaraStatus.SETUP.value
+    )
+    gara.playoff_config_id = configurazione.id
+    gara.classification_system = sistema
+    db_session.flush()
+    return gara
+
+
+@pytest.mark.unit
+class TestLaFinaleSecondoLaModalita:
+    """`SPECIFICHE.md` riga 289.
+
+    > La gara di playoff lo segue quando il suo punteggio **si somma** a quello
+    > del campionato […] e per questo in quella modalità non può essere a
+    > tabellone se il campionato non lo è; quando invece la classifica finale
+    > è **solo quella dei playoff** della finale conta soltanto l'ordine
+    > d'arrivo […]. Per questo
+    > non si passa alla modalità sommata se la finale ha già un sistema diverso
+    > da quello del campionato, o una strategia a tabellone.
+    """
+
+    def test_in_modalita_sommata_la_finale_a_tabellone_e_rifiutata(self, db_session):
+        from models.exceptions import ValidationError
+
+        campionato = _campionato(db_session, "WINS")
+        _gara_del_campionato(
+            db_session, campionato, numero=1, stato=GaraStatus.COMPLETED.value
+        )
+        configurazione = _configurazione(
+            db_session, campionato, strategy_type="direct_elimination"
+        )
+        db_session.commit()
+
+        with pytest.raises(ValidationError):
+            PlayoffService.create_playoff_gara(configurazione.id)
+
+    def test_non_si_passa_alla_somma_con_una_finale_di_altro_sistema(self, db_session):
+        from models.exceptions import ValidationError
+
+        campionato = _campionato(db_session, "RACK")
+        configurazione = _configurazione(
+            db_session, campionato, final_ranking_mode="playoff_only"
+        )
+        _finale(db_session, campionato, configurazione, sistema="WINS")
+        db_session.commit()
+        configurazione_id = configurazione.id
+
+        with pytest.raises(ValidationError):
+            PlayoffService.update_scoring(
+                configurazione_id, final_ranking_mode="campionato_plus_playoff"
+            )
+
+        db_session.expire_all()
+        rimasta = db_session.get(PlayoffConfiguration, configurazione_id)
+        assert rimasta.final_ranking_mode == "playoff_only"
+
+    def test_non_si_passa_alla_somma_con_la_strategia_a_tabellone(self, db_session):
+        from models.exceptions import ValidationError
+
+        campionato = _campionato(db_session, "WINS")
+        configurazione = _configurazione(
+            db_session,
+            campionato,
+            final_ranking_mode="playoff_only",
+            strategy_type="double_knockout",
+        )
+        db_session.commit()
+
+        with pytest.raises(ValidationError):
+            PlayoffService.update_scoring(
+                configurazione.id, final_ranking_mode="campionato_plus_playoff"
+            )
+
+    def test_con_lo_stesso_sistema_si_passa_alla_somma(self, db_session):
+        campionato = _campionato(db_session, "RACK")
+        configurazione = _configurazione(
+            db_session, campionato, final_ranking_mode="playoff_only"
+        )
+        _finale(db_session, campionato, configurazione, sistema="RACK")
+        db_session.commit()
+        configurazione_id = configurazione.id
+
+        PlayoffService.update_scoring(
+            configurazione_id, final_ranking_mode="campionato_plus_playoff"
+        )
+
+        db_session.expire_all()
+        aggiornata = db_session.get(PlayoffConfiguration, configurazione_id)
+        assert aggiornata.final_ranking_mode == "campionato_plus_playoff"
+
+    def test_salvare_il_peso_senza_cambiare_modalita_non_si_blocca(self, db_session):
+        """Il form del punteggio rimanda la modalità a ogni salvataggio. Una
+        finale già incoerente — nata a vittorie in un campionato a triangoli,
+        prima del 2026-09-14 — non deve impedire al direttore di cambiare il
+        peso: il controllo scatta sul **passaggio** alla somma, non sullo stato."""
+        campionato = _campionato(db_session, "RACK")
+        configurazione = _configurazione(
+            db_session, campionato, final_ranking_mode="campionato_plus_playoff"
+        )
+        _finale(db_session, campionato, configurazione, sistema="WINS")
+        db_session.commit()
+        configurazione_id = configurazione.id
+
+        PlayoffService.update_scoring(
+            configurazione_id,
+            final_ranking_mode="campionato_plus_playoff",
+            playoff_weight=2,
+        )
+
+        db_session.expire_all()
+        aggiornata = db_session.get(PlayoffConfiguration, configurazione_id)
+        assert aggiornata.playoff_weight == 2

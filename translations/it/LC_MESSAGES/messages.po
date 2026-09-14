@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-14 15:06+0200\n"
+"POT-Creation-Date: 2026-09-14 16:38+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -2412,35 +2412,43 @@ msgstr ""
 msgid "La gara di playoff è già cominciata: l'invito non si può più accettare."
 msgstr ""
 
-#: models/playoff/services.py:809
+#: models/playoff/services.py:416
+msgid ""
+"Con «Campionato + gara di playoff» il punteggio della finale si somma a "
+"quello del campionato, quindi deve usare lo stesso sistema di classifica,"
+" e una finale a tabellone non si somma a un campionato che non lo è. "
+"Scegli «Solo i playoff», dove della finale conta solo l'ordine d'arrivo."
+msgstr ""
+
+#: models/playoff/services.py:877
 msgid "La scadenza degli inviti deve essere nel futuro."
 msgstr ""
 
-#: models/playoff/services.py:811
+#: models/playoff/services.py:879
 msgid "La data dei playoff deve essere nel futuro."
 msgstr ""
 
-#: models/playoff/services.py:839
+#: models/playoff/services.py:907
 msgid "La gara di playoff è già cominciata: data e scadenza non si cambiano più."
 msgstr ""
 
-#: models/playoff/services.py:1036
+#: models/playoff/services.py:1104
 #, python-format
 msgid "Invito Playoff — %(nome)s"
 msgstr ""
 
-#: models/playoff/services.py:1038
+#: models/playoff/services.py:1106
 #, python-format
 msgid ""
 "Sei stato qualificato per %(nome)s del campionato %(campionato)s. "
 "Conferma o rifiuta la partecipazione."
 msgstr ""
 
-#: models/playoff/services.py:1045 templates/individual_match/matches.html:160
+#: models/playoff/services.py:1113 templates/individual_match/matches.html:160
 msgid "Conferma o rifiuta"
 msgstr ""
 
-#: models/playoff/services.py:1238 models/playoff/services.py:1295
+#: models/playoff/services.py:1300 models/playoff/services.py:1357
 msgid "La gara di playoff è già cominciata: la lista non si modifica più."
 msgstr ""
 

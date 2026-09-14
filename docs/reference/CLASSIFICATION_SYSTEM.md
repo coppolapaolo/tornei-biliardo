@@ -287,9 +287,16 @@ L'handicap si applica a livello di **match** e modifica il conteggio dei rack.
 
 Non è permesso mescolare gare RACK con gare WINS nello stesso campionato.
 
-- **La gara di playoff** riceve il sistema del campionato come le altre; se si
-  gioca a tabellone è POSITION, l'unico sistema che un tabellone ammette.
-  Fino al 2026-09-14 nasceva sempre WINS.
+- **La gara di playoff dipende dalla modalità della classifica finale**
+  (ADR-053). Se il suo punteggio **si somma** (`campionato_plus_playoff`) ha il
+  sistema del campionato, quindi è a tabellone solo se lo è anche il
+  campionato: POSITION non si somma a vittorie o triangoli. Se la classifica finale è **solo quella dei playoff**
+  (`playoff_only`) della finale conta solo l'ordine d'arrivo
+  (`_apply_playoff_final_order` legge `GaraClassification.position`), quindi il
+  sistema può essere diverso e il tabellone è ammesso (POSITION). Il passaggio a
+  `campionato_plus_playoff` è rifiutato se la finale esistente ha un altro
+  sistema o la strategia è a tabellone; salvare il peso senza cambiare modalità
+  non è mai bloccato. Fino al 2026-09-14 la finale nasceva sempre WINS.
 - **Il sistema si cambia solo prima delle iscrizioni**: se una gara (non
   eliminata né annullata) ha lasciato la preparazione o ha già degli iscritti,
   `TournamentService.update_campionato` rifiuta il cambio. Altrimenti il

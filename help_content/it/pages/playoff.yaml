@@ -188,13 +188,24 @@ blocks:
           Il punteggio del playoff si **somma** a quello del campionato, come
           se fosse una gara in più. Chi ha fatto una bella stagione parte
           avvantaggiato. Il direttore può dare al playoff un **peso**: peso 2
-          vuol dire che quella gara vale il doppio delle altre.
+          vuol dire che quella gara vale il doppio delle altre. Per potersi
+          sommare, la finale usa lo **stesso sistema di classifica** del
+          campionato: vittorie con vittorie, triangoli con triangoli.
       - name: "Solo i playoff"
         text: >-
           La classifica finale la decide il playoff: chi lo gioca occupa le
           prime posizioni nell'ordine deciso lì, e sotto vengono tutti gli
           altri nell'ordine che avevano in campionato. Quello che hai fatto
-          durante la stagione ti serve a entrare, non a vincere.
+          durante la stagione ti serve a entrare, non a vincere. Della finale
+          conta solo l'ordine d'arrivo, non i punti.
+
+  - type: note
+    tone: warning
+    text: >-
+      Si passa da «Solo i playoff» a «Campionato + gara di playoff» solo se la
+      finale usa lo stesso sistema di classifica del campionato: altrimenti si
+      sommerebbero cose diverse, e l'app rifiuta il cambio. Il peso invece si
+      cambia sempre.
 
   - type: note
     tone: info
