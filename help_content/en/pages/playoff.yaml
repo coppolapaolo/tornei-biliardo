@@ -190,13 +190,24 @@ blocks:
           The play-off score is **added** to the championship score, as if it
           were one more competition. A good season leaves you ahead. The
           director can give the play-off a **weight**: weight 2 means that
-          event counts double.
+          event counts double. To be added up, the final uses the **same
+          standings system** as the championship: wins with wins, racks with
+          racks.
       - name: "Play-offs only"
         text: >-
           The play-off decides the final standings: whoever plays it takes the
           top places in the order the play-off produces, and everyone else
           follows in championship order. What you did during the season gets
-          you in, not to the top.
+          you in, not to the top. Only the finishing order of the final
+          counts, not its points.
+
+  - type: note
+    tone: warning
+    text: >-
+      You can switch from "Play-offs only" to "Championship + play-off event"
+      only if the final uses the same standings system as the championship:
+      otherwise different things would be added up, and the app refuses the
+      change. The weight can always be changed.
 
   - type: note
     tone: info

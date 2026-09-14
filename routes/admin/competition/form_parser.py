@@ -23,6 +23,7 @@ from models.matchmaking.configuration import (
     OddNumberPolicy,
     calculate_rounds_for_strategy,
     minimum_players_for,
+    resolve_classification_system,
 )
 from models.matchmaking.bracket import group_format_total_rounds
 from models.match.break_rules import BreakRule, StartRule
@@ -34,17 +35,9 @@ from models.status_enum import WithdrawPolicy
 # dove lo era prima.
 __all__ = ["BRACKET_STRATEGIES", "GaraFormParser"]
 
-
-def _resolve_classification_system(strategy: str, requested: str) -> str:
-    """Sistema di classifica coerente con la strategia scelta.
-
-    Sul tabellone è POSITION e basta: chiederlo all'utente per poi rifiutare
-    ogni altra risposta sarebbe solo un modo di far fallire il salvataggio.
-    Fuori dal tabellone POSITION non ha senso, quindi si ricade su WINS.
-    """
-    if strategy in BRACKET_STRATEGIES:
-        return "POSITION"
-    return requested if requested in ("WINS", "RACK") else "WINS"
+# La regola vive nel dominio, dove la usano anche il playoff e il cambio di
+# sistema sul campionato; qui resta il nome storico.
+_resolve_classification_system = resolve_classification_system
 
 
 def _third_place_applies(strategy: str, double_ko_rounds: Optional[int]) -> bool:

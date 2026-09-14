@@ -197,6 +197,16 @@ class TournamentService(TournamentStatisticsService):
         if not campionato:
             raise NotFoundError("Campionato not found")
 
+        # Il form rimanda sempre il sistema: conta solo se cambia davvero.
+        from models.status_enum import ClassificationSystem
+
+        nuovo_sistema = kwargs.get("default_classification_system")
+        cambia_sistema = nuovo_sistema is not None and ClassificationSystem.normalize(
+            nuovo_sistema
+        ) != ClassificationSystem.normalize(campionato.default_classification_system)
+        if cambia_sistema:
+            self._verifica_cambio_sistema(campionato)
+
         if not campionato.can_be_modified():
             raise ValueError(
                 "Impossibile modificare il campionato: "
@@ -208,8 +218,82 @@ class TournamentService(TournamentStatisticsService):
             if hasattr(campionato, field):
                 setattr(campionato, field, value)
 
+        if cambia_sistema:
+            self._propaga_sistema(campionato)
+
         campionato.updated_at = utc_now()
         return campionato
+
+    @staticmethod
+    def _gare_col_sistema_del_campionato(campionato: Campionato) -> list:
+        """Le gare che devono avere il sistema del campionato.
+
+        Fuori le eliminate e le annullate: nessuno le giocherà, e nessuna
+        classifica le somma.
+        """
+        from models.status_enum import GaraStatus
+
+        return [
+            gara
+            for gara in campionato.gare
+            if not gara.is_deleted and gara.status != GaraStatus.CANCELLED.value
+        ]
+
+    @classmethod
+    def _verifica_cambio_sistema(cls, campionato: Campionato) -> None:
+        """Il sistema di classifica si cambia solo prima delle iscrizioni.
+
+        Aperte le iscrizioni — o arrivato anche un solo iscritto, come in una
+        gara di playoff o per mano del direttore — cambiarlo vorrebbe dire
+        cambiare le regole a chi si è iscritto o ha già giocato
+        (SPECIFICHE.md riga 289).
+
+        Il controllo generale `can_be_modified` oggi blocca già quei casi, ma
+        per tutta la modifica e con un messaggio che non nomina il sistema:
+        questo resta anche se quel lucchetto un giorno si allenta.
+        """
+        from flask_babel import gettext as _
+        from models.status_enum import GaraStatus
+
+        for gara in cls._gare_col_sistema_del_campionato(campionato):
+            if gara.status != GaraStatus.SETUP.value or gara.inscriptions:
+                raise ValidationError(
+                    _(
+                        "Il sistema di classifica non si può più cambiare: la "
+                        "gara «%(gara)s» ha già aperto le iscrizioni o ha degli "
+                        "iscritti.",
+                        gara=gara.name,
+                    )
+                )
+
+    @classmethod
+    def _propaga_sistema(cls, campionato: Campionato) -> None:
+        """Porta il sistema nuovo del campionato a tutte le sue gare.
+
+        Arrivati qui sono tutte da aprire. Una gara che col sistema nuovo non
+        sarebbe valida — a triangoli totali la X semplice è vietata — ferma il
+        cambio intero: la transazione si annulla e il campionato non resta a
+        metà.
+        """
+        from flask_babel import gettext as _
+        from models.competition.validators import validate_gara
+        from models.matchmaking.configuration import resolve_classification_system
+
+        sistema = campionato.classification_system.value
+        for gara in cls._gare_col_sistema_del_campionato(campionato):
+            gara.classification_system = resolve_classification_system(
+                gara.matchmaking_strategy, sistema
+            )
+            errori, _avvisi = validate_gara(gara)
+            if errori:
+                raise ValidationError(
+                    _(
+                        "Con il nuovo sistema di classifica la gara «%(gara)s» "
+                        "non sarebbe valida: %(errori)s",
+                        gara=gara.name,
+                        errori="; ".join(errori),
+                    )
+                )
 
     @transactional(domain="campionato")
     def toggle_active_status(self, campionato_id: int) -> Campionato:

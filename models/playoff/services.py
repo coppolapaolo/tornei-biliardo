@@ -335,9 +335,21 @@ class PlayoffService:
             raise NotFoundError("Configurazione playoff non trovata")
 
         if final_ranking_mode is not None:
-            config.final_ranking_mode = PlayoffRankingMode.normalize(
-                final_ranking_mode
-            ).value
+            modalita = PlayoffRankingMode.normalize(final_ranking_mode)
+            # Si controlla il **passaggio** alla somma, non lo stato: il form
+            # rimanda la modalità a ogni salvataggio del peso, e una finale
+            # già incoerente — nata prima del 2026-09-14 — non deve impedire
+            # al direttore di cambiare il peso.
+            if (
+                modalita is PlayoffRankingMode.CAMPIONATO_PLUS_PLAYOFF
+                and config.decides_final_ranking
+            ):
+                PlayoffService._verifica_finale_sommabile(
+                    config,
+                    PlayoffService._sistema_della_finale(config).value,
+                    somma=True,
+                )
+            config.final_ranking_mode = modalita.value
 
         if playoff_weight is not None:
             weight = int(playoff_weight)
@@ -352,6 +364,62 @@ class PlayoffService:
         db.session.flush()
         PlayoffService._recalculate_campionato_classification(config.campionato_id)
         return config
+
+    @staticmethod
+    def _sistema_della_finale(config: PlayoffConfiguration):
+        """Il sistema di classifica che la finale ha, o avrebbe se la si creasse.
+
+        Una finale già creata ha il suo. Altrimenti lo decide la strategia —
+        esplicita o ereditata — con la stessa regola delle altre gare: il
+        tabellone è POSITION, il resto segue il campionato.
+        """
+        from ..matchmaking.configuration import (
+            MatchmakingStrategy,
+            resolve_classification_system,
+        )
+        from ..status_enum import ClassificationSystem
+
+        if config.gara is not None:
+            return ClassificationSystem.resolve(config.gara.classification_system)
+        strategia = (
+            config.get_gara_params().get("matchmaking_strategy")
+            or MatchmakingStrategy.AMALFI.value
+        )
+        return ClassificationSystem.resolve(
+            resolve_classification_system(
+                strategia, config.campionato.classification_system.value
+            )
+        )
+
+    @staticmethod
+    def _verifica_finale_sommabile(
+        config: PlayoffConfiguration, sistema_finale: str, somma: bool = False
+    ) -> None:
+        """Una finale che si somma al campionato deve contare la stessa cosa.
+
+        Vittorie e triangoli, o punti per posizione, non si sommano fra loro
+        (SPECIFICHE.md riga 289). Con «solo playoff» il vincolo non c'è: della
+        finale si legge solo l'ordine d'arrivo. `somma` dice che la modalità
+        sommata sta per essere scelta ora, invece che letta dalla
+        configurazione.
+        """
+        from flask_babel import gettext as _
+
+        from ..exceptions import ValidationError
+
+        if config.decides_final_ranking and not somma:
+            return
+        if sistema_finale == config.campionato.classification_system.value:
+            return
+        raise ValidationError(
+            _(
+                "Con «Campionato + gara di playoff» il punteggio della finale si "
+                "somma a quello del campionato, quindi deve usare lo stesso "
+                "sistema di classifica, e una finale a tabellone non si somma a "
+                "un campionato che non lo è. Scegli «Solo i playoff», dove della "
+                "finale conta solo l'ordine d'arrivo."
+            )
+        )
 
     @staticmethod
     def _recalculate_campionato_classification(campionato_id: Optional[int]) -> None:
@@ -1119,6 +1187,15 @@ class PlayoffService:
             if datetime.combine(gara_date, gara_time) < ultima:
                 gara_date, gara_time = ultima.date(), ultima.time()
 
+        # Il sistema della finale (SPECIFICHE.md riga 289). Fino al 2026-09-14
+        # non veniva passato e la gara prendeva il default della colonna, WINS:
+        # un campionato a triangoli totali si chiudeva con una finale a
+        # vittorie. Quando il punteggio si somma dev'essere quello del
+        # campionato; con «solo playoff» conta solo l'ordine d'arrivo, e un
+        # tabellone porta il suo.
+        classification_system = PlayoffService._sistema_della_finale(config).value
+        PlayoffService._verifica_finale_sommabile(config, classification_system)
+
         gara = GaraService.create_gara(
             number=max_number + 1,
             name=config.name,
@@ -1135,6 +1212,7 @@ class PlayoffService:
             # gare di serata, sei, e un playoff da quattro non partiva mai.
             min_participants=PLAYOFF_MIN_PARTICIPANTS,
             playoff_config_id=config.id,
+            classification_system=classification_system,
             # Il peso vive sulla gara, che è ciò che l'aggregatore legge; la
             # configurazione è il valore scelto dal direttore prima che la
             # gara esistesse.

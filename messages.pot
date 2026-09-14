@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-14 12:06+0200\n"
+"POT-Creation-Date: 2026-09-14 16:38+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,27 +17,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:266
+#: app.py:313
 msgid "Accedi per vedere questa pagina."
 msgstr ""
 
-#: app.py:813 templates/errors/403.html:3
+#: app.py:860 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
-#: app.py:831
+#: app.py:878
 msgid "Non è il tuo turno"
 msgstr ""
 
-#: app.py:832
+#: app.py:879
 msgid "Colpo irregolare"
 msgstr ""
 
-#: app.py:851
+#: app.py:898
 msgid "Operazione non consentita"
 msgstr ""
 
-#: app.py:865
+#: app.py:912
 msgid "Tiro non valido"
 msgstr ""
 
@@ -245,6 +245,20 @@ msgstr ""
 #: models/campionato/showcase_view.py:355
 #: models/competition/showcase_view.py:422
 msgid "Regolamento e informazioni"
+msgstr ""
+
+#: models/campionato/tournament_service.py:262
+#, python-format
+msgid ""
+"Il sistema di classifica non si può più cambiare: la gara «%(gara)s» ha "
+"già aperto le iscrizioni o ha degli iscritti."
+msgstr ""
+
+#: models/campionato/tournament_service.py:291
+#, python-format
+msgid ""
+"Con il nuovo sistema di classifica la gara «%(gara)s» non sarebbe valida:"
+" %(errori)s"
 msgstr ""
 
 #: models/challenge/models.py:288
@@ -2397,35 +2411,43 @@ msgstr ""
 msgid "La gara di playoff è già cominciata: l'invito non si può più accettare."
 msgstr ""
 
-#: models/playoff/services.py:809
+#: models/playoff/services.py:416
+msgid ""
+"Con «Campionato + gara di playoff» il punteggio della finale si somma a "
+"quello del campionato, quindi deve usare lo stesso sistema di classifica,"
+" e una finale a tabellone non si somma a un campionato che non lo è. "
+"Scegli «Solo i playoff», dove della finale conta solo l'ordine d'arrivo."
+msgstr ""
+
+#: models/playoff/services.py:877
 msgid "La scadenza degli inviti deve essere nel futuro."
 msgstr ""
 
-#: models/playoff/services.py:811
+#: models/playoff/services.py:879
 msgid "La data dei playoff deve essere nel futuro."
 msgstr ""
 
-#: models/playoff/services.py:839
+#: models/playoff/services.py:907
 msgid "La gara di playoff è già cominciata: data e scadenza non si cambiano più."
 msgstr ""
 
-#: models/playoff/services.py:1036
+#: models/playoff/services.py:1104
 #, python-format
 msgid "Invito Playoff — %(nome)s"
 msgstr ""
 
-#: models/playoff/services.py:1038
+#: models/playoff/services.py:1106
 #, python-format
 msgid ""
 "Sei stato qualificato per %(nome)s del campionato %(campionato)s. "
 "Conferma o rifiuta la partecipazione."
 msgstr ""
 
-#: models/playoff/services.py:1045 templates/individual_match/matches.html:160
+#: models/playoff/services.py:1113 templates/individual_match/matches.html:160
 msgid "Conferma o rifiuta"
 msgstr ""
 
-#: models/playoff/services.py:1222 models/playoff/services.py:1279
+#: models/playoff/services.py:1300 models/playoff/services.py:1357
 msgid "La gara di playoff è già cominciata: la lista non si modifica più."
 msgstr ""
 
