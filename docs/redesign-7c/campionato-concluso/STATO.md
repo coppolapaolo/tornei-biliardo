@@ -99,4 +99,4 @@ Bootstrap.
    - `components/_campionato_gare.html`;
    - `components/_campionato_stato.html`.
 
-   PR: *in apertura*.
+   PR: #419.
