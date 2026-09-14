@@ -224,9 +224,12 @@ def create_admin_if_not_exists():
         .first()
     )
     if existing_admin:
-        # In produzione, aggiorna sempre la password dalla configurazione
-        # per garantire che sia quella della variabile d'ambiente
-        if require_pwd and password:
+        # In produzione la password dell'admin è quella della variabile
+        # d'ambiente: la si riallinea, ma solo se è davvero diversa. Riscrivere
+        # lo stesso valore cambia comunque l'hash, perché il sale è casuale, e
+        # con l'hash cambia l'impronta di sessione dell'ADR-055: l'admin
+        # veniva scollegato a ogni avvio dell'app e a ogni scheduled task.
+        if require_pwd and password and not existing_admin.check_password(password):
             existing_admin.set_password(password)
         return existing_admin
 
