@@ -1522,6 +1522,9 @@ input[type="number"].form-control {
     padding: 14px var(--c7-gutter) 12px;
     background: var(--c7-bg);
   }
+  /* Dentro una pila (pagina del campionato) la distanza la da' gia' il gap:
+     il margine sotto raddoppierebbe lo spazio fra linguette e contenuto. */
+  .c7-stack > .c7-vtabs { margin-bottom: 0; }
   .c7-vtabs__tab {
     position: relative;
     flex: 1;

@@ -77,9 +77,15 @@
 {% else %}<span class="c7-state c7-state--muted">{{ _('In preparazione') }}</span>{% endif %}
 {%- endmacro %}
 
+{# Una pila sola per banner, fascia, linguette e colonne: la distanza fra la
+   fascia e cio' che segue la da' il gap, come nella pagina della gara
+   (`direttore/gara.html`). Senza, sul desktop la fascia toccava i titoli
+   delle colonne. #}
+<div class="c7-stack">
+
 {# Competizione di prova (ADR-058): il banner sta in cima, come sulla gara. #}
 {% if campionato.is_prova %}
-<div class="mb-4">
+<div>
   {% with prova_radice=campionato %}{% include "components/_prova_banner.html" %}{% endwith %}
 </div>
 {% endif %}
@@ -643,6 +649,8 @@
     </section>
   </div>
 </div>
+
+</div>{# fine della pila #}
 
 {# ---------- Fogli dei playoff: fuori dalle colonne a linguette ---------- #}
 {% if _fase_playoff and not _playoff_avviati and playoff_status and playoff_status.has_playoffs %}
