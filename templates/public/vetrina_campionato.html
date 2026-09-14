@@ -8,7 +8,13 @@
    Da lì viene la decisione che conta: la chiamata all'azione di un campionato
    **punta a una gara**. Non esiste «iscriviti al campionato»; ci si iscrive
    alla prova aperta, e se non ce n'è nessuna la pagina lo dice invece di
-   mostrare un pulsante che non porta da nessuna parte. #}
+   mostrare un pulsante che non porta da nessuna parte.
+
+   A campionato concluso (canvas «campionato-concluso», forma A) la targa
+   annuncia il campione, con secondo e terzo sotto; la classifica diventa
+   quella finale e sul telefono sale sopra le gare, sul desktop prende la
+   colonna di destra. Il riquadro delle iscrizioni non ha piu' niente da
+   dire: restano «Condividi» e chi organizza. #}
 
 {% block title %}{{ vetrina.titolo }} - {{ config.APP_NAME }}{% endblock %}
 
@@ -34,7 +40,38 @@
 {% endblock %}
 
 {% block content %}
-<div class="c7-vt">
+{% set concluso = vetrina.concluso %}
+
+{# La classifica si scrive una volta sola e si mette dove serve: a campionato
+   concluso sta in due punti — prima delle gare sul telefono, nella colonna di
+   destra sul desktop — e due copie scritte a mano finirebbero per divergere.
+   Nessun `id` e nessuno script dentro, quindi ripeterla e' innocuo. #}
+{% macro classifica(classe='') %}
+{% if vetrina.classifica %}
+<div class="c7-vt__sec{% if classe %} {{ classe }}{% endif %}">
+  <div class="c7-vt__sechead">
+    {% if vetrina.concluso %}
+    <h2>{{ _("Classifica finale") }}</h2>
+    <span>{{ _("definitiva") }}</span>
+    {% else %}
+    <h2>{{ _("Classifica") }}</h2>
+    <span>{{ _("dopo %(gare)s", gare=vetrina.conteggio_giocate.gare_testo) }}</span>
+    {% endif %}
+  </div>
+  <div class="c7-vt__std">
+    {% for riga in vetrina.classifica %}
+    <div class="c7-vt__stdr{% if riga.posizione <= 3 %} c7-vt__stdr--podio{% endif %}">
+      <span class="c7-vt__stdp">{{ riga.posizione }}</span>
+      <span class="c7-vt__stdn">{{ riga.nome }}</span>
+      <span class="c7-vt__stdv">{{ riga.valore }} <small>{{ riga.unita }}</small></span>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+{% endmacro %}
+
+<div class="c7-vt{% if concluso %} c7-vt--concluso{% endif %}">
 
   <div class="c7-vt__bar">
     <a class="c7-vt__mark" href="{{ url_for('main.index') }}">{{ config.APP_NAME }}</a>
@@ -52,7 +89,7 @@
       </div>
 
       <div class="c7-vt__plate">
-        <div class="c7-vt__ovr">{{ _("Campionato") }}</div>
+        <div class="c7-vt__ovr">{% if concluso %}{{ _("Campionato concluso") }}{% else %}{{ _("Campionato") }}{% endif %}</div>
         <h1 class="c7-vt__title">{{ vetrina.titolo }}</h1>
         {% if vetrina.periodo or vetrina.prove_totali %}
         <div class="c7-vt__when">
@@ -63,11 +100,31 @@
           {% endif %}
         </div>
         {% endif %}
+        {% if concluso %}
+        {% if vetrina.podio %}
+        {% set campione = vetrina.podio[0] %}
+        <div class="c7-campione c7-vt__campione">
+          <span class="c7-avatar c7-avatar--oro c7-campione__av" aria-hidden="true">{{ campione.iniziali }}</span>
+          <div class="c7-campione__testo">
+            <div class="c7-vt__ovr c7-campione__k">{{ _("Campione") }}</div>
+            <div class="c7-campione__nome">{{ campione.nome }}</div>
+          </div>
+        </div>
+        {% if vetrina.podio|length > 1 %}
+        <div class="c7-campione__podio">
+          {% for posto in vetrina.podio[1:] %}
+          <span class="c7-campione__alt"><span class="c7-pos c7-pos--{{ posto.posizione }}">{{ posto.posizione }}</span>{{ posto.nome }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% endif %}
+        {% else %}
         <div>
           <span class="c7-vt__badge{% if vetrina.stato_tono %} c7-vt__badge--{{ vetrina.stato_tono }}{% endif %}">
             {{ vetrina.stato_testo }}
           </span>
         </div>
+        {% endif %}
       </div>
 
       <dl class="c7-vt__facts">
@@ -92,6 +149,8 @@
       {% if vetrina.descrizione %}
       <p class="c7-vt__desc">{{ vetrina.descrizione }}</p>
       {% endif %}
+
+      {% if concluso %}{{ classifica('d-lg-none') }}{% endif %}
 
       {% if vetrina.calendario %}
       <div class="c7-vt__sec">
@@ -125,27 +184,18 @@
       </div>
       {% endif %}
 
-      {% if vetrina.classifica %}
-      <div class="c7-vt__sec">
-        <div class="c7-vt__sechead">
-          <h2>{{ _("Classifica") }}</h2>
-          <span>{{ _("dopo %(gare)s", gare=vetrina.conteggio_giocate.gare_testo) }}</span>
-        </div>
-        <div class="c7-vt__std">
-          {% for riga in vetrina.classifica %}
-          <div class="c7-vt__stdr{% if riga.posizione <= 3 %} c7-vt__stdr--podio{% endif %}">
-            <span class="c7-vt__stdp">{{ riga.posizione }}</span>
-            <span class="c7-vt__stdn">{{ riga.nome }}</span>
-            <span class="c7-vt__stdv">{{ riga.valore }} <small>{{ riga.unita }}</small></span>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
+      {% if not concluso %}{{ classifica() }}{% endif %}
 
     </div>
 
     <div class="c7-vt__rail">
+      {% if concluso %}
+      {{ classifica('d-none d-lg-block') }}
+      <button type="button" class="c7-vt__out c7-vt__out--condividi" data-condividi>
+        <i class="fa-solid fa-share-nodes"></i>
+        <span>{{ _("Condividi il campionato") }}</span>
+      </button>
+      {% else %}
       <div class="c7-vt__panel">
         {% if vetrina.prossima %}
         <div class="c7-vt__sechead"><span>{{ _("Prossima gara") }}</span></div>
@@ -184,6 +234,7 @@
           {% endif %}
         </div>
       </div>
+      {% endif %}
 
       {% if vetrina.link_esterno %}
       <a class="c7-vt__out" href="{{ vetrina.link_esterno }}" target="_blank" rel="noopener noreferrer">

@@ -1522,6 +1522,9 @@ input[type="number"].form-control {
     padding: 14px var(--c7-gutter) 12px;
     background: var(--c7-bg);
   }
+  /* Dentro una pila (pagina del campionato) la distanza la da' gia' il gap:
+     il margine sotto raddoppierebbe lo spazio fra linguette e contenuto. */
+  .c7-stack > .c7-vtabs { margin-bottom: 0; }
   .c7-vtabs__tab {
     position: relative;
     flex: 1;
@@ -3575,6 +3578,58 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 .c7-cgara__link { color: inherit; text-decoration: none; }
 .c7-cgara__link:hover .c7-rows__title { text-decoration: underline; }
 .c7-cgara__peso { height: 20px; padding: 0 7px; font-size: 10px; vertical-align: middle; }
+/* --------------------------------------------------------------------------
+   28b. Il campione di un campionato concluso (canvas «campionato-concluso»)
+   Lo stesso blocco sulla targa scura della vetrina e nella fascia della
+   pagina del direttore: avatar oro, «Campione», il nome grande; secondo e
+   terzo sotto, con i chip delle medaglie (`.c7-pos`). Sul desktop della
+   pagina del direttore secondo e terzo stanno a destra nella fascia.
+   -------------------------------------------------------------------------- */
+.c7-avatar--oro { background: var(--c7-oro); color: var(--c7-oro-ink); }
+.c7-campione { margin-top: 14px; display: flex; align-items: center; gap: 13px; }
+.c7-campione__av { width: 52px; height: 52px; font-size: 15px; }
+.c7-campione__testo { min-width: 0; }
+/* Il kicker della card accento e' forzato al tono spento: qui e' oro. */
+.c7-card--accent .c7-kicker.c7-campione__k,
+.c7-vt__ovr.c7-campione__k { color: var(--c7-oro) !important; }
+.c7-campione__nome {
+  margin-top: 3px; font-size: 22px; font-weight: 800; letter-spacing: -.03em;
+  line-height: 1.1; overflow-wrap: anywhere;
+}
+.c7-campione__podio { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.c7-campione__alt {
+  display: inline-flex; align-items: center; gap: 8px; min-width: 0;
+  font-size: 13px; font-weight: 700; color: var(--c7-accent-dim); overflow-wrap: anywhere;
+}
+/* Sulla targa un filetto separa titolo e periodo dal campione. */
+.c7-vt__campione { margin-top: 18px; padding-top: 16px; border-top: 1px solid rgba(255, 255, 255, .14); }
+.c7-vt__plate .c7-campione__nome { color: var(--c7-on-ink); }
+.c7-vt__plate .c7-campione__alt { color: var(--c7-on-ink-muted); }
+
+/* Senza la barra dell'iscrizione che galleggia in fondo, la pagina non ha
+   bisogno del suo spazio; «Condividi» e' un comando della pagina. */
+.c7-public .c7-vt--concluso { padding-bottom: 40px; }
+.c7-vt__out--condividi {
+  width: 100%; margin-top: 28px; justify-content: center; gap: 9px;
+  background: transparent; font-family: var(--c7-font); font-size: 15px; cursor: pointer;
+}
+
+@media (min-width: 992px) {
+  .c7-fascia .c7-campione { margin-top: 12px; gap: 16px; }
+  .c7-fascia .c7-campione__av { width: 60px; height: 60px; font-size: 17px; }
+  .c7-fascia .c7-campione__nome { font-size: 28px; }
+  .c7-fascia .c7-campione__podio {
+    margin-top: 0; flex-direction: column; gap: 12px; min-width: 190px; flex-shrink: 0;
+  }
+  .c7-campione__alt { font-size: 15px; }
+  .c7-vt__campione { margin-top: 24px; padding-top: 22px; gap: 16px; }
+  .c7-vt__campione .c7-campione__av { width: 64px; height: 64px; font-size: 18px; }
+  .c7-vt__campione .c7-campione__nome { font-size: 30px; }
+  .c7-vt__plate .c7-campione__podio { gap: 10px 26px; }
+  .c7-public .c7-vt--concluso { padding-bottom: 0; }
+  .c7-vt__rail > .c7-vt__sec:first-child { margin-top: 0; }
+}
+
 .c7-invitato { gap: 10px; flex-wrap: wrap; }
 .c7-invitato__azioni { display: flex; align-items: center; gap: 6px; margin-left: auto; }
 .c7-invitato__azioni form { margin: 0; }

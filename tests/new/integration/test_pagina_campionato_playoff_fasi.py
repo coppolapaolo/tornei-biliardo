@@ -88,12 +88,13 @@ def test_a_finale_conclusa_il_campionato_e_concluso(client, db_session):
 
     html = _pagina(client, dati)
 
-    assert "Campionato concluso" in html and "Classifica definitiva" in html
+    assert "Campionato concluso" in html
     assert "Fase playoff" not in html
     assert "Vai alla gara playoff" not in html
     assert "c7-invitato" not in html
-    # Resta la strada per rileggere com'è andata la finale.
-    assert "Risultati della finale" in html
+    # La finale sta fra le gare come le altre (canvas «campionato-concluso»):
+    # il pulsante «Risultati della finale» non serve più.
+    assert "Risultati della finale" not in html
     assert f"/admin/gara/{gara.id}" in html
     # La linguetta «Playoff» del telefono torna a essere «Gestione».
     assert 'data-c7-tab-btn="playoff"' not in html

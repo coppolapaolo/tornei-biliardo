@@ -479,12 +479,23 @@ def campionato_detail(campionato_id):
 
     # La zona playoff nella classifica generale (canvas 7.1): chi verrebbe
     # invitato, o chi lo e' stato. Senza configurazioni non c'e' zona.
+    from models.campionato.esito import (
+        campionato_concluso,
+        podio_da_classifica,
+        vincitori_delle_gare,
+    )
     from models.playoff.fase import FasePlayoff, fase_playoff
     from models.playoff.zona import zone_playoff
 
+    # A campionato concluso (canvas «campionato-concluso») la fascia annuncia
+    # il campione — il primo della classifica, non il vincitore della finale —
+    # e la classifica perde la zona playoff, che non segna più niente.
+    concluso = campionato_concluso(campionato)
     zone = (
         zone_playoff(campionato)
-        if general_classification and campionato.has_playoff_configurations()
+        if general_classification
+        and campionato.has_playoff_configurations()
+        and not concluso
         else []
     )
 
@@ -510,6 +521,11 @@ def campionato_detail(campionato_id):
         # A che punto sono i playoff: la fascia e gli invitati ne dipendono.
         fase_playoff=fase_playoff(campionato),
         FasePlayoff=FasePlayoff,
+        concluso=concluso,
+        podio=podio_da_classifica(general_classification) if concluso else [],
+        # Chi ha vinto ogni gara conclusa, finale compresa: la stessa query
+        # della vetrina.
+        vincitori_gare=vincitori_delle_gare(gare),
         campionato_players=campionato_players,
         # La data con cui il modale «Nuova gara» si presenta: oggi o una
         # settimana dopo l'ultima; in una prova, domani o il giorno dopo

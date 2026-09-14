@@ -248,9 +248,11 @@ blocks:
     title: "Il campionato si chiude da solo"
     text: >-
       Quando tutte le gare di playoff sono concluse, la fascia dice
-      **Campionato concluso · Classifica definitiva**, con il vincitore di
-      ogni playoff e il pulsante **Risultati della finale**. Non c'è niente da
-      premere: il campionato risulta completato da solo.
+      **Campionato concluso** e mostra il campione — il primo della
+      **Classifica finale** — con secondo e terzo. La finale resta fra le
+      gare, con chi l'ha vinta, come le altre. Non c'è niente da premere: il
+      campionato risulta completato da solo, e la vetrina annuncia il
+      campione allo stesso modo.
 
   - type: faq
     items:
