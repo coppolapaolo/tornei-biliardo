@@ -731,6 +731,19 @@
 
     <!-- Gamification Animations JS -->
     <script src="{{ url_for('static', filename='js/gamification.js') }}?v={{ config.ASSET_VERSION }}"></script>
+    {# Quando la sessione finisce il poll risponde 401: polling.js si ferma e
+       mostra l'avviso. I testi passano di qui perché nessuna stringa visibile
+       vive nel JS; il login riporta sulla pagina corrente. #}
+    <script type="application/json" id="polling-config">
+    {
+        "login_url": {{ url_for('auth.login') | tojson }},
+        "i18n": {
+            "title": {{ _("La sessione è scaduta") | tojson }},
+            "text": {{ _("Gli aggiornamenti in tempo reale si sono fermati: accedi di nuovo per riprenderli.") | tojson }},
+            "action": {{ _("Accedi di nuovo") | tojson }}
+        }
+    }
+    </script>
     <!-- Polling utility for real-time updates (replaces SSE) -->
     <script src="{{ url_for('static', filename='js/polling.js') }}?v={{ config.ASSET_VERSION }}"></script>
     {# La cifra del punteggio che cambia salta: sul tabellone via

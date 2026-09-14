@@ -12,7 +12,10 @@
  *   dell'ultimo evento visto. Resta fermo quando non arriva niente;
  * - `retention` è per quanti secondi il server conserva gli eventi. Una
  *   scheda rimasta nascosta più a lungo non può recuperarli: al ritorno in
- *   primo piano si chiama `onGap` (per reloadOnEvents: si ricarica).
+ *   primo piano si chiama `onGap` (per reloadOnEvents: si ricarica);
+ * - un 401 vuol dire che la sessione è finita: il poller si ferma e la pagina
+ *   lo dice una volta sola, qualunque sia il numero di poller. Riprovare non
+ *   serve a niente — ed è ciò che faceva prima, ogni tre secondi, per sempre.
  */
 
 window.Polling = (function() {
@@ -20,6 +23,56 @@ window.Polling = (function() {
 
     var DEFAULT_INTERVAL = 3000;   // ms fra un poll e l'altro
     var DEFAULT_RETENTION = 60;    // s; il server manda il valore vero a ogni risposta
+    var CONFIG_ID = 'polling-config';
+    var AVVISO_ID = 'c7-session-expired';
+
+    /**
+     * L'avviso «la sessione è scaduta», uno per pagina.
+     *
+     * I testi e l'indirizzo del login arrivano da `#polling-config` in
+     * base.html: nessuna stringa visibile vive nel JS. Il link riporta sulla
+     * pagina corrente dopo l'accesso.
+     */
+    function avvisaSessioneScaduta() {
+        if (document.getElementById(AVVISO_ID)) return;
+        var nodo = document.getElementById(CONFIG_ID);
+        var config = null;
+        try {
+            config = nodo ? JSON.parse(nodo.textContent || '{}') : null;
+        } catch (e) {
+            config = null;
+        }
+        if (!config || !config.i18n || !config.login_url) {
+            console.warn('[Polling] session expired, polling stopped');
+            return;
+        }
+
+        var avviso = document.createElement('div');
+        avviso.id = AVVISO_ID;
+        avviso.className = 'c7-session-expired';
+        avviso.setAttribute('role', 'alert');
+
+        var titolo = document.createElement('div');
+        titolo.className = 'c7-session-expired__title';
+        titolo.textContent = config.i18n.title;
+
+        var testo = document.createElement('p');
+        testo.className = 'c7-session-expired__text';
+        testo.textContent = config.i18n.text;
+
+        var azione = document.createElement('a');
+        azione.className = 'btn btn-dark c7-session-expired__action';
+        azione.setAttribute(
+            'href',
+            config.login_url + '?next=' + encodeURIComponent(location.pathname + location.search)
+        );
+        azione.textContent = config.i18n.action;
+
+        avviso.appendChild(titolo);
+        avviso.appendChild(testo);
+        avviso.appendChild(azione);
+        document.body.appendChild(avviso);
+    }
 
     /**
      * Crea un poller per uno scope.
@@ -68,10 +121,19 @@ window.Polling = (function() {
             inFlight = true;
             fetch(url + (primo ? '' : '?since=' + cursor))
                 .then(function(response) {
+                    // Sessione finita. `redirected` copre chi manda ancora al
+                    // login con un 302: fetch lo segue e consegna il 200 della
+                    // pagina di login, che `ok` non distingue da un poll vero.
+                    if (response.status === 401 || response.redirected) {
+                        stop();
+                        avvisaSessioneScaduta();
+                        return null;
+                    }
                     if (!response.ok) throw new Error('Poll failed: ' + response.status);
                     return response.json();
                 })
                 .then(function(result) {
+                    if (!result) return;
                     cursor = result.cursor;
                     if (result.retention) retention = result.retention;
                     // Al primo giro il server non manda eventi; se mai lo
@@ -103,6 +165,15 @@ window.Polling = (function() {
             poll();
         }
 
+        function stop() {
+            running = false;
+            document.removeEventListener('visibilitychange', onVisibilityChange);
+            if (timerId) {
+                clearInterval(timerId);
+                timerId = null;
+            }
+        }
+
         return {
             start: function() {
                 if (running) return;
@@ -112,14 +183,7 @@ window.Polling = (function() {
                 setTimeout(poll, 500);
                 timerId = setInterval(poll, interval);
             },
-            stop: function() {
-                running = false;
-                document.removeEventListener('visibilitychange', onVisibilityChange);
-                if (timerId) {
-                    clearInterval(timerId);
-                    timerId = null;
-                }
-            }
+            stop: stop
         };
     }
 
