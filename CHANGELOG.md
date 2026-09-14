@@ -19,6 +19,11 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **Il direttore che non dirige un campionato non aveva «Dettagli» sulle
+  tessere delle sue gare**, nemmeno su quella a cui era iscritto: restava solo
+  «Disiscriviti», senza una via per l'elenco degli iscritti, e sul campionato
+  un pulsante «Classifica» spento. Le pagine sono aperte a tutti, e ora i
+  pulsanti ci sono per tutti.
 - **La barra della zona playoff saltava dei giocatori**: nella classifica
   generale segnava chi era fra i primi in un ricalcolo vecchio delle righe
   persistite, ferme a prima dell'ultima gara, e non chi è fra i primi nella

@@ -70,18 +70,21 @@ def build_unified_items(
             next_date = None
 
         can_manage = False
+        # La pagina del campionato e quelle delle sue gare sono aperte a
+        # chiunque, anonimo compreso (ADR-028): il flag qui è sempre vero.
+        # Fino al 14/09/2026 il direttore che **non** dirigeva il campionato
+        # aveva `can_view_details = is_co_director`, cioè falso: la tessera
+        # della gara a cui era iscritto mostrava solo «Disiscriviti», senza
+        # via per arrivare all'elenco degli iscritti, e quella del campionato
+        # un pulsante «Classifica» spento. Un giocatore nello stesso posto
+        # vedeva entrambi. Regola nata col refactor del 07/02/2026, prima che
+        # la pagina della gara fosse unificata.
         can_view_details = True
 
         if user_role == UserRole.ADMIN.value:
             can_manage = True
         elif user_role == UserRole.DIRECTOR.value and user_id:
-            is_co_director = campionato.id in user_assignments["campionato"]
-            can_manage = is_co_director
-            can_view_details = is_co_director
-        elif user_role == UserRole.PLAYER.value:
-            can_view_details = True
-        elif user_role == UserRole.GUEST.value:
-            can_view_details = True
+            can_manage = campionato.id in user_assignments["campionato"]
 
         if next_date:
             sort_key = f"{next_date.strftime('%Y-%m-%d')}_campionato_{campionato.id}"
