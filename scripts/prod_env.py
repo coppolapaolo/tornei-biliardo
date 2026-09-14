@@ -148,4 +148,8 @@ def bootstrap_and_create_app(
     # Import ritardato di proposito: vedi docstring.
     from app import create_app
 
-    return create_app(config_name or os.environ.get("FLASK_ENV", "production"))
+    # `da_script`: l'app non riporta il log a WARNING, come fa per il server
+    # web — lo script lo ha alzato a INFO per il proprio resoconto.
+    return create_app(
+        config_name or os.environ.get("FLASK_ENV", "production"), da_script=True
+    )

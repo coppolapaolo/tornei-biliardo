@@ -153,9 +153,10 @@ def test_bootstrap_and_create_app_carica_le_env_prima_di_creare_l_app():
     """
     visto = {}
 
-    def registra_ambiente(config_name=None):
+    def registra_ambiente(config_name=None, da_script=False):
         visto["SECRET_KEY"] = os.environ.get("SECRET_KEY")
         visto["config_name"] = config_name
+        visto["da_script"] = da_script
         return "app-finta"
 
     import app as app_module
@@ -174,6 +175,10 @@ def test_bootstrap_and_create_app_carica_le_env_prima_di_creare_l_app():
     assert risultato == "app-finta"
     assert visto["SECRET_KEY"] == "dal-wsgi"
     assert visto["config_name"] == "production"
+    # Gli script fanno `basicConfig(INFO)` per il loro resoconto: il bootstrap
+    # lo dice a `create_app`, che altrimenti riporterebbe il log a WARNING
+    # come fa col server web di produzione.
+    assert visto["da_script"] is True
 
 
 def test_bootstrap_and_create_app_si_ferma_senza_le_variabili_richieste():
