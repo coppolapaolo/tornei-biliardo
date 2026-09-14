@@ -300,7 +300,6 @@ def create_app(config_name=None):
         return {
             "can_inscribe": UserPermissions.can_inscribe_to_gara(),
             "can_view_profile": UserPermissions.can_view_profile(),
-            "can_delete_account": UserPermissions.can_delete_account(),
             "show_admin_management": UserPermissions.show_admin_management(),
             "show_director_management": UserPermissions.show_director_management(),
             "is_player": current_user.is_authenticated and current_user.is_player,

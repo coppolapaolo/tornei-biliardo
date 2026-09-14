@@ -40,13 +40,6 @@
         </a>
     </li>
 
-    {% if can_delete_account and feature_visible('player.delete_account') %}
-    <li>
-        <a class="dropdown-item text-danger" href="{{ url_for('player.delete_account') }}">
-            <i class="fas fa-trash"></i>{{ _('Elimina Account') }}
-        </a>
-    </li>
-    {% endif %}
     <li>
         <a class="dropdown-item" href="{{ url_for('auth.logout') }}">
             <i class="fas fa-right-from-bracket"></i>{{ _('Logout') }}
