@@ -462,11 +462,6 @@ class UserPermissions:
         return current_user.is_authenticated and not current_user.is_admin
 
     @staticmethod
-    def can_delete_account():
-        """Check if current user can delete their account."""
-        return current_user.is_authenticated and not current_user.is_admin
-
-    @staticmethod
     def show_admin_management():
         """Check if admin management UI should be shown."""
         return current_user.is_authenticated and current_user.is_admin
