@@ -215,14 +215,53 @@ def campionato_detail_public(campionato_id):
     if gare_concluse:
         last_completed_gara_number = max(g.number for g in gare_concluse)
 
-    # La stessa zona playoff della pagina del direttore: e' un fatto pubblico
-    # quanto la classifica (canvas 7.1).
+    # La pagina del direttore in sola lettura (canvas «campionato-concluso»,
+    # decisione del 2026-09-14): stessa fascia, stessa classifica, stesse
+    # gare, con le stesse regole — `esito` per il campione e i vincitori,
+    # `fase` per i playoff, `zona` per chi va ai playoff.
+    from models.campionato.esito import (
+        campionato_concluso,
+        podio_da_classifica,
+        vincitori_delle_gare,
+    )
+    from models.campionato.showcase_view import (
+        formula_classifica,
+        giocatori_del_campionato,
+    )
+    from models.playoff.fase import FasePlayoff, fase_playoff
     from models.playoff.zona import zone_playoff
 
+    concluso = campionato_concluso(campionato)
+    # La zona playoff e' un fatto pubblico quanto la classifica (canvas 7.1);
+    # a campionato concluso non segna piu' niente.
     zone = (
         zone_playoff(campionato)
-        if general_classification and campionato.has_playoff_configurations()
+        if general_classification
+        and campionato.has_playoff_configurations()
+        and not concluso
         else []
+    )
+
+    # A che punto sono gli inviti, per la fascia. Solo lettura: niente
+    # `expire_old_qualifications`, che la pagina del direttore chiama al
+    # caricamento e che scrive — una pagina aperta agli anonimi no.
+    playoff_status = None
+    if campionato.terminated_at and campionato.has_playoff_configurations():
+        from models.playoff.services import PlayoffService
+
+        playoff_status = PlayoffService.get_campionato_playoff_status(campionato_id)
+
+    # Il link alla vetrina, se il campionato ne ha uno. Mai per una prova
+    # (ADR-058), che da fuori non deve esistere.
+    identificatore = campionato.public_slug_or_token
+    vetrina_url = (
+        url_for("main.campionato_invite", identificatore=identificatore)
+        if identificatore and not campionato.is_prova
+        else None
+    )
+    sala = campionato.default_venue
+    sede = (
+        " · ".join(p for p in (sala.name, sala.city) if p) if sala is not None else None
     )
 
     return render_template(
@@ -232,6 +271,16 @@ def campionato_detail_public(campionato_id):
         general_classification=general_classification,
         last_completed_gara_number=last_completed_gara_number,
         zone_playoff=zone,
+        fase_playoff=fase_playoff(campionato),
+        FasePlayoff=FasePlayoff,
+        playoff_status=playoff_status,
+        concluso=concluso,
+        podio=podio_da_classifica(general_classification) if concluso else [],
+        vincitori_gare=vincitori_delle_gare(gare),
+        formula=formula_classifica(campionato),
+        giocatori=giocatori_del_campionato(campionato.id),
+        sede=sede,
+        vetrina_url=vetrina_url,
     )
 
 

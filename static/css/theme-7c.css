@@ -1555,7 +1555,9 @@ input[type="number"].form-control {
   [data-c7-view="gestione"] [data-c7-tab]:not([data-c7-tab~="gestione"]),
   /* Le viste della pagina del campionato (canvas 7.1 e 7.2). */
   [data-c7-view="gare"] [data-c7-tab]:not([data-c7-tab~="gare"]),
-  [data-c7-view="playoff"] [data-c7-tab]:not([data-c7-tab~="playoff"]) {
+  [data-c7-view="playoff"] [data-c7-tab]:not([data-c7-tab~="playoff"]),
+  /* La pagina pubblica del campionato: «Il campionato» al posto di Gestione. */
+  [data-c7-view="campionato"] [data-c7-tab]:not([data-c7-tab~="campionato"]) {
     display: none !important;
   }
 

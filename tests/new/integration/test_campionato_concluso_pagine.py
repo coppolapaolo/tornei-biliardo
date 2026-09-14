@@ -184,12 +184,15 @@ class TestVetrina:
         assert "Nessuna gara ha le iscrizioni aperte" in html
 
 
-def test_la_pagina_pubblica_del_campionato_resta_quella_di_prima(client, db_session):
-    """Il componente della classifica è incluso anche lì, senza la variante."""
+def test_la_pagina_pubblica_del_campionato_annuncia_il_campione(client, db_session):
+    """Dal 2026-09-14 la pagina pubblica è quella del direttore in sola
+    lettura: stessa fascia, stessa classifica finale. Il resto sta in
+    `test_campionato_pagina_pubblica_7c.py`."""
     dati = _concluso(db_session)
 
     risposta = client.get(f"/campionato/{dati['campionato'].id}/public")
 
     assert risposta.status_code == 200
-    html = risposta.get_data(as_text=True)
-    assert "Classifica generale" in html
+    html = _senza_debug(risposta.get_data(as_text=True))
+    assert dati["d"].username in _fascia(html).split("c7-campione__nome")[1]
+    assert "Classifica finale" in html

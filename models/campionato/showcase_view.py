@@ -169,8 +169,10 @@ def _tappa(gara, vincitori: Dict[int, str], iscritti: Dict[int, int]) -> TappaVe
     )
 
 
-def _formula(campionato) -> str:
+def formula_classifica(campionato) -> str:
     """Su cosa si ordina la classifica, detto a chi non conosce l'app.
+
+    La mostrano la vetrina e la pagina pubblica del campionato.
 
     Si legge `classification_system` e **non** `campionato_type` (ADR-047): il
     tipo dice come si formano gli abbinamenti, il sistema su cosa si ordina, e
@@ -187,11 +189,27 @@ def _formula(campionato) -> str:
     return _("Classifica a vittorie")
 
 
+def giocatori_del_campionato(campionato_id: int) -> int:
+    """Quanti giocatori diversi si sono iscritti ad almeno una gara.
+
+    Lo stesso numero nella vetrina e nella pagina pubblica del campionato.
+    """
+    from models.competition.models import Gara, Inscription
+
+    return (
+        db.session.query(db.func.count(db.distinct(Inscription.user_id)))
+        .join(Gara, Inscription.gara_id == Gara.id)
+        .filter(Gara.campionato_id == campionato_id)
+        .scalar()
+        or 0
+    )
+
+
 def _classifica(campionato, generale) -> List[RigaClassifica]:
     """La classifica generale, ridotta alle colonne che stanno su un telefono.
 
     Il numero mostrato dipende dal sistema, per la stessa ragione di
-    `_formula`: mostrare le vittorie in un campionato che ordina per triangoli
+    `formula_classifica`: mostrare le vittorie in un campionato che ordina per triangoli
     darebbe una lista che sembra ordinata male.
     """
     sistema = ClassificationSystem.resolve(
@@ -289,13 +307,7 @@ def costruisci_vetrina_campionato(campionato) -> VetrinaCampionato:
     vincitori = vincitori_delle_gare(gare)
     calendario = [_tappa(g, vincitori, conteggi) for g in gare]
 
-    giocatori = (
-        db.session.query(db.func.count(db.distinct(Inscription.user_id)))
-        .join(Gara, Inscription.gara_id == Gara.id)
-        .filter(Gara.campionato_id == campionato.id)
-        .scalar()
-        or 0
-    )
+    giocatori = giocatori_del_campionato(campionato.id)
 
     sala = getattr(campionato, "default_venue", None)
     banner = campionato.banner_path
@@ -323,7 +335,7 @@ def costruisci_vetrina_campionato(campionato) -> VetrinaCampionato:
         periodo=_periodo(gare),
         sede=getattr(sala, "name", None) if sala is not None else None,
         citta=getattr(sala, "city", None) if sala is not None else None,
-        formula=_formula(campionato),
+        formula=formula_classifica(campionato),
         giocatori=giocatori,
         prove_totali=sum(1 for t in calendario if not t.gara.is_playoff),
         prove_giocate=sum(

@@ -1,0 +1,33 @@
+{# templates/components/_campionato_stato.html — Design System 7c
+
+   A che punto e' un campionato, detto una volta sola per le due pagine che
+   lo mostrano: quella di chi lo dirige (`admin/campionato_detail.html`) e
+   quella pubblica di chi usa l'app (`public/campionato_detail.html`).
+   Non disegna niente: si importa `with context` e se ne leggono i nomi.
+
+       {% import "components/_campionato_stato.html" as stato with context %}
+       {% if stato.fase_playoff %} ...
+
+   I nomi non cominciano con `_`: Jinja non esporta dal modulo quelli che
+   cominciano cosi'.
+
+   Attesi dal contesto: campionato, gare, fase_playoff (da
+   `models/playoff/fase.py`), FasePlayoff, playoff_status (o None).
+
+   La finale dei playoff non e' una delle gare previste: si conta a parte
+   (`campionato.conteggio_gare`, SPECIFICHE.md nota del 2026-09-14). #}
+{% set regolari = gare | rejectattr('is_playoff') | list %}
+{% set giocate = regolari | selectattr('status', 'equalto', GaraStatus.COMPLETED.value) | sort(attribute='number') | list %}
+{% set in_corso = gare | selectattr('status', 'in', [GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value]) | sort(attribute='number') | list %}
+{% set prossime = gare | selectattr('status', 'in', [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value]) | sort(attribute='number') | list %}
+{% set previste = campionato.planned_gare_count or regolari|length %}
+{% set cfg_attive = (campionato.playoff_configurations or []) | selectattr('is_active') | list %}
+{# A playoff conclusi il campionato e' Completato: la fascia lo constata come
+   per un campionato senza playoff. A finale cominciata gli invitati
+   spariscono. #}
+{% set playoff_conclusi = fase_playoff == FasePlayoff.CONCLUSI %}
+{% set playoff_in_corso = fase_playoff == FasePlayoff.IN_CORSO %}
+{% set in_fase_playoff = true if (campionato.terminated_at and campionato.has_playoff_configurations() and not playoff_conclusi) else false %}
+{% set playoff_avviati = true if (playoff_status and playoff_status.total_qualified > 0) else false %}
+{% set configurazioni = playoff_status.configurations if playoff_status else [] %}
+{% set una_sola = configurazioni|length == 1 %}

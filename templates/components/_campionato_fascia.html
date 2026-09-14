@@ -1,0 +1,120 @@
+{# templates/components/_campionato_fascia.html — Design System 7c
+
+   La fascia in cima alla pagina di un campionato (canvas «Pagina gara del
+   direttore» 7.1–7.4 e «campionato-concluso», forma A): dice a che punto e'
+   la stagione.
+
+   * stagione in corso: gare giocate su previste, la prossima;
+   * fase playoff: da avviare, inviti, finale in corso, con i confermati, la
+     scadenza e la data;
+   * concluso: il campione — il primo della classifica finale, che con
+     «campionato + playoff» puo' non essere chi ha vinto la finale — con
+     secondo e terzo sotto, a destra sul desktop.
+
+   La includono la pagina del direttore e quella pubblica. Con `sola_lettura`
+   (la pubblica) sparisce l'unico comando — Nuova gara, Avvia i playoff, Crea
+   la gara playoff — e la frase rivolta a chi dirige.
+
+   Attesi: campionato, gare, fase_playoff, FasePlayoff, playoff_status,
+   concluso, podio; opzionale sola_lettura. #}
+{% import "components/_campionato_stato.html" as stato with context %}
+{% set _sola_lettura = sola_lettura is defined and sola_lettura %}
+<section class="c7-card c7-card--accent c7-fascia">
+  <div class="c7-fascia__testo">
+    {% if stato.in_fase_playoff %}
+    <div class="c7-kicker">{{ _('Fase playoff') }}</div>
+    <h3 class="c7-fascia__titolo">
+      {% if not stato.playoff_avviati %}{{ _('Playoff da avviare') }}
+      {% elif stato.playoff_in_corso %}{{ _('Playoff in corso') }}
+      {% elif stato.configurazioni | sum(attribute='pending') %}{{ _('Inviti in attesa') }}
+      {% else %}{{ _('Inviti chiusi') }}{% endif %}
+    </h3>
+    <div class="c7-fascia__corpo">
+      {{ ngettext('%(n)d gara conclusa.', '%(n)d gare concluse.', stato.giocate|length, n=stato.giocate|length) }}
+      {% if stato.playoff_in_corso %}
+        {{ _('Gli inviti sono chiusi: si gioca con chi è entrato.') }}
+      {% elif stato.playoff_avviati %}
+        {% for cs in stato.configurazioni %}
+        {{ _('%(nome)s: %(c)s confermati su %(tot)s.', nome=cs.configuration.name, c=cs.confirmed, tot=cs.configuration.max_participants) }}
+        {% endfor %}
+        {% set _scadenza = stato.configurazioni | map(attribute='configuration') | selectattr('response_deadline') | map(attribute='response_deadline') | first %}
+        {% if _scadenza and stato.configurazioni | sum(attribute='pending') %}{{ _('Gli inviti scadono il %(quando)s.', quando=_scadenza|datetime_local) }}{% endif %}
+        {% set _quando = stato.configurazioni | map(attribute='configuration') | selectattr('scheduled_date') | map(attribute='scheduled_date') | first %}
+        {% if _quando %}{{ _('Si gioca il %(quando)s.', quando=_quando|datetime_local) }}{% endif %}
+      {% elif _sola_lettura %}
+        {{ _('I primi in classifica ricevono l’invito quando la direzione avvia i playoff.') }}
+      {% else %}
+        {{ _('Controlla chi è qualificato e avvia i playoff: i giocatori ricevono l’invito.') }}
+      {% endif %}
+    </div>
+    {% elif campionato.terminated_at %}
+    <div class="c7-kicker">{{ _('Campionato concluso') }}</div>
+    {% if podio %}
+    <div class="c7-campione">
+      <span class="c7-avatar c7-avatar--oro c7-campione__av" aria-hidden="true">{{ podio[0].iniziali }}</span>
+      <div class="c7-campione__testo">
+        <div class="c7-kicker c7-campione__k">{{ _('Campione') }}</div>
+        <div class="c7-campione__nome">{{ podio[0].nome }}</div>
+      </div>
+    </div>
+    {% else %}
+    {# Terminato senza nemmeno una gara conclusa: non c'e' nessuno da
+       annunciare. #}
+    <h3 class="c7-fascia__titolo">{{ _('Classifica definitiva') }}</h3>
+    <div class="c7-fascia__corpo">
+      {{ ngettext('%(n)d gara conclusa.', '%(n)d gare concluse.', stato.giocate|length, n=stato.giocate|length) }}
+    </div>
+    {% endif %}
+    {% else %}
+    <div class="c7-kicker">{{ _('Stagione in corso') }}</div>
+    <h3 class="c7-fascia__titolo">
+      {% if stato.in_corso %}{{ _('Gara %(num)s in corso', num=stato.in_corso[0].number) }}
+      {% elif stato.giocate %}{{ _('Gara %(num)s conclusa', num=stato.giocate[-1].number) }}
+      {% else %}{{ _('Nessuna gara ancora giocata') }}{% endif %}
+    </h3>
+    <div class="c7-fascia__corpo">
+      {{ ngettext('%(n)d gara giocata su %(tot)s', '%(n)d gare giocate su %(tot)s', stato.giocate|length, n=stato.giocate|length, tot=stato.previste) }}{% if stato.cfg_attive %}{{ _(', poi il playoff fra i primi %(n)s', n=stato.cfg_attive[0].positions_to or stato.cfg_attive[0].max_participants) }}{% endif %}.
+      {% if stato.prossime %}{{ _('Prossima: gara %(num)s, %(quando)s.', num=stato.prossime[0].number, quando=stato.prossime[0].date|date_local) }}{% endif %}
+    </div>
+    {% endif %}
+  </div>
+  {% if concluso %}
+  {% if podio|length > 1 %}
+  <div class="c7-campione__podio">
+    {% for posto in podio[1:] %}
+    <span class="c7-campione__alt"><span class="c7-pos c7-pos--{{ posto.posizione }}">{{ posto.posizione }}</span>{{ posto.nome }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% elif not _sola_lettura %}
+  <div class="c7-fascia__azione">
+    {% if stato.in_fase_playoff and not stato.playoff_avviati and playoff_status and playoff_status.has_playoffs %}
+    {# Il foglio chiede quando si gioca e fino a quando si risponde, prima
+       che partano gli inviti: sta in fondo alla pagina del direttore. #}
+    <button type="button" class="btn btn-success" data-help="campionato-avvia-playoff"
+            data-bs-toggle="modal" data-bs-target="#avviaPlayoffModal">
+      <i class="fas fa-play"></i> {{ _("Avvia i playoff") }}
+    </button>
+    {% elif stato.in_fase_playoff and stato.playoff_avviati and stato.una_sola %}
+      {% set cs = stato.configurazioni[0] %}
+      {% if cs.configuration.gara is none %}
+      <form method="POST" action='{{ url_for("admin.campionato.create_playoff_gara", campionato_id=campionato.id, config_id=cs.configuration.id) }}'>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-success"
+                onclick='return confirm({{ _("Creare la gara playoff e iscrivere i giocatori confermati?")|tojson }})'>
+          <i class="fas fa-trophy"></i> {{ ngettext('Crea la gara playoff · %(n)d confermato', 'Crea la gara playoff · %(n)d confermati', cs.confirmed, n=cs.confirmed) }}
+        </button>
+      </form>
+      {% else %}
+      <a href='{{ url_for("admin.competition.gara_detail", gara_id=cs.configuration.gara.id) }}' class="btn btn-success">
+        <i class="fas fa-arrow-right"></i> {{ _("Vai alla gara playoff") }}
+      </a>
+      {% endif %}
+    {% elif not campionato.terminated_at %}
+    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newProvaModal" data-help="campionato-nuova-gara">
+      <i class="fas fa-plus"></i> {{ _("Nuova gara") }}
+    </button>
+    {% endif %}
+  </div>
+  {% endif %}
+</section>

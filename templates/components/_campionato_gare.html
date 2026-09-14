@@ -1,0 +1,85 @@
+{# templates/components/_campionato_gare.html — Design System 7c
+
+   Le gare di un campionato, dalla piu' recente (canvas «Pagina gara del
+   direttore» 7.1 e «campionato-concluso»): tessera, nome con il peso quando
+   vale piu' di uno, data e — per una gara conclusa — chi l'ha vinta, la
+   finale playoff come le altre. Chi ha vinto viene da
+   `esito.vincitori_delle_gare`, una query per tutta la lista.
+
+   La testata conta le gare giocate su quelle previste; la finale sta a parte
+   (`campionato.conteggio_gare`, SPECIFICHE.md nota del 2026-09-14).
+
+   Ogni riga porta alla pagina della gara, che e' una sola per chiunque e si
+   adatta a chi guarda (`admin.competition.gara_detail`, aperta anche ad
+   anonimi e giocatori).
+
+   La includono la pagina del direttore e quella pubblica. Con `sola_lettura`
+   (la pubblica) spariscono i comandi della riga, modifica ed elimina.
+
+   Attesi: campionato, gare, vincitori_gare, piu' quello che chiede
+   `_campionato_stato.html`; opzionale sola_lettura. #}
+{% import "direttore/_macros.html" as d with context %}
+{% import "components/_campionato_stato.html" as stato with context %}
+{% set _sola_lettura = sola_lettura is defined and sola_lettura %}
+
+{% macro stato_gara(gara) -%}
+{% set s = gara.status %}
+{% if s == GaraStatus.COMPLETED.value %}<span class="c7-state c7-state--ok">{{ _('Conclusa') }}</span>
+{% elif s == GaraStatus.PLAYING.value %}<span class="c7-state c7-state--accent">{{ _('In corso') }}</span>
+{% elif s == GaraStatus.AWAITING_SSR.value %}<span class="c7-state c7-state--warn">{{ _('Spareggio') }}</span>
+{% elif s == GaraStatus.INSCRIPTION.value %}<span class="c7-state c7-state--info">{{ _('Iscrizioni') }}</span>
+{% elif s == GaraStatus.CANCELLED.value %}<span class="c7-state c7-state--muted">{{ _('Annullata') }}</span>
+{% else %}<span class="c7-state c7-state--muted">{{ _('In preparazione') }}</span>{% endif %}
+{%- endmacro %}
+
+<section data-c7-tab="gare">
+  {% set _conteggio = campionato.conteggio_gare %}
+  {{ d.sezione(_('Gare'), nota=_('%(n)s di %(tot)s', n=stato.giocate|length, tot=stato.previste) ~ ((' · ' ~ _conteggio.finale_testo) if _conteggio.finali else '')) }}
+  {% if gare %}
+  <div class="c7-rows" style="margin-top:10px">
+    {% for gara in gare | sort(attribute='number', reverse=true) %}
+    <div class="c7-rows__row c7-cgara">
+      <span class="c7-tile c7-tile--sm c7-tile--neutral">
+        <i class="fas {{ 'fa-flag-checkered' if gara.status == GaraStatus.COMPLETED.value else ('fa-play' if gara.status in (GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value) else 'fa-clock') }}"></i>
+      </span>
+      <a class="c7-rows__main c7-cgara__link" href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}">
+        <span class="c7-rows__title d-block">
+          {{ gara.display_name }}
+          {%- if gara.classification_weight > 1 %} <span class="c7-state c7-state--warn c7-cgara__peso" title="{{ _('Il punteggio di questa prova conta %(n)s volte nella classifica del campionato', n=gara.classification_weight) }}">&times;{{ gara.classification_weight }}</span>{% endif %}
+        </span>
+        {% set _vincitore = (vincitori_gare or {}).get(gara.id) if gara.status == GaraStatus.COMPLETED.value else none %}
+        <span class="c7-rows__sub d-block">
+          {{ gara.date|date_local }}
+          {%- if _vincitore %} · {{ _('ha vinto %(nome)s', nome=_vincitore) }}
+          {%- else %}{% if gara.location %} · {{ gara.location }}{% endif %}
+          · {{ ngettext('%(n)d iscritto', '%(n)d iscritti', gara.get_active_inscriptions_count(), n=gara.get_active_inscriptions_count()) }}{% endif %}
+        </span>
+      </a>
+      {{ stato_gara(gara) }}
+      {% if not _sola_lettura %}
+      {% if gara.can_be_modified() %}
+      <a class="c7-iconbtn" href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}"
+         title="{{ _('Modifica') }}" aria-label="{{ _('Modifica %(gara)s', gara=gara.display_name) }}"><i class="fas fa-pencil"></i></a>
+      {% endif %}
+      {% if gara.can_be_deleted() and not current_user.is_admin %}
+      <button type="button" class="c7-iconbtn" onclick="deleteProva({{ gara.id }}, {{ gara.number }}, this)"
+              title="{{ _('Elimina') }}" aria-label="{{ _('Elimina %(gara)s', gara=gara.display_name) }}"><i class="fas fa-trash"></i></button>
+      {% endif %}
+      {% if current_user.is_admin %}
+      <button type="button" class="c7-iconbtn"
+              onclick="showSoftDeleteModal('gara', {{ gara.id }}, '{{ gara.name|e }}', '{{ url_for('admin.competition.soft_delete_gara', gara_id=gara.id) }}')"
+              title="{{ _('Elimina') }}" aria-label="{{ _('Elimina %(gara)s', gara=gara.display_name) }}"><i class="fas fa-trash-alt"></i></button>
+      {% endif %}
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="c7-card" style="margin-top:10px">
+    <p class="c7-nota" style="margin:0">
+      {% if _sola_lettura %}{{ _('Nessuna gara ancora in calendario.') }}
+      {% else %}{{ _('Nessuna gara ancora: la prima si crea da «Nuova gara».') }}{% endif %}
+    </p>
+  </div>
+  {% endif %}
+</section>

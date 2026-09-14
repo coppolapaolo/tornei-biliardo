@@ -67,16 +67,6 @@
    secondo e terzo sotto, a destra sul desktop. La finale sta fra le gare,
    con chi l'ha vinta come tutte le altre. #}
 
-{% macro stato_gara(gara) -%}
-{% set s = gara.status %}
-{% if s == GaraStatus.COMPLETED.value %}<span class="c7-state c7-state--ok">{{ _('Conclusa') }}</span>
-{% elif s == GaraStatus.PLAYING.value %}<span class="c7-state c7-state--accent">{{ _('In corso') }}</span>
-{% elif s == GaraStatus.AWAITING_SSR.value %}<span class="c7-state c7-state--warn">{{ _('Spareggio') }}</span>
-{% elif s == GaraStatus.INSCRIPTION.value %}<span class="c7-state c7-state--info">{{ _('Iscrizioni') }}</span>
-{% elif s == GaraStatus.CANCELLED.value %}<span class="c7-state c7-state--muted">{{ _('Annullata') }}</span>
-{% else %}<span class="c7-state c7-state--muted">{{ _('In preparazione') }}</span>{% endif %}
-{%- endmacro %}
-
 {# Una pila sola per banner, fascia, linguette e colonne: la distanza fra la
    fascia e cio' che segue la da' il gap, come nella pagina della gara
    (`direttore/gara.html`). Senza, sul desktop la fascia toccava i titoli
@@ -90,122 +80,19 @@
 </div>
 {% endif %}
 
-{# La finale dei playoff non è una delle gare previste: si conta a parte
-   (`campionato.conteggio_gare`, SPECIFICHE.md nota del 2026-09-14). #}
-{% set _regolari = gare | rejectattr('is_playoff') | list %}
-{% set _giocate = _regolari | selectattr('status', 'equalto', GaraStatus.COMPLETED.value) | sort(attribute='number') | list %}
-{% set _in_corso = gare | selectattr('status', 'in', [GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value]) | sort(attribute='number') | list %}
-{% set _prossime = gare | selectattr('status', 'in', [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value]) | sort(attribute='number') | list %}
-{% set _previste = campionato.planned_gare_count or _regolari|length %}
-{% set _cfg_attive = (campionato.playoff_configurations or []) | selectattr('is_active') | list %}
-{# La fase dei playoff la calcola `models/playoff/fase.py`. A playoff conclusi
-   il campionato è Completato: la fascia lo constata come per un campionato
-   senza playoff. A finale cominciata gli invitati spariscono. #}
-{% set _playoff_conclusi = fase_playoff == FasePlayoff.CONCLUSI %}
-{% set _playoff_in_corso = fase_playoff == FasePlayoff.IN_CORSO %}
-{% set _fase_playoff = campionato.terminated_at and campionato.has_playoff_configurations() and not _playoff_conclusi %}
-{% set _playoff_avviati = playoff_status and playoff_status.total_qualified > 0 %}
-{% set _configurazioni = playoff_status.configurations if playoff_status else [] %}
-{% set _una_sola = _configurazioni|length == 1 %}
+{# A che punto e' il campionato: una regola sola per questa pagina e per
+   quella pubblica (`components/_campionato_stato.html`). #}
+{% import "components/_campionato_stato.html" as stato with context %}
+{% set _previste = stato.previste %}
+{% set _cfg_attive = stato.cfg_attive %}
+{% set _playoff_in_corso = stato.playoff_in_corso %}
+{% set _fase_playoff = stato.in_fase_playoff %}
+{% set _playoff_avviati = stato.playoff_avviati %}
+{% set _configurazioni = stato.configurazioni %}
+{% set _una_sola = stato.una_sola %}
 
-{# ---------- La fascia ---------- #}
-<section class="c7-card c7-card--accent c7-fascia">
-  <div class="c7-fascia__testo">
-    {% if _fase_playoff %}
-    <div class="c7-kicker">{{ _('Fase playoff') }}</div>
-    <h3 class="c7-fascia__titolo">
-      {% if not _playoff_avviati %}{{ _('Playoff da avviare') }}
-      {% elif _playoff_in_corso %}{{ _('Playoff in corso') }}
-      {% elif _configurazioni | sum(attribute='pending') %}{{ _('Inviti in attesa') }}
-      {% else %}{{ _('Inviti chiusi') }}{% endif %}
-    </h3>
-    <div class="c7-fascia__corpo">
-      {{ ngettext('%(n)d gara conclusa.', '%(n)d gare concluse.', _giocate|length, n=_giocate|length) }}
-      {% if _playoff_in_corso %}
-        {{ _('Gli inviti sono chiusi: si gioca con chi è entrato.') }}
-      {% elif _playoff_avviati %}
-        {% for cs in _configurazioni %}
-        {{ _('%(nome)s: %(c)s confermati su %(tot)s.', nome=cs.configuration.name, c=cs.confirmed, tot=cs.configuration.max_participants) }}
-        {% endfor %}
-        {% set _scadenza = _configurazioni | map(attribute='configuration') | selectattr('response_deadline') | map(attribute='response_deadline') | first %}
-        {% if _scadenza and _configurazioni | sum(attribute='pending') %}{{ _('Gli inviti scadono il %(quando)s.', quando=_scadenza|datetime_local) }}{% endif %}
-        {% set _quando = _configurazioni | map(attribute='configuration') | selectattr('scheduled_date') | map(attribute='scheduled_date') | first %}
-        {% if _quando %}{{ _('Si gioca il %(quando)s.', quando=_quando|datetime_local) }}{% endif %}
-      {% else %}
-        {{ _('Controlla chi è qualificato e avvia i playoff: i giocatori ricevono l’invito.') }}
-      {% endif %}
-    </div>
-    {% elif campionato.terminated_at %}
-    <div class="c7-kicker">{{ _('Campionato concluso') }}</div>
-    {% if podio %}
-    <div class="c7-campione">
-      <span class="c7-avatar c7-avatar--oro c7-campione__av" aria-hidden="true">{{ podio[0].iniziali }}</span>
-      <div class="c7-campione__testo">
-        <div class="c7-kicker c7-campione__k">{{ _('Campione') }}</div>
-        <div class="c7-campione__nome">{{ podio[0].nome }}</div>
-      </div>
-    </div>
-    {% else %}
-    {# Terminato senza nemmeno una gara conclusa: non c'e' nessuno da
-       annunciare. #}
-    <h3 class="c7-fascia__titolo">{{ _('Classifica definitiva') }}</h3>
-    <div class="c7-fascia__corpo">
-      {{ ngettext('%(n)d gara conclusa.', '%(n)d gare concluse.', _giocate|length, n=_giocate|length) }}
-    </div>
-    {% endif %}
-    {% else %}
-    <div class="c7-kicker">{{ _('Stagione in corso') }}</div>
-    <h3 class="c7-fascia__titolo">
-      {% if _in_corso %}{{ _('Gara %(num)s in corso', num=_in_corso[0].number) }}
-      {% elif _giocate %}{{ _('Gara %(num)s conclusa', num=_giocate[-1].number) }}
-      {% else %}{{ _('Nessuna gara ancora giocata') }}{% endif %}
-    </h3>
-    <div class="c7-fascia__corpo">
-      {{ ngettext('%(n)d gara giocata su %(tot)s', '%(n)d gare giocate su %(tot)s', _giocate|length, n=_giocate|length, tot=_previste) }}{% if _cfg_attive %}{{ _(', poi il playoff fra i primi %(n)s', n=_cfg_attive[0].positions_to or _cfg_attive[0].max_participants) }}{% endif %}.
-      {% if _prossime %}{{ _('Prossima: gara %(num)s, %(quando)s.', num=_prossime[0].number, quando=_prossime[0].date|date_local) }}{% endif %}
-    </div>
-    {% endif %}
-  </div>
-  {% if concluso %}
-  {% if podio|length > 1 %}
-  <div class="c7-campione__podio">
-    {% for posto in podio[1:] %}
-    <span class="c7-campione__alt"><span class="c7-pos c7-pos--{{ posto.posizione }}">{{ posto.posizione }}</span>{{ posto.nome }}</span>
-    {% endfor %}
-  </div>
-  {% endif %}
-  {% else %}
-  <div class="c7-fascia__azione">
-    {% if _fase_playoff and not _playoff_avviati and playoff_status and playoff_status.has_playoffs %}
-    {# Il foglio chiede quando si gioca e fino a quando si risponde, prima
-       che partano gli inviti: sta in fondo alla pagina. #}
-    <button type="button" class="btn btn-success" data-help="campionato-avvia-playoff"
-            data-bs-toggle="modal" data-bs-target="#avviaPlayoffModal">
-      <i class="fas fa-play"></i> {{ _("Avvia i playoff") }}
-    </button>
-    {% elif _fase_playoff and _playoff_avviati and _una_sola %}
-      {% set cs = _configurazioni[0] %}
-      {% if cs.configuration.gara is none %}
-      <form method="POST" action='{{ url_for("admin.campionato.create_playoff_gara", campionato_id=campionato.id, config_id=cs.configuration.id) }}'>
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-success"
-                onclick='return confirm({{ _("Creare la gara playoff e iscrivere i giocatori confermati?")|tojson }})'>
-          <i class="fas fa-trophy"></i> {{ ngettext('Crea la gara playoff · %(n)d confermato', 'Crea la gara playoff · %(n)d confermati', cs.confirmed, n=cs.confirmed) }}
-        </button>
-      </form>
-      {% else %}
-      <a href='{{ url_for("admin.competition.gara_detail", gara_id=cs.configuration.gara.id) }}' class="btn btn-success">
-        <i class="fas fa-arrow-right"></i> {{ _("Vai alla gara playoff") }}
-      </a>
-      {% endif %}
-    {% elif not campionato.terminated_at %}
-    <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newProvaModal" data-help="campionato-nuova-gara">
-      <i class="fas fa-plus"></i> {{ _("Nuova gara") }}
-    </button>
-    {% endif %}
-  </div>
-  {% endif %}
-</section>
+{# ---------- La fascia, condivisa con la pagina pubblica ---------- #}
+{% include "components/_campionato_fascia.html" %}
 
 {# ---------- Le linguette (telefono) ---------- #}
 {% set gara_views = [('classifica', _('Classifica')), ('gare', _('Gare')), (('playoff', _('Playoff')) if _fase_playoff else ('gestione', _('Gestione')))] %}
@@ -548,55 +435,7 @@
     </section>
     {% endif %}
 
-    <section data-c7-tab="gare">
-      {% set _conteggio = campionato.conteggio_gare %}
-      {{ d.sezione(_('Gare'), nota=_('%(n)s di %(tot)s', n=_giocate|length, tot=_previste) ~ ((' · ' ~ _conteggio.finale_testo) if _conteggio.finali else '')) }}
-      {% if gare %}
-      <div class="c7-rows" style="margin-top:10px">
-        {% for gara in gare | sort(attribute='number', reverse=true) %}
-        <div class="c7-rows__row c7-cgara">
-          <span class="c7-tile c7-tile--sm c7-tile--neutral">
-            <i class="fas {{ 'fa-flag-checkered' if gara.status == GaraStatus.COMPLETED.value else ('fa-play' if gara.status in (GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value) else 'fa-clock') }}"></i>
-          </span>
-          <a class="c7-rows__main c7-cgara__link" href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}">
-            <span class="c7-rows__title d-block">
-              {{ gara.display_name }}
-              {%- if gara.classification_weight > 1 %} <span class="c7-state c7-state--warn c7-cgara__peso" title="{{ _('Il punteggio di questa prova conta %(n)s volte nella classifica del campionato', n=gara.classification_weight) }}">&times;{{ gara.classification_weight }}</span>{% endif %}
-            </span>
-            {# Una gara conclusa dice chi l'ha vinta, la finale playoff come le
-               altre (canvas «campionato-concluso»): e' la stessa fonte della
-               vetrina, una query per tutta la lista. #}
-            {% set _vincitore = (vincitori_gare or {}).get(gara.id) if gara.status == GaraStatus.COMPLETED.value else none %}
-            <span class="c7-rows__sub d-block">
-              {{ gara.date|date_local }}
-              {%- if _vincitore %} · {{ _('ha vinto %(nome)s', nome=_vincitore) }}
-              {%- else %}{% if gara.location %} · {{ gara.location }}{% endif %}
-              · {{ ngettext('%(n)d iscritto', '%(n)d iscritti', gara.get_active_inscriptions_count(), n=gara.get_active_inscriptions_count()) }}{% endif %}
-            </span>
-          </a>
-          {{ stato_gara(gara) }}
-          {% if gara.can_be_modified() %}
-          <a class="c7-iconbtn" href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}"
-             title="{{ _('Modifica') }}" aria-label="{{ _('Modifica %(gara)s', gara=gara.display_name) }}"><i class="fas fa-pencil"></i></a>
-          {% endif %}
-          {% if gara.can_be_deleted() and not current_user.is_admin %}
-          <button type="button" class="c7-iconbtn" onclick="deleteProva({{ gara.id }}, {{ gara.number }}, this)"
-                  title="{{ _('Elimina') }}" aria-label="{{ _('Elimina %(gara)s', gara=gara.display_name) }}"><i class="fas fa-trash"></i></button>
-          {% endif %}
-          {% if current_user.is_admin %}
-          <button type="button" class="c7-iconbtn"
-                  onclick="showSoftDeleteModal('gara', {{ gara.id }}, '{{ gara.name|e }}', '{{ url_for('admin.competition.soft_delete_gara', gara_id=gara.id) }}')"
-                  title="{{ _('Elimina') }}" aria-label="{{ _('Elimina %(gara)s', gara=gara.display_name) }}"><i class="fas fa-trash-alt"></i></button>
-          {% endif %}
-        </div>
-        {% endfor %}
-      </div>
-      {% else %}
-      <div class="c7-card" style="margin-top:10px">
-        <p class="c7-nota" style="margin:0">{{ _('Nessuna gara ancora: la prima si crea da «Nuova gara».') }}</p>
-      </div>
-      {% endif %}
-    </section>
+    {% include "components/_campionato_gare.html" %}
 
     <section data-c7-tab="{{ 'playoff' if _fase_playoff else 'gestione' }}">
       {{ d.sezione(_('Gestione')) }}
