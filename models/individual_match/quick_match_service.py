@@ -205,6 +205,13 @@ class QuickMatchService:
         if existing is not None:
             return existing
 
+        # Solo **dopo** la guardia sul doppio avvio: se la partita che aspetta
+        # la firma è proprio contro chi hai davanti, riaprirla è il modo di
+        # chiuderla, non una sfida nuova (2026-09-14).
+        from .pending_confirmation import PendingConfirmationService
+
+        PendingConfirmationService.ensure_none_pending(user_id)
+
         settings = QuickMatchService._resolve_config(user_id, config)
 
         match = IndividualMatch(

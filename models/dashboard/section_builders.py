@@ -12,7 +12,7 @@ from typing import Any, List, Optional
 from sqlalchemy import or_, select
 from sqlalchemy.orm import joinedload
 
-from models.base import db
+from models.base import db, utc_now
 from models.campionato.models import Campionato
 from models.competition.models import Gara, Inscription
 from models.match.models import Match as TournamentMatch
@@ -148,6 +148,20 @@ class DashboardSectionBuilder:
             .order_by(IndividualMatch.scheduled_at.asc())
             .all()
         )
+
+        # Una partita che aspetta una firma da più di un giorno non è più
+        # un'attività in corso, per nessuno dei due: resta fra le sfide con lo
+        # stato «In attesa di conferma» (richiesta del 2026-09-14).
+        from ..individual_match.pending_confirmation import (
+            PendingConfirmationService,
+        )
+
+        now = utc_now()
+        sfide_in_corso = [
+            sfida
+            for sfida in sfide_in_corso
+            if not PendingConfirmationService.is_hidden_from_dashboard(sfida, now)
+        ]
 
         # Match opportunities: open proposals already filtered by eligibility
         # in ProposalService.get_user_proposals (venue/played-based, ADR-033).

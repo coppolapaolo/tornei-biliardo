@@ -142,6 +142,15 @@ blocks:
       risultato resta in attesa; se non è d'accordo può rifiutarlo e si
       corregge.
 
+  - type: text
+    text: >-
+      Una partita **in attesa di conferma** da più di un giorno esce dalla
+      dashboard e resta fra le tue sfide, con lo stato **In attesa di
+      conferma**. E finché una partita aspetta la **tua** conferma non puoi
+      lanciare né accettare altre sfide: quando ci provi, l'app ti mostra le
+      partite da chiudere, con **Confermo il risultato** e **Rifiuto il
+      risultato**, e chiusa l'ultima ti riporta dov'eri.
+
   - type: heading
     id: chi-apre
     title: "Chi apre, e come si passa il tiro"
@@ -320,7 +329,9 @@ blocks:
       - q: "Non vedo la sezione Sfide."
         a: "È una funzione che si sblocca con l'uso della piattaforma. Se non compare, continua a giocare qualche gara: comparirà."
       - q: "L'avversario non conferma il risultato."
-        a: "La partita resta in attesa. Sollecitalo: senza la conferma di entrambi il risultato non entra nelle statistiche."
+        a: "La partita resta in attesa: dopo un giorno esce dalla dashboard, ma la trovi fra le sfide. Sollecitalo: senza la conferma di entrambi il risultato non entra nelle statistiche. Finché non conferma, lui non può lanciare né accettare altre sfide; tu sì."
+      - q: "Perché non riesco a lanciare o accettare una sfida?"
+        a: "Hai almeno una partita che aspetta la tua conferma. Confermala o rifiutala dalla pagina che l'app ti propone, o da Le mie sfide: chiusa l'ultima, puoi ripartire."
       - q: "Posso proporre una partita a chi non è iscritto all'app?"
         a: "No, l'avversario deve avere un account. Puoi invitarlo a registrarsi: è gratuito."
       - q: "Che differenza c'è con una gara?"

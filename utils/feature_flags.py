@@ -427,6 +427,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "individual_match.toggle_run_out": {"player", "director"},
     "individual_match.confirm_result": {"player", "director"},
     "individual_match.reject_result": {"player", "director"},
+    # Le partite che aspettano la conferma di chi guarda (2026-09-14): ci si
+    # arriva quando il blocco impedisce di lanciare o accettare una sfida.
+    "individual_match.pending_confirmations": {"player", "director"},
     "individual_match.complete_match": {"player", "director"},
     "individual_match.cancel_match": {"player", "director"},
     "individual_match.edit_match": {"player", "director"},

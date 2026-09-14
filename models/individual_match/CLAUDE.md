@@ -72,6 +72,18 @@ SCHEDULED → IN_PROGRESS → (distance reached) → is_ready_for_validation() =
                                          VALIDATED
 ```
 
+**In attesa di conferma (2026-09-14)** — `pending_confirmation.py`:
+- `match.awaiting_confirmation_from_id` / `awaiting_confirmation_since`: una
+  firma c'è, l'altra manca (a distanza raggiunta chi vince firma d'ufficio).
+  Senza nessuna firma la partita non aspetta nessuno.
+- Dopo `DASHBOARD_GRACE` (24 h dalla prima firma) esce dalla dashboard di
+  entrambi; resta in «Le mie sfide» con lo stato «In attesa di conferma».
+- `PendingConfirmationService.ensure_none_pending(user_id)` blocca proposte
+  (dirette e aperte), accettazioni e avvio rapido di chi deve firmare
+  (`PendingConfirmationError`, un `ConflictError`). Le route rispondono con
+  `routes/individual_match/pending.py::pending_confirmation_response`: redirect
+  alla pagina `individual_match.pending_confirmations` con `next`, o 409 in JSON.
+
 **Key Points:**
 - Match does NOT auto-complete when distance is reached
 - `is_ready_for_validation()` returns True when score reaches distance

@@ -16,6 +16,7 @@ from datetime import timedelta
 
 from models.individual_match.services import MatchProposalService
 from models.individual_match.models import MatchProposal, ProposalType
+from models.individual_match.pending_confirmation import PendingConfirmationError
 from models.match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
 from models.status_enum import Discipline
 from models.user.permissions import RoleRequirement
@@ -23,6 +24,7 @@ from utils.local_time import parse_local_datetime
 from utils.route_helpers import safe_json_error
 
 from . import individual_match_bp
+from .pending import pending_confirmation_response
 
 logger = logging.getLogger(__name__)
 
@@ -295,6 +297,10 @@ def create_proposal():
                 url_for("individual_match.proposal_detail", proposal_id=proposal.id)
             )
 
+    except PendingConfirmationError as exc:
+        return pending_confirmation_response(
+            exc, url_for("individual_match.create_proposal")
+        )
     except ValueError as e:
         error_msg = f"Error creating proposal: {str(e)}"
         if request.is_json:
@@ -327,6 +333,11 @@ def accept_proposal(proposal_id):
                 url_for("individual_match.match_detail", match_id=individual_match.id)
             )
 
+    except PendingConfirmationError as exc:
+        # Chiuse le pendenti si torna alla proposta, da accettare di nuovo.
+        return pending_confirmation_response(
+            exc, url_for("individual_match.proposal_detail", proposal_id=proposal_id)
+        )
     except ValueError as e:
         error_msg = f"Error accepting proposal: {str(e)}"
         if request.is_json:

@@ -255,6 +255,13 @@ Tutti i match (sia di torneo che individuali) condividono un set unificato di st
 
 Questa unificazione permette di tracciare le statistiche e gestire i risultati in modo centralizzato.
 
+Una sfida a due si chiude con la **conferma di entrambi i giocatori** (ADR-051). Raggiunta la distanza chi vince conferma d'ufficio; nel formato libero conferma chi dichiara finita la partita. Da quel momento la partita è **in attesa di conferma** dell'altro giocatore.
+
+- Passato **un giorno** dalla prima conferma, la partita non compare più nella dashboard, né per chi deve confermare né per chi aspetta. Resta nell'elenco delle sfide con lo stato «In attesa di conferma».
+- Chi ha almeno una partita in attesa della **propria** conferma non può lanciare una nuova sfida (proposta, avvio rapido, richiesta da disponibilità) né accettarne una ricevuta, finché non la conferma o la rifiuta. Il blocco vale da subito, non dopo il giorno. Invece di un errore il sistema gli propone le partite da chiudere, ognuna con conferma e rifiuto, e chiusa l'ultima lo riporta a quello che stava facendo. Chi aspetta la conferma dell'avversario non è bloccato.
+
+_Nota del 2026-09-14: regole nuove, decise dall'utente. Prima una partita mai confermata restava «in corso» a tempo indeterminato, in dashboard e fuori, come l'ADR-051 aveva messo in conto fra le conseguenze negative; e nulla impediva a chi non confermava di aprire altre sfide. Il giorno si conta dalla prima conferma perché è il momento in cui la partita smette di aspettare un gioco e comincia ad aspettare una firma: una partita ancora da finire non è in attesa di nessuno._
+
 ## Rack
 
 Un **rack** è relativo ad una disciplina come, ad esempio, "palla 8", "palla 9", "palla 10", "pool continuo", "one pocket". Il valore di default della disciplina viene dal set, che a sua volta prende il valore di default del match, che lo prende da turno, che lo prende come valore di default da gara.
@@ -378,6 +385,8 @@ Le iscrizioni a nuove gare che non sono ancora iniziate vengono cancellate. Se l
 #### Dashboard 
 
 La home mostra le attività in corso: campionati in corso, gare standalone in corso, match singoli programmati, proposte di match da parte di altri utenti.
+
+_Nota del 2026-09-14: un match singolo in attesa di conferma da più di un giorno non è più un'attività in corso e non compare nella home; resta fra le sfide. Vedi «Ciclo di vita dei Match»._
 
 ##### Vista Campionato
 

@@ -25,6 +25,22 @@
 {% if matches %}
 <div class="c7-stack c7-sections">
 
+  {# Le partite che aspettano la **tua** firma bloccano le sfide nuove
+     (2026-09-14): si dice qui, prima che lo scopra provando. #}
+  {% set da_confermare = matches|selectattr('awaiting_confirmation_from_id', 'equalto', current_user.id)|list %}
+  {% if da_confermare and feature_visible('individual_match.pending_confirmations') %}
+  <a class="c7-card c7-card--warn d-flex align-items-center gap-3 text-decoration-none"
+     href="{{ url_for('individual_match.pending_confirmations') }}">
+    <i class="fas fa-hourglass-half"></i>
+    <span class="flex-fill" style="font-size:14px;font-weight:700">
+      {{ ngettext("Una partita aspetta la tua conferma: finché resta aperta non puoi lanciare né accettare sfide.",
+                  "%(num)d partite aspettano la tua conferma: finché restano aperte non puoi lanciare né accettare sfide.",
+                  da_confermare|length) }}
+    </span>
+    <i class="fas fa-chevron-right"></i>
+  </a>
+  {% endif %}
+
   {# ---------- Filtri ---------- #}
   <div class="c7-stack" style="gap:10px">
     {# Si filtra per **gruppo**, non per valore di stato: "giocati" comprende
@@ -36,6 +52,7 @@
         ('', _('Tutti')),
         ('da_giocare', _('Da giocare')),
         ('in_corso', _('In corso')),
+        ('da_confermare', _('Da confermare')),
         ('giocati', _('Giocati')),
         ('annullati', _('Annullati'))
       ] %}
@@ -86,16 +103,22 @@
     {% set my_score = match.player1_score if match.player1_id == current_user.id else match.player2_score %}
     {% set their_score = match.player2_score if match.player1_id == current_user.id else match.player1_score %}
     {% set i_won = match.winner_id == current_user.id %}
+    {# In attesa di conferma: una firma c'è, l'altra manca. La si vede da
+       entrambe le parti; chi deve firmare ha anche il pulsante per farlo. #}
+    {% set waiting_for = match.awaiting_confirmation_from_id %}
     {% set group = 'annullati' if state == MatchStatus.CANCELLED.value
                    else ('giocati' if is_finished
-                   else ('in_corso' if state == MatchStatus.IN_PROGRESS.value else 'da_giocare')) %}
+                   else ('da_confermare' if waiting_for
+                   else ('in_corso' if state == MatchStatus.IN_PROGRESS.value else 'da_giocare'))) %}
     <article class="c7-card match-card {{ 'c7-dim' if state == MatchStatus.CANCELLED.value }}"
              data-group="{{ group }}" data-discipline="{{ match.discipline }}"
              data-opponent="{{ opponent.id if opponent else '' }}">
       <div class="d-flex align-items-center gap-2">
         <span class="c7-kicker">{{ match.discipline|discipline_display }}</span>
         <span style="margin-left:auto">
-          {%- if state == MatchStatus.IN_PROGRESS.value %}
+          {%- if waiting_for %}
+          <span class="c7-state c7-state--warn">{{ _('In attesa di conferma') }}</span>
+          {%- elif state == MatchStatus.IN_PROGRESS.value %}
           <span class="c7-state c7-state--accent">{{ _('In corso') }}</span>
           {%- elif is_finished %}
           <span class="c7-state {{ 'c7-state--ok' if i_won else 'c7-state--muted' }}">
@@ -134,6 +157,8 @@
       <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}"
          class="btn {{ 'btn-primary' if not is_finished else 'btn-secondary' }} w-100" style="margin-top:14px">
         {%- if state == MatchStatus.SCHEDULED.value %}{{ _("Apri la partita") }}
+        {%- elif waiting_for == current_user.id %}{{ _("Conferma o rifiuta") }}
+        {%- elif waiting_for %}{{ _("Dettagli") }}
         {%- elif state == MatchStatus.IN_PROGRESS.value %}{{ _("Continua") }}
         {%- else %}{{ _("Dettagli") }}{% endif %}
       </a>

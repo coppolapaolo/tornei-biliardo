@@ -6,6 +6,7 @@ Split from: models/individual_match/models.py (P3a refactoring)
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Optional, TYPE_CHECKING
 from enum import Enum
 
@@ -336,6 +337,37 @@ class IndividualMatch(BaseModel, BaseMatchMixin):
         if score is None:
             return False
         return score.is_complete()
+
+    @property
+    def awaiting_confirmation_from_id(self) -> Optional[int]:
+        """Il giocatore di cui la partita aspetta la firma, se c'è.
+
+        Aspetta la firma di X quando è pronta per la validazione, l'avversario
+        ha già confermato e X no. Arrivati alla distanza chi vince firma
+        d'ufficio (``IndividualRackService.add_rack_for_player``); nel formato
+        libero firma chi preme «Termina». Senza nessuna firma la partita non
+        aspetta nessuno in particolare: nel formato libero è «pronta» dal primo
+        triangolo, mentre i due stanno ancora giocando.
+
+        Vedi ``models/individual_match/pending_confirmation.py``.
+        """
+        if not self.is_ready_for_validation():
+            return None
+        if self.player1_confirmed and not self.player2_confirmed:
+            return self.player2_id
+        if self.player2_confirmed and not self.player1_confirmed:
+            return self.player1_id
+        return None
+
+    @property
+    def awaiting_confirmation_since(self) -> Optional[datetime]:
+        """Da quando la partita aspetta quella firma: l'ora della prima."""
+        waiting_for = self.awaiting_confirmation_from_id
+        if waiting_for is None:
+            return None
+        if waiting_for == self.player1_id:
+            return self.player2_confirmed_at
+        return self.player1_confirmed_at
 
     def _complete_match_after_confirmation(self) -> None:
         """Complete the match after both players have confirmed.
