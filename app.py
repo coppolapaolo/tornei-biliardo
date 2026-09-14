@@ -302,6 +302,19 @@ def create_app(config_name=None):
         # password proprio perche' qualcun altro era entrato nel suo account.
         return User.from_session_id(user_id)
 
+    # L'admin fermo da troppo viene scollegato (ADR-063). Registrato qui, prima
+    # dell'allowlist e dell'onboarding: i `before_request` girano nell'ordine
+    # di registrazione, e un admin appena scollegato deve arrivare al login,
+    # non a un 404 dell'allowlist per anonimi.
+    from flask_login import user_logged_in as _user_logged_in
+    from utils.inattivita_admin import controlla_inattivita_admin, segna_accesso
+
+    app.before_request(controlla_inattivita_admin)
+
+    @_user_logged_in.connect_via(app)
+    def _segna_accesso_admin(sender, user, **extra):
+        segna_accesso(user)
+
     # Context processor per debug info
     @app.context_processor
     def inject_debug():

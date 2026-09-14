@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-14 12:00+0200\n"
+"POT-Creation-Date: 2026-09-14 11:49+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,27 +18,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:266
-msgid "Accedi per vedere questa pagina."
-msgstr "Log in to see this page."
-
-#: app.py:800 templates/errors/403.html:3
+#: app.py:802 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr "Access denied"
 
-#: app.py:818
+#: app.py:820
 msgid "Non è il tuo turno"
 msgstr "Not your turn yet"
 
-#: app.py:819
+#: app.py:821
 msgid "Colpo irregolare"
 msgstr "Illegal shot"
 
-#: app.py:838
+#: app.py:840
 msgid "Operazione non consentita"
 msgstr "That shot isn't allowed."
 
-#: app.py:852
+#: app.py:854
 msgid "Tiro non valido"
 msgstr "Foul shot"
 
@@ -2703,15 +2699,15 @@ msgstr "New role"
 msgid "Hai ottenuto il ruolo di %(role)s."
 msgstr "You have been granted the %(role)s role."
 
-#: routes/auth.py:153
+#: routes/auth.py:152
 msgid "Che piacere rivederti!"
 msgstr "Nice to see you again!"
 
-#: routes/auth.py:154 templates/base.html:711
+#: routes/auth.py:153 templates/base.html:711
 msgid "Tutto pronto per giocare?"
 msgstr "Ready to play?"
 
-#: routes/auth.py:185
+#: routes/auth.py:180
 msgid ""
 "Il tuo account non è ancora verificato. Senza email confermata non potrai"
 " recuperare la password se la dimentichi."
@@ -2719,47 +2715,47 @@ msgstr ""
 "Your account is not yet verified. Without a confirmed email you will not "
 "be able to recover your password if you forget it."
 
-#: routes/auth.py:193
+#: routes/auth.py:188
 msgid "Vai al profilo per verificare l'email"
 msgstr "Go to your profile to verify your email"
 
-#: routes/auth.py:200
+#: routes/auth.py:195
 msgid "Username o password errati."
 msgstr "Wrong username or password."
 
-#: routes/auth.py:239
+#: routes/auth.py:234
 msgid "Registrazione completata! Controlla la tua email per verificare l'account."
 msgstr "Registration complete! Check your email to verify the account."
 
-#: routes/auth.py:250 templates/onboarding.html:12
+#: routes/auth.py:245 templates/onboarding.html:12
 msgid "Ti diamo il benvenuto!"
 msgstr "Welcome aboard!"
 
-#: routes/auth.py:251
+#: routes/auth.py:246
 msgid "Registrazione completata con successo."
 msgstr "Registration completed successfully."
 
-#: routes/auth.py:294
+#: routes/auth.py:289
 msgid "Inserisci l'indirizzo email del tuo account."
 msgstr "Enter the email address of your account."
 
-#: routes/auth.py:300
+#: routes/auth.py:295
 msgid "Se l'email esiste, riceverai un link per resettare la password."
 msgstr "If that email exists, you'll receive a link to reset your password."
 
-#: routes/auth.py:310
+#: routes/auth.py:305
 msgid "Non siamo riusciti a inviare l'email. Riprova fra qualche minuto."
 msgstr "We couldn't send the email. Please try again in a few minutes."
 
-#: routes/auth.py:330 routes/auth.py:352
+#: routes/auth.py:325 routes/auth.py:347
 msgid "Token non valido o scaduto."
 msgstr "Invalid or expired link."
 
-#: routes/auth.py:338
+#: routes/auth.py:333
 msgid "Le password non coincidono."
 msgstr "Passwords do not match."
 
-#: routes/auth.py:345
+#: routes/auth.py:340
 msgid "Password aggiornata con successo! Ora puoi effettuare il login."
 msgstr "Password updated successfully! You can now log in."
 
@@ -21785,6 +21781,11 @@ msgstr "Competitive Elo"
 #: utils/elo_visibility.py:77
 msgid "Elo globale"
 msgstr "Global Elo"
+
+#: utils/inattivita_admin.py:96
+#, python-format
+msgid "Sessione chiusa dopo %(minuti)s minuti di inattività: accedi di nuovo."
+msgstr "Signed out after %(minuti)s minutes of inactivity: please sign in again."
 
 #: utils/jinja.py:33 utils/jinja.py:80 utils/jinja.py:143 utils/jinja.py:177
 #: utils/jinja.py:200 utils/jinja.py:232 utils/jinja.py:242 utils/jinja.py:278
