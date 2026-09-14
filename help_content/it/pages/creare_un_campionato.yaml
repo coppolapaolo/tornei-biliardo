@@ -78,9 +78,12 @@ blocks:
     tone: warning
     title: "Il sistema di classifica vale per tutto il campionato"
     text: >-
-      Tutte le gare di un campionato devono usare lo **stesso** sistema di
-      classifica: non si possono sommare mele e pere. Sceglilo con attenzione
-      ora, perché cambiarlo a campionato avviato significa rifare i conti.
+      Tutte le gare di un campionato usano lo **stesso** sistema di
+      classifica, finale dei playoff compresa: non si possono sommare mele e
+      pere. Sceglilo con attenzione ora. Puoi cambiarlo solo finché nessuna
+      gara ha aperto le iscrizioni o ha già degli iscritti, e allora il cambio
+      vale per tutte le gare. Dopo non si può più: cambieresti le regole a chi
+      si è iscritto o ha già giocato.
 
   - type: heading
     id: passo2

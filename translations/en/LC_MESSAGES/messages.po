@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-14 12:06+0200\n"
+"POT-Creation-Date: 2026-09-14 15:06+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -18,27 +18,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:266
+#: app.py:313
 msgid "Accedi per vedere questa pagina."
 msgstr "Log in to see this page."
 
-#: app.py:813 templates/errors/403.html:3
+#: app.py:860 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr "Access denied"
 
-#: app.py:831
+#: app.py:878
 msgid "Non è il tuo turno"
 msgstr "Not your turn yet"
 
-#: app.py:832
+#: app.py:879
 msgid "Colpo irregolare"
 msgstr "Illegal shot"
 
-#: app.py:851
+#: app.py:898
 msgid "Operazione non consentita"
 msgstr "That shot isn't allowed."
 
-#: app.py:865
+#: app.py:912
 msgid "Tiro non valido"
 msgstr "Foul shot"
 
@@ -247,6 +247,24 @@ msgstr "Not started yet"
 #: models/competition/showcase_view.py:422
 msgid "Regolamento e informazioni"
 msgstr "Rules and information"
+
+#: models/campionato/tournament_service.py:262
+#, python-format
+msgid ""
+"Il sistema di classifica non si può più cambiare: la gara «%(gara)s» ha "
+"già aperto le iscrizioni o ha degli iscritti."
+msgstr ""
+"The standings system can no longer be changed: the competition "
+"«%(gara)s» has already opened registrations or has registered players."
+
+#: models/campionato/tournament_service.py:291
+#, python-format
+msgid ""
+"Con il nuovo sistema di classifica la gara «%(gara)s» non sarebbe valida:"
+" %(errori)s"
+msgstr ""
+"With the new standings system the competition «%(gara)s» would not be "
+"valid: %(errori)s"
 
 #: models/challenge/models.py:288
 #, python-format
@@ -2516,7 +2534,7 @@ msgstr ""
 msgid "Conferma o rifiuta"
 msgstr "Confirm or decline"
 
-#: models/playoff/services.py:1222 models/playoff/services.py:1279
+#: models/playoff/services.py:1238 models/playoff/services.py:1295
 msgid "La gara di playoff è già cominciata: la lista non si modifica più."
 msgstr ""
 "The play-off competition has already started: the list can no longer be "

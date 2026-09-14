@@ -286,7 +286,7 @@ Esistono tre sistemi di classifica:
 - **WINS**: ordina per match vinti (decrescente), poi differenza rack (decrescente), poi spareggio
 - **POSITION**: assegna punti per posizione nel tabellone (solo per gare a eliminazione)
 
-Tutte le gare di un campionato devono usare lo stesso sistema di classifica. La classifica del campionato aggrega sommando le classifiche delle singole gare.
+Tutte le gare di un campionato devono usare lo stesso sistema di classifica, compresa la gara di playoff (salvo che si giochi a tabellone: allora è POSITION, l'unico sistema che un tabellone ammette). Il sistema si può cambiare solo finché nessuna gara del campionato ha aperto le iscrizioni o ha già degli iscritti: dopo, cambierebbe le regole a chi si è iscritto o ha già giocato; prima, il cambio arriva a tutte le gare ancora da aprire *(precisato il 2026-09-14: fino ad allora la gara di playoff nasceva a vittorie qualunque fosse il sistema, e il cambio sul campionato lasciava le gare già create col sistema vecchio)*. La classifica del campionato aggrega sommando le classifiche delle singole gare.
 
 Per i dettagli completi sul sistema di classificazione, vincoli e combinazioni valide, vedi [CLASSIFICATION_SYSTEM.md](CLASSIFICATION_SYSTEM.md).
 

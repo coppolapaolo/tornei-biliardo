@@ -45,6 +45,22 @@ BRACKET_STRATEGIES = frozenset(
 )
 
 
+def resolve_classification_system(strategy: str, requested: str) -> str:
+    """Sistema di classifica coerente con la strategia scelta.
+
+    Sul tabellone è POSITION e basta: chiederlo all'utente per poi rifiutare
+    ogni altra risposta sarebbe solo un modo di far fallire il salvataggio.
+    Fuori dal tabellone POSITION non ha senso, quindi si ricade su WINS.
+
+    Vive nel dominio perché una gara riceve il sistema del campionato da tre
+    strade — il form, la gara di playoff e il cambio di sistema sul campionato
+    (SPECIFICHE.md riga 289) — e devono decidere tutte e tre allo stesso modo.
+    """
+    if strategy in BRACKET_STRATEGIES:
+        return "POSITION"
+    return requested if requested in ("WINS", "RACK") else "WINS"
+
+
 def minimum_players_for(strategy: str) -> int:
     """Iscritti minimi richiesti dal formato (1 se il formato non li impone).
 

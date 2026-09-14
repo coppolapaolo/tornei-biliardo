@@ -78,9 +78,12 @@ blocks:
     tone: warning
     title: "The standings system applies to the whole championship"
     text: >-
-      Every competition in a championship must use the **same** standings
-      system: you cannot add apples to pears. Choose carefully now, because
-      changing it once the championship is under way means redoing the sums.
+      Every competition in a championship uses the **same** standings system,
+      playoff final included: you cannot add apples to pears. Choose carefully
+      now. You can change it only while no competition has opened
+      registrations or has any registered players, and then the change applies
+      to every competition. After that it can no longer be changed: you would
+      be changing the rules for players who have registered or already played.
 
   - type: heading
     id: passo2

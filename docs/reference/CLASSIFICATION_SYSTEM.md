@@ -287,6 +287,17 @@ L'handicap si applica a livello di **match** e modifica il conteggio dei rack.
 
 Non è permesso mescolare gare RACK con gare WINS nello stesso campionato.
 
+- **La gara di playoff** riceve il sistema del campionato come le altre; se si
+  gioca a tabellone è POSITION, l'unico sistema che un tabellone ammette.
+  Fino al 2026-09-14 nasceva sempre WINS.
+- **Il sistema si cambia solo prima delle iscrizioni**: se una gara (non
+  eliminata né annullata) ha lasciato la preparazione o ha già degli iscritti,
+  `TournamentService.update_campionato` rifiuta il cambio. Altrimenti il
+  sistema nuovo arriva a tutte le gare, e una gara che con quel sistema non
+  sarebbe valida (per esempio a triangoli totali con la X semplice) ferma il
+  cambio intero. Presidio: `test_specifiche_conformita.py` e
+  `test_sistema_classifica_campionato.py`.
+
 ### 7.2 Aggregazione
 
 La classifica del campionato **aggrega sommando** le classifiche delle singole gare.

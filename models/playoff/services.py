@@ -1119,6 +1119,21 @@ class PlayoffService:
             if datetime.combine(gara_date, gara_time) < ultima:
                 gara_date, gara_time = ultima.date(), ultima.time()
 
+        # La finale usa il sistema di classifica del campionato, come ogni sua
+        # gara (SPECIFICHE.md riga 289). Senza, prendeva il default della
+        # colonna, WINS: un campionato a triangoli totali si chiudeva con una
+        # finale a vittorie, e un playoff a tabellone non si creava affatto,
+        # perché WINS su un tabellone è rifiutato dalla validazione.
+        from ..matchmaking.configuration import (
+            MatchmakingStrategy,
+            resolve_classification_system,
+        )
+
+        classification_system = resolve_classification_system(
+            params.get("matchmaking_strategy") or MatchmakingStrategy.AMALFI.value,
+            config.campionato.classification_system.value,
+        )
+
         gara = GaraService.create_gara(
             number=max_number + 1,
             name=config.name,
@@ -1135,6 +1150,7 @@ class PlayoffService:
             # gare di serata, sei, e un playoff da quattro non partiva mai.
             min_participants=PLAYOFF_MIN_PARTICIPANTS,
             playoff_config_id=config.id,
+            classification_system=classification_system,
             # Il peso vive sulla gara, che è ciò che l'aggregatore legge; la
             # configurazione è il valore scelto dal direttore prima che la
             # gara esistesse.
