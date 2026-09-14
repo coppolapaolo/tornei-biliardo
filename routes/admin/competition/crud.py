@@ -338,7 +338,7 @@ def edit_gara(gara_id):
             # classification system from the campionato; a standalone gara reads
             # them from the form. Hand-rolling the parsing here is what caused the
             # silent loss of `classification_system` (regression F9.2 / F7.5).
-            parser = GaraFormParser(campionato=gara.campionato)
+            parser = GaraFormParser(campionato=gara.campionato, gara=gara)
             data = parser.parse()
 
             errors = GaraFormParser.validate_strategy(data)

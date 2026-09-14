@@ -69,6 +69,16 @@ Defines playoff rules for a campionato.
 - `is_active`, `auto_generate`
 - `final_ranking_mode`, `playoff_weight` — come il playoff entra nella
   classifica finale del campionato (ADR-053)
+- `discipline`, `distance`, `rounds_count`, `strategy_type`,
+  `odd_number_policy`, `classification_system` — le opzioni della finale.
+  NULL = eredita: dalla **prima gara conclusa** (anche «al N»), e dai
+  valori del campionato solo se non ce n'è ancora una (`get_gara_params`).
+  Con `campionato_plus_playoff` la finale deve avere il sistema del
+  campionato; con `playoff_only` è libero e il tabellone porta POSITION
+  (`PlayoffService._verifica_finale_sommabile`, SPECIFICHE.md riga 289).
+  Si modificano solo prima dell'avvio: dopo, la finale esiste e la si
+  cambia dal form della gara, che non le impone strategia e sistema del
+  campionato
 
 ### PlayoffQualification
 Individual player qualification record.

@@ -759,6 +759,7 @@
 | `rounds_count` | INTEGER | YES |  |  |  |
 | `strategy_type` | VARCHAR(50) | YES |  |  |  |
 | `odd_number_policy` | VARCHAR(20) | YES |  |  |  |
+| `classification_system` | VARCHAR(10) | YES |  |  |  |
 | `created_at` | DATETIME | NO |  | func |  |
 | `updated_at` | DATETIME | NO |  | func |  |
 

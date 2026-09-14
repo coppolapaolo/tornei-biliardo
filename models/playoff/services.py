@@ -371,7 +371,8 @@ class PlayoffService:
 
         Una finale già creata ha il suo. Altrimenti lo decide la strategia —
         esplicita o ereditata — con la stessa regola delle altre gare: il
-        tabellone è POSITION, il resto segue il campionato.
+        tabellone è POSITION, il resto usa il sistema scelto nella
+        configurazione, o quello del campionato se non è stato scelto.
         """
         from ..matchmaking.configuration import (
             MatchmakingStrategy,
@@ -385,11 +386,54 @@ class PlayoffService:
             config.get_gara_params().get("matchmaking_strategy")
             or MatchmakingStrategy.AMALFI.value
         )
-        return ClassificationSystem.resolve(
-            resolve_classification_system(
-                strategia, config.campionato.classification_system.value
-            )
+        richiesto = (
+            config.classification_system
+            or config.campionato.classification_system.value
         )
+        return ClassificationSystem.resolve(
+            resolve_classification_system(strategia, richiesto)
+        )
+
+    @staticmethod
+    def _verifica_valori_della_finale(fields: Dict[str, Any]) -> None:
+        """Rifiuta i valori che l'app non conosce, prima di scriverli.
+
+        Un valore sconosciuto in queste colonne non darebbe errore qui: la
+        finale nascerebbe mesi dopo, all'avvio dei playoff, e fallirebbe lì —
+        o peggio, `_MATCHMAKING_MAP` la tratterebbe in silenzio come Amalfi.
+        POSITION non si sceglie: lo porta il tabellone. La disciplina si
+        normalizza sul vocabolario unico.
+        """
+        from flask_babel import gettext as _
+
+        from ..exceptions import ValidationError
+        from ..matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
+        from ..status_enum import Discipline
+
+        ammessi = {
+            "strategy_type": {s.value for s in MatchmakingStrategy},
+            "odd_number_policy": {p.value for p in OddNumberPolicy},
+            "classification_system": {"WINS", "RACK"},
+        }
+        for campo, valori in ammessi.items():
+            valore = fields.get(campo)
+            if valore is not None and valore not in valori:
+                raise ValidationError(
+                    _(
+                        "Valore non ammesso per la finale dei playoff: %(valore)s",
+                        valore=valore,
+                    )
+                )
+        if fields.get("discipline") is not None:
+            disciplina = Discipline.normalize(fields["discipline"])
+            if disciplina is None:
+                raise ValidationError(
+                    _(
+                        "Valore non ammesso per la finale dei playoff: %(valore)s",
+                        valore=fields["discipline"],
+                    )
+                )
+            fields["discipline"] = disciplina.value
 
     @staticmethod
     def _verifica_finale_sommabile(
@@ -736,11 +780,18 @@ class PlayoffService:
             "rounds_count",
             "strategy_type",
             "odd_number_policy",
+            "classification_system",
         }
+        PlayoffService._verifica_valori_della_finale(fields)
         for key, value in fields.items():
             if key in allowed:
                 setattr(config, key, value)
 
+        # Una scelta che, con la somma, conterebbe un'altra cosa si ferma qui e
+        # non all'avvio dei playoff: la transazione annulla quanto scritto sopra.
+        PlayoffService._verifica_finale_sommabile(
+            config, PlayoffService._sistema_della_finale(config).value
+        )
         return config
 
     @staticmethod
@@ -1196,28 +1247,28 @@ class PlayoffService:
         classification_system = PlayoffService._sistema_della_finale(config).value
         PlayoffService._verifica_finale_sommabile(config, classification_system)
 
-        gara = GaraService.create_gara(
-            number=max_number + 1,
-            name=config.name,
-            date=gara_date,
-            discipline=params["discipline"],
-            distance=params["distance"],
-            campionato_id=config.campionato_id,
-            time=gara_time,
-            rounds_count=params.get("rounds_count", 1),
-            max_participants=config.max_participants,
+        from ..matchmaking.configuration import (
+            MatchmakingStrategy,
+            bracket_derived_fields,
+        )
+
+        campi: Dict[str, Any] = {
+            "rounds_count": params.get("rounds_count", 1),
+            "max_participants": config.max_participants,
             # Il playoff si gioca con chi ha accettato, anche se sono meno dei
             # posti (SPECIFICHE.md, «Playoff»: «oppure sono finiti i
             # giocatori»). Senza, la gara prendeva il minimo di default delle
             # gare di serata, sei, e un playoff da quattro non partiva mai.
-            min_participants=PLAYOFF_MIN_PARTICIPANTS,
-            playoff_config_id=config.id,
-            classification_system=classification_system,
+            "min_participants": PLAYOFF_MIN_PARTICIPANTS,
+            "playoff_config_id": config.id,
+            "classification_system": classification_system,
             # Il peso vive sulla gara, che è ciò che l'aggregatore legge; la
             # configurazione è il valore scelto dal direttore prima che la
             # gara esistesse.
-            weight=config.playoff_weight or 1,
-            **{
+            "weight": config.playoff_weight or 1,
+        }
+        campi.update(
+            {
                 k: v
                 for k, v in params.items()
                 if v is not None
@@ -1227,8 +1278,28 @@ class PlayoffService:
                     "entry_fee",
                     "matchmaking_strategy",
                     "odd_number_policy",
+                    "is_race_to",
                 )
-            },
+            }
+        )
+        # Una finale a tabellone prende i campi che sul tabellone non sono una
+        # scelta — «al N», minimo del formato, turni dalla capienza — come una
+        # gara creata dal form. Fuori dal tabellone non cambia niente.
+        campi.update(
+            bracket_derived_fields(
+                {"matchmaking_strategy": MatchmakingStrategy.AMALFI.value, **campi}
+            )
+        )
+
+        gara = GaraService.create_gara(
+            number=max_number + 1,
+            name=config.name,
+            date=gara_date,
+            discipline=params["discipline"],
+            distance=params["distance"],
+            campionato_id=config.campionato_id,
+            time=gara_time,
+            **campi,
         )
 
         # Inscribe all confirmed players

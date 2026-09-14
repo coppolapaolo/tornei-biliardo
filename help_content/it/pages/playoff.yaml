@@ -254,6 +254,26 @@ blocks:
           posto degli invitati trovi **Gare di playoff**, con il collegamento
           a ciascuna.
 
+  - type: options
+    title: "Le opzioni della finale"
+    items:
+      - name: "Distanza, turni, disciplina, formula, dispari"
+        text: >-
+          Nella configurazione di ogni playoff, con **Modifica**. Lasciate su
+          **Eredita**, la finale si gioca come la prima gara conclusa della
+          stagione, compreso «al N» o «esattamente N». Le puoi cambiare tutte,
+          ma solo prima di avviare i playoff.
+      - name: "Sistema di classifica"
+        text: >-
+          Con «Campionato + gara di playoff» la finale usa quello del
+          campionato, perché i punti si sommano. Con «Solo i playoff» puoi
+          sceglierne un altro: della finale conta solo l'ordine d'arrivo.
+      - name: "Finale a tabellone"
+        text: >-
+          Eliminazione diretta o doppio KO si scelgono con «Solo i playoff», o
+          quando è a tabellone anche il campionato. Sul tabellone si gioca
+          sempre «al N».
+
   - type: note
     tone: info
     title: "Il campionato si chiude da solo"

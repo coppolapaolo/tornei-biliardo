@@ -159,16 +159,6 @@ class TestCambioDelSistema:
 
 @pytest.mark.unit
 class TestPlayoffATabellone:
-    @pytest.mark.xfail(
-        strict=True,
-        raises=ValueError,
-        reason=(
-            "Il sistema ora è quello giusto, POSITION, ma la finale eredita la "
-            "distanza «esattamente N» delle gare di serata, che un tabellone "
-            "rifiuta. Nessuna interfaccia sceglie oggi `strategy_type`, quindi "
-            "il caso si raggiunge solo scrivendo la configurazione a mano."
-        ),
-    )
     def test_con_solo_playoff_nasce_a_posizioni_in_un_campionato_a_vittorie(
         self, db_session
     ):
@@ -200,3 +190,6 @@ class TestPlayoffATabellone:
         gara = PlayoffService.create_playoff_gara(configurazione.id)
 
         assert gara.classification_system == "POSITION"
+        # Sul tabellone si gioca sempre «al N»: la distanza esatta della
+        # stagione è ciò che fino al 2026-09-14 impediva di crearla.
+        assert gara.is_race_to is True

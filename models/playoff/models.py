@@ -150,6 +150,10 @@ class PlayoffConfiguration(BaseModel):
     rounds_count = db.Column(db.Integer, nullable=True)
     strategy_type = db.Column(db.String(50), nullable=True)
     odd_number_policy = db.Column(db.String(20), nullable=True)
+    # WINS o RACK; NULL = quello del campionato. POSITION non si sceglie: lo
+    # porta il tabellone da solo. Con «Campionato + gara di playoff» dev'essere
+    # quello del campionato (SPECIFICHE.md riga 289).
+    classification_system = db.Column(db.String(10), nullable=True)
 
     # Relationships
     campionato = db.relationship("Campionato")
@@ -182,10 +186,16 @@ class PlayoffConfiguration(BaseModel):
         )
 
     def get_gara_params(self) -> Dict[str, Any]:
-        """Return gara creation parameters, falling back to campionato defaults.
+        """I parametri della finale: espliciti, o ereditati.
 
-        Explicit values on this config override; NULL fields inherit from
-        the first completed gara of the campionato.
+        Un valore scritto sulla configurazione vince. Un campo NULL si eredita
+        dalla **prima gara conclusa** del campionato, che dice come si è
+        giocato davvero; se non ce n'è ancora una, dai valori predefiniti del
+        campionato dove esistono (turni, dispari).
+
+        Dal 2026-09-14 si eredita anche la distanza «al N»: fino ad allora non
+        veniva letta, e una stagione giocata «al 5» si chiudeva con una finale
+        «esattamente 5».
         """
         from ..competition.models import Gara
         from ..status_enum import GaraStatus
@@ -214,11 +224,17 @@ class PlayoffConfiguration(BaseModel):
             if self.distance is not None
             else (default_gara.distance if default_gara else 5)
         )
-        params["rounds_count"] = (
-            self.rounds_count
-            if self.rounds_count is not None
-            else (default_gara.rounds_count if default_gara else 1)
-        )
+        campionato = self.campionato
+        if self.rounds_count is not None:
+            params["rounds_count"] = self.rounds_count
+        elif default_gara is not None:
+            params["rounds_count"] = default_gara.rounds_count
+        else:
+            params["rounds_count"] = (
+                getattr(campionato, "default_rounds_count", None) or 1
+            )
+        if default_gara is not None:
+            params["is_race_to"] = bool(default_gara.is_race_to)
         if self.strategy_type is not None:
             params["matchmaking_strategy"] = self.strategy_type
         elif default_gara and default_gara.matchmaking_strategy:
@@ -231,6 +247,8 @@ class PlayoffConfiguration(BaseModel):
             and default_gara.odd_number_policy
         ):
             params["odd_number_policy"] = default_gara.odd_number_policy
+        elif default_gara is None and getattr(campionato, "default_odd_policy", None):
+            params["odd_number_policy"] = campionato.default_odd_policy
 
         # Additional fields from config
         if self.location:
