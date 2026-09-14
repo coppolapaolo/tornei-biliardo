@@ -9,7 +9,7 @@ Data Structures: PlayoffConfiguration, PlayoffQualification, PlayoffTournament
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, Sequence, TYPE_CHECKING
 from enum import Enum
 
 
@@ -254,9 +254,19 @@ class PlayoffConfiguration(BaseModel):
         self.qualification_criteria = json.dumps(criteria)
 
     def evaluate_qualifications(
-        self, posti: Optional[int] = None
+        self,
+        posti: Optional[int] = None,
+        classifications: Optional[Sequence[Any]] = None,
     ) -> List[Dict[str, Any]]:
         """Evaluate which players qualify for this playoff based on criteria.
+
+        `classifications` sono le righe su cui valutare, gia' in ordine di
+        posizione: per default le righe `Classification` persistite, da cui
+        partono gli inviti. La zona playoff della classifica generale
+        (`models/playoff/zona.py`) passa invece la classifica calcolata al
+        volo per la pagina, perche' le righe persistite possono essere ferme
+        a un ricalcolo precedente. Servono `user_id`, `position`,
+        `gare_played`, `total_matches_won` e `total_point_difference`.
 
         `posti` allarga la finestra oltre `max_participants`, e serve alla
         **cascata dei rifiuti** (`SPECIFICHE.md` riga 186: «se un giocatore
@@ -278,12 +288,16 @@ class PlayoffConfiguration(BaseModel):
         criteria = self.get_qualification_criteria()
         finestra = self.max_participants if posti is None else posti
 
-        # Get campionato final classification
-        classifications = (
-            Classification.query.filter_by(campionato_id=self.campionato_id)
-            .order_by(Classification.position)
-            .all()
-        )
+        righe: Sequence[Any]
+        if classifications is None:
+            # Get campionato final classification
+            righe = (
+                Classification.query.filter_by(campionato_id=self.campionato_id)
+                .order_by(Classification.position)
+                .all()
+            )
+        else:
+            righe = classifications
 
         qualified_players = []
 
@@ -293,8 +307,8 @@ class PlayoffConfiguration(BaseModel):
             top_n = criteria.get("top_positions", self.max_participants)
             if posti is not None:
                 top_n = max(top_n, posti)
-            for i, classification in enumerate(classifications[:top_n]):
-                if self._meets_minimum_requirements(classification.user_id):
+            for i, classification in enumerate(righe[:top_n]):
+                if self._meets_minimum_requirements(classification):
                     qualified_players.append(
                         {
                             "user_id": classification.user_id,
@@ -309,16 +323,16 @@ class PlayoffConfiguration(BaseModel):
             academy_positions = criteria.get("academy_positions", 6)
 
             if criteria.get("category") == "elite":
-                target_classifications = classifications[:elite_positions]
+                target_classifications = righe[:elite_positions]
                 reason = "Elite qualification"
             else:
-                target_classifications = classifications[
+                target_classifications = righe[
                     elite_positions : elite_positions + academy_positions
                 ]
                 reason = "Academy qualification"
 
             for classification in target_classifications:
-                if self._meets_minimum_requirements(classification.user_id):
+                if self._meets_minimum_requirements(classification):
                     qualified_players.append(
                         {
                             "user_id": classification.user_id,
@@ -330,10 +344,10 @@ class PlayoffConfiguration(BaseModel):
         elif self.playoff_type == PlayoffType.BOTTOM_EXCLUDE:
             # Exclude top N, include rest up to max_participants
             exclude_top = criteria.get("exclude_top_positions", 2)
-            eligible_classifications = classifications[exclude_top:]
+            eligible_classifications = righe[exclude_top:]
 
             for classification in eligible_classifications[:finestra]:
-                if self._meets_minimum_requirements(classification.user_id):
+                if self._meets_minimum_requirements(classification):
                     qualified_players.append(
                         {
                             "user_id": classification.user_id,
@@ -347,7 +361,7 @@ class PlayoffConfiguration(BaseModel):
 
         elif self.playoff_type == PlayoffType.CONDITIONAL:
             # Custom criteria evaluation
-            for classification in classifications:
+            for classification in righe:
                 if self._evaluate_custom_criteria(classification, criteria):
                     qualified_players.append(
                         {
@@ -359,26 +373,19 @@ class PlayoffConfiguration(BaseModel):
 
         return qualified_players[:finestra]
 
-    def _meets_minimum_requirements(self, user_id: int) -> bool:
-        """Check if user meets minimum requirements for playoff.
+    def _meets_minimum_requirements(self, classification: Any) -> bool:
+        """Check if the player of this row meets minimum requirements.
 
-        Usa `Classification.gare_played` (popolato da
-        `ClassificationService._count_gare_played` che conta le gare con
-        almeno un match completed/validated). Filtrare per
-        `Gara.status == "completed"` non e' affidabile perche' una gara
-        puo' essere di fatto conclusa pur restando in PLAYING finche' il
-        director non la chiude formalmente.
+        Legge `gare_played` dalla riga in mano — una `Classification`
+        (popolata da `ClassificationService._count_gare_played`, che conta le
+        gare con almeno un match completed/validated) o una riga calcolata al
+        volo dalla zona playoff. Filtrare per `Gara.status == "completed"`
+        non e' affidabile perche' una gara puo' essere di fatto conclusa pur
+        restando in PLAYING finche' il director non la chiude formalmente.
+        Prima rifaceva una query per candidato, sulle sole righe persistite.
         """
         if not self.min_garas_played:
             return True
-
-        from ..classification.models import Classification
-
-        classification = Classification.query.filter_by(
-            campionato_id=self.campionato_id, user_id=user_id
-        ).first()
-        if not classification:
-            return False
         return (classification.gare_played or 0) >= self.min_garas_played
 
     def _evaluate_custom_criteria(

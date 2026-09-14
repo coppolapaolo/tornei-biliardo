@@ -42,8 +42,12 @@ def _utente(db_session, prefisso):
     return u
 
 
-def _campionato_a_quattro(db_session, **cfg):
-    """Due gare, quattro giocatori, ordine A > B > C > D."""
+def _campionato_a_quattro(db_session, seconda_gara=None, **cfg):
+    """Due gare, quattro giocatori, ordine A > B > C > D.
+
+    `seconda_gara` sostituisce le coppie della gara 2: una funzione che
+    riceve i quattro giocatori e ne restituisce le coppie (vince, perde).
+    """
     from models.classification.gara_classification import RoundClassificationService
 
     camp = Campionato(
@@ -56,9 +60,10 @@ def _campionato_a_quattro(db_session, **cfg):
     db_session.add(camp)
     db_session.flush()
     a, b, c, d = (_utente(db_session, n) for n in "abcd")
+    coppie_2 = ((a, c), (b, d)) if seconda_gara is None else seconda_gara(a, b, c, d)
     for numero, giorno, coppie in (
         (1, 10, ((a, d), (b, c))),
-        (2, 15, ((a, c), (b, d))),
+        (2, 15, coppie_2),
     ):
         gara = Gara(
             campionato_id=camp.id,
@@ -178,13 +183,21 @@ def test_la_fascia_academy_segna_le_sue_posizioni_non_i_primi(db_session):
 
 
 def test_chi_non_ha_le_gare_minime_lascia_il_posto_a_chi_viene_dopo(db_session):
-    """Come `start_playoff`: il posto rimasto si copre dopo la fascia."""
-    dati = _campionato_a_quattro(db_session, min_garas_played=2)
-    riga_b = Classification.query.filter_by(
-        campionato_id=dati["campionato"].id, user_id=dati["b"].id
-    ).one()
-    riga_b.gare_played = 1
-    db.session.commit()
+    """Come `start_playoff`: il posto rimasto si copre dopo la fascia.
+
+    B salta la gara 2 (al suo posto gioca E, che quindi ha una gara sola
+    anche lui): con due gare minime la fascia 1–2 e' A e B, B non e' idoneo,
+    e il posto va al primo idoneo dopo la fascia, cioe' C.
+    """
+    e = {}
+
+    def seconda_gara(a, b, c, d):
+        e["utente"] = _utente(db.session, "e")
+        return ((a, c), (e["utente"], d))
+
+    dati = _campionato_a_quattro(
+        db_session, seconda_gara=seconda_gara, min_garas_played=2
+    )
 
     (zona,) = zone_playoff(dati["campionato"])
 
@@ -247,3 +260,80 @@ def test_qualificazioni_non_ancora_inviate_non_sono_inviti_partiti(db_session):
 
     assert not zona.inviti_partiti
     assert zona.user_ids == {dati["a"].id, dati["b"].id}
+
+
+def _invecchia_le_righe(dati):
+    """Simula le righe `Classification` ferme a un ricalcolo precedente.
+
+    In produzione (campionato 5, settembre 2026) le righe erano ferme alla
+    gara 1: la gara 2 era stata chiusa prima che la chiusura ricalcolasse
+    (PR #335), e la zona — nata dopo, PR #358 — le leggeva. Qui le righe
+    dicono D > C > B, e A non c'e' proprio, come chi ha giocato solo
+    l'ultima gara.
+    """
+    righe = {
+        r.user_id: r
+        for r in Classification.query.filter_by(campionato_id=dati["campionato"].id)
+    }
+    db.session.delete(righe[dati["a"].id])
+    righe[dati["d"].id].position = 1
+    righe[dati["c"].id].position = 2
+    righe[dati["b"].id].position = 3
+    db.session.commit()
+
+
+def test_la_zona_segue_la_classifica_in_pagina_non_le_righe_invecchiate(db_session):
+    """Bug di produzione del 14/09/2026: la barra saltava GIANNI (4º in
+    pagina, assente dalle righe) e segnava PICCHIO (14º in pagina, 8º nelle
+    righe ferme alla gara 1). La zona si calcola dalla stessa classifica che
+    la pagina mostra, cosi' non puo' divergere da cio' su cui e' disegnata."""
+    from models.campionato.tournament_service import TournamentService
+
+    dati = _campionato_a_quattro(db_session)
+    _invecchia_le_righe(dati)
+
+    (zona,) = zone_playoff(dati["campionato"])
+
+    pagina = TournamentService().calculate_general_classification(dati["campionato"].id)
+    primi_in_pagina = {riga["user_id"] for _pos, riga in pagina[:2]}
+    assert primi_in_pagina == {dati["a"].id, dati["b"].id}
+    assert zona.user_ids == primi_in_pagina
+
+
+def test_anche_senza_fascia_la_zona_segue_la_classifica_in_pagina(db_session):
+    """Le configurazioni senza fascia ripiegano su `evaluate_qualifications`,
+    che deve leggere la stessa classifica al volo e non le righe."""
+    dati = _campionato_a_quattro(db_session, positions_from=None, positions_to=None)
+    _invecchia_le_righe(dati)
+
+    (zona,) = zone_playoff(dati["campionato"])
+
+    assert zona.user_ids == {dati["a"].id, dati["b"].id}
+
+
+def test_le_gare_minime_si_leggono_dalla_classifica_in_pagina(db_session):
+    """Il minimo di gare si legge dalla classifica in pagina, non dalle righe.
+
+    Senza fascia decide `evaluate_qualifications`, come in `start_playoff`:
+    prende i primi `max_participants` e scarta chi non ha le gare minime,
+    senza coprire il posto con chi viene dopo. Qui B e' secondo con una gara
+    sola, quindi resta il solo A.
+    """
+    e = {}
+
+    def seconda_gara(a, b, c, d):
+        e["utente"] = _utente(db.session, "e")
+        return ((a, c), (e["utente"], d))
+
+    dati = _campionato_a_quattro(
+        db_session,
+        seconda_gara=seconda_gara,
+        positions_from=None,
+        positions_to=None,
+        min_garas_played=2,
+    )
+    _invecchia_le_righe(dati)
+
+    (zona,) = zone_playoff(dati["campionato"])
+
+    assert zona.user_ids == {dati["a"].id}
