@@ -3,6 +3,7 @@ from urllib.parse import urljoin
 
 from flask import (
     Blueprint,
+    abort,
     render_template,
     request,
     redirect,
@@ -192,6 +193,12 @@ def campionato_detail_public(campionato_id):
     from models.status_enum import GaraStatus
 
     campionato = db.get_or_404(Campionato, campionato_id)
+    # Su `Campionato` il filtro dei soft-eliminati non è automatico: si scrive,
+    # come fa la vetrina in `resolve_public_identifier_campionato`. Senza,
+    # un campionato eliminato risponderebbe 200 a chiunque ne indovini l'id.
+    # La prova (ADR-058) invece la esclude già il filtro di sessione.
+    if campionato.is_deleted:
+        abort(404)
 
     # Tutte le gare del campionato
     gare = Gara.query.filter_by(campionato_id=campionato_id).order_by(Gara.number).all()
