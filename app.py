@@ -57,7 +57,11 @@ def glitchtip_before_send(event, hint):
 
 
 def _inside_uwsgi() -> bool:
-    """Vero solo nel processo del server web: uWSGI vi rende importabile `uwsgi`."""
+    """Il processo vede il modulo `uwsgi`? Solo informativo, nella riga diagnostica.
+
+    Era la condizione della #427, e in produzione non ha fatto scattare nulla:
+    riportarne l'esito dice se era lei a sbagliare.
+    """
     import importlib.util
     import sys
 
@@ -69,7 +73,9 @@ def _inside_uwsgi() -> bool:
         return False
 
 
-def configure_production_logging(config_name: str) -> None:
+def configure_production_logging(
+    config_name: str, *, da_script: bool = False, fase: str = "avvio"
+) -> bool:
     """Riporta a WARNING il logging del server web di produzione.
 
     Nell'error log di PythonAnywhere comparivano i `logger.info` del progetto,
@@ -78,12 +84,18 @@ def configure_production_logging(config_name: str) -> None:
     qualcosa fuori dal codice. Prima di correggerlo si scrive una riga con ciò
     che si è trovato, così l'error log dice chi era stato.
 
-    Solo dentro uWSGI: gli script da console fanno `basicConfig(level=INFO)` e
-    poi creano l'app in production, e un override qui zittirebbe il loro
-    resoconto, dry-run compresi.
+    Esclusi gli script: passano da `scripts/prod_env.bootstrap_and_create_app`,
+    che lo dice con `da_script`, e fanno `basicConfig(level=INFO)` apposta per
+    il loro resoconto, dry-run compresi. La #427 li distingueva guardando se il
+    processo girava dentro uWSGI; in produzione non ha fatto nulla, e quel
+    rilevamento resta solo come informazione nella riga.
+
+    Restituisce True se la regola vale per quest'app: `create_app` allora
+    ripete il controllo alla prima richiesta, per il caso in cui il livello
+    scenda dopo l'avvio.
     """
-    if config_name != "production" or not _inside_uwsgi():
-        return
+    if config_name != "production" or da_script:
+        return False
 
     root = logging.getLogger()
     sotto_warning = sorted(
@@ -93,22 +105,56 @@ def configure_production_logging(config_name: str) -> None:
         and logging.NOTSET < logger.level < logging.WARNING
     )
     if root.getEffectiveLevel() >= logging.WARNING and not sotto_warning:
-        return
+        return True
 
     root.warning(
-        "Logging del server web a %s, handler %r, logger sotto WARNING %r: "
-        "riportato a WARNING",
+        "Logging del server web a %s alla fase «%s», handler %r, logger sotto "
+        "WARNING %r, uWSGI rilevato: %s — riportato a WARNING",
         logging.getLevelName(root.level),
-        [(type(h).__name__, getattr(h.formatter, "_fmt", None)) for h in root.handlers],
+        fase,
+        [
+            (
+                type(h).__name__,
+                getattr(h.formatter, "_fmt", None),
+                logging.getLevelName(h.level),
+            )
+            for h in root.handlers
+        ],
         sotto_warning,
+        _inside_uwsgi(),
     )
     root.setLevel(logging.WARNING)
     for name in sotto_warning:
         logging.getLogger(name).setLevel(logging.NOTSET)
+    return True
 
 
-def create_app(config_name=None):
-    """Factory per creare l'app Flask"""
+def registra_controllo_logging_alla_prima_richiesta(app) -> None:
+    """Ripete `configure_production_logging` alla prima richiesta del processo.
+
+    All'avvio il livello può essere ancora a posto e scendere dopo, quando il
+    server web ha finito di caricare l'app. Il controllo gira una volta sola
+    per processo: ogni worker uWSGI ha la sua copia di questo stato, quindi
+    ciascuno controlla la propria prima richiesta, e poi non costa più nulla.
+    """
+    stato = {"fatto": False}
+
+    @app.before_request
+    def _controlla_logging_alla_prima_richiesta():
+        if stato["fatto"]:
+            return None
+        stato["fatto"] = True
+        configure_production_logging("production", fase="prima richiesta")
+        return None
+
+
+def create_app(config_name=None, *, da_script: bool = False):
+    """Factory per creare l'app Flask.
+
+    `da_script` lo passa `scripts/prod_env.bootstrap_and_create_app`: un'app
+    creata da uno script non tocca il livello di log, che lo script ha alzato
+    a INFO per il proprio resoconto.
+    """
 
     # Determina configurazione
     if config_name is None:
@@ -173,7 +219,8 @@ def create_app(config_name=None):
             logging.INFO
         )
         logging.getLogger("routes.admin.match").setLevel(logging.INFO)
-    configure_production_logging(config_name)
+    if configure_production_logging(config_name, da_script=da_script):
+        registra_controllo_logging_alla_prima_richiesta(app)
 
     # Inizializza estensioni
     db.init_app(app)
