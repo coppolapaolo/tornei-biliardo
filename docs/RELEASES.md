@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.28.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.27.1...v1.28.0) (2026-09-14)
+
+
+### Funzioni nuove
+
+* il campionato concluso mostra il campione, in vetrina e nella pagina del direttore ([#417](https://github.com/coppolapaolo/tornei-biliardo/issues/417)) ([7769656](https://github.com/coppolapaolo/tornei-biliardo/commit/7769656d131d9f933ec890654e0ba6399dfd6053))
+
+
+### Correzioni
+
+* la finale dei playoff non conta fra le gare previste ([#416](https://github.com/coppolapaolo/tornei-biliardo/issues/416)) ([677e62a](https://github.com/coppolapaolo/tornei-biliardo/commit/677e62a7fe9f0bf898dc6356046d43b8dc588266))
+* la pagina pubblica di un campionato eliminato risponde 404 ([#415](https://github.com/coppolapaolo/tornei-biliardo/issues/415)) ([b8293ee](https://github.com/coppolapaolo/tornei-biliardo/commit/b8293ee9b08bb44e622fe8ab3163f4ed8e52d075))
+
 ## [1.27.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.27.0...v1.27.1) (2026-09-14)
 
 
