@@ -18,6 +18,7 @@ from utils.activity_feedback_view import reset_activity_feedback_view
 from flask_babel import gettext as _
 from models.user.services import UserService
 from models.user.profile_service import UserProfileService
+from models.user.role_enum import UserRole
 from utils.analytics import AnalyticsEvent, track_event
 from utils.rate_limiter import limiter
 from utils.safe_redirect import safe_next_url
@@ -166,7 +167,11 @@ def login():
                     f"Gamification welcome flash failed: {e}"
                 )
 
-            if not user.is_verified:
+            # L'admin resta fuori: l'avviso parla di recupero password via
+            # email e manda al profilo, ma la sua password arriva dalla
+            # variabile d'ambiente e il suo profilo non è modificabile. Nato
+            # dal bootstrap con un'email finta, lo vedeva a ogni login.
+            if not user.is_verified and user.role != UserRole.ADMIN.value:
                 # B11: explain real consequence (password recovery) + link to
                 # the profile page where the resend form already lives. The
                 # /verify-email route is POST-only (CSRF-protected), so we do
