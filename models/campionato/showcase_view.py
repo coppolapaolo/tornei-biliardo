@@ -116,7 +116,6 @@ class VetrinaCampionato:
         return ConteggioGare(regolari=self.prove_giocate, finali=self.finali_giocate)
 
 
-
 def _tappa(gara, vincitori: Dict[int, str], iscritti: Dict[int, int]) -> TappaVetrina:
     """Una riga del calendario, con la frase giusta per il suo stato."""
     from models.competition.invite_service import GaraInviteService
