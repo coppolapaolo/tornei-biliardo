@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.30.3](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.30.2...v1.30.3) (2026-09-14)
+
+
+### Correzioni
+
+* il sistema di classifica della finale dei playoff segue la modalità della classifica finale ([#437](https://github.com/coppolapaolo/tornei-biliardo/issues/437)) ([5f617d9](https://github.com/coppolapaolo/tornei-biliardo/commit/5f617d9c323517aa13c7b3875f20163e7d811dfc))
+
 ## [1.30.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.30.1...v1.30.2) (2026-09-14)
 
 
