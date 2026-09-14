@@ -113,26 +113,28 @@ attivo non cambia.
 
 ---
 
-## GitHub Actions (`.github/workflows/ci.yml`) — 4 job
+## GitHub Actions (`.github/workflows/ci.yml`) — 2 job, nessuno tocca la produzione
 
 | Job | Quando gira | Cosa fa |
 |-----|-------------|---------|
-| `test-and-typecheck` | push su `main` **e** PR **verso `main`** | unit test + pyright. È l'unico status check che blocca il merge. Il workflow ha `on: push: branches: [main]` e `pull_request: branches: [main]`, quindi **una PR con base diversa da `main` non fa girare nessun check** e resta bloccata per sempre: le PR impilate vanno riportate su `main` prima del merge |
-| `check-migrations` | solo push su `main` | `git diff --diff-filter=A HEAD~1 HEAD -- 'migrations/*.py'`: c'è una migration **nuova**? |
-| `deploy` | solo push su `main`, **e solo se NON ci sono migration nuove** | **reload** della web app via API PythonAnywhere |
-| `skip-deploy-notification` | solo push su `main`, **se ci sono migration nuove** | salta il deploy e stampa la procedura manuale |
+| `test-and-typecheck` | push su `main` **e** PR **verso `main`** | unit test + pyright. Status check richiesto. Il workflow ha `on: push: branches: [main]` e `pull_request: branches: [main]`, quindi **una PR con base diversa da `main` non fa girare nessun check** e resta bloccata per sempre: le PR impilate vanno riportate su `main` prima del merge |
+| `pr-title` | PR verso `main` | titolo in formato Conventional Commits. Status check richiesto |
 
-Il job `deploy` non fa `git pull` per un motivo scritto nel workflow stesso:
-*«PythonAnywhere console API requires browser session, doesn't work from CI»*.
-Il codice lo porta `scripts/auto_deploy.py`. La procedura manuale stampata da
-`skip-deploy-notification` è un **fallback**, non un compito da assegnare a chi
-fa il merge: le migration pendenti le applica `auto_deploy.py` al giro
-successivo, disabilitando e riabilitando la web app via API.
+Il codice, le dipendenze, le migration e il reload li porta **solo**
+`scripts/auto_deploy.py`. Dalla CI non si può fare il `git pull`: la console
+API di PythonAnywhere vuole una sessione del browser.
 
-Sulle PR girano solo `test-and-typecheck`; gli altri tre risultano `skipped`
-perché condizionati a `github.event_name == 'push'`. Non vanno **mai** richiesti
-come status check: resterebbero pending all'infinito. Per un hotfix urgente con
-CI rotta serve togliere temporaneamente la protezione
+> ⚠️ **Non rimettere un reload in CI** (tolto il 2026-09-14). I job
+> `check-migrations`, `deploy` e `skip-deploy-notification` facevano un reload
+> della web app a ogni merge senza migration nuove: il codice non cambiava,
+> perché nessuno aveva fatto pull, ma l'app ripartiva sotto gli utenti
+> collegati. Nei log di sei giorni: tutti i 16 errori 5xx caduti su un
+> riavvio, 6 il solo 13/09 sui reload della CI, e con tre merge ravvicinati
+> alle 16:30 dello stesso giorno i reload si sovrapponevano — `KeyboardInterrupt`
+> dentro un import, `lost connection with my emperor`. I secret
+> `PYTHONANYWHERE_*` della CI su GitHub non servono più.
+
+Per un hotfix urgente con CI rotta serve togliere temporaneamente la protezione
 (`gh api -X DELETE repos/coppolapaolo/tornei-biliardo/branches/main/protection`,
 poi riapplicarla).
 

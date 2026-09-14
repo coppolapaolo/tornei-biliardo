@@ -44,16 +44,19 @@ python scripts/generate_schema_docs.py          # Regenerate DB schema docs
 **Production URL**: https://www.torneibiliardo.it
 
 Le tre cose che devono essere note **sempre**, non solo quando si deploya. Il
-resto — i 4 job della CI, la procedura manuale PythonAnywhere, le env negli
+resto — i job della CI, la procedura manuale PythonAnywhere, le env negli
 script da console, l'ordine degli import, gli scheduled task, GlitchTip, la
 convenzione dry-run degli script sui dati storici — sta nella skill **`deploy`**
 (`.claude/skills/deploy/SKILL.md`), che si carica quando serve.
 
-> ⚠️ **1. Il merge su `main` NON deploya il codice.** Il job `deploy` fa **solo
-> un reload** della web app, non un `git pull`. Il codice nuovo arriva su
-> PythonAnywhere quando gira lo scheduled task giornaliero
-> `scripts/auto_deploy.py`: fra il merge e la produzione può passare fino a **un
-> giorno**. E se la PR **aggiunge una migration** non parte nemmeno il reload.
+> ⚠️ **1. Il merge su `main` NON deploya il codice, e la CI non tocca la
+> produzione.** Il codice nuovo arriva su PythonAnywhere quando gira lo
+> scheduled task giornaliero `scripts/auto_deploy.py`, che fa pull, dipendenze,
+> migration e reload: fra il merge e la produzione può passare fino a **un
+> giorno**. Fino al 2026-09-14 un job `deploy` della CI faceva un reload a ogni
+> merge: non portava codice, e riavviare l'app sotto gli utenti costava errori
+> 5xx — con tre merge ravvicinati i reload si sovrapponevano. **Non
+> rimetterlo.**
 >
 > Le migration pendenti le applica da solo `auto_deploy.py` al giro successivo.
 > Quindi dopo un merge **non c'è nulla da ricordare all'utente**: niente
@@ -73,11 +76,10 @@ gh pr create --title "fix: descrizione in italiano"   # il prefisso è obbligato
 # attendi che la CI sia verde, poi merge (il codice va in produzione dopo, vedi sopra)
 ```
 
-Due trappole: una **PR con base diversa da `main` non fa girare nessun check** e
-resta bloccata per sempre (le PR impilate vanno riportate su `main`); e sulle PR
-`check-migrations`, `deploy` e `skip-deploy-notification` risultano `skipped` di
-proposito — è **normale**, non va segnalato come problema né richiesto come
-status check. (`pr-title`, invece, sulle PR gira eccome: vedi il punto 4.)
+Una trappola: una **PR con base diversa da `main` non fa girare nessun check** e
+resta bloccata per sempre — le PR impilate vanno riportate su `main`. Gli
+status check richiesti sono due, `test-and-typecheck` e `pr-title` (vedi il
+punto 4).
 
 `test-and-typecheck` parte sempre, ma su una PR di **sola documentazione**
 (Markdown, testo, `docs/` senza sorgenti Python) salta test e pyright e chiude
@@ -507,7 +509,7 @@ grafo anti-rematch. Non reimplementare algoritmi su grafi — usa `nx`, è già 
 | `Match.status == CLOSED_UNILATERALLY` per «partita giocata» | `MatchStatus.finished_values()`: `CONFIRMED_BY_BOTH` è la chiusura **dei due giocatori**, ed è giocata quanto l'altra. Filtrare solo la prima è il bug che teneva monco lo storico |
 | `RoundConfiguration` salvato solo in `localStorage` | API endpoint `POST /admin/gara/<id>/round-config/<n>` (ADR-027) |
 | Nuova route senza entry in `ENDPOINT_ROLES` | Sarà admin-only in prod (ADR-028) — aggiungila a `utils/feature_flags.py` se non è il comportamento voluto |
-| "Il merge su `main` fa scattare il deploy" | **Falso**: il job `deploy` fa solo un *reload*, e se la PR aggiunge migration non parte neanche quello. Il codice lo porta lo scheduled task `auto_deploy.py` (fino a 24h dopo) |
+| "Il merge su `main` fa scattare il deploy", o rimettere un reload della web app in CI | **Falso**, e il reload non va rimesso: la CI non tocca la produzione. Codice, dipendenze, migration e reload li porta lo scheduled task `auto_deploy.py` (fino a 24h dopo). Il reload da CI, tolto il 2026-09-14, riavviava l'app senza codice nuovo e causava 5xx a chi era collegato |
 | Link a endpoint in template senza `feature_visible(...)` | In prod il link compare ma porta a 404 (ADR-028) — avvolgi con `{% if feature_visible('endpoint.name') %}` |
 | `match.status in ["completed", "validated"]` (letterale raw) | `MatchStatus.is_finished(match.status)` / `is_active(...)` (typo-safe) |
 | Credere che `"validated"` sia la validazione del direttore | È il contrario: `CONFIRMED_BY_BOTH` (valore `"validated"`) = chiusa dai **giocatori** con doppia conferma; `CLOSED_UNILATERALLY` (valore `"completed"`) = chiusa dal direttore/forfait/bye. I nomi dei membri sono stati corretti il 2026-08-17, **i valori persistiti no** |
