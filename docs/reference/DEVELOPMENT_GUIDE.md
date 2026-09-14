@@ -181,12 +181,9 @@ Le migrazioni devono:
 ### Architettura Produzione
 
 ```
-GitHub (main) → GitHub Actions CI → PythonAnywhere
-                    ↓
-              1. Unit tests
-              2. Pyright
-              3. Check migrazioni
-              4. Reload web app (se no migrazioni nuove)
+GitHub (main) → GitHub Actions CI: unit test + pyright (nessun contatto con la produzione)
+GitHub (main) → scheduled task auto_deploy.py su PythonAnywhere, una volta al giorno:
+                git pull → pip install → migrazioni → reload
 ```
 
 **URL Produzione**: https://www.torneibiliardo.it
@@ -196,9 +193,11 @@ GitHub (main) → GitHub Actions CI → PythonAnywhere
 | Job | Trigger | Azioni |
 |-----|---------|--------|
 | `test-and-typecheck` | Push/PR su main | pytest + pyright |
-| `check-migrations` | Push su main | Rileva nuovi file migrazione |
-| `deploy` | Push su main (no migrazioni) | Reload web app PythonAnywhere |
-| `skip-deploy-notification` | Push su main (con migrazioni) | Avvisa di deploy manuale |
+| `pr-title` | PR su main | Titolo in formato Conventional Commits |
+
+Fino al 2026-09-14 la CI faceva anche un reload della web app a ogni merge:
+non portava codice nuovo e riavviava l'app sotto gli utenti collegati, quindi
+è stato tolto.
 
 ### Deploy Manuale (con migrazioni)
 
