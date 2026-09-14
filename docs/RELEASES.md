@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.30.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.30.1...v1.30.2) (2026-09-14)
+
+
+### Correzioni
+
+* il direttore non titolare ha «Dettagli» sulle tessere delle gare ([#435](https://github.com/coppolapaolo/tornei-biliardo/issues/435)) ([5077e80](https://github.com/coppolapaolo/tornei-biliardo/commit/5077e80c0f9696b4d3a9384a4cebbbeb4545be65))
+
 ## [1.30.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.30.0...v1.30.1) (2026-09-14)
 
 
