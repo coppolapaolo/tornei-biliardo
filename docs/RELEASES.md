@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.27.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.27.0...v1.27.1) (2026-09-14)
+
+
+### Correzioni
+
+* Elimina account sta solo nel profilo, non più nel menu utente ([#411](https://github.com/coppolapaolo/tornei-biliardo/issues/411)) ([6fe16cc](https://github.com/coppolapaolo/tornei-biliardo/commit/6fe16ccd79fb11747a2106b4ff9f7670990580e8))
+* le sfide a due in attesa di conferma escono dalla dashboard e bloccano le sfide nuove ([#413](https://github.com/coppolapaolo/tornei-biliardo/issues/413)) ([1bd5c3d](https://github.com/coppolapaolo/tornei-biliardo/commit/1bd5c3da7baac61ee8ad6e4befdc7a16849fc6da))
+
 ## [1.27.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.26.1...v1.27.0) (2026-09-13)
 
 
