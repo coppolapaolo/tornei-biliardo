@@ -24,7 +24,7 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
   persistite, ferme a prima dell'ultima gara, e non chi è fra i primi nella
   classifica mostrata. Ora la zona si calcola dalla stessa classifica che la
   pagina disegna. Gli inviti non erano a rischio: l'avvio dei playoff
-  ricalcola le righe prima di leggerle.
+  ricalcola le righe prima di leggerle (PR #433).
 - **Un'operazione che salvava dentro un'altra poteva lasciare i dati a
   metà o perderli**: se falliva l'esterna restavano scritti i passi interni,
   e se falliva un passo interno si perdeva il lavoro fatto prima. Ora salva
