@@ -39,7 +39,7 @@ def _righe(n=4):
     ]
 
 
-def _render(app, righe, *, zone=None, sistema=ClassificationSystem.WINS):
+def _render(app, righe, *, zone=None, sistema=ClassificationSystem.WINS, **extra):
     with app.test_request_context():
         return app.jinja_env.get_template(TEMPLATE).render(
             campionato=SimpleNamespace(classification_system=sistema),
@@ -47,7 +47,30 @@ def _render(app, righe, *, zone=None, sistema=ClassificationSystem.WINS):
             last_completed_gara_number=2,
             zone_playoff=zone or [],
             ClassificationSystem=ClassificationSystem,
+            **extra,
         )
+
+
+def test_la_classifica_finale_non_ha_zona_ne_frecce(app):
+    """A campionato concluso (canvas «campionato-concluso»): la zona playoff
+    non segna più niente e la freccia non ha un termine di confronto."""
+    zona = ZonaPlayoff("Finale", 2, frozenset({1, 2}), inviti_partiti=True)
+    html = _render(app, _righe(), zone=[zona], classifica_finale=True)
+
+    assert ">Classifica finale<" in html and "definitiva" in html
+    assert "Classifica generale<" not in html and "dopo la gara" not in html
+    assert "Zona playoff" not in html and "c7-cg__riga--zona" not in html
+    assert "La barra segna" not in html
+    assert "c7-classifica__trend" not in html
+    # Sul telefono niente colonna Gare: lascia il posto al nome.
+    gare = html.split(">Gare<")[0].rsplit("<span", 1)[1]
+    assert "d-none d-lg-block" in gare
+
+
+def test_senza_la_variante_resta_la_classifica_generale(app):
+    html = _render(app, _righe())
+    assert ">Classifica generale<" in html
+    assert "c7-classifica__trend" in html
 
 
 def test_la_zona_ha_etichetta_barra_e_fuori(app):

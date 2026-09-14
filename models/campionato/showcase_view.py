@@ -14,6 +14,10 @@ mostrare un pulsante che non porta da nessuna parte (`prossima`).
 Nessuna scrittura, come per la gara: la classifica generale arriva da
 `TournamentStatisticsService.calculate_general_classification`, che è
 `@read_only`, e i vincitori delle prove concluse da una query sola.
+
+A campionato concluso la stessa classifica dà anche il podio che la targa
+annuncia (`models/campionato/esito.py`, condiviso con la pagina del
+direttore).
 """
 
 from __future__ import annotations
@@ -25,6 +29,12 @@ from flask_babel import format_date, gettext as _
 
 from models.base import db
 from models.campionato.conteggio_gare import ConteggioGare
+from models.campionato.esito import (
+    PostoPodio,
+    campionato_concluso,
+    podio_da_classifica,
+    vincitori_delle_gare,
+)
 
 # Stessa forma della classifica della gara, e di proposito: le due vetrine
 # la disegnano con lo stesso markup, e due dataclass gemelle sarebbero due
@@ -89,6 +99,11 @@ class VetrinaCampionato:
     link_esterno: Optional[str] = None
     etichetta_link: Optional[str] = None
     indicizzabile: bool = True
+    #: Terminato e senza playoff da giocare: la targa annuncia il campione e
+    #: la classifica diventa quella finale.
+    concluso: bool = False
+    #: Campione, secondo e terzo; vuoto finché il campionato non è concluso.
+    podio: List[PostoPodio] = field(default_factory=list)
 
     @property
     def conteggio(self) -> ConteggioGare:
@@ -100,44 +115,6 @@ class VetrinaCampionato:
         """Le gare già giocate, con la finale se è conclusa."""
         return ConteggioGare(regolari=self.prove_giocate, finali=self.finali_giocate)
 
-
-def _vincitori_delle_prove(gare) -> Dict[int, str]:
-    """Chi ha vinto ciascuna prova conclusa, in **una** query.
-
-    Si legge la riga in prima posizione della classifica dell'ultimo turno,
-    che è la stessa fonte che la pagina della gara mostra davvero. Batchare
-    sulle coppie `(gara_id, ultimo_turno)` invece di interrogare gara per gara
-    è ciò che tiene questa pagina a query costanti anche su un campionato di
-    dodici prove: la vetrina la aprono i crawler, e un N+1 qui si paga a ogni
-    passaggio.
-    """
-    from sqlalchemy import tuple_
-    from sqlalchemy.orm import joinedload
-    from models.classification.models import RoundClassification
-
-    coppie = [
-        (g.id, g.rounds_count) for g in gare if gara_ha_finito(g) and g.rounds_count
-    ]
-    if not coppie:
-        return {}
-
-    righe = (
-        db.session.query(RoundClassification)
-        .filter(
-            tuple_(RoundClassification.gara_id, RoundClassification.round_number).in_(
-                coppie
-            ),
-            RoundClassification.position == 1,
-        )
-        .options(joinedload(RoundClassification.user))
-        .all()
-    )
-    vincitori = {}
-    for riga in righe:
-        if riga.user is not None:
-            nome = getattr(riga.user, "display_name", None) or riga.user.username
-            vincitori[riga.gara_id] = nome
-    return vincitori
 
 
 def _tappa(gara, vincitori: Dict[int, str], iscritti: Dict[int, int]) -> TappaVetrina:
@@ -211,15 +188,13 @@ def _formula(campionato) -> str:
     return _("Classifica a vittorie")
 
 
-def _classifica(campionato) -> List[RigaClassifica]:
+def _classifica(campionato, generale) -> List[RigaClassifica]:
     """La classifica generale, ridotta alle colonne che stanno su un telefono.
 
     Il numero mostrato dipende dal sistema, per la stessa ragione di
     `_formula`: mostrare le vittorie in un campionato che ordina per triangoli
     darebbe una lista che sembra ordinata male.
     """
-    from models.campionato.statistics_service import TournamentStatisticsService
-
     sistema = ClassificationSystem.resolve(
         getattr(campionato, "classification_system", None)
     )
@@ -230,9 +205,6 @@ def _classifica(campionato) -> List[RigaClassifica]:
     else:
         chiave, unita = "total_matches_won", _("V")
 
-    generale = TournamentStatisticsService().calculate_general_classification(
-        campionato.id
-    )
     return [
         RigaClassifica(
             posizione=posizione,
@@ -303,7 +275,7 @@ def costruisci_vetrina_campionato(campionato) -> VetrinaCampionato:
     gare = Gara.query.filter_by(campionato_id=campionato.id).order_by(Gara.number).all()
 
     # Iscritti per gara, in una query sola invece che una per riga del
-    # calendario: stessa ragione di `_vincitori_delle_prove`.
+    # calendario: stessa ragione di `vincitori_delle_gare`.
     conteggi = dict(
         db.session.query(Inscription.gara_id, db.func.count(Inscription.id))
         .filter(
@@ -315,7 +287,7 @@ def costruisci_vetrina_campionato(campionato) -> VetrinaCampionato:
         .all()
     )
 
-    vincitori = _vincitori_delle_prove(gare)
+    vincitori = vincitori_delle_gare(gare)
     calendario = [_tappa(g, vincitori, conteggi) for g in gare]
 
     giocatori = (
@@ -330,6 +302,15 @@ def costruisci_vetrina_campionato(campionato) -> VetrinaCampionato:
     banner = campionato.banner_path
     link = campionato.effective_external_link
     stato_testo, stato_tono = _stato(campionato, calendario)
+
+    from models.campionato.statistics_service import TournamentStatisticsService
+
+    # Una classifica sola per le righe e per il podio: il nome sulla targa e
+    # la prima riga non possono dire due cose diverse.
+    generale = TournamentStatisticsService().calculate_general_classification(
+        campionato.id
+    )
+    concluso = campionato_concluso(campionato)
 
     return VetrinaCampionato(
         campionato=campionato,
@@ -355,7 +336,7 @@ def costruisci_vetrina_campionato(campionato) -> VetrinaCampionato:
         ),
         organizzatore=_chi_organizza(campionato),
         calendario=calendario,
-        classifica=_classifica(campionato),
+        classifica=_classifica(campionato, generale),
         prossima=next((t for t in calendario if t.stato == "open"), None),
         stato_testo=stato_testo,
         stato_tono=stato_tono,
@@ -365,6 +346,8 @@ def costruisci_vetrina_campionato(campionato) -> VetrinaCampionato:
         # niente: il link funziona per chi ce l'ha, ma non si offre ai motori
         # di ricerca una pagina che non ha ancora contenuto.
         indicizzabile=bool(calendario),
+        concluso=concluso,
+        podio=podio_da_classifica(generale) if concluso else [],
     )
 
 
