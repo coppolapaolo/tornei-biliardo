@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.29.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.29.0...v1.29.1) (2026-09-14)
+
+
+### Correzioni
+
+* auto_deploy riconosce le dipendenze mancanti senza chiedere a pip ([#423](https://github.com/coppolapaolo/tornei-biliardo/issues/423)) ([e0b59be](https://github.com/coppolapaolo/tornei-biliardo/commit/e0b59be02c6f2326cdadc87be010128384aa976d))
+* gli aggiornamenti live si fermano quando la sessione è scaduta ([#425](https://github.com/coppolapaolo/tornei-biliardo/issues/425)) ([e3cffd4](https://github.com/coppolapaolo/tornei-biliardo/commit/e3cffd4426fd9bb3538b2d68a730becd9dc023da))
+* GlitchTip non riceve più le sessioni che non sa gestire ([#424](https://github.com/coppolapaolo/tornei-biliardo/issues/424)) ([18bb5cd](https://github.com/coppolapaolo/tornei-biliardo/commit/18bb5cd44559ae8b355cb8f69591b8a50ed10f18))
+* l'admin non viene più scollegato a ogni avvio dell'app ([#421](https://github.com/coppolapaolo/tornei-biliardo/issues/421)) ([a7b2da8](https://github.com/coppolapaolo/tornei-biliardo/commit/a7b2da8a2a9ba0b4efe3c2ffd7aef7bc70b2638f))
+* l'error log di produzione torna a WARNING ([#427](https://github.com/coppolapaolo/tornei-biliardo/issues/427)) ([40eea0d](https://github.com/coppolapaolo/tornei-biliardo/commit/40eea0d0b71fedf17c0568df32c775b03585b02f))
+
 ## [1.29.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.28.0...v1.29.0) (2026-09-14)
 
 
