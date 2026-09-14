@@ -15,6 +15,9 @@ Ci sono tre tipologie di utenti:
 
 La app permette di organizzare campionati. ``admin`` o un utente ``director`` possono creare nuovi campionati. Un **campionato** è una collezione di ``n`` **gare**, con una **classifica** complessiva. 
 Un **campionato** può avere anche dei **playoff** che possono essere giocati alla fine del **campionato** (dopo che si è conclusa l'ultima **gara** del campionato). La logica dei **playoff** può essere di tipo diverso e viene impostata da ``admin`` o da un utente ``director``. 
+
+> **Nota (2026-09-14).** Le **gare previste** di un campionato sono quelle della stagione: la gara di playoff **non è una di queste**, è la conclusione. Ogni conteggio mostrato — pagina del direttore, vetrina, tessere, elenchi — conta le gare regolari e aggiunge la finale a parte: «5 gare + finale», «2 di 2 · finale». Una gara è di playoff se è collegata a una configurazione dei playoff, non per il nome. Fino a questa data la finale finiva nel numeratore e la pagina del direttore scriveva «3 di 2».
+
 ``admin`` o un utente ``director`` creano, modificano e cancellano un **campionato**. Non sempre le modifiche e le cancellazioni sono possibili: ad esempio, se una **gara** è in itinere (i giocatori stanno giocando le partire della **gara**) allora non è possibile modificarla. 
 Nel caso di cancellazione di un **campionato** con alcune **gare** già giocate, si opera un _soft delete_ e i **match** giocati vengono mantenuti per le **statistiche** personali dei vari **player**.
 Un **campionato** può avere 0 o più direttori di gara. Se ne ha zero allora viene gestito dall'``admin``. 

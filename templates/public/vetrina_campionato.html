@@ -59,7 +59,7 @@
           <i class="fa-solid fa-calendar-days"></i>
           {% if vetrina.periodo %}<strong>{{ vetrina.periodo }}</strong>{% endif %}
           {% if vetrina.prove_totali %}
-          <span>·</span><span>{{ _("%(n)s gare", n=vetrina.prove_totali) }}</span>
+          <span>·</span><span>{{ vetrina.conteggio.gare_testo }}</span>
           {% endif %}
         </div>
         {% endif %}
@@ -97,7 +97,7 @@
       <div class="c7-vt__sec">
         <div class="c7-vt__sechead">
           <h2>{{ _("Le gare") }}</h2>
-          <span>{{ _("%(giocate)s di %(totali)s giocate", giocate=vetrina.prove_giocate, totali=vetrina.prove_totali) }}</span>
+          <span>{{ _("%(giocate)s di %(totali)s giocate", giocate=vetrina.prove_giocate, totali=vetrina.prove_totali) }}{% if vetrina.finali %} · {{ vetrina.conteggio.finale_testo }}{% endif %}</span>
         </div>
 
         {% for tappa in vetrina.calendario %}
@@ -129,7 +129,7 @@
       <div class="c7-vt__sec">
         <div class="c7-vt__sechead">
           <h2>{{ _("Classifica") }}</h2>
-          <span>{{ _("dopo %(n)s gare", n=vetrina.prove_giocate) }}</span>
+          <span>{{ _("dopo %(gare)s", gare=vetrina.conteggio_giocate.gare_testo) }}</span>
         </div>
         <div class="c7-vt__std">
           {% for riga in vetrina.classifica %}

@@ -14,7 +14,7 @@
         <h3 style="margin: 5px 0 0;">{{ item.name }}</h3>
         <div class="text-muted" style="font-size: 12px; margin-top: 3px;">
           {% if item.type == 'campionato' %}
-          {{ item.entity.campionato_type }} <span class="c7-sep">·</span> <span class="c7-num">{{ item.entity.gare|length }}</span> {{ _('gare') }}
+          {{ item.entity.campionato_type }} <span class="c7-sep">·</span> {{ item.entity.conteggio_gare.gare_testo }}
           {% else %}
           {{ item.entity.discipline|discipline_display if item.entity.discipline }}
           {% if item.entity.distance %}<span class="c7-sep">·</span> {{ item.entity.distance_config|format_distance }}{% endif %}

@@ -24,6 +24,7 @@ from typing import Any, Dict, List, Optional
 from flask_babel import format_date, gettext as _
 
 from models.base import db
+from models.campionato.conteggio_gare import ConteggioGare
 
 # Stessa forma della classifica della gara, e di proposito: le due vetrine
 # la disegnano con lo stesso markup, e due dataclass gemelle sarebbero due
@@ -70,8 +71,12 @@ class VetrinaCampionato:
     citta: Optional[str] = None
     formula: Optional[str] = None
     giocatori: int = 0
+    #: Le gare regolari in calendario e quelle giocate. La finale dei playoff
+    #: non ne fa parte: si conta a parte in `finali` (`conteggio_gare.py`).
     prove_totali: int = 0
     prove_giocate: int = 0
+    finali: int = 0
+    finali_giocate: int = 0
     organizzatore: Optional[str] = None
     calendario: List[TappaVetrina] = field(default_factory=list)
     classifica: List[RigaClassifica] = field(default_factory=list)
@@ -84,6 +89,16 @@ class VetrinaCampionato:
     link_esterno: Optional[str] = None
     etichetta_link: Optional[str] = None
     indicizzabile: bool = True
+
+    @property
+    def conteggio(self) -> ConteggioGare:
+        """Le gare in calendario: «5 gare + finale»."""
+        return ConteggioGare(regolari=self.prove_totali, finali=self.finali)
+
+    @property
+    def conteggio_giocate(self) -> ConteggioGare:
+        """Le gare già giocate, con la finale se è conclusa."""
+        return ConteggioGare(regolari=self.prove_giocate, finali=self.finali_giocate)
 
 
 def _vincitori_delle_prove(gare) -> Dict[int, str]:
@@ -330,8 +345,14 @@ def costruisci_vetrina_campionato(campionato) -> VetrinaCampionato:
         citta=getattr(sala, "city", None) if sala is not None else None,
         formula=_formula(campionato),
         giocatori=giocatori,
-        prove_totali=len(calendario),
-        prove_giocate=sum(1 for t in calendario if t.stato == "done"),
+        prove_totali=sum(1 for t in calendario if not t.gara.is_playoff),
+        prove_giocate=sum(
+            1 for t in calendario if t.stato == "done" and not t.gara.is_playoff
+        ),
+        finali=sum(1 for t in calendario if t.gara.is_playoff),
+        finali_giocate=sum(
+            1 for t in calendario if t.stato == "done" and t.gara.is_playoff
+        ),
         organizzatore=_chi_organizza(campionato),
         calendario=calendario,
         classifica=_classifica(campionato),
@@ -364,7 +385,7 @@ def descrizione_social_campionato(vetrina: VetrinaCampionato) -> str:
     if vetrina.periodo:
         pezzi.append(vetrina.periodo)
     if vetrina.prove_totali:
-        pezzi.append(_("%(n)s gare", n=vetrina.prove_totali))
+        pezzi.append(vetrina.conteggio.gare_testo)
     if vetrina.sede:
         pezzi.append(vetrina.sede)
     pezzi.append(vetrina.stato_testo)

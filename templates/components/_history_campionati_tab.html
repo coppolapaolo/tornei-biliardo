@@ -34,10 +34,9 @@
                                 </p>
 
                                 <!-- Count gare in this campionato -->
-                                {% set gare_count = campionato.gare|length %}
                                 <p class="mb-2">
                                     <i class="fas fa-trophy text-muted me-2"></i>
-                                    {{ gare_count }} {{ _("gare") }}
+                                    {{ campionato.conteggio_gare.gare_testo }}
                                 </p>
 
                                 <!-- User's participation info -->

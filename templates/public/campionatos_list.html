@@ -65,7 +65,7 @@
             <dt class="text-muted" style="font-weight: 700;">{{ _('Creato') }}</dt>
             <dd class="c7-num" style="margin: 0; text-align: right;">{{ campionato.created_at|date_local }}</dd>
             <dt class="text-muted" style="font-weight: 700;">{{ _('Gare') }}</dt>
-            <dd class="c7-num" style="margin: 0; text-align: right;">{{ campionato.gare|length }}</dd>
+            <dd class="c7-num" style="margin: 0; text-align: right;">{{ campionato.conteggio_gare.numero_testo }}</dd>
         </dl>
 
         <a href="{{ url_for('main.campionato_detail_public', campionato_id=campionato.id) }}" class="btn btn-secondary w-100" style="margin-top: auto; margin-top: 16px;">{{ _('Apri') }}</a>
