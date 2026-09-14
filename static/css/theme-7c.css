@@ -829,6 +829,23 @@ input[type="number"].form-control {
 .c7-flash--warning .c7-flash__title { color: var(--c7-warn-ink); }
 .c7-flash--info    .c7-flash__title { color: var(--c7-info-ink); }
 
+/* Sessione scaduta mentre la pagina aspettava gli aggiornamenti live
+   (prototipo 13a, «Sessione»): il poller si è fermato e lo dice. Nasce dopo
+   il caricamento, quindi non entra nel flusso dei flash: sta sopra la pagina,
+   come un toast, e ne porta l'ombra. Da lg si allinea a destra. */
+.c7-session-expired {
+  position: fixed; top: 16px; left: 16px; right: 16px; z-index: var(--c7-z-toast);
+  max-width: 420px; margin-left: auto;
+  padding: 16px; border-radius: var(--c7-r-card);
+  background: var(--c7-warn-bg); box-shadow: var(--c7-shadow-toast);
+}
+.c7-session-expired__title { font-size: 14px; font-weight: 800; color: var(--c7-warn-ink); }
+.c7-session-expired__text {
+  margin: 6px 0 14px;
+  font-size: 13px; font-weight: 600; line-height: 1.5; color: var(--c7-warn-body);
+}
+.c7-session-expired__action { width: 100%; height: 48px; border-radius: var(--c7-r-control); font-size: 14px; }
+
 /* Versione compatta a pillola: conferma senza corpo testo. */
 .c7-flash--compact {
   height: 46px; padding: 0 16px; border-radius: var(--c7-r-pill);

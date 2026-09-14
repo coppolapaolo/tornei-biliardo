@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-14 10:18+0200\n"
+"POT-Creation-Date: 2026-09-14 11:05+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -4536,7 +4536,7 @@ msgstr ""
 msgid "Informazione"
 msgstr ""
 
-#: templates/base.html:475 templates/base.html:755
+#: templates/base.html:475 templates/base.html:768
 #: templates/challenge/create.html:8
 #: templates/components/_campionato_create_modal.html:7
 #: templates/components/_history_drills_tab.html:47
@@ -4667,7 +4667,7 @@ msgstr ""
 msgid "Conferma"
 msgstr ""
 
-#: templates/base.html:681 templates/base.html:774
+#: templates/base.html:681 templates/base.html:787
 msgid "Close"
 msgstr ""
 
@@ -4678,7 +4678,7 @@ msgstr ""
 #: templates/admin/campionato_wizard_step2.html:8
 #: templates/admin/gara_edit.html:11 templates/admin/venue_form.html:296
 #: templates/admin/venue_manager_requests.html:155 templates/base.html:685
-#: templates/base.html:787 templates/challenge/_training_board.html:92
+#: templates/base.html:800 templates/challenge/_training_board.html:92
 #: templates/challenge/builder.html:33 templates/challenge/builder.html:262
 #: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:35
@@ -4755,53 +4755,67 @@ msgstr ""
 msgid "Ciao %(username)s!"
 msgstr ""
 
-#: templates/base.html:753
+#: templates/base.html:741
+msgid "La sessione è scaduta"
+msgstr ""
+
+#: templates/base.html:742
+msgid ""
+"Gli aggiornamenti in tempo reale si sono fermati: accedi di nuovo per "
+"riprenderli."
+msgstr ""
+
+#: templates/base.html:743
+msgid "Accedi di nuovo"
+msgstr ""
+
+#: templates/base.html:766
 msgid "Aiuto"
 msgstr ""
 
-#: templates/base.html:754
+#: templates/base.html:767
 msgid "Leggi nella guida"
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:177
-#: templates/admin/gara_create_standalone.html:492 templates/base.html:756
+#: templates/admin/gara_create_standalone.html:492 templates/base.html:769
 #: templates/components/_new_gara_modal.html:417
 msgid "Avanti"
 msgstr ""
 
-#: templates/base.html:757 templates/components/_page_modal.html:31
+#: templates/base.html:770 templates/components/_page_modal.html:31
 msgid "Ho capito"
 msgstr ""
 
-#: templates/base.html:758
+#: templates/base.html:771
 msgid "Salta"
 msgstr ""
 
-#: templates/base.html:759
+#: templates/base.html:772
 #, python-brace-format
 msgid "{n} di {total}"
 msgstr ""
 
-#: templates/base.html:760
+#: templates/base.html:773
 msgid "Presentazione"
 msgstr ""
 
-#: templates/base.html:773
+#: templates/base.html:786
 msgid "Save Reset Snapshot"
 msgstr ""
 
-#: templates/base.html:778
+#: templates/base.html:791
 msgid "Nome snapshot"
 msgstr ""
 
-#: templates/base.html:782
+#: templates/base.html:795
 msgid "Descrizione (opzionale)"
 msgstr ""
 
 #: templates/admin/_vetrina_form.html:84
 #: templates/admin/campionato_detail.html:174
 #: templates/admin/campionato_detail.html:554
-#: templates/admin/campionato_vetrina.html:93 templates/base.html:788
+#: templates/admin/campionato_vetrina.html:93 templates/base.html:801
 #: templates/components/_playoff_scoring_form.html:28
 #: templates/gamification/admin/level_config.html:42
 #: templates/gamification/admin/level_config.html:174
@@ -20584,7 +20598,6 @@ msgstr ""
 
 #: templates/public/campionato_detail.html:51
 #: templates/public/campionato_detail.html:76
-#, python-format
 msgid "Il campionato"
 msgstr ""
 

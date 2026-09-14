@@ -43,10 +43,12 @@ Chi emette:
 import json
 import time
 from enum import Enum
+from functools import wraps
 from typing import List
 
-from flask import Blueprint, abort, jsonify, request
-from flask_login import current_user, login_required
+from flask import Blueprint, abort, current_app, jsonify, request
+from flask_login import current_user
+from flask_login.config import EXEMPT_METHODS
 from sqlalchemy import func
 
 from models.base import db
@@ -264,19 +266,44 @@ def _poll_response(scope: EventScope, scope_id: int):
     )
 
 
+def _poll_login_required(view):
+    """`@login_required` che risponde 401 JSON invece di mandare al login.
+
+    Il poll lo chiama `fetch`, che segue i redirect da solo: col 302 di
+    `login_required` al JavaScript arrivava il 200 della pagina di login,
+    `response.ok` era vero, `response.json()` falliva e il poller riprovava
+    tre secondi dopo, per sempre. In sei giorni di produzione erano 4232 poll
+    e altrettante pagine di login, il 17% di tutte le richieste. Il 401 è la
+    risposta su cui `static/js/polling.js` si ferma e avvisa. Le pagine
+    continuano a mandare al login come prima: cambia solo il poll.
+    """
+
+    @wraps(view)
+    def wrapped(*args, **kwargs):
+        if (
+            request.method not in EXEMPT_METHODS
+            and not current_app.config.get("LOGIN_DISABLED")
+            and not current_user.is_authenticated
+        ):
+            return jsonify({"error": "unauthenticated"}), 401
+        return view(*args, **kwargs)
+
+    return wrapped
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Endpoint di poll
 # ═══════════════════════════════════════════════════════════════════════════
 
 
 @sse_bp.route("/poll/trio/<int:trio_id>")
-@login_required
+@_poll_login_required
 def poll_trio(trio_id: int):
     return _poll_response(EventScope.TRIO, trio_id)
 
 
 @sse_bp.route("/poll/gara/<int:gara_id>")
-@login_required
+@_poll_login_required
 def poll_gara(gara_id: int):
     return _poll_response(EventScope.GARA, gara_id)
 
@@ -300,7 +327,7 @@ def poll_sala(token: str):
 
 
 @sse_bp.route("/poll/user/<int:user_id>")
-@login_required
+@_poll_login_required
 def poll_user(user_id: int):
     """Solo i propri eventi: XP, livelli, notifiche sono cose personali."""
     if current_user.id != user_id:
@@ -309,12 +336,12 @@ def poll_user(user_id: int):
 
 
 @sse_bp.route("/poll/individual_match/<int:match_id>")
-@login_required
+@_poll_login_required
 def poll_individual_match(match_id: int):
     return _poll_response(EventScope.INDIVIDUAL_MATCH, match_id)
 
 
 @sse_bp.route("/poll/match/<int:match_id>")
-@login_required
+@_poll_login_required
 def poll_match(match_id: int):
     return _poll_response(EventScope.MATCH, match_id)
