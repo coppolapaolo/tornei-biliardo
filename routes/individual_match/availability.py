@@ -15,6 +15,7 @@ from flask_login import current_user
 
 from models.base import db
 from models.individual_match.availability_service import AvailabilityService
+from models.individual_match.pending_confirmation import PendingConfirmationError
 from models.location.models import BilliardHall
 from models.user.models import User
 from models.user.permissions import RoleRequirement
@@ -247,6 +248,12 @@ def request_availability_match(target_user_id):
             location=location,
             proposed_datetime=proposed_datetime,
             message=message or None,
+        )
+    except PendingConfirmationError as exc:
+        from .pending import pending_confirmation_response
+
+        return pending_confirmation_response(
+            exc, url_for("individual_match.discover_players")
         )
     except ValueError as exc:
         return _availability_error(

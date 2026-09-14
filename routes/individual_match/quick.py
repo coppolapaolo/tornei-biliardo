@@ -13,6 +13,7 @@ from flask_babel import gettext as _
 from flask_login import current_user
 
 from models.exceptions import DomainError, http_status_for_exception
+from models.individual_match.pending_confirmation import PendingConfirmationError
 from models.individual_match.quick_match_service import QuickMatchService
 from models.status_enum import MatchStatus
 from models.tpa.engine import GAME_TYPE_BY_DISCIPLINE
@@ -20,6 +21,7 @@ from models.tpa.services import FEATURE_CODE as TPA_FEATURE
 from models.user.permissions import RoleRequirement
 
 from . import individual_match_bp
+from .pending import pending_confirmation_response
 from .tpa_choice import open_tpa_referto, wants_referto
 
 logger = logging.getLogger(__name__)
@@ -64,6 +66,12 @@ def quick_match():
 
     try:
         match = QuickMatchService.start(current_user.id, opponent_id, config)
+    except PendingConfirmationError as exc:
+        # Non un errore secco: la proposta di chiudere le partite che aspettano
+        # la sua firma, e poi il ritorno qui con lo stesso avversario.
+        return pending_confirmation_response(
+            exc, url_for("individual_match.quick_match", opponent_id=opponent_id)
+        )
     except DomainError as exc:
         if request.is_json:
             return (

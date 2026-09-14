@@ -55,9 +55,15 @@
             <span class="c7-num" style="font-size:12px">{{ sfida.scheduled_at|datetime_local }}</span>
           </div>
         </div>
+        {# Nel suo primo giorno la partita che aspetta una firma si vede qui
+           con lo stato giusto; dopo esce dalla dashboard (2026-09-14). #}
+        {% if sfida.awaiting_confirmation_from_id %}
+        <span class="c7-state c7-state--warn">{{ _('In attesa di conferma') }}</span>
+        {% else %}
         <span class="c7-state {{ 'c7-state--err' if iniziata else 'c7-state--info' }}">
           {{ _('In corso') if iniziata else _('Fissata') }}
         </span>
+        {% endif %}
       </div>
 
       {% if sfida.player1_score or sfida.player2_score %}

@@ -19,6 +19,7 @@ from models.match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
 from models.status_enum import Discipline
 from models.user.permissions import RoleRequirement
 from utils.local_time import parse_local_datetime
+from utils.safe_redirect import safe_next_url
 from utils.status_ui import match_scoring_state
 
 from . import individual_match_bp
@@ -420,7 +421,7 @@ def confirm_result(match_id):
                 flash(
                     _("Risultato confermato! In attesa dell'altro giocatore."), "info"
                 )
-            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+            return redirect(_after_result_url(match_id))
 
     except ValueError as e:
         error_msg = f"Errore: {str(e)}"
@@ -428,7 +429,18 @@ def confirm_result(match_id):
             return jsonify({"success": False, "error": error_msg}), 400
         else:
             flash(error_msg, "danger")
-            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+            return redirect(_after_result_url(match_id))
+
+
+def _after_result_url(match_id: int) -> str:
+    """Dove si torna dopo una conferma o un rifiuto inviati da un modulo.
+
+    Di norma la partita. Dalla pagina delle partite da confermare il modulo
+    porta ``next`` e si torna lì, per chiudere la successiva.
+    """
+    return safe_next_url(request.form.get("next")) or url_for(
+        "individual_match.match_detail", match_id=match_id
+    )
 
 
 @individual_match_bp.route("/matches/<int:match_id>/reject", methods=["POST"])
@@ -466,7 +478,7 @@ def reject_result(match_id):
             )
         else:
             flash(_("Risultato rifiutato. Ultimo triangolo rimosso."), "warning")
-            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+            return redirect(_after_result_url(match_id))
 
     except ValueError as e:
         error_msg = f"Errore: {str(e)}"
@@ -474,7 +486,7 @@ def reject_result(match_id):
             return jsonify({"success": False, "error": error_msg}), 400
         else:
             flash(error_msg, "danger")
-            return redirect(url_for("individual_match.match_detail", match_id=match_id))
+            return redirect(_after_result_url(match_id))
 
 
 @individual_match_bp.route("/matches/<int:match_id>/complete", methods=["POST"])

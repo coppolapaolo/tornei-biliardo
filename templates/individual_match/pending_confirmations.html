@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+
+{# Le partite che aspettano la conferma di chi guarda (richiesta del
+   2026-09-14). Ci si arriva quando si prova a lanciare o accettare una sfida
+   con partite ancora da firmare: il sistema, invece di un errore, propone di
+   chiuderle una per una. Chiusa l'ultima, «Riprendi» riporta dov'eri.
+
+   Stessa card dell'elenco delle sfide (prototipo 9a): kicker, nomi, punteggio
+   col proprio a sinistra, poi le due azioni. #}
+
+{% block title %}{{ _("Partite da confermare") }} - {{ config.APP_NAME }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('individual_match.match_list') }}"
+   aria-label="{{ _('Torna alle sfide') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Partite da confermare") }}{% endblock %}
+
+{% block content %}
+{% if matches %}
+<div class="c7-stack c7-sections">
+  <p style="margin:0;font-size:14px;font-weight:600;color:var(--c7-ink-muted)">
+    {{ _("Queste partite aspettano la tua conferma. Confermale o rifiutale: finché restano aperte non puoi lanciare né accettare altre sfide.") }}
+  </p>
+
+  <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+    {% for match in matches %}
+    {% set sono_p1 = match.player1_id == current_user.id %}
+    {% set opponent = match.player2 if sono_p1 else match.player1 %}
+    {% set my_score = match.player1_score if sono_p1 else match.player2_score %}
+    {% set their_score = match.player2_score if sono_p1 else match.player1_score %}
+    <article class="c7-card">
+      <div class="d-flex align-items-center gap-2">
+        <span class="c7-kicker">
+          {{ match.discipline|discipline_display }}
+          {%- if match.location_display %} <span class="c7-sep">·</span> {{ match.location_display }}{% endif %}
+        </span>
+        <span style="margin-left:auto">
+          <span class="c7-state c7-state--warn">{{ _('In attesa di conferma') }}</span>
+        </span>
+      </div>
+
+      <div class="d-flex align-items-center gap-3" style="margin-top:14px">
+        <div class="flex-fill" style="min-width:0">
+          <div style="font-size:14px;font-weight:800">{{ current_user.username }}</div>
+          <div style="margin-top:3px;font-size:14px;font-weight:800;color:var(--c7-ink-muted)">
+            {{ opponent.username if opponent else _('Avversario') }}
+          </div>
+        </div>
+        <div style="text-align:right">
+          <div class="c7-num-lg">{{ my_score or 0 }}</div>
+          <div class="c7-num-lg" style="color:var(--c7-ink-muted)">{{ their_score or 0 }}</div>
+        </div>
+      </div>
+
+      {% if match.awaiting_confirmation_since %}
+      <div class="c7-rows__sub" style="margin-top:12px">
+        {{ _("%(name)s ha confermato il", name=(opponent.username if opponent else _('Avversario'))) }}
+        <span class="c7-num">{{ match.awaiting_confirmation_since|datetime_local }}</span>
+      </div>
+      {% endif %}
+
+      <div class="c7-stack" style="gap:10px;margin-top:14px">
+        <form method="POST" action="{{ url_for('individual_match.confirm_result', match_id=match.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ return_url }}">
+          <button type="submit" class="btn btn-success w-100">
+            <i class="fas fa-check"></i>&nbsp;{{ _("Confermo il risultato") }}
+          </button>
+        </form>
+        <form method="POST" action="{{ url_for('individual_match.reject_result', match_id=match.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="next" value="{{ return_url }}">
+          <button type="button" class="btn btn-danger w-100"
+                  onclick='confirmSubmit(this.closest("form"), {{ _("Rifiutando, l'ultimo triangolo viene tolto e la partita torna in corso. Continuare?")|tojson }})'>
+            {{ _("Rifiuto il risultato") }}
+          </button>
+        </form>
+        <a href="{{ url_for('individual_match.match_detail', match_id=match.id) }}" class="btn btn-secondary w-100">
+          {{ _("Apri la partita") }}
+        </a>
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</div>
+{% else %}
+<div class="c7-empty">
+  <div class="c7-empty__ico"><i class="fas fa-check"></i></div>
+  <div class="c7-empty__title">{{ _("Nessuna partita aspetta la tua conferma") }}</div>
+  <p class="c7-empty__text">{{ _("Puoi lanciare e accettare sfide.") }}</p>
+  <div class="c7-empty__actions">
+    {% if next_url %}
+    <a href="{{ next_url }}" class="btn btn-primary">
+      <i class="fas fa-arrow-right"></i> {{ _("Riprendi da dove eri") }}
+    </a>
+    {% endif %}
+    <a href="{{ url_for('individual_match.match_list') }}" class="btn btn-secondary">
+      {{ _("Le mie sfide") }}
+    </a>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -21,6 +21,7 @@ from .models import (
     ProposalStatus,
     InvitationStatus,
 )
+from .pending_confirmation import PendingConfirmationService
 from ..location.models import UserLocationAvailability
 
 
@@ -72,6 +73,9 @@ class ProposalService:
         from flask_babel import _
 
         from models.base import utc_now
+
+        # Chi ha partite che aspettano la sua firma le chiude prima (2026-09-14).
+        PendingConfirmationService.ensure_none_pending(proposer_id)
 
         if scheduled_at < utc_now():
             raise ValueError(_("Non è possibile programmare una sfida nel passato"))
@@ -161,6 +165,8 @@ class ProposalService:
         from ..notification.models import NotificationType, NotificationPriority
         from .availability_service import AvailabilityService
         from models.base import utc_now
+
+        PendingConfirmationService.ensure_none_pending(proposer_id)
 
         if scheduled_at < utc_now():
             raise ValueError(_("Non è possibile programmare una sfida nel passato"))
@@ -471,6 +477,11 @@ class ProposalService:
 
         if not proposal.can_be_accepted_by(user_id):
             raise ValueError("User cannot accept this proposal")
+
+        # Accettare è l'altro modo di entrare in una sfida: vale lo stesso
+        # blocco del proporne una (2026-09-14). Copre anche l'invito accettato
+        # e l'interesse accolto, che passano tutti da qui.
+        PendingConfirmationService.ensure_none_pending(user_id)
 
         # Chi resta fuori, letto PRIMA dell'accettazione: proposal.accept()
         # porta questi inviti a REJECTED, e dopo non si distinguerebbero più
