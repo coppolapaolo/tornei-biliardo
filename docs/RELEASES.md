@@ -1,5 +1,24 @@
 # Changelog
 
+## [1.27.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.26.1...v1.27.0) (2026-09-13)
+
+
+### Funzioni nuove
+
+* data dei playoff e scadenza degli inviti le sceglie il direttore ([#409](https://github.com/coppolapaolo/tornei-biliardo/issues/409)) ([ecb185a](https://github.com/coppolapaolo/tornei-biliardo/commit/ecb185a182a87e01a79f56281dcaca320c0a1517))
+
+
+### Correzioni
+
+* «completa il turno» dal footer di debug non va più in 500 ([#401](https://github.com/coppolapaolo/tornei-biliardo/issues/401)) ([66f780d](https://github.com/coppolapaolo/tornei-biliardo/commit/66f780d3a29a3ec032517baf1081f733c9b3e325))
+* a playoff conclusi il campionato risulta concluso, e gli inviti spariscono all'avvio della finale ([#407](https://github.com/coppolapaolo/tornei-biliardo/issues/407)) ([423348f](https://github.com/coppolapaolo/tornei-biliardo/commit/423348fb3d06725e4300a582be66cf84be3d3168))
+* i playoff restano in dashboard dopo la risposta e compaiono anche fuori zona ([#404](https://github.com/coppolapaolo/tornei-biliardo/issues/404)) ([298fe21](https://github.com/coppolapaolo/tornei-biliardo/commit/298fe21ad9ead97a4dd824c26079207d4b067027))
+* i punti SSR a zero si salvano, e classifica e podio dicono quanti ([#402](https://github.com/coppolapaolo/tornei-biliardo/issues/402)) ([c943c65](https://github.com/coppolapaolo/tornei-biliardo/commit/c943c654759f35f55a1bc67cf51631191203f7d1))
+* il playoff si avvia senza aprire le iscrizioni ([#406](https://github.com/coppolapaolo/tornei-biliardo/issues/406)) ([dd6f000](https://github.com/coppolapaolo/tornei-biliardo/commit/dd6f000b1952e79d81272c846e16b6f5beba0973))
+* il primo degli esclusi riceve l'invito ai playoff ([#408](https://github.com/coppolapaolo/tornei-biliardo/issues/408)) ([36577ea](https://github.com/coppolapaolo/tornei-biliardo/commit/36577eaceceb2c5f4f8bd188c7298e8654b66d09))
+* in inglese il pulsante per terminare il campionato dice Terminate ([#410](https://github.com/coppolapaolo/tornei-biliardo/issues/410)) ([db8fd85](https://github.com/coppolapaolo/tornei-biliardo/commit/db8fd85e85615104c73b9e5196f400fb043a18c8))
+* la gara di playoff si può annullare senza errore di chiave esterna ([#405](https://github.com/coppolapaolo/tornei-biliardo/issues/405)) ([721af14](https://github.com/coppolapaolo/tornei-biliardo/commit/721af14416e445cd862b0a530858d0a91848956a))
+
 ## [1.26.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.26.0...v1.26.1) (2026-09-13)
 
 
