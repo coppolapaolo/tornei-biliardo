@@ -1,0 +1,165 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Vetrina"
+    },
+    {
+      "id": "page-2",
+      "name": "Pagina del direttore"
+    },
+    {
+      "id": "page-3",
+      "name": "Pagina pubblica"
+    },
+    {
+      "id": "page-4",
+      "name": "Vetrina · alternative"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "page": "page-1",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1900,
+      "title": "Vetrina · telefono"
+    },
+    {
+      "file": "VetrinaDesktop.dc.html",
+      "page": "page-1",
+      "x": 470,
+      "y": 0,
+      "w": 1440,
+      "h": 1720,
+      "title": "Vetrina · desktop"
+    },
+    {
+      "file": "DirettoreMobile.dc.html",
+      "page": "page-2",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 2020,
+      "title": "Direttore · telefono"
+    },
+    {
+      "file": "DirettoreDesktop.dc.html",
+      "page": "page-2",
+      "x": 470,
+      "y": 0,
+      "w": 1440,
+      "h": 1060,
+      "title": "Direttore · desktop"
+    },
+    {
+      "file": "PubblicaMobile.dc.html",
+      "page": "page-3",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 2020,
+      "title": "Pubblica · telefono"
+    },
+    {
+      "file": "PubblicaDesktop.dc.html",
+      "page": "page-3",
+      "x": 470,
+      "y": 0,
+      "w": 1440,
+      "h": 1060,
+      "title": "Pubblica · desktop"
+    },
+    {
+      "file": "Oggi.dc.html",
+      "page": "page-4",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1900,
+      "title": "Oggi · com'è adesso"
+    },
+    {
+      "file": "ComeFinita.dc.html",
+      "page": "page-4",
+      "x": 470,
+      "y": 0,
+      "w": 390,
+      "h": 2050,
+      "title": "B · Com'è finita, come la gara conclusa"
+    },
+    {
+      "file": "Classifica.dc.html",
+      "page": "page-4",
+      "x": 940,
+      "y": 0,
+      "w": 390,
+      "h": 1900,
+      "title": "C · Il podio è la classifica"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "premessa",
+      "page": "page-1",
+      "x": 0,
+      "y": -560,
+      "w": 1910,
+      "text": "Un campionato concluso in tre pagine: la vetrina, la pagina del direttore e la pagina pubblica. Stessi dati ovunque: il campione è m.rossi, primo della classifica finale; la finale playoff l'ha vinta a.verdi e sta fra le gare come tutte le altre.\n\nLa forma è la A, scelta sulla vetrina: il campione in cima, dentro la superficie scura che apre la pagina, con secondo e terzo sotto (nella fascia desktop dell'app, a destra)."
+    },
+    {
+      "id": "nota-vetrina",
+      "page": "page-1",
+      "x": 470,
+      "y": -300,
+      "w": 1440,
+      "text": "VETRINA DESKTOP\nIl campione resta sulla targa. La colonna di destra, che oggi contiene solo il riquadro delle iscrizioni, prende la classifica finale: sul telefono sta prima delle gare, qui accanto. In fondo alla colonna, Condividi e chi organizza."
+    },
+    {
+      "id": "nota-direttore",
+      "page": "page-2",
+      "x": 0,
+      "y": -420,
+      "w": 1910,
+      "text": "PAGINA DEL DIRETTORE\nLa fascia dice chi ha vinto il campionato, come la targa della vetrina. Oggi dice «Classifica definitiva · Playoff Elite: vince player2», con il pulsante «Risultati della finale».\n• Il pulsante sparisce: la finale sta fra le gare con «ha vinto a.verdi», come tutte.\n• «Classifica generale · dopo la gara N» diventa «Classifica finale», e perde la zona playoff (a playoff conclusi non segna più niente) e le frecce di tendenza. Sul telefono senza la colonna Gare, per lasciare posto al nome.\n• Ogni gara conclusa dice chi l'ha vinta: oggi la riga dice data, sala e iscritti.\n\nRILIEVO: oggi la sezione Gare scrive «3 di 2», perché le gare previste non contano la finale ma l'elenco sì. Qui «5 + finale», in tutte e tre le pagine."
+    },
+    {
+      "id": "nota-pubblica",
+      "page": "page-3",
+      "x": 0,
+      "y": -420,
+      "w": 1910,
+      "text": "PAGINA PUBBLICA\nOggi è ancora la vecchia pagina Bootstrap: Informazioni, Statistiche, classifica con la zona playoff, tabella delle gare, nessun vincitore. Qui è la pagina del direttore in sola lettura: stessa fascia col campione, stessa classifica finale, stesse gare. Al posto di Gestione, «Il campionato»: formula, sala, giocatori e il link alla vetrina.\n\nDA DECIDERE DOPO: con la vetrina, il campionato ha due pagine pubbliche. Questa serve a chi è dentro l'app, la vetrina a chi arriva da un link condiviso."
+    },
+    {
+      "id": "nota-oggi",
+      "page": "page-4",
+      "x": 0,
+      "y": -300,
+      "w": 390,
+      "text": "OGGI\nIn cima c'è solo «Campionato concluso». Chi ha vinto si deduce dalla classifica «dopo 6 gare», che viene dopo il calendario, e in fondo resta il riquadro delle iscrizioni."
+    },
+    {
+      "id": "nota-b",
+      "page": "page-4",
+      "x": 470,
+      "y": -300,
+      "w": 390,
+      "text": "B · COM'È FINITA\nUna card accento sotto la targa con il podio a tre posti, il primo al centro e più grande: è lo stesso podio della gara conclusa.\nPro: chi ha visto una gara finita riconosce il campionato finito.\nContro: la classifica scende di circa 250px, e i primi tre compaiono due volte."
+    },
+    {
+      "id": "nota-c",
+      "page": "page-4",
+      "x": 940,
+      "y": -300,
+      "w": 390,
+      "text": "C · IL PODIO È LA CLASSIFICA\nNessun blocco nuovo: la classifica finale sale sotto la targa, i primi tre prendono i colori delle medaglie e il primo la scritta «Campione».\nPro: niente di ripetuto.\nContro: il campione è una riga, non un annuncio."
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-2"
+  }
+}
