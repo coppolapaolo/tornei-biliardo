@@ -102,6 +102,11 @@ def create_app(config_name=None):
             # Solo error event: le transaction di performance consumano la
             # quota GlitchTip Free (1000 eventi/mese) in poche ore.
             traces_sample_rate=0.0,
+            # Niente sessioni (release health): GlitchTip non le implementa
+            # (issue #206 del backend, che consiglia proprio questa opzione),
+            # e ogni richiesta servita diventava una busta verso /envelope/
+            # che non portava niente.
+            auto_session_tracking=False,
             environment=config_name,
             before_send=glitchtip_before_send,
         )

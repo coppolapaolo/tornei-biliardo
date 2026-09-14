@@ -125,6 +125,13 @@ moriva in `create_app` su `AttributeError: module 'lib' has no attribute
 integrazioni dichiarate sono le stesse che si attivavano prima — l'insieme
 attivo non cambia.
 
+E `auto_session_tracking` deve restare **False** (dal 2026-09-14): di default
+l'SDK spedisce una busta `sessions` per le richieste servite, che GlitchTip non
+implementa (issue #206 del backend). Probabile origine di molti `Retrying ...
+SSLEOFError ... /envelope/` nell'error log, non provata busta per busta.
+Presidio: `tests/new/unit/test_glitchtip_no_sessions.py`, che arma l'SDK con le
+opzioni vere e guarda cosa arriva al trasporto.
+
 ---
 
 ## GitHub Actions (`.github/workflows/ci.yml`) — 2 job, nessuno tocca la produzione
