@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.30.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.30.0...v1.30.1) (2026-09-14)
+
+
+### Correzioni
+
+* la zona playoff si calcola dalla classifica mostrata in pagina ([#433](https://github.com/coppolapaolo/tornei-biliardo/issues/433)) ([e687b3b](https://github.com/coppolapaolo/tornei-biliardo/commit/e687b3bd50d6a8ef09a3fdb19250f91f35891abe))
+
 ## [1.30.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.29.1...v1.30.0) (2026-09-14)
 
 
