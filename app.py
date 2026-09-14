@@ -255,6 +255,17 @@ def create_app(config_name=None):
     login_manager = LoginManager()
     login_manager.init_app(app)
     setattr(login_manager, "login_view", "auth.login")
+    # Senza, chi apre una pagina riservata da anonimo riceve il default di
+    # Flask-Login, «Please log in to access this page.», anche nell'app in
+    # italiano. Il testo è lazy perché qui non c'è ancora una richiesta, e
+    # `localize_callback=str` lo risolve al momento del flash, nella lingua di
+    # chi legge: nella sessione finisce una stringa, non l'oggetto lazy, che
+    # non si serializzerebbe.
+    from flask_babel import lazy_gettext as _l
+
+    setattr(login_manager, "login_message", _l("Accedi per vedere questa pagina."))
+    setattr(login_manager, "login_message_category", "info")
+    setattr(login_manager, "localize_callback", str)
 
     # Setup Babel
     def get_locale():

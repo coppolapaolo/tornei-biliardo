@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-14 11:05+0200\n"
+"POT-Creation-Date: 2026-09-14 12:00+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,23 +17,27 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 2.18.0\n"
 
-#: app.py:732 templates/errors/403.html:3
+#: app.py:266
+msgid "Accedi per vedere questa pagina."
+msgstr ""
+
+#: app.py:800 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
-#: app.py:750
+#: app.py:818
 msgid "Non è il tuo turno"
 msgstr ""
 
-#: app.py:751
+#: app.py:819
 msgid "Colpo irregolare"
 msgstr ""
 
-#: app.py:770
+#: app.py:838
 msgid "Operazione non consentita"
 msgstr ""
 
-#: app.py:784
+#: app.py:852
 msgid "Tiro non valido"
 msgstr ""
 
@@ -2596,61 +2600,61 @@ msgstr ""
 msgid "Hai ottenuto il ruolo di %(role)s."
 msgstr ""
 
-#: routes/auth.py:152
+#: routes/auth.py:153
 msgid "Che piacere rivederti!"
 msgstr ""
 
-#: routes/auth.py:153 templates/base.html:711
+#: routes/auth.py:154 templates/base.html:711
 msgid "Tutto pronto per giocare?"
 msgstr ""
 
-#: routes/auth.py:180
+#: routes/auth.py:185
 msgid ""
 "Il tuo account non è ancora verificato. Senza email confermata non potrai"
 " recuperare la password se la dimentichi."
 msgstr ""
 
-#: routes/auth.py:188
+#: routes/auth.py:193
 msgid "Vai al profilo per verificare l'email"
 msgstr ""
 
-#: routes/auth.py:195
+#: routes/auth.py:200
 msgid "Username o password errati."
 msgstr ""
 
-#: routes/auth.py:234
+#: routes/auth.py:239
 msgid "Registrazione completata! Controlla la tua email per verificare l'account."
 msgstr ""
 
-#: routes/auth.py:245 templates/onboarding.html:12
+#: routes/auth.py:250 templates/onboarding.html:12
 msgid "Ti diamo il benvenuto!"
 msgstr ""
 
-#: routes/auth.py:246
+#: routes/auth.py:251
 msgid "Registrazione completata con successo."
 msgstr ""
 
-#: routes/auth.py:289
+#: routes/auth.py:294
 msgid "Inserisci l'indirizzo email del tuo account."
 msgstr ""
 
-#: routes/auth.py:295
+#: routes/auth.py:300
 msgid "Se l'email esiste, riceverai un link per resettare la password."
 msgstr ""
 
-#: routes/auth.py:305
+#: routes/auth.py:310
 msgid "Non siamo riusciti a inviare l'email. Riprova fra qualche minuto."
 msgstr ""
 
-#: routes/auth.py:325 routes/auth.py:347
+#: routes/auth.py:330 routes/auth.py:352
 msgid "Token non valido o scaduto."
 msgstr ""
 
-#: routes/auth.py:333
+#: routes/auth.py:338
 msgid "Le password non coincidono."
 msgstr ""
 
-#: routes/auth.py:340
+#: routes/auth.py:345
 msgid "Password aggiornata con successo! Ora puoi effettuare il login."
 msgstr ""
 
