@@ -56,6 +56,57 @@ def glitchtip_before_send(event, hint):
     return event
 
 
+def _inside_uwsgi() -> bool:
+    """Vero solo nel processo del server web: uWSGI vi rende importabile `uwsgi`."""
+    import importlib.util
+    import sys
+
+    if "uwsgi" in sys.modules:
+        return True
+    try:
+        return importlib.util.find_spec("uwsgi") is not None
+    except (ImportError, ValueError):
+        return False
+
+
+def configure_production_logging(config_name: str) -> None:
+    """Riporta a WARNING il logging del server web di produzione.
+
+    Nell'error log di PythonAnywhere comparivano i `logger.info` del progetto,
+    ma nel repo nessuno li alza nel percorso della web app e in locale
+    `create_app("production")` lascia il root a WARNING: il livello lo abbassa
+    qualcosa fuori dal codice. Prima di correggerlo si scrive una riga con ciò
+    che si è trovato, così l'error log dice chi era stato.
+
+    Solo dentro uWSGI: gli script da console fanno `basicConfig(level=INFO)` e
+    poi creano l'app in production, e un override qui zittirebbe il loro
+    resoconto, dry-run compresi.
+    """
+    if config_name != "production" or not _inside_uwsgi():
+        return
+
+    root = logging.getLogger()
+    sotto_warning = sorted(
+        name
+        for name, logger in logging.root.manager.loggerDict.items()
+        if isinstance(logger, logging.Logger)
+        and logging.NOTSET < logger.level < logging.WARNING
+    )
+    if root.getEffectiveLevel() >= logging.WARNING and not sotto_warning:
+        return
+
+    root.warning(
+        "Logging del server web a %s, handler %r, logger sotto WARNING %r: "
+        "riportato a WARNING",
+        logging.getLevelName(root.level),
+        [(type(h).__name__, getattr(h.formatter, "_fmt", None)) for h in root.handlers],
+        sotto_warning,
+    )
+    root.setLevel(logging.WARNING)
+    for name in sotto_warning:
+        logging.getLogger(name).setLevel(logging.NOTSET)
+
+
 def create_app(config_name=None):
     """Factory per creare l'app Flask"""
 
@@ -122,6 +173,7 @@ def create_app(config_name=None):
             logging.INFO
         )
         logging.getLogger("routes.admin.match").setLevel(logging.INFO)
+    configure_production_logging(config_name)
 
     # Inizializza estensioni
     db.init_app(app)
