@@ -34,7 +34,7 @@
       <div class="c7-tessera__meta">
         {{ campionato.campionato_type }}
         <span class="c7-sep">·</span>
-        {{ ngettext('%(num)s gara', '%(num)s gare', campionato.gare|length, num=campionato.gare|length) }}
+        {{ campionato.conteggio_gare.gare_testo }}
         {% if card.is_concluso %}
           {% if card.ultima_data %}
           <span class="c7-sep">·</span> {{ _('ultima gara il') }}

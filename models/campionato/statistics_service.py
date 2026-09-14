@@ -543,8 +543,11 @@ def compute_campionato_status(campionato: Campionato) -> str:
         # prove da creare rispetto a quelle pianificate il campionato è
         # ancora in corso; il completamento "vero" passa da
         # `terminate_campionato` (ramo `terminated_at` sopra).
+        # La finale dei playoff non è una delle gare pianificate.
+        from models.campionato.conteggio_gare import gare_regolari
+
         planned = getattr(campionato, "planned_gare_count", 0) or 0
-        if len(gare) < planned:
+        if len(gare_regolari(gare)) < planned:
             return TournamentStatus.IN_PROGRESS.value
         # Le gare previste sono finite tutte, ma `terminated_at` è NULL: la
         # classifica generale non è consolidata e il pulsante "Termina" aspetta

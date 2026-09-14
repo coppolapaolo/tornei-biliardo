@@ -236,6 +236,17 @@ class Campionato(db.Model):
     # Rimosse con la #242: badge e testo li decide `StatusPresenter.campionato`
     # (utils/status_ui.py), che è l'unica tabella e passa da `_()`.
 
+    @property
+    def conteggio_gare(self):
+        """Gare regolari e finali dei playoff, contate a parte.
+
+        La finale non è una delle gare previste (SPECIFICHE.md, «Campionati»,
+        nota del 2026-09-14): la regola sta in `conteggio_gare.py`.
+        """
+        from models.campionato.conteggio_gare import ConteggioGare
+
+        return ConteggioGare.da_gare(getattr(self, "gare", None) or [])
+
     def has_playoff_configurations(self) -> bool:
         """Check if campionato has playoff configurations."""
         configurations = getattr(self, "playoff_configurations", [])

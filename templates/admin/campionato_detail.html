@@ -78,10 +78,13 @@
 </div>
 {% endif %}
 
-{% set _giocate = gare | selectattr('status', 'equalto', GaraStatus.COMPLETED.value) | sort(attribute='number') | list %}
+{# La finale dei playoff non è una delle gare previste: si conta a parte
+   (`campionato.conteggio_gare`, SPECIFICHE.md nota del 2026-09-14). #}
+{% set _regolari = gare | rejectattr('is_playoff') | list %}
+{% set _giocate = _regolari | selectattr('status', 'equalto', GaraStatus.COMPLETED.value) | sort(attribute='number') | list %}
 {% set _in_corso = gare | selectattr('status', 'in', [GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value]) | sort(attribute='number') | list %}
 {% set _prossime = gare | selectattr('status', 'in', [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value]) | sort(attribute='number') | list %}
-{% set _previste = campionato.planned_gare_count or gare|length %}
+{% set _previste = campionato.planned_gare_count or _regolari|length %}
 {% set _cfg_attive = (campionato.playoff_configurations or []) | selectattr('is_active') | list %}
 {# La fase dei playoff la calcola `models/playoff/fase.py`. A playoff conclusi
    il campionato è Completato: la fascia lo constata come per un campionato
@@ -521,7 +524,8 @@
     {% endif %}
 
     <section data-c7-tab="gare">
-      {{ d.sezione(_('Gare'), nota=_('%(n)s di %(tot)s', n=_giocate|length, tot=_previste)) }}
+      {% set _conteggio = campionato.conteggio_gare %}
+      {{ d.sezione(_('Gare'), nota=_('%(n)s di %(tot)s', n=_giocate|length, tot=_previste) ~ ((' · ' ~ _conteggio.finale_testo) if _conteggio.finali else '')) }}
       {% if gare %}
       <div class="c7-rows" style="margin-top:10px">
         {% for gara in gare | sort(attribute='number', reverse=true) %}
