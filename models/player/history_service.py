@@ -8,7 +8,7 @@ from datetime import date, datetime
 from typing import Optional, List, Tuple, Any, Dict
 
 from flask_sqlalchemy.pagination import Pagination
-from sqlalchemy import or_, and_, func
+from sqlalchemy import or_, and_, func, select
 from sqlalchemy.orm import joinedload, selectinload
 
 from models.base import db
@@ -1115,25 +1115,21 @@ class PlayerHistoryService:
         Returns campionati where user participated in at least one gara.
         Supports optional status filter ('active' | 'completed' | None=all).
         """
-        # Subquery for gare where user inscribed
-        inscribed_gara_ids = (
-            db.session.query(Inscription.gara_id)
-            .filter(
-                Inscription.user_id == user_id,
-                Inscription.is_withdrawn == False,  # noqa: E712
-            )
-            .subquery()
+        # Dentro IN() va un select(), non un .subquery(): SQLAlchemy 2.0
+        # convertirebbe da solo, emettendo un SAWarning a ogni chiamata.
+        inscribed_gara_ids = select(Inscription.gara_id).where(
+            Inscription.user_id == user_id,
+            Inscription.is_withdrawn == False,  # noqa: E712
         )
 
         # Campionati that have gare where user inscribed
         campionato_ids_with_participation = (
-            db.session.query(Gara.campionato_id)
-            .filter(
+            select(Gara.campionato_id)
+            .where(
                 Gara.id.in_(inscribed_gara_ids),
                 Gara.campionato_id.isnot(None),
             )
             .distinct()
-            .subquery()
         )
 
         # Query campionati
