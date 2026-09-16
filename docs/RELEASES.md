@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.33.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.32.0...v1.33.0) (2026-09-16)
+
+
+### Funzioni nuove
+
+* adozione di una finale giocata fuori dal campionato ([#455](https://github.com/coppolapaolo/tornei-biliardo/issues/455)) ([d50d91e](https://github.com/coppolapaolo/tornei-biliardo/commit/d50d91edecdad24c8015ea27b9daaed8d07a4b89))
+* il direttore accetta un invito ai playoff anche scaduto ([#457](https://github.com/coppolapaolo/tornei-biliardo/issues/457)) ([58b67f4](https://github.com/coppolapaolo/tornei-biliardo/commit/58b67f4e56cb5a4550327ffec6d5afb90d270dd0))
+* il direttore iscrive e toglie un giocatore anche a iscrizioni chiuse ([#458](https://github.com/coppolapaolo/tornei-biliardo/issues/458)) ([455f599](https://github.com/coppolapaolo/tornei-biliardo/commit/455f59995ce5b22e0f2bde773f2cc5505007bfc9))
+
 ## [1.32.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.31.1...v1.32.0) (2026-09-16)
 
 
