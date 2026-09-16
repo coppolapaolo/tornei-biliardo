@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.32.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.31.1...v1.32.0) (2026-09-16)
+
+
+### Funzioni nuove
+
+* recapito per segnalare un contenuto e avviso sui diritti dove si carica ([#450](https://github.com/coppolapaolo/tornei-biliardo/issues/450)) ([840e621](https://github.com/coppolapaolo/tornei-biliardo/commit/840e6219d59645fb95daaaa3524642bf6b7ba47e))
+
+
+### Correzioni
+
+* sullo schermo in sala il risultato non sparisce quando la partita finisce ([#449](https://github.com/coppolapaolo/tornei-biliardo/issues/449)) ([736af22](https://github.com/coppolapaolo/tornei-biliardo/commit/736af224b27180a2606241968722132d940b50e3)), closes [#443](https://github.com/coppolapaolo/tornei-biliardo/issues/443)
+
 ## [1.31.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.31.0...v1.31.1) (2026-09-15)
 
 
