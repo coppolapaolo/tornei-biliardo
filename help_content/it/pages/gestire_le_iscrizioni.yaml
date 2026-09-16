@@ -64,11 +64,15 @@ blocks:
           nome che usa nell'app: i candidati compaiono sotto mentre scrivi,
           ognuno con «Iscrivi» sulla riga. Chi ha aggiunto nome e cognome al
           proprio profilo compare con quelli, così non rischi di scegliere un
-          omonimo. Deve comunque avere un account.
+          omonimo. Deve comunque avere un account. Puoi farlo anche a
+          iscrizioni chiuse, finché non avvii la gara: la scadenza vale per
+          chi si iscrive da solo, non per te. Nell'elenco resta scritto
+          «iscritto da» col tuo nome, e posti e parità valgono come per tutti.
       - name: "Togliere un iscritto"
         text: >-
           Per chi avvisa che non viene. Il giocatore riceve una notifica, e se
-          c'è una lista d'attesa il primo in coda entra al suo posto.
+          c'è una lista d'attesa il primo in coda entra al suo posto. Anche
+          questo si può fare a iscrizioni chiuse, finché la gara non è avviata.
       - name: "Cambiare le date"
         text: >-
           Prorogare la chiusura se gli iscritti sono pochi, o anticiparla se

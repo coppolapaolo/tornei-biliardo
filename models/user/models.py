@@ -155,7 +155,14 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     prova_campionato_id = db.Column(db.Integer, nullable=True, index=True)
 
     # Relationships (string names to postpone model imports)
-    inscriptions = db.relationship("Inscription", back_populates="user", lazy=True)
+    # `foreign_keys` esplicito: `inscription` punta a `user` due volte, chi è
+    # iscritto e chi lo ha iscritto (`inscribed_by_id`, 2026-09-16).
+    inscriptions = db.relationship(
+        "Inscription",
+        back_populates="user",
+        foreign_keys="Inscription.user_id",
+        lazy=True,
+    )
     match_results = db.relationship(
         "MatchResult", foreign_keys="MatchResult.user_id", lazy=True
     )

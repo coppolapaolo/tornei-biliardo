@@ -51,6 +51,7 @@ class InscriptionService:
         gara_id: int,
         _bypass_playoff_check: bool = False,
         _d_ufficio: bool = False,
+        inscribed_by_id: Optional[int] = None,
     ) -> Optional[Inscription]:
         """Registra un utente a una gara se non già iscritto.
 
@@ -71,6 +72,13 @@ class InscriptionService:
                 invece resta: in una gara che non ammette dispari chi
                 renderebbe dispari gli iscritti aspetta in lista d'attesa un
                 secondo giocatore, come chiunque, e la gara resta avviabile.
+            inscribed_by_id: chi registra l'iscrizione al posto del giocatore,
+                cioè il direttore che lo iscrive a mano. Resta scritto sulla
+                riga, e per lui la **finestra non vale**: chi arriva in sala
+                a iscrizioni chiuse si iscrive lo stesso, finché la gara non è
+                avviata (SPECIFICHE.md, «Gara», nota del 2026-09-16). Posti e
+                parità restano quelli di tutti: un giocatore oltre il massimo
+                va in lista d'attesa anche se lo iscrive il direttore.
         """
         from models.competition.models import Gara, WaitlistReason
         from models.user.models import User
@@ -120,11 +128,14 @@ class InscriptionService:
         # Chi entra in un playoff dall'invito non passa dalla finestra: la
         # finestra serve alle gare aperte a tutti, qui il biglietto è l'invito,
         # e un sì arrivato a finestra chiusa ma prima dell'avvio vale.
+        # E nemmeno per il direttore che iscrive a mano: la finestra dice
+        # quando i giocatori si iscrivono da soli, non quando lui può farlo.
         now = utc_now()
         if (
             gara.inscription_start
             and gara.inscription_end
             and not _bypass_playoff_check
+            and inscribed_by_id is None
         ):
             if now < gara.inscription_start:
                 raise ConflictError("Iscrizioni non ancora aperte")
@@ -196,6 +207,7 @@ class InscriptionService:
             is_waitlist=is_waitlist,
             waitlist_position=waitlist_position,
             waitlist_reason=waitlist_reason,
+            inscribed_by_id=inscribed_by_id,
         )
         # Squadra precompilata dal testo del profilo (US-1, US-8), e solo qui:
         # è l'unico momento in cui `user.squadra` viene letto. Se il testo non

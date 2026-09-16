@@ -1041,7 +1041,21 @@ class Inscription(db.Model):
     created_at = db.Column(db.DateTime, default=utc_now)
     initial_order = db.Column(db.Integer)  # ordine sorteggio iniziale
 
-    user = db.relationship("User", back_populates="inscriptions")
+    user = db.relationship(
+        "User", back_populates="inscriptions", foreign_keys=[user_id]
+    )
+
+    # Chi ha registrato l'iscrizione, quando non è stato il giocatore: il
+    # direttore che lo ha iscritto a mano, anche a finestra chiusa. NULL vuol
+    # dire «non si sa» — le iscrizioni precedenti al 2026-09-16 non lo hanno
+    # mai scritto. Stesso schema di `PlayoffQualification.responded_by_id`.
+    inscribed_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    inscribed_by = db.relationship("User", foreign_keys=[inscribed_by_id])
+
+    @property
+    def iscritto_dal_direttore(self) -> bool:
+        """True se a iscriverlo è stato qualcun altro."""
+        return self.inscribed_by_id is not None and self.inscribed_by_id != self.user_id
 
     is_withdrawn = db.Column(db.Boolean, default=False, nullable=False)
     withdrawn_at = db.Column(db.DateTime, nullable=True)

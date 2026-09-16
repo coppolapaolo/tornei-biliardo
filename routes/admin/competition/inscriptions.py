@@ -213,8 +213,12 @@ def admin_inscribe_user(gara_id):
             )
             return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
-        # Esegui l'iscrizione usando il service layer
-        inscription = InscriptionService.inscribe_user(user_id, gara_id)
+        # Esegui l'iscrizione usando il service layer. Resta scritto chi l'ha
+        # fatta, e per il direttore la finestra non vale: iscrive anche a
+        # iscrizioni chiuse, finché la gara non è avviata.
+        inscription = InscriptionService.inscribe_user(
+            user_id, gara_id, inscribed_by_id=current_user.id
+        )
 
         if inscription:
             # Formatta la data per la notifica

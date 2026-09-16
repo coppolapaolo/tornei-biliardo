@@ -21,10 +21,12 @@
 {% set _attivi = inscriptions | selectattr('is_waitlist', 'equalto', false) | selectattr('is_withdrawn', 'equalto', false) | list %}
 {% set _attesa = inscriptions | selectattr('is_waitlist', 'equalto', true) | selectattr('is_withdrawn', 'equalto', false) | sort(attribute='waitlist_position') | list %}
 {% set _puo_ritirare = user_can_manage and ritiro_iscritti is defined and ritiro_iscritti and gara.status == GaraStatus.PLAYING.value %}
-{# Lo stato derivato, non quello persistito: a scadenza passata le
-   iscrizioni sono chiuse anche se la gara e' ancora INSCRIPTION, e il
-   servizio rifiuterebbe l'iscrizione. #}
-{% set _puo_iscrivere = user_can_manage and gara.get_real_status() == GaraStatus.INSCRIPTION.value %}
+{# Lo stato persistito, non quello derivato: a scadenza passata le
+   iscrizioni sono chiuse per i giocatori, ma il direttore iscrive a mano
+   finché la gara non è avviata (SPECIFICHE.md, nota del 2026-09-16). Fino
+   ad allora il campo spariva proprio quando serviva: chi arrivava in sala
+   a finestra chiusa non aveva modo di entrare. #}
+{% set _puo_iscrivere = user_can_manage and gara.status == GaraStatus.INSCRIPTION.value %}
 
 <section class="c7-stack">
 
@@ -119,6 +121,11 @@
              giocatori fittizi della prova. #}
           {% if user_can_manage and inscription.user.full_name and inscription.user.full_name|lower != inscription.user.username|lower %}{{ inscription.user.full_name }} <span class="c7-sep">·</span> {% endif %}
           {{ _('iscritto il %(date)s', date=inscription.created_at|date_local) }}
+          {# Chi l'ha iscritto, se non è stato lui: lo vede chi dirige, in
+             modo discreto, come «registrato da» sugli inviti ai playoff. #}
+          {% if user_can_manage and inscription.iscritto_dal_direttore %}
+          <span class="c7-sep">·</span> {{ _('iscritto da %(nome)s', nome=inscription.inscribed_by.username if inscription.inscribed_by else _('direzione')) }}
+          {% endif %}
           {% if inscription.squadra and not (user_can_manage and squadre_editable and gara.separate_teammates) %}
           <span class="c7-sep">·</span> {{ inscription.squadra.name }}
           {% endif %}
