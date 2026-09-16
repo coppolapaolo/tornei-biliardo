@@ -105,6 +105,35 @@ blocks:
       history standing.
 
   - type: heading
+    id: contenuti
+    title: "Images published on the site"
+
+  - type: text
+    text: >-
+      The posters of competitions and championships, the photos of venues and
+      the pictures of drills are not put there by the platform: they are
+      uploaded by competition directors and venue managers, whom we ask to use
+      only material they hold the rights to.
+
+  - type: text
+    text: >-
+      If you believe an image published here infringes your rights, is
+      inappropriate or should not be there, write to
+      **info@torneibiliardo.it** saying which page it is on. The **Report
+      content** link at the foot of every page takes you straight there:
+      [Content published on this site](/privacy#contenuti). Every report is
+      looked at, and where it is well founded the material is removed.
+
+  - type: note
+    tone: info
+    title: "Not the same channel as reports"
+    text: >-
+      Things that do not work are reported from inside the app, under
+      **Reports**: see [Reporting a
+      problem](/aiuto/account/segnalare_un_problema). To have a piece of
+      content taken down, write to the address above instead.
+
+  - type: heading
     id: cookie
     title: "Cookies"
 
@@ -122,5 +151,7 @@ blocks:
         a: "No other player, not even competition directors. It is stored encrypted and used only for the app's own messages."
       - q: "What is the difference between the CSV and the full export?"
         a: "The CSV is your results history, handy to read. The full export covers everything the app has recorded about you, and is the one that answers a data access request."
+      - q: "I have seen a photo that I do not think should be there."
+        a: "Write to **info@torneibiliardo.it** saying which page you saw it on. The **Report content** link at the foot of every page takes you to the explanation with the address."
       - q: "Can I change my mind after deleting my account?"
         a: "No: anonymisation is final and cannot be reversed. You can create a new account, but it starts from scratch."

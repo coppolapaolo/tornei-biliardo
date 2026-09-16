@@ -105,6 +105,36 @@ blocks:
       sportiva di tutti gli altri.
 
   - type: heading
+    id: contenuti
+    title: "Le immagini pubblicate sul sito"
+
+  - type: text
+    text: >-
+      Le locandine delle gare e dei campionati, le foto delle sale e le
+      fotografie degli esercizi non le mette la piattaforma: le caricano i
+      direttori di gara e i gestori di sala, a cui chiediamo di usare solo
+      materiale di cui hanno i diritti.
+
+  - type: text
+    text: >-
+      Se ritieni che un'immagine pubblicata qui violi un tuo diritto, sia
+      inappropriata o non debba comparire, scrivi a
+      **info@torneibiliardo.it** dicendo in quale pagina si trova. La voce
+      **Segnala un contenuto**, in fondo a ogni pagina, porta esattamente
+      lì: [Contenuti pubblicati sul sito](/privacy#contenuti). Ogni
+      segnalazione viene esaminata, e quando è fondata il materiale viene
+      rimosso.
+
+  - type: note
+    tone: info
+    title: "Non è lo stesso canale delle segnalazioni"
+    text: >-
+      Le cose che non funzionano si segnalano dall'app, dalla voce
+      **Segnalazioni**: vedi [Segnalare un
+      problema](/aiuto/account/segnalare_un_problema). Per un contenuto da
+      togliere, invece, si scrive all'indirizzo qui sopra.
+
+  - type: heading
     id: cookie
     title: "Cookie"
 
@@ -123,5 +153,7 @@ blocks:
         a: "Nessun altro giocatore, e nemmeno i direttori di gara. È conservato cifrato e serve solo alle comunicazioni dell'app."
       - q: "Che differenza c'è tra CSV ed export completo?"
         a: "Il CSV è lo storico dei risultati, comodo da consultare. L'export completo comprende tutto ciò che l'app ha registrato su di te, ed è quello previsto dal diritto di accesso ai dati."
+      - q: "Ho visto una foto che secondo me non dovrebbe esserci."
+        a: "Scrivi a **info@torneibiliardo.it** indicando la pagina in cui l'hai vista. Il collegamento **Segnala un contenuto**, in fondo a ogni pagina, ti porta alla spiegazione con l'indirizzo."
       - q: "Posso ripensarci dopo aver eliminato l'account?"
         a: "No: l'anonimizzazione è definitiva e non è reversibile. Potrai crearne uno nuovo, ma partirà da zero."

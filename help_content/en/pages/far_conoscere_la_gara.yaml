@@ -123,6 +123,17 @@ blocks:
       - name: "Removing the competition poster"
         text: "The competition goes back to the championship one, if there is one. It is never left without an image by mistake."
 
+  - type: note
+    tone: warning
+    title: "Only images you have the rights to"
+    text: >-
+      Below the field for uploading the poster the app says so: **upload only
+      material you hold the rights to**. Artwork made by you or by the club is
+      fine; an image taken from the internet, or somebody else's poster, is
+      not. Anyone who believes an image published here infringes their rights
+      can write to us: the **Report content** link at the foot of every page
+      leads to the address to write to.
+
   - type: heading
     id: indirizzo
     title: "An address you can read out on the phone"

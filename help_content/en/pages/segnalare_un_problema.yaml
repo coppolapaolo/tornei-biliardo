@@ -89,5 +89,7 @@ blocks:
         a: "Not yet. If we answer you, our reply appears under the report in your list. To add something, for now, write a new report."
       - q: "I reported something someone else had already reported."
         a: "That is fine: we notice and merge them. Two identical reports are better than none."
+      - q: "I want to report an image, not a fault."
+        a: "That has a channel of its own: the **Report content** link at the foot of every page leads to the email address to write to, saying which page the image is on. See [Privacy and data](/aiuto/account/privacy_e_dati)."
       - q: "I cannot log in — how do I report that?"
         a: "Not from here, because the form needs you to be signed in. In that case write to the email address given on the Privacy and Cookies page."

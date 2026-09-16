@@ -92,8 +92,9 @@ blocks:
           gestisci vedi la linguetta **Gestione**. Tutto il resto resta uguale.
       - name: "Da giocatore a gestore di sala"
         text: >-
-          Puoi modificare la scheda della sala che gestisci. Le gare non ne
-          risentono.
+          Puoi modificare la scheda della sala che gestisci, comprese le
+          fotografie: come per ogni immagine caricata sulla piattaforma, solo
+          materiale di cui hai i diritti. Le gare non ne risentono.
       - name: "Se cambi idea"
         text: >-
           Entrambi i ruoli si possono revocare: chiedilo a un amministratore.
