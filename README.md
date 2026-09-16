@@ -1,218 +1,151 @@
-# 🎱 Pool Community Platform
+# 🎱 Tornei Biliardo
 
-> **Piattaforma community completa** per gli amanti del pool americano - Connetti, gioca, competi e cresci insieme alla community
+> Piattaforma per organizzare **campionati, gare e allenamento** di biliardo
+> americano: iscrizioni, abbinamenti, segnapunti, classifiche e statistiche.
 
----
-
-## 🌟 Visione della Piattaforma
-
-Una **community hub centralizzata** per tutti gli appassionati di pool americano, che aspira a diventare il punto di riferimento per:
-
-- 🤝 **Connessioni sociali** tra giocatori locali e regionali
-- 🏆 **Organizzazione tornei** con strategie di abbinamento flessibili
-- 🎯 **Partite casuali** e incontri spontanei tra membri
-- 📈 **Sviluppo skills** attraverso sfide e sistema rating
-- 🏢 **Integrazione venue** per scoprire nuovi luoghi di gioco
-- 🔮 **Espansione futura** per qualsiasi attività collegata al pool
-
-### 🎯 Discipline Supportate
-- **8-Ball** (Palla 8)
-- **9-Ball** (Palla 9) 
-- **10-Ball** (Palla 10)
-- **One Pocket**
-- **Straight Pool** (Pool Continuo)
-- **Espansione futura** per tutte le varianti del pool americano
+**In produzione**: <https://www.torneibiliardo.it>
 
 ---
 
-## 🚀 Quick Start
+## Che cosa fa
 
-### 🔧 **Setup Locale**
+Nasce per il lavoro reale di una sala: un direttore di gara apre un
+campionato, i giocatori si iscrivono, l'app abbina i turni, raccoglie i
+risultati dai tavoli e tiene le classifiche.
+
+### Competizioni
+
+- **Campionati multi-gara** con classifica generale aggregata e pesi per gara
+- **Gare singole** oppure inserite in un campionato
+- **Cinque formule di abbinamento**: Amalfi, girone all'italiana, eliminazione
+  diretta, doppio KO, casuale
+- **Playoff** con criteri di qualificazione, inviti e sostituzioni
+- **Spareggi** Spot Shot Rally quando la classifica lascia dei pari merito
+- **Iscrizioni** con lista d'attesa, categorie e handicap
+- **Squadre** e separazione dei compagni nel sorteggio
+
+### Al tavolo
+
+- **Segnapunti** pensato per il telefono, con acchito, regola di apertura e
+  runout marcati sul triangolo
+- **Referto TPA** in stile Accu-Stats: il punteggio discende dal referto
+- **Sfide individuali** fuori dalle gare
+- **Schermo in sala**: la pagina pubblica da proiettare sulla TV, con i tavoli
+  in corso e la classifica
+
+### Intorno al gioco
+
+- **Esami e allenamento**: esercizi a esito registrato, schede, esami certificati
+- **Rating ELO** con regole per le competizioni a handicap
+- **Gamification**: punti esperienza, traguardi, notifiche
+- **Profili giocatore** con storico partite e statistiche
+- **Vetrina pubblica** di gare e campionati, condivisibile
+- **Guida in app** (`/aiuto`) con schermate generate dall'applicazione stessa
+
+### Discipline
+
+Palla 7 · Palla 8 · Palla 9 · Palla 10 · One Pocket · Straight Pool ·
+Bank Pool · Rotation
+
+---
+
+## Avvio locale
+
 ```bash
-# Clone repository
 git clone https://github.com/coppolapaolo/tornei-biliardo.git
 cd tornei-biliardo
 
-# Virtual environment
 python3 -m venv venv
-source venv/bin/activate  # Mac/Linux
-# venv\Scripts\activate   # Windows
+source venv/bin/activate          # Windows: venv\Scripts\activate
 
-# Install dependencies
 pip install -r requirements.txt
 pip install -r requirements-dev.txt
 
-# Launch application
 python app.py
 ```
 
-**🌐 App disponibile su**: `http://localhost:5001`
+L'applicazione risponde su <http://localhost:5001>.
 
-**🌐 App produzione**: https://www.torneibiliardo.it
+> Su macOS la porta 5000 è occupata da AirPlay Receiver e risponde 403: non è
+> un guasto dell'app, è il motivo per cui si usa la 5001.
 
----
-
-## ✨ Funzionalità Community
-
-### 🤝 **Connessioni Sociali**
-- **Profili membri** con statistiche e preferenze
-- **Sistema match proposal** per organizzare partite casuali
-- **Discovery giocatori** basato su location e skill level
-- **Social dashboard** per attività community
-
-### 🏆 **Sistema Tornei Flessibile**
-- **Strategie multiple**: Amalfi, Round-Robin, Eliminazione, Casuale
-- **Campionati multi-gara** con classifiche aggregate
-- **Gare standalone** per eventi speciali
-- **Gestione iscrizioni** con liste d'attesa e quote
-
-### 🎯 **Sviluppo Skills**
-- **Sistema challenge** per practice e miglioramento
-- **Rating community** per tracking progressi
-- **Statistiche dettagliate** a livello rack, set e match
-- **Handicap system** per partite equilibrate
-
-### 🏢 **Integrazione Venue**
-- **Database sale biliardo** con gestione disponibilità
-- **Match location-based** per trovare giocatori vicini
-- **Coordinate eventi** presso venue partner
-- **Sistema venue manager** per gestione spazi
-
----
-
-## 🛠️ Architettura Tecnologica
-
-### **Backend Community-Focused**
-- **Python 3.8+** con Flask framework per scalabilità community
-- **Domain-Driven Design** organizzato per crescita sociale
-- **Strategy Pattern** per matchmaking flessibile e inclusivo
-- **SQLAlchemy ORM** con supporto multi-disciplina
-- **Sistema notifiche** per engagement community
-- **Privacy-by-design** con crittografia dati personali
-
-### **Sistemi Community**
-- **Individual Match Domain**: Coordinamento partite casuali
-- **Location Services**: Discovery venue e giocatori
-- **Challenge System**: Sviluppo skills e leaderboard
-- **Rating Engine**: Valutazione community-wide
-- **Social Notifications**: Comunicazione tra membri
-
-### **Frontend Social**
-- **Bootstrap 5** per UI components responsive
-- **Component-based templates** per scalabilità
-- **Real-time updates** per engagement live
-- **Mobile-first design** per accessibilità ovunque
-- **AJAX interactions** per esperienza fluida
-
-### **Infrastructure Scalabile**
-- **SQLite** (dev e prod su PythonAnywhere)
-- **Multi-level caching** per performance community
-- **Transaction management** per operazioni complesse
-- **Comprehensive testing** per affidabilità piattaforma
-
----
-
-## 🌍 Internazionalizzazione (i18n)
-
-La piattaforma supporta **multiple lingue**:
-
-| Lingua | Codice | Status |
-|--------|--------|--------|
-| 🇮🇹 Italiano | `it` | Default |
-| 🇬🇧 English | `en` | Completo |
-
-### Gestione Traduzioni
+### Test e controlli
 
 ```bash
-# Estrarre nuove stringhe
-pybabel extract -F babel.cfg -o messages.pot .
-
-# Aggiornare cataloghi esistenti
-pybabel update -i messages.pot -d translations
-
-# Compilare traduzioni
-pybabel compile -d translations
-```
-
-### Aggiungere una Nuova Lingua
-
-```bash
-# Inizializzare una nuova lingua (es. Spagnolo)
-pybabel init -i messages.pot -d translations -l es
-
-# Compilare dopo aver tradotto
-pybabel compile -d translations
+pytest tests/new/unit/ -n auto        # test unitari
+pytest tests/new/integration/ -n 4    # integrazione (SQLite non regge -n auto)
+pyright                               # type check, atteso a zero errori
+black . && flake8                     # formattazione e stile
 ```
 
 ---
 
-## 🎮 Casi d'Uso Community
+## Architettura
 
-### 👥 **Per Community Members**
-- Registrazione e creazione profilo social
-- Ricerca e connessione con giocatori locali
-- Proposta partite casuali e organizzazione meetup
-- Partecipazione a tornei e eventi community
-- Tracking statistiche personali e sviluppo skills
-
-### 👑 **Per Community Leaders (Directors)**
-- Organizzazione tornei e eventi speciali
-- Gestione community locale e coordinamento venue
-- Creazione campionati multi-evento
-- Moderazione attività e supporto membri
-
-### 🛡️ **Per Administrators**
-- Gestione piattaforma e moderazione community
-- Analytics e insights crescita community
-- Configurazione system-wide e venue management
-- Supporto community leaders e risoluzione conflitti
+- **Python 3.11** con **Flask**; la CI prova su questa versione
+- **SQLAlchemy** su **SQLite**, in sviluppo e in produzione (PythonAnywhere)
+- Codice organizzato **per domini** (`models/campionato`, `models/match`,
+  `models/playoff`, `models/tpa`, `models/exam`, …), non per livelli tecnici
+- **Strategy pattern** per le formule di abbinamento e per le classifiche
+- **networkx** per il matching sul grafo anti-reincontro
+- Scritture sempre dentro un `@transactional`, con savepoint annidati
+- Aggiornamenti dal vivo su tabella condivisa fra i worker, senza WebSocket
+- Frontend **Bootstrap 5.3** con sopra il design system **7c**
+  (`static/css/tokens-7c.css`, `theme-7c.css`)
 
 ---
 
-## 🚀 Roadmap Community
+## Lingue
 
-### **Fase Attuale**: Tournament & Match Foundation
-- ✅ Sistema tornei con strategie multiple
-- ✅ Match proposal e coordinamento sociale
-- ✅ Gestione venue e location services
-- ✅ Challenge system per skill development
-- ✅ **Gamification V2 (ABAC)** - [Documentazione Completa](docs/adr/ADR-020-gamification-system-v2.md)
+Italiano (lingua di partenza) e inglese, entrambi completi. I testi passano da
+`gettext`; le notifiche si compongono nella lingua di **chi le riceve**.
 
-### **Prossime Fasi**: Community Expansion
-- 🔄 Sistema amicizie e network sociali
-- 🔄 Eventi community e meetup organizzati
-- 🔄 Marketplace attrezzature e servizi
-- 🔄 Sistema coaching e mentorship
-- 🔄 News e content community-generated
-
-### **Visione Futura**: Pool Ecosystem Hub
-- 🔮 Integrazione streaming e content creation
-- 🔮 Partnership con venue e organizzatori
-- 🔮 Sistema credentials e certificazioni
-- 🔮 Mobile app companion
-- 🔮 Espansione internazionale community
+> ⚠️ Il ciclo di traduzione **non si esegue a comandi copiati a memoria**:
+> `pybabel update` senza i flag giusti riempie le stringhe nuove con traduzioni
+> prese a caso da altre voci. La procedura corretta è in
+> [`CLAUDE.md`](CLAUDE.md) e nella skill `translate`.
 
 ---
 
-## 📞 Community & Supporto
+## Documentazione
 
-### 🐛 **Issues e Feedback**
-- **GitHub Issues**: [Crea Issue](https://github.com/coppolapaolo/tornei-biliardo/issues)
-- **Community Feedback**: Suggerimenti per migliorare l'esperienza
-- **Bug Reports**: Segnalazioni con scenario dettagliato
+| Dove | Che cosa |
+|---|---|
+| [`docs/reference/SPECIFICHE.md`](docs/reference/SPECIFICHE.md) | I requisiti: si apre **prima** di toccare una regola di gioco |
+| [`docs/adr/`](docs/adr/) | Le decisioni architetturali e il perché |
+| [`docs/reference/`](docs/reference/) | Schema del database, autenticazione, convenzioni di nome e di interfaccia |
+| [`docs/usecases/`](docs/usecases/) | I flussi di gara e i percorsi degli esami |
+| [`CLAUDE.md`](CLAUDE.md) | Convenzioni operative, trappole note, come si lavora qui |
 
-### 🤝 **Contributi Community**
-- **Pull Requests**: Contributi al codice benvenuti
-- **Feature Requests**: Idee per nuove funzionalità community
-- **Community Building**: Suggerimenti per engagement e crescita
-- **Documentation**: Migliorie e traduzione contenuti
-
-### 📧 **Contatti**
-- **Email**: paolo.coppola@gmail.com
-- **Repository**: https://github.com/coppolapaolo/tornei-biliardo
+Lo stato di avanzamento vive nelle
+[issue](https://github.com/coppolapaolo/tornei-biliardo/issues), non in questo
+file: un elenco di funzionalità scritto qui invecchia senza che nessuno se ne
+accorga.
 
 ---
 
-*🎱 Piattaforma community per il pool americano - Dove i giocatori si incontrano, competono e crescono insieme*
+## Contribuire
 
-**Unisciti alla community del pool! 🚀**
+Segnalazioni e proposte passano dalle
+[issue](https://github.com/coppolapaolo/tornei-biliardo/issues); per tutto il
+resto, <info@torneibiliardo.it>. Per le pull request valgono due regole:
+
+- il **titolo** segue [Conventional Commits](https://www.conventionalcommits.org)
+  (`feat:`, `fix:`, `docs:`, …) perché da lì si calcola il numero di versione;
+- i test e `pyright` devono essere verdi.
+
+---
+
+## Licenza
+
+Distribuito sotto **GNU Affero General Public License v3.0** — vedi
+[`LICENSE`](LICENSE).
+
+L'AGPL estende alla rete l'obbligo della GPL: chi modifica questo software e lo
+offre come servizio agli utenti deve rendere disponibile il codice modificato.
+
+> **Eccezione.** Le immagini in
+> [`docs/reference/inspiration/`](docs/reference/inspiration/) sono schermate di
+> applicazioni di terzi, citate come riferimento progettuale. **Non sono coperte
+> da questa licenza** e restano dei rispettivi titolari: vedi il
+> [README della cartella](docs/reference/inspiration/README.md).
