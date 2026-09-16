@@ -108,8 +108,8 @@ class FeedbackReport(BaseModel):
     #: NULL finché la issue non è nata. È il segnale che il job usa per
     #: rispedire, e non si mostra a chi ha segnalato: il numero è il ponte con
     #: il backlog, non un'informazione per l'utente. Fino al 2026-09-16 il
-    #: motivo era anche che il repository era privato; ora è pubblico, ma la
-    #: scelta non è stata riesaminata.
+    #: motivo era anche che il repository era privato; aprendolo la scelta è
+    #: stata riesaminata e **confermata**, perché la prima ragione basta.
     issue_number = db.Column(db.Integer, nullable=True)
     tentativi_invio = db.Column(db.Integer, nullable=False, default=0)
     #: L'ultimo errore di spedizione, in chiaro, per l'admin. Un rinvio

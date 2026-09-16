@@ -163,9 +163,9 @@ class TestNessunLinkAGithubPerGliUtenti:
         dove mandare l'utente.
 
         Fino al 2026-09-16 il motivo era anche che il repository era privato e
-        il link avrebbe dato un 404 senza spiegazione. Ora è pubblico, quindi
-        quella metà della ragione è caduta — ma la scelta non è stata
-        riesaminata, e finché non lo è questo presidio resta."""
+        il link avrebbe dato un 404 senza spiegazione. Aprendolo quella metà è
+        caduta, e la scelta è stata riesaminata: **confermata** lo stesso
+        giorno, perché la prima ragione basta da sola."""
         utente = _utente(db_session)
         _login(client, utente)
         client.post(
