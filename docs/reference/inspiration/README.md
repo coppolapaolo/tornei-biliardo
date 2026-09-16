@@ -13,13 +13,19 @@ l'immagine in testa a nessuno.
 > problema di progettazione**, non a copiare un'interfaccia: quello che ne prendiamo va
 > ridisegnato nel design system 7c.
 >
-> ⚠️ **Stanno qui perche' il repository e' privato** (verificato il 2026-08-20). E' la
-> condizione che rende accettabile tenerle versionate: sono materiale di lavoro interno,
-> non ridistribuito. **Se un giorno il repository venisse aperto, questa cartella va
-> rivista prima** — le immagini vanno tolte dalla storia, non solo dall'ultimo commit,
-> perche' `git log` le conserva comunque. In alternativa si sostituiscono con
-> descrizioni a parole: le issue che le citano le descrivono gia' in dettaglio apposta,
-> e sopravvivono senza i file.
+> ⚠️ **Non sono coperte dalla licenza di questo repository.** Il codice è distribuito
+> sotto AGPL-3.0; queste immagini no — restano dei rispettivi titolari, indicati qui
+> sotto sezione per sezione. Stanno qui a titolo di **citazione per discussione e
+> studio** (art. 70 L. 633/1941): fonte dichiarata, nessuna concorrenza all'uso
+> economico delle app originali, e servono a ragionare su un problema di
+> progettazione — non a sostituire quei prodotti.
+>
+> La nota precedente diceva che stavano qui «perche' il repository e' privato»
+> (2026-08-20). La condizione è stata riesaminata quando si è deciso di aprirlo: il
+> punto non era la visibilità ma la licenza, e si risolve escludendole invece di
+> rimuoverle. Se un titolare ne chiedesse la rimozione, si tolgono: le tabelle qui
+> sotto descrivono ogni schermata a parole apposta, e il ragionamento sopravvive
+> senza i file.
 
 ## poolbilliards.co
 
