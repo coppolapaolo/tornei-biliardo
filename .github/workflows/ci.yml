@@ -6,6 +6,15 @@ on:
   pull_request:
     branches: [main]
 
+# Un push nuovo sulla stessa PR rende inutile il giro precedente: si cancella,
+# invece di tenere occupato un runner fino in fondo per un risultato che
+# nessuno leggera'. Su `main` invece no, e la differenza e' voluta: li' ogni
+# commit e' quello che va in produzione, e il suo esito serve anche quando ne
+# arriva subito un altro.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 # La CI non tocca la produzione: niente reload della web app.
 # Il codice, le dipendenze, le migration e il reload li porta lo scheduled
 # task scripts/auto_deploy.py. Il reload a ogni merge, tolto il 2026-09-14,
@@ -34,7 +43,22 @@ jobs:
         if: github.event_name == 'pull_request'
         env:
           BASE_REF: ${{ github.base_ref }}
+          # Come per PR_TITLE piu' sotto: il nome del branch lo sceglie chi
+          # apre la PR, quindi passa da una variabile e non si interpola nello
+          # script, che altrimenti lo farebbe eseguire dalla shell del runner.
+          HEAD_REF: ${{ github.head_ref }}
         run: |
+          # La PR di rilascio la scrive release-please: numero di versione,
+          # changelog e manifest. Il filtro qui sotto non la riconosce come
+          # documentazione perche' tocca `config.py`, quindi faceva girare
+          # test e pyright per cambiare una riga - e si ripete a ogni merge,
+          # perche' quella PR si riapre di continuo. Il criterio giusto in
+          # questo caso non e' che file tocca, ma chi l'ha aperta.
+          if [ "$HEAD_REF" = "release-please--branches--main" ]; then
+            echo "PR di rilascio generata dal bot: test e type check saltati."
+            echo "docs_only=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           git fetch --quiet origin "$BASE_REF"
           CHANGED=$(git diff --name-only "origin/$BASE_REF...HEAD")
           echo "File cambiati rispetto a $BASE_REF:"
