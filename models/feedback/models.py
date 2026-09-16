@@ -7,8 +7,10 @@ La strada opposta — chiamare GitHub dentro la richiesta e mostrare un errore �
 perde il testo che l'utente ha appena scritto, ed è il modo migliore per non
 riceverne mai più.
 
-Il repo è **privato**: le issue non sono leggibili senza token, quindi l'app
-non mostra mai link a github.com. Quello che l'utente sa di GitHub è zero, e
+**L'app non mostra mai link a github.com.** Fino al 2026-09-16 il repository era
+privato e le issue non erano leggibili senza token; ora è pubblico, ma la scelta
+è stata riesaminata e confermata — il backlog è nostro, non un posto dove
+mandare chi ha segnalato. Quello che l'utente sa di GitHub è zero, e
 `issue_number` esiste solo per l'admin e per il polling.
 """
 
