@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.31.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.31.0...v1.31.1) (2026-09-15)
+
+
+### Correzioni
+
+* avvisi SQLAlchemy nello storico campionati ([#441](https://github.com/coppolapaolo/tornei-biliardo/issues/441)) ([b23c751](https://github.com/coppolapaolo/tornei-biliardo/commit/b23c751619e72f62063a138247cf734d28edf7e3))
+
 ## [1.31.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.30.3...v1.31.0) (2026-09-14)
 
 
