@@ -2,7 +2,7 @@
 
 Qui si verificano le cose che gli unit test del servizio non possono vedere:
 chi arriva alle schermate, che il testo scritto sopravviva anche quando GitHub
-non risponde, e che il repo privato non trapeli mai in un link.
+non risponde, e che le schermate dell'utente non rimandino mai a GitHub.
 """
 
 from __future__ import annotations
@@ -157,10 +157,15 @@ class TestLInvio:
         assert "Segreto di uno" not in pagina
 
 
-class TestIlRepoRestaPrivato:
+class TestNessunLinkAGithubPerGliUtenti:
     def test_nessun_link_a_github_nelle_schermate_dell_utente(self, client, db_session):
-        """Il repo è privato: un link a github.com porterebbe l'utente a un
-        404 senza spiegazione. Quello che sa di GitHub deve essere zero."""
+        """Chi segnala resta nell'app: GitHub è il nostro backlog, non un posto
+        dove mandare l'utente.
+
+        Fino al 2026-09-16 il motivo era anche che il repository era privato e
+        il link avrebbe dato un 404 senza spiegazione. Ora è pubblico, quindi
+        quella metà della ragione è caduta — ma la scelta non è stata
+        riesaminata, e finché non lo è questo presidio resta."""
         utente = _utente(db_session)
         _login(client, utente)
         client.post(

@@ -21,9 +21,9 @@ l'immagine in testa a nessuno.
 > progettazione — non a sostituire quei prodotti.
 >
 > La nota precedente diceva che stavano qui «perche' il repository e' privato»
-> (2026-08-20). La condizione è stata riesaminata quando si è deciso di aprirlo: il
-> punto non era la visibilità ma la licenza, e si risolve escludendole invece di
-> rimuoverle. Se un titolare ne chiedesse la rimozione, si tolgono: le tabelle qui
+> (2026-08-20). **Il repository è pubblico dal 2026-09-16**, e la condizione è stata
+> riesaminata prima di aprirlo: il punto non era la visibilità ma la licenza, e si
+> risolve escludendole invece di rimuoverle. Se un titolare ne chiedesse la rimozione, si tolgono: le tabelle qui
 > sotto descrivono ogni schermata a parole apposta, e il ragionamento sopravvive
 > senza i file.
 
