@@ -328,7 +328,7 @@ blocks:
   - type: shot
     shot: schermo-sala
     variant: desktop
-    caption: "Lo schermo in sala: la locandina, i tavoli con le partite in corso, la classifica e il turno prima."
+    caption: "Lo schermo in sala: la locandina, i tavoli con le partite in corso, quelli appena liberati con il punteggio della partita conclusa, la classifica e i risultati del turno."
 
   - type: note
     tone: tip

@@ -315,7 +315,7 @@ blocks:
   - type: shot
     shot: schermo-sala
     variant: desktop
-    caption: "The room screen: the poster, the tables with the matches under way, the standings and the previous round."
+    caption: "The room screen: the poster, the tables with the matches under way, the ones just freed with the score of the finished match, the standings and this round's results."
 
   - type: note
     tone: tip

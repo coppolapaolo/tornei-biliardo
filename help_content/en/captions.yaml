@@ -80,7 +80,7 @@ prova-presentazione: "The introduction shown the first time you open the page of
 prova-iscrizioni: "The trial competition with registrations open: at the top the banner with the expiry date, the «Tips» switch and «Delete the trial»; below, the three fictitious-player buttons, each with its «?»."
 prova-fumetto: "The bubble that opens when you tap a «?»: the name of the control, two sentences, and the «Read in the guide» link."
 prova-simulazione: "The «Simulation» sheet of a started trial, opened from the row under the band: one match, the round, the whole competition, and the note on the matches left to validate."
-schermo-sala: "The room screen of a competition under way: the poster at the top, the tables with both players and the score, the standings with medals and the previous round."
+schermo-sala: "The room screen of a competition under way: the poster at the top, the tables with both players and the score, the ones just freed showing the score of the match that has finished, and on the right the standings with medals, the other matches already finished this round and the previous round."
 gara-esercizio-turno: "The drill after round 1 on the director's page: one row per player with the attempts made and the best one, «to do» for whoever has not shot yet."
 gara-trio-card: "The card of a trio under way: three names, and under each one the racks won with − and +."
 gara-trio-correggi: "The «Correct» sheet of a trio that is already closed: the racks won by each of the three players."

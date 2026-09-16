@@ -189,7 +189,7 @@ shots:
   - id: schermo-sala
     route: /g/seconda-prova-palla-9/sala
     as: anonimo
-    caption: "Lo schermo in sala di una gara in corso: la locandina in testa, i tavoli con i due giocatori e il punteggio, la classifica con le medaglie e il turno prima."
+    caption: "Lo schermo in sala di una gara in corso: la locandina in testa, i tavoli con i due giocatori e il punteggio, quelli appena liberati con il punteggio della partita conclusa, e a destra la classifica con le medaglie, le altre partite già concluse del turno e il turno prima."
     viewports: [desktop]
 
   - id: vetrina-cura
