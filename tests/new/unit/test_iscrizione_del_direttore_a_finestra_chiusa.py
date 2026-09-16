@@ -188,6 +188,9 @@ class TestLaPaginaDelDirettore:
 
         assert "Iscrivi un giocatore" in html
         assert f"iscritto da {direttore.username}" in html
+        # E il comando per togliere: la stessa condizione lo nascondeva a
+        # scadenza passata, anche se il servizio lo permetteva da sempre.
+        assert f"/admin/gara/{gara.id}/admin_uninscribe/{giocatore.id}" in html
 
     def test_a_gara_avviata_il_campo_sparisce(self, client, db_session):
         direttore = _utente(db_session, UserRole.DIRECTOR.value)
