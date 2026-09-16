@@ -5,9 +5,10 @@ Prefix ``/segnalazioni`` e non ``/admin``: chi segnala è un giocatore. L'unica
 voce riservata è l'elenco completo, che sta sotto ``/segnalazioni/tutte`` con
 il suo ``@admin_required``.
 
-Il repo del backlog è **privato**, quindi da qui non esce mai un link a
-github.com: l'utente vedrebbe un 404. Quello che sa di GitHub è zero — legge
-uno stato in italiano e, quando c'è, la frase che gli abbiamo scritto.
+**Da qui non esce mai un link a github.com.** Fino al 2026-09-16 il repository
+del backlog era privato e l'utente avrebbe visto un 404; ora è pubblico, ma la
+scelta è stata confermata: il backlog è nostro. Quello che sa di GitHub è zero —
+legge uno stato in italiano e, quando c'è, la frase che gli abbiamo scritto.
 """
 
 from __future__ import annotations

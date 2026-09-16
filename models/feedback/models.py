@@ -7,8 +7,10 @@ La strada opposta — chiamare GitHub dentro la richiesta e mostrare un errore �
 perde il testo che l'utente ha appena scritto, ed è il modo migliore per non
 riceverne mai più.
 
-Il repo è **privato**: le issue non sono leggibili senza token, quindi l'app
-non mostra mai link a github.com. Quello che l'utente sa di GitHub è zero, e
+**L'app non mostra mai link a github.com.** Fino al 2026-09-16 il repository era
+privato e le issue non erano leggibili senza token; ora è pubblico, ma la scelta
+è stata riesaminata e confermata — il backlog è nostro, non un posto dove
+mandare chi ha segnalato. Quello che l'utente sa di GitHub è zero, e
 `issue_number` esiste solo per l'admin e per il polling.
 """
 
@@ -106,7 +108,10 @@ class FeedbackReport(BaseModel):
     nota_pubblica = db.Column(db.Text, nullable=True)
 
     #: NULL finché la issue non è nata. È il segnale che il job usa per
-    #: rispedire, e non si mostra mai a chi ha segnalato: il repo è privato.
+    #: rispedire, e non si mostra a chi ha segnalato: il numero è il ponte con
+    #: il backlog, non un'informazione per l'utente. Fino al 2026-09-16 il
+    #: motivo era anche che il repository era privato; aprendolo la scelta è
+    #: stata riesaminata e **confermata**, perché la prima ragione basta.
     issue_number = db.Column(db.Integer, nullable=True)
     tentativi_invio = db.Column(db.Integer, nullable=False, default=0)
     #: L'ultimo errore di spedizione, in chiaro, per l'admin. Un rinvio
