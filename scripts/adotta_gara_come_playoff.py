@@ -185,6 +185,18 @@ def _print_report(report):
             )
 
 
+def _user_id(by):
+    """`--by` accetta l'id o il nome utente: in console l'id non si ricorda."""
+    from models.user.models import User
+
+    if str(by).isdigit():
+        return int(by)
+    utente = User.query.filter_by(username=by).first()
+    if utente is None:
+        raise SystemExit(f"Nessun utente con nome «{by}»")
+    return utente.id
+
+
 def _config_id(campionato_id, esplicito):
     from models.playoff.models import PlayoffConfiguration
 
@@ -210,7 +222,9 @@ def main() -> int:
         "--gara", type=int, required=True, help="ID della gara standalone giocata"
     )
     parser.add_argument(
-        "--by", type=int, required=True, help="ID dell'admin che esegue la correzione"
+        "--by",
+        required=True,
+        help="Chi esegue la correzione: id oppure nome utente dell'admin",
     )
     parser.add_argument(
         "--config", type=int, help="ID della configurazione playoff, se più di una"
@@ -241,14 +255,15 @@ def main() -> int:
         print(f"Database: {app.config.get('SQLALCHEMY_DATABASE_URI')}\n")
         try:
             config_id = _config_id(args.campionato, args.config)
+            by = _user_id(args.by)
             if args.commit:
                 report = AdozioneGaraGiocata.esegui(
-                    config_id, args.gara, performed_by_id=args.by, nome=args.nome
+                    config_id, args.gara, performed_by_id=by, nome=args.nome
                 )
                 db.session.commit()
             else:
                 report = AdozioneGaraGiocata.plan(
-                    config_id, args.gara, performed_by_id=args.by, nome=args.nome
+                    config_id, args.gara, performed_by_id=by, nome=args.nome
                 )
                 db.session.rollback()
         except Exception as exc:
