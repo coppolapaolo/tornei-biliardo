@@ -77,6 +77,27 @@
   </main>
 
   {% else %}
+  {% macro lati_tavolo(lati, conclusa=false) -%}
+  <div class="c7-sala__lati{% if lati|length > 2 %} c7-sala__lati--tre{% endif %}{% if conclusa %} c7-sala__lati--conclusa{% endif %}">
+    {% for lato in lati %}
+    <div class="c7-sala__lato{% if not lato.avanti %} is-dietro{% endif %}">
+      <div class="c7-sala__gioc">{{ lato.nome }}</div>
+      <div class="c7-sala__punti c7-num">{{ lato.punti }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {%- endmacro %}
+  {% macro elenco_chiuse(partite) -%}
+  <section class="c7-card c7-sala__turno-prima">
+    {% for p in partite %}
+    <div class="c7-sala__partita-chiusa">
+      <span{% if not p.vince1 %} class="c7-dim"{% endif %}>{{ p.p1 }}</span>
+      <span class="c7-num">{{ p.s1 }}–{{ p.s2 }}</span>
+      <span{% if not p.vince2 %} class="c7-dim"{% endif %}>{{ p.p2 }}</span>
+    </div>
+    {% endfor %}
+  </section>
+  {%- endmacro %}
   {% macro nodo_sala(n) -%}
   <div class="c7-sala-tab__nodo is-{{ n.stato.value }}">
     {% for lato in n.lati %}
@@ -114,13 +135,14 @@
         </div>
         {% if t.round %}<div class="c7-kicker c7-sala__round">{{ tb.nome_round(t.round) }}</div>{% endif %}
         {% if not t.libero %}
-        <div class="c7-sala__lati{% if t.lati|length > 2 %} c7-sala__lati--tre{% endif %}">
-          {% for lato in t.lati %}
-          <div class="c7-sala__lato{% if not lato.avanti %} is-dietro{% endif %}">
-            <div class="c7-sala__gioc">{{ lato.nome }}</div>
-            <div class="c7-sala__punti c7-num">{{ lato.punti }}</div>
-          </div>
-          {% endfor %}
+        {{ lati_tavolo(t.lati) }}
+        {% elif t.conclusa %}
+        {# Il risultato appena arrivato resta dov'era (issue #443): il tavolo
+           e' libero — lo dicono la tessera spenta e lo stato in testa — ma
+           finche' nessuno lo riprende il punteggio si legge ancora qui. #}
+        <div class="c7-sala__conclusa">
+          <div class="c7-kicker">{{ _('Partita conclusa') }}</div>
+          {{ lati_tavolo(t.conclusa, conclusa=true) }}
         </div>
         {% else %}
         <div class="c7-sala__vuoto">
@@ -229,20 +251,23 @@
       </section>
       {% endif %}
 
+      {% if schermo.chiuse_del_turno %}
+      {# Le partite di questo turno gia' concluse a cui la casella del loro
+         tavolo non basta piu': quello e' tornato in uso, o e' promesso alla
+         prossima partita in attesa. Il risultato si sposta, non si perde. #}
+      <div class="c7-sechead">
+        <h3>{{ _('Turno %(num)s', num=schermo.turno) }}</h3>
+        <span class="c7-sechead__note">{{ _('partite già concluse') }}</span>
+      </div>
+      {{ elenco_chiuse(schermo.chiuse_del_turno) }}
+      {% endif %}
+
       {% if schermo.turno_prima %}
       <div class="c7-sechead">
         <h3 class="c7-dim">{{ _('Turno %(num)s', num=schermo.numero_turno_prima) }}</h3>
         <span class="c7-state c7-state--muted c7-sechead__stato">{{ _('Concluso') }}</span>
       </div>
-      <section class="c7-card c7-sala__turno-prima">
-        {% for p in schermo.turno_prima %}
-        <div class="c7-sala__partita-chiusa">
-          <span{% if not p.vince1 %} class="c7-dim"{% endif %}>{{ p.p1 }}</span>
-          <span class="c7-num">{{ p.s1 }}–{{ p.s2 }}</span>
-          <span{% if not p.vince2 %} class="c7-dim"{% endif %}>{{ p.p2 }}</span>
-        </div>
-        {% endfor %}
-      </section>
+      {{ elenco_chiuse(schermo.turno_prima) }}
       {% endif %}
     </aside>
   </main>

@@ -1,10 +1,12 @@
 """Lo schermo in sala dal client HTTP (canvas 3.10).
 
 La pagina `/g/<indirizzo>/sala` e il suo poll sono pubblici: li apre un
-computer della sala senza login. Qui si difendono le quattro cose che non
+computer della sala senza login. Qui si difendono le cinque cose che non
 devono cambiare in silenzio: l'anonimo la vede, una prova (ADR-058) no, una
 gara a tabellone mostra tavoli, turno del tabellone e a gara conclusa podio e
-bande (issue #352), e la pagina non scrive sul database.
+bande (issue #352), un risultato appena arrivato resta in pagina invece di
+sparire col tavolo che si libera (issue #443), e la pagina non scrive sul
+database.
 """
 
 from __future__ import annotations
@@ -104,6 +106,52 @@ def test_l_anonimo_vede_i_tavoli_senza_menu(client, db_session):
     assert "c7-sidetoggle" not in html
     assert 'name="robots" content="noindex"' in html
     assert f"/sse/poll/sala/{gara.public_token}" in html
+
+
+def test_il_risultato_appena_arrivato_resta_sulla_pagina(client, db_session):
+    """Issue #443: una partita che finisce non deve sparire dallo schermo.
+
+    Le due strade, in una pagina sola. Il tavolo 1 si e' liberato e nessuno
+    lo ha ripreso: il punteggio resta nella sua casella. Il tavolo 2 invece
+    e' gia' tornato in uso, quindi quel risultato scende nell'elenco accanto
+    alla classifica. In nessuno dei due casi si perde — che era il difetto:
+    fuori dal tavolo, non ancora in classifica, e i risultati in basso
+    mostrano solo i turni gia' chiusi.
+
+    Il tavolo si legge da `played_on_table`, non da `table_assignment`: alla
+    chiusura quest'ultima torna a NULL per rimettere il tavolo in circolo.
+    """
+    gara = _gara()
+    marco, flavio = _utente("marco"), _utente("flavio")
+    neri, conti = _utente("neri"), _utente("conti")
+    galli, sala = _utente("galli"), _utente("sala")
+
+    # Due partite chiuse: il listener di `Match` ricorda il tavolo, poi la
+    # chiusura lo libera — esattamente come in produzione.
+    for p1, p2, s1, s2, tavolo in (
+        (marco, flavio, 5, 2, "1"),
+        (neri, conti, 1, 5, "2"),
+    ):
+        m = _partita(gara, p1, p2, s1, s2, tavolo=tavolo)
+        m.status = MatchStatus.CLOSED_UNILATERALLY.value
+        m.table_assignment = None
+        db.session.commit()
+        assert m.played_on_table == tavolo
+
+    # Il tavolo 2 se lo riprende un'altra partita, che tiene aperto il turno.
+    _partita(gara, galli, sala, 2, 1, tavolo="2")
+
+    html = client.get(f"/g/{gara.public_token}/sala").get_data(as_text=True)
+
+    # Il tavolo 1 e' libero e mostra comunque il risultato.
+    assert "c7-sala__lati--conclusa" in html
+    assert "Partita conclusa" in html
+    assert marco.username in html and flavio.username in html
+
+    # Quello del tavolo 2 non ha piu' casella: sta nell'elenco a destra.
+    assert "partite già concluse" in html
+    assert "c7-sala__partita-chiusa" in html
+    assert neri.username in html and conti.username in html
 
 
 def test_la_classifica_gia_calcolata_ha_le_medaglie(client, db_session):

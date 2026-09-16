@@ -5,6 +5,13 @@ menu, da leggere a tre metri. In testa la locandina della vetrina, sotto i
 tavoli con le partite in corso — nome grande, punteggio grandissimo — e a
 destra la classifica dopo l'ultimo turno chiuso con il turno prima.
 
+Una partita che finisce non deve sparire (issue #443): resta sulla casella
+del tavolo dove si è giocata — che intanto risulta libero — e se quel tavolo
+è già tornato in uso passa nell'elenco accanto alla classifica. Che la
+classifica invece non si muova fino a fine turno è voluto: in formula Amalfi
+è la base con cui si abbina il turno dopo, e aggiornarla a metà turno
+ordinerebbe anche per «chi ha finito prima».
+
 Questo modulo decide **cosa** si proietta e non tocca il database: riceve le
 partite, le righe di classifica già calcolate e i tavoli della gara. La
 classifica in particolare non si ricalcola qui, come per la vetrina
@@ -24,7 +31,7 @@ la finestra.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
@@ -75,6 +82,10 @@ class TavoloSala:
     prossima: Optional[str] = None
     #: Nelle gare a tabellone, il round della partita sul tavolo o in attesa.
     round: Optional[NomeRound] = None
+    #: La partita che su questo tavolo si e' appena conclusa (issue #443).
+    #: Il tavolo e' libero davvero — `libero` resta vero e la casella lo
+    #: dichiara — ma il risultato ha ancora un posto dove stare.
+    conclusa: Tuple[LatoTavolo, ...] = ()
 
     @property
     def libero(self) -> bool:
@@ -213,6 +224,10 @@ class SchermoSala:
     rack: bool = False
     turno_prima: List[PartitaChiusa] = field(default_factory=list)
     numero_turno_prima: Optional[int] = None
+    #: Le partite del turno **in corso** gia' concluse che su un tavolo non
+    #: stanno: quello e' tornato in uso, e' promesso alla prossima partita,
+    #: o la gara non ha tavoli dichiarati (issue #443).
+    chiuse_del_turno: List[PartitaChiusa] = field(default_factory=list)
     #: Tutte le partite del turno che si vede sono chiuse.
     turno_concluso: bool = False
     #: Gare a tabellone in gioco: il turno del tabellone e quello dopo.
@@ -244,6 +259,25 @@ def fase_schermo(gara) -> FaseSchermo:
 
 def _nome(giocatore) -> str:
     return giocatore.username if giocatore is not None else ""
+
+
+def _lati_tavolo(m) -> Tuple[LatoTavolo, ...]:
+    """I due nomi col punteggio, o i tre del trio; pieno chi non e' dietro."""
+    trio = m.trio_match if getattr(m, "is_trio", False) else None
+    if trio is not None:
+        return tuple(
+            LatoTavolo(_nome(p), punti or 0, True)
+            for p, punti in (
+                (trio.player1, trio.player1_racks),
+                (trio.player2, trio.player2_racks),
+                (trio.player3, trio.player3_racks),
+            )
+        )
+    s1, s2 = m.player1_score or 0, m.player2_score or 0
+    return (
+        LatoTavolo(_nome(m.player1), s1, s1 >= s2),
+        LatoTavolo(_nome(m.player2), s2, s2 >= s1),
+    )
 
 
 def _tavoli(
@@ -288,26 +322,10 @@ def _tavoli(
             )
             continue
         m = per_id[tessera.match_id]
-        trio = m.trio_match if getattr(m, "is_trio", False) else None
-        if trio is not None:
-            lati = tuple(
-                LatoTavolo(_nome(p), punti or 0, True)
-                for p, punti in (
-                    (trio.player1, trio.player1_racks),
-                    (trio.player2, trio.player2_racks),
-                    (trio.player3, trio.player3_racks),
-                )
-            )
-        else:
-            s1, s2 = m.player1_score or 0, m.player2_score or 0
-            lati = (
-                LatoTavolo(_nome(m.player1), s1, s1 >= s2),
-                LatoTavolo(_nome(m.player2), s2, s2 >= s1),
-            )
         caselle.append(
             TavoloSala(
                 nome=tessera.nome,
-                lati=lati,
+                lati=_lati_tavolo(m),
                 alla_distanza=stato_partita(m) == StatoPartita.DA_VALIDARE,
                 round=rounds.get(m.id),
             )
@@ -353,6 +371,81 @@ def _ultimo_turno_chiuso(matches: List, prima_di: int) -> Optional[int]:
         ):
             return n
     return None
+
+
+def _partita_chiusa(m) -> PartitaChiusa:
+    return PartitaChiusa(
+        _nome(m.player1),
+        m.player1_score or 0,
+        _nome(m.player2),
+        m.player2_score or 0,
+    )
+
+
+def _partite_chiuse(matches: List, numero: int) -> List:
+    """Le partite **giocate** e concluse del turno `numero`, per id.
+
+    Fuori restano la X, che non si gioca, e il trio, che ha tre punteggi e
+    non entra in una riga a due.
+    """
+    return sorted(
+        (
+            m
+            for m in matches
+            if m.round_number == numero
+            and MatchStatus.is_finished(m.status)
+            and not m.is_bye
+            and not getattr(m, "is_trio", False)
+        ),
+        key=lambda m: m.id or 0,
+    )
+
+
+def _piazza_le_concluse(
+    caselle: List[TavoloSala], chiuse: List
+) -> Tuple[List[TavoloSala], List[PartitaChiusa]]:
+    """Rimette ogni partita conclusa sul tavolo dove si e' giocata.
+
+    Il tavolo si legge da `played_on_table` e non da `table_assignment`:
+    quest'ultima dice chi occupa cosa *adesso* e viene azzerata proprio alla
+    chiusura, per rimettere il tavolo in circolo. Il fatto «si e' giocata al
+    tavolo 3» vive nella colonna sua (issue #154).
+
+    La casella pero' non e' sempre libera di ospitarlo: quando i tavoli sono
+    pochi quel tavolo e' gia' tornato in uso, o e' promesso alla prossima
+    partita in attesa — e li' vince l'informazione operativa, chi deve
+    andare al tavolo. Chi resta senza posto finisce nel secondo valore, che
+    lo schermo elenca accanto alla classifica: il risultato si sposta, non
+    si perde. Stessa sorte per le gare senza tavoli dichiarati, dove caselle
+    non ce ne sono affatto.
+    """
+    per_tavolo: Dict[str, List] = {}
+    altrove: List = []
+    for m in chiuse:
+        tavolo = getattr(m, "played_on_table", None)
+        if tavolo:
+            per_tavolo.setdefault(str(tavolo), []).append(m)
+        else:
+            altrove.append(m)
+
+    nuove: List[TavoloSala] = []
+    for casella in caselle:
+        del_tavolo = per_tavolo.pop(str(casella.nome), [])
+        # Sullo stesso tavolo puo' essersene chiusa piu' d'una: la casella
+        # mostra l'ultima, le altre scendono nell'elenco.
+        ultima = del_tavolo.pop() if del_tavolo else None
+        altrove.extend(del_tavolo)
+        if ultima is not None and casella.libero and casella.prossima is None:
+            nuove.append(replace(casella, conclusa=_lati_tavolo(ultima)))
+        else:
+            nuove.append(casella)
+            if ultima is not None:
+                altrove.append(ultima)
+    for senza_casella in per_tavolo.values():
+        altrove.extend(senza_casella)
+
+    altrove.sort(key=lambda m: m.id or 0)
+    return nuove, [_partita_chiusa(m) for m in altrove]
 
 
 def _lato_futuro(posto: Posto) -> LatoNodo:
@@ -497,6 +590,7 @@ def schermo_sala(
 
     caselle: List[TavoloSala] = []
     turno_prima: List[PartitaChiusa] = []
+    chiuse_del_turno: List[PartitaChiusa] = []
     numero_turno_prima: Optional[int] = None
     tabellone: Optional[TabelloneSala] = None
     bande: List[Banda] = []
@@ -514,21 +608,18 @@ def schermo_sala(
     elif fase in (FaseSchermo.GIOCO, FaseSchermo.SPAREGGIO):
         if fase == FaseSchermo.GIOCO:
             caselle = _tavoli(partite, turno, tavoli)
+            # A turno concluso le stesse partite stanno gia' tutte sotto
+            # «turno prima», qui sotto: elencarle due volte non aggiunge.
+            if not concluso:
+                caselle, chiuse_del_turno = _piazza_le_concluse(
+                    caselle, _partite_chiuse(partite, turno)
+                )
         numero_turno_prima = _ultimo_turno_chiuso(
             partite, turno + 1 if concluso else turno
         )
         if numero_turno_prima:
             turno_prima = [
-                PartitaChiusa(
-                    _nome(m.player1),
-                    m.player1_score or 0,
-                    _nome(m.player2),
-                    m.player2_score or 0,
-                )
-                for m in partite
-                if m.round_number == numero_turno_prima
-                and not m.is_bye
-                and not getattr(m, "is_trio", False)
+                _partita_chiusa(m) for m in _partite_chiuse(partite, numero_turno_prima)
             ]
     elif fase == FaseSchermo.CONCLUSA and albero is not None and posizioni:
         bande = bande_finali(posizioni, albero)
@@ -544,6 +635,7 @@ def schermo_sala(
         rack=rack,
         turno_prima=turno_prima,
         numero_turno_prima=numero_turno_prima,
+        chiuse_del_turno=chiuse_del_turno,
         turno_concluso=concluso,
         tabellone=tabellone,
         bande=bande,

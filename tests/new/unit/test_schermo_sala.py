@@ -42,6 +42,7 @@ def _m(
     status,
     *,
     tavolo=None,
+    giocato_su=None,
     s1=0,
     s2=0,
     distanza=False,
@@ -54,6 +55,9 @@ def _m(
         round_number=turno,
         status=status,
         table_assignment=tavolo,
+        # Come il vero `Match`: il tavolo assegnato si ricorda appena
+        # assegnato, e resta dopo che `table_assignment` e' tornato a NULL.
+        played_on_table=giocato_su if giocato_su is not None else tavolo,
         player1_score=s1,
         player2_score=s2,
         is_at_distance=distanza,
@@ -179,6 +183,87 @@ def test_a_turno_concluso_il_turno_prima_e_quello_stesso():
     assert s.numero_turno_prima == 2
     assert s.turno_prima[0].vince2
     assert all(t.libero and t.prossima is None for t in s.tavoli)
+    # Il turno intero e' gia' in «turno prima»: non si elenca due volte.
+    assert s.chiuse_del_turno == []
+
+
+# ── Le partite del turno in corso gia' concluse (issue #443) ──────────────
+
+
+def test_la_partita_conclusa_resta_sul_tavolo_dove_si_e_giocata():
+    """Il risultato non sparisce con l'occupazione del tavolo.
+
+    Il tavolo 1 si e' liberato (`table_assignment` a NULL) ma la partita
+    ricorda di esserci stata (`played_on_table`): la casella la mostra,
+    dicendo pero' che il tavolo e' libero.
+    """
+    partite = [
+        _m(1, 2, CHIUSA, giocato_su="1", s1=5, s2=2, p1="marco", p2="flavio"),
+        _m(2, 2, PLAYING, tavolo="2", s1=3, s2=1, p1="galli", p2="sala"),
+    ]
+    s = schermo_sala(_gara(turno=2), partite, [], ["1", "2"], 4)
+    uno, due = s.tavoli
+    assert uno.libero and uno.prossima is None
+    assert [(lato.nome, lato.punti, lato.avanti) for lato in uno.conclusa] == [
+        ("marco", 5, True),
+        ("flavio", 2, False),
+    ]
+    # Sta su un tavolo, quindi non si ripete anche nell'elenco.
+    assert s.chiuse_del_turno == []
+    assert due.lati and due.conclusa == ()
+
+
+def test_se_il_tavolo_e_tornato_in_uso_la_conclusa_va_nell_elenco():
+    """Quando i tavoli sono pochi il posto sulla casella non c'e' piu'.
+
+    Due casi nello stesso turno: il tavolo 1 e' stato ripreso da un'altra
+    partita, il tavolo 2 e' libero ma promesso alla prossima in attesa. In
+    entrambi il risultato va elencato a destra, e in nessuno dei due si
+    perde.
+    """
+    partite = [
+        _m(1, 2, CHIUSA, giocato_su="1", s1=5, s2=2, p1="marco", p2="flavio"),
+        _m(2, 2, CHIUSA, giocato_su="2", s1=1, s2=5, p1="neri", p2="conti"),
+        _m(3, 2, PLAYING, tavolo="1", s1=2, s2=2, p1="galli", p2="sala"),
+        _m(4, 2, PENDING, p1="costa", p2="marini"),
+    ]
+    s = schermo_sala(_gara(turno=2), partite, [], ["1", "2"], 8)
+    uno, due = s.tavoli
+    assert not uno.libero and uno.conclusa == ()
+    assert due.libero and due.prossima == "costa – marini" and due.conclusa == ()
+    assert [(p.p1, p.s1, p.p2, p.s2, p.vince2) for p in s.chiuse_del_turno] == [
+        ("marco", 5, "flavio", 2, False),
+        ("neri", 1, "conti", 5, True),
+    ]
+
+
+def test_sullo_stesso_tavolo_la_casella_mostra_l_ultima_conclusa():
+    """Con pochi tavoli se ne chiude piu' d'una sullo stesso.
+
+    La casella ne mostra una sola — l'ultima — e la precedente scende
+    nell'elenco invece di essere sovrascritta.
+    """
+    partite = [
+        _m(1, 2, CHIUSA, giocato_su="1", s1=5, s2=0, p1="prima", p2="uno"),
+        _m(2, 2, CHIUSA, giocato_su="1", s1=2, s2=5, p1="dopo", p2="due"),
+        # Senza una partita ancora in gioco il turno sarebbe concluso, e
+        # allora e' «turno prima» a mostrarle tutte.
+        _m(3, 2, PLAYING, tavolo="2", s1=1, s2=1, p1="galli", p2="sala"),
+    ]
+    s = schermo_sala(_gara(turno=2), partite, [], ["1", "2"], 6)
+    assert [lato.nome for lato in s.tavoli[0].conclusa] == ["dopo", "due"]
+    assert [(p.p1, p.p2) for p in s.chiuse_del_turno] == [("prima", "uno")]
+
+
+def test_fra_le_concluse_del_turno_non_ci_sono_x_ne_gare_senza_tavoli():
+    """La X non si gioca; senza tavoli dichiarati resta solo l'elenco."""
+    partite = [
+        _m(1, 2, CHIUSA, s1=5, s2=3, p1="rossi", p2="verdi"),
+        _m(2, 2, CHIUSA, bye=True, p1="neri"),
+        _m(3, 2, PLAYING, s1=1, s2=0, p1="galli", p2="sala"),
+    ]
+    s = schermo_sala(_gara(turno=2), partite, [], [], 5)
+    assert [(p.p1, p.p2) for p in s.chiuse_del_turno] == [("rossi", "verdi")]
 
 
 def test_fuori_dal_gioco_non_ci_sono_tavoli():

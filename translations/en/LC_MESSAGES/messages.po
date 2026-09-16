@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-14 16:55+0200\n"
+"POT-Creation-Date: 2026-09-16 14:41+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -128,7 +128,7 @@ msgstr "Winner: %(nome)s"
 #: templates/individual_match/quick_match.html:60
 #: templates/player/challenge_attempt_detail.html:24
 #: templates/public/campionatos_list.html:27
-#: templates/public/schermo_sala.html:112
+#: templates/public/schermo_sala.html:133
 msgid "In corso"
 msgstr "In Progress"
 
@@ -2883,47 +2883,47 @@ msgstr "Request not found or cannot be renewed."
 msgid "Richiesta riconfermata: resterà attiva ancora a lungo."
 msgstr "Request reconfirmed: it will stay active for a while longer."
 
-#: routes/feedback.py:110
+#: routes/feedback.py:111
 msgid "Segnalazione ricevuta. Ti avvisiamo qui quando ci sono novità."
 msgstr "Report received. We will let you know here when there is news."
 
-#: routes/feedback.py:142
+#: routes/feedback.py:143
 msgid "Ricevuta, la guarderemo presto"
 msgstr "Received, we will look at it soon"
 
-#: routes/feedback.py:143
+#: routes/feedback.py:144
 msgid "Presa in considerazione"
 msgstr "Being considered"
 
-#: routes/feedback.py:144 templates/base.html:461
+#: routes/feedback.py:145 templates/base.html:461
 msgid "Fatto"
 msgstr "Done"
 
-#: routes/feedback.py:145
+#: routes/feedback.py:146
 msgid "Per ora non la faremo"
 msgstr "Not planned for now"
 
-#: routes/feedback.py:151
+#: routes/feedback.py:152
 msgid "Qualcosa non funziona"
 msgstr "Something is not working"
 
-#: routes/feedback.py:152
+#: routes/feedback.py:153
 msgid "Ho un'idea"
 msgstr "I have an idea"
 
-#: routes/feedback.py:153
+#: routes/feedback.py:154
 msgid "Non ho capito come si fa"
 msgstr "I could not work out how to do it"
 
-#: routes/feedback.py:159
+#: routes/feedback.py:160
 msgid "Una cosa che dovrebbe funzionare e non va"
 msgstr "Something that should work and does not"
 
-#: routes/feedback.py:160
+#: routes/feedback.py:161
 msgid "Qualcosa che vorresti trovare nell'app"
 msgstr "Something you would like the app to have"
 
-#: routes/feedback.py:161
+#: routes/feedback.py:162
 msgid "Cerchi una funzione e non la trovi"
 msgstr "You are looking for a feature and cannot find it"
 
@@ -3540,7 +3540,7 @@ msgstr "Rounds"
 #: templates/direttore/_fase_gioco.html:235
 #: templates/direttore/_fase_iscrizioni.html:122
 #: templates/direttore/_fase_preparazione.html:158
-#: templates/player/venues.html:29 templates/public/schermo_sala.html:103
+#: templates/player/venues.html:29 templates/public/schermo_sala.html:124
 msgid "Tavoli"
 msgstr "Tables"
 
@@ -4416,7 +4416,7 @@ msgstr "The attempt could not be deleted."
 #: templates/direttore/_card_partita.html:105
 #: templates/direttore/_partite.html:45 templates/direttore/_tabellino.html:38
 #: templates/match_detail.html:13 templates/match_detail.html:50
-#: templates/match_detail.html:106 templates/public/schermo_sala.html:98
+#: templates/match_detail.html:106 templates/public/schermo_sala.html:119
 #: utils/jinja.py:438
 msgid "X a tavolino"
 msgstr "X by walkover"
@@ -5015,7 +5015,7 @@ msgstr "Save"
 #: templates/direttore/_fase_preparazione.html:178
 #: templates/direttore/_tabellino.html:46 templates/gara_bracket.html:4
 #: templates/gara_bracket.html:12 templates/gara_detail.html:142
-#: templates/public/schermo_sala.html:147
+#: templates/public/schermo_sala.html:169
 msgid "Tabellone"
 msgstr "Bracket"
 
@@ -6190,9 +6190,9 @@ msgid ""
 " è a tabellone anche il campionato."
 msgstr ""
 "Empty means the final takes it from the season. With «Championship + "
-"play-off event» the final must use the championship's standings system; a "
-"bracket can be chosen only with «Play-offs only», or if the championship "
-"is a bracket too."
+"play-off event» the final must use the championship's standings system; a"
+" bracket can be chosen only with «Play-offs only», or if the championship"
+" is a bracket too."
 
 #: templates/admin/campionato_detail.html:224
 #: templates/admin/campionato_detail.html:415
@@ -9246,8 +9246,8 @@ msgstr "Finish line"
 #: templates/direttore/_card_partita.html:224
 #: templates/direttore/_fase_gioco.html:240
 #: templates/direttore/_partite.html:31 templates/direttore/_partite.html:62
-#: templates/direttore/_scripts.html:84 templates/public/schermo_sala.html:89
-#: templates/public/schermo_sala.html:108
+#: templates/direttore/_scripts.html:84 templates/public/schermo_sala.html:110
+#: templates/public/schermo_sala.html:129
 msgid "Tavolo"
 msgstr "Table"
 
@@ -9929,13 +9929,13 @@ msgstr "If needed"
 
 #: templates/components/_bracket_view.html:82
 #: templates/direttore/_tabellino.html:55
-#: templates/public/schermo_sala.html:160
+#: templates/public/schermo_sala.html:182
 msgid "Vincenti"
 msgstr "Winners"
 
 #: templates/components/_bracket_view.html:82
 #: templates/direttore/_tabellino.html:55
-#: templates/public/schermo_sala.html:160
+#: templates/public/schermo_sala.html:182
 msgid "Ripescati"
 msgstr "Losers bracket"
 
@@ -9953,7 +9953,7 @@ msgstr ""
 
 #: templates/components/_bracket_view.html:120
 #: templates/direttore/_tabellino.html:51
-#: templates/public/schermo_sala.html:154
+#: templates/public/schermo_sala.html:176
 #, python-format
 msgid "Girone %(num)s"
 msgstr "Group %(num)s"
@@ -9964,7 +9964,7 @@ msgstr "Four qualify: two unbeaten and two through the losers bracket"
 
 #: templates/components/_bracket_view.html:125
 #: templates/direttore/_tabellino.html:52
-#: templates/public/schermo_sala.html:155
+#: templates/public/schermo_sala.html:177
 msgid "Tabellone finale"
 msgstr "Final bracket"
 
@@ -10437,8 +10437,8 @@ msgstr "No competition yet: create the first one with «New competition»."
 #: templates/direttore/_classifica_bande.html:18
 #: templates/direttore/_fase_conclusa.html:47
 #: templates/direttore/_fase_conclusa.html:63
-#: templates/public/schermo_sala.html:190
-#: templates/public/schermo_sala.html:210
+#: templates/public/schermo_sala.html:212
+#: templates/public/schermo_sala.html:232
 #: templates/public/vetrina_campionato.html:54
 #: templates/public/vetrina_gara.html:103
 msgid "Classifica finale"
@@ -10639,7 +10639,7 @@ msgstr ""
 "tournaments in your area."
 
 #: templates/components/_detailed_classification.html:10
-#: templates/public/schermo_sala.html:211
+#: templates/public/schermo_sala.html:233
 msgid "Classifica complessiva"
 msgstr "Overall standings"
 
@@ -11534,7 +11534,8 @@ msgstr "Removes %(username)s from the waiting list"
 #: templates/direttore/_partite.html:31 templates/direttore/_partite.html:79
 #: templates/direttore/preparazione/_turni.html:46
 #: templates/direttore/preparazione/_turni.html:67
-#: templates/public/schermo_sala.html:234
+#: templates/public/schermo_sala.html:259
+#: templates/public/schermo_sala.html:267
 #, python-format
 msgid "Turno %(num)s"
 msgstr "Round %(num)s"
@@ -11567,7 +11568,7 @@ msgstr "Result"
 #: templates/direttore/_partite.html:84
 #: templates/individual_match/match_detail.html:229
 #: templates/individual_match/matches.html:125
-#: templates/public/schermo_sala.html:235
+#: templates/public/schermo_sala.html:268
 msgid "Concluso"
 msgstr "Completed"
 
@@ -13770,7 +13771,8 @@ msgid "chi vince la finale"
 msgstr "whoever wins the final"
 
 #: templates/components/_tabellone_macros.html:79
-#: templates/direttore/_tabellino.html:30 templates/public/schermo_sala.html:93
+#: templates/direttore/_tabellino.html:30
+#: templates/public/schermo_sala.html:114
 msgid "da definire"
 msgstr "to be decided"
 
@@ -14303,6 +14305,7 @@ msgstr "Forfeit: %(name)s"
 #: templates/components/_trio_rack_input.html:351
 #: templates/components/_unified_rack_input.html:184
 #: templates/components/_unified_rack_input.html:217
+#: templates/public/schermo_sala.html:144
 msgid "Partita conclusa"
 msgstr "Match finished"
 
@@ -15069,7 +15072,7 @@ msgid "SSR segna chi è stato messo in ordine dallo spareggio."
 msgstr "SSR marks the players whose order the tiebreaker decided."
 
 #: templates/direttore/_classifica_bande.html:19
-#: templates/public/schermo_sala.html:191
+#: templates/public/schermo_sala.html:213
 msgid "dal tabellone"
 msgstr "from the bracket"
 
@@ -19572,7 +19575,7 @@ msgstr "Several sets: the first to win N takes it."
 #: templates/individual_match/edit_match.html:74
 #: templates/individual_match/match_detail.html:201
 #: templates/individual_match/quick_match.html:166
-#: templates/public/schermo_sala.html:113
+#: templates/public/schermo_sala.html:134
 msgid "Libero"
 msgstr "Open"
 
@@ -21529,54 +21532,58 @@ msgstr ""
 "As soon as the director starts the first round, the tables and their "
 "matches appear here."
 
-#: templates/public/schermo_sala.html:88
+#: templates/public/schermo_sala.html:109
 msgid "chi vince"
 msgstr "winner of"
 
-#: templates/public/schermo_sala.html:88
+#: templates/public/schermo_sala.html:109
 msgid "chi perde"
 msgstr "loser of"
 
-#: templates/public/schermo_sala.html:111
+#: templates/public/schermo_sala.html:132
 msgid "Alla distanza"
 msgstr "At the distance"
 
-#: templates/public/schermo_sala.html:128
+#: templates/public/schermo_sala.html:150
 msgid "Prossima partita"
 msgstr "Next match"
 
-#: templates/public/schermo_sala.html:130
+#: templates/public/schermo_sala.html:152
 msgid "in attesa di un tavolo libero"
 msgstr "waiting for a free table"
 
-#: templates/public/schermo_sala.html:132
+#: templates/public/schermo_sala.html:154
 msgid "nessuna partita in attesa"
 msgstr "no match waiting"
 
-#: templates/public/schermo_sala.html:148
+#: templates/public/schermo_sala.html:170
 msgid "il turno che si gioca e quello dopo"
 msgstr "the round being played and the next one"
 
-#: templates/public/schermo_sala.html:179
+#: templates/public/schermo_sala.html:201
 msgid "Il tabellone compare dopo il sorteggio."
 msgstr "The bracket appears after the draw."
 
-#: templates/public/schermo_sala.html:212
+#: templates/public/schermo_sala.html:234
 #, python-format
 msgid "Classifica dopo il turno %(n)s"
 msgstr "Standings after round %(n)s"
 
-#: templates/public/schermo_sala.html:214
+#: templates/public/schermo_sala.html:236
 msgid "Vinti · persi"
 msgstr "Won · lost"
 
-#: templates/public/schermo_sala.html:214
+#: templates/public/schermo_sala.html:236
 msgid "Vinte · diff"
 msgstr "Won · diff"
 
-#: templates/public/schermo_sala.html:228
+#: templates/public/schermo_sala.html:250
 msgid "La classifica compare alla fine del primo turno."
 msgstr "The standings appear at the end of the first round."
+
+#: templates/public/schermo_sala.html:260
+msgid "partite già concluse"
+msgstr "already finished"
 
 #: templates/public/storico_gare.html:14
 msgid "Gare e campionati conclusi"

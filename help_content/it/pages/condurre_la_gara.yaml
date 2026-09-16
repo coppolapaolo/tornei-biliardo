@@ -315,6 +315,16 @@ blocks:
       dopo l'ultimo turno chiuso e i risultati del turno prima. Si aggiorna
       da sola a ogni risultato: nessuno deve toccarla.
 
+  - type: text
+    text: >-
+      Quando una partita finisce il suo tavolo torna libero, ma il punteggio
+      resta nella casella, in tono più tenue, finché nessun altro va a
+      giocarci. Se i tavoli sono pochi e quel tavolo serve subito, il
+      risultato si sposta nell'elenco a destra, sopra il turno prima. La
+      classifica invece non si muove fino alla fine del turno: nelle gare in
+      formula Amalfi è lei a decidere gli abbinamenti del turno successivo, e
+      aggiornarla a metà turno metterebbe avanti chi ha finito prima.
+
   - type: shot
     shot: schermo-sala
     variant: desktop
