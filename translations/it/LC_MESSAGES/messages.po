@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-16 16:20+0200\n"
+"POT-Creation-Date: 2026-09-16 16:32+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -304,40 +304,40 @@ msgid ""
 "%(prima)s non si tolgono più."
 msgstr ""
 
-#: models/competition/inscription_service.py:559
-#: models/competition/inscription_service.py:594
+#: models/competition/inscription_service.py:571
+#: models/competition/inscription_service.py:606
 #, python-format
 msgid "Gara %(numero)s"
 msgstr ""
 
-#: models/competition/inscription_service.py:563
+#: models/competition/inscription_service.py:575
 msgid "Posto disponibile!"
 msgstr ""
 
-#: models/competition/inscription_service.py:565
+#: models/competition/inscription_service.py:577
 #, python-format
 msgid "Sei stato promosso dalla lista d'attesa per la gara '%(gara)s'"
 msgstr ""
 
-#: models/competition/inscription_service.py:618
+#: models/competition/inscription_service.py:630
 msgid "Aggiornamento gara"
 msgstr ""
 
-#: models/competition/inscription_service.py:628 models/demand/service.py:414
+#: models/competition/inscription_service.py:640 models/demand/service.py:414
 msgid "Vedi la gara"
 msgstr ""
 
-#: models/competition/inscription_service.py:665
+#: models/competition/inscription_service.py:677
 #, python-format
 msgid "%(direttore)s ti ha tolto dalla lista d'attesa della gara %(gara)s."
 msgstr ""
 
-#: models/competition/inscription_service.py:672
+#: models/competition/inscription_service.py:684
 #, python-format
 msgid "%(direttore)s ha annullato la tua iscrizione alla gara %(gara)s."
 msgstr ""
 
-#: models/competition/inscription_service.py:733
+#: models/competition/inscription_service.py:745
 #, python-format
 msgid "Sei stato promosso dalla lista d'attesa per %(gara)s"
 msgstr ""
@@ -2551,7 +2551,7 @@ msgid ""
 msgstr ""
 
 #: models/user/profile_service.py:200
-#: routes/admin/competition/inscriptions.py:272
+#: routes/admin/competition/inscriptions.py:276
 msgid "Utente non trovato."
 msgstr ""
 
@@ -3357,33 +3357,33 @@ msgstr ""
 msgid "Un giocatore fittizio gioca solo nella sua prova."
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:225
+#: routes/admin/competition/inscriptions.py:229
 msgid "data da definire"
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:278
+#: routes/admin/competition/inscriptions.py:282
 msgid "Gara non trovata."
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:286
+#: routes/admin/competition/inscriptions.py:290
 msgid "Non è possibile disiscrivere utenti quando il primo turno è già iniziato."
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:300
+#: routes/admin/competition/inscriptions.py:304
 #, python-format
 msgid "%(username)s non è più iscritto."
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:304
+#: routes/admin/competition/inscriptions.py:308
 msgid "Errore: utente non iscritto a questa gara."
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:307
+#: routes/admin/competition/inscriptions.py:311
 #, python-format
 msgid "Errore durante la disiscrizione: %(errore)s"
 msgstr ""
 
-#: routes/admin/competition/inscriptions.py:343
+#: routes/admin/competition/inscriptions.py:347
 #, python-format
 msgid "Ritiro di %(username)s registrato: gli è arrivata una notifica."
 msgstr ""
@@ -4678,7 +4678,7 @@ msgstr ""
 msgid "Fill Gara"
 msgstr ""
 
-#: templates/base.html:657 templates/components/_gara_inscriptions.html:53
+#: templates/base.html:657 templates/components/_gara_inscriptions.html:55
 msgid "Iscrivi"
 msgstr ""
 
@@ -4936,7 +4936,7 @@ msgid "Classifica"
 msgstr ""
 
 #: templates/components/_gara_info.html:35
-#: templates/components/_gara_inscriptions.html:97
+#: templates/components/_gara_inscriptions.html:99
 #: templates/components/_nearby_gare.html:137
 #: templates/direttore/_fase_conclusa.html:116
 #: templates/direttore/_fase_gioco.html:272
@@ -6109,6 +6109,7 @@ msgid "registrato da %(name)s"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:311
+#: templates/components/_gara_inscriptions.html:127
 msgid "direzione"
 msgstr ""
 
@@ -7199,7 +7200,7 @@ msgid "Partecipanti"
 msgstr ""
 
 #: templates/admin/gara_create_standalone.html:456
-#: templates/components/_gara_inscriptions.html:128
+#: templates/components/_gara_inscriptions.html:135
 #: templates/components/_match_result_row.html:24
 #: templates/components/_match_result_row.html:28
 #: templates/components/_match_result_row.html:32
@@ -10989,7 +10990,7 @@ msgid "Numero dispari"
 msgstr ""
 
 #: templates/components/_gara_info.html:71
-#: templates/components/_gara_inscriptions.html:98
+#: templates/components/_gara_inscriptions.html:100
 #: templates/direttore/_fase_gioco.html:273
 #: templates/direttore/_fase_spareggio.html:87
 #, python-format
@@ -11005,130 +11006,135 @@ msgstr[1] ""
 msgid "Direzione di gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:35
+#: templates/components/_gara_inscriptions.html:37
 msgid "Iscrivi un giocatore"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:37
+#: templates/components/_gara_inscriptions.html:39
 msgid "Cognome, nome o username"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:38
+#: templates/components/_gara_inscriptions.html:40
 msgid "Cerca il giocatore da iscrivere"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:52
+#: templates/components/_gara_inscriptions.html:54
 msgid "Aggiungi iscritto"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:58
+#: templates/components/_gara_inscriptions.html:60
 msgid ""
 "Nessun giocatore con questo nome. Serve un account: puoi crearglielo "
 "insieme."
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:61
+#: templates/components/_gara_inscriptions.html:63
 #, python-brace-format
 msgid "{n} giocatori trovati"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:70
+#: templates/components/_gara_inscriptions.html:72
 msgid "Giocatori fittizi"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:73
+#: templates/components/_gara_inscriptions.html:75
 msgid "Iscrivi il minimo"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:74
+#: templates/components/_gara_inscriptions.html:76
 msgid "Iscrivi fino al massimo"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:75
+#: templates/components/_gara_inscriptions.html:77
 msgid "Iscrivine uno in più"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:81
+#: templates/components/_gara_inscriptions.html:83
 msgid "Niente da aggiungere"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:81
+#: templates/components/_gara_inscriptions.html:83
 #, python-format
 msgid "Aggiunge %(n)s giocatori fittizi"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:89
+#: templates/components/_gara_inscriptions.html:91
 msgid "Imposta un massimo di iscritti per usare «fino al massimo»."
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:99
+#: templates/components/_gara_inscriptions.html:101
 msgid "in attesa"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:121
+#: templates/components/_gara_inscriptions.html:123
 #, python-format
 msgid "iscritto il %(date)s"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:128
+#: templates/components/_gara_inscriptions.html:127
+#, python-format
+msgid "iscritto da %(nome)s"
+msgstr ""
+
+#: templates/components/_gara_inscriptions.html:135
 msgid "Ha dato forfait"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:138
+#: templates/components/_gara_inscriptions.html:145
 msgid "cat."
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:140
+#: templates/components/_gara_inscriptions.html:147
 #, python-format
 msgid "Categoria di %(username)s in questa gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:157
+#: templates/components/_gara_inscriptions.html:164
 #, python-format
 msgid "Squadra di %(username)s in questa gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:158
+#: templates/components/_gara_inscriptions.html:165
 #: templates/direttore/_squadre_categorie.html:190
 msgid "Senza squadra"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:171
+#: templates/components/_gara_inscriptions.html:178
 msgid "Ritira dalla gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:171
+#: templates/components/_gara_inscriptions.html:178
 #, python-format
 msgid "Ritira %(username)s dalla gara"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:179
+#: templates/components/_gara_inscriptions.html:186
 #, python-format
 msgid "Disiscrivere %(username)s? Riceverà una notifica."
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:182
+#: templates/components/_gara_inscriptions.html:189
 msgid "Disiscrive il giocatore"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:182
+#: templates/components/_gara_inscriptions.html:189
 #, python-format
 msgid "Disiscrive %(username)s"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:193
+#: templates/components/_gara_inscriptions.html:200
 msgid "Nessun iscritto"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:194
+#: templates/components/_gara_inscriptions.html:201
 msgid "Appena qualcuno si iscrive lo trovi qui."
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:207
+#: templates/components/_gara_inscriptions.html:214
 msgid "Limite massimo raggiunto"
 msgstr ""
 
-#: templates/components/_gara_inscriptions.html:208
+#: templates/components/_gara_inscriptions.html:215
 msgid "Chi arriva adesso finisce in lista d’attesa."
 msgstr ""
 

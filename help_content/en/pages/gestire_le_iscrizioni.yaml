@@ -64,11 +64,17 @@ blocks:
           their last name, first name or username: the candidates appear
           below as you type, each with «Enroll» on its row. Players who added
           their name to their profile show up with it, so you do not pick a
-          namesake by mistake. They still need an account.
+          namesake by mistake. They still need an account. You can do it even
+          after registration has closed, until you start the competition: the
+          deadline applies to players registering by themselves, not to you.
+          The list keeps «registered by» with your name, and places and parity
+          apply as for everyone.
       - name: "Remove an entrant"
         text: >-
           For people who say they cannot come. The player is notified, and if
-          there is a waitlist the first in the queue takes their place.
+          there is a waitlist the first in the queue takes their place. This
+          too can be done after registration has closed, until the competition
+          starts.
       - name: "Change the dates"
         text: >-
           Extend the closing time if entries are thin, or bring it forward if
