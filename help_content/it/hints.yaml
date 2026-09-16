@@ -726,6 +726,14 @@ hints:
     page: playoff
     section: invito
 
+  - id: playoff.invito_scaduto
+    label: "Accetta (invito scaduto)"
+    short: "L'invito è scaduto, ma fino all'avvio della gara puoi accettarlo tu per il giocatore, per esempio se si presenta in sala. Entra anche oltre i posti."
+    anchor: playoff-invito-scaduto
+    screens: [admin.campionato.campionato_detail]
+    page: playoff
+    section: invito
+
   - id: playoff.accetta_tutti
     label: "Accetta tutti i rimanenti"
     short: "In una prova i fittizi non rispondono da soli: questo pulsante accetta tutti gli inviti ancora in attesa, e la finale si riempie in un tocco."

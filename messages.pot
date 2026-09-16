@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-16 15:20+0200\n"
+"POT-Creation-Date: 2026-09-16 16:20+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -2407,16 +2407,20 @@ msgstr ""
 msgid "Evento Speciale"
 msgstr ""
 
-#: models/playoff/services.py:151
+#: models/playoff/services.py:154
 msgid "La gara di playoff è già cominciata: l'invito non si può più accettare."
 msgstr ""
 
-#: models/playoff/services.py:423 models/playoff/services.py:432
+#: models/playoff/services.py:316
+msgid "Un invito scaduto si può solo accettare: il posto è già libero."
+msgstr ""
+
+#: models/playoff/services.py:448 models/playoff/services.py:457
 #, python-format
 msgid "Valore non ammesso per la finale dei playoff: %(valore)s"
 msgstr ""
 
-#: models/playoff/services.py:460
+#: models/playoff/services.py:485
 msgid ""
 "Con «Campionato + gara di playoff» il punteggio della finale si somma a "
 "quello del campionato, quindi deve usare lo stesso sistema di classifica,"
@@ -2424,35 +2428,35 @@ msgid ""
 "Scegli «Solo i playoff», dove della finale conta solo l'ordine d'arrivo."
 msgstr ""
 
-#: models/playoff/services.py:928
+#: models/playoff/services.py:953
 msgid "La scadenza degli inviti deve essere nel futuro."
 msgstr ""
 
-#: models/playoff/services.py:930
+#: models/playoff/services.py:955
 msgid "La data dei playoff deve essere nel futuro."
 msgstr ""
 
-#: models/playoff/services.py:958
+#: models/playoff/services.py:983
 msgid "La gara di playoff è già cominciata: data e scadenza non si cambiano più."
 msgstr ""
 
-#: models/playoff/services.py:1155
+#: models/playoff/services.py:1180
 #, python-format
 msgid "Invito Playoff — %(nome)s"
 msgstr ""
 
-#: models/playoff/services.py:1157
+#: models/playoff/services.py:1182
 #, python-format
 msgid ""
 "Sei stato qualificato per %(nome)s del campionato %(campionato)s. "
 "Conferma o rifiuta la partecipazione."
 msgstr ""
 
-#: models/playoff/services.py:1164 templates/individual_match/matches.html:160
+#: models/playoff/services.py:1189 templates/individual_match/matches.html:160
 msgid "Conferma o rifiuta"
 msgstr ""
 
-#: models/playoff/services.py:1371 models/playoff/services.py:1428
+#: models/playoff/services.py:1396 models/playoff/services.py:1453
 msgid "La gara di playoff è già cominciata: la lista non si modifica più."
 msgstr ""
 
@@ -3426,13 +3430,13 @@ msgid "Esercizi"
 msgstr ""
 
 #: routes/admin/competition/preparazione.py:32
-#: templates/admin/campionato_detail.html:484
+#: templates/admin/campionato_detail.html:500
 msgid "Direttori"
 msgstr ""
 
 #: routes/admin/competition/preparazione.py:33
 #: templates/admin/campionato_detail.html:31
-#: templates/admin/campionato_detail.html:489
+#: templates/admin/campionato_detail.html:505
 #: templates/admin/campionato_vetrina.html:8
 #: templates/admin/gara_vetrina.html:10 templates/admin/gara_vetrina.html:14
 #: templates/direttore/_fase_preparazione.html:133
@@ -4848,7 +4852,7 @@ msgstr ""
 
 #: templates/admin/_vetrina_form.html:85
 #: templates/admin/campionato_detail.html:212
-#: templates/admin/campionato_detail.html:592
+#: templates/admin/campionato_detail.html:614
 #: templates/admin/campionato_vetrina.html:94 templates/base.html:807
 #: templates/components/_playoff_scoring_form.html:28
 #: templates/gamification/admin/level_config.html:42
@@ -5822,7 +5826,7 @@ msgid "Gare"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:98
-#: templates/admin/campionato_detail.html:481
+#: templates/admin/campionato_detail.html:497
 #: templates/components/_campionato_details_info.html:59
 #: templates/components/_history_campionati_tab.html:90
 #: templates/components/_history_campionati_tab.html:91
@@ -5835,7 +5839,7 @@ msgid "Playoff"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:98
-#: templates/admin/campionato_detail.html:479
+#: templates/admin/campionato_detail.html:495
 #: templates/components/_tessera_campionato.html:113
 #: templates/gamification/admin/dashboard.html:39
 #: templates/player/venue_detail.html:147
@@ -5873,7 +5877,7 @@ msgstr ""
 
 #: templates/admin/campionato_detail.html:143
 #: templates/admin/campionato_detail.html:231
-#: templates/admin/campionato_detail.html:422
+#: templates/admin/campionato_detail.html:438
 #: templates/admin/campionato_wizard_step2.html:24
 #: templates/admin/venues_list.html:30
 #: templates/components/_gara_edit_form.html:30
@@ -5892,19 +5896,19 @@ msgstr ""
 
 #: templates/admin/campionato_detail.html:147
 #: templates/admin/campionato_detail.html:234
-#: templates/admin/campionato_detail.html:425
+#: templates/admin/campionato_detail.html:441
 msgid "Da pos."
 msgstr ""
 
 #: templates/admin/campionato_detail.html:151
 #: templates/admin/campionato_detail.html:237
-#: templates/admin/campionato_detail.html:428
+#: templates/admin/campionato_detail.html:444
 msgid "A pos."
 msgstr ""
 
 #: templates/admin/campionato_detail.html:155
 #: templates/admin/campionato_detail.html:240
-#: templates/admin/campionato_detail.html:431
+#: templates/admin/campionato_detail.html:447
 #: templates/gamification/admin/streaks.html:30
 msgid "Max"
 msgstr ""
@@ -6000,13 +6004,13 @@ msgid ""
 msgstr ""
 
 #: templates/admin/campionato_detail.html:224
-#: templates/admin/campionato_detail.html:415
+#: templates/admin/campionato_detail.html:431
 msgid "Aggiungi configurazione"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:244
-#: templates/admin/campionato_detail.html:385
-#: templates/admin/campionato_detail.html:435
+#: templates/admin/campionato_detail.html:401
+#: templates/admin/campionato_detail.html:451
 #: templates/direttore/preparazione/_direttori.html:92
 #: templates/direttore/preparazione/_esercizi.html:100
 #: templates/exam/detail.html:157 templates/exam/examiners.html:45
@@ -6056,7 +6060,7 @@ msgid "Accetta tutti i rimanenti"
 msgstr ""
 
 #: templates/admin/campionato_detail.html:290
-#: templates/admin/campionato_detail.html:574
+#: templates/admin/campionato_detail.html:593
 msgid "Data e scadenza"
 msgstr ""
 
@@ -6109,6 +6113,7 @@ msgstr ""
 
 #: templates/admin/campionato_detail.html:319
 #: templates/admin/campionato_detail.html:340
+#: templates/admin/campionato_detail.html:368
 #: templates/components/_match_scoreboard.html:352
 #: templates/components/_playoff_invitations.html:48
 #: templates/components/_trio_rack_input.html:209
@@ -6175,27 +6180,37 @@ msgstr ""
 msgid "Scaduto"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:361
+#: templates/admin/campionato_detail.html:366
+msgid "Accetta per conto del giocatore, anche se l'invito è scaduto"
+msgstr ""
+
+#: templates/admin/campionato_detail.html:367
+msgid ""
+"L'invito è scaduto. Confermare comunque la partecipazione per conto di "
+"questo giocatore? Entra anche oltre i posti."
+msgstr ""
+
+#: templates/admin/campionato_detail.html:377
 msgid "Rimuovi dai playoff"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:361
+#: templates/admin/campionato_detail.html:377
 #, python-format
 msgid "Rimuovi %(nome)s dai playoff"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:362
+#: templates/admin/campionato_detail.html:378
 msgid "Rimuovere questo giocatore?"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:372
+#: templates/admin/campionato_detail.html:388
 msgid ""
 "Chi rifiuta lascia il posto al primo degli esclusi. Se un giocatore te lo"
 " dice a voce, rispondi tu dalla sua riga: la risposta resta registrata a "
 "tuo nome."
 msgstr ""
 
-#: templates/admin/campionato_detail.html:373
+#: templates/admin/campionato_detail.html:389
 msgid ""
 "Puoi creare la gara anche con inviti in attesa: chi accetta dopo entra "
 "fra gli iscritti, finché ci sono posti. Chi aggiungi tu entra anche oltre"
@@ -6204,20 +6219,20 @@ msgid ""
 " c’è; se annulli l’avvio, tornano validi."
 msgstr ""
 
-#: templates/admin/campionato_detail.html:379
+#: templates/admin/campionato_detail.html:395
 msgid "Aggiungi un giocatore ai playoff"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:380
+#: templates/admin/campionato_detail.html:396
 msgid "Aggiungi giocatore..."
 msgstr ""
 
-#: templates/admin/campionato_detail.html:394
+#: templates/admin/campionato_detail.html:410
 #: templates/components/_campionato_fascia.html:104
 msgid "Creare la gara playoff e iscrivere i giocatori confermati?"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:395
+#: templates/admin/campionato_detail.html:411
 #: templates/components/_campionato_fascia.html:105
 #, python-format
 msgid "Crea la gara playoff · %(n)d confermato"
@@ -6225,113 +6240,121 @@ msgid_plural "Crea la gara playoff · %(n)d confermati"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/admin/campionato_detail.html:400
+#: templates/admin/campionato_detail.html:416
 #: templates/components/_campionato_fascia.html:110
 msgid "Vai alla gara playoff"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:408
+#: templates/admin/campionato_detail.html:424
 msgid "Nessuna configurazione playoff attiva."
 msgstr ""
 
-#: templates/admin/campionato_detail.html:452
+#: templates/admin/campionato_detail.html:468
 #: templates/components/_campionato_general_classification.html:40
 #: templates/components/_tessera_campionato.html:68
 #: templates/public/campionato_detail.html:63
 msgid "Classifica generale"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:454
+#: templates/admin/campionato_detail.html:470
 #: templates/public/campionato_detail.html:65
 msgid "La classifica generale compare dopo la prima gara conclusa."
 msgstr ""
 
-#: templates/admin/campionato_detail.html:465
+#: templates/admin/campionato_detail.html:481
 #: templates/components/_playoff_scoring_form.html:11
 msgid "Classifica finale del campionato"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:482
+#: templates/admin/campionato_detail.html:498
 msgid "nessun playoff previsto"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:485
+#: templates/admin/campionato_detail.html:501
 #, python-format
 msgid "%(n)d direttore"
 msgid_plural "%(n)d direttori"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/admin/campionato_detail.html:489
+#: templates/admin/campionato_detail.html:505
 msgid "locandina e link che tutte le gare ereditano"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:492
+#: templates/admin/campionato_detail.html:508
 msgid "Impostazioni"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:493
+#: templates/admin/campionato_detail.html:509
 #, python-format
 msgid "%(n)d gara prevista"
 msgid_plural "%(n)d gare previste"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/admin/campionato_detail.html:506
+#: templates/admin/campionato_detail.html:522
 #: templates/admin/campionato_edit.html:10
 msgid "Modifica campionato"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:517
+#: templates/admin/campionato_detail.html:533
 msgid "Passa alla fase playoff"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:521
+#: templates/admin/campionato_detail.html:537
 msgid "Termina campionato"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:540
+#: templates/admin/campionato_detail.html:556
 #: templates/components/_campionato_fascia.html:96
 msgid "Avvia i playoff"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:545
-#: templates/admin/campionato_detail.html:580
+#: templates/admin/campionato_detail.html:561
+#: templates/admin/campionato_detail.html:599
 msgid "Quando si gioca il playoff"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:548
+#: templates/admin/campionato_detail.html:564
 #: templates/components/_modify_dates_modal.html:23
 #: templates/components/_open_inscriptions_modal.html:22
 msgid "Nel tuo fuso orario."
 msgstr ""
 
-#: templates/admin/campionato_detail.html:551
-#: templates/admin/campionato_detail.html:586
+#: templates/admin/campionato_detail.html:567
+#: templates/admin/campionato_detail.html:605
 msgid "Gli invitati rispondono entro"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:556
+#: templates/admin/campionato_detail.html:571
+#: templates/admin/campionato_detail.html:610
+msgid ""
+"La scadenza coincide con l'orario di gioco o lo supera: chi non ha "
+"risposto risulterà scaduto quando aprirai questa pagina per avviare la "
+"gara. Meglio qualche ora prima, così puoi ancora chiamare chi manca."
+msgstr ""
+
+#: templates/admin/campionato_detail.html:575
 msgid "Avvia i playoff e invia gli inviti"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:559
+#: templates/admin/campionato_detail.html:578
 msgid ""
 "I qualificati ricevono l’invito e le configurazioni si bloccano. Data e "
 "scadenza restano modificabili fino all’avvio della gara."
 msgstr ""
 
-#: templates/admin/campionato_detail.html:583
+#: templates/admin/campionato_detail.html:602
 msgid ""
 "Nel tuo fuso orario. Se la gara di playoff esiste già, cambia anche la "
 "sua data."
 msgstr ""
 
-#: templates/admin/campionato_detail.html:589
+#: templates/admin/campionato_detail.html:608
 msgid "Vale per chi non ha ancora risposto."
 msgstr ""
 
-#: templates/admin/campionato_detail.html:622
+#: templates/admin/campionato_detail.html:644
 #, python-brace-format
 msgid ""
 "Sei SICURO di voler eliminare la Gara {number}?\n"
@@ -6339,32 +6362,32 @@ msgid ""
 "Questa azione è IRREVERSIBILE!"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:644
+#: templates/admin/campionato_detail.html:666
 msgid ""
 "Tutte le gare sono concluse. Passare alla fase playoff? Potrai poi "
 "avviare i playoff e invitare i qualificati."
 msgstr ""
 
-#: templates/admin/campionato_detail.html:646
+#: templates/admin/campionato_detail.html:668
 msgid ""
 "Sei sicuro di voler terminare il campionato? Le gare non completate "
 "verranno eliminate."
 msgstr ""
 
-#: templates/admin/campionato_detail.html:649
+#: templates/admin/campionato_detail.html:671
 msgid ""
 "Attenzione: alcuni playoff hanno un requisito minimo gare non "
 "raggiungibile. Vuoi terminare comunque?"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:712
+#: templates/admin/campionato_detail.html:734
 #: templates/admin/gara_edit.html:164
 #: templates/components/_new_gara_modal.html:666
 #, python-brace-format
 msgid "Esatto numero: {distance} triangoli totali"
 msgstr ""
 
-#: templates/admin/campionato_detail.html:713
+#: templates/admin/campionato_detail.html:735
 #: templates/admin/gara_edit.html:166
 #: templates/components/_new_gara_modal.html:667
 #, python-brace-format

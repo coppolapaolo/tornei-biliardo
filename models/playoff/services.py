@@ -134,12 +134,15 @@ class PlayoffService:
         qualification_id: int,
         user_id: int,
         responded_by_id: Optional[int] = None,
+        _d_ufficio: bool = False,
     ) -> PlayoffQualification:
         """Confirm a user's playoff qualification.
 
         `responded_by_id` è chi registra la risposta: assente vuol dire «l'ha
         fatto il giocatore stesso». Il direttore lo passa quando gliel'hanno
-        detta a voce (vedi `respond_on_behalf`).
+        detta a voce (vedi `respond_on_behalf`). `_d_ufficio` è l'ingresso
+        deciso dal direttore, che supera i posti: lo passa `respond_on_behalf`
+        quando riapre un invito scaduto.
         """
         qualification = PlayoffQualification.query.filter_by(
             id=qualification_id, user_id=user_id
@@ -159,7 +162,7 @@ class PlayoffService:
         # inviti partono prima della gara e le risposte non arrivano tutte
         # insieme. Senza, il sì di un ritardatario — o del sostituto chiamato
         # da un rifiuto — restava confermato ma fuori dalla gara.
-        PlayoffService._iscrivi_alla_gara(qualification)
+        PlayoffService._iscrivi_alla_gara(qualification, d_ufficio=_d_ufficio)
 
         # Check if we can start the playoff campionato
         PlayoffService._check_playoff_readiness(qualification.configuration_id)
@@ -290,20 +293,42 @@ class PlayoffService:
         sostituto cercato sul rifiuto — con l'unica differenza che resta
         scritto chi ha risposto (`responded_by_id`).
 
+        **Un invito scaduto si può riaprire, solo per accettarlo**, fino
+        all'avvio della gara (SPECIFICHE.md, «Playoff», nota del
+        2026-09-16). La scadenza scatta quando il direttore apre la pagina, e
+        se coincide con l'orario di gioco chi arriva in sala senza aver
+        risposto è fuori senza che nessuno possa più fare niente: è successo,
+        e il direttore ha rifatto la finale in una gara a parte. Chi rientra
+        così entra d'ufficio, anche oltre i posti, perché è una decisione del
+        direttore e la cascata può aver già chiamato un sostituto. Il
+        rifiuto di uno scaduto non ha senso: è già fuori, e il sostituto — se
+        c'era — è già stato chiamato alla scadenza.
+
         Ritorna l'eventuale sostituto trovato (solo sul rifiuto), come
         `decline_qualification`.
         """
         qualification = db.session.get(PlayoffQualification, qualification_id)
         if qualification is None:
             raise NotFoundError("Qualificazione non trovata")
-        if qualification.status != QualificationStatus.PENDING:
+        scaduta = qualification.status == QualificationStatus.EXPIRED
+        if scaduta and not accept:
+            raise ValueError(
+                _("Un invito scaduto si può solo accettare: il posto è già libero.")
+            )
+        if qualification.status != QualificationStatus.PENDING and not scaduta:
             raise ValueError("Questa qualificazione ha già una risposta")
 
         if accept:
+            if scaduta:
+                # Torna in attesa un istante prima: a registrare la risposta
+                # è lo stesso metodo di sempre, coi suoi controlli — a gara
+                # avviata rifiuta, e l'annullamento lo rimette scaduto.
+                qualification.status = QualificationStatus.PENDING
             PlayoffService.confirm_qualification(
                 qualification_id,
                 qualification.user_id,
                 responded_by_id=responded_by_id,
+                _d_ufficio=scaduta,
             )
             return None
 
