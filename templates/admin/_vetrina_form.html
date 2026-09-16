@@ -38,6 +38,7 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="hidden" name="next" value="{{ request.path }}">
       <input type="file" class="form-control" name="banner" accept="image/png,image/jpeg,image/gif" required>
+      <div class="form-text">{{ _("Carica solo materiale di cui hai i diritti.") }}</div>
       <button type="submit" class="btn btn-secondary w-100">
         <i class="fa-solid fa-upload"></i> {{ _("Carica la locandina") }}
       </button>

@@ -510,6 +510,12 @@
                     {% if feature_visible('main.privacy_policy') %}
                     <span class="c7-sep mx-2">&middot;</span>
                     <a href="{{ url_for('main.privacy_policy') }}" style="color:var(--c7-ink-muted)">{{ _('Privacy e Cookie') }}</a>
+                    {# Chi ospita contenuti altrui non ne risponde a priori, a
+                       patto di rimuoverli quando gli vengono segnalati: quella
+                       protezione presuppone che il canale esista e si trovi.
+                       Da ogni pagina, quindi, non solo dalla privacy (#445). #}
+                    <span class="c7-sep mx-2">&middot;</span>
+                    <a href="{{ url_for('main.privacy_policy') }}#contenuti" style="color:var(--c7-ink-muted)">{{ _('Segnala un contenuto') }}</a>
                     {% endif %}
                     <span class="c7-sep mx-2">&middot;</span>
                     <a href="{{ url_for('i18n.set_language', language='en' if get_locale() == 'it' else 'it') }}"

@@ -59,6 +59,20 @@
             </p>
         </section>
 
+        {# Il canale per segnalare un contenuto illecito (issue #445). Sta
+           in una sezione sua, con un recapito suo: `privacy@` raccoglie le
+           richieste sui dati personali, e mescolare i due scopi vuol dire
+           che una segnalazione urgente finisce nella coda sbagliata. #}
+        <section class="mb-4" id="contenuti">
+            <h2 class="h5">{{ _('Contenuti pubblicati sul sito') }}</h2>
+            <p class="text-muted">
+                {{ _('Le immagini che vedi sulla piattaforma — le locandine dei campionati e delle gare, le foto delle sale, le fotografie degli esercizi — le caricano i direttori di gara e i gestori di sala, a cui chiediamo di usare solo materiale di cui hanno i diritti.') }}
+            </p>
+            <p class="text-muted">
+                {{ _('Se ritieni che un contenuto pubblicato qui violi un tuo diritto, sia inappropriato o non debba comparire, scrivi a %(email)s indicando la pagina in cui si trova. Esaminiamo ogni segnalazione e rimuoviamo prontamente il materiale quando è fondata.', email='info@torneibiliardo.it') }}
+            </p>
+        </section>
+
         <section class="mb-4">
             <h2 class="h5">{{ _('I tuoi diritti') }}</h2>
             <p class="text-muted">
