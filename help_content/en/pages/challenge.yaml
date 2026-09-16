@@ -195,6 +195,14 @@ blocks:
       balls go gets interpreted differently by everyone. A photo of the table
       set up settles it.
 
+  - type: note
+    tone: warning
+    title: "Only photos you have the rights to"
+    text: >-
+      Below the photo field the app says so: **upload only material you hold
+      the rights to**. The table you set up and photographed yourself is
+      perfect; a diagram from a book or from somebody else's website is not.
+
   - type: heading
     id: disegnare
     title: "If you have no photo"

@@ -37,6 +37,7 @@
           enctype="multipart/form-data" class="mt-3">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <input type="file" class="form-control" name="banner" accept="image/png,image/jpeg,image/gif" required>
+      <div class="form-text">{{ _("Carica solo materiale di cui hai i diritti.") }}</div>
       <button type="submit" class="btn btn-primary mt-2">
         <i class="fa-solid fa-upload me-2"></i>{{ _("Carica locandina") }}
       </button>

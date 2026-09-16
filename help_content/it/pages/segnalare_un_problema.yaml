@@ -89,5 +89,7 @@ blocks:
         a: "Non ancora. Se ti rispondiamo, la nostra risposta compare sotto la segnalazione nel tuo elenco. Per aggiungere qualcosa, per ora, scrivi una nuova segnalazione."
       - q: "Ho segnalato una cosa che aveva già segnalato un altro."
         a: "Non è un problema: ce ne accorgiamo noi e le uniamo. Meglio due segnalazioni uguali che nessuna."
+      - q: "Voglio segnalare un'immagine, non un guasto."
+        a: "Per quello c'è un canale a parte: la voce **Segnala un contenuto**, in fondo a ogni pagina, porta all'indirizzo email a cui scrivere indicando la pagina in cui si trova l'immagine. Vedi [Privacy e dati](/aiuto/account/privacy_e_dati)."
       - q: "Non riesco a entrare nell'app: come faccio a segnalarlo?"
         a: "Da qui non si può, perché il modulo chiede di essere collegati. In quel caso scrivi all'indirizzo email indicato nella pagina Privacy e Cookie."

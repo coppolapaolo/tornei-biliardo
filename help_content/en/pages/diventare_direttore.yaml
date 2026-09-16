@@ -96,8 +96,9 @@ blocks:
           Everything else stays the same.
       - name: "From player to venue manager"
         text: >-
-          You can edit the page of the venue you manage. Competitions are
-          unaffected.
+          You can edit the page of the venue you manage, photos included: as
+          with every image uploaded to the platform, only material you hold the
+          rights to. Competitions are unaffected.
       - name: "If you change your mind"
         text: >-
           Both roles can be revoked: ask an administrator. The competitions you

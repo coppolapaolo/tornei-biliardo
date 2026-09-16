@@ -121,6 +121,17 @@ blocks:
       - name: "Rimuovere la locandina della gara"
         text: "La gara torna a usare quella del campionato, se ce n'è una. Non resta senza immagine per sbaglio."
 
+  - type: note
+    tone: warning
+    title: "Solo immagini di cui hai i diritti"
+    text: >-
+      Sotto il campo per caricare la locandina l'app lo ricorda: **carica solo
+      materiale di cui hai i diritti**. Una grafica fatta da te o dal circolo
+      va bene; un'immagine presa da internet o il manifesto di qualcun altro
+      no. Chi ritiene che un'immagine pubblicata qui violi un suo diritto può
+      scriverci: la voce **Segnala un contenuto**, in fondo a ogni pagina,
+      porta all'indirizzo a cui rivolgersi.
+
   - type: heading
     id: indirizzo
     title: "Un indirizzo che si può dettare al telefono"
