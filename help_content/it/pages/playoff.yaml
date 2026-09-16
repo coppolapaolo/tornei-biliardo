@@ -96,7 +96,9 @@ blocks:
           L'invito ha una scadenza, scelta dal direttore quando manda gli
           inviti. Non rispondere equivale a rifiutare, e il posto va a
           qualcun altro. Se il direttore sposta la scadenza, quella nuova vale
-          anche per te finché non hai risposto.
+          anche per te finché non hai risposto. Se ti scade, non è detto che
+          sia finita: il direttore può ancora accettarlo per te fino
+          all'avvio della gara, per esempio se ti presenti in sala.
 
   - type: note
     tone: tip
@@ -241,7 +243,18 @@ blocks:
           Sopra l'elenco degli invitati di ogni playoff c'è la riga **Data e
           scadenza**. Toccala per cambiarle, fino a quando la gara di playoff
           comincia. La scadenza nuova vale per chi non ha ancora risposto; la
-          data nuova sposta anche la gara, se l'hai già creata.
+          data nuova sposta anche la gara, se l'hai già creata. Se la
+          scadenza coincide con l'orario di gioco o lo supera, il foglio te
+          lo dice: chi non ha risposto risulterebbe scaduto proprio quando
+          apri la pagina per avviare la gara. Meglio qualche ora prima.
+      - title: "Se un invito è scaduto"
+        text: >-
+          La riga dice **Scaduto**, ma ha ancora **Accetta**. Se il giocatore
+          ti conferma a voce, o si presenta in sala, tocca **Accetta**: entra
+          fra gli iscritti, anche oltre i posti, fino all'avvio della gara, e
+          resta scritto che l'hai registrato tu. Rifiutare un invito scaduto
+          non serve: il posto è già libero, e se c'era qualcuno da chiamare al
+          suo posto è già stato chiamato.
       - title: "Crea la gara"
         text: >-
           Quando le risposte bastano, **Crea la gara playoff** crea la gara e

@@ -353,6 +353,22 @@
               {% elif _stato == 'confirmed' %}<span class="c7-state c7-state--ok">{{ _("Confermato") }}</span>
               {% elif _stato == 'declined' %}<span class="c7-state c7-state--err">{{ _("Rifiutato") }}</span>
               {% elif _stato == 'expired' %}<span class="c7-state c7-state--muted">{{ _("Scaduto") }}</span>
+              {% if not _playoff_in_corso and not campionato.is_prova %}
+              {# Un invito scaduto si riapre solo per accettarlo, fino all'avvio:
+                 la scadenza scatta all'apertura di questa pagina, e chi si
+                 presenta in sala senza aver risposto non deve restare fuori
+                 per questo. Entra d'ufficio, anche oltre i posti. #}
+              <form method="POST" action='{{ url_for("admin.campionato.playoff_respond_for_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="qualification_id" value="{{ q.id }}">
+                <input type="hidden" name="answer" value="accept">
+                <button type="submit" class="btn btn-sm btn-outline-success" data-help="playoff-invito-scaduto"
+                        title='{{ _("Accetta per conto del giocatore, anche se l'invito è scaduto") }}'
+                        onclick='return confirm({{ _("L'invito è scaduto. Confermare comunque la partecipazione per conto di questo giocatore? Entra anche oltre i posti.")|tojson }})'>
+                  <i class="fas fa-check"></i> {{ _("Accetta") }}
+                </button>
+              </form>
+              {% endif %}
               {% endif %}
               {% if cfg.gara is none and _stato in ('pending', 'confirmed') %}
               <form method="POST" action='{{ url_for("admin.campionato.playoff_remove_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
@@ -551,6 +567,9 @@
           <label for="avviaPlayoffScadenza" class="c7-label">{{ _("Gli invitati rispondono entro") }}</label>
           <input type="datetime-local" class="form-control c7-num" name="response_deadline" id="avviaPlayoffScadenza" required
                  value="{{ (_cfg_prima.response_deadline if _cfg_prima else none)|datetime_input }}">
+          <div class="c7-nota mt-1 text-warning d-none" data-avviso-scadenza>
+            {{ _("La scadenza coincide con l'orario di gioco o lo supera: chi non ha risposto risulterà scaduto quando aprirai questa pagina per avviare la gara. Meglio qualche ora prima, così puoi ancora chiamare chi manca.") }}
+          </div>
         </div>
         <button type="submit" class="btn btn-success w-100">
           <i class="fas fa-play"></i> {{ _("Avvia i playoff e invia gli inviti") }}
@@ -587,6 +606,9 @@
           <input type="datetime-local" class="form-control c7-num" name="response_deadline" id="calendarioScadenza{{ cfg.id }}"
                  value="{{ cfg.response_deadline|datetime_input }}">
           <div class="c7-nota mt-1">{{ _("Vale per chi non ha ancora risposto.") }}</div>
+          <div class="c7-nota mt-1 text-warning d-none" data-avviso-scadenza>
+            {{ _("La scadenza coincide con l'orario di gioco o lo supera: chi non ha risposto risulterà scaduto quando aprirai questa pagina per avviare la gara. Meglio qualche ora prima, così puoi ancora chiamare chi manca.") }}
+          </div>
         </div>
         <button type="submit" class="btn btn-success w-100">
           <i class="fas fa-check"></i> {{ _("Salva") }}
@@ -740,5 +762,25 @@
         updateCreateGameModeText(); // Iniziale
     }
 });
+
+    // Nei fogli «Avvia i playoff» e «Data e scadenza»: una scadenza che
+    // coincide con l'orario di gioco o lo supera fa scadere gli inviti senza
+    // risposta proprio quando il direttore apre la pagina per avviare la
+    // finale. L'avviso compare mentre scrive, non dopo. I due valori sono
+    // stringhe ISO locali: si confrontano come testo.
+    document.querySelectorAll('[data-avviso-scadenza]').forEach(function (avviso) {
+        const form = avviso.closest('form');
+        if (!form) return;
+        const data = form.querySelector('[name="scheduled_date"]');
+        const scadenza = form.querySelector('[name="response_deadline"]');
+        if (!data || !scadenza) return;
+        const aggiorna = function () {
+            const tardi = data.value && scadenza.value && scadenza.value >= data.value;
+            avviso.classList.toggle('d-none', !tardi);
+        };
+        data.addEventListener('input', aggiorna);
+        scadenza.addEventListener('input', aggiorna);
+        aggiorna();
+    });
 </script>
 {% endblock %}

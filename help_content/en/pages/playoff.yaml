@@ -97,7 +97,10 @@ blocks:
           The invitation has a deadline, chosen by the director when sending
           the invitations. Not answering counts as declining, and the place
           goes to someone else. If the director moves the deadline, the new
-          one applies to you too as long as you have not answered.
+          one applies to you too as long as you have not answered. If it
+          expires, it is not necessarily over: the director can still accept
+          it on your behalf until the competition starts, for instance if you
+          show up at the venue.
 
   - type: note
     tone: tip
@@ -244,7 +247,18 @@ blocks:
           **Date and deadline** row. Tap it to change them, until the play-off
           competition starts. The new deadline applies to whoever has not
           answered yet; the new date also moves the competition, if you have
-          already created it.
+          already created it. If the deadline coincides with the playing time
+          or is later, the sheet tells you: whoever has not answered would
+          expire right when you open the page to start the competition. A few
+          hours earlier is better.
+      - title: "If an invitation has expired"
+        text: >-
+          The row says **Expired**, but still has **Accept**. If the player
+          confirms in person, or shows up at the venue, tap **Accept**: they
+          join the entrants, even beyond the places, until the competition
+          starts, and it stays on record that you registered it. Declining an
+          expired invitation is pointless: the place is already free, and if
+          someone was to be called in their place, they already have been.
       - title: "Create the competition"
         text: >-
           When there are enough answers, **Create the playoff competition**

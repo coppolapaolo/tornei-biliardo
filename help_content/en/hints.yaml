@@ -800,6 +800,15 @@ hints:
   - admin.campionato.campionato_detail
   page: playoff
   section: invito
+- id: playoff.invito_scaduto
+  label: Accept (expired invitation)
+  short: The invitation has expired, but until the competition starts you can accept it for the
+    player, for instance if they show up at the venue. They join even beyond the places.
+  anchor: playoff-invito-scaduto
+  screens:
+  - admin.campionato.campionato_detail
+  page: playoff
+  section: invito
 - id: playoff.accetta_tutti
   label: Accept all remaining
   short: 'In a trial the fictitious players do not answer by themselves: this button accepts every

@@ -301,6 +301,8 @@ La gara di playoff **non ha una fase di iscrizioni**: gli iscritti sono chi ha a
 
 > **Nota (2026-09-13, sera).** Fino a questa data per avviare il playoff il direttore doveva **aprire le iscrizioni**, con inizio e fine, su una gara a cui non si iscrive nessuno: inviti, accettazioni e rifiuti erano già avvenuti. Ora la gara di playoff si avvia dalla preparazione e aprirne le iscrizioni è rifiutato. Le gare di playoff già aperte prima di questa data si avviano come prima.
 
+> **Nota (2026-09-16).** Un invito **scaduto** non è definitivo per il direttore: fino all'avvio della gara di playoff può **accettarlo per conto del giocatore**, e chi rientra così entra d'ufficio, anche oltre i posti, con scritto chi ha registrato la risposta. Rifiutarlo non ha senso, perché il posto è già libero e il sostituto, se c'era, è già stato chiamato alla scadenza. Nasce dal campionato 4: la scadenza coincideva con l'orario di gioco, dieci inviti sono scaduti quando il direttore ha aperto la pagina per avviare la finale, e la lista non gli offriva più niente — la finale è stata giocata in una gara a parte. Per lo stesso motivo il foglio della data avverte quando la scadenza coincide con l'orario di gioco o lo supera.
+
 ### Challenge
 
 Una **challenge** è una gara di abilità che un giocatore può affrontare da solo. Consiste in una immagine, che mostra la disposizione delle biglie sul tavolo e un testo di spiegazione. È identificata da un nome. 
