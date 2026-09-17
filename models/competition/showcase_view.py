@@ -181,38 +181,124 @@ def gara_si_sta_giocando(gara) -> bool:
     return gara.get_real_status() in STATI_IN_GIOCO
 
 
-def _formato_di_gioco(gara: Gara) -> str:
-    """La formula di gara detta come la direbbe un giocatore.
+def _nome_disciplina(codice: Optional[str]) -> str:
+    disciplina = Discipline.normalize(codice)
+    return disciplina.display_name if disciplina else (codice or "")
 
-    «Palla 9, al 5» e non `9_ball / race_to=True / distance=5`: chi arriva da
+
+def _regola_di_gioco(
+    *,
+    distance: int,
+    is_race_to: bool,
+    is_multi_set: bool,
+    match_distance: Optional[int],
+    is_race_to_sets: bool,
+) -> str:
+    """«al 5», «7 triangoli esatti», «al 2, ogni set al 4»: senza la disciplina."""
+    if is_multi_set and match_distance:
+        set_txt = (
+            _("al %(n)s", n=match_distance)
+            if is_race_to_sets
+            else _("%(n)s set", n=match_distance)
+        )
+        return _("%(set)s, ogni set al %(rack)s", set=set_txt, rack=distance)
+    if is_race_to:
+        return _("al %(n)s", n=distance)
+    return _("%(n)s triangoli esatti", n=distance)
+
+
+def _formati_dei_turni(gara: Gara) -> List[tuple]:
+    """Disciplina e regola di ogni turno, con gli override risolti (ADR-027).
+
+    Una coppia `(nome disciplina, regola)` per turno, da 1 a `rounds_count`.
+    I ripieghi sono quelli con cui nascono le partite
+    (`round_creation.resolve_round_overrides`): un override a NULL eredita
+    dalla gara. Un override su un turno oltre `rounds_count` non conta — quel
+    turno non si giocherà. Senza `rounds_count` resta il formato della gara:
+    non si sa quanti turni descrivere.
+    """
+    from models.competition.round_configuration import RoundConfiguration
+
+    gara_irts = bool(getattr(gara, "is_race_to_sets", True))
+
+    def della_gara():
+        return (
+            _nome_disciplina(gara.discipline),
+            _regola_di_gioco(
+                distance=gara.distance,
+                is_race_to=gara.is_race_to,
+                is_multi_set=gara.is_multi_set,
+                match_distance=gara.match_distance,
+                is_race_to_sets=gara_irts,
+            ),
+        )
+
+    if not gara.rounds_count:
+        return [della_gara()]
+
+    override = {
+        rc.round_number: rc for rc in RoundConfiguration.get_all_for_gara(gara.id)
+    }
+    formati = []
+    for turno in range(1, gara.rounds_count + 1):
+        rc = override.get(turno)
+        if rc is None:
+            formati.append(della_gara())
+            continue
+        formati.append(
+            (
+                _nome_disciplina(rc.get_effective_discipline(gara.discipline)),
+                _regola_di_gioco(
+                    distance=rc.get_effective_distance(gara.distance),
+                    is_race_to=rc.get_effective_is_race_to(gara.is_race_to),
+                    is_multi_set=rc.get_effective_is_multi_set(gara.is_multi_set),
+                    match_distance=rc.get_effective_match_distance(gara.match_distance),
+                    is_race_to_sets=rc.get_effective_is_race_to_sets(gara_irts),
+                ),
+            )
+        )
+    return formati
+
+
+def _formato_di_gioco(gara: Gara) -> tuple:
+    """La formula di gara detta come la direbbe un giocatore: valore e dettaglio.
+
+    «Palla 9 — al 5» e non `9_ball / race_to=True / distance=5`: chi arriva da
     un post non ha motivo di conoscere i nomi interni, e questa riga è metà
     della ragione per cui deciderà se venire.
+
+    Con i **turni misti** il formato della gara non basta: fino al 17/09/2026
+    una gara con un turno a Palla 8, uno a Palla 9 e uno a Palla 10 si
+    presentava con la sola disciplina predefinita, cioè con un formato che in
+    due turni su tre non era quello giocato. Il valore nomina allora tutte le
+    discipline — è la riga che finisce nell'anteprima social — e il dettaglio
+    le mette in fila turno per turno.
     """
-    disciplina = Discipline.normalize(gara.discipline)
-    nome_disciplina = disciplina.display_name if disciplina else gara.discipline
+    formati = _formati_dei_turni(gara)
+    turni = _("%(n)s turni", n=gara.rounds_count) if gara.rounds_count else None
 
-    if gara.is_multi_set and gara.match_distance:
-        set_txt = (
-            _("al %(n)s", n=gara.match_distance)
-            if gara.is_race_to_sets
-            else _("%(n)s set", n=gara.match_distance)
-        )
-        return _(
-            "%(disciplina)s — %(set)s, ogni set al %(rack)s",
-            disciplina=nome_disciplina,
-            set=set_txt,
-            rack=gara.distance,
-        )
+    if len(set(formati)) == 1:
+        disciplina, regola = formati[0]
+        return f"{disciplina} — {regola}", turni
 
-    if gara.is_race_to:
-        return _(
-            "%(disciplina)s — al %(n)s", disciplina=nome_disciplina, n=gara.distance
+    discipline = list(dict.fromkeys(d for d, _regola in formati))
+    if len(discipline) == 1:
+        valore = _(
+            "%(disciplina)s — distanze diverse per turno", disciplina=discipline[0]
         )
-    return _(
-        "%(disciplina)s — %(n)s triangoli esatti",
-        disciplina=nome_disciplina,
-        n=gara.distance,
-    )
+        voci = [
+            _("Turno %(n)s: %(formato)s", n=i, formato=regola)
+            for i, (_d, regola) in enumerate(formati, start=1)
+        ]
+    else:
+        # Solo i nomi: «Palla 8, Palla 9, Palla 10» sta su una riga anche sul
+        # telefono, e che cambino col turno lo dice il dettaglio qui sotto.
+        valore = ", ".join(discipline)
+        voci = [
+            _("Turno %(n)s: %(formato)s", n=i, formato=f"{d} — {regola}")
+            for i, (d, regola) in enumerate(formati, start=1)
+        ]
+    return valore, " · ".join(voci)
 
 
 def _dove_si_gioca(gara: Gara):
@@ -354,14 +440,13 @@ def costruisci_vetrina(gara: Gara) -> Vetrina:
             )
         )
 
+    formato_valore, formato_dettaglio = _formato_di_gioco(gara)
     righe.append(
         RigaInformativa(
             icona="fa-trophy",
             etichetta=_("Formato"),
-            valore=_formato_di_gioco(gara),
-            dettaglio=(
-                _("%(n)s turni", n=gara.rounds_count) if gara.rounds_count else None
-            ),
+            valore=formato_valore,
+            dettaglio=formato_dettaglio,
         )
     )
 

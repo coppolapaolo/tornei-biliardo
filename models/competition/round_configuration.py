@@ -188,11 +188,22 @@ class RoundConfiguration(BaseModel):
         kwargs per Match(...). Risolve qui i fallback in modo da centralizzare
         la regola in un solo punto, evitando duplicazione in round_creation.
         """
+        # `match_distance` ha due significati, come su `Match`: a set unico
+        # sono i triangoli del turno, in multi-set i **set** da vincere. La
+        # stessa regola di `create_matches_from_pairings`. Fino al 17/09/2026
+        # ripiegava sempre su `gara.distance`: in una gara «al 2 set, ogni
+        # set al 4» un turno con la sola disciplina cambiata diventava «al 4
+        # set», e a set unico un turno «al 6» restava alla distanza della gara.
+        is_multi_set = self.get_effective_is_multi_set(gara.is_multi_set)
+        if is_multi_set:
+            match_distance = self.get_effective_match_distance(gara.match_distance) or 1
+        else:
+            match_distance = self.get_effective_distance(gara.distance)
         return {
             "discipline": self.get_effective_discipline(gara.discipline),
-            "match_distance": self.get_effective_match_distance(gara.distance),
+            "match_distance": match_distance,
             "is_race_to": self.get_effective_is_race_to(gara.is_race_to),
-            "is_multi_set": self.get_effective_is_multi_set(gara.is_multi_set),
+            "is_multi_set": is_multi_set,
             "is_race_to_sets": self.get_effective_is_race_to_sets(
                 getattr(gara, "is_race_to_sets", True)
             ),

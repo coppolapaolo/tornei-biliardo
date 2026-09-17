@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-18 11:06+0200\n"
+"POT-Creation-Date: 2026-09-18 11:10+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -190,7 +190,7 @@ msgid "P"
 msgstr "L"
 
 #: models/campionato/showcase_view.py:223
-#: models/competition/showcase_view.py:320
+#: models/competition/showcase_view.py:406
 #: templates/individual_match/availability.html:17
 #: templates/individual_match/statistics.html:203
 #: templates/individual_match/statistics.html:212
@@ -215,8 +215,8 @@ msgid "Iscrizioni aperte · gara %(n)s"
 msgstr "Registration open · competition %(n)s"
 
 #: models/campionato/showcase_view.py:272
-#: models/competition/showcase_view.py:292
-#: models/competition/showcase_view.py:461
+#: models/competition/showcase_view.py:378
+#: models/competition/showcase_view.py:546
 #: templates/components/_nearby_gare.html:40
 #: templates/components/_separated_dashboard_content.html:90
 #: templates/components/_tessera_gara.html:45
@@ -226,7 +226,7 @@ msgid "Iscrizioni aperte"
 msgstr "Open registrations"
 
 #: models/campionato/showcase_view.py:277
-#: models/competition/showcase_view.py:290
+#: models/competition/showcase_view.py:376
 msgid "Gara in corso"
 msgstr "Competition in progress"
 
@@ -244,7 +244,7 @@ msgid "Non ancora iniziato"
 msgstr "Not started yet"
 
 #: models/campionato/showcase_view.py:355
-#: models/competition/showcase_view.py:422
+#: models/competition/showcase_view.py:507
 msgid "Regolamento e informazioni"
 msgstr "Rules and information"
 
@@ -459,58 +459,72 @@ msgstr "%(gara)s on %(data)s has been cancelled."
 msgid "Gara Cancellata"
 msgstr "Competition cancelled"
 
-#: models/competition/showcase_view.py:196
+#: models/competition/showcase_view.py:200
+#: models/competition/showcase_view.py:206
 #: templates/direttore/_card_partita.html:278
 #, python-format
 msgid "al %(n)s"
 msgstr "race to %(n)s"
 
-#: models/competition/showcase_view.py:198
+#: models/competition/showcase_view.py:202
 #, python-format
 msgid "%(n)s set"
 msgstr "exactly %(n)s sets"
 
-#: models/competition/showcase_view.py:201
+#: models/competition/showcase_view.py:204
 #, python-format
-msgid "%(disciplina)s — %(set)s, ogni set al %(rack)s"
-msgstr "%(disciplina)s — %(set)s, each set race to %(rack)s"
+msgid "%(set)s, ogni set al %(rack)s"
+msgstr "%(set)s, each set to %(rack)s"
 
-#: models/competition/showcase_view.py:209
+#: models/competition/showcase_view.py:207
+#: templates/direttore/preparazione/_turni.html:179
 #, python-format
-msgid "%(disciplina)s — al %(n)s"
-msgstr "%(disciplina)s — race to %(n)s"
+msgid "%(n)s triangoli esatti"
+msgstr "exactly %(n)s racks"
 
-#: models/competition/showcase_view.py:212
+#: models/competition/showcase_view.py:278
+#: templates/direttore/preparazione/_turni.html:24
 #, python-format
-msgid "%(disciplina)s — %(n)s triangoli esatti"
-msgstr "%(disciplina)s — exactly %(n)s racks"
+msgid "%(n)s turni"
+msgstr "%(n)s rounds"
 
-#: models/competition/showcase_view.py:277
+#: models/competition/showcase_view.py:287
+#, python-format
+msgid "%(disciplina)s — distanze diverse per turno"
+msgstr "%(disciplina)s — a different race each round"
+
+#: models/competition/showcase_view.py:290
+#: models/competition/showcase_view.py:298
+#, python-format
+msgid "Turno %(n)s: %(formato)s"
+msgstr "Round %(n)s: %(formato)s"
+
+#: models/competition/showcase_view.py:363
 #, python-format
 msgid "%(campionato)s · gara %(n)s"
 msgstr "%(campionato)s · competition %(n)s"
 
-#: models/competition/showcase_view.py:288
-#: models/competition/showcase_view.py:455 routes/main.py:566
+#: models/competition/showcase_view.py:374
+#: models/competition/showcase_view.py:540 routes/main.py:566
 #: templates/direttore/_fase_conclusa.html:26
 #: templates/direttore/_fase_conclusa.html:74
 msgid "Gara conclusa"
 msgstr "Competition finished"
 
-#: models/competition/showcase_view.py:297 routes/main.py:536
+#: models/competition/showcase_view.py:383 routes/main.py:536
 #: templates/components/_unified_cards.html:79
 #: templates/direttore/_fase_iscrizioni.html:27
 msgid "Iscrizioni non ancora aperte"
 msgstr "Registrations not yet open"
 
-#: models/competition/showcase_view.py:298 routes/main.py:547
+#: models/competition/showcase_view.py:384 routes/main.py:547
 #: templates/components/_tessera_gara.html:43
 #: templates/components/_tessera_playoff.html:52
 msgid "Iscrizioni chiuse"
 msgstr "Registration closed"
 
-#: models/competition/showcase_view.py:351
-#: models/competition/showcase_view.py:451
+#: models/competition/showcase_view.py:437
+#: models/competition/showcase_view.py:536
 #: templates/individual_match/create_proposal.html:86
 #: templates/player/playoff_invitation.html:27
 #: templates/public/campionato_detail.html:80
@@ -518,8 +532,8 @@ msgstr "Registration closed"
 msgid "Dove"
 msgstr "Where"
 
-#: models/competition/showcase_view.py:360
-#: models/competition/showcase_view.py:451
+#: models/competition/showcase_view.py:447
+#: models/competition/showcase_view.py:536
 #: templates/individual_match/create_proposal.html:119
 #: templates/individual_match/edit_match.html:71
 #: templates/individual_match/match_detail.html:199
@@ -527,13 +541,7 @@ msgstr "Where"
 msgid "Formato"
 msgstr "Format"
 
-#: models/competition/showcase_view.py:363
-#: templates/direttore/preparazione/_turni.html:24
-#, python-format
-msgid "%(n)s turni"
-msgstr "%(n)s rounds"
-
-#: models/competition/showcase_view.py:375
+#: models/competition/showcase_view.py:460
 #: templates/admin/gara_create_standalone.html:457
 #: templates/components/_campionato_details_info.html:87
 #: templates/components/_gara_info.html:48
@@ -543,21 +551,21 @@ msgstr "%(n)s rounds"
 msgid "Quota"
 msgstr "Fee"
 
-#: models/competition/showcase_view.py:377
+#: models/competition/showcase_view.py:462
 msgid "Gratuito"
 msgstr "Free"
 
-#: models/competition/showcase_view.py:379
+#: models/competition/showcase_view.py:464
 #, python-format
 msgid "%(fee)s €"
 msgstr "€%(fee)s"
 
-#: models/competition/showcase_view.py:390
+#: models/competition/showcase_view.py:475
 #: templates/direttore/_fase_iscrizioni.html:136
 msgid "Chiusura iscrizioni"
 msgstr "Registration closes"
 
-#: models/competition/showcase_view.py:459
+#: models/competition/showcase_view.py:544
 #, python-format
 msgid "Iscrizioni aperte — %(n)s posti liberi"
 msgstr "Registration open — %(n)s seats left"
@@ -17249,11 +17257,6 @@ msgid ""
 msgstr ""
 "A changed round stands out by its pill. Drills are played after the given"
 " round, while the others finish, and have separate standings."
-
-#: templates/direttore/preparazione/_turni.html:179
-#, python-format
-msgid "%(n)s triangoli esatti"
-msgstr "exactly %(n)s racks"
 
 #: templates/direttore/preparazione/_turni.html:180
 #: templates/individual_match/quick_match.html:35
