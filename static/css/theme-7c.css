@@ -1279,6 +1279,12 @@ input[type="number"].form-control {
 @media (orientation: landscape) and (max-height: 520px) and (pointer: coarse) {
   .c7-board {
     position: fixed; inset: 0; z-index: var(--c7-z-board);
+    /* L'altezza **visibile**, non quella del layout: su iPhone in orizzontale
+       `inset: 0` puo' misurarsi a barre del browser nascoste, e allora la
+       fascia dei comandi in fondo finisce sotto la barra. Con `top`, `bottom`
+       e `height` insieme vince `height`; dove `dvh` non esiste la riga cade e
+       resta `inset`. Non si prova dal browser pilotato: serve un telefono. */
+    height: 100dvh;
     display: flex; flex-direction: column;
     background: var(--c7-accent); color: var(--c7-accent-ink);
     font-family: var(--c7-font);

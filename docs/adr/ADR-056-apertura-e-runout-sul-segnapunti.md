@@ -112,6 +112,27 @@ Nota lessicale dallo stesso regolamento: «acchito» ha **due** significati — 
 primo tiro che decide l'ordine (1.2) e la preparazione delle bilie nel
 triangolo (1.4 «Acchito delle bilie», «Riacchito»).
 
+**Emendamento 2026-09-17 — alle due domande si risponde toccando i nomi.**
+Nella prima stesura il primo tocco rispondeva a tutte e due le domande (vince
+e apre lo stesso giocatore), un secondo tocco spostava solo l'apertura, e per
+proseguire serviva «Comincia» nella fascia in basso. Alla gara 3 della Ronin
+Cup (16/09/2026) il direttore, su iPhone, ha segnato chi aveva vinto e il
+tabellone «non andava avanti»: ha raddrizzato il telefono e ha segnato dalla
+vista verticale, dove la domanda non esiste — perdendo così chi aveva aperto,
+e con lui i break and run di quella partita.
+
+«Comincia» era l'unico stato del tabellone in cui il bersaglio non era la
+mezza schermata, e stava nella fascia che su iPhone in orizzontale può finire
+sotto la barra del browser. Ora il primo tocco dice chi ha vinto e cambia la
+domanda, il secondo dice chi apre e **invia**: il caso comune costa gli stessi
+due tocchi, sullo stesso nome. Nella fascia resta «Ricomincia», che è un
+rimedio e non la strada. Il tabellone inoltre si misura sull'altezza visibile
+(`100dvh`). Logica in `static/js/board_acchito.js`, presidio in
+`tests/frontend/test_board_acchito.cjs`. La causa esatta non è stata
+riprodotta — il tabellone sta dietro una media query che il browser pilotato
+non emula — quindi la correzione toglie entrambe le cause possibili invece di
+sceglierne una.
+
 ### 4. Quattro modalità di apertura, ereditate su due livelli
 
 Modalità: `winner_breaks` (chi ha vinto), `alternate` (a turno),

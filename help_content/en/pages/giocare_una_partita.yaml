@@ -191,10 +191,12 @@ blocks:
       - title: "Who takes the break shot?"
         text: >-
           The lag winner chooses, and it **need not be them**: they may send
-          the opponent to the table. If they break themselves you touch
-          nothing; if they send the other player, tap the other name.
-      - title: "Start"
-        text: "The scoreboard appears, and you score as usual."
+          the opponent to the table. Tap the name of whoever breaks: the same
+          one if they break themselves, the other if they send the opponent.
+      - title: "The scoreboard appears"
+        text: >-
+          After the second tap you score as usual. If the first tap was wrong,
+          **Start over** takes you back to the first question.
 
   - type: note
     tone: info

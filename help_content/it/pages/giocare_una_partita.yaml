@@ -189,10 +189,12 @@ blocks:
       - title: "Chi esegue il tiro di apertura?"
         text: >-
           Lo sceglie chi ha vinto l'acchito, e **non deve essere lui**: può
-          mandare al tavolo l'avversario. Se apre lui, non tocchi niente; se
-          manda l'altro, tocca l'altro nome.
-      - title: "Comincia"
-        text: "Il tabellone compare, e si segna come sempre."
+          mandare al tavolo l'avversario. Tocca il nome di chi apre: lo stesso
+          di prima se apre lui, l'altro se manda l'avversario.
+      - title: "Il tabellone compare"
+        text: >-
+          Dopo il secondo tocco si segna come sempre. Se hai sbagliato il
+          primo, **Ricomincia** ti riporta alla prima domanda.
 
   - type: note
     tone: info
