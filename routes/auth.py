@@ -22,6 +22,7 @@ from models.user.role_enum import UserRole
 from utils.analytics import AnalyticsEvent, track_event
 from utils.rate_limiter import limiter
 from utils.safe_redirect import safe_next_url
+from utils.sessione_duratura import applica_scelta_al_login
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -117,6 +118,10 @@ def login():
 
         if user:
             login_user(user)
+
+            # Quanto vive il cookie lo decide la spunta «Resta collegato»:
+            # trenta giorni, oppure finché il browser resta aperto (ADR-064).
+            applica_scelta_al_login()
 
             # Il blocco «Come stai andando» si mostra una volta per sessione, e
             # «per sessione» qui vuol dire davvero da questo login: senza
