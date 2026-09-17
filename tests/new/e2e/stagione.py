@@ -44,7 +44,7 @@ from datetime import date, timedelta
 from typing import Any
 
 from models.matchmaking.configuration import MatchmakingStrategy, OddNumberPolicy
-from models.status_enum import Discipline
+from models.status_enum import Discipline, WithdrawPolicy
 
 #: Iscritti al completo. Quindici è il massimo consentito, ed è dispari: ogni
 #: turno qualcuno prende la X. È il caso che il direttore avrà davvero.
@@ -152,7 +152,7 @@ FORM_GARA_STAGIONE: dict[str, str] = {
     # Un intero significa «quanti tavoli», non «quale tavolo». Otto tavoli
     # bastano per i sette match di un turno da quindici giocatori.
     "available_tables": "8",
-    "withdraw_policy": "forfeit",
+    "withdraw_policy": WithdrawPolicy.FORFEIT.value,
 }
 
 #: Il passo 1 del wizard del campionato.
