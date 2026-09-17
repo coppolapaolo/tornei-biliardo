@@ -102,9 +102,12 @@ blocks:
       - name: "Segnare il punteggio al posto dei giocatori"
         text: >-
           Se un tavolo non ha lo smartphone, segni tu dalla card della
-          partita: sotto ogni nome ci sono **−** e **+**. Alla distanza del
-          turno il + si spegne, la partita si chiude da sola e il tavolo passa
-          alla prima partita in attesa.
+          partita: sotto ogni nome ci sono **−** e **+**, e il numero cambia
+          appena tocchi. Alla distanza del turno il + si spegne e la card
+          avvisa: **«Si chiude fra 3 s»**, con **Annulla** accanto. Se l'ultimo
+          tocco era sbagliato lo annulli lì, o togli il triangolo con −. Passati
+          i tre secondi la card dice **«Partita chiusa»**, il tavolo passa alla
+          prima partita in attesa e la pagina si aggiorna.
       - name: "Validare un risultato"
         text: >-
           Una partita arrivata alla distanza dal segnapunti dei giocatori,

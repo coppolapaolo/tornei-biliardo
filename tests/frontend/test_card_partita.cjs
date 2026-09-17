@@ -12,6 +12,11 @@
  * 3. alla chiusura (partita finita, set chiuso, card che cambia stato) la
  *    pagina si ricarica;
  * 4. la X non salva al tocco: il punteggio parte con «Convalida».
+ * 5. il numero cambia **al tocco**, non alla risposta: due tocchi veloci si
+ *    accodano e parte l'ultimo punteggio, un rifiuto rimette quello
+ *    confermato (Ronin Cup, 16/09/2026: «tap e non succede niente»);
+ * 6. il tocco che chiude **aspetta** prima di partire: la card dice che si sta
+ *    chiudendo e offre «Annulla»; se la pagina se ne va, parte lo stesso.
  *
  * Run:  cd tests/frontend && npm install && npm test
  */
@@ -24,6 +29,18 @@ const SRC = fs.readFileSync(
   path.join(__dirname, "..", "..", "static", "js", "card_partita.js"),
   "utf8"
 );
+
+const ATTESA = 30;
+
+function dopo(ms) {
+  return new Promise(function (fatto) { setTimeout(fatto, ms); });
+}
+
+function differita() {
+  let sblocca;
+  const quando = new Promise(function (fatto) { sblocca = fatto; });
+  return { quando: quando, sblocca: sblocca };
+}
 
 function lato(n) {
   return (
@@ -47,12 +64,22 @@ function ambiente(attributi, lati, risposte) {
     const campi = {};
     init.body.forEach(function (v, k) { campi[k] = v; });
     inviati.push({ url: url, campi: campi, headers: init.headers });
+    inviati[inviati.length - 1].keepalive = init.keepalive === true;
     const r = risposte.shift() || { ok: true, json: { success: true } };
-    return Promise.resolve({ ok: r.ok, json: function () { return Promise.resolve(r.json); } });
+    const pronta = { ok: r.ok, json: function () { return Promise.resolve(r.json); } };
+    // `quando`: una promessa che il test risolve a mano, per guardare la
+    // card mentre la richiesta e' ancora in volo.
+    return r.quando ? r.quando.then(function () { return pronta; }) : Promise.resolve(pronta);
   };
   w.eval(SRC);
   const card = w.document.getElementById("c");
-  const opzioni = { csrf: "tok", ricarica: function () { ricariche += 1; } };
+  const opzioni = {
+    csrf: "tok",
+    ricarica: function () { ricariche += 1; },
+    attesaChiusura: ATTESA,
+    attesaRicarica: 1,
+    testi: { chiusura: "si chiude fra {n}", annulla: "annulla", chiusa: "chiusa" },
+  };
   w.CardPartita.aggiorna(card);
   return {
     w: w,
@@ -62,6 +89,7 @@ function ambiente(attributi, lati, risposte) {
     piu: function (n) { return card.querySelector('.c7-partita__piu[data-lato="' + n + '"]'); },
     meno: function (n) { return card.querySelector('.c7-partita__meno[data-lato="' + n + '"]'); },
     num: function (n) { return card.querySelector('[data-num="' + n + '"]').textContent; },
+    striscia: function () { return card.querySelector(".c7-partita__chiusura"); },
     tocca: function (n, delta) {
       const b = delta > 0 ? this.piu(n) : this.meno(n);
       return w.CardPartita.passo(b, delta, opzioni);
@@ -107,6 +135,9 @@ async function alla_chiusura_la_pagina_si_ricarica() {
     'data-url="/admin/match/9/set/punteggio" data-campi="player1_racks,player2_racks" data-stato="in_corso"', 2,
     [{ ok: true, json: { success: true, punti: [4, 1], set_chiuso: true, finished: false } }]);
   await set.tocca(1, 1);
+  assert.strictEqual(set.inviati.length, 0, "il tocco che chiude aspetta");
+  await dopo(ATTESA + 20);
+  assert.deepStrictEqual(set.inviati[0].campi, { player1_racks: "4", player2_racks: "1" });
   assert.strictEqual(set.ricariche(), 1);
 
   const due = ambiente('data-tipo="due" data-punti="5,1" data-max="5" data-race-to="1" ' +
@@ -151,6 +182,104 @@ async function la_x_non_salva_al_tocco() {
   assert.strictEqual(a.num(1), "2");
 }
 
+
+async function il_numero_cambia_al_tocco() {
+  const volo = differita();
+  const a = ambiente('data-tipo="due" data-punti="1,1" data-max="5" data-race-to="1" ' +
+    'data-url="/u" data-campi="player1_score,player2_score" data-stato="in_corso"', 2,
+    [{ ok: true, json: { success: true, player1_score: 2, player2_score: 1 }, quando: volo.quando }]);
+  const fatto = a.tocca(1, 1);
+  assert.strictEqual(a.num(1), "2", "il numero non aspetta il server");
+  assert.strictEqual(a.piu(1).disabled, false, "e i tasti restano vivi");
+  volo.sblocca();
+  await fatto;
+  assert.strictEqual(a.card.dataset.punti, "2,1");
+}
+
+async function due_tocchi_veloci_si_accodano() {
+  const volo = differita();
+  const a = ambiente('data-tipo="due" data-punti="1,1" data-max="5" data-race-to="1" ' +
+    'data-url="/u" data-campi="player1_score,player2_score" data-stato="in_corso"', 2,
+    [{ ok: true, json: { success: true, player1_score: 2, player2_score: 1 }, quando: volo.quando },
+     { ok: true, json: { success: true, player1_score: 3, player2_score: 1 } }]);
+  const primo = a.tocca(1, 1);
+  a.tocca(1, 1);
+  assert.strictEqual(a.num(1), "3");
+  assert.strictEqual(a.inviati.length, 1, "una richiesta alla volta");
+  volo.sblocca();
+  await primo;
+  await dopo(5);
+  assert.deepStrictEqual(a.inviati.map(function (i) { return i.campi.player1_score; }), ["2", "3"]);
+  assert.strictEqual(a.card.dataset.punti, "3,1", "la risposta vecchia non riscrive il numero nuovo");
+}
+
+async function un_rifiuto_torna_al_punteggio_confermato() {
+  const volo = differita();
+  const a = ambiente('data-tipo="due" data-punti="1,1" data-max="5" data-race-to="1" ' +
+    'data-url="/u" data-campi="player1_score,player2_score" data-stato="in_corso"', 2,
+    [{ ok: false, json: { success: false, error: "no" }, quando: volo.quando }]);
+  const primo = a.tocca(1, 1);
+  a.tocca(1, 1);
+  assert.strictEqual(a.num(1), "3");
+  volo.sblocca();
+  await primo;
+  assert.strictEqual(a.card.dataset.punti, "1,1");
+  assert.strictEqual(a.num(1), "1");
+  assert.strictEqual(a.inviati.length, 1, "dopo un rifiuto la coda si butta");
+}
+
+async function il_tocco_che_chiude_aspetta() {
+  const a = ambiente('data-tipo="due" data-punti="4,1" data-max="5" data-race-to="1" ' +
+    'data-url="/u" data-campi="player1_score,player2_score" data-stato="in_corso"', 2,
+    [{ ok: true, json: { success: true, player1_score: 5, player2_score: 1, finished: true } }]);
+  await a.tocca(1, 1);
+  assert.strictEqual(a.num(1), "5", "il numero finale si vede subito");
+  assert.strictEqual(a.inviati.length, 0, "ma la chiusura non e' ancora partita");
+  assert.ok(a.striscia(), "la card dice che si sta chiudendo");
+  assert.ok(a.striscia().textContent.indexOf("si chiude fra") !== -1);
+  await dopo(ATTESA + 20);
+  assert.deepStrictEqual(a.inviati[0].campi, { player1_score: "5", player2_score: "1" });
+  assert.strictEqual(a.ricariche(), 1);
+}
+
+async function annulla_ferma_la_chiusura() {
+  const a = ambiente('data-tipo="due" data-punti="4,1" data-max="5" data-race-to="1" ' +
+    'data-url="/u" data-campi="player1_score,player2_score" data-stato="in_corso"', 2, []);
+  await a.tocca(1, 1);
+  a.striscia().querySelector("button").click();
+  assert.strictEqual(a.num(1), "4");
+  assert.strictEqual(a.striscia(), null);
+  assert.strictEqual(a.piu(1).disabled, false);
+  await dopo(ATTESA + 20);
+  assert.strictEqual(a.inviati.length, 0, "il server ha gia' il 4 a 1: niente da inviare");
+  assert.strictEqual(a.ricariche(), 0);
+}
+
+async function il_meno_durante_l_attesa_annulla() {
+  const a = ambiente('data-tipo="due" data-punti="4,1" data-max="5" data-race-to="1" ' +
+    'data-url="/u" data-campi="player1_score,player2_score" data-stato="in_corso"', 2, []);
+  await a.tocca(1, 1);
+  await a.tocca(1, -1);
+  assert.strictEqual(a.num(1), "4");
+  assert.strictEqual(a.striscia(), null);
+  await dopo(ATTESA + 20);
+  assert.strictEqual(a.inviati.length, 0);
+  assert.strictEqual(a.ricariche(), 0);
+}
+
+async function se_la_pagina_se_ne_va_la_chiusura_parte_lo_stesso() {
+  const a = ambiente('data-tipo="due" data-punti="4,1" data-max="5" data-race-to="1" ' +
+    'data-url="/u" data-campi="player1_score,player2_score" data-stato="in_corso"', 2,
+    [{ ok: true, json: { success: true, finished: true } }]);
+  await a.tocca(1, 1);
+  a.w.dispatchEvent(new a.w.Event("pagehide"));
+  assert.strictEqual(a.inviati.length, 1);
+  assert.deepStrictEqual(a.inviati[0].campi, { player1_score: "5", player2_score: "1" });
+  assert.strictEqual(a.inviati[0].keepalive, true);
+  await dopo(ATTESA + 20);
+  assert.strictEqual(a.inviati.length, 1, "e non parte una seconda volta");
+}
+
 (async function () {
   const prove = [
     la_partita_a_due_si_ferma_alla_distanza,
@@ -159,6 +288,13 @@ async function la_x_non_salva_al_tocco() {
     un_rifiuto_rimette_la_card_com_era,
     il_foglio_del_trio_si_ferma_ai_triangoli_del_trio,
     la_x_non_salva_al_tocco,
+    il_numero_cambia_al_tocco,
+    due_tocchi_veloci_si_accodano,
+    un_rifiuto_torna_al_punteggio_confermato,
+    il_tocco_che_chiude_aspetta,
+    annulla_ferma_la_chiusura,
+    il_meno_durante_l_attesa_annulla,
+    se_la_pagina_se_ne_va_la_chiusura_parte_lo_stesso,
   ];
   for (const prova of prove) {
     await prova();

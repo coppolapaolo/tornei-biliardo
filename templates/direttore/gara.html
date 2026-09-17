@@ -116,7 +116,11 @@
       url: '/sse/poll/gara/' + GARA_CONFIG.gara.id,
       onEvent: function (evento) {
         if (!tipi.includes(evento.type)) return;
-        if (evento.data && evento.data.autore === GARA_CONFIG.utenteId && evento.type === 'match_updated') return;
+        // Anche la chiusura: la card che l'ha fatta ricarica da se', dopo aver
+        // detto «Partita chiusa». Un secondo `location.reload()` arrivato dal
+        // poll a ricaricamento in corso lo annullava e lo faceva ripartire.
+        var mio = evento.data && evento.data.autore === GARA_CONFIG.utenteId;
+        if (mio && (evento.type === 'match_updated' || evento.type === 'match_completed')) return;
         location.reload();
       },
       onGap: function () { location.reload(); }

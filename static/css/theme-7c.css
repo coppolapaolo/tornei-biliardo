@@ -3367,6 +3367,20 @@ a.c7-rows__row:hover { background: var(--c7-sunken); }
 .c7-partita__meno:disabled { color: var(--c7-ink-faint); }
 .c7-partita__piu:disabled { background: var(--c7-sunken); color: var(--c7-ink-faint); }
 .c7-partita__step button:not(:disabled):active { transform: scale(.94); }
+/* Tocchi ravvicinati sullo stesso +: senza, il secondo puo' essere letto come
+   doppio tocco per ingrandire, e il browser aspetta a consegnarlo. */
+.c7-partita__step button { touch-action: manipulation; }
+/* Il tocco che chiude aspetta: la striscia lo dice e offre «Annulla»; a
+   chiusura confermata diventa la conferma, per l'attimo prima che la pagina
+   si ricarichi (`static/js/card_partita.js`). */
+.c7-partita__chiusura {
+  margin-top: 10px; padding: 8px 8px 8px 14px; border-radius: var(--c7-r-control);
+  background: var(--c7-warn-bg); color: var(--c7-warn-ink); display: flex; align-items: center; gap: 10px;
+  font-size: 13px; font-weight: 800;
+}
+.c7-partita__chiusura-testo { flex: 1; min-width: 0; font-variant-numeric: tabular-nums; }
+.c7-partita__chiusura-annulla { min-height: 48px; flex-shrink: 0; }
+.c7-partita__chiusura--fatta { padding: 14px; background: var(--c7-ok-bg); color: var(--c7-ok-ink); }
 /* Chi ha vinto resta pieno, l'altro si spegne (card conclusa). */
 .c7-partita--conclusa .c7-partita__lato { background: var(--c7-card); }
 .c7-partita__lato--spento .c7-partita__nome,

@@ -60,6 +60,10 @@
       "errorRound": {{ _("Errore durante l'avvio del turno:")| tojson }},
       "errorCreateRound": {{ _("Errore di rete durante la creazione del turno") | tojson }},
       "errorQuickResult": {{ _("Errore durante l'impostazione del risultato") | tojson }},
+      "cardChiusura": {{ _("Si chiude fra {n} s") | tojson }},
+      "cardAnnulla": {{ _("Annulla") | tojson }},
+      "cardChiusa": {{ _("Partita chiusa") | tojson }},
+      "cardSetChiuso": {{ _("Set chiuso") | tojson }},
       "errorResetMatch": {{ _("Errore durante il reset") | tojson }},
       "errorResetTrio": {{ _("Errore durante il reset del trio") | tojson }},
       "errorValidation": {{ _("Errore:") | tojson }},
@@ -1386,16 +1390,22 @@
   // qui restano i comandi che parlano col server.
 
   /**
-   * Un tocco su − o +: salva subito e aggiorna la card sul posto. Alla chiusura
-   * (distanza, set chiuso, trio finito) il tavolo passa alla prima in attesa e
-   * la pagina si ricarica per mostrarlo. La X con esercizio non salva: aspetta
-   * «Convalida».
+   * Un tocco su − o +: il numero cambia subito e il punteggio parte. Il tocco
+   * che chiude aspetta tre secondi, con «Annulla»; a chiusura confermata la
+   * card lo dice, il tavolo passa alla prima in attesa e la pagina si ricarica
+   * per mostrarlo. La X con esercizio non salva: aspetta «Convalida».
    */
   function passoPunteggio(btn, delta) {
     return window.CardPartita.passo(btn, delta, {
       csrf: csrfToken(),
       errore: showError,
-      messaggioErrore: GARA_CONFIG.i18n.errorQuickResult
+      messaggioErrore: GARA_CONFIG.i18n.errorQuickResult,
+      testi: {
+        chiusura: GARA_CONFIG.i18n.cardChiusura,
+        annulla: GARA_CONFIG.i18n.cardAnnulla,
+        chiusa: GARA_CONFIG.i18n.cardChiusa,
+        setChiuso: GARA_CONFIG.i18n.cardSetChiuso
+      }
     });
   }
 
