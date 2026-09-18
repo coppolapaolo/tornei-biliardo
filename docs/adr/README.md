@@ -76,6 +76,8 @@ Crea un ADR quando:
 | ADR-060 | [I tavoli della gara si scelgono in ogni stato](ADR-060-tavoli-scelti-in-ogni-stato.md) | Accepted | 2026-09-13 |
 | ADR-061 | [Un `@transactional` annidato rilascia il proprio savepoint: salva solo il più esterno](ADR-061-transactional-annidato-salva-solo-il-piu-esterno.md) | Accepted | 2026-09-13 |
 | ADR-062 | [Le notifiche si scrivono nella lingua di chi le riceve](ADR-062-notifiche-nella-lingua-di-chi-riceve.md) | Accepted | 2026-09-13 |
+| ADR-063 | [L'admin viene scollegato dopo 30 minuti di inattività](ADR-063-admin-scollegato-dopo-inattivita.md) | Accepted | 2026-09-14 |
+| ADR-064 | [Chi accede resta collegato su quel dispositivo per trenta giorni](ADR-064-sessione-che-dura-trenta-giorni.md) | Accepted | 2026-09-17 |
 
 ## Come Creare un Nuovo ADR
 

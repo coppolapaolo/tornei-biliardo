@@ -152,6 +152,16 @@ class Config:
     # aggiornamenti live non contano come attività.
     ADMIN_IDLE_TIMEOUT = timedelta(minutes=30)
 
+    # Quanto resta collegato chi accede con la spunta «Resta collegato»
+    # (ADR-064). Senza una scadenza il cookie vive quanto decide il browser, e
+    # iOS lo butta a ogni chiusura: sul telefono era un login a ogni apertura.
+    PERMANENT_SESSION_LIFETIME = timedelta(days=30)
+    # Il cookie NON si rimanda a ogni risposta: la sessione sta nel cookie, e
+    # un poll partito prima e arrivato dopo la riscriverebbe con lo stato
+    # vecchio. La scadenza la sposta `utils/sessione_duratura.py`, al più una
+    # volta al giorno e mai sui poll.
+    SESSION_REFRESH_EACH_REQUEST = False
+
     @classmethod
     def environment_settings(cls) -> dict:
         """Le impostazioni che leggono ``os.environ``, risolte **adesso**.

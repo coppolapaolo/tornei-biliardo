@@ -11,8 +11,14 @@ The application uses standard session-based authentication via `Flask-Login`. Pa
 - **Credential-bound sessions** (ADR-055): the session id carries a
   fingerprint of the password hash, so changing the password invalidates every
   open session.
-- **No "remember me"** and no server-side lifetime for directors and players:
-  a session lasts as long as the browser keeps its cookie.
+- **"Stay signed in" for 30 days** (ADR-064): the login form has a checkbox,
+  ticked by default, that makes the session permanent
+  (`PERMANENT_SESSION_LIFETIME`, `config.py`). Unticked, the cookie lasts as
+  long as the browser keeps it — which on iOS means until the tab or the
+  installed web app is closed. `SESSION_REFRESH_EACH_REQUEST` is **off**: the
+  session lives in the cookie, and re-sending it on every poll response would
+  let a slow response overwrite newer session state. The expiry is pushed
+  forward at most once a day, on pages only (`utils/sessione_duratura.py`).
 - **Admin idle timeout** (ADR-063): the admin is logged out after
   `ADMIN_IDLE_TIMEOUT` (30 minutes, `config.py`) without opening a page. The
   last activity lives in the signed session cookie (`_admin_ultima_attivita`),

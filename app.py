@@ -358,6 +358,12 @@ def create_app(config_name=None, *, da_script: bool = False):
 
     app.before_request(controlla_inattivita_admin)
 
+    # Chi ha scelto «Resta collegato» non viene scollegato finché usa l'app:
+    # la scadenza del cookie avanza al più una volta al giorno (ADR-064).
+    from utils.sessione_duratura import rinnova_sessione_duratura
+
+    app.before_request(rinnova_sessione_duratura)
+
     @_user_logged_in.connect_via(app)
     def _segna_accesso_admin(sender, user, **extra):
         segna_accesso(user)

@@ -622,6 +622,7 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [061](docs/adr/ADR-061-transactional-annidato-salva-solo-il-piu-esterno.md) | un `@transactional` annidato chiude il proprio savepoint, salva solo il più esterno; `BEGIN` su SQLite prima del savepoint |
 | [062](docs/adr/ADR-062-notifiche-nella-lingua-di-chi-riceve.md) | le notifiche nella lingua di **chi riceve**, salvata su `User.language`; testi passati da comporre, nessun backfill |
 | [063](docs/adr/ADR-063-admin-scollegato-dopo-inattivita.md) | l'**admin** viene scollegato dopo 30 minuti senza aprire pagine; ultima attività nel cookie, i poll non contano |
+| [064](docs/adr/ADR-064-sessione-che-dura-trenta-giorni.md) | casella «Resta collegato», spuntata per default: sessione di **30 giorni**; il cookie non si rimanda a ogni risposta, la scadenza si rinnova al più una volta al giorno e mai sui poll |
 
 ---
 

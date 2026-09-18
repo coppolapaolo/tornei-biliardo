@@ -33,6 +33,14 @@
             </div>
         </div>
 
+        {# Spuntata per default: sul proprio telefono si resta collegati trenta
+           giorni. Si toglie sul computer di qualcun altro (ADR-064). #}
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="resta-collegato" name="resta_collegato" value="1" checked>
+            <label class="form-check-label" for="resta-collegato">{{ _('Resta collegato su questo dispositivo') }}</label>
+            <div class="form-text">{{ _('Per trenta giorni. Togli la spunta se il dispositivo non è tuo.') }}</div>
+        </div>
+
         <button type="submit" class="btn btn-primary w-100">{{ _('Accedi') }}</button>
     </form>
 
