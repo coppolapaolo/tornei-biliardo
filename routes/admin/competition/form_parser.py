@@ -130,9 +130,7 @@ class GaraFormParser:
         data["discipline"] = request.form["discipline"]
         data["distance"] = int(request.form["distance"])
         data["is_race_to"] = "exact_number" not in request.form
-        data["withdraw_policy"] = request.form.get(
-            "withdraw_policy", DEFAULT_WITHDRAW_POLICY
-        )
+        data["withdraw_policy"] = GaraFormParser._parse_withdraw_policy()
 
         # ── Multi-set ────────────────────────────────────────────
         data["is_multi_set"] = "is_multi_set" in request.form
@@ -273,6 +271,26 @@ class GaraFormParser:
                 "Se non ne trovi uno adatto puoi crearlo dal modulo."
             )
         return scelto
+
+    @staticmethod
+    def _parse_withdraw_policy() -> str:
+        """La regola dei ritiri: una di quelle che il servizio conosce.
+
+        Salvata com'era, una stringa sconosciuta passava in silenzio e
+        l'errore arrivava al primo ritiro, a gara in corso («Unknown withdraw
+        policy»). Si rifiuta qui, dove chi sbaglia è ancora davanti al form.
+        Maiuscole e minuscole non contano: chi scrive `forfeit` intende
+        `Forfeit`, e si salva il valore vero.
+        """
+        from models.status_enum import WithdrawPolicy
+
+        grezzo = (request.form.get("withdraw_policy") or "").strip()
+        if not grezzo:
+            return DEFAULT_WITHDRAW_POLICY
+        for regola in WithdrawPolicy:
+            if regola.value.lower() == grezzo.lower():
+                return regola.value
+        raise ValueError(f"Regola dei ritiri sconosciuta: {grezzo}")
 
     @staticmethod
     def _parse_weight(campionato: Optional[Any]) -> int:

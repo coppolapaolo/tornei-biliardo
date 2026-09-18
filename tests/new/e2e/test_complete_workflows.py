@@ -6,6 +6,7 @@ from datetime import date, timedelta
 from models import db, User, Campionato, Gara, DirectorRequest, Inscription
 from models.user.models import DirectorAssignment
 from models.user.role_enum import UserRole
+from models.status_enum import WithdrawPolicy
 from models.campionato.services import TournamentService
 
 
@@ -180,7 +181,7 @@ class TestCompleteUserJourney:
                 "entry_fee": "15.0",
                 "discipline": "9_ball",
                 "distance": "7",
-                "withdraw_policy": "exclude",
+                "withdraw_policy": WithdrawPolicy.EXCLUDE.value,
                 # Add strategy configuration parameters
                 "matchmaking_strategy": "amalfi",
                 "first_round_policy": "random",
@@ -235,7 +236,7 @@ class TestCompleteUserJourney:
                 "entry_fee": "10.0",
                 "discipline": "8_ball",
                 "distance": "5",
-                "withdraw_policy": "exclude",
+                "withdraw_policy": WithdrawPolicy.EXCLUDE.value,
                 # Add strategy configuration parameters
                 "matchmaking_strategy": "amalfi",
                 "first_round_policy": "random",
@@ -565,7 +566,7 @@ class TestCompleteUserJourney:
                 "entry_fee": "10.0",
                 "discipline": "9_ball",
                 "distance": "7",
-                "withdraw_policy": "exclude",
+                "withdraw_policy": WithdrawPolicy.EXCLUDE.value,
                 # Add strategy configuration parameters
                 "matchmaking_strategy": "amalfi",
                 "first_round_policy": "random",
