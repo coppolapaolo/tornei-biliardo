@@ -19,6 +19,44 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **All'avvio del turno il primo tavolo finiva a due partite e l'ultimo
+  restava vuoto** (gara 3 della Ronin Cup, 16/09/2026). La X si chiude da
+  sola mentre il turno sta nascendo, e ogni chiusura riassegna i tavoli
+  liberi alle partite già create; subito dopo l'avvio del turno ripartiva dal
+  primo tavolo senza guardare quelli occupati. Succedeva solo con la X in
+  mezzo agli abbinamenti, per questo non si era mai visto. Ora l'avvio parte
+  dai soli tavoli liberi (#459).
+- **All'acchito, sul tabellone orizzontale, dopo la prima risposta non si
+  andava avanti**: per proseguire serviva «Comincia», nella fascia in basso,
+  che su iPhone può finire sotto la barra del browser. Ora si risponde
+  toccando i nomi tutte e due le volte, il primo tocco dice chi ha vinto e il
+  secondo chi apre; nella fascia resta «Ricomincia». Il tabellone si misura
+  sull'altezza visibile dello schermo (#461, emendamento all'ADR-056).
+- **La vetrina di una gara a turni misti mostrava la sola disciplina
+  predefinita**: la riga «Formato» non sapeva delle configurazioni per turno.
+  Ora nomina le discipline e le elenca turno per turno; e in una gara a set un
+  turno modificato non mostra più i triangoli al posto dei set (#463).
+- **Una regola dei ritiri sconosciuta finiva sulla gara in silenzio** e
+  faceva fallire il primo ritiro a gara in corso. Ora il form la rifiuta
+  subito. In produzione non era capitato: l'interfaccia manda i valori
+  giusti (#466).
+
+### Aggiunto
+
+- **Sul telefono si resta collegati**: la casella «Resta collegato su questo
+  dispositivo», spuntata per default, tiene la sessione per trenta giorni
+  dall'ultimo uso. Prima il cookie nasceva senza scadenza e iOS lo buttava a
+  ogni chiusura dell'app, quindi in sala si rifaceva l'accesso a ogni
+  apertura, con i suggerimenti di due gestori di password che l'app non
+  chiedeva. L'admin resta scollegato dopo mezz'ora di inattività (#460,
+  ADR-064).
+- **La card del direttore risponde al tocco.** Il numero cambia subito, non
+  quando risponde il server, e i tocchi ravvicinati non si perdono. Il tocco
+  che porta alla distanza aspetta tre secondi, con «Si chiude fra 3 s» e
+  «Annulla» accanto; a chiusura confermata la card dice «Partita chiusa» e
+  solo dopo la pagina si aggiorna. Prima la card spariva in fondo all'elenco
+  senza che si capisse se l'ultimo + era andato (#462).
+
 - **Il direttore che non dirige un campionato non aveva «Dettagli» sulle
   tessere delle sue gare**, nemmeno su quella a cui era iscritto: restava solo
   «Disiscriviti», senza una via per l'elenco degli iscritti, e sul campionato
