@@ -647,6 +647,22 @@ class TestCoDirettori:
         driver.entra(direttore)
         return driver.crea_gara(min_participants=4)
 
+    @staticmethod
+    def _candidati(pagina: str) -> str:
+        """Il solo elenco dei candidati, ritagliato dalla pagina.
+
+        La sezione è «Direzione di gara» (canvas 1.6): i candidati sono righe
+        con un form «Aggiungi», non più le `<option>` di una tendina. Finché
+        questi test cercavano le `<option>`, due fallivano e il terzo —
+        «i giocatori non compaiono» — passava sempre, perché di `<option>`
+        non ce n'era nessuna: la CI esegue solo i test unitari e non li vedeva.
+        Si ritaglia l'elenco perché gli stessi id compaiono anche altrove
+        nella pagina (il form per togliere un co-direttore, l'accesso rapido).
+        """
+        inizio = pagina.index('id="direzioneCandidati"')
+        fine = pagina.index('id="direzioneNessuno"', inizio)
+        return pagina[inizio:fine]
+
     def test_la_sezione_c_e_anche_quando_non_c_e_nessuno_da_aggiungere(
         self, driver: GaraDriver
     ):
@@ -661,8 +677,8 @@ class TestCoDirettori:
 
         pagina = driver.pagina_gara(gara_id)
 
-        assert "Direttori di gara" in pagina
-        assert "Nessun altro direttore in zona" in pagina
+        assert "Direzione di gara" in pagina
+        assert "Nessun altro direttore in zona" in self._candidati(pagina)
 
     def test_un_altro_direttore_compare_nell_elenco(self, driver: GaraDriver):
         direttore = driver.crea_utente(UserRole.DIRECTOR.value)
@@ -671,13 +687,16 @@ class TestCoDirettori:
 
         pagina = driver.pagina_gara(gara_id)
 
-        assert f'<option value="{collega.id}">{collega.username}</option>' in pagina
+        candidati = self._candidati(pagina)
+        assert f'name="user_id" value="{collega.id}"' in candidati
+        assert collega.username in candidati
 
     def test_i_giocatori_non_compaiono_fra_i_candidati(self, driver: GaraDriver):
         """Co-direttore si nasce, non si diventa per assegnazione.
 
-        Si cerca l'`<option>` e non il nome: in sviluppo la pagina porta anche
-        il pannello di accesso rapido, dove i nomi di tutti compaiono comunque.
+        Si guarda il solo elenco dei candidati e non la pagina intera: in
+        sviluppo la pagina porta anche il pannello di accesso rapido, dove i
+        nomi di tutti compaiono comunque.
         """
         direttore = driver.crea_utente(UserRole.DIRECTOR.value)
         giocatore = driver.crea_utente(UserRole.PLAYER.value)
@@ -685,7 +704,9 @@ class TestCoDirettori:
 
         pagina = driver.pagina_gara(gara_id)
 
-        assert f'<option value="{giocatore.id}">' not in pagina
+        candidati = self._candidati(pagina)
+        assert f'name="user_id" value="{giocatore.id}"' not in candidati
+        assert giocatore.username not in candidati
 
     def test_il_co_direttore_aggiunto_compare_fra_i_direttori(self, driver: GaraDriver):
         direttore = driver.crea_utente(UserRole.DIRECTOR.value)
