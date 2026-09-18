@@ -100,9 +100,13 @@ blocks:
       - name: "Keep score on the players' behalf"
         text: >-
           If a table has no smartphone, you keep score from the match card:
-          under each name there are **−** and **+**. At the round's distance
-          the + switches off, the match closes by itself and the table goes
-          to the first match waiting for one.
+          under each name there are **−** and **+**, and the number changes as
+          soon as you tap. At the round's distance the + switches off and the
+          card warns you: **"Closing in 3 s"**, with **Cancel** next to it. If
+          the last tap was a mistake you cancel it there, or take the rack
+          back with −. After three seconds the card says **"Match closed"**,
+          the table goes to the first match waiting for one and the page
+          refreshes.
       - name: "Validate a result"
         text: >-
           A match that reached the distance from the players' scoreboard,
