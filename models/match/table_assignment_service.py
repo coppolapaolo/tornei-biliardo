@@ -184,9 +184,15 @@ class TableAssignmentService:
         if not gara:
             return 0
 
-        # Get available table names (uses gara.available_tables if set,
-        # otherwise falls back to venue's tables)
-        table_names = gara.get_available_tables()
+        # Solo i tavoli **liberi**, non la lista intera. Mentre il turno nasce
+        # la X (o un forfait) si chiude da sola, e ogni chiusura riassegna i
+        # tavoli liberi alle partite in attesa (`release_and_reassign_table`):
+        # le partite create prima della X arrivano qui con un tavolo già
+        # preso. Scorrendo la lista dall'inizio, la prima partita senza tavolo
+        # riceveva di nuovo il primo, e l'ultimo restava vuoto (Ronin Cup,
+        # gara 3, 16/09/2026). `_get_free_tables` toglie anche i doppioni
+        # della lista. Presidio: `test_tavoli_avvio_turno_con_x.py`.
+        table_names = TableAssignmentService._get_free_tables(gara_id)
         if not table_names:
             return 0
 
