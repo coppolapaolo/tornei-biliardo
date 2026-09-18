@@ -296,9 +296,12 @@
         </div>
         <div class="c7-board__pad">
             <span class="c7-board__note" data-lag-note>{{ _("Tocca il nome di chi ha vinto l'acchito.") }}</span>
-            <button type="button" class="c7-board__btn c7-board__btn--mine" style="flex:0 0 auto;padding:0 26px"
-                    data-lag-go disabled>
-                <span>{{ _('Comincia') }}</span><i class="fas fa-arrow-right"></i>
+            {# Un rimedio, non la strada: si prosegue toccando i nomi
+               (`static/js/board_acchito.js`). Se questa fascia finisse sotto
+               la barra del browser, nessuno resterebbe bloccato. #}
+            <button type="button" class="c7-board__btn" style="flex:0 0 auto;padding:0 26px"
+                    data-lag-reset disabled>
+                <i class="fas fa-rotate-left"></i><span>{{ _('Ricomincia') }}</span>
             </button>
         </div>
     </div>
@@ -396,6 +399,7 @@
     {% endif %}
 </div>
 
+<script src="{{ url_for('static', filename='js/board_acchito.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
     (function () {
         var board = document.getElementById('matchBoard');
@@ -600,56 +604,18 @@
             daRicaricare = true;
         };
 
-        /* L'acchito: due domande in sequenza sulla stessa schermata
+        /* L'acchito: due domande, e si risponde toccando i nomi
            -----------------------------------------------------------------
-           Il primo tocco risponde «chi ha vinto» e, in prima battuta, mette
-           l'apertura sullo stesso giocatore — che e' il caso di gran lunga
-           piu' comune. Il secondo tocco sposta solo l'apertura, che per
-           regolamento puo' andare all'avversario. Cosi' la risposta piu'
-           frequente costa un tocco e un «Comincia», e quella rara ne costa
-           uno in piu'. */
+           La logica sta in `static/js/board_acchito.js`, dove si prova con
+           jsdom (`tests/frontend/test_board_acchito.cjs`). Qui resta solo
+           l'aggancio: l'invio lo fa la pagina ospite, perche' l'indirizzo di
+           una gara e quello di una sfida sono due. */
         var lag = document.getElementById('boardLag');
-        if (lag) {
-            var vinto = null, apre = null;
-            var lati = lag.querySelectorAll('[data-lag-player]');
-            var titolo = lag.querySelector('[data-lag-title]');
-            var nota = lag.querySelector('[data-lag-note]');
-            var vai = lag.querySelector('[data-lag-go]');
-
-            function disegna() {
-                titolo.textContent = lag.getAttribute(
-                    vinto === null ? 'data-domanda-uno' : 'data-domanda-due');
-                nota.textContent = lag.getAttribute(
-                    vinto === null ? 'data-nota-uno' : 'data-nota-due');
-                vai.disabled = (vinto === null);
-                lati.forEach(function (lato) {
-                    var id = Number(lato.getAttribute('data-lag-player'));
-                    var pill = lato.querySelector('.c7-board__lagq-pill');
-                    var mostra = (id === vinto) || (id === apre);
-                    pill.hidden = !mostra;
-                    if (mostra) {
-                        pill.textContent = lag.getAttribute(
-                            (id === vinto && id === apre) ? 'data-et-entrambi'
-                                : (id === vinto ? 'data-et-acchito' : 'data-et-apre'));
-                    }
-                    pill.classList.toggle('is-breaking', id === apre);
-                    lato.classList.toggle('c7-board__half--breaks', id === apre);
-                });
-            }
-
-            lati.forEach(function (lato) {
-                lato.addEventListener('click', function () {
-                    var id = Number(lato.getAttribute('data-lag-player'));
-                    if (vinto === null) { vinto = id; apre = id; } else { apre = id; }
-                    disegna();
-                });
-            });
-
-            vai.addEventListener('click', function () {
-                if (vinto === null || apre === null) { return; }
+        if (lag && window.c7BoardAcchito) {
+            window.c7BoardAcchito.avvia(lag, function (vinto, apre, lato) {
                 var nome = board.getAttribute('data-lag-fn') || 'registerLag';
                 var fn = window[nome];
-                if (typeof fn === 'function') { fn(vinto, apre, vai); }
+                if (typeof fn === 'function') { fn(vinto, apre, lato); }
             });
         }
 

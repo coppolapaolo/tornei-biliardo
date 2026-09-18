@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-17 17:18+0200\n"
+"POT-Creation-Date: 2026-09-18 11:02+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -3786,7 +3786,7 @@ msgstr "Session opened: wait for the candidate to accept."
 msgid "Esame iniziato."
 msgstr "Exam started."
 
-#: routes/exam/attempts.py:163 templates/components/_match_scoreboard.html:367
+#: routes/exam/attempts.py:163 templates/components/_match_scoreboard.html:370
 msgid "Risultato registrato."
 msgstr "Result recorded."
 
@@ -6357,7 +6357,7 @@ msgstr "the direction"
 #: templates/admin/campionato_detail.html:319
 #: templates/admin/campionato_detail.html:340
 #: templates/admin/campionato_detail.html:368
-#: templates/components/_match_scoreboard.html:352
+#: templates/components/_match_scoreboard.html:355
 #: templates/components/_playoff_invitations.html:48
 #: templates/components/_trio_rack_input.html:209
 #: templates/components/_unified_rack_input.html:252
@@ -6381,7 +6381,7 @@ msgstr ""
 #: templates/admin/director_requests.html:36
 #: templates/admin/venue_manager_requests.html:118
 #: templates/admin/venue_manager_requests.html:157
-#: templates/components/_match_scoreboard.html:355
+#: templates/components/_match_scoreboard.html:358
 #: templates/components/_playoff_invitations.html:53
 #: templates/components/_trio_rack_input.html:217
 #: templates/components/_unified_rack_input.html:253
@@ -12654,37 +12654,37 @@ msgstr "breaks"
 msgid "acchito · apre"
 msgstr "lag · breaks"
 
-#: templates/components/_match_scoreboard.html:301
-msgid "Comincia"
-msgstr "Start"
+#: templates/components/_match_scoreboard.html:304
+msgid "Ricomincia"
+msgstr "Start over"
 
-#: templates/components/_match_scoreboard.html:324
+#: templates/components/_match_scoreboard.html:327
 #: templates/components/_unified_rack_input.html:185
 msgid "vince"
 msgstr "wins"
 
-#: templates/components/_match_scoreboard.html:363
+#: templates/components/_match_scoreboard.html:366
 #: templates/components/_unified_rack_input.html:193
 msgid "Hai confermato. Manca la conferma dell'avversario."
 msgstr "You confirmed. Your opponent still has to."
 
-#: templates/components/_match_scoreboard.html:365
+#: templates/components/_match_scoreboard.html:368
 msgid "Risultato confermato da entrambi."
 msgstr "Both players confirmed the result."
 
-#: templates/components/_match_scoreboard.html:373
+#: templates/components/_match_scoreboard.html:376
 #: templates/components/_trio_rack_input.html:402
 #: templates/components/_unified_rack_input.html:288
 msgid "Annulla ultimo triangolo"
 msgstr "Undo last rack"
 
-#: templates/components/_match_scoreboard.html:387
+#: templates/components/_match_scoreboard.html:390
 #: templates/components/_unified_rack_input.html:201
 #: templates/components/_unified_rack_input.html:295
 msgid "Serve un tavolo assegnato prima di iniziare."
 msgstr "A table must be assigned before starting."
 
-#: templates/components/_match_scoreboard.html:392
+#: templates/components/_match_scoreboard.html:395
 msgid "Annulla il triangolo"
 msgstr "Undo the rack"
 

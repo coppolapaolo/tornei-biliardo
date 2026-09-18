@@ -428,6 +428,35 @@ class TestLeRouteDelTabellone:
         assert risposta.get_json()["success"] is True
         assert db.session.get(Match, match.id).first_break_player_id == gioc[1].id
 
+    def test_la_pagina_chiede_l_acchito_e_poi_smette(self, app, db_session):
+        """Il giro intero: la domanda c'è, si risponde, e ricaricando sparisce.
+
+        Alla gara 3 della Ronin Cup (16/09/2026) il tabellone «non andava
+        avanti» dopo la prima risposta. Questo test tiene fermo il lato
+        server del giro — risposta salvata, domanda che non ritorna — e i due
+        agganci della pagina: il modulo che fa proseguire toccando i nomi, e
+        nessun «Comincia» da cui dipendere (ADR-056, emendamento 2026-09-17).
+        """
+        gioc = _giocatori(db_session)
+        _, _, match = _match_di_gara(db_session, gioc, start_rule=StartRule.LAG)
+
+        client = app.test_client()
+        self._login(client, gioc[0])
+
+        prima = client.get(f"/admin/match/{match.id}").get_data(as_text=True)
+        assert 'id="boardLag"' in prima
+        assert "js/board_acchito.js" in prima
+        assert "data-lag-reset" in prima
+        assert "data-lag-go" not in prima
+
+        client.post(
+            f"/player/match/{match.id}/lag",
+            data={"lag_winner_id": gioc[0].id, "first_break_player_id": gioc[0].id},
+        )
+
+        dopo = client.get(f"/admin/match/{match.id}").get_data(as_text=True)
+        assert 'id="boardLag"' not in dopo
+
     def test_chi_non_gioca_non_registra_l_acchito(self, app, db_session):
         gioc = _giocatori(db_session, 3)
         _, _, match = _match_di_gara(db_session, gioc[:2], start_rule=StartRule.LAG)
