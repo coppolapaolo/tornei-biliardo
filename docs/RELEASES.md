@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.36.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.35.0...v1.36.0) (2026-09-19)
+
+
+### Funzioni nuove
+
+* un modulo solo per creare, modificare e duplicare un esercizio ([#492](https://github.com/coppolapaolo/tornei-biliardo/issues/492)) ([a0eb66b](https://github.com/coppolapaolo/tornei-biliardo/commit/a0eb66b77fa33bed95afbe8452d5fd331ad5f4a8)), closes [#252](https://github.com/coppolapaolo/tornei-biliardo/issues/252) [#253](https://github.com/coppolapaolo/tornei-biliardo/issues/253)
+
 ## [1.35.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.34.0...v1.35.0) (2026-09-19)
 
 
