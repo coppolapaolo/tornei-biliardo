@@ -94,7 +94,7 @@
             {% if pip.rack_id %}data-rack-id="{{ pip.rack_id }}"{% endif %}
             {%- if pip.won %}
             aria-pressed="{{ 'true' if pip.run_out else 'false' }}"
-            aria-label="{{ _('Chiuso in una visita') }}"
+            aria-label="{{ _('Chiuso in un turno') }}"
             {%- else %}
             {# Spento: e' il traguardo che manca, non un comando. Chi legge con
                un lettore di schermo non deve sentirsi proporre cinque volte

@@ -137,14 +137,22 @@ def tpa_referto(match_id: int):
         abort(403)
 
     state = None
+    summary = None
     if referto is not None:
         state = TpaRefertoService.describe(referto, viewer_id=current_user.id)
+        if referto.is_closed:
+            # Il referto chiuso e' un racconto: i totali li da' il servizio
+            # delle statistiche, che li legge dal motore senza ricontarli.
+            from models.tpa.stats_service import TpaStatsService
+
+            summary = TpaStatsService.referto_summary(referto)
 
     return render_template(
         "individual_match/tpa_referto.html",
         match=match,
         referto=referto,
         state=state,
+        summary=summary,
         blocking_reason=(
             TpaRefertoService.blocking_reason(match, current_user.id)
             if referto is None

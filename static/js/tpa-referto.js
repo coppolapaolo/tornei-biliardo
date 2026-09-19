@@ -184,7 +184,12 @@
       players.textContent = '';
       [1, 2].forEach((seat) => {
         const tally = tallyOf(v.score, seat);
-        const active = v.player === seat;
+        /* A referto chiuso nessuno e' al tavolo: in evidenza c'e' chi ha vinto,
+           e le caselle del turno non ci sono piu'. */
+        const other = tallyOf(v.score, seat === 1 ? 2 : 1);
+        const active = state.closed
+          ? (tally.racks_won || 0) > (other.racks_won || 0)
+          : v.player === seat;
         const name = seatOf(seat).name || ('#' + seat);
         /* Il proprio riquadro non si tocca: si tocca quello dell'altro, ed
            e' quello il gesto che passa il tavolo. */
@@ -213,11 +218,13 @@
         const errors = tally.total_errors || 0;
         let meta = balls + ' ' + (balls === 1 ? dati.etBilia : dati.etBilie) +
           ' · ' + errors + ' ' + (errors === 1 ? dati.etErroreUno : dati.etErrori);
-        if (active) meta = (v.turn.is_break ? dati.etSpacca : dati.etAlTavolo) + ' · ' + meta;
+        if (active && !state.closed) meta = (v.turn.is_break ? dati.etSpacca : dati.etAlTavolo) + ' · ' + meta;
         node.appendChild(span('c7-tpa-half__meta', meta));
 
         /* Le due caselle del referto, dentro la card di ciascuno. Chi e' al
            tavolo ci vede il turno che sta scrivendo, l'altro il suo ultimo. */
+        if (state.closed) { players.appendChild(node); return; }
+
         const turn = active ? v.turn : lastTurnOf(seat, v);
         const slip = span('c7-tpa-slip');
         /* La riga del calcio c'e' sempre, anche vuota: senza, le caselle dei
@@ -322,17 +329,44 @@
       return button;
     }
 
+    /* A referto chiuso il referto sotto e' un racconto: i triangoli stanno
+       ripiegati, con chi li ha vinti nell'intestazione, e si aprono uno per
+       uno o tutti insieme. Finche' si annota restano distesi. */
+    const aperti = {};
+
+    function playedRacks() {
+      return (state.racks || []).filter((rack) => !state.closed ||
+        rack.turns.some((turn) => has(turn.annotation.total_potted)));
+    }
+
     function renderSheet(v) {
       let count = 0;
       const sheet = el('tpaSheet');
       sheet.textContent = '';
-      (state.racks || []).forEach((rack) => {
-        const head = doc.createElement('div');
+      playedRacks().forEach((rack) => {
+        const folding = !!state.closed;
+        const open = !folding || !!aperti[rack.number];
+        const head = doc.createElement(folding ? 'button' : 'div');
         head.className = 'c7-tpa-sheet__rack';
+        if (folding) {
+          head.type = 'button';
+          head.setAttribute('aria-expanded', open ? 'true' : 'false');
+          head.addEventListener('click', () => {
+            aperti[rack.number] = !aperti[rack.number];
+            render();
+          });
+        }
         const title = doc.createElement('span');
         title.textContent = dati.etTriangolo + ' ' + rack.number;
-        head.appendChild(title);
         const last = rack.turns[rack.turns.length - 1];
+        if (folding && last && last.winning) {
+          title.textContent += ' · ' + (seatOf(last.player).name || ('#' + last.player));
+          /* Spacca e chiude: il triangolo e' un turno solo, quello di spaccata. */
+          if (rack.turns.length === 1 && last.is_break) {
+            title.textContent += ' · ' + dati.etSpaccaChiude;
+          }
+        }
+        head.appendChild(title);
         if (last && last.score_snapshot) {
           const snap = last.score_snapshot;
           const one = snap[1] || snap['1'] || {};
@@ -346,6 +380,7 @@
         rack.turns.forEach((turn) => {
           const row = doc.createElement('div');
           count += 1;
+          row.hidden = !open;
           row.className = 'c7-tpa-sheet__turn' + (turn.winning ? ' c7-tpa-sheet__turn--won' : '') +
             (!v.live && count === v.position ? ' c7-tpa-sheet__turn--reading' : '');
           const seat = doc.createElement('span');
@@ -368,6 +403,18 @@
           sheet.appendChild(row);
         });
       });
+    }
+
+    function renderOpenAll() {
+      const button = el('tpaApriTutti');
+      if (!button) return;
+      const racks = playedRacks();
+      const all = racks.length > 0 && racks.every((rack) => aperti[rack.number]);
+      button.textContent = all ? dati.etChiudiTutti : dati.etApriTutti;
+      button.onclick = () => {
+        racks.forEach((rack) => { aperti[rack.number] = !all; });
+        render();
+      };
     }
 
     function renderHistory(v) {
@@ -437,6 +484,7 @@
       renderPlayers(v);
       renderPad(v);
       renderSheet(v);
+      renderOpenAll();
       renderHistory(v);
       followSheet(v);
     }

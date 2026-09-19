@@ -31,7 +31,9 @@
  *     rileggere non scrive, e mentre si rilegge il tastierino è spento;
  * 12. «Riparti da questo turno…» apre un foglio che nomina i turni che
  *     escono, e solo la conferma chiama il server;
- * 13. uno stato nuovo dal server riporta al turno in corso.
+ * 13. uno stato nuovo dal server riporta al turno in corso;
+ * 14. a referto chiuso i triangoli sono ripiegati, con chi li ha vinti
+ *     nell'intestazione, e si aprono uno per uno o tutti insieme.
  *
  * Run:  cd tests/frontend && npm install && npm test
  */
@@ -81,6 +83,8 @@ function ambiente(iniziale, opzioni) {
       ' data-press-url="/m/7/tpa/press" data-undo-url="/m/7/tpa/undo"' +
       ' data-state-url="/m/7/tpa/state" data-poll-url="/sse/poll/individual_match/7"' +
       ' data-current-user-id="42" data-can-write="' + (scrive ? "true" : "false") + '"' +
+      ' data-closed="' + (iniziale.closed ? "true" : "false") + '"' +
+      ' data-et-spacca-chiude="spacca e chiude" data-et-apri-tutti="Apri tutti" data-et-chiudi-tutti="Chiudi tutti"' +
       ' data-clear-url="/m/7/tpa/clear" data-restart-url="/m/7/tpa/restart"' +
       ' data-et-posizione="turno {n} di {m}" data-et-rileggi="Rileggi il turno {n} di {m}"' +
       ' data-et-riparti="Riparti da questo turno…" data-et-riparti-titolo="Ripartire dal turno {n}?"' +
@@ -105,7 +109,7 @@ function ambiente(iniziale, opzioni) {
           '<div id="tpaRipartiModal"><h3 id="tpaRipartiTitolo"></h3><div id="tpaRipartiElenco"></div>' +
           '<button id="tpaRipartiConferma"></button></div>'
         : "") +
-      '<div id="tpaSheet"></div>' +
+      '<button id="tpaApriTutti"></button><div id="tpaSheet"></div>' +
       '<script type="application/json" id="tpaStato">' + JSON.stringify(iniziale) + "</script>" +
       "</div></body>",
     { runScripts: "outside-only" }
@@ -477,6 +481,65 @@ async function main() {
     assert.strictEqual(doc.getElementById("tpaRileggi").hidden, true);
     assert.strictEqual(a.tasto("3").disabled, false);
     assert.strictEqual(a.tasto("restart"), null);
+  }
+
+  // 14. A referto chiuso il referto è un racconto: triangoli ripiegati.
+  {
+    const turno = function (player, tot, extra) {
+      return Object.assign({
+        player: player, is_break: false, winning: false, main_note: "M", secondary_note: "",
+        annotation: { break_potted: null, total_potted: tot, first_shot_kick_in: false },
+        score_snapshot: null,
+      }, extra || {});
+    };
+    const racks = [
+      { number: 1, turns: [turno(1, 9, { is_break: true, winning: true, main_note: "",
+          annotation: { break_potted: 3, total_potted: 9, first_shot_kick_in: false },
+          score_snapshot: { 1: { racks_won: 1 }, 2: { racks_won: 0 } } })] },
+      { number: 2, turns: [turno(2, 4, { is_break: true }), turno(1, 5, { winning: true, main_note: "",
+          score_snapshot: { 1: { racks_won: 2 }, 2: { racks_won: 0 } } })] },
+    ];
+    const a = ambiente(stato({ closed: true, racks: racks, current_player: 2 }), { scrive: false });
+    const doc = a.doc;
+    const foglio = doc.getElementById("tpaSheet");
+    const teste = foglio.querySelectorAll(".c7-tpa-sheet__rack");
+    assert.strictEqual(teste.length, 2);
+    assert.strictEqual(teste[0].tagName, "BUTTON");
+    assert.ok(teste[0].textContent.indexOf("Triangolo 1 · Marco") >= 0);
+    assert.ok(teste[0].textContent.indexOf("spacca e chiude") >= 0);
+    assert.ok(teste[1].textContent.indexOf("spacca e chiude") < 0, "ha vinto chi non spaccava");
+    assert.ok(teste[1].textContent.indexOf("2–0") >= 0);
+    const righe = function () {
+      return Array.prototype.filter.call(foglio.querySelectorAll(".c7-tpa-sheet__turn"),
+        function (r) { return !r.hidden; }).length;
+    };
+    assert.strictEqual(righe(), 0, "tutti ripiegati");
+    teste[1].click();
+    assert.strictEqual(righe(), 2);
+    assert.strictEqual(foglio.querySelectorAll(".c7-tpa-sheet__rack")[1].getAttribute("aria-expanded"), "true");
+    const tutti = doc.getElementById("tpaApriTutti");
+    assert.strictEqual(tutti.textContent, "Apri tutti");
+    tutti.click();
+    assert.strictEqual(righe(), 3);
+    assert.strictEqual(tutti.textContent, "Chiudi tutti");
+    tutti.click();
+    assert.strictEqual(righe(), 0);
+
+    // Le card: nessuno è al tavolo, niente caselle, in evidenza chi ha vinto.
+    assert.strictEqual(a.riquadri()[0].querySelector(".c7-tpa-slip"), null);
+    assert.ok(a.riquadri()[0].className.indexOf("c7-tpa-half--on") >= 0);
+    assert.ok(a.riquadri()[1].className.indexOf("c7-tpa-half--on") < 0);
+    assert.ok(a.riquadri()[1].textContent.indexOf("al tavolo") < 0);
+  }
+
+  // A referto aperto i triangoli restano distesi, e le teste non sono pulsanti.
+  {
+    const a = ambiente(stato({ racks: [{ number: 1, turns: [{ player: 1, is_break: true, winning: false,
+      main_note: "M", secondary_note: "", annotation: { break_potted: 1, total_potted: 3, first_shot_kick_in: false },
+      score_snapshot: null }] }] }));
+    const testa = a.doc.querySelector(".c7-tpa-sheet__rack");
+    assert.strictEqual(testa.tagName, "DIV");
+    assert.strictEqual(a.doc.querySelectorAll(".c7-tpa-sheet__turn")[0].hidden, false);
   }
 
   // Il referto sotto: stessa notazione delle caselle.

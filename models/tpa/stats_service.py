@@ -73,6 +73,60 @@ class TpaStatsService:
         ).scalar()
 
     @staticmethod
+    def _numbers(tally: PlayerTally) -> Dict[str, Any]:
+        """I numeri di un conto, nella forma che le pagine mostrano.
+
+        Non conta niente di nuovo: legge i contatori del motore. L'unica
+        somma e' ``closed_in_one_turn``: nel motore ``run_outs`` e
+        ``break_and_runs`` sono **disgiunti**, ma per chi gioca lo «spacca e
+        chiude» e' un triangolo chiuso in un turno come gli altri. Stampare il
+        solo ``run_outs`` sotto quell'etichetta ne perde uno per ogni spaccata
+        vincente.
+        """
+        return {
+            "tpa": tpa_score(tally),
+            "balls_potted": tally.balls_potted,
+            "errors": total_errors(tally),
+            "errors_by_kind": {
+                "miss": tally.miss_errors,
+                "break": tally.break_errors,
+                "kick": tally.kick_errors,
+                "safety": tally.safety_errors,
+                "position": tally.position_errors,
+            },
+            "racks_won": tally.racks_won,
+            "break_and_runs": tally.break_and_runs,
+            "run_outs": tally.run_outs,
+            "closed_in_one_turn": tally.run_outs + tally.break_and_runs,
+            "perfect_racks": tally.perfect_racks,
+        }
+
+    @staticmethod
+    def referto_summary(referto: TpaReferto) -> Dict[str, Any]:
+        """Il racconto di un referto: i due conti, chi ha vinto, quanti triangoli.
+
+        E' cio' che mostra la pagina del referto chiuso. I turni uno per uno
+        restano nello stato del referto; qui ci sono solo i totali.
+        """
+        state = TpaRefertoService.build_state(referto)
+        match = referto.match
+        names = {
+            1: match.player1.username if match and match.player1 else "",
+            2: match.player2.username if match and match.player2 else "",
+        }
+        players = {}
+        for seat in (1, 2):
+            players[seat] = TpaStatsService._numbers(state.tally(seat))
+            players[seat]["name"] = names[seat]
+
+        one, two = players[1]["racks_won"], players[2]["racks_won"]
+        return {
+            "players": players,
+            "racks_played": one + two,
+            "winner": 1 if one > two else 2 if two > one else None,
+        }
+
+    @staticmethod
     def career_stats(user_id: int) -> Optional[Dict[str, Any]]:
         """I numeri TPA di un giocatore, o ``None`` se non ha nessun referto.
 
@@ -121,21 +175,9 @@ class TpaStatsService:
             )
 
         scored = [entry for entry in per_match if entry["tpa"] is not None]
+        numbers = TpaStatsService._numbers(career)
         return {
-            "tpa": tpa_score(career),
-            "balls_potted": career.balls_potted,
-            "errors": total_errors(career),
-            "errors_by_kind": {
-                "miss": career.miss_errors,
-                "break": career.break_errors,
-                "kick": career.kick_errors,
-                "safety": career.safety_errors,
-                "position": career.position_errors,
-            },
-            "racks_won": career.racks_won,
-            "break_and_runs": career.break_and_runs,
-            "run_outs": career.run_outs,
-            "perfect_racks": career.perfect_racks,
+            **numbers,
             "referti": len(per_match),
             "best_tpa": max((entry["tpa"] for entry in scored), default=None),
             "matches": per_match,
