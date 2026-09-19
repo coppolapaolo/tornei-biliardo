@@ -11,18 +11,23 @@
  * Il modulo **non conosce le regole**: disegna lo stato che il server gli dà e
  * rimanda ogni tocco al server. Quello che si prova qui è questo contratto.
  *
- * 1. il tastierino ha caselle fisse: i tasti non ammessi si spengono, non
- *    spariscono;
+ * 1. il tastierino è uno, sempre tutto visibile: dieci numeri, nove lettere
+ *    con la loro parola sotto, «Primo tiro di calcio?»; i tasti non ammessi
+ *    si spengono, non spariscono;
  * 2. un tocco invia il comando all'indirizzo dei `data-*`, col token CSRF, e
  *    ridisegna con lo stato della risposta;
  * 3. toccare il riquadro dell'avversario passa il tavolo — o, prima della
- *    spaccata, sceglie chi spacca;
- * 4. «annulla» va all'altro indirizzo, ed è spento a referto vuoto;
+ *    spaccata, sceglie chi spacca — e il riquadro lo dice;
+ * 4. «annulla» e «cancella» sono due gesti con due indirizzi: il primo toglie
+ *    un tocco, il secondo l'annotazione del turno;
  * 5. mentre un invio è in corso i tocchi non contano;
  * 6. un rifiuto del server diventa un messaggio, e lo stato non cambia;
  * 7. chi guarda rilegge lo stato quando l'altro annota, non quando annota
  *    lui, e ricarica la pagina se il referto è stato chiuso;
- * 8. il TPA si scrive .780, e mille millesimi sono 1.000.
+ * 8. il TPA va da 0 a 1000, senza punto, e conta quanto i triangoli;
+ * 9. la notazione è quella del referto: spaccata in apice, triangolo vinto
+ *    cerchiato, calcio come numero del giocatore sopra la casella;
+ * 10. nella card dell'avversario resta scritto il suo ultimo turno.
  *
  * Run:  cd tests/frontend && npm install && npm test
  */
@@ -41,6 +46,8 @@ function stato(extra) {
     game_type: 9,
     closed: false,
     commands: 3,
+    can_clear: false,
+    current_rack: 1,
     current_player: 1,
     can_switch_player: true,
     players: { 1: { name: "Marco" }, 2: { name: "Sara" } },
@@ -70,15 +77,21 @@ function ambiente(iniziale, opzioni) {
       ' data-press-url="/m/7/tpa/press" data-undo-url="/m/7/tpa/undo"' +
       ' data-state-url="/m/7/tpa/state" data-poll-url="/sse/poll/individual_match/7"' +
       ' data-current-user-id="42" data-can-write="' + (scrive ? "true" : "false") + '"' +
-      ' data-et-passa="passa il tavolo" data-et-al-tavolo="al tavolo"' +
-      ' data-et-spacca="spacca" data-et-spacca-lui="spacca lui"' +
-      ' data-et-senza-tpa="TPA ancora da calcolare" data-et-bilie="quante bilie?"' +
-      ' data-et-perche="perché finisce il turno?" data-et-triangolo="Triangolo"' +
+      ' data-clear-url="/m/7/tpa/clear"' +
+      ' data-et-passa="Tocca: tavolo a {nome}" data-et-spacca-lui="Tocca: spacca {nome}"' +
+      ' data-et-al-tavolo="al tavolo" data-et-spacca="spacca"' +
+      ' data-et-triangoli="Triangoli" data-et-tpa="TPA"' +
+      ' data-et-bilia="bilia" data-et-bilie="bilie" data-et-errore-uno="errore" data-et-errori="errori"' +
+      ' data-et-senza-tpa="TPA ancora da calcolare" data-et-quante="bilie?"' +
+      ' data-et-triangolo="Triangolo"' +
       ' data-et-errore="Non è stato possibile annotare."' +
-      ' data-et-kick-in="di sponda" data-et-runout-chiedi="Una sola visita?"' +
-      ' data-et-runout-si="Chiusa in una sola visita">' +
+      ' data-et-cancella="cancella" data-et-cancella-aria="Cancella il turno"' +
+      ' data-et-cap-m="sbagliato" data-et-cap-k="di sponda" data-et-cap-s="difesa"' +
+      ' data-et-cap-p="in buca" data-et-cap-g="triangolo" data-et-cap-n="non colpita"' +
+      ' data-et-kick-in="Primo tiro di calcio?" data-et-kick-in-aria="calcio del giocatore {n}"' +
+      ' data-et-runout-chiedi="Un solo turno?"' +
+      ' data-et-runout-si="Chiusa in un solo turno">' +
       '<div id="tpaPlayers"></div>' +
-      '<div id="tpaWhiteBox"></div><div id="tpaShadedBox"></div>' +
       (scrive
         ? '<div id="tpaNumbers"></div><div id="tpaLetters"></div><button id="tpaUndo"></button>'
         : "") +
@@ -124,10 +137,12 @@ function ambiente(iniziale, opzioni) {
     risposte: risposte,
     ricariche: function () { return ricariche; },
     ascoltatore: function () { return ascoltatore; },
-    tasto: function (etichetta) {
-      return Array.prototype.slice
-        .call(doc.querySelectorAll("#tpaNumbers button, #tpaLetters button"))
-        .filter(function (b) { return b.textContent === etichetta; })[0];
+    tasto: function (comando) {
+      return doc.querySelector('[data-command="' + comando + '"]');
+    },
+    casella: function (posto, quale) {
+      return doc.getElementById("tpaPlayers").children[posto - 1]
+        .querySelector(".c7-tpa-box--" + quale);
     },
     riquadri: function () { return doc.getElementById("tpaPlayers").children; },
     formatTpa: w.c7TpaReferto.formatTpa,
@@ -139,31 +154,42 @@ function giro() {
 }
 
 async function main() {
-  // 1. Caselle fisse: tutti i numeri della disciplina e le nove lettere, gli
-  //    ammessi accesi e gli altri spenti.
+  // 1. Un tastierino solo, sempre tutto visibile; spento ciò che non è ammesso.
   {
     const a = ambiente(stato());
-    const numeri = a.doc.querySelectorAll("#tpaNumbers button");
-    assert.strictEqual(numeri.length, 10, "palla 9: da 0 a 9");
+    const numeri = Array.prototype.map.call(
+      a.doc.querySelectorAll("#tpaNumbers [data-command]"),
+      function (b) { return b.getAttribute("data-command"); }
+    );
+    assert.deepStrictEqual(numeri, ["clear", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9"]);
     assert.strictEqual(a.tasto("3").disabled, false);
     assert.strictEqual(a.tasto("4").disabled, true);
     const lettere = Array.prototype.map.call(
-      a.doc.querySelectorAll("#tpaLetters button"),
-      function (b) { return b.textContent; }
+      a.doc.querySelectorAll("#tpaLetters [data-command]"),
+      function (b) { return b.getAttribute("data-command"); }
     );
-    assert.deepStrictEqual(lettere, ["M", "K", "S", "P", "G", "N", "n", "x", "p"]);
+    assert.deepStrictEqual(lettere, ["M", "K", "S", "P", "G", "N", "n", "x", "p", "K-in"]);
     assert.strictEqual(a.tasto("M").disabled, true);
-    assert.strictEqual(a.doc.getElementById("tpaWhiteBox").textContent, "quante bilie?");
+    assert.strictEqual(a.tasto("K-in").disabled, true, "il calcio c'è sempre, spento");
+    assert.strictEqual(a.tasto("M").querySelector(".c7-tpa-key__cap").textContent, "sbagliato");
+    assert.strictEqual(a.tasto("n").querySelector(".c7-tpa-key__cap"), null);
+    assert.strictEqual(a.casella(1, "white").textContent, "bilie?");
   }
 
-  // 1 bis. I due tasti larghi compaiono solo quando il motore li ammette.
+  // 1 bis. A numeri non ammessi il blocco resta: si spegne e basta.
   {
     const a = ambiente(stato({ buttons: ["M", "K-in", "runout"] }));
-    const lettere = a.doc.querySelectorAll("#tpaLetters button");
-    assert.strictEqual(lettere.length, 11);
-    assert.strictEqual(lettere[9].textContent, "↺ di sponda");
-    assert.strictEqual(lettere[10].textContent, "Una sola visita?");
-    assert.strictEqual(a.doc.getElementById("tpaNumbers").style.display, "none");
+    assert.strictEqual(a.doc.querySelectorAll("#tpaNumbers [data-command]").length, 11);
+    assert.strictEqual(a.tasto("0").disabled, true);
+    assert.strictEqual(a.tasto("K-in").disabled, false);
+    assert.strictEqual(a.tasto("runout").textContent, "Un solo turno?");
+    assert.strictEqual(ambiente(stato()).tasto("runout"), null, "il run-out si chiede solo se ambiguo");
+  }
+
+  // 1 ter. A palla 10 c'è anche il 10; a palla 9 no.
+  {
+    assert.ok(ambiente(stato({ game_type: 10 })).tasto("10"));
+    assert.strictEqual(ambiente(stato()).tasto("10"), null);
   }
 
   // 2. Un tocco invia il comando e ridisegna con lo stato della risposta.
@@ -181,18 +207,18 @@ async function main() {
     a.risposte[0].ok({ success: true, state: dopo });
     await giro();
     assert.strictEqual(a.tasto("M").disabled, false);
-    assert.strictEqual(a.tasto("3"), undefined, "senza numeri ammessi il blocco è vuoto");
-    assert.ok(a.doc.getElementById("tpaWhiteBox").textContent.indexOf("3") === 0);
+    assert.strictEqual(a.tasto("3").disabled, true);
+    assert.strictEqual(a.casella(1, "white").textContent, "3", "dopo il numero parlano le lettere accese");
   }
 
-  // 3. Il riquadro dell'avversario passa il tavolo; il proprio non si tocca.
+  // 3. Il riquadro dell'avversario passa il tavolo, e lo dice; il proprio no.
   {
     const a = ambiente(stato());
     const r = a.riquadri();
     assert.strictEqual(r[0].tagName, "DIV");
-    assert.ok(r[0].className.indexOf("c7-tpa-player--active") >= 0);
+    assert.ok(r[0].className.indexOf("c7-tpa-half--on") >= 0);
     assert.strictEqual(r[1].tagName, "BUTTON");
-    assert.ok(r[1].textContent.indexOf("passa il tavolo") >= 0);
+    assert.strictEqual(r[1].querySelector(".c7-tpa-half__tap").textContent, "Tocca: tavolo a Sara");
     r[1].click();
     assert.deepStrictEqual(JSON.parse(a.chiamate[0].init.body), { command: "end" });
   }
@@ -203,7 +229,7 @@ async function main() {
     s.current.can_choose_seat = true;
     s.current.is_break = true;
     const a = ambiente(s);
-    assert.ok(a.riquadri()[1].textContent.indexOf("spacca lui") >= 0);
+    assert.strictEqual(a.riquadri()[1].querySelector(".c7-tpa-half__tap").textContent, "Tocca: spacca Sara");
     a.riquadri()[1].click();
     assert.deepStrictEqual(JSON.parse(a.chiamate[0].init.body), { command: "seat:2" });
   }
@@ -212,18 +238,26 @@ async function main() {
   {
     const a = ambiente(stato({ can_switch_player: false }));
     assert.strictEqual(a.riquadri()[1].tagName, "DIV");
+    assert.strictEqual(a.riquadri()[1].querySelector(".c7-tpa-half__tap"), null);
   }
 
-  // 4. «Annulla» va all'altro indirizzo, ed è spento a referto vuoto.
+  // 4. «Annulla» e «cancella»: due gesti, due indirizzi.
   {
-    const a = ambiente(stato());
+    const a = ambiente(stato({ can_clear: true }));
     const annulla = a.doc.getElementById("tpaUndo");
     assert.strictEqual(annulla.disabled, false);
     annulla.click();
     assert.strictEqual(a.chiamate[0].url, "/m/7/tpa/undo");
+    a.risposte[0].ok({ success: true, state: stato({ can_clear: true }) });
+    await giro();
+
+    assert.strictEqual(a.tasto("clear").disabled, false);
+    a.tasto("clear").click();
+    assert.strictEqual(a.chiamate[1].url, "/m/7/tpa/clear");
 
     const vuoto = ambiente(stato({ commands: 0 }));
     assert.strictEqual(vuoto.doc.getElementById("tpaUndo").disabled, true);
+    assert.strictEqual(vuoto.tasto("clear").disabled, true, "a turno bianco non c'è niente da cancellare");
   }
 
   // 5. Mentre un invio è in corso i tocchi non contano; dopo sì.
@@ -260,6 +294,7 @@ async function main() {
   {
     const a = ambiente(stato(), { scrive: false });
     assert.strictEqual(a.riquadri()[1].tagName, "DIV");
+    assert.strictEqual(a.casella(1, "white").textContent, "", "a chi guarda non si chiede niente");
     const canale = a.ascoltatore();
     assert.strictEqual(canale.url, "/sse/poll/individual_match/7");
     assert.strictEqual(canale.avviato, true);
@@ -273,7 +308,7 @@ async function main() {
     const dopo = stato({ current_player: 2 });
     a.risposte[0].ok({ success: true, state: dopo });
     await giro();
-    assert.ok(a.riquadri()[1].className.indexOf("c7-tpa-player--active") >= 0);
+    assert.ok(a.riquadri()[1].className.indexOf("c7-tpa-half--on") >= 0);
     assert.strictEqual(a.ricariche(), 0);
 
     canale.onEvent({ type: "tpa_updated", data: { by: 9 } });
@@ -288,17 +323,74 @@ async function main() {
     assert.strictEqual(ambiente(stato({ closed: true }), { scrive: false }).ascoltatore(), null);
   }
 
-  // 8. Il TPA come sul referto.
+  // 8. Il TPA da 0 a 1000, senza punto, grande quanto i triangoli.
   {
-    const f = ambiente(stato()).formatTpa;
-    assert.strictEqual(f(780), ".780");
-    assert.strictEqual(f(45), ".045");
-    assert.strictEqual(f(1000), "1.000");
+    const a = ambiente(stato());
+    const f = a.formatTpa;
+    assert.strictEqual(f(780), "780");
+    assert.strictEqual(f(45), "45");
+    assert.strictEqual(f(1000), "1000");
+    assert.strictEqual(f(0), "0");
     assert.strictEqual(f(null), "—");
     assert.strictEqual(f(undefined), "—");
+
+    const cifre = a.riquadri()[0].querySelectorAll(".c7-tpa-fig");
+    assert.strictEqual(cifre.length, 2);
+    assert.strictEqual(cifre[0].textContent, "Triangoli2");
+    assert.strictEqual(cifre[1].textContent, "TPA780");
+    assert.strictEqual(cifre[0].querySelector(".c7-tpa-fig__v").className,
+      cifre[1].querySelector(".c7-tpa-fig__v").className, "stessa evidenza");
+    assert.ok(a.riquadri()[0].querySelector(".c7-tpa-half__meta").textContent.indexOf("4 bilie · 1 errore") >= 0);
   }
 
-  // Il foglio: spaccata, nota, triangolo vinto.
+  // 9. La notazione del referto.
+  {
+    const s = stato({ buttons: [] });
+    s.current.is_break = true;
+    s.current.winning = true;
+    s.current.main_note = "M^n";
+    s.current.secondary_note = "P";
+    s.current.annotation = { break_potted: 1, total_potted: 3, first_shot_kick_in: true, run_out: null };
+    const a = ambiente(s);
+    const bianca = a.casella(1, "white");
+    assert.strictEqual(bianca.querySelector(".c7-tpa-nt__break").textContent, "1", "spaccata in apice");
+    assert.strictEqual(bianca.querySelector(".c7-tpa-nt__balls--won").textContent, "3", "triangolo vinto: cerchio");
+    assert.strictEqual(bianca.querySelector(".c7-tpa-nt__main").textContent, "Mn");
+    assert.strictEqual(bianca.querySelector(".c7-tpa-nt__main sup").textContent, "n");
+    assert.ok(bianca.textContent.indexOf("/") < 0, "mai «1/3»");
+    assert.strictEqual(a.casella(1, "shaded").textContent, "P");
+
+    // Il calcio: il numero del giocatore, sopra la casella e fuori dal bianco.
+    const calcio = a.riquadri()[0].querySelector(".c7-tpa-kickrow");
+    assert.strictEqual(calcio.textContent, "1");
+    assert.strictEqual(bianca.contains(calcio), false);
+    // La riga c'è anche dall'altra parte, vuota: le caselle restano allineate.
+    assert.strictEqual(a.riquadri()[1].querySelector(".c7-tpa-kickrow").textContent, "");
+  }
+
+  // 10. Nella card dell'avversario resta il suo ultimo turno di questo
+  //     triangolo; a triangolo nuovo è bianca.
+  {
+    const turno = function (player, tot, main, extra) {
+      return Object.assign({
+        player: player, is_break: false, winning: false, main_note: main, secondary_note: "",
+        annotation: { break_potted: null, total_potted: tot, first_shot_kick_in: false },
+        score_snapshot: null,
+      }, extra || {});
+    };
+    const racks = [
+      { number: 1, turns: [turno(2, 5, "M")] },
+      { number: 2, turns: [turno(1, 1, "M"), turno(2, 2, "S^x"), turno(1, null, "")] },
+    ];
+    const a = ambiente(stato({ racks: racks, current_rack: 2 }));
+    assert.strictEqual(a.casella(2, "white").textContent, "2Sx");
+    assert.strictEqual(a.casella(1, "white").textContent, "bilie?");
+
+    const nuovo = ambiente(stato({ racks: [racks[0], { number: 2, turns: [turno(1, null, "")] }], current_rack: 2 }));
+    assert.strictEqual(nuovo.casella(2, "white").textContent, "");
+  }
+
+  // Il referto sotto: stessa notazione delle caselle.
   {
     const racks = [{
       number: 1,
@@ -315,9 +407,14 @@ async function main() {
     const foglio = a.doc.getElementById("tpaSheet");
     assert.strictEqual(foglio.children.length, 3);
     assert.strictEqual(foglio.children[0].textContent, "Triangolo 10–1");
-    assert.ok(foglio.children[1].textContent.indexOf("1/3 Mn P") >= 0);
-    assert.ok(foglio.children[2].className.indexOf("c7-tpa-sheet__turn--won") >= 0);
-    assert.ok(foglio.children[2].textContent.indexOf("6 ↺ ●") >= 0);
+    const prima = foglio.children[1].querySelector(".c7-tpa-sheet__note");
+    assert.strictEqual(prima.querySelector(".c7-tpa-nt__break").textContent, "1");
+    assert.ok(prima.textContent.indexOf("/") < 0);
+    assert.ok(prima.textContent.indexOf("P") >= 0);
+    const seconda = foglio.children[2].querySelector(".c7-tpa-sheet__note");
+    assert.strictEqual(seconda.querySelector(".c7-tpa-nt__balls--won").textContent, "6");
+    assert.strictEqual(seconda.querySelector(".c7-tpa-kick").textContent, "2");
+    assert.ok(seconda.textContent.indexOf("↺") < 0 && seconda.textContent.indexOf("●") < 0);
   }
 
   console.log("test_tpa_referto: ok");

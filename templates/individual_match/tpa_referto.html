@@ -15,6 +15,10 @@
 <span class="c7-sep">·</span> {{ match.discipline|discipline_display }}
 {% endblock %}
 
+{# Chi compila ha il tastierino agganciato in basso: la nav flottante gli
+   lascia il posto. Per uscire c'e' la freccia in testata. #}
+{% block app_nav %}{% if not (state and state.can_write) %}{{ super() }}{% endif %}{% endblock %}
+
 {% block content %}
 <div class="c7-cols">
   <div class="c7-stack c7-sections">
@@ -66,44 +70,58 @@
        qui: gli indirizzi, chi guarda, i testi tradotti. Negli attributi i
        testi passano dall'autoescape dell'HTML, quindi un apostrofo non rompe
        niente e `|tojson` non serve. #}
-    <section class="c7-tpa" id="tpaReferto"
+    <section class="c7-tpa{{ ' c7-tpa--write' if state.can_write }}" id="tpaReferto"
              data-press-url="{{ url_for('individual_match.tpa_press', match_id=match.id) }}"
              data-undo-url="{{ url_for('individual_match.tpa_undo', match_id=match.id) }}"
+             data-clear-url="{{ url_for('individual_match.tpa_clear', match_id=match.id) }}"
              data-state-url="{{ url_for('individual_match.tpa_state', match_id=match.id) }}"
              data-poll-url="{{ url_for('sse.poll_individual_match', match_id=match.id) }}"
              data-current-user-id="{{ current_user.id }}"
              data-can-write="{{ 'true' if state.can_write else 'false' }}"
-             data-et-passa="{{ _('passa il tavolo') }}"
+             {# `{nome}` e `{n}` li sostituisce il JavaScript: niente `%(...)s`. #}
+             data-et-passa="{{ _('Tocca: tavolo a {nome}') }}"
+             data-et-spacca-lui="{{ _('Tocca: spacca {nome}') }}"
              data-et-al-tavolo="{{ _('al tavolo') }}"
              data-et-spacca="{{ _('spacca') }}"
-             data-et-spacca-lui="{{ _('spacca lui') }}"
+             data-et-triangoli="{{ _('Triangoli') }}"
+             data-et-tpa="{{ _('TPA') }}"
+             data-et-bilia="{{ _('bilia') }}"
+             data-et-bilie="{{ _('bilie') }}"
+             data-et-errore-uno="{{ _('errore') }}"
+             data-et-errori="{{ _('errori') }}"
              data-et-senza-tpa="{{ _('TPA ancora da calcolare') }}"
-             data-et-bilie="{{ _('quante bilie?') }}"
-             data-et-perche="{{ _('perché finisce il turno?') }}"
+             data-et-quante="{{ _('bilie?') }}"
              data-et-triangolo="{{ _('Triangolo') }}"
              data-et-errore="{{ _('Non è stato possibile annotare.') }}"
-             data-et-kick-in="{{ _('è entrata di sponda alla prima bilia') }}"
+             data-et-cancella="{{ _('cancella') }}"
+             data-et-cancella-aria="{{ _('Cancella l’annotazione di questo turno') }}"
+             data-et-cap-m="{{ _('sbagliato') }}"
+             data-et-cap-k="{{ _('di sponda') }}"
+             data-et-cap-s="{{ _('difesa') }}"
+             data-et-cap-p="{{ _('in buca') }}"
+             data-et-cap-g="{{ _('triangolo') }}"
+             data-et-cap-n="{{ _('non colpita') }}"
+             data-et-kick-in="{{ _('Primo tiro di calcio?') }}"
+             data-et-kick-in-aria="{{ _('primo tiro di calcio del giocatore {n}') }}"
              data-et-runout-chiedi="{{ _('Ha chiuso in una sola visita?') }}"
              data-et-runout-si="{{ _('Chiusa in una sola visita') }}">
       <script type="application/json" id="tpaStato">{{ state|tojson }}</script>
       {# I riquadri dei giocatori e il tastierino li disegna il JavaScript e li
          svuota a ogni tocco: le ancore dell'aiuto (`data-help`) stanno su
-         involucri stabili, che non partecipano alla griglia. #}
+         involucri stabili. #}
       <div data-help="referto-passa-tavolo">
-        <div id="tpaPlayers" class="c7-tpa"></div>
-      </div>
-
-      <div class="c7-tpa-boxes" id="tpaBoxes">
-        <div class="c7-tpa-box c7-tpa-box--white" id="tpaWhiteBox"></div>
-        <div class="c7-tpa-box c7-tpa-box--shaded" id="tpaShadedBox"></div>
+        <div id="tpaPlayers" class="c7-card c7-card--accent c7-tpa-duo"></div>
       </div>
 
       {% if state.can_write %}
-      <div class="c7-stack" data-help="referto-tastierino">
-        <div class="c7-tpa-pad" id="tpaNumbers"></div>
-        <div class="c7-tpa-pad c7-tpa-pad--letters" id="tpaLetters"></div>
+      {# Sotto lg questo blocco sta agganciato in basso (vedi `.c7-tpa-dock`). #}
+      <div class="c7-tpa-dock" id="tpaDock">
+        <div class="c7-stack" data-help="referto-tastierino" style="gap:8px">
+          <div class="c7-tpa-pad" id="tpaNumbers"></div>
+          <div class="c7-tpa-pad" id="tpaLetters"></div>
+        </div>
+        <button type="button" class="c7-undo" id="tpaUndo" data-help="referto-annulla">{{ _('Annulla l\'ultimo tocco') }}</button>
       </div>
-      <button type="button" class="c7-undo" id="tpaUndo" data-help="referto-annulla">{{ _('Annulla l\'ultimo tocco') }}</button>
       {% endif %}
     </section>
 
@@ -120,10 +138,16 @@
         <b>x</b> {{ _('difesa premeditata: niente errore di posizione') }} <span class="c7-sep">·</span>
         <b>p</b> {{ _('push out') }}
       </p>
+      {% if state.can_write %}
+      <div class="form-check form-switch" style="margin:12px 0 0">
+        <input class="form-check-input" type="checkbox" role="switch" id="tpaParole" checked>
+        <label class="form-check-label" for="tpaParole" style="font-size:13px;font-weight:700">{{ _('Mostra la parola sotto le lettere del tastierino') }}</label>
+      </div>
+      {% endif %}
     </details>
 
     <section>
-      <h3 style="margin:0 0 10px">{{ _('Il foglio') }}</h3>
+      <h3 style="margin:0 0 10px">{{ _('Referto') }}</h3>
       <div class="c7-tpa-sheet" id="tpaSheet"></div>
     </section>
 

@@ -1,6 +1,6 @@
 """Referto TPA di un match individuale.
 
-Una pagina e cinque azioni.
+Una pagina e sei azioni.
 
 **Il gate della gamification sta sull'apertura, non sulla lettura.** Sbloccare
 la funzione vuol dire poter *prendere* un referto; una volta che il referto
@@ -207,6 +207,29 @@ def tpa_undo(match_id: int):
         return _domain_error(error)
     except Exception:
         logger.error("Annulla referto TPA fallito", exc_info=True)
+        return (
+            jsonify({"success": False, "message": _("Errore interno del server")}),
+            500,
+        )
+    _announce(match_id, referto, score_before)
+    return _state_response(referto)
+
+
+@individual_match_bp.route("/matches/<int:match_id>/tpa/clear", methods=["POST"])
+@RoleRequirement.player_or_director_required
+def tpa_clear(match_id: int):
+    """«Cancella»: via l'annotazione del turno in corso."""
+    match, referto, is_player = _load(match_id)
+    if not is_player or referto is None:
+        return jsonify({"success": False, "message": _("Referto non trovato")}), 404
+
+    score_before = _score_of(match_id)
+    try:
+        TpaRefertoService.clear_turn(referto.id, current_user.id)
+    except DomainError as error:
+        return _domain_error(error)
+    except Exception:
+        logger.error("Cancella turno del referto TPA fallito", exc_info=True)
         return (
             jsonify({"success": False, "message": _("Errore interno del server")}),
             500,

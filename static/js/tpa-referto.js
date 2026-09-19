@@ -18,58 +18,77 @@
 (function (root) {
   'use strict';
 
-  /* Il TPA si mostra come sul referto: .780, non 780. Il caso pieno e'
-     l'unico che sfugge: mille millesimi sono 1.000, non .1000. */
+  /* Il TPA va da 0 a 1000 e si scrive senza punto (D20): il server manda
+     gia' i millesimi interi, quindi qui non c'e' niente da calcolare. */
   function formatTpa(value) {
     if (value === null || value === undefined) return '—';
-    if (value >= 1000) {
-      return Math.floor(value / 1000) + '.' + String(value % 1000).padStart(3, '0');
-    }
-    return '.' + String(value).padStart(3, '0');
+    return String(value);
   }
 
-  function turnLabel(turn) {
+  function has(value) { return value !== null && value !== undefined; }
+
+  /* Il numero del giocatore cerchiato in piccolo: e' cosi' che il referto
+     Accu-Stats scrive «il primo tiro e' stato di calcio». */
+  function kickNode(doc, player, aria) {
+    const kick = doc.createElement('span');
+    kick.className = 'c7-tpa-kick';
+    kick.textContent = player;
+    if (aria) kick.setAttribute('aria-label', aria.replace('{n}', player));
+    return kick;
+  }
+
+  /* L'annotazione di un turno come la scrive il referto: le bilie della
+     spaccata in apice *prima* del totale (mai «1/3»), il totale cerchiato se
+     il turno ha vinto il triangolo (non una «G»), poi la lettera grande col
+     suo apice: M^n, S^x, S^p. Una funzione sola per le caselle e per il
+     referto sotto, cosi' non possono scriverla in due modi. */
+  function notationNode(doc, turn) {
     const note = turn.annotation;
-    let text = '';
-    if (turn.is_break && note.break_potted !== null && note.break_potted !== undefined) {
-      text += note.break_potted + '/';
-    }
-    text += (note.total_potted === null || note.total_potted === undefined) ? '–' : note.total_potted;
-    if (turn.main_note) text += ' ' + turn.main_note.replace('^', '');
-    if (turn.secondary_note) text += ' ' + turn.secondary_note;
-    if (note.first_shot_kick_in) text += ' ↺';
-    if (turn.winning) text += ' ●';
-    return text;
-  }
-
-  /* "M^n" e "S^x" sul foglio sono una lettera grande con un apice. */
-  function noteNode(doc, text) {
     const wrap = doc.createElement('span');
-    const parts = String(text).split('^');
-    wrap.appendChild(doc.createTextNode(parts[0]));
-    if (parts.length > 1) {
-      const sup = doc.createElement('sup');
-      sup.textContent = parts[1];
-      wrap.appendChild(sup);
+    wrap.className = 'c7-tpa-nt';
+    if (turn.is_break && has(note.break_potted)) {
+      const brk = doc.createElement('sup');
+      brk.className = 'c7-tpa-nt__break';
+      brk.textContent = note.break_potted;
+      wrap.appendChild(brk);
+    }
+    if (has(note.total_potted)) {
+      const balls = doc.createElement('span');
+      balls.className = 'c7-tpa-nt__balls' + (turn.winning ? ' c7-tpa-nt__balls--won' : '');
+      balls.textContent = note.total_potted;
+      wrap.appendChild(balls);
+    }
+    if (turn.main_note) {
+      const parts = String(turn.main_note).split('^');
+      const main = doc.createElement('span');
+      main.className = 'c7-tpa-nt__main';
+      main.appendChild(doc.createTextNode(parts[0]));
+      if (parts.length > 1) {
+        const sup = doc.createElement('sup');
+        sup.textContent = parts[1];
+        main.appendChild(sup);
+      }
+      wrap.appendChild(main);
     }
     return wrap;
   }
 
-  /* Il tastierino ha caselle fisse, sempre le stesse: le lettere stanno
-     dove il referto cartaceo le mette (motivo di fine turno, falli,
-     annotazioni piccole) e quelle non ammesse si spengono invece di
-     sparire. Se i pulsanti si riordinassero a ogni tocco, chi annota
-     mentre gioca finirebbe per premere quello sbagliato. */
+  /* Il tastierino e' uno ed e' sempre tutto visibile, a tre colonne come
+     quello di un telefono: e' cosi' nell'app Accu-Stats originale. Le lettere
+     stanno dove il referto cartaceo le mette (motivo di fine turno, falli,
+     annotazioni piccole) e i tasti non ammessi si spengono invece di sparire.
+     Se i pulsanti si riordinassero a ogni tocco, chi annota mentre gioca
+     finirebbe per premere quello sbagliato. */
   const LETTER_SLOTS = [
-    ['M', 'c7-tpa-key'],
-    ['K', 'c7-tpa-key'],
-    ['S', 'c7-tpa-key'],
-    ['P', 'c7-tpa-key c7-tpa-key--foul'],
-    ['G', 'c7-tpa-key c7-tpa-key--game'],
-    ['N', 'c7-tpa-key c7-tpa-key--foul'],
-    ['n', 'c7-tpa-key c7-tpa-key--small'],
-    ['x', 'c7-tpa-key c7-tpa-key--small'],
-    ['p', 'c7-tpa-key c7-tpa-key--small']
+    ['M', 'c7-tpa-key', 'etCapM'],
+    ['K', 'c7-tpa-key', 'etCapK'],
+    ['S', 'c7-tpa-key', 'etCapS'],
+    ['P', 'c7-tpa-key c7-tpa-key--foul', 'etCapP'],
+    ['G', 'c7-tpa-key c7-tpa-key--game', 'etCapG'],
+    ['N', 'c7-tpa-key c7-tpa-key--foul', 'etCapN'],
+    ['n', 'c7-tpa-key c7-tpa-key--small', null],
+    ['x', 'c7-tpa-key c7-tpa-key--small', null],
+    ['p', 'c7-tpa-key c7-tpa-key--small', null]
   ];
 
   function avvia(host, opzioni) {
@@ -87,17 +106,49 @@
     function seatOf(n) { return state.players[n] || state.players[String(n)] || {}; }
     function tallyOf(n) { return state.score[n] || state.score[String(n)] || {}; }
 
+    function span(className, text) {
+      const node = doc.createElement('span');
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function figure(label, value, title) {
+      const fig = span('c7-tpa-fig');
+      fig.appendChild(span('c7-tpa-fig__k', label));
+      const v = span('c7-tpa-fig__v', value);
+      if (title) v.title = title;
+      fig.appendChild(v);
+      return fig;
+    }
+
+    /* L'ultimo turno giocato da un posto in questo triangolo: e' quello che
+       resta scritto nella card di chi non e' al tavolo. A triangolo nuovo non
+       c'e', e le caselle restano bianche. */
+    function lastTurnOf(seat) {
+      const racks = state.racks || [];
+      const rack = racks.filter((r) => r.number === state.current_rack)[0];
+      if (!rack) return null;
+      for (let i = rack.turns.length - 1; i >= 0; i--) {
+        const turn = rack.turns[i];
+        if (turn.player === seat && has(turn.annotation.total_potted)) return turn;
+      }
+      return null;
+    }
+
     function renderPlayers() {
       const players = el('tpaPlayers');
       players.textContent = '';
       [1, 2].forEach((seat) => {
         const tally = tallyOf(seat);
         const active = state.current_player === seat;
+        const name = seatOf(seat).name || ('#' + seat);
         /* Il proprio riquadro non si tocca: si tocca quello dell'altro, ed
            e' quello il gesto che passa il tavolo. */
         const tappable = CAN_WRITE && !active && state.can_switch_player;
         const node = doc.createElement(tappable ? 'button' : 'div');
-        node.className = 'c7-tpa-player' + (active ? ' c7-tpa-player--active' : '');
+        node.className = 'c7-tpa-half' +
+          (active ? ' c7-tpa-half--on' : '') + (tappable ? ' c7-tpa-half--tap' : '');
         if (tappable) {
           node.type = 'button';
           /* Prima della spaccata il tocco sceglie chi spacca; dopo,
@@ -107,83 +158,59 @@
           }));
         }
 
-        const left = doc.createElement('span');
-        const name = doc.createElement('span');
-        name.className = 'c7-tpa-player__name';
-        name.textContent = seatOf(seat).name || ('#' + seat);
-        const meta = doc.createElement('span');
-        meta.className = 'c7-tpa-player__meta';
+        node.appendChild(span('c7-tpa-half__name', name));
+
+        /* Il TPA conta quanto il punteggio: stessa misura, stesso peso. */
+        const figs = span('c7-tpa-figs');
+        figs.appendChild(figure(dati.etTriangoli, tally.racks_won || 0));
+        figs.appendChild(figure(dati.etTpa, formatTpa(tally.tpa), has(tally.tpa) ? '' : dati.etSenzaTpa));
+        node.appendChild(figs);
+
+        const balls = tally.balls_potted || 0;
         const errors = tally.total_errors || 0;
-        let metaText = 'B' + (tally.balls_potted || 0) + ' E' + errors;
-        if (active) metaText += ' · ' + (state.current.is_break ? dati.etSpacca : dati.etAlTavolo);
-        else if (tappable) {
-          metaText += ' · ' + (state.current.can_choose_seat ? dati.etSpaccaLui : dati.etPassa);
+        let meta = balls + ' ' + (balls === 1 ? dati.etBilia : dati.etBilie) +
+          ' · ' + errors + ' ' + (errors === 1 ? dati.etErroreUno : dati.etErrori);
+        if (active) meta = (state.current.is_break ? dati.etSpacca : dati.etAlTavolo) + ' · ' + meta;
+        node.appendChild(span('c7-tpa-half__meta', meta));
+
+        /* Le due caselle del referto, dentro la card di ciascuno. Chi e' al
+           tavolo ci vede il turno che sta scrivendo, l'altro il suo ultimo. */
+        const turn = active ? state.current : lastTurnOf(seat);
+        const slip = span('c7-tpa-slip');
+        /* La riga del calcio c'e' sempre, anche vuota: senza, le caselle dei
+           due giocatori finirebbero a due altezze diverse. */
+        const kickrow = span('c7-tpa-kickrow');
+        if (turn && turn.annotation.first_shot_kick_in) {
+          kickrow.appendChild(kickNode(doc, turn.player || seat, dati.etKickInAria));
         }
-        meta.textContent = metaText;
-        left.appendChild(name);
-        left.appendChild(meta);
+        slip.appendChild(kickrow);
+        slip.appendChild(span(''));
 
-        const tpa = doc.createElement('span');
-        tpa.className = 'c7-tpa-player__tpa';
-        tpa.textContent = formatTpa(tally.tpa);
-        if (tally.tpa === null || tally.tpa === undefined) tpa.title = dati.etSenzaTpa;
+        const white = span('c7-tpa-box c7-tpa-box--white');
+        const shaded = span('c7-tpa-box c7-tpa-box--shaded');
+        if (turn) {
+          if (has(turn.annotation.total_potted) || has(turn.annotation.break_potted)) {
+            white.appendChild(notationNode(doc, turn));
+          }
+          /* Un solo suggerimento, corto, e solo a chi compila: a casella
+             bianca si chiedono le bilie. Dopo, il suggerimento sono le lettere che si accendono —
+             una frase qui andrebbe a capo e le caselle dei due giocatori
+             finirebbero a due altezze diverse. */
+          if (CAN_WRITE && active && !has(turn.annotation.total_potted)) {
+            white.appendChild(span('c7-tpa-box__hint', dati.etQuante));
+          }
+          shaded.textContent = turn.secondary_note || '';
+        }
+        slip.appendChild(white);
+        slip.appendChild(shaded);
+        node.appendChild(slip);
 
-        const racks = doc.createElement('span');
-        racks.className = 'c7-tpa-player__racks';
-        racks.textContent = tally.racks_won || 0;
-
-        node.appendChild(left);
-        node.appendChild(tpa);
-        node.appendChild(racks);
+        if (tappable) {
+          const template = state.current.can_choose_seat ? dati.etSpaccaLui : dati.etPassa;
+          node.appendChild(span('c7-tpa-half__tap', template.replace('{nome}', name)));
+        }
         players.appendChild(node);
       });
-    }
-
-    function renderBoxes() {
-      const current = state.current;
-      const note = current.annotation;
-      const white = el('tpaWhiteBox');
-      const shaded = el('tpaShadedBox');
-      white.textContent = '';
-      shaded.textContent = '';
-      white.classList.toggle('c7-tpa-box--won', !!current.winning);
-
-      /* Sulla spaccata le bilie della spaccata si annotano per prime e
-         restano scritte in piccolo, in alto: e' cosi' sul foglio. */
-      if (current.is_break && note.break_potted !== null && note.break_potted !== undefined) {
-        const brk = doc.createElement('span');
-        brk.className = 'c7-tpa-box__break';
-        brk.textContent = note.break_potted;
-        white.appendChild(brk);
-      }
-
-      if (note.total_potted === null || note.total_potted === undefined) {
-        const hint = doc.createElement('span');
-        hint.className = 'c7-tpa-box__hint';
-        hint.textContent = dati.etBilie;
-        white.appendChild(hint);
-      } else {
-        const balls = doc.createElement('span');
-        balls.textContent = note.total_potted;
-        white.appendChild(balls);
-        if (current.main_note) white.appendChild(noteNode(doc, current.main_note));
-        else if (!current.winning) {
-          const hint = doc.createElement('span');
-          hint.className = 'c7-tpa-box__hint';
-          hint.style.marginLeft = '8px';
-          hint.textContent = dati.etPerche;
-          white.appendChild(hint);
-        }
-        if (note.first_shot_kick_in) {
-          const kick = doc.createElement('span');
-          kick.className = 'c7-tpa-box__hint';
-          kick.style.marginLeft = '8px';
-          kick.textContent = '↺';
-          kick.title = dati.etKickIn;
-          white.appendChild(kick);
-        }
-      }
-      shaded.textContent = current.secondary_note || '';
     }
 
     function renderPad() {
@@ -193,45 +220,52 @@
       numbers.textContent = '';
       letters.textContent = '';
       const available = state.buttons || [];
-      const has = (b) => available.indexOf(b) >= 0;
+      const allowed = (b) => available.indexOf(b) >= 0;
 
-      /* Le bilie: una casella per ogni numero possibile in questa
-         disciplina. Quando non se ne puo' premere nessuna il blocco sparisce
-         del tutto, invece di lasciare una griglia spenta. */
-      const anyNumber = available.some((b) => /^\d+$/.test(b));
-      numbers.style.display = anyNumber ? '' : 'none';
-      if (anyNumber) {
-        for (let n = 0; n <= state.game_type; n++) {
-          numbers.appendChild(key(String(n), String(n), 'c7-tpa-key', has(String(n))));
-        }
+      /* «Cancella» sta nel posto vuoto accanto allo 0: toglie l'annotazione
+         di questo turno, tutta. Non e' l'annulla, che toglie un tocco solo. */
+      const clear = key('clear', '×', 'c7-tpa-key c7-tpa-key--clear', !!state.can_clear, dati.etCancella);
+      clear.setAttribute('aria-label', dati.etCancellaAria);
+      numbers.appendChild(clear);
+      numbers.appendChild(key('0', '0', 'c7-tpa-key', allowed('0')));
+      /* Il terzo posto della prima riga: il 10 a palla 10, vuoto altrimenti. */
+      if (state.game_type >= 10) numbers.appendChild(key('10', '10', 'c7-tpa-key', allowed('10')));
+      else numbers.appendChild(span('c7-tpa-pad__gap'));
+      for (let n = 1; n <= 9; n++) {
+        numbers.appendChild(key(String(n), String(n), 'c7-tpa-key', allowed(String(n))));
       }
 
-      LETTER_SLOTS.forEach(([command, className]) => {
-        letters.appendChild(key(command, command, className, has(command)));
+      LETTER_SLOTS.forEach(([command, className, caption]) => {
+        letters.appendChild(key(command, command, className, allowed(command), caption ? dati[caption] : null));
       });
 
-      if (has('K-in')) {
-        letters.appendChild(key('K-in', '↺ ' + dati.etKickIn, 'c7-tpa-key c7-tpa-key--wide', true));
-      }
-      if (has('runout')) {
+      letters.appendChild(key('K-in', dati.etKickIn, 'c7-tpa-key c7-tpa-key--wide', allowed('K-in')));
+      /* Il run-out si chiede solo quando e' ambiguo: capita di rado, e un
+         tasto spento in piu' tutto il resto del tempo sarebbe solo rumore. */
+      if (allowed('runout')) {
         const on = state.current.annotation.run_out === true;
         letters.appendChild(key(
           'runout',
-          on ? '✓ ' + dati.etRunoutSi : dati.etRunoutChiedi,
+          on ? dati.etRunoutSi : dati.etRunoutChiedi,
           'c7-tpa-key c7-tpa-key--wide' + (on ? ' c7-tpa-key--on' : ''),
           true
         ));
       }
     }
 
-    function key(command, label, className, enabled) {
+    function key(command, label, className, enabled, caption) {
       const button = doc.createElement('button');
       button.type = 'button';
       button.className = className;
-      button.textContent = label;
+      button.setAttribute('data-command', command);
+      button.appendChild(doc.createTextNode(label));
+      if (caption) button.appendChild(span('c7-tpa-key__cap', caption));
       button.disabled = !enabled;
       if (enabled) {
-        button.addEventListener('click', () => send(dati.pressUrl, { command: command }));
+        button.addEventListener('click', () => send(
+          command === 'clear' ? dati.clearUrl : dati.pressUrl,
+          command === 'clear' ? {} : { command: command }
+        ));
       }
       return button;
     }
@@ -267,7 +301,12 @@
           who.textContent = seatOf(turn.player).name || ('#' + turn.player);
           const note = doc.createElement('span');
           note.className = 'c7-tpa-sheet__note';
-          note.appendChild(doc.createTextNode(turnLabel(turn)));
+          if (turn.annotation.first_shot_kick_in) {
+            note.appendChild(kickNode(doc, turn.player, dati.etKickInAria));
+          }
+          if (has(turn.annotation.total_potted)) note.appendChild(notationNode(doc, turn));
+          else note.appendChild(doc.createTextNode('–'));
+          if (turn.secondary_note) note.appendChild(span('c7-tpa-nt__foul', turn.secondary_note));
           row.appendChild(seat);
           row.appendChild(who);
           row.appendChild(note);
@@ -278,7 +317,6 @@
 
     function render() {
       renderPlayers();
-      renderBoxes();
       renderPad();
       renderSheet();
       const undo = el('tpaUndo');
@@ -343,8 +381,41 @@
       }).start();
     }
 
+    /* La parola sotto le lettere si puo' spegnere: e' una comodita' di chi
+       guarda, quindi sta nel suo browser e la pagina funziona anche senza. */
+    const parole = el('tpaParole');
+    if (parole) {
+      let spente = false;
+      try { spente = root.localStorage.getItem('tpaParole') === 'no'; } catch (e) { /* niente */ }
+      parole.checked = !spente;
+      host.classList.toggle('c7-tpa--nocap', spente);
+      parole.addEventListener('change', () => {
+        host.classList.toggle('c7-tpa--nocap', !parole.checked);
+        try { root.localStorage.setItem('tpaParole', parole.checked ? 'si' : 'no'); } catch (e) { /* niente */ }
+        misuraDock();
+      });
+    }
+
+    /* Sotto lg il tastierino e' agganciato in basso: il contenuto deve poter
+       scorrere fin sopra, e quanto e' alto lo sa solo il browser. */
+    function misuraDock() {
+      const dock = el('tpaDock');
+      if (!dock || !dock.getBoundingClientRect) return;
+      doc.documentElement.style.setProperty('--c7-tpa-dock-h', Math.round(dock.getBoundingClientRect().height) + 'px');
+    }
+
     render();
+    misuraDock();
+    /* Su un telefono basso il tastierino coprirebbe il fondo delle card: si
+       scorre, una volta sola, quel tanto che le porta sopra. */
+    const dock = el('tpaDock');
+    if (dock && dock.getBoundingClientRect && root.getComputedStyle &&
+        root.getComputedStyle(dock).position === 'fixed') {
+      const sotto = el('tpaPlayers').getBoundingClientRect().bottom - dock.getBoundingClientRect().top;
+      if (sotto > 0) root.scrollTo(0, (root.scrollY || 0) + sotto + 8);
+    }
+    if (root.addEventListener) root.addEventListener('resize', misuraDock);
   }
 
-  root.c7TpaReferto = { avvia: avvia, formatTpa: formatTpa, turnLabel: turnLabel };
+  root.c7TpaReferto = { avvia: avvia, formatTpa: formatTpa };
 })(window);

@@ -58,22 +58,17 @@ def test_il_referto_non_scrive_gli_accenti_con_l_apostrofo():
     assert not sospetti, sospetti
 
 
-def _blocco_media_640(css: str) -> str:
-    start = css.index("/* Da 640px in su le due colonne del referto")
-    end = css.index("}\n}", start)
-    return css[start:end]
+def test_il_tastierino_e_su_tre_colonne_a_ogni_larghezza():
+    """0 / 123 / 456 / 789, poi M K S / P G N / n x p: a ogni larghezza.
 
-
-def test_le_lettere_restano_su_tre_colonne_anche_su_schermo_largo():
-    """M K S / P G N / n x p: la griglia è quella del foglio, a ogni larghezza.
-
-    La regola del breakpoint aveva la stessa specificità di
-    `.c7-tpa-pad--letters` e veniva dopo: vinceva lei, e le nove lettere
-    finivano su sei colonne.
+    Il tastierino e' uno, a tre colonne come quello dell'app Accu-Stats
+    originale. Una volta un breakpoint a 640px portava i numeri su sei colonne
+    e, a pari specificita', si prendeva anche le lettere: ora nessuna media
+    query tocca le colonne di `.c7-tpa-pad`.
     """
-    blocco = _blocco_media_640(CSS.read_text(encoding="utf-8"))
-    assert ".c7-tpa-pad:not(.c7-tpa-pad--letters)" in blocco
-    assert not re.search(r"\.c7-tpa-pad\s*\{", blocco)
+    css = CSS.read_text(encoding="utf-8")
+    regole = re.findall(r"\.c7-tpa-pad[^{}]*\{[^}]*grid-template-columns:([^;}]*)", css)
+    assert [r.strip() for r in regole] == ["repeat(3, 1fr)"]
 
 
 def test_i_tasti_larghi_del_referto_hanno_l_altezza_di_tocco():
