@@ -83,6 +83,23 @@ class ProposalService:
         if expires_at is None:
             expires_at = scheduled_at - timedelta(hours=2)
 
+        # Un invitato che non esiste si rifiuta **prima** di scrivere qualcosa.
+        # Fino al 19/09/2026 l'invito nasceva lo stesso, la chiave esterna lo
+        # bocciava al flush dentro la notifica, l'`except` qui sotto inghiottiva
+        # l'errore e la sessione restava avvelenata: chi chiamava riceveva un
+        # `PendingRollbackError` che non diceva niente di cosa fosse andato male.
+        from ..exceptions import NotFoundError
+        from ..user.models import User
+
+        wanted = {uid for uid in invited_user_ids if uid != proposer_id}
+        found = (
+            {row.id for row in User.query.filter(User.id.in_(wanted)).all()}
+            if wanted
+            else set()
+        )
+        if wanted - found:
+            raise NotFoundError(_("Il giocatore invitato non esiste"))
+
         proposal = MatchProposal(
             proposer_id=proposer_id,
             proposal_type=ProposalType.DIRECT,
@@ -103,10 +120,9 @@ class ProposalService:
         db.session.add(proposal)
         db.session.flush()
 
-        from ..user.models import User
         from ..notification.factory import NotificationFactory
 
-        proposer = User.query.get(proposer_id)
+        proposer = db.session.get(User, proposer_id)
 
         for user_id in invited_user_ids:
             if user_id != proposer_id:
@@ -114,6 +130,9 @@ class ProposalService:
                     proposal_id=proposal.id, invited_user_id=user_id
                 )
                 db.session.add(invitation)
+                # L'invito si scrive **fuori** dal `try`: se fallisce è la
+                # proposta a essere sbagliata, non la notifica.
+                db.session.flush()
 
                 try:
                     # Nome e orario grezzi: la fabbrica li compone nella lingua

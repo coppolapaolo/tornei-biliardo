@@ -202,46 +202,40 @@ class TestIndividualMatchServiceTransactionMigration:
             db.session.commit()
 
     def test_create_direct_proposal_rollback_on_error(self, app, test_users):
-        """
-        RED: Test current error handling in create_direct_proposal.
+        """Un invitato che non esiste: errore di dominio, e niente scritto a metà.
 
-        Documents current behavior: service doesn't raise exception for notification
-        errors
-        but should properly rollback any partial data due to @transactional decorator.
+        Questo test è nato come «RED» per documentare che il servizio *non*
+        sollevava; con l'ADR-061 l'errore ha cominciato a uscire, ma come
+        ``PendingRollbackError`` — la sessione avvelenata da un flush fallito
+        dentro un ``except: pass``. Ora il servizio controlla prima.
         """
+        from models.exceptions import NotFoundError
+
         proposer, invitee = test_users
 
         with app.app_context():
-            # Test with invalid user ID to trigger rollback during autoflush
             scheduled_time = utc_now() + timedelta(hours=2)
             expires_time = utc_now() + timedelta(hours=1)
 
-            # This will not raise exception but should rollback properly
-            proposal = IndividualMatchService.create_direct_proposal(
-                proposer_id=proposer.id,
-                invited_user_ids=[99999],  # Non-existent user
-                location="Test Hall",
-                scheduled_at=scheduled_time,
-                expires_at=expires_time,
-                discipline="8ball",
-                distance=3,
-                description="Should rollback",
-            )
+            with pytest.raises(NotFoundError):
+                IndividualMatchService.create_direct_proposal(
+                    proposer_id=proposer.id,
+                    invited_user_ids=[99999],  # Non-existent user
+                    location="Test Hall",
+                    scheduled_at=scheduled_time,
+                    expires_at=expires_time,
+                    discipline="8ball",
+                    distance=3,
+                    description="Should rollback",
+                )
 
-            # The current implementation returns a MatchProposal object even when
-            # transaction fails
-            assert proposal is not None
-            assert proposal.description == "Should rollback"
-
-            # However, due to rollback, the proposal should not exist in database
-            # Force a fresh query to check database state
-            db.session.expunge_all()  # Clear SQLAlchemy session
+            db.session.expunge_all()
             proposals = (
                 db.session.query(MatchProposal)
                 .filter_by(proposer_id=proposer.id, description="Should rollback")
                 .all()
             )
-            assert len(proposals) == 0  # No partial data should remain due to rollback
+            assert len(proposals) == 0
 
             # Verify no invitations were created
             invitations = (
