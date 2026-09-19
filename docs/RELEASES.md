@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.35.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.34.0...v1.35.0) (2026-09-19)
+
+
+### Funzioni nuove
+
+* l'esercizio dice che cosa allena, quanto è difficile e in che varianti si fa ([#490](https://github.com/coppolapaolo/tornei-biliardo/issues/490)) ([86eaf24](https://github.com/coppolapaolo/tornei-biliardo/commit/86eaf24a18e205fab029c9d25c82338f81efea50))
+
 ## [1.34.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.33.0...v1.34.0) (2026-09-19)
 
 
