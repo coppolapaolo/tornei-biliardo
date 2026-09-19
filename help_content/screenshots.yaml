@@ -275,12 +275,12 @@ shots:
   - id: esame-catalogo
     route: /exam/
     as: Marco Rossi
-    caption: "Il catalogo degli esami: le sequenze di esercizi che si possono sostenere."
+    caption: "Il catalogo degli esami: per ognuno dice cosa sei tu — superato e da chi, provato da solo, mai provato."
 
   - id: esame-dettaglio
     route: /exam/1
     as: Marco Rossi
-    caption: "La pagina di un esame: gli esercizi che lo compongono con il punteggio massimo e il numero di prove, chi lo somministra e i due modi di sostenerlo."
+    caption: "La pagina di un esame: cosa si fa, gli esercizi numerati nell'ordine in cui si fanno, le tue volte, chi lo somministra e in fondo i due comandi."
     viewports: [mobile, desktop]
     # I due pulsanti stanno sotto la piega: senza la pagina intera la didascalia
     # prometterebbe qualcosa che nell'immagine non c'e'.
@@ -289,18 +289,38 @@ shots:
   - id: esame-appuntamento
     route: /exam/1/request
     as: Marco Rossi
-    caption: "Il modulo per chiedere un appuntamento: a quali esaminatori rivolgersi, quando e in quale sala."
+    caption: "Il modulo per chiedere un appuntamento: a quali esaminatori rivolgersi, giorno, ora e sala."
 
   - id: esame-trattativa
     route: /exam/requests/1
     as: Elena Ricci
-    caption: "Una trattativa in corso: la proposta sul tavolo, chi l'ha fatta e lo storico degli scambi."
+    caption: "Una trattativa in corso: in cima la proposta sul tavolo col pulsante per accettarla, sotto la controproposta, poi come ci siete arrivati."
+    full_page: true
+
+  - id: esame-appuntamenti
+    route: /exam/requests
+    as: Elena Ricci
+    caption: "I tuoi appuntamenti d'esame: «Tocca a te» segna quelli in cui l'altra parte aspetta una tua risposta."
 
   - id: esame-sessione
     route: /exam/sessions/2
     as: Luca Bianchi
-    caption: "La sessione d'esame vista dall'esaminatore: una casella per ogni prova, l'avanzamento e i due pulsanti dell'esito."
+    caption: "La sessione vista dall'esaminatore: un esercizio per volta, le prove già fatte con la migliore in verde, e in basso il tastierino."
+    # Niente pagina intera: il tastierino è agganciato al fondo dello schermo,
+    # ed è lì che la figura deve mostrarlo.
     viewports: [mobile, desktop]
+
+  - id: esame-esito
+    route: /exam/sessions/2?at=esito
+    as: Luca Bianchi
+    caption: "Il riepilogo da cui si decide l'esito: il totale, una riga per esercizio con le prove fatte, e i due pulsanti «Non superato» e «Superato»."
+
+  # «Componi» si fotografa sul secondo esame: sul primo c'è la sessione
+  # certificata di Sara, che ne blocca la composizione.
+  - id: esame-componi
+    route: /exam/2/compose
+    as: Luca Bianchi
+    caption: "Comporre un esame: gli esercizi in sequenza, ognuno con quanto vale e quante prove; si trascinano per cambiare l'ordine."
     full_page: true
 
   - id: esame-gestione

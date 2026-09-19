@@ -5,7 +5,7 @@ audience: [giocatore]
 minutes: 4
 summary: "Chi certifica gli esami degli altri: come si ottiene il ruolo, come si compone un esame e cosa succede quando arriva una richiesta."
 screens: [roles.request_role_form, roles.role_requests, exam.manage_exams,
-  exam.manage_examiners]
+  exam.compose_exam, exam.manage_examiners]
 related: [esami, diventare_direttore, challenge]
 
 blocks:
@@ -22,7 +22,7 @@ blocks:
 
   - type: text
     text: >-
-      Il ruolo si sblocca **macinando esercizio**: quando ne hai completati venti,
+      Il ruolo si sblocca **macinando esercizi**: quando ne hai completati venti,
       fra le pagine degli esercizi compare **«Diventa Esaminatore»**. Non si chiede
       dal profilo, e prima della soglia non compare da nessuna parte.
 
@@ -85,12 +85,33 @@ blocks:
   - type: text
     text: >-
       Dall'area **Gestisci esami** crei l'esame — nome, descrizione ed
-      eventualmente un limite di tempo — e **gli esercizi si aggiungono dopo**,
-      dalla pagina dell'esame.
+      eventualmente un limite di tempo. Poi, dalla pagina dell'esame, tocchi
+      **«Componi»**: nome, esercizi, ordine e quanto vale ciascuno stanno in
+      **una pagina sola, con un salvataggio solo**.
 
   - type: shot
     shot: esame-gestione
     caption: "L'area di chi somministra gli esami: quelli che ha composto, quanti candidati e il tasso di riuscita."
+
+  - type: text
+    text: >-
+      Gli esercizi si scelgono **per nome**, da **«Aggiungi un esercizio dal
+      catalogo»**: si apre un elenco in cui cercare, e quelli già nell'esame
+      non compaiono. Ogni voce della sequenza ha la sua presa a sinistra per
+      trascinarla, quanto **vale** e quante **prove** chiede.
+
+  - type: shot
+    shot: esame-componi
+    caption: "Comporre un esame: gli esercizi in sequenza, ognuno con quanto vale e quante prove; si trascinano per cambiare l'ordine."
+
+  - type: note
+    tone: info
+    title: "Con una sessione d'esame aperta la composizione aspetta"
+    text: >-
+      Finché un candidato ha una sessione certificata aperta, l'esame resta
+      quello che ha accettato: la pagina te lo dice e si salva dopo. Gli
+      allenamenti in autonomia invece non bloccano niente — si riallineano
+      all'esame nuovo.
 
   - type: options
     items:
@@ -102,22 +123,22 @@ blocks:
       - name: "Punteggio massimo"
         values: "per esercizio"
         text: >-
-          Lo decidi esame per esame, non è una proprietà dell'esercizio. Un esercizio
-          che vuoi far pesare di più lo si fa valere di più alzandogli il
-          massimo.
+          È il numero accanto a **«vale»**. Lo decidi esame per esame, non è
+          una proprietà dell'esercizio: lo stesso esercizio può valere 10 in un
+          esame e 20 in un altro.
         hint: esame.punteggio_massimo
       - name: "Quante prove"
         values: "da 1 a 20"
         text: >-
-          Quante volte il candidato ripete quell'esercizio. Se è più di una, il
-          esercizio vale la **prova migliore** — non la somma, così un esercizio a tre
+          Quante volte il candidato ripete quell'esercizio. Se è più di una,
+          l'esercizio vale la **prova migliore** — non la somma, così un esercizio a tre
           prove non pesa il triplo di uno a prova unica.
         hint: esame.quante_prove
 
   - type: note
     tone: warning
     text: >-
-      Un esame senza esercizio **non è sostenibile**, e la sua pagina lo dice.
+      Un esame senza esercizi **non è sostenibile**, e la sua pagina lo dice.
       Comporlo e lasciarlo vuoto significa mostrarlo nel catalogo senza che
       nessuno possa farci niente.
 
@@ -156,13 +177,22 @@ blocks:
           pulsante nascosto: il divieto vale anche per chi provasse ad aggirare
           la schermata.
       - title: "Registra prova per prova"
-        text: "Le caselle si riempiono in ordine. Indicando il numero di una prova la riscrivi, se hai sbagliato a digitare."
+        text: >-
+          La pagina ti mostra **un esercizio per volta**, col tastierino in
+          basso: **più** e **meno** muovono il punteggio di uno, toccando la
+          cifra la scrivi. Le prove già fatte restano in vista, la migliore in
+          verde. Se hai sbagliato a digitare c'è **«Correggi la prova …»**; se
+          il candidato non vuole la terza, **«Rinuncia alla prova …»** — una
+          prova non fatta non è uno zero.
         shot: esame-sessione
       - title: "Chiudi con l'esito"
         text: >-
-          **Superato** o **non superato**. Se l'esame non si è svolto —
-          il candidato non si presenta, la sala chiude — c'è **«Interrompi
-          senza esito»**, che non è una bocciatura.
+          Finiti gli esercizi resta il riepilogo, con i due pulsanti:
+          **Superato** o **Non superato**, e una conferma prima di scrivere.
+          Se l'esame non si è svolto — il candidato non si presenta, la sala
+          chiude — c'è **«Interrompi senza esito»**, che non è una bocciatura e
+          che trovi anche mentre aspetti che il candidato accetti l'inizio.
+        shot: esame-esito
 
   - type: faq
     items:
@@ -171,7 +201,7 @@ blocks:
       - q: "Posso sostenere un esame che somministro io?"
         a: "No. La richiesta non nasce nemmeno: chi somministra non si certifica da solo."
       - q: "Devo aver sbloccato gli esami per fare l'esaminatore?"
-        a: "Sono due cose separate. Puoi somministrare esami senza aver sbloccato la possibilità di sostenerne: vedi i tuoi esami e li certifichi, ma il pulsante per sostenerli resta chiuso finché non completi i tuogli esercizi."
+        a: "Sono due cose separate. Puoi somministrare esami senza aver sbloccato la possibilità di sostenerne: vedi i tuoi esami e li certifichi, ma il pulsante per sostenerli resta chiuso finché non completi i tuoi esercizi."
       - q: "Se mi tolgono il ruolo, cosa succede agli esami che ho certificato?"
         a: "Restano validi. La revoca chiude la concessione, non cancella il lavoro fatto: gli esami che hai composto e le certificazioni che hai rilasciato non si toccano."
       - q: "Che voto posso dare?"

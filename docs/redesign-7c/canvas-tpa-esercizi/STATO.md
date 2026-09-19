@@ -148,12 +148,26 @@ il turno?» andava a capo e rompeva l'allineamento delle caselle.
 
 | Artboard | Schermata | Template | PR | Stato |
 |---|---|---|---|---|
-| `EsamiCatalogo` | Gli esami | `exam/catalog.html` | 3b | da fare |
-| `EsameDettaglio` | Un esame | `exam/detail.html` | 3b | da fare |
-| `EsameAppuntamento` | L'appuntamento | `exam/request_detail.html`, `exam/request_form.html` | 3c | da fare |
-| `EsameSessione` | La sessione dell'esaminatore | `exam/session.html` | 3d | da fare |
-| `EsameChiusura` | L'esito | `exam/session.html` | 3d | da fare |
-| `EsameComponi` | Comporre un esame | `exam/manage.html`, `exam/detail.html` | 3a | da fare |
+| `EsamiCatalogo` | Gli esami | `exam/catalog.html` + `models/exam/overview.py` | #486 | **fatto** — cosa sei tu per ogni esame, e il prossimo appuntamento in cima |
+| `EsameDettaglio` | Un esame | `exam/detail.html` | #486 | **fatto** — via le quattro statistiche globali, «Le tue volte» al loro posto |
+| `EsameAppuntamento` | L'appuntamento | `exam/request_detail.html`, `exam/request_form.html`, `exam/requests.html` | #487 | **fatto** — «Accetto» dentro la card della proposta (come l'artboard), non in una barra d'azione |
+| `EsameSessione` | La sessione dell'esaminatore | `exam/session.html` + `models/exam/session_view.py` + `static/js/exam-session.js` | #488 | **fatto** — meno · cifra · più come l'artboard, e la cifra si può anche scrivere |
+| `EsameChiusura` | L'esito | `exam/session.html` | #488 | **fatto** — conferme in un foglio 7c |
+| `EsameComponi` | Comporre un esame | `exam/compose.html` + `components/_sequence_editor.html` + `static/js/sequence-editor.js` | #484 | **fatto** — il componente lo riusa la fase 6 |
+
+**Fase 3 chiusa il 19/09/2026.** Cinque PR più una trovata strada facendo
+(#485, invitato inesistente in una sfida). Cose nate qui che servono dopo: il
+filtro `day_friendly` («sab 26 set · 18:30») per ogni data che è un
+appuntamento; `.c7-duo`, `.c7-slot__*`, `.c7-tl` e `.c7-facts` nel tema;
+`scripts/po_set.py` per scrivere traduzioni senza riformattare il catalogo.
+Due scelte scritte nell'ADR-042: con una sessione certificata aperta la
+composizione aspetta (#484), e **rinunciare a una prova non si persiste** — è
+un indirizzo, non una colonna (#488). Negli `exam/*.html` gli stati si
+confrontano con gli enum: presidio in
+`test_exam_templates_no_status_literals.py`. `exam/manage.html` ed
+`exam/examiners.html` non erano sul canvas e non sono stati toccati. Guida e
+schermate rifatte (#489); il seed dimostrativo ha un secondo esame, perché la
+sessione aperta sul primo ne blocca la composizione.
 
 ### 7 · Disegnatore — fase 9
 
@@ -176,8 +190,8 @@ cosa si è scelto, cosa si è scartato e perché.
 |---|---|---|---|
 | 0 | Canvas, tre giri, pagina di decisioni | — | chiusa il 19/09 |
 | 1 | Sorgenti e questo file nel repo | #473 | fatta il 19/09 |
-| 2 | Referto TPA | | da fare |
-| 3 | Esami | | da fare |
+| 2 | Referto TPA | #475 #478 #479 #481 #482 #483 (più #476 #477 #480) | chiusa il 19/09 |
+| 3 | Esami | #484 #486 #487 #488 #489 (più #485) | chiusa il 19/09 |
 | 4 | Il modello dell'esercizio (#168 #252 #253), «Oggi», voto | | da fare |
 | 5 | Eseguire un esercizio (#183 #452) | | da fare |
 | 6 | Schede di allenamento (#172) | | da fare |

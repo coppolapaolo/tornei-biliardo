@@ -27,7 +27,7 @@ Sorgenti del canvas: `sorgenti/` (`kit.py`, `tpa.py`, `esercizi.py`,
 | 0 | Canvas, tre giri + pagina di decisioni | **chiusa il 19/09** — canvas v20, 46 artboard in 8 pagine; D1–D20 congelate; issue #471 e #472 aperte |
 | 1 | Sorgenti e STATO.md nel repo | **fatta il 19/09** — PR #473 |
 | 2 | Referto TPA | **chiusa il 19/09** — #475 (2a), #478 (2b), #479 (2c), #481 (2d), #482 (2e), #483 (2f); più #476, #477, #480 trovate strada facendo. Niente cursore salvato: vedi la nota nella fase |
-| 3 | Esami | da fare |
+| 3 | Esami | **chiusa il 19/09** — #484 (3a), #486 (3b), #487 (3c), #488 (3d), #489 (3e); più #485 trovata strada facendo. «Accetto» nella card e non in una barra, rinuncia a una prova non persistita: vedi la nota nella fase |
 | 4 | Modello dell'esercizio (#168 #252 #253) | da fare |
 | 5 | Eseguire un esercizio (#183 #452) | da fare |
 | 6 | Schede di allenamento (#172) | da fare |
@@ -369,6 +369,17 @@ all'unione solo se la successiva dipende da quella.»
 - 3d `feat:` sessione dell'esaminatore col tastierino, punteggio mostrato una
   volta; esito.
 - 3e `docs:` guida.
+
+**Com'è andata (19/09)**: due scarti dal testo qui sopra, entrambi per seguire
+l'artboard. 3c: «Accetto» sta **dentro la card della proposta**, in cima, non in
+una barra d'azione — il difetto era «sotto la nav», e così non c'è più. 3d: il
+tastierino è **meno · cifra · più**, con la cifra che si può anche scrivere (un
+esercizio da 22 punti non costa 22 tocchi). Rinunciare a una prova **non si
+persiste**: il modello reggeva già una prova vuota, quindi è un indirizzo
+(`?at=`) e non una colonna — emendamento all'ADR-042. Da riusare nelle fasi
+dopo: `components/_sequence_editor.html` (fase 6), `day_friendly`,
+`models/exam/overview.py` e `session_view.py` come forma per le viste di sola
+lettura, `scripts/po_set.py`.
 
 **Prompt**: «…esegui la fase 3.»
 

@@ -3,7 +3,7 @@ section: giocare
 kind: tutorial
 audience: [giocatore]
 minutes: 5
-summary: "Più esercizio in fila, in ordine. Da solo per allenarti, oppure davanti a un esaminatore perché resti scritto che li hai superati."
+summary: "Più esercizi in fila, in ordine. Da solo per allenarti, oppure davanti a un esaminatore perché resti scritto che li hai superati."
 screens: [exam.exam_catalog, exam.exam_detail, exam.request_form,
   exam.request_list, exam.request_detail, exam.session_detail]
 related: [challenge, diventare_esaminatore, profilo_e_statistiche]
@@ -14,12 +14,12 @@ blocks:
       Un esame è una **sequenza di esercizi**, decisa da chi l'ha composto e
       sempre nello stesso ordine. Un esercizio da solo dice come ti è andato un
       tiro; un esame dice se sai tenere insieme più gesti di seguito. Se non
-      sai cos'è un esercizio, comincia da [Le
+      sai cos'è un esercizio, comincia da [Gli
       esercizi](/aiuto/giocare/challenge).
 
   - type: shot
     shot: esame-catalogo
-    caption: "Il catalogo degli esami: le sequenze di esercizi che si possono sostenere."
+    caption: "Il catalogo degli esami: per ognuno dice cosa sei tu — superato e da chi, provato da solo, mai provato."
 
   - type: heading
     id: due_modi
@@ -55,24 +55,32 @@ blocks:
 
   - type: text
     text: >-
-      Prima di iniziare, la scheda dell'esame ti dice esattamente cosa ti
-      aspetta: gli esercizi in ordine, il punteggio massimo di ciascuno, quante
-      prove hai a disposizione e **chi lo somministra**.
+      Già dal catalogo ogni esame dice **cosa sei tu per lui**: «superato», con
+      la data e il nome di chi l'ha certificato; «provato da solo», con quante
+      volte e il tuo risultato migliore; oppure «mai provato». In cima, se ne
+      hai uno, c'è **il tuo prossimo appuntamento**.
+
+  - type: text
+    text: >-
+      Aprendo l'esame trovi, dall'alto: **cosa si fa**, gli esercizi
+      **numerati nell'ordine in cui si fanno** — ognuno con quanto vale e
+      quante prove hai — poi **«Le tue volte»**, **chi lo somministra**, e in
+      fondo i due comandi per sostenerlo.
 
   - type: shot
     shot: esame-dettaglio
-    caption: "La pagina di un esame: gli esercizi che lo compongono con il punteggio massimo e il numero di prove, chi lo somministra e i due modi di sostenerlo."
+    caption: "La pagina di un esame: cosa si fa, gli esercizi numerati nell'ordine in cui si fanno, le tue volte, chi lo somministra e in fondo i due comandi."
 
   - type: note
     tone: tip
     title: "Quando un esercizio chiede più prove, conta la migliore"
     text: >-
-      Accanto a un esercizio puoi leggere per esempio **«3 prove · conta la
+      Accanto a un esercizio puoi leggere per esempio **«3 prove, conta la
       migliore»**. Vuol dire che quel gesto lo ripeti tre volte e vale il tuo
       risultato **migliore**, non la media e non la somma: se fai 6, 9 e 7 su
-      un esercizio da 10, quell'esercizio vale 9. Chi compone l'esame decide quante
-      prove servono; sugli esercizi a prova unica non compare nulla e si registra
-      una volta sola.
+      un esercizio da 10, quell'esercizio vale 9. Chi compone l'esame decide
+      quante prove servono; sugli esercizi a prova unica si registra una volta
+      sola.
 
   - type: heading
     id: da_solo
@@ -80,24 +88,33 @@ blocks:
 
   - type: steps
     items:
-      - title: "Apri l'esame e cerca «Prova da solo»"
+      - title: "Apri l'esame e tocca «Prova da solo»"
         text: >-
-          Sotto **Sostieni l'esame** ci sono due riquadri affiancati. Quello a
-          sinistra è l'allenamento: tocca **«Inizia»** e il tentativo si apre
-          subito, senza chiedere niente a nessuno.
+          È il pulsante in basso a sinistra, sempre a portata di dito. Il
+          tentativo si apre subito, senza chiedere niente a nessuno.
         shot: esame-dettaglio
-      - title: "Esegui gli esercizi nell'ordine in cui sono elencati"
+      - title: "Un esercizio per volta"
         text: >-
-          Per ogni prova compare una casella. Le riempi via via, in ordine, e
-          l'avanzamento in cima si aggiorna.
+          La pagina ti mostra **un esercizio solo**: la disposizione, le prove
+          che hai già fatto e, in basso, il punteggio da scrivere. **Più** e
+          **meno** lo muovono di uno; toccando la cifra la scrivi dalla
+          tastiera. Per un esercizio «riuscito o no» ci sono due tasti grandi.
+      - title: "Correggere, saltare, tornare indietro"
+        text: >-
+          Sotto il punteggio trovi **«Correggi la prova …»** se hai sbagliato a
+          scrivere, e **«Rinuncia alla prova …»** se non vuoi farla: una prova
+          non fatta non è uno zero, semplicemente non conta. Toccando un
+          esercizio nella fila in alto ci torni sopra.
       - title: "Puoi fermarti e riprendere"
         text: >-
           Se chiudi l'app a metà non perdi niente: tornando sull'esame trovi
-          **«Riprendi»** e ritrovi il tentativo dove l'avevi lasciato.
+          **«Riprendi l'allenamento»** e ritrovi il tentativo dove l'avevi
+          lasciato.
       - title: "Chiudi l'allenamento"
         text: >-
-          A quel punto entra nel tuo storico, insieme ai punteggi che hai
-          registrato.
+          Finiti gli esercizi compare il riepilogo, con **«Chiudi
+          l'allenamento»**. A quel punto entra nel tuo storico, insieme ai
+          punteggi che hai registrato.
 
   - type: heading
     id: appuntamento
@@ -111,7 +128,7 @@ blocks:
 
   - type: shot
     shot: esame-appuntamento
-    caption: "Il modulo per chiedere un appuntamento: a quali esaminatori rivolgersi, quando e in quale sala."
+    caption: "Il modulo per chiedere un appuntamento: a quali esaminatori rivolgersi, giorno, ora e sala."
 
   - type: options
     items:
@@ -122,8 +139,9 @@ blocks:
           primo chiude la richiesta per gli altri, che ricevono un avviso.
       - name: "Quando e dove"
         text: >-
-          Proponi data, ora e sala. Sono una proposta, non un impegno: l'altra
-          parte può risponderti con un orario diverso.
+          Proponi **giorno**, **ora** e **sala**. Sono una proposta, non un
+          impegno: l'altra parte può risponderti con un orario diverso, o con
+          un'altra sala.
       - name: "Note"
         text: "Facoltative. Servono a spiegare, non a concordare: l'accordo si fa con le proposte."
 
@@ -133,23 +151,38 @@ blocks:
 
   - type: text
     text: >-
-      Da lì in poi è uno scambio di proposte. L'esaminatore può accettare
-      quella che hai fatto oppure **controproporre** un altro orario; tu puoi
-      accettare la sua o rilanciare. Si va avanti finché uno dei due accetta,
-      oppure finché la richiesta scade.
+      Da lì in poi è uno scambio di proposte. In cima alla pagina c'è sempre
+      **la proposta sul tavolo** — giorno, ora, sala e chi l'ha fatta — e,
+      quando tocca a te, il pulsante per accettarla sta lì dentro:
+      **«Accetto: ci vediamo lì»**. Se non ti va bene, subito sotto puoi
+      **controproporre** un altro giorno, un'altra ora o un'altra sala. Si va
+      avanti finché uno dei due accetta, oppure finché la richiesta scade.
 
   - type: shot
     shot: esame-trattativa
-    caption: "Una trattativa in corso: la proposta sul tavolo, chi l'ha fatta e lo storico degli scambi."
+    caption: "Una trattativa in corso: in cima la proposta sul tavolo col pulsante per accettarla, sotto la controproposta, poi come ci siete arrivati."
+
+  - type: text
+    text: >-
+      **«Come ci siete arrivati»** tiene la fila delle proposte, con un punto
+      acceso su quella in piedi, e dice dov'è ogni esaminatore che avevi
+      interpellato: **sta trattando**, **non ha risposto**, **non può**.
+      Finché nessuno ha accettato puoi **ritirare la richiesta**.
+
+  - type: shot
+    shot: esame-appuntamenti
+    caption: "I tuoi appuntamenti d'esame: «Tocca a te» segna quelli in cui l'altra parte aspetta una tua risposta."
 
   - type: note
     tone: info
     title: "Tocca a uno per volta"
     text: >-
       Chi ha appena proposto **aspetta la risposta**: non si può proporre due
-      volte di fila. E se avevi interpellato più esaminatori, dal momento in
-      cui uno contropropone la trattativa è fra te e lui — gli altri possono
-      solo accettare l'ultima proposta, non inserirsi nello scambio.
+      volte di fila, e la pagina te lo dice invece di offrirti un pulsante.
+      Nell'elenco degli appuntamenti, **«Tocca a te»** segna quelli in cui sei
+      tu a dover rispondere. E se avevi interpellato più esaminatori, dal
+      momento in cui uno contropropone la trattativa è fra te e lui — gli altri
+      possono solo accettare l'ultima proposta, non inserirsi nello scambio.
 
   - type: heading
     id: il_giorno
@@ -161,16 +194,20 @@ blocks:
         text: "Davanti al tavolo, dalla pagina dell'appuntamento confermato."
       - title: "Tu accetti l'inizio"
         text: >-
-          Compare **«Accetto: iniziamo»**. Finché non lo tocchi non può essere
-          registrato nessun punteggio: nessuno viene valutato a sua insaputa.
+          In cima alla sessione compare **«Accetto: iniziamo»**. Finché non lo
+          tocchi non può essere registrato nessun punteggio: nessuno viene
+          valutato a sua insaputa.
       - title: "Esegui, lui registra"
         text: >-
-          Esercizio dopo esercizio, prova dopo prova, mentre l'avanzamento sale.
+          Esercizio dopo esercizio, prova dopo prova. Dal tuo telefono segui il
+          riepilogo: il totale e, per ogni esercizio, le prove fatte e quella
+          che conta.
         shot: esame-sessione
       - title: "Alla fine certifica l'esito"
         text: >-
           **Superato** oppure **non superato**. Non c'è un voto e non c'è una
           nota: è un fatto, non un giudizio da argomentare.
+        shot: esame-esito
 
   - type: note
     tone: warning
