@@ -315,6 +315,10 @@ I risultati delle **challenge** compaiono nelle statistiche individuali dei gioc
 Un giocatore può scegliere una **challenge** da un elenco generale o da quelle che ha già provato o dalle sue preferite.
 Un giocatore può aggiungere/togliere una **challenge** dalle sue preferite.
 
+> **Nota (2026-09-19) — il profilo dell'esercizio.** Oltre a *come si valuta*, un esercizio dice **che cosa allena**. Ha zero, una o più **abilità** (Fondamentali, Tiro, Battente, Posizione, Sponde, Difesa, Spaccata), **al più tre**, e zero, uno o più **gesti** (stop, stun, follow, draw, spin, forza, bank, kick, jump, massé), senza tetto: i due vocabolari sono fissi di piattaforma. Ha un **livello dichiarato da 1 a 5**, facoltativo; una **famiglia** con un **passo** (da 1 in su), liberi di chi lo crea; e dice se **la bianca** si rimette a ogni tiro o resta dove si ferma. Può avere **varianti** etichettate (destra e sinistra, A e B): sono lo stesso esercizio, e le prove si registrano separate. Una variante che ha già delle prove si rinomina, non si toglie. Gli esercizi nati prima restano senza profilo finché chi li ha creati non lo scrive.
+>
+> Un giocatore può dare a un esercizio un **voto da 1 a 5**, uno solo, che può cambiare; **vota solo chi l'ha provato**, cioè chi ha almeno una prova conclusa, dal catalogo o in gara. Accanto al voto si mostra **quanti giocatori l'hanno provato**, contati allo stesso modo.
+
 ### Esame
 
 Un **esame** è una sequenza ordinata di **challenge**, ciascuna con il proprio

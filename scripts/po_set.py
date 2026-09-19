@@ -81,6 +81,26 @@ def _msgstr(block: list[str]) -> str | None:
     return _unquote([first] + block[span[0] + 1 : span[1]])
 
 
+def _is_empty(block: list[str]) -> bool:
+    """Il blocco non ha nessuna traduzione, **plurali comprese**.
+
+    Una voce plurale non ha un `msgstr` ma tanti `msgstr[n]`: guardare solo il
+    primo campo la faceva sembrare «non vuota», e il suo `fuzzy` restava lì per
+    sempre — innocuo per chi compila, ma indistinguibile da un lavoro a metà.
+    """
+    forme = [i for i, line in enumerate(block) if line.startswith("msgstr[")]
+    if not forme:
+        return _msgstr(block) == ""
+    for start in forme:
+        first = block[start][block[start].index("] ") + 2 :]
+        end = start + 1
+        while end < len(block) and block[end].startswith('"'):
+            end += 1
+        if _unquote([first] + block[start + 1 : end]) != "":
+            return False
+    return True
+
+
 def _drop_fuzzy(block: list[str]) -> list[str]:
     out = []
     for line in block:
@@ -114,7 +134,7 @@ def main(argv: list[str]) -> int:
             line.startswith("#,") and re.search(r"\bfuzzy\b", line) for line in block
         )
         if clear_only:
-            if is_fuzzy and _msgstr(block) == "":
+            if is_fuzzy and _is_empty(block):
                 blocks[index] = _drop_fuzzy(block)
                 cleared += 1
             continue

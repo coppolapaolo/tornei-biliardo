@@ -1482,3 +1482,94 @@ class TestLaFinaleSecondoLaModalita:
         db_session.expire_all()
         aggiornata = db_session.get(PlayoffConfiguration, configurazione_id)
         assert aggiornata.playoff_weight == 2
+
+
+# ────────────────────────────────────────────────────────────────────────
+# Il profilo dell'esercizio (ADR-065)
+# ────────────────────────────────────────────────────────────────────────
+
+
+def _esercizio_per_il_profilo(db_session):
+    from models.challenge.models import Challenge
+
+    esercizio = Challenge(
+        title=f"Profilo {uuid.uuid4().hex[:6]}",
+        description="Dieci tiri dalla stessa posizione",
+        image_path="test.jpg",
+        pass_fail_only=False,
+        is_active=True,
+    )
+    db_session.add(esercizio)
+    db_session.flush()
+    return esercizio
+
+
+@pytest.mark.unit
+class TestIlProfiloDellEsercizio:
+    """`SPECIFICHE.md` riga 318, nota del 2026-09-19.
+
+    > Ha zero, una o più abilità […], al più tre, e zero, uno o più gesti […],
+    > senza tetto […]. Ha un livello dichiarato da 1 a 5, facoltativo; una
+    > famiglia con un passo (da 1 in su) […]
+    """
+
+    def test_i_due_vocabolari_sono_quelli_della_specifica(self):
+        from models.challenge.vocabulary import Abilita, Gesto
+
+        assert len(Abilita) == 7
+        assert len(Gesto) == 10
+
+    def test_tre_abilita_passano_la_quarta_no(self, db_session):
+        from models.challenge.profile_service import ChallengeProfileService
+        from models.exceptions import ValidationError
+
+        esercizio = _esercizio_per_il_profilo(db_session)
+        ChallengeProfileService.set_profile(
+            esercizio.id, abilita=["tiro", "posizione", "sponde"]
+        )
+        with pytest.raises(ValidationError):
+            ChallengeProfileService.set_profile(
+                esercizio.id, abilita=["tiro", "posizione", "sponde", "difesa"]
+            )
+
+    def test_i_gesti_non_hanno_tetto(self, db_session):
+        from models.challenge.profile_service import ChallengeProfileService
+        from models.challenge.vocabulary import Gesto
+
+        esercizio = _esercizio_per_il_profilo(db_session)
+        ChallengeProfileService.set_profile(
+            esercizio.id, gesti=[g.value for g in Gesto]
+        )
+
+    @pytest.mark.parametrize("livello", [1, 5])
+    def test_gli_estremi_del_livello_sono_ammessi(self, db_session, livello):
+        from models.challenge.profile_service import ChallengeProfileService
+
+        esercizio = _esercizio_per_il_profilo(db_session)
+        salvato = ChallengeProfileService.set_profile(
+            esercizio.id, declared_level=livello
+        )
+        assert salvato.declared_level == livello
+
+    @pytest.mark.parametrize("livello", [0, 6])
+    def test_fuori_da_uno_cinque_il_livello_si_rifiuta(self, db_session, livello):
+        from models.challenge.profile_service import ChallengeProfileService
+        from models.exceptions import ValidationError
+
+        esercizio = _esercizio_per_il_profilo(db_session)
+        with pytest.raises(ValidationError):
+            ChallengeProfileService.set_profile(esercizio.id, declared_level=livello)
+
+    def test_il_livello_e_facoltativo(self, db_session):
+        esercizio = _esercizio_per_il_profilo(db_session)
+        assert esercizio.declared_level is None
+
+    def test_il_passo_parte_da_uno(self, db_session):
+        from models.challenge.profile_service import ChallengeProfileService
+        from models.exceptions import ValidationError
+
+        esercizio = _esercizio_per_il_profilo(db_session)
+        with pytest.raises(ValidationError):
+            ChallengeProfileService.set_profile(
+                esercizio.id, family="stop shot", family_step=0
+            )

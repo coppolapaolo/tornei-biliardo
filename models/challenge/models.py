@@ -39,14 +39,12 @@ Modifiche Recenti (Settembre 2025):
 from __future__ import annotations
 
 import statistics
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Optional
 
 from sqlalchemy import desc
 
 from ..base import db, BaseModel, utc_now
-
-if TYPE_CHECKING:
-    pass
+from .vocabulary import Abilita, CategoryAxis, Gesto
 
 
 class Challenge(BaseModel):
@@ -122,6 +120,32 @@ class Challenge(BaseModel):
     # nessun posto dove dire quanto vale al massimo una prova.
     max_score = db.Column(db.Integer, nullable=True)
 
+    # ── Il profilo: che cosa allena e quanto e' difficile (ADR-065) ──────
+    #
+    # Tutte facoltative, e NULL non e' mai un dato mancante: dice «l'autore non
+    # l'ha detto». Gli esercizi nati prima di queste colonne restano cosi'
+    # finche' qualcuno non li descrive — un livello 1 messo d'ufficio sarebbe
+    # una bugia che il catalogo poi filtra come vera.
+    #
+    # Le abilita' e i gesti **non** sono qui: un esercizio ne ha zero, una o
+    # piu', quindi stanno in `challenge_category` (vedi `abilita` e `gesti`).
+
+    # Livello **dichiarato** dall'autore, da 1 a 5. Il nome non e' «difficolta'»
+    # di proposito: quella misurata dai risultati (#174) gli stara' accanto, e
+    # due numeri con lo stesso nome in lettura non si distinguono piu'.
+    declared_level = db.Column(db.Integer, nullable=True)
+
+    # Famiglia e passo: «stop shot» 1 · 2 · 3, lo stesso gesto sempre piu'
+    # difficile. Testo libero dell'autore — a differenza dei due vocabolari —
+    # perche' le progressioni le inventa chi insegna, non la piattaforma.
+    family = db.Column(db.String(80), nullable=True)
+    family_step = db.Column(db.Integer, nullable=True)
+
+    # La bianca: True = si rimette al suo posto a ogni tiro, False = resta dove
+    # si ferma (e il tiro dopo parte da li'). Cambia che cosa misura il
+    # punteggio, quindi e' un fatto dell'esercizio e non una nota nel testo.
+    cue_ball_reset = db.Column(db.Boolean, nullable=True)
+
     # Metadata
     created_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
@@ -142,6 +166,56 @@ class Challenge(BaseModel):
     )
 
     created_by = db.relationship("User", foreign_keys=[created_by_id])
+
+    # `selectin` e non `dynamic`: il catalogo mostra le etichette di decine di
+    # esercizi insieme, e una SELECT per card e' il modo in cui una pagina
+    # passa da 3 a 60 query senza che nessun test se ne accorga.
+    categories = db.relationship(
+        "ChallengeCategory",
+        back_populates="challenge",
+        lazy="selectin",
+        cascade="all, delete-orphan",
+    )
+
+    variants = db.relationship(
+        "ChallengeVariant",
+        back_populates="challenge",
+        lazy="selectin",
+        order_by="ChallengeVariant.position",
+        cascade="all, delete-orphan",
+    )
+
+    ratings = db.relationship(
+        "ChallengeRating",
+        back_populates="challenge",
+        lazy="dynamic",
+        cascade="all, delete-orphan",
+    )
+
+    @property
+    def abilita(self) -> List[Abilita]:
+        """Le abilita' allenate, **nell'ordine del vocabolario**.
+
+        Una riga con un valore che il vocabolario non conosce piu' si salta:
+        togliere una voce dall'enum non deve far esplodere il catalogo.
+        """
+        presenti = {
+            c.value for c in self.categories if c.axis == CategoryAxis.ABILITA.value
+        }
+        return [a for a in Abilita if a.value in presenti]
+
+    @property
+    def gesti(self) -> List[Gesto]:
+        """I gesti con cui si esegue, nell'ordine del vocabolario."""
+        presenti = {
+            c.value for c in self.categories if c.axis == CategoryAxis.GESTO.value
+        }
+        return [g for g in Gesto if g.value in presenti]
+
+    @property
+    def has_variants(self) -> bool:
+        """Due o piu' etichette: con una sola non c'e' niente da distinguere."""
+        return len(self.variants) >= 2
 
     def get_statistics(self) -> Dict[str, Any]:
         """
@@ -362,6 +436,15 @@ class ChallengeAttempt(BaseModel):
     # Note opzionali sul tentativo (condizioni particolari, osservazioni)
     notes = db.Column(db.Text, nullable=True)
 
+    # Con quale variante dell'esercizio e' stata fatta la prova (dx/sx, A/B).
+    # NULL su ogni esercizio senza varianti — la quasi totalita' — e sulle prove
+    # nate prima che l'autore le introducesse: «non si sa» resta «non si sa».
+    variant_id = db.Column(
+        db.Integer,
+        db.ForeignKey("challenge_variant.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+
     # DEPRECATED (Sprint 11, December 2025)
     # These fields violate DDD: Challenge domain shouldn't know about Gara.
     # Use GaraByeChallenge (models.competition.gara_bye_challenge) instead.
@@ -379,6 +462,7 @@ class ChallengeAttempt(BaseModel):
     challenge = db.relationship("Challenge", back_populates="attempts")
     user = db.relationship("User")
     gara = db.relationship("Gara")  # DEPRECATED: Use GaraByeChallenge.gara instead
+    variant = db.relationship("ChallengeVariant")
 
     def complete_attempt(
         self, score: Optional[int] = None, passed: Optional[bool] = None
@@ -477,4 +561,103 @@ class ChallengeFavorite(BaseModel):
         """Rappresentazione stringa per debugging e logging sistema preferiti."""
         return (
             f"<ChallengeFavorite User#{self.user_id} -> Challenge#{self.challenge_id}>"
+        )
+
+
+class ChallengeCategory(BaseModel):
+    """Una voce di vocabolario attaccata a un esercizio (ADR-065).
+
+    Una tabella sola per i due assi, con `axis` a dire quale: abilita' e gesto
+    hanno la stessa forma (esercizio → voce) e la stessa vita, e due tabelle
+    gemelle sarebbero due posti da tenere allineati a ogni ritocco.
+
+    `value` e' il **valore** dell'enum (`Abilita`/`Gesto`), in una colonna
+    `String`: il vocabolario vive nel codice, dove si traduce, e qui resta solo
+    l'associazione.
+    """
+
+    __tablename__ = "challenge_category"
+
+    id = db.Column(db.Integer, primary_key=True)
+    challenge_id = db.Column(
+        db.Integer, db.ForeignKey("challenge.id", ondelete="CASCADE"), nullable=False
+    )
+    axis = db.Column(db.String(20), nullable=False)
+    value = db.Column(db.String(30), nullable=False)
+
+    challenge = db.relationship("Challenge", back_populates="categories")
+
+    __table_args__ = (
+        db.UniqueConstraint(
+            "challenge_id", "axis", "value", name="uq_challenge_category"
+        ),
+        db.Index("ix_challenge_category_axis_value", "axis", "value"),
+    )
+
+    def __repr__(self) -> str:  # pragma: no cover - banale
+        return f"<ChallengeCategory #{self.challenge_id} {self.axis}={self.value}>"
+
+
+class ChallengeVariant(BaseModel):
+    """Una variante etichettata di **uno stesso** esercizio: dx/sx, A/B.
+
+    Non e' un secondo esercizio: disegno, istruzioni, profilo e voto sono
+    quelli del padre. Cambia solo da che parte ci si mette, e le prove si
+    registrano separate (`ChallengeAttempt.variant_id`) perche' il 9 su 10 di
+    destra e il 4 su 10 di sinistra sono la notizia, non la loro media.
+
+    Le etichette sono N, libere dell'autore: due bastano quasi sempre, ma
+    niente nel modello lo presume.
+    """
+
+    __tablename__ = "challenge_variant"
+
+    id = db.Column(db.Integer, primary_key=True)
+    challenge_id = db.Column(
+        db.Integer, db.ForeignKey("challenge.id", ondelete="CASCADE"), nullable=False
+    )
+    label = db.Column(db.String(40), nullable=False)
+    position = db.Column(db.Integer, nullable=False, default=1)
+
+    challenge = db.relationship("Challenge", back_populates="variants")
+
+    __table_args__ = (
+        db.UniqueConstraint("challenge_id", "label", name="uq_challenge_variant"),
+    )
+
+    def __repr__(self) -> str:  # pragma: no cover - banale
+        return f"<ChallengeVariant #{self.challenge_id} {self.label!r}>"
+
+
+class ChallengeRating(BaseModel):
+    """Il voto di un giocatore a un esercizio, da 1 a 5 (ADR-065, D6).
+
+    Un voto per giocatore per esercizio: rivotare **sostituisce**. L'unicita'
+    sta nello schema e non in un `if`, perche' `UserMergeService` decide dallo
+    schema come spostare le righe quando due account si fondono.
+    """
+
+    __tablename__ = "challenge_rating"
+
+    id = db.Column(db.Integer, primary_key=True)
+    challenge_id = db.Column(
+        db.Integer, db.ForeignKey("challenge.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    rating = db.Column(db.Integer, nullable=False)
+
+    challenge = db.relationship("Challenge", back_populates="ratings")
+    user = db.relationship("User")
+
+    __table_args__ = (
+        db.UniqueConstraint("challenge_id", "user_id", name="uq_challenge_rating"),
+        db.CheckConstraint("rating BETWEEN 1 AND 5", name="ck_challenge_rating_range"),
+    )
+
+    def __repr__(self) -> str:  # pragma: no cover - banale
+        return (
+            f"<ChallengeRating User#{self.user_id} -> "
+            f"Challenge#{self.challenge_id}: {self.rating}>"
         )

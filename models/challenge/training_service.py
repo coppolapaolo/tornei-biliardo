@@ -40,8 +40,8 @@ def _entry(
     """Forma comune alle due sorgenti.
 
     ``challenge_name`` passa da ``get_display_name()``: ``Challenge`` **non ha**
-    un campo ``name`` (né ``max_score``), e leggerli è il bug storico che
-    svuotava questa sezione in silenzio.
+    un campo ``name``, e leggerlo è il bug storico che svuotava questa sezione
+    in silenzio. (``max_score`` oggi c'è: allora mancava anche quello.)
 
     ``source`` è **dichiarata dal chiamante**, non dedotta dalla presenza del
     nome della gara: un tentativo giocato in una gara senza nome verrebbe

@@ -152,7 +152,8 @@ nuova del builder si **ri-prefissa**, non si incolla grezzo.
 
 ### Challenge
 **Fields:** `title`, `description`, `image_path`, `pass_fail_only`, `max_score`,
-`diagram_scene`, `is_active`
+`diagram_scene`, `is_active` — più il profilo (`declared_level`, `family`,
+`family_step`, `cue_ball_reset`, vedi sotto)
 
 > ⚠️ `Challenge` **non ha** `name`: il nome mostrato è `get_display_name()`, che
 > restituisce il `title` scelto oppure il progressivo (`Esercizio 12`). Non è
@@ -177,8 +178,46 @@ nuova del builder si **ri-prefissa**, non si incolla grezzo.
 > drill del profilo per mesi. Oggi la colonna c'è, quindi quel difetto non si
 > riproduce più cercando un `AttributeError`.
 
+### Il profilo: che cosa allena, quanto è difficile, in che varianti (ADR-065)
+
+`Challenge` dice *come si valuta* la prova; il **profilo** dice *come si trova*.
+Tutto facoltativo, e `NULL` vuol dire «l'autore non l'ha detto» — mai un default
+inventato, nemmeno in migration.
+
+| cosa | dove | note |
+|---|---|---|
+| **abilità** (al più 3) e **gesti** (senza tetto) | `challenge_category (axis, value)` → `challenge.abilita`, `challenge.gesti` | vocabolari **fissi**, enum in `vocabulary.py`; su disco va il *valore*, in colonne `String` |
+| livello **dichiarato** 1–5 | `declared_level` | non «difficoltà»: quella misurata (#174) gli starà accanto |
+| famiglia e passo | `family`, `family_step` | liberi dell'autore; un passo senza famiglia si rifiuta |
+| la bianca | `cue_ball_reset` | `True` si rimette, `False` resta dove si ferma |
+| varianti (dx/sx, A/B) | `challenge_variant` + `ChallengeAttempt.variant_id` | **mai un secondo esercizio**; con prove si rinomina, non si toglie |
+| voto 1–5 | `challenge_rating` | uno per giocatore, unicità e `CHECK` nello schema |
+
+```python
+from models.challenge.profile_service import ChallengeProfileService, copy_profile
+from models.challenge.popularity import popularity_for, has_tried
+
+ChallengeProfileService.set_profile(
+    challenge.id,
+    abilita=["posizione", "tiro"],      # sostituisce l'elenco
+    gesti=["draw"],
+    declared_level=2,
+    variants=[{"id": 7, "label": "destra"}, {"label": "sinistra"}],
+)
+numeri = popularity_for([c.id for c in esercizi])   # tre query, non tre per card
+```
+
+* **Non inviato ≠ vuoto**: ogni argomento di `set_profile` ha default `UNSET`;
+  `None` o `[]` vuol dire «toglilo».
+* Il profilo **non** passa da `update_challenge`: quello cambia il senso dei
+  punteggi già registrati (e il modulo chiede se farne una copia), questo no.
+* «Quanti l'hanno provato» **si conta**, non si salva: prove *completate* dal
+  catalogo ∪ in gara, le stesse fonti dello storico. `has_tried` è anche la
+  regola di chi può votare — una funzione sola perché non divergano.
+* `copy_profile(originale, copia)` porta il profilo, non prove né voti.
+
 ### ChallengeAttempt
-**Fields:** `challenge_id`, `user_id`, `score`, `passed`, `attempted_at`
+**Fields:** `challenge_id`, `user_id`, `score`, `passed`, `attempted_at`, `variant_id`
 
 Una prova si **cancella**, con `ChallengeService.delete_attempt`. Non è una
 concessione: si registra con un tocco solo, col telefono appoggiato alla sponda,
