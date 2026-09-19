@@ -148,6 +148,10 @@ class TestChallengeImagePathsFix:
         with app.app_context():
             # Use centralized path management to check directory structure
             static_folder = current_app.static_folder
+            # La cartella la crea l'app al primo caricamento, ed e' in
+            # `.gitignore`: in un checkout pulito non c'e' finche' nessuno la
+            # chiede. Il contratto e' «dopo `ensure` esiste», non «esiste gia'».
+            ImagePathManager.ensure_challenge_upload_dir()
             challenges_dir = ImagePathManager.get_challenge_upload_dir()
 
             assert static_folder is not None, "Static folder should be configured"
@@ -250,5 +254,6 @@ class TestChallengeImagePathsFix:
             assert "challenges" in file_system_path
 
             # The directory should exist (using centralized directory management)
+            ImagePathManager.ensure_challenge_upload_dir()
             expected_dir = ImagePathManager.get_challenge_upload_dir()
             assert os.path.exists(expected_dir)
