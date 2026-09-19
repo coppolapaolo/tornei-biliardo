@@ -25,7 +25,7 @@ Sorgenti del canvas: `sorgenti/` (`kit.py`, `tpa.py`, `esercizi.py`,
 | — | PR #469 allowlist esercizi di gara | unita il 19/09 |
 | — | PR #470 difetti in produzione | unita il 19/09 |
 | 0 | Canvas, tre giri + pagina di decisioni | **chiusa il 19/09** — canvas v20, 46 artboard in 8 pagine; D1–D20 congelate; issue #471 e #472 aperte |
-| 1 | Sorgenti e STATO.md nel repo | **in corso** — PR da numerare |
+| 1 | Sorgenti e STATO.md nel repo | **fatta il 19/09** — PR #473 |
 | 2 | Referto TPA | da fare |
 | 3 | Esami | da fare |
 | 4 | Modello dell'esercizio (#168 #252 #253) | da fare |

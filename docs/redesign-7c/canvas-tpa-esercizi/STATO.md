@@ -166,7 +166,7 @@ cosa si è scelto, cosa si è scartato e perché.
 | Fase | Cosa | PR | Stato |
 |---|---|---|---|
 | 0 | Canvas, tre giri, pagina di decisioni | — | chiusa il 19/09 |
-| 1 | Sorgenti e questo file nel repo | questa | in corso |
+| 1 | Sorgenti e questo file nel repo | #473 | fatta il 19/09 |
 | 2 | Referto TPA | | da fare |
 | 3 | Esami | | da fare |
 | 4 | Il modello dell'esercizio (#168 #252 #253), «Oggi», voto | | da fare |
