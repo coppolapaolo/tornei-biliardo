@@ -4268,3 +4268,25 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
   display: grid; place-items: center;
   font-family: var(--c7-font-mono); font-size: 12px; font-weight: 800;
 }
+/* I fatti fuori da una card d'accento: il velo chiaro lì sopra non si vede. */
+.c7-facts__item--plain { background: var(--c7-bg); color: var(--c7-ink-soft); }
+.c7-facts__item--info { background: var(--c7-accent-tint); color: var(--c7-accent-tint-ink); }
+/* Lo slot di un appuntamento: il giorno come lo si dice, grande; sotto, dove
+   e con chi; in fondo alla card il comando che lo riguarda. */
+.c7-slot__when {
+  margin-top: 6px; font-family: var(--c7-font-mono); font-weight: 800;
+  font-size: 26px; letter-spacing: -.04em; line-height: 1.15;
+}
+.c7-slot__where { margin-top: 2px; font-size: 13px; font-weight: 700; opacity: .78; }
+.c7-slot__cta { margin-top: 14px; width: 100%; }
+@media (min-width: 992px) { .c7-slot__cta { width: auto; min-width: 320px; } }
+.c7-slot__note { margin-top: 12px; font-size: 13px; font-weight: 600; line-height: 1.45; opacity: .85; }
+/* La storia di una trattativa: un punto per proposta, acceso quello in piedi. */
+.c7-tl { margin-top: 12px; display: grid; grid-template-columns: 14px 1fr; gap: 0 12px; }
+.c7-tl__dot {
+  width: 10px; height: 10px; border-radius: 50%; margin-top: 6px;
+  justify-self: center; background: var(--c7-line);
+}
+.c7-tl__dot.is-now { background: var(--c7-accent); }
+.c7-tl__body { padding-bottom: 14px; }
+.c7-tl__when { font-family: var(--c7-font-mono); font-size: 14px; font-weight: 800; }

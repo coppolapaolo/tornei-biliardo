@@ -15,7 +15,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional, Tuple
 
 from sqlalchemy.orm import joinedload
 
@@ -37,6 +37,23 @@ class StandingKind(str, Enum):
     FAILED = "failed"  # l'ha sostenuto davanti a un esaminatore, senza superarlo
     PRACTICED = "practiced"  # l'ha provato solo da solo
     NEVER = "never"
+
+
+class RecipientStance(str, Enum):
+    """Dov'è un esaminatore interpellato dentro una trattativa. Si deduce.
+
+    Lo stato persistito del destinatario ha quattro valori, ma alla pagina ne
+    servono cinque: ``pending`` vuol dire sia «sta trattando con te» sia «non
+    ha mai risposto», e la differenza la fa ``negotiating_with_id`` sulla
+    richiesta — è l'invariante 2, letto dal lato di chi guarda.
+    """
+
+    # L'ordine dei membri è l'ordine in cui la pagina li elenca.
+    ACCEPTED = "accepted"
+    NEGOTIATING = "negotiating"  # è l'interlocutore fissato dalla controproposta
+    SILENT = "silent"  # interpellato, non si è ancora espresso
+    DECLINED = "declined"
+    CLOSED = "closed"  # non ha detto di no: ha accettato prima un altro
 
 
 @dataclass
@@ -174,3 +191,26 @@ class ExamOverview:
             .order_by(ExamRequest.scheduled_at)
             .all()
         )
+
+    @staticmethod
+    def recipient_stances(
+        request: ExamRequest,
+    ) -> List[Tuple[ExamRequestRecipient, RecipientStance]]:
+        """Ogni interpellato con la sua posizione: prima chi accetta o tratta."""
+        by_status = {
+            ExamRequestRecipientStatus.ACCEPTED.value: RecipientStance.ACCEPTED,
+            ExamRequestRecipientStatus.REJECTED.value: RecipientStance.DECLINED,
+            ExamRequestRecipientStatus.CLOSED.value: RecipientStance.CLOSED,
+        }
+        stances = []
+        for recipient in request.recipients:
+            stance = by_status.get(recipient.status, RecipientStance.SILENT)
+            if (
+                stance is RecipientStance.SILENT
+                and recipient.examiner_id == request.negotiating_with_id
+            ):
+                stance = RecipientStance.NEGOTIATING
+            stances.append((recipient, stance))
+        order = list(RecipientStance)
+        stances.sort(key=lambda pair: order.index(pair[1]))
+        return stances

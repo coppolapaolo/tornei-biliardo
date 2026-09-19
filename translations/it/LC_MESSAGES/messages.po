@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-19 21:13+0200\n"
+"POT-Creation-Date: 2026-09-19 21:46+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -1437,7 +1437,7 @@ msgstr ""
 msgid "%(user)s propone «%(exam)s»: %(slot)s."
 msgstr ""
 
-#: models/exam/request_service.py:689 templates/exam/request_detail.html:101
+#: models/exam/request_service.py:689
 msgid "Rispondi"
 msgstr ""
 
@@ -3005,7 +3005,7 @@ msgstr ""
 msgid "Hai già questo ruolo."
 msgstr ""
 
-#: routes/exam/requests.py:138 routes/role_grant.py:100
+#: routes/exam/requests.py:178 routes/role_grant.py:100
 msgid "Richiesta inviata."
 msgstr ""
 
@@ -3013,7 +3013,7 @@ msgstr ""
 msgid "Richiesta approvata: il ruolo è stato concesso."
 msgstr ""
 
-#: routes/exam/requests.py:185 routes/role_grant.py:139
+#: routes/exam/requests.py:225 routes/role_grant.py:139
 msgid "Richiesta rifiutata."
 msgstr ""
 
@@ -3699,15 +3699,15 @@ msgstr ""
 msgid "Esaminatore rimosso."
 msgstr ""
 
-#: routes/exam/requests.py:159
+#: routes/exam/requests.py:199
 msgid "Controproposta inviata."
 msgstr ""
 
-#: routes/exam/requests.py:172
+#: routes/exam/requests.py:212
 msgid "Appuntamento fissato."
 msgstr ""
 
-#: routes/exam/requests.py:198
+#: routes/exam/requests.py:238
 msgid "Richiesta ritirata."
 msgstr ""
 
@@ -6198,7 +6198,7 @@ msgstr ""
 #: templates/admin/campionato_detail.html:353
 #: templates/components/_unified_match_score.html:88
 #: templates/components/_unified_match_score.html:99
-#: templates/exam/requests.html:19 utils/status_ui.py:225
+#: templates/exam/requests.html:28 utils/status_ui.py:225
 msgid "Confermato"
 msgstr ""
 
@@ -8301,7 +8301,7 @@ msgstr ""
 #: templates/components/_player_dashboard_content.html:36
 #: templates/components/_playoff_invitations.html:36
 #: templates/direttore/_fase_preparazione.html:184
-#: templates/exam/request_form.html:55
+#: templates/exam/request_detail.html:96 templates/exam/request_form.html:63
 #: templates/individual_match/match_detail.html:211
 #: templates/player/my_venue_requests.html:21
 #: templates/public/garas_list.html:12 templates/public/garas_list.html:32
@@ -10810,6 +10810,7 @@ msgstr ""
 
 #: templates/components/_gara_edit_form.html:45
 #: templates/components/_new_gara_modal.html:92
+#: templates/exam/request_detail.html:92 templates/exam/request_form.html:58
 #: templates/individual_match/discover_players.html:42
 msgid "Ora"
 msgstr ""
@@ -12180,7 +12181,6 @@ msgstr ""
 #: templates/components/_multi_set_score_display.html:94
 #: templates/components/_playoff_invitations.html:23
 #: templates/components/_proposal_labels.html:18
-#: templates/exam/request_detail.html:50
 #: templates/individual_match/admin_overview.html:37
 #: templates/individual_match/dashboard.html:142
 #: templates/individual_match/dashboard.html:162
@@ -12219,6 +12219,7 @@ msgstr ""
 
 #: templates/components/_match_scoreboard.html:127
 #: templates/direttore/_card_partita.html:255 templates/exam/compose.html:110
+#: templates/exam/request_detail.html:24
 msgid "tu"
 msgstr ""
 
@@ -12926,7 +12927,7 @@ msgid "Accettata"
 msgstr ""
 
 #: templates/components/_proposal_labels.html:21
-#: templates/exam/requests.html:25 templates/gamification/admin/quests.html:48
+#: templates/exam/requests.html:36 templates/gamification/admin/quests.html:48
 msgid "Scaduta"
 msgstr ""
 
@@ -12935,7 +12936,6 @@ msgid "Non ha ancora risposto"
 msgstr ""
 
 #: templates/components/_proposal_labels.html:34
-#: templates/exam/request_detail.html:43
 msgid "Ha accettato"
 msgstr ""
 
@@ -17031,7 +17031,7 @@ msgstr ""
 msgid "Quelli già nell'esame non compaiono."
 msgstr ""
 
-#: templates/exam/detail.html:16
+#: templates/exam/detail.html:16 templates/exam/requests.html:8
 msgid "Torna agli esami"
 msgstr ""
 
@@ -17208,114 +17208,138 @@ msgstr ""
 msgid "Subito dopo scegli gli esercizi e il loro ordine."
 msgstr ""
 
-#: templates/exam/request_detail.html:3 templates/exam/request_detail.html:6
+#: templates/exam/request_detail.html:14 templates/exam/request_detail.html:20
 msgid "Appuntamento d'esame"
 msgstr ""
 
-#: templates/exam/request_detail.html:14
+#: templates/exam/request_detail.html:18
+msgid "Torna agli appuntamenti"
+msgstr ""
+
+#: templates/exam/request_detail.html:36
 msgid "Appuntamento confermato"
 msgstr ""
 
-#: templates/exam/request_detail.html:15
+#: templates/exam/request_detail.html:37
+msgid "Richiesta ritirata"
+msgstr ""
+
+#: templates/exam/request_detail.html:38
+msgid "Scaduta senza accordo"
+msgstr ""
+
+#: templates/exam/request_detail.html:39
 msgid "Proposta sul tavolo"
 msgstr ""
 
-#: templates/exam/request_detail.html:24
+#: templates/exam/request_detail.html:46 templates/exam/request_detail.html:47
 #, python-format
-msgid "proposto da %(who)s"
-msgstr ""
-
-#: templates/exam/request_detail.html:29
-#, python-format
-msgid "Con %(who)s"
-msgstr ""
-
-#: templates/exam/request_detail.html:35
-msgid "Esaminatori interpellati"
-msgstr ""
-
-#: templates/exam/request_detail.html:45
-msgid "Si è sfilato"
+msgid "con %(who)s"
 msgstr ""
 
 #: templates/exam/request_detail.html:48
-msgid "Richiesta chiusa"
+msgid "proposta da te"
 msgstr ""
 
-#: templates/exam/request_detail.html:58
-msgid "Come ci siete arrivati"
+#: templates/exam/request_detail.html:49
+#, python-format
+msgid "proposta da %(who)s"
 msgstr ""
 
-#: templates/exam/request_detail.html:72
-msgid "attuale"
+#: templates/exam/request_detail.html:55
+msgid "Accetto: ci vediamo lì"
 msgstr ""
 
-#: templates/exam/request_detail.html:85
-msgid ""
-"La trattativa è in corso con un altro esaminatore: puoi accettare la "
-"proposta attuale, o lasciar scadere."
+#: templates/exam/request_detail.html:60
+msgid "L'ultima proposta è tua: ora tocca all'altra parte rispondere."
 msgstr ""
 
-#: templates/exam/request_detail.html:90
-msgid "Accetto questo slot"
-msgstr ""
-
-#: templates/exam/request_detail.html:97
-msgid "Tocca all'altra parte"
-msgstr ""
-
-#: templates/exam/request_detail.html:98
-msgid "Hai fatto tu l'ultima proposta: attendi una risposta."
-msgstr ""
-
-#: templates/exam/request_detail.html:105
-msgid "Accetto lo slot proposto"
-msgstr ""
-
-#: templates/exam/request_detail.html:110
-msgid "Oppure controproponi"
-msgstr ""
-
-#: templates/exam/request_detail.html:116
-msgid "La sala resta la stessa se non ne indichi un'altra."
-msgstr ""
-
-#: templates/exam/request_detail.html:119
-msgid "Controproponi"
-msgstr ""
-
-#: templates/exam/request_detail.html:130
-msgid "Ritirare la richiesta?"
-msgstr ""
-
-#: templates/exam/request_detail.html:131
-msgid "Ritira la richiesta"
-msgstr ""
-
-#: templates/exam/request_detail.html:138
-msgid "Non posso"
-msgstr ""
-
-#: templates/exam/request_detail.html:146
-msgid "La sessione"
-msgstr ""
-
-#: templates/exam/request_detail.html:149
+#: templates/exam/request_detail.html:67
 msgid "Vai alla sessione"
 msgstr ""
 
-#: templates/exam/request_detail.html:154
+#: templates/exam/request_detail.html:71
 msgid "Apri la sessione"
 msgstr ""
 
-#: templates/exam/request_detail.html:156
+#: templates/exam/request_detail.html:73
 msgid ""
 "Il candidato dovrà accettare l'inizio prima che tu possa registrare i "
 "punteggi."
 msgstr ""
 
-#: templates/exam/request_detail.html:160
+#: templates/exam/request_detail.html:75
 msgid "L'esaminatore aprirà la sessione al momento dell'esame."
+msgstr ""
+
+#: templates/exam/request_detail.html:85
+msgid "Oppure controproponi"
+msgstr ""
+
+#: templates/exam/request_detail.html:88 templates/exam/request_form.html:54
+msgid "Giorno"
+msgstr ""
+
+#: templates/exam/request_detail.html:102
+msgid "Manda la controproposta"
+msgstr ""
+
+#: templates/exam/request_detail.html:108
+msgid ""
+"La trattativa è in corso con un altro esaminatore: puoi accettare la "
+"proposta com'è, o lasciar perdere."
+msgstr ""
+
+#: templates/exam/request_detail.html:118
+msgid "Come ci siete arrivati"
+msgstr ""
+
+#: templates/exam/request_detail.html:131
+#, python-format
+msgid "%(who)s ha accettato"
+msgstr ""
+
+#: templates/exam/request_detail.html:132
+#, python-format
+msgid "%(who)s sta trattando"
+msgstr ""
+
+#: templates/exam/request_detail.html:133
+#, python-format
+msgid "%(who)s non può"
+msgstr ""
+
+#: templates/exam/request_detail.html:135
+#, python-format
+msgid "%(who)s non ha fatto in tempo"
+msgstr ""
+
+#: templates/exam/request_detail.html:136
+#, python-format
+msgid "%(who)s non ha risposto"
+msgstr ""
+
+#: templates/exam/request_detail.html:145
+#: templates/exam/request_detail.html:169
+msgid "Ritira la richiesta"
+msgstr ""
+
+#: templates/exam/request_detail.html:150
+msgid "Non posso"
+msgstr ""
+
+#: templates/exam/request_detail.html:163
+msgid "Ritirare la richiesta?"
+msgstr ""
+
+#: templates/exam/request_detail.html:164
+msgid ""
+"Gli esaminatori interpellati vengono avvisati. Potrai chiederne un'altra "
+"quando vuoi."
+msgstr ""
+
+#: templates/exam/request_detail.html:170
+msgid "La tengo"
 msgstr ""
 
 #: templates/exam/request_form.html:12
@@ -17354,30 +17378,25 @@ msgstr ""
 msgid "Quando e dove"
 msgstr ""
 
-#: templates/exam/request_form.html:52
-#: templates/individual_match/create_proposal.html:64
-msgid "Data e ora"
-msgstr ""
-
-#: templates/exam/request_form.html:57
+#: templates/exam/request_form.html:65
 msgid "Scegli una sala"
 msgstr ""
 
-#: templates/exam/request_form.html:63 templates/roles/request_form.html:55
+#: templates/exam/request_form.html:71 templates/roles/request_form.html:55
 msgid "Note (facoltative)"
 msgstr ""
 
-#: templates/exam/request_form.html:65
+#: templates/exam/request_form.html:73
 msgid "Qualcosa da dire all'esaminatore"
 msgstr ""
 
-#: templates/exam/request_form.html:68
+#: templates/exam/request_form.html:76
 msgid ""
 "È una proposta: l'esaminatore può controproporre un altro orario, e si "
 "continua finché non trovate l'accordo."
 msgstr ""
 
-#: templates/exam/request_form.html:72
+#: templates/exam/request_form.html:80
 #: templates/individual_match/discover_players.html:52
 #: templates/player/venues.html:100
 msgid "Invia la richiesta"
@@ -17387,36 +17406,40 @@ msgstr ""
 msgid "Appuntamenti d'esame"
 msgstr ""
 
-#: templates/exam/requests.html:6
-msgid "Le richieste che hai inviato e quelle che hai ricevuto"
+#: templates/exam/requests.html:10
+msgid "Inviate e ricevute"
 msgstr ""
 
-#: templates/exam/requests.html:21
+#: templates/exam/requests.html:30
+msgid "Tocca a te"
+msgstr ""
+
+#: templates/exam/requests.html:32
 msgid "In trattativa"
 msgstr ""
 
-#: templates/exam/requests.html:23
+#: templates/exam/requests.html:34
 msgid "Ritirata"
 msgstr ""
 
-#: templates/exam/requests.html:34 templates/individual_match/proposals.html:76
+#: templates/exam/requests.html:45 templates/individual_match/proposals.html:76
 msgid "Ricevute"
 msgstr ""
 
-#: templates/exam/requests.html:44 templates/individual_match/proposals.html:81
+#: templates/exam/requests.html:55 templates/individual_match/proposals.html:81
 #: templates/individual_match/proposals.html:242
 msgid "Inviate"
 msgstr ""
 
-#: templates/exam/requests.html:55
+#: templates/exam/requests.html:66
 msgid "Nessun appuntamento"
 msgstr ""
 
-#: templates/exam/requests.html:57
+#: templates/exam/requests.html:68
 msgid "Quando chiederai di sostenere un esame, la trattativa comparirà qui."
 msgstr ""
 
-#: templates/exam/requests.html:60
+#: templates/exam/requests.html:71
 msgid "Vedi gli esami"
 msgstr ""
 
@@ -19129,6 +19152,10 @@ msgstr ""
 
 #: templates/individual_match/create_proposal.html:55
 msgid "Cerca fra i giocatori con cui hai già giocato"
+msgstr ""
+
+#: templates/individual_match/create_proposal.html:64
+msgid "Data e ora"
 msgstr ""
 
 #: templates/individual_match/create_proposal.html:70

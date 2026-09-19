@@ -3,39 +3,50 @@
 {% block title %}{{ _("Appuntamenti d'esame") }}{% endblock %}
 
 {% block page_title %}{{ _("Appuntamenti d'esame") }}{% endblock %}
-{% block page_sub %}{{ _("Le richieste che hai inviato e quelle che hai ricevuto") }}{% endblock %}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('exam.exam_catalog') }}"
+   aria-label="{{ _('Torna agli esami') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_sub %}{{ _("Inviate e ricevute") }}{% endblock %}
 
-{% macro request_row(r, side) %}
+{# Lo stato si confronta con l'enum, mai con un letterale: un refuso in
+   ``'acepted'`` finirebbe nel ramo «Scaduta» senza dire niente a nessuno. Una
+   trattativa a tempo finito resta ``negotiating`` su disco finché qualcuno non
+   la tocca: per chi legge è già scaduta. #}
+{% macro request_row(r, received) %}
+{% set live = r.is_open and not r.is_expired() %}
 <a class="c7-rows__row" href="{{ url_for('exam.request_detail', request_id=r.id) }}"
    style="text-decoration:none;color:inherit">
   <div class="c7-rows__main">
     <div class="c7-rows__title">{{ r.exam.name }}</div>
+    <div class="c7-rows__sub c7-num">{{ r.scheduled_at|day_friendly }}</div>
     <div class="c7-rows__sub">
-      {% if side == 'received' %}{{ r.requester.username }}<span class="c7-sep">·</span>{% endif %}
-      <span class="c7-num">{{ r.scheduled_at|datetime_local }}</span>
+      {% if received %}{{ r.requester.username }} <span class="c7-sep">·</span> {% endif %}{{ r.billiard_hall.name }}
     </div>
   </div>
-  {% if r.status == 'accepted' %}
+  {% if r.status == ExamRequestStatus.ACCEPTED.value %}
   <span class="c7-state c7-state--ok">{{ _("Confermato") }}</span>
-  {% elif r.status == 'negotiating' %}
-  <span class="c7-pill">{{ _("In trattativa") }}</span>
-  {% elif r.status == 'cancelled' %}
-  <span class="c7-pill">{{ _("Ritirata") }}</span>
+  {% elif live and r.last_proposed_by_id != current_user.id %}
+  <span class="c7-state c7-state--warn">{{ _("Tocca a te") }}</span>
+  {% elif live %}
+  <span class="c7-state c7-state--info">{{ _("In trattativa") }}</span>
+  {% elif r.status == ExamRequestStatus.CANCELLED.value %}
+  <span class="c7-state c7-state--muted">{{ _("Ritirata") }}</span>
   {% else %}
-  <span class="c7-pill">{{ _("Scaduta") }}</span>
+  <span class="c7-state c7-state--muted">{{ _("Scaduta") }}</span>
   {% endif %}
 </a>
 {% endmacro %}
 
 {% block content %}
-<section class="c7-stack">
+<section class="c7-stack" style="max-width:720px">
   {% if received %}
   <div class="c7-sechead">
     <h2>{{ _("Ricevute") }}</h2>
     <span class="c7-sechead__note">{{ received|length }}</span>
   </div>
   <div class="c7-rows">
-    {% for r in received %}{{ request_row(r, 'received') }}{% endfor %}
+    {% for r in received %}{{ request_row(r, true) }}{% endfor %}
   </div>
   {% endif %}
 
@@ -45,7 +56,7 @@
     <span class="c7-sechead__note">{{ sent|length }}</span>
   </div>
   <div class="c7-rows">
-    {% for r in sent %}{{ request_row(r, 'sent') }}{% endfor %}
+    {% for r in sent %}{{ request_row(r, false) }}{% endfor %}
   </div>
   {% endif %}
 
