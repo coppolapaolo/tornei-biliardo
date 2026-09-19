@@ -14,8 +14,10 @@ Tre scelte reggono tutto il modulo, e conviene averle in testa leggendo il resto
    condotto davanti a un esaminatore.
 3. **Il punteggio massimo è per-esame**, su ``ExamChallenge.max_score``, non su
    ``Challenge``: lo stesso drill può valere 10 in un esame e 15 in un altro.
-   ``Challenge`` **non ha** ``max_score`` (né ``name``): leggerlo era il bug che
-   rendeva questo dominio non funzionante.
+   ``Challenge`` **non ha** ``name``, e quando questo dominio è nato non aveva
+   nemmeno ``max_score``: leggerli era il bug che lo rendeva non funzionante.
+   Oggi ``Challenge.max_score`` c'è, ma risponde a un'altra domanda (quanto vale
+   al massimo la prova, non quanto pesa qui) e fa solo da valore proposto.
 
 Non c'è più il ``weight``: pesava i drill nel calcolo del voto, e senza voto non
 ha scopo. Per dare più rilievo a un drill gli si assegna un ``max_score`` più

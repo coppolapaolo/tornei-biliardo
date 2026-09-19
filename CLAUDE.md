@@ -572,6 +572,8 @@ grafo anti-rematch. Non reimplementare algoritmi su grafi — usa `nx`, è già 
 | `sess["_user_id"] = str(user.id)` in un test | `user.get_id()` (ADR-055): l'id di sessione porta un'impronta della credenziale, e l'id nudo produce un client **non autenticato** — i test falliscono con 302 verso il login senza dire perché |
 | Verificare in un test che una sessione sia caduta, senza ripulire `g` | In questa suite `g` **non è per-richiesta**: Flask-Login trova l'utente già in cache e non richiama mai `load_user`, quindi il test passa sempre — anche col controllo rimosso (verificato sabotandolo). Cancella `g._login_user` prima della verifica, come fa `_simula_richiesta_nuova()` in `test_recupero_password.py` |
 | Chiudere le righe di `user_session` per «buttare fuori» qualcuno | `user_session` è **analitica**: misura le permanenze, non autentica. Il cookie non la consulta, quindi chiuderne le righe cambia le statistiche e lascia l'intruso dov'è (ADR-055) |
+| Descrivere una variante (destra/sinistra, A/B) creando un secondo esercizio | `ChallengeVariant` + `ChallengeAttempt.variant_id` (ADR-065): due esercizi sono due disegni, due testi e due voti da tenere allineati a mano. E una variante che ha già prove **si rinomina, non si toglie** — la chiave è `SET NULL`, i numeri resterebbero senza più dire di che lato erano |
+| Salvare su `challenge` un contatore dei giocatori, o decidere chi può votare con una query propria | `models/challenge/popularity.py`: `popularity_for` conta e `has_tried` decide, sulla stessa definizione di «ha provato» (prove completate, catalogo ∪ gara). Due definizioni danno «14 giocatori» sulla card e un voto rifiutato a uno dei quattordici |
 | Tenere in **memoria del processo** un dato che un'altra richiesta deve rileggere (dizionario a livello di modulo, cache «globale») | In produzione la web app sono **tre processi** uWSGI (pid diversi nel server log): ogni processo ha la sua copia e le richieste si distribuiscono a caso. L'archivio degli eventi live ha vissuto così per sette mesi facendone arrivare uno su tre, e in sviluppo — un processo solo — non si vedeva mai. Ciò che deve sopravvivere alla richiesta va nel DB (ADR-057, `live_event`); una cache in memoria è ammessa solo se perderla costa una query, non un dato |
 
 ---
@@ -623,6 +625,7 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [062](docs/adr/ADR-062-notifiche-nella-lingua-di-chi-riceve.md) | le notifiche nella lingua di **chi riceve**, salvata su `User.language`; testi passati da comporre, nessun backfill |
 | [063](docs/adr/ADR-063-admin-scollegato-dopo-inattivita.md) | l'**admin** viene scollegato dopo 30 minuti senza aprire pagine; ultima attività nel cookie, i poll non contano |
 | [064](docs/adr/ADR-064-sessione-che-dura-trenta-giorni.md) | casella «Resta collegato», spuntata per default: sessione di **30 giorni**; il cookie non si rimanda a ogni risposta, la scadenza si rinnova al più una volta al giorno e mai sui poll |
+| [065](docs/adr/ADR-065-profilo-dell-esercizio.md) | profilo dell'esercizio: abilità e gesto come vocabolari **fissi** (enum) in `challenge_category`, livello *dichiarato* 1–5, varianti come etichette e mai come secondo esercizio, voto 1–5; «quanti l'hanno provato» si conta e non si salva |
 
 ---
 

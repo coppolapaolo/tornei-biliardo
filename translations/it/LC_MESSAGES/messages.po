@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-19 22:01+0200\n"
+"POT-Creation-Date: 2026-09-19 23:21+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -262,26 +262,164 @@ msgid ""
 " %(errori)s"
 msgstr ""
 
-#: models/challenge/models.py:288
+#: models/challenge/models.py:362
 #, python-format
 msgid "Esercizio %(number)s"
 msgstr ""
 
-#: models/challenge/services.py:738
+#: models/challenge/profile_service.py:94
+#, python-format
+msgid "Esercizio non trovato"
+msgstr ""
+
+#: models/challenge/profile_service.py:101
+#, python-format
+msgid "Un esercizio allena al più %(max)s abilità"
+msgstr ""
+
+#: models/challenge/profile_service.py:124
+msgid "Il passo ha senso solo dentro una famiglia di esercizi"
+msgstr ""
+
+#: models/challenge/profile_service.py:173
+#, python-format
+msgid "«%(value)s» non è una voce ammessa"
+msgstr ""
+
+#: models/challenge/profile_service.py:205
+msgid "Il livello deve essere un numero"
+msgstr ""
+
+#: models/challenge/profile_service.py:209
+#, python-format
+msgid "Il livello va da %(min)s a %(max)s"
+msgstr ""
+
+#: models/challenge/profile_service.py:223
+msgid "Il passo deve essere un numero"
+msgstr ""
+
+#: models/challenge/profile_service.py:225
+msgid "Il passo parte da 1"
+msgstr ""
+
+#: models/challenge/profile_service.py:240
+msgid "Ogni variante vuole un nome"
+msgstr ""
+
+#: models/challenge/profile_service.py:244
+#, python-format
+msgid "Il nome di una variante ha al più %(max)s caratteri"
+msgstr ""
+
+#: models/challenge/profile_service.py:250
+#, python-format
+msgid "Due varianti non possono chiamarsi «%(label)s»"
+msgstr ""
+
+#: models/challenge/profile_service.py:263
+#: models/challenge/profile_service.py:266
+msgid "Variante non riconosciuta"
+msgstr ""
+
+#: models/challenge/profile_service.py:280
+#, python-format
+msgid ""
+"La variante «%(label)s» ha già %(count)s prove: si può rinominare, non "
+"togliere"
+msgstr ""
+
+#: models/challenge/services.py:745
 msgid ""
 "Il direttore non ha ancora scelto l'esercizio da giocare al posto della X"
 " in questa gara."
 msgstr ""
 
-#: models/challenge/services.py:784 models/challenge/services.py:918
+#: models/challenge/services.py:791 models/challenge/services.py:925
 #, python-format
 msgid ""
 "Il punteggio della prova deve essere compreso fra 0 e %(massimo)s, la "
 "differenza più ampia ottenibile in questo turno."
 msgstr ""
 
-#: models/challenge/services.py:909
+#: models/challenge/services.py:916
 msgid "Serve un punteggio: la prova non ne ha ancora uno registrato."
+msgstr ""
+
+#: models/challenge/services.py:1200
+msgid "Questa variante non è di questo esercizio"
+msgstr ""
+
+#: models/challenge/vocabulary.py:100
+msgid "Fondamentali"
+msgstr ""
+
+#: models/challenge/vocabulary.py:101 templates/challenge/builder.html:55
+#: templates/challenge/builder.html:84 templates/challenge/builder.html:293
+msgid "Tiro"
+msgstr ""
+
+#: models/challenge/vocabulary.py:102 templates/challenge/builder.html:290
+msgid "Battente"
+msgstr ""
+
+#: models/challenge/vocabulary.py:103 templates/admin/venue_form.html:195
+#: templates/components/_playoff_invitations.html:29
+#: templates/individual_match/statistics.html:80
+#: templates/individual_match/tpa_referto.html:179
+msgid "Posizione"
+msgstr ""
+
+#: models/challenge/vocabulary.py:104
+msgid "Sponde"
+msgstr ""
+
+#: models/challenge/vocabulary.py:105
+msgid "Difesa"
+msgstr ""
+
+#: models/challenge/vocabulary.py:106
+msgid "Spaccata"
+msgstr ""
+
+#: models/challenge/vocabulary.py:132
+msgid "stop"
+msgstr ""
+
+#: models/challenge/vocabulary.py:133
+msgid "stun"
+msgstr ""
+
+#: models/challenge/vocabulary.py:134
+msgid "follow"
+msgstr ""
+
+#: models/challenge/vocabulary.py:135
+msgid "draw"
+msgstr ""
+
+#: models/challenge/vocabulary.py:136
+msgid "spin"
+msgstr ""
+
+#: models/challenge/vocabulary.py:137 templates/challenge/builder.html:294
+msgid "forza"
+msgstr ""
+
+#: models/challenge/vocabulary.py:138
+msgid "bank"
+msgstr ""
+
+#: models/challenge/vocabulary.py:139
+msgid "kick"
+msgstr ""
+
+#: models/challenge/vocabulary.py:140
+msgid "jump"
+msgstr ""
+
+#: models/challenge/vocabulary.py:141
+msgid "massé"
 msgstr ""
 
 #: models/competition/gara_challenge_service.py:79
@@ -6939,7 +7077,7 @@ msgstr ""
 #: templates/components/_gara_challenges_display.html:26
 #: templates/components/_match_challenge_input.html:97
 #: templates/components/_player_challenges_dashboard.html:30
-#: templates/components/_player_training.html:43
+#: templates/components/_player_training.html:45
 #: templates/components/_public_challenges.html:21
 #: templates/direttore/_esercizi_turni.html:75
 #: templates/direttore/_esercizi_turni.html:104
@@ -7349,7 +7487,7 @@ msgstr ""
 msgid "Torna alla dashboard"
 msgstr ""
 
-#: templates/admin/kpi.html:33 templates/components/_player_training.html:66
+#: templates/admin/kpi.html:33 templates/components/_player_training.html:68
 msgid "Andamento"
 msgstr ""
 
@@ -8201,13 +8339,6 @@ msgstr ""
 msgid "Formato libero - inserire orari come testo"
 msgstr ""
 
-#: templates/admin/venue_form.html:195
-#: templates/components/_playoff_invitations.html:29
-#: templates/individual_match/statistics.html:80
-#: templates/individual_match/tpa_referto.html:179
-msgid "Posizione"
-msgstr ""
-
 #: templates/admin/venue_form.html:199
 msgid "Latitudine"
 msgstr ""
@@ -8757,7 +8888,7 @@ msgid "Riuscite"
 msgstr ""
 
 #: templates/challenge/_training_board.html:57
-#: templates/components/_player_training.html:56
+#: templates/components/_player_training.html:58
 #: templates/gamification/admin/streaks.html:104
 #: templates/gamification/dashboard.html:65
 #: templates/gamification/streaks.html:79
@@ -8841,11 +8972,6 @@ msgstr ""
 
 #: templates/challenge/builder.html:54
 msgid "Sposta"
-msgstr ""
-
-#: templates/challenge/builder.html:55 templates/challenge/builder.html:84
-#: templates/challenge/builder.html:293
-msgid "Tiro"
 msgstr ""
 
 #: templates/challenge/builder.html:58 templates/challenge/builder.html:115
@@ -9199,20 +9325,12 @@ msgstr ""
 msgid "Testo:"
 msgstr ""
 
-#: templates/challenge/builder.html:290
-msgid "Battente"
-msgstr ""
-
 #: templates/challenge/builder.html:291
 msgid "Biglia fantasma"
 msgstr ""
 
 #: templates/challenge/builder.html:292
 msgid "Biglia"
-msgstr ""
-
-#: templates/challenge/builder.html:294
-msgid "forza"
 msgstr ""
 
 #: templates/challenge/builder.html:295
@@ -9514,7 +9632,7 @@ msgid "Punteggio mediano"
 msgstr ""
 
 #: templates/challenge/training.html:27 templates/challenge/training.html:33
-#: templates/components/_player_training.html:24
+#: templates/components/_player_training.html:26
 msgid "Allenamento"
 msgstr ""
 
@@ -11527,7 +11645,7 @@ msgid "Vai agli esercizi"
 msgstr ""
 
 #: templates/components/_history_exams_tab.html:21
-#: templates/components/_player_training.html:116 templates/exam/manage.html:15
+#: templates/components/_player_training.html:118 templates/exam/manage.html:15
 msgid "Esami sostenuti"
 msgstr ""
 
@@ -11558,7 +11676,7 @@ msgid "Certificato"
 msgstr ""
 
 #: templates/components/_history_exams_tab.html:64
-#: templates/components/_player_training.html:136
+#: templates/components/_player_training.html:138
 msgid "In autonomia"
 msgstr ""
 
@@ -12833,38 +12951,38 @@ msgstr ""
 msgid "di cui %(n)s break and run"
 msgstr ""
 
-#: templates/components/_player_training.html:29
+#: templates/components/_player_training.html:31
 msgid "Esercizi sostenuti"
 msgstr ""
 
-#: templates/components/_player_training.html:52
-#: templates/components/_player_training.html:100
-#: templates/components/_player_training.html:146
+#: templates/components/_player_training.html:54
+#: templates/components/_player_training.html:102
+#: templates/components/_player_training.html:148
 #: templates/exam/session.html:275 templates/exam/session.html:320
 msgid "Superato"
 msgstr ""
 
-#: templates/components/_player_training.html:52
+#: templates/components/_player_training.html:54
 msgid "Mai superato"
 msgstr ""
 
-#: templates/components/_player_training.html:84
+#: templates/components/_player_training.html:86
 #: templates/player/challenge_detail.html:54
 #: templates/player/gara_challenge_detail.html:124
 msgid "I tuoi tentativi"
 msgstr ""
 
-#: templates/components/_player_training.html:95
+#: templates/components/_player_training.html:97
 msgid "Dal catalogo"
 msgstr ""
 
-#: templates/components/_player_training.html:100
-#: templates/components/_player_training.html:146
+#: templates/components/_player_training.html:102
+#: templates/components/_player_training.html:148
 #: templates/exam/session.html:272 templates/exam/session.html:323
 msgid "Non superato"
 msgstr ""
 
-#: templates/components/_player_training.html:130
+#: templates/components/_player_training.html:132
 #: templates/exam/session.html:139
 #, python-format
 msgid "certificato da %(who)s"
@@ -16898,7 +17016,7 @@ msgid "esamini %(nome)s"
 msgstr ""
 
 #: templates/exam/catalog.html:74
-#, fuzzy, python-format
+#, python-format
 msgid "%(n)s richiesta aspetta te"
 msgid_plural "%(n)s richieste aspettano te"
 msgstr[0] ""

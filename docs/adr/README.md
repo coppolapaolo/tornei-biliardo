@@ -78,6 +78,7 @@ Crea un ADR quando:
 | ADR-062 | [Le notifiche si scrivono nella lingua di chi le riceve](ADR-062-notifiche-nella-lingua-di-chi-riceve.md) | Accepted | 2026-09-13 |
 | ADR-063 | [L'admin viene scollegato dopo 30 minuti di inattività](ADR-063-admin-scollegato-dopo-inattivita.md) | Accepted | 2026-09-14 |
 | ADR-064 | [Chi accede resta collegato su quel dispositivo per trenta giorni](ADR-064-sessione-che-dura-trenta-giorni.md) | Accepted | 2026-09-17 |
+| ADR-065 | [Il profilo dell'esercizio: due vocabolari fissi, livello dichiarato, varianti, voto](ADR-065-profilo-dell-esercizio.md) | Accepted | 2026-09-19 |
 
 ## Come Creare un Nuovo ADR
 

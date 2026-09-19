@@ -208,6 +208,11 @@ class ChallengeService:
             created_by_id=da_spostare[0].director_id,
             is_active=True,
         )
+        # Import locale: `profile_service` importa i modelli di questo dominio,
+        # e a livello di modulo i due si rincorrerebbero.
+        from .profile_service import copy_profile
+
+        copy_profile(originale, copia)
         db.session.add(copia)
         db.session.flush()
 
@@ -354,6 +359,7 @@ class ChallengeService:
         challenge_id: int,
         gara_id: Optional[int] = None,
         round_number: Optional[int] = None,
+        variant_id: Optional[int] = None,
     ) -> ChallengeAttempt:
         """Start a new challenge attempt.
 
@@ -363,6 +369,7 @@ class ChallengeService:
         attempt = ChallengeAttempt(
             user_id=user_id,
             challenge_id=challenge_id,
+            variant_id=variant_id,
             gara_id=gara_id,  # DEPRECATED: kept for backward compatibility
             round_number=round_number,  # DEPRECATED: kept for backward compatibility
         )
@@ -1134,6 +1141,7 @@ class ChallengeService:
         notes: Optional[str] = None,
         gara_id: Optional[int] = None,
         round_number: Optional[int] = None,
+        variant_id: Optional[int] = None,
     ) -> ChallengeAttempt:
         """Registra una prova già conclusa: aprire e chiudere sono un gesto solo.
 
@@ -1157,13 +1165,18 @@ class ChallengeService:
             notes: appunto facoltativo sulla prova
             gara_id: contesto gara, se la prova nasce lì (DEPRECATED)
             round_number: turno di quella gara (DEPRECATED)
+            variant_id: con quale variante dell'esercizio (dx/sx, A/B) è stata
+                fatta la prova. Facoltativa anche quando le varianti ci sono:
+                chi non lo dice registra una prova generica, e non gli si
+                inventa un lato
 
         Returns:
             ChallengeAttempt: la prova completata e persistita
 
         Raises:
             NotFoundError: il drill non esiste
-            ValidationError: manca il dato che quel tipo di drill richiede
+            ValidationError: manca il dato che quel tipo di drill richiede, o
+                la variante è di un altro esercizio
         """
         challenge = db.session.get(Challenge, challenge_id)
         if challenge is None:
@@ -1177,11 +1190,21 @@ class ChallengeService:
         else:
             ChallengeService._validate_score_against_max(challenge, score)
 
+        # Stessa regola della validazione qui sopra: prima di creare. Una
+        # variante di un altro esercizio non darebbe errore da nessuna parte —
+        # la chiave esterna è soddisfatta — e la prova finirebbe nel conto del
+        # lato sbagliato di un esercizio che non c'entra.
+        if variant_id is not None and variant_id not in {
+            v.id for v in challenge.variants
+        }:
+            raise ValidationError(_("Questa variante non è di questo esercizio"))
+
         attempt = ChallengeService.start_challenge_attempt(
             user_id=user_id,
             challenge_id=challenge_id,
             gara_id=gara_id,
             round_number=round_number,
+            variant_id=variant_id,
         )
 
         return ChallengeService.complete_challenge_attempt(
