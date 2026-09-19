@@ -164,7 +164,14 @@ del dominio (`routes/individual_match/matches.py`).
 pytest tests/new/unit/test_tpa_engine.py -v          # la sessione d'esempio ufficiale
 pytest tests/new/unit/test_tpa_engine_corpus.py -v   # 600 partite contro l'app JS
 pytest tests/new/integration/test_tpa_referto.py -n 4
+cd tests/frontend && node test_tpa_referto.cjs        # la pagina: static/js/tpa-referto.js
 ```
+
+Il JavaScript della pagina sta in `static/js/tpa-referto.js` e **non conosce le
+regole**: disegna lo stato che riceve e rimanda ogni tocco al server. Indirizzi
+e testi tradotti li legge dai `data-*` di `#tpaReferto`, lo stato iniziale dal
+blocco `#tpaStato`. La suite frontend **non gira in CI**: dopo aver toccato quel
+file va lanciata a mano.
 
 Il corpus (`tests/new/fixtures/tpa_js_reference_corpus.json.gz`) è una
 **fotografia del comportamento dell'app JS di riferimento**: non si rigenera

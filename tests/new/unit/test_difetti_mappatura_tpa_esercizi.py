@@ -44,8 +44,8 @@ def test_la_guida_non_ha_i_refusi_della_rinomina():
 def test_l_intestazione_del_triangolo_e_al_singolare():
     """«Triangolo 3» è il terzo triangolo, non tre triangoli."""
     text = REFERTO.read_text(encoding="utf-8")
-    match = re.search(r"const LABEL_RACK = \{\{ _\('([^']+)'\)", text)
-    assert match, "LABEL_RACK non trovata: il test va aggiornato"
+    match = re.search(r"data-et-triangolo=\"\{\{ _\('([^']+)'\)", text)
+    assert match, "data-et-triangolo non trovato: il test va aggiornato"
     assert match.group(1) == "Triangolo"
 
 
