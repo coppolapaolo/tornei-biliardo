@@ -216,6 +216,33 @@ numeri = popularity_for([c.id for c in esercizi])   # tre query, non tre per car
   regola di chi può votare — una funzione sola perché non divergano.
 * `copy_profile(originale, copia)` porta il profilo, non prove né voti.
 
+### Il modulo unico: crea, modifica, duplica (#252, #253)
+
+Le tre route (`create_challenge`, `edit_challenge`, `duplicate_challenge`)
+rendono **lo stesso** `challenge/form.html`, leggono i campi con **un** parser
+(`routes/challenge_form.py::parse_challenge_draft` → `ChallengeDraft`) e salvano
+da **una** porta, `models/challenge/authoring.py::ChallengeAuthoringService`,
+che scrive valutazione e profilo nella stessa transazione.
+
+**«Ha già delle prove».** Se il salvataggio cambia il *senso* dei punteggi — tipo
+di valutazione, massimo, istruzioni (`meaning_changes`) — e l'esercizio ha prove
+(`evidence`: catalogo + gara + **esami**), `update` non salva e solleva
+`EvidenceDecisionRequired`. La route risponde **409** con `needs_decision`; il
+browser apre il foglio e rispedisce lo stesso modulo con `on_evidence=copy` o
+`overwrite`. Titolo, profilo, foto e «nel catalogo» passano lisci. La decisione
+sta nel servizio, non nel JavaScript: una POST scritta a mano non la salta.
+
+* La **copia** è di chi la fa (`created_by_id`), nasce senza prove, voti e
+  preferiti, e ha un **file immagine suo** (`ImagePathManager.copy_challenge_image`):
+  risalvare un disegno cancella l'immagine di prima, quindi due esercizi sullo
+  stesso file vuol dire che ritoccando l'uno si spegne l'altro.
+* I file li gestisce la route, prima e dopo il servizio: se il servizio rifiuta,
+  il file appena scritto si toglie.
+* Una **foto nuova** al posto di un disegno azzera `diagram_scene`.
+* Il **disegnatore** salva anche istruzioni e punteggio ma non ha il foglio:
+  `_refuse_meaning_change_from_builder` gli fa salvare solo il disegno quando ci
+  sono prove. Senza, sarebbe la porta sul retro della #252.
+
 ### ChallengeAttempt
 **Fields:** `challenge_id`, `user_id`, `score`, `passed`, `attempted_at`, `variant_id`
 

@@ -65,14 +65,14 @@ def test_il_modulo_di_modifica_arriva_compilato(app, client):
     assert response.status_code == 200
     assert 'value="Progressione lungo sponda"' in html
     assert "Imbuca in sequenza partendo dalla corta</textarea>" in html
-    assert "Modifica esercizio" in html
+    assert "Modifica l&#39;esercizio" in html or "Modifica l'esercizio" in html
     assert "Salva le modifiche" in html
     # La foto c'è già: pretenderne un'altra impedirebbe di correggere un refuso.
     assert 'name="image" accept="image/*" required' not in html
-    # Il tipo di punteggio non si cambia da qui: la route non lo legge, e con
-    # delle prove già registrate è una decisione a parte (#252).
-    # (Lo script nomina `scoring_type` in un selettore: si guarda il markup.)
-    assert 'id="maxScoreRow"' not in html
+    # Dal modulo unico (#252) il tipo di punteggio e il massimo si cambiano
+    # anche in modifica: con delle prove già registrate è il servizio a fermarsi
+    # e chiedere, non il modulo a nascondere il campo.
+    assert 'id="maxScoreRow"' in html
 
 
 def test_salvare_il_modulo_di_modifica_cambia_l_esercizio(app, client):

@@ -4389,3 +4389,24 @@ button.c7-exam-dock__alt { width: 100%; }
      la misura `exam-session.js`. */
   body:has(.c7-exam--write) .c7-main { padding-bottom: calc(var(--c7-exam-dock-h, 300px) + 16px); }
 }
+
+/* ---------------------------------------------------------------------------
+   Il modulo dell'esercizio (canvas «TPA ed esercizi», fase 4b).
+   - `.c7-seg__item` che contiene un radio: lo stesso segmento dello storico,
+     acceso dal `:checked` invece che da una classe messa dal server.
+   - `.c7-fold`: una riga di `.c7-rows` che si apre sul posto (<details>), per
+     le cose che quasi nessun esercizio ha. A destra il valore di adesso.
+   - `.c7-pill.is-off`: la pillola che non si può più scegliere (tre abilità).
+   --------------------------------------------------------------------------- */
+.c7-seg__item { cursor: pointer; position: relative; }
+.c7-seg__item input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
+.c7-seg__item:has(input:checked) { background: var(--c7-ink); color: var(--c7-on-ink); }
+.c7-seg__item:has(input:focus-visible) { outline: 2px solid var(--c7-accent); outline-offset: 2px; }
+.c7-pill.is-off { opacity: .4; cursor: not-allowed; }
+.c7-fold + .c7-fold { border-top: 1px solid var(--c7-line-soft); }
+.c7-fold > summary { list-style: none; cursor: pointer; }
+.c7-fold > summary::-webkit-details-marker { display: none; }
+.c7-fold__value { font-size: 13px; font-weight: 700; color: var(--c7-ink-muted); text-align: right; max-width: 40%; }
+.c7-fold__chev { font-size: 11px; color: var(--c7-ink-faint); transition: transform var(--c7-dur-quick) var(--c7-ease); }
+.c7-fold[open] > summary .c7-fold__chev { transform: rotate(180deg); }
+.c7-fold__body { padding: 4px 18px 18px; }

@@ -74,20 +74,36 @@
     </section>
     {% endif %}
 
-    {# ---------- Correggere e leggere i numeri: stessa regola della route ---------- #}
+    {# ---------- Correggere, duplicare, leggere i numeri: stessa regola delle route ----------
+       Righe e non pulsanti affiancati, come l'artboard «La scheda di un
+       esercizio»: sono tre gesti diversi, e ognuno vuole la sua frase. #}
     {% if current_user.is_admin or (current_user.is_director and challenge.created_by_id == current_user.id) %}
-    <div class="d-flex gap-2">
+    <section class="c7-rows">
       {% if feature_visible('challenge.edit_challenge') %}
-      <a href="{{ url_for('challenge.edit_challenge', challenge_id=challenge.id) }}" class="btn btn-secondary w-100">
-        <i class="fas fa-pen"></i>&nbsp;{{ _("Modifica") }}
+      <a href="{{ url_for('challenge.edit_challenge', challenge_id=challenge.id) }}" class="c7-rows__row c7-rows__row--btn" style="color:inherit;text-decoration:none">
+        <span class="c7-tile c7-tile--sm c7-tile--neutral"><i class="fas fa-pen"></i></span>
+        <span class="c7-rows__main"><span class="c7-rows__title d-block">{{ _("Modifica l'esercizio") }}</span></span>
+        <i class="fas fa-chevron-right" style="font-size:11px;color:var(--c7-ink-faint)"></i>
+      </a>
+      {% endif %}
+      {% if feature_visible('challenge.duplicate_challenge') %}
+      <a href="{{ url_for('challenge.duplicate_challenge', challenge_id=challenge.id) }}" class="c7-rows__row c7-rows__row--btn" style="color:inherit;text-decoration:none" data-help="challenge-duplica">
+        <span class="c7-tile c7-tile--sm c7-tile--neutral"><i class="fas fa-copy"></i></span>
+        <span class="c7-rows__main">
+          <span class="c7-rows__title d-block">{{ _("Duplica") }}</span>
+          <span class="c7-rows__sub d-block">{{ _("per farne una variante senza toccare questo") }}</span>
+        </span>
+        <i class="fas fa-chevron-right" style="font-size:11px;color:var(--c7-ink-faint)"></i>
       </a>
       {% endif %}
       {% if feature_visible('challenge.challenge_statistics') %}
-      <a href="{{ url_for('challenge.challenge_statistics', challenge_id=challenge.id) }}" class="btn btn-secondary w-100">
-        <i class="fas fa-chart-simple"></i>&nbsp;{{ _("Statistiche") }}
+      <a href="{{ url_for('challenge.challenge_statistics', challenge_id=challenge.id) }}" class="c7-rows__row c7-rows__row--btn" style="color:inherit;text-decoration:none">
+        <span class="c7-tile c7-tile--sm c7-tile--neutral"><i class="fas fa-chart-simple"></i></span>
+        <span class="c7-rows__main"><span class="c7-rows__title d-block">{{ _("Statistiche") }}</span></span>
+        <i class="fas fa-chevron-right" style="font-size:11px;color:var(--c7-ink-faint)"></i>
       </a>
       {% endif %}
-    </div>
+    </section>
     {% endif %}
 
     {# ---------- Gestione (chi l'ha creata, o l'admin) ---------- #}

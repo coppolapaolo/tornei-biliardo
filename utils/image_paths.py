@@ -1,6 +1,7 @@
 """Utility module for managing image paths consistently across the application."""
 
 import os
+import shutil
 import uuid
 from typing import Optional
 from flask import current_app
@@ -184,6 +185,31 @@ class ImagePathManager:
                 os.remove(filepath)
             current_app.logger.error(f"Failed to process challenge image: {e}")
             return None
+
+    @staticmethod
+    def copy_challenge_image(image_filename: Optional[str]) -> Optional[str]:
+        """Duplica il file di un'immagine e restituisce il nome della copia.
+
+        Una copia di un esercizio vuole un file **suo**: risalvare un disegno
+        cancella l'immagine di prima, quindi due esercizi sullo stesso file
+        vuol dire che ritoccando l'uno si spegne l'altro (#253).
+
+        ``None`` se l'originale non c'è sul disco: chi chiama decide il ripiego.
+        """
+        if not image_filename:
+            return None
+        upload_dir = ImagePathManager.get_challenge_upload_dir()
+        source = os.path.join(upload_dir, os.path.basename(image_filename))
+        if not os.path.isfile(source):
+            return None
+        estensione = os.path.splitext(source)[1] or ".jpg"
+        filename = f"{uuid.uuid4().hex}{estensione}"
+        try:
+            shutil.copyfile(source, os.path.join(upload_dir, filename))
+        except OSError as e:
+            current_app.logger.error(f"Failed to copy challenge image: {e}")
+            return None
+        return filename
 
     @staticmethod
     def delete_challenge_image(image_filename: Optional[str]) -> None:
