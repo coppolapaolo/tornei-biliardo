@@ -45,7 +45,7 @@ blocks:
           comprese le partite amichevoli.
       - name: "Runout"
         text: >-
-          Quanti triangoli hai chiuso **in una sola visita**, cioè senza mai
+          Quanti triangoli hai chiuso **in un solo turno**, cioè senza mai
           lasciare il tavolo all'avversario, e quanti di quelli li avevi anche
           aperti tu — i *break and run*. Compare solo se ne hai almeno uno.
         hint: profilo.runout

@@ -71,8 +71,11 @@ ruolo-richiesta: "The form for requesting the examiner role: who to forward the 
 ruolo-richieste: "Incoming role requests: approved or rejected one at a time."
 
 # --- TPA scoresheet ------------------------------------------------------
-referto-tpa: "The TPA scoresheet during the match: the two players with their TPA, the inning box and the keypad."
-referto-tpa-foglio: "The scoresheet itself: each row is one visit to the table, with the balls pocketed and why the inning ended."
+referto-tpa: "The TPA scoresheet during the match: the two players side by side, each with their two boxes, and the keypad below."
+referto-tpa-foglio: "The scoresheet inning by inning: break balls small and raised, the total, the letter. The green circle is a won rack."
+referto-tpa-rileggi: "A past inning reviewed with «Back»: above the players it says this is read only, and the keypad is dim."
+referto-tpa-riparti: "Before restarting, the sheet says which inning reopens and, struck through, which innings leave the scoresheet."
+referto-tpa-chiuso: "The closed scoresheet: who won, where each player's errors came from, and the best racks."
 
 # --- Trial competition (ADR-058) -------------------------------------------
 prova-spunta: "The «Trial competition» switch in the new competition form, with the explanation underneath."

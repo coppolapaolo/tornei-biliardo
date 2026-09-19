@@ -731,6 +731,7 @@ Quelli sopra sono chiusi; questi no.
    decisioni congelate, undici fasi: lo stato schermata per schermata sta in
    [`canvas-tpa-esercizi/STATO.md`](canvas-tpa-esercizi/STATO.md), il piano in
    [`canvas-tpa-esercizi/PIANO.md`](canvas-tpa-esercizi/PIANO.md).
+   **Fatto il referto TPA** (fase 2, 19/09/2026, #475–#482); il resto è da fare.
 
 ### Rilievi di dominio trovati durante la conversione (non toccati)
 

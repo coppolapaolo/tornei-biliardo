@@ -124,7 +124,8 @@ competizione in qualcosa che si apre anche di mercoledì.
 | #214 | nascondere una partita dal profilo pubblico |
 
 Il **referto TPA** non ha issue sue ma ha un disegno: è la pagina 1 del canvas
-«TPA ed esercizi» (2026-09-19), e nel piano di quel redesign è la fase 2 —
+«TPA ed esercizi» (2026-09-19), e nel piano di quel redesign è la fase 2,
+**chiusa il 19/09/2026** (#475–#482) —
 vedi [`redesign-7c/canvas-tpa-esercizi/STATO.md`](redesign-7c/canvas-tpa-esercizi/STATO.md).
 
 ---

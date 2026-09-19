@@ -2,7 +2,7 @@ title: "Il referto TPA"
 section: giocare
 kind: tutorial
 audience: [giocatore]
-minutes: 6
+minutes: 8
 summary: "Nelle partite amichevoli puoi annotare tutta la partita, non solo chi vince i triangoli, e ottenere il TPA: la percentuale di azioni riuscite."
 screens: [individual_match.tpa_referto]
 related: [partite_amichevoli, profilo_e_statistiche]
@@ -18,9 +18,10 @@ blocks:
   - type: text
     text: >-
       Alla fine ne esce un numero, il **TPA**, che si legge come una
-      percentuale di azioni riuscite. Un TPA di **.750** vuol dire che tre
-      volte su quattro quello che hai fatto al tavolo è andato a buon fine. È
-      lo stesso conto che si usa nel biliardo americano professionistico.
+      percentuale di azioni riuscite. Va da **0 a 1000**: un TPA di **750** vuol
+      dire che tre volte su quattro quello che hai fatto al tavolo è andato a
+      buon fine. È lo stesso conto che si usa nel biliardo americano
+      professionistico.
 
   - type: note
     tone: info
@@ -136,20 +137,29 @@ blocks:
 
   - type: shot
     shot: referto-tpa
-    caption: "Il referto TPA durante la partita: i due giocatori con il loro TPA, la casella del turno e il tastierino."
+    caption: "Il referto TPA durante la partita: i due giocatori affiancati, ciascuno con le sue due caselle, e sotto il tastierino."
 
   - type: text
     text: >-
-      In alto ci sono i due giocatori. Quello **scuro** è chi sta al tavolo
-      adesso. Accanto al nome trovi il suo TPA e, più piccolo, quante bilie ha
-      imbucato (**B**) e quanti errori ha fatto (**E**). Nel cerchio a destra i
-      triangoli vinti.
+      In alto ci sono i due giocatori, uno accanto all'altro. Quello **chiaro**
+      è chi sta al tavolo adesso. Per ciascuno vedi due numeri grandi alla
+      pari: i **triangoli** vinti e il **TPA**. Sotto, più piccolo, quante
+      bilie ha imbucato e quanti errori ha fatto.
 
   - type: text
     text: >-
-      Sotto ci sono due caselle. Nella **casella chiara** si scrive quante
-      bilie sono entrate e perché il turno è finito. Nella **casella scura**,
-      solo i falli. Sono le stesse due caselle del referto di carta.
+      Dentro il riquadro di ogni giocatore ci sono due caselle, le stesse del
+      referto di carta. Nella **casella chiara** si scrive quante bilie sono
+      entrate e perché il turno è finito. Nella **casella più scura**, a
+      destra, solo i falli. Chi è al tavolo ci vede il turno che stai
+      scrivendo; l'altro ci vede il suo ultimo turno.
+
+  - type: text
+    text: >-
+      Il **tastierino** è sempre tutto lì, in basso: i numeri come su un
+      telefono, poi le lettere nell'ordine del referto di carta. I tasti che
+      in quel momento non si possono premere **si spengono**, ma restano al
+      loro posto: così le dita imparano dove stanno.
 
   - type: steps
     items:
@@ -157,7 +167,8 @@ blocks:
         text: >-
           Premi il numero. Se è il turno di spaccata i numeri si premono
           **due volte**: prima quante ne sono entrate sulla spaccata, poi
-          quante in tutto nel turno.
+          quante in tutto nel turno. Sul referto le bilie della spaccata
+          restano scritte piccole, in alto, prima del totale.
       - title: "Perché il turno è finito"
         text: >-
           **M** se ha sbagliato un tiro che voleva imbucare, **S** se ha
@@ -166,23 +177,35 @@ blocks:
       - title: "Se c'è stato un fallo"
         text: >-
           **P** se la bilia bianca è finita in buca o fuori dal tavolo, **N**
-          se non ha colpito regolarmente la bilia designata.
+          se non ha colpito regolarmente la bilia designata. Il fallo finisce
+          nella casella più scura.
       - title: "Se ha vinto il triangolo"
         text: >-
           Premi **G**. Se ha imbucato tutte le bilie rimaste non serve: il
-          referto se ne accorge da solo.
+          referto se ne accorge da solo. Sul referto il triangolo vinto è un
+          **cerchio** attorno al numero delle bilie.
       - title: "Passa il tavolo"
         text: >-
-          Tocca il nome dell'altro giocatore. Il turno si chiude e comincia il
-          suo.
+          Tocca il riquadro dell'altro giocatore: c'è scritto «Tocca: tavolo
+          a…». Il turno si chiude e comincia il suo. Prima della spaccata lo
+          stesso tocco sceglie chi spacca.
+
+  - type: note
+    tone: info
+    title: "Primo tiro di calcio"
+    text: >-
+      Se dopo una difesa dell'avversario la prima bilia è entrata **di
+      sponda**, tocca «Primo tiro di calcio?». Sul referto compare il numero
+      del giocatore, cerchiato in piccolo sopra la casella. Conta, perché
+      toglie l'errore a chi aveva giocato la difesa.
 
   - type: note
     tone: tip
-    title: "Il tastierino ti guida"
+    title: "La parola sotto le lettere"
     text: >-
-      Non devi ricordarti cosa si può premere e cosa no: i tasti che in quel
-      momento non hanno senso sono spenti. Se hai sbagliato, **Annulla
-      l'ultimo tocco** torna indietro di un passo, quante volte vuoi.
+      Sotto M, K, S, P, G e N c'è scritto cosa vogliono dire. Quando le hai
+      imparate puoi toglierle: apri «Cosa vuol dire ogni lettera» e spegni
+      «Mostra la parola sotto le lettere del tastierino».
 
   - type: heading
     id: annotazioni-piccole
@@ -209,24 +232,122 @@ blocks:
           Era un **push out**, la giocata libera subito dopo la spaccata.
 
   - type: heading
-    id: il-foglio
-    title: "Rileggere la partita"
+    id: se-sbagli
+    title: "Se sbagli a scrivere"
 
   - type: text
     text: >-
-      In fondo alla pagina c'è **il foglio**: tutta la partita, triangolo per triangolo e
-      turno per turno. Serve durante la partita per controllare di non aver
-      saltato niente, e dopo per rivedere com'è andata.
+      Ci sono due rimedi, uno piccolo e uno grande.
+
+  - type: list
+    items:
+      - "**Cancella**, il tasto col bordo accanto allo zero: toglie quello che hai scritto **in questo turno**, tutto insieme, e lo riscrivi. Il tavolo resta a chi c'era."
+      - "**Indietro**, in fondo al tastierino: per tornare a un turno già passato. Lo trovi spiegato qui sotto."
+
+  - type: heading
+    id: rileggere-e-ripartire
+    title: "Tornare indietro, e ripartire da un turno"
+
+  - type: text
+    text: >-
+      In fondo al tastierino ci sono **Indietro** e **Avanti**, con in mezzo a
+      che punto sei: «turno 6 di 8». Servono a scorrere la partita un turno
+      alla volta.
+
+  - type: shot
+    shot: referto-tpa-rileggi
+    caption: "Un turno del passato riletto con «Indietro»: sopra i giocatori c'è scritto che qui non si scrive, e il tastierino è spento."
+
+  - type: text
+    text: >-
+      Mentre rileggi **non si scrive niente**: lo dice la riga sopra i
+      giocatori, e il tastierino è tutto spento. Vedi chi era al tavolo, cosa
+      aveva scritto, e i triangoli e il TPA **di quel momento**. Con «Avanti»
+      torni al turno in corso. Il tuo avversario non si accorge di niente.
+
+  - type: text
+    text: >-
+      Se ti accorgi che un turno del passato è sbagliato, l'unico tasto acceso
+      è **Riparti da questo turno…**
+
+  - type: shot
+    shot: referto-tpa-riparti
+    caption: "Prima di ripartire, il foglio dice quale turno si riapre e, barrati, quali turni escono dal referto."
+
+  - type: steps
+    items:
+      - title: "Tocca «Riparti da questo turno…»"
+        text: >-
+          Si apre un foglio che ti dice cosa succede: quel turno si riapre
+          **vuoto**, e i turni scritti dopo **escono dal referto**. Li vedi
+          elencati, barrati.
+      - title: "Conferma, oppure «Resta a guardare»"
+        text: >-
+          Se confermi, triangoli e TPA si ricalcolano fino a quel punto e
+          riprendi ad annotare da lì. Se un turno tolto aveva chiuso un
+          triangolo, quel triangolo esce anche dal punteggio della partita.
+
+  - type: note
+    tone: warning
+    title: "Dopo non si torna avanti"
+    text: >-
+      I turni che escono non si recuperano: vanno riscritti. Per questo il
+      foglio te li fa vedere prima. Se volevi solo controllare, «Resta a
+      guardare» non tocca niente.
+
+  - type: heading
+    id: il-foglio
+    title: "Il referto, turno per turno"
+
+  - type: text
+    text: >-
+      Sotto il tastierino — a fianco, su uno schermo largo — c'è il
+      **referto**: tutta la partita, triangolo per triangolo e turno per
+      turno. Serve durante la partita per controllare di non aver saltato
+      niente, e dopo per rivedere com'è andata.
 
   - type: shot
     shot: referto-tpa-foglio
-    caption: "Il foglio del referto: ogni riga è una visita al tavolo, con le bilie imbucate e il motivo per cui il turno è finito."
+    caption: "Il referto turno per turno: le bilie della spaccata piccole in alto, il totale, la lettera. Il cerchio verde è un triangolo vinto."
 
   - type: text
     text: >-
-      Quando avete finito, **Chiudi il referto**. Da quel momento si legge e
-      basta. Il risultato della partita segue la strada di sempre: va
-      confermato da tutti e due.
+      Si legge come il referto di carta. **¹3 M** vuol dire: una bilia sulla
+      spaccata, tre in tutto, poi un tiro sbagliato. Un numero dentro un
+      **cerchio** è il turno che ha vinto il triangolo. Tutti i segni sono
+      spiegati in «Cosa vuol dire ogni lettera».
+
+  - type: heading
+    id: referto-chiuso
+    title: "A partita finita: il referto chiuso"
+
+  - type: text
+    text: >-
+      Quando avete finito, **Chiudi il referto**: su telefono è in fondo alla
+      pagina, su uno schermo largo in alto a destra. Ti chiede conferma,
+      perché dopo non si annota più. Il risultato della partita segue la
+      strada di sempre: va confermato da tutti e due.
+
+  - type: shot
+    shot: referto-tpa-chiuso
+    caption: "Il referto chiuso: chi ha vinto, da dove sono venuti gli errori di ciascuno, e i triangoli migliori."
+
+  - type: text
+    text: >-
+      Da chiuso, il referto **racconta la partita**. In alto chi ha vinto, con
+      triangoli e TPA. Poi due tabelle che mettono i giocatori a confronto,
+      riga per riga.
+
+  - type: list
+    items:
+      - "**Da dove vengono gli errori**: tiri sbagliati, posizione, difese, spaccate, tiri di sponda. È la parte che ti dice su cosa allenarti."
+      - "**I triangoli migliori**: gli «spacca e chiude», i triangoli **chiusi in un turno** — cioè senza mai lasciare il tavolo, spacca e chiude compresi — e i triangoli perfetti."
+
+  - type: text
+    text: >-
+      Sotto c'è il referto turno per turno, con i triangoli **ripiegati**:
+      ogni riga dice chi l'ha vinto e il punteggio a quel punto. Tocca un
+      triangolo per aprirlo, o «Apri tutti».
 
   - type: heading
     id: dove-si-vede
@@ -286,7 +407,9 @@ blocks:
       - q: "Lo può tenere il mio avversario al posto mio?"
         a: "Lo tiene chi lo apre, e resta suo per tutta la partita. Tu premi «Guarda il referto TPA» e lo vedi riempirsi da solo, senza ricaricare la pagina, ma non puoi scriverci."
       - q: "Ho premuto il tasto sbagliato."
-        a: "«Annulla l'ultimo tocco» torna indietro di un passo. Puoi premerlo più volte di seguito: torna indietro anche di un triangolo intero, punteggio compreso."
+        a: "Se è successo in questo turno, tocca «cancella», accanto allo zero: il turno torna vuoto e lo riscrivi. Se te ne accorgi dopo aver passato il tavolo, tocca «Indietro» fino a quel turno e poi «Riparti da questo turno…»: il foglio ti dice quali turni escono dal referto, e da lì riannoti."
+      - q: "Ho toccato «Indietro» per sbaglio: ho perso qualcosa?"
+        a: "No. Indietro e Avanti servono solo a rileggere: non cambiano niente, né nel referto né nel punteggio. Tocca «Avanti» finché torni al turno in corso. Si tolgono dei turni solo con «Riparti da questo turno…», e solo dopo la conferma."
       - q: "Che TPA è un buon TPA?"
         a: "Dipende dalla disciplina e dal livello. La cosa utile non è il numero in sé, ma come cambia il tuo nel tempo: è per quello che il referto esiste."
       - q: "Funziona anche nelle gare?"
