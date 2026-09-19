@@ -243,6 +243,41 @@ Dice «questo esercizio non ha un nome scelto» e «questa prova non ha un tetto
 ci sono esercizi che si ripetono finché non si sbaglia, dove un massimo non
 esiste, e obbligare a dichiararlo vorrebbe dire farlo inventare.
 
+## Emendamento 2026-09-19 — comporre un esame che ha già una storia
+
+Fino a oggi la composizione si cambiava solo il primo giorno: aggiungere e
+togliere erano gli unici comandi, riordino e modifica di peso e prove avevano
+il servizio e la route ma nessuna interfaccia. Con la pagina «Componi l'esame»
+(`exam.compose_exam`, salvataggio unico con `ExamService.save_composition`) la
+composizione si ritocca davvero, e bisogna dire cosa succede a chi l'esame lo
+sta sostenendo. Due regole, e una cosa che **non** si è decisa.
+
+* **Sessione certificata aperta → la composizione è bloccata.** La griglia
+  delle prove nasce all'apertura della sessione (`create_placeholder_results`):
+  cambiarla a sessione aperta vorrebbe dire valutare il candidato su un esame
+  diverso da quello che ha accettato. Il blocco è del servizio
+  (`ConflictError`), e la pagina lo dice **prima**, senza lasciar lavorare a
+  vuoto. Non trattiene nessuno a lungo: una sessione certificata dura una sera
+  e si può interrompere.
+* **Allenamento in autonomia aperto → la griglia si riallinea.** Un
+  allenamento può restare aperto per mesi e non può bloccare chi compone.
+  Nascono le caselle che mancano, spariscono quelle in più *mai usate*; una
+  prova già registrata non si tocca, e `get_progress` conta solo le prove che
+  l'esame prevede oggi, così un «3 su 2» non compare.
+* **Non deciso: la versione dell'esame.** I tentativi conclusi tengono i
+  totali che avevano (`total_score`, `max_possible_score` sono scritti sul
+  tentativo), ma togliere un esercizio ne cancella le righe di dettaglio a
+  cascata, anche dai tentativi certificati: resta l'esito, resta il punteggio,
+  sparisce il «come». Era già così col vecchio «Togli». La cura vera è una
+  composizione versionata — la stessa che il piano del redesign prevede per le
+  schede di allenamento («una scheda pubblicata che cambia non riscrive le
+  sedute fatte») — e va decisa insieme a quella, non qui di passaggio.
+
+Le cinque route di prima (`update_exam`, `add_challenge`, `update_challenge`,
+`remove_challenge`, `reorder_challenges`) sono state tolte: tre non avevano mai
+avuto un comando, e i metodi del servizio che servivano restano — li compone
+`save_composition` dentro una transazione sola (ADR-061).
+
 ## Riferimenti
 
 - ADR-041 — il ruolo di esaminatore, concedibile e ortogonale

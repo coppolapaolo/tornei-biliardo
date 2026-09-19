@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% import "components/_sequence_editor.html" as seq with context %}
+
+{# Comporre un esame: nome, sequenza, chi lo somministra — e **un salvataggio
+   solo** (canvas «TPA ed esercizi», pagina 6 · «Comporre un esame»).
+
+   La sequenza è il componente di `_sequence_editor.html`, che di esami non sa
+   niente: qui gli si dice che una voce porta «vale» e «prove», cioè i due
+   campi di `ExamChallenge` (ADR-042: «vale» è quanto l'esercizio pesa **in
+   questo esame**, e il valore del catalogo è solo la proposta di partenza).
+
+   Un esercizio riuscito o no non ha «vale», ma manda lo stesso un `max_score`
+   vuoto: il server legge tre liste parallele per posizione. #}
+
+{% block title %}{{ _("Componi l'esame") }} — {{ exam.name }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('exam.exam_detail', exam_id=exam.id) }}"
+   aria-label="{{ _("Torna all'esame") }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Componi l'esame") }}{% endblock %}
+{% block page_sub %}{{ _("Trascina per cambiare l'ordine") }}{% endblock %}
+
+{% macro sottotitolo(challenge) -%}
+  {%- if challenge.pass_fail_only -%}{{ _('riuscito o no') }}
+  {%- elif challenge.max_score -%}{{ _('nel catalogo vale %(n)s', n=challenge.max_score) }}
+  {%- else -%}{{ _('a punteggio') }}{%- endif -%}
+{%- endmacro %}
+
+{# I comandi di una voce. `voce` è None nello stampo delle voci nuove, dove
+   restano tutte e due le varianti e il JavaScript tiene quella giusta. #}
+{% macro quanto(voce=None) %}
+  {% if voce is none or not voce.challenge.pass_fail_only %}
+  <div {% if voce is none %}data-seq-if="score"{% endif %}>
+    {{ seq.stepper('max_score', voce.max_score if voce else 10, _('vale'), min=1, max=999, da='vale', pesa=True) }}
+  </div>
+  {% endif %}
+  {% if voce is none or voce.challenge.pass_fail_only %}
+  <div class="c7-seq__fixed" data-seq-weight="1" {% if voce is none %}data-seq-if="passfail"{% endif %}>
+    <input type="hidden" name="max_score" value="">
+    {{ _('superato') }}<br>{{ _('o no') }}
+  </div>
+  {% endif %}
+  {{ seq.stepper('max_attempts', voce.max_attempts if voce else 1, _('prove'), min=1, max=max_attempts_cap) }}
+{% endmacro %}
+
+{% block content %}
+<form method="POST" action="{{ url_for('exam.save_composition', exam_id=exam.id) }}"
+      class="c7-stack" style="max-width:720px" data-seq-editor data-seq-picker-id="examPicker">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  {# Detto prima, non al salvataggio: chi riordina dieci voci e poi scopre che
+     non può salvare ha lavorato per niente. #}
+  {% if locked %}
+  <div class="c7-card c7-card--warn">
+    <div class="c7-rows__title"><i class="fas fa-lock"></i> {{ _("C'è una sessione d'esame aperta") }}</div>
+    <div class="c7-rows__sub">{{ _("Finché non è chiusa l'esame resta quello che il candidato ha accettato: la composizione si cambia dopo.") }}</div>
+  </div>
+  {% endif %}
+
+  <div class="c7-card c7-stack">
+    <div>
+      <label class="c7-label" for="name">{{ _("Nome") }}</label>
+      <input class="form-control" type="text" id="name" name="name" required maxlength="120"
+             value="{{ form.name if form.name is defined else exam.name }}">
+    </div>
+    <div>
+      <label class="c7-label" for="description">{{ _("Descrizione") }}</label>
+      <input class="form-control" type="text" id="description" name="description"
+             value="{{ form.description if form.description is defined else (exam.description or '') }}">
+    </div>
+    <div>
+      <label class="c7-label" for="time_limit_minutes">{{ _("Limite di tempo in minuti (facoltativo)") }}</label>
+      <input class="form-control" type="number" inputmode="numeric" id="time_limit_minutes" name="time_limit_minutes" min="1"
+             value="{{ form.time_limit_minutes if form.time_limit_minutes is defined else (exam.time_limit_minutes or '') }}">
+    </div>
+  </div>
+
+  <div class="c7-sechead">
+    <h2 data-help="esame-ordine-drill">{{ _("Gli esercizi, in ordine") }}</h2>
+    <span class="c7-sechead__note" data-seq-total
+          data-seq-total-text="{{ _('fino a {n} punti') }}"></span>
+  </div>
+
+  {% call seq.lista(vuota=_("Ancora nessun esercizio: senza, l'esame non è sostenibile.")) %}
+    {% for voce in items %}
+      {% call seq.item(voce.challenge, sub=sottotitolo(voce.challenge)) %}{{ quanto(voce) }}{% endcall %}
+    {% endfor %}
+  {% endcall %}
+
+  <template data-seq-template>
+    {% call seq.item() %}{{ quanto() }}{% endcall %}
+  </template>
+
+  {{ seq.aggiungi('examPicker', _("Aggiungi un esercizio dal catalogo")) }}
+
+  <div class="c7-rows__sub">
+    <span data-help="esame-punteggio-massimo">{{ _("«Vale» è quanto l'esercizio pesa in questo esame.") }}</span>
+    <span data-help="esame-quante-prove">{{ _("Con più di una prova conta la migliore.") }}</span>
+  </div>
+
+  <div class="c7-sechead"><h2>{{ _("Chi lo somministra") }}</h2></div>
+  <div class="c7-rows">
+    {% for examiner in examiners %}
+    <div class="c7-rows__row">
+      <span class="c7-avatar">{{ examiner.username[:2]|upper }}</span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ examiner.username }}</div>
+        <div class="c7-rows__sub">
+          {%- if examiner.id == current_user.id %}{{ _("tu") }}
+          {%- elif examiner.id == exam.examiner_id %}{{ _("ha composto l'esame") }}
+          {%- else %}{{ _("co-esaminatore") }}{% endif -%}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+    {% if feature_visible('exam.manage_examiners') %}
+    <a class="c7-rows__row" href="{{ url_for('exam.manage_examiners', exam_id=exam.id) }}"
+       style="text-decoration:none;color:inherit">
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ _("Aggiungi o togli un esaminatore") }}</div>
+        <div class="c7-rows__sub">{{ _("Salva prima: le modifiche non salvate si perdono.") }}</div>
+      </div>
+      <i class="fas fa-chevron-right" style="color:var(--c7-ink-faint)"></i>
+    </a>
+    {% endif %}
+  </div>
+
+  <div class="c7-actionbar">
+    <a class="btn btn-secondary c7-btn-narrow" href="{{ url_for('exam.exam_detail', exam_id=exam.id) }}">{{ _("Annulla") }}</a>
+    <button type="submit" class="btn btn-success" {% if locked %}disabled{% endif %}><i class="fas fa-check"></i> {{ _("Salva l'esame") }}</button>
+  </div>
+</form>
+
+{% call(challenge) seq.picker('examPicker', available,
+                              titolo=_("Aggiungi un esercizio"),
+                              sottotitolo=_("Quelli già nell'esame non compaiono.")) -%}
+  data-seq-kind="{{ 'passfail' if challenge.pass_fail_only else 'score' }}"
+  data-seq-sub="{{ sottotitolo(challenge) }}"
+  data-seq-vale="{{ challenge.max_score or 10 }}"
+{%- endcall %}
+
+<script src="{{ url_for('static', filename='js/sequence-editor.js') }}?v={{ config.ASSET_VERSION }}"></script>
+{% endblock %}

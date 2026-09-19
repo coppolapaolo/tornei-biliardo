@@ -1,0 +1,140 @@
+{# templates/components/_sequence_editor.html — 7c
+
+   «Una sequenza ordinata di esercizi, ognuno col suo quanto farne.»
+
+   È la forma di un esame, e sarà la forma di una scheda di allenamento
+   (docs/redesign-7c/canvas-tpa-esercizi/PIANO.md, fasi 3a e 6): per questo il
+   componente **non sa cosa sia un esame**. Conosce una lista che si riordina,
+   voci che si tolgono, numeri piccoli che si ritoccano e un foglio da cui
+   pescare un esercizio. Quali numeri porta una voce («vale» e «prove» per
+   l'esame) lo decide la pagina, dentro il `call` di `item` e nel `<template>`
+   delle voci nuove.
+
+   Il contratto col server è un modulo normale: ogni voce contiene i propri
+   campi, e l'ordine è **l'ordine in cui compaiono nella pagina** — quindi
+   liste parallele lette per posizione, e ogni voce deve mandare sempre tutti i
+   suoi campi, anche vuoti.
+
+   Il comportamento sta in `static/js/sequence-editor.js`
+   (`c7SequenceEditor.avvia(nodo)`), provato in
+   `tests/frontend/test_sequence_editor.cjs`.
+
+   Uso:
+     {% import "components/_sequence_editor.html" as seq with context %}
+     <div data-seq-editor>
+       {% call seq.lista(vuota=_('Nessun esercizio')) %}
+         {% for voce in items %}
+           {% call seq.item(voce.challenge, sub=...) %} …stepper… {% endcall %}
+         {% endfor %}
+       {% endcall %}
+       <template data-seq-template>{% call seq.item() %}…{% endcall %}</template>
+       {{ seq.aggiungi(picker_id='seqPicker') }}
+     </div>
+     {{ seq.picker('seqPicker', available, …) }}
+#}
+{% import "components/_challenge_bits.html" as ch with context %}
+
+{# La lista. `vuota` è il testo che compare quando non c'è nessuna voce. #}
+{% macro lista(vuota) -%}
+<ol class="c7-seq" data-seq-list>
+  {{- caller() -}}
+</ol>
+<div class="c7-seq__empty" data-seq-empty hidden>{{ vuota }}</div>
+<div class="visually-hidden" aria-live="polite" data-seq-live
+     data-seq-live-text="{{ _('{title}: posizione {n} di {total}') }}"></div>
+{%- endmacro %}
+
+{# Una voce. Senza `challenge` è lo **stampo** di una voce nuova: titolo,
+   sottotitolo e miniatura li riempie il JavaScript da ciò che si è scelto nel
+   foglio. Il contenuto del `call` sono i comandi di «quanto farne»; `campo` è
+   il nome con cui la voce manda al server quale esercizio è. #}
+{% macro item(challenge=None, sub='', campo='challenge_id') -%}
+<li class="c7-seq__item" data-seq-item data-seq-key="{{ challenge.id if challenge else '' }}">
+  <input type="hidden" name="{{ campo }}" value="{{ challenge.id if challenge else '' }}" data-seq-from="key">
+  <div class="c7-seq__head">
+    <button type="button" class="c7-seq__grip" data-seq-grip
+            aria-label="{{ _('Sposta: trascina, o usa le frecce su e giù') }}">
+      <i></i><i></i><i></i>
+    </button>
+    <span class="c7-seq__thumb" data-seq-slot="thumb">
+      {%- if challenge %}{{ ch.thumb(challenge, 48, 'var(--c7-r-chip)') }}{% endif -%}
+    </span>
+    <div class="c7-seq__text">
+      <div class="c7-seq__title" data-seq-fill="title">{{ challenge.get_display_name() if challenge else '' }}</div>
+      <div class="c7-seq__sub" data-seq-fill="sub">{{ sub }}</div>
+    </div>
+  </div>
+  <div class="c7-seq__controls">
+    {{- caller() -}}
+    <button type="button" class="c7-seq__remove" data-seq-remove aria-label="{{ _('Togli') }}">
+      <i class="fas fa-trash-can"></i>
+    </button>
+  </div>
+</li>
+{%- endmacro %}
+
+{# Un numero piccolo che si ritocca: meno, più, o scritto a mano toccando la
+   cifra. `da` dice al JavaScript da quale dato dell'esercizio scelto prendere
+   il valore iniziale di una voce nuova (`data-seq-<da>` sull'opzione);
+   `pesa=True` lo fa entrare nel totale della sequenza. #}
+{% macro stepper(name, value, label, min=1, max=999, da=None, pesa=False) -%}
+<div class="c7-seq__measure">
+  <div class="c7-ministep" data-seq-stepper>
+    <button type="button" data-seq-step="-1" aria-label="{{ _('Meno') }}"><i class="fas fa-minus"></i></button>
+    <input class="c7-ministep__value" type="number" inputmode="numeric" name="{{ name }}"
+           value="{{ value if value is not none else '' }}" min="{{ min }}" max="{{ max }}" required
+           aria-label="{{ label }}"
+           {%- if da %} data-seq-from="{{ da }}"{% endif %}
+           {%- if pesa %} data-seq-weight{% endif %}>
+    <button type="button" data-seq-step="1" aria-label="{{ _('Più') }}"><i class="fas fa-plus"></i></button>
+  </div>
+  <div class="c7-seq__unit">{{ label }}</div>
+</div>
+{%- endmacro %}
+
+{# Il comando che apre il foglio. #}
+{% macro aggiungi(picker_id, testo) -%}
+<button type="button" class="btn btn-secondary w-100" data-bs-toggle="modal" data-bs-target="#{{ picker_id }}">
+  <i class="fas fa-plus"></i> {{ testo }}
+</button>
+{%- endmacro %}
+
+{# Il foglio da cui si pesca un esercizio. Ogni opzione porta nei `data-seq-*`
+   ciò che serve a riempire lo stampo; il `call` riceve l'esercizio e rende gli
+   attributi in più che la pagina vuole (tipo, valore proposto, sottotitolo).
+   Resta aperto dopo una scelta: chi compone ne aggiunge quasi sempre più d'uno,
+   e l'esercizio scelto sparisce dall'elenco, che è già un riscontro. #}
+{% macro picker(picker_id, available, titolo, sottotitolo) -%}
+<div class="modal fade c7-sheet" id="{{ picker_id }}" tabindex="-1" aria-labelledby="{{ picker_id }}Titolo" data-seq-picker>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="{{ picker_id }}Titolo">{{ titolo }}</h3>
+        <div class="c7-sheet__sub">{{ sottotitolo }}</div>
+        <input type="search" class="form-control c7-seq-picker__search" data-seq-search
+               placeholder="{{ _('Cerca per nome') }}" aria-label="{{ _('Cerca per nome') }}">
+      </div>
+      <div class="modal-body c7-stack">
+        <div class="c7-rows c7-seq-picker__list">
+          {% for challenge in available %}
+          <button type="button" class="c7-rows__row c7-seq-picker__opt" data-seq-option
+                  data-seq-key="{{ challenge.id }}"
+                  data-seq-title="{{ challenge.get_display_name() }}"
+                  {{ caller(challenge) }}>
+            <span data-seq-slot="thumb">{{ ch.thumb(challenge, 48, 'var(--c7-r-chip)') }}</span>
+            <span class="c7-rows__main">
+              <span class="c7-rows__title">{{ challenge.get_display_name() }}</span>
+              <span class="c7-rows__sub">{{ ch.type_pill(challenge) }}</span>
+            </span>
+            <i class="fas fa-plus" style="color:var(--c7-accent)"></i>
+          </button>
+          {% endfor %}
+        </div>
+        <div class="c7-seq__empty" data-seq-noresult hidden>{{ _('Nessun esercizio da aggiungere.') }}</div>
+        <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal">{{ _('Fatto') }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{%- endmacro %}

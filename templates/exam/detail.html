@@ -6,8 +6,10 @@
 {% block page_title %}{{ exam.name }}{% endblock %}
 {% block page_sub %}{{ _("Esame: una sequenza di esercizi") }}{% endblock %}
 {% block page_actions %}
-    {% if can_edit and feature_visible('exam.manage_examiners') %}
-    <a href="{{ url_for('exam.manage_examiners', exam_id=exam.id) }}" class="btn btn-outline-info btn-sm">{{ _("Esaminatori") }}</a>
+    {% if can_edit and feature_visible('exam.compose_exam') %}
+    <a href="{{ url_for('exam.compose_exam', exam_id=exam.id) }}" class="btn btn-secondary" data-help="esame-componi">
+      <i class="fas fa-pen"></i> {{ _("Componi") }}
+    </a>
     {% endif %}
 {% endblock %}
 
@@ -26,7 +28,7 @@
      un'informazione sola. #}
   {% set exam_challenges = exam.challenges.all() %}
   <div class="c7-sechead">
-    <h2 data-help="esame-ordine-drill">{{ _("Gli esercizi dell'esame") }}</h2>
+    <h2>{{ _("Gli esercizi dell'esame") }}</h2>
     <span class="c7-sechead__note">{{ exam_challenges|length }}</span>
   </div>
   {# Il tipo di drill e l'azione stanno su una **seconda riga**, non in coda al
@@ -53,16 +55,6 @@
         {% if ec.max_attempts > 1 %}
         <span class="c7-pill">{{ _("%(n)s prove · conta la migliore", n=ec.max_attempts) }}</span>
         {% endif %}
-        {% if can_edit %}
-        <form method="POST" style="margin-left:auto"
-              action="{{ url_for('exam.remove_challenge', exam_id=exam.id, challenge_id=ec.challenge_id) }}">
-          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-          <button type="submit" class="btn btn-sm" style="background:var(--c7-err-bg);color:var(--c7-err-ink)"
-                  onclick='return confirm({{ _('Togliere questo esercizio dall\'esame?')|tojson }})'>
-            {{ _("Togli") }}
-          </button>
-        </form>
-        {% endif %}
       </div>
     </div>
     {% endfor %}
@@ -72,6 +64,9 @@
     <div class="c7-empty__ico"><i class="fas fa-list-ol"></i></div>
     <h2 class="c7-empty__title">{{ _("Nessun esercizio") }}</h2>
     <p class="c7-empty__text">{{ _("Questo esame non contiene ancora nessun esercizio: non è sostenibile.") }}</p>
+    {% if can_edit and feature_visible('exam.compose_exam') %}
+    <a class="btn btn-primary" href="{{ url_for('exam.compose_exam', exam_id=exam.id) }}">{{ _("Scegli gli esercizi") }}</a>
+    {% endif %}
   </div>
   {% endif %}
 
@@ -135,27 +130,6 @@
     </div>
   </div>
   {% endif %}
-  {% endif %}
-
-  {# ── Composizione, per chi può (US-E1) ──────────────────────────────── #}
-  {% if can_edit %}
-  <div class="c7-sechead"><h2>{{ _("Aggiungi un esercizio") }}</h2></div>
-  <form method="POST" action="{{ url_for('exam.add_challenge', exam_id=exam.id) }}" class="c7-card">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <label class="c7-label" for="challenge_id">{{ _("Esercizio") }}</label>
-    <input class="form-control" type="number" id="challenge_id" name="challenge_id" required
-           placeholder="{{ _('ID dell\'esercizio') }}">
-    <label class="c7-label" for="max_score" style="margin-top:12px" data-help="esame-punteggio-massimo">{{ _("Punteggio massimo") }}</label>
-    <input class="form-control" type="number" id="max_score" name="max_score" min="1"
-           placeholder="{{ _('Vuoto per gli esercizi superato / non superato') }}">
-    <label class="c7-label" for="max_attempts" style="margin-top:12px" data-help="esame-quante-prove">{{ _("Quante prove") }}</label>
-    <input class="form-control" type="number" id="max_attempts" name="max_attempts"
-           min="1" max="{{ max_attempts_cap }}" value="1">
-    <div class="c7-rows__sub" style="margin-top:6px">
-      {{ _("Se più di una, l'esercizio vale la prova migliore.") }}
-    </div>
-    <button type="submit" class="btn btn-primary" style="margin-top:12px">{{ _("Aggiungi") }}</button>
-  </form>
   {% endif %}
 
   {# ── Statistiche (US-E8) ────────────────────────────────────────────── #}

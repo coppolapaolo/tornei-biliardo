@@ -379,12 +379,21 @@ class ExamAttempt(BaseModel):
         total_challenges = len(exam_challenges)
         total_attempts = sum(ec.max_attempts for ec in exam_challenges)
 
-        recorded = self.challenge_results.filter(
-            db.or_(
-                ExamChallengeResult.score.isnot(None),
-                ExamChallengeResult.passed.isnot(None),
-            )
-        ).all()
+        # Solo le prove che l'esame prevede **oggi**: se chi lo compone ha
+        # ridotto le prove di un esercizio, una terza prova già registrata in un
+        # allenamento aperto resta (non si butta un dato), ma non deve far
+        # segnare «6 su 5».
+        prescribed = {ec.id: ec.max_attempts for ec in exam_challenges}
+        recorded = [
+            result
+            for result in self.challenge_results.filter(
+                db.or_(
+                    ExamChallengeResult.score.isnot(None),
+                    ExamChallengeResult.passed.isnot(None),
+                )
+            ).all()
+            if result.attempt_number <= prescribed.get(result.exam_challenge_id, 0)
+        ]
         completed_attempts = len(recorded)
 
         done_per_challenge: Dict[int, int] = {}

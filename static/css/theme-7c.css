@@ -4157,3 +4157,91 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 }
 .c7-correzione-set__comandi { display: flex; gap: 8px; }
 .c7-correzione-set__comandi .btn { flex: 1; min-height: 48px; }
+
+/* ==========================================================================
+   36. La sequenza di esercizi che si compone (canvas «TPA ed esercizi»,
+   pagina 6 · «Comporre un esame»; la riuseranno le schede di allenamento)
+   Una card per voce: sopra la presa, la miniatura e il nome; sotto, a destra,
+   i numeri piccoli di «quanto farne» e il togli. Markup in
+   `components/_sequence_editor.html`, gesti in `sequence-editor.js`.
+   ========================================================================== */
+.c7-seq { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.c7-seq__item {
+  background: var(--c7-card);
+  border-radius: var(--c7-r-card);
+  padding: 10px 12px;
+  transition: transform var(--c7-dur-quick) var(--c7-ease);
+}
+/* La voce presa si stacca dalle altre per tono e per scala: niente ombra. */
+.c7-seq__item.is-dragging { background: var(--c7-sunken); transform: scale(1.02); transition-duration: 0ms; }
+.c7-seq__head { display: flex; align-items: center; gap: 10px; }
+/* La presa: bersaglio da 48 anche se il segno è piccolo. `touch-action: none`
+   perché il dito che trascina non faccia scorrere la pagina. */
+.c7-seq__grip {
+  flex-shrink: 0; width: 32px; height: 48px; margin-left: -6px;
+  border: 0; background: none; color: var(--c7-ink-faint);
+  display: grid; align-content: center; justify-items: center; gap: 3px;
+  touch-action: none; cursor: grab;
+}
+.c7-seq__grip i { display: block; width: 14px; height: 2px; border-radius: 2px; background: currentColor; }
+.c7-seq__grip:focus-visible { outline: 2px solid var(--c7-accent); outline-offset: -2px; border-radius: var(--c7-r-chip); }
+.c7-seq__thumb { flex-shrink: 0; display: block; width: 48px; height: 48px; }
+.c7-seq__text { flex: 1; min-width: 0; }
+.c7-seq__title { font-size: 14px; font-weight: 800; letter-spacing: -.01em; overflow-wrap: anywhere; }
+.c7-seq__sub { margin-top: 2px; font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); }
+.c7-seq__controls { margin-top: 10px; display: flex; align-items: flex-start; justify-content: flex-end; gap: 12px; }
+.c7-seq__measure { text-align: center; }
+.c7-seq__unit { margin-top: 2px; font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); }
+/* «superato o no» al posto di un numero: alto quanto lo stepper, così i due
+   tipi di voce restano allineati. */
+.c7-seq__fixed {
+  min-height: 40px; display: grid; align-content: center; text-align: center;
+  font-size: 11px; font-weight: 700; line-height: 1.25; color: var(--c7-ink-muted);
+}
+.c7-seq__remove {
+  flex-shrink: 0; width: 48px; height: 40px; border: 0;
+  border-radius: var(--c7-r-control);
+  background: var(--c7-err-bg); color: var(--c7-err-ink);
+  display: grid; place-items: center;
+}
+/* Da lg la voce sta su una riga: nome a sinistra, numeri a destra. */
+@media (min-width: 992px) {
+  .c7-seq__item { display: flex; align-items: center; gap: 16px; }
+  .c7-seq__head { flex: 1; min-width: 0; }
+  .c7-seq__controls { margin-top: 0; }
+}
+.c7-seq__empty {
+  padding: 18px; border-radius: var(--c7-r-card); background: var(--c7-sunken);
+  font-size: 13px; font-weight: 700; color: var(--c7-ink-muted); text-align: center;
+}
+
+/* Lo stepper piccolo: meno · cifra · più su una riga. La cifra è un campo —
+   chi deve arrivare a 40 la scrive, non tocca «più» trenta volte. */
+.c7-ministep { display: inline-flex; align-items: center; gap: 2px; background: var(--c7-bg); border-radius: var(--c7-r-control); padding: 2px; }
+.c7-ministep button {
+  width: 40px; height: 40px; border: 0; border-radius: var(--c7-r-chip);
+  background: var(--c7-card); color: var(--c7-accent); font-size: 12px;
+  display: grid; place-items: center;
+}
+.c7-ministep__value {
+  width: 40px; height: 40px; border: 0; padding: 0; background: none; text-align: center;
+  font-family: var(--c7-font-mono); font-size: 15px; font-weight: 800; color: var(--c7-ink);
+  font-variant-numeric: tabular-nums; -moz-appearance: textfield; appearance: textfield;
+}
+.c7-ministep__value::-webkit-outer-spin-button,
+.c7-ministep__value::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.c7-ministep__value:focus { outline: 2px solid var(--c7-accent); border-radius: var(--c7-r-chip); }
+
+/* Il foglio da cui si pesca: la ricerca sotto il titolo, le opzioni come righe
+   toccabili. */
+.c7-seq-picker__search { margin-top: 12px; }
+/* L'elenco scorre dentro il foglio: con cento esercizi il foglio non deve
+   superare lo schermo né portarsi via «Fatto». */
+.c7-seq-picker__list { background: var(--c7-bg); max-height: 46vh; overflow-y: auto; }
+.c7-seq-picker__opt { width: 100%; border: 0; background: none; text-align: left; font-family: inherit; color: inherit; }
+.c7-seq-picker__opt + .c7-seq-picker__opt { border-top: 1px solid var(--c7-line-soft); }
+/* `.c7-rows__row` è un flex: senza questa riga `hidden` non nasconderebbe
+   l'esercizio già scelto. */
+.c7-seq-picker__opt[hidden] { display: none; }
+.c7-seq-picker__opt .c7-rows__title,
+.c7-seq-picker__opt .c7-rows__sub { display: block; }
