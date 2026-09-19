@@ -588,6 +588,14 @@ class TestRotte:
             assert f'action="{base}/close"' in foglio
             assert 'name="csrf_token"' in foglio[: foglio.index("</form>")]
 
+            # «Chiudi il referto» c'e' due volte — in testata da lg, in fondo
+            # sotto — e nessuna delle due porta un `id`: aprono lo stesso foglio.
+            assert html.count('data-bs-target="#tpaChiudiModal"') == 2
+            assert html.count('id="tpaChiudiModal"') == 1
+            # La legenda spiega anche la notazione, non solo le lettere.
+            legenda = html[html.index('id="tpaLegenda"') : html.index('id="tpaSheet"')]
+            assert "c7-tpa-kick" in legenda and "<sup>1</sup>4" in legenda
+
             # Chi guarda non riceve ne' il tastierino ne' il foglio di chiusura.
             # In questa suite `g` non e' per-richiesta: senza ripulirlo
             # Flask-Login risponderebbe ancora per il primo giocatore.

@@ -15,12 +15,27 @@
 <span class="c7-sep">·</span> {{ match.discipline|discipline_display }}
 {% endblock %}
 
+{# Da lg in su «Chiudi il referto» sta in testata, come nel canvas; sotto lg
+   resta in fondo alla pagina, dove il pollice lo trova. Nessuno dei due ha un
+   `id`: aprono lo stesso foglio. #}
+{% block page_actions %}
+{% if state and state.can_write %}
+<button type="button" class="btn btn-secondary d-none d-lg-inline-flex"
+        data-bs-toggle="modal" data-bs-target="#tpaChiudiModal">
+  <i class="fas fa-flag-checkered"></i> {{ _('Chiudi il referto') }}
+</button>
+{% endif %}
+{{ super() }}
+{% endblock %}
+
 {# Chi compila ha il tastierino agganciato in basso: la nav flottante gli
    lascia il posto. Per uscire c'e' la freccia in testata. #}
 {% block app_nav %}{% if not (state and state.can_write) %}{{ super() }}{% endif %}{% endblock %}
 
 {% block content %}
-<div class="c7-cols">
+{# La presentazione usa le due colonne dell'app; il referto ha la sua griglia
+   (`.c7-tpa`), che da lg in su e' a tre colonne. #}
+<div class="{{ 'c7-cols' if referto is none }}">
   <div class="c7-stack c7-sections">
 
   {% if referto is none %}
@@ -116,15 +131,15 @@
       {# I riquadri dei giocatori e il tastierino li disegna il JavaScript e li
          svuota a ogni tocco: le ancore dell'aiuto (`data-help`) stanno su
          involucri stabili. #}
-      {# Compare solo mentre si rilegge un turno del passato. #}
-      <p class="c7-tpa-reading" id="tpaRileggi" hidden></p>
-      <div data-help="referto-passa-tavolo">
+      <div class="c7-tpa__players" data-help="referto-passa-tavolo">
+        {# Compare solo mentre si rilegge un turno del passato. #}
+        <p class="c7-tpa-reading" id="tpaRileggi" hidden></p>
         <div id="tpaPlayers" class="c7-card c7-card--accent c7-tpa-duo"></div>
       </div>
 
       {% if state.can_write %}
       {# Sotto lg questo blocco sta agganciato in basso (vedi `.c7-tpa-dock`). #}
-      <div class="c7-tpa-dock" id="tpaDock">
+      <div class="c7-tpa-dock c7-tpa__pad" id="tpaDock">
         <div class="c7-stack" data-help="referto-tastierino" style="gap:8px">
           <div class="c7-tpa-pad" id="tpaNumbers"></div>
           <div class="c7-tpa-pad" id="tpaLetters"></div>
@@ -139,45 +154,54 @@
         </div>
       </div>
       {% endif %}
-    </section>
 
-    <details class="c7-card">
-      <summary style="font-size:13px;font-weight:800;cursor:pointer">{{ _('Cosa vuol dire ogni lettera') }}</summary>
-      <p class="c7-tpa-legend" style="margin:10px 0 0" data-help="referto-annotazioni-piccole">
-        <b>M</b> {{ _('sbagli un tiro d\'attacco') }} <span class="c7-sep">·</span>
-        <b>S</b> {{ _('giochi di difesa') }} <span class="c7-sep">·</span>
-        <b>K</b> {{ _('tiro di sponda obbligato, non vedi la bilia') }}<br>
-        <b>P</b> {{ _('battente in buca o fuori dal tavolo') }} <span class="c7-sep">·</span>
-        <b>N</b> {{ _('non colpisci la bilia designata') }}<br>
-        <b>G</b> {{ _('con questo turno vinci il triangolo') }}<br>
-        <b>n</b> {{ _('il tiro sbagliato era facile: vale doppio') }} <span class="c7-sep">·</span>
-        <b>x</b> {{ _('difesa premeditata: niente errore di posizione') }} <span class="c7-sep">·</span>
-        <b>p</b> {{ _('push out') }}
-      </p>
-      {% if state.can_write %}
-      <div class="form-check form-switch" style="margin:12px 0 0">
-        <input class="form-check-input" type="checkbox" role="switch" id="tpaParole" checked>
-        <label class="form-check-label" for="tpaParole" style="font-size:13px;font-weight:700">{{ _('Mostra la parola sotto le lettere del tastierino') }}</label>
+      <details class="c7-card c7-tpa__legend" id="tpaLegenda">
+        <summary style="font-size:13px;font-weight:800;cursor:pointer">{{ _('Cosa vuol dire ogni lettera') }}</summary>
+        <div class="c7-tpa-legend" data-help="referto-annotazioni-piccole">
+          <span><b>M</b> {{ _('sbagli un tiro d\'attacco') }}</span>
+          <span><b>K</b> {{ _('tiro di sponda obbligato, non vedi la bilia') }}</span>
+          <span><b>S</b> {{ _('giochi di difesa') }}</span>
+          <span><b>P</b> {{ _('battente in buca o fuori dal tavolo') }}</span>
+          <span><b>G</b> {{ _('con questo turno vinci il triangolo: sul referto è un cerchio') }}</span>
+          <span><b>N</b> {{ _('non colpisci la bilia designata') }}</span>
+          <span><b>n</b> {{ _('il tiro sbagliato era facile: vale doppio') }}</span>
+          <span><b>x</b> {{ _('difesa premeditata: niente errore di posizione') }}</span>
+          <span><b>p</b> {{ _('push out') }}</span>
+          <span><b><span class="c7-tpa-kick">1</span></b> {{ _('sopra la casella: primo tiro di calcio, col numero di chi tira') }}</span>
+          <span><b class="c7-tpa-nt"><sup>1</sup>4</b> {{ _('una bilia in spaccata, quattro in tutto') }}</span>
+        </div>
+        {% if state.can_write %}
+        <div class="form-check form-switch" style="margin:12px 0 0">
+          <input class="form-check-input" type="checkbox" role="switch" id="tpaParole" checked>
+          <label class="form-check-label" for="tpaParole" style="font-size:13px;font-weight:700;margin-left:10px">{{ _('Mostra la parola sotto le lettere del tastierino') }}</label>
+        </div>
+        {% endif %}
+      </details>
+
+      <div class="c7-tpa__sheet">
+        <h3 style="margin:0 0 10px">{{ _('Referto') }}</h3>
+        <div class="c7-tpa-sheet" id="tpaSheet"></div>
       </div>
-      {% endif %}
-    </details>
 
-    <section>
-      <h3 style="margin:0 0 10px">{{ _('Referto') }}</h3>
-      <div class="c7-tpa-sheet" id="tpaSheet"></div>
+      <div class="c7-stack c7-tpa__actions">
+        {% if state.can_write %}
+        <button type="button" class="btn btn-secondary w-100 d-lg-none"
+                data-bs-toggle="modal" data-bs-target="#tpaChiudiModal">
+          <i class="fas fa-flag-checkered"></i> {{ _('Chiudi il referto') }}
+        </button>
+        {% endif %}
+        <a class="btn btn-secondary w-100" href="{{ url_for('individual_match.match_detail', match_id=match.id) }}">
+          {{ _('Torna alla sfida') }}
+        </a>
+      </div>
     </section>
-
-    {% if state.can_write %}
-    <button type="button" class="btn btn-secondary w-100"
-            data-bs-toggle="modal" data-bs-target="#tpaChiudiModal">
-      <i class="fas fa-flag-checkered"></i> {{ _('Chiudi il referto') }}
-    </button>
-    {% endif %}
   {% endif %}
 
+  {% if referto is none %}
     <a class="btn btn-secondary w-100" href="{{ url_for('individual_match.match_detail', match_id=match.id) }}">
       {{ _('Torna alla sfida') }}
     </a>
+  {% endif %}
   </div>
 </div>
 {% endblock %}

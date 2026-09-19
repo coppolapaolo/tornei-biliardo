@@ -322,7 +322,8 @@
       return button;
     }
 
-    function renderSheet() {
+    function renderSheet(v) {
+      let count = 0;
       const sheet = el('tpaSheet');
       sheet.textContent = '';
       (state.racks || []).forEach((rack) => {
@@ -344,7 +345,9 @@
 
         rack.turns.forEach((turn) => {
           const row = doc.createElement('div');
-          row.className = 'c7-tpa-sheet__turn' + (turn.winning ? ' c7-tpa-sheet__turn--won' : '');
+          count += 1;
+          row.className = 'c7-tpa-sheet__turn' + (turn.winning ? ' c7-tpa-sheet__turn--won' : '') +
+            (!v.live && count === v.position ? ' c7-tpa-sheet__turn--reading' : '');
           const seat = doc.createElement('span');
           seat.className = 'c7-tpa-sheet__seat';
           seat.textContent = turn.player;
@@ -418,12 +421,24 @@
       foglio.apri(el('tpaRipartiModal'));
     }
 
+    /* Da lg in su il referto scorre dentro la sua colonna: mentre si annota
+       deve restare in vista l'ultimo turno, mentre si rilegge quello letto. */
+    function followSheet(v) {
+      const sheet = el('tpaSheet');
+      if (!sheet || sheet.scrollHeight <= sheet.clientHeight) return;
+      const rows = sheet.querySelectorAll('.c7-tpa-sheet__turn');
+      const row = rows[v.position - 1];
+      if (v.live || !row) sheet.scrollTop = sheet.scrollHeight;
+      else sheet.scrollTop = Math.max(0, row.offsetTop - sheet.clientHeight / 2);
+    }
+
     function render() {
       const v = view();
       renderPlayers(v);
       renderPad(v);
-      renderSheet();
+      renderSheet(v);
       renderHistory(v);
+      followSheet(v);
     }
 
     let busy = false;
@@ -515,6 +530,10 @@
       if (!dock || !dock.getBoundingClientRect) return;
       doc.documentElement.style.setProperty('--c7-tpa-dock-h', Math.round(dock.getBoundingClientRect().height) + 'px');
     }
+
+    /* Dove le colonne sono tre la legenda ha posto: parte aperta. */
+    const legenda = el('tpaLegenda');
+    if (legenda && root.matchMedia && root.matchMedia('(min-width: 1400px)').matches) legenda.open = true;
 
     render();
     misuraDock();

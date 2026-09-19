@@ -2021,6 +2021,41 @@ a.c7-bracket__node.is-live:hover { background: var(--c7-accent); filter: brightn
 .c7-tpa-out .c7-tpa-sheet__note sup { text-decoration: line-through; }
 .c7-tpa-sheet__note--text { font-family: var(--c7-font); color: var(--c7-ink-muted); }
 
+/* --- Da lg in su: il referto a fianco -----------------------------------
+   Da lg il referto che cresce sta in una colonna sua, a destra, e il resto
+   resta in pila a sinistra. Le tre colonne del canvas — giocatori e legenda,
+   tastierino, referto — arrivano solo quando c'e' posto: accanto alla barra
+   laterale, 340 + 380 di colonne fisse a 1024px lasciavano alla prima colonna
+   una striscia. L'ultima riga e' elastica: senza, l'altezza del referto si
+   spalmerebbe fra le righe di sinistra e le allontanerebbe una dall'altra. */
+@media (min-width: 992px) {
+  .c7-tpa {
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 380px);
+    grid-template-rows: auto auto auto auto 1fr;
+    grid-template-areas: "players sheet" "pad sheet" "legend sheet" "actions sheet" ". sheet";
+    gap: var(--c7-gap-lg); align-items: start;
+  }
+  .c7-tpa__players { grid-area: players; }
+  .c7-tpa__pad { grid-area: pad; }
+  .c7-tpa__legend { grid-area: legend; }
+  .c7-tpa__actions { grid-area: actions; }
+  .c7-tpa__sheet {
+    grid-area: sheet; position: sticky; top: var(--c7-gap-lg);
+    max-height: calc(100vh - 2 * var(--c7-gap-lg)); display: flex; flex-direction: column;
+  }
+  /* Il referto scorre dentro la sua colonna: la pagina resta ferma, e
+     tastierino e card non se ne vanno mentre si rilegge una partita lunga. */
+  .c7-tpa__sheet .c7-tpa-sheet { overflow-y: auto; min-height: 0; }
+}
+@media (min-width: 1400px) {
+  .c7-tpa--write {
+    grid-template-columns: minmax(0, 1fr) 340px 380px;
+    grid-template-rows: auto auto auto 1fr;
+    grid-template-areas: "players pad sheet" "legend pad sheet" "actions pad sheet" ". pad sheet";
+  }
+  .c7-tpa-legend { grid-template-columns: 1fr 1fr; }
+}
+
 /* Sotto lg il tastierino sta agganciato in basso, e la nav flottante gli
    lascia il posto (il template la toglie a chi compila): chi annota mentre
    gioca non deve cercarlo scorrendo. L'altezza dei tasti segue lo schermo,
@@ -2040,10 +2075,13 @@ a.c7-bracket__node.is-live:hover { background: var(--c7-accent); filter: brightn
   .c7-tpa--write .c7-tpa-key--wide { height: var(--c7-tpa-key-h); }
 }
 
+/* La legenda: una voce per riga su telefono, due colonne da lg in su. */
 .c7-tpa-legend {
-  font-size: 12px; font-weight: 600; line-height: 1.5; color: var(--c7-ink-muted);
+  display: grid; gap: 6px 20px; margin-top: 10px;
+  font-size: 12px; font-weight: 600; line-height: 1.45; color: var(--c7-ink-muted);
 }
-.c7-tpa-legend b { color: var(--c7-ink-soft); }
+.c7-tpa-legend b { color: var(--c7-ink-soft); margin-right: 4px; }
+.c7-tpa-legend .c7-tpa-kick { vertical-align: middle; }
 
 /* --- Lo storico dei turni ---------------------------------------------- */
 
@@ -2074,6 +2112,8 @@ a.c7-bracket__node.is-live:hover { background: var(--c7-accent); filter: brightn
   color: var(--c7-ink-soft); font-variant-numeric: tabular-nums;
 }
 .c7-tpa-sheet__turn--won .c7-tpa-sheet__note { color: var(--c7-ok); }
+/* Il turno che si sta rileggendo con Indietro e Avanti. */
+.c7-tpa-sheet__turn--reading { background: var(--c7-warn-bg); }
 
 /* --------------------------------------------------------------------------
    Blocco «Come stai andando» (feedback attivita' in home)
