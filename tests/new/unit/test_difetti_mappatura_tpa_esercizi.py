@@ -71,6 +71,23 @@ def test_il_tastierino_e_su_tre_colonne_a_ogni_larghezza():
     assert [r.strip() for r in regole] == ["repeat(3, 1fr)"]
 
 
+def test_le_tre_colonne_del_referto_arrivano_solo_quando_c_e_posto():
+    """Tre colonne — giocatori, tastierino, referto — solo da 1400px in su.
+
+    A 1024px, accanto alla barra laterale, 340 + 380 di colonne fisse lasciavano
+    alla prima una striscia e le card dei giocatori finivano sotto il
+    tastierino. Da lg le colonne sono due, e nessuna regola a `min-width: 992px`
+    deve dichiararne tre.
+    """
+    css = CSS.read_text(encoding="utf-8")
+    tre = "minmax(0, 1fr) 340px 380px"
+    assert css.count(tre) == 1
+    prima = css[: css.index(tre)]
+    assert prima.rindex("@media (min-width: 1400px)") > prima.rindex(
+        "@media (min-width: 992px)"
+    )
+
+
 def test_i_tasti_larghi_del_referto_hanno_l_altezza_di_tocco():
     css = CSS.read_text(encoding="utf-8")
     regola = re.search(r"\.c7-tpa-key--wide\s*\{([^}]*)\}", css)
