@@ -239,10 +239,12 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 
 | Path HTTP | Metodo | Endpoint | Decoratori | Tipo | Descrizione |
 |-----------|--------|----------|-----------|------|-------------|
-| `/challenges/` | GET | `challenge.challenge_catalog` | `@login_required` | UI page | Catalogo challenges per player |
+| `/challenges/` | GET | `challenge.today` | `@login_required` | UI page | «Oggi»: porta d'ingresso degli esercizi (riprendi, preferiti, più provati) |
+| `/challenges/catalog` | GET | `challenge.challenge_catalog` | `@login_required` | UI page | Catalogo che si filtra per abilità, gesto, livello, voto |
 | `/challenges/create` | GET, POST | `challenge.create_challenge` | `@director_required` | UI page + action | Crea nuova challenge (directors) |
 | `/challenges/<int:challenge_id>` | GET | `challenge.challenge_detail` | `@login_required` | UI page | Dettaglio challenge |
 | `/challenges/<int:challenge_id>/edit` | GET, POST | `challenge.edit_challenge` | `@director_required` | UI page + action | Modifica challenge |
+| `/challenges/<int:challenge_id>/duplicate` | GET, POST | `challenge.duplicate_challenge` | `@director_required` | UI page + action | Duplica un esercizio (modulo unico) |
 | `/challenges/<int:challenge_id>/delete` | POST | `challenge.delete_challenge` | `@director_required` | action | Soft delete challenge |
 | `/challenges/builder` | GET, POST | `challenge.diagram_builder` | `@director_required` + `@feature_required('use_drill_builder')` | UI page + action | Disegna un drill invece di fotografarlo: salva immagine **e** scena |
 | `/challenges/<int:challenge_id>/builder` | GET, POST | `challenge.edit_diagram` | `@director_required` + `@feature_required('use_drill_builder')` | UI page + action | Riapre il disegno di un drill costruito (solo se ha una scena) |

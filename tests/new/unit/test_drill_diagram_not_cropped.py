@@ -28,7 +28,8 @@ SURFACES = (
     "templates/components/_challenge_bits.html",
     "templates/direttore/preparazione/_esercizi.html",
     "templates/challenge/_challenge_detail.html",
-    "templates/challenge/_challenge_card.html",
+    # La card del catalogo usa la miniatura di `_challenge_bits.html`, qui sopra.
+    "templates/challenge/form.html",
     "templates/player/challenge_attempt_detail.html",
 )
 

@@ -50,11 +50,67 @@ delete_challenge_image = ImagePathManager.delete_challenge_image
 
 @challenge_bp.route("/")
 @login_required
-def challenge_catalog():
-    """Display challenge catalog for current user."""
+def today():
+    """«Oggi»: la porta d'ingresso degli esercizi (D3).
+
+    Dice da dove ripartire — l'ultimo esercizio, i preferiti, i più provati — e
+    ha dietro il catalogo. L'amministratore non si allena: va dritto al
+    catalogo, che per lui è uno strumento di gestione.
+    """
+    if current_user.is_admin:
+        return redirect(url_for("challenge.challenge_catalog"))
+
+    from datetime import timezone
+
+    from babel.dates import format_date
+    from flask_babel import get_locale
+
+    from models.base import utc_now
+    from models.challenge.catalog_view import build_today
+    from utils.local_time import resolve_timezone
+
     try:
-        catalog_data = ChallengeService.get_catalog_data(current_user.id)
-        return render_template("challenge/catalog.html", **catalog_data)
+        oggi = utc_now().replace(tzinfo=timezone.utc).astimezone(resolve_timezone())
+        today_label = format_date(
+            oggi, format="EEEE d MMMM", locale=str(get_locale() or "it")
+        ).capitalize()
+        return render_template(
+            "challenge/today.html",
+            today=build_today(current_user.id),
+            today_label=today_label,
+        )
+    except Exception:
+        current_app.logger.exception("«Oggi» degli esercizi non caricata")
+        flash(_("Non è stato possibile caricare gli esercizi."), "danger")
+        return redirect(url_for("dashboard.dashboard"))
+
+
+@challenge_bp.route("/catalog")
+@login_required
+def challenge_catalog():
+    """Il catalogo che si filtra: abilità, gesto, livello, voto.
+
+    I filtri arrivano dalla query string — ogni pillola è un collegamento —
+    quindi un filtro ha un indirizzo, si può mandare a qualcuno e il tasto
+    indietro lo disfa.
+    """
+    from models.challenge.catalog_view import (
+        RATING_FLOORS,
+        CatalogFilter,
+        build_catalog,
+    )
+    from models.challenge.vocabulary import Abilita, Gesto
+
+    try:
+        return render_template(
+            "challenge/catalog.html",
+            catalog=build_catalog(
+                current_user.id, CatalogFilter.from_args(request.args)
+            ),
+            abilita_choices=list(Abilita),
+            gesto_choices=list(Gesto),
+            rating_floors=sorted(RATING_FLOORS),
+        )
     except Exception:
         # All'utente il messaggio tradotto, nel log l'errore vero: prima
         # finiva a schermo il testo dell'eccezione, in inglese.
@@ -322,11 +378,15 @@ def challenge_detail(challenge_id):
     )
     user_best = challenge.get_user_best_attempt(current_user.id)
 
+    from models.challenge.catalog_view import build_card, variant_lines
+
     return render_template(
         "player/challenge_detail.html",
         challenge=challenge,
         user_attempts=user_attempts,
         user_best=user_best,
+        card=build_card(challenge, current_user.id),
+        variant_lines=variant_lines(challenge, current_user.id),
     )
 
 
@@ -614,6 +674,9 @@ def training_session(challenge_id):
 
     data = (request.get_json(silent=True) if request.is_json else request.form) or {}
     score, passed, notes = _parse_complete_attempt_payload(data)
+    # Con quale variante (destra/sinistra, A/B): facoltativa anche quando
+    # l'esercizio ne ha. Che sia di **questo** esercizio lo verifica il servizio.
+    variant_id = _payload_int(data, "variant_id")
 
     def _record():
         attempt = ChallengeService.record_attempt(
@@ -622,6 +685,7 @@ def training_session(challenge_id):
             score=score,
             passed=passed,
             notes=notes,
+            variant_id=variant_id,
         )
         # Il dict torna al chiamante dentro la risposta JSON: la pagina
         # aggiorna in posto l'elenco e il record, senza ricaricarsi.
@@ -632,6 +696,7 @@ def training_session(challenge_id):
                 "passed": attempt.passed,
                 "notes": attempt.notes,
                 "attempted_at": attempt.attempted_at.isoformat(),
+                "variant": attempt.variant.label if attempt.variant else None,
             },
             "attempts_count": ChallengeAttempt.query.filter_by(
                 user_id=current_user.id, challenge_id=challenge_id, completed=True
@@ -1092,7 +1157,7 @@ def challenge_not_found(error):
         return jsonify({"success": False, "error": "Challenge not found"}), 404
     else:
         flash(_("Esercizio non trovato."), "danger")
-        return redirect(url_for("challenge.challenge_catalog"))
+        return redirect(url_for("challenge.today"))
 
 
 @challenge_bp.errorhandler(403)
@@ -1102,4 +1167,4 @@ def challenge_access_denied(error):
         return jsonify({"success": False, "error": "Access denied"}), 403
     else:
         flash(_("Non hai i permessi per questo esercizio."), "danger")
-        return redirect(url_for("challenge.challenge_catalog"))
+        return redirect(url_for("challenge.today"))

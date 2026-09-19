@@ -274,9 +274,9 @@ def test_il_catalogo_offre_la_ricerca_su_titolo_e_istruzioni(app, client):
         db.session.commit()
 
     _login(client, player_id)
-    html = client.get("/challenges/").get_data(as_text=True)
+    html = client.get("/challenges/catalog").get_data(as_text=True)
 
-    assert 'id="challengeSearch"' in html
+    assert "data-exercise-search" in html
     # `data-search` unisce titolo e istruzioni, già minuscolo: cercare una
     # parola che sta solo nelle regole deve trovare comunque la challenge.
     assert "progressione lungo sponda" in html

@@ -69,6 +69,23 @@
       </p>
     </div>
 
+    {# ---------- Da che parte: le varianti dell'esercizio (ADR-065) ----------
+       Pillole a scelta singola, con «senza dirlo» accesa di partenza: la
+       variante è facoltativa anche quando c'è, e non si inventa un lato a chi
+       non lo dice. Stanno fuori dal tabellone orizzontale, che legge lo stesso
+       campo: si sceglie una volta, poi si tira. #}
+    {% if challenge.has_variants %}
+    <div data-help="allenamento-variante">
+      <div class="form-label">{{ _("Da che parte") }}</div>
+      <div class="c7-hscroll">
+        <label class="c7-pill"><input type="radio" name="variant_id" value="" checked>{{ _("senza dirlo") }}</label>
+        {% for variante in challenge.variants %}
+        <label class="c7-pill"><input type="radio" name="variant_id" value="{{ variante.id }}">{{ variante.label }}</label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
     {# ---------- Come sta andando ---------- #}
     <div class="c7-grid" style="grid-template-columns:1fr 1fr">
       <div class="c7-card">
@@ -290,6 +307,11 @@ document.addEventListener('DOMContentLoaded', function () {
         // dopo un errore di rete direbbe che sta ancora salvando, per sempre.
         const etichette = $$('[data-record-label]').map(el => [el, el.textContent]);
         etichette.forEach(([el]) => { el.textContent = recordingLabel; });
+
+        // La variante scelta viaggia con ogni prova: resta accesa fra una e
+        // l'altra, perché chi tira da destra ne fa dieci di fila da destra.
+        const variante = document.querySelector('input[name="variant_id"]:checked');
+        if (variante && variante.value) payload.variant_id = variante.value;
 
         fetch(recordUrl, {
             method: 'POST',

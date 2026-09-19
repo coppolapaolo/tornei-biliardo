@@ -113,14 +113,39 @@ class TestSchermataDiAllenamento:
         assert response.status_code == 200
         assert b"Superata" in response.data
 
-    def test_il_catalogo_porta_qui(self, client, player, numeric_drill):
-        """Il pulsante «Provala» del catalogo apre l'allenamento, non piu' la
-        vecchia pagina di conferma."""
+    def test_la_scheda_porta_qui(self, client, player, numeric_drill):
+        """«Allenati» apre l'allenamento, non la vecchia pagina di conferma.
+
+        Fino alla fase 4c il comando stava anche sulla card del catalogo; ora la
+        card è tutta un collegamento alla scheda, e da lì si comincia.
+        """
+        login(client, player)
+
+        response = client.get(f"/challenges/{numeric_drill.id}")
+
+        assert response.status_code == 200
+        assert f"/challenges/{numeric_drill.id}/train".encode() in response.data
+
+    def test_oggi_fa_riprendere_l_ultimo_esercizio(self, client, player, numeric_drill):
+        """Chi ha già provato un esercizio lo ritrova in cima, con «Comincia»."""
+        # La riga si scrive a mano e non dal servizio: gli handler della
+        # gamification leggono `current_user` fuori da una richiesta, e in
+        # questa suite le richieste dopo risultano anonime (302 verso il login).
+        db.session.add(
+            ChallengeAttempt(
+                user_id=player.id,
+                challenge_id=numeric_drill.id,
+                score=3,
+                completed=True,
+            )
+        )
+        db.session.commit()
         login(client, player)
 
         response = client.get("/challenges/")
 
         assert response.status_code == 200
+        assert "Riprendi da qui".encode() in response.data
         assert f"/challenges/{numeric_drill.id}/train".encode() in response.data
 
     def test_admin_non_si_allena(self, app, client, numeric_drill):

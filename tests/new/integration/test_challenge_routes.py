@@ -79,9 +79,12 @@ class TestChallengeRoutes:
         with client.session_transaction() as sess:
             sess["_user_id"] = admin_user.get_id()
 
-        response = client.get("/challenges/")
+        # «/challenges/» è «Oggi», la porta di chi si allena: l'admin non si
+        # allena e viene mandato al catalogo, che per lui è gestione.
+        response = client.get("/challenges/", follow_redirects=True)
         assert response.status_code == 200
-        assert b"Challenge" in response.data
+        assert response.request.path == "/challenges/catalog"
+        assert "Catalogo".encode() in response.data
 
     def test_challenge_catalog_requires_login(self, client):
         """Test that challenge catalog requires login."""
