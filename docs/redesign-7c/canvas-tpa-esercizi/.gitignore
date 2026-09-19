@@ -1,0 +1,5 @@
+# Ciò che il generatore produce: si rifà con `python3 sorgenti/gen.py`
+# (46 artboard, ~2 MB) e `measure.py` (gli screenshot di controllo).
+sorgenti/root/
+sorgenti/shots/
+__pycache__/
