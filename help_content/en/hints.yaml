@@ -475,7 +475,8 @@ hints:
   section: come-si-compila
 - id: referto.passa_tavolo
   label: Handing over the table
-  short: 'Tap the other player''s name: it closes your inning and starts theirs.'
+  short: 'Tap the other player''s panel: it closes your inning and starts theirs. Before the break, the same
+    tap chooses who breaks.'
   anchor: referto-passa-tavolo
   screens:
   - individual_match.tpa_referto
@@ -490,14 +491,15 @@ hints:
   - individual_match.tpa_referto
   page: referto_tpa
   section: annotazioni-piccole
-- id: referto.annulla
-  label: Undo last entry
-  short: Steps back one move, as many times as you like. It also takes back racks already awarded.
-  anchor: referto-annulla
+- id: referto.rileggi
+  label: Back and Next
+  short: They step through the match one inning at a time, changing nothing. From a past inning you can
+    restart — a sheet first tells you which innings leave the scoresheet.
+  anchor: referto-rileggi
   screens:
   - individual_match.tpa_referto
   page: referto_tpa
-  section: come-si-compila
+  section: rileggere-e-ripartire
 - id: challenge.ricerca
   label: Search the title or the instructions…
   short: It filters all three tabs at once, and the numbers next to the tab names update. It looks inside
@@ -954,7 +956,7 @@ tours:
   - hint: referto.tastierino
   - hint: referto.passa_tavolo
   - hint: referto.annotazioni_piccole
-  - hint: referto.annulla
+  - hint: referto.rileggi
 - screen: feedback.nuova_segnalazione
   title: Reporting a problem
   intro: Three fields, that is all. The page you came from, the version and the browser are attached by

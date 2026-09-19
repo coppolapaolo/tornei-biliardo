@@ -129,9 +129,14 @@ html { scroll-behavior: auto !important; }
 # (visto su `challenge-nuova`). Nasconderla toglierebbe pero' il pulsante
 # principale della pagina — «Crea la challenge» — proprio dalla figura che deve
 # mostrarlo. Da statica finisce dov'e' davvero: in fondo alla pagina.
+#
+# `.c7-head` e' `position: sticky`: in un ritaglio piu' alto della finestra
+# Playwright scorre, e la testata veniva dipinta sopra il contenuto (visto su
+# `referto-tpa-chiuso`, dove copriva le card dei giocatori). Da statica resta
+# in cima alla pagina, fuori dal ritaglio.
 OVERLAY_CSS = """
 .c7-mobilenav, #chalky-container { display: none !important; }
-.c7-actionbar { position: static !important; }
+.c7-actionbar, .c7-head { position: static !important; }
 """
 
 # Cornice e numeri di richiamo. Ricalcano i token del design system (accento

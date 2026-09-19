@@ -356,7 +356,7 @@ hints:
   # --- Profilo -------------------------------------------------------------
   - id: profilo.runout
     label: "Runout"
-    short: "Triangoli chiusi in una sola visita. I «break and run» sono quelli in cui avevi anche il tiro di apertura."
+    short: "Triangoli chiusi in un solo turno. I «break and run» sono quelli in cui avevi anche il tiro di apertura."
     anchor: profilo-runout
     screens: [player.profile, player.view_profile]
     page: profilo_e_statistiche
@@ -440,7 +440,7 @@ hints:
   # --- Referto TPA (ADR-044) -----------------------------------------------
   - id: referto.tastierino
     label: "Il tastierino"
-    short: "Prima quante bilie sono entrate, poi perché il turno è finito. I tasti che ora non hanno senso sono spenti."
+    short: "Prima quante bilie sono entrate, poi perché il turno è finito. I tasti che ora non si possono premere sono spenti. «Cancella» svuota il turno che stai scrivendo."
     anchor: referto-tastierino
     screens: [individual_match.tpa_referto]
     page: referto_tpa
@@ -448,7 +448,7 @@ hints:
 
   - id: referto.passa_tavolo
     label: "Passare il tavolo"
-    short: "Tocca il nome dell'altro giocatore: chiude il tuo turno e comincia il suo."
+    short: "Tocca il riquadro dell'altro giocatore: chiude il tuo turno e comincia il suo. Prima della spaccata, lo stesso tocco sceglie chi spacca."
     anchor: referto-passa-tavolo
     screens: [individual_match.tpa_referto]
     page: referto_tpa
@@ -462,13 +462,13 @@ hints:
     page: referto_tpa
     section: annotazioni-piccole
 
-  - id: referto.annulla
-    label: "Annulla l'ultimo tocco"
-    short: "Torna indietro di un passo, quante volte vuoi. Riporta indietro anche i triangoli già assegnati."
-    anchor: referto-annulla
+  - id: referto.rileggi
+    label: "Indietro e Avanti"
+    short: "Scorrono la partita un turno alla volta, senza cambiare niente. Da un turno del passato puoi ripartire: un foglio ti dice prima quali turni escono dal referto."
+    anchor: referto-rileggi
     screens: [individual_match.tpa_referto]
     page: referto_tpa
-    section: come-si-compila
+    section: rileggere-e-ripartire
 
   # --- Catalogo e creazione degli esercizi --------------------------------------
   - id: challenge.ricerca
@@ -849,7 +849,7 @@ tours:
       - hint: referto.tastierino
       - hint: referto.passa_tavolo
       - hint: referto.annotazioni_piccole
-      - hint: referto.annulla
+      - hint: referto.rileggi
 
   - screen: feedback.nuova_segnalazione
     title: "Segnalare un problema"

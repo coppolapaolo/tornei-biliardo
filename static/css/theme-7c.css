@@ -2019,7 +2019,7 @@ a.c7-bracket__node.is-live:hover { background: var(--c7-accent); filter: brightn
 .c7-tpa-out .c7-tpa-sheet__note { color: var(--c7-ink-muted); }
 .c7-tpa-out .c7-tpa-sheet__note span,
 .c7-tpa-out .c7-tpa-sheet__note sup { text-decoration: line-through; }
-.c7-tpa-sheet__note--text { font-family: var(--c7-font); color: var(--c7-ink-muted); }
+.c7-tpa-sheet__note.c7-tpa-sheet__note--text { font-family: var(--c7-font); color: var(--c7-ink-muted); }
 
 /* --- Da lg in su: il referto a fianco -----------------------------------
    Da lg il referto che cresce sta in una colonna sua, a destra, e il resto
@@ -2090,7 +2090,9 @@ a.c7-bracket__node.is-live:hover { background: var(--c7-accent); filter: brightn
   width: 100%; margin-top: 6px; border-collapse: collapse; table-layout: fixed;
   font-variant-numeric: tabular-nums;
 }
-.c7-tpa-recap th:not(:first-child), .c7-tpa-recap td { width: 84px; }
+/* Le colonne dei due giocatori: larghe abbastanza per un nome, con un margine
+   a sinistra perche' due nomi lunghi non si tocchino. */
+.c7-tpa-recap th:not(:first-child), .c7-tpa-recap td { width: 104px; padding-left: 12px; }
 .c7-tpa-recap th, .c7-tpa-recap td { padding: 9px 0; border-bottom: 1px solid var(--c7-line-soft); }
 .c7-tpa-recap tbody tr:last-child > * { border-bottom: 0; }
 .c7-tpa-recap thead th {

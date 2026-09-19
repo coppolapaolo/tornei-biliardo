@@ -2,7 +2,7 @@ title: "The TPA scoresheet"
 section: giocare
 kind: tutorial
 audience: [giocatore]
-minutes: 6
+minutes: 8
 summary: "In friendly matches you can record the whole match, not just who wins the racks, and get your TPA: the share of successful actions."
 screens: [individual_match.tpa_referto]
 related: [partite_amichevoli, profilo_e_statistiche]
@@ -18,8 +18,8 @@ blocks:
   - type: text
     text: >-
       What comes out at the end is one figure, the **TPA**, read as a share of
-      successful actions. A TPA of **.750** means that three times out of four
-      what you did at the table worked. It is the same figure used in
+      successful actions. It runs from **0 to 1000**: a TPA of **750** means
+      that three times out of four what you did at the table worked. It is the same figure used in
       professional American pool.
 
   - type: note
@@ -136,52 +136,75 @@ blocks:
 
   - type: shot
     shot: referto-tpa
-    caption: "The TPA scoresheet during the match: the two players with their TPA, the inning box and the keypad."
+    caption: "The TPA scoresheet during the match: the two players side by side, each with their two boxes, and the keypad below."
 
   - type: text
     text: >-
-      The two players are at the top. The **dark** one is whoever is at the
-      table now. Next to the name you find their TPA and, smaller, how many
-      balls they have pocketed (**B**) and how many errors they have made
-      (**E**). The circle on the right holds racks won.
+      The two players are at the top, side by side. The **light** one is
+      whoever is at the table now. For each you see two big figures of equal
+      weight: **racks** won and **TPA**. Below, smaller, how many balls they
+      have pocketed and how many errors they have made.
 
   - type: text
     text: >-
-      Below there are two boxes. In the **light box** you record how many balls
-      went in and why the inning ended. In the **dark box**, fouls only. They
-      are the same two boxes as on the paper scoresheet.
+      Inside each player's panel there are two boxes, the same two as on the
+      paper scoresheet. In the **light box** you record how many balls went in
+      and why the inning ended. In the **darker box**, on the right, only
+      fouls. The player at the table shows the inning you are writing; the
+      other shows their last inning.
+
+  - type: text
+    text: >-
+      The **keypad** is always all there, at the bottom: numbers laid out like
+      a phone, then the letters in the order of the paper scoresheet. Keys you
+      cannot press right now **go dim**, but stay in place: that way your
+      fingers learn where they are.
 
   - type: steps
     items:
-      - title: "How many balls they pocketed"
+      - title: "How many balls were pocketed"
         text: >-
-          Press the number. On the break inning the numbers are pressed
-          **twice**: first how many went in on the break, then how many in the
-          inning altogether.
+          Press the number. On the break inning you press numbers **twice**:
+          first how many went in on the break, then how many in total in the
+          inning. On the scoresheet the break balls stay written small, raised,
+          before the total.
       - title: "Why the inning ended"
         text: >-
-          **M** if they missed a shot they meant to pot, **S** if they played a
-          safety, **K** if they were forced into a rail-first shot because they
-          could not see the ball.
+          **M** for a missed shot they were trying to pocket, **S** for a
+          safety, **K** when they were forced to kick because they could not
+          see the ball.
       - title: "If there was a foul"
         text: >-
-          **P** if the cue ball was pocketed or left the table, **N** if they
-          failed to hit the lowest ball legally.
+          **P** if the cue ball went in a pocket or off the table, **N** if
+          they did not make a legal hit on the designated ball. The foul goes
+          in the darker box.
       - title: "If they won the rack"
         text: >-
-          Press **G**. If they pocketed every remaining ball you do not need
-          to: the scoresheet works it out on its own.
-      - title: "Hand over the table"
+          Press **G**. If they pocketed every remaining ball there is no need:
+          the scoresheet works it out. On the scoresheet a won rack is a
+          **circle** around the number of balls.
+      - title: "Pass the table"
         text: >-
-          Tap the other player's name. The inning closes and theirs begins.
+          Tap the other player's panel: it says «Tap: table to…». The inning
+          closes and theirs begins. Before the break, the same tap chooses who
+          breaks.
+
+  - type: note
+    tone: info
+    title: "Kicked in on the first shot"
+    text: >-
+      If, after the opponent's safety, the first ball went in **off a kick**,
+      tap «Kicked in on the first shot?». The scoresheet shows the player's
+      number, in a small circle above the box. It matters, because it takes
+      the error off whoever played the safety.
 
   - type: note
     tone: tip
-    title: "The keypad guides you"
+    title: "The word under the letters"
     text: >-
-      You do not have to remember what can and cannot be pressed: keys that
-      make no sense at that moment are switched off. If you got it wrong,
-      **Undo last entry** steps back, as many times as you like.
+      Under M, K, S, P, G and N it says what they mean. Once you know them you
+      can remove the words: open «What each letter means» and switch off «Show
+      the word under the keypad letters».
 
   - type: heading
     id: annotazioni-piccole
@@ -208,24 +231,122 @@ blocks:
           It was a **push out**, the free shot straight after the break.
 
   - type: heading
-    id: il-foglio
-    title: "Reading the match back"
+    id: se-sbagli
+    title: "If you write something wrong"
 
   - type: text
     text: >-
-      At the bottom of the page is **the sheet**: the whole match, rack by rack
-      and inning by inning. Use it during play to check you have not missed
-      anything, and afterwards to see how it went.
+      There are two remedies, a small one and a big one.
+
+  - type: list
+    items:
+      - "**Clear**, the outlined key next to the zero: removes what you wrote **in this inning**, all at once, so you can write it again. The table stays with whoever had it."
+      - "**Back**, at the bottom of the keypad: to return to an inning already played. It is explained just below."
+
+  - type: heading
+    id: rileggere-e-ripartire
+    title: "Going back, and restarting from a turn"
+
+  - type: text
+    text: >-
+      At the bottom of the keypad are **Back** and **Next**, with where you are
+      in between: «turn 6 of 8». They step through the match one inning at a
+      time.
+
+  - type: shot
+    shot: referto-tpa-rileggi
+    caption: "A past inning reviewed with «Back»: above the players it says this is read only, and the keypad is dim."
+
+  - type: text
+    text: >-
+      While you review, **nothing is written**: the line above the players says
+      so, and the whole keypad is dim. You see who was at the table, what they
+      had written, and racks and TPA **as they were then**. «Next» takes you
+      back to the current inning. Your opponent notices nothing.
+
+  - type: text
+    text: >-
+      If you spot that a past inning is wrong, the only key lit is **Restart
+      from this turn…**
+
+  - type: shot
+    shot: referto-tpa-riparti
+    caption: "Before restarting, the sheet says which inning reopens and, struck through, which innings leave the scoresheet."
+
+  - type: steps
+    items:
+      - title: "Tap «Restart from this turn…»"
+        text: >-
+          A sheet opens and tells you what happens: that inning reopens
+          **empty**, and the innings recorded after it **leave the
+          scoresheet**. You see them listed, struck through.
+      - title: "Confirm, or «Keep reviewing»"
+        text: >-
+          If you confirm, racks and TPA are recalculated up to that point and
+          you carry on recording from there. If a removed inning had won a
+          rack, that rack leaves the match score too.
+
+  - type: note
+    tone: warning
+    title: "There is no going forward again"
+    text: >-
+      The innings that leave cannot be recovered: they have to be written
+      again. That is why the sheet shows them first. If you only wanted to
+      check, «Keep reviewing» touches nothing.
+
+  - type: heading
+    id: il-foglio
+    title: "The scoresheet, inning by inning"
+
+  - type: text
+    text: >-
+      Below the keypad — beside it, on a wide screen — is the **scoresheet**:
+      the whole match, rack by rack and inning by inning. During the match it
+      lets you check you have not skipped anything; afterwards, to see how it
+      went.
 
   - type: shot
     shot: referto-tpa-foglio
-    caption: "The scoresheet itself: each row is one visit to the table, with the balls pocketed and why the inning ended."
+    caption: "The scoresheet inning by inning: break balls small and raised, the total, the letter. The green circle is a won rack."
 
   - type: text
     text: >-
-      When you are done, **Close the scoresheet**. From then on it is
-      read-only. The match result follows the usual path: both of you have to
-      confirm it.
+      It reads like the paper scoresheet. **¹3 M** means: one ball on the
+      break, three in total, then a missed shot. A number inside a **circle**
+      is the inning that won the rack. Every mark is explained under «What each
+      letter means».
+
+  - type: heading
+    id: referto-chiuso
+    title: "After the match: the closed scoresheet"
+
+  - type: text
+    text: >-
+      When you are done, **Close the scoresheet**: on a phone it is at the
+      bottom of the page, on a wide screen at the top right. It asks you to
+      confirm, because nothing can be recorded afterwards. The match result
+      goes the usual way: both players confirm it.
+
+  - type: shot
+    shot: referto-tpa-chiuso
+    caption: "The closed scoresheet: who won, where each player's errors came from, and the best racks."
+
+  - type: text
+    text: >-
+      Once closed, the scoresheet **tells the story of the match**. At the top,
+      who won, with racks and TPA. Then two tables that compare the players,
+      row by row.
+
+  - type: list
+    items:
+      - "**Where the errors come from**: missed shots, position, safeties, breaks, kicks. This is the part that tells you what to practise."
+      - "**Best racks**: break and runs, **run-outs** — racks closed without ever leaving the table, break and runs included — and perfect racks."
+
+  - type: text
+    text: >-
+      Below is the scoresheet inning by inning, with the racks **folded**: each
+      row says who won it and the score at that point. Tap a rack to open it,
+      or «Expand all».
 
   - type: heading
     id: dove-si-vede
@@ -285,7 +406,9 @@ blocks:
       - q: "Can my opponent keep it instead of me?"
         a: "Whoever starts it keeps it, for the whole match. You press «View the TPA scoresheet» and watch it fill in on its own, without reloading the page, but you cannot write on it."
       - q: "I pressed the wrong key."
-        a: "«Undo last entry» steps back one move. Press it repeatedly and it goes back a whole rack, score included."
+        a: "If it happened in this inning, tap «clear», next to the zero: the inning goes back to empty and you write it again. If you notice after passing the table, tap «Back» until you reach that inning and then «Restart from this turn…»: the sheet tells you which innings leave the scoresheet, and you record again from there."
+      - q: "I tapped «Back» by mistake: have I lost anything?"
+        a: "No. Back and Next only let you review: they change nothing, neither the scoresheet nor the score. Tap «Next» until you are back at the current inning. Innings are only removed by «Restart from this turn…», and only after you confirm."
       - q: "What counts as a good TPA?"
         a: "It depends on the discipline and the standard. The useful thing is not the number itself but how yours changes over time: that is what the scoresheet is for."
       - q: "Does it work in competitions too?"

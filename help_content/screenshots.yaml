@@ -361,18 +361,40 @@ shots:
     caption: "Le statistiche delle partite amichevoli, separate da quelle delle gare."
 
   # Referto TPA (ADR-044). Il dataset lo crea `_create_tpa_referto` in
-  # seed_demo.py: match #1 con un primo rack gia' annotato.
+  # seed_demo.py: match #1 aperto, con un primo rack gia' annotato, e match #2
+  # fra altri due giocatori col referto chiuso.
   - id: referto-tpa
     route: /match/matches/1/tpa
     as: Marco Rossi
-    caption: "Il referto TPA durante la partita: i due giocatori con il loro TPA, la casella del turno e il tastierino."
+    caption: "Il referto TPA durante la partita: i due giocatori affiancati, ciascuno con le sue due caselle, e sotto il tastierino."
     viewports: [mobile, desktop]
 
+  # Chi guarda non ha il tastierino agganciato in basso: il ritaglio del
+  # referto esce pulito, senza bisogno di spostare niente.
   - id: referto-tpa-foglio
     route: /match/matches/1/tpa
+    as: Sara Neri
+    caption: "Il referto turno per turno: le bilie della spaccata piccole in alto, il totale, la lettera. Il cerchio verde e' un triangolo vinto."
+    clip: "#tpaSheet"
+
+  - id: referto-tpa-rileggi
+    route: /match/matches/1/tpa
     as: Marco Rossi
-    caption: "Il foglio del referto: ogni riga e' una visita al tavolo, con le bilie imbucate e il motivo per cui il turno e' finito."
-    clip: ".c7-tpa-sheet"
+    click: ['#tpaIndietro']
+    caption: "Un turno del passato riletto con «Indietro»: sopra i giocatori c'e' scritto che qui non si scrive, e il tastierino e' spento."
+
+  - id: referto-tpa-riparti
+    route: /match/matches/1/tpa
+    as: Marco Rossi
+    click: ['#tpaIndietro', '#tpaIndietro', '[data-command="restart"]']
+    settle_ms: 900
+    caption: "Prima di ripartire, il foglio dice quale turno si riapre e, barrati, quali turni escono dal referto."
+
+  - id: referto-tpa-chiuso
+    route: /match/matches/2/tpa
+    as: Giulia Conti
+    clip: "#tpaReferto"
+    caption: "Il referto chiuso: chi ha vinto, da dove sono venuti gli errori di ciascuno, e i triangoli migliori."
 
   - id: richieste-gestore
     route: /player/my_venue_requests

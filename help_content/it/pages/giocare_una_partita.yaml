@@ -136,7 +136,7 @@ blocks:
 
   - type: heading
     id: chi-spacca
-    title: "Chi spacca, e i triangoli chiusi in una visita"
+    title: "Chi spacca, e i triangoli chiusi in un turno"
 
   - type: text
     text: >-
@@ -149,7 +149,7 @@ blocks:
     text: >-
       I trattini sotto il punteggio non contano soltanto: quello che si è
       appena acceso si può **premere**. Un tocco lo marca come triangolo chiuso
-      in una visita, cioè senza mai lasciare il tavolo all'avversario; un
+      in un turno, cioè senza mai lasciare il tavolo all'avversario; un
       secondo tocco lo smarca, se hai sbagliato.
 
   - type: list

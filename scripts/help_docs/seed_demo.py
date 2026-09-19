@@ -846,6 +846,72 @@ def _create_tpa_referto(db, players):
     except Exception as exc:  # pragma: no cover - il seed non deve bloccarsi qui
         log(f"referto TPA non creato ({exc.__class__.__name__}: {exc})")
 
+    _create_tpa_referto_chiuso(db, players)
+
+
+#: Una partita intera «al 3», finita 3 a 1: uno spacca e chiude, una chiusura
+#: in un turno, una difesa premeditata, un fallo, un primo tiro di calcio. E'
+#: cio' che la pagina del referto chiuso deve far vedere: errori di tipi
+#: diversi, e almeno un numero in ciascuna riga dei «triangoli migliori».
+REFERTO_CHIUSO = (
+    ["3", "9", "end"]  # 1-0: spacca e chiude
+    + [
+        "0",
+        "end",
+        "2",
+        "S",
+        "x",
+        "end",
+        "1",
+        "K-in",
+        "M",
+        "n",
+        "end",
+        "6",
+        "end",
+    ]  # 2-0
+    + ["1", "3", "M", "end", "2", "M", "P", "end", "4", "end"]  # 2-1
+    + ["1", "2", "S", "end", "0", "K", "end", "7", "end"]  # 3-1
+)
+
+
+def _create_tpa_referto_chiuso(db, players):
+    """Una seconda sfida, fra altri due giocatori, col referto gia' chiuso.
+
+    Fra altri due perche' le pagine di Marco Rossi — profilo, statistiche,
+    elenco delle sfide — sono gia' fotografate, e una sua partita in piu' le
+    cambierebbe tutte senza che l'interfaccia si sia mossa.
+    """
+    from models.base import utc_now
+    from models.individual_match.match_models import IndividualMatch
+    from models.status_enum import Discipline, MatchStatus
+    from models.tpa.services import TpaRefertoService
+
+    compilatore, avversario = players[1], players[4]
+    try:
+        match = IndividualMatch(
+            player1_id=compilatore.id,
+            player2_id=avversario.id,
+            location="Biliardo Centrale",
+            scheduled_at=utc_now(),
+            status=MatchStatus.IN_PROGRESS,
+            discipline=Discipline.NINE_BALL.value,
+            distance=3,
+            is_race_to=True,
+            started_at=utc_now(),
+        )
+        db.session.add(match)
+        db.session.commit()
+
+        referto = TpaRefertoService.open_referto(match.id, compilatore.id)
+        for comando in REFERTO_CHIUSO:
+            TpaRefertoService.press(referto.id, compilatore.id, comando)
+        TpaRefertoService.close(referto.id, compilatore.id)
+        db.session.commit()
+        log(f"referto TPA chiuso: match #{match.id}, referto #{referto.id}")
+    except Exception as exc:  # pragma: no cover - il seed non deve bloccarsi qui
+        log(f"referto TPA chiuso non creato ({exc.__class__.__name__}: {exc})")
+
 
 def _create_prove(db, director, venue):
     """Due competizioni di prova (ADR-058) per la pagina «Fare una prova».

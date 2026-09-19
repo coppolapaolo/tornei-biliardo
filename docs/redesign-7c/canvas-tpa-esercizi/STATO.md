@@ -78,16 +78,25 @@ antenato nell'app.
 | Artboard | Schermata | Template | PR | Stato |
 |---|---|---|---|---|
 | `Main` | A · Ordine | — | — | scartato (D1) |
-| `TpaTavolo` | B · Tavolo: tastierino unico, tavolo passato toccando il riquadro, TPA alla pari del punteggio | `individual_match/tpa_referto.html` | 2a, 2b | da fare |
-| `TpaIndietro` | B · Indietro nel referto, in sola lettura | `individual_match/tpa_referto.html` | 2c | da fare |
-| `TpaRiparti` | B · Ripartire da un turno del passato (D16) | nuovo (foglio) | 2c | da fare |
+| `TpaTavolo` | B · Tavolo: tastierino unico, tavolo passato toccando il riquadro, TPA alla pari del punteggio | `individual_match/tpa_referto.html` + `static/js/tpa-referto.js` | #475, #478 | **fatto** |
+| `TpaIndietro` | B · Indietro nel referto, in sola lettura | `individual_match/tpa_referto.html` | #479 | **fatto** — è una vista del browser, nessun cursore salvato |
+| `TpaRiparti` | B · Ripartire da un turno del passato (D16) | foglio `#tpaRipartiModal` | #479 | **fatto** |
 | `TpaFoglio` | C · Foglio vivo | — | — | scartato (D1); l'idea sopravvive su desktop |
-| `TpaDesktop` | Desktop a tre colonne | `individual_match/tpa_referto.html` | 2d | da fare |
-| `TpaChiuso` | Referto chiuso, come racconto | `individual_match/tpa_referto.html` | 2e | da fare |
+| `TpaDesktop` | Desktop a tre colonne | `individual_match/tpa_referto.html` | #481 | **fatto** — tre colonne da 1400px, due da lg: a 1024px le tre non ci stanno |
+| `TpaChiuso` | Referto chiuso, come racconto | `individual_match/tpa_referto.html` | #482 | **fatto** — i numeri per giocatore, non sommati |
 
-Difetto di oggi da correggere in 2b/2e: il primo tiro di calcio è disegnato
-come una freccia `↺`; va il numero del giocatore cerchiato, sopra l'annotazione
-(D20 bis).
+**Fase 2 chiusa il 19/09/2026.** Oltre alle schermate: il JavaScript è uscito
+dal template ed è provato in jsdom (#475); il primo tiro di calcio è il numero
+del giocatore cerchiato sopra la casella, non più la freccia `↺` (#478, D20
+bis); in tutta l'app si dice «turno» e non «visita» (#482); guida e schermate
+rifatte (#483). Tre difetti trovati strada facendo e corretti a parte: #476
+(triangolo vinto senza G mostrato come non vinto), #477 e #480 (due test che
+dipendevano dall'ambiente).
+
+**Due scarti dal canvas, voluti.** La 2c non ha il cursore salvato che il piano
+prevedeva: l'ha superato la D16, e i motivi stanno nell'emendamento
+all'ADR-044. Nella casella resta il solo suggerimento «bilie?»: «perché finisce
+il turno?» andava a capo e rompeva l'allineamento delle caselle.
 
 ### 2 · Esercizi: trovare — fase 4 (e 7)
 
