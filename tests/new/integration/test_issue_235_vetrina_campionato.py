@@ -92,7 +92,13 @@ def _pagina(client, url: str) -> str:
     i casi senza dire niente di vero sulla pagina.
     """
     corpo = client.get(url).get_data(as_text=True)
-    return corpo.split('<footer class="debug-footer"')[0]
+    corpo = corpo.split('<footer class="debug-footer"')[0]
+    # Il pannello di debug c'e' solo con `DEBUG_MODE` acceso, e un altro test
+    # dello stesso worker puo' averlo spento: allora il taglio qui sopra non
+    # avviene, e resta in pagina il blocco `polling-config` di `base.html`, che
+    # porta l'indirizzo del login per conto suo. Chi cerca «/auth/login» per
+    # sapere se c'e' il pulsante «Iscriviti» lo troverebbe sempre.
+    return corpo.split('id="polling-config"')[0]
 
 
 @pytest.mark.integration
