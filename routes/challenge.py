@@ -30,6 +30,7 @@ from utils import (
     challenge_attempt_player_required,
 )
 from models.challenge.services import ChallengeService
+from utils.feature_flags import is_endpoint_visible
 from utils.permissions import feature_required
 from utils.route_helpers import (
     ajax_error,
@@ -62,66 +63,219 @@ def challenge_catalog():
         return redirect(url_for("dashboard.dashboard"))
 
 
-@challenge_bp.route("/create", methods=["GET", "POST"])
-@director_required
-def create_challenge():
-    """Create new challenge (directors only)."""
-    if request.method == "GET":
-        return render_template("challenge/create.html")
+def _can_author(challenge) -> bool:
+    """Chi corregge o duplica un esercizio: l'admin, o il direttore che l'ha creato."""
+    return current_user.is_admin or (
+        current_user.is_director and challenge.created_by_id == current_user.id
+    )
+
+
+def _render_challenge_form(
+    mode, *, challenge=None, source=None, draft=None, decision=None
+):
+    """Il modulo unico: `mode` è «create», «edit» o «duplicate».
+
+    `decision` rende il foglio «ha già delle prove» già aperto: serve a chi
+    arriva senza JavaScript, dove non c'è nessuno che lo apra sopra il modulo.
+    """
+    from models.challenge.authoring import ChallengeAuthoringService
+    from models.challenge.vocabulary import MAX_ABILITA, Abilita, Gesto
+    from routes.challenge_form import draft_from_challenge
+
+    subject = challenge or source
+    if draft is None and subject is not None:
+        draft = draft_from_challenge(subject, as_copy=mode == "duplicate")
+    return render_template(
+        "challenge/form.html",
+        mode=mode,
+        challenge=challenge,
+        source=source,
+        draft=draft,
+        decision=decision,
+        evidence=(
+            ChallengeAuthoringService.evidence(challenge.id) if challenge else None
+        ),
+        abilita_choices=list(Abilita),
+        gesto_choices=list(Gesto),
+        max_abilita=MAX_ABILITA,
+    )
+
+
+def _save_challenge_form(mode, *, challenge=None, source=None):
+    """Salva il modulo unico. Risponde in JSON a `fetch`, con un redirect agli altri.
+
+    La foto è un fatto del disco e si sistema qui, prima e dopo il servizio: si
+    salva quella nuova (o si duplica quella dell'originale, per una copia) e, se
+    il servizio rifiuta, il file appena scritto si toglie — altrimenti ogni
+    salvataggio fallito lascerebbe un orfano.
+    """
+    from models.challenge.authoring import (
+        ChallengeAuthoringService,
+        EvidenceDecisionRequired,
+        OnEvidence,
+    )
+    from routes.challenge_form import describe_decision, parse_challenge_draft
+    from utils.image_paths import ImagePathManager
+    from utils.route_helpers import http_status_for_exception, is_ajax_request
+
+    wants_json = is_ajax_request() or request.is_json
+    data = request.get_json() if request.is_json else request.form
+    written = []
+    draft = None
+
+    def _db_path(filename):
+        return ImagePathManager.get_challenge_db_path(filename)
+
+    def _uploaded():
+        if request.is_json:
+            return data.get("image_path") or None
+        image_file = request.files.get("image")
+        if not image_file or not image_file.filename:
+            return None
+        filename = save_challenge_image(image_file)
+        if not filename:
+            raise ValidationError(_("La foto non è un'immagine che si possa leggere"))
+        written.append(filename)
+        return filename
+
+    def _copied(original):
+        filename = ImagePathManager.copy_challenge_image(original.image_filename)
+        if filename:
+            written.append(filename)
+        return filename
 
     try:
-        if request.is_json:
-            data = request.get_json()
-            image_filename = data.get("image_path")
-            if not image_filename:
-                raise ValueError("Immagine obbligatoria per creare una challenge")
+        draft = parse_challenge_draft(data)
+        on_evidence = OnEvidence.parse(data.get("on_evidence"))
+        new_image = _uploaded()
+        old_image = None
+
+        if mode == "edit":
+            copy_image = None
+            if on_evidence == OnEvidence.COPY and not new_image:
+                copy_image = _copied(challenge)
+            old_image = challenge.image_filename
+            esito = ChallengeAuthoringService.update(
+                challenge.id,
+                draft,
+                acting_user_id=current_user.id,
+                image_path=_db_path(new_image) if new_image else None,
+                copy_image_path=_db_path(copy_image) if copy_image else None,
+                on_evidence=on_evidence,
+            )
+            saved = esito.challenge
+            if esito.copied:
+                message = _(
+                    "Ho creato una copia con le tue modifiche: "
+                    "l'originale è rimasto com'era."
+                )
+            else:
+                message = _("Esercizio aggiornato.")
+                # La foto di prima non serve più a nessuno.
+                if new_image and old_image and old_image != new_image:
+                    delete_challenge_image(old_image)
         else:
-            data = request.form
-            # Handle image upload
-            image_file = request.files.get("image")
-            image_filename = save_challenge_image(image_file) if image_file else None
+            image = new_image
+            scene = None
+            if mode == "duplicate" and not image:
+                image = _copied(source)
+                scene = source.diagram_scene
+            if not image:
+                if request.is_json or current_app.config.get("TESTING"):
+                    # Le API e i test creano esercizi senza file: storico.
+                    image = "default_challenge.jpg"
+                else:
+                    raise ValidationError(_("Serve la foto della disposizione"))
+            saved = ChallengeAuthoringService.create(
+                draft,
+                image_path=_db_path(image),
+                created_by_id=current_user.id,
+                diagram_scene=scene,
+            )
+            message = (
+                _("Copia creata.") if mode == "duplicate" else _("Esercizio creato.")
+            )
 
-        # Validate that image is provided or use default for testing
-        if not image_filename:
-            # Use default path for testing scenarios
-            image_filename = "default_challenge.jpg"
+        if (
+            data.get("then") == "diagram"
+            and saved.diagram_scene
+            and is_endpoint_visible("challenge.edit_diagram", current_user)
+        ):
+            target = url_for("challenge.edit_diagram", challenge_id=saved.id)
+        else:
+            target = url_for("challenge.challenge_detail", challenge_id=saved.id)
 
-        # Convert filename to proper database path
-        from utils.image_paths import ImagePathManager
-
-        image_path = ImagePathManager.get_challenge_db_path(image_filename)
-
-        pass_fail_only = data.get("pass_fail_only", "false").lower() == "true"
-        challenge = ChallengeService.create_challenge(
-            title=data.get("title"),
-            description=data["description"],
-            image_path=image_path,
-            pass_fail_only=pass_fail_only,
-            created_by_id=current_user.id,
-            max_score=_parse_max_score(data, pass_fail_only),
-        )
-
-        if request.is_json:
+        if wants_json:
             return jsonify(
                 {
                     "success": True,
-                    "challenge_id": challenge.id,
-                    "message": "Challenge created successfully",
+                    "challenge_id": saved.id,
+                    "redirect_url": target,
+                    "message": message,
                 }
             )
-        else:
-            flash(_("Esercizio creato."), "success")
-            return redirect(
-                url_for("challenge.challenge_detail", challenge_id=challenge.id)
-            )
+        flash(message, "success")
+        return redirect(target)
 
+    except EvidenceDecisionRequired as fermo:
+        for filename in written:
+            delete_challenge_image(filename)
+        decision = describe_decision(fermo)
+        if wants_json:
+            return jsonify({"success": False, "needs_decision": True, **decision}), 409
+        # Senza JavaScript il foglio non si può aprire sopra il modulo com'è:
+        # lo si rende già aperto, con quello che era stato scritto.
+        return (
+            _render_challenge_form(
+                mode,
+                challenge=challenge,
+                source=source,
+                draft=draft,
+                decision=decision,
+            ),
+            409,
+        )
     except ValueError as e:
-        error_msg = f"Error creating challenge: {str(e)}"
-        if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
-        else:
-            flash(error_msg, "danger")
-            return render_template("challenge/create.html")
+        for filename in written:
+            delete_challenge_image(filename)
+        if wants_json:
+            return (
+                jsonify({"success": False, "error": str(e)}),
+                http_status_for_exception(e),
+            )
+        flash(str(e), "danger")
+        return _render_challenge_form(
+            mode,
+            challenge=challenge,
+            source=source,
+            draft=draft,
+        )
+
+
+@challenge_bp.route("/create", methods=["GET", "POST"])
+@director_required
+def create_challenge():
+    """Un esercizio nuovo (direttori)."""
+    if request.method == "GET":
+        return _render_challenge_form("create")
+    return _save_challenge_form("create")
+
+
+@challenge_bp.route("/<int:challenge_id>/duplicate", methods=["GET", "POST"])
+@director_required
+def duplicate_challenge(challenge_id):
+    """Un esercizio nuovo a partire da uno che c'è (#253).
+
+    Il modulo si apre con i dati dell'originale; salvando nasce un record a sé,
+    di chi duplica, senza prove né voti né preferiti, con la **sua** immagine —
+    un file nuovo — e, se l'originale è disegnato, la sua scena.
+    """
+    source = db.get_or_404(Challenge, challenge_id)
+    if not _can_author(source):
+        abort(403)
+    if request.method == "GET":
+        return _render_challenge_form("duplicate", source=source)
+    return _save_challenge_form("duplicate", source=source)
 
 
 @challenge_bp.route("/<int:challenge_id>/delete", methods=["POST"])
@@ -285,6 +439,9 @@ def _save_from_builder(challenge_id=None):
     else:
         previous = db.session.get(Challenge, challenge_id)
         old_image = previous.image_filename if previous else None
+        _refuse_meaning_change_from_builder(
+            previous, description, pass_fail_only, max_score
+        )
         challenge = ChallengeService.update_challenge(
             challenge_id=challenge_id,
             title=title,
@@ -308,6 +465,36 @@ def _save_from_builder(challenge_id=None):
             "challenge.challenge_detail", challenge_id=challenge.id
         ),
     }
+
+
+def _refuse_meaning_change_from_builder(
+    challenge, description, pass_fail_only, max_score
+):
+    """Dal disegnatore non si cambia il senso di prove già registrate.
+
+    Il disegnatore salva anche istruzioni, tipo e massimo, ma non ha il foglio
+    che chiede «ne faccio una copia?» (#252): senza questo controllo resterebbe
+    una porta sul retro, e il massimo di un esercizio con cento prove si
+    cambierebbe ritoccando una bilia. Qui il disegno si salva sempre; per il
+    resto si manda al modulo, che la domanda la sa fare.
+    """
+    from models.challenge.authoring import ChallengeAuthoringService, ChallengeDraft
+    from models.exceptions import ConflictError
+
+    if challenge is None:
+        return
+    bozza = ChallengeDraft(
+        description=description, pass_fail_only=pass_fail_only, max_score=max_score
+    )
+    if ChallengeAuthoringService.meaning_changes(
+        challenge, bozza
+    ) and ChallengeAuthoringService.evidence(challenge.id):
+        raise ConflictError(
+            _(
+                "Questo esercizio ha già delle prove: istruzioni e punteggio si "
+                "cambiano da «Modifica l'esercizio», qui salva solo il disegno."
+            )
+        )
 
 
 @challenge_bp.route("/builder", methods=["GET", "POST"])
@@ -888,67 +1075,13 @@ def complete_x_replacement(attempt_id):
 @challenge_bp.route("/<int:challenge_id>/edit", methods=["GET", "POST"])
 @director_required
 def edit_challenge(challenge_id):
-    """Edit challenge (directors only)."""
+    """Correggere un esercizio: lo stesso modulo con cui è nato (#252)."""
     challenge = db.get_or_404(Challenge, challenge_id)
-
-    # Check if user can edit (admin can edit all, directors can edit their own)
-    can_edit = current_user.is_admin or (
-        current_user.is_director and challenge.created_by_id == current_user.id
-    )
-    if not can_edit:
+    if not _can_author(challenge):
         abort(403)
-
     if request.method == "GET":
-        return render_template(
-            "challenge/create.html", challenge=challenge, edit_mode=True
-        )
-
-    from models.challenge.services import ChallengeService
-    from utils.route_helpers import handle_ajax_service_action
-
-    if request.is_json:
-        data = request.get_json()
-    else:
-        data = request.form
-
-    # Handle image upload if provided (filesystem concern, before service call)
-    new_image_path = None
-    if not request.is_json:
-        image_file = request.files.get("image")
-        if image_file:
-            image_filename = save_challenge_image(image_file)
-            if image_filename:
-                if challenge.image_filename:
-                    delete_challenge_image(challenge.image_filename)
-                from utils.image_paths import ImagePathManager
-
-                new_image_path = ImagePathManager.get_challenge_db_path(image_filename)
-
-    description = data["description"]
-    # Campo assente = non si tocca. Col default a "false" ogni salvataggio
-    # **disattivava** la challenge, che sparisce dal catalogo: il modulo di
-    # modifica `is_active` non lo manda, quindi bastava correggere un refuso
-    # per far fuori il drill, senza nessun messaggio.
-    is_active = (
-        data.get("is_active").lower() == "true"
-        if data.get("is_active") is not None
-        else None
-    )
-    # `.get` e non `[...]`: chi non manda il campo non voleva toccare il titolo,
-    # chi lo manda vuoto vuole toglierlo. Sono due cose diverse.
-    title = data.get("title")
-
-    return handle_ajax_service_action(
-        action=lambda: ChallengeService.update_challenge(
-            challenge_id=challenge_id,
-            title=title,
-            description=description,
-            is_active=is_active,
-            image_path=new_image_path,
-        ),
-        redirect_url=url_for("challenge.challenge_detail", challenge_id=challenge.id),
-        success_message=_("Esercizio aggiornato."),
-    )
+        return _render_challenge_form("edit", challenge=challenge)
+    return _save_challenge_form("edit", challenge=challenge)
 
 
 # Error handlers

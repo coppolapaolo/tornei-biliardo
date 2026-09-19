@@ -1,0 +1,334 @@
+{% extends "base.html" %}
+{% from "components/_form_macros.html" import choice, form_macros_scripts %}
+
+{# templates/challenge/form.html — 7c
+   Il modulo unico dell'esercizio: crea, modifica, duplica (canvas «TPA ed
+   esercizi», artboard «Crea, modifica, duplica» e «Ha già delle prove»).
+
+   `mode` decide solo le parole e dove si torna: i campi sono gli stessi nei tre
+   casi, e li legge un parser solo (`routes/challenge_form.py`). Arriva sempre
+   una `draft` — vuota in creazione — così un salvataggio rifiutato ripropone
+   ciò che era stato scritto.
+
+   «Come si registra» ha due voci, non le quattro dell'artboard: colpo per colpo
+   ed estrazione non esistono ancora (fase 5), e una scelta che non fa niente è
+   peggio di una scelta che manca. #}
+{% set is_edit = mode == 'edit' %}
+{% set is_copy = mode == 'duplicate' %}
+{% set subject = challenge or source %}
+{% set torna_a = url_for('challenge.challenge_detail', challenge_id=subject.id) if subject else url_for('challenge.challenge_catalog') %}
+{% set titolo_pagina = _("Modifica l'esercizio") if is_edit else (_("Duplica l'esercizio") if is_copy else _("Nuovo esercizio")) %}
+
+{% block title %}{{ titolo_pagina }} - {{ config.APP_NAME }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ torna_a }}"
+   aria-label="{{ _('Chiudi') }}"><i class="fas fa-xmark"></i></a>
+{% endblock %}
+{% block page_title %}{{ titolo_pagina }}{% endblock %}
+{% block page_sub %}
+{%- if is_edit -%}
+  {{ challenge.get_display_name() }}{% if evidence and evidence.attempts %} · {{ ngettext("%(num)s prova registrata", "%(num)s prove registrate", evidence.attempts) }}{% endif %}
+{%- elif is_copy -%}
+  {{ _("Una copia di «%(name)s»: parte senza prove e senza voti", name=source.get_display_name()) }}
+{%- else -%}
+  {{ _("La disposizione, le regole, che cosa allena") }}
+{%- endif -%}
+{% endblock %}
+{% block page_actions %}
+<a href="{{ torna_a }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-xmark"></i>&nbsp;{{ _("Annulla") }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:720px">
+  <form id="challengeForm" method="POST" enctype="multipart/form-data" class="c7-stack" style="gap:16px"
+        data-challenge-form data-max-abilita="{{ max_abilita }}"
+        {% if decision %}data-decision-open="1"{% endif %}>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="on_evidence" value="">
+    <input type="hidden" name="then" value="">
+
+    <div>
+      <label for="title" class="form-label" data-help="challenge-titolo">{{ _("Titolo") }}</label>
+      <input type="text" class="form-control" id="title" name="title" maxlength="120"
+             value="{{ draft.title if draft else '' }}"
+             placeholder="{{ _('es. Progressione lungo sponda') }}">
+      <div class="form-text">
+        {{ _("Facoltativo: senza, l'esercizio prende il suo numero progressivo (Esercizio 12).") }}
+      </div>
+    </div>
+
+    <div>
+      <label for="description" class="form-label">{{ _("Come si fa") }}</label>
+      {# Nessun `maxlength`: la colonna e' TEXT, e un limite del solo modulo
+         tagliava a meta' le regole degli esercizi articolati. #}
+      <textarea class="form-control" id="description" name="description" rows="6" required
+                placeholder="{{ _('es. Disponi 10 bilie lungo la sponda lunga e imbucale in sequenza…') }}">{{ draft.description if draft else '' }}</textarea>
+      <div class="form-text">{{ _("È il testo che il giocatore legge prima di provarci: sii preciso sulle regole.") }}</div>
+    </div>
+
+    {# ── Che cosa allena: i due vocabolari ─────────────────────────────── #}
+    <div data-help="challenge-abilita">
+      <div class="d-flex align-items-baseline gap-2">
+        <span class="form-label flex-fill">{{ _("Cosa allena") }}</span>
+        <span class="c7-label">{{ _("fino a %(max)s", max=max_abilita) }}</span>
+      </div>
+      <div class="d-flex flex-wrap gap-2" data-pick-max="{{ max_abilita }}">
+        {% for voce in abilita_choices %}
+        <label class="c7-pill">
+          <input type="checkbox" name="abilita" value="{{ voce.value }}"
+                 {% if draft and voce.value in draft.abilita %}checked{% endif %}>
+          {{ voce.display_name }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div data-help="challenge-gesto">
+      <div class="d-flex align-items-baseline gap-2">
+        <span class="form-label flex-fill">{{ _("Con che gesto") }}</span>
+        <span class="c7-label">{{ _("zero, uno o più") }}</span>
+      </div>
+      <div class="d-flex flex-wrap gap-2">
+        {% for voce in gesto_choices %}
+        <label class="c7-pill">
+          <input type="checkbox" name="gesti" value="{{ voce.value }}"
+                 {% if draft and voce.value in draft.gesti %}checked{% endif %}>
+          {{ voce.display_name }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div data-help="challenge-livello">
+      <div class="d-flex align-items-baseline gap-2">
+        <span class="form-label flex-fill">{{ _("Livello") }}</span>
+        <span class="c7-label">{{ _("1 per chi comincia") }}</span>
+      </div>
+      {# Radio che si possono anche spegnere: il livello è facoltativo, e un
+         gruppo di radio da solo non torna a «nessuno». Lo fa il JS; senza JS
+         resta la voce «—». #}
+      <div class="c7-seg" data-radio-off>
+        <label class="c7-seg__item">
+          <input type="radio" name="declared_level" value=""
+                 {% if not draft or draft.declared_level is none %}checked{% endif %}>—
+        </label>
+        {% for n in range(1, 6) %}
+        <label class="c7-seg__item c7-num">
+          <input type="radio" name="declared_level" value="{{ n }}"
+                 {% if draft and draft.declared_level == n %}checked{% endif %}>{{ n }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    {# ── Tre cose che quasi nessun esercizio ha: ripiegate ─────────────── #}
+    <section class="c7-rows">
+      <details class="c7-fold"{% if draft and draft.family %} open{% endif %}>
+        <summary class="c7-rows__row">
+          <span class="c7-rows__main">
+            <span class="c7-rows__title d-block">{{ _("Famiglia e passo") }}</span>
+            <span class="c7-rows__sub d-block">{{ _("stop shot 1 · 2 · 3: lo stesso gesto, sempre più difficile") }}</span>
+          </span>
+          <span class="c7-fold__value">{{ (draft.family ~ (' · ' ~ draft.family_step if draft.family_step else '')) if draft and draft.family else _("nessuna") }}</span>
+          <i class="fas fa-chevron-down c7-fold__chev"></i>
+        </summary>
+        <div class="c7-fold__body">
+          <div class="d-flex gap-2">
+            <div class="flex-fill">
+              <label for="family" class="form-label">{{ _("Famiglia") }}</label>
+              <input type="text" class="form-control" id="family" name="family" maxlength="80"
+                     value="{{ draft.family or '' if draft else '' }}" placeholder="{{ _('es. stop shot') }}">
+            </div>
+            <div style="width:96px">
+              <label for="family_step" class="form-label">{{ _("Passo") }}</label>
+              <input type="number" class="form-control" id="family_step" name="family_step"
+                     min="1" max="99" inputmode="numeric"
+                     value="{{ draft.family_step if draft and draft.family_step else '' }}">
+            </div>
+          </div>
+        </div>
+      </details>
+
+      <details class="c7-fold"{% if draft and draft.cue_ball_reset is not none %} open{% endif %}>
+        <summary class="c7-rows__row">
+          <span class="c7-rows__main">
+            <span class="c7-rows__title d-block">{{ _("La bianca") }}</span>
+            <span class="c7-rows__sub d-block">{{ _("si rimette a ogni tiro, o resta dove si ferma") }}</span>
+          </span>
+          <span class="c7-fold__value">
+            {%- if draft and draft.cue_ball_reset is true %}{{ _("si rimette") }}
+            {%- elif draft and draft.cue_ball_reset is false %}{{ _("resta") }}
+            {%- else %}{{ _("non detto") }}{% endif -%}
+          </span>
+          <i class="fas fa-chevron-down c7-fold__chev"></i>
+        </summary>
+        <div class="c7-fold__body">
+          <div class="c7-seg">
+            {% set bianca = ('1' if draft.cue_ball_reset else '0') if draft and draft.cue_ball_reset is not none else '' %}
+            {% for valore, etichetta in [('', _("Non detto")), ('1', _("Si rimette")), ('0', _("Resta dov'è"))] %}
+            <label class="c7-seg__item">
+              <input type="radio" name="cue_ball_reset" value="{{ valore }}" {% if bianca == valore %}checked{% endif %}>{{ etichetta }}
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+      </details>
+
+      <details class="c7-fold"{% if draft and draft.variants %} open{% endif %}>
+        <summary class="c7-rows__row">
+          <span class="c7-rows__main">
+            <span class="c7-rows__title d-block">{{ _("Varianti") }}</span>
+            <span class="c7-rows__sub d-block">{{ _("destra e sinistra, oppure posizioni A e B: si registrano separate") }}</span>
+          </span>
+          <span class="c7-fold__value">{{ draft.variants|map(attribute='label')|join(' · ') if draft and draft.variants else _("nessuna") }}</span>
+          <i class="fas fa-chevron-down c7-fold__chev"></i>
+        </summary>
+        <div class="c7-fold__body c7-stack" style="gap:8px" data-variants>
+          {% for variante in (draft.variants if draft else []) %}
+          <div class="d-flex gap-2" data-variant-row>
+            <input type="hidden" name="variant_id" value="{{ variante.id or '' }}">
+            <input type="text" class="form-control" name="variant_label" maxlength="40"
+                   value="{{ variante.label }}" aria-label="{{ _('Nome della variante') }}">
+            <button type="button" class="btn btn-secondary" data-variant-remove aria-label="{{ _('Togli la variante') }}"><i class="fas fa-xmark"></i></button>
+          </div>
+          {% endfor %}
+          <template data-variant-template>
+            <div class="d-flex gap-2" data-variant-row>
+              <input type="hidden" name="variant_id" value="">
+              <input type="text" class="form-control" name="variant_label" maxlength="40"
+                     placeholder="{{ _('es. destra') }}" aria-label="{{ _('Nome della variante') }}">
+              <button type="button" class="btn btn-secondary" data-variant-remove aria-label="{{ _('Togli la variante') }}"><i class="fas fa-xmark"></i></button>
+            </div>
+          </template>
+          <button type="button" class="btn btn-secondary w-100" data-variant-add>
+            <i class="fas fa-plus"></i>&nbsp;{{ _("Aggiungi una variante") }}
+          </button>
+          <div class="form-text">{{ _("Sono lo stesso esercizio, non un altro: stessa disposizione, stesse regole. Una variante che ha già delle prove si può rinominare, non togliere.") }}</div>
+        </div>
+      </details>
+    </section>
+
+    {# ── Come si registra ──────────────────────────────────────────────── #}
+    <div>
+      {{ choice('scoring_type', _("Come si registra"), [
+           {'value': 'pass_fail', 'title': _("Riuscito o no"),
+            'desc': _("un tocco per prova")},
+           {'value': 'score', 'title': _("A punteggio"),
+            'desc': _("un numero a fine prova")}
+         ], selected=('pass_fail' if draft and draft.pass_fail_only else 'score')) }}
+
+      {# Nascosto, non disabilitato: un campo grigio su una prova riuscito/non
+         riuscito fa credere che il numero serva e che manchi un permesso. #}
+      <div class="c7-card d-flex align-items-center gap-3" id="maxScoreRow">
+        <label for="max_score" class="flex-fill m-0" data-help="challenge-punteggio-massimo">
+          <span class="c7-rows__title d-block">{{ _("Punteggio massimo") }}</span>
+          <span class="c7-rows__sub d-block">{{ _("lascia vuoto se si va avanti finché si sbaglia") }}</span>
+        </label>
+        <input type="number" class="form-control c7-num text-center" style="width:96px" id="max_score" name="max_score"
+               min="1" max="999" inputmode="numeric" placeholder="—"
+               value="{{ draft.max_score if draft and draft.max_score else '' }}">
+      </div>
+    </div>
+
+    {# ── La disposizione ───────────────────────────────────────────────── #}
+    <div>
+      <div class="form-label">{{ _("La disposizione") }}</div>
+      {% if subject %}
+      <div id="currentImage" style="border-radius:var(--c7-r-card);overflow:hidden;background:var(--c7-sunken);margin-bottom:10px">
+        <img src="{{ challenge_image_url(subject) }}" alt="{{ subject.get_display_name() }}" style="width:100%;display:block">
+      </div>
+      {% endif %}
+      <div id="imagePreview" hidden style="border-radius:var(--c7-r-card);overflow:hidden;margin-bottom:10px">
+        <img alt="{{ _('Anteprima della foto') }}" style="width:100%;display:block">
+      </div>
+
+      {# Due comandi affiancati solo quando sono due: da sola, la foto prende
+         tutta la riga invece di lasciare mezzo schermo vuoto. #}
+      {% set can_draw = current_user.can_access('use_drill_builder') and (
+           (is_edit and challenge.diagram_scene and feature_visible('challenge.edit_diagram'))
+           or (mode == 'create' and feature_visible('challenge.diagram_builder'))) %}
+      <div class="{{ 'c7-duo' if can_draw else 'd-grid' }}">
+        {% if is_edit and challenge.diagram_scene and current_user.can_access('use_drill_builder') and feature_visible('challenge.edit_diagram') %}
+        <a href="{{ url_for('challenge.edit_diagram', challenge_id=challenge.id) }}" class="btn btn-secondary" data-help="drill-modifica-disegno">
+          <i class="fas fa-pen-ruler"></i>&nbsp;{{ _("Modifica il disegno") }}
+        </a>
+        {% elif mode == 'create' and current_user.can_access('use_drill_builder') and feature_visible('challenge.diagram_builder') %}
+        <a href="{{ url_for('challenge.diagram_builder') }}" id="goToBuilder" class="btn btn-secondary" data-help="drill-disegna">
+          <i class="fas fa-pen-ruler"></i>&nbsp;{{ _("Disegna l'esercizio") }}
+        </a>
+        {% endif %}
+        <label class="btn btn-secondary m-0" for="image">
+          <i class="fas fa-camera"></i>&nbsp;{{ _("Usa una foto") }}
+        </label>
+      </div>
+      <input type="file" class="visually-hidden" id="image" name="image" accept="image/*">
+      <div class="form-text">
+        {% if subject %}{{ _("Senza una foto nuova resta quella di adesso.") }}{% else %}{{ _("Serve a riprodurre il tavolo: fotografalo dall'alto, JPG o PNG.") }}{% endif %}
+        {{ _("Carica solo materiale di cui hai i diritti.") }}
+        {% if is_edit and challenge.diagram_scene %}{{ _("Una foto al posto del disegno toglie la possibilità di riaprirlo.") }}{% endif %}
+      </div>
+    </div>
+
+    {% if is_edit %}
+    <label class="c7-card d-flex align-items-center gap-3">
+      <span class="flex-fill">
+        <span class="c7-choice__title d-block">{{ _("Nel catalogo") }}</span>
+        <span class="c7-choice__desc d-block">{{ _("Spento, l'esercizio non si propone più a nessuno; le prove fatte restano.") }}</span>
+      </span>
+      <span class="form-check form-switch m-0">
+        <input type="hidden" name="is_active_sent" value="1">
+        <input class="form-check-input m-0" type="checkbox" role="switch" name="is_active" value="1"
+               {% if not draft or draft.is_active is not false %}checked{% endif %}>
+      </span>
+    </label>
+    {% endif %}
+  </form>
+
+  <div class="c7-actionbar" style="flex-direction:column;gap:8px">
+    {# Il verde e' la conferma conclusiva di un flusso. #}
+    <button type="submit" form="challengeForm" class="btn btn-success w-100">
+      <i class="fas fa-check"></i>&nbsp;
+      {%- if is_edit %}{{ _("Salva le modifiche") }}{% elif is_copy %}{{ _("Crea la copia") }}{% else %}{{ _("Crea l'esercizio") }}{% endif %}
+    </button>
+    {% if is_copy and source.diagram_scene and current_user.can_access('use_drill_builder') and feature_visible('challenge.edit_diagram') %}
+    {# La copia serve quasi sempre a spostare una bilia: si va dritti al disegno. #}
+    <button type="submit" form="challengeForm" class="btn btn-secondary w-100" data-then="diagram">
+      <i class="fas fa-pen-ruler"></i>&nbsp;{{ _("Crea la copia e apri il disegno") }}
+    </button>
+    {% endif %}
+  </div>
+</div>
+
+{# ── «Ha già delle prove»: foglio 7c, tre uscite ─────────────────────────── #}
+{% if is_edit %}
+<div class="modal fade c7-sheet" id="evidenceSheet" tabindex="-1" aria-labelledby="evidenceSheetTitle">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="evidenceSheetTitle" data-evidence-title>{{ decision.title if decision else '' }}</h3>
+        <div class="c7-sheet__sub" data-evidence-text>{{ decision.text if decision else '' }}</div>
+      </div>
+      <div class="modal-body c7-stack">
+        <button type="button" class="btn btn-primary w-100" data-evidence-choice="copy">{{ _("Crea una copia e modifica quella") }}</button>
+        <button type="button" class="btn btn-danger w-100" data-evidence-choice="overwrite">{{ _("Modifica comunque questo") }}</button>
+        <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">{{ _("Torna al modulo") }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{{ form_macros_scripts() }}
+<script>
+  window.challengeFormMessages = {
+    saveFailed: {{ _("Non è stato possibile salvare. Riprova.")|tojson }}
+  };
+</script>
+<script src="{{ url_for('static', filename='js/challenge-form.js') }}?v={{ config.ASSET_VERSION }}"></script>
+{% endblock %}

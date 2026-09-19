@@ -55,6 +55,7 @@ TRAINING_ENDPOINTS = (
 AUTHORING_ENDPOINTS = (
     "challenge.create_challenge",
     "challenge.edit_challenge",
+    "challenge.duplicate_challenge",
     "challenge.delete_challenge",
     "challenge.challenge_statistics",
     # Il builder: disegnare un drill è autorialità come crearlo da una foto —

@@ -524,8 +524,48 @@ hints:
   anchor: challenge-titolo
   screens:
   - challenge.create_challenge
+  - challenge.edit_challenge
+  - challenge.duplicate_challenge
   - challenge.diagram_builder
   - challenge.edit_diagram
+  page: challenge
+  section: crearle
+- id: challenge.abilita
+  label: What it trains
+  short: 'The skills the drill tests, three at most: this is how the catalogue lets people find it when they look for «something on position». If you are not sure, leave it empty.'
+  anchor: challenge-abilita
+  screens:
+  - challenge.create_challenge
+  - challenge.edit_challenge
+  - challenge.duplicate_challenge
+  page: challenge
+  section: crearle
+- id: challenge.gesto
+  label: With which stroke
+  short: 'The strokes it is played with: stop, draw, follow… As many as needed, even none. A second way of searching, separate from «what it trains».'
+  anchor: challenge-gesto
+  screens:
+  - challenge.create_challenge
+  - challenge.edit_challenge
+  - challenge.duplicate_challenge
+  page: challenge
+  section: crearle
+- id: challenge.livello
+  label: Level
+  short: 'How hard you think it is, from 1 (for beginners) to 5. Tap the selected number again to leave it undeclared.'
+  anchor: challenge-livello
+  screens:
+  - challenge.create_challenge
+  - challenge.edit_challenge
+  - challenge.duplicate_challenge
+  page: challenge
+  section: crearle
+- id: challenge.duplica
+  label: Duplicate
+  short: 'Opens the form filled in with this drill and creates a new one, yours, with no attempts and no ratings. The original is left alone.'
+  anchor: challenge-duplica
+  screens:
+  - challenge.challenge_detail
   page: challenge
   section: crearle
 - id: challenge.punteggio_massimo
@@ -535,6 +575,8 @@ hints:
   anchor: challenge-punteggio-massimo
   screens:
   - challenge.create_challenge
+  - challenge.edit_challenge
+  - challenge.duplicate_challenge
   - challenge.diagram_builder
   - challenge.edit_diagram
   page: challenge

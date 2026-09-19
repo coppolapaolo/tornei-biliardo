@@ -491,7 +491,39 @@ hints:
     label: "Titolo"
     short: "Il nome con cui la prova compare ovunque. È facoltativo: senza, prende il suo numero — «Esercizio 12»."
     anchor: challenge-titolo
-    screens: [challenge.create_challenge, challenge.diagram_builder, challenge.edit_diagram]
+    screens: [challenge.create_challenge, challenge.edit_challenge, challenge.duplicate_challenge, challenge.diagram_builder, challenge.edit_diagram]
+    page: challenge
+    section: crearle
+
+  - id: challenge.abilita
+    label: "Cosa allena"
+    short: "Le abilità che l'esercizio mette alla prova, al più tre: è da qui che il catalogo lo fa trovare a chi cerca «qualcosa sulla posizione». Se non lo sai, lascia vuoto."
+    anchor: challenge-abilita
+    screens: [challenge.create_challenge, challenge.edit_challenge, challenge.duplicate_challenge]
+    page: challenge
+    section: crearle
+
+  - id: challenge.gesto
+    label: "Con che gesto"
+    short: "I colpi con cui si esegue: stop, draw, follow… Quanti ne servono, anche nessuno. È un secondo modo di cercare, diverso da «cosa allena»."
+    anchor: challenge-gesto
+    screens: [challenge.create_challenge, challenge.edit_challenge, challenge.duplicate_challenge]
+    page: challenge
+    section: crearle
+
+  - id: challenge.livello
+    label: "Livello"
+    short: "Quanto è difficile secondo te, da 1 (per chi comincia) a 5. Tocca di nuovo la cifra accesa per non dichiararlo."
+    anchor: challenge-livello
+    screens: [challenge.create_challenge, challenge.edit_challenge, challenge.duplicate_challenge]
+    page: challenge
+    section: crearle
+
+  - id: challenge.duplica
+    label: "Duplica"
+    short: "Apre il modulo già compilato coi dati di questo esercizio e ne crea uno nuovo, tuo, senza prove né voti. L'originale non si tocca."
+    anchor: challenge-duplica
+    screens: [challenge.challenge_detail]
     page: challenge
     section: crearle
 
@@ -500,7 +532,7 @@ hints:
     label: "Punteggio massimo"
     short: "Fin dove si può arrivare. Facoltativo: lascialo vuoto per le prove che si ripetono finché non sbagli, dove un massimo non esiste."
     anchor: challenge-punteggio-massimo
-    screens: [challenge.create_challenge, challenge.diagram_builder, challenge.edit_diagram]
+    screens: [challenge.create_challenge, challenge.edit_challenge, challenge.duplicate_challenge, challenge.diagram_builder, challenge.edit_diagram]
     page: challenge
     section: due_tipi
 

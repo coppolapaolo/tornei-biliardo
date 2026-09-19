@@ -508,6 +508,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # un 403.
     "challenge.create_challenge": {"director"},
     "challenge.edit_challenge": {"director"},
+    # Stessa porta della modifica: si duplica ciò che si potrebbe correggere.
+    "challenge.duplicate_challenge": {"director"},
     "challenge.delete_challenge": {"director"},
     "challenge.challenge_statistics": {"director"},
     # Il builder dei drill sta con l'autorialità per la stessa ragione: chi
