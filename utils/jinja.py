@@ -166,6 +166,40 @@ def format_datetime_local(value, tz=None) -> Markup:
         return Markup(escape(str(value)))
 
 
+def format_day_friendly(value, tz=None, with_time=True) -> Markup:
+    """«sab 26 set · 18:30»: il giorno come lo si dice, nel fuso di chi legge.
+
+    Per gli appuntamenti: ``26/09/2026, 18:30`` è una data da modulo, e chi
+    deve presentarsi in sala ragiona per giorno della settimana. L'anno compare
+    solo se non è quello in corso. Nomi di giorno e mese li dà Babel nella
+    lingua di chi legge; l'attributo ``datetime`` resta l'istante in UTC, come
+    in ``format_datetime_local``.
+    """
+    if not value:
+        return Markup(_("N/A"))
+    if not isinstance(value, datetime):
+        return format_date_local(value, tz)
+
+    from babel.dates import format_date
+    from flask_babel import get_locale
+
+    from utils.local_time import UTC
+
+    reader_time = _to_reader_time(value, tz)
+    today = _to_reader_time(datetime.now(UTC), tz)
+    pattern = "EEE d MMM" if reader_time.year == today.year else "EEE d MMM y"
+    locale = str(get_locale() or "it")
+    text = format_date(reader_time, pattern, locale=locale).replace(".", "")
+    if with_time:
+        text = f"{text} · {reader_time.strftime('%H:%M')}"
+
+    utc_dt = (
+        value.replace(tzinfo=UTC) if value.tzinfo is None else value.astimezone(UTC)
+    )
+    iso_utc = utc_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+    return Markup(f'<time datetime="{iso_utc}">{escape(text)}</time>')
+
+
 def format_time_local(value, tz=None) -> Markup:
     """Formatta un orario in formato HH:MM, nel fuso di chi legge.
 

@@ -17,7 +17,9 @@ Uso:
 
 Cosa fa a una voce tradotta: riscrive `msgstr` (a capo come li mette Babel),
 toglie il flag `fuzzy` e le righe `#|` della voce a cui pybabel l'aveva
-avvicinata. Le voci **plurali** non le tocca e le elenca: vanno scritte a mano.
+avvicinata. Per una voce **plurale** il valore nel JSON è una lista, una forma
+per elemento (`["%(n)s drill", "%(n)s drills"]`); se trova una stringa sola non
+la tocca e la elenca.
 Un `msgid` del JSON che nel catalogo non c'è è un errore, non un avviso: quasi
 sempre è un refuso, e la stringa resterebbe non tradotta in silenzio.
 """
@@ -35,16 +37,16 @@ from babel.messages.catalog import Catalog
 from babel.messages.pofile import write_po
 
 
-def _msgstr_lines(msgid: str, msgstr: str) -> list[str]:
+def _msgstr_lines(msgid, msgstr) -> list[str]:
     """Le righe `msgstr` come le scriverebbe Babel: si fa scrivere a lui un
     catalogo di una voce sola e si prendono quelle. Rifare a mano i suoi a capo
     vorrebbe dire un diff al prossimo `pybabel update`."""
-    catalog = Catalog()
-    catalog.add(msgid, msgstr)
+    catalog = Catalog(locale="en")
+    catalog.add(msgid, tuple(msgstr) if isinstance(msgstr, list) else msgstr)
     buffer = BytesIO()
     write_po(buffer, catalog, omit_header=True, width=76)
     lines = buffer.getvalue().decode("utf-8").strip("\n").split("\n")
-    start = next(i for i, line in enumerate(lines) if line.startswith("msgstr "))
+    start = next(i for i, line in enumerate(lines) if line.startswith("msgstr"))
     return lines[start:]
 
 
@@ -118,11 +120,19 @@ def main(argv: list[str]) -> int:
             continue
         if msgid not in wanted:
             continue
-        if _field(block, "msgid_plural") is not None:
-            plurals.append(msgid)
-            continue
-        start, end = _field(block, "msgstr")  # type: ignore[misc]
-        block[start:end] = _msgstr_lines(msgid, wanted[msgid])
+        plural_span = _field(block, "msgid_plural")
+        if plural_span is not None:
+            # Plurale: nel JSON il valore è una lista, una forma per elemento.
+            if not isinstance(wanted[msgid], list):
+                plurals.append(msgid)
+                continue
+            first = block[plural_span[0]][len("msgid_plural ") :]
+            plural = _unquote([first] + block[plural_span[0] + 1 : plural_span[1]])
+            start = next(i for i, l in enumerate(block) if l.startswith("msgstr["))
+            block[start:] = _msgstr_lines((msgid, plural), wanted[msgid])
+        else:
+            start, end = _field(block, "msgstr")  # type: ignore[misc]
+            block[start:end] = _msgstr_lines(msgid, wanted[msgid])
         blocks[index] = _drop_fuzzy(block)
         done.add(msgid)
 
@@ -133,7 +143,7 @@ def main(argv: list[str]) -> int:
         return 0
     print(f"{po_path}: {len(done)} voci scritte")
     for msgid in plurals:
-        print(f"  PLURALE, da scrivere a mano: {msgid!r}")
+        print(f"  PLURALE, serve una lista di forme: {msgid!r}")
     missing = set(wanted) - done - set(plurals)
     for msgid in sorted(missing):
         print(f"  NON TROVATA nel catalogo: {msgid!r}")

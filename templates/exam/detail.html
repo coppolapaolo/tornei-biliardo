@@ -1,8 +1,20 @@
 {% extends "base.html" %}
 {% import "components/_challenge_bits.html" as ch with context %}
 
+{# Un esame (canvas «TPA ed esercizi», pagina 6 · «Un esame»).
+
+   Cosa si fa, gli esercizi **numerati nell'ordine in cui si fanno**, «Le tue
+   volte», chi lo somministra, e in fondo i due comandi. Le quattro statistiche
+   globali di prima — sostenuti, superati, candidati, in autonomia — su un esame
+   giovane erano quattro zeri e al candidato non dicevano niente: chi somministra
+   le trova, aggregate, in «Gestisci esami». #}
+
 {% block title %}{{ exam.name }}{% endblock %}
 
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('exam.exam_catalog') }}"
+   aria-label="{{ _('Torna agli esami') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
 {% block page_title %}{{ exam.name }}{% endblock %}
 {% block page_sub %}{{ _("Esame: una sequenza di esercizi") }}{% endblock %}
 {% block page_actions %}
@@ -14,47 +26,41 @@
 {% endblock %}
 
 {% block content %}
-<section class="c7-stack">
-  {% if exam.description %}
-  <div class="c7-card">
-    <div class="c7-label">{{ _("Descrizione") }}</div>
-    <p style="margin:8px 0 0">{{ exam.description }}</p>
-  </div>
-  {% endif %}
+{# La lista si materializza una volta: ``challenges`` è lazy="dynamic". #}
+{% set exam_challenges = exam.challenges.all() %}
+{% set total = exam_challenges|sum(attribute='effective_max_score') %}
+<section class="c7-stack" style="max-width:720px">
 
-  {# ── I drill che lo compongono (US-P1) ──────────────────────────────── #}
-  {# La lista si materializza **prima** del badge: ``challenges`` è
-     lazy="dynamic", e un .count() accanto a un .all() sono due query per
-     un'informazione sola. #}
-  {% set exam_challenges = exam.challenges.all() %}
-  <div class="c7-sechead">
-    <h2>{{ _("Gli esercizi dell'esame") }}</h2>
-    <span class="c7-sechead__note">{{ exam_challenges|length }}</span>
+  {# ── Cosa si fa ─────────────────────────────────────────────────────── #}
+  <div class="c7-card c7-card--accent">
+    <div class="c7-kicker">{{ _("Cosa si fa") }}</div>
+    {% if exam.description %}<p style="margin:8px 0 0;font-weight:600">{{ exam.description }}</p>{% endif %}
+    <div class="c7-facts">
+      <span class="c7-facts__item">{{ ngettext("%(n)s esercizio", "%(n)s esercizi", exam_challenges|length, n=exam_challenges|length) }}</span>
+      {% if exam_challenges %}
+      <span class="c7-facts__item">{{ _("fino a %(n)s punti", n=total) }}</span>
+      {% endif %}
+      {% if exam.time_limit_minutes %}
+      <span class="c7-facts__item">{{ _("%(n)s minuti al massimo", n=exam.time_limit_minutes) }}</span>
+      {% endif %}
+    </div>
   </div>
-  {# Il tipo di drill e l'azione stanno su una **seconda riga**, non in coda al
-     titolo: a 390px un nome lungo più una pill «Superato / non superato» più il
-     bottone non ci stanno, e il risultato era un titolo strizzato a una parola
-     per riga con il bottone tagliato fuori dallo schermo. #}
+
+  {# ── Gli esercizi, numerati (US-P1) ─────────────────────────────────── #}
+  <div class="c7-sechead"><h2>{{ _("Gli esercizi, nell'ordine in cui si fanno") }}</h2></div>
   {% if exam_challenges %}
-  <div class="c7-stack">
+  <div class="c7-rows">
     {% for ec in exam_challenges %}
-    <div class="c7-card">
-      <div style="display:flex;align-items:center;gap:12px">
-        {{ ch.thumb(ec.challenge, 40, 'var(--c7-r-chip)') }}
-        <div style="flex:1;min-width:0">
-          <div class="c7-rows__title">{{ ec.challenge.get_display_name() }}</div>
-          <div class="c7-rows__sub">{{ _("Posizione %(n)s", n=ec.order) }}</div>
+    <div class="c7-rows__row">
+      <span class="c7-ordinal">{{ loop.index }}</span>
+      {{ ch.thumb(ec.challenge, 48, 'var(--c7-r-chip)') }}
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ ec.challenge.get_display_name() }}</div>
+        <div class="c7-rows__sub">
+          {% if ec.is_pass_fail %}{{ _("superato o no") }}{% else %}{{ _("da 0 a %(n)s", n=ec.effective_max_score) }}{% endif %}
+          <span class="c7-sep">·</span>
+          {% if ec.max_attempts > 1 %}{{ _("%(n)s prove, conta la migliore", n=ec.max_attempts) }}{% else %}{{ _("una prova") }}{% endif %}
         </div>
-      </div>
-      <div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        {% if ec.is_pass_fail %}
-        <span class="c7-pill">{{ _("Superato / non superato") }}</span>
-        {% else %}
-        <span class="c7-num" style="font-size:15px;font-weight:800">{{ _("max %(n)s", n=ec.effective_max_score) }}</span>
-        {% endif %}
-        {% if ec.max_attempts > 1 %}
-        <span class="c7-pill">{{ _("%(n)s prove · conta la migliore", n=ec.max_attempts) }}</span>
-        {% endif %}
       </div>
     </div>
     {% endfor %}
@@ -70,88 +76,86 @@
   </div>
   {% endif %}
 
+  {# ── Le tue volte ───────────────────────────────────────────────────── #}
+  {% if exam_challenges %}
+  <div class="c7-card">
+    <div class="c7-kicker">{{ _("Le tue volte") }}</div>
+    <div style="display:flex;align-items:center;gap:12px;margin-top:10px">
+      <div style="flex:1;min-width:0">
+        {% if standing.practice_count %}
+        <div class="c7-rows__title">{{ ngettext("Da solo, %(n)s volta", "Da solo, %(n)s volte", standing.practice_count, n=standing.practice_count) }}</div>
+        <div class="c7-rows__sub">
+          {% if standing.practice_count > 1 %}
+          {{ _("%(p)s su %(m)s l'ultima", p=standing.last_score, m=standing.last_max) }}
+          <span class="c7-sep">·</span> {{ _("%(p)s la prima", p=standing.first_score) }}
+          {% else %}
+          {{ _("%(p)s su %(m)s", p=standing.last_score, m=standing.last_max) }}
+          {% endif %}
+        </div>
+        {% else %}
+        <div class="c7-rows__title">{{ _("Da solo, mai") }}</div>
+        <div class="c7-rows__sub">{{ _("è il modo per arrivarci preparato") }}</div>
+        {% endif %}
+      </div>
+      <span class="c7-state c7-state--muted">{{ _("allenamento") }}</span>
+    </div>
+    <hr class="c7-divider" style="margin:12px 0">
+    <div style="display:flex;align-items:center;gap:12px">
+      <div style="flex:1;min-width:0">
+        {% if standing.kind == StandingKind.PASSED %}
+        <div class="c7-rows__title">{{ _("Superato il %(data)s", data=standing.certified_at|date_local) }}</div>
+        <div class="c7-rows__sub">{% if standing.certified_by %}{{ _("certificato da %(nome)s", nome=standing.certified_by) }}{% endif %}</div>
+        {% elif standing.kind == StandingKind.FAILED %}
+        <div class="c7-rows__title">{{ _("Non superato il %(data)s", data=standing.certified_at|date_local) }}</div>
+        <div class="c7-rows__sub">{{ _("si può ripetere: chiedi un altro appuntamento") }}</div>
+        {% else %}
+        <div class="c7-rows__title">{{ _("Davanti a un esaminatore, mai") }}</div>
+        <div class="c7-rows__sub">{{ _("è l'unico modo per farlo valere") }}</div>
+        {% endif %}
+      </div>
+      {% if standing.kind == StandingKind.PASSED %}
+      <span class="c7-state c7-state--ok">{{ _("certificato") }}</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
   {# ── Chi lo somministra (US-P1) ─────────────────────────────────────── #}
   <div class="c7-sechead"><h2>{{ _("Chi lo somministra") }}</h2></div>
   <div class="c7-rows">
     {% for examiner in examiners %}
     <div class="c7-rows__row">
+      <span class="c7-avatar">{{ examiner.username[:2]|upper }}</span>
       <div class="c7-rows__main">
         <div class="c7-rows__title">{{ examiner.username }}</div>
         {% if examiner.id == exam.examiner_id %}
-        <div class="c7-rows__sub">{{ _("Ha composto l'esame") }}</div>
+        <div class="c7-rows__sub">{{ _("ha composto l'esame") }}</div>
         {% endif %}
       </div>
     </div>
     {% endfor %}
   </div>
 
-  {# ── Cosa posso fare ────────────────────────────────────────────────── #}
+  {# ── I due comandi, in fondo e sempre a portata ─────────────────────── #}
   {% if exam_challenges %}
-  <div class="c7-sechead"><h2>{{ _("Sostieni l'esame") }}</h2></div>
-
-  {% if open_attempt %}
-  <div class="c7-card c7-card--accent">
-    <div class="c7-rows__title">{{ _("Hai un allenamento in corso") }}</div>
-    <div class="c7-rows__sub">{{ _("Riprendilo da dove l'hai lasciato.") }}</div>
-    <a class="btn btn-primary" style="margin-top:12px"
-       href="{{ url_for('exam.session_detail', attempt_id=open_attempt.id) }}">
-      {{ _("Riprendi") }}
+  <div class="c7-actionbar">
+    {% if open_attempt %}
+    <a class="btn btn-primary" href="{{ url_for('exam.session_detail', attempt_id=open_attempt.id) }}">
+      <i class="fas fa-play"></i> {{ _("Riprendi l'allenamento") }}
     </a>
-  </div>
-  {% else %}
-  <div class="c7-grid" style="grid-template-columns:1fr 1fr">
-    <form method="POST" action="{{ url_for('exam.start_self_practice', exam_id=exam.id) }}">
+    {% else %}
+    <form method="POST" action="{{ url_for('exam.start_self_practice', exam_id=exam.id) }}" style="flex:1;display:flex">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-      <div class="c7-card">
-        <div class="c7-rows__title" data-help="esame-prova-da-solo">{{ _("Prova da solo") }}</div>
-        <div class="c7-rows__sub">{{ _("Allenamento: non porta la certificazione.") }}</div>
-        <button type="submit" class="btn btn-outline-primary" style="margin-top:12px">{{ _("Inizia") }}</button>
-      </div>
+      <button type="submit" class="btn btn-secondary" style="flex:1" data-help="esame-prova-da-solo">{{ _("Prova da solo") }}</button>
     </form>
-
-    <div class="c7-card">
-      <div class="c7-rows__title">{{ _("Sostieni l'esame") }}</div>
-      <div class="c7-rows__sub">{{ _("Davanti a un esaminatore, di persona.") }}</div>
-      {% if open_request %}
-      <a class="btn btn-outline-info" style="margin-top:12px"
-         href="{{ url_for('exam.request_detail', request_id=open_request.id) }}">
-        {{ _("Vedi la richiesta in corso") }}
-      </a>
-      {% elif examiners|length > 0 and feature_visible('exam.request_form') %}
-      <a class="btn btn-success" style="margin-top:12px" data-help="esame-appuntamento"
-         href="{{ url_for('exam.request_form', exam_id=exam.id) }}">
-        {{ _("Chiedi un appuntamento") }}
-      </a>
-      {% else %}
-      <div class="c7-rows__sub" style="margin-top:12px">
-        {{ _("Nessun esaminatore disponibile per questo esame.") }}
-      </div>
-      {% endif %}
-    </div>
-  </div>
-  {% endif %}
-  {% endif %}
-
-  {# ── Statistiche (US-E8) ────────────────────────────────────────────── #}
-  {% if statistics %}
-  <div class="c7-sechead"><h2>{{ _("Statistiche") }}</h2></div>
-  <div class="c7-grid" style="grid-template-columns:1fr 1fr">
-    <div class="c7-card">
-      <div class="c7-num-lg">{{ statistics.certified_attempts }}</div>
-      <div class="c7-rows__sub">{{ _("Sostenuti") }}</div>
-    </div>
-    <div class="c7-card">
-      <div class="c7-num-lg">{{ statistics.passed }}</div>
-      <div class="c7-rows__sub">{{ _("Superati") }}</div>
-    </div>
-    <div class="c7-card">
-      <div class="c7-num-lg">{{ statistics.unique_candidates }}</div>
-      <div class="c7-rows__sub">{{ _("Candidati") }}</div>
-    </div>
-    <div class="c7-card">
-      <div class="c7-num-lg">{{ statistics.self_practice_attempts }}</div>
-      <div class="c7-rows__sub">{{ _("In autonomia") }}</div>
-    </div>
+    {% endif %}
+    {% if open_request %}
+    <a class="btn btn-primary" href="{{ url_for('exam.request_detail', request_id=open_request.id) }}">{{ _("Vedi la richiesta") }}</a>
+    {# Chi lo somministra non può chiederlo a sé stesso: il servizio rifiuta. #}
+    {% elif examiners|length > 0 and not exam.is_examined_by(current_user.id) and feature_visible('exam.request_form') %}
+    <a class="btn btn-success" data-help="esame-appuntamento"
+       href="{{ url_for('exam.request_form', exam_id=exam.id) }}">{{ _("Chiedi un appuntamento") }}</a>
+    {% endif %}
   </div>
   {% endif %}
 </section>
