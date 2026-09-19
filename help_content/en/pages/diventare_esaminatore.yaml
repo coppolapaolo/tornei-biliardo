@@ -5,7 +5,7 @@ audience: [giocatore]
 minutes: 4
 summary: "The person who certifies other people's exams: how to get the role, how to compose an exam, and what happens when a request arrives."
 screens: [roles.request_role_form, roles.role_requests, exam.manage_exams,
-  exam.manage_examiners]
+  exam.compose_exam, exam.manage_examiners]
 related: [esami, diventare_direttore, challenge]
 
 blocks:
@@ -86,12 +86,33 @@ blocks:
   - type: text
     text: >-
       From the **Manage exams** area you create the exam — name, description
-      and possibly a time limit — and **the drills are added afterwards**, from
-      the exam's own page.
+      and possibly a time limit. Then, from the exam's own page, you tap
+      **"Compose"**: name, drills, order and what each one is worth are all on
+      **one page, with a single save**.
 
   - type: shot
     shot: esame-gestione
     caption: "The area for whoever administers exams: the ones they composed, how many candidates, and the pass rate."
+
+  - type: text
+    text: >-
+      Drills are picked **by name**, from **"Add a drill from the
+      catalogue"**: a list opens where you can search, and the ones already in
+      the exam are left out. Each entry in the sequence has its grip on the
+      left to drag it, what it is **worth** and how many **attempts** it asks
+      for.
+
+  - type: shot
+    shot: esame-componi
+    caption: "Composing an exam: the drills in sequence, each with what it is worth and how many attempts; drag them to change the order."
+
+  - type: note
+    tone: info
+    title: "With an exam session open, composing waits"
+    text: >-
+      As long as a candidate has a certified session open, the exam stays the
+      one they accepted: the page tells you so and you save afterwards.
+      Practice runs block nothing — they are realigned to the new exam.
 
   - type: options
     items:
@@ -103,9 +124,9 @@ blocks:
       - name: "Maximum score"
         values: "per drill"
         text: >-
-          You decide it exam by exam; it is not a property of the drill. A
-          drill you want to weigh more is made to weigh more by raising its
-          maximum.
+          It is the number next to **"worth"**. You decide it exam by exam; it
+          is not a property of the drill: the same drill can be worth 10 in one
+          exam and 20 in another.
         hint: esame.punteggio_massimo
       - name: "How many attempts"
         values: "1 to 20"
@@ -157,13 +178,23 @@ blocks:
           button: the block also holds for anyone trying to go around the
           screen.
       - title: "Record attempt by attempt"
-        text: "The boxes fill in order. Giving an attempt's number rewrites it, if you mistyped."
+        text: >-
+          The page shows you **one drill at a time**, with the keypad at the
+          bottom: **plus** and **minus** move the score by one, tap the figure
+          to type it. The attempts already made stay in view, the best one in
+          green. If you mistyped there is **"Correct attempt …"**; if the
+          candidate does not want the third one, **"Give up attempt …"** — an
+          attempt not taken is not a zero.
         shot: esame-sessione
       - title: "Close with the outcome"
         text: >-
-          **Passed** or **not passed**. If the exam never happened — the
-          candidate does not turn up, the venue closes — there is **«Stop with
-          no outcome»**, which is not a fail.
+          Once the drills are done the summary remains, with the two buttons:
+          **Passed** or **Not passed**, and a confirmation before it is
+          written. If the exam never happened — the candidate does not turn up,
+          the venue closes — there is **"Stop with no outcome"**, which is not
+          a fail and is also there while you wait for the candidate to accept
+          the start.
+        shot: esame-esito
 
   - type: faq
     items:

@@ -18,7 +18,7 @@ blocks:
 
   - type: shot
     shot: esame-catalogo
-    caption: "The exam catalogue: the drill sequences you can sit."
+    caption: "The exam catalogue: for each one it says what you are to it — passed and by whom, practised alone, never tried."
 
   - type: heading
     id: due_modi
@@ -54,104 +54,138 @@ blocks:
 
   - type: text
     text: >-
-      Before you start, the exam page tells you exactly what is coming: the
-      drills in order, the maximum score of each one, how many attempts you
-      get and **who administers it**.
+      Right from the catalogue every exam tells you **what you are to it**:
+      "passed", with the date and the name of whoever certified it; "practised
+      alone", with how many times and your best result; or "never tried". At
+      the top, if you have one, is **your next appointment**.
+
+  - type: text
+    text: >-
+      Open the exam and you find, from the top: **what you do**, the drills
+      **numbered in the order you take them** — each with what it is worth and
+      how many attempts you get — then **"Your attempts"**, **who administers
+      it**, and at the bottom the two commands to sit it.
 
   - type: shot
     shot: esame-dettaglio
-    caption: "An exam page: the drills it is made of with their maximum score and number of attempts, who administers it and the two ways to sit it."
+    caption: "An exam page: what you do, the drills numbered in the order you take them, your attempts, who administers it, and the two commands at the bottom."
 
   - type: note
     tone: tip
     title: "When a drill asks for several attempts, the best one counts"
     text: >-
-      Next to a drill you may read something like **«3 attempts · best one
-      counts»**. It means you repeat that shot three times and your **best**
-      result is what counts — not the average and not the sum: if you score 6,
-      9 and 7 on a drill out of 10, that drill is worth 9. Whoever composes
-      the exam decides how many attempts are needed; on single-attempt drills
-      nothing is shown and you record once.
+      Next to a drill you may read, for instance, **"3 attempts, the best one
+      counts"**. It means you repeat that shot three times and your **best**
+      result is what counts — not the average, not the sum: score 6, 9 and 7 on
+      a 10-point drill and that drill is worth 9. Whoever composes the exam
+      decides how many attempts are needed; single-attempt drills are recorded
+      once.
 
   - type: heading
     id: da_solo
-    title: "Practising on your own"
+    title: "Trying it on your own"
 
   - type: steps
     items:
-      - title: "Open the exam and look for «Try it on your own»"
+      - title: "Open the exam and tap \"Try it on your own\""
         text: >-
-          Under **Sit the exam** there are two boxes side by side. The one on
-          the left is practice: tap **«Start»** and the attempt opens straight
-          away, without asking anyone.
+          It is the button at the bottom left, always within reach. The attempt
+          opens at once, without asking anyone.
         shot: esame-dettaglio
-      - title: "Do the drills in the order they are listed"
+      - title: "One drill at a time"
         text: >-
-          Each attempt gets its own box. You fill them in as you go, in order,
-          and the progress bar at the top keeps up.
-      - title: "You can stop and resume"
+          The page shows you **a single drill**: the layout, the attempts you
+          have already made and, at the bottom, the score to write. **Plus**
+          and **minus** move it by one; tap the figure to type it. A "made or
+          not" drill has two large buttons instead.
+      - title: "Correct, skip, go back"
         text: >-
-          Closing the app halfway loses nothing: going back to the exam you
-          find **«Resume»** and pick the attempt up where you left it.
-      - title: "Close the practice session"
+          Under the score you find **"Correct attempt …"** if you mistyped, and
+          **"Give up attempt …"** if you do not want to take it: an attempt you
+          did not take is not a zero, it simply does not count. Tap a drill in
+          the row at the top to go back to it.
+      - title: "You can stop and pick it up again"
         text: >-
-          It then enters your history, together with the scores you recorded.
+          If you close the app halfway you lose nothing: back on the exam you
+          find **"Resume training"** and the attempt is where you left it.
+      - title: "Close the training session"
+        text: >-
+          Once the drills are done the summary appears, with **"Close the
+          training session"**. At that point it goes into your history, together with
+          the scores you recorded.
 
   - type: heading
     id: appuntamento
-    title: "Asking for an appointment"
+    title: "Requesting an appointment"
 
   - type: text
     text: >-
-      A certified exam is taken **in person**, so the first thing to agree on
-      is when and where. It starts from the exam page, with **«Ask for an
-      appointment»**.
+      A certified exam happens **in person**, so the first thing to agree on is
+      when and where. You start from the exam page, with **"Ask for an
+      appointment"**.
 
   - type: shot
     shot: esame-appuntamento
-    caption: "The form for requesting an appointment: which examiners to ask, when and at which venue."
+    caption: "The form for requesting an appointment: which examiners to ask, day, time and venue."
 
   - type: options
     items:
       - name: "Who you ask"
         text: >-
-          If the exam has several examiners you can pick one, a few, or
-          **leave the choice empty to ask them all**. Whoever accepts first
-          closes the request for the others, who are notified.
+          If the exam has several examiners you can pick one, some, or **leave
+          the choice empty to ask all of them**. Whoever accepts first closes
+          the request for the others, who get a notice.
       - name: "When and where"
         text: >-
-          You propose a date, a time and a venue. They are a proposal, not a
-          commitment: the other side can come back with a different time.
+          You propose a **day**, a **time** and a **venue**. It is a proposal,
+          not a commitment: the other side can answer with a different time, or
+          another venue.
       - name: "Notes"
-        text: "Optional. They explain, they do not settle: the agreement is made through proposals."
+        text: "Optional. They are there to explain, not to agree: agreement happens through proposals."
 
   - type: heading
     id: trattativa
-    title: "The back and forth"
+    title: "The negotiation"
 
   - type: text
     text: >-
-      From there it is an exchange of proposals. The examiner can accept yours
-      or **counter-propose** a different time; you can accept theirs or come
-      back with another. It goes on until one of you accepts, or until the
-      request expires.
+      From there on it is an exchange of proposals. At the top of the page is
+      always **the proposal on the table** — day, time, venue and who made it —
+      and, when it is your turn, the button to accept it sits right in there:
+      **"I accept: see you there"**. If it does not suit you, just below you
+      can **counter-propose** another day, time or venue. It goes on until one
+      of you accepts, or until the request expires.
 
   - type: shot
     shot: esame-trattativa
-    caption: "A negotiation under way: the proposal on the table, who made it, and the history of the exchange."
+    caption: "A negotiation under way: at the top the proposal on the table with the button to accept it, below it the counter-proposal, then how you got there."
+
+  - type: text
+    text: >-
+      **"How you got there"** keeps the line of proposals, with a lit dot on
+      the standing one, and tells you where each examiner you asked is:
+      **negotiating**, **hasn't answered**, **can't make it**. Until someone
+      accepts you can **withdraw the request**.
+
+  - type: shot
+    shot: esame-appuntamenti
+    caption: "Your exam appointments: \"Your turn\" marks the ones where the other side is waiting for your answer."
 
   - type: note
     tone: info
-    title: "One at a time"
+    title: "One side at a time"
     text: >-
       Whoever has just proposed **waits for the answer**: you cannot propose
-      twice in a row. And if you had asked several examiners, from the moment
-      one of them counter-proposes the negotiation is between you and them —
-      the others can only accept the latest proposal, not join the exchange.
+      twice in a row, and the page tells you so instead of offering a button.
+      In the list of appointments, **"Your turn"** marks the ones where you are
+      the one who has to answer. And if you asked several examiners, from the
+      moment one of them counter-proposes the negotiation is between you and
+      them — the others can only accept the last proposal, not join the
+      exchange.
 
   - type: heading
     id: il_giorno
-    title: "On the day"
+    title: "Exam day"
 
   - type: steps
     items:
@@ -159,25 +193,28 @@ blocks:
         text: "At the table, from the page of the confirmed appointment."
       - title: "You accept the start"
         text: >-
-          **«I accept: let's start»** appears. Until you tap it no score can be
-          recorded: nobody is assessed without knowing it.
+          At the top of the session **"I accept: let's start"** appears. Until
+          you tap it no score can be recorded: nobody is assessed without
+          knowing.
       - title: "You play, they record"
         text: >-
-          Drill after drill, attempt after attempt, while the progress bar
-          climbs.
+          Drill after drill, attempt after attempt. From your phone you follow
+          the summary: the total and, for each drill, the attempts made and the
+          one that counts.
         shot: esame-sessione
       - title: "At the end they certify the outcome"
         text: >-
-          **Passed** or **not passed**. There is no mark and no note: it is a
-          fact, not a judgement to be argued over.
+          **Passed** or **not passed**. There is no grade and no note: it is a
+          fact, not a judgement to argue.
+        shot: esame-esito
 
   - type: note
     tone: warning
-    title: "No accepted appointment, no start"
+    title: "No accepted appointment, no session"
     text: >-
-      A certified session can only come from an appointment somebody accepted.
-      There is no way to start one on your own, and that is what separates an
-      exam that counts from a practice session.
+      A certified session can only come from an appointment someone accepted.
+      There is no way to start one on your own, and that is what tells an exam
+      that counts from a practice run.
 
   - type: heading
     id: dopo

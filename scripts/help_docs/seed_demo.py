@@ -734,6 +734,38 @@ def _create_esami(db, director, players, challenges, venue):
     db.session.commit()
     log(f"esame «{esame.name}»: 2 drill, 2 esaminatori")
 
+    # ── Un secondo esame, che nessuno ha ancora toccato. Due ragioni: nel
+    #    catalogo serve almeno una voce «mai provato» accanto a quelle con una
+    #    storia, e «Componi» va fotografata su un esame **senza sessioni
+    #    certificate aperte** — quella di Sara, più sotto, blocca la
+    #    composizione del primo (emendamento ADR-042). Gli esercizi sono gli
+    #    stessi due, in ordine inverso e con un altro peso: è proprio ciò che
+    #    la guida racconta di `max_score`, che si decide esame per esame.
+    secondo = ExamService.create_exam(
+        actor=director,
+        name="Controllo — livello 1",
+        description=(
+            "Prima la serie senza errori, poi il tiro dal punto: qui il tiro "
+            "pesa il doppio, e le prove sono due."
+        ),
+    )
+    db.session.commit()
+    ExamService.add_challenge_to_exam(
+        exam_id=secondo.id,
+        challenge_id=challenges[1].id,
+        actor=director,
+        max_attempts=1,
+    )
+    ExamService.add_challenge_to_exam(
+        exam_id=secondo.id,
+        challenge_id=challenges[0].id,
+        actor=director,
+        max_score=20,
+        max_attempts=2,
+    )
+    db.session.commit()
+    log(f"esame «{secondo.name}»: 2 drill, mai sostenuto")
+
     # ── Allenamento gia' concluso: da' statistiche non vuote all'esame e uno
     #    storico al profilo. I tre punteggi sono 6, 9, 7 — vale 9, e si vede.
     allenamento = ExamService.start_self_practice(actor=marco, exam_id=esame.id)
@@ -758,7 +790,10 @@ def _create_esami(db, director, players, challenges, venue):
     # ── Trattativa aperta: proposta del candidato, controproposta
     #    dell'esaminatore. Serve alla figura «Come ci siete arrivati», che con
     #    una proposta sola non mostrerebbe nessuno scambio.
-    quando = datetime.combine(date.today() + timedelta(days=4), time(20, 0))
+    # Gli orari sono naive **UTC**, e la pagina li mostra nel fuso di chi legge:
+    # le 18 diventano le 20 italiane (le 19 d'inverno). Scritti come «20» si
+    # leggevano «22:00» e «23:30», orari a cui nessuna sala dà un esame.
+    quando = datetime.combine(date.today() + timedelta(days=4), time(18, 0))
     trattativa = ExamRequestService.create_request(
         actor=elena,
         exam_id=esame.id,
@@ -784,7 +819,7 @@ def _create_esami(db, director, players, challenges, venue):
         exam_id=esame.id,
         # Domani, non oggi: «oggi alle 21» e' gia' passato per chi lancia il
         # seed di sera, e `create_request` rifiuta un appuntamento nel passato.
-        scheduled_at=datetime.combine(date.today() + timedelta(days=1), time(21, 0)),
+        scheduled_at=datetime.combine(date.today() + timedelta(days=1), time(19, 0)),
         billiard_hall_id=venue.id,
         recipient_ids=[director.id],
     )
