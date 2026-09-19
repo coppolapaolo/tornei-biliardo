@@ -209,3 +209,42 @@ class TestPassaggioDelTavolo:
         state = play([(1, ["1", "9"])])  # spacca e chiude: rack finito
         assert state.current_rack == 2
         assert state.to_dict()["current"]["can_choose_seat"] is True
+
+
+class TestTavoloSvuotatoSenzaG:
+    """Chi imbuca tutte le bilie rimaste ha vinto il rack anche senza premere `G`.
+
+    `TurnState.is_winning()` **memorizza**: `winning_turn` diventa vero la prima
+    volta che qualcuno lo chiede. Fino al 19/09/2026 `to_dict()` leggeva il memo
+    per la chiave `winning` *prima* di chiamare `available_buttons()`, che e'
+    chi lo calcola: alla pagina arrivava `winning: False` insieme a un
+    tastierino vuoto. Risultato a schermo: casella non vinta, la domanda
+    «perché finisce il turno?» e nessun tasto per rispondere.
+    """
+
+    def test_spacca_e_chiude_il_turno_in_corso_risulta_vinto(self):
+        state = TpaState(9)
+        state.annotate("3")
+        state.annotate("9")
+
+        current = state.to_dict()["current"]
+
+        assert current["winning"] is True
+
+    def test_le_ultime_bilie_a_meta_rack(self):
+        state = play([(1, ["1", "3", "M"]), (2, ["4", "S"])])
+        assert state.turn().balls_remaining == 2
+        state.annotate("2")
+
+        described = state.to_dict()
+
+        assert described["current"]["winning"] is True
+        # Coerente col tastierino: a rack vinto non si chiede il perche'.
+        assert TpaButton.MISS not in described["buttons"]
+
+    def test_a_turno_non_vincente_resta_falso(self):
+        state = TpaState(9)
+        state.annotate("1")
+        state.annotate("3")
+
+        assert state.to_dict()["current"]["winning"] is False

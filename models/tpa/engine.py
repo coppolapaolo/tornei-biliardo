@@ -872,7 +872,10 @@ class TpaState:
                 # non deve reimparare la regola.
                 "can_choose_seat": self.can_choose_seat(),
                 "balls_remaining": current.balls_remaining,
-                "winning": current.winning_turn,
+                # `is_winning()`, non il memo `winning_turn`: chi svuota il
+                # tavolo senza premere `G` ha vinto, ma il memo lo scopre solo
+                # quando qualcuno lo chiede — e qui nessuno l'ha ancora fatto.
+                "winning": current.is_winning(),
                 "main_note": current.annotation.main_note(),
                 "secondary_note": current.annotation.secondary_note(),
                 "annotation": current.annotation.to_dict(),
