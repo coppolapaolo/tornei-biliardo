@@ -321,6 +321,108 @@ class TestPunteggioDerivato:
             assert match.player2_confirmed is False
 
 
+class TestCancellaIlTurno:
+    """«Cancella»: via l'annotazione del turno in corso, e solo quella.
+
+    Non e' l'annulla: l'annulla toglie **un** comando, qualunque sia, e puo'
+    riportare il tavolo al giocatore di prima. «Cancella» si ferma al confine
+    del turno — l'ultimo ``end`` o ``seat:`` — perche' serve a chi ha sbagliato
+    a scrivere *questo* turno e vuole riscriverlo da capo.
+    """
+
+    def test_toglie_tutta_l_annotazione_del_turno_in_corso(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            for command in ("1", "3", "M", "end", "2", "S", "x"):
+                TpaRefertoService.press(referto.id, one.id, command)
+
+            state = TpaRefertoService.clear_turn(referto.id, one.id)
+
+            referto = db.session.get(type(referto), referto.id)
+            assert [c.command for c in referto.comandi] == ["1", "3", "M", "end"]
+            # Il tavolo resta a chi c'era: si riscrive il turno, non si torna indietro.
+            assert state.current_player == 2
+            assert state.turn().annotation.total_potted is None
+
+    def test_si_ferma_alla_scelta_di_chi_spacca(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            for command in ("seat:2", "1", "3"):
+                TpaRefertoService.press(referto.id, one.id, command)
+
+            state = TpaRefertoService.clear_turn(referto.id, one.id)
+
+            referto = db.session.get(type(referto), referto.id)
+            assert [c.command for c in referto.comandi] == ["seat:2"]
+            assert state.current_player == 2
+
+    def test_a_turno_bianco_non_c_e_niente_da_cancellare(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+
+            assert (
+                TpaRefertoService.describe(referto, viewer_id=one.id)["can_clear"]
+                is False
+            )
+            with pytest.raises(ConflictError):
+                TpaRefertoService.clear_turn(referto.id, one.id)
+
+            for command in ("1", "3", "M", "end"):
+                TpaRefertoService.press(referto.id, one.id, command)
+            referto = db.session.get(type(referto), referto.id)
+            assert (
+                TpaRefertoService.describe(referto, viewer_id=one.id)["can_clear"]
+                is False
+            )
+            with pytest.raises(ConflictError):
+                TpaRefertoService.clear_turn(referto.id, one.id)
+
+            TpaRefertoService.press(referto.id, one.id, "2")
+            referto = db.session.get(type(referto), referto.id)
+            assert (
+                TpaRefertoService.describe(referto, viewer_id=one.id)["can_clear"]
+                is True
+            )
+
+    def test_cancellare_il_turno_vincente_non_tocca_il_punteggio(self, app, players):
+        """Il triangolo si assegna quando il tavolo passa, non quando si annota:
+        un turno vincente ancora in corso si cancella senza muovere la partita."""
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            for command in ("3", "9"):
+                TpaRefertoService.press(referto.id, one.id, command)
+            assert TpaRefertoService.build_state(referto).turn().is_winning() is True
+            assert db.session.get(IndividualMatch, match.id).player1_score == 0
+
+            state = TpaRefertoService.clear_turn(referto.id, one.id)
+
+            assert state.turn().is_winning() is False
+            assert "3" in state.available_buttons()
+            assert db.session.get(IndividualMatch, match.id).player1_score == 0
+
+    def test_solo_il_compilatore_e_solo_a_referto_aperto(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            TpaRefertoService.press(referto.id, one.id, "1")
+
+            with pytest.raises(PermissionDeniedError):
+                TpaRefertoService.clear_turn(referto.id, two.id)
+
+            TpaRefertoService.close(referto.id, one.id)
+            with pytest.raises((ConflictError, PermissionDeniedError, ValidationError)):
+                TpaRefertoService.clear_turn(referto.id, one.id)
+
+
 class TestRotte:
     """La superficie HTTP."""
 
@@ -369,6 +471,7 @@ class TestRotte:
 
             assert f'data-press-url="{base}/press"' in html
             assert f'data-undo-url="{base}/undo"' in html
+            assert f'data-clear-url="{base}/clear"' in html
             assert f'data-state-url="{base}/state"' in html
             assert f'data-poll-url="/sse/poll/individual_match/{match.id}"' in html
             assert 'data-can-write="true"' in html
@@ -399,6 +502,30 @@ class TestRotte:
             html_due = self._client(app, two).get(base).get_data(as_text=True)
             assert 'data-can-write="false"' in html_due
             assert 'id="tpaChiudiModal"' not in html_due
+            # ...e tiene la nav flottante, che a chi compila lascia il posto
+            # al tastierino agganciato in basso.
+            assert 'class="c7-mobilenav"' in html_due
+            assert 'class="c7-mobilenav"' not in html
+
+    def test_cancella_risponde_con_lo_stato_intero(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            TpaRefertoService.press(referto.id, one.id, "1")
+
+            response = self._client(app, one).post(
+                f"/match/matches/{match.id}/tpa/clear"
+            )
+
+            assert response.status_code == 200
+            state = response.get_json()["state"]
+            assert state["commands"] == 0
+            assert state["can_clear"] is False
+
+            # A turno bianco e' un conflitto, non un errore del server.
+            again = self._client(app, one).post(f"/match/matches/{match.id}/tpa/clear")
+            assert again.status_code == 409
 
     def test_chi_guarda_non_scrive(self, app, players):
         with app.app_context():

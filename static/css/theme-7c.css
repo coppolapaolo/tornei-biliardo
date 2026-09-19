@@ -1864,90 +1864,149 @@ a.c7-bracket__node.is-live:hover { background: var(--c7-accent); filter: brightn
 
 .c7-tpa { display: grid; gap: var(--c7-gap); }
 
-/* --- La riga del giocatore -------------------------------------------- */
+/* --- I due giocatori, una card sola ------------------------------------
+   Direzione «B · Tavolo» del canvas: i due giocatori affiancati dentro una
+   card accento, e dentro ciascuno le sue due caselle del referto. Chi e' al
+   tavolo ha la meta' chiara — e' l'unica cosa che si deve capire da lontano —
+   e l'altra meta' e' un pulsante: toccarla passa il tavolo. */
 
-.c7-tpa-player {
-  display: grid; grid-template-columns: 1fr auto auto;
-  gap: var(--c7-gap); align-items: center;
-  padding: 14px var(--c7-pad-card);
-  border-radius: var(--c7-r-card);
-  background: var(--c7-card); color: var(--c7-ink);
-  border: 1.5px solid transparent;
-  width: 100%; text-align: left; font-family: inherit;
+.c7-tpa-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+.c7-tpa-half {
+  display: block; width: 100%; min-width: 0;
+  border: 0; border-radius: var(--c7-r-control); padding: 12px;
+  background: rgba(242, 248, 247, .08); color: inherit;
+  font-family: inherit; text-align: left;
 }
-/* Chi e' al tavolo adesso. E' l'unica cosa che si deve capire da lontano. */
-.c7-tpa-player--active { background: var(--c7-accent); color: var(--c7-accent-ink); }
-/* Passare il tavolo si fa toccando l'altro: il bordo dice che e' toccabile. */
-button.c7-tpa-player:not(:disabled) { cursor: pointer; border-color: var(--c7-line); }
-button.c7-tpa-player:not(:disabled):hover { background: var(--c7-line-soft); }
-button.c7-tpa-player:disabled { cursor: default; }
-
-.c7-tpa-player__name {
-  display: block; font-size: 15px; font-weight: 800; letter-spacing: -.01em;
+.c7-tpa-half--on { background: var(--c7-accent-bright); color: #0D2A36; }
+/* Il filo chiaro dice che si tocca; il testo in fondo dice cosa succede. */
+.c7-tpa-half--tap {
+  box-shadow: inset 0 0 0 1.5px rgba(242, 248, 247, .28); cursor: pointer;
+  transition: transform var(--c7-dur-quick) var(--c7-ease);
+}
+.c7-tpa-half--tap:active { transform: scale(var(--c7-press)); transition-duration: 0ms; }
+.c7-tpa-half__name {
+  display: block; font-size: 13px; font-weight: 800;
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.c7-tpa-player__meta {
-  display: block; margin-top: 2px;
-  font-family: var(--c7-font-mono); font-size: 11px; font-weight: 600;
-  color: var(--c7-ink-muted); font-variant-numeric: tabular-nums;
+/* Triangoli e TPA alla pari: stessa misura, stesso peso. Sono le cifre
+   protagoniste, quindi Manrope e non mono. */
+.c7-tpa-figs { display: flex; align-items: flex-end; gap: 12px; margin-top: 4px; }
+.c7-tpa-fig { display: block; min-width: 0; }
+.c7-tpa-fig__k {
+  display: block; font-size: 9px; font-weight: 800; letter-spacing: .08em;
+  text-transform: uppercase; opacity: .7;
 }
-.c7-tpa-player--active .c7-tpa-player__meta { color: var(--c7-accent-dim); }
-
-/* Il TPA e' la cifra protagonista: Manrope, non mono. */
-.c7-tpa-player__tpa {
-  font-size: 26px; font-weight: 800; letter-spacing: -.03em;
-  font-variant-numeric: tabular-nums; line-height: 1;
+.c7-tpa-fig__v {
+  display: block; font-size: 34px; font-weight: 800; letter-spacing: -.04em;
+  line-height: 1.05; font-variant-numeric: tabular-nums;
 }
-.c7-tpa-player__racks {
-  min-width: 34px; height: 34px; border-radius: 50%;
-  background: var(--c7-bg); color: var(--c7-ink);
-  display: grid; place-items: center;
-  font-size: 14px; font-weight: 800; font-variant-numeric: tabular-nums;
+.c7-tpa-half__meta { display: block; margin-top: 2px; font-size: 11px; font-weight: 700; opacity: .75; }
+.c7-tpa-half__tap {
+  display: block; margin-top: 8px; font-size: 11px; font-weight: 800;
+  color: var(--c7-accent-bright);
 }
-.c7-tpa-player--active .c7-tpa-player__racks { background: var(--c7-accent-bright); color: var(--c7-ink); }
 
-/* --- Le due caselle del turno ----------------------------------------- */
+/* --- Le due caselle del turno ------------------------------------------
+   Bianca l'annotazione, ombreggiata il fallo. Sopra la bianca, **fuori dal
+   bianco**, la riga del primo tiro di calcio: c'e' sempre, anche vuota,
+   perche' le caselle dei due giocatori restino alla stessa altezza. */
 
-.c7-tpa-boxes { display: grid; grid-template-columns: 1fr 74px; gap: 8px; }
+.c7-tpa-slip { display: grid; grid-template-columns: 1fr 38px; gap: 3px 5px; margin-top: 4px; }
+.c7-tpa-kickrow { min-height: 13px; display: flex; justify-content: center; align-items: flex-end; line-height: 1; }
+.c7-tpa-kick {
+  display: inline-grid; place-items: center; width: 13px; height: 13px; border-radius: 50%;
+  font-size: 9px; font-weight: 800; line-height: 1;
+  box-shadow: inset 0 0 0 1.5px currentColor;
+}
 .c7-tpa-box {
-  min-height: 62px; border-radius: var(--c7-r-control); padding: 8px;
-  /* In riga e allineate alla base, come si scrive a mano nella casella:
-     le bilie della spaccata in apice, poi il totale, poi la lettera. */
-  display: flex; align-items: baseline; justify-content: center; gap: 3px;
-  font-size: 22px; font-weight: 800; letter-spacing: -.02em;
-  font-variant-numeric: tabular-nums;
+  height: 44px; min-width: 0; overflow: hidden; border-radius: var(--c7-r-control); padding: 4px;
+  /* Centrate e sulla stessa riga, come si scrive a mano nella casella. */
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  font-family: var(--c7-font-mono); font-size: 18px; font-weight: 800;
+  letter-spacing: -.02em; font-variant-numeric: tabular-nums;
 }
-.c7-tpa-box--white { background: var(--c7-card); color: var(--c7-ink); }
-.c7-tpa-box--shaded { background: var(--c7-sunken); color: var(--c7-ink-soft); }
-.c7-tpa-box__break { font-size: 12px; align-self: flex-start; color: var(--c7-ink-muted); }
-.c7-tpa-box sup { font-size: 12px; }
-/* Il turno che chiude il rack: cerchiato, come sul foglio. */
-.c7-tpa-box--won { box-shadow: inset 0 0 0 2px var(--c7-ok); }
-.c7-tpa-box__hint { font-size: 12px; font-weight: 700; color: var(--c7-ink-faint); }
+.c7-tpa-box--shaded { font-size: 16px; }
+.c7-tpa-half--on .c7-tpa-box--white { background: var(--c7-card); color: var(--c7-ink); }
+.c7-tpa-half--on .c7-tpa-box--shaded { background: var(--c7-sunken); color: var(--c7-ink-soft); }
+.c7-tpa-box--white { background: rgba(242, 248, 247, .10); }
+.c7-tpa-box--shaded { background: rgba(242, 248, 247, .05); }
+.c7-tpa-box__hint {
+  font-family: var(--c7-font); font-size: 10px; font-weight: 700;
+  letter-spacing: 0; line-height: 1.2; text-align: center; color: var(--c7-ink-faint);
+}
 
-/* --- Il tastierino ----------------------------------------------------- */
+/* La notazione del referto: la spaccata in apice prima del totale, il totale
+   cerchiato quando il turno vince il triangolo, la lettera col suo apice. */
+.c7-tpa-nt { display: inline-flex; align-items: baseline; gap: 4px; white-space: nowrap; }
+.c7-tpa-nt sup {
+  font-size: .62em; font-weight: 800; line-height: 0;
+  position: relative; top: -.55em; vertical-align: baseline;
+}
+.c7-tpa-nt__break { margin-right: -2px; }
+.c7-tpa-nt__balls--won {
+  display: inline-grid; place-items: center; min-width: 1.5em; height: 1.5em;
+  padding: 0 .2em; border-radius: 999px; box-shadow: inset 0 0 0 1.5px currentColor;
+}
+.c7-tpa-nt__foul { margin-left: 6px; }
 
-.c7-tpa-pad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
-.c7-tpa-pad--letters { grid-template-columns: repeat(3, 1fr); }
+/* --- Il tastierino -----------------------------------------------------
+   Uno, sempre tutto visibile, a tre colonne come quello di un telefono: e'
+   quello dell'app Accu-Stats originale. I tasti non ammessi si spengono, non
+   spariscono: le mani imparano dove stanno. */
+
+.c7-tpa-dock { display: grid; gap: 8px; }
+.c7-tpa-pad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .c7-tpa-key {
-  height: var(--c7-touch); border: 0; border-radius: var(--c7-r-control);
+  height: var(--c7-tpa-key-h, var(--c7-touch)); border: 0; border-radius: var(--c7-r-control);
   background: var(--c7-card); color: var(--c7-ink);
-  font-family: inherit; font-size: 17px; font-weight: 800;
+  font-family: inherit; font-size: 17px; font-weight: 800; line-height: 1.05;
   font-variant-numeric: tabular-nums; cursor: pointer;
+  transition: transform var(--c7-dur-quick) var(--c7-ease);
 }
-.c7-tpa-key:hover { background: var(--c7-line-soft); }
+.c7-tpa-key:active:not(:disabled) { transform: scale(var(--c7-press)); transition-duration: 0ms; }
 .c7-tpa-key:disabled { background: var(--c7-sunken); color: var(--c7-ink-faint); cursor: not-allowed; }
+/* La parola sotto la lettera: per chi il referto lo sta imparando. Si spegne
+   da «Cosa vuol dire ogni lettera». */
+.c7-tpa-key__cap {
+  display: block; margin-top: 1px; font-size: 9px; font-weight: 800;
+  letter-spacing: .06em; text-transform: uppercase; color: var(--c7-ink-muted);
+}
+.c7-tpa-key:disabled .c7-tpa-key__cap { color: var(--c7-ink-faint); }
+.c7-tpa--nocap .c7-tpa-key__cap { display: none; }
 /* I falli stanno nella casella ombreggiata anche sul tastierino. */
 .c7-tpa-key--foul { background: var(--c7-sunken); }
-.c7-tpa-key--foul:hover { background: var(--c7-line); }
 /* Chiudere il rack e' la conferma conclusiva del gesto: verde. */
 .c7-tpa-key--game { background: var(--c7-ok-bg); color: var(--c7-ok-ink); }
-.c7-tpa-key--game:hover { background: var(--c7-ok-bg); filter: brightness(.97); }
+.c7-tpa-key--game .c7-tpa-key__cap { color: var(--c7-ok-body); }
 /* Le annotazioni piccole del foglio restano piccole anche qui. */
 .c7-tpa-key--small { font-size: 15px; color: var(--c7-ink-muted); }
 .c7-tpa-key--wide { grid-column: 1 / -1; height: var(--c7-touch); font-size: 14px; }
 .c7-tpa-key--on { background: var(--c7-ok); color: var(--c7-on-ink); }
-.c7-tpa-key--on:hover { background: var(--c7-ok); filter: brightness(1.06); }
+/* «Cancella» non e' un tasto del referto: e' un rimedio, quindi e' un contorno. */
+.c7-tpa-key--clear {
+  background: transparent; border: 1.5px solid var(--c7-line); color: var(--c7-ink-soft);
+}
+.c7-tpa-key--clear:disabled { background: transparent; border-style: dashed; }
+
+/* Sotto lg il tastierino sta agganciato in basso, e la nav flottante gli
+   lascia il posto (il template la toglie a chi compila): chi annota mentre
+   gioca non deve cercarlo scorrendo. L'altezza dei tasti segue lo schermo,
+   perche' su un telefono basso dieci righe da 48px si mangerebbero le card. */
+@media (max-width: 991.98px) {
+  /* Nove righe (quattro di numeri, tre di lettere, il calcio, l'annulla) piu'
+     gli spazi, sotto una testata e una card che insieme fanno ~300px. */
+  .c7-tpa--write { --c7-tpa-key-h: clamp(40px, calc((100dvh - 390px) / 9), 48px); }
+  .c7-tpa--write .c7-tpa-dock {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--c7-z-mobnav);
+    padding: 10px var(--c7-gutter) calc(12px + env(safe-area-inset-bottom, 0px));
+    background: var(--c7-bg); border-top: 1px solid var(--c7-line);
+  }
+  /* Il contenuto sotto (referto, legenda, chiusura) deve poter scorrere fin
+     sopra il tastierino: l'altezza vera la misura `tpa-referto.js`. */
+  body:has(.c7-tpa--write) .c7-main { padding-bottom: calc(var(--c7-tpa-dock-h, 520px) + 16px); }
+  .c7-tpa--write .c7-tpa-key--wide,
+  .c7-tpa--write .c7-undo { height: var(--c7-tpa-key-h); }
+}
 
 .c7-tpa-legend {
   font-size: 12px; font-weight: 600; line-height: 1.5; color: var(--c7-ink-muted);
@@ -1983,15 +2042,6 @@ button.c7-tpa-player:disabled { cursor: default; }
   color: var(--c7-ink-soft); font-variant-numeric: tabular-nums;
 }
 .c7-tpa-sheet__turn--won .c7-tpa-sheet__note { color: var(--c7-ok); }
-
-/* Da 640px in su le due colonne del referto stanno affiancate. */
-@media (min-width: 640px) {
-  /* Solo i numeri: le lettere restano M K S / P G N / n x p, come sul foglio.
-     Senza il :not questa regola, a pari specificita' e scritta dopo, vinceva
-     su `.c7-tpa-pad--letters`. */
-  .c7-tpa-pad:not(.c7-tpa-pad--letters) { grid-template-columns: repeat(6, 1fr); }
-  .c7-tpa-key { height: 54px; font-size: 18px; }
-}
 
 /* --------------------------------------------------------------------------
    Blocco «Come stai andando» (feedback attivita' in home)

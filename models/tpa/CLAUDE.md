@@ -47,6 +47,7 @@ state = TpaRefertoService.press(referto.id, user_id, "M")
 state = TpaRefertoService.press(referto.id, user_id, "end")   # passa il tavolo
 
 TpaRefertoService.undo(referto.id, user_id)     # annulla l'ultimo comando
+TpaRefertoService.clear_turn(referto.id, user_id)  # «cancella»: via l'annotazione del turno in corso
 TpaRefertoService.close(referto.id, user_id)    # da qui si legge e basta
 
 # Per la pagina: stato + nomi + se chi guarda puo' scrivere

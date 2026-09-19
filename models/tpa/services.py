@@ -278,6 +278,51 @@ class TpaRefertoService:
         return state
 
     @staticmethod
+    def _turn_commands(comandi: List[TpaComando]) -> List[TpaComando]:
+        """I comandi del turno in corso: quelli dopo l'ultimo confine di turno.
+
+        Il confine e' un ``end`` (tavolo passato) o un ``seat:`` (scelto chi
+        spacca): tutto cio' che viene dopo e' annotazione di *questo* turno.
+        """
+        tail: List[TpaComando] = []
+        for comando in reversed(comandi):
+            if comando.command == TpaComando.END_TURN or comando.command.startswith(
+                TpaComando.SEAT_PREFIX
+            ):
+                break
+            tail.append(comando)
+        return tail
+
+    @staticmethod
+    @transactional(domain="tpa")
+    def clear_turn(referto_id: int, user_id: int) -> TpaState:
+        """«Cancella»: toglie l'annotazione del turno in corso, tutta insieme.
+
+        Non e' l'annulla. L'annulla toglie un comando qualunque e puo' riportare
+        il tavolo al giocatore di prima; questo si ferma al confine del turno,
+        perche' serve a chi ha scritto male *questo* turno e vuole riscriverlo.
+        Il punteggio non si muove: un triangolo si assegna quando il tavolo
+        passa, e un turno gia' passato non e' piu' «in corso». L'allineamento
+        col match resta comunque, perche' costa niente e non dipende da questo.
+        """
+        referto = db.session.get(TpaReferto, referto_id)
+        if referto is None:
+            raise NotFoundError(_("Referto non trovato"))
+        TpaRefertoService._require_compiler(referto, user_id)
+
+        tail = TpaRefertoService._turn_commands(list(referto.comandi))
+        if not tail:
+            raise ConflictError(_("In questo turno non c'e' niente da cancellare."))
+
+        for comando in tail:
+            db.session.delete(comando)
+            referto.comandi.remove(comando)
+
+        state = TpaRefertoService.build_state(referto)
+        TpaRefertoService._sync_match_score(referto, state)
+        return state
+
+    @staticmethod
     @transactional(domain="tpa")
     def close(referto_id: int, user_id: int) -> TpaReferto:
         """Chiude il referto: da qui in poi si legge e basta."""
@@ -331,6 +376,10 @@ class TpaRefertoService:
             },
         }
         payload["commands"] = len(referto.comandi or [])
+        # «Cancella» ha senso solo se in questo turno qualcosa e' stato scritto.
+        payload["can_clear"] = bool(
+            TpaRefertoService._turn_commands(list(referto.comandi or []))
+        )
         return payload
 
     # ------------------------------------------------------------------
