@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-19 19:02+0200\n"
+"POT-Creation-Date: 2026-09-19 19:13+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -2633,10 +2633,10 @@ msgstr "The scoresheet is closed."
 
 #: models/tpa/services.py:205 models/tpa/services.py:265
 #: models/tpa/services.py:310 models/tpa/services.py:344
-#: models/tpa/services.py:382 routes/individual_match/tpa.py:177
-#: routes/individual_match/tpa.py:201 routes/individual_match/tpa.py:224
-#: routes/individual_match/tpa.py:247 routes/individual_match/tpa.py:278
-#: routes/individual_match/tpa.py:288
+#: models/tpa/services.py:382 routes/individual_match/tpa.py:185
+#: routes/individual_match/tpa.py:209 routes/individual_match/tpa.py:232
+#: routes/individual_match/tpa.py:255 routes/individual_match/tpa.py:286
+#: routes/individual_match/tpa.py:296
 msgid "Referto non trovato"
 msgstr "Scoresheet not found"
 
@@ -3666,10 +3666,10 @@ msgstr ""
 #: routes/individual_match/matches.py:83
 #: routes/individual_match/proposals.py:41
 #: routes/individual_match/proposals.py:69
-#: routes/individual_match/proposals.py:425 routes/individual_match/tpa.py:167
-#: routes/individual_match/tpa.py:188 routes/individual_match/tpa.py:211
-#: routes/individual_match/tpa.py:234 routes/individual_match/tpa.py:265
-#: routes/individual_match/tpa.py:299 routes/individual_match/views.py:34
+#: routes/individual_match/proposals.py:425 routes/individual_match/tpa.py:175
+#: routes/individual_match/tpa.py:196 routes/individual_match/tpa.py:219
+#: routes/individual_match/tpa.py:242 routes/individual_match/tpa.py:273
+#: routes/individual_match/tpa.py:307 routes/individual_match/views.py:34
 #: routes/individual_match/views.py:82
 msgid "Errore interno del server"
 msgstr "Internal server error"
@@ -4349,11 +4349,11 @@ msgstr "Match open: the scoresheet is yours."
 msgid "Partita aperta: segnate pure."
 msgstr "Match open: go ahead and score."
 
-#: routes/individual_match/tpa.py:253
+#: routes/individual_match/tpa.py:261
 msgid "Turno non valido."
 msgstr "Invalid turn."
 
-#: routes/individual_match/tpa.py:294
+#: routes/individual_match/tpa.py:302
 msgid "Referto chiuso."
 msgstr "Scoresheet closed."
 
@@ -8542,6 +8542,7 @@ msgstr "Free text - enter the hours as plain text"
 #: templates/admin/venue_form.html:195
 #: templates/components/_playoff_invitations.html:29
 #: templates/individual_match/statistics.html:80
+#: templates/individual_match/tpa_referto.html:179
 msgid "Posizione"
 msgstr "Position"
 
@@ -12664,7 +12665,7 @@ msgid "Assegna un tavolo"
 msgstr "Assign a table"
 
 #: templates/components/_match_scoreboard.html:97
-msgid "Chiuso in una visita"
+msgid "Chiuso in un turno"
 msgstr "Closed in one visit"
 
 #: templates/components/_match_scoreboard.html:124
@@ -20074,9 +20075,7 @@ msgstr "I'll keep the TPA scoresheet"
 
 #: templates/individual_match/match_detail.html:63
 #: templates/individual_match/quick_match.html:223
-msgid ""
-"Si annota visita per visita e il punteggio viene da lì: niente «+1» a "
-"mano."
+msgid "Si annota turno per turno e il punteggio viene da lì: niente «+1» a mano."
 msgstr "Scored visit by visit, with the score derived from it: no manual “+1”."
 
 #: templates/individual_match/match_detail.html:65
@@ -20629,34 +20628,42 @@ msgid "Errori"
 msgstr "Errors"
 
 #: templates/individual_match/statistics.html:73
+#: templates/individual_match/tpa_referto.html:170
 msgid "Da dove vengono gli errori"
 msgstr "Where the errors come from"
 
 #: templates/individual_match/statistics.html:76
+#: templates/individual_match/tpa_referto.html:178
 msgid "Tiri sbagliati"
 msgstr "Missed shots"
 
 #: templates/individual_match/statistics.html:77
+#: templates/individual_match/tpa_referto.html:181
 msgid "Spaccate"
 msgstr "Breaks"
 
 #: templates/individual_match/statistics.html:78
+#: templates/individual_match/tpa_referto.html:182
 msgid "Tiri di sponda"
 msgstr "Kicks"
 
 #: templates/individual_match/statistics.html:79
+#: templates/individual_match/tpa_referto.html:180
 msgid "Difese"
 msgstr "Safeties"
 
 #: templates/individual_match/statistics.html:93
+#: templates/individual_match/tpa_referto.html:198
 msgid "Spacca e chiude"
 msgstr "Break & runs"
 
 #: templates/individual_match/statistics.html:97
-msgid "Chiuse in una visita"
+#: templates/individual_match/tpa_referto.html:199
+msgid "Chiuse in un turno"
 msgstr "Run-outs"
 
 #: templates/individual_match/statistics.html:101
+#: templates/individual_match/tpa_referto.html:200
 msgid "Triangoli perfetti"
 msgstr "Perfect racks"
 
@@ -20754,14 +20761,14 @@ msgid "Referto TPA"
 msgstr "TPA Scoresheet"
 
 #: templates/individual_match/tpa_referto.html:10
-#: templates/individual_match/tpa_referto.html:194
-#: templates/individual_match/tpa_referto.html:202
+#: templates/individual_match/tpa_referto.html:248
+#: templates/individual_match/tpa_referto.html:256
 msgid "Torna alla sfida"
 msgstr "Back to the match"
 
 #: templates/individual_match/tpa_referto.html:25
-#: templates/individual_match/tpa_referto.html:190
-#: templates/individual_match/tpa_referto.html:225
+#: templates/individual_match/tpa_referto.html:244
+#: templates/individual_match/tpa_referto.html:279
 msgid "Chiudi il referto"
 msgstr "Close the scoresheet"
 
@@ -20775,15 +20782,11 @@ msgstr "Keep the scoresheet for this match"
 
 #: templates/individual_match/tpa_referto.html:47
 msgid ""
-"Invece dei soli triangoli vinti, annoti ogni visita al tavolo: quante "
+"Invece dei soli triangoli vinti, annoti ogni turno al tavolo: quante "
 "bilie sono entrate e perché il turno è finito. Da lì esce il TPA, la "
 "percentuale di azioni riuscite — lo stesso conto che Accu-Stats usa per i"
 " professionisti."
-msgstr ""
-"Instead of just the racks won, you record every visit to the table: how "
-"many balls went in and why the inning ended. That is where the TPA comes "
-"from — the share of successful actions, the same figure Accu-Stats uses "
-"for the professionals."
+msgstr "Instead of just the racks won, you record every visit to the table: how many balls went in and why the inning ended. That is where the TPA comes from — the share of successful actions, the same figure Accu-Stats uses for the professionals."
 
 #: templates/individual_match/tpa_referto.html:50
 msgid ""
@@ -20799,14 +20802,22 @@ msgstr ""
 msgid "Apri il referto"
 msgstr "Start the scoresheet"
 
-#: templates/individual_match/tpa_referto.html:73
-msgid "Referto chiuso: da qui si legge e basta."
-msgstr "Scoresheet closed: from here on it is read-only."
-
-#: templates/individual_match/tpa_referto.html:79
+#: templates/individual_match/tpa_referto.html:75
 #, python-format
 msgid "Il referto lo tiene %(name)s. Qui lo vedi aggiornarsi."
 msgstr "%(name)s is keeping the scoresheet. Here you can watch it fill in."
+
+#: templates/individual_match/tpa_referto.html:93
+msgid "spacca e chiude"
+msgstr "break and run"
+
+#: templates/individual_match/tpa_referto.html:94
+msgid "Apri tutti"
+msgstr "Expand all"
+
+#: templates/individual_match/tpa_referto.html:95
+msgid "Chiudi tutti"
+msgstr "Collapse all"
 
 #: templates/individual_match/tpa_referto.html:97
 #, python-brace-format
@@ -20920,82 +20931,102 @@ msgid "si riannota"
 msgstr "to be re-recorded"
 
 #: templates/individual_match/tpa_referto.html:128
-msgid "Ha chiuso in una sola visita?"
+msgid "Ha chiuso in un solo turno?"
 msgstr "Did they run out in one visit?"
 
 #: templates/individual_match/tpa_referto.html:129
-msgid "Chiusa in una sola visita"
+msgid "Chiuso in un solo turno"
 msgstr "Ran out in one visit"
 
-#: templates/individual_match/tpa_referto.html:159
+#: templates/individual_match/tpa_referto.html:165
+msgid "Referto chiuso"
+msgstr "Scoresheet closed"
+
+#: templates/individual_match/tpa_referto.html:167
+#, python-format
+msgid "%(num)s triangolo giocato"
+msgid_plural "%(num)s triangoli giocati"
+msgstr[0] "%(num)s rack played"
+msgstr[1] "%(num)s racks played"
+
+#: templates/individual_match/tpa_referto.html:173
+#: templates/individual_match/tpa_referto.html:193
+msgid "Voce"
+msgstr "Item"
+
+#: templates/individual_match/tpa_referto.html:190
+msgid "I triangoli migliori"
+msgstr "Best racks"
+
+#: templates/individual_match/tpa_referto.html:210
 msgid "Cosa vuol dire ogni lettera"
 msgstr "What each letter means"
 
-#: templates/individual_match/tpa_referto.html:161
+#: templates/individual_match/tpa_referto.html:212
 msgid "sbagli un tiro d'attacco"
 msgstr "you miss a shot you meant to pot"
 
-#: templates/individual_match/tpa_referto.html:162
+#: templates/individual_match/tpa_referto.html:213
 msgid "tiro di sponda obbligato, non vedi la bilia"
 msgstr "forced rail-first shot: you cannot see the ball"
 
-#: templates/individual_match/tpa_referto.html:163
+#: templates/individual_match/tpa_referto.html:214
 msgid "giochi di difesa"
 msgstr "you play a safety"
 
-#: templates/individual_match/tpa_referto.html:164
+#: templates/individual_match/tpa_referto.html:215
 msgid "battente in buca o fuori dal tavolo"
 msgstr "cue ball pocketed or off the table"
 
-#: templates/individual_match/tpa_referto.html:165
+#: templates/individual_match/tpa_referto.html:216
 msgid "con questo turno vinci il triangolo: sul referto è un cerchio"
 msgstr "this inning wins the rack: on the scoresheet it is a circle"
 
-#: templates/individual_match/tpa_referto.html:166
+#: templates/individual_match/tpa_referto.html:217
 msgid "non colpisci la bilia designata"
 msgstr "you fail to hit the lowest ball legally"
 
-#: templates/individual_match/tpa_referto.html:167
+#: templates/individual_match/tpa_referto.html:218
 msgid "il tiro sbagliato era facile: vale doppio"
 msgstr "the missed shot was an easy one: counts double"
 
-#: templates/individual_match/tpa_referto.html:168
+#: templates/individual_match/tpa_referto.html:219
 msgid "difesa premeditata: niente errore di posizione"
 msgstr "planned safety: no position error"
 
-#: templates/individual_match/tpa_referto.html:169
+#: templates/individual_match/tpa_referto.html:220
 msgid "push out"
 msgstr "push out"
 
-#: templates/individual_match/tpa_referto.html:170
+#: templates/individual_match/tpa_referto.html:221
 msgid "sopra la casella: primo tiro di calcio, col numero di chi tira"
 msgstr "above the box: kicked in on the first shot, with the shooter’s number"
 
-#: templates/individual_match/tpa_referto.html:171
+#: templates/individual_match/tpa_referto.html:222
 msgid "una bilia in spaccata, quattro in tutto"
 msgstr "one ball on the break, four in total"
 
-#: templates/individual_match/tpa_referto.html:176
+#: templates/individual_match/tpa_referto.html:227
 msgid "Mostra la parola sotto le lettere del tastierino"
 msgstr "Show the word under the keypad letters"
 
-#: templates/individual_match/tpa_referto.html:182
+#: templates/individual_match/tpa_referto.html:234
 msgid "Referto"
 msgstr "Scoresheet"
 
-#: templates/individual_match/tpa_referto.html:218
+#: templates/individual_match/tpa_referto.html:272
 msgid "Chiudere il referto?"
 msgstr "Close the scoresheet?"
 
-#: templates/individual_match/tpa_referto.html:219
+#: templates/individual_match/tpa_referto.html:273
 msgid "Dopo non si annota più."
 msgstr "Nothing can be recorded afterwards."
 
-#: templates/individual_match/tpa_referto.html:227
+#: templates/individual_match/tpa_referto.html:281
 msgid "Continua ad annotare"
 msgstr "Keep recording"
 
-#: templates/individual_match/tpa_referto.html:242
+#: templates/individual_match/tpa_referto.html:296
 msgid ""
 "Il turno si riapre vuoto e quelli scritti dopo escono dal referto. "
 "Triangoli e TPA si ricalcolano fin qui."
@@ -21003,7 +21034,7 @@ msgstr ""
 "The turn reopens empty and the ones recorded after it leave the "
 "scoresheet. Racks and TPA are recalculated up to here."
 
-#: templates/individual_match/tpa_referto.html:247
+#: templates/individual_match/tpa_referto.html:301
 msgid "Resta a guardare"
 msgstr "Keep reviewing"
 

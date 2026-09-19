@@ -1005,6 +1005,111 @@ class TestStatisticheDiCarriera:
             assert ".1000".encode() not in response.data
 
 
+class TestRefertoChiuso:
+    """Il referto chiuso e' un racconto: chi ha vinto, da dove sono venuti gli
+    errori, i triangoli chiusi in un turno.
+
+    I numeri non si contano di nuovo: sono i contatori del motore, passati dal
+    servizio delle statistiche.
+    """
+
+    PARTITA = (
+        ("3", "9", "end")  # P1 spacca e chiude                       -> 1-0
+        + ("0", "end", "9", "end")  # P2 spacca a vuoto, P1 le imbuca tutte -> 2-0
+        + ("1", "4", "M", "end", "2", "S", "end", "3", "end")  # -> 2-1
+    )
+
+    def _referto_chiuso(self, one, two):
+        match = _match(one, two)
+        referto = TpaRefertoService.open_referto(match.id, one.id)
+        for command in self.PARTITA:
+            TpaRefertoService.press(referto.id, one.id, command)
+        TpaRefertoService.close(referto.id, one.id)
+        return match, db.session.get(type(referto), referto.id)
+
+    def test_il_riepilogo_porta_i_contatori_del_motore(self, app, players):
+        from models.tpa.engine import total_errors, tpa_score
+        from models.tpa.stats_service import TpaStatsService
+
+        with app.app_context():
+            one, two = players
+            match, referto = self._referto_chiuso(one, two)
+            state = TpaRefertoService.build_state(referto)
+
+            summary = TpaStatsService.referto_summary(referto)
+
+            assert summary["racks_played"] == 3
+            for seat in (1, 2):
+                tally = state.tally(seat)
+                mine = summary["players"][seat]
+                assert mine["racks_won"] == tally.racks_won
+                assert mine["tpa"] == tpa_score(tally)
+                assert mine["balls_potted"] == tally.balls_potted
+                assert mine["errors"] == total_errors(tally)
+                assert mine["errors_by_kind"] == {
+                    "miss": tally.miss_errors,
+                    "break": tally.break_errors,
+                    "kick": tally.kick_errors,
+                    "safety": tally.safety_errors,
+                    "position": tally.position_errors,
+                }
+            assert summary["players"][1]["name"] == one.username
+            assert summary["winner"] == 1
+
+    def test_chiuso_in_un_turno_comprende_lo_spacca_e_chiude(self, app, players):
+        """Nel motore i due contatori sono disgiunti; per chi gioca lo «spacca e
+        chiude» e' un triangolo chiuso in un turno come gli altri, quindi il
+        numero mostrato e' la somma. Stampare il solo `run_outs` ne perde uno."""
+        from models.tpa.stats_service import TpaStatsService
+
+        with app.app_context():
+            one, two = players
+            match, referto = self._referto_chiuso(one, two)
+            tally = TpaRefertoService.build_state(referto).tally(1)
+            assert (tally.break_and_runs, tally.run_outs) == (1, 1)
+
+            mine = TpaStatsService.referto_summary(referto)["players"][1]
+            assert mine["break_and_runs"] == 1
+            assert mine["closed_in_one_turn"] == 2
+
+            # Stessa regola nel riepilogo di carriera.
+            career = TpaStatsService.career_stats(one.id)
+            assert career["closed_in_one_turn"] == 2
+
+    def test_la_pagina_chiusa_racconta_e_non_offre_il_tastierino(self, app, players):
+        with app.app_context():
+            one, two = players
+            match, referto = self._referto_chiuso(one, two)
+
+            html = (
+                TestRotte._client(app, one)
+                .get(f"/match/matches/{match.id}/tpa")
+                .get_data(as_text=True)
+            )
+
+            assert "Da dove vengono gli errori" in html
+            assert "Chiuse in un turno" in html
+            assert 'id="tpaRefertoChiuso"' in html
+            assert 'id="tpaDock"' not in html
+            assert 'data-closed="true"' in html
+
+    def test_in_parita_non_c_e_un_vincitore(self, app, players):
+        from models.tpa.stats_service import TpaStatsService
+
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            TpaRefertoService.close(referto.id, one.id)
+
+            summary = TpaStatsService.referto_summary(
+                db.session.get(type(referto), referto.id)
+            )
+            assert summary["winner"] is None
+            assert summary["racks_played"] == 0
+            assert summary["players"][1]["tpa"] is None
+
+
 class TestChiSpaccaSiSceglieUnaVoltaSola:
     """Il posto in spaccata non si cambia a spaccata gia' annotata.
 
