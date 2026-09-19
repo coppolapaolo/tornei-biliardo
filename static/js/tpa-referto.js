@@ -98,13 +98,57 @@
     const CURRENT_USER_ID = Number(dati.currentUserId);
     const CAN_WRITE = dati.canWrite === 'true';
     const ricarica = opzioni.ricarica || function () { root.location.reload(); };
+    /* Il foglio e' un modal di Bootstrap: aprirlo e chiuderlo e' l'unica cosa
+       che qui dipende da Bootstrap, e nei test la sostituisce un finto. */
+    const foglio = opzioni.foglio || {
+      apri: (node) => root.bootstrap.Modal.getOrCreateInstance(node).show(),
+      chiudi: (node) => root.bootstrap.Modal.getOrCreateInstance(node).hide()
+    };
 
     let state = JSON.parse(doc.getElementById('tpaStato').textContent);
 
     const el = (id) => doc.getElementById(id);
 
     function seatOf(n) { return state.players[n] || state.players[String(n)] || {}; }
-    function tallyOf(n) { return state.score[n] || state.score[String(n)] || {}; }
+
+    /* Rileggere il referto e' una **vista**: sta tutta qui, nel browser, e non
+       tocca ne' il registro ne' il punteggio (ADR-044, emendamento del
+       19/09/2026). `leggendo` e' l'indice del turno che si sta rileggendo fra
+       tutti i turni della partita messi in fila; `null` vuol dire «il turno in
+       corso», ed e' l'unico stato in cui si scrive. */
+    let leggendo = null;
+
+    function allTurns() {
+      const all = [];
+      (state.racks || []).forEach((rack) => {
+        rack.turns.forEach((turn, index) => all.push({ rack: rack.number, index: index, turn: turn }));
+      });
+      return all;
+    }
+
+    function view() {
+      const all = allTurns();
+      const total = Math.max(all.length, 1);
+      if (leggendo === null || leggendo >= all.length - 1) {
+        leggendo = null;
+        return {
+          live: true, position: total, total: total, all: all,
+          turn: state.current, rack: state.current_rack, index: Infinity,
+          player: state.current_player, score: state.score
+        };
+      }
+      const at = all[leggendo];
+      return {
+        live: false, position: leggendo + 1, total: total, all: all,
+        turn: at.turn, rack: at.rack, index: at.index,
+        player: at.turn.player,
+        /* Il punteggio di allora: la fotografia che il motore ha scattato
+           subito dopo quel turno. */
+        score: at.turn.score_snapshot || state.score
+      };
+    }
+
+    function tallyOf(score, n) { return score[n] || score[String(n)] || {}; }
 
     function span(className, text) {
       const node = doc.createElement('span');
@@ -125,27 +169,26 @@
     /* L'ultimo turno giocato da un posto in questo triangolo: e' quello che
        resta scritto nella card di chi non e' al tavolo. A triangolo nuovo non
        c'e', e le caselle restano bianche. */
-    function lastTurnOf(seat) {
-      const racks = state.racks || [];
-      const rack = racks.filter((r) => r.number === state.current_rack)[0];
+    function lastTurnOf(seat, v) {
+      const rack = (state.racks || []).filter((r) => r.number === v.rack)[0];
       if (!rack) return null;
-      for (let i = rack.turns.length - 1; i >= 0; i--) {
+      for (let i = Math.min(rack.turns.length, v.index) - 1; i >= 0; i--) {
         const turn = rack.turns[i];
         if (turn.player === seat && has(turn.annotation.total_potted)) return turn;
       }
       return null;
     }
 
-    function renderPlayers() {
+    function renderPlayers(v) {
       const players = el('tpaPlayers');
       players.textContent = '';
       [1, 2].forEach((seat) => {
-        const tally = tallyOf(seat);
-        const active = state.current_player === seat;
+        const tally = tallyOf(v.score, seat);
+        const active = v.player === seat;
         const name = seatOf(seat).name || ('#' + seat);
         /* Il proprio riquadro non si tocca: si tocca quello dell'altro, ed
            e' quello il gesto che passa il tavolo. */
-        const tappable = CAN_WRITE && !active && state.can_switch_player;
+        const tappable = CAN_WRITE && v.live && !active && state.can_switch_player;
         const node = doc.createElement(tappable ? 'button' : 'div');
         node.className = 'c7-tpa-half' +
           (active ? ' c7-tpa-half--on' : '') + (tappable ? ' c7-tpa-half--tap' : '');
@@ -170,12 +213,12 @@
         const errors = tally.total_errors || 0;
         let meta = balls + ' ' + (balls === 1 ? dati.etBilia : dati.etBilie) +
           ' · ' + errors + ' ' + (errors === 1 ? dati.etErroreUno : dati.etErrori);
-        if (active) meta = (state.current.is_break ? dati.etSpacca : dati.etAlTavolo) + ' · ' + meta;
+        if (active) meta = (v.turn.is_break ? dati.etSpacca : dati.etAlTavolo) + ' · ' + meta;
         node.appendChild(span('c7-tpa-half__meta', meta));
 
         /* Le due caselle del referto, dentro la card di ciascuno. Chi e' al
            tavolo ci vede il turno che sta scrivendo, l'altro il suo ultimo. */
-        const turn = active ? state.current : lastTurnOf(seat);
+        const turn = active ? v.turn : lastTurnOf(seat, v);
         const slip = span('c7-tpa-slip');
         /* La riga del calcio c'e' sempre, anche vuota: senza, le caselle dei
            due giocatori finirebbero a due altezze diverse. */
@@ -196,7 +239,7 @@
              bianca si chiedono le bilie. Dopo, il suggerimento sono le lettere che si accendono —
              una frase qui andrebbe a capo e le caselle dei due giocatori
              finirebbero a due altezze diverse. */
-          if (CAN_WRITE && active && !has(turn.annotation.total_potted)) {
+          if (CAN_WRITE && v.live && active && !has(turn.annotation.total_potted)) {
             white.appendChild(span('c7-tpa-box__hint', dati.etQuante));
           }
           shaded.textContent = turn.secondary_note || '';
@@ -213,18 +256,19 @@
       });
     }
 
-    function renderPad() {
+    function renderPad(v) {
       if (!CAN_WRITE) return;
       const numbers = el('tpaNumbers');
       const letters = el('tpaLetters');
       numbers.textContent = '';
       letters.textContent = '';
-      const available = state.buttons || [];
+      /* Mentre si rilegge non si scrive: il tastierino resta dov'e', spento. */
+      const available = v.live ? (state.buttons || []) : [];
       const allowed = (b) => available.indexOf(b) >= 0;
 
       /* «Cancella» sta nel posto vuoto accanto allo 0: toglie l'annotazione
          di questo turno, tutta. Non e' l'annulla, che toglie un tocco solo. */
-      const clear = key('clear', '×', 'c7-tpa-key c7-tpa-key--clear', !!state.can_clear, dati.etCancella);
+      const clear = key('clear', '×', 'c7-tpa-key c7-tpa-key--clear', v.live && !!state.can_clear, dati.etCancella);
       clear.setAttribute('aria-label', dati.etCancellaAria);
       numbers.appendChild(clear);
       numbers.appendChild(key('0', '0', 'c7-tpa-key', allowed('0')));
@@ -239,6 +283,14 @@
         letters.appendChild(key(command, command, className, allowed(command), caption ? dati[caption] : null));
       });
 
+      if (!v.live) {
+        /* Da un turno del passato si puo' solo ripartire, e dopo una conferma. */
+        const restart = key('restart', dati.etRiparti, 'c7-tpa-key c7-tpa-key--wide c7-tpa-key--restart', false);
+        restart.disabled = false;
+        restart.addEventListener('click', () => askRestart(v));
+        letters.appendChild(restart);
+        return;
+      }
       letters.appendChild(key('K-in', dati.etKickIn, 'c7-tpa-key c7-tpa-key--wide', allowed('K-in')));
       /* Il run-out si chiede solo quando e' ambiguo: capita di rado, e un
          tasto spento in piu' tutto il resto del tempo sarebbe solo rumore. */
@@ -315,12 +367,63 @@
       });
     }
 
+    function renderHistory(v) {
+      const back = el('tpaIndietro');
+      if (!back) return;
+      const fill = (text) => text.replace('{n}', v.position).replace('{m}', v.total);
+      el('tpaPosizione').textContent = fill(dati.etPosizione);
+      back.disabled = v.position <= 1;
+      el('tpaAvanti').disabled = v.live;
+      const reading = el('tpaRileggi');
+      reading.hidden = v.live;
+      reading.textContent = v.live ? '' : fill(dati.etRileggi);
+      host.classList.toggle('c7-tpa--reading', !v.live);
+    }
+
+    function step(delta) {
+      const v = view();
+      const next = v.position - 1 + delta;
+      if (next < 0 || next > v.total - 1) return;
+      leggendo = next;
+      render();
+    }
+
+    /* Il foglio di conferma nomina cio' che esce dal referto: il turno che si
+       riapre vuoto, e sotto i turni gia' scritti che vengono dopo. Quello in
+       corso, se e' ancora bianco, non e' una perdita e non compare. */
+    let pending = null;
+    function askRestart(v) {
+      pending = { rack: v.rack, turn: v.index + 1 };
+      el('tpaRipartiTitolo').textContent = dati.etRipartiTitolo.replace('{n}', v.position);
+      el('tpaRipartiConferma').textContent = dati.etRipartiConferma.replace('{n}', v.position);
+      const list = el('tpaRipartiElenco');
+      list.textContent = '';
+      v.all.slice(v.position - 1).forEach((item, offset) => {
+        const written = has(item.turn.annotation.total_potted) || has(item.turn.annotation.break_potted);
+        if (offset > 0 && !written) return;
+        const row = span('c7-tpa-sheet__turn' + (offset > 0 ? ' c7-tpa-out' : ''));
+        row.appendChild(span('c7-tpa-sheet__seat', item.turn.player));
+        row.appendChild(span('c7-tpa-sheet__who', seatOf(item.turn.player).name || ('#' + item.turn.player)));
+        const note = span('c7-tpa-sheet__note');
+        if (offset === 0) {
+          note.textContent = dati.etSiRiannota;
+          note.className += ' c7-tpa-sheet__note--text';
+        } else {
+          note.appendChild(notationNode(doc, item.turn));
+          if (item.turn.secondary_note) note.appendChild(span('c7-tpa-nt__foul', item.turn.secondary_note));
+        }
+        row.appendChild(note);
+        list.appendChild(row);
+      });
+      foglio.apri(el('tpaRipartiModal'));
+    }
+
     function render() {
-      renderPlayers();
-      renderPad();
+      const v = view();
+      renderPlayers(v);
+      renderPad(v);
       renderSheet();
-      const undo = el('tpaUndo');
-      if (undo) undo.disabled = !state.commands;
+      renderHistory(v);
     }
 
     let busy = false;
@@ -336,6 +439,7 @@
         .then((data) => {
           if (data.success && data.state) {
             state = data.state;
+            leggendo = null;
             render();
           } else {
             root.showError(data.message || dati.etErrore);
@@ -345,8 +449,15 @@
         .finally(() => { busy = false; });
     }
 
-    const undoButton = el('tpaUndo');
-    if (undoButton) undoButton.addEventListener('click', () => send(dati.undoUrl, {}));
+    if (el('tpaIndietro')) {
+      el('tpaIndietro').addEventListener('click', () => step(-1));
+      el('tpaAvanti').addEventListener('click', () => step(1));
+      el('tpaRipartiConferma').addEventListener('click', () => {
+        foglio.chiudi(el('tpaRipartiModal'));
+        if (pending) send(dati.restartUrl, pending);
+        pending = null;
+      });
+    }
 
     function refresh() {
       root.fetch(dati.stateUrl)
@@ -354,6 +465,7 @@
         .then((data) => {
           if (data.success && data.state) {
             state = data.state;
+            leggendo = null;
             render();
             /* Il referto e' stato chiuso mentre lo guardavi: da qui in
                poi la pagina e' un'altra cosa, e va ripresa dal server. */

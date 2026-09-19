@@ -1988,14 +1988,47 @@ a.c7-bracket__node.is-live:hover { background: var(--c7-accent); filter: brightn
 }
 .c7-tpa-key--clear:disabled { background: transparent; border-style: dashed; }
 
+/* «Riparti da questo turno…» non e' un tasto del referto: e' l'uscita dalla
+   rilettura, quindi ha il tono dell'avviso e non quello di una lettera. */
+.c7-tpa-key--restart { background: var(--c7-warn-bg); color: var(--c7-warn-ink); }
+
+/* --- Indietro e avanti nel referto -------------------------------------
+   Scorrere e' una vista: qui non si scrive, e la riga sopra le card lo dice.
+   Mentre si rilegge le card si spengono di un tono, perche' a colpo d'occhio
+   non sembrino la partita di adesso. */
+.c7-tpa-hist { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: center; }
+.c7-tpa-hist__btn {
+  height: var(--c7-tpa-key-h, var(--c7-touch)); border-radius: var(--c7-r-pill);
+  border: 1.5px solid var(--c7-line); background: transparent; color: var(--c7-ink-soft);
+  font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.c7-tpa-hist__btn:disabled { color: var(--c7-ink-faint); border-style: dashed; cursor: not-allowed; }
+.c7-tpa-hist__pos {
+  padding: 0 4px; white-space: nowrap;
+  font-family: var(--c7-font-mono); font-size: 11px; font-weight: 700; color: var(--c7-ink-muted);
+}
+.c7-tpa-reading {
+  margin: 0; font-size: 11px; font-weight: 800; letter-spacing: .06em;
+  text-transform: uppercase; color: var(--c7-warn-ink);
+}
+.c7-tpa--reading .c7-tpa-duo { opacity: .82; }
+/* Nel foglio di conferma, i turni che escono dal referto. */
+/* Il barrato va messo sui pezzi: la decorazione del padre non entra negli
+   elementi `inline-flex` della notazione. */
+.c7-tpa-out .c7-tpa-sheet__note { color: var(--c7-ink-muted); }
+.c7-tpa-out .c7-tpa-sheet__note span,
+.c7-tpa-out .c7-tpa-sheet__note sup { text-decoration: line-through; }
+.c7-tpa-sheet__note--text { font-family: var(--c7-font); color: var(--c7-ink-muted); }
+
 /* Sotto lg il tastierino sta agganciato in basso, e la nav flottante gli
    lascia il posto (il template la toglie a chi compila): chi annota mentre
    gioca non deve cercarlo scorrendo. L'altezza dei tasti segue lo schermo,
    perche' su un telefono basso dieci righe da 48px si mangerebbero le card. */
 @media (max-width: 991.98px) {
   /* Nove righe (quattro di numeri, tre di lettere, il calcio, l'annulla) piu'
-     gli spazi, sotto una testata e una card che insieme fanno ~300px. */
-  .c7-tpa--write { --c7-tpa-key-h: clamp(40px, calc((100dvh - 390px) / 9), 48px); }
+     gli spazi, sotto una testata, la riga «Rileggi…» e una card che insieme fanno ~330px. */
+  .c7-tpa--write { --c7-tpa-key-h: clamp(40px, calc((100dvh - 420px) / 9), 48px); }
   .c7-tpa--write .c7-tpa-dock {
     position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--c7-z-mobnav);
     padding: 10px var(--c7-gutter) calc(12px + env(safe-area-inset-bottom, 0px));
@@ -2004,8 +2037,7 @@ a.c7-bracket__node.is-live:hover { background: var(--c7-accent); filter: brightn
   /* Il contenuto sotto (referto, legenda, chiusura) deve poter scorrere fin
      sopra il tastierino: l'altezza vera la misura `tpa-referto.js`. */
   body:has(.c7-tpa--write) .c7-main { padding-bottom: calc(var(--c7-tpa-dock-h, 520px) + 16px); }
-  .c7-tpa--write .c7-tpa-key--wide,
-  .c7-tpa--write .c7-undo { height: var(--c7-tpa-key-h); }
+  .c7-tpa--write .c7-tpa-key--wide { height: var(--c7-tpa-key-h); }
 }
 
 .c7-tpa-legend {

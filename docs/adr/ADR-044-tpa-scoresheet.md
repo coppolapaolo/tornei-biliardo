@@ -204,6 +204,51 @@ confine fra un set e l'altro, e forzarcelo dentro sarebbe stato inventare.
 | Aperto a tutti, senza sblocco | Compilarlo mentre si gioca è un mestiere: proposto troppo presto è rumore |
 | Terzo utente statistico a bordo tavolo | Inviti e permessi nuovi per un caso che oggi non si verifica |
 
+## Emendamento del 2026-09-19 · rileggere il referto, e ripartire da un turno
+
+Il redesign del referto chiedeva due rimedi distinti: cancellare l'annotazione
+che si sta scrivendo, e tornare indietro nel referto fino a poter ricominciare
+da un punto del passato.
+
+**Rileggere è una vista, non uno stato.** «Indietro» e «Avanti» scorrono i
+turni nel browser, con i dati che la pagina ha già: lo stato porta tutti i
+turni, e ognuno ha la fotografia del punteggio scattata subito dopo
+(`score_snapshot`). Non si chiama il server, non si scrive niente, e mentre si
+rilegge il tastierino è spento. È quello che fa l'app originale, che in
+lettura scorre e per scrivere pretende un passo a parte.
+
+**Ripartire è un comando, ed è l'unico che scrive.** «Riparti da questo
+turno…» apre un foglio che nomina i turni che escono; alla conferma
+`TpaRefertoService.restart_from_turn` tronca il registro all'inizio di quel
+turno, che si riapre vuoto. Il turno si trova *rigiocando*: di ogni comando si
+guarda in che turno cadeva. Resta la scelta di chi spacca, che è un'altra
+decisione.
+
+**Scartato: un cursore salvato sul registro**, con i comandi oltre il cursore
+tenuti finché un comando nuovo non li tronca — l'undo/redo di un editor. Tre
+motivi:
+
+1. Il punteggio del match discende dal referto. Con un cursore salvato,
+   scorrere indietro *sposterebbe la partita*: triangoli tolti e rimessi,
+   conferme azzerate, la pagina dell'avversario che cambia — per un gesto che
+   chi lo fa considera «sto solo guardando».
+2. Sarebbe una posizione salvata accanto ai dati da cui si ricava, cioè
+   esattamente ciò che questo ADR vieta: può restare indietro, e un referto col
+   cursore a metà non si sa più quanti turni ha.
+3. La troncatura implicita — «il primo tasto dopo essere tornati indietro
+   cancella il futuro» — toglie turni senza dirlo. Qui si toglie solo dopo un
+   foglio che li elenca.
+
+Il prezzo: dopo una ripartenza non c'è un «rifai». È lo stesso prezzo
+dell'annulla di prima, con in più una conferma che prima non c'era.
+
+**«Cancella»** (`clear_turn`) è il rimedio piccolo: toglie i comandi del turno
+in corso, cioè quelli dopo l'ultimo `end` o `seat:`, e il tavolo resta a chi
+c'era. Non può muovere il punteggio, perché un triangolo si assegna quando il
+tavolo passa. L'annulla di un solo tocco (`undo`) resta nel servizio e nella
+route, ma l'interfaccia non lo usa più: fra «cancella» e «riparti» non gli
+resta un caso suo.
+
 ## Riferimenti
 
 - `models/tpa/engine.py` — le regole, con le divergenze documentate in testa

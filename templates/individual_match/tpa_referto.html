@@ -72,7 +72,7 @@
        niente e `|tojson` non serve. #}
     <section class="c7-tpa{{ ' c7-tpa--write' if state.can_write }}" id="tpaReferto"
              data-press-url="{{ url_for('individual_match.tpa_press', match_id=match.id) }}"
-             data-undo-url="{{ url_for('individual_match.tpa_undo', match_id=match.id) }}"
+             data-restart-url="{{ url_for('individual_match.tpa_restart', match_id=match.id) }}"
              data-clear-url="{{ url_for('individual_match.tpa_clear', match_id=match.id) }}"
              data-state-url="{{ url_for('individual_match.tpa_state', match_id=match.id) }}"
              data-poll-url="{{ url_for('sse.poll_individual_match', match_id=match.id) }}"
@@ -103,12 +103,21 @@
              data-et-cap-n="{{ _('non colpita') }}"
              data-et-kick-in="{{ _('Primo tiro di calcio?') }}"
              data-et-kick-in-aria="{{ _('primo tiro di calcio del giocatore {n}') }}"
+             {# `{n}` e `{m}` li sostituisce il JavaScript. #}
+             data-et-posizione="{{ _('turno {n} di {m}') }}"
+             data-et-rileggi="{{ _('Rileggi il turno {n} di {m} · qui non si scrive') }}"
+             data-et-riparti="{{ _('Riparti da questo turno…') }}"
+             data-et-riparti-titolo="{{ _('Ripartire dal turno {n}?') }}"
+             data-et-riparti-conferma="{{ _('Riparti dal turno {n}') }}"
+             data-et-si-riannota="{{ _('si riannota') }}"
              data-et-runout-chiedi="{{ _('Ha chiuso in una sola visita?') }}"
              data-et-runout-si="{{ _('Chiusa in una sola visita') }}">
       <script type="application/json" id="tpaStato">{{ state|tojson }}</script>
       {# I riquadri dei giocatori e il tastierino li disegna il JavaScript e li
          svuota a ogni tocco: le ancore dell'aiuto (`data-help`) stanno su
          involucri stabili. #}
+      {# Compare solo mentre si rilegge un turno del passato. #}
+      <p class="c7-tpa-reading" id="tpaRileggi" hidden></p>
       <div data-help="referto-passa-tavolo">
         <div id="tpaPlayers" class="c7-card c7-card--accent c7-tpa-duo"></div>
       </div>
@@ -120,7 +129,14 @@
           <div class="c7-tpa-pad" id="tpaNumbers"></div>
           <div class="c7-tpa-pad" id="tpaLetters"></div>
         </div>
-        <button type="button" class="c7-undo" id="tpaUndo" data-help="referto-annulla">{{ _('Annulla l\'ultimo tocco') }}</button>
+        {# Indietro e avanti scorrono i turni e non scrivono niente: e' una
+           vista. Si scrive solo dal turno in corso, o ripartendo da uno del
+           passato dopo la conferma del foglio qui sotto. #}
+        <div class="c7-tpa-hist" data-help="referto-annulla">
+          <button type="button" class="c7-tpa-hist__btn" id="tpaIndietro"><i class="fas fa-chevron-left" aria-hidden="true"></i> {{ _('Indietro') }}</button>
+          <span class="c7-tpa-hist__pos" id="tpaPosizione"></span>
+          <button type="button" class="c7-tpa-hist__btn" id="tpaAvanti">{{ _('Avanti') }} <i class="fas fa-chevron-right" aria-hidden="true"></i></button>
+        </div>
       </div>
       {% endif %}
     </section>
@@ -186,6 +202,26 @@
         </button>
         <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">{{ _('Continua ad annotare') }}</button>
       </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% if state.can_write %}
+{# «Riparti da questo turno…»: titolo, elenco e pulsante li scrive
+   `tpa-referto.js`, che sa quale turno si sta rileggendo. #}
+<div class="modal fade c7-sheet" id="tpaRipartiModal" tabindex="-1" aria-labelledby="tpaRipartiTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="tpaRipartiTitolo"></h3>
+        <div class="c7-sheet__sub">{{ _('Il turno si riapre vuoto e quelli scritti dopo escono dal referto. Triangoli e TPA si ricalcolano fin qui.') }}</div>
+      </div>
+      <div class="modal-body c7-stack">
+        <div class="c7-tpa-sheet" id="tpaRipartiElenco"></div>
+        <button type="button" class="btn btn-danger w-100" id="tpaRipartiConferma"></button>
+        <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">{{ _('Resta a guardare') }}</button>
+      </div>
     </div>
   </div>
 </div>

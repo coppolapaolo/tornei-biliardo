@@ -324,6 +324,57 @@ class TpaRefertoService:
 
     @staticmethod
     @transactional(domain="tpa")
+    def restart_from_turn(
+        referto_id: int, user_id: int, rack_number: int, turn_number: int
+    ) -> TpaState:
+        """«Riparti da questo turno…»: tronca il registro all'inizio di un
+        turno del passato, che si riapre vuoto.
+
+        Scorrere il referto indietro e avanti e' una vista e non passa di qui:
+        questo e' il solo gesto che scrive, e l'interfaccia lo fa precedere da
+        una conferma che nomina i turni che escono (ADR-044, emendamento del
+        19/09/2026). Resta la scelta di chi spacca: e' un'altra decisione.
+
+        Il turno si trova **rigiocando**: di ogni comando si guarda in che
+        turno cadeva, e si taglia al primo che cade in quello chiesto. Nessuna
+        posizione e' salvata, quindi nessuna puo' restare indietro.
+        """
+        referto = db.session.get(TpaReferto, referto_id)
+        if referto is None:
+            raise NotFoundError(_("Referto non trovato"))
+        TpaRefertoService._require_compiler(referto, user_id)
+
+        comandi: List[TpaComando] = list(referto.comandi)
+        target = (rack_number, turn_number)
+        state = TpaState(referto.game_type)
+        cut: Optional[int] = None
+        for index, comando in enumerate(comandi):
+            position = (state.current_rack, state.current_turn)
+            if (
+                cut is None
+                and position == target
+                and not comando.command.startswith(TpaComando.SEAT_PREFIX)
+            ):
+                cut = index
+            TpaRefertoService._apply(state, comando.command)
+
+        if (state.current_rack, state.current_turn) == target:
+            raise ConflictError(
+                _("Questo e' il turno in corso: per riscriverlo c'e' «cancella».")
+            )
+        if cut is None:
+            raise ValidationError(_("Questo turno nel referto non c'e'."))
+
+        for comando in comandi[cut:]:
+            db.session.delete(comando)
+            referto.comandi.remove(comando)
+
+        state = TpaRefertoService.build_state(referto)
+        TpaRefertoService._sync_match_score(referto, state)
+        return state
+
+    @staticmethod
+    @transactional(domain="tpa")
     def close(referto_id: int, user_id: int) -> TpaReferto:
         """Chiude il referto: da qui in poi si legge e basta."""
         referto = db.session.get(TpaReferto, referto_id)

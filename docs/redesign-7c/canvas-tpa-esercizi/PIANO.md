@@ -316,6 +316,16 @@ un emendamento all'ADR-044: il registro resta l'unica verità, il punteggio
 continua a discendere dal rigioco **fino al cursore**. Le regole Accu-Stats
 restano solo in `engine.py`.
 
+**Nota del 19/09, eseguendo la 2c**: il cursore **non è stato fatto**, e non
+serve una migration. Il paragrafo qui sopra è precedente alla D16, che ha deciso
+l'altra strada: scorrere è sola lettura, ripartire è un passo esplicito con
+conferma. Un cursore salvato farebbe muovere il punteggio della partita mentre
+si «guarda soltanto». Quindi «Indietro/Avanti» è una vista nel browser, sui
+turni e sulle fotografie di punteggio che lo stato porta già, e «Riparti da
+questo turno…» è un comando che tronca il registro
+(`TpaRefertoService.restart_from_turn`). Motivi e alternativa scartata
+nell'emendamento all'ADR-044.
+
 **PR**
 - 2a `refactor:` il JS esce dal template in `static/js/tpa-referto.js`; URL da
   `data-*`, niente `confirm()` nativo (foglio 7c). Nessun cambiamento visibile;

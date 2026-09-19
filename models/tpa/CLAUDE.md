@@ -46,8 +46,9 @@ state = TpaRefertoService.press(referto.id, user_id, "3")
 state = TpaRefertoService.press(referto.id, user_id, "M")
 state = TpaRefertoService.press(referto.id, user_id, "end")   # passa il tavolo
 
-TpaRefertoService.undo(referto.id, user_id)     # annulla l'ultimo comando
+TpaRefertoService.undo(referto.id, user_id)     # annulla l'ultimo comando (l'interfaccia non lo usa piu')
 TpaRefertoService.clear_turn(referto.id, user_id)  # «cancella»: via l'annotazione del turno in corso
+TpaRefertoService.restart_from_turn(referto.id, user_id, rack, turn)  # «riparti da questo turno…»
 TpaRefertoService.close(referto.id, user_id)    # da qui si legge e basta
 
 # Per la pagina: stato + nomi + se chi guarda puo' scrivere
@@ -131,6 +132,11 @@ del dominio (`routes/individual_match/matches.py`).
 ---
 
 ## Do Not
+
+- **Non salvare una posizione nel referto** (cursore, «turno che sto guardando»).
+  Rileggere e' una vista del browser; l'unico gesto che scrive e'
+  `restart_from_turn`, dopo una conferma. Con una posizione salvata, scorrere
+  indietro sposterebbe il punteggio della partita (ADR-044, emendamento).
 
 - **Non calcolare il TPA fuori da `engine.py`.** Le regole stanno lì e solo lì.
 - **Non salvare totali** (TPA, errori, rack) su colonna: si ricavano rigiocando
