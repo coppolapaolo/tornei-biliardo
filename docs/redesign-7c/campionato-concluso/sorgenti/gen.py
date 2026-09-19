@@ -233,7 +233,6 @@ def gare(sotto="tutte giocate"):
         <div class="legb"><b>{nome}</b><span>Vince {chi}</span></div><span class="legs">Conclusa</span></div>"""
         for g, m, nome, chi in GARE
     )
-    n = len(GARE)
     return f"""    <div class="sec">
       <div class="sech"><h2>Le gare</h2><span>{sotto}</span></div>
 {righe}
@@ -283,13 +282,11 @@ def podio_gradini():
     posti = []
     for i, metallo in ordine:
         nome = CLASSIFICA[i][0]
-        posti.append(
-            f"""        <div class="pf__posto pf__posto--{metallo}">
+        posti.append(f"""        <div class="pf__posto pf__posto--{metallo}">
           <span class="av pf__av av--{metallo}">{iniziali(nome)}</span>
           <div class="pf__nome">{nome}</div>
           <div class="pf__pos mono">{i + 1}°</div>
-        </div>"""
-        )
+        </div>""")
     return '      <div class="pf">\n' + "\n".join(posti) + "\n      </div>"
 
 

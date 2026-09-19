@@ -94,7 +94,8 @@ def _chiavi_di_ricerca(html, user_id):
     Dal 2026-09-13 i candidati sono righe-form con «Iscrivi» (canvas 2.2),
     non option di una tendina: la chiave sta sul form, dopo l'`user_id`."""
     return re.findall(
-        rf'data-cerca="([^"]*)"[^>]*>\s*<input[^>]*csrf_token[^>]*>\s*<input type="hidden" name="user_id" value="{user_id}"',
+        r'data-cerca="([^"]*)"[^>]*>\s*<input[^>]*csrf_token[^>]*>\s*'
+        rf'<input type="hidden" name="user_id" value="{user_id}"',
         html,
     )
 

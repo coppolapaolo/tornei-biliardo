@@ -21,6 +21,7 @@ Quattro cose valgono in **tutte** le varianti, perche' non sono in discussione
 Stato ritratto: la visita **ordinaria**, non la prima della sessione, quindi
 senza il blocco «Come stai andando» — che al primo ingresso c'e' e resta com'e'.
 """
+
 import pathlib
 
 OUT = pathlib.Path(__file__).parent
@@ -28,7 +29,7 @@ OUT = pathlib.Path(__file__).parent
 
 # ── Guscio ───────────────────────────────────────────────────────────────────
 def head(saluto, ruolo, avatar, livello, azioni=""):
-    return f'''  <header class="c7-head">
+    return f"""  <header class="c7-head">
     <span class="c7-head__back"><svg viewBox="0 0 24 24" class="ico ico-lg"><use href="#i-nodes"></use></svg></span>
     <div class="c7-head__title">
       <span class="c7-title">{saluto}</span>
@@ -40,36 +41,42 @@ def head(saluto, ruolo, avatar, livello, azioni=""):
     </span>
     <span class="c7-avatar c7-avatar--lg">{avatar}</span>
 {azioni}  </header>
-'''
+"""
 
 
-NAV_GIOC = '''  <nav class="c7-mobilenav">
+NAV_GIOC = """  <nav class="c7-mobilenav">
     <a href="#" class="is-active"><svg viewBox="0 0 24 24" class="ico"><use href="#i-gauge"></use></svg>Dashboard</a>
     <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-users"></use></svg>Sfide</a>
     <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-target"></use></svg>Esercizi</a>
     <a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-bell"></use></svg>Notifiche</a>
   </nav>
-'''
+"""
 NAV_DIR = NAV_GIOC.replace(
     '<a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-target"></use></svg>Esercizi</a>',
-    '<a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-venue"></use></svg>Sale</a>')
+    '<a href="#"><svg viewBox="0 0 24 24" class="ico"><use href="#i-venue"></use></svg>Sale</a>',
+)
 
 
 def sechead(titolo, conteggio="", link="Vedi tutte"):
     c = f' <span class="count">{conteggio}</span>' if conteggio else ""
     a = f'\n        <a href="#" style="font-size:12px">{link}</a>' if link else ""
-    return f'''      <div class="sec-head">
+    return f"""      <div class="sec-head">
         <h2>{titolo}{c}</h2>{a}
       </div>
-'''
+"""
 
 
 def sez(titolo, corpo, conteggio="", link="Vedi tutte"):
-    return '    <section class="sec">\n' + sechead(titolo, conteggio, link) + corpo + '    </section>\n'
+    return (
+        '    <section class="sec">\n'
+        + sechead(titolo, conteggio, link)
+        + corpo
+        + "    </section>\n"
+    )
 
 
 def screen(headhtml, contenuto, nav):
-    return f'''<div class="screen">
+    return f"""<div class="screen">
 
 {headhtml}
   <main class="c7-content">
@@ -78,11 +85,11 @@ def screen(headhtml, contenuto, nav):
   </main>
 
 {nav}</div>
-'''
+"""
 
 
 # ── I pezzi ──────────────────────────────────────────────────────────────────
-CARD_PLAYOFF = '''      <article class="c7-card c7-card--warn">
+CARD_PLAYOFF = """      <article class="c7-card c7-card--warn">
         <div class="rowtop">
           <div class="fill">
             <div class="c7-kicker">Campionato Sociale 2026</div>
@@ -106,9 +113,9 @@ CARD_PLAYOFF = '''      <article class="c7-card c7-card--warn">
           <span class="btn btn-secondary">Rifiuta</span>
         </div>
       </article>
-'''
+"""
 
-CARD_MATCH_GARA = '''      <article class="c7-card cardstack">
+CARD_MATCH_GARA = """      <article class="c7-card cardstack">
         <div class="rowtop">
           <div class="fill">
             <div class="c7-kicker">Gara 3 <span class="c7-sep">&middot;</span> Turno 3 <span class="c7-sep">&middot;</span> Tavolo 4</div>
@@ -121,11 +128,11 @@ CARD_MATCH_GARA = '''      <article class="c7-card cardstack">
         <div class="meta">Palla 8 <span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span></div>
         <span class="btn btn-primary btn-sm btn-w"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-play"></use></svg>Gioca</span>
       </article>
-'''
+"""
 
 # La sfida a due ha lo stesso stato `playing` di una partita di gara, ma non
 # ha una gara a cui appartenere. Oggi non compare da nessuna parte.
-CARD_SFIDA = '''      <article class="c7-card cardstack">
+CARD_SFIDA = """      <article class="c7-card cardstack">
         <div class="rowtop">
           <div class="fill">
             <div class="c7-kicker">Sfida a due <span class="c7-sep">&middot;</span> Sala Da Vinci</div>
@@ -137,11 +144,11 @@ CARD_SFIDA = '''      <article class="c7-card cardstack">
         <div class="c7-num" style="font-size:22px">3 &mdash; 4</div>
         <span class="btn btn-primary btn-sm btn-w"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-play"></use></svg>Gioca</span>
       </article>
-'''
+"""
 
 # Dove sei e come stanno andando gli altri: senza, «gara in corso» dice solo
 # che la gara esiste.
-INSET_GARA_VIVA = '''        <div class="inset">
+INSET_GARA_VIVA = """        <div class="inset">
           <div class="c7-kicker">Classifica provvisoria</div>
           <div style="margin-top:2px;font-size:14px;font-weight:800">Sei <span class="c7-num">4&deg;</span> su <span class="c7-num">14</span></div>
           <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--c7-line)">
@@ -154,20 +161,20 @@ INSET_GARA_VIVA = '''        <div class="inset">
             <div class="meta" style="margin-top:6px">e altre <span class="c7-num">3</span> da giocare</div>
           </div>
         </div>
-'''
+"""
 
-INSET_PARTITA = '''        <div class="inset">
+INSET_PARTITA = """        <div class="inset">
           <div class="c7-kicker">La tua partita <span class="c7-sep">&middot;</span> Turno 3 <span class="c7-sep">&middot;</span> Tavolo 4</div>
           <div class="row" style="margin-top:6px">
             <span class="fill" style="font-size:14px;font-weight:800">vs Luca Berti</span>
             <span class="c7-num" style="font-size:20px">3 &mdash; 2</span>
           </div>
         </div>
-'''
+"""
 
 
 def card_gara3(azioni, insets=""):
-    return f'''      <article class="c7-card cardstack">
+    return f"""      <article class="c7-card cardstack">
         <div class="rowtop">
           <div class="fill">
             <div class="cardtitle">Gara 3 &mdash; Palla 8</div>
@@ -181,10 +188,10 @@ def card_gara3(azioni, insets=""):
           <span class="muted"><span class="c7-num">14</span> giocatori</span>
         </div>
 {insets}{azioni}      </article>
-'''
+"""
 
 
-CARD_GARA4 = '''      <article class="c7-card cardstack">
+CARD_GARA4 = """      <article class="c7-card cardstack">
         <div class="rowtop">
           <div class="fill">
             <div class="cardtitle">Gara 4 &mdash; Palla 9</div>
@@ -203,9 +210,9 @@ CARD_GARA4 = '''      <article class="c7-card cardstack">
           <span class="btn btn-success btn-sm btn-fill">Iscriviti</span>
         </div>
       </article>
-'''
+"""
 
-INSET_PLAYOFF = '''        <div class="inset">
+INSET_PLAYOFF = """        <div class="inset">
           <span class="c7-kicker">Playoff <span class="c7-sep">&middot;</span> 3&deg; posto</span>
           <span style="display:block;margin-top:3px;font-size:14px;font-weight:800">Sei qualificato alla finale</span>
           <span class="meta">21/09 20:30 <span class="c7-sep">&middot;</span> rispondi entro il <span class="c7-num">05/09</span></span>
@@ -214,11 +221,11 @@ INSET_PLAYOFF = '''        <div class="inset">
             <span class="btn btn-secondary btn-sm">Rifiuta</span>
           </div>
         </div>
-'''
+"""
 
 
 def card_campionato(extra=""):
-    return f'''      <article class="c7-card cardstack">
+    return f"""      <article class="c7-card cardstack">
         <div class="rowtop">
           <div class="fill">
             <div class="cardtitle">Campionato Sociale 2026</div>
@@ -229,24 +236,28 @@ def card_campionato(extra=""):
         <div class="meta">Prossima: <span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span></div>
 {extra}        <span class="btn btn-secondary btn-sm btn-w">Dettagli</span>
       </article>
-'''
+"""
 
 
 # ── GIOCATORE ────────────────────────────────────────────────────────────────
 G_HEAD = head("Ciao marco", "Giocatore", "MA", 7)
 
 VEDI_GARA = '        <span class="btn btn-secondary btn-sm btn-w">Vedi la gara</span>\n'
-GIOCA_GARA = ('        <span class="btn btn-primary btn-w">'
-              '<svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-play"></use></svg>'
-              'Gioca la tua partita</span>\n')
+GIOCA_GARA = (
+    '        <span class="btn btn-primary btn-w">'
+    '<svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-play"></use></svg>'
+    "Gioca la tua partita</span>\n"
+)
 
-a = (sez("Sei qualificato", CARD_PLAYOFF, "1", None)
-     + sez("I tuoi match", CARD_MATCH_GARA + CARD_SFIDA, "2", None)
-     + sez("Le tue gare", card_gara3(VEDI_GARA, insets=INSET_GARA_VIVA), "1")
-     + sez("Aperte, puoi iscriverti", CARD_GARA4, "1")
-     + sez("Campionati", card_campionato(), "1 attivo", "Vedi tutti"))
+a = (
+    sez("Sei qualificato", CARD_PLAYOFF, "1", None)
+    + sez("I tuoi match", CARD_MATCH_GARA + CARD_SFIDA, "2", None)
+    + sez("Le tue gare", card_gara3(VEDI_GARA, insets=INSET_GARA_VIVA), "1")
+    + sez("Aperte, puoi iscriverti", CARD_GARA4, "1")
+    + sez("Campionati", card_campionato(), "1 attivo", "Vedi tutti")
+)
 
-FASCIA = '''    <section class="c7-card c7-card--accent now">
+FASCIA = """    <section class="c7-card c7-card--accent now">
       <div class="now__head"><h2>Da fare</h2><span class="now__count">3</span></div>
 
       <a class="now__row" href="#">
@@ -285,17 +296,25 @@ FASCIA = '''    <section class="c7-card c7-card--accent now">
         <span class="now__go now__go--soft">Rispondi</span>
       </a>
     </section>
-'''
+"""
 
-b = (FASCIA
-     + sez("Le tue gare", card_gara3(VEDI_GARA, insets=INSET_GARA_VIVA), "1")
-     + sez("Aperte, puoi iscriverti", CARD_GARA4, "1")
-     + sez("Campionati", card_campionato(), "1 attivo", "Vedi tutti"))
+b = (
+    FASCIA
+    + sez("Le tue gare", card_gara3(VEDI_GARA, insets=INSET_GARA_VIVA), "1")
+    + sez("Aperte, puoi iscriverti", CARD_GARA4, "1")
+    + sez("Campionati", card_campionato(), "1 attivo", "Vedi tutti")
+)
 
-c = (sez("Le tue gare", card_gara3(GIOCA_GARA, insets=INSET_PARTITA + INSET_GARA_VIVA), "1")
-     + sez("Sfide a due", CARD_SFIDA, "1", None)
-     + sez("Aperte, puoi iscriverti", CARD_GARA4, "1")
-     + sez("Campionati", card_campionato(extra=INSET_PLAYOFF), "1 attivo", "Vedi tutti"))
+c = (
+    sez(
+        "Le tue gare",
+        card_gara3(GIOCA_GARA, insets=INSET_PARTITA + INSET_GARA_VIVA),
+        "1",
+    )
+    + sez("Sfide a due", CARD_SFIDA, "1", None)
+    + sez("Aperte, puoi iscriverti", CARD_GARA4, "1")
+    + sez("Campionati", card_campionato(extra=INSET_PLAYOFF), "1 attivo", "Vedi tutti")
+)
 
 
 # ── DIRETTORE ────────────────────────────────────────────────────────────────
@@ -305,11 +324,11 @@ c = (sez("Le tue gare", card_gara3(GIOCA_GARA, insets=INSET_PARTITA + INSET_GARA
 # quella gara e' per te: la tua partita se ci giochi, i comandi se la dirigi,
 # tutte e due se le due cose coincidono. Restano due varianti, e riguardano
 # una domanda sola: i comandi di direzione stanno sulla card o si apre la gara?
-D_AZIONI = '''    <div class="c7-head__actions">
+D_AZIONI = """    <div class="c7-head__actions">
       <span class="btn btn-secondary btn-sm btn-secondary--onpage"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-plus"></use></svg>Nuova Gara</span>
       <span class="btn btn-primary btn-sm"><svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-wand"></use></svg>Nuovo Campionato</span>
     </div>
-'''
+"""
 D_HEAD = head("Ciao paolo", "Direttore di gara", "PA", 12, D_AZIONI)
 
 DIRIGI = '<span class="c7-state c7-state--info">Dirigi</span>'
@@ -317,7 +336,7 @@ ISCRITTO = '<span class="c7-state c7-state--accent">Iscritto</span>'
 
 
 def card_gara_dir(titolo, meta, pastiglie, righe, insets="", azioni=""):
-    return f'''      <article class="c7-card cardstack">
+    return f"""      <article class="c7-card cardstack">
         <div class="rowtop">
           <div class="fill">
             <div class="cardtitle">{titolo}</div>
@@ -327,41 +346,57 @@ def card_gara_dir(titolo, meta, pastiglie, righe, insets="", azioni=""):
         </div>
         <div class="row" style="font-size:12px;font-weight:700">{righe}</div>
 {insets}{azioni}      </article>
-'''
+"""
 
 
-M3 = ('Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 '
-      '<span class="c7-sep">&middot;</span> <span class="c7-num">30/08</span> '
-      '<span class="c7-sep">&middot;</span> Biliardo Club Udine')
-M2 = ('Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 '
-      '<span class="c7-sep">&middot;</span> <span class="c7-num">16/08</span> '
-      '<span class="c7-sep">&middot;</span> Biliardo Club Udine')
-M5 = ('Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 '
-      '<span class="c7-sep">&middot;</span> <span class="c7-num">03/10</span> '
-      '<span class="c7-sep">&middot;</span> Biliardo Club Udine')
-MT = ('Gara singola <span class="c7-sep">&middot;</span> Palla 8 '
-      '<span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span>')
+M3 = (
+    'Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 '
+    '<span class="c7-sep">&middot;</span> <span class="c7-num">30/08</span> '
+    '<span class="c7-sep">&middot;</span> Biliardo Club Udine'
+)
+M2 = (
+    'Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 '
+    '<span class="c7-sep">&middot;</span> <span class="c7-num">16/08</span> '
+    '<span class="c7-sep">&middot;</span> Biliardo Club Udine'
+)
+M5 = (
+    'Campionato Sociale 2026 <span class="c7-sep">&middot;</span> Palla 8 '
+    '<span class="c7-sep">&middot;</span> <span class="c7-num">03/10</span> '
+    '<span class="c7-sep">&middot;</span> Biliardo Club Udine'
+)
+MT = (
+    'Gara singola <span class="c7-sep">&middot;</span> Palla 8 '
+    '<span class="c7-sep">&middot;</span> Al <span class="c7-num">5</span>'
+)
 
-R3 = ('<span class="fill">Turno <span class="c7-num">3/5</span> '
-      '<span class="c7-sep">&middot;</span> <span class="c7-num">6/7</span> confermate</span>'
-      '<span class="muted"><span class="c7-num">14</span> giocatori</span>')
-R2 = ('<span class="fill">Turni finiti <span class="c7-sep">&middot;</span> 2 a pari merito</span>'
-      '<span class="muted"><span class="c7-num">16</span> giocatori</span>')
-R5 = ('<span class="fill muted">Nessun iscritto</span>'
-      '<span class="muted">quota <span class="c7-num">&euro;10,00</span></span>')
-RT = ('<span class="fill">Turno <span class="c7-num">2/4</span></span>'
-      '<span class="muted"><span class="c7-num">12</span> giocatori</span>')
+R3 = (
+    '<span class="fill">Turno <span class="c7-num">3/5</span> '
+    '<span class="c7-sep">&middot;</span> <span class="c7-num">6/7</span> confermate</span>'
+    '<span class="muted"><span class="c7-num">14</span> giocatori</span>'
+)
+R2 = (
+    '<span class="fill">Turni finiti <span class="c7-sep">&middot;</span> 2 a pari merito</span>'
+    '<span class="muted"><span class="c7-num">16</span> giocatori</span>'
+)
+R5 = (
+    '<span class="fill muted">Nessun iscritto</span>'
+    '<span class="muted">quota <span class="c7-num">&euro;10,00</span></span>'
+)
+RT = (
+    '<span class="fill">Turno <span class="c7-num">2/4</span></span>'
+    '<span class="muted"><span class="c7-num">12</span> giocatori</span>'
+)
 
-INSET_MIA_ATTESA = '''        <div class="inset">
+INSET_MIA_ATTESA = """        <div class="inset">
           <div class="c7-kicker">La tua partita <span class="c7-sep">&middot;</span> Turno 2 <span class="c7-sep">&middot;</span> In attesa del tavolo</div>
           <div class="row" style="margin-top:6px">
             <span class="fill" style="font-size:14px;font-weight:800">vs Elena Furlan</span>
             <span class="c7-num" style="font-size:20px">2 &mdash; 4</span>
           </div>
         </div>
-'''
+"""
 
-NOTA_TURNO = ('        <div class="meta">Il turno 4 si avvia quando finisce l\u2019ultima partita.</div>\n')
+NOTA_TURNO = '        <div class="meta">Il turno 4 si avvia quando finisce l\u2019ultima partita.</div>\n'
 
 CARD_SFIDA_DIR = CARD_SFIDA.replace("vs Andrea Zanin", "vs Marco Bassi")
 
@@ -369,50 +404,79 @@ CARD_SFIDA_DIR = CARD_SFIDA.replace("vs Andrea Zanin", "vs Marco Bassi")
 def gare_direttore(comandi):
     """Le quattro combinazioni: dirigo+gioco, solo dirigo (x2), solo gioco."""
     if comandi:
-        a3 = ('        <div style="display:flex;gap:8px">\n'
-              '          <span class="btn btn-secondary btn-sm btn-fill">Vedi la gara</span>\n'
-              '          <span class="btn btn-primary btn-sm btn-fill">'
-              '<svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-play"></use></svg>Gioca</span>\n'
-              '        </div>\n') + NOTA_TURNO
-        a2 = ('        <div style="display:flex;gap:8px">\n'
-              '          <span class="btn btn-secondary btn-sm btn-fill">Vedi la gara</span>\n'
-              '          <span class="btn btn-primary btn-sm btn-fill">Avvia Spareggio</span>\n'
-              '        </div>\n')
-        a5 = ('        <div style="display:flex;gap:8px">\n'
-              '          <span class="btn btn-secondary btn-sm btn-fill">Gestisci</span>\n'
-              '          <span class="btn btn-success btn-sm btn-fill">Apri Iscrizioni</span>\n'
-              '        </div>\n')
+        a3 = (
+            '        <div style="display:flex;gap:8px">\n'
+            '          <span class="btn btn-secondary btn-sm btn-fill">Vedi la gara</span>\n'
+            '          <span class="btn btn-primary btn-sm btn-fill">'
+            '<svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-play"></use></svg>Gioca</span>\n'
+            "        </div>\n"
+        ) + NOTA_TURNO
+        a2 = (
+            '        <div style="display:flex;gap:8px">\n'
+            '          <span class="btn btn-secondary btn-sm btn-fill">Vedi la gara</span>\n'
+            '          <span class="btn btn-primary btn-sm btn-fill">Avvia Spareggio</span>\n'
+            "        </div>\n"
+        )
+        a5 = (
+            '        <div style="display:flex;gap:8px">\n'
+            '          <span class="btn btn-secondary btn-sm btn-fill">Gestisci</span>\n'
+            '          <span class="btn btn-success btn-sm btn-fill">Apri Iscrizioni</span>\n'
+            "        </div>\n"
+        )
     else:
-        a3 = ('        <div style="display:flex;gap:8px">\n'
-              '          <span class="btn btn-secondary btn-sm btn-fill">Vedi la gara</span>\n'
-              '          <span class="btn btn-primary btn-sm btn-fill">'
-              '<svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-play"></use></svg>Gioca</span>\n'
-              '        </div>\n')
-        a2 = '        <span class="btn btn-secondary btn-sm btn-w">Vedi la gara</span>\n'
+        a3 = (
+            '        <div style="display:flex;gap:8px">\n'
+            '          <span class="btn btn-secondary btn-sm btn-fill">Vedi la gara</span>\n'
+            '          <span class="btn btn-primary btn-sm btn-fill">'
+            '<svg viewBox="0 0 24 24" class="ico ico-sm"><use href="#i-play"></use></svg>Gioca</span>\n'
+            "        </div>\n"
+        )
+        a2 = (
+            '        <span class="btn btn-secondary btn-sm btn-w">Vedi la gara</span>\n'
+        )
         a5 = '        <span class="btn btn-secondary btn-sm btn-w">Gestisci</span>\n'
 
     return (
-        card_gara_dir("Gara 3 &mdash; Palla 8", M3,
-                      DIRIGI + ISCRITTO + '<span class="c7-state c7-state--err">In corso</span>',
-                      R3, insets=INSET_PARTITA + INSET_GARA_VIVA, azioni=a3)
-        + card_gara_dir("Gara 2 &mdash; Palla 8", M2,
-                        DIRIGI + '<span class="c7-state c7-state--warn">Spareggi</span>',
-                        R2, azioni=a2)
-        + card_gara_dir("Gara 5 &mdash; Palla 8", M5,
-                        DIRIGI + '<span class="c7-state c7-state--muted">In preparazione</span>',
-                        R5, azioni=a5)
-        + card_gara_dir("Torneo del Giovedì", MT,
-                        ISCRITTO + '<span class="c7-state c7-state--err">In corso</span>',
-                        RT, insets=INSET_MIA_ATTESA,
-                        azioni='        <span class="btn btn-secondary btn-sm btn-w is-disabled">In attesa del tavolo</span>\n')
+        card_gara_dir(
+            "Gara 3 &mdash; Palla 8",
+            M3,
+            DIRIGI + ISCRITTO + '<span class="c7-state c7-state--err">In corso</span>',
+            R3,
+            insets=INSET_PARTITA + INSET_GARA_VIVA,
+            azioni=a3,
+        )
+        + card_gara_dir(
+            "Gara 2 &mdash; Palla 8",
+            M2,
+            DIRIGI + '<span class="c7-state c7-state--warn">Spareggi</span>',
+            R2,
+            azioni=a2,
+        )
+        + card_gara_dir(
+            "Gara 5 &mdash; Palla 8",
+            M5,
+            DIRIGI + '<span class="c7-state c7-state--muted">In preparazione</span>',
+            R5,
+            azioni=a5,
+        )
+        + card_gara_dir(
+            "Torneo del Giovedì",
+            MT,
+            ISCRITTO + '<span class="c7-state c7-state--err">In corso</span>',
+            RT,
+            insets=INSET_MIA_ATTESA,
+            azioni='        <span class="btn btn-secondary btn-sm btn-w is-disabled">In attesa del tavolo</span>\n',
+        )
     )
 
 
 def dashboard_direttore(comandi):
-    return (sez("Le tue gare", gare_direttore(comandi), "4")
-            + sez("Aperte, puoi iscriverti", CARD_GARA4, "1")
-            + sez("Sfide a due", CARD_SFIDA_DIR, "1", None)
-            + sez("Campionati", card_campionato(), "1 attivo", "Vedi tutti"))
+    return (
+        sez("Le tue gare", gare_direttore(comandi), "4")
+        + sez("Aperte, puoi iscriverti", CARD_GARA4, "1")
+        + sez("Sfide a due", CARD_SFIDA_DIR, "1", None)
+        + sez("Campionati", card_campionato(), "1 attivo", "Vedi tutti")
+    )
 
 
 da = dashboard_direttore(comandi=False)

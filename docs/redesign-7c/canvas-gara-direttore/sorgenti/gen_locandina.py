@@ -38,7 +38,12 @@ def main():
     d.text((72, 246), "GARA 3", font=font(100), fill=(242, 245, 244))
     d.text((72, 334), "GIOVEDI'", font=font(62), fill=BRIGHT)
     d.text((72, 60), "BILIARDO MIMMO", font=font(28), fill=DIM)
-    d.text((72, 540), "3 SETTEMBRE  ·  ORE 20  ·  PALLA 8  ·  AL 5", font=font(30), fill=DIM)
+    d.text(
+        (72, 540),
+        "3 SETTEMBRE  ·  ORE 20  ·  PALLA 8  ·  AL 5",
+        font=font(30),
+        fill=DIM,
+    )
     out = SRC / "locandina.png"
     img.save(out, optimize=True)
     print(f"{out.name}: {out.stat().st_size // 1024} KB")

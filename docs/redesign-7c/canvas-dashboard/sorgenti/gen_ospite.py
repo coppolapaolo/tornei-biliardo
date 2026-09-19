@@ -10,13 +10,14 @@ Una nota che vale per tutte e tre: qui il blocco dei campionati e' disegnato
 in 7c. Nell'app e' l'unico pezzo rimasto a Bootstrap legacy (list-group,
 alert, medaglie in emoji), e non e' in discussione: va rifatto comunque.
 """
+
 import pathlib
 
 OUT = pathlib.Path(__file__).parent
 
 
 def head():
-    return '''  <header class="c7-head">
+    return """  <header class="c7-head">
     <span class="c7-head__back"><svg viewBox="0 0 24 24" class="ico ico-lg"><use href="#i-nodes"></use></svg></span>
     <div class="c7-head__title">
       <span class="c7-title">Tornei Biliardo</span>
@@ -24,23 +25,23 @@ def head():
     </div>
     <span class="btn btn-secondary btn-sm btn-secondary--onpage">Login</span>
   </header>
-'''
+"""
 
 
 def sez(titolo, corpo, conteggio="", link="Tutte le gare", dot=False):
     d = '<span class="c7-live__dot"></span>' if dot else ""
     c = f' <span class="count">{conteggio}</span>' if conteggio else ""
     a = f'\n        <a href="#" style="font-size:12px">{link}</a>' if link else ""
-    return f'''    <section class="sec">
+    return f"""    <section class="sec">
       <div class="sec-head">{d}
         <h2>{titolo}{c}</h2>{a}
       </div>
 {corpo}    </section>
-'''
+"""
 
 
 def screen(contenuto):
-    return f'''<div class="screen screen--nonav">
+    return f"""<div class="screen screen--nonav">
 
 {head()}
   <main class="c7-content">
@@ -48,11 +49,11 @@ def screen(contenuto):
 {contenuto}
   </main>
 </div>
-'''
+"""
 
 
 # ── I pezzi ──────────────────────────────────────────────────────────────────
-ONBOARDING_FULL = '''    <section class="c7-card c7-card--accent" style="padding:24px 20px">
+ONBOARDING_FULL = """    <section class="c7-card c7-card--accent" style="padding:24px 20px">
       <div class="c7-kicker">Come si partecipa</div>
       <h2 style="margin:6px 0 0;color:inherit;font-size:22px">Iscriviti, gioca, scala la classifica</h2>
       <div style="display:grid;gap:14px;margin-top:20px">
@@ -83,9 +84,9 @@ ONBOARDING_FULL = '''    <section class="c7-card c7-card--accent" style="padding
         <span class="btn btn-ghost btn-fill">Registrati</span>
       </div>
     </section>
-'''
+"""
 
-ACCOUNT_STRIP = '''    <section class="c7-card c7-card--accent" style="padding:20px">
+ACCOUNT_STRIP = """    <section class="c7-card c7-card--accent" style="padding:20px">
       <div class="c7-kicker">Per iscriverti</div>
       <h2 style="margin:6px 0 0;color:inherit;font-size:20px">Serve un account. È gratis.</h2>
       <p style="margin-top:8px;font-size:13px;font-weight:600;color:var(--c7-accent-dim)">
@@ -96,9 +97,9 @@ ACCOUNT_STRIP = '''    <section class="c7-card c7-card--accent" style="padding:2
         <span class="btn btn-ghost btn-fill">Accedi</span>
       </div>
     </section>
-'''
+"""
 
-LIVE = '''      <article class="c7-card c7-card--accent">
+LIVE = """      <article class="c7-card c7-card--accent">
         <div class="rowtop">
           <div class="fill">
             <div class="c7-kicker">Campionato Sociale 2026</div>
@@ -130,13 +131,14 @@ LIVE = '''      <article class="c7-card c7-card--accent">
         </div>
         <span class="btn btn-bright btn-w" style="margin-top:16px">Segui la diretta</span>
       </article>
-'''
+"""
 
 
-def card_aperta(kicker, nome, meta, iscritti, pct, posti, posti_tono, chiusura,
-                azione, nota=""):
+def card_aperta(
+    kicker, nome, meta, iscritti, pct, posti, posti_tono, chiusura, azione, nota=""
+):
     k = f'<div class="c7-kicker">{kicker}</div>' if kicker else ""
-    return f'''      <article class="c7-card cardstack">
+    return f"""      <article class="c7-card cardstack">
         <div class="rowtop">
           <div class="fill">
             {k}
@@ -153,10 +155,10 @@ def card_aperta(kicker, nome, meta, iscritti, pct, posti, posti_tono, chiusura,
           </div>
         </div>
 {azione}{nota}      </article>
-'''
+"""
 
 
-CAMPIONATO = '''      <article class="c7-card cardstack">
+CAMPIONATO = """      <article class="c7-card cardstack">
         <div class="rowtop">
           <div class="fill">
             <div class="cardtitle">Campionato Sociale 2026</div>
@@ -186,9 +188,9 @@ CAMPIONATO = '''      <article class="c7-card cardstack">
         </div>
         <span class="btn btn-secondary btn-sm btn-w">Classifica e risultati</span>
       </article>
-'''
+"""
 
-IN_ARRIVO = '''      <div class="c7-card">
+IN_ARRIVO = """      <div class="c7-card">
         <a class="listrow" href="#">
           <span class="fill">
             <span style="display:block;font-size:14px;font-weight:800">Gara 5 &mdash; Palla 8</span>
@@ -197,58 +199,92 @@ IN_ARRIVO = '''      <div class="c7-card">
           <span class="c7-state c7-state--muted">In preparazione</span>
         </a>
       </div>
-'''
+"""
 
-M4 = ('<span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span> '
-      '<span class="c7-sep">&middot;</span> Palla 9 '
-      '<span class="c7-sep">&middot;</span> Biliardo Club Udine')
-MT = ('<span class="c7-num" style="color:var(--c7-ink)">04/09/2026</span> '
-      '<span class="c7-sep">&middot;</span> Palla 8 '
-      '<span class="c7-sep">&middot;</span> Sala Da Vinci, Pordenone')
+M4 = (
+    '<span class="c7-num" style="color:var(--c7-ink)">12/09/2026</span> '
+    '<span class="c7-sep">&middot;</span> Palla 9 '
+    '<span class="c7-sep">&middot;</span> Biliardo Club Udine'
+)
+MT = (
+    '<span class="c7-num" style="color:var(--c7-ink)">04/09/2026</span> '
+    '<span class="c7-sep">&middot;</span> Palla 8 '
+    '<span class="c7-sep">&middot;</span> Sala Da Vinci, Pordenone'
+)
 
-BTN_ACCEDI = '        <span class="btn btn-success btn-w">Accedi per iscriverti</span>\n'
+BTN_ACCEDI = (
+    '        <span class="btn btn-success btn-w">Accedi per iscriverti</span>\n'
+)
 BTN_VEDI = '        <span class="btn btn-secondary btn-sm btn-w">Vedi la gara</span>\n'
 BTN_ISCRIVITI = '        <span class="btn btn-success btn-w">Iscriviti</span>\n'
 BTN_ATTESA = '        <span class="btn btn-warning btn-w">Mettiti in lista d\u2019attesa</span>\n'
-NOTA_ACCOUNT = ('        <div class="meta" style="text-align:center;margin-top:-4px">'
-                'Serve un account gratuito &mdash; ci vogliono 30 secondi</div>\n')
+NOTA_ACCOUNT = (
+    '        <div class="meta" style="text-align:center;margin-top:-4px">'
+    "Serve un account gratuito &mdash; ci vogliono 30 secondi</div>\n"
+)
 
 
 def aperte(azione, nota="", azione_piena=None):
     """La seconda gara e' al completo: li' l'azione e' entrare in lista."""
-    return (card_aperta("Campionato Sociale 2026", "Gara 4 &mdash; Palla 9", M4,
-                        "18/24", 75, "6 posti", "ok", "10/09", azione, nota)
-            + card_aperta("", "Torneo del Giovedì", MT,
-                          "24/24", 100, "Lista d'attesa", "warn", "03/09",
-                          azione_piena or azione, nota))
+    return card_aperta(
+        "Campionato Sociale 2026",
+        "Gara 4 &mdash; Palla 9",
+        M4,
+        "18/24",
+        75,
+        "6 posti",
+        "ok",
+        "10/09",
+        azione,
+        nota,
+    ) + card_aperta(
+        "",
+        "Torneo del Giovedì",
+        MT,
+        "24/24",
+        100,
+        "Lista d'attesa",
+        "warn",
+        "03/09",
+        azione_piena or azione,
+        nota,
+    )
 
 
 # ── Le tre varianti ──────────────────────────────────────────────────────────
 # A — com'e' oggi: il pitch prima di tutto, e ogni gara ripete l'invito.
-a = (ONBOARDING_FULL
-     + sez("In diretta ora", LIVE, dot=True)
-     + sez("Iscrizioni aperte", aperte(BTN_ACCEDI), "2")
-     + sez("Campionati in corso", CAMPIONATO, "1", "Vedi tutti")
-     + sez("In arrivo", IN_ARRIVO, "", None))
+a = (
+    ONBOARDING_FULL
+    + sez("In diretta ora", LIVE, dot=True)
+    + sez("Iscrizioni aperte", aperte(BTN_ACCEDI), "2")
+    + sez("Campionati in corso", CAMPIONATO, "1", "Vedi tutti")
+    + sez("In arrivo", IN_ARRIVO, "", None)
+)
 
 # B — prima cosa succede, l'account chiesto una volta sola e dopo averlo
 #     motivato. Sulle card il comando e' «guarda», non «accedi».
-b = (sez("In diretta ora", LIVE, dot=True)
-     + sez("Iscrizioni aperte", aperte(BTN_VEDI), "2")
-     + ACCOUNT_STRIP
-     + sez("Campionati in corso", CAMPIONATO, "1", "Vedi tutti")
-     + sez("In arrivo", IN_ARRIVO, "", None))
+b = (
+    sez("In diretta ora", LIVE, dot=True)
+    + sez("Iscrizioni aperte", aperte(BTN_VEDI), "2")
+    + ACCOUNT_STRIP
+    + sez("Campionati in corso", CAMPIONATO, "1", "Vedi tutti")
+    + sez("In arrivo", IN_ARRIVO, "", None)
+)
 
 # C — nessun blocco dedicato all'account: il comando resta «Iscriviti», e la
 #     riga sotto dice cosa serve. Si chiede dove serve, non prima.
-c = (sez("In diretta ora", LIVE, dot=True)
-     + sez("Iscrizioni aperte", aperte(BTN_ISCRIVITI, NOTA_ACCOUNT, BTN_ATTESA), "2")
-     + sez("Campionati in corso", CAMPIONATO, "1", "Vedi tutti")
-     + sez("In arrivo", IN_ARRIVO, "", None))
+c = (
+    sez("In diretta ora", LIVE, dot=True)
+    + sez("Iscrizioni aperte", aperte(BTN_ISCRIVITI, NOTA_ACCOUNT, BTN_ATTESA), "2")
+    + sez("Campionati in corso", CAMPIONATO, "1", "Vedi tutti")
+    + sez("In arrivo", IN_ARRIVO, "", None)
+)
 
 
 if __name__ == "__main__":
     for nome, corpo in [("OspiteA", a), ("OspiteB", b), ("OspiteC", c)]:
         (OUT / f"{nome}.body").write_text(screen(corpo), encoding="utf-8")
-        (OUT / f"{nome}.css").write_text(".screen--nonav{padding-bottom:28px}\n", encoding="utf-8")
+        (OUT / f"{nome}.css").write_text(
+            ".screen--nonav{padding-bottom:28px}\n", encoding="utf-8"
+        )
         print("scritto", nome)
