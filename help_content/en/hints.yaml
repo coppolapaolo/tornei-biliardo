@@ -437,31 +437,39 @@ hints:
   - exam.request_form
   page: esami
   section: appuntamento
+- id: esame.componi
+  label: Compose
+  short: 'Name, drills, order and what each one is worth: all on one page, saved in one go.'
+  anchor: esame-componi
+  screens:
+  - exam.exam_detail
+  page: diventare_esaminatore
+  section: comporre
 - id: esame.quante_prove
-  label: How many attempts
+  label: Attempts
   short: How many times the candidate repeats that drill. If it is more than one, the best attempt counts,
     not the sum.
   anchor: esame-quante-prove
   screens:
-  - exam.exam_detail
+  - exam.compose_exam
   page: diventare_esaminatore
   section: comporre
 - id: esame.punteggio_massimo
-  label: Maximum score
-  short: 'What the drill is worth inside this exam. It is per exam, not a property of the drill: the same
-    drill can weigh differently elsewhere.'
+  label: Worth
+  short: 'What the drill weighs inside this exam. It is per exam, not a property of the drill: the same
+    drill can weigh differently elsewhere. The catalogue value is only the starting suggestion.'
   anchor: esame-punteggio-massimo
   screens:
-  - exam.exam_detail
+  - exam.compose_exam
   page: diventare_esaminatore
   section: comporre
 - id: esame.ordine_drill
   label: The order of the drills
-  short: 'Candidates face them in the sequence you add them. They do not move: if the order is wrong,
-    remove the drill and put it back in the right place.'
+  short: Candidates face them in this sequence. To change it, drag an entry by the handle on the left,
+    or select it and use the up and down arrows.
   anchor: esame-ordine-drill
   screens:
-  - exam.exam_detail
+  - exam.compose_exam
   page: diventare_esaminatore
   section: comporre
 - id: referto.tastierino

@@ -412,27 +412,35 @@ hints:
     page: esami
     section: appuntamento
 
-  - id: esame.quante_prove
-    label: "Quante prove"
-    short: "Quante volte il candidato ripete quell'esercizio. Se è più di una vale la prova migliore, non la somma."
-    anchor: esame-quante-prove
+  - id: esame.componi
+    label: "Componi"
+    short: "Nome, esercizi, ordine e quanto vale ciascuno: tutto in una pagina, con un salvataggio solo."
+    anchor: esame-componi
     screens: [exam.exam_detail]
     page: diventare_esaminatore
     section: comporre
 
+  - id: esame.quante_prove
+    label: "Prove"
+    short: "Quante volte il candidato ripete quell'esercizio. Se è più di una vale la prova migliore, non la somma."
+    anchor: esame-quante-prove
+    screens: [exam.compose_exam]
+    page: diventare_esaminatore
+    section: comporre
+
   - id: esame.punteggio_massimo
-    label: "Punteggio massimo"
-    short: "Quanto vale l'esercizio dentro questo esame. È per-esame, non una proprietà dell'esercizio: lo stesso esercizio può pesare diversamente altrove."
+    label: "Vale"
+    short: "Quanto pesa l'esercizio dentro questo esame. È per-esame, non una proprietà dell'esercizio: lo stesso esercizio può pesare diversamente altrove. Il valore del catalogo è solo la proposta di partenza."
     anchor: esame-punteggio-massimo
-    screens: [exam.exam_detail]
+    screens: [exam.compose_exam]
     page: diventare_esaminatore
     section: comporre
 
   - id: esame.ordine_drill
     label: "L'ordine degli esercizi"
-    short: "I candidati li affrontano nella sequenza in cui li aggiungi. Non si spostano: se l'ordine è sbagliato, togli l'esercizio e rimettilo al posto giusto."
+    short: "I candidati li affrontano in questa sequenza. Per cambiarla trascina una voce dalla presa a sinistra, oppure selezionala e usa le frecce su e giù."
     anchor: esame-ordine-drill
-    screens: [exam.exam_detail]
+    screens: [exam.compose_exam]
     page: diventare_esaminatore
     section: comporre
 

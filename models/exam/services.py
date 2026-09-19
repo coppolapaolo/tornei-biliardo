@@ -23,6 +23,7 @@ sono proprietà del tentativo, non della schermata che lo pilota.
 from __future__ import annotations
 
 import logging
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Sequence
 
 from sqlalchemy import case, distinct, func
@@ -48,6 +49,20 @@ logger = logging.getLogger(__name__)
 #: riga di ``exam_challenge_result`` creata all'apertura di **ogni** sessione:
 #: un numero digitato male si pagherebbe su tutti i candidati.
 MAX_ATTEMPTS_PER_CHALLENGE = 20
+
+
+@dataclass(frozen=True)
+class CompositionItem:
+    """Una voce della sequenza come la manda la pagina «Componi l'esame».
+
+    La posizione non c'è: è quella che la voce occupa nell'elenco. ``max_score``
+    è quanto l'esercizio **pesa in questo esame** (ADR-042), ``None`` per un
+    esercizio riuscito o no.
+    """
+
+    challenge_id: int
+    max_score: Optional[int] = None
+    max_attempts: int = 1
 
 
 class ExamService:
@@ -339,6 +354,159 @@ class ExamService:
         db.session.flush()
 
         return [by_challenge[cid] for cid in requested]
+
+    # ────────────────────────────────────────────────────────────────────
+    # La composizione tutta insieme (pagina «Componi l'esame»)
+    # ────────────────────────────────────────────────────────────────────
+    @staticmethod
+    @transactional(domain="exam")
+    def save_composition(
+        exam_id: int,
+        actor: User,
+        *,
+        name: Optional[str],
+        description: Optional[str],
+        time_limit_minutes: Optional[int],
+        items: Sequence[CompositionItem],
+    ) -> Exam:
+        """Salva nome, limite e **l'intera sequenza**, tutto o niente.
+
+        ``items`` è la sequenza come deve risultare: chi non c'è esce, chi è
+        nuovo entra, chi resta prende posizione, peso e prove che porta. Le
+        regole di ogni singola mossa restano nei metodi che già le avevano —
+        qui si compongono dentro una transazione sola (ADR-061: gli interni
+        chiudono un savepoint, salva soltanto questo), così una voce sbagliata
+        non lascia l'esame scritto a metà.
+
+        A differenza di ``update_exam``, qui ``None`` su descrizione e limite
+        di tempo vuol dire **vuoto**, non «non toccare»: la pagina manda sempre
+        tutti i campi, e da ``update_exam`` un limite messo non si toglieva più.
+        """
+        exam = ExamService.get_exam(exam_id)
+        ExamService._require_edit(exam, actor)
+        ExamService._require_no_open_certified_session(exam)
+
+        requested = [item.challenge_id for item in items]
+        if len(requested) != len(set(requested)):
+            raise ValidationError(
+                "Lo stesso esercizio non può comparire due volte nell'esame"
+            )
+
+        ExamService.update_exam(exam_id, actor, name=name or "")
+        if time_limit_minutes is not None and time_limit_minutes <= 0:
+            raise ValidationError("Il tempo limite deve essere positivo")
+        exam.description = (description or "").strip() or None
+        exam.time_limit_minutes = time_limit_minutes
+
+        current = {ec.challenge_id for ec in exam.challenges.all()}
+        for challenge_id in current - set(requested):
+            ExamService.remove_challenge_from_exam(exam_id, challenge_id, actor)
+        db.session.flush()
+
+        for item in items:
+            if item.challenge_id in current:
+                ExamService.update_exam_challenge(
+                    exam_id,
+                    item.challenge_id,
+                    actor,
+                    max_score=item.max_score,
+                    max_attempts=item.max_attempts,
+                )
+            else:
+                ExamService.add_challenge_to_exam(
+                    exam_id,
+                    item.challenge_id,
+                    actor,
+                    max_score=item.max_score,
+                    max_attempts=item.max_attempts,
+                )
+        ExamService.reorder_exam_challenges(exam_id, actor, requested)
+
+        ExamService._realign_open_self_practice(exam)
+        return exam
+
+    @staticmethod
+    def has_open_certified_session(exam: Exam) -> bool:
+        """True se qualcuno sta sostenendo (o sta per sostenere) l'esame davanti
+        a un esaminatore. La pagina lo chiede per dirlo **prima** che si lavori
+        a una composizione che non si potrà salvare."""
+        return (
+            ExamAttempt.query.filter_by(
+                exam_id=exam.id, mode=ExamAttemptMode.CERTIFIED.value
+            )
+            .filter(
+                ExamAttempt.status.in_(
+                    [
+                        ExamAttemptStatus.AWAITING_PLAYER_START.value,
+                        ExamAttemptStatus.IN_PROGRESS.value,
+                    ]
+                )
+            )
+            .first()
+            is not None
+        )
+
+    @staticmethod
+    def _require_no_open_certified_session(exam: Exam) -> None:
+        """Con un candidato davanti, l'esame resta quello che ha accettato.
+
+        La griglia delle prove nasce all'apertura della sessione: cambiare la
+        composizione a sessione aperta vorrebbe dire valutare qualcuno su un
+        esame diverso. Una sessione certificata dura una sera e si può
+        interrompere, quindi il blocco non trattiene nessuno a lungo.
+        """
+        if ExamService.has_open_certified_session(exam):
+            raise ConflictError(
+                "C'è una sessione d'esame aperta: la composizione si cambia "
+                "quando è chiusa"
+            )
+
+    @staticmethod
+    def _realign_open_self_practice(exam: Exam) -> None:
+        """Riallinea la griglia degli allenamenti lasciati aperti.
+
+        Un allenamento in autonomia può restare aperto per mesi: non può
+        bloccare chi compone l'esame, ma nemmeno restare con la griglia di
+        prima — un esercizio aggiunto non si potrebbe registrare. Nascono le
+        caselle che mancano, spariscono quelle in più **mai usate**; una prova
+        già registrata non si tocca.
+        """
+        exam_challenges = exam.challenges.all()
+        by_id = {ec.id: ec for ec in exam_challenges}
+
+        open_attempts = ExamAttempt.query.filter_by(
+            exam_id=exam.id,
+            mode=ExamAttemptMode.SELF_PRACTICE.value,
+            status=ExamAttemptStatus.IN_PROGRESS.value,
+        ).all()
+        for attempt in open_attempts:
+            existing = {
+                (result.exam_challenge_id, result.attempt_number): result
+                for result in ExamChallengeResult.query.filter_by(
+                    exam_attempt_id=attempt.id
+                ).all()
+            }
+            for (exam_challenge_id, number), result in existing.items():
+                exam_challenge = by_id.get(exam_challenge_id)
+                unused = result.score is None and result.passed is None
+                if (
+                    exam_challenge is not None
+                    and number > exam_challenge.max_attempts
+                    and unused
+                ):
+                    db.session.delete(result)
+            for exam_challenge in exam_challenges:
+                for number in range(1, exam_challenge.max_attempts + 1):
+                    if (exam_challenge.id, number) not in existing:
+                        db.session.add(
+                            ExamChallengeResult(
+                                exam_attempt_id=attempt.id,
+                                exam_challenge_id=exam_challenge.id,
+                                attempt_number=number,
+                            )
+                        )
+            db.session.flush()
+            attempt.recompute_scores()
 
     # ────────────────────────────────────────────────────────────────────
     # Co-esaminatori (US-E2)

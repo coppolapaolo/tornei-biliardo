@@ -50,6 +50,20 @@ Per ogni stringa **nuova** (non fuzzy, solo untranslated con msgstr vuoto):
 - Genera la traduzione inglese appropriata
 - Scrivi il `msgstr` nel file .po
 
+**Per scriverle usa `scripts/po_set.py`**, non un editor e non `write_po`:
+metti le traduzioni in un JSON `{"msgid italiano": "english msgstr"}` (vuote e
+fuzzy insieme) e lancia
+
+```bash
+python scripts/po_set.py translations/en/LC_MESSAGES/messages.po nuove.json
+```
+
+Tocca solo i blocchi delle voci nominate, toglie `fuzzy` e le righe `#|`, va a
+capo come Babel, elenca le plurali (che vanno a mano) e **fallisce** se un
+`msgid` non è nel catalogo. Riscrivere tutto il catalogo con `write_po`
+riformatta migliaia di righe, e i cataloghi sono già il punto in cui due PR
+aperte insieme vanno in conflitto.
+
 Per le stringhe **fuzzy**:
 - **Riscrivile a mano, una per una.** `pybabel update` non traduce: copia il
   `msgstr` di una voce che *somiglia* al `msgid` nuovo, e la somiglianza è sul
@@ -70,6 +84,8 @@ Per le stringhe **fuzzy**:
 vuoto per scelta (in italiano il `msgid` *è* la traduzione). Sono innocue —
 `pybabel compile` ripiega sul `msgid` — ma restano rumore nel catalogo, e chi
 lo apre non sa distinguerle da un lavoro lasciato a metà.
+
+Lo fa `python scripts/po_set.py translations/it/LC_MESSAGES/messages.po --clear-empty-fuzzy`.
 
 Togli il flag **solo** dalle voci a `msgstr` vuoto: una fuzzy con dentro una
 traduzione va letta, non sbandierata via. Verificato una volta (agosto 2026,

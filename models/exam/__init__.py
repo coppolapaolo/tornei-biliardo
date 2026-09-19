@@ -17,7 +17,7 @@ from .request_models import (
     ExamTimeProposal,
 )
 from .request_service import ExamRequestService
-from .services import ExamService
+from .services import CompositionItem, ExamService
 
 __all__ = [
     # Models
@@ -32,5 +32,6 @@ __all__ = [
     "ExamTimeProposal",
     # Services
     "ExamService",
+    "CompositionItem",
     "ExamRequestService",
 ]

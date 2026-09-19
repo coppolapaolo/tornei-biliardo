@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-19 19:13+0200\n"
+"POT-Creation-Date: 2026-09-19 20:49+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -653,7 +653,6 @@ msgstr ""
 
 #: models/dashboard/activity_feedback.py:261
 #: templates/direttore/preparazione/_esercizi.html:73
-#: templates/exam/detail.html:145
 msgid "Esercizio"
 msgstr ""
 
@@ -1465,30 +1464,30 @@ msgid ""
 "esaminatore."
 msgstr ""
 
-#: models/exam/services.py:831
+#: models/exam/services.py:999
 msgid "L'esame sta per iniziare"
 msgstr ""
 
-#: models/exam/services.py:833
+#: models/exam/services.py:1001
 #, python-format
 msgid ""
 "L'esaminatore ha aperto la sessione di «%(exam)s»: accetta l'inizio per "
 "far partire la valutazione."
 msgstr ""
 
-#: models/exam/services.py:840
+#: models/exam/services.py:1008
 msgid "Accetta l'inizio"
 msgstr ""
 
-#: models/exam/services.py:848
+#: models/exam/services.py:1016 templates/exam/compose.html:41
 msgid "superato"
 msgstr ""
 
-#: models/exam/services.py:848
+#: models/exam/services.py:1016
 msgid "non superato"
 msgstr ""
 
-#: models/exam/services.py:852
+#: models/exam/services.py:1020
 #: tests/new/unit/test_notifiche_lingua_destinatario.py:92
 #: tests/new/unit/test_notifiche_lingua_destinatario.py:122
 #: tests/new/unit/test_notifiche_lingua_destinatario.py:125
@@ -1496,12 +1495,12 @@ msgstr ""
 msgid "Esame certificato"
 msgstr ""
 
-#: models/exam/services.py:854
+#: models/exam/services.py:1022
 #, python-format
 msgid "«%(exam)s»: esito %(outcome)s, certificato da %(examiner)s."
 msgstr ""
 
-#: models/exam/services.py:865
+#: models/exam/services.py:1033
 msgid "Vedi l'esito"
 msgstr ""
 
@@ -2772,7 +2771,7 @@ msgstr ""
 msgid "Esercizio di gara registrato."
 msgstr ""
 
-#: routes/challenge.py:950 routes/exam/catalog.py:210
+#: routes/challenge.py:950
 msgid "Esercizio aggiornato."
 msgstr ""
 
@@ -2809,6 +2808,7 @@ msgid "Presa in considerazione"
 msgstr ""
 
 #: routes/feedback.py:145 templates/base.html:461
+#: templates/components/_sequence_editor.html:135
 msgid "Fatto"
 msgstr ""
 
@@ -3674,35 +3674,23 @@ msgstr ""
 msgid "Sessione interrotta."
 msgstr ""
 
-#: routes/exam/catalog.py:121
-msgid "Esame creato."
+#: routes/exam/catalog.py:132
+msgid "Esame creato: ora scegli gli esercizi."
 msgstr ""
 
 #: routes/exam/catalog.py:144
-msgid "Esame aggiornato."
-msgstr ""
-
-#: routes/exam/catalog.py:157
 msgid "Esame disattivato."
 msgstr ""
 
-#: routes/exam/catalog.py:186
-msgid "Esercizio aggiunto all'esame."
+#: routes/exam/catalog.py:278
+msgid "Esame salvato."
 msgstr ""
 
-#: routes/exam/catalog.py:225
-msgid "Esercizio rimosso dall'esame."
-msgstr ""
-
-#: routes/exam/catalog.py:245
-msgid "Ordine aggiornato."
-msgstr ""
-
-#: routes/exam/catalog.py:288
+#: routes/exam/catalog.py:320
 msgid "Esaminatore aggiunto."
 msgstr ""
 
-#: routes/exam/catalog.py:301
+#: routes/exam/catalog.py:333
 msgid "Esaminatore rimosso."
 msgstr ""
 
@@ -4751,7 +4739,7 @@ msgstr ""
 #: templates/components/_soft_delete_modal.html:48
 #: templates/direttore/_modali_gioco.html:117
 #: templates/direttore/_modali_gioco.html:244
-#: templates/direttore/_scripts.html:64
+#: templates/direttore/_scripts.html:64 templates/exam/compose.html:130
 #: templates/gamification/admin/achievement_form.html:124
 #: templates/gamification/admin/level_config.html:173
 #: templates/gamification/admin/level_config.html:220
@@ -5920,7 +5908,8 @@ msgstr ""
 #: templates/components/_new_gara_modal.html:77
 #: templates/components/_user_info_card.html:9
 #: templates/components/_user_info_card.html:138
-#: templates/components/_user_info_card.html:140 templates/exam/manage.html:68
+#: templates/components/_user_info_card.html:140 templates/exam/compose.html:63
+#: templates/exam/manage.html:68
 #: templates/gamification/admin/achievement_form.html:26
 #: templates/gamification/admin/feature_create.html:32
 #: templates/gamification/admin/feature_detail.html:35
@@ -6049,7 +6038,7 @@ msgstr ""
 #: templates/admin/campionato_detail.html:451
 #: templates/direttore/preparazione/_direttori.html:92
 #: templates/direttore/preparazione/_esercizi.html:100
-#: templates/exam/detail.html:157 templates/exam/examiners.html:45
+#: templates/exam/examiners.html:45
 #: templates/gamification/admin/level_config.html:221
 #: templates/gamification/admin/streak_config.html:274
 msgid "Aggiungi"
@@ -6462,8 +6451,8 @@ msgid "Carica locandina"
 msgstr ""
 
 #: templates/admin/campionato_vetrina.html:59
-#: templates/components/_gara_edit_form.html:386 templates/exam/detail.html:18
-#: templates/exam/manage.html:72
+#: templates/components/_gara_edit_form.html:386 templates/exam/compose.html:68
+#: templates/exam/detail.html:20 templates/exam/manage.html:72
 #: templates/gamification/admin/achievement_form.html:34
 #: templates/gamification/admin/feature_create.html:38
 #: templates/gamification/admin/feature_detail.html:45
@@ -7729,8 +7718,8 @@ msgstr ""
 msgid "Esaminatore: tutti"
 msgstr ""
 
-#: templates/admin/users_list.html:111 templates/exam/detail.html:10
-#: templates/exam/examiners.html:3 templates/exam/examiners.html:5
+#: templates/admin/users_list.html:111 templates/exam/examiners.html:3
+#: templates/exam/examiners.html:5
 msgid "Esaminatori"
 msgstr ""
 
@@ -8085,7 +8074,7 @@ msgstr ""
 #: templates/challenge/statistics.html:13
 #: templates/components/_campionato_statistics.html:4
 #: templates/components/_player_statistics.html:19
-#: templates/exam/detail.html:163 templates/individual_match/dashboard.html:285
+#: templates/exam/detail.html:137 templates/individual_match/dashboard.html:285
 #: templates/player/challenge_detail.html:87
 #: templates/player/privacy_settings.html:42
 #: templates/player/venue_detail.html:194
@@ -9142,7 +9131,6 @@ msgid "Superato o non superato"
 msgstr ""
 
 #: templates/challenge/builder.html:245 templates/challenge/create.html:70
-#: templates/exam/detail.html:148
 msgid "Punteggio massimo"
 msgstr ""
 
@@ -11474,6 +11462,7 @@ msgid "Andamento nel periodo scelto"
 msgstr ""
 
 #: templates/components/_history_drills_tab.html:54
+#: templates/exam/compose.html:44
 msgid "prove"
 msgstr ""
 
@@ -11540,7 +11529,7 @@ msgid "Esami sostenuti"
 msgstr ""
 
 #: templates/components/_history_exams_tab.html:25
-#: templates/exam/detail.html:171 templates/exam/manage.html:19
+#: templates/exam/detail.html:145 templates/exam/manage.html:19
 msgid "Superati"
 msgstr ""
 
@@ -11567,7 +11556,7 @@ msgstr ""
 
 #: templates/components/_history_exams_tab.html:64
 #: templates/components/_player_training.html:136
-#: templates/exam/detail.html:179
+#: templates/exam/detail.html:153
 msgid "In autonomia"
 msgstr ""
 
@@ -12225,7 +12214,7 @@ msgid "spacca"
 msgstr ""
 
 #: templates/components/_match_scoreboard.html:127
-#: templates/direttore/_card_partita.html:255
+#: templates/direttore/_card_partita.html:255 templates/exam/compose.html:110
 msgid "tu"
 msgstr ""
 
@@ -13110,6 +13099,37 @@ msgid "L'ultimo e quelli dell'ultimo mese: un altro è nello storico."
 msgid_plural "L'ultimo e quelli dell'ultimo mese: gli altri %(num)s sono nello storico."
 msgstr[0] ""
 msgstr[1] ""
+
+#: templates/components/_sequence_editor.html:44
+#, python-brace-format
+msgid "{title}: posizione {n} di {total}"
+msgstr ""
+
+#: templates/components/_sequence_editor.html:56
+msgid "Sposta: trascina, o usa le frecce su e giù"
+msgstr ""
+
+#: templates/components/_sequence_editor.html:69
+#: templates/direttore/_foglio_esercizio.html:107
+#: templates/exam/examiners.html:28
+msgid "Togli"
+msgstr ""
+
+#: templates/components/_sequence_editor.html:83
+msgid "Meno"
+msgstr ""
+
+#: templates/components/_sequence_editor.html:89
+msgid "Più"
+msgstr ""
+
+#: templates/components/_sequence_editor.html:116
+msgid "Cerca per nome"
+msgstr ""
+
+#: templates/components/_sequence_editor.html:134
+msgid "Nessun esercizio da aggiungere."
+msgstr ""
 
 #: templates/components/_sfide_in_corso.html:20
 msgid "Sfide a due"
@@ -14808,7 +14828,7 @@ msgid_plural "%(n)d da registrare"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/direttore/_esercizi_turni.html:77
+#: templates/direttore/_esercizi_turni.html:77 templates/exam/compose.html:25
 msgid "riuscito o no"
 msgstr ""
 
@@ -15501,11 +15521,6 @@ msgstr ""
 #: templates/direttore/_foglio_esercizio.html:104
 #, python-brace-format
 msgid "{n} punti"
-msgstr ""
-
-#: templates/direttore/_foglio_esercizio.html:107 templates/exam/detail.html:62
-#: templates/exam/examiners.html:28
-msgid "Togli"
 msgstr ""
 
 #: templates/direttore/_foglio_esercizio.html:108
@@ -16513,6 +16528,7 @@ msgstr ""
 
 #: templates/direttore/preparazione/_esercizi.html:35
 #: templates/direttore/preparazione/_esercizi.html:122
+#: templates/exam/compose.html:27
 msgid "a punteggio"
 msgstr ""
 
@@ -16526,7 +16542,7 @@ msgid "Togli %(nome)s dalla gara"
 msgstr ""
 
 #: templates/direttore/preparazione/_esercizi.html:49
-#: templates/exam/detail.html:73
+#: templates/exam/detail.html:65
 msgid "Nessun esercizio"
 msgstr ""
 
@@ -16536,7 +16552,7 @@ msgstr ""
 
 #: templates/direttore/preparazione/_esercizi.html:58
 #: templates/direttore/preparazione/_esercizi.html:69
-#: templates/exam/detail.html:142
+#: templates/exam/compose.html:136
 msgid "Aggiungi un esercizio"
 msgstr ""
 
@@ -16864,115 +16880,192 @@ msgstr ""
 msgid "Esami che somministro"
 msgstr ""
 
+#: templates/exam/compose.html:15 templates/exam/compose.html:21
+msgid "Componi l'esame"
+msgstr ""
+
+#: templates/exam/compose.html:19
+msgid "Torna all'esame"
+msgstr ""
+
+#: templates/exam/compose.html:22
+msgid "Trascina per cambiare l'ordine"
+msgstr ""
+
+#: templates/exam/compose.html:26
+#, python-format
+msgid "nel catalogo vale %(n)s"
+msgstr ""
+
+#: templates/exam/compose.html:35
+msgid "vale"
+msgstr ""
+
+#: templates/exam/compose.html:41
+msgid "o no"
+msgstr ""
+
+#: templates/exam/compose.html:56
+msgid "C'è una sessione d'esame aperta"
+msgstr ""
+
+#: templates/exam/compose.html:57
+msgid ""
+"Finché non è chiusa l'esame resta quello che il candidato ha accettato: "
+"la composizione si cambia dopo."
+msgstr ""
+
+#: templates/exam/compose.html:73 templates/exam/manage.html:76
+msgid "Limite di tempo in minuti (facoltativo)"
+msgstr ""
+
+#: templates/exam/compose.html:80
+msgid "Gli esercizi, in ordine"
+msgstr ""
+
+#: templates/exam/compose.html:82
+#, python-brace-format
+msgid "fino a {n} punti"
+msgstr ""
+
+#: templates/exam/compose.html:85
+msgid "Ancora nessun esercizio: senza, l'esame non è sostenibile."
+msgstr ""
+
+#: templates/exam/compose.html:95
+msgid "Aggiungi un esercizio dal catalogo"
+msgstr ""
+
+#: templates/exam/compose.html:98
+msgid "«Vale» è quanto l'esercizio pesa in questo esame."
+msgstr ""
+
+#: templates/exam/compose.html:99
+msgid "Con più di una prova conta la migliore."
+msgstr ""
+
+#: templates/exam/compose.html:102 templates/exam/detail.html:74
+#: templates/exam/examiners.html:12
+msgid "Chi lo somministra"
+msgstr ""
+
+#: templates/exam/compose.html:111
+msgid "ha composto l'esame"
+msgstr ""
+
+#: templates/exam/compose.html:112
+msgid "co-esaminatore"
+msgstr ""
+
+#: templates/exam/compose.html:121
+msgid "Aggiungi o togli un esaminatore"
+msgstr ""
+
+#: templates/exam/compose.html:122
+msgid "Salva prima: le modifiche non salvate si perdono."
+msgstr ""
+
+#: templates/exam/compose.html:131
+msgid "Salva l'esame"
+msgstr ""
+
+#: templates/exam/compose.html:137
+msgid "Quelli già nell'esame non compaiono."
+msgstr ""
+
 #: templates/exam/detail.html:7
 msgid "Esame: una sequenza di esercizi"
 msgstr ""
 
-#: templates/exam/detail.html:29
+#: templates/exam/detail.html:11
+msgid "Componi"
+msgstr ""
+
+#: templates/exam/detail.html:31
 msgid "Gli esercizi dell'esame"
 msgstr ""
 
-#: templates/exam/detail.html:44
+#: templates/exam/detail.html:46
 #, python-format
 msgid "Posizione %(n)s"
 msgstr ""
 
-#: templates/exam/detail.html:49 templates/exam/session.html:70
+#: templates/exam/detail.html:51 templates/exam/session.html:70
 msgid "Superato / non superato"
 msgstr ""
 
-#: templates/exam/detail.html:51
+#: templates/exam/detail.html:53
 #, python-format
 msgid "max %(n)s"
 msgstr ""
 
-#: templates/exam/detail.html:54 templates/exam/session.html:73
+#: templates/exam/detail.html:56 templates/exam/session.html:73
 #, python-format
 msgid "%(n)s prove · conta la migliore"
 msgstr ""
 
-#: templates/exam/detail.html:61
-msgid "Togliere questo esercizio dall'esame?"
-msgstr ""
-
-#: templates/exam/detail.html:74
+#: templates/exam/detail.html:66
 msgid "Questo esame non contiene ancora nessun esercizio: non è sostenibile."
 msgstr ""
 
-#: templates/exam/detail.html:79 templates/exam/examiners.html:12
-msgid "Chi lo somministra"
+#: templates/exam/detail.html:68
+msgid "Scegli gli esercizi"
 msgstr ""
 
-#: templates/exam/detail.html:86 templates/exam/examiners.html:21
+#: templates/exam/detail.html:81 templates/exam/examiners.html:21
 msgid "Ha composto l'esame"
 msgstr ""
 
-#: templates/exam/detail.html:95 templates/exam/detail.html:118
+#: templates/exam/detail.html:90 templates/exam/detail.html:113
 msgid "Sostieni l'esame"
 msgstr ""
 
-#: templates/exam/detail.html:99
+#: templates/exam/detail.html:94
 msgid "Hai un allenamento in corso"
 msgstr ""
 
-#: templates/exam/detail.html:100
+#: templates/exam/detail.html:95
 msgid "Riprendilo da dove l'hai lasciato."
 msgstr ""
 
-#: templates/exam/detail.html:103
+#: templates/exam/detail.html:98
 msgid "Riprendi"
 msgstr ""
 
-#: templates/exam/detail.html:111
+#: templates/exam/detail.html:106
 msgid "Prova da solo"
 msgstr ""
 
-#: templates/exam/detail.html:112
+#: templates/exam/detail.html:107
 msgid "Allenamento: non porta la certificazione."
 msgstr ""
 
-#: templates/exam/detail.html:113
+#: templates/exam/detail.html:108
 msgid "Inizia"
 msgstr ""
 
-#: templates/exam/detail.html:119
+#: templates/exam/detail.html:114
 msgid "Davanti a un esaminatore, di persona."
 msgstr ""
 
-#: templates/exam/detail.html:123
+#: templates/exam/detail.html:118
 msgid "Vedi la richiesta in corso"
 msgstr ""
 
-#: templates/exam/detail.html:128 templates/exam/request_form.html:3
+#: templates/exam/detail.html:123 templates/exam/request_form.html:3
 #: templates/exam/request_form.html:5
 msgid "Chiedi un appuntamento"
 msgstr ""
 
-#: templates/exam/detail.html:132
+#: templates/exam/detail.html:127
 msgid "Nessun esaminatore disponibile per questo esame."
 msgstr ""
 
-#: templates/exam/detail.html:147
-msgid "ID dell'esercizio"
-msgstr ""
-
-#: templates/exam/detail.html:150
-msgid "Vuoto per gli esercizi superato / non superato"
-msgstr ""
-
-#: templates/exam/detail.html:151
-msgid "Quante prove"
-msgstr ""
-
-#: templates/exam/detail.html:155
-msgid "Se più di una, l'esercizio vale la prova migliore."
-msgstr ""
-
-#: templates/exam/detail.html:167
+#: templates/exam/detail.html:141
 msgid "Sostenuti"
 msgstr ""
 
-#: templates/exam/detail.html:175
+#: templates/exam/detail.html:149
 msgid "Candidati"
 msgstr ""
 
@@ -17018,16 +17111,12 @@ msgstr ""
 msgid "Fondamentali — livello 1"
 msgstr ""
 
-#: templates/exam/manage.html:76
-msgid "Limite di tempo in minuti (facoltativo)"
-msgstr ""
-
 #: templates/exam/manage.html:80
 msgid "Crea l'esame"
 msgstr ""
 
 #: templates/exam/manage.html:82
-msgid "Gli esercizi si aggiungono dopo, dalla pagina dell'esame."
+msgid "Subito dopo scegli gli esercizi e il loro ordine."
 msgstr ""
 
 #: templates/exam/request_detail.html:3 templates/exam/request_detail.html:6
