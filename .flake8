@@ -4,3 +4,10 @@ extend-ignore = E203, W503
 # venv e asset di plugin (.agent) non sono codice del progetto: senza exclude
 # il bare `flake8` documentato in CLAUDE.md li scansiona e annega il gate.
 extend-exclude = venv, .venv, .agent, .claude, node_modules, instance
+# I generatori dei canvas sono HTML dentro f-string a tripli apici: le righe
+# lunghe sono markup (black non spezza i letterali) e l'E122 scatta dentro i
+# campi `{...}` di quelle stringhe, che da Python 3.12 pycodestyle legge come
+# codice. Tutto il resto — import inutili, f-string senza segnaposto, variabili
+# morte — vale anche li', e per questo la cartella non e' esclusa.
+per-file-ignores =
+    docs/redesign-7c/*/sorgenti/*.py: E501, E122

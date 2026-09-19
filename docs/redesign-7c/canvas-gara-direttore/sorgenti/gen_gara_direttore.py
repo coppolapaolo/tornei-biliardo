@@ -216,10 +216,12 @@ svg{display:block}
 .cols{display:grid;grid-template-columns:1fr 380px;gap:var(--c7-gap-lg);align-items:start}
 """
 
-FONTS = ('<link rel="stylesheet" '
-         'href="https://fonts.googleapis.com/css2?'
-         'family=Manrope:wght@600;700;800&amp;family=JetBrains+Mono:wght@700;800&amp;'
-         'display=swap">')
+FONTS = (
+    '<link rel="stylesheet" '
+    'href="https://fonts.googleapis.com/css2?'
+    "family=Manrope:wght@600;700;800&amp;family=JetBrains+Mono:wght@700;800&amp;"
+    'display=swap">'
+)
 
 # --------------------------------------------------------------------------
 # Icone — SVG stroke, griglia 20/24, un solo stile
@@ -227,58 +229,83 @@ FONTS = ('<link rel="stylesheet" '
 
 
 def ico(path, size=18, sw=1.9, fill=""):
-    return (f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" '
-            f'stroke="currentColor" stroke-width="{sw}" stroke-linecap="round" '
-            f'stroke-linejoin="round">{path}</svg>')
+    return (
+        f'<svg width="{size}" height="{size}" viewBox="0 0 24 24" fill="none" '
+        f'stroke="currentColor" stroke-width="{sw}" stroke-linecap="round" '
+        f'stroke-linejoin="round">{path}</svg>'
+    )
 
 
-I = {
+I = {  # noqa: E741 - il nome e' usato da tutti i canvas che importano questo kit
     "back": '<path d="M15 18l-6-6 6-6"></path>',
     "play": '<path d="M7 4l12 8-12 8V4z"></path>',
     "flag": '<path d="M5 21V4h13l-2.5 4L18 12H5"></path>',
     "check": '<path d="M20 6L9 17l-5-5"></path>',
     "clock": '<circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path>',
-    "table": ('<rect x="3" y="5" width="18" height="14" rx="3"></rect>'
-              '<path d="M3 12h18M12 5v14"></path>'),
-    "users": ('<circle cx="9" cy="8" r="3.2"></circle>'
-              '<path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6S13.9 16 14.5 19"></path>'
-              '<path d="M16 6.5a3 3 0 010 6M18 19c-.2-1.6-.7-2.9-1.6-3.8"></path>'),
-    "trophy": ('<path d="M7 4h10v5a5 5 0 01-10 0V4z"></path>'
-               '<path d="M7 6H4.5v1A3.5 3.5 0 007 10.5M17 6h2.5v1A3.5 3.5 0 0117 10.5">'
-               '</path><path d="M10 14v3M14 14v3M8.5 20h7"></path>'),
+    "table": (
+        '<rect x="3" y="5" width="18" height="14" rx="3"></rect>'
+        '<path d="M3 12h18M12 5v14"></path>'
+    ),
+    "users": (
+        '<circle cx="9" cy="8" r="3.2"></circle>'
+        '<path d="M3.5 19c.6-3 2.8-4.6 5.5-4.6S13.9 16 14.5 19"></path>'
+        '<path d="M16 6.5a3 3 0 010 6M18 19c-.2-1.6-.7-2.9-1.6-3.8"></path>'
+    ),
+    "trophy": (
+        '<path d="M7 4h10v5a5 5 0 01-10 0V4z"></path>'
+        '<path d="M7 6H4.5v1A3.5 3.5 0 007 10.5M17 6h2.5v1A3.5 3.5 0 0117 10.5">'
+        '</path><path d="M10 14v3M14 14v3M8.5 20h7"></path>'
+    ),
     "list": '<path d="M8 6h13M8 12h13M8 18h13M3.5 6h.01M3.5 12h.01M3.5 18h.01"></path>',
-    "gear": ('<circle cx="12" cy="12" r="3"></circle>'
-             '<path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 '
-             '00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1A1.6 1.6 0 008 19.4a1.6 1.6 '
-             '0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 '
-             '00-1.5-1H2a2 2 0 110-4h.1A1.6 1.6 0 003.6 8a1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 '
-             '112.8-2.8l.1.1a1.6 1.6 0 001.8.3H8a1.6 1.6 0 001-1.5V2a2 2 0 114 0v.1a1.6 1.6 '
-             '0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 '
-             '00-.3 1.8V8a1.6 1.6 0 001.5 1H22a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"></path>'),
+    "gear": (
+        '<circle cx="12" cy="12" r="3"></circle>'
+        '<path d="M19.4 15a1.6 1.6 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.6 1.6 0 '
+        "00-1.8-.3 1.6 1.6 0 00-1 1.5V21a2 2 0 11-4 0v-.1A1.6 1.6 0 008 19.4a1.6 1.6 "
+        "0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.6 1.6 0 00.3-1.8 1.6 1.6 0 "
+        "00-1.5-1H2a2 2 0 110-4h.1A1.6 1.6 0 003.6 8a1.6 1.6 0 00-.3-1.8l-.1-.1a2 2 0 "
+        "112.8-2.8l.1.1a1.6 1.6 0 001.8.3H8a1.6 1.6 0 001-1.5V2a2 2 0 114 0v.1a1.6 1.6 "
+        "0 001 1.5 1.6 1.6 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.6 1.6 0 "
+        '00-.3 1.8V8a1.6 1.6 0 001.5 1H22a2 2 0 110 4h-.1a1.6 1.6 0 00-1.5 1z"></path>'
+    ),
     "plus": '<path d="M12 5v14M5 12h14"></path>',
     "minus": '<path d="M5 12h14"></path>',
-    "bell": ('<path d="M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6"></path>'
-             '<path d="M10.5 20a2 2 0 003 0"></path>'),
-    "home": ('<path d="M4 11l8-7 8 7"></path>'
-             '<path d="M6.5 9.5V20h11V9.5"></path>'),
-    "target": ('<circle cx="12" cy="12" r="8.5"></circle>'
-               '<circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="1"></circle>'),
-    "swords": ('<path d="M4 4l9 9M4 8V4h4M20 4l-9 9M20 8V4h-4"></path>'
-               '<path d="M14 14l6 6M10 14l-6 6"></path>'),
+    "bell": (
+        '<path d="M18 9a6 6 0 10-12 0c0 5-2 6-2 6h16s-2-1-2-6"></path>'
+        '<path d="M10.5 20a2 2 0 003 0"></path>'
+    ),
+    "home": ('<path d="M4 11l8-7 8 7"></path>' '<path d="M6.5 9.5V20h11V9.5"></path>'),
+    "target": (
+        '<circle cx="12" cy="12" r="8.5"></circle>'
+        '<circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="1"></circle>'
+    ),
+    "swords": (
+        '<path d="M4 4l9 9M4 8V4h4M20 4l-9 9M20 8V4h-4"></path>'
+        '<path d="M14 14l6 6M10 14l-6 6"></path>'
+    ),
     "chevron": '<path d="M9 6l6 6-6 6"></path>',
-    "link": ('<path d="M10 13a4 4 0 006 .5l2-2a4 4 0 10-5.7-5.7l-1 1"></path>'
-             '<path d="M14 11a4 4 0 00-6-.5l-2 2A4 4 0 109.7 18.2l1-1"></path>'),
-    "scale": ('<path d="M12 4v16M7 20h10M4 9l4-4 4 4"></path>'
-              '<path d="M4 9a4 4 0 008 0M12 9l4-4 4 4"></path>'
-              '<path d="M12 9a4 4 0 008 0"></path>'),
-    "rotate": ('<path d="M4 10a8 8 0 0113.7-4.2L20 8"></path><path d="M20 4v4h-4"></path>'),
-    "grid": ('<rect x="3" y="3" width="7" height="7" rx="2"></rect>'
-             '<rect x="14" y="3" width="7" height="7" rx="2"></rect>'
-             '<rect x="3" y="14" width="7" height="7" rx="2"></rect>'
-             '<rect x="14" y="14" width="7" height="7" rx="2"></rect>'),
-    "share": ('<circle cx="18" cy="5" r="2.6"></circle><circle cx="6" cy="12" r="2.6"></circle>'
-              '<circle cx="18" cy="19" r="2.6"></circle>'
-              '<path d="M8.4 10.8l7.2-4.1M8.4 13.2l7.2 4.1"></path>'),
+    "link": (
+        '<path d="M10 13a4 4 0 006 .5l2-2a4 4 0 10-5.7-5.7l-1 1"></path>'
+        '<path d="M14 11a4 4 0 00-6-.5l-2 2A4 4 0 109.7 18.2l1-1"></path>'
+    ),
+    "scale": (
+        '<path d="M12 4v16M7 20h10M4 9l4-4 4 4"></path>'
+        '<path d="M4 9a4 4 0 008 0M12 9l4-4 4 4"></path>'
+        '<path d="M12 9a4 4 0 008 0"></path>'
+    ),
+    "rotate": (
+        '<path d="M4 10a8 8 0 0113.7-4.2L20 8"></path><path d="M20 4v4h-4"></path>'
+    ),
+    "grid": (
+        '<rect x="3" y="3" width="7" height="7" rx="2"></rect>'
+        '<rect x="14" y="3" width="7" height="7" rx="2"></rect>'
+        '<rect x="3" y="14" width="7" height="7" rx="2"></rect>'
+        '<rect x="14" y="14" width="7" height="7" rx="2"></rect>'
+    ),
+    "share": (
+        '<circle cx="18" cy="5" r="2.6"></circle><circle cx="6" cy="12" r="2.6"></circle>'
+        '<circle cx="18" cy="19" r="2.6"></circle>'
+        '<path d="M8.4 10.8l7.2-4.1M8.4 13.2l7.2 4.1"></path>'
+    ),
     "crown": '<path d="M4 18h16M4 18L3 7l5 4 4-6 4 6 5-4-1 11"></path>',
 }
 
@@ -298,8 +325,14 @@ MOBILENAV = f"""
 """
 
 
-def phone(head_sub, tabs, content, actionbar="", overlay="",
-          title="Gara 3 &middot; Gioved&igrave;"):
+def phone(
+    head_sub,
+    tabs,
+    content,
+    actionbar="",
+    overlay="",
+    title="Gara 3 &middot; Gioved&igrave;",
+):
     """Guscio telefono: testata unica del guscio, linguette, contenuto, nav.
 
     `overlay` e' il foglio modale che copre la pagina (assegna tavolo,
@@ -412,6 +445,7 @@ def doc(body):
 # Pezzi di contenuto condivisi fra le direzioni
 # --------------------------------------------------------------------------
 
+
 def match_card(p1, s1, p2, s2, state, right_html, locked=False, winner=None):
     """Card partita come components/_match_card.html: pill di stato a sinistra,
     tavolo o comando a destra, poi giocatori e punteggio."""
@@ -442,12 +476,17 @@ def match_card(p1, s1, p2, s2, state, right_html, locked=False, winner=None):
 
 def stepper_card(p1, s1, p2, s2, table, live=True):
     """Card partita della direzione Console: il punteggio si segna qui."""
-    pill = (f'<span class="state state--accent">In corso</span>' if live
-            else '<span class="state state--warn">Da giocare</span>')
-    tbl = (f'<span class="pill" style="height:30px;padding:0 12px;font-size:12px">'
-           f'{ico(I["table"], 13)} Tavolo <span class="num">{table}</span></span>'
-           if table else
-           f'<button class="btn btn--warn btn--sm">Assegna tavolo</button>')
+    pill = (
+        '<span class="state state--accent">In corso</span>'
+        if live
+        else '<span class="state state--warn">Da giocare</span>'
+    )
+    tbl = (
+        f'<span class="pill" style="height:30px;padding:0 12px;font-size:12px">'
+        f'{ico(I["table"], 13)} Tavolo <span class="num">{table}</span></span>'
+        if table
+        else '<button class="btn btn--warn btn--sm">Assegna tavolo</button>'
+    )
     return f"""
       <article class="card">
         <div class="row" style="justify-content:space-between">
@@ -483,9 +522,13 @@ def pending_card(p1, p2):
 """
 
 
-R1 = [("m.rossi", "5", "d.bianchi", "2", "1"), ("a.galli", "5", "s.conti", "3", "2"),
-      ("l.ferrari", "5", "f.costa", "1", "3"), ("g.verdi", "5", "p.marini", "4", "1"),
-      ("r.neri", "5", "e.sala", "0", "2")]
+R1 = [
+    ("m.rossi", "5", "d.bianchi", "2", "1"),
+    ("a.galli", "5", "s.conti", "3", "2"),
+    ("l.ferrari", "5", "f.costa", "1", "3"),
+    ("g.verdi", "5", "p.marini", "4", "1"),
+    ("r.neri", "5", "e.sala", "0", "2"),
+]
 
 
 def round1_rows():
@@ -526,9 +569,13 @@ def score_side(name, score):
 
 
 def todo_row(icon, title, sub, tone="warn"):
-    tile = {"warn": "tile tile--warn", "ok": "tile tile--ok",
-            "locked": "tile tile--locked", "neutral": "tile tile--neutral",
-            "accent": "tile"}[tone]
+    tile = {
+        "warn": "tile tile--warn",
+        "ok": "tile tile--ok",
+        "locked": "tile tile--locked",
+        "neutral": "tile tile--neutral",
+        "accent": "tile",
+    }[tone]
     return f"""
         <div class="rows__row">
           <div class="{tile} tile--sm">{ico(icon, 16)}</div>
@@ -542,8 +589,12 @@ def todo_row(icon, title, sub, tone="warn"):
 
 
 def classifica_rows(n=4):
-    data = [("1", "m.rossi", "4", "+11"), ("2", "a.galli", "3", "+6"),
-            ("3", "d.bianchi", "3", "+2"), ("4", "l.ferrari", "2", "-1")]
+    data = [
+        ("1", "m.rossi", "4", "+11"),
+        ("2", "a.galli", "3", "+6"),
+        ("3", "d.bianchi", "3", "+2"),
+        ("4", "l.ferrari", "2", "-1"),
+    ]
     out = []
     for pos, name, w, diff in data[:n]:
         out.append(f"""
@@ -615,9 +666,13 @@ def regia_mobile():
         <span class="state state--muted" style="margin-left:auto">Concluso</span>
       </div>
 """
-    return doc(phone("Biliardo Mimmo &middot; Al 5",
-                     vtabs(["Turni", "Classifica", "Iscritti", "Gestione"], "Turni"),
-                     content))
+    return doc(
+        phone(
+            "Biliardo Mimmo &middot; Al 5",
+            vtabs(["Turni", "Classifica", "Iscritti", "Gestione"], "Turni"),
+            content,
+        )
+    )
 
 
 def regia_desktop():
@@ -646,18 +701,20 @@ def regia_desktop():
       </section>
 """
     table_rows = ""
-    rows = [("m.rossi", "g.verdi", "4&ndash;2", "In corso", "accent", "1"),
-            ("d.bianchi", "l.ferrari", "3&ndash;3", "In corso", "accent", "2"),
-            ("s.conti", "p.marini", "&mdash;", "Da giocare", "warn", None),
-            ("a.galli", "r.neri", "5&ndash;1", "Conclusa", "ok", "3"),
-            ("f.costa", "X a tavolino", "&mdash;", "X", "info", "bye")]
+    rows = [
+        ("m.rossi", "g.verdi", "4&ndash;2", "In corso", "accent", "1"),
+        ("d.bianchi", "l.ferrari", "3&ndash;3", "In corso", "accent", "2"),
+        ("s.conti", "p.marini", "&mdash;", "Da giocare", "warn", None),
+        ("a.galli", "r.neri", "5&ndash;1", "Conclusa", "ok", "3"),
+        ("f.costa", "X a tavolino", "&mdash;", "X", "info", "bye"),
+    ]
     for p1, p2, sc, st, tone, tbl in rows:
         if tbl == "bye":
             tblcell = '<span class="faint">&mdash;</span>'
         elif tbl:
             tblcell = f'<span class="num">{tbl}</span>'
         else:
-            tblcell = '<button class="btn btn--warn btn--sm">Assegna</button>' 
+            tblcell = '<button class="btn btn--warn btn--sm">Assegna</button>'
         table_rows += f"""
             <tr>
               <td style="padding:13px 0;font-weight:800">{p1} <span class="faint">vs</span> {p2}</td>
@@ -729,10 +786,12 @@ def regia_desktop():
         </div>
       </div>
 """
-    actions = ('<button class="btn btn--secondary btn--sm">'
-               f'{ico(I["share"], 15)} Link pubblico</button>'
-               '<button class="btn btn--primary btn--sm">'
-               f'{ico(I["gear"], 15)} Gestione</button>')
+    actions = (
+        '<button class="btn btn--secondary btn--sm">'
+        f'{ico(I["share"], 15)} Link pubblico</button>'
+        '<button class="btn btn--primary btn--sm">'
+        f'{ico(I["gear"], 15)} Gestione</button>'
+    )
     return doc(desktop(actions, content))
 
 
@@ -742,7 +801,7 @@ def regia_desktop():
 
 # La card riassuntiva del turno: scura come la fascia di fase (scelta 1B
 # del 12/09/2026), perche' e' lei a dire dove siamo.
-CONSOLE_HEAD = f"""
+CONSOLE_HEAD = """
       <section class="card card--accent" style="padding:14px 16px">
         <div class="row">
           <div class="grow">
@@ -775,18 +834,25 @@ def console_mobile():
     <button class="btn btn--locked">{ico(I["play"], 16)} Avvia turno 3 &middot; 4 aperte</button>
   </div>
 """
-    return doc(phone("Biliardo Mimmo &middot; Al 5",
-                     vtabs(["Turni", "Classifica", "Iscritti", "Gestione"], "Turni"),
-                     content, bar))
-
+    return doc(
+        phone(
+            "Biliardo Mimmo &middot; Al 5",
+            vtabs(["Turni", "Classifica", "Iscritti", "Gestione"], "Turni"),
+            content,
+            bar,
+        )
+    )
 
 
 def dscore_side(name, score, alla_distanza=False):
     """Lato dello stepper su desktop: come score_side, ma riempie l'altezza
     della casella (il numero e i comandi stanno al centro). Alla distanza
     il + si spegne (match.effective_distance, ADR-027)."""
-    piu = ("background:var(--c7-sunken);color:var(--c7-ink-faint)" if alla_distanza
-           else "background:var(--c7-ink);color:#fff")
+    piu = (
+        "background:var(--c7-sunken);color:var(--c7-ink-faint)"
+        if alla_distanza
+        else "background:var(--c7-ink);color:#fff"
+    )
     return f"""
           <div class="card--sunk" style="border-radius:var(--c7-r-field);padding:12px 12px 14px;
                display:flex;flex-direction:column;justify-content:center;gap:10px">
@@ -832,8 +898,10 @@ def dcard(pill, right, corpo, cls="card", coda=""):
 
 
 def tavolo_txt(n, extra=""):
-    return (f'<span style="font-size:12px;font-weight:700;{extra}">Tavolo '
-            f'<span class="num">{n}</span></span>')
+    return (
+        f'<span style="font-size:12px;font-weight:700;{extra}">Tavolo '
+        f'<span class="num">{n}</span></span>'
+    )
 
 
 def console_desktop():
@@ -904,10 +972,18 @@ def console_desktop():
           </div>
         </div>
 """
-    righe = [("1", "r.neri", "1", "+5"), ("2", "l.ferrari", "1", "+4"), ("3", "m.rossi", "1", "+3"),
-             ("4", "a.galli", "1", "+2"), ("5", "g.verdi", "1", "+1"), ("6", "p.marini", "0", "-1"),
-             ("7", "e.sala", "0", "-2"), ("8", "s.conti", "0", "-2"), ("9", "d.bianchi", "0", "-3"),
-             ("10", "f.costa", "0", "-4")]
+    righe = [
+        ("1", "r.neri", "1", "+5"),
+        ("2", "l.ferrari", "1", "+4"),
+        ("3", "m.rossi", "1", "+3"),
+        ("4", "a.galli", "1", "+2"),
+        ("5", "g.verdi", "1", "+1"),
+        ("6", "p.marini", "0", "-1"),
+        ("7", "e.sala", "0", "-2"),
+        ("8", "s.conti", "0", "-2"),
+        ("9", "d.bianchi", "0", "-3"),
+        ("10", "f.costa", "0", "-4"),
+    ]
     class_rows = "".join(f"""
             <div class="rows__row" style="padding:0 16px;flex:1;min-height:0;gap:10px">
               <div class="num pos" style="width:24px;height:24px;font-size:11px">{pos}</div>
@@ -915,12 +991,18 @@ def console_desktop():
               <div class="num" style="font-size:14px;font-weight:800">{v}</div>
               <div class="num muted" style="width:32px;text-align:right;font-size:12px">{d}</div>
             </div>""" for pos, nome, v, d in righe)
-    tessera = lambda n, chi, occ: (
-        f'<div class="card--sunk" style="border-radius:var(--c7-r-control);padding:10px;text-align:center;'
-        + ("background:var(--c7-accent);color:var(--c7-accent-ink)" if occ else "") + '">'
-        f'<div class="num" style="font-size:17px;font-weight:800">{n}</div>'
-        f'<div style="font-size:10px;font-weight:700;line-height:1.3;'
-        + ("color:var(--c7-accent-dim)" if occ else "color:var(--c7-ink-muted)") + f'">{chi}</div></div>')
+
+    def tessera(n, chi, occ):
+        return (
+            '<div class="card--sunk" style="border-radius:var(--c7-r-control);padding:10px;text-align:center;'
+            + ("background:var(--c7-accent);color:var(--c7-accent-ink)" if occ else "")
+            + '">'
+            f'<div class="num" style="font-size:17px;font-weight:800">{n}</div>'
+            f'<div style="font-size:10px;font-weight:700;line-height:1.3;'
+            + ("color:var(--c7-accent-dim)" if occ else "color:var(--c7-ink-muted)")
+            + f'">{chi}</div></div>'
+        )
+
     rail = f"""
         <div style="display:flex;flex-direction:column;gap:12px;min-height:0">
           <div class="sechead"><h3>Da fare adesso</h3></div>
@@ -954,10 +1036,12 @@ def console_desktop():
         </div>
       </div>
 """
-    actions = ('<button class="btn btn--secondary btn--sm">'
-               f'{ico(I["users"], 15)} Iscritti <span class="num">10</span></button>'
-               '<button class="btn btn--secondary btn--sm">'
-               f'{ico(I["gear"], 15)} Impostazioni gara</button>')
+    actions = (
+        '<button class="btn btn--secondary btn--sm">'
+        f'{ico(I["users"], 15)} Iscritti <span class="num">10</span></button>'
+        '<button class="btn btn--secondary btn--sm">'
+        f'{ico(I["gear"], 15)} Impostazioni gara</button>'
+    )
     return doc(desktop(actions, content))
 
 
@@ -1083,8 +1167,10 @@ def fasi_desktop():
         </div>
       </div>
 """
-    actions = ('<button class="btn btn--secondary btn--sm">'
-               f'{ico(I["share"], 15)} Link pubblico</button>')
+    actions = (
+        '<button class="btn btn--secondary btn--sm">'
+        f'{ico(I["share"], 15)} Link pubblico</button>'
+    )
     return doc(desktop(actions, content))
 
 
@@ -1093,7 +1179,7 @@ def fasi_desktop():
 # --------------------------------------------------------------------------
 
 FILES = {
-    "Main.dc.html": console_mobile,          # candidata in testa: B telefono
+    "Main.dc.html": console_mobile,  # candidata in testa: B telefono
     "ConsoleDesktop.dc.html": console_desktop,
     "RegiaMobile.dc.html": regia_mobile,
     "RegiaDesktop.dc.html": regia_desktop,
@@ -1103,41 +1189,92 @@ FILES = {
 
 CANVAS = {
     "artboards": [
-        {"file": "RegiaMobile.dc.html", "title": "A · Regia — telefono",
-         "x": 0, "y": 0, "w": 390, "h": 844},
-        {"file": "Main.dc.html", "title": "B · Console — telefono",
-         "x": 1600, "y": 0, "w": 390, "h": 844},
-        {"file": "FasiMobile.dc.html", "title": "C · Fasi — telefono",
-         "x": 3200, "y": 0, "w": 390, "h": 844},
-        {"file": "RegiaDesktop.dc.html", "title": "A · Regia — desktop",
-         "x": 0, "y": 1010, "w": 1440, "h": 900},
-        {"file": "ConsoleDesktop.dc.html", "title": "B · Console — desktop",
-         "x": 1600, "y": 1010, "w": 1440, "h": 900},
-        {"file": "FasiDesktop.dc.html", "title": "C · Fasi — desktop",
-         "x": 3200, "y": 1010, "w": 1440, "h": 900},
+        {
+            "file": "RegiaMobile.dc.html",
+            "title": "A · Regia — telefono",
+            "x": 0,
+            "y": 0,
+            "w": 390,
+            "h": 844,
+        },
+        {
+            "file": "Main.dc.html",
+            "title": "B · Console — telefono",
+            "x": 1600,
+            "y": 0,
+            "w": 390,
+            "h": 844,
+        },
+        {
+            "file": "FasiMobile.dc.html",
+            "title": "C · Fasi — telefono",
+            "x": 3200,
+            "y": 0,
+            "w": 390,
+            "h": 844,
+        },
+        {
+            "file": "RegiaDesktop.dc.html",
+            "title": "A · Regia — desktop",
+            "x": 0,
+            "y": 1010,
+            "w": 1440,
+            "h": 900,
+        },
+        {
+            "file": "ConsoleDesktop.dc.html",
+            "title": "B · Console — desktop",
+            "x": 1600,
+            "y": 1010,
+            "w": 1440,
+            "h": 900,
+        },
+        {
+            "file": "FasiDesktop.dc.html",
+            "title": "C · Fasi — desktop",
+            "x": 3200,
+            "y": 1010,
+            "w": 1440,
+            "h": 900,
+        },
     ],
     "annotations": [
-        {"id": "nota-a", "x": 0, "y": -230, "w": 460,
-         "text": "A · REGIA\nLa pagina di oggi con una fascia in cima che dice a che "
-                 "punto e' il turno e cosa lo tiene aperto: tavoli da assegnare e "
-                 "risultati mancanti.\n\nPerche': il direttore non ha un comando da "
-                 "premere mentre il turno gira — ha lavoro sparso. La fascia lo "
-                 "raccoglie.\nCosto: aggiunge un blocco, non toglie niente. Le quattro "
-                 "linguette e le sezioni restano dove sono."},
-        {"id": "nota-b", "x": 1600, "y": -230, "w": 460,
-         "text": "B · CONSOLE\nIl turno in corso diventa la pagina: punteggio "
-                 "segnato sulla card (niente modale), tavolo sulla card, e a destra "
-                 "«da fare adesso» con la mappa dei tavoli.\n\nPerche': e' la "
-                 "pagina che si tiene aperta mentre si dirige.\nCosto: il piu' grosso "
-                 "dei tre — tocca il segnapunti, non solo l'impaginazione."},
-        {"id": "nota-c", "x": 3200, "y": -230, "w": 460,
-         "text": "C · FASI\nNiente quattro linguette: una striscia mostra il ciclo "
-                 "(iscrizione → gioco → chiusura) e la pagina e' la fase in "
-                 "corso. Direttori, tavoli, squadre, categorie e configurazione turni "
-                 "finiscono sotto «Impostazioni gara».\n\nPerche': in gioco il "
-                 "90% di quelle sezioni non serve.\nCosto: aggiungere un co-direttore a "
-                 "gara iniziata costa un tap in piu', e la striscia mangia spazio "
-                 "verticale sul telefono."},
+        {
+            "id": "nota-a",
+            "x": 0,
+            "y": -230,
+            "w": 460,
+            "text": "A · REGIA\nLa pagina di oggi con una fascia in cima che dice a che "
+            "punto e' il turno e cosa lo tiene aperto: tavoli da assegnare e "
+            "risultati mancanti.\n\nPerche': il direttore non ha un comando da "
+            "premere mentre il turno gira — ha lavoro sparso. La fascia lo "
+            "raccoglie.\nCosto: aggiunge un blocco, non toglie niente. Le quattro "
+            "linguette e le sezioni restano dove sono.",
+        },
+        {
+            "id": "nota-b",
+            "x": 1600,
+            "y": -230,
+            "w": 460,
+            "text": "B · CONSOLE\nIl turno in corso diventa la pagina: punteggio "
+            "segnato sulla card (niente modale), tavolo sulla card, e a destra "
+            "«da fare adesso» con la mappa dei tavoli.\n\nPerche': e' la "
+            "pagina che si tiene aperta mentre si dirige.\nCosto: il piu' grosso "
+            "dei tre — tocca il segnapunti, non solo l'impaginazione.",
+        },
+        {
+            "id": "nota-c",
+            "x": 3200,
+            "y": -230,
+            "w": 460,
+            "text": "C · FASI\nNiente quattro linguette: una striscia mostra il ciclo "
+            "(iscrizione → gioco → chiusura) e la pagina e' la fase in "
+            "corso. Direttori, tavoli, squadre, categorie e configurazione turni "
+            "finiscono sotto «Impostazioni gara».\n\nPerche': in gioco il "
+            "90% di quelle sezioni non serve.\nCosto: aggiungere un co-direttore a "
+            "gara iniziata costa un tap in piu', e la striscia mangia spazio "
+            "verticale sul telefono.",
+        },
     ],
     "launch": {"view": "canvas"},
 }
@@ -1147,7 +1284,8 @@ def main():
     for name, fn in FILES.items():
         (SRC / name).write_text(fn(), encoding="utf-8")
     (SRC / "canvas.json").write_text(
-        json.dumps(CANVAS, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(CANVAS, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
     print("scritti:", ", ".join(sorted(FILES)), "+ canvas.json")
 
 

@@ -33,29 +33,43 @@ TABS_SETUP = F.TABS_SETUP
 STATE_LIVE = '<span class="state state--accent">In corso</span>'
 STATE_TODO = '<span class="state state--warn">Da giocare</span>'
 
-ICO_MORE = ('<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">'
-            '<circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/>'
-            '<circle cx="19" cy="12" r="2"/></svg>')
+ICO_MORE = (
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">'
+    '<circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/>'
+    '<circle cx="19" cy="12" r="2"/></svg>'
+)
 
 
 def tavolo_txt(n):
-    return (f'<span class="muted" style="font-size:12px">Tavolo '
-            f'<span class="num">{n}</span></span>')
+    return (
+        f'<span class="muted" style="font-size:12px">Tavolo '
+        f'<span class="num">{n}</span></span>'
+    )
 
 
 def cards_regia():
     """Le card di oggi: stato a sinistra, tavolo a destra, punteggio sotto."""
-    return (base.match_card("m.rossi", "4", "g.verdi", "2", STATE_LIVE, tavolo_txt(1))
-            + base.match_card("d.bianchi", "3", "l.ferrari", "3", STATE_LIVE, tavolo_txt(2))
-            + base.match_card("s.conti", "0", "p.marini", "0", STATE_TODO,
-                              '<button class="btn btn--warn btn--sm">Assegna tavolo</button>'))
+    return (
+        base.match_card("m.rossi", "4", "g.verdi", "2", STATE_LIVE, tavolo_txt(1))
+        + base.match_card("d.bianchi", "3", "l.ferrari", "3", STATE_LIVE, tavolo_txt(2))
+        + base.match_card(
+            "s.conti",
+            "0",
+            "p.marini",
+            "0",
+            STATE_TODO,
+            '<button class="btn btn--warn btn--sm">Assegna tavolo</button>',
+        )
+    )
 
 
 def cards_console():
     """Le card della console: il punteggio si segna qui."""
-    return (base.stepper_card("m.rossi", "4", "g.verdi", "2", "1")
-            + base.stepper_card("d.bianchi", "3", "l.ferrari", "3", "2")
-            + base.pending_card("s.conti", "p.marini"))
+    return (
+        base.stepper_card("m.rossi", "4", "g.verdi", "2", "1")
+        + base.stepper_card("d.bianchi", "3", "l.ferrari", "3", "2")
+        + base.pending_card("s.conti", "p.marini")
+    )
 
 
 ACTIONBAR = f"""
@@ -100,8 +114,11 @@ TOGGLE_PARTITE = """
 
 def sechead_turno(n, stato, cls="", menu=False):
     tone = "state--accent" if stato == "In corso" else "state--muted"
-    more = (f'<button class="iconbtn" style="background:var(--c7-card)">{ICO_MORE}</button>'
-            if menu else "")
+    more = (
+        f'<button class="iconbtn" style="background:var(--c7-card)">{ICO_MORE}</button>'
+        if menu
+        else ""
+    )
     return f"""
       <div class="sechead" style="margin-top:4px;align-items:center">
         <h3 class="{cls}">Turno {n}</h3>
@@ -118,9 +135,13 @@ TURNO1 = F.partite_turno(1, base.R1)
 # spareggio compare solo nelle gare che ce l'hanno.
 # --------------------------------------------------------------------------
 
-FASI = [("prep", "gear", "Preparazione"), ("iscr", "users", "Iscrizioni"),
-        ("gioco", "play", "In gioco"), ("ssr", "scale", "Spareggio"),
-        ("fine", "flag", "Chiusura")]
+FASI = [
+    ("prep", "gear", "Preparazione"),
+    ("iscr", "users", "Iscrizioni"),
+    ("gioco", "play", "In gioco"),
+    ("ssr", "scale", "Spareggio"),
+    ("fine", "flag", "Chiusura"),
+]
 
 
 def strip_bar(attiva, spareggio=False):
@@ -130,37 +151,52 @@ def strip_bar(attiva, spareggio=False):
     parts = []
     for i, (key, icon, label) in enumerate(fasi):
         if i > 0:
-            parts.append('<div style="height:2px;flex:1;background:var(--c7-line)"></div>')
+            parts.append(
+                '<div style="height:2px;flex:1;background:var(--c7-line)"></div>'
+            )
         if i < idx:
             parts.append(
                 '<div class="pill" style="height:34px;width:34px;padding:0;'
                 'justify-content:center;background:var(--c7-ok-bg);color:var(--c7-ok-ink)">'
-                f'{ico(I["check"], 14)}</div>')
+                f'{ico(I["check"], 14)}</div>'
+            )
         elif i == idx:
             parts.append(
                 '<div class="pill is-active" style="height:34px;font-size:12px;padding:0 14px">'
-                f'{ico(I[icon], 13)} {label}</div>')
+                f"{ico(I[icon], 13)} {label}</div>"
+            )
         else:
             parts.append(
                 '<div class="pill" style="height:34px;width:34px;padding:0;'
-                f'justify-content:center;color:var(--c7-ink-faint)">{ico(I[icon], 13)}</div>')
-    return ('<div style="display:flex;align-items:center;gap:8px;padding:14px 18px 12px">'
-            + "".join(parts) + "</div>")
+                f'justify-content:center;color:var(--c7-ink-faint)">{ico(I[icon], 13)}</div>'
+            )
+    return (
+        '<div style="display:flex;align-items:center;gap:8px;padding:14px 18px 12px">'
+        + "".join(parts)
+        + "</div>"
+    )
 
 
 # --------------------------------------------------------------------------
 # La preparazione: il contenuto della sintesi (1.1), con le voci a scelta
 # --------------------------------------------------------------------------
 
-def setup_content(esercizi="nessuno &mdash; facoltativo", esercizi_tone="neutral",
-                  riposa="X a tavolino all'ultimo iscritto"):
-    corpo = ("""
+
+def setup_content(
+    esercizi="nessuno &mdash; facoltativo",
+    esercizi_tone="neutral",
+    riposa="X a tavolino all'ultimo iscritto",
+):
+    corpo = """
         <div style="margin-top:10px;font-size:13px;font-weight:600;
              color:var(--c7-accent-dim);line-height:1.45">
           Quando apri le iscrizioni la gara diventa pubblica e chi &egrave; in
-          zona riceve la notifica.</div>""")
-    azione = ('<div style="margin-top:14px">'
-              + F.btn("Apri iscrizioni", "success", "play") + "</div>")
+          zona riceve la notifica.</div>"""
+    azione = (
+        '<div style="margin-top:14px">'
+        + F.btn("Apri iscrizioni", "success", "play")
+        + "</div>"
+    )
     return f"""
       {F.band("In preparazione", "Nessuno vede ancora la gara", corpo, azione)}
 
@@ -186,10 +222,12 @@ def regia_setup_content():
     perche' oggi non ci sono: i tavoli si modificano solo a iscrizioni
     aperte, la vetrina e' una pagina del menu."""
     fascia = F.band(
-        "In preparazione", "Nessuno vede ancora la gara",
+        "In preparazione",
+        "Nessuno vede ancora la gara",
         '<div style="margin-top:10px;font-size:13px;font-weight:600;'
         'color:var(--c7-accent-dim);line-height:1.45">Manca la vetrina. '
-        'I tavoli si scelgono con le iscrizioni aperte.</div>')
+        "I tavoli si scelgono con le iscrizioni aperte.</div>",
+    )
     gestione = f"""
       <section class="card stack">
         <h3>Gestione</h3>
@@ -210,8 +248,10 @@ def regia_setup_content():
       </section>"""
 
     def kv(k, v):
-        return (f'<div><div class="kicker">{k}</div>'
-                f'<div style="margin-top:4px;font-size:14px;font-weight:800">{v}</div></div>')
+        return (
+            f'<div><div class="kicker">{k}</div>'
+            f'<div style="margin-top:4px;font-size:14px;font-weight:800">{v}</div></div>'
+        )
 
     def turno(n):
         return f"""
@@ -250,9 +290,11 @@ def regia_setup_content():
 # Decisione 1 — la forma (scelta: 1B in gioco con la card scura, 1S in preparazione)
 # --------------------------------------------------------------------------
 
+
 def dec1_a():
-    content = (base.REGIA_BAND_MOBILE + sechead_turno(2, "In corso")
-               + cards_regia() + TURNO1)
+    content = (
+        base.REGIA_BAND_MOBILE + sechead_turno(2, "In corso") + cards_regia() + TURNO1
+    )
     return doc(phone(SUB, TABS4, content))
 
 
@@ -262,12 +304,13 @@ def dec1_b():
 
 
 def dec1_c():
-    content = (base.PHASE_STRIP + FASI_BAND + TOGGLE_PARTITE + cards_regia() + TURNO1
-               + f"""
+    content = (
+        base.PHASE_STRIP + FASI_BAND + TOGGLE_PARTITE + cards_regia() + TURNO1 + f"""
       <div class="rows">
         {base.todo_row(I["users"], "Iscritti", "10 attivi, nessuna riserva", "neutral")}
         {base.todo_row(I["gear"], "Impostazioni gara", "direttori, tavoli, squadre, turni", "neutral")}
-      </div>""")
+      </div>"""
+    )
     return doc(phone(SUB, "", content))
 
 
@@ -297,8 +340,13 @@ def dec2_linguette_gioco():
 
 
 def striscia_gioco_content():
-    return (CONSOLE_HEAD + sechead_turno(2, "In corso", menu=True) + cards_console()
-            + TURNO1 + ROWS_FONDO)
+    return (
+        CONSOLE_HEAD
+        + sechead_turno(2, "In corso", menu=True)
+        + cards_console()
+        + TURNO1
+        + ROWS_FONDO
+    )
 
 
 def dec2_striscia_gioco():
@@ -323,8 +371,17 @@ def dec2_striscia_menu_turno():
         un risultato chiuso &mdash; si tocca la sua card.
       </div>
     </div>"""
-    return doc(phone(SUB, strip_bar("gioco"), striscia_gioco_content(), ACTIONBAR,
-                     overlay=F.sheet("Turno 2", corpo, "", "In corso &middot; 2 partite chiuse su 5")))
+    return doc(
+        phone(
+            SUB,
+            strip_bar("gioco"),
+            striscia_gioco_content(),
+            ACTIONBAR,
+            overlay=F.sheet(
+                "Turno 2", corpo, "", "In corso &middot; 2 partite chiuse su 5"
+            ),
+        )
+    )
 
 
 def dec2_striscia_menu_partita():
@@ -341,9 +398,20 @@ def dec2_striscia_menu_partita():
         turno 3 non &egrave; avviato.
       </div>
     </div>"""
-    return doc(phone(SUB, strip_bar("gioco"), striscia_gioco_content(), ACTIONBAR,
-                     overlay=F.sheet("m.rossi vs g.verdi", corpo, "",
-                                     "In corso &middot; 4&ndash;2 &middot; tavolo 1")))
+    return doc(
+        phone(
+            SUB,
+            strip_bar("gioco"),
+            striscia_gioco_content(),
+            ACTIONBAR,
+            overlay=F.sheet(
+                "m.rossi vs g.verdi",
+                corpo,
+                "",
+                "In corso &middot; 4&ndash;2 &middot; tavolo 1",
+            ),
+        )
+    )
 
 
 def dec2_striscia_impostazioni():
@@ -373,7 +441,9 @@ def dec2_striscia_impostazioni():
         + F.row(I["target"], "Esercizi fra i turni", "nessuno", tone="locked")
         + F.row(I["scale"], "Chi riposa", "X a tavolino all'ultimo iscritto", tone="locked"))}
 """
-    return doc(phone("Gara 3 &middot; Gioved&igrave;", "", content, title="Impostazioni gara"))
+    return doc(
+        phone("Gara 3 &middot; Gioved&igrave;", "", content, title="Impostazioni gara")
+    )
 
 
 def dec2_striscia_spareggio():
@@ -394,6 +464,7 @@ def dec2_striscia_setup():
 # Decisione 3 — il punteggio (scelta: 3C, sulla card)
 # --------------------------------------------------------------------------
 
+
 def dec3_card():
     content = f"""
       {sechead_turno(2, "In corso")}
@@ -407,12 +478,22 @@ def dec3_card():
 
 def cards_foglio():
     segna = '<button class="btn btn--primary btn--sm">Segna il risultato</button>'
-    return (base.match_card("m.rossi", "4", "g.verdi", "2",
-                            STATE_LIVE + tavolo_txt(1), segna)
-            + base.match_card("d.bianchi", "3", "l.ferrari", "3",
-                              STATE_LIVE + tavolo_txt(2), segna)
-            + base.match_card("s.conti", "0", "p.marini", "0", STATE_TODO,
-                              '<button class="btn btn--warn btn--sm">Assegna tavolo</button>'))
+    return (
+        base.match_card(
+            "m.rossi", "4", "g.verdi", "2", STATE_LIVE + tavolo_txt(1), segna
+        )
+        + base.match_card(
+            "d.bianchi", "3", "l.ferrari", "3", STATE_LIVE + tavolo_txt(2), segna
+        )
+        + base.match_card(
+            "s.conti",
+            "0",
+            "p.marini",
+            "0",
+            STATE_TODO,
+            '<button class="btn btn--warn btn--sm">Assegna tavolo</button>',
+        )
+    )
 
 
 def dec3_foglio():
@@ -432,20 +513,38 @@ def dec3_foglio_aperto():
           <div>Al 5: vince chi arriva a 5 triangoli.</div></div>
       </div>
     </div>"""
-    return doc(phone(SUB, TABS4, sechead_turno(2, "In corso") + cards_foglio(),
-                     overlay=F.sheet("Segna il risultato", corpo,
-                                     F.btn("Imposta il risultato", "primary", "check"),
-                                     "m.rossi vs g.verdi &middot; tavolo 1")))
+    return doc(
+        phone(
+            SUB,
+            TABS4,
+            sechead_turno(2, "In corso") + cards_foglio(),
+            overlay=F.sheet(
+                "Segna il risultato",
+                corpo,
+                F.btn("Imposta il risultato", "primary", "check"),
+                "m.rossi vs g.verdi &middot; tavolo 1",
+            ),
+        )
+    )
 
 
 # --------------------------------------------------------------------------
 # Decisione 4 — gli esercizi: le due forme, entrambe con Amalfi
 # --------------------------------------------------------------------------
 
+
 def dec4_due_forme():
-    return doc(phone(SUB, TABS_SETUP, setup_content(
-        esercizi="1 dopo il turno 2 &middot; classifica a parte", esercizi_tone="ok",
-        riposa="X con esercizio &laquo;Stop shot&raquo; &middot; all'ultimo iscritto")))
+    return doc(
+        phone(
+            SUB,
+            TABS_SETUP,
+            setup_content(
+                esercizi="1 dopo il turno 2 &middot; classifica a parte",
+                esercizi_tone="ok",
+                riposa="X con esercizio &laquo;Stop shot&raquo; &middot; all'ultimo iscritto",
+            ),
+        )
+    )
 
 
 # --------------------------------------------------------------------------
@@ -456,16 +555,24 @@ TABS_FINE = base.vtabs(["Turni", "Classifica", "Iscritti"], "Turni")
 
 
 def fine_dopo_content(riepilogo):
-    corpo = ("""
+    corpo = """
         <div style="margin-top:10px;font-size:13px;font-weight:600;
              color:var(--c7-accent-dim);line-height:1.45">
-          10 partecipanti &middot; 20 partite giocate &middot; 4 turni.</div>""")
-    riga = (F.row(I["list"], "Riepilogo partite", "20 partite, tutte validate", tone="neutral")
-            if riepilogo == "link" else "")
+          10 partecipanti &middot; 20 partite giocate &middot; 4 turni.</div>"""
+    riga = (
+        F.row(
+            I["list"], "Riepilogo partite", "20 partite, tutte validate", tone="neutral"
+        )
+        if riepilogo == "link"
+        else ""
+    )
     partite = ""
     if riepilogo == "sezione":
-        partite = (F.sec("Partite", "20, tutte validate")
-                   + F.partite_turno(4, F.T4) + F.partite_turno(3, base.R1))
+        partite = (
+            F.sec("Partite", "20, tutte validate")
+            + F.partite_turno(4, F.T4)
+            + F.partite_turno(3, base.R1)
+        )
     return f"""
       {F.band("Gara conclusa", "Ha vinto m.rossi", corpo)}
 
@@ -501,98 +608,120 @@ RIGA = 1300
 NOTE_W = 1060
 
 RIGHE = [
-    ("dec-1",
-     "DECISIONE 1 · LA FORMA — in gioco (le prime tre) e in preparazione (le ultime due)\n"
-     "SCELTA (12/09): 1B in gioco, con la card riassuntiva scura come la fascia; 1S in "
-     "preparazione. Applicata alle pagine 1–5. Nota: i tavoli si scelgono sempre, di "
-     "solito prima di avviare un turno; la riga mostra quanti ne ha la sala.\n"
-     "Stessi dati: turno 2 di 4, 2 partite chiuse su 5, m.rossi–g.verdi 4–2 al "
-     "tavolo 1, d.bianchi–l.ferrari 3–3 al tavolo 2, s.conti–p.marini senza "
-     "tavolo, turno 1 concluso.\n"
-     "1A · Regia: la pagina di oggi più una fascia che dice cosa tiene aperto il turno.\n"
-     "1B · Console: il turno è la pagina, il punteggio si segna sulla card, l'azione "
-     "della fase sta nella barra in fondo.\n"
-     "1C · Fasi: la striscia del ciclo al posto delle linguette, la fascia dice l'unica "
-     "cosa da fare, classifica in un commutatore, iscritti e impostazioni come righe.",
-     [("Dec1A", dec1_a, "1A · Regia — in gioco"),
-      ("Dec1B", dec1_b, "1B · Console — in gioco (scelta)"),
-      ("Dec1C", dec1_c, "1C · Fasi — in gioco"),
-      ("Dec1ASetup", dec1_a_setup, "1A · Regia — in preparazione"),
-      ("Dec1SSetup", dec1_s_setup, "1S · Sintesi — in preparazione (scelta)")]),
-
-    ("dec-2",
-     "DECISIONE 2 · LINGUETTE O STRISCIA DI FASE — stesso contenuto, cambia la navigazione\n"
-     "SCELTA (12/09): la striscia. Corretto il 12/09 sera dopo le tue obiezioni, con il "
-     "codice alla mano:\n"
-     "• IL TURNO ha un solo comando durante il gioco: annullarne l'avvio, e solo finché "
-     "nessuna partita ha segnato un triangolo (X esclusa — `Gara.can_cancel_round`, "
-     "use case 8). Sta nei tre puntini accanto a «Turno 2».\n"
-     "• LA PARTITA ha i suoi comandi sulla card: cambia tavolo (3.2), azzera la partita "
-     "(`reset_match`, finché il turno dopo non è avviato), e su una chiusa «correggi il "
-     "risultato» (3.4). Il «da validare» è la 3.3: una partita arrivata alla distanza dal "
-     "segnapunti dei giocatori senza la doppia conferma mostra «Valida», che la chiude e "
-     "libera il tavolo (`MatchValidationService.validate_and_complete`).\n"
-     "• L'azzeramento in blocco del turno l'avevo messo io: nell'app c'è («Reset ultimo "
-     "turno», `bulk_reset_round_matches`) ma compare solo a gara finita, prima di "
-     "terminarla. Tolto dal disegno.\n"
-     "• «IMPOSTAZIONI GARA» in gioco contiene solo ciò che si tocca davvero: direttori e "
-     "vetrina (modificabili in ogni stato) e i tavoli (oggi bloccati dopo l'avvio; la "
-     "regola nuova li vuole modificabili fra un turno e l'altro). Il resto si legge. La "
-     "gara si modifica solo in preparazione senza iscritti, si elimina solo fino alle "
-     "iscrizioni: la prima versione di questa schermata li inventava.\n"
-     "• L'azione della fase (avvia il turno 3, termina la gara) resta nella barra in fondo.\n"
-     "Lo spareggio ha la sua tacca nella striscia, fra il gioco e la chiusura, e compare "
-     "solo nelle gare che ce l'hanno (schermata 2S · nello spareggio, contenuto della 4.1).",
-     [("Dec2LGioco", dec2_linguette_gioco, "2L · Linguette — in gioco"),
-      ("Dec2SGioco", dec2_striscia_gioco, "2S · Striscia — in gioco (scelta)"),
-      ("Dec2SMenuTurno", dec2_striscia_menu_turno, "2S · Il menu del turno"),
-      ("Dec2SMenuPartita", dec2_striscia_menu_partita, "2S · Il menu della partita"),
-      ("Dec2SImpostazioni", dec2_striscia_impostazioni, "2S · Impostazioni gara"),
-      ("Dec2SSpareggio", dec2_striscia_spareggio, "2S · Striscia — nello spareggio"),
-      ("Dec2LSetup", dec2_linguette_setup, "2L · Linguette — in preparazione"),
-      ("Dec2SSetup", dec2_striscia_setup, "2S · Striscia — in preparazione")]),
-
-    ("dec-3",
-     "DECISIONE 3 · IL PUNTEGGIO — dove si segna il risultato di una partita del turno\n"
-     "SCELTA (12/09): 3C, sulla card. La 3.3 «Segna il risultato» è uscita dalla "
-     "pagina 3.\n"
-     "3C · Sulla card: gli stepper stanno sulla card, ogni tocco scrive il punteggio; a "
-     "5 la partita si chiude e il tavolo si libera. Niente foglio, niente conferma. "
-     "Tocca il segnapunti: una scrittura per tocco, la conferma da ripensare.\n"
-     "3F · Dal foglio: la card mostra il punteggio e «Segna il risultato»; il foglio ha "
-     "gli stepper e la riga che dice chi vince. Era il meccanismo di oggi (il "
-     "«risultato rapido» dalla card), rivestito.",
-     [("Dec3Card", dec3_card, "3C · Sulla card (scelta)"),
-      ("Dec3Foglio", dec3_foglio, "3F · Dal foglio"),
-      ("Dec3FoglioAperto", dec3_foglio_aperto, "3F · Il foglio aperto")]),
-
-    ("dec-4",
-     "DECISIONE 4 · GLI ESERCIZI — le due forme, entrambe anche con Amalfi\n"
-     "La domanda «nascosta o spenta» era posta male: la spunta di oggi copre una sola "
-     "forma. Ce ne sono due, e la schermata le mostra insieme su una gara Amalfi:\n"
-     "• ESERCIZI FRA I TURNI: uno o più esercizi che si giocano dopo un turno "
-     "(GaraChallenge.round_number), con tentativi contati e una classifica a parte "
-     "accanto a quella della gara. Riga «Esercizi fra i turni» in «Da preparare», "
-     "facoltativa. Oggi l'app li mostra solo con l'accoppiamento casuale, ma il "
-     "limite sta nei template (_gara_management.html, _gara_challenges_display.html): "
-     "il servizio non lo impone. Con Amalfi va aperto.\n"
-     "• X CON ESERCIZIO: la policy dei dispari «Bye+Challenge», chi riposa gioca "
-     "l'esercizio e prende una vittoria e una differenza pari al punteggio "
-     "(SPECIFICHE.md riga 138). È una voce di «Chi riposa», non degli esercizi. Oggi "
-     "l'app la offre con qualunque strategia tranne i tabelloni "
-     "(x_challenge_section.js).\n"
-     "Da confermare: i due testi delle righe.",
-     [("Dec4Due", dec4_due_forme, "4 · Le due forme, con Amalfi")]),
-
-    ("dec-5",
-     "DECISIONE 5 · «RIEPILOGO PARTITE» A GARA CONCLUSA — la pagina dopo la fine, vista Turni\n"
-     "SCELTA (12/09): 5S, le partite restano in pagina. Applicata alla 5.2. La pagina "
-     "pubblica a gara conclusa mostra la classifica finale (vetrina_gara.html, "
-     "`vetrina.conclusa`): la riga ora lo dice.\n"
-     "5L · Link: una riga che apre l'elenco, pagina corta. 5S · Sezione: le partite in "
-     "pagina, turno per turno; è ciò che l'app fa oggi.",
-     [("Dec5Link", dec5_link, "5L · Link"),
-      ("Dec5Sezione", dec5_sezione, "5S · Sezione in pagina (scelta)")]),
+    (
+        "dec-1",
+        "DECISIONE 1 · LA FORMA — in gioco (le prime tre) e in preparazione (le ultime due)\n"
+        "SCELTA (12/09): 1B in gioco, con la card riassuntiva scura come la fascia; 1S in "
+        "preparazione. Applicata alle pagine 1–5. Nota: i tavoli si scelgono sempre, di "
+        "solito prima di avviare un turno; la riga mostra quanti ne ha la sala.\n"
+        "Stessi dati: turno 2 di 4, 2 partite chiuse su 5, m.rossi–g.verdi 4–2 al "
+        "tavolo 1, d.bianchi–l.ferrari 3–3 al tavolo 2, s.conti–p.marini senza "
+        "tavolo, turno 1 concluso.\n"
+        "1A · Regia: la pagina di oggi più una fascia che dice cosa tiene aperto il turno.\n"
+        "1B · Console: il turno è la pagina, il punteggio si segna sulla card, l'azione "
+        "della fase sta nella barra in fondo.\n"
+        "1C · Fasi: la striscia del ciclo al posto delle linguette, la fascia dice l'unica "
+        "cosa da fare, classifica in un commutatore, iscritti e impostazioni come righe.",
+        [
+            ("Dec1A", dec1_a, "1A · Regia — in gioco"),
+            ("Dec1B", dec1_b, "1B · Console — in gioco (scelta)"),
+            ("Dec1C", dec1_c, "1C · Fasi — in gioco"),
+            ("Dec1ASetup", dec1_a_setup, "1A · Regia — in preparazione"),
+            ("Dec1SSetup", dec1_s_setup, "1S · Sintesi — in preparazione (scelta)"),
+        ],
+    ),
+    (
+        "dec-2",
+        "DECISIONE 2 · LINGUETTE O STRISCIA DI FASE — stesso contenuto, cambia la navigazione\n"
+        "SCELTA (12/09): la striscia. Corretto il 12/09 sera dopo le tue obiezioni, con il "
+        "codice alla mano:\n"
+        "• IL TURNO ha un solo comando durante il gioco: annullarne l'avvio, e solo finché "
+        "nessuna partita ha segnato un triangolo (X esclusa — `Gara.can_cancel_round`, "
+        "use case 8). Sta nei tre puntini accanto a «Turno 2».\n"
+        "• LA PARTITA ha i suoi comandi sulla card: cambia tavolo (3.2), azzera la partita "
+        "(`reset_match`, finché il turno dopo non è avviato), e su una chiusa «correggi il "
+        "risultato» (3.4). Il «da validare» è la 3.3: una partita arrivata alla distanza dal "
+        "segnapunti dei giocatori senza la doppia conferma mostra «Valida», che la chiude e "
+        "libera il tavolo (`MatchValidationService.validate_and_complete`).\n"
+        "• L'azzeramento in blocco del turno l'avevo messo io: nell'app c'è («Reset ultimo "
+        "turno», `bulk_reset_round_matches`) ma compare solo a gara finita, prima di "
+        "terminarla. Tolto dal disegno.\n"
+        "• «IMPOSTAZIONI GARA» in gioco contiene solo ciò che si tocca davvero: direttori e "
+        "vetrina (modificabili in ogni stato) e i tavoli (oggi bloccati dopo l'avvio; la "
+        "regola nuova li vuole modificabili fra un turno e l'altro). Il resto si legge. La "
+        "gara si modifica solo in preparazione senza iscritti, si elimina solo fino alle "
+        "iscrizioni: la prima versione di questa schermata li inventava.\n"
+        "• L'azione della fase (avvia il turno 3, termina la gara) resta nella barra in fondo.\n"
+        "Lo spareggio ha la sua tacca nella striscia, fra il gioco e la chiusura, e compare "
+        "solo nelle gare che ce l'hanno (schermata 2S · nello spareggio, contenuto della 4.1).",
+        [
+            ("Dec2LGioco", dec2_linguette_gioco, "2L · Linguette — in gioco"),
+            ("Dec2SGioco", dec2_striscia_gioco, "2S · Striscia — in gioco (scelta)"),
+            ("Dec2SMenuTurno", dec2_striscia_menu_turno, "2S · Il menu del turno"),
+            (
+                "Dec2SMenuPartita",
+                dec2_striscia_menu_partita,
+                "2S · Il menu della partita",
+            ),
+            ("Dec2SImpostazioni", dec2_striscia_impostazioni, "2S · Impostazioni gara"),
+            (
+                "Dec2SSpareggio",
+                dec2_striscia_spareggio,
+                "2S · Striscia — nello spareggio",
+            ),
+            ("Dec2LSetup", dec2_linguette_setup, "2L · Linguette — in preparazione"),
+            ("Dec2SSetup", dec2_striscia_setup, "2S · Striscia — in preparazione"),
+        ],
+    ),
+    (
+        "dec-3",
+        "DECISIONE 3 · IL PUNTEGGIO — dove si segna il risultato di una partita del turno\n"
+        "SCELTA (12/09): 3C, sulla card. La 3.3 «Segna il risultato» è uscita dalla "
+        "pagina 3.\n"
+        "3C · Sulla card: gli stepper stanno sulla card, ogni tocco scrive il punteggio; a "
+        "5 la partita si chiude e il tavolo si libera. Niente foglio, niente conferma. "
+        "Tocca il segnapunti: una scrittura per tocco, la conferma da ripensare.\n"
+        "3F · Dal foglio: la card mostra il punteggio e «Segna il risultato»; il foglio ha "
+        "gli stepper e la riga che dice chi vince. Era il meccanismo di oggi (il "
+        "«risultato rapido» dalla card), rivestito.",
+        [
+            ("Dec3Card", dec3_card, "3C · Sulla card (scelta)"),
+            ("Dec3Foglio", dec3_foglio, "3F · Dal foglio"),
+            ("Dec3FoglioAperto", dec3_foglio_aperto, "3F · Il foglio aperto"),
+        ],
+    ),
+    (
+        "dec-4",
+        "DECISIONE 4 · GLI ESERCIZI — le due forme, entrambe anche con Amalfi\n"
+        "La domanda «nascosta o spenta» era posta male: la spunta di oggi copre una sola "
+        "forma. Ce ne sono due, e la schermata le mostra insieme su una gara Amalfi:\n"
+        "• ESERCIZI FRA I TURNI: uno o più esercizi che si giocano dopo un turno "
+        "(GaraChallenge.round_number), con tentativi contati e una classifica a parte "
+        "accanto a quella della gara. Riga «Esercizi fra i turni» in «Da preparare», "
+        "facoltativa. Oggi l'app li mostra solo con l'accoppiamento casuale, ma il "
+        "limite sta nei template (_gara_management.html, _gara_challenges_display.html): "
+        "il servizio non lo impone. Con Amalfi va aperto.\n"
+        "• X CON ESERCIZIO: la policy dei dispari «Bye+Challenge», chi riposa gioca "
+        "l'esercizio e prende una vittoria e una differenza pari al punteggio "
+        "(SPECIFICHE.md riga 138). È una voce di «Chi riposa», non degli esercizi. Oggi "
+        "l'app la offre con qualunque strategia tranne i tabelloni "
+        "(x_challenge_section.js).\n"
+        "Da confermare: i due testi delle righe.",
+        [("Dec4Due", dec4_due_forme, "4 · Le due forme, con Amalfi")],
+    ),
+    (
+        "dec-5",
+        "DECISIONE 5 · «RIEPILOGO PARTITE» A GARA CONCLUSA — la pagina dopo la fine, vista Turni\n"
+        "SCELTA (12/09): 5S, le partite restano in pagina. Applicata alla 5.2. La pagina "
+        "pubblica a gara conclusa mostra la classifica finale (vetrina_gara.html, "
+        "`vetrina.conclusa`): la riga ora lo dice.\n"
+        "5L · Link: una riga che apre l'elenco, pagina corta. 5S · Sezione: le partite in "
+        "pagina, turno per turno; è ciò che l'app fa oggi.",
+        [
+            ("Dec5Link", dec5_link, "5L · Link"),
+            ("Dec5Sezione", dec5_sezione, "5S · Sezione in pagina (scelta)"),
+        ],
+    ),
 ]
 
 NOTA_COME = (
@@ -603,7 +732,8 @@ NOTA_COME = (
     "Il 12/09 le cinque hanno avuto risposta (le righe «SCELTA»); le scelte sono "
     "applicate alle pagine 1–5, che restano la proposta completa. Restano aperti due "
     "punti: la gestione con la striscia (decisione 2) e i testi degli esercizi "
-    "(decisione 4).")
+    "(decisione 4)."
+)
 
 PAGINA = {"id": "page-0", "name": "0 · Decisioni"}
 
@@ -613,27 +743,54 @@ def main():
 
     canvas = json.loads((SRC / "canvas.json").read_text(encoding="utf-8"))
     canvas["pages"] = [PAGINA] + [p for p in canvas["pages"] if p["id"] != PAGINA["id"]]
-    canvas["annotations"].append({"id": "dec-come", "page": PAGINA["id"],
-                                  "x": 0, "y": -600, "w": NOTE_W, "text": NOTA_COME})
+    canvas["annotations"].append(
+        {
+            "id": "dec-come",
+            "page": PAGINA["id"],
+            "x": 0,
+            "y": -600,
+            "w": NOTE_W,
+            "text": NOTA_COME,
+        }
+    )
 
     for riga, (nid, testo, schermate) in enumerate(RIGHE):
         y = riga * RIGA
-        canvas["annotations"].append({"id": nid, "page": PAGINA["id"],
-                                      "x": 0, "y": y - 340, "w": NOTE_W, "text": testo})
+        canvas["annotations"].append(
+            {
+                "id": nid,
+                "page": PAGINA["id"],
+                "x": 0,
+                "y": y - 340,
+                "w": NOTE_W,
+                "text": testo,
+            }
+        )
         for colonna, (stem, fn, titolo) in enumerate(schermate):
             nome = f"{stem}.dc.html"
             (SRC / nome).write_text(fn(), encoding="utf-8")
-            canvas["artboards"].append({
-                "file": nome, "title": titolo, "page": PAGINA["id"],
-                "x": colonna * COL, "y": y, "w": 390, "h": 844})
+            canvas["artboards"].append(
+                {
+                    "file": nome,
+                    "title": titolo,
+                    "page": PAGINA["id"],
+                    "x": colonna * COL,
+                    "y": y,
+                    "w": 390,
+                    "h": 844,
+                }
+            )
 
     canvas["launch"] = {"view": "canvas", "page": PAGINA["id"]}
     (SRC / "canvas.json").write_text(
-        json.dumps(canvas, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(canvas, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
     files = list(dict.fromkeys(a["file"] for a in canvas["artboards"]))
-    print(f"{len(files)} artboard su {len(canvas['pages'])} pagine, "
-          f"{len(canvas['annotations'])} bigliettini")
+    print(
+        f"{len(files)} artboard su {len(canvas['pages'])} pagine, "
+        f"{len(canvas['annotations'])} bigliettini"
+    )
     print("--artboard " + " --artboard ".join(files))
 
 

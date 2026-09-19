@@ -134,14 +134,11 @@ def classifica_finale(telefono=True):
           <div class="grow"><div class="rows__title">{nome}</div></div>
           {celle}
         </div>"""
-    return fasi.rows(
-        f"""
+    return fasi.rows(f"""
         <div class="rows__row" style="padding-top:11px;padding-bottom:11px">
           <div style="width:20px"></div>
           <div class="grow label" style="margin:0;padding-left:46px">Giocatore</div>{head}
-        </div>"""
-        + body
-    )
+        </div>""" + body)
 
 
 def gare():
@@ -154,12 +151,16 @@ def gare():
     )
 
 
-FERMO = '<span></span>'
+FERMO = "<span></span>"
 
 
 def gestione():
     return fasi.rows(
-        fasi.row(I["trophy"], "Playoff", "finale conclusa &middot; campionato + finale, peso 1")
+        fasi.row(
+            I["trophy"],
+            "Playoff",
+            "finale conclusa &middot; campionato + finale, peso 1",
+        )
         + fasi.row(I["users"], "Direttori", "tu e m.neri")
         + fasi.row(I["share"], "Vetrina", "locandina caricata")
         + fasi.row(I["gear"], "Impostazioni", "Palla 8 &middot; al 5 &middot; Amalfi")
@@ -169,9 +170,16 @@ def gestione():
 def il_campionato():
     """Al posto di Gestione, nella pagina pubblica: i fatti della vetrina."""
     return fasi.rows(
-        fasi.row(I["trophy"], "Formula", "Amalfi &middot; classifica a vittorie", right=FERMO)
+        fasi.row(
+            I["trophy"], "Formula", "Amalfi &middot; classifica a vittorie", right=FERMO
+        )
         + fasi.row(I["table"], "Dove", "Sala Centrale &middot; Udine", right=FERMO)
-        + fasi.row(I["users"], "Giocatori", f"{vt.GIOCATORI} in 5 gare e la finale", right=FERMO)
+        + fasi.row(
+            I["users"],
+            "Giocatori",
+            f"{vt.GIOCATORI} in 5 gare e la finale",
+            right=FERMO,
+        )
         + fasi.row(I["share"], "Vetrina", "locandina e link da condividere")
     )
 
@@ -184,14 +192,18 @@ SOTTO_DESKTOP = (
 
 
 def telefono_lungo(html, altezza):
-    return html.replace('<div class="phone">', f'<div class="phone" style="height:{altezza}px">')
+    return html.replace(
+        '<div class="phone">', f'<div class="phone" style="height:{altezza}px">'
+    )
 
 
 def desktop_lungo(actions, content, altezza, sotto):
     html = (
         desktop(actions, content)
         .replace('<div class="app">', f'<div class="app" style="height:{altezza}px">')
-        .replace('<div class="dcontent">', '<div class="dcontent" style="overflow:visible">')
+        .replace(
+            '<div class="dcontent">', '<div class="dcontent" style="overflow:visible">'
+        )
         .replace("Gara 3 &middot; Gioved&igrave;</h1>", f"{TITOLO}</h1>")
         .replace(SOTTO_DESKTOP, sotto)
     )
@@ -202,15 +214,26 @@ def da_giocatore(html):
     """Il guscio del canvas e' quello del direttore pa: la pagina pubblica
     la guarda un giocatore."""
     return (
-        html.replace('<div class="side__role">direzione gara</div>', '<div class="side__role">giocatore</div>')
-        .replace('<div style="font-size:13px;font-weight:800">pa</div>', '<div style="font-size:13px;font-weight:800">g.ferri</div>')
+        html.replace(
+            '<div class="side__role">direzione gara</div>',
+            '<div class="side__role">giocatore</div>',
+        )
+        .replace(
+            '<div style="font-size:13px;font-weight:800">pa</div>',
+            '<div style="font-size:13px;font-weight:800">g.ferri</div>',
+        )
         .replace("direttore &middot; Lv 17", "giocatore &middot; Lv 9")
         .replace('<div class="avatar">PA</div>', '<div class="avatar">GF</div>')
-        .replace('<div class="avatar avatar--lg">PA</div>', '<div class="avatar avatar--lg">GF</div>')
+        .replace(
+            '<div class="avatar avatar--lg">PA</div>',
+            '<div class="avatar avatar--lg">GF</div>',
+        )
     )
 
 
-VETRINA = f'<button class="btn btn--secondary btn--sm">{ico(I["share"], 15)} Vetrina</button>'
+VETRINA = (
+    f'<button class="btn btn--secondary btn--sm">{ico(I["share"], 15)} Vetrina</button>'
+)
 
 
 # ---------------------------------------------------------------- le schermate
@@ -224,8 +247,12 @@ def direttore_mobile():
       {fasi.sec("Gestione")}
       {gestione()}
 """
-    html = phone("Amalfi &middot; concluso", vtabs(["Classifica", "Gare", "Gestione"], "Classifica"),
-                 content, title=TITOLO)
+    html = phone(
+        "Amalfi &middot; concluso",
+        vtabs(["Classifica", "Gare", "Gestione"], "Classifica"),
+        content,
+        title=TITOLO,
+    )
     return con_stile(doc(telefono_lungo(html, 2020)))
 
 
@@ -243,8 +270,12 @@ def direttore_desktop():
           {fasi.sec("Gestione")}
           {gestione()}
         </div>"""
-    return desktop_lungo(VETRINA, f'<div class="cols">{sinistra}{destra}</div>', 1060,
-                         "Amalfi &middot; concluso &middot; Sala Centrale &middot; 5 gare + finale")
+    return desktop_lungo(
+        VETRINA,
+        f'<div class="cols">{sinistra}{destra}</div>',
+        1060,
+        "Amalfi &middot; concluso &middot; Sala Centrale &middot; 5 gare + finale",
+    )
 
 
 def pubblica_mobile():
@@ -257,8 +288,12 @@ def pubblica_mobile():
       {fasi.sec("Il campionato")}
       {il_campionato()}
 """
-    html = phone("Amalfi &middot; concluso", vtabs(["Classifica", "Gare", "Il campionato"], "Classifica"),
-                 content, title=TITOLO)
+    html = phone(
+        "Amalfi &middot; concluso",
+        vtabs(["Classifica", "Gare", "Il campionato"], "Classifica"),
+        content,
+        title=TITOLO,
+    )
     return da_giocatore(con_stile(doc(telefono_lungo(html, 2020))))
 
 
@@ -277,8 +312,12 @@ def pubblica_desktop():
           {il_campionato()}
         </div>"""
     return da_giocatore(
-        desktop_lungo(VETRINA, f'<div class="cols">{sinistra}{destra}</div>', 1060,
-                      "Amalfi &middot; concluso &middot; Sala Centrale &middot; 5 gare + finale")
+        desktop_lungo(
+            VETRINA,
+            f'<div class="cols">{sinistra}{destra}</div>',
+            1060,
+            "Amalfi &middot; concluso &middot; Sala Centrale &middot; 5 gare + finale",
+        )
     )
 
 
@@ -294,7 +333,15 @@ def canvas():
     tel, desk = (390, 1440)
 
     def ab(file, page, x, w, h, title):
-        return {"file": file, "page": page, "x": x, "y": 0, "w": w, "h": h, "title": title}
+        return {
+            "file": file,
+            "page": page,
+            "x": x,
+            "y": 0,
+            "w": w,
+            "h": h,
+            "title": title,
+        }
 
     def nota(id_, page, x, w, text, y=-300):
         return {"id": id_, "page": page, "x": x, "y": y, "w": w, "text": text}
@@ -303,54 +350,143 @@ def canvas():
         "pages": PAGINE,
         "artboards": [
             ab("Main.dc.html", "page-1", 0, tel, 1900, "Vetrina · telefono"),
-            ab("VetrinaDesktop.dc.html", "page-1", 470, desk, 1720, "Vetrina · desktop"),
-            ab("DirettoreMobile.dc.html", "page-2", 0, tel, 2020, "Direttore · telefono"),
-            ab("DirettoreDesktop.dc.html", "page-2", 470, desk, 1060, "Direttore · desktop"),
+            ab(
+                "VetrinaDesktop.dc.html", "page-1", 470, desk, 1720, "Vetrina · desktop"
+            ),
+            ab(
+                "DirettoreMobile.dc.html",
+                "page-2",
+                0,
+                tel,
+                2020,
+                "Direttore · telefono",
+            ),
+            ab(
+                "DirettoreDesktop.dc.html",
+                "page-2",
+                470,
+                desk,
+                1060,
+                "Direttore · desktop",
+            ),
             ab("PubblicaMobile.dc.html", "page-3", 0, tel, 2020, "Pubblica · telefono"),
-            ab("PubblicaDesktop.dc.html", "page-3", 470, desk, 1060, "Pubblica · desktop"),
+            ab(
+                "PubblicaDesktop.dc.html",
+                "page-3",
+                470,
+                desk,
+                1060,
+                "Pubblica · desktop",
+            ),
             ab("Oggi.dc.html", "page-4", 0, tel, 1900, "Oggi · com'è adesso"),
-            ab("ComeFinita.dc.html", "page-4", 470, tel, 2050, "B · Com'è finita, come la gara conclusa"),
-            ab("Classifica.dc.html", "page-4", 940, tel, 1900, "C · Il podio è la classifica"),
+            ab(
+                "ComeFinita.dc.html",
+                "page-4",
+                470,
+                tel,
+                2050,
+                "B · Com'è finita, come la gara conclusa",
+            ),
+            ab(
+                "Classifica.dc.html",
+                "page-4",
+                940,
+                tel,
+                1900,
+                "C · Il podio è la classifica",
+            ),
         ],
         "annotations": [
-            nota("premessa", "page-1", 0, 1910, (
-                "Un campionato concluso in tre pagine: la vetrina, la pagina del direttore e la pagina "
-                "pubblica. Stessi dati ovunque: il campione è m.rossi, primo della classifica finale; la "
-                "finale playoff l'ha vinta a.verdi e sta fra le gare come tutte le altre.\n\nLa forma è la A, "
-                "scelta sulla vetrina: il campione in cima, dentro la superficie scura che apre la pagina, "
-                "con secondo e terzo sotto (nella fascia desktop dell'app, a destra)."), y=-560),
-            nota("nota-vetrina", "page-1", 470, 1440, (
-                "VETRINA DESKTOP\nIl campione resta sulla targa. La colonna di destra, che oggi contiene "
-                "solo il riquadro delle iscrizioni, prende la classifica finale: sul telefono sta prima delle "
-                "gare, qui accanto. In fondo alla colonna, Condividi e chi organizza.")),
-            nota("nota-direttore", "page-2", 0, 1910, (
-                "PAGINA DEL DIRETTORE\nLa fascia dice chi ha vinto il campionato, come la targa della "
-                "vetrina. Oggi dice «Classifica definitiva · Playoff Elite: vince player2», con il pulsante "
-                "«Risultati della finale».\n• Il pulsante sparisce: la finale sta fra le gare con «ha vinto "
-                "a.verdi», come tutte.\n• «Classifica generale · dopo la gara N» diventa «Classifica "
-                "finale», e perde la zona playoff (a playoff conclusi non segna più niente) e le frecce di tendenza. Sul telefono senza la colonna Gare, per lasciare posto al nome.\n• Ogni gara "
-                "conclusa dice chi l'ha vinta: oggi la riga dice data, sala e iscritti.\n\nRILIEVO: oggi la "
-                "sezione Gare scrive «3 di 2», perché le gare previste non contano la finale ma l'elenco sì. "
-                "Qui «5 + finale», in tutte e tre le pagine."), y=-420),
-            nota("nota-pubblica", "page-3", 0, 1910, (
-                "PAGINA PUBBLICA\nOggi è ancora la vecchia pagina Bootstrap: Informazioni, Statistiche, "
-                "classifica con la zona playoff, tabella delle gare, nessun vincitore. Qui è la pagina del "
-                "direttore in sola lettura: stessa fascia col campione, stessa classifica finale, stesse "
-                "gare. Al posto di Gestione, «Il campionato»: formula, sala, giocatori e il link alla "
-                "vetrina.\n\nDA DECIDERE DOPO: con la vetrina, il campionato ha due pagine pubbliche. "
-                "Questa serve a chi è dentro l'app, la vetrina a chi arriva da un link condiviso."), y=-420),
-            nota("nota-oggi", "page-4", 0, tel, (
-                "OGGI\nIn cima c'è solo «Campionato concluso». Chi ha vinto si deduce dalla classifica "
-                "«dopo 6 gare», che viene dopo il calendario, e in fondo resta il riquadro delle iscrizioni.")),
-            nota("nota-b", "page-4", 470, tel, (
-                "B · COM'È FINITA\nUna card accento sotto la targa con il podio a tre posti, il primo al "
-                "centro e più grande: è lo stesso podio della gara conclusa.\nPro: chi ha visto una gara "
-                "finita riconosce il campionato finito.\nContro: la classifica scende di circa 250px, e i "
-                "primi tre compaiono due volte.")),
-            nota("nota-c", "page-4", 940, tel, (
-                "C · IL PODIO È LA CLASSIFICA\nNessun blocco nuovo: la classifica finale sale sotto la "
-                "targa, i primi tre prendono i colori delle medaglie e il primo la scritta «Campione».\n"
-                "Pro: niente di ripetuto.\nContro: il campione è una riga, non un annuncio.")),
+            nota(
+                "premessa",
+                "page-1",
+                0,
+                1910,
+                (
+                    "Un campionato concluso in tre pagine: la vetrina, la pagina del direttore e la pagina "
+                    "pubblica. Stessi dati ovunque: il campione è m.rossi, primo della classifica finale; la "
+                    "finale playoff l'ha vinta a.verdi e sta fra le gare come tutte le altre.\n\nLa forma è la A, "
+                    "scelta sulla vetrina: il campione in cima, dentro la superficie scura che apre la pagina, "
+                    "con secondo e terzo sotto (nella fascia desktop dell'app, a destra)."
+                ),
+                y=-560,
+            ),
+            nota(
+                "nota-vetrina",
+                "page-1",
+                470,
+                1440,
+                (
+                    "VETRINA DESKTOP\nIl campione resta sulla targa. La colonna di destra, che oggi contiene "
+                    "solo il riquadro delle iscrizioni, prende la classifica finale: sul telefono sta prima delle "
+                    "gare, qui accanto. In fondo alla colonna, Condividi e chi organizza."
+                ),
+            ),
+            nota(
+                "nota-direttore",
+                "page-2",
+                0,
+                1910,
+                (
+                    "PAGINA DEL DIRETTORE\nLa fascia dice chi ha vinto il campionato, come la targa della "
+                    "vetrina. Oggi dice «Classifica definitiva · Playoff Elite: vince player2», con il pulsante "
+                    "«Risultati della finale».\n• Il pulsante sparisce: la finale sta fra le gare con «ha vinto "
+                    "a.verdi», come tutte.\n• «Classifica generale · dopo la gara N» diventa «Classifica "
+                    "finale», e perde la zona playoff (a playoff conclusi non segna più niente) e le frecce di tendenza. Sul telefono senza la colonna Gare, per lasciare posto al nome.\n• Ogni gara "
+                    "conclusa dice chi l'ha vinta: oggi la riga dice data, sala e iscritti.\n\nRILIEVO: oggi la "
+                    "sezione Gare scrive «3 di 2», perché le gare previste non contano la finale ma l'elenco sì. "
+                    "Qui «5 + finale», in tutte e tre le pagine."
+                ),
+                y=-420,
+            ),
+            nota(
+                "nota-pubblica",
+                "page-3",
+                0,
+                1910,
+                (
+                    "PAGINA PUBBLICA\nOggi è ancora la vecchia pagina Bootstrap: Informazioni, Statistiche, "
+                    "classifica con la zona playoff, tabella delle gare, nessun vincitore. Qui è la pagina del "
+                    "direttore in sola lettura: stessa fascia col campione, stessa classifica finale, stesse "
+                    "gare. Al posto di Gestione, «Il campionato»: formula, sala, giocatori e il link alla "
+                    "vetrina.\n\nDA DECIDERE DOPO: con la vetrina, il campionato ha due pagine pubbliche. "
+                    "Questa serve a chi è dentro l'app, la vetrina a chi arriva da un link condiviso."
+                ),
+                y=-420,
+            ),
+            nota(
+                "nota-oggi",
+                "page-4",
+                0,
+                tel,
+                (
+                    "OGGI\nIn cima c'è solo «Campionato concluso». Chi ha vinto si deduce dalla classifica "
+                    "«dopo 6 gare», che viene dopo il calendario, e in fondo resta il riquadro delle iscrizioni."
+                ),
+            ),
+            nota(
+                "nota-b",
+                "page-4",
+                470,
+                tel,
+                (
+                    "B · COM'È FINITA\nUna card accento sotto la targa con il podio a tre posti, il primo al "
+                    "centro e più grande: è lo stesso podio della gara conclusa.\nPro: chi ha visto una gara "
+                    "finita riconosce il campionato finito.\nContro: la classifica scende di circa 250px, e i "
+                    "primi tre compaiono due volte."
+                ),
+            ),
+            nota(
+                "nota-c",
+                "page-4",
+                940,
+                tel,
+                (
+                    "C · IL PODIO È LA CLASSIFICA\nNessun blocco nuovo: la classifica finale sale sotto la "
+                    "targa, i primi tre prendono i colori delle medaglie e il primo la scritta «Campione».\n"
+                    "Pro: niente di ripetuto.\nContro: il campione è una riga, non un annuncio."
+                ),
+            ),
         ],
         "launch": {"view": "canvas", "page": "page-2"},
     }
@@ -369,5 +505,7 @@ if __name__ == "__main__":
     for nome, fn in SCHERMATE:
         (OUT / f"{nome}.dc.html").write_text(fn(), encoding="utf-8")
         scritti.append(f"{nome}.dc.html")
-    (OUT / "canvas.json").write_text(json.dumps(canvas(), ensure_ascii=False, indent=2), encoding="utf-8")
+    (OUT / "canvas.json").write_text(
+        json.dumps(canvas(), ensure_ascii=False, indent=2), encoding="utf-8"
+    )
     print("--artboard " + " --artboard ".join(scritti))
