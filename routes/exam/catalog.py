@@ -7,6 +7,7 @@ from flask_login import current_user, login_required
 from models.base import db
 from models.challenge.models import Challenge
 from models.challenge.services import ChallengeService
+from models.exam.overview import ExamOverview, StandingKind
 from models.exam.services import (
     MAX_ATTEMPTS_PER_CHALLENGE,
     CompositionItem,
@@ -64,14 +65,24 @@ def exam_catalog():
     """Gli esami disponibili, con i drill che li compongono."""
     require_exam_reader()
 
+    exams = ExamService.get_available_exams()
+    my_exams = (
+        ExamService.get_exams_for_examiner(current_user.id)
+        if current_user.is_examiner
+        else []
+    )
     return render_template(
         "exam/catalog.html",
-        exams=ExamService.get_available_exams(),
-        my_exams=(
-            ExamService.get_exams_for_examiner(current_user.id)
+        exams=exams,
+        my_exam_ids={exam.id for exam in my_exams},
+        standings=ExamOverview.standings(current_user.id, [e.id for e in exams]),
+        upcoming=ExamOverview.upcoming_appointments(current_user.id),
+        waiting=(
+            ExamOverview.requests_waiting_for(current_user.id)
             if current_user.is_examiner
             else []
         ),
+        StandingKind=StandingKind,
     )
 
 
@@ -91,7 +102,8 @@ def exam_detail(exam_id: int):
         examiners=User.query.filter(User.id.in_(exam.examiner_ids)).all(),
         open_attempt=ExamService.get_open_self_practice(actor.id, exam_id),
         open_request=ExamRequestService.get_open_request(actor.id, exam_id),
-        statistics=ExamService.get_exam_statistics(exam_id),
+        standing=ExamOverview.standings(actor.id, [exam_id])[exam_id],
+        StandingKind=StandingKind,
     )
 
 

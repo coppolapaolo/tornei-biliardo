@@ -1,46 +1,119 @@
 {% extends "base.html" %}
 
+{# Gli esami (canvas «TPA ed esercizi», pagina 6 · «Gli esami»).
+
+   Era un elenco di nomi. Ora ogni esame dice **cosa sei tu per lui** —
+   superato e da chi, provato da solo, mai provato — l'appuntamento più vicino
+   sta in cima, e chi somministra trova subito le richieste che aspettano lui.
+   Tutto viene da `models/exam/overview.py`, che legge soltanto. #}
+
 {% block title %}{{ _("Esami") }}{% endblock %}
 
-{# Testata: si riempiono i blocchi del guscio, non se ne disegna una seconda. #}
 {% block page_title %}{{ _("Esami") }}{% endblock %}
-{% block page_sub %}{{ _("Più esercizi in fila. Da solo per allenarti, davanti a un esaminatore per farlo valere.") }}{% endblock %}
+{% block page_sub %}{{ _("Sequenze di esercizi, certificate di persona") }}{% endblock %}
 {% block page_actions %}
     {% if current_user.is_authenticated and current_user.is_examiner
           and feature_visible('exam.manage_exams') %}
-    <a href="{{ url_for('exam.manage_exams') }}" class="btn btn-outline-info btn-sm">{{ _("Gestisci esami") }}</a>
-    {% endif %}
-    {% if feature_visible('exam.request_list') %}
-    <a href="{{ url_for('exam.request_list') }}" class="btn btn-outline-primary btn-sm">{{ _("Appuntamenti") }}</a>
+    <a href="{{ url_for('exam.manage_exams') }}" class="btn btn-secondary">{{ _("Gestisci esami") }}</a>
     {% endif %}
 {% endblock %}
 
+{% macro stato(standing) -%}
+  {%- if standing.kind == StandingKind.PASSED -%}
+    {{ _("Superato il %(data)s", data=standing.certified_at|date_local) }}
+    {%- if standing.certified_by %}<span class="c7-sep">·</span> {{ _("certificato da %(nome)s", nome=standing.certified_by) }}{% endif -%}
+  {%- elif standing.kind == StandingKind.FAILED -%}
+    {{ _("Non superato il %(data)s", data=standing.certified_at|date_local) }}
+    <span class="c7-sep">·</span> {{ _("si può ripetere") }}
+  {%- elif standing.kind == StandingKind.PRACTICED -%}
+    {{ ngettext("Provato da solo %(n)s volta", "Provato da solo %(n)s volte", standing.practice_count, n=standing.practice_count) }}
+    <span class="c7-sep">·</span> {{ _("il tuo meglio %(p)s su %(m)s", p=standing.best_score, m=standing.best_max) }}
+  {%- else -%}
+    {{ _("Mai provato") }}
+  {%- endif -%}
+{%- endmacro %}
+
 {% block content %}
 <section class="c7-stack">
+
+  {# ── Il prossimo appuntamento ───────────────────────────────────────── #}
+  {% if upcoming %}
+  {% set next = upcoming[0] %}
+  <div class="c7-card c7-card--accent">
+    <div class="c7-kicker">{{ _("Il tuo prossimo appuntamento") }}</div>
+    <div class="c7-num-lg" style="margin-top:6px">{{ next.scheduled_at|day_friendly }}</div>
+    <div style="margin-top:4px;font-weight:700">
+      {{ next.exam.name }}
+      <span class="c7-sep">·</span>
+      {%- if next.requester_id == current_user.id %}
+      {{ _("con %(nome)s", nome=next.accepted_by.username) }}
+      {%- else %}
+      {{ _("esamini %(nome)s", nome=next.requester.username) }}
+      {%- endif %}
+      {% if next.billiard_hall %}<span class="c7-sep">·</span> {{ next.billiard_hall.name }}{% endif %}
+    </div>
+    {# «Tutti» solo se ce n'è più d'uno: con un appuntamento solo porterebbe
+       a un elenco di una riga, quella che si sta già guardando. #}
+    {% set altri = upcoming|length > 1 and feature_visible('exam.request_list') %}
+    <div class="{{ 'c7-duo' if altri else '' }}" style="margin-top:14px">
+      <a class="btn btn-primary w-100" href="{{ url_for('exam.request_detail', request_id=next.id) }}">{{ _("Apri") }}</a>
+      {% if altri %}
+      <a class="btn btn-secondary w-100" href="{{ url_for('exam.request_list') }}">{{ _("Tutti") }} · <span class="c7-num">{{ upcoming|length }}</span></a>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Chi somministra: le richieste che aspettano lui ────────────────── #}
+  {% if waiting %}
+  <a class="c7-rows" href="{{ url_for('exam.request_list') }}" style="text-decoration:none;color:inherit">
+    <div class="c7-rows__row">
+      <span class="c7-tile c7-tile--sm c7-tile--warn"><i class="fas fa-hourglass-half"></i></span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">
+          {{ ngettext("%(n)s richiesta aspetta te", "%(n)s richieste aspettano te", waiting|length, n=waiting|length) }}
+        </div>
+        <div class="c7-rows__sub">
+          {{ waiting[:3]|map(attribute='requester.username')|join(', ') }}{% if waiting|length > 3 %}…{% endif %}
+        </div>
+      </div>
+      <i class="fas fa-chevron-right" style="color:var(--c7-ink-faint)"></i>
+    </div>
+  </a>
+  {% endif %}
+
+  {# ── Gli esami ──────────────────────────────────────────────────────── #}
   {% if exams %}
   <div class="c7-sechead">
     <h2>{{ _("Esami disponibili") }}</h2>
     <span class="c7-sechead__note">{{ exams|length }}</span>
+    {% if not upcoming and feature_visible('exam.request_list') %}
+    <a class="c7-sechead__more" href="{{ url_for('exam.request_list') }}">{{ _("Appuntamenti") }}</a>
+    {% endif %}
   </div>
 
-  <div class="c7-stack">
+  <div class="c7-rows">
     {% for exam in exams %}
-    <a class="c7-card" href="{{ url_for('exam.exam_detail', exam_id=exam.id) }}"
-       style="display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit">
-      {# ``challenges`` è lazy="dynamic": ogni .count() è una query. Una sola
-         per riga, non due. #}
-      {% set drill_count = exam.challenges.count() %}
-      <div style="flex:1;min-width:0">
+    {% set standing = standings[exam.id] %}
+    {# ``challenges`` è lazy="dynamic": ogni .count() è una query. Una sola
+       per riga, non due. #}
+    {% set drill_count = exam.challenges.count() %}
+    <a class="c7-rows__row" href="{{ url_for('exam.exam_detail', exam_id=exam.id) }}"
+       style="text-decoration:none;color:inherit">
+      {% if standing.kind == StandingKind.PASSED %}
+      <span class="c7-tile c7-tile--sm c7-tile--ok"><i class="fas fa-check"></i></span>
+      {% else %}
+      <span class="c7-tile c7-tile--sm c7-tile--locked"><i class="fas fa-graduation-cap"></i></span>
+      {% endif %}
+      <div class="c7-rows__main">
         <div class="c7-rows__title">{{ exam.name }}</div>
         <div class="c7-rows__sub">
           {{ ngettext("%(n)s esercizio", "%(n)s esercizi", drill_count, n=drill_count) }}
           <span class="c7-sep">·</span>
           {{ ngettext("%(n)s esaminatore", "%(n)s esaminatori", exam.examiner_ids|length, n=exam.examiner_ids|length) }}
-          {% if exam.time_limit_minutes %}
-          <span class="c7-sep">·</span>
-          <span class="c7-num">{{ exam.time_limit_minutes }}'</span>
-          {% endif %}
+          {% if exam.id in my_exam_ids %}<span class="c7-sep">·</span> {{ _("lo somministri tu") }}{% endif %}
         </div>
+        <div class="c7-rows__sub">{{ stato(standing) }}</div>
       </div>
       <i class="fas fa-chevron-right" style="color:var(--c7-ink-faint)"></i>
     </a>
@@ -51,28 +124,6 @@
     <div class="c7-empty__ico"><i class="fas fa-graduation-cap"></i></div>
     <h2 class="c7-empty__title">{{ _("Nessun esame disponibile") }}</h2>
     <p class="c7-empty__text">{{ _("Non è ancora stato composto nessun esame. Torna più avanti.") }}</p>
-  </div>
-  {% endif %}
-
-  {% if my_exams %}
-  <div class="c7-sechead">
-    <h2>{{ _("Esami che somministro") }}</h2>
-    <span class="c7-sechead__note">{{ my_exams|length }}</span>
-  </div>
-  <div class="c7-rows">
-    {% for exam in my_exams %}
-    <a class="c7-rows__row" href="{{ url_for('exam.exam_detail', exam_id=exam.id) }}"
-       style="text-decoration:none;color:inherit">
-      {% set drill_count = exam.challenges.count() %}
-      <div class="c7-rows__main">
-        <div class="c7-rows__title">{{ exam.name }}</div>
-        <div class="c7-rows__sub">
-          {{ ngettext("%(n)s esercizio", "%(n)s esercizi", drill_count, n=drill_count) }}
-        </div>
-      </div>
-      <i class="fas fa-chevron-right" style="color:var(--c7-ink-faint)"></i>
-    </a>
-    {% endfor %}
   </div>
   {% endif %}
 </section>

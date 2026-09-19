@@ -59,7 +59,7 @@ python scripts/po_set.py translations/en/LC_MESSAGES/messages.po nuove.json
 ```
 
 Tocca solo i blocchi delle voci nominate, toglie `fuzzy` e le righe `#|`, va a
-capo come Babel, elenca le plurali (che vanno a mano) e **fallisce** se un
+capo come Babel, per le plurali vuole una lista di forme, e **fallisce** se un
 `msgid` non è nel catalogo. Riscrivere tutto il catalogo con `write_po`
 riformatta migliaia di righe, e i cataloghi sono già il punto in cui due PR
 aperte insieme vanno in conflitto.

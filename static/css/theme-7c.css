@@ -4245,3 +4245,26 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 .c7-seq-picker__opt[hidden] { display: none; }
 .c7-seq-picker__opt .c7-rows__title,
 .c7-seq-picker__opt .c7-rows__sub { display: block; }
+
+/* ==========================================================================
+   37. Gli esami: catalogo, dettaglio, appuntamento (canvas «TPA ed esercizi»,
+   pagina 6)
+   ========================================================================== */
+/* Due comandi affiancati di pari peso. */
+.c7-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* La tessera che dice com'è andata: superato, in attesa. */
+.c7-tile--ok { background: var(--c7-ok-bg); color: var(--c7-ok-ink); }
+.c7-tile--warn { background: var(--c7-warn-bg); color: var(--c7-warn-ink); }
+/* I fatti di un esame, sotto la descrizione: pastiglie non toccabili. */
+.c7-facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.c7-facts__item {
+  padding: 5px 10px; border-radius: 999px; font-size: 12px; font-weight: 700;
+  background: rgba(242, 248, 247, .14);
+}
+/* Il numero d'ordine di una voce in una sequenza che si legge soltanto. */
+.c7-ordinal {
+  flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--c7-bg); color: var(--c7-ink-muted);
+  display: grid; place-items: center;
+  font-family: var(--c7-font-mono); font-size: 12px; font-weight: 800;
+}

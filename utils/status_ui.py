@@ -402,6 +402,7 @@ def register_status_filters(app) -> None:
     from utils.jinja import (
         format_date_local,
         format_datetime_input,
+        format_day_friendly,
         format_datetime_local,
         format_time_local,
         format_discipline,
@@ -412,6 +413,8 @@ def register_status_filters(app) -> None:
     app.jinja_env.filters["date_local"] = format_date_local
     app.jinja_env.filters["datetime_local"] = format_datetime_local
     app.jinja_env.filters["time_local"] = format_time_local
+    # «sab 26 set · 18:30»: per gli appuntamenti, dove conta il giorno.
+    app.jinja_env.filters["day_friendly"] = format_day_friendly
     # Controparte in scrittura di `datetime_local`: ripopola un
     # `<input type="datetime-local">` con l'ora che l'utente aveva digitato.
     app.jinja_env.filters["datetime_input"] = format_datetime_input
