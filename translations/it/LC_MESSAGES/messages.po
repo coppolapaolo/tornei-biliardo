@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-19 20:49+0200\n"
+"POT-Creation-Date: 2026-09-19 21:00+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -1747,8 +1747,8 @@ msgid "%(nome)s è disponibile a giocare presso %(luogo)s"
 msgstr ""
 
 #: models/individual_match/availability_service.py:263
-#: models/individual_match/proposal_service.py:200
-#: models/individual_match/proposal_service.py:526
+#: models/individual_match/proposal_service.py:219
+#: models/individual_match/proposal_service.py:545
 #: models/individual_match/quick_match_service.py:424
 #: models/individual_match/services.py:191 models/notification/factory.py:264
 #: models/notification/factory.py:265
@@ -1780,9 +1780,9 @@ msgid "La tua sfida è programmata per il %(when)s%(location)s"
 msgstr ""
 
 #: models/individual_match/match_lifecycle_service.py:266
-#: models/individual_match/proposal_service.py:249
-#: models/individual_match/proposal_service.py:680
-#: models/individual_match/proposal_service.py:725
+#: models/individual_match/proposal_service.py:268
+#: models/individual_match/proposal_service.py:699
+#: models/individual_match/proposal_service.py:744
 msgid "Visualizza"
 msgstr ""
 
@@ -1798,91 +1798,95 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: models/individual_match/proposal_service.py:81
-#: models/individual_match/proposal_service.py:172
+#: models/individual_match/proposal_service.py:191
 msgid "Non è possibile programmare una sfida nel passato"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:231
-#: models/individual_match/proposal_service.py:513
+#: models/individual_match/proposal_service.py:101
+msgid "Il giocatore invitato non esiste"
+msgstr ""
+
+#: models/individual_match/proposal_service.py:250
+#: models/individual_match/proposal_service.py:532
 #: models/individual_match/quick_match_service.py:419
 #: models/individual_match/services.py:188
 #, python-format
 msgid "a %(loc)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:234
+#: models/individual_match/proposal_service.py:253
 #, python-format
 msgid "%(username)s propone una sfida aperta%(location)s il %(date)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:245
+#: models/individual_match/proposal_service.py:264
 msgid "Nuova proposta di sfida"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:326
+#: models/individual_match/proposal_service.py:345
 msgid "Giocatore già invitato a questa proposta"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:505
+#: models/individual_match/proposal_service.py:524
 msgid "Proposta già accettata"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:523
+#: models/individual_match/proposal_service.py:542
 msgid "Proposta accettata!"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:525
+#: models/individual_match/proposal_service.py:544
 #, python-format
 msgid "%(player)s ha accettato la tua proposta di sfida%(location)s"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:531
+#: models/individual_match/proposal_service.py:550
 msgid "Vai alla sfida"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:546
+#: models/individual_match/proposal_service.py:565
 msgid "Proposta di sfida chiusa"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:548
+#: models/individual_match/proposal_service.py:567
 #, python-format
 msgid "La proposta di sfida%(location)s è stata accettata da un altro giocatore."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:614
+#: models/individual_match/proposal_service.py:633
 msgid "Proposta non trovata"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:617
+#: models/individual_match/proposal_service.py:636
 msgid "La proposta la cancella chi l'ha fatta."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:627
+#: models/individual_match/proposal_service.py:646
 msgid ""
 "Da questa proposta è nata una partita: per farla sparire annulla prima "
 "quella."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:671
-#: models/individual_match/proposal_service.py:716
+#: models/individual_match/proposal_service.py:690
+#: models/individual_match/proposal_service.py:735
 msgid "Proposta scaduta"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:674
-#: models/individual_match/proposal_service.py:719
+#: models/individual_match/proposal_service.py:693
+#: models/individual_match/proposal_service.py:738
 #, python-format
 msgid "La tua proposta di sfida%(location)s è scaduta senza accettazioni."
 msgstr ""
 
-#: models/individual_match/proposal_service.py:802
+#: models/individual_match/proposal_service.py:821
 msgid "Proposta di sfida aperta"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:810
+#: models/individual_match/proposal_service.py:829
 msgid "Proposta di sfida conclusa"
 msgstr ""
 
-#: models/individual_match/proposal_service.py:812
+#: models/individual_match/proposal_service.py:831
 #, python-format
 msgid "La proposta di sfida '%(title)s' è stata accettata da un altro giocatore."
 msgstr ""
@@ -16955,7 +16959,6 @@ msgid "ha composto l'esame"
 msgstr ""
 
 #: templates/exam/compose.html:112
-#, python-format
 msgid "co-esaminatore"
 msgstr ""
 
