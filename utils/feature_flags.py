@@ -452,6 +452,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "individual_match.tpa_press": {"player", "director"},
     "individual_match.tpa_undo": {"player", "director"},
     "individual_match.tpa_clear": {"player", "director"},
+    "individual_match.tpa_restart": {"player", "director"},
     "individual_match.tpa_state": {"player", "director"},
     "individual_match.tpa_close": {"player", "director"},
     # Availability: visibile a player/director. La visibilità del menu è

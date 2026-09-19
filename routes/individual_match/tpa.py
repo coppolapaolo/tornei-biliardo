@@ -1,6 +1,6 @@
 """Referto TPA di un match individuale.
 
-Una pagina e sei azioni.
+Una pagina e sette azioni.
 
 **Il gate della gamification sta sull'apertura, non sulla lettura.** Sbloccare
 la funzione vuol dire poter *prendere* un referto; una volta che il referto
@@ -230,6 +230,37 @@ def tpa_clear(match_id: int):
         return _domain_error(error)
     except Exception:
         logger.error("Cancella turno del referto TPA fallito", exc_info=True)
+        return (
+            jsonify({"success": False, "message": _("Errore interno del server")}),
+            500,
+        )
+    _announce(match_id, referto, score_before)
+    return _state_response(referto)
+
+
+@individual_match_bp.route("/matches/<int:match_id>/tpa/restart", methods=["POST"])
+@RoleRequirement.player_or_director_required
+def tpa_restart(match_id: int):
+    """«Riparti da questo turno…»: il registro si tronca a un turno del passato."""
+    match, referto, is_player = _load(match_id)
+    if not is_player or referto is None:
+        return jsonify({"success": False, "message": _("Referto non trovato")}), 404
+
+    body = request.get_json(silent=True) or {}
+    try:
+        rack_number, turn_number = int(body["rack"]), int(body["turn"])
+    except (KeyError, TypeError, ValueError):
+        return jsonify({"success": False, "message": _("Turno non valido.")}), 400
+
+    score_before = _score_of(match_id)
+    try:
+        TpaRefertoService.restart_from_turn(
+            referto.id, current_user.id, rack_number, turn_number
+        )
+    except DomainError as error:
+        return _domain_error(error)
+    except Exception:
+        logger.error("Ripartenza del referto TPA fallita", exc_info=True)
         return (
             jsonify({"success": False, "message": _("Errore interno del server")}),
             500,

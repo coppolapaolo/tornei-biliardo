@@ -18,8 +18,7 @@
  *    ridisegna con lo stato della risposta;
  * 3. toccare il riquadro dell'avversario passa il tavolo — o, prima della
  *    spaccata, sceglie chi spacca — e il riquadro lo dice;
- * 4. «annulla» e «cancella» sono due gesti con due indirizzi: il primo toglie
- *    un tocco, il secondo l'annotazione del turno;
+ * 4. «cancella» toglie l'annotazione del turno in corso;
  * 5. mentre un invio è in corso i tocchi non contano;
  * 6. un rifiuto del server diventa un messaggio, e lo stato non cambia;
  * 7. chi guarda rilegge lo stato quando l'altro annota, non quando annota
@@ -27,7 +26,12 @@
  * 8. il TPA va da 0 a 1000, senza punto, e conta quanto i triangoli;
  * 9. la notazione è quella del referto: spaccata in apice, triangolo vinto
  *    cerchiato, calcio come numero del giocatore sopra la casella;
- * 10. nella card dell'avversario resta scritto il suo ultimo turno.
+ * 10. nella card dell'avversario resta scritto il suo ultimo turno;
+ * 11. «Indietro» e «Avanti» scorrono i turni **senza chiamare il server**:
+ *     rileggere non scrive, e mentre si rilegge il tastierino è spento;
+ * 12. «Riparti da questo turno…» apre un foglio che nomina i turni che
+ *     escono, e solo la conferma chiama il server;
+ * 13. uno stato nuovo dal server riporta al turno in corso.
  *
  * Run:  cd tests/frontend && npm install && npm test
  */
@@ -77,7 +81,10 @@ function ambiente(iniziale, opzioni) {
       ' data-press-url="/m/7/tpa/press" data-undo-url="/m/7/tpa/undo"' +
       ' data-state-url="/m/7/tpa/state" data-poll-url="/sse/poll/individual_match/7"' +
       ' data-current-user-id="42" data-can-write="' + (scrive ? "true" : "false") + '"' +
-      ' data-clear-url="/m/7/tpa/clear"' +
+      ' data-clear-url="/m/7/tpa/clear" data-restart-url="/m/7/tpa/restart"' +
+      ' data-et-posizione="turno {n} di {m}" data-et-rileggi="Rileggi il turno {n} di {m}"' +
+      ' data-et-riparti="Riparti da questo turno…" data-et-riparti-titolo="Ripartire dal turno {n}?"' +
+      ' data-et-riparti-conferma="Riparti dal turno {n}" data-et-si-riannota="si riannota"' +
       ' data-et-passa="Tocca: tavolo a {nome}" data-et-spacca-lui="Tocca: spacca {nome}"' +
       ' data-et-al-tavolo="al tavolo" data-et-spacca="spacca"' +
       ' data-et-triangoli="Triangoli" data-et-tpa="TPA"' +
@@ -93,7 +100,10 @@ function ambiente(iniziale, opzioni) {
       ' data-et-runout-si="Chiusa in un solo turno">' +
       '<div id="tpaPlayers"></div>' +
       (scrive
-        ? '<div id="tpaNumbers"></div><div id="tpaLetters"></div><button id="tpaUndo"></button>'
+        ? '<p id="tpaRileggi" hidden></p><div id="tpaNumbers"></div><div id="tpaLetters"></div>' +
+          '<button id="tpaIndietro"></button><span id="tpaPosizione"></span><button id="tpaAvanti"></button>' +
+          '<div id="tpaRipartiModal"><h3 id="tpaRipartiTitolo"></h3><div id="tpaRipartiElenco"></div>' +
+          '<button id="tpaRipartiConferma"></button></div>'
         : "") +
       '<div id="tpaSheet"></div>' +
       '<script type="application/json" id="tpaStato">' + JSON.stringify(iniziale) + "</script>" +
@@ -125,8 +135,13 @@ function ambiente(iniziale, opzioni) {
     },
   };
   w.eval(SRC);
+  const foglio = { aperto: false };
   w.c7TpaReferto.avvia(w.document.getElementById("tpaReferto"), {
     ricarica: function () { ricariche += 1; },
+    foglio: {
+      apri: function () { foglio.aperto = true; },
+      chiudi: function () { foglio.aperto = false; },
+    },
   });
 
   const doc = w.document;
@@ -134,6 +149,7 @@ function ambiente(iniziale, opzioni) {
     doc: doc,
     chiamate: chiamate,
     errori: errori,
+    foglio: foglio,
     risposte: risposte,
     ricariche: function () { return ricariche; },
     ascoltatore: function () { return ascoltatore; },
@@ -241,22 +257,14 @@ async function main() {
     assert.strictEqual(a.riquadri()[1].querySelector(".c7-tpa-half__tap"), null);
   }
 
-  // 4. «Annulla» e «cancella»: due gesti, due indirizzi.
+  // 4. «Cancella» toglie l'annotazione del turno; a turno bianco è spento.
   {
     const a = ambiente(stato({ can_clear: true }));
-    const annulla = a.doc.getElementById("tpaUndo");
-    assert.strictEqual(annulla.disabled, false);
-    annulla.click();
-    assert.strictEqual(a.chiamate[0].url, "/m/7/tpa/undo");
-    a.risposte[0].ok({ success: true, state: stato({ can_clear: true }) });
-    await giro();
-
     assert.strictEqual(a.tasto("clear").disabled, false);
     a.tasto("clear").click();
-    assert.strictEqual(a.chiamate[1].url, "/m/7/tpa/clear");
+    assert.strictEqual(a.chiamate[0].url, "/m/7/tpa/clear");
 
     const vuoto = ambiente(stato({ commands: 0 }));
-    assert.strictEqual(vuoto.doc.getElementById("tpaUndo").disabled, true);
     assert.strictEqual(vuoto.tasto("clear").disabled, true, "a turno bianco non c'è niente da cancellare");
   }
 
@@ -388,6 +396,87 @@ async function main() {
 
     const nuovo = ambiente(stato({ racks: [racks[0], { number: 2, turns: [turno(1, null, "")] }], current_rack: 2 }));
     assert.strictEqual(nuovo.casella(2, "white").textContent, "");
+  }
+
+  // 11-13. Rileggere il referto, e ripartire da un turno.
+  {
+    const foto = function (r1, t1, r2, t2) {
+      return { 1: { racks_won: r1, tpa: t1, balls_potted: 3, total_errors: 1 },
+               2: { racks_won: r2, tpa: t2, balls_potted: 2, total_errors: 0 } };
+    };
+    const turno = function (n, player, tot, main, snap, extra) {
+      return Object.assign({
+        turn: n, player: player, is_break: n === 1, winning: false, main_note: main, secondary_note: "",
+        annotation: { break_potted: n === 1 ? 1 : null, total_potted: tot, first_shot_kick_in: false },
+        score_snapshot: snap,
+      }, extra || {});
+    };
+    const racks = [
+      { number: 1, turns: [turno(1, 1, 3, "M", foto(0, 750, 0, null)), turno(2, 2, 6, "", foto(0, 750, 1, 1000), { winning: true })] },
+      { number: 2, turns: [turno(1, 2, 2, "S", foto(0, 750, 1, 900)), turno(2, 1, null, "", null)] },
+    ];
+    const vivo = stato({ racks: racks, current_rack: 2, current_turn: 2, can_clear: false });
+    const a = ambiente(vivo);
+    const doc = a.doc;
+    const indietro = doc.getElementById("tpaIndietro");
+    const avanti = doc.getElementById("tpaAvanti");
+    assert.strictEqual(doc.getElementById("tpaPosizione").textContent, "turno 4 di 4");
+    assert.strictEqual(avanti.disabled, true);
+    assert.strictEqual(indietro.disabled, false);
+    assert.strictEqual(doc.getElementById("tpaRileggi").hidden, true);
+
+    // Due passi indietro: il turno 2, quello che ha chiuso il primo triangolo.
+    indietro.click();
+    indietro.click();
+    assert.strictEqual(a.chiamate.length, 0, "rileggere non chiama il server");
+    assert.strictEqual(doc.getElementById("tpaPosizione").textContent, "turno 2 di 4");
+    assert.strictEqual(doc.getElementById("tpaRileggi").hidden, false);
+    assert.strictEqual(doc.getElementById("tpaRileggi").textContent, "Rileggi il turno 2 di 4");
+    // Al tavolo c'è chi giocava quel turno, col punteggio di allora.
+    assert.ok(a.riquadri()[1].className.indexOf("c7-tpa-half--on") >= 0);
+    assert.strictEqual(a.riquadri()[1].querySelectorAll(".c7-tpa-fig__v")[0].textContent, "1");
+    assert.strictEqual(a.riquadri()[1].querySelectorAll(".c7-tpa-fig__v")[1].textContent, "1000");
+    assert.strictEqual(a.casella(2, "white").querySelector(".c7-tpa-nt__balls--won").textContent, "6");
+    assert.strictEqual(a.casella(1, "white").textContent, "13M", "nell'altra card il suo turno di prima");
+    // Qui non si scrive: tastierino spento, nessun riquadro da toccare.
+    assert.strictEqual(a.tasto("3").disabled, true);
+    assert.strictEqual(a.tasto("clear").disabled, true);
+    assert.strictEqual(a.riquadri()[0].tagName, "DIV");
+    assert.strictEqual(a.tasto("K-in"), null);
+    assert.strictEqual(a.tasto("restart").disabled, false);
+    assert.strictEqual(a.tasto("restart").textContent, "Riparti da questo turno…");
+
+    // In fondo a sinistra non si va oltre il primo turno.
+    indietro.click();
+    assert.strictEqual(indietro.disabled, true);
+    avanti.click();
+
+    // 12. Il foglio nomina chi esce; solo la conferma chiama il server.
+    a.tasto("restart").click();
+    assert.strictEqual(a.foglio.aperto, true);
+    assert.strictEqual(a.chiamate.length, 0);
+    assert.strictEqual(doc.getElementById("tpaRipartiTitolo").textContent, "Ripartire dal turno 2?");
+    const righe = doc.getElementById("tpaRipartiElenco").children;
+    assert.strictEqual(righe.length, 2, "il turno che si riapre e l'unico scritto dopo; quello bianco in corso non conta");
+    assert.ok(righe[0].textContent.indexOf("si riannota") >= 0);
+    assert.ok(righe[1].className.indexOf("c7-tpa-out") >= 0);
+    assert.ok(righe[1].textContent.indexOf("Sara") >= 0 && righe[1].textContent.indexOf("2S") >= 0);
+    assert.strictEqual(doc.getElementById("tpaRipartiConferma").textContent, "Riparti dal turno 2");
+
+    doc.getElementById("tpaRipartiConferma").click();
+    assert.strictEqual(a.chiamate[0].url, "/m/7/tpa/restart");
+    assert.deepStrictEqual(JSON.parse(a.chiamate[0].init.body), { rack: 1, turn: 2 });
+
+    // 13. Lo stato nuovo riporta al turno in corso, e il foglio si chiude.
+    const dopo = stato({ racks: [{ number: 1, turns: [racks[0].turns[0], turno(2, 2, null, "", null)] }],
+      current_rack: 1, current_turn: 2, current_player: 2 });
+    a.risposte[0].ok({ success: true, state: dopo });
+    await giro();
+    assert.strictEqual(a.foglio.aperto, false);
+    assert.strictEqual(doc.getElementById("tpaPosizione").textContent, "turno 2 di 2");
+    assert.strictEqual(doc.getElementById("tpaRileggi").hidden, true);
+    assert.strictEqual(a.tasto("3").disabled, false);
+    assert.strictEqual(a.tasto("restart"), null);
   }
 
   // Il referto sotto: stessa notazione delle caselle.

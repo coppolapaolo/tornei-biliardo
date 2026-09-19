@@ -423,6 +423,101 @@ class TestCancellaIlTurno:
                 TpaRefertoService.clear_turn(referto.id, one.id)
 
 
+class TestRipartireDaUnTurno:
+    """«Riparti da questo turno…»: il registro si tronca all'inizio di un turno
+    del passato, che si riapre vuoto.
+
+    Scorrere il referto indietro e avanti e' una vista, nel browser, e non
+    tocca niente (ADR-044, emendamento del 19/09/2026). Questo e' l'unico gesto
+    che scrive, e lo fa dopo una conferma che nomina i turni che escono.
+    """
+
+    PARTITA = ("1", "3", "M", "end", "2", "S", "end", "3", "G", "end", "0", "N")
+    #            rack 1 turno 1 ......  turno 2 ....  turno 3 ....  rack 2 turno 1
+
+    def _referto(self, one, two):
+        match = _match(one, two)
+        referto = TpaRefertoService.open_referto(match.id, one.id)
+        for command in self.PARTITA:
+            TpaRefertoService.press(referto.id, one.id, command)
+        return match, referto
+
+    def _comandi(self, referto):
+        return [c.command for c in db.session.get(type(referto), referto.id).comandi]
+
+    def test_tronca_all_inizio_del_turno_e_lo_riapre_vuoto(self, app, players):
+        with app.app_context():
+            one, two = players
+            match, referto = self._referto(one, two)
+
+            state = TpaRefertoService.restart_from_turn(referto.id, one.id, 1, 2)
+
+            assert self._comandi(referto) == ["1", "3", "M", "end"]
+            assert (state.current_rack, state.current_turn) == (1, 2)
+            assert state.current_player == 2
+            assert state.turn().annotation.total_potted is None
+
+    def test_il_triangolo_vinto_dopo_torna_indietro_anche_nel_match(self, app, players):
+        """Il punteggio discende dal referto: se il turno che ha chiuso il
+        triangolo esce dal referto, il triangolo esce dalla partita."""
+        with app.app_context():
+            one, two = players
+            match, referto = self._referto(one, two)
+            assert db.session.get(IndividualMatch, match.id).player1_score == 1
+
+            TpaRefertoService.restart_from_turn(referto.id, one.id, 1, 3)
+
+            assert self._comandi(referto) == ["1", "3", "M", "end", "2", "S", "end"]
+            assert db.session.get(IndividualMatch, match.id).player1_score == 0
+
+    def test_chi_spacca_resta_scelto(self, app, players):
+        """Riaprire la spaccata non rimette in discussione chi spacca: quella e'
+        un'altra scelta, e si rifa' toccando l'avversario."""
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            for command in ("seat:2", "1", "3", "M", "end", "2"):
+                TpaRefertoService.press(referto.id, one.id, command)
+
+            state = TpaRefertoService.restart_from_turn(referto.id, one.id, 1, 1)
+
+            assert self._comandi(referto) == ["seat:2"]
+            assert state.current_player == 2
+
+    def test_il_turno_in_corso_non_e_il_passato(self, app, players):
+        """Per il turno che si sta scrivendo c'e' «cancella»."""
+        with app.app_context():
+            one, two = players
+            match, referto = self._referto(one, two)
+
+            with pytest.raises(ConflictError):
+                TpaRefertoService.restart_from_turn(referto.id, one.id, 2, 1)
+            assert len(self._comandi(referto)) == len(self.PARTITA)
+
+    def test_un_turno_che_non_esiste_viene_rifiutato(self, app, players):
+        with app.app_context():
+            one, two = players
+            match, referto = self._referto(one, two)
+
+            for rack, turn in ((1, 9), (5, 1), (0, 0)):
+                with pytest.raises(ValidationError):
+                    TpaRefertoService.restart_from_turn(referto.id, one.id, rack, turn)
+            assert len(self._comandi(referto)) == len(self.PARTITA)
+
+    def test_solo_il_compilatore_e_solo_a_referto_aperto(self, app, players):
+        with app.app_context():
+            one, two = players
+            match, referto = self._referto(one, two)
+
+            with pytest.raises(PermissionDeniedError):
+                TpaRefertoService.restart_from_turn(referto.id, two.id, 1, 2)
+
+            TpaRefertoService.close(referto.id, one.id)
+            with pytest.raises(ConflictError):
+                TpaRefertoService.restart_from_turn(referto.id, one.id, 1, 2)
+
+
 class TestRotte:
     """La superficie HTTP."""
 
@@ -470,7 +565,7 @@ class TestRotte:
             html = self._client(app, one).get(base).get_data(as_text=True)
 
             assert f'data-press-url="{base}/press"' in html
-            assert f'data-undo-url="{base}/undo"' in html
+            assert f'data-restart-url="{base}/restart"' in html
             assert f'data-clear-url="{base}/clear"' in html
             assert f'data-state-url="{base}/state"' in html
             assert f'data-poll-url="/sse/poll/individual_match/{match.id}"' in html
@@ -526,6 +621,26 @@ class TestRotte:
             # A turno bianco e' un conflitto, non un errore del server.
             again = self._client(app, one).post(f"/match/matches/{match.id}/tpa/clear")
             assert again.status_code == 409
+
+    def test_ripartire_risponde_con_lo_stato_intero(self, app, players):
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            referto = TpaRefertoService.open_referto(match.id, one.id)
+            for command in ("1", "3", "M", "end", "2", "S", "end", "1"):
+                TpaRefertoService.press(referto.id, one.id, command)
+            url = f"/match/matches/{match.id}/tpa/restart"
+
+            response = self._client(app, one).post(url, json={"rack": 1, "turn": 2})
+
+            assert response.status_code == 200
+            state = response.get_json()["state"]
+            assert state["commands"] == 4
+            assert (state["current_rack"], state["current_turn"]) == (1, 2)
+
+            # Dati che non sono numeri: una richiesta sbagliata, non un 500.
+            storta = self._client(app, one).post(url, json={"rack": "x"})
+            assert storta.status_code == 400
 
     def test_chi_guarda_non_scrive(self, app, players):
         with app.app_context():
