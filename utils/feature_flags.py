@@ -182,6 +182,12 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # storico deve poterlo correggere, altrimenti il pulsante c'e' e risponde
     # 404 solo agli utenti veri.
     "player.delete_drill_attempt": {"player", "director"},
+    # Gli esercizi «fra i turni» di una gara: la dashboard («Esercizi attivi»)
+    # e la pagina partita mandano qui i giocatori. Il blueprint ``challenge``
+    # era gia' stato aperto; queste due stanno sotto ``player.`` ed erano
+    # rimaste fuori, quindi il link c'era e rispondeva 404 solo in produzione.
+    "player.challenge_detail": {"player", "director"},
+    "player.record_challenge_attempt": {"player", "director"},
     "player.gara_detail": {"player", "director"},
     "player.inscribe_to_gara": {"player", "director"},
     "player.unsubscribe_from_gara": {"player", "director"},

@@ -180,3 +180,27 @@ def test_report_unclassified_endpoints(app):
             f"Sample: {sorted(unclassified)[:10]}",
             stacklevel=2,
         )
+
+
+def test_esercizi_di_gara_visibili_al_giocatore_in_produzione(app, monkeypatch):
+    """Regression: gli esercizi «fra i turni» di una gara si aprono e si
+    registrano da due route del blueprint ``player``, linkate dalla dashboard
+    (``_player_challenges_dashboard.html``) e dalla pagina partita
+    (``_match_challenge_input.html``). Senza la entry in ENDPOINT_ROLES erano
+    admin-only by default → 404 proprio per i giocatori a cui il link è
+    rivolto (ADR-028). Il blueprint ``challenge`` aveva avuto lo stesso
+    difetto: queste due erano rimaste fuori perché stanno sotto ``player.``."""
+    with app.test_request_context():
+        monkeypatch.setitem(app.config, "TESTING", False)
+        monkeypatch.setitem(app.config, "DEBUG_MODE", False)
+
+        player = _FakeUser()
+        director = _FakeUser(is_director=True)
+
+        for endpoint in (
+            "player.challenge_detail",
+            "player.record_challenge_attempt",
+        ):
+            assert is_endpoint_visible(endpoint, player), endpoint
+            # Il direttore che gioca la propria gara registra come gli altri.
+            assert is_endpoint_visible(endpoint, director), endpoint
