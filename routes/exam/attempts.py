@@ -16,6 +16,8 @@ from flask_login import current_user, login_required
 from models.base import db
 from models.exam.models import ExamAttempt
 from models.exam.services import ExamService
+from models.exam.session_view import OUTCOME, StepState, build_focus
+from models.status_enum import ExamAttemptMode, ExamAttemptStatus
 from models.user.models import User
 from utils import feature_required
 from utils.route_helpers import handle_service_action
@@ -72,12 +74,33 @@ def session_detail(attempt_id: int):
     if actor.id not in allowed and not actor.is_admin:
         abort(403)
 
+    is_candidate = actor.id == attempt.user_id
+    is_examiner = actor.id == attempt.examiner_id
+    certified = attempt.mode == ExamAttemptMode.CERTIFIED.value
+    # Chi scrive: l'esaminatore nella sessione certificata, chi si allena nel
+    # proprio allenamento. È la stessa regola di `ExamService._require_scorer`,
+    # letta qui solo per non offrire comandi che il servizio rifiuterebbe.
+    can_score = attempt.status == ExamAttemptStatus.IN_PROGRESS.value and (
+        is_examiner if certified else is_candidate
+    )
+    focus = build_focus(
+        attempt,
+        at=request.args.get("at") if can_score else OUTCOME,
+        attempt_number=_int_or_none(request.args.get("n")),
+    )
+
     return render_template(
         "exam/session.html",
         attempt=attempt,
-        is_candidate=(actor.id == attempt.user_id),
-        is_examiner=(actor.id == attempt.examiner_id),
+        is_candidate=is_candidate,
+        is_examiner=is_examiner,
+        certified=certified,
+        can_score=can_score,
+        focus=focus,
         progress=attempt.get_progress(),
+        ExamAttemptStatus=ExamAttemptStatus,
+        StepState=StepState,
+        OUTCOME=OUTCOME,
     )
 
 
@@ -149,6 +172,9 @@ def record_result(attempt_id: int):
     passed = None if raw_passed is None else raw_passed in ("1", "true", "True", "on")
     # Quale prova del drill: assente = la prima ancora libera.
     attempt_number = _int_or_none(request.form.get("attempt_number"))
+    # Chi corregge una prova resta sull'esercizio che stava guardando; chi va
+    # in ordine non manda niente, e il fuoco lo sceglie `build_focus`.
+    at = _int_or_none(request.form.get("at"))
 
     return handle_service_action(
         action=lambda: ExamService.record_challenge_result(
@@ -159,8 +185,8 @@ def record_result(attempt_id: int):
             passed=passed,
             attempt_number=attempt_number,
         ),
-        redirect_url=url_for("exam.session_detail", attempt_id=attempt_id),
-        success_message=_("Risultato registrato."),
+        redirect_url=url_for("exam.session_detail", attempt_id=attempt_id, at=at),
+        success_message=None,
         error_prefix=None,
     )
 

@@ -6,7 +6,7 @@ rinominato, manda la riga nel ramo ``else`` — in `requests.html` voleva dire
 mostrare «Scaduta» su un appuntamento confermato. Con l'enum passato al
 template il refuso diventa un errore alla prima apertura della pagina.
 
-`session.html` entra in elenco con la fase 3d, che la riscrive.
+`session.html` è entrata in elenco con la fase 3d, che l'ha riscritta.
 """
 
 from __future__ import annotations
@@ -18,7 +18,7 @@ import pytest
 
 TEMPLATES = Path(__file__).resolve().parents[3] / "templates" / "exam"
 
-GUARDED = ["requests.html", "request_detail.html", "request_form.html"]
+GUARDED = ["requests.html", "request_detail.html", "request_form.html", "session.html"]
 
 LITERAL = re.compile(r"\b(?:status|mode)\s*(?:==|!=|in)\s*[\[(]?\s*['\"]")
 

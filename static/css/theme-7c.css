@@ -3286,6 +3286,7 @@ a.c7-rows__row:hover { background: var(--c7-sunken); }
    transform e opacity: le due cifre stanno in colonne flex, quindi il
    transform si applica anche se sono <span>. */
 .c7-score__num.is-pop,
+.c7-exam-pad__v.is-pop,
 .c7-board__num.is-pop {
   animation: c7-pop var(--c7-dur-base) var(--c7-ease) both;
 }
@@ -4290,3 +4291,101 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 .c7-tl__dot.is-now { background: var(--c7-accent); }
 .c7-tl__body { padding-bottom: 14px; }
 .c7-tl__when { font-family: var(--c7-font-mono); font-size: 14px; font-weight: 800; }
+
+/* --- La sessione d'esame: un esercizio per volta ------------------------- */
+/* Da lg il tastierino sta in una colonna a fianco, fermo mentre si scorre. */
+.c7-exam { display: grid; gap: var(--c7-gap); }
+@media (min-width: 992px) {
+  .c7-exam--write { grid-template-columns: minmax(0, 1fr) 380px; gap: var(--c7-gap-lg); align-items: start; }
+  .c7-exam--write .c7-exam-dock {
+    position: sticky; top: 16px; padding: 20px;
+    border-radius: var(--c7-r-card); background: var(--c7-card);
+  }
+  .c7-exam--write .c7-exam-pad__btn:not(.c7-exam-pad__btn--plus) { background: var(--c7-bg); }
+}
+.c7-exam__main { min-width: 0; max-width: 820px; }
+/* La sequenza: un passo per esercizio, quello a fuoco acceso. */
+.c7-exam-steps { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.c7-exam-steps::-webkit-scrollbar { display: none; }
+.c7-exam-steps__step {
+  flex: 1 1 0; min-width: 72px; display: grid; justify-items: center; gap: 5px;
+  padding: 2px 2px 0; text-decoration: none; color: var(--c7-ink-muted);
+}
+.c7-exam-steps__dot {
+  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--c7-card); font-family: var(--c7-font-mono); font-size: 12px; font-weight: 800;
+}
+.c7-exam-steps__lab {
+  max-width: 100%; font-size: 11px; font-weight: 700; text-align: center;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.c7-exam-steps__step.is-done .c7-exam-steps__dot { background: var(--c7-ok-bg); color: var(--c7-ok-ink); font-size: 11px; }
+.c7-exam-steps__step.is-now { color: var(--c7-ink); }
+.c7-exam-steps__step.is-now .c7-exam-steps__dot { background: var(--c7-accent); color: var(--c7-accent-ink); }
+.c7-exam__who { display: flex; align-items: center; gap: 12px; }
+.c7-exam__title { margin: 0; font-size: 19px; font-weight: 800; letter-spacing: -.02em; }
+/* Le prove dell'esercizio a fuoco: la migliore in verde, quella di adesso in tinta. */
+.c7-exam-tries { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.c7-exam-try { padding: 12px 10px; border-radius: var(--c7-r-control); background: var(--c7-card); text-align: center; }
+.c7-exam-try__v { font-family: var(--c7-font-mono); font-size: 22px; font-weight: 800; line-height: 1.1; }
+.c7-exam-try__l { margin-top: 4px; font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); }
+.c7-exam-try.is-best { background: var(--c7-ok-bg); color: var(--c7-ok-ink); }
+.c7-exam-try.is-best .c7-exam-try__l { color: inherit; opacity: .8; }
+.c7-exam-try.is-now { background: var(--c7-accent-tint); color: var(--c7-accent-tint-ink); }
+.c7-exam-try.is-now .c7-exam-try__l { color: inherit; opacity: .8; }
+/* Il riepilogo: il totale è la cifra protagonista, Manrope 800. */
+.c7-exam__total { margin-top: 6px; display: flex; align-items: baseline; gap: 8px; }
+.c7-exam__total-v { font-size: 48px; font-weight: 800; letter-spacing: -.04em; line-height: 1; font-variant-numeric: tabular-nums; }
+.c7-exam__total-max { font-family: var(--c7-font-mono); font-size: 18px; font-weight: 800; color: var(--c7-accent-dim); }
+.c7-exam__verdict { margin-top: 6px; font-size: 24px; font-weight: 800; letter-spacing: -.03em; line-height: 1.15; }
+.c7-exam__best { font-family: var(--c7-font-mono); font-size: 20px; font-weight: 800; white-space: nowrap; }
+.c7-exam__fine { margin: 0; font-size: 12px; font-weight: 600; line-height: 1.5; color: var(--c7-ink-muted); }
+/* Il tastierino. */
+.c7-exam-dock { display: grid; gap: 12px; align-content: start; }
+.c7-exam-dock__form { display: grid; gap: 12px; }
+.c7-exam-pad { display: flex; align-items: center; justify-content: center; gap: 20px; }
+.c7-exam-pad__btn {
+  width: 64px; height: 64px; flex-shrink: 0; border: 0; border-radius: 50%;
+  background: var(--c7-card); color: var(--c7-ink); font-size: 20px;
+  display: grid; place-items: center; cursor: pointer;
+  transition: transform var(--c7-dur-quick) var(--c7-ease);
+}
+.c7-exam-pad__btn--plus { background: var(--c7-accent); color: var(--c7-accent-ink); }
+.c7-exam-pad__btn:active { transform: scale(var(--c7-press)); transition-duration: 0ms; }
+.c7-exam-pad__figure { text-align: center; min-width: 120px; }
+.c7-exam-pad__v {
+  width: 100%; border: 0; padding: 0; background: transparent; color: var(--c7-ink);
+  font-family: inherit; font-size: 64px; font-weight: 800; letter-spacing: -.05em; line-height: 1;
+  text-align: center; font-variant-numeric: tabular-nums;
+}
+.c7-exam-pad__v:focus { outline: none; }
+.c7-exam-pad__v:focus-visible { border-radius: var(--c7-r-control); background: var(--c7-card); }
+.c7-exam-pad__max { margin-top: 2px; font-family: var(--c7-font-mono); font-size: 13px; font-weight: 800; color: var(--c7-ink-muted); }
+/* I due tasti di un esito netto: grandi, di pari peso, il sì in verde pieno. */
+.c7-exam-verdict {
+  min-height: 84px; padding: 12px; border: 0; border-radius: var(--c7-r-card);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  font-family: inherit; font-size: 17px; font-weight: 800; letter-spacing: -.01em; cursor: pointer;
+  transition: transform var(--c7-dur-quick) var(--c7-ease);
+}
+.c7-exam-verdict:active { transform: scale(var(--c7-press)); transition-duration: 0ms; }
+.c7-exam-verdict--ok { background: var(--c7-ok); color: #fff; }
+.c7-exam-verdict--no { background: var(--c7-err-bg); color: var(--c7-err-ink); }
+.c7-exam-verdict__s { font-size: 11px; font-weight: 700; opacity: .85; }
+.c7-exam-dock__alt {
+  min-height: var(--c7-touch); padding: 0 10px; border: 0; border-radius: var(--c7-r-control);
+  background: transparent; color: var(--c7-ink-soft); text-decoration: none;
+  display: flex; align-items: center; justify-content: center; gap: 7px;
+  font-family: inherit; font-size: 13px; font-weight: 800; cursor: pointer;
+}
+button.c7-exam-dock__alt { width: 100%; }
+@media (max-width: 991.98px) {
+  .c7-exam--write .c7-exam-dock {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--c7-z-mobnav);
+    padding: 14px var(--c7-gutter) calc(10px + env(safe-area-inset-bottom, 0px));
+    background: var(--c7-bg); border-top: 1px solid var(--c7-line);
+  }
+  /* Il contenuto deve poter scorrere fin sopra il tastierino: l'altezza vera
+     la misura `exam-session.js`. */
+  body:has(.c7-exam--write) .c7-main { padding-bottom: calc(var(--c7-exam-dock-h, 300px) + 16px); }
+}

@@ -114,7 +114,7 @@ def handle_ajax_service_action(
 def handle_service_action(
     action: Callable[[], Any],
     redirect_url: str,
-    success_message: str,
+    success_message: Optional[str],
     error_prefix: Optional[str] = "Errore",
 ):
     """Execute a service action with standard error handling and redirect.
@@ -125,7 +125,8 @@ def handle_service_action(
     Args:
         action: Callable to execute (typically a service method call).
         redirect_url: URL to redirect to after success or error.
-        success_message: Flash message on success.
+        success_message: Flash message on success. Use None when the page
+            itself shows the result and a toast would only be noise.
         error_prefix: Prefix for business error messages.
             Use None to flash the raw error message without prefix.
 
@@ -138,7 +139,8 @@ def handle_service_action(
     """
     try:
         action()
-        flash(success_message, "success")
+        if success_message:
+            flash(success_message, "success")
     except (ValueError, PermissionError) as e:
         msg = f"{error_prefix}: {e}" if error_prefix else str(e)
         flash(msg, "error")

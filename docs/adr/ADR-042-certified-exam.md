@@ -278,6 +278,28 @@ Le cinque route di prima (`update_exam`, `add_challenge`, `update_challenge`,
 avuto un comando, e i metodi del servizio che servivano restano — li compone
 `save_composition` dentro una transazione sola (ADR-061).
 
+## Emendamento 2026-09-19 (bis) — la sessione guarda un esercizio per volta
+
+La pagina della sessione non elenca più tutti gli esercizi con un campo
+ciascuno: mette a fuoco **un esercizio**, e la prova si scrive da un tastierino
+agganciato in basso. Due scelte che restano, entrambe senza toccare lo schema:
+
+- **Rinunciare a una prova non si persiste.** «Conta la migliore» rende
+  legittimo fermarsi alla seconda di tre, e il modello lo reggeva già: una prova
+  vuota non è uno zero (`ExamAttempt.recompute_scores`) e la chiusura non
+  pretende tutte le caselle piene (`ExamService.complete_attempt`). Rinunciare è
+  quindi *andare avanti*: un indirizzo (`?at=`), non una colonna `skipped`. Una
+  colonna avrebbe chiesto una migration e introdotto un terzo stato della prova
+  — scritta, vuota, rinunciata — che nessun calcolo distingue dal secondo.
+- **Il fuoco riparte dall'ultimo esercizio che ha un risultato**, non dal primo
+  con una casella vuota: altrimenti la prova a cui si è rinunciato richiamerebbe
+  indietro l'esaminatore a ogni ricarica. La regola vive in
+  `models/exam/session_view.py`, sola lettura, ed è provata in
+  `tests/new/integration/test_exam_session_page.py`.
+
+L'esito resta netto e deciso dall'esaminatore: i due pulsanti stanno nel
+riepilogo, e la conferma è un foglio, non il `confirm()` del browser.
+
 ## Riferimenti
 
 - ADR-041 — il ruolo di esaminatore, concedibile e ortogonale
