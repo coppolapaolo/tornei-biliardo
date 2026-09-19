@@ -1,164 +1,176 @@
 {% extends "base.html" %}
 
+{# L'appuntamento d'esame (canvas «TPA ed esercizi», pagina 6 · «Appuntamento»).
+
+   In cima la proposta sul tavolo **col suo comando**: «Accetto» sta nella card,
+   accanto al dato su cui si decide — prima stava in fondo alla pagina, sotto la
+   storia della trattativa e, sul telefono, dietro la nav flottante. Poi la
+   controproposta (giorno, ora, sala), poi come ci si è arrivati.
+
+   Cosa si può fare lo decide la route leggendo gli invarianti del servizio
+   (`can_answer`, `can_counter`): la pagina non offre mai un comando che il
+   servizio rifiuterebbe. #}
+
 {% block title %}{{ _("Appuntamento d'esame") }}{% endblock %}
 
-{% block page_title %}{{ exam_request.exam.name }}{% endblock %}
-{% block page_sub %}{{ _("Appuntamento d'esame") }}{% endblock %}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('exam.request_list') }}"
+   aria-label="{{ _('Torna agli appuntamenti') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Appuntamento d'esame") }}{% endblock %}
+{% block page_sub %}{{ exam_request.exam.name }}{% endblock %}
+
+{% macro who(user) -%}
+  {%- if user.id == current_user.id %}{{ _("tu") }}{% else %}{{ user.username }}{% endif -%}
+{%- endmacro %}
 
 {% block content %}
+{% set closed_without_deal = not exam_request.is_accepted and not can_act %}
+<div class="c7-cols">
 <section class="c7-stack">
 
-  {# ── Lo slot sul tavolo ─────────────────────────────────────────────── #}
-  <div class="c7-card {{ 'c7-card--ok' if exam_request.is_accepted else 'c7-card--accent' }}">
-    <div class="c7-label">
+  {# ── Lo slot sul tavolo, col suo comando ────────────────────────────── #}
+  <div class="c7-card {% if exam_request.is_accepted %}c7-card--ok{% elif closed_without_deal %}c7-card--locked{% else %}c7-card--accent{% endif %}"
+       data-help="esame-appuntamento">
+    <div class="c7-kicker">
       {% if exam_request.is_accepted %}{{ _("Appuntamento confermato") }}
+      {% elif exam_request.status == ExamRequestStatus.CANCELLED.value %}{{ _("Richiesta ritirata") }}
+      {% elif closed_without_deal %}{{ _("Scaduta senza accordo") }}
       {% else %}{{ _("Proposta sul tavolo") }}{% endif %}
     </div>
-    <div class="c7-rows__title" style="margin-top:8px">
-      <span class="c7-num">{{ exam_request.scheduled_at|datetime_local }}</span>
-    </div>
-    <div class="c7-rows__sub">
-      {% if exam_request.billiard_hall %}{{ exam_request.billiard_hall.name }}{% endif %}
-      {% if exam_request.last_proposed_by %}
+    <div class="c7-slot__when">{{ exam_request.scheduled_at|day_friendly }}</div>
+    <div class="c7-slot__where">
+      {{ exam_request.billiard_hall.name }}
       <span class="c7-sep">·</span>
-      {{ _("proposto da %(who)s", who=exam_request.last_proposed_by.username) }}
-      {% endif %}
+      {% if exam_request.is_accepted %}
+        {% if is_requester %}{{ _("con %(who)s", who=exam_request.accepted_by.username) }}
+        {% else %}{{ _("con %(who)s", who=exam_request.requester.username) }}{% endif %}
+      {% elif exam_request.last_proposed_by_id == current_user.id %}{{ _("proposta da te") }}
+      {% else %}{{ _("proposta da %(who)s", who=exam_request.last_proposed_by.username) }}{% endif %}
     </div>
-    {% if exam_request.is_accepted and exam_request.accepted_by %}
-    <div class="c7-rows__sub" style="margin-top:8px">
-      {{ _("Con %(who)s", who=exam_request.accepted_by.username) }}
-    </div>
-    {% endif %}
-  </div>
 
-  {# ── Chi è stato interpellato ───────────────────────────────────────── #}
-  <div class="c7-sechead"><h2>{{ _("Esaminatori interpellati") }}</h2></div>
-  <div class="c7-rows">
-    {% for r in exam_request.recipients %}
-    <div class="c7-rows__row">
-      <div class="c7-rows__main">
-        <div class="c7-rows__title">{{ r.examiner.username }}</div>
-      </div>
-      {% if r.status == 'accepted' %}
-      <span class="c7-state c7-state--ok">{{ _("Ha accettato") }}</span>
-      {% elif r.status == 'rejected' %}
-      <span class="c7-state c7-state--err">{{ _("Si è sfilato") }}</span>
-      {% elif r.status == 'closed' %}
-      {# Non ha detto di no: non ha fatto in tempo. La differenza si vede. #}
-      <span class="c7-pill">{{ _("Richiesta chiusa") }}</span>
-      {% else %}
-      <span class="c7-pill">{{ _("In attesa") }}</span>
-      {% endif %}
-    </div>
-    {% endfor %}
-  </div>
-
-  {# ── Lo storico della trattativa ────────────────────────────────────── #}
-  {% if exam_request.time_proposals|length > 1 %}
-  <div class="c7-sechead"><h2>{{ _("Come ci siete arrivati") }}</h2></div>
-  <div class="c7-rows">
-    {% for p in exam_request.time_proposals %}
-    <div class="c7-rows__row">
-      <div class="c7-rows__main">
-        <div class="c7-rows__title c7-num" style="font-size:14px">
-          {{ p.scheduled_at|datetime_local }}
-        </div>
-        <div class="c7-rows__sub">
-          {{ p.proposed_by.username }}
-          {% if p.billiard_hall %}<span class="c7-sep">·</span>{{ p.billiard_hall.name }}{% endif %}
-        </div>
-      </div>
-      {% if p.superseded_at is none %}
-      <span class="c7-pill">{{ _("attuale") }}</span>
-      {% endif %}
-    </div>
-    {% endfor %}
-  </div>
-  {% endif %}
-
-  {# ── Cosa posso fare adesso ─────────────────────────────────────────── #}
-  {% if can_act %}
-    {% if locked_out %}
-    {# Invariante 2: la trattativa è a due, gli altri possono solo accettare. #}
-    <div class="c7-card">
-      <div class="c7-rows__sub">
-        {{ _("La trattativa è in corso con un altro esaminatore: puoi accettare la proposta attuale, o lasciar scadere.") }}
-      </div>
-      <form method="POST" action="{{ url_for('exam.accept_request', request_id=exam_request.id) }}"
-            style="margin-top:12px">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-success">{{ _("Accetto questo slot") }}</button>
-      </form>
-    </div>
-    {% elif waiting_for_the_other %}
+    {% if can_answer %}
+    <form method="POST" action="{{ url_for('exam.accept_request', request_id=exam_request.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-success c7-slot__cta">{{ _("Accetto: ci vediamo lì") }}</button>
+    </form>
+    {% elif can_act and waiting_for_the_other %}
     {# Invariante 1: chi ha proposto per ultimo aspetta. Dirlo, invece di
        offrire un bottone che il servizio rifiuterebbe. #}
-    <div class="c7-card">
-      <div class="c7-rows__title">{{ _("Tocca all'altra parte") }}</div>
-      <div class="c7-rows__sub">{{ _("Hai fatto tu l'ultima proposta: attendi una risposta.") }}</div>
-    </div>
-    {% else %}
-    <div class="c7-sechead"><h2>{{ _("Rispondi") }}</h2></div>
-    <div class="c7-card">
-      <form method="POST" action="{{ url_for('exam.accept_request', request_id=exam_request.id) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-success">{{ _("Accetto lo slot proposto") }}</button>
-      </form>
-
-      <div class="c7-divider" style="margin:16px 0"></div>
-
-      <div class="c7-label">{{ _("Oppure controproponi") }}</div>
-      <form method="POST" action="{{ url_for('exam.counter_propose', request_id=exam_request.id) }}"
-            style="margin-top:8px">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <input class="form-control" type="datetime-local" name="scheduled_at" required>
-        <div class="c7-rows__sub" style="margin-top:8px">
-          {{ _("La sala resta la stessa se non ne indichi un'altra.") }}
-        </div>
-        <button type="submit" class="btn btn-outline-primary" style="margin-top:12px">
-          {{ _("Controproponi") }}
-        </button>
-      </form>
-    </div>
+    <div class="c7-slot__note">{{ _("L'ultima proposta è tua: ora tocca all'altra parte rispondere.") }}</div>
     {% endif %}
 
-    <div style="display:flex;gap:8px">
-      {% if is_requester %}
-      <form method="POST" action="{{ url_for('exam.cancel_request', request_id=exam_request.id) }}">
+    {# ── La sessione, quando l'appuntamento è fissato ───────────────── #}
+    {% if exam_request.is_accepted %}
+      {% if attempt %}
+      <a class="btn btn-primary c7-slot__cta"
+         href="{{ url_for('exam.session_detail', attempt_id=attempt.id) }}">{{ _("Vai alla sessione") }}</a>
+      {% elif exam_request.accepted_by_id == current_user.id %}
+      <form method="POST" action="{{ url_for('exam.open_certified_session', request_id=exam_request.id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-outline-secondary btn-sm"
-                onclick='return confirm({{ _('Ritirare la richiesta?')|tojson }})'>
-          {{ _("Ritira la richiesta") }}
-        </button>
+        <button type="submit" class="btn btn-success c7-slot__cta">{{ _("Apri la sessione") }}</button>
       </form>
+      <div class="c7-slot__note">{{ _("Il candidato dovrà accettare l'inizio prima che tu possa registrare i punteggi.") }}</div>
+      {% else %}
+      <div class="c7-slot__note">{{ _("L'esaminatore aprirà la sessione al momento dell'esame.") }}</div>
       {% endif %}
-      {% if is_recipient and recipient and recipient.is_pending %}
-      <form method="POST" action="{{ url_for('exam.decline_request', request_id=exam_request.id) }}">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-outline-secondary btn-sm">{{ _("Non posso") }}</button>
-      </form>
-      {% endif %}
+    {% endif %}
+  </div>
+
+  {# ── Oppure controproponi ───────────────────────────────────────────── #}
+  {% if can_counter %}
+  <form method="POST" class="c7-card"
+        action="{{ url_for('exam.counter_propose', request_id=exam_request.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="c7-kicker">{{ _("Oppure controproponi") }}</div>
+    <div class="c7-duo" style="margin-top:10px">
+      <div>
+        <label class="c7-label" for="scheduled_date">{{ _("Giorno") }}</label>
+        <input class="form-control" type="date" id="scheduled_date" name="scheduled_date" required>
+      </div>
+      <div>
+        <label class="c7-label" for="scheduled_time">{{ _("Ora") }}</label>
+        <input class="form-control" type="time" id="scheduled_time" name="scheduled_time" step="300" required>
+      </div>
     </div>
+    <label class="c7-label" for="billiard_hall_id" style="margin-top:12px">{{ _("Sala") }}</label>
+    <select class="form-control" id="billiard_hall_id" name="billiard_hall_id">
+      {% for hall in halls %}
+      <option value="{{ hall.id }}"{% if hall.id == exam_request.billiard_hall_id %} selected{% endif %}>{{ hall.name }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit" class="btn btn-primary c7-slot__cta" style="margin-top:12px">{{ _("Manda la controproposta") }}</button>
+  </form>
+  {% elif can_answer and locked_out %}
+  {# Invariante 2: la trattativa è a due, gli altri possono solo accettare. #}
+  <div class="c7-card c7-card--locked">
+    <div class="c7-rows__sub">
+      {{ _("La trattativa è in corso con un altro esaminatore: puoi accettare la proposta com'è, o lasciar perdere.") }}
+    </div>
+  </div>
   {% endif %}
 
-  {# ── La sessione, quando l'appuntamento è fissato ───────────────────── #}
-  {% if exam_request.is_accepted %}
-  <div class="c7-sechead"><h2>{{ _("La sessione") }}</h2></div>
-  {% if attempt %}
-  <a class="btn btn-primary" href="{{ url_for('exam.session_detail', attempt_id=attempt.id) }}">
-    {{ _("Vai alla sessione") }}
-  </a>
-  {% elif is_recipient and exam_request.accepted_by_id == current_user.id %}
-  <form method="POST" action="{{ url_for('exam.open_certified_session', request_id=exam_request.id) }}">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <button type="submit" class="btn btn-success">{{ _("Apri la sessione") }}</button>
-    <div class="c7-rows__sub" style="margin-top:8px">
-      {{ _("Il candidato dovrà accettare l'inizio prima che tu possa registrare i punteggi.") }}
-    </div>
-  </form>
-  {% else %}
-  <div class="c7-rows__sub">{{ _("L'esaminatore aprirà la sessione al momento dell'esame.") }}</div>
-  {% endif %}
-  {% endif %}
 </section>
+
+{# ── Come ci siete arrivati ─────────────────────────────────────────────── #}
+<aside class="c7-stack">
+<div class="c7-card">
+  <div class="c7-kicker">{{ _("Come ci siete arrivati") }}</div>
+  <div class="c7-tl">
+    {% for p in exam_request.time_proposals %}
+    <span class="c7-tl__dot{% if p.superseded_at is none %} is-now{% endif %}"></span>
+    <div class="c7-tl__body">
+      <div class="c7-tl__when">{{ p.scheduled_at|day_friendly }}</div>
+      <div class="c7-rows__sub">{{ who(p.proposed_by) }} <span class="c7-sep">·</span> {{ p.billiard_hall.name }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="c7-facts" style="margin-top:0">
+    {% for r, stance in stances %}
+    <span class="c7-facts__item {% if stance in (RecipientStance.ACCEPTED, RecipientStance.NEGOTIATING) %}c7-facts__item--info{% else %}c7-facts__item--plain{% endif %}">
+      {% if stance == RecipientStance.ACCEPTED %}{{ _("%(who)s ha accettato", who=r.examiner.username) }}
+      {% elif stance == RecipientStance.NEGOTIATING %}{{ _("%(who)s sta trattando", who=r.examiner.username) }}
+      {% elif stance == RecipientStance.DECLINED %}{{ _("%(who)s non può", who=r.examiner.username) }}
+      {# Non ha detto di no: non ha fatto in tempo. La differenza si vede. #}
+      {% elif stance == RecipientStance.CLOSED %}{{ _("%(who)s non ha fatto in tempo", who=r.examiner.username) }}
+      {% else %}{{ _("%(who)s non ha risposto", who=r.examiner.username) }}{% endif %}
+    </span>
+    {% endfor %}
+  </div>
+</div>
+
+  {# ── Uscirne ────────────────────────────────────────────────────────── #}
+  {% if can_act and is_requester %}
+  <button type="button" class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#ritiraRichiesta">
+    {{ _("Ritira la richiesta") }}
+  </button>
+  {% elif can_act and is_recipient and recipient.is_pending %}
+  <form method="POST" action="{{ url_for('exam.decline_request', request_id=exam_request.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-secondary w-100">{{ _("Non posso") }}</button>
+  </form>
+  {% endif %}
+</aside>
+</div>
+
+{% if can_act and is_requester %}
+{# La conferma del ritiro: un foglio 7c, non il `confirm()` del browser. #}
+<div class="modal fade c7-sheet" id="ritiraRichiesta" tabindex="-1" aria-labelledby="ritiraRichiestaTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="ritiraRichiestaTitolo">{{ _("Ritirare la richiesta?") }}</h3>
+        <div class="c7-sheet__sub">{{ _("Gli esaminatori interpellati vengono avvisati. Potrai chiederne un'altra quando vuoi.") }}</div>
+      </div>
+      <form method="POST" action="{{ url_for('exam.cancel_request', request_id=exam_request.id) }}"
+            class="modal-body c7-stack">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-danger w-100">{{ _("Ritira la richiesta") }}</button>
+        <button type="button" class="btn btn-secondary w-100" data-bs-dismiss="modal">{{ _("La tengo") }}</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock %}

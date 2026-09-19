@@ -13,8 +13,10 @@ from flask_babel import gettext as _
 from flask_login import current_user, login_required
 
 from models.base import db
+from models.exam.overview import ExamOverview, RecipientStance
 from models.exam.request_service import ExamRequestService
 from models.exam.services import ExamService
+from models.status_enum import ExamRequestStatus
 from models.user.models import User
 from utils import feature_required
 from utils.local_time import parse_local_datetime
@@ -35,6 +37,29 @@ def _int_or_none(value):
     return int(value) if value.isdigit() else None
 
 
+def _scheduled_at_from_form():
+    """Lo slot scritto nel modulo, naive UTC; ``None`` se manca un pezzo.
+
+    Giorno e ora arrivano in **due campi**: su telefono sono due selettori
+    nativi che si usano con un dito, mentre ``datetime-local`` ne apre uno solo
+    e affollato. Si ricompongono qui e passano da ``parse_local_datetime``, che
+    è l'unico a sapere in che fuso scrive chi compila (ADR-043). Un giorno
+    senza ora **non** diventa mezzanotte: torna ``None``, e il servizio
+    risponde «serve una data e un'ora».
+    """
+    day = (request.form.get("scheduled_date") or "").strip()
+    hour = (request.form.get("scheduled_time") or "").strip()
+    if day or hour:
+        return parse_local_datetime(f"{day}T{hour}") if day and hour else None
+    return parse_local_datetime(request.form.get("scheduled_at"))
+
+
+def _halls():
+    from models.location.models import BilliardHall
+
+    return BilliardHall.query.order_by(BilliardHall.name.asc()).all()
+
+
 # ────────────────────────────────────────────────────────────────────────────────
 # Elenco e dettaglio
 # ────────────────────────────────────────────────────────────────────────────────
@@ -51,6 +76,7 @@ def request_list():
             if actor.is_examiner
             else []
         ),
+        ExamRequestStatus=ExamRequestStatus,
     )
 
 
@@ -77,16 +103,32 @@ def request_detail(request_id: int):
         and exam_request.negotiating_with_id != actor.id
     )
 
+    can_act = exam_request.is_open and not exam_request.is_expired()
+    # Risponde chi è coinvolto e non ha fatto l'ultima proposta; controproporre
+    # è in più, e a trattativa avviata resta ai due che la stanno facendo.
+    can_answer = (
+        can_act
+        and not waiting_for_the_other
+        and (is_recipient or actor.id == exam_request.requester_id)
+    )
+    can_counter = can_answer and not locked_out
+
     return render_template(
         "exam/request_detail.html",
         exam_request=exam_request,
         is_requester=(actor.id == exam_request.requester_id),
         is_recipient=is_recipient,
         recipient=recipient,
-        can_act=exam_request.is_open and not exam_request.is_expired(),
+        can_act=can_act,
+        can_answer=can_answer,
+        can_counter=can_counter,
         waiting_for_the_other=waiting_for_the_other,
         locked_out=locked_out,
         attempt=exam_request.attempt,
+        stances=ExamOverview.recipient_stances(exam_request),
+        RecipientStance=RecipientStance,
+        ExamRequestStatus=ExamRequestStatus,
+        halls=_halls() if can_counter else [],
     )
 
 
@@ -98,8 +140,6 @@ def request_detail(request_id: int):
 @feature_required("take_exam")
 def request_form(exam_id: int):
     """A chi chiedere, e quando: gli esaminatori con le loro disponibilità."""
-    from models.location.models import BilliardHall
-
     exam = ExamService.get_exam(exam_id)
     actor = _actor()
 
@@ -107,7 +147,7 @@ def request_form(exam_id: int):
         "exam/request_form.html",
         exam=exam,
         examiners=ExamRequestService.eligible_examiners(exam_id, actor.id),
-        halls=BilliardHall.query.order_by(BilliardHall.name.asc()).all(),
+        halls=_halls(),
         open_request=ExamRequestService.get_open_request(actor.id, exam_id),
     )
 
@@ -129,7 +169,7 @@ def create_request(exam_id: int):
         action=lambda: ExamRequestService.create_request(
             actor,
             exam_id,
-            scheduled_at=parse_local_datetime(request.form.get("scheduled_at")),
+            scheduled_at=_scheduled_at_from_form(),
             billiard_hall_id=_int_or_none(request.form.get("billiard_hall_id")),
             recipient_ids=recipient_ids,
             notes=notes,
@@ -152,7 +192,7 @@ def counter_propose(request_id: int):
         action=lambda: ExamRequestService.counter_propose(
             request_id,
             actor,
-            scheduled_at=parse_local_datetime(request.form.get("scheduled_at")),
+            scheduled_at=_scheduled_at_from_form(),
             billiard_hall_id=_int_or_none(request.form.get("billiard_hall_id")),
         ),
         redirect_url=url_for("exam.request_detail", request_id=request_id),

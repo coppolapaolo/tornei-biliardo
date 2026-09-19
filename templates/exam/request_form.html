@@ -49,8 +49,16 @@
     {# ── Quando e dove (US-P5) ────────────────────────────────────────── #}
     <div class="c7-sechead"><h2>{{ _("Quando e dove") }}</h2></div>
     <div class="c7-card">
-      <label class="c7-label" for="scheduled_at">{{ _("Data e ora") }}</label>
-      <input class="form-control" type="datetime-local" id="scheduled_at" name="scheduled_at" required>
+      <div class="c7-duo">
+        <div>
+          <label class="c7-label" for="scheduled_date">{{ _("Giorno") }}</label>
+          <input class="form-control" type="date" id="scheduled_date" name="scheduled_date" required>
+        </div>
+        <div>
+          <label class="c7-label" for="scheduled_time">{{ _("Ora") }}</label>
+          <input class="form-control" type="time" id="scheduled_time" name="scheduled_time" step="300" required>
+        </div>
+      </div>
 
       <label class="c7-label" for="billiard_hall_id" style="margin-top:12px">{{ _("Sala") }}</label>
       <select class="form-control" id="billiard_hall_id" name="billiard_hall_id" required>
