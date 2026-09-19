@@ -25,10 +25,10 @@
       <div class="c7-kicker">{{ _('Total Performance Average') }}</div>
       <h3 style="margin:6px 0 0">{{ _('Prendi il referto della partita') }}</h3>
       <p style="margin:10px 0 0;font-size:13px;font-weight:600;line-height:1.55;color:var(--c7-ink-soft)">
-        {{ _('Invece dei soli triangoli vinti, annoti ogni visita al tavolo: quante bilie sono entrate e perche\' il turno e\' finito. Da li\' esce il TPA, la percentuale di azioni riuscite — lo stesso conto che Accu-Stats usa per i professionisti.') }}
+        {{ _('Invece dei soli triangoli vinti, annoti ogni visita al tavolo: quante bilie sono entrate e perché il turno è finito. Da lì esce il TPA, la percentuale di azioni riuscite — lo stesso conto che Accu-Stats usa per i professionisti.') }}
       </p>
       <p style="margin:10px 0 0;font-size:13px;font-weight:600;line-height:1.55;color:var(--c7-ink-soft)">
-        {{ _('Il referto lo tiene chi lo apre; l\'altro giocatore lo vede aggiornarsi. I triangoli vinti finiscono da soli nel punteggio della partita: non c\'e\' niente da segnare due volte.') }}
+        {{ _('Il referto lo tiene chi lo apre; l\'altro giocatore lo vede aggiornarsi. I triangoli vinti finiscono da soli nel punteggio della partita: non c\'è niente da segnare due volte.') }}
       </p>
     </section>
 
@@ -106,7 +106,7 @@
 
     {% if state.can_write %}
     <form method="POST" action="{{ url_for('individual_match.tpa_close', match_id=match.id) }}"
-          onsubmit='return confirm({{ _('Chiudere il referto? Dopo non si annota piu\'.')|tojson }})'>
+          onsubmit='return confirm({{ _('Chiudere il referto? Dopo non si annota più.')|tojson }})'>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-secondary w-100">
         <i class="fas fa-flag-checkered"></i> {{ _('Chiudi il referto') }}
@@ -135,10 +135,10 @@
     const LABEL_LET_BREAK = {{ _('spacca lui')|tojson }};
     const LABEL_NO_TPA = {{ _('TPA ancora da calcolare')|tojson }};
     const LABEL_BALLS = {{ _('quante bilie?')|tojson }};
-    const LABEL_WHY = {{ _('perche\' finisce il turno?')|tojson }};
-    const LABEL_RACK = {{ _('Triangoli')|tojson }};
-    const LABEL_ERROR = {{ _('Non e\' stato possibile annotare.')|tojson }};
-    const KICK_IN = {{ _('e\' entrata di sponda alla prima bilia')|tojson }};
+    const LABEL_WHY = {{ _('perché finisce il turno?')|tojson }};
+    const LABEL_RACK = {{ _('Triangolo')|tojson }};
+    const LABEL_ERROR = {{ _('Non è stato possibile annotare.')|tojson }};
+    const KICK_IN = {{ _('è entrata di sponda alla prima bilia')|tojson }};
     const RUNOUT_ASK = {{ _('Ha chiuso in una sola visita?')|tojson }};
     const RUNOUT_ON = {{ _('Chiusa in una sola visita')|tojson }};
 

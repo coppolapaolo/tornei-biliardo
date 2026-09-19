@@ -785,11 +785,13 @@ def challenge_statistics(challenge_id):
             )
 
     except Exception as e:
+        # Solo per chi chiede JSON. Alla pagina un errore deve restare un
+        # errore: qui un `except` generico ha nascosto per mesi che
+        # `challenge/statistics.html` non esisteva — il TemplateNotFound
+        # diventava «non è stato possibile caricare» e un redirect.
         if request.is_json:
             return safe_json_error(e, "loading challenge statistics")
-        else:
-            flash(_("Non è stato possibile caricare le statistiche."), "danger")
-            return redirect(url_for("challenge.challenge_catalog"))
+        raise
 
 
 @challenge_bp.route("/x-replacement/<int:gara_id>/<int:round_number>", methods=["POST"])
@@ -945,7 +947,7 @@ def edit_challenge(challenge_id):
             image_path=new_image_path,
         ),
         redirect_url=url_for("challenge.challenge_detail", challenge_id=challenge.id),
-        success_message="Challenge updated successfully",
+        success_message=_("Esercizio aggiornato."),
     )
 
 

@@ -1945,7 +1945,7 @@ button.c7-tpa-player:disabled { cursor: default; }
 .c7-tpa-key--game:hover { background: var(--c7-ok-bg); filter: brightness(.97); }
 /* Le annotazioni piccole del foglio restano piccole anche qui. */
 .c7-tpa-key--small { font-size: 15px; color: var(--c7-ink-muted); }
-.c7-tpa-key--wide { grid-column: 1 / -1; height: 46px; font-size: 14px; }
+.c7-tpa-key--wide { grid-column: 1 / -1; height: var(--c7-touch); font-size: 14px; }
 .c7-tpa-key--on { background: var(--c7-ok); color: var(--c7-on-ink); }
 .c7-tpa-key--on:hover { background: var(--c7-ok); filter: brightness(1.06); }
 
@@ -1986,7 +1986,10 @@ button.c7-tpa-player:disabled { cursor: default; }
 
 /* Da 640px in su le due colonne del referto stanno affiancate. */
 @media (min-width: 640px) {
-  .c7-tpa-pad { grid-template-columns: repeat(6, 1fr); }
+  /* Solo i numeri: le lettere restano M K S / P G N / n x p, come sul foglio.
+     Senza il :not questa regola, a pari specificita' e scritta dopo, vinceva
+     su `.c7-tpa-pad--letters`. */
+  .c7-tpa-pad:not(.c7-tpa-pad--letters) { grid-template-columns: repeat(6, 1fr); }
   .c7-tpa-key { height: 54px; font-size: 18px; }
 }
 

@@ -551,6 +551,13 @@
             <i class="fas fa-bullseye"></i>{{ _('Esercizi') }}
         </a>
         {% endif %}
+        {# Stessa condizione della barra laterale: senza, da telefono gli esami
+           non avevano una porta. #}
+        {% if nav_exam %}
+        <a href="{{ url_for('exam.exam_catalog') }}" class="{{ 'is-active' if ep.startswith('exam.') }}">
+            <i class="fas fa-graduation-cap"></i>{{ _('Esami') }}
+        </a>
+        {% endif %}
         <a href="{{ url_for('player.notifications') }}" class="{{ 'is-active' if ep == 'player.notifications' }}">
             <i class="fas fa-bell"></i>{{ _('Notifiche') }}
         </a>

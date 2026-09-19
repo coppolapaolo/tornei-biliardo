@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-18 11:10+0200\n"
+"POT-Creation-Date: 2026-09-19 15:38+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1758,7 +1758,7 @@ msgstr ""
 "Several drills in a row, in one go. On your own to practise, or before an"
 " examiner to make it count."
 
-#: models/gamification/frontend_bridge.py:494 templates/base.html:596
+#: models/gamification/frontend_bridge.py:494 templates/base.html:603
 msgid "Diventa esaminatore"
 msgstr "Become an examiner"
 
@@ -2755,7 +2755,7 @@ msgstr "You have been granted the %(role)s role."
 msgid "Che piacere rivederti!"
 msgstr "Nice to see you again!"
 
-#: routes/auth.py:159 templates/base.html:717
+#: routes/auth.py:159 templates/base.html:724
 msgid "Tutto pronto per giocare?"
 msgstr "Ready to play?"
 
@@ -2863,23 +2863,23 @@ msgstr "Attempt recorded."
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr "The favourites could not be updated."
 
-#: routes/challenge.py:791
-msgid "Non è stato possibile caricare le statistiche."
-msgstr "The statistics could not be loaded."
-
-#: routes/challenge.py:819
+#: routes/challenge.py:821
 msgid "Esercizio di gara avviato."
 msgstr "Tournament drill started."
 
-#: routes/challenge.py:872
+#: routes/challenge.py:874
 msgid "Esercizio di gara registrato."
 msgstr "Tournament drill recorded."
 
-#: routes/challenge.py:959
+#: routes/challenge.py:950 routes/exam/catalog.py:210
+msgid "Esercizio aggiornato."
+msgstr "Drill updated."
+
+#: routes/challenge.py:961
 msgid "Esercizio non trovato."
 msgstr "Drill not found."
 
-#: routes/challenge.py:969
+#: routes/challenge.py:971
 msgid "Non hai i permessi per questo esercizio."
 msgstr "You do not have permission for this drill."
 
@@ -3822,10 +3822,6 @@ msgstr "Exam disabled."
 msgid "Esercizio aggiunto all'esame."
 msgstr "Drill added to the exam."
 
-#: routes/exam/catalog.py:210
-msgid "Esercizio aggiornato."
-msgstr "Drill updated."
-
 #: routes/exam/catalog.py:225
 msgid "Esercizio rimosso dall'esame."
 msgstr "Drill removed from the exam."
@@ -4616,8 +4612,9 @@ msgstr "Dashboard"
 msgid "Sale Biliardo"
 msgstr "Billiard Halls"
 
-#: templates/base.html:261 templates/exam/catalog.html:3
-#: templates/exam/catalog.html:6 templates/player/history.html:34
+#: templates/base.html:261 templates/base.html:558
+#: templates/exam/catalog.html:3 templates/exam/catalog.html:6
+#: templates/player/history.html:34
 msgid "Esami"
 msgstr "Exams"
 
@@ -4681,7 +4678,7 @@ msgstr "Achievements and XP"
 msgid "Debug"
 msgstr "Debug"
 
-#: templates/base.html:331 templates/base.html:629
+#: templates/base.html:331 templates/base.html:636
 msgid "Reset DB"
 msgstr "Reset DB"
 
@@ -4730,8 +4727,8 @@ msgstr "Warning"
 msgid "Informazione"
 msgstr "Information"
 
-#: templates/base.html:475 templates/base.html:774
-#: templates/challenge/create.html:8
+#: templates/base.html:475 templates/base.html:781
+#: templates/challenge/create.html:14
 #: templates/components/_campionato_create_modal.html:7
 #: templates/components/_history_drills_tab.html:47
 #: templates/components/_page_modal.html:17
@@ -4764,108 +4761,108 @@ msgstr "Venues"
 msgid "Sfide"
 msgstr "Matches"
 
-#: templates/base.html:555 templates/components/_user_menu.html:8
+#: templates/base.html:562 templates/components/_user_menu.html:8
 #: templates/player/notifications.html:3 templates/player/notifications.html:8
 msgid "Notifiche"
 msgstr "Notifications"
 
-#: templates/base.html:565
+#: templates/base.html:572
 msgid "DEBUG MODE - Informazioni Sistema"
 msgstr "DEBUG MODE - System Information"
 
-#: templates/base.html:569
+#: templates/base.html:576
 msgid "Utente:"
 msgstr "User:"
 
-#: templates/base.html:576
+#: templates/base.html:583
 msgid "User ID:"
 msgstr "User ID:"
 
-#: templates/base.html:583
+#: templates/base.html:590
 msgid "Esami:"
 msgstr "Exams:"
 
-#: templates/base.html:585 templates/components/_history_exams_tab.html:66
+#: templates/base.html:592 templates/components/_history_exams_tab.html:66
 msgid "esaminatore"
 msgstr "examiner"
 
-#: templates/base.html:585 templates/base.html:588
+#: templates/base.html:592 templates/base.html:595
 msgid "sì"
 msgstr "yes"
 
-#: templates/base.html:585 templates/base.html:588
+#: templates/base.html:592 templates/base.html:595
 msgid "no"
 msgstr "no"
 
-#: templates/base.html:588
+#: templates/base.html:595
 msgid "override"
 msgstr "override"
 
-#: templates/base.html:604
+#: templates/base.html:611
 msgid "Endpoint:"
 msgstr "Endpoint:"
 
-#: templates/base.html:608
+#: templates/base.html:615
 msgid "Method:"
 msgstr "Method:"
 
-#: templates/base.html:614 templates/base.html:628
+#: templates/base.html:621 templates/base.html:635
 msgid "Database:"
 msgstr "Database:"
 
-#: templates/base.html:622
+#: templates/base.html:629
 msgid "Not accessible"
 msgstr "Not accessible"
 
-#: templates/base.html:630
+#: templates/base.html:637
 msgid "Save Reset"
 msgstr "Save Reset"
 
-#: templates/base.html:633
+#: templates/base.html:640
 msgid "Quick Login:"
 msgstr "Quick Login:"
 
-#: templates/base.html:646
+#: templates/base.html:653
 msgid "Test Fixtures:"
 msgstr "Test Fixtures:"
 
-#: templates/base.html:648
+#: templates/base.html:655
 msgid "Player"
 msgstr "Player"
 
-#: templates/base.html:653
+#: templates/base.html:660
 msgid "Fill Gara"
 msgstr "Fill Competition"
 
-#: templates/base.html:657 templates/components/_gara_inscriptions.html:55
+#: templates/base.html:664 templates/components/_gara_inscriptions.html:55
 msgid "Iscrivi"
 msgstr "Enroll"
 
-#: templates/base.html:661
+#: templates/base.html:668
 msgid "Completare le partite in corso del turno attuale con risultati random?"
 msgstr "Complete the current round's in-progress matches with random results?"
 
-#: templates/base.html:662
+#: templates/base.html:669
 msgid "Completa turno"
 msgstr "Complete Round"
 
-#: templates/base.html:666
+#: templates/base.html:673
 msgid "Completa partita"
 msgstr "Complete Match"
 
-#: templates/base.html:670
+#: templates/base.html:677
 msgid "Completare l'intera gara con risultati random fino alla fine?"
 msgstr "Complete the whole competition with random results to the end?"
 
-#: templates/base.html:671
+#: templates/base.html:678
 msgid "Complete Gara"
 msgstr "Complete Competition"
 
-#: templates/base.html:686 templates/base.html:692
+#: templates/base.html:693 templates/base.html:699
 msgid "Conferma"
 msgstr "Confirm"
 
-#: templates/base.html:687 templates/base.html:793
+#: templates/base.html:694 templates/base.html:800
 msgid "Close"
 msgstr "Close"
 
@@ -4875,10 +4872,10 @@ msgstr "Close"
 #: templates/admin/campionato_wizard_step1.html:176
 #: templates/admin/campionato_wizard_step2.html:8
 #: templates/admin/gara_edit.html:11 templates/admin/venue_form.html:296
-#: templates/admin/venue_manager_requests.html:155 templates/base.html:691
-#: templates/base.html:806 templates/challenge/_training_board.html:92
+#: templates/admin/venue_manager_requests.html:155 templates/base.html:698
+#: templates/base.html:813 templates/challenge/_training_board.html:92
 #: templates/challenge/builder.html:33 templates/challenge/builder.html:262
-#: templates/challenge/create.html:14
+#: templates/challenge/create.html:20
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:239
 #: templates/components/_gara_edit_form.html:393
@@ -4905,116 +4902,116 @@ msgstr "Close"
 msgid "Annulla"
 msgstr "Cancel"
 
-#: templates/base.html:707
+#: templates/base.html:714
 msgid "XP OTTENUTI"
 msgstr "XP EARNED"
 
-#: templates/base.html:708
+#: templates/base.html:715
 msgid "LEVEL UP!"
 msgstr "LEVEL UP!"
 
-#: templates/base.html:709
+#: templates/base.html:716
 msgid "Nuovo livello raggiunto!"
 msgstr "New level reached!"
 
-#: templates/base.html:710
+#: templates/base.html:717
 msgid "NUOVO TRAGUARDO!"
 msgstr "NEW MILESTONE!"
 
-#: templates/base.html:711
+#: templates/base.html:718
 msgid "STREAK!"
 msgstr "STREAK!"
 
-#: templates/base.html:712
+#: templates/base.html:719
 msgid "Freeze attivo"
 msgstr "Freeze active"
 
-#: templates/base.html:713
+#: templates/base.html:720
 msgid "STREAK PERSA"
 msgstr "STREAK LOST"
 
-#: templates/base.html:714
+#: templates/base.html:721
 msgid "Non mollare, riprovare!"
 msgstr "Don't give up, try again!"
 
-#: templates/base.html:715
+#: templates/base.html:722
 msgid "QUEST COMPLETATA!"
 msgstr "QUEST COMPLETED!"
 
-#: templates/base.html:716
+#: templates/base.html:723
 msgid "TI DIAMO IL BENTORNATO!"
 msgstr "WELCOME BACK!"
 
-#: templates/base.html:718
+#: templates/base.html:725
 msgid "Ciao!"
 msgstr "Hello!"
 
-#: templates/base.html:719
+#: templates/base.html:726
 #, python-format
 msgid "Ciao %(username)s!"
 msgstr "Hello %(username)s!"
 
-#: templates/base.html:747
+#: templates/base.html:754
 msgid "La sessione è scaduta"
 msgstr "Your session has expired"
 
-#: templates/base.html:748
+#: templates/base.html:755
 msgid ""
 "Gli aggiornamenti in tempo reale si sono fermati: accedi di nuovo per "
 "riprenderli."
 msgstr "Live updates have stopped: sign in again to resume them."
 
-#: templates/base.html:749
+#: templates/base.html:756
 msgid "Accedi di nuovo"
 msgstr "Sign in again"
 
-#: templates/base.html:772
+#: templates/base.html:779
 msgid "Aiuto"
 msgstr "Help"
 
-#: templates/base.html:773
+#: templates/base.html:780
 msgid "Leggi nella guida"
 msgstr "Read in the guide"
 
 #: templates/admin/campionato_wizard_step1.html:177
-#: templates/admin/gara_create_standalone.html:492 templates/base.html:775
+#: templates/admin/gara_create_standalone.html:492 templates/base.html:782
 #: templates/components/_new_gara_modal.html:417
 msgid "Avanti"
 msgstr "Next"
 
-#: templates/base.html:776 templates/components/_page_modal.html:31
+#: templates/base.html:783 templates/components/_page_modal.html:31
 msgid "Ho capito"
 msgstr "Got it"
 
-#: templates/base.html:777
+#: templates/base.html:784
 msgid "Salta"
 msgstr "Skip"
 
-#: templates/base.html:778
+#: templates/base.html:785
 #, python-brace-format
 msgid "{n} di {total}"
 msgstr "{n} of {total}"
 
-#: templates/base.html:779
+#: templates/base.html:786
 msgid "Presentazione"
 msgstr "Introduction"
 
-#: templates/base.html:792
+#: templates/base.html:799
 msgid "Save Reset Snapshot"
 msgstr "Save Reset Snapshot"
 
-#: templates/base.html:797
+#: templates/base.html:804
 msgid "Nome snapshot"
 msgstr "Snapshot name"
 
-#: templates/base.html:801
+#: templates/base.html:808
 msgid "Descrizione (opzionale)"
 msgstr "Description (optional)"
 
 #: templates/admin/_vetrina_form.html:85
 #: templates/admin/campionato_detail.html:212
 #: templates/admin/campionato_detail.html:614
-#: templates/admin/campionato_vetrina.html:94 templates/base.html:807
+#: templates/admin/campionato_vetrina.html:94 templates/base.html:814
 #: templates/components/_playoff_scoring_form.html:28
 #: templates/gamification/admin/level_config.html:42
 #: templates/gamification/admin/level_config.html:174
@@ -5715,7 +5712,7 @@ msgstr ""
 
 #: templates/admin/_vetrina_form.html:41
 #: templates/admin/campionato_vetrina.html:40
-#: templates/admin/venue_detail.html:303 templates/challenge/create.html:76
+#: templates/admin/venue_detail.html:303 templates/challenge/create.html:89
 msgid "Carica solo materiale di cui hai i diritti."
 msgstr "Upload only material you hold the rights to."
 
@@ -6045,6 +6042,7 @@ msgstr "Back to championships"
 #: templates/gamification/admin/config_dashboard.html:101
 #: templates/gamification/admin/config_dashboard.html:132
 #: templates/gamification/admin/features.html:60
+#: templates/player/challenge_detail.html:82
 msgid "Modifica"
 msgstr "Edit"
 
@@ -7088,6 +7086,7 @@ msgstr ""
 #: templates/admin/campionato_wizard_step2.html:186
 #: templates/admin/gara_create_standalone.html:488
 #: templates/admin/venue_form.html:12 templates/admin/venue_form.html:23
+#: templates/challenge/statistics.html:11
 #: templates/components/_new_gara_modal.html:412
 #: templates/gamification/admin/feature_create.html:6
 #: templates/gamification/admin/feature_detail.html:6
@@ -8385,10 +8384,12 @@ msgstr "Assign Manager"
 msgid "Seleziona utente..."
 msgstr "Select user..."
 
-#: templates/admin/venue_detail.html:253
+#: templates/admin/venue_detail.html:253 templates/challenge/statistics.html:7
+#: templates/challenge/statistics.html:13
 #: templates/components/_campionato_statistics.html:4
 #: templates/components/_player_statistics.html:19
 #: templates/exam/detail.html:163 templates/individual_match/dashboard.html:285
+#: templates/player/challenge_detail.html:87
 #: templates/player/privacy_settings.html:42
 #: templates/player/venue_detail.html:194
 msgid "Statistiche"
@@ -8955,7 +8956,7 @@ msgstr "0-%(max)s points"
 
 #: templates/challenge/_challenge_card.html:41
 #: templates/challenge/_challenge_detail.html:43
-#: templates/challenge/builder.html:234 templates/challenge/create.html:48
+#: templates/challenge/builder.html:234 templates/challenge/create.html:56
 #: templates/challenge/training.html:61
 #: templates/components/_challenge_bits.html:27
 #: templates/player/challenge_attempt_detail.html:49
@@ -9004,7 +9005,7 @@ msgid "Nessuna foto"
 msgstr "No photo"
 
 #: templates/challenge/_challenge_detail.html:43
-#: templates/challenge/create.html:51
+#: templates/challenge/create.html:59
 #: templates/components/_challenge_bits.html:27
 #: templates/player/challenge_attempt_detail.html:49
 msgid "Riuscita o no"
@@ -9028,11 +9029,13 @@ msgid "Tentativi riusciti"
 msgstr "Attempts passed"
 
 #: templates/challenge/_challenge_detail.html:76
+#: templates/challenge/statistics.html:46
 #: templates/components/_player_challenge_statistics.html:26
 msgid "Punteggio medio"
 msgstr "Average score"
 
 #: templates/challenge/_challenge_detail.html:80
+#: templates/challenge/statistics.html:54
 #: templates/components/_history_drills_tab.html:29
 msgid "Miglior punteggio"
 msgstr "Best score"
@@ -9148,12 +9151,12 @@ msgid "Ho finito"
 msgstr "I'm done"
 
 #: templates/challenge/builder.html:19 templates/challenge/builder.html:35
-#: templates/challenge/create.html:89
+#: templates/challenge/create.html:102
 msgid "Disegna l'esercizio"
 msgstr "Draw the drill"
 
 #: templates/challenge/builder.html:35
-#: templates/player/challenge_detail.html:108
+#: templates/player/challenge_detail.html:124
 msgid "Modifica il disegno"
 msgstr "Edit the drawing"
 
@@ -9430,12 +9433,12 @@ msgstr "L drill"
 msgid "Svuota"
 msgstr "Clear"
 
-#: templates/challenge/builder.html:211 templates/challenge/create.html:27
+#: templates/challenge/builder.html:211 templates/challenge/create.html:33
 #: templates/feedback/nuova.html:39 templates/feedback/tutte.html:16
 msgid "Titolo"
 msgstr "Title"
 
-#: templates/challenge/builder.html:213 templates/challenge/create.html:29
+#: templates/challenge/builder.html:213 templates/challenge/create.html:36
 msgid "es. Progressione lungo sponda"
 msgstr "e.g. Progression along the rail"
 
@@ -9463,12 +9466,12 @@ msgstr "How it is scored"
 msgid "Superato o non superato"
 msgstr "Pass or fail"
 
-#: templates/challenge/builder.html:245 templates/challenge/create.html:62
+#: templates/challenge/builder.html:245 templates/challenge/create.html:70
 #: templates/exam/detail.html:148
 msgid "Punteggio massimo"
 msgstr "Maximum score"
 
-#: templates/challenge/builder.html:248 templates/challenge/create.html:65
+#: templates/challenge/builder.html:248 templates/challenge/create.html:73
 msgid "es. 15"
 msgstr "e.g. 15"
 
@@ -9480,7 +9483,7 @@ msgstr "Optional. Leave it empty if the drill has no cap."
 msgid "Salva l'esercizio"
 msgstr "Save the drill"
 
-#: templates/challenge/builder.html:259
+#: templates/challenge/builder.html:259 templates/challenge/create.html:112
 #: templates/individual_match/availability.html:111
 msgid "Salva le modifiche"
 msgstr "Save changes"
@@ -9627,8 +9630,8 @@ msgstr "Examiner requests"
 msgid "Diventa Esaminatore"
 msgstr "Become an Examiner"
 
-#: templates/challenge/catalog.html:24 templates/challenge/create.html:4
-#: templates/challenge/create.html:10
+#: templates/challenge/catalog.html:24 templates/challenge/create.html:10
+#: templates/challenge/create.html:16
 msgid "Nuovo esercizio"
 msgstr "New drill"
 
@@ -9679,34 +9682,38 @@ msgid "Errore di rete: riprova."
 msgstr "Network error: try again."
 
 #: templates/challenge/catalog.html:112
-#: templates/player/challenge_detail.html:122
+#: templates/player/challenge_detail.html:138
 msgid "Confermi di voler eliminare questo esercizio? Non si torna indietro."
 msgstr "Do you want to delete this drill? There is no going back."
 
 #: templates/challenge/catalog.html:113
-#: templates/player/challenge_detail.html:132
+#: templates/player/challenge_detail.html:148
 msgid "Non è stato possibile eliminare l'esercizio."
 msgstr "The drill could not be deleted."
 
-#: templates/challenge/create.html:11
+#: templates/challenge/create.html:10 templates/challenge/create.html:16
+msgid "Modifica esercizio"
+msgstr "Edit drill"
+
+#: templates/challenge/create.html:17
 msgid "Un esercizio ripetibile: la foto del tavolo, le regole, il punteggio"
 msgstr "A repeatable drill: the table photo, the rules, the score"
 
-#: templates/challenge/create.html:31
+#: templates/challenge/create.html:38
 msgid ""
 "Facoltativo: senza, l'esercizio prende il suo numero progressivo "
 "(Esercizio 12)."
 msgstr "Optional: without one, the drill takes its sequence number (Drill 12)."
 
-#: templates/challenge/create.html:36
+#: templates/challenge/create.html:43
 msgid "Che cosa deve fare il giocatore"
 msgstr "What the player has to do"
 
-#: templates/challenge/create.html:41
+#: templates/challenge/create.html:48
 msgid "es. Disponi 10 bilie lungo la sponda lunga e imbucale in sequenza…"
 msgstr "e.g. Line 10 balls along the long rail and pot them in sequence…"
 
-#: templates/challenge/create.html:42
+#: templates/challenge/create.html:49
 msgid ""
 "È il testo che il giocatore legge prima di provarci: sii preciso sulle "
 "regole."
@@ -9714,19 +9721,19 @@ msgstr ""
 "This is the text the player reads before trying: be precise about the "
 "rules."
 
-#: templates/challenge/create.html:46
+#: templates/challenge/create.html:54
 msgid "Come si valuta"
 msgstr "How it is scored"
 
-#: templates/challenge/create.html:49
+#: templates/challenge/create.html:57
 msgid "Il giocatore registra un numero: bilie imbucate, punti fatti."
 msgstr "The player records a number: balls potted, points scored."
 
-#: templates/challenge/create.html:52
+#: templates/challenge/create.html:60
 msgid "Nessun numero: l'esercizio è superato oppure no."
 msgstr "No number: the drill is either passed or not."
 
-#: templates/challenge/create.html:67
+#: templates/challenge/create.html:75
 msgid ""
 "Facoltativo. Serve a mostrare «12 / 15» a chi si allena e a rifiutare un "
 "punteggio impossibile. Lascialo vuoto se la prova non ha un tetto."
@@ -9734,27 +9741,39 @@ msgstr ""
 "Optional. It shows “12 / 15” to whoever practises and rejects an "
 "impossible score. Leave it empty if the drill has no cap."
 
-#: templates/challenge/create.html:73
+#: templates/challenge/create.html:82
+msgid "Sostituisci la foto"
+msgstr "Replace the photo"
+
+#: templates/challenge/create.html:82
 msgid "Foto della disposizione"
 msgstr "Layout photo"
 
-#: templates/challenge/create.html:75
+#: templates/challenge/create.html:85
+msgid "Facoltativo: senza una foto nuova resta quella di adesso."
+msgstr "Optional: without a new photo the current one stays."
+
+#: templates/challenge/create.html:87
 msgid "Serve a riprodurre il tavolo: fotografalo dall'alto, JPG o PNG."
 msgstr "It is there to reproduce the table: shoot it from above, JPG or PNG."
 
-#: templates/challenge/create.html:78
+#: templates/challenge/create.html:91
 msgid "Anteprima della foto"
 msgstr "Photo preview"
 
-#: templates/challenge/create.html:86
+#: templates/challenge/create.html:99
 msgid "Non hai una foto?"
 msgstr "No photo to hand?"
 
-#: templates/challenge/create.html:99
+#: templates/challenge/create.html:112
 msgid "Crea l'esercizio"
 msgstr "Create the drill"
 
-#: templates/challenge/create.html:187
+#: templates/challenge/create.html:202
+msgid "Non è stato possibile salvare le modifiche. Riprova."
+msgstr "The changes could not be saved. Try again."
+
+#: templates/challenge/create.html:202
 msgid "Non è stato possibile creare l'esercizio. Riprova."
 msgstr "The drill could not be created. Try again."
 
@@ -9763,6 +9782,7 @@ msgid "Inizia l'esercizio"
 msgstr "Start the drill"
 
 #: templates/challenge/start_attempt.html:7
+#: templates/challenge/statistics.html:17
 #: templates/player/challenge_attempt_detail.html:12
 msgid "Torna all'esercizio"
 msgstr "Back to the drill"
@@ -9808,6 +9828,30 @@ msgstr "Start now"
 msgid "Non è stato possibile iniziare il tentativo. Riprova."
 msgstr "The attempt could not be started. Try again."
 
+#: templates/challenge/statistics.html:25
+msgid "Nessuno l'ha ancora provato"
+msgstr "Nobody has tried it yet"
+
+#: templates/challenge/statistics.html:26
+msgid "I numeri compaiono qui dopo la prima prova registrata."
+msgstr "The numbers show up here after the first recorded attempt."
+
+#: templates/challenge/statistics.html:32 templates/challenge/training.html:75
+msgid "Prove registrate"
+msgstr "Attempts recorded"
+
+#: templates/challenge/statistics.html:36
+msgid "Giocatori diversi"
+msgstr "Different players"
+
+#: templates/challenge/statistics.html:41
+msgid "Riuscite su cento"
+msgstr "Successes per hundred"
+
+#: templates/challenge/statistics.html:50
+msgid "Punteggio mediano"
+msgstr "Median score"
+
 #: templates/challenge/training.html:27 templates/challenge/training.html:33
 #: templates/components/_player_training.html:24
 msgid "Allenamento"
@@ -9816,10 +9860,6 @@ msgstr "Training"
 #: templates/challenge/training.html:31
 msgid "Torna agli esercizi"
 msgstr "Back to the drills"
-
-#: templates/challenge/training.html:75
-msgid "Prove registrate"
-msgstr "Attempts recorded"
 
 #: templates/challenge/training.html:79
 #: templates/player/challenge_detail.html:38
@@ -10554,7 +10594,6 @@ msgstr "All (%(n)s)"
 #: templates/components/_campionato_general_classification.html:58
 #: templates/components/_unified_rack_history.html:61
 #: templates/direttore/preparazione/_turni.html:86
-#: templates/individual_match/tpa_referto.html:139
 msgid "Triangoli"
 msgstr "Racks"
 
@@ -20706,7 +20745,7 @@ msgstr "Keep the scoresheet for this match"
 #: templates/individual_match/tpa_referto.html:28
 msgid ""
 "Invece dei soli triangoli vinti, annoti ogni visita al tavolo: quante "
-"bilie sono entrate e perche' il turno e' finito. Da li' esce il TPA, la "
+"bilie sono entrate e perché il turno è finito. Da lì esce il TPA, la "
 "percentuale di azioni riuscite — lo stesso conto che Accu-Stats usa per i"
 " professionisti."
 msgstr ""
@@ -20718,7 +20757,7 @@ msgstr ""
 #: templates/individual_match/tpa_referto.html:31
 msgid ""
 "Il referto lo tiene chi lo apre; l'altro giocatore lo vede aggiornarsi. I"
-" triangoli vinti finiscono da soli nel punteggio della partita: non c'e' "
+" triangoli vinti finiscono da soli nel punteggio della partita: non c'è "
 "niente da segnare due volte."
 msgstr ""
 "Whoever starts it keeps the scoresheet; the other player watches it fill "
@@ -20787,7 +20826,7 @@ msgid "Il foglio"
 msgstr "The sheet"
 
 #: templates/individual_match/tpa_referto.html:109
-msgid "Chiudere il referto? Dopo non si annota piu'."
+msgid "Chiudere il referto? Dopo non si annota più."
 msgstr "Close the scoresheet? Nothing can be recorded afterwards."
 
 #: templates/individual_match/tpa_referto.html:112
@@ -20815,15 +20854,19 @@ msgid "quante bilie?"
 msgstr "how many balls?"
 
 #: templates/individual_match/tpa_referto.html:138
-msgid "perche' finisce il turno?"
+msgid "perché finisce il turno?"
 msgstr "why did the inning end?"
 
+#: templates/individual_match/tpa_referto.html:139
+msgid "Triangolo"
+msgstr "Rack"
+
 #: templates/individual_match/tpa_referto.html:140
-msgid "Non e' stato possibile annotare."
+msgid "Non è stato possibile annotare."
 msgstr "That entry could not be recorded."
 
 #: templates/individual_match/tpa_referto.html:141
-msgid "e' entrata di sponda alla prima bilia"
+msgid "è entrata di sponda alla prima bilia"
 msgstr "kicked in on the first ball"
 
 #: templates/individual_match/tpa_referto.html:142
@@ -20928,19 +20971,19 @@ msgstr "Catalogue"
 msgid "Non ancora superata"
 msgstr "Not passed yet"
 
-#: templates/player/challenge_detail.html:80
+#: templates/player/challenge_detail.html:96
 msgid "Elimina l'esercizio"
 msgstr "Delete the drill"
 
-#: templates/player/challenge_detail.html:90
+#: templates/player/challenge_detail.html:106
 msgid "Allenati su questo esercizio"
 msgstr "Practise this drill"
 
-#: templates/player/challenge_detail.html:93
+#: templates/player/challenge_detail.html:109
 msgid "Registri una prova dopo l'altra, sulla stessa schermata"
 msgstr "Record one attempt after another, on the same screen"
 
-#: templates/player/challenge_detail.html:138
+#: templates/player/challenge_detail.html:154
 msgid "Errore di rete: l'esercizio non è stato eliminato."
 msgstr "Network error: the drill was not deleted."
 
