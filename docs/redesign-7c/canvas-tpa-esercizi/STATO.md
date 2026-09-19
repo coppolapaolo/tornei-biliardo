@@ -89,7 +89,7 @@ antenato nell'app.
 dal template ed è provato in jsdom (#475); il primo tiro di calcio è il numero
 del giocatore cerchiato sopra la casella, non più la freccia `↺` (#478, D20
 bis); in tutta l'app si dice «turno» e non «visita» (#482); guida e schermate
-rifatte (2f). Tre difetti trovati strada facendo e corretti a parte: #476
+rifatte (#483). Tre difetti trovati strada facendo e corretti a parte: #476
 (triangolo vinto senza G mostrato come non vinto), #477 e #480 (due test che
 dipendevano dall'ambiente).
 
