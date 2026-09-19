@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-19 15:38+0200\n"
+"POT-Creation-Date: 2026-09-19 18:00+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -12196,7 +12196,7 @@ msgid "Chiuso in una visita"
 msgstr ""
 
 #: templates/components/_match_scoreboard.html:124
-#: templates/individual_match/tpa_referto.html:134
+#: templates/individual_match/tpa_referto.html:78
 msgid "spacca"
 msgstr ""
 
@@ -19981,7 +19981,7 @@ msgid "Referto TPA"
 msgstr ""
 
 #: templates/individual_match/tpa_referto.html:10
-#: templates/individual_match/tpa_referto.html:119
+#: templates/individual_match/tpa_referto.html:139
 msgid "Torna alla sfida"
 msgstr ""
 
@@ -20021,104 +20021,113 @@ msgstr ""
 msgid "Il referto lo tiene %(name)s. Qui lo vedi aggiornarsi."
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:83
-msgid "Annulla l'ultimo tocco"
-msgstr ""
-
-#: templates/individual_match/tpa_referto.html:88
-msgid "Cosa vuol dire ogni lettera"
-msgstr ""
-
-#: templates/individual_match/tpa_referto.html:90
-msgid "sbagli un tiro d'attacco"
-msgstr ""
-
-#: templates/individual_match/tpa_referto.html:91
-msgid "giochi di difesa"
-msgstr ""
-
-#: templates/individual_match/tpa_referto.html:92
-msgid "tiro di sponda obbligato, non vedi la bilia"
-msgstr ""
-
-#: templates/individual_match/tpa_referto.html:93
-msgid "battente in buca o fuori dal tavolo"
-msgstr ""
-
-#: templates/individual_match/tpa_referto.html:94
-msgid "non colpisci la bilia designata"
-msgstr ""
-
-#: templates/individual_match/tpa_referto.html:95
-msgid "con questo turno vinci il triangolo"
-msgstr ""
-
-#: templates/individual_match/tpa_referto.html:96
-msgid "il tiro sbagliato era facile: vale doppio"
-msgstr ""
-
-#: templates/individual_match/tpa_referto.html:97
-msgid "difesa premeditata: niente errore di posizione"
-msgstr ""
-
-#: templates/individual_match/tpa_referto.html:98
-msgid "push out"
-msgstr ""
-
-#: templates/individual_match/tpa_referto.html:103
-msgid "Il foglio"
-msgstr ""
-
-#: templates/individual_match/tpa_referto.html:109
-msgid "Chiudere il referto? Dopo non si annota più."
-msgstr ""
-
-#: templates/individual_match/tpa_referto.html:112
-msgid "Chiudi il referto"
-msgstr ""
-
-#: templates/individual_match/tpa_referto.html:132
+#: templates/individual_match/tpa_referto.html:76
 msgid "passa il tavolo"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:133
+#: templates/individual_match/tpa_referto.html:77
 msgid "al tavolo"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:135
+#: templates/individual_match/tpa_referto.html:79
 msgid "spacca lui"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:136
+#: templates/individual_match/tpa_referto.html:80
 msgid "TPA ancora da calcolare"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:137
+#: templates/individual_match/tpa_referto.html:81
 msgid "quante bilie?"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:138
+#: templates/individual_match/tpa_referto.html:82
 msgid "perché finisce il turno?"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:139
+#: templates/individual_match/tpa_referto.html:83
 msgid "Triangolo"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:140
+#: templates/individual_match/tpa_referto.html:84
 msgid "Non è stato possibile annotare."
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:141
+#: templates/individual_match/tpa_referto.html:85
 msgid "è entrata di sponda alla prima bilia"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:142
+#: templates/individual_match/tpa_referto.html:86
 msgid "Ha chiuso in una sola visita?"
 msgstr ""
 
-#: templates/individual_match/tpa_referto.html:143
+#: templates/individual_match/tpa_referto.html:87
 msgid "Chiusa in una sola visita"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:106
+msgid "Annulla l'ultimo tocco"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:111
+msgid "Cosa vuol dire ogni lettera"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:113
+msgid "sbagli un tiro d'attacco"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:114
+msgid "giochi di difesa"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:115
+msgid "tiro di sponda obbligato, non vedi la bilia"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:116
+msgid "battente in buca o fuori dal tavolo"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:117
+msgid "non colpisci la bilia designata"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:118
+msgid "con questo turno vinci il triangolo"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:119
+msgid "il tiro sbagliato era facile: vale doppio"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:120
+msgid "difesa premeditata: niente errore di posizione"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:121
+msgid "push out"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:126
+msgid "Il foglio"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:133
+#: templates/individual_match/tpa_referto.html:161
+msgid "Chiudi il referto"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:154
+msgid "Chiudere il referto?"
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:155
+msgid "Dopo non si annota più."
+msgstr ""
+
+#: templates/individual_match/tpa_referto.html:163
+msgid "Continua ad annotare"
 msgstr ""
 
 #: templates/player/_change_password_modal.html:13

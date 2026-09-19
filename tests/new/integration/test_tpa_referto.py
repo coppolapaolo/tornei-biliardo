@@ -338,9 +338,67 @@ class TestRotte:
             match = _match(one, two)
             TpaRefertoService.open_referto(match.id, one.id)
 
-            for user in (one, two):
+            from flask import g
+
+            for user, scrive in ((one, "true"), (two, "false")):
+                # `g` qui non e' per-richiesta: senza ripulirlo il secondo giro
+                # risponderebbe ancora per il primo giocatore.
+                g.pop("_login_user", None)
                 response = self._client(app, user).get(f"/match/matches/{match.id}/tpa")
                 assert response.status_code == 200
+                assert f'data-can-write="{scrive}"' in response.get_data(as_text=True)
+
+    def test_la_pagina_consegna_al_modulo_indirizzi_e_stato(self, app, players):
+        """Il JavaScript sta in ``static/js/tpa-referto.js`` e non sa niente
+        della pagina: indirizzi e stato glieli consegna il template.
+
+        Il modulo lo prova ``tests/frontend/test_tpa_referto.cjs`` con indirizzi
+        finti; qui si prova l'altra meta' del contratto — che quelli veri
+        arrivino, e che siano quelli delle route.
+        """
+        import json
+        import re
+
+        with app.app_context():
+            one, two = players
+            match = _match(one, two)
+            TpaRefertoService.open_referto(match.id, one.id)
+            base = f"/match/matches/{match.id}/tpa"
+
+            html = self._client(app, one).get(base).get_data(as_text=True)
+
+            assert f'data-press-url="{base}/press"' in html
+            assert f'data-undo-url="{base}/undo"' in html
+            assert f'data-state-url="{base}/state"' in html
+            assert f'data-poll-url="/sse/poll/individual_match/{match.id}"' in html
+            assert 'data-can-write="true"' in html
+            assert "js/tpa-referto.js" in html
+
+            blocco = re.search(
+                r'<script type="application/json" id="tpaStato">(.*?)</script>',
+                html,
+                re.S,
+            )
+            assert blocco is not None
+            state = json.loads(blocco.group(1))
+            assert state["can_write"] is True
+            assert state["buttons"]
+
+            # La chiusura si conferma in un foglio 7c, col suo token.
+            assert "confirm(" not in html
+            foglio = html[html.index('id="tpaChiudiModal"') :]
+            assert f'action="{base}/close"' in foglio
+            assert 'name="csrf_token"' in foglio[: foglio.index("</form>")]
+
+            # Chi guarda non riceve ne' il tastierino ne' il foglio di chiusura.
+            # In questa suite `g` non e' per-richiesta: senza ripulirlo
+            # Flask-Login risponderebbe ancora per il primo giocatore.
+            from flask import g
+
+            g.pop("_login_user", None)
+            html_due = self._client(app, two).get(base).get_data(as_text=True)
+            assert 'data-can-write="false"' in html_due
+            assert 'id="tpaChiudiModal"' not in html_due
 
     def test_chi_guarda_non_scrive(self, app, players):
         with app.app_context():
