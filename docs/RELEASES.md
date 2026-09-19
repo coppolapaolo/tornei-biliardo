@@ -1,5 +1,33 @@
 # Changelog
 
+## [1.34.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.33.0...v1.34.0) (2026-09-19)
+
+
+### Funzioni nuove
+
+* chi accede resta collegato su quel dispositivo per trenta giorni ([#460](https://github.com/coppolapaolo/tornei-biliardo/issues/460)) ([deaf455](https://github.com/coppolapaolo/tornei-biliardo/commit/deaf455b459b1819ea637bdd72b51da9f3784c85))
+* il catalogo degli esami dice cosa sei tu per ogni esame ([#486](https://github.com/coppolapaolo/tornei-biliardo/issues/486)) ([6cf919a](https://github.com/coppolapaolo/tornei-biliardo/commit/6cf919afd0856632a37283cc2965bc7636d317ae))
+* il referto TPA chiuso racconta la partita ([#482](https://github.com/coppolapaolo/tornei-biliardo/issues/482)) ([06eee45](https://github.com/coppolapaolo/tornei-biliardo/commit/06eee458e680d0a78055cd805bff0fe0d0af57dc))
+* il referto TPA su schermo largo mette il referto a fianco ([#481](https://github.com/coppolapaolo/tornei-biliardo/issues/481)) ([73e2a68](https://github.com/coppolapaolo/tornei-biliardo/commit/73e2a68d6af3d76a9719127739529be9719bd139))
+* il referto TPA su telefono è un tavolo con un tastierino solo ([#478](https://github.com/coppolapaolo/tornei-biliardo/issues/478)) ([f8a177f](https://github.com/coppolapaolo/tornei-biliardo/commit/f8a177f3b7ba61f5f566a2bb81ad49b0b799aeaf))
+* l'appuntamento d'esame si accetta dalla card della proposta ([#487](https://github.com/coppolapaolo/tornei-biliardo/issues/487)) ([f754f3e](https://github.com/coppolapaolo/tornei-biliardo/commit/f754f3e356476e88256b3d463f14f7afb89da66e))
+* l'esame si compone in una pagina, scegliendo gli esercizi per nome ([#484](https://github.com/coppolapaolo/tornei-biliardo/issues/484)) ([4dd1da5](https://github.com/coppolapaolo/tornei-biliardo/commit/4dd1da5695639d873735a331d691a56cb074d815))
+* la card del direttore risponde al tocco e avvisa prima di chiudere ([#462](https://github.com/coppolapaolo/tornei-biliardo/issues/462)) ([deefb35](https://github.com/coppolapaolo/tornei-biliardo/commit/deefb35e29e634e745e1185d72225a595e578fa9))
+* la sessione d'esame mette a fuoco un esercizio per volta ([#488](https://github.com/coppolapaolo/tornei-biliardo/issues/488)) ([62ea629](https://github.com/coppolapaolo/tornei-biliardo/commit/62ea62969cfc2f91e44869f44762224969102014))
+* nel referto TPA si torna indietro a rileggere, e si riparte da un turno ([#479](https://github.com/coppolapaolo/tornei-biliardo/issues/479)) ([cbc82b4](https://github.com/coppolapaolo/tornei-biliardo/commit/cbc82b4111c3f6545db33d74aaca1321c5575979))
+
+
+### Correzioni
+
+* all'acchito si risponde toccando i nomi, senza passare da «Comincia» ([#461](https://github.com/coppolapaolo/tornei-biliardo/issues/461)) ([025c386](https://github.com/coppolapaolo/tornei-biliardo/commit/025c386f331e3bfce93137cbe6a86fd7b295ad8c))
+* all'avvio del turno ogni tavolo va a una partita sola ([#459](https://github.com/coppolapaolo/tornei-biliardo/issues/459)) ([9cb731e](https://github.com/coppolapaolo/tornei-biliardo/commit/9cb731ea9b1ae29df2cdd0d34e10b895c28bd577))
+* chi svuota il tavolo senza premere G vede il triangolo vinto ([#476](https://github.com/coppolapaolo/tornei-biliardo/issues/476)) ([105301a](https://github.com/coppolapaolo/tornei-biliardo/commit/105301aa25d3aea18bf353b52321c3f1b481b023))
+* gli esercizi di gara si aprono anche per i giocatori, non solo per l'admin ([#469](https://github.com/coppolapaolo/tornei-biliardo/issues/469)) ([66d2ea2](https://github.com/coppolapaolo/tornei-biliardo/commit/66d2ea2d7ea28c5ac983ccbb61a689c018c85cb3))
+* invitare a una sfida un giocatore che non esiste dà un errore chiaro ([#485](https://github.com/coppolapaolo/tornei-biliardo/issues/485)) ([1d124f2](https://github.com/coppolapaolo/tornei-biliardo/commit/1d124f2d0888a51bce93d507d3edd658b7d3199f))
+* la vetrina di una gara a turni misti dice come si gioca ogni turno ([#463](https://github.com/coppolapaolo/tornei-biliardo/issues/463)) ([0258660](https://github.com/coppolapaolo/tornei-biliardo/commit/0258660bb89d94c9316ae2b9a0e4460bcb651436))
+* modifica e statistiche di un esercizio funzionano, gli esami si aprono da telefono ([#470](https://github.com/coppolapaolo/tornei-biliardo/issues/470)) ([42b190b](https://github.com/coppolapaolo/tornei-biliardo/commit/42b190b094b55adec46c1a5ca47b737a46f9c320))
+* una regola dei ritiri sconosciuta si rifiuta al form, non al primo ritiro ([#466](https://github.com/coppolapaolo/tornei-biliardo/issues/466)) ([ade785f](https://github.com/coppolapaolo/tornei-biliardo/commit/ade785f284cc26d3465f5629b2c94f60d8ac0f91))
+
 ## [1.33.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.32.0...v1.33.0) (2026-09-16)
 
 
