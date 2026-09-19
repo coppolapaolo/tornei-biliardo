@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{# I numeri di un esercizio, per chi l'ha scritto: quanto viene provato e come
+   va a chi lo prova. La route esisteva da sempre e rendeva questo file, che
+   non c'era. Pagina minima di proposito: l'andamento vero e' materia del
+   redesign degli esercizi (#181). #}
+
+{% block title %}{{ _("Statistiche") }} · {{ challenge.get_display_name() }} - {{ config.APP_NAME }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}"
+   aria-label="{{ _('Indietro') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Statistiche") }}{% endblock %}
+{% block page_sub %}{{ challenge.get_display_name() }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('challenge.challenge_detail', challenge_id=challenge.id) }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i>&nbsp;{{ _("Torna all'esercizio") }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+  {% if statistics.total_attempts == 0 %}
+  <div class="c7-card text-center">
+    <div class="c7-rows__title">{{ _("Nessuno l'ha ancora provato") }}</div>
+    <div class="c7-rows__sub">{{ _("I numeri compaiono qui dopo la prima prova registrata.") }}</div>
+  </div>
+  {% else %}
+  <div class="c7-grid c7-kpis" style="grid-template-columns:1fr 1fr">
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ statistics.total_attempts }}</div>
+      <div class="c7-rows__sub">{{ _("Prove registrate") }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ statistics.unique_players }}</div>
+      <div class="c7-rows__sub">{{ _("Giocatori diversi") }}</div>
+    </div>
+    {% if challenge.pass_fail_only %}
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ statistics.pass_rate|round|int if statistics.pass_rate is not none else "–" }}</div>
+      <div class="c7-rows__sub">{{ _("Riuscite su cento") }}</div>
+    </div>
+    {% else %}
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ statistics.average_score|round(1) }}</div>
+      <div class="c7-rows__sub">{{ _("Punteggio medio") }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ statistics.median_score|round(1) }}</div>
+      <div class="c7-rows__sub">{{ _("Punteggio mediano") }}</div>
+    </div>
+    <div class="c7-card">
+      <div class="c7-num-xl">{{ statistics.max_score_achieved }}{% if challenge.max_score %}<span class="c7-rows__sub"> / {{ challenge.max_score }}</span>{% endif %}</div>
+      <div class="c7-rows__sub">{{ _("Miglior punteggio") }}</div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

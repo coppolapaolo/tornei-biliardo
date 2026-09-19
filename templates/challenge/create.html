@@ -1,16 +1,22 @@
 {% extends "base.html" %}
 {% from "components/_form_macros.html" import choice, form_macros_scripts %}
 
-{% block title %}{{ _("Nuovo esercizio") }} - {{ config.APP_NAME }}{% endblock %}
+{# Lo stesso modulo serve a creare e a correggere. In modifica (`edit_mode`,
+   passato da `challenge.edit_challenge`) arriva compilato, non pretende una
+   seconda foto e non mostra il tipo di punteggio: la route non lo legge, e
+   cambiarlo con delle prove gia' registrate e' una decisione a parte (#252). #}
+{% set edit_mode = edit_mode|default(false) %}
+{% set torna_a = url_for('challenge.challenge_detail', challenge_id=challenge.id) if edit_mode else url_for('challenge.challenge_catalog') %}
+{% block title %}{{ _("Modifica esercizio") if edit_mode else _("Nuovo esercizio") }} - {{ config.APP_NAME }}{% endblock %}
 
 {% block page_back %}
-<a class="c7-head__back d-lg-none" href="{{ url_for('challenge.challenge_catalog') }}"
+<a class="c7-head__back d-lg-none" href="{{ torna_a }}"
    aria-label="{{ _('Chiudi') }}"><i class="fas fa-xmark"></i></a>
 {% endblock %}
-{% block page_title %}{{ _("Nuovo esercizio") }}{% endblock %}
-{% block page_sub %}{{ _("Un esercizio ripetibile: la foto del tavolo, le regole, il punteggio") }}{% endblock %}
+{% block page_title %}{{ _("Modifica esercizio") if edit_mode else _("Nuovo esercizio") }}{% endblock %}
+{% block page_sub %}{% if edit_mode %}{{ challenge.get_display_name() }}{% else %}{{ _("Un esercizio ripetibile: la foto del tavolo, le regole, il punteggio") }}{% endif %}{% endblock %}
 {% block page_actions %}
-<a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+<a href="{{ torna_a }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
   <i class="fas fa-xmark"></i>&nbsp;{{ _("Annulla") }}
 </a>
 {% endblock %}
@@ -26,6 +32,7 @@
     <div class="c7-card">
       <label for="title" class="form-label" data-help="challenge-titolo">{{ _("Titolo") }}</label>
       <input type="text" class="form-control" id="title" name="title" maxlength="120"
+             value="{{ challenge.title or '' if edit_mode else '' }}"
              placeholder="{{ _('es. Progressione lungo sponda') }}">
       <div class="form-text">
         {{ _("Facoltativo: senza, l'esercizio prende il suo numero progressivo (Esercizio 12).") }}
@@ -38,10 +45,11 @@
          era una restrizione del solo modulo — tagliava a meta' le regole dei
          drill articolati, senza nemmeno dirlo. #}
       <textarea class="form-control" id="description" name="description" rows="8" required
-                placeholder="{{ _('es. Disponi 10 bilie lungo la sponda lunga e imbucale in sequenza…') }}"></textarea>
+                placeholder="{{ _('es. Disponi 10 bilie lungo la sponda lunga e imbucale in sequenza…') }}">{{ challenge.description if edit_mode else '' }}</textarea>
       <div class="form-text">{{ _("È il testo che il giocatore legge prima di provarci: sii preciso sulle regole.") }}</div>
     </div>
 
+    {% if not edit_mode %}
     <div class="c7-card">
       <div class="c7-sechead mb-3"><h2>{{ _("Come si valuta") }}</h2></div>
       {{ choice('scoring_type', '', [
@@ -68,11 +76,16 @@
         </div>
       </div>
     </div>
+    {% endif %}
 
     <div class="c7-card">
-      <label for="image" class="form-label">{{ _("Foto della disposizione") }}</label>
-      <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+      <label for="image" class="form-label">{{ _("Sostituisci la foto") if edit_mode else _("Foto della disposizione") }}</label>
+      <input type="file" class="form-control" id="image" name="image" accept="image/*"{% if not edit_mode %} required{% endif %}>
+      {% if edit_mode %}
+      <div class="form-text">{{ _("Facoltativo: senza una foto nuova resta quella di adesso.") }}</div>
+      {% else %}
       <div class="form-text">{{ _("Serve a riprodurre il tavolo: fotografalo dall'alto, JPG o PNG.") }}</div>
+      {% endif %}
       <div class="form-text">{{ _("Carica solo materiale di cui hai i diritti.") }}</div>
       <div id="imagePreview" class="d-none" style="margin-top:14px;border-radius:var(--c7-r-card);overflow:hidden">
         <img alt="{{ _('Anteprima della foto') }}" style="width:100%;display:block">
@@ -81,7 +94,7 @@
       {# L'altra strada, per chi la foto non ce l'ha: si disegna. Sta qui e non
          in cima perché è l'alternativa, non il modo consigliato — una foto del
          tavolo vero resta la cosa più chiara che si possa dare a chi esegue. #}
-      {% if current_user.can_access('use_drill_builder') and feature_visible('challenge.diagram_builder') %}
+      {% if not edit_mode and current_user.can_access('use_drill_builder') and feature_visible('challenge.diagram_builder') %}
       <div class="c7-topline">
         <div class="c7-kicker">{{ _("Non hai una foto?") }}</div>
         <a href="{{ url_for('challenge.diagram_builder') }}"
@@ -96,7 +109,7 @@
   <div class="c7-actionbar">
     {# Il verde e' la conferma conclusiva di un flusso: qui la challenge nasce. #}
     <button type="submit" form="challengeForm" class="btn btn-success w-100">
-      <i class="fas fa-check"></i>&nbsp;{{ _("Crea l'esercizio") }}
+      <i class="fas fa-check"></i>&nbsp;{{ _("Salva le modifiche") if edit_mode else _("Crea l'esercizio") }}
     </button>
   </div>
 </div>
@@ -113,6 +126,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const maxScoreRow = document.getElementById('maxScoreRow');
     const maxScoreInput = document.getElementById('max_score');
     function syncMaxScore() {
+        // In modifica la sezione del punteggio non c'e'.
+        if (!maxScoreRow) return;
         const scelta = document.querySelector('input[name="scoring_type"]:checked');
         const aPunteggio = !scelta || scelta.value === 'score';
         maxScoreRow.style.display = aPunteggio ? '' : 'none';
@@ -161,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const formData = new FormData(this);
         const passFail = document.querySelector('input[name="scoring_type"]:checked');
-        formData.append('pass_fail_only', (passFail && passFail.value === 'pass_fail') ? 'true' : 'false');
+        if (passFail) formData.append('pass_fail_only', passFail.value === 'pass_fail' ? 'true' : 'false');
 
         fetch(window.location.href, {
             method: 'POST',
@@ -184,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .catch(error => {
             console.error('Error creating challenge:', error);
-            showError({{ _("Non è stato possibile creare l'esercizio. Riprova.")|tojson }});
+            showError({{ (_("Non è stato possibile salvare le modifiche. Riprova.") if edit_mode else _("Non è stato possibile creare l'esercizio. Riprova."))|tojson }});
         });
     });
 });

@@ -74,6 +74,22 @@
     </section>
     {% endif %}
 
+    {# ---------- Correggere e leggere i numeri: stessa regola della route ---------- #}
+    {% if current_user.is_admin or (current_user.is_director and challenge.created_by_id == current_user.id) %}
+    <div class="d-flex gap-2">
+      {% if feature_visible('challenge.edit_challenge') %}
+      <a href="{{ url_for('challenge.edit_challenge', challenge_id=challenge.id) }}" class="btn btn-secondary w-100">
+        <i class="fas fa-pen"></i>&nbsp;{{ _("Modifica") }}
+      </a>
+      {% endif %}
+      {% if feature_visible('challenge.challenge_statistics') %}
+      <a href="{{ url_for('challenge.challenge_statistics', challenge_id=challenge.id) }}" class="btn btn-secondary w-100">
+        <i class="fas fa-chart-simple"></i>&nbsp;{{ _("Statistiche") }}
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+
     {# ---------- Gestione (chi l'ha creata, o l'admin) ---------- #}
     {% if current_user.is_admin or (current_user.is_authenticated and challenge.created_by_id == current_user.id) %}
     <button class="btn btn-danger w-100" onclick="deleteChallenge()">

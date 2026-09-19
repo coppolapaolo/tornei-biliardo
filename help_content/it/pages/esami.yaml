@@ -11,7 +11,7 @@ related: [challenge, diventare_esaminatore, profilo_e_statistiche]
 blocks:
   - type: text
     text: >-
-      Un esame è una **sequenza dgli esercizi**, decisa da chi l'ha composto e
+      Un esame è una **sequenza di esercizi**, decisa da chi l'ha composto e
       sempre nello stesso ordine. Un esercizio da solo dice come ti è andato un
       tiro; un esame dice se sai tenere insieme più gesti di seguito. Se non
       sai cos'è un esercizio, comincia da [Le
@@ -19,7 +19,7 @@ blocks:
 
   - type: shot
     shot: esame-catalogo
-    caption: "Il catalogo degli esami: le sequenze dgli esercizi che si possono sostenere."
+    caption: "Il catalogo degli esami: le sequenze di esercizi che si possono sostenere."
 
   - type: heading
     id: due_modi
