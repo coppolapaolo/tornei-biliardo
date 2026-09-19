@@ -1,0 +1,954 @@
+{
+ "v": 3,
+ "attachments": {},
+ "boards": {
+  "Main.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 976,
+   "title": "A · Ordine",
+   "page": "tpa"
+  },
+  "TpaTavolo.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "B · Tavolo",
+   "page": "tpa"
+  },
+  "TpaIndietro.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "B · Indietro nel referto",
+   "page": "tpa"
+  },
+  "TpaRiparti.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "B · Ripartire dal passato",
+   "page": "tpa"
+  },
+  "TpaFoglio.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "C · Foglio vivo",
+   "page": "tpa"
+  },
+  "TpaDesktop.dc.html": {
+   "x": 2350,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "Desktop",
+   "page": "tpa"
+  },
+  "TpaChiuso.dc.html": {
+   "x": 3870,
+   "y": 0,
+   "w": 390,
+   "h": 1098,
+   "title": "Referto chiuso",
+   "page": "tpa"
+  },
+  "TrovareCatalogo.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "A · Catalogo che si filtra",
+   "page": "trovare"
+  },
+  "TrovareOggi.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 1024,
+   "title": "B · Oggi",
+   "page": "trovare"
+  },
+  "SchedaEsercizio.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 1196,
+   "title": "La scheda di un esercizio",
+   "page": "trovare"
+  },
+  "EseguiPunteggio.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "1 · A punteggio",
+   "page": "eseguire"
+  },
+  "EseguiColpo.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "2 · Colpo per colpo",
+   "page": "eseguire"
+  },
+  "EseguiZoom.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "3 · Il punto preciso",
+   "page": "eseguire"
+  },
+  "EseguiCasuale.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "4 · Con estrazione",
+   "page": "eseguire"
+  },
+  "EseguiFine.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "5 · Fine sessione",
+   "page": "eseguire"
+  },
+  "Andamento.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 1320,
+   "title": "Il tuo allenamento",
+   "page": "dopo"
+  },
+  "AndamentoGesto.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 1320,
+   "title": "Il tuo allenamento · per gesto",
+   "page": "dopo"
+  },
+  "Obiettivo.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 980,
+   "title": "Imposta un obiettivo",
+   "page": "dopo"
+  },
+  "CreaModulo.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 1640,
+   "title": "Crea, modifica, duplica",
+   "page": "dopo"
+  },
+  "CreaCopia.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Ha già delle prove",
+   "page": "dopo"
+  },
+  "SchedeElenco.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "1 · Le tue schede",
+   "page": "schede"
+  },
+  "SchedaComponi.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 1264,
+   "title": "2 · Comporre",
+   "page": "schede"
+  },
+  "SchedaVoce.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "3 · Quanto farne",
+   "page": "schede"
+  },
+  "SchedaInCorso.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "4 · La seduta · una voce con varianti",
+   "page": "schede"
+  },
+  "SedutaPalestra.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "5 · La stessa seduta · una voce lunga",
+   "page": "schede"
+  },
+  "SchedaRegistro.dc.html": {
+   "x": 2350,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "6 · Il registro",
+   "page": "schede"
+  },
+  "SchedaFine.dc.html": {
+   "x": 2820,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "7 · Fine seduta",
+   "page": "schede"
+  },
+  "SchedaLettori.dc.html": {
+   "x": 3290,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "8 · Chi la legge",
+   "page": "schede"
+  },
+  "IstruttoreConsenso.dc.html": {
+   "x": 3760,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "9 · Chi legge le mie schede",
+   "page": "schede"
+  },
+  "IstruttoreAggiungi.dc.html": {
+   "x": 4230,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "10 · Aprire una scheda a un istruttore",
+   "page": "schede"
+  },
+  "IstruttoreDiventa.dc.html": {
+   "x": 4700,
+   "y": 0,
+   "w": 390,
+   "h": 860,
+   "title": "11 · Diventare istruttore",
+   "page": "schede"
+  },
+  "IstruttoreAllievi.dc.html": {
+   "x": 5170,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "12 · I miei allievi",
+   "page": "schede"
+  },
+  "IstruttoreGruppo.dc.html": {
+   "x": 5640,
+   "y": 0,
+   "w": 390,
+   "h": 880,
+   "title": "13 · Un gruppo, e lo storico",
+   "page": "schede"
+  },
+  "EsamiCatalogo.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "1 · Gli esami",
+   "page": "esami"
+  },
+  "EsameDettaglio.dc.html": {
+   "x": 470,
+   "y": 0,
+   "w": 390,
+   "h": 908,
+   "title": "2 · Un esame",
+   "page": "esami"
+  },
+  "EsameAppuntamento.dc.html": {
+   "x": 940,
+   "y": 0,
+   "w": 390,
+   "h": 916,
+   "title": "3 · L'appuntamento",
+   "page": "esami"
+  },
+  "EsameSessione.dc.html": {
+   "x": 1410,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "4 · La sessione",
+   "page": "esami"
+  },
+  "EsameChiusura.dc.html": {
+   "x": 1880,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "5 · L'esito",
+   "page": "esami"
+  },
+  "EsameComponi.dc.html": {
+   "x": 2350,
+   "y": 0,
+   "w": 390,
+   "h": 954,
+   "title": "6 · Comporre un esame",
+   "page": "esami"
+  },
+  "DisegnatoreDesktop.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 900,
+   "title": "Desktop",
+   "page": "disegnatore"
+  },
+  "DisegnatoreMobile.dc.html": {
+   "x": 1520,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Telefono",
+   "page": "disegnatore"
+  },
+  "DisegnatoreCerchi.dc.html": {
+   "x": 1990,
+   "y": 0,
+   "w": 390,
+   "h": 860,
+   "title": "I cerchi: il bersaglio come dato",
+   "page": "disegnatore"
+  },
+  "DisegnatoreInquadratura.dc.html": {
+   "x": 2460,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "L'inquadratura",
+   "page": "disegnatore"
+  },
+  "DisegnatoreVarianti.dc.html": {
+   "x": 2930,
+   "y": 0,
+   "w": 390,
+   "h": 844,
+   "title": "Dal foglio di Ronin",
+   "page": "disegnatore"
+  },
+  "Decisioni.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1280,
+   "h": 1960,
+   "title": "Le decisioni",
+   "page": "decisioni"
+  },
+  "DecisioniAperte.dc.html": {
+   "x": 1360,
+   "y": 0,
+   "w": 1280,
+   "h": 1062,
+   "title": "Le tre domande: risposte",
+   "page": "decisioni"
+  }
+ },
+ "createdOnFiles": {
+  "at": "2026-09-19T08:15:53Z",
+  "v": 1
+ },
+ "designSystems": [],
+ "launch": {
+  "page": "tpa",
+  "view": "canvas"
+ },
+ "notes": {
+  "n-Main": {
+   "x": 0,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "A · ORDINE\nLa pagina di oggi messa in ordine, con la nav in basso. Col tastierino intero dell'app originale la pagina NON sta in uno schermo: si scorre per arrivare a «Indietro / Avanti» e al referto. È il suo limite. Stesse regole di B: niente pulsante per passare il tavolo, due annulla, TPA alla pari.",
+   "color": "blue",
+   "page": "tpa"
+  },
+  "n-TpaTavolo": {
+   "x": 470,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "B · TAVOLO — la direzione scelta (D1)\nPASSARE IL TAVOLO = toccare il riquadro di Sara. DUE ANNULLA: «cancella» toglie l'annotazione del turno; «Indietro / Avanti» scorre il referto. TRIANGOLI e TPA alla pari, TPA da 0 a 1000. NOTAZIONE, tutta in una schermata: il ① piccolo sopra è il PRIMO TIRO DI CALCIO (numero di chi tira, cerchiato — come l'originale, non una freccia); «3 Mⁿ» ha la n in apice; la P nella casella ombreggiata è il FALLO. Dopo il fallo il motore non ammette altro: tasti tutti spenti, resta passare.",
+   "color": "green",
+   "page": "tpa"
+  },
+  "n-TpaIndietro": {
+   "x": 940,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "IL SECONDO ANNULLA · nuovo\nCome nell'originale: «Indietro» porta a rileggere un turno passato, in sola lettura — il tastierino si spegne tutto, l'avviso dice dove sei. «Avanti» riporta al presente senza perdere niente. Per riscrivere la storia c'è un passo esplicito: «Riparti da questo turno…». Oggi nell'app `undo` CANCELLA l'ultimo comando: serve un cursore sul registro (emendamento ADR-044, fase 2c).",
+   "color": "orange",
+   "page": "tpa"
+  },
+  "n-TpaRiparti": {
+   "x": 1410,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "RIPARTIRE · nuovo\nL'originale chiede con un confirm() «Questo eliminerà 2 turni successivi». Qui è un foglio 7c che li nomina uno per uno. ALTERNATIVA (D16): niente conferma, il primo tasto premuto nel passato tronca da sé — più veloce, ma un tocco per sbaglio mentre si rilegge butta via dei turni.",
+   "color": "orange",
+   "page": "tpa"
+  },
+  "n-TpaFoglio": {
+   "x": 1880,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "C · FOGLIO VIVO — da scartare se confermi B (D1)\nIl turno in corso è l'ultima riga del referto. Ma col tastierino intero del referto resta una riga e mezza: su telefono non regge, e TPA e punteggio qui restano piccoli. L'idea buona — il referto sempre in vista — sopravvive su desktop, dove ha la sua colonna.",
+   "color": "gray",
+   "page": "tpa"
+  },
+  "n-TpaDesktop": {
+   "x": 2350,
+   "y": -340,
+   "w": 560,
+   "maxH": 300,
+   "text": "DESKTOP\nOggi la colonna destra resta vuota (380px) e il tastierino si stira su 6 colonne, rompendo la disposizione del cartaceo. Qui il referto riempie la colonna e il tastierino resta a 3 colonne, con «cancella» e «Indietro / Avanti». Il tavolo si passa cliccando il riquadro di Sara. Vale per qualunque direzione.",
+   "color": "gray",
+   "page": "tpa"
+  },
+  "n-TpaChiuso": {
+   "x": 3870,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "REFERTO CHIUSO · nuovo\nOggi un referto chiuso è la stessa pagina senza tastierino. Qui diventa il racconto della partita: TPA dei due, da dove vengono gli errori (le cinque famiglie del motore), i riconoscimenti, il referto triangolo per triangolo. Tutti dati che `describe` già calcola: nessun modello nuovo. Recepito: «Chiuse in un turno» (non «visita») e «Referto» (non «Il foglio»).",
+   "color": "orange",
+   "page": "tpa"
+  },
+  "n-TrovareCatalogo": {
+   "x": 0,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "A · CATALOGO  (#168)\nSi filtra per ABILITÀ (cosa alleni: posizione, tiro…), per GESTO (come colpisci: stop, stun, follow, draw — è la categorizzazione di Bullseye), per livello e per voto. Sono vocabolari distinti e un esercizio ha zero, una o più voci su ciascuno: il terzo qui sotto non ha nessuna abilità. La «classe» di Ronin li mescola. Su ogni card il voto e quanti l'hanno provato, che si leggono insieme. Richiede tabelle di associazione, non colonne.",
+   "color": "blue",
+   "page": "trovare"
+  },
+  "n-TrovareOggi": {
+   "x": 470,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "B · OGGI  (#175 #172 #316)\nLa porta è un consiglio: un esercizio per oggi col motivo scritto, la scheda da riprendere, gli obiettivi; il catalogo sta dietro «Apri il catalogo».\nÈ la direzione più ricca e la più costosa: presuppone scheda, obiettivi e la regola di raccomandazione. Può essere l'arrivo, con A come prima tappa.",
+   "color": "blue",
+   "page": "trovare"
+  },
+  "n-SchedaEsercizio": {
+   "x": 940,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "LA SCHEDA  (#181 #174 #252 #253)\nMedia, ultime tre con tendenza, record; il grafico delle prove (esiste già nello storico: qui viene portato dove serve); «quelli come te» per fascia di Elo e il livello misurato accanto a quello dichiarato. «Modifica» e «Duplica» compaiono per chi può: oggi la modifica è una route senza link.",
+   "color": "gray",
+   "page": "trovare"
+  },
+  "n-EseguiPunteggio": {
+   "x": 0,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "A PUNTEGGIO · c'è già\nIl gesto di oggi, con i comandi ancorati in basso. NUOVO, dal tuo commento: l'AVANZAMENTO DAL VIVO — una barra per prova, la tua media tratteggiata, i posti ancora vuoti. È un pezzo della cornice comune: lo riusano tutte le modalità.",
+   "color": "gray",
+   "page": "eseguire"
+  },
+  "n-EseguiColpo": {
+   "x": 470,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "COLPO PER COLPO · rifatto (#183)\nEra troppo Bullseye. Ora: tavolo orizzontale come nel resto dell'app; anelli che valgono PUNTI (3·2·1) in una sola tinta oro, non verde e rosso; un gesto solo — il tocco sul panno è già «imbucata» — e un tasto per l'errore, non la coppia rosso/nero; i colpi sono caselle col punteggio. In alto la corsa dal vivo contro il tuo solito, con la proiezione a fine serie.",
+   "color": "green",
+   "page": "eseguire"
+  },
+  "n-EseguiZoom": {
+   "x": 940,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "IL PUNTO PRECISO · nuovo (#183)\nCol dito, su un tavolo grande come un telefono, un punto a pochi centimetri dal centro non si indica: dopo il tocco si apre l'ingrandimento, si trascina, si conferma. Qui gli anelli portano scritto il valore.",
+   "color": "orange",
+   "page": "eseguire"
+  },
+  "n-EseguiCasuale": {
+   "x": 1410,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "CON ESTRAZIONE · nuovo (#452)\nL'app estrae e scrive la consegna a parole — «3 o più sponde, bilia 7» — invece di stampare 37. L'esito è una scala con un nome per voce (0 1 2 4 8). Stessa cornice: anche qui la corsa dal vivo, contro la serie del record. L'estrazione si persiste, così l'annulla sa dire cosa toglie.",
+   "color": "orange",
+   "page": "eseguire"
+  },
+  "n-EseguiFine": {
+   "x": 1880,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "FINE SESSIONE · nuovo (#172 #181 #184)\nLa sessione si chiude davvero. La nuvola dei punti d'arrivo è l'unica rappresentazione che dice COME correggere; i tre numeri hanno una parola accanto; la serie di colpi (non la streak settimanale) dà il traguardo; le note spiegano fra tre mesi un crollo isolato.",
+   "color": "orange",
+   "page": "eseguire"
+  },
+  "n-Andamento": {
+   "x": 0,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "ANDAMENTO · nuovo (#181 #316)\nIl confronto che conta è con sé stessi un mese fa. Le categorizzazioni sono DUE, quindi i radar sono due (tuo commento): «Per abilità» e «Per gesto», con un interruttore. Ogni asse vuole abbastanza prove per dire qualcosa, e quando non le ha la pagina lo dice. Gli obiettivi sono al massimo tre.",
+   "color": "orange",
+   "page": "dopo"
+  },
+  "n-AndamentoGesto": {
+   "x": 470,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "PER GESTO\nLa stessa pagina sull'altro asse: qui si vede che il draw cresce e lo spin è fermo — una lettura che le abilità non danno. Otto assi e non dieci: jump e massé entrano quando hanno abbastanza prove.",
+   "color": "orange",
+   "page": "dopo"
+  },
+  "n-Obiettivo": {
+   "x": 940,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "IMPOSTA UN OBIETTIVO · nuovo (#316 #175)\nRisposta a «come si impostano?»: da «Aggiungi un obiettivo» nell'andamento, o da «Punta a…» sulla scheda di un esercizio. Tre forme: un RISULTATO su un esercizio (qui), un'ABILITÀ che sale di fascia, la COSTANZA. Si dichiara quando vale raggiunto (media delle ultime 5, o una volta) ed entro quando. Il grafico dice da dove parti: un obiettivo irraggiungibile si vede prima di salvarlo. Massimo tre. La costanza può appoggiarsi alle quest che esistono già.",
+   "color": "orange",
+   "page": "dopo"
+  },
+  "n-CreaModulo": {
+   "x": 1410,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "UN MODULO SOLO  (#168 #252 #253)\nCreare, modificare e duplicare sono lo stesso modulo, precompilato. Abilità come pastiglie (fino a tre), livello 1–5, «come si registra» con le due modalità nuove. Dal catalogo «Kata» di Ronin: famiglia e passo (stop shot 1·2·3), la bianca che si rimette o resta, le varianti (dx/sx, A/B). Oggi la modifica apre il modulo vuoto e chiede di ricaricare la foto.",
+   "color": "gray",
+   "page": "dopo"
+  },
+  "n-CreaCopia": {
+   "x": 1880,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "HA GIÀ DELLE PROVE  (#252)\nLa domanda scatta solo se cambia il significato dei punteggi (massimo, tipo, istruzioni), non per un refuso nel titolo. La copia è la scelta proposta; «modifica comunque» resta, e dice quante prove tocca.",
+   "color": "gray",
+   "page": "dopo"
+  },
+  "n-SchedeElenco": {
+   "x": 0,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "LE TUE SCHEDE · nuovo (#172)\nUna scheda è una scheda: niente più «da palestra» o «a caselle». Le pastiglie dicono solo ciò che QUELLA scheda ha acceso — un livello, una soglia, dei giorni — e di chi è. La prima la legge un istruttore.",
+   "color": "orange",
+   "page": "schede"
+  },
+  "n-SchedaComponi": {
+   "x": 470,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "COMPORRE — UNA FORMA SOLA\nOgni voce ha il SUO «quanto farne», libero: 10 tiri, 5 + 5 dx e sx, 30 tiri, 5 partite. Niente «serie × ripetizioni»: è un concetto da palestra, non da biliardo (tuo commento). LIVELLO e SOGLIA sono interruttori, accanto a giorni e durata. La soglia somma solo le voci «a riusciti» (qui 60 tiri).",
+   "color": "green",
+   "page": "schede"
+  },
+  "n-SchedaVoce": {
+   "x": 940,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "QUANTO FARNE — SENZA SERIE (tuo commento)\nUna voce è: come si segna (fatto · riusciti · punteggio · vinte · minuti), QUANTI — tiri, partite o minuti — e le varianti. Un numero solo. Le differenze fra una scuola e l'altra stanno qui, nella voce.",
+   "color": "green",
+   "page": "schede"
+  },
+  "n-SchedaInCorso": {
+   "x": 1410,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "LA SEDUTA — VOCE «A RIUSCITI» CON DX E SX\nUn tocco su 0–5 e il tocco salva: come la cifra scritta sulla carta. Il totale corre sotto, contro la soglia, perché questa scheda la soglia ce l'ha accesa. La seduta è un'entità con inizio e fine (D7).",
+   "color": "orange",
+   "page": "schede"
+  },
+  "n-SedutaPalestra": {
+   "x": 1880,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "LA STESSA SEDUTA, LA VOCE DOPO\nTrenta tiri non si ricordano a memoria: si contano uno alla volta, riuscito o sbagliato, e la striscia cresce. Chi preferisce scrive il totale alla fine. L'input lo decide la VOCE, non la scheda.",
+   "color": "orange",
+   "page": "schede"
+  },
+  "n-SchedaRegistro": {
+   "x": 2350,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "IL REGISTRO\nLe sedute e, voce per voce, le ultime tre: è qui che si vede «a sinistra fai meno». Il totale c'è perché la soglia è accesa; le voci non a riusciti si vedono ma restano fuori dal conto. La griglia stampabile del foglio può tornare come vista in più quando tutte le voci sono a riusciti.",
+   "color": "orange",
+   "page": "schede"
+  },
+  "n-SchedaFine": {
+   "x": 2820,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "FINE SEDUTA\nOggi contro l'ultima volta, voce per voce. Il passaggio di livello è un'OPZIONE della scheda (D8): nessuno · automatico alla soglia · conferma dell'istruttore. Qui è disegnata la terza.",
+   "color": "orange",
+   "page": "schede"
+  },
+  "n-SchedaLettori": {
+   "x": 3290,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "IL LEGAME È ALLIEVO–SCHEDA–ISTRUTTORE (tuo commento su D11)\nNon esiste «Luca mi segue»: esiste «questa scheda la legge Luca». Ogni scheda ha i suoi lettori, n istruttori diversi, aggiunti e tolti dal giocatore. Nel modello è UNA tabella (scheda, istruttore, da quando, fino a quando) e nient'altro.",
+   "color": "green",
+   "page": "schede"
+  },
+  "n-IstruttoreConsenso": {
+   "x": 3760,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "UNA VISTA, NON UN LEGAME\nIl riepilogo di chi legge cosa, ricavato dalle schede. Un istruttore compare perché gli hai aperto almeno una scheda. L'andamento generale NON si condivide: fuori da una scheda l'istruttore non vede niente.",
+   "color": "orange",
+   "page": "schede"
+  },
+  "n-IstruttoreAggiungi": {
+   "x": 4230,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "APRIRE\nSi parte dalla scheda. Si cerca per nome fra chi ha il ruolo di istruttore — la scuola accanto al nome aiuta a non sbagliare persona — e si conferma. Vale subito (D18): l'istruttore riceve una notifica nella SUA lingua (ADR-062).",
+   "color": "orange",
+   "page": "schede"
+  },
+  "n-IstruttoreDiventa": {
+   "x": 4700,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "DOVE SI CONFIGURA L'ISTRUTTORE (tua domanda)\nNel profilo, sezione Ruoli: lo stesso percorso di «Diventa esaminatore» che esiste già (`RoleRequest` → approvazione → `RoleGrant`, ADR-041). La scuola o associazione è un testo facoltativo della richiesta, mostrato accanto al nome. PROPOSTA: testo libero, non un'anagrafica delle associazioni.",
+   "color": "green",
+   "page": "schede"
+  },
+  "n-IstruttoreAllievi": {
+   "x": 5170,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "I MIEI ALLIEVI, PER GRUPPO · nuovo (#173, D12)\nL'istruttore organizza gli allievi in GRUPPI con un nome e un periodo («Base 1 · autunno 2026»). Chi gli apre una scheda compare in cima, da sistemare. VERIFICATO NEL CODICE: corsi, lezioni, programmi NON esistono — zero modelli, zero tabelle. Esistono invece lo storico e l'andamento per esercizio.",
+   "color": "orange",
+   "page": "schede"
+  },
+  "n-IstruttoreGruppo": {
+   "x": 5640,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "LO STORICO CORSO PER CORSO · nuovo (D12)\nUn gruppo chiuso resta com'era: chi c'era, com'è andata. È il modo in cui l'istruttore ritrova «il Base 1 della primavera scorsa». PROPOSTA: gruppo = nome + periodo + allievi + scheda; niente lezioni né programma.",
+   "color": "orange",
+   "page": "schede"
+  },
+  "n-EsamiCatalogo": {
+   "x": 0,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "GLI ESAMI\nOggi è un elenco di nomi. Qui ogni esame dice cosa sei tu per lui — superato e da chi, provato da solo, mai provato — e l'appuntamento più vicino sta in cima. Chi somministra trova le richieste che aspettano lui. Tutti dati che esistono.",
+   "color": "gray",
+   "page": "esami"
+  },
+  "n-EsameDettaglio": {
+   "x": 470,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "UN ESAME\nGli esercizi numerati nell'ordine in cui si fanno. «Le tue volte» al posto delle quattro statistiche globali, che oggi mostrano quasi sempre zero. I due comandi in fondo sono quelli di oggi.",
+   "color": "gray",
+   "page": "esami"
+  },
+  "n-EsameAppuntamento": {
+   "x": 940,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "L'APPUNTAMENTO\nLa proposta sul tavolo e il suo «Accetto» stanno nella stessa card: oggi la proposta è in cima e il pulsante in fondo, sotto la nav. Date leggibili («sab 26 set») al posto di 26/09/2026. La trattativa è una linea del tempo.",
+   "color": "gray",
+   "page": "esami"
+  },
+  "n-EsameSessione": {
+   "x": 1410,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "LA SESSIONE DELL'ESAMINATORE\nUn esercizio alla volta, stessa cornice e stessa striscia della scheda di allenamento. Oggi il punteggio compare due volte (la cifra e il campo) e si scrive in un input numerico. NUOVO: «Rinuncia alla terza» non esiste.",
+   "color": "gray",
+   "page": "esami"
+  },
+  "n-EsameChiusura": {
+   "x": 1880,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "L'ESITO\nIl riepilogo prima della decisione, poi i due bersagli grandi. ADR-042 non si tocca: esito netto, deciso dall'esaminatore, nessun voto.",
+   "color": "gray",
+   "page": "esami"
+  },
+  "n-EsameComponi": {
+   "x": 2350,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "COMPORRE UN ESAME\nLo stesso modulo della scheda. Oggi per aggiungere un esercizio si scrive il suo ID numerico a mano, il riordino ha la route ma nessun comando, e peso e prove non si cambiano più dopo. «Vale» e «prove» sono i due campi di ExamChallenge.",
+   "color": "gray",
+   "page": "esami"
+  },
+  "n-DisegnatoreDesktop": {
+   "x": 0,
+   "y": -340,
+   "w": 560,
+   "maxH": 300,
+   "text": "IL DISEGNATORE (#179)\nTavolo al centro, strumenti in colonna, proprietà dell'oggetto selezionato a destra. I quattro col puntino sono nuovi: Bersaglio, Posizioni, Richiamo, Marcatore. Sul tavolo la notazione di Billiard University: riquadri in diamanti (vuoti, pieno, ruotato), numeri fuori sponda, donut, richiamo legato al punto. Passa dal lessico scuro-giallo del tool ai token 7c: è una scelta (D13). RECEPITO: largo, alto e raggio dei bersagli vanno a passi da ¼ di diamante, come la griglia (qui 2½ × 1¼).",
+   "color": "orange",
+   "page": "disegnatore"
+  },
+  "n-DisegnatoreMobile": {
+   "x": 1520,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "SU TELEFONO\nOggi gli strumenti occupano tutto lo schermo e il tavolo finisce sotto «Salva». Qui il tavolo resta sempre in vista, gli strumenti sono una striscia e sotto c'è solo ciò che serve all'oggetto selezionato.",
+   "color": "orange",
+   "page": "disegnatore"
+  },
+  "n-DisegnatoreCerchi": {
+   "x": 1990,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "IL BERSAGLIO COME DATO (#179 → #183, D14)\nI cerchi hanno centro, raggio e un valore per anello: è ciò che rende calcolabile «Posizione» nel colpo per colpo. Le misure sono in QUARTI di diamante (raggio 1½). Gli anelli si chiamano per VALORE, non per colore: il colore non è nel dato, ed è così che il colpo per colpo smette di somigliare a Bullseye.",
+   "color": "orange",
+   "page": "disegnatore"
+  },
+  "n-DisegnatoreInquadratura": {
+   "x": 2460,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "COME SI FA L'IMMAGINE DI UN SOLO PEZZO (tua domanda)\nSi disegna sempre sul tavolo intero. L'inquadratura è una cornice: tre preset (mezzo tavolo, un angolo, intero) o libera, trascinata dalle maniglie e agganciata ai diamanti. Decide solo cosa finisce nell'immagine: nel dato è un rettangolo in quarti di diamante accanto alla scena.",
+   "color": "green",
+   "page": "disegnatore"
+  },
+  "n-DisegnatoreVarianti": {
+   "x": 2930,
+   "y": -340,
+   "w": 390,
+   "maxH": 300,
+   "text": "DAL FOGLIO DI RONIN · nuovo\nTre cose che i diagrammi della scheda usano e il disegnatore non sa fare: la variante specchiata (dx/sx da un disegno solo), l'inquadratura su mezzo tavolo o su un angolo, e il bersaglio come tratto di sponda evidenziato (esercizio 1, linea tangente). Non erano nella #179.",
+   "color": "orange",
+   "page": "disegnatore"
+  },
+  "n-Decisioni": {
+   "x": 0,
+   "y": -340,
+   "w": 560,
+   "maxH": 300,
+   "text": "CONGELATE IL 19/09\nVenti decisioni, tutte confermate. La colonna di destra resta come memoria di cosa si è scartato e perché. Stanno anche in PIANO.md, fra le prese.",
+   "color": "green",
+   "page": "decisioni"
+  },
+  "n-DecisioniAperte": {
+   "x": 1360,
+   "y": -340,
+   "w": 560,
+   "maxH": 300,
+   "text": "QUESTE SERVONO A TE\nLe voci dei due vocabolari, la regola della soglia, e i corsi — con quello che la verifica nel codice ha trovato: le statistiche ci sono, i corsi no.",
+   "color": "orange",
+   "page": "decisioni"
+  },
+  "t-tpa": {
+   "x": 0,
+   "y": -640,
+   "text": "Referto TPA — la stessa giocata in tre direzioni",
+   "kind": "title1",
+   "maxW": 4260,
+   "page": "tpa",
+   "w": 240
+  },
+  "t-trovare": {
+   "x": 0,
+   "y": -640,
+   "text": "Esercizi — qual è la porta d'ingresso",
+   "kind": "title1",
+   "maxW": 1330,
+   "page": "trovare",
+   "w": 240
+  },
+  "t-eseguire": {
+   "x": 0,
+   "y": -640,
+   "text": "Eseguire — cinque momenti, una cornice sola",
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "eseguire",
+   "w": 240
+  },
+  "t-dopo": {
+   "x": 0,
+   "y": -640,
+   "text": "Dopo la prova, e prima: andamento e modulo",
+   "kind": "title1",
+   "maxW": 2270,
+   "page": "dopo",
+   "w": 240
+  },
+  "t-schede": {
+   "x": 0,
+   "y": -640,
+   "text": "Schede — una forma sola; e chi ti segue lo scegli tu",
+   "kind": "title1",
+   "maxW": 6030,
+   "page": "schede",
+   "w": 240
+  },
+  "t-esami": {
+   "x": 0,
+   "y": -640,
+   "text": "Esami — la stessa sequenza, davanti a un esaminatore",
+   "kind": "title1",
+   "maxW": 2740,
+   "page": "esami",
+   "w": 240
+  },
+  "t-disegnatore": {
+   "x": 0,
+   "y": -640,
+   "text": "Disegnatore — la notazione che manca",
+   "kind": "title1",
+   "maxW": 3320,
+   "page": "disegnatore",
+   "w": 240
+  },
+  "t-decisioni": {
+   "x": 0,
+   "y": -640,
+   "text": "Decisioni — cosa do per fatto, e cosa ti chiedo",
+   "kind": "title1",
+   "maxW": 2640,
+   "page": "decisioni",
+   "w": 240
+  }
+ },
+ "order": [
+  "Main.dc.html",
+  "TpaTavolo.dc.html",
+  "TpaIndietro.dc.html",
+  "TpaRiparti.dc.html",
+  "TpaFoglio.dc.html",
+  "TpaDesktop.dc.html",
+  "TpaChiuso.dc.html",
+  "TrovareCatalogo.dc.html",
+  "TrovareOggi.dc.html",
+  "SchedaEsercizio.dc.html",
+  "EseguiPunteggio.dc.html",
+  "EseguiColpo.dc.html",
+  "EseguiZoom.dc.html",
+  "EseguiCasuale.dc.html",
+  "EseguiFine.dc.html",
+  "Andamento.dc.html",
+  "AndamentoGesto.dc.html",
+  "Obiettivo.dc.html",
+  "CreaModulo.dc.html",
+  "CreaCopia.dc.html",
+  "SchedeElenco.dc.html",
+  "SchedaComponi.dc.html",
+  "SchedaVoce.dc.html",
+  "SchedaInCorso.dc.html",
+  "SedutaPalestra.dc.html",
+  "SchedaRegistro.dc.html",
+  "SchedaFine.dc.html",
+  "SchedaLettori.dc.html",
+  "IstruttoreConsenso.dc.html",
+  "IstruttoreAggiungi.dc.html",
+  "IstruttoreDiventa.dc.html",
+  "IstruttoreAllievi.dc.html",
+  "IstruttoreGruppo.dc.html",
+  "EsamiCatalogo.dc.html",
+  "EsameDettaglio.dc.html",
+  "EsameAppuntamento.dc.html",
+  "EsameSessione.dc.html",
+  "EsameChiusura.dc.html",
+  "EsameComponi.dc.html",
+  "DisegnatoreDesktop.dc.html",
+  "DisegnatoreMobile.dc.html",
+  "DisegnatoreCerchi.dc.html",
+  "DisegnatoreInquadratura.dc.html",
+  "DisegnatoreVarianti.dc.html",
+  "Decisioni.dc.html",
+  "DecisioniAperte.dc.html"
+ ],
+ "pages": [
+  {
+   "id": "tpa",
+   "name": "1 · Referto TPA"
+  },
+  {
+   "id": "trovare",
+   "name": "2 · Esercizi: trovare"
+  },
+  {
+   "id": "eseguire",
+   "name": "3 · Esercizi: eseguire"
+  },
+  {
+   "id": "dopo",
+   "name": "4 · Andamento e creazione"
+  },
+  {
+   "id": "schede",
+   "name": "5 · Schede di allenamento"
+  },
+  {
+   "id": "esami",
+   "name": "6 · Esami"
+  },
+  {
+   "id": "disegnatore",
+   "name": "7 · Disegnatore"
+  },
+  {
+   "id": "decisioni",
+   "name": "8 · Decisioni"
+  }
+ ],
+ "title": "TPA ed esercizi"
+}

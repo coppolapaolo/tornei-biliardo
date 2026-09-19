@@ -724,6 +724,13 @@ Quelli sopra sono chiusi; questi no.
    README. Va fatta con il browser davanti, regola per regola: sono i due file
    che il tema sovrascrive, quindi togliere quella sbagliata non da' errore, da'
    una pagina storta.
+6. **Referto TPA, esercizi, schede, esami e disegnatore** (dal 2026-09-19) — il
+   referto TPA non era mai passato dal redesign (nessuna schermata nel
+   prototipo), e l'area esercizi aveva preso il tema senza che nessuno ne
+   ripensasse i percorsi. Canvas di 46 schermate, venti
+   decisioni congelate, undici fasi: lo stato schermata per schermata sta in
+   [`canvas-tpa-esercizi/STATO.md`](canvas-tpa-esercizi/STATO.md), il piano in
+   [`canvas-tpa-esercizi/PIANO.md`](canvas-tpa-esercizi/PIANO.md).
 
 ### Rilievi di dominio trovati durante la conversione (non toccati)
 

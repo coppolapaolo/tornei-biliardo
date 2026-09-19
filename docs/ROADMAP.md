@@ -123,6 +123,10 @@ competizione in qualcosa che si apre anche di mercoledì.
 | #210 | il trio non ha la vista orizzontale |
 | #214 | nascondere una partita dal profilo pubblico |
 
+Il **referto TPA** non ha issue sue ma ha un disegno: è la pagina 1 del canvas
+«TPA ed esercizi» (2026-09-19), e nel piano di quel redesign è la fase 2 —
+vedi [`redesign-7c/canvas-tpa-esercizi/STATO.md`](redesign-7c/canvas-tpa-esercizi/STATO.md).
+
 ---
 
 ## Fase 3 · Allenamento e istruttori
@@ -137,6 +141,16 @@ Undici issue: #168, #172, #173, #174, #175, #179, #181, #183, #184, #252, #253.
 
 Oggi sono il gruppo più numeroso del backlog e riempiono la vista. Sono anche
 le più lontane: metterle qui è il modo di smettere di guardarle.
+
+**Dal 2026-09-19 hanno un disegno e un ordine.** Il canvas «TPA ed esercizi»
+(46 schermate, venti decisioni congelate) le mette in fila in undici fasi, una
+per sessione di lavoro, insieme a tre issue nate dopo — #316 (obiettivi), #452
+(esercizi con estrazione), #326 (la prova fuori dalle gare) — e a ciò che non aveva una issue: gli esami da
+ridisegnare, i gruppi di allievi dell'istruttore, il voto degli esercizi. Il
+piano è in [`redesign-7c/canvas-tpa-esercizi/PIANO.md`](redesign-7c/canvas-tpa-esercizi/PIANO.md),
+lo stato schermata per schermata in
+[`STATO.md`](redesign-7c/canvas-tpa-esercizi/STATO.md). Restano fuori, come
+issue a sé: #471 (TPA semplificato) e #472 (giochi a due o più giocatori).
 
 ---
 
