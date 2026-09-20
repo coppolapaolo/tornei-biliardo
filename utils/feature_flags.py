@@ -540,6 +540,18 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "sheet.toggle_notes_shared": {"player", "director"},
     "sheet.leave_sheet": {"player", "director"},
     "sheet.my_instructors": {"player", "director"},
+    # L'altro lato: «I miei allievi» e i gruppi (D12). Solo `instructor`, e non
+    # anche `player`, perché queste pagine esistono per chi ha il ruolo — le
+    # route rispondono 404 a chi non ce l'ha, e qui si dice la stessa cosa a
+    # monte. Un istruttore è quasi sempre anche `player`: è il set dei ruoli a
+    # decidere, non il primario (ADR-041).
+    "istruttore.allievi": {"instructor"},
+    "istruttore.assegna_gruppo": {"instructor"},
+    "istruttore.gruppi": {"instructor"},
+    "istruttore.crea_gruppo": {"instructor"},
+    "istruttore.gruppo": {"instructor"},
+    "istruttore.modifica_gruppo": {"instructor"},
+    "istruttore.chiudi_gruppo": {"instructor"},
     # start_attempt/attempt_detail/complete_attempt sono il percorso della
     # gara (il drill al posto del bye), che il giocatore attraversa da solo.
     "challenge.start_attempt": {"player", "director"},

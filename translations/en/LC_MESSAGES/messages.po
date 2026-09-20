@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 18:18+0200\n"
+"POT-Creation-Date: 2026-09-20 19:01+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -166,6 +166,7 @@ msgstr "Winner: %(nome)s"
 #: templates/individual_match/matches.html:54
 #: templates/individual_match/matches.html:122
 #: templates/individual_match/quick_match.html:60
+#: templates/istruttore/gruppi.html:44
 #: templates/player/challenge_attempt_detail.html:24
 #: templates/public/campionatos_list.html:27
 #: templates/public/schermo_sala.html:133
@@ -742,7 +743,7 @@ msgid "Questo esercizio si registra colpo per colpo, non col totale."
 msgstr "This exercise is recorded shot by shot, not with the total."
 
 #: models/challenge/services.py:1257 models/challenge/shot_service.py:162
-#: models/training_sheet/session_service.py:398
+#: models/training_sheet/session_service.py:415
 msgid "Questa variante non è di questo esercizio"
 msgstr "This variant does not belong to this drill"
 
@@ -1573,6 +1574,7 @@ msgid "ultima partita %(date)s"
 msgstr "last match %(date)s"
 
 #: models/dashboard/activity_feedback.py:1504
+#: models/istruttore/allievi_view.py:376
 msgid "oggi"
 msgstr "today"
 
@@ -2643,6 +2645,84 @@ msgstr "Proposal declined"
 msgid "Vedi la proposta"
 msgstr "See the proposal"
 
+#: models/istruttore/allievi_view.py:270
+#, python-format
+msgid "%(numeri)s su %(max)s · soglia %(soglia)s"
+msgstr "%(numeri)s out of %(max)s · threshold %(soglia)s"
+
+#: models/istruttore/allievi_view.py:293
+msgid "non ha ancora chiuso una seduta"
+msgstr "has not closed a session yet"
+
+#: models/istruttore/allievi_view.py:303
+#, python-format
+msgid "non si allena da %(num)s giorno"
+msgid_plural "non si allena da %(num)s giorni"
+msgstr[0] "has not trained for %(num)s day"
+msgstr[1] "has not trained for %(num)s days"
+
+#: models/istruttore/allievi_view.py:336
+#, python-format
+msgid "da %(sedute)s sedute non supera %(massimo)s"
+msgstr "has not beaten %(massimo)s in %(sedute)s sessions"
+
+#: models/istruttore/allievi_view.py:352
+msgid "ha appena cominciato"
+msgstr "has just started"
+
+#: models/istruttore/allievi_view.py:361
+#, python-format
+msgid "%(quando)s · %(quante)s"
+msgstr "%(quando)s · %(quante)s"
+
+#: models/istruttore/allievi_view.py:364
+#, python-format
+msgid "%(num)s seduta in quattro settimane"
+msgid_plural "%(num)s sedute in quattro settimane"
+msgstr[0] "%(num)s session in four weeks"
+msgstr[1] "%(num)s sessions in four weeks"
+
+#: models/istruttore/allievi_view.py:378
+msgid "ieri"
+msgstr "yesterday"
+
+#: models/istruttore/allievi_view.py:379
+#, python-format
+msgid "%(num)s giorni fa"
+msgstr "%(num)s days ago"
+
+#: models/istruttore/gruppi.py:65 models/istruttore/gruppi.py:230
+msgid "Questo gruppo non esiste"
+msgstr "This group does not exist"
+
+#: models/istruttore/gruppi.py:155
+msgid "Questo gruppo è già chiuso"
+msgstr "This group is already closed"
+
+#: models/istruttore/gruppi.py:176
+msgid "Questo gruppo è chiuso: riaprilo, o mettilo in uno in corso"
+msgstr "This group is closed: use one that is still running"
+
+#: models/istruttore/gruppi.py:180
+msgid "Puoi mettere in un gruppo solo chi ti ha aperto una scheda"
+msgstr "You can only add people who have opened a sheet to you"
+
+#: models/istruttore/gruppi.py:210
+msgid "Questo allievo non fa parte del gruppo"
+msgstr "This student is not in the group"
+
+#: models/istruttore/gruppi.py:218
+msgid "I gruppi sono dell'istruttore"
+msgstr "Groups belong to the instructor"
+
+#: models/istruttore/gruppi.py:259
+msgid "Il gruppo ha bisogno di un nome"
+msgstr "The group needs a name"
+
+#: models/istruttore/gruppi.py:265
+msgid "Il corso non può finire prima di cominciare"
+msgstr "The course cannot end before it starts"
+
 #: models/kpi/notifications.py:52
 #, python-format
 msgid "Milestone: %(value)s utenti!"
@@ -3490,12 +3570,12 @@ msgid "soglia %(n)s su %(tot)s"
 msgstr "threshold %(n)s of %(tot)s"
 
 #: models/training_sheet/services.py:69
-#: models/training_sheet/session_service.py:97
+#: models/training_sheet/session_service.py:120
 msgid "Scheda non trovata"
 msgstr "Sheet not found"
 
 #: models/training_sheet/services.py:109
-#: models/training_sheet/session_service.py:99
+#: models/training_sheet/session_service.py:122
 msgid "Questa scheda non è tua"
 msgstr "This sheet is not yours"
 
@@ -3520,7 +3600,7 @@ msgid "Le settimane vanno da 1 a %(n)s."
 msgstr "Weeks go from 1 to %(n)s."
 
 #: models/training_sheet/services.py:226
-#: models/training_sheet/session_service.py:377
+#: models/training_sheet/session_service.py:394
 msgid "Questa voce non è di questa scheda"
 msgstr "This item does not belong to this sheet"
 
@@ -3598,76 +3678,76 @@ msgstr "A threshold needs at least one \"made\" item: the others do not add up."
 msgid "La soglia non può superare il totale della scheda, che è %(n)s."
 msgstr "The threshold cannot be higher than the sheet total, which is %(n)s."
 
-#: models/training_sheet/session_service.py:66
+#: models/training_sheet/session_service.py:89
 msgid "Seduta non trovata"
 msgstr "Session not found"
 
-#: models/training_sheet/session_service.py:107
+#: models/training_sheet/session_service.py:130
 msgid "Questo giorno non è nella scheda"
 msgstr "This day is not in the sheet"
 
-#: models/training_sheet/session_service.py:149
+#: models/training_sheet/session_service.py:172
 msgid "Serve dire se l'hai fatto"
 msgstr "Say whether you did it"
 
-#: models/training_sheet/session_service.py:182
+#: models/training_sheet/session_service.py:205
 msgid "Questa voce si segna con un numero, non tiro per tiro"
 msgstr "This item is recorded with a number, not shot by shot"
 
-#: models/training_sheet/session_service.py:190
+#: models/training_sheet/session_service.py:213
 msgid "Hai già segnato tutti i tiri di questa voce"
 msgstr "You have already recorded every shot of this item"
 
-#: models/training_sheet/session_service.py:212
+#: models/training_sheet/session_service.py:235
 msgid "Non c'è nessun tiro da togliere"
 msgstr "There is no shot to undo"
 
-#: models/training_sheet/session_service.py:257
+#: models/training_sheet/session_service.py:280
 msgid "Questa seduta è già chiusa"
 msgstr "This session is already closed"
 
-#: models/training_sheet/session_service.py:310
+#: models/training_sheet/session_service.py:333
 msgid "Questa seduta ha già qualcosa segnato: chiudila, non buttarla"
 msgstr "This session already has something recorded: close it, do not discard it"
 
-#: models/training_sheet/session_service.py:366
+#: models/training_sheet/session_service.py:383
 msgid "Questa seduta non è tua"
 msgstr "This session is not yours"
 
-#: models/training_sheet/session_service.py:373
+#: models/training_sheet/session_service.py:390
 msgid "Questa seduta è chiusa"
 msgstr "This session is closed"
 
-#: models/training_sheet/session_service.py:379
+#: models/training_sheet/session_service.py:396
 msgid "Questa voce non fa più parte della scheda"
 msgstr "This item is no longer part of the sheet"
 
-#: models/training_sheet/session_service.py:392
+#: models/training_sheet/session_service.py:409
 msgid "Serve dire da che parte"
 msgstr "Say which side"
 
-#: models/training_sheet/session_service.py:395
+#: models/training_sheet/session_service.py:412
 msgid "Questa voce si segna in una casella sola"
 msgstr "This item is recorded in a single box"
 
-#: models/training_sheet/session_service.py:434
+#: models/training_sheet/session_service.py:451
 msgid "Serve il numero"
 msgstr "The number is required"
 
-#: models/training_sheet/session_service.py:436
+#: models/training_sheet/session_service.py:453
 msgid "Il numero non può essere negativo"
 msgstr "The number cannot be negative"
 
-#: models/training_sheet/session_service.py:442
+#: models/training_sheet/session_service.py:459
 #, python-format
 msgid "Al massimo %(n)s su questa voce."
 msgstr "At most %(n)s on this item."
 
-#: models/training_sheet/session_service.py:446
+#: models/training_sheet/session_service.py:463
 msgid "Una seduta non dura più di un giorno"
 msgstr "A session does not last longer than a day"
 
-#: models/training_sheet/session_service.py:453
+#: models/training_sheet/session_service.py:470
 #, python-format
 msgid "Questo esercizio arriva a %(n)s."
 msgstr "This drill goes up to %(n)s."
@@ -4284,9 +4364,26 @@ msgstr "Reference"
 #: templates/exam/catalog.html:64 templates/gamification/dashboard.html:150
 #: templates/individual_match/dashboard.html:178
 #: templates/individual_match/matches.html:52
+#: templates/istruttore/allievi.html:78
 #: templates/public/campionatos_list.html:26
 msgid "Tutti"
 msgstr "All"
+
+#: routes/istruttore.py:117
+msgid "Non fa più parte del gruppo."
+msgstr "No longer in the group."
+
+#: routes/istruttore.py:123
+msgid "Adesso è nel gruppo."
+msgstr "Now in the group."
+
+#: routes/istruttore.py:195
+msgid "Gruppo aggiornato."
+msgstr "Group updated."
+
+#: routes/istruttore.py:209
+msgid "Corso chiuso. Resta nello storico."
+msgstr "Course closed. It stays in your past groups."
 
 #: routes/main.py:356
 msgid "Senza data"
@@ -6345,6 +6442,7 @@ msgstr "Description (optional)"
 #: templates/gamification/admin/streak_config.html:34
 #: templates/gamification/admin/streak_config.html:152
 #: templates/individual_match/edit_match.html:122
+#: templates/istruttore/gruppo.html:160
 #: templates/player/privacy_settings.html:98
 #: templates/player/profile_edit.html:78 templates/player/roles.html:89
 msgid "Salva"
@@ -7154,7 +7252,8 @@ msgstr "Average time on site"
 msgid "Collegati adesso"
 msgstr "Online now"
 
-#: templates/admin/accessi.html:66
+#: templates/admin/accessi.html:66 templates/istruttore/gruppi.html:82
+#: templates/istruttore/gruppo.html:150
 msgid "Dal"
 msgstr "From"
 
@@ -7591,6 +7690,7 @@ msgstr "Add configuration"
 #: templates/exam/examiners.html:45
 #: templates/gamification/admin/level_config.html:221
 #: templates/gamification/admin/streak_config.html:274
+#: templates/istruttore/gruppo.html:111
 msgid "Aggiungi"
 msgstr "Add"
 
@@ -8101,6 +8201,7 @@ msgid "Indirizzo"
 msgstr "Address"
 
 #: templates/admin/campionato_vetrina.html:88
+#: templates/istruttore/gruppo.html:141
 msgid "Come si chiama"
 msgstr "Label"
 
@@ -12905,6 +13006,7 @@ msgstr "View All"
 #: templates/individual_match/matches.html:151
 #: templates/individual_match/proposals.html:37
 #: templates/individual_match/proposals.html:40
+#: templates/istruttore/gruppi.html:86 templates/istruttore/gruppo.html:155
 msgid "Al"
 msgstr "Race to"
 
@@ -15589,7 +15691,8 @@ msgstr "Move: drag, or use the up and down arrows"
 
 #: templates/components/_sequence_editor.html:75
 #: templates/direttore/_foglio_esercizio.html:107
-#: templates/exam/examiners.html:28 templates/sheet/readers.html:53
+#: templates/exam/examiners.html:28 templates/istruttore/gruppo.html:82
+#: templates/sheet/readers.html:53
 msgid "Togli"
 msgstr "Remove"
 
@@ -23311,6 +23414,229 @@ msgstr ""
 msgid "Resta a guardare"
 msgstr "Keep reviewing"
 
+#: templates/istruttore/allievi.html:17 templates/istruttore/allievi.html:23
+#: templates/sheet/index.html:110
+msgid "I miei allievi"
+msgstr "My students"
+
+#: templates/istruttore/allievi.html:21 templates/sheet/compose.html:25
+#: templates/sheet/detail.html:19 templates/sheet/instructors.html:16
+#: templates/sheet/run.html:20 templates/sheet/summary.html:15
+msgid "Torna alle schede"
+msgstr "Back to the sheets"
+
+#: templates/istruttore/allievi.html:26
+#, python-format
+msgid "%(num)s persona ti ha aperto una scheda"
+msgid_plural "%(num)s persone ti hanno aperto una scheda"
+msgstr[0] "%(num)s person has opened a sheet to you"
+msgstr[1] "%(num)s people have opened a sheet to you"
+
+#: templates/istruttore/allievi.html:33 templates/istruttore/gruppi.html:11
+#: templates/istruttore/gruppi.html:17
+msgid "I tuoi gruppi"
+msgstr "Your groups"
+
+#: templates/istruttore/allievi.html:55
+#, python-format
+msgid "Apri il registro di %(chi)s"
+msgstr "Open the log of %(chi)s"
+
+#: templates/istruttore/allievi.html:67
+msgid "Nessun allievo"
+msgstr "No students"
+
+#: templates/istruttore/allievi.html:69
+msgid ""
+"Qui compaiono le persone che ti hanno aperto una loro scheda. Sei tu a "
+"non poterlo chiedere: è una decisione che prendono loro, scheda per "
+"scheda."
+msgstr ""
+"People appear here once they open one of their sheets to you. You cannot "
+"ask for it: it is their decision, one sheet at a time."
+
+#: templates/istruttore/allievi.html:76
+msgid "Filtra per gruppo"
+msgstr "Filter by group"
+
+#: templates/istruttore/allievi.html:88
+msgid "Ti hanno appena aperto una scheda"
+msgstr "They have just opened a sheet to you"
+
+#: templates/istruttore/allievi.html:96 templates/istruttore/gruppi.html:29
+#: templates/istruttore/gruppo.html:39 templates/player/roles.html:34
+#: templates/sheet/readers.html:47
+#, python-format
+msgid "dal %(giorno)s"
+msgstr "since %(giorno)s"
+
+#: templates/istruttore/allievi.html:109
+msgid "Metti in un gruppo"
+msgstr "Put in a group"
+
+#: templates/istruttore/allievi.html:119
+msgid "Valuta il passaggio di livello"
+msgstr "Consider moving them up a level"
+
+#: templates/istruttore/allievi.html:124
+msgid ""
+"Hanno superato la soglia della loro scheda tante volte di fila quante ne "
+"chiede. Il gradino lo sancisci tu: dagli la scheda del livello dopo "
+"quando te la senti."
+msgstr ""
+"They have been above their sheet threshold as many times in a row as it "
+"asks for. You are the one who confirms the step: give them the next level"
+" sheet when you think they are ready."
+
+#: templates/istruttore/allievi.html:130
+msgid "Da guardare"
+msgstr "Worth a look"
+
+#: templates/istruttore/allievi.html:138
+msgid "Tutto bene"
+msgstr "All good"
+
+#: templates/istruttore/allievi.html:147
+msgid "Nessuno in questo gruppo"
+msgstr "Nobody in this group"
+
+#: templates/istruttore/allievi.html:149
+msgid ""
+"Ci si mette chi ti ha già aperto una scheda: un gruppo serve a ordinare "
+"gli allievi, non a chiederne di nuovi."
+msgstr ""
+"Only people who have already opened a sheet to you go in: a group sorts "
+"your students, it does not ask for new ones."
+
+#: templates/istruttore/allievi.html:153
+msgid "Apri il gruppo"
+msgstr "Open the group"
+
+#: templates/istruttore/gruppi.html:15
+msgid "Torna agli allievi"
+msgstr "Back to students"
+
+#: templates/istruttore/gruppi.html:18
+msgid "Un gruppo ordina i tuoi allievi: non apre niente"
+msgstr "A group sorts your students: it opens nothing"
+
+#: templates/istruttore/gruppi.html:30 templates/istruttore/gruppo.html:40
+#, python-format
+msgid "al %(giorno)s"
+msgstr "to %(giorno)s"
+
+#: templates/istruttore/gruppi.html:32
+#, python-format
+msgid "%(num)s allievo"
+msgid_plural "%(num)s allievi"
+msgstr[0] "%(num)s student"
+msgstr[1] "%(num)s students"
+
+#: templates/istruttore/gruppi.html:51
+msgid "Nessun gruppo"
+msgstr "No groups"
+
+#: templates/istruttore/gruppi.html:53
+msgid ""
+"Un gruppo serve a ordinare chi ti ha già aperto una scheda — il corso del"
+" lunedì, i ragazzi del primo anno. Non dà accesso a niente: quello lo "
+"decide l'allievo."
+msgstr ""
+"A group sorts the people who have already opened a sheet to you — the "
+"Monday course, the first-year kids. It grants no access: that is the "
+"student's decision."
+
+#: templates/istruttore/gruppi.html:59
+msgid "Lo storico dei tuoi gruppi"
+msgstr "Your past groups"
+
+#: templates/istruttore/gruppi.html:64
+msgid ""
+"Un gruppo chiuso resta com'era: chi c'era e fino a quando. Se un allievo "
+"ti toglie da una scheda, da quel giorno di quella scheda non vedi più "
+"niente di nuovo."
+msgstr ""
+"A closed group stays as it was: who was in it, and until when. If a "
+"student removes you from a sheet, from that day on you see nothing new of"
+" that sheet."
+
+#: templates/istruttore/gruppi.html:73
+msgid "Un gruppo nuovo"
+msgstr "A new group"
+
+#: templates/istruttore/gruppi.html:75
+msgid "Come lo chiami"
+msgstr "What you call it"
+
+#: templates/istruttore/gruppi.html:91
+msgid ""
+"Le date sono facoltative: servono a dire a che settimana è arrivato il "
+"corso."
+msgstr "The dates are optional: they say which week the course has reached."
+
+#: templates/istruttore/gruppi.html:94
+msgid "Crea il gruppo"
+msgstr "Create the group"
+
+#: templates/istruttore/gruppo.html:20
+msgid "Torna ai gruppi"
+msgstr "Back to groups"
+
+#: templates/istruttore/gruppo.html:23
+msgid "Un gruppo: nome, periodo, allievi"
+msgstr "A group: name, dates, students"
+
+#: templates/istruttore/gruppo.html:33
+msgid "Gruppo in corso"
+msgstr "Group running"
+
+#: templates/istruttore/gruppo.html:33
+msgid "Gruppo chiuso"
+msgstr "Group closed"
+
+#: templates/istruttore/gruppo.html:46
+#, python-format
+msgid "settimana %(n)s di %(tot)s"
+msgstr "week %(n)s of %(tot)s"
+
+#: templates/istruttore/gruppo.html:48
+#, python-format
+msgid "settimana %(n)s"
+msgstr "week %(n)s"
+
+#: templates/istruttore/gruppo.html:57 templates/istruttore/gruppo.html:67
+msgid "Allievi"
+msgstr "Students"
+
+#: templates/istruttore/gruppo.html:61 templates/istruttore/gruppo.html:120
+msgid "Ne sono usciti"
+msgstr "Have left"
+
+#: templates/istruttore/gruppo.html:89
+msgid "Ancora nessuno. Si mette dentro chi ti ha aperto una scheda."
+msgstr "Nobody yet. People who have opened a sheet to you go in here."
+
+#: templates/istruttore/gruppo.html:95
+msgid "Fra chi ti ha aperto una scheda"
+msgstr "Among those who opened a sheet to you"
+
+#: templates/istruttore/gruppo.html:128
+#, python-format
+msgid "fino al %(giorno)s"
+msgstr "until %(giorno)s"
+
+#: templates/istruttore/gruppo.html:165
+msgid ""
+"Chiudi il corso? Resta nello storico con chi ne faceva parte, e da oggi "
+"quelle persone possono entrare in un altro gruppo."
+msgstr ""
+"Close the course? It stays in your past groups with everyone who was in "
+"it, and from today those people can join another group."
+
+#: templates/istruttore/gruppo.html:168
+msgid "Chiudi il corso"
+msgstr "Close the course"
+
 #: templates/player/_change_password_modal.html:13
 msgid "Password attuale"
 msgstr "Current password"
@@ -23917,11 +24243,6 @@ msgstr "Your roles"
 #: templates/player/roles.html:16
 msgid "Chi sei, qui dentro"
 msgstr "Who you are, in here"
-
-#: templates/player/roles.html:34 templates/sheet/readers.html:47
-#, python-format
-msgid "dal %(giorno)s"
-msgstr "since %(giorno)s"
 
 #: templates/player/roles.html:35
 #, python-format
@@ -24644,12 +24965,6 @@ msgstr "This sheet has no items for today: compose it, then begin."
 msgid "Componi la scheda"
 msgstr "Compose the sheet"
 
-#: templates/sheet/compose.html:25 templates/sheet/detail.html:19
-#: templates/sheet/instructors.html:16 templates/sheet/run.html:20
-#: templates/sheet/summary.html:15
-msgid "Torna alle schede"
-msgstr "Back to the sheets"
-
 #: templates/sheet/compose.html:28
 msgid "Ogni voce ha il suo «quanto farne»"
 msgstr "Every item has its own \"how much\""
@@ -24917,24 +25232,28 @@ msgstr "Remove this sheet from the list? The sessions you have done stay."
 msgid "Archivia"
 msgstr "Archive"
 
-#: templates/sheet/index.html:107 templates/sheet/instructors.html:12
+#: templates/sheet/index.html:111
+msgid "chi ti ha aperto una scheda, e i tuoi gruppi"
+msgstr "who opened a sheet to you, and your groups"
+
+#: templates/sheet/index.html:122 templates/sheet/instructors.html:12
 #: templates/sheet/instructors.html:18
 msgid "Chi legge le mie schede"
 msgstr "Who reads my sheets"
 
-#: templates/sheet/index.html:108
+#: templates/sheet/index.html:123
 msgid "si decide scheda per scheda"
 msgstr "decided sheet by sheet"
 
-#: templates/sheet/index.html:117
+#: templates/sheet/index.html:132
 msgid "Una scheda nuova"
 msgstr "A new sheet"
 
-#: templates/sheet/index.html:119
+#: templates/sheet/index.html:134
 msgid "Come la chiami"
 msgstr "What you call it"
 
-#: templates/sheet/index.html:122
+#: templates/sheet/index.html:137
 msgid "Crea e componi"
 msgstr "Create and compose"
 

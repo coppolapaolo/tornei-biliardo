@@ -37,6 +37,29 @@ logger = logging.getLogger(__name__)
 MAX_MINUTES = 1440
 
 
+def streak_above_threshold(sheet: TrainingSheet, sedute: List[TrainingSession]) -> int:
+    """Quante delle ``sedute`` in testa stanno sopra la soglia della scheda.
+
+    Una funzione, e non un metodo, perché ha **due** chiamanti che partono da
+    punti diversi: la fine seduta, che le sedute se le va a prendere, e la
+    pagina «I miei allievi», che le ha già in mano per venti schede insieme e
+    non può permettersi una query a testa. La regola del gradino deve restare
+    una sola: due copie che divergono direbbero a un istruttore che l'allievo
+    è pronto e all'allievo di no.
+
+    ``sedute`` arriva **dalla più recente**, come la dà ``closed_sessions``.
+    """
+    if sheet.threshold is None:
+        return 0
+    streak = 0
+    for session in sedute:
+        if session.total >= sheet.threshold:
+            streak += 1
+        else:
+            break
+    return streak
+
+
 class TrainingSessionService:
     """Le sedute di una scheda: una alla volta, e sempre di chi le fa."""
 
@@ -347,15 +370,9 @@ class TrainingSessionService:
         fine seduta confronta con ``sheet.threshold_streak`` per dire se il
         gradino è superato.
         """
-        if sheet.threshold is None:
-            return 0
-        streak = 0
-        for session in TrainingSessionService.closed_sessions(sheet.id, user_id):
-            if session.total >= sheet.threshold:
-                streak += 1
-            else:
-                break
-        return streak
+        return streak_above_threshold(
+            sheet, TrainingSessionService.closed_sessions(sheet.id, user_id)
+        )
 
     # ────────────────────────────────────────────────────────────────────
     # Dentro
