@@ -34,11 +34,17 @@ Sorgenti del canvas: `sorgenti/` (`kit.py`, `tpa.py`, `esercizi.py`,
 | 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | **chiusa il 20/09** — #517 (7a), #519 (7b), #520 (7c), #521 (7d+7e), #522 (7f). Una scala sola per due mondi (ADR-068), 7d e 7e in una PR: vedi la nota nella fase |
 | 8 | Istruttori (#173) | **chiusa il 20/09** — #523 (8a), #525 (8b), #526 (catena delle nomine, fuori piano), #528 (8c), #530 + #531 + #532 (8d, in tre), #534 (8e). Chiude #173. Tre ADR nuovi (069, 070, 071) e un emendamento all'ADR-041: vedi la nota nella fase |
 | 9 | Disegnatore (#179) | **chiusa il 20/09** — #536 (9a), #538 (9b), #540 (9c), #541 (9d · guida). Chiude #179. Emendamenti all'ADR-065 e all'ADR-066; aperta la #539 (lo specchio anche sul panno): vedi la nota nella fase |
-| 10 | Chiusura: guida, racconto, issue | da fare |
+| 10 | Chiusura: racconto, ROADMAP, issue | **chiusa il 21/09** — #542. Il piano è finito: vedi la nota nella fase |
 
 Chi chiude una fase aggiorna questa tabella e quella di `STATO.md` (stato,
 numeri di PR) **dentro l'ultima PR della fase**, e la riga corrispondente in
 memoria.
+
+> **Il piano è concluso.** Undici fasi e **51 PR di lavoro** — più le due
+> preliminari #469 e #470 e 16 di rilascio, dalla 1.34.0 alla 1.47.0 — dal 19
+> al 21 settembre 2026. Quello che resta da fare non sta più qui: sta
+> nelle cinque issue elencate in fondo a [`STATO.md`](STATO.md), e nella
+> ROADMAP. Questo file da oggi si legge, non si esegue.
 
 ---
 
@@ -734,3 +740,35 @@ issue chiuse o riscritte, schermate della guida rigenerate una volta sola,
 memoria aggiornata, e un giro sui log di produzione nei giorni dopo.
 
 **Prompt**: «…esegui la fase 10.»
+
+### Com'è andata (21/09) — una PR, #542
+
+* **Il racconto** sta in `CHANGELOG.md`, dentro «Non rilasciato»: una sezione
+  «Allenarsi nell'app» con una voce per area e, in «Corretto», i sei difetti
+  riparati strada facendo. `docs/RELEASES.md` resta l'indice generato dal bot:
+  i due non si scambiano.
+* **La ROADMAP**: la fase 3 passa a «fatta», con l'elenco di ciò che resta
+  aperto e il motivo per cui è stata fatta prima che la 2 si svuotasse. La 2
+  eredita le due issue del segnapunti che il redesign non ha toccato, #208 e
+  #241, perché vivono sul tabellone e non sul referto. Corretta anche la #235,
+  chiusa da tempo e ancora elencata nella fase 4.
+* **Le issue, verificate una per una** e non dall'elenco del piano: le
+  quattordici del perimetro sono chiuse, le cinque rinviate sono già scritte
+  come si deve — ciascuna dice da dove nasce e cosa andrebbe deciso prima di
+  scrivere codice — quindi nessuna è stata riaperta o riscritta.
+* **Le schermate della guida NON sono state rigenerate.** Ogni fase ha
+  ricatturato le sue, e una ricattura di massa cambierebbe oltre 130 immagini
+  su 254 senza che l'interfaccia sia cambiata, perché le date del dataset sono
+  relative a oggi: sarebbe un diff che nasconde quello vero. Al posto della
+  ricattura, un controllo d'integrità del manifest — 113 voci, 254 file attesi,
+  **zero mancanti** — che ha trovato due PNG orfane di una voce tolta dal
+  manifest, `gara-challenge`, rimosse qui.
+* **Il DB di sviluppo era indietro di 13 migration**, ferme al 16/09: nessun
+  test lo vede, perché i test costruiscono lo schema dai modelli con
+  `db.create_all()` e solo il runner sa che cosa è applicato *a quel file*.
+  Applicate (12 pendenti più una già presente), con backup prima.
+
+**Quello che resta, e non è codice**: il giro sui log di produzione. Il codice
+di queste fasi arriva su PythonAnywhere col prossimo `auto_deploy.py`, quindi
+il primo error log utile è quello del giorno dopo — cosa cercare sta in
+`project_analisi_log_2026-09-14`.

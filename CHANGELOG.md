@@ -19,6 +19,30 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **Gli esercizi fra i turni davano 404 ai giocatori**, e solo in produzione:
+  le due pagine con cui si registra un tentativo non erano dichiarate
+  nell'elenco degli endpoint visibili, quindi l'app le nascondeva a tutti
+  tranne l'admin. In sviluppo il controllo è disattivato, per questo non si era
+  mai visto (#469, ADR-028).
+- **Un esercizio già usato in un esame risultava «mai utilizzato».** Le prove
+  d'esame non sono tentativi del catalogo, e chi contava gli usi guardava solo
+  quelli: cancellare quell'esercizio se lo portava via insieme alla voce
+  dell'esame e ai risultati già dati. Ora contano anche esami e schede (#511).
+- **Di un esercizio si modificava solo il disegno**, le statistiche davano
+  errore, «Esami» non compariva nel menu del telefono e la guida aveva testi
+  corrotti da una rinomina («dgli esercizi»). Erano quattro difetti che
+  arrivavano dalla stessa rinomina mai completata (#470).
+- **Chi svuota il tavolo senza premere «G» ora vede il triangolo vinto**: il
+  motore del referto leggeva un valore in cache prima di ricalcolare quali
+  tasti fossero ammessi (#476).
+- **Chi ha nominato chi adesso si vede.** I ruoli delegabili erano generici nel
+  meccanismo ma scritti a mano nei tre posti che li usano: l'admin non poteva
+  far partire la catena degli istruttori, la pagina che mostra «concesso da»
+  non era raggiungibile da nessun collegamento, e in produzione un istruttore
+  avrebbe preso 404 proprio sull'approvazione della richiesta di un collega
+  (#526, ADR-041 emendato).
+- **Invitare a una sfida un giocatore che non esiste** dà un errore chiaro
+  invece di fallire più avanti (#485).
 - **All'avvio del turno il primo tavolo finiva a due partite e l'ultimo
   restava vuoto** (gara 3 della Ronin Cup, 16/09/2026). La X si chiude da
   sola mentre il turno sta nascendo, e ogni chiusura riassegna i tavoli
@@ -43,8 +67,100 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Aggiunto
 
+#### Allenarsi nell'app (19–20/09/2026)
+
+Fino a settembre l'app sapeva fare tornei. Chi voleva usarla il mercoledì, per
+allenarsi da solo o con un istruttore, trovava un catalogo di esercizi con
+poche funzioni e un referto TPA che nessuno aveva mai ripensato. In due giorni
+sono state disegnate 46 schermate su un canvas, congelate venti decisioni e
+portate a termine undici fasi di lavoro, una per sessione. Il piano e lo stato
+schermata per schermata stanno in
+[`docs/redesign-7c/canvas-tpa-esercizi/`](docs/redesign-7c/canvas-tpa-esercizi/PIANO.md).
+
+- **Il referto TPA si compila con una mano sola.** Il tastierino è uno solo,
+  sempre tutto visibile, su tre colonne come l'app Accu-Stats da cui viene il
+  motore: prima su schermo largo si stirava su sei colonne e i tasti non
+  premibili sparivano invece di spegnersi. Il tavolo si passa **toccando il
+  riquadro del giocatore** in alto, senza un pulsante apposta; il TPA sta su
+  scala 0–1000 e ha la stessa evidenza del punteggio, perché è il numero per
+  cui si compila un referto. Si torna indietro a rileggere — e rileggere è
+  **sola lettura**: per ricominciare da un turno del passato si dice
+  esplicitamente, così guardare non sposta mai il punteggio della partita. Su
+  schermo largo il referto sta a fianco del tavolo, e a partita chiusa diventa
+  un racconto con i numeri di ciascuno, non sommati (PR #475, #478, #479,
+  #481, #482, #483; ADR-044 emendato).
+- **Gli esami hanno una pagina per ogni momento.** L'esame si compone in una
+  pagina sola, scegliendo gli esercizi per nome invece di scriverne l'ID a
+  mano; il catalogo dice, esame per esame, che cosa sei tu — candidato,
+  esaminatore, nessuno dei due. L'appuntamento si accetta **dentro la card
+  della proposta**, e la controproposta si fa con tre campi, giorno, ora e
+  sala. La sessione mette a fuoco un esercizio per volta, col tastierino
+  agganciato in basso, e l'esito si dà dal riepilogo. Con una sessione
+  certificata aperta la composizione aspetta: cambiare le regole a esame in
+  corso sarebbe cambiare la prova sotto i piedi di chi la sta sostenendo
+  (PR #484, #486, #487, #488, #489; ADR-042 emendato).
+- **Un esercizio dice che cosa allena.** Abilità e gesto vengono da un
+  vocabolario fisso, il livello è dichiarato da chi lo scrive, e le varianti
+  — destra e sinistra, A e B — sono **etichette dello stesso esercizio**, non
+  un secondo esercizio da tenere allineato a mano. Creare, modificare e
+  duplicare passano da un modulo solo; se il cambiamento toccherebbe prove già
+  registrate l'app lo dice e chiede se copiarle o sovrascriverle, invece di
+  decidere da sé. L'area si apre su **«Oggi»**, con dietro il catalogo che si
+  filtra per abilità, gesto, livello e voto. E un esercizio si vota da 1 a 5
+  **con cinque bilie** — gli oggetti del gioco al posto delle stelle — ma solo
+  dopo averlo provato (PR #490, #492, #494, #496, #498; ADR-065).
+- **Una prova si può fare colpo per colpo.** Si tocca il panno dove si è
+  fermata la bianca, e il punteggio **discende dai colpi** invece di essere
+  digitato: è lo stesso rapporto che c'è fra il referto TPA e il punteggio di
+  una partita. L'app può anche estrarre la consegna a ogni colpo, con la
+  richiesta scritta a parole e conservata. A fine sessione il tavolo mostra la
+  nuvola dei punti d'arrivo, letta in una frase: lungo o corto è forza, di lato
+  è mira (PR #501, #503, #504, #507, #508, #509; ADR-066).
+- **Le schede di allenamento.** Una scheda ha **una forma sola** — livello,
+  soglia, giorni e durata sono interruttori, non schede diverse — e si compone
+  come un esame, con lo stesso oggetto. La seduta si segna con un tocco per
+  casella, e il registro dice com'è andata voce per voce e da che parte si
+  sbaglia. Quando si segna, la casella **copia la misura e il «su quanto»**, e
+  una voce che ha registrazioni si ritira invece di sparire: è ciò che rende
+  il registro ancora leggibile fra sei mesi (PR #511, #513, #514, #515, #516;
+  ADR-067).
+- **L'andamento, gli obiettivi e i consigli.** Un radar dice dove sei forte,
+  mettendo prove del catalogo e caselle delle schede **su una scala sola** — la
+  quota di ciò che era ottenibile, dove 12 su 15 e 4 su 5 tiri valgono lo
+  stesso 80% — senza però fonderle mai su un esercizio: media e record restano
+  quelli del catalogo. Un obiettivo si sceglie da sé e ha una barra che si
+  riempie; i traguardi premiano la **tenuta** e non solo la quantità; e l'app
+  stima quanto è difficile davvero un esercizio dai risultati di chi l'ha
+  provato, per dire che cosa conviene fare oggi (PR #517, #519, #520, #521,
+  #522; ADR-068).
+- **Istruttori e allievi.** Il ruolo di istruttore non apre niente: rende
+  **trovabili**. Il legame nasce sempre dall'allievo, che apre una sua scheda a
+  un istruttore e può richiuderla quando vuole; «I miei istruttori» e «I miei
+  allievi» sono la stessa riga letta dai due lati. L'istruttore ordina gli
+  allievi in gruppi, vede un triage in tre sezioni e i numeri del corso, e
+  **propone** una scheda invece di assegnarla: nasce quando l'allievo accetta,
+  e nasce sua. Il passaggio di livello si sancisce — per soglia o con un gesto
+  dell'istruttore — e resta timbrato anche se le sedute dopo vanno peggio
+  (PR #523, #525, #528, #530, #531, #532, #534; ADR-069, ADR-070, ADR-071).
+- **Il disegnatore degli esercizi parla la lingua dell'app.** Colori dal design
+  system invece di una tavolozza sua; sul telefono il tavolo sta in cima, gli
+  strumenti in una striscia che scorre, e sotto restano le proprietà del solo
+  strumento acceso — prima il tavolo finiva sotto «Salva». Il **bersaglio è un
+  dato**, in due forme che fanno due domande diverse: i cerchi chiedono *quanto
+  vicino* e graduano, il riquadro chiede *dentro o fuori* e non gradua. Con
+  loro arrivano posizioni numerate, richiami col filo legato, marcatori,
+  varianti ribaltate e l'inquadratura, che ritaglia l'immagine e non il tavolo
+  su cui si lavora (PR #536, #538, #540, #541; ADR-065 e ADR-066 emendati).
+- **La guida racconta tutto questo**, in italiano e in inglese, con le
+  schermate catturate dall'app su un dataset dimostrativo. Ha una sezione nuova
+  **«Insegnare»**, e il seed ha ora un istruttore vero con sei allievi, ognuno
+  messo lì per illustrare una frase della guida (PR #483, #489, #498, #509,
+  #516, #522, #534, #541).
+
 - **Sul telefono si resta collegati**: la casella «Resta collegato su questo
   dispositivo», spuntata per default, tiene la sessione per trenta giorni
+  dall'ultimo uso. Prima il cookie nasceva senza scadenza e iOS lo buttava a
+  ogni chiusura dell'app, quindi in sala si rifaceva l'accesso a ogni
   dall'ultimo uso. Prima il cookie nasceva senza scadenza e iOS lo buttava a
   ogni chiusura dell'app, quindi in sala si rifaceva l'accesso a ogni
   apertura, con i suggerimenti di due gestori di password che l'app non
