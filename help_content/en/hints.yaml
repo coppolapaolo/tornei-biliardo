@@ -1031,6 +1031,43 @@ hints:
   page: fare_una_prova
   section: eliminare
 
+- id: scheda.ordine
+  label: The order of the drills
+  short: "You will do them in this order, so the warm-up goes first. To change it,
+    drag an item from the handle on the left, or use the up and down arrows."
+  anchor: scheda-ordine
+  screens:
+  - sheet.compose
+  page: schede_di_allenamento
+  section: comporre
+- id: scheda.quanto_farne
+  label: How much to do
+  short: "Tap the pill to say how the item is recorded — made, done, score, won,
+    minutes — and how many shots, games or minutes."
+  anchor: scheda-quanto-farne
+  screens:
+  - sheet.compose
+  page: schede_di_allenamento
+  section: comporre
+- id: scheda.soglia
+  label: The threshold
+  short: "How much it takes to call the step passed. It sums only the \"made\"
+    items: games and minutes stay out of the count."
+  anchor: scheda-soglia
+  screens:
+  - sheet.compose
+  page: schede_di_allenamento
+  section: comporre
+- id: scheda.casella
+  label: Recording a box
+  short: "One tap on the number and the box is written, with nothing to confirm.
+    If you got it wrong, tap the right number: the first one is gone."
+  anchor: scheda-casella
+  screens:
+  - sheet.run
+  page: schede_di_allenamento
+  section: seduta
+
 tours:
 - screen: dashboard.dashboard
   title: Your home

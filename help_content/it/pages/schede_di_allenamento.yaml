@@ -1,0 +1,200 @@
+title: "Le schede di allenamento"
+section: giocare
+kind: approfondimento
+audience: [giocatore]
+minutes: 4
+summary: "La sequenza di esercizi che fai in sala, nell'ordine in cui la fai: la componi una volta, e poi segni com'è andata."
+screens: [sheet.index, sheet.compose, sheet.detail, sheet.run, sheet.session_summary]
+related: [challenge, fare_una_prova, progressi]
+
+blocks:
+  - type: text
+    text: >-
+      Dal catalogo peschi **un esercizio alla volta**. Una **scheda** è
+      l'opposto: decidi una volta cosa fare e in che ordine, e quando arrivi in
+      sala sai già da dove partire. È la stessa cosa che molti fanno su un
+      foglio di carta — una riga per seduta, una colonna per esercizio — e
+      questa pagina spiega come farla nell'app.
+
+  - type: shot
+    shot: scheda-elenco
+    caption: "Le tue schede: quella cominciata sta in cima, con «Riprendi»."
+
+  - type: heading
+    id: comporre
+    title: "Comporre la scheda"
+
+  - type: text
+    text: >-
+      **Schede** è accanto a **Esercizi**. Dai un nome alla scheda e premi
+      **«Crea e componi»**: si apre il modulo, e da lì aggiungi gli esercizi con
+      **«Aggiungi un esercizio»**. L'ordine conta — il riscaldamento sta
+      all'inizio — e si cambia trascinando una voce dalla presa a sinistra.
+      Lo stesso esercizio può comparire due volte: il rastrello di riscaldamento
+      e quello di fine seduta sono due righe.
+
+  - type: shot
+    shot: scheda-componi
+    caption: "Comporre: gli esercizi in ordine, e sotto gli interruttori facoltativi."
+
+  - type: text
+    text: >-
+      Ogni voce ha il suo **«quanto farne»**, e si tocca la pillola a destra per
+      deciderlo. La prima scelta è **come si segna**, e cambia tutto il resto.
+
+  - type: options
+    items:
+      - name: "Riusciti"
+        values: "quanti su N tiri"
+        text: >-
+          È l'unità del foglio di carta: «5 tiri» e alla fine dici quanti ne
+          sono entrati. È anche **l'unica che fa totale**, quindi l'unica che
+          entra nella soglia.
+      - name: "Fatto"
+        values: "sì o no"
+        text: >-
+          Per le voci che non si contano: il riscaldamento o si è fatto o no.
+      - name: "Punteggio"
+        values: "il punteggio dell'esercizio"
+        text: >-
+          Il numero lo dà l'esercizio, con il suo massimo: qui non si scrive un
+          «quanto farne», perché ce l'ha già lui.
+      - name: "Vinte"
+        values: "quante su N partite"
+        text: >-
+          Per le voci che sono partite, come «contro il ghost».
+      - name: "Minuti"
+        values: "quanti minuti"
+        text: >-
+          Per le voci a tempo, che non hanno un esito ma una durata.
+
+  - type: text
+    text: >-
+      Se l'esercizio si fa **a destra e a sinistra** (o in due posizioni A e B),
+      nel foglio compare **«Da che parte»**: acceso, i due lati si segnano in
+      due caselle separate, ognuna coi suoi tiri. Tenerli separati non è un
+      dettaglio — è il modo in cui ci si accorge di quale lato è indietro.
+
+  - type: note
+    tone: tip
+    title: "Le opzioni sono tutte facoltative"
+    text: >-
+      **Livello**, **soglia**, **giorni** e **durata** si accendono solo se ti
+      servono. Una scheda senza niente di tutto questo è una scheda valida: un
+      elenco di esercizi da fare in ordine.
+
+  - type: list
+    title: "Cosa fanno le quattro opzioni"
+    items:
+      - "**Livello** — la scheda è un gradino di una scala: «livello 3», e sopra c'è il 4."
+      - "**Soglia** — quanto serve fare per dire che il gradino è superato. Somma le sole voci «a riusciti», e puoi chiedere che la soglia sia tenuta per più sedute di fila."
+      - "**Giorni** — le voci si dividono in giorno A, B e C, e una seduta ne fa uno."
+      - "**Durata** — quante settimane dura il programma."
+
+  - type: heading
+    id: seduta
+    title: "La seduta: un tocco per casella"
+
+  - type: text
+    text: >-
+      Da **«Comincia»** parte la seduta: **una voce per volta**, con la striscia
+      in alto che dice a che punto sei e i comandi in basso, dove arriva il
+      pollice. Se la voce si fa da due lati vedi due disegni — lo stesso,
+      specchiato — e due file di tasti.
+
+  - type: shot
+    shot: scheda-seduta
+    caption: "La seduta: la voce a fuoco, e in basso «quanti su 5?» per ogni lato."
+
+  - type: steps
+    items:
+      - title: "Tocca il numero"
+        text: >-
+          «Quanti su 5?»: tocchi **4** e la casella è scritta. Non c'è nessun
+          «conferma»: se hai sbagliato, tocchi il numero giusto e il primo
+          sparisce.
+      - title: "Passa alla voce dopo"
+        text: >-
+          Il pulsante in basso a destra porta alla voce successiva. Puoi anche
+          toccare una voce della striscia in alto per andarci direttamente.
+      - title: "Chiudi quando hai finito"
+        text: >-
+          Sull'ultima voce il pulsante diventa **«Ho finito»**, e ti porta al
+          riepilogo.
+
+  - type: text
+    text: >-
+      Le voci **lunghe** — trenta tiri — non si segnano con una fila di tasti:
+      lì ci sono **«Riuscito»** e **«Sbagliato»**, uno per tiro, con la striscia
+      che tiene il conto e **«Annulla il tiro»** per l'ultimo. Se i tiri li hai
+      contati da te, **«Scrivi il totale»** li scrive tutti insieme.
+
+  - type: note
+    tone: info
+    title: "La seduta ti aspetta"
+    text: >-
+      Puoi chiudere l'app e tornare il giorno dopo: la seduta resta aperta e
+      riprende dalla prima casella vuota. La ritrovi anche in cima a
+      **Esercizi**, con **«Riprendi la seduta»**.
+
+  - type: heading
+    id: registro
+    title: "Il registro: cosa dice l'andamento"
+
+  - type: text
+    text: >-
+      Toccando il nome della scheda si apre il **registro**, che è il foglio
+      visto per intero: in cima l'ultima seduta, la media delle ultime tre e
+      quante volte sei stato sopra la soglia; poi una riga per voce con le
+      ultime tre volte; in fondo l'elenco delle sedute, da cui si riapre
+      ciascuna.
+
+  - type: shot
+    shot: scheda-registro
+    caption: "Il registro: i tre numeri, voce per voce, e le sedute."
+
+  - type: text
+    text: >-
+      Accanto a una voce può comparire una frase breve — **«in crescita»**,
+      oppure **«sinistra 2,7 di media, destra 4,3»**. Sono osservazioni, non
+      giudizi, e compaiono solo quando c'è qualcosa da dire: sotto tre sedute
+      non si dice se stai salendo, e una differenza di meno di un tiro fra i
+      due lati non si nomina, perché a quella distanza è il caso.
+
+  - type: heading
+    id: cambiare
+    title: "Cambiare la scheda senza perdere il passato"
+
+  - type: text
+    text: >-
+      Una scheda si modifica quando vuoi, anche dopo mesi di sedute. Quello che
+      hai già segnato **non cambia**: se una voce passa da cinque tiri a dieci,
+      il «4 su 5» di ieri resta un quattro su cinque. E una voce che togli, se
+      ha delle sedute alle spalle, esce dalla scheda ma resta nelle sedute in
+      cui l'avevi fatta.
+
+  - type: text
+    text: >-
+      **«Archivia»** toglie la scheda dall'elenco senza cancellare niente: le
+      sedute fatte restano, perché sono il tuo registro.
+
+  - type: faq
+    items:
+      - q: "Posso avere più schede?"
+        a: >-
+          Sì, quante vuoi: una per il lavoro di tecnica, una da fare prima di una
+          gara, una per i giorni in cui hai poco tempo. Le sedute sono di quella
+          scheda, quindi ogni scheda ha il suo registro.
+      - q: "Una seduta in cui ho fatto poco conta lo stesso?"
+        a: >-
+          Sì, e va bene così: un allenamento fatto male è comunque un allenamento
+          fatto. Se invece non hai segnato **niente**, chiudendola non resta
+          traccia — non sporca il registro.
+      - q: "La soglia la posso mettere più alta del totale?"
+        a: >-
+          No: se la scheda vale 50 tiri, una soglia di 60 non si potrebbe
+          raggiungere mai. L'app te lo dice quando salvi.
+      - q: "Chi vede la mia scheda?"
+        a: >-
+          Solo tu. Poterla aprire a un istruttore, perché veda come procedi, è
+          una cosa che arriverà.

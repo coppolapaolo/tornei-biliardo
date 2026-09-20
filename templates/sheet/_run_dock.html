@@ -33,7 +33,7 @@
   {% endif %}
 
   {% if run.dock == 'buttons' %}
-  <div class="c7-sheetpad">
+  <div class="c7-sheetpad" data-help="scheda-casella">
     {% for n in run.buttons %}
     <button type="button" class="c7-sheetpad__key{{ ' is-on' if cell.value == n }}"
             data-value="{{ n }}">{{ n }}</button>

@@ -613,6 +613,132 @@ def _allena_su_challenge(db, player, challenges) -> None:
     log(f"allenamento: 3 prove registrate su «{drill.get_display_name()}»")
 
 
+def _crea_scheda(db, player, challenges) -> None:
+    """Una scheda di allenamento come quella di carta, con tre sedute fatte.
+
+    Serve a tre figure della guida — l'elenco, la seduta e il registro — e
+    nessuna delle tre direbbe niente su una scheda vuota: il registro
+    mostrerebbe «Nessuna seduta» proprio mentre il testo spiega come si legge
+    l'andamento.
+
+    I numeri sono scritti qui e non sorteggiati, come i punteggi di
+    `_allena_su_challenge`: due catture successive devono dare immagini
+    identiche. Sono quelli che raccontano qualcosa — un lato più debole
+    dell'altro, e una voce in crescita — perché è quello che il registro deve
+    saper dire.
+    """
+    from models.base import utc_now
+    from models.challenge.models import ChallengeVariant
+    from models.training_sheet import (
+        SheetItemSpec,
+        SheetMeasure,
+        TrainingSheetService,
+    )
+    from models.training_sheet.models import TrainingEntry, TrainingSession
+
+    numeriche = [c for c in challenges if not c.pass_fail_only]
+    if not player or len(numeriche) < 3:
+        return
+
+    a_lati, lungo, a_tempo = numeriche[0], numeriche[1], numeriche[2]
+    if not a_lati.variants:
+        for posizione, etichetta in enumerate(("destra", "sinistra"), start=1):
+            db.session.add(
+                ChallengeVariant(
+                    challenge_id=a_lati.id, label=etichetta, position=posizione
+                )
+            )
+        db.session.commit()
+
+    sheet = TrainingSheetService.create_sheet(player, "Tecnica di base")
+    TrainingSheetService.save_composition(
+        sheet.id,
+        player,
+        name="Tecnica di base",
+        level=3,
+        threshold=30,
+        items=[
+            SheetItemSpec(
+                challenge_id=a_lati.id,
+                measure=SheetMeasure.MADE,
+                amount=5,
+                per_variant=True,
+                section="Tecnica",
+            ),
+            SheetItemSpec(challenge_id=lungo.id, measure=SheetMeasure.MADE, amount=30),
+            SheetItemSpec(
+                challenge_id=a_tempo.id,
+                measure=SheetMeasure.MINUTES,
+                amount=10,
+                section="Gioco",
+            ),
+        ],
+    )
+    db.session.commit()
+
+    lati, voce_lunga, voce_tempo = sheet.active_items
+    destra, sinistra = lati.variants
+
+    # Tre sedute chiuse: il lato sinistro resta indietro, la voce lunga sale.
+    for giorni_fa, (a_destra, a_sinistra), riusciti, minuti in (
+        (6, (4, 2), 19, 10),
+        (3, (5, 3), 22, 12),
+        (1, (4, 3), 24, 10),
+    ):
+        quando = utc_now() - timedelta(days=giorni_fa)
+        seduta = TrainingSession(
+            sheet_id=sheet.id,
+            user_id=player.id,
+            sheet_version=sheet.version,
+            started_at=quando,
+            ended_at=quando + timedelta(minutes=52),
+        )
+        db.session.add(seduta)
+        db.session.flush()
+        caselle = (
+            (voce_lunga.id, None, riusciti, voce_lunga.amount),
+            (voce_tempo.id, None, minuti, voce_tempo.amount),
+            (lati.id, destra.id, a_destra, lati.amount),
+            (lati.id, sinistra.id, a_sinistra, lati.amount),
+        )
+        for item_id, variant_id, valore, tetto in caselle:
+            voce = next(v for v in sheet.items if v.id == item_id)
+            db.session.add(
+                TrainingEntry(
+                    session_id=seduta.id,
+                    item_id=item_id,
+                    variant_id=variant_id,
+                    value=valore,
+                    measure=voce.measure,
+                    target_amount=tetto,
+                )
+            )
+        db.session.commit()
+
+    # E una seduta cominciata e lasciata a metà: è quella che la figura della
+    # seduta mostra, e che «Oggi» propone di riprendere.
+    aperta = TrainingSession(
+        sheet_id=sheet.id,
+        user_id=player.id,
+        sheet_version=sheet.version,
+        started_at=utc_now() - timedelta(minutes=18),
+    )
+    db.session.add(aperta)
+    db.session.flush()
+    db.session.add(
+        TrainingEntry(
+            session_id=aperta.id,
+            item_id=lati.id,
+            variant_id=destra.id,
+            value=4,
+            measure=lati.measure,
+            target_amount=lati.amount,
+        )
+    )
+    db.session.commit()
+    log(f"scheda «{sheet.name}»: 3 sedute chiuse e una in corso")
+
+
 def _popola_esercizi(db, players, challenges) -> None:
     """Altri giocatori che hanno provato e votato: i numeri sociali delle card.
 
@@ -1523,6 +1649,7 @@ def main() -> int:
         _allena_su_challenge(db, players[0], challenges)
         _popola_esercizi(db, players, challenges)
         _prove_a_colpi(db, players[0], challenges)
+        _crea_scheda(db, players[0], challenges)
         _create_squadre(db, gara_iscrizioni, players[:5])
         _create_gara_bozza(db, campionato, director, venue)
         _create_gara_tabellone(db, director, venue, players)

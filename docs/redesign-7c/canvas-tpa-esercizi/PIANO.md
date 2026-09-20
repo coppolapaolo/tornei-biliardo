@@ -30,7 +30,7 @@ Sorgenti del canvas: `sorgenti/` (`kit.py`, `tpa.py`, `esercizi.py`,
 | 3 | Esami | **chiusa il 19/09** — #484 (3a), #486 (3b), #487 (3c), #488 (3d), #489 (3e); più #485 trovata strada facendo. «Accetto» nella card e non in una barra, rinuncia a una prova non persistita: vedi la nota nella fase |
 | 4 | Modello dell'esercizio (#168 #252 #253) | **chiusa il 20/09** — #490 (4a), #492 (4b), #494 (4c), #496 (4d), #498 (4e). Vocabolari come enum e non come tabelle, voto con le bilie: vedi la nota nella fase |
 | 5 | Eseguire un esercizio (#183 #452) | **chiusa il 20/09** — #501 (5a), #503 + #504 (5b), #507 (5c), #508 (5d), #509 (5e). Chiude #183, #452 e #326; aperte #500 e #506. Colpo per colpo in due PR, niente esercizio a punteggio «vuoto»: vedi la nota nella fase |
-| 6 | Schede di allenamento (#172) | da fare |
+| 6 | Schede di allenamento (#172) | **chiusa il 20/09** — #511 (6a), #513 (6b), #514 (6c), #515 (6d), #516 (6e). Le caselle non sono prove del catalogo, la sezione è un campo della voce: vedi la nota nella fase |
 | 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | da fare |
 | 8 | Istruttori (#173) | da fare |
 | 9 | Disegnatore (#179) | da fare — indipendente, si può anticipare dopo la 4 |
@@ -523,6 +523,50 @@ Seduta come entità (D7). Inserimento a un tocco per casella.
 con lo stesso oggetto — una a riusciti-su-N con soglia e livelli, una a tiri,
 partite e minuti su giorni A/B/C senza totale. (Nota del 19/09: qui c'era
 scritto «serie × ripetizioni», rimasto dal secondo giro; la D19 l'ha tolto.)
+
+**Com'è andata (20/09)**: cinque PR, come previsto — #511 (6a), #513 (6b),
+#514 (6c), #515 (6d), #516 (6e) — e l'ADR nuovo è l'**ADR-067**. Cinque cose
+da tenere:
+
+* **Le caselle di una scheda non sono prove del catalogo.** «4 su 5 tiri» non
+  è tarato come il punteggio dello stesso esercizio nel catalogo, e mescolarli
+  falserebbe medie e record di entrambi — la stessa separazione che hanno le
+  prove d'esame. Incrociarli nell'**andamento** è una scelta della fase 7:
+  farlo qui l'avrebbe presa senza dirlo. Per lo stesso motivo la seduta non
+  emette eventi: XP, serie e traguardi sono la 7c.
+* **La sezione è un campo della voce**, non una riga della lista, e il
+  titoletto compare sulla prima voce che lo apre. Il canvas aveva «+ Esercizio»
+  e «+ Sezione» affiancati, ma una riga estranea dentro la lista spezza il
+  trascinamento, che guarda la voce vicina. Per lo stesso motivo il titoletto
+  sta **dentro** la voce.
+* **Il componente della 3a ha retto la prova**: comporre una scheda non ha
+  richiesto una riga di logica in più in `_sequence_editor.html`. L'unica
+  aggiunta è uno slot per il titoletto, invisibile a chi non lo usa. Era il
+  collaudo della promessa «non sa cosa sia un esame», e l'ha passato.
+* **Quali comandi servono a una voce lo decide la misura** (`run_view._dock`):
+  fino a dieci una fila di tasti, oltre il tiro per tiro, col punteggio e coi
+  minuti il tastierino, con «fatto» due tasti. La soglia dei dieci non è del
+  dominio: è dove un bersaglio smette di essere grande per un dito.
+* **Il passaggio di livello (D8) non c'è**: il servizio sa dire quante sedute
+  di fila si è sopra la soglia, e la fine seduta dice che si può chiedere. Chi
+  sancisce il gradino si decide con gli istruttori, dove c'è qualcuno che può
+  confermare. Stessa ragione per l'interfaccia dei **lettori**: la tabella
+  nasce qui (D11), la schermata è la fase 8.
+
+Trappole di questa tornata:
+* `capture_screenshots.py --serve` sposta l'app con `PORT`, ma naviga su
+  `--base-url`, che di default è la **5001**: senza passare tutti e due, le
+  figure vengono dall'app di sviluppo che sta lì — e si vede solo guardandole
+  (404, e la versione sbagliata nel footer);
+* `.c7-exam-dock` è `fixed` sotto lg e in `full_page` tagliava il footer:
+  aggiunto a `OVERLAY_CSS` accanto a `.c7-run-dock`. Ne hanno guadagnato anche
+  le tre figure della **sessione d'esame**, ricatturate;
+* `data-help` vuole un valore **letterale**: passarlo a una macro Jinja lo
+  rende dinamico, e il presidio `test_nessun_data_help_dinamico` lo vede;
+* una PR impilata si rebasa **dopo** che la precedente è unita, non prima:
+  `--onto origin/main HEAD~1` su un ramo che dipende da una PR ancora aperta
+  dà conflitto, e il file lasciato in conflitto fa morire l'app di prova che
+  lo stava ricaricando.
 
 **Prompt**: «…esegui la fase 6.»
 

@@ -140,10 +140,14 @@ html { scroll-behavior: auto !important; }
 # «Imbucate» e «Posizione». Sono il comando principale della schermata, quindi
 # valgono le ragioni di `.c7-actionbar`: statici, non nascosti. Lo spazio che
 # il contenuto si riserva sotto di loro, invece, in figura non serve.
+#
+# `.c7-exam-dock` fa lo stesso mestiere nella sessione d'esame e nella seduta
+# di una scheda: stessa regola, e senza il footer finiva tagliato a meta'.
 OVERLAY_CSS = """
 .c7-mobilenav, #chalky-container { display: none !important; }
-.c7-actionbar, .c7-head, .c7-run-dock { position: static !important; }
-body:has(.c7-run-dock) .c7-main { padding-bottom: 16px !important; }
+.c7-actionbar, .c7-head, .c7-run-dock, .c7-exam-dock { position: static !important; }
+body:has(.c7-run-dock) .c7-main,
+body:has(.c7-exam-dock) .c7-main { padding-bottom: 16px !important; }
 """
 
 # Cornice e numeri di richiamo. Ricalcano i token del design system (accento

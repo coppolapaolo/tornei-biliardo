@@ -57,6 +57,7 @@
      numero e varianti insieme. #}
   <span hidden data-seq-weight="0" data-sheet-weight></span>
   <button type="button" class="c7-pill c7-seq__open" data-sheet-open
+          data-help="scheda-quanto-farne"
           data-bs-toggle="modal" data-bs-target="#sheetItem">
     <span data-sheet-dose>{{ _("quanto farne") }}</span>
   </button>
@@ -77,10 +78,7 @@
   </div>
 
   <div class="c7-sechead">
-    {# Il micro-aiuto arriva con la guida delle schede (6e): un'ancora che
-       rimanda a una pagina che non c'è ancora sarebbe un punto interrogativo
-       che non risponde. #}
-    <h2>{{ _("Gli esercizi, in ordine") }}</h2>
+    <h2 data-help="scheda-ordine">{{ _("Gli esercizi, in ordine") }}</h2>
     <span class="c7-sechead__note" data-seq-total
           data-seq-total-text="{{ _('{n} tiri a riusciti') }}"></span>
   </div>
@@ -115,7 +113,7 @@
     {{ interruttore('has_threshold', _("Soglia"), _("somma le voci «a riusciti»"),
                     acceso=form.has_threshold if form else sheet.threshold is not none) }}
     <div class="c7-rows__row c7-rows__row--sub" data-sheet-when="has_threshold">
-      <label class="c7-rows__main c7-label" for="threshold">{{ _("Quanto serve fare") }}</label>
+      <label class="c7-rows__main c7-label" for="threshold" data-help="scheda-soglia">{{ _("Quanto serve fare") }}</label>
       <input class="form-control c7-numfield" type="number" inputmode="numeric" id="threshold" name="threshold"
              min="1" value="{{ form.threshold if form.threshold else (sheet.threshold or '') }}">
     </div>
