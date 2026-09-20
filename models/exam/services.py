@@ -32,6 +32,7 @@ from sqlalchemy.orm import joinedload
 
 from ..base import db, utc_now
 from ..challenge.models import Challenge
+from ..challenge.recording import refuse_if_drawn
 from ..exceptions import (
     ConflictError,
     NotFoundError,
@@ -231,6 +232,9 @@ class ExamService:
         challenge = db.session.get(Challenge, challenge_id)
         if challenge is None:
             raise NotFoundError("Esercizio non trovato")
+        # Un esercizio con estrazione darebbe a ogni candidato una consegna
+        # diversa: prove non confrontabili, in una sessione che certifica.
+        refuse_if_drawn(challenge)
         ExamService._validate_max_score(challenge, max_score)
         max_attempts = ExamService._validate_max_attempts(max_attempts)
 

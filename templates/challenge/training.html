@@ -35,7 +35,7 @@
 {% block page_title %}{{ challenge.get_display_name() }}{% endblock %}
 {% block page_sub %}
   {%- if is_pass_fail %}{{ _("Riuscito o no") }}
-  {%- elif is_shots %}{{ _("Colpo per colpo") }} <span class="c7-sep">·</span> {{ _("%(n)s colpi", n=challenge.shots_count) }}
+  {%- elif is_shots %}{{ RecordingMode.parse(challenge.recording_mode).label }} <span class="c7-sep">·</span> {{ _("%(n)s colpi", n=challenge.shots_count) }}
   {%- elif max_score %}{{ _("A punteggio") }} <span class="c7-sep">·</span> {{ _("su %(n)s", n=max_score) }}
   {%- else %}{{ _("A punteggio") }}{% endif -%}
 {% endblock %}
@@ -66,6 +66,8 @@
      data-shot-undo-url="{{ url_for('challenge.training_shot_undo', challenge_id=challenge.id) }}"
      data-shot-close-url="{{ url_for('challenge.training_shot_close', challenge_id=challenge.id) }}"
      data-shot-restart-url="{{ url_for('challenge.training_shot_restart', challenge_id=challenge.id) }}"
+     data-draw-url="{{ url_for('challenge.training_draw', challenge_id=challenge.id) }}"
+     data-outcome-url="{{ url_for('challenge.training_outcome', challenge_id=challenge.id) }}"
      {% endif %}>
 
   <section class="c7-stack c7-run__main">

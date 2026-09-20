@@ -321,6 +321,31 @@ allena: due prove dello stesso esercizio devono potersi confrontare.
   convalida al salvataggio, `target_from_scene` lo legge con tolleranza. Uno per
   scena. Il disegnatore non può toglierlo a un esercizio che lo usa.
 
+### Con estrazione (#452)
+
+Il quarto modo: prima di ogni colpo **l'app estrae la consegna** — «3 o più
+sponde, bilia 7» — e a colpo tirato si sceglie l'esito da una **scala di voci
+con un nome** (0 · 1 · 2 · 4 · 8). È la sequenza di colpi con una consegna al
+posto del bersaglio.
+
+* La specifica sta in `challenge.draw_spec` (JSON convalidato da
+  `draw_spec.py`): da una a tre **liste** indipendenti di voci già a parole, e
+  da due a otto **esiti** con nome e punti. `max_score` = colpi × esito più
+  alto. Nel modulo si scrivono una per riga, «nome: voce | voce» e «nome =
+  punti».
+* La consegna in attesa si **persiste** (`ChallengeAttempt.pending_prompt`):
+  riestrarla a ogni lettura renderebbe ricaricare la pagina un modo di
+  cambiarla finché non piace. `ShotRunService.draw_next` non riestrae se una
+  c'è già, e `undo_last` **rimette quella del colpo tolto**.
+* Qui la prova nasce dall'**estrazione**, non dal primo colpo: tolto l'unico
+  colpo la prova resta, perché la consegna rimessa in attesa è da giocare.
+* Consegna ed esito si scrivono sul colpo (`prompt`, `outcome_label`), come i
+  punti.
+* **Fuori dall'allenamento non entra**: `recording.refuse_if_drawn` lo rifiuta
+  alla composizione di un esame, e la lista dell'esercizio della X non lo offre
+  — a due persone uscirebbero consegne diverse. Col seme fissato si potrà
+  (#506).
+
 **Come si esegue.** La cornice è la stessa
 (`challenge/training.html`), cambia il terzo posto: al posto del tastierino c'è
 il **panno** (`_run_cloth.html`). Il tocco non registra — apre l'ingrandimento

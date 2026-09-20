@@ -26,7 +26,10 @@ MIGRATION = "migrations.20260919_profilo_esercizio"
 # Le migration venute dopo sulle stesse tabelle. I modelli descrivono lo schema
 # di OGGI, quindi il confronto colonna per colonna vale sulla catena intera:
 # fermarsi a questa migration farebbe fallire il test a ogni colonna nuova.
-SUCCESSIVE = ("migrations.20260920_prova_fatta_di_colpi",)
+SUCCESSIVE = (
+    "migrations.20260920_prova_fatta_di_colpi",
+    "migrations.20260920_estrazione_e_consegna",
+)
 
 
 def _colonne(conn: sqlite3.Connection, tabella: str) -> set[str]:

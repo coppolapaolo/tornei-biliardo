@@ -160,6 +160,12 @@ class Challenge(BaseModel):
     # non e' fatta di colpi, e uno zero direbbe un'altra cosa.
     shots_count = db.Column(db.Integer, nullable=True)
 
+    # Che cosa estrae l'app prima di ogni colpo, e con che scala si conta
+    # (#452). JSON convalidato da `draw_spec.py`, NULL su ogni altro esercizio.
+    # In colonna e non in due tabelle: non la interroga nessuno — si legge
+    # tutta insieme, e solo mentre si esegue.
+    draw_spec = db.Column(db.Text, nullable=True)
+
     # Metadata
     created_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
@@ -450,6 +456,12 @@ class ChallengeAttempt(BaseModel):
     # Note opzionali sul tentativo (condizioni particolari, osservazioni)
     notes = db.Column(db.Text, nullable=True)
 
+    # La consegna estratta per il colpo che sta per essere giocato (#452).
+    # Si **persiste**: se si riestraesse a ogni lettura, ricaricare la pagina
+    # sarebbe un modo di cambiare la consegna finche' non piace. NULL quando
+    # non c'e' niente in attesa — prova chiusa, o ultimo colpo gia' giocato.
+    pending_prompt = db.Column(db.String(200), nullable=True)
+
     # Con quale variante dell'esercizio e' stata fatta la prova (dx/sx, A/B).
     # NULL su ogni esercizio senza varianti — la quasi totalita' — e sulle prove
     # nate prima che l'autore le introducesse: «non si sa» resta «non si sa».
@@ -689,6 +701,13 @@ class ChallengeShot(BaseModel):
     # (1 diamante = 100, panno 800 x 400).
     x = db.Column(db.Float, nullable=True)
     y = db.Column(db.Float, nullable=True)
+
+    # Con estrazione (#452): la consegna che era uscita, e il nome dell'esito
+    # scelto. Si persistono **come testo**, per la stessa ragione di `points`:
+    # se domani l'autore riscrive le liste o la scala, il colpo gia' giocato
+    # deve continuare a raccontare quello che e' successo.
+    prompt = db.Column(db.String(200), nullable=True)
+    outcome_label = db.Column(db.String(60), nullable=True)
 
     attempt = db.relationship("ChallengeAttempt", back_populates="shots")
 

@@ -34,6 +34,7 @@ from models.base import db, utc_now
 from models.exceptions import ConflictError, NotFoundError, ValidationError
 from models.transaction.manager import transactional
 
+from .draw_spec import parse_draw_spec
 from .models import Challenge, ChallengeAttempt, ChallengeShot
 from .recording import RecordingMode
 from .target import on_cloth, target_from_scene
@@ -73,12 +74,22 @@ class ShotRunService:
         return ShotRunService._run(challenge, user_id)
 
     @staticmethod
-    def _challenge(challenge_id: int) -> Challenge:
+    def _challenge(challenge_id: int, *, mode: Optional[RecordingMode] = None):
+        """L'esercizio, se si registra a colpi — e, se richiesto, **in quel modo**.
+
+        Il gesto e il modo devono corrispondere: toccare il panno su un
+        esercizio con estrazione, o scegliere un esito su uno col bersaglio,
+        sono due richieste che non vogliono dire niente, e accettarle
+        scriverebbe un colpo senza il dato che lo qualifica.
+        """
         challenge = db.session.get(Challenge, challenge_id)
         if challenge is None:
             raise NotFoundError(_("Esercizio non trovato"))
-        if not RecordingMode.parse(challenge.recording_mode).is_sequence:
+        modo = RecordingMode.parse(challenge.recording_mode)
+        if not modo.is_sequence:
             raise ValidationError(_("Questo esercizio non si registra colpo per colpo"))
+        if mode is not None and modo is not mode:
+            raise ValidationError(_("Non è così che si registra questo esercizio"))
         return challenge
 
     @staticmethod
@@ -121,7 +132,7 @@ class ShotRunService:
         l'autore lo sposta, i colpi già tirati valgono ancora quello che
         valevano.
         """
-        challenge = ShotRunService._challenge(challenge_id)
+        challenge = ShotRunService._challenge(challenge_id, mode=RecordingMode.SHOTS)
         run = ShotRunService._run(challenge, user_id)
         if run.is_full:
             raise ConflictError(
@@ -171,6 +182,82 @@ class ShotRunService:
 
     @staticmethod
     @transactional(domain="challenge")
+    def draw_next(user_id: int, challenge_id: int) -> ShotRun:
+        """La consegna del colpo che sta per essere giocato (#452).
+
+        La **prima** estrazione apre la prova: con l'estrazione cominciare è un
+        atto — ti dice che cosa fare — mentre col bersaglio il primo dato è già
+        il primo colpo.
+
+        Se una consegna in attesa c'è già, **non se ne estrae un'altra**:
+        chiamare di nuovo non è un modo di rifare il sorteggio finché piace.
+        """
+        challenge = ShotRunService._challenge(challenge_id, mode=RecordingMode.DRAW)
+        spec = parse_draw_spec(challenge.draw_spec)
+        if spec is None:
+            raise ValidationError(_("Questo esercizio non ha niente da estrarre."))
+
+        run = ShotRunService._run(challenge, user_id)
+        if run.is_full:
+            raise ConflictError(
+                _("Hai già tirato tutti i colpi: chiudi la prova o annulla l'ultimo.")
+            )
+
+        attempt = run.attempt
+        if attempt is None:
+            attempt = ChallengeAttempt(user_id=user_id, challenge_id=challenge.id)
+            db.session.add(attempt)
+            db.session.flush()
+        if not attempt.pending_prompt:
+            attempt.pending_prompt = spec.draw()
+        db.session.flush()
+        return ShotRunService._run(challenge, user_id)
+
+    @staticmethod
+    @transactional(domain="challenge")
+    def record_outcome(user_id: int, challenge_id: int, *, outcome_index) -> ShotRun:
+        """Com'è andato il colpo estratto: una voce della scala, col suo nome.
+
+        Consegna e nome dell'esito si scrivono **sul colpo**, come i punti: se
+        domani l'autore riscrive le liste o la scala, il colpo giocato deve
+        continuare a raccontare quello che è successo.
+        """
+        challenge = ShotRunService._challenge(challenge_id, mode=RecordingMode.DRAW)
+        spec = parse_draw_spec(challenge.draw_spec)
+        if spec is None:
+            raise ValidationError(_("Questo esercizio non ha niente da estrarre."))
+
+        run = ShotRunService._run(challenge, user_id)
+        if run.is_full:
+            raise ConflictError(
+                _("Hai già tirato tutti i colpi: chiudi la prova o annulla l'ultimo.")
+            )
+        # Prima si sa che cosa fare, poi si tira: mai il contrario.
+        if run.attempt is None or not run.attempt.pending_prompt:
+            raise ConflictError(_("Estrai la consegna prima di registrare il colpo."))
+
+        esito = spec.outcome_at(outcome_index)
+        consegna = run.attempt.pending_prompt
+        db.session.add(
+            ChallengeShot(
+                attempt_id=run.attempt.id,
+                position=run.next_position,
+                made=None,
+                points=esito.points,
+                prompt=consegna,
+                outcome_label=esito.label,
+            )
+        )
+        # La consegna dopo esce subito: chi sta tirando non deve chiederla.
+        # All'ultimo colpo no — non c'è nessun colpo dopo da preparare.
+        resta = run.shots_count - (len(run.shots) + 1) > 0
+        run.attempt.pending_prompt = spec.draw() if resta else None
+        db.session.flush()
+        db.session.expire(run.attempt, ["shots"])
+        return ShotRunService._run(challenge, user_id)
+
+    @staticmethod
+    @transactional(domain="challenge")
     def undo_last(user_id: int, challenge_id: int) -> ShotRun:
         """Toglie l'ultimo colpo. Tolto l'unico, la prova aperta sparisce."""
         challenge = ShotRunService._challenge(challenge_id)
@@ -178,11 +265,27 @@ class ShotRunService:
         if run.attempt is None or not run.shots:
             raise NotFoundError(_("Non c'è nessun colpo da annullare."))
 
-        db.session.delete(run.shots[-1])
-        if len(run.shots) == 1:
+        ultimo = run.shots[-1]
+        # Con l'estrazione la consegna del colpo tolto torna in attesa: se se ne
+        # estraesse una nuova, annullare sarebbe un modo di riestrarre finché
+        # la consegna piace.
+        con_estrazione = (
+            RecordingMode.parse(challenge.recording_mode) is RecordingMode.DRAW
+        )
+        if ultimo.prompt:
+            run.attempt.pending_prompt = ultimo.prompt
+        db.session.delete(ultimo)
+        # Tolto l'unico colpo la prova sparisce — una prova aperta e vuota è una
+        # riga che nessuno chiude più. Non con l'estrazione: lì la prova è nata
+        # dall'estrazione, non dal colpo, e la consegna appena rimessa in attesa
+        # è ancora da giocare.
+        prova_resta = len(run.shots) > 1 or con_estrazione
+        if not prova_resta:
             db.session.delete(run.attempt)
         db.session.flush()
-        if len(run.shots) > 1:
+        if prova_resta:
+            # La relazione è in cache: senza, la prova continuerebbe a portarsi
+            # dietro il colpo appena tolto.
             db.session.expire(run.attempt, ["shots"])
         return ShotRunService._run(challenge, user_id)
 
@@ -212,6 +315,7 @@ class ShotRunService:
         # L'ora della prova è quella in cui finisce: è lì che entra nelle
         # «prove di oggi», e una ripresa il giorno dopo non la lascia a ieri.
         run.attempt.attempted_at = utc_now()
+        run.attempt.pending_prompt = None
         return ChallengeService.complete_challenge_attempt(
             attempt_id=run.attempt.id, score=run.total, notes=notes
         )

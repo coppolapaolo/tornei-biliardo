@@ -17,10 +17,14 @@
   <p class="c7-runprog__say">{{ run.sentence }}</p>
 </section>
 
-{% if run.target and not run.is_full %}
+{% if not run.is_full %}
+{% if run.target %}
 {% with target = run.target, shots = run.shots %}
 {% include "challenge/_run_cloth.html" %}
 {% endwith %}
+{% else %}
+{% include "challenge/_run_draw.html" %}
+{% endif %}
 {% endif %}
 
 {# La striscia dei colpi: uno per posto, col suo punteggio; la mancata è un
@@ -36,6 +40,19 @@
   <span class="c7-shots__one is-todo"></span>
   {% endfor %}
 </div>
+
+{% if run.shots and run.shots[0].prompt %}
+<section class="c7-rows" aria-label="{{ _('I colpi di questa prova') }}">
+  {% for colpo in run.shots|reverse %}
+  <div class="c7-rows__row c7-runprog__row">
+    <span class="c7-tile c7-tile--sm"><span class="c7-num">{{ colpo.position }}</span></span>
+    <span class="c7-rows__title c7-runprog__name">{{ colpo.prompt }}</span>
+    <span class="c7-rows__sub" style="margin:0">{{ colpo.outcome_label }}</span>
+    <span class="c7-runprog__score">{{ colpo.points }}</span>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}
 
 {% if run.pocketing is not none %}
 {# Due numeri e non uno: «Imbucate» dice se la bilia entra, «Posizione» quanto

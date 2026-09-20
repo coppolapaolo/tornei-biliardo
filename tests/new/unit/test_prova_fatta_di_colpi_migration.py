@@ -18,6 +18,9 @@ from models.challenge.models import Challenge, ChallengeAttempt, ChallengeShot
 
 PRIMA = "migrations.20260919_profilo_esercizio"
 MIGRATION = "migrations.20260920_prova_fatta_di_colpi"
+# Le migration venute dopo sulle stesse tabelle: i modelli descrivono lo schema
+# di oggi, quindi il confronto colonna per colonna vale sulla catena intera.
+SUCCESSIVE = ("migrations.20260920_estrazione_e_consegna",)
 
 
 def _colonne(conn: sqlite3.Connection, tabella: str) -> set[str]:
@@ -55,6 +58,8 @@ def db_di_ieri(tmp_path):
 
 def test_lo_schema_coincide_con_i_modelli(db_di_ieri):
     importlib.import_module(MIGRATION).upgrade_sqlite(db_di_ieri)
+    for successiva in SUCCESSIVE:
+        importlib.import_module(successiva).upgrade_sqlite(db_di_ieri)
 
     conn = sqlite3.connect(db_di_ieri)
     for modello in (Challenge, ChallengeAttempt, ChallengeShot):
@@ -64,9 +69,20 @@ def test_lo_schema_coincide_con_i_modelli(db_di_ieri):
 
 
 def test_si_puo_rieseguire(db_di_ieri):
-    migration = importlib.import_module(MIGRATION)
-    migration.upgrade_sqlite(db_di_ieri)
-    migration.upgrade_sqlite(db_di_ieri)
+    for nome in (MIGRATION, *SUCCESSIVE):
+        migration = importlib.import_module(nome)
+        migration.upgrade_sqlite(db_di_ieri)
+        migration.upgrade_sqlite(db_di_ieri)
+
+
+def test_l_estrazione_non_tocca_gli_esercizi_di_ieri(db_di_ieri):
+    """La modalità con estrazione nasce oggi: non c'è niente da riempire."""
+    importlib.import_module(MIGRATION).upgrade_sqlite(db_di_ieri)
+    importlib.import_module(SUCCESSIVE[0]).upgrade_sqlite(db_di_ieri)
+
+    conn = sqlite3.connect(db_di_ieri)
+    assert conn.execute("SELECT draw_spec FROM challenge").fetchone() == (None,)
+    conn.close()
 
 
 def test_gli_esercizi_di_ieri_restano_col_totale(db_di_ieri):

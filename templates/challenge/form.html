@@ -10,10 +10,10 @@
    una `draft` — vuota in creazione — così un salvataggio rifiutato ripropone
    ciò che era stato scritto.
 
-   «Come si registra» ha tre voci, non le quattro dell'artboard: l'estrazione
-   arriva con la fase 5c, e una scelta che non fa niente è peggio di una scelta
-   che manca. La terza — colpo per colpo (ADR-066) — si offre solo se il disegno
-   ha un bersaglio; altrimenti al suo posto c'è una riga che dice come averla. #}
+   «Come si registra» ha quattro voci, come l'artboard. Colpo per colpo
+   (ADR-066) si offre solo se il disegno ha un bersaglio — altrimenti al suo
+   posto c'è una riga che dice come averlo; con estrazione (#452) si offre
+   sempre, perché quello che serve si scrive qui sotto. #}
 {% set is_edit = mode == 'edit' %}
 {% set is_copy = mode == 'duplicate' %}
 {% set subject = challenge or source %}
@@ -215,6 +215,7 @@
     {# ── Come si registra ──────────────────────────────────────────────── #}
     <div>
       {% set is_shots = draft and draft.recording_mode == RecordingMode.SHOTS.value %}
+      {% set is_draw = draft and draft.recording_mode == RecordingMode.DRAW.value %}
       {% set voci = [
            {'value': 'pass_fail', 'title': _("Riuscito o no"),
             'desc': _("un tocco per prova")},
@@ -227,13 +228,17 @@
             'desc': _("dove si ferma la bianca, a ogni colpo")}
          ] %}
       {% endif %}
+      {% set voci = voci + [
+           {'value': RecordingMode.DRAW.value, 'title': _("Con estrazione"),
+            'desc': _("l'app estrae la consegna a ogni colpo")}
+         ] %}
       {{ choice('scoring_type', _("Come si registra"), voci,
-                selected=(RecordingMode.SHOTS.value if is_shots
+                selected=(draft.recording_mode if is_shots or is_draw
                           else ('pass_fail' if draft and draft.pass_fail_only else 'score'))) }}
 
       {# Colpo per colpo: quanti colpi ha una prova. Il massimo non si scrive:
          è questo numero per il valore più alto del bersaglio. #}
-      {% if target or is_shots %}
+      {% if target or is_shots or is_draw %}
       <div class="c7-card d-flex align-items-center gap-3 d-none" id="shotsCountRow">
         <label for="shots_count" class="flex-fill m-0" data-help="challenge-colpi">
           <span class="c7-rows__title d-block">{{ _("Colpi di una prova") }}</span>
@@ -246,12 +251,37 @@
                min="{{ shots_range[0] }}" max="{{ shots_range[1] }}" inputmode="numeric" placeholder="20"
                value="{{ draft.shots_count if draft and draft.shots_count else '' }}">
       </div>
-      {% else %}
+      {% endif %}
+      {% if not (target or is_shots) %}
       <p class="c7-rows__sub" style="margin:0 0 10px">
         <i class="fas fa-bullseye" aria-hidden="true"></i>
         {{ _("Per registrarlo colpo per colpo — dove si ferma la bianca, a ogni colpo — l'esercizio va disegnato, e nel disegno va messo un bersaglio.") }}
       </p>
       {% endif %}
+
+      {# Con estrazione: le liste da cui l'app pesca, e la scala con cui si
+         conta un colpo. Si scrivono una per riga, come si scriverebbero su un
+         foglio: due campi e nessun editor da imparare. #}
+      <div class="c7-stack d-none" id="drawSpecRows" style="gap:12px">
+        <div>
+          <label class="form-label" for="draw_sources" data-help="challenge-estrazione">
+            {{ _("Che cosa estrae l'app") }}
+          </label>
+          <textarea class="form-control" id="draw_sources" name="draw_sources" rows="3"
+                    placeholder="{{ _('sponde: 1 sponda | 2 sponde | 3 o più sponde') }}">{{ draft.draw_sources_text if draft }}</textarea>
+          <div class="c7-rows__sub" style="margin-top:6px">
+            {{ _("Una lista per riga, «nome: voce | voce | voce». Le liste si pescano insieme: «3 o più sponde, bilia 7».") }}
+          </div>
+        </div>
+        <div>
+          <label class="form-label" for="draw_outcomes">{{ _("Come si conta un colpo") }}</label>
+          <textarea class="form-control" id="draw_outcomes" name="draw_outcomes" rows="4"
+                    placeholder="{{ _('Mancata = 0') }}">{{ draft.draw_outcomes_text if draft }}</textarea>
+          <div class="c7-rows__sub" style="margin-top:6px">
+            {{ _("Un esito per riga, «nome = punti», dal peggiore al migliore. Il punteggio massimo è i colpi per l'esito che vale di più.") }}
+          </div>
+        </div>
+      </div>
 
       {# Nascosto, non disabilitato: un campo grigio su una prova riuscito/non
          riuscito fa credere che il numero serva e che manchi un permesso. #}
