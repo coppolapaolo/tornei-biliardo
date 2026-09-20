@@ -13,6 +13,7 @@ intanto può essere cambiata o essere stata ritirata.
 
 from __future__ import annotations
 
+import logging
 from typing import List, Optional
 
 from flask_babel import gettext as _
@@ -28,6 +29,8 @@ from ..transaction.manager import transactional
 from ..user.models import User
 from .measure import SheetMeasure
 from .models import TrainingEntry, TrainingSession, TrainingSheet, TrainingSheetItem
+
+logger = logging.getLogger(__name__)
 
 #: Quanti minuti può durare una voce a tempo: una giornata, e non di più. Un
 #: numero digitato male non deve entrare in un totale.
@@ -240,7 +243,39 @@ class TrainingSessionService:
             session.notes = notes.strip() or None
         session.ended_at = utc_now()
         db.session.flush()
+        TrainingSessionService._publish_closed(session)
         return session
+
+    @staticmethod
+    def _publish_closed(session: TrainingSession) -> None:
+        """Annuncia la seduta chiusa (XP, serie, traguardi — ADR-067 punto 6).
+
+        Best-effort come per il drill: un ascoltatore che esplode non deve far
+        perdere la seduta appena chiusa, che è il dato importante.
+        """
+        from models.events.base import EventBus
+
+        from .events import TrainingSessionClosedEvent
+
+        try:
+            sheet = session.sheet
+            soglia = sheet.threshold if sheet is not None else None
+            EventBus.publish(
+                TrainingSessionClosedEvent(
+                    session_id=session.id,
+                    sheet_id=session.sheet_id,
+                    sheet_name=(sheet.name if sheet is not None else ""),
+                    user_id=session.user_id,
+                    filled=sum(1 for entry in session.entries if entry.is_filled),
+                    total=session.total,
+                    max_total=session.max_total,
+                    above_threshold=(
+                        None if soglia is None else session.total >= soglia
+                    ),
+                )
+            )
+        except Exception:  # pragma: no cover - la gamification non blocca mai
+            logger.warning("Evento di seduta chiusa non pubblicato", exc_info=True)
 
     @staticmethod
     @transactional(domain="training_sheet")

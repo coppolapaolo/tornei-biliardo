@@ -31,6 +31,7 @@ from models.events.competition_events import (
 )
 from models.challenge.events import ChallengeAttemptCompletedEvent
 from models.exam.events import ExamAttemptCompletedEvent
+from models.training_sheet.events import TrainingSessionClosedEvent
 from models.gamification.level_service import LevelService
 from models.gamification.achievement_service import AchievementService
 from models.gamification.streak_service import StreakService
@@ -110,6 +111,13 @@ class GamificationEventHandlers:
         _registra(
             ExamAttemptCompletedEvent,
             GamificationEventHandlers.handle_exam_attempt_completed_for_xp,
+            priority=10,
+        )
+
+        # Seduta di una scheda (ADR-067, punto 6)
+        _registra(
+            TrainingSessionClosedEvent,
+            GamificationEventHandlers.handle_training_session_closed_for_xp,
             priority=10,
         )
 
@@ -711,6 +719,65 @@ class GamificationEventHandlers:
         except Exception as e:
             logger.error(
                 f"Error handling challenge attempt completed event: {e}", exc_info=True
+            )
+
+    # ========================================
+    # Scheda di allenamento (ADR-067, punto 6)
+    # ========================================
+
+    @staticmethod
+    def handle_training_session_closed_for_xp(
+        event: TrainingSessionClosedEvent,
+    ) -> None:
+        """XP e serie alla chiusura di una seduta di scheda.
+
+        L'ADR-067 aveva lasciato la seduta **muta** di proposito: far emettere
+        un evento a una tabella nuova avrebbe deciso in silenzio che XP, serie
+        e traguardi si guadagnano anche a scheda. La decisione è questa, ed è
+        sì — una seduta è un allenamento come una prova del catalogo, di più,
+        perché è una sequenza decisa prima e portata a termine.
+
+        **Una seduta vale un drill**, non uno per casella: un allenamento è
+        quello che si è fatto quella sera, e pagare ogni voce moltiplicherebbe
+        l'XP per la lunghezza della scheda — premiando chi compone schede lunghe
+        invece di chi si allena. Vale la stessa ragione per cui in gara paga solo
+        il primo tentativo.
+
+        **Una seduta vuota non paga.** Aprirla e non segnare niente non è un
+        allenamento, e contarla premierebbe il gesto di aprire l'app.
+        """
+        if event.is_empty:
+            return
+        try:
+            LevelService.award_xp(
+                user_id=event.user_id,
+                xp_amount=ConfigService.get_xp_rate(
+                    XPTransactionType.CHALLENGE_COMPLETION
+                ),
+                transaction_type=XPTransactionType.CHALLENGE_COMPLETION,
+                reason=f"Closed training session on {event.sheet_name}",
+                related_entities={
+                    "sheet_id": event.sheet_id,
+                    # Dice **da quale tabella** viene l'id: `training_session` e
+                    # `challenge_attempt` si sovrappongono, e chi un giorno
+                    # dovesse restituire l'XP deve riconoscere il movimento.
+                    "training_session_id": event.session_id,
+                },
+            )
+
+            for streak_type in (StreakType.WEEKLY_DRILL, StreakType.WEEKLY_ACTIVITY):
+                try:
+                    StreakService.record_activity(
+                        user_id=event.user_id, streak_type=streak_type
+                    )
+                except Exception as streak_error:
+                    logger.warning(
+                        f"Error recording {streak_type} for user "
+                        f"{event.user_id}: {streak_error}"
+                    )
+        except Exception as e:
+            logger.error(
+                f"Error handling training session closed event: {e}", exc_info=True
             )
 
     # ========================================
