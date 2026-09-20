@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 11:46+0200\n"
+"POT-Creation-Date: 2026-09-20 13:09+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -267,6 +267,7 @@ msgstr ""
 
 #: models/challenge/authoring.py:290 models/challenge/profile_service.py:94
 #: models/challenge/rating_service.py:61 models/challenge/shot_service.py:87
+#: models/training_sheet/services.py:216
 msgid "Esercizio non trovato"
 msgstr ""
 
@@ -614,11 +615,12 @@ msgstr ""
 msgid "Serve un punteggio: la prova non ne ha ancora uno registrato."
 msgstr ""
 
-#: models/challenge/services.py:1219
+#: models/challenge/services.py:1239
 msgid "Questo esercizio si registra colpo per colpo, non col totale."
 msgstr ""
 
-#: models/challenge/services.py:1237 models/challenge/shot_service.py:162
+#: models/challenge/services.py:1257 models/challenge/shot_service.py:162
+#: models/training_sheet/session_service.py:346
 msgid "Questa variante non è di questo esercizio"
 msgstr ""
 
@@ -2853,7 +2855,7 @@ msgstr ""
 msgid "attività"
 msgstr ""
 
-#: models/notification/templates.py:146
+#: models/notification/templates.py:146 models/training_sheet/measure.py:108
 msgid "partite"
 msgstr ""
 
@@ -3036,6 +3038,202 @@ msgstr ""
 msgid ""
 "La partita ha raggiunto la distanza: prima di continuare il risultato va "
 "confermato o rifiutato."
+msgstr ""
+
+#: models/training_sheet/measure.py:97 routes/feedback.py:145
+#: templates/base.html:461 templates/components/_sequence_editor.html:135
+msgid "Fatto"
+msgstr ""
+
+#: models/training_sheet/measure.py:98
+msgid "Riusciti"
+msgstr ""
+
+#: models/training_sheet/measure.py:99
+#: templates/components/_match_card.html:160
+#: templates/components/_match_challenge_input.html:59
+#: templates/exam/session.html:154 templates/exam/session.html:236
+msgid "Punteggio"
+msgstr ""
+
+#: models/training_sheet/measure.py:100
+#: templates/components/_campionato_general_classification.html:64
+#: templates/direttore/_classifica.html:40
+msgid "Vinte"
+msgstr ""
+
+#: models/training_sheet/measure.py:101
+msgid "Minuti"
+msgstr ""
+
+#: models/training_sheet/measure.py:105 models/training_sheet/measure.py:106
+#: models/training_sheet/measure.py:107
+msgid "tiri"
+msgstr ""
+
+#: models/training_sheet/measure.py:109
+msgid "minuti"
+msgstr ""
+
+#: models/training_sheet/measure.py:129
+#, python-format
+msgid "%(n)s partite"
+msgstr ""
+
+#: models/training_sheet/measure.py:131
+#, python-format
+msgid "%(n)s minuti"
+msgstr ""
+
+#: models/training_sheet/measure.py:132
+#, python-format
+msgid "%(n)s tiri"
+msgstr ""
+
+#: models/training_sheet/services.py:69
+#: models/training_sheet/session_service.py:77
+msgid "Scheda non trovata"
+msgstr ""
+
+#: models/training_sheet/services.py:96
+#: models/training_sheet/session_service.py:79
+msgid "Questa scheda non è tua"
+msgstr ""
+
+#: models/training_sheet/services.py:163
+#, python-format
+msgid "Una scheda arriva a %(n)s voci."
+msgstr ""
+
+#: models/training_sheet/services.py:170
+#, python-format
+msgid "Il livello va da 1 a %(n)s."
+msgstr ""
+
+#: models/training_sheet/services.py:177
+#, python-format
+msgid "Le sedute di fila vanno da 1 a %(n)s."
+msgstr ""
+
+#: models/training_sheet/services.py:182
+#, python-format
+msgid "Le settimane vanno da 1 a %(n)s."
+msgstr ""
+
+#: models/training_sheet/services.py:213
+#: models/training_sheet/session_service.py:325
+msgid "Questa voce non è di questa scheda"
+msgstr ""
+
+#: models/training_sheet/services.py:263
+msgid "La scheda è già tua"
+msgstr ""
+
+#: models/training_sheet/services.py:266
+msgid "Utente non trovato"
+msgstr ""
+
+#: models/training_sheet/services.py:302
+msgid "La scheda vuole un nome"
+msgstr ""
+
+#: models/training_sheet/services.py:328
+#, python-format
+msgid "Serve dire quanto farne: %(unita)s."
+msgstr ""
+
+#: models/training_sheet/services.py:334
+#, python-format
+msgid "Il «quanto farne» va da %(min)s a %(max)s."
+msgstr ""
+
+#: models/training_sheet/services.py:348
+msgid "La soglia è un numero positivo"
+msgstr ""
+
+#: models/training_sheet/services.py:353
+msgid ""
+"Per una soglia serve almeno una voce «a riusciti»: le altre non fanno "
+"totale."
+msgstr ""
+
+#: models/training_sheet/services.py:360
+#, python-format
+msgid "La soglia non può superare il totale della scheda, che è %(n)s."
+msgstr ""
+
+#: models/training_sheet/session_service.py:63
+msgid "Seduta non trovata"
+msgstr ""
+
+#: models/training_sheet/session_service.py:87
+msgid "Questo giorno non è nella scheda"
+msgstr ""
+
+#: models/training_sheet/session_service.py:129
+msgid "Serve dire se l'hai fatto"
+msgstr ""
+
+#: models/training_sheet/session_service.py:162
+msgid "Questa voce si segna con un numero, non tiro per tiro"
+msgstr ""
+
+#: models/training_sheet/session_service.py:170
+msgid "Hai già segnato tutti i tiri di questa voce"
+msgstr ""
+
+#: models/training_sheet/session_service.py:192
+msgid "Non c'è nessun tiro da togliere"
+msgstr ""
+
+#: models/training_sheet/session_service.py:237
+msgid "Questa seduta è già chiusa"
+msgstr ""
+
+#: models/training_sheet/session_service.py:258
+msgid "Questa seduta ha già qualcosa segnato: chiudila, non buttarla"
+msgstr ""
+
+#: models/training_sheet/session_service.py:314
+msgid "Questa seduta non è tua"
+msgstr ""
+
+#: models/training_sheet/session_service.py:321
+msgid "Questa seduta è chiusa"
+msgstr ""
+
+#: models/training_sheet/session_service.py:327
+msgid "Questa voce non fa più parte della scheda"
+msgstr ""
+
+#: models/training_sheet/session_service.py:340
+msgid "Serve dire da che parte"
+msgstr ""
+
+#: models/training_sheet/session_service.py:343
+msgid "Questa voce si segna in una casella sola"
+msgstr ""
+
+#: models/training_sheet/session_service.py:382
+msgid "Serve il numero"
+msgstr ""
+
+#: models/training_sheet/session_service.py:384
+msgid "Il numero non può essere negativo"
+msgstr ""
+
+#: models/training_sheet/session_service.py:390
+#, python-format
+msgid "Al massimo %(n)s su questa voce."
+msgstr ""
+
+#: models/training_sheet/session_service.py:394
+msgid "Una seduta non dura più di un giorno"
+msgstr ""
+
+#: models/training_sheet/session_service.py:401
+#, python-format
+msgid "Questo esercizio arriva a %(n)s."
 msgstr ""
 
 #: models/user/profile_service.py:200
@@ -3373,11 +3571,6 @@ msgstr ""
 
 #: routes/feedback.py:144
 msgid "Presa in considerazione"
-msgstr ""
-
-#: routes/feedback.py:145 templates/base.html:461
-#: templates/components/_sequence_editor.html:135
-msgid "Fatto"
 msgstr ""
 
 #: routes/feedback.py:146
@@ -11286,11 +11479,6 @@ msgstr ""
 msgid "Diff"
 msgstr ""
 
-#: templates/components/_campionato_general_classification.html:64
-#: templates/direttore/_classifica.html:40
-msgid "Vinte"
-msgstr ""
-
 #: templates/components/_campionato_general_classification.html:75
 #, python-format
 msgid "Zona playoff · primi %(n)s"
@@ -13070,12 +13258,6 @@ msgstr ""
 #: templates/components/_match_card.html:226
 #: templates/public/campionatos_list.html:35
 msgid "Azzera"
-msgstr ""
-
-#: templates/components/_match_card.html:160
-#: templates/components/_match_challenge_input.html:59
-#: templates/exam/session.html:154 templates/exam/session.html:236
-msgid "Punteggio"
 msgstr ""
 
 #: templates/components/_match_card.html:166
