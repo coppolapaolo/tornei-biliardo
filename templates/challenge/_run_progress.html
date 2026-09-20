@@ -1,0 +1,39 @@
+{# Il posto di mezzo della cornice di esecuzione: come sta andando (fase 5a).
+
+   Lo disegna **solo il server**, anche dopo una prova registrata senza
+   ricaricare: la risposta JSON porta questo stesso pezzo già pronto e la
+   pagina lo sostituisce. Un secondo disegnatore in JavaScript avrebbe voluto
+   dire due grafici e due frasi da tenere uguali, e le frasi tradotte composte
+   nel browser. Niente `id` qui dentro: il pezzo può stare due volte nel
+   documento. #}
+<section class="c7-card c7-runprog" data-help="allenamento-andamento">
+  <div class="c7-runprog__head">
+    <span class="c7-label">{{ progress.kicker }}</span>
+    <span class="c7-num c7-runprog__now">{{ progress.next_label }}</span>
+  </div>
+  {% if progress.chart %}
+  {% with chart = progress.chart, chart_label = progress.sentence %}
+  {% include "challenge/_run_chart.html" %}
+  {% endwith %}
+  {% endif %}
+  <p class="c7-runprog__say">{{ progress.sentence }}</p>
+</section>
+
+{% if progress.today %}
+<section class="c7-rows" aria-label="{{ _('Le prove di oggi') }}">
+  {% for prova in progress.today %}
+  <div class="c7-rows__row c7-runprog__row">
+    <span class="c7-rows__title c7-runprog__name">
+      {{- prova.label|capitalize }}{% if prova.variant %} <span class="c7-sep">·</span> {{ prova.variant }}{% endif -%}
+    </span>
+    <span class="c7-num c7-runprog__when">{{ prova.attempted_at|time_local }}</span>
+    <span class="c7-runprog__score">
+      {%- if challenge.pass_fail_only -%}
+      <i class="fas {{ 'fa-check' if prova.passed else 'fa-xmark' }}" aria-hidden="true"></i>
+      <span class="visually-hidden">{{ _("Superata") if prova.passed else _("Non superata") }}</span>
+      {%- else %}{{ prova.score }}{% endif -%}
+    </span>
+  </div>
+  {% endfor %}
+</section>
+{% endif %}

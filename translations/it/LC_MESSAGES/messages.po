@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 09:20+0200\n"
+"POT-Creation-Date: 2026-09-20 10:16+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -278,6 +278,111 @@ msgstr ""
 #: models/challenge/authoring.py:315
 msgid "Servono le istruzioni per chi esegue l'esercizio"
 msgstr ""
+
+#: models/challenge/execution_view.py:64
+msgid "prima prova"
+msgstr ""
+
+#: models/challenge/execution_view.py:65
+msgid "seconda prova"
+msgstr ""
+
+#: models/challenge/execution_view.py:66
+msgid "terza prova"
+msgstr ""
+
+#: models/challenge/execution_view.py:67
+msgid "quarta prova"
+msgstr ""
+
+#: models/challenge/execution_view.py:68
+msgid "quinta prova"
+msgstr ""
+
+#: models/challenge/execution_view.py:69
+msgid "sesta prova"
+msgstr ""
+
+#: models/challenge/execution_view.py:70
+msgid "settima prova"
+msgstr ""
+
+#: models/challenge/execution_view.py:71
+msgid "ottava prova"
+msgstr ""
+
+#: models/challenge/execution_view.py:72
+#, python-format
+msgid "nona prova"
+msgstr ""
+
+#: models/challenge/execution_view.py:73
+msgid "decima prova"
+msgstr ""
+
+#: models/challenge/execution_view.py:77
+#, python-format
+msgid "prova %(n)s"
+msgstr ""
+
+#: models/challenge/execution_view.py:85
+#: templates/challenge/_exercise_bits.html:34
+msgid ","
+msgstr ""
+
+#: models/challenge/execution_view.py:129
+#: templates/challenge/_run_progress.html:23
+msgid "Le prove di oggi"
+msgstr ""
+
+#: models/challenge/execution_view.py:155
+#, python-format
+msgid "la tua media %(avg)s"
+msgstr ""
+
+#: models/challenge/execution_view.py:170
+#: models/challenge/execution_view.py:212
+msgid "È la tua prima prova su questo esercizio."
+msgstr ""
+
+#: models/challenge/execution_view.py:171
+#, python-format
+msgid "Record: %(best)s."
+msgstr ""
+
+#: models/challenge/execution_view.py:182
+#, python-format
+msgid "Sei sopra la tua media da %(num)s prova."
+msgid_plural "Sei sopra la tua media da %(num)s prove."
+msgstr[0] ""
+msgstr[1] ""
+
+#: models/challenge/execution_view.py:187
+msgid "L'ultima prova è sulla tua media."
+msgstr ""
+
+#: models/challenge/execution_view.py:189
+msgid "L'ultima prova è sotto la tua media."
+msgstr ""
+
+#: models/challenge/execution_view.py:207
+#, python-format
+msgid "di solito %(pct)s su 100"
+msgstr ""
+
+#: models/challenge/execution_view.py:215
+#, python-format
+msgid "Finora %(num)s riuscita su %(n)s."
+msgid_plural "Finora %(num)s riuscite su %(n)s."
+msgstr[0] ""
+msgstr[1] ""
+
+#: models/challenge/execution_view.py:222
+#, python-format
+msgid "Oggi %(num)s riuscita su %(n)s."
+msgid_plural "Oggi %(num)s riuscite su %(n)s."
+msgstr[0] ""
+msgstr[1] ""
 
 #: models/challenge/models.py:362
 #, python-format
@@ -2933,44 +3038,44 @@ msgstr ""
 msgid "Gli amministratori non provano gli esercizi."
 msgstr ""
 
-#: routes/challenge.py:718
+#: routes/challenge.py:720
 msgid "Prova registrata."
 msgstr ""
 
-#: routes/challenge.py:749
+#: routes/challenge.py:751
 msgid "Non c'è nessuna prova da annullare."
 msgstr ""
 
-#: routes/challenge.py:770
+#: routes/challenge.py:773
 msgid "Prova annullata."
 msgstr ""
 
-#: routes/challenge.py:970
+#: routes/challenge.py:995
 msgid "Tentativo registrato."
 msgstr ""
 
-#: routes/challenge.py:1011 templates/challenge/catalog.html:138
+#: routes/challenge.py:1036 templates/challenge/catalog.html:138
 #: templates/challenge/today.html:92
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr ""
 
-#: routes/challenge.py:1048
+#: routes/challenge.py:1073
 msgid "Voto registrato."
 msgstr ""
 
-#: routes/challenge.py:1111
+#: routes/challenge.py:1136
 msgid "Esercizio di gara avviato."
 msgstr ""
 
-#: routes/challenge.py:1164
+#: routes/challenge.py:1189
 msgid "Esercizio di gara registrato."
 msgstr ""
 
-#: routes/challenge.py:1197
+#: routes/challenge.py:1222
 msgid "Esercizio non trovato."
 msgstr ""
 
-#: routes/challenge.py:1207
+#: routes/challenge.py:1232
 msgid "Non hai i permessi per questo esercizio."
 msgstr ""
 
@@ -8835,7 +8940,7 @@ msgstr ""
 
 #: templates/challenge/_challenge_detail.html:25
 #: templates/challenge/_training_board.html:27
-#: templates/challenge/training.html:52
+#: templates/challenge/training.html:66
 msgid "Disposizione dell'esercizio"
 msgstr ""
 
@@ -8914,7 +9019,7 @@ msgid "Liv. %(n)s"
 msgstr ""
 
 #: templates/challenge/_exercise_bits.html:23 templates/challenge/form.html:217
-#: templates/challenge/training.html:59
+#: templates/challenge/training.html:37
 msgid "Riuscito o no"
 msgstr ""
 
@@ -8925,14 +9030,10 @@ msgstr ""
 
 #: templates/challenge/_exercise_bits.html:25
 #: templates/challenge/builder.html:234 templates/challenge/form.html:219
-#: templates/challenge/training.html:61
+#: templates/challenge/training.html:38 templates/challenge/training.html:39
 #: templates/components/_challenge_bits.html:27
 #: templates/player/challenge_attempt_detail.html:49
 msgid "A punteggio"
-msgstr ""
-
-#: templates/challenge/_exercise_bits.html:34
-msgid ","
 msgstr ""
 
 #: templates/challenge/_exercise_bits.html:35
@@ -8994,6 +9095,36 @@ msgstr ""
 msgid "Aggiungi ai preferiti"
 msgstr ""
 
+#: templates/challenge/_run_progress.html:33
+#: templates/challenge/_training_board.html:65
+#: templates/challenge/training.html:107
+#: templates/components/_history_drills_tab.html:133
+#: templates/components/_match_challenge_input.html:54
+#: templates/components/_player_challenge_statistics.html:55
+#: templates/components/_player_challenges.html:38
+#: templates/player/challenge_attempt_detail.html:78
+#: templates/player/challenge_attempt_detail.html:139
+#: templates/player/challenge_detail.html:119
+#: templates/player/gara_challenge_detail.html:75
+#: templates/player/gara_challenge_detail.html:136
+msgid "Superata"
+msgstr ""
+
+#: templates/challenge/_run_progress.html:33
+#: templates/challenge/_training_board.html:68
+#: templates/challenge/training.html:110
+#: templates/components/_history_drills_tab.html:133
+#: templates/components/_match_challenge_input.html:55
+#: templates/components/_player_challenge_statistics.html:55
+#: templates/components/_player_challenges.html:38
+#: templates/player/challenge_attempt_detail.html:88
+#: templates/player/challenge_attempt_detail.html:139
+#: templates/player/challenge_detail.html:119
+#: templates/player/gara_challenge_detail.html:84
+#: templates/player/gara_challenge_detail.html:136
+msgid "Non superata"
+msgstr ""
+
 #: templates/challenge/_training_board.html:21
 msgid "Allenamento a schermo intero"
 msgstr ""
@@ -9009,7 +9140,6 @@ msgid "Prove"
 msgstr ""
 
 #: templates/challenge/_training_board.html:57
-#: templates/challenge/training.html:96
 #: templates/components/_player_challenge_statistics.html:30
 #: templates/player/challenge_detail.html:40
 msgid "Riuscite"
@@ -9024,38 +9154,7 @@ msgstr ""
 msgid "Record"
 msgstr ""
 
-#: templates/challenge/_training_board.html:65
-#: templates/challenge/training.html:112 templates/challenge/training.html:167
-#: templates/challenge/training.html:210
-#: templates/components/_history_drills_tab.html:133
-#: templates/components/_match_challenge_input.html:54
-#: templates/components/_player_challenge_statistics.html:55
-#: templates/components/_player_challenges.html:38
-#: templates/player/challenge_attempt_detail.html:78
-#: templates/player/challenge_attempt_detail.html:139
-#: templates/player/challenge_detail.html:119
-#: templates/player/gara_challenge_detail.html:75
-#: templates/player/gara_challenge_detail.html:136
-msgid "Superata"
-msgstr ""
-
-#: templates/challenge/_training_board.html:68
-#: templates/challenge/training.html:116 templates/challenge/training.html:167
-#: templates/challenge/training.html:211
-#: templates/components/_history_drills_tab.html:133
-#: templates/components/_match_challenge_input.html:55
-#: templates/components/_player_challenge_statistics.html:55
-#: templates/components/_player_challenges.html:38
-#: templates/player/challenge_attempt_detail.html:88
-#: templates/player/challenge_attempt_detail.html:139
-#: templates/player/challenge_detail.html:119
-#: templates/player/gara_challenge_detail.html:84
-#: templates/player/gara_challenge_detail.html:136
-msgid "Non superata"
-msgstr ""
-
 #: templates/challenge/_training_board.html:74
-#: templates/challenge/training.html:124
 #: templates/components/_form_macros.html:84
 #: templates/player/challenge_attempt_detail.html:100
 #: templates/player/gara_challenge_detail.html:94
@@ -9063,7 +9162,6 @@ msgid "Diminuisci"
 msgstr ""
 
 #: templates/challenge/_training_board.html:80
-#: templates/challenge/training.html:133
 #: templates/components/_form_macros.html:89
 #: templates/player/challenge_attempt_detail.html:103
 #: templates/player/gara_challenge_detail.html:97
@@ -9076,7 +9174,7 @@ msgid "Registra"
 msgstr ""
 
 #: templates/challenge/_training_board.html:95
-#: templates/challenge/training.html:38 templates/challenge/training.html:195
+#: templates/challenge/training.html:145
 msgid "Ho finito"
 msgstr ""
 
@@ -9947,7 +10045,7 @@ msgid "Alla fine registri il punteggio"
 msgstr ""
 
 #: templates/challenge/start_attempt.html:43
-#: templates/challenge/training.html:182
+#: templates/challenge/training.html:98
 msgid "Puoi riprovare quante volte vuoi: resta il tuo risultato migliore."
 msgstr ""
 
@@ -9967,7 +10065,7 @@ msgstr ""
 msgid "I numeri compaiono qui dopo la prima prova registrata."
 msgstr ""
 
-#: templates/challenge/statistics.html:32 templates/challenge/training.html:92
+#: templates/challenge/statistics.html:32
 msgid "Prove registrate"
 msgstr ""
 
@@ -10027,94 +10125,59 @@ msgid_plural "%(num)s esercizi, da filtrare per abilità, gesto, livello e voto"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/challenge/training.html:27 templates/challenge/training.html:33
+#: templates/challenge/training.html:29
 #: templates/components/_player_training.html:26
 msgid "Allenamento"
 msgstr ""
 
-#: templates/challenge/training.html:31
+#: templates/challenge/training.html:33
 msgid "Torna agli esercizi"
 msgstr ""
 
-#: templates/challenge/training.html:60
+#: templates/challenge/training.html:38 templates/challenge/training.html:119
+#: templates/exam/session.html:238
 #, python-format
-msgid "0-%(max)s punti"
+msgid "su %(n)s"
 msgstr ""
 
-#: templates/challenge/training.html:66
-msgid "Istruzioni"
-msgstr ""
-
-#: templates/challenge/training.html:79
-msgid "Da che parte"
-msgstr ""
-
-#: templates/challenge/training.html:81
-msgid "senza dirlo"
-msgstr ""
-
-#: templates/challenge/training.html:96
-msgid "Il tuo record"
-msgstr ""
-
-#: templates/challenge/training.html:121
-msgid "Punteggio della prova"
-msgstr ""
-
-#: templates/challenge/training.html:146
-#: templates/player/challenge_attempt_detail.html:107
-#, python-format
-msgid "Il tuo record è %(best)s"
-msgstr ""
-
-#: templates/challenge/training.html:150
-msgid "Registra la prova"
-msgstr ""
-
-#: templates/challenge/training.html:157
-#: templates/components/_history_drills_tab.html:118
-msgid "Le tue prove"
-msgstr ""
-
-#: templates/challenge/training.html:168
-#: templates/components/_history_drills_tab.html:134
-#, python-format
-msgid "Punteggio %(score)s"
-msgstr ""
-
-#: templates/challenge/training.html:177
-msgid "Nessuna prova ancora. Registra la prima qui sopra."
-msgstr ""
-
-#: templates/challenge/training.html:192
-msgid "Annulla l'ultima"
-msgstr ""
-
-#: templates/challenge/training.html:212 templates/exam/session.html:124
-msgid "adesso"
-msgstr ""
-
-#: templates/challenge/training.html:213
-#: templates/components/_match_card.html:160
-#: templates/components/_match_challenge_input.html:59
-#: templates/exam/session.html:154 templates/exam/session.html:236
-msgid "Punteggio"
-msgstr ""
-
-#: templates/challenge/training.html:214
+#: templates/challenge/training.html:55
 msgid "Registro…"
 msgstr ""
 
-#: templates/challenge/training.html:215
+#: templates/challenge/training.html:56
 msgid "Non è stato possibile registrare la prova."
 msgstr ""
 
-#: templates/challenge/training.html:216
+#: templates/challenge/training.html:57
 msgid "Non è stato possibile registrare la prova. Riprova."
 msgstr ""
 
-#: templates/challenge/training.html:217
+#: templates/challenge/training.html:58
 msgid "Non è stato possibile annullare la prova."
+msgstr ""
+
+#: templates/challenge/training.html:82
+msgid "Da che parte"
+msgstr ""
+
+#: templates/challenge/training.html:84
+msgid "senza dirlo"
+msgstr ""
+
+#: templates/challenge/training.html:116 templates/exam/session.html:231
+msgid "Uno in meno"
+msgstr ""
+
+#: templates/challenge/training.html:122 templates/exam/session.html:240
+msgid "Uno in più"
+msgstr ""
+
+#: templates/challenge/training.html:133
+msgid "Registra la prova"
+msgstr ""
+
+#: templates/challenge/training.html:143
+msgid "Annulla l'ultima"
 msgstr ""
 
 #: templates/components/_amalfi_algorithm_info.html:4
@@ -12027,6 +12090,15 @@ msgstr ""
 msgid "Servono almeno due prove nel periodo scelto per disegnare un andamento."
 msgstr ""
 
+#: templates/components/_history_drills_tab.html:118
+msgid "Le tue prove"
+msgstr ""
+
+#: templates/components/_history_drills_tab.html:134
+#, python-format
+msgid "Punteggio %(score)s"
+msgstr ""
+
 #: templates/components/_history_drills_tab.html:138
 msgid "in gara"
 msgstr ""
@@ -12545,6 +12617,12 @@ msgstr ""
 #: templates/components/_match_card.html:226
 #: templates/public/campionatos_list.html:35
 msgid "Azzera"
+msgstr ""
+
+#: templates/components/_match_card.html:160
+#: templates/components/_match_challenge_input.html:59
+#: templates/exam/session.html:154 templates/exam/session.html:236
+msgid "Punteggio"
 msgstr ""
 
 #: templates/components/_match_card.html:166
@@ -18016,6 +18094,10 @@ msgstr ""
 msgid "Prova %(n)s"
 msgstr ""
 
+#: templates/exam/session.html:124
+msgid "adesso"
+msgstr ""
+
 #: templates/exam/session.html:125
 msgid "la migliore"
 msgstr ""
@@ -18081,19 +18163,6 @@ msgstr ""
 
 #: templates/exam/session.html:227
 msgid "Riuscita"
-msgstr ""
-
-#: templates/exam/session.html:231
-msgid "Uno in meno"
-msgstr ""
-
-#: templates/exam/session.html:238
-#, python-format
-msgid "su %(n)s"
-msgstr ""
-
-#: templates/exam/session.html:240
-msgid "Uno in più"
 msgstr ""
 
 #: templates/exam/session.html:243 templates/exam/session.html:256
@@ -21157,6 +21226,11 @@ msgstr ""
 #: templates/player/challenge_attempt_detail.html:97
 #: templates/player/gara_challenge_detail.html:91
 msgid "Punteggio ottenuto"
+msgstr ""
+
+#: templates/player/challenge_attempt_detail.html:107
+#, python-format
+msgid "Il tuo record è %(best)s"
 msgstr ""
 
 #: templates/player/challenge_attempt_detail.html:116

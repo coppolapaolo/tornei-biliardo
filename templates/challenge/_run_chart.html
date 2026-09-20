@@ -1,0 +1,20 @@
+{# Il grafico dal vivo della cornice di esecuzione (fase 5a).
+
+   La geometria arriva pronta da `models/challenge/live_chart.py`; qui ci sono
+   solo i colori, dai token. Il viewBox non è stirato: l'SVG si allarga intero,
+   così barre arrotondate e cerchi restano quello che sono. #}
+<svg class="c7-livechart" viewBox="0 0 {{ chart.width }} {{ chart.height }}" role="img"
+     aria-label="{{ chart_label }}">
+  <line class="c7-livechart__base" x1="{{ chart.x0 }}" y1="{{ chart.baseline }}" x2="{{ chart.x1 }}" y2="{{ chart.baseline }}"></line>
+  {% if chart.reference_y is not none %}
+  <line class="c7-livechart__ref" x1="{{ chart.x0 }}" y1="{{ chart.reference_y }}" x2="{{ chart.x1 }}" y2="{{ chart.reference_y }}"></line>
+  {% if chart.reference_label %}
+  <text class="c7-livechart__reflabel" x="{{ chart.x1 }}" y="{{ chart.reference_y - 5 }}" text-anchor="end">{{ chart.reference_label }}</text>
+  {% endif %}
+  {% endif %}
+  {% for slot in chart.slots %}
+  <rect class="c7-livechart__bar{% if not slot.filled %} is-todo{% elif slot.now %} is-now{% endif %}"
+        x="{{ slot.x }}" y="{{ slot.y }}" width="{{ slot.width }}" height="{{ slot.height }}"
+        rx="{{ 4 if slot.filled else 1.5 }}"></rect>
+  {% endfor %}
+</svg>
