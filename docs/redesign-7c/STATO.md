@@ -736,7 +736,10 @@ Quelli sopra sono chiusi; questi no.
    eseguire un esercizio colpo per colpo e con estrazione (20/09, #501–#509),
    schede di allenamento (20/09, #511–#516), andamento, obiettivi e consigli
    (20/09, #517–#522), istruttori con allievi, gruppi e proposte di scheda
-   (20/09, #523–#534). **Restano il disegnatore e la chiusura.**
+   (20/09, #523–#534), disegnatore degli esercizi (20/09, #536–#541: pannello
+   ai token 7c e telefono, bersaglio a riquadro come dato, notazione degli
+   schemi, varianti allo specchio e inquadratura). **Resta la chiusura**:
+   racconto, ROADMAP e issue.
 
 ### Rilievi di dominio trovati durante la conversione (non toccati)
 

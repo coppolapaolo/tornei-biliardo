@@ -61,14 +61,15 @@ blocks:
 
   - type: text
     text: >-
-      There are two parts: the **tool panel** and the **table**. On a phone the
-      panel is on top and the table below, and you scroll the panel to reach
-      the controls you cannot see. On a computer they sit side by side, panel
-      on the left and table on the right.
+      There are two parts: the **table** and the **tool panel**. On a phone the
+      table is at the top and stays there, below it is the strip of tools — it
+      scrolls sideways if they do not all fit — and further down the settings
+      of the active tool. On a computer they sit side by side, panel on the
+      left and table on the right.
 
   - type: shot
     shot: drill-builder
-    caption: "The builder on a phone: controls on top, table below."
+    caption: "On a phone: the table at the top, the strip of tools below."
 
   - type: note
     tone: tip
@@ -79,16 +80,17 @@ blocks:
 
   - type: heading
     id: strumenti
-    title: "The four tools"
+    title: "The tools"
 
   - type: text
     text: >-
-      At the top of the panel, in the **«Tools»** box, you choose what you are
-      doing. One is active at a time: the active one is yellow.
+      In the **«Tools»** strip you choose what you are doing. One is active at
+      a time: the active one is dark.
 
   - type: shot
     shot: drill-builder-strumenti
-    caption: "The «Tools» box: the active tool is the yellow one."
+    variant: desktop
+    caption: "The tools: the active one is dark. On a phone they are the strip under the table."
 
   - type: options
     items:
@@ -101,20 +103,51 @@ blocks:
           Draws a shot: first you tap the ball being played, then you move your
           finger or the pointer to aim and tap again to fix it. Tapping an
           existing shot lets you correct it.
-      - name: "Free line"
+      - name: "Line"
         text: >-
-          Draws a line by hand, point after point: for marking a path, a route
-          or an area of the table.
+          Draws a line by hand, point after point: for marking a path or a
+          route.
       - name: "Text"
         text: >-
           Writes a word on the table. It asks what to write, then puts it where
           you tapped. To change it, tap the label twice.
+      - name: "Target"
+        hint: drill-bersaglio
+        text: >-
+          Where the cue ball should stop. It is the only thing in the drawing
+          the app reads as data: with a target the exercise can be recorded
+          shot by shot. It has two shapes, and there is a section about them
+          below.
+      - name: "Positions"
+        hint: drill-posizioni
+        text: >-
+          The numbers marking the successive positions of the cue ball: 1, 2,
+          3… They are an ordered scale, not scattered labels.
+      - name: "Callout"
+        hint: drill-richiamo
+        text: >-
+          A caption tied by a thread to the point it comments: «half a diamond
+          from here».
+      - name: "Marker"
+        text: >-
+          The dashed little circle that marks a spot on the cloth, without
+          putting a ball there.
+      - name: "Cushion"
+        hint: drill-sponda
+        text: >-
+          Highlights the piece of cushion that matters — «stop between the
+          second and the fourth diamond».
+      - name: "Framing"
+        hint: drill-inquadratura
+        text: >-
+          Decides how much of the table ends up in the picture. There is a
+          section about it below too.
 
   - type: list
     title: "Next to the tools"
     items:
-      - "**Undo** steps back one move, **Redo** puts back what you undid."
-      - "**Delete** removes the selected item. On a computer the «Del» and «Backspace» keys do the same."
+      - "**Undo** steps back one move, **Redo** puts back what you undid: they are the two arrows at the end of the strip."
+      - "The **bin** removes the selected item. On a computer the «Del» and «Backspace» keys do the same."
       - "The «Esc» key cancels what you are doing: an aim you started, a line half drawn."
 
   - type: heading
@@ -199,6 +232,131 @@ blocks:
       - "**Cue on the table**: draws the cue, so the side it is played from is clear."
       - "**Shot card below the table**: the written summary — spin, power, angle — under the drawing."
       - "**Cut angle label**: writes how many degrees the cut is. Normally off."
+
+  - type: heading
+    id: bersaglio
+    title: "The target: where the cue ball must stop"
+
+  - type: text
+    text: >-
+      Everything else in the drawing is drawing. The **target** is not: it is
+      the only thing the app reads as data, and it is what lets the exercise be
+      recorded **shot by shot** — whoever trains taps the spot where the cue
+      ball stopped, and the app counts the points.
+
+  - type: shot
+    shot: drill-builder-bersaglio
+    variant: desktop
+    caption: "A box target on the table: selected, it is grabbed by its corners."
+
+  - type: text
+    text: >-
+      There is **one per drawing**, and you choose between two shapes, which
+      ask two different questions.
+
+  - type: shot
+    shot: drill-builder-bersaglio-pannello
+    variant: desktop
+    caption: "The target settings in the panel."
+
+  - type: options
+    items:
+      - name: "Rings"
+        values: "how close"
+        text: >-
+          A centre and up to five rings, each with its own points: the closer
+          you stop to the centre, the more it is worth. Ring thickness is
+          measured in diamonds, halves and quarters included, like the grid.
+          Outside the last ring it is worth zero.
+      - name: "Box"
+        values: "in or out"
+        text: >-
+          A rectangular area: either the cue ball stops inside, and is worth
+          the points you chose, or it is outside and worth zero. It is the way
+          the reference drills mark their areas, and it is measured in quarter
+          diamonds too.
+
+  - type: list
+    title: "What you can say about a box"
+    items:
+      - "**Wide** and **High**, in quarter-diamond steps; **Rotate by 90°** swaps the two measures."
+      - "**Filled** tints it lightly, **Number inside** writes its number in the middle."
+      - "**Counts for the score** makes it the target, and asks how many points stopping inside is worth."
+      - "The corners can be dragged: the box snaps to the diamonds like everything else."
+
+  - type: note
+    tone: info
+    text: >-
+      There can be **many** boxes — the reference drills often have four,
+      numbered — but only one can count for the score. If you try with a
+      second one, the app tells you instead of letting you find out when you
+      save.
+
+  - type: heading
+    id: notazione
+    title: "Numbers, callouts and marks"
+
+  - type: text
+    text: >-
+      These are the marks training drills explain themselves with. They do not
+      count for the score: they are there for whoever reads the drawing.
+
+  - type: options
+    items:
+      - name: "Numbered positions"
+        hint: drill-posizioni
+        text: >-
+          Every tap adds a position **after** the selected one, and the numbers
+          renumber themselves: slip one in the middle and the others follow.
+          They can also sit on the cushion, off the cloth, as in almost every
+          drill. **Number backwards** counts them from N to 1, as when the cue
+          ball moves back.
+      - name: "Callout"
+        hint: drill-richiamo
+        text: >-
+          A caption attached to a point by a thread. Move the caption or move
+          the point: the thread stays attached. Two taps on the caption to
+          change it.
+      - name: "Marker"
+        text: >-
+          A dashed little circle: it marks a spot without putting a ball there.
+          It is not the ghost ball, which belongs to a shot.
+      - name: "Cushion stretch"
+        hint: drill-sponda
+        text: >-
+          Highlights a piece of cushion. You put one by tapping near the
+          cushion you want; it slides along its own and never leaves it, and
+          **Long** changes its length.
+
+  - type: heading
+    id: inquadratura
+    title: "The framing: how much table is shown"
+
+  - type: text
+    text: >-
+      Many exercises use half a table or a corner. You always draw on the
+      **whole table**, and the framing only decides what ends up in the
+      picture: the balls left outside are not lost, and if one day you widen it
+      they show up again.
+
+  - type: shot
+    shot: drill-builder-inquadratura
+    variant: desktop
+    caption: "«Corner» framing: the veil covers the part that will not end up in the picture."
+
+  - type: list
+    items:
+      - "**Table**: all of it, as before."
+      - "**Half**: one short rail."
+      - "**Corner**: a quarter of the table."
+      - "**Free**: the frame is dragged by its corners, snapped to the diamonds."
+
+  - type: note
+    tone: tip
+    text: >-
+      While you draw, the whole table is visible and the part that will stay
+      out is under a veil: so you always know what you are cutting, and you can
+      grab the frame again to widen it.
 
   - type: heading
     id: linee
@@ -346,7 +504,13 @@ blocks:
       - q: "I cannot see «Draw the drill» on the creation form."
         a: "It is a competition director's command, and it unlocks after thirty drills completed. Until it shows up, a challenge is created by uploading the photo: that is the normal way, not a fallback."
       - q: "Can I draw the drill from my phone?"
-        a: "Yes, everything works. But the table is small and the panel has to be scrolled: if a computer is within reach, use it."
+        a: "Yes, everything works: the table stays at the top and the tools are the strip below it, which scrolls sideways. But the table is small and pointing is less precise: if a computer is within reach, use it."
+      - q: "What is the difference between the ring target and the box one?"
+        a: "The question they ask. The rings say **how close** to the centre you are, and each ring is worth its points; the box says **in or out**, and that is all. Pick the one that looks like the exercise: if fine precision matters, the rings; if getting into an area matters, the box."
+      - q: "Can I put two targets?"
+        a: "Drawing as many boxes as you like, yes. Having more than one count for the score, no: a shot's score must be one, and with two targets nobody would know which one you were aiming at."
+      - q: "Does the framing cut the balls left outside?"
+        a: "Only in the picture. In the drawing they stay where they are: widen the frame and they show up again, and if you reopen the drawing you find them all."
       - q: "Do other people see the drawing?"
         a: "They see the picture, as with a photographed drill: the drawing becomes the drill's image in the catalogue. Reopening and changing it is only for whoever created it."
       - q: "Can I start from an existing drill and change it?"

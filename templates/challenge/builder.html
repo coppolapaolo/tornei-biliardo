@@ -32,7 +32,10 @@
    aria-label="{{ _('Annulla') }}"><i class="fas fa-xmark"></i></a>
 {% endblock %}
 {% block page_title %}{{ _("Disegna l'esercizio") if not challenge else _("Modifica il disegno") }}{% endblock %}
-{% block page_sub %}{{ _("Disponi le bilie e traccia i tiri: l'immagine la genera il builder") }}{% endblock %}
+{# «Builder» era l'unica parola di questa schermata che l'app non usa da
+   nessun'altra parte, e la guida non la può nemmeno scrivere: qui si dice
+   esercizio, disegno, tavolo. #}
+{% block page_sub %}{{ _("Disponi le bilie e traccia i tiri: l'immagine la fa l'app") }}{% endblock %}
 
 {% block content %}
 <div class="c7-stack">
@@ -225,8 +228,13 @@
 
       {# Le posizioni numerate (#179): una scala ordinata, non numeri sparsi.
          Compare quando ce n'è una selezionata — finché non si tocca il panno
-         non ha niente da dire. #}
-      <div class="sec" id="sec-posizioni" hidden>
+         non ha niente da dire.
+
+         `sec-numeri` e non `sec-posizioni`: quel nome ce l'ha già il riquadro
+         delle **posizioni standard**, e due `id` uguali nella stessa pagina
+         sono un guasto silenzioso — il ritaglio della guida fotografava questo
+         riquadro, che di suo è nascosto, invece di quello. #}
+      <div class="sec" id="sec-numeri" hidden>
         <h2>{{ _("Posizioni numerate") }}</h2>
         <p class="tip">{{ _("Ogni tocco aggiunge una posizione dopo quella selezionata: i numeri si rifanno da soli. Si possono mettere anche sulla sponda, fuori dal panno.") }}</p>
         <label class="chk"><input type="checkbox" id="posReverse"> {{ _("Numera all'indietro") }}</label>

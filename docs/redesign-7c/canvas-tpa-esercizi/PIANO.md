@@ -33,7 +33,7 @@ Sorgenti del canvas: `sorgenti/` (`kit.py`, `tpa.py`, `esercizi.py`,
 | 6 | Schede di allenamento (#172) | **chiusa il 20/09** — #511 (6a), #513 (6b), #514 (6c), #515 (6d), #516 (6e). Le caselle non sono prove del catalogo, la sezione è un campo della voce: vedi la nota nella fase |
 | 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | **chiusa il 20/09** — #517 (7a), #519 (7b), #520 (7c), #521 (7d+7e), #522 (7f). Una scala sola per due mondi (ADR-068), 7d e 7e in una PR: vedi la nota nella fase |
 | 8 | Istruttori (#173) | **chiusa il 20/09** — #523 (8a), #525 (8b), #526 (catena delle nomine, fuori piano), #528 (8c), #530 + #531 + #532 (8d, in tre), #534 (8e). Chiude #173. Tre ADR nuovi (069, 070, 071) e un emendamento all'ADR-041: vedi la nota nella fase |
-| 9 | Disegnatore (#179) | da fare — indipendente, si può anticipare dopo la 4 |
+| 9 | Disegnatore (#179) | **chiusa il 20/09** — #536 (9a), #538 (9b), #540 (9c), #541 (9d · guida). Chiude #179. Emendamenti all'ADR-065 e all'ADR-066; aperta la #539 (lo specchio anche sul panno): vedi la nota nella fase |
 | 10 | Chiusura: guida, racconto, issue | da fare |
 
 Chi chiude una fase aggiorna questa tabella e quella di `STATO.md` (stato,
@@ -683,6 +683,47 @@ Indipendente: si può fare dopo la fase 4.
 9c varianti, inquadratura, sponda · 9d guida.
 
 **Prompt**: «…esegui la fase 9.»
+
+### Com'è andata (20/09) — quattro PR, come previsto
+
+* **#536 (9a)** — i colori del disegnatore vengono da `tokens-7c.css`, e nel
+  foglio non resta un solo esadecimale (presidio statico). Restano scuri il
+  tavolo e il buio attorno: il panno è un oggetto del gioco. Il segno della
+  selezione passa all'azzurro del design system — sul panno blu il giallo si
+  confondeva con la bilia 1 — mentre il cartellino del titolo *dentro* il
+  disegno non si tocca, perché quello è disegno e finisce nell'immagine. Sul
+  telefono il tavolo va in cima, gli strumenti diventano una striscia che
+  scorre e sotto restano le proprietà **del solo strumento acceso**. Il punto
+  di rottura è lg, non gli 820px del tool autonomo, e l'altezza fissa del
+  riquadro sta nel foglio con la sua media query: era una regola scritta a
+  mano nel `<style>` del template a tenere il tavolo sotto «Salva».
+* **#538 (9b)** — il bersaglio prende una **seconda forma** (emendamento
+  ADR-066): i cerchi chiedono *quanto vicino*, il riquadro *dentro o fuori*.
+  Niente gradazione sul rettangolo — sarebbe una misura che l'esercizio non
+  chiede — quindi `closeness` vale 1 o 0 e la percentuale cambia nome, «Nel
+  riquadro». I riquadri sul tavolo possono essere tanti, il bersaglio è uno: è
+  la presenza di `value` a farne uno, e la regola vale **contando insieme le
+  due forme**. Ruotare di 90° non ha un campo suo: è scambiare le due misure.
+  Con loro le altre tre voci della notazione (#179) — posizioni numerate come
+  scala ordinata, richiami col filo legato, marcatori — tutte disegno per il
+  server, tutte gestite nei **tre** posti che enumerano i tipi.
+* **#540 (9c)** — la variante **ribaltata** (emendamento ADR-065): destra e
+  sinistra senza ridisegnare. **Con un bersaglio si rifiuta**, ed è una
+  decisione presa qui: il punteggio discende dal disegno e il panno è uno, e
+  mostrare la figura specchiata chiedendo il punto sul panno dritto
+  registrerebbe ogni colpo dal lato sbagliato, con numeri plausibili. La
+  strada per ammetterlo è la **#539**. L'inquadratura ritaglia **l'immagine**
+  e non il tavolo su cui si lavora: tagliare anche lì vorrebbe dire non poter
+  più allargare la cornice, perché le maniglie sarebbero fuori dallo schermo.
+* **#541 (9d)** — guida IT/EN: la schermata rifatta, gli strumenti da quattro
+  a dieci, tre sezioni nuove (il bersaglio, la notazione, l'inquadratura), sei
+  schermate nuove e dieci rifatte, cinque micro-aiuti. Trovati **guardando le
+  figure**: la sezione nuova «Posizioni numerate» aveva lo stesso `id` del
+  riquadro delle «Posizioni standard» — due `id` uguali, e il ritaglio della
+  guida fotografava quello nascosto; il sottotitolo della pagina diceva
+  «builder», parola che la guida non può nemmeno scrivere; e il ritaglio degli
+  strumenti, fatto su telefono, ne inquadrava quattro sotto una didascalia che
+  li nominava tutti.
 
 ---
 

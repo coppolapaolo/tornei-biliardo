@@ -232,7 +232,9 @@ blocks:
       dice quante bilie sono entrate; il secondo quanto vicino al centro del
       bersaglio si è fermata la battente. Un numero solo scenderebbe sia per chi
       sbaglia la bilia sia per chi sbaglia la forza — cioè non direbbe che cosa
-      correggere.
+      correggere. Se il bersaglio è un **riquadro** il secondo si chiama **Nel
+      riquadro** e conta un'altra cosa: quante volte ci sei finito dentro,
+      perché una zona non misura *quanto* vicino.
 
   - type: note
     tone: tip
@@ -356,7 +358,9 @@ blocks:
         text: >-
           Ogni colpo ha il suo esito e, se la bilia entra, il punto in cui si è
           fermata la battente. Il punteggio è la somma dei colpi, e il massimo
-          non si scrive: è i colpi per il valore del centro del bersaglio.
+          non si scrive: è i colpi per il valore più alto del bersaglio — il
+          centro, se è a cerchi, o quanto vale fermarsi dentro, se è un
+          riquadro.
       - name: "Con estrazione"
         values: "vuole le liste da cui pescare"
         text: >-
@@ -426,14 +430,19 @@ blocks:
           un altro: stessa disposizione, stesse regole, stesso voto. Chi si
           allena sceglie «da che parte» prima di tirare, e i risultati restano
           separati. Una variante che ha già delle prove si può rinominare, non
-          togliere.
+          togliere. Spuntando **«è il disegno ribaltato»** la figura si mostra
+          allo specchio quando si sceglie quella variante: è il modo di fare
+          destra e sinistra senza disegnare due volte. Con un bersaglio non si
+          può — il punteggio discende dal disegno, e il panno da toccare è uno
+          solo — e l'app lo dice.
       - name: "Come si registra"
         values: "riuscito o no · a punteggio · colpo per colpo · con estrazione"
         text: >-
           I quattro modi spiegati in «Quattro modi di contare», col punteggio
           massimo facoltativo. **Colpo per colpo** compare solo se l'esercizio
           è disegnato e nel disegno c'è un bersaglio: senza, una riga lo
-          ricorda, perché sono gli anelli del bersaglio a dare i punti.
+          ricorda, perché è il bersaglio — gli anelli, o il riquadro — a dare i
+          punti.
         hint: challenge.punteggio_massimo
       - name: "Colpi di una prova"
         values: "colpo per colpo e con estrazione"
