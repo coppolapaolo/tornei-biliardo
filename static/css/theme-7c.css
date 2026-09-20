@@ -343,8 +343,12 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
    questa riga la griglia restava a una colonna e quattro card a piena
    larghezza si mangiavano lo schermo prima del contenuto. Dichiararlo qui e
    non con uno `style` inline nel template e' l'unico modo perche' la media
-   query possa poi vincere: l'inline no. */
-.c7-kpis { grid-template-columns: 1fr 1fr; }
+   query possa poi vincere: l'inline no.
+   `display: grid` mancava (2026-09-20): la regola qui sopra era inerte sotto
+   lg — senza display la `grid-template-columns` non la legge nessuno — e le
+   due colonne c'erano solo da desktop, dove il display arriva dalla media
+   query. */
+.c7-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: var(--c7-gap); }
 .c7-stack { display: flex; flex-direction: column; gap: var(--c7-gap); }
 /* Pila di sezioni di pagina. Una sezione che non produce nulla (dipende
    dallo stato della gara: turni, direttori, tavoli…) lascerebbe comunque il

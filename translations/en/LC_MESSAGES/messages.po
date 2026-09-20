@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 11:32+0200\n"
+"POT-Creation-Date: 2026-09-20 11:46+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -300,6 +300,68 @@ msgstr ""
 msgid "Servono le istruzioni per chi esegue l'esercizio"
 msgstr "The drill needs instructions for whoever plays it"
 
+#: models/challenge/dispersion.py:89
+msgid "lungo"
+msgstr "long"
+
+#: models/challenge/dispersion.py:89
+msgid "corto"
+msgstr "short"
+
+#: models/challenge/dispersion.py:90
+msgid "a destra"
+msgstr "to the right"
+
+#: models/challenge/dispersion.py:90
+msgid "a sinistra"
+msgstr "to the left"
+
+#: models/challenge/dispersion.py:96
+msgid "Sparse attorno al centro"
+msgstr "Spread around the centre"
+
+#: models/challenge/dispersion.py:98
+msgid ""
+"Nessuna direzione ricorrente: gli arrivi si distribuiscono attorno al "
+"bersaglio."
+msgstr "No recurring direction: the arrivals spread around the target."
+
+#: models/challenge/dispersion.py:111
+#, python-format
+msgid "Arrivi %(lungo)s, e %(lato)s"
+msgstr "You arrive %(lungo)s, and %(lato)s"
+
+#: models/challenge/dispersion.py:112
+msgid "è forza e mira insieme."
+msgstr "that is force and aim together."
+
+#: models/challenge/dispersion.py:114
+#, python-format
+msgid "Arrivi %(lungo)s"
+msgstr "You arrive %(lungo)s"
+
+#: models/challenge/dispersion.py:115
+msgid "è forza, non mira."
+msgstr "that is force, not aim."
+
+#: models/challenge/dispersion.py:117
+#, python-format
+msgid "Arrivi %(lato)s"
+msgstr "You arrive %(lato)s"
+
+#: models/challenge/dispersion.py:118
+msgid "è mira, non forza."
+msgstr "that is aim, not force."
+
+#: models/challenge/dispersion.py:121
+#, python-format
+msgid ""
+"%(quanti)s battenti su %(totale)s si sono fermate dalla stessa parte "
+"rispetto al centro: %(coda)s"
+msgstr ""
+"%(quanti)s cue balls out of %(totale)s stopped on the same side of the "
+"centre: %(coda)s"
+
 #: models/challenge/execution_view.py:64
 msgid "prima prova"
 msgstr "first attempt"
@@ -540,7 +602,15 @@ msgstr[1] "At this pace you finish at %(proj)s: %(num)s points below your usual.
 msgid "A questo ritmo chiudi a %(proj)s: il tuo solito."
 msgstr "At this pace you finish at %(proj)s: your usual."
 
-#: models/challenge/services.py:749
+#: models/challenge/services.py:440
+msgid "Prova non trovata"
+msgstr "Attempt not found"
+
+#: models/challenge/services.py:442
+msgid "Questa prova non è tua"
+msgstr "This attempt is not yours"
+
+#: models/challenge/services.py:769
 msgid ""
 "Il direttore non ha ancora scelto l'esercizio da giocare al posto della X"
 " in questa gara."
@@ -548,7 +618,7 @@ msgstr ""
 "The director has not yet chosen the drill to play in place of the X in "
 "this competition."
 
-#: models/challenge/services.py:795 models/challenge/services.py:929
+#: models/challenge/services.py:815 models/challenge/services.py:949
 #, python-format
 msgid ""
 "Il punteggio della prova deve essere compreso fra 0 e %(massimo)s, la "
@@ -557,15 +627,15 @@ msgstr ""
 "The challenge score must be between 0 and %(massimo)s, the widest rack "
 "difference achievable in this round."
 
-#: models/challenge/services.py:920
+#: models/challenge/services.py:940
 msgid "Serve un punteggio: la prova non ne ha ancora uno registrato."
 msgstr "A score is needed: none has been recorded for this drill yet."
 
-#: models/challenge/services.py:1199
+#: models/challenge/services.py:1219
 msgid "Questo esercizio si registra colpo per colpo, non col totale."
 msgstr "This exercise is recorded shot by shot, not with the total."
 
-#: models/challenge/services.py:1217 models/challenge/shot_service.py:162
+#: models/challenge/services.py:1237 models/challenge/shot_service.py:162
 msgid "Questa variante non è di questo esercizio"
 msgstr "This variant does not belong to this drill"
 
@@ -606,6 +676,20 @@ msgstr "There is no shot to undo."
 msgid "La prova si chiude dopo l'ultimo colpo: ne mancano ancora."
 msgstr "The attempt closes after the last shot: there are still some to go."
 
+#: models/challenge/summary_view.py:98
+#, python-format
+msgid "%(num)s colpo"
+msgid_plural "%(num)s colpi"
+msgstr[0] "%(num)s shot"
+msgstr[1] "%(num)s shots"
+
+#: models/challenge/summary_view.py:107
+#, python-format
+msgid "%(num)s minuto"
+msgid_plural "%(num)s minuti"
+msgstr[0] "%(num)s minute"
+msgstr[1] "%(num)s minutes"
+
 #: models/challenge/vocabulary.py:100
 msgid "Fondamentali"
 msgstr "Fundamentals"
@@ -620,7 +704,7 @@ msgid "Battente"
 msgstr "Cue ball"
 
 #: models/challenge/vocabulary.py:103 templates/admin/venue_form.html:195
-#: templates/challenge/_run_shots.html:69
+#: templates/challenge/_run_shots.html:69 templates/challenge/summary.html:66
 #: templates/components/_playoff_invitations.html:29
 #: templates/individual_match/statistics.html:80
 #: templates/individual_match/tpa_referto.html:179
@@ -3216,48 +3300,48 @@ msgstr "Passwords do not match."
 msgid "Password aggiornata con successo! Ora puoi effettuare il login."
 msgstr "Password updated successfully! You can now log in."
 
-#: routes/challenge.py:84 routes/challenge.py:118
+#: routes/challenge.py:85 routes/challenge.py:119
 #: templates/direttore/preparazione/_esercizi.html:117
 msgid "Non è stato possibile caricare gli esercizi."
 msgstr "The drills could not be loaded."
 
-#: routes/challenge.py:200
+#: routes/challenge.py:201
 msgid "La foto non è un'immagine che si possa leggere"
 msgstr "The photo is not a readable image"
 
-#: routes/challenge.py:232
+#: routes/challenge.py:233
 msgid "Ho creato una copia con le tue modifiche: l'originale è rimasto com'era."
 msgstr "I created a copy with your changes: the original is untouched."
 
-#: routes/challenge.py:236
+#: routes/challenge.py:237
 msgid "Esercizio aggiornato."
 msgstr "Drill updated."
 
-#: routes/challenge.py:251
+#: routes/challenge.py:252
 msgid "Serve la foto della disposizione"
 msgstr "A photo of the layout is required"
 
-#: routes/challenge.py:259
+#: routes/challenge.py:260
 msgid "Copia creata."
 msgstr "Copy created."
 
-#: routes/challenge.py:259 routes/challenge.py:630
+#: routes/challenge.py:260 routes/challenge.py:631
 msgid "Esercizio creato."
 msgstr "Drill created."
 
-#: routes/challenge.py:410 routes/challenge.py:698
+#: routes/challenge.py:411 routes/challenge.py:699
 msgid "Questo esercizio non è più disponibile."
 msgstr "This drill is no longer available."
 
-#: routes/challenge.py:415
+#: routes/challenge.py:416
 msgid "Gli amministratori non possono provare gli esercizi."
 msgstr "Administrators cannot attempt drills."
 
-#: routes/challenge.py:444
+#: routes/challenge.py:445
 msgid "Tentativo iniziato."
 msgstr "Attempt started."
 
-#: routes/challenge.py:558
+#: routes/challenge.py:559
 msgid ""
 "Questo esercizio si registra colpo per colpo: il bersaglio serve. Per "
 "toglierlo, cambia prima «Come si registra»."
@@ -3265,7 +3349,7 @@ msgstr ""
 "This exercise is recorded shot by shot: the target is needed. To remove "
 "it, change «How it is recorded» first."
 
-#: routes/challenge.py:594
+#: routes/challenge.py:595
 msgid ""
 "Questo esercizio ha già delle prove: istruzioni e punteggio si cambiano "
 "da «Modifica l'esercizio», qui salva solo il disegno."
@@ -3273,60 +3357,64 @@ msgstr ""
 "This drill already has attempts: change instructions and scoring from "
 "“Edit drill”; here, save the diagram only."
 
-#: routes/challenge.py:655
+#: routes/challenge.py:656
 msgid "Questo esercizio nasce da una foto: non c'è un disegno da modificare."
 msgstr "This drill comes from a photo: there is no drawing to edit."
 
-#: routes/challenge.py:674
+#: routes/challenge.py:675
 msgid "Disegno aggiornato."
 msgstr "Drawing updated."
 
-#: routes/challenge.py:702
+#: routes/challenge.py:703
 msgid "Gli amministratori non provano gli esercizi."
 msgstr "Administrators do not attempt drills."
 
-#: routes/challenge.py:758 routes/challenge.py:1048
+#: routes/challenge.py:759 routes/challenge.py:1055
 msgid "Prova registrata."
 msgstr "Attempt recorded."
 
-#: routes/challenge.py:789
+#: routes/challenge.py:790
 msgid "Non c'è nessuna prova da annullare."
 msgstr "There is no attempt to undo."
 
-#: routes/challenge.py:811 routes/challenge.py:1023
+#: routes/challenge.py:812 routes/challenge.py:1024
 msgid "Prova annullata."
 msgstr "Attempt undone."
 
-#: routes/challenge.py:898
+#: routes/challenge.py:899
 msgid "Il punto sul panno non è leggibile."
 msgstr "The point on the cloth cannot be read."
 
-#: routes/challenge.py:1248
+#: routes/challenge.py:1112
+msgid "Note salvate."
+msgstr "Notes saved."
+
+#: routes/challenge.py:1312
 msgid "Tentativo registrato."
 msgstr "Attempt recorded."
 
-#: routes/challenge.py:1289 templates/challenge/catalog.html:138
+#: routes/challenge.py:1353 templates/challenge/catalog.html:138
 #: templates/challenge/today.html:92
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr "The favourites could not be updated."
 
-#: routes/challenge.py:1326
+#: routes/challenge.py:1390
 msgid "Voto registrato."
 msgstr "Rating saved."
 
-#: routes/challenge.py:1389
+#: routes/challenge.py:1453
 msgid "Esercizio di gara avviato."
 msgstr "Tournament drill started."
 
-#: routes/challenge.py:1442
+#: routes/challenge.py:1506
 msgid "Esercizio di gara registrato."
 msgstr "Tournament drill recorded."
 
-#: routes/challenge.py:1475
+#: routes/challenge.py:1539
 msgid "Esercizio non trovato."
 msgstr "Drill not found."
 
-#: routes/challenge.py:1485
+#: routes/challenge.py:1549
 msgid "Non hai i permessi per questo esercizio."
 msgstr "You do not have permission for this drill."
 
@@ -5363,7 +5451,7 @@ msgid "Complete Gara"
 msgstr "Complete Competition"
 
 #: templates/base.html:693 templates/base.html:699
-#: templates/challenge/_run_cloth.html:78
+#: templates/challenge/_run_cloth.html:84
 msgid "Conferma"
 msgstr "Confirm"
 
@@ -9589,15 +9677,19 @@ msgstr "Remove from favourites"
 msgid "Aggiungi ai preferiti"
 msgstr "Add to favourites"
 
-#: templates/challenge/_run_cloth.html:33
+#: templates/challenge/_run_cloth.html:38
+msgid "Il tavolo: dove si è fermata la bianca"
+msgstr "The table: where the cue ball stopped"
+
+#: templates/challenge/_run_cloth.html:38
 msgid "Il tavolo: tocca dove si è fermata la bianca"
 msgstr "The table: tap where the cue ball stopped"
 
-#: templates/challenge/_run_cloth.html:75
+#: templates/challenge/_run_cloth.html:81
 msgid "Trascina la battente per correggere il punto."
 msgstr "Drag the cue ball to adjust the point."
 
-#: templates/challenge/_run_cloth.html:77
+#: templates/challenge/_run_cloth.html:83
 msgid "Tavolo intero"
 msgstr "Whole table"
 
@@ -9640,7 +9732,8 @@ msgid "Non superata"
 msgstr "Not passed"
 
 #: templates/challenge/_run_shots.html:32
-#: templates/challenge/_run_shots.html:45
+#: templates/challenge/_run_shots.html:45 templates/challenge/summary.html:79
+#: templates/challenge/summary.html:90
 msgid "I colpi di questa prova"
 msgstr "The shots of this attempt"
 
@@ -9649,7 +9742,7 @@ msgstr "The shots of this attempt"
 msgid "Colpo %(n)s"
 msgstr "Shot %(n)s"
 
-#: templates/challenge/_run_shots.html:65
+#: templates/challenge/_run_shots.html:65 templates/challenge/summary.html:60
 msgid "Imbucate"
 msgstr "Pocketed"
 
@@ -9692,7 +9785,7 @@ msgstr "Start over"
 
 #: templates/challenge/_run_shots_dock.html:48
 #: templates/challenge/_training_board.html:95
-#: templates/challenge/training.html:166
+#: templates/challenge/summary.html:120 templates/challenge/training.html:166
 msgid "Ho finito"
 msgstr "I'm done"
 
@@ -10771,6 +10864,61 @@ msgstr "Successes per hundred"
 msgid "Punteggio mediano"
 msgstr "Median score"
 
+#: templates/challenge/summary.html:12
+msgid "Fine sessione"
+msgstr "End of session"
+
+#: templates/challenge/summary.html:16 templates/challenge/training.html:33
+msgid "Torna agli esercizi"
+msgstr "Back to the drills"
+
+#: templates/challenge/summary.html:27
+msgid "Punteggio della prova"
+msgstr "Score of the attempt"
+
+#: templates/challenge/summary.html:30 templates/challenge/training.html:39
+#: templates/challenge/training.html:139 templates/exam/session.html:238
+#, python-format
+msgid "su %(n)s"
+msgstr "out of %(n)s"
+
+#: templates/challenge/summary.html:34
+#, python-format
+msgid "Il tuo record: il precedente era %(n)s."
+msgstr "Your best: the previous one was %(n)s."
+
+#: templates/challenge/summary.html:35
+msgid "La tua prima prova su questo esercizio."
+msgstr "Your first attempt at this exercise."
+
+#: templates/challenge/summary.html:36
+#, python-format
+msgid "Il tuo record resta %(n)s."
+msgstr "Your best is still %(n)s."
+
+#: templates/challenge/summary.html:72
+msgid "di fila imbucate"
+msgstr "pocketed in a row"
+
+#: templates/challenge/summary.html:105
+msgid "Note della sessione"
+msgstr "Notes of the session"
+
+#: templates/challenge/summary.html:107
+msgid "Tavolo 4, panno lento. Stecca nuova."
+msgstr "Table 4, slow cloth. New cue."
+
+#: templates/challenge/summary.html:109
+msgid "Salva le note"
+msgstr "Save the notes"
+
+#: templates/challenge/summary.html:117
+#, python-format
+msgid "Altro %(num)s colpo"
+msgid_plural "Altri %(num)s colpi"
+msgstr[0] "Another %(num)s shot"
+msgstr[1] "Another %(num)s shots"
+
 #: templates/challenge/today.html:38
 msgid "Riprendi da qui"
 msgstr "Pick up from here"
@@ -10820,20 +10968,10 @@ msgstr[1] "%(num)s drills, to filter by skill, stroke, level and rating"
 msgid "Allenamento"
 msgstr "Training"
 
-#: templates/challenge/training.html:33
-msgid "Torna agli esercizi"
-msgstr "Back to the drills"
-
 #: templates/challenge/training.html:38
 #, python-format
 msgid "%(n)s colpi"
 msgstr "%(n)s shots"
-
-#: templates/challenge/training.html:39 templates/challenge/training.html:139
-#: templates/exam/session.html:238
-#, python-format
-msgid "su %(n)s"
-msgstr "out of %(n)s"
 
 #: templates/challenge/training.html:60
 msgid "Registro…"

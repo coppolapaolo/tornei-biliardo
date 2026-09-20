@@ -498,6 +498,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # L'estrazione e l'esito della modalità con estrazione (#452).
     "challenge.training_draw": {"player", "director"},
     "challenge.training_outcome": {"player", "director"},
+    # La fine della sessione: il riepilogo della prova e le sue note.
+    "challenge.training_summary": {"player", "director"},
+    "challenge.training_notes": {"player", "director"},
     # start_attempt/attempt_detail/complete_attempt sono il percorso della
     # gara (il drill al posto del bye), che il giocatore attraversa da solo.
     "challenge.start_attempt": {"player", "director"},

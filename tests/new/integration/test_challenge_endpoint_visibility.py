@@ -50,6 +50,8 @@ TRAINING_ENDPOINTS = (
     "challenge.training_shot_restart",
     "challenge.training_draw",
     "challenge.training_outcome",
+    "challenge.training_summary",
+    "challenge.training_notes",
     "challenge.start_attempt",
     "challenge.attempt_detail",
     "challenge.complete_attempt",

@@ -145,9 +145,9 @@ class TestChiudereEAnnullare:
         assert payload["success"] is True
         prova = ChallengeAttempt.query.one()
         assert (prova.completed, prova.score) == (True, 6)
-        # Chiusa la prova si torna alle «prove di oggi», col panno pronto.
-        assert "Le prove di oggi" in payload["progress_html"]
-        assert "data-cloth-full" in payload["progress_html"]
+        # Chiusa la prova si va al riepilogo: la nuvola dei punti d'arrivo e
+        # che cosa dice sono la fine della sessione (fase 5d).
+        assert payload["redirect_url"].endswith(f"/train/summary/{prova.id}")
 
     def test_a_meta_non_si_chiude(self, client, giocatore, esercizio):
         _colpo(client, esercizio, made=False)

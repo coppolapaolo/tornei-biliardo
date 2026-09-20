@@ -425,6 +425,26 @@ class ChallengeService:
 
     @staticmethod
     @transactional(domain="challenge")
+    def set_attempt_notes(
+        attempt_id: int, user_id: int, notes: str
+    ) -> ChallengeAttempt:
+        """Le note di una prova, scritte da chi l'ha giocata.
+
+        Il testo vuoto **toglie** la nota: è quello che deve succedere a chi
+        svuota la casella e risalva.
+        """
+        from ..exceptions import PermissionDeniedError
+
+        attempt = db.session.get(ChallengeAttempt, attempt_id)
+        if attempt is None:
+            raise NotFoundError(_("Prova non trovata"))
+        if attempt.user_id != user_id:
+            raise PermissionDeniedError(_("Questa prova non è tua"))
+        attempt.notes = (notes or "").strip() or None
+        return attempt
+
+    @staticmethod
+    @transactional(domain="challenge")
     def delete_attempt(
         attempt_id: int, actor_id: int, actor_is_admin: bool = False
     ) -> int:

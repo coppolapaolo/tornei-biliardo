@@ -35,6 +35,7 @@ from utils.permissions import feature_required
 from utils.route_helpers import (
     ajax_error,
     handle_ajax_service_action,
+    handle_service_action,
     safe_json_error,
 )
 from utils.image_paths import ImagePathManager
@@ -1036,16 +1037,79 @@ def training_shot_close(challenge_id):
     """
     from models.challenge.shot_service import ShotRunService
 
-    challenge = db.get_or_404(Challenge, challenge_id)
+    # L'esercizio si carica per dare 404 su un id che non esiste, prima di
+    # parlare di prove aperte.
+    db.get_or_404(Challenge, challenge_id)
 
     def _chiudi():
-        ShotRunService.close(current_user.id, challenge_id)
-        return _shots_payload(challenge)
+        chiusa = ShotRunService.close(current_user.id, challenge_id)
+        # Chiudere porta al riepilogo: la nuvola dei punti d'arrivo e che cosa
+        # dice sono la fine della sessione, non una riga in più nell'elenco.
+        return {
+            "redirect_url": url_for("challenge.training_summary", attempt_id=chiusa.id)
+        }
 
     return handle_ajax_service_action(
         action=_chiudi,
         redirect_url=url_for("challenge.training_session", challenge_id=challenge_id),
         success_message=_("Prova registrata."),
+        error_prefix=None,
+    )
+
+
+@challenge_bp.route("/train/summary/<int:attempt_id>")
+@login_required
+def training_summary(attempt_id):
+    """La fine della sessione: la nuvola, che cosa dice, i numeri (fase 5d).
+
+    Una prova sola, e solo la propria: il riepilogo racconta come si sbaglia,
+    che è la cosa più personale che questa app scriva.
+    """
+    from models.challenge.summary_view import build_summary
+
+    attempt = db.get_or_404(ChallengeAttempt, attempt_id)
+    if attempt.user_id != current_user.id:
+        abort(404)
+    if not attempt.completed or not attempt.shots:
+        # Una prova aperta non ha una fine da raccontare, e una senza colpi non
+        # è passata di qui: si torna dove la si sta giocando.
+        return redirect(
+            url_for("challenge.training_session", challenge_id=attempt.challenge_id)
+        )
+
+    return render_template(
+        "challenge/summary.html",
+        challenge=attempt.challenge,
+        summary=build_summary(attempt),
+    )
+
+
+@challenge_bp.route("/train/summary/<int:attempt_id>/notes", methods=["POST"])
+@login_required
+def training_notes(attempt_id):
+    """Le note della sessione: «tavolo 4, panno lento».
+
+    Spiegano un punteggio meglio di qualunque statistica, ma solo se si
+    scrivono adesso. Stanno sulla prova, dov'erano già previste.
+    """
+    attempt = db.get_or_404(ChallengeAttempt, attempt_id)
+    # Il permesso lo verifica anche il servizio: qui si guadagna solo il 404
+    # invece di un messaggio d'errore su una prova che non è di chi scrive.
+    if attempt.user_id != current_user.id:
+        abort(404)
+
+    def _salva():
+        ChallengeService.set_attempt_notes(
+            attempt_id=attempt_id,
+            user_id=current_user.id,
+            notes=request.form.get("notes", ""),
+        )
+        return {}
+
+    return handle_service_action(
+        action=_salva,
+        redirect_url=url_for("challenge.training_summary", attempt_id=attempt_id),
+        success_message=_("Note salvate."),
         error_prefix=None,
     )
 

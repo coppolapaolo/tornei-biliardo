@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{# La fine della sessione (canvas «TPA ed esercizi», «5 · Fine sessione»).
+
+   Una prova sola, raccontata: la nuvola dei punti d'arrivo, che cosa dice, i
+   tre numeri, e le note. Ha un indirizzo suo perché è una cosa che si riapre —
+   e perché domani lo storico manderà qui.
+
+   La nuvola non si legge da sola: accanto ci vogliono le Imbucate, o
+   mostrerebbe i soli colpi riusciti spacciandoli per tutti. #}
+
+{% block title %}{{ challenge.get_display_name() }} - {{ _("Fine sessione") }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('challenge.today') }}"
+   aria-label="{{ _('Torna agli esercizi') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ challenge.get_display_name() }}{% endblock %}
+{% block page_sub %}{{ summary.subtitle }}{% endblock %}
+
+{% block content %}
+<div style="max-width:720px">
+  <div class="c7-stack">
+
+    {# ---------- Il punteggio ---------- #}
+    <section class="c7-card c7-card--accent">
+      <div class="c7-kicker">{{ _("Punteggio della prova") }}</div>
+      <div class="c7-exam__total">
+        <span class="c7-exam__total-v">{{ summary.score }}</span>
+        {% if summary.max_score %}<span class="c7-exam__total-max">{{ _("su %(n)s", n=summary.max_score) }}</span>{% endif %}
+      </div>
+      <p class="c7-exam__fine" style="color:var(--c7-accent-dim)">
+        {%- if summary.is_best and summary.previous_best is not none %}
+        {{ _("Il tuo record: il precedente era %(n)s.", n=summary.previous_best) }}
+        {%- elif summary.is_best %}{{ _("La tua prima prova su questo esercizio.") }}
+        {%- else %}{{ _("Il tuo record resta %(n)s.", n=summary.previous_best) }}{% endif -%}
+      </p>
+    </section>
+
+    {# ---------- La dispersione, e che cosa dice ---------- #}
+    {% if summary.dispersion %}
+    {% with target = summary.target, shots = summary.shots, readonly = true %}
+    {% include "challenge/_run_cloth.html" %}
+    {% endwith %}
+
+    <div class="c7-flash c7-flash--info">
+      <span class="c7-flash__ico"><i class="fas fa-lightbulb"></i></span>
+      <div>
+        <div class="c7-flash__title">{{ summary.dispersion.headline }}</div>
+        {{ summary.dispersion.detail }}
+      </div>
+    </div>
+    {% endif %}
+
+    {# ---------- I numeri ---------- #}
+    <div class="c7-kpis">
+      {% if summary.pocketing is not none %}
+      <div class="c7-card">
+        <div class="c7-num-lg">{{ summary.pocketing }}%</div>
+        <div class="c7-rows__sub">{{ _("Imbucate") }}</div>
+      </div>
+      {% endif %}
+      {% if summary.position is not none %}
+      <div class="c7-card">
+        <div class="c7-num-lg">{{ summary.position }}%</div>
+        <div class="c7-rows__sub">{{ _("Posizione") }}</div>
+      </div>
+      {% endif %}
+      {% if summary.streak %}
+      <div class="c7-card">
+        <div class="c7-num-lg">{{ summary.streak }}</div>
+        <div class="c7-rows__sub">{{ _("di fila imbucate") }}</div>
+      </div>
+      {% endif %}
+    </div>
+
+    {# ---------- I colpi, uno per uno ---------- #}
+    {% if summary.with_draw %}
+    <section class="c7-rows" aria-label="{{ _('I colpi di questa prova') }}">
+      {% for colpo in summary.shots %}
+      <div class="c7-rows__row c7-runprog__row">
+        <span class="c7-tile c7-tile--sm"><span class="c7-num">{{ colpo.position }}</span></span>
+        <span class="c7-rows__title c7-runprog__name">{{ colpo.prompt }}</span>
+        <span class="c7-rows__sub" style="margin:0">{{ colpo.outcome_label }}</span>
+        <span class="c7-runprog__score">{{ colpo.points }}</span>
+      </div>
+      {% endfor %}
+    </section>
+    {% else %}
+    <div class="c7-shots" aria-label="{{ _('I colpi di questa prova') }}">
+      {% for colpo in summary.shots %}
+      <span class="c7-shots__one{{ ' is-miss' if not colpo.made }}">
+        {%- if colpo.made %}{{ colpo.points }}{% else %}&minus;{% endif -%}
+      </span>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ---------- Le note ----------
+       Restano sulla prova: «tavolo 4, panno lento» spiega un punteggio basso
+       meglio di qualunque statistica, ma solo se lo si scrive adesso. #}
+    <form method="POST" action="{{ url_for('challenge.training_notes', attempt_id=summary.attempt.id) }}"
+          class="c7-card">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label class="form-label" for="notes">{{ _("Note della sessione") }}</label>
+      <textarea class="form-control" id="notes" name="notes" rows="3"
+                placeholder="{{ _('Tavolo 4, panno lento. Stecca nuova.') }}">{{ summary.attempt.notes or '' }}</textarea>
+      <button type="submit" class="btn btn-secondary w-100" style="margin-top:12px">
+        {{ _("Salva le note") }}
+      </button>
+    </form>
+  </div>
+
+  <div class="c7-actionbar">
+    <a href="{{ url_for('challenge.training_session', challenge_id=challenge.id) }}"
+       class="btn btn-secondary w-100">
+      {{ ngettext("Altro %(num)s colpo", "Altri %(num)s colpi", summary.shots_count) }}
+    </a>
+    <a href="{{ url_for('challenge.today') }}"
+       class="btn btn-success c7-btn-narrow">{{ _("Ho finito") }}</a>
+  </div>
+</div>
+{% endblock %}
