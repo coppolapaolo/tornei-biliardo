@@ -84,11 +84,29 @@ def today():
             seduta_aperta=_seduta_da_riprendere(current_user.id),
             # E sotto, se uno si è dato un traguardo, il motivo per cui è qui.
             obiettivi=_obiettivi_aperti(current_user.id),
+            # «Per oggi»: la porta smette di essere un elenco e diventa una
+            # proposta (#175). Ogni consiglio porta con sé il perché.
+            consigli=_consigli_per_oggi(current_user.id),
         )
     except Exception:
         current_app.logger.exception("«Oggi» degli esercizi non caricata")
         flash(_("Non è stato possibile caricare gli esercizi."), "danger")
         return redirect(url_for("dashboard.dashboard"))
+
+
+def _consigli_per_oggi(user_id):
+    """I consigli, o niente se nessuna regola ha presa.
+
+    Best-effort: un consiglio è un di più, e un errore nel calcolarlo non deve
+    portarsi via la porta d'ingresso degli esercizi.
+    """
+    from models.challenge.consigli import build_advice
+
+    try:
+        return build_advice(user_id)
+    except Exception:  # pragma: no cover - i consigli non bloccano «Oggi»
+        current_app.logger.warning("Consigli per oggi non calcolati", exc_info=True)
+        return []
 
 
 def _seduta_da_riprendere(user_id):
@@ -594,6 +612,7 @@ def challenge_detail(challenge_id):
     user_best = challenge.get_user_best_attempt(current_user.id)
 
     from models.challenge.catalog_view import build_card, variant_lines
+    from models.challenge.difficulty import measure, peers
     from models.challenge.rating_service import ChallengeRatingService
 
     return render_template(
@@ -604,6 +623,11 @@ def challenge_detail(challenge_id):
         card=build_card(challenge, current_user.id),
         variant_lines=variant_lines(challenge, current_user.id),
         my_rating=ChallengeRatingService.get(current_user.id, challenge_id),
+        # La difficoltà misurata **accanto** a quella dichiarata, non al suo
+        # posto: sono due informazioni diverse, e la seconda serve a far
+        # correggere la prima (#174).
+        difficolta=measure(challenge),
+        pari_forza=peers(challenge, current_user.id),
     )
 
 

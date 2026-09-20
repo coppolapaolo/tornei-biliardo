@@ -100,6 +100,58 @@
     </section>
     {% endif %}
 
+    {# ---------- Quelli come te ---------- #}
+    {# Il livello dichiarato è un'opinione, e per giunta di chi l'esercizio lo
+       sa già fare. Qui accanto ci va quella misurata — non al suo posto: sono
+       due informazioni diverse, e la seconda serve a far correggere la prima
+       (#174, canvas artboard `SchedaEsercizio`).
+
+       Sotto le soglie la card non compare affatto. Mostrare «misurato —» o una
+       percentuale su due giocatori sarebbe peggio che tacere, perché una stima
+       falsa la si crede. #}
+    {% if pari_forza or difficolta.has_estimate %}
+    <section class="c7-card">
+      <div class="c7-kicker">{{ _("Quelli come te") }}</div>
+
+      {% if pari_forza %}
+      <div class="d-flex align-items-center gap-3" style="margin-top:6px">
+        <div class="flex-fill" style="min-width:0">
+          <div class="c7-rows__title">{{ pari_forza.label }}</div>
+          <div class="c7-rows__sub">
+            {{ ngettext("media su %(num)s giocatore", "media su %(num)s giocatori", pari_forza.players) }}
+          </div>
+        </div>
+        <span class="c7-num-lg">{{ pari_forza.quota }}%</span>
+      </div>
+      {% endif %}
+
+      {% if difficolta.has_estimate %}
+      {% if pari_forza %}<div class="c7-divider"></div>{% endif %}
+      <div class="d-flex align-items-center gap-3">
+        <div class="flex-fill" style="min-width:0">
+          <div class="c7-rows__title">
+            {%- if challenge.declared_level -%}
+            {{ _("Livello %(n)s dichiarato", n=challenge.declared_level) }}
+            {%- else -%}
+            {{ _("Livello non dichiarato") }}
+            {%- endif -%}
+          </div>
+          <div class="c7-rows__sub">
+            {%- if difficolta.sentence -%}
+            {{ difficolta.sentence }}
+            {%- else -%}
+            {{ ngettext("dai risultati di %(num)s giocatore", "dai risultati di %(num)s giocatori", difficolta.players) }}
+            {%- endif -%}
+          </div>
+        </div>
+        <span class="c7-state c7-state--{{ 'warn' if difficolta.harder else 'ok' }}">
+          {{ _("misurato %(n)s", n=difficolta.level) }}
+        </span>
+      </div>
+      {% endif %}
+    </section>
+    {% endif %}
+
     {# ---------- I tuoi tentativi ---------- #}
     {% if user_attempts %}
     <section class="c7-stack">

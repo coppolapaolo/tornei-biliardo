@@ -91,6 +91,34 @@
   </section>
   {% endif %}
 
+  {# ── Per oggi ──────────────────────────────────────────────────────── #}
+  {# La porta smette di essere un elenco e diventa una proposta (#175).
+     Ogni consiglio porta con sé il **perché**: un consiglio che non si capisce
+     non si segue, e senza il motivo non si può nemmeno contestare.
+
+     Sta sotto «riprendi» perché chi ha lasciato qualcosa a metà vuole quello;
+     sopra i preferiti perché i preferiti sono i tre che si sanno già fare, ed
+     è il difetto che questa sezione esiste per correggere. #}
+  {% if consigli %}
+  <div class="c7-sechead">
+    <h2>{{ _("Per oggi") }}</h2>
+  </div>
+  {% for consiglio in consigli %}
+  {% set c = consiglio.challenge %}
+  <section class="c7-card">
+    <div class="c7-kicker">{{ consiglio.kicker }}</div>
+    <div class="d-flex align-items-center gap-3" style="margin-top:6px">
+      <div class="flex-fill" style="min-width:0">
+        <div class="c7-rows__title">{{ c.get_display_name() }}</div>
+        <div class="c7-rows__sub">{{ consiglio.reason }}</div>
+      </div>
+      <a href="{{ url_for('challenge.training_session', challenge_id=c.id) }}"
+         class="btn btn-primary btn-sm" style="flex-shrink:0">{{ _("Comincia") }}</a>
+    </div>
+  </section>
+  {% endfor %}
+  {% endif %}
+
   {% if today.favorites %}
   <div class="c7-sechead">
     <h2>{{ _("I tuoi preferiti") }}</h2>
