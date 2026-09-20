@@ -73,6 +73,13 @@ from .exam.request_models import (
     ExamRequestRecipient,
     ExamTimeProposal,
 )
+from .training_sheet.models import (
+    TrainingSheet,
+    TrainingSheetItem,
+    TrainingSheetReader,
+    TrainingSession,
+    TrainingEntry,
+)
 from .individual_match.models import (
     MatchProposal,
     ProposalInvitation,
@@ -219,6 +226,12 @@ __all__ = [
     "ExamRequest",
     "ExamRequestRecipient",
     "ExamTimeProposal",
+    # Scheda di allenamento (ADR-067)
+    "TrainingSheet",
+    "TrainingSheetItem",
+    "TrainingSheetReader",
+    "TrainingSession",
+    "TrainingEntry",
     # Individual Match domain models (Phase 3)
     "MatchProposal",
     "ProposalInvitation",

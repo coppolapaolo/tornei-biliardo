@@ -1144,7 +1144,27 @@ class ChallengeService:
                 # Se non esiste relazione gara-challenge, salta questo controllo
                 pass
 
-        if not has_attempts and not has_gara_usage:
+        # E dove altro vive un esercizio: in un **esame** e in una **scheda di
+        # allenamento**. Erano fuori da questo conto, e la cancellazione fisica
+        # se le porta via — le due chiavi esterne sono `ON DELETE CASCADE`.
+        # Per l'esame il danno non era la voce persa ma i **risultati**: le
+        # prove d'esame stanno in `exam_challenge_result`, non fra i tentativi
+        # qui sopra, quindi un esercizio già sostenuto da qualcuno risultava
+        # «mai utilizzato». Stessa forma del difetto dell'esercizio della X
+        # (#267): ogni posto nuovo in cui un esercizio compare va aggiunto qui.
+        from models.exam.models import ExamChallenge
+        from models.training_sheet.models import TrainingSheetItem
+
+        in_uso_altrove = (
+            db.session.query(ExamChallenge).filter_by(challenge_id=challenge_id).first()
+            is not None
+            or db.session.query(TrainingSheetItem)
+            .filter_by(challenge_id=challenge_id)
+            .first()
+            is not None
+        )
+
+        if not has_attempts and not has_gara_usage and not in_uso_altrove:
             # Hard delete: rimozione completa dal database (mai utilizzata)
             db.session.delete(challenge)
         else:
