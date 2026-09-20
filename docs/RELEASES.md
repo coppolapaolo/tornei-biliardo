@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.37.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.36.0...v1.37.0) (2026-09-20)
+
+
+### Funzioni nuove
+
+* gli esercizi si aprono su «Oggi», con dietro il catalogo che si filtra ([#494](https://github.com/coppolapaolo/tornei-biliardo/issues/494)) ([1d5ef7b](https://github.com/coppolapaolo/tornei-biliardo/commit/1d5ef7b3859ce087726ad71128534639ea06b777)), closes [#168](https://github.com/coppolapaolo/tornei-biliardo/issues/168)
+
 ## [1.36.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.35.0...v1.36.0) (2026-09-19)
 
 
