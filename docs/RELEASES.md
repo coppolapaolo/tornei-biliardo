@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.38.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.37.0...v1.38.0) (2026-09-20)
+
+
+### Funzioni nuove
+
+* un esercizio si vota da 1 a 5, con le bilie, dopo averlo provato ([#496](https://github.com/coppolapaolo/tornei-biliardo/issues/496)) ([4e9850f](https://github.com/coppolapaolo/tornei-biliardo/commit/4e9850fc4e7cac1f91ed2900c2aba91cf46aea64)), closes [#168](https://github.com/coppolapaolo/tornei-biliardo/issues/168)
+
 ## [1.37.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.36.0...v1.37.0) (2026-09-20)
 
 
