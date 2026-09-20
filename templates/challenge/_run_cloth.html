@@ -26,11 +26,16 @@
 {%- endmacro %}
 
 {% set r = target.step * target.values|length %}
+{# `readonly`: a fine prova il tavolo racconta e basta — la nuvola dei punti
+   d'arrivo — e non c'è niente da toccare. Stesso disegno, un attributo in meno,
+   così le due schermate non divergono. #}
+{% set readonly = readonly|default(false) %}
 <div class="c7-cloth" data-cloth>
   {# ── Il tavolo intero ─────────────────────────────────────────────── #}
-  <svg class="c7-cloth__svg" viewBox="-30 -30 860 460" data-cloth-full
+  <svg class="c7-cloth__svg{{ ' is-readonly' if readonly }}" viewBox="-30 -30 860 460"
+       {% if not readonly %}data-cloth-full{% endif %}
        data-vb="-30 -30 860 460"
-       role="img" aria-label="{{ _('Il tavolo: tocca dove si è fermata la bianca') }}">
+       role="img" aria-label="{{ _('Il tavolo: dove si è fermata la bianca') if readonly else _('Il tavolo: tocca dove si è fermata la bianca') }}">
     <rect class="c7-cloth__rail" x="-30" y="-30" width="860" height="460" rx="14"></rect>
     <rect class="c7-cloth__felt" x="0" y="0" width="800" height="400"></rect>
     {% for d in range(1, 8) %}
@@ -53,6 +58,7 @@
     </g>
   </svg>
 
+  {% if readonly %}</div>{% else %}
   {# ── L'ingrandimento: si apre al tocco, si trascina per correggere ── #}
   <div class="c7-cloth__zoom" data-cloth-zoom hidden>
     <svg class="c7-cloth__svg" data-cloth-zoomsvg
@@ -79,3 +85,4 @@
     </div>
   </div>
 </div>
+{% endif %}

@@ -316,8 +316,9 @@ class ShotRunService:
         # «prove di oggi», e una ripresa il giorno dopo non la lascia a ieri.
         run.attempt.attempted_at = utc_now()
         run.attempt.pending_prompt = None
+        chiusa = run.attempt.id
         return ChallengeService.complete_challenge_attempt(
-            attempt_id=run.attempt.id, score=run.total, notes=notes
+            attempt_id=chiusa, score=run.total, notes=notes
         )
 
 

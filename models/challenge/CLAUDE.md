@@ -346,6 +346,23 @@ posto del bersaglio.
   — a due persone uscirebbero consegne diverse. Col seme fissato si potrà
   (#506).
 
+### La fine della sessione (fase 5d)
+
+Chiudere una prova a colpi porta a **`challenge.training_summary`**, una pagina
+sua: la **nuvola** dei punti d'arrivo sul tavolo (di sola lettura: `_run_cloth`
+con `readonly`), la sua **lettura**, i numeri, e le note.
+
+* `models/challenge/dispersion.py` traduce la nuvola in una frase, e le due
+  direzioni vogliono dire due cose diverse: **lungo/corto è forza**,
+  **destra/sinistra è mira**. Sotto un quarto del raggio non si dice niente —
+  dare una direzione a una nuvola dispersa è dare una correzione a chi non ne
+  ha bisogno.
+* `models/challenge/summary_view.py` mette insieme il resto. Il **record** con
+  cui ci si confronta è quello di *prima* della prova: includerla direbbe
+  «record» a ogni prova migliore di niente.
+* Le note stanno su `ChallengeAttempt.notes` e le scrive
+  `ChallengeService.set_attempt_notes`, che verifica **lui** di chi è la prova.
+
 **Come si esegue.** La cornice è la stessa
 (`challenge/training.html`), cambia il terzo posto: al posto del tastierino c'è
 il **panno** (`_run_cloth.html`). Il tocco non registra — apre l'ingrandimento
