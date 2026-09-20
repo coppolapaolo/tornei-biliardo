@@ -18,11 +18,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional
+from typing import Dict, List, Optional, Set
 
 from flask_babel import gettext as _
 
 from .models import User
+from .role_copy import RoleCopy, copy_for
 from .role_enum import GrantableRole, UserRole
 from .role_grant_service import GRANT_POLICY, RoleGrantService
 
@@ -41,6 +42,12 @@ class RigaRuolo:
     dal: Optional[datetime] = None
     #: Valorizzato solo quando il ruolo si può chiedere adesso.
     ruolo_da_chiedere: Optional[GrantableRole] = None
+    #: Chi ha concesso il ruolo, quando lo si ha. `None` per il ruolo primario
+    #: e per un concedente anonimizzato.
+    concesso_da: Optional[str] = None
+    #: Valorizzato solo sui ruoli che l'utente **ha**: è la chiave con cui la
+    #: pagina offre la catena delle nomine, che vedono i titolari.
+    ruolo_posseduto: Optional[GrantableRole] = None
     #: True quando manca solo la progressione: la pagina lo dice invece di
     #: tacere, altrimenti la riga sembrerebbe un vicolo cieco.
     in_arrivo: bool = False
@@ -92,7 +99,21 @@ def _riga_concedibile(user: User, ruolo: GrantableRole) -> Optional[RigaRuolo]:
     }
 
     if grant is not None:
-        return RigaRuolo(**comune, stato=_("attivo"), tono="ok", dal=grant.granted_at)
+        # Chi ti ha nominato si dice, e si dice **a te**: un ruolo che si
+        # propaga a catena senza che il titolare sappia da dove arriva il
+        # proprio è una delega al buio (emendamento ADR-041 del 20/09).
+        return RigaRuolo(
+            **comune,
+            stato=_("attivo"),
+            tono="ok",
+            dal=grant.granted_at,
+            concesso_da=(
+                grant.granted_by.username
+                if grant.granted_by and not grant.granted_by.is_deleted
+                else None
+            ),
+            ruolo_posseduto=ruolo,
+        )
 
     richiesta = RoleGrantService.get_pending_request(user.id, ruolo)
     if richiesta is not None:
@@ -125,3 +146,50 @@ def build_roles_view(user: User) -> List[RigaRuolo]:
         if riga is not None:
             righe.append(riga)
     return righe
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# Le azioni dell'amministrazione
+# ────────────────────────────────────────────────────────────────────────────
+@dataclass(frozen=True)
+class AzioneRuolo:
+    """Un ruolo concedibile come lo vede chi lo assegna."""
+
+    valore: str
+    nome: str
+    copy: RoleCopy
+    #: Se l'utente in questione il ruolo ce l'ha già: decide quale dei due
+    #: comandi si mostra.
+    posseduto: bool
+
+
+def azioni_ruoli(
+    user: User, titolari: Optional[Dict[str, Set[int]]] = None
+) -> List[AzioneRuolo]:
+    """I ruoli concedibili con lo stato di ``user``, uno per riga.
+
+    Si ciclano da ``GRANT_POLICY`` e non si scrivono a mano: un ruolo nuovo
+    compare dove lo si assegna il giorno stesso in cui entra nel meccanismo.
+    Era questo a mancare, e senza il primo titolare la catena non parte.
+
+    ``titolari`` è la mappa ruolo → id dei titolari, per gli elenchi: senza,
+    ogni riga costerebbe una query per ruolo (`RoleGrantService.holder_ids`).
+    """
+    return [
+        AzioneRuolo(
+            valore=ruolo.value,
+            nome=str(RoleGrantService.role_label(ruolo)),
+            copy=copy_for(ruolo),
+            posseduto=(
+                user.id in titolari.get(ruolo.value, set())
+                if titolari is not None
+                else RoleGrantService.has_role(user.id, ruolo)
+            ),
+        )
+        for ruolo in GRANT_POLICY
+    ]
+
+
+def titolari_per_ruolo() -> Dict[str, Set[int]]:
+    """Gli id dei titolari, un ruolo per query. Per gli elenchi lunghi."""
+    return {ruolo.value: RoleGrantService.holder_ids(ruolo) for ruolo in GRANT_POLICY}

@@ -179,7 +179,7 @@ def roles():
     istruttore, con lo stesso percorso di «Diventa esaminatore» (ADR-069).
     """
     from models.user.role_enum import GrantableRole
-    from models.user.role_grant_service import RoleGrantService
+    from models.user.role_grant_service import GRANT_POLICY, RoleGrantService
     from models.user.roles_view import build_roles_view
 
     user = db.session.get(User, current_user.id)
@@ -201,6 +201,12 @@ def roles():
         user=user,
         righe=build_roles_view(user),
         mostra_scuola=mostra_scuola,
+        # Chi può concedere un ruolo ha una coda di richieste da valutare, ed è
+        # qui che la trova: prima stava solo nel catalogo esercizi, dichiarata
+        # per il solo esaminatore (ADR-041, em. del 20/09).
+        puo_valutare=any(
+            RoleGrantService.can_grant(user, ruolo) for ruolo in GRANT_POLICY
+        ),
     )
 
 

@@ -1,5 +1,6 @@
 <!-- templates/admin/users_list.html - Lista utenti per admin -->
 {% extends "base.html" %}
+{% import "components/_role_grant_actions.html" as ruoli %}
 
 {% block title %}{{ _("Gestione Utenti - Admin") }}{% endblock %}
 
@@ -94,6 +95,16 @@
                     <i class="fas fa-door-open"></i> {{ _("Accessi") }}
                 </a>
                 {% endif %}
+                {# La catena delle nomine, un ruolo per pulsante. Esisteva già
+                   e non la raggiungeva nessun collegamento: un audit che non
+                   si apre è un audit che non si fa (ADR-041, em. del 20/09). #}
+                {% for azione in azioni_ruoli(current_user, titolari_ruoli) %}
+                <a href="{{ url_for('roles.role_holders', role=azione.valore) }}"
+                   class="btn btn-outline-secondary btn-sm">
+                    <i class="fas {{ azione.copy.icona }}"></i>
+                    {{ _("Chi è %(ruolo)s", ruolo=azione.nome|lower) }}
+                </a>
+                {% endfor %}
                 <input type="search" id="userSearch" class="form-control form-control-sm"
                        style="min-width: 200px;"
                        placeholder="{{ _('Cerca per username o email...') }}"
@@ -262,65 +273,18 @@
                                 </form>
                                 {% endif %}
                                 {% if current_user.is_admin and not user.is_admin %}
-                                {# Ruolo esaminatore (ADR-041): ortogonale a
-                                   `user.role`, quindi si concede e si revoca
-                                   qui accanto senza toccare direttore/giocatore.
-                                   `next` riporta a questa lista invece che alla
-                                   scheda dell'utente: chi ne sta promuovendo
-                                   tre di fila non vuole tornare indietro ogni
-                                   volta. #}
-                                {% if is_examiner %}
-                                <form action="{{ url_for('roles.revoke_role', role='examiner', user_id=user.id) }}"
-                                    method="POST" style="display: inline;"
-                                    onsubmit='return confirmSubmit(this, {{ _("Revocare il ruolo di Esaminatore? Gli esami creati e le certificazioni rilasciate restano validi.")|tojson }})'>
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <input type="hidden" name="next" value="{{ url_for('admin.user.users_list') }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                                            title="{{ _('Revoca il ruolo di esaminatore') }}">
-                                        <i class="fas fa-user-graduate"></i> {{ _("Revoca esaminatore") }}
-                                    </button>
-                                </form>
-                                {% else %}
-                                <form action="{{ url_for('roles.grant_role', role='examiner', user_id=user.id) }}"
-                                    method="POST" style="display: inline;"
-                                    onsubmit='return confirmSubmit(this, {{ _("Promuovere a Esaminatore?")|tojson }})'>
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <input type="hidden" name="next" value="{{ url_for('admin.user.users_list') }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-info"
-                                            title="{{ _('Rendi esaminatore') }}">
-                                        <i class="fas fa-user-graduate"></i> {{ _("Rendi esaminatore") }}
-                                    </button>
-                                </form>
-                                {% endif %}
-                                {# Beta tester (ADR-041 + ADR-028): non e' un
-                                   permesso in piu', e' visibilita' in piu'.
-                                   Vede le funzioni non ancora aperte al suo
-                                   ruolo, mai l'amministrazione — e non puo'
-                                   nominarne altri, cosi' la platea resta
-                                   quella che l'admin ha deciso. #}
-                                {% if is_beta %}
-                                <form action="{{ url_for('roles.revoke_role', role='beta_tester', user_id=user.id) }}"
-                                    method="POST" style="display: inline;"
-                                    onsubmit='return confirmSubmit(this, {{ _("Togliere l'accesso alle funzioni in prova? Tornerà a vedere quello che vede il suo ruolo.")|tojson }})'>
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <input type="hidden" name="next" value="{{ url_for('admin.user.users_list') }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger"
-                                            title="{{ _('Togli il ruolo di beta tester') }}">
-                                        <i class="fas fa-flask"></i> {{ _("Togli beta") }}
-                                    </button>
-                                </form>
-                                {% else %}
-                                <form action="{{ url_for('roles.grant_role', role='beta_tester', user_id=user.id) }}"
-                                    method="POST" style="display: inline;"
-                                    onsubmit='return confirmSubmit(this, {{ _("Fargli vedere le funzioni non ancora aperte? Non vedrà comunque l'amministrazione.")|tojson }})'>
-                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                    <input type="hidden" name="next" value="{{ url_for('admin.user.users_list') }}">
-                                    <button type="submit" class="btn btn-sm btn-outline-info"
-                                            title="{{ _('Rendi beta tester') }}">
-                                        <i class="fas fa-flask"></i> {{ _("Rendi beta") }}
-                                    </button>
-                                </form>
-                                {% endif %}
+                                {# Ruoli concedibili (ADR-041): ortogonali a
+                                   `user.role`, quindi si concedono e si
+                                   revocano qui accanto senza toccare
+                                   direttore/giocatore. I pulsanti si ricavano
+                                   da `GRANT_POLICY`: un ruolo nuovo compare
+                                   qui il giorno che entra nel meccanismo.
+                                   `next` riporta a questa lista invece che
+                                   alla scheda dell'utente: chi ne sta
+                                   promuovendo tre di fila non vuole tornare
+                                   indietro ogni volta. #}
+                                {{ ruoli.comandi(azioni_ruoli(user, titolari_ruoli),
+                                                 user, url_for('admin.user.users_list')) }}
                                 {% if not user.is_verified %}
                                 <form action="{{ url_for('admin.user.verify_user_email', user_id=user.id) }}"
                                     method="POST" style="display: inline;">

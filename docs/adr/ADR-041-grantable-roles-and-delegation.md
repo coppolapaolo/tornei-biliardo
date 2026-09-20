@@ -180,6 +180,51 @@ da `DEBUG_MODE` — l'endpoint non deve nemmeno esistere in produzione — e il
 servizio rifiuta comunque. Il grant creato è normale: revocabile e visibile
 nell'audit con la nota `debug self-grant`.
 
+## Emendamento del 2026-09-20 · la catena si vede, e l'admin la fa partire
+
+Nato guardando la propagazione decisa per l'istruttore (ADR-069). L'utente:
+
+> «va bene la propagazione, ma deve essere visibile chi ha nominato chi. Deve
+> anche essere possibile per admin assegnare il ruolo, altrimenti non parte
+> mai.»
+
+Due difetti veri, e nessuno dei due era una svista del disegno: erano **buchi
+fra il meccanismo e le schermate**.
+
+**1 · Un ruolo nuovo non compariva dove lo si assegna.** I pulsanti «Rendi
+esaminatore» e «Rendi beta tester» erano scritti a mano in due template
+dell'amministrazione. Aggiungere un ruolo a `GRANT_POLICY` — che è tutto ciò
+che l'ADR chiedeva di fare — non lo faceva comparire da nessuna parte, e senza
+un primo titolare la catena non parte mai: `eligible_recipients` ripiega sugli
+admin, quindi la *richiesta* funzionava, ma la concessione diretta no.
+
+Adesso le due schermate ciclano su `GRANT_POLICY`
+(`roles_view.azioni_ruoli`, `templates/components/_role_grant_actions.html`) e
+i testi stanno in `models/user/role_copy.py`, uno per ruolo. `copy_for` ha un
+**ripiego** per un ruolo senza voce: un pulsante sgraziato è un difetto, un
+pulsante che non c'è è il difetto che stiamo correggendo.
+
+**2 · La catena era persistita e invisibile.** `granted_by_id` si scrive dal
+primo giorno, e `roles/holders.html` la mostra da sempre — ma **nessun
+collegamento raggiungeva quella pagina** (l'unico `url_for('roles.role_holders')`
+del repo stava dentro la pagina stessa) e la vedeva solo l'admin.
+
+Adesso la leggono **l'admin e i titolari di quel ruolo**, ed è raggiungibile
+dall'elenco utenti e dalla pagina «Ruoli» di chi il ruolo ce l'ha. Titolari *di
+quel* ruolo: essere esaminatore non dà diritto a guardare gli istruttori. E
+ciascuno vede, nella propria pagina «Ruoli», **chi ha nominato lui**.
+
+Perché fin lì e non oltre: chi può nominare deve poter vedere da dove arriva un
+collega — una catena che non si guarda è una delega al buio. Un allievo no: la
+catena resta interna al mestiere, e pubblicarla accanto a ogni istruttore
+significherebbe pubblicare una rete di relazioni a chiunque abbia una scheda.
+
+**La revoca resta dell'admin** (US-A3), e il comando compare solo a lui:
+`can_revoke` non è cambiato. Con la propagazione è l'unico punto di
+contenimento, e i pari non devono potersi disfare a vicenda.
+
+Presidio: `tests/new/integration/test_catena_delle_nomine.py`.
+
 ## Fuori scope
 
 Migrare `DirectorRequest` e `VenueManagerRequest` sul nuovo meccanismo. Il primo

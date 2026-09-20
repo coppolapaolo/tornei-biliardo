@@ -22,12 +22,14 @@ class FakeUser:
         is_director: bool = False,
         is_player: bool = False,
         is_examiner: bool = False,
+        is_instructor: bool = False,
     ):
         self.is_authenticated = is_authenticated
         self.is_admin = is_admin
         self.is_director = is_director
         self.is_player = is_player
         self.is_examiner = is_examiner
+        self.is_instructor = is_instructor
 
 
 @pytest.fixture
@@ -389,7 +391,7 @@ def test_the_role_request_path_is_open_now_that_exams_exist(app, production_mode
         assert is_endpoint_visible("roles.role_requests", player) is False
 
 
-def test_the_audit_and_the_revoke_stay_admin_only(app, production_mode):
+def test_the_revoke_stays_admin_only(app, production_mode):
     """Non è rollout, è una scelta: con la propagazione a catena il ruolo si
     diffonde senza controllo dall'alto, e la revoca resta l'unico punto di
     contenimento (US-A3). Resta ad admin anche dopo la Fase 5.
@@ -401,12 +403,41 @@ def test_the_audit_and_the_revoke_stay_admin_only(app, production_mode):
             FakeUser(is_authenticated=True, is_player=True),
             FakeUser(is_authenticated=True, is_director=True),
             FakeUser(is_authenticated=True, is_player=True, is_examiner=True),
+            FakeUser(is_authenticated=True, is_player=True, is_instructor=True),
         )
 
-        for endpoint in ("roles.role_holders", "roles.revoke_role"):
-            for viewer in others:
-                assert is_endpoint_visible(endpoint, viewer) is False, endpoint
-            assert is_endpoint_visible(endpoint, admin) is True, endpoint
+        for viewer in others:
+            assert is_endpoint_visible("roles.revoke_role", viewer) is False
+        assert is_endpoint_visible("roles.revoke_role", admin) is True
+
+
+def test_the_chain_is_visible_to_the_holders(app, production_mode):
+    """Emendamento ADR-041 del 20/09: chi può nominare vede la catena.
+
+    Era admin-only, e la pagina non era nemmeno collegata da nessuna parte: un
+    ruolo che si propaga senza che i titolari possano vedere da dove arriva un
+    collega è una delega al buio. Che il titolare sia **di quel ruolo** lo
+    controlla la route; qui si verifica solo chi arriva alla pagina.
+    """
+    with app.app_context():
+        assert is_endpoint_visible(
+            "roles.role_holders", FakeUser(is_authenticated=True, is_admin=True)
+        )
+        assert is_endpoint_visible(
+            "roles.role_holders",
+            FakeUser(is_authenticated=True, is_player=True, is_instructor=True),
+        )
+        assert is_endpoint_visible(
+            "roles.role_holders",
+            FakeUser(is_authenticated=True, is_player=True, is_examiner=True),
+        )
+        # Chi non ha nessuno dei due ruoli non ci arriva.
+        for viewer in (
+            FakeUser(),
+            FakeUser(is_authenticated=True, is_player=True),
+            FakeUser(is_authenticated=True, is_director=True),
+        ):
+            assert is_endpoint_visible("roles.role_holders", viewer) is False
 
 
 def test_the_debug_self_grant_is_never_visible_in_production(app, production_mode):

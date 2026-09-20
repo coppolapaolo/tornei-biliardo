@@ -26,6 +26,7 @@ def users_list():
     """Lista di tutti gli utenti con statistiche"""
     from models.user.role_enum import GrantableRole
     from models.user.role_grant_service import RoleGrantService
+    from models.user.roles_view import titolari_per_ruolo
 
     # Use the service layer instead of direct database access
     users = user_service.get_users_with_stats()
@@ -36,6 +37,9 @@ def users_list():
     # Stessa ragione della riga sopra: `user.is_beta_tester` dentro il ciclo
     # sarebbe una query per riga.
     beta_ids = RoleGrantService.holder_ids(GrantableRole.BETA_TESTER)
+    # E la stessa, generalizzata, per i pulsanti che concedono i ruoli: una
+    # query per **ruolo**, non per riga (ADR-041, emendamento del 20/09).
+    titolari_ruoli = titolari_per_ruolo()
 
     # Il conteggio delle email non confermate sta qui e non nel template:
     # `users` e' una lista di tuple, e in Jinja l'indice 0 non si raggiunge
@@ -50,6 +54,7 @@ def users_list():
         users=users,
         examiner_ids=examiner_ids,
         beta_ids=beta_ids,
+        titolari_ruoli=titolari_ruoli,
         non_confermate=non_confermate,
     )
 

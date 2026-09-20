@@ -41,6 +41,13 @@ silenzio la platea di chi *vede* cose che gli altri non vedono — qui non si
 pone, perché il ruolo **non fa vedere niente**: rende trovabili. Chi insegna sa
 chi insegna; l'amministratore di una piattaforma nazionale no.
 
+«In silenzio» era però vero anche qui, e l'ha fatto notare l'utente: la catena
+si scriveva e non la guardava nessuno, e nessuno poteva nominare il **primo**
+istruttore. Le due cose sono state corrette nel meccanismo, dove il difetto
+stava: vedi l'**emendamento del 2026-09-20 all'ADR-041**. Da lì, chi ha il
+ruolo vede chi altro ce l'ha e da chi è stato nominato, e l'amministratore può
+assegnarlo a mano — il che è ciò che fa partire la propagazione.
+
 **`User.is_instructor` non è vero d'ufficio per l'admin**, al contrario di
 `is_examiner`. Quella property decide chi compare nella ricerca di un allievo
 che sta scegliendo a chi aprire la propria scheda: col bypass ci finirebbero

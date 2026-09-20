@@ -621,6 +621,20 @@ def create_app(config_name=None, *, da_script: bool = False):
 
         return {"feature_visible": feature_visible, "url_visible": url_visible}
 
+    @app.context_processor
+    def inject_grantable_roles():
+        """I ruoli concedibili di un utente, per le schermate che li assegnano.
+
+        Globale e non variabile di route perché `_user_info_card.html` lo
+        include da più pagine: passarlo da ciascuna vorrebbe dire ricordarsene
+        ogni volta, ed è così che il ruolo di istruttore non compariva da
+        nessuna parte (emendamento ADR-041 del 20/09). Chi cicla un elenco
+        passa `titolari`, altrimenti sarebbe una query per riga.
+        """
+        from models.user.roles_view import azioni_ruoli
+
+        return {"azioni_ruoli": azioni_ruoli}
+
     # Filtri Jinja per status
     register_status_filters(app)
 

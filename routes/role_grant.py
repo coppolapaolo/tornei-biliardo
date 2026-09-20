@@ -148,17 +148,29 @@ def process_role_request(request_id: int):
 @role_grant_bp.route("/holders/<role>", methods=["GET"])
 @login_required
 def role_holders(role: str):
-    """Elenco dei titolari con la catena delle deleghe (chi ha concesso a chi)."""
+    """Elenco dei titolari con la catena delle deleghe (chi ha concesso a chi).
+
+    La leggono l'admin e **i titolari di quel ruolo** (emendamento ADR-041 del
+    20/09). Un ruolo che si propaga a catena senza che i titolari possano
+    vedere da dove arriva un collega è una delega al buio: chi può nominare
+    deve poter guardare chi è già stato nominato, e da chi.
+
+    Titolari **di quel ruolo**, non di uno qualunque: essere esaminatore non dà
+    diritto a guardare gli istruttori. La revoca resta dell'admin (US-A3), e il
+    template mostra il comando solo a lui.
+    """
     grantable = _parse_role_or_404(role)
     user = _current_user_obj()
 
-    if not user.is_admin:
+    if not (user.is_admin or RoleGrantService.has_role(user.id, grantable)):
         abort(403)
 
     return render_template(
         "roles/holders.html",
         role=grantable,
+        role_nome=str(RoleGrantService.role_label(grantable)),
         grants=RoleGrantService.list_grants_history(grantable),
+        puo_revocare=RoleGrantService.can_revoke(user, grantable),
     )
 
 

@@ -30,10 +30,12 @@
 {%- if catalog.abilita_in_use %} · {{ ngettext("%(num)s abilità", "%(num)s abilità", catalog.abilita_in_use) }}{% endif -%}
 {% endblock %}
 {% block page_actions %}
-    {# Ruolo esaminatore (ADR-041): il punto d'ingresso vive qui, nelle pagine
-       degli esercizi — è qui che sta chi si allena. #}
-    {% if current_user.is_examiner and feature_visible('roles.role_requests') %}
-    <a href="{{ url_for('roles.role_requests') }}" class="btn btn-outline-info btn-sm">{{ _("Richieste ruolo esaminatore") }}</a>
+    {# Ruoli concedibili (ADR-041): il punto d'ingresso vive qui, nelle pagine
+       degli esercizi — è qui che sta chi si allena. La coda è **una sola** per
+       tutti i ruoli propaganti: era dichiarata per il solo esaminatore, e un
+       istruttore non l'avrebbe trovata da nessuna parte (em. del 20/09). #}
+    {% if (current_user.is_examiner or current_user.is_instructor) and feature_visible('roles.role_requests') %}
+    <a href="{{ url_for('roles.role_requests') }}" class="btn btn-outline-info btn-sm">{{ _("Richieste di ruolo") }}</a>
     {% elif current_user.can_access('request_examiner') and feature_visible('roles.request_role_form') %}
     <a href="{{ url_for('roles.request_role_form', role='examiner') }}" class="btn btn-outline-primary btn-sm">{{ _("Diventa Esaminatore") }}</a>
     {% endif %}
