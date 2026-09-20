@@ -483,6 +483,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # «Oggi»: la porta d'ingresso degli esercizi, col catalogo dietro.
     "challenge.today": {"player", "director"},
     "challenge.challenge_catalog": {"player", "director"},
+    # «Il tuo allenamento»: la quarta stanza. Guarda i **propri** numeri, quindi
+    # la vede chi si allena — l'amministratore non ne ha.
+    "challenge.andamento": {"player", "director"},
     "challenge.challenge_detail": {"player", "director"},
     "challenge.training_session": {"player", "director"},
     # L'annulla della schermata di allenamento: chi puo' registrare una prova

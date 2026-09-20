@@ -29,6 +29,9 @@
 {% block content %}
 <div class="c7-stack" style="max-width:720px">
 
+  {% set room = 'schede' %}
+  {% include "components/_training_rooms.html" %}
+
   {% if not schede %}
   <div class="c7-empty">
     <div class="c7-empty__ico"><i class="fas fa-list-check"></i></div>

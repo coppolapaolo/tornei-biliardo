@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 15:17+0200\n"
+"POT-Creation-Date: 2026-09-20 15:58+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -72,6 +72,46 @@ msgstr ""
 
 #: models/status_enum.py:437
 msgid "Rotation"
+msgstr ""
+
+#: models/andamento/view.py:67
+msgid "Ultimi 30 giorni"
+msgstr ""
+
+#: models/andamento/view.py:68
+msgid "3 mesi"
+msgstr ""
+
+#: models/andamento/view.py:69
+msgid "Sempre"
+msgstr ""
+
+#: models/andamento/view.py:76
+msgid "Il mese prima"
+msgstr ""
+
+#: models/andamento/view.py:77
+msgid "I tre mesi prima"
+msgstr ""
+
+#: models/andamento/view.py:91 templates/challenge/andamento.html:67
+msgid "Per abilità"
+msgstr ""
+
+#: models/andamento/view.py:92 templates/challenge/andamento.html:67
+msgid "Per gesto"
+msgstr ""
+
+#: models/andamento/view.py:243
+msgid "solido"
+msgstr ""
+
+#: models/andamento/view.py:245 models/training_sheet/register_view.py:242
+msgid "in crescita"
+msgstr ""
+
+#: models/andamento/view.py:246
+msgid "da costruire"
 msgstr ""
 
 #: models/campionato/conteggio_gare.py:52
@@ -3099,10 +3139,6 @@ msgstr ""
 msgid "%(lato)s %(n)s di media, %(altro)s %(m)s"
 msgstr ""
 
-#: models/training_sheet/register_view.py:242
-msgid "in crescita"
-msgstr ""
-
 #: models/training_sheet/register_view.py:244
 msgid "in calo"
 msgstr ""
@@ -3423,112 +3459,116 @@ msgstr ""
 msgid "Non è stato possibile caricare gli esercizi."
 msgstr ""
 
-#: routes/challenge.py:220
+#: routes/challenge.py:171
+msgid "Non è stato possibile caricare l'andamento."
+msgstr ""
+
+#: routes/challenge.py:253
 msgid "La foto non è un'immagine che si possa leggere"
 msgstr ""
 
-#: routes/challenge.py:252
+#: routes/challenge.py:285
 msgid "Ho creato una copia con le tue modifiche: l'originale è rimasto com'era."
 msgstr ""
 
-#: routes/challenge.py:256
+#: routes/challenge.py:289
 msgid "Esercizio aggiornato."
 msgstr ""
 
-#: routes/challenge.py:271
+#: routes/challenge.py:304
 msgid "Serve la foto della disposizione"
 msgstr ""
 
-#: routes/challenge.py:279
+#: routes/challenge.py:312
 msgid "Copia creata."
 msgstr ""
 
-#: routes/challenge.py:279 routes/challenge.py:650
+#: routes/challenge.py:312 routes/challenge.py:683
 msgid "Esercizio creato."
 msgstr ""
 
-#: routes/challenge.py:430 routes/challenge.py:718
+#: routes/challenge.py:463 routes/challenge.py:751
 msgid "Questo esercizio non è più disponibile."
 msgstr ""
 
-#: routes/challenge.py:435
+#: routes/challenge.py:468
 msgid "Gli amministratori non possono provare gli esercizi."
 msgstr ""
 
-#: routes/challenge.py:464
+#: routes/challenge.py:497
 msgid "Tentativo iniziato."
 msgstr ""
 
-#: routes/challenge.py:578
+#: routes/challenge.py:611
 msgid ""
 "Questo esercizio si registra colpo per colpo: il bersaglio serve. Per "
 "toglierlo, cambia prima «Come si registra»."
 msgstr ""
 
-#: routes/challenge.py:614
+#: routes/challenge.py:647
 msgid ""
 "Questo esercizio ha già delle prove: istruzioni e punteggio si cambiano "
 "da «Modifica l'esercizio», qui salva solo il disegno."
 msgstr ""
 
-#: routes/challenge.py:675
+#: routes/challenge.py:708
 msgid "Questo esercizio nasce da una foto: non c'è un disegno da modificare."
 msgstr ""
 
-#: routes/challenge.py:694
+#: routes/challenge.py:727
 msgid "Disegno aggiornato."
 msgstr ""
 
-#: routes/challenge.py:722
+#: routes/challenge.py:755
 msgid "Gli amministratori non provano gli esercizi."
 msgstr ""
 
-#: routes/challenge.py:778 routes/challenge.py:1074
+#: routes/challenge.py:811 routes/challenge.py:1107
 msgid "Prova registrata."
 msgstr ""
 
-#: routes/challenge.py:809
+#: routes/challenge.py:842
 msgid "Non c'è nessuna prova da annullare."
 msgstr ""
 
-#: routes/challenge.py:831 routes/challenge.py:1043
+#: routes/challenge.py:864 routes/challenge.py:1076
 msgid "Prova annullata."
 msgstr ""
 
-#: routes/challenge.py:918
+#: routes/challenge.py:951
 msgid "Il punto sul panno non è leggibile."
 msgstr ""
 
-#: routes/challenge.py:1131 routes/sheet/run.py:205
+#: routes/challenge.py:1164 routes/sheet/run.py:205
 msgid "Note salvate."
 msgstr ""
 
-#: routes/challenge.py:1331
+#: routes/challenge.py:1364
 msgid "Tentativo registrato."
 msgstr ""
 
-#: routes/challenge.py:1372 templates/challenge/catalog.html:138
-#: templates/challenge/today.html:125
+#: routes/challenge.py:1405 templates/challenge/catalog.html:138
+#: templates/challenge/today.html:128
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr ""
 
-#: routes/challenge.py:1409
+#: routes/challenge.py:1442
 msgid "Voto registrato."
 msgstr ""
 
-#: routes/challenge.py:1472
+#: routes/challenge.py:1505
 msgid "Esercizio di gara avviato."
 msgstr ""
 
-#: routes/challenge.py:1525
+#: routes/challenge.py:1558
 msgid "Esercizio di gara registrato."
 msgstr ""
 
-#: routes/challenge.py:1558
+#: routes/challenge.py:1591
 msgid "Esercizio non trovato."
 msgstr ""
 
-#: routes/challenge.py:1568
+#: routes/challenge.py:1601
 msgid "Non hai i permessi per questo esercizio."
 msgstr ""
 
@@ -3663,13 +3703,13 @@ msgstr ""
 #: routes/help.py:57 templates/admin/accessi.html:83
 #: templates/challenge/catalog.html:56 templates/challenge/catalog.html:83
 #: templates/challenge/catalog.html:87 templates/challenge/catalog.html:91
-#: templates/challenge/today.html:79
+#: templates/challenge/today.html:82
 #: templates/components/_classification_mobile.html:13
 #: templates/components/_history_filters.html:79
 #: templates/components/_history_filters.html:93
 #: templates/components/_history_filters.html:125
 #: templates/components/_history_filters.html:156
-#: templates/exam/catalog.html:61 templates/gamification/dashboard.html:150
+#: templates/exam/catalog.html:64 templates/gamification/dashboard.html:150
 #: templates/individual_match/dashboard.html:178
 #: templates/individual_match/matches.html:52
 #: templates/public/campionatos_list.html:26
@@ -4252,6 +4292,7 @@ msgstr ""
 #: templates/components/_history_campionati_tab.html:95
 #: templates/components/_history_campionati_tab.html:96
 #: templates/components/_player_challenge_statistics.html:13
+#: templates/components/_training_rooms.html:25
 #: templates/components/_unified_cards.html:52
 #: templates/player/challenge_detail.html:3 templates/player/history.html:31
 msgid "Esercizi"
@@ -5286,13 +5327,14 @@ msgstr ""
 msgid "Sale Biliardo"
 msgstr ""
 
-#: templates/base.html:266 templates/sheet/index.html:15
+#: templates/base.html:266 templates/components/_training_rooms.html:26
+#: templates/sheet/index.html:15
 msgid "Schede"
 msgstr ""
 
 #: templates/base.html:271 templates/base.html:568
-#: templates/exam/catalog.html:10 templates/exam/catalog.html:12
-#: templates/player/history.html:34
+#: templates/components/_training_rooms.html:27 templates/exam/catalog.html:10
+#: templates/exam/catalog.html:12 templates/player/history.html:34
 msgid "Esami"
 msgstr ""
 
@@ -6641,7 +6683,7 @@ msgstr ""
 #: templates/gamification/admin/config_dashboard.html:101
 #: templates/gamification/admin/config_dashboard.html:132
 #: templates/gamification/admin/features.html:60
-#: templates/sheet/detail.html:116 templates/sheet/index.html:77
+#: templates/sheet/detail.html:116 templates/sheet/index.html:80
 msgid "Modifica"
 msgstr ""
 
@@ -8166,6 +8208,7 @@ msgid "Torna alla dashboard"
 msgstr ""
 
 #: templates/admin/kpi.html:33 templates/components/_player_training.html:68
+#: templates/components/_training_rooms.html:28
 msgid "Andamento"
 msgstr ""
 
@@ -9554,6 +9597,7 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: templates/challenge/_exercise_bits.html:47
+#: templates/challenge/andamento.html:30 templates/challenge/andamento.html:133
 #: templates/player/challenge_detail.html:94
 #, python-format
 msgid "%(num)s prova"
@@ -9562,12 +9606,12 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: templates/challenge/_exercise_bits.html:54
-#: templates/challenge/catalog.html:137 templates/challenge/today.html:124
+#: templates/challenge/catalog.html:137 templates/challenge/today.html:127
 msgid "Rimuovi dai preferiti"
 msgstr ""
 
 #: templates/challenge/_exercise_bits.html:54
-#: templates/challenge/catalog.html:136 templates/challenge/today.html:123
+#: templates/challenge/catalog.html:136 templates/challenge/today.html:126
 msgid "Aggiungi ai preferiti"
 msgstr ""
 
@@ -9731,6 +9775,81 @@ msgstr ""
 #: templates/components/_match_challenge_input.html:63
 msgid "Registra"
 msgstr ""
+
+#: templates/challenge/andamento.html:23 templates/challenge/andamento.html:28
+msgid "Il tuo allenamento"
+msgstr ""
+
+#: templates/challenge/andamento.html:26 templates/challenge/catalog.html:25
+msgid "Torna a Esercizi"
+msgstr ""
+
+#: templates/challenge/andamento.html:31 templates/challenge/catalog.html:29
+#: templates/challenge/catalog.html:100
+#, python-format
+msgid "%(num)s esercizio"
+msgid_plural "%(num)s esercizi"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/challenge/andamento.html:51
+msgid "Ancora niente da misurare"
+msgstr ""
+
+#: templates/challenge/andamento.html:53
+msgid ""
+"Qui compare come stai andando, abilità per abilità, appena registri "
+"qualche prova con un punteggio."
+msgstr ""
+
+#: templates/challenge/andamento.html:56 templates/challenge/today.html:75
+#: templates/challenge/today.html:98
+msgid "Apri il catalogo"
+msgstr ""
+
+#: templates/challenge/andamento.html:63
+msgid "Su quale vocabolario"
+msgstr ""
+
+#: templates/challenge/andamento.html:79 templates/challenge/andamento.html:115
+#: templates/individual_match/quick_match.html:114
+msgid "Adesso"
+msgstr ""
+
+#: templates/challenge/andamento.html:94
+msgid "Radar delle tue percentuali, un raggio per categoria"
+msgstr ""
+
+#: templates/challenge/andamento.html:135
+#, python-format
+msgid "%(num)s da una scheda"
+msgid_plural "%(num)s dalle schede"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/challenge/andamento.html:155
+#, python-format
+msgid ""
+"%(voci)s ha meno di %(n)s prove: sul grafico c'è, ma il numero non dice "
+"ancora niente."
+msgid_plural ""
+"%(voci)s hanno meno di %(n)s prove: sul grafico ci sono, ma il numero non"
+" dice ancora niente."
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/challenge/andamento.html:165
+#, python-format
+msgid ""
+"%(num)s registrazione non entra in questi numeri: non ha un massimo con "
+"cui fare una percentuale — un esercizio senza tetto dichiarato, dei "
+"minuti, una spunta."
+msgid_plural ""
+"%(num)s registrazioni non entrano in questi numeri: non hanno un massimo "
+"con cui fare una percentuale — esercizi senza tetto dichiarato, minuti, "
+"spunte."
+msgstr[0] ""
+msgstr[1] ""
 
 #: templates/challenge/builder.html:19 templates/challenge/builder.html:35
 #: templates/challenge/form.html:323
@@ -10239,21 +10358,10 @@ msgstr ""
 msgid "Catalogo degli esercizi"
 msgstr ""
 
-#: templates/challenge/catalog.html:25
-msgid "Torna a Esercizi"
-msgstr ""
-
 #: templates/challenge/catalog.html:27
 #: templates/player/challenge_detail.html:21
 msgid "Catalogo"
 msgstr ""
-
-#: templates/challenge/catalog.html:29 templates/challenge/catalog.html:100
-#, python-format
-msgid "%(num)s esercizio"
-msgid_plural "%(num)s esercizi"
-msgstr[0] ""
-msgstr[1] ""
 
 #: templates/challenge/catalog.html:30
 #, python-format
@@ -10332,7 +10440,7 @@ msgstr ""
 msgid "{n} esercizi"
 msgstr ""
 
-#: templates/challenge/catalog.html:103 templates/challenge/today.html:86
+#: templates/challenge/catalog.html:103 templates/challenge/today.html:89
 msgid "I più provati"
 msgstr ""
 
@@ -10340,11 +10448,11 @@ msgstr ""
 msgid "I più nuovi"
 msgstr ""
 
-#: templates/challenge/catalog.html:114 templates/challenge/today.html:46
+#: templates/challenge/catalog.html:114 templates/challenge/today.html:49
 msgid "Catalogo vuoto"
 msgstr ""
 
-#: templates/challenge/catalog.html:115 templates/challenge/today.html:47
+#: templates/challenge/catalog.html:115 templates/challenge/today.html:50
 msgid "Non ci sono ancora esercizi da provare."
 msgstr ""
 
@@ -10790,73 +10898,70 @@ msgid_plural "Altri %(num)s colpi"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/challenge/today.html:31 templates/sheet/index.html:46
+#: templates/challenge/today.html:34 templates/sheet/index.html:49
 msgid "Seduta cominciata"
 msgstr ""
 
-#: templates/challenge/today.html:36
+#: templates/challenge/today.html:39
 #, python-format
 msgid "L'hai cominciata %(quando)s."
 msgstr ""
 
-#: templates/challenge/today.html:39 templates/sheet/detail.html:120
+#: templates/challenge/today.html:42 templates/sheet/detail.html:120
 msgid "Riprendi la seduta"
 msgstr ""
 
-#: templates/challenge/today.html:55
+#: templates/challenge/today.html:58
 msgid "Riprendi da qui"
 msgstr ""
 
-#: templates/challenge/today.html:59
+#: templates/challenge/today.html:62
 #, python-format
 msgid "L'ultima volta: %(when)s."
 msgstr ""
 
-#: templates/challenge/today.html:63 templates/sheet/index.html:73
+#: templates/challenge/today.html:66 templates/sheet/index.html:76
 msgid "Comincia"
 msgstr ""
 
-#: templates/challenge/today.html:64
+#: templates/challenge/today.html:67
 msgid "La scheda"
 msgstr ""
 
-#: templates/challenge/today.html:69
+#: templates/challenge/today.html:72
 msgid "Per cominciare"
 msgstr ""
 
-#: templates/challenge/today.html:70
+#: templates/challenge/today.html:73
 msgid "Scegli un esercizio e provalo"
 msgstr ""
 
-#: templates/challenge/today.html:71
+#: templates/challenge/today.html:74
 msgid "Registri una prova dopo l'altra, e la prossima volta riparti da qui."
 msgstr ""
 
-#: templates/challenge/today.html:72 templates/challenge/today.html:95
-msgid "Apri il catalogo"
-msgstr ""
-
-#: templates/challenge/today.html:78
+#: templates/challenge/today.html:81
 msgid "I tuoi preferiti"
 msgstr ""
 
-#: templates/challenge/today.html:96
+#: templates/challenge/today.html:99
 #, python-format
 msgid "%(num)s esercizio, da filtrare per abilità, gesto, livello e voto"
 msgid_plural "%(num)s esercizi, da filtrare per abilità, gesto, livello e voto"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/challenge/today.html:111 templates/sheet/summary.html:113
+#: templates/challenge/today.html:114 templates/sheet/summary.html:113
 msgid "Le tue schede"
 msgstr ""
 
-#: templates/challenge/today.html:112
+#: templates/challenge/today.html:115
 msgid "La sequenza di esercizi che fai in sala, nell'ordine in cui la fai"
 msgstr ""
 
 #: templates/challenge/training.html:29
 #: templates/components/_player_training.html:26
+#: templates/components/_training_rooms.html:36
 msgid "Allenamento"
 msgstr ""
 
@@ -12615,7 +12720,7 @@ msgid "La tua partita"
 msgstr ""
 
 #: templates/components/_gara_my_match.html:29
-#: templates/components/_match_card.html:215 templates/exam/catalog.html:59
+#: templates/components/_match_card.html:215 templates/exam/catalog.html:62
 #: templates/player/notifications.html:96
 #: templates/public/campionatos_list.html:71
 #: templates/public/garas_list.html:39
@@ -18199,36 +18304,36 @@ msgstr[1] ""
 msgid "il tuo meglio %(p)s su %(m)s"
 msgstr ""
 
-#: templates/exam/catalog.html:43
+#: templates/exam/catalog.html:46
 msgid "Il tuo prossimo appuntamento"
 msgstr ""
 
-#: templates/exam/catalog.html:49
+#: templates/exam/catalog.html:52
 #, python-format
 msgid "con %(nome)s"
 msgstr ""
 
-#: templates/exam/catalog.html:51
+#: templates/exam/catalog.html:54
 #, python-format
 msgid "esamini %(nome)s"
 msgstr ""
 
-#: templates/exam/catalog.html:74
+#: templates/exam/catalog.html:77
 #, python-format
 msgid "%(n)s richiesta aspetta te"
 msgid_plural "%(n)s richieste aspettano te"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/exam/catalog.html:88
+#: templates/exam/catalog.html:91
 msgid "Esami disponibili"
 msgstr ""
 
-#: templates/exam/catalog.html:91
+#: templates/exam/catalog.html:94
 msgid "Appuntamenti"
 msgstr ""
 
-#: templates/exam/catalog.html:111 templates/exam/detail.html:39
+#: templates/exam/catalog.html:114 templates/exam/detail.html:39
 #: templates/exam/manage.html:49
 #, python-format
 msgid "%(n)s esercizio"
@@ -18236,22 +18341,22 @@ msgid_plural "%(n)s esercizi"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/exam/catalog.html:113
+#: templates/exam/catalog.html:116
 #, python-format
 msgid "%(n)s esaminatore"
 msgid_plural "%(n)s esaminatori"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/exam/catalog.html:114
+#: templates/exam/catalog.html:117
 msgid "lo somministri tu"
 msgstr ""
 
-#: templates/exam/catalog.html:125
+#: templates/exam/catalog.html:128
 msgid "Nessun esame disponibile"
 msgstr ""
 
-#: templates/exam/catalog.html:126
+#: templates/exam/catalog.html:129
 msgid "Non è ancora stato composto nessun esame. Torna più avanti."
 msgstr ""
 
@@ -18356,7 +18461,7 @@ msgstr ""
 msgid "Esame: una sequenza di esercizi"
 msgstr ""
 
-#: templates/exam/detail.html:23 templates/sheet/index.html:81
+#: templates/exam/detail.html:23 templates/sheet/index.html:84
 msgid "Componi"
 msgstr ""
 
@@ -21445,10 +21550,6 @@ msgstr ""
 msgid "Cambia"
 msgstr ""
 
-#: templates/individual_match/quick_match.html:114
-msgid "Adesso"
-msgstr ""
-
 #: templates/individual_match/quick_match.html:115
 msgid "La partita parte appena tocchi il pulsante"
 msgstr ""
@@ -23071,7 +23172,7 @@ msgstr ""
 msgid "L'ultima volta, %(lato)s"
 msgstr ""
 
-#: templates/sheet/_run_progress.html:52 templates/sheet/index.html:60
+#: templates/sheet/_run_progress.html:52 templates/sheet/index.html:63
 msgid "L'ultima volta"
 msgstr ""
 
@@ -23298,57 +23399,57 @@ msgstr ""
 msgid "%(n)s settimane"
 msgstr ""
 
-#: templates/sheet/index.html:35
+#: templates/sheet/index.html:38
 msgid "Nessuna scheda"
 msgstr ""
 
-#: templates/sheet/index.html:37
+#: templates/sheet/index.html:40
 msgid ""
 "Una scheda è la sequenza di esercizi che fai in sala, nell'ordine in cui "
 "la fai: la componi una volta e poi segni com'è andata."
 msgstr ""
 
-#: templates/sheet/index.html:55
+#: templates/sheet/index.html:58
 msgid "Ancora nessun esercizio: componila."
 msgstr ""
 
-#: templates/sheet/index.html:57
+#: templates/sheet/index.html:60
 #, python-format
 msgid "L'ultima volta %(n)s su %(tot)s"
 msgstr ""
 
-#: templates/sheet/index.html:62
+#: templates/sheet/index.html:65
 #, python-format
 msgid "%(num)s esercizio, mai fatta"
 msgid_plural "%(num)s esercizi, mai fatta"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/sheet/index.html:73
+#: templates/sheet/index.html:76
 msgid "Riprendi"
 msgstr ""
 
-#: templates/sheet/index.html:89
+#: templates/sheet/index.html:92
 msgid "Il registro"
 msgstr ""
 
-#: templates/sheet/index.html:91
+#: templates/sheet/index.html:94
 msgid "Togli questa scheda dall'elenco? Le sedute che hai fatto restano."
 msgstr ""
 
-#: templates/sheet/index.html:93
+#: templates/sheet/index.html:96
 msgid "Archivia"
 msgstr ""
 
-#: templates/sheet/index.html:102
+#: templates/sheet/index.html:105
 msgid "Una scheda nuova"
 msgstr ""
 
-#: templates/sheet/index.html:104
+#: templates/sheet/index.html:107
 msgid "Come la chiami"
 msgstr ""
 
-#: templates/sheet/index.html:107
+#: templates/sheet/index.html:110
 msgid "Crea e componi"
 msgstr ""
 

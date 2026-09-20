@@ -629,6 +629,7 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [064](docs/adr/ADR-064-sessione-che-dura-trenta-giorni.md) | casella «Resta collegato», spuntata per default: sessione di **30 giorni**; il cookie non si rimanda a ogni risposta, la scadenza si rinnova al più una volta al giorno e mai sui poll |
 | [065](docs/adr/ADR-065-profilo-dell-esercizio.md) | profilo dell'esercizio: abilità e gesto come vocabolari **fissi** (enum) in `challenge_category`, livello *dichiarato* 1–5, varianti come etichette e mai come secondo esercizio, voto 1–5; «quanti l'hanno provato» si conta e non si salva |
 | [066](docs/adr/ADR-066-prova-fatta-di-colpi.md) | prova fatta di colpi: `ChallengeShot` sotto il tentativo, punteggio **derivato** dai colpi e punti persistiti sul colpo; `recording_mode` sull'esercizio; il bersaglio è una voce della scena del disegnatore; la prova aperta nasce col primo colpo e si chiude con un gesto |
+| [068](docs/adr/ADR-068-andamento-una-scala-sola.md) | l'andamento mette prove del catalogo e caselle delle schede su **una scala sola** — la quota di ciò che era ottenibile — senza sommarle su un esercizio; entra solo ciò che ha un massimo, e ciò che resta fuori si conta e si dice |
 
 ---
 

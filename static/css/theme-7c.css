@@ -4714,3 +4714,77 @@ span.c7-exam-pad__v { display: block; }
 button.c7-draw__outcome { width: 100%; border: 0; font-family: inherit; text-align: left; }
 button.c7-draw__outcome:active { transform: scale(var(--c7-press)); transition-duration: 0ms; }
 .c7-draw__points { font-size: 20px; font-weight: 800; color: var(--c7-accent); flex-shrink: 0; }
+
+/* ==========================================================================
+   L'ANDAMENTO DELL'ALLENAMENTO (fase 7a, #181, ADR-068)
+   ==========================================================================
+   - `.c7-rooms`: le quattro stanze — Esercizi, Schede, Esami, Andamento.
+     Somiglia a `.c7-vtabs` (e viene dallo stesso `vtab` del canvas) ma non e'
+     la stessa cosa: quelle commutano sezioni dentro una pagina e spariscono da
+     lg, queste sono quattro pagine e restano a ogni larghezza.
+   - `.c7-radar`: il radar per abilita' e per gesto. La geometria la calcola
+     `models/andamento/radar.py`; qui ci sono solo i colori e i tratti.
+   - `.c7-delta`: di quanto e' salito o sceso un asse. Distinto da `.c7-trend`,
+     che e' la spezzata del dettaglio giocatore.
+   -------------------------------------------------------------------------- */
+
+.c7-rooms { display: flex; gap: 6px; }
+.c7-rooms__tab {
+  position: relative; flex: 1; min-width: 0; height: 42px;
+  border-radius: var(--c7-r-pill); background: var(--c7-card); color: var(--c7-ink-muted);
+  font-size: 13px; font-weight: 700; text-decoration: none;
+  display: grid; place-items: center; white-space: nowrap;
+}
+/* Il pill del canvas e' alto 42px, sotto il minimo tattile di 48: l'area
+   sensibile si allarga di 3px per lato senza spostare niente, come fa
+   `.c7-vtabs__tab`. Il gap fra i pill e' 6px, quindi le aree si sfiorano. */
+.c7-rooms__tab::after { content: ""; position: absolute; inset: -3px; }
+.c7-rooms__tab:hover { color: var(--c7-ink); }
+.c7-rooms__tab.is-active, .c7-rooms__tab.is-active:hover {
+  background: var(--c7-accent); color: var(--c7-accent-ink);
+}
+
+/* Il radar sta al centro e non si allarga oltre il leggibile: a tutta
+   larghezza su un desktop le etichette finirebbero lontane dal disegno. */
+.c7-radar { max-width: 300px; margin: 6px auto 0; }
+/* I due numeri: in riga sopra il disegno sul telefono, in colonna di fianco da
+   lg. Il radar ha un lato suo, e in una card larga resterebbe in mezzo al
+   vuoto. */
+.c7-radarbox__nums { display: flex; align-items: flex-start; gap: 12px; }
+.c7-radarbox__nums > * { flex: 1; min-width: 0; }
+.c7-radarbox__was { text-align: right; }
+@media (min-width: 992px) {
+  .c7-radarbox { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: center; }
+  .c7-radarbox__nums { flex-direction: column; gap: 18px; }
+  .c7-radarbox__was { text-align: left; }
+}
+.c7-radar__ring, .c7-radar__spoke { fill: none; stroke: var(--c7-line); stroke-width: 1; }
+/* Il periodo precedente: tratteggiato e smorzato, perche' e' il termine di
+   paragone e non il dato. */
+.c7-radar__before {
+  fill: var(--c7-ink-faint); fill-opacity: .22;
+  stroke: var(--c7-ink-faint); stroke-width: 1.6; stroke-dasharray: 5 4;
+}
+.c7-radar__now {
+  fill: var(--c7-accent); fill-opacity: .28;
+  stroke: var(--c7-accent); stroke-width: 2.4; stroke-linejoin: round;
+}
+.c7-radar__label {
+  text-anchor: middle; font-size: 11px; font-weight: 800; fill: var(--c7-ink-soft);
+}
+
+/* La legenda dei due poligoni: compare solo quando i poligoni sono due. */
+.c7-legend {
+  display: flex; flex-wrap: wrap; gap: 14px; margin-top: 4px;
+  font-size: 12px; font-weight: 700; color: var(--c7-ink-muted);
+}
+.c7-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.c7-legend i { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+
+.c7-delta {
+  display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0;
+  font-size: 12px; font-weight: 800; color: var(--c7-ink-muted);
+}
+.c7-delta i { font-size: 11px; }
+.c7-delta--ok { color: var(--c7-ok); }
+.c7-delta--err { color: var(--c7-err); }

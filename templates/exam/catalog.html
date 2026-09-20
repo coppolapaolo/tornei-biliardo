@@ -36,6 +36,9 @@
 {% block content %}
 <section class="c7-stack">
 
+  {% set room = 'esami' %}
+  {% include "components/_training_rooms.html" %}
+
   {# ── Il prossimo appuntamento ───────────────────────────────────────── #}
   {% if upcoming %}
   {% set next = upcoming[0] %}
