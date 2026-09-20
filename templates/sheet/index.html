@@ -63,14 +63,35 @@
     </div>
 
     <div class="c7-duo">
-      <a href="{{ url_for('sheet.compose', sheet_id=scheda.id) }}"
-         class="btn btn-{{ 'secondary' if scheda.active_items else 'primary' }}">
+      {% if scheda.active_items %}
+      {# Una sola porta, che la seduta sia nuova o da riprendere: il servizio
+         riprende quella aperta invece di aprirne una seconda. #}
+      <form method="POST" action="{{ url_for('sheet.start_session', sheet_id=scheda.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-primary w-100">
+          {{ _("Riprendi") if aperta else _("Comincia") }}
+        </button>
+      </form>
+      <a href="{{ url_for('sheet.compose', sheet_id=scheda.id) }}" class="btn btn-secondary">
+        {{ _("Modifica") }}
+      </a>
+      {% else %}
+      <a href="{{ url_for('sheet.compose', sheet_id=scheda.id) }}" class="btn btn-primary">
         {{ _("Componi") }}
       </a>
+      <span></span>
+      {% endif %}
+    </div>
+
+    {# Le due cose che si fanno di rado, dove non rubano il tocco a «Comincia». #}
+    <div class="c7-sheetcard__minor">
+      {% if ultima %}
+      <a href="{{ url_for('sheet.session_summary', session_id=ultima.id) }}">{{ _("Rivedi l'ultima seduta") }}</a>
+      {% endif %}
       <form method="POST" action="{{ url_for('sheet.archive', sheet_id=scheda.id) }}"
             onsubmit="return confirm({{ _('Togli questa scheda dall\'elenco? Le sedute che hai fatto restano.')|tojson }})">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="btn btn-secondary w-100">{{ _("Archivia") }}</button>
+        <button type="submit">{{ _("Archivia") }}</button>
       </form>
     </div>
   </section>

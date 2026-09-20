@@ -510,6 +510,15 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "sheet.archive": {"player", "director"},
     "sheet.compose": {"player", "director"},
     "sheet.save_composition": {"player", "director"},
+    # La seduta: aprirla, segnare, chiuderla, e la fine seduta che si riapre.
+    "sheet.start_session": {"player", "director"},
+    "sheet.run": {"player", "director"},
+    "sheet.record_cell": {"player", "director"},
+    "sheet.record_shot": {"player", "director"},
+    "sheet.undo_shot": {"player", "director"},
+    "sheet.close_session": {"player", "director"},
+    "sheet.session_summary": {"player", "director"},
+    "sheet.session_notes": {"player", "director"},
     # start_attempt/attempt_detail/complete_attempt sono il percorso della
     # gara (il drill al posto del bye), che il giocatore attraversa da solo.
     "challenge.start_attempt": {"player", "director"},

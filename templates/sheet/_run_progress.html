@@ -1,0 +1,89 @@
+{# Il posto di mezzo della seduta: la voce a fuoco e come sta andando.
+
+   Lo disegna **solo il server**, anche dopo una casella segnata senza
+   ricaricare: la risposta JSON porta questo stesso pezzo già pronto e la
+   pagina lo sostituisce. Niente `id` qui dentro.
+
+   Il numero grande non c'è: quello che conta mentre si tira è la consegna
+   («5 tiri a destra») e il riferimento della volta prima. Il totale sta in
+   basso, accanto alla soglia, dove non distrae. #}
+{% set item = run.item %}
+
+{% if item %}
+{# ── La disposizione: una per lato quando i lati sono due ─────────────── #}
+{% if item.challenge.image_filename %}
+<div class="c7-sheetrun__diagrams{% if run.cells|length > 1 %} c7-sheetrun__diagrams--duo{% endif %}">
+  {% for cell in run.cells %}
+  <figure class="c7-diagram c7-diagram--card">
+    {# Il secondo lato è lo stesso disegno specchiato: è così che si allena, e
+       disegnarne due sarebbe chiedere all'autore la stessa cosa due volte.
+       Se l'immagine manca sparisce, invece di mostrare il testo alternativo —
+       che specchiato si leggerebbe alla rovescia. #}
+    <img class="c7-diagram__img" src="{{ challenge_image_url(item.challenge) }}"
+         alt="{{ _('Disposizione dell\'esercizio') }}"
+         onerror="this.style.display='none'"
+         {% if cell.side and loop.index0 == 1 %}style="transform:scaleX(-1)"{% endif %}>
+    {% if cell.side %}<figcaption class="c7-label">{{ cell.side }}</figcaption>{% endif %}
+  </figure>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div>
+  <h2 class="c7-exam__title">{{ item.challenge.get_display_name() }}</h2>
+  <div class="c7-rows__sub">
+    {{ item.measure_kind.label }}
+    {%- if run.dose %} <span class="c7-sep">·</span> {{ run.dose }}{% endif -%}
+    {%- if run.cells|length > 1 %} <span class="c7-sep">·</span>
+      {{ _("per lato") }}{% endif -%}
+  </div>
+  <p class="c7-run__brief">{{ item.challenge.description }}</p>
+</div>
+
+{# ── Il riferimento: quanto si era fatto la volta prima ───────────────── #}
+{% set con_storico = run.cells|selectattr('last_time')|list %}
+{% if con_storico %}
+<div class="c7-kpis" style="grid-template-columns:repeat({{ run.cells|length }}, 1fr)">
+  {% for cell in run.cells %}
+  <div class="c7-kpi">
+    <div class="c7-kpi__v">{{ cell.last_time if cell.last_time is not none else '–' }}</div>
+    <div class="c7-kpi__l">
+      {%- if cell.side %}{{ _("L'ultima volta, %(lato)s", lato=cell.side) }}
+      {%- else %}{{ _("L'ultima volta") }}{% endif -%}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{# ── Tiro per tiro: la striscia di com'è andata finora ────────────────── #}
+{% if run.dock == 'counter' %}
+{% for cell in run.cells %}
+<section class="c7-card c7-sheetrun__strip">
+  <div class="c7-runprog__head">
+    <span class="c7-label">
+      {%- if cell.side %}{{ cell.side }} <span class="c7-sep">·</span> {% endif -%}
+      {{ _("Tiro %(n)s di %(tot)s", n=[cell.shots_done + 1, item.amount]|min, tot=item.amount) }}
+    </span>
+    <span class="c7-num c7-runprog__now">
+      {{ _("%(n)s riusciti", n=cell.value or 0) }}
+    </span>
+  </div>
+  <div class="c7-sheetrun__pips">
+    {% for segno in cell.marks %}
+    <span class="c7-sheetrun__pip {{ 'is-on' if segno == '1' else 'is-miss' }}"></span>
+    {% endfor %}
+    {% for _n in range(item.amount - cell.shots_done) %}<span class="c7-sheetrun__pip"></span>{% endfor %}
+  </div>
+</section>
+{% endfor %}
+{% endif %}
+
+{% else %}
+<div class="c7-card c7-card--locked">
+  <div class="c7-kicker">{{ _("Niente da fare") }}</div>
+  <div class="c7-rows__sub" style="margin-top:6px">
+    {{ _("Questa scheda non ha voci per oggi: componila, e poi comincia.") }}
+  </div>
+</div>
+{% endif %}

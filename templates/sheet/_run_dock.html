@@ -1,0 +1,118 @@
+{# I comandi della seduta: agganciati in basso, uno per lato quando i lati sono
+   due. Anche questo pezzo lo ridisegna **solo il server** dopo ogni casella.
+
+   Quattro forme, e le decide `run_view._dock`:
+
+   * `buttons`  una fila di tasti 0…N — il gesto del foglio di carta, un tocco;
+   * `counter`  tiro per tiro, più «scrivi il totale» per chi ha contato da sé;
+   * `pad`      meno · cifra · più, per punteggio e minuti;
+   * `done`     due tasti: fatto, o no.
+
+   Il tocco **è** la registrazione: nessun «conferma». A proteggere dall'errore
+   c'è il tocco dopo, che sovrascrive, e «Svuota» per tornare a non compilata —
+   che non è segnare zero. #}
+{% set item = run.item %}
+
+{% if item %}
+{% for cell in run.cells %}
+<div class="c7-sheetdock__cell"
+     data-cell
+     data-item="{{ item.id }}"
+     data-variant="{{ cell.variant_id or '' }}">
+
+  {% if cell.side or run.cells|length > 1 %}
+  <div class="c7-sheetdock__side">
+    <span class="c7-label">
+      {%- if run.dock == 'buttons' %}{{ _("%(lato)s · quanti su %(n)s?", lato=cell.side|capitalize, n=item.amount) }}
+      {%- else %}{{ cell.side|capitalize }}{% endif -%}
+    </span>
+    {% if cell.is_filled %}
+    <button type="button" class="c7-sheetdock__clear" data-clear>{{ _("svuota") }}</button>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if run.dock == 'buttons' %}
+  <div class="c7-sheetpad">
+    {% for n in run.buttons %}
+    <button type="button" class="c7-sheetpad__key{{ ' is-on' if cell.value == n }}"
+            data-value="{{ n }}">{{ n }}</button>
+    {% endfor %}
+  </div>
+
+  {% elif run.dock == 'counter' %}
+  <div class="c7-duo">
+    <button type="button" class="c7-exam-verdict c7-exam-verdict--no" data-shot="0">
+      {{ _("Sbagliato") }}
+    </button>
+    <button type="button" class="c7-exam-verdict c7-exam-verdict--ok" data-shot="1">
+      {{ _("Riuscito") }}
+    </button>
+  </div>
+  <div class="c7-duo">
+    <button type="button" class="c7-exam-dock__alt" data-undo
+            {% if not cell.marks %}disabled{% endif %}>
+      <i class="fas fa-rotate-left" aria-hidden="true"></i>{{ _("Annulla il tiro") }}
+    </button>
+    <button type="button" class="c7-exam-dock__alt" data-bs-toggle="modal" data-bs-target="#sheetTotale"
+            data-total-open data-max="{{ item.amount }}" data-current="{{ cell.value or 0 }}">
+      {{ _("Scrivi il totale") }}
+    </button>
+  </div>
+
+  {% elif run.dock == 'pad' %}
+  <div class="c7-exam-pad" data-pad data-max="{{ item.amount or '' }}">
+    <button type="button" class="c7-exam-pad__btn" data-step="-1"
+            aria-label="{{ _('Uno in meno') }}"><i class="fas fa-minus"></i></button>
+    <div class="c7-exam-pad__figure">
+      <input class="c7-exam-pad__v" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+             data-pad-value aria-label="{{ item.measure_kind.label }}"
+             value="{{ cell.value if cell.value is not none else 0 }}">
+      {% if item.amount %}<div class="c7-exam-pad__max">{{ _("su %(n)s", n=item.amount) }}</div>{% endif %}
+    </div>
+    <button type="button" class="c7-exam-pad__btn c7-exam-pad__btn--plus" data-step="1"
+            aria-label="{{ _('Uno in più') }}"><i class="fas fa-plus"></i></button>
+  </div>
+  <button type="button" class="btn btn-primary w-100" data-pad-save>{{ _("Segna") }}</button>
+
+  {% elif run.dock == 'done' %}
+  <div class="c7-duo">
+    <button type="button" class="c7-exam-verdict c7-exam-verdict--no{{ ' is-on' if cell.done is false }}"
+            data-done="0">{{ _("Non fatto") }}</button>
+    <button type="button" class="c7-exam-verdict c7-exam-verdict--ok{{ ' is-on' if cell.done }}"
+            data-done="1">{{ _("Fatto") }}</button>
+  </div>
+  {% endif %}
+</div>
+{% endfor %}
+{% endif %}
+
+{# ── Dove siamo nella scheda, e quanto manca alla soglia ───────────────── #}
+{% if run.max_total %}
+<div class="c7-sheetdock__meter">
+  <div class="c7-runprog__head">
+    <span class="c7-num" style="font-weight:800">
+      {{ _("%(n)s su %(tot)s finora", n=run.total, tot=run.max_total) }}
+    </span>
+    {% if run.threshold %}<span class="c7-label">{{ run.threshold_label }}</span>{% endif %}
+  </div>
+  <div class="c7-bar"><div class="c7-bar__fill" style="width:{{ run.progress_pct }}%"></div></div>
+</div>
+{% endif %}
+
+{# ── Indietro, avanti, e la fine ───────────────────────────────────────── #}
+<div class="c7-duo" style="grid-template-columns:1fr 1fr">
+  {% if not run.is_first %}
+  <a class="c7-exam-dock__alt" href="{{ url_for('sheet.run', session_id=run.session.id, voce=run.index - 1) }}">
+    <i class="fas fa-arrow-left" aria-hidden="true"></i>{{ run.steps[run.index - 1].label|truncate(18, True) }}
+  </a>
+  {% else %}<span></span>{% endif %}
+
+  {% if not run.is_last %}
+  <a class="btn btn-primary" href="{{ url_for('sheet.run', session_id=run.session.id, voce=run.index + 1) }}">
+    {{ run.steps[run.index + 1].label|truncate(18, True) }}<i class="fas fa-arrow-right" aria-hidden="true"></i>
+  </a>
+  {% else %}
+  <button type="submit" form="sheetClose" class="btn btn-success">{{ _("Ho finito") }}</button>
+  {% endif %}
+</div>

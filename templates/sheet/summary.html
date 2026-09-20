@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{# Fine seduta (canvas «TPA ed esercizi», pagina 5 · «Fine seduta»; ADR-067).
+
+   Una pagina con un indirizzo suo, come la fine di una prova a colpi: si
+   riapre, e domani il registro ci manderà. Tre cose in ordine — il totale,
+   voce per voce com'è cambiata, e se il gradino è superato — più le note, che
+   si scrivono anche dopo. #}
+
+{% block title %}{{ summary.sheet.name }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('sheet.index') }}"
+   aria-label="{{ _('Torna alle schede') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ summary.sheet.name }}{% endblock %}
+{% block page_sub %}
+  {{ _("Seduta del %(giorno)s", giorno=session.started_at|day_friendly(with_time=False)) }}
+  {%- if summary.minutes %} <span class="c7-sep">·</span>
+    {{ ngettext("%(num)s minuto", "%(num)s minuti", summary.minutes) }}{% endif -%}
+{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+
+  {# ── Il totale ─────────────────────────────────────────────────────── #}
+  {% if summary.counts %}
+  <section class="c7-card c7-card--accent">
+    <div class="c7-kicker">{{ _("Seduta finita") if not session.is_open else _("Come sta andando") }}</div>
+    <div class="c7-exam__total">
+      <span class="c7-exam__total-v">{{ summary.total }}</span>
+      <span class="c7-exam__total-max">{{ _("su %(max)s", max=summary.max_total) }}</span>
+      <span class="flex-fill"></span>
+      {% if summary.threshold %}
+      <span class="c7-state c7-state--onaccent">
+        {{ _("sopra la soglia") if summary.above else _("sotto la soglia") }}
+      </span>
+      {% endif %}
+    </div>
+    <div class="c7-slot__where">
+      {%- if summary.is_best and summary.previous_best is not none %}
+        {{ _("Il tuo meglio su questa scheda: prima era %(n)s.", n=summary.previous_best) }}
+      {%- elif summary.previous_best is not none %}
+        {{ _("La volta prima %(n)s.", n=summary.previous_best) }}
+      {%- else %}{{ _("È la prima seduta di questa scheda.") }}{% endif -%}
+      {%- if summary.above and summary.streak > 1 %}
+        <span class="c7-sep">·</span>
+        {{ ngettext("%(num)s seduta di fila sopra la soglia",
+                    "%(num)s sedute di fila sopra la soglia", summary.streak) }}
+      {%- endif -%}
+    </div>
+  </section>
+  {% endif %}
+
+  {# ── Voce per voce ─────────────────────────────────────────────────── #}
+  {% if summary.rows %}
+  <section class="c7-rows">
+    {% for row in summary.rows %}
+    <div class="c7-rows__row">
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">
+          {{ row.label }}{% if row.side %} <span class="c7-sep">·</span> {{ row.side }}{% endif %}
+        </div>
+      </div>
+      {% if row.previous is not none %}
+      <span class="c7-num" style="font-size:12px;color:var(--c7-ink-muted)">
+        {{ _("prima %(n)s", n=row.previous) }}
+      </span>
+      {% endif %}
+      <span class="c7-num-lg{% if row.tone %} c7-summary__v--{{ row.tone }}{% endif %}">
+        {{ row.value_label }}
+      </span>
+    </div>
+    {% endfor %}
+  </section>
+  {% else %}
+  <div class="c7-empty">
+    <p class="c7-empty__text">{{ _("In questa seduta non hai segnato niente.") }}</p>
+  </div>
+  {% endif %}
+
+  {# ── Il gradino ────────────────────────────────────────────────────── #}
+  {% if summary.step_reached %}
+  <div class="c7-flash c7-flash--ok">
+    <span class="c7-flash__ico"><i class="fas fa-trophy"></i></span>
+    <div>
+      <div class="c7-flash__title">
+        {{ _("Hai tenuto la soglia del livello %(n)s", n=summary.sheet.level) }}
+      </div>
+      {{ ngettext("Una seduta sopra la soglia.", "%(num)s sedute di fila sopra la soglia.", summary.streak) }}
+      {{ _("Il passaggio al livello successivo lo confermerà chi ti segue.") }}
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Le note ───────────────────────────────────────────────────────── #}
+  <form method="POST" action="{{ url_for('sheet.session_notes', session_id=session.id) }}"
+        class="c7-card c7-stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <label class="c7-label" for="notes">{{ _("Note della seduta") }}</label>
+      <textarea class="form-control" id="notes" name="notes" rows="3"
+                placeholder="{{ _('Tavolo 4. Sul follow a sinistra arrivo corto.') }}">{{ session.notes or '' }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-secondary w-100">{{ _("Salva le note") }}</button>
+  </form>
+
+  <div class="c7-duo">
+    {% if session.is_open %}
+    <a class="btn btn-secondary" href="{{ url_for('sheet.run', session_id=session.id) }}">{{ _("Torna alla seduta") }}</a>
+    <button type="submit" form="sheetClose" class="btn btn-success">{{ _("Ho finito") }}</button>
+    {% else %}
+    <a class="btn btn-secondary" href="{{ url_for('sheet.index') }}">{{ _("Le tue schede") }}</a>
+    <form method="POST" action="{{ url_for('sheet.start_session', sheet_id=summary.sheet.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-primary w-100">{{ _("Un'altra seduta") }}</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+{% if session.is_open %}
+<form method="POST" id="sheetClose" action="{{ url_for('sheet.close_session', session_id=session.id) }}" hidden>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+{% endif %}
+{% endblock %}
