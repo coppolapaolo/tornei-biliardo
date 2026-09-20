@@ -35,6 +35,7 @@
 {% block page_title %}{{ challenge.get_display_name() }}{% endblock %}
 {% block page_sub %}
   {%- if is_pass_fail %}{{ _("Riuscito o no") }}
+  {%- elif is_shots %}{{ _("Colpo per colpo") }} <span class="c7-sep">·</span> {{ _("%(n)s colpi", n=challenge.shots_count) }}
   {%- elif max_score %}{{ _("A punteggio") }} <span class="c7-sep">·</span> {{ _("su %(n)s", n=max_score) }}
   {%- else %}{{ _("A punteggio") }}{% endif -%}
 {% endblock %}
@@ -44,7 +45,11 @@
 {% block app_nav %}{% endblock %}
 
 {% block content %}
-{% include "challenge/_training_board.html" %}
+{# Il tabellone orizzontale è dei due modi col totale: lì il telefono girato
+   mette foto, regola e tastierino in una schermata sola. Colpo per colpo il
+   comando **è** il panno, che di spazio ne vuole tutto: un secondo tastierino
+   in un velo sopra la pagina non registrerebbe niente. #}
+{% if not is_shots %}{% include "challenge/_training_board.html" %}{% endif %}
 
 <div class="c7-run"
      data-run
@@ -55,11 +60,21 @@
      data-msg-recording="{{ _('Registro…') }}"
      data-msg-error="{{ _('Non è stato possibile registrare la prova.') }}"
      data-msg-network="{{ _('Non è stato possibile registrare la prova. Riprova.') }}"
-     data-msg-undo-error="{{ _('Non è stato possibile annullare la prova.') }}">
+     data-msg-undo-error="{{ _('Non è stato possibile annullare la prova.') }}"
+     {% if is_shots %}
+     data-shot-url="{{ url_for('challenge.training_shot', challenge_id=challenge.id) }}"
+     data-shot-undo-url="{{ url_for('challenge.training_shot_undo', challenge_id=challenge.id) }}"
+     data-shot-close-url="{{ url_for('challenge.training_shot_close', challenge_id=challenge.id) }}"
+     data-shot-restart-url="{{ url_for('challenge.training_shot_restart', challenge_id=challenge.id) }}"
+     {% endif %}>
 
   <section class="c7-stack c7-run__main">
 
-    {# ---------- 1 · L'esercizio: disegno e consegna ---------- #}
+    {# ---------- 1 · L'esercizio: disegno e consegna ----------
+       Colpo per colpo il disegno si chiude in una linguetta: il panno da
+       toccare vuole lo spazio, e chi tira la disposizione ce l'ha davanti sul
+       tavolo vero. #}
+    {% if is_shots %}<details class="c7-run__fold"><summary>{{ _("Rivedi la disposizione") }}</summary>{% endif %}
     <div class="c7-diagram c7-diagram--card">
       {% if challenge.image_filename %}
       <img class="c7-diagram__img" src="{{ challenge_image_url(challenge) }}"
@@ -71,6 +86,7 @@
     </div>
 
     <p class="c7-run__brief">{{ challenge.description }}</p>
+    {% if is_shots %}</details>{% endif %}
 
     {# Da che parte: le varianti dell'esercizio (ADR-065). Pillole a scelta
        singola, con «senza dirlo» accesa di partenza: la variante è
@@ -101,7 +117,9 @@
 
   {# ---------- 3 · I comandi ---------- #}
   <aside class="c7-run-dock" data-run-dock>
-    {% if is_pass_fail %}
+    {% if is_shots %}
+    {% include "challenge/_run_shots_dock.html" %}
+    {% elif is_pass_fail %}
     <div class="c7-run-dock__pair" data-help="allenamento-esito">
       <button type="button" class="c7-exam-verdict c7-exam-verdict--ok" data-outcome="true">
         <i class="fas fa-check" aria-hidden="true"></i>{{ _("Superata") }}
@@ -134,6 +152,7 @@
     </button>
     {% endif %}
 
+    {% if not is_shots %}
     {# Le due vie d'uscita: disfare l'ultima, o smettere. L'annulla nasce
        spento quando non c'è niente da annullare — un tasto che risponde «non
        c'è nessuna prova» è un tasto che non doveva essere lì. #}
@@ -144,10 +163,15 @@
       </button>
       <a href="{{ url_for('challenge.today') }}" class="btn btn-success">{{ _("Ho finito") }}</a>
     </div>
+    {% endif %}
   </aside>
 </div>
 {% endblock %}
 
 {% block scripts %}
+{% if is_shots %}
+<script src="{{ url_for('static', filename='js/exercise-shots.js') }}?v={{ config.ASSET_VERSION }}"></script>
+{% else %}
 <script src="{{ url_for('static', filename='js/exercise-run.js') }}?v={{ config.ASSET_VERSION }}"></script>
+{% endif %}
 {% endblock %}

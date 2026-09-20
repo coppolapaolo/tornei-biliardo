@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 10:52+0200\n"
+"POT-Creation-Date: 2026-09-20 11:14+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -344,7 +344,7 @@ msgid ","
 msgstr ""
 
 #: models/challenge/execution_view.py:129
-#: templates/challenge/_run_progress.html:23
+#: templates/challenge/_run_progress.html:41
 msgid "Le prove di oggi"
 msgstr ""
 
@@ -354,7 +354,7 @@ msgid "la tua media %(avg)s"
 msgstr ""
 
 #: models/challenge/execution_view.py:170
-#: models/challenge/execution_view.py:212
+#: models/challenge/execution_view.py:212 models/challenge/run_view.py:141
 msgid "È la tua prima prova su questo esercizio."
 msgstr ""
 
@@ -472,7 +472,51 @@ msgid "Col totale"
 msgstr ""
 
 #: models/challenge/recording.py:49 templates/challenge/form.html:226
+#: templates/challenge/training.html:38
 msgid "Colpo per colpo"
+msgstr ""
+
+#: models/challenge/run_view.py:80
+#, python-format
+msgid "Colpo %(n)s di %(tot)s"
+msgstr ""
+
+#: models/challenge/run_view.py:84
+#, python-format
+msgid "%(n)s punti"
+msgstr ""
+
+#: models/challenge/run_view.py:93
+#, python-format
+msgid "la tua media %(avg)s a colpo"
+msgstr ""
+
+#: models/challenge/run_view.py:139
+msgid "Hai tirato tutti i colpi: chiudi la prova quando vuoi."
+msgstr ""
+
+#: models/challenge/run_view.py:144
+#, python-format
+msgid "Di solito chiudi a %(solito)s."
+msgstr ""
+
+#: models/challenge/run_view.py:155
+#, python-format
+msgid "A questo ritmo chiudi a %(proj)s: %(num)s punto sopra il tuo solito."
+msgid_plural "A questo ritmo chiudi a %(proj)s: %(num)s punti sopra il tuo solito."
+msgstr[0] ""
+msgstr[1] ""
+
+#: models/challenge/run_view.py:162
+#, python-format
+msgid "A questo ritmo chiudi a %(proj)s: %(num)s punto sotto il tuo solito."
+msgid_plural "A questo ritmo chiudi a %(proj)s: %(num)s punti sotto il tuo solito."
+msgstr[0] ""
+msgstr[1] ""
+
+#: models/challenge/run_view.py:167
+#, python-format
+msgid "A questo ritmo chiudi a %(proj)s: il tuo solito."
 msgstr ""
 
 #: models/challenge/services.py:745
@@ -538,6 +582,7 @@ msgid "Battente"
 msgstr ""
 
 #: models/challenge/vocabulary.py:103 templates/admin/venue_form.html:195
+#: templates/challenge/_run_shots.html:52
 #: templates/components/_playoff_invitations.html:29
 #: templates/individual_match/statistics.html:80
 #: templates/individual_match/tpa_referto.html:179
@@ -3093,7 +3138,7 @@ msgstr ""
 msgid "Gli amministratori non provano gli esercizi."
 msgstr ""
 
-#: routes/challenge.py:758
+#: routes/challenge.py:758 routes/challenge.py:994
 msgid "Prova registrata."
 msgstr ""
 
@@ -3101,36 +3146,40 @@ msgstr ""
 msgid "Non c'è nessuna prova da annullare."
 msgstr ""
 
-#: routes/challenge.py:811
+#: routes/challenge.py:811 routes/challenge.py:969
 msgid "Prova annullata."
 msgstr ""
 
-#: routes/challenge.py:1033
+#: routes/challenge.py:896
+msgid "Il punto sul panno non è leggibile."
+msgstr ""
+
+#: routes/challenge.py:1194
 msgid "Tentativo registrato."
 msgstr ""
 
-#: routes/challenge.py:1074 templates/challenge/catalog.html:138
+#: routes/challenge.py:1235 templates/challenge/catalog.html:138
 #: templates/challenge/today.html:92
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr ""
 
-#: routes/challenge.py:1111
+#: routes/challenge.py:1272
 msgid "Voto registrato."
 msgstr ""
 
-#: routes/challenge.py:1174
+#: routes/challenge.py:1335
 msgid "Esercizio di gara avviato."
 msgstr ""
 
-#: routes/challenge.py:1227
+#: routes/challenge.py:1388
 msgid "Esercizio di gara registrato."
 msgstr ""
 
-#: routes/challenge.py:1260
+#: routes/challenge.py:1421
 msgid "Esercizio non trovato."
 msgstr ""
 
-#: routes/challenge.py:1270
+#: routes/challenge.py:1431
 msgid "Non hai i permessi per questo esercizio."
 msgstr ""
 
@@ -5125,6 +5174,7 @@ msgid "Complete Gara"
 msgstr ""
 
 #: templates/base.html:693 templates/base.html:699
+#: templates/challenge/_run_cloth.html:78
 msgid "Conferma"
 msgstr ""
 
@@ -9004,7 +9054,7 @@ msgstr ""
 
 #: templates/challenge/_challenge_detail.html:25
 #: templates/challenge/_training_board.html:27
-#: templates/challenge/training.html:66
+#: templates/challenge/training.html:81
 msgid "Disposizione dell'esercizio"
 msgstr ""
 
@@ -9094,7 +9144,7 @@ msgstr ""
 
 #: templates/challenge/_exercise_bits.html:25
 #: templates/challenge/builder.html:271 templates/challenge/form.html:221
-#: templates/challenge/training.html:38 templates/challenge/training.html:39
+#: templates/challenge/training.html:39 templates/challenge/training.html:40
 #: templates/components/_challenge_bits.html:27
 #: templates/player/challenge_attempt_detail.html:49
 msgid "A punteggio"
@@ -9159,9 +9209,21 @@ msgstr ""
 msgid "Aggiungi ai preferiti"
 msgstr ""
 
-#: templates/challenge/_run_progress.html:33
+#: templates/challenge/_run_cloth.html:33
+msgid "Il tavolo: tocca dove si è fermata la bianca"
+msgstr ""
+
+#: templates/challenge/_run_cloth.html:75
+msgid "Trascina la battente per correggere il punto."
+msgstr ""
+
+#: templates/challenge/_run_cloth.html:77
+msgid "Tavolo intero"
+msgstr ""
+
+#: templates/challenge/_run_progress.html:51
 #: templates/challenge/_training_board.html:65
-#: templates/challenge/training.html:107
+#: templates/challenge/training.html:125
 #: templates/components/_history_drills_tab.html:133
 #: templates/components/_match_challenge_input.html:54
 #: templates/components/_player_challenge_statistics.html:55
@@ -9174,9 +9236,9 @@ msgstr ""
 msgid "Superata"
 msgstr ""
 
-#: templates/challenge/_run_progress.html:33
+#: templates/challenge/_run_progress.html:51
 #: templates/challenge/_training_board.html:68
-#: templates/challenge/training.html:110
+#: templates/challenge/training.html:128
 #: templates/components/_history_drills_tab.html:133
 #: templates/components/_match_challenge_input.html:55
 #: templates/components/_player_challenge_statistics.html:55
@@ -9187,6 +9249,50 @@ msgstr ""
 #: templates/player/gara_challenge_detail.html:84
 #: templates/player/gara_challenge_detail.html:136
 msgid "Non superata"
+msgstr ""
+
+#: templates/challenge/_run_shots.html:28
+msgid "I colpi di questa prova"
+msgstr ""
+
+#: templates/challenge/_run_shots.html:31
+#, python-format
+msgid "Colpo %(n)s"
+msgstr ""
+
+#: templates/challenge/_run_shots.html:48
+msgid "Imbucate"
+msgstr ""
+
+#: templates/challenge/_run_shots_dock.html:9
+msgid "Chiudi la prova"
+msgstr ""
+
+#: templates/challenge/_run_shots_dock.html:13
+msgid "Imbucata?"
+msgstr ""
+
+#: templates/challenge/_run_shots_dock.html:14
+msgid "Tocca il panno dove si è fermata la bianca: l'anello dà i punti."
+msgstr ""
+
+#: templates/challenge/_run_shots_dock.html:18
+msgid "Non è entrata · 0 punti"
+msgstr ""
+
+#: templates/challenge/_run_shots_dock.html:25
+msgid "Annulla l'ultimo colpo"
+msgstr ""
+
+#: templates/challenge/_run_shots_dock.html:29
+#: templates/components/_match_scoreboard.html:304
+msgid "Ricomincia"
+msgstr ""
+
+#: templates/challenge/_run_shots_dock.html:32
+#: templates/challenge/_training_board.html:95
+#: templates/challenge/training.html:164
+msgid "Ho finito"
 msgstr ""
 
 #: templates/challenge/_training_board.html:21
@@ -9235,11 +9341,6 @@ msgstr ""
 #: templates/challenge/_training_board.html:84
 #: templates/components/_match_challenge_input.html:63
 msgid "Registra"
-msgstr ""
-
-#: templates/challenge/_training_board.html:95
-#: templates/challenge/training.html:145
-msgid "Ho finito"
 msgstr ""
 
 #: templates/challenge/builder.html:19 templates/challenge/builder.html:35
@@ -10176,7 +10277,7 @@ msgid "Alla fine registri il punteggio"
 msgstr ""
 
 #: templates/challenge/start_attempt.html:43
-#: templates/challenge/training.html:98
+#: templates/challenge/training.html:114
 msgid "Puoi riprovare quante volte vuoi: resta il tuo risultato migliore."
 msgstr ""
 
@@ -10265,49 +10366,58 @@ msgstr ""
 msgid "Torna agli esercizi"
 msgstr ""
 
-#: templates/challenge/training.html:38 templates/challenge/training.html:119
+#: templates/challenge/training.html:38
+#, python-format
+msgid "%(n)s colpi"
+msgstr ""
+
+#: templates/challenge/training.html:39 templates/challenge/training.html:137
 #: templates/exam/session.html:238
 #, python-format
 msgid "su %(n)s"
 msgstr ""
 
-#: templates/challenge/training.html:55
+#: templates/challenge/training.html:60
 msgid "Registro…"
 msgstr ""
 
-#: templates/challenge/training.html:56
+#: templates/challenge/training.html:61
 msgid "Non è stato possibile registrare la prova."
 msgstr ""
 
-#: templates/challenge/training.html:57
+#: templates/challenge/training.html:62
 msgid "Non è stato possibile registrare la prova. Riprova."
 msgstr ""
 
-#: templates/challenge/training.html:58
+#: templates/challenge/training.html:63
 msgid "Non è stato possibile annullare la prova."
 msgstr ""
 
-#: templates/challenge/training.html:82
+#: templates/challenge/training.html:77
+msgid "Rivedi la disposizione"
+msgstr ""
+
+#: templates/challenge/training.html:98
 msgid "Da che parte"
 msgstr ""
 
-#: templates/challenge/training.html:84
+#: templates/challenge/training.html:100
 msgid "senza dirlo"
 msgstr ""
 
-#: templates/challenge/training.html:116 templates/exam/session.html:231
+#: templates/challenge/training.html:134 templates/exam/session.html:231
 msgid "Uno in meno"
 msgstr ""
 
-#: templates/challenge/training.html:122 templates/exam/session.html:240
+#: templates/challenge/training.html:140 templates/exam/session.html:240
 msgid "Uno in più"
 msgstr ""
 
-#: templates/challenge/training.html:133
+#: templates/challenge/training.html:151
 msgid "Registra la prova"
 msgstr ""
 
-#: templates/challenge/training.html:143
+#: templates/challenge/training.html:162
 msgid "Annulla l'ultima"
 msgstr ""
 
@@ -12997,10 +13107,6 @@ msgstr ""
 
 #: templates/components/_match_scoreboard.html:284
 msgid "acchito · apre"
-msgstr ""
-
-#: templates/components/_match_scoreboard.html:304
-msgid "Ricomincia"
 msgstr ""
 
 #: templates/components/_match_scoreboard.html:327

@@ -1,0 +1,81 @@
+{# Il panno che si tocca (fase 5b; ADR-066).
+
+   Due viste dello **stesso** sistema di coordinate — 1 diamante = 100 unità,
+   panno 800 × 400, come il disegnatore: il tavolo intero, e l'ingrandimento sul
+   bersaglio. L'ingrandimento non è un abbellimento: indicare un punto a pochi
+   centimetri dal centro, su un tavolo grande quanto uno schermo di telefono,
+   col dito non si fa (#183).
+
+   Qui non ci sono le bilie dell'esercizio: quelle stanno nel disegno, che è lì
+   sopra. Questo è il posto dove si dice **dove si è fermata la bianca**, e più
+   è pulito meno si sbaglia a toccarlo.
+
+   `challenge.diagram_scene` non arriva fin qui: il bersaglio è già stato letto
+   dal server (`RunProgress.target`), che è l'unico a sapere quanto vale ogni
+   anello. #}
+
+{% macro rings(target, marker_class='') -%}
+  {#- Dal più largo al più stretto, così i cerchi interni coprono gli esterni;
+      `--ring` cresce verso FUORI, e con lui la tinta si schiarisce: il centro
+      è il pieno, l'ultimo anello un velo. -#}
+  {%- for valore in target.values|reverse -%}
+  {%- set indice = target.values|length - loop.index0 -%}
+  <circle class="c7-cloth__ring" cx="{{ target.x }}" cy="{{ target.y }}"
+          r="{{ target.step * indice }}" style="--ring: {{ indice - 1 }}"></circle>
+  {%- endfor -%}
+{%- endmacro %}
+
+{% set r = target.step * target.values|length %}
+<div class="c7-cloth" data-cloth>
+  {# ── Il tavolo intero ─────────────────────────────────────────────── #}
+  <svg class="c7-cloth__svg" viewBox="-30 -30 860 460" data-cloth-full
+       data-vb="-30 -30 860 460"
+       role="img" aria-label="{{ _('Il tavolo: tocca dove si è fermata la bianca') }}">
+    <rect class="c7-cloth__rail" x="-30" y="-30" width="860" height="460" rx="14"></rect>
+    <rect class="c7-cloth__felt" x="0" y="0" width="800" height="400"></rect>
+    {% for d in range(1, 8) %}
+    <circle class="c7-cloth__dia" cx="{{ d * 100 }}" cy="-15" r="4"></circle>
+    <circle class="c7-cloth__dia" cx="{{ d * 100 }}" cy="415" r="4"></circle>
+    {% endfor %}
+    {% for d in range(1, 4) %}
+    <circle class="c7-cloth__dia" cx="-15" cy="{{ d * 100 }}" r="4"></circle>
+    <circle class="c7-cloth__dia" cx="815" cy="{{ d * 100 }}" r="4"></circle>
+    {% endfor %}
+    <g class="c7-cloth__rings">{{ rings(target) }}</g>
+    {# I colpi già tirati restano sul panno: è la nuvola che nessun punteggio
+       riassume — si vede a colpo d'occhio se si sbaglia sempre dallo stesso lato. #}
+    <g data-cloth-shots>
+      {% for colpo in shots %}
+      {% if colpo.x is not none %}
+      <circle class="c7-cloth__shot" cx="{{ colpo.x }}" cy="{{ colpo.y }}" r="9"></circle>
+      {% endif %}
+      {% endfor %}
+    </g>
+  </svg>
+
+  {# ── L'ingrandimento: si apre al tocco, si trascina per correggere ── #}
+  <div class="c7-cloth__zoom" data-cloth-zoom hidden>
+    <svg class="c7-cloth__svg" data-cloth-zoomsvg
+         viewBox="{{ target.x - r * 1.3 }} {{ target.y - r * 1.3 }} {{ r * 2.6 }} {{ r * 2.6 }}"
+         data-vb="{{ target.x - r * 1.3 }} {{ target.y - r * 1.3 }} {{ r * 2.6 }} {{ r * 2.6 }}">
+      <rect class="c7-cloth__felt" x="{{ target.x - r * 1.3 }}" y="{{ target.y - r * 1.3 }}"
+            width="{{ r * 2.6 }}" height="{{ r * 2.6 }}"></rect>
+      <g class="c7-cloth__rings">{{ rings(target) }}</g>
+      {# I due mirini proiettano il punto sui bordi: a occhio la distanza dal
+         centro si giudica male, una riga no. #}
+      <line class="c7-cloth__cross" data-cross-x
+            x1="{{ target.x }}" y1="{{ target.y - r * 1.3 }}"
+            x2="{{ target.x }}" y2="{{ target.y + r * 1.3 }}"></line>
+      <line class="c7-cloth__cross" data-cross-y
+            x1="{{ target.x - r * 1.3 }}" y1="{{ target.y }}"
+            x2="{{ target.x + r * 1.3 }}" y2="{{ target.y }}"></line>
+      <circle class="c7-cloth__cue" data-cloth-marker
+              cx="{{ target.x }}" cy="{{ target.y }}" r="18"></circle>
+    </svg>
+    <p class="c7-cloth__hint">{{ _("Trascina la battente per correggere il punto.") }}</p>
+    <div class="c7-cloth__zoomacts">
+      <button type="button" class="btn btn-secondary" data-cloth-cancel>{{ _("Tavolo intero") }}</button>
+      <button type="button" class="btn btn-primary" data-cloth-confirm>{{ _("Conferma") }}</button>
+    </div>
+  </div>
+</div>

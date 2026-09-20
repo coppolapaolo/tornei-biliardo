@@ -43,6 +43,11 @@ TRAINING_ENDPOINTS = (
     "challenge.challenge_detail",
     "challenge.training_session",
     "challenge.training_undo",
+    # I colpi di una prova colpo per colpo (ADR-066).
+    "challenge.training_shot",
+    "challenge.training_shot_undo",
+    "challenge.training_shot_close",
+    "challenge.training_shot_restart",
     "challenge.start_attempt",
     "challenge.attempt_detail",
     "challenge.complete_attempt",

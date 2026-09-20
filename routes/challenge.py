@@ -707,10 +707,10 @@ def training_session(challenge_id):
     if request.method == "GET":
         return render_template(
             "challenge/training.html",
-            challenge=challenge,
             attempts=_recent_attempts(challenge_id),
             best_score=_best_score(challenge),
-            progress=_progress(challenge),
+            is_shots=_is_shots(challenge),
+            **_run_context(challenge),
         )
 
     data = (request.get_json(silent=True) if request.is_json else request.form) or {}
@@ -821,7 +821,43 @@ def _progress(challenge):
     return build_progress(challenge, current_user.id, tz=resolve_timezone())
 
 
-def _progress_html(challenge):
+def _is_shots(challenge) -> bool:
+    from models.challenge.recording import RecordingMode
+
+    return RecordingMode.parse(challenge.recording_mode).is_sequence
+
+
+def _run_context(challenge):
+    """Tutto ciò che la cornice mostra: oggi, la prova in corso, il bersaglio.
+
+    Uno solo, e lo usano sia il caricamento della pagina sia ogni risposta
+    JSON: due letture diverse dello stesso stato darebbero una pagina che dopo
+    un colpo dice una cosa diversa da quella che direbbe ricaricandola.
+    """
+    from models.challenge.run_view import build_run
+    from models.challenge.shot_service import ShotRunService
+    from models.challenge.target import target_from_scene
+
+    a_colpi = _is_shots(challenge)
+    run = (
+        build_run(ShotRunService.current(current_user.id, challenge.id))
+        if a_colpi
+        else None
+    )
+    return {
+        "challenge": challenge,
+        "progress": _progress(challenge),
+        "run": run,
+        # Il panno da toccare prima del primo colpo: dopo lo porta `run`.
+        "cloth_target": (
+            target_from_scene(challenge.diagram_scene)
+            if a_colpi and run is None
+            else None
+        ),
+    }
+
+
+def _progress_html(challenge, context=None):
     """Lo stesso pezzo che la pagina ha ricevuto al caricamento, ridisegnato.
 
     Viaggia dentro la risposta JSON di ogni prova registrata o annullata: il
@@ -829,9 +865,134 @@ def _progress_html(challenge):
     non si compone nessun testo tradotto.
     """
     return render_template(
-        "challenge/_run_progress.html",
-        challenge=challenge,
-        progress=_progress(challenge),
+        "challenge/_run_progress.html", **(context or _run_context(challenge))
+    )
+
+
+def _shots_payload(challenge):
+    """I due pezzi che cambiano a ogni colpo: come sta andando, e i comandi.
+
+    Anche i comandi li ridisegna il server — dopo l'ultimo colpo compare
+    «Chiudi la prova» — perché due stati da tenere in pari nel browser sono due
+    stati che prima o poi divergono.
+    """
+    context = _run_context(challenge)
+    return {
+        "progress_html": _progress_html(challenge, context),
+        "dock_html": render_template(
+            "challenge/_run_shots_dock.html", run=context["run"]
+        ),
+    }
+
+
+def _shot_payload_field(data, key):
+    """Un numero facoltativo dal JSON del colpo: assente e vuoto sono lo stesso."""
+    valore = data.get(key)
+    if valore in (None, ""):
+        return None
+    try:
+        return float(valore)
+    except (TypeError, ValueError):
+        raise ValidationError(_("Il punto sul panno non è leggibile."))
+
+
+@challenge_bp.route("/<int:challenge_id>/train/shot", methods=["POST"])
+@login_required
+def training_shot(challenge_id):
+    """Un colpo in più nella prova aperta; il primo la apre (ADR-066).
+
+    Il punteggio non passa di qui: lo decide il bersaglio, che il server ha e
+    il browser no. Dal browser arrivano solo l'esito e, quando la bilia è
+    entrata, il punto in cui si è fermata la battente.
+    """
+    from models.challenge.shot_service import ShotRunService
+
+    challenge = db.get_or_404(Challenge, challenge_id)
+    data = (request.get_json(silent=True) if request.is_json else request.form) or {}
+    made = str(data.get("made")).lower() == "true" or data.get("made") is True
+    variant = _payload_int(data, "variant_id")
+
+    def _registra():
+        ShotRunService.record_shot(
+            current_user.id,
+            challenge_id,
+            made=made,
+            x=_shot_payload_field(data, "x"),
+            y=_shot_payload_field(data, "y"),
+            variant_id=variant,
+        )
+        return _shots_payload(challenge)
+
+    return handle_ajax_service_action(
+        action=_registra,
+        redirect_url=url_for("challenge.training_session", challenge_id=challenge_id),
+        success_message=None,
+        error_prefix=None,
+    )
+
+
+@challenge_bp.route("/<int:challenge_id>/train/shot/undo", methods=["POST"])
+@login_required
+def training_shot_undo(challenge_id):
+    """Annulla l'ultimo colpo. Tolto l'unico, la prova aperta sparisce."""
+    from models.challenge.shot_service import ShotRunService
+
+    challenge = db.get_or_404(Challenge, challenge_id)
+
+    def _annulla():
+        ShotRunService.undo_last(current_user.id, challenge_id)
+        return _shots_payload(challenge)
+
+    return handle_ajax_service_action(
+        action=_annulla,
+        redirect_url=url_for("challenge.training_session", challenge_id=challenge_id),
+        success_message=None,
+        error_prefix=None,
+    )
+
+
+@challenge_bp.route("/<int:challenge_id>/train/shot/restart", methods=["POST"])
+@login_required
+def training_shot_restart(challenge_id):
+    """Butta la prova aperta e i suoi colpi. Le prove chiuse non si toccano."""
+    from models.challenge.shot_service import ShotRunService
+
+    challenge = db.get_or_404(Challenge, challenge_id)
+
+    def _ricomincia():
+        ShotRunService.restart(current_user.id, challenge_id)
+        return _shots_payload(challenge)
+
+    return handle_ajax_service_action(
+        action=_ricomincia,
+        redirect_url=url_for("challenge.training_session", challenge_id=challenge_id),
+        success_message=_("Prova annullata."),
+        error_prefix=None,
+    )
+
+
+@challenge_bp.route("/<int:challenge_id>/train/shot/close", methods=["POST"])
+@login_required
+def training_shot_close(challenge_id):
+    """Chiude la prova: il punteggio è la somma dei colpi.
+
+    Da qui in poi la prova è una come le altre — entra nelle «prove di oggi»,
+    nel record, nello storico — e la pagina torna al principio, pronta per la
+    prossima.
+    """
+    from models.challenge.shot_service import ShotRunService
+
+    challenge = db.get_or_404(Challenge, challenge_id)
+
+    def _chiudi():
+        ShotRunService.close(current_user.id, challenge_id)
+        return _shots_payload(challenge)
+
+    return handle_ajax_service_action(
+        action=_chiudi,
+        redirect_url=url_for("challenge.training_session", challenge_id=challenge_id),
+        success_message=_("Prova registrata."),
+        error_prefix=None,
     )
 
 

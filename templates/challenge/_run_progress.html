@@ -1,11 +1,29 @@
-{# Il posto di mezzo della cornice di esecuzione: come sta andando (fase 5a).
+{# Il posto di mezzo della cornice di esecuzione: come sta andando (fasi 5a, 5b).
 
    Lo disegna **solo il server**, anche dopo una prova registrata senza
    ricaricare: la risposta JSON porta questo stesso pezzo già pronto e la
    pagina lo sostituisce. Un secondo disegnatore in JavaScript avrebbe voluto
    dire due grafici e due frasi da tenere uguali, e le frasi tradotte composte
    nel browser. Niente `id` qui dentro: il pezzo può stare due volte nel
-   documento. #}
+   documento.
+
+   Tre stati, e uno solo per volta:
+
+   * una prova **colpo per colpo aperta** → si parla di colpi, non di prove: si
+     sta tirando, e ciò che conta è questa serie (`_run_shots.html`);
+   * colpo per colpo, **prima del primo colpo** → il panno da toccare in cima,
+     e sotto le prove di oggi;
+   * **col totale** → le prove di oggi, come sempre. #}
+{% if run %}
+{% include "challenge/_run_shots.html" %}
+{% else %}
+
+{% if cloth_target %}
+{% with target = cloth_target, shots = [] %}
+{% include "challenge/_run_cloth.html" %}
+{% endwith %}
+{% endif %}
+
 <section class="c7-card c7-runprog" data-help="allenamento-andamento">
   <div class="c7-runprog__head">
     <span class="c7-label">{{ progress.kicker }}</span>
@@ -36,4 +54,5 @@
   </div>
   {% endfor %}
 </section>
+{% endif %}
 {% endif %}
