@@ -268,13 +268,19 @@ class TrainingSheetService:
     # ────────────────────────────────────────────────────────────────────
     @staticmethod
     @transactional(domain="training_sheet")
-    def add_reader(sheet_id: int, user_id: int, actor: User) -> TrainingSheetReader:
+    def add_reader(
+        sheet_id: int, user_id: int, actor: User, *, avvisa: bool = True
+    ) -> TrainingSheetReader:
         """Apre la scheda a un istruttore: vale subito, senza attese (D18).
 
         Che il lettore debba essere un **istruttore** si controlla qui e non
         solo nella casella di ricerca: nascondere un nome dall'elenco non è una
         regola, e le schede di un minorenne non si difendono con l'ordine dei
         risultati.
+
+        ``avvisa=False`` serve a chi l'avviso lo manda da sé, con più contesto:
+        accettando una scheda proposta (ADR-071) il permesso nasce dentro un
+        gesto più grande, e due notifiche per un gesto solo sono una di troppo.
         """
         sheet = TrainingSheetService.get_sheet(sheet_id)
         TrainingSheetService._require_edit(sheet, actor)
@@ -295,7 +301,8 @@ class TrainingSheetService:
         reader = TrainingSheetReader(sheet_id=sheet.id, user_id=user_id)
         db.session.add(reader)
         db.session.flush()
-        TrainingSheetService._avvisa_apertura(sheet, lettore, actor)
+        if avvisa:
+            TrainingSheetService._avvisa_apertura(sheet, lettore, actor)
         return reader
 
     @staticmethod

@@ -84,6 +84,7 @@ Crea un ADR quando:
 | ADR-068 | [L'andamento mette insieme catalogo e schede su una scala sola, senza sommarli](ADR-068-andamento-una-scala-sola.md) | Accepted | 2026-09-20 |
 | ADR-069 | [Istruttore e allievo: il legame passa dalla scheda](ADR-069-istruttore-e-allievo.md) | Accepted | 2026-09-20 |
 | ADR-070 | [I gruppi ordinano, e «I miei allievi» dice fatti](ADR-070-gruppi-di-allievi-e-triage.md) | Accepted | 2026-09-20 |
+| ADR-071 | [Una scheda si propone, non si assegna](ADR-071-una-scheda-si-propone.md) | Accepted | 2026-09-20 |
 
 ## Come Creare un Nuovo ADR
 

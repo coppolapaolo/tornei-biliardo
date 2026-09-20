@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{# templates/sheet/proposta.html — 7c
+   «Ti propongono una scheda» (ADR-071, fase 8d).
+
+   Non c'è artboard, e la schermata più vicina per funzione è la card di
+   `sheet/index.html`: una proposta è una scheda che non hai ancora, quindi si
+   disegna come le altre schede — stesso titolo, stesse etichette — e non come
+   un avviso. Il comando sta **dentro la card**, accanto al dato su cui si
+   decide, come l'«Accetto» dell'appuntamento d'esame.
+
+   La casella della lettura nasce spuntata: chi ti manda una scheda te la manda
+   per seguirti, e senza quel permesso non vedrebbe niente. Resta una scelta —
+   la si toglie qui, o dopo da «Chi la legge» (ADR-069). #}
+
+{% block title %}{{ _("Una scheda per te") }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('sheet.index') }}"
+   aria-label="{{ _('Torna alle schede') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Una scheda per te") }}{% endblock %}
+{% block page_sub %}{{ _("da %(chi)s", chi=proposta.instructor.username) }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+
+  {# ── La proposta, col suo comando ───────────────────────────────────── #}
+  <section class="c7-card">
+    <div class="c7-kicker">{{ _("Un istruttore ti propone una scheda") }}</div>
+    <h2 style="margin:6px 0 10px;font-size:18px;font-weight:800;letter-spacing:-.02em">
+      {{ modello.name }}
+    </h2>
+    <div class="c7-chips">
+      <span class="c7-chip">
+        {{ ngettext("%(num)s esercizio", "%(num)s esercizi", modello.active_items|length) }}
+      </span>
+      {%- if modello.level %}<span class="c7-chip">{{ _("livello %(n)s", n=modello.level) }}</span>{% endif -%}
+      {%- if modello.has_threshold %}
+      <span class="c7-chip">{{ _("soglia %(n)s su %(tot)s", n=modello.threshold, tot=modello.total) }}</span>
+      {%- endif -%}
+      {%- if modello.days %}<span class="c7-chip">{{ _("giorni %(g)s", g=modello.days|join(' · ')) }}</span>{% endif -%}
+      {%- if modello.weeks %}<span class="c7-chip">{{ _("%(n)s settimane", n=modello.weeks) }}</span>{% endif -%}
+    </div>
+
+    {% if proposta.message %}
+    <div class="c7-inset" style="margin-top:12px">
+      <div class="c7-kicker">{{ _("dice %(chi)s", chi=proposta.instructor.username) }}</div>
+      <p style="margin:4px 0 0;font-size:14px;line-height:1.5">{{ proposta.message }}</p>
+    </div>
+    {% endif %}
+
+    <form method="POST" style="margin-top:12px"
+          action="{{ url_for('sheet.accetta_proposta', assignment_id=proposta.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {# L'interruttore della composizione, stessa forma: titolo, spiegazione,
+         spunta a destra. È il permesso di lettura, e nasce acceso. #}
+      <label class="c7-rows__row" style="background:var(--c7-bg);border-radius:var(--c7-r-field)">
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">
+            {{ _("Fai vedere a %(chi)s come va", chi=proposta.instructor.username) }}
+          </div>
+          <div class="c7-rows__sub">
+            {{ _("Vedrà le sedute di questa scheda, e nient'altro. Puoi togliergliela quando vuoi.") }}
+          </div>
+        </div>
+        <input class="form-check-input" type="checkbox" name="apri_lettura" value="1" checked>
+      </label>
+      <button type="submit" class="btn btn-success w-100" style="margin-top:12px">
+        {{ _("Prendi la scheda") }}
+      </button>
+    </form>
+  </section>
+
+  {# ── Cosa c'è dentro ────────────────────────────────────────────────── #}
+  <div class="c7-label">{{ _("Cosa c'è dentro") }}</div>
+  <section class="c7-rows">
+    {% for voce in modello.active_items %}
+    <div class="c7-rows__row">
+      <span class="c7-tile c7-tile--sm c7-tile--neutral">{{ loop.index }}</span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">
+          {{ voce.challenge.get_display_name() if voce.challenge else _("Esercizio") }}
+        </div>
+        <div class="c7-rows__sub">
+          {%- if voce.section %}{{ voce.section }} <span class="c7-sep">·</span> {% endif -%}
+          {%- if voce.day %}{{ _("giorno %(g)s", g=voce.day) }} <span class="c7-sep">·</span> {% endif -%}
+          {{ voce.measure_kind.label }}
+          {%- set quanti = quanto(voce.measure_kind, voce.amount) -%}
+          {%- if quanti %} <span class="c7-sep">·</span> {{ quanti }}{% endif -%}
+          {%- if voce.per_variant %} <span class="c7-sep">·</span> {{ _("una parte per volta") }}{% endif -%}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+
+  {# ── Dire di no ─────────────────────────────────────────────────────── #}
+  <form method="POST"
+        action="{{ url_for('sheet.rifiuta_proposta', assignment_id=proposta.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-secondary w-100">{{ _("No, grazie") }}</button>
+  </form>
+
+  <p class="c7-rows__sub" style="margin:0">
+    {{ _("Presa, la scheda è tua: la cambi, la archivi e decidi chi la legge. Quella di %(chi)s resta sua, e le modifiche che ci farà non toccheranno la tua.", chi=proposta.instructor.username) }}
+  </p>
+</div>
+{% endblock %}

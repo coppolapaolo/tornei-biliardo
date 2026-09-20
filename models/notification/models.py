@@ -63,6 +63,8 @@ class NotificationType(Enum):
     # continuerebbe a credersi seguito.
     SHEET_SHARED = "sheet_shared"  # Un allievo ti ha aperto una sua scheda
     SHEET_READER_LEFT = "sheet_reader_left"  # Un istruttore ha smesso di seguirti
+    SHEET_PROPOSED = "sheet_proposed"  # Un istruttore ti propone una scheda
+    SHEET_ANSWERED = "sheet_answered"  # L'allievo ha preso la scheda, o no
 
     # Segnalazioni degli utenti (issue #255)
     FEEDBACK_UPDATE = "feedback_update"  # La tua segnalazione è cambiata di stato

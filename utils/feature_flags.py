@@ -540,6 +540,12 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "sheet.toggle_notes_shared": {"player", "director"},
     "sheet.leave_sheet": {"player", "director"},
     "sheet.my_instructors": {"player", "director"},
+    # Le schede che un istruttore propone (ADR-071). Sono pagine del
+    # **destinatario**, non di chi insegna: chiunque si alleni può riceverne
+    # una, quindi gli stessi ruoli di tutte le altre schede.
+    "sheet.proposta": {"player", "director"},
+    "sheet.accetta_proposta": {"player", "director"},
+    "sheet.rifiuta_proposta": {"player", "director"},
     # L'altro lato: «I miei allievi» e i gruppi (D12). Solo `instructor`, e non
     # anche `player`, perché queste pagine esistono per chi ha il ruolo — le
     # route rispondono 404 a chi non ce l'ha, e qui si dice la stessa cosa a
@@ -547,6 +553,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # decidere, non il primario (ADR-041).
     "istruttore.allievi": {"instructor"},
     "istruttore.assegna_gruppo": {"instructor"},
+    "istruttore.dai_scheda": {"instructor"},
+    "istruttore.proponi_scheda": {"instructor"},
+    "istruttore.ritira_proposta": {"instructor"},
     "istruttore.gruppi": {"instructor"},
     "istruttore.crea_gruppo": {"instructor"},
     "istruttore.gruppo": {"instructor"},

@@ -35,6 +35,26 @@
   {% endif %}
 {% endblock %}
 
+{# «Dai una scheda», o lo stato della proposta che aspetta risposta.
+   Un riquadro e non un pulsante con la sua etichetta: la riga ha già il nome,
+   il fatto e il gruppo, e a 500px un quarto elemento con del testo dentro la
+   spezzerebbe. Il nome della cosa sta nell'`aria-label` e nel `title`. #}
+{% macro dare(voce) %}
+  {% if feature_visible('istruttore.dai_scheda') %}
+    {% set attesa = attese.get(voce.persona.id) %}
+    {% if attesa %}
+    <span class="c7-state c7-state--muted">{{ _("in attesa") }}</span>
+    {% else %}
+    <a class="c7-tile c7-tile--sm c7-tile--neutral"
+       href="{{ url_for('istruttore.dai_scheda', user_id=voce.persona.id) }}"
+       title="{{ _('Dai una scheda a %(chi)s', chi=voce.persona.username) }}"
+       aria-label="{{ _('Dai una scheda a %(chi)s', chi=voce.persona.username) }}">
+      <i class="fas fa-list-check"></i>
+    </a>
+    {% endif %}
+  {% endif %}
+{% endmacro %}
+
 {% macro riga(voce) %}
   {# Una persona: iniziali, nome, il fatto, e il gruppo in cui metterla. #}
   <div class="c7-rows__row">
@@ -51,6 +71,7 @@
     {% if voce.gruppo %}
     <span class="c7-state c7-state--muted">{{ voce.gruppo.name }}</span>
     {% endif %}
+    {{ dare(voce) }}
     <a class="c7-rows__chev" href="{{ url_for('sheet.detail', sheet_id=voce.schede[0].id) }}"
        aria-label="{{ _('Apri il registro di %(chi)s', chi=voce.persona.username) }}">
       <i class="fas fa-chevron-right"></i>
@@ -109,6 +130,7 @@
         {{ _("Metti in un gruppo") }}
       </a>
       {% endif %}
+      {{ dare(voce) }}
     </div>
     {% endfor %}
   </section>

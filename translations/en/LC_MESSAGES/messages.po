@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 19:01+0200\n"
+"POT-Creation-Date: 2026-09-20 19:40+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1274,6 +1274,7 @@ msgstr "%(gara)s, place %(pos)s"
 
 #: models/dashboard/activity_feedback.py:261 models/obiettivo/progress.py:198
 #: templates/direttore/preparazione/_esercizi.html:73
+#: templates/sheet/proposta.html:83
 msgid "Esercizio"
 msgstr "Drill"
 
@@ -2691,6 +2692,78 @@ msgstr "yesterday"
 msgid "%(num)s giorni fa"
 msgstr "%(num)s days ago"
 
+#: models/istruttore/assegnazioni.py:76 models/istruttore/assegnazioni.py:138
+#: models/istruttore/assegnazioni.py:246
+msgid "Questa proposta non esiste"
+msgstr "This proposal does not exist"
+
+#: models/istruttore/assegnazioni.py:107
+msgid "Puoi dare una scheda solo a chi te ne ha aperta una"
+msgstr "You can only give a sheet to someone who has opened one to you"
+
+#: models/istruttore/assegnazioni.py:166
+msgid "Questa scheda non esiste più"
+msgstr "This sheet no longer exists"
+
+#: models/istruttore/assegnazioni.py:232
+msgid "A questa proposta hai già risposto"
+msgstr "You have already answered this proposal"
+
+#: models/istruttore/assegnazioni.py:252
+msgid "Le schede le propone un istruttore"
+msgstr "Sheets are proposed by an instructor"
+
+#: models/istruttore/assegnazioni.py:259
+msgid "Si propone una scheda tua"
+msgstr "You can only propose a sheet of your own"
+
+#: models/istruttore/assegnazioni.py:261
+msgid "Questa scheda è ancora vuota: componila prima"
+msgstr "This sheet is still empty: compose it first"
+
+#: models/istruttore/assegnazioni.py:284 templates/sheet/proposta.html:30
+msgid "Un istruttore ti propone una scheda"
+msgstr "An instructor is proposing a sheet to you"
+
+#: models/istruttore/assegnazioni.py:286
+#, python-format
+msgid "%(istruttore)s ti propone «%(scheda)s». Decidi tu se prenderla."
+msgstr ""
+"%(istruttore)s is proposing “%(scheda)s” to you. It is up to you whether "
+"to take it."
+
+#: models/istruttore/assegnazioni.py:292
+msgid "Guarda la scheda"
+msgstr "See the sheet"
+
+#: models/istruttore/assegnazioni.py:306
+msgid "Un allievo ha preso la tua scheda"
+msgstr "A student has taken your sheet"
+
+#: models/istruttore/assegnazioni.py:310
+#, python-format
+msgid "%(allievo)s ha preso «%(scheda)s» e te la fa leggere."
+msgstr "%(allievo)s has taken “%(scheda)s” and lets you read it."
+
+#: models/istruttore/assegnazioni.py:316
+#, python-format
+msgid "%(allievo)s ha preso «%(scheda)s». Non te la fa leggere."
+msgstr "%(allievo)s has taken “%(scheda)s”. They are not letting you read it."
+
+#: models/istruttore/assegnazioni.py:322
+msgid "Un allievo ha detto di no"
+msgstr "A student has said no"
+
+#: models/istruttore/assegnazioni.py:324
+#, python-format
+msgid "%(allievo)s non ha preso «%(scheda)s»."
+msgstr "%(allievo)s has not taken “%(scheda)s”."
+
+#: models/istruttore/assegnazioni.py:336 templates/istruttore/allievi.html:17
+#: templates/istruttore/allievi.html:23 templates/sheet/index.html:126
+msgid "I miei allievi"
+msgstr "My students"
+
 #: models/istruttore/gruppi.py:65 models/istruttore/gruppi.py:230
 msgid "Questo gruppo non esiste"
 msgstr "This group does not exist"
@@ -3563,8 +3636,9 @@ msgstr "trending down"
 msgid "fuori dalla soglia: non è a riusciti"
 msgstr "outside the threshold: not a \"made\" item"
 
-#: models/training_sheet/run_view.py:124 templates/sheet/detail.html:26
-#: templates/sheet/index.html:22
+#: models/training_sheet/run_view.py:124
+#: templates/istruttore/dai_scheda.html:73 templates/sheet/detail.html:26
+#: templates/sheet/index.html:22 templates/sheet/proposta.html:40
 #, python-format
 msgid "soglia %(n)s su %(tot)s"
 msgstr "threshold %(n)s of %(tot)s"
@@ -3604,76 +3678,76 @@ msgstr "Weeks go from 1 to %(n)s."
 msgid "Questa voce non è di questa scheda"
 msgstr "This item does not belong to this sheet"
 
-#: models/training_sheet/services.py:282
+#: models/training_sheet/services.py:288
 msgid "La scheda è già tua"
 msgstr "The sheet is already yours"
 
-#: models/training_sheet/services.py:285 routes/player/profile.py:187
+#: models/training_sheet/services.py:291 routes/player/profile.py:187
 msgid "Utente non trovato"
 msgstr "User not found"
 
-#: models/training_sheet/services.py:287
+#: models/training_sheet/services.py:293
 msgid "Una scheda si apre a un istruttore"
 msgstr "A sheet can only be opened to an instructor"
 
-#: models/training_sheet/services.py:325
+#: models/training_sheet/services.py:332
 msgid "Non leggi questa scheda"
 msgstr "You do not read this sheet"
 
-#: models/training_sheet/services.py:366
+#: models/training_sheet/services.py:373
 msgid "Un allievo ti ha aperto una scheda"
 msgstr "A student has opened a sheet to you"
 
-#: models/training_sheet/services.py:368
+#: models/training_sheet/services.py:375
 #, python-format
 msgid "%(allievo)s ti fa leggere «%(scheda)s»: vedi le sue sedute e come procede."
 msgstr ""
 "%(allievo)s is letting you read “%(scheda)s”: you can see their sessions "
 "and how they are getting on."
 
-#: models/training_sheet/services.py:375
+#: models/training_sheet/services.py:382
 msgid "Apri la scheda"
 msgstr "Open the sheet"
 
-#: models/training_sheet/services.py:389
+#: models/training_sheet/services.py:396
 msgid "Un istruttore ha smesso di seguirti"
 msgstr "An instructor has stopped following you"
 
-#: models/training_sheet/services.py:391
+#: models/training_sheet/services.py:398
 #, python-format
 msgid "%(istruttore)s non legge più «%(scheda)s»."
 msgstr "%(istruttore)s no longer reads “%(scheda)s”."
 
-#: models/training_sheet/services.py:397 templates/sheet/detail.html:149
+#: models/training_sheet/services.py:404 templates/sheet/detail.html:149
 #: templates/sheet/readers.html:21
 msgid "Chi la legge"
 msgstr "Who reads it"
 
-#: models/training_sheet/services.py:408
+#: models/training_sheet/services.py:415
 msgid "La scheda vuole un nome"
 msgstr "The sheet needs a name"
 
-#: models/training_sheet/services.py:434
+#: models/training_sheet/services.py:441
 #, python-format
 msgid "Serve dire quanto farne: %(unita)s."
 msgstr "Say how much to do: %(unita)s."
 
-#: models/training_sheet/services.py:440
+#: models/training_sheet/services.py:447
 #, python-format
 msgid "Il «quanto farne» va da %(min)s a %(max)s."
 msgstr "The \"how much\" goes from %(min)s to %(max)s."
 
-#: models/training_sheet/services.py:454
+#: models/training_sheet/services.py:461
 msgid "La soglia è un numero positivo"
 msgstr "The threshold is a positive number"
 
-#: models/training_sheet/services.py:459
+#: models/training_sheet/services.py:466
 msgid ""
 "Per una soglia serve almeno una voce «a riusciti»: le altre non fanno "
 "totale."
 msgstr "A threshold needs at least one \"made\" item: the others do not add up."
 
-#: models/training_sheet/services.py:466
+#: models/training_sheet/services.py:473
 #, python-format
 msgid "La soglia non può superare il totale della scheda, che è %(n)s."
 msgstr "The threshold cannot be higher than the sheet total, which is %(n)s."
@@ -4364,24 +4438,40 @@ msgstr "Reference"
 #: templates/exam/catalog.html:64 templates/gamification/dashboard.html:150
 #: templates/individual_match/dashboard.html:178
 #: templates/individual_match/matches.html:52
-#: templates/istruttore/allievi.html:78
+#: templates/istruttore/allievi.html:99
 #: templates/public/campionatos_list.html:26
 msgid "Tutti"
 msgstr "All"
 
-#: routes/istruttore.py:117
+#: routes/istruttore.py:124
 msgid "Non fa più parte del gruppo."
 msgstr "No longer in the group."
 
-#: routes/istruttore.py:123
+#: routes/istruttore.py:130
 msgid "Adesso è nel gruppo."
 msgstr "Now in the group."
 
-#: routes/istruttore.py:195
+#: routes/istruttore.py:177
+msgid "Scegli quale scheda dargli."
+msgstr "Choose which sheet to give them."
+
+#: routes/istruttore.py:192
+msgid "Ha già una tua proposta in attesa."
+msgstr "They already have a proposal from you waiting."
+
+#: routes/istruttore.py:194
+msgid "Proposta mandata. Decide lui se prenderla."
+msgstr "Proposal sent. It is up to them whether to take it."
+
+#: routes/istruttore.py:206
+msgid "Proposta ritirata."
+msgstr "Proposal withdrawn."
+
+#: routes/istruttore.py:278
 msgid "Gruppo aggiornato."
 msgstr "Group updated."
 
-#: routes/istruttore.py:209
+#: routes/istruttore.py:292
 msgid "Corso chiuso. Resta nello storico."
 msgstr "Course closed. It stays in your past groups."
 
@@ -5692,7 +5782,7 @@ msgstr "Proposal cancelled successfully!"
 msgid "Proposta cancellata."
 msgstr "Proposal deleted."
 
-#: routes/individual_match/proposals.py:418
+#: routes/individual_match/proposals.py:418 routes/sheet/proposte.py:88
 msgid "Proposta rifiutata."
 msgstr "Proposal declined."
 
@@ -5941,17 +6031,21 @@ msgstr "Password updated successfully."
 msgid "Password attuale errata o nuova password non valida."
 msgstr "Current password is wrong, or the new password is not valid."
 
-#: routes/sheet/__init__.py:67
+#: routes/sheet/__init__.py:70
 msgid "La mia scheda"
 msgstr "My sheet"
 
-#: routes/sheet/__init__.py:114
+#: routes/sheet/__init__.py:117
 msgid "Scheda archiviata."
 msgstr "Sheet archived."
 
 #: routes/sheet/compose.py:129
 msgid "Scheda salvata."
 msgstr "Sheet saved."
+
+#: routes/sheet/proposte.py:75
+msgid "La scheda è tua: componila come vuoi."
+msgstr "The sheet is yours: compose it however you like."
 
 #: routes/sheet/readers.py:74
 msgid "Adesso legge questa scheda."
@@ -7465,7 +7559,7 @@ msgstr "Back to championships"
 #: templates/gamification/admin/config_dashboard.html:101
 #: templates/gamification/admin/config_dashboard.html:132
 #: templates/gamification/admin/features.html:60
-#: templates/sheet/detail.html:134 templates/sheet/index.html:80
+#: templates/sheet/detail.html:134 templates/sheet/index.html:96
 msgid "Modifica"
 msgstr "Edit"
 
@@ -10651,7 +10745,8 @@ msgid "Torna a Esercizi"
 msgstr "Back to Drills"
 
 #: templates/challenge/andamento.html:31 templates/challenge/catalog.html:29
-#: templates/challenge/catalog.html:102
+#: templates/challenge/catalog.html:102 templates/istruttore/dai_scheda.html:71
+#: templates/sheet/proposta.html:36
 #, python-format
 msgid "%(num)s esercizio"
 msgid_plural "%(num)s esercizi"
@@ -11907,7 +12002,7 @@ msgid_plural "Altri %(num)s colpi"
 msgstr[0] "Another %(num)s shot"
 msgstr[1] "Another %(num)s shots"
 
-#: templates/challenge/today.html:34 templates/sheet/index.html:49
+#: templates/challenge/today.html:34 templates/sheet/index.html:65
 msgid "Seduta cominciata"
 msgstr "Session started"
 
@@ -11930,7 +12025,7 @@ msgid "L'ultima volta: %(when)s."
 msgstr "Last time: %(when)s."
 
 #: templates/challenge/today.html:81 templates/challenge/today.html:116
-#: templates/sheet/index.html:76
+#: templates/sheet/index.html:92
 msgid "Comincia"
 msgstr "Start"
 
@@ -13649,6 +13744,7 @@ msgid "Imposta un massimo di iscritti per usare «fino al massimo»."
 msgstr "Set a maximum number of entries to use \"fill to the maximum\"."
 
 #: templates/components/_gara_inscriptions.html:101
+#: templates/istruttore/allievi.html:46
 msgid "in attesa"
 msgstr "pending"
 
@@ -19794,7 +19890,7 @@ msgstr "Back to the exams"
 msgid "Esame: una sequenza di esercizi"
 msgstr "Exam: a sequence of drills"
 
-#: templates/exam/detail.html:23 templates/sheet/index.html:84
+#: templates/exam/detail.html:23 templates/sheet/index.html:100
 msgid "Componi"
 msgstr "Compose"
 
@@ -23414,14 +23510,10 @@ msgstr ""
 msgid "Resta a guardare"
 msgstr "Keep reviewing"
 
-#: templates/istruttore/allievi.html:17 templates/istruttore/allievi.html:23
-#: templates/sheet/index.html:110
-msgid "I miei allievi"
-msgstr "My students"
-
 #: templates/istruttore/allievi.html:21 templates/sheet/compose.html:25
 #: templates/sheet/detail.html:19 templates/sheet/instructors.html:16
-#: templates/sheet/run.html:20 templates/sheet/summary.html:15
+#: templates/sheet/proposta.html:20 templates/sheet/run.html:20
+#: templates/sheet/summary.html:15
 msgid "Torna alle schede"
 msgstr "Back to the sheets"
 
@@ -23437,16 +23529,21 @@ msgstr[1] "%(num)s people have opened a sheet to you"
 msgid "I tuoi gruppi"
 msgstr "Your groups"
 
-#: templates/istruttore/allievi.html:55
+#: templates/istruttore/allievi.html:50 templates/istruttore/allievi.html:51
+#, python-format
+msgid "Dai una scheda a %(chi)s"
+msgstr "Give a sheet to %(chi)s"
+
+#: templates/istruttore/allievi.html:76
 #, python-format
 msgid "Apri il registro di %(chi)s"
 msgstr "Open the log of %(chi)s"
 
-#: templates/istruttore/allievi.html:67
+#: templates/istruttore/allievi.html:88
 msgid "Nessun allievo"
 msgstr "No students"
 
-#: templates/istruttore/allievi.html:69
+#: templates/istruttore/allievi.html:90
 msgid ""
 "Qui compaiono le persone che ti hanno aperto una loro scheda. Sei tu a "
 "non poterlo chiedere: è una decisione che prendono loro, scheda per "
@@ -23455,30 +23552,30 @@ msgstr ""
 "People appear here once they open one of their sheets to you. You cannot "
 "ask for it: it is their decision, one sheet at a time."
 
-#: templates/istruttore/allievi.html:76
+#: templates/istruttore/allievi.html:97
 msgid "Filtra per gruppo"
 msgstr "Filter by group"
 
-#: templates/istruttore/allievi.html:88
+#: templates/istruttore/allievi.html:109
 msgid "Ti hanno appena aperto una scheda"
 msgstr "They have just opened a sheet to you"
 
-#: templates/istruttore/allievi.html:96 templates/istruttore/gruppi.html:29
+#: templates/istruttore/allievi.html:117 templates/istruttore/gruppi.html:29
 #: templates/istruttore/gruppo.html:39 templates/player/roles.html:34
 #: templates/sheet/readers.html:47
 #, python-format
 msgid "dal %(giorno)s"
 msgstr "since %(giorno)s"
 
-#: templates/istruttore/allievi.html:109
+#: templates/istruttore/allievi.html:130
 msgid "Metti in un gruppo"
 msgstr "Put in a group"
 
-#: templates/istruttore/allievi.html:119
+#: templates/istruttore/allievi.html:141
 msgid "Valuta il passaggio di livello"
 msgstr "Consider moving them up a level"
 
-#: templates/istruttore/allievi.html:124
+#: templates/istruttore/allievi.html:146
 msgid ""
 "Hanno superato la soglia della loro scheda tante volte di fila quante ne "
 "chiede. Il gradino lo sancisci tu: dagli la scheda del livello dopo "
@@ -23488,19 +23585,19 @@ msgstr ""
 "asks for. You are the one who confirms the step: give them the next level"
 " sheet when you think they are ready."
 
-#: templates/istruttore/allievi.html:130
+#: templates/istruttore/allievi.html:152
 msgid "Da guardare"
 msgstr "Worth a look"
 
-#: templates/istruttore/allievi.html:138
+#: templates/istruttore/allievi.html:160
 msgid "Tutto bene"
 msgstr "All good"
 
-#: templates/istruttore/allievi.html:147
+#: templates/istruttore/allievi.html:169
 msgid "Nessuno in questo gruppo"
 msgstr "Nobody in this group"
 
-#: templates/istruttore/allievi.html:149
+#: templates/istruttore/allievi.html:171
 msgid ""
 "Ci si mette chi ti ha già aperto una scheda: un gruppo serve a ordinare "
 "gli allievi, non a chiederne di nuovi."
@@ -23508,13 +23605,88 @@ msgstr ""
 "Only people who have already opened a sheet to you go in: a group sorts "
 "your students, it does not ask for new ones."
 
-#: templates/istruttore/allievi.html:153
+#: templates/istruttore/allievi.html:175
 msgid "Apri il gruppo"
 msgstr "Open the group"
 
-#: templates/istruttore/gruppi.html:15
+#: templates/istruttore/dai_scheda.html:13
+#: templates/istruttore/dai_scheda.html:19
+msgid "Dai una scheda"
+msgstr "Give a sheet"
+
+#: templates/istruttore/dai_scheda.html:17 templates/istruttore/gruppi.html:15
 msgid "Torna agli allievi"
 msgstr "Back to students"
+
+#: templates/istruttore/dai_scheda.html:20
+#, python-format
+msgid "a %(chi)s"
+msgstr "to %(chi)s"
+
+#: templates/istruttore/dai_scheda.html:29
+msgid "Proposta in attesa"
+msgstr "Proposal waiting"
+
+#: templates/istruttore/dai_scheda.html:31 templates/sheet/index.html:43
+msgid "Una scheda"
+msgstr "A sheet"
+
+#: templates/istruttore/dai_scheda.html:34
+#, python-format
+msgid "mandata il %(giorno)s: %(chi)s non ha ancora risposto"
+msgstr "sent on %(giorno)s: %(chi)s has not answered yet"
+
+#: templates/istruttore/dai_scheda.html:41
+msgid "Ritira la proposta"
+msgstr "Withdraw the proposal"
+
+#: templates/istruttore/dai_scheda.html:48
+msgid "Nessuna scheda da dare"
+msgstr "No sheet to give"
+
+#: templates/istruttore/dai_scheda.html:50
+msgid ""
+"Si propone una scheda tua, già composta: comincia col comporre quella che"
+" fai fare in sala, poi la dai a chi vuoi."
+msgstr ""
+"You propose a sheet of your own, already composed: start by composing the"
+" one you use in the room, then give it to whoever you like."
+
+#: templates/istruttore/dai_scheda.html:53
+msgid "Le mie schede"
+msgstr "My sheets"
+
+#: templates/istruttore/dai_scheda.html:62
+msgid "Quale gli dai"
+msgstr "Which one you give them"
+
+#: templates/istruttore/dai_scheda.html:72 templates/sheet/detail.html:23
+#: templates/sheet/index.html:20 templates/sheet/proposta.html:38
+#, python-format
+msgid "livello %(n)s"
+msgstr "level %(n)s"
+
+#: templates/istruttore/dai_scheda.html:82
+msgid "Due parole, se vuoi"
+msgstr "A word or two, if you like"
+
+#: templates/istruttore/dai_scheda.html:84
+msgid "Per l’autunno. Fai i giorni A e B."
+msgstr "For the autumn. Do days A and B."
+
+#: templates/istruttore/dai_scheda.html:87
+msgid "Manda la proposta"
+msgstr "Send the proposal"
+
+#: templates/istruttore/dai_scheda.html:91
+#, python-format
+msgid ""
+"È una proposta: la scheda nasce solo se %(chi)s la prende, e nasce sua. "
+"Decide lui anche se fartela leggere — e può togliertela quando vuole."
+msgstr ""
+"It is a proposal: the sheet only comes into being if %(chi)s takes it, "
+"and it is theirs. They also decide whether to let you read it — and can "
+"take that away whenever they like."
 
 #: templates/istruttore/gruppi.html:18
 msgid "Un gruppo ordina i tuoi allievi: non apre niente"
@@ -24939,7 +25111,7 @@ msgstr "per side"
 msgid "L'ultima volta, %(lato)s"
 msgstr "Last time, %(lato)s"
 
-#: templates/sheet/_run_progress.html:52 templates/sheet/index.html:63
+#: templates/sheet/_run_progress.html:52 templates/sheet/index.html:79
 msgid "L'ultima volta"
 msgstr "Last time"
 
@@ -25086,11 +25258,6 @@ msgstr "A, B, C…"
 msgid "Lo stesso esercizio può comparire in due voci."
 msgstr "The same drill can appear in two items."
 
-#: templates/sheet/detail.html:23 templates/sheet/index.html:20
-#, python-format
-msgid "livello %(n)s"
-msgstr "level %(n)s"
-
 #: templates/sheet/detail.html:38
 #, python-format
 msgid "La scheda di %(chi)s"
@@ -25157,7 +25324,8 @@ msgstr "The sessions"
 msgid "%(fatte)s caselle su %(tutte)s"
 msgstr "%(fatte)s boxes out of %(tutte)s"
 
-#: templates/sheet/detail.html:120 templates/sheet/run.html:25
+#: templates/sheet/detail.html:120 templates/sheet/proposta.html:87
+#: templates/sheet/run.html:25
 #, python-format
 msgid "giorno %(g)s"
 msgstr "day %(g)s"
@@ -25178,21 +25346,30 @@ msgstr "Training sheets"
 msgid "Il tuo allenamento, in ordine"
 msgstr "Your training, in order"
 
-#: templates/sheet/index.html:24
+#: templates/sheet/index.html:24 templates/sheet/proposta.html:42
 #, python-format
 msgid "giorni %(g)s"
 msgstr "days %(g)s"
 
-#: templates/sheet/index.html:25
+#: templates/sheet/index.html:25 templates/sheet/proposta.html:43
 #, python-format
 msgid "%(n)s settimane"
 msgstr "%(n)s weeks"
 
-#: templates/sheet/index.html:38 templates/sheet/instructors.html:27
+#: templates/sheet/index.html:40
+#, python-format
+msgid "%(chi)s ti propone una scheda"
+msgstr "%(chi)s is proposing a sheet to you"
+
+#: templates/sheet/index.html:46
+msgid "Guarda cosa c'è dentro, poi decidi: la prendi o no."
+msgstr "See what is inside, then decide: take it or not."
+
+#: templates/sheet/index.html:54 templates/sheet/instructors.html:27
 msgid "Nessuna scheda"
 msgstr "No sheets"
 
-#: templates/sheet/index.html:40
+#: templates/sheet/index.html:56
 msgid ""
 "Una scheda è la sequenza di esercizi che fai in sala, nell'ordine in cui "
 "la fai: la componi una volta e poi segni com'è andata."
@@ -25200,60 +25377,60 @@ msgstr ""
 "A sheet is the sequence of drills you do at the table, in the order you "
 "do them: you compose it once, then record how it went."
 
-#: templates/sheet/index.html:58
+#: templates/sheet/index.html:74
 msgid "Ancora nessun esercizio: componila."
 msgstr "No drills yet: compose it."
 
-#: templates/sheet/index.html:60
+#: templates/sheet/index.html:76
 #, python-format
 msgid "L'ultima volta %(n)s su %(tot)s"
 msgstr "Last time %(n)s of %(tot)s"
 
-#: templates/sheet/index.html:65
+#: templates/sheet/index.html:81
 #, python-format
 msgid "%(num)s esercizio, mai fatta"
 msgid_plural "%(num)s esercizi, mai fatta"
 msgstr[0] "%(num)s drill, never done"
 msgstr[1] "%(num)s drills, never done"
 
-#: templates/sheet/index.html:76
+#: templates/sheet/index.html:92
 msgid "Riprendi"
 msgstr "Resume"
 
-#: templates/sheet/index.html:92 templates/sheet/summary.html:127
+#: templates/sheet/index.html:108 templates/sheet/summary.html:127
 msgid "Il registro"
 msgstr "The register"
 
-#: templates/sheet/index.html:94
+#: templates/sheet/index.html:110
 msgid "Togli questa scheda dall'elenco? Le sedute che hai fatto restano."
 msgstr "Remove this sheet from the list? The sessions you have done stay."
 
-#: templates/sheet/index.html:96
+#: templates/sheet/index.html:112
 msgid "Archivia"
 msgstr "Archive"
 
-#: templates/sheet/index.html:111
+#: templates/sheet/index.html:127
 msgid "chi ti ha aperto una scheda, e i tuoi gruppi"
 msgstr "who opened a sheet to you, and your groups"
 
-#: templates/sheet/index.html:122 templates/sheet/instructors.html:12
+#: templates/sheet/index.html:138 templates/sheet/instructors.html:12
 #: templates/sheet/instructors.html:18
 msgid "Chi legge le mie schede"
 msgstr "Who reads my sheets"
 
-#: templates/sheet/index.html:123
+#: templates/sheet/index.html:139
 msgid "si decide scheda per scheda"
 msgstr "decided sheet by sheet"
 
-#: templates/sheet/index.html:132
+#: templates/sheet/index.html:148
 msgid "Una scheda nuova"
 msgstr "A new sheet"
 
-#: templates/sheet/index.html:134
+#: templates/sheet/index.html:150
 msgid "Come la chiami"
 msgstr "What you call it"
 
-#: templates/sheet/index.html:137
+#: templates/sheet/index.html:153
 msgid "Crea e componi"
 msgstr "Create and compose"
 
@@ -25287,6 +25464,60 @@ msgstr "instructor"
 #: templates/sheet/instructors.html:68
 msgid "Non le legge nessuno"
 msgstr "Nobody reads these"
+
+#: templates/sheet/proposta.html:16 templates/sheet/proposta.html:22
+msgid "Una scheda per te"
+msgstr "A sheet for you"
+
+#: templates/sheet/proposta.html:23
+#, python-format
+msgid "da %(chi)s"
+msgstr "from %(chi)s"
+
+#: templates/sheet/proposta.html:48
+#, python-format
+msgid "dice %(chi)s"
+msgstr "%(chi)s says"
+
+#: templates/sheet/proposta.html:61
+#, python-format
+msgid "Fai vedere a %(chi)s come va"
+msgstr "Let %(chi)s see how it goes"
+
+#: templates/sheet/proposta.html:64
+msgid ""
+"Vedrà le sedute di questa scheda, e nient'altro. Puoi togliergliela "
+"quando vuoi."
+msgstr ""
+"They will see the sessions of this sheet, and nothing else. You can take "
+"it away whenever you like."
+
+#: templates/sheet/proposta.html:70
+msgid "Prendi la scheda"
+msgstr "Take the sheet"
+
+#: templates/sheet/proposta.html:76
+msgid "Cosa c'è dentro"
+msgstr "What is inside"
+
+#: templates/sheet/proposta.html:91
+msgid "una parte per volta"
+msgstr "one part at a time"
+
+#: templates/sheet/proposta.html:102
+msgid "No, grazie"
+msgstr "No, thanks"
+
+#: templates/sheet/proposta.html:106
+#, python-format
+msgid ""
+"Presa, la scheda è tua: la cambi, la archivi e decidi chi la legge. "
+"Quella di %(chi)s resta sua, e le modifiche che ci farà non toccheranno "
+"la tua."
+msgstr ""
+"Once taken, the sheet is yours: you change it, archive it and decide who "
+"reads it. The one belonging to %(chi)s stays theirs, and the changes they"
+" make to it will not touch yours."
 
 #: templates/sheet/readers.html:15
 #, python-format
