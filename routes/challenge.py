@@ -82,6 +82,8 @@ def today():
             # La seduta lasciata a metà sale in cima a «Oggi»: è la cosa più
             # probabile che chi apre l'app stia per fare (ADR-067, fase 6c).
             seduta_aperta=_seduta_da_riprendere(current_user.id),
+            # E sotto, se uno si è dato un traguardo, il motivo per cui è qui.
+            obiettivi=_obiettivi_aperti(current_user.id),
         )
     except Exception:
         current_app.logger.exception("«Oggi» degli esercizi non caricata")
@@ -151,6 +153,7 @@ def andamento():
     """
     from models.andamento import MIN_OSSERVAZIONI, Periodo, build_andamento
     from models.challenge.vocabulary import CategoryAxis
+    from models.obiettivo import MAX_ATTIVI
 
     asse = CategoryAxis.ABILITA
     if str(request.args.get("asse") or "").strip().lower() == CategoryAxis.GESTO.value:
@@ -165,11 +168,163 @@ def andamento():
             periodi=list(Periodo),
             assi=list(CategoryAxis),
             min_osservazioni=MIN_OSSERVAZIONI,
+            obiettivi=_obiettivi_aperti(current_user.id),
+            max_obiettivi=MAX_ATTIVI,
         )
     except Exception:
         current_app.logger.exception("Andamento dell'allenamento non caricato")
         flash(_("Non è stato possibile caricare l'andamento."), "danger")
         return redirect(url_for("challenge.today"))
+
+
+def _obiettivi_aperti(user_id):
+    """Gli obiettivi aperti, già timbrati se nel frattempo sono stati raggiunti.
+
+    Il `refresh` è una scrittura dentro una lettura, e va detto: non calcola
+    niente — registra che una cosa derivata è successa, una volta sola per
+    obiettivo. Senza, «raggiunto» sarebbe uno stato che si accende e si spegne
+    col variare della media, e la data non esisterebbe.
+    """
+    from models.obiettivo import TrainingGoalService, build_all
+
+    TrainingGoalService.refresh(user_id)
+    return build_all(TrainingGoalService.active(user_id))
+
+
+@challenge_bp.route("/obiettivi/nuovo", methods=["GET", "POST"])
+@login_required
+def nuovo_obiettivo():
+    """«Imposta un obiettivo» (#316).
+
+    Il tipo è un **collegamento**, come i filtri del catalogo: le tre forme
+    chiedono cose diverse, e un modulo che le mostra tutte e tre insieme chiede
+    di ignorarne due. Così ogni forma ha il suo indirizzo e funziona senza
+    JavaScript.
+    """
+    from models.andamento import Periodo, build_andamento
+    from models.challenge.vocabulary import Abilita, CategoryAxis, Gesto
+    from models.obiettivo import (
+        FINESTRA_MEDIA,
+        MAX_ATTIVI,
+        MAX_SETTIMANE,
+        MAX_VOLTE,
+        MIN_SETTIMANE,
+        MIN_VOLTE,
+        GoalDeadline,
+        GoalKind,
+        GoalRule,
+        TrainingGoalService,
+    )
+
+    tipo = GoalKind.parse(request.args.get("tipo")) or GoalKind.ESERCIZIO
+
+    if request.method == "POST":
+        # Non passa da `handle_service_action` perché le due destinazioni sono
+        # diverse: riuscito si va all'andamento, rifiutato si torna al modulo
+        # con il tipo che si stava compilando — altrimenti il messaggio d'errore
+        # arriva su una pagina che non ha il campo da correggere.
+        inviato = GoalKind.parse(request.form.get("tipo"))
+        tipo = inviato or tipo
+        try:
+            TrainingGoalService.create(
+                current_user.id,
+                inviato,
+                challenge_id=_intero(request.form.get("challenge_id")),
+                rule=GoalRule.parse(request.form.get("regola")),
+                **_categoria(request.form.get("categoria")),
+                per_week=_intero(request.form.get("volte")),
+                target=_intero(request.form.get("traguardo")),
+                deadline=GoalDeadline.parse(request.form.get("scadenza")),
+            )
+            flash(_("Obiettivo salvato."), "success")
+            return redirect(url_for("challenge.andamento"))
+        except ValueError as errore:
+            flash(str(errore), "error")
+            return redirect(url_for("challenge.nuovo_obiettivo", tipo=tipo.value))
+        except Exception:
+            current_app.logger.exception("Obiettivo non salvato")
+            flash(_("Non è stato possibile salvare l'obiettivo."), "error")
+            return redirect(url_for("challenge.nuovo_obiettivo", tipo=tipo.value))
+
+    andamento = build_andamento(current_user.id, Periodo.MESE, CategoryAxis.ABILITA)
+    gesti = build_andamento(current_user.id, Periodo.MESE, CategoryAxis.GESTO)
+    return render_template(
+        "challenge/obiettivo.html",
+        tipo=tipo,
+        tipi=list(GoalKind),
+        regole=list(GoalRule),
+        scadenze=list(GoalDeadline),
+        esercizi=_esercizi_per_obiettivo(current_user.id),
+        abilita_choices=list(Abilita),
+        gesto_choices=list(Gesto),
+        dove_sei={
+            CategoryAxis.ABILITA.value: {
+                riga.value.value: riga.pct for riga in andamento.radar_rows
+            },
+            CategoryAxis.GESTO.value: {
+                riga.value.value: riga.pct for riga in gesti.radar_rows
+            },
+        },
+        aperti=len(TrainingGoalService.active(current_user.id)),
+        max_obiettivi=MAX_ATTIVI,
+        finestra_media=FINESTRA_MEDIA,
+        min_volte=MIN_VOLTE,
+        max_volte=MAX_VOLTE,
+        min_settimane=MIN_SETTIMANE,
+        max_settimane=MAX_SETTIMANE,
+    )
+
+
+def _intero(valore):
+    try:
+        return int(str(valore).strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def _categoria(valore):
+    """«abilita:tiro» → l'asse e la voce.
+
+    Arrivano insieme da un campo solo perché i due vocabolari non hanno voci in
+    comune: «stop» dice già di essere un gesto. Due campi separati avrebbero
+    permesso di inviare «abilita» + «stop», che non esiste.
+    """
+    from models.challenge.vocabulary import CategoryAxis
+
+    asse, _sep, voce = str(valore or "").strip().lower().partition(":")
+    try:
+        return {"axis": CategoryAxis(asse), "axis_value": voce or None}
+    except ValueError:
+        return {"axis": None, "axis_value": None}
+
+
+def _esercizi_per_obiettivo(user_id):
+    """Gli esercizi su cui si può porre un obiettivo, i già provati per primi.
+
+    Fuori restano quelli **superato/non superato**: lì non c'è un punteggio a
+    cui arrivare, e offrirli vorrebbe dire far scegliere una cosa che il
+    servizio poi rifiuta.
+    """
+    from models.challenge.catalog_view import build_catalog, CatalogFilter
+
+    catalogo = build_catalog(user_id, CatalogFilter())
+    card = [c for c in catalogo.cards if not c.challenge.pass_fail_only]
+    return sorted(
+        card, key=lambda c: (not c.mine.tried, c.challenge.get_display_name())
+    )
+
+
+@challenge_bp.route("/obiettivi/<int:goal_id>/lascia", methods=["POST"])
+@login_required
+def lascia_obiettivo(goal_id):
+    """Lasciare un obiettivo. La riga resta: è successo."""
+    from models.obiettivo import TrainingGoalService
+
+    return handle_service_action(
+        lambda: TrainingGoalService.abandon(goal_id, current_user.id),
+        success_message=_("Obiettivo lasciato."),
+        redirect_url=url_for("challenge.andamento"),
+    )
 
 
 def _can_author(challenge) -> bool:

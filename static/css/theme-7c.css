@@ -613,6 +613,10 @@ input[type="number"].form-control {
 .c7-choice.is-selected { background: var(--c7-accent); color: var(--c7-accent-ink); }
 .c7-choice.is-selected .c7-choice__desc { color: var(--c7-accent-dim); }
 .c7-choice.is-locked { background: var(--c7-sunken); opacity: .6; cursor: not-allowed; }
+/* La scelta puo' essere anche un collegamento (il tipo di obiettivo, fase
+   7b): senza questo tiene il blu e la sottolineatura del browser. */
+a.c7-choice { color: inherit; text-decoration: none; }
+a.c7-choice.is-selected { color: var(--c7-accent-ink); }
 /* La spunta segue la selezione viva, non quella stampata dal server. */
 .c7-choice__mark { display: none; font-size: 15px; flex-shrink: 0; }
 .c7-choice.is-selected .c7-choice__mark { display: block; }
@@ -4788,3 +4792,26 @@ button.c7-draw__outcome:active { transform: scale(var(--c7-press)); transition-d
 .c7-delta i { font-size: 11px; }
 .c7-delta--ok { color: var(--c7-ok); }
 .c7-delta--err { color: var(--c7-err); }
+
+/* --- Gli obiettivi di allenamento (fase 7b, #316) ------------------------ */
+/* Titolo a sinistra, «dove sei / dove vuoi arrivare» a destra, e sotto la
+   barra. `.c7-bar` c'e' gia': qui si aggiungono solo le due righe di testo e
+   lo stato «tempo finito». */
+.c7-goal__top { display: flex; align-items: baseline; gap: 10px; }
+.c7-goal__t { flex: 1; min-width: 0; font-size: 14px; font-weight: 800; letter-spacing: -.02em; }
+.c7-goal__v { flex-shrink: 0; font-size: 13px; font-weight: 800; color: var(--c7-ink-soft); }
+.c7-goal__sub {
+  margin-top: 6px; display: flex; align-items: center; gap: 10px;
+  font-size: 12px; font-weight: 600; color: var(--c7-ink-muted);
+}
+/* Il tempo finito si dice col colore della barra, non spegnendola: un
+   obiettivo scaduto resta un obiettivo su cui si era arrivati fin li'. */
+.c7-bar__fill.is-late { background: var(--c7-err); }
+/* «Lascia» e' un comando minore e deve sembrarlo: nessuno lo cerca, e chi lo
+   trova lo sta cercando davvero. */
+.c7-goal__drop {
+  margin-left: auto; border: 0; background: transparent; padding: 4px 0;
+  font-family: inherit; font-size: 12px; font-weight: 700;
+  color: var(--c7-ink-faint); text-decoration: underline; cursor: pointer;
+}
+.c7-goal__drop:hover { color: var(--c7-err); }

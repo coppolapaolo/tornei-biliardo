@@ -156,6 +156,40 @@ def _dal_catalogo(user_id: int) -> Tuple[List[Osservazione], int]:
     return osservazioni, senza_scala
 
 
+def training_days(user_id: int) -> set:
+    """I **giorni** in cui ci si è allenati: una prova, o una seduta chiusa.
+
+    Serve alla costanza (#316), che non chiede «quante prove» ma «quante
+    volte»: dieci tiri in una sera sono una volta sola, e contare le
+    registrazioni premierebbe chi segna fitto invece di chi torna.
+
+    Qui entra **tutto**, anche ciò che una percentuale non ce l'ha: essersi
+    allenati per venti minuti è essersi allenati. È la differenza fra questa
+    domanda e quella del radar, ed è il motivo per cui non riusa le
+    osservazioni.
+    """
+    from ..base import db
+    from ..challenge.training_service import TrainingHistoryService
+    from ..training_sheet.models import TrainingSession
+
+    giorni = {
+        voce["attempted_at"].date()
+        for voce in TrainingHistoryService.get_drill_attempts(user_id)
+        if voce.get("attempted_at") is not None
+    }
+    giorni |= {
+        quando.date()
+        for (quando,) in db.session.query(TrainingSession.ended_at)
+        .filter(
+            TrainingSession.user_id == user_id,
+            TrainingSession.ended_at.isnot(None),
+        )
+        .all()
+        if quando is not None
+    }
+    return giorni
+
+
 def _dalle_schede(user_id: int) -> Tuple[List[Osservazione], int]:
     """Le caselle delle sedute **chiuse**: una seduta aperta è quella in corso."""
     from sqlalchemy.orm import joinedload
@@ -388,6 +422,7 @@ __all__ = [
     "Periodo",
     "axis_label",
     "build_andamento",
+    "training_days",
     "MIN_OSSERVAZIONI",
     "SOGLIA_CRESCITA",
     "SOGLIA_SOLIDO",

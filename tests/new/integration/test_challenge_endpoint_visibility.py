@@ -42,6 +42,8 @@ TRAINING_ENDPOINTS = (
     "challenge.challenge_catalog",
     # «Il tuo allenamento»: guarda i propri numeri, quindi è di chi si allena.
     "challenge.andamento",
+    "challenge.nuovo_obiettivo",
+    "challenge.lascia_obiettivo",
     "challenge.challenge_detail",
     "challenge.training_session",
     "challenge.training_undo",

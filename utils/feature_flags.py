@@ -486,6 +486,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # «Il tuo allenamento»: la quarta stanza. Guarda i **propri** numeri, quindi
     # la vede chi si allena — l'amministratore non ne ha.
     "challenge.andamento": {"player", "director"},
+    # Gli obiettivi: se li pone chi si allena, e li vede solo lui.
+    "challenge.nuovo_obiettivo": {"player", "director"},
+    "challenge.lascia_obiettivo": {"player", "director"},
     "challenge.challenge_detail": {"player", "director"},
     "challenge.training_session": {"player", "director"},
     # L'annulla della schermata di allenamento: chi puo' registrare una prova

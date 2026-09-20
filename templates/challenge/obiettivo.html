@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{# templates/challenge/obiettivo.html — 7c
+   «Imposta un obiettivo» (canvas «TPA ed esercizi», artboard `Obiettivo`; #316).
+
+   Il tipo è un **collegamento**: le tre forme chiedono cose diverse, e un
+   modulo che le mostra tutte e tre insieme chiede di ignorarne due. Così ogni
+   forma ha il suo indirizzo, il tasto indietro la disfa, e senza JavaScript
+   funziona tutto — come i filtri del catalogo.
+
+   Uno scarto voluto dall'artboard: lì sotto «Da dove parti» c'è la stima «a
+   questo ritmo ci arrivi in cinque settimane». Qui il modulo dice soltanto
+   **dove sei adesso**, che è un dato che si conosce prima di scegliere il
+   traguardo; la stima vuole il traguardo già scelto, quindi vivrebbe solo
+   dietro del JavaScript che ricalcola a ogni tocco. Dove serve davvero è sulla
+   barra dell'obiettivo aperto, che si aggiorna mentre ci si allena. #}
+
+{% set e_esercizio = tipo.value == 'esercizio' %}
+{% set e_abilita = tipo.value == 'abilita' %}
+{% set e_costanza = tipo.value == 'costanza' %}
+
+{% block title %}{{ _("Imposta un obiettivo") }}{% endblock %}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('challenge.andamento') }}"
+   aria-label="{{ _('Torna al tuo allenamento') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Nuovo obiettivo") }}{% endblock %}
+{% block page_sub %}{{ _("Il tuo allenamento") }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+
+  {# ── Che cosa vuoi ottenere ────────────────────────────────────────── #}
+  <div>
+    <div class="c7-label" style="margin-bottom:8px">{{ _("Che cosa vuoi ottenere") }}</div>
+    <div class="c7-stack" style="gap:8px">
+      {% for voce in tipi %}
+      <a class="c7-choice{{ ' is-selected' if voce == tipo }}" href="{{ url_for('challenge.nuovo_obiettivo', tipo=voce.value) }}"
+         {% if voce == tipo %}aria-current="page"{% endif %}>
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ voce.label }}</span>
+          <span class="c7-choice__desc d-block">{{ voce.hint }}</span>
+        </span>
+        <i class="fas fa-chevron-right" style="font-size:11px;opacity:.5"></i>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+
+  <form method="POST" action="{{ url_for('challenge.nuovo_obiettivo') }}" class="c7-stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="tipo" value="{{ tipo.value }}">
+
+    {# ── Un risultato su un esercizio ────────────────────────────────── #}
+    {% if e_esercizio %}
+    <div>
+      <label class="c7-label" for="obChallenge">{{ _("Su quale esercizio") }}</label>
+      <select class="form-select" id="obChallenge" name="challenge_id" required>
+        {% for card in esercizi %}
+        <option value="{{ card.challenge.id }}">
+          {{ card.challenge.get_display_name() }}{% if card.challenge.max_score %} · {{ _("su %(max)s", max=card.challenge.max_score) }}{% endif %}
+          {%- if card.mine.tried %} · {{ ngettext("%(num)s prova", "%(num)s prove", card.mine.attempts) }}
+          {%- if card.mine.best is not none %} · {{ _("record %(n)s", n=card.mine.best) }}{% endif %}
+          {%- else %} · {{ _("mai provato") }}{% endif %}
+        </option>
+        {% endfor %}
+      </select>
+      {% if not esercizi %}
+      <p class="c7-rows__sub" style="margin:8px 0 0">
+        {{ _("Non c'è ancora nessun esercizio a punteggio nel catalogo.") }}
+      </p>
+      {% endif %}
+    </div>
+
+    <div>
+      <label class="c7-label" for="obTraguardo">{{ _("Dove vuoi arrivare") }}</label>
+      <input class="form-control" id="obTraguardo" name="traguardo" type="number"
+             inputmode="numeric" min="1" required>
+    </div>
+
+    <div>
+      <div class="c7-label" style="margin-bottom:8px">{{ _("Quando vale raggiunto") }}</div>
+      <div class="c7-seg">
+        {% for regola in regole %}
+        <label class="c7-seg__item">
+          <input type="radio" name="regola" value="{{ regola.value }}"{{ ' checked' if loop.first }}>
+          {{ regola.label }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    {# ── Un'abilità che sale ─────────────────────────────────────────── #}
+    {% if e_abilita %}
+    {# L'asse **discende** dalla voce, e non si sceglie a parte: i due
+       vocabolari non hanno voci in comune, quindi «stop» dice già di essere un
+       gesto. Due campi separati avrebbero permesso «Per abilità» + «stop», una
+       combinazione che nessuno vuole e che il servizio deve poi rifiutare. #}
+    <div>
+      <label class="c7-label" for="obCategoria">{{ _("Su quale categoria") }}</label>
+      <select class="form-select" id="obCategoria" name="categoria" required>
+        {% for asse, etichetta, voci in [
+             ('abilita', _("Abilità"), abilita_choices),
+             ('gesto', _("Gesto"), gesto_choices)] %}
+        <optgroup label="{{ etichetta }}">
+          {% for voce in voci %}
+          {% set dove = dove_sei[asse].get(voce.value) %}
+          <option value="{{ asse }}:{{ voce.value }}">
+            {{ voce.display_name }}
+            {%- if dove is not none %} · {{ _("oggi sei al %(n)s%%", n=dove) }}{% endif %}
+          </option>
+          {% endfor %}
+        </optgroup>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div>
+      <label class="c7-label" for="obPercento">{{ _("A che percentuale vuoi arrivare") }}</label>
+      <input class="form-control" id="obPercento" name="traguardo" type="number"
+             inputmode="numeric" min="1" max="100" required>
+    </div>
+    {% endif %}
+
+    {# ── La costanza ─────────────────────────────────────────────────── #}
+    {% if e_costanza %}
+    <div>
+      <label class="c7-label" for="obVolte">{{ _("Quante volte a settimana") }}</label>
+      <input class="form-control" id="obVolte" name="volte" type="number"
+             inputmode="numeric" min="{{ min_volte }}" max="{{ max_volte }}" value="2" required>
+      <p class="c7-rows__sub" style="margin:8px 0 0">
+        {{ _("Conta il giorno, non quante prove ci segni: dieci tiri in una sera sono una volta sola.") }}
+      </p>
+    </div>
+
+    <div>
+      <label class="c7-label" for="obSettimane">{{ _("Per quante settimane di fila") }}</label>
+      <input class="form-control" id="obSettimane" name="traguardo" type="number"
+             inputmode="numeric" min="{{ min_settimane }}" max="{{ max_settimane }}" value="4" required>
+    </div>
+    {% endif %}
+
+    {# ── Entro quando ────────────────────────────────────────────────── #}
+    <div>
+      <div class="c7-label" style="margin-bottom:8px">{{ _("Entro quando") }}</div>
+      <div class="c7-seg">
+        {% for scadenza in scadenze %}
+        <label class="c7-seg__item">
+          <input type="radio" name="scadenza" value="{{ scadenza.value }}"{{ ' checked' if scadenza.value == 'nessuna' }}>
+          {{ scadenza.label }}
+        </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <p class="c7-rows__sub" style="margin:0">
+      {{ ngettext("Hai %(num)s obiettivo aperto su %(max)s.",
+                  "Hai %(num)s obiettivi aperti su %(max)s.", aperti, max=max_obiettivi) }}
+      {{ _("Un obiettivo si può lasciare in ogni momento; raggiunto, resta nel tuo andamento con la data.") }}
+    </p>
+
+    <button type="submit" class="btn btn-success w-100">{{ _("Salva l'obiettivo") }}</button>
+  </form>
+</div>
+{% endblock %}
