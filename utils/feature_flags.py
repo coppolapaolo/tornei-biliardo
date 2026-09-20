@@ -562,6 +562,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "istruttore.gruppo": {"instructor"},
     "istruttore.modifica_gruppo": {"instructor"},
     "istruttore.chiudi_gruppo": {"instructor"},
+    "istruttore.scheda_gruppo": {"instructor"},
+    "istruttore.proponi_al_gruppo": {"instructor"},
     # start_attempt/attempt_detail/complete_attempt sono il percorso della
     # gara (il drill al posto del bye), che il giocatore attraversa da solo.
     "challenge.start_attempt": {"player", "director"},
