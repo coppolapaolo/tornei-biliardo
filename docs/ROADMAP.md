@@ -5,8 +5,8 @@ Questo documento risponde a una domanda che il backlog non sa rispondere:
 
 Le issue portano una label di *area* (`campionati`, `tabellone`, `segnapunti`,
 `allenamento`, `sfide`, `piattaforma`), che dice **di che tipo** è un lavoro.
-Non dice a cosa serve. Con quarantacinque issue aperte, guardare l'elenco non
-restituisce nessuna visione d'insieme: si vedono quarantacinque cose tutte
+Non dice a cosa serve. Con una quarantina di issue aperte, guardare l'elenco
+non restituisce nessuna visione d'insieme: si vedono quaranta cose tutte
 ugualmente da fare.
 
 Qui c'è l'ordine, e soprattutto il motivo dell'ordine. Ogni fase esiste perché
@@ -125,12 +125,18 @@ competizione in qualcosa che si apre anche di mercoledì.
 
 Il **referto TPA** non ha issue sue ma ha un disegno: è la pagina 1 del canvas
 «TPA ed esercizi» (2026-09-19), e nel piano di quel redesign è la fase 2,
-**chiusa il 19/09/2026** (#475–#482) —
+**chiusa il 19/09/2026** (#475–#483) —
 vedi [`redesign-7c/canvas-tpa-esercizi/STATO.md`](redesign-7c/canvas-tpa-esercizi/STATO.md).
+Restano qui le due issue del segnapunti che il redesign non ha toccato, perché
+vivono sul tabellone della partita e non sul referto: **#208** e **#241**.
 
 ---
 
 ## Fase 3 · Allenamento e istruttori
+
+**Stato: fatta il 2026-09-20**, prima che la fase 2 si svuotasse — su richiesta
+esplicita, che è l'unico modo ammesso di saltare la fila. La fase 2 resta
+quindi la corrente, con le sue sei issue.
 
 **Perché qui.** Gli esercizi, le schede e gli esami intercettano gli
 **istruttori**, e un istruttore porta i suoi allievi: è il primo moltiplicatore
@@ -138,20 +144,39 @@ di utenti che non richiede pubblicità. Ma ha senso solo dopo la fase 2, perché
 ciò che si propone a un istruttore è un'app dove i suoi allievi già giocano e
 hanno un rating che si muove.
 
-Undici issue: #168, #172, #173, #174, #175, #179, #181, #183, #184, #252, #253.
+Le undici issue — #168, #172, #173, #174, #175, #179, #181, #183, #184, #252,
+#253 — erano il gruppo più numeroso del backlog e riempivano la vista. Quando
+questa roadmap è stata scritta, il 30/08, la frase era: «sono anche le più
+lontane: metterle qui è il modo di smettere di guardarle».
 
-Oggi sono il gruppo più numeroso del backlog e riempiono la vista. Sono anche
-le più lontane: metterle qui è il modo di smettere di guardarle.
-
-**Dal 2026-09-19 hanno un disegno e un ordine.** Il canvas «TPA ed esercizi»
-(46 schermate, venti decisioni congelate) le mette in fila in undici fasi, una
-per sessione di lavoro, insieme a tre issue nate dopo — #316 (obiettivi), #452
-(esercizi con estrazione), #326 (la prova fuori dalle gare) — e a ciò che non aveva una issue: gli esami da
-ridisegnare, i gruppi di allievi dell'istruttore, il voto degli esercizi. Il
-piano è in [`redesign-7c/canvas-tpa-esercizi/PIANO.md`](redesign-7c/canvas-tpa-esercizi/PIANO.md),
+**Sono state fatte tutte fra il 19 e il 20 settembre 2026**, insieme a tre
+issue nate dopo — #316 (obiettivi), #452 (esercizi con estrazione), #326 (la
+prova fuori dalle gare) — e a ciò che non aveva una issue: gli esami da
+ridisegnare, i gruppi di allievi dell'istruttore, il voto degli esercizi. La
+strada è stata un canvas di 46 schermate con venti decisioni congelate, poi
+undici fasi di lavoro, una per sessione, una PR per sotto-fase: il piano e il
+resoconto di ogni fase stanno in
+[`redesign-7c/canvas-tpa-esercizi/PIANO.md`](redesign-7c/canvas-tpa-esercizi/PIANO.md),
 lo stato schermata per schermata in
-[`STATO.md`](redesign-7c/canvas-tpa-esercizi/STATO.md). Restano fuori, come
-issue a sé: #471 (TPA semplificato) e #472 (giochi a due o più giocatori).
+[`STATO.md`](redesign-7c/canvas-tpa-esercizi/STATO.md), il racconto in
+[`CHANGELOG.md`](../CHANGELOG.md). Otto ADR nuovi, dal 065 al 071, più tre
+emendamenti.
+
+Quello che **resta aperto**, come issue a sé, sono le cose che durante il
+lavoro si è deciso di non fare adesso, ciascuna con scritto cosa andrebbe
+deciso prima di scrivere codice: **#471** (un TPA semplificato per gli
+allievi), **#472** (giochi di allenamento a due o più giocatori), **#500**
+(sessione d'esame di prova, per l'esaminatore che deve imparare), **#506**
+(esercizi con estrazione anche in esami e gare, col seme fissato), **#539** (la
+variante ribaltata su un esercizio che ha un bersaglio).
+
+> **Quello che questa fase insegna sull'ordine.** Le undici issue sembravano
+> lontane perché erano tante, e sembravano tante perché ognuna descriveva un
+> pezzo visto da fuori. Disegnarle insieme ha mostrato che erano **poche cose
+> sotto**: una sequenza ordinata di esercizi con «quanto farne» — che è insieme
+> l'esame e la scheda — una prova fatta di colpi, un bersaglio che è un dato
+> del disegno. Il conto delle issue non misura il lavoro: misura quante volte
+> la stessa cosa è stata incontrata da angoli diversi.
 
 ---
 
@@ -163,7 +188,7 @@ giusto è quando c'è qualcosa da mostrare a chi non ti conosce.
 
 | | |
 |---|---|
-| #235 | pagina-vetrina da condividere sui social |
+| ~~#235~~ | ~~pagina-vetrina da condividere sui social~~ — **fatta** |
 | #205 | rivedere il design della pagina del profilo |
 | #169 | dare un voto alle sale da biliardo |
 | #266 | rating dei direttori da parte dei giocatori |

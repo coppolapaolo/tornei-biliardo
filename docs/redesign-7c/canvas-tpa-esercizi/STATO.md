@@ -237,10 +237,53 @@ cosa si è scelto, cosa si è scartato e perché.
 | 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | #517 #519 #520 #521 #522 | **chiusa il 20/09** |
 | 8 | Istruttori (#173) | #523 #525 #526 #528 #530 #531 #532 #534 | **chiusa il 20/09** |
 | 9 | Disegnatore (#179) | #536 #538 #540 #541 | **chiusa il 20/09** |
-| 10 | Chiusura: guida, racconto, issue | | da fare |
+| 10 | Chiusura: racconto, ROADMAP, issue | #542 | **chiusa il 21/09** |
 
-Fuori dal piano, come issue: **#471** TPA semplificato, **#472** giochi a due o
-più giocatori.
+**Il piano è finito.** Dei 46 artboard, 44 sono schermate: **42 fatte** e 2
+scartate per una decisione scritta — `Main` e `TpaFoglio`, le direzioni A e C
+del referto, chiuse dalla D1. Gli altri due, `Decisioni` e `DecisioniAperte`,
+non dovevano diventare schermate. Nessuna riga resta «da fare».
+
+Restano aperte, come issue a sé, le cinque cose che si è deciso di **non** fare
+adesso — ciascuna con scritto cosa andrebbe deciso prima di scrivere codice:
+
+| Issue | Cosa | Da dove nasce |
+|---|---|---|
+| **#471** | un TPA semplificato per gli allievi | fase 0: deciso di non disegnarlo |
+| **#472** | giochi di allenamento a due o più giocatori | fase 0: «non ora» |
+| **#500** | sessione d'esame di prova, per l'esaminatore | fase 5, chiudendo la #326 |
+| **#506** | esercizi con estrazione anche in esami e gare, col seme fissato | fase 5c |
+| **#539** | la variante ribaltata su un esercizio col bersaglio | fase 9c |
+
+Fuori dal perimetro fin dall'inizio, e ancora nella fase 2 della ROADMAP,
+le due issue del **segnapunti**: **#208** (segnare il break and run dal
+tabellone) e **#241** (acchito e runout nella vista verticale). Il redesign ha
+rifatto il **referto**, che è un'altra pagina.
+
+## Che cosa ha lasciato, oltre alle schermate
+
+Otto ADR nuovi — [065](../../adr/ADR-065-profilo-dell-esercizio.md) profilo
+dell'esercizio, [066](../../adr/ADR-066-prova-fatta-di-colpi.md) prova fatta di
+colpi, [067](../../adr/ADR-067-scheda-di-allenamento.md) scheda di allenamento,
+[068](../../adr/ADR-068-andamento-una-scala-sola.md) andamento su una scala
+sola, [069](../../adr/ADR-069-istruttore-e-allievo.md) istruttore e allievo,
+[070](../../adr/ADR-070-gruppi-di-allievi-e-triage.md) gruppi e triage,
+[071](../../adr/ADR-071-una-scheda-si-propone.md) una scheda si propone — più
+gli emendamenti a 041, 042, 044, 065 e 066.
+
+Tre forme che si ripetono, e che conviene riconoscere la prossima volta:
+
+* **il dato che discende da un altro dato** — il punteggio dal referto TPA, il
+  punteggio di una prova dai colpi, il break and run da chi ha aperto. Non si
+  tiene un secondo numero allineato a mano;
+* **ciò che si persiste al momento del fatto** — chi ha aperto il triangolo, i
+  punti di un colpo, la misura e il «su quanto» di una casella. Se domani la
+  regola cambia, quello che è già successo continua a dire la stessa cosa;
+* **la prima mossa è sempre dell'altro** — un istruttore vede una scheda solo
+  se l'allievo gliela apre, e una scheda si propone e nasce quando lui accetta.
+
+E un utensile: `scripts/po_set.py`, che scrive le traduzioni nel catalogo senza
+riformattarlo (la skill `translate` lo indica).
 
 ## Materiale di terzi
 

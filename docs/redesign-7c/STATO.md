@@ -724,22 +724,24 @@ Quelli sopra sono chiusi; questi no.
    README. Va fatta con il browser davanti, regola per regola: sono i due file
    che il tema sovrascrive, quindi togliere quella sbagliata non da' errore, da'
    una pagina storta.
-6. **Referto TPA, esercizi, schede, esami e disegnatore** (dal 2026-09-19) — il
-   referto TPA non era mai passato dal redesign (nessuna schermata nel
-   prototipo), e l'area esercizi aveva preso il tema senza che nessuno ne
-   ripensasse i percorsi. Canvas di 46 schermate, venti
-   decisioni congelate, undici fasi: lo stato schermata per schermata sta in
-   [`canvas-tpa-esercizi/STATO.md`](canvas-tpa-esercizi/STATO.md), il piano in
+6. ~~**Referto TPA, esercizi, schede, esami e disegnatore.**~~ **Chiuso il
+   2026-09-21**, in due giorni e mezzo di lavoro. Il referto TPA non era mai passato
+   dal redesign (nessuna schermata nel prototipo), e l'area esercizi aveva
+   preso il tema senza che nessuno ne ripensasse i percorsi. Canvas di 46
+   schermate, venti decisioni congelate, undici fasi: lo stato schermata per
+   schermata sta in
+   [`canvas-tpa-esercizi/STATO.md`](canvas-tpa-esercizi/STATO.md), il piano e
+   il resoconto di ogni fase in
    [`canvas-tpa-esercizi/PIANO.md`](canvas-tpa-esercizi/PIANO.md).
-   **Fatte le fasi 2–8**: referto TPA (19/09, #475–#483), esami (19/09,
+   Le fasi: referto TPA (19/09, #475–#483), esami (19/09,
    #484–#489), modello dell'esercizio con «Oggi» e il voto (20/09, #490–#498),
    eseguire un esercizio colpo per colpo e con estrazione (20/09, #501–#509),
    schede di allenamento (20/09, #511–#516), andamento, obiettivi e consigli
    (20/09, #517–#522), istruttori con allievi, gruppi e proposte di scheda
    (20/09, #523–#534), disegnatore degli esercizi (20/09, #536–#541: pannello
    ai token 7c e telefono, bersaglio a riquadro come dato, notazione degli
-   schemi, varianti allo specchio e inquadratura). **Resta la chiusura**:
-   racconto, ROADMAP e issue.
+   schemi, varianti allo specchio e inquadratura), chiusura con racconto,
+   ROADMAP e issue (21/09, #542).
 
 ### Rilievi di dominio trovati durante la conversione (non toccati)
 
