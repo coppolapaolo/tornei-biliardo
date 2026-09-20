@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{# templates/sheet/readers.html — 7c
+   «Chi la legge» (canvas «TPA ed esercizi», artboard `SchedaLettori` e
+   `IstruttoreAggiungi`; ADR-069).
+
+   Il permesso è **per scheda**: qui si aggiunge e si toglie chi legge questa,
+   e le altre non cambiano. La seconda metà della pagina dice che cosa vede
+   davvero chi legge — le note restano del proprietario a meno che non le apra
+   lui.
+
+   La ricerca sta nella pagina e non dietro una chiamata JS: un foglio che si
+   apre già con i risultati dentro è una cosa in meno che può non rispondere. #}
+
+{% block title %}{{ _("Chi legge «%(scheda)s»", scheda=sheet.name) }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('sheet.detail', sheet_id=sheet.id) }}"
+   aria-label="{{ _('Torna alla scheda') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Chi la legge") }}{% endblock %}
+{% block page_sub %}{{ sheet.name }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+
+  <section class="c7-card c7-card--accent">
+    <div class="c7-kicker">{{ sheet.name }}</div>
+    <p style="margin-top:6px;font-size:14px">
+      {{ _("Ogni scheda ha i suoi lettori: li aggiungi e li togli tu, qui. Chi la legge vede le sedute e come procedi; non può cambiarla né scriverci.") }}
+    </p>
+  </section>
+
+  {# ── Chi la legge adesso ────────────────────────────────────────────── #}
+  {% if lettori %}
+  <div class="c7-label">{{ _("La leggono") }}</div>
+  <section class="c7-rows">
+    {% for lettore in lettori %}
+    <div class="c7-rows__row">
+      <span class="c7-avatar">{{ lettore.user.username[:2]|upper }}</span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ lettore.user.username }}</div>
+        <div class="c7-rows__sub">
+          {{ _("istruttore") }}
+          {%- if lettore.user.organization %} <span class="c7-sep">·</span>
+            {{ lettore.user.organization }}{% endif %}
+          <span class="c7-sep">·</span> {{ _("dal %(giorno)s", giorno=lettore.granted_at|date_local) }}
+        </div>
+      </div>
+      <form method="POST" action="{{ url_for('sheet.remove_reader', sheet_id=sheet.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="user_id" value="{{ lettore.user_id }}">
+        <button type="submit" class="btn btn-secondary btn-sm">{{ _("Togli") }}</button>
+      </form>
+    </div>
+    {% endfor %}
+  </section>
+  {% else %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-user-lock"></i></div>
+    <h2 class="c7-empty__title">{{ _("Non la legge nessuno") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Questa scheda è solo tua. Se ti alleni con un istruttore, puoi fargliela leggere: vedrà le sedute e come procedi.") }}
+    </p>
+  </div>
+  {% endif %}
+
+  {# ── Aggiungerne uno ────────────────────────────────────────────────── #}
+  <section class="c7-card c7-stack">
+    <div class="c7-kicker">{{ _("Aggiungi un istruttore a questa scheda") }}</div>
+    <form method="GET" action="{{ url_for('sheet.readers', sheet_id=sheet.id) }}"
+          class="c7-duo" style="grid-template-columns:1fr auto">
+      <input class="form-control" type="search" name="cerca" value="{{ cercato or '' }}"
+             maxlength="80" placeholder="{{ _('Nome utente o scuola') }}"
+             aria-label="{{ _('Cerca un istruttore') }}">
+      <button type="submit" class="btn btn-secondary">{{ _("Cerca") }}</button>
+    </form>
+
+    {% if cercato %}
+      {% if trovati %}
+      <section class="c7-rows c7-rows--sunk">
+        {% for utente in trovati %}
+        <div class="c7-rows__row">
+          <span class="c7-avatar">{{ utente.username[:2]|upper }}</span>
+          <div class="c7-rows__main">
+            <div class="c7-rows__title">{{ utente.username }}</div>
+            <div class="c7-rows__sub">
+              {{ _("istruttore") }}
+              {%- if utente.organization %} <span class="c7-sep">·</span>
+                {{ utente.organization }}{% endif %}
+            </div>
+          </div>
+          <form method="POST" action="{{ url_for('sheet.add_reader', sheet_id=sheet.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="user_id" value="{{ utente.id }}">
+            <button type="submit" class="btn btn-primary btn-sm">{{ _("Apri") }}</button>
+          </form>
+        </div>
+        {% endfor %}
+      </section>
+      {% else %}
+      <div class="c7-rows__sub">
+        {{ _("Nessun istruttore con questo nome. Si trovano solo gli utenti che hanno il ruolo di istruttore: chi insegna e non compare qui non l'ha ancora chiesto.") }}
+      </div>
+      {% endif %}
+    {% else %}
+    <div class="c7-rows__sub">
+      {{ _("Chi aggiungi riceve una notifica e trova questa scheda fra quelle dei suoi allievi. Vale per questa scheda soltanto, e puoi toglierlo quando vuoi.") }}
+    </div>
+    {% endif %}
+  </section>
+
+  {# ── Che cosa vede ──────────────────────────────────────────────────── #}
+  <div class="c7-label">{{ _("Cosa vede chi la legge") }}</div>
+  <section class="c7-rows">
+    <div class="c7-rows__row">
+      <span class="c7-tile c7-tile--sm c7-tile--ok"><i class="fas fa-table-list"></i></span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ _("Le sedute e il registro") }}</div>
+        <div class="c7-rows__sub">{{ _("di questa scheda, voce per voce") }}</div>
+      </div>
+    </div>
+    <div class="c7-rows__row">
+      <span class="c7-tile c7-tile--sm {{ 'c7-tile--ok' if sheet.readers_see_notes else 'c7-tile--locked' }}">
+        <i class="fas {{ 'fa-pen' if sheet.readers_see_notes else 'fa-lock' }}"></i>
+      </span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ _("Le note delle sedute") }}</div>
+        <div class="c7-rows__sub">
+          {%- if sheet.readers_see_notes %}{{ _("le legge anche chi legge la scheda") }}
+          {%- else %}{{ _("restano tue, a meno che tu non le apra") }}{% endif -%}
+        </div>
+      </div>
+      <form method="POST" action="{{ url_for('sheet.toggle_notes_shared', sheet_id=sheet.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="shared" value="{{ '0' if sheet.readers_see_notes else '1' }}">
+        <button type="submit" class="btn btn-secondary btn-sm">
+          {{ _("Richiudi") if sheet.readers_see_notes else _("Apri anche le note") }}
+        </button>
+      </form>
+    </div>
+    <div class="c7-rows__row">
+      <span class="c7-tile c7-tile--sm c7-tile--locked"><i class="fas fa-lock"></i></span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ _("Tutto il resto") }}</div>
+        <div class="c7-rows__sub">{{ _("le altre schede, l'andamento, partite ed Elo") }}</div>
+      </div>
+    </div>
+  </section>
+
+  <p class="c7-rows__sub">
+    {{ _("Tolto da qui, un istruttore smette subito di vedere questa scheda. Le altre non cambiano.") }}
+  </p>
+</div>
+{% endblock %}

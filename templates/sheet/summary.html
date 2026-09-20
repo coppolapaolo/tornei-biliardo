@@ -10,8 +10,9 @@
 {% block title %}{{ summary.sheet.name }}{% endblock %}
 
 {% block page_back %}
-<a class="c7-head__back d-lg-none" href="{{ url_for('sheet.index') }}"
-   aria-label="{{ _('Torna alle schede') }}"><i class="fas fa-arrow-left"></i></a>
+<a class="c7-head__back d-lg-none"
+   href="{{ url_for('sheet.index') if mia else url_for('sheet.detail', sheet_id=summary.sheet.id) }}"
+   aria-label="{{ _('Torna alle schede') if mia else _('Torna al registro') }}"><i class="fas fa-arrow-left"></i></a>
 {% endblock %}
 {% block page_title %}{{ summary.sheet.name }}{% endblock %}
 {% block page_sub %}
@@ -39,7 +40,8 @@
     </div>
     <div class="c7-slot__where">
       {%- if summary.is_best and summary.previous_best is not none %}
-        {{ _("Il tuo meglio su questa scheda: prima era %(n)s.", n=summary.previous_best) }}
+        {% if mia %}{{ _("Il tuo meglio su questa scheda: prima era %(n)s.", n=summary.previous_best) }}
+        {%- else %}{{ _("Il suo meglio su questa scheda: prima era %(n)s.", n=summary.previous_best) }}{% endif %}
       {%- elif summary.previous_best is not none %}
         {{ _("La volta prima %(n)s.", n=summary.previous_best) }}
       {%- else %}{{ _("È la prima seduta di questa scheda.") }}{% endif -%}
@@ -75,7 +77,10 @@
   </section>
   {% else %}
   <div class="c7-empty">
-    <p class="c7-empty__text">{{ _("In questa seduta non hai segnato niente.") }}</p>
+    <p class="c7-empty__text">
+      {%- if mia %}{{ _("In questa seduta non hai segnato niente.") }}
+      {%- else %}{{ _("In questa seduta non è stato segnato niente.") }}{% endif -%}
+    </p>
   </div>
   {% endif %}
 
@@ -85,15 +90,20 @@
     <span class="c7-flash__ico"><i class="fas fa-trophy"></i></span>
     <div>
       <div class="c7-flash__title">
-        {{ _("Hai tenuto la soglia del livello %(n)s", n=summary.sheet.level) }}
+        {%- if mia %}{{ _("Hai tenuto la soglia del livello %(n)s", n=summary.sheet.level) }}
+        {%- else %}{{ _("Ha tenuto la soglia del livello %(n)s", n=summary.sheet.level) }}{% endif -%}
       </div>
       {{ ngettext("Una seduta sopra la soglia.", "%(num)s sedute di fila sopra la soglia.", summary.streak) }}
-      {{ _("Il passaggio al livello successivo lo confermerà chi ti segue.") }}
+      {% if mia %}{{ _("Il passaggio al livello successivo lo confermerà chi ti segue.") }}{% endif %}
     </div>
   </div>
   {% endif %}
 
   {# ── Le note ───────────────────────────────────────────────────────── #}
+  {# Le scrive chi si allena; le legge chi legge la scheda solo se il
+     proprietario le ha aperte (ADR-069). Una nota chiusa non compare
+     nemmeno vuota: dirne l'esistenza è già dire qualcosa. #}
+  {% if mia %}
   <form method="POST" action="{{ url_for('sheet.session_notes', session_id=session.id) }}"
         class="c7-card c7-stack">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -104,9 +114,20 @@
     </div>
     <button type="submit" class="btn btn-secondary w-100">{{ _("Salva le note") }}</button>
   </form>
+  {% elif vedo_le_note and session.notes %}
+  <section class="c7-card">
+    <div class="c7-label">{{ _("Note della seduta") }}</div>
+    <p style="margin:8px 0 0;font-size:14px;white-space:pre-line">{{ session.notes }}</p>
+  </section>
+  {% endif %}
 
   <div class="c7-duo">
-    {% if session.is_open %}
+    {% if not mia %}
+    <a class="btn btn-secondary" href="{{ url_for('sheet.detail', sheet_id=summary.sheet.id) }}">
+      {{ _("Il registro") }}
+    </a>
+    <span></span>
+    {% elif session.is_open %}
     <a class="btn btn-secondary" href="{{ url_for('sheet.run', session_id=session.id) }}">{{ _("Torna alla seduta") }}</a>
     <button type="submit" form="sheetClose" class="btn btn-success">{{ _("Ho finito") }}</button>
     {% else %}
@@ -119,7 +140,7 @@
   </div>
 </div>
 
-{% if session.is_open %}
+{% if mia and session.is_open %}
 <form method="POST" id="sheetClose" action="{{ url_for('sheet.close_session', session_id=session.id) }}" hidden>
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 </form>

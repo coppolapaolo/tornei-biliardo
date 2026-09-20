@@ -28,6 +28,18 @@ from models.training_sheet.models import (
 
 MIGRATION = "migrations.20260920_scheda_di_allenamento"
 
+#: Le migration che **aggiungono colonne** a queste tabelle dopo la prima. Il
+#: confronto con i modelli le vuole tutte: l'ORM legge lo schema di oggi, non
+#: quello del giorno in cui le tabelle sono nate. Chi ne scrive un'altra la
+#: aggiunge qui, o questo test glielo ricorda.
+SUCCESSIVE = ("migrations.20260920_note_condivise",)
+
+
+def _schema_di_oggi(percorso: str) -> None:
+    importlib.import_module(MIGRATION).upgrade_sqlite(percorso)
+    for nome in SUCCESSIVE:
+        importlib.import_module(nome).upgrade_sqlite(percorso)
+
 
 def _colonne(conn: sqlite3.Connection, tabella: str) -> set[str]:
     return {riga[1] for riga in conn.execute(f"PRAGMA table_info({tabella})")}
@@ -57,7 +69,7 @@ def db_di_ieri(tmp_path):
 
 
 def test_lo_schema_coincide_con_i_modelli(db_di_ieri):
-    importlib.import_module(MIGRATION).upgrade_sqlite(db_di_ieri)
+    _schema_di_oggi(db_di_ieri)
 
     conn = sqlite3.connect(db_di_ieri)
     for modello in (
@@ -73,9 +85,8 @@ def test_lo_schema_coincide_con_i_modelli(db_di_ieri):
 
 
 def test_si_puo_rieseguire(db_di_ieri):
-    migration = importlib.import_module(MIGRATION)
-    migration.upgrade_sqlite(db_di_ieri)
-    migration.upgrade_sqlite(db_di_ieri)
+    _schema_di_oggi(db_di_ieri)
+    _schema_di_oggi(db_di_ieri)
 
 
 def _scheda_con_voce(conn: sqlite3.Connection) -> None:

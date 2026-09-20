@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 17:24+0200\n"
+"POT-Creation-Date: 2026-09-20 17:46+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -312,7 +312,7 @@ msgstr "This drill already has recorded attempts"
 
 #: models/challenge/authoring.py:290 models/challenge/profile_service.py:94
 #: models/challenge/rating_service.py:61 models/challenge/shot_service.py:87
-#: models/training_sheet/services.py:216
+#: models/training_sheet/services.py:229
 msgid "Esercizio non trovato"
 msgstr "Drill not found"
 
@@ -742,7 +742,7 @@ msgid "Questo esercizio si registra colpo per colpo, non col totale."
 msgstr "This exercise is recorded shot by shot, not with the total."
 
 #: models/challenge/services.py:1257 models/challenge/shot_service.py:162
-#: models/training_sheet/session_service.py:381
+#: models/training_sheet/session_service.py:398
 msgid "Questa variante non è di questo esercizio"
 msgstr "This variant does not belong to this drill"
 
@@ -790,8 +790,8 @@ msgid_plural "%(num)s colpi"
 msgstr[0] "%(num)s shot"
 msgstr[1] "%(num)s shots"
 
-#: models/challenge/summary_view.py:107 templates/sheet/detail.html:100
-#: templates/sheet/summary.html:20
+#: models/challenge/summary_view.py:107 templates/sheet/detail.html:118
+#: templates/sheet/summary.html:21
 #, python-format
 msgid "%(num)s minuto"
 msgid_plural "%(num)s minuti"
@@ -3490,109 +3490,110 @@ msgid "soglia %(n)s su %(tot)s"
 msgstr "threshold %(n)s of %(tot)s"
 
 #: models/training_sheet/services.py:69
-#: models/training_sheet/session_service.py:80
+#: models/training_sheet/session_service.py:97
 msgid "Scheda non trovata"
 msgstr "Sheet not found"
 
-#: models/training_sheet/services.py:96
-#: models/training_sheet/session_service.py:82
+#: models/training_sheet/services.py:109
+#: models/training_sheet/session_service.py:99
 msgid "Questa scheda non è tua"
 msgstr "This sheet is not yours"
 
-#: models/training_sheet/services.py:163
+#: models/training_sheet/services.py:176
 #, python-format
 msgid "Una scheda arriva a %(n)s voci."
 msgstr "A sheet holds up to %(n)s items."
 
-#: models/training_sheet/services.py:170
+#: models/training_sheet/services.py:183
 #, python-format
 msgid "Il livello va da 1 a %(n)s."
 msgstr "The level goes from 1 to %(n)s."
 
-#: models/training_sheet/services.py:177
+#: models/training_sheet/services.py:190
 #, python-format
 msgid "Le sedute di fila vanno da 1 a %(n)s."
 msgstr "Sessions in a row go from 1 to %(n)s."
 
-#: models/training_sheet/services.py:182
+#: models/training_sheet/services.py:195
 #, python-format
 msgid "Le settimane vanno da 1 a %(n)s."
 msgstr "Weeks go from 1 to %(n)s."
 
-#: models/training_sheet/services.py:213
-#: models/training_sheet/session_service.py:360
+#: models/training_sheet/services.py:226
+#: models/training_sheet/session_service.py:377
 msgid "Questa voce non è di questa scheda"
 msgstr "This item does not belong to this sheet"
 
-#: models/training_sheet/services.py:269
+#: models/training_sheet/services.py:282
 msgid "La scheda è già tua"
 msgstr "The sheet is already yours"
 
-#: models/training_sheet/services.py:272 routes/player/profile.py:187
+#: models/training_sheet/services.py:285 routes/player/profile.py:187
 msgid "Utente non trovato"
 msgstr "User not found"
 
-#: models/training_sheet/services.py:274
+#: models/training_sheet/services.py:287
 msgid "Una scheda si apre a un istruttore"
 msgstr "A sheet can only be opened to an instructor"
 
-#: models/training_sheet/services.py:312
+#: models/training_sheet/services.py:325
 msgid "Non leggi questa scheda"
 msgstr "You do not read this sheet"
 
-#: models/training_sheet/services.py:344
+#: models/training_sheet/services.py:366
 msgid "Un allievo ti ha aperto una scheda"
 msgstr "A student has opened a sheet to you"
 
-#: models/training_sheet/services.py:346
+#: models/training_sheet/services.py:368
 #, python-format
 msgid "%(allievo)s ti fa leggere «%(scheda)s»: vedi le sue sedute e come procede."
 msgstr ""
 "%(allievo)s is letting you read “%(scheda)s”: you can see their sessions "
 "and how they are getting on."
 
-#: models/training_sheet/services.py:353
+#: models/training_sheet/services.py:375
 msgid "Apri la scheda"
 msgstr "Open the sheet"
 
-#: models/training_sheet/services.py:367
+#: models/training_sheet/services.py:389
 msgid "Un istruttore ha smesso di seguirti"
 msgstr "An instructor has stopped following you"
 
-#: models/training_sheet/services.py:369
+#: models/training_sheet/services.py:391
 #, python-format
 msgid "%(istruttore)s non legge più «%(scheda)s»."
 msgstr "%(istruttore)s no longer reads “%(scheda)s”."
 
-#: models/training_sheet/services.py:375
+#: models/training_sheet/services.py:397 templates/sheet/detail.html:149
+#: templates/sheet/readers.html:21
 msgid "Chi la legge"
 msgstr "Who reads it"
 
-#: models/training_sheet/services.py:386
+#: models/training_sheet/services.py:408
 msgid "La scheda vuole un nome"
 msgstr "The sheet needs a name"
 
-#: models/training_sheet/services.py:412
+#: models/training_sheet/services.py:434
 #, python-format
 msgid "Serve dire quanto farne: %(unita)s."
 msgstr "Say how much to do: %(unita)s."
 
-#: models/training_sheet/services.py:418
+#: models/training_sheet/services.py:440
 #, python-format
 msgid "Il «quanto farne» va da %(min)s a %(max)s."
 msgstr "The \"how much\" goes from %(min)s to %(max)s."
 
-#: models/training_sheet/services.py:432
+#: models/training_sheet/services.py:454
 msgid "La soglia è un numero positivo"
 msgstr "The threshold is a positive number"
 
-#: models/training_sheet/services.py:437
+#: models/training_sheet/services.py:459
 msgid ""
 "Per una soglia serve almeno una voce «a riusciti»: le altre non fanno "
 "totale."
 msgstr "A threshold needs at least one \"made\" item: the others do not add up."
 
-#: models/training_sheet/services.py:444
+#: models/training_sheet/services.py:466
 #, python-format
 msgid "La soglia non può superare il totale della scheda, che è %(n)s."
 msgstr "The threshold cannot be higher than the sheet total, which is %(n)s."
@@ -3601,72 +3602,72 @@ msgstr "The threshold cannot be higher than the sheet total, which is %(n)s."
 msgid "Seduta non trovata"
 msgstr "Session not found"
 
-#: models/training_sheet/session_service.py:90
+#: models/training_sheet/session_service.py:107
 msgid "Questo giorno non è nella scheda"
 msgstr "This day is not in the sheet"
 
-#: models/training_sheet/session_service.py:132
+#: models/training_sheet/session_service.py:149
 msgid "Serve dire se l'hai fatto"
 msgstr "Say whether you did it"
 
-#: models/training_sheet/session_service.py:165
+#: models/training_sheet/session_service.py:182
 msgid "Questa voce si segna con un numero, non tiro per tiro"
 msgstr "This item is recorded with a number, not shot by shot"
 
-#: models/training_sheet/session_service.py:173
+#: models/training_sheet/session_service.py:190
 msgid "Hai già segnato tutti i tiri di questa voce"
 msgstr "You have already recorded every shot of this item"
 
-#: models/training_sheet/session_service.py:195
+#: models/training_sheet/session_service.py:212
 msgid "Non c'è nessun tiro da togliere"
 msgstr "There is no shot to undo"
 
-#: models/training_sheet/session_service.py:240
+#: models/training_sheet/session_service.py:257
 msgid "Questa seduta è già chiusa"
 msgstr "This session is already closed"
 
-#: models/training_sheet/session_service.py:293
+#: models/training_sheet/session_service.py:310
 msgid "Questa seduta ha già qualcosa segnato: chiudila, non buttarla"
 msgstr "This session already has something recorded: close it, do not discard it"
 
-#: models/training_sheet/session_service.py:349
+#: models/training_sheet/session_service.py:366
 msgid "Questa seduta non è tua"
 msgstr "This session is not yours"
 
-#: models/training_sheet/session_service.py:356
+#: models/training_sheet/session_service.py:373
 msgid "Questa seduta è chiusa"
 msgstr "This session is closed"
 
-#: models/training_sheet/session_service.py:362
+#: models/training_sheet/session_service.py:379
 msgid "Questa voce non fa più parte della scheda"
 msgstr "This item is no longer part of the sheet"
 
-#: models/training_sheet/session_service.py:375
+#: models/training_sheet/session_service.py:392
 msgid "Serve dire da che parte"
 msgstr "Say which side"
 
-#: models/training_sheet/session_service.py:378
+#: models/training_sheet/session_service.py:395
 msgid "Questa voce si segna in una casella sola"
 msgstr "This item is recorded in a single box"
 
-#: models/training_sheet/session_service.py:417
+#: models/training_sheet/session_service.py:434
 msgid "Serve il numero"
 msgstr "The number is required"
 
-#: models/training_sheet/session_service.py:419
+#: models/training_sheet/session_service.py:436
 msgid "Il numero non può essere negativo"
 msgstr "The number cannot be negative"
 
-#: models/training_sheet/session_service.py:425
+#: models/training_sheet/session_service.py:442
 #, python-format
 msgid "Al massimo %(n)s su questa voce."
 msgstr "At most %(n)s on this item."
 
-#: models/training_sheet/session_service.py:429
+#: models/training_sheet/session_service.py:446
 msgid "Una seduta non dura più di un giorno"
 msgstr "A session does not last longer than a day"
 
-#: models/training_sheet/session_service.py:436
+#: models/training_sheet/session_service.py:453
 #, python-format
 msgid "Questo esercizio arriva a %(n)s."
 msgstr "This drill goes up to %(n)s."
@@ -4001,7 +4002,7 @@ msgstr "Attempt undone."
 msgid "Il punto sul panno non è leggibile."
 msgstr "The point on the cloth cannot be read."
 
-#: routes/challenge.py:1343 routes/sheet/run.py:205
+#: routes/challenge.py:1343 routes/sheet/run.py:229
 msgid "Note salvate."
 msgstr "Notes saved."
 
@@ -5742,7 +5743,7 @@ msgstr "Current password is wrong, or the new password is not valid."
 msgid "La mia scheda"
 msgstr "My sheet"
 
-#: routes/sheet/__init__.py:113
+#: routes/sheet/__init__.py:114
 msgid "Scheda archiviata."
 msgstr "Sheet archived."
 
@@ -5750,7 +5751,27 @@ msgstr "Sheet archived."
 msgid "Scheda salvata."
 msgstr "Sheet saved."
 
-#: routes/sheet/run.py:174
+#: routes/sheet/readers.py:74
+msgid "Adesso legge questa scheda."
+msgstr "They now read this sheet."
+
+#: routes/sheet/readers.py:88
+msgid "Non legge più questa scheda."
+msgstr "They no longer read this sheet."
+
+#: routes/sheet/readers.py:103
+msgid "Adesso chi legge vede anche le note."
+msgstr "Whoever reads the sheet now sees the notes too."
+
+#: routes/sheet/readers.py:105
+msgid "Le note tornano tue."
+msgstr "The notes are yours again."
+
+#: routes/sheet/readers.py:117
+msgid "Non leggi più questa scheda."
+msgstr "You no longer read this sheet."
+
+#: routes/sheet/run.py:188
 msgid "Seduta chiusa senza segnare niente."
 msgstr "Session closed without recording anything."
 
@@ -7242,7 +7263,7 @@ msgstr "Back to championships"
 #: templates/gamification/admin/config_dashboard.html:101
 #: templates/gamification/admin/config_dashboard.html:132
 #: templates/gamification/admin/features.html:60
-#: templates/sheet/detail.html:116 templates/sheet/index.html:80
+#: templates/sheet/detail.html:134 templates/sheet/index.html:80
 msgid "Modifica"
 msgstr "Edit"
 
@@ -10421,7 +10442,7 @@ msgstr "Start over"
 #: templates/challenge/_run_shots_dock.html:48
 #: templates/challenge/_training_board.html:95
 #: templates/challenge/summary.html:120 templates/challenge/training.html:166
-#: templates/sheet/_run_dock.html:116 templates/sheet/summary.html:111
+#: templates/sheet/_run_dock.html:116 templates/sheet/summary.html:132
 msgid "Ho finito"
 msgstr "I'm done"
 
@@ -11529,7 +11550,7 @@ msgid "Su quale esercizio"
 msgstr "On which drill"
 
 #: templates/challenge/obiettivo.html:61 templates/exam/session.html:159
-#: templates/sheet/summary.html:32
+#: templates/sheet/summary.html:33
 #, python-format
 msgid "su %(max)s"
 msgstr "out of %(max)s"
@@ -11727,7 +11748,7 @@ msgstr "Notes of the session"
 msgid "Tavolo 4, panno lento. Stecca nuova."
 msgstr "Table 4, slow cloth. New cue."
 
-#: templates/challenge/summary.html:109 templates/sheet/summary.html:105
+#: templates/challenge/summary.html:109 templates/sheet/summary.html:115
 msgid "Salva le note"
 msgstr "Save the notes"
 
@@ -11747,7 +11768,7 @@ msgstr "Session started"
 msgid "L'hai cominciata %(quando)s."
 msgstr "You started it %(quando)s."
 
-#: templates/challenge/today.html:42 templates/sheet/detail.html:120
+#: templates/challenge/today.html:42 templates/sheet/detail.html:138
 msgid "Riprendi la seduta"
 msgstr "Pick the session back up"
 
@@ -11796,7 +11817,7 @@ msgid_plural "%(num)s esercizi, da filtrare per abilità, gesto, livello e voto"
 msgstr[0] "%(num)s drill, to filter by skill, stroke, level and rating"
 msgstr[1] "%(num)s drills, to filter by skill, stroke, level and rating"
 
-#: templates/challenge/today.html:157 templates/sheet/summary.html:113
+#: templates/challenge/today.html:157 templates/sheet/summary.html:134
 msgid "Le tue schede"
 msgstr "Your sheets"
 
@@ -13644,7 +13665,7 @@ msgstr "Your match"
 #: templates/components/_match_card.html:215 templates/exam/catalog.html:62
 #: templates/player/notifications.html:96
 #: templates/public/campionatos_list.html:71
-#: templates/public/garas_list.html:39
+#: templates/public/garas_list.html:39 templates/sheet/readers.html:96
 msgid "Apri"
 msgstr "Open"
 
@@ -15521,7 +15542,7 @@ msgstr "Move: drag, or use the up and down arrows"
 
 #: templates/components/_sequence_editor.html:75
 #: templates/direttore/_foglio_esercizio.html:107
-#: templates/exam/examiners.html:28
+#: templates/exam/examiners.html:28 templates/sheet/readers.html:53
 msgid "Togli"
 msgstr "Remove"
 
@@ -21532,7 +21553,7 @@ msgid "Cerca nella guida"
 msgstr "Search the guide"
 
 #: templates/help/_ui.html:47 templates/help/search.html:5
-#: templates/public/campionatos_list.html:20
+#: templates/public/campionatos_list.html:20 templates/sheet/readers.html:76
 msgid "Cerca"
 msgstr "Search"
 
@@ -23866,7 +23887,7 @@ msgstr "Your roles"
 msgid "Chi sei, qui dentro"
 msgstr "Who you are, in here"
 
-#: templates/player/roles.html:34
+#: templates/player/roles.html:34 templates/sheet/readers.html:47
 #, python-format
 msgid "dal %(giorno)s"
 msgstr "since %(giorno)s"
@@ -24576,7 +24597,8 @@ msgid "Componi la scheda"
 msgstr "Compose the sheet"
 
 #: templates/sheet/compose.html:25 templates/sheet/detail.html:19
-#: templates/sheet/run.html:20 templates/sheet/summary.html:14
+#: templates/sheet/instructors.html:16 templates/sheet/run.html:20
+#: templates/sheet/summary.html:15
 msgid "Torna alle schede"
 msgstr "Back to the sheets"
 
@@ -24706,11 +24728,32 @@ msgstr "The same drill can appear in two items."
 msgid "livello %(n)s"
 msgstr "level %(n)s"
 
-#: templates/sheet/detail.html:36
+#: templates/sheet/detail.html:38
+#, python-format
+msgid "La scheda di %(chi)s"
+msgstr "%(chi)s's sheet"
+
+#: templates/sheet/detail.html:40
+msgid ""
+"La leggi perché te l'ha aperta. Vedi le sedute e come procede; non puoi "
+"cambiarla né scriverci."
+msgstr ""
+"You read it because they opened it to you. You see the sessions and how "
+"they are getting on; you cannot change it or write in it."
+
+#: templates/sheet/detail.html:44
+msgid "Smetti di seguire questa scheda? Potrà riaprirtela solo chi la possiede."
+msgstr "Stop following this sheet? Only its owner can open it to you again."
+
+#: templates/sheet/detail.html:46
+msgid "Non seguirla più"
+msgstr "Stop following it"
+
+#: templates/sheet/detail.html:54
 msgid "Nessuna seduta"
 msgstr "No sessions"
 
-#: templates/sheet/detail.html:38
+#: templates/sheet/detail.html:56
 msgid ""
 "Qui compariranno le sedute che fai con questa scheda, e come cambia ogni "
 "esercizio nel tempo."
@@ -24718,47 +24761,51 @@ msgstr ""
 "The sessions you do with this sheet will show up here, and how each drill"
 " changes over time."
 
-#: templates/sheet/detail.html:48
+#: templates/sheet/detail.html:66
 #, python-format
 msgid "L'ultima, su %(n)s"
 msgstr "The last one, out of %(n)s"
 
-#: templates/sheet/detail.html:53
+#: templates/sheet/detail.html:71
 #, python-format
 msgid "Media di %(num)s seduta"
 msgid_plural "Media di %(num)s sedute"
 msgstr[0] "Average of %(num)s session"
 msgstr[1] "Average of %(num)s sessions"
 
-#: templates/sheet/detail.html:62
+#: templates/sheet/detail.html:80
 msgid "Volte sopra la soglia"
 msgstr "Times above the threshold"
 
-#: templates/sheet/detail.html:71
+#: templates/sheet/detail.html:89
 msgid "Voce per voce"
 msgstr "Item by item"
 
-#: templates/sheet/detail.html:72
+#: templates/sheet/detail.html:90
 msgid "le ultime tre"
 msgstr "the last three"
 
-#: templates/sheet/detail.html:90
+#: templates/sheet/detail.html:108
 msgid "Le sedute"
 msgstr "The sessions"
 
-#: templates/sheet/detail.html:98
+#: templates/sheet/detail.html:116
 #, python-format
 msgid "%(fatte)s caselle su %(tutte)s"
 msgstr "%(fatte)s boxes out of %(tutte)s"
 
-#: templates/sheet/detail.html:102 templates/sheet/run.html:25
+#: templates/sheet/detail.html:120 templates/sheet/run.html:25
 #, python-format
 msgid "giorno %(g)s"
 msgstr "day %(g)s"
 
-#: templates/sheet/detail.html:120
+#: templates/sheet/detail.html:138
 msgid "Nuova seduta"
 msgstr "New session"
+
+#: templates/sheet/detail.html:152 templates/sheet/instructors.html:76
+msgid "solo tua"
+msgstr "yours alone"
 
 #: templates/sheet/index.html:14
 msgid "Schede di allenamento"
@@ -24778,7 +24825,7 @@ msgstr "days %(g)s"
 msgid "%(n)s settimane"
 msgstr "%(n)s weeks"
 
-#: templates/sheet/index.html:38
+#: templates/sheet/index.html:38 templates/sheet/instructors.html:27
 msgid "Nessuna scheda"
 msgstr "No sheets"
 
@@ -24810,7 +24857,7 @@ msgstr[1] "%(num)s drills, never done"
 msgid "Riprendi"
 msgstr "Resume"
 
-#: templates/sheet/index.html:92
+#: templates/sheet/index.html:92 templates/sheet/summary.html:127
 msgid "Il registro"
 msgstr "The register"
 
@@ -24822,19 +24869,173 @@ msgstr "Remove this sheet from the list? The sessions you have done stay."
 msgid "Archivia"
 msgstr "Archive"
 
-#: templates/sheet/index.html:105
+#: templates/sheet/index.html:107 templates/sheet/instructors.html:12
+#: templates/sheet/instructors.html:18
+msgid "Chi legge le mie schede"
+msgstr "Who reads my sheets"
+
+#: templates/sheet/index.html:108
+msgid "si decide scheda per scheda"
+msgstr "decided sheet by sheet"
+
+#: templates/sheet/index.html:117
 msgid "Una scheda nuova"
 msgstr "A new sheet"
 
-#: templates/sheet/index.html:107
+#: templates/sheet/index.html:119
 msgid "Come la chiami"
 msgstr "What you call it"
 
-#: templates/sheet/index.html:110
+#: templates/sheet/index.html:122
 msgid "Crea e componi"
 msgstr "Create and compose"
 
-#: templates/sheet/run.html:24 templates/sheet/summary.html:18
+#: templates/sheet/instructors.html:19
+msgid "Si decide scheda per scheda"
+msgstr "Decided sheet by sheet"
+
+#: templates/sheet/instructors.html:29
+msgid ""
+"Quando avrai una scheda potrai farla leggere a uno o più istruttori, una "
+"per una."
+msgstr ""
+"Once you have a sheet you can let one or more instructors read it, one "
+"sheet at a time."
+
+#: templates/sheet/instructors.html:35
+msgid ""
+"Qui vedi in un colpo solo chi legge cosa. Non è un elenco a parte: un "
+"istruttore compare perché gli hai aperto almeno una scheda, e sparisce "
+"quando lo togli dall'ultima."
+msgstr ""
+"Here you see at a glance who reads what. It is not a separate list: an "
+"instructor appears because you opened at least one sheet to them, and "
+"disappears when you remove them from the last one."
+
+#: templates/sheet/instructors.html:47 templates/sheet/readers.html:44
+#: templates/sheet/readers.html:88
+msgid "istruttore"
+msgstr "instructor"
+
+#: templates/sheet/instructors.html:68
+msgid "Non le legge nessuno"
+msgstr "Nobody reads these"
+
+#: templates/sheet/readers.html:15
+#, python-format
+msgid "Chi legge «%(scheda)s»"
+msgstr "Who reads “%(scheda)s”"
+
+#: templates/sheet/readers.html:19
+msgid "Torna alla scheda"
+msgstr "Back to the sheet"
+
+#: templates/sheet/readers.html:30
+msgid ""
+"Ogni scheda ha i suoi lettori: li aggiungi e li togli tu, qui. Chi la "
+"legge vede le sedute e come procedi; non può cambiarla né scriverci."
+msgstr ""
+"Every sheet has its own readers: you add and remove them here. Whoever "
+"reads it sees your sessions and how you are getting on; they cannot "
+"change it or write in it."
+
+#: templates/sheet/readers.html:36
+msgid "La leggono"
+msgstr "They read it"
+
+#: templates/sheet/readers.html:61
+msgid "Non la legge nessuno"
+msgstr "Nobody reads it"
+
+#: templates/sheet/readers.html:63
+msgid ""
+"Questa scheda è solo tua. Se ti alleni con un istruttore, puoi fargliela "
+"leggere: vedrà le sedute e come procedi."
+msgstr ""
+"This sheet is yours alone. If you train with an instructor, you can let "
+"them read it: they will see your sessions and how you are getting on."
+
+#: templates/sheet/readers.html:70
+msgid "Aggiungi un istruttore a questa scheda"
+msgstr "Add an instructor to this sheet"
+
+#: templates/sheet/readers.html:74
+msgid "Nome utente o scuola"
+msgstr "Username or school"
+
+#: templates/sheet/readers.html:75
+msgid "Cerca un istruttore"
+msgstr "Search for an instructor"
+
+#: templates/sheet/readers.html:103
+msgid ""
+"Nessun istruttore con questo nome. Si trovano solo gli utenti che hanno "
+"il ruolo di istruttore: chi insegna e non compare qui non l'ha ancora "
+"chiesto."
+msgstr ""
+"No instructor with that name. Only users with the instructor role can be "
+"found: someone who teaches and does not appear here has not asked for the"
+" role yet."
+
+#: templates/sheet/readers.html:108
+msgid ""
+"Chi aggiungi riceve una notifica e trova questa scheda fra quelle dei "
+"suoi allievi. Vale per questa scheda soltanto, e puoi toglierlo quando "
+"vuoi."
+msgstr ""
+"Whoever you add gets a notification and finds this sheet among their "
+"students'. It applies to this sheet only, and you can remove them "
+"whenever you want."
+
+#: templates/sheet/readers.html:114
+msgid "Cosa vede chi la legge"
+msgstr "What a reader sees"
+
+#: templates/sheet/readers.html:119
+msgid "Le sedute e il registro"
+msgstr "The sessions and the register"
+
+#: templates/sheet/readers.html:120
+msgid "di questa scheda, voce per voce"
+msgstr "of this sheet, item by item"
+
+#: templates/sheet/readers.html:128
+msgid "Le note delle sedute"
+msgstr "The session notes"
+
+#: templates/sheet/readers.html:130
+msgid "le legge anche chi legge la scheda"
+msgstr "read by whoever reads the sheet"
+
+#: templates/sheet/readers.html:131
+msgid "restano tue, a meno che tu non le apra"
+msgstr "they stay yours, unless you open them"
+
+#: templates/sheet/readers.html:138
+msgid "Richiudi"
+msgstr "Close them again"
+
+#: templates/sheet/readers.html:138
+msgid "Apri anche le note"
+msgstr "Open the notes too"
+
+#: templates/sheet/readers.html:145
+msgid "Tutto il resto"
+msgstr "Everything else"
+
+#: templates/sheet/readers.html:146
+msgid "le altre schede, l'andamento, partite ed Elo"
+msgstr "your other sheets, your progress, matches and Elo"
+
+#: templates/sheet/readers.html:152
+msgid ""
+"Tolto da qui, un istruttore smette subito di vedere questa scheda. Le "
+"altre non cambiano."
+msgstr ""
+"Removed from here, an instructor immediately stops seeing this sheet. The"
+" others do not change."
+
+#: templates/sheet/run.html:24 templates/sheet/summary.html:19
 #, python-format
 msgid "Seduta del %(giorno)s"
 msgstr "Session of %(giorno)s"
@@ -24860,81 +25061,99 @@ msgstr "How many were made, if you counted them yourself."
 msgid "Quanti riusciti"
 msgstr "How many made"
 
-#: templates/sheet/summary.html:29
+#: templates/sheet/summary.html:15
+msgid "Torna al registro"
+msgstr "Back to the register"
+
+#: templates/sheet/summary.html:30
 msgid "Seduta finita"
 msgstr "Session finished"
 
-#: templates/sheet/summary.html:29
+#: templates/sheet/summary.html:30
 msgid "Come sta andando"
 msgstr "How it is going"
 
-#: templates/sheet/summary.html:36
+#: templates/sheet/summary.html:37
 msgid "sopra la soglia"
 msgstr "above the threshold"
 
-#: templates/sheet/summary.html:36
+#: templates/sheet/summary.html:37
 msgid "sotto la soglia"
 msgstr "below the threshold"
 
-#: templates/sheet/summary.html:42
+#: templates/sheet/summary.html:43
 #, python-format
 msgid "Il tuo meglio su questa scheda: prima era %(n)s."
 msgstr "Your best on this sheet: it was %(n)s before."
 
 #: templates/sheet/summary.html:44
 #, python-format
+msgid "Il suo meglio su questa scheda: prima era %(n)s."
+msgstr "Their best on this sheet: it was %(n)s before."
+
+#: templates/sheet/summary.html:46
+#, python-format
 msgid "La volta prima %(n)s."
 msgstr "Last time %(n)s."
 
-#: templates/sheet/summary.html:45
+#: templates/sheet/summary.html:47
 msgid "È la prima seduta di questa scheda."
 msgstr "This is the first session of this sheet."
 
-#: templates/sheet/summary.html:48
+#: templates/sheet/summary.html:50
 #, python-format
 msgid "%(num)s seduta di fila sopra la soglia"
 msgid_plural "%(num)s sedute di fila sopra la soglia"
 msgstr[0] "%(num)s session in a row above the threshold"
 msgstr[1] "%(num)s sessions in a row above the threshold"
 
-#: templates/sheet/summary.html:67
+#: templates/sheet/summary.html:69
 #, python-format
 msgid "prima %(n)s"
 msgstr "before %(n)s"
 
-#: templates/sheet/summary.html:78
+#: templates/sheet/summary.html:81
 msgid "In questa seduta non hai segnato niente."
 msgstr "You recorded nothing in this session."
 
-#: templates/sheet/summary.html:88
+#: templates/sheet/summary.html:82
+msgid "In questa seduta non è stato segnato niente."
+msgstr "Nothing was recorded in this session."
+
+#: templates/sheet/summary.html:93
 #, python-format
 msgid "Hai tenuto la soglia del livello %(n)s"
 msgstr "You have held the level %(n)s threshold"
 
-#: templates/sheet/summary.html:90
+#: templates/sheet/summary.html:94
+#, python-format
+msgid "Ha tenuto la soglia del livello %(n)s"
+msgstr "They have held the level %(n)s threshold"
+
+#: templates/sheet/summary.html:96
 #, python-format
 msgid "Una seduta sopra la soglia."
 msgid_plural "%(num)s sedute di fila sopra la soglia."
 msgstr[0] "One session above the threshold."
 msgstr[1] "%(num)s sessions in a row above the threshold."
 
-#: templates/sheet/summary.html:91
+#: templates/sheet/summary.html:97
 msgid "Il passaggio al livello successivo lo confermerà chi ti segue."
 msgstr "Whoever follows you will confirm the step up."
 
-#: templates/sheet/summary.html:101
+#: templates/sheet/summary.html:111 templates/sheet/summary.html:119
 msgid "Note della seduta"
 msgstr "Session notes"
 
-#: templates/sheet/summary.html:103
+#: templates/sheet/summary.html:113
 msgid "Tavolo 4. Sul follow a sinistra arrivo corto."
 msgstr "Table 4. On the follow to the left I come up short."
 
-#: templates/sheet/summary.html:110
+#: templates/sheet/summary.html:131
 msgid "Torna alla seduta"
 msgstr "Back to the session"
 
-#: templates/sheet/summary.html:116
+#: templates/sheet/summary.html:137
 msgid "Un'altra seduta"
 msgstr "Another session"
 

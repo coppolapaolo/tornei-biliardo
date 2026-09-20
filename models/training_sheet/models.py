@@ -62,6 +62,14 @@ class TrainingSheet(BaseModel):
     #: tutta la scheda.
     uses_days = db.Column(db.Boolean, nullable=False, default=False, server_default="0")
 
+    #: Se chi legge la scheda vede anche le **note** delle sedute. Spento per
+    #: default (ADR-069): la nota è il posto dove si scrive «oggi malissimo,
+    #: braccio rigido», e aprirla d'ufficio trasformerebbe un diario in un
+    #: rapportino. Chi vuole che l'istruttore la legga lo dice.
+    readers_see_notes = db.Column(
+        db.Boolean, nullable=False, default=False, server_default="0"
+    )
+
     version = db.Column(db.Integer, nullable=False, default=1, server_default="1")
     is_active = db.Column(db.Boolean, nullable=False, default=True, server_default="1")
 

@@ -97,6 +97,7 @@ def detail(sheet_id):
         registro=build_register(sheet, sheet.owner_id),
         aperta=TrainingSessionService.open_session(sheet.id, current_user.id),
         can_edit=TrainingSheetService.can_edit(sheet, current_user),
+        lettori=TrainingSheetService.readers_of(sheet),
     )
 
 
@@ -115,6 +116,6 @@ def archive(sheet_id):
     )
 
 
-from . import compose, run  # noqa: E402,F401  (registra le route sul blueprint)
+from . import compose, readers, run  # noqa: E402,F401  (registra le route)
 
 __all__ = ["sheet_bp"]
