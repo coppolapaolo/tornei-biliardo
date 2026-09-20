@@ -87,6 +87,16 @@
       var remove = event.target.closest('[data-variant-remove]');
       if (remove) remove.closest('[data-variant-row]').remove();
     });
+    // «È il disegno ribaltato»: la casella muove il campo nascosto, che è
+    // quello che viaggia. Una casella non spuntata non si invia, e le liste
+    // del modulo si disallineerebbero di una riga.
+    variants.addEventListener('change', function (event) {
+      var mirror = event.target.closest('[data-variant-mirror]');
+      if (!mirror) return;
+      var row = mirror.closest('[data-variant-row]');
+      var field = row.querySelector('input[name="variant_mirrored"]');
+      if (field) field.value = mirror.checked ? '1' : '0';
+    });
   }
 
   // ── anteprima della foto: senza, l'immagine sbagliata si scopre dopo ─────

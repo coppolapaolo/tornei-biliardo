@@ -29,6 +29,7 @@ MIGRATION = "migrations.20260919_profilo_esercizio"
 SUCCESSIVE = (
     "migrations.20260920_prova_fatta_di_colpi",
     "migrations.20260920_estrazione_e_consegna",
+    "migrations.20260920_variante_specchiata",
 )
 
 

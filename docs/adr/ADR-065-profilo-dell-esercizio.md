@@ -151,3 +151,28 @@ catalogo filtrerebbe il secondo come vero.
   etichette di decine di esercizi senza una query per card.
 * Le schermate arrivano dopo: modulo (#252, #253), «Oggi» e catalogo che si
   filtra, voto.
+
+## Emendamento (2026-09-20) — la variante **ribaltata** (fase 9c, #179)
+
+Destra e sinistra sono lo stesso esercizio visto dall'altro lato, ed è il caso
+che la decisione delle varianti nomina per primo. Finora però l'autore, per
+farlo *vedere*, doveva **ridisegnare** il tavolo: due disegni da tenere
+allineati a mano, cioè esattamente il difetto che questo ADR evita fra due
+esercizi e che rientrava dalla finestra fra due varianti dello stesso.
+
+`ChallengeVariant.mirrored` dice che quella variante si mostra col disegno
+ribaltato. Non c'è un secondo disegno da nessuna parte: c'è una riflessione di
+quello che esiste, fatta dove l'esercizio si mostra (la figura si gira quando
+scegli la variante). Default `False`, nessun backfill: nessuna variante scritta
+finora ha mai chiesto lo specchio.
+
+**Con un bersaglio non si può**, e il servizio lo rifiuta. Il punteggio di una
+prova a colpi discende dal disegno (ADR-066) e il panno che si tocca è uno, in
+un sistema di coordinate solo: mostrare la figura ribaltata e chiedere dove si
+è fermata la bianca sul panno dritto registrerebbe ogni colpo dal lato
+sbagliato — senza errori, senza segnali, con dei numeri plausibili. La strada
+per ammetterlo esiste ed è scritta nella issue: specchiare **anche** il
+bersaglio e riportare il punto toccato nelle coordinate del disegno prima di
+dargli i punti, il che vuol dire che il panno deve sapere quale variante è
+accesa **prima** del primo colpo. È un lavoro suo, non un effetto collaterale
+di questo.

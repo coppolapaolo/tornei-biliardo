@@ -755,6 +755,26 @@ hints:
   - challenge.edit_diagram
   page: disegnare_un_drill
   section: strumenti
+- id: drill.sponda
+  label: The cushion stretch
+  short: 'Highlights the piece of cushion that matters — «stop between the second and the fourth
+    diamond». It slides along its own cushion and never leaves it.'
+  anchor: drill-sponda
+  screens:
+  - challenge.diagram_builder
+  - challenge.edit_diagram
+  page: disegnare_un_drill
+  section: strumenti
+- id: drill.inquadratura
+  label: The framing
+  short: 'You always draw on the whole table: the frame only decides what ends up in the picture.
+    The balls left outside are not lost, should you widen it one day.'
+  anchor: drill-inquadratura
+  screens:
+  - challenge.diagram_builder
+  - challenge.edit_diagram
+  page: disegnare_un_drill
+  section: strumenti
 - id: drill.richiamo
   label: The callout
   short: 'A caption tied to the point it comments: move either one and the thread stays

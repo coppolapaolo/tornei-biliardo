@@ -131,6 +131,7 @@ class ChallengeProfileService:
 
         if not isinstance(variants, _Unset):
             _replace_variants(challenge, variants)
+            _refuse_mirror_with_target(challenge)
 
         return challenge
 
@@ -154,8 +155,40 @@ def copy_profile(originale: Challenge, copia: Challenge) -> None:
         )
     for variante in originale.variants:
         copia.variants.append(
-            ChallengeVariant(label=variante.label, position=variante.position)
+            ChallengeVariant(
+                label=variante.label,
+                position=variante.position,
+                mirrored=variante.mirrored,
+            )
         )
+
+
+def _refuse_mirror_with_target(challenge: Challenge) -> None:
+    """Lo specchio è del **disegno**, e con un bersaglio il disegno è il punteggio.
+
+    Su un esercizio a bersaglio il panno che si tocca è uno, in un sistema di
+    coordinate solo: mostrare il disegno ribaltato e chiedere di indicare dove
+    si è fermata la bianca sul panno dritto è un modo tranquillo di registrare
+    ogni colpo dal lato sbagliato — senza errori, senza segnali, con dei numeri
+    plausibili. Meglio dirlo qui, all'autore, che è l'unico che può scegliere
+    fra le due cose.
+
+    La strada per ammetterlo c'è ed è scritta nell'ADR-066: specchiare anche il
+    bersaglio e riportare il punto toccato nelle coordinate del disegno prima
+    di dargli i punti. È un lavoro suo, non un effetto collaterale di questo.
+    """
+    from .target import target_from_scene
+
+    if not any(v.mirrored for v in challenge.variants):
+        return
+    if target_from_scene(challenge.diagram_scene) is None:
+        return
+    raise ValidationError(
+        _(
+            "Con un bersaglio la variante specchiata non si può usare: "
+            "il punteggio discende dal disegno, e il panno da toccare è uno solo"
+        )
+    )
 
 
 # ────────────────────────────────────────────────────────────────────────
@@ -301,11 +334,15 @@ def _replace_variants(
     for posizione, (richiesta, etichetta) in enumerate(
         zip(richieste or [], etichette), start=1
     ):
+        specchiata = bool(richiesta.get("mirrored"))
         if richiesta.get("id") not in (None, ""):
             variante = esistenti[int(richiesta["id"])]
             variante.label = etichetta
             variante.position = posizione
+            variante.mirrored = specchiata
         else:
             challenge.variants.append(
-                ChallengeVariant(label=etichetta, position=posizione)
+                ChallengeVariant(
+                    label=etichetta, position=posizione, mirrored=specchiata
+                )
             )

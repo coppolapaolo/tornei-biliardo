@@ -1099,6 +1099,10 @@ a.c7-choice.is-selected { color: var(--c7-accent-ink); }
   position: absolute; inset: 0;
   width: 100%; height: 100%; object-fit: contain; display: block;
 }
+/* La variante ribaltata (fase 9c): lo stesso disegno visto dall'altro lato,
+   non un secondo disegno da tenere allineato a mano. Il giro è istantaneo —
+   è un cambio di stato, non un'animazione da guardare. */
+.c7-diagram__img.is-mirrored { transform: scaleX(-1); }
 /* Le tre misure in uso: miniatura in riga, card del catalogo, dettaglio. */
 .c7-diagram--thumb { border-radius: var(--c7-r-control); }
 .c7-diagram--card  { aspect-ratio: 16 / 9; }

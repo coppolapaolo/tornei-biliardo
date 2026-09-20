@@ -100,8 +100,12 @@
       <div class="form-label">{{ _("Da che parte") }}</div>
       <div class="c7-hscroll">
         <label class="c7-pill"><input type="radio" name="variant_id" value="" checked>{{ _("senza dirlo") }}</label>
+        {# Una variante ribaltata (fase 9c) non ha un disegno suo: è questo,
+           allo specchio. Il segno viaggia sul radio, e il disegno si gira
+           quando la scegli. #}
         {% for variante in challenge.variants %}
-        <label class="c7-pill"><input type="radio" name="variant_id" value="{{ variante.id }}">{{ variante.label }}</label>
+        <label class="c7-pill"><input type="radio" name="variant_id" value="{{ variante.id }}"
+               {% if variante.mirrored %}data-mirror="1"{% endif %}>{{ variante.label }}</label>
         {% endfor %}
       </div>
     </div>

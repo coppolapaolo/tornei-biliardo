@@ -1,0 +1,19 @@
+{
+  "Con un bersaglio la variante specchiata non si può usare: il punteggio discende dal disegno, e il panno da toccare è uno solo": "With a target the mirrored variant cannot be used: the score comes from the drawing, and there is only one cloth to tap",
+  "Scorre lungo la sua sponda e non la lascia. Per metterlo su un'altra sponda, tocca lì con lo strumento.": "It slides along its own cushion and never leaves it. To put one on another cushion, tap there with the tool.",
+  "Si disegna sempre sul tavolo intero: la cornice si sposta e si allarga dagli angoli, agganciata ai diamanti, e decide solo cosa si vede. Le bilie fuori restano nel disegno.": "You always draw on the whole table: the frame moves and grows from its corners, snapped to the diamonds, and only decides what is seen. The balls outside stay in the drawing.",
+  "«Ribaltata» mostra lo stesso disegno allo specchio, senza ridisegnarlo: serve per destra e sinistra. Con un bersaglio non si può, perché il punteggio discende dal disegno.": "«Mirrored» shows the same drawing in a mirror, without redrawing it: it is there for right and left. With a target it cannot be used, because the score comes from the drawing.",
+  "Sponda": "Cushion",
+  "Inquadratura": "Framing",
+  "Tratto di sponda": "Cushion stretch",
+  "Lungo": "Long",
+  "Togli il tratto": "Remove the stretch",
+  "intero": "whole",
+  "Mezzo": "Half",
+  "un lato corto": "one short rail",
+  "Angolo": "Corner",
+  "un quarto": "a quarter",
+  "trascini la cornice": "drag the frame",
+  "Togli l'inquadratura": "Remove the framing",
+  "è il disegno ribaltato": "is the drawing mirrored"
+}

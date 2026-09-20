@@ -688,6 +688,22 @@ hints:
     page: disegnare_un_drill
     section: strumenti
 
+  - id: drill.sponda
+    label: "Il tratto di sponda"
+    short: "Evidenzia il pezzo di sponda che conta — «fermati fra il secondo e il quarto diamante». Scorre lungo la sua sponda e non la lascia."
+    anchor: drill-sponda
+    screens: [challenge.diagram_builder, challenge.edit_diagram]
+    page: disegnare_un_drill
+    section: strumenti
+
+  - id: drill.inquadratura
+    label: "L'inquadratura"
+    short: "Si disegna sempre sul tavolo intero: la cornice decide solo cosa finisce nell'immagine. Le bilie che restano fuori non si perdono, se un giorno la allarghi."
+    anchor: drill-inquadratura
+    screens: [challenge.diagram_builder, challenge.edit_diagram]
+    page: disegnare_un_drill
+    section: strumenti
+
   - id: drill.richiamo
     label: "Il richiamo"
     short: "Una didascalia legata al punto che commenta: sposti l'una o l'altro e il filo resta attaccato. Due tocchi sulla didascalia per cambiarla."

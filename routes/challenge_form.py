@@ -87,13 +87,24 @@ def parse_challenge_draft(data: Any) -> ChallengeDraft:
 
     labels = _getlist(data, "variant_label")
     ids = _getlist(data, "variant_id")
+    # Lo specchio viaggia in un campo **nascosto** per riga, non nella casella
+    # di spunta: una casella non spuntata non si invia, e le tre liste si
+    # disallineerebbero — la variante sbagliata si ritroverebbe specchiata.
+    mirrored = _getlist(data, "variant_mirrored")
     variants: List[Dict[str, Any]] = []
     for posizione, label in enumerate(labels):
         if not label.strip():
             # Una riga lasciata vuota nel modulo non è una variante senza nome.
             continue
         variant_id = ids[posizione] if posizione < len(ids) else ""
-        variants.append({"id": variant_id or None, "label": label.strip()})
+        specchiata = mirrored[posizione] if posizione < len(mirrored) else ""
+        variants.append(
+            {
+                "id": variant_id or None,
+                "label": label.strip(),
+                "mirrored": str(specchiata).lower() in ("1", "true", "on"),
+            }
+        )
 
     return ChallengeDraft(
         title=_text(data, "title"),
@@ -165,7 +176,11 @@ def draft_from_challenge(challenge: Any, *, as_copy: bool = False) -> ChallengeD
         family_step=challenge.family_step,
         cue_ball_reset=challenge.cue_ball_reset,
         variants=tuple(
-            {"id": None if as_copy else v.id, "label": v.label}
+            {
+                "id": None if as_copy else v.id,
+                "label": v.label,
+                "mirrored": v.mirrored,
+            }
             for v in challenge.variants
         ),
     )
