@@ -4,9 +4,9 @@ kind: approfondimento
 audience: [giocatore]
 minutes: 4
 summary: "Prove di abilità da eseguire da soli: servono ad allenarsi, a sbloccare traguardi e — dentro una gara — a decidere gli spareggi."
-screens: [challenge.challenge_catalog, challenge.challenge_detail, challenge.training_session,
+screens: [challenge.today, challenge.challenge_catalog, challenge.challenge_detail, challenge.training_session,
   challenge.start_attempt, challenge.attempt_detail, challenge.create_challenge,
-  challenge.edit_challenge, challenge.challenge_statistics, player.challenge_detail]
+  challenge.edit_challenge, challenge.duplicate_challenge, challenge.challenge_statistics, player.challenge_detail]
 related: [disegnare_un_drill, progressi, numero_dispari, esami]
 
 blocks:
@@ -18,26 +18,87 @@ blocks:
 
   - type: heading
     id: catalogo
-    title: "Il catalogo"
+    title: "Da dove si comincia: «Oggi» e il catalogo"
 
   - type: text
     text: >-
-      La sezione **Esercizi** raccoglie tutte le prove disponibili. Ogni
-      scheda mostra l'immagine della disposizione, il **nome della prova** in
-      grassetto e sotto le prime righe delle istruzioni. Puoi metterne qualcuna
-      fra i preferiti per ritrovarla in fretta.
+      La sezione **Esercizi** si apre su **«Oggi»**: non un elenco, ma il punto
+      da cui ripartire. In cima c'è **«Riprendi da qui»**, l'ultimo esercizio su
+      cui ti sei allenato, con com'è andata e il pulsante **«Comincia»**. Sotto
+      trovi i tuoi **preferiti** e **i più provati**. La prima volta, quando
+      una storia non ce l'hai ancora, al suo posto c'è l'invito a sceglierne uno.
+
+  - type: shot
+    shot: esercizi-oggi
+    caption: "«Oggi»: l'esercizio da riprendere, i più provati e, in fondo, il catalogo."
+
+  - type: text
+    text: >-
+      **«Apri il catalogo»** porta a tutti gli esercizi. In alto la casella
+      **«Cerca un esercizio»** lascia a schermo solo le prove che contengono
+      quella parola, nel titolo o nelle istruzioni. Sotto, **Tutti**, **I miei**
+      e **Preferiti**, e poi i filtri.
 
   - type: shot
     shot: challenge-catalogo
-    caption: "Il catalogo: ogni prova ha la sua immagine e il tipo di punteggio."
+    caption: "Il catalogo filtrato per un'abilità: restano solo gli esercizi che la allenano."
+
+  - type: options
+    items:
+      - name: "Abilità"
+        values: "Fondamentali · Tiro · Battente · Posizione · Sponde · Difesa · Spaccata"
+        text: >-
+          Che cosa allena l'esercizio. È la risposta a «su cosa devo lavorare?».
+        hint: esercizi.filtri
+      - name: "Gesto"
+        values: "stop · stun · follow · draw · spin · forza · bank · kick · jump · massé"
+        text: >-
+          Con che colpo si esegue. Lo stesso draw serve a un esercizio di
+          posizione e a uno di difesa: per questo è un filtro a parte.
+      - name: "Livello"
+        values: "da 1 a 5"
+        text: >-
+          Quanto è difficile secondo chi l'ha creato: 1 per chi comincia.
+      - name: "Voto"
+        values: "da 3 in su · da 4 in su"
+        text: >-
+          Solo gli esercizi che chi li ha provati ha votato bene.
 
   - type: text
     text: >-
-      Sopra le linguette **Tutti**, **I miei** e **Preferiti** c'è la casella
-      **«Cerca nel titolo o nelle istruzioni…»**: mentre scrivi restano solo le
-      prove che contengono quella parola, in tutte e tre le linguette insieme, e
-      i numeri accanto ai nomi si aggiornano da soli. Se non corrisponde niente,
-      te lo dice.
+      Tocca un asse, poi una voce: i filtri **si sommano** — Posizione, col
+      draw, di livello 2. La voce accesa, ritoccata, si spegne. Accanto al
+      conteggio scegli l'ordine: **i più provati**, **voto**, **i più nuovi**.
+
+  - type: note
+    tone: info
+    title: "Se un filtro non trova quasi niente"
+    text: >-
+      Abilità, gesto e livello li scrive chi ha creato l'esercizio, e sono
+      facoltativi: un esercizio che non li ha compare solo senza filtri. Non è
+      un errore, è un esercizio ancora da descrivere.
+
+  - type: heading
+    id: scheda
+    title: "La scheda di un esercizio"
+
+  - type: text
+    text: >-
+      Toccando una card si apre la scheda. In testata leggi chi l'ha creato, il
+      **voto** e **quanti giocatori l'hanno provato**: i due numeri vanno letti
+      insieme, perché un 4,8 dato da tre persone pesa meno di un 4,5 dato da
+      duecento. Sotto la disposizione trovi le etichette — livello, abilità,
+      gesti, come si registra — e **«Come si fa»**.
+
+  - type: shot
+    shot: esercizio-scheda
+    caption: "La scheda: etichette, istruzioni, i tuoi tre numeri, il voto e le tue prove."
+
+  - type: list
+    items:
+      - "**Media**, **Ultime tre** e **Record** sono i tuoi numeri su quell'esercizio. «Ultime tre» compare quando hai più di tre prove: dice se stai migliorando."
+      - "Se l'esercizio ha delle **varianti** — destra e sinistra, posizioni A e B — i tuoi risultati restano separati, una riga per variante: la differenza fra i due lati è proprio la cosa da sapere."
+      - "**Il tuo voto** si dà toccando una bilia da **1 a 5**. Puoi votare un esercizio **dopo averlo provato almeno una volta**; il voto si cambia quando vuoi, e toccando di nuovo la tua bilia lo togli."
 
   - type: note
     tone: info
@@ -63,8 +124,10 @@ blocks:
     items:
       - title: "Scegli un esercizio"
         text: "Apri la sua scheda e leggi le regole: come si dispongono le bilie e come si conta il punteggio."
-      - title: "Tocca «Provalo»"
-        text: "È il pulsante sulla scheda nel catalogo. Dalla pagina dell'esercizio si chiama «Allenati su questo esercizio»."
+      - title: "Tocca «Allenati su questo esercizio»"
+        text: "È il pulsante in fondo alla scheda. Se è l'esercizio che stavi già facendo, da «Oggi» basta «Comincia»."
+      - title: "Se ci sono varianti, scegli «da che parte»"
+        text: "Destra o sinistra, A o B: la scelta resta accesa per tutte le prove che registri. Se non la dici, la prova vale per l'esercizio in generale."
       - title: "Prepara il tavolo e gioca"
         text: "La foto e le istruzioni restano in alto, sempre visibili: non devi ricordarti niente a memoria."
       - title: "Registra com'è andata"
@@ -74,7 +137,7 @@ blocks:
       - title: "Riprova quante volte vuoi"
         text: "La prova compare subito in «Le tue prove», e in alto salgono «Prove registrate» e il secondo contatore — «Il tuo record» se è a punteggio, «Riuscite» se è superato o non superato. Il campo si azzera da solo: sei già pronto per la prossima."
       - title: "Quando basta, tocca «Ho finito»"
-        text: "Torni al catalogo. Le prove restano nel tuo storico, e tornando sull'esercizio ritrovi le ultime dieci."
+        text: "Torni a «Oggi», dove l'esercizio appena fatto ti aspetta in cima per la prossima volta. Le prove restano nel tuo storico."
 
   - type: note
     tone: tip
@@ -107,7 +170,7 @@ blocks:
         values: "facoltativo"
         text: >-
           Chi crea l'esercizio può dire fin dove si può arrivare: allora il
-          catalogo scrive «0-15 punti» e mentre ti alleni leggi «12 / 15»
+          la scheda scrive «A punteggio · su 15» e mentre ti alleni leggi «12 / 15»
           invece di un numero solo. Può anche lasciarlo vuoto, ed è giusto così
           per le prove che si ripetono finché non sbagli: lì un massimo non
           esiste.
@@ -118,16 +181,17 @@ blocks:
 
   - type: heading
     id: crearle
-    title: "Crearne di nuove (direttori)"
+    title: "Crearne di nuovi, correggerli, duplicarli (direttori)"
 
   - type: text
     text: >-
-      Un direttore di gara può aggiungere esercizi al catalogo: titolo,
-      istruzioni, immagine della disposizione delle bilie e tipo di punteggio.
+      Un direttore di gara può aggiungere esercizi al catalogo. Il modulo è
+      **uno solo**: serve a crearne uno nuovo, a correggere uno dei tuoi
+      («Modifica l'esercizio», nella sua scheda) e a farne una copia («Duplica»).
 
   - type: shot
     shot: challenge-nuova
-    caption: "Il modulo per creare un esercizio. In fondo, «Disegna l'esercizio» per chi la foto non ce l'ha."
+    caption: "Il modulo dell'esercizio: titolo, come si fa, cosa allena, con che gesto, livello, come si registra, la disposizione."
 
   - type: options
     items:
@@ -139,14 +203,51 @@ blocks:
           cominciano tutte con «Disponi le bilie…» nel catalogo non si
           distinguono l'una dall'altra.
         hint: challenge.titolo
-      - name: "Che cosa deve fare il giocatore"
+      - name: "Come si fa"
         text: >-
           Le istruzioni. **Non c'è un limite di lunghezza**: le regole
           articolate si scrivono per esteso, senza doverle accorciare.
-      - name: "Come si valuta"
-        values: "a punteggio · riuscita o no"
+      - name: "Cosa allena"
+        values: "fino a tre abilità"
         text: >-
-          Le due possibilità spiegate qui sopra, in «Due modi di contare».
+          È da qui che il catalogo fa trovare l'esercizio a chi cerca «qualcosa
+          sulla posizione». Al più tre: un esercizio che allena tutto non dice
+          niente a chi filtra. Scelte tre, le altre si spengono.
+        hint: challenge.abilita
+      - name: "Con che gesto"
+        values: "zero, uno o più"
+        text: >-
+          I colpi con cui si esegue. Quanti ne servono, anche nessuno.
+        hint: challenge.gesto
+      - name: "Livello"
+        values: "da 1 a 5, facoltativo"
+        text: >-
+          Quanto è difficile secondo te. Tocca di nuovo la cifra accesa per non
+          dichiararlo.
+        hint: challenge.livello
+      - name: "Famiglia e passo"
+        values: "facoltativi"
+        text: >-
+          Per le progressioni: «stop shot» 1, 2, 3 — lo stesso gesto, sempre più
+          difficile. Il nome della famiglia lo scegli tu.
+      - name: "La bianca"
+        values: "si rimette · resta dov'è"
+        text: >-
+          Se a ogni tiro la battente torna al suo posto, o se il tiro dopo parte
+          da dove si è fermata. Cambia che cosa misura il punteggio.
+      - name: "Varianti"
+        text: >-
+          Destra e sinistra, posizioni A e B. **Sono lo stesso esercizio**, non
+          un altro: stessa disposizione, stesse regole, stesso voto. Chi si
+          allena sceglie «da che parte» prima di tirare, e i risultati restano
+          separati. Una variante che ha già delle prove si può rinominare, non
+          togliere.
+      - name: "Come si registra"
+        values: "riuscito o no · a punteggio"
+        text: >-
+          Le due possibilità spiegate in «Due modi di contare», col punteggio
+          massimo facoltativo.
+        hint: challenge.punteggio_massimo
 
   - type: note
     tone: tip
@@ -164,13 +265,54 @@ blocks:
       benissimo; la figura presa da un libro o dal sito di qualcun altro no.
 
   - type: heading
+    id: modificare
+    title: "Correggere un esercizio che ha già delle prove"
+
+  - type: text
+    text: >-
+      Un refuso nel titolo, un'abilità in più, una foto migliore: si salvano e
+      basta. Ma se cambi **come si registra**, il **punteggio massimo** o le
+      **istruzioni** di un esercizio che qualcuno ha già provato, i punteggi
+      già scritti si leggerebbero con regole che non sono quelle con cui sono
+      stati fatti. Per questo, prima di salvare, l'app si ferma e chiede.
+
+  - type: shot
+    shot: esercizio-ha-gia-prove
+    caption: "«Questo esercizio ha già delle prove»: crea una copia, modifica comunque, o torna al modulo."
+
+  - type: options
+    items:
+      - name: "Crea una copia e modifica quella"
+        text: >-
+          Nasce un esercizio nuovo con le tue modifiche, senza prove e senza
+          voti. L'originale resta com'era, con tutti i suoi risultati. È la
+          scelta consigliata.
+      - name: "Modifica comunque questo"
+        text: >-
+          Le modifiche si applicano a questo esercizio: le prove già registrate
+          restano, ma da ora si leggono con le regole nuove.
+      - name: "Torna al modulo"
+        text: >-
+          Non succede niente: quello che avevi scritto è ancora lì.
+
+  - type: text
+    text: >-
+      **«Duplica»**, nella scheda dell'esercizio, fa la stessa cosa di tua
+      iniziativa: apre il modulo già compilato — col titolo che finisce in
+      «(copia)», da riscrivere — e crea un esercizio nuovo, tuo. Serve per le
+      famiglie: la stessa disposizione con una bilia spostata, la versione
+      facile e quella difficile. Se l'originale è disegnato, **«Crea la copia e
+      apri il disegno»** ti porta dritto sul tavolo con le bilie già al loro
+      posto.
+
+  - type: heading
     id: disegnare
     title: "Se la foto non ce l'hai"
 
   - type: text
     text: >-
-      In fondo al modulo, sotto il campo della foto, c'è la domanda **«Non hai
-      una foto?»** e il pulsante **«Disegna l'esercizio»**: apre un tavolo vuoto
+      In fondo al modulo, nella sezione **«La disposizione»**, accanto a «Usa
+      una foto» c'è il pulsante **«Disegna l'esercizio»**: apre un tavolo vuoto
       su cui disponi le bilie e tracci i tiri, e l'immagine del catalogo la
       genera il disegno. È una funzione da direttore di gara, e si sblocca
       dopo trenta esercizi completati.

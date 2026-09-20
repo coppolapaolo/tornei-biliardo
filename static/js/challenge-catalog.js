@@ -52,6 +52,13 @@
       tab.addEventListener('click', function () { showAxis(tab.dataset.axisTab); });
     });
     showAxis(axes.dataset.open || 'abilita');
+    // La voce accesa va in vista: su telefono la striscia scorre di lato, e un
+    // filtro attivo nascosto oltre il bordo sembra un filtro che non c'è. Si
+    // sposta la striscia, non la pagina.
+    axes.querySelectorAll('[data-axis]').forEach(function (row) {
+      var on = row.querySelector('.c7-chip.is-on');
+      if (on) row.scrollLeft = Math.max(0, on.offsetLeft - row.offsetLeft - (row.clientWidth - on.offsetWidth) / 2);
+    });
   }
 
   // ── cercare nel testo delle card a schermo ───────────────────────────────

@@ -4,9 +4,9 @@ kind: approfondimento
 audience: [giocatore]
 minutes: 4
 summary: "Skill drills you do on your own: for practice, for unlocking milestones, and — inside a competition — for settling tie-breaks."
-screens: [challenge.challenge_catalog, challenge.challenge_detail, challenge.training_session,
+screens: [challenge.today, challenge.challenge_catalog, challenge.challenge_detail, challenge.training_session,
   challenge.start_attempt, challenge.attempt_detail, challenge.create_challenge,
-  challenge.edit_challenge, challenge.challenge_statistics, player.challenge_detail]
+  challenge.edit_challenge, challenge.duplicate_challenge, challenge.challenge_statistics, player.challenge_detail]
 related: [disegnare_un_drill, progressi, numero_dispari, esami]
 
 blocks:
@@ -18,26 +18,87 @@ blocks:
 
   - type: heading
     id: catalogo
-    title: "The catalogue"
+    title: "Where you start: «Today» and the catalogue"
 
   - type: text
     text: >-
-      The **Challenges** section gathers every drill available. Each card shows
-      the picture of the layout, the **name of the drill** in bold and, below
-      it, the first lines of the instructions. You can keep some as favourites
-      to find them quickly.
+      The **Challenges** section opens on **«Today»**: not a list, but the place
+      to pick up from. At the top there is **«Pick up from here»**, the last
+      drill you practised, with how it went and the **«Start»** button. Below
+      you find your **favourites** and the **most tried**. The first time, when
+      you have no history yet, you find an invitation to choose one instead.
+
+  - type: shot
+    shot: esercizi-oggi
+    caption: "«Today»: the drill to pick up, the most tried and, at the bottom, the catalogue."
+
+  - type: text
+    text: >-
+      **«Open the catalogue»** takes you to every drill. At the top, the
+      **«Search for a drill»** box leaves on screen only the drills containing
+      that word, in the title or in the instructions. Below, **All**, **Mine**
+      and **Favourites**, and then the filters.
 
   - type: shot
     shot: challenge-catalogo
-    caption: "The catalogue: each drill has its picture and scoring type."
+    caption: "The catalogue filtered by a skill: only the drills that train it are left."
+
+  - type: options
+    items:
+      - name: "Skill"
+        values: "Fundamentals · Shot · Cue ball · Position · Banks & kicks · Safety · Break"
+        text: >-
+          What the drill trains. It answers «what should I work on?».
+        hint: esercizi.filtri
+      - name: "Stroke"
+        values: "stop · stun · follow · draw · side spin · power · bank · kick · jump · massé"
+        text: >-
+          Which stroke it is played with. The same draw serves a position drill
+          and a safety drill: that is why it is a separate filter.
+      - name: "Level"
+        values: "1 to 5"
+        text: >-
+          How hard it is according to its author: 1 is for beginners.
+      - name: "Rating"
+        values: "3 and up · 4 and up"
+        text: >-
+          Only the drills that the people who tried them rated well.
 
   - type: text
     text: >-
-      Above the **All**, **Mine** and **Favourites** tabs there is the
-      **«Search the title or the instructions…»** box: as you type, only the
-      drills containing that word are left, across all three tabs at once, and
-      the numbers next to the tab names update by themselves. If nothing
-      matches, it tells you.
+      Tap an axis, then an entry: filters **add up** — Position, with draw,
+      level 2. Tapping the selected entry again turns it off. Next to the count
+      you choose the order: **most tried**, **rating**, **newest**.
+
+  - type: note
+    tone: info
+    title: "If a filter finds almost nothing"
+    text: >-
+      Skill, stroke and level are written by the drill's author, and they are
+      optional: a drill without them shows up only with no filters on. It is
+      not an error, it is a drill still waiting to be described.
+
+  - type: heading
+    id: scheda
+    title: "A drill's page"
+
+  - type: text
+    text: >-
+      Tapping a card opens the drill's page. In the header you read who created
+      it, the **rating** and **how many players tried it**: the two numbers go
+      together, because a 4.8 from three people weighs less than a 4.5 from two
+      hundred. Below the layout you find the labels — level, skills, strokes,
+      how it is recorded — and **«How to do it»**.
+
+  - type: shot
+    shot: esercizio-scheda
+    caption: "The drill's page: labels, instructions, your three numbers, the rating and your attempts."
+
+  - type: list
+    items:
+      - "**Average**, **Last three** and **Best** are your numbers on that drill. «Last three» shows up once you have more than three attempts: it tells you whether you are improving."
+      - "If the drill has **variants** — right and left, positions A and B — your results stay separate, one row per variant: the gap between the two sides is exactly what you want to know."
+      - "**Your rating** is given by tapping a ball from **1 to 5**. You can rate a drill **after trying it at least once**; you can change the rating whenever you like, and tapping your ball again removes it."
 
   - type: note
     tone: info
@@ -63,8 +124,10 @@ blocks:
     items:
       - title: "Pick a challenge"
         text: "Open its page and read the rules: how the balls are set up and how the score is counted."
-      - title: "Tap «Try it»"
-        text: "It is the button on the card in the catalogue. From the challenge page it reads «Practise this drill»."
+      - title: "Tap «Practise this drill»"
+        text: "It is the button at the bottom of the drill's page. If it is the drill you were already working on, «Start» on «Today» is enough."
+      - title: "If there are variants, pick «which side»"
+        text: "Right or left, A or B: your choice stays selected for every attempt you record. If you do not say, the attempt counts for the drill in general."
       - title: "Set the table up and play"
         text: "The picture and the instructions stay at the top, always visible: nothing to keep in your head."
       - title: "Record how it went"
@@ -74,7 +137,7 @@ blocks:
       - title: "Try again as often as you like"
         text: "The attempt shows up straight away under «Your attempts», and at the top «Attempts recorded» goes up along with the second counter — «Your record» on a scored drill, «Passed» on a pass-or-fail one. The field resets itself: you are ready for the next one."
       - title: "When you have had enough, tap «I'm done»"
-        text: "You go back to the catalogue. The attempts stay in your history, and coming back to the challenge shows you the last ten."
+        text: "You go back to «Today», where the drill you just did waits at the top for next time. The attempts stay in your history."
 
   - type: note
     tone: tip
@@ -159,16 +222,17 @@ blocks:
 
   - type: heading
     id: crearle
-    title: "Creating new ones (directors)"
+    title: "Creating new ones, fixing them, duplicating them (directors)"
 
   - type: text
     text: >-
-      A competition director can add challenges to the catalogue: title,
-      instructions, a picture of the ball layout and the scoring type.
+      A competition director can add drills to the catalogue. There is **one
+      form**: it creates a new drill, fixes one of yours («Edit drill», on its
+      page) and makes a copy of one («Duplicate»).
 
   - type: shot
     shot: challenge-nuova
-    caption: "The form for creating a challenge. At the bottom, «Draw the drill» for those without a photo."
+    caption: "The drill form: title, how to do it, what it trains, with which stroke, level, how it is recorded, the layout."
 
   - type: options
     items:
@@ -176,32 +240,110 @@ blocks:
         values: "optional"
         text: >-
           The name the drill goes by everywhere. Without one, it takes its
-          number — «Drill 12». It is worth writing: twenty drills that all begin
-          with «Set the balls up…» cannot be told apart in the catalogue.
+          number — «Drill 12». It is worth writing: twenty drills that all start
+          with «Set the balls…» cannot be told apart in the catalogue.
         hint: challenge.titolo
-      - name: "What the player has to do"
+      - name: "How to do it"
         text: >-
-          The instructions. **There is no length limit**: involved rules can be
-          written out in full, without having to cut them short.
-      - name: "How it is scored"
-        values: "scored · pass or fail"
+          The instructions. **There is no length limit**: detailed rules can be
+          written out in full, with no need to shorten them.
+      - name: "What it trains"
+        values: "up to three skills"
         text: >-
-          The two options explained above, under «Two ways of counting».
+          This is how the catalogue lets people find the drill when they look
+          for «something on position». Three at most: a drill that trains
+          everything tells nothing to someone filtering. Once three are chosen,
+          the others switch off.
+        hint: challenge.abilita
+      - name: "With which stroke"
+        values: "none, one or more"
+        text: >-
+          The strokes it is played with. As many as needed, even none.
+        hint: challenge.gesto
+      - name: "Level"
+        values: "1 to 5, optional"
+        text: >-
+          How hard you think it is. Tap the selected number again to leave it
+          undeclared.
+        hint: challenge.livello
+      - name: "Family and step"
+        values: "optional"
+        text: >-
+          For progressions: «stop shot» 1, 2, 3 — the same stroke, harder each
+          time. You choose the family name.
+      - name: "The cue ball"
+        values: "replaced · stays where it is"
+        text: >-
+          Whether the cue ball goes back to its spot for every shot, or the next
+          shot starts from where it stopped. It changes what the score measures.
+      - name: "Variants"
+        text: >-
+          Right and left, positions A and B. **They are the same drill**, not
+          another one: same layout, same rules, same rating. Whoever practises
+          picks «which side» before shooting, and the results stay separate. A
+          variant that already has attempts can be renamed, not removed.
+      - name: "How it is recorded"
+        values: "made or not · scored"
+        text: >-
+          The two options explained in «Two ways of counting», with the optional
+          maximum score.
+        hint: challenge.punteggio_massimo
 
   - type: note
     tone: tip
     text: >-
       The picture is the part that matters: a description in words of where the
-      balls go gets interpreted differently by everyone. A photo of the table
-      set up settles it.
+      balls go gets read differently by everyone. A photo of the table, set up,
+      settles it.
 
   - type: note
     tone: warning
     title: "Only photos you have the rights to"
     text: >-
-      Below the photo field the app says so: **upload only material you hold
-      the rights to**. The table you set up and photographed yourself is
-      perfect; a diagram from a book or from somebody else's website is not.
+      Below the photo field the app reminds you: **upload only material you
+      have the rights to**. The table you set up and photographed yourself is
+      perfect; a figure taken from a book or from someone else's site is not.
+
+  - type: heading
+    id: modificare
+    title: "Fixing a drill that already has attempts"
+
+  - type: text
+    text: >-
+      A typo in the title, one more skill, a better photo: they are simply
+      saved. But if you change **how it is recorded**, the **maximum score** or
+      the **instructions** of a drill someone has already tried, the scores
+      already written would be read under rules they were not played with. That
+      is why, before saving, the app stops and asks.
+
+  - type: shot
+    shot: esercizio-ha-gia-prove
+    caption: "«This drill already has attempts»: create a copy, edit anyway, or go back to the form."
+
+  - type: options
+    items:
+      - name: "Create a copy and edit that one"
+        text: >-
+          A new drill is created with your changes, with no attempts and no
+          ratings. The original stays as it was, with all its results. This is
+          the recommended choice.
+      - name: "Edit this one anyway"
+        text: >-
+          The changes apply to this drill: the recorded attempts stay, but from
+          now on they are read under the new rules.
+      - name: "Back to the form"
+        text: >-
+          Nothing happens: what you wrote is still there.
+
+  - type: text
+    text: >-
+      **«Duplicate»**, on the drill's page, does the same thing on your own
+      initiative: it opens the form already filled in — with a title ending in
+      «(copy)», to be rewritten — and creates a new drill, yours. It is meant
+      for families: the same layout with one ball moved, the easy version and
+      the hard one. If the original is drawn, **«Create the copy and open the
+      diagram»** takes you straight to the table with the balls already in
+      place.
 
   - type: heading
     id: disegnare
@@ -209,8 +351,8 @@ blocks:
 
   - type: text
     text: >-
-      At the bottom of the form, below the photo field, there is the question
-      **«No photo to hand?»** and the button **«Draw the drill»**: it opens an
+      At the bottom of the form, in the **«The layout»** section, next to «Use
+      a photo» there is the button **«Draw the drill»**: it opens an
       empty table where you place the balls and draw the shots, and the picture
       for the catalogue comes from the drawing. It is a competition director's
       feature, and it unlocks after thirty drills completed.

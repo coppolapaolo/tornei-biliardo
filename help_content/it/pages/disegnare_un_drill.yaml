@@ -40,12 +40,12 @@ blocks:
   - type: text
     text: >-
       Si parte dal modulo **«Nuovo esercizio»**, lo stesso di sempre. In fondo,
-      sotto il campo della foto, c'è la domanda **«Non hai una foto?»** e il
-      pulsante **«Disegna l'esercizio»**.
+      nella sezione **«La disposizione»**, ci sono due pulsanti affiancati:
+      **«Disegna l'esercizio»** e **«Usa una foto»**.
 
   - type: shot
     shot: challenge-nuova
-    caption: "«Disegna l'esercizio» è in fondo al modulo, sotto il campo della foto."
+    caption: "«Disegna l'esercizio» è in fondo al modulo, nella sezione «La disposizione», accanto a «Usa una foto»."
 
   - type: note
     tone: info

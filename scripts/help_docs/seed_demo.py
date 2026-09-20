@@ -414,21 +414,50 @@ def _create_challenges(db, director):
         log("challenge non create: nessuna immagine in static/uploads/challenges/")
         return []
 
+    # Il quarto elemento è il profilo (ADR-065): senza, «Oggi» e il catalogo
+    # mostrerebbero card senza etichette e filtri che non trovano niente, cioè
+    # l'opposto di quello che la guida racconta. Il terzo esercizio sta in fondo
+    # apposta: esami e gara pescano i primi due per posizione.
     specs = [
         (
             "Spot Shot Rally",
             "Dieci tiri dalla stessa posizione: la bilia bersaglio sul punto, "
             "la battente in mano. Un punto per ogni imbucata riuscita.",
             False,
+            dict(
+                max_score=10,
+                abilita=["tiro", "posizione"],
+                gesti=["stop"],
+                declared_level=1,
+            ),
         ),
         (
             "Serie da otto",
             "Imbuca otto bilie di fila senza sbagliare. Si passa o non si passa.",
             True,
+            dict(abilita=["posizione"], gesti=["follow", "draw"], declared_level=3),
+        ),
+        (
+            "Ferma nel cerchio",
+            "Imbuca la bilia e ferma la battente dentro il cerchio. Dieci tiri "
+            "da destra e dieci da sinistra: un punto per ogni battente nel cerchio.",
+            False,
+            dict(
+                max_score=10,
+                abilita=["battente", "posizione"],
+                gesti=["draw", "stun"],
+                declared_level=2,
+                family="controllo della battente",
+                family_step=1,
+                cue_ball_reset=True,
+                variants=[{"label": "destra"}, {"label": "sinistra"}],
+            ),
         ),
     ]
+    from models.challenge.profile_service import ChallengeProfileService
+
     create = []
-    for index, (title, description, pass_fail) in enumerate(specs):
+    for index, (title, description, pass_fail, profilo) in enumerate(specs):
         existing = Challenge.query.filter_by(description=description).first()
         if existing:
             create.append(existing)
@@ -439,10 +468,13 @@ def _create_challenges(db, director):
             description=description,
             image_path=f"uploads/challenges/{image.name}",
             pass_fail_only=pass_fail,
+            max_score=profilo.pop("max_score", None),
             created_by_id=director.id,
             is_active=True,
         )
         db.session.add(challenge)
+        db.session.flush()
+        ChallengeProfileService.set_profile(challenge.id, **profilo)
         create.append(challenge)
     db.session.commit()
     log(f"challenge: {len(create)} prove nel catalogo")
@@ -473,6 +505,36 @@ def _allena_su_challenge(db, player, challenges) -> None:
         )
     db.session.commit()
     log(f"allenamento: 3 prove registrate su «{drill.get_display_name()}»")
+
+
+def _popola_esercizi(db, players, challenges) -> None:
+    """Altri giocatori che hanno provato e votato: i numeri sociali delle card.
+
+    «4,5 · 5 giocatori» non si può mostrare con un giocatore solo. Prove e voti
+    sono scritti qui, non sorteggiati, per lo stesso motivo dei punteggi sopra:
+    due catture devono dare la stessa immagine. Il primo giocatore — quello
+    delle schermate — **non** vota: la figura della scheda deve mostrare le
+    bilie ancora da toccare.
+    """
+    from models.challenge.rating_service import ChallengeRatingService
+    from models.challenge.services import ChallengeService
+
+    if len(players) < 6 or len(challenges) < 3:
+        return
+    piano = {
+        0: [(1, 7, 5), (2, 5, 4), (3, 9, 5), (4, 6, 4)],
+        2: [(1, 4, 5), (2, 6, 4)],
+    }
+    for indice, prove in piano.items():
+        esercizio = challenges[indice]
+        for chi, punteggio, voto in prove:
+            giocatore = players[chi]
+            ChallengeService.record_attempt(
+                user_id=giocatore.id, challenge_id=esercizio.id, score=punteggio
+            )
+            ChallengeRatingService.rate(giocatore.id, esercizio.id, voto)
+    db.session.commit()
+    log("esercizi: prove e voti di altri giocatori")
 
 
 def _add_challenge_to_gara(db, gara, challenges) -> None:
@@ -1254,6 +1316,7 @@ def main() -> int:
         challenges = _create_challenges(db, director)
         _add_challenge_to_gara(db, gara_in_corso, challenges)
         _allena_su_challenge(db, players[0], challenges)
+        _popola_esercizi(db, players, challenges)
         _create_squadre(db, gara_iscrizioni, players[:5])
         _create_gara_bozza(db, campionato, director, venue)
         _create_gara_tabellone(db, director, venue, players)

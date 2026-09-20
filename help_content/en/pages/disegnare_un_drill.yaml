@@ -40,12 +40,12 @@ blocks:
   - type: text
     text: >-
       You start from the **«New challenge»** form, the usual one. At the
-      bottom, below the photo field, there is the question **«No photo to
-      hand?»** and the button **«Draw the drill»**.
+      bottom, in the **«The layout»** section, there are two buttons side by
+      side: **«Draw the drill»** and **«Use a photo»**.
 
   - type: shot
     shot: challenge-nuova
-    caption: "«Draw the drill» is at the bottom of the form, below the photo field."
+    caption: "«Draw the drill» is at the bottom of the form, in «The layout» section, next to «Use a photo»."
 
   - type: note
     tone: info
