@@ -1,4 +1,4 @@
-/* Il builder dei drill: foglio suo, confinato sotto `.drill-builder`.
+/* Il disegnatore degli esercizi: foglio suo, confinato sotto `.drill-builder`.
 
    Non e' pignoleria da linter. Il tool nasce come pagina autonoma e stila
    `body`, `header`, `main`, `*` e — soprattutto — `.btn`, che nell'app e' di
@@ -6,33 +6,42 @@
    schermata. Prefissare qui costa una riga; scoprirlo dopo costa un'app che
    cambia aspetto dove nessuno ha toccato niente.
 
+   **I colori vengono dal design system** (D13, fase 9a). Il tool aveva una
+   palette sua — pannello ardesia, giallo gesso — che era giusta da pagina
+   autonoma e in mezzo all'app diceva «questa schermata e' di qualcun altro».
+   Qui i token sono quelli di `tokens-7c.css`: un solo posto dove cambiano, e
+   il disegnatore invecchia con l'app invece che contro. L'unica cosa che resta
+   scura e' il **tavolo**: il panno e' un oggetto del gioco, e i diamanti su
+   fondo chiaro non si leggono.
+
    Rigenerato dal builder allegato: se arriva una versione nuova, si ri-prefissa
-   invece di ritoccare a mano, altrimenti le due copie divergono. */
+   e si rimappano i colori invece di ritoccare a mano, altrimenti le due copie
+   divergono. Le regole di `header` del tool autonomo non ci sono piu': qui la
+   testata e' quella di `base.html`, e quelle non le usava nessuno. */
 
 .drill-builder{
-    --slate:#15181c; --slate-2:#1c2026; --slate-3:#252b33;
-    --line:#333b45; --ink:#e8eaed; --muted:#8d97a3; --chalk:#f5c518; --radius:5px;
+    /* I nomi restano locali — il tool li usa dappertutto — ma i valori sono
+       del design system. `panel` e' la superficie chiara del pannello,
+       `control` il fondo dei comandi, `stage` il buio attorno al tavolo. */
+    --db-panel:var(--c7-card); --db-control:var(--c7-bg); --db-sunken:var(--c7-sunken);
+    --db-line:var(--c7-line); --db-ink:var(--c7-ink); --db-muted:var(--c7-ink-muted);
+    --db-accent:var(--c7-accent); --db-accent-ink:var(--c7-accent-ink);
+    --db-stage:var(--c7-ink); --db-radius:var(--c7-r-control);
   }
   .drill-builder *{box-sizing:border-box}
   .drill-builder{height:100%}
-  .drill-builder{margin:0;background:var(--slate);color:var(--ink);
-    font-family:'IBM Plex Sans',system-ui,sans-serif;font-size:13px;
+  .drill-builder{margin:0;background:var(--db-panel);color:var(--db-ink);
+    font-family:var(--c7-font);font-size:13px;
     display:flex;flex-direction:column;overflow:hidden}
-  .drill-builder header{display:flex;align-items:baseline;gap:14px;padding:10px 16px;
-    border-bottom:1px solid var(--line);background:var(--slate-2);flex:0 0 auto}
-  .drill-builder header h1{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:20px;
-    letter-spacing:.09em;text-transform:uppercase;margin:0}
-  .drill-builder header h1 em{font-style:normal;color:var(--chalk)}
-  .drill-builder header .hint{color:var(--muted);font-size:11.5px}
   .drill-builder main{flex:1 1 auto;display:flex;min-height:0}
-  .drill-builder #panel{width:300px;flex:0 0 300px;overflow-y:auto;background:var(--slate-2);
-    border-right:1px solid var(--line);padding:12px 12px 48px}
+  .drill-builder #panel{width:300px;flex:0 0 300px;overflow-y:auto;background:var(--db-panel);
+    border-right:1px solid var(--db-line);padding:12px 12px 48px}
   .drill-builder #panel::-webkit-scrollbar{width:9px}
-  .drill-builder #panel::-webkit-scrollbar-thumb{background:#333b45;border-radius:9px}
+  .drill-builder #panel::-webkit-scrollbar-thumb{background:var(--c7-line);border-radius:9px}
   .drill-builder .sec{margin-bottom:16px}
-  .drill-builder .sec > h2{font-family:'Barlow Condensed',sans-serif;font-weight:600;font-size:12px;
-    letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
-    margin:0 0 7px;padding-bottom:5px;border-bottom:1px solid var(--line)}
+  .drill-builder .sec > h2{font-weight:800;font-size:11px;
+    letter-spacing:.14em;text-transform:uppercase;color:var(--db-muted);
+    margin:0 0 7px;padding-bottom:5px;border-bottom:1px solid var(--db-line)}
   .drill-builder .row{display:flex;gap:6px;flex-wrap:wrap}
   /* Il confine vale anche al contrario: `.row` nel tool autonomo era una
      semplice riga flex, ma nell'app e' la riga di griglia di Bootstrap, che ai
@@ -44,63 +53,114 @@
      spazio. */
   .drill-builder .row{--bs-gutter-x:0;--bs-gutter-y:0;margin:0}
   .drill-builder .row > *{width:auto;max-width:none;padding-left:0;padding-right:0;margin-top:0}
-  .drill-builder button, .drill-builder select, .drill-builder input[type=text]{font-family:inherit;font-size:12.5px;color:var(--ink)}
-  .drill-builder .btn{background:var(--slate-3);border:1px solid var(--line);border-radius:var(--radius);
-    padding:6px 9px;cursor:pointer;transition:.12s;line-height:1.2}
-  .drill-builder .btn:hover{border-color:#4a5561;background:#2c333c}
-  .drill-builder .btn:focus-visible{outline:2px solid var(--chalk);outline-offset:1px}
-  .drill-builder .btn.on{background:var(--chalk);border-color:var(--chalk);color:#17181a;font-weight:600}
+  .drill-builder button, .drill-builder select, .drill-builder input[type=text]{font-family:inherit;font-size:12.5px;color:var(--db-ink)}
+  .drill-builder .btn{background:var(--db-control);border:1px solid var(--db-line);border-radius:var(--db-radius);
+    padding:6px 9px;cursor:pointer;transition:.12s;line-height:1.2;font-weight:700}
+  .drill-builder .btn:hover{border-color:var(--c7-ink-faint);background:var(--db-sunken)}
+  .drill-builder .btn:focus-visible{outline:2px solid var(--db-accent);outline-offset:1px}
+  /* Lo strumento acceso: lo stesso segno del resto dell'app (`.c7-seg__item.is-on`
+     e `.c7-choice.is-selected`) — inchiostro pieno, non un colore in piu'. */
+  .drill-builder .btn.on{background:var(--db-ink);border-color:var(--db-ink);color:var(--c7-on-ink)}
   .drill-builder .btn.wide{flex:1 1 auto;text-align:center}
   .drill-builder .btn.sm{padding:4px 5px;font-size:11px}
   .drill-builder .btn.ghostbtn{background:transparent}
-  .drill-builder select{background:var(--slate-3);border:1px solid var(--line);border-radius:var(--radius);
+
+  /* --- La striscia degli strumenti ---------------------------------------
+     Un solo markup per i due formati: da lg e' una griglia dentro il pannello,
+     sotto diventa una striscia che scorre di lato, appiccicata sotto il tavolo.
+     Icona sopra, parola sotto: con la sola icona nessuno indovina «Sposta», e
+     con la sola parola la striscia non ci sta. */
+  .drill-builder .tools{display:flex;flex-wrap:wrap;gap:6px}
+  .drill-builder .tool{flex:1 1 84px;min-height:52px;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:3px;text-align:center}
+  .drill-builder .tool i{font-size:15px}
+  .drill-builder .tool--icon{flex:0 0 52px;min-width:52px}
+  /* Il separatore fa due mestieri secondo il formato: nel pannello e' una riga
+     che manda annulla/ripeti/elimina a capo (sono comandi, non strumenti),
+     nella striscia del telefono e' il trattino verticale fra i due gruppi. */
+  .drill-builder .tools__sep{flex:0 0 100%;height:1px;background:var(--db-line);margin:3px 0}
+
+  .drill-builder select{background:var(--db-control);border:1px solid var(--db-line);border-radius:var(--db-radius);
     padding:5px 6px;width:100%}
-  .drill-builder input[type=text]{background:var(--slate-3);border:1px solid var(--line);
-    border-radius:var(--radius);padding:6px 8px;width:100%}
-  .drill-builder input[type=text]:focus, .drill-builder select:focus{outline:1px solid var(--chalk);border-color:var(--chalk)}
-  .drill-builder input[type=range]{width:100%;accent-color:var(--chalk)}
+  .drill-builder input[type=text]{background:var(--db-control);border:1px solid var(--db-line);
+    border-radius:var(--db-radius);padding:6px 8px;width:100%}
+  .drill-builder input[type=text]:focus, .drill-builder select:focus{outline:1px solid var(--db-accent);border-color:var(--db-accent)}
+  .drill-builder input[type=range]{width:100%;accent-color:var(--db-accent)}
   .drill-builder label.chk{display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer;user-select:none}
-  .drill-builder label.chk input{accent-color:var(--chalk);width:14px;height:14px;margin:0}
+  .drill-builder label.chk input{accent-color:var(--db-accent);width:14px;height:14px;margin:0}
   .drill-builder .field{margin-top:7px}
   /* I punti degli anelli del bersaglio (ADR-066): un campo per anello, in riga,
      dal centro verso l'esterno. Stesso vestito dei campi di testo. */
   .drill-builder .target-values{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
-  .drill-builder .target-values input{background:var(--slate-3);border:1px solid var(--line);
-    border-radius:var(--radius);padding:6px 4px;width:100%;min-width:0;text-align:center;color:var(--ink)}
-  .drill-builder .target-values input:focus{outline:1px solid var(--chalk);border-color:var(--chalk)}
-  .drill-builder .field > span{display:block;color:var(--muted);font-size:11px;margin-bottom:3px;letter-spacing:.04em}
-  .drill-builder .field b{color:var(--ink)}
+  .drill-builder .target-values input{background:var(--db-control);border:1px solid var(--db-line);
+    border-radius:var(--db-radius);padding:6px 4px;width:100%;min-width:0;text-align:center;
+    color:var(--db-ink);font-family:var(--c7-font-mono)}
+  .drill-builder .target-values input:focus{outline:1px solid var(--db-accent);border-color:var(--db-accent)}
+  .drill-builder .field > span{display:block;color:var(--db-muted);font-size:11px;margin-bottom:3px;letter-spacing:.04em}
+  .drill-builder .field b{color:var(--db-ink);font-family:var(--c7-font-mono);font-variant-numeric:tabular-nums}
   .drill-builder #palette{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:2px}
   .drill-builder .pball{position:relative;aspect-ratio:1;border-radius:50%;border:1px solid transparent;
     cursor:pointer;padding:2px;background:none;display:block}
   .drill-builder .pball svg{display:block;width:100%;height:100%}
-  .drill-builder .pball.armed{border-color:var(--chalk);box-shadow:0 0 0 2px rgba(245,197,24,.28)}
+  .drill-builder .pball.armed{border-color:var(--db-accent);box-shadow:0 0 0 2px var(--c7-accent-tint)}
   .drill-builder .pball.used{opacity:.34}
   .drill-builder .swatches{display:flex;gap:5px}
   .drill-builder .sw{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0}
-  .drill-builder .sw.on{border-color:var(--chalk)}
+  .drill-builder .sw.on{border-color:var(--db-accent)}
   .drill-builder .cloths{display:flex;gap:6px}
   .drill-builder .cl{flex:1;height:26px;border-radius:4px;border:2px solid transparent;cursor:pointer;padding:0}
-  .drill-builder .cl.on{border-color:var(--chalk)}
+  .drill-builder .cl.on{border-color:var(--db-accent)}
+  /* Il tavolo resta scuro: il panno e' un oggetto del gioco, e i diamanti su
+     fondo chiaro non si leggono. Fondo pieno e non sfumato — in 7c i gradienti
+     non ci sono. */
   .drill-builder #stage{flex:1 1 auto;min-width:0;display:flex;align-items:center;justify-content:center;
-    padding:14px;background:radial-gradient(ellipse at 50% 0%,#1d222a 0%,#101317 78%)}
+    padding:14px;background:var(--db-stage)}
   .drill-builder #stage svg{max-width:100%;max-height:100%;touch-action:none;display:block}
   .drill-builder #stage.mode-line svg, .drill-builder #stage.mode-text svg, .drill-builder #stage.mode-shot svg{cursor:crosshair}
-  .drill-builder .tip{color:var(--muted);font-size:11px;line-height:1.5;margin:8px 0 0}
-  .drill-builder .tip kbd{background:var(--slate-3);border:1px solid var(--line);border-bottom-width:2px;
-    border-radius:3px;padding:0 4px;font-family:'Barlow Condensed',monospace;font-size:11px}
+  .drill-builder .tip{color:var(--db-muted);font-size:11px;line-height:1.5;margin:8px 0 0}
+  .drill-builder .tip kbd{background:var(--db-control);border:1px solid var(--db-line);border-bottom-width:2px;
+    border-radius:3px;padding:0 4px;font-family:var(--c7-font-mono);font-size:11px}
   .drill-builder #tipwrap{display:flex;gap:10px;align-items:center}
   .drill-builder #tipsvg{width:104px;height:104px;flex:0 0 104px;cursor:crosshair;touch-action:none}
-  .drill-builder #tipinfo{font-size:11.5px;color:var(--muted);line-height:1.6}
-  .drill-builder #tipinfo b{color:var(--ink);font-weight:600}
-  .drill-builder #shotHint{background:var(--slate-3);border-left:2px solid var(--chalk);padding:6px 8px;
-    border-radius:0 4px 4px 0;color:var(--ink);margin:0 0 8px}
+  .drill-builder #tipinfo{font-size:11.5px;color:var(--db-muted);line-height:1.6}
+  .drill-builder #tipinfo b{color:var(--db-ink);font-weight:700}
+  .drill-builder #shotHint{background:var(--c7-accent-tint);border-left:2px solid var(--db-accent);padding:6px 8px;
+    border-radius:0 4px 4px 0;color:var(--c7-accent-tint-ink);margin:0 0 8px}
   .drill-builder #toast{position:fixed;bottom:16px;left:50%;transform:translateX(-50%) translateY(20px);
-    background:var(--chalk);color:#17181a;font-weight:600;padding:8px 16px;border-radius:20px;
+    background:var(--db-ink);color:var(--c7-on-ink);font-weight:700;padding:8px 16px;border-radius:var(--c7-r-pill);
     opacity:0;pointer-events:none;transition:.22s;z-index:9}
   .drill-builder #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-  @media (max-width:820px){
+
+  /* --- Il telefono --------------------------------------------------------
+     Fino al 2026-09-20 qui il pannello stava **sopra** il tavolo, alto fino a
+     mezzo schermo: gli strumenti coprivano la pagina e il tavolo finiva sotto
+     la barra «Salva l'esercizio». Ora il tavolo e' in cima, sotto c'e' la
+     striscia degli strumenti, e le proprieta' scorrono sotto ancora — quelle
+     dello strumento acceso, non tutte insieme. Il punto di rottura e' `lg`
+     (992px), lo stesso del resto dell'app, non gli 820px del tool autonomo. */
+  @media (max-width:991.98px){
+    .drill-builder{height:auto;overflow:visible}
     .drill-builder main{flex-direction:column}
-    .drill-builder #panel{width:100%;flex:0 0 auto;max-height:48vh;border-right:none;border-bottom:1px solid var(--line)}
+    .drill-builder #stage{order:-1;flex:0 0 auto;padding:10px}
+    .drill-builder #stage svg{max-height:50vh}
+    .drill-builder #panel{width:100%;flex:1 1 auto;max-height:none;overflow:visible;
+      border-right:none;padding:0 12px 12px}
+    .drill-builder #sec-strumenti{position:sticky;top:0;z-index:2;margin:0 -12px 14px;
+      padding:8px 12px;background:var(--db-panel);border-bottom:1px solid var(--db-line)}
+    .drill-builder #sec-strumenti > h2{display:none}
+    .drill-builder .tools{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+    .drill-builder .tools::-webkit-scrollbar{display:none}
+    .drill-builder .tool{flex:0 0 76px;min-height:var(--c7-touch)}
+    .drill-builder .tool--icon{flex:0 0 52px}
+    .drill-builder .tools__sep{flex:0 0 1px;height:auto;align-self:stretch;margin:0 2px}
+    /* Le proprieta' di uno strumento spento non servono a nessuno, e su un
+       telefono sono duecento righe fra il tavolo e quello che cerchi. */
+    .drill-builder #panel:not([data-tool=shot]) #sec-tiro{display:none}
+    .drill-builder #panel:not([data-tool=line]) #sec-linea{display:none}
+  }
+  /* Da lg il disegnatore e' un riquadro alto quanto lo schermo, col tavolo al
+     centro: la pagina intera non scorre, scorre il pannello. */
+  @media (min-width:992px){
+    .drill-builder{height:min(78vh,760px);border-radius:var(--c7-r-card-lg);overflow:hidden}
   }
   @media (prefers-reduced-motion:reduce){.drill-builder *{transition:none!important}}

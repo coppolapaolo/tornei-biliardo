@@ -75,6 +75,51 @@ def test_ogni_selettore_e_confinato():
     )
 
 
+def test_i_colori_vengono_dai_token_7c():
+    """Nessun colore scritto a mano nel foglio: solo `var(--c7-…)` (D13).
+
+    Il tool autonomo aveva una palette sua — pannello ardesia, giallo gesso —
+    che in mezzo all'app diceva «questa schermata è di qualcun altro». Il
+    presidio guarda i **valori esadecimali**, che sono la firma di un colore
+    deciso qui invece che nel design system; il panno del tavolo non c'entra,
+    quello vive nel JavaScript ed è un oggetto del gioco.
+    """
+    css = _strip_comments(CSS.read_text(encoding="utf-8"))
+    esadecimali = re.findall(r"#[0-9a-fA-F]{3,8}\b", css)
+    assert not esadecimali, (
+        "Colori scritti a mano in drill-builder.css: %s. "
+        "I colori del disegnatore vengono da tokens-7c.css." % sorted(set(esadecimali))
+    )
+
+
+def test_su_telefono_il_disegnatore_non_e_un_riquadro_ad_altezza_fissa():
+    """L'altezza fissa vale da lg in su, e sta nel foglio (fase 9a).
+
+    Era una regola scritta a mano nel `<style>` del template, senza punto di
+    rottura: sul telefono il disegnatore diventava un riquadro alto 78vh con
+    gli strumenti sopra e il tavolo schiacciato in fondo, **sotto** la barra
+    «Salva l'esercizio». Chi rimette l'altezza senza media query rifà il
+    difetto, e nessun test di comportamento lo vede.
+    """
+    css = _strip_comments(CSS.read_text(encoding="utf-8"))
+    assert "height:min(" in css.replace(
+        " ", ""
+    ), "la regola dell'altezza del disegnatore è sparita dal foglio"
+    da_lg = re.findall(
+        r"@media\s*\(min-width:\s*992px\s*\)\s*\{(.*?)\n\s*\}", css, re.S
+    )
+    assert any("height:min(" in blocco.replace(" ", "") for blocco in da_lg), (
+        "l'altezza fissa del disegnatore deve stare dentro `@media "
+        "(min-width: 992px)`: sotto lg il tavolo va in cima e la pagina scorre"
+    )
+
+    markup = TEMPLATE.read_text(encoding="utf-8")
+    assert "<style>" not in markup, (
+        "il foglio del disegnatore è tornato dentro il template: le regole "
+        "stanno in static/css/drill-builder.css, dove hanno i punti di rottura"
+    )
+
+
 @pytest.mark.parametrize("pericoloso", ["body{", "html,body{", "*{", ".btn{"])
 def test_nessuna_regola_globale_del_tool_originale(pericoloso):
     """Le firme del file autonomo: se ricompaiono, è stato incollato grezzo."""
