@@ -495,6 +495,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "challenge.attempt_detail": {"player", "director"},
     "challenge.complete_attempt": {"player", "director"},
     "challenge.toggle_favorite": {"player", "director"},
+    # Il voto: lo dà chi ha provato l'esercizio, e lo verifica il servizio.
+    "challenge.rate_challenge": {"player", "director"},
     "challenge.create_x_replacement": {"player", "director"},
     # Le due azioni del direttore sulla prova giocata al posto della X:
     # registrarla/validarla e azzerarla, come per i match (issue #221).

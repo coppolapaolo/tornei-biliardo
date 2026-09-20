@@ -52,6 +52,17 @@
   --c7-info-body:     #40606A;
   --c7-info:          var(--c7-accent);
 
+  /* --- Bilie ------------------------------------------------------------ *
+     I colori delle prime cinque bilie del pool, smorzati quanto basta per
+     stare accanto al resto della palette. Servono al voto degli esercizi, che
+     si dà toccando una bilia da 1 a 5: sono iconografia del gioco, non un
+     sesto semantico — non si usano per dire «ok» o «attenzione». */
+  --c7-ball-1:        #D6A42A;   /* gialla */
+  --c7-ball-2:        #2F5C96;   /* blu */
+  --c7-ball-3:        #B23B3B;   /* rossa */
+  --c7-ball-4:        #5A418A;   /* viola */
+  --c7-ball-5:        #CF6F2B;   /* arancio */
+
   /* --- Grigi dei grafici ----------------------------------------------- *
      Una sparkline ha bisogno di gradazioni che non siano ne' testo ne' linea:
      servono a dire «prima» e «adesso» senza che il prima sembri spento. Non

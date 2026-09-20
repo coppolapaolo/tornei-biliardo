@@ -50,6 +50,37 @@
     {% endif %}
     {% endif %}
 
+    {# ---------- Il tuo voto (D6): solo chi ha provato ----------
+       Le bilie compaiono a chi ha almeno una prova conclusa; agli altri non si
+       mostra un comando spento, si dice perché non c'è. Il permesso vero lo
+       verifica il servizio. Toccare di nuovo la bilia del proprio voto lo toglie.
+       Bilie e non stelle (l'utente, 20/09): il voto si dà con gli oggetti del gioco. #}
+    {% if not current_user.is_admin and feature_visible('challenge.rate_challenge') %}
+    {% if card.mine.tried %}
+    <section class="c7-card" data-rating data-help="esercizio-voto"
+             data-rate-url="{{ url_for('challenge.rate_challenge', challenge_id=challenge.id) }}"
+             data-rating-value="{{ my_rating or 0 }}">
+      <div class="d-flex align-items-center gap-2">
+        <div class="flex-fill">
+          <div class="c7-rows__title">{{ _("Il tuo voto") }}</div>
+          <div class="c7-rows__sub" data-rating-note>
+            {%- if my_rating %}{{ _("Tocca di nuovo la tua bilia per toglierlo") }}{% else %}{{ _("Aiuta gli altri a scegliere") }}{% endif -%}
+          </div>
+        </div>
+        <div class="c7-ballvote" role="radiogroup" aria-label="{{ _('Il tuo voto, da 1 a 5') }}">
+          {% for n in range(1, 6) %}
+          <button type="button" class="c7-ballvote__ball{{ ' is-on' if my_rating and n <= my_rating }}" data-ball="{{ n }}"
+                  role="radio" aria-checked="{{ 'true' if my_rating == n else 'false' }}"
+                  aria-label="{{ ngettext('%(num)s bilia su 5', '%(num)s bilie su 5', n) }}"><span>{{ n }}</span></button>
+          {% endfor %}
+        </div>
+      </div>
+    </section>
+    {% else %}
+    <div class="c7-kicker" style="text-align:center">{{ _("Provalo almeno una volta per poterlo votare") }}</div>
+    {% endif %}
+    {% endif %}
+
     {# ---------- Destra e sinistra, separate ---------- #}
     {% if variant_lines %}
     <section class="c7-rows" data-help="esercizio-varianti">
@@ -166,6 +197,14 @@
 {% endblock %}
 
 {% block scripts %}
+<script>
+  window.challengeRatingMessages = {
+    removeHint: {{ _("Tocca di nuovo la tua bilia per toglierlo")|tojson }},
+    helpHint: {{ _("Aiuta gli altri a scegliere")|tojson }},
+    failed: {{ _("Non è stato possibile registrare il voto.")|tojson }}
+  };
+</script>
+<script src="{{ url_for('static', filename='js/challenge-rating.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
 function deleteChallenge() {
     // L'indirizzo lo scrive il server: la stringa scritta a mano diceva

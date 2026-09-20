@@ -4450,7 +4450,6 @@ button.c7-seg__item.is-on { background: var(--c7-ink); }
 .c7-extag--gesto { background: transparent; box-shadow: inset 0 0 0 1.5px var(--c7-line); }
 .c7-card--accent .c7-extag { background: rgba(255, 255, 255, .14); color: inherit; box-shadow: none; }
 .c7-exsocial__vote { color: var(--c7-ink); }
-.c7-exsocial__vote i { font-size: 10px; color: var(--c7-warn); }
 .c7-hscroll {
   display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px;
   scrollbar-width: none; -webkit-overflow-scrolling: touch;
@@ -4458,3 +4457,33 @@ button.c7-seg__item.is-on { background: var(--c7-ink); }
 .c7-hscroll::-webkit-scrollbar { display: none; }
 .c7-hscroll > * { flex: none; }
 @media (min-width: 992px) { .c7-hscroll { flex-wrap: wrap; overflow: visible; } }
+
+/* Il voto degli esercizi (fase 4d): cinque bilie, non cinque stelle. Si tocca
+   la bilia del voto e si accendono tutte fino a quella, ognuna col suo colore
+   (`--c7-ball-N`); spente sono in tono di linea. Piatte, come tutto il resto:
+   il disco chiaro col numero basta a dire «bilia». `.c7-ballmark` è la stessa
+   bilia in piccolo, accanto alla media sulle card. */
+.c7-ballvote { display: flex; gap: 6px; }
+.c7-ballvote__ball {
+  width: 40px; height: 40px; margin: 4px 0; border: 0; padding: 0; border-radius: 50%;
+  background: var(--c7-line); display: grid; place-items: center; cursor: pointer;
+  transition: transform var(--c7-dur-quick) var(--c7-ease);
+}
+.c7-ballvote__ball:active { transform: scale(var(--c7-press)); transition-duration: 0ms; }
+.c7-ballvote__ball span {
+  width: 20px; height: 20px; border-radius: 50%; background: var(--c7-card);
+  display: grid; place-items: center;
+  font-family: var(--c7-font-mono); font-size: 12px; font-weight: 800; color: var(--c7-ink-faint);
+}
+.c7-ballvote__ball.is-on span { color: var(--c7-ink); }
+.c7-ballvote__ball.is-on[data-ball="1"] { background: var(--c7-ball-1); }
+.c7-ballvote__ball.is-on[data-ball="2"] { background: var(--c7-ball-2); }
+.c7-ballvote__ball.is-on[data-ball="3"] { background: var(--c7-ball-3); }
+.c7-ballvote__ball.is-on[data-ball="4"] { background: var(--c7-ball-4); }
+.c7-ballvote__ball.is-on[data-ball="5"] { background: var(--c7-ball-5); }
+.c7-ballvote__ball:focus-visible { outline: 2px solid var(--c7-accent); outline-offset: 2px; }
+.c7-ballmark {
+  display: inline-block; width: 11px; height: 11px; border-radius: 50%;
+  background: var(--c7-ball-1); vertical-align: -1px;
+  box-shadow: inset 0 0 0 3px var(--c7-ball-1), inset 0 0 0 6px var(--c7-card);
+}

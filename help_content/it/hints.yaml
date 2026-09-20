@@ -519,6 +519,14 @@ hints:
     page: challenge
     section: catalogo
 
+  - id: esercizio.voto
+    label: "Il tuo voto"
+    short: "Da una a cinque bilie, per aiutare gli altri a scegliere: tocca la bilia del tuo voto. Si vota un esercizio dopo averlo provato; il voto si cambia quando vuoi, e toccando di nuovo la tua bilia lo togli."
+    anchor: esercizio-voto
+    screens: [challenge.challenge_detail]
+    page: challenge
+    section: catalogo
+
   - id: esercizio.varianti
     label: "Varianti"
     short: "Lo stesso esercizio da destra e da sinistra, o dalle posizioni A e B: i tuoi risultati restano separati, perché la differenza fra i due lati è la cosa da sapere."

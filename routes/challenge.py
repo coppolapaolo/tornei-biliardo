@@ -379,6 +379,7 @@ def challenge_detail(challenge_id):
     user_best = challenge.get_user_best_attempt(current_user.id)
 
     from models.challenge.catalog_view import build_card, variant_lines
+    from models.challenge.rating_service import ChallengeRatingService
 
     return render_template(
         "player/challenge_detail.html",
@@ -387,6 +388,7 @@ def challenge_detail(challenge_id):
         user_best=user_best,
         card=build_card(challenge, current_user.id),
         variant_lines=variant_lines(challenge, current_user.id),
+        my_rating=ChallengeRatingService.get(current_user.id, challenge_id),
     )
 
 
@@ -1010,6 +1012,42 @@ def toggle_favorite(challenge_id):
             return redirect(
                 url_for("challenge.challenge_detail", challenge_id=challenge_id)
             )
+
+
+@challenge_bp.route("/<int:challenge_id>/rate", methods=["POST"])
+@login_required
+@challenge_player_required
+def rate_challenge(challenge_id):
+    """Il voto da 1 a 5 (D6). Un voto vuoto lo toglie.
+
+    Chi può votare lo decide il servizio — solo chi ha provato l'esercizio — e
+    non il fatto che la scheda gli abbia mostrato le bilie.
+    """
+    from models.challenge.rating_service import ChallengeRatingService
+
+    data = (request.get_json(silent=True) if request.is_json else request.form) or {}
+    rating = data.get("rating")
+
+    def _vota():
+        if rating in (None, "", 0, "0"):
+            numeri = ChallengeRatingService.clear(current_user.id, challenge_id)
+            mio = None
+        else:
+            numeri = ChallengeRatingService.rate(current_user.id, challenge_id, rating)
+            mio = int(rating)
+        return {
+            "rating": mio,
+            "rating_average": numeri.rating_average,
+            "rating_count": numeri.rating_count,
+            "players": numeri.players,
+        }
+
+    return handle_ajax_service_action(
+        action=_vota,
+        redirect_url=url_for("challenge.challenge_detail", challenge_id=challenge_id),
+        success_message=_("Voto registrato."),
+        error_prefix=None,
+    )
 
 
 @challenge_bp.route("/<int:challenge_id>/statistics")

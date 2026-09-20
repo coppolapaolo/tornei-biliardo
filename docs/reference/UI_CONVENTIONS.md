@@ -1262,6 +1262,7 @@ Principi, in ordine di importanza:
 | 2026-09-13 | Griglia delle partite `repeat(auto-fill, minmax(340px, 1fr))` e lato con gli stepper come contenitore che impila sotto i 150px | Due colonne fisse a 1024 e 1280, con la colonna laterale, facevano card da 160px (PR #375) |
 | 2026-09-13 | Esercizio fra i turni come sezione di righe, un foglio per registrare il tentativo | Stessa grammatica delle partite: riga con lo stato, foglio con − e + o due scelte grandi; fra un turno e l'altro sta sopra le partite, durante il turno sotto (PR #377) |
 | 2026-09-13 | Squadre e categorie come righe con foglio, chip della squadra, foglio del ritiro con le conseguenze, riga distruttiva «Elimina la gara» in fondo alla preparazione | Ciò che non appartiene a una fase segue una grammatica sola, riga e foglio; il ritiro dice cosa comporta prima della conferma; l'eliminazione non è mai un pulsante rosso in vista (PR #379) |
+| 2026-09-20 | Il voto di un esercizio si dà con **cinque bilie numerate** (`.c7-ballvote`, token `--c7-ball-1…5`), non con le stelle; accanto alla media, sulle card, una bilia in piccolo (`.c7-ballmark`) | Decisione dell'utente: una scala da 1 a 5 nel biliardo ha già i suoi oggetti, e le stelle sono il lessico di un negozio. I cinque colori sono **iconografia del gioco**, non semantici: non si usano per dire «ok» o «attenzione». Piatte, senza gradienti; toccare di nuovo la propria bilia toglie il voto |
 
 ---
 
