@@ -207,6 +207,11 @@
    sostenere esami, ma deve raggiungere i propri. Senza questo `or`, chi ha il
    ruolo ma non i drill non vede nessuna porta. #}
 {% set nav_exam      = current_user.is_authenticated and (current_user.can_access('take_exam') or current_user.is_examiner) and feature_visible('exam.exam_catalog') %}
+{# Schede di allenamento (ADR-067): stesso gate degli esercizi — è l'altra
+   porta della stessa stanza, e chi non si allena non ne ha bisogno. Solo
+   nella barra laterale: la nav flottante del telefono è già a sei voci, e da
+   lì alle schede si arriva da «Oggi». #}
+{% set nav_sheet     = nav_challenge and feature_visible('sheet.index') %}
 {% set ep = request.endpoint or '' %}
 
     <div class="c7-app">
@@ -254,6 +259,11 @@
                 {% if nav_challenge %}
                 <a href="{{ url_for('challenge.today') }}" class="{{ 'is-active' if ep.startswith('challenge.') }}">
                     <i class="fas fa-bullseye"></i>{{ _('Esercizi') }}
+                </a>
+                {% endif %}
+                {% if nav_sheet %}
+                <a href="{{ url_for('sheet.index') }}" class="{{ 'is-active' if ep.startswith('sheet.') }}">
+                    <i class="fas fa-list-check"></i>{{ _('Schede') }}
                 </a>
                 {% endif %}
                 {% if nav_exam %}

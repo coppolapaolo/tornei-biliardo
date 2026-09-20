@@ -18,6 +18,7 @@ def register_blueprints(app):
     # Import dei blueprint extended domains (Phase 3)
     from .challenge import challenge_bp
     from .exam import exam_bp
+    from .sheet import sheet_bp
     from .individual_match import individual_match_bp
 
     # Import gamification blueprint (Phase 4)
@@ -50,6 +51,10 @@ def register_blueprints(app):
     # ha un ciclo di vita, degli esaminatori e degli appuntamenti che il
     # catalogo challenge non ha.
     app.register_blueprint(exam_bp, url_prefix="/exam")
+    # Schede di allenamento (ADR-067): il prefisso /schede lo dichiara il
+    # blueprint. Non sta sotto /challenges perché una scheda ha sedute, un
+    # registro e dei lettori che il catalogo degli esercizi non ha.
+    app.register_blueprint(sheet_bp)
     app.register_blueprint(individual_match_bp, url_prefix="/match")
 
     # Registrazione gamification blueprint

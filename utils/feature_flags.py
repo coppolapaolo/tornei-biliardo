@@ -501,6 +501,15 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # La fine della sessione: il riepilogo della prova e le sue note.
     "challenge.training_summary": {"player", "director"},
     "challenge.training_notes": {"player", "director"},
+    # === Schede di allenamento (ADR-067) ===
+    # Una scheda è di chi la compone, e il servizio non ne mostra di altri:
+    # l'allowlist dice solo chi può arrivare alla stanza. L'amministratore non
+    # si allena, ma qui non c'è niente da nascondergli — la sua pagina è vuota.
+    "sheet.index": {"player", "director"},
+    "sheet.create_sheet": {"player", "director"},
+    "sheet.archive": {"player", "director"},
+    "sheet.compose": {"player", "director"},
+    "sheet.save_composition": {"player", "director"},
     # start_attempt/attempt_detail/complete_attempt sono il percorso della
     # gara (il drill al posto del bye), che il giocatore attraversa da solo.
     "challenge.start_attempt": {"player", "director"},

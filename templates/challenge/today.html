@@ -81,6 +81,22 @@
     <i class="fas fa-chevron-right" style="font-size:11px;color:var(--c7-ink-faint)"></i>
   </a>
   {% endif %}
+
+  {# Le schede sono l'altra porta dell'allenamento: qui si pesca un esercizio
+     alla volta, là si segue una sequenza decisa prima. La scheda in corso
+     salirà in cima a questa pagina quando ci sarà una seduta da riprendere
+     (fase 6c): per ora il collegamento sta dove sta il catalogo. #}
+  {% if feature_visible('sheet.index') %}
+  <a href="{{ url_for('sheet.index') }}" class="c7-card d-flex align-items-center gap-3"
+     style="color:inherit;text-decoration:none">
+    <span class="c7-tile c7-tile--sm c7-tile--neutral"><i class="fas fa-list-check"></i></span>
+    <span class="flex-fill">
+      <span class="c7-rows__title d-block">{{ _("Le tue schede") }}</span>
+      <span class="c7-rows__sub d-block">{{ _("La sequenza di esercizi che fai in sala, nell'ordine in cui la fai") }}</span>
+    </span>
+    <i class="fas fa-chevron-right" style="font-size:11px;color:var(--c7-ink-faint)"></i>
+  </a>
+  {% endif %}
 </div>
 {% endblock %}
 

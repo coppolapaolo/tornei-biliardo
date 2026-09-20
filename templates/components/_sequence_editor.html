@@ -51,6 +51,12 @@
 {% macro item(challenge=None, sub='', campo='challenge_id') -%}
 <li class="c7-seq__item" data-seq-item data-seq-key="{{ challenge.id if challenge else '' }}">
   <input type="hidden" name="{{ campo }}" value="{{ challenge.id if challenge else '' }}" data-seq-from="key">
+  {# Il titoletto di un gruppo di voci — «Riscaldamento», «Tecnica» — per le
+     pagine che raggruppano. Sta **dentro** la voce e non fra una voce e
+     l'altra: una riga estranea nella lista spezzerebbe il trascinamento, che
+     guarda la voce vicina. Vuoto sparisce (`:empty`), quindi chi non
+     raggruppa non se ne accorge. #}
+  <div class="c7-seq__section" data-seq-slot="section"></div>
   <div class="c7-seq__head">
     <button type="button" class="c7-seq__grip" data-seq-grip
             aria-label="{{ _('Sposta: trascina, o usa le frecce su e giù') }}">
