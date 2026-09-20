@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.43.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.43.0...v1.43.1) (2026-09-20)
+
+
+### Correzioni
+
+* chi ha nominato chi si vede, e l'admin può far partire la catena ([#526](https://github.com/coppolapaolo/tornei-biliardo/issues/526)) ([18f9c95](https://github.com/coppolapaolo/tornei-biliardo/commit/18f9c9599c56578156bca349f55524a511d02d58))
+
 ## [1.43.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.42.0...v1.43.0) (2026-09-20)
 
 
