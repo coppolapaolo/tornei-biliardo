@@ -502,6 +502,27 @@ def _capture_one(
             page.click(selector)
             page.wait_for_timeout(500)
 
+        # I comandi che esistono **grazie** al tocco: il riquadro bersaglio
+        # nasce toccando il panno, e solo dopo si può spuntare «Vale per il
+        # punteggio». Un `click` normale arriverebbe prima, su un elemento che
+        # ancora non c'è — e fallirebbe la cattura invece di dirlo.
+        for selector in shot.get("click_after_tap") or []:
+            clicked = page.evaluate(
+                """(sel) => {
+                    const el = document.querySelector(sel);
+                    if (!el) return false;
+                    el.click();
+                    return true;
+                }""",
+                selector,
+            )
+            if not clicked:
+                raise CaptureError(
+                    f"«{shot['id']}»: selettore `click_after_tap` non trovato: "
+                    f"{selector}"
+                )
+            page.wait_for_timeout(300)
+
         if shot.get("wait_for"):
             page.wait_for_selector(shot["wait_for"], timeout=10_000)
         page.wait_for_timeout(int(shot.get("settle_ms", 600)))

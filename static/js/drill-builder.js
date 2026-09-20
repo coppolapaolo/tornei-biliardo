@@ -970,7 +970,7 @@ const _eQuesto = (f, p) => !!p && f.x===p.x && f.y===p.y && f.w===p.w && f.h===p
 const _ePreset = f => Object.values(FRAME_PRESETS).some(p=>_eQuesto(f,p));
 
 function syncPositionsControls(){
-  const box = $("#sec-posizioni"); if (!box) return;
+  const box = $("#sec-numeri"); if (!box) return;
   const ps = selectedPositions();
   box.hidden = !ps;
   if (ps) $("#posReverse").checked = !!ps.reverse;

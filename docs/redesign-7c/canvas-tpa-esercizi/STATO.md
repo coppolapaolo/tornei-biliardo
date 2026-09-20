@@ -212,11 +212,11 @@ sessione aperta sul primo ne blocca la composizione.
 
 | Artboard | Schermata | Template | PR | Stato |
 |---|---|---|---|---|
-| `DisegnatoreDesktop` | Desktop, pannello ai token 7c (D13) | `challenge/builder.html` | 9a | da fare |
-| `DisegnatoreMobile` | Telefono: strumenti in una striscia | `challenge/builder.html` | 9a | da fare |
-| `DisegnatoreCerchi` | Il bersaglio come dato, misure in quarti di diamante (D14, #179) | `challenge/builder.html` | 9b | da fare |
-| `DisegnatoreInquadratura` | L'inquadratura: una cornice salvata accanto alla scena | nuovo | 9c | da fare |
-| `DisegnatoreVarianti` | Variante specchiata, tratto di sponda evidenziato | nuovo | 9c | da fare |
+| `DisegnatoreDesktop` | Desktop, pannello ai token 7c (D13) | `challenge/builder.html`, `static/css/drill-builder.css` | #536 (9a) | **fatta il 20/09** — nessun colore scritto a mano nel foglio, tavolo scuro |
+| `DisegnatoreMobile` | Telefono: strumenti in una striscia | `challenge/builder.html` | #536 (9a) | **fatta il 20/09** — tavolo in cima, striscia che scorre, proprietà del solo strumento acceso |
+| `DisegnatoreCerchi` | Il bersaglio come dato, misure in quarti di diamante (D14, #179) | `models/challenge/target.py`, `challenge/builder.html`, `_run_cloth.html` | #538 (9b) | **fatta il 20/09** — due forme, cerchi e riquadro; più posizioni numerate, richiami e marcatori |
+| `DisegnatoreInquadratura` | L'inquadratura: una cornice salvata accanto alla scena | `static/js/drill-builder.js`, `challenge/builder.html` | #540 (9c) | **fatta il 20/09** — ritaglia l'immagine, non il tavolo su cui si lavora |
+| `DisegnatoreVarianti` | Variante specchiata, tratto di sponda evidenziato | `challenge/form.html`, `models/challenge/profile_service.py` | #540 (9c) | **fatta il 20/09** — con un bersaglio la specchiata si rifiuta (#539) |
 
 ### 8 · Decisioni
 
@@ -236,7 +236,7 @@ cosa si è scelto, cosa si è scartato e perché.
 | 6 | Schede di allenamento (#172) | #511 #513 #514 #515 #516 | **chiusa il 20/09** |
 | 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | #517 #519 #520 #521 #522 | **chiusa il 20/09** |
 | 8 | Istruttori (#173) | #523 #525 #526 #528 #530 #531 #532 #534 | **chiusa il 20/09** |
-| 9 | Disegnatore (#179) — indipendente, si può anticipare dopo la 4 | | da fare |
+| 9 | Disegnatore (#179) | #536 #538 #540 #541 | **chiusa il 20/09** |
 | 10 | Chiusura: guida, racconto, issue | | da fare |
 
 Fuori dal piano, come issue: **#471** TPA semplificato, **#472** giochi a due o

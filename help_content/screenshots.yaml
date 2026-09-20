@@ -307,9 +307,45 @@ shots:
   - id: drill-builder
     route: /challenges/builder
     as: Luca Bianchi
-    caption: "Lo strumento per disegnare un esercizio: a sinistra gli strumenti, a destra il tavolo con le bilie disposte."
+    caption: "Lo strumento per disegnare un esercizio: il tavolo con le bilie disposte, e gli strumenti in una striscia."
     viewports: [mobile, desktop]
     click: ['[data-preset="lshape"]']
+
+  # Il bersaglio e l'inquadratura vogliono un tavolo *con qualcosa sopra*: una
+  # figura del pannello vuoto direbbe che cosa si puo' impostare, non che cosa
+  # succede. Il `tap` e' un tocco vero sul panno — il `click()` del DOM non
+  # dice *dove* si e' toccato, e il bersaglio non nascerebbe.
+  - id: drill-builder-bersaglio
+    route: /challenges/builder
+    as: Luca Bianchi
+    caption: "Un bersaglio a riquadro posato sul tavolo, selezionato, con le maniglie agli angoli per cambiarne le misure."
+    viewports: [desktop]
+    click: ['[data-preset="lshape"]', '[data-shape="zone"]']
+    tap: ['#stage svg']
+
+  # Il riquadro del pannello si fotografa a parte: nell'immagine intera il
+  # pannello e' in cima alla sua barra di scorrimento e le impostazioni del
+  # bersaglio, che stanno piu' giu', non si vedono — la didascalia prometteva
+  # una cosa che nella figura non c'era.
+  - id: drill-builder-bersaglio-pannello
+    route: /challenges/builder
+    as: Luca Bianchi
+    caption: "Le impostazioni del bersaglio: le due forme, le misure in diamanti, la rotazione, e «Vale per il punteggio» coi punti che vale fermarsi dentro."
+    viewports: [desktop]
+    click: ['[data-preset="lshape"]', '[data-shape="zone"]']
+    tap: ['#stage svg']
+    # La spunta «Vale per il punteggio» si dà qui: senza, la riga dei punti
+    # resta nascosta e la didascalia parlerebbe di un comando che nella figura
+    # non c'e'. Il `click` viene dopo il `tap`, quindi il riquadro esiste gia'.
+    click_after_tap: ['#zoneScores']
+    clip: "#sec-bersaglio"
+
+  - id: drill-builder-inquadratura
+    route: /challenges/builder
+    as: Luca Bianchi
+    caption: "L'inquadratura «Angolo»: il velo copre la parte di tavolo che non finirà nell'immagine, e la cornice si trascina dagli angoli."
+    viewports: [desktop]
+    click: ['[data-preset="lshape"]', '[data-frame="corner"]']
 
   # I tre ritagli qui sotto fotografano un riquadro del pannello alla volta: a
   # figura intera, su mobile, le scritte del pannello sono illeggibili. Gli
@@ -317,7 +353,12 @@ shots:
   - id: drill-builder-strumenti
     route: /challenges/builder
     as: Luca Bianchi
-    caption: "Il riquadro «Strumenti» del builder: Sposta, Tiro, Linea libera, Testo, e i tasti per annullare, ripetere ed eliminare."
+    caption: "Gli strumenti: Sposta, Tiro, Linea, Testo, Bersaglio, Posizioni, Richiamo, Marcatore, Sponda e Inquadratura, più i tasti per annullare, ripetere ed eliminare."
+    # Da desktop: sul telefono gli strumenti sono una striscia che scorre di
+    # lato, quindi il ritaglio ne inquadrerebbe quattro — e la didascalia, che
+    # li nomina tutti, prometterebbe una cosa che nella figura non c'e'. Il
+    # telefono lo mostra la figura intera qui sopra.
+    viewports: [desktop]
     clip: "#sec-strumenti"
 
   # Questi due si scattano da desktop: il ritaglio riprende il rettangolo

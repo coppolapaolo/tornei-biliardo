@@ -232,7 +232,9 @@ blocks:
       **Position**. The first says how many balls went in; the second how close
       to the centre of the target the cue ball stopped. A single number would
       go down both for missing the ball and for misjudging the pace — that is,
-      it would not say what to fix.
+      it would not say what to fix. If the target is a **box** the second one
+      is called **In the box** and counts something else: how many times you
+      ended up inside, because an area does not measure *how* close.
 
   - type: note
     tone: tip
@@ -356,7 +358,8 @@ blocks:
           Every shot has its outcome and, if the ball goes in, the point where
           the cue ball stopped. The score is the sum of the shots, and the
           maximum is not written down: it is the number of shots times the
-          value of the centre of the target.
+          highest value of the target — the centre, if it is rings, or what
+          stopping inside is worth, if it is a box.
       - name: "With a draw"
         values: "needs the lists to draw from"
         text: >-
@@ -469,13 +472,18 @@ blocks:
           another one: same layout, same rules, same rating. Whoever practises
           picks «which side» before shooting, and the results stay separate. A
           variant that already has attempts can be renamed, not removed.
+          Ticking **«is the drawing mirrored»** shows the picture in a mirror
+          when that variant is chosen: it is how right and left are done
+          without drawing twice. With a target it cannot be used — the score
+          comes from the drawing, and there is only one cloth to tap — and the
+          app says so.
       - name: "How it is recorded"
         values: "made or not · scored · shot by shot · with a draw"
         text: >-
           The four ways explained in «Four ways of counting», with the optional
           maximum score. **Shot by shot** only appears if the drill is drawn and
           the diagram has a target: without one a line says so, because it is
-          the rings of the target that give the points.
+          the target — the rings, or the box — that gives the points.
         hint: challenge.punteggio_massimo
       - name: "Shots in an attempt"
         values: "shot by shot and with a draw"

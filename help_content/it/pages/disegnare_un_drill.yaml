@@ -61,14 +61,15 @@ blocks:
 
   - type: text
     text: >-
-      Ci sono due parti: il **pannello dei comandi** e il **tavolo**. Sul
-      telefono il pannello sta sopra e il tavolo sotto, e il pannello si fa
-      scorrere per arrivare ai comandi che non si vedono. Sul computer stanno
-      affiancati, pannello a sinistra e tavolo a destra.
+      Ci sono due parti: il **tavolo** e il **pannello dei comandi**. Sul
+      telefono il tavolo sta in cima e ci resta, sotto c'è la striscia degli
+      strumenti — scorre di lato, se non ci stanno tutti — e più giù le
+      impostazioni dello strumento acceso. Sul computer stanno affiancati:
+      pannello a sinistra, tavolo a destra.
 
   - type: shot
     shot: drill-builder
-    caption: "Il builder sul telefono: i comandi in alto, il tavolo sotto."
+    caption: "Sul telefono: il tavolo in cima, la striscia degli strumenti sotto."
 
   - type: note
     tone: tip
@@ -79,16 +80,17 @@ blocks:
 
   - type: heading
     id: strumenti
-    title: "I quattro strumenti"
+    title: "Gli strumenti"
 
   - type: text
     text: >-
-      In cima al pannello, nel riquadro **«Strumenti»**, si sceglie cosa si sta
-      facendo. Ne è attivo uno alla volta: quello acceso è giallo.
+      Nella striscia **«Strumenti»** si sceglie cosa si sta facendo. Ne è
+      attivo uno alla volta: quello acceso è scuro.
 
   - type: shot
     shot: drill-builder-strumenti
-    caption: "Il riquadro «Strumenti»: lo strumento attivo è quello giallo."
+    variant: desktop
+    caption: "Gli strumenti: quello attivo è scuro. Sul telefono sono la striscia sotto al tavolo."
 
   - type: options
     items:
@@ -102,20 +104,51 @@ blocks:
           Disegna un tiro: prima si tocca la bilia che si gioca, poi si muove
           il dito o il puntatore per mirare e si tocca di nuovo per fissare.
           Toccando un tiro già fatto lo si corregge.
-      - name: "Linea libera"
+      - name: "Linea"
         text: >-
           Traccia una linea a mano, punto per punto: serve a segnare una
-          traiettoria, un percorso o una zona del tavolo.
+          traiettoria o un percorso.
       - name: "Testo"
         text: >-
           Scrive una parola sul tavolo. Chiede cosa scrivere, poi la mette dove
           hai toccato. Per cambiarla, tocca due volte la scritta.
+      - name: "Bersaglio"
+        hint: drill-bersaglio
+        text: >-
+          Dove la bianca deve fermarsi. È l'unica cosa del disegno che l'app
+          legge come un dato: con un bersaglio l'esercizio si può registrare
+          colpo per colpo. Ha due forme, e più sotto c'è la sezione che le
+          spiega.
+      - name: "Posizioni"
+        hint: drill-posizioni
+        text: >-
+          I numeri che indicano le posizioni successive della bianca: 1, 2, 3…
+          Sono una scala ordinata, non scritte sparse.
+      - name: "Richiamo"
+        hint: drill-richiamo
+        text: >-
+          Una didascalia legata al punto che commenta da un filo: «qui a mezzo
+          diamante».
+      - name: "Marcatore"
+        text: >-
+          Il cerchietto tratteggiato che segna un punto sul panno, senza
+          metterci una bilia.
+      - name: "Sponda"
+        hint: drill-sponda
+        text: >-
+          Evidenzia il pezzo di sponda che conta — «fermati fra il secondo e il
+          quarto diamante».
+      - name: "Inquadratura"
+        hint: drill-inquadratura
+        text: >-
+          Decide quanto tavolo finisce nell'immagine. Anche qui, più sotto c'è
+          la sezione che la spiega.
 
   - type: list
     title: "Accanto agli strumenti"
     items:
-      - "**Annulla mossa** torna indietro di un passo, **Ripeti mossa** rifà quello che hai annullato."
-      - "**Elimina** toglie l'elemento selezionato. Sul computer fanno lo stesso i tasti «Canc» e «Backspace»."
+      - "**Annulla mossa** torna indietro di un passo, **Ripeti mossa** rifà quello che hai annullato: sono le due frecce in coda alla striscia."
+      - "Il **cestino** toglie l'elemento selezionato. Sul computer fanno lo stesso i tasti «Canc» e «Backspace»."
       - "Il tasto «Esc» annulla quello che stai facendo: una mira iniziata, una linea a metà."
 
   - type: heading
@@ -202,6 +235,131 @@ blocks:
       - "**Stecca sul tavolo**: disegna la stecca, così si capisce da che parte si gioca."
       - "**Scheda del tiro sotto al tavolo**: il riepilogo scritto — effetto, forza, angolo — sotto il disegno."
       - "**Etichetta dell'angolo di taglio**: scrive di quanti gradi è il taglio. Normalmente è spenta."
+
+  - type: heading
+    id: bersaglio
+    title: "Il bersaglio: dove deve fermarsi la bianca"
+
+  - type: text
+    text: >-
+      Tutto il resto del disegno è disegno. Il **bersaglio** no: è l'unica cosa
+      che l'app legge come un dato, ed è quella che permette di registrare
+      l'esercizio **colpo per colpo** — chi si allena tocca il punto in cui la
+      bianca si è fermata, e i punti li conta l'app.
+
+  - type: shot
+    shot: drill-builder-bersaglio
+    variant: desktop
+    caption: "Un bersaglio a riquadro sul tavolo: selezionato, si prende dagli angoli."
+
+  - type: text
+    text: >-
+      Ce n'è **uno solo per disegno**, e si sceglie fra due forme, che fanno due
+      domande diverse.
+
+  - type: shot
+    shot: drill-builder-bersaglio-pannello
+    variant: desktop
+    caption: "Le impostazioni del bersaglio nel pannello."
+
+  - type: options
+    items:
+      - name: "Cerchi"
+        values: "quanto vicino"
+        text: >-
+          Un centro e fino a cinque anelli, ciascuno con i suoi punti: più si
+          ferma vicino al centro, più vale. Lo spessore degli anelli si misura
+          in diamanti, anche a mezzo e a quarti, come la griglia. Fuori
+          dall'ultimo anello vale zero.
+      - name: "Riquadro"
+        values: "dentro o fuori"
+        text: >-
+          Una zona rettangolare: o la bianca si ferma dentro, e vale i punti
+          che hai scelto, o è fuori e vale zero. È il modo in cui i drill di
+          riferimento segnano le zone, e si misura anche lui in diamanti a
+          quarti.
+
+  - type: list
+    title: "Quello che si può dire di un riquadro"
+    items:
+      - "**Largo** e **Alto**, a passi di un quarto di diamante; **Ruota di 90°** scambia le due misure."
+      - "**Riempito** lo colora appena, **Numero dentro** gli scrive il suo numero in mezzo."
+      - "**Vale per il punteggio** ne fa il bersaglio, e chiede quanti punti vale fermarsi dentro."
+      - "Gli angoli si trascinano: il riquadro si aggancia ai diamanti come tutto il resto."
+
+  - type: note
+    tone: info
+    text: >-
+      I riquadri possono essere **tanti** — gli schemi di riferimento ne hanno
+      spesso quattro, numerati — ma uno solo può valere per il punteggio. Se ci
+      provi con un secondo, l'app te lo dice invece di lasciartelo scoprire al
+      salvataggio.
+
+  - type: heading
+    id: notazione
+    title: "Numeri, richiami e segni"
+
+  - type: text
+    text: >-
+      Sono i segni con cui gli schemi di allenamento si spiegano. Non contano
+      per il punteggio: servono a chi legge il disegno.
+
+  - type: options
+    items:
+      - name: "Posizioni numerate"
+        hint: drill-posizioni
+        text: >-
+          Ogni tocco aggiunge una posizione **dopo** quella selezionata, e i
+          numeri si rifanno da soli: se ne infili una in mezzo, le altre si
+          rinumerano. Possono stare anche sulla sponda, fuori dal panno, com'è
+          in quasi tutti gli schemi. **Numera all'indietro** le conta da N a 1,
+          come quando la bianca arretra.
+      - name: "Richiamo"
+        hint: drill-richiamo
+        text: >-
+          Una didascalia attaccata a un punto da un filo. Sposti la didascalia
+          o sposti il punto: il filo resta attaccato. Due tocchi sulla
+          didascalia per cambiarla.
+      - name: "Marcatore"
+        text: >-
+          Un cerchietto tratteggiato: segna un punto senza metterci una bilia.
+          Non è la bilia fantasma, che invece è legata a un tiro.
+      - name: "Tratto di sponda"
+        hint: drill-sponda
+        text: >-
+          Evidenzia un pezzo di sponda. Si mette toccando vicino alla sponda
+          che vuoi, scorre lungo la sua e non la lascia; **Lungo** ne cambia la
+          misura.
+
+  - type: heading
+    id: inquadratura
+    title: "L'inquadratura: quanto tavolo si vede"
+
+  - type: text
+    text: >-
+      Molti esercizi usano mezzo tavolo o un angolo. Si disegna **sempre sul
+      tavolo intero**, e l'inquadratura decide solo cosa finisce
+      nell'immagine: le bilie che restano fuori non si perdono, e se un giorno
+      la allarghi tornano a vedersi.
+
+  - type: shot
+    shot: drill-builder-inquadratura
+    variant: desktop
+    caption: "Inquadratura «Angolo»: il velo copre la parte che non finirà nell'immagine."
+
+  - type: list
+    items:
+      - "**Tavolo**: tutto, com'era prima."
+      - "**Mezzo**: un lato corto."
+      - "**Angolo**: un quarto di tavolo."
+      - "**Libera**: la cornice si trascina dagli angoli, agganciata ai diamanti."
+
+  - type: note
+    tone: tip
+    text: >-
+      Mentre disegni il tavolo si vede tutto, e la parte che resterà fuori è
+      sotto un velo: così sai sempre cosa stai tagliando, e puoi riprendere la
+      cornice per allargarla.
 
   - type: heading
     id: linee
@@ -350,7 +508,13 @@ blocks:
       - q: "Non vedo «Disegna l'esercizio» nel modulo di creazione."
         a: "È un comando da direttore di gara, e si sblocca dopo trenta esercizi completati. Finché non compare, l'esercizio si crea caricando la foto: è il modo normale, non un ripiego."
       - q: "Posso disegnare l'esercizio dal telefono?"
-        a: "Sì, tutto funziona. Ma il tavolo è piccolo e il pannello va fatto scorrere: se hai un computer a portata, usalo."
+        a: "Sì, tutto funziona: il tavolo resta in cima e gli strumenti sono la striscia sotto, che scorre di lato. Ma il tavolo è piccolo e si punta con meno precisione: se hai un computer a portata, usalo."
+      - q: "Che differenza c'è fra il bersaglio a cerchi e quello a riquadro?"
+        a: "La domanda che fanno. I cerchi dicono **quanto vicino** sei al centro, e ogni anello vale i suoi punti; il riquadro dice **dentro o fuori**, e basta. Si sceglie quello che somiglia all'esercizio: se conta la precisione fine, i cerchi; se conta arrivare in una zona, il riquadro."
+      - q: "Posso mettere due bersagli?"
+        a: "Disegnare quanti riquadri vuoi, sì. Farne valere per il punteggio più di uno, no: il punteggio di un colpo dev'essere uno, e con due bersagli non si saprebbe a quale stavi mirando."
+      - q: "L'inquadratura taglia le bilie che restano fuori?"
+        a: "Solo nell'immagine. Nel disegno restano dove sono: se allarghi la cornice tornano a vedersi, e se riapri il disegno le ritrovi tutte."
       - q: "Il disegno lo vedono anche gli altri?"
         a: "Vedono l'immagine, come per un esercizio fotografato: il disegno diventa la figura dell'esercizio nel catalogo. Riaprirlo e modificarlo può farlo solo chi l'ha creato."
       - q: "Posso partire da un esercizio esistente e cambiarlo?"
