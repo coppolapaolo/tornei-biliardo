@@ -100,7 +100,8 @@ massimo «di allora» da non superare.
   rifiuta. Al suo posto c'è un conteggio: «6 sedute in quattro settimane».
 * **«Media del gruppo, su 60»** (l'artboard). Si può dire solo se tutti fanno
   la stessa scheda. Torna con la scheda di gruppo (fase 8d), quando quel «su
-  60» avrà un significato unico.
+  60» avrà un significato unico. → **Rinvio chiuso**: vedi l'emendamento del
+  2026-09-20 in fondo.
 
 ## Alternative scartate
 
@@ -146,3 +147,110 @@ presidiarle — perché i due fatti scelti sono verificabili da chi legge.
   parziale provato con un `INSERT` a mano.
 * `tests/new/integration/test_pagina_allievi.py` — le route, il 404 a chi non ha
   il ruolo, e l'allowlist di produzione.
+
+---
+
+## Emendamento del 2026-09-20 · i quattro numeri del gruppo (fase 8d₃)
+
+Il §5 aveva rinviato «Media del gruppo, su 60» a quando fosse esistita una
+**scheda comune**. Con l'[ADR-071](ADR-071-una-scheda-si-propone.md) quella
+scheda esiste — si propone, e `training_assignment.group_id` dice da quale
+corso è partita — quindi i tre numeri dell'artboard e l'esito dello storico si
+possono definire. Le definizioni stanno in `models/istruttore/gruppo_view.py`;
+qui c'è il perché.
+
+### 1 · La scheda del gruppo è l'ultima proposta *dal* gruppo
+
+Il «giro» sono tutte le proposte partite da quel corso con quel modello, anche
+quelle mandate più tardi a chi è arrivato dopo. Proporne una diversa — il
+livello dopo, a metà corso — **cambia** la scheda del gruppo, perché è ciò che
+è successo davvero.
+
+«L'hanno presa in 4 su 5» conta le **proposte partite**, non gli allievi di
+adesso: è l'unica domanda a cui quelle righe possano rispondere («di quelli a
+cui l'ho data, quanti l'hanno presa»). Chi è entrato nel corso dopo il giro non
+è un «no»: non ha mai ricevuto niente, e la pagina lo dice a parte, con i nomi,
+perché è una cosa da fare. Chi aveva già una proposta in attesa viene **saltato**
+dal servizio in silenzio (una per coppia, indice unico): a confrontare i due
+numeri e a dirlo è la route.
+
+Accanto alle «prese» c'è un secondo conto, **«te la fanno leggere»**: prendere
+una scheda e aprirla a chi l'ha proposta sono due decisioni dello stesso modulo
+(ADR-071), e la seconda si può togliere il giorno dopo. Quel numero è il
+denominatore della media, e per questo si mostra sempre.
+
+### 2 · La media è in quota, e su una seduta a testa
+
+Due scelte, entrambe contro la formula che viene spontanea.
+
+**Una seduta a testa, l'ultima.** Mediando tutte le sedute, chi si allena tre
+volte a settimana sposterebbe da solo la media di un corso di cinque persone:
+il numero direbbe quanto si allena lui invece che a che punto è il gruppo.
+
+**In quota, non sui totali grezzi.** `TrainingSession.max_total` si legge dalle
+registrazioni — è «il su 60 che quella sera era vero» — quindi una seduta
+compilata a metà ha un massimo più basso; una scheda a giorni ha un massimo per
+giorno (A · B · C non sono mai confrontabili fra loro in numeri assoluti); e
+soprattutto **la copia è dell'allievo, che può cambiarla**. Si media perciò la
+quota di ciò che era ottenibile e la si riporta sulla scala del modello: è la
+stessa scala sola dell'[ADR-068](ADR-068-andamento-una-scala-sola.md), e per le
+stesse ragioni.
+
+Entra solo ciò che ha un massimo. Una copia che non ha ancora fatto numeri si
+**conta e si dice** («1 non ha ancora fatto numeri»), invece di sparire in un
+denominatore o, peggio, di entrare come zero — che è la bugia più facile da
+scrivere in questa pagina. Se non c'è nessuna copia con numeri, o la scheda di
+totale non ne ha, **non si mostra nessuna media**.
+
+### 3 · «Questa settimana» è la settimana del corso
+
+Il riquadro in cima dice «settimana 3 di 13»: le sedute contate sotto sono
+quelle di *quella* settimana, che comincia nel giorno in cui è cominciato il
+corso e non il lunedì. Un corso senza data d'inizio non ha settimane — lì sono
+gli ultimi sette giorni, e l'etichetta cambia invece di far finta di niente.
+
+Si contano su **tutte** le schede che l'istruttore legge dei suoi allievi, non
+solo sulla scheda del gruppo: la domanda è se il corso si muove, e chi si allena
+sulla scheda che aveva già si è allenato lo stesso.
+
+### 4 · «N al livello dopo» sono i timbri, non le promozioni proposte
+
+La fonte è `training_sheet.passed_at` — il **fatto** ([ADR-071](ADR-071-una-scheda-si-propone.md),
+D8) — caduto nella finestra in cui quella persona faceva parte del corso
+(`joined_at` → `left_at`, o la chiusura del gruppo).
+
+L'alternativa era contare le proposte accettate con `promotes_sheet_id` di quel
+gruppo. È stata scartata perché misurerebbe **un gesto dell'istruttore** (avergli
+dato la scheda dopo) più l'accettazione dell'allievo, non il traguardo: con
+`level_up=auto` non esiste nessuna proposta, quindi un corso in cui tutti sono
+passati per soglia direbbe **zero**.
+
+Si contano solo i timbri che l'istruttore **leggeva** quando sono avvenuti
+(`training_sheet_reader.granted_at ≤ passed_at`, e non ancora revocato). Questo
+rende il numero **stabile nel tempo**: un ex allievo che oggi ti richiude le
+schede non può cambiare ciò che il tuo storico dice di tre anni fa. Lo storico
+dice quello che hai visto succedere.
+
+Per lo stesso motivo la query **non filtra le schede attive**: il passaggio di
+livello di solito *archivia* la scheda superata (è la casella del modulo di
+accettazione), e cercarla fra le attive vorrebbe dire non trovare mai i
+passaggi andati a buon fine fino in fondo.
+
+### 5 · Il vincolo dell'ADR-069 resta intero
+
+Proporre una scheda «a tutto il corso» resta **N proposte**, una per allievo,
+ciascuna con la sua casella della lettura. Il gruppo decide **a chi parte
+l'invito**, non chi lo accetta — e non apre niente, come il §1 di questa ADR.
+Dove si vede: «è il livello dopo» promuove, per ciascuno, **la sua** copia
+della scheda del gruppo. È la ragione per cui `AssegnazioneService.proponi`
+prende una mappa allievo→scheda e non un solo id.
+
+### Presidi dell'emendamento
+
+* `tests/new/unit/test_scheda_del_gruppo.py` — le quattro definizioni, ciascuna
+  contro la definizione sbagliata che le somiglia (la media di tutte le sedute,
+  i totali grezzi, lo zero al posto del dato mancante, il timbro fuori
+  finestra, quello arrivato dopo la revoca).
+* `tests/new/integration/test_scheda_del_gruppo_route.py` — il giro dalle
+  route: N proposte, il saltato che si dice, la mappa delle promozioni,
+  l'allowlist.

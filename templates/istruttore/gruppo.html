@@ -4,10 +4,11 @@
    Un gruppo: a che punto è, chi ne fa parte, chi ne è uscito (canvas «TPA ed
    esercizi», artboard `IstruttoreGruppo`; D12).
 
-   Due numeri in cima, e non i tre dell'artboard: «media del gruppo su 60» si
-   può dire solo se tutti fanno la stessa scheda, e una media fra schede
-   diverse è un numero che sembra vero e non lo è. Torna con la scheda di
-   gruppo (fase 8d).
+   I tre numeri dell'artboard ci sono dalla fase 8d₃, perché solo ora esiste
+   una **scheda comune** su cui una media voglia dire qualcosa. Sotto la media
+   c'è sempre scritto su quante schede è fatta: l'istruttore vede solo quelle
+   che l'allievo gli fa leggere, e una media su 4 schede di 5 allievi è
+   un'altra cosa da una media su 5.
 
    Chi si aggiunge sono **gli allievi liberi**: un gruppo ordina chi ti ha già
    aperto una scheda, e non c'è nessuna casella di ricerca da cui pescare
@@ -38,6 +39,8 @@
         <div class="c7-rows__sub">
           {%- if gruppo.started_on %}{{ _("dal %(giorno)s", giorno=gruppo.started_on|date_local) }}{% endif -%}
           {%- if gruppo.ended_on %} {{ _("al %(giorno)s", giorno=gruppo.ended_on|date_local) }}{% endif -%}
+          {%- if gruppo.started_on or gruppo.ended_on %} <span class="c7-sep">·</span> {% endif -%}
+          {{ ngettext("%(num)s allievo", "%(num)s allievi", vista.quanti) }}
         </div>
       </div>
       {% if gruppo.week_of %}
@@ -50,24 +53,84 @@
       </span>
       {% endif %}
     </div>
+  </section>
 
-    <div class="c7-kpis" style="margin-top:14px">
+  {# I tre numeri stanno **fuori** dalla card d'accento, come nell'artboard:
+     sono riquadri chiari su fondo pagina, e dentro il verde scuro
+     diventerebbero tre rettangoli di un colore che non è di nessuno. #}
+  <div>
+    <div class="c7-kpis c7-kpis--tre">
       <div class="c7-kpi">
-        <div class="c7-kpi__v">{{ dentro|length }}</div>
+        <div class="c7-kpi__v">{{ vista.quanti }}</div>
         <div class="c7-kpi__l">{{ _("Allievi") }}</div>
       </div>
+      {% if gruppo.is_open %}
+      <div class="c7-kpi">
+        <div class="c7-kpi__v">{{ vista.sedute_settimana }}</div>
+        <div class="c7-kpi__l">
+          {{ _("Sedute questa settimana") if vista.settimana_del_corso
+             else _("Sedute negli ultimi 7 giorni") }}
+        </div>
+      </div>
+      {% else %}
       <div class="c7-kpi">
         <div class="c7-kpi__v">{{ passati|length }}</div>
         <div class="c7-kpi__l">{{ _("Ne sono usciti") }}</div>
       </div>
+      {% endif %}
+      {% if vista.media %}
+      <div class="c7-kpi">
+        <div class="c7-kpi__v">{{ vista.media.valore }}</div>
+        <div class="c7-kpi__l">{{ _("Media del gruppo, su %(su)s", su=vista.media.su) }}</div>
+      </div>
+      {% elif not gruppo.is_open or vista.al_livello_dopo %}
+      <div class="c7-kpi">
+        <div class="c7-kpi__v">{{ vista.al_livello_dopo }}</div>
+        <div class="c7-kpi__l">{{ _("Al livello dopo") }}</div>
+      </div>
+      {% endif %}
     </div>
+
+    {# Su quante schede è fatta la media: non è una postilla, è il numero che
+       la rende leggibile. #}
+    {% if vista.media %}
+    <p class="c7-rows__sub" style="margin:8px 0 0">
+      {{ ngettext("su %(num)s scheda che leggi", "su %(num)s schede che leggi",
+                  vista.media.schede) }}
+      {%- if vista.media.fuori %} <span class="c7-sep">·</span>
+        {{ ngettext("%(num)s non ha ancora fatto numeri",
+                    "%(num)s non hanno ancora fatto numeri", vista.media.fuori) }}
+      {%- endif -%}
+    </p>
+    {% endif %}
+  </div>
+
+  {# ── La scheda del gruppo ───────────────────────────────────────────── #}
+  <section class="c7-rows">
+    <a class="c7-rows__row" style="color:inherit;text-decoration:none"
+       href="{{ url_for('istruttore.scheda_gruppo', group_id=gruppo.id) }}">
+      <span class="c7-tile c7-tile--sm c7-tile--neutral"><i class="fas fa-list-check"></i></span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ _("Scheda del gruppo") }}</div>
+        <div class="c7-rows__sub">
+          {%- if vista.scheda -%}
+            {{ vista.scheda.modello.name }} <span class="c7-sep">·</span>
+            {{ _("l'hanno presa in %(prese)s su %(mandate)s",
+                 prese=vista.scheda.prese, mandate=vista.scheda.mandate) }}
+          {%- else -%}
+            {{ _("nessuna: dai a tutti la stessa, e i numeri si confrontano") }}
+          {%- endif -%}
+        </div>
+      </div>
+      <span class="c7-rows__chev"><i class="fas fa-chevron-right"></i></span>
+    </a>
   </section>
 
   {# ── Chi ne fa parte ────────────────────────────────────────────────── #}
   <div class="c7-label">{{ _("Allievi") }}</div>
-  {% if dentro %}
+  {% if vista.dentro %}
   <section class="c7-rows">
-    {% for voce in dentro %}
+    {% for voce in vista.dentro %}
     <div class="c7-rows__row">
       <span class="c7-avatar">{{ voce.persona.username[:2]|upper }}</span>
       <div class="c7-rows__main">
@@ -91,10 +154,10 @@
   {% endif %}
 
   {# ── Chi ci si può mettere ──────────────────────────────────────────── #}
-  {% if gruppo.is_open and fuori %}
+  {% if gruppo.is_open and vista.fuori %}
   <div class="c7-label">{{ _("Fra chi ti ha aperto una scheda") }}</div>
   <section class="c7-rows">
-    {% for voce in fuori %}
+    {% for voce in vista.fuori %}
     <div class="c7-rows__row">
       <span class="c7-avatar">{{ voce.persona.username[:2]|upper }}</span>
       <div class="c7-rows__main">

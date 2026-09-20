@@ -26,6 +26,7 @@ from flask import (
     url_for,
 )
 from flask_babel import gettext as _
+from flask_babel import ngettext
 from flask_login import current_user, login_required
 
 from models.exceptions import DomainError
@@ -34,6 +35,9 @@ from models.istruttore import (
     GruppoService,
     allievi_di,
     build_allievi,
+    build_gruppo,
+    esiti_dei_corsi,
+    gia_ce_l_hanno,
 )
 from models.training_sheet import TrainingSheetService
 from models.training_sheet.gradino import GradinoService
@@ -252,10 +256,15 @@ def ritira_proposta(assignment_id):
 def gruppi():
     """I corsi in corso, quelli passati, e come farne uno nuovo."""
     _solo_istruttori()
+    passati = GruppoService.gruppi_di(current_user.id, aperti=False)
     return render_template(
         "istruttore/gruppi.html",
         aperti=GruppoService.gruppi_di(current_user.id, aperti=True),
-        passati=GruppoService.gruppi_di(current_user.id, aperti=False),
+        passati=passati,
+        # Lo storico dice com'è andata, e «com'è andata» è quante persone sono
+        # passate di livello mentre erano dentro. Una query per tutta la
+        # pagina, e non una per corso.
+        esiti=esiti_dei_corsi(current_user.id, passati),
     )
 
 
@@ -291,11 +300,147 @@ def gruppo(group_id):
 
     return render_template(
         "istruttore/gruppo.html",
+        vista=build_gruppo(
+            current_user,
+            corso,
+            [r for r in tutti.righe if r.gruppo and r.gruppo.id == corso.id],
+            [r for r in tutti.righe if r.iscrizione is None],
+        ),
         gruppo=corso,
-        dentro=[r for r in tutti.righe if r.gruppo and r.gruppo.id == corso.id],
-        fuori=[r for r in tutti.righe if r.iscrizione is None],
         passati=GruppoService.membri_passati(corso),
     )
+
+
+# ── La scheda del gruppo ────────────────────────────────────────────────────
+
+
+@istruttore_bp.route("/gruppi/<int:group_id>/scheda", methods=["GET"])
+@login_required
+def scheda_gruppo(group_id):
+    """La scheda che tutto il corso ha in comune: qual è, e come è andata."""
+    _solo_istruttori()
+    corso = _mio_gruppo(group_id)
+    tutti = build_allievi(current_user)
+    vista = build_gruppo(
+        current_user,
+        corso,
+        [r for r in tutti.righe if r.gruppo and r.gruppo.id == corso.id],
+        [],
+    )
+
+    return render_template(
+        "istruttore/scheda_gruppo.html",
+        vista=vista,
+        gruppo=corso,
+        schede=[
+            scheda
+            for scheda in TrainingSheetService.sheets_of(current_user.id)
+            if scheda.active_items
+        ],
+        attese=AssegnazioneService.attese_di(current_user.id),
+    )
+
+
+@istruttore_bp.route("/gruppi/<int:group_id>/scheda", methods=["POST"])
+@login_required
+def proponi_al_gruppo(group_id):
+    """Manda la stessa scheda a tutti quelli che sono nel corso adesso.
+
+    Resta **una proposta a testa**, ciascuna con la sua casella della lettura
+    (ADR-069): il gruppo decide a chi parte l'invito, non chi lo accetta.
+
+    Con «è il livello dopo» spuntata, ciascuna proposta lascia indietro la
+    copia che *quell'*allievo ha della scheda del gruppo di adesso — ed è la
+    ragione per cui `proponi` prende una mappa e non un solo id.
+    """
+    _solo_istruttori()
+    corso = _mio_gruppo(group_id)
+    sheet_id = request.form.get("sheet_id", type=int)
+    dove = url_for("istruttore.scheda_gruppo", group_id=group_id)
+    if not sheet_id:
+        flash(_("Scegli quale scheda dare al corso."), "error")
+        return redirect(dove)
+
+    tutti = build_allievi(current_user)
+    dentro = [r for r in tutti.righe if r.gruppo and r.gruppo.id == corso.id]
+    if not dentro:
+        flash(_("Questo corso non ha ancora allievi."), "error")
+        return redirect(dove)
+
+    promuove = None
+    if request.form.get("promuove"):
+        vista = build_gruppo(current_user, corso, dentro, [])
+        if vista.scheda is not None:
+            promuove = {uid: copia.id for uid, copia in vista.scheda.copie.items()}
+
+    nel_corso = [riga.persona.id for riga in dentro]
+    # A chi quella scheda ce l'ha già non si ripete: gliene nascerebbe una
+    # seconda copia identica da riempire. Chi l'ha archiviata non è qui, e
+    # rimandargliela ha senso.
+    hanno = gia_ce_l_hanno(sheet_id, nel_corso)
+    destinatari = [uid for uid in nel_corso if uid not in hanno]
+    if not destinatari:
+        flash(_("Ce l'hanno già tutti: non c'era niente da mandare."), "info")
+        return redirect(dove)
+
+    try:
+        nate = AssegnazioneService.proponi(
+            current_user,
+            sheet_id,
+            destinatari,
+            messaggio=request.form.get("message"),
+            group_id=corso.id,
+            promuove=promuove,
+        )
+    except DomainError as errore:
+        flash(str(errore), "error")
+        return redirect(dove)
+
+    _dillo(len(nate), len(destinatari), len(hanno))
+    return redirect(url_for("istruttore.gruppo", group_id=group_id))
+
+
+def _dillo(nate: int, chiesti: int, hanno: int) -> None:
+    """I numeri, quando non coincidono.
+
+    Due modi di essere saltati, e dicono cose diverse: chi **ce l'ha già** (lo
+    esclude la route) e chi ha una tua proposta **in attesa** (lo salta
+    `proponi`, in silenzio, per non far fallire il giro per uno che non ha
+    ancora risposto). Saltare senza dirlo lascerebbe credere che sia partita a
+    tutti.
+    """
+    if hanno:
+        flash(
+            ngettext(
+                "A %(num)s non è ripartita: quella scheda ce l'ha già.",
+                "A %(num)s non è ripartita: quella scheda ce l'hanno già.",
+                hanno,
+            ),
+            "info",
+        )
+    if not nate:
+        flash(
+            _("Nessuna proposta è partita: hanno già tutti la tua in attesa."), "info"
+        )
+    elif nate < chiesti:
+        flash(
+            _(
+                "Mandata a %(nate)s su %(chiesti)s: gli altri hanno già una tua "
+                "proposta in attesa.",
+                nate=nate,
+                chiesti=chiesti,
+            ),
+            "success",
+        )
+    else:
+        flash(
+            ngettext(
+                "Proposta mandata a %(num)s allievo. Decide lui se prenderla.",
+                "Proposta mandata a %(num)s allievi. Decide ciascuno se prenderla.",
+                nate,
+            ),
+            "success",
+        )
 
 
 @istruttore_bp.route("/gruppi/<int:group_id>/modifica", methods=["POST"])

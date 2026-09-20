@@ -349,6 +349,17 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
    due colonne c'erano solo da desktop, dove il display arriva dalla media
    query. */
 .c7-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: var(--c7-gap); }
+/* I numeri in cima a una pagina. Riquadro e tipografia vengono dal kit del
+   canvas: `__v` e' mono, perche' e' un numero di servizio, `__l` e'
+   l'etichetta sotto. Le tre regole **mancavano dal tema** pur essendo usate da
+   dieci template (dal profilo alla scheda, alla pagina del gruppo): numero ed
+   etichetta uscivano entrambi a 14px, senza riquadro. */
+.c7-kpi { background: var(--c7-card); border-radius: var(--c7-r-control); padding: 12px; }
+.c7-kpi__v { font-family: var(--c7-font-mono); font-size: 22px; font-weight: 800;
+  letter-spacing: -.03em; font-variant-numeric: tabular-nums;
+  display: flex; align-items: center; gap: 4px; }
+.c7-kpi__l { font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); }
+.c7-kpis--tre { grid-template-columns: repeat(3, 1fr); }
 .c7-stack { display: flex; flex-direction: column; gap: var(--c7-gap); }
 /* Pila di sezioni di pagina. Una sezione che non produce nulla (dipende
    dallo stato della gara: turni, direttori, tavoli…) lascerebbe comunque il
@@ -362,6 +373,9 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
 @media (min-width: 992px) {
   .c7-cols { display: grid; grid-template-columns: 1fr 380px; gap: var(--c7-gap-lg); align-items: start; }
   .c7-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--c7-gap-lg); }
+  /* Tre numeri restano tre anche da lg: la quarta colonna vuota spezzerebbe
+     la fila. Sta qui dentro perche' la regola sopra vincerebbe per ordine. */
+  .c7-kpis--tre { grid-template-columns: repeat(3, 1fr); }
 
   /* Sezioni di configurazione fuori dalla griglia a due colonne: larghe come
      la colonna principale, non come la pagina. Una card con tre righe di

@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{# templates/istruttore/scheda_gruppo.html — 7c
+   «La scheda del gruppo» (canvas «TPA ed esercizi», artboard
+   `IstruttoreGruppo`, riga omonima; fase 8d₃).
+
+   Una scheda sola per tutto il corso è ciò che rende dicibile la media: senza,
+   «47 su 60» sarebbe la media fra numeri tarati su schede diverse. Ma resta
+   **una proposta a testa** — il gruppo decide a chi parte l'invito, non chi lo
+   accetta, e ciascuno ha la sua casella della lettura (ADR-069, ADR-071).
+
+   Per questo la pagina mostra due conti e non uno: quanti l'hanno presa, e
+   quanti te la fanno leggere. Il secondo è il denominatore della media. #}
+
+{% block title %}{{ _("Scheda del gruppo") }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('istruttore.gruppo', group_id=gruppo.id) }}"
+   aria-label="{{ _('Torna al gruppo') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Scheda del gruppo") }}{% endblock %}
+{% block page_sub %}{{ gruppo.name }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+
+  {# ── Quella che hanno adesso ────────────────────────────────────────── #}
+  {% if vista.scheda %}
+  <section class="c7-card c7-card--accent">
+    <div class="c7-kicker">{{ _("Ce l'hanno in comune") }}</div>
+    <h2 style="margin:4px 0 0;font-size:19px;font-weight:800;letter-spacing:-.02em">
+      {{ vista.scheda.modello.name }}
+    </h2>
+  </section>
+
+  {# Fuori dalla card d'accento, come nella pagina del gruppo: i riquadri sono
+     chiari, e dentro il verde scuro non sarebbero di nessun colore. #}
+  <div class="c7-kpis{{ ' c7-kpis--tre' if vista.scheda.in_attesa }}">
+    <div class="c7-kpi">
+      <div class="c7-kpi__v">{{ vista.scheda.prese }}</div>
+      <div class="c7-kpi__l">{{ _("l'hanno presa, su %(num)s", num=vista.scheda.mandate) }}</div>
+    </div>
+    <div class="c7-kpi">
+      <div class="c7-kpi__v">{{ vista.scheda.lette }}</div>
+      <div class="c7-kpi__l">{{ _("te la fanno leggere") }}</div>
+    </div>
+    {% if vista.scheda.in_attesa %}
+    <div class="c7-kpi">
+      <div class="c7-kpi__v">{{ vista.scheda.in_attesa }}</div>
+      <div class="c7-kpi__l">
+        {{ ngettext("non ha ancora risposto", "non hanno ancora risposto",
+                    vista.scheda.in_attesa) }}
+      </div>
+    </div>
+    {% endif %}
+  </div>
+
+  {% if vista.scheda.senza %}
+  <section class="c7-inset">
+    <div class="c7-kicker">{{ _("Non l'hanno ricevuta") }}</div>
+    <p style="margin:4px 0 0;font-size:13px;line-height:1.45">
+      {{ _("Sono entrati nel corso dopo: %(chi)s. Mandandola di nuovo arriva a loro — a chi ce l'ha già non si ripete.",
+            chi=vista.scheda.senza|map(attribute='username')|join(', ')) }}
+    </p>
+  </section>
+  {% endif %}
+  {% endif %}
+
+  {# ── Darne una (o darne un'altra) ───────────────────────────────────── #}
+  {% if not vista.dentro %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-users"></i></div>
+    <h2 class="c7-empty__title">{{ _("Questo corso non ha allievi") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Si mette dentro chi ti ha già aperto una scheda: la prima mossa è sempre sua.") }}
+    </p>
+    <div class="c7-empty__actions">
+      <a class="btn btn-primary" href="{{ url_for('istruttore.gruppo', group_id=gruppo.id) }}">
+        {{ _("Metti dentro qualcuno") }}
+      </a>
+    </div>
+  </div>
+
+  {% elif not schede %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-list-check"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessuna scheda da dare") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Si propone una scheda tua, già composta: comincia col comporre quella che fai fare in sala, poi la dai al corso.") }}
+    </p>
+    <div class="c7-empty__actions">
+      <a class="btn btn-primary" href="{{ url_for('sheet.index') }}">{{ _("Le mie schede") }}</a>
+    </div>
+  </div>
+
+  {% else %}
+  {% set in_attesa = vista.dentro|selectattr('persona.id', 'in', attese)|list %}
+  {% if in_attesa %}
+  <section class="c7-card c7-card--locked">
+    <div class="c7-kicker">{{ _("Saranno saltati") }}</div>
+    <div class="c7-rows__sub" style="margin-top:4px">
+      {{ _("Hanno già una tua proposta in attesa: %(chi)s. Una per volta — a loro non parte niente, e il resto del corso la riceve lo stesso.",
+            chi=in_attesa|map(attribute='persona.username')|join(', ')) }}
+    </div>
+  </section>
+  {% endif %}
+
+  <form method="POST" class="c7-stack"
+        action="{{ url_for('istruttore.proponi_al_gruppo', group_id=gruppo.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="c7-label">{{ _("Quale dai al corso") }}</div>
+    <div class="c7-stack">
+      {% for scheda in schede %}
+      <label class="c7-choice c7-choice--big">
+        <input type="radio" name="sheet_id" value="{{ scheda.id }}" class="d-none" required>
+        <span class="c7-tile c7-tile--round"><i class="fas fa-list-check"></i></span>
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ scheda.name }}</span>
+          <span class="c7-choice__desc d-block">
+            {{ ngettext("%(num)s esercizio", "%(num)s esercizi", scheda.active_items|length) }}
+            {%- if scheda.level %} <span class="c7-sep">·</span> {{ _("livello %(n)s", n=scheda.level) }}{% endif -%}
+            {%- if scheda.has_threshold %} <span class="c7-sep">·</span> {{ _("soglia %(n)s su %(tot)s", n=scheda.threshold, tot=scheda.total) }}{% endif -%}
+          </span>
+        </span>
+        <i class="fas fa-circle-check c7-choice__mark"></i>
+      </label>
+      {% endfor %}
+    </div>
+
+    {# Il passaggio di livello di tutto un corso: la scheda nuova è una per
+       tutti, ma la scheda che si lascia indietro è **la sua** — ed è la
+       ragione per cui il servizio prende una mappa e non un solo id (D8). #}
+    {% if vista.scheda and vista.scheda.lette %}
+    <label class="c7-choice">
+      <input type="checkbox" name="promuove" value="1" class="form-check-input">
+      <span class="flex-fill">
+        <span class="c7-choice__title d-block">{{ _("È il livello dopo") }}</span>
+        <span class="c7-choice__desc d-block">
+          {{ _("Ciascuno lascia indietro la sua copia di «%(scheda)s», e potrà metterla nello storico: le sedute che ha fatto restano.",
+                scheda=vista.scheda.modello.name) }}
+        </span>
+      </span>
+    </label>
+    {% endif %}
+
+    <div>
+      <label class="c7-label" for="message">{{ _("Due parole, se vuoi") }}</label>
+      <textarea class="form-control" id="message" name="message" rows="3" maxlength="500"
+                placeholder="{{ _('Per l’autunno. Fai i giorni A e B.') }}"></textarea>
+    </div>
+
+    {# Niente numero sul pulsante: a quanti parta davvero dipende dalla scheda
+       scelta qui sopra — chi ce l'ha già viene escluso — e un numero promesso
+       prima sarebbe quasi sempre sbagliato. Quanti sono partite lo dice il
+       messaggio dopo l'invio. #}
+    <button type="submit" class="btn btn-success w-100">{{ _("Manda al corso") }}</button>
+  </form>
+
+  <p class="c7-rows__sub" style="margin:0">
+    {{ _("Restano proposte, una a testa: la scheda nasce solo per chi la prende, e nasce sua. Ciascuno decide da sé se fartela leggere, e può togliertela quando vuole.") }}
+    {{ _("A chi quella scheda ce l'ha già non riparte: si ritroverebbe due volte la stessa.") }}
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

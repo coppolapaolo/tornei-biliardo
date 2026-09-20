@@ -155,7 +155,7 @@ def build_allievi(instructor: User, gruppo: Optional[TrainingGroup] = None) -> A
     """
     legami = allievi_di(instructor.id)
     iscrizioni = GruppoService.iscrizioni_correnti(instructor.id)
-    sedute = _sedute_per_scheda([s.id for legame in legami for s in legame.schede])
+    sedute = sedute_per_scheda([s.id for legame in legami for s in legame.schede])
 
     adesso = utc_now()
     righe: List[RigaAllievo] = []
@@ -189,7 +189,7 @@ _DA_GUARDARE = frozenset({"assenza", "stallo"})
 # ── le sedute, in una query sola ────────────────────────────────────────────
 
 
-def _sedute_per_scheda(sheet_ids: Sequence[int]) -> Dict[int, List[TrainingSession]]:
+def sedute_per_scheda(sheet_ids: Sequence[int]) -> Dict[int, List[TrainingSession]]:
     """Le sedute chiuse di tutte le schede lette, raggruppate per scheda.
 
     Una query per l'intera pagina, e non una per allievo: con venti allievi e
@@ -389,6 +389,7 @@ __all__ = [
     "RigaAllievo",
     "Segnale",
     "build_allievi",
+    "sedute_per_scheda",
     "GIORNI_ASSENZA",
     "GIORNI_FINESTRA",
     "GIORNI_NUOVI",
