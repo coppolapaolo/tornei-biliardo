@@ -80,6 +80,7 @@ from .training_sheet.models import (
     TrainingSession,
     TrainingEntry,
 )
+from .obiettivo.models import TrainingGoal
 from .individual_match.models import (
     MatchProposal,
     ProposalInvitation,
@@ -232,6 +233,8 @@ __all__ = [
     "TrainingSheetReader",
     "TrainingSession",
     "TrainingEntry",
+    # Obiettivi di allenamento (#316)
+    "TrainingGoal",
     # Individual Match domain models (Phase 3)
     "MatchProposal",
     "ProposalInvitation",

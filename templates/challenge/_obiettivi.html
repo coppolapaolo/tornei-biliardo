@@ -1,0 +1,50 @@
+{# templates/challenge/_obiettivi.html — 7c
+   Gli obiettivi aperti, con la barra: titolo a sinistra, «dove sei / dove vuoi
+   arrivare» a destra (canvas, artboard `Andamento`; #316).
+
+   Lo stesso blocco serve al «Il tuo allenamento» e a «Oggi»: là in mezzo agli
+   altri motivi per allenarsi, qui sotto il radar che li ha suggeriti. Niente
+   `id` e niente `<script>`, quindi si può includere due volte nella stessa
+   pagina senza rompere niente.
+
+   La barra parte da **dove si partiva**, non da zero: un obiettivo che va da 61
+   a 70 con la barra vuota racconterebbe che non si è fatto niente, quando
+   invece manca poco. Il conto sta in `GoalProgress.pct`.
+
+   Atteso dal chiamante: `obiettivi`, una lista di `GoalProgress`. Facoltativo:
+   `obiettivi_lasciabili` (falso per nascondere «Lascia», come in «Oggi», dove
+   un comando distruttivo non c'entra). #}
+
+{% if not obiettivi %}
+<p class="c7-rows__sub" style="margin:0">
+  {{ _("Nessun obiettivo aperto. Un traguardo scelto da sé è il motivo per cui si torna al tavolo.") }}
+</p>
+{% endif %}
+
+{% for o in obiettivi %}
+<div style="margin-top:{{ 12 if not loop.first else 14 }}px">
+  <div class="c7-goal__top">
+    <span class="c7-goal__t">{{ o.title }}</span>
+    <span class="c7-goal__v c7-num">{{ o.current_label }} / {{ o.target }}{{ o.unit }}</span>
+  </div>
+  <div class="c7-bar" style="margin-top:6px">
+    <div class="c7-bar__fill{{ ' is-late' if o.expired }}" style="width:{{ o.pct }}%"></div>
+  </div>
+  <div class="c7-goal__sub">
+    {% if o.expired %}
+    <span style="color:var(--c7-err)">{{ _("Il tempo è finito: si può rifare, con più respiro.") }}</span>
+    {% elif o.days_left is not none %}
+    {{ ngettext("Resta %(num)s giorno.", "Restano %(num)s giorni.", o.days_left) }}
+    {% elif o.goal.baseline is not none %}
+    {{ _("Partivi da %(n)s.", n=o.goal.baseline) }}{{ o.unit }}
+    {% endif %}
+    {% if obiettivi_lasciabili is not defined or obiettivi_lasciabili %}
+    <form method="POST" action="{{ url_for('challenge.lascia_obiettivo', goal_id=o.goal.id) }}"
+          style="display:inline">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="c7-goal__drop">{{ _("Lascia") }}</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endfor %}

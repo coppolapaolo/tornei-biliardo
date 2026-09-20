@@ -43,6 +43,21 @@
   </section>
   {% endif %}
 
+  {# ── Gli obiettivi aperti ──────────────────────────────────────────── #}
+  {# Sotto la seduta da riprendere e sopra tutto il resto: se uno si è dato un
+     traguardo, è il motivo per cui è qui. «Lascia» non c'è — è un comando che
+     si va a cercare, e si cerca nell'andamento. #}
+  {% if obiettivi and feature_visible('challenge.andamento') %}
+  <section class="c7-card">
+    <div class="c7-sechead">
+      <h2>{{ _("I tuoi obiettivi") }}</h2>
+      <a class="c7-sechead__note" href="{{ url_for('challenge.andamento') }}">{{ _("Il tuo allenamento") }}</a>
+    </div>
+    {% set obiettivi_lasciabili = false %}
+    {% include "challenge/_obiettivi.html" %}
+  </section>
+  {% endif %}
+
   {% if today.is_empty %}
   <div class="c7-empty">
     <div class="c7-empty__ico"><i class="fas fa-bullseye"></i></div>

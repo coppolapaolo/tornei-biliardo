@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 15:58+0200\n"
+"POT-Creation-Date: 2026-09-20 16:16+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -102,15 +102,15 @@ msgstr "By skill"
 msgid "Per gesto"
 msgstr "By stroke"
 
-#: models/andamento/view.py:243
+#: models/andamento/view.py:277
 msgid "solido"
 msgstr "solid"
 
-#: models/andamento/view.py:245 models/training_sheet/register_view.py:242
+#: models/andamento/view.py:279 models/training_sheet/register_view.py:242
 msgid "in crescita"
 msgstr "trending up"
 
-#: models/andamento/view.py:246
+#: models/andamento/view.py:280
 msgid "da costruire"
 msgstr "to build"
 
@@ -1206,7 +1206,7 @@ msgstr "%(gara)s, place %(pos)s of %(total)s"
 msgid "%(gara)s, %(pos)s°"
 msgstr "%(gara)s, place %(pos)s"
 
-#: models/dashboard/activity_feedback.py:261
+#: models/dashboard/activity_feedback.py:261 models/obiettivo/progress.py:198
 #: templates/direttore/preparazione/_esercizi.html:73
 msgid "Esercizio"
 msgstr "Drill"
@@ -3023,6 +3023,134 @@ msgstr "Monthly"
 msgid "Evento Speciale"
 msgstr "Special Event"
 
+#: models/obiettivo/kinds.py:43
+msgid "Un risultato su un esercizio"
+msgstr "A result on a drill"
+
+#: models/obiettivo/kinds.py:44
+msgid "Un'abilità che sale"
+msgstr "A skill that rises"
+
+#: models/obiettivo/kinds.py:45
+msgid "La costanza"
+msgstr "Consistency"
+
+#: models/obiettivo/kinds.py:51
+msgid "arrivare a un punteggio, e tenerlo"
+msgstr "reach a score, and hold it"
+
+#: models/obiettivo/kinds.py:52
+msgid "portare una categoria alla banda successiva"
+msgstr "take a category up to the next band"
+
+#: models/obiettivo/kinds.py:53
+msgid "allenarmi con una certa frequenza"
+msgstr "train at a certain pace"
+
+#: models/obiettivo/kinds.py:78
+#, python-format
+msgid "Media delle ultime %(n)s prove"
+msgstr "Average of the last %(n)s attempts"
+
+#: models/obiettivo/kinds.py:79
+msgid "Basta una volta"
+msgstr "Once is enough"
+
+#: models/obiettivo/kinds.py:108
+msgid "Un mese"
+msgstr "One month"
+
+#: models/obiettivo/kinds.py:109
+msgid "Tre mesi"
+msgstr "Three months"
+
+#: models/obiettivo/kinds.py:110
+msgid "Senza scadenza"
+msgstr "No deadline"
+
+#: models/obiettivo/progress.py:202
+#, python-format
+msgid "%(nome)s a %(t)s su %(max)s"
+msgstr "%(nome)s at %(t)s out of %(max)s"
+
+#: models/obiettivo/progress.py:204
+#, python-format
+msgid "%(nome)s a %(t)s"
+msgstr "%(nome)s at %(t)s"
+
+#: models/obiettivo/progress.py:208
+#, python-format
+msgid "%(nome)s al %(t)s%%"
+msgstr "%(nome)s at %(t)s%%"
+
+#: models/obiettivo/progress.py:210
+#, python-format
+msgid "%(n)s volte a settimana, per %(s)s settimane"
+msgstr "%(n)s times a week, for %(s)s weeks"
+
+#: models/obiettivo/progress.py:221
+#: templates/gamification/admin/streak_config.html:187
+msgid "settimane"
+msgstr "weeks"
+
+#: models/obiettivo/service.py:99
+msgid "Obiettivo non trovato."
+msgstr "Goal not found."
+
+#: models/obiettivo/service.py:101
+msgid "Questo obiettivo è già concluso."
+msgstr "This goal is already over."
+
+#: models/obiettivo/service.py:121
+msgid "Scegli che cosa vuoi ottenere."
+msgstr "Choose what you want to achieve."
+
+#: models/obiettivo/service.py:125
+#, python-format
+msgid ""
+"Hai già %(n)s obiettivi aperti: lasciane uno prima di aggiungerne un "
+"altro."
+msgstr "You already have %(n)s open goals: leave one before adding another."
+
+#: models/obiettivo/service.py:131
+msgid "Scegli dove vuoi arrivare."
+msgstr "Choose where you want to get to."
+
+#: models/obiettivo/service.py:165
+msgid "Ci sei già: scegli un traguardo più alto di dove sei adesso."
+msgstr "You are already there: pick a target above where you are now."
+
+#: models/obiettivo/service.py:178
+msgid "Scegli su quale esercizio."
+msgstr "Choose which drill."
+
+#: models/obiettivo/service.py:182
+msgid "Questo esercizio è superato o no: non ha un punteggio a cui arrivare."
+msgstr "This drill is pass-or-fail: there is no score to reach."
+
+#: models/obiettivo/service.py:189
+#, python-format
+msgid "Il traguardo deve stare fra 1 e %(max)s."
+msgstr "The target has to be between 1 and %(max)s."
+
+#: models/obiettivo/service.py:206
+msgid "Scegli su quale categoria."
+msgstr "Choose which category."
+
+#: models/obiettivo/service.py:208
+msgid "Il traguardo è una percentuale, fra 1 e 100."
+msgstr "The target is a percentage, between 1 and 100."
+
+#: models/obiettivo/service.py:222
+#, python-format
+msgid "Quante volte a settimana? Fra %(min)s e %(max)s."
+msgstr "How many times a week? Between %(min)s and %(max)s."
+
+#: models/obiettivo/service.py:230
+#, python-format
+msgid "Per quante settimane? Fra %(min)s e %(max)s."
+msgstr "For how many weeks? Between %(min)s and %(max)s."
+
 #: models/playoff/services.py:154
 msgid "La gara di playoff è già cominciata: l'invito non si può più accettare."
 msgstr ""
@@ -3575,52 +3703,64 @@ msgstr "Passwords do not match."
 msgid "Password aggiornata con successo! Ora puoi effettuare il login."
 msgstr "Password updated successfully! You can now log in."
 
-#: routes/challenge.py:88 routes/challenge.py:138
+#: routes/challenge.py:90 routes/challenge.py:140
 #: templates/direttore/preparazione/_esercizi.html:117
 msgid "Non è stato possibile caricare gli esercizi."
 msgstr "The drills could not be loaded."
 
-#: routes/challenge.py:171
+#: routes/challenge.py:176
 msgid "Non è stato possibile caricare l'andamento."
 msgstr "Your training trends could not be loaded."
 
-#: routes/challenge.py:253
+#: routes/challenge.py:239
+msgid "Obiettivo salvato."
+msgstr "Goal saved."
+
+#: routes/challenge.py:246
+msgid "Non è stato possibile salvare l'obiettivo."
+msgstr "The goal could not be saved."
+
+#: routes/challenge.py:325
+msgid "Obiettivo lasciato."
+msgstr "Goal left."
+
+#: routes/challenge.py:408
 msgid "La foto non è un'immagine che si possa leggere"
 msgstr "The photo is not a readable image"
 
-#: routes/challenge.py:285
+#: routes/challenge.py:440
 msgid "Ho creato una copia con le tue modifiche: l'originale è rimasto com'era."
 msgstr "I created a copy with your changes: the original is untouched."
 
-#: routes/challenge.py:289
+#: routes/challenge.py:444
 msgid "Esercizio aggiornato."
 msgstr "Drill updated."
 
-#: routes/challenge.py:304
+#: routes/challenge.py:459
 msgid "Serve la foto della disposizione"
 msgstr "A photo of the layout is required"
 
-#: routes/challenge.py:312
+#: routes/challenge.py:467
 msgid "Copia creata."
 msgstr "Copy created."
 
-#: routes/challenge.py:312 routes/challenge.py:683
+#: routes/challenge.py:467 routes/challenge.py:838
 msgid "Esercizio creato."
 msgstr "Drill created."
 
-#: routes/challenge.py:463 routes/challenge.py:751
+#: routes/challenge.py:618 routes/challenge.py:906
 msgid "Questo esercizio non è più disponibile."
 msgstr "This drill is no longer available."
 
-#: routes/challenge.py:468
+#: routes/challenge.py:623
 msgid "Gli amministratori non possono provare gli esercizi."
 msgstr "Administrators cannot attempt drills."
 
-#: routes/challenge.py:497
+#: routes/challenge.py:652
 msgid "Tentativo iniziato."
 msgstr "Attempt started."
 
-#: routes/challenge.py:611
+#: routes/challenge.py:766
 msgid ""
 "Questo esercizio si registra colpo per colpo: il bersaglio serve. Per "
 "toglierlo, cambia prima «Come si registra»."
@@ -3628,7 +3768,7 @@ msgstr ""
 "This exercise is recorded shot by shot: the target is needed. To remove "
 "it, change «How it is recorded» first."
 
-#: routes/challenge.py:647
+#: routes/challenge.py:802
 msgid ""
 "Questo esercizio ha già delle prove: istruzioni e punteggio si cambiano "
 "da «Modifica l'esercizio», qui salva solo il disegno."
@@ -3636,64 +3776,64 @@ msgstr ""
 "This drill already has attempts: change instructions and scoring from "
 "“Edit drill”; here, save the diagram only."
 
-#: routes/challenge.py:708
+#: routes/challenge.py:863
 msgid "Questo esercizio nasce da una foto: non c'è un disegno da modificare."
 msgstr "This drill comes from a photo: there is no drawing to edit."
 
-#: routes/challenge.py:727
+#: routes/challenge.py:882
 msgid "Disegno aggiornato."
 msgstr "Drawing updated."
 
-#: routes/challenge.py:755
+#: routes/challenge.py:910
 msgid "Gli amministratori non provano gli esercizi."
 msgstr "Administrators do not attempt drills."
 
-#: routes/challenge.py:811 routes/challenge.py:1107
+#: routes/challenge.py:966 routes/challenge.py:1262
 msgid "Prova registrata."
 msgstr "Attempt recorded."
 
-#: routes/challenge.py:842
+#: routes/challenge.py:997
 msgid "Non c'è nessuna prova da annullare."
 msgstr "There is no attempt to undo."
 
-#: routes/challenge.py:864 routes/challenge.py:1076
+#: routes/challenge.py:1019 routes/challenge.py:1231
 msgid "Prova annullata."
 msgstr "Attempt undone."
 
-#: routes/challenge.py:951
+#: routes/challenge.py:1106
 msgid "Il punto sul panno non è leggibile."
 msgstr "The point on the cloth cannot be read."
 
-#: routes/challenge.py:1164 routes/sheet/run.py:205
+#: routes/challenge.py:1319 routes/sheet/run.py:205
 msgid "Note salvate."
 msgstr "Notes saved."
 
-#: routes/challenge.py:1364
+#: routes/challenge.py:1519
 msgid "Tentativo registrato."
 msgstr "Attempt recorded."
 
-#: routes/challenge.py:1405 templates/challenge/catalog.html:138
-#: templates/challenge/today.html:128
+#: routes/challenge.py:1560 templates/challenge/catalog.html:138
+#: templates/challenge/today.html:143
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr "The favourites could not be updated."
 
-#: routes/challenge.py:1442
+#: routes/challenge.py:1597
 msgid "Voto registrato."
 msgstr "Rating saved."
 
-#: routes/challenge.py:1505
+#: routes/challenge.py:1660
 msgid "Esercizio di gara avviato."
 msgstr "Tournament drill started."
 
-#: routes/challenge.py:1558
+#: routes/challenge.py:1713
 msgid "Esercizio di gara registrato."
 msgstr "Tournament drill recorded."
 
-#: routes/challenge.py:1591
+#: routes/challenge.py:1746
 msgid "Esercizio non trovato."
 msgstr "Drill not found."
 
-#: routes/challenge.py:1601
+#: routes/challenge.py:1756
 msgid "Non hai i permessi per questo esercizio."
 msgstr "You do not have permission for this drill."
 
@@ -3832,7 +3972,7 @@ msgstr "Reference"
 #: routes/help.py:57 templates/admin/accessi.html:83
 #: templates/challenge/catalog.html:56 templates/challenge/catalog.html:83
 #: templates/challenge/catalog.html:87 templates/challenge/catalog.html:91
-#: templates/challenge/today.html:82
+#: templates/challenge/today.html:97
 #: templates/components/_classification_mobile.html:13
 #: templates/components/_history_filters.html:79
 #: templates/components/_history_filters.html:93
@@ -9956,6 +10096,7 @@ msgstr[1] "Your best %(best)s · %(num)s attempts"
 
 #: templates/challenge/_exercise_bits.html:47
 #: templates/challenge/andamento.html:30 templates/challenge/andamento.html:133
+#: templates/challenge/obiettivo.html:62
 #: templates/player/challenge_detail.html:94
 #, python-format
 msgid "%(num)s prova"
@@ -9964,14 +10105,42 @@ msgstr[0] "%(num)s attempt"
 msgstr[1] "%(num)s attempts"
 
 #: templates/challenge/_exercise_bits.html:54
-#: templates/challenge/catalog.html:137 templates/challenge/today.html:127
+#: templates/challenge/catalog.html:137 templates/challenge/today.html:142
 msgid "Rimuovi dai preferiti"
 msgstr "Remove from favourites"
 
 #: templates/challenge/_exercise_bits.html:54
-#: templates/challenge/catalog.html:136 templates/challenge/today.html:126
+#: templates/challenge/catalog.html:136 templates/challenge/today.html:141
 msgid "Aggiungi ai preferiti"
 msgstr "Add to favourites"
+
+#: templates/challenge/_obiettivi.html:20
+msgid ""
+"Nessun obiettivo aperto. Un traguardo scelto da sé è il motivo per cui si"
+" torna al tavolo."
+msgstr ""
+"No open goals. A target you set yourself is the reason you come back to "
+"the table."
+
+#: templates/challenge/_obiettivi.html:35
+msgid "Il tempo è finito: si può rifare, con più respiro."
+msgstr "Time is up: you can set it again, with more room."
+
+#: templates/challenge/_obiettivi.html:37
+#, python-format
+msgid "Resta %(num)s giorno."
+msgid_plural "Restano %(num)s giorni."
+msgstr[0] "%(num)s day left."
+msgstr[1] "%(num)s days left."
+
+#: templates/challenge/_obiettivi.html:39
+#, python-format
+msgid "Partivi da %(n)s."
+msgstr "You started from %(n)s."
+
+#: templates/challenge/_obiettivi.html:45
+msgid "Lascia"
+msgstr "Leave"
 
 #: templates/challenge/_run_cloth.html:38
 msgid "Il tavolo: dove si è fermata la bianca"
@@ -10135,6 +10304,7 @@ msgid "Registra"
 msgstr "Record"
 
 #: templates/challenge/andamento.html:23 templates/challenge/andamento.html:28
+#: templates/challenge/obiettivo.html:28 templates/challenge/today.html:54
 msgid "Il tuo allenamento"
 msgstr "Your training"
 
@@ -10162,8 +10332,8 @@ msgstr ""
 "This is where you'll see how you're doing, skill by skill, as soon as you"
 " record a few scored attempts."
 
-#: templates/challenge/andamento.html:56 templates/challenge/today.html:75
-#: templates/challenge/today.html:98
+#: templates/challenge/andamento.html:56 templates/challenge/today.html:90
+#: templates/challenge/today.html:113
 msgid "Apri il catalogo"
 msgstr "Open the catalogue"
 
@@ -10218,6 +10388,14 @@ msgstr[0] ""
 msgstr[1] ""
 "%(num)s records are not in these numbers: they have no maximum to turn "
 "into a percentage — drills with no declared cap, minutes, ticks."
+
+#: templates/challenge/andamento.html:179 templates/challenge/today.html:53
+msgid "I tuoi obiettivi"
+msgstr "Your goals"
+
+#: templates/challenge/andamento.html:186
+msgid "Aggiungi un obiettivo"
+msgstr "Add a goal"
 
 #: templates/challenge/builder.html:19 templates/challenge/builder.html:35
 #: templates/challenge/form.html:323
@@ -10780,12 +10958,12 @@ msgstr "Mine"
 msgid "Preferiti"
 msgstr "Favourites"
 
-#: templates/challenge/catalog.html:68
+#: templates/challenge/catalog.html:68 templates/challenge/obiettivo.html:104
 #: templates/components/_gamification_labels.html:53
 msgid "Abilità"
 msgstr "Skill"
 
-#: templates/challenge/catalog.html:69
+#: templates/challenge/catalog.html:69 templates/challenge/obiettivo.html:105
 msgid "Gesto"
 msgstr "Stroke"
 
@@ -10817,7 +10995,7 @@ msgstr "1 drill"
 msgid "{n} esercizi"
 msgstr "{n} drills"
 
-#: templates/challenge/catalog.html:103 templates/challenge/today.html:89
+#: templates/challenge/catalog.html:103 templates/challenge/today.html:104
 msgid "I più provati"
 msgstr "Most tried"
 
@@ -10825,11 +11003,11 @@ msgstr "Most tried"
 msgid "I più nuovi"
 msgstr "Newest"
 
-#: templates/challenge/catalog.html:114 templates/challenge/today.html:49
+#: templates/challenge/catalog.html:114 templates/challenge/today.html:64
 msgid "Catalogo vuoto"
 msgstr "Empty catalogue"
 
-#: templates/challenge/catalog.html:115 templates/challenge/today.html:50
+#: templates/challenge/catalog.html:115 templates/challenge/today.html:65
 msgid "Non ci sono ancora esercizi da provare."
 msgstr "There are no drills to try yet."
 
@@ -11160,6 +11338,105 @@ msgstr "Back to the form"
 msgid "Non è stato possibile salvare. Riprova."
 msgstr "Could not save. Try again."
 
+#: templates/challenge/obiettivo.html:22
+msgid "Imposta un obiettivo"
+msgstr "Set a goal"
+
+#: templates/challenge/obiettivo.html:25
+msgid "Torna al tuo allenamento"
+msgstr "Back to your training"
+
+#: templates/challenge/obiettivo.html:27
+msgid "Nuovo obiettivo"
+msgstr "New goal"
+
+#: templates/challenge/obiettivo.html:35
+msgid "Che cosa vuoi ottenere"
+msgstr "What do you want to achieve"
+
+#: templates/challenge/obiettivo.html:57
+msgid "Su quale esercizio"
+msgstr "On which drill"
+
+#: templates/challenge/obiettivo.html:61 templates/exam/session.html:159
+#: templates/sheet/summary.html:32
+#, python-format
+msgid "su %(max)s"
+msgstr "out of %(max)s"
+
+#: templates/challenge/obiettivo.html:63
+#, python-format
+msgid "record %(n)s"
+msgstr "best %(n)s"
+
+#: templates/challenge/obiettivo.html:64
+msgid "mai provato"
+msgstr "never tried"
+
+#: templates/challenge/obiettivo.html:70
+msgid "Non c'è ancora nessun esercizio a punteggio nel catalogo."
+msgstr "There is no scored drill in the catalogue yet."
+
+#: templates/challenge/obiettivo.html:76
+msgid "Dove vuoi arrivare"
+msgstr "Where do you want to get to"
+
+#: templates/challenge/obiettivo.html:82
+msgid "Quando vale raggiunto"
+msgstr "When it counts as reached"
+
+#: templates/challenge/obiettivo.html:101
+msgid "Su quale categoria"
+msgstr "On which category"
+
+#: templates/challenge/obiettivo.html:111
+#, python-format
+msgid "oggi sei al %(n)s%%"
+msgstr "today you are at %(n)s%%"
+
+#: templates/challenge/obiettivo.html:120
+msgid "A che percentuale vuoi arrivare"
+msgstr "Which percentage do you want to reach"
+
+#: templates/challenge/obiettivo.html:129
+msgid "Quante volte a settimana"
+msgstr "How many times a week"
+
+#: templates/challenge/obiettivo.html:133
+msgid ""
+"Conta il giorno, non quante prove ci segni: dieci tiri in una sera sono "
+"una volta sola."
+msgstr ""
+"It counts the day, not how many attempts you record on it: ten shots in "
+"one evening are one time."
+
+#: templates/challenge/obiettivo.html:138
+msgid "Per quante settimane di fila"
+msgstr "For how many weeks in a row"
+
+#: templates/challenge/obiettivo.html:146
+msgid "Entro quando"
+msgstr "By when"
+
+#: templates/challenge/obiettivo.html:158
+#, python-format
+msgid "Hai %(num)s obiettivo aperto su %(max)s."
+msgid_plural "Hai %(num)s obiettivi aperti su %(max)s."
+msgstr[0] "You have %(num)s open goal out of %(max)s."
+msgstr[1] "You have %(num)s open goals out of %(max)s."
+
+#: templates/challenge/obiettivo.html:160
+msgid ""
+"Un obiettivo si può lasciare in ogni momento; raggiunto, resta nel tuo "
+"andamento con la data."
+msgstr ""
+"A goal can be left at any time; once reached, it stays in your training "
+"with its date."
+
+#: templates/challenge/obiettivo.html:163
+msgid "Salva l'obiettivo"
+msgstr "Save the goal"
+
 #: templates/challenge/start_attempt.html:3
 msgid "Inizia l'esercizio"
 msgstr "Start the drill"
@@ -11304,51 +11581,51 @@ msgstr "You started it %(quando)s."
 msgid "Riprendi la seduta"
 msgstr "Pick the session back up"
 
-#: templates/challenge/today.html:58
+#: templates/challenge/today.html:73
 msgid "Riprendi da qui"
 msgstr "Pick up from here"
 
-#: templates/challenge/today.html:62
+#: templates/challenge/today.html:77
 #, python-format
 msgid "L'ultima volta: %(when)s."
 msgstr "Last time: %(when)s."
 
-#: templates/challenge/today.html:66 templates/sheet/index.html:76
+#: templates/challenge/today.html:81 templates/sheet/index.html:76
 msgid "Comincia"
 msgstr "Start"
 
-#: templates/challenge/today.html:67
+#: templates/challenge/today.html:82
 msgid "La scheda"
 msgstr "Drill page"
 
-#: templates/challenge/today.html:72
+#: templates/challenge/today.html:87
 msgid "Per cominciare"
 msgstr "To get started"
 
-#: templates/challenge/today.html:73
+#: templates/challenge/today.html:88
 msgid "Scegli un esercizio e provalo"
 msgstr "Pick a drill and try it"
 
-#: templates/challenge/today.html:74
+#: templates/challenge/today.html:89
 msgid "Registri una prova dopo l'altra, e la prossima volta riparti da qui."
 msgstr "You record one attempt after another, and next time you pick up from here."
 
-#: templates/challenge/today.html:81
+#: templates/challenge/today.html:96
 msgid "I tuoi preferiti"
 msgstr "Your favourites"
 
-#: templates/challenge/today.html:99
+#: templates/challenge/today.html:114
 #, python-format
 msgid "%(num)s esercizio, da filtrare per abilità, gesto, livello e voto"
 msgid_plural "%(num)s esercizi, da filtrare per abilità, gesto, livello e voto"
 msgstr[0] "%(num)s drill, to filter by skill, stroke, level and rating"
 msgstr[1] "%(num)s drills, to filter by skill, stroke, level and rating"
 
-#: templates/challenge/today.html:114 templates/sheet/summary.html:113
+#: templates/challenge/today.html:129 templates/sheet/summary.html:113
 msgid "Le tue schede"
 msgstr "Your sheets"
 
-#: templates/challenge/today.html:115
+#: templates/challenge/today.html:130
 msgid "La sequenza di esercizi che fai in sala, nell'ordine in cui la fai"
 msgstr "The drills you do at the table, in the order you do them"
 
@@ -19678,11 +19955,6 @@ msgstr "Session stopped"
 msgid "Senza esito: non è una bocciatura."
 msgstr "No outcome recorded: this is not a fail."
 
-#: templates/exam/session.html:159 templates/sheet/summary.html:32
-#, python-format
-msgid "su %(max)s"
-msgstr "out of %(max)s"
-
 #: templates/exam/session.html:162
 #, python-format
 msgid "%(done)s prove su %(all)s"
@@ -20894,10 +21166,6 @@ msgstr "Freezes Earned"
 #: templates/gamification/admin/streak_config.html:180
 msgid "XP Bonus"
 msgstr "XP Bonus"
-
-#: templates/gamification/admin/streak_config.html:187
-msgid "settimane"
-msgstr "weeks"
 
 #: templates/gamification/admin/streak_config.html:224
 msgid "Milestone"
