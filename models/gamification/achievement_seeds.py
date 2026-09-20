@@ -330,6 +330,83 @@ PREDEFINED_ACHIEVEMENTS = [
         "xp_reward": 500,
     },
     # ========================================
+    # L'allenamento: tenuta, miglioramento, obiettivi (#184, fase 7c)
+    # ========================================
+    # I tre traguardi che c'erano contavano **quanti** esercizi, mai **come**.
+    # Questi guardano l'altra metà: non aver sbagliato per venti colpi, aver
+    # battuto il proprio record, essere arrivati dove ci si era dati
+    # appuntamento.
+    {
+        "slug": "shot_streak_10",
+        "name": "Dieci di fila",
+        "description": "Imbuca 10 colpi consecutivi in una sola prova",
+        "category": AchievementCategory.SKILL,
+        "difficulty": AchievementDifficulty.UNCOMMON,
+        "requirements": '{"type": "shot_streak", "count": 10}',
+        "is_progressive": True,
+        "xp_reward": 200,
+    },
+    {
+        "slug": "shot_streak_20",
+        "name": "Venti di fila",
+        "description": "Imbuca 20 colpi consecutivi in una sola prova",
+        "category": AchievementCategory.SKILL,
+        "difficulty": AchievementDifficulty.EPIC,
+        "requirements": '{"type": "shot_streak", "count": 20}',
+        "is_progressive": True,
+        "xp_reward": 500,
+    },
+    {
+        "slug": "personal_best_5",
+        "name": "Cinque record",
+        "description": "Batti il tuo record su un esercizio 5 volte",
+        "category": AchievementCategory.SKILL,
+        "difficulty": AchievementDifficulty.COMMON,
+        "requirements": '{"type": "personal_bests", "count": 5}',
+        "is_progressive": True,
+        "xp_reward": 150,
+    },
+    {
+        "slug": "personal_best_25",
+        "name": "Venticinque record",
+        "description": "Batti il tuo record su un esercizio 25 volte",
+        "category": AchievementCategory.SKILL,
+        "difficulty": AchievementDifficulty.RARE,
+        "requirements": '{"type": "personal_bests", "count": 25}',
+        "is_progressive": True,
+        "xp_reward": 400,
+    },
+    {
+        "slug": "goal_reached_1",
+        "name": "Ci sei arrivato",
+        "description": "Raggiungi un obiettivo che ti eri dato",
+        "category": AchievementCategory.SKILL,
+        "difficulty": AchievementDifficulty.COMMON,
+        "requirements": '{"type": "goals_reached", "count": 1}',
+        "is_progressive": True,
+        "xp_reward": 200,
+    },
+    {
+        "slug": "goal_reached_5",
+        "name": "Cinque obiettivi",
+        "description": "Raggiungi 5 obiettivi che ti eri dato",
+        "category": AchievementCategory.SKILL,
+        "difficulty": AchievementDifficulty.RARE,
+        "requirements": '{"type": "goals_reached", "count": 5}',
+        "is_progressive": True,
+        "xp_reward": 500,
+    },
+    {
+        "slug": "sheet_sessions_10",
+        "name": "Dieci sedute",
+        "description": "Porta a termine 10 sedute di una scheda di allenamento",
+        "category": AchievementCategory.EXPLORATION,
+        "difficulty": AchievementDifficulty.UNCOMMON,
+        "requirements": '{"type": "sheet_sessions", "count": 10}',
+        "is_progressive": True,
+        "xp_reward": 250,
+    },
+    # ========================================
     # Director Eligibility Achievement
     # ========================================
     {

@@ -88,7 +88,20 @@ CompetitionCompletedEvent ──→    handle_competition_completed_for_xp()
 ChallengeAttemptCompletedEvent ─→ handle_challenge_attempt_completed_for_xp()
                                  - Award CHALLENGE_COMPLETION XP
                                  - Record WEEKLY_DRILL + WEEKLY_ACTIVITY streak
+
+TrainingSessionClosedEvent ───→  handle_training_session_closed_for_xp()
+                                 - Award CHALLENGE_COMPLETION XP (one per seduta)
+                                 - Record WEEKLY_DRILL + WEEKLY_ACTIVITY streak
 ```
+
+**La seduta di una scheda vale un drill, non uno per casella** (fase 7c).
+L'ADR-067 l'aveva lasciata muta di proposito: far emettere un evento a una
+tabella nuova avrebbe deciso in silenzio che XP e serie si guadagnano anche a
+scheda. La decisione è sì — una seduta è un allenamento come una prova del
+catalogo — ma paga **una volta**: un allenamento è quello che si è fatto quella
+sera, e pagare ogni voce premierebbe chi compone schede lunghe. Stessa ragione
+per cui in gara paga solo il primo tentativo. Una seduta chiusa **senza niente
+segnato** non paga: aprirla e basta non è un allenamento.
 
 **Il drill non è simmetrico fra le due origini, ed è voluto.** L'evento arriva
 sia dal catalogo (`ChallengeService.complete_challenge_attempt`) sia dalla gara

@@ -49,6 +49,11 @@ class AchievementMetrics:
             "strategies_tried",
             "challenges_completed",
             "perfect_challenges",
+            # L'allenamento (#184, fase 7c)
+            "shot_streak",
+            "personal_bests",
+            "goals_reached",
+            "sheet_sessions",
         }
     )
 
@@ -294,6 +299,139 @@ class AchievementMetrics:
         )
         return len(rows)
 
+    # ------------------------------------------------------------------
+    # L'allenamento (#184, fase 7c)
+    # ------------------------------------------------------------------
+    # La issue chiedeva anche «una categoria del radar e' salita di una banda».
+    # **Non c'e'**, e non per dimenticanza: un asse dell'andamento si misura su
+    # una finestra di trenta giorni, quindi sale e riscende — mentre un
+    # traguardo dovrebbe essere un fatto. Per renderlo monotono servirebbe una
+    # storia delle bande che il modello non tiene: si dovrebbe scrivere «questa
+    # categoria ha toccato "solido" il giorno X», cioe' una tabella nuova, e
+    # tenerla aggiornata a ogni prova. E' una scelta che merita una decisione
+    # sua, non un resolver aggiunto di straforo qui.
+    # Le tre metriche qui sotto sono monotone per costruzione: la serie piu'
+    # lunga e i record battuti non si disfano, e `reached_at` non si toglie.
+
+    @staticmethod
+    def _shot_streak(user_id: int) -> int:
+        """La serie piu' lunga di colpi **imbucati di fila** dentro UNA prova.
+
+        E' un'altra cosa dalla serie settimanale di `StreakService`, e il nome
+        lo dice: quella misura la frequenza, questa la tenuta. La issue #184
+        avverte che finiscono nello stesso servizio se si chiamano uguale, e
+        che la prima volta che qualcuno tocca l'una rompe l'altra.
+
+        Si conta dentro una prova sola: venti colpi di fila in una sessione
+        sono un fatto, venti colpi riusciti sparsi in un mese non sono una
+        serie. Deriva dai colpi (ADR-066), quindi vale solo per gli esercizi
+        colpo per colpo — sugli altri non ci sono colpi da mettere in fila, e
+        il valore e' zero.
+
+        Un colpo con `made` a NULL **interrompe** la serie invece di saltarla:
+        sono gli esercizi con estrazione, che hanno una scala di esiti loro e
+        non dicono se la bilia e' entrata. Saltarli farebbe attraversare la
+        serie a colpi di cui non si sa niente.
+        """
+        from models.challenge.models import ChallengeAttempt, ChallengeShot
+
+        righe = (
+            db.session.query(ChallengeShot.attempt_id, ChallengeShot.made)
+            .join(ChallengeAttempt, ChallengeShot.attempt_id == ChallengeAttempt.id)
+            .filter(ChallengeAttempt.user_id == user_id)
+            .order_by(ChallengeShot.attempt_id, ChallengeShot.position)
+            .all()
+        )
+
+        migliore = corrente = 0
+        prova = None
+        for attempt_id, imbucato in righe:
+            if attempt_id != prova:
+                prova, corrente = attempt_id, 0
+            corrente = corrente + 1 if imbucato else 0
+            migliore = max(migliore, corrente)
+        return migliore
+
+    @staticmethod
+    def _personal_bests(user_id: int) -> int:
+        """Quante volte si e' battuto il proprio record su un esercizio.
+
+        Il primo punteggio su un esercizio non e' un record battuto: e' il
+        punto di partenza. Si contano i **miglioramenti** — un punteggio
+        strettamente superiore a tutti quelli di prima sulla stessa prova — ed
+        e' la differenza fra premiare chi torna e premiare chi comincia.
+
+        Si rigioca la storia in ordine, come fa il referto TPA col registro: e'
+        l'unico modo di sapere quando un punteggio era un record, invece di
+        sapere soltanto qual e' il massimo di oggi.
+        """
+        from models.challenge.models import Challenge, ChallengeAttempt
+
+        righe = (
+            db.session.query(ChallengeAttempt.challenge_id, ChallengeAttempt.score)
+            .join(Challenge, ChallengeAttempt.challenge_id == Challenge.id)
+            .filter(
+                ChallengeAttempt.user_id == user_id,
+                ChallengeAttempt.completed.is_(True),
+                ChallengeAttempt.score.isnot(None),
+                Challenge.pass_fail_only.is_(False),
+            )
+            .order_by(ChallengeAttempt.attempted_at, ChallengeAttempt.id)
+            .all()
+        )
+
+        migliori: Dict[int, int] = {}
+        quante = 0
+        for challenge_id, punteggio in righe:
+            precedente = migliori.get(challenge_id)
+            if precedente is not None and punteggio > precedente:
+                quante += 1
+            if precedente is None or punteggio > precedente:
+                migliori[challenge_id] = punteggio
+        return quante
+
+    @staticmethod
+    def _goals_reached(user_id: int) -> int:
+        """Quanti obiettivi si sono raggiunti (#316).
+
+        La data di «raggiunto» non si toglie mai, quindi questa metrica e'
+        monotona: e' la proprieta' che un traguardo vuole.
+        """
+        from models.obiettivo.models import TrainingGoal
+
+        return int(
+            TrainingGoal.query.filter(
+                TrainingGoal.user_id == user_id,
+                TrainingGoal.reached_at.isnot(None),
+            ).count()
+        )
+
+    @staticmethod
+    def _sheet_sessions(user_id: int) -> int:
+        """Quante sedute di scheda si sono portate a termine.
+
+        Solo quelle **chiuse e con qualcosa segnato**: aprire una seduta e non
+        scriverci niente non e' un allenamento, e contarla premierebbe il gesto
+        di aprire l'app.
+        """
+        from models.training_sheet.models import TrainingEntry, TrainingSession
+
+        chiuse = (
+            db.session.query(TrainingSession.id)
+            .join(TrainingEntry, TrainingEntry.session_id == TrainingSession.id)
+            .filter(
+                TrainingSession.user_id == user_id,
+                TrainingSession.ended_at.isnot(None),
+                db.or_(
+                    TrainingEntry.value.isnot(None),
+                    TrainingEntry.done.isnot(None),
+                ),
+            )
+            .distinct()
+            .count()
+        )
+        return int(chiuse)
+
 
 _RESOLVERS = {
     "match_wins": AchievementMetrics._match_wins,
@@ -307,4 +445,9 @@ _RESOLVERS = {
     "strategies_tried": AchievementMetrics._strategies_tried,
     "challenges_completed": AchievementMetrics._challenges_completed,
     "perfect_challenges": AchievementMetrics._perfect_challenges,
+    # L'allenamento (#184, fase 7c)
+    "shot_streak": AchievementMetrics._shot_streak,
+    "personal_bests": AchievementMetrics._personal_bests,
+    "goals_reached": AchievementMetrics._goals_reached,
+    "sheet_sessions": AchievementMetrics._sheet_sessions,
 }
