@@ -187,27 +187,46 @@
           <span class="c7-fold__value">{{ draft.variants|map(attribute='label')|join(' · ') if draft and draft.variants else _("nessuna") }}</span>
           <i class="fas fa-chevron-down c7-fold__chev"></i>
         </summary>
+        {# «Specchiata» viaggia in un campo **nascosto** per riga, non nella
+           casella di spunta: una casella non spuntata non si invia, le tre
+           liste si disallineerebbero, e a ritrovarsi ribaltata sarebbe la
+           variante sbagliata. La casella muove il campo, e basta. #}
         <div class="c7-fold__body c7-stack" style="gap:8px" data-variants>
           {% for variante in (draft.variants if draft else []) %}
-          <div class="d-flex gap-2" data-variant-row>
-            <input type="hidden" name="variant_id" value="{{ variante.id or '' }}">
-            <input type="text" class="form-control" name="variant_label" maxlength="40"
-                   value="{{ variante.label }}" aria-label="{{ _('Nome della variante') }}">
-            <button type="button" class="btn btn-secondary" data-variant-remove aria-label="{{ _('Togli la variante') }}"><i class="fas fa-xmark"></i></button>
+          <div data-variant-row>
+            <div class="d-flex gap-2">
+              <input type="hidden" name="variant_id" value="{{ variante.id or '' }}">
+              <input type="hidden" name="variant_mirrored" value="{{ '1' if variante.mirrored else '0' }}">
+              <input type="text" class="form-control" name="variant_label" maxlength="40"
+                     value="{{ variante.label }}" aria-label="{{ _('Nome della variante') }}">
+              <button type="button" class="btn btn-secondary" data-variant-remove aria-label="{{ _('Togli la variante') }}"><i class="fas fa-xmark"></i></button>
+            </div>
+            <label class="c7-rows__sub d-flex align-items-center gap-2" style="margin-top:4px">
+              <input type="checkbox" data-variant-mirror {% if variante.mirrored %}checked{% endif %}>
+              {{ _("è il disegno ribaltato") }}
+            </label>
           </div>
           {% endfor %}
           <template data-variant-template>
-            <div class="d-flex gap-2" data-variant-row>
-              <input type="hidden" name="variant_id" value="">
-              <input type="text" class="form-control" name="variant_label" maxlength="40"
-                     placeholder="{{ _('es. destra') }}" aria-label="{{ _('Nome della variante') }}">
-              <button type="button" class="btn btn-secondary" data-variant-remove aria-label="{{ _('Togli la variante') }}"><i class="fas fa-xmark"></i></button>
+            <div data-variant-row>
+              <div class="d-flex gap-2">
+                <input type="hidden" name="variant_id" value="">
+                <input type="hidden" name="variant_mirrored" value="0">
+                <input type="text" class="form-control" name="variant_label" maxlength="40"
+                       placeholder="{{ _('es. destra') }}" aria-label="{{ _('Nome della variante') }}">
+                <button type="button" class="btn btn-secondary" data-variant-remove aria-label="{{ _('Togli la variante') }}"><i class="fas fa-xmark"></i></button>
+              </div>
+              <label class="c7-rows__sub d-flex align-items-center gap-2" style="margin-top:4px">
+                <input type="checkbox" data-variant-mirror>
+                {{ _("è il disegno ribaltato") }}
+              </label>
             </div>
           </template>
           <button type="button" class="btn btn-secondary w-100" data-variant-add>
             <i class="fas fa-plus"></i>&nbsp;{{ _("Aggiungi una variante") }}
           </button>
           <div class="form-text">{{ _("Sono lo stesso esercizio, non un altro: stessa disposizione, stesse regole. Una variante che ha già delle prove si può rinominare, non togliere.") }}</div>
+          <div class="form-text">{{ _("«Ribaltata» mostra lo stesso disegno allo specchio, senza ridisegnarlo: serve per destra e sinistra. Con un bersaglio non si può, perché il punteggio discende dal disegno.") }}</div>
         </div>
       </details>
     </section>

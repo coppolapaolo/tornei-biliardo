@@ -19,6 +19,7 @@ oggi resta senza profilo finché l'autore non glielo dà.
 
 from __future__ import annotations
 
+import json
 import uuid
 
 import pytest
@@ -299,6 +300,94 @@ class TestVarianti:
         u = _utente(db_session)
         prova = ChallengeService.record_attempt(u.id, c.id, score=3)
         assert prova.variant_id is None
+
+
+# ────────────────────────────────────────────────────────────────────────
+# La variante ribaltata (fase 9c)
+# ────────────────────────────────────────────────────────────────────────
+class TestVarianteSpecchiata:
+    """Destra e sinistra sono lo stesso disegno visto dall'altro lato.
+
+    Ridisegnarlo sarebbe due disegni da tenere allineati a mano: il difetto che
+    l'ADR-065 evita fra esercizi, e che rientrerebbe dalla finestra fra le
+    varianti.
+    """
+
+    def test_si_scrive_e_si_legge(self, db_session):
+        c = _esercizio(db_session)
+        ChallengeProfileService.set_profile(
+            c.id,
+            variants=[
+                {"label": "destra"},
+                {"label": "sinistra", "mirrored": True},
+            ],
+        )
+        c = db_session.get(Challenge, c.id)
+        assert [v.mirrored for v in c.variants] == [False, True]
+
+    def test_di_suo_una_variante_non_e_specchiata(self, db_session):
+        c = _esercizio(db_session)
+        ChallengeProfileService.set_profile(c.id, variants=[{"label": "A"}])
+        assert db_session.get(Challenge, c.id).variants[0].mirrored is False
+
+    def test_si_toglie_come_si_mette(self, db_session):
+        c = _esercizio(db_session)
+        ChallengeProfileService.set_profile(
+            c.id, variants=[{"label": "sinistra", "mirrored": True}]
+        )
+        sx = db_session.get(Challenge, c.id).variants[0]
+        ChallengeProfileService.set_profile(
+            c.id, variants=[{"id": sx.id, "label": "sinistra", "mirrored": False}]
+        )
+        assert db_session.get(Challenge, c.id).variants[0].mirrored is False
+
+    def test_con_un_bersaglio_si_rifiuta(self, db_session):
+        """Il punteggio discende dal disegno, e il panno da toccare è uno solo.
+
+        Mostrare il disegno ribaltato e chiedere dove si è fermata la bianca sul
+        panno dritto registrerebbe ogni colpo dal lato sbagliato: senza errori,
+        senza segnali, con dei numeri plausibili.
+        """
+        scena = json.dumps(
+            {
+                "v": 4,
+                "items": [
+                    {
+                        "type": "target",
+                        "id": "t1",
+                        "x": 600,
+                        "y": 200,
+                        "step": 50,
+                        "values": [3, 2, 1],
+                    }
+                ],
+            }
+        )
+        c = _esercizio(db_session, diagram_scene=scena)
+        with pytest.raises(ValidationError):
+            ChallengeProfileService.set_profile(
+                c.id, variants=[{"label": "sinistra", "mirrored": True}]
+            )
+
+    def test_senza_bersaglio_lo_stesso_esercizio_la_accetta(self, db_session):
+        c = _esercizio(db_session, diagram_scene='{"v":4,"items":[]}')
+        ChallengeProfileService.set_profile(
+            c.id, variants=[{"label": "sinistra", "mirrored": True}]
+        )
+        assert db_session.get(Challenge, c.id).variants[0].mirrored is True
+
+    def test_la_copia_porta_anche_lo_specchio(self, db_session):
+        from models.challenge.profile_service import copy_profile
+
+        originale = _esercizio(db_session)
+        ChallengeProfileService.set_profile(
+            originale.id, variants=[{"label": "sinistra", "mirrored": True}]
+        )
+        originale = db_session.get(Challenge, originale.id)
+        copia = _esercizio(db_session)
+        copy_profile(originale, copia)
+        db_session.flush()
+        assert [v.mirrored for v in copia.variants] == [True]
 
 
 # ────────────────────────────────────────────────────────────────────────

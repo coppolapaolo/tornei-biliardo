@@ -153,6 +153,24 @@
     });
   });
 
+  /* ---- La variante ribaltata gira il disegno ----------------------------- *
+     Una variante specchiata (fase 9c) non ha un disegno suo: è lo stesso, allo
+     specchio. Scegliendola si gira la figura, così chi si allena vede la
+     disposizione dalla parte da cui la sta giocando invece di doverla
+     ribaltare a mente. Il tabellone orizzontale ha la sua copia della figura,
+     quindi si girano tutte. */
+  function mirrorDiagram() {
+    var chosen = document.querySelector('input[name="variant_id"]:checked');
+    var mirrored = !!(chosen && chosen.dataset.mirror === '1');
+    all('.c7-diagram__img').forEach(function (img) {
+      img.classList.toggle('is-mirrored', mirrored);
+    });
+  }
+  all('input[name="variant_id"]').forEach(function (radio) {
+    radio.addEventListener('change', mirrorDiagram);
+  });
+  mirrorDiagram();
+
   /* ---- I comandi agganciati in basso ------------------------------------- */
   // Sotto lg i comandi stanno fissi al posto della nav: la loro altezza vera
   // va detta al CSS, perché il contenuto possa scorrere fin sopra.

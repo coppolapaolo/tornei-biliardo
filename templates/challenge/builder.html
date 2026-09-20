@@ -75,6 +75,10 @@
             <i class="fas fa-comment-dots" aria-hidden="true"></i><span>{{ _("Richiamo") }}</span></button>
           <button class="btn tool" data-tool="marker">
             <i class="far fa-circle-dot" aria-hidden="true"></i><span>{{ _("Marcatore") }}</span></button>
+          <button class="btn tool" data-tool="rail" data-help="drill-sponda">
+            <i class="fas fa-grip-lines" aria-hidden="true"></i><span>{{ _("Sponda") }}</span></button>
+          <button class="btn tool" data-tool="frame" data-help="drill-inquadratura">
+            <i class="far fa-image" aria-hidden="true"></i><span>{{ _("Inquadratura") }}</span></button>
           <span class="tools__sep" aria-hidden="true"></span>
           <button class="btn tool tool--icon ghostbtn" id="undo"
                   title="{{ _('Annulla mossa') }}" aria-label="{{ _('Annulla mossa') }}">
@@ -228,6 +232,44 @@
         <label class="chk"><input type="checkbox" id="posReverse"> {{ _("Numera all'indietro") }}</label>
         <div class="row" style="margin-top:4px">
           <button class="btn wide ghostbtn" type="button" id="posRemoveLast">{{ _("Togli l'ultima") }}</button>
+        </div>
+      </div>
+
+      {# Il tratto di sponda: compare quando ce n'è uno selezionato. #}
+      <div class="sec" id="sec-sponda" hidden>
+        <h2>{{ _("Tratto di sponda") }}</h2>
+        <div class="field">
+          <span>{{ _("Lungo") }} — <b id="railLen">2</b></span>
+          <div class="row">
+            <button class="btn wide ghostbtn" type="button" id="railMinus" aria-label="{{ _('Un quarto in meno') }}">−</button>
+            <button class="btn wide ghostbtn" type="button" id="railPlus" aria-label="{{ _('Un quarto in più') }}">+</button>
+          </div>
+        </div>
+        <p class="tip">{{ _("Scorre lungo la sua sponda e non la lascia. Per metterlo su un'altra sponda, tocca lì con lo strumento.") }}</p>
+        <div class="row" style="margin-top:4px">
+          <button class="btn wide ghostbtn" type="button" id="railRemove">{{ _("Togli il tratto") }}</button>
+        </div>
+      </div>
+
+      {# L'inquadratura: si disegna sempre sul tavolo intero, e questa decide
+         solo cosa finisce nell'immagine. Le bilie fuori restano nel disegno. #}
+      <div class="sec" id="sec-inquadratura">
+        <h2>{{ _("Inquadratura") }}</h2>
+        <div class="row">
+          <button class="btn wide shape" type="button" data-frame="full">
+            <b>{{ _("Tavolo") }}</b><small>{{ _("intero") }}</small></button>
+          <button class="btn wide shape" type="button" data-frame="half">
+            <b>{{ _("Mezzo") }}</b><small>{{ _("un lato corto") }}</small></button>
+        </div>
+        <div class="row" style="margin-top:6px">
+          <button class="btn wide shape" type="button" data-frame="corner">
+            <b>{{ _("Angolo") }}</b><small>{{ _("un quarto") }}</small></button>
+          <button class="btn wide shape" type="button" data-frame="free">
+            <b>{{ _("Libera") }}</b><small>{{ _("trascini la cornice") }}</small></button>
+        </div>
+        <p class="tip">{{ _("Si disegna sempre sul tavolo intero: la cornice si sposta e si allarga dagli angoli, agganciata ai diamanti, e decide solo cosa si vede. Le bilie fuori restano nel disegno.") }}</p>
+        <div class="row" style="margin-top:4px">
+          <button class="btn wide ghostbtn" type="button" id="frameClear" hidden>{{ _("Togli l'inquadratura") }}</button>
         </div>
       </div>
 

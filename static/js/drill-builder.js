@@ -81,6 +81,9 @@ const state = {
      riquadro (dentro o fuori). Non e' un dato della scena — la scena sa gia'
      che cos'e' ogni voce — e' quello che il prossimo tocco fara'. */
   targetShape:"rings",
+  /* Quanto tavolo finisce nell'immagine: `null` = tutto. Non e' un elemento
+     della scena, e' il ritaglio con cui la si guarda. */
+  frame:null, selVertex:null,
   lineStyle:"solid", lineColor:"#ffffff", lineArrow:true, lineGhost:false,
   shotDefaults:{ tip:{x:0,y:0}, elev:0, force:30,
                  showPost:true, showObj:true, showStick:true, showCard:true, showAngle:false },
@@ -680,6 +683,30 @@ function drawCallout(g, it, sel){
   }
 }
 
+/* Il tratto di sponda: il pezzo di sponda che conta. Negli schemi si evidenzia
+   una parte della sponda lunga — «fermati fra il secondo e il quarto diamante»
+   — e con la linea libera veniva una riga che non si capiva se fosse una
+   traiettoria. Sta **sulla** sponda, quindi segue il bordo invece di essere
+   due punti qualunque. */
+const RAIL_MIN = U/4;
+const railAxis = it => (it.edge==="top" || it.edge==="bottom") ? "x" : "y";
+function railGeo(it){
+  const dentro = 14;   /* quanto il tratto entra nella sponda, dal panno */
+  if (it.edge==="top")    return {x1:it.from, y1:-dentro, x2:it.to, y2:-dentro};
+  if (it.edge==="bottom") return {x1:it.from, y1:W+dentro, x2:it.to, y2:W+dentro};
+  if (it.edge==="left")   return {x1:-dentro, y1:it.from, x2:-dentro, y2:it.to};
+  return {x1:L+dentro, y1:it.from, x2:L+dentro, y2:it.to};
+}
+function drawRail(g, it, sel){
+  const s = railGeo(it);
+  E("line",{x1:s.x1,y1:s.y1,x2:s.x2,y2:s.y2,stroke:"rgba(0,0,0,.45)",
+    "stroke-width":16,"stroke-linecap":"round"},g);
+  E("line",{x1:s.x1,y1:s.y1,x2:s.x2,y2:s.y2,stroke:theme().ink,
+    "stroke-width":11,"stroke-linecap":"round"},g);
+  if (sel) E("line",{x1:s.x1,y1:s.y1,x2:s.x2,y2:s.y2,stroke:SEL,
+    "stroke-width":19,"stroke-linecap":"round",opacity:.5},g);
+}
+
 function drawMarker(g, it, sel){
   E("circle",{cx:it.x,cy:it.y,r:BR+3,fill:"none",stroke:theme().ink,"stroke-width":2.2,
     "stroke-dasharray":"4 4"},g);
@@ -687,13 +714,55 @@ function drawMarker(g, it, sel){
     "stroke-dasharray":"3 3"},g);
 }
 
+/* ---- L'inquadratura ----------------------------------------------------- *
+   «Come si fa l'immagine di un solo pezzo di tavolo?», ha chiesto l'utente
+   guardando i diagrammi di una scuola. La risposta e' che si disegna **sempre**
+   sul tavolo intero, e l'inquadratura e' una cornice che decide solo cosa
+   finisce nell'immagine: le bilie fuori restano nel disegno, se un giorno la
+   allarghi. Vive accanto alla scena (`scene.frame`), non dentro gli elementi.
+   Tre preset piu' il trascinamento libero; si aggancia ai diamanti come tutto
+   il resto. */
+const FRAME_MIN = U;
+const FRAME_FULL = {x:-PAD, y:-PAD, w:L+2*PAD, h:W+2*PAD};
+const FRAME_PRESETS = {
+  half:   {x:-PAD, y:-PAD, w:L/2+PAD, h:W+2*PAD},
+  corner: {x:-PAD, y:-PAD, w:L/2+PAD, h:W/2+PAD},
+};
+const frameCorners = f => [{k:"nw",x:f.x,y:f.y},{k:"ne",x:f.x+f.w,y:f.y},
+                           {k:"sw",x:f.x,y:f.y+f.h},{k:"se",x:f.x+f.w,y:f.y+f.h}];
+const clampInFrame = p => ({x:Math.min(L+PAD,Math.max(-PAD,p.x)),
+                            y:Math.min(W+PAD,Math.max(-PAD,p.y))});
+function drawFrame(g, f){
+  /* Il velo sta **fuori** dalla cornice: si vede a colpo d'occhio che cosa
+     resta fuori dall'immagine senza doverlo immaginare. Regola pari e dispari
+     su un path con due rettangoli, come il mascherino di un ritaglio. */
+  E("path",{d:`M${-PAD} ${-PAD}H${L+PAD}V${W+PAD}H${-PAD}Z `+
+              `M${f.x} ${f.y}V${f.y+f.h}H${f.x+f.w}V${f.y}Z`,
+    fill:"#14181a","fill-opacity":.62,"fill-rule":"evenodd"},g);
+  E("rect",{x:f.x,y:f.y,width:f.w,height:f.h,fill:"none",stroke:SEL,
+    "stroke-width":4,"stroke-dasharray":"14 8",rx:10},g);
+  frameCorners(f).forEach(c=>E("circle",{cx:c.x,cy:c.y,r:11,fill:SEL,
+    stroke:"#14181a","stroke-width":2},g));
+}
+
 function buildScene(o){
   o = o || {};
   const vert = state.orient === "v";
-  const tw = vert ? W+2*PAD : L+2*PAD;
-  const th = vert ? L+2*PAD : W+2*PAD;
-  const minX = vert ? -(W+PAD) : -PAD;
-  const minY = -PAD;
+  let tw = vert ? W+2*PAD : L+2*PAD;
+  let th = vert ? L+2*PAD : W+2*PAD;
+  let minX = vert ? -(W+PAD) : -PAD;
+  let minY = -PAD;
+  /* Il ritaglio vale **nell'immagine**, non mentre si lavora: sul tavolo si
+     continua a vedere tutto, col velo su ciò che resta fuori e le maniglie da
+     prendere. Tagliare anche qui vorrebbe dire non poter più allargare la
+     cornice, perché le sue maniglie sarebbero fuori dallo schermo. */
+  if (state.frame && o.forExport){
+    /* Ruotando, il gruppo porta (x,y) in (-y,x): la cornice si gira con lui,
+       altrimenti il tavolo verticale inquadrerebbe un pezzo di niente. */
+    const f = state.frame;
+    if (vert){ minX = -(f.y+f.h); minY = f.x; tw = f.h; th = f.w; }
+    else { minX = f.x; minY = f.y; tw = f.w; th = f.h; }
+  }
 
   const shots = effectiveShots();
   const cards = shots.filter(s=>s.showCard);
@@ -722,6 +791,7 @@ function buildScene(o){
   }
   for (const it of state.items){
     if (it.type === "marker") drawMarker(g, it, !o.forExport && state.sel === it.id);
+    else if (it.type === "rail") drawRail(g, it, !o.forExport && state.sel === it.id);
   }
   for (const it of state.items){
     if (it.type !== "path") continue;
@@ -757,6 +827,9 @@ function buildScene(o){
     if (it.type === "positions") drawPositions(g, it, sel);
     else if (it.type === "callout") drawCallout(g, it, sel);
   }
+  /* La cornice si vede mentre si lavora e sparisce nell'immagine: li' il suo
+     effetto e' il taglio stesso. */
+  if (!o.forExport && state.frame) drawFrame(g, state.frame);
   if (!o.forExport && state.draft){
     const pv = state.draft.points.concat(state.preview?[state.preview]:[]);
     polyline(g,pv,{color:state.lineColor,dashed:state.lineStyle==="dashed",
@@ -805,6 +878,7 @@ function render(){
       : T_("hintPick","Clicca la biglia da giocare per iniziare a mirare. Clicca un tiro esistente per correggerlo.");
   renderPalette(); renderTip(); syncShotControls(); syncTargetControls();
   syncZoneControls(); syncPositionsControls(); syncShapeButtons();
+  syncRailControls(); syncFrameControls();
 }
 
 /* Il pannello del bersaglio: c'è un bersaglio solo, quindi lavora su quello
@@ -863,6 +937,38 @@ function syncZoneControls(){
   $("#zoneValueRow").hidden = z.value == null;
   $("#zoneValue").textContent = z.value == null ? 1 : z.value;
 }
+function selectedRail(){ const it = byId(state.sel); return it && it.type==="rail" ? it : null; }
+function syncRailControls(){
+  const box = $("#sec-sponda"); if (!box) return;
+  const r = selectedRail();
+  box.hidden = !r;
+  if (r) $("#railLen").textContent = inDiamanti(r.to - r.from);
+}
+function setRailLen(delta){
+  const r = selectedRail(); if (!r) return;
+  const passo = U/4, massimo = railAxis(r)==="x" ? L : W;
+  const misura = (r.to - r.from) + delta*passo;
+  if (misura < RAIL_MIN || misura > massimo) return;
+  push();
+  r.to = Math.min(massimo, r.from + misura);
+  r.from = Math.max(0, r.to - misura);
+  render();
+}
+function syncFrameControls(){
+  const box = $("#sec-inquadratura"); if (!box) return;
+  const f = state.frame;
+  document.querySelectorAll("[data-frame]").forEach(b=>{
+    const scelto = b.dataset.frame;
+    const acceso = scelto==="full" ? !f
+      : scelto==="free" ? !!f && !_ePreset(f)
+      : !!f && _eQuesto(f, FRAME_PRESETS[scelto]);
+    b.classList.toggle("on", acceso);
+  });
+  const via = $("#frameClear"); if (via) via.hidden = !f;
+}
+const _eQuesto = (f, p) => !!p && f.x===p.x && f.y===p.y && f.w===p.w && f.h===p.h;
+const _ePreset = f => Object.values(FRAME_PRESETS).some(p=>_eQuesto(f,p));
+
 function syncPositionsControls(){
   const box = $("#sec-posizioni"); if (!box) return;
   const ps = selectedPositions();
@@ -995,9 +1101,14 @@ function setShotProp(k, v){
 /* ================================================================
    STORICO
 =================================================================*/
-const snapState = ()=>JSON.stringify({items:state.items, title:state.title});
+/* L'inquadratura entra nello storico come il resto: allargarla è un gesto che
+   si annulla, e un «annulla» che non la tocca lascerebbe il disegno in uno
+   stato che nessuno ha scelto. */
+const snapState = ()=>JSON.stringify({items:state.items, title:state.title,
+                                      frame:state.frame});
 function push(){ history.push(snapState()); if(history.length>80) history.shift(); future=[]; }
 function restore(s){ const d=JSON.parse(s); state.items=d.items; state.title=d.title;
+  state.frame=d.frame||null;
   $("#titleInput").value=d.title||""; state.sel=null; state.aiming=null; render(); }
 function undo(){ if(!history.length) return; future.push(snapState()); restore(history.pop()); }
 function redo(){ if(!future.length) return; history.push(snapState()); restore(future.pop()); }
@@ -1040,6 +1151,10 @@ function hitItems(p){
     if (it.type==="ball" && dist(it,p)<=BR+3) return {it};
     if (it.type==="text" && dist(it,p)<=13) return {it};
     if (it.type==="marker" && dist(it,p)<=BR+6) return {it};
+    if (it.type==="rail"){
+      const s = railGeo(it);
+      if (segDist(p,{x:s.x1,y:s.y1},{x:s.x2,y:s.y2})<=14) return {it};
+    }
     if (it.type==="positions"){
       for(let v=0;v<it.points.length;v++) if(dist(it.points[v],p)<=16) return {it,vertex:v};
     }
@@ -1066,6 +1181,27 @@ function hitItems(p){
     if (it.type==="shot" && shotHit(p,it)) return {it};
   }
   return null;
+}
+
+/* La cornice trascinata: per un angolo cambia misura — l'angolo opposto resta
+   fermo — e dal di dentro si sposta tutta, restando dentro il bordo. */
+function moveFrame(d, p){
+  const passo = U/4, f = state.frame, o = d.orig;
+  const q = clampInFrame(altDown ? p : {x:Math.round(p.x/passo)*passo,
+                                        y:Math.round(p.y/passo)*passo});
+  if (!d.handle){
+    const dx = p.x-d.start.x, dy = p.y-d.start.y;
+    f.x = Math.max(-PAD, Math.min(L+PAD-o.w, Math.round((o.x+dx)/passo)*passo));
+    f.y = Math.max(-PAD, Math.min(W+PAD-o.h, Math.round((o.y+dy)/passo)*passo));
+    return;
+  }
+  const fissoX = d.handle[1]==="w" ? o.x+o.w : o.x;
+  const fissoY = d.handle[0]==="n" ? o.y+o.h : o.y;
+  const w = Math.max(FRAME_MIN, Math.abs(q.x-fissoX));
+  const h = Math.max(FRAME_MIN, Math.abs(q.y-fissoY));
+  f.x = d.handle[1]==="w" ? fissoX-w : fissoX;
+  f.y = d.handle[0]==="n" ? fissoY-h : fissoY;
+  f.w = w; f.h = h;
 }
 
 /* Il riquadro trascinato per un angolo: l'angolo opposto resta fermo, le
@@ -1179,6 +1315,35 @@ stage.addEventListener("pointerdown", ev=>{
     state.items.push({id:uid(),type:"marker",...clampPt(snapPoint(raw,{toBalls:false}))});
     render(); return;
   }
+  if (state.tool === "rail"){
+    /* La sponda la sceglie il tocco: quella piu' vicina al punto. Nasce lungo
+       due diamanti, che e' la misura in cui li scrivono gli schemi. */
+    push();
+    const p = clampInFrame(raw);
+    const vicine = [["top",Math.abs(p.y)],["bottom",Math.abs(p.y-W)],
+                    ["left",Math.abs(p.x)],["right",Math.abs(p.x-L)]];
+    const edge = vicine.sort((a,b)=>a[1]-b[1])[0][0];
+    const lungo = (edge==="top"||edge==="bottom");
+    const massimo = lungo ? L : W;
+    const centro = lungo ? p.x : p.y;
+    const passo = U/4;
+    let da = Math.round((centro-U)/passo)*passo;
+    da = Math.max(0, Math.min(massimo-2*U, da));
+    const r = {id:uid(),type:"rail",edge,from:da,to:da+2*U};
+    state.items.push(r); state.sel = r.id;
+    render(); return;
+  }
+  if (state.tool === "frame"){
+    if (!state.frame){ push(); state.frame = {...FRAME_FULL}; render(); return; }
+    const f = state.frame;
+    const ang = frameCorners(f).find(c=>dist(c,raw)<=22);
+    const dentro = raw.x>=f.x && raw.x<=f.x+f.w && raw.y>=f.y && raw.y<=f.y+f.h;
+    if (ang || dentro){
+      push();
+      state.drag = {frame:true, handle:ang && ang.k, start:raw, moved:false, orig:{...f}};
+      return;
+    }
+  }
   if (state.tool === "text"){
     const t = prompt(T_("textNew","Testo da inserire:"));
     if (t){ push(); state.items.push({id:uid(),type:"text",text:t,...clampPt(snapPoint(raw,{toBalls:false}))}); }
@@ -1218,6 +1383,13 @@ window.addEventListener("pointermove", ev=>{
     state.preview = clampPt(snapPoint(toTable(ev))); render(); return;
   }
   if (!state.drag) return;
+  if (state.drag.frame){
+    /* La cornice non e' un elemento della scena: sta accanto, quindi si
+       trascina qui e non passa da `byId`. */
+    state.drag.moved = true;
+    moveFrame(state.drag, toTable(ev));
+    render(); return;
+  }
   const p = toTable(ev), d = state.drag, it = byId(d.id);
   if (!it) return;
   d.moved = true;
@@ -1237,6 +1409,15 @@ window.addEventListener("pointermove", ev=>{
   }
   else if (it.type==="positions" && d.vertex !== undefined)
     it.points[d.vertex] = clampFrame(snapPoint(p,{toBalls:false}));
+  else if (it.type==="rail"){
+    /* Scorre lungo la sua sponda e non la lascia: un tratto di sponda staccato
+       dalla sponda non vorrebbe dire niente. */
+    const passo = U/4, lungo = railAxis(it)==="x";
+    const massimo = lungo ? L : W, misura = d.orig.to - d.orig.from;
+    const dove = (lungo ? p.x : p.y) - misura/2;
+    const da = Math.max(0, Math.min(massimo-misura, Math.round(dove/passo)*passo));
+    it.from = da; it.to = da + misura;
+  }
   else if (it.type==="shot") return;
   else if (d.vertex !== undefined) it.points[d.vertex] = clampPt(snapPoint(p));
   else {
@@ -1436,6 +1617,23 @@ if ($("#zoneControls")){
   $("#zoneRemove").onclick = ()=>{ const z=selectedZone(); if(!z) return;
     push(); state.items = state.items.filter(i=>i!==z); state.sel=null; render(); };
 }
+if ($("#railLen")){
+  $("#railMinus").onclick = ()=>setRailLen(-1);
+  $("#railPlus").onclick  = ()=>setRailLen(1);
+  $("#railRemove").onclick = ()=>{ const r=selectedRail(); if(!r) return;
+    push(); state.items = state.items.filter(i=>i!==r); state.sel=null; render(); };
+}
+document.querySelectorAll("[data-frame]").forEach(b=>b.onclick=()=>{
+  push();
+  const scelto = b.dataset.frame;
+  if (scelto === "full") state.frame = null;
+  else if (scelto === "free") state.frame = state.frame || {...FRAME_FULL};
+  else state.frame = {...FRAME_PRESETS[scelto]};
+  state.tool = state.frame ? "frame" : "select";
+  render();
+});
+if ($("#frameClear")) $("#frameClear").onclick = ()=>{
+  push(); state.frame = null; state.tool = "select"; render(); };
 if ($("#posReverse")){
   $("#posReverse").onchange = e=>{ const ps=selectedPositions(); if(!ps) return;
     push(); ps.reverse = e.target.checked; render(); };
@@ -1475,7 +1673,7 @@ function applyScene(d){
         }
     return i;
   }).filter(i=>i.type!=="shot" || i.aim);
-  state.title=d.title||""; state.orient=d.orient||"h";
+  state.title=d.title||""; state.orient=d.orient||"h"; state.frame=d.frame||null;
   state.cloth=d.cloth||"blu"; setBallScale(d.ballScale||1);
   $("#titleInput").value=state.title; $("#orientSel").value=state.orient;
   $("#ballScale").value=state.ballScale;
@@ -1499,7 +1697,10 @@ window.DrillBuilder = {
   /* La scena nel formato che il server sa rileggere (`parse_scene`). */
   scene(){
     return {v:4, title:state.title, orient:state.orient,
-            cloth:state.cloth, ballScale:state.ballScale, items:state.items};
+            cloth:state.cloth, ballScale:state.ballScale, items:state.items,
+            /* L'inquadratura sta accanto alla scena e non dentro un elemento:
+               non è una cosa sul tavolo, è quanto tavolo si guarda. */
+            frame:state.frame};
   },
 
   /* Vuoto = niente da salvare. Serve a non far partire una richiesta che il

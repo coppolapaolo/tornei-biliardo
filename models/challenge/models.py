@@ -653,6 +653,13 @@ class ChallengeVariant(BaseModel):
     )
     label = db.Column(db.String(40), nullable=False)
     position = db.Column(db.Integer, nullable=False, default=1)
+    #: La variante e' il disegno **ribaltato** (fase 9c): destra e sinistra
+    #: sono la stessa disposizione vista dall'altro lato, e ridisegnarla
+    #: vorrebbe dire due disegni da tenere allineati a mano — cioe' il difetto
+    #: che l'ADR-065 evita fra esercizi e che rientrerebbe fra le varianti.
+    #: Con un bersaglio non si puo': il punteggio discende dal disegno, e il
+    #: panno che si tocca e' uno solo (`ChallengeProfileService.set_profile`).
+    mirrored = db.Column(db.Boolean, nullable=False, default=False)
 
     challenge = db.relationship("Challenge", back_populates="variants")
 
