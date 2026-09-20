@@ -23,6 +23,9 @@
 {% block content %}
 <div class="c7-stack" style="max-width:720px" data-exercise-list>
 
+  {% set room = 'esercizi' %}
+  {% include "components/_training_rooms.html" %}
+
   {# ── La seduta lasciata a metà, se c'è ─────────────────────────────── #}
   {# Sta sopra tutto e prima del catalogo vuoto: chi ha una seduta aperta la
      vuole riprendere, e il resto della pagina non c'entra. #}

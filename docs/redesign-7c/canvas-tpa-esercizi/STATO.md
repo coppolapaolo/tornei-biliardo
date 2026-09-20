@@ -131,8 +131,8 @@ ascolta `pointerdown`.
 
 | Artboard | Schermata | Template | PR | Stato |
 |---|---|---|---|---|
-| `Andamento` | Il tuo allenamento, radar per abilità | `components/_player_training.html` | 7a | da fare |
-| `AndamentoGesto` | Lo stesso, radar per gesto | nuovo | 7a | da fare |
+| `Andamento` | Il tuo allenamento, radar per abilità | `challenge/andamento.html` + `models/andamento/` | 7a | **fatta il 20/09** — pagina nuova, non la sezione del profilo: quella resta lo storico di chi guarda un profilo |
+| `AndamentoGesto` | Lo stesso, radar per gesto | la stessa pagina, `?asse=gesto` | 7a | **fatta il 20/09** — due artboard, una pagina: l'asse è un collegamento, come i filtri del catalogo |
 | `Obiettivo` | Imposta un obiettivo (#316) | nuovo | 7b | da fare |
 | `CreaModulo` | Crea, modifica, duplica: un modulo solo (#168 #252 #253) | `challenge/form.html` | #492 (4b) | **fatta il 19/09** — «Come si registra» ha due voci: colpo per colpo ed estrazione in fase 5 |
 | `CreaCopia` | «Ha già delle prove» (#252) | foglio in `challenge/form.html` | #492 (4b) | **fatta il 19/09** — la decisione sta nel servizio (409), non nel JS |

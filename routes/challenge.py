@@ -139,6 +139,39 @@ def challenge_catalog():
         return redirect(url_for("dashboard.dashboard"))
 
 
+@challenge_bp.route("/andamento")
+@login_required
+def andamento():
+    """«Il tuo allenamento»: dove sei forte, dove no, e se stai salendo (#181).
+
+    Due interruttori, entrambi collegamenti come i filtri del catalogo: il
+    periodo e l'asse. I radar sono **due**, uno per vocabolario, perché anche le
+    categorie sono due (decisione dell'utente del 19/09) — ma è la stessa
+    pagina, e cambiare asse è cambiare indirizzo.
+    """
+    from models.andamento import MIN_OSSERVAZIONI, Periodo, build_andamento
+    from models.challenge.vocabulary import CategoryAxis
+
+    asse = CategoryAxis.ABILITA
+    if str(request.args.get("asse") or "").strip().lower() == CategoryAxis.GESTO.value:
+        asse = CategoryAxis.GESTO
+
+    try:
+        return render_template(
+            "challenge/andamento.html",
+            andamento=build_andamento(
+                current_user.id, Periodo.parse(request.args.get("periodo")), asse
+            ),
+            periodi=list(Periodo),
+            assi=list(CategoryAxis),
+            min_osservazioni=MIN_OSSERVAZIONI,
+        )
+    except Exception:
+        current_app.logger.exception("Andamento dell'allenamento non caricato")
+        flash(_("Non è stato possibile caricare l'andamento."), "danger")
+        return redirect(url_for("challenge.today"))
+
+
 def _can_author(challenge) -> bool:
     """Chi corregge o duplica un esercizio: l'admin, o il direttore che l'ha creato."""
     return current_user.is_admin or (

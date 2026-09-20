@@ -1,0 +1,44 @@
+{# templates/components/_training_rooms.html — 7c
+   Le quattro stanze dell'allenamento: Esercizi · Schede · Esami · Andamento
+   (canvas «TPA ed esercizi», `kit.area_tabs`).
+
+   Per chi usa l'app «esercizi» comprende schede ed esami: è la lezione del
+   primo giro del canvas, e questa striscia è il modo in cui l'app lo dice. La
+   quarta stanza è nata con l'andamento (fase 7a); fino ad allora le linguette
+   non c'erano perché metà delle stanze non c'erano.
+
+   **Sono collegamenti, non viste**: quattro pagine diverse, quindi `<a>` e non
+   i `<button>` di `.c7-vtabs`, che commuta sezioni dentro la stessa pagina. E
+   si vedono a ogni larghezza: su desktop le stanze restano quattro.
+
+   Ogni voce passa da `feature_visible`: una stanza che in produzione
+   risponderebbe 404 non si mostra (ADR-028). Sotto le due, la striscia sparisce
+   — una linguetta sola non è una scelta.
+
+   Il conteggio si fa con un `namespace` invece del solito
+   `{% set _ = lista.append(…) %}`: qui siamo fuori da un ciclo, e lì quel nome
+   sarebbe `gettext` — da quel punto in poi ogni `_("…")` chiamerebbe un `None`.
+
+   Attesa dal chiamante: `room` col nome della stanza corrente. #}
+
+{% set stanze = [
+     ('esercizi', _("Esercizi"), 'challenge.today'),
+     ('schede', _("Schede"), 'sheet.index'),
+     ('esami', _("Esami"), 'exam.exam_catalog'),
+     ('andamento', _("Andamento"), 'challenge.andamento'),
+   ] %}
+{% set quante = namespace(n=0) %}
+{% for _chiave, _etichetta, endpoint in stanze %}
+  {% if feature_visible(endpoint) %}{% set quante.n = quante.n + 1 %}{% endif %}
+{% endfor %}
+
+{% if quante.n > 1 %}
+<nav class="c7-rooms" aria-label="{{ _('Allenamento') }}">
+  {% for chiave, etichetta, endpoint in stanze %}
+  {% if feature_visible(endpoint) %}
+  <a class="c7-rooms__tab{{ ' is-active' if chiave == room }}" href="{{ url_for(endpoint) }}"
+     {% if chiave == room %}aria-current="page"{% endif %}>{{ etichetta }}</a>
+  {% endif %}
+  {% endfor %}
+</nav>
+{% endif %}

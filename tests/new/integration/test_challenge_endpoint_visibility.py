@@ -40,6 +40,8 @@ PASSWORD = "prova123"
 TRAINING_ENDPOINTS = (
     "challenge.today",
     "challenge.challenge_catalog",
+    # «Il tuo allenamento»: guarda i propri numeri, quindi è di chi si allena.
+    "challenge.andamento",
     "challenge.challenge_detail",
     "challenge.training_session",
     "challenge.training_undo",

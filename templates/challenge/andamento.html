@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{# templates/challenge/andamento.html — 7c
+   «Il tuo allenamento» (canvas «TPA ed esercizi», artboard `Andamento` e
+   `AndamentoGesto`; #181, ADR-068).
+
+   Gli artboard sono due ma la pagina è una: le categorie sono due vocabolari,
+   quindi i radar sono due, e si passa dall'uno all'altro come si cambia un
+   filtro del catalogo — con un collegamento. Stessa cosa per il periodo: tre
+   pillole, tre indirizzi.
+
+   Il disegno lo calcola `models/andamento/radar.py` e qui si stampa. Un
+   `<polygon>` con del seno e del coseno dentro un `{% for %}` è un disegno che
+   nessuno può correggere senza rifarlo. #}
+
+{% set a = andamento %}
+{% macro indirizzo(periodo=none, asse=none) -%}
+{{ url_for('challenge.andamento',
+           periodo=(periodo or a.periodo).value,
+           asse=(asse or a.asse).value) }}
+{%- endmacro %}
+
+{% block title %}{{ _("Il tuo allenamento") }}{% endblock %}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('challenge.today') }}"
+   aria-label="{{ _('Torna a Esercizi') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Il tuo allenamento") }}{% endblock %}
+{% block page_sub %}
+{{- ngettext("%(num)s prova", "%(num)s prove", a.attempts) -}}
+{%- if a.exercises %} · {{ ngettext("%(num)s esercizio", "%(num)s esercizi", a.exercises) }}{% endif -%}
+{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+
+  {% set room = 'andamento' %}
+  {% include "components/_training_rooms.html" %}
+
+  {# ── Il periodo ─────────────────────────────────────────────────────── #}
+  <div class="c7-hscroll">
+    {% for periodo in periodi %}
+    <a class="c7-chip{{ ' is-on' if periodo == a.periodo }}" href="{{ indirizzo(periodo=periodo) }}"
+       {% if periodo == a.periodo %}aria-current="true"{% endif %}>{{ periodo.label }}</a>
+    {% endfor %}
+  </div>
+
+  {% if a.is_empty %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-chart-simple"></i></div>
+    <h2 class="c7-empty__title">{{ _("Ancora niente da misurare") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Qui compare come stai andando, abilità per abilità, appena registri qualche prova con un punteggio.") }}
+    </p>
+    {% if feature_visible('challenge.challenge_catalog') %}
+    <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-primary">{{ _("Apri il catalogo") }}</a>
+    {% endif %}
+  </div>
+  {% else %}
+
+  {# ── Il radar ───────────────────────────────────────────────────────── #}
+  <section class="c7-card">
+    <nav class="c7-seg" style="margin-bottom:12px" aria-label="{{ _('Su quale vocabolario') }}">
+      {% for asse in assi %}
+      <a class="c7-seg__item{{ ' is-on' if asse == a.asse }}" href="{{ indirizzo(asse=asse) }}"
+         {% if asse == a.asse %}aria-current="true"{% endif %}>
+        {{ _("Per abilità") if asse.value == 'abilita' else _("Per gesto") }}
+      </a>
+      {% endfor %}
+    </nav>
+
+    {# Sul telefono i due numeri stanno in riga sopra il disegno, come
+       nell'artboard. Da lg si spostano **accanto** al radar: il disegno ha un
+       lato suo — oltre i 300px le etichette si allontanano dal cerchio — e in
+       una card larga il triangolo resterebbe in mezzo a due terzi di niente. #}
+    <div class="c7-radarbox">
+      <div class="c7-radarbox__nums">
+        <div>
+          <div class="c7-kicker">{{ _("Adesso") }}</div>
+          <div class="c7-num-xl">{{ a.pct }}%</div>
+        </div>
+        {% if a.pct_before is not none %}
+        <div class="c7-radarbox__was">
+          <div class="c7-kicker">{{ a.periodo.before_label }}</div>
+          <div class="c7-num-xl" style="color:var(--c7-ink-muted)">{{ a.pct_before }}%</div>
+        </div>
+        {% endif %}
+      </div>
+
+      <div>
+    {% if a.radar %}
+    <div class="c7-radar">
+      <svg viewBox="0 0 {{ a.radar.size }} {{ a.radar.size }}" width="100%" role="img"
+           aria-label="{{ _('Radar delle tue percentuali, un raggio per categoria') }}">
+        {% for anello in a.radar.rings %}
+        <polygon points="{{ anello }}" class="c7-radar__ring"/>
+        {% endfor %}
+        {% for x, y in a.radar.spokes %}
+        <path d="M{{ a.radar.center }} {{ a.radar.center }}L{{ '%.1f'|format(x) }} {{ '%.1f'|format(y) }}" class="c7-radar__spoke"/>
+        {% endfor %}
+        {% if a.radar.before %}
+        <polygon points="{{ a.radar.before }}" class="c7-radar__before"/>
+        {% endif %}
+        <polygon points="{{ a.radar.now }}" class="c7-radar__now"/>
+        {% for etichetta in a.radar.labels %}
+        <text x="{{ etichetta.x }}" y="{{ etichetta.y }}" class="c7-radar__label">{{ etichetta.text }}</text>
+        {% endfor %}
+      </svg>
+    </div>
+    {% if a.radar.has_before %}
+    {# Le stesse due parole dei numeri qui sopra, e non le loro minuscole:
+       «adesso» minuscolo esiste già nel catalogo come istante di un orario —
+       in inglese è «just now», che qui direbbe un'altra cosa. #}
+    <div class="c7-legend" style="justify-content:center">
+      <span><i style="background:var(--c7-accent)"></i>{{ _("Adesso") }}</span>
+      <span><i style="background:var(--c7-ink-faint)"></i>{{ a.periodo.before_label }}</span>
+    </div>
+    {% endif %}
+    {% endif %}
+      </div>
+    </div>
+  </section>
+
+  {# ── Una riga per asse ──────────────────────────────────────────────── #}
+  {% if a.rows %}
+  <section class="c7-rows">
+    {% for riga in a.rows %}
+    <div class="c7-rows__row">
+      <div class="flex-fill" style="min-width:0">
+        <div class="c7-rows__title">{{ riga.label }}</div>
+        <div class="c7-rows__sub">
+          {{ riga.band }}<span class="c7-sep">·</span>
+          {{ ngettext("%(num)s prova", "%(num)s prove", riga.count) }}
+          {%- if riga.sheet_count %}<span class="c7-sep">·</span>{{
+            ngettext("%(num)s da una scheda", "%(num)s dalle schede", riga.sheet_count) }}{% endif %}
+        </div>
+      </div>
+      {% if riga.delta %}
+      <span class="c7-delta c7-delta--{{ riga.tone }}">
+        <i class="fas fa-arrow-{{ 'up' if riga.delta > 0 else 'down' }}"></i>
+        <span class="c7-num">{{ riga.delta|abs }}</span>
+      </span>
+      {% endif %}
+      <span class="c7-num-lg" style="font-size:20px;min-width:56px;text-align:right">{{ riga.pct }}%</span>
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {# ── Ciò che il grafico mostra ma non sa ancora dire ────────────────── #}
+  {% if a.thin %}
+  <div class="c7-flash c7-flash--info">
+    <span class="c7-flash__ico"><i class="fas fa-circle-info"></i></span>
+    <div>
+      {{ ngettext("%(voci)s ha meno di %(n)s prove: sul grafico c'è, ma il numero non dice ancora niente.",
+                  "%(voci)s hanno meno di %(n)s prove: sul grafico ci sono, ma il numero non dice ancora niente.",
+                  a.thin|length, voci=a.thin|map(attribute='label')|join(', '), n=min_osservazioni) }}
+    </div>
+  </div>
+  {% endif %}
+
+  {# ── Ciò che resta fuori dalla percentuale ──────────────────────────── #}
+  {% if a.senza_scala %}
+  <p class="c7-rows__sub" style="margin:0">
+    {{ ngettext("%(num)s registrazione non entra in questi numeri: non ha un massimo con cui fare una percentuale — un esercizio senza tetto dichiarato, dei minuti, una spunta.",
+                "%(num)s registrazioni non entrano in questi numeri: non hanno un massimo con cui fare una percentuale — esercizi senza tetto dichiarato, minuti, spunte.",
+                a.senza_scala) }}
+  </p>
+  {% endif %}
+
+  {% endif %}
+</div>
+{% endblock %}

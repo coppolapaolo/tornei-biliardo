@@ -117,6 +117,11 @@ colpo un totale scritto a mano sarebbe comunque rifiutato (ADR-066).
 nell'andamento è una scelta della fase 7, dove si guarda l'insieme; farlo qui
 vorrebbe dire prenderla senza dirlo.
 
+> **Chiusa il 2026-09-20** dall'[ADR-068](ADR-068-andamento-una-scala-sola.md):
+> nell'andamento i due mondi entrano **insieme**, ridotti entrambi alla quota di
+> ciò che era ottenibile, e non si fondono mai su un esercizio. Il divieto qui
+> sopra resta intero: media e record di un esercizio sono quelli del catalogo.
+
 Per lo stesso motivo la seduta **non emette eventi di dominio**: XP, serie e
 traguardi dell'allenamento a scheda sono lavoro della fase 7c, e un evento
 aggiunto qui li deciderebbe in silenzio.
