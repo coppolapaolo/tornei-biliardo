@@ -253,6 +253,7 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/challenges/attempt/<int:attempt_id>` | GET | `challenge.attempt_detail` | `@login_required` | UI page | Dettaglio tentativo |
 | `/challenges/attempt/<int:attempt_id>/complete` | POST | `challenge.complete_attempt` | `@login_required` | action | Completa tentativo challenge |
 | `/challenges/<int:challenge_id>/favorite` | POST | `challenge.toggle_favorite` | `@login_required` | action | Aggiungi/rimuovi dai preferiti |
+| `/challenges/<int:challenge_id>/rate` | POST | `challenge.rate_challenge` | `@login_required`, `@challenge_player_required` | action | Voto 1–5 all'esercizio (solo chi l'ha provato); vuoto = toglie |
 | `/challenges/<int:challenge_id>/statistics` | GET | `challenge.challenge_statistics` | `@director_required` | UI page | Statistiche di una challenge |
 | `/challenges/x-replacement/<int:gara_id>/<int:round_number>` | POST | `challenge.create_x_replacement` | `@login_required` | action | Crea tentativo X-replacement |
 | `/challenges/x-replacement/<int:attempt_id>/complete` | POST | `challenge.complete_x_replacement` | `@login_required` | action | Completa X-replacement |

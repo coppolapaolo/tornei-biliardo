@@ -47,6 +47,7 @@ TRAINING_ENDPOINTS = (
     "challenge.attempt_detail",
     "challenge.complete_attempt",
     "challenge.toggle_favorite",
+    "challenge.rate_challenge",
     "challenge.create_x_replacement",
     "challenge.complete_x_replacement",
 )

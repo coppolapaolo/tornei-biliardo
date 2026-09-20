@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-19 23:51+0200\n"
+"POT-Creation-Date: 2026-09-20 09:20+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -271,6 +271,7 @@ msgid "Questo esercizio ha già delle prove registrate"
 msgstr "This drill already has recorded attempts"
 
 #: models/challenge/authoring.py:242 models/challenge/profile_service.py:94
+#: models/challenge/rating_service.py:61
 msgid "Esercizio non trovato"
 msgstr "Drill not found"
 
@@ -345,6 +346,14 @@ msgid ""
 msgstr ""
 "The variant “%(label)s” already has %(count)s attempts: you can rename "
 "it, not remove it"
+
+#: models/challenge/rating_service.py:65 models/challenge/rating_service.py:67
+msgid "Il voto è un numero da 1 a 5"
+msgstr "The rating is a number from 1 to 5"
+
+#: models/challenge/rating_service.py:70
+msgid "Si vota un esercizio dopo averlo provato almeno una volta"
+msgstr "You can rate a drill after trying it at least once"
 
 #: models/challenge/services.py:745
 msgid ""
@@ -3005,23 +3014,23 @@ msgstr "A photo of the layout is required"
 msgid "Copia creata."
 msgstr "Copy created."
 
-#: routes/challenge.py:252 routes/challenge.py:590
+#: routes/challenge.py:252 routes/challenge.py:592
 msgid "Esercizio creato."
 msgstr "Drill created."
 
-#: routes/challenge.py:401 routes/challenge.py:658
+#: routes/challenge.py:403 routes/challenge.py:660
 msgid "Questo esercizio non è più disponibile."
 msgstr "This drill is no longer available."
 
-#: routes/challenge.py:406
+#: routes/challenge.py:408
 msgid "Gli amministratori non possono provare gli esercizi."
 msgstr "Administrators cannot attempt drills."
 
-#: routes/challenge.py:435
+#: routes/challenge.py:437
 msgid "Tentativo iniziato."
 msgstr "Attempt started."
 
-#: routes/challenge.py:554
+#: routes/challenge.py:556
 msgid ""
 "Questo esercizio ha già delle prove: istruzioni e punteggio si cambiano "
 "da «Modifica l'esercizio», qui salva solo il disegno."
@@ -3029,52 +3038,56 @@ msgstr ""
 "This drill already has attempts: change instructions and scoring from "
 "“Edit drill”; here, save the diagram only."
 
-#: routes/challenge.py:615
+#: routes/challenge.py:617
 msgid "Questo esercizio nasce da una foto: non c'è un disegno da modificare."
 msgstr "This drill comes from a photo: there is no drawing to edit."
 
-#: routes/challenge.py:634
+#: routes/challenge.py:636
 msgid "Disegno aggiornato."
 msgstr "Drawing updated."
 
-#: routes/challenge.py:662
+#: routes/challenge.py:664
 msgid "Gli amministratori non provano gli esercizi."
 msgstr "Administrators do not attempt drills."
 
-#: routes/challenge.py:716
+#: routes/challenge.py:718
 msgid "Prova registrata."
 msgstr "Attempt recorded."
 
-#: routes/challenge.py:747
+#: routes/challenge.py:749
 msgid "Non c'è nessuna prova da annullare."
 msgstr "There is no attempt to undo."
 
-#: routes/challenge.py:768
+#: routes/challenge.py:770
 msgid "Prova annullata."
 msgstr "Attempt undone."
 
-#: routes/challenge.py:968
+#: routes/challenge.py:970
 msgid "Tentativo registrato."
 msgstr "Attempt recorded."
 
-#: routes/challenge.py:1009 templates/challenge/catalog.html:138
+#: routes/challenge.py:1011 templates/challenge/catalog.html:138
 #: templates/challenge/today.html:92
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr "The favourites could not be updated."
 
-#: routes/challenge.py:1073
+#: routes/challenge.py:1048
+msgid "Voto registrato."
+msgstr "Rating saved."
+
+#: routes/challenge.py:1111
 msgid "Esercizio di gara avviato."
 msgstr "Tournament drill started."
 
-#: routes/challenge.py:1126
+#: routes/challenge.py:1164
 msgid "Esercizio di gara registrato."
 msgstr "Tournament drill recorded."
 
-#: routes/challenge.py:1159
+#: routes/challenge.py:1197
 msgid "Esercizio non trovato."
 msgstr "Drill not found."
 
-#: routes/challenge.py:1169
+#: routes/challenge.py:1207
 msgid "Non hai i permessi per questo esercizio."
 msgstr "You do not have permission for this drill."
 
@@ -8632,7 +8645,7 @@ msgstr "Select user..."
 #: templates/components/_campionato_statistics.html:4
 #: templates/components/_player_statistics.html:19
 #: templates/individual_match/dashboard.html:285
-#: templates/player/challenge_detail.html:124
+#: templates/player/challenge_detail.html:155
 #: templates/player/privacy_settings.html:42
 #: templates/player/venue_detail.html:194
 msgid "Statistiche"
@@ -9314,7 +9327,7 @@ msgstr[0] "Your best %(best)s · %(num)s attempt"
 msgstr[1] "Your best %(best)s · %(num)s attempts"
 
 #: templates/challenge/_exercise_bits.html:47
-#: templates/player/challenge_detail.html:63
+#: templates/player/challenge_detail.html:94
 #, python-format
 msgid "%(num)s prova"
 msgid_plural "%(num)s prove"
@@ -9370,7 +9383,7 @@ msgstr "Best"
 #: templates/components/_player_challenges.html:38
 #: templates/player/challenge_attempt_detail.html:78
 #: templates/player/challenge_attempt_detail.html:139
-#: templates/player/challenge_detail.html:88
+#: templates/player/challenge_detail.html:119
 #: templates/player/gara_challenge_detail.html:75
 #: templates/player/gara_challenge_detail.html:136
 msgid "Superata"
@@ -9385,7 +9398,7 @@ msgstr "Passed"
 #: templates/components/_player_challenges.html:38
 #: templates/player/challenge_attempt_detail.html:88
 #: templates/player/challenge_attempt_detail.html:139
-#: templates/player/challenge_detail.html:88
+#: templates/player/challenge_detail.html:119
 #: templates/player/gara_challenge_detail.html:84
 #: templates/player/gara_challenge_detail.html:136
 msgid "Non superata"
@@ -9423,7 +9436,7 @@ msgid "Disegna l'esercizio"
 msgstr "Draw the drill"
 
 #: templates/challenge/builder.html:35 templates/challenge/form.html:256
-#: templates/player/challenge_detail.html:162
+#: templates/player/challenge_detail.html:193
 msgid "Modifica il disegno"
 msgstr "Edit the drawing"
 
@@ -10028,7 +10041,7 @@ msgstr ""
 msgid "Togli i filtri"
 msgstr "Clear the filters"
 
-#: templates/challenge/form.html:20 templates/player/challenge_detail.html:107
+#: templates/challenge/form.html:20 templates/player/challenge_detail.html:138
 msgid "Modifica l'esercizio"
 msgstr "Edit drill"
 
@@ -13835,7 +13848,7 @@ msgid "Mai superato"
 msgstr "Never passed"
 
 #: templates/components/_player_training.html:86
-#: templates/player/challenge_detail.html:76
+#: templates/player/challenge_detail.html:107
 #: templates/player/gara_challenge_detail.html:124
 msgid "I tuoi tentativi"
 msgstr "Your attempts"
@@ -21969,51 +21982,84 @@ msgstr "Last three"
 msgid "Record, su %(max)s"
 msgstr "Best, out of %(max)s"
 
-#: templates/player/challenge_detail.html:61
+#: templates/player/challenge_detail.html:65
+msgid "Il tuo voto"
+msgstr "Your rating"
+
+#: templates/player/challenge_detail.html:67
+#: templates/player/challenge_detail.html:202
+msgid "Tocca di nuovo la tua bilia per toglierlo"
+msgstr "Tap your ball again to remove it"
+
+#: templates/player/challenge_detail.html:67
+#: templates/player/challenge_detail.html:203
+msgid "Aiuta gli altri a scegliere"
+msgstr "Help others choose"
+
+#: templates/player/challenge_detail.html:70
+msgid "Il tuo voto, da 1 a 5"
+msgstr "Your rating, from 1 to 5"
+
+#: templates/player/challenge_detail.html:74
+#, python-format
+msgid "%(num)s bilia su 5"
+msgid_plural "%(num)s bilie su 5"
+msgstr[0] "%(num)s ball out of 5"
+msgstr[1] "%(num)s balls out of 5"
+
+#: templates/player/challenge_detail.html:80
+msgid "Provalo almeno una volta per poterlo votare"
+msgstr "Try it at least once to be able to rate it"
+
+#: templates/player/challenge_detail.html:92
 msgid "mai provata"
 msgstr "never tried"
 
-#: templates/player/challenge_detail.html:62
+#: templates/player/challenge_detail.html:93
 #, python-format
 msgid "riuscita %(ok)s volta su %(num)s"
 msgid_plural "riuscita %(ok)s volte su %(num)s"
 msgstr[0] "made %(ok)s time out of %(num)s"
 msgstr[1] "made %(ok)s times out of %(num)s"
 
-#: templates/player/challenge_detail.html:63
+#: templates/player/challenge_detail.html:94
 #, python-format
 msgid "record %(best)s"
 msgstr "best %(best)s"
 
-#: templates/player/challenge_detail.html:115
+#: templates/player/challenge_detail.html:146
 msgid "Duplica"
 msgstr "Duplicate"
 
-#: templates/player/challenge_detail.html:116
+#: templates/player/challenge_detail.html:147
 msgid "per farne una variante senza toccare questo"
 msgstr "to make a variation without touching this one"
 
-#: templates/player/challenge_detail.html:134
+#: templates/player/challenge_detail.html:165
 msgid "Elimina l'esercizio"
 msgstr "Delete the drill"
 
-#: templates/player/challenge_detail.html:144
+#: templates/player/challenge_detail.html:175
 msgid "Allenati su questo esercizio"
 msgstr "Practise this drill"
 
-#: templates/player/challenge_detail.html:147
+#: templates/player/challenge_detail.html:178
 msgid "Registri una prova dopo l'altra, sulla stessa schermata"
 msgstr "Record one attempt after another, on the same screen"
 
-#: templates/player/challenge_detail.html:176
+#: templates/player/challenge_detail.html:204
+msgid "Non è stato possibile registrare il voto."
+msgstr "The rating could not be saved."
+
+#: templates/player/challenge_detail.html:215
 msgid "Confermi di voler eliminare questo esercizio? Non si torna indietro."
 msgstr "Do you want to delete this drill? There is no going back."
 
-#: templates/player/challenge_detail.html:186
+#: templates/player/challenge_detail.html:225
 msgid "Non è stato possibile eliminare l'esercizio."
 msgstr "The drill could not be deleted."
 
-#: templates/player/challenge_detail.html:192
+#: templates/player/challenge_detail.html:231
 msgid "Errore di rete: l'esercizio non è stato eliminato."
 msgstr "Network error: the drill was not deleted."
 

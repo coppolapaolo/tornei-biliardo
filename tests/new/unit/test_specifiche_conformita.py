@@ -1573,3 +1573,80 @@ class TestIlProfiloDellEsercizio:
             ChallengeProfileService.set_profile(
                 esercizio.id, family="stop shot", family_step=0
             )
+
+
+@pytest.mark.unit
+class TestIlVotoDegliEsercizi:
+    """`SPECIFICHE.md`, nota del 2026-09-19 sul profilo dell'esercizio.
+
+    > Un giocatore può dare a un esercizio un voto da 1 a 5, uno solo, che può
+    > cambiare; vota solo chi l'ha provato, cioè chi ha almeno una prova
+    > conclusa, dal catalogo o in gara.
+    """
+
+    def _chi_ha_provato(self, db_session, esercizio):
+        from models.challenge.models import ChallengeAttempt
+        from models.user.models import User
+        from models.user.role_enum import UserRole
+
+        giocatore = User(
+            username=f"v_{uuid.uuid4().hex[:8]}",
+            email=f"v_{uuid.uuid4().hex[:8]}@test.com",
+            role=UserRole.PLAYER.value,
+        )
+        giocatore.set_password("test1234")
+        db_session.add(giocatore)
+        db_session.flush()
+        db_session.add(
+            ChallengeAttempt(
+                user_id=giocatore.id,
+                challenge_id=esercizio.id,
+                score=1,
+                completed=True,
+            )
+        )
+        db_session.flush()
+        return giocatore
+
+    @pytest.mark.parametrize("voto", [1, 5])
+    def test_gli_estremi_sono_ammessi(self, db_session, voto):
+        from models.challenge.rating_service import ChallengeRatingService
+
+        esercizio = _esercizio_per_il_profilo(db_session)
+        giocatore = self._chi_ha_provato(db_session, esercizio)
+        numeri = ChallengeRatingService.rate(giocatore.id, esercizio.id, voto)
+        assert numeri.rating_average == voto
+
+    @pytest.mark.parametrize("voto", [0, 6])
+    def test_fuori_scala_si_rifiuta(self, db_session, voto):
+        from models.challenge.rating_service import ChallengeRatingService
+        from models.exceptions import ValidationError
+
+        esercizio = _esercizio_per_il_profilo(db_session)
+        giocatore = self._chi_ha_provato(db_session, esercizio)
+        with pytest.raises(ValidationError):
+            ChallengeRatingService.rate(giocatore.id, esercizio.id, voto)
+
+    def test_uno_solo_che_puo_cambiare(self, db_session):
+        from models.challenge.rating_service import ChallengeRatingService
+
+        esercizio = _esercizio_per_il_profilo(db_session)
+        giocatore = self._chi_ha_provato(db_session, esercizio)
+        ChallengeRatingService.rate(giocatore.id, esercizio.id, 2)
+        numeri = ChallengeRatingService.rate(giocatore.id, esercizio.id, 5)
+        assert (numeri.rating_count, numeri.rating_average) == (1, 5)
+
+    def test_vota_solo_chi_ha_provato(self, db_session):
+        """Chi vota e chi è contato fra i giocatori sono lo stesso insieme."""
+        from models.challenge.popularity import popularity_for
+        from models.challenge.rating_service import ChallengeRatingService
+        from models.exceptions import PermissionDeniedError
+
+        esercizio = _esercizio_per_il_profilo(db_session)
+        contato = self._chi_ha_provato(db_session, esercizio)
+        assert popularity_for([esercizio.id])[esercizio.id].players == 1
+        ChallengeRatingService.rate(contato.id, esercizio.id, 4)
+
+        altro = _esercizio_per_il_profilo(db_session)
+        with pytest.raises(PermissionDeniedError):
+            ChallengeRatingService.rate(contato.id, altro.id, 4)

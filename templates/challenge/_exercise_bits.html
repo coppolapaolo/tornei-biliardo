@@ -31,7 +31,7 @@
    4,5 di duecento. Senza voti si dice solo quanti l'hanno provato. #}
 {% macro social(popularity) -%}
 <span class="c7-exsocial">
-  {%- if popularity.has_rating %}<span class="c7-exsocial__vote"><i class="fas fa-star"></i>&nbsp;<span class="c7-num">{{ "%.1f"|format(popularity.rating_average)|replace(".", _(",")) }}</span></span> · {% endif -%}
+  {%- if popularity.has_rating %}<span class="c7-exsocial__vote"><span class="c7-ballmark" aria-hidden="true"></span>&nbsp;<span class="c7-num">{{ "%.1f"|format(popularity.rating_average)|replace(".", _(",")) }}</span></span> · {% endif -%}
   {%- if popularity.players %}{{ ngettext("%(num)s giocatore", "%(num)s giocatori", popularity.players) }}
   {%- else %}{{ _("ancora nessuno l'ha provato") }}{% endif -%}
 </span>

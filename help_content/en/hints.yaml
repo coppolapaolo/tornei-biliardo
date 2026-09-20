@@ -554,6 +554,14 @@ hints:
   - challenge.challenge_catalog
   page: challenge
   section: catalogo
+- id: esercizio.voto
+  label: Your rating
+  short: 'One to five balls, to help others choose: tap the ball of your rating. You rate a drill after trying it; you can change the rating whenever you like, and tapping your ball again removes it.'
+  anchor: esercizio-voto
+  screens:
+  - challenge.challenge_detail
+  page: challenge
+  section: catalogo
 - id: esercizio.varianti
   label: Variants
   short: 'The same drill from the right and from the left, or from positions A and B: your results stay separate, because the gap between the two sides is what you want to know.'

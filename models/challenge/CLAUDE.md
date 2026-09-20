@@ -271,6 +271,18 @@ esercizio per stampare due numeri.
   parte», con «senza dirlo» accesa) e viaggia con ogni prova; la scheda mostra
   una riga per variante.
 
+### Il voto (fase 4d, D6)
+
+`ChallengeRatingService` (`rating_service.py`): `rate`, `clear`, `get`,
+`can_rate`. **Vota solo chi ha provato** — `popularity.has_tried`, la stessa
+definizione del contatore «N giocatori» — il voto è un intero **1–5**, **uno per
+giocatore**, e rivotare sostituisce. Nella scheda il voto si dà con **cinque
+bilie** numerate (`.c7-ballvote`, colori `--c7-ball-N`), non con le stelle: le
+vede solo chi ha una prova conclusa, e toccare di nuovo la propria toglie il voto
+(`challenge.rate_challenge` con `rating` vuoto). Il permesso lo verifica il
+servizio, non il fatto che la scheda abbia mostrato le bilie. Il voto **non**
+entra ancora nei consigli: con tre voti una media è un'opinione, non una misura.
+
 ### ChallengeAttempt
 **Fields:** `challenge_id`, `user_id`, `score`, `passed`, `attempted_at`, `variant_id`
 
