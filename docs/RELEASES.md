@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.46.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.45.0...v1.46.0) (2026-09-20)
+
+
+### Funzioni nuove
+
+* la guida racconta gli istruttori, e il seed ne ha uno vero ([#173](https://github.com/coppolapaolo/tornei-biliardo/issues/173)) ([#534](https://github.com/coppolapaolo/tornei-biliardo/issues/534)) ([47a6f68](https://github.com/coppolapaolo/tornei-biliardo/commit/47a6f6820841eae77e45caca47c58b4a1c41ebcd))
+
 ## [1.45.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.44.0...v1.45.0) (2026-09-20)
 
 
