@@ -531,6 +531,15 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "sheet.close_session": {"player", "director"},
     "sheet.session_summary": {"player", "director"},
     "sheet.session_notes": {"player", "director"},
+    # Chi legge una scheda (ADR-069). Il giocatore le apre e le chiude; chi
+    # legge può togliersi. Chi non possiede la scheda prende 404 dal servizio,
+    # non da qui: l'allowlist non è un controllo di permessi.
+    "sheet.readers": {"player", "director"},
+    "sheet.add_reader": {"player", "director"},
+    "sheet.remove_reader": {"player", "director"},
+    "sheet.toggle_notes_shared": {"player", "director"},
+    "sheet.leave_sheet": {"player", "director"},
+    "sheet.my_instructors": {"player", "director"},
     # start_attempt/attempt_detail/complete_attempt sono il percorso della
     # gara (il drill al posto del bye), che il giocatore attraversa da solo.
     "challenge.start_attempt": {"player", "director"},

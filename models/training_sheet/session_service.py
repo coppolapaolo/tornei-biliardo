@@ -67,6 +67,23 @@ class TrainingSessionService:
         return session
 
     @staticmethod
+    def can_read(session: TrainingSession, actor) -> bool:
+        """Chi può guardare questa seduta: chi l'ha fatta, e chi legge la scheda.
+
+        Aggiunto con gli istruttori (ADR-069). Prima il permesso di leggere una
+        scheda si fermava al registro: le sue righe portavano a una pagina che
+        rispondeva 404, e un permesso che non si può esercitare non è un
+        permesso — è un elenco.
+        """
+        if actor is None or not getattr(actor, "id", None):
+            return False
+        if session.user_id == actor.id:
+            return True
+        from .services import TrainingSheetService
+
+        return TrainingSheetService.can_read(session.sheet, actor)
+
+    @staticmethod
     @transactional(domain="training_sheet")
     def start(sheet_id: int, actor: User, day: Optional[str] = None) -> TrainingSession:
         """Comincia una seduta — o riprende quella lasciata aperta.

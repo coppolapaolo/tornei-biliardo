@@ -39,8 +39,22 @@ def _mia_o_404(sheet_id: int):
 
 
 def _seduta_o_404(session_id: int) -> TrainingSession:
+    """La seduta, se è di chi sta guardando. Per **scriverci**."""
     session = db.session.get(TrainingSession, session_id)
     if session is None or session.user_id != current_user.id:
+        abort(404)
+    return session
+
+
+def _seduta_da_leggere(session_id: int) -> TrainingSession:
+    """La seduta, se la si può **guardare**: anche di un allievo (ADR-069).
+
+    Le due porte restano separate. Una sola, con un `if` dentro ogni gesto,
+    sarebbe a un refactor di distanza dal lasciar scrivere un istruttore nel
+    registro di qualcun altro.
+    """
+    session = db.session.get(TrainingSession, session_id)
+    if session is None or not TrainingSessionService.can_read(session, current_user):
         abort(404)
     return session
 
@@ -183,10 +197,20 @@ def close_session(session_id):
 @sheet_bp.route("/seduta/<int:session_id>/fine", methods=["GET"])
 @login_required
 def session_summary(session_id):
-    """Fine seduta: com'è andata, e com'era andata la volta prima."""
-    session = _seduta_o_404(session_id)
+    """Fine seduta: com'è andata, e com'era andata la volta prima.
+
+    È anche la pagina che apre l'istruttore dal registro dell'allievo: gli
+    stessi numeri, senza i comandi e — se l'allievo non le ha aperte — senza
+    le note (ADR-069).
+    """
+    session = _seduta_da_leggere(session_id)
+    mia = session.user_id == current_user.id
     return render_template(
-        "sheet/summary.html", summary=build_summary(session), session=session
+        "sheet/summary.html",
+        summary=build_summary(session),
+        session=session,
+        mia=mia,
+        vedo_le_note=TrainingSheetService.can_read_notes(session.sheet, current_user),
     )
 
 

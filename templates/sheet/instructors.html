@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{# templates/sheet/instructors.html — 7c
+   «I miei istruttori» (canvas «TPA ed esercizi», artboard `IstruttoreConsenso`;
+   ADR-069).
+
+   Non è un elenco a parte: un istruttore compare perché gli hai aperto almeno
+   una scheda, e sparisce quando lo togli dall'ultima. Per questo la pagina
+   mostra anche le schede che non legge nessuno — è lì che si va a cambiare
+   idea, e senza quella metà l'elenco direbbe solo mezza verità. #}
+
+{% block title %}{{ _("Chi legge le mie schede") }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('sheet.index') }}"
+   aria-label="{{ _('Torna alle schede') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Chi legge le mie schede") }}{% endblock %}
+{% block page_sub %}{{ _("Si decide scheda per scheda") }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+
+  {% if not legami and not sole %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-chalkboard-user"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessuna scheda") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Quando avrai una scheda potrai farla leggere a uno o più istruttori, una per una.") }}
+    </p>
+  </div>
+  {% else %}
+
+  <p class="c7-rows__sub">
+    {{ _("Qui vedi in un colpo solo chi legge cosa. Non è un elenco a parte: un istruttore compare perché gli hai aperto almeno una scheda, e sparisce quando lo togli dall'ultima.") }}
+  </p>
+
+  {% for legame in legami %}
+  <section class="c7-card">
+    <div class="d-flex align-items-center gap-3">
+      <span class="c7-avatar c7-avatar--lg">{{ legame.persona.username[:2]|upper }}</span>
+      <div class="c7-rows__main">
+        <h2 style="margin:0;font-size:17px;font-weight:800;letter-spacing:-.02em">
+          {{ legame.persona.username }}
+        </h2>
+        <div class="c7-rows__sub">
+          {{ _("istruttore") }}
+          {%- if legame.persona.organization %} <span class="c7-sep">·</span>
+            {{ legame.persona.organization }}{% endif %}
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:12px">
+      {% for scheda in legame.schede %}
+      <a class="c7-rows__row" style="color:inherit;text-decoration:none;padding:8px 0"
+         href="{{ url_for('sheet.readers', sheet_id=scheda.id) }}">
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ scheda.name }}</div>
+        </div>
+        <span class="c7-rows__chev"><i class="fas fa-chevron-right"></i></span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endfor %}
+
+  {% if sole %}
+  <div class="c7-label">{{ _("Non le legge nessuno") }}</div>
+  <section class="c7-rows">
+    {% for scheda in sole %}
+    <a class="c7-rows__row" style="color:inherit;text-decoration:none"
+       href="{{ url_for('sheet.readers', sheet_id=scheda.id) }}">
+      <span class="c7-tile c7-tile--sm c7-tile--locked"><i class="fas fa-lock"></i></span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ scheda.name }}</div>
+        <div class="c7-rows__sub">{{ _("solo tua") }}</div>
+      </div>
+      <span class="c7-rows__chev"><i class="fas fa-chevron-right"></i></span>
+    </a>
+    {% endfor %}
+  </section>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

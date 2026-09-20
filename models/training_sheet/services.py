@@ -91,6 +91,19 @@ class TrainingSheetService:
         )
 
     @staticmethod
+    def can_read_notes(sheet: TrainingSheet, actor: Optional[User]) -> bool:
+        """Le note delle sedute: del proprietario, e di chi lui ci fa leggere.
+
+        Un confine dentro un confine: leggere la scheda non è leggere quello
+        che ci si scrive sopra a fine serata (ADR-069).
+        """
+        if TrainingSheetService.can_edit(sheet, actor):
+            return True
+        return bool(
+            sheet.readers_see_notes and TrainingSheetService.can_read(sheet, actor)
+        )
+
+    @staticmethod
     def _require_edit(sheet: TrainingSheet, actor: Optional[User]) -> None:
         if not TrainingSheetService.can_edit(sheet, actor):
             raise PermissionDeniedError(_("Questa scheda non è tua"))
@@ -323,6 +336,15 @@ class TrainingSheetService:
                 reader.revoked_at = utc_now()
                 chiuso = True
         return chiuso
+
+    @staticmethod
+    @transactional(domain="training_sheet")
+    def set_notes_shared(sheet_id: int, actor: User, shared: bool) -> TrainingSheet:
+        """Apre o richiude le note delle sedute a chi legge la scheda."""
+        sheet = TrainingSheetService.get_sheet(sheet_id)
+        TrainingSheetService._require_edit(sheet, actor)
+        sheet.readers_see_notes = bool(shared)
+        return sheet
 
     @staticmethod
     def readers_of(sheet: TrainingSheet) -> List[TrainingSheetReader]:
