@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.38.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.38.0...v1.38.1) (2026-09-20)
+
+
+### Correzioni
+
+* il filtro acceso del catalogo resta in vista, e la guida racconta gli esercizi di oggi ([#498](https://github.com/coppolapaolo/tornei-biliardo/issues/498)) ([c4952c5](https://github.com/coppolapaolo/tornei-biliardo/commit/c4952c5e0951c924c2509eefd2828cfbc23d6baa)), closes [#168](https://github.com/coppolapaolo/tornei-biliardo/issues/168)
+
 ## [1.38.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.37.0...v1.38.0) (2026-09-20)
 
 
