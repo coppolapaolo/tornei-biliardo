@@ -638,6 +638,24 @@ hints:
   - challenge.training_session
   page: challenge
   section: allenarsi
+- id: allenamento.punteggio
+  label: The score of the attempt
+  short: 'Plus and minus build the score, which never goes above the maximum of the exercise. «Record
+    the attempt» saves it and sets the figure back to zero, ready for the next one.'
+  anchor: allenamento-punteggio
+  screens:
+  - challenge.training_session
+  page: challenge
+  section: allenarsi
+- id: allenamento.andamento
+  label: Today's attempts
+  short: 'One bar for each attempt of today, the latest one lit. The dashed line is your average up to
+    yesterday: you are compared with yourself, not with the others.'
+  anchor: allenamento-andamento
+  screens:
+  - challenge.training_session
+  page: challenge
+  section: allenarsi
 - id: allenamento.annulla
   label: Undo the last one
   short: 'Removes the attempt you just recorded. The XP goes back too: it is there to fix a wrong tap,

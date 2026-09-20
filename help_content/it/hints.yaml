@@ -592,6 +592,22 @@ hints:
     page: challenge
     section: allenarsi
 
+  - id: allenamento.punteggio
+    label: "Il punteggio della prova"
+    short: "Più e meno compongono il punteggio, che non sale oltre il massimo dell'esercizio. «Registra la prova» lo salva e riporta la cifra a zero, pronta per la prossima."
+    anchor: allenamento-punteggio
+    screens: [challenge.training_session]
+    page: challenge
+    section: allenarsi
+
+  - id: allenamento.andamento
+    label: "Le prove di oggi"
+    short: "Una barra per ogni prova di oggi, l'ultima accesa. La linea tratteggiata è la tua media fino a ieri: il confronto è con te stesso, non con gli altri."
+    anchor: allenamento-andamento
+    screens: [challenge.training_session]
+    page: challenge
+    section: allenarsi
+
   - id: allenamento.annulla
     label: "Annulla l'ultima"
     short: "Toglie l'ultima prova registrata. Torna indietro anche l'XP: serve a correggere un tocco sbagliato, non a rigiocarsi il punteggio."

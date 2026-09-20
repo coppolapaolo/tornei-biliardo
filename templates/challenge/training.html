@@ -1,28 +1,30 @@
 {% extends "base.html" %}
 
-{# La schermata dell'allenamento: si sceglie l'esercizio, si registra una prova
-   dopo l'altra, si chiude quando si vuole.
+{# La cornice di esecuzione di un esercizio (canvas «TPA ed esercizi», pagina
+   3 · «A punteggio»; fase 5a).
 
-   Prima ogni singola prova costava due pagine e quattro richieste — pagina di
-   conferma, POST che apriva il tentativo, redirect alla pagina del punteggio,
-   POST che lo chiudeva, redirect al dettaglio — e per la seconda si
-   ricominciava da capo. Chi si allena ne fa dieci di fila.
+   Tre posti fissi, uguali per ogni modo di registrare:
 
-   Poi il gesto e' rimasto uno solo, ma **doppio**: scegliere l'esito e poi
-   premere «Registra». Su un superato/non superato la scelta *e'* l'esito, e il
-   secondo tocco non aggiungeva informazione — aggiungeva solo un modo di
-   sbagliare, perche' fra i due tocchi si perde il segno di cosa si era scelto.
-   Oggi il tasto dell'esito registra, e a proteggere dall'errore c'e' l'annulla,
-   che e' l'unico posto dove la protezione serve davvero: dopo.
+     1. il disegno dell'esercizio e la sua consegna;
+     2. **come sta andando** — il grafico dal vivo, la frase, le prove di oggi
+        (`_run_progress.html`, ridisegnato dal server a ogni prova);
+     3. i comandi, agganciati in basso al posto della nav (a fianco da lg).
 
-   La sessione NON e' un'entita': la POST registra una prova gia' completa e
-   risponde in JSON, la pagina si aggiorna in posto. L'elenco delle prove
-   arriva dal server e sopravvive a un ricaricamento, perche' e' ricavato dai
-   tentativi e non da uno stato tenuto qui. #}
+   Cambia solo il terzo: qui ci sono i due modi di oggi — riuscita o no, e a
+   punteggio. Colpo per colpo ed estrazione ci mettono i loro comandi (fasi 5b
+   e 5c) senza toccare il resto.
+
+   Storia dei gesti, che resta vera: una prova costa **una** richiesta, e sul
+   superato/non superato il tasto dell'esito *è* la registrazione — a
+   proteggere dall'errore c'è l'annulla, l'unico posto dove la protezione serve
+   davvero: dopo.
+
+   La sessione NON è un'entità: «le prove di oggi» è una finestra sull'ora
+   delle prove, nel fuso di chi legge. Sopravvive a un ricaricamento perché è
+   ricavata dai tentativi e non da uno stato tenuto qui. #}
 
 {% set is_pass_fail = challenge.pass_fail_only %}
 {% set max_score = challenge.max_score %}
-{% set passed_count = attempts|selectattr('passed')|list|length %}
 
 {% block title %}{{ _("Allenamento") }} - {{ challenge.get_display_name() }}{% endblock %}
 
@@ -30,22 +32,34 @@
 <a class="c7-head__back d-lg-none" href="{{ url_for('challenge.today') }}"
    aria-label="{{ _('Torna agli esercizi') }}"><i class="fas fa-arrow-left"></i></a>
 {% endblock %}
-{% block page_title %}{{ _("Allenamento") }}{% endblock %}
-{% block page_sub %}{{ challenge.description|truncate(46, True, "…") }}{% endblock %}
-{% block page_actions %}
-<a href="{{ url_for('challenge.today') }}"
-   class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
-  <i class="fas fa-check"></i>&nbsp;{{ _("Ho finito") }}
-</a>
+{% block page_title %}{{ challenge.get_display_name() }}{% endblock %}
+{% block page_sub %}
+  {%- if is_pass_fail %}{{ _("Riuscito o no") }}
+  {%- elif max_score %}{{ _("A punteggio") }} <span class="c7-sep">·</span> {{ _("su %(n)s", n=max_score) }}
+  {%- else %}{{ _("A punteggio") }}{% endif -%}
 {% endblock %}
+
+{# I comandi stanno agganciati in basso: la nav flottante gli lascia il posto.
+   Per uscire ci sono la freccia in testata e «Ho finito». #}
+{% block app_nav %}{% endblock %}
 
 {% block content %}
 {% include "challenge/_training_board.html" %}
 
-<div style="max-width:720px">
-  <div class="c7-stack">
+<div class="c7-run"
+     data-run
+     data-pass-fail="{{ 'true' if is_pass_fail else 'false' }}"
+     data-max-score="{{ max_score if max_score is not none else 0 }}"
+     data-record-url="{{ url_for('challenge.training_session', challenge_id=challenge.id) }}"
+     data-undo-url="{{ url_for('challenge.training_undo', challenge_id=challenge.id) }}"
+     data-msg-recording="{{ _('Registro…') }}"
+     data-msg-error="{{ _('Non è stato possibile registrare la prova.') }}"
+     data-msg-network="{{ _('Non è stato possibile registrare la prova. Riprova.') }}"
+     data-msg-undo-error="{{ _('Non è stato possibile annullare la prova.') }}">
 
-    {# ---------- L'esercizio: foto e istruzioni, sempre sotto gli occhi ---------- #}
+  <section class="c7-stack c7-run__main">
+
+    {# ---------- 1 · L'esercizio: disegno e consegna ---------- #}
     <div class="c7-diagram c7-diagram--card">
       {% if challenge.image_filename %}
       <img class="c7-diagram__img" src="{{ challenge_image_url(challenge) }}"
@@ -54,26 +68,15 @@
       {% else %}
       <i class="fas fa-bullseye" style="font-size:28px"></i>
       {% endif %}
-      <span class="c7-state {{ 'c7-state--info' if is_pass_fail else 'c7-state--muted' }}"
-            style="position:absolute;bottom:12px;left:12px">
-        {%- if is_pass_fail %}{{ _('Riuscito o no') }}
-        {%- elif max_score %}{{ _('0-%(max)s punti', max=max_score) }}
-        {%- else %}{{ _('A punteggio') }}{% endif %}
-      </span>
     </div>
 
-    <div class="c7-card c7-card--accent">
-      <div class="c7-kicker">{{ _("Istruzioni") }}</div>
-      <p class="mb-0" style="margin-top:10px;font-size:15px;font-weight:600;line-height:1.5">
-        {{ challenge.description }}
-      </p>
-    </div>
+    <p class="c7-run__brief">{{ challenge.description }}</p>
 
-    {# ---------- Da che parte: le varianti dell'esercizio (ADR-065) ----------
-       Pillole a scelta singola, con «senza dirlo» accesa di partenza: la
-       variante è facoltativa anche quando c'è, e non si inventa un lato a chi
-       non lo dice. Stanno fuori dal tabellone orizzontale, che legge lo stesso
-       campo: si sceglie una volta, poi si tira. #}
+    {# Da che parte: le varianti dell'esercizio (ADR-065). Pillole a scelta
+       singola, con «senza dirlo» accesa di partenza: la variante è
+       facoltativa anche quando c'è, e non si inventa un lato a chi non lo
+       dice. Si sceglie una volta, poi si tira: resta accesa fra una prova e
+       l'altra, e il tabellone orizzontale legge lo stesso campo. #}
     {% if challenge.has_variants %}
     <div data-help="allenamento-variante">
       <div class="form-label">{{ _("Da che parte") }}</div>
@@ -86,300 +89,65 @@
     </div>
     {% endif %}
 
-    {# ---------- Come sta andando ---------- #}
-    <div class="c7-grid" style="grid-template-columns:1fr 1fr">
-      <div class="c7-card">
-        <div class="c7-rows__sub">{{ _("Prove registrate") }}</div>
-        <div class="c7-num-lg" style="margin-top:6px" data-drill-count>{{ attempts|length }}</div>
-      </div>
-      <div class="c7-card">
-        <div class="c7-rows__sub">{{ _("Il tuo record") if not is_pass_fail else _("Riuscite") }}</div>
-        <div class="c7-num-lg" style="margin-top:6px" data-drill-best>
-          {%- if is_pass_fail %}{{ passed_count }}
-          {%- else %}{{ best_score if best_score is not none else '—' }}{% endif %}
-        </div>
-      </div>
+    {# ---------- 2 · Come sta andando ---------- #}
+    <div class="c7-stack" data-run-progress aria-live="polite">
+      {% include "challenge/_run_progress.html" %}
     </div>
 
-    {# ---------- Il gesto ----------
-       Superato/non superato: il tasto **e'** la registrazione. A punteggio il
-       numero va composto, quindi il tastierino resta e la conferma e' un tasto
-       a parte — ma e' lo stesso identico giro di richiesta. #}
+    <p class="c7-kicker" style="text-align:center">
+      {{ _("Puoi riprovare quante volte vuoi: resta il tuo risultato migliore.") }}
+    </p>
+  </section>
+
+  {# ---------- 3 · I comandi ---------- #}
+  <aside class="c7-run-dock" data-run-dock>
     {% if is_pass_fail %}
-    <div class="c7-grid" style="grid-template-columns:1fr 1fr;gap:12px" data-help="allenamento-esito">
-      <button type="button" class="c7-bigbtn c7-bigbtn--ok" data-outcome="true">
-        <i class="fas fa-check"></i>
-        <span>{{ _("Superata") }}</span>
+    <div class="c7-run-dock__pair" data-help="allenamento-esito">
+      <button type="button" class="c7-exam-verdict c7-exam-verdict--ok" data-outcome="true">
+        <i class="fas fa-check" aria-hidden="true"></i>{{ _("Superata") }}
       </button>
-      <button type="button" class="c7-bigbtn c7-bigbtn--no" data-outcome="false">
-        <i class="fas fa-xmark"></i>
-        <span>{{ _("Non superata") }}</span>
+      <button type="button" class="c7-exam-verdict c7-exam-verdict--no" data-outcome="false">
+        <i class="fas fa-xmark" aria-hidden="true"></i>{{ _("Non superata") }}
       </button>
     </div>
     {% else %}
-    <div class="c7-card c7-card--accent c7-scorepad">
-      <div class="c7-kicker">{{ _("Punteggio della prova") }}</div>
-      <div class="c7-scorepad__row">
-        <button type="button" class="c7-scorepad__btn" data-score-step="-1"
-                aria-label="{{ _('Diminuisci') }}"><i class="fas fa-minus"></i></button>
-        {# Il numero e il suo tetto stanno insieme, come nel prototipo (9b·3):
-           «7 / 10» dice in un colpo solo quanto hai fatto e quanto si poteva
-           fare. Senza il secondo numero il primo non si sa leggere. #}
-        <div class="c7-scorepad__figure">
-          <span class="c7-scorepad__value" data-score-display>0</span>
-          {%- if max_score %}<span class="c7-scorepad__max">/&nbsp;{{ max_score }}</span>{% endif %}
-        </div>
-        <button type="button" class="c7-scorepad__btn c7-scorepad__btn--plus" data-score-step="1"
-                aria-label="{{ _('Aumenta') }}"><i class="fas fa-plus"></i></button>
+    <div class="c7-exam-pad" data-help="allenamento-punteggio">
+      <button type="button" class="c7-exam-pad__btn" data-score-step="-1"
+              aria-label="{{ _('Uno in meno') }}"><i class="fas fa-minus"></i></button>
+      <div class="c7-exam-pad__figure">
+        <span class="c7-exam-pad__v" data-score-display>0</span>
+        {% if max_score %}<div class="c7-exam-pad__max">{{ _("su %(n)s", n=max_score) }}</div>{% endif %}
       </div>
-
-      {# La barretta traduce il numero in quantita': a colpo d'occhio si vede
-         quanto manca al tetto senza contare le cifre. Solo dove un tetto c'e'
-         e non e' cosi' alto da diventare una riga di trattini illeggibile. #}
-      {% if max_score and max_score <= 20 %}
-      <div class="c7-scorepad__pips" data-score-pips aria-hidden="true">
-        {% for i in range(max_score) %}<span class="c7-scorepad__pip" data-pip="{{ i }}"></span>{% endfor %}
-      </div>
-      {% endif %}
-
-      {% if best_score is not none %}
-      <div class="c7-scorepad__hint">{{ _("Il tuo record è %(best)s", best=best_score) }}</div>
-      {% endif %}
-
-      <button type="button" class="btn btn-primary w-100" style="margin-top:14px" data-record>
-        <i class="fas fa-plus"></i>&nbsp;<span data-record-label>{{ _("Registra la prova") }}</span>
-      </button>
+      <button type="button" class="c7-exam-pad__btn c7-exam-pad__btn--plus" data-score-step="1"
+              aria-label="{{ _('Uno in più') }}"><i class="fas fa-plus"></i></button>
+    </div>
+    {# Le barrette traducono il numero in quantità: quanto manca al tetto si
+       vede senza contare. Solo dove un tetto c'è e non è così alto da
+       diventare una riga di trattini illeggibile. #}
+    {% if max_score and max_score <= 20 %}
+    <div class="c7-scorepad__pips c7-run-dock__pips" data-score-pips aria-hidden="true">
+      {% for i in range(max_score) %}<span class="c7-scorepad__pip" data-pip="{{ i }}"></span>{% endfor %}
     </div>
     {% endif %}
-
-    {# ---------- Le prove fatte ---------- #}
-    <div class="c7-card">
-      <div class="c7-sechead mb-3"><h2>{{ _("Le tue prove") }}</h2></div>
-      <div class="c7-rows" style="background:var(--c7-bg)" data-drill-list>
-        {% for attempt in attempts %}
-        <div class="c7-rows__row">
-          <span class="c7-tile c7-tile--sm {{ 'c7-tile--locked' if is_pass_fail and not attempt.passed }}">
-            {%- if is_pass_fail %}<i class="fas {{ 'fa-check' if attempt.passed else 'fa-xmark' }}"></i>
-            {%- else %}<span class="c7-num">{{ attempt.score }}</span>{% endif %}
-          </span>
-          <div class="c7-rows__main">
-            <div class="c7-rows__title">
-              {%- if is_pass_fail %}{{ _("Superata") if attempt.passed else _("Non superata") }}
-              {%- else %}{{ _("Punteggio %(score)s", score=attempt.score) }}{% endif %}
-            </div>
-            <div class="c7-rows__sub"><span class="c7-num">{{ attempt.attempted_at|datetime_local }}</span></div>
-          </div>
-        </div>
-        {% endfor %}
-      </div>
-      <div class="c7-kicker" data-drill-empty style="text-align:center;margin-top:12px;
-           {% if attempts %}display:none{% endif %}">
-        {{ _("Nessuna prova ancora. Registra la prima qui sopra.") }}
-      </div>
-    </div>
-
-    <div class="c7-kicker" style="text-align:center">
-      {{ _("Puoi riprovare quante volte vuoi: resta il tuo risultato migliore.") }}
-    </div>
-  </div>
-
-  {# In fondo restano le due vie d'uscita: disfare l'ultima, o smettere.
-     L'annulla nasce spento quando non c'e' niente da annullare — un tasto che
-     risponde «non c'e' nessuna prova» e' un tasto che non doveva essere li'. #}
-  <div class="c7-actionbar">
-    <button type="button" class="btn btn-secondary w-100" data-undo data-help="allenamento-annulla"
-            {% if not attempts %}disabled{% endif %}>
-      <i class="fas fa-rotate-left"></i>&nbsp;{{ _("Annulla l'ultima") }}
+    <button type="button" class="btn btn-primary w-100" data-record>
+      <span data-record-label>{{ _("Registra la prova") }}</span>
     </button>
-    <a href="{{ url_for('challenge.today') }}"
-       class="btn btn-primary c7-btn-narrow">{{ _("Ho finito") }}</a>
-  </div>
+    {% endif %}
+
+    {# Le due vie d'uscita: disfare l'ultima, o smettere. L'annulla nasce
+       spento quando non c'è niente da annullare — un tasto che risponde «non
+       c'è nessuna prova» è un tasto che non doveva essere lì. #}
+    <div class="c7-run-dock__pair">
+      <button type="button" class="c7-exam-dock__alt" data-undo data-help="allenamento-annulla"
+              {% if not attempts %}disabled{% endif %}>
+        <i class="fas fa-rotate-left" aria-hidden="true"></i>{{ _("Annulla l'ultima") }}
+      </button>
+      <a href="{{ url_for('challenge.today') }}" class="btn btn-success">{{ _("Ho finito") }}</a>
+    </div>
+  </aside>
 </div>
 {% endblock %}
 
 {% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const isPassFail = {{ is_pass_fail|tojson }};
-    const maxScore = {{ (max_score if max_score is not none else 0)|tojson }};
-    const recordUrl = {{ url_for('challenge.training_session', challenge_id=challenge.id)|tojson }};
-    const undoUrl = {{ url_for('challenge.training_undo', challenge_id=challenge.id)|tojson }};
-
-    // Le etichette che il JS compone: placeholder in stile JS, mai `%(x)s`,
-    // che Flask-Babel proverebbe a sostituire al rendering (KeyError).
-    const passedLabel = {{ _("Superata")|tojson }};
-    const failedLabel = {{ _("Non superata")|tojson }};
-    const justNowLabel = {{ _("adesso")|tojson }};
-    const scoreLabel = {{ _("Punteggio")|tojson }} + " {score}";
-    const recordingLabel = {{ _("Registro…")|tojson }};
-    const genericError = {{ _("Non è stato possibile registrare la prova.")|tojson }};
-    const networkError = {{ _("Non è stato possibile registrare la prova. Riprova.")|tojson }};
-    const undoError = {{ _("Non è stato possibile annullare la prova.")|tojson }};
-
-    // I due formati (verticale e tabellone orizzontale) mostrano gli **stessi**
-    // comandi e gli **stessi** numeri. Si lavora quindi per selettore e non per
-    // id: un id si puo' scrivere una volta sola, e duplicarlo avrebbe fatto
-    // aggiornare un contatore su due, in silenzio, a seconda dell'orientamento.
-    const $$ = (sel) => Array.from(document.querySelectorAll(sel));
-    const liste = () => $$('[data-drill-list]');
-    const setTesto = (sel, valore) => $$(sel).forEach(el => { el.textContent = valore; });
-
-    let punteggio = 0;
-    function mostraPunteggio() {
-        setTesto('[data-score-display]', String(punteggio));
-        $$('[data-score-pips] [data-pip]').forEach(function (pip) {
-            pip.classList.toggle('is-on', parseInt(pip.dataset.pip, 10) < punteggio);
-        });
-    }
-
-    $$('[data-score-step]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            const prossimo = punteggio + parseInt(btn.dataset.scoreStep, 10);
-            if (prossimo < 0) return;
-            // Il tetto ferma il tastierino: e' la stessa regola che il server
-            // applica, portata dove l'errore si sta per fare.
-            if (maxScore && prossimo > maxScore) return;
-            punteggio = prossimo;
-            mostraPunteggio();
-        });
-    });
-
-    function riga(attempt) {
-        const row = document.createElement('div');
-        row.className = 'c7-rows__row';
-
-        const tile = document.createElement('span');
-        tile.className = 'c7-tile c7-tile--sm';
-        if (isPassFail) {
-            if (!attempt.passed) tile.classList.add('c7-tile--locked');
-            tile.innerHTML = '<i class="fas ' + (attempt.passed ? 'fa-check' : 'fa-xmark') + '"></i>';
-        } else {
-            const num = document.createElement('span');
-            num.className = 'c7-num';
-            num.textContent = attempt.score;
-            tile.appendChild(num);
-        }
-
-        const main = document.createElement('div');
-        main.className = 'c7-rows__main';
-        const title = document.createElement('div');
-        title.className = 'c7-rows__title';
-        title.textContent = isPassFail
-            ? (attempt.passed ? passedLabel : failedLabel)
-            : scoreLabel.replace('{score}', attempt.score);
-        const sub = document.createElement('div');
-        sub.className = 'c7-rows__sub';
-        sub.textContent = justNowLabel;
-        main.appendChild(title);
-        main.appendChild(sub);
-
-        row.appendChild(tile);
-        row.appendChild(main);
-        return row;
-    }
-
-    function aggiornaTotali(data) {
-        setTesto('[data-drill-count]', data.attempts_count);
-        if (isPassFail) {
-            if (data.passed_count !== undefined) {
-                setTesto('[data-drill-best]', data.passed_count);
-            }
-        } else {
-            setTesto('[data-drill-best]', data.best_score === null || data.best_score === undefined ? '—' : data.best_score);
-        }
-        $$('[data-undo]').forEach(b => { b.disabled = !data.attempts_count; });
-        $$('[data-drill-empty]').forEach(e => { e.style.display = data.attempts_count ? 'none' : ''; });
-    }
-
-    let inCorso = false;
-    function bloccaComandi(bloccato) {
-        inCorso = bloccato;
-        $$('[data-outcome], [data-record], [data-undo], [data-score-step]').forEach(function (b) {
-            if (b.hasAttribute('data-undo')) return;   // lo governa aggiornaTotali
-            b.disabled = bloccato;
-        });
-    }
-
-    function registra(payload) {
-        if (inCorso) return;
-        bloccaComandi(true);
-        // L'etichetta torna com'era nel `finally`: lasciarla su «Registro…»
-        // dopo un errore di rete direbbe che sta ancora salvando, per sempre.
-        const etichette = $$('[data-record-label]').map(el => [el, el.textContent]);
-        etichette.forEach(([el]) => { el.textContent = recordingLabel; });
-
-        // La variante scelta viaggia con ogni prova: resta accesa fra una e
-        // l'altra, perché chi tira da destra ne fa dieci di fila da destra.
-        const variante = document.querySelector('input[name="variant_id"]:checked');
-        if (variante && variante.value) payload.variant_id = variante.value;
-
-        fetch(recordUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken(),
-                'X-Requested-With': 'XMLHttpRequest'
-            },
-            body: JSON.stringify(payload)
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success) { showError(data.error || genericError); return; }
-            liste().forEach(function (lista) {
-                lista.insertBefore(riga(data.attempt), lista.firstChild);
-            });
-            aggiornaTotali(data);
-            punteggio = 0;
-            mostraPunteggio();
-        })
-        .catch(function (err) {
-            console.error('Error recording attempt:', err);
-            showError(networkError);
-        })
-        .finally(function () {
-            bloccaComandi(false);
-            etichette.forEach(([el, testo]) => { el.textContent = testo; });
-        });
-    }
-
-    // Superato / non superato: un tocco, una prova. Niente conferma: la via
-    // d'uscita e' l'annulla, che sta accanto e costa un tocco anche lui.
-    $$('[data-outcome]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            registra({passed: btn.dataset.outcome === 'true'});
-        });
-    });
-
-    $$('[data-record]').forEach(function (btn) {
-        btn.addEventListener('click', function () { registra({score: punteggio}); });
-    });
-
-    $$('[data-undo]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            if (inCorso) return;
-            bloccaComandi(true);
-            fetch(undoUrl, {
-                method: 'POST',
-                headers: {'X-CSRFToken': csrfToken(), 'X-Requested-With': 'XMLHttpRequest'}
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (!data.success) { showError(data.error || undoError); return; }
-                // La riga sparisce da tutte le liste: e' la stessa prova.
-                liste().forEach(function (lista) {
-                    if (lista.firstElementChild) lista.removeChild(lista.firstElementChild);
-                });
-                aggiornaTotali(data);
-            })
-            .catch(function (err) {
-                console.error('Error undoing attempt:', err);
-                showError(undoError);
-            })
-            .finally(function () { bloccaComandi(false); });
-        });
-    });
-
-    mostraPunteggio();
-});
-</script>
+<script src="{{ url_for('static', filename='js/exercise-run.js') }}?v={{ config.ASSET_VERSION }}"></script>
 {% endblock %}

@@ -672,6 +672,7 @@ def training_session(challenge_id):
             challenge=challenge,
             attempts=_recent_attempts(challenge_id),
             best_score=_best_score(challenge),
+            progress=_progress(challenge),
         )
 
     data = (request.get_json(silent=True) if request.is_json else request.form) or {}
@@ -710,6 +711,7 @@ def training_session(challenge_id):
             # vedeva salire solo il totale. Si ricalcola dal DB invece di
             # incrementarlo a schermo, cosi' due schede aperte non divergono.
             "passed_count": _passed_count(challenge_id),
+            "progress_html": _progress_html(challenge),
         }
 
     return handle_ajax_service_action(
@@ -762,6 +764,7 @@ def training_undo(challenge_id):
             ).count(),
             "best_score": _best_score(challenge),
             "passed_count": _passed_count(challenge_id),
+            "progress_html": _progress_html(challenge),
         }
 
     return handle_ajax_service_action(
@@ -769,6 +772,28 @@ def training_undo(challenge_id):
         redirect_url=url_for("challenge.training_session", challenge_id=challenge_id),
         success_message=_("Prova annullata."),
         error_prefix=None,
+    )
+
+
+def _progress(challenge):
+    """Come sta andando, per chi guarda, nel **suo** giorno (ADR-043)."""
+    from models.challenge.execution_view import build_progress
+    from utils.local_time import resolve_timezone
+
+    return build_progress(challenge, current_user.id, tz=resolve_timezone())
+
+
+def _progress_html(challenge):
+    """Lo stesso pezzo che la pagina ha ricevuto al caricamento, ridisegnato.
+
+    Viaggia dentro la risposta JSON di ogni prova registrata o annullata: il
+    grafico e la frase hanno così un disegnatore solo, il server, e nel browser
+    non si compone nessun testo tradotto.
+    """
+    return render_template(
+        "challenge/_run_progress.html",
+        challenge=challenge,
+        progress=_progress(challenge),
     )
 
 

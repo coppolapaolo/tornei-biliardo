@@ -322,3 +322,66 @@ class TestIlPercorsoGaraNonSiTocca:
         response = client.get(f"/challenges/{numeric_drill.id}/attempt")
 
         assert response.status_code == 200
+
+
+class TestLaCorniceDiEsecuzione:
+    """Fase 5a: «come sta andando» lo disegna il server, anche senza ricaricare.
+
+    Grafico e frase hanno un disegnatore solo. Se la risposta JSON smettesse di
+    portare il pezzo, la pagina resterebbe ferma alla prova di prima senza dare
+    nessun errore: per questo si presidia qui.
+    """
+
+    def test_la_pagina_nasce_con_l_andamento(self, client, player, numeric_drill):
+        login(client, player)
+
+        html = client.get(f"/challenges/{numeric_drill.id}/train").get_data(
+            as_text=True
+        )
+
+        assert "data-run-progress" in html
+        assert "Le prove di oggi" in html
+        assert "prima prova" in html
+        # I comandi stanno agganciati in basso al posto della nav flottante.
+        assert "data-run-dock" in html
+        assert 'class="c7-mobilenav' not in html
+
+    def test_la_risposta_porta_il_pezzo_ridisegnato(
+        self, client, player, numeric_drill
+    ):
+        login(client, player)
+
+        payload = client.post(
+            f"/challenges/{numeric_drill.id}/train", json={"score": 7}
+        ).get_json()
+
+        pezzo = payload["progress_html"]
+        assert "seconda prova" in pezzo  # quella che sta per arrivare
+        assert "Prima prova" in pezzo  # quella appena fatta, nell'elenco
+        assert "c7-livechart" in pezzo
+        assert "Record: 7" in pezzo
+
+    def test_l_annulla_lo_ridisegna_all_indietro(self, client, player, numeric_drill):
+        login(client, player)
+        client.post(f"/challenges/{numeric_drill.id}/train", json={"score": 7})
+
+        # Come la chiama la pagina: senza l'intestazione la route risponde con
+        # un redirect, che è la strada di chi non ha JavaScript.
+        payload = client.post(
+            f"/challenges/{numeric_drill.id}/train/undo",
+            headers={"X-Requested-With": "XMLHttpRequest"},
+        ).get_json()
+
+        assert payload["success"] is True
+        assert "prima prova" in payload["progress_html"]
+        assert "c7-livechart" not in payload["progress_html"]
+
+    def test_riuscita_o_no_conta_le_riuscite(self, client, player, pass_fail_drill):
+        login(client, player)
+        client.post(f"/challenges/{pass_fail_drill.id}/train", json={"passed": True})
+
+        payload = client.post(
+            f"/challenges/{pass_fail_drill.id}/train", json={"passed": False}
+        ).get_json()
+
+        assert "Oggi 1 riuscita su 2" in payload["progress_html"]
