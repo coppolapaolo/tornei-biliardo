@@ -593,13 +593,21 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "feedback.tutte_le_segnalazioni": set(),
     "roles.request_role_form": {"player", "director"},
     "roles.request_role": {"player", "director"},
-    "roles.role_requests": {"examiner"},
-    "roles.process_role_request": {"examiner"},
-    "roles.grant_role": {"examiner"},
-    # Audit della catena e revoca: solo admin **per scelta**, non per rollout
-    # (US-A3) — con la propagazione a catena la revoca è l'unico punto di
-    # contenimento, e resta in mano ad admin anche adesso.
-    "roles.role_holders": set(),
+    # La coda delle richieste e la concessione: **ogni** ruolo propagante, non
+    # solo l'esaminatore. Era scritto a mano, e in produzione un istruttore
+    # avrebbe preso 404 proprio sulla via da cui il ruolo si propaga — cioè
+    # approvare la richiesta di un collega (ADR-041, em. del 20/09). Che possa
+    # concedere *quel* ruolo lo decide `can_grant`, non questa riga.
+    "roles.role_requests": {"examiner", "instructor"},
+    "roles.process_role_request": {"examiner", "instructor"},
+    "roles.grant_role": {"examiner", "instructor"},
+    # La catena delle nomine la leggono admin e **i titolari del ruolo**
+    # (emendamento ADR-041 del 20/09): chi può nominare deve poter vedere da
+    # dove arriva un collega. Che siano titolari *di quel* ruolo lo controlla
+    # la route — questa matrice dice solo chi arriva alla pagina.
+    "roles.role_holders": {"examiner", "instructor"},
+    # La revoca resta solo admin **per scelta**, non per rollout (US-A3): con
+    # la propagazione a catena è l'unico punto di contenimento.
     "roles.revoke_role": set(),
     # Auto-concessione di debug: la route fa già `abort(404)` fuori da
     # DEBUG_MODE, quindi in produzione non esiste. `set()` è ridondante per
@@ -688,7 +696,7 @@ def _is_production() -> bool:
 #: (ADR-041), e che quindi costano una query per essere accertati. Serve a
 #: ``is_endpoint_visible`` per non pagare quel costo quando l'endpoint non li
 #: ammette comunque.
-GRANTABLE_ROLES: frozenset[Role] = frozenset({"examiner"})
+GRANTABLE_ROLES: frozenset[Role] = frozenset({"examiner", "instructor"})
 
 
 def _primary_role(user) -> Role:
@@ -706,7 +714,12 @@ def _grantable_roles(user) -> set[Role]:
     """
     if not user.is_authenticated:
         return set()
-    return {"examiner"} if getattr(user, "is_examiner", False) else set()
+    posseduti: set[Role] = set()
+    if getattr(user, "is_examiner", False):
+        posseduti.add("examiner")
+    if getattr(user, "is_instructor", False):
+        posseduti.add("instructor")
+    return posseduti
 
 
 def _user_roles(user) -> set[Role]:

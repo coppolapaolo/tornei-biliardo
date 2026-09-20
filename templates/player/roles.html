@@ -32,11 +32,21 @@
         <div class="c7-rows__sub">
           {{ riga.descrizione }}
           {%- if riga.dal %} <span class="c7-sep">·</span> {{ _("dal %(giorno)s", giorno=riga.dal|date_local) }}{% endif -%}
+          {%- if riga.concesso_da %}<br>{{ _("nominato da %(chi)s", chi=riga.concesso_da) }}{% endif -%}
         </div>
       </div>
       <span class="c7-state c7-state--{{ riga.tono }}">{{ riga.stato }}</span>
     </div>
-    {% if riga.ruolo_da_chiedere and feature_visible('roles.request_role_form') %}
+    {% if riga.ruolo_posseduto and feature_visible('roles.role_holders') %}
+    {# Chi può nominare deve poter vedere chi è già stato nominato, e da chi:
+       una catena che non si guarda è una delega al buio (ADR-041 em.). #}
+    <div class="c7-rows__row c7-rows__row--sub">
+      <a class="c7-rows__title" style="color:var(--c7-accent)"
+         href="{{ url_for('roles.role_holders', role=riga.ruolo_posseduto.value) }}">
+        {{ _("Chi altro ce l'ha, e chi l'ha nominato") }}
+      </a>
+    </div>
+    {% elif riga.ruolo_da_chiedere and feature_visible('roles.request_role_form') %}
     <div class="c7-rows__row c7-rows__row--sub">
       <a class="c7-rows__title" style="color:var(--c7-accent)"
          href="{{ url_for('roles.request_role_form', role=riga.ruolo_da_chiedere.value) }}">
@@ -50,6 +60,18 @@
     {% endif %}
     {% endfor %}
   </section>
+
+  {% if puo_valutare and feature_visible('roles.role_requests') %}
+  <a class="c7-rows__row" style="color:inherit;text-decoration:none;border-radius:var(--c7-r-card);background:var(--c7-card)"
+     href="{{ url_for('roles.role_requests') }}">
+    <span class="c7-tile c7-tile--sm c7-tile--neutral"><i class="fas fa-inbox"></i></span>
+    <div class="c7-rows__main">
+      <div class="c7-rows__title">{{ _("Richieste da valutare") }}</div>
+      <div class="c7-rows__sub">{{ _("chi ha chiesto un ruolo che tu puoi concedere") }}</div>
+    </div>
+    <span class="c7-rows__chev"><i class="fas fa-chevron-right"></i></span>
+  </a>
+  {% endif %}
 
   {% if mostra_scuola %}
   <form method="POST" action="{{ url_for('player.save_organization') }}" class="c7-card c7-stack">

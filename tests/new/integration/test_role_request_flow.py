@@ -192,10 +192,24 @@ class TestRoleRequestFlow:
         db_session.expire_all()
         assert db_session.get(User, player.id).is_examiner is True
 
-    def test_holders_audit_is_admin_only(self, client, db_session, admin, player):
+    def test_holders_audit_is_for_admin_and_holders(
+        self, client, db_session, admin, player
+    ):
+        """Emendamento ADR-041 del 20/09: chi può nominare vede la catena.
+
+        Prima era admin-only. Il ruolo si propaga a catena, quindi un titolare
+        che non può vedere da dove arriva un collega delega al buio. La
+        **revoca** invece resta dell'admin, e il test qui sopra la difende.
+        """
         RoleGrantService.grant(player.id, EXAMINER, admin)
         db_session.commit()
 
+        _login(client, player)
+        assert client.get("/roles/holders/examiner").status_code == 200
+
+    def test_holders_audit_is_closed_to_who_has_not_the_role(
+        self, client, db_session, player
+    ):
         _login(client, player)
         assert client.get("/roles/holders/examiner").status_code == 403
 

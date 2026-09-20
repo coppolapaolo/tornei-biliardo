@@ -1,0 +1,54 @@
+{# templates/components/_role_grant_actions.html
+   Concedere e revocare i ruoli concedibili (ADR-041, emendamento del 20/09).
+
+   Le due schermate dell'amministrazione — l'elenco utenti e la scheda di uno
+   solo — avevano questi pulsanti **scritti a mano, ruolo per ruolo**. Il
+   difetto non era la ripetizione: era che aggiungere un ruolo al meccanismo
+   non bastava a farlo comparire dove lo si assegna, e un ruolo che nessuno
+   può concedere non parte mai — nemmeno il primo titolare, da cui poi la
+   catena si propaga.
+
+   Qui si cicla su `azioni_ruoli(user)`, che viene da `GRANT_POLICY`. I testi
+   stanno in `models/user/role_copy.py`.
+
+   Niente `id` e niente `<script>`: il componente si include due volte nella
+   stessa pagina senza rompere niente (vedi `templates/CLAUDE.md`). #}
+
+{% macro comandi(azioni, user, next_url, forma='riga') -%}
+  {%- for azione in azioni %}
+  {%- if forma == 'scheda' %}
+  <p><strong>{{ azione.copy.etichetta }}</strong>
+    {% if azione.posseduto %}
+    <span class="badge bg-info text-dark"><i class="fas {{ azione.copy.icona }}"></i> {{ _("Sì") }}</span>
+    {% else %}
+    <span class="badge bg-light text-muted">{{ _("No") }}</span>
+    {% endif %}
+  {%- endif %}
+
+  {% if azione.posseduto %}
+  <form action="{{ url_for('roles.revoke_role', role=azione.valore, user_id=user.id) }}"
+        method="POST" style="display:inline{{ '; margin-left:10px' if forma == 'scheda' }}"
+        onsubmit='return confirmSubmit(this, {{ azione.copy.revoca_conferma|string|tojson }})'>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ next_url }}">
+    <button type="submit" class="btn btn-sm btn-outline-danger" title="{{ azione.copy.revoca }}">
+      <i class="fas {{ azione.copy.icona }}"></i> {{ azione.copy.revoca }}
+    </button>
+  </form>
+  {% else %}
+  <form action="{{ url_for('roles.grant_role', role=azione.valore, user_id=user.id) }}"
+        method="POST" style="display:inline{{ '; margin-left:10px' if forma == 'scheda' }}"
+        onsubmit='return confirmSubmit(this, {{ azione.copy.concedi_conferma|string|tojson }})'>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="next" value="{{ next_url }}">
+    <button type="submit"
+            class="btn btn-sm {{ 'btn-outline-success' if forma == 'scheda' else 'btn-outline-info' }}"
+            title="{{ azione.copy.concedi }}">
+      <i class="fas {{ azione.copy.icona }}"></i> {{ azione.copy.concedi }}
+    </button>
+  </form>
+  {% endif %}
+
+  {%- if forma == 'scheda' %}</p>{% endif %}
+  {%- endfor %}
+{%- endmacro %}
