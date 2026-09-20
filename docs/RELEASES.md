@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.40.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.39.0...v1.40.0) (2026-09-20)
+
+
+### Funzioni nuove
+
+* l'app estrae la consegna a ogni colpo, e l'esito si sceglie dalla sua scala ([#507](https://github.com/coppolapaolo/tornei-biliardo/issues/507)) ([6bdeb98](https://github.com/coppolapaolo/tornei-biliardo/commit/6bdeb98e32245b9f3f87d27759811f8d7e129405)), closes [#452](https://github.com/coppolapaolo/tornei-biliardo/issues/452)
+* si tira colpo per colpo toccando il panno dove si è fermata la bianca ([#504](https://github.com/coppolapaolo/tornei-biliardo/issues/504)) ([60ee8e6](https://github.com/coppolapaolo/tornei-biliardo/commit/60ee8e6f2d1ef5aefb0b743ee45d37f2fd9e4ff3)), closes [#183](https://github.com/coppolapaolo/tornei-biliardo/issues/183)
+
 ## [1.39.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.38.1...v1.39.0) (2026-09-20)
 
 
