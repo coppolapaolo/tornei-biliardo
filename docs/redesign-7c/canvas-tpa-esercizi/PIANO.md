@@ -28,7 +28,7 @@ Sorgenti del canvas: `sorgenti/` (`kit.py`, `tpa.py`, `esercizi.py`,
 | 1 | Sorgenti e STATO.md nel repo | **fatta il 19/09** — PR #473 |
 | 2 | Referto TPA | **chiusa il 19/09** — #475 (2a), #478 (2b), #479 (2c), #481 (2d), #482 (2e), #483 (2f); più #476, #477, #480 trovate strada facendo. Niente cursore salvato: vedi la nota nella fase |
 | 3 | Esami | **chiusa il 19/09** — #484 (3a), #486 (3b), #487 (3c), #488 (3d), #489 (3e); più #485 trovata strada facendo. «Accetto» nella card e non in una barra, rinuncia a una prova non persistita: vedi la nota nella fase |
-| 4 | Modello dell'esercizio (#168 #252 #253) | da fare |
+| 4 | Modello dell'esercizio (#168 #252 #253) | **chiusa il 20/09** — #490 (4a), #492 (4b), #494 (4c), #496 (4d), #498 (4e). Vocabolari come enum e non come tabelle, voto con le bilie: vedi la nota nella fase |
 | 5 | Eseguire un esercizio (#183 #452) | da fare |
 | 6 | Schede di allenamento (#172) | da fare |
 | 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | da fare |
@@ -409,6 +409,46 @@ categoria finché l'autore non la mette.
   voto, i più provati) e la scheda dell'esercizio.
 - 4d `feat:` voto.
 - 4e `docs:` guida.
+
+**Com'è andata (19–20/09)**: nessun cancello — D4, D5, D6 e gli artboard
+bastavano. Cinque PR, e quattro scarti dal testo qui sopra.
+
+* **I vocabolari sono enum, non tabelle** (ADR-065). In tabella sta
+  l'*associazione*, `challenge_category` con `axis` e `value`; le voci stanno in
+  `models/challenge/vocabulary.py`, come `Discipline`. D4 le vuole fisse di
+  piattaforma: una tabella avrebbe chiesto colonne di traduzione e un seed in
+  produzione.
+* **Il voto si dà con cinque bilie**, non con le stelle: l'ha chiesto l'utente a
+  4d in corso. Cinque token nuovi, `--c7-ball-1…5`, iconografia del gioco e non
+  semantici (`UI_CONVENTIONS.md`).
+* **«Come si registra» ha due voci**, non quattro: colpo per colpo ed estrazione
+  sono della fase 5, e una scelta che non fa niente è peggio di una che manca.
+* **Le quattro linguette delle stanze non ci sono**: Schede e Andamento non
+  esistono ancora. Entrano quando nascono (fasi 6 e 7).
+
+Da riusare nelle fasi dopo:
+
+* `models/challenge/catalog_view.py` — `ExerciseCard`, `PlayerLine`,
+  `build_today`: è qui che «Oggi» si allunga con la scheda in corso (fase 6) e
+  con obiettivi e consigli (fase 7). `templates/challenge/_exercise_bits.html`
+  è la fonte unica di etichette, voto e giocatori, riga di chi guarda.
+* `popularity.has_tried` è **la** definizione di «ha provato» (catalogo ∪ gara):
+  chi ne scrive una seconda fa divergere contatori e permessi.
+* `ChallengeVariant` e `ChallengeAttempt.variant_id`: la fase 6 (voce di scheda
+  con variante) e la 5 (cornice di esecuzione) partono da qui; la scelta «Da che
+  parte» oggi sta in `challenge/training.html`.
+* `ChallengeAuthoringService` e `EvidenceDecisionRequired`: lo schema «il
+  servizio si ferma, la route risponde 409, il foglio rimanda la decisione» vale
+  per ogni modifica che riscrive il passato — le schede pubblicate della fase 6
+  sono il prossimo caso.
+* `scripts/po_set.py --clear-empty-fuzzy` ora vede anche le plurali vuote. I
+  JSON delle traduzioni della fase stanno fuori dal repo, in
+  `canvas-tpa-esercizi/po/fase4{a,b,c,d}.json`.
+* Trappola del flusso a PR impilate: dopo un'unione in squash **non** fare
+  `git reset` misto su `origin/main` se nel frattempo è entrata una PR di
+  rilascio — i tre file della versione restano vecchi nel working tree e il
+  commit dopo riporta indietro il numero. Si committa e si fa
+  `git rebase --onto origin/main HEAD~1`.
 
 **Prompt**: «…esegui la fase 4.»
 

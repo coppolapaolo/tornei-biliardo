@@ -102,9 +102,9 @@ il turno?» andava a capo e rompeva l'allineamento delle caselle.
 
 | Artboard | Schermata | Template | PR | Stato |
 |---|---|---|---|---|
-| `TrovareOggi` | B · Oggi, la porta d'ingresso (D3). Nasce in 4c con ciò che c'è, si riempie in 6 e 7 | nuovo | 4c, 7e | da fare |
-| `TrovareCatalogo` | A · Catalogo che si filtra, dietro «Apri il catalogo» | `challenge/catalog.html` | 4c | da fare |
-| `SchedaEsercizio` | La scheda di un esercizio | `player/challenge_detail.html` | 4c, 4d | da fare |
+| `TrovareOggi` | B · Oggi, la porta d'ingresso (D3). Nasce in 4c con ciò che c'è, si riempie in 6 e 7 | `challenge/today.html` | #494 (4c), 7e | **fatta il 20/09** per ciò che esiste: riprendi, preferiti, i più provati. Scheda in corso in 6, obiettivi e «per oggi» in 7 |
+| `TrovareCatalogo` | A · Catalogo che si filtra, dietro «Apri il catalogo» | `challenge/catalog.html` | #494 (4c) | **fatta il 20/09** — senza le quattro linguette delle stanze: Schede e Andamento non esistono ancora |
+| `SchedaEsercizio` | La scheda di un esercizio | `player/challenge_detail.html` | #494 (4c), #496 (4d) | **fatta il 20/09** — il voto si dà con cinque bilie, non con le stelle. «Quelli come te» in 7d, «Nella scheda» in 6 |
 
 ### 3 · Esercizi: eseguire — fase 5
 
@@ -123,8 +123,8 @@ il turno?» andava a capo e rompeva l'allineamento delle caselle.
 | `Andamento` | Il tuo allenamento, radar per abilità | `components/_player_training.html` | 7a | da fare |
 | `AndamentoGesto` | Lo stesso, radar per gesto | nuovo | 7a | da fare |
 | `Obiettivo` | Imposta un obiettivo (#316) | nuovo | 7b | da fare |
-| `CreaModulo` | Crea, modifica, duplica: un modulo solo (#168 #252 #253) | `challenge/create.html` | 4b | da fare |
-| `CreaCopia` | «Ha già delle prove» (#252) | nuovo (foglio) | 4b | da fare |
+| `CreaModulo` | Crea, modifica, duplica: un modulo solo (#168 #252 #253) | `challenge/form.html` | #492 (4b) | **fatta il 19/09** — «Come si registra» ha due voci: colpo per colpo ed estrazione in fase 5 |
+| `CreaCopia` | «Ha già delle prove» (#252) | foglio in `challenge/form.html` | #492 (4b) | **fatta il 19/09** — la decisione sta nel servizio (409), non nel JS |
 
 ### 5 · Schede di allenamento e istruttori — fasi 6 e 8
 
@@ -192,7 +192,7 @@ cosa si è scelto, cosa si è scartato e perché.
 | 1 | Sorgenti e questo file nel repo | #473 | fatta il 19/09 |
 | 2 | Referto TPA | #475 #478 #479 #481 #482 #483 (più #476 #477 #480) | chiusa il 19/09 |
 | 3 | Esami | #484 #486 #487 #488 #489 (più #485) | chiusa il 19/09 |
-| 4 | Il modello dell'esercizio (#168 #252 #253), «Oggi», voto | | da fare |
+| 4 | Il modello dell'esercizio (#168 #252 #253), «Oggi», voto | #490 #492 #494 #496 #498 | chiusa il 20/09 |
 | 5 | Eseguire un esercizio (#183 #452) | | da fare |
 | 6 | Schede di allenamento (#172) | | da fare |
 | 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | | da fare |

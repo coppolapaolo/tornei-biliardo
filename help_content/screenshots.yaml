@@ -215,16 +215,42 @@ shots:
     caption: "La pagina di un campionato: le sue gare, la classifica generale e le impostazioni."
     viewports: [mobile, desktop]
 
-  - id: challenge-catalogo
+  - id: esercizi-oggi
     route: /challenges/
     as: Marco Rossi
-    caption: "Il catalogo degli esercizi: le prove di abilità disponibili, con la disposizione delle bilie."
+    caption: "«Oggi», la porta d'ingresso degli esercizi: l'ultimo esercizio da riprendere, i più provati e il collegamento al catalogo."
+    full_page: true
+
+  # Filtrato apposta: la figura sta accanto al testo che spiega i filtri, e un
+  # catalogo senza filtri accesi non mostrerebbe né la pillola accesa né il
+  # conteggio che cambia.
+  - id: challenge-catalogo
+    route: /challenges/catalog?abilita=posizione
+    as: Marco Rossi
+    caption: "Il catalogo degli esercizi filtrato per l'abilità «Posizione»: ogni card mostra livello, abilità, gesti, voto e quanti giocatori l'hanno provato."
+    full_page: true
+
+  - id: esercizio-scheda
+    route: /challenges/1
+    as: Marco Rossi
+    caption: "La scheda di un esercizio: disposizione, etichette, istruzioni, media e record di chi guarda, le cinque bilie del voto e le prove registrate."
+    full_page: true
+
+  # Il foglio si apre da solo quando il server rifiuta il salvataggio: si
+  # cambia il tipo di punteggio di un esercizio che ha già delle prove e si
+  # salva. Niente viene scritto — è proprio ciò che la figura racconta.
+  - id: esercizio-ha-gia-prove
+    route: /challenges/1/edit
+    as: Luca Bianchi
+    caption: "Il foglio «Questo esercizio ha già delle prove»: crea una copia e modifica quella, modifica comunque questo, torna al modulo."
+    click: ['label.c7-choice:has(input[value="pass_fail"])', 'button[type="submit"][form="challengeForm"]']
+    wait_for: "#evidenceSheet.show"
 
   - id: challenge-nuova
     route: /challenges/create
     as: Luca Bianchi
-    caption: "Il modulo per creare un esercizio: titolo, descrizione, tipo di punteggio, foto della disposizione e, in fondo, «Disegna l'esercizio» per chi la foto non ce l'ha."
-    # Pagina intera: «Non hai una foto? / Disegna il drill» sta in fondo, sotto
+    caption: "Il modulo dell'esercizio: titolo, come si fa, cosa allena, con che gesto, livello, come si registra e, in fondo, la disposizione — con «Disegna l'esercizio» per chi la foto non ce l'ha."
+    # Pagina intera: «La disposizione», con «Disegna l'esercizio», sta in fondo, sotto
     # la piega, ed e' il punto da cui la guida fa partire il builder. Senza,
     # la didascalia prometterebbe un pulsante che nell'immagine non c'e'.
     full_page: true
