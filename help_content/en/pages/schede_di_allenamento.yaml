@@ -1,0 +1,201 @@
+title: "Training sheets"
+section: giocare
+kind: approfondimento
+audience: [giocatore]
+minutes: 4
+summary: "The sequence of drills you do at the table, in the order you do them: you compose it once, then record how it went."
+screens: [sheet.index, sheet.compose, sheet.detail, sheet.run, sheet.session_summary]
+related: [challenge, fare_una_prova, progressi]
+
+blocks:
+  - type: text
+    text: >-
+      From the catalogue you pick **one drill at a time**. A **sheet** is the
+      opposite: you decide once what to do and in which order, so when you get
+      to the table you already know where to start. It is the same thing many
+      players do on a sheet of paper — one row per session, one column per
+      drill — and this page explains how to do it in the app.
+
+  - type: shot
+    shot: scheda-elenco
+    caption: "Your sheets: the one you started sits at the top, with «Resume»."
+
+  - type: heading
+    id: comporre
+    title: "Composing the sheet"
+
+  - type: text
+    text: >-
+      **Sheets** sits next to **Drills**. Give the sheet a name and press
+      **«Create and compose»**: the form opens, and from there you add drills
+      with **«Add a drill»**. The order matters — the warm-up goes first — and
+      you change it by dragging an item from the handle on the left. The same
+      drill can appear twice: the warm-up rake and the one at the end of the
+      session are two rows.
+
+  - type: shot
+    shot: scheda-componi
+    caption: "Composing: the drills in order, with the optional switches below."
+
+  - type: text
+    text: >-
+      Every item has its own **«how much»**, and you tap the pill on the right
+      to set it. The first choice is **how it is recorded**, and it changes
+      everything else.
+
+  - type: options
+    items:
+      - name: "Made"
+        values: "how many out of N shots"
+        text: >-
+          This is the unit of the paper sheet: «5 shots», and at the end you say
+          how many went in. It is also **the only one that adds up**, so the
+          only one that counts toward the threshold.
+      - name: "Done"
+        values: "yes or no"
+        text: >-
+          For items you do not count: the warm-up is either done or not.
+      - name: "Score"
+        values: "the drill score"
+        text: >-
+          The number comes from the drill, with its own maximum: there is no
+          «how much» to write here, because the drill already has one.
+      - name: "Won"
+        values: "how many out of N games"
+        text: >-
+          For items that are games, such as «against the ghost».
+      - name: "Minutes"
+        values: "how many minutes"
+        text: >-
+          For timed items, which have no outcome but a length.
+
+  - type: text
+    text: >-
+      If the drill is done **on the right and on the left** (or in two
+      positions A and B), the sheet shows **«Which side»**: switched on, the two
+      sides are recorded in two separate boxes, each with its own shots. Keeping
+      them apart is not a detail — it is how you notice which side is behind.
+
+  - type: note
+    tone: tip
+    title: "The options are all optional"
+    text: >-
+      **Level**, **threshold**, **days** and **length** are switched on only if
+      you need them. A sheet with none of them is a valid sheet: a list of
+      drills to do in order.
+
+  - type: list
+    title: "What the four options do"
+    items:
+      - "**Level** — the sheet is one step of a ladder: «level 3», and above it there is the 4."
+      - "**Threshold** — how much it takes to call the step passed. It sums only the «made» items, and you can ask for the threshold to be held for several sessions in a row."
+      - "**Days** — the items are split into day A, B and C, and one session does one of them."
+      - "**Length** — how many weeks the programme lasts."
+
+  - type: heading
+    id: seduta
+    title: "The session: one tap per box"
+
+  - type: text
+    text: >-
+      **«Begin»** starts the session: **one item at a time**, with the strip at
+      the top telling you where you are and the controls at the bottom, where
+      the thumb lands. If the item is done on two sides you see two diagrams —
+      the same one, mirrored — and two rows of keys.
+
+  - type: shot
+    shot: scheda-seduta
+    caption: "The session: the item in focus, and «how many out of 5?» for each side."
+
+  - type: steps
+    items:
+      - title: "Tap the number"
+        text: >-
+          «How many out of 5?»: you tap **4** and the box is written. There is no
+          «confirm»: if you got it wrong, tap the right number and the first one
+          is gone.
+      - title: "Move to the next item"
+        text: >-
+          The button at the bottom right takes you to the next item. You can also
+          tap an item in the strip at the top to go straight there.
+      - title: "Close it when you are done"
+        text: >-
+          On the last item the button becomes **«I am done»**, and takes you to
+          the summary.
+
+  - type: text
+    text: >-
+      **Long** items — thirty shots — are not recorded with a row of keys: there
+      you get **«Made»** and **«Missed»**, one per shot, with the strip keeping
+      count and **«Undo the shot»** for the last one. If you counted the shots
+      yourself, **«Write the total»** records them all at once.
+
+  - type: note
+    tone: info
+    title: "The session waits for you"
+    text: >-
+      You can close the app and come back the next day: the session stays open
+      and picks up from the first empty box. You also find it at the top of
+      **Drills**, with **«Pick the session back up»**.
+
+  - type: heading
+    id: registro
+    title: "The register: what the trend says"
+
+  - type: text
+    text: >-
+      Tapping the name of the sheet opens the **register**, which is the whole
+      paper sheet at a glance: at the top the last session, the average of the
+      last three and how many times you were above the threshold; then one row
+      per item with the last three times; at the bottom the list of sessions,
+      from which each one reopens.
+
+  - type: shot
+    shot: scheda-registro
+    caption: "The register: the three numbers, item by item, and the sessions."
+
+  - type: text
+    text: >-
+      Next to an item a short sentence may appear — **«trending up»**, or
+      **«left 2.7 on average, right 4.3»**. They are observations, not verdicts,
+      and they only show up when there is something to say: below three sessions
+      nothing is said about a trend, and a difference of less than one shot
+      between the two sides is not named, because at that distance it is chance.
+
+  - type: heading
+    id: cambiare
+    title: "Changing the sheet without losing the past"
+
+  - type: text
+    text: >-
+      A sheet can be changed whenever you like, even after months of sessions.
+      What you already recorded **does not change**: if an item goes from five
+      shots to ten, yesterday's «4 out of 5» stays a four out of five. And an
+      item you remove, if it has sessions behind it, leaves the sheet but stays
+      in the sessions where you did it.
+
+  - type: text
+    text: >-
+      **«Archive»** takes the sheet off the list without deleting anything: the
+      sessions you did stay, because they are your register.
+
+  - type: faq
+    items:
+      - q: "Can I have more than one sheet?"
+        a: >-
+          Yes, as many as you like: one for technique work, one to do before a
+          competition, one for the days when you are short of time. Sessions
+          belong to a sheet, so every sheet has its own register.
+      - q: "Does a session where I did little still count?"
+        a: >-
+          Yes, and that is right: training done badly is still training done. If
+          you recorded **nothing** at all, closing it leaves no trace — it does
+          not clutter the register.
+      - q: "Can the threshold be higher than the total?"
+        a: >-
+          No: if the sheet is worth 50 shots, a threshold of 60 could never be
+          reached. The app tells you when you save.
+      - q: "Who sees my sheet?"
+        a: >-
+          Only you. Opening it to an instructor, so they can see how you are
+          getting on, is something that will come.

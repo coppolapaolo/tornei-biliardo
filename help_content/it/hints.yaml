@@ -919,6 +919,39 @@ hints:
     page: fare_una_prova
     section: eliminare
 
+  # --- Le schede di allenamento (ADR-067) ---------------------------------
+  - id: scheda.ordine
+    label: "L'ordine degli esercizi"
+    short: "Li farai in questo ordine, quindi il riscaldamento sta all'inizio. Per cambiarlo trascina una voce dalla presa a sinistra, o usa le frecce su e giù."
+    anchor: scheda-ordine
+    screens: [sheet.compose]
+    page: schede_di_allenamento
+    section: comporre
+
+  - id: scheda.quanto_farne
+    label: "Quanto farne"
+    short: "Tocca la pillola per dire come si segna la voce — riusciti, fatto, punteggio, vinte, minuti — e quanti tiri, partite o minuti."
+    anchor: scheda-quanto-farne
+    screens: [sheet.compose]
+    page: schede_di_allenamento
+    section: comporre
+
+  - id: scheda.soglia
+    label: "La soglia"
+    short: "Quanto serve fare per dire che il gradino è superato. Somma le sole voci «a riusciti»: partite e minuti restano fuori dal conto."
+    anchor: scheda-soglia
+    screens: [sheet.compose]
+    page: schede_di_allenamento
+    section: comporre
+
+  - id: scheda.casella
+    label: "Segnare una casella"
+    short: "Un tocco sul numero e la casella è scritta, senza confermare. Se hai sbagliato, tocca il numero giusto: il primo sparisce."
+    anchor: scheda-casella
+    screens: [sheet.run]
+    page: schede_di_allenamento
+    section: seduta
+
 tours:
   - screen: dashboard.dashboard
     title: "La tua home"

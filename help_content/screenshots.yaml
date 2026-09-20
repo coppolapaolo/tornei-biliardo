@@ -659,3 +659,32 @@ shots:
     click: ['[data-help-action="skip"]', '[data-help-toggle]']
     clip: "section.c7-fascia"
     caption: "La fascia a turno concluso quando manca ancora la convalida della prova della X: «Prima di avviare il turno 2», cosa manca, e il pulsante spento."
+
+  # --- Le schede di allenamento (ADR-067) --------------------------------
+  # Le quattro figure della pagina «Le schede di allenamento». Il seed
+  # (`_crea_scheda`) prepara una scheda a livello 3 con tre sedute chiuse e una
+  # cominciata: senza, l'elenco direbbe «Nessuna scheda» e il registro
+  # «Nessuna seduta» proprio mentre il testo spiega come si leggono.
+  - id: scheda-elenco
+    route: /schede/
+    as: Marco Rossi
+    caption: "L'elenco delle schede: il nome, le etichette che la descrivono, a che punto si è, e «Riprendi» quando una seduta è rimasta aperta."
+    full_page: true
+
+  - id: scheda-componi
+    route: /schede/1/componi
+    as: Marco Rossi
+    caption: "Comporre una scheda: gli esercizi in ordine, ognuno con la pillola del suo «quanto farne», e sotto gli interruttori di livello, soglia, giorni e durata."
+    full_page: true
+
+  - id: scheda-seduta
+    route: /schede/seduta/4
+    as: Marco Rossi
+    caption: "La seduta: la striscia delle voci, i due disegni di destra e sinistra, e in basso le due file di tasti «quanti su 5?»."
+    full_page: true
+
+  - id: scheda-registro
+    route: /schede/1
+    as: Marco Rossi
+    caption: "Il registro: l'ultima seduta, la media, le volte sopra la soglia, la riga di ogni voce con le ultime tre volte, e l'elenco delle sedute."
+    full_page: true

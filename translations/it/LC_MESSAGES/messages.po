@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 15:04+0200\n"
+"POT-Creation-Date: 2026-09-20 15:17+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -2858,7 +2858,7 @@ msgid "attività"
 msgstr ""
 
 #: models/notification/templates.py:146 models/training_sheet/measure.py:108
-#: templates/sheet/compose.html:154
+#: templates/sheet/compose.html:152
 msgid "partite"
 msgstr ""
 
@@ -3045,7 +3045,7 @@ msgstr ""
 
 #: models/training_sheet/measure.py:97 routes/feedback.py:145
 #: templates/base.html:471 templates/components/_sequence_editor.html:141
-#: templates/sheet/_run_dock.html:83 templates/sheet/compose.html:209
+#: templates/sheet/_run_dock.html:83 templates/sheet/compose.html:207
 msgid "Fatto"
 msgstr ""
 
@@ -3071,11 +3071,11 @@ msgid "Minuti"
 msgstr ""
 
 #: models/training_sheet/measure.py:105 models/training_sheet/measure.py:106
-#: models/training_sheet/measure.py:107 templates/sheet/compose.html:153
+#: models/training_sheet/measure.py:107 templates/sheet/compose.html:151
 msgid "tiri"
 msgstr ""
 
-#: models/training_sheet/measure.py:109 templates/sheet/compose.html:155
+#: models/training_sheet/measure.py:109 templates/sheet/compose.html:153
 msgid "minuti"
 msgstr ""
 
@@ -4787,7 +4787,7 @@ msgstr ""
 #: templates/gamification/admin/level_config.html:98
 #: templates/gamification/admin/level_config.html:148
 #: templates/gamification/admin/level_config.html:199
-#: templates/gamification/dashboard.html:27 templates/sheet/compose.html:107
+#: templates/gamification/dashboard.html:27 templates/sheet/compose.html:105
 msgid "Livello"
 msgstr ""
 
@@ -5574,7 +5574,7 @@ msgstr ""
 #: templates/player/my_venue_requests.html:66
 #: templates/player/profile_edit.html:81 templates/player/venue_detail.html:287
 #: templates/player/venues.html:99 templates/roles/request_form.html:63
-#: templates/sheet/compose.html:142
+#: templates/sheet/compose.html:140
 msgid "Annulla"
 msgstr ""
 
@@ -6736,7 +6736,7 @@ msgstr ""
 #: templates/gamification/admin/features.html:26
 #: templates/gamification/admin/quests.html:22
 #: templates/player/profile_edit.html:25 templates/player/venue_detail.html:49
-#: templates/sheet/compose.html:73
+#: templates/sheet/compose.html:74
 msgid "Nome"
 msgstr ""
 
@@ -10885,7 +10885,7 @@ msgstr ""
 msgid "Rivedi la disposizione"
 msgstr ""
 
-#: templates/challenge/training.html:100 templates/sheet/compose.html:190
+#: templates/challenge/training.html:100 templates/sheet/compose.html:188
 msgid "Da che parte"
 msgstr ""
 
@@ -14436,12 +14436,12 @@ msgid "Togli"
 msgstr ""
 
 #: templates/components/_sequence_editor.html:89
-#: templates/sheet/compose.html:181
+#: templates/sheet/compose.html:179
 msgid "Meno"
 msgstr ""
 
 #: templates/components/_sequence_editor.html:95
-#: templates/sheet/compose.html:184
+#: templates/sheet/compose.html:182
 msgid "Più"
 msgstr ""
 
@@ -17876,8 +17876,8 @@ msgstr ""
 
 #: templates/direttore/preparazione/_esercizi.html:58
 #: templates/direttore/preparazione/_esercizi.html:69
-#: templates/exam/compose.html:136 templates/sheet/compose.html:98
-#: templates/sheet/compose.html:216
+#: templates/exam/compose.html:136 templates/sheet/compose.html:96
+#: templates/sheet/compose.html:214
 msgid "Aggiungi un esercizio"
 msgstr ""
 
@@ -18294,7 +18294,7 @@ msgstr ""
 msgid "Limite di tempo in minuti (facoltativo)"
 msgstr ""
 
-#: templates/exam/compose.html:80 templates/sheet/compose.html:83
+#: templates/exam/compose.html:80 templates/sheet/compose.html:81
 msgid "Gli esercizi, in ordine"
 msgstr ""
 
@@ -18594,7 +18594,7 @@ msgid "Oppure controproponi"
 msgstr ""
 
 #: templates/exam/request_detail.html:88 templates/exam/request_form.html:54
-#: templates/sheet/compose.html:203
+#: templates/sheet/compose.html:201
 msgid "Giorno"
 msgstr ""
 
@@ -20486,7 +20486,7 @@ msgstr ""
 
 #: templates/individual_match/availability.html:107
 #: templates/individual_match/availability.html:135
-#: templates/sheet/compose.html:129
+#: templates/sheet/compose.html:127
 msgid "Giorni"
 msgstr ""
 
@@ -23106,120 +23106,120 @@ msgstr ""
 msgid "Ogni voce ha il suo «quanto farne»"
 msgstr ""
 
-#: templates/sheet/compose.html:61
+#: templates/sheet/compose.html:62
 msgid "quanto farne"
 msgstr ""
 
-#: templates/sheet/compose.html:85
+#: templates/sheet/compose.html:83
 #, python-brace-format
 msgid "{n} tiri a riusciti"
 msgstr ""
 
-#: templates/sheet/compose.html:88
+#: templates/sheet/compose.html:86
 msgid "Ancora nessun esercizio: una scheda vuota non si può fare."
 msgstr ""
 
-#: templates/sheet/compose.html:102
+#: templates/sheet/compose.html:100
 msgid "Se ti servono"
 msgstr ""
 
-#: templates/sheet/compose.html:103
+#: templates/sheet/compose.html:101
 msgid "tutto facoltativo"
 msgstr ""
 
-#: templates/sheet/compose.html:107
+#: templates/sheet/compose.html:105
 msgid "la scheda è un gradino di una scala"
 msgstr ""
 
-#: templates/sheet/compose.html:110
+#: templates/sheet/compose.html:108
 msgid "Che gradino"
 msgstr ""
 
-#: templates/sheet/compose.html:115
+#: templates/sheet/compose.html:113
 msgid "Soglia"
 msgstr ""
 
-#: templates/sheet/compose.html:115
+#: templates/sheet/compose.html:113
 msgid "somma le voci «a riusciti»"
 msgstr ""
 
-#: templates/sheet/compose.html:118
+#: templates/sheet/compose.html:116
 msgid "Quanto serve fare"
 msgstr ""
 
-#: templates/sheet/compose.html:123
+#: templates/sheet/compose.html:121
 msgid "Sedute di fila sopra la soglia"
 msgstr ""
 
-#: templates/sheet/compose.html:129
+#: templates/sheet/compose.html:127
 msgid "A · B · C, ognuno con le sue voci"
 msgstr ""
 
-#: templates/sheet/compose.html:132
+#: templates/sheet/compose.html:130
 msgid "Durata"
 msgstr ""
 
-#: templates/sheet/compose.html:132
+#: templates/sheet/compose.html:130
 msgid "quante settimane"
 msgstr ""
 
-#: templates/sheet/compose.html:135
+#: templates/sheet/compose.html:133
 msgid "Quante settimane"
 msgstr ""
 
-#: templates/sheet/compose.html:143
+#: templates/sheet/compose.html:141
 msgid "Salva la scheda"
 msgstr ""
 
-#: templates/sheet/compose.html:150 templates/sheet/compose.html:177
+#: templates/sheet/compose.html:148 templates/sheet/compose.html:175
 msgid "Quanti tiri"
 msgstr ""
 
-#: templates/sheet/compose.html:151
+#: templates/sheet/compose.html:149
 msgid "Quante partite"
 msgstr ""
 
-#: templates/sheet/compose.html:152
+#: templates/sheet/compose.html:150
 msgid "Quanti minuti"
 msgstr ""
 
-#: templates/sheet/compose.html:156
+#: templates/sheet/compose.html:154
 msgid "Entra nella soglia della scheda."
 msgstr ""
 
-#: templates/sheet/compose.html:157
+#: templates/sheet/compose.html:155
 msgid "Fuori dalla soglia: la soglia somma solo le voci «a riusciti»."
 msgstr ""
 
-#: templates/sheet/compose.html:162 templates/sheet/compose.html:183
+#: templates/sheet/compose.html:160 templates/sheet/compose.html:181
 msgid "Quanto farne"
 msgstr ""
 
-#: templates/sheet/compose.html:167
+#: templates/sheet/compose.html:165
 msgid "Come si segna"
 msgstr ""
 
-#: templates/sheet/compose.html:178
+#: templates/sheet/compose.html:176
 msgid "Il «quanto farne» di questa voce."
 msgstr ""
 
-#: templates/sheet/compose.html:191
+#: templates/sheet/compose.html:189
 msgid "Destra e sinistra si segnano separate, ognuna coi suoi tiri."
 msgstr ""
 
-#: templates/sheet/compose.html:197
+#: templates/sheet/compose.html:195
 msgid "Sezione"
 msgstr ""
 
-#: templates/sheet/compose.html:199
+#: templates/sheet/compose.html:197
 msgid "Riscaldamento, Tecnica, Gioco…"
 msgstr ""
 
-#: templates/sheet/compose.html:205
+#: templates/sheet/compose.html:203
 msgid "A, B, C…"
 msgstr ""
 
-#: templates/sheet/compose.html:217
+#: templates/sheet/compose.html:215
 msgid "Lo stesso esercizio può comparire in due voci."
 msgstr ""
 
@@ -23251,7 +23251,6 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: templates/sheet/detail.html:62
-#, python-format
 msgid "Volte sopra la soglia"
 msgstr ""
 

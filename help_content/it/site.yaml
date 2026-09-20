@@ -44,6 +44,7 @@ sections:
       - referto_tpa
       - sale_e_disponibilita
       - challenge
+      - schede_di_allenamento
       - disegnare_un_drill
       - esami
       - playoff

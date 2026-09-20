@@ -141,14 +141,14 @@ ascolta `pointerdown`.
 
 | Artboard | Schermata | Template | PR | Stato |
 |---|---|---|---|---|
-| `SchedeElenco` | Le tue schede | nuovo | 6b | da fare |
-| `SchedaComponi` | Comporre | nuovo (riusa il componente di 3a) | 6b | da fare |
-| `SchedaVoce` | Quanto farne (D19: niente serie × ripetizioni) | nuovo | 6b | da fare |
-| `SchedaInCorso` | La seduta, una voce con varianti | nuovo | 6c | da fare |
-| `SedutaPalestra` | La stessa seduta, una voce lunga | nuovo | 6c | da fare |
-| `SchedaRegistro` | Il registro | nuovo | 6d | da fare |
-| `SchedaFine` | Fine seduta | nuovo | 6c | da fare |
-| `SchedaLettori` | Chi la legge (D11: il legame è allievo–scheda–istruttore) | nuovo | 6b, 8b | da fare |
+| `SchedeElenco` | Le tue schede | `sheet/index.html` | #513 (6b), #514 (6c) | **fatta il 20/09** — «Comincia» riprende la seduta aperta; archiviare e registro come azioni minori |
+| `SchedaComponi` | Comporre | `sheet/compose.html` | #513 (6b) | **fatta il 20/09** — il componente di 3a ha retto senza modifiche; «+ Sezione» non c'è: la sezione è un campo della voce |
+| `SchedaVoce` | Quanto farne (D19: niente serie × ripetizioni) | foglio in `sheet/compose.html` | #513 (6b) | **fatta il 20/09** — un foglio per pagina, non uno per voce; col punteggio il «quanto farne» sparisce |
+| `SchedaInCorso` | La seduta, una voce con varianti | `sheet/run.html` | #514 (6c) | **fatta il 20/09** — due disegni (il secondo specchiato) e due file di tasti |
+| `SedutaPalestra` | La stessa seduta, una voce lunga | `sheet/_run_dock.html` | #514 (6c) | **fatta il 20/09** — oltre dieci tiri si conta tiro per tiro, con «scrivi il totale» |
+| `SchedaRegistro` | Il registro | `sheet/detail.html` | #515 (6d) | **fatta il 20/09** — le osservazioni tacciono sotto tre sedute e sotto il tiro di scarto |
+| `SchedaFine` | Fine seduta | `sheet/summary.html` | #514 (6c) | **fatta il 20/09** — ha un indirizzo suo e si riapre; il passaggio di livello si **chiede**, chi conferma è della fase 8 |
+| `SchedaLettori` | Chi la legge (D11: il legame è allievo–scheda–istruttore) | nuovo | 8b | da fare — la **tabella** c'è (#511), la schermata è della fase 8: senza il ruolo istruttore non c'è nessuno da cercare |
 | `IstruttoreConsenso` | Chi legge le mie schede | nuovo | 8b | da fare |
 | `IstruttoreAggiungi` | Aprire una scheda a un istruttore (D18: vale subito) | nuovo | 8b | da fare |
 | `IstruttoreDiventa` | Diventare istruttore: lo stesso percorso di «Diventa esaminatore» (D10) | `roles/request_form.html` | 8a | da fare |
@@ -205,7 +205,7 @@ cosa si è scelto, cosa si è scartato e perché.
 | 3 | Esami | #484 #486 #487 #488 #489 (più #485) | chiusa il 19/09 |
 | 4 | Il modello dell'esercizio (#168 #252 #253), «Oggi», voto | #490 #492 #494 #496 #498 | chiusa il 20/09 |
 | 5 | Eseguire un esercizio (#183 #452 #326) | #501 #503 #504 #507 #508 #509 | chiusa il 20/09 |
-| 6 | Schede di allenamento (#172) | | da fare |
+| 6 | Schede di allenamento (#172) | #511 #513 #514 #515 #516 | **chiusa il 20/09** |
 | 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | | da fare |
 | 8 | Istruttori (#173) | | da fare |
 | 9 | Disegnatore (#179) — indipendente, si può anticipare dopo la 4 | | da fare |
