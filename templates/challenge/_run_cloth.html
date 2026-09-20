@@ -15,6 +15,16 @@
    anello. #}
 
 {% macro rings(target, marker_class='') -%}
+  {#- Le due forme del bersaglio (fase 9b). Un macro solo: le due viste — il
+      tavolo intero e l'ingrandimento — lo chiamano entrambe, e disegnarle in
+      due posti vorrebbe dire due bersagli che prima o poi si smentiscono. -#}
+  {%- if target.is_zone -%}
+  {#- Il riquadro: centro più le due misure, come nel disegnatore. Ruotato di
+      90° vuol dire larghezza e altezza scambiate, quindi qui non c'è niente da
+      sapere in più. -#}
+  <rect class="c7-cloth__zone" x="{{ target.x - target.w / 2 }}" y="{{ target.y - target.h / 2 }}"
+        width="{{ target.w }}" height="{{ target.h }}"></rect>
+  {%- else -%}
   {#- Dal più largo al più stretto, così i cerchi interni coprono gli esterni;
       `--ring` cresce verso FUORI, e con lui la tinta si schiarisce: il centro
       è il pieno, l'ultimo anello un velo. -#}
@@ -23,9 +33,13 @@
   <circle class="c7-cloth__ring" cx="{{ target.x }}" cy="{{ target.y }}"
           r="{{ target.step * indice }}" style="--ring: {{ indice - 1 }}"></circle>
   {%- endfor -%}
+  {%- endif -%}
 {%- endmacro %}
 
-{% set r = target.step * target.values|length %}
+{# Quanto largo inquadrare: il mezzo lato più lungo, che per i cerchi è il
+   raggio. L'ingrandimento resta quadrato — è l'area che si tocca col dito, e
+   un riquadro lungo e basso lo renderebbe una fessura. #}
+{% set r = target.outer_radius %}
 {# `readonly`: a fine prova il tavolo racconta e basta — la nuvola dei punti
    d'arrivo — e non c'è niente da toccare. Stesso disegno, un attributo in meno,
    così le due schermate non divergono. #}

@@ -243,7 +243,8 @@
         <label for="shots_count" class="flex-fill m-0" data-help="challenge-colpi">
           <span class="c7-rows__title d-block">{{ _("Colpi di una prova") }}</span>
           <span class="c7-rows__sub d-block">
-            {%- if target %}{{ _("il massimo è questo numero per %(n)s, il centro del bersaglio", n=target.max_points) }}
+            {%- if target and target.is_zone %}{{ _("il massimo è questo numero per %(n)s, il riquadro del disegno", n=target.max_points) }}
+            {%- elif target %}{{ _("il massimo è questo numero per %(n)s, il centro del bersaglio", n=target.max_points) }}
             {%- else %}{{ _("il massimo lo dà il bersaglio del disegno") }}{% endif -%}
           </span>
         </label>

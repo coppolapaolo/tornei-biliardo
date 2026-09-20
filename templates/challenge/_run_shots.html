@@ -66,7 +66,14 @@
   </div>
   <div class="c7-card">
     <div class="c7-num-lg">{% if run.position is not none %}{{ run.position }}%{% else %}&mdash;{% endif %}</div>
-    <div class="c7-rows__sub">{{ _("Posizione") }}</div>
+    {# Col riquadro la stessa percentuale risponde a un'altra domanda: non
+       «quanto vicino» — che un rettangolo non misura — ma quante volte dentro.
+       Stesso numero, parola diversa, altrimenti dice una cosa che non ha
+       calcolato. #}
+    <div class="c7-rows__sub">
+      {%- if run.target and run.target.is_zone %}{{ _("Nel riquadro") }}
+      {%- else %}{{ _("Posizione") }}{% endif -%}
+    </div>
   </div>
 </div>
 {% endif %}

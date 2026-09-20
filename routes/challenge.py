@@ -1115,6 +1115,10 @@ def _shots_payload(challenge):
             "challenge/_run_shots_dock.html",
             run=context["run"],
             challenge=challenge,
+            # La frase dei comandi nomina la forma del bersaglio, e prima del
+            # primo colpo la prova non c'è ancora: il bersaglio arriva di qui,
+            # come per il panno.
+            cloth_target=context["cloth_target"],
         ),
     }
 

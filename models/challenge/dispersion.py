@@ -71,10 +71,12 @@ def read_dispersion(shots: Iterable, target: Optional[Target]) -> Optional[Dispe
 
     scarto_x = sum(x for x, _y in punti) / len(punti) - target.x
     scarto_y = sum(y for _x, y in punti) / len(punti) - target.y
-    raggio = target.outer_radius or 1
-
-    lungo = scarto_x / raggio
-    lato = scarto_y / raggio
+    # Due misure, non una: un riquadro lungo e basso è largo il doppio di
+    # quanto è alto, e normalizzare entrambi gli scarti sullo stesso numero
+    # direbbe «corto» a chi in larghezza è centratissimo. Nei cerchi le due
+    # coincidono, quindi per loro non cambia niente.
+    lungo = scarto_x / (target.scale_x or 1)
+    lato = scarto_y / (target.scale_y or 1)
     titolo, dettaglio = _frase(punti, target, lungo, lato)
     return Dispersion(
         points=punti,

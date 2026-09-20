@@ -69,6 +69,12 @@
             <i class="fas fa-font" aria-hidden="true"></i><span>{{ _("Testo") }}</span></button>
           <button class="btn tool" data-tool="target" data-help="drill-bersaglio">
             <i class="fas fa-bullseye" aria-hidden="true"></i><span>{{ _("Bersaglio") }}</span></button>
+          <button class="btn tool" data-tool="positions" data-help="drill-posizioni">
+            <i class="fas fa-list-ol" aria-hidden="true"></i><span>{{ _("Posizioni") }}</span></button>
+          <button class="btn tool" data-tool="callout" data-help="drill-richiamo">
+            <i class="fas fa-comment-dots" aria-hidden="true"></i><span>{{ _("Richiamo") }}</span></button>
+          <button class="btn tool" data-tool="marker">
+            <i class="far fa-circle-dot" aria-hidden="true"></i><span>{{ _("Marcatore") }}</span></button>
           <span class="tools__sep" aria-hidden="true"></span>
           <button class="btn tool tool--icon ghostbtn" id="undo"
                   title="{{ _('Annulla mossa') }}" aria-label="{{ _('Annulla mossa') }}">
@@ -130,10 +136,61 @@
 
       {# Il bersaglio (ADR-066): l'unica voce del disegno che il server legge
          come dato. Uno per disegno; con un bersaglio l'esercizio si può
-         registrare colpo per colpo. #}
+         registrare colpo per colpo.
+
+         Due forme, e fanno due domande diverse: i **cerchi** chiedono quanto
+         vicino, il **riquadro** dentro o fuori. I riquadri sul tavolo possono
+         essere tanti — gli schemi di Billiard University ne hanno quattro —
+         ma uno solo può valere punti. #}
       <div class="sec" id="sec-bersaglio">
         <h2>{{ _("Bersaglio") }}</h2>
-        <p class="tip" id="targetEmpty">{{ _("Attiva Bersaglio e tocca il panno dove la bianca deve fermarsi. Ce n'è uno per disegno: un secondo tocco lo sposta.") }}</p>
+        <div class="row">
+          <button class="btn wide shape" type="button" data-shape="rings">
+            <b>{{ _("Cerchi") }}</b><small>{{ _("quanto vicino") }}</small></button>
+          <button class="btn wide shape" type="button" data-shape="zone">
+            <b>{{ _("Riquadro") }}</b><small>{{ _("dentro o fuori") }}</small></button>
+        </div>
+        <p class="tip" id="targetEmpty">
+          <span data-shape-tip="rings">{{ _("Tocca il panno dove la bianca deve fermarsi. Ce n'è uno per disegno: un secondo tocco lo sposta.") }}</span>
+          <span data-shape-tip="zone" hidden>{{ _("Tocca il panno: nasce un riquadro da 2 × 1 diamanti. Puoi metterne quanti ne servono, e trascinarne gli angoli.") }}</span>
+        </p>
+
+        {# Il riquadro selezionato. Le misure sono in diamanti a passi di un
+           quarto, come la griglia e come gli schemi da cui viene la notazione. #}
+        <div id="zoneControls" hidden>
+          <div class="field">
+            <span>{{ _("Largo") }} — <b id="zoneW">2</b> <span class="tip" style="display:inline">{{ _("in diamanti · passi da ¼") }}</span></span>
+            <div class="row">
+              <button class="btn wide ghostbtn" type="button" id="zoneWMinus" aria-label="{{ _('Un quarto in meno') }}">−</button>
+              <button class="btn wide ghostbtn" type="button" id="zoneWPlus" aria-label="{{ _('Un quarto in più') }}">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <span>{{ _("Alto") }} — <b id="zoneH">1</b></span>
+            <div class="row">
+              <button class="btn wide ghostbtn" type="button" id="zoneHMinus" aria-label="{{ _('Un quarto in meno') }}">−</button>
+              <button class="btn wide ghostbtn" type="button" id="zoneHPlus" aria-label="{{ _('Un quarto in più') }}">+</button>
+            </div>
+          </div>
+          <div class="row" style="margin-top:6px">
+            <button class="btn wide ghostbtn" type="button" id="zoneRotate">{{ _("Ruota di 90°") }}</button>
+          </div>
+          <label class="chk"><input type="checkbox" id="zoneFilled"> {{ _("Riempito") }}</label>
+          <label class="chk"><input type="checkbox" id="zoneNumber"> {{ _("Numero dentro") }}</label>
+          <label class="chk" data-help="drill-riquadro-punteggio"><input type="checkbox" id="zoneScores"> {{ _("Vale per il punteggio") }}</label>
+          <div class="field" id="zoneValueRow" hidden>
+            <span>{{ _("Punti se si ferma dentro") }} — <b id="zoneValue">1</b></span>
+            <div class="row">
+              <button class="btn wide ghostbtn" type="button" id="zoneValueMinus" aria-label="{{ _('Un punto in meno') }}">−</button>
+              <button class="btn wide ghostbtn" type="button" id="zoneValuePlus" aria-label="{{ _('Un punto in più') }}">+</button>
+            </div>
+          </div>
+          <p class="tip">{{ _("Fuori dal riquadro vale zero. Con un bersaglio l'esercizio si può registrare colpo per colpo: lo scegli in «Modifica l'esercizio».") }}</p>
+          <div class="row" style="margin-top:4px">
+            <button class="btn wide ghostbtn" type="button" id="zoneRemove">{{ _("Togli il riquadro") }}</button>
+          </div>
+        </div>
+
         <div id="targetControls" hidden>
           <div class="field">
             <span>{{ _("Spessore degli anelli") }}</span>
@@ -159,6 +216,18 @@
           <div class="row" style="margin-top:4px">
             <button class="btn wide ghostbtn" type="button" id="targetRemove">{{ _("Togli il bersaglio") }}</button>
           </div>
+        </div>
+      </div>
+
+      {# Le posizioni numerate (#179): una scala ordinata, non numeri sparsi.
+         Compare quando ce n'è una selezionata — finché non si tocca il panno
+         non ha niente da dire. #}
+      <div class="sec" id="sec-posizioni" hidden>
+        <h2>{{ _("Posizioni numerate") }}</h2>
+        <p class="tip">{{ _("Ogni tocco aggiunge una posizione dopo quella selezionata: i numeri si rifanno da soli. Si possono mettere anche sulla sponda, fuori dal panno.") }}</p>
+        <label class="chk"><input type="checkbox" id="posReverse"> {{ _("Numera all'indietro") }}</label>
+        <div class="row" style="margin-top:4px">
+          <button class="btn wide ghostbtn" type="button" id="posRemoveLast">{{ _("Togli l'ultima") }}</button>
         </div>
       </div>
 
@@ -338,6 +407,9 @@ window.DRILL_BUILDER_I18N = {
        traducibili, ma nessuno le ci aveva fatte passare. #}
     textNew: {{ _("Testo da inserire:")|tojson }},
     textEdit: {{ _("Testo:")|tojson }},
+    calloutNew: {{ _("Didascalia:")|tojson }},
+    calloutEdit: {{ _("Didascalia:")|tojson }},
+    toastOneTarget: {{ _("C'è già un bersaglio: toglilo prima")|tojson }},
     ballCue: {{ _("Battente")|tojson }},
     ballGhost: {{ _("Biglia fantasma")|tojson }},
     ballN: {{ _("Biglia")|tojson }},
