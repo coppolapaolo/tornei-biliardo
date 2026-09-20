@@ -22,7 +22,7 @@ from __future__ import annotations
 from typing import List, Optional
 
 from ..base import BaseModel, db, utc_now
-from .measure import SheetMeasure
+from .measure import LevelUp, SheetMeasure
 
 
 class TrainingSheet(BaseModel):
@@ -70,10 +70,28 @@ class TrainingSheet(BaseModel):
         db.Boolean, nullable=False, default=False, server_default="0"
     )
 
+    #: Chi sancisce il gradino, quando la soglia è stata tenuta (D8):
+    #: `none` nessuno, `auto` la soglia stessa, `instructor` chi ti segue.
+    #: I valori stanno in una `String` e non in un `db.Enum`, come `measure`.
+    level_up = db.Column(
+        db.String(12), nullable=False, default="auto", server_default="auto"
+    )
+    #: Quando il livello di questa scheda è stato **superato**. NULL = non
+    #: ancora. È un fatto, non una previsione: da qui in poi la scheda resta
+    #: superata anche se le sedute dopo vanno peggio.
+    passed_at = db.Column(db.DateTime, nullable=True)
+    #: Chi l'ha sancito. NULL con `auto`, dove a sancire è stata la soglia:
+    #: sono due cose diverse e si leggono diversamente («superato il 12/10» /
+    #: «confermato da Luca il 12/10»).
+    passed_by_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="SET NULL"), nullable=True
+    )
+
     version = db.Column(db.Integer, nullable=False, default=1, server_default="1")
     is_active = db.Column(db.Boolean, nullable=False, default=True, server_default="1")
 
     owner = db.relationship("User", foreign_keys=[owner_id])
+    passed_by = db.relationship("User", foreign_keys=[passed_by_id])
     items = db.relationship(
         "TrainingSheetItem",
         back_populates="sheet",
@@ -133,6 +151,14 @@ class TrainingSheet(BaseModel):
     @property
     def has_threshold(self) -> bool:
         return self.threshold is not None and self.total > 0
+
+    @property
+    def level_up_kind(self) -> "LevelUp":
+        return LevelUp.parse(self.level_up)
+
+    @property
+    def is_passed(self) -> bool:
+        return self.passed_at is not None
 
     def __repr__(self) -> str:  # pragma: no cover - banale
         return f"<TrainingSheet {self.id} {self.name!r}>"

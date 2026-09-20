@@ -25,7 +25,7 @@ from ..challenge.models import Challenge
 from ..exceptions import NotFoundError, PermissionDeniedError, ValidationError
 from ..transaction.manager import transactional
 from ..user.models import User
-from .measure import MAX_AMOUNT, MAX_ITEMS, MIN_AMOUNT, SheetMeasure
+from .measure import MAX_AMOUNT, MAX_ITEMS, MIN_AMOUNT, LevelUp, SheetMeasure
 from .models import TrainingSheet, TrainingSheetItem, TrainingSheetReader
 
 #: Quanti livelli può avere una scala di schede. Nessuno ne usa cento, e un
@@ -160,6 +160,7 @@ class TrainingSheetService:
         threshold_streak: int = 1,
         weeks: Optional[int] = None,
         uses_days: bool = False,
+        level_up: Optional[LevelUp] = None,
     ) -> TrainingSheet:
         """Salva nome, opzioni e **l'intera sequenza**, tutto o niente.
 
@@ -195,6 +196,13 @@ class TrainingSheetService:
             weeks, 1, MAX_WEEKS, _("Le settimane vanno da 1 a %(n)s.", n=MAX_WEEKS)
         )
         sheet.uses_days = bool(uses_days)
+        # Senza livello non c'è gradino da sancire, e tenere un «chi lo
+        # conferma» su una scheda che livelli non ne ha sarebbe una risposta a
+        # una domanda che nessuno fa.
+        if level_up is not None:
+            sheet.level_up = (
+                level_up.value if sheet.level is not None else LevelUp.NONE.value
+            )
 
         TrainingSheetService._write_items(sheet, items)
         db.session.flush()

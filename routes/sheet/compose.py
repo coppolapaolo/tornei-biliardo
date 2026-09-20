@@ -20,6 +20,7 @@ from models.challenge.models import Challenge
 from models.exceptions import DomainError
 from models.training_sheet import (
     MAX_AMOUNT,
+    LevelUp,
     SheetItemSpec,
     SheetMeasure,
     TrainingSheetService,
@@ -61,6 +62,10 @@ def _render(sheet, items, *, form=None, status=200):
             form=form or {},
             available=_catalogo(),
             measures=list(SheetMeasure),
+            level_up_modi=list(LevelUp),
+            level_up_scelto=LevelUp.parse(
+                (form or {}).get("level_up") or sheet.level_up
+            ),
             max_amount=MAX_AMOUNT,
             max_level=MAX_LEVEL,
             max_streak=MAX_STREAK,
@@ -99,6 +104,7 @@ def save_composition(sheet_id):
         "has_threshold": _acceso("has_threshold"),
         "has_weeks": _acceso("has_weeks"),
         "uses_days": _acceso("uses_days"),
+        "level_up": request.form.get("level_up") or "",
     }
 
     try:
@@ -114,6 +120,7 @@ def save_composition(sheet_id):
             ),
             weeks=_int(form["weeks"]) if form["has_weeks"] else None,
             uses_days=form["uses_days"],
+            level_up=LevelUp.parse(form["level_up"]),
         )
     except ValueError as errore:
         db.session.rollback()

@@ -64,10 +64,14 @@ def accetta_proposta(assignment_id):
     """La scheda nasce qui, e nasce tua. Il permesso di lettura è la casella."""
     _mia_o_404(assignment_id)
     apri = request.form.get("apri_lettura") == "1"
+    archivia = request.form.get("archivia_promossa") == "1"
 
     def _accetta():
         return AssegnazioneService.accetta(
-            assignment_id, current_user, apri_lettura=apri
+            assignment_id,
+            current_user,
+            apri_lettura=apri,
+            archivia_promossa=archivia,
         )
 
     return handle_service_action(

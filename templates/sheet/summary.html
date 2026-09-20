@@ -85,16 +85,26 @@
   {% endif %}
 
   {# ── Il gradino ────────────────────────────────────────────────────── #}
+  {# Chi lo sancisce lo dice la scheda (D8), e la frase cambia con la
+     risposta: con `auto` è già superato — l'ha timbrato la chiusura di questa
+     seduta — con `instructor` aspetta una persona. #}
   {% if summary.step_reached %}
   <div class="c7-flash c7-flash--ok">
     <span class="c7-flash__ico"><i class="fas fa-trophy"></i></span>
     <div>
       <div class="c7-flash__title">
-        {%- if mia %}{{ _("Hai tenuto la soglia del livello %(n)s", n=summary.sheet.level) }}
-        {%- else %}{{ _("Ha tenuto la soglia del livello %(n)s", n=summary.sheet.level) }}{% endif -%}
+        {%- if summary.sheet.is_passed -%}
+          {%- if mia %}{{ _("Hai superato il livello %(n)s", n=summary.sheet.level) }}
+          {%- else %}{{ _("Ha superato il livello %(n)s", n=summary.sheet.level) }}{% endif -%}
+        {%- else -%}
+          {%- if mia %}{{ _("Hai tenuto la soglia del livello %(n)s", n=summary.sheet.level) }}
+          {%- else %}{{ _("Ha tenuto la soglia del livello %(n)s", n=summary.sheet.level) }}{% endif -%}
+        {%- endif -%}
       </div>
       {{ ngettext("Una seduta sopra la soglia.", "%(num)s sedute di fila sopra la soglia.", summary.streak) }}
-      {% if mia %}{{ _("Il passaggio al livello successivo lo confermerà chi ti segue.") }}{% endif %}
+      {% if mia and not summary.sheet.is_passed %}
+        {{ _("Il passaggio al livello successivo lo confermerà chi ti segue.") }}
+      {% endif %}
     </div>
   </div>
   {% endif %}

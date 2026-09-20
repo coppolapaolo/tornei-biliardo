@@ -94,6 +94,50 @@ Non è simmetrico, come già in ADR-069:
 * **ritirare una proposta non avvisa nessuno.** Era un invito, e ritirarlo
   prima che l'altro risponda non è una notizia: è non aver detto niente.
 
+### 6 · Il passaggio di livello ha tre sancitori e due gesti (D8)
+
+La fase 6 aveva lasciato aperta una domanda — **chi dice che hai passato il
+livello?** — e l'ADR-070 l'aveva *mostrata* senza chiuderla: «Valuta il
+passaggio di livello» diceva all'istruttore che l'allievo era pronto, e poi non
+c'era niente da premere. Qui si chiude.
+
+La risposta sta sulla scheda, in `level_up` (`LevelUp`), e sono **tre**:
+
+| | Chi sancisce | Per chi è |
+|---|---|---|
+| `none` | nessuno | la scheda non è fatta a livelli |
+| `auto` *(default)* | la soglia stessa, alla seduta in cui viene tenuta | chi si allena da solo — senza, il suo gradino non lo timbrerebbe mai nessuno |
+| `instructor` | una persona, fra quelle che leggono la scheda | chi va in sala da un maestro |
+
+Il default è `auto` perché è ciò che la scheda faceva già prima di questa
+colonna: la fine seduta diceva «gradino raggiunto» e nessuno lo scriveva. Le
+schede che esistono già prendono lo stesso default, e **non c'è backfill** di
+`passed_at`: una scheda superata è un fatto avvenuto in un giorno, e inventarne
+la data scriverebbe nello storico qualcosa che non è successo.
+
+Conseguenza sul triage (ADR-070 §4): «Valuta il passaggio di livello» compare
+**solo** per le schede `instructor`. Con `auto` non c'è niente da valutare, e
+mettere in elenco chi non ha bisogno di te è un invito a premere qualcosa che
+non esiste.
+
+**Superato è un fatto, non uno stato che va e viene.** Timbrato `passed_at`, la
+scheda resta superata anche se le sedute dopo vanno peggio: un attestato, non
+un termometro. È la stessa ragione per cui `break_player_id` si persiste invece
+di essere dedotto a ogni lettura (ADR-056), ed è anche ciò che permette al
+gradino di essere contato — «5 al livello dopo» nello storico di un gruppo.
+
+E **il gradino è un fatto anche per chi lo conferma**: `GradinoService.conferma`
+rifiuta se la soglia non è stata tenuta. Un istruttore non promuove chi non è
+arrivato — potrebbe volerlo, e il posto per dirlo non è un pulsante che scrive
+nello storico dell'allievo una cosa non avvenuta.
+
+**I gesti sono due, e il secondo è facoltativo.** «Confermo» timbra; «Dai il
+livello dopo» è una proposta come le altre, con `promotes_sheet_id` a dire
+quale scheda lascia indietro. Si può essere promossi prima di avere in mano la
+scheda nuova — succede sempre, in sala — e accettandola l'allievo può mettere
+nello storico quella superata: una casella del **suo** modulo, perché la scheda
+è sua e archiviare non è cancellare.
+
 ## Alternative scartate
 
 **L'istruttore scrive la scheda in casa dell'allievo.** La forma di ogni
@@ -108,6 +152,19 @@ potrebbe più correggere un refuso senza rifarla. Si copia **com'è il giorno in
 cui si accetta**, e il prezzo — chi accetta lunedì e chi giovedì possono
 ricevere due versioni — è minore del beneficio, perché da lì in poi le due
 schede sono comunque indipendenti.
+
+**Un solo sancitore del gradino.** Sarebbe stato più semplice: o lo timbra la
+soglia, o lo conferma un istruttore. Ma le due risposte servono due persone
+diverse, e sceglierne una sola avrebbe lasciato fuori l'altra — chi si allena
+da solo senza nessuno che confermi, o l'allievo promosso da un conteggio
+mentre il suo maestro lo guardava sbagliare.
+
+**Il timbro senza la scheda dopo, o la scheda dopo senza il timbro.** Ciascuno
+da solo racconta metà: il primo promuove e lascia l'allievo sulla stessa
+scheda, il secondo gli dà la scheda nuova senza dire che ha passato la
+precedente — e allora «quanti sono andati al livello dopo» non si può contare.
+Sono due gesti perché sono due decisioni, e in sala avvengono in momenti
+diversi.
 
 **Un legame vivo fra modello e copia** («l'istruttore aggiorna, e la scheda di
 tutti cambia»). Sarebbe l'unico modo per tenere venti allievi davvero
@@ -136,3 +193,8 @@ nuova — cioè di nuovo un gesto dell'allievo.
 * `tests/new/integration/test_pagina_proposte.py` — le route, la casella che
   arriva **dal modulo** (spuntata e non), il 404 sulla proposta di un altro, e
   l'allowlist di produzione.
+* `tests/new/unit/test_passaggio_di_livello.py` — le tre risposte di `level_up`,
+  il timbro che resta dopo una seduta storta, e l'istruttore che non promuove
+  chi non è arrivato.
+* `tests/new/unit/test_allievi_triage.py` — che una scheda `auto` **non**
+  comparisca in «Valuta il passaggio di livello».

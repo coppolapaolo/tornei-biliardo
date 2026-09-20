@@ -20,6 +20,11 @@ from models.istruttore.models import TrainingAssignment
 
 MIGRATION = "migrations.20260920_proposte_di_scheda"
 
+#: Le migration che **aggiungono colonne** a questa tabella dopo la prima. Il
+#: confronto con il modello le vuole tutte: l'ORM legge lo schema di oggi, non
+#: quello del giorno in cui la tabella è nata.
+SUCCESSIVE = ("migrations.20260920_superato_il_livello",)
+
 
 def _colonne(conn: sqlite3.Connection, tabella: str) -> set[str]:
     return {riga[1] for riga in conn.execute(f"PRAGMA table_info({tabella})")}
@@ -57,8 +62,14 @@ def db_di_ieri(tmp_path):
     return str(percorso)
 
 
+def _schema_di_oggi(percorso: str) -> None:
+    importlib.import_module(MIGRATION).upgrade_sqlite(percorso)
+    for nome in SUCCESSIVE:
+        importlib.import_module(nome).upgrade_sqlite(percorso)
+
+
 def test_lo_schema_coincide_col_modello(db_di_ieri):
-    importlib.import_module(MIGRATION).upgrade_sqlite(db_di_ieri)
+    _schema_di_oggi(db_di_ieri)
 
     conn = sqlite3.connect(db_di_ieri)
     attese = {c.name for c in TrainingAssignment.__table__.columns}

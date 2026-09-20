@@ -32,7 +32,10 @@ MIGRATION = "migrations.20260920_scheda_di_allenamento"
 #: confronto con i modelli le vuole tutte: l'ORM legge lo schema di oggi, non
 #: quello del giorno in cui le tabelle sono nate. Chi ne scrive un'altra la
 #: aggiunge qui, o questo test glielo ricorda.
-SUCCESSIVE = ("migrations.20260920_note_condivise",)
+SUCCESSIVE = (
+    "migrations.20260920_note_condivise",
+    "migrations.20260920_superato_il_livello",
+)
 
 
 def _schema_di_oggi(percorso: str) -> None:

@@ -283,8 +283,22 @@ class TrainingSessionService:
             session.notes = notes.strip() or None
         session.ended_at = utc_now()
         db.session.flush()
+        TrainingSessionService._timbra_il_gradino(session)
         TrainingSessionService._publish_closed(session)
         return session
+
+    @staticmethod
+    def _timbra_il_gradino(session: TrainingSession) -> None:
+        """Se la scheda si promuove da sé, la seduta appena chiusa la promuove.
+
+        Qui dentro e non dopo, perché il gradino discende **da questa seduta**:
+        se la chiusura si annulla deve annullarsi anche il livello superato.
+        L'import è locale, che `gradino` importa questo modulo.
+        """
+        from .gradino import GradinoService
+
+        if session.sheet is not None:
+            GradinoService.timbra_alla_soglia(session.sheet)
 
     @staticmethod
     def _publish_closed(session: TrainingSession) -> None:

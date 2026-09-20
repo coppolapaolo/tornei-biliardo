@@ -1630,6 +1630,10 @@ a.c7-choice.is-selected { color: var(--c7-accent-ink); }
 .c7-rows__sub { margin-top: 2px; font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); }
 /* Riga spenta: elemento concluso o non ancora raggiunto. */
 .c7-rows__row--dim .c7-rows__title { color: var(--c7-ink-muted); }
+/* Riga con i comandi sotto invece che a destra: due decisioni non stanno
+   accanto a un nome su uno schermo da 390px, e affiancarne una al chevron
+   direbbe che e' la piu' importante. */
+.c7-rows__row--stack { flex-direction: column; align-items: stretch; gap: 10px; }
 
 /* Titolo di sezione, con l'azione facoltativa a destra ("Tutti", "Dettagli"). */
 .c7-sechead { display: flex; align-items: baseline; gap: 10px; }
@@ -3201,6 +3205,9 @@ a.c7-vt__ovr:hover { color: var(--c7-on-ink); }
 }
 .c7-chip:hover { color: var(--c7-ink); }
 .c7-chip.is-on, .c7-chip.is-on:hover { background: var(--c7-ink); color: var(--c7-on-ink); }
+/* Il chip di un fatto raggiunto («livello superato»): non e' un filtro, quindi
+   non si accende al passaggio del dito. */
+.c7-chip--ok, .c7-chip--ok:hover { background: var(--c7-ok-bg); color: var(--c7-ok-ink); }
 /* Il chip che contiene una scelta («Nei primi 3», «2026»): la tendina e'
    nuda, il chip e' il suo vestito. */
 .c7-chip select {

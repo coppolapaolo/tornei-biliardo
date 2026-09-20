@@ -140,10 +140,42 @@
   {% if pagina.passaggio %}
   <div class="c7-label">{{ _("Valuta il passaggio di livello") }}</div>
   <section class="c7-rows">
-    {% for voce in pagina.passaggio %}{{ riga(voce) }}{% endfor %}
+    {% for voce in pagina.passaggio %}
+    <div class="c7-rows__row c7-rows__row--stack">
+      <div class="d-flex align-items-center gap-2 w-100">
+        <span class="c7-avatar">{{ voce.persona.username[:2]|upper }}</span>
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ voce.persona.username }}</div>
+          <div class="c7-rows__sub">
+            {%- if voce.segnale.scheda %}{{ voce.segnale.scheda.name }}
+            <span class="c7-sep">·</span> {% endif -%}
+            {{ voce.segnale.frase }}
+          </div>
+        </div>
+      </div>
+      {# I due gesti del passaggio (D8): il timbro, che vale da solo, e la
+         scheda del gradino dopo, che è facoltativa. Qui hanno lo stesso peso
+         visivo perché sono davvero due decisioni, non una e il suo seguito. #}
+      <div class="c7-duo w-100">
+        <form method="POST"
+              action="{{ url_for('istruttore.conferma_passaggio', user_id=voce.persona.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="sheet_id" value="{{ voce.segnale.scheda.id }}">
+          <button type="submit" class="btn btn-primary w-100">{{ _("Confermo") }}</button>
+        </form>
+        {% if feature_visible('istruttore.dai_scheda') %}
+        <a class="btn btn-secondary"
+           href="{{ url_for('istruttore.dai_scheda', user_id=voce.persona.id,
+                            promuove=voce.segnale.scheda.id) }}">
+          {{ _("Dai il livello dopo") }}
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
   </section>
   <p class="c7-rows__sub" style="margin:0">
-    {{ _("Hanno superato la soglia della loro scheda tante volte di fila quante ne chiede. Il gradino lo sancisci tu: dagli la scheda del livello dopo quando te la senti.") }}
+    {{ _("Hanno superato la soglia della loro scheda tante volte di fila quante ne chiede, e la loro scheda dice che a sancirlo sei tu. «Confermo» lo scrive; dare la scheda del livello dopo è un secondo gesto, e può aspettare.") }}
   </p>
   {% endif %}
 

@@ -36,6 +36,7 @@ from models.istruttore import (
     build_allievi,
 )
 from models.training_sheet import TrainingSheetService
+from models.training_sheet.gradino import GradinoService
 from utils.route_helpers import handle_service_action
 
 istruttore_bp = Blueprint("istruttore", __name__, url_prefix="/istruttore")
@@ -150,9 +151,14 @@ def _un_allievo(user_id: int):
 @istruttore_bp.route("/allievi/<int:user_id>/scheda", methods=["GET"])
 @login_required
 def dai_scheda(user_id):
-    """«Dai una scheda a Marco»: fra le tue, quella che gli proponi."""
+    """«Dai una scheda a Marco»: fra le tue, quella che gli proponi.
+
+    Con `?promuove=<scheda>` è il secondo gesto del passaggio di livello: la
+    stessa pagina, che però dice quale scheda sua sta lasciando indietro.
+    """
     _solo_istruttori()
     legame = _un_allievo(user_id)
+    promossa = _scheda_da_promuovere(legame, request.args.get("promuove", type=int))
 
     return render_template(
         "istruttore/dai_scheda.html",
@@ -163,6 +169,34 @@ def dai_scheda(user_id):
             if scheda.active_items
         ],
         attesa=AssegnazioneService.attese_di(current_user.id).get(user_id),
+        promossa=promossa,
+    )
+
+
+def _scheda_da_promuovere(legame, sheet_id: Optional[int]):
+    """La scheda dell'allievo che si sta lasciando indietro, se è delle sue."""
+    if not sheet_id:
+        return None
+    return next((s for s in legame.schede if s.id == sheet_id), None)
+
+
+@istruttore_bp.route("/allievi/<int:user_id>/passaggio", methods=["POST"])
+@login_required
+def conferma_passaggio(user_id):
+    """«Confermo»: il gradino di quella scheda è superato (D8).
+
+    È il primo dei due gesti, e vale da solo: dare la scheda del livello dopo
+    è il secondo, facoltativo — si può essere promossi prima di avere in mano
+    la scheda nuova.
+    """
+    _solo_istruttori()
+    _un_allievo(user_id)
+    sheet_id = request.form.get("sheet_id", type=int) or 0
+
+    return handle_service_action(
+        lambda: GradinoService.conferma(sheet_id, current_user),
+        success_message=_("Passaggio confermato."),
+        redirect_url=url_for("istruttore.allievi"),
     )
 
 
@@ -177,12 +211,14 @@ def proponi_scheda(user_id):
         flash(_("Scegli quale scheda dargli."), "error")
         return redirect(url_for("istruttore.dai_scheda", user_id=user_id))
 
+    promuove = request.form.get("promuove", type=int)
     try:
         nate = AssegnazioneService.proponi(
             current_user,
             sheet_id,
             [user_id],
             messaggio=request.form.get("message"),
+            promuove={user_id: promuove} if promuove else None,
         )
     except DomainError as errore:
         flash(str(errore), "error")

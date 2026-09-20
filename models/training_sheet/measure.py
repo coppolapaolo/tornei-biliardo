@@ -101,6 +101,59 @@ _LABELS = {
     SheetMeasure.MINUTES: _l("Minuti"),
 }
 
+
+class LevelUp(str, Enum):
+    """Chi sancisce il gradino, quando la soglia è stata tenuta (D8).
+
+    Sono tre risposte a una domanda sola — «chi dice che hai passato il
+    livello?» — e nessuna delle tre è un ripiego dell'altra: chi si allena da
+    solo non ha nessuno che confermi, e chi va in sala da un maestro non vuole
+    che lo decida un conteggio.
+
+    In colonna sta il **valore**, come per `SheetMeasure`.
+    """
+
+    #: La scheda non è fatta a livelli: non c'è nessun gradino da passare.
+    NONE = "none"
+    #: Lo sancisce la soglia stessa, alla seduta in cui viene tenuta.
+    AUTO = "auto"
+    #: Lo sancisce un istruttore fra quelli che leggono la scheda.
+    INSTRUCTOR = "instructor"
+
+    @property
+    def label(self):
+        return _LEVEL_UP_LABELS[self]
+
+    @property
+    def hint(self):
+        return _LEVEL_UP_HINTS[self]
+
+    @classmethod
+    def parse(cls, raw) -> "LevelUp":
+        """Dal modulo o dalla colonna. L'ignoto è «alla soglia».
+
+        Il ripiego è il comportamento che la scheda aveva prima che questa
+        colonna esistesse: la fine seduta diceva già «gradino raggiunto».
+        """
+        try:
+            return cls(raw)
+        except ValueError:
+            return cls.AUTO
+
+
+_LEVEL_UP_LABELS = {
+    LevelUp.NONE: _l("Nessuno"),
+    LevelUp.AUTO: _l("La soglia"),
+    LevelUp.INSTRUCTOR: _l("Un istruttore"),
+}
+
+_LEVEL_UP_HINTS = {
+    LevelUp.NONE: _l("La scheda non è fatta a livelli."),
+    LevelUp.AUTO: _l("Tenuta la soglia, il livello è superato."),
+    LevelUp.INSTRUCTOR: _l("Te lo conferma chi legge la scheda."),
+}
+
+
 _UNITS = {
     SheetMeasure.DONE: _l("tiri"),
     SheetMeasure.MADE: _l("tiri"),
@@ -134,6 +187,7 @@ def amount_label(measure: SheetMeasure, amount: Optional[int]) -> str:
 
 __all__ = [
     "SheetMeasure",
+    "LevelUp",
     "MIN_AMOUNT",
     "MAX_AMOUNT",
     "MAX_ITEMS",

@@ -218,6 +218,15 @@ class TrainingAssignment(BaseModel):
         db.ForeignKey("training_sheet.id", ondelete="SET NULL"),
         nullable=True,
     )
+    #: La scheda che questa proposta **promuove**: è «dagli il livello
+    #: successivo», il secondo gesto del passaggio (D8). Il primo — il timbro
+    #: su `training_sheet.passed_at` — vale da solo, e questo è facoltativo:
+    #: si può essere promossi senza avere ancora la scheda dopo.
+    promotes_sheet_id = db.Column(
+        db.Integer,
+        db.ForeignKey("training_sheet.id", ondelete="SET NULL"),
+        nullable=True,
+    )
     #: Il gruppo da cui è partita, quando è partita da lì. Serve a dire «la
     #: scheda del gruppo» e a fare una media che voglia dire qualcosa.
     group_id = db.Column(
@@ -236,6 +245,7 @@ class TrainingAssignment(BaseModel):
     user = db.relationship("User", foreign_keys=[user_id])
     source_sheet = db.relationship("TrainingSheet", foreign_keys=[source_sheet_id])
     sheet = db.relationship("TrainingSheet", foreign_keys=[sheet_id])
+    promotes_sheet = db.relationship("TrainingSheet", foreign_keys=[promotes_sheet_id])
     group = db.relationship("TrainingGroup", foreign_keys=[group_id])
 
     __table_args__ = (
