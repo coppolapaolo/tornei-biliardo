@@ -283,6 +283,44 @@ vede solo chi ha una prova conclusa, e toccare di nuovo la propria toglie il vot
 servizio, non il fatto che la scheda abbia mostrato le bilie. Il voto **non**
 entra ancora nei consigli: con tre voti una media è un'opinione, non una misura.
 
+### Come si registra, e la prova fatta di colpi (ADR-066)
+
+`challenge.recording_mode` dice **come si registra una prova**: `total` — il
+punteggio (o l'esito) scritto alla fine, com'è sempre stato — oppure `shots`,
+colpo per colpo. È una proprietà dell'**esercizio**, non una scelta di chi si
+allena: due prove dello stesso esercizio devono potersi confrontare.
+
+| cosa | dove | note |
+|---|---|---|
+| il modo | `challenge.recording_mode` | valori di `RecordingMode` (`recording.py`), `String` e non `db.Enum` |
+| quanti colpi | `challenge.shots_count` | `NULL` col totale; da 1 a 100 |
+| i colpi | `challenge_shot` → `ChallengeAttempt.shots` | ordine, esito, punti, punto d'arrivo |
+| il bersaglio | voce `{"type": "target"}` dentro `challenge.diagram_scene` | `models/challenge/target.py` |
+
+* **Il punteggio discende dai colpi**: `ChallengeService.record_attempt`
+  **rifiuta** un totale scritto a mano su un esercizio colpo per colpo (stessa
+  regola del referto TPA, ADR-044). Il ciclo di vita della prova sta in
+  `ShotRunService` (`shot_service.py`): il primo colpo la apre, l'annulla toglie
+  l'ultimo, e dopo l'ultimo la si **chiude con un gesto** — da
+  `complete_challenge_attempt`, quindi XP, achievement ed eventi sono quelli di
+  ogni altra prova. Una prova aperta ha `score` a `NULL` e non conta da nessuna
+  parte.
+* **`max_score` è derivato**: N colpi per il valore più alto del bersaglio. Lo
+  scrive `ChallengeAuthoringService`; nel modulo la casella del massimo sparisce
+  e al suo posto c'è «Colpi di una prova».
+* **`ChallengeShot.points` si persiste** al colpo: se l'autore sposta il
+  bersaglio, i colpi già tirati valgono quello che valevano (come
+  `break_player_id`, ADR-056). Un colpo non imbucato **non ha** `x`/`y`.
+* Le due percentuali — **Imbucate** e **Posizione** — stanno in
+  `shot_stats.py`, e sono due conti diversi: il colpo mancato pesa sulla prima e
+  non entra nella seconda.
+* **In esami e gare** un esercizio colpo per colpo si registra ancora col totale
+  digitato: lì le prove stanno in altre tabelle, e non c'è un secondo
+  segnapunti da contraddire.
+* Il **bersaglio** vive nel disegno e in nessun'altra parte: `parse_scene` lo
+  convalida al salvataggio, `target_from_scene` lo legge con tolleranza. Uno per
+  scena. Il disegnatore non può toglierlo a un esercizio che lo usa.
+
 ### ChallengeAttempt
 **Fields:** `challenge_id`, `user_id`, `score`, `passed`, `attempted_at`, `variant_id`
 

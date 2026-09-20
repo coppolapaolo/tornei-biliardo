@@ -268,6 +268,12 @@ code, kbd, pre, samp, .font-mono { font-family: var(--c7-font-mono); }
   .c7-head__actions { order: 0; flex: 0 0 auto; margin-left: auto; }
   .c7-actionbar { padding: 12px var(--c7-gutter-lg) 22px; bottom: 0; }
   .c7-actionbar .btn { flex: 0 0 auto; padding: 0 22px; }
+  /* Il `w-100` sui pulsanti della barra è per il telefono, dove il comando
+     principale prende tutta la riga. Qui i pulsanti sono `flex: 0 0 auto`,
+     quindi la base la dà la larghezza: un 100% sul primo spinge il secondo
+     fuori dallo schermo (il disegnatore sbordava di 49px). `!important`
+     perché l'utility di Bootstrap ce l'ha, e senza non la si supera. */
+  .c7-actionbar .btn.w-100 { width: auto !important; }
 }
 
 /* La navbar Bootstrap non esiste piu' in 7c: il guscio la sostituisce. */

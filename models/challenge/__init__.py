@@ -10,6 +10,7 @@ from .models import (
     ChallengeCategory,
     ChallengeFavorite,
     ChallengeRating,
+    ChallengeShot,
     ChallengeVariant,
 )
 from .profile_service import ChallengeProfileService
@@ -22,6 +23,7 @@ __all__ = [
     "ChallengeFavorite",
     "ChallengeProfileService",
     "ChallengeRating",
+    "ChallengeShot",
     "ChallengeVariant",
     "ChallengeService",
 ]

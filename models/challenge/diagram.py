@@ -72,6 +72,12 @@ def parse_scene(raw: Optional[str]) -> Optional[str]:
     if not isinstance(scene.get("items"), list):
         raise ValidationError("Il disegno del drill non contiene elementi")
 
+    # Il bersaglio è l'unica voce della scena che il server legge come dato
+    # (ADR-066): tutto il resto è disegno, e resta affare del disegnatore.
+    from .target import validate_targets
+
+    validate_targets(scene["items"])
+
     # Riserializzata compatta: la colonna non deve pagare l'indentazione che il
     # builder usa nel file scaricato, e cosi' due salvataggi identici danno la
     # stessa stringa invece di due che differiscono per spazi.

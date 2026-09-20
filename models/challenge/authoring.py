@@ -35,7 +35,9 @@ from ..status_enum import _StrEnum
 from ..transaction.manager import transactional
 from .models import Challenge, ChallengeAttempt
 from .profile_service import ChallengeProfileService
+from .recording import MAX_SHOTS, MIN_SHOTS, RecordingMode
 from .services import ChallengeService
+from .target import target_from_scene
 
 
 class OnEvidence(_StrEnum):
@@ -55,6 +57,9 @@ class OnEvidence(_StrEnum):
 
 class MeaningChangeKind(_StrEnum):
     SCORING_TYPE = "scoring_type"
+    # Dal totale al colpo per colpo, o viceversa (ADR-066): un 37 scritto a mano
+    # e un 37 fatto di venti colpi non sono lo stesso numero.
+    RECORDING_MODE = "recording_mode"
     MAX_SCORE = "max_score"
     INSTRUCTIONS = "instructions"
 
@@ -104,6 +109,10 @@ class ChallengeDraft:
     family_step: Optional[int] = None
     cue_ball_reset: Optional[bool] = None
     variants: Sequence[Dict[str, Any]] = field(default_factory=tuple)
+    # Come si registra (ADR-066). Col totale `shots_count` non si tiene; colpo
+    # per colpo `max_score` non si scrive a mano: lo deriva `_recording`.
+    recording_mode: str = "total"
+    shots_count: Optional[int] = None
 
 
 @dataclass(frozen=True)
@@ -173,14 +182,33 @@ class ChallengeAuthoringService:
     ) -> List[MeaningChange]:
         """Che cosa, di questa bozza, cambia il senso dei punteggi già scritti."""
         changes: List[MeaningChange] = []
+        prima = RecordingMode.parse(challenge.recording_mode)
+        dopo = RecordingMode.parse(draft.recording_mode)
+        # Colpo per colpo il massimo è derivato: si confronta quello che il
+        # salvataggio scriverebbe, non quello rimasto nel modulo.
+        # Dal disegnatore il massimo arriva già derivato dal bersaglio NUOVO, e
+        # vale quello; dal modulo non arriva, e si deriva dal disegno che c'è.
+        massimo = draft.max_score
+        if dopo.is_sequence and massimo is None:
+            bersaglio = target_from_scene(challenge.diagram_scene)
+            if bersaglio is not None and draft.shots_count:
+                massimo = draft.shots_count * bersaglio.max_points
         if bool(challenge.pass_fail_only) != bool(draft.pass_fail_only):
             changes.append(MeaningChange(MeaningChangeKind.SCORING_TYPE))
-        elif not draft.pass_fail_only and challenge.max_score != draft.max_score:
+        elif prima is not dopo:
+            changes.append(
+                MeaningChange(
+                    MeaningChangeKind.RECORDING_MODE,
+                    before=str(prima.label),
+                    after=str(dopo.label),
+                )
+            )
+        elif not draft.pass_fail_only and challenge.max_score != massimo:
             changes.append(
                 MeaningChange(
                     MeaningChangeKind.MAX_SCORE,
                     before=_fmt(challenge.max_score),
-                    after=_fmt(draft.max_score),
+                    after=_fmt(massimo),
                 )
             )
         if _squash(challenge.description) != _squash(draft.description):
@@ -199,6 +227,7 @@ class ChallengeAuthoringService:
     ) -> Challenge:
         """Un esercizio nuovo, col suo profilo. Vale anche per «Duplica»."""
         _require_description(draft)
+        modo, colpi, massimo = _recording(draft, diagram_scene)
         challenge = ChallengeService.create_challenge(
             title=draft.title,
             description=draft.description.strip(),
@@ -206,8 +235,10 @@ class ChallengeAuthoringService:
             pass_fail_only=draft.pass_fail_only,
             created_by_id=created_by_id,
             diagram_scene=diagram_scene,
-            max_score=draft.max_score,
+            max_score=massimo,
         )
+        challenge.recording_mode = modo.value
+        challenge.shots_count = colpi
         db.session.flush()
         _write_profile(challenge.id, draft, is_new=True)
         return challenge
@@ -241,6 +272,10 @@ class ChallengeAuthoringService:
         if challenge is None:
             raise NotFoundError(_("Esercizio non trovato"))
         _require_description(draft)
+        # Una foto nuova butta via il disegno, e col disegno il bersaglio.
+        modo, colpi, massimo = _recording(
+            draft, None if image_path else challenge.diagram_scene
+        )
 
         changes = ChallengeAuthoringService.meaning_changes(challenge, draft)
         evidence = (
@@ -270,10 +305,12 @@ class ChallengeAuthoringService:
             image_path=image_path,
             pass_fail_only=draft.pass_fail_only,
             is_active=draft.is_active,
-            max_score=draft.max_score,
+            max_score=massimo,
             # Il modulo manda sempre il campo: vuoto vuol dire «togli il tetto».
-            clear_max_score=draft.max_score is None,
+            clear_max_score=massimo is None,
         )
+        challenge.recording_mode = modo.value
+        challenge.shots_count = colpi
         if image_path:
             # Una foto caricata al posto di un disegno: la scena di prima non
             # descrive più quello che si vede, e «Modifica il disegno»
@@ -286,6 +323,41 @@ class ChallengeAuthoringService:
 # ────────────────────────────────────────────────────────────────────────
 # Pezzi
 # ────────────────────────────────────────────────────────────────────────
+def _recording(draft: ChallengeDraft, scene: Optional[str]):
+    """Modo, colpi e massimo come vanno scritti — o il motivo per cui non si può.
+
+    Colpo per colpo (ADR-066) vuole tre cose: un esercizio a punteggio, un
+    numero di colpi, e un **bersaglio nel disegno** — senza anelli un colpo non
+    saprebbe quanti punti vale. Il massimo non si scrive a mano: è N per il
+    valore più alto. Col totale i colpi non si tengono.
+    """
+    modo = RecordingMode.parse(draft.recording_mode)
+    if not modo.is_sequence:
+        return modo, None, draft.max_score
+    if draft.pass_fail_only:
+        raise ValidationError(
+            _("Colpo per colpo l'esercizio è a punteggio, non riuscito o no.")
+        )
+    colpi = draft.shots_count
+    if colpi is None or not MIN_SHOTS <= colpi <= MAX_SHOTS:
+        raise ValidationError(
+            _(
+                "Di' quanti colpi ha una prova: da %(min)s a %(max)s.",
+                min=MIN_SHOTS,
+                max=MAX_SHOTS,
+            )
+        )
+    bersaglio = target_from_scene(scene)
+    if bersaglio is None:
+        raise ValidationError(
+            _(
+                "Colpo per colpo serve un bersaglio: l'esercizio va disegnato, "
+                "e nel disegno va messo il bersaglio."
+            )
+        )
+    return modo, colpi, colpi * bersaglio.max_points
+
+
 def _write_profile(challenge_id: int, draft: ChallengeDraft, *, is_new: bool) -> None:
     ChallengeProfileService.set_profile(
         challenge_id,

@@ -10,9 +10,10 @@
    una `draft` — vuota in creazione — così un salvataggio rifiutato ripropone
    ciò che era stato scritto.
 
-   «Come si registra» ha due voci, non le quattro dell'artboard: colpo per colpo
-   ed estrazione non esistono ancora (fase 5), e una scelta che non fa niente è
-   peggio di una scelta che manca. #}
+   «Come si registra» ha tre voci, non le quattro dell'artboard: l'estrazione
+   arriva con la fase 5c, e una scelta che non fa niente è peggio di una scelta
+   che manca. La terza — colpo per colpo (ADR-066) — si offre solo se il disegno
+   ha un bersaglio; altrimenti al suo posto c'è una riga che dice come averla. #}
 {% set is_edit = mode == 'edit' %}
 {% set is_copy = mode == 'duplicate' %}
 {% set subject = challenge or source %}
@@ -213,12 +214,44 @@
 
     {# ── Come si registra ──────────────────────────────────────────────── #}
     <div>
-      {{ choice('scoring_type', _("Come si registra"), [
+      {% set is_shots = draft and draft.recording_mode == RecordingMode.SHOTS.value %}
+      {% set voci = [
            {'value': 'pass_fail', 'title': _("Riuscito o no"),
             'desc': _("un tocco per prova")},
            {'value': 'score', 'title': _("A punteggio"),
             'desc': _("un numero a fine prova")}
-         ], selected=('pass_fail' if draft and draft.pass_fail_only else 'score')) }}
+         ] %}
+      {% if target or is_shots %}
+      {% set voci = voci + [
+           {'value': RecordingMode.SHOTS.value, 'title': _("Colpo per colpo"),
+            'desc': _("dove si ferma la bianca, a ogni colpo")}
+         ] %}
+      {% endif %}
+      {{ choice('scoring_type', _("Come si registra"), voci,
+                selected=(RecordingMode.SHOTS.value if is_shots
+                          else ('pass_fail' if draft and draft.pass_fail_only else 'score'))) }}
+
+      {# Colpo per colpo: quanti colpi ha una prova. Il massimo non si scrive:
+         è questo numero per il valore più alto del bersaglio. #}
+      {% if target or is_shots %}
+      <div class="c7-card d-flex align-items-center gap-3 d-none" id="shotsCountRow">
+        <label for="shots_count" class="flex-fill m-0" data-help="challenge-colpi">
+          <span class="c7-rows__title d-block">{{ _("Colpi di una prova") }}</span>
+          <span class="c7-rows__sub d-block">
+            {%- if target %}{{ _("il massimo è questo numero per %(n)s, il centro del bersaglio", n=target.max_points) }}
+            {%- else %}{{ _("il massimo lo dà il bersaglio del disegno") }}{% endif -%}
+          </span>
+        </label>
+        <input type="number" class="form-control c7-num text-center" style="width:96px" id="shots_count" name="shots_count"
+               min="{{ shots_range[0] }}" max="{{ shots_range[1] }}" inputmode="numeric" placeholder="20"
+               value="{{ draft.shots_count if draft and draft.shots_count else '' }}">
+      </div>
+      {% else %}
+      <p class="c7-rows__sub" style="margin:0 0 10px">
+        <i class="fas fa-bullseye" aria-hidden="true"></i>
+        {{ _("Per registrarlo colpo per colpo — dove si ferma la bianca, a ogni colpo — l'esercizio va disegnato, e nel disegno va messo un bersaglio.") }}
+      </p>
+      {% endif %}
 
       {# Nascosto, non disabilitato: un campo grigio su una prova riuscito/non
          riuscito fa credere che il numero serva e che manchi un permesso. #}

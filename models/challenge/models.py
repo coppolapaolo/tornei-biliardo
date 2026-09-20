@@ -146,6 +146,20 @@ class Challenge(BaseModel):
     # punteggio, quindi e' un fatto dell'esercizio e non una nota nel testo.
     cue_ball_reset = db.Column(db.Boolean, nullable=True)
 
+    # ── Come si registra una prova (ADR-066) ────────────────────────────
+    #
+    # `total` = il punteggio o l'esito scritto a fine prova, com'e' sempre
+    # stato. `shots` = colpo per colpo: la prova e' una sequenza di
+    # `shots_count` colpi (`ChallengeShot`) e il punteggio **discende** da loro.
+    # E' una String e non un `db.Enum`: in colonna sta il valore, e rinominare
+    # un membro di `RecordingMode` non rompe i dati gia' scritti.
+    recording_mode = db.Column(
+        db.String(20), nullable=False, default="total", server_default="total"
+    )
+    # Quanti colpi ha una prova. NULL sugli esercizi col totale: li' una prova
+    # non e' fatta di colpi, e uno zero direbbe un'altra cosa.
+    shots_count = db.Column(db.Integer, nullable=True)
+
     # Metadata
     created_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     is_active = db.Column(db.Boolean, nullable=False, default=True)
@@ -461,6 +475,15 @@ class ChallengeAttempt(BaseModel):
     # Relationships
     challenge = db.relationship("Challenge", back_populates="attempts")
     user = db.relationship("User")
+    # I colpi della prova, in ordine, per gli esercizi colpo per colpo
+    # (ADR-066). Vuota su ogni altra prova. Spariscono con la prova.
+    shots = db.relationship(
+        "ChallengeShot",
+        back_populates="attempt",
+        order_by="ChallengeShot.position",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
+    )
     gara = db.relationship("Gara")  # DEPRECATED: Use GaraByeChallenge.gara instead
     variant = db.relationship("ChallengeVariant")
 
@@ -627,6 +650,54 @@ class ChallengeVariant(BaseModel):
 
     def __repr__(self) -> str:  # pragma: no cover - banale
         return f"<ChallengeVariant #{self.challenge_id} {self.label!r}>"
+
+
+class ChallengeShot(BaseModel):
+    """Un colpo di una prova fatta di colpi (ADR-066).
+
+    La prova (`ChallengeAttempt`) resta il contenitore e continua a esporre il
+    punteggio, che pero' per questi esercizi **discende** dai colpi invece di
+    essere digitato: e' lo stesso rapporto che c'e' fra referto TPA e punteggio
+    della partita (ADR-044), e vale la stessa regola — due segnapunti che si
+    contraddicono al primo tocco non devono esistere.
+
+    `points` si **persiste** al momento del colpo e non si ricalcola in
+    lettura: se domani l'autore sposta il bersaglio, i colpi gia' tirati devono
+    continuare a valere quello che valevano (come `break_player_id`, ADR-056).
+
+    Il colpo non imbucato non ha un punto: `x` e `y` restano NULL, e chi
+    disegna la nuvola dei punti d'arrivo deve saperlo — o mostrerebbe solo i
+    colpi riusciti spacciandoli per tutti.
+    """
+
+    __tablename__ = "challenge_shot"
+
+    id = db.Column(db.Integer, primary_key=True)
+    attempt_id = db.Column(
+        db.Integer,
+        db.ForeignKey("challenge_attempt.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    # Da 1, senza buchi: l'annulla toglie sempre e solo l'ultimo.
+    position = db.Column(db.Integer, nullable=False)
+    # La bilia e' entrata? NULL quando l'esito non e' un'imbucata (gli esercizi
+    # con estrazione hanno una scala loro).
+    made = db.Column(db.Boolean, nullable=True)
+    points = db.Column(db.Integer, nullable=False, default=0)
+    # Dove si e' fermata la battente, in unita' del disegnatore
+    # (1 diamante = 100, panno 800 x 400).
+    x = db.Column(db.Float, nullable=True)
+    y = db.Column(db.Float, nullable=True)
+
+    attempt = db.relationship("ChallengeAttempt", back_populates="shots")
+
+    __table_args__ = (
+        db.UniqueConstraint("attempt_id", "position", name="uq_challenge_shot"),
+    )
+
+    def __repr__(self) -> str:  # pragma: no cover - banale
+        return f"<ChallengeShot #{self.attempt_id}.{self.position} {self.points}pt>"
 
 
 class ChallengeRating(BaseModel):

@@ -21,6 +21,7 @@ from models.challenge.authoring import (
     EvidenceDecisionRequired,
     MeaningChangeKind,
 )
+from models.challenge.recording import RecordingMode
 from models.exceptions import ValidationError
 
 
@@ -55,9 +56,17 @@ def _is_pass_fail(data: Any) -> bool:
     return _text(data, "pass_fail_only").lower() == "true"
 
 
+def _recording_mode(data: Any) -> RecordingMode:
+    """«Come si registra» ha tre voci; la terza è un modo, non un tipo."""
+    if _text(data, "scoring_type") == RecordingMode.SHOTS.value:
+        return RecordingMode.SHOTS
+    return RecordingMode.parse(_text(data, "recording_mode"))
+
+
 def parse_challenge_draft(data: Any) -> ChallengeDraft:
     """La bozza dell'esercizio com'è scritta nel modulo."""
     pass_fail_only = _is_pass_fail(data)
+    modo = _recording_mode(data)
 
     # La casella «attivo» c'è solo in modifica: il segnaposto dice che il campo
     # è stato inviato, così un modulo che non lo mostra non disattiva niente
@@ -87,12 +96,22 @@ def parse_challenge_draft(data: Any) -> ChallengeDraft:
         pass_fail_only=pass_fail_only,
         # Su un esercizio riuscito/non riuscito la casella è nascosta: un valore
         # che arriva lo stesso è un residuo del cambio di tipo a schermo.
+        # Colpo per colpo il massimo lo deriva il servizio: anche lì la
+        # casella è nascosta.
         max_score=(
             None
-            if pass_fail_only
+            if pass_fail_only or modo.is_sequence
             else _optional_int(
                 data, "max_score", _("Il punteggio massimo deve essere un numero")
             )
+        ),
+        recording_mode=modo.value,
+        shots_count=(
+            _optional_int(
+                data, "shots_count", _("I colpi di una prova devono essere un numero")
+            )
+            if modo.is_sequence
+            else None
         ),
         is_active=is_active,
         abilita=tuple(_getlist(data, "abilita")),
@@ -121,6 +140,8 @@ def draft_from_challenge(challenge: Any, *, as_copy: bool = False) -> ChallengeD
         description=challenge.description or "",
         pass_fail_only=bool(challenge.pass_fail_only),
         max_score=challenge.max_score,
+        recording_mode=RecordingMode.parse(challenge.recording_mode).value,
+        shots_count=challenge.shots_count,
         is_active=None if as_copy else bool(challenge.is_active),
         abilita=tuple(a.value for a in challenge.abilita),
         gesti=tuple(g.value for g in challenge.gesti),
@@ -143,6 +164,15 @@ def describe_decision(fermo: EvidenceDecisionRequired) -> Dict[str, Any]:
     for cambio in fermo.changes:
         if cambio.kind == MeaningChangeKind.SCORING_TYPE:
             frasi.append(_("Hai cambiato come si registra la prova."))
+        elif cambio.kind == MeaningChangeKind.RECORDING_MODE:
+            frasi.append(
+                _(
+                    "Hai cambiato come si registra la prova: da «%(before)s» "
+                    "a «%(after)s».",
+                    before=cambio.before,
+                    after=cambio.after,
+                )
+            )
         elif cambio.kind == MeaningChangeKind.MAX_SCORE:
             if cambio.before is None:
                 frasi.append(

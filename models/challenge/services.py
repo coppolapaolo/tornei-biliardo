@@ -1182,6 +1182,21 @@ class ChallengeService:
         if challenge is None:
             raise NotFoundError("Drill non trovato")
 
+        # Colpo per colpo il punteggio **discende** dai colpi (ADR-066): un
+        # totale scritto a mano accanto sarebbe un secondo segnapunti, e i due
+        # si contraddirebbero al primo tocco. In gara la prova sta in un'altra
+        # tabella e si scrive ancora col totale: lì non c'è niente da
+        # contraddire.
+        from .recording import RecordingMode
+
+        if (
+            gara_id is None
+            and RecordingMode.parse(challenge.recording_mode).is_sequence
+        ):
+            raise ValidationError(
+                _("Questo esercizio si registra colpo per colpo, non col totale.")
+            )
+
         if challenge.pass_fail_only:
             if passed is None:
                 raise ValidationError("Serve dire se la prova è stata superata o no")

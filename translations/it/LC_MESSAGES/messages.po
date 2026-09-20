@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 10:16+0200\n"
+"POT-Creation-Date: 2026-09-20 10:52+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -22,23 +22,23 @@ msgstr ""
 msgid "Accedi per vedere questa pagina."
 msgstr ""
 
-#: app.py:866 templates/errors/403.html:3
+#: app.py:870 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr ""
 
-#: app.py:884
+#: app.py:888
 msgid "Non è il tuo turno"
 msgstr ""
 
-#: app.py:885
+#: app.py:889
 msgid "Colpo irregolare"
 msgstr ""
 
-#: app.py:904
+#: app.py:908
 msgid "Operazione non consentita"
 msgstr ""
 
-#: app.py:918
+#: app.py:922
 msgid "Tiro non valido"
 msgstr ""
 
@@ -262,20 +262,35 @@ msgid ""
 " %(errori)s"
 msgstr ""
 
-#: models/challenge/authoring.py:86
+#: models/challenge/authoring.py:91
 msgid "Questo esercizio ha già delle prove registrate"
 msgstr ""
 
-#: models/challenge/authoring.py:242 models/challenge/profile_service.py:94
-#: models/challenge/rating_service.py:61
+#: models/challenge/authoring.py:273 models/challenge/profile_service.py:94
+#: models/challenge/rating_service.py:61 models/challenge/shot_service.py:79
 msgid "Esercizio non trovato"
 msgstr ""
 
-#: models/challenge/authoring.py:255
+#: models/challenge/authoring.py:290
 msgid "Alla copia manca l'immagine"
 msgstr ""
 
-#: models/challenge/authoring.py:315
+#: models/challenge/authoring.py:339
+msgid "Colpo per colpo l'esercizio è a punteggio, non riuscito o no."
+msgstr ""
+
+#: models/challenge/authoring.py:345
+#, python-format
+msgid "Di' quanti colpi ha una prova: da %(min)s a %(max)s."
+msgstr ""
+
+#: models/challenge/authoring.py:354
+msgid ""
+"Colpo per colpo serve un bersaglio: l'esercizio va disegnato, e nel "
+"disegno va messo il bersaglio."
+msgstr ""
+
+#: models/challenge/authoring.py:387
 msgid "Servono le istruzioni per chi esegue l'esercizio"
 msgstr ""
 
@@ -312,7 +327,6 @@ msgid "ottava prova"
 msgstr ""
 
 #: models/challenge/execution_view.py:72
-#, python-format
 msgid "nona prova"
 msgstr ""
 
@@ -384,7 +398,7 @@ msgid_plural "Oggi %(num)s riuscite su %(n)s."
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/challenge/models.py:362
+#: models/challenge/models.py:376
 #, python-format
 msgid "Esercizio %(number)s"
 msgstr ""
@@ -403,7 +417,7 @@ msgstr ""
 msgid "«%(value)s» non è una voce ammessa"
 msgstr ""
 
-#: models/challenge/profile_service.py:205 routes/challenge_form.py:101
+#: models/challenge/profile_service.py:205 routes/challenge_form.py:120
 msgid "Il livello deve essere un numero"
 msgstr ""
 
@@ -412,7 +426,7 @@ msgstr ""
 msgid "Il livello va da %(min)s a %(max)s"
 msgstr ""
 
-#: models/challenge/profile_service.py:223 routes/challenge_form.py:105
+#: models/challenge/profile_service.py:223 routes/challenge_form.py:124
 msgid "Il passo deve essere un numero"
 msgstr ""
 
@@ -454,6 +468,14 @@ msgstr ""
 msgid "Si vota un esercizio dopo averlo provato almeno una volta"
 msgstr ""
 
+#: models/challenge/recording.py:48
+msgid "Col totale"
+msgstr ""
+
+#: models/challenge/recording.py:49 templates/challenge/form.html:226
+msgid "Colpo per colpo"
+msgstr ""
+
 #: models/challenge/services.py:745
 msgid ""
 "Il direttore non ha ancora scelto l'esercizio da giocare al posto della X"
@@ -471,8 +493,37 @@ msgstr ""
 msgid "Serve un punteggio: la prova non ne ha ancora uno registrato."
 msgstr ""
 
-#: models/challenge/services.py:1200
+#: models/challenge/services.py:1197
+msgid "Questo esercizio si registra colpo per colpo, non col totale."
+msgstr ""
+
+#: models/challenge/services.py:1215 models/challenge/shot_service.py:151
 msgid "Questa variante non è di questo esercizio"
+msgstr ""
+
+#: models/challenge/shot_service.py:81
+msgid "Questo esercizio non si registra colpo per colpo"
+msgstr ""
+
+#: models/challenge/shot_service.py:128
+msgid "Hai già tirato tutti i colpi: chiudi la prova o annulla l'ultimo."
+msgstr ""
+
+#: models/challenge/shot_service.py:135
+#, python-format
+msgid "Questo esercizio non ha un bersaglio."
+msgstr ""
+
+#: models/challenge/shot_service.py:138
+msgid "Tocca il panno nel punto in cui si è fermata la bianca."
+msgstr ""
+
+#: models/challenge/shot_service.py:179
+msgid "Non c'è nessun colpo da annullare."
+msgstr ""
+
+#: models/challenge/shot_service.py:210
+msgid "La prova si chiude dopo l'ultimo colpo: ne mancano ancora."
 msgstr ""
 
 #: models/challenge/vocabulary.py:100
@@ -480,11 +531,11 @@ msgid "Fondamentali"
 msgstr ""
 
 #: models/challenge/vocabulary.py:101 templates/challenge/builder.html:55
-#: templates/challenge/builder.html:84 templates/challenge/builder.html:293
+#: templates/challenge/builder.html:87 templates/challenge/builder.html:330
 msgid "Tiro"
 msgstr ""
 
-#: models/challenge/vocabulary.py:102 templates/challenge/builder.html:290
+#: models/challenge/vocabulary.py:102 templates/challenge/builder.html:327
 msgid "Battente"
 msgstr ""
 
@@ -527,7 +578,7 @@ msgstr ""
 msgid "spin"
 msgstr ""
 
-#: models/challenge/vocabulary.py:137 templates/challenge/builder.html:294
+#: models/challenge/vocabulary.py:137 templates/challenge/builder.html:331
 msgid "forza"
 msgstr ""
 
@@ -2984,134 +3035,149 @@ msgstr ""
 msgid "Non è stato possibile caricare gli esercizi."
 msgstr ""
 
-#: routes/challenge.py:193
+#: routes/challenge.py:200
 msgid "La foto non è un'immagine che si possa leggere"
 msgstr ""
 
-#: routes/challenge.py:225
+#: routes/challenge.py:232
 msgid "Ho creato una copia con le tue modifiche: l'originale è rimasto com'era."
 msgstr ""
 
-#: routes/challenge.py:229
+#: routes/challenge.py:236
 msgid "Esercizio aggiornato."
 msgstr ""
 
-#: routes/challenge.py:244
+#: routes/challenge.py:251
 msgid "Serve la foto della disposizione"
 msgstr ""
 
-#: routes/challenge.py:252
+#: routes/challenge.py:259
 msgid "Copia creata."
 msgstr ""
 
-#: routes/challenge.py:252 routes/challenge.py:592
+#: routes/challenge.py:259 routes/challenge.py:630
 msgid "Esercizio creato."
 msgstr ""
 
-#: routes/challenge.py:403 routes/challenge.py:660
+#: routes/challenge.py:410 routes/challenge.py:698
 msgid "Questo esercizio non è più disponibile."
 msgstr ""
 
-#: routes/challenge.py:408
+#: routes/challenge.py:415
 msgid "Gli amministratori non possono provare gli esercizi."
 msgstr ""
 
-#: routes/challenge.py:437
+#: routes/challenge.py:444
 msgid "Tentativo iniziato."
 msgstr ""
 
-#: routes/challenge.py:556
+#: routes/challenge.py:558
+msgid ""
+"Questo esercizio si registra colpo per colpo: il bersaglio serve. Per "
+"toglierlo, cambia prima «Come si registra»."
+msgstr ""
+
+#: routes/challenge.py:594
 msgid ""
 "Questo esercizio ha già delle prove: istruzioni e punteggio si cambiano "
 "da «Modifica l'esercizio», qui salva solo il disegno."
 msgstr ""
 
-#: routes/challenge.py:617
+#: routes/challenge.py:655
 msgid "Questo esercizio nasce da una foto: non c'è un disegno da modificare."
 msgstr ""
 
-#: routes/challenge.py:636
+#: routes/challenge.py:674
 msgid "Disegno aggiornato."
 msgstr ""
 
-#: routes/challenge.py:664
+#: routes/challenge.py:702
 msgid "Gli amministratori non provano gli esercizi."
 msgstr ""
 
-#: routes/challenge.py:720
+#: routes/challenge.py:758
 msgid "Prova registrata."
 msgstr ""
 
-#: routes/challenge.py:751
+#: routes/challenge.py:789
 msgid "Non c'è nessuna prova da annullare."
 msgstr ""
 
-#: routes/challenge.py:773
+#: routes/challenge.py:811
 msgid "Prova annullata."
 msgstr ""
 
-#: routes/challenge.py:995
+#: routes/challenge.py:1033
 msgid "Tentativo registrato."
 msgstr ""
 
-#: routes/challenge.py:1036 templates/challenge/catalog.html:138
+#: routes/challenge.py:1074 templates/challenge/catalog.html:138
 #: templates/challenge/today.html:92
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr ""
 
-#: routes/challenge.py:1073
+#: routes/challenge.py:1111
 msgid "Voto registrato."
 msgstr ""
 
-#: routes/challenge.py:1136
+#: routes/challenge.py:1174
 msgid "Esercizio di gara avviato."
 msgstr ""
 
-#: routes/challenge.py:1189
+#: routes/challenge.py:1227
 msgid "Esercizio di gara registrato."
 msgstr ""
 
-#: routes/challenge.py:1222
+#: routes/challenge.py:1260
 msgid "Esercizio non trovato."
 msgstr ""
 
-#: routes/challenge.py:1232
+#: routes/challenge.py:1270
 msgid "Non hai i permessi per questo esercizio."
 msgstr ""
 
-#: routes/challenge_form.py:94
+#: routes/challenge_form.py:105
 msgid "Il punteggio massimo deve essere un numero"
 msgstr ""
 
-#: routes/challenge_form.py:118
+#: routes/challenge_form.py:111
+msgid "I colpi di una prova devono essere un numero"
+msgstr ""
+
+#: routes/challenge_form.py:137
 #, python-format
 msgid "%(title)s (copia)"
 msgstr ""
 
-#: routes/challenge_form.py:145
+#: routes/challenge_form.py:166
 msgid "Hai cambiato come si registra la prova."
 msgstr ""
 
-#: routes/challenge_form.py:149
+#: routes/challenge_form.py:170
+#, python-format
+msgid "Hai cambiato come si registra la prova: da «%(before)s» a «%(after)s»."
+msgstr ""
+
+#: routes/challenge_form.py:179
 #, python-format
 msgid "Hai messo un punteggio massimo: %(after)s."
 msgstr ""
 
-#: routes/challenge_form.py:154
+#: routes/challenge_form.py:184
 #, python-format
 msgid "Hai tolto il punteggio massimo, che era %(before)s."
 msgstr ""
 
-#: routes/challenge_form.py:161
+#: routes/challenge_form.py:191
 #, python-format
 msgid "Hai cambiato il punteggio massimo, da %(before)s a %(after)s."
 msgstr ""
 
-#: routes/challenge_form.py:167
+#: routes/challenge_form.py:197
 msgid "Hai cambiato le istruzioni."
 msgstr ""
 
-#: routes/challenge_form.py:173
+#: routes/challenge_form.py:203
 #, python-format
 msgid ""
 "Se modifichi questo esercizio, la prova già registrata si leggerà con "
@@ -3122,7 +3188,7 @@ msgid_plural ""
 msgstr[0] ""
 msgstr[1] ""
 
-#: routes/challenge_form.py:181
+#: routes/challenge_form.py:211
 #, python-format
 msgid "Questo esercizio ha già %(num)s prova"
 msgid_plural "Questo esercizio ha già %(num)s prove"
@@ -4323,7 +4389,7 @@ msgid "Esami certificati superati"
 msgstr ""
 
 #: routes/gamification/features.py:61 templates/base.html:422
-#: templates/challenge/catalog.html:70 templates/challenge/form.html:107
+#: templates/challenge/catalog.html:70 templates/challenge/form.html:108
 #: templates/gamification/admin/dashboard.html:102
 #: templates/gamification/admin/dashboard.html:145
 #: templates/gamification/admin/feature_create.html:69
@@ -4929,7 +4995,7 @@ msgid "Informazione"
 msgstr ""
 
 #: templates/base.html:475 templates/base.html:781
-#: templates/challenge/form.html:26
+#: templates/challenge/form.html:27
 #: templates/components/_campionato_create_modal.html:7
 #: templates/components/_history_drills_tab.html:47
 #: templates/components/_page_modal.html:17
@@ -5076,8 +5142,8 @@ msgstr ""
 #: templates/admin/gara_edit.html:11 templates/admin/venue_form.html:296
 #: templates/admin/venue_manager_requests.html:155 templates/base.html:698
 #: templates/base.html:813 templates/challenge/_training_board.html:92
-#: templates/challenge/builder.html:33 templates/challenge/builder.html:262
-#: templates/challenge/form.html:40
+#: templates/challenge/builder.html:33 templates/challenge/builder.html:299
+#: templates/challenge/form.html:41
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:239
 #: templates/components/_gara_edit_form.html:393
@@ -5848,7 +5914,7 @@ msgstr ""
 
 #: templates/admin/_vetrina_form.html:41
 #: templates/admin/campionato_vetrina.html:40
-#: templates/admin/venue_detail.html:303 templates/challenge/form.html:270
+#: templates/admin/venue_detail.html:303 templates/challenge/form.html:303
 msgid "Carica solo materiale di cui hai i diritti."
 msgstr ""
 
@@ -8971,7 +9037,7 @@ msgid "varianti: %(labels)s"
 msgstr ""
 
 #: templates/challenge/_challenge_detail.html:62
-#: templates/challenge/form.html:64
+#: templates/challenge/form.html:65
 msgid "Come si fa"
 msgstr ""
 
@@ -9018,7 +9084,7 @@ msgstr ""
 msgid "Liv. %(n)s"
 msgstr ""
 
-#: templates/challenge/_exercise_bits.html:23 templates/challenge/form.html:217
+#: templates/challenge/_exercise_bits.html:23 templates/challenge/form.html:219
 #: templates/challenge/training.html:37
 msgid "Riuscito o no"
 msgstr ""
@@ -9029,7 +9095,7 @@ msgid "A punteggio · su %(max)s"
 msgstr ""
 
 #: templates/challenge/_exercise_bits.html:25
-#: templates/challenge/builder.html:234 templates/challenge/form.html:219
+#: templates/challenge/builder.html:271 templates/challenge/form.html:221
 #: templates/challenge/training.html:38 templates/challenge/training.html:39
 #: templates/components/_challenge_bits.html:27
 #: templates/player/challenge_attempt_detail.html:49
@@ -9179,11 +9245,11 @@ msgid "Ho finito"
 msgstr ""
 
 #: templates/challenge/builder.html:19 templates/challenge/builder.html:35
-#: templates/challenge/form.html:260
+#: templates/challenge/form.html:293
 msgid "Disegna l'esercizio"
 msgstr ""
 
-#: templates/challenge/builder.html:35 templates/challenge/form.html:256
+#: templates/challenge/builder.html:35 templates/challenge/form.html:289
 #: templates/player/challenge_detail.html:193
 msgid "Modifica il disegno"
 msgstr ""
@@ -9200,7 +9266,7 @@ msgstr ""
 msgid "Sposta"
 msgstr ""
 
-#: templates/challenge/builder.html:58 templates/challenge/builder.html:115
+#: templates/challenge/builder.html:58 templates/challenge/builder.html:152
 msgid "Linea libera"
 msgstr ""
 
@@ -9208,15 +9274,19 @@ msgstr ""
 msgid "Testo"
 msgstr ""
 
-#: templates/challenge/builder.html:62
+#: templates/challenge/builder.html:62 templates/challenge/builder.html:121
+msgid "Bersaglio"
+msgstr ""
+
+#: templates/challenge/builder.html:65
 msgid "Annulla mossa"
 msgstr ""
 
-#: templates/challenge/builder.html:63
+#: templates/challenge/builder.html:66
 msgid "Ripeti mossa"
 msgstr ""
 
-#: templates/challenge/builder.html:64
+#: templates/challenge/builder.html:67
 #: templates/components/_campionato_gare.html:66
 #: templates/components/_campionato_gare.html:71
 #: templates/components/_soft_delete_modal.html:6
@@ -9226,96 +9296,148 @@ msgstr ""
 msgid "Elimina"
 msgstr ""
 
-#: templates/challenge/builder.html:69
+#: templates/challenge/builder.html:72
 msgid "Biglie"
 msgstr ""
 
-#: templates/challenge/builder.html:71
+#: templates/challenge/builder.html:74
 msgid "Calamite sponda e biglie"
 msgstr ""
 
-#: templates/challenge/builder.html:73
+#: templates/challenge/builder.html:76
 msgid "Dimensione delle biglie"
 msgstr ""
 
-#: templates/challenge/builder.html:75
+#: templates/challenge/builder.html:78
 msgid "in scala reale — 2,25″"
 msgstr ""
 
-#: templates/challenge/builder.html:76
+#: templates/challenge/builder.html:79
 msgid "più leggibile"
 msgstr ""
 
-#: templates/challenge/builder.html:77
+#: templates/challenge/builder.html:80
 msgid "stile diagramma"
 msgstr ""
 
-#: templates/challenge/builder.html:80
+#: templates/challenge/builder.html:83
 msgid ""
 "Scegli una biglia, poi clicca sul tavolo. Si aggancia alla griglia, alla "
 "sponda e a contatto con le altre; un movimento fine resta libero."
 msgstr ""
 
-#: templates/challenge/builder.html:80
+#: templates/challenge/builder.html:83
 msgid "Alt"
 msgstr ""
 
-#: templates/challenge/builder.html:80
+#: templates/challenge/builder.html:83
 msgid "disattiva ogni aggancio."
 msgstr ""
 
-#: templates/challenge/builder.html:87
+#: templates/challenge/builder.html:90
 msgid "Punto di impatto sulla bianca"
 msgstr ""
 
-#: templates/challenge/builder.html:94
+#: templates/challenge/builder.html:97
 msgid "Inclinazione stecca"
 msgstr ""
 
-#: templates/challenge/builder.html:99
+#: templates/challenge/builder.html:102
 msgid "Forza"
 msgstr ""
 
-#: templates/challenge/builder.html:99 templates/challenge/builder.html:278
+#: templates/challenge/builder.html:102 templates/challenge/builder.html:315
 msgid "medio"
 msgstr ""
 
-#: templates/challenge/builder.html:103
+#: templates/challenge/builder.html:106
 msgid ""
 "A forza 30 la biglia percorre due lunghezze di tavolo. Il percorso cresce"
 " con il quadrato della forza, si divide fra le biglie all'impatto e cala "
 "a ogni sponda; il cerchio tratteggiato segna il punto di arresto."
 msgstr ""
 
-#: templates/challenge/builder.html:105
+#: templates/challenge/builder.html:108
 msgid "Aggancia la mira alla buca"
 msgstr ""
 
-#: templates/challenge/builder.html:106
+#: templates/challenge/builder.html:109
 msgid "Tieni premuto e trascina per mirare libero, senza aggancio."
 msgstr ""
 
-#: templates/challenge/builder.html:107
+#: templates/challenge/builder.html:110
 msgid "Traiettoria della bianca"
 msgstr ""
 
-#: templates/challenge/builder.html:108
+#: templates/challenge/builder.html:111
 msgid "Traiettorie delle altre biglie"
 msgstr ""
 
-#: templates/challenge/builder.html:109
+#: templates/challenge/builder.html:112
 msgid "Stecca sul tavolo"
 msgstr ""
 
-#: templates/challenge/builder.html:110
+#: templates/challenge/builder.html:113
 msgid "Scheda del tiro sotto al tavolo"
 msgstr ""
 
-#: templates/challenge/builder.html:111
+#: templates/challenge/builder.html:114
 msgid "Etichetta dell'angolo di taglio"
 msgstr ""
 
-#: templates/challenge/builder.html:117
+#: templates/challenge/builder.html:122
+msgid ""
+"Attiva Bersaglio e tocca il panno dove la bianca deve fermarsi. Ce n'è "
+"uno per disegno: un secondo tocco lo sposta."
+msgstr ""
+
+#: templates/challenge/builder.html:125
+msgid "Spessore degli anelli"
+msgstr ""
+
+#: templates/challenge/builder.html:127 templates/challenge/builder.html:180
+msgid "¼ di diamante"
+msgstr ""
+
+#: templates/challenge/builder.html:128 templates/challenge/builder.html:181
+msgid "½ diamante"
+msgstr ""
+
+#: templates/challenge/builder.html:129
+msgid "¾ di diamante"
+msgstr ""
+
+#: templates/challenge/builder.html:130 templates/challenge/builder.html:182
+msgid "1 diamante"
+msgstr ""
+
+#: templates/challenge/builder.html:134
+msgid "Anelli"
+msgstr ""
+
+#: templates/challenge/builder.html:136
+msgid "Un anello in meno"
+msgstr ""
+
+#: templates/challenge/builder.html:137
+msgid "Un anello in più"
+msgstr ""
+
+#: templates/challenge/builder.html:141
+msgid "Punti, dal centro verso l'esterno"
+msgstr ""
+
+#: templates/challenge/builder.html:144
+msgid ""
+"Fuori dagli anelli vale zero. Con un bersaglio l'esercizio si può "
+"registrare colpo per colpo: lo scegli in «Modifica l'esercizio»."
+msgstr ""
+
+#: templates/challenge/builder.html:146
+msgid "Togli il bersaglio"
+msgstr ""
+
+#: templates/challenge/builder.html:154
 #: templates/components/_bye_challenges.html:52
 #: templates/components/_player_challenges.html:47
 #: templates/individual_match/dashboard.html:131
@@ -9323,27 +9445,27 @@ msgstr ""
 msgid "Continua"
 msgstr ""
 
-#: templates/challenge/builder.html:118
+#: templates/challenge/builder.html:155
 msgid "Tratteggiata"
 msgstr ""
 
-#: templates/challenge/builder.html:121
+#: templates/challenge/builder.html:158
 msgid "Colore"
 msgstr ""
 
-#: templates/challenge/builder.html:124
+#: templates/challenge/builder.html:161
 msgid "Punta a freccia"
 msgstr ""
 
-#: templates/challenge/builder.html:125
+#: templates/challenge/builder.html:162
 msgid "Biglia fantasma in fondo"
 msgstr ""
 
-#: templates/challenge/builder.html:127
+#: templates/challenge/builder.html:164
 msgid "Chiudi linea"
 msgstr ""
 
-#: templates/challenge/builder.html:132
+#: templates/challenge/builder.html:169
 #: templates/components/_bracket_view.html:42
 #: templates/components/_gara_matches.html:66
 #: templates/components/_gara_matches.html:100
@@ -9367,273 +9489,261 @@ msgstr ""
 msgid "Tavolo"
 msgstr ""
 
-#: templates/challenge/builder.html:134
+#: templates/challenge/builder.html:171
 msgid "Panno"
 msgstr ""
 
-#: templates/challenge/builder.html:137
+#: templates/challenge/builder.html:174
 msgid "Griglia dei diamanti"
 msgstr ""
 
-#: templates/challenge/builder.html:138
+#: templates/challenge/builder.html:175
 msgid "Griglia ¼ di diamante"
 msgstr ""
 
-#: templates/challenge/builder.html:139
+#: templates/challenge/builder.html:176
 msgid "Punti e linee standard"
 msgstr ""
 
-#: templates/challenge/builder.html:141
+#: templates/challenge/builder.html:178
 msgid "Aggancio alla griglia"
 msgstr ""
 
-#: templates/challenge/builder.html:143
-msgid "¼ di diamante"
-msgstr ""
-
-#: templates/challenge/builder.html:144
-msgid "½ diamante"
-msgstr ""
-
-#: templates/challenge/builder.html:145
-msgid "1 diamante"
-msgstr ""
-
-#: templates/challenge/builder.html:146
+#: templates/challenge/builder.html:183
 #: templates/components/_tabellone_macros.html:73
 #: templates/direttore/impostazioni.html:79 templates/player/venues.html:33
 msgid "nessuno"
 msgstr ""
 
-#: templates/challenge/builder.html:150
+#: templates/challenge/builder.html:187
 msgid "Orientamento"
 msgstr ""
 
-#: templates/challenge/builder.html:152
+#: templates/challenge/builder.html:189
 msgid "Orizzontale"
 msgstr ""
 
-#: templates/challenge/builder.html:153
+#: templates/challenge/builder.html:190
 msgid "Verticale"
 msgstr ""
 
-#: templates/challenge/builder.html:157
+#: templates/challenge/builder.html:194
 msgid "Titolo del diagramma"
 msgstr ""
 
-#: templates/challenge/builder.html:158
+#: templates/challenge/builder.html:195
 msgid "es. Esercizio 1 — Stop shot"
 msgstr ""
 
-#: templates/challenge/builder.html:163
+#: templates/challenge/builder.html:200
 msgid "Posizioni standard"
 msgstr ""
 
-#: templates/challenge/builder.html:165
+#: templates/challenge/builder.html:202
 msgid "Triangolo 9-ball"
 msgstr ""
 
-#: templates/challenge/builder.html:166
+#: templates/challenge/builder.html:203
 msgid "Triangolo 8-ball"
 msgstr ""
 
-#: templates/challenge/builder.html:169
+#: templates/challenge/builder.html:206
 msgid "Triangolo 10-ball"
 msgstr ""
 
-#: templates/challenge/builder.html:170
+#: templates/challenge/builder.html:207
 msgid "Break 9-ball"
 msgstr ""
 
-#: templates/challenge/builder.html:173
+#: templates/challenge/builder.html:210
 msgid "Wagon wheel"
 msgstr ""
 
-#: templates/challenge/builder.html:174
+#: templates/challenge/builder.html:211
 msgid "Linea di stop"
 msgstr ""
 
-#: templates/challenge/builder.html:177
+#: templates/challenge/builder.html:214
 msgid "Esercizio a L"
 msgstr ""
 
-#: templates/challenge/builder.html:178
+#: templates/challenge/builder.html:215
 msgid "Svuota"
 msgstr ""
 
-#: templates/challenge/builder.html:211 templates/challenge/form.html:54
+#: templates/challenge/builder.html:248 templates/challenge/form.html:55
 #: templates/feedback/nuova.html:39 templates/feedback/tutte.html:16
 msgid "Titolo"
 msgstr ""
 
-#: templates/challenge/builder.html:213 templates/challenge/form.html:57
+#: templates/challenge/builder.html:250 templates/challenge/form.html:58
 msgid "es. Progressione lungo sponda"
 msgstr ""
 
-#: templates/challenge/builder.html:215
+#: templates/challenge/builder.html:252
 msgid "Facoltativo: senza, l'esercizio prende il suo numero progressivo."
 msgstr ""
 
-#: templates/challenge/builder.html:220
+#: templates/challenge/builder.html:257
 msgid "Istruzioni per chi la esegue"
 msgstr ""
 
-#: templates/challenge/builder.html:224
+#: templates/challenge/builder.html:261
 msgid "Come si dispongono le bilie e come si conta il punteggio"
 msgstr ""
 
-#: templates/challenge/builder.html:226
+#: templates/challenge/builder.html:263
 msgid "Il disegno mostra la disposizione; qui si scrive la regola."
 msgstr ""
 
-#: templates/challenge/builder.html:231
+#: templates/challenge/builder.html:268
 msgid "Come si conta"
 msgstr ""
 
-#: templates/challenge/builder.html:237
+#: templates/challenge/builder.html:274
 msgid "Superato o non superato"
 msgstr ""
 
-#: templates/challenge/builder.html:245 templates/challenge/form.html:227
+#: templates/challenge/builder.html:282 templates/challenge/form.html:260
 msgid "Punteggio massimo"
 msgstr ""
 
-#: templates/challenge/builder.html:248
+#: templates/challenge/builder.html:285
 msgid "es. 15"
 msgstr ""
 
-#: templates/challenge/builder.html:250
+#: templates/challenge/builder.html:287
 msgid "Facoltativo. Lascialo vuoto se la prova non ha un tetto."
 msgstr ""
 
-#: templates/challenge/builder.html:259
+#: templates/challenge/builder.html:296
 msgid "Salva l'esercizio"
 msgstr ""
 
-#: templates/challenge/builder.html:259 templates/challenge/form.html:294
+#: templates/challenge/builder.html:296 templates/challenge/form.html:327
 #: templates/individual_match/availability.html:111
 msgid "Salva le modifiche"
 msgstr ""
 
-#: templates/challenge/builder.html:276
+#: templates/challenge/builder.html:313
 msgid "tocco"
 msgstr ""
 
-#: templates/challenge/builder.html:277
+#: templates/challenge/builder.html:314
 msgid "piano"
 msgstr ""
 
-#: templates/challenge/builder.html:279
+#: templates/challenge/builder.html:316
 msgid "forte"
 msgstr ""
 
-#: templates/challenge/builder.html:280
+#: templates/challenge/builder.html:317
 msgid "spacco"
 msgstr ""
 
-#: templates/challenge/builder.html:281
+#: templates/challenge/builder.html:318
 msgid ""
 "Attiva Tiro: la traiettoria segue il puntatore e si ricalcola in tempo "
 "reale."
 msgstr ""
 
-#: templates/challenge/builder.html:282
+#: templates/challenge/builder.html:319
 msgid ""
 "Muovi per mirare. Premi e rilascia per fissare; tieni premuto e trascina "
 "per la mira fine. Esc annulla."
 msgstr ""
 
-#: templates/challenge/builder.html:283
+#: templates/challenge/builder.html:320
 msgid ""
 "Clicca la biglia da giocare per iniziare a mirare. Clicca un tiro "
 "esistente per correggerlo."
 msgstr ""
 
-#: templates/challenge/builder.html:284
+#: templates/challenge/builder.html:321
 msgid "Clicca una biglia per iniziare a mirare"
 msgstr ""
 
-#: templates/challenge/builder.html:288
+#: templates/challenge/builder.html:325
 msgid "Testo da inserire:"
 msgstr ""
 
-#: templates/challenge/builder.html:289
+#: templates/challenge/builder.html:326
 msgid "Testo:"
 msgstr ""
 
-#: templates/challenge/builder.html:291
+#: templates/challenge/builder.html:328
 msgid "Biglia fantasma"
 msgstr ""
 
-#: templates/challenge/builder.html:292
+#: templates/challenge/builder.html:329
 msgid "Biglia"
 msgstr ""
 
-#: templates/challenge/builder.html:295
+#: templates/challenge/builder.html:332
 msgid "alto"
 msgstr ""
 
-#: templates/challenge/builder.html:296
+#: templates/challenge/builder.html:333
 msgid "basso"
 msgstr ""
 
-#: templates/challenge/builder.html:297
+#: templates/challenge/builder.html:334
 msgid "sx"
 msgstr ""
 
-#: templates/challenge/builder.html:298
+#: templates/challenge/builder.html:335
 msgid "dx"
 msgstr ""
 
-#: templates/challenge/builder.html:299
+#: templates/challenge/builder.html:336
 msgid "verticale"
 msgstr ""
 
-#: templates/challenge/builder.html:300
+#: templates/challenge/builder.html:337
 msgid "laterale"
 msgstr ""
 
-#: templates/challenge/builder.html:301
+#: templates/challenge/builder.html:338
 msgid "centro"
 msgstr ""
 
-#: templates/challenge/builder.html:302
+#: templates/challenge/builder.html:339
 msgid "destro"
 msgstr ""
 
-#: templates/challenge/builder.html:303
+#: templates/challenge/builder.html:340
 msgid "sinistro"
 msgstr ""
 
-#: templates/challenge/builder.html:304
+#: templates/challenge/builder.html:341
 msgid "1 = massimo effetto utile"
 msgstr ""
 
-#: templates/challenge/builder.html:316
+#: templates/challenge/builder.html:353
 msgid "Il disegno salvato non si è potuto ricaricare."
 msgstr ""
 
-#: templates/challenge/builder.html:339
+#: templates/challenge/builder.html:376
 msgid "Servono le istruzioni: il disegno da solo non dice come si conta."
 msgstr ""
 
-#: templates/challenge/builder.html:343
+#: templates/challenge/builder.html:380
 msgid "Il tavolo è vuoto: disponi almeno una bilia."
 msgstr ""
 
-#: templates/challenge/builder.html:349
+#: templates/challenge/builder.html:386
 msgid "Salvo…"
 msgstr ""
 
-#: templates/challenge/builder.html:355
+#: templates/challenge/builder.html:392
 msgid "Non è stato possibile generare l'immagine dell'esercizio."
 msgstr ""
 
-#: templates/challenge/builder.html:371
+#: templates/challenge/builder.html:408
 msgid "Non è stato possibile salvare l'esercizio."
 msgstr ""
 
-#: templates/challenge/builder.html:379
+#: templates/challenge/builder.html:416
 msgid "Non è stato possibile salvare l'esercizio. Riprova."
 msgstr ""
 
@@ -9672,7 +9782,7 @@ msgstr ""
 msgid "Diventa Esaminatore"
 msgstr ""
 
-#: templates/challenge/catalog.html:41 templates/challenge/form.html:20
+#: templates/challenge/catalog.html:41 templates/challenge/form.html:21
 #: templates/challenge/today.html:19
 msgid "Nuovo esercizio"
 msgstr ""
@@ -9782,227 +9892,250 @@ msgstr ""
 msgid "Togli i filtri"
 msgstr ""
 
-#: templates/challenge/form.html:20 templates/player/challenge_detail.html:138
+#: templates/challenge/form.html:21 templates/player/challenge_detail.html:138
 msgid "Modifica l'esercizio"
 msgstr ""
 
-#: templates/challenge/form.html:20
+#: templates/challenge/form.html:21
 msgid "Duplica l'esercizio"
 msgstr ""
 
-#: templates/challenge/form.html:31
+#: templates/challenge/form.html:32
 #, python-format
 msgid "%(num)s prova registrata"
 msgid_plural "%(num)s prove registrate"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/challenge/form.html:33
+#: templates/challenge/form.html:34
 #, python-format
 msgid "Una copia di «%(name)s»: parte senza prove e senza voti"
 msgstr ""
 
-#: templates/challenge/form.html:35
+#: templates/challenge/form.html:36
 msgid "La disposizione, le regole, che cosa allena"
 msgstr ""
 
-#: templates/challenge/form.html:59
+#: templates/challenge/form.html:60
 msgid ""
 "Facoltativo: senza, l'esercizio prende il suo numero progressivo "
 "(Esercizio 12)."
 msgstr ""
 
-#: templates/challenge/form.html:68
+#: templates/challenge/form.html:69
 msgid "es. Disponi 10 bilie lungo la sponda lunga e imbucale in sequenza…"
 msgstr ""
 
-#: templates/challenge/form.html:69
+#: templates/challenge/form.html:70
 msgid ""
 "È il testo che il giocatore legge prima di provarci: sii preciso sulle "
 "regole."
 msgstr ""
 
-#: templates/challenge/form.html:75
+#: templates/challenge/form.html:76
 msgid "Cosa allena"
 msgstr ""
 
-#: templates/challenge/form.html:76
+#: templates/challenge/form.html:77
 #, python-format
 msgid "fino a %(max)s"
 msgstr ""
 
-#: templates/challenge/form.html:91
+#: templates/challenge/form.html:92
 msgid "Con che gesto"
 msgstr ""
 
-#: templates/challenge/form.html:92
+#: templates/challenge/form.html:93
 msgid "zero, uno o più"
 msgstr ""
 
-#: templates/challenge/form.html:108
+#: templates/challenge/form.html:109
 msgid "1 per chi comincia"
 msgstr ""
 
-#: templates/challenge/form.html:132
+#: templates/challenge/form.html:133
 msgid "Famiglia e passo"
 msgstr ""
 
-#: templates/challenge/form.html:133
+#: templates/challenge/form.html:134
 msgid "stop shot 1 · 2 · 3: lo stesso gesto, sempre più difficile"
 msgstr ""
 
-#: templates/challenge/form.html:135 templates/challenge/form.html:186
+#: templates/challenge/form.html:136 templates/challenge/form.html:187
 msgid "nessuna"
 msgstr ""
 
-#: templates/challenge/form.html:141
+#: templates/challenge/form.html:142
 msgid "Famiglia"
 msgstr ""
 
-#: templates/challenge/form.html:143
+#: templates/challenge/form.html:144
 msgid "es. stop shot"
 msgstr ""
 
-#: templates/challenge/form.html:146
+#: templates/challenge/form.html:147
 msgid "Passo"
 msgstr ""
 
-#: templates/challenge/form.html:158
+#: templates/challenge/form.html:159
 msgid "La bianca"
 msgstr ""
 
-#: templates/challenge/form.html:159
+#: templates/challenge/form.html:160
 msgid "si rimette a ogni tiro, o resta dove si ferma"
 msgstr ""
 
-#: templates/challenge/form.html:162
+#: templates/challenge/form.html:163
 msgid "si rimette"
 msgstr ""
 
-#: templates/challenge/form.html:163
+#: templates/challenge/form.html:164
 msgid "resta"
 msgstr ""
 
-#: templates/challenge/form.html:164
+#: templates/challenge/form.html:165
 msgid "non detto"
 msgstr ""
 
-#: templates/challenge/form.html:171
+#: templates/challenge/form.html:172
 msgid "Non detto"
 msgstr ""
 
-#: templates/challenge/form.html:171
+#: templates/challenge/form.html:172
 msgid "Si rimette"
 msgstr ""
 
-#: templates/challenge/form.html:171
+#: templates/challenge/form.html:172
 msgid "Resta dov'è"
 msgstr ""
 
-#: templates/challenge/form.html:183
+#: templates/challenge/form.html:184
 msgid "Varianti"
 msgstr ""
 
-#: templates/challenge/form.html:184
+#: templates/challenge/form.html:185
 msgid "destra e sinistra, oppure posizioni A e B: si registrano separate"
 msgstr ""
 
-#: templates/challenge/form.html:194 templates/challenge/form.html:202
+#: templates/challenge/form.html:195 templates/challenge/form.html:203
 msgid "Nome della variante"
 msgstr ""
 
-#: templates/challenge/form.html:195 templates/challenge/form.html:203
+#: templates/challenge/form.html:196 templates/challenge/form.html:204
 msgid "Togli la variante"
 msgstr ""
 
-#: templates/challenge/form.html:202
+#: templates/challenge/form.html:203
 msgid "es. destra"
 msgstr ""
 
-#: templates/challenge/form.html:207
+#: templates/challenge/form.html:208
 msgid "Aggiungi una variante"
 msgstr ""
 
-#: templates/challenge/form.html:209
+#: templates/challenge/form.html:210
 msgid ""
 "Sono lo stesso esercizio, non un altro: stessa disposizione, stesse "
 "regole. Una variante che ha già delle prove si può rinominare, non "
 "togliere."
 msgstr ""
 
-#: templates/challenge/form.html:216
-msgid "Come si registra"
-msgstr ""
-
-#: templates/challenge/form.html:218
+#: templates/challenge/form.html:220
 msgid "un tocco per prova"
 msgstr ""
 
-#: templates/challenge/form.html:220
+#: templates/challenge/form.html:222
 msgid "un numero a fine prova"
 msgstr ""
 
-#: templates/challenge/form.html:228
+#: templates/challenge/form.html:227
+msgid "dove si ferma la bianca, a ogni colpo"
+msgstr ""
+
+#: templates/challenge/form.html:230
+msgid "Come si registra"
+msgstr ""
+
+#: templates/challenge/form.html:239
+msgid "Colpi di una prova"
+msgstr ""
+
+#: templates/challenge/form.html:241
+#, python-format
+msgid "il massimo è questo numero per %(n)s, il centro del bersaglio"
+msgstr ""
+
+#: templates/challenge/form.html:242
+msgid "il massimo lo dà il bersaglio del disegno"
+msgstr ""
+
+#: templates/challenge/form.html:252
+msgid ""
+"Per registrarlo colpo per colpo — dove si ferma la bianca, a ogni colpo —"
+" l'esercizio va disegnato, e nel disegno va messo un bersaglio."
+msgstr ""
+
+#: templates/challenge/form.html:261
 msgid "lascia vuoto se si va avanti finché si sbaglia"
 msgstr ""
 
-#: templates/challenge/form.html:238
+#: templates/challenge/form.html:271
 msgid "La disposizione"
 msgstr ""
 
-#: templates/challenge/form.html:245
+#: templates/challenge/form.html:278
 msgid "Anteprima della foto"
 msgstr ""
 
-#: templates/challenge/form.html:264
+#: templates/challenge/form.html:297
 msgid "Usa una foto"
 msgstr ""
 
-#: templates/challenge/form.html:269
+#: templates/challenge/form.html:302
 msgid "Senza una foto nuova resta quella di adesso."
 msgstr ""
 
-#: templates/challenge/form.html:269
+#: templates/challenge/form.html:302
 msgid "Serve a riprodurre il tavolo: fotografalo dall'alto, JPG o PNG."
 msgstr ""
 
-#: templates/challenge/form.html:271
+#: templates/challenge/form.html:304
 msgid "Una foto al posto del disegno toglie la possibilità di riaprirlo."
 msgstr ""
 
-#: templates/challenge/form.html:278
+#: templates/challenge/form.html:311
 msgid "Nel catalogo"
 msgstr ""
 
-#: templates/challenge/form.html:279
+#: templates/challenge/form.html:312
 msgid "Spento, l'esercizio non si propone più a nessuno; le prove fatte restano."
 msgstr ""
 
-#: templates/challenge/form.html:294
+#: templates/challenge/form.html:327
 msgid "Crea la copia"
 msgstr ""
 
-#: templates/challenge/form.html:294
+#: templates/challenge/form.html:327
 msgid "Crea l'esercizio"
 msgstr ""
 
-#: templates/challenge/form.html:299
+#: templates/challenge/form.html:332
 msgid "Crea la copia e apri il disegno"
 msgstr ""
 
-#: templates/challenge/form.html:316
+#: templates/challenge/form.html:349
 msgid "Crea una copia e modifica quella"
 msgstr ""
 
-#: templates/challenge/form.html:317
+#: templates/challenge/form.html:350
 msgid "Modifica comunque questo"
 msgstr ""
 
-#: templates/challenge/form.html:318
+#: templates/challenge/form.html:351
 msgid "Torna al modulo"
 msgstr ""
 
-#: templates/challenge/form.html:330
+#: templates/challenge/form.html:363
 msgid "Non è stato possibile salvare. Riprova."
 msgstr ""
 

@@ -535,6 +535,45 @@ function effectiveShots(){
   }
   return arr;
 }
+/* ---------- Il bersaglio (ADR-066) ----------
+   L'unica voce della scena che il server legge come **dato**: centro, anelli
+   di uguale spessore (`step`, in multipli di un quarto di diamante), valori dal
+   centro verso l'esterno. Da qui nasce l'esecuzione colpo per colpo: il punto
+   in cui si ferma la bianca prende i punti dell'anello in cui cade.
+   La tinta è l'oro del canvas, a fasce sempre più tenui verso l'esterno: si
+   deve leggere sopra ogni panno senza sembrare una bilia. */
+const TARGET_GOLD = "201,168,76";
+const TARGET_STEPS = [U/4, U/2, 3*U/4, U];
+const TARGET_MAX_RINGS = 5;
+function theTarget(){ return state.items.find(i=>i.type==="target") || null; }
+function drawTarget(gTable, it, sel){
+  const n = it.values.length;
+  /* Ritagliato al panno: la bianca non si ferma sulle sponde, e un anello che
+     le copre nasconde i diamanti. La selezione invece resta intera, fuori. */
+  const clipId = "clothClip-" + it.id;
+  const cp = E("clipPath",{id:clipId},gTable);
+  E("rect",{x:0,y:0,width:L,height:W},cp);
+  const g = E("g",{"clip-path":`url(#${clipId})`},gTable);
+  for (let i=n-1;i>=0;i--){
+    E("circle",{cx:it.x,cy:it.y,r:it.step*(i+1),
+      fill:`rgba(${TARGET_GOLD},${(0.78 - 0.5*i/Math.max(1,n-1||1)).toFixed(2)})`,
+      stroke:"rgba(0,0,0,.35)","stroke-width":.8},g);
+  }
+  for (let i=0;i<n;i++){
+    /* Il valore sta a metà dello spessore del suo anello, sopra il centro; se
+       lì finisce fuori dal panno passa sotto, perché il gruppo è ritagliato e
+       un numero fuori sparirebbe — l'anello resterebbe senza il suo valore. */
+    const off = it.step*(i+.5);
+    let ry = i===0 ? it.y : it.y - off;
+    if (i && ry < 8) ry = Math.min(W - 8, it.y + off);
+    const t = E("text",{x:it.x,y:ry,dy:4,"text-anchor":"middle",
+      "font-family":"Arial, Helvetica, sans-serif","font-size":i===0?13:11,"font-weight":"700",
+      fill:"#1b2124",transform:rot(it.x,ry)},g);
+    t.textContent = it.values[i];
+  }
+  if (sel) E("circle",{cx:it.x,cy:it.y,r:it.step*n+4,fill:"none",stroke:"#f5c518",
+    "stroke-width":1.6,"stroke-dasharray":"3 3"},gTable);
+}
 function buildScene(o){
   o = o || {};
   const vert = state.orient === "v";
@@ -558,6 +597,9 @@ function buildScene(o){
   if (state.showMarks) drawMarks(g);
   if (o.forExport ? o.includeGrid : true) drawGrid(g);
 
+  for (const it of state.items){
+    if (it.type === "target") drawTarget(g, it, !o.forExport && state.sel === it.id);
+  }
   for (const it of state.items){
     if (it.type !== "path") continue;
     const sel = !o.forExport && state.sel === it.id;
@@ -627,7 +669,44 @@ function render(){
     : state.aiming
       ? T_("hintAiming","Muovi per mirare. Premi e rilascia per fissare; tieni premuto e trascina per la mira fine. Esc annulla.")
       : T_("hintPick","Clicca la biglia da giocare per iniziare a mirare. Clicca un tiro esistente per correggerlo.");
-  renderPalette(); renderTip(); syncShotControls();
+  renderPalette(); renderTip(); syncShotControls(); syncTargetControls();
+}
+
+/* Il pannello del bersaglio: c'è un bersaglio solo, quindi lavora su quello
+   senza bisogno che sia selezionato. Vuoto finché non lo si posa. */
+function syncTargetControls(){
+  const box = $("#targetControls"); if (!box) return;
+  const tg = theTarget();
+  box.hidden = !tg;
+  const vuoto = $("#targetEmpty"); if (vuoto) vuoto.hidden = !!tg;
+  if (!tg) return;
+  $("#targetStep").value = String(tg.step);
+  $("#targetRings").textContent = tg.values.length;
+  const riga = $("#targetValues");
+  if (riga.childElementCount !== tg.values.length){
+    riga.replaceChildren(...tg.values.map((v,i)=>{
+      const inp = document.createElement("input");
+      inp.type="number"; inp.min="0"; inp.max="99"; inp.inputMode="numeric";
+      inp.dataset.ring=i; inp.value=v;
+      inp.onchange = ()=>{ const t=theTarget(); if(!t) return;
+        const n = Math.max(0, Math.min(99, parseInt(inp.value,10)||0));
+        push(); t.values[i]=n; render(); };
+      return inp;
+    }));
+  } else {
+    [...riga.children].forEach((inp,i)=>{ if (document.activeElement!==inp) inp.value=tg.values[i]; });
+  }
+}
+function setTargetRings(delta){
+  const tg = theTarget(); if (!tg) return;
+  const n = tg.values.length + delta;
+  if (n < 1 || n > TARGET_MAX_RINGS) return;
+  push();
+  /* L'anello nuovo vale uno meno del precedente, ma mai zero: un anello da
+     zero punti è panno qualunque con un cerchio disegnato sopra. */
+  if (delta > 0) tg.values.push(Math.max(1, tg.values[tg.values.length-1]-1));
+  else tg.values.pop();
+  render();
 }
 
 /* ================================================================
@@ -752,6 +831,14 @@ function shotHit(p, sh){
   return res.paths.some(path=>nearPoly(p, path.pts, 6));
 }
 function hit(p){
+  const viaBersaglio = ()=>{
+    const tg = theTarget();
+    return tg && dist(tg,p) <= tg.step*tg.values.length ? {it:tg} : null;
+  };
+  const trovato = hitItems(p);
+  return trovato || viaBersaglio();
+}
+function hitItems(p){
   for (let i=state.items.length-1;i>=0;i--){
     const it = state.items[i];
     if (it.type==="ball" && dist(it,p)<=BR+3) return {it};
@@ -809,6 +896,14 @@ stage.addEventListener("pointerdown", ev=>{
     }
     render(); return;
   }
+  if (state.tool === "target"){
+    push();
+    const dove = clampPt(snapPoint(raw,{toBalls:false}));
+    let tg = theTarget();
+    if (tg) Object.assign(tg, dove);
+    else { tg = {id:uid(),type:"target",step:U/2,values:[3,2,1],...dove}; state.items.push(tg); }
+    state.sel = tg.id; state.tool = "select"; render(); return;
+  }
   if (state.tool === "text"){
     const t = prompt(T_("textNew","Testo da inserire:"));
     if (t){ push(); state.items.push({id:uid(),type:"text",text:t,...clampPt(snapPoint(raw,{toBalls:false}))}); }
@@ -848,7 +943,7 @@ window.addEventListener("pointermove", ev=>{
   if (!it) return;
   d.moved = true;
   if (it.type==="ball") Object.assign(it, snapBall(p, it.id));
-  else if (it.type==="text") Object.assign(it, clampPt(snapPoint(p,{toBalls:false})));
+  else if (it.type==="text" || it.type==="target") Object.assign(it, clampPt(snapPoint(p,{toBalls:false})));
   else if (it.type==="shot") return;
   else if (d.vertex !== undefined) it.points[d.vertex] = clampPt(snapPoint(p));
   else {
@@ -1002,6 +1097,15 @@ Object.keys(CLOTHS).forEach(k=>{
   cl.appendChild(b);
 });
 $("#undo").onclick=undo; $("#redo").onclick=redo; $("#del").onclick=removeSel;
+if ($("#targetStep")){
+  $("#targetStep").onchange = e=>{ const tg=theTarget(); if(!tg) return;
+    const s = +e.target.value; if (!TARGET_STEPS.includes(s)) return;
+    push(); tg.step = s; render(); };
+  $("#targetMinus").onclick = ()=>setTargetRings(-1);
+  $("#targetPlus").onclick  = ()=>setTargetRings(1);
+  $("#targetRemove").onclick = ()=>{ const tg=theTarget(); if(!tg) return;
+    push(); state.items = state.items.filter(i=>i!==tg); state.sel=null; render(); };
+}
 $("#finishLine").onclick=finishLine;
 $("#elev").oninput  = e=>{ $("#elevVal").textContent=e.target.value+"\u00B0"; setShotProp("elev",+e.target.value); };
 $("#force").oninput = e=>{ const f=+e.target.value;

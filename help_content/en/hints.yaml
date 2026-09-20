@@ -629,6 +629,16 @@ hints:
   - challenge.edit_diagram
   page: challenge
   section: due_tipi
+- id: challenge.colpi
+  label: Shots in an attempt
+  short: 'How many shots an attempt has when it is recorded shot by shot. The maximum score is not
+    typed in: it is this number times the value of the centre of the target.'
+  anchor: challenge-colpi
+  screens:
+  - challenge.edit_challenge
+  - challenge.duplicate_challenge
+  page: challenge
+  section: due_tipi
 - id: allenamento.esito
   label: Passed / Not passed
   short: 'The button you tap records the attempt straight away: there is nothing to confirm. Tapped the
@@ -688,6 +698,16 @@ hints:
   short: 'One at a time, and the active one is yellow: «Move» tidies up, «Shot» draws a shot, «Free line»
     traces a path, «Text» writes.'
   anchor: drill-strumento
+  screens:
+  - challenge.diagram_builder
+  - challenge.edit_diagram
+  page: disegnare_un_drill
+  section: strumenti
+- id: drill.bersaglio
+  label: The target
+  short: 'Where the cue ball should stop: a centre and up to five rings, each with its own points.
+    One per drawing, and with a target the exercise can be recorded shot by shot.'
+  anchor: drill-bersaglio
   screens:
   - challenge.diagram_builder
   - challenge.edit_diagram
