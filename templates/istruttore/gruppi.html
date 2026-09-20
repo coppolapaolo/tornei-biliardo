@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{# templates/istruttore/gruppi.html — 7c
+   «I tuoi gruppi»: i corsi in corso, lo storico, e come farne uno nuovo
+   (canvas «TPA ed esercizi», artboard `IstruttoreGruppo`; D12).
+
+   Lo storico è metà della funzione, non un archivio: «chi c'era nel corso
+   della primavera scorsa» è la domanda per cui un istruttore tiene i gruppi.
+   Per questo i corsi passati stanno qui sotto e non dietro un filtro. #}
+
+{% block title %}{{ _("I tuoi gruppi") }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('istruttore.allievi') }}"
+   aria-label="{{ _('Torna agli allievi') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("I tuoi gruppi") }}{% endblock %}
+{% block page_sub %}{{ _("Un gruppo ordina i tuoi allievi: non apre niente") }}{% endblock %}
+
+{% macro corso(gruppo, chiuso) %}
+<a class="c7-rows__row" style="color:inherit;text-decoration:none"
+   href="{{ url_for('istruttore.gruppo', group_id=gruppo.id) }}">
+  <span class="c7-tile c7-tile--sm{{ ' c7-tile--locked' if chiuso else ' c7-tile--neutral' }}">
+    <i class="fas fa-users"></i>
+  </span>
+  <div class="c7-rows__main">
+    <div class="c7-rows__title">{{ gruppo.name }}</div>
+    <div class="c7-rows__sub">
+      {%- if gruppo.started_on %}{{ _("dal %(giorno)s", giorno=gruppo.started_on|date_local) }}{% endif -%}
+      {%- if gruppo.ended_on %} {{ _("al %(giorno)s", giorno=gruppo.ended_on|date_local) }}{% endif -%}
+      {%- if gruppo.started_on or gruppo.ended_on %} <span class="c7-sep">·</span> {% endif -%}
+      {{ ngettext("%(num)s allievo", "%(num)s allievi",
+                  (gruppo.members if chiuso else gruppo.active_members)|length) }}
+    </div>
+  </div>
+  <span class="c7-rows__chev"><i class="fas fa-chevron-right"></i></span>
+</a>
+{% endmacro %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+
+  {% if aperti %}
+  <div class="c7-label">{{ _("In corso") }}</div>
+  <section class="c7-rows">
+    {% for gruppo in aperti %}{{ corso(gruppo, false) }}{% endfor %}
+  </section>
+  {% elif not passati %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-users"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessun gruppo") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Un gruppo serve a ordinare chi ti ha già aperto una scheda — il corso del lunedì, i ragazzi del primo anno. Non dà accesso a niente: quello lo decide l'allievo.") }}
+    </p>
+  </div>
+  {% endif %}
+
+  {% if passati %}
+  <div class="c7-label">{{ _("Lo storico dei tuoi gruppi") }}</div>
+  <section class="c7-rows">
+    {% for gruppo in passati %}{{ corso(gruppo, true) }}{% endfor %}
+  </section>
+  <p class="c7-rows__sub" style="margin:0">
+    {{ _("Un gruppo chiuso resta com'era: chi c'era e fino a quando. Se un allievo ti toglie da una scheda, da quel giorno di quella scheda non vedi più niente di nuovo.") }}
+  </p>
+  {% endif %}
+
+  {# ── Un gruppo nuovo ────────────────────────────────────────────────── #}
+  <form method="POST" action="{{ url_for('istruttore.crea_gruppo') }}"
+        class="c7-card c7-stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <label class="c7-label" for="name">{{ _("Un gruppo nuovo") }}</label>
+      <input class="form-control" type="text" id="name" name="name" maxlength="120"
+             required placeholder="{{ _('Come lo chiami') }}">
+    </div>
+    {# `.c7-grid` non porta le colonne: le dichiara chi la usa, come nelle
+       altre schermate. Due campi stretti stanno affiancati appena c'è
+       spazio, e sul telefono si impilano da soli. #}
+    <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <div>
+        <label class="c7-label" for="started_on">{{ _("Dal") }}</label>
+        <input class="form-control" type="date" id="started_on" name="started_on">
+      </div>
+      <div>
+        <label class="c7-label" for="ended_on">{{ _("Al") }}</label>
+        <input class="form-control" type="date" id="ended_on" name="ended_on">
+      </div>
+    </div>
+    <p class="c7-rows__sub" style="margin:0">
+      {{ _("Le date sono facoltative: servono a dire a che settimana è arrivato il corso.") }}
+    </p>
+    <button type="submit" class="btn btn-success w-100">
+      <i class="fas fa-plus"></i> {{ _("Crea il gruppo") }}
+    </button>
+  </form>
+</div>
+{% endblock %}

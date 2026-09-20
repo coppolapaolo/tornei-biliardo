@@ -19,6 +19,7 @@ def register_blueprints(app):
     from .challenge import challenge_bp
     from .exam import exam_bp
     from .sheet import sheet_bp
+    from .istruttore import istruttore_bp
     from .individual_match import individual_match_bp
 
     # Import gamification blueprint (Phase 4)
@@ -55,6 +56,10 @@ def register_blueprints(app):
     # blueprint. Non sta sotto /challenges perché una scheda ha sedute, un
     # registro e dei lettori che il catalogo degli esercizi non ha.
     app.register_blueprint(sheet_bp)
+    # L'altro lato delle schede (ADR-069, D12): chi le legge, e come ordina i
+    # suoi allievi. Un blueprint suo perché queste pagine non appartengono a
+    # una scheda — appartengono a un mestiere.
+    app.register_blueprint(istruttore_bp)
     app.register_blueprint(individual_match_bp, url_prefix="/match")
 
     # Registrazione gamification blueprint

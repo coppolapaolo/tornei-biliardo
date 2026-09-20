@@ -1,0 +1,167 @@
+"""I gruppi di allievi dell'istruttore, con il loro storico (D12, fase 8c).
+
+Due tabelle, e una sola cosa da tenere a mente leggendole:
+
+    training_group          un corso: nome, periodo, e di chi è
+      training_group_member chi ne fa parte, da quando a quando
+
+**Un gruppo non dà accesso a niente.** È l'ADR-069 §2: l'unico posto in cui
+sta scritto chi legge che cosa è `training_sheet_reader`, e queste due tabelle
+servono a *ordinare* chi te l'ha già dato — non a ottenerlo. Se domani un
+allievo ti richiude la sua scheda, la riga del gruppo resta dov'è (è storia) e
+tu di quella scheda non vedi più niente di nuovo: le due cose non si parlano, e
+il permesso non passa mai da qui.
+
+Da questo discendono le tre scelte che si vedono nello schema.
+
+* **`instructor_id` è anche sul membro**, e non solo sul gruppo. È una
+  denormalizzazione, e serve a un indice unico parziale che il database può
+  davvero imporre: «un allievo sta in un gruppo solo per volta, per lo stesso
+  istruttore». Un'unicità che vive in Python è invisibile a chi scrive in
+  blocco — `UserMergeService` decide dallo schema se muovere una colonna riga
+  per riga — ed è così che unendo due account un giocatore è finito iscritto
+  due volte alla stessa gara. La colonna è sicura perché non cambia mai: un
+  gruppo appartiene al suo istruttore per sempre.
+* **Chiudere un gruppo data l'uscita dei suoi membri.** Senza, l'indice qui
+  sopra impedirebbe di mettere l'allievo nel corso dell'anno dopo: per il
+  database sarebbe ancora dentro quello di prima. E dire «è uscito il giorno in
+  cui il corso è finito» è anche ciò che è successo davvero.
+* **Le righe non si cancellano mai.** «Chi c'era» è la domanda a cui questa
+  tabella risponde, come `granted_at`/`revoked_at` per i permessi.
+"""
+
+from __future__ import annotations
+
+from typing import List, Optional
+
+from ..base import BaseModel, db, utc_now
+
+
+class TrainingGroup(BaseModel):
+    """Un corso: un nome, un periodo, e gli allievi che ci sono dentro.
+
+    Il periodo è fatto di due date **facoltative**: chi tiene un corso a
+    calendario le mette entrambe, chi segue tre ragazzi tutto l'anno non ne
+    mette nessuna. ``ended_on`` valorizzata è anche ciò che distingue un gruppo
+    in corso da uno passato — non un `is_active` a parte, che sarebbe un
+    secondo posto in cui scrivere la stessa cosa.
+    """
+
+    __tablename__ = "training_group"
+
+    id = db.Column(db.Integer, primary_key=True)
+    instructor_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    name = db.Column(db.String(120), nullable=False)
+    #: Il periodo **dichiarato**: «dal 15/09 al 15/12». Due date facoltative,
+    #: ed entrambe descrivono il calendario — non lo stato. Un corso che sul
+    #: calendario finisce a dicembre è in corso a settembre.
+    started_on = db.Column(db.Date, nullable=True)
+    ended_on = db.Column(db.Date, nullable=True)
+    #: Quando il corso è stato **chiuso**, che è un atto e non una previsione.
+    #: NULL = in corso. Separata da `ended_on` perché le due cose divergono
+    #: sempre: la data di fine si scrive a settembre, la chiusura succede a
+    #: dicembre — e leggere la prima come stato farebbe nascere archiviato ogni
+    #: corso a cui si dà un calendario.
+    closed_at = db.Column(db.DateTime, nullable=True)
+
+    instructor = db.relationship("User", foreign_keys=[instructor_id])
+    members = db.relationship(
+        "TrainingGroupMember",
+        back_populates="group",
+        cascade="all, delete-orphan",
+        order_by="TrainingGroupMember.joined_at",
+    )
+
+    @property
+    def is_open(self) -> bool:
+        return self.closed_at is None
+
+    @property
+    def active_members(self) -> List["TrainingGroupMember"]:
+        """Chi ne fa parte adesso, nell'ordine in cui è entrato."""
+        return [member for member in self.members if member.left_at is None]
+
+    @property
+    def week_of(self) -> Optional[int]:
+        """A che settimana è arrivato il corso, se ha una data d'inizio.
+
+        Uno alla prima settimana, non zero: un corso cominciato ieri è alla
+        «settimana 1 di 13», come lo direbbe chi lo tiene. Un corso chiuso si
+        ferma alla settimana in cui è finito.
+        """
+        if self.started_on is None:
+            return None
+        oggi = utc_now().date()
+        fine = min(self.ended_on, oggi) if self.ended_on else oggi
+        giorni = (fine - self.started_on).days
+        if giorni < 0:
+            return None
+        return giorni // 7 + 1
+
+    @property
+    def weeks(self) -> Optional[int]:
+        """Quante settimane dura, se il periodo è chiuso da due date."""
+        if self.started_on is None or self.ended_on is None:
+            return None
+        giorni = (self.ended_on - self.started_on).days
+        if giorni < 0:
+            return None
+        return giorni // 7 + 1
+
+    def __repr__(self) -> str:  # pragma: no cover - banale
+        return f"<TrainingGroup {self.id} {self.name!r}>"
+
+
+class TrainingGroupMember(BaseModel):
+    """Un allievo dentro un gruppo, da quando a quando.
+
+    Ci si entra solo se si è già allievi — cioè se si è già aperta almeno una
+    scheda a questo istruttore (ADR-069). Il controllo sta nel servizio, dove
+    stanno le regole; qui c'è solo il fatto, con le sue date.
+    """
+
+    __tablename__ = "training_group_member"
+
+    id = db.Column(db.Integer, primary_key=True)
+    group_id = db.Column(
+        db.Integer,
+        db.ForeignKey("training_group.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    #: Copia di `group.instructor_id`: serve all'indice unico parziale, e non
+    #: cambia mai (vedi il docstring del modulo).
+    instructor_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    joined_at = db.Column(db.DateTime, nullable=False, default=utc_now)
+    #: Quando ne è uscito. NULL = ci sta ancora.
+    left_at = db.Column(db.DateTime, nullable=True)
+
+    group = db.relationship("TrainingGroup", back_populates="members")
+    user = db.relationship("User", foreign_keys=[user_id])
+
+    __table_args__ = (
+        db.Index(
+            "uq_training_group_member_attivo",
+            "instructor_id",
+            "user_id",
+            unique=True,
+            sqlite_where=db.text("left_at IS NULL"),
+        ),
+        db.Index("ix_training_group_member_group_id", "group_id"),
+    )
+
+    @property
+    def is_current(self) -> bool:
+        return self.left_at is None
+
+    def __repr__(self) -> str:  # pragma: no cover - banale
+        return f"<TrainingGroupMember group={self.group_id} user={self.user_id}>"
+
+
+__all__ = ["TrainingGroup", "TrainingGroupMember"]

@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{# templates/istruttore/allievi.html — 7c
+   «I miei allievi» (canvas «TPA ed esercizi», artboard `IstruttoreAllievi`;
+   ADR-069, D12).
+
+   Le tre sezioni non sono un giudizio sulle persone: sono tre domande diverse
+   che l'istruttore si fa aprendo la pagina — «a chi devo rispondere?», «chi
+   devo andare a cercare?», «chi va da solo?». Le definizioni stanno in
+   `models/istruttore/allievi_view.py`, scritte per esteso: qui si disegnano
+   soltanto.
+
+   «Tutto bene» è il resto, e sotto ogni nome c'è un fatto — quando si è
+   allenato, quante sedute ha chiuso — mai una valutazione. È la differenza
+   fra un elenco che si può controllare e uno a cui bisogna credere. #}
+
+{% block title %}{{ _("I miei allievi") }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('sheet.index') }}"
+   aria-label="{{ _('Torna alle schede') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("I miei allievi") }}{% endblock %}
+{% block page_sub %}
+  {%- if gruppo %}{{ gruppo.name }}
+  {%- else %}{{ ngettext("%(num)s persona ti ha aperto una scheda",
+                         "%(num)s persone ti hanno aperto una scheda", pagina.totale) }}
+  {%- endif -%}
+{% endblock %}
+{% block page_actions %}
+  {% if feature_visible('istruttore.gruppi') %}
+  <a href="{{ url_for('istruttore.gruppi') }}" class="btn btn-outline-primary btn-sm">
+    {{ _("I tuoi gruppi") }}
+  </a>
+  {% endif %}
+{% endblock %}
+
+{% macro riga(voce) %}
+  {# Una persona: iniziali, nome, il fatto, e il gruppo in cui metterla. #}
+  <div class="c7-rows__row">
+    <span class="c7-avatar">{{ voce.persona.username[:2]|upper }}</span>
+    <div class="c7-rows__main">
+      <div class="c7-rows__title">{{ voce.persona.username }}</div>
+      <div class="c7-rows__sub">
+        {%- if voce.schede|length > 1 and voce.segnale.scheda -%}
+          {{ voce.segnale.scheda.name }} <span class="c7-sep">·</span>
+        {% endif -%}
+        {{ voce.segnale.frase }}
+      </div>
+    </div>
+    {% if voce.gruppo %}
+    <span class="c7-state c7-state--muted">{{ voce.gruppo.name }}</span>
+    {% endif %}
+    <a class="c7-rows__chev" href="{{ url_for('sheet.detail', sheet_id=voce.schede[0].id) }}"
+       aria-label="{{ _('Apri il registro di %(chi)s', chi=voce.persona.username) }}">
+      <i class="fas fa-chevron-right"></i>
+    </a>
+  </div>
+{% endmacro %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+
+  {% if pagina.vuota and not gruppo %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-chalkboard-user"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessun allievo") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Qui compaiono le persone che ti hanno aperto una loro scheda. Sei tu a non poterlo chiedere: è una decisione che prendono loro, scheda per scheda.") }}
+    </p>
+  </div>
+  {% else %}
+
+  {# ── Le linguette dei gruppi ────────────────────────────────────────── #}
+  {% if pagina.gruppi %}
+  <nav class="c7-hscroll" aria-label="{{ _('Filtra per gruppo') }}">
+    <a class="c7-pill{{ ' is-active' if not gruppo }}"
+       href="{{ url_for('istruttore.allievi') }}">{{ _("Tutti") }}</a>
+    {% for corso in pagina.gruppi %}
+    <a class="c7-pill{{ ' is-active' if gruppo and corso.id == gruppo.id }}"
+       href="{{ url_for('istruttore.allievi', gruppo=corso.id) }}">{{ corso.name }}</a>
+    {% endfor %}
+  </nav>
+  {% endif %}
+
+  {# ── Chi ti ha appena aperto una scheda ─────────────────────────────── #}
+  {% if pagina.nuovi %}
+  <div class="c7-label">{{ _("Ti hanno appena aperto una scheda") }}</div>
+  <section class="c7-rows">
+    {% for voce in pagina.nuovi %}
+    <div class="c7-rows__row">
+      <span class="c7-avatar">{{ voce.persona.username[:2]|upper }}</span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ voce.persona.username }}</div>
+        <div class="c7-rows__sub">
+          {{ _("dal %(giorno)s", giorno=voce.legame.dal|day_friendly(with_time=False)) }}
+          <span class="c7-sep">·</span>
+          {{ voce.schede|map(attribute='name')|join(', ') }}
+        </div>
+      </div>
+      {# Il gesto vero — scegliere il gruppo — sta sulla pagina del gruppo, dove
+         c'è l'elenco di chi ci si può mettere. Qui un menu a tendina per
+         persona ripeterebbe lo stesso meccanismo in una seconda forma, e con
+         cinque nomi nuovi occuperebbe lo schermo intero. #}
+      {% if voce.gruppo %}
+      <span class="c7-state c7-state--muted">{{ voce.gruppo.name }}</span>
+      {% elif feature_visible('istruttore.gruppi') %}
+      <a class="btn btn-secondary btn-sm" href="{{ url_for('istruttore.gruppi') }}">
+        {{ _("Metti in un gruppo") }}
+      </a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {# ── Valuta il passaggio di livello ─────────────────────────────────── #}
+  {% if pagina.passaggio %}
+  <div class="c7-label">{{ _("Valuta il passaggio di livello") }}</div>
+  <section class="c7-rows">
+    {% for voce in pagina.passaggio %}{{ riga(voce) }}{% endfor %}
+  </section>
+  <p class="c7-rows__sub" style="margin:0">
+    {{ _("Hanno superato la soglia della loro scheda tante volte di fila quante ne chiede. Il gradino lo sancisci tu: dagli la scheda del livello dopo quando te la senti.") }}
+  </p>
+  {% endif %}
+
+  {# ── Da guardare ────────────────────────────────────────────────────── #}
+  {% if pagina.guardare %}
+  <div class="c7-label">{{ _("Da guardare") }}</div>
+  <section class="c7-rows">
+    {% for voce in pagina.guardare %}{{ riga(voce) }}{% endfor %}
+  </section>
+  {% endif %}
+
+  {# ── Tutto bene ─────────────────────────────────────────────────────── #}
+  {% if pagina.bene %}
+  <div class="c7-label">{{ _("Tutto bene") }}</div>
+  <section class="c7-rows">
+    {% for voce in pagina.bene %}{{ riga(voce) }}{% endfor %}
+  </section>
+  {% endif %}
+
+  {% if gruppo and pagina.vuota %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-users"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessuno in questo gruppo") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Ci si mette chi ti ha già aperto una scheda: un gruppo serve a ordinare gli allievi, non a chiederne di nuovi.") }}
+    </p>
+    <div class="c7-empty__actions">
+      <a class="btn btn-secondary" href="{{ url_for('istruttore.gruppo', group_id=gruppo.id) }}">
+        {{ _("Apri il gruppo") }}
+      </a>
+    </div>
+  </div>
+  {% endif %}
+  {% endif %}
+</div>
+{% endblock %}

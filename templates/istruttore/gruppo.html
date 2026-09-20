@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{# templates/istruttore/gruppo.html — 7c
+   Un gruppo: a che punto è, chi ne fa parte, chi ne è uscito (canvas «TPA ed
+   esercizi», artboard `IstruttoreGruppo`; D12).
+
+   Due numeri in cima, e non i tre dell'artboard: «media del gruppo su 60» si
+   può dire solo se tutti fanno la stessa scheda, e una media fra schede
+   diverse è un numero che sembra vero e non lo è. Torna con la scheda di
+   gruppo (fase 8d).
+
+   Chi si aggiunge sono **gli allievi liberi**: un gruppo ordina chi ti ha già
+   aperto una scheda, e non c'è nessuna casella di ricerca da cui pescare
+   qualcun altro. È l'ADR-069, e si vede proprio da questa assenza. #}
+
+{% block title %}{{ gruppo.name }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('istruttore.gruppi') }}"
+   aria-label="{{ _('Torna ai gruppi') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ gruppo.name }}{% endblock %}
+{% block page_sub %}{{ _("Un gruppo: nome, periodo, allievi") }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+
+  {# ── A che punto è ──────────────────────────────────────────────────── #}
+  <section class="c7-card{{ ' c7-card--accent' if gruppo.is_open }}">
+    <div class="d-flex align-items-start justify-content-between gap-2">
+      <div>
+        <div class="c7-kicker">
+          {{ _("Gruppo in corso") if gruppo.is_open else _("Gruppo chiuso") }}
+        </div>
+        <h2 style="margin:4px 0 0;font-size:19px;font-weight:800;letter-spacing:-.02em">
+          {{ gruppo.name }}
+        </h2>
+        <div class="c7-rows__sub">
+          {%- if gruppo.started_on %}{{ _("dal %(giorno)s", giorno=gruppo.started_on|date_local) }}{% endif -%}
+          {%- if gruppo.ended_on %} {{ _("al %(giorno)s", giorno=gruppo.ended_on|date_local) }}{% endif -%}
+        </div>
+      </div>
+      {% if gruppo.week_of %}
+      <span class="c7-state {{ 'c7-state--onaccent' if gruppo.is_open else 'c7-state--muted' }}">
+        {%- if gruppo.weeks -%}
+          {{ _("settimana %(n)s di %(tot)s", n=gruppo.week_of, tot=gruppo.weeks) }}
+        {%- else -%}
+          {{ _("settimana %(n)s", n=gruppo.week_of) }}
+        {%- endif -%}
+      </span>
+      {% endif %}
+    </div>
+
+    <div class="c7-kpis" style="margin-top:14px">
+      <div class="c7-kpi">
+        <div class="c7-kpi__v">{{ dentro|length }}</div>
+        <div class="c7-kpi__l">{{ _("Allievi") }}</div>
+      </div>
+      <div class="c7-kpi">
+        <div class="c7-kpi__v">{{ passati|length }}</div>
+        <div class="c7-kpi__l">{{ _("Ne sono usciti") }}</div>
+      </div>
+    </div>
+  </section>
+
+  {# ── Chi ne fa parte ────────────────────────────────────────────────── #}
+  <div class="c7-label">{{ _("Allievi") }}</div>
+  {% if dentro %}
+  <section class="c7-rows">
+    {% for voce in dentro %}
+    <div class="c7-rows__row">
+      <span class="c7-avatar">{{ voce.persona.username[:2]|upper }}</span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ voce.persona.username }}</div>
+        <div class="c7-rows__sub">{{ voce.segnale.frase }}</div>
+      </div>
+      <form method="POST"
+            action="{{ url_for('istruttore.assegna_gruppo', user_id=voce.persona.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="group_id" value="">
+        <input type="hidden" name="torna" value="{{ gruppo.id }}">
+        <button type="submit" class="btn btn-secondary btn-sm">{{ _("Togli") }}</button>
+      </form>
+    </div>
+    {% endfor %}
+  </section>
+  {% else %}
+  <p class="c7-rows__sub" style="margin:0">
+    {{ _("Ancora nessuno. Si mette dentro chi ti ha aperto una scheda.") }}
+  </p>
+  {% endif %}
+
+  {# ── Chi ci si può mettere ──────────────────────────────────────────── #}
+  {% if gruppo.is_open and fuori %}
+  <div class="c7-label">{{ _("Fra chi ti ha aperto una scheda") }}</div>
+  <section class="c7-rows">
+    {% for voce in fuori %}
+    <div class="c7-rows__row">
+      <span class="c7-avatar">{{ voce.persona.username[:2]|upper }}</span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ voce.persona.username }}</div>
+        <div class="c7-rows__sub">
+          {{ voce.schede|map(attribute='name')|join(', ') }}
+        </div>
+      </div>
+      <form method="POST"
+            action="{{ url_for('istruttore.assegna_gruppo', user_id=voce.persona.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="group_id" value="{{ gruppo.id }}">
+        <input type="hidden" name="torna" value="{{ gruppo.id }}">
+        <button type="submit" class="btn btn-secondary btn-sm">{{ _("Aggiungi") }}</button>
+      </form>
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {# ── Chi ne è uscito ────────────────────────────────────────────────── #}
+  {% if passati %}
+  <div class="c7-label">{{ _("Ne sono usciti") }}</div>
+  <section class="c7-rows c7-rows--spenta">
+    {% for membro in passati %}
+    <div class="c7-rows__row">
+      <span class="c7-avatar c7-avatar--sm">{{ membro.user.username[:2]|upper }}</span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ membro.user.username }}</div>
+        <div class="c7-rows__sub">
+          {{ _("fino al %(giorno)s", giorno=membro.left_at|date_local) }}
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {# ── Nome, periodo, chiusura ────────────────────────────────────────── #}
+  <form method="POST" action="{{ url_for('istruttore.modifica_gruppo', group_id=gruppo.id) }}"
+        class="c7-card c7-stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <label class="c7-label" for="name">{{ _("Come si chiama") }}</label>
+      <input class="form-control" type="text" id="name" name="name" maxlength="120"
+             required value="{{ gruppo.name }}">
+    </div>
+    {# `.c7-grid` non porta le colonne: le dichiara chi la usa, come nelle
+       altre schermate. Due campi stretti stanno affiancati appena c'è
+       spazio, e sul telefono si impilano da soli. #}
+    <div class="c7-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <div>
+        <label class="c7-label" for="started_on">{{ _("Dal") }}</label>
+        <input class="form-control" type="date" id="started_on" name="started_on"
+               value="{{ gruppo.started_on.isoformat() if gruppo.started_on else '' }}">
+      </div>
+      <div>
+        <label class="c7-label" for="ended_on">{{ _("Al") }}</label>
+        <input class="form-control" type="date" id="ended_on" name="ended_on"
+               value="{{ gruppo.ended_on.isoformat() if gruppo.ended_on else '' }}">
+      </div>
+    </div>
+    <button type="submit" class="btn btn-secondary w-100">{{ _("Salva") }}</button>
+  </form>
+
+  {% if gruppo.is_open %}
+  <form method="POST" action="{{ url_for('istruttore.chiudi_gruppo', group_id=gruppo.id) }}"
+        onsubmit="return confirm({{ _('Chiudi il corso? Resta nello storico con chi ne faceva parte, e da oggi quelle persone possono entrare in un altro gruppo.')|tojson }})">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-outline-danger w-100">
+      {{ _("Chiudi il corso") }}
+    </button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}
