@@ -1,0 +1,231 @@
+title: "Il tuo allenamento"
+section: giocare
+kind: approfondimento
+audience: [giocatore]
+minutes: 4
+summary: "Dove sei forte e dove no, un traguardo che ti dai tu, e la proposta di cosa fare oggi."
+screens: [challenge.andamento, challenge.nuovo_obiettivo]
+related: [challenge, schede_di_allenamento, progressi]
+
+blocks:
+  - type: text
+    text: >-
+      Registrare le prove serve a qualcosa solo se poi qualcuno te le racconta.
+      **Andamento** è la quarta stanza dell'allenamento, accanto a Esercizi,
+      Schede ed Esami: dice dove sei forte, dove no, e se stai salendo.
+
+  - type: shot
+    shot: andamento-radar
+    caption: "«Il tuo allenamento»: adesso, il mese prima, e il radar delle tue categorie."
+
+  - type: heading
+    id: una_scala_sola
+    title: "Una scala sola: quanto prendi di quello che si poteva prendere"
+
+  - type: text
+    text: >-
+      Gli esercizi sono tarati in modi diversi: uno vale al massimo 10, un altro
+      50, un altro ancora si fa a tiri riusciti. Per confrontarli serve
+      un'unità comune, e qui è **la quota di quello che si poteva fare**. Un 12
+      su 15 e un 4 su 5 tiri valgono tutti e due l'ottanta per cento.
+
+  - type: text
+    text: >-
+      Per questo entrano insieme le prove fatte **dal catalogo** e le caselle
+      segnate **dentro una scheda**: la domanda di questa pagina non è «quanto
+      vale questo esercizio», è «quanto bene tiro di draw» — e la risposta non
+      cambia a seconda di dove hai scritto il numero. Sotto ogni categoria
+      trovi anche quante prove vengono dalle schede.
+
+  - type: note
+    tone: info
+    title: "Che cosa resta fuori"
+    text: >-
+      Entra solo quello che ha un **massimo**. Un esercizio senza tetto
+      dichiarato, i minuti e le spunte «fatto» non si possono mettere in
+      percentuale: restano fuori, e in fondo alla pagina c'è scritto quante
+      registrazioni sono. Non spariscono: semplicemente non fanno media.
+
+  - type: heading
+    id: i_due_radar
+    title: "I radar sono due"
+
+  - type: text
+    text: >-
+      Un esercizio si descrive su due assi: **l'abilità** — che cosa allena — e
+      **il gesto** — con che colpo. Sono due vocabolari indipendenti, quindi i
+      radar sono due, e si passa dall'uno all'altro con l'interruttore **«Per
+      abilità» · «Per gesto»** sopra il grafico.
+
+  - type: shot
+    shot: andamento-gesto
+    caption: "Lo stesso andamento, sull'altro vocabolario."
+
+  - type: text
+    text: >-
+      In cima ci sono due numeri: **Adesso** e **Il mese prima**. Il confronto è
+      sempre con il periodo di pari durata subito prima — trenta giorni contro i
+      trenta di prima, tre mesi contro i tre di prima. Con **Sempre** un «prima»
+      non c'è, e infatti non compare.
+
+  - type: note
+    tone: tip
+    title: "Perché a volte i poligoni sono due e a volte uno"
+    text: >-
+      Il poligono chiaro — il periodo prima — si disegna solo se **tutte** le
+      categorie del grafico hanno numeri anche allora. Una categoria che il mese
+      scorso non avevi allenato non vale zero: vale «non l'avevo allenata», che è
+      un'altra cosa. In quel caso resta un poligono solo, e il confronto lo
+      leggi nelle righe sotto, categoria per categoria.
+
+  - type: heading
+    id: le_righe
+    title: "Le righe sotto il grafico"
+
+  - type: text
+    text: >-
+      Ogni categoria che hai allenato abbastanza prende una riga: la **banda**
+      («solido», «in crescita», «da costruire»), quante prove la reggono, di
+      quanto sei salito o sceso, e la percentuale.
+
+  - type: text
+    text: >-
+      Le categorie con **meno di cinque prove** restano sul grafico — la forma si
+      legge tutta insieme — ma non prendono una riga, e un avviso te lo dice.
+      Non è un difetto: un numero costruito su due prove è rumore disegnato
+      bene, e mostrarlo sarebbe peggio che tacere.
+
+  - type: heading
+    id: obiettivi
+    title: "Darsi un obiettivo"
+
+  - type: text
+    text: >-
+      In fondo alla pagina c'è **«I tuoi obiettivi»**: un traguardo che scegli
+      tu, con una barra che si riempie mentre ti alleni. Ne puoi tenere aperti
+      **tre** per volta.
+
+  - type: shot
+    shot: obiettivo-nuovo
+    caption: "Imposta un obiettivo: prima che cosa vuoi ottenere, poi i campi di quella forma."
+
+  - type: options
+    items:
+      - name: "Un risultato su un esercizio"
+        values: "arrivare a un punteggio"
+        text: >-
+          Scegli l'esercizio e dove vuoi arrivare. Poi dici **quando vale
+          raggiunto**: la media delle ultime cinque prove — cioè «lo so fare» —
+          oppure basta una volta, cioè «ci sono arrivato». Non è una questione
+          di severità: sono due cose diverse.
+      - name: "Un'abilità che sale"
+        values: "una percentuale su una categoria"
+        text: >-
+          Scegli una categoria — un'abilità o un gesto — e la percentuale a cui
+          vuoi arrivare. Accanto a ogni voce c'è scritto dove sei oggi.
+      - name: "La costanza"
+        values: "quante volte a settimana"
+        text: >-
+          Quante volte a settimana, e per quante settimane di fila. Conta il
+          **giorno**, non quante prove ci segni: dieci tiri in una sera sono una
+          volta sola.
+
+  - type: text
+    text: >-
+      **Entro quando** è una scelta a tre voci — un mese, tre mesi, senza
+      scadenza. Una data precisa su un obiettivo di allenamento sarebbe una
+      finta precisione: nessuno decide di arrivare a otto su dieci entro il 14
+      novembre.
+
+  - type: note
+    tone: info
+    title: "La barra parte da dove eri"
+    text: >-
+      Se quando ti sei dato l'obiettivo eri a 61 e il traguardo è 70, la barra
+      misura quei nove punti, non i settanta. Partire da zero racconterebbe che
+      non hai fatto niente proprio mentre ti manca poco.
+
+  - type: text
+    text: >-
+      Un obiettivo si può **lasciare** in ogni momento. Quando lo raggiungi,
+      resta nel tuo allenamento con la data: da lì in poi è un fatto, e non si
+      toglie nemmeno se poi vai peggio. Una scadenza passata non lo chiude: te
+      lo dice, e tu decidi.
+
+  - type: heading
+    id: per_oggi
+    title: "«Per oggi»: cosa conviene fare"
+
+  - type: text
+    text: >-
+      Nella pagina **Esercizi** — la porta d'ingresso — sopra i preferiti c'è
+      **«Per oggi»**, con una o più proposte. Accanto a ognuna c'è scritto
+      **perché** è lì: senza il motivo un consiglio non si segue, e non si può
+      nemmeno contestare.
+
+  - type: list
+    title: "Le quattro cose che l'app guarda, in quest'ordine"
+    items:
+      - "**Il tuo obiettivo.** Se te ne sei dato uno, la cosa da fare è quello."
+      - "**Dove sei indietro.** La categoria con la banda più bassa fra quelle di cui si può parlare."
+      - "**Fermo da un po'.** Qualcosa che facevi e non tocchi da un mese."
+      - "**Mai provato, ed è alla tua portata.** Né banale né un muro, misurato su chi l'ha provato davvero."
+
+  - type: text
+    text: >-
+      Un esercizio in cui sei **già al massimo** non te lo propone mai:
+      insistere lì non serve. E se nessuna delle quattro ha qualcosa da dire, la
+      sezione non compare — meglio nessun consiglio che uno a caso.
+
+  - type: heading
+    id: difficolta_misurata
+    title: "Quanto è difficile davvero un esercizio"
+
+  - type: text
+    text: >-
+      Nella scheda di un esercizio, sotto le tue prove, c'è **«Quelli come te»**.
+      Dice due cose.
+
+  - type: list
+    items:
+      - "**A quanto arriva chi ha la tua forza**, cioè i giocatori con un Elo vicino al tuo, e su quanti giocatori è la media."
+      - "**Il livello misurato** accanto a quello dichiarato dall'autore. Se non coincidono, una riga spiega in che verso: «dai risultati sembra più difficile: chi lo prova arriva al 60%…»."
+    title: "Due righe"
+
+  - type: text
+    text: >-
+      Il livello dichiarato resta dov'è, e non viene sostituito: sono due
+      informazioni diverse, e la seconda serve a far correggere la prima. Chi ha
+      creato l'esercizio lo sa già fare, e il suo giudizio parte da lì.
+
+  - type: note
+    tone: warning
+    title: "Quando la card non compare"
+    text: >-
+      Sotto **tre giocatori** o **cinque prove** non c'è ancora niente da dire, e
+      la card sparisce invece di mostrare una media su due persone. E la riga
+      «quelli come te» compare solo se tu hai un Elo e se nella tua fascia c'è
+      abbastanza gente: altrimenti resta la media di tutti.
+
+  - type: faq
+    items:
+      - q: "Perché il mio radar ha solo tre raggi?"
+        a: >-
+          Perché hai allenato tre categorie. Un raggio compare quando c'è almeno
+          una prova su un esercizio che porta quella categoria: man mano che
+          provi esercizi diversi il grafico si allarga da solo.
+      - q: "Ho fatto una seduta di scheda: perché la percentuale non si è mossa?"
+        a: >-
+          Entrano solo le caselle che hanno un massimo — «riusciti su N tiri»,
+          «vinte su N partite», il punteggio. I minuti e le spunte «fatto» non
+          si possono mettere in percentuale, e in fondo alla pagina è scritto
+          quante registrazioni sono rimaste fuori.
+      - q: "Posso darmi lo stesso obiettivo due volte?"
+        a: >-
+          Se l'hai già raggiunto sì: quello vecchio resta nel tuo allenamento
+          con la sua data. Ma non puoi darti un obiettivo che hai **già**
+          raggiunto adesso — l'app ti chiede un traguardo più alto di dove sei.
+      - q: "Perché non vedo «Quelli come te» su un esercizio nuovo?"
+        a: >-
+          Perché l'hanno provato in pochi. Serve un minimo di giocatori e di
+          prove: prima di quello qualunque numero sarebbe un aneddoto.

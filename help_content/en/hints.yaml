@@ -1068,6 +1068,51 @@ hints:
   page: schede_di_allenamento
   section: seduta
 
+- id: andamento.periodo
+  label: The period
+  short: Which window you are looking at. The comparison is always with the window of equal
+    length right before; with "All time" there is no before.
+  anchor: andamento-periodo
+  screens:
+  - challenge.andamento
+  page: il_tuo_allenamento
+  section: i_due_radar
+- id: andamento.assi
+  label: By skill or by stroke
+  short: There are two categorisations — what it trains and with which shot — so there are two
+    radars. Same page, one switch.
+  anchor: andamento-assi
+  screens:
+  - challenge.andamento
+  page: il_tuo_allenamento
+  section: i_due_radar
+- id: andamento.obiettivi
+  label: Your goals
+  short: A target you choose yourself, with a bar that fills as you train. Three open at a time.
+  anchor: andamento-obiettivi
+  screens:
+  - challenge.andamento
+  page: il_tuo_allenamento
+  section: obiettivi
+- id: esercizi.per_oggi
+  label: For today
+  short: What is worth training, with the reason written next to it. If no rule has anything to
+    say, the section does not appear.
+  anchor: esercizi-per-oggi
+  screens:
+  - challenge.today
+  page: il_tuo_allenamento
+  section: per_oggi
+- id: esercizio.quelli_come_te
+  label: Players like you
+  short: How far players of your strength get, and the level measured from the results next to
+    the one the author declared.
+  anchor: esercizio-quelli-come-te
+  screens:
+  - challenge.challenge_detail
+  page: il_tuo_allenamento
+  section: difficolta_misurata
+
 tours:
 - screen: dashboard.dashboard
   title: Your home

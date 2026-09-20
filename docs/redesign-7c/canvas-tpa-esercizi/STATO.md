@@ -132,8 +132,17 @@ ascolta `pointerdown`.
 | Artboard | Schermata | Template | PR | Stato |
 |---|---|---|---|---|
 | `Andamento` | Il tuo allenamento, radar per abilità | `challenge/andamento.html` + `models/andamento/` | 7a | **fatta il 20/09** — pagina nuova, non la sezione del profilo: quella resta lo storico di chi guarda un profilo |
+
+**Fase 7 chiusa il 20/09/2026.** Cinque PR invece di sei — la 7d e la 7e
+viaggiano insieme, perché il consiglio «alla tua portata» è costruito sulla
+difficoltà misurata. L'ADR nuovo è l'**ADR-068**: nell'andamento catalogo e
+schede entrano **insieme**, ridotti entrambi alla quota di ciò che era
+ottenibile, e non si fondono mai su un esercizio. Nate qui e da riusare: le
+quattro stanze (`components/_training_rooms.html`), `models/andamento/`,
+`models/obiettivo/`, e `difficulty.expected_for`, che è l'ingrediente di ogni
+consiglio futuro. Chiuse #181, #316, #184, #174, #175.
 | `AndamentoGesto` | Lo stesso, radar per gesto | la stessa pagina, `?asse=gesto` | 7a | **fatta il 20/09** — due artboard, una pagina: l'asse è un collegamento, come i filtri del catalogo |
-| `Obiettivo` | Imposta un obiettivo (#316) | nuovo | 7b | da fare |
+| `Obiettivo` | Imposta un obiettivo (#316) | `challenge/obiettivo.html` + `models/obiettivo/` | 7b | **fatta il 20/09** — il tipo è un collegamento; la stima «a questo ritmo» sta sulla barra dell'obiettivo aperto, non nel modulo |
 | `CreaModulo` | Crea, modifica, duplica: un modulo solo (#168 #252 #253) | `challenge/form.html` | #492 (4b) | **fatta il 19/09** — «Come si registra» ha due voci: colpo per colpo ed estrazione in fase 5 |
 | `CreaCopia` | «Ha già delle prove» (#252) | foglio in `challenge/form.html` | #492 (4b) | **fatta il 19/09** — la decisione sta nel servizio (409), non nel JS |
 
@@ -206,7 +215,7 @@ cosa si è scelto, cosa si è scartato e perché.
 | 4 | Il modello dell'esercizio (#168 #252 #253), «Oggi», voto | #490 #492 #494 #496 #498 | chiusa il 20/09 |
 | 5 | Eseguire un esercizio (#183 #452 #326) | #501 #503 #504 #507 #508 #509 | chiusa il 20/09 |
 | 6 | Schede di allenamento (#172) | #511 #513 #514 #515 #516 | **chiusa il 20/09** |
-| 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | | da fare |
+| 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | #517 #519 #520 #521 #522 | **chiusa il 20/09** |
 | 8 | Istruttori (#173) | | da fare |
 | 9 | Disegnatore (#179) — indipendente, si può anticipare dopo la 4 | | da fare |
 | 10 | Chiusura: guida, racconto, issue | | da fare |

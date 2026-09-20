@@ -38,7 +38,7 @@
   {% include "components/_training_rooms.html" %}
 
   {# ── Il periodo ─────────────────────────────────────────────────────── #}
-  <div class="c7-hscroll">
+  <div class="c7-hscroll" data-help="andamento-periodo">
     {% for periodo in periodi %}
     <a class="c7-chip{{ ' is-on' if periodo == a.periodo }}" href="{{ indirizzo(periodo=periodo) }}"
        {% if periodo == a.periodo %}aria-current="true"{% endif %}>{{ periodo.label }}</a>
@@ -60,7 +60,8 @@
 
   {# ── Il radar ───────────────────────────────────────────────────────── #}
   <section class="c7-card">
-    <nav class="c7-seg" style="margin-bottom:12px" aria-label="{{ _('Su quale vocabolario') }}">
+    <nav class="c7-seg" style="margin-bottom:12px" data-help="andamento-assi"
+         aria-label="{{ _('Su quale vocabolario') }}">
       {% for asse in assi %}
       <a class="c7-seg__item{{ ' is-on' if asse == a.asse }}" href="{{ indirizzo(asse=asse) }}"
          {% if asse == a.asse %}aria-current="true"{% endif %}>
@@ -174,7 +175,7 @@
   {# Sotto l'andamento e non sopra: un obiettivo si pone guardando dove si è,
      e la pagina si legge in quest'ordine. Sta fuori dal `{% if is_empty %}`
      perché un obiettivo di costanza ha senso anche a percentuali vuote. #}
-  <section class="c7-card">
+  <section class="c7-card" data-help="andamento-obiettivi">
     <div class="c7-sechead">
       <h2>{{ _("I tuoi obiettivi") }}</h2>
       <span class="c7-sechead__note c7-num">{{ obiettivi|length }} / {{ max_obiettivi }}</span>
