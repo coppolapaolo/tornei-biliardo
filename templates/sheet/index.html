@@ -32,7 +32,23 @@
   {% set room = 'schede' %}
   {% include "components/_training_rooms.html" %}
 
-  {% if not schede %}
+  {# ── Le schede che ti hanno proposto (ADR-071) ──────────────────────── #}
+  {% for proposta in proposte %}
+  <a class="c7-card" style="display:block;color:inherit;text-decoration:none"
+     href="{{ url_for('sheet.proposta', assignment_id=proposta.id) }}">
+    <div class="c7-kicker">
+      {{ _("%(chi)s ti propone una scheda", chi=proposta.instructor.username) }}
+    </div>
+    <h2 style="margin:6px 0 10px;font-size:18px;font-weight:800;letter-spacing:-.02em">
+      {{ proposta.source_sheet.name if proposta.source_sheet else _("Una scheda") }}
+    </h2>
+    <div class="c7-rows__sub">
+      {{ _("Guarda cosa c'è dentro, poi decidi: la prendi o no.") }}
+    </div>
+  </a>
+  {% endfor %}
+
+  {% if not schede and not proposte %}
   <div class="c7-empty">
     <div class="c7-empty__ico"><i class="fas fa-list-check"></i></div>
     <h2 class="c7-empty__title">{{ _("Nessuna scheda") }}</h2>

@@ -21,6 +21,7 @@ from flask_babel import gettext as _
 from flask_login import current_user, login_required
 
 from models.exceptions import DomainError
+from models.istruttore import AssegnazioneService
 from models.training_sheet import TrainingSheetService
 from models.training_sheet.session_service import TrainingSessionService
 from utils.route_helpers import handle_service_action
@@ -36,6 +37,7 @@ def index():
     L'amministratore non si allena (come per «Oggi»): la pagina esiste per lui
     ma non avrà mai niente dentro, e va bene — non è una schermata di gestione.
     """
+    proposte_aperte = AssegnazioneService.proposte_per(current_user.id)
     schede = TrainingSheetService.sheets_of(current_user.id)
     aperte = {
         scheda.id: TrainingSessionService.open_session(scheda.id, current_user.id)
@@ -52,6 +54,7 @@ def index():
         schede=schede,
         aperte=aperte,
         ultime={k: (v[0] if v else None) for k, v in ultime.items()},
+        proposte=proposte_aperte,
     )
 
 
@@ -116,6 +119,11 @@ def archive(sheet_id):
     )
 
 
-from . import compose, readers, run  # noqa: E402,F401  (registra le route)
+from . import (  # noqa: E402,F401  (registra le route)
+    compose,
+    proposte,
+    readers,
+    run,
+)
 
 __all__ = ["sheet_bp"]

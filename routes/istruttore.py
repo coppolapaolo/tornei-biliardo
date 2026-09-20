@@ -29,7 +29,13 @@ from flask_babel import gettext as _
 from flask_login import current_user, login_required
 
 from models.exceptions import DomainError
-from models.istruttore import GruppoService, build_allievi
+from models.istruttore import (
+    AssegnazioneService,
+    GruppoService,
+    allievi_di,
+    build_allievi,
+)
+from models.training_sheet import TrainingSheetService
 from utils.route_helpers import handle_service_action
 
 istruttore_bp = Blueprint("istruttore", __name__, url_prefix="/istruttore")
@@ -83,6 +89,7 @@ def allievi():
         "istruttore/allievi.html",
         pagina=build_allievi(current_user, gruppo),
         gruppo=gruppo,
+        attese=AssegnazioneService.attese_di(current_user.id),
     )
 
 
@@ -122,6 +129,82 @@ def assegna_gruppo(user_id):
         lambda: GruppoService.aggiungi(group_id, current_user, user_id),
         success_message=_("Adesso è nel gruppo."),
         redirect_url=dove,
+    )
+
+
+# ── Dare una scheda ─────────────────────────────────────────────────────────
+
+
+def _un_allievo(user_id: int):
+    """L'allievo, se ti ha aperto una scheda. Altrimenti non esiste.
+
+    Il controllo vero sta nel servizio (`proponi` rifiuta un estraneo): qui si
+    evita di disegnare una pagina intestata a qualcuno che non c'entra.
+    """
+    for legame in allievi_di(current_user.id):
+        if legame.persona.id == user_id:
+            return legame
+    abort(404)
+
+
+@istruttore_bp.route("/allievi/<int:user_id>/scheda", methods=["GET"])
+@login_required
+def dai_scheda(user_id):
+    """«Dai una scheda a Marco»: fra le tue, quella che gli proponi."""
+    _solo_istruttori()
+    legame = _un_allievo(user_id)
+
+    return render_template(
+        "istruttore/dai_scheda.html",
+        allievo=legame.persona,
+        schede=[
+            scheda
+            for scheda in TrainingSheetService.sheets_of(current_user.id)
+            if scheda.active_items
+        ],
+        attesa=AssegnazioneService.attese_di(current_user.id).get(user_id),
+    )
+
+
+@istruttore_bp.route("/allievi/<int:user_id>/scheda", methods=["POST"])
+@login_required
+def proponi_scheda(user_id):
+    """Manda la proposta. La scheda nascerà solo se lui la prende."""
+    _solo_istruttori()
+    _un_allievo(user_id)
+    sheet_id = request.form.get("sheet_id", type=int)
+    if not sheet_id:
+        flash(_("Scegli quale scheda dargli."), "error")
+        return redirect(url_for("istruttore.dai_scheda", user_id=user_id))
+
+    try:
+        nate = AssegnazioneService.proponi(
+            current_user,
+            sheet_id,
+            [user_id],
+            messaggio=request.form.get("message"),
+        )
+    except DomainError as errore:
+        flash(str(errore), "error")
+        return redirect(url_for("istruttore.dai_scheda", user_id=user_id))
+
+    if not nate:
+        flash(_("Ha già una tua proposta in attesa."), "info")
+    else:
+        flash(_("Proposta mandata. Decide lui se prenderla."), "success")
+    return redirect(url_for("istruttore.allievi"))
+
+
+@istruttore_bp.route("/proposte/<int:assignment_id>/ritira", methods=["POST"])
+@login_required
+def ritira_proposta(assignment_id):
+    """Si riprende una proposta a cui nessuno ha ancora risposto."""
+    _solo_istruttori()
+
+    return handle_service_action(
+        lambda: AssegnazioneService.ritira(assignment_id, current_user),
+        success_message=_("Proposta ritirata."),
+        redirect_url=url_for("istruttore.allievi"),
     )
 
 

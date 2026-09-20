@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{# templates/istruttore/dai_scheda.html — 7c
+   «Dai una scheda a X» (ADR-071, fase 8d).
+
+   Non c'è artboard: la schermata si interpreta da «Da che modello parti» della
+   pagina 5 — poche opzioni importanti, quindi `c7-choice` e non un `<select>`.
+
+   La frase in fondo alla pagina non è un disclaimer: è la funzione. Questa
+   pagina manda una **proposta**, e finché l'altro non la prende non esiste
+   nessuna scheda sua e non si legge niente di nuovo (ADR-069). #}
+
+{% block title %}{{ _("Dai una scheda") }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('istruttore.allievi') }}"
+   aria-label="{{ _('Torna agli allievi') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Dai una scheda") }}{% endblock %}
+{% block page_sub %}{{ _("a %(chi)s", chi=allievo.username) }}{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+
+  {% if attesa %}
+  {# Una proposta per volta: dirlo qui, invece di far premere un pulsante che
+     il servizio salterebbe in silenzio. #}
+  <section class="c7-card c7-card--locked">
+    <div class="c7-kicker">{{ _("Proposta in attesa") }}</div>
+    <div class="c7-rows__title" style="margin-top:4px">
+      {{ attesa.source_sheet.name if attesa.source_sheet else _("Una scheda") }}
+    </div>
+    <div class="c7-rows__sub">
+      {{ _("mandata il %(giorno)s: %(chi)s non ha ancora risposto",
+            giorno=attesa.proposed_at|day_friendly(with_time=False),
+            chi=allievo.username) }}
+    </div>
+    <form method="POST" style="margin-top:12px"
+          action="{{ url_for('istruttore.ritira_proposta', assignment_id=attesa.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-secondary w-100">{{ _("Ritira la proposta") }}</button>
+    </form>
+  </section>
+
+  {% elif not schede %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-list-check"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessuna scheda da dare") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Si propone una scheda tua, già composta: comincia col comporre quella che fai fare in sala, poi la dai a chi vuoi.") }}
+    </p>
+    <div class="c7-empty__actions">
+      <a class="btn btn-primary" href="{{ url_for('sheet.index') }}">{{ _("Le mie schede") }}</a>
+    </div>
+  </div>
+
+  {% else %}
+  <form method="POST" class="c7-stack"
+        action="{{ url_for('istruttore.proponi_scheda', user_id=allievo.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="c7-label">{{ _("Quale gli dai") }}</div>
+    <div class="c7-stack">
+      {% for scheda in schede %}
+      <label class="c7-choice c7-choice--big">
+        <input type="radio" name="sheet_id" value="{{ scheda.id }}" class="d-none" required>
+        <span class="c7-tile c7-tile--round"><i class="fas fa-list-check"></i></span>
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ scheda.name }}</span>
+          <span class="c7-choice__desc d-block">
+            {{ ngettext("%(num)s esercizio", "%(num)s esercizi", scheda.active_items|length) }}
+            {%- if scheda.level %} <span class="c7-sep">·</span> {{ _("livello %(n)s", n=scheda.level) }}{% endif -%}
+            {%- if scheda.has_threshold %} <span class="c7-sep">·</span> {{ _("soglia %(n)s su %(tot)s", n=scheda.threshold, tot=scheda.total) }}{% endif -%}
+          </span>
+        </span>
+        <i class="fas fa-circle-check c7-choice__mark"></i>
+      </label>
+      {% endfor %}
+    </div>
+
+    <div>
+      <label class="c7-label" for="message">{{ _("Due parole, se vuoi") }}</label>
+      <textarea class="form-control" id="message" name="message" rows="3" maxlength="500"
+                placeholder="{{ _('Per l’autunno. Fai i giorni A e B.') }}"></textarea>
+    </div>
+
+    <button type="submit" class="btn btn-success w-100">{{ _("Manda la proposta") }}</button>
+  </form>
+
+  <p class="c7-rows__sub" style="margin:0">
+    {{ _("È una proposta: la scheda nasce solo se %(chi)s la prende, e nasce sua. Decide lui anche se fartela leggere — e può togliertela quando vuole.", chi=allievo.username) }}
+  </p>
+  {% endif %}
+</div>
+{% endblock %}

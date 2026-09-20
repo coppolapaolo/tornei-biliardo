@@ -1,12 +1,13 @@
-"""I gruppi di allievi dell'istruttore, con il loro storico (D12, fase 8c).
+"""I gruppi di allievi dell'istruttore e le schede che propone (D12, fase 8).
 
-Due tabelle, e una sola cosa da tenere a mente leggendole:
+Tre tabelle, e una sola cosa da tenere a mente leggendole:
 
     training_group          un corso: nome, periodo, e di chi è
       training_group_member chi ne fa parte, da quando a quando
+    training_assignment     una scheda proposta a un allievo, e cos'ha risposto
 
-**Un gruppo non dà accesso a niente.** È l'ADR-069 §2: l'unico posto in cui
-sta scritto chi legge che cosa è `training_sheet_reader`, e queste due tabelle
+**Nessuna delle tre dà accesso a niente.** È l'ADR-069 §2: l'unico posto in cui
+sta scritto chi legge che cosa è `training_sheet_reader`, e queste tabelle
 servono a *ordinare* chi te l'ha già dato — non a ottenerlo. Se domani un
 allievo ti richiude la sua scheda, la riga del gruppo resta dov'è (è storia) e
 tu di quella scheda non vedi più niente di nuovo: le due cose non si parlano, e
@@ -32,6 +33,7 @@ Da questo discendono le tre scelte che si vedono nello schema.
 
 from __future__ import annotations
 
+from enum import Enum
 from typing import List, Optional
 
 from ..base import BaseModel, db, utc_now
@@ -164,4 +166,111 @@ class TrainingGroupMember(BaseModel):
         return f"<TrainingGroupMember group={self.group_id} user={self.user_id}>"
 
 
-__all__ = ["TrainingGroup", "TrainingGroupMember"]
+class EsitoProposta(Enum):
+    """Com'è finita una proposta. NULL sulla riga vuol dire «in attesa».
+
+    I valori stanno in una colonna `String` e non in un `db.Enum`: senza
+    `values_callable` SQLAlchemy persiste il **nome** del membro, e rinominarlo
+    domani romperebbe i dati già scritti (incidente del 2026-08-17). Qui il
+    nome resta un fatto del codice e il valore un fatto del database.
+    """
+
+    ACCEPTED = "accepted"
+    DECLINED = "declined"
+    WITHDRAWN = "withdrawn"
+
+
+class TrainingAssignment(BaseModel):
+    """Una scheda che un istruttore propone a un allievo, e cos'ha risposto.
+
+    È una **proposta**, non un'assegnazione: finché l'allievo non accetta non
+    esiste nessuna scheda sua, e accettando ne nasce una di cui è proprietario
+    lui. L'istruttore, da questa riga, non guadagna una sola lettura — il
+    permesso resta una riga di `training_sheet_reader`, e l'allievo la dà nello
+    stesso modulo con cui accetta, o non la dà (ADR-071).
+
+    Le date: `proposed_at` quando è partita, `closed_at` quando ha smesso di
+    essere in attesa, e `outcome` dice come. Due colonne e non tre timestamp,
+    perché «in attesa» è una domanda che si fa spesso — ed è l'indice unico
+    parziale a rispondere.
+    """
+
+    __tablename__ = "training_assignment"
+
+    id = db.Column(db.Integer, primary_key=True)
+    instructor_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    #: La scheda dell'istruttore da cui si copia: il modello.
+    source_sheet_id = db.Column(
+        db.Integer,
+        db.ForeignKey("training_sheet.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    #: La scheda **nata dall'accettazione**, dell'allievo. NULL finché non
+    #: accetta, e per sempre se dice di no. Va a NULL anche se un giorno quella
+    #: scheda sparisse: la proposta resta accettata, che è ciò che è successo.
+    sheet_id = db.Column(
+        db.Integer,
+        db.ForeignKey("training_sheet.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    #: Il gruppo da cui è partita, quando è partita da lì. Serve a dire «la
+    #: scheda del gruppo» e a fare una media che voglia dire qualcosa.
+    group_id = db.Column(
+        db.Integer,
+        db.ForeignKey("training_group.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    #: Due parole dell'istruttore: «per l'autunno, fai i giorni A e B».
+    message = db.Column(db.String(500), nullable=True)
+
+    proposed_at = db.Column(db.DateTime, nullable=False, default=utc_now)
+    closed_at = db.Column(db.DateTime, nullable=True)
+    outcome = db.Column(db.String(12), nullable=True)
+
+    instructor = db.relationship("User", foreign_keys=[instructor_id])
+    user = db.relationship("User", foreign_keys=[user_id])
+    source_sheet = db.relationship("TrainingSheet", foreign_keys=[source_sheet_id])
+    sheet = db.relationship("TrainingSheet", foreign_keys=[sheet_id])
+    group = db.relationship("TrainingGroup", foreign_keys=[group_id])
+
+    __table_args__ = (
+        # Una proposta in attesa per volta, per coppia (istruttore, allievo).
+        # Lo impone il database e non un `if`: un'unicità che vive in Python è
+        # invisibile a chi scrive in blocco (ADR-070 §2). Due istruttori
+        # diversi possono proporre insieme — è il loro mestiere, non una
+        # raffica.
+        db.Index(
+            "uq_training_assignment_in_attesa",
+            "instructor_id",
+            "user_id",
+            unique=True,
+            sqlite_where=db.text("closed_at IS NULL"),
+        ),
+        db.Index("ix_training_assignment_user_id", "user_id"),
+        db.Index("ix_training_assignment_group_id", "group_id"),
+    )
+
+    @property
+    def is_pending(self) -> bool:
+        return self.closed_at is None
+
+    @property
+    def is_accepted(self) -> bool:
+        return self.outcome == EsitoProposta.ACCEPTED.value
+
+    def __repr__(self) -> str:  # pragma: no cover - banale
+        stato = "in attesa" if self.is_pending else (self.outcome or "?")
+        return f"<TrainingAssignment {self.id} user={self.user_id} {stato}>"
+
+
+__all__ = [
+    "EsitoProposta",
+    "TrainingAssignment",
+    "TrainingGroup",
+    "TrainingGroupMember",
+]

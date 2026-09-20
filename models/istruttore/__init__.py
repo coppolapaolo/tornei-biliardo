@@ -10,18 +10,28 @@ ti ha già aperto una scheda, e non aprono niente a nessuno.
 """
 
 from .allievi_view import Allievi, RigaAllievo, Segnale, build_allievi
+from .assegnazioni import MAX_MESSAGGIO, AssegnazioneService
 from .gruppi import GruppoService
-from .models import TrainingGroup, TrainingGroupMember
+from .models import (
+    EsitoProposta,
+    TrainingAssignment,
+    TrainingGroup,
+    TrainingGroupMember,
+)
 from .ricerca import MAX_RISULTATI, cerca_istruttori
 from .viste import Legame, allievi_di, istruttori_di
 
 __all__ = [
     "Allievi",
+    "AssegnazioneService",
+    "EsitoProposta",
     "GruppoService",
     "Legame",
+    "MAX_MESSAGGIO",
     "MAX_RISULTATI",
     "RigaAllievo",
     "Segnale",
+    "TrainingAssignment",
     "TrainingGroup",
     "TrainingGroupMember",
     "allievi_di",
