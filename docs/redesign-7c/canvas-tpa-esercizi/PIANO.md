@@ -31,7 +31,7 @@ Sorgenti del canvas: `sorgenti/` (`kit.py`, `tpa.py`, `esercizi.py`,
 | 4 | Modello dell'esercizio (#168 #252 #253) | **chiusa il 20/09** — #490 (4a), #492 (4b), #494 (4c), #496 (4d), #498 (4e). Vocabolari come enum e non come tabelle, voto con le bilie: vedi la nota nella fase |
 | 5 | Eseguire un esercizio (#183 #452) | **chiusa il 20/09** — #501 (5a), #503 + #504 (5b), #507 (5c), #508 (5d), #509 (5e). Chiude #183, #452 e #326; aperte #500 e #506. Colpo per colpo in due PR, niente esercizio a punteggio «vuoto»: vedi la nota nella fase |
 | 6 | Schede di allenamento (#172) | **chiusa il 20/09** — #511 (6a), #513 (6b), #514 (6c), #515 (6d), #516 (6e). Le caselle non sono prove del catalogo, la sezione è un campo della voce: vedi la nota nella fase |
-| 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | da fare |
+| 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | **chiusa il 20/09** — #517 (7a), #519 (7b), #520 (7c), #521 (7d+7e), #522 (7f). Una scala sola per due mondi (ADR-068), 7d e 7e in una PR: vedi la nota nella fase |
 | 8 | Istruttori (#173) | da fare |
 | 9 | Disegnatore (#179) | da fare — indipendente, si può anticipare dopo la 4 |
 | 10 | Chiusura: guida, racconto, issue | da fare |
@@ -583,6 +583,56 @@ propri dati.
 
 **PR**: 7a andamento · 7b obiettivi · 7c traguardi · 7d difficoltà misurata ·
 7e consigli e «Oggi» · 7f guida.
+
+**Com'è andata (20/09)**: cinque PR invece di sei — la 7d e la 7e viaggiano
+insieme — e l'ADR nuovo è l'**ADR-068**. Sei cose da tenere:
+
+* **La domanda lasciata aperta dalla fase 6 ha una risposta, ed è «insieme,
+  senza sommarli»** (ADR-068). L'unità è la **quota di ciò che era
+  ottenibile**: un 12 su 15 e un 4 su 5 tiri valgono entrambi l'ottanta per
+  cento, quindi catalogo e schede entrano nello stesso asse, una osservazione
+  per registrazione. Non si fondono mai su un *esercizio*: media e record
+  restano quelli del catalogo, come vuole l'ADR-067. Il prezzo è dichiarato in
+  pagina — entra solo ciò che ha un massimo, e le registrazioni che restano
+  fuori si contano.
+* **Un vertice mancante non vale zero.** Il poligono del periodo prima si
+  disegna solo se ogni asse ha numeri anche lì: zero direbbe «andavo
+  malissimo», il fatto è «non l'avevo allenato». Stessa famiglia di scelte del
+  «tacere quando non si ha di che parlare» di `register_view`.
+* **Le tre forme di obiettivo leggono tre fonti diverse**, e ciascuna è quella
+  giusta per la sua domanda: l'esercizio guarda le prove di quell'esercizio,
+  l'abilità guarda l'andamento (dove i due mondi entrano insieme), la costanza
+  conta i **giorni**. Scambiarle non darebbe errore: darebbe numeri plausibili
+  e sbagliati.
+* **Il traguardo «una categoria è salita di una banda» non c'è**, ed è scritto
+  nel codice accanto alle tre metriche che invece sono monotone: un asse si
+  misura su trenta giorni, quindi sale e riscende, mentre un traguardo dovrebbe
+  essere un fatto. Renderlo monotono chiede una storia delle bande che il
+  modello non tiene.
+* **La 7d e la 7e in una PR sola**: il consiglio «mai provato, ed è alla tua
+  portata» è costruito su `expected_for`, cioè sulla difficoltà misurata.
+  Spedirle separate avrebbe voluto dire spedire per un giorno un modulo senza
+  il suo chiamante.
+* **L'Elo entra come banda, non come correzione** (#174). «Chi ha il tuo Elo
+  riesce al 58%» si capisce e si può controllare; un punteggio corretto da un
+  coefficiente di forza è un numero che nessuno può contestare perché nessuno
+  sa come è venuto. E chi l'Elo non ce l'ha vede la media di tutti.
+
+Scarti dal canvas, entrambi voluti: nel modulo dell'obiettivo **non c'è la
+stima «a questo ritmo ci arrivi in cinque settimane»** — vuole il traguardo già
+scelto, quindi vivrebbe solo dietro del JavaScript che ricalcola a ogni tocco;
+dove serve è sulla barra dell'obiettivo aperto. E le soglie che portano la quota
+sul livello 1–5 fanno di un 41% un **4**, non il «misurato 2» dell'artboard: i
+numeri del canvas erano un'illustrazione disegnata prima che esistesse un
+modello.
+
+Da riusare nelle fasi dopo: `models/andamento/` (le osservazioni, le finestre,
+la geometria del radar), `models/obiettivo/` (e `goals_reached`, la metrica
+monotona che lega obiettivi e traguardi), `models/challenge/difficulty.py`
+(`expected_for` è l'ingrediente di ogni consiglio futuro),
+`templates/components/_training_rooms.html` (le quattro stanze) e
+`templates/challenge/_obiettivi.html`, che si include due volte nella stessa
+pagina perché non ha `id` né `<script>`.
 
 **Prompt**: «…esegui la fase 7.»
 

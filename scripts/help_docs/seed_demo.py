@@ -613,6 +613,92 @@ def _allena_su_challenge(db, player, challenges) -> None:
     log(f"allenamento: 3 prove registrate su «{drill.get_display_name()}»")
 
 
+#: Quante prove mettere su ogni esercizio «a totale», e in quale finestra.
+#: Il mese di adesso e quello prima, perché il radar disegni **due** poligoni:
+#: il secondo si disegna solo se ogni asse ha numeri anche nel periodo
+#: precedente, e senza queste righe la guida mostrerebbe un radar a un
+#: poligono proprio mentre il testo spiega il confronto.
+ANDAMENTO = (
+    # (giorni fa, punteggio come frazione del massimo)
+    (4, 0.7),
+    (11, 0.6),
+    (19, 0.8),
+    (26, 0.6),
+    (38, 0.5),
+    (47, 0.5),
+    (54, 0.4),
+)
+
+
+def _andamento_e_obiettivo(db, player, challenges) -> None:
+    """Abbastanza prove perché l'andamento dica qualcosa, e un obiettivo aperto.
+
+    Tre figure lo chiedono: il radar per abilità, quello per gesto e la card
+    degli obiettivi. Nessuna delle tre direbbe niente con le tre prove su un
+    esercizio solo che bastavano alla schermata di allenamento — il radar
+    avrebbe due raggi e la pagina sarebbe una riga di scuse.
+
+    Si allarga su **tutti** gli esercizi a totale, perché ogni abilità del
+    vocabolario che compare nel catalogo abbia il suo raggio, e su **due
+    finestre**, perché il confronto col mese prima si possa disegnare.
+    """
+    from models.base import utc_now
+    from models.challenge.recording import RecordingMode
+    from models.challenge.services import ChallengeService
+    from models.obiettivo import GoalKind, GoalRule, TrainingGoalService
+
+    if not player:
+        return
+
+    a_totale = [
+        c
+        for c in challenges
+        if str(c.recording_mode or RecordingMode.TOTAL.value)
+        == RecordingMode.TOTAL.value
+    ]
+    quante = 0
+    for esercizio in a_totale:
+        for giorni_fa, quota in ANDAMENTO:
+            if esercizio.pass_fail_only:
+                prova = ChallengeService.record_attempt(
+                    user_id=player.id,
+                    challenge_id=esercizio.id,
+                    passed=quota >= 0.6,
+                )
+            else:
+                massimo = esercizio.max_score or 10
+                prova = ChallengeService.record_attempt(
+                    user_id=player.id,
+                    challenge_id=esercizio.id,
+                    score=max(1, round(massimo * quota)),
+                )
+            prova.attempted_at = utc_now() - timedelta(days=giorni_fa)
+            quante += 1
+    db.session.commit()
+    log(f"andamento: {quante} prove su {len(a_totale)} esercizi, su due mesi")
+
+    # Un obiettivo aperto, e uno solo: la card ne mostra uno per riga, e tre
+    # righe su un mockup sembrano un elenco di cose da fare invece di una
+    # scelta. Il traguardo sta sopra la media di adesso — altrimenti il
+    # servizio lo rifiuta, ed è giusto: un obiettivo già raggiunto non è un
+    # obiettivo.
+    if not a_totale:
+        return
+    bersaglio = next((c for c in a_totale if not c.pass_fail_only), None)
+    if bersaglio is None:
+        return
+    massimo = bersaglio.max_score or 10
+    TrainingGoalService.create(
+        player.id,
+        GoalKind.ESERCIZIO,
+        challenge_id=bersaglio.id,
+        rule=GoalRule.MEDIA,
+        target=min(massimo, round(massimo * 0.9)),
+    )
+    db.session.commit()
+    log(f"obiettivo: «{bersaglio.get_display_name()}» come traguardo")
+
+
 def _crea_scheda(db, player, challenges) -> None:
     """Una scheda di allenamento come quella di carta, con tre sedute fatte.
 
@@ -1650,6 +1736,9 @@ def main() -> int:
         _popola_esercizi(db, players, challenges)
         _prove_a_colpi(db, players[0], challenges)
         _crea_scheda(db, players[0], challenges)
+        # Dopo la scheda: l'andamento legge **anche** le sedute (ADR-068), e
+        # seminarlo prima darebbe un radar costruito su metà delle fonti.
+        _andamento_e_obiettivo(db, players[0], challenges)
         _create_squadre(db, gara_iscrizioni, players[:5])
         _create_gara_bozza(db, campionato, director, venue)
         _create_gara_tabellone(db, director, venue, players)

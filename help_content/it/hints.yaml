@@ -952,6 +952,46 @@ hints:
     page: schede_di_allenamento
     section: seduta
 
+  - id: andamento.periodo
+    label: "Il periodo"
+    short: "Su che finestra si guarda. Il confronto è sempre col periodo di pari durata subito prima; con «Sempre» un prima non c'è."
+    anchor: andamento-periodo
+    screens: [challenge.andamento]
+    page: il_tuo_allenamento
+    section: i_due_radar
+
+  - id: andamento.assi
+    label: "Per abilità o per gesto"
+    short: "Le categorizzazioni sono due — che cosa allena e con che colpo — quindi i radar sono due. Stessa pagina, un interruttore."
+    anchor: andamento-assi
+    screens: [challenge.andamento]
+    page: il_tuo_allenamento
+    section: i_due_radar
+
+  - id: andamento.obiettivi
+    label: "I tuoi obiettivi"
+    short: "Un traguardo che scegli tu, con la barra che si riempie mentre ti alleni. Tre aperti per volta."
+    anchor: andamento-obiettivi
+    screens: [challenge.andamento]
+    page: il_tuo_allenamento
+    section: obiettivi
+
+  - id: esercizi.per_oggi
+    label: "Per oggi"
+    short: "Che cosa conviene allenare, con scritto accanto il perché. Se nessuna regola ha qualcosa da dire, la sezione non compare."
+    anchor: esercizi-per-oggi
+    screens: [challenge.today]
+    page: il_tuo_allenamento
+    section: per_oggi
+
+  - id: esercizio.quelli_come_te
+    label: "Quelli come te"
+    short: "A quanto arriva chi ha la tua forza, e il livello misurato dai risultati accanto a quello dichiarato dall'autore."
+    anchor: esercizio-quelli-come-te
+    screens: [challenge.challenge_detail]
+    page: il_tuo_allenamento
+    section: difficolta_misurata
+
 tours:
   - screen: dashboard.dashboard
     title: "La tua home"

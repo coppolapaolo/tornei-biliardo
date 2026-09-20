@@ -1,0 +1,232 @@
+title: "Your training"
+section: giocare
+kind: approfondimento
+audience: [giocatore]
+minutes: 4
+summary: "Where you are strong and where you are not, a target you set yourself, and a suggestion of what to do today."
+screens: [challenge.andamento, challenge.nuovo_obiettivo]
+related: [challenge, schede_di_allenamento, progressi]
+
+blocks:
+  - type: text
+    text: >-
+      Recording attempts is only worth it if something tells you the story
+      afterwards. **Trends** is the fourth room of training, next to Drills,
+      Sheets and Exams: it says where you are strong, where you are not, and
+      whether you are climbing.
+
+  - type: shot
+    shot: andamento-radar
+    caption: "«Your training»: now, the month before, and the radar of your categories."
+
+  - type: heading
+    id: una_scala_sola
+    title: "One scale: how much you get of what there was to get"
+
+  - type: text
+    text: >-
+      Drills are calibrated differently: one is worth 10 at most, another 50,
+      another is counted in made shots. Comparing them needs a common unit, and
+      here it is **the share of what there was to get**. A 12 out of 15 and a 4
+      out of 5 shots are both eighty per cent.
+
+  - type: text
+    text: >-
+      That is why attempts made **from the catalogue** and cells filled in
+      **inside a sheet** come in together: the question on this page is not «how
+      much is this drill worth», it is «how well do I draw» — and the answer
+      does not change depending on where you wrote the number. Under each
+      category you also see how many attempts come from sheets.
+
+  - type: note
+    tone: info
+    title: "What stays out"
+    text: >-
+      Only what has a **maximum** comes in. A drill with no declared cap,
+      minutes and «done» ticks cannot be turned into a percentage: they stay
+      out, and the bottom of the page says how many records those are. They do
+      not disappear: they just do not average.
+
+  - type: heading
+    id: i_due_radar
+    title: "There are two radars"
+
+  - type: text
+    text: >-
+      A drill is described along two axes: **the skill** — what it trains — and
+      **the stroke** — with which shot. They are two independent vocabularies,
+      so there are two radars, and you move between them with the **«By skill» ·
+      «By stroke»** switch above the chart.
+
+  - type: shot
+    shot: andamento-gesto
+    caption: "The same trends, on the other vocabulary."
+
+  - type: text
+    text: >-
+      Two numbers sit at the top: **Now** and **The month before**. The
+      comparison is always with the window of equal length right before — thirty
+      days against the thirty before, three months against the three before.
+      With **All time** there is no «before», and indeed none is shown.
+
+  - type: note
+    tone: tip
+    title: "Why sometimes there are two shapes and sometimes one"
+    text: >-
+      The pale shape — the period before — is only drawn when **every** category
+      on the chart has numbers back then too. A category you had not trained
+      last month is not worth zero: it is worth «I had not trained it», which is
+      something else. In that case one shape remains, and you read the
+      comparison in the rows below, category by category.
+
+  - type: heading
+    id: le_righe
+    title: "The rows under the chart"
+
+  - type: text
+    text: >-
+      Every category you have trained enough gets a row: the **band** («solid»,
+      «trending up», «to build»), how many attempts back it up, how much you
+      went up or down, and the percentage.
+
+  - type: text
+    text: >-
+      Categories with **fewer than five attempts** stay on the chart — the shape
+      reads as a whole — but do not get a row, and a notice tells you so. It is
+      not a flaw: a number built on two attempts is noise drawn nicely, and
+      showing it would be worse than staying quiet.
+
+  - type: heading
+    id: obiettivi
+    title: "Setting yourself a goal"
+
+  - type: text
+    text: >-
+      At the bottom of the page there is **«Your goals»**: a target you choose
+      yourself, with a bar that fills as you train. You can keep **three** open
+      at a time.
+
+  - type: shot
+    shot: obiettivo-nuovo
+    caption: "Set a goal: first what you want to achieve, then the fields of that form."
+
+  - type: options
+    items:
+      - name: "A result on a drill"
+        values: "reach a score"
+        text: >-
+          Choose the drill and where you want to get to. Then say **when it
+          counts as reached**: the average of the last five attempts — that is
+          «I can do it» — or once is enough, that is «I got there». It is not
+          about strictness: they are two different things.
+      - name: "A skill that rises"
+        values: "a percentage on a category"
+        text: >-
+          Choose a category — a skill or a stroke — and the percentage you want
+          to reach. Next to every entry it says where you are today.
+      - name: "Consistency"
+        values: "how many times a week"
+        text: >-
+          How many times a week, and for how many weeks in a row. It counts the
+          **day**, not how many attempts you record on it: ten shots in one
+          evening are one time.
+
+  - type: text
+    text: >-
+      **By when** is a choice of three — one month, three months, no deadline. A
+      precise date on a training goal would be false precision: nobody decides
+      to reach eight out of ten by 14 November.
+
+  - type: note
+    tone: info
+    title: "The bar starts from where you were"
+    text: >-
+      If you were at 61 when you set the goal and the target is 70, the bar
+      measures those nine points, not the seventy. Starting from zero would say
+      you have done nothing exactly when you are nearly there.
+
+  - type: text
+    text: >-
+      A goal can be **left** at any time. When you reach it, it stays in your
+      training with its date: from then on it is a fact, and it is not taken
+      away even if you later do worse. A deadline that has passed does not close
+      it: it tells you, and you decide.
+
+  - type: heading
+    id: per_oggi
+    title: "«For today»: what is worth doing"
+
+  - type: text
+    text: >-
+      On the **Drills** page — the front door — above your favourites there is
+      **«For today»**, with one or more suggestions. Next to each one it says
+      **why** it is there: without the reason a suggestion is not followed, and
+      cannot even be argued with.
+
+  - type: list
+    title: "The four things the app looks at, in this order"
+    items:
+      - "**Your goal.** If you set one, that is the thing to do."
+      - "**Where you are behind.** The category with the lowest band among those it can speak about."
+      - "**Untouched for a while.** Something you used to do and have not tried for a month."
+      - "**Never tried, and within reach.** Neither trivial nor a wall, measured on those who really tried it."
+
+  - type: text
+    text: >-
+      A drill where you are **already at the top** is never suggested: insisting
+      there is no use. And if none of the four has anything to say, the section
+      does not appear — no suggestion is better than a random one.
+
+  - type: heading
+    id: difficolta_misurata
+    title: "How hard a drill really is"
+
+  - type: text
+    text: >-
+      On a drill's page, under your attempts, there is **«Players like you»**.
+      It says two things.
+
+  - type: list
+    title: "Two rows"
+    items:
+      - "**How far players of your strength get**, that is players with an Elo close to yours, and over how many players the average is taken."
+      - "**The measured level** next to the one the author declared. If they do not match, a line explains which way: «the results make it look harder: those who try it get to 60%…»."
+
+  - type: text
+    text: >-
+      The declared level stays where it is, and is not replaced: they are two
+      different pieces of information, and the second is there to get the first
+      corrected. Whoever created the drill can already do it, and their judgement
+      starts from there.
+
+  - type: note
+    tone: warning
+    title: "When the card does not appear"
+    text: >-
+      Below **three players** or **five attempts** there is nothing to say yet,
+      and the card disappears instead of showing an average over two people. And
+      the «players like you» row only appears if you have an Elo and there are
+      enough people in your band: otherwise the average over everyone remains.
+
+  - type: faq
+    items:
+      - q: "Why does my radar only have three spokes?"
+        a: >-
+          Because you have trained three categories. A spoke appears when there
+          is at least one attempt on a drill carrying that category: as you try
+          different drills the chart widens by itself.
+      - q: "I did a sheet session: why did the percentage not move?"
+        a: >-
+          Only cells that have a maximum come in — «made out of N shots», «won
+          out of N games», the score. Minutes and «done» ticks cannot be turned
+          into a percentage, and the bottom of the page says how many records
+          stayed out.
+      - q: "Can I set myself the same goal twice?"
+        a: >-
+          If you have already reached it, yes: the old one stays in your training
+          with its date. But you cannot set a goal you have **already** reached
+          now — the app asks for a target above where you are.
+      - q: "Why do I not see «Players like you» on a new drill?"
+        a: >-
+          Because few people have tried it. A minimum of players and attempts is
+          needed: before that, any number would be an anecdote.

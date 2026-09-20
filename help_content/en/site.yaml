@@ -46,6 +46,7 @@ sections:
       - sale_e_disponibilita
       - challenge
       - schede_di_allenamento
+      - il_tuo_allenamento
       - disegnare_un_drill
       - esami
       - playoff

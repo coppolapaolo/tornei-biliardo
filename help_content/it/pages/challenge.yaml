@@ -26,12 +26,15 @@ blocks:
       La sezione **Esercizi** si apre su **«Oggi»**: non un elenco, ma il punto
       da cui ripartire. In cima c'è **«Riprendi da qui»**, l'ultimo esercizio su
       cui ti sei allenato, con com'è andata e il pulsante **«Comincia»**. Sotto
-      trovi i tuoi **preferiti** e **i più provati**. La prima volta, quando
-      una storia non ce l'hai ancora, al suo posto c'è l'invito a sceglierne uno.
+      trovi **«Per oggi»** — la proposta di cosa allenare, col motivo accanto —
+      poi i tuoi **preferiti** e **i più provati**. La prima volta, quando una
+      storia non ce l'hai ancora, al suo posto c'è l'invito a sceglierne uno.
+      Se ti sei dato un obiettivo, la sua barra sta in cima: ne parla
+      [Il tuo allenamento](/aiuto/giocare/il_tuo_allenamento).
 
   - type: shot
     shot: esercizi-oggi
-    caption: "«Oggi»: l'esercizio da riprendere, i più provati e, in fondo, il catalogo."
+    caption: "«Oggi»: la seduta lasciata a metà, i tuoi obiettivi, l'esercizio da riprendere, «Per oggi» e i più provati."
 
   - type: text
     text: >-

@@ -222,7 +222,7 @@ shots:
   - id: esercizi-oggi
     route: /challenges/
     as: Marco Rossi
-    caption: "«Oggi», la porta d'ingresso degli esercizi: l'ultimo esercizio da riprendere, i più provati e il collegamento al catalogo."
+    caption: "«Oggi», la porta d'ingresso degli esercizi: la seduta da riprendere, gli obiettivi aperti, l'ultimo esercizio, «Per oggi» e i più provati."
     full_page: true
 
   # Filtrato apposta: la figura sta accanto al testo che spiega i filtri, e un
@@ -237,7 +237,7 @@ shots:
   - id: esercizio-scheda
     route: /challenges/1
     as: Marco Rossi
-    caption: "La scheda di un esercizio: disposizione, etichette, istruzioni, media e record di chi guarda, le cinque bilie del voto e le prove registrate."
+    caption: "La scheda di un esercizio: disposizione, etichette, istruzioni, media e record di chi guarda, le cinque bilie del voto, «Quelli come te» e le prove registrate."
     full_page: true
 
   # --- Allenarsi: la cornice di esecuzione e i tre modi -------------------
@@ -687,4 +687,26 @@ shots:
     route: /schede/1
     as: Marco Rossi
     caption: "Il registro: l'ultima seduta, la media, le volte sopra la soglia, la riga di ogni voce con le ultime tre volte, e l'elenco delle sedute."
+    full_page: true
+
+  # --- Il tuo allenamento: andamento, obiettivi, consigli (fase 7) --------
+  # Il radar vuole prove su due mesi per disegnare **due** poligoni: le mette
+  # `_andamento_e_obiettivo` nel seed. Con uno solo la figura mostrerebbe metà
+  # di quello che il testo accanto spiega.
+  - id: andamento-radar
+    route: /challenges/andamento
+    as: Marco Rossi
+    caption: "«Il tuo allenamento» per abilità: adesso e il mese prima, il radar con i due poligoni, e una riga per categoria con la banda e quante prove la reggono."
+    full_page: true
+
+  - id: andamento-gesto
+    route: /challenges/andamento?asse=gesto
+    as: Marco Rossi
+    caption: "Lo stesso andamento sull'altro vocabolario: i gesti. I radar sono due perché sono due le categorizzazioni."
+    full_page: true
+
+  - id: obiettivo-nuovo
+    route: /challenges/obiettivi/nuovo
+    as: Marco Rossi
+    caption: "Imposta un obiettivo: le tre forme fra cui scegliere, e sotto i campi della forma scelta."
     full_page: true

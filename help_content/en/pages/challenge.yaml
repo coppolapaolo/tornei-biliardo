@@ -26,12 +26,15 @@ blocks:
       The **Challenges** section opens on **«Today»**: not a list, but the place
       to pick up from. At the top there is **«Pick up from here»**, the last
       drill you practised, with how it went and the **«Start»** button. Below
-      you find your **favourites** and the **most tried**. The first time, when
-      you have no history yet, you find an invitation to choose one instead.
+      you find **«For today»** — the suggestion of what to train, with the reason
+      next to it — then your **favourites** and the **most tried**. The first
+      time, when you have no history yet, you find an invitation to choose one
+      instead. If you have set yourself a goal, its bar sits at the top: it is
+      covered in [Your training](/aiuto/giocare/il_tuo_allenamento).
 
   - type: shot
     shot: esercizi-oggi
-    caption: "«Today»: the drill to pick up, the most tried and, at the bottom, the catalogue."
+    caption: "«Today»: the session left half done, your goals, the last drill, «For today» and the most tried."
 
   - type: text
     text: >-
