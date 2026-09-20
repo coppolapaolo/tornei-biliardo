@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.45.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.44.0...v1.45.0) (2026-09-20)
+
+
+### Funzioni nuove
+
+* la scheda del gruppo, e i numeri del corso ([#173](https://github.com/coppolapaolo/tornei-biliardo/issues/173)) ([#532](https://github.com/coppolapaolo/tornei-biliardo/issues/532)) ([5af5c5b](https://github.com/coppolapaolo/tornei-biliardo/commit/5af5c5b03a054b7a0b1bbc2cde6b5f012043793d))
+
 ## [1.44.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.43.1...v1.44.0) (2026-09-20)
 
 
