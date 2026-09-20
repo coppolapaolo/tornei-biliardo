@@ -5,6 +5,7 @@ audience: [giocatore]
 minutes: 4
 summary: "Prove di abilità da eseguire da soli: servono ad allenarsi, a sbloccare traguardi e — dentro una gara — a decidere gli spareggi."
 screens: [challenge.today, challenge.challenge_catalog, challenge.challenge_detail, challenge.training_session,
+  challenge.training_summary,
   challenge.start_attempt, challenge.attempt_detail, challenge.create_challenge,
   challenge.edit_challenge, challenge.duplicate_challenge, challenge.challenge_statistics, player.challenge_detail]
 related: [disegnare_un_drill, progressi, numero_dispari, esami]
@@ -116,9 +117,20 @@ blocks:
   - type: text
     text: >-
       Allenarsi vuol dire ripetere: dieci prove di fila, non una alla volta.
-      Per questo c'è **una schermata sola**, dove la foto della disposizione e
-      le istruzioni restano sotto gli occhi mentre registri una prova dopo
+      Per questo c'è **una schermata sola**, dove la disposizione e le
+      istruzioni restano sotto gli occhi mentre registri una prova dopo
       l'altra, senza mai cambiare pagina.
+
+  - type: list
+    title: "È sempre fatta di tre parti, dall'alto in basso"
+    items:
+      - "**L'esercizio**: il disegno e la consegna, così non devi ricordarti niente a memoria."
+      - "**Come sta andando**: il grafico delle prove di oggi, una barra per prova, con l'ultima in evidenza e il tratteggio della tua media. Sotto, una frase che dice in parole quello che il grafico mostra."
+      - "**I comandi**, agganciati in fondo allo schermo dove arriva il pollice. Sono l'unica parte che cambia da un esercizio all'altro: dipende da come si registra."
+
+  - type: shot
+    shot: allenamento-punteggio
+    caption: "L'allenamento su un esercizio a punteggio: disposizione, prove di oggi con il grafico, e in fondo «−», la cifra, «+» e «Registra la prova»."
 
   - type: steps
     items:
@@ -129,24 +141,34 @@ blocks:
       - title: "Se ci sono varianti, scegli «da che parte»"
         text: "Destra o sinistra, A o B: la scelta resta accesa per tutte le prove che registri. Se non la dici, la prova vale per l'esercizio in generale."
       - title: "Prepara il tavolo e gioca"
-        text: "La foto e le istruzioni restano in alto, sempre visibili: non devi ricordarti niente a memoria."
+        text: "La disposizione e le istruzioni restano in alto, sempre visibili."
       - title: "Registra com'è andata"
-        text: "Se l'esercizio è superato o non superato, ti bastano i due tasti grandi: quello che tocchi registra subito la prova, senza confermare. Se è a punteggio, imposti il numero con «−» e «+» e poi tocchi «Registra la prova»."
+        text: "Se l'esercizio è superato o non superato, ti bastano i due tasti grandi: quello che tocchi registra subito la prova, senza confermare. Se è a punteggio, imposti il numero con «−» e «+» e poi tocchi «Registra la prova». Gli altri due modi — colpo per colpo e con estrazione — si registrano mentre giochi, e sono spiegati qui sotto."
       - title: "Se sbagli tasto, «Annulla l'ultima»"
         text: "Toglie l'ultima prova registrata, in fondo alla schermata. Serve proprio perché basta un tocco per registrare: l'errore si corregge dopo, non prima."
       - title: "Riprova quante volte vuoi"
-        text: "La prova compare subito in «Le tue prove», e in alto salgono «Prove registrate» e il secondo contatore — «Il tuo record» se è a punteggio, «Riuscite» se è superato o non superato. Il campo si azzera da solo: sei già pronto per la prossima."
+        text: "La prova compare subito nell'elenco di oggi e il grafico si allunga di una barra. Il campo si azzera da solo: sei già pronto per la prossima."
       - title: "Quando basta, tocca «Ho finito»"
         text: "Torni a «Oggi», dove l'esercizio appena fatto ti aspetta in cima per la prossima volta. Le prove restano nel tuo storico."
+
+  - type: note
+    tone: info
+    title: "«A questo ritmo chiudi a 14»"
+    text: >-
+      La frase sotto il grafico non è un incoraggiamento generico: confronta
+      quello che stai facendo adesso con le tue prove di prima. Compare quando
+      c'è abbastanza da confrontare — non alla prima prova, e non senza uno
+      storico.
 
   - type: note
     tone: tip
     title: "Gira il telefono"
     text: >-
-      Mettendolo in orizzontale la schermata diventa un pannello solo: la foto
-      da una parte, i tasti dall'altra, senza scorrere. È pensata per il
-      telefono appoggiato alla sponda mentre giochi. La **X** in alto a sinistra
-      torna alla schermata normale senza raddrizzarlo.
+      Negli esercizi che si registrano col totale — a punteggio, o superati e
+      non superati — mettendolo in orizzontale la schermata diventa un pannello
+      solo: la disposizione da una parte, i tasti dall'altra, senza scorrere. È
+      pensata per il telefono appoggiato alla sponda mentre giochi. La **X** in
+      alto a sinistra torna alla schermata normale senza raddrizzarlo.
 
   - type: note
     tone: info
@@ -155,8 +177,156 @@ blocks:
       andata male non cancella quella buona di prima.
 
   - type: heading
+    id: colpo_per_colpo
+    title: "Colpo per colpo: dove si è fermata la bianca"
+
+  - type: text
+    text: >-
+      In certi esercizi non conta solo se la bilia entra, ma **dove si ferma la
+      battente**: due punti a quindici centimetri l'uno dall'altro sono due
+      colpi molto diversi, e un punteggio solo non lo dice. Quando l'esercizio
+      è fatto così, la prova si registra **un colpo alla volta** e il punteggio
+      non lo scrivi tu: lo danno i colpi.
+
+  - type: shot
+    shot: allenamento-colpo
+    caption: "Una prova a metà: il bersaglio col punto d'arrivo dei colpi già tirati, la striscia dei colpi e, in fondo, «Non è entrata»."
+
+  - type: steps
+    items:
+      - title: "Tira"
+        text: "La disposizione è nella linguetta «Rivedi la disposizione», chiusa perché il tavolo ce l'hai davanti e lo spazio serve al panno."
+      - title: "Se la bilia è entrata, tocca il panno dove si è fermata la bianca"
+        text: "Il tocco apre l'ingrandimento sul bersaglio. Non serve mirare col dito: si aggiusta dopo."
+        shot: allenamento-ingrandimento
+      - title: "Aggiusta e conferma"
+        text: "Trascina la battente finché è dove si era fermata davvero; i due tratteggi la proiettano sui bordi, perché a occhio la distanza dal centro si giudica male. «Conferma» registra il colpo, «Tavolo intero» torna indietro senza registrare niente."
+      - title: "Se non è entrata, «Non è entrata · 0 punti»"
+        text: "Il colpo vale zero e non ha un punto d'arrivo: per questo sul panno non compare."
+      - title: "Guarda la striscia dei colpi"
+        text: "Un posto per colpo, col suo punteggio; il trattino è una mancata e i posti grigi sono i colpi che restano."
+      - title: "Quando li hai tirati tutti, «Chiudi la prova»"
+        text: "Il pulsante compare da solo dopo l'ultimo colpo, e porta alla fine sessione."
+
+  - type: options
+    items:
+      - name: "Annulla l'ultimo colpo"
+        text: >-
+          Toglie il colpo appena registrato, punto d'arrivo compreso. Tolto
+          l'unico colpo, la prova aperta sparisce.
+        hint: allenamento.colpo
+      - name: "Ricomincia"
+        text: >-
+          Butta via la prova in corso, colpi compresi, e riparte da zero: serve
+          quando il tavolo era preparato male, non per rifare un colpo andato
+          storto.
+
+  - type: note
+    tone: info
+    title: "Perché due numeri e non uno"
+    text: >-
+      Mentre tiri, sopra i comandi trovi **Imbucate** e **Posizione**. Il primo
+      dice quante bilie sono entrate; il secondo quanto vicino al centro del
+      bersaglio si è fermata la battente. Un numero solo scenderebbe sia per chi
+      sbaglia la bilia sia per chi sbaglia la forza — cioè non direbbe che cosa
+      correggere.
+
+  - type: note
+    tone: tip
+    text: >-
+      La prova aperta ti aspetta: se chiudi l'app a metà dei colpi, la ritrovi
+      dov'era. Riprendere non è ricominciare.
+
+  - type: heading
+    id: fine_sessione
+    title: "La fine della sessione: la nuvola dei punti d'arrivo"
+
+  - type: text
+    text: >-
+      Chiusa la prova, l'app te la racconta. In cima il punteggio, e se è un
+      record te lo dice. Poi il tavolo con **tutti i punti d'arrivo insieme**:
+      è la cosa che nessun punteggio riassume, perché si vede a colpo d'occhio
+      se sbagli sempre dalla stessa parte.
+
+  - type: shot
+    shot: allenamento-fine
+    caption: "La fine sessione: il punteggio, la nuvola dei punti d'arrivo con la frase che la legge, i tre numeri e il campo delle note."
+
+  - type: list
+    items:
+      - "**Arrivi lungo, corto**: la battente si ferma oltre o prima del bersaglio. È **forza** — quanto hai tirato."
+      - "**Arrivi a destra, a sinistra**: si ferma di lato. È **mira**, o effetto — dove hai tirato."
+      - "Se i punti sono sparsi attorno al centro la frase lo dice e basta: non c'è una direzione da correggere, e inventargliene una sarebbe un consiglio dato a caso."
+
+  - type: note
+    tone: warning
+    title: "La nuvola non si legge da sola"
+    text: >-
+      Sul tavolo compaiono **solo i colpi imbucati**, perché gli altri un punto
+      d'arrivo non ce l'hanno. Una nuvola stretta attorno al centro con le
+      «Imbucate» al 40% vuol dire che quando la bilia entra sei preciso, non che
+      la prova è andata bene: i due numeri accanto si leggono insieme alla
+      figura.
+
+  - type: text
+    text: >-
+      Sotto trovi **Imbucate**, **Posizione** e la serie più lunga di imbucate
+      di fila, poi tutti i colpi in fila. In fondo, le **note della sessione**:
+      «tavolo 4, panno lento, stecca nuova» spiega un punteggio basso meglio di
+      qualunque statistica, ma solo se lo scrivi adesso. Restano attaccate a
+      quella prova. Infine **«Altri 8 colpi»** ricomincia subito con la stessa
+      disposizione, **«Ho finito»** torna a «Oggi».
+
+  - type: heading
+    id: estrazione
+    title: "Con estrazione: la consegna la dà l'app"
+
+  - type: text
+    text: >-
+      Ci sono esercizi in cui una parte della consegna si decide al tavolo, e
+      deve essere **casuale**: quante sponde fare, su quale bilia andare. Senza
+      l'app toccherebbe tenere aperto un sorteggiatore su un'altra scheda del
+      telefono. Qui l'estrazione la fa l'app, prima di ogni colpo, e la scrive
+      già a parole: **«3 o più sponde, bilia 7»**.
+
+  - type: shot
+    shot: allenamento-estrazione
+    caption: "Un esercizio con estrazione: la consegna appena uscita, la scala degli esiti con quanto vale ciascuno, e sotto i colpi già giocati."
+
+  - type: steps
+    items:
+      - title: "«Estrai il colpo»"
+        text: "La prima estrazione apre la prova: con questi esercizi cominciare vuol dire sapere che cosa fare."
+      - title: "Tira quello che ti è uscito"
+        text: "La consegna resta lì finché non registri il colpo: ricaricare la pagina non la cambia, e non è un modo di riestrarre finché non piace."
+      - title: "Scegli com'è andata"
+        text: "Non un punteggio da digitare, ma una scala di voci **con un nome** — mancata, toccata, imbucata — ognuna col suo valore. Chi ha creato l'esercizio decide quali sono e quanto valgono."
+      - title: "Il colpo dopo esce da solo"
+        text: "Appena registri, la consegna successiva è già lì: chi sta tirando non deve chiederla. Sull'ultimo colpo no, perché dopo non c'è niente da preparare."
+
+  - type: note
+    tone: info
+    text: >-
+      **«Annulla l'ultimo colpo»** rimette in attesa la consegna che avevi:
+      annullare corregge un esito sbagliato, non fa ripescare.
+
+  - type: note
+    tone: warning
+    title: "Non entra negli esami né nelle gare"
+    text: >-
+      Un esercizio con estrazione si allena da soli e basta. A due candidati
+      uscirebbero consegne diverse, quindi le loro prove non sarebbero
+      confrontabili — e un esame certifica, una gara fa classifica. Se provi a
+      metterlo in un esame, l'app lo rifiuta e te lo scrive.
+
+  - type: heading
     id: due_tipi
-    title: "Due modi di contare"
+    title: "Quattro modi di contare"
+
+  - type: text
+    text: >-
+      Il modo è una proprietà **dell'esercizio**, non una scelta di chi si
+      allena: due prove dello stesso esercizio devono potersi confrontare.
 
   - type: options
     items:
@@ -178,6 +348,18 @@ blocks:
         text: >-
           Non c'è un punteggio: o riesci o no. Va bene per allenarsi, non per
           decidere una classifica.
+      - name: "Colpo per colpo"
+        values: "vuole un disegno col bersaglio"
+        text: >-
+          Ogni colpo ha il suo esito e, se la bilia entra, il punto in cui si è
+          fermata la battente. Il punteggio è la somma dei colpi, e il massimo
+          non si scrive: è i colpi per il valore del centro del bersaglio.
+      - name: "Con estrazione"
+        values: "vuole le liste da cui pescare"
+        text: >-
+          L'app estrae la consegna prima di ogni colpo e l'esito si sceglie da
+          una scala di voci. Il massimo è i colpi per l'esito che vale di più.
+        hint: challenge.estrazione
 
   - type: heading
     id: crearle
@@ -243,11 +425,31 @@ blocks:
           separati. Una variante che ha già delle prove si può rinominare, non
           togliere.
       - name: "Come si registra"
-        values: "riuscito o no · a punteggio"
+        values: "riuscito o no · a punteggio · colpo per colpo · con estrazione"
         text: >-
-          Le due possibilità spiegate in «Due modi di contare», col punteggio
-          massimo facoltativo.
+          I quattro modi spiegati in «Quattro modi di contare», col punteggio
+          massimo facoltativo. **Colpo per colpo** compare solo se l'esercizio
+          è disegnato e nel disegno c'è un bersaglio: senza, una riga lo
+          ricorda, perché sono gli anelli del bersaglio a dare i punti.
         hint: challenge.punteggio_massimo
+      - name: "Colpi di una prova"
+        values: "colpo per colpo e con estrazione"
+        text: >-
+          Quanti colpi dura una prova. Il punteggio massimo non si scrive: è
+          questo numero per il valore più alto — il centro del bersaglio, o
+          l'esito migliore della scala.
+        hint: challenge.colpi
+      - name: "Che cosa estrae l'app"
+        text: >-
+          Le liste da cui pescare, una per riga, nella forma
+          `sponde: 1 sponda | 2 sponde | 3 o più sponde`. Le liste si pescano
+          insieme, e la consegna esce già a parole. Da una a tre liste.
+        hint: challenge.estrazione
+      - name: "Come si conta un colpo"
+        text: >-
+          La scala degli esiti, uno per riga, nella forma `Imbucata = 4`, dal
+          peggiore al migliore. Da due a otto voci: sono i tasti che chi si
+          allena vedrà dopo ogni colpo.
 
   - type: note
     tone: tip

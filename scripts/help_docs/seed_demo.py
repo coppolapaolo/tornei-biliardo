@@ -32,6 +32,7 @@ configurazione corrente. Non lanciarlo mai con `FLASK_ENV=production`.
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import random
 import sys
@@ -395,19 +396,76 @@ def _score_match(db, match, partial: bool = False) -> None:
         )
 
 
+#: Il bersaglio dell'esercizio colpo per colpo, nelle coordinate del
+#: disegnatore (1 diamante = 100 unità, panno 800 × 400). Tre anelli da mezzo
+#: diamante: 3 punti al centro, poi 2 e 1. Da qui discende anche il punteggio
+#: massimo della prova — vedi `_create_challenges`.
+BERSAGLIO = {
+    "type": "target",
+    "id": "t1",
+    "x": 600,
+    "y": 200,
+    "step": 50,
+    "values": [3, 2, 1],
+}
+SCENA_BERSAGLIO = {"v": 4, "orient": "h", "items": [BERSAGLIO]}
+
+#: Le liste da cui l'app pesca la consegna, e la scala con cui si conta un
+#: colpo (#452). E' lo stesso «Kicking Madness» da cui nasce la richiesta: a
+#: ogni colpo servono un numero di sponde e una bilia.
+ESTRAZIONE = {
+    "v": 1,
+    "sources": [
+        {"label": "sponde", "options": ["1 sponda", "2 sponde", "3 o più sponde"]},
+        {"label": "bilia", "options": ["bilia 3", "bilia 5", "bilia 7", "bilia 9"]},
+    ],
+    "outcomes": [
+        {"label": "Mancata", "points": 0},
+        {"label": "Toccata", "points": 1, "hint": "la battente arriva sulla bilia"},
+        {"label": "Mossa verso la buca", "points": 2},
+        {"label": "Imbucata", "points": 4},
+    ],
+}
+
+
+def _massimo_a_colpi(colonne: dict):
+    """Il punteggio massimo di una prova a colpi, con la formula dell'app.
+
+    È i colpi per il valore più alto — il centro del bersaglio, o l'esito che
+    vale di più — e non si scrive a mano: scritto a mano diventa un numero che
+    nessuno ricalcola quando il bersaglio cambia. Stessa derivazione di
+    `ChallengeAuthoringService._recording`.
+    """
+    from models.challenge.draw_spec import parse_draw_spec
+    from models.challenge.target import target_from_scene
+
+    colpi = colonne.get("shots_count")
+    if not colpi:
+        return None
+    bersaglio = target_from_scene(colonne.get("diagram_scene"))
+    if bersaglio is not None:
+        return colpi * bersaglio.max_points
+    spec = parse_draw_spec(colonne.get("draw_spec"))
+    return colpi * spec.max_points if spec else None
+
+
 def _create_challenges(db, director):
-    """Due prove di abilita', una a punteggio e una superata/non superata.
+    """Cinque prove di abilità, una per ogni modo di registrarle.
 
-    Servono entrambe perche' la guida spiega che le challenge si contano in due
-    modi diversi, e un catalogo con un solo tipo non lo mostrerebbe. Le immagini
-    sono quelle gia' presenti in `static/uploads/challenges/`: il seed non ne
-    inventa di nuove.
+    Le prime due sono i modi di sempre — a punteggio e superata/non superata —
+    e servono perche' la guida li spiega entrambi: un catalogo con un solo tipo
+    non li mostrerebbe. La terza porta le varianti (destra e sinistra). Le
+    ultime due sono i modi nati con la fase 5: **colpo per colpo**, che vuole un
+    disegno con un bersaglio, e **con estrazione**, che vuole le liste da cui
+    pescare. Le immagini sono quelle gia' presenti in
+    `static/uploads/challenges/`: il seed non ne inventa di nuove.
 
-    Le due prove hanno un **titolo**, e non e' un dettaglio: la guida consiglia
-    di darne uno, e delle schermate piene di «Drill 1» e «Drill 2» direbbero il
-    contrario di quello che c'e' scritto accanto.
+    Le prove hanno un **titolo**, e non e' un dettaglio: la guida consiglia di
+    darne uno, e delle schermate piene di «Esercizio 1» e «Esercizio 2»
+    direbbero il contrario di quello che c'e' scritto accanto.
     """
     from models.challenge.models import Challenge
+    from models.challenge.recording import RecordingMode
 
     disponibili = sorted((REPO_ROOT / "static" / "uploads" / "challenges").glob("*.*"))
     if not disponibili:
@@ -453,6 +511,45 @@ def _create_challenges(db, director):
                 variants=[{"label": "destra"}, {"label": "sinistra"}],
             ),
         ),
+        # Gli ultimi due stanno in fondo apposta: esami e gara pescano i primi
+        # per posizione, e un esercizio con estrazione in un esame lo rifiuta
+        # il servizio (`refuse_if_drawn`) — a ognuno uscirebbe un'altra
+        # consegna.
+        (
+            "Stop nel bersaglio",
+            "Imbuca la bilia e ferma la battente nel bersaglio disegnato a "
+            "metà tavolo. Vale l'anello in cui si ferma: tre punti il centro, "
+            "poi due e uno.",
+            False,
+            dict(
+                abilita=["battente", "posizione"],
+                gesti=["stop", "draw"],
+                declared_level=2,
+                family="controllo della battente",
+                family_step=2,
+                colonne=dict(
+                    recording_mode=RecordingMode.SHOTS.value,
+                    shots_count=8,
+                    diagram_scene=json.dumps(SCENA_BERSAGLIO),
+                ),
+            ),
+        ),
+        (
+            "Kicking Madness",
+            "A ogni colpo l'app estrae quante sponde fare e su quale bilia "
+            "andare. Dieci colpi: conta come è andato ciascuno.",
+            False,
+            dict(
+                abilita=["sponde", "difesa"],
+                gesti=["kick", "bank"],
+                declared_level=4,
+                colonne=dict(
+                    recording_mode=RecordingMode.DRAW.value,
+                    shots_count=10,
+                    draw_spec=json.dumps(ESTRAZIONE),
+                ),
+            ),
+        ),
     ]
     from models.challenge.profile_service import ChallengeProfileService
 
@@ -463,14 +560,16 @@ def _create_challenges(db, director):
             create.append(existing)
             continue
         image = disponibili[index % len(disponibili)]
+        colonne = profilo.pop("colonne", {})
         challenge = Challenge(
             title=title,
             description=description,
             image_path=f"uploads/challenges/{image.name}",
             pass_fail_only=pass_fail,
-            max_score=profilo.pop("max_score", None),
+            max_score=profilo.pop("max_score", None) or _massimo_a_colpi(colonne),
             created_by_id=director.id,
             is_active=True,
+            **colonne,
         )
         db.session.add(challenge)
         db.session.flush()
@@ -490,6 +589,7 @@ def _allena_su_challenge(db, player, challenges) -> None:
     punteggi sono scritti qui e non sorteggiati perche' due catture successive
     devono produrre immagini identiche (vedi il docstring del modulo).
     """
+    from models.base import utc_now
     from models.challenge.services import ChallengeService
 
     numeriche = [c for c in challenges if not c.pass_fail_only]
@@ -497,12 +597,18 @@ def _allena_su_challenge(db, player, challenges) -> None:
         return
 
     drill = numeriche[0]
-    for punteggio in (6, 4, 8):
-        ChallengeService.record_attempt(
+    # Le tre prove sono distanti qualche minuto l'una dall'altra: registrate
+    # tutte nello stesso istante, «Le prove di oggi» mostrava tre volte lo
+    # stesso orario, che è il modo in cui una figura dice «questi dati sono
+    # finti». L'ora resta quella di oggi, perché è la finestra che la
+    # schermata guarda.
+    for punteggio, minuti_fa in ((6, 14), (4, 9), (8, 3)):
+        prova = ChallengeService.record_attempt(
             user_id=player.id,
             challenge_id=drill.id,
             score=punteggio,
         )
+        prova.attempted_at = utc_now() - timedelta(minutes=minuti_fa)
     db.session.commit()
     log(f"allenamento: 3 prove registrate su «{drill.get_display_name()}»")
 
@@ -535,6 +641,105 @@ def _popola_esercizi(db, players, challenges) -> None:
             ChallengeRatingService.rate(giocatore.id, esercizio.id, voto)
     db.session.commit()
     log("esercizi: prove e voti di altri giocatori")
+
+
+#: Dove si è fermata la battente, colpo per colpo: prima la prova già chiusa —
+#: quella che la guida mostra a fine sessione — poi quella ancora aperta, che è
+#: la schermata «si tira». `None` è il colpo non imbucato, che un punto
+#: d'arrivo non ce l'ha. Coordinate del disegnatore, come il bersaglio.
+#:
+#: Sono scelti perché la nuvola **dica qualcosa**: tutti gli arrivi oltre il
+#: centro verso la sponda lunga, cioè «Arrivi lungo · è forza, non mira». Una
+#: dispersione a caso avrebbe dato la frase «Sparse attorno al centro», e la
+#: guida avrebbe spiegato una lettura che la sua stessa figura non mostra.
+COLPI_CHIUSI = [
+    (640, 210),
+    (665, 190),
+    (690, 215),
+    (652, 175),
+    (700, 205),
+    (645, 230),
+    None,
+    (620, 195),
+]
+COLPI_APERTI = [(610, 205), None, (660, 220), (695, 185)]
+
+#: Le consegne della prova con estrazione, e come è andata ciascuna (l'indice
+#: nella scala di `ESTRAZIONE`). L'ultima riga è la consegna **in attesa**: il
+#: colpo che il lettore vede sullo schermo, ancora da tirare.
+COLPI_ESTRATTI = [
+    ("2 sponde, bilia 5", 3),
+    ("1 sponda, bilia 9", 1),
+    ("3 o più sponde, bilia 3", 0),
+]
+CONSEGNA_IN_ATTESA = "2 sponde, bilia 7"
+
+
+def _prove_a_colpi(db, player, challenges) -> None:
+    """Le prove delle schermate della fase 5: colpo per colpo ed estrazione.
+
+    Tre stati, perché la guida ne mostra tre schermate diverse:
+
+    * una prova **chiusa** sul bersaglio — è la «fine sessione», con la nuvola
+      dei punti d'arrivo e che cosa dice;
+    * una prova **aperta** sullo stesso esercizio, a metà dei colpi: è la
+      schermata che si ha in mano mentre si tira;
+    * una prova aperta **con estrazione**, con la consegna già uscita e in
+      attesa del colpo.
+
+    L'estrazione è l'unico punto in cui il seed deve mettere le mani dentro
+    l'app: `DrawSpec.draw` pesca da un `random.Random()` suo, che non risponde
+    al seme globale, quindi la consegna cambierebbe a ogni esecuzione e ogni
+    ricattura riscriverebbe immagini a interfaccia identica. Si fissa la
+    consegna sulla prova prima di registrare il colpo — come `_avvia_primo_turno`
+    fissa il seme del sorteggio — e tutto il resto passa dal servizio vero.
+    """
+    from models.challenge.recording import RecordingMode
+    from models.challenge.shot_service import ShotRunService
+
+    if not player:
+        return
+
+    def _del_modo(modo):
+        for esercizio in challenges:
+            if RecordingMode.parse(esercizio.recording_mode) is modo:
+                return esercizio
+        return None
+
+    bersaglio = _del_modo(RecordingMode.SHOTS)
+    if bersaglio is not None:
+        for serie, chiudere in ((COLPI_CHIUSI, True), (COLPI_APERTI, False)):
+            for punto in serie:
+                ShotRunService.record_shot(
+                    user_id=player.id,
+                    challenge_id=bersaglio.id,
+                    made=punto is not None,
+                    x=punto[0] if punto else None,
+                    y=punto[1] if punto else None,
+                )
+            if chiudere:
+                ShotRunService.close(player.id, bersaglio.id)
+        db.session.commit()
+        chiusa = len(COLPI_CHIUSI)
+        log(
+            f"colpo per colpo: una prova di {chiusa} colpi chiusa e una da "
+            f"{len(COLPI_APERTI)} ancora aperta su «{bersaglio.get_display_name()}»"
+        )
+
+    estrazione = _del_modo(RecordingMode.DRAW)
+    if estrazione is not None:
+        for consegna, esito in COLPI_ESTRATTI:
+            run = ShotRunService.draw_next(player.id, estrazione.id)
+            run.attempt.pending_prompt = consegna
+            db.session.commit()
+            ShotRunService.record_outcome(player.id, estrazione.id, outcome_index=esito)
+        run = ShotRunService.current(player.id, estrazione.id)
+        run.attempt.pending_prompt = CONSEGNA_IN_ATTESA
+        db.session.commit()
+        log(
+            f"con estrazione: {len(COLPI_ESTRATTI)} colpi giocati e la consegna "
+            f"«{CONSEGNA_IN_ATTESA}» in attesa"
+        )
 
 
 def _add_challenge_to_gara(db, gara, challenges) -> None:
@@ -1317,6 +1522,7 @@ def main() -> int:
         _add_challenge_to_gara(db, gara_in_corso, challenges)
         _allena_su_challenge(db, players[0], challenges)
         _popola_esercizi(db, players, challenges)
+        _prove_a_colpi(db, players[0], challenges)
         _create_squadre(db, gara_iscrizioni, players[:5])
         _create_gara_bozza(db, campionato, director, venue)
         _create_gara_tabellone(db, director, venue, players)
