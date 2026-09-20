@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.42.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.41.0...v1.42.0) (2026-09-20)
+
+
+### Funzioni nuove
+
+* il tuo allenamento dice dove sei forte, su una scala sola ([#181](https://github.com/coppolapaolo/tornei-biliardo/issues/181)) ([#517](https://github.com/coppolapaolo/tornei-biliardo/issues/517)) ([dd653e3](https://github.com/coppolapaolo/tornei-biliardo/commit/dd653e302db3637bd68b0b20f316e63c513f98df))
+* l'allenamento merita traguardi di tenuta, non solo di quantità ([#184](https://github.com/coppolapaolo/tornei-biliardo/issues/184)) ([#520](https://github.com/coppolapaolo/tornei-biliardo/issues/520)) ([3959944](https://github.com/coppolapaolo/tornei-biliardo/commit/39599444583deb7481fbd168b92ceb63529693ec))
+* quanto è difficile davvero un esercizio, e che cosa conviene fare oggi ([#174](https://github.com/coppolapaolo/tornei-biliardo/issues/174), [#175](https://github.com/coppolapaolo/tornei-biliardo/issues/175)) ([#521](https://github.com/coppolapaolo/tornei-biliardo/issues/521)) ([8cc3819](https://github.com/coppolapaolo/tornei-biliardo/commit/8cc3819507ab2c1e3e34a9c9e416159931f9119f))
+* un obiettivo scelto da sé, con una barra che si riempie ([#316](https://github.com/coppolapaolo/tornei-biliardo/issues/316)) ([#519](https://github.com/coppolapaolo/tornei-biliardo/issues/519)) ([bf24d3c](https://github.com/coppolapaolo/tornei-biliardo/commit/bf24d3cab2c106e4dd2021f3f397a67496a295b9))
+
 ## [1.41.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.40.0...v1.41.0) (2026-09-20)
 
 
