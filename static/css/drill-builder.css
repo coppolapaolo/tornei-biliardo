@@ -80,6 +80,13 @@
      nella striscia del telefono e' il trattino verticale fra i due gruppi. */
   .drill-builder .tools__sep{flex:0 0 100%;height:1px;background:var(--db-line);margin:3px 0}
 
+  /* Le due forme del bersaglio: la parola sopra dice cosa posa, quella sotto
+     che domanda fa — «quanto vicino» o «dentro o fuori». */
+  .drill-builder .shape{display:flex;flex-direction:column;align-items:center;gap:2px;
+    min-height:48px;padding:6px 4px;line-height:1.15}
+  .drill-builder .shape small{color:var(--db-muted);font-size:10.5px;font-weight:600}
+  .drill-builder .shape.on small{color:var(--c7-on-ink-muted)}
+
   .drill-builder select{background:var(--db-control);border:1px solid var(--db-line);border-radius:var(--db-radius);
     padding:5px 6px;width:100%}
   .drill-builder input[type=text]{background:var(--db-control);border:1px solid var(--db-line);

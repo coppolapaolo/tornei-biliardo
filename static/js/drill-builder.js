@@ -77,6 +77,10 @@ const state = {
   items: [], tool:"select", armed:null,
   showGrid:true, showSub:false, showMarks:true, magnets:true, cloth:"blu", ballScale:1,
   snap:"quarter", orient:"h", title:"", pocketSnap:true,
+  /* Quale forma posa lo strumento «Bersaglio»: i cerchi (quanto vicino) o il
+     riquadro (dentro o fuori). Non e' un dato della scena — la scena sa gia'
+     che cos'e' ogni voce — e' quello che il prossimo tocco fara'. */
+  targetShape:"rings",
   lineStyle:"solid", lineColor:"#ffffff", lineArrow:true, lineGhost:false,
   shotDefaults:{ tip:{x:0,y:0}, elev:0, force:30,
                  showPost:true, showObj:true, showStick:true, showCard:true, showAngle:false },
@@ -117,6 +121,12 @@ function snapAxis(v, s){ if(!s) return v; const n = Math.round(v/s)*s;
   return Math.abs(n-v) <= s*0.35 ? n : v; }
 const clampBall = p => ({x:Math.min(L-BR,Math.max(BR,p.x)), y:Math.min(W-BR,Math.max(BR,p.y))});
 const clampPt   = p => ({x:Math.min(L,Math.max(0,p.x)),     y:Math.min(W,Math.max(0,p.y))});
+/* Numeri di posizione e didascalie possono stare **sulla sponda**, fuori dal
+   panno: negli schemi di riferimento le posizioni della battente si scrivono
+   proprio li', sopra la sponda lunga. Il limite non e' il panno, e' il bordo
+   dell'immagine. */
+const clampFrame = p => ({x:Math.min(L+PAD-10,Math.max(-PAD+10,p.x)),
+                          y:Math.min(W+PAD-10,Math.max(-PAD+10,p.y))});
 
 function snapPoint(p, o){
   o = o || {};
@@ -583,6 +593,100 @@ function drawTarget(gTable, it, sel){
   if (sel) E("circle",{cx:it.x,cy:it.y,r:it.step*n+4,fill:"none",stroke:SEL,
     "stroke-width":1.6,"stroke-dasharray":"3 3"},gTable);
 }
+/* ================================================================
+   LA NOTAZIONE DEGLI SCHEMI (#179)
+
+   Quattro voci che il disegnatore non aveva, e che gli schemi di riferimento
+   della disciplina usano in ogni pagina:
+
+   - il **riquadro** (`zone`): la zona in cui la battente deve fermarsi. Ce ne
+     possono essere tanti — i drill di Billiard University ne hanno quattro —
+     e uno solo, se tanto, vale punti: quello e' il bersaglio, e il server lo
+     legge come tale (`models/challenge/target.py`). Ruotarlo di 90 gradi e'
+     scambiare le due misure, quindi non c'e' un campo «ruotato»;
+   - le **posizioni numerate** (`positions`): una scala ordinata, non sette
+     testi indipendenti. Inserirne una in mezzo rinumera le altre da sola,
+     perche' il numero e' la posizione nella lista e non un dato scritto;
+   - il **richiamo** (`callout`): la didascalia legata al punto che commenta.
+     Con la linea libera il filo resta dov'era quando si sposta il testo;
+   - il **marcatore** (`marker`): il cerchietto tratteggiato che segna un punto
+     sul panno. Somiglia alla biglia fantasma ma e' un'altra cosa — quella e'
+     legata al tiro e ne segue il calcolo.
+
+   Le prime tre sono disegno per il server: le convalida il disegnatore, non
+   `parse_scene`. L'eccezione e' il riquadro che vale punti.
+=================================================================*/
+const ZONE_GOLD = "201,168,76";
+const ZONE_MIN = U/4, ZONE_MAX_W = L, ZONE_MAX_H = W;
+const CALLOUT_MAX = 60;
+const theZones = () => state.items.filter(i=>i.type==="zone");
+const zoneRect = it => ({x:it.x-it.w/2, y:it.y-it.h/2, w:it.w, h:it.h});
+const zoneCorners = it => { const r = zoneRect(it);
+  return [{k:"nw",x:r.x,y:r.y},{k:"ne",x:r.x+r.w,y:r.y},
+          {k:"sw",x:r.x,y:r.y+r.h},{k:"se",x:r.x+r.w,y:r.y+r.h}]; };
+
+function drawZone(gTable, it, sel, numero){
+  const r = zoneRect(it);
+  /* Il riquadro che vale punti si veste come il bersaglio a cerchi — stesso
+     oro — cosi' guardando il tavolo si vede quale dei quattro conta. */
+  const fill = it.value != null ? `rgba(${ZONE_GOLD},.34)`
+             : it.filled ? "rgba(27,33,36,.28)" : "none";
+  E("rect",{x:r.x,y:r.y,width:r.w,height:r.h,fill,
+    stroke:theme().ink,"stroke-width":3.5},gTable);
+  if (it.number){
+    const t = E("text",{x:it.x,y:it.y,dy:9,"text-anchor":"middle",
+      "font-family":"Arial, Helvetica, sans-serif","font-size":26,"font-weight":"800",
+      fill:theme().ink,stroke:"rgba(0,0,0,.45)","stroke-width":3,"paint-order":"stroke",
+      transform:rot(it.x,it.y)},gTable);
+    t.textContent = numero;
+  }
+  if (sel){
+    E("rect",{x:r.x-8,y:r.y-8,width:r.w+16,height:r.h+16,fill:"none",stroke:SEL,
+      "stroke-width":2.5,"stroke-dasharray":"8 6"},gTable);
+    zoneCorners(it).forEach(c=>E("rect",{x:c.x-7,y:c.y-7,width:14,height:14,rx:3,
+      fill:SEL},gTable));
+  }
+}
+
+/* Il numero di una posizione: `reverse` conta all'indietro, come negli schemi
+   dove la battente arretra (7 6 5 4 3 2 1). */
+const posLabel = (it,i) => it.reverse ? it.points.length - i : i + 1;
+
+function drawPositions(g, it, sel){
+  it.points.forEach((p,i)=>{
+    if (sel) E("circle",{cx:p.x,cy:p.y,r:15,fill:"none",stroke:SEL,"stroke-width":1.6,
+      "stroke-dasharray":"3 3"},g);
+    const t = E("text",{x:p.x,y:p.y,dy:8,"text-anchor":"middle",
+      "font-family":"Arial, Helvetica, sans-serif","font-size":24,"font-weight":"800",
+      fill:theme().ink,stroke:"rgba(0,0,0,.45)","stroke-width":3.2,"paint-order":"stroke",
+      transform:rot(p.x,p.y)},g);
+    t.textContent = posLabel(it,i);
+  });
+}
+
+function drawCallout(g, it, sel){
+  const w = Math.max(40, (it.text||"").length*9.2 + 24);
+  polyline(g, [{x:it.tx,y:it.ty},{x:it.x,y:it.y}], {color:theme().ink});
+  E("circle",{cx:it.x,cy:it.y,r:4.5,fill:theme().ink},g);
+  E("rect",{x:it.tx-w/2,y:it.ty-17,width:w,height:32,rx:9,fill:theme().ink},g);
+  const t = E("text",{x:it.tx,y:it.ty,dy:5,"text-anchor":"middle",
+    "font-family":"Arial, Helvetica, sans-serif","font-size":16,"font-weight":"700",
+    fill:theme().cloth,transform:rot(it.tx,it.ty)},g);
+  t.textContent = it.text || "";
+  if (sel){
+    E("rect",{x:it.tx-w/2-5,y:it.ty-22,width:w+10,height:42,rx:12,fill:"none",
+      stroke:SEL,"stroke-width":2,"stroke-dasharray":"6 5"},g);
+    E("circle",{cx:it.x,cy:it.y,r:11,fill:"none",stroke:SEL,"stroke-width":1.8},g);
+  }
+}
+
+function drawMarker(g, it, sel){
+  E("circle",{cx:it.x,cy:it.y,r:BR+3,fill:"none",stroke:theme().ink,"stroke-width":2.2,
+    "stroke-dasharray":"4 4"},g);
+  if (sel) E("circle",{cx:it.x,cy:it.y,r:BR+8,fill:"none",stroke:SEL,"stroke-width":1.6,
+    "stroke-dasharray":"3 3"},g);
+}
+
 function buildScene(o){
   o = o || {};
   const vert = state.orient === "v";
@@ -606,8 +710,18 @@ function buildScene(o){
   if (state.showMarks) drawMarks(g);
   if (o.forExport ? o.includeGrid : true) drawGrid(g);
 
+  /* Sotto a tutto: il bersaglio e le zone sono il campo su cui si gioca, e
+     una bilia che ci finisce sopra deve restare visibile. */
   for (const it of state.items){
     if (it.type === "target") drawTarget(g, it, !o.forExport && state.sel === it.id);
+  }
+  let numeroZona = 0;
+  for (const it of state.items){
+    if (it.type !== "zone") continue;
+    drawZone(g, it, !o.forExport && state.sel === it.id, ++numeroZona);
+  }
+  for (const it of state.items){
+    if (it.type === "marker") drawMarker(g, it, !o.forExport && state.sel === it.id);
   }
   for (const it of state.items){
     if (it.type !== "path") continue;
@@ -635,6 +749,13 @@ function buildScene(o){
         transform:rot(it.x,it.y)},g);
       t.textContent = it.text;
     }
+  }
+  /* Sopra a tutto: numeri e didascalie commentano il disegno, quindi non ci
+     devono finire sotto. */
+  for (const it of state.items){
+    const sel = !o.forExport && state.sel === it.id;
+    if (it.type === "positions") drawPositions(g, it, sel);
+    else if (it.type === "callout") drawCallout(g, it, sel);
   }
   if (!o.forExport && state.draft){
     const pv = state.draft.points.concat(state.preview?[state.preview]:[]);
@@ -683,6 +804,7 @@ function render(){
       ? T_("hintAiming","Muovi per mirare. Premi e rilascia per fissare; tieni premuto e trascina per la mira fine. Esc annulla.")
       : T_("hintPick","Clicca la biglia da giocare per iniziare a mirare. Clicca un tiro esistente per correggerlo.");
   renderPalette(); renderTip(); syncShotControls(); syncTargetControls();
+  syncZoneControls(); syncPositionsControls(); syncShapeButtons();
 }
 
 /* Il pannello del bersaglio: c'è un bersaglio solo, quindi lavora su quello
@@ -691,7 +813,8 @@ function syncTargetControls(){
   const box = $("#targetControls"); if (!box) return;
   const tg = theTarget();
   box.hidden = !tg;
-  const vuoto = $("#targetEmpty"); if (vuoto) vuoto.hidden = !!tg;
+  /* Il suggerimento «non c'e' ancora niente» lo decide `syncShapeButtons`:
+     dipende dalla forma scelta, non dai soli cerchi. */
   if (!tg) return;
   $("#targetStep").value = String(tg.step);
   $("#targetRings").textContent = tg.values.length;
@@ -710,6 +833,66 @@ function syncTargetControls(){
     [...riga.children].forEach((inp,i)=>{ if (document.activeElement!==inp) inp.value=tg.values[i]; });
   }
 }
+/* --- Il pannello del riquadro ------------------------------------------- *
+   Le misure si scrivono in diamanti con le frazioni della griglia — 2½, 1¼ —
+   perche' e' cosi' che le scrivono gli schemi da cui viene questa notazione, e
+   «250 unita'» non lo direbbe a nessuno. */
+const FRAZIONI = ["", "¼", "½", "¾"];
+function inDiamanti(v){
+  const q = Math.round(v/(U/4)), interi = Math.floor(q/4), frazione = FRAZIONI[q%4];
+  return interi ? interi + frazione : (frazione || "0");
+}
+function selectedZone(){ const it = byId(state.sel); return it && it.type==="zone" ? it : null; }
+function selectedPositions(){ const it = byId(state.sel); return it && it.type==="positions" ? it : null; }
+/* Quante voci della scena valgono punti: i cerchi piu' i riquadri col valore.
+   Il server ne accetta **una** (`validate_targets`), quindi il disegnatore lo
+   dice prima invece di far fallire il salvataggio dopo dieci minuti di lavoro. */
+function scoringCount(){
+  return state.items.filter(i=>i.type==="target" || (i.type==="zone" && i.value!=null)).length;
+}
+function syncZoneControls(){
+  const box = $("#zoneControls"); if (!box) return;
+  const z = selectedZone();
+  box.hidden = !z;
+  if (!z) return;
+  $("#zoneW").textContent = inDiamanti(z.w);
+  $("#zoneH").textContent = inDiamanti(z.h);
+  $("#zoneFilled").checked = !!z.filled;
+  $("#zoneNumber").checked = !!z.number;
+  $("#zoneScores").checked = z.value != null;
+  $("#zoneValueRow").hidden = z.value == null;
+  $("#zoneValue").textContent = z.value == null ? 1 : z.value;
+}
+function syncPositionsControls(){
+  const box = $("#sec-posizioni"); if (!box) return;
+  const ps = selectedPositions();
+  box.hidden = !ps;
+  if (ps) $("#posReverse").checked = !!ps.reverse;
+}
+function syncShapeButtons(){
+  document.querySelectorAll("[data-shape]").forEach(b=>
+    b.classList.toggle("on", b.dataset.shape===state.targetShape));
+  const vuoto = $("#targetEmpty");
+  if (!vuoto) return;
+  const mostrato = state.targetShape==="zone" ? !selectedZone() : !theTarget();
+  vuoto.hidden = !mostrato;
+  vuoto.querySelectorAll("[data-shape-tip]").forEach(s=>
+    s.hidden = s.dataset.shapeTip!==state.targetShape);
+}
+function setZoneSize(campo, delta){
+  const z = selectedZone(); if (!z) return;
+  const massimo = campo==="w" ? ZONE_MAX_W : ZONE_MAX_H;
+  const v = z[campo] + delta*(U/4);
+  if (v < ZONE_MIN || v > massimo) return;
+  push(); z[campo] = v; render();
+}
+function setZoneValue(delta){
+  const z = selectedZone(); if (!z || z.value==null) return;
+  const v = z.value + delta;
+  if (v < 1 || v > 99) return;
+  push(); z.value = v; render();
+}
+
 function setTargetRings(delta){
   const tg = theTarget(); if (!tg) return;
   const n = tg.values.length + delta;
@@ -856,6 +1039,26 @@ function hitItems(p){
     const it = state.items[i];
     if (it.type==="ball" && dist(it,p)<=BR+3) return {it};
     if (it.type==="text" && dist(it,p)<=13) return {it};
+    if (it.type==="marker" && dist(it,p)<=BR+6) return {it};
+    if (it.type==="positions"){
+      for(let v=0;v<it.points.length;v++) if(dist(it.points[v],p)<=16) return {it,vertex:v};
+    }
+    if (it.type==="callout"){
+      /* Prima l'ancora, poi la didascalia: l'ancora e' piccola e sta sotto il
+         filo, quindi se vincesse la didascalia non si prenderebbe mai. */
+      if (dist({x:it.x,y:it.y},p)<=12) return {it,handle:"anchor"};
+      const w = Math.max(40,(it.text||"").length*9.2+24);
+      if (Math.abs(p.x-it.tx)<=w/2+4 && Math.abs(p.y-it.ty)<=20) return {it};
+    }
+    if (it.type==="zone"){
+      /* Un riquadro selezionato si prende dagli angoli per cambiarne le misure;
+         dentro, per spostarlo. Senza l'angolo bisognerebbe passare per i
+         numeri del pannello anche per una correzione a occhio. */
+      if (state.sel === it.id)
+        for (const c of zoneCorners(it)) if (dist(c,p)<=14) return {it,handle:c.k};
+      const r = zoneRect(it);
+      if (p.x>=r.x && p.x<=r.x+r.w && p.y>=r.y && p.y<=r.y+r.h) return {it};
+    }
     if (it.type==="path"){
       for(let v=0;v<it.points.length;v++) if(dist(it.points[v],p)<=7) return {it,vertex:v};
       if (nearPoly(p,it.points,6)) return {it};
@@ -863,6 +1066,20 @@ function hitItems(p){
     if (it.type==="shot" && shotHit(p,it)) return {it};
   }
   return null;
+}
+
+/* Il riquadro trascinato per un angolo: l'angolo opposto resta fermo, le
+   misure restano multipli di un quarto di diamante e non scendono sotto uno. */
+function resizeZone(it, orig, handle, p){
+  const r = {x:orig.x-orig.w/2, y:orig.y-orig.h/2, w:orig.w, h:orig.h};
+  const q = clampPt(snapPoint(p,{toBalls:false}));
+  const fissoX = handle[1]==="w" ? r.x+r.w : r.x;
+  const fissoY = handle[0]==="n" ? r.y+r.h : r.y;
+  const w = Math.max(ZONE_MIN, Math.min(ZONE_MAX_W, Math.round(Math.abs(q.x-fissoX)/ZONE_MIN)*ZONE_MIN));
+  const h = Math.max(ZONE_MIN, Math.min(ZONE_MAX_H, Math.round(Math.abs(q.y-fissoY)/ZONE_MIN)*ZONE_MIN));
+  const x0 = handle[1]==="w" ? fissoX-w : fissoX;
+  const y0 = handle[0]==="n" ? fissoY-h : fissoY;
+  Object.assign(it, {w, h, x:x0+w/2, y:y0+h/2});
 }
 function ballHit(p){
   for (let i=state.items.length-1;i>=0;i--){
@@ -912,10 +1129,55 @@ stage.addEventListener("pointerdown", ev=>{
   if (state.tool === "target"){
     push();
     const dove = clampPt(snapPoint(raw,{toBalls:false}));
-    let tg = theTarget();
-    if (tg) Object.assign(tg, dove);
-    else { tg = {id:uid(),type:"target",step:U/2,values:[3,2,1],...dove}; state.items.push(tg); }
-    state.sel = tg.id; state.tool = "select"; render(); return;
+    if (state.targetShape === "zone"){
+      /* Un riquadro nuovo a ogni tocco: gli schemi ne hanno quattro, e il
+         secondo tocco che sposta il primo — come fanno i cerchi, che sono uno
+         solo — qui sarebbe un impedimento. */
+      const z = {id:uid(),type:"zone",w:2*U,h:U,filled:false,number:false,...dove};
+      state.items.push(z); state.sel = z.id;
+    } else {
+      let tg = theTarget();
+      if (tg) Object.assign(tg, dove);
+      else { tg = {id:uid(),type:"target",step:U/2,values:[3,2,1],...dove}; state.items.push(tg); }
+      state.sel = tg.id;
+    }
+    state.tool = "select"; render(); return;
+  }
+  if (state.tool === "positions"){
+    /* Una scala sola: il tocco allunga quella selezionata, o ne apre una.
+       Il numero e' la posizione nella lista, quindi inserirne una in mezzo
+       rinumera le altre da sole — che e' il motivo per cui questa voce
+       esiste invece di sette testi. */
+    push();
+    const dove = clampFrame(snapPoint(raw,{toBalls:false}));
+    const sel = byId(state.sel);
+    if (sel && sel.type==="positions"){
+      const dopo = state.selVertex==null ? sel.points.length : state.selVertex+1;
+      sel.points.splice(dopo, 0, dove);
+      state.selVertex = dopo;
+    } else {
+      const ps = {id:uid(),type:"positions",points:[dove],reverse:false};
+      state.items.push(ps); state.sel = ps.id; state.selVertex = 0;
+    }
+    render(); return;
+  }
+  if (state.tool === "callout"){
+    const t = prompt(T_("calloutNew","Didascalia:"));
+    if (t){
+      push();
+      const a = clampFrame(snapPoint(raw,{toBalls:false}));
+      /* La didascalia nasce discosta dall'ancora: sovrapposte non si
+         distinguerebbero, e la prima cosa da fare sarebbe separarle. */
+      const etichetta = clampFrame({x:a.x+1.6*U, y:a.y+0.6*U});
+      state.items.push({id:uid(),type:"callout",x:a.x,y:a.y,
+        tx:etichetta.x,ty:etichetta.y,text:t.slice(0,CALLOUT_MAX)});
+    }
+    state.tool = "select"; render(); return;
+  }
+  if (state.tool === "marker"){
+    push();
+    state.items.push({id:uid(),type:"marker",...clampPt(snapPoint(raw,{toBalls:false}))});
+    render(); return;
   }
   if (state.tool === "text"){
     const t = prompt(T_("textNew","Testo da inserire:"));
@@ -933,10 +1195,14 @@ stage.addEventListener("pointerdown", ev=>{
   const h = hit(raw);
   if (h){
     state.sel = h.it.id;
+    /* Quale numero di una scala si e' preso: il tocco successivo con lo
+       strumento «Posizioni» inserisce **dopo** quello, ed e' cosi' che una
+       posizione si aggiunge in mezzo senza ribattere le altre. */
+    state.selVertex = h.it.type==="positions" ? h.vertex : null;
     state.drag = {id:h.it.id, vertex:h.vertex, handle:h.handle, start:raw, moved:false,
                   orig:JSON.parse(JSON.stringify(h.it))};
     push();
-  } else state.sel = null;
+  } else { state.sel = null; state.selVertex = null; }
   render();
 });
 
@@ -956,7 +1222,21 @@ window.addEventListener("pointermove", ev=>{
   if (!it) return;
   d.moved = true;
   if (it.type==="ball") Object.assign(it, snapBall(p, it.id));
-  else if (it.type==="text" || it.type==="target") Object.assign(it, clampPt(snapPoint(p,{toBalls:false})));
+  else if (it.type==="text" || it.type==="target" || it.type==="marker")
+    Object.assign(it, clampPt(snapPoint(p,{toBalls:false})));
+  else if (it.type==="zone"){
+    if (d.handle) resizeZone(it, d.orig, d.handle, p);
+    else Object.assign(it, clampPt(snapPoint(p,{toBalls:false})));
+  }
+  else if (it.type==="callout"){
+    /* Il filo resta legato: si sposta l'ancora o la didascalia, mai il
+       disegno intero — e' tutto il punto del richiamo. */
+    const q = clampFrame(snapPoint(p,{toBalls:false}));
+    if (d.handle==="anchor") Object.assign(it, {x:q.x, y:q.y});
+    else Object.assign(it, {tx:q.x, ty:q.y});
+  }
+  else if (it.type==="positions" && d.vertex !== undefined)
+    it.points[d.vertex] = clampFrame(snapPoint(p,{toBalls:false}));
   else if (it.type==="shot") return;
   else if (d.vertex !== undefined) it.points[d.vertex] = clampPt(snapPoint(p));
   else {
@@ -992,6 +1272,10 @@ stage.addEventListener("dblclick", ev=>{
   if (h && h.it.type==="text"){
     const t = prompt(T_("textEdit","Testo:"), h.it.text);
     if (t !== null){ push(); h.it.text = t; render(); }
+  }
+  if (h && h.it.type==="callout"){
+    const t = prompt(T_("calloutEdit","Didascalia:"), h.it.text);
+    if (t !== null){ push(); h.it.text = t.slice(0,CALLOUT_MAX); render(); }
   }
 });
 stage.addEventListener("contextmenu", e=>e.preventDefault());
@@ -1118,6 +1402,48 @@ if ($("#targetStep")){
   $("#targetPlus").onclick  = ()=>setTargetRings(1);
   $("#targetRemove").onclick = ()=>{ const tg=theTarget(); if(!tg) return;
     push(); state.items = state.items.filter(i=>i!==tg); state.sel=null; render(); };
+}
+document.querySelectorAll("[data-shape]").forEach(b=>b.onclick=()=>{
+  state.targetShape = b.dataset.shape; state.tool = "target"; render(); });
+if ($("#zoneControls")){
+  $("#zoneWMinus").onclick = ()=>setZoneSize("w",-1);
+  $("#zoneWPlus").onclick  = ()=>setZoneSize("w", 1);
+  $("#zoneHMinus").onclick = ()=>setZoneSize("h",-1);
+  $("#zoneHPlus").onclick  = ()=>setZoneSize("h", 1);
+  /* Ruotare di 90 gradi e' scambiare le due misure: un campo in meno da
+     tenere d'accordo col disegno. */
+  $("#zoneRotate").onclick = ()=>{ const z=selectedZone(); if(!z) return;
+    push(); const w=z.w; z.w=Math.min(ZONE_MAX_W,z.h); z.h=Math.min(ZONE_MAX_H,w); render(); };
+  $("#zoneFilled").onchange = e=>{ const z=selectedZone(); if(!z) return;
+    push(); z.filled = e.target.checked; render(); };
+  $("#zoneNumber").onchange = e=>{ const z=selectedZone(); if(!z) return;
+    push(); z.number = e.target.checked; render(); };
+  $("#zoneScores").onchange = e=>{
+    const z=selectedZone(); if(!z) return;
+    if (e.target.checked && scoringCount() > 0){
+      /* Il bersaglio e' uno per disegno: se ce n'e' gia' uno lo si dice qui,
+         invece di far rifiutare il salvataggio al server a lavoro finito. */
+      e.target.checked = false;
+      toast(T_("toastOneTarget","C'è già un bersaglio: toglilo prima"));
+      return;
+    }
+    push();
+    if (e.target.checked) z.value = 1; else delete z.value;
+    render();
+  };
+  $("#zoneValueMinus").onclick = ()=>setZoneValue(-1);
+  $("#zoneValuePlus").onclick  = ()=>setZoneValue(1);
+  $("#zoneRemove").onclick = ()=>{ const z=selectedZone(); if(!z) return;
+    push(); state.items = state.items.filter(i=>i!==z); state.sel=null; render(); };
+}
+if ($("#posReverse")){
+  $("#posReverse").onchange = e=>{ const ps=selectedPositions(); if(!ps) return;
+    push(); ps.reverse = e.target.checked; render(); };
+  $("#posRemoveLast").onclick = ()=>{ const ps=selectedPositions(); if(!ps) return;
+    push();
+    ps.points.pop();
+    if (!ps.points.length){ state.items = state.items.filter(i=>i!==ps); state.sel=null; }
+    state.selVertex = null; render(); };
 }
 $("#finishLine").onclick=finishLine;
 $("#elev").oninput  = e=>{ $("#elevVal").textContent=e.target.value+"\u00B0"; setShotProp("elev",+e.target.value); };

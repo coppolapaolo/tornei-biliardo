@@ -658,7 +658,7 @@ hints:
 
   - id: drill.strumento
     label: "Gli strumenti"
-    short: "Uno alla volta, e quello attivo è giallo: «Sposta» sistema, «Tiro» disegna un tiro, «Linea libera» traccia un percorso, «Testo» scrive."
+    short: "Uno alla volta, e quello attivo è scuro: «Sposta» sistema, «Tiro» disegna un tiro, «Linea» traccia un percorso, «Testo» scrive. Su telefono sono la striscia sotto al tavolo, e scorre di lato."
     anchor: drill-strumento
     screens: [challenge.diagram_builder, challenge.edit_diagram]
     page: disegnare_un_drill
@@ -666,8 +666,32 @@ hints:
 
   - id: drill.bersaglio
     label: "Il bersaglio"
-    short: "Dove la bianca deve fermarsi: un centro e fino a cinque anelli, ciascuno coi suoi punti. Ce n'è uno per disegno, e con un bersaglio l'esercizio si può registrare colpo per colpo."
+    short: "Dove la bianca deve fermarsi, in due forme: i cerchi chiedono quanto vicino, il riquadro dentro o fuori. Ce n'è uno per disegno, e con un bersaglio l'esercizio si può registrare colpo per colpo."
     anchor: drill-bersaglio
+    screens: [challenge.diagram_builder, challenge.edit_diagram]
+    page: disegnare_un_drill
+    section: strumenti
+
+  - id: drill.riquadro_punteggio
+    label: "Vale per il punteggio"
+    short: "Fa di questo riquadro il bersaglio: fermarsi dentro vale i punti che scegli, fuori vale zero. I riquadri possono essere tanti, quello che vale punti uno solo."
+    anchor: drill-riquadro-punteggio
+    screens: [challenge.diagram_builder, challenge.edit_diagram]
+    page: disegnare_un_drill
+    section: strumenti
+
+  - id: drill.posizioni
+    label: "Le posizioni numerate"
+    short: "Una scala ordinata, non numeri sparsi: ogni tocco aggiunge la posizione dopo quella scelta, e i numeri si rifanno da soli. Possono stare anche sulla sponda, fuori dal panno."
+    anchor: drill-posizioni
+    screens: [challenge.diagram_builder, challenge.edit_diagram]
+    page: disegnare_un_drill
+    section: strumenti
+
+  - id: drill.richiamo
+    label: "Il richiamo"
+    short: "Una didascalia legata al punto che commenta: sposti l'una o l'altro e il filo resta attaccato. Due tocchi sulla didascalia per cambiarla."
+    anchor: drill-richiamo
     screens: [challenge.diagram_builder, challenge.edit_diagram]
     page: disegnare_un_drill
     section: strumenti

@@ -160,6 +160,48 @@ punti d'anello.
   lo rifiuta alla composizione dell'esame, e la lista dell'esercizio della X non
   lo offre. La strada per ammetterli passa da un **seme fissato** ed è la #506.
 
+## Emendamento (2026-09-20 bis) — il bersaglio a riquadro (fase 9b, #179)
+
+Il punto 5 diceva «una voce `{"type": "target", …}` con gli anelli». Gli schemi
+di riferimento della disciplina — i drill F1–F5 di Billiard University — non
+segnano quasi mai un centro con dei cerchi: segnano una **zona**, e la domanda
+che fanno è «dentro o fuori». Il bersaglio prende quindi una seconda forma.
+
+**Due forme, due domande diverse.** I cerchi chiedono *quanto vicino* e
+graduano; il riquadro chiede *dentro o fuori* e non gradua. Non è una mancanza
+da colmare: inventare una gradazione su un rettangolo — la distanza dal bordo,
+per dire — vorrebbe dire misurare una cosa che l'esercizio non chiede, e
+stampare sotto la percentuale «Posizione» un numero che nessuno ha deciso. Per
+questo `Target.closeness` vale 1 dentro e 0 fuori, `Target.graded` dice quale
+delle due si sta guardando, e la parola sopra la percentuale cambia: con un
+riquadro è **«Nel riquadro»**, cioè quante volte dentro.
+
+**I riquadri sono tanti, il bersaglio è uno.** Un drill di quello stesso
+documento ne ha quattro sul tavolo, e uno solo, se tanto, conta. Quindi:
+
+* la voce `{"type": "zone", x, y, w, h}` è **disegno** come una linea o un
+  testo, e il server non la convalida;
+* è la presenza di `value` a farne il bersaglio — `{"type": "zone", …, "value":
+  2}` — e allora vale la stessa regola di prima: **uno per scena**, contando
+  insieme le due forme. Cerchi *e* un riquadro che vale punti sono comunque due
+  bersagli, e `validate_targets` li rifiuta insieme;
+* togliere i punti a un riquadro vuol dire togliere la **chiave**, non
+  scriverci zero: un `value` scritto storto è un bersaglio dichiarato male e si
+  rifiuta, invece di declassarsi a disegno in silenzio.
+
+**Niente campo «ruotato».** Negli schemi un riquadro sta col lato lungo contro
+la sponda e gli altri no; ma ruotare di 90° è **scambiare larghezza e altezza**,
+e un dato in meno è un dato che non può contraddire il disegno. Nel disegnatore
+la rotazione resta un pulsante, che fa esattamente quello scambio.
+
+**Due misure per lo scarto.** `read_dispersion` normalizzava lo scarto medio su
+un raggio solo. Con un riquadro lungo e basso è sbagliato: `scale_x` e
+`scale_y` dicono di quanto si è «fuori» lungo i due assi, e per i cerchi
+coincidono — quindi per loro non cambia niente.
+
+Le altre voci nate qui (posizioni numerate, richiami, marcatori) restano
+**disegno per intero**: le convalida il disegnatore, non `parse_scene`.
+
 ## Conseguenze
 
 * La fase 5c (#452) aggiunge un valore a `RecordingMode` e ciò che serve

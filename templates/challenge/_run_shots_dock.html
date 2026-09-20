@@ -27,7 +27,17 @@
 {% else %}
 <p class="c7-runprog__say" style="text-align:center">
   <b style="color:var(--c7-ink)">{{ _("Imbucata?") }}</b>
+  {# Chi dà i punti dipende dalla forma del bersaglio: gli anelli graduano,
+     il riquadro dice dentro o fuori. La frase deve nominare quello che si
+     vede sul panno, altrimenti manda a cercare dei cerchi che non ci sono.
+     Prima del primo colpo la prova non c'è ancora e il bersaglio arriva da
+     `cloth_target`, come per il panno. #}
+  {% set bersaglio = (run.target if run else none) or cloth_target|default(none) %}
+  {% if bersaglio and bersaglio.is_zone -%}
+  {{ _("Tocca il panno dove si è fermata la bianca: dentro il riquadro dà i punti.") }}
+  {%- else -%}
   {{ _("Tocca il panno dove si è fermata la bianca: l'anello dà i punti.") }}
+  {%- endif %}
 </p>
 <button type="button" class="c7-exam-verdict c7-exam-verdict--no" data-shot-miss
         data-help="allenamento-colpo">

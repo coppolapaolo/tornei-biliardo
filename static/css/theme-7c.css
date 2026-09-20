@@ -4702,6 +4702,10 @@ span.c7-exam-pad__v { display: block; }
   fill: rgba(201, 168, 76, calc(.78 - var(--ring) * .18));
   stroke: rgba(0, 0, 0, .35); stroke-width: .8;
 }
+/* Il bersaglio a riquadro (fase 9b): stesso oro degli anelli, ma il pieno è un
+   velo e il contorno è spesso — la zona dice «dentro o fuori», e un rettangolo
+   pieno quanto il centro di un bersaglio coprirebbe mezzo tavolo. */
+.c7-cloth__zone { fill: rgba(201, 168, 76, .3); stroke: #fbfaf6; stroke-width: 4; }
 /* I colpi già tirati: la nuvola dei punti d'arrivo, che nessun punteggio
    riassume — si vede a colpo d'occhio se si sbaglia sempre dallo stesso lato. */
 .c7-cloth__shot { fill: #fbfaf6; stroke: #1b2124; stroke-width: 2; opacity: .75; }

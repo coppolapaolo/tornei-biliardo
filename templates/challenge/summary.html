@@ -63,7 +63,11 @@
       {% if summary.position is not none %}
       <div class="c7-card">
         <div class="c7-num-lg">{{ summary.position }}%</div>
-        <div class="c7-rows__sub">{{ _("Posizione") }}</div>
+        {# Vedi `_run_shots.html`: col riquadro è «quante volte dentro». #}
+        <div class="c7-rows__sub">
+          {%- if summary.target and summary.target.is_zone %}{{ _("Nel riquadro") }}
+          {%- else %}{{ _("Posizione") }}{% endif -%}
+        </div>
       </div>
       {% endif %}
       {% if summary.streak %}
