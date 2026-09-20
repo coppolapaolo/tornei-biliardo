@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.47.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.46.0...v1.47.0) (2026-09-20)
+
+
+### Funzioni nuove
+
+* il bersaglio puo' essere un riquadro, e il disegno sa annotare ([#179](https://github.com/coppolapaolo/tornei-biliardo/issues/179)) ([#538](https://github.com/coppolapaolo/tornei-biliardo/issues/538)) ([a40e938](https://github.com/coppolapaolo/tornei-biliardo/commit/a40e93885f49c3e368860e415fdbb0d0e8cdd022))
+* il disegnatore parla la lingua dell'app, e ci sta in un telefono ([#179](https://github.com/coppolapaolo/tornei-biliardo/issues/179)) ([#536](https://github.com/coppolapaolo/tornei-biliardo/issues/536)) ([2146b29](https://github.com/coppolapaolo/tornei-biliardo/commit/2146b29e5b9a6ea9b50f5a5207a5bedb3b3fa937))
+* la guida racconta il disegnatore rifatto ([#179](https://github.com/coppolapaolo/tornei-biliardo/issues/179)) ([#541](https://github.com/coppolapaolo/tornei-biliardo/issues/541)) ([cff9f6c](https://github.com/coppolapaolo/tornei-biliardo/commit/cff9f6ce4513aa9e15d222705fa1bc711acccf08))
+* varianti allo specchio, inquadratura e tratto di sponda ([#179](https://github.com/coppolapaolo/tornei-biliardo/issues/179)) ([#540](https://github.com/coppolapaolo/tornei-biliardo/issues/540)) ([e84724f](https://github.com/coppolapaolo/tornei-biliardo/commit/e84724f81431427fa3bdfe1b2b4f63ca2e2092f2))
+
 ## [1.46.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.45.0...v1.46.0) (2026-09-20)
 
 
