@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import uuid
 
+from flask import g
 from werkzeug.datastructures import MultiDict
 
 from models.base import db
@@ -37,6 +38,10 @@ def _login(client, user_id: int) -> None:
     with client.session_transaction() as session:
         session["_user_id"] = db.session.get(User, user_id).get_id()
         session["_fresh"] = True
+    # In questa suite `g` non è per-richiesta: senza questa pulizia Flask-Login
+    # tiene l'utente di prima, e un test sui permessi passerebbe da solo.
+    if hasattr(g, "_login_user"):
+        delattr(g, "_login_user")
 
 
 def _esercizio(nome: str, *, varianti=()) -> int:
@@ -248,3 +253,39 @@ def test_archiviare_la_toglie_dall_elenco(app, client):
 
     with app.app_context():
         assert db.session.get(TrainingSheet, sheet_id) is not None
+
+
+def test_il_registro_si_apre_dalla_card(app, client):
+    """La pagina della scheda: le sedute fatte, e i comandi di chi la possiede."""
+    with app.app_context():
+        player = _utente()
+        stop = _esercizio("Stop shot")
+        sheet_id = _scheda(player)
+        from models.training_sheet import SheetItemSpec, SheetMeasure
+
+        TrainingSheetService.save_composition(
+            sheet_id,
+            db.session.get(User, player),
+            name="Tecnica di base",
+            items=[
+                SheetItemSpec(challenge_id=stop, measure=SheetMeasure.MADE, amount=5)
+            ],
+        )
+        db.session.commit()
+    _login(client, player)
+
+    elenco = client.get("/schede/").get_data(as_text=True)
+    assert f"/schede/{sheet_id}" in elenco
+
+    pagina = client.get(f"/schede/{sheet_id}").get_data(as_text=True)
+    assert "Nessuna seduta" in pagina, "senza sedute il registro lo dice"
+    assert "Nuova seduta" in pagina
+
+
+def test_il_registro_di_un_altro_non_esiste(app, client):
+    with app.app_context():
+        proprietario = _utente()
+        estraneo = _utente()
+        sheet_id = _scheda(proprietario)
+    _login(client, estraneo)
+    assert client.get(f"/schede/{sheet_id}").status_code == 404
