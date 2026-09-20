@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.39.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.38.1...v1.39.0) (2026-09-20)
+
+
+### Funzioni nuove
+
+* l'allenamento è una cornice con il grafico delle prove di oggi ([#501](https://github.com/coppolapaolo/tornei-biliardo/issues/501)) ([c5b999e](https://github.com/coppolapaolo/tornei-biliardo/commit/c5b999e3f9a261429b8fbd0e828f3af69b2d2473))
+
 ## [1.38.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.38.0...v1.38.1) (2026-09-20)
 
 
