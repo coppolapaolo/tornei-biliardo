@@ -506,6 +506,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # l'allowlist dice solo chi può arrivare alla stanza. L'amministratore non
     # si allena, ma qui non c'è niente da nascondergli — la sua pagina è vuota.
     "sheet.index": {"player", "director"},
+    # Il registro: lo apre chi possiede la scheda e chi può leggerla (D11).
+    "sheet.detail": {"player", "director"},
     "sheet.create_sheet": {"player", "director"},
     "sheet.archive": {"player", "director"},
     "sheet.compose": {"player", "director"},

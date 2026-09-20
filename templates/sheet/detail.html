@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{# Il registro di una scheda (canvas «TPA ed esercizi», pagina 5 · «Il
+   registro»; ADR-067).
+
+   Sul foglio di carta il registro **è** l'andamento: una riga per seduta, e
+   guardando la colonna si vede se quell'esercizio sta salendo. Qui la stessa
+   cosa è detta in tre modi, dal generale al particolare: i tre numeri in cima,
+   la riga di ogni voce con le ultime volte, l'elenco delle sedute.
+
+   È anche la pagina che l'istruttore vedrà quando gli si aprirà la scheda
+   (fase 8): per questo i comandi che cambiano qualcosa compaiono solo a chi la
+   possiede. #}
+
+{% block title %}{{ sheet.name }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('sheet.index') }}"
+   aria-label="{{ _('Torna alle schede') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ sheet.name }}{% endblock %}
+{% block page_sub %}
+  {%- if sheet.level %}{{ _("livello %(n)s", n=sheet.level) }}{% endif -%}
+  {%- if sheet.has_threshold %}
+    {% if sheet.level %}<span class="c7-sep">·</span>{% endif %}
+    {{ _("soglia %(n)s su %(tot)s", n=sheet.threshold, tot=sheet.total) }}
+  {%- endif -%}
+{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+
+  {% if registro.is_empty %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-table-list"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessuna seduta") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Qui compariranno le sedute che fai con questa scheda, e come cambia ogni esercizio nel tempo.") }}
+    </p>
+  </div>
+  {% else %}
+
+  {# ── I tre numeri ───────────────────────────────────────────────────── #}
+  {% if registro.counts %}
+  <div class="c7-kpis">
+    <div class="c7-kpi">
+      <div class="c7-kpi__v">{{ registro.last_total }}</div>
+      <div class="c7-kpi__l">{{ _("L'ultima, su %(n)s", n=registro.last_max) }}</div>
+    </div>
+    <div class="c7-kpi">
+      <div class="c7-kpi__v">{{ registro.average_label }}</div>
+      <div class="c7-kpi__l">
+        {{ ngettext("Media di %(num)s seduta", "Media di %(num)s sedute",
+                    [registro.sessions|length, 3]|min) }}
+      </div>
+    </div>
+    {% if sheet.threshold %}
+    <div class="c7-kpi">
+      <div class="c7-kpi__v">
+        {{ registro.above_count }}<span style="color:var(--c7-ok)"><i class="fas fa-check" style="font-size:14px"></i></span>
+      </div>
+      <div class="c7-kpi__l">{{ _("Volte sopra la soglia") }}</div>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {# ── Voce per voce ──────────────────────────────────────────────────── #}
+  {% if registro.items %}
+  <div class="c7-sechead">
+    <h2>{{ _("Voce per voce") }}</h2>
+    <span class="c7-sechead__note">{{ _("le ultime tre") }}</span>
+  </div>
+  <section class="c7-rows">
+    {% for riga in registro.items %}
+    <div class="c7-rows__row">
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ riga.label }}</div>
+        {% if riga.note %}
+        <div class="c7-rows__sub{% if riga.tone %} c7-summary__v--{{ riga.tone }}{% endif %}">{{ riga.note }}</div>
+        {% endif %}
+      </div>
+      <span class="c7-num" style="font-size:12px;color:var(--c7-ink-muted)">{{ riga.recent_label }}</span>
+    </div>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {# ── Le sedute ──────────────────────────────────────────────────────── #}
+  <div class="c7-sechead"><h2>{{ _("Le sedute") }}</h2></div>
+  <section class="c7-rows">
+    {% for riga in registro.sessions %}
+    <a class="c7-rows__row" href="{{ url_for('sheet.session_summary', session_id=riga.session.id) }}"
+       style="color:inherit;text-decoration:none">
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ riga.session.ended_at|day_friendly(with_time=False) }}</div>
+        <div class="c7-rows__sub">
+          {{ _("%(fatte)s caselle su %(tutte)s", fatte=riga.filled, tutte=riga.slots) }}
+          {%- if riga.minutes %} <span class="c7-sep">·</span>
+            {{ ngettext("%(num)s minuto", "%(num)s minuti", riga.minutes) }}{% endif -%}
+          {%- if riga.session.day %} <span class="c7-sep">·</span>
+            {{ _("giorno %(g)s", g=riga.session.day) }}{% endif -%}
+        </div>
+      </div>
+      {% if riga.max_total %}
+      <span class="c7-num-lg{% if riga.above %} c7-summary__v--ok{% endif %}">{{ riga.total }}</span>
+      {% endif %}
+    </a>
+    {% endfor %}
+  </section>
+  {% endif %}
+
+  {# ── I comandi: solo per chi la possiede ────────────────────────────── #}
+  {% if can_edit %}
+  <div class="c7-duo">
+    <a class="btn btn-secondary" href="{{ url_for('sheet.compose', sheet_id=sheet.id) }}">{{ _("Modifica") }}</a>
+    <form method="POST" action="{{ url_for('sheet.start_session', sheet_id=sheet.id) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-primary w-100" {% if not sheet.active_items %}disabled{% endif %}>
+        {{ _("Riprendi la seduta") if aperta else _("Nuova seduta") }}
+      </button>
+    </form>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

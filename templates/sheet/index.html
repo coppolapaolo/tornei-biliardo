@@ -45,7 +45,8 @@
   <section class="c7-card{{ ' c7-card--accent' if aperta else '' }}">
     {% if aperta %}<div class="c7-kicker">{{ _("Seduta cominciata") }}</div>{% endif %}
     <h2 style="margin:{{ '6px' if aperta else '0' }} 0 10px;font-size:18px;font-weight:800;letter-spacing:-.02em">
-      {{ scheda.name }}
+      <a href="{{ url_for('sheet.detail', sheet_id=scheda.id) }}"
+         style="color:inherit;text-decoration:none">{{ scheda.name }}</a>
     </h2>
     {{ etichette(scheda) }}
 
@@ -85,9 +86,7 @@
 
     {# Le due cose che si fanno di rado, dove non rubano il tocco a «Comincia». #}
     <div class="c7-sheetcard__minor">
-      {% if ultima %}
-      <a href="{{ url_for('sheet.session_summary', session_id=ultima.id) }}">{{ _("Rivedi l'ultima seduta") }}</a>
-      {% endif %}
+      <a href="{{ url_for('sheet.detail', sheet_id=scheda.id) }}">{{ _("Il registro") }}</a>
       <form method="POST" action="{{ url_for('sheet.archive', sheet_id=scheda.id) }}"
             onsubmit="return confirm({{ _('Togli questa scheda dall\'elenco? Le sedute che hai fatto restano.')|tojson }})">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 14:56+0200\n"
+"POT-Creation-Date: 2026-09-20 15:04+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -685,7 +685,8 @@ msgid_plural "%(num)s colpi"
 msgstr[0] "%(num)s shot"
 msgstr[1] "%(num)s shots"
 
-#: models/challenge/summary_view.py:107 templates/sheet/summary.html:20
+#: models/challenge/summary_view.py:107 templates/sheet/detail.html:100
+#: templates/sheet/summary.html:20
 #, python-format
 msgid "%(num)s minuto"
 msgid_plural "%(num)s minuti"
@@ -3212,7 +3213,25 @@ msgstr "%(n)s minutes"
 msgid "%(n)s tiri"
 msgstr "%(n)s shots"
 
-#: models/training_sheet/run_view.py:124 templates/sheet/index.html:22
+#: models/training_sheet/register_view.py:228
+#, python-format
+msgid "%(lato)s %(n)s di media, %(altro)s %(m)s"
+msgstr "%(lato)s %(n)s on average, %(altro)s %(m)s"
+
+#: models/training_sheet/register_view.py:242
+msgid "in crescita"
+msgstr "trending up"
+
+#: models/training_sheet/register_view.py:244
+msgid "in calo"
+msgstr "trending down"
+
+#: models/training_sheet/register_view.py:246
+msgid "fuori dalla soglia: non è a riusciti"
+msgstr "outside the threshold: not a \"made\" item"
+
+#: models/training_sheet/run_view.py:124 templates/sheet/detail.html:26
+#: templates/sheet/index.html:22
 #, python-format
 msgid "soglia %(n)s su %(tot)s"
 msgstr "threshold %(n)s of %(tot)s"
@@ -5364,11 +5383,11 @@ msgstr "Password updated successfully."
 msgid "Password attuale errata o nuova password non valida."
 msgstr "Current password is wrong, or the new password is not valid."
 
-#: routes/sheet/__init__.py:59
+#: routes/sheet/__init__.py:67
 msgid "La mia scheda"
 msgstr "My sheet"
 
-#: routes/sheet/__init__.py:78
+#: routes/sheet/__init__.py:113
 msgid "Scheda archiviata."
 msgstr "Sheet archived."
 
@@ -6866,7 +6885,8 @@ msgstr "Back to championships"
 #: templates/gamification/admin/config_dashboard.html:75
 #: templates/gamification/admin/config_dashboard.html:101
 #: templates/gamification/admin/config_dashboard.html:132
-#: templates/gamification/admin/features.html:60 templates/sheet/index.html:76
+#: templates/gamification/admin/features.html:60
+#: templates/sheet/detail.html:116 templates/sheet/index.html:77
 msgid "Modifica"
 msgstr "Edit"
 
@@ -11162,7 +11182,7 @@ msgstr "Session started"
 msgid "L'hai cominciata %(quando)s."
 msgstr "You started it %(quando)s."
 
-#: templates/challenge/today.html:39
+#: templates/challenge/today.html:39 templates/sheet/detail.html:120
 msgid "Riprendi la seduta"
 msgstr "Pick the session back up"
 
@@ -11175,7 +11195,7 @@ msgstr "Pick up from here"
 msgid "L'ultima volta: %(when)s."
 msgstr "Last time: %(when)s."
 
-#: templates/challenge/today.html:63 templates/sheet/index.html:72
+#: templates/challenge/today.html:63 templates/sheet/index.html:73
 msgid "Comincia"
 msgstr "Start"
 
@@ -19046,7 +19066,7 @@ msgstr "Back to the exams"
 msgid "Esame: una sequenza di esercizi"
 msgstr "Exam: a sequence of drills"
 
-#: templates/exam/detail.html:23 templates/sheet/index.html:80
+#: templates/exam/detail.html:23 templates/sheet/index.html:81
 msgid "Componi"
 msgstr "Compose"
 
@@ -23889,7 +23909,7 @@ msgstr "per side"
 msgid "L'ultima volta, %(lato)s"
 msgstr "Last time, %(lato)s"
 
-#: templates/sheet/_run_progress.html:52 templates/sheet/index.html:59
+#: templates/sheet/_run_progress.html:52 templates/sheet/index.html:60
 msgid "L'ultima volta"
 msgstr "Last time"
 
@@ -23915,8 +23935,8 @@ msgstr "This sheet has no items for today: compose it, then begin."
 msgid "Componi la scheda"
 msgstr "Compose the sheet"
 
-#: templates/sheet/compose.html:25 templates/sheet/run.html:20
-#: templates/sheet/summary.html:14
+#: templates/sheet/compose.html:25 templates/sheet/detail.html:19
+#: templates/sheet/run.html:20 templates/sheet/summary.html:14
 msgid "Torna alle schede"
 msgstr "Back to the sheets"
 
@@ -24041,6 +24061,65 @@ msgstr "A, B, C…"
 msgid "Lo stesso esercizio può comparire in due voci."
 msgstr "The same drill can appear in two items."
 
+#: templates/sheet/detail.html:23 templates/sheet/index.html:20
+#, python-format
+msgid "livello %(n)s"
+msgstr "level %(n)s"
+
+#: templates/sheet/detail.html:36
+msgid "Nessuna seduta"
+msgstr "No sessions"
+
+#: templates/sheet/detail.html:38
+msgid ""
+"Qui compariranno le sedute che fai con questa scheda, e come cambia ogni "
+"esercizio nel tempo."
+msgstr ""
+"The sessions you do with this sheet will show up here, and how each drill"
+" changes over time."
+
+#: templates/sheet/detail.html:48
+#, python-format
+msgid "L'ultima, su %(n)s"
+msgstr "The last one, out of %(n)s"
+
+#: templates/sheet/detail.html:53
+#, python-format
+msgid "Media di %(num)s seduta"
+msgid_plural "Media di %(num)s sedute"
+msgstr[0] "Average of %(num)s session"
+msgstr[1] "Average of %(num)s sessions"
+
+#: templates/sheet/detail.html:62
+msgid "Volte sopra la soglia"
+msgstr "Times above the threshold"
+
+#: templates/sheet/detail.html:71
+msgid "Voce per voce"
+msgstr "Item by item"
+
+#: templates/sheet/detail.html:72
+msgid "le ultime tre"
+msgstr "the last three"
+
+#: templates/sheet/detail.html:90
+msgid "Le sedute"
+msgstr "The sessions"
+
+#: templates/sheet/detail.html:98
+#, python-format
+msgid "%(fatte)s caselle su %(tutte)s"
+msgstr "%(fatte)s boxes out of %(tutte)s"
+
+#: templates/sheet/detail.html:102 templates/sheet/run.html:25
+#, python-format
+msgid "giorno %(g)s"
+msgstr "day %(g)s"
+
+#: templates/sheet/detail.html:120
+msgid "Nuova seduta"
+msgstr "New session"
+
 #: templates/sheet/index.html:14
 msgid "Schede di allenamento"
 msgstr "Training sheets"
@@ -24048,11 +24127,6 @@ msgstr "Training sheets"
 #: templates/sheet/index.html:16
 msgid "Il tuo allenamento, in ordine"
 msgstr "Your training, in order"
-
-#: templates/sheet/index.html:20
-#, python-format
-msgid "livello %(n)s"
-msgstr "level %(n)s"
 
 #: templates/sheet/index.html:24
 #, python-format
@@ -24076,47 +24150,47 @@ msgstr ""
 "A sheet is the sequence of drills you do at the table, in the order you "
 "do them: you compose it once, then record how it went."
 
-#: templates/sheet/index.html:54
+#: templates/sheet/index.html:55
 msgid "Ancora nessun esercizio: componila."
 msgstr "No drills yet: compose it."
 
-#: templates/sheet/index.html:56
+#: templates/sheet/index.html:57
 #, python-format
 msgid "L'ultima volta %(n)s su %(tot)s"
 msgstr "Last time %(n)s of %(tot)s"
 
-#: templates/sheet/index.html:61
+#: templates/sheet/index.html:62
 #, python-format
 msgid "%(num)s esercizio, mai fatta"
 msgid_plural "%(num)s esercizi, mai fatta"
 msgstr[0] "%(num)s drill, never done"
 msgstr[1] "%(num)s drills, never done"
 
-#: templates/sheet/index.html:72
+#: templates/sheet/index.html:73
 msgid "Riprendi"
 msgstr "Resume"
 
 #: templates/sheet/index.html:89
-msgid "Rivedi l'ultima seduta"
-msgstr "Look at the last session again"
+msgid "Il registro"
+msgstr "The register"
 
-#: templates/sheet/index.html:92
+#: templates/sheet/index.html:91
 msgid "Togli questa scheda dall'elenco? Le sedute che hai fatto restano."
 msgstr "Remove this sheet from the list? The sessions you have done stay."
 
-#: templates/sheet/index.html:94
+#: templates/sheet/index.html:93
 msgid "Archivia"
 msgstr "Archive"
 
-#: templates/sheet/index.html:103
+#: templates/sheet/index.html:102
 msgid "Una scheda nuova"
 msgstr "A new sheet"
 
-#: templates/sheet/index.html:105
+#: templates/sheet/index.html:104
 msgid "Come la chiami"
 msgstr "What you call it"
 
-#: templates/sheet/index.html:108
+#: templates/sheet/index.html:107
 msgid "Crea e componi"
 msgstr "Create and compose"
 
@@ -24124,11 +24198,6 @@ msgstr "Create and compose"
 #, python-format
 msgid "Seduta del %(giorno)s"
 msgstr "Session of %(giorno)s"
-
-#: templates/sheet/run.html:25
-#, python-format
-msgid "giorno %(g)s"
-msgstr "day %(g)s"
 
 #: templates/sheet/run.html:27
 #, python-format

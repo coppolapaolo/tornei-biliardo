@@ -8,7 +8,15 @@ scheda ha un ciclo di vita, delle sedute e dei lettori che il catalogo non ha �
 la stessa ragione per cui gli esami stanno per conto loro.
 """
 
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import (
+    Blueprint,
+    abort,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
+)
 from flask_babel import gettext as _
 from flask_login import current_user, login_required
 
@@ -63,6 +71,33 @@ def create_sheet():
         flash(str(errore), "error")
         return redirect(url_for("sheet.index"))
     return redirect(url_for("sheet.compose", sheet_id=scheda.id))
+
+
+@sheet_bp.route("/<int:sheet_id>", methods=["GET"])
+@login_required
+def detail(sheet_id):
+    """Il registro: le sedute fatte, voce per voce, e i tre numeri in cima.
+
+    Lo aprono il proprietario e chi ha il permesso di leggere la scheda (D11):
+    per l'istruttore **questa** è la pagina — vede come procede, e non può
+    toccare niente.
+    """
+    from models.training_sheet.register_view import build_register
+
+    try:
+        sheet = TrainingSheetService.get_sheet(sheet_id)
+    except DomainError:
+        abort(404)
+    if not TrainingSheetService.can_read(sheet, current_user):
+        abort(404)
+
+    return render_template(
+        "sheet/detail.html",
+        sheet=sheet,
+        registro=build_register(sheet, sheet.owner_id),
+        aperta=TrainingSessionService.open_session(sheet.id, current_user.id),
+        can_edit=TrainingSheetService.can_edit(sheet, current_user),
+    )
 
 
 @sheet_bp.route("/<int:sheet_id>/archivia", methods=["POST"])
