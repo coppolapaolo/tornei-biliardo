@@ -178,6 +178,12 @@ class UnlockEngine:
         elif target_role == "EXAMINER":
             # is_examiner include già il bypass admin (ADR-041)
             return user.is_examiner
+        elif target_role == "INSTRUCTOR":
+            # `is_instructor` **non** include il bypass admin (ADR-069): serve a
+            # dire chi insegna, non chi amministra. Qui il bypass si scrive,
+            # come per DIRECTOR, perché una condizione ABAC su un ruolo non
+            # deve chiudere la porta in faccia a un amministratore.
+            return user.is_instructor or user.is_admin
 
         return False
 

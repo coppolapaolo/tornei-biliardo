@@ -251,12 +251,18 @@ class TrainingSheetService:
         db.session.flush()
 
     # ────────────────────────────────────────────────────────────────────
-    # Lettori (D11) — l'interfaccia arriva con gli istruttori, fase 8
+    # Lettori (D11, ADR-069)
     # ────────────────────────────────────────────────────────────────────
     @staticmethod
     @transactional(domain="training_sheet")
     def add_reader(sheet_id: int, user_id: int, actor: User) -> TrainingSheetReader:
-        """Apre la scheda a un altro: vale subito, senza attese (D18)."""
+        """Apre la scheda a un istruttore: vale subito, senza attese (D18).
+
+        Che il lettore debba essere un **istruttore** si controlla qui e non
+        solo nella casella di ricerca: nascondere un nome dall'elenco non è una
+        regola, e le schede di un minorenne non si difendono con l'ordine dei
+        risultati.
+        """
         sheet = TrainingSheetService.get_sheet(sheet_id)
         TrainingSheetService._require_edit(sheet, actor)
         if user_id == sheet.owner_id:
@@ -264,6 +270,8 @@ class TrainingSheetService:
         lettore = db.session.get(User, user_id)
         if lettore is None or lettore.is_deleted:
             raise NotFoundError(_("Utente non trovato"))
+        if not lettore.is_instructor:
+            raise ValidationError(_("Una scheda si apre a un istruttore"))
 
         corrente = next(
             (r for r in sheet.readers if r.user_id == user_id and r.is_current), None
@@ -274,23 +282,99 @@ class TrainingSheetService:
         reader = TrainingSheetReader(sheet_id=sheet.id, user_id=user_id)
         db.session.add(reader)
         db.session.flush()
+        TrainingSheetService._avvisa_apertura(sheet, lettore, actor)
         return reader
 
     @staticmethod
     @transactional(domain="training_sheet")
     def remove_reader(sheet_id: int, user_id: int, actor: User) -> None:
-        """Toglie il permesso. La riga resta: dice da quando a quando."""
-        from ..base import utc_now
+        """Toglie il permesso. La riga resta: dice da quando a quando.
 
+        Senza avviso a chi lo perde, di proposito: è una decisione di chi
+        possiede la scheda, e annunciarla ne farebbe un atto da giustificare.
+        """
         sheet = TrainingSheetService.get_sheet(sheet_id)
         TrainingSheetService._require_edit(sheet, actor)
+        TrainingSheetService._chiudi_permesso(sheet, user_id)
+
+    @staticmethod
+    @transactional(domain="training_sheet")
+    def leave_sheet(sheet_id: int, actor: User) -> None:
+        """L'istruttore smette di seguire questa scheda (D18).
+
+        Il permesso vale subito, quindi chi lo riceve dev'essere libero di
+        restituirlo: nessuno è obbligato a seguire un allievo. Qui l'avviso
+        invece parte — l'allievo aveva invitato qualcuno, e ha diritto di
+        sapere che quel qualcuno non legge più.
+        """
+        sheet = TrainingSheetService.get_sheet(sheet_id)
+        if not TrainingSheetService._chiudi_permesso(sheet, getattr(actor, "id", None)):
+            raise PermissionDeniedError(_("Non leggi questa scheda"))
+        TrainingSheetService._avvisa_abbandono(sheet, actor)
+
+    @staticmethod
+    def _chiudi_permesso(sheet: TrainingSheet, user_id: Optional[int]) -> bool:
+        """Chiude il permesso corrente di ``user_id``; True se ce n'era uno."""
+        from ..base import utc_now
+
+        chiuso = False
         for reader in sheet.readers:
-            if reader.user_id == user_id and reader.is_current:
+            if user_id and reader.user_id == user_id and reader.is_current:
                 reader.revoked_at = utc_now()
+                chiuso = True
+        return chiuso
 
     @staticmethod
     def readers_of(sheet: TrainingSheet) -> List[TrainingSheetReader]:
         return [reader for reader in sheet.readers if reader.is_current]
+
+    # ────────────────────────────────────────────────────────────────────
+    # Gli avvisi (ADR-062: testi da comporre, non tradotti da chi preme)
+    # ────────────────────────────────────────────────────────────────────
+    @staticmethod
+    def _avvisa_apertura(sheet: TrainingSheet, lettore: User, allievo: User) -> None:
+        from flask_babel import lazy_gettext as _l
+
+        from ..notification.models import NotificationPriority, NotificationType
+        from ..notification.services import NotificationService
+
+        NotificationService.create_notification(
+            user_id=lettore.id,
+            notification_type=NotificationType.SHEET_SHARED,
+            title=_l("Un allievo ti ha aperto una scheda"),
+            message=_l(
+                "%(allievo)s ti fa leggere «%(scheda)s»: vedi le sue sedute e "
+                "come procede.",
+                allievo=allievo.username,
+                scheda=sheet.name,
+            ),
+            priority=NotificationPriority.NORMAL,
+            action_url=f"/schede/{sheet.id}",
+            action_text=_l("Apri la scheda"),
+            related_entities={"sheet_id": sheet.id},
+        )
+
+    @staticmethod
+    def _avvisa_abbandono(sheet: TrainingSheet, lettore: User) -> None:
+        from flask_babel import lazy_gettext as _l
+
+        from ..notification.models import NotificationPriority, NotificationType
+        from ..notification.services import NotificationService
+
+        NotificationService.create_notification(
+            user_id=sheet.owner_id,
+            notification_type=NotificationType.SHEET_READER_LEFT,
+            title=_l("Un istruttore ha smesso di seguirti"),
+            message=_l(
+                "%(istruttore)s non legge più «%(scheda)s».",
+                istruttore=lettore.username,
+                scheda=sheet.name,
+            ),
+            priority=NotificationPriority.LOW,
+            action_url=f"/schede/{sheet.id}/lettori",
+            action_text=_l("Chi la legge"),
+            related_entities={"sheet_id": sheet.id},
+        )
 
     # ────────────────────────────────────────────────────────────────────
     # Convalide

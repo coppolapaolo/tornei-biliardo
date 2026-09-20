@@ -633,9 +633,21 @@ def test_la_scheda_di_un_altro_non_si_tocca(db_session):
 
 
 def test_un_lettore_legge_e_non_scrive(db_session):
-    """Il legame è allievo–scheda–istruttore, e vale subito (D11, D18)."""
+    """Il legame è allievo–scheda–istruttore, e vale subito (D11, D18).
+
+    Il grant serve dall'ADR-069: una scheda si apre a un **istruttore**, e il
+    controllo sta nel servizio. Quando questo test è nato il ruolo non esisteva
+    ancora, e chiunque poteva essere aggiunto come lettore.
+    """
+    from models.user.role_enum import GrantableRole
+    from models.user.role_grant_service import RoleGrantService
+
     owner = _user(db_session)
     istruttore = _user(db_session)
+    admin = _user(db_session)
+    admin.role = UserRole.ADMIN.value
+    db_session.flush()
+    RoleGrantService.grant(istruttore.id, GrantableRole.INSTRUCTOR, admin)
     sheet = _scheda_ronin(db_session, owner)
 
     TrainingSheetService.add_reader(sheet.id, istruttore.id, owner)

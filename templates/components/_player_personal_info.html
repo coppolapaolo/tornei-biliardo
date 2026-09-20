@@ -47,6 +47,11 @@
         <a class="btn btn-sm btn-outline-info" href="{{ url_for('player.privacy_settings') }}">
             <i class="fas fa-lock"></i> {{ _("Privacy") }}
         </a>
+        {% if feature_visible('player.roles') %}
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('player.roles') }}">
+            <i class="fas fa-chalkboard-user"></i> {{ _("Ruoli") }}
+        </a>
+        {% endif %}
         <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
             data-bs-target="#changePasswordModal">
             <i class="fas fa-key"></i> {{ _("Cambia password") }}

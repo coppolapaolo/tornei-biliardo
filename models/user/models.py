@@ -73,6 +73,14 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     first_name = db.Column(EncryptedString(100), nullable=True)
     last_name = db.Column(EncryptedString(100), nullable=True)
 
+    # La scuola o l'associazione di chi insegna (ADR-069). Facoltativa, e
+    # **non cifrata** al contrario di telefono e anagrafica: è il contrario di
+    # un dato da proteggere — chi la scrive lo fa per farsi trovare da un
+    # allievo che sta scegliendo a chi aprire la propria scheda. Sta sulla
+    # persona e non sulla richiesta di ruolo perché cambia senza che il ruolo
+    # cambi, e a correggerla dev'essere l'interessato.
+    organization = db.Column(db.String(120), nullable=True)
+
     # Rating systems (player skill metrics)
     elo_rating = db.Column(db.Integer, nullable=True)  # Elo rating
 
@@ -308,6 +316,22 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
         from .role_grant_service import RoleGrantService
 
         return RoleGrantService.has_role(self.id, GrantableRole.EXAMINER)
+
+    @property
+    def is_instructor(self) -> bool:
+        """True se l'utente insegna: può essere seguito dagli allievi (ADR-069).
+
+        **Non** è vero d'ufficio per l'admin, al contrario di ``is_examiner``.
+        Questa property decide chi compare nella ricerca di un allievo — spesso
+        minorenne — che sceglie a chi aprire la sua scheda: col bypass ci
+        finirebbero tutti gli amministratori della piattaforma, e il consenso
+        si dà a una persona, non a chi amministra il sito. L'admin che deve
+        davvero insegnare si concede il grant come chiunque altro.
+        """
+        from .role_enum import GrantableRole
+        from .role_grant_service import RoleGrantService
+
+        return RoleGrantService.has_role(self.id, GrantableRole.INSTRUCTOR)
 
     @property
     def is_beta_tester(self) -> bool:

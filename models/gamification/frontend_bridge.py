@@ -348,6 +348,13 @@ class GamificationFrontendBridge:
                 "puoi chiedere di comporre esami e certificarli tu."
             ),
         },
+        "request_instructor": {
+            "name": "Diventa istruttore",
+            "description": (
+                "Se insegni, puoi farti riconoscere: "
+                "i tuoi allievi potranno farti leggere le loro schede."
+            ),
+        },
     }
 
     @staticmethod
@@ -391,6 +398,13 @@ class GamificationFrontendBridge:
             "description": (
                 "Ora puoi comporre esami e certificarli di persona. "
                 "Dichiara le tue disponibilità per farti trovare."
+            ),
+        },
+        "instructor": {
+            "name": "Sei un istruttore",
+            "description": (
+                "I tuoi allievi possono farti leggere le loro schede. "
+                "Finché non te ne aprono una, non vedi niente di loro."
             ),
         },
     }
@@ -496,11 +510,21 @@ def _i18n_nudge_anchor() -> None:
         "Hai macinato abbastanza esercizi: "
         "puoi chiedere di comporre esami e certificarli tu."
     )
+    _("Diventa istruttore")
+    _(
+        "Se insegni, puoi farti riconoscere: "
+        "i tuoi allievi potranno farti leggere le loro schede."
+    )
     # _ROLE_GRANTED_COPY (ADR-041): stessa ragione, stessa ancora.
     _("Sei un esaminatore")
     _(
         "Ora puoi comporre esami e certificarli di persona. "
         "Dichiara le tue disponibilità per farti trovare."
+    )
+    _("Sei un istruttore")
+    _(
+        "I tuoi allievi possono farti leggere le loro schede. "
+        "Finché non te ne aprono una, non vedi niente di loro."
     )
 
 

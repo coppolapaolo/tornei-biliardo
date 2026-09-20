@@ -168,6 +168,59 @@ def profile():
     )
 
 
+@player_bp.route("/ruoli")
+@login_required
+@player_only
+def roles():
+    """«I tuoi ruoli»: cosa sei, cosa puoi chiedere, cosa stai aspettando.
+
+    Una pagina sua e non un riquadro del profilo: il profilo racconta come si
+    gioca, questa dice che cosa si è. È anche il posto dove si diventa
+    istruttore, con lo stesso percorso di «Diventa esaminatore» (ADR-069).
+    """
+    from models.user.role_enum import GrantableRole
+    from models.user.role_grant_service import RoleGrantService
+    from models.user.roles_view import build_roles_view
+
+    user = db.session.get(User, current_user.id)
+    if user is None:
+        flash(_("Utente non trovato"), "danger")
+        return redirect(url_for("dashboard.dashboard"))
+
+    # La scuola si mostra a chi insegna o sta chiedendo di farlo: a chiunque
+    # altro sarebbe un campo senza risposta a una domanda che non si è fatto.
+    istruttore = GrantableRole.INSTRUCTOR
+    mostra_scuola = bool(
+        user.organization
+        or RoleGrantService.has_role(user.id, istruttore)
+        or RoleGrantService.get_pending_request(user.id, istruttore)
+    )
+
+    return render_template(
+        "player/roles.html",
+        user=user,
+        righe=build_roles_view(user),
+        mostra_scuola=mostra_scuola,
+    )
+
+
+@player_bp.route("/ruoli/scuola", methods=["POST"])
+@login_required
+@player_only
+def save_organization():
+    """Salva (o cancella) la scuola o l'associazione di chi insegna."""
+    scuola = (request.form.get("organization") or "").strip()[:120]
+
+    return handle_service_action(
+        action=lambda: UserService.update_user(
+            current_user.id, organization=scuola or None
+        ),
+        redirect_url=url_for("player.roles"),
+        success_message=_("Salvato."),
+        error_prefix=None,
+    )
+
+
 @player_bp.route("/profile/<int:user_id>")
 def view_profile(user_id):
     """View another player's public profile with privacy controls."""

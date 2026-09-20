@@ -62,6 +62,16 @@ GRANT_POLICY: Dict[GrantableRole, GrantPolicy] = {
         self_propagating=True,  # un esaminatore concede esaminatore
         request_feature_code="request_examiner",
     ),
+    GrantableRole.INSTRUCTOR: GrantPolicy(
+        # Propagante come l'esaminatore, e per una ragione in più: chi insegna
+        # sa chi insegna, mentre l'amministratore di una piattaforma nazionale
+        # non ha modo di saperlo. La preoccupazione che ferma il beta tester
+        # qui non si pone — quello concede di **vedere** cose che gli altri non
+        # vedono, questo non concede niente: rende trovabili, e ogni sguardo
+        # dentro una scheda lo apre l'allievo, una scheda per volta (ADR-069).
+        self_propagating=True,
+        request_feature_code="request_instructor",
+    ),
     GrantableRole.BETA_TESTER: GrantPolicy(
         # **Non** propagante, al contrario dell'esaminatore. La differenza non
         # e' di comodita': l'esaminatore concede un lavoro da fare, il beta
@@ -547,7 +557,7 @@ class RoleGrantService:
     # Notifiche (best-effort: non devono mai bloccare l'operazione)
     # ────────────────────────────────────────────────────────────────────
     @staticmethod
-    def _role_label(role: GrantableRole) -> Any:
+    def role_label(role: GrantableRole) -> Any:
         from flask_babel import lazy_gettext as _l
 
         # Senza una voce qui la notifica direbbe «Hai ottenuto il ruolo di
@@ -556,6 +566,7 @@ class RoleGrantService:
         # si compongono nella lingua del destinatario (ADR-062).
         labels = {
             GrantableRole.EXAMINER: _l("Esaminatore"),
+            GrantableRole.INSTRUCTOR: _l("Istruttore"),
             GrantableRole.BETA_TESTER: _l("Beta tester"),
         }
         return labels.get(role, role.value)
@@ -591,7 +602,7 @@ class RoleGrantService:
             message=_l(
                 "%(user)s chiede il ruolo di %(role)s.",
                 user=requester.username,
-                role=RoleGrantService._role_label(
+                role=RoleGrantService.role_label(
                     RoleGrantService.parse_role(request.role)
                 ),
             ),
@@ -607,7 +618,7 @@ class RoleGrantService:
         from flask_babel import lazy_gettext as _l
         from models.notification.models import NotificationPriority, NotificationType
 
-        role_label = RoleGrantService._role_label(
+        role_label = RoleGrantService.role_label(
             RoleGrantService.parse_role(request.role)
         )
         if approve:
@@ -644,7 +655,7 @@ class RoleGrantService:
             message=_l(
                 "La richiesta per il ruolo di %(role)s è stata presa in carico "
                 "da un altro titolare.",
-                role=RoleGrantService._role_label(
+                role=RoleGrantService.role_label(
                     RoleGrantService.parse_role(request.role)
                 ),
             ),
@@ -662,7 +673,7 @@ class RoleGrantService:
             title=_l("Nuovo ruolo"),
             message=_l(
                 "Hai ottenuto il ruolo di %(role)s.",
-                role=RoleGrantService._role_label(role),
+                role=RoleGrantService.role_label(role),
             ),
             priority=NotificationPriority.HIGH,
         )
