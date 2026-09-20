@@ -178,9 +178,9 @@
     <div class="c7-empty__ico"><i class="fas fa-bullseye"></i></div>
     <h2 class="c7-empty__title">{{ _("Nessuna prova") }}</h2>
     <p class="c7-empty__text">{{ _("Nessuna prova di esercizio nel periodo scelto.") }}</p>
-    {% if feature_visible('challenge.challenge_catalog') %}
+    {% if feature_visible('challenge.today') %}
     <div class="c7-empty__actions">
-      <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-primary">{{ _("Vai agli esercizi") }}</a>
+      <a href="{{ url_for('challenge.today') }}" class="btn btn-primary">{{ _("Vai agli esercizi") }}</a>
     </div>
     {% endif %}
   </div>

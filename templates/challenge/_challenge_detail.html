@@ -4,12 +4,13 @@
    Prototipo 9b, seconda schermata. Usato dalla pagina di dettaglio e dalla
    classifica challenge di gara.
 
-   Nota: `challenge.min_score` / `max_score` **non esistono sul modello** — le
-   card che stampavano "{min}-{max} punti" mostravano quindi "- punti", e la
-   percentuale calcolata su `max_score` faceva errore di rendering. Una
-   challenge numerica non dichiara un massimo: si mostra il punteggio, non una
-   frazione.
+   `challenge.max_score` è **facoltativo** (e `min_score` non esiste): dove
+   manca si mostra il punteggio, non una frazione.
+
+   Le etichette — livello, abilità, gesti, tipo — vengono da
+   `challenge/_exercise_bits.html`, la stessa fonte di «Oggi» e del catalogo.
 #}
+{% import "challenge/_exercise_bits.html" as ex with context %}
 {% set stats = challenge.get_statistics() %}
 
 <div class="c7-stack">
@@ -38,15 +39,27 @@
     </div>
     {% endif %}
 
-    <span class="c7-state {{ 'c7-state--info' if challenge.pass_fail_only else 'c7-state--muted' }}"
-          style="position:absolute;bottom:12px;left:12px">
-      {{ _('Riuscita o no') if challenge.pass_fail_only else _('A punteggio') }}
-    </span>
   </div>
+
+  {# ---------- Che cosa allena, quanto è difficile, come si registra ---------- #}
+  {{ ex.tags(challenge, with_type=true) }}
+  {% if challenge.family or challenge.cue_ball_reset is not none or challenge.variants %}
+  <div class="c7-facts" style="margin-top:0">
+    {% if challenge.family %}<span class="c7-facts__item c7-facts__item--plain">
+      {%- if challenge.family_step %}{{ _("%(family)s · passo %(step)s", family=challenge.family, step=challenge.family_step) }}{% else %}{{ challenge.family }}{% endif -%}
+    </span>{% endif %}
+    {% if challenge.cue_ball_reset is not none %}<span class="c7-facts__item c7-facts__item--plain">
+      {{- _("la bianca si rimette a ogni tiro") if challenge.cue_ball_reset else _("la bianca resta dove si ferma") -}}
+    </span>{% endif %}
+    {% if challenge.variants %}<span class="c7-facts__item c7-facts__item--plain">
+      {{- _("varianti: %(labels)s", labels=challenge.variants|map(attribute='label')|join(' · ')) -}}
+    </span>{% endif %}
+  </div>
+  {% endif %}
 
   {# ---------- Istruzioni (card scura del prototipo) ---------- #}
   <div class="c7-card c7-card--accent">
-    <div class="c7-kicker">{{ _("Istruzioni") }}</div>
+    <div class="c7-kicker">{{ _("Come si fa") }}</div>
     <p class="mb-0" style="margin-top:10px;font-size:15px;font-weight:600;line-height:1.5">
       {{ challenge.description }}
     </p>

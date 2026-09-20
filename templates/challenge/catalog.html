@@ -1,220 +1,142 @@
 {% extends "base.html" %}
+{% import "challenge/_exercise_bits.html" as ex with context %}
 
-{% block title %}{{ _("Esercizi") }}{% endblock %}
+{# templates/challenge/catalog.html — 7c
+   Il catalogo che si filtra (canvas «TPA ed esercizi», artboard «A · Catalogo
+   che si filtra»). Sta dietro «Oggi», che è la porta d'ingresso (D3).
 
-{# Testata: si riempiono i blocchi del guscio, non se ne disegna una seconda
-   dentro `content`. Sovrascrivere `page_head` per intero farebbe perdere il
-   link indietro e l'avatar che base.html ci mette per il mobile. #}
-{% block page_title %}{{ _("Esercizi") }}{% endblock %}
-{% block page_sub %}{{ _("Esercizi di abilità: provaci, registra il punteggio, migliora.") }}{% endblock %}
+   I filtri sono **collegamenti**, non JavaScript: ogni pillola è l'indirizzo
+   del catalogo con quella voce accesa (o spenta, se lo era già), quindi un
+   filtro si può mandare a qualcuno, il tasto indietro lo disfa, e senza JS
+   funziona tutto. Il JS fa solo due cose: mostra una riga di pillole per volta
+   e cerca nel testo delle card già a schermo.
+
+   `f` è il `CatalogFilter`; `f.to_args(...)` dà la query string con una voce
+   cambiata. #}
+{% set f = catalog.filter %}
+{% macro filtro(etichetta, accesa) -%}
+<a class="c7-chip{{ ' is-on' if accesa }}" href="{{ url_for('challenge.challenge_catalog', **kwargs) }}"
+   {% if accesa %}aria-current="true"{% endif %}>{{ etichetta }}</a>
+{%- endmacro %}
+
+{% block title %}{{ _("Catalogo degli esercizi") }}{% endblock %}
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('challenge.today') }}"
+   aria-label="{{ _('Torna a Esercizi') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Catalogo") }}{% endblock %}
+{% block page_sub %}
+{{- ngettext("%(num)s esercizio", "%(num)s esercizi", catalog.total) -}}
+{%- if catalog.abilita_in_use %} · {{ ngettext("%(num)s abilità", "%(num)s abilità", catalog.abilita_in_use) }}{% endif -%}
+{% endblock %}
 {% block page_actions %}
     {# Ruolo esaminatore (ADR-041): il punto d'ingresso vive qui, nelle pagine
-       dei drill, non nel profilo — è qui che sta chi si allena. Chi il ruolo
-       ce l'ha già vede invece la coda delle richieste da processare. #}
-    {% if current_user.is_authenticated and current_user.is_examiner
-          and feature_visible('roles.role_requests') %}
+       degli esercizi — è qui che sta chi si allena. #}
+    {% if current_user.is_examiner and feature_visible('roles.role_requests') %}
     <a href="{{ url_for('roles.role_requests') }}" class="btn btn-outline-info btn-sm">{{ _("Richieste ruolo esaminatore") }}</a>
-    {% elif current_user.is_authenticated
-            and current_user.can_access('request_examiner')
-            and feature_visible('roles.request_role_form') %}
+    {% elif current_user.can_access('request_examiner') and feature_visible('roles.request_role_form') %}
     <a href="{{ url_for('roles.request_role_form', role='examiner') }}" class="btn btn-outline-primary btn-sm">{{ _("Diventa Esaminatore") }}</a>
     {% endif %}
-    {% if current_user.is_authenticated and current_user.can_access('create_challenge')
-          and feature_visible('challenge.create_challenge') %}
+    {% if current_user.can_access('create_challenge') and feature_visible('challenge.create_challenge') %}
     <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success btn-sm">{{ _("Nuovo esercizio") }}</a>
     {% endif %}
 {% endblock %}
 
 {% block content %}
-{# La ricerca sta sopra le schede e vale per tutte e tre: filtrare solo la
-   scheda aperta vorrebbe dire cercare tre volte la stessa parola. Il filtro e'
-   client-side come nella lista utenti — le card sono gia' tutte nel documento,
-   e una chiamata al server per ogni tasto premuto non aggiungerebbe niente. #}
-<div style="margin-bottom: 16px;">
-    <label class="visually-hidden" for="challengeSearch">{{ _("Cerca fra gli esercizi") }}</label>
-    <input type="search" id="challengeSearch" class="form-control" data-help="challenge-ricerca"
-           placeholder="{{ _('Cerca nel titolo o nelle istruzioni…') }}"
+<div class="c7-stack" style="max-width:720px" data-exercise-list>
+
+  <label class="c7-search" data-help="challenge-ricerca">
+    <i class="fas fa-magnifying-glass"></i>
+    <input type="search" data-exercise-search placeholder="{{ _('Cerca un esercizio') }}"
            aria-label="{{ _('Cerca fra gli esercizi') }}">
-    <div class="c7-kicker d-none" id="challengeSearchEmpty" style="margin-top: 8px;">
-        {{ _("Nessun esercizio corrisponde alla ricerca.") }}
-    </div>
-</div>
+  </label>
 
-<nav class="nav-tabs nav" id="challengeTabs" role="tablist" style="margin-bottom: 20px;">
-    <button class="nav-link active" id="all-tab" data-bs-toggle="pill" data-bs-target="#all-challenges" type="button" role="tab">
-        {{ _("Tutti") }} <span class="c7-num" style="margin-left: 6px;" data-count-for="all-challenges">{{ all_challenges|length }}</span>
-    </button>
-    {% if current_user.is_authenticated and current_user.can_access('create_challenge')
-          and feature_visible('challenge.create_challenge') %}
-    <button class="nav-link" id="my-tab" data-bs-toggle="pill" data-bs-target="#my-challenges" type="button" role="tab">
-        {{ _("I miei") }} <span class="c7-num" style="margin-left: 6px;" data-count-for="my-challenges">{{ my_challenges|length }}</span>
-    </button>
+  {# ── Tutti · I miei · Preferiti ────────────────────────────────────── #}
+  <nav class="c7-seg" aria-label="{{ _('Quali esercizi') }}">
+    <a class="c7-seg__item{{ ' is-on' if f.scope.value == 'tutti' }}" href="{{ url_for('challenge.challenge_catalog', **f.to_args(vista=none)) }}">{{ _("Tutti") }}&nbsp;<span class="c7-num">{{ catalog.counts['tutti'] }}</span></a>
+    {% if current_user.can_access('create_challenge') and feature_visible('challenge.create_challenge') %}
+    <a class="c7-seg__item{{ ' is-on' if f.scope.value == 'miei' }}" href="{{ url_for('challenge.challenge_catalog', **f.to_args(vista='miei')) }}">{{ _("I miei") }}&nbsp;<span class="c7-num">{{ catalog.counts['miei'] }}</span></a>
     {% endif %}
-    <button class="nav-link" id="favorites-tab" data-bs-toggle="pill" data-bs-target="#favorite-challenges" type="button" role="tab">
-        {{ _("Preferiti") }} <span class="c7-num" style="margin-left: 6px;" data-count-for="favorite-challenges">{{ favorite_challenges|length }}</span>
-    </button>
-</nav>
+    <a class="c7-seg__item{{ ' is-on' if f.scope.value == 'preferiti' }}" href="{{ url_for('challenge.challenge_catalog', **f.to_args(vista='preferiti')) }}">{{ _("Preferiti") }}&nbsp;<span class="c7-num">{{ catalog.counts['preferiti'] }}</span></a>
+  </nav>
 
-<div class="tab-content" id="challengeTabContent">
-    <div class="tab-pane fade show active" id="all-challenges" role="tabpanel">
-        {% include "challenge/_challenge_grid.html" with context %}
+  {# ── I quattro assi: una riga di pillole per volta ─────────────────── #}
+  {% set asse_aperto = 'gesto' if f.gesto else ('livello' if f.level else ('voto' if f.min_rating else 'abilita')) %}
+  <div data-axes data-open="{{ asse_aperto }}" data-help="esercizi-filtri">
+    <div class="c7-seg" role="tablist" style="margin-bottom:10px">
+      {% for chiave, etichetta, acceso in [
+           ('abilita', _("Abilità"), f.abilita),
+           ('gesto', _("Gesto"), f.gesto),
+           ('livello', _("Livello"), f.level),
+           ('voto', _("Voto"), f.min_rating)] %}
+      <button type="button" class="c7-seg__item{{ ' is-on' if chiave == asse_aperto }}" data-axis-tab="{{ chiave }}" role="tab">
+        {{ etichetta }}{% if acceso %}&nbsp;<i class="fas fa-circle" style="font-size:6px"></i>{% endif %}
+      </button>
+      {% endfor %}
     </div>
 
-    {% if current_user.is_authenticated and current_user.can_access('create_challenge')
-          and feature_visible('challenge.create_challenge') %}
-    <div class="tab-pane fade" id="my-challenges" role="tabpanel">
-        {% if my_challenges %}
-        <div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
-            {% for challenge in my_challenges %}
-            {% include "challenge/_challenge_card.html" %}
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="c7-empty">
-            <div class="c7-empty__ico"><i class="fas fa-bullseye"></i></div>
-            <h2 class="c7-empty__title">{{ _("Non hai ancora creato esercizi") }}</h2>
-            <p class="c7-empty__text">{{ _("Un esercizio è una prova ripetibile: una foto del tavolo, le regole, il punteggio.") }}</p>
-            <div class="c7-empty__actions">
-                <a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success">{{ _("Crea il primo") }}</a>
-            </div>
-        </div>
-        {% endif %}
+    <div class="c7-hscroll" data-axis="abilita">
+      {{ filtro(_("Tutte"), not f.abilita, **f.to_args(abilita=none)) }}
+      {% for voce in abilita_choices %}{{ filtro(voce.display_name, f.abilita == voce, **f.to_args(abilita=(none if f.abilita == voce else voce.value))) }}{% endfor %}
+    </div>
+    <div class="c7-hscroll" data-axis="gesto">
+      {{ filtro(_("Tutti"), not f.gesto, **f.to_args(gesto=none)) }}
+      {% for voce in gesto_choices %}{{ filtro(voce.display_name, f.gesto == voce, **f.to_args(gesto=(none if f.gesto == voce else voce.value))) }}{% endfor %}
+    </div>
+    <div class="c7-hscroll" data-axis="livello">
+      {{ filtro(_("Tutti"), not f.level, **f.to_args(livello=none)) }}
+      {% for n in range(1, 6) %}{{ filtro(_("Liv. %(n)s", n=n), f.level == n, **f.to_args(livello=(none if f.level == n else n))) }}{% endfor %}
+    </div>
+    <div class="c7-hscroll" data-axis="voto">
+      {{ filtro(_("Tutti"), not f.min_rating, **f.to_args(voto=none)) }}
+      {% for n in rating_floors %}{{ filtro(_("da %(n)s in su", n=n), f.min_rating == n, **f.to_args(voto=(none if f.min_rating == n else n))) }}{% endfor %}
+    </div>
+  </div>
+
+  {# ── Quanti, e in che ordine ───────────────────────────────────────── #}
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+    <span class="c7-label flex-fill" data-exercise-count
+          data-template-one="{{ _('1 esercizio') }}" data-template-many="{{ _('{n} esercizi') }}">
+      {{- ngettext("%(num)s esercizio", "%(num)s esercizi", catalog.cards|length) -}}
+    </span>
+    <div class="c7-chips">
+      {% for valore, etichetta in [('provati', _("I più provati")), ('voto', _("Voto")), ('nuovi', _("I più nuovi"))] %}
+      <a class="c7-chip{{ ' is-on' if f.sort.value == valore }}" href="{{ url_for('challenge.challenge_catalog', **f.to_args(ordine=(none if valore == 'provati' else valore))) }}">{{ etichetta }}</a>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% for card in catalog.cards %}{{ ex.card(card) }}{% endfor %}
+
+  <div class="c7-empty{{ ' d-none' if catalog.cards }}" data-exercise-empty>
+    <div class="c7-empty__ico"><i class="fas fa-bullseye"></i></div>
+    {% if catalog.total == 0 %}
+    <h2 class="c7-empty__title">{{ _("Catalogo vuoto") }}</h2>
+    <p class="c7-empty__text">{{ _("Non ci sono ancora esercizi da provare.") }}</p>
+    {% elif f.scope.value == 'preferiti' and not f.is_filtering %}
+    <h2 class="c7-empty__title">{{ _("Nessun preferito") }}</h2>
+    <p class="c7-empty__text">{{ _("Tocca il cuore su un esercizio per ritrovarlo qui.") }}</p>
+    {% elif f.scope.value == 'miei' and not f.is_filtering %}
+    <h2 class="c7-empty__title">{{ _("Non hai ancora creato esercizi") }}</h2>
+    <p class="c7-empty__text">{{ _("Un esercizio è una prova ripetibile: la disposizione, le regole, che cosa allena.") }}</p>
+    {% else %}
+    <h2 class="c7-empty__title">{{ _("Nessun esercizio così") }}</h2>
+    <p class="c7-empty__text">{{ _("Molti esercizi non hanno ancora abilità, gesto e livello: li scrive chi li ha creati.") }}</p>
+    <div class="c7-empty__actions">
+      <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-secondary">{{ _("Togli i filtri") }}</a>
     </div>
     {% endif %}
-
-    <div class="tab-pane fade" id="favorite-challenges" role="tabpanel">
-        {% if favorite_challenges %}
-        <div class="c7-grid" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));">
-            {% for challenge in favorite_challenges %}
-            {% include "challenge/_challenge_card.html" %}
-            {% endfor %}
-        </div>
-        {% else %}
-        <div class="c7-empty">
-            <div class="c7-empty__ico"><i class="far fa-heart"></i></div>
-            <h2 class="c7-empty__title">{{ _("Nessun preferito") }}</h2>
-            <p class="c7-empty__text">{{ _("Tocca il cuore su un esercizio per ritrovarlo qui.") }}</p>
-        </div>
-        {% endif %}
-    </div>
+  </div>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
-    // Gli indirizzi li scrive il server, in `data-*` sulla card: erano stringhe
-    // costruite a mano su `/challenge/<id>/...` mentre il blueprint e' montato
-    // su **`/challenges/`** — click sulla card, preferiti ed elimina
-    // rispondevano tutti 404, e l'unico segnale era un "errore sconosciuto".
-    const i18n = {
-        favAdd: {{ _("Aggiungi ai preferiti")|tojson }},
-        favRemove: {{ _("Rimuovi dai preferiti")|tojson }},
-        favError: {{ _("Non è stato possibile aggiornare i preferiti.")|tojson }},
-        netError: {{ _("Errore di rete: riprova.")|tojson }},
-        deleteConfirm: {{ _("Confermi di voler eliminare questo esercizio? Non si torna indietro.")|tojson }},
-        deleteError: {{ _("Non è stato possibile eliminare l'esercizio.")|tojson }}
-    };
-
-    // Ricerca nel catalogo: nasconde le card che non contengono il termine, in
-    // tutte e tre le schede, e aggiorna i contatori — un contatore che resta
-    // sul totale mentre a schermo ci sono due card e' peggio di nessuno.
-    function filterChallenges() {
-        const input = document.getElementById('challengeSearch');
-        if (!input) return;
-        const term = (input.value || '').trim().toLowerCase();
-        let total = 0;
-
-        document.querySelectorAll('.tab-pane').forEach(function (pane) {
-            let visible = 0;
-            pane.querySelectorAll('.challenge-card').forEach(function (card) {
-                const show = !term || (card.dataset.search || '').indexOf(term) !== -1;
-                card.classList.toggle('d-none', !show);
-                if (show) visible++;
-            });
-            const counter = document.querySelector('[data-count-for="' + pane.id + '"]');
-            if (counter) counter.textContent = visible;
-            total += visible;
-        });
-
-        const empty = document.getElementById('challengeSearchEmpty');
-        if (empty) empty.classList.toggle('d-none', !term || total > 0);
-    }
-
-    document.addEventListener('DOMContentLoaded', function () {
-        const search = document.getElementById('challengeSearch');
-        if (search) search.addEventListener('input', filterChallenges);
-
-        document.addEventListener('click', function (e) {
-            const favBtn = e.target.closest('.favorite-btn');
-            if (favBtn) {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleFavorite(favBtn);
-                return;
-            }
-
-            const deleteBtn = e.target.closest('.delete-challenge-btn');
-            if (deleteBtn) {
-                e.preventDefault();
-                e.stopPropagation();
-                deleteChallenge(deleteBtn.dataset.deleteUrl);
-                return;
-            }
-
-            // Click sulla card (fuori dai comandi): apre il dettaglio.
-            if (e.target.closest('.btn') || e.target.closest('.dropdown')) return;
-            const card = e.target.closest('.challenge-card');
-            if (card && card.dataset.challengeUrl) {
-                window.location.href = card.dataset.challengeUrl;
-            }
-        });
-    });
-
-    function toggleFavorite(btn) {
-        fetch(btn.dataset.favoriteUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() }
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const icon = btn.querySelector('i');
-                    if (data.is_favorite) {
-                        icon.className = 'fas fa-heart';
-                        btn.style.color = 'var(--c7-err)';
-                        btn.title = i18n.favRemove;
-                    } else {
-                        icon.className = 'far fa-heart';
-                        btn.style.color = '';
-                        btn.title = i18n.favAdd;
-                    }
-                } else {
-                    showError(i18n.favError);
-                }
-            })
-            .catch(error => {
-                console.error('Error toggling favorite:', error);
-                showError(i18n.netError);
-            });
-    }
-
-    function deleteChallenge(url) {
-        showConfirm(i18n.deleteConfirm, () => {
-            fetch(url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken() }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        location.reload();
-                    } else {
-                        showError(i18n.deleteError + (data.error ? ' ' + data.error : ''));
-                    }
-                })
-                .catch(error => {
-                    console.error('Error deleting challenge:', error);
-                    showError(i18n.netError);
-                });
-        });
-    }
+  window.challengeCatalogMessages = {
+    favAdd: {{ _("Aggiungi ai preferiti")|tojson }},
+    favRemove: {{ _("Rimuovi dai preferiti")|tojson }},
+    favError: {{ _("Non è stato possibile aggiornare i preferiti.")|tojson }}
+  };
 </script>
+<script src="{{ url_for('static', filename='js/challenge-catalog.js') }}?v={{ config.ASSET_VERSION }}"></script>
 {% endblock %}

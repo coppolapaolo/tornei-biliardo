@@ -480,6 +480,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     #
     # Allenamento: lo percorre anche un director, dirigere non toglie il
     # diritto di allenarsi.
+    # «Oggi»: la porta d'ingresso degli esercizi, col catalogo dietro.
+    "challenge.today": {"player", "director"},
     "challenge.challenge_catalog": {"player", "director"},
     "challenge.challenge_detail": {"player", "director"},
     "challenge.training_session": {"player", "director"},

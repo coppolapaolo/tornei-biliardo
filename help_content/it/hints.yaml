@@ -495,6 +495,46 @@ hints:
     page: challenge
     section: crearle
 
+  - id: esercizi.riprendi
+    label: "Riprendi da qui"
+    short: "L'ultimo esercizio su cui ti sei allenato, con come stava andando. «Comincia» apre subito la schermata delle prove."
+    anchor: esercizi-riprendi
+    screens: [challenge.today]
+    page: challenge
+    section: catalogo
+
+  - id: esercizi.apri_catalogo
+    label: "Apri il catalogo"
+    short: "Tutti gli esercizi, da filtrare per abilità, gesto, livello e voto."
+    anchor: esercizi-apri-catalogo
+    screens: [challenge.today]
+    page: challenge
+    section: catalogo
+
+  - id: esercizi.filtri
+    label: "Filtri"
+    short: "Scegli un asse — abilità, gesto, livello, voto — e tocca una voce: i filtri si sommano. Ritocca la voce accesa per spegnerla. Un esercizio compare solo se chi l'ha creato ha scritto quelle informazioni."
+    anchor: esercizi-filtri
+    screens: [challenge.challenge_catalog]
+    page: challenge
+    section: catalogo
+
+  - id: esercizio.varianti
+    label: "Varianti"
+    short: "Lo stesso esercizio da destra e da sinistra, o dalle posizioni A e B: i tuoi risultati restano separati, perché la differenza fra i due lati è la cosa da sapere."
+    anchor: esercizio-varianti
+    screens: [challenge.challenge_detail]
+    page: challenge
+    section: catalogo
+
+  - id: allenamento.variante
+    label: "Da che parte"
+    short: "Scegli la variante prima di tirare: resta accesa per tutte le prove che registri. Se non la dici, la prova vale per l'esercizio in generale."
+    anchor: allenamento-variante
+    screens: [challenge.training_session]
+    page: challenge
+    section: catalogo
+
   - id: challenge.abilita
     label: "Cosa allena"
     short: "Le abilità che l'esercizio mette alla prova, al più tre: è da qui che il catalogo lo fa trovare a chi cerca «qualcosa sulla posizione». Se non lo sai, lascia vuoto."

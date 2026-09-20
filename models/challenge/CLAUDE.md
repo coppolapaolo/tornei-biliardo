@@ -243,6 +243,34 @@ sta nel servizio, non nel JavaScript: una POST scritta a mano non la salta.
   `_refuse_meaning_change_from_builder` gli fa salvare solo il disegno quando ci
   sono prove. Senza, sarebbe la porta sul retro della #252.
 
+### «Oggi», il catalogo che si filtra, la scheda (fase 4c)
+
+`/challenges/` è **«Oggi»** (`challenge.today`), la porta d'ingresso: riprendi
+l'ultimo esercizio, i preferiti, i più provati. Il catalogo sta dietro, su
+`/challenges/catalog` (`challenge.challenge_catalog`). L'admin non si allena:
+«Oggi» lo manda al catalogo. «Oggi» crescerà da sola: scheda in corso (fase 6),
+obiettivi e consigli (fase 7) — niente segnaposto vuoti nel frattempo.
+
+Le due viste, e la card della scheda, vengono da
+`models/challenge/catalog_view.py` (`build_today`, `build_catalog`,
+`build_card`, `variant_lines`): stessa forma di `models/exam/overview.py`. Un
+numero fisso di query qualunque sia la lunghezza del catalogo — la card di prima
+chiamava `get_statistics()` a ogni giro, cioè caricava tutte le prove di ogni
+esercizio per stampare due numeri.
+
+* **I filtri sono collegamenti**, non JavaScript: `CatalogFilter.from_args`
+  legge la query string (`abilita`, `gesto`, `livello`, `voto`, `ordine`,
+  `vista`), `to_args(gesto=None)` dà l'indirizzo con una voce cambiata — è così
+  che la pillola accesa, ritoccata, si spegne. Un valore ignoto vale «nessun
+  filtro», mai un errore.
+* La riga «Media 63% · ultime tre 89%» viene dalle **stesse due fonti** dello
+  storico (`TrainingHistoryService.get_drill_attempts`): catalogo e gara.
+* I pezzi con cui un esercizio si presenta — etichette, voto e giocatori, riga
+  di chi guarda, card — stanno in `templates/challenge/_exercise_bits.html`.
+* La **variante** si sceglie nella schermata di allenamento (pillole «Da che
+  parte», con «senza dirlo» accesa) e viaggia con ogni prova; la scheda mostra
+  una riga per variante.
+
 ### ChallengeAttempt
 **Fields:** `challenge_id`, `user_id`, `score`, `passed`, `attempted_at`, `variant_id`
 

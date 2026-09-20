@@ -12,9 +12,9 @@
    qui sotto. #}
 {% block page_title %}{{ challenge.get_display_name() }}{% endblock %}
 {% block page_sub %}
-{%- if challenge.pass_fail_only %}{{ _("Esercizio riuscito o no") }}
-{%- elif challenge.max_score %}{{ _("Esercizio a punteggio · max %(max)s", max=challenge.max_score) }}
-{%- else %}{{ _("Esercizio a punteggio") }}{% endif %}
+{%- import "challenge/_exercise_bits.html" as ex with context -%}
+{%- if challenge.created_by %}{{ _("di %(who)s", who=challenge.created_by.username) }} · {% endif -%}
+{{ ex.social(card.popularity) }}
 {% endblock %}
 {% block page_actions %}
 <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
@@ -32,19 +32,41 @@
 
   <div class="c7-stack c7-sections">
 
-    {# ---------- Come sei andato tu ---------- #}
-    {% if user_best %}
-    <div class="c7-card">
-      <div class="c7-sechead mb-3"><h2>{{ _("Il tuo record") }}</h2></div>
-      {% if challenge.pass_fail_only %}
-      <span class="c7-state c7-state--{{ 'ok' if user_best.passed else 'muted' }}">
-        {{ _("Superata") if user_best.passed else _("Non ancora superata") }}
-      </span>
-      {% else %}
-      <div class="c7-num-xl">{{ user_best.score }}</div>
-      {% endif %}
-      <div class="c7-rows__sub" style="margin-top:6px">{{ user_best.attempted_at|date_local }}</div>
+    {# ---------- Come sei andato tu: tre numeri, come nell'artboard ---------- #}
+    {% set mine = card.mine %}
+    {% if mine.tried %}
+    {% if challenge.pass_fail_only %}
+    <div class="c7-kpis">
+      <div class="c7-card"><div class="c7-num-lg">{{ mine.passed_count }}</div><div class="c7-rows__sub">{{ _("Riuscite") }}</div></div>
+      <div class="c7-card"><div class="c7-num-lg">{{ mine.attempts }}</div><div class="c7-rows__sub">{{ _("Prove") }}</div></div>
     </div>
+    {% else %}
+    <div class="c7-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="c7-card"><div class="c7-num-lg">{{ mine.average_pct ~ '%' if mine.average_pct is not none else '—' }}</div><div class="c7-rows__sub">{{ _("Media") }}</div></div>
+      <div class="c7-card"><div class="c7-num-lg">{{ mine.recent_pct ~ '%' if mine.recent_pct is not none else '—' }}</div><div class="c7-rows__sub">{{ _("Ultime tre") }}</div></div>
+      <div class="c7-card"><div class="c7-num-lg">{{ mine.best if mine.best is not none else '—' }}</div>
+        <div class="c7-rows__sub">{% if challenge.max_score %}{{ _("Record, su %(max)s", max=challenge.max_score) }}{% else %}{{ _("Record") }}{% endif %}</div></div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+    {# ---------- Destra e sinistra, separate ---------- #}
+    {% if variant_lines %}
+    <section class="c7-rows" data-help="esercizio-varianti">
+      {% for riga in variant_lines %}
+      <div class="c7-rows__row">
+        <div class="c7-rows__main">
+          <div class="c7-rows__title">{{ riga.label }}</div>
+          <div class="c7-rows__sub">
+            {%- if not riga.attempts %}{{ _("mai provata") }}
+            {%- elif challenge.pass_fail_only %}{{ ngettext("riuscita %(ok)s volta su %(num)s", "riuscita %(ok)s volte su %(num)s", riga.attempts, ok=riga.passed_count) }}
+            {%- else %}{{ ngettext("%(num)s prova", "%(num)s prove", riga.attempts) }}{% if riga.best is not none %} · {{ _("record %(best)s", best=riga.best) }}{% endif %}{% endif -%}
+          </div>
+        </div>
+        {% if riga.average_pct is not none %}<span class="c7-num" style="font-size:18px;font-weight:800">{{ riga.average_pct }}%</span>{% endif %}
+      </div>
+      {% endfor %}
+    </section>
     {% endif %}
 
     {# ---------- I tuoi tentativi ---------- #}

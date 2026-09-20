@@ -1,0 +1,76 @@
+{# templates/challenge/_exercise_bits.html — 7c
+   I pezzi con cui un esercizio si presenta in «Oggi», nel catalogo e nella sua
+   scheda (canvas «TPA ed esercizi», pagina 2). Una fonte sola: tre schermate
+   che scrivono «Liv. 2 · Posizione · draw» in tre modi diversi sono il modo in
+   cui un vocabolario smette di sembrare un vocabolario.
+
+   Ricevono una `ExerciseCard` di `models/challenge/catalog_view.py` — niente
+   query qui dentro, e nessun conto.
+
+   Uso:
+     {% import "challenge/_exercise_bits.html" as ex with context %}
+     {{ ex.card(card) }}
+#}
+{% import "components/_challenge_bits.html" as ch with context %}
+
+{# Livello, abilità, gesti: tre toni diversi perché sono tre cose diverse. #}
+{% macro tags(challenge, with_type=false) -%}
+<div class="c7-extags">
+  {%- if challenge.declared_level %}<span class="c7-extag c7-extag--lvl">{{ _("Liv. %(n)s", n=challenge.declared_level) }}</span>{% endif -%}
+  {%- for voce in challenge.abilita %}<span class="c7-extag c7-extag--cat">{{ voce.display_name }}</span>{% endfor -%}
+  {%- for voce in challenge.gesti %}<span class="c7-extag c7-extag--gesto">{{ voce.display_name }}</span>{% endfor -%}
+  {%- if with_type %}<span class="c7-extag">
+    {%- if challenge.pass_fail_only %}{{ _("Riuscito o no") }}
+    {%- elif challenge.max_score %}{{ _("A punteggio · su %(max)s", max=challenge.max_score) }}
+    {%- else %}{{ _("A punteggio") }}{% endif -%}
+  </span>{% endif -%}
+</div>
+{%- endmacro %}
+
+{# Voto e giocatori si leggono insieme: un 4,8 di tre persone pesa meno di un
+   4,5 di duecento. Senza voti si dice solo quanti l'hanno provato. #}
+{% macro social(popularity) -%}
+<span class="c7-exsocial">
+  {%- if popularity.has_rating %}<span class="c7-exsocial__vote"><i class="fas fa-star"></i>&nbsp;<span class="c7-num">{{ "%.1f"|format(popularity.rating_average)|replace(".", _(",")) }}</span></span> · {% endif -%}
+  {%- if popularity.players %}{{ ngettext("%(num)s giocatore", "%(num)s giocatori", popularity.players) }}
+  {%- else %}{{ _("ancora nessuno l'ha provato") }}{% endif -%}
+</span>
+{%- endmacro %}
+
+{% macro my_line(card) -%}
+{%- set mine = card.mine -%}
+{%- if not mine.tried %}{{ _("Mai provato") }}
+{%- elif card.challenge.pass_fail_only %}{{ ngettext("Riuscito %(ok)s volta su %(num)s", "Riuscito %(ok)s volte su %(num)s", mine.attempts, ok=mine.passed_count) }}
+{%- elif mine.average_pct is not none and mine.recent_pct is not none %}{{ _("Media %(avg)s%% · ultime tre %(recent)s%%", avg=mine.average_pct, recent=mine.recent_pct) }}
+{%- elif mine.best is not none and card.challenge.max_score %}{{ ngettext("Il tuo record %(best)s su %(max)s · %(num)s prova", "Il tuo record %(best)s su %(max)s · %(num)s prove", mine.attempts, best=mine.best, max=card.challenge.max_score) }}
+{%- elif mine.best is not none %}{{ ngettext("Il tuo record %(best)s · %(num)s prova", "Il tuo record %(best)s · %(num)s prove", mine.attempts, best=mine.best) }}
+{%- else %}{{ ngettext("%(num)s prova", "%(num)s prove", mine.attempts) }}{% endif -%}
+{%- endmacro %}
+
+{% macro favorite_button(card) -%}
+<button type="button" class="c7-iconbtn c7-exfav{{ ' is-on' if card.is_favorite }}" data-favorite
+        data-favorite-url="{{ url_for('challenge.toggle_favorite', challenge_id=card.challenge.id) }}"
+        aria-pressed="{{ 'true' if card.is_favorite else 'false' }}"
+        aria-label="{{ _('Rimuovi dai preferiti') if card.is_favorite else _('Aggiungi ai preferiti') }}">
+  <i class="{{ 'fas' if card.is_favorite else 'far' }} fa-heart"></i>
+</button>
+{%- endmacro %}
+
+{# La card: miniatura a sinistra, tutto il resto a destra. L'intera card porta
+   alla scheda; il cuore è l'unico comando dentro, e sta fuori dal link. #}
+{% macro card(card) -%}
+{%- set c = card.challenge -%}
+<article class="c7-card c7-ex" data-exercise
+         data-search="{{ (c.get_display_name() ~ ' ' ~ c.description ~ ' ' ~ (c.family or ''))|lower }}">
+  <a class="c7-ex__link" href="{{ url_for('challenge.challenge_detail', challenge_id=c.id) }}">
+    {{ ch.thumb(c, 72) }}
+    <span class="c7-ex__body">
+      <span class="c7-ex__title">{{ c.get_display_name() }}</span>
+      {{ tags(c) }}
+      <span class="c7-ex__line">{{ social(card.popularity) }}</span>
+      <span class="c7-ex__line">{{ my_line(card) }}</span>
+    </span>
+  </a>
+  {{ favorite_button(card) }}
+</article>
+{%- endmacro %}

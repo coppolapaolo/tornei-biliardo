@@ -199,7 +199,7 @@
     ============================================================ #}
 {% set nav_dashboard = current_user.is_authenticated %}
 {% set nav_venues    = feature_visible('admin.venue.venues_list') %}
-{% set nav_challenge = current_user.is_authenticated and current_user.can_access('do_challenge') and feature_visible('challenge.challenge_catalog') %}
+{% set nav_challenge = current_user.is_authenticated and current_user.can_access('do_challenge') and feature_visible('challenge.today') %}
 {% set nav_matches   = current_user.is_authenticated and not current_user.is_admin and current_user.can_access('create_match_direct') and feature_visible('individual_match.dashboard') %}
 {# Esami (ADR-042): due gate ortogonali, entrambi necessari — la progressione
    (`take_exam`) e la visibilità in produzione (ADR-028). #}
@@ -252,7 +252,7 @@
                 </a>
                 {% endif %}
                 {% if nav_challenge %}
-                <a href="{{ url_for('challenge.challenge_catalog') }}" class="{{ 'is-active' if ep.startswith('challenge.') }}">
+                <a href="{{ url_for('challenge.today') }}" class="{{ 'is-active' if ep.startswith('challenge.') }}">
                     <i class="fas fa-bullseye"></i>{{ _('Esercizi') }}
                 </a>
                 {% endif %}
@@ -547,7 +547,7 @@
         </a>
         {% endif %}
         {% if nav_challenge %}
-        <a href="{{ url_for('challenge.challenge_catalog') }}" class="{{ 'is-active' if ep.startswith('challenge.') }}">
+        <a href="{{ url_for('challenge.today') }}" class="{{ 'is-active' if ep.startswith('challenge.') }}">
             <i class="fas fa-bullseye"></i>{{ _('Esercizi') }}
         </a>
         {% endif %}

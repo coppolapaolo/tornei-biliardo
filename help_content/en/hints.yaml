@@ -530,6 +530,46 @@ hints:
   - challenge.edit_diagram
   page: challenge
   section: crearle
+- id: esercizi.riprendi
+  label: Pick up from here
+  short: 'The last drill you practised, with how it was going. «Start» opens the attempts screen straight away.'
+  anchor: esercizi-riprendi
+  screens:
+  - challenge.today
+  page: challenge
+  section: catalogo
+- id: esercizi.apri_catalogo
+  label: Open the catalogue
+  short: 'All the drills, to filter by skill, stroke, level and rating.'
+  anchor: esercizi-apri-catalogo
+  screens:
+  - challenge.today
+  page: challenge
+  section: catalogo
+- id: esercizi.filtri
+  label: Filters
+  short: 'Pick an axis — skill, stroke, level, rating — and tap an entry: filters add up. Tap the selected entry again to turn it off. A drill shows up only if its author filled in that information.'
+  anchor: esercizi-filtri
+  screens:
+  - challenge.challenge_catalog
+  page: challenge
+  section: catalogo
+- id: esercizio.varianti
+  label: Variants
+  short: 'The same drill from the right and from the left, or from positions A and B: your results stay separate, because the gap between the two sides is what you want to know.'
+  anchor: esercizio-varianti
+  screens:
+  - challenge.challenge_detail
+  page: challenge
+  section: catalogo
+- id: allenamento.variante
+  label: Which side
+  short: 'Pick the variant before shooting: it stays selected for every attempt you record. If you do not say, the attempt counts for the drill in general.'
+  anchor: allenamento-variante
+  screens:
+  - challenge.training_session
+  page: challenge
+  section: catalogo
 - id: challenge.abilita
   label: What it trains
   short: 'The skills the drill tests, three at most: this is how the catalogue lets people find it when they look for «something on position». If you are not sure, leave it empty.'

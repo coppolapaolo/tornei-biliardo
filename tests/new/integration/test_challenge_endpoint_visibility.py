@@ -38,6 +38,7 @@ PASSWORD = "prova123"
 #: Le superfici dell'allenamento. Le percorre anche un director: dirigere una
 #: gara non toglie il diritto di allenarsi.
 TRAINING_ENDPOINTS = (
+    "challenge.today",
     "challenge.challenge_catalog",
     "challenge.challenge_detail",
     "challenge.training_session",

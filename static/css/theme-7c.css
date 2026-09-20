@@ -4399,6 +4399,10 @@ button.c7-exam-dock__alt { width: 100%; }
    - `.c7-pill.is-off`: la pillola che non si può più scegliere (tre abilità).
    --------------------------------------------------------------------------- */
 .c7-seg__item { cursor: pointer; position: relative; }
+/* Il segmento può essere anche un <button> (gli assi del catalogo): senza
+   questo tiene bordo, fondo e carattere del browser. */
+button.c7-seg__item { border: 0; background: transparent; font-family: inherit; }
+button.c7-seg__item.is-on { background: var(--c7-ink); }
 .c7-seg__item input[type="radio"] { position: absolute; opacity: 0; pointer-events: none; }
 .c7-seg__item:has(input:checked) { background: var(--c7-ink); color: var(--c7-on-ink); }
 .c7-seg__item:has(input:focus-visible) { outline: 2px solid var(--c7-accent); outline-offset: 2px; }
@@ -4410,3 +4414,47 @@ button.c7-exam-dock__alt { width: 100%; }
 .c7-fold__chev { font-size: 11px; color: var(--c7-ink-faint); transition: transform var(--c7-dur-quick) var(--c7-ease); }
 .c7-fold[open] > summary .c7-fold__chev { transform: rotate(180deg); }
 .c7-fold__body { padding: 4px 18px 18px; }
+
+/* ---------------------------------------------------------------------------
+   Gli esercizi in «Oggi», nel catalogo e nella scheda (canvas «TPA ed
+   esercizi», fase 4c).
+   - `.c7-ex`: la card a miniatura, tutta toccabile; il cuore sta fuori dal
+     link, in alto a destra.
+   - `.c7-extag`: livello (pieno), abilità (accento tenue), gesto (contorno):
+     tre toni perché sono tre cose diverse. Non sono comandi — i filtri del
+     catalogo sono `.c7-chip`.
+   - `.c7-hscroll`: una striscia che scorre di lato senza far sbordare la
+     pagina (i filtri a pillole su telefono).
+   --------------------------------------------------------------------------- */
+.c7-ex { position: relative; padding: 0; }
+.c7-ex__link {
+  display: flex; gap: 14px; align-items: flex-start;
+  padding: var(--c7-pad-card); padding-right: 56px;
+  color: inherit; text-decoration: none;
+}
+.c7-ex__link:active { transform: scale(var(--c7-press)); transition-duration: 0ms; }
+.c7-ex__link { transition: transform var(--c7-dur-quick) var(--c7-ease); }
+.c7-ex__body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.c7-ex__title { font-size: 15px; font-weight: 800; letter-spacing: -.02em; line-height: 1.25; }
+.c7-ex__line { font-size: 12px; font-weight: 700; color: var(--c7-ink-muted); }
+.c7-exfav { position: absolute; top: 10px; right: 10px; background: transparent; }
+.c7-exfav.is-on { color: var(--c7-err); }
+.c7-extags { display: flex; flex-wrap: wrap; gap: 6px; }
+.c7-extag {
+  display: inline-flex; align-items: center; height: 24px; padding: 0 9px;
+  border-radius: var(--c7-r-chip); background: var(--c7-bg);
+  font-size: 11px; font-weight: 800; color: var(--c7-ink-soft); white-space: nowrap;
+}
+.c7-extag--lvl { background: var(--c7-ink); color: var(--c7-on-ink); }
+.c7-extag--cat { background: var(--c7-accent-tint); color: var(--c7-accent-tint-ink); }
+.c7-extag--gesto { background: transparent; box-shadow: inset 0 0 0 1.5px var(--c7-line); }
+.c7-card--accent .c7-extag { background: rgba(255, 255, 255, .14); color: inherit; box-shadow: none; }
+.c7-exsocial__vote { color: var(--c7-ink); }
+.c7-exsocial__vote i { font-size: 10px; color: var(--c7-warn); }
+.c7-hscroll {
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px;
+  scrollbar-width: none; -webkit-overflow-scrolling: touch;
+}
+.c7-hscroll::-webkit-scrollbar { display: none; }
+.c7-hscroll > * { flex: none; }
+@media (min-width: 992px) { .c7-hscroll { flex-wrap: wrap; overflow: visible; } }

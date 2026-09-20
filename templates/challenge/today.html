@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% import "challenge/_exercise_bits.html" as ex with context %}
+
+{# templates/challenge/today.html — 7c
+   «Oggi»: la porta d'ingresso degli esercizi (canvas «TPA ed esercizi»,
+   artboard «B · Oggi», decisione D3).
+
+   Una porta, non un cruscotto: dice da dove ripartire e ha dietro il catalogo.
+   Oggi propone ciò che esiste — l'ultimo esercizio da riprendere, i preferiti,
+   i più provati. La scheda in corso (fase 6), gli obiettivi e il consiglio «per
+   oggi» (fase 7) entreranno qui, sopra, quando nasceranno: niente segnaposto
+   vuoti nel frattempo. #}
+
+{% block title %}{{ _("Esercizi") }}{% endblock %}
+{% block page_title %}{{ _("Esercizi") }}{% endblock %}
+{% block page_sub %}{{ today_label }}{% endblock %}
+{% block page_actions %}
+{% if current_user.can_access('create_challenge') and feature_visible('challenge.create_challenge') %}
+<a href="{{ url_for('challenge.create_challenge') }}" class="btn btn-success btn-sm">{{ _("Nuovo esercizio") }}</a>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px" data-exercise-list>
+
+  {% if today.is_empty %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-bullseye"></i></div>
+    <h2 class="c7-empty__title">{{ _("Catalogo vuoto") }}</h2>
+    <p class="c7-empty__text">{{ _("Non ci sono ancora esercizi da provare.") }}</p>
+  </div>
+  {% else %}
+
+  {# ── Da dove ripartire ─────────────────────────────────────────────── #}
+  {% if today.resume %}
+  {% set c = today.resume.challenge %}
+  <section class="c7-card c7-card--accent" data-help="esercizi-riprendi">
+    <div class="c7-kicker">{{ _("Riprendi da qui") }}</div>
+    <h2 style="margin:6px 0 10px;font-size:20px;font-weight:800;letter-spacing:-.03em">{{ c.get_display_name() }}</h2>
+    {{ ex.tags(c) }}
+    <p style="margin:12px 0 0;font-size:13px;font-weight:600;opacity:.85">
+      {{ _("L'ultima volta: %(when)s.", when=today.resume.mine.last_attempted_at|day_friendly) }}
+      {{ ex.my_line(today.resume) }}.
+    </p>
+    <div class="c7-duo" style="margin-top:14px">
+      <a href="{{ url_for('challenge.training_session', challenge_id=c.id) }}" class="btn btn-primary">{{ _("Comincia") }}</a>
+      <a href="{{ url_for('challenge.challenge_detail', challenge_id=c.id) }}" class="btn btn-secondary">{{ _("La scheda") }}</a>
+    </div>
+  </section>
+  {% else %}
+  <section class="c7-card c7-card--accent">
+    <div class="c7-kicker">{{ _("Per cominciare") }}</div>
+    <h2 style="margin:6px 0 8px;font-size:20px;font-weight:800;letter-spacing:-.03em">{{ _("Scegli un esercizio e provalo") }}</h2>
+    <p style="margin:0;font-size:13px;font-weight:600;opacity:.85">{{ _("Registri una prova dopo l'altra, e la prossima volta riparti da qui.") }}</p>
+    <a href="{{ url_for('challenge.challenge_catalog') }}" class="btn btn-primary w-100" style="margin-top:14px">{{ _("Apri il catalogo") }}</a>
+  </section>
+  {% endif %}
+
+  {% if today.favorites %}
+  <div class="c7-sechead">
+    <h2>{{ _("I tuoi preferiti") }}</h2>
+    <a class="c7-sechead__note" href="{{ url_for('challenge.challenge_catalog', vista='preferiti') }}">{{ _("Tutti") }}</a>
+  </div>
+  {% for card in today.favorites %}{{ ex.card(card) }}{% endfor %}
+  {% endif %}
+
+  {% if today.most_tried %}
+  <div class="c7-sechead">
+    <h2>{{ _("I più provati") }}</h2>
+  </div>
+  {% for card in today.most_tried %}{{ ex.card(card) }}{% endfor %}
+  {% endif %}
+
+  <a href="{{ url_for('challenge.challenge_catalog') }}" class="c7-card d-flex align-items-center gap-3"
+     style="color:inherit;text-decoration:none" data-help="esercizi-apri-catalogo">
+    <span class="c7-tile c7-tile--sm c7-tile--neutral"><i class="fas fa-layer-group"></i></span>
+    <span class="flex-fill">
+      <span class="c7-rows__title d-block">{{ _("Apri il catalogo") }}</span>
+      <span class="c7-rows__sub d-block">{{ ngettext("%(num)s esercizio, da filtrare per abilità, gesto, livello e voto", "%(num)s esercizi, da filtrare per abilità, gesto, livello e voto", today.total) }}</span>
+    </span>
+    <i class="fas fa-chevron-right" style="font-size:11px;color:var(--c7-ink-faint)"></i>
+  </a>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.challengeCatalogMessages = {
+    favAdd: {{ _("Aggiungi ai preferiti")|tojson }},
+    favRemove: {{ _("Rimuovi dai preferiti")|tojson }},
+    favError: {{ _("Non è stato possibile aggiornare i preferiti.")|tojson }}
+  };
+</script>
+<script src="{{ url_for('static', filename='js/challenge-catalog.js') }}?v={{ config.ASSET_VERSION }}"></script>
+{% endblock %}
