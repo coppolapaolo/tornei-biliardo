@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.43.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.42.0...v1.43.0) (2026-09-20)
+
+
+### Funzioni nuove
+
+* il giocatore decide chi legge le sue schede, una per una ([#173](https://github.com/coppolapaolo/tornei-biliardo/issues/173)) ([#525](https://github.com/coppolapaolo/tornei-biliardo/issues/525)) ([c6a64f9](https://github.com/coppolapaolo/tornei-biliardo/commit/c6a64f9df83c3b75a42cec01c5bb5c6c9d26a5a3))
+* un istruttore vede una scheda solo quando un allievo gliela apre ([#173](https://github.com/coppolapaolo/tornei-biliardo/issues/173)) ([#523](https://github.com/coppolapaolo/tornei-biliardo/issues/523)) ([6389d18](https://github.com/coppolapaolo/tornei-biliardo/commit/6389d1823ca1c7b4f86fdd69795ab737643b9fa4))
+
 ## [1.42.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.41.0...v1.42.0) (2026-09-20)
 
 
