@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{# templates/player/roles.html — 7c
+   «I tuoi ruoli» (canvas «TPA ed esercizi», artboard `IstruttoreDiventa`).
+
+   Una riga per ruolo: quello che sei, quelli che puoi sommarci. Lo stato sta a
+   destra come un segnalino, e l'azione — quando c'è — sotto la riga: un ruolo
+   si chiede una volta sola in tutta la vita, non merita un pulsante grande
+   accanto a uno che dice «attivo».
+
+   La scuola compare solo a chi insegna o sta chiedendo di farlo: a chiunque
+   altro sarebbe un campo che risponde a una domanda che non si è fatto. #}
+
+{% block title %}{{ _("I tuoi ruoli") }}{% endblock %}
+{% block page_title %}{{ _("Ruoli") }}{% endblock %}
+{% block page_sub %}{{ _("Chi sei, qui dentro") }}{% endblock %}
+{% block page_back %}<a href="{{ url_for('player.profile') }}" class="c7-head__back d-lg-none"
+    aria-label="{{ _('Torna al profilo') }}"><i class="fas fa-chevron-left"></i></a>{% endblock %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+
+  <div class="c7-label">{{ _("I tuoi ruoli") }}</div>
+  <section class="c7-rows">
+    {% for riga in righe %}
+    <div class="c7-rows__row">
+      <span class="c7-tile c7-tile--sm c7-tile--{{ 'ok' if riga.tono == 'ok' else 'neutral' }}">
+        <i class="fas {{ riga.icona }}"></i>
+      </span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ riga.nome }}</div>
+        <div class="c7-rows__sub">
+          {{ riga.descrizione }}
+          {%- if riga.dal %} <span class="c7-sep">·</span> {{ _("dal %(giorno)s", giorno=riga.dal|date_local) }}{% endif -%}
+        </div>
+      </div>
+      <span class="c7-state c7-state--{{ riga.tono }}">{{ riga.stato }}</span>
+    </div>
+    {% if riga.ruolo_da_chiedere and feature_visible('roles.request_role_form') %}
+    <div class="c7-rows__row c7-rows__row--sub">
+      <a class="c7-rows__title" style="color:var(--c7-accent)"
+         href="{{ url_for('roles.request_role_form', role=riga.ruolo_da_chiedere.value) }}">
+        {{ _("Chiedi di diventare %(ruolo)s", ruolo=riga.nome|lower) }}
+      </a>
+    </div>
+    {% elif riga.in_arrivo %}
+    <div class="c7-rows__row c7-rows__row--sub">
+      <div class="c7-rows__sub">{{ _("Si apre continuando ad allenarti.") }}</div>
+    </div>
+    {% endif %}
+    {% endfor %}
+  </section>
+
+  {% if mostra_scuola %}
+  <form method="POST" action="{{ url_for('player.save_organization') }}" class="c7-card c7-stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="c7-kicker">{{ _("Dove insegni") }}</div>
+    <div>
+      <label class="c7-label" for="organization">{{ _("Scuola o associazione") }}</label>
+      <input class="form-control" type="text" id="organization" name="organization"
+             maxlength="120" value="{{ user.organization or '' }}"
+             placeholder="{{ _('Il nome, se ne hai una') }}">
+      <div class="c7-rows__sub" style="margin-top:6px">
+        {{ _("Facoltativa: compare accanto al tuo nome quando un allievo sceglie a chi aprire una scheda.") }}
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary">{{ _("Salva") }}</button>
+  </form>
+  {% endif %}
+
+  <p class="c7-rows__sub">
+    {{ _("Un ruolo non toglie niente a quello che sei già: si somma. E non apre niente da solo — un istruttore vede una scheda solo quando un allievo gliela apre.") }}
+  </p>
+</div>
+{% endblock %}

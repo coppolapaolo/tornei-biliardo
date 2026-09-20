@@ -39,6 +39,8 @@ FEATURE_PRIMARY_ENDPOINT: dict[str, str] = {
     # Esami e ruolo esaminatore (ADR-041/042)
     "request_examiner": "roles.request_role_form",
     "take_exam": "exam.exam_catalog",
+    # Ruolo istruttore (ADR-069)
+    "request_instructor": "roles.request_role_form",
 }
 
 

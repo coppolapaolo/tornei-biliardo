@@ -28,6 +28,12 @@ class GrantableRole(str, Enum):
 
     EXAMINER = "examiner"
 
+    #: Chi insegna: segue gli allievi sulle schede che gli aprono (ADR-069).
+    #: Distinto dall'esaminatore, che certifica esami — due mestieri, due
+    #: concessioni. Da solo **non apre niente**: rende trovabili, e ciò che si
+    #: vede lo concede un allievo, una scheda per volta.
+    INSTRUCTOR = "instructor"
+
     #: Chi prova in produzione le funzioni non ancora aperte al suo ruolo.
     #: Non e' un permesso in piu' — e' **visibilita'** in piu': un beta tester
     #: raggiunge le schermate che l'allowlist di ADR-028 terrebbe nascoste,

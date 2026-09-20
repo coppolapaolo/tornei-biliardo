@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 16:36+0200\n"
+"POT-Creation-Date: 2026-09-20 17:24+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -94,11 +94,11 @@ msgstr "The month before"
 msgid "I tre mesi prima"
 msgstr "The three months before"
 
-#: models/andamento/view.py:91 templates/challenge/andamento.html:67
+#: models/andamento/view.py:91 templates/challenge/andamento.html:68
 msgid "Per abilità"
 msgstr "By skill"
 
-#: models/andamento/view.py:92 templates/challenge/andamento.html:67
+#: models/andamento/view.py:92 templates/challenge/andamento.html:68
 msgid "Per gesto"
 msgstr "By stroke"
 
@@ -2243,23 +2243,23 @@ msgstr "You lost a %(weeks)d-week streak."
 msgid "Quest completata: %(name)s — +%(xp)d XP"
 msgstr "Quest completed: %(name)s — +%(xp)d XP"
 
-#: models/gamification/frontend_bridge.py:370
-#: models/gamification/frontend_bridge.py:424
-#: models/gamification/frontend_bridge.py:448
+#: models/gamification/frontend_bridge.py:377
+#: models/gamification/frontend_bridge.py:438
+#: models/gamification/frontend_bridge.py:462
 msgid "name"
 msgstr "name"
 
-#: models/gamification/frontend_bridge.py:371
-#: models/gamification/frontend_bridge.py:425
-#: models/gamification/frontend_bridge.py:449
+#: models/gamification/frontend_bridge.py:378
+#: models/gamification/frontend_bridge.py:439
+#: models/gamification/frontend_bridge.py:463
 msgid "description"
 msgstr "description"
 
-#: models/gamification/frontend_bridge.py:473
+#: models/gamification/frontend_bridge.py:487
 msgid "Scopri gli altri giocatori"
 msgstr "Discover other players"
 
-#: models/gamification/frontend_bridge.py:474
+#: models/gamification/frontend_bridge.py:488
 msgid ""
 "Ora puoi sbirciare i profili degli altri. Vai alla classifica per "
 "cominciare!"
@@ -2267,69 +2267,69 @@ msgstr ""
 "You can now peek at other players' profiles. Head to the leaderboard to "
 "get started!"
 
-#: models/gamification/frontend_bridge.py:475
+#: models/gamification/frontend_bridge.py:489
 msgid "Statistiche globali"
 msgstr "Global statistics"
 
-#: models/gamification/frontend_bridge.py:476
+#: models/gamification/frontend_bridge.py:490
 msgid "Confronta le tue performance con quelle della community."
 msgstr "Compare your performance with the community."
 
-#: models/gamification/frontend_bridge.py:477
+#: models/gamification/frontend_bridge.py:491
 msgid "Crea una partita diretta"
 msgstr "Create a direct match"
 
-#: models/gamification/frontend_bridge.py:478
+#: models/gamification/frontend_bridge.py:492
 msgid "Sfida un avversario specifico — proponi luogo e data."
 msgstr "Challenge a specific opponent — propose a place and date."
 
-#: models/gamification/frontend_bridge.py:479
+#: models/gamification/frontend_bridge.py:493
 msgid "Proponi una partita aperta"
 msgstr "Propose an open match"
 
-#: models/gamification/frontend_bridge.py:480
+#: models/gamification/frontend_bridge.py:494
 msgid ""
 "Lancia una proposta alla community e aspetta che qualcuno si faccia "
 "avanti."
 msgstr "Post a proposal to the community and wait for someone to step up."
 
-#: models/gamification/frontend_bridge.py:481
+#: models/gamification/frontend_bridge.py:495
 msgid "Imposta la tua disponibilità"
 msgstr "Set your availability"
 
-#: models/gamification/frontend_bridge.py:482
+#: models/gamification/frontend_bridge.py:496
 msgid "Fai sapere quando sei libero così altri possono proporti partite."
 msgstr "Let others know when you're free so they can propose matches."
 
-#: models/gamification/frontend_bridge.py:483
+#: models/gamification/frontend_bridge.py:497
 msgid "Organizza una gara"
 msgstr "Organize a competition"
 
-#: models/gamification/frontend_bridge.py:484
+#: models/gamification/frontend_bridge.py:498
 msgid "Sei pronto: puoi creare la tua prima gara standalone."
 msgstr "You're ready: you can create your first standalone competition."
 
-#: models/gamification/frontend_bridge.py:485
+#: models/gamification/frontend_bridge.py:499
 msgid "Organizza un campionato"
 msgstr "Organize a championship"
 
-#: models/gamification/frontend_bridge.py:486
+#: models/gamification/frontend_bridge.py:500
 msgid "Crea una serie di gare e gestisci una stagione completa."
 msgstr "Create a series of competitions and manage a full season."
 
-#: models/gamification/frontend_bridge.py:487
+#: models/gamification/frontend_bridge.py:501
 msgid "Prova gli esercizi"
 msgstr "Try the drills"
 
-#: models/gamification/frontend_bridge.py:488
+#: models/gamification/frontend_bridge.py:502
 msgid "Allenati con esercizi mirati: ogni completamento conta per la classifica."
 msgstr "Train with focused drills: every completion counts towards the standings."
 
-#: models/gamification/frontend_bridge.py:489
+#: models/gamification/frontend_bridge.py:503
 msgid "Sostieni un esame"
 msgstr "Sit an exam"
 
-#: models/gamification/frontend_bridge.py:491
+#: models/gamification/frontend_bridge.py:505
 msgid ""
 "Più esercizi in fila, in un colpo solo. Da solo per allenarti, o davanti "
 "a un esaminatore per farlo valere."
@@ -2337,11 +2337,11 @@ msgstr ""
 "Several drills in a row, in one go. On your own to practise, or before an"
 " examiner to make it count."
 
-#: models/gamification/frontend_bridge.py:494 templates/base.html:613
+#: models/gamification/frontend_bridge.py:508 templates/base.html:613
 msgid "Diventa esaminatore"
 msgstr "Become an examiner"
 
-#: models/gamification/frontend_bridge.py:496
+#: models/gamification/frontend_bridge.py:510
 msgid ""
 "Hai macinato abbastanza esercizi: puoi chiedere di comporre esami e "
 "certificarli tu."
@@ -2349,11 +2349,23 @@ msgstr ""
 "You've done enough drills: you can ask to compose exams and certify them "
 "yourself."
 
-#: models/gamification/frontend_bridge.py:500
+#: models/gamification/frontend_bridge.py:513
+msgid "Diventa istruttore"
+msgstr "Become an instructor"
+
+#: models/gamification/frontend_bridge.py:515
+msgid ""
+"Se insegni, puoi farti riconoscere: i tuoi allievi potranno farti leggere"
+" le loro schede."
+msgstr ""
+"If you teach, you can be recognised: your students will be able to let "
+"you read their sheets."
+
+#: models/gamification/frontend_bridge.py:519
 msgid "Sei un esaminatore"
 msgstr "You are an examiner"
 
-#: models/gamification/frontend_bridge.py:502
+#: models/gamification/frontend_bridge.py:521
 msgid ""
 "Ora puoi comporre esami e certificarli di persona. Dichiara le tue "
 "disponibilità per farti trovare."
@@ -2361,7 +2373,19 @@ msgstr ""
 "You can now put exams together and certify them in person. Publish your "
 "availability so people can find you."
 
+#: models/gamification/frontend_bridge.py:524
+msgid "Sei un istruttore"
+msgstr "You are an instructor"
+
 #: models/gamification/frontend_bridge.py:526
+msgid ""
+"I tuoi allievi possono farti leggere le loro schede. Finché non te ne "
+"aprono una, non vedi niente di loro."
+msgstr ""
+"Your students can let you read their sheets. Until one of them opens a "
+"sheet to you, you see nothing of theirs."
+
+#: models/gamification/frontend_bridge.py:550
 #, python-format
 msgid "+%(xp)d XP — %(category)s"
 msgstr "+%(xp)d XP — %(category)s"
@@ -3500,39 +3524,75 @@ msgstr "Weeks go from 1 to %(n)s."
 msgid "Questa voce non è di questa scheda"
 msgstr "This item does not belong to this sheet"
 
-#: models/training_sheet/services.py:263
+#: models/training_sheet/services.py:269
 msgid "La scheda è già tua"
 msgstr "The sheet is already yours"
 
-#: models/training_sheet/services.py:266
+#: models/training_sheet/services.py:272 routes/player/profile.py:187
 msgid "Utente non trovato"
 msgstr "User not found"
 
-#: models/training_sheet/services.py:302
+#: models/training_sheet/services.py:274
+msgid "Una scheda si apre a un istruttore"
+msgstr "A sheet can only be opened to an instructor"
+
+#: models/training_sheet/services.py:312
+msgid "Non leggi questa scheda"
+msgstr "You do not read this sheet"
+
+#: models/training_sheet/services.py:344
+msgid "Un allievo ti ha aperto una scheda"
+msgstr "A student has opened a sheet to you"
+
+#: models/training_sheet/services.py:346
+#, python-format
+msgid "%(allievo)s ti fa leggere «%(scheda)s»: vedi le sue sedute e come procede."
+msgstr ""
+"%(allievo)s is letting you read “%(scheda)s”: you can see their sessions "
+"and how they are getting on."
+
+#: models/training_sheet/services.py:353
+msgid "Apri la scheda"
+msgstr "Open the sheet"
+
+#: models/training_sheet/services.py:367
+msgid "Un istruttore ha smesso di seguirti"
+msgstr "An instructor has stopped following you"
+
+#: models/training_sheet/services.py:369
+#, python-format
+msgid "%(istruttore)s non legge più «%(scheda)s»."
+msgstr "%(istruttore)s no longer reads “%(scheda)s”."
+
+#: models/training_sheet/services.py:375
+msgid "Chi la legge"
+msgstr "Who reads it"
+
+#: models/training_sheet/services.py:386
 msgid "La scheda vuole un nome"
 msgstr "The sheet needs a name"
 
-#: models/training_sheet/services.py:328
+#: models/training_sheet/services.py:412
 #, python-format
 msgid "Serve dire quanto farne: %(unita)s."
 msgstr "Say how much to do: %(unita)s."
 
-#: models/training_sheet/services.py:334
+#: models/training_sheet/services.py:418
 #, python-format
 msgid "Il «quanto farne» va da %(min)s a %(max)s."
 msgstr "The \"how much\" goes from %(min)s to %(max)s."
 
-#: models/training_sheet/services.py:348
+#: models/training_sheet/services.py:432
 msgid "La soglia è un numero positivo"
 msgstr "The threshold is a positive number"
 
-#: models/training_sheet/services.py:353
+#: models/training_sheet/services.py:437
 msgid ""
 "Per una soglia serve almeno una voce «a riusciti»: le altre non fanno "
 "totale."
 msgstr "A threshold needs at least one \"made\" item: the others do not add up."
 
-#: models/training_sheet/services.py:360
+#: models/training_sheet/services.py:444
 #, python-format
 msgid "La soglia non può superare il totale della scheda, che è %(n)s."
 msgstr "The threshold cannot be higher than the sheet total, which is %(n)s."
@@ -3652,61 +3712,133 @@ msgstr "The username “admin” (and its variants) is reserved by the system."
 msgid "Lo username «%(nome)s» è già in uso."
 msgstr "The username “%(nome)s” is already taken."
 
-#: models/user/role_grant_service.py:558 routes/gamification/features.py:81
+#: models/user/role_grant_service.py:568 routes/gamification/features.py:81
 #: templates/admin/users_list.html:133 templates/admin/users_list.html:180
 msgid "Esaminatore"
 msgstr "Examiner"
 
-#: models/user/role_grant_service.py:559
+#: models/user/role_grant_service.py:569
+msgid "Istruttore"
+msgstr "Instructor"
+
+#: models/user/role_grant_service.py:570
 msgid "Beta tester"
 msgstr "Beta tester"
 
-#: models/user/role_grant_service.py:590
+#: models/user/role_grant_service.py:601
 msgid "Richiesta di ruolo"
 msgstr "Role request"
 
-#: models/user/role_grant_service.py:592
+#: models/user/role_grant_service.py:603
 #, python-format
 msgid "%(user)s chiede il ruolo di %(role)s."
 msgstr "%(user)s is requesting the %(role)s role."
 
-#: models/user/role_grant_service.py:600
+#: models/user/role_grant_service.py:611
 msgid "Vedi le richieste"
 msgstr "View the requests"
 
-#: models/user/role_grant_service.py:615
+#: models/user/role_grant_service.py:626
 #, python-format
 msgid "%(actor)s ha approvato la tua richiesta: ora sei %(role)s."
 msgstr "%(actor)s approved your request: you are now %(role)s."
 
-#: models/user/role_grant_service.py:621
+#: models/user/role_grant_service.py:632
 #, python-format
 msgid "La tua richiesta per il ruolo di %(role)s non è stata accolta."
 msgstr "Your request for the %(role)s role was not granted."
 
-#: models/user/role_grant_service.py:628
+#: models/user/role_grant_service.py:639
 msgid "Richiesta di ruolo processata"
 msgstr "Role request processed"
 
-#: models/user/role_grant_service.py:643
+#: models/user/role_grant_service.py:654
 msgid "Richiesta di ruolo chiusa"
 msgstr "Role request closed"
 
-#: models/user/role_grant_service.py:645
+#: models/user/role_grant_service.py:656
 #, python-format
 msgid ""
 "La richiesta per il ruolo di %(role)s è stata presa in carico da un altro"
 " titolare."
 msgstr "The request for the %(role)s role has been taken over by another holder."
 
-#: models/user/role_grant_service.py:662
+#: models/user/role_grant_service.py:673
 msgid "Nuovo ruolo"
 msgstr "New role"
 
-#: models/user/role_grant_service.py:664
+#: models/user/role_grant_service.py:675
 #, python-format
 msgid "Hai ottenuto il ruolo di %(role)s."
 msgstr "You have been granted the %(role)s role."
+
+#: models/user/roles_view.py:51 routes/help.py:60
+#: templates/dashboard/base.html:17 templates/player/profile.html:78
+msgid "Amministratore"
+msgstr "Administrator"
+
+#: models/user/roles_view.py:51
+msgid "gestisce la piattaforma"
+msgstr "manages the platform"
+
+#: models/user/roles_view.py:54 routes/gamification/features.py:79
+#: routes/help.py:59 templates/admin/accessi.html:85
+#: templates/admin/accessi.html:139 templates/admin/kpi.html:587
+#: templates/admin/users_list.html:105 templates/admin/users_list.html:175
+#: templates/admin/venue_detail.html:237
+#: templates/admin/venue_manager_requests.html:46
+#: templates/components/_user_info_card.html:14
+#: templates/dashboard/base.html:18 templates/player/profile.html:79
+msgid "Direttore di gara"
+msgstr "Competition Director"
+
+#: models/user/roles_view.py:54
+msgid "organizza gare e campionati"
+msgstr "organises competitions and championships"
+
+#: models/user/roles_view.py:57 routes/help.py:58
+#: templates/admin/accessi.html:86 templates/admin/accessi.html:141
+#: templates/admin/users_list.html:106 templates/admin/users_list.html:177
+#: templates/admin/venue_manager_requests.html:48
+#: templates/components/_campionato_general_classification.html:56
+#: templates/components/_detailed_classification.html:19
+#: templates/components/_user_info_card.html:26
+#: templates/dashboard/base.html:19 templates/direttore/_classifica.html:39
+#: templates/player/profile.html:80
+msgid "Giocatore"
+msgstr "Player"
+
+#: models/user/roles_view.py:57
+msgid "si iscrive, gioca e si allena"
+msgstr "signs up, plays and trains"
+
+#: models/user/roles_view.py:63 models/user/roles_view.py:95
+msgid "attivo"
+msgstr "active"
+
+#: models/user/roles_view.py:71
+msgid "compone gli esami e li certifica"
+msgstr "composes exams and certifies them"
+
+#: models/user/roles_view.py:72
+msgid "legge le schede che gli allievi gli aprono"
+msgstr "reads the sheets their students open to them"
+
+#: models/user/roles_view.py:73
+msgid "prova le funzioni non ancora aperte"
+msgstr "tries features that are not open yet"
+
+#: models/user/roles_view.py:101
+msgid "richiesto"
+msgstr "requested"
+
+#: models/user/roles_view.py:113
+msgid "puoi chiederlo"
+msgstr "you can ask for it"
+
+#: models/user/roles_view.py:117
+msgid "più avanti"
+msgstr "later on"
 
 #: routes/auth.py:158
 msgid "Che piacere rivederti!"
@@ -4049,33 +4181,6 @@ msgstr "Reference"
 #: templates/public/campionatos_list.html:26
 msgid "Tutti"
 msgstr "All"
-
-#: routes/help.py:58 templates/admin/accessi.html:86
-#: templates/admin/accessi.html:141 templates/admin/users_list.html:106
-#: templates/admin/users_list.html:177
-#: templates/admin/venue_manager_requests.html:48
-#: templates/components/_campionato_general_classification.html:56
-#: templates/components/_detailed_classification.html:19
-#: templates/components/_user_info_card.html:26
-#: templates/dashboard/base.html:19 templates/direttore/_classifica.html:39
-#: templates/player/profile.html:80
-msgid "Giocatore"
-msgstr "Player"
-
-#: routes/gamification/features.py:79 routes/help.py:59
-#: templates/admin/accessi.html:85 templates/admin/accessi.html:139
-#: templates/admin/kpi.html:587 templates/admin/users_list.html:105
-#: templates/admin/users_list.html:175 templates/admin/venue_detail.html:237
-#: templates/admin/venue_manager_requests.html:46
-#: templates/components/_user_info_card.html:14
-#: templates/dashboard/base.html:18 templates/player/profile.html:79
-msgid "Direttore di gara"
-msgstr "Competition Director"
-
-#: routes/help.py:60 templates/dashboard/base.html:17
-#: templates/player/profile.html:78
-msgid "Amministratore"
-msgstr "Administrator"
 
 #: routes/main.py:356
 msgid "Senza data"
@@ -5584,7 +5689,11 @@ msgstr "Championship visible"
 msgid "Campionato non era nascosto"
 msgstr "Championship was not hidden"
 
-#: routes/player/profile.py:346
+#: routes/player/profile.py:219
+msgid "Salvato."
+msgstr "Saved."
+
+#: routes/player/profile.py:399
 msgid ""
 "Informazioni aggiornate. Abbiamo inviato una nuova email di verifica al "
 "nuovo indirizzo."
@@ -5592,40 +5701,40 @@ msgstr ""
 "Information updated. A new verification email has been sent to the new "
 "address."
 
-#: routes/player/profile.py:352
+#: routes/player/profile.py:405
 msgid "Informazioni aggiornate correttamente."
 msgstr "Information updated successfully."
 
-#: routes/player/profile.py:357
+#: routes/player/profile.py:410
 msgid "Si è verificato un errore durante l'aggiornamento."
 msgstr "An error occurred during the update."
 
-#: routes/player/profile.py:369
+#: routes/player/profile.py:422
 msgid "La tua email è già verificata."
 msgstr "Your email is already verified."
 
-#: routes/player/profile.py:378
+#: routes/player/profile.py:431
 msgid "Email di verifica inviata. Controlla la tua casella di posta."
 msgstr "Verification email sent. Check your inbox."
 
-#: routes/player/profile.py:382
+#: routes/player/profile.py:435
 msgid "Impossibile inviare l'email. Riprova più tardi."
 msgstr "Could not send the email. Please try again later."
 
-#: routes/player/profile.py:384
+#: routes/player/profile.py:437
 #, python-format
 msgid "Errore durante l'invio: %(detail)s"
 msgstr "Error while sending: %(detail)s"
 
-#: routes/player/profile.py:399
+#: routes/player/profile.py:452
 msgid "La nuova password e la conferma non coincidono."
 msgstr "The new password and its confirmation do not match."
 
-#: routes/player/profile.py:412
+#: routes/player/profile.py:465
 msgid "Password aggiornata correttamente."
 msgstr "Password updated successfully."
 
-#: routes/player/profile.py:414
+#: routes/player/profile.py:467
 msgid "Password attuale errata o nuova password non valida."
 msgstr "Current password is wrong, or the new password is not valid."
 
@@ -6111,7 +6220,7 @@ msgstr "Description (optional)"
 #: templates/gamification/admin/streak_config.html:152
 #: templates/individual_match/edit_match.html:122
 #: templates/player/privacy_settings.html:98
-#: templates/player/profile_edit.html:78
+#: templates/player/profile_edit.html:78 templates/player/roles.html:67
 msgid "Salva"
 msgstr "Save"
 
@@ -10156,7 +10265,7 @@ msgstr[0] "Your best %(best)s · %(num)s attempt"
 msgstr[1] "Your best %(best)s · %(num)s attempts"
 
 #: templates/challenge/_exercise_bits.html:47
-#: templates/challenge/andamento.html:30 templates/challenge/andamento.html:133
+#: templates/challenge/andamento.html:30 templates/challenge/andamento.html:134
 #: templates/challenge/obiettivo.html:62
 #: templates/player/challenge_detail.html:94
 #, python-format
@@ -10398,27 +10507,27 @@ msgstr ""
 msgid "Apri il catalogo"
 msgstr "Open the catalogue"
 
-#: templates/challenge/andamento.html:63
+#: templates/challenge/andamento.html:64
 msgid "Su quale vocabolario"
 msgstr "Which vocabulary"
 
-#: templates/challenge/andamento.html:79 templates/challenge/andamento.html:115
+#: templates/challenge/andamento.html:80 templates/challenge/andamento.html:116
 #: templates/individual_match/quick_match.html:114
 msgid "Adesso"
 msgstr "Now"
 
-#: templates/challenge/andamento.html:94
+#: templates/challenge/andamento.html:95
 msgid "Radar delle tue percentuali, un raggio per categoria"
 msgstr "Radar of your percentages, one spoke per category"
 
-#: templates/challenge/andamento.html:135
+#: templates/challenge/andamento.html:136
 #, python-format
 msgid "%(num)s da una scheda"
 msgid_plural "%(num)s dalle schede"
 msgstr[0] "%(num)s from a sheet"
 msgstr[1] "%(num)s from sheets"
 
-#: templates/challenge/andamento.html:155
+#: templates/challenge/andamento.html:156
 #, python-format
 msgid ""
 "%(voci)s ha meno di %(n)s prove: sul grafico c'è, ma il numero non dice "
@@ -10433,7 +10542,7 @@ msgstr[1] ""
 "%(voci)s have fewer than %(n)s attempts: they are on the chart, but the "
 "numbers do not say anything yet."
 
-#: templates/challenge/andamento.html:165
+#: templates/challenge/andamento.html:166
 #, python-format
 msgid ""
 "%(num)s registrazione non entra in questi numeri: non ha un massimo con "
@@ -10450,11 +10559,11 @@ msgstr[1] ""
 "%(num)s records are not in these numbers: they have no maximum to turn "
 "into a percentage — drills with no declared cap, minutes, ticks."
 
-#: templates/challenge/andamento.html:179 templates/challenge/today.html:53
+#: templates/challenge/andamento.html:180 templates/challenge/today.html:53
 msgid "I tuoi obiettivi"
 msgstr "Your goals"
 
-#: templates/challenge/andamento.html:186
+#: templates/challenge/andamento.html:187
 msgid "Aggiungi un obiettivo"
 msgstr "Add a goal"
 
@@ -15017,11 +15126,17 @@ msgid "Privacy"
 msgstr "Privacy"
 
 #: templates/components/_player_personal_info.html:52
+#: templates/gamification/admin/feature_create.html:71
+#: templates/player/roles.html:15
+msgid "Ruoli"
+msgstr "Roles"
+
+#: templates/components/_player_personal_info.html:57
 #: templates/player/_change_password_modal.html:7
 msgid "Cambia password"
 msgstr "Change password"
 
-#: templates/components/_player_personal_info.html:59
+#: templates/components/_player_personal_info.html:64
 msgid "Richiedi il ruolo di direttore di gara"
 msgstr "Apply to become a tournament director"
 
@@ -20851,10 +20966,6 @@ msgid "Partite giocate, gare completate, ecc."
 msgstr "Matches played, competitions completed, etc."
 
 #: templates/gamification/admin/feature_create.html:71
-msgid "Ruoli"
-msgstr "Roles"
-
-#: templates/gamification/admin/feature_create.html:71
 msgid "Admin, Direttore di gara, Gestore Sala"
 msgstr "Admin, Director, Venue Manager"
 
@@ -23586,7 +23697,7 @@ msgstr "You gave up your spot."
 msgid "L'invito è scaduto."
 msgstr "The invitation has expired."
 
-#: templates/player/privacy_settings.html:5
+#: templates/player/privacy_settings.html:5 templates/player/roles.html:18
 msgid "Torna al profilo"
 msgstr "Back to the profile"
 
@@ -23746,6 +23857,58 @@ msgstr ""
 "The club or team you usually play for. It is suggested when you enter a "
 "competition that takes teams into account; there you can always change it"
 " or leave it empty."
+
+#: templates/player/roles.html:14 templates/player/roles.html:23
+msgid "I tuoi ruoli"
+msgstr "Your roles"
+
+#: templates/player/roles.html:16
+msgid "Chi sei, qui dentro"
+msgstr "Who you are, in here"
+
+#: templates/player/roles.html:34
+#, python-format
+msgid "dal %(giorno)s"
+msgstr "since %(giorno)s"
+
+#: templates/player/roles.html:43
+#, python-format
+msgid "Chiedi di diventare %(ruolo)s"
+msgstr "Ask for the role of %(ruolo)s"
+
+#: templates/player/roles.html:48
+msgid "Si apre continuando ad allenarti."
+msgstr "It opens as you keep training."
+
+#: templates/player/roles.html:57
+msgid "Dove insegni"
+msgstr "Where you teach"
+
+#: templates/player/roles.html:59
+msgid "Scuola o associazione"
+msgstr "School or club"
+
+#: templates/player/roles.html:62
+msgid "Il nome, se ne hai una"
+msgstr "Its name, if you have one"
+
+#: templates/player/roles.html:64
+msgid ""
+"Facoltativa: compare accanto al tuo nome quando un allievo sceglie a chi "
+"aprire una scheda."
+msgstr ""
+"Optional: it appears next to your name when a student chooses who to open"
+" a sheet to."
+
+#: templates/player/roles.html:72
+msgid ""
+"Un ruolo non toglie niente a quello che sei già: si somma. E non apre "
+"niente da solo — un istruttore vede una scheda solo quando un allievo "
+"gliela apre."
+msgstr ""
+"A role takes nothing away from what you already are: it adds to it. And "
+"it opens nothing on its own — an instructor sees a sheet only when a "
+"student opens it to them."
 
 #: templates/player/venue_detail.html:4
 msgid "Sala Biliardo"

@@ -121,6 +121,10 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "player.view_profile": {"player", "director"},
     "player.edit_profile": {"player", "director"},
     "player.change_password": {"player", "director"},
+    # «I tuoi ruoli» (ADR-069): è la pagina da cui si chiede di diventare
+    # istruttore o esaminatore, quindi la vede chi quei ruoli non ce li ha.
+    "player.roles": {"player", "director"},
+    "player.save_organization": {"player", "director"},
     "player.request_verification_email": {"player", "director"},
     # Solo i player possono richiedere la promozione a director (il form è
     # mostrato unicamente a current_user.role == 'player'). Senza questa

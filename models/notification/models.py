@@ -56,6 +56,14 @@ class NotificationType(Enum):
     ROLE_REQUEST_CLOSED = "role_request_closed"  # Presa in carico da un altro
     ROLE_GRANTED = "role_granted"  # Ti è stato concesso un ruolo
 
+    # Istruttori e allievi (ADR-069). I due avvisi non sono simmetrici di
+    # proposito: chi **toglie** un istruttore non deve annunciarglielo — è una
+    # decisione sua, e per un minorenne un avviso sarebbe una pressione —
+    # mentre chi **se ne va** lo dice a chi l'aveva invitato, che altrimenti
+    # continuerebbe a credersi seguito.
+    SHEET_SHARED = "sheet_shared"  # Un allievo ti ha aperto una sua scheda
+    SHEET_READER_LEFT = "sheet_reader_left"  # Un istruttore ha smesso di seguirti
+
     # Segnalazioni degli utenti (issue #255)
     FEEDBACK_UPDATE = "feedback_update"  # La tua segnalazione è cambiata di stato
 

@@ -243,6 +243,8 @@ class UserProfileService:
         # nessuna route di amministrazione passa da qui con quel campo.
         # `first_name`/`last_name`: anagrafica facoltativa, la scrive solo
         # l'interessato dal proprio profilo (issue #156).
+        # `organization`: la scuola di chi insegna, dalla pagina dei ruoli
+        # (ADR-069) — anche questa scritta solo dall'interessato.
         allowed_fields = [
             "username",
             "email",
@@ -251,6 +253,7 @@ class UserProfileService:
             "squadra",
             "first_name",
             "last_name",
+            "organization",
         ]
         email_changed = False
         for field, value in kwargs.items():
