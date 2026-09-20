@@ -4186,6 +4186,14 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 /* La voce presa si stacca dalle altre per tono e per scala: niente ombra. */
 .c7-seq__item.is-dragging { background: var(--c7-sunken); transform: scale(1.02); transition-duration: 0ms; }
 .c7-seq__head { display: flex; align-items: center; gap: 10px; }
+/* Il titoletto del gruppo — «Riscaldamento», «Tecnica» — sulla prima voce che
+   lo apre. Sta dentro la voce perché una riga estranea nella lista
+   spezzerebbe il trascinamento; vuoto non occupa niente. */
+.c7-seq__section {
+  margin: 0 0 8px; font-size: 11px; font-weight: 800;
+  letter-spacing: .08em; text-transform: uppercase; color: var(--c7-ink-faint);
+}
+.c7-seq__section:empty { display: none; }
 /* La presa: bersaglio da 48 anche se il segno è piccolo. `touch-action: none`
    perché il dito che trascina non faccia scorrere la pagina. */
 .c7-seq__grip {
@@ -4217,14 +4225,29 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 }
 /* Da lg la voce sta su una riga: nome a sinistra, numeri a destra. */
 @media (min-width: 992px) {
-  .c7-seq__item { display: flex; align-items: center; gap: 16px; }
+  .c7-seq__item { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
   .c7-seq__head { flex: 1; min-width: 0; }
   .c7-seq__controls { margin-top: 0; }
+  /* Il titoletto prende la riga intera sopra la voce, non una colonna. */
+  .c7-seq__section { flex: 0 0 100%; margin: 0; }
 }
 .c7-seq__empty {
   padding: 18px; border-radius: var(--c7-r-card); background: var(--c7-sunken);
   font-size: 13px; font-weight: 700; color: var(--c7-ink-muted); text-align: center;
 }
+/* La pillola che apre il foglio «quanto farne» di una voce (schede): al posto
+   di due comandi piccoli su una riga già piena, uno che dice il valore. */
+.c7-seq__open {
+  min-height: 40px; padding: 0 14px; font-size: 12px; font-weight: 800;
+  font-variant-numeric: tabular-nums; white-space: nowrap;
+}
+
+/* Una riga che dipende da un interruttore acceso poco sopra: rientrata e su
+   fondo affossato, così si legge come conseguenza e non come pari grado. */
+.c7-rows__row--sub { padding-left: 30px; background: var(--c7-sunken); }
+.c7-rows__row--sub[hidden] { display: none; }
+/* Un numero in un campo, non un testo: largo quanto serve e non di più. */
+.c7-numfield { width: 96px; flex-shrink: 0; text-align: center; font-variant-numeric: tabular-nums; }
 
 /* Lo stepper piccolo: meno · cifra · più su una riga. La cifra è un campo —
    chi deve arrivare a 40 la scrive, non tocca «più» trenta volte. */

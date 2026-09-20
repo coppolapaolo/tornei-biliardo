@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{# templates/sheet/index.html — 7c
+   «Le tue schede» (canvas «TPA ed esercizi», pagina 5 · «Il tuo allenamento»).
+
+   Una scheda per card: nome, le etichette che la descrivono — livello, soglia,
+   giorni — e in fondo a che punto sei. Le opzioni facoltative non lasciano
+   buchi: una scheda senza livello non mostra una riga vuota, mostra una riga
+   in meno.
+
+   Qui non si compone e non si esegue: si sceglie. Comporre è una pagina sua,
+   la seduta un'altra ancora. #}
+
+{% block title %}{{ _("Schede di allenamento") }}{% endblock %}
+{% block page_title %}{{ _("Schede") }}{% endblock %}
+{% block page_sub %}{{ _("Il tuo allenamento, in ordine") }}{% endblock %}
+
+{% macro etichette(scheda) -%}
+  <div class="c7-chips">
+    {%- if scheda.level %}<span class="c7-chip">{{ _("livello %(n)s", n=scheda.level) }}</span>{% endif -%}
+    {%- if scheda.has_threshold %}
+    <span class="c7-chip">{{ _("soglia %(n)s su %(tot)s", n=scheda.threshold, tot=scheda.total) }}</span>
+    {%- endif -%}
+    {%- if scheda.days %}<span class="c7-chip">{{ _("giorni %(g)s", g=scheda.days|join(' · ')) }}</span>{% endif -%}
+    {%- if scheda.weeks %}<span class="c7-chip">{{ _("%(n)s settimane", n=scheda.weeks) }}</span>{% endif -%}
+  </div>
+{%- endmacro %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:720px">
+
+  {% if not schede %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-list-check"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessuna scheda") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Una scheda è la sequenza di esercizi che fai in sala, nell'ordine in cui la fai: la componi una volta e poi segni com'è andata.") }}
+    </p>
+  </div>
+  {% endif %}
+
+  {% for scheda in schede %}
+  {% set aperta = aperte.get(scheda.id) %}
+  {% set ultima = ultime.get(scheda.id) %}
+  <section class="c7-card{{ ' c7-card--accent' if aperta else '' }}">
+    {% if aperta %}<div class="c7-kicker">{{ _("Seduta cominciata") }}</div>{% endif %}
+    <h2 style="margin:{{ '6px' if aperta else '0' }} 0 10px;font-size:18px;font-weight:800;letter-spacing:-.02em">
+      {{ scheda.name }}
+    </h2>
+    {{ etichette(scheda) }}
+
+    <div class="c7-divider" style="margin:12px 0 10px"></div>
+    <div class="c7-rows__sub" style="margin-bottom:10px">
+      {%- if not scheda.active_items %}{{ _("Ancora nessun esercizio: componila.") }}
+      {%- elif ultima and scheda.has_threshold %}
+        {{ _("L'ultima volta %(n)s su %(tot)s", n=ultima.total, tot=ultima.max_total) }}
+        <span class="c7-sep">·</span> {{ ultima.ended_at|day_friendly }}
+      {%- elif ultima %}
+        {{ _("L'ultima volta") }} <span class="c7-sep">·</span> {{ ultima.ended_at|day_friendly }}
+      {%- else %}
+        {{ ngettext("%(num)s esercizio, mai fatta", "%(num)s esercizi, mai fatta", scheda.active_items|length) }}
+      {%- endif -%}
+    </div>
+
+    <div class="c7-duo">
+      <a href="{{ url_for('sheet.compose', sheet_id=scheda.id) }}"
+         class="btn btn-{{ 'secondary' if scheda.active_items else 'primary' }}">
+        {{ _("Componi") }}
+      </a>
+      <form method="POST" action="{{ url_for('sheet.archive', sheet_id=scheda.id) }}"
+            onsubmit="return confirm({{ _('Togli questa scheda dall\'elenco? Le sedute che hai fatto restano.')|tojson }})">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-secondary w-100">{{ _("Archivia") }}</button>
+      </form>
+    </div>
+  </section>
+  {% endfor %}
+
+  <form method="POST" action="{{ url_for('sheet.create_sheet') }}" class="c7-card c7-stack">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div>
+      <label class="c7-label" for="name">{{ _("Una scheda nuova") }}</label>
+      <input class="form-control" type="text" id="name" name="name" maxlength="120"
+             placeholder="{{ _('Come la chiami') }}">
+    </div>
+    <button type="submit" class="btn btn-success w-100">
+      <i class="fas fa-plus"></i> {{ _("Crea e componi") }}
+    </button>
+  </form>
+</div>
+{% endblock %}

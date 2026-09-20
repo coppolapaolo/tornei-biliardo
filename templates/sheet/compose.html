@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% import "components/_sequence_editor.html" as seq with context %}
+
+{# Comporre una scheda di allenamento (canvas «TPA ed esercizi», pagina 5 ·
+   «Componi la scheda» e «Quanto farne»; ADR-067).
+
+   La sequenza è lo stesso componente dell'esame, che di schede non sa niente:
+   qui gli si dice che una voce porta **come si segna** e **quanto farne**.
+   Quei due valori non stanno in due campi sulla riga — sarebbero due comandi
+   piccoli su una riga già piena — ma in un foglio che si apre toccando la
+   pillola, uno solo per tutta la pagina.
+
+   Ogni voce manda sempre tutti i suoi campi, anche vuoti: il server legge
+   liste parallele per posizione.
+
+   Scarto dichiarato dal disegno: il canvas ha «+ Esercizio» e «+ Sezione»
+   affiancati. La sezione qui è un campo **della voce** (nel foglio), e il
+   titoletto compare sulla prima voce che lo apre. Una riga-sezione dentro la
+   lista spezzerebbe il trascinamento, che guarda la voce vicina. #}
+
+{% block title %}{{ _("Componi la scheda") }} — {{ sheet.name }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('sheet.index') }}"
+   aria-label="{{ _('Torna alle schede') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ _("Componi la scheda") }}{% endblock %}
+{% block page_sub %}{{ _("Ogni voce ha il suo «quanto farne»") }}{% endblock %}
+
+{# Un interruttore di scheda: titolo, spiegazione, e la spunta. #}
+{% macro interruttore(campo, titolo, sotto, acceso=False) -%}
+<label class="c7-rows__row">
+  <div class="c7-rows__main">
+    <div class="c7-rows__title">{{ titolo }}</div>
+    <div class="c7-rows__sub">{{ sotto }}</div>
+  </div>
+  <input class="form-check-input" type="checkbox" name="{{ campo }}" value="1"
+         data-sheet-toggle="{{ campo }}" {% if acceso %}checked{% endif %}>
+</label>
+{%- endmacro %}
+
+{# I comandi di una voce: la pillola che apre il foglio, e i campi che
+   viaggiano col modulo. `voce` è None nello stampo delle voci nuove. #}
+{% macro quanto(voce=None) %}
+  <input type="hidden" name="item_id" value="{{ voce.id if voce and voce.id else '' }}">
+  <input type="hidden" name="measure" value="{{ voce.measure if voce else 'made' }}" data-sheet-measure>
+  <input type="hidden" name="amount" value="{{ voce.amount if voce and voce.amount is not none else 5 }}" data-sheet-amount>
+  <input type="hidden" name="per_variant" value="{{ '1' if voce and voce.per_variant else '0' }}" data-sheet-variant>
+  <input type="hidden" name="section" value="{{ voce.section or '' if voce else '' }}" data-sheet-section>
+  <input type="hidden" name="day" value="{{ voce.day or '' if voce else '' }}" data-sheet-day>
+  {# Quante varianti ha l'esercizio: decide se il foglio offre «da che parte».
+     Senza `name` non viaggia col modulo; nelle voci nuove lo riempie il
+     componente da `data-seq-variants` dell'esercizio scelto. #}
+  <input type="hidden" data-seq-from="variants" data-sheet-variants
+         value="{{ voce.challenge.variants|length if voce else 0 }}">
+  {# Il peso nel totale: lo scrive il JavaScript, perché dipende da misura,
+     numero e varianti insieme. #}
+  <span hidden data-seq-weight="0" data-sheet-weight></span>
+  <button type="button" class="c7-pill c7-seq__open" data-sheet-open
+          data-bs-toggle="modal" data-bs-target="#sheetItem">
+    <span data-sheet-dose>{{ _("quanto farne") }}</span>
+  </button>
+{% endmacro %}
+
+{% block content %}
+<form method="POST" action="{{ url_for('sheet.save_composition', sheet_id=sheet.id) }}"
+      class="c7-stack" style="max-width:720px"
+      data-seq-editor data-seq-picker-id="sheetPicker" data-sheet-compose>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="c7-card c7-stack">
+    <div>
+      <label class="c7-label" for="name">{{ _("Nome") }}</label>
+      <input class="form-control" type="text" id="name" name="name" required maxlength="120"
+             value="{{ form.name if form.name else sheet.name }}">
+    </div>
+  </div>
+
+  <div class="c7-sechead">
+    {# Il micro-aiuto arriva con la guida delle schede (6e): un'ancora che
+       rimanda a una pagina che non c'è ancora sarebbe un punto interrogativo
+       che non risponde. #}
+    <h2>{{ _("Gli esercizi, in ordine") }}</h2>
+    <span class="c7-sechead__note" data-seq-total
+          data-seq-total-text="{{ _('{n} tiri a riusciti') }}"></span>
+  </div>
+
+  {% call seq.lista(vuota=_("Ancora nessun esercizio: una scheda vuota non si può fare.")) %}
+    {% for voce in items %}
+      {% call seq.item(voce.challenge) %}{{ quanto(voce) }}{% endcall %}
+    {% endfor %}
+  {% endcall %}
+
+  <template data-seq-template>
+    {% call seq.item() %}{{ quanto() }}{% endcall %}
+  </template>
+
+  {{ seq.aggiungi('sheetPicker', _("Aggiungi un esercizio")) }}
+
+  {# ── Le opzioni: tutto facoltativo ─────────────────────────────────── #}
+  <div class="c7-sechead">
+    <h2>{{ _("Se ti servono") }}</h2>
+    <span class="c7-sechead__note">{{ _("tutto facoltativo") }}</span>
+  </div>
+
+  <section class="c7-rows" data-sheet-options>
+    {{ interruttore('has_level', _("Livello"), _("la scheda è un gradino di una scala"),
+                    acceso=form.has_level if form else sheet.level is not none) }}
+    <div class="c7-rows__row c7-rows__row--sub" data-sheet-when="has_level">
+      <label class="c7-rows__main c7-label" for="level">{{ _("Che gradino") }}</label>
+      <input class="form-control c7-numfield" type="number" inputmode="numeric" id="level" name="level"
+             min="1" max="{{ max_level }}" value="{{ form.level if form.level else (sheet.level or 1) }}">
+    </div>
+
+    {{ interruttore('has_threshold', _("Soglia"), _("somma le voci «a riusciti»"),
+                    acceso=form.has_threshold if form else sheet.threshold is not none) }}
+    <div class="c7-rows__row c7-rows__row--sub" data-sheet-when="has_threshold">
+      <label class="c7-rows__main c7-label" for="threshold">{{ _("Quanto serve fare") }}</label>
+      <input class="form-control c7-numfield" type="number" inputmode="numeric" id="threshold" name="threshold"
+             min="1" value="{{ form.threshold if form.threshold else (sheet.threshold or '') }}">
+    </div>
+    <div class="c7-rows__row c7-rows__row--sub" data-sheet-when="has_threshold">
+      <label class="c7-rows__main c7-label" for="threshold_streak">{{ _("Sedute di fila sopra la soglia") }}</label>
+      <input class="form-control c7-numfield" type="number" inputmode="numeric" id="threshold_streak"
+             name="threshold_streak" min="1" max="{{ max_streak }}"
+             value="{{ form.threshold_streak if form.threshold_streak else (sheet.threshold_streak or 1) }}">
+    </div>
+
+    {{ interruttore('uses_days', _("Giorni"), _("A · B · C, ognuno con le sue voci"),
+                    acceso=form.uses_days if form else sheet.uses_days) }}
+
+    {{ interruttore('has_weeks', _("Durata"), _("quante settimane"),
+                    acceso=form.has_weeks if form else sheet.weeks is not none) }}
+    <div class="c7-rows__row c7-rows__row--sub" data-sheet-when="has_weeks">
+      <label class="c7-rows__main c7-label" for="weeks">{{ _("Quante settimane") }}</label>
+      <input class="form-control c7-numfield" type="number" inputmode="numeric" id="weeks" name="weeks"
+             min="1" max="{{ max_weeks }}" value="{{ form.weeks if form.weeks else (sheet.weeks or 6) }}">
+    </div>
+  </section>
+
+  <div class="c7-actionbar">
+    <a class="btn btn-secondary c7-btn-narrow" href="{{ url_for('sheet.index') }}">{{ _("Annulla") }}</a>
+    <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> {{ _("Salva la scheda") }}</button>
+  </div>
+</form>
+
+{# ── Il foglio «quanto farne»: uno solo, per la voce che lo apre ─────── #}
+<div class="modal fade c7-sheet" id="sheetItem" tabindex="-1" aria-labelledby="sheetItemTitolo"
+     data-sheet-dialog
+     data-sheet-msg-shots="{{ _('Quanti tiri') }}"
+     data-sheet-msg-games="{{ _('Quante partite') }}"
+     data-sheet-msg-minutes="{{ _('Quanti minuti') }}"
+     data-sheet-unit-shots="{{ _('tiri') }}"
+     data-sheet-unit-games="{{ _('partite') }}"
+     data-sheet-unit-minutes="{{ _('minuti') }}"
+     data-sheet-msg-threshold="{{ _('Entra nella soglia della scheda.') }}"
+     data-sheet-msg-out="{{ _('Fuori dalla soglia: la soglia somma solo le voci «a riusciti».') }}">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="sheetItemTitolo" data-sheet-dialog-title>{{ _("Quanto farne") }}</h3>
+      </div>
+      <div class="modal-body c7-stack">
+
+        <div>
+          <div class="c7-label">{{ _("Come si segna") }}</div>
+          <div class="c7-hscroll">
+            {% for measure in measures %}
+            <button type="button" class="c7-pill" data-sheet-pick="{{ measure.value }}">{{ measure.label }}</button>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="c7-card c7-rows__row" data-sheet-amount-row>
+          <div class="c7-rows__main">
+            <div class="c7-rows__title" data-sheet-amount-label>{{ _("Quanti tiri") }}</div>
+            <div class="c7-rows__sub">{{ _("Il «quanto farne» di questa voce.") }}</div>
+          </div>
+          <div class="c7-ministep">
+            <button type="button" data-sheet-step="-1" aria-label="{{ _('Meno') }}"><i class="fas fa-minus"></i></button>
+            <input class="c7-ministep__value" type="number" inputmode="numeric" min="1" max="{{ max_amount }}"
+                   data-sheet-dialog-amount aria-label="{{ _('Quanto farne') }}">
+            <button type="button" data-sheet-step="1" aria-label="{{ _('Più') }}"><i class="fas fa-plus"></i></button>
+          </div>
+        </div>
+
+        <label class="c7-card c7-rows__row" data-sheet-variant-row hidden>
+          <div class="c7-rows__main">
+            <div class="c7-rows__title">{{ _("Da che parte") }}</div>
+            <div class="c7-rows__sub">{{ _("Destra e sinistra si segnano separate, ognuna coi suoi tiri.") }}</div>
+          </div>
+          <input class="form-check-input" type="checkbox" data-sheet-dialog-variant>
+        </label>
+
+        <div>
+          <label class="c7-label" for="sheetSection">{{ _("Sezione") }}</label>
+          <input class="form-control" type="text" id="sheetSection" maxlength="60" data-sheet-dialog-section
+                 placeholder="{{ _('Riscaldamento, Tecnica, Gioco…') }}">
+        </div>
+
+        <div data-sheet-day-row hidden>
+          <label class="c7-label" for="sheetDay">{{ _("Giorno") }}</label>
+          <input class="form-control" type="text" id="sheetDay" maxlength="12" data-sheet-dialog-day
+                 placeholder="{{ _('A, B, C…') }}">
+        </div>
+
+        <div class="c7-rows__sub" data-sheet-note></div>
+        <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal">{{ _("Fatto") }}</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% call(challenge) seq.picker('sheetPicker', available,
+                              titolo=_("Aggiungi un esercizio"),
+                              sottotitolo=_("Lo stesso esercizio può comparire in due voci.")) -%}
+  data-seq-variants="{{ challenge.variants|length }}"
+{%- endcall %}
+
+<script src="{{ url_for('static', filename='js/sequence-editor.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/sheet-compose.js') }}?v={{ config.ASSET_VERSION }}"></script>
+{% endblock %}
