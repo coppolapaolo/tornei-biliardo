@@ -20,12 +20,11 @@
 {%- endblock %}
 
 {% block head_extra %}
+{# L'altezza del disegnatore sta nel foglio, non qui: da lg è un riquadro alto
+   quanto lo schermo, sotto è il tavolo in cima e la pagina che scorre. Era una
+   regola sola scritta a mano in questo blocco, e senza il suo punto di rottura
+   teneva il tavolo schiacciato sotto «Salva» sul telefono. #}
 <link rel="stylesheet" href="{{ url_for('static', filename='css/drill-builder.css') }}">
-<style>
-  /* Il builder vuole tutta l'altezza che resta sotto l'intestazione della
-     pagina: da autonomo se la prendeva da `body`, che qui non e' suo. */
-  .drill-builder { height: min(78vh, 760px); border-radius: var(--c7-r-card-lg); overflow: hidden; }
-</style>
 {% endblock %}
 
 {% block page_back %}
@@ -48,23 +47,38 @@
        direbbe «Tiro» sopra l'immagine del tavolo. #}
     <div id="panel">
 
+      {# Gli strumenti sono una striscia sola, con lo stesso markup nei due
+         formati: da lg si dispone in griglia dentro il pannello, sotto scorre
+         di lato appiccicata sotto il tavolo. Icona sopra e parola sotto —
+         con la sola icona nessuno indovina «Sposta», con la sola parola la
+         striscia non ci sta.
+
+         `data-help` sta sulla striscia e non sul titolo: il titolo su telefono
+         non c'è, e il micro-aiuto attaccato a un elemento nascosto non si vede
+         proprio dove servirebbe. #}
       <div class="sec" id="sec-strumenti">
-        <h2 data-help="drill-strumento">{{ _("Strumenti") }}</h2>
-        <div class="row">
-          <button class="btn wide" data-tool="select">{{ _("Sposta") }}</button>
-          <button class="btn wide" data-tool="shot">{{ _("Tiro") }}</button>
-        </div>
-        <div class="row" style="margin-top:6px">
-          <button class="btn wide" data-tool="line">{{ _("Linea libera") }}</button>
-          <button class="btn wide" data-tool="text">{{ _("Testo") }}</button>
-        </div>
-        <div class="row" style="margin-top:6px">
-          <button class="btn wide" data-tool="target" data-help="drill-bersaglio">{{ _("Bersaglio") }}</button>
-        </div>
-        <div class="row" style="margin-top:6px">
-          <button class="btn wide ghostbtn" id="undo">{{ _("Annulla mossa") }}</button>
-          <button class="btn wide ghostbtn" id="redo">{{ _("Ripeti mossa") }}</button>
-          <button class="btn wide ghostbtn" id="del">{{ _("Elimina") }}</button>
+        <h2>{{ _("Strumenti") }}</h2>
+        <div class="tools" data-help="drill-strumento">
+          <button class="btn tool" data-tool="select">
+            <i class="fas fa-arrow-pointer" aria-hidden="true"></i><span>{{ _("Sposta") }}</span></button>
+          <button class="btn tool" data-tool="shot">
+            <i class="fas fa-location-crosshairs" aria-hidden="true"></i><span>{{ _("Tiro") }}</span></button>
+          <button class="btn tool" data-tool="line">
+            <i class="fas fa-pen-nib" aria-hidden="true"></i><span>{{ _("Linea") }}</span></button>
+          <button class="btn tool" data-tool="text">
+            <i class="fas fa-font" aria-hidden="true"></i><span>{{ _("Testo") }}</span></button>
+          <button class="btn tool" data-tool="target" data-help="drill-bersaglio">
+            <i class="fas fa-bullseye" aria-hidden="true"></i><span>{{ _("Bersaglio") }}</span></button>
+          <span class="tools__sep" aria-hidden="true"></span>
+          <button class="btn tool tool--icon ghostbtn" id="undo"
+                  title="{{ _('Annulla mossa') }}" aria-label="{{ _('Annulla mossa') }}">
+            <i class="fas fa-rotate-left" aria-hidden="true"></i></button>
+          <button class="btn tool tool--icon ghostbtn" id="redo"
+                  title="{{ _('Ripeti mossa') }}" aria-label="{{ _('Ripeti mossa') }}">
+            <i class="fas fa-rotate-right" aria-hidden="true"></i></button>
+          <button class="btn tool tool--icon ghostbtn" id="del"
+                  title="{{ _('Elimina') }}" aria-label="{{ _('Elimina') }}">
+            <i class="fas fa-trash-can" aria-hidden="true"></i></button>
         </div>
       </div>
 

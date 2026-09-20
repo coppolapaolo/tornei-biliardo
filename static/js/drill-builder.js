@@ -65,6 +65,14 @@ const forceLabel = f => f<=12 ? T_("forceTouch","tocco") : f<=22 ? T_("forceSoft
 
 const CARD_W = 250, CARD_H = 136, CARD_GAP = 10;
 
+/* Il segno della selezione: azzurro chiaro, `--c7-accent-bright` del design
+   system, come il riquadro selezionato negli artboard del canvas. Era il giallo
+   gesso del tool autonomo, che sul panno blu si confondeva con la bilia 1.
+   Non finisce nell'immagine — `forExport` toglie ogni selezione — quindi si
+   puo' cambiare senza toccare i disegni gia' salvati. Il cartellino del titolo,
+   che invece **e'** disegno, resta com'era. */
+const SEL = "#8FCDE8";
+
 const state = {
   items: [], tool:"select", armed:null,
   showGrid:true, showSub:false, showMarks:true, magnets:true, cloth:"blu", ballScale:1,
@@ -79,6 +87,7 @@ let history = [], future = [], gRoot = null, altDown = false;
 
 const $ = s => document.querySelector(s);
 const stage = $("#stage");
+const panel = $("#panel");
 function E(tag, a, parent){
   const e = document.createElementNS(NS, tag);
   for (const k in a) if (a[k] !== undefined && a[k] !== null) e.setAttribute(k, a[k]);
@@ -367,7 +376,7 @@ function polyline(g, pts, o){
   const d = o.curve
     ? `M${pts[0].x} ${pts[0].y}Q${o.curve.x} ${o.curve.y} ${pts[1].x} ${pts[1].y}`
     : "M" + pts.map(p=>`${p.x.toFixed(2)} ${p.y.toFixed(2)}`).join("L");
-  if (o.halo) E("path",{d,fill:"none",stroke:"#f5c518","stroke-width":6,opacity:.45,
+  if (o.halo) E("path",{d,fill:"none",stroke:SEL,"stroke-width":6,opacity:.45,
     "stroke-linecap":"round","stroke-linejoin":"round"},g);
   E("path",{d,fill:"none",stroke:o.color,"stroke-width":o.w||2.2,
     "stroke-linecap":"round","stroke-linejoin":"round",
@@ -485,7 +494,7 @@ function drawShot(g, sh, sel, forExport, index, many){
 function drawShotCard(root, sh, idx, x, y, sel){
   const g = E("g",{transform:`translate(${x} ${y})`}, root);
   E("rect",{x:0,y:0,width:CARD_W,height:CARD_H,rx:8,fill:"#17181a",
-    stroke:sel?"#f5c518":"#39424d","stroke-width":sel?1.8:1.2},g);
+    stroke:sel?SEL:"#39424d","stroke-width":sel?1.8:1.2},g);
   const T=(x,y,s,o)=>{const t=E("text",Object.assign({x,y,
     "font-family":"Arial, Helvetica, sans-serif","font-size":11,fill:"#8d97a3"},o||{}),g);
     t.textContent=s; return t;};
@@ -571,7 +580,7 @@ function drawTarget(gTable, it, sel){
       fill:"#1b2124",transform:rot(it.x,ry)},g);
     t.textContent = it.values[i];
   }
-  if (sel) E("circle",{cx:it.x,cy:it.y,r:it.step*n+4,fill:"none",stroke:"#f5c518",
+  if (sel) E("circle",{cx:it.x,cy:it.y,r:it.step*n+4,fill:"none",stroke:SEL,
     "stroke-width":1.6,"stroke-dasharray":"3 3"},gTable);
 }
 function buildScene(o){
@@ -606,7 +615,7 @@ function buildScene(o){
     const fg = freeGeo(it);
     if (fg.ghost) ballSvg(g,"ghost",fg.ghost.x,fg.ghost.y);
     polyline(g, fg.pts, {color:it.color, dashed:it.style==="dashed", arrow:it.arrow, halo:sel});
-    if (sel) it.points.forEach(q=>E("circle",{cx:q.x,cy:q.y,r:4.5,fill:"#f5c518",
+    if (sel) it.points.forEach(q=>E("circle",{cx:q.x,cy:q.y,r:4.5,fill:SEL,
       stroke:"#17181a","stroke-width":1},g));
   }
   shots.forEach((sh,i)=>drawShot(g, sh, !o.forExport && state.sel===sh.id,
@@ -615,11 +624,11 @@ function buildScene(o){
   for (const it of state.items){
     const sel = !o.forExport && state.sel === it.id;
     if (it.type === "ball"){
-      if (sel) E("circle",{cx:it.x,cy:it.y,r:BR+4,fill:"none",stroke:"#f5c518",
+      if (sel) E("circle",{cx:it.x,cy:it.y,r:BR+4,fill:"none",stroke:SEL,
         "stroke-width":1.6,"stroke-dasharray":"3 3"},g);
       ballSvg(g,it.ball,it.x,it.y);
     } else if (it.type === "text"){
-      if (sel) E("circle",{cx:it.x,cy:it.y,r:12,fill:"none",stroke:"#f5c518","stroke-width":1.4},g);
+      if (sel) E("circle",{cx:it.x,cy:it.y,r:12,fill:"none",stroke:SEL,"stroke-width":1.4},g);
       const t=E("text",{x:it.x,y:it.y,dy:5,"text-anchor":"middle",
         "font-family":"Arial, Helvetica, sans-serif","font-size":18,"font-weight":"700",
         fill:theme().ink,stroke:"rgba(0,0,0,.5)","stroke-width":2.6,"paint-order":"stroke",
@@ -631,7 +640,7 @@ function buildScene(o){
     const pv = state.draft.points.concat(state.preview?[state.preview]:[]);
     polyline(g,pv,{color:state.lineColor,dashed:state.lineStyle==="dashed",
       arrow:state.lineArrow,opacity:.75});
-    pv.forEach(q=>E("circle",{cx:q.x,cy:q.y,r:3.2,fill:"#f5c518"},g));
+    pv.forEach(q=>E("circle",{cx:q.x,cy:q.y,r:3.2,fill:SEL},g));
   }
   if (state.title){
     const bw = Math.max(80, state.title.length*9.4+24), bx = L-14-bw, by = 12;
@@ -662,6 +671,10 @@ function render(){
   stage.replaceChildren(svg);
   gRoot = g;
   stage.className = "mode-" + state.tool;
+  /* Lo strumento acceso lo sa anche il pannello: su telefono le proprieta'
+     degli strumenti spenti si nascondono (CSS), perche' li' sono duecento
+     righe fra il tavolo e quello che stai cercando. */
+  if (panel) panel.dataset.tool = state.tool;
   document.querySelectorAll("[data-tool]").forEach(b=>b.classList.toggle("on",b.dataset.tool===state.tool));
   document.querySelectorAll("[data-lstyle]").forEach(b=>b.classList.toggle("on",b.dataset.lstyle===state.lineStyle));
   $("#shotHint").textContent = state.tool!=="shot"
