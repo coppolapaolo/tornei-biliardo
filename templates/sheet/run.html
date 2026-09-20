@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{# La seduta (canvas «TPA ed esercizi», pagina 5 · «La seduta» e «La stessa
+   seduta, una voce lunga»; ADR-067).
+
+   La cornice è quella dell'esecuzione di un esercizio (fase 5a) e della
+   sessione d'esame (3d), e le tre parti sono le stesse: la striscia di dove
+   siamo, la voce a fuoco con «come sta andando», e i comandi agganciati in
+   basso al posto della nav. Cambia cosa c'è nei comandi — lo decide la misura
+   della voce.
+
+   I due pezzi che cambiano dopo ogni casella li ridisegna **il server**
+   (`_run_progress.html`, `_run_dock.html`): il browser li sostituisce e non ne
+   tiene una seconda copia. #}
+
+{% block title %}{{ run.sheet.name }}{% endblock %}
+
+{% block page_back %}
+<a class="c7-head__back d-lg-none" href="{{ url_for('sheet.index') }}"
+   aria-label="{{ _('Torna alle schede') }}"><i class="fas fa-arrow-left"></i></a>
+{% endblock %}
+{% block page_title %}{{ run.sheet.name }}{% endblock %}
+{% block page_sub %}
+  {{ _("Seduta del %(giorno)s", giorno=run.session.started_at|day_friendly(with_time=False)) }}
+  {%- if run.session.day %} <span class="c7-sep">·</span> {{ _("giorno %(g)s", g=run.session.day) }}{% endif -%}
+  {%- if run.steps %} <span class="c7-sep">·</span>
+    {{ _("voce %(n)s di %(tot)s", n=run.index + 1, tot=run.steps|length) }}{% endif -%}
+{% endblock %}
+
+{# I comandi stanno agganciati in basso: la nav flottante gli lascia il posto.
+   Per uscire ci sono la freccia in testata e «Ho finito». #}
+{% block app_nav %}{% endblock %}
+
+{% block content %}
+{# Il modulo che chiude la seduta: vive fuori dai comandi, che il server
+   ridisegna, così il pulsante «Ho finito» lo trova sempre per `form=`. #}
+<form method="POST" id="sheetClose" action="{{ url_for('sheet.close_session', session_id=run.session.id) }}" hidden>
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+</form>
+
+<div class="c7-exam c7-exam--write"
+     data-sheet-run
+     data-at="{{ run.index }}"
+     data-record-url="{{ url_for('sheet.record_cell', session_id=run.session.id) }}"
+     data-shot-url="{{ url_for('sheet.record_shot', session_id=run.session.id) }}"
+     data-undo-url="{{ url_for('sheet.undo_shot', session_id=run.session.id) }}"
+     data-msg-error="{{ _('Non è stato possibile segnare la casella.') }}">
+
+  <section class="c7-stack c7-exam__main">
+
+    {# ── La striscia: dove siamo ──────────────────────────────────────── #}
+    {% if run.steps %}
+    <nav class="c7-exam-steps" aria-label="{{ _('Le voci della scheda') }}">
+      {% for step in run.steps %}
+      <a class="c7-exam-steps__step {{ 'is-now' if step.index == run.index else ('is-done' if step.done else '') }}"
+         href="{{ url_for('sheet.run', session_id=run.session.id, voce=step.index) }}"
+         {% if step.index == run.index %}aria-current="step"{% endif %}>
+        <span class="c7-exam-steps__dot">
+          {%- if step.done and step.index != run.index %}<i class="fas fa-check"></i>
+          {%- else %}{{ loop.index }}{% endif -%}
+        </span>
+        <span class="c7-exam-steps__lab">{{ step.label }}</span>
+      </a>
+      {% endfor %}
+    </nav>
+    {% endif %}
+
+    <div class="c7-stack" data-run-progress aria-live="polite">
+      {% include "sheet/_run_progress.html" %}
+    </div>
+  </section>
+
+  <aside class="c7-exam-dock c7-sheetdock" data-run-dock>
+    {% include "sheet/_run_dock.html" %}
+  </aside>
+</div>
+
+{# Il foglio per scrivere il totale di una voce lunga: uno per pagina. #}
+<div class="modal fade c7-sheet" id="sheetTotale" tabindex="-1" aria-labelledby="sheetTotaleTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="sheetTotaleTitolo">{{ _("Scrivi il totale") }}</h3>
+        <div class="c7-sheet__sub">{{ _("Quanti ne sono riusciti, se li hai contati da te.") }}</div>
+      </div>
+      <div class="modal-body c7-stack">
+        <div class="c7-exam-pad">
+          <button type="button" class="c7-exam-pad__btn" data-total-step="-1"
+                  aria-label="{{ _('Uno in meno') }}"><i class="fas fa-minus"></i></button>
+          <div class="c7-exam-pad__figure">
+            <input class="c7-exam-pad__v" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+                   data-total-value aria-label="{{ _('Quanti riusciti') }}" value="0">
+            <div class="c7-exam-pad__max" data-total-max></div>
+          </div>
+          <button type="button" class="c7-exam-pad__btn c7-exam-pad__btn--plus" data-total-step="1"
+                  aria-label="{{ _('Uno in più') }}"><i class="fas fa-plus"></i></button>
+        </div>
+        <button type="button" class="btn btn-primary w-100" data-bs-dismiss="modal" data-total-save>
+          {{ _("Segna") }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/sheet-run.js') }}?v={{ config.ASSET_VERSION }}"></script>
+{% endblock %}

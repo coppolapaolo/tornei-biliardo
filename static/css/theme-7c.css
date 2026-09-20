@@ -4249,6 +4249,76 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 /* Un numero in un campo, non un testo: largo quanto serve e non di più. */
 .c7-numfield { width: 96px; flex-shrink: 0; text-align: center; font-variant-numeric: tabular-nums; }
 
+/* ==========================================================================
+   La seduta di una scheda (ADR-067). La cornice è quella della sessione
+   d'esame — `.c7-exam`, `.c7-exam-steps`, `.c7-exam-dock`, `.c7-exam-pad` —
+   e qui ci sono solo i pezzi che una seduta ha in più: la fila di tasti «0…N»,
+   i due disegni quando la voce si fa da due lati, e la striscia dei tiri.
+   ========================================================================== */
+
+/* Una voce per lato: due disegni affiancati, il secondo specchiato. */
+.c7-sheetrun__diagrams { display: grid; gap: 10px; }
+.c7-sheetrun__diagrams--duo { grid-template-columns: 1fr 1fr; }
+.c7-sheetrun__diagrams figcaption {
+  margin-top: 6px; text-align: center;
+}
+.c7-sheetrun__strip { padding: 12px 14px; }
+/* La striscia dei tiri: un segno per tiro, in ordine. Vuoto = non ancora
+   tirato, e si vede che ne restano. */
+.c7-sheetrun__pips { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 10px; }
+.c7-sheetrun__pip {
+  width: 9px; height: 9px; border-radius: 3px; background: var(--c7-line-soft);
+}
+.c7-sheetrun__pip.is-on { background: var(--c7-ok); }
+.c7-sheetrun__pip.is-miss { background: var(--c7-err); }
+
+/* Il dock della seduta: più caselle una sotto l'altra, ognuna coi suoi tasti. */
+.c7-sheetdock { gap: 12px; }
+.c7-sheetdock__cell { display: grid; gap: 8px; }
+.c7-sheetdock__side { display: flex; align-items: baseline; gap: 8px; }
+.c7-sheetdock__side .c7-label { flex: 1; min-width: 0; }
+.c7-sheetdock__clear {
+  border: 0; background: none; padding: 0;
+  font-size: 11px; font-weight: 700; color: var(--c7-ink-muted);
+  text-decoration: underline;
+}
+.c7-sheetdock__meter { display: grid; gap: 6px; }
+
+/* La fila di tasti «quanti su N?»: un tocco per casella, ed è il gesto del
+   foglio di carta. Si dispone da sé su più righe quando i numeri sono molti,
+   senza mai scendere sotto il bersaglio tattile. */
+.c7-sheetpad {
+  display: grid; gap: 6px;
+  grid-template-columns: repeat(auto-fit, minmax(var(--c7-touch), 1fr));
+}
+.c7-sheetpad__key {
+  min-height: var(--c7-touch); border: 0; border-radius: var(--c7-r-control);
+  background: var(--c7-bg); color: var(--c7-ink);
+  font-family: var(--c7-font-mono); font-size: 18px; font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  transition: transform var(--c7-dur-quick) var(--c7-ease);
+}
+.c7-sheetpad__key:active { transform: scale(var(--c7-press)); transition-duration: 0ms; }
+.c7-sheetpad__key.is-on { background: var(--c7-ink); color: var(--c7-on-ink); }
+
+/* Le azioni di rado della card di una scheda: piccole, in fondo, dove non
+   rubano il tocco a «Comincia». */
+.c7-sheetcard__minor {
+  margin-top: 10px; display: flex; align-items: baseline;
+  gap: 8px; justify-content: space-between; flex-wrap: wrap;
+}
+.c7-sheetcard__minor a,
+.c7-sheetcard__minor button {
+  border: 0; background: none; padding: 0;
+  font-size: 11px; font-weight: 700; color: var(--c7-ink-muted);
+  text-decoration: underline;
+}
+
+/* Nel riepilogo: la cifra di oggi, verde se migliorata e rossa se peggiorata.
+   Il colore sta sul numero e non sulla riga: la notizia è quel numero. */
+.c7-summary__v--ok { color: var(--c7-ok); }
+.c7-summary__v--err { color: var(--c7-err-ink); }
+
 /* Lo stepper piccolo: meno · cifra · più su una riga. La cifra è un campo —
    chi deve arrivare a 40 la scrive, non tocca «più» trenta volte. */
 .c7-ministep { display: inline-flex; align-items: center; gap: 2px; background: var(--c7-bg); border-radius: var(--c7-r-control); padding: 2px; }

@@ -80,6 +80,6 @@ def archive(sheet_id):
     )
 
 
-from . import compose  # noqa: E402,F401  (registra le route sul blueprint)
+from . import compose, run  # noqa: E402,F401  (registra le route sul blueprint)
 
 __all__ = ["sheet_bp"]

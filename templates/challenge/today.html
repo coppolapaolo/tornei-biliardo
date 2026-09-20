@@ -23,6 +23,23 @@
 {% block content %}
 <div class="c7-stack" style="max-width:720px" data-exercise-list>
 
+  {# ── La seduta lasciata a metà, se c'è ─────────────────────────────── #}
+  {# Sta sopra tutto e prima del catalogo vuoto: chi ha una seduta aperta la
+     vuole riprendere, e il resto della pagina non c'entra. #}
+  {% if seduta_aperta and feature_visible('sheet.run') %}
+  <section class="c7-card c7-card--accent">
+    <div class="c7-kicker">{{ _("Seduta cominciata") }}</div>
+    <h2 style="margin:6px 0 10px;font-size:20px;font-weight:800;letter-spacing:-.03em">
+      {{ seduta_aperta.sheet.name }}
+    </h2>
+    <p style="margin:0;font-size:13px;font-weight:600;opacity:.85">
+      {{ _("L'hai cominciata %(quando)s.", quando=seduta_aperta.started_at|day_friendly) }}
+    </p>
+    <a href="{{ url_for('sheet.run', session_id=seduta_aperta.id) }}"
+       class="btn btn-primary w-100" style="margin-top:14px">{{ _("Riprendi la seduta") }}</a>
+  </section>
+  {% endif %}
+
   {% if today.is_empty %}
   <div class="c7-empty">
     <div class="c7-empty__ico"><i class="fas fa-bullseye"></i></div>

@@ -79,11 +79,30 @@ def today():
             "challenge/today.html",
             today=build_today(current_user.id),
             today_label=today_label,
+            # La seduta lasciata a metà sale in cima a «Oggi»: è la cosa più
+            # probabile che chi apre l'app stia per fare (ADR-067, fase 6c).
+            seduta_aperta=_seduta_da_riprendere(current_user.id),
         )
     except Exception:
         current_app.logger.exception("«Oggi» degli esercizi non caricata")
         flash(_("Non è stato possibile caricare gli esercizi."), "danger")
         return redirect(url_for("dashboard.dashboard"))
+
+
+def _seduta_da_riprendere(user_id):
+    """La seduta di scheda lasciata aperta, se ce n'è una (ADR-067).
+
+    Una sola, la più recente: due sedute aperte su due schede diverse sono
+    possibili, ma «riprendi» è un invito, non un elenco — e chi ne ha due le
+    trova entrambe nella stanza delle schede.
+    """
+    from models.training_sheet.models import TrainingSession
+
+    return (
+        TrainingSession.query.filter_by(user_id=user_id, ended_at=None)
+        .order_by(TrainingSession.started_at.desc())
+        .first()
+    )
 
 
 @challenge_bp.route("/catalog")
