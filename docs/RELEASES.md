@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.44.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.43.1...v1.44.0) (2026-09-20)
+
+
+### Funzioni nuove
+
+* il passaggio di livello ha chi lo sancisce ([#173](https://github.com/coppolapaolo/tornei-biliardo/issues/173)) ([#531](https://github.com/coppolapaolo/tornei-biliardo/issues/531)) ([7e3fb1a](https://github.com/coppolapaolo/tornei-biliardo/commit/7e3fb1afeb3c7238b8734599f9f7d7fd6318631c))
+* l'istruttore propone una scheda, e l'allievo decide se prenderla ([#173](https://github.com/coppolapaolo/tornei-biliardo/issues/173)) ([#530](https://github.com/coppolapaolo/tornei-biliardo/issues/530)) ([96b8868](https://github.com/coppolapaolo/tornei-biliardo/commit/96b88682f4603f51df47a75f6cffb6256b604246))
+* l'istruttore vede i suoi allievi e li ordina in gruppi ([#173](https://github.com/coppolapaolo/tornei-biliardo/issues/173)) ([#528](https://github.com/coppolapaolo/tornei-biliardo/issues/528)) ([26827bc](https://github.com/coppolapaolo/tornei-biliardo/commit/26827bc0dca174749d7784563e597349e83770b6))
+
 ## [1.43.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.43.0...v1.43.1) (2026-09-20)
 
 
