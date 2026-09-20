@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.41.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.40.0...v1.41.0) (2026-09-20)
+
+
+### Funzioni nuove
+
+* il registro di una scheda dice com'è andata, e da che parte si sbaglia ([#515](https://github.com/coppolapaolo/tornei-biliardo/issues/515)) ([d739b16](https://github.com/coppolapaolo/tornei-biliardo/commit/d739b16c2cdb00ca26e4db2cda880c73ed59c2f1))
+* la scheda di allenamento ha una forma sola, e un registro che non si riscrive ([#511](https://github.com/coppolapaolo/tornei-biliardo/issues/511)) ([668c6f4](https://github.com/coppolapaolo/tornei-biliardo/commit/668c6f4e9e6bd470ab9a87bbf1b5e547d4a3e9c4))
+* la scheda si compone come un esame, e ogni voce ha il suo «quanto farne» ([#513](https://github.com/coppolapaolo/tornei-biliardo/issues/513)) ([a38906d](https://github.com/coppolapaolo/tornei-biliardo/commit/a38906d72faa027826d6d1391f956470f6725177))
+* la seduta si segna con un tocco per casella, e finisce con un riepilogo ([#514](https://github.com/coppolapaolo/tornei-biliardo/issues/514)) ([7c2e26f](https://github.com/coppolapaolo/tornei-biliardo/commit/7c2e26fbed37e09ce5cf7b9b50eb558e51e35ef1))
+
 ## [1.40.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.39.0...v1.40.0) (2026-09-20)
 
 
