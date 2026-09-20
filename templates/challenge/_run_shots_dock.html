@@ -1,0 +1,34 @@
+{# I comandi della prova colpo per colpo (fase 5b; ADR-066).
+
+   Il terzo posto della cornice. Cambiano mentre si tira — dopo l'ultimo colpo
+   compare «Chiudi la prova» — quindi li **ridisegna il server** a ogni colpo,
+   come il pezzo «come sta andando»: due stati da tenere in pari nel browser
+   sono due stati che prima o poi divergono. #}
+{% if run and run.is_full %}
+<button type="button" class="btn btn-success w-100" data-shot-close>
+  {{ _("Chiudi la prova") }}
+</button>
+{% else %}
+<p class="c7-runprog__say" style="text-align:center">
+  <b style="color:var(--c7-ink)">{{ _("Imbucata?") }}</b>
+  {{ _("Tocca il panno dove si è fermata la bianca: l'anello dà i punti.") }}
+</p>
+<button type="button" class="c7-exam-verdict c7-exam-verdict--no" data-shot-miss
+        data-help="allenamento-colpo">
+  {{ _("Non è entrata · 0 punti") }}
+</button>
+{% endif %}
+
+<div class="c7-run-dock__pair">
+  <button type="button" class="c7-exam-dock__alt" data-shot-undo
+          {% if not (run and run.can_undo) %}disabled{% endif %}>
+    <i class="fas fa-rotate-left" aria-hidden="true"></i>{{ _("Annulla l'ultimo colpo") }}
+  </button>
+  {% if run %}
+  <button type="button" class="c7-exam-dock__alt" data-shot-restart>
+    <i class="fas fa-xmark" aria-hidden="true"></i>{{ _("Ricomincia") }}
+  </button>
+  {% else %}
+  <a href="{{ url_for('challenge.today') }}" class="btn btn-success">{{ _("Ho finito") }}</a>
+  {% endif %}
+</div>

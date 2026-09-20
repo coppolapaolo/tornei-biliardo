@@ -321,6 +321,19 @@ allena: due prove dello stesso esercizio devono potersi confrontare.
   convalida al salvataggio, `target_from_scene` lo legge con tolleranza. Uno per
   scena. Il disegnatore non può toglierlo a un esercizio che lo usa.
 
+**Come si esegue.** La cornice è la stessa
+(`challenge/training.html`), cambia il terzo posto: al posto del tastierino c'è
+il **panno** (`_run_cloth.html`). Il tocco non registra — apre l'ingrandimento
+sul bersaglio, dove il punto si corregge trascinando (#183) — e registra
+«Conferma». Dal browser arrivano **solo** l'esito e il punto: quanto vale lo sa
+il server, che ha il bersaglio. `models/challenge/run_view.py` dice a che colpo
+si è, che cosa disegna il grafico e quale frase lo accompagna; la proiezione
+(«a questo ritmo chiudi a 37») tace sotto i tre colpi e senza storico. Ogni
+risposta riporta **due** pezzi già disegnati, «come sta andando» e i comandi:
+dopo l'ultimo colpo compare «Chiudi la prova», e due stati da tenere in pari
+nel browser sono due stati che divergono. Il tabellone orizzontale non c'è:
+colpo per colpo il comando **è** il panno.
+
 ### ChallengeAttempt
 **Fields:** `challenge_id`, `user_id`, `score`, `passed`, `attempted_at`, `variant_id`
 

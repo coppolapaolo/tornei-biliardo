@@ -1,0 +1,55 @@
+{# La prova in corso, colpo per colpo: come sta andando (fase 5b; ADR-066).
+
+   Prende il posto delle «prove di oggi» finché una prova è aperta — si sta
+   tirando, e ciò che conta è questa serie, non la sera. Come il pezzo dell'altra
+   modalità, lo ridisegna **solo il server**: ogni colpo lo riporta già pronto
+   nella risposta. Niente `id` qui dentro. #}
+<section class="c7-card c7-runprog" data-help="allenamento-andamento">
+  <div class="c7-runprog__head">
+    <span class="c7-label">{{ run.kicker }}</span>
+    <span class="c7-num c7-runprog__now">{{ run.figure }}</span>
+  </div>
+  {% if run.chart %}
+  {% with chart = run.chart, chart_label = run.sentence %}
+  {% include "challenge/_run_chart.html" %}
+  {% endwith %}
+  {% endif %}
+  <p class="c7-runprog__say">{{ run.sentence }}</p>
+</section>
+
+{% if run.target and not run.is_full %}
+{% with target = run.target, shots = run.shots %}
+{% include "challenge/_run_cloth.html" %}
+{% endwith %}
+{% endif %}
+
+{# La striscia dei colpi: uno per posto, col suo punteggio; la mancata è un
+   trattino. I posti ancora vuoti dicono quanto manca. #}
+<div class="c7-shots" aria-label="{{ _('I colpi di questa prova') }}">
+  {% for colpo in run.shots %}
+  <span class="c7-shots__one{{ ' is-miss' if not colpo.made }}"
+        title="{{ _('Colpo %(n)s', n=colpo.position) }}">
+    {%- if colpo.made %}{{ colpo.points }}{% else %}&minus;{% endif -%}
+  </span>
+  {% endfor %}
+  {% for _i in range(run.shots_count - run.shots|length) %}
+  <span class="c7-shots__one is-todo"></span>
+  {% endfor %}
+</div>
+
+{% if run.pocketing is not none %}
+{# Due numeri e non uno: «Imbucate» dice se la bilia entra, «Posizione» quanto
+   vicino al centro si ferma la battente. Un numero solo scenderebbe sia per chi
+   sbaglia la bilia sia per chi sbaglia la forza, cioè non direbbe che cosa
+   correggere. Il colpo mancato pesa sul primo e non entra nel secondo. #}
+<div class="c7-kpis">
+  <div class="c7-card">
+    <div class="c7-num-lg">{{ run.pocketing }}%</div>
+    <div class="c7-rows__sub">{{ _("Imbucate") }}</div>
+  </div>
+  <div class="c7-card">
+    <div class="c7-num-lg">{% if run.position is not none %}{{ run.position }}%{% else %}&mdash;{% endif %}</div>
+    <div class="c7-rows__sub">{{ _("Posizione") }}</div>
+  </div>
+</div>
+{% endif %}

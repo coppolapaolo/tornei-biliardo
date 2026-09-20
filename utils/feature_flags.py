@@ -489,6 +489,12 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # deve poter disfare quella appena registrata, altrimenti il tasto c'e' ma
     # risponde 404 solo in produzione.
     "challenge.training_undo": {"player", "director"},
+    # I colpi di una prova colpo per colpo (ADR-066): stesso percorso
+    # dell'allenamento, quindi stessi ruoli.
+    "challenge.training_shot": {"player", "director"},
+    "challenge.training_shot_undo": {"player", "director"},
+    "challenge.training_shot_close": {"player", "director"},
+    "challenge.training_shot_restart": {"player", "director"},
     # start_attempt/attempt_detail/complete_attempt sono il percorso della
     # gara (il drill al posto del bye), che il giocatore attraversa da solo.
     "challenge.start_attempt": {"player", "director"},

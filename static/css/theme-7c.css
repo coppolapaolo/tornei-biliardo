@@ -4556,3 +4556,53 @@ span.c7-exam-pad__v { display: block; }
 .c7-livechart__bar { fill: var(--c7-accent); }
 .c7-livechart__bar.is-now { fill: var(--c7-accent-bright); stroke: var(--c7-accent); stroke-width: 2; }
 .c7-livechart__bar.is-todo { fill: var(--c7-line); }
+
+/* --- Il panno che si tocca, e i colpi (fase 5b, ADR-066) ------------------ */
+/* Due viste dello stesso sistema di coordinate: il tavolo intero e
+   l'ingrandimento sul bersaglio. Il verde è quello del disegnatore, non un
+   token: è il colore di un panno, non un ruolo dell'interfaccia. */
+.c7-cloth { position: relative; }
+.c7-cloth__svg {
+  display: block; width: 100%; height: auto;
+  border-radius: var(--c7-r-card); touch-action: none; cursor: crosshair;
+}
+.c7-cloth__rail { fill: #175f80; }
+.c7-cloth__felt { fill: #2f8fc0; }
+.c7-cloth__dia { fill: #fff; opacity: .85; }
+.c7-cloth__rings .c7-cloth__ring {
+  fill: rgba(201, 168, 76, calc(.78 - var(--ring) * .18));
+  stroke: rgba(0, 0, 0, .35); stroke-width: .8;
+}
+/* I colpi già tirati: la nuvola dei punti d'arrivo, che nessun punteggio
+   riassume — si vede a colpo d'occhio se si sbaglia sempre dallo stesso lato. */
+.c7-cloth__shot { fill: #fbfaf6; stroke: #1b2124; stroke-width: 2; opacity: .75; }
+.c7-cloth__cue { fill: #fbfaf6; stroke: #1b2124; stroke-width: 3; }
+.c7-cloth__cross { stroke: #1b2124; stroke-width: 1.5; stroke-dasharray: 6 6; opacity: .7; }
+/* L'ingrandimento **prende il posto** del tavolo, non ci si mette sopra: su un
+   telefono il tavolo è alto due dita, e un velo con dentro disegno, istruzione
+   e due pulsanti finirebbe per coprire proprio il punto da correggere. */
+.c7-cloth:has([data-cloth-zoom]:not([hidden])) [data-cloth-full] { display: none; }
+.c7-cloth__zoom { display: grid; gap: 10px; }
+.c7-cloth__hint { margin: 0; font-size: 13px; font-weight: 700; text-align: center; color: var(--c7-ink-soft); }
+.c7-cloth__zoomacts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+/* Sul telefono l'ingrandimento è quadrato, quindi alto: senza un tetto
+   «Conferma» finisce sotto il bordo dello schermo, e per registrare un colpo
+   bisognerebbe scorrere — col telefono in mano, fra un tiro e l'altro. */
+@media (max-width: 991.98px) {
+  .c7-cloth__zoom .c7-cloth__svg { width: auto; height: 42vh; margin-inline: auto; }
+}
+
+/* La striscia dei colpi: uno per posto, col suo punteggio. */
+.c7-shots { display: flex; flex-wrap: wrap; gap: 6px; }
+.c7-shots__one {
+  min-width: 30px; height: 30px; padding: 0 6px; border-radius: var(--c7-r-control);
+  display: grid; place-items: center; background: var(--c7-accent); color: var(--c7-accent-ink);
+  font-family: var(--c7-font-mono); font-size: 13px; font-weight: 800;
+}
+.c7-shots__one.is-miss { background: var(--c7-err-bg); color: var(--c7-err-ink); }
+.c7-shots__one.is-todo { background: var(--c7-line); }
+/* Il disegno dell'esercizio, chiuso in una linguetta mentre si tira. */
+.c7-run__fold > summary {
+  padding: 10px 0; font-size: 13px; font-weight: 800; color: var(--c7-ink-soft); cursor: pointer;
+}
+.c7-run__fold[open] > summary { color: var(--c7-ink); }

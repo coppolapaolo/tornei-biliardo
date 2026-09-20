@@ -616,6 +616,14 @@ hints:
     page: challenge
     section: allenarsi
 
+  - id: allenamento.colpo
+    label: "Colpo per colpo"
+    short: "Se la bilia è entrata, tocca il panno dove si è fermata la bianca: l'anello in cui cade dà i punti. Se non è entrata, il colpo vale zero e non ha una posizione."
+    anchor: allenamento-colpo
+    screens: [challenge.training_session]
+    page: challenge
+    section: allenarsi
+
   - id: allenamento.annulla
     label: "Annulla l'ultima"
     short: "Toglie l'ultima prova registrata. Torna indietro anche l'XP: serve a correggere un tocco sbagliato, non a rigiocarsi il punteggio."

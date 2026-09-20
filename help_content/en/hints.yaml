@@ -666,6 +666,15 @@ hints:
   - challenge.training_session
   page: challenge
   section: allenarsi
+- id: allenamento.colpo
+  label: Shot by shot
+  short: 'If the ball went in, tap the cloth where the cue ball stopped: the ring it lands in gives the
+    points. If it did not, the shot is worth zero and has no position.'
+  anchor: allenamento-colpo
+  screens:
+  - challenge.training_session
+  page: challenge
+  section: allenarsi
 - id: allenamento.annulla
   label: Undo the last one
   short: 'Removes the attempt you just recorded. The XP goes back too: it is there to fix a wrong tap,
