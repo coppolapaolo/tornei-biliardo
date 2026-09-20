@@ -1,0 +1,30 @@
+{# La consegna estratta e la scala degli esiti (fase 5c, #452).
+
+   Prende il posto del panno: qui non si tocca nessun punto: l'app dice che
+   cosa fare — «3 o più sponde, sulla bilia 7» — e a colpo tirato si sceglie
+   com'è andata da una scala di voci **con un nome**. Il numero accanto è
+   quanto vale, e non si digita.
+
+   La consegna la porta il server e resta la stessa finché il colpo non è
+   registrato: se si riestraesse a ogni lettura, ricaricare la pagina sarebbe
+   un modo di cambiarla finché non piace. #}
+{% if run.prompt %}
+<section class="c7-card c7-card--accent c7-draw">
+  <div class="c7-kicker">{{ _("L'app ha estratto") }}</div>
+  <div class="c7-draw__lead">{{ run.prompt_lead }}</div>
+  {% if run.prompt_rest %}<div class="c7-draw__rest">{{ run.prompt_rest }}</div>{% endif %}
+</section>
+
+<div class="form-label">{{ _("Com'è andata?") }}</div>
+<div class="c7-stack" style="gap:8px">
+  {% for esito in run.outcomes %}
+  <button type="button" class="c7-choice c7-draw__outcome" data-draw-outcome="{{ loop.index0 }}">
+    <span class="flex-fill text-start">
+      <span class="c7-choice__title d-block">{{ esito.label }}</span>
+      {% if esito.hint %}<span class="c7-choice__desc d-block">{{ esito.hint }}</span>{% endif %}
+    </span>
+    <span class="c7-num c7-draw__points">{{ esito.points }}</span>
+  </button>
+  {% endfor %}
+</div>
+{% endif %}

@@ -21,6 +21,11 @@ from models.challenge.authoring import (
     EvidenceDecisionRequired,
     MeaningChangeKind,
 )
+from models.challenge.draw_spec import (
+    outcomes_to_text,
+    parse_draw_spec,
+    sources_to_text,
+)
 from models.challenge.recording import RecordingMode
 from models.exceptions import ValidationError
 
@@ -106,6 +111,8 @@ def parse_challenge_draft(data: Any) -> ChallengeDraft:
             )
         ),
         recording_mode=modo.value,
+        draw_sources_text=_text(data, "draw_sources"),
+        draw_outcomes_text=_text(data, "draw_outcomes"),
         shots_count=(
             _optional_int(
                 data, "shots_count", _("I colpi di una prova devono essere un numero")
@@ -128,6 +135,12 @@ def parse_challenge_draft(data: Any) -> ChallengeDraft:
     )
 
 
+def _spec_lines(challenge: Any, come) -> str:
+    """La specifica dell'estrazione come la si riscriverebbe nel modulo."""
+    spec = parse_draw_spec(getattr(challenge, "draw_spec", None))
+    return come(spec) if spec else ""
+
+
 def draft_from_challenge(challenge: Any, *, as_copy: bool = False) -> ChallengeDraft:
     """La bozza con cui il modulo si apre in modifica — o su una copia."""
     title = challenge.title or ""
@@ -142,6 +155,8 @@ def draft_from_challenge(challenge: Any, *, as_copy: bool = False) -> ChallengeD
         max_score=challenge.max_score,
         recording_mode=RecordingMode.parse(challenge.recording_mode).value,
         shots_count=challenge.shots_count,
+        draw_sources_text=_spec_lines(challenge, sources_to_text),
+        draw_outcomes_text=_spec_lines(challenge, outcomes_to_text),
         is_active=None if as_copy else bool(challenge.is_active),
         abilita=tuple(a.value for a in challenge.abilita),
         gesti=tuple(g.value for g in challenge.gesti),

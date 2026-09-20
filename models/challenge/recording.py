@@ -25,6 +25,9 @@ class RecordingMode(str, Enum):
     #: Colpo per colpo: ogni colpo ha un esito e, se imbucato, il punto in cui
     #: si è fermata la battente. Il punteggio discende dai colpi.
     SHOTS = "shots"
+    #: Con estrazione: prima di ogni colpo l'app estrae la consegna, e l'esito
+    #: si sceglie da una scala di voci con un nome (#452).
+    DRAW = "draw"
 
     @property
     def label(self):
@@ -47,11 +50,41 @@ class RecordingMode(str, Enum):
 _LABELS = {
     RecordingMode.TOTAL: _l("Col totale"),
     RecordingMode.SHOTS: _l("Colpo per colpo"),
+    RecordingMode.DRAW: _l("Con estrazione"),
 }
+
+
+def refuse_if_drawn(challenge) -> None:
+    """Un esercizio con estrazione non entra in un esame né in una gara.
+
+    Due candidati riceverebbero consegne diverse, quindi prove **non
+    confrontabili**: un esame certifica, una gara fa classifica, e nessuna delle
+    due può poggiare su una prova che ha chiesto cose diverse a persone diverse.
+    Nell'allenamento in autonomia la stessa casualità è il senso dell'esercizio.
+
+    La strada per ammetterli c'è, e passa da un **seme fissato** — stessa
+    sequenza per tutti, e comunque imprevedibile — ma è un lavoro suo (#452,
+    punto 5).
+    """
+    from flask_babel import gettext as _
+
+    from models.exceptions import ValidationError
+
+    if RecordingMode.parse(getattr(challenge, "recording_mode", None)) is (
+        RecordingMode.DRAW
+    ):
+        raise ValidationError(
+            _(
+                "Un esercizio con estrazione non si può mettere in un esame o "
+                "in una gara: a ognuno uscirebbe una consegna diversa, e le "
+                "prove non sarebbero confrontabili."
+            )
+        )
+
 
 #: Quanti colpi può avere una prova. Il tetto non è del dominio: è ciò che si
 #: regge a registrare in piedi accanto al tavolo.
 MIN_SHOTS = 1
 MAX_SHOTS = 100
 
-__all__ = ["RecordingMode", "MIN_SHOTS", "MAX_SHOTS"]
+__all__ = ["RecordingMode", "MIN_SHOTS", "MAX_SHOTS", "refuse_if_drawn"]

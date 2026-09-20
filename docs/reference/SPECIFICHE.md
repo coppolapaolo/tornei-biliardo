@@ -323,6 +323,10 @@ Un giocatore può aggiungere/togliere una **challenge** dalle sue preferite.
 >
 > Da una prova così nascono due percentuali distinte. **Imbucate** = colpi imbucati su colpi tirati. **Posizione** = media, sui **soli colpi imbucati**, di `1 − distanza dal centro ÷ raggio esterno del bersaglio`, mai sotto zero: un colpo non imbucato non ha un punto, quindi non entra. In **esami e gare** un esercizio colpo per colpo si registra ancora col totale digitato, sul massimo derivato.
 
+> **Nota (2026-09-20) — l'esercizio con estrazione.** Un esercizio può avere una **componente casuale, estratta dall'app prima di ogni colpo**. Chi lo crea dichiara da una a tre **liste** di voci già scritte a parole («1 sponda», «2 sponde», «3 o più sponde»; «bilia 1» … «bilia 10»), ciascuna con almeno due voci, e una **scala di esiti**: da due a otto voci con un nome e un valore in punti da 0 a 99, di cui almeno una maggiore di zero. Prima di ogni colpo l'app pesca **una voce da ogni lista, indipendentemente**, e le compone in una consegna: «3 o più sponde, bilia 7». A colpo tirato si sceglie l'esito, e il colpo vale i punti di quella voce. Il punteggio della prova è la somma dei colpi e il massimo è i colpi per il valore più alto della scala. La consegna in attesa **si persiste**: ricaricare la pagina non la cambia, e annullare un colpo la rimette in attesa com'era.
+>
+> **In esami e gare un esercizio con estrazione non si può mettere**: a due persone uscirebbero consegne diverse, quindi prove non confrontabili, e lì si certifica e si fa classifica. Nell'allenamento in autonomia quella stessa casualità è il senso dell'esercizio.
+
 ### Esame
 
 Un **esame** è una sequenza ordinata di **challenge**, ciascuna con il proprio

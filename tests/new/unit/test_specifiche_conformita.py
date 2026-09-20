@@ -1818,3 +1818,74 @@ class TestLaProvaFattaDiColpi:
             )
         ShotRunService.record_shot(giocatore.id, esercizio.id, made=False)  # 0
         assert ShotRunService.close(giocatore.id, esercizio.id).score == 6
+
+
+@pytest.mark.unit
+class TestLEsercizioConEstrazione:
+    """`SPECIFICHE.md`, sezione «Challenge», nota del 2026-09-20.
+
+    > […] l'app pesca una voce da ogni lista, indipendentemente […]. Il
+    > punteggio della prova è la somma dei colpi e il massimo è i colpi per il
+    > valore più alto della scala. […] In esami e gare un esercizio con
+    > estrazione non si può mettere.
+    """
+
+    @staticmethod
+    def _spec():
+        from models.challenge.draw_spec import build_spec
+
+        return build_spec(
+            [
+                {"label": "sponde", "options": ["1 sponda", "2 sponde"]},
+                {"label": "bilia", "options": ["bilia 1", "bilia 2", "bilia 3"]},
+            ],
+            [
+                {"label": "Mancata", "points": 0},
+                {"label": "Imbucata", "points": 4},
+            ],
+        )
+
+    def test_una_voce_da_ogni_lista(self):
+        """Il conto è riderivato: due liste da 2 e 3 voci fanno sei consegne."""
+        import random
+
+        rng = random.Random(3)
+        viste = {self._spec().draw(rng) for _ in range(500)}
+
+        assert len(viste) == 2 * 3
+        for consegna in viste:
+            sponde, bilia = consegna.split(", ")
+            assert sponde in ("1 sponda", "2 sponde")
+            assert bilia in ("bilia 1", "bilia 2", "bilia 3")
+
+    def test_il_massimo_e_i_colpi_per_l_esito_piu_alto(self):
+        spec = self._spec()
+        colpi = 12
+
+        assert spec.max_points == 4
+        assert colpi * spec.max_points == 48
+
+    @pytest.mark.parametrize(
+        "quante,ammesse", [(0, False), (1, True), (3, True), (4, False)]
+    )
+    def test_le_liste_vanno_da_una_a_tre(self, quante, ammesse):
+        from models.challenge.draw_spec import build_spec
+        from models.exceptions import ValidationError
+
+        liste = [{"label": f"l{i}", "options": ["a", "b"]} for i in range(quante)]
+        scala = [{"label": "no", "points": 0}, {"label": "sì", "points": 1}]
+        if ammesse:
+            assert len(build_spec(liste, scala).sources) == quante
+        else:
+            with pytest.raises(ValidationError):
+                build_spec(liste, scala)
+
+    def test_fuori_dall_allenamento_si_rifiuta(self, db_session):
+        from types import SimpleNamespace
+
+        from models.challenge.recording import refuse_if_drawn
+        from models.exceptions import ValidationError
+
+        with pytest.raises(ValidationError):
+            refuse_if_drawn(SimpleNamespace(recording_mode="draw"))
+        refuse_if_drawn(SimpleNamespace(recording_mode="shots"))

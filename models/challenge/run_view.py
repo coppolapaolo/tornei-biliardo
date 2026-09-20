@@ -13,11 +13,12 @@ appoggiarsi — non al primo colpo, e non senza uno storico.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
 from flask_babel import gettext as _
 from flask_babel import ngettext
 
+from .draw_spec import JOIN, Outcome, parse_draw_spec
 from .execution_view import decimal_label
 from .live_chart import BarsChart, bars_chart
 from .models import ChallengeAttempt
@@ -43,6 +44,9 @@ class ShotMark:
     points: int
     x: Optional[float] = None
     y: Optional[float] = None
+    #: Con estrazione: che cosa era uscito, e come è andata.
+    prompt: Optional[str] = None
+    outcome_label: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -60,10 +64,24 @@ class RunProgress:
     target: Optional[Target]
     pocketing: Optional[int]
     position: Optional[int]
+    # Con estrazione (#452): la consegna in attesa e la scala fra cui scegliere.
+    # `None` e lista vuota su ogni altro modo.
+    prompt: Optional[str] = None
+    outcomes: Sequence[Outcome] = ()
 
     @property
     def can_undo(self) -> bool:
         return bool(self.shots)
+
+    @property
+    def prompt_lead(self) -> str:
+        """La prima voce della consegna: quella grande, «3 o più sponde»."""
+        return (self.prompt or "").split(JOIN)[0]
+
+    @property
+    def prompt_rest(self) -> str:
+        """Il resto, in tono minore: «bilia 7»."""
+        return JOIN.join((self.prompt or "").split(JOIN)[1:])
 
 
 def build_run(run: ShotRun) -> Optional[RunProgress]:
@@ -72,6 +90,7 @@ def build_run(run: ShotRun) -> Optional[RunProgress]:
         return None
 
     bersaglio = target_from_scene(run.challenge.diagram_scene)
+    spec = parse_draw_spec(run.challenge.draw_spec)
     punti = [s.points for s in run.shots]
     media = _media_per_colpo(run)
 
@@ -85,7 +104,8 @@ def build_run(run: ShotRun) -> Optional[RunProgress]:
         sentence=_sentence(run, media),
         chart=bars_chart(
             punti,
-            top=bersaglio.max_points if bersaglio else None,
+            top=(bersaglio.max_points if bersaglio else None)
+            or (spec.max_points if spec else None),
             reference=media,
             reference_label=(
                 None
@@ -100,6 +120,8 @@ def build_run(run: ShotRun) -> Optional[RunProgress]:
                 points=s.points,
                 x=s.x,
                 y=s.y,
+                prompt=s.prompt,
+                outcome_label=s.outcome_label,
             )
             for s in run.shots
         ],
@@ -107,8 +129,10 @@ def build_run(run: ShotRun) -> Optional[RunProgress]:
         shots_count=run.shots_count,
         is_full=run.is_full,
         target=bersaglio,
-        pocketing=pocketing_pct(run.shots),
+        pocketing=pocketing_pct(run.shots) if bersaglio else None,
         position=position_pct(run.shots, bersaglio),
+        prompt=run.attempt.pending_prompt,
+        outcomes=spec.outcomes if spec else (),
     )
 
 

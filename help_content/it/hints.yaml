@@ -616,6 +616,14 @@ hints:
     page: challenge
     section: allenarsi
 
+  - id: challenge.estrazione
+    label: "Che cosa estrae l'app"
+    short: "Le liste da cui l'app pesca prima di ogni colpo: una per riga, «nome: voce | voce». Si pescano insieme, e la consegna esce già a parole — «3 o più sponde, bilia 7»."
+    anchor: challenge-estrazione
+    screens: [challenge.create_challenge, challenge.edit_challenge, challenge.duplicate_challenge]
+    page: challenge
+    section: due_tipi
+
   - id: allenamento.colpo
     label: "Colpo per colpo"
     short: "Se la bilia è entrata, tocca il panno dove si è fermata la bianca: l'anello in cui cade dà i punti. Se non è entrata, il colpo vale zero e non ha una posizione."

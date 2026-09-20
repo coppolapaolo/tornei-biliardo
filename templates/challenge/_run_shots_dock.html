@@ -8,6 +8,22 @@
 <button type="button" class="btn btn-success w-100" data-shot-close>
   {{ _("Chiudi la prova") }}
 </button>
+{% elif run and run.outcomes %}
+{# Con estrazione: se una consegna in attesa c'è, gli esiti stanno nella
+   pagina e qui resta solo la via d'uscita. Se non c'è, si estrae. #}
+{% if not run.prompt %}
+<button type="button" class="btn btn-primary w-100" data-draw-next>
+  {{ _("Estrai il colpo") }}
+</button>
+{% else %}
+<p class="c7-runprog__say" style="text-align:center">
+  {{ _("Tira, poi scegli com'è andata qui sopra.") }}
+</p>
+{% endif %}
+{% elif run is none and challenge and challenge.draw_spec %}
+<button type="button" class="btn btn-primary w-100" data-draw-next>
+  {{ _("Estrai il primo colpo") }}
+</button>
 {% else %}
 <p class="c7-runprog__say" style="text-align:center">
   <b style="color:var(--c7-ink)">{{ _("Imbucata?") }}</b>

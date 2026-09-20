@@ -33,6 +33,7 @@ function pagina({ risposte = [] } = {}) {
   const dom = new JSDOM(
     `<div data-run data-shot-url="/shot" data-shot-undo-url="/shot/undo"
           data-shot-close-url="/shot/close" data-shot-restart-url="/shot/restart"
+          data-draw-url="/draw" data-outcome-url="/outcome"
           data-msg-error="errore" data-msg-network="rete">
        <div data-run-progress>
          <div class="c7-cloth" data-cloth>
@@ -184,6 +185,27 @@ const ok = () => ({
     p.$("[data-shot-miss]").click();
     await p.attesa();
     assert.strictEqual(p.w.__errore, "rete");
+  }
+
+  // 9. con estrazione (#452): si estrae, e l'esito manda quale voce, non quanto vale
+  {
+    const p = pagina({ risposte: [ok(), ok()] });
+    const dock = p.doc.querySelector("[data-run-dock]");
+    dock.insertAdjacentHTML("beforeend", "<button data-draw-next></button>");
+    p.$("[data-draw-next]").click();
+    await p.attesa();
+    assert.deepStrictEqual(p.chiamate[0], { url: "/draw", body: null });
+
+    // Gli esiti stanno nel pezzo «come sta andando», che il server ridisegna.
+    p.doc
+      .querySelector("[data-run-progress]")
+      .insertAdjacentHTML("beforeend", '<button data-draw-outcome="2"></button>');
+    p.$('[data-draw-outcome="2"]').click();
+    await p.attesa();
+    assert.deepStrictEqual(p.chiamate[1], {
+      url: "/outcome",
+      body: { outcome_index: "2" },
+    });
   }
 
   console.log("test_exercise_shots: ok");

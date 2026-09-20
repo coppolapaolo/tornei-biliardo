@@ -16,6 +16,7 @@ from ..exceptions import NotFoundError, ValidationError
 from ..transaction.manager import transactional
 from .events import DrillOrigin
 from .models import Challenge, ChallengeAttempt, ChallengeFavorite
+from .recording import RecordingMode
 
 logger = logging.getLogger(__name__)
 
@@ -644,6 +645,9 @@ class ChallengeService:
         offribili = (
             db.session.query(Challenge)
             .filter_by(is_active=True, pass_fail_only=False)
+            # Con estrazione no: la prova della X fa classifica, e a due
+            # giocatori uscirebbero consegne diverse (#452).
+            .filter(Challenge.recording_mode != RecordingMode.DRAW.value)
             .order_by(Challenge.title, Challenge.id)
             .all()
         )
@@ -1187,8 +1191,6 @@ class ChallengeService:
         # si contraddirebbero al primo tocco. In gara la prova sta in un'altra
         # tabella e si scrive ancora col totale: lì non c'è niente da
         # contraddire.
-        from .recording import RecordingMode
-
         if (
             gara_id is None
             and RecordingMode.parse(challenge.recording_mode).is_sequence

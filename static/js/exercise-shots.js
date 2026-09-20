@@ -139,9 +139,17 @@
 
   root.addEventListener('click', function (ev) {
     var el = ev.target.closest && ev.target.closest(
-      '[data-cloth-confirm],[data-cloth-cancel],[data-shot-miss],[data-shot-undo],[data-shot-close],[data-shot-restart]'
+      '[data-cloth-confirm],[data-cloth-cancel],[data-shot-miss],[data-shot-undo],' +
+      '[data-shot-close],[data-shot-restart],[data-draw-next],[data-draw-outcome]'
     );
     if (!el) return;
+    // Con estrazione (#452): si estrae la consegna, si tira, si dice com'è
+    // andata scegliendo una voce. Quanto vale lo sa il server.
+    if (el.hasAttribute('data-draw-next')) { post(root.dataset.drawUrl, null); return; }
+    if (el.hasAttribute('data-draw-outcome')) {
+      post(root.dataset.outcomeUrl, { outcome_index: el.dataset.drawOutcome });
+      return;
+    }
     if (el.hasAttribute('data-cloth-cancel')) { chiudiZoom(); return; }
     if (el.hasAttribute('data-cloth-confirm')) {
       if (punto) post(root.dataset.shotUrl, { made: true, x: punto.x, y: punto.y });

@@ -880,7 +880,9 @@ def _shots_payload(challenge):
     return {
         "progress_html": _progress_html(challenge, context),
         "dock_html": render_template(
-            "challenge/_run_shots_dock.html", run=context["run"]
+            "challenge/_run_shots_dock.html",
+            run=context["run"],
+            challenge=challenge,
         ),
     }
 
@@ -920,6 +922,58 @@ def training_shot(challenge_id):
             x=_shot_payload_field(data, "x"),
             y=_shot_payload_field(data, "y"),
             variant_id=variant,
+        )
+        return _shots_payload(challenge)
+
+    return handle_ajax_service_action(
+        action=_registra,
+        redirect_url=url_for("challenge.training_session", challenge_id=challenge_id),
+        success_message=None,
+        error_prefix=None,
+    )
+
+
+@challenge_bp.route("/<int:challenge_id>/train/draw", methods=["POST"])
+@login_required
+def training_draw(challenge_id):
+    """La consegna del colpo che sta per essere giocato (#452).
+
+    La prima estrazione apre la prova: con l'estrazione cominciare è un atto —
+    ti dice che cosa fare — mentre col bersaglio il primo dato è già il primo
+    colpo. Chiamarla di nuovo non riestrae: la consegna in attesa è quella.
+    """
+    from models.challenge.shot_service import ShotRunService
+
+    challenge = db.get_or_404(Challenge, challenge_id)
+
+    def _estrai():
+        ShotRunService.draw_next(current_user.id, challenge_id)
+        return _shots_payload(challenge)
+
+    return handle_ajax_service_action(
+        action=_estrai,
+        redirect_url=url_for("challenge.training_session", challenge_id=challenge_id),
+        success_message=None,
+        error_prefix=None,
+    )
+
+
+@challenge_bp.route("/<int:challenge_id>/train/outcome", methods=["POST"])
+@login_required
+def training_outcome(challenge_id):
+    """Com'è andato il colpo estratto: una voce della scala (#452).
+
+    Dal browser arriva **quale** voce, non quanto vale: la scala ce l'ha il
+    server, e un punteggio che passasse di qui sarebbe scrivibile a mano.
+    """
+    from models.challenge.shot_service import ShotRunService
+
+    challenge = db.get_or_404(Challenge, challenge_id)
+    data = (request.get_json(silent=True) if request.is_json else request.form) or {}
+
+    def _registra():
+        ShotRunService.record_outcome(
+            current_user.id, challenge_id, outcome_index=data.get("outcome_index")
         )
         return _shots_payload(challenge)
 

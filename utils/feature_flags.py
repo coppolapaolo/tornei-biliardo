@@ -495,6 +495,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "challenge.training_shot_undo": {"player", "director"},
     "challenge.training_shot_close": {"player", "director"},
     "challenge.training_shot_restart": {"player", "director"},
+    # L'estrazione e l'esito della modalità con estrazione (#452).
+    "challenge.training_draw": {"player", "director"},
+    "challenge.training_outcome": {"player", "director"},
     # start_attempt/attempt_detail/complete_attempt sono il percorso della
     # gara (il drill al posto del bye), che il giocatore attraversa da solo.
     "challenge.start_attempt": {"player", "director"},

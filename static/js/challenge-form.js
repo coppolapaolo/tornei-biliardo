@@ -56,8 +56,14 @@
     maxRow.classList.toggle('d-none', !scored);
     // Colpo per colpo (ADR-066) si dice quanti colpi, non il massimo: quello
     // lo deriva il server dal bersaglio. La riga c'è solo se il disegno ne ha uno.
+    // Colpo per colpo e con estrazione vogliono tutt'e due il numero di colpi;
+    // solo la seconda vuole anche le liste e la scala.
+    var modo = chosen ? chosen.value : '';
+    var aColpi = modo === 'shots' || modo === 'draw';
     var shotsRow = document.getElementById('shotsCountRow');
-    if (shotsRow) shotsRow.classList.toggle('d-none', !(chosen && chosen.value === 'shots'));
+    if (shotsRow) shotsRow.classList.toggle('d-none', !aColpi);
+    var drawRows = document.getElementById('drawSpecRows');
+    if (drawRows) drawRows.classList.toggle('d-none', modo !== 'draw');
     // Si svuota: un 15 scritto prima di cambiare idea resterebbe nel modulo,
     // invisibile, e tornerebbe a galla cambiando idea di nuovo.
     if (!scored) maxInput.value = '';

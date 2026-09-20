@@ -4606,3 +4606,14 @@ span.c7-exam-pad__v { display: block; }
   padding: 10px 0; font-size: 13px; font-weight: 800; color: var(--c7-ink-soft); cursor: pointer;
 }
 .c7-run__fold[open] > summary { color: var(--c7-ink); }
+
+/* --- La consegna estratta, e la scala degli esiti (fase 5c, #452) --------- */
+/* La consegna è la cosa da leggere prima di tirare: grande, e su una card
+   d'accento perché non si confonda col resto della pagina. */
+.c7-draw__lead { margin-top: 10px; font-size: 26px; font-weight: 800; letter-spacing: -.03em; line-height: 1.1; }
+.c7-draw__rest { margin-top: 2px; font-size: 15px; font-weight: 700; color: var(--c7-accent-dim); }
+/* Gli esiti: card come ogni altra scelta a poche opzioni, col valore a destra.
+   Sono pulsanti, quindi il bordo e il fondo del browser vanno tolti a mano. */
+button.c7-draw__outcome { width: 100%; border: 0; font-family: inherit; text-align: left; }
+button.c7-draw__outcome:active { transform: scale(var(--c7-press)); transition-duration: 0ms; }
+.c7-draw__points { font-size: 20px; font-weight: 800; color: var(--c7-accent); flex-shrink: 0; }

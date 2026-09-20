@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 11:14+0200\n"
+"POT-Creation-Date: 2026-09-20 11:32+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -266,29 +266,29 @@ msgstr ""
 "With the new standings system the competition «%(gara)s» would not be "
 "valid: %(errori)s"
 
-#: models/challenge/authoring.py:91
+#: models/challenge/authoring.py:98
 msgid "Questo esercizio ha già delle prove registrate"
 msgstr "This drill already has recorded attempts"
 
-#: models/challenge/authoring.py:273 models/challenge/profile_service.py:94
-#: models/challenge/rating_service.py:61 models/challenge/shot_service.py:79
+#: models/challenge/authoring.py:290 models/challenge/profile_service.py:94
+#: models/challenge/rating_service.py:61 models/challenge/shot_service.py:87
 msgid "Esercizio non trovato"
 msgstr "Drill not found"
 
-#: models/challenge/authoring.py:290
+#: models/challenge/authoring.py:307
 msgid "Alla copia manca l'immagine"
 msgstr "The copy has no image"
 
-#: models/challenge/authoring.py:339
+#: models/challenge/authoring.py:357
 msgid "Colpo per colpo l'esercizio è a punteggio, non riuscito o no."
 msgstr "Shot by shot the exercise is scored, not passed or failed."
 
-#: models/challenge/authoring.py:345
+#: models/challenge/authoring.py:363
 #, python-format
 msgid "Di' quanti colpi ha una prova: da %(min)s a %(max)s."
 msgstr "Say how many shots an attempt has: from %(min)s to %(max)s."
 
-#: models/challenge/authoring.py:354
+#: models/challenge/authoring.py:381
 msgid ""
 "Colpo per colpo serve un bersaglio: l'esercizio va disegnato, e nel "
 "disegno va messo il bersaglio."
@@ -296,7 +296,7 @@ msgstr ""
 "Shot by shot needs a target: the exercise has to be drawn, and the "
 "drawing has to have the target in it."
 
-#: models/challenge/authoring.py:387
+#: models/challenge/authoring.py:429
 msgid "Servono le istruzioni per chi esegue l'esercizio"
 msgstr "The drill needs instructions for whoever plays it"
 
@@ -361,7 +361,7 @@ msgid "la tua media %(avg)s"
 msgstr "your average %(avg)s"
 
 #: models/challenge/execution_view.py:170
-#: models/challenge/execution_view.py:212 models/challenge/run_view.py:141
+#: models/challenge/execution_view.py:212 models/challenge/run_view.py:165
 msgid "È la tua prima prova su questo esercizio."
 msgstr "This is your first attempt at this exercise."
 
@@ -404,7 +404,7 @@ msgid_plural "Oggi %(num)s riuscite su %(n)s."
 msgstr[0] "Today %(num)s passed out of %(n)s."
 msgstr[1] "Today %(num)s passed out of %(n)s."
 
-#: models/challenge/models.py:376
+#: models/challenge/models.py:382
 #, python-format
 msgid "Esercizio %(number)s"
 msgstr "Drill %(number)s"
@@ -423,7 +423,7 @@ msgstr "A step only makes sense inside a drill family"
 msgid "«%(value)s» non è una voce ammessa"
 msgstr "“%(value)s” is not an allowed entry"
 
-#: models/challenge/profile_service.py:205 routes/challenge_form.py:120
+#: models/challenge/profile_service.py:205 routes/challenge_form.py:127
 msgid "Il livello deve essere un numero"
 msgstr "The level must be a number"
 
@@ -432,7 +432,7 @@ msgstr "The level must be a number"
 msgid "Il livello va da %(min)s a %(max)s"
 msgstr "The level goes from %(min)s to %(max)s"
 
-#: models/challenge/profile_service.py:223 routes/challenge_form.py:124
+#: models/challenge/profile_service.py:223 routes/challenge_form.py:131
 msgid "Il passo deve essere un numero"
 msgstr "The step must be a number"
 
@@ -476,59 +476,71 @@ msgstr "The rating is a number from 1 to 5"
 msgid "Si vota un esercizio dopo averlo provato almeno una volta"
 msgstr "You can rate a drill after trying it at least once"
 
-#: models/challenge/recording.py:48
+#: models/challenge/recording.py:51
 msgid "Col totale"
 msgstr "With the total"
 
-#: models/challenge/recording.py:49 templates/challenge/form.html:226
-#: templates/challenge/training.html:38
+#: models/challenge/recording.py:52 templates/challenge/form.html:227
 msgid "Colpo per colpo"
 msgstr "Shot by shot"
 
-#: models/challenge/run_view.py:80
+#: models/challenge/recording.py:53 templates/challenge/form.html:232
+msgid "Con estrazione"
+msgstr "With a draw"
+
+#: models/challenge/recording.py:78
+msgid ""
+"Un esercizio con estrazione non si può mettere in un esame o in una gara:"
+" a ognuno uscirebbe una consegna diversa, e le prove non sarebbero "
+"confrontabili."
+msgstr ""
+"An exercise with a draw cannot go into an exam or a competition: everyone"
+" would get a different task, and the attempts would not be comparable."
+
+#: models/challenge/run_view.py:99
 #, python-format
 msgid "Colpo %(n)s di %(tot)s"
 msgstr "Shot %(n)s of %(tot)s"
 
-#: models/challenge/run_view.py:84
+#: models/challenge/run_view.py:103
 #, python-format
 msgid "%(n)s punti"
 msgstr "%(n)s points"
 
-#: models/challenge/run_view.py:93
+#: models/challenge/run_view.py:113
 #, python-format
 msgid "la tua media %(avg)s a colpo"
 msgstr "your average %(avg)s a shot"
 
-#: models/challenge/run_view.py:139
+#: models/challenge/run_view.py:163
 msgid "Hai tirato tutti i colpi: chiudi la prova quando vuoi."
 msgstr "You have taken all the shots: close the attempt whenever you like."
 
-#: models/challenge/run_view.py:144
+#: models/challenge/run_view.py:168
 #, python-format
 msgid "Di solito chiudi a %(solito)s."
 msgstr "You usually finish at %(solito)s."
 
-#: models/challenge/run_view.py:155
+#: models/challenge/run_view.py:179
 #, python-format
 msgid "A questo ritmo chiudi a %(proj)s: %(num)s punto sopra il tuo solito."
 msgid_plural "A questo ritmo chiudi a %(proj)s: %(num)s punti sopra il tuo solito."
 msgstr[0] "At this pace you finish at %(proj)s: %(num)s point above your usual."
 msgstr[1] "At this pace you finish at %(proj)s: %(num)s points above your usual."
 
-#: models/challenge/run_view.py:162
+#: models/challenge/run_view.py:186
 #, python-format
 msgid "A questo ritmo chiudi a %(proj)s: %(num)s punto sotto il tuo solito."
 msgid_plural "A questo ritmo chiudi a %(proj)s: %(num)s punti sotto il tuo solito."
 msgstr[0] "At this pace you finish at %(proj)s: %(num)s point below your usual."
 msgstr[1] "At this pace you finish at %(proj)s: %(num)s points below your usual."
 
-#: models/challenge/run_view.py:167
+#: models/challenge/run_view.py:191
 #, python-format
 msgid "A questo ritmo chiudi a %(proj)s: il tuo solito."
 msgstr "At this pace you finish at %(proj)s: your usual."
 
-#: models/challenge/services.py:745
+#: models/challenge/services.py:749
 msgid ""
 "Il direttore non ha ancora scelto l'esercizio da giocare al posto della X"
 " in questa gara."
@@ -536,7 +548,7 @@ msgstr ""
 "The director has not yet chosen the drill to play in place of the X in "
 "this competition."
 
-#: models/challenge/services.py:791 models/challenge/services.py:925
+#: models/challenge/services.py:795 models/challenge/services.py:929
 #, python-format
 msgid ""
 "Il punteggio della prova deve essere compreso fra 0 e %(massimo)s, la "
@@ -545,39 +557,52 @@ msgstr ""
 "The challenge score must be between 0 and %(massimo)s, the widest rack "
 "difference achievable in this round."
 
-#: models/challenge/services.py:916
+#: models/challenge/services.py:920
 msgid "Serve un punteggio: la prova non ne ha ancora uno registrato."
 msgstr "A score is needed: none has been recorded for this drill yet."
 
-#: models/challenge/services.py:1197
+#: models/challenge/services.py:1199
 msgid "Questo esercizio si registra colpo per colpo, non col totale."
 msgstr "This exercise is recorded shot by shot, not with the total."
 
-#: models/challenge/services.py:1215 models/challenge/shot_service.py:151
+#: models/challenge/services.py:1217 models/challenge/shot_service.py:162
 msgid "Questa variante non è di questo esercizio"
 msgstr "This variant does not belong to this drill"
 
-#: models/challenge/shot_service.py:81
+#: models/challenge/shot_service.py:90
 msgid "Questo esercizio non si registra colpo per colpo"
 msgstr "This exercise is not recorded shot by shot"
 
-#: models/challenge/shot_service.py:128
+#: models/challenge/shot_service.py:92
+msgid "Non è così che si registra questo esercizio"
+msgstr "This is not how this exercise is recorded"
+
+#: models/challenge/shot_service.py:139 models/challenge/shot_service.py:203
+#: models/challenge/shot_service.py:233
 msgid "Hai già tirato tutti i colpi: chiudi la prova o annulla l'ultimo."
 msgstr "You have taken all the shots: close the attempt or undo the last one."
 
-#: models/challenge/shot_service.py:135
+#: models/challenge/shot_service.py:146
 msgid "Questo esercizio non ha un bersaglio."
 msgstr "This exercise has no target."
 
-#: models/challenge/shot_service.py:138
+#: models/challenge/shot_service.py:149
 msgid "Tocca il panno nel punto in cui si è fermata la bianca."
 msgstr "Tap the cloth where the cue ball stopped."
 
-#: models/challenge/shot_service.py:179
+#: models/challenge/shot_service.py:198 models/challenge/shot_service.py:228
+msgid "Questo esercizio non ha niente da estrarre."
+msgstr "This exercise has nothing to draw."
+
+#: models/challenge/shot_service.py:237
+msgid "Estrai la consegna prima di registrare il colpo."
+msgstr "Draw the task before recording the shot."
+
+#: models/challenge/shot_service.py:266
 msgid "Non c'è nessun colpo da annullare."
 msgstr "There is no shot to undo."
 
-#: models/challenge/shot_service.py:210
+#: models/challenge/shot_service.py:313
 msgid "La prova si chiude dopo l'ultimo colpo: ne mancano ancora."
 msgstr "The attempt closes after the last shot: there are still some to go."
 
@@ -595,7 +620,7 @@ msgid "Battente"
 msgstr "Cue ball"
 
 #: models/challenge/vocabulary.py:103 templates/admin/venue_form.html:195
-#: templates/challenge/_run_shots.html:52
+#: templates/challenge/_run_shots.html:69
 #: templates/components/_playoff_invitations.html:29
 #: templates/individual_match/statistics.html:80
 #: templates/individual_match/tpa_referto.html:179
@@ -1879,11 +1904,11 @@ msgid ""
 "esaminatore."
 msgstr "The request for “%(exam)s” has been taken over by another examiner."
 
-#: models/exam/services.py:999
+#: models/exam/services.py:1003
 msgid "L'esame sta per iniziare"
 msgstr "The exam is about to start"
 
-#: models/exam/services.py:1001
+#: models/exam/services.py:1005
 #, python-format
 msgid ""
 "L'esaminatore ha aperto la sessione di «%(exam)s»: accetta l'inizio per "
@@ -1892,19 +1917,19 @@ msgstr ""
 "The examiner has opened the «%(exam)s» session: accept the start to begin"
 " the assessment."
 
-#: models/exam/services.py:1008
+#: models/exam/services.py:1012
 msgid "Accetta l'inizio"
 msgstr "Accept the start"
 
-#: models/exam/services.py:1016 templates/exam/compose.html:41
+#: models/exam/services.py:1020 templates/exam/compose.html:41
 msgid "superato"
 msgstr "passed"
 
-#: models/exam/services.py:1016
+#: models/exam/services.py:1020
 msgid "non superato"
 msgstr "not passed"
 
-#: models/exam/services.py:1020
+#: models/exam/services.py:1024
 #: tests/new/unit/test_notifiche_lingua_destinatario.py:92
 #: tests/new/unit/test_notifiche_lingua_destinatario.py:122
 #: tests/new/unit/test_notifiche_lingua_destinatario.py:125
@@ -1912,12 +1937,12 @@ msgstr "not passed"
 msgid "Esame certificato"
 msgstr "Exam certified"
 
-#: models/exam/services.py:1022
+#: models/exam/services.py:1026
 #, python-format
 msgid "«%(exam)s»: esito %(outcome)s, certificato da %(examiner)s."
 msgstr "«%(exam)s»: %(outcome)s, certified by %(examiner)s."
 
-#: models/exam/services.py:1033
+#: models/exam/services.py:1037
 msgid "Vedi l'esito"
 msgstr "View the outcome"
 
@@ -3260,7 +3285,7 @@ msgstr "Drawing updated."
 msgid "Gli amministratori non provano gli esercizi."
 msgstr "Administrators do not attempt drills."
 
-#: routes/challenge.py:758 routes/challenge.py:994
+#: routes/challenge.py:758 routes/challenge.py:1048
 msgid "Prova registrata."
 msgstr "Attempt recorded."
 
@@ -3268,85 +3293,85 @@ msgstr "Attempt recorded."
 msgid "Non c'è nessuna prova da annullare."
 msgstr "There is no attempt to undo."
 
-#: routes/challenge.py:811 routes/challenge.py:969
+#: routes/challenge.py:811 routes/challenge.py:1023
 msgid "Prova annullata."
 msgstr "Attempt undone."
 
-#: routes/challenge.py:896
+#: routes/challenge.py:898
 msgid "Il punto sul panno non è leggibile."
 msgstr "The point on the cloth cannot be read."
 
-#: routes/challenge.py:1194
+#: routes/challenge.py:1248
 msgid "Tentativo registrato."
 msgstr "Attempt recorded."
 
-#: routes/challenge.py:1235 templates/challenge/catalog.html:138
+#: routes/challenge.py:1289 templates/challenge/catalog.html:138
 #: templates/challenge/today.html:92
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr "The favourites could not be updated."
 
-#: routes/challenge.py:1272
+#: routes/challenge.py:1326
 msgid "Voto registrato."
 msgstr "Rating saved."
 
-#: routes/challenge.py:1335
+#: routes/challenge.py:1389
 msgid "Esercizio di gara avviato."
 msgstr "Tournament drill started."
 
-#: routes/challenge.py:1388
+#: routes/challenge.py:1442
 msgid "Esercizio di gara registrato."
 msgstr "Tournament drill recorded."
 
-#: routes/challenge.py:1421
+#: routes/challenge.py:1475
 msgid "Esercizio non trovato."
 msgstr "Drill not found."
 
-#: routes/challenge.py:1431
+#: routes/challenge.py:1485
 msgid "Non hai i permessi per questo esercizio."
 msgstr "You do not have permission for this drill."
 
-#: routes/challenge_form.py:105
+#: routes/challenge_form.py:110
 msgid "Il punteggio massimo deve essere un numero"
 msgstr "The maximum score must be a number"
 
-#: routes/challenge_form.py:111
+#: routes/challenge_form.py:118
 msgid "I colpi di una prova devono essere un numero"
 msgstr "The shots of an attempt must be a number"
 
-#: routes/challenge_form.py:137
+#: routes/challenge_form.py:150
 #, python-format
 msgid "%(title)s (copia)"
 msgstr "%(title)s (copy)"
 
-#: routes/challenge_form.py:166
+#: routes/challenge_form.py:181
 msgid "Hai cambiato come si registra la prova."
 msgstr "You changed how an attempt is recorded."
 
-#: routes/challenge_form.py:170
+#: routes/challenge_form.py:185
 #, python-format
 msgid "Hai cambiato come si registra la prova: da «%(before)s» a «%(after)s»."
 msgstr "You changed how an attempt is recorded: from «%(before)s» to «%(after)s»."
 
-#: routes/challenge_form.py:179
+#: routes/challenge_form.py:194
 #, python-format
 msgid "Hai messo un punteggio massimo: %(after)s."
 msgstr "You set a maximum score: %(after)s."
 
-#: routes/challenge_form.py:184
+#: routes/challenge_form.py:199
 #, python-format
 msgid "Hai tolto il punteggio massimo, che era %(before)s."
 msgstr "You removed the maximum score, which was %(before)s."
 
-#: routes/challenge_form.py:191
+#: routes/challenge_form.py:206
 #, python-format
 msgid "Hai cambiato il punteggio massimo, da %(before)s a %(after)s."
 msgstr "You changed the maximum score from %(before)s to %(after)s."
 
-#: routes/challenge_form.py:197
+#: routes/challenge_form.py:212
 msgid "Hai cambiato le istruzioni."
 msgstr "You changed the instructions."
 
-#: routes/challenge_form.py:203
+#: routes/challenge_form.py:218
 #, python-format
 msgid ""
 "Se modifichi questo esercizio, la prova già registrata si leggerà con "
@@ -3361,7 +3386,7 @@ msgstr[1] ""
 "If you edit this drill, the %(num)s attempts already recorded will be "
 "read under rules they were not played with."
 
-#: routes/challenge_form.py:211
+#: routes/challenge_form.py:226
 #, python-format
 msgid "Questo esercizio ha già %(num)s prova"
 msgid_plural "Questo esercizio ha già %(num)s prove"
@@ -6193,7 +6218,7 @@ msgstr ""
 
 #: templates/admin/_vetrina_form.html:41
 #: templates/admin/campionato_vetrina.html:40
-#: templates/admin/venue_detail.html:303 templates/challenge/form.html:303
+#: templates/admin/venue_detail.html:303 templates/challenge/form.html:333
 msgid "Carica solo materiale di cui hai i diritti."
 msgstr "Upload only material you hold the rights to."
 
@@ -9409,7 +9434,7 @@ msgstr "Update Password"
 
 #: templates/challenge/_challenge_detail.html:25
 #: templates/challenge/_training_board.html:27
-#: templates/challenge/training.html:81
+#: templates/challenge/training.html:83
 msgid "Disposizione dell'esercizio"
 msgstr "Drill layout"
 
@@ -9487,7 +9512,7 @@ msgstr "no longer active"
 msgid "Liv. %(n)s"
 msgstr "Lvl %(n)s"
 
-#: templates/challenge/_exercise_bits.html:23 templates/challenge/form.html:219
+#: templates/challenge/_exercise_bits.html:23 templates/challenge/form.html:220
 #: templates/challenge/training.html:37
 msgid "Riuscito o no"
 msgstr "Pass or fail"
@@ -9498,7 +9523,7 @@ msgid "A punteggio · su %(max)s"
 msgstr "Scored · out of %(max)s"
 
 #: templates/challenge/_exercise_bits.html:25
-#: templates/challenge/builder.html:271 templates/challenge/form.html:221
+#: templates/challenge/builder.html:271 templates/challenge/form.html:222
 #: templates/challenge/training.html:39 templates/challenge/training.html:40
 #: templates/components/_challenge_bits.html:27
 #: templates/player/challenge_attempt_detail.html:49
@@ -9576,9 +9601,17 @@ msgstr "Drag the cue ball to adjust the point."
 msgid "Tavolo intero"
 msgstr "Whole table"
 
+#: templates/challenge/_run_draw.html:13
+msgid "L'app ha estratto"
+msgstr "The app drew"
+
+#: templates/challenge/_run_draw.html:18
+msgid "Com'è andata?"
+msgstr "How did it go?"
+
 #: templates/challenge/_run_progress.html:51
 #: templates/challenge/_training_board.html:65
-#: templates/challenge/training.html:125
+#: templates/challenge/training.html:127
 #: templates/components/_history_drills_tab.html:133
 #: templates/components/_match_challenge_input.html:54
 #: templates/components/_player_challenge_statistics.html:55
@@ -9593,7 +9626,7 @@ msgstr "Passed"
 
 #: templates/challenge/_run_progress.html:51
 #: templates/challenge/_training_board.html:68
-#: templates/challenge/training.html:128
+#: templates/challenge/training.html:130
 #: templates/components/_history_drills_tab.html:133
 #: templates/components/_match_challenge_input.html:55
 #: templates/components/_player_challenge_statistics.html:55
@@ -9606,16 +9639,17 @@ msgstr "Passed"
 msgid "Non superata"
 msgstr "Not passed"
 
-#: templates/challenge/_run_shots.html:28
+#: templates/challenge/_run_shots.html:32
+#: templates/challenge/_run_shots.html:45
 msgid "I colpi di questa prova"
 msgstr "The shots of this attempt"
 
-#: templates/challenge/_run_shots.html:31
+#: templates/challenge/_run_shots.html:35
 #, python-format
 msgid "Colpo %(n)s"
 msgstr "Shot %(n)s"
 
-#: templates/challenge/_run_shots.html:48
+#: templates/challenge/_run_shots.html:65
 msgid "Imbucate"
 msgstr "Pocketed"
 
@@ -9623,30 +9657,42 @@ msgstr "Pocketed"
 msgid "Chiudi la prova"
 msgstr "Close the attempt"
 
-#: templates/challenge/_run_shots_dock.html:13
+#: templates/challenge/_run_shots_dock.html:16
+msgid "Estrai il colpo"
+msgstr "Draw the shot"
+
+#: templates/challenge/_run_shots_dock.html:20
+msgid "Tira, poi scegli com'è andata qui sopra."
+msgstr "Take the shot, then choose how it went up there."
+
+#: templates/challenge/_run_shots_dock.html:25
+msgid "Estrai il primo colpo"
+msgstr "Draw the first shot"
+
+#: templates/challenge/_run_shots_dock.html:29
 msgid "Imbucata?"
 msgstr "Did it go in?"
 
-#: templates/challenge/_run_shots_dock.html:14
+#: templates/challenge/_run_shots_dock.html:30
 msgid "Tocca il panno dove si è fermata la bianca: l'anello dà i punti."
 msgstr "Tap the cloth where the cue ball stopped: the ring gives the points."
 
-#: templates/challenge/_run_shots_dock.html:18
+#: templates/challenge/_run_shots_dock.html:34
 msgid "Non è entrata · 0 punti"
 msgstr "It did not go in · 0 points"
 
-#: templates/challenge/_run_shots_dock.html:25
+#: templates/challenge/_run_shots_dock.html:41
 msgid "Annulla l'ultimo colpo"
 msgstr "Undo the last shot"
 
-#: templates/challenge/_run_shots_dock.html:29
+#: templates/challenge/_run_shots_dock.html:45
 #: templates/components/_match_scoreboard.html:304
 msgid "Ricomincia"
 msgstr "Start over"
 
-#: templates/challenge/_run_shots_dock.html:32
+#: templates/challenge/_run_shots_dock.html:48
 #: templates/challenge/_training_board.html:95
-#: templates/challenge/training.html:164
+#: templates/challenge/training.html:166
 msgid "Ho finito"
 msgstr "I'm done"
 
@@ -9699,11 +9745,11 @@ msgid "Registra"
 msgstr "Record"
 
 #: templates/challenge/builder.html:19 templates/challenge/builder.html:35
-#: templates/challenge/form.html:293
+#: templates/challenge/form.html:323
 msgid "Disegna l'esercizio"
 msgstr "Draw the drill"
 
-#: templates/challenge/builder.html:35 templates/challenge/form.html:289
+#: templates/challenge/builder.html:35 templates/challenge/form.html:319
 #: templates/player/challenge_detail.html:193
 msgid "Modifica il disegno"
 msgstr "Edit the drawing"
@@ -10067,7 +10113,7 @@ msgstr "How it is scored"
 msgid "Superato o non superato"
 msgstr "Pass or fail"
 
-#: templates/challenge/builder.html:282 templates/challenge/form.html:260
+#: templates/challenge/builder.html:282 templates/challenge/form.html:290
 msgid "Punteggio massimo"
 msgstr "Maximum score"
 
@@ -10083,7 +10129,7 @@ msgstr "Optional. Leave it empty if the drill has no cap."
 msgid "Salva l'esercizio"
 msgstr "Save the drill"
 
-#: templates/challenge/builder.html:296 templates/challenge/form.html:327
+#: templates/challenge/builder.html:296 templates/challenge/form.html:357
 #: templates/individual_match/availability.html:111
 msgid "Salva le modifiche"
 msgstr "Save changes"
@@ -10509,36 +10555,40 @@ msgstr ""
 "They are the same drill, not another one: same layout, same rules. A "
 "variant that already has attempts can be renamed, not removed."
 
-#: templates/challenge/form.html:220
+#: templates/challenge/form.html:221
 msgid "un tocco per prova"
 msgstr "one tap per attempt"
 
-#: templates/challenge/form.html:222
+#: templates/challenge/form.html:223
 msgid "un numero a fine prova"
 msgstr "one number at the end of the attempt"
 
-#: templates/challenge/form.html:227
+#: templates/challenge/form.html:228
 msgid "dove si ferma la bianca, a ogni colpo"
 msgstr "where the cue ball stops, on every shot"
 
-#: templates/challenge/form.html:230
+#: templates/challenge/form.html:233
+msgid "l'app estrae la consegna a ogni colpo"
+msgstr "the app draws the task on every shot"
+
+#: templates/challenge/form.html:235
 msgid "Come si registra"
 msgstr "How it is recorded"
 
-#: templates/challenge/form.html:239
+#: templates/challenge/form.html:244
 msgid "Colpi di una prova"
 msgstr "Shots in an attempt"
 
-#: templates/challenge/form.html:241
+#: templates/challenge/form.html:246
 #, python-format
 msgid "il massimo è questo numero per %(n)s, il centro del bersaglio"
 msgstr "the maximum is this number times %(n)s, the centre of the target"
 
-#: templates/challenge/form.html:242
+#: templates/challenge/form.html:247
 msgid "il massimo lo dà il bersaglio del disegno"
 msgstr "the maximum comes from the target in the drawing"
 
-#: templates/challenge/form.html:252
+#: templates/challenge/form.html:258
 msgid ""
 "Per registrarlo colpo per colpo — dove si ferma la bianca, a ogni colpo —"
 " l'esercizio va disegnato, e nel disegno va messo un bersaglio."
@@ -10546,71 +10596,103 @@ msgstr ""
 "To record it shot by shot — where the cue ball stops, on every shot — the"
 " exercise has to be drawn, and the drawing has to have a target in it."
 
-#: templates/challenge/form.html:261
+#: templates/challenge/form.html:268
+msgid "Che cosa estrae l'app"
+msgstr "What the app draws"
+
+#: templates/challenge/form.html:271
+msgid "sponde: 1 sponda | 2 sponde | 3 o più sponde"
+msgstr "cushions: 1 cushion | 2 cushions | 3 or more cushions"
+
+#: templates/challenge/form.html:273
+msgid ""
+"Una lista per riga, «nome: voce | voce | voce». Le liste si pescano "
+"insieme: «3 o più sponde, bilia 7»."
+msgstr ""
+"One list per line, «name: item | item | item». The lists are drawn "
+"together: «3 or more cushions, ball 7»."
+
+#: templates/challenge/form.html:277
+msgid "Come si conta un colpo"
+msgstr "How a shot is counted"
+
+#: templates/challenge/form.html:279
+msgid "Mancata = 0"
+msgstr "Missed = 0"
+
+#: templates/challenge/form.html:281
+msgid ""
+"Un esito per riga, «nome = punti», dal peggiore al migliore. Il punteggio"
+" massimo è i colpi per l'esito che vale di più."
+msgstr ""
+"One outcome per line, «name = points», from worst to best. The maximum "
+"score is the shots times the outcome that is worth most."
+
+#: templates/challenge/form.html:291
 msgid "lascia vuoto se si va avanti finché si sbaglia"
 msgstr "leave empty if you keep going until you miss"
 
-#: templates/challenge/form.html:271
+#: templates/challenge/form.html:301
 msgid "La disposizione"
 msgstr "The layout"
 
-#: templates/challenge/form.html:278
+#: templates/challenge/form.html:308
 msgid "Anteprima della foto"
 msgstr "Photo preview"
 
-#: templates/challenge/form.html:297
+#: templates/challenge/form.html:327
 msgid "Usa una foto"
 msgstr "Use a photo"
 
-#: templates/challenge/form.html:302
+#: templates/challenge/form.html:332
 msgid "Senza una foto nuova resta quella di adesso."
 msgstr "Without a new photo the current one stays."
 
-#: templates/challenge/form.html:302
+#: templates/challenge/form.html:332
 msgid "Serve a riprodurre il tavolo: fotografalo dall'alto, JPG o PNG."
 msgstr "It is there to reproduce the table: shoot it from above, JPG or PNG."
 
-#: templates/challenge/form.html:304
+#: templates/challenge/form.html:334
 msgid "Una foto al posto del disegno toglie la possibilità di riaprirlo."
 msgstr ""
 "A photo in place of the diagram means the diagram can no longer be "
 "reopened."
 
-#: templates/challenge/form.html:311
+#: templates/challenge/form.html:341
 msgid "Nel catalogo"
 msgstr "In the catalogue"
 
-#: templates/challenge/form.html:312
+#: templates/challenge/form.html:342
 msgid "Spento, l'esercizio non si propone più a nessuno; le prove fatte restano."
 msgstr ""
 "When off, the drill is no longer offered to anyone; recorded attempts "
 "stay."
 
-#: templates/challenge/form.html:327
+#: templates/challenge/form.html:357
 msgid "Crea la copia"
 msgstr "Create the copy"
 
-#: templates/challenge/form.html:327
+#: templates/challenge/form.html:357
 msgid "Crea l'esercizio"
 msgstr "Create the drill"
 
-#: templates/challenge/form.html:332
+#: templates/challenge/form.html:362
 msgid "Crea la copia e apri il disegno"
 msgstr "Create the copy and open the diagram"
 
-#: templates/challenge/form.html:349
+#: templates/challenge/form.html:379
 msgid "Crea una copia e modifica quella"
 msgstr "Create a copy and edit that one"
 
-#: templates/challenge/form.html:350
+#: templates/challenge/form.html:380
 msgid "Modifica comunque questo"
 msgstr "Edit this one anyway"
 
-#: templates/challenge/form.html:351
+#: templates/challenge/form.html:381
 msgid "Torna al modulo"
 msgstr "Back to the form"
 
-#: templates/challenge/form.html:363
+#: templates/challenge/form.html:393
 msgid "Non è stato possibile salvare. Riprova."
 msgstr "Could not save. Try again."
 
@@ -10653,7 +10735,7 @@ msgid "Alla fine registri il punteggio"
 msgstr "At the end you record your score"
 
 #: templates/challenge/start_attempt.html:43
-#: templates/challenge/training.html:114
+#: templates/challenge/training.html:116
 msgid "Puoi riprovare quante volte vuoi: resta il tuo risultato migliore."
 msgstr "You can try as often as you like: your best result is the one that stays."
 
@@ -10747,7 +10829,7 @@ msgstr "Back to the drills"
 msgid "%(n)s colpi"
 msgstr "%(n)s shots"
 
-#: templates/challenge/training.html:39 templates/challenge/training.html:137
+#: templates/challenge/training.html:39 templates/challenge/training.html:139
 #: templates/exam/session.html:238
 #, python-format
 msgid "su %(n)s"
@@ -10769,31 +10851,31 @@ msgstr "The attempt could not be recorded. Try again."
 msgid "Non è stato possibile annullare la prova."
 msgstr "The attempt could not be undone."
 
-#: templates/challenge/training.html:77
+#: templates/challenge/training.html:79
 msgid "Rivedi la disposizione"
 msgstr "Look at the layout again"
 
-#: templates/challenge/training.html:98
+#: templates/challenge/training.html:100
 msgid "Da che parte"
 msgstr "Which side"
 
-#: templates/challenge/training.html:100
+#: templates/challenge/training.html:102
 msgid "senza dirlo"
 msgstr "unspecified"
 
-#: templates/challenge/training.html:134 templates/exam/session.html:231
+#: templates/challenge/training.html:136 templates/exam/session.html:231
 msgid "Uno in meno"
 msgstr "One less"
 
-#: templates/challenge/training.html:140 templates/exam/session.html:240
+#: templates/challenge/training.html:142 templates/exam/session.html:240
 msgid "Uno in più"
 msgstr "One more"
 
-#: templates/challenge/training.html:151
+#: templates/challenge/training.html:153
 msgid "Registra la prova"
 msgstr "Record the attempt"
 
-#: templates/challenge/training.html:162
+#: templates/challenge/training.html:164
 msgid "Annulla l'ultima"
 msgstr "Undo the last one"
 

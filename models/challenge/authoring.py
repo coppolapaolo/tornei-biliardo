@@ -34,6 +34,13 @@ from ..exceptions import ConflictError, NotFoundError, ValidationError
 from ..status_enum import _StrEnum
 from ..transaction.manager import transactional
 from .models import Challenge, ChallengeAttempt
+from .draw_spec import (
+    build_spec,
+    dump_spec,
+    parse_draw_spec,
+    parse_outcomes_text,
+    parse_sources_text,
+)
 from .profile_service import ChallengeProfileService
 from .recording import MAX_SHOTS, MIN_SHOTS, RecordingMode
 from .services import ChallengeService
@@ -113,6 +120,10 @@ class ChallengeDraft:
     # per colpo `max_score` non si scrive a mano: lo deriva `_recording`.
     recording_mode: str = "total"
     shots_count: Optional[int] = None
+    # Con estrazione (#452): le liste da cui l'app pesca e la scala degli
+    # esiti, come si scrivono nel modulo — una voce per riga.
+    draw_sources_text: str = ""
+    draw_outcomes_text: str = ""
 
 
 @dataclass(frozen=True)
@@ -189,10 +200,15 @@ class ChallengeAuthoringService:
         # Dal disegnatore il massimo arriva già derivato dal bersaglio NUOVO, e
         # vale quello; dal modulo non arriva, e si deriva dal disegno che c'è.
         massimo = draft.max_score
-        if dopo.is_sequence and massimo is None:
-            bersaglio = target_from_scene(challenge.diagram_scene)
-            if bersaglio is not None and draft.shots_count:
-                massimo = draft.shots_count * bersaglio.max_points
+        if dopo.is_sequence and massimo is None and draft.shots_count:
+            if dopo is RecordingMode.DRAW:
+                spec = parse_draw_spec(_spec_text(draft) or challenge.draw_spec)
+                if spec is not None:
+                    massimo = draft.shots_count * spec.max_points
+            else:
+                bersaglio = target_from_scene(challenge.diagram_scene)
+                if bersaglio is not None:
+                    massimo = draft.shots_count * bersaglio.max_points
         if bool(challenge.pass_fail_only) != bool(draft.pass_fail_only):
             changes.append(MeaningChange(MeaningChangeKind.SCORING_TYPE))
         elif prima is not dopo:
@@ -227,7 +243,7 @@ class ChallengeAuthoringService:
     ) -> Challenge:
         """Un esercizio nuovo, col suo profilo. Vale anche per «Duplica»."""
         _require_description(draft)
-        modo, colpi, massimo = _recording(draft, diagram_scene)
+        modo, colpi, massimo, estrazione = _recording(draft, diagram_scene)
         challenge = ChallengeService.create_challenge(
             title=draft.title,
             description=draft.description.strip(),
@@ -239,6 +255,7 @@ class ChallengeAuthoringService:
         )
         challenge.recording_mode = modo.value
         challenge.shots_count = colpi
+        challenge.draw_spec = estrazione
         db.session.flush()
         _write_profile(challenge.id, draft, is_new=True)
         return challenge
@@ -273,7 +290,7 @@ class ChallengeAuthoringService:
             raise NotFoundError(_("Esercizio non trovato"))
         _require_description(draft)
         # Una foto nuova butta via il disegno, e col disegno il bersaglio.
-        modo, colpi, massimo = _recording(
+        modo, colpi, massimo, estrazione = _recording(
             draft, None if image_path else challenge.diagram_scene
         )
 
@@ -311,6 +328,7 @@ class ChallengeAuthoringService:
         )
         challenge.recording_mode = modo.value
         challenge.shots_count = colpi
+        challenge.draw_spec = estrazione
         if image_path:
             # Una foto caricata al posto di un disegno: la scena di prima non
             # descrive più quello che si vede, e «Modifica il disegno»
@@ -324,7 +342,7 @@ class ChallengeAuthoringService:
 # Pezzi
 # ────────────────────────────────────────────────────────────────────────
 def _recording(draft: ChallengeDraft, scene: Optional[str]):
-    """Modo, colpi e massimo come vanno scritti — o il motivo per cui non si può.
+    """Modo, colpi, massimo e specifica — o il motivo per cui non si può.
 
     Colpo per colpo (ADR-066) vuole tre cose: un esercizio a punteggio, un
     numero di colpi, e un **bersaglio nel disegno** — senza anelli un colpo non
@@ -333,7 +351,7 @@ def _recording(draft: ChallengeDraft, scene: Optional[str]):
     """
     modo = RecordingMode.parse(draft.recording_mode)
     if not modo.is_sequence:
-        return modo, None, draft.max_score
+        return modo, None, draft.max_score, None
     if draft.pass_fail_only:
         raise ValidationError(
             _("Colpo per colpo l'esercizio è a punteggio, non riuscito o no.")
@@ -347,6 +365,15 @@ def _recording(draft: ChallengeDraft, scene: Optional[str]):
                 max=MAX_SHOTS,
             )
         )
+    if modo is RecordingMode.DRAW:
+        # Qui il massimo lo dà la scala degli esiti, non il bersaglio: non c'è
+        # nessun punto da toccare sul panno.
+        spec = build_spec(
+            parse_sources_text(draft.draw_sources_text),
+            parse_outcomes_text(draft.draw_outcomes_text),
+        )
+        return modo, colpi, colpi * spec.max_points, dump_spec(spec)
+
     bersaglio = target_from_scene(scene)
     if bersaglio is None:
         raise ValidationError(
@@ -355,7 +382,22 @@ def _recording(draft: ChallengeDraft, scene: Optional[str]):
                 "e nel disegno va messo il bersaglio."
             )
         )
-    return modo, colpi, colpi * bersaglio.max_points
+    return modo, colpi, colpi * bersaglio.max_points, None
+
+
+def _spec_text(draft: ChallengeDraft) -> Optional[str]:
+    """La specifica scritta nel modulo, o ``None`` se il modulo non l'ha detta."""
+    if not (draft.draw_sources_text and draft.draw_outcomes_text):
+        return None
+    try:
+        return dump_spec(
+            build_spec(
+                parse_sources_text(draft.draw_sources_text),
+                parse_outcomes_text(draft.draw_outcomes_text),
+            )
+        )
+    except ValidationError:
+        return None
 
 
 def _write_profile(challenge_id: int, draft: ChallengeDraft, *, is_new: bool) -> None:
