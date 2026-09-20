@@ -5,7 +5,7 @@ audience: [giocatore]
 minutes: 4
 summary: "La sequenza di esercizi che fai in sala, nell'ordine in cui la fai: la componi una volta, e poi segni com'è andata."
 screens: [sheet.index, sheet.compose, sheet.detail, sheet.run, sheet.session_summary]
-related: [challenge, fare_una_prova, progressi]
+related: [challenge, aprire_la_scheda_a_un_istruttore, progressi]
 
 blocks:
   - type: text
@@ -90,6 +90,7 @@ blocks:
       - "**Soglia** — quanto serve fare per dire che il gradino è superato. Somma le sole voci «a riusciti», e puoi chiedere che la soglia sia tenuta per più sedute di fila."
       - "**Giorni** — le voci si dividono in giorno A, B e C, e una seduta ne fa uno."
       - "**Durata** — quante settimane dura il programma."
+      - "**Chi dice che l'hai passato** — nessuno, la soglia da sola, oppure un istruttore fra quelli che leggono la scheda. Compare quando la scheda ha un livello."
 
   - type: heading
     id: seduta
@@ -196,5 +197,7 @@ blocks:
           raggiungere mai. L'app te lo dice quando salvi.
       - q: "Chi vede la mia scheda?"
         a: >-
-          Solo tu. Poterla aprire a un istruttore, perché veda come procedi, è
-          una cosa che arriverà.
+          Solo tu, finché non decidi altrimenti: da **«Chi la legge»** puoi
+          aprirla a uno o più istruttori, e richiuderla quando vuoi. Vedi [Far
+          leggere una scheda a un
+          istruttore](/aiuto/giocare/aprire_la_scheda_a_un_istruttore).

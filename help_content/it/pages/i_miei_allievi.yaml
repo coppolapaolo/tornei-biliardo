@@ -1,0 +1,188 @@
+title: "I miei allievi"
+section: insegnare
+kind: approfondimento
+audience: [giocatore]
+minutes: 5
+summary: "Chi ti ha aperto una scheda, diviso in chi aspetta una decisione, chi è da guardare e chi va bene — e come si dà una scheda a qualcuno."
+screens: [istruttore.allievi, istruttore.dai_scheda]
+related: [i_gruppi_di_allievi, diventare_istruttore, aprire_la_scheda_a_un_istruttore]
+
+blocks:
+  - type: text
+    text: >-
+      **I miei allievi** è l'elenco delle persone che ti hanno aperto almeno una
+      loro scheda. Non lo componi tu e non ci puoi aggiungere nessuno: si
+      riempie da solo quando qualcuno decide di farti leggere come si allena, e
+      si svuota quando smette.
+
+  - type: shot
+    shot: istruttore-allievi
+    caption: "«I miei allievi»: chi ha appena aperto una scheda, chi è arrivato al passaggio di livello, chi è da guardare e chi va bene."
+
+  - type: text
+    text: >-
+      La pagina divide le persone in **tre**, e in cima ripete chi è arrivato
+      da poco. Le tre sezioni non sono giudizi: sono definizioni, e questa
+      pagina le scrive per intero — perché un elenco che dice «sta migliorando»
+      senza spiegare come lo ha deciso è un elenco di cui non ci si può fidare.
+
+  - type: heading
+    id: appena
+    title: "Ti hanno appena aperto una scheda"
+
+  - type: text
+    text: >-
+      Chi ti ha aperto una scheda **negli ultimi sette giorni**. Non è una
+      quarta sezione: sono le stesse persone che trovi più sotto, ripetute in
+      cima perché è il momento in cui c'è qualcosa da fare — metterle in un
+      gruppo, o dare loro una scheda. Passata la settimana, la riga sparisce da
+      qui e resta dov'era.
+
+  - type: heading
+    id: gradino
+    title: "Valuta il passaggio di livello"
+
+  - type: text
+    text: >-
+      Qui non c'è nessuna stima: c'è una **soglia tenuta**. Una scheda può
+      dichiarare un livello, quanto serve fare per superarlo, e per quante
+      sedute di fila. Quando l'allievo ci arriva, e la sua scheda dice che a
+      sancirlo è una persona, compare qui — con sotto i totali delle ultime
+      sedute e la soglia, così il numero si controlla a occhio.
+
+  - type: note
+    tone: info
+    title: "Compare solo se la scheda aspetta te"
+    text: >-
+      Chi compone una scheda sceglie **chi dice che l'ha passata**: nessuno,
+      la soglia da sola, oppure un istruttore. Con la soglia da sola il
+      passaggio si è già timbrato quando l'ha tenuta, e non c'è niente da
+      premere: per questo quelle schede non arrivano qui.
+
+  - type: options
+    items:
+      - name: "Confermo"
+        text: >-
+          Scrive il passaggio: da quel momento la scheda risulta **superata**,
+          con la data e il tuo nome. Resta superata anche se le sedute dopo
+          vanno peggio — è un attestato, non un termometro.
+        hint: istruttore.passaggio
+      - name: "Dai il livello dopo"
+        text: >-
+          È un **secondo gesto**, e può aspettare: apre «Dai una scheda» già
+          impostata per proporre il gradino successivo. Si può essere promossi
+          prima di avere in mano la scheda nuova, e si può ricevere la scheda
+          nuova senza che nessuno abbia ancora confermato.
+
+  - type: note
+    tone: warning
+    title: "Non si promuove chi non è arrivato"
+    text: >-
+      Se la soglia non è stata tenuta, «Confermo» non c'è e non funziona
+      nemmeno per chi provasse ad aggirare la schermata. Il passaggio è un
+      fatto, e qui resta tale.
+
+  - type: heading
+    id: guardare
+    title: "Da guardare"
+
+  - type: text
+    text: >-
+      Due fatti, nessuna interpretazione. Nessuno dei due dice *perché*, e non
+      devono: dicono che c'è qualcosa da chiedere.
+
+  - type: list
+    title: "Si finisce qui per uno di questi due motivi"
+    items:
+      - "**Non si allena da due settimane** — o non ha ancora chiuso nessuna seduta. Una saltata capita a tutti, due sono una cosa che si chiede."
+      - "**Da cinque sedute non supera il suo massimo.** Chi è già al massimo possibile della scheda non compare: ha finito i numeri disponibili, e dirgli che non sale sarebbe falso."
+
+  - type: note
+    tone: tip
+    text: >-
+      Chi ti ha aperto la scheda ieri e non si è ancora allenato **non** è
+      assente: è nuovo, e sta nella sezione di sopra.
+
+  - type: heading
+    id: bene
+    title: "Tutto bene"
+
+  - type: text
+    text: >-
+      «Tutto bene» **non è una misura**: è il resto — tutti quelli che non
+      aspettano una decisione e non hanno fatto scattare niente. Proprio perché
+      il nome è generoso, sotto ogni nome non c'è un giudizio ma un fatto che
+      si può controllare: **quando si è allenato l'ultima volta** e **quante
+      sedute ha chiuso nelle ultime quattro settimane**.
+
+  - type: heading
+    id: dare
+    title: "Dare una scheda"
+
+  - type: text
+    text: >-
+      Accanto a ogni allievo c'è **«Dai una scheda»**. Si propone una scheda
+      **tua**, già composta: il primo passo quindi è comporre in **Schede**
+      quella che fai fare in sala — l'elenco degli esercizi, il «quanto farne»
+      di ognuno, e se serve livello e soglia.
+
+  - type: shot
+    shot: istruttore-dai-scheda
+    caption: "«Dai una scheda»: fra le proprie schede già composte si sceglie quella da proporre, si aggiungono due parole e si manda."
+
+  - type: steps
+    items:
+      - title: "Scegli quale"
+        text: >-
+          Compaiono solo le tue schede che hanno almeno un esercizio dentro:
+          una scheda vuota non si può dare.
+      - title: "Due parole, se vuoi"
+        text: >-
+          Un biglietto attaccato alla scheda — *«Per l'autunno, fai i giorni A e
+          B»*. È facoltativo.
+      - title: "Manda la proposta"
+        text: >-
+          Parte una notifica. **Decide lui**: la scheda nasce solo se la prende,
+          e nasce sua. Finché non risponde, la riga dell'elenco dice *in
+          attesa*, e puoi **ritirarla**.
+
+  - type: note
+    tone: warning
+    title: "Si propone solo a chi ti è già allievo"
+    text: >-
+      A chi non ti ha aperto nessuna scheda non puoi mandare niente: la prima
+      mossa è sempre sua. Vale anche per i gruppi, e vale di più qui — una
+      proposta è un messaggio, e arriva spesso a un ragazzo.
+
+  - type: list
+    title: "Cosa succede quando la prende"
+    items:
+      - "Nasce una scheda **sua**, copiata dalla tua com'è oggi. Se domani cambi la tua, la sua non si muove."
+      - "Il permesso di leggerla è **una casella del suo modulo**, spuntata per default: può toglierla, e la scheda nasce lo stesso. In quel caso lui ce l'ha e tu non la vedi."
+      - "Livello, soglia e «chi sancisce il passaggio» si copiano: se la tua dice «lo confermo io», lo dice anche la sua."
+      - "Una proposta alla volta per persona: finché non ha risposto, una seconda non parte."
+
+  - type: faq
+    items:
+      - q: "Posso togliere un allievo dall'elenco?"
+        a: >-
+          No, e non è una dimenticanza: sei entrato in quell'elenco perché lui
+          ti ha aperto una scheda, e ne esci quando te la richiude. Se non vuoi
+          più seguirlo, apri la sua scheda e tocca **«Non seguirla più»**:
+          quella è la tua metà della decisione, e da lì in poi può riaprirtela
+          solo lui.
+      - q: "Un allievo compare due volte?"
+        a: >-
+          In cima, fra chi è arrivato da poco, sì: quella sezione è una
+          ripetizione. Nelle tre sezioni vere ognuno sta in una sola, quella
+          del segnale più forte — il passaggio prima di tutto, poi l'assenza,
+          poi lo stallo.
+      - q: "Perché non vedo quante sedute ha fatto rispetto a quelle previste?"
+        a: >-
+          Perché «previste» non esiste. Una scheda dichiara le settimane e i
+          giorni, non la frequenza: dedurne «un giro a settimana» sarebbe un
+          numero inventato, e sembrerebbe vero.
+      - q: "Vedo l'andamento generale dei miei allievi?"
+        a: >-
+          No. Il legame è con la **scheda**: vedi le sedute delle schede che ti
+          hanno aperto, e nient'altro. Radar, obiettivi ed Elo restano loro.

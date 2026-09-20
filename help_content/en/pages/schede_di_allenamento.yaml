@@ -5,7 +5,7 @@ audience: [giocatore]
 minutes: 4
 summary: "The sequence of drills you do at the table, in the order you do them: you compose it once, then record how it went."
 screens: [sheet.index, sheet.compose, sheet.detail, sheet.run, sheet.session_summary]
-related: [challenge, fare_una_prova, progressi]
+related: [challenge, aprire_la_scheda_a_un_istruttore, progressi]
 
 blocks:
   - type: text
@@ -91,6 +91,7 @@ blocks:
       - "**Threshold** — how much it takes to call the step passed. It sums only the «made» items, and you can ask for the threshold to be held for several sessions in a row."
       - "**Days** — the items are split into day A, B and C, and one session does one of them."
       - "**Length** — how many weeks the programme lasts."
+      - "**Who says you have passed it** — nobody, the threshold on its own, or an instructor among those who read the sheet. It appears once the sheet has a level."
 
   - type: heading
     id: seduta
@@ -197,5 +198,7 @@ blocks:
           reached. The app tells you when you save.
       - q: "Who sees my sheet?"
         a: >-
-          Only you. Opening it to an instructor, so they can see how you are
-          getting on, is something that will come.
+          Only you, until you decide otherwise: from **«Who reads it»** you can
+          open it to one or more instructors, and close it again whenever you
+          like. See [Letting an instructor read a
+          sheet](/aiuto/giocare/aprire_la_scheda_a_un_istruttore).

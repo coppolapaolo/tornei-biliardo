@@ -32,7 +32,7 @@ Sorgenti del canvas: `sorgenti/` (`kit.py`, `tpa.py`, `esercizi.py`,
 | 5 | Eseguire un esercizio (#183 #452) | **chiusa il 20/09** — #501 (5a), #503 + #504 (5b), #507 (5c), #508 (5d), #509 (5e). Chiude #183, #452 e #326; aperte #500 e #506. Colpo per colpo in due PR, niente esercizio a punteggio «vuoto»: vedi la nota nella fase |
 | 6 | Schede di allenamento (#172) | **chiusa il 20/09** — #511 (6a), #513 (6b), #514 (6c), #515 (6d), #516 (6e). Le caselle non sono prove del catalogo, la sezione è un campo della voce: vedi la nota nella fase |
 | 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | **chiusa il 20/09** — #517 (7a), #519 (7b), #520 (7c), #521 (7d+7e), #522 (7f). Una scala sola per due mondi (ADR-068), 7d e 7e in una PR: vedi la nota nella fase |
-| 8 | Istruttori (#173) | da fare |
+| 8 | Istruttori (#173) | **chiusa il 20/09** — #523 (8a), #525 (8b), #526 (catena delle nomine, fuori piano), #528 (8c), #530 + #531 + #532 (8d, in tre), #534 (8e). Chiude #173. Tre ADR nuovi (069, 070, 071) e un emendamento all'ADR-041: vedi la nota nella fase |
 | 9 | Disegnatore (#179) | da fare — indipendente, si può anticipare dopo la 4 |
 | 10 | Chiusura: guida, racconto, issue | da fare |
 
@@ -649,6 +649,24 @@ nessuna visibilità che non passi dal consenso; niente foto.
 
 **PR**: 8a ruolo e legame+ADR · 8b «I miei istruttori» lato giocatore ·
 8c «I miei allievi» e gruppi · 8d assegnare schede · 8e guida.
+
+**Com'è andata.** Otto PR invece di cinque. Due scarti dal piano, entrambi
+chiesti dai fatti e non dal disegno:
+
+* la **8d si è spaccata in tre** (#530 proposta, #531 gradino, #532 scheda del
+  gruppo): «assegnare una scheda» conteneva tre decisioni di dominio, non una,
+  e l'ADR-071 — *una scheda si propone, non si assegna* — è nato lì;
+* la **#526 non era nel piano**: l'utente ha chiesto che si veda **chi ha
+  nominato chi**. Erano tre buchi della stessa forma — l'ADR-041 aveva reso
+  generico il *meccanismo*, ma tre consumatori erano scritti a mano sui due
+  ruoli che esistevano allora. Lezione: un'astrazione generica con consumatori
+  hard-coded non è generica, e fallisce **in silenzio**.
+
+La 8e ha portato dentro `seed_demo.py` un istruttore vero — sei allievi, un
+corso aperto e uno chiuso — perché senza uno stato costruito apposta le pagine
+della fase 8 sarebbero figure di elenchi vuoti. Ogni allievo del seed sta lì
+per una frase della guida: quello che prende la scheda e **non** la fa leggere
+è ciò che rende diversi «l'hanno presa in 4» e «media su 3 schede che leggi».
 
 **Prompt**: «…esegui la fase 8.»
 

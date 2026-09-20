@@ -3,7 +3,7 @@ section: introduzione
 kind: introduzione
 audience: [tutti]
 minutes: 3
-summary: "Player, competition director and administrator: who can do what, and how to become a director."
+summary: "Player, competition director, instructor and administrator: who can do what, and how to ask for a role."
 screens: [dashboard.dashboard]
 related: [primo_accesso, creare_una_gara]
 
@@ -168,6 +168,19 @@ blocks:
       a billiard venue, who can keep their venue's page up to date (address,
       tables, opening hours). You ask for it from your profile, as with the
       director role, and an administrator approves it.
+
+  - type: heading
+    id: istruttore
+    title: "Instructor"
+
+  - type: text
+    text: >-
+      Someone who follows other people's training. This one adds to the others
+      too, and **opens nothing on its own**: it makes you findable by anyone
+      looking for an instructor to open a sheet to. Every look inside a sheet
+      is opened by the student, one sheet at a time. You ask for it from your
+      profile, under **Roles**, after five completed exercises — see [Becoming
+      an instructor](/aiuto/insegnare/diventare_istruttore).
 
   - type: heading
     id: beta_tester

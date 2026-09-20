@@ -3,7 +3,7 @@ section: introduzione
 kind: introduzione
 audience: [tutti]
 minutes: 3
-summary: "Giocatore, direttore di gara e amministratore: chi può fare cosa, e come si diventa direttore."
+summary: "Giocatore, direttore di gara, istruttore e amministratore: chi può fare cosa, e come si chiede un ruolo."
 screens: [dashboard.dashboard]
 related: [primo_accesso, creare_una_gara]
 
@@ -164,6 +164,19 @@ blocks:
       una sala biliardo, che può tenere aggiornata la scheda della sua sala
       (indirizzo, tavoli, orari). Si richiede dal profilo, come per il ruolo di
       direttore, e viene approvato da un amministratore.
+
+  - type: heading
+    id: istruttore
+    title: "Istruttore"
+
+  - type: text
+    text: >-
+      Chi segue l'allenamento di altri. Anche questo si aggiunge agli altri, e
+      **non apre niente da solo**: rende trovabili da chi cerca un istruttore a
+      cui aprire una scheda. Ogni sguardo dentro una scheda lo apre l'allievo,
+      una scheda per volta. Si chiede dal profilo, alla voce **Ruoli**, dopo
+      cinque esercizi completati — vedi [Diventare
+      istruttore](/aiuto/insegnare/diventare_istruttore).
 
   - type: heading
     id: beta_tester

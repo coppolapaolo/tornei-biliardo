@@ -23,6 +23,7 @@ from flask_login import current_user, login_required
 from models.base import db
 from models.exceptions import ValidationError
 from models.user.models import User
+from models.user.role_copy import copy_for
 from models.user.role_enum import GrantableRole
 from models.user.role_grant_service import GRANT_POLICY, RoleGrantService
 from utils.route_helpers import handle_service_action
@@ -171,6 +172,10 @@ def role_holders(role: str):
         role_nome=str(RoleGrantService.role_label(grantable)),
         grants=RoleGrantService.list_grants_history(grantable),
         puo_revocare=RoleGrantService.can_revoke(user, grantable),
+        # Il testo della conferma dipende dal ruolo: scritto nel template
+        # parlava di esami e certificazioni anche mentre si revocava un
+        # istruttore, che è il difetto che `role_copy` esiste per evitare.
+        revoca_conferma=copy_for(grantable).revoca_conferma,
     )
 
 

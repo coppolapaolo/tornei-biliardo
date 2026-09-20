@@ -1,71 +1,80 @@
 {% extends "base.html" %}
 
+{# templates/roles/holders.html — 7c
+   «Chi è esaminatore / istruttore», con la catena delle nomine
+   (ADR-041, emendamento del 20/09).
+
+   Era una tabella Bootstrap di quattro colonne, scritta quando la pagina la
+   vedeva solo l'amministratore. Dalla #526 la leggono anche i titolari del
+   ruolo, e a 390px quattro colonne mandano ogni cella a capo. Qui è una
+   riga per persona, come «I tuoi ruoli» da cui si arriva: il nome sopra, chi
+   l'ha nominato e quando sotto, lo stato a destra.
+
+   Il testo della conferma di revoca viene da `role_copy`: scritto qui a mano
+   parlava di esami e certificazioni, cioè della revoca dell'**esaminatore**,
+   anche mentre si toglieva il ruolo di istruttore. #}
+
 {% block title %}{{ _("Titolari del ruolo") }}{% endblock %}
+{% block page_title %}{{ _("Chi è %(ruolo)s", ruolo=role_nome|lower) }}{% endblock %}
+{% block page_sub %}{{ _("e chi l'ha nominato") }}{% endblock %}
+{% block page_back %}<a href="{{ url_for('player.roles') }}" class="c7-head__back d-lg-none"
+    aria-label="{{ _('Torna ai ruoli') }}"><i class="fas fa-chevron-left"></i></a>{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h2 class="mb-1">
-        <i class="fas fa-user-shield"></i>
-        {{ _("Chi è %(ruolo)s", ruolo=role_nome|lower) }}
-    </h2>
-    <p class="text-muted">
-        {{ _("Con la propagazione il ruolo si diffonde senza passare da admin: qui si legge da dove arriva ciascun titolare.") }}
-        {% if not puo_revocare %}
-        {{ _("La revoca resta dell'amministratore.") }}
-        {% endif %}
-    </p>
+<div class="c7-stack" style="max-width:720px">
 
-    {% if grants %}
-    <div class="table-responsive">
-        <table class="table table-striped align-middle">
-            <thead>
-                <tr>
-                    <th>{{ _("Utente") }}</th>
-                    <th>{{ _("Concesso da") }}</th>
-                    <th>{{ _("Data") }}</th>
-                    <th>{{ _("Stato") }}</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for grant in grants %}
-                <tr>
-                    <td>{{ grant.user.username if grant.user else '—' }}</td>
-                    <td>{{ grant.granted_by.username if grant.granted_by else '—' }}</td>
-                    <td>{{ grant.granted_at|datetime_local }}</td>
-                    <td>
-                        {% if grant.is_active %}
-                        <span class="badge bg-success">{{ _("Attivo") }}</span>
-                        {% else %}
-                        <span class="badge bg-secondary">
-                            {{ _("Revocato il") }} {{ grant.revoked_at|datetime_local }}
-                            {% if grant.revoked_by %}({{ grant.revoked_by.username }}){% endif %}
-                        </span>
-                        {% endif %}
-                    </td>
-                    <td class="text-end">
-                        {% if puo_revocare and grant.is_active and grant.user %}
-                        <form method="POST"
-                            action="{{ url_for('roles.revoke_role', role=role.value, user_id=grant.user.id) }}"
-                            onsubmit='return confirmSubmit(this, {{ _("Revocare il ruolo? Gli esami creati e le certificazioni rilasciate restano validi.")|tojson }})'>
-                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                            <input type="hidden" name="next"
-                                value="{{ url_for('roles.role_holders', role=role.value) }}">
-                            <button type="submit" class="btn btn-outline-danger btn-sm">
-                                <i class="fas fa-user-minus"></i> {{ _("Revoca") }}
-                            </button>
-                        </form>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-    {% else %}
-    <div class="alert alert-light border">
-        {{ _("Nessun titolare: il ruolo non è ancora stato concesso a nessuno.") }}
-    </div>
+  <p class="c7-rows__sub" style="margin:0">
+    {{ _("Con la propagazione il ruolo si diffonde senza passare da admin: qui si legge da dove arriva ciascun titolare.") }}
+    {% if not puo_revocare %}
+    {{ _("La revoca resta dell'amministratore.") }}
     {% endif %}
+  </p>
+
+  {% if grants %}
+  <section class="c7-rows">
+    {% for grant in grants %}
+    <div class="c7-rows__row c7-rows__row--wrap{{ ' c7-rows__row--dim' if not grant.is_active }}">
+      <span class="c7-avatar">
+        {{ grant.user.username[:2]|upper if grant.user else '—' }}
+      </span>
+      <div class="c7-rows__main">
+        <div class="c7-rows__title">{{ grant.user.username if grant.user else '—' }}</div>
+        <div class="c7-rows__sub">
+          {%- if grant.granted_by %}
+          {{ _("nominato da %(chi)s", chi=grant.granted_by.username) }}
+          <span class="c7-sep">·</span>
+          {%- endif %}
+          {{ grant.granted_at|datetime_local }}
+          {%- if not grant.is_active %}<br>
+          {{ _("revocato il %(quando)s", quando=grant.revoked_at|datetime_local) }}
+          {%- if grant.revoked_by %} ({{ grant.revoked_by.username }}){% endif -%}
+          {% endif %}
+        </div>
+      </div>
+      <span class="c7-state c7-state--{{ 'ok' if grant.is_active else 'muted' }}">
+        {{ _("Attivo") if grant.is_active else _("Revocato") }}
+      </span>
+      {% if puo_revocare and grant.is_active and grant.user %}
+      <form method="POST"
+            action="{{ url_for('roles.revoke_role', role=role.value, user_id=grant.user.id) }}"
+            onsubmit='return confirmSubmit(this, {{ revoca_conferma|string|tojson }})'>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="next"
+               value="{{ url_for('roles.role_holders', role=role.value) }}">
+        <button type="submit" class="btn btn-secondary btn-sm">{{ _("Revoca") }}</button>
+      </form>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </section>
+  {% else %}
+  <div class="c7-empty">
+    <div class="c7-empty__ico"><i class="fas fa-user-shield"></i></div>
+    <h2 class="c7-empty__title">{{ _("Nessun titolare") }}</h2>
+    <p class="c7-empty__text">
+      {{ _("Il ruolo non è ancora stato concesso a nessuno.") }}
+    </p>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}

@@ -1,0 +1,205 @@
+title: "Groups and the course sheet"
+section: insegnare
+kind: approfondimento
+audience: [giocatore]
+minutes: 5
+summary: "Sorting students into courses, giving everyone the same sheet, and reading the course's numbers knowing what they are worked out on."
+screens: [istruttore.gruppi, istruttore.gruppo, istruttore.scheda_gruppo]
+related: [i_miei_allievi, diventare_istruttore, schede_di_allenamento]
+
+blocks:
+  - type: text
+    text: >-
+      With three students a list is enough. With twenty it is not: **the Monday
+      course** and **the first-year kids** are two different things, and
+      looking at them together says nothing. **Groups** are for that, and for
+      nothing else.
+
+  - type: note
+    tone: warning
+    title: "A group opens nothing"
+    text: >-
+      Putting someone in a group does **not** show you one extra line. Only
+      people who have already opened a sheet to you can go in, and what you see
+      stays what they opened. A group **sorts**: it is not a way of getting
+      students.
+
+  - type: heading
+    id: fare
+    title: "Making a group"
+
+  - type: shot
+    shot: istruttore-gruppi
+    caption: "Groups: the ones running, the form to make a new one, and the history of closed courses."
+
+  - type: steps
+    items:
+      - title: "Give it a name"
+        text: >-
+          «Monday course», «First year», «Kids 2026». It is the only thing
+          required.
+      - title: "Dates, if you need them"
+        text: >-
+          **From** and **to** are optional, and they serve one purpose: saying
+          what week the course has reached — *«week 6 of 13»*. Someone who
+          follows three kids all year round leaves them empty.
+      - title: "Put people in it"
+        text: >-
+          On the group's page, under **«Among those who opened a sheet to
+          you»**, there is the list of who is still free: a tap on **«Add»** and
+          they are in. Nobody sits in two groups — putting them in one takes
+          them out of the other, with no need to remove them first.
+
+  - type: heading
+    id: scheda_comune
+    title: "The course sheet"
+
+  - type: text
+    text: >-
+      From the group's page, **«Group sheet»** sends the same sheet to everyone
+      currently in it. It is not just convenience: **it is what makes the
+      numbers comparable**. If one person scores «51 out of 60» and another «14
+      out of 20», an average of the two means nothing.
+
+  - type: shot
+    shot: istruttore-scheda-gruppo
+    caption: "The group sheet: how many took it, how many let you read it, who has not answered and who joined later."
+
+  - type: text
+    text: >-
+      They remain **proposals, one each**: the group decides who the invitation
+      goes to, not who accepts it. Each of them decides for themselves whether
+      to take it and whether to let you read it, and can take it back at any
+      time.
+
+  - type: options
+    items:
+      - name: "took it, out of N"
+        text: >-
+          How many accepted, out of the number of **proposals sent** — not out
+          of today's students. It is the only question those rows can answer:
+          *of the people I gave it to, how many took it*.
+      - name: "let you read it"
+        text: >-
+          How many of those taken you can actually open. Taking it and letting
+          you read it are **two decisions**, and the second can be undone the
+          next day. This number is here because it is the average's
+          denominator.
+      - name: "have not answered yet"
+        text: >-
+          The proposals still waiting. It only appears when there is at least
+          one.
+
+  - type: note
+    tone: info
+    title: "Joining later is not a «no»"
+    text: >-
+      People who arrived once the course had started never got the sheet, and
+      the page says so separately, **with their names**: sending it again
+      reaches them. It does not go out again to those who already have it —
+      they would end up with the same sheet twice to fill in.
+
+  - type: text
+    text: >-
+      Tick **«It is the next level»** and each proposal leaves behind the copy
+      *that* student has of the current sheet: each of them files their own
+      away, and the sessions they did stay readable.
+
+  - type: heading
+    id: numeri
+    title: "The course's numbers, and what they are worked out on"
+
+  - type: shot
+    shot: istruttore-gruppo
+    caption: "A course: what week it has reached, the numbers at the top, the sheet it has in common and who is in it."
+
+  - type: options
+    items:
+      - name: "Group average, out of N"
+        text: >-
+          It takes **everyone's last session**, looks at how much they scored
+          out of what was available, and averages that back onto the shared
+          sheet's scale. One session each and not all of them: someone training
+          three times a week would shift the average of a course of five on
+          their own, and the number would end up saying how much *they* train.
+        hint: istruttore.media_gruppo
+      - name: "out of N sheets you read"
+        text: >-
+          It is **always** under the average, and it is read together with it:
+          an average over three sheets out of five is a different thing from an
+          average over five. If somebody has not produced numbers yet, they are
+          counted and said — instead of vanishing into the denominator.
+      - name: "Sessions this week"
+        text: >-
+          The **course's** week, the one in the panel at the top: it starts on
+          the weekday the course started on, not on Monday. A course with no
+          start date has no weeks, and then it is the last seven days — and the
+          label says so. They are counted across **all** the sheets of its
+          students that you read: the question is whether the course is moving.
+      - name: "Moved up a level"
+        text: >-
+          How many people passed a level **while they were in the course**, and
+          while you were reading that sheet. What counts is the stamp, not your
+          gesture: a sheet that stamps itself at the threshold counts like the
+          others.
+
+  - type: note
+    tone: tip
+    title: "No average? That is not a zero"
+    text: >-
+      If there is no shared sheet, or that sheet has no items that add up to a
+      total, the average **does not appear**. A zero in place of a number that
+      does not exist would be the easiest lie to write on this page.
+
+  - type: heading
+    id: chiudere
+    title: "Closing a course, and the history"
+
+  - type: text
+    text: >-
+      **«Close the course»** ends it today. The rows stay: who was in it and
+      until when. From that moment those people can join another group, and the
+      course moves into the **history**, where every row carries how many
+      people moved up a level inside it.
+
+  - type: note
+    tone: info
+    title: "The history says what you saw happen"
+    text: >-
+      A former student who closes all their sheets to you today does **not**
+      change your history: the count looks at whether you were reading that
+      sheet **when** the level up was stamped, not whether you read it now.
+
+  - type: text
+    text: >-
+      The calendar and the closing are two different things: writing *«to 15
+      December»* in September declares **when it will end**, and a course
+      ending in three months is running now. A closed course reopens by
+      clearing the end date.
+
+  - type: faq
+    items:
+      - q: "Can I put someone in a group who has not opened a sheet to me?"
+        a: >-
+          No. A group sorts people who are already your students: if it could
+          add people, it would be a way of granting yourself what the student
+          is supposed to decide.
+      - q: "Can a student be in two groups?"
+        a: >-
+          No, only one. «Move» is not a separate command: putting them in a
+          group takes them out of the one they were in.
+      - q: "If I change my sheet, do my students' sheets change?"
+        a: >-
+          No. When they take it, a **copy of their own** is born, and from then
+          on the two lives are separate — you change yours whenever you like,
+          theirs is theirs and they can change it too. It is also why the
+          average works on shares rather than raw totals.
+      - q: "I sent the sheet to five people and the page says it went to three."
+        a: >-
+          The other two were skipped, and the page says why: either they
+          already have that sheet, or they have a proposal from you still
+          waiting. Neither is an error, and the rest of the course gets it all
+          the same.
+      - q: "Do students see which group I put them in?"
+        a: >-
+          No. Groups are your own way of sorting people, and they stay yours.

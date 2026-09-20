@@ -731,10 +731,12 @@ Quelli sopra sono chiusi; questi no.
    decisioni congelate, undici fasi: lo stato schermata per schermata sta in
    [`canvas-tpa-esercizi/STATO.md`](canvas-tpa-esercizi/STATO.md), il piano in
    [`canvas-tpa-esercizi/PIANO.md`](canvas-tpa-esercizi/PIANO.md).
-   **Fatte le fasi 2–5**: referto TPA (19/09, #475–#483), esami (19/09,
+   **Fatte le fasi 2–8**: referto TPA (19/09, #475–#483), esami (19/09,
    #484–#489), modello dell'esercizio con «Oggi» e il voto (20/09, #490–#498),
-   eseguire un esercizio colpo per colpo e con estrazione (20/09, #501–#509).
-   Restano schede, andamento, istruttori, disegnatore e la chiusura.
+   eseguire un esercizio colpo per colpo e con estrazione (20/09, #501–#509),
+   schede di allenamento (20/09, #511–#516), andamento, obiettivi e consigli
+   (20/09, #517–#522), istruttori con allievi, gruppi e proposte di scheda
+   (20/09, #523–#534). **Restano il disegnatore e la chiusura.**
 
 ### Rilievi di dominio trovati durante la conversione (non toccati)
 

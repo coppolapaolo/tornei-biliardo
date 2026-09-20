@@ -710,3 +710,75 @@ shots:
     as: Marco Rossi
     caption: "Imposta un obiettivo: le tre forme fra cui scegliere, e sotto i campi della forma scelta."
     full_page: true
+
+  # --- Istruttori: le schede aperte, i corsi (fase 8) ---------------------
+  # Il dataset lo prepara `_istruttore_e_allievi` nel seed: Andrea Ferri è
+  # istruttore, e ogni allievo sta lì per una ragione. Davide ha preso la
+  # scheda del corso e **non** la fa leggere — è lui a far sì che «l'hanno
+  # presa in 4» e «media su 3 schede che leggi» siano due numeri diversi, che
+  # è proprio ciò che il testo accanto spiega.
+  - id: scheda-lettori
+    route: /schede/1/lettori
+    as: Marco Rossi
+    caption: "«Chi la legge»: l'istruttore a cui questa scheda è aperta, l'interruttore delle note, e la ricerca per aggiungerne un altro."
+    full_page: true
+
+  - id: scheda-istruttori
+    route: /schede/istruttori
+    as: Marco Rossi
+    caption: "«Chi legge le mie schede»: un istruttore per riga, e sotto quali schede gli hai aperto."
+    full_page: true
+
+  - id: scheda-proposta
+    route: /schede/proposte/6
+    as: Sara Neri
+    caption: "Una scheda proposta da un istruttore: cosa c'è dentro, le due caselle già spuntate — fargli vedere come va, e mettere nello storico la scheda superata — e i due pulsanti «Prendi la scheda» e «No, grazie»."
+    full_page: true
+
+  - id: ruoli-giocatore
+    route: /player/ruoli
+    as: Marco Rossi
+    caption: "«I tuoi ruoli» di un giocatore: giocatore attivo, esaminatore e istruttore ancora da chiedere, con il collegamento per chiederli."
+    full_page: true
+
+  - id: ruoli-istruttore
+    route: /player/ruoli
+    as: Andrea Ferri
+    caption: "La stessa pagina per chi il ruolo ce l'ha: «Istruttore · attivo», da quando e nominato da chi, il collegamento ai titolari e il campo della scuola."
+    full_page: true
+
+  - id: ruolo-titolari
+    route: /roles/holders/instructor
+    as: Andrea Ferri
+    caption: "I titolari del ruolo di istruttore con la catena delle nomine: chi ha concesso a chi, e da quando."
+    full_page: true
+
+  - id: istruttore-allievi
+    route: /istruttore/allievi
+    as: Andrea Ferri
+    caption: "«I miei allievi»: chi ha appena aperto una scheda, chi è arrivato al passaggio di livello, chi è da guardare e chi va bene, ognuno con sotto un fatto."
+    full_page: true
+
+  - id: istruttore-dai-scheda
+    route: /istruttore/allievi/3/scheda
+    as: Andrea Ferri
+    caption: "«Dai una scheda»: fra le proprie schede già composte si sceglie quella da proporre, si aggiungono due parole e si manda."
+    full_page: true
+
+  - id: istruttore-gruppi
+    route: /istruttore/gruppi
+    as: Andrea Ferri
+    caption: "I gruppi: quelli in corso, il modulo per farne uno nuovo, e lo storico dei corsi chiusi con quante persone sono passate di livello dentro."
+    full_page: true
+
+  - id: istruttore-gruppo
+    route: /istruttore/gruppi/1
+    as: Andrea Ferri
+    caption: "Un corso: a che settimana è arrivato, i numeri in cima — quanti allievi, le sedute della settimana, la media del gruppo — la scheda che ha in comune e chi ne fa parte."
+    full_page: true
+
+  - id: istruttore-scheda-gruppo
+    route: /istruttore/gruppi/1/scheda
+    as: Andrea Ferri
+    caption: "La scheda del gruppo: quanti l'hanno presa, quanti te la fanno leggere, chi non ha risposto, chi è entrato dopo, e il modulo per mandarne una a tutto il corso."
+    full_page: true

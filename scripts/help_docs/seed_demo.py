@@ -720,6 +720,7 @@ def _crea_scheda(db, player, challenges) -> None:
         SheetMeasure,
         TrainingSheetService,
     )
+    from models.training_sheet.measure import LevelUp
     from models.training_sheet.models import TrainingEntry, TrainingSession
 
     numeriche = [c for c in challenges if not c.pass_fail_only]
@@ -743,6 +744,12 @@ def _crea_scheda(db, player, challenges) -> None:
         name="Tecnica di base",
         level=3,
         threshold=30,
+        # Il gradino lo sancisce una persona (D8, ADR-071): e' questa scheda a
+        # far comparire «Valuta il passaggio di livello» fra gli allievi
+        # dell'istruttore, e senza `instructor` quella sezione resterebbe vuota
+        # proprio mentre la guida la spiega. Con `auto` non ci sarebbe nessuno
+        # da chiamare, ed e' il motivo per cui il segnale non compare.
+        level_up=LevelUp.INSTRUCTOR,
         items=[
             SheetItemSpec(
                 challenge_id=a_lati.id,
@@ -823,6 +830,381 @@ def _crea_scheda(db, player, challenges) -> None:
     )
     db.session.commit()
     log(f"scheda «{sheet.name}»: 3 sedute chiuse e una in corso")
+
+
+# ── L'istruttore, i suoi allievi, i corsi (fase 8) ──────────────────────────
+
+#: Da quanti giorni e' cominciato il corso in corso. Trentotto e non
+#: trentacinque di proposito: `TrainingGroup.week_of` conta `giorni // 7 + 1`,
+#: quindi la settimana in corso e' cominciata **tre giorni fa**, e le sedute di
+#: questi giorni cadono dentro la finestra che la pagina chiama «questa
+#: settimana». Con un multiplo esatto di sette la settimana comincerebbe oggi e
+#: il numero sarebbe quasi sempre zero: vero, e inutile da guardare.
+GIORNI_CORSO_DA = 38
+
+#: Quanto manca alla fine dichiarata: «settimana 6 di 13».
+GIORNI_CORSO_A = 49
+
+#: Il corso chiuso dello storico, in giorni da oggi. Il passaggio di livello di
+#: Giulia sta **dentro** questa finestra, ed e' cio' che fa dire «1 al livello
+#: dopo» alla riga dello storico.
+GIORNI_CORSO_PASSATO = (210, 120)
+
+
+def _istruttore_e_allievi(db, players, challenges) -> None:
+    """Un istruttore vero, i suoi allievi, un corso aperto e uno chiuso.
+
+    Il seed della fase 6 si fermava alla scheda di un giocatore che si allena
+    da solo: nessun ruolo di istruttore, nessun gruppo, nessuna proposta.
+    Le pagine della fase 8 su quel dataset sarebbero tutte vuote — e una guida
+    illustrata da elenchi vuoti non spiega niente, mostra un'app spenta.
+
+    Lo stato costruito qui e' quello che serve a **dire la verita' sui numeri
+    del corso**, e ogni pezzo risponde a una frase della guida:
+
+    * **Davide prende la scheda e non la fa leggere.** E' il caso che spiega il
+      denominatore: «l'hanno presa in 4» ma la media e' «su 3 schede che
+      leggi». Senza di lui i due numeri coinciderebbero sempre, e chi legge
+      crederebbe che siano lo stesso numero scritto due volte;
+    * **Paolo non ha ancora risposto** — la proposta in attesa;
+    * **Chiara e' entrata dopo** e la scheda del corso non l'ha mai ricevuta:
+      non e' un «no», e la pagina lo dice a parte, coi nomi;
+    * **Sara ha superato il livello** e le arriva la scheda del gradino dopo:
+      e' la proposta con le **due** caselle, lettura e passaggio;
+    * **Marco e' arrivato alla soglia** di una scheda che aspetta una persona:
+      e' «Valuta il passaggio di livello», con «Confermo» da premere;
+    * **Giulia e' un'ex allieva** che oggi non gli fa piu' leggere niente, e il
+      suo passaggio resta scritto nello storico del corso chiuso: e' la
+      proprieta' per cui il conteggio guarda **quando** leggevi, non se leggi
+      adesso (`esiti_dei_corsi`).
+
+    I numeri delle sedute sono scritti qui e non sorteggiati, come ovunque in
+    questo file: due catture successive devono dare immagini identiche.
+    """
+    from models import User
+    from models.base import utc_now
+    from models.istruttore import AssegnazioneService, GruppoService
+    from models.training_sheet import (
+        SheetItemSpec,
+        SheetMeasure,
+        TrainingSheetService,
+    )
+    from models.training_sheet.measure import LevelUp
+    from models.user.role_enum import UserRole
+
+    numeriche = [c for c in challenges if not c.pass_fail_only]
+    if len(numeriche) < 3:
+        log("istruttore non creato: servono almeno tre esercizi numerici")
+        return
+    admin = User.query.filter_by(role=UserRole.ADMIN.value).first()
+    director = User.query.filter_by(username=DEMO_DIRECTOR[0]).first()
+    if admin is None or director is None:
+        log("istruttore non creato: manca chi concede il ruolo")
+        return
+
+    marco, giulia, andrea = players[0], players[1], players[2]
+    sara, paolo, elena = players[3], players[4], players[5]
+    davide, chiara = players[6], players[7]
+
+    # La catena delle nomine, che la pagina dei titolari mostra (#526): admin
+    # concede al primo, e il primo concede al secondo. Con un titolare solo la
+    # colonna «Concesso da» direbbe «admin» e basta, e la propagazione — che e'
+    # il motivo per cui quella pagina esiste — non si vedrebbe.
+    _concedi_istruttore(db, admin, director)
+    _concedi_istruttore(db, director, andrea)
+    andrea.organization = "Scuola Biliardo Centrale"
+    db.session.commit()
+
+    # I due modelli dell'istruttore: una scala di due gradini. Il secondo serve
+    # a «Dai il livello dopo», che senza una scheda a cui puntare non si puo'
+    # nemmeno fotografare.
+    modelli = []
+    for livello, soglia in ((1, 14), (2, 17)):
+        modello = TrainingSheetService.create_sheet(
+            andrea, f"Corso base · livello {livello}"
+        )
+        TrainingSheetService.save_composition(
+            modello.id,
+            andrea,
+            name=f"Corso base · livello {livello}",
+            level=livello,
+            threshold=soglia,
+            # Il gradino lo sancisce lui: e' una scheda che si fa in sala, con
+            # qualcuno che guarda. Si copia sulle schede che ne nascono.
+            level_up=LevelUp.INSTRUCTOR,
+            items=[
+                SheetItemSpec(
+                    challenge_id=numeriche[0].id, measure=SheetMeasure.MADE, amount=5
+                ),
+                SheetItemSpec(
+                    challenge_id=numeriche[1].id, measure=SheetMeasure.MADE, amount=10
+                ),
+                SheetItemSpec(
+                    challenge_id=numeriche[2].id, measure=SheetMeasure.MADE, amount=5
+                ),
+            ],
+        )
+        modelli.append(modello)
+    db.session.commit()
+    livello1, livello2 = modelli
+
+    # La prima mossa e' sempre dell'allievo (ADR-069): finche' non ti apre una
+    # scheda non sei nessuno per lui, e non gli puoi proporre niente. Marco ha
+    # gia' la sua — «Tecnica di base» — e la apre; gli altri ne scrivono una.
+    tecnica = TrainingSheetService.sheets_of(marco.id)[0]
+    _apre_la_scheda(db, tecnica, andrea, marco, giorni_fa=40)
+    personali = {
+        allievo.id: _scheda_personale(db, allievo, andrea, numeriche, giorni_fa=giorni)
+        for allievo, giorni in (
+            (sara, 40),
+            (elena, 40),
+            (davide, 40),
+            (paolo, 40),
+            (chiara, 3),
+        )
+    }
+    # Davide si allena, e quel che l'istruttore vede di lui e' questo: la
+    # scheda del corso lui la tiene per se'. Senza questa seduta finirebbe
+    # fra quelli «da guardare» — vero secondo il modello, e fuorviante da
+    # leggere: non e' sparito, e' solo che di quella scheda non gli dice
+    # niente. Paolo resta l'unico che non ha ancora cominciato.
+    _sedute_di_scheda(db, personali[davide.id], davide, ((5, 11),))
+
+    # Il corso in corso, e chi ne fa parte.
+    oggi = date.today()
+    corso = GruppoService.crea(
+        andrea,
+        "Corso del lunedì",
+        oggi - timedelta(days=GIORNI_CORSO_DA),
+        oggi + timedelta(days=GIORNI_CORSO_A),
+    )
+    db.session.commit()
+    for allievo in (marco, sara, elena, davide, paolo):
+        GruppoService.aggiungi(corso.id, andrea, allievo.id)
+    db.session.commit()
+
+    # La scheda del corso, proposta dal gruppo: quattro la prendono, uno non ha
+    # ancora risposto. L'ordine conta — `proponi` salta chi ha gia' una
+    # proposta tua in attesa, quindi le risposte vanno date prima di mandarne
+    # un'altra a chi ha gia' risposto.
+    proposte = AssegnazioneService.proponi(
+        andrea,
+        livello1.id,
+        [marco.id, sara.id, elena.id, davide.id, paolo.id],
+        messaggio="La scheda del corso. Due giri a settimana, senza fretta.",
+        group_id=corso.id,
+    )
+    db.session.commit()
+    per_allievo = {proposta.user_id: proposta for proposta in proposte}
+
+    copie = {}
+    for allievo, legge in ((marco, True), (sara, True), (elena, True), (davide, False)):
+        copie[allievo.id] = AssegnazioneService.accetta(
+            per_allievo[allievo.id].id, allievo, apri_lettura=legge
+        )
+    db.session.commit()
+
+    # Chiara entra a corso cominciato: la scheda comune non le e' mai arrivata,
+    # ed e' la riga «Sono entrati nel corso dopo» della pagina.
+    GruppoService.aggiungi(corso.id, andrea, chiara.id)
+    db.session.commit()
+
+    # Le sedute delle copie. I totali sono scelti perche' la pagina dica cose
+    # diverse su persone diverse: Sara tiene la soglia e passa, Marco ed Elena
+    # restano sotto — con una sola seduta sopra la soglia scatterebbe anche per
+    # loro «Valuta il passaggio», e le tre sezioni collasserebbero in una.
+    _sedute_di_scheda(db, copie[marco.id], marco, ((9, 12), (5, 16), (1, 13)))
+    _sedute_di_scheda(db, copie[sara.id], sara, ((10, 11), (6, 15), (2, 15)))
+    _sedute_di_scheda(db, copie[elena.id], elena, ((8, 10), (4, 12), (2, 13)))
+
+    # Sara ha superato il livello, e a timbrarlo e' stato lui.
+    passata = copie[sara.id]
+    passata.passed_at = utc_now() - timedelta(days=1)
+    passata.passed_by_id = andrea.id
+    db.session.commit()
+
+    # Il secondo gesto del passaggio: la scheda del livello dopo, che aspetta
+    # la sua risposta. E' la proposta con le **due** caselle.
+    AssegnazioneService.proponi(
+        andrea,
+        livello2.id,
+        [sara.id],
+        messaggio="Bravissima. Da lunedì passiamo a questa.",
+        promuove={sara.id: passata.id},
+    )
+    db.session.commit()
+
+    _corso_chiuso(db, andrea, giulia, numeriche)
+    log(
+        "istruttore Andrea Ferri: 6 allievi, «Corso del lunedì» "
+        "(4 schede prese su 5, 3 lette) e un corso chiuso nello storico"
+    )
+
+
+def _concedi_istruttore(db, chi, a_chi) -> None:
+    """Concede il ruolo, se non ce l'ha gia'. Idempotente come il resto."""
+    from models.user.role_enum import GrantableRole
+    from models.user.role_grant_service import RoleGrantService
+
+    if RoleGrantService.has_role(a_chi.id, GrantableRole.INSTRUCTOR):
+        return
+    RoleGrantService.grant(
+        user_id=a_chi.id, role=GrantableRole.INSTRUCTOR, granted_by=chi
+    )
+    db.session.commit()
+
+
+def _apre_la_scheda(db, scheda, istruttore, proprietario, *, giorni_fa: int):
+    """Apre una scheda a un istruttore, retrodatando il permesso.
+
+    La data conta: «Ti hanno appena aperto una scheda» guarda gli ultimi sette
+    giorni, e senza retrodatare l'elenco direbbe che sono arrivati tutti oggi.
+    """
+    from models.base import utc_now
+    from models.training_sheet import TrainingSheetService
+
+    lettore = TrainingSheetService.add_reader(
+        scheda.id, istruttore.id, proprietario, avvisa=False
+    )
+    lettore.granted_at = utc_now() - timedelta(days=giorni_fa)
+    db.session.commit()
+    return lettore
+
+
+def _scheda_personale(db, allievo, istruttore, numeriche, *, giorni_fa: int):
+    """La scheda che l'allievo si scrive da se', e che apre all'istruttore.
+
+    Serve a far esistere il legame: senza, l'istruttore non potrebbe proporgli
+    niente — la prima mossa e' sempre dell'altro (ADR-069). Resta senza sedute
+    di proposito: i numeri di questi allievi stanno sulla scheda del corso, e
+    aggiungerne altrove renderebbe illeggibile la media.
+    """
+    from models.training_sheet import (
+        SheetItemSpec,
+        SheetMeasure,
+        TrainingSheetService,
+    )
+
+    scheda = TrainingSheetService.create_sheet(allievo, "Esercizi di casa")
+    TrainingSheetService.save_composition(
+        scheda.id,
+        allievo,
+        name="Esercizi di casa",
+        items=[
+            SheetItemSpec(
+                challenge_id=numeriche[0].id, measure=SheetMeasure.MADE, amount=10
+            ),
+            SheetItemSpec(
+                challenge_id=numeriche[1].id, measure=SheetMeasure.MADE, amount=5
+            ),
+        ],
+    )
+    db.session.commit()
+    _apre_la_scheda(db, scheda, istruttore, allievo, giorni_fa=giorni_fa)
+    return scheda
+
+
+def _sedute_di_scheda(db, scheda, proprietario, sedute) -> None:
+    """Sedute chiuse su una scheda a tre voci, dato il totale di ciascuna.
+
+    Il totale si spalma sulle tre voci rispettando il tetto di ognuna: cosi'
+    l'invariante che conta — `total` e `max_total` della seduta — resta quella
+    voluta senza dover scrivere a mano nove numeri per allievo.
+    """
+    from models.base import utc_now
+    from models.training_sheet.models import TrainingEntry, TrainingSession
+
+    voci = scheda.active_items
+    for giorni_fa, totale in sedute:
+        quando = utc_now() - timedelta(days=giorni_fa)
+        seduta = TrainingSession(
+            sheet_id=scheda.id,
+            user_id=proprietario.id,
+            sheet_version=scheda.version,
+            started_at=quando,
+            ended_at=quando + timedelta(minutes=45),
+        )
+        db.session.add(seduta)
+        db.session.flush()
+        resto = totale
+        for voce in voci:
+            valore = min(voce.amount, resto)
+            resto -= valore
+            db.session.add(
+                TrainingEntry(
+                    session_id=seduta.id,
+                    item_id=voce.id,
+                    value=valore,
+                    measure=voce.measure,
+                    target_amount=voce.amount,
+                )
+            )
+        db.session.commit()
+
+
+def _corso_chiuso(db, istruttore, allieva, numeriche) -> None:
+    """Un corso finito, con dentro un passaggio di livello. E un'ex allieva.
+
+    Il permesso di lettura viene **revocato** dopo il passaggio, ed e' voluto:
+    Giulia oggi non e' piu' un'allieva — non compare in «I miei allievi» — ma
+    lo storico continua a dire «1 al livello dopo», perche' il conteggio guarda
+    se leggevi la scheda **quando** il timbro e' stato messo. Lo storico dice
+    quello che hai visto succedere, e non cambia dopo.
+    """
+    from models.base import utc_now
+    from models.istruttore import GruppoService
+    from models.training_sheet import (
+        SheetItemSpec,
+        SheetMeasure,
+        TrainingSheetService,
+    )
+    from models.training_sheet.measure import LevelUp
+
+    da_giorni, a_giorni = GIORNI_CORSO_PASSATO
+    scheda = TrainingSheetService.create_sheet(allieva, "Corso base · livello 1")
+    TrainingSheetService.save_composition(
+        scheda.id,
+        allieva,
+        name="Corso base · livello 1",
+        level=1,
+        threshold=14,
+        level_up=LevelUp.INSTRUCTOR,
+        items=[
+            SheetItemSpec(
+                challenge_id=numeriche[0].id, measure=SheetMeasure.MADE, amount=5
+            ),
+            SheetItemSpec(
+                challenge_id=numeriche[1].id, measure=SheetMeasure.MADE, amount=10
+            ),
+        ],
+    )
+    db.session.commit()
+    lettore = _apre_la_scheda(db, scheda, istruttore, allieva, giorni_fa=da_giorni - 5)
+
+    oggi = date.today()
+    corso = GruppoService.crea(
+        istruttore,
+        "Corso di primavera",
+        oggi - timedelta(days=da_giorni),
+        oggi - timedelta(days=a_giorni),
+    )
+    db.session.commit()
+    membro = GruppoService.aggiungi(corso.id, istruttore, allieva.id)
+    db.session.commit()
+
+    # Il calendario e' una previsione, lo stato e' un atto (ADR-070): il corso
+    # si chiude, e poi le date si portano indietro perche' sia davvero passato.
+    GruppoService.chiudi(corso.id, istruttore)
+    db.session.commit()
+    corso.started_on = oggi - timedelta(days=da_giorni)
+    corso.ended_on = oggi - timedelta(days=a_giorni)
+    corso.closed_at = utc_now() - timedelta(days=a_giorni)
+    membro.joined_at = utc_now() - timedelta(days=da_giorni - 5)
+    membro.left_at = utc_now() - timedelta(days=a_giorni)
+    scheda.passed_at = utc_now() - timedelta(days=150)
+    scheda.passed_by_id = istruttore.id
+    lettore.revoked_at = utc_now() - timedelta(days=a_giorni)
+    db.session.commit()
 
 
 def _popola_esercizi(db, players, challenges) -> None:
@@ -1736,8 +2118,10 @@ def main() -> int:
         _popola_esercizi(db, players, challenges)
         _prove_a_colpi(db, players[0], challenges)
         _crea_scheda(db, players[0], challenges)
-        # Dopo la scheda: l'andamento legge **anche** le sedute (ADR-068), e
+        # Dopo la scheda: l'istruttore apre la scheda di Marco, che deve gia'
+        # esistere, e l'andamento legge **anche** le sedute (ADR-068) —
         # seminarlo prima darebbe un radar costruito su metà delle fonti.
+        _istruttore_e_allievi(db, players, challenges)
         _andamento_e_obiettivo(db, players[0], challenges)
         _create_squadre(db, gara_iscrizioni, players[:5])
         _create_gara_bozza(db, campionato, director, venue)
