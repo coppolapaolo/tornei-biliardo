@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 19:40+0200\n"
+"POT-Creation-Date: 2026-09-20 20:12+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -308,7 +308,7 @@ msgstr ""
 
 #: models/challenge/authoring.py:290 models/challenge/profile_service.py:94
 #: models/challenge/rating_service.py:61 models/challenge/shot_service.py:87
-#: models/training_sheet/services.py:229
+#: models/training_sheet/services.py:237
 msgid "Esercizio non trovato"
 msgstr ""
 
@@ -722,7 +722,7 @@ msgid "Questo esercizio si registra colpo per colpo, non col totale."
 msgstr ""
 
 #: models/challenge/services.py:1257 models/challenge/shot_service.py:162
-#: models/training_sheet/session_service.py:415
+#: models/training_sheet/session_service.py:429
 msgid "Questa variante non è di questo esercizio"
 msgstr ""
 
@@ -1221,7 +1221,7 @@ msgstr ""
 
 #: models/dashboard/activity_feedback.py:261 models/obiettivo/progress.py:198
 #: templates/direttore/preparazione/_esercizi.html:73
-#: templates/sheet/proposta.html:83
+#: templates/sheet/proposta.html:99
 msgid "Esercizio"
 msgstr ""
 
@@ -1522,7 +1522,7 @@ msgid "ultima partita %(date)s"
 msgstr ""
 
 #: models/dashboard/activity_feedback.py:1504
-#: models/istruttore/allievi_view.py:376
+#: models/istruttore/allievi_view.py:381
 msgid "oggi"
 msgstr ""
 
@@ -2561,119 +2561,119 @@ msgstr ""
 msgid "Vedi la proposta"
 msgstr ""
 
-#: models/istruttore/allievi_view.py:270
+#: models/istruttore/allievi_view.py:275
 #, python-format
 msgid "%(numeri)s su %(max)s · soglia %(soglia)s"
 msgstr ""
 
-#: models/istruttore/allievi_view.py:293
+#: models/istruttore/allievi_view.py:298
 msgid "non ha ancora chiuso una seduta"
 msgstr ""
 
-#: models/istruttore/allievi_view.py:303
+#: models/istruttore/allievi_view.py:308
 #, python-format
 msgid "non si allena da %(num)s giorno"
 msgid_plural "non si allena da %(num)s giorni"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/istruttore/allievi_view.py:336
+#: models/istruttore/allievi_view.py:341
 #, python-format
 msgid "da %(sedute)s sedute non supera %(massimo)s"
 msgstr ""
 
-#: models/istruttore/allievi_view.py:352
+#: models/istruttore/allievi_view.py:357
 msgid "ha appena cominciato"
 msgstr ""
 
-#: models/istruttore/allievi_view.py:361
+#: models/istruttore/allievi_view.py:366
 #, python-format
 msgid "%(quando)s · %(quante)s"
 msgstr ""
 
-#: models/istruttore/allievi_view.py:364
+#: models/istruttore/allievi_view.py:369
 #, python-format
 msgid "%(num)s seduta in quattro settimane"
 msgid_plural "%(num)s sedute in quattro settimane"
 msgstr[0] ""
 msgstr[1] ""
 
-#: models/istruttore/allievi_view.py:378
+#: models/istruttore/allievi_view.py:383
 msgid "ieri"
 msgstr ""
 
-#: models/istruttore/allievi_view.py:379
+#: models/istruttore/allievi_view.py:384
 #, python-format
 msgid "%(num)s giorni fa"
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:76 models/istruttore/assegnazioni.py:138
-#: models/istruttore/assegnazioni.py:246
+#: models/istruttore/assegnazioni.py:76 models/istruttore/assegnazioni.py:147
+#: models/istruttore/assegnazioni.py:267
 msgid "Questa proposta non esiste"
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:107
+#: models/istruttore/assegnazioni.py:113
 msgid "Puoi dare una scheda solo a chi te ne ha aperta una"
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:166
+#: models/istruttore/assegnazioni.py:181
 msgid "Questa scheda non esiste più"
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:232
+#: models/istruttore/assegnazioni.py:253
 msgid "A questa proposta hai già risposto"
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:252
+#: models/istruttore/assegnazioni.py:273
 msgid "Le schede le propone un istruttore"
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:259
+#: models/istruttore/assegnazioni.py:280
 msgid "Si propone una scheda tua"
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:261
+#: models/istruttore/assegnazioni.py:282
 msgid "Questa scheda è ancora vuota: componila prima"
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:284 templates/sheet/proposta.html:30
+#: models/istruttore/assegnazioni.py:323 templates/sheet/proposta.html:30
 msgid "Un istruttore ti propone una scheda"
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:286
+#: models/istruttore/assegnazioni.py:325
 #, python-format
 msgid "%(istruttore)s ti propone «%(scheda)s». Decidi tu se prenderla."
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:292
+#: models/istruttore/assegnazioni.py:331
 msgid "Guarda la scheda"
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:306
+#: models/istruttore/assegnazioni.py:345
 msgid "Un allievo ha preso la tua scheda"
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:310
+#: models/istruttore/assegnazioni.py:349
 #, python-format
 msgid "%(allievo)s ha preso «%(scheda)s» e te la fa leggere."
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:316
+#: models/istruttore/assegnazioni.py:355
 #, python-format
 msgid "%(allievo)s ha preso «%(scheda)s». Non te la fa leggere."
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:322
+#: models/istruttore/assegnazioni.py:361
 msgid "Un allievo ha detto di no"
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:324
+#: models/istruttore/assegnazioni.py:363
 #, python-format
 msgid "%(allievo)s non ha preso «%(scheda)s»."
 msgstr ""
 
-#: models/istruttore/assegnazioni.py:336 templates/istruttore/allievi.html:17
-#: templates/istruttore/allievi.html:23 templates/sheet/index.html:126
+#: models/istruttore/assegnazioni.py:375 templates/istruttore/allievi.html:17
+#: templates/istruttore/allievi.html:23 templates/sheet/index.html:131
 msgid "I miei allievi"
 msgstr ""
 
@@ -3128,8 +3128,8 @@ msgstr ""
 msgid "attività"
 msgstr ""
 
-#: models/notification/templates.py:146 models/training_sheet/measure.py:108
-#: templates/sheet/compose.html:152
+#: models/notification/templates.py:146 models/training_sheet/measure.py:161
+#: templates/sheet/compose.html:175
 msgid "partite"
 msgstr ""
 
@@ -3442,9 +3442,43 @@ msgid ""
 "confermato o rifiutato."
 msgstr ""
 
+#: models/training_sheet/gradino.py:83 models/training_sheet/services.py:340
+msgid "Non leggi questa scheda"
+msgstr ""
+
+#: models/training_sheet/gradino.py:86
+msgid "Questa scheda non aspetta la conferma di un istruttore"
+msgstr ""
+
+#: models/training_sheet/gradino.py:89
+msgid "Questo livello è già superato"
+msgstr ""
+
+#: models/training_sheet/gradino.py:91
+msgid "La soglia non è ancora stata tenuta abbastanza"
+msgstr ""
+
+#: models/training_sheet/gradino.py:135
+#, python-format
+msgid "%(chi)s ha confermato: «%(scheda)s» è superata."
+msgstr ""
+
+#: models/training_sheet/gradino.py:141
+#, python-format
+msgid "Hai tenuto la soglia di «%(scheda)s»: livello superato."
+msgstr ""
+
+#: models/training_sheet/gradino.py:148
+msgid "Livello superato"
+msgstr ""
+
+#: models/training_sheet/gradino.py:152 models/training_sheet/services.py:390
+msgid "Apri la scheda"
+msgstr ""
+
 #: models/training_sheet/measure.py:97 routes/feedback.py:145
 #: templates/base.html:471 templates/components/_sequence_editor.html:141
-#: templates/sheet/_run_dock.html:83 templates/sheet/compose.html:207
+#: templates/sheet/_run_dock.html:83 templates/sheet/compose.html:230
 msgid "Fatto"
 msgstr ""
 
@@ -3469,26 +3503,50 @@ msgstr ""
 msgid "Minuti"
 msgstr ""
 
-#: models/training_sheet/measure.py:105 models/training_sheet/measure.py:106
-#: models/training_sheet/measure.py:107 templates/sheet/compose.html:151
+#: models/training_sheet/measure.py:145
+msgid "Nessuno"
+msgstr ""
+
+#: models/training_sheet/measure.py:146
+msgid "La soglia"
+msgstr ""
+
+#: models/training_sheet/measure.py:147
+msgid "Un istruttore"
+msgstr ""
+
+#: models/training_sheet/measure.py:151
+msgid "La scheda non è fatta a livelli."
+msgstr ""
+
+#: models/training_sheet/measure.py:152
+msgid "Tenuta la soglia, il livello è superato."
+msgstr ""
+
+#: models/training_sheet/measure.py:153
+msgid "Te lo conferma chi legge la scheda."
+msgstr ""
+
+#: models/training_sheet/measure.py:158 models/training_sheet/measure.py:159
+#: models/training_sheet/measure.py:160 templates/sheet/compose.html:174
 msgid "tiri"
 msgstr ""
 
-#: models/training_sheet/measure.py:109 templates/sheet/compose.html:153
+#: models/training_sheet/measure.py:162 templates/sheet/compose.html:176
 msgid "minuti"
 msgstr ""
 
-#: models/training_sheet/measure.py:129
+#: models/training_sheet/measure.py:182
 #, python-format
 msgid "%(n)s partite"
 msgstr ""
 
-#: models/training_sheet/measure.py:131
+#: models/training_sheet/measure.py:184
 #, python-format
 msgid "%(n)s minuti"
 msgstr ""
 
-#: models/training_sheet/measure.py:132
+#: models/training_sheet/measure.py:185
 #, python-format
 msgid "%(n)s tiri"
 msgstr ""
@@ -3507,7 +3565,7 @@ msgid "fuori dalla soglia: non è a riusciti"
 msgstr ""
 
 #: models/training_sheet/run_view.py:124
-#: templates/istruttore/dai_scheda.html:73 templates/sheet/detail.html:26
+#: templates/istruttore/dai_scheda.html:83 templates/sheet/detail.html:26
 #: templates/sheet/index.html:22 templates/sheet/proposta.html:40
 #, python-format
 msgid "soglia %(n)s su %(tot)s"
@@ -3523,99 +3581,91 @@ msgstr ""
 msgid "Questa scheda non è tua"
 msgstr ""
 
-#: models/training_sheet/services.py:176
+#: models/training_sheet/services.py:177
 #, python-format
 msgid "Una scheda arriva a %(n)s voci."
 msgstr ""
 
-#: models/training_sheet/services.py:183
+#: models/training_sheet/services.py:184
 #, python-format
 msgid "Il livello va da 1 a %(n)s."
 msgstr ""
 
-#: models/training_sheet/services.py:190
+#: models/training_sheet/services.py:191
 #, python-format
 msgid "Le sedute di fila vanno da 1 a %(n)s."
 msgstr ""
 
-#: models/training_sheet/services.py:195
+#: models/training_sheet/services.py:196
 #, python-format
 msgid "Le settimane vanno da 1 a %(n)s."
 msgstr ""
 
-#: models/training_sheet/services.py:226
-#: models/training_sheet/session_service.py:394
+#: models/training_sheet/services.py:234
+#: models/training_sheet/session_service.py:408
 msgid "Questa voce non è di questa scheda"
 msgstr ""
 
-#: models/training_sheet/services.py:288
+#: models/training_sheet/services.py:296
 msgid "La scheda è già tua"
 msgstr ""
 
-#: models/training_sheet/services.py:291 routes/player/profile.py:187
+#: models/training_sheet/services.py:299 routes/player/profile.py:187
 msgid "Utente non trovato"
 msgstr ""
 
-#: models/training_sheet/services.py:293
+#: models/training_sheet/services.py:301
 msgid "Una scheda si apre a un istruttore"
 msgstr ""
 
-#: models/training_sheet/services.py:332
-msgid "Non leggi questa scheda"
-msgstr ""
-
-#: models/training_sheet/services.py:373
+#: models/training_sheet/services.py:381
 msgid "Un allievo ti ha aperto una scheda"
 msgstr ""
 
-#: models/training_sheet/services.py:375
+#: models/training_sheet/services.py:383
 #, python-format
 msgid "%(allievo)s ti fa leggere «%(scheda)s»: vedi le sue sedute e come procede."
 msgstr ""
 
-#: models/training_sheet/services.py:382
-msgid "Apri la scheda"
-msgstr ""
-
-#: models/training_sheet/services.py:396
+#: models/training_sheet/services.py:404
 msgid "Un istruttore ha smesso di seguirti"
 msgstr ""
 
-#: models/training_sheet/services.py:398
+#: models/training_sheet/services.py:406
 #, python-format
 msgid "%(istruttore)s non legge più «%(scheda)s»."
 msgstr ""
 
-#: models/training_sheet/services.py:404 templates/sheet/detail.html:149
+#: models/training_sheet/services.py:412 templates/sheet/detail.html:149
 #: templates/sheet/readers.html:21
 msgid "Chi la legge"
 msgstr ""
 
-#: models/training_sheet/services.py:415
+#: models/training_sheet/services.py:423
 msgid "La scheda vuole un nome"
 msgstr ""
 
-#: models/training_sheet/services.py:441
+#: models/training_sheet/services.py:449
 #, python-format
 msgid "Serve dire quanto farne: %(unita)s."
 msgstr ""
 
-#: models/training_sheet/services.py:447
+#: models/training_sheet/services.py:455
 #, python-format
 msgid "Il «quanto farne» va da %(min)s a %(max)s."
 msgstr ""
 
-#: models/training_sheet/services.py:461
+#: models/training_sheet/services.py:469
 msgid "La soglia è un numero positivo"
 msgstr ""
 
-#: models/training_sheet/services.py:466
+#: models/training_sheet/services.py:474
 msgid ""
 "Per una soglia serve almeno una voce «a riusciti»: le altre non fanno "
 "totale."
 msgstr ""
 
-#: models/training_sheet/services.py:473
+#: models/training_sheet/services.py:481
 #, python-format
 msgid "La soglia non può superare il totale della scheda, che è %(n)s."
 msgstr ""
@@ -3648,48 +3698,48 @@ msgstr ""
 msgid "Questa seduta è già chiusa"
 msgstr ""
 
-#: models/training_sheet/session_service.py:333
+#: models/training_sheet/session_service.py:347
 msgid "Questa seduta ha già qualcosa segnato: chiudila, non buttarla"
 msgstr ""
 
-#: models/training_sheet/session_service.py:383
+#: models/training_sheet/session_service.py:397
 msgid "Questa seduta non è tua"
 msgstr ""
 
-#: models/training_sheet/session_service.py:390
+#: models/training_sheet/session_service.py:404
 msgid "Questa seduta è chiusa"
 msgstr ""
 
-#: models/training_sheet/session_service.py:396
+#: models/training_sheet/session_service.py:410
 msgid "Questa voce non fa più parte della scheda"
 msgstr ""
 
-#: models/training_sheet/session_service.py:409
+#: models/training_sheet/session_service.py:423
 msgid "Serve dire da che parte"
 msgstr ""
 
-#: models/training_sheet/session_service.py:412
+#: models/training_sheet/session_service.py:426
 msgid "Questa voce si segna in una casella sola"
 msgstr ""
 
-#: models/training_sheet/session_service.py:451
+#: models/training_sheet/session_service.py:465
 msgid "Serve il numero"
 msgstr ""
 
-#: models/training_sheet/session_service.py:453
+#: models/training_sheet/session_service.py:467
 msgid "Il numero non può essere negativo"
 msgstr ""
 
-#: models/training_sheet/session_service.py:459
+#: models/training_sheet/session_service.py:473
 #, python-format
 msgid "Al massimo %(n)s su questa voce."
 msgstr ""
 
-#: models/training_sheet/session_service.py:463
+#: models/training_sheet/session_service.py:477
 msgid "Una seduta non dura più di un giorno"
 msgstr ""
 
-#: models/training_sheet/session_service.py:470
+#: models/training_sheet/session_service.py:484
 #, python-format
 msgid "Questo esercizio arriva a %(n)s."
 msgstr ""
@@ -4291,35 +4341,39 @@ msgstr ""
 msgid "Tutti"
 msgstr ""
 
-#: routes/istruttore.py:124
+#: routes/istruttore.py:125
 msgid "Non fa più parte del gruppo."
 msgstr ""
 
-#: routes/istruttore.py:130
+#: routes/istruttore.py:131
 msgid "Adesso è nel gruppo."
 msgstr ""
 
-#: routes/istruttore.py:177
+#: routes/istruttore.py:198
+msgid "Passaggio confermato."
+msgstr ""
+
+#: routes/istruttore.py:211
 msgid "Scegli quale scheda dargli."
 msgstr ""
 
-#: routes/istruttore.py:192
+#: routes/istruttore.py:228
 msgid "Ha già una tua proposta in attesa."
 msgstr ""
 
-#: routes/istruttore.py:194
+#: routes/istruttore.py:230
 msgid "Proposta mandata. Decide lui se prenderla."
 msgstr ""
 
-#: routes/istruttore.py:206
+#: routes/istruttore.py:242
 msgid "Proposta ritirata."
 msgstr ""
 
-#: routes/istruttore.py:278
+#: routes/istruttore.py:314
 msgid "Gruppo aggiornato."
 msgstr ""
 
-#: routes/istruttore.py:292
+#: routes/istruttore.py:328
 msgid "Corso chiuso. Resta nello storico."
 msgstr ""
 
@@ -5596,7 +5650,7 @@ msgstr ""
 msgid "Proposta cancellata."
 msgstr ""
 
-#: routes/individual_match/proposals.py:418 routes/sheet/proposte.py:88
+#: routes/individual_match/proposals.py:418 routes/sheet/proposte.py:92
 msgid "Proposta rifiutata."
 msgstr ""
 
@@ -5851,11 +5905,11 @@ msgstr ""
 msgid "Scheda archiviata."
 msgstr ""
 
-#: routes/sheet/compose.py:129
+#: routes/sheet/compose.py:136
 msgid "Scheda salvata."
 msgstr ""
 
-#: routes/sheet/proposte.py:75
+#: routes/sheet/proposte.py:79
 msgid "La scheda è tua: componila come vuoi."
 msgstr ""
 
@@ -6224,7 +6278,7 @@ msgstr ""
 #: templates/player/my_venue_requests.html:66
 #: templates/player/profile_edit.html:81 templates/player/venue_detail.html:287
 #: templates/player/venues.html:99 templates/roles/request_form.html:63
-#: templates/sheet/compose.html:140
+#: templates/sheet/compose.html:163
 msgid "Annulla"
 msgstr ""
 
@@ -7291,7 +7345,7 @@ msgstr ""
 #: templates/gamification/admin/config_dashboard.html:101
 #: templates/gamification/admin/config_dashboard.html:132
 #: templates/gamification/admin/features.html:60
-#: templates/sheet/detail.html:134 templates/sheet/index.html:96
+#: templates/sheet/detail.html:134 templates/sheet/index.html:101
 msgid "Modifica"
 msgstr ""
 
@@ -10306,7 +10360,7 @@ msgstr ""
 #: templates/challenge/_run_shots_dock.html:48
 #: templates/challenge/_training_board.html:95
 #: templates/challenge/summary.html:120 templates/challenge/training.html:166
-#: templates/sheet/_run_dock.html:116 templates/sheet/summary.html:132
+#: templates/sheet/_run_dock.html:116 templates/sheet/summary.html:142
 msgid "Ho finito"
 msgstr ""
 
@@ -10368,7 +10422,7 @@ msgid "Torna a Esercizi"
 msgstr ""
 
 #: templates/challenge/andamento.html:31 templates/challenge/catalog.html:29
-#: templates/challenge/catalog.html:102 templates/istruttore/dai_scheda.html:71
+#: templates/challenge/catalog.html:102 templates/istruttore/dai_scheda.html:81
 #: templates/sheet/proposta.html:36
 #, python-format
 msgid "%(num)s esercizio"
@@ -11575,7 +11629,7 @@ msgstr ""
 msgid "Tavolo 4, panno lento. Stecca nuova."
 msgstr ""
 
-#: templates/challenge/summary.html:109 templates/sheet/summary.html:115
+#: templates/challenge/summary.html:109 templates/sheet/summary.html:125
 msgid "Salva le note"
 msgstr ""
 
@@ -11586,7 +11640,7 @@ msgid_plural "Altri %(num)s colpi"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/challenge/today.html:34 templates/sheet/index.html:65
+#: templates/challenge/today.html:34 templates/sheet/index.html:70
 msgid "Seduta cominciata"
 msgstr ""
 
@@ -11609,7 +11663,7 @@ msgid "L'ultima volta: %(when)s."
 msgstr ""
 
 #: templates/challenge/today.html:81 templates/challenge/today.html:116
-#: templates/sheet/index.html:92
+#: templates/sheet/index.html:97
 msgid "Comincia"
 msgstr ""
 
@@ -11644,7 +11698,7 @@ msgid_plural "%(num)s esercizi, da filtrare per abilità, gesto, livello e voto"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/challenge/today.html:157 templates/sheet/summary.html:134
+#: templates/challenge/today.html:157 templates/sheet/summary.html:144
 msgid "Le tue schede"
 msgstr ""
 
@@ -11683,7 +11737,7 @@ msgstr ""
 msgid "Rivedi la disposizione"
 msgstr ""
 
-#: templates/challenge/training.html:100 templates/sheet/compose.html:188
+#: templates/challenge/training.html:100 templates/sheet/compose.html:211
 msgid "Da che parte"
 msgstr ""
 
@@ -15243,12 +15297,12 @@ msgid "Togli"
 msgstr ""
 
 #: templates/components/_sequence_editor.html:89
-#: templates/sheet/compose.html:179
+#: templates/sheet/compose.html:202
 msgid "Meno"
 msgstr ""
 
 #: templates/components/_sequence_editor.html:95
-#: templates/sheet/compose.html:182
+#: templates/sheet/compose.html:205
 msgid "Più"
 msgstr ""
 
@@ -18668,7 +18722,7 @@ msgstr ""
 #: templates/direttore/preparazione/_esercizi.html:58
 #: templates/direttore/preparazione/_esercizi.html:69
 #: templates/exam/compose.html:136 templates/sheet/compose.html:96
-#: templates/sheet/compose.html:214
+#: templates/sheet/compose.html:237
 msgid "Aggiungi un esercizio"
 msgstr ""
 
@@ -19147,7 +19201,7 @@ msgstr ""
 msgid "Esame: una sequenza di esercizi"
 msgstr ""
 
-#: templates/exam/detail.html:23 templates/sheet/index.html:100
+#: templates/exam/detail.html:23 templates/sheet/index.html:105
 msgid "Componi"
 msgstr ""
 
@@ -19385,7 +19439,7 @@ msgid "Oppure controproponi"
 msgstr ""
 
 #: templates/exam/request_detail.html:88 templates/exam/request_form.html:54
-#: templates/sheet/compose.html:201
+#: templates/sheet/compose.html:224
 msgid "Giorno"
 msgstr ""
 
@@ -21264,7 +21318,7 @@ msgstr ""
 
 #: templates/individual_match/availability.html:107
 #: templates/individual_match/availability.html:135
-#: templates/sheet/compose.html:127
+#: templates/sheet/compose.html:150
 msgid "Giorni"
 msgstr ""
 
@@ -22743,32 +22797,41 @@ msgstr ""
 msgid "Valuta il passaggio di livello"
 msgstr ""
 
-#: templates/istruttore/allievi.html:146
-msgid ""
-"Hanno superato la soglia della loro scheda tante volte di fila quante ne "
-"chiede. Il gradino lo sancisci tu: dagli la scheda del livello dopo "
-"quando te la senti."
+#: templates/istruttore/allievi.html:164
+msgid "Confermo"
 msgstr ""
 
-#: templates/istruttore/allievi.html:152
+#: templates/istruttore/allievi.html:170
+msgid "Dai il livello dopo"
+msgstr ""
+
+#: templates/istruttore/allievi.html:178
+msgid ""
+"Hanno superato la soglia della loro scheda tante volte di fila quante ne "
+"chiede, e la loro scheda dice che a sancirlo sei tu. «Confermo» lo "
+"scrive; dare la scheda del livello dopo è un secondo gesto, e può "
+"aspettare."
+msgstr ""
+
+#: templates/istruttore/allievi.html:184
 msgid "Da guardare"
 msgstr ""
 
-#: templates/istruttore/allievi.html:160
+#: templates/istruttore/allievi.html:192
 msgid "Tutto bene"
 msgstr ""
 
-#: templates/istruttore/allievi.html:169
+#: templates/istruttore/allievi.html:201
 msgid "Nessuno in questo gruppo"
 msgstr ""
 
-#: templates/istruttore/allievi.html:171
+#: templates/istruttore/allievi.html:203
 msgid ""
 "Ci si mette chi ti ha già aperto una scheda: un gruppo serve a ordinare "
 "gli allievi, non a chiederne di nuovi."
 msgstr ""
 
-#: templates/istruttore/allievi.html:175
+#: templates/istruttore/allievi.html:207
 msgid "Apri il gruppo"
 msgstr ""
 
@@ -22790,7 +22853,7 @@ msgstr ""
 msgid "Proposta in attesa"
 msgstr ""
 
-#: templates/istruttore/dai_scheda.html:31 templates/sheet/index.html:43
+#: templates/istruttore/dai_scheda.html:31 templates/sheet/index.html:48
 msgid "Una scheda"
 msgstr ""
 
@@ -22817,29 +22880,40 @@ msgstr ""
 msgid "Le mie schede"
 msgstr ""
 
-#: templates/istruttore/dai_scheda.html:62
+#: templates/istruttore/dai_scheda.html:65
+msgid "Passaggio di livello"
+msgstr ""
+
+#: templates/istruttore/dai_scheda.html:67
+#, python-format
+msgid ""
+"Questa proposta lascia indietro «%(scheda)s». Prendendola, potrà metterla"
+" nello storico: le sedute che ha fatto restano."
+msgstr ""
+
+#: templates/istruttore/dai_scheda.html:72
 msgid "Quale gli dai"
 msgstr ""
 
-#: templates/istruttore/dai_scheda.html:72 templates/sheet/detail.html:23
+#: templates/istruttore/dai_scheda.html:82 templates/sheet/detail.html:23
 #: templates/sheet/index.html:20 templates/sheet/proposta.html:38
 #, python-format
 msgid "livello %(n)s"
 msgstr ""
 
-#: templates/istruttore/dai_scheda.html:82
+#: templates/istruttore/dai_scheda.html:92
 msgid "Due parole, se vuoi"
 msgstr ""
 
-#: templates/istruttore/dai_scheda.html:84
+#: templates/istruttore/dai_scheda.html:94
 msgid "Per l’autunno. Fai i giorni A e B."
 msgstr ""
 
-#: templates/istruttore/dai_scheda.html:87
+#: templates/istruttore/dai_scheda.html:97
 msgid "Manda la proposta"
 msgstr ""
 
-#: templates/istruttore/dai_scheda.html:91
+#: templates/istruttore/dai_scheda.html:101
 #, python-format
 msgid ""
 "È una proposta: la scheda nasce solo se %(chi)s la prende, e nasce sua. "
@@ -24215,7 +24289,7 @@ msgstr ""
 msgid "L'ultima volta, %(lato)s"
 msgstr ""
 
-#: templates/sheet/_run_progress.html:52 templates/sheet/index.html:79
+#: templates/sheet/_run_progress.html:52 templates/sheet/index.html:84
 msgid "L'ultima volta"
 msgstr ""
 
@@ -24290,75 +24364,79 @@ msgstr ""
 msgid "Sedute di fila sopra la soglia"
 msgstr ""
 
-#: templates/sheet/compose.html:127
-msgid "A · B · C, ognuno con le sue voci"
-msgstr ""
-
-#: templates/sheet/compose.html:130
-msgid "Durata"
-msgstr ""
-
-#: templates/sheet/compose.html:130
-msgid "quante settimane"
-msgstr ""
-
 #: templates/sheet/compose.html:133
-msgid "Quante settimane"
-msgstr ""
-
-#: templates/sheet/compose.html:141
-msgid "Salva la scheda"
-msgstr ""
-
-#: templates/sheet/compose.html:148 templates/sheet/compose.html:175
-msgid "Quanti tiri"
-msgstr ""
-
-#: templates/sheet/compose.html:149
-msgid "Quante partite"
+msgid "Chi dice che l'hai passato"
 msgstr ""
 
 #: templates/sheet/compose.html:150
+msgid "A · B · C, ognuno con le sue voci"
+msgstr ""
+
+#: templates/sheet/compose.html:153
+msgid "Durata"
+msgstr ""
+
+#: templates/sheet/compose.html:153
+msgid "quante settimane"
+msgstr ""
+
+#: templates/sheet/compose.html:156
+msgid "Quante settimane"
+msgstr ""
+
+#: templates/sheet/compose.html:164
+msgid "Salva la scheda"
+msgstr ""
+
+#: templates/sheet/compose.html:171 templates/sheet/compose.html:198
+msgid "Quanti tiri"
+msgstr ""
+
+#: templates/sheet/compose.html:172
+msgid "Quante partite"
+msgstr ""
+
+#: templates/sheet/compose.html:173
 msgid "Quanti minuti"
 msgstr ""
 
-#: templates/sheet/compose.html:154
+#: templates/sheet/compose.html:177
 msgid "Entra nella soglia della scheda."
 msgstr ""
 
-#: templates/sheet/compose.html:155
+#: templates/sheet/compose.html:178
 msgid "Fuori dalla soglia: la soglia somma solo le voci «a riusciti»."
 msgstr ""
 
-#: templates/sheet/compose.html:160 templates/sheet/compose.html:181
+#: templates/sheet/compose.html:183 templates/sheet/compose.html:204
 msgid "Quanto farne"
 msgstr ""
 
-#: templates/sheet/compose.html:165
+#: templates/sheet/compose.html:188
 msgid "Come si segna"
 msgstr ""
 
-#: templates/sheet/compose.html:176
+#: templates/sheet/compose.html:199
 msgid "Il «quanto farne» di questa voce."
 msgstr ""
 
-#: templates/sheet/compose.html:189
+#: templates/sheet/compose.html:212
 msgid "Destra e sinistra si segnano separate, ognuna coi suoi tiri."
 msgstr ""
 
-#: templates/sheet/compose.html:195
+#: templates/sheet/compose.html:218
 msgid "Sezione"
 msgstr ""
 
-#: templates/sheet/compose.html:197
+#: templates/sheet/compose.html:220
 msgid "Riscaldamento, Tecnica, Gioco…"
 msgstr ""
 
-#: templates/sheet/compose.html:203
+#: templates/sheet/compose.html:226
 msgid "A, B, C…"
 msgstr ""
 
-#: templates/sheet/compose.html:215
+#: templates/sheet/compose.html:238
 msgid "Lo stesso esercizio può comparire in due voci."
 msgstr ""
 
@@ -24424,7 +24502,7 @@ msgstr ""
 msgid "%(fatte)s caselle su %(tutte)s"
 msgstr ""
 
-#: templates/sheet/detail.html:120 templates/sheet/proposta.html:87
+#: templates/sheet/detail.html:120 templates/sheet/proposta.html:103
 #: templates/sheet/run.html:25
 #, python-format
 msgid "giorno %(g)s"
@@ -24446,89 +24524,93 @@ msgstr ""
 msgid "Il tuo allenamento, in ordine"
 msgstr ""
 
-#: templates/sheet/index.html:24 templates/sheet/proposta.html:42
+#: templates/sheet/index.html:27
+msgid "livello superato"
+msgstr ""
+
+#: templates/sheet/index.html:29 templates/sheet/proposta.html:42
 #, python-format
 msgid "giorni %(g)s"
 msgstr ""
 
-#: templates/sheet/index.html:25 templates/sheet/proposta.html:43
+#: templates/sheet/index.html:30 templates/sheet/proposta.html:43
 #, python-format
 msgid "%(n)s settimane"
 msgstr ""
 
-#: templates/sheet/index.html:40
+#: templates/sheet/index.html:45
 #, python-format
 msgid "%(chi)s ti propone una scheda"
 msgstr ""
 
-#: templates/sheet/index.html:46
+#: templates/sheet/index.html:51
 msgid "Guarda cosa c'è dentro, poi decidi: la prendi o no."
 msgstr ""
 
-#: templates/sheet/index.html:54 templates/sheet/instructors.html:27
+#: templates/sheet/index.html:59 templates/sheet/instructors.html:27
 msgid "Nessuna scheda"
 msgstr ""
 
-#: templates/sheet/index.html:56
+#: templates/sheet/index.html:61
 msgid ""
 "Una scheda è la sequenza di esercizi che fai in sala, nell'ordine in cui "
 "la fai: la componi una volta e poi segni com'è andata."
 msgstr ""
 
-#: templates/sheet/index.html:74
+#: templates/sheet/index.html:79
 msgid "Ancora nessun esercizio: componila."
 msgstr ""
 
-#: templates/sheet/index.html:76
+#: templates/sheet/index.html:81
 #, python-format
 msgid "L'ultima volta %(n)s su %(tot)s"
 msgstr ""
 
-#: templates/sheet/index.html:81
+#: templates/sheet/index.html:86
 #, python-format
 msgid "%(num)s esercizio, mai fatta"
 msgid_plural "%(num)s esercizi, mai fatta"
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/sheet/index.html:92
+#: templates/sheet/index.html:97
 msgid "Riprendi"
 msgstr ""
 
-#: templates/sheet/index.html:108 templates/sheet/summary.html:127
+#: templates/sheet/index.html:113 templates/sheet/summary.html:137
 msgid "Il registro"
 msgstr ""
 
-#: templates/sheet/index.html:110
+#: templates/sheet/index.html:115
 msgid "Togli questa scheda dall'elenco? Le sedute che hai fatto restano."
 msgstr ""
 
-#: templates/sheet/index.html:112
+#: templates/sheet/index.html:117
 msgid "Archivia"
 msgstr ""
 
-#: templates/sheet/index.html:127
+#: templates/sheet/index.html:132
 msgid "chi ti ha aperto una scheda, e i tuoi gruppi"
 msgstr ""
 
-#: templates/sheet/index.html:138 templates/sheet/instructors.html:12
+#: templates/sheet/index.html:143 templates/sheet/instructors.html:12
 #: templates/sheet/instructors.html:18
 msgid "Chi legge le mie schede"
 msgstr ""
 
-#: templates/sheet/index.html:139
+#: templates/sheet/index.html:144
 msgid "si decide scheda per scheda"
 msgstr ""
 
-#: templates/sheet/index.html:148
+#: templates/sheet/index.html:153
 msgid "Una scheda nuova"
 msgstr ""
 
-#: templates/sheet/index.html:150
+#: templates/sheet/index.html:155
 msgid "Come la chiami"
 msgstr ""
 
-#: templates/sheet/index.html:153
+#: templates/sheet/index.html:158
 msgid "Crea e componi"
 msgstr ""
 
@@ -24583,23 +24665,32 @@ msgid ""
 "quando vuoi."
 msgstr ""
 
-#: templates/sheet/proposta.html:70
+#: templates/sheet/proposta.html:76
+#, python-format
+msgid "Metti «%(scheda)s» nello storico"
+msgstr ""
+
+#: templates/sheet/proposta.html:79
+msgid "L'hai superata. Le sedute che hai fatto restano leggibili."
+msgstr ""
+
+#: templates/sheet/proposta.html:86
 msgid "Prendi la scheda"
 msgstr ""
 
-#: templates/sheet/proposta.html:76
+#: templates/sheet/proposta.html:92
 msgid "Cosa c'è dentro"
 msgstr ""
 
-#: templates/sheet/proposta.html:91
+#: templates/sheet/proposta.html:107
 msgid "una parte per volta"
 msgstr ""
 
-#: templates/sheet/proposta.html:102
+#: templates/sheet/proposta.html:118
 msgid "No, grazie"
 msgstr ""
 
-#: templates/sheet/proposta.html:106
+#: templates/sheet/proposta.html:122
 #, python-format
 msgid ""
 "Presa, la scheda è tua: la cambi, la archivi e decidi chi la legge. "
@@ -24793,40 +24884,50 @@ msgstr ""
 msgid "In questa seduta non è stato segnato niente."
 msgstr ""
 
-#: templates/sheet/summary.html:93
+#: templates/sheet/summary.html:97
+#, python-format
+msgid "Hai superato il livello %(n)s"
+msgstr ""
+
+#: templates/sheet/summary.html:98
+#, python-format
+msgid "Ha superato il livello %(n)s"
+msgstr ""
+
+#: templates/sheet/summary.html:100
 #, python-format
 msgid "Hai tenuto la soglia del livello %(n)s"
 msgstr ""
 
-#: templates/sheet/summary.html:94
+#: templates/sheet/summary.html:101
 #, python-format
 msgid "Ha tenuto la soglia del livello %(n)s"
 msgstr ""
 
-#: templates/sheet/summary.html:96
+#: templates/sheet/summary.html:104
 #, python-format
 msgid "Una seduta sopra la soglia."
 msgid_plural "%(num)s sedute di fila sopra la soglia."
 msgstr[0] ""
 msgstr[1] ""
 
-#: templates/sheet/summary.html:97
+#: templates/sheet/summary.html:106
 msgid "Il passaggio al livello successivo lo confermerà chi ti segue."
 msgstr ""
 
-#: templates/sheet/summary.html:111 templates/sheet/summary.html:119
+#: templates/sheet/summary.html:121 templates/sheet/summary.html:129
 msgid "Note della seduta"
 msgstr ""
 
-#: templates/sheet/summary.html:113
+#: templates/sheet/summary.html:123
 msgid "Tavolo 4. Sul follow a sinistra arrivo corto."
 msgstr ""
 
-#: templates/sheet/summary.html:131
+#: templates/sheet/summary.html:141
 msgid "Torna alla seduta"
 msgstr ""
 
-#: templates/sheet/summary.html:137
+#: templates/sheet/summary.html:147
 msgid "Un'altra seduta"
 msgstr ""
 

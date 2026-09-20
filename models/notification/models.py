@@ -65,6 +65,7 @@ class NotificationType(Enum):
     SHEET_READER_LEFT = "sheet_reader_left"  # Un istruttore ha smesso di seguirti
     SHEET_PROPOSED = "sheet_proposed"  # Un istruttore ti propone una scheda
     SHEET_ANSWERED = "sheet_answered"  # L'allievo ha preso la scheda, o no
+    SHEET_LEVEL_PASSED = "sheet_level_passed"  # Gradino superato (D8)
 
     # Segnalazioni degli utenti (issue #255)
     FEEDBACK_UPDATE = "feedback_update"  # La tua segnalazione è cambiata di stato

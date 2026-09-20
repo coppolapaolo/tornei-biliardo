@@ -4,7 +4,14 @@ Purpose: La scheda di allenamento — sequenza di voci, sedute, registro.
 Requirements: ADR-067 (scheda di allenamento), issue #172
 """
 
-from .measure import MAX_AMOUNT, MAX_ITEMS, MIN_AMOUNT, SheetMeasure, amount_label
+from .measure import (
+    MAX_AMOUNT,
+    MAX_ITEMS,
+    MIN_AMOUNT,
+    LevelUp,
+    SheetMeasure,
+    amount_label,
+)
 from .models import (
     TrainingEntry,
     TrainingSession,
@@ -24,6 +31,7 @@ __all__ = [
     "TrainingEntry",
     # Vocabolario
     "SheetMeasure",
+    "LevelUp",
     "MIN_AMOUNT",
     "MAX_AMOUNT",
     "MAX_ITEMS",

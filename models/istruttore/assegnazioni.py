@@ -88,6 +88,7 @@ class AssegnazioneService:
         *,
         messaggio: Optional[str] = None,
         group_id: Optional[int] = None,
+        promuove: Optional[Dict[int, int]] = None,
     ) -> List[TrainingAssignment]:
         """Propone la scheda a uno o più allievi. Torna quelle **nate**.
 
@@ -95,6 +96,11 @@ class AssegnazioneService:
         mandarne una seconda non aggiungerebbe niente, e far fallire l'invio a
         tutto un gruppo per uno che non ha ancora risposto sarebbe peggio. Chi
         chiama confronta i due numeri e lo dice.
+
+        ``promuove`` è «dagli il livello successivo»: per ogni allievo, quale
+        sua scheda questa proposta promuove. Una mappa e non un solo id perché
+        la stessa chiamata serve un gruppo, dove ciascuno ha la **sua** scheda
+        da promuovere anche se la scheda nuova è una per tutti.
         """
         AssegnazioneService._require_istruttore(actor)
         modello = AssegnazioneService._modello(source_sheet_id, actor)
@@ -118,6 +124,9 @@ class AssegnazioneService:
                 source_sheet_id=modello.id,
                 group_id=group_id,
                 message=testo,
+                promotes_sheet_id=AssegnazioneService._promossa(
+                    (promuove or {}).get(user_id), user_id, actor
+                ),
             )
             db.session.add(proposta)
             db.session.flush()
@@ -149,6 +158,7 @@ class AssegnazioneService:
         actor: User,
         *,
         apri_lettura: bool = True,
+        archivia_promossa: bool = False,
     ) -> TrainingSheet:
         """Fa nascere la scheda dell'allievo, copiando il modello com'è oggi.
 
@@ -159,6 +169,11 @@ class AssegnazioneService:
 
         ``apri_lettura`` è la casella del modulo: spuntata apre la scheda a chi
         l'ha proposta, e si toglie quando si vuole da «Chi la legge».
+
+        ``archivia_promossa`` è la seconda casella, e compare solo quando la
+        proposta è un passaggio di livello: mette nello storico la scheda
+        superata. Le sedute fatte restano — è un'archiviazione, non una
+        cancellazione — e resta una scelta sua, perché la scheda è sua.
         """
         proposta = AssegnazioneService._mia(assignment_id, actor)
         modello = proposta.source_sheet
@@ -177,6 +192,10 @@ class AssegnazioneService:
             # `avvisa=False`: l'avviso lo manda `_avvisa_risposta`, che sa dire
             # in una frase sola cos'è successo — presa, e te la fa leggere.
             TrainingSheetService.add_reader(nata.id, istruttore.id, actor, avvisa=False)
+        promossa = proposta.promotes_sheet
+        if archivia_promossa and promossa is not None and promossa.owner_id == actor.id:
+            TrainingSheetService.archive_sheet(promossa.id, actor)
+
         AssegnazioneService._avvisa_risposta(proposta, actor, presa=True, letta=aperta)
         return nata
 
@@ -221,6 +240,10 @@ class AssegnazioneService:
             threshold_streak=modello.threshold_streak or 1,
             weeks=modello.weeks,
             uses_days=bool(modello.uses_days),
+            # Anche «chi sancisce il gradino» si copia: un maestro che compone
+            # la sua scala dichiarando «lo confermo io» se la ritrova su tutte
+            # le copie, senza doverlo ripetere a ciascuno.
+            level_up=modello.level_up_kind,
         )
         return nata
 
@@ -258,6 +281,24 @@ class AssegnazioneService:
         if not modello.active_items:
             raise ConflictError(_("Questa scheda è ancora vuota: componila prima"))
         return modello
+
+    @staticmethod
+    def _promossa(sheet_id: Optional[int], user_id: int, actor: User) -> Optional[int]:
+        """La scheda che la proposta promuove: sua, e che tu leggi davvero.
+
+        Se non torna, non si solleva: la proposta parte lo stesso senza il
+        legame. Il gradino è il **timbro**, che è un gesto suo e già avvenuto;
+        questo è il secondo gesto, e perderne il riferimento non deve far
+        fallire il dono della scheda nuova.
+        """
+        if not sheet_id:
+            return None
+        promossa = db.session.get(TrainingSheet, sheet_id)
+        if promossa is None or promossa.owner_id != user_id:
+            return None
+        if not TrainingSheetService.can_read(promossa, actor):
+            return None
+        return promossa.id
 
     @staticmethod
     def _messaggio(testo: Optional[str]) -> Optional[str]:

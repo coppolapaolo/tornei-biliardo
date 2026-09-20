@@ -31,7 +31,12 @@ from models.istruttore.allievi_view import (
     GIORNI_NUOVI,
     SEDUTE_SENZA_MIGLIORARE,
 )
-from models.training_sheet import SheetItemSpec, SheetMeasure, TrainingSheetService
+from models.training_sheet import (
+    LevelUp,
+    SheetItemSpec,
+    SheetMeasure,
+    TrainingSheetService,
+)
 from models.training_sheet.models import TrainingEntry, TrainingSession
 from models.user.models import User
 from models.user.role_enum import GrantableRole, UserRole
@@ -74,8 +79,15 @@ def _scheda(
     soglia: Optional[int] = None,
     serie: int = 1,
     nome: str = "Tecnica di base",
+    livello: Optional[int] = 3,
+    level_up: LevelUp = LevelUp.INSTRUCTOR,
 ):
-    """Una scheda dell'allievo, aperta all'istruttore, che vale 60."""
+    """Una scheda dell'allievo, aperta all'istruttore, che vale 60.
+
+    Nasce con «lo conferma un istruttore» (D8) perché è la sola risposta che
+    fa comparire qualcuno in «Valuta il passaggio di livello»: con `auto` il
+    gradino se l'è già timbrato la soglia, e non c'è niente da valutare.
+    """
     scheda = TrainingSheetService.create_sheet(allievo, nome)
     TrainingSheetService.save_composition(
         scheda.id,
@@ -88,8 +100,10 @@ def _scheda(
                 amount=SU_QUANTO,
             )
         ],
+        level=livello,
         threshold=soglia,
         threshold_streak=serie,
+        level_up=level_up,
     )
     TrainingSheetService.add_reader(scheda.id, istruttore.id, allievo)
     return scheda
@@ -214,6 +228,22 @@ def test_una_sola_seduta_sopra_non_basta_se_ne_chiede_due(db_session, luca, paol
     _sedute(scheda, paolo, [51, 46, 51])
 
     assert build_allievi(luca).passaggio == []
+
+
+def test_una_scheda_che_si_promuove_da_sola_non_chiede_niente(db_session, luca, paolo):
+    """Con `auto` il gradino l'ha già timbrato la soglia (D8): non c'è da valutare.
+
+    L'allievo resta in elenco — è sempre un allievo — ma in un'altra sezione:
+    mettere in «Valuta il passaggio» chi non ha bisogno di te sarebbe un invito
+    a premere qualcosa che non esiste.
+    """
+    scheda = _scheda(paolo, luca, soglia=48, serie=2, level_up=LevelUp.AUTO)
+    _sedute(scheda, paolo, [46, 48, 51])
+
+    pagina = build_allievi(luca)
+
+    assert pagina.passaggio == []
+    assert _riga(pagina, paolo).segnale.tipo != "passaggio"
 
 
 def test_una_scheda_senza_soglia_non_ha_gradini(db_session, luca, paolo):

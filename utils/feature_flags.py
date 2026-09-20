@@ -554,6 +554,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "istruttore.allievi": {"instructor"},
     "istruttore.assegna_gruppo": {"instructor"},
     "istruttore.dai_scheda": {"instructor"},
+    "istruttore.conferma_passaggio": {"instructor"},
     "istruttore.proponi_scheda": {"instructor"},
     "istruttore.ritira_proposta": {"instructor"},
     "istruttore.gruppi": {"instructor"},

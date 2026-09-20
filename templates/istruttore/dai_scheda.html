@@ -59,6 +59,16 @@
         action="{{ url_for('istruttore.proponi_scheda', user_id=allievo.id) }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
+    {% if promossa %}
+    <input type="hidden" name="promuove" value="{{ promossa.id }}">
+    <section class="c7-inset">
+      <div class="c7-kicker">{{ _("Passaggio di livello") }}</div>
+      <p style="margin:4px 0 0;font-size:13px;line-height:1.45">
+        {{ _("Questa proposta lascia indietro «%(scheda)s». Prendendola, potrà metterla nello storico: le sedute che ha fatto restano.", scheda=promossa.name) }}
+      </p>
+    </section>
+    {% endif %}
+
     <div class="c7-label">{{ _("Quale gli dai") }}</div>
     <div class="c7-stack">
       {% for scheda in schede %}

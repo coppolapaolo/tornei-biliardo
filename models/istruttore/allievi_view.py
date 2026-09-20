@@ -37,8 +37,9 @@ from flask_babel import gettext as _
 from flask_babel import ngettext
 
 from ..base import utc_now
+from ..training_sheet.gradino import gradino_raggiunto
+from ..training_sheet.measure import LevelUp
 from ..training_sheet.models import TrainingSession, TrainingSheet
-from ..training_sheet.session_service import streak_above_threshold
 from ..user.models import User
 from .gruppi import GruppoService
 from .models import TrainingGroup, TrainingGroupMember
@@ -256,10 +257,14 @@ def _gradino(scheda: TrainingSheet, sedute: List[TrainingSession]) -> Optional[S
 
     La regola è quella della fine seduta, chiamata dalla stessa funzione: tante
     sedute di fila sopra la soglia quante la scheda ne chiede.
+
+    Compare solo per le schede che aspettano **una persona** (`instructor`):
+    con `auto` il gradino se l'è già timbrato la soglia, e mettere in elenco
+    chi non ha bisogno di te sarebbe un invito a premere qualcosa che non c'è.
     """
-    if scheda.threshold is None or not sedute:
+    if not sedute or scheda.level_up_kind is not LevelUp.INSTRUCTOR:
         return None
-    if streak_above_threshold(scheda, sedute) < (scheda.threshold_streak or 1):
+    if not gradino_raggiunto(scheda, sedute):
         return None
 
     ultimi = list(reversed(sedute[:NUMERI_MOSTRATI]))

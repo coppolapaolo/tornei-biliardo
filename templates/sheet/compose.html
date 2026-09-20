@@ -124,6 +124,29 @@
              value="{{ form.threshold_streak if form.threshold_streak else (sheet.threshold_streak or 1) }}">
     </div>
 
+    {# Chi sancisce il gradino (D8). Tre risposte a una domanda, quindi un
+       segmentato e non un interruttore: «nessuno» non è lo spento di «la
+       soglia», è un'altra cosa. Compare col livello, perché senza livello un
+       gradino non c'è. #}
+    <div class="c7-rows__row c7-rows__row--sub" data-sheet-when="has_level">
+      <div class="c7-rows__main">
+        <span class="c7-label">{{ _("Chi dice che l'hai passato") }}</span>
+        <div class="c7-seg" style="margin-top:8px">
+          {% set scelto = form.level_up if form and form.level_up else sheet.level_up %}
+          {% for modo in level_up_modi %}
+          <label class="c7-seg__item{{ ' is-on' if modo.value == scelto }}">
+            <input type="radio" name="level_up" value="{{ modo.value }}" class="d-none"
+                   {% if modo.value == scelto %}checked{% endif %}>
+            {{ modo.label }}
+          </label>
+          {% endfor %}
+        </div>
+        <div class="c7-rows__sub" style="margin-top:6px">
+          {{ level_up_scelto.hint }}
+        </div>
+      </div>
+    </div>
+
     {{ interruttore('uses_days', _("Giorni"), _("A · B · C, ognuno con le sue voci"),
                     acceso=form.uses_days if form else sheet.uses_days) }}
 

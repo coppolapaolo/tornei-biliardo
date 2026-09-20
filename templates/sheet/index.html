@@ -21,6 +21,11 @@
     {%- if scheda.has_threshold %}
     <span class="c7-chip">{{ _("soglia %(n)s su %(tot)s", n=scheda.threshold, tot=scheda.total) }}</span>
     {%- endif -%}
+    {%- if scheda.is_passed %}
+    {# Superato è un fatto, e resta: la chip lo dice anche se le sedute dopo
+       vanno peggio (D8). Chi l'ha sancito si legge nel registro. #}
+    <span class="c7-chip c7-chip--ok">{{ _("livello superato") }}</span>
+    {%- endif -%}
     {%- if scheda.days %}<span class="c7-chip">{{ _("giorni %(g)s", g=scheda.days|join(' · ')) }}</span>{% endif -%}
     {%- if scheda.weeks %}<span class="c7-chip">{{ _("%(n)s settimane", n=scheda.weeks) }}</span>{% endif -%}
   </div>
