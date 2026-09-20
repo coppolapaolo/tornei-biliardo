@@ -146,9 +146,7 @@ def test_nessuna_fetch_non_get_senza_header_csrf():
 # ────────────────────────────────────────────────────────────────────────────────
 # 1. La descrizione del drill non è più tagliata dal modulo
 # ────────────────────────────────────────────────────────────────────────────────
-@pytest.mark.parametrize(
-    "template", ["challenge/form.html", "challenge/builder.html"]
-)
+@pytest.mark.parametrize("template", ["challenge/form.html", "challenge/builder.html"])
 def test_la_descrizione_del_drill_non_ha_un_tetto_di_caratteri(template):
     """Bug: `maxlength` sulla textarea troncava le regole dei drill lunghi.
 

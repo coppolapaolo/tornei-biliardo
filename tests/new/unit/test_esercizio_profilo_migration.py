@@ -23,6 +23,10 @@ from models.challenge.models import (
 )
 
 MIGRATION = "migrations.20260919_profilo_esercizio"
+# Le migration venute dopo sulle stesse tabelle. I modelli descrivono lo schema
+# di OGGI, quindi il confronto colonna per colonna vale sulla catena intera:
+# fermarsi a questa migration farebbe fallire il test a ogni colonna nuova.
+SUCCESSIVE = ("migrations.20260920_prova_fatta_di_colpi",)
 
 
 def _colonne(conn: sqlite3.Connection, tabella: str) -> set[str]:
@@ -64,6 +68,8 @@ def db_di_ieri(tmp_path):
 def test_lo_schema_coincide_con_i_modelli(db_di_ieri):
     migration = importlib.import_module(MIGRATION)
     migration.upgrade_sqlite(db_di_ieri)
+    for successiva in SUCCESSIVE:
+        importlib.import_module(successiva).upgrade_sqlite(db_di_ieri)
 
     conn = sqlite3.connect(db_di_ieri)
     for modello in (

@@ -135,6 +135,8 @@ def _render_challenge_form(
     arriva senza JavaScript, dove non c'è nessuno che lo apra sopra il modulo.
     """
     from models.challenge.authoring import ChallengeAuthoringService
+    from models.challenge.recording import MAX_SHOTS, MIN_SHOTS
+    from models.challenge.target import target_from_scene
     from models.challenge.vocabulary import MAX_ABILITA, Abilita, Gesto
     from routes.challenge_form import draft_from_challenge
 
@@ -154,6 +156,11 @@ def _render_challenge_form(
         abilita_choices=list(Abilita),
         gesto_choices=list(Gesto),
         max_abilita=MAX_ABILITA,
+        # Colpo per colpo si può scegliere solo se il disegno ha un bersaglio
+        # (ADR-066): il modulo lo dice invece di offrire una voce che il
+        # salvataggio rifiuterebbe.
+        target=target_from_scene(subject.diagram_scene) if subject else None,
+        shots_range=(MIN_SHOTS, MAX_SHOTS),
     )
 
 
@@ -501,6 +508,7 @@ def _save_from_builder(challenge_id=None):
     else:
         previous = db.session.get(Challenge, challenge_id)
         old_image = previous.image_filename if previous else None
+        max_score = _max_score_from_target(previous, scene, max_score)
         _refuse_meaning_change_from_builder(
             previous, description, pass_fail_only, max_score
         )
@@ -529,6 +537,31 @@ def _save_from_builder(challenge_id=None):
     }
 
 
+def _max_score_from_target(challenge, scene, max_score):
+    """Su un esercizio colpo per colpo il massimo lo dà il bersaglio (ADR-066).
+
+    Il disegnatore è il posto in cui il bersaglio si tocca: cambiare il valore
+    di un anello cambia il massimo, e toglierlo lascerebbe un esercizio che non
+    sa più dare punti a un colpo.
+    """
+    from models.challenge.recording import RecordingMode
+    from models.challenge.target import target_from_scene
+
+    if challenge is None or not (
+        RecordingMode.parse(challenge.recording_mode).is_sequence
+    ):
+        return max_score
+    bersaglio = target_from_scene(scene)
+    if bersaglio is None:
+        raise ValidationError(
+            _(
+                "Questo esercizio si registra colpo per colpo: il bersaglio "
+                "serve. Per toglierlo, cambia prima «Come si registra»."
+            )
+        )
+    return (challenge.shots_count or 0) * bersaglio.max_points
+
+
 def _refuse_meaning_change_from_builder(
     challenge, description, pass_fail_only, max_score
 ):
@@ -545,8 +578,13 @@ def _refuse_meaning_change_from_builder(
 
     if challenge is None:
         return
+    # Il disegnatore non tocca il modo di registrare: si confronta col suo.
     bozza = ChallengeDraft(
-        description=description, pass_fail_only=pass_fail_only, max_score=max_score
+        description=description,
+        pass_fail_only=pass_fail_only,
+        max_score=max_score,
+        recording_mode=challenge.recording_mode,
+        shots_count=challenge.shots_count,
     )
     if ChallengeAuthoringService.meaning_changes(
         challenge, bozza

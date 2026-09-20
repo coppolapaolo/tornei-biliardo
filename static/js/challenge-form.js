@@ -54,6 +54,10 @@
     var scored = !chosen || chosen.value === 'score';
     // `d-none` e non `hidden`: la riga è un `d-flex`, che vince su [hidden].
     maxRow.classList.toggle('d-none', !scored);
+    // Colpo per colpo (ADR-066) si dice quanti colpi, non il massimo: quello
+    // lo deriva il server dal bersaglio. La riga c'è solo se il disegno ne ha uno.
+    var shotsRow = document.getElementById('shotsCountRow');
+    if (shotsRow) shotsRow.classList.toggle('d-none', !(chosen && chosen.value === 'shots'));
     // Si svuota: un 15 scritto prima di cambiare idea resterebbe nel modulo,
     // invisibile, e tornerebbe a galla cambiando idea di nuovo.
     if (!scored) maxInput.value = '';

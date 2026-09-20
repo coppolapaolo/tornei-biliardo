@@ -584,6 +584,14 @@ hints:
     page: challenge
     section: due_tipi
 
+  - id: challenge.colpi
+    label: "Colpi di una prova"
+    short: "Quanti colpi ha una prova registrata colpo per colpo. Il punteggio massimo non si scrive: è questo numero per il valore del centro del bersaglio."
+    anchor: challenge-colpi
+    screens: [challenge.edit_challenge, challenge.duplicate_challenge]
+    page: challenge
+    section: due_tipi
+
   - id: allenamento.esito
     label: "Superata / Non superata"
     short: "Il tasto che tocchi registra subito la prova: non c'è niente da confermare. Se sbagli tasto, «Annulla l'ultima» lo disfa."
@@ -636,6 +644,14 @@ hints:
     label: "Gli strumenti"
     short: "Uno alla volta, e quello attivo è giallo: «Sposta» sistema, «Tiro» disegna un tiro, «Linea libera» traccia un percorso, «Testo» scrive."
     anchor: drill-strumento
+    screens: [challenge.diagram_builder, challenge.edit_diagram]
+    page: disegnare_un_drill
+    section: strumenti
+
+  - id: drill.bersaglio
+    label: "Il bersaglio"
+    short: "Dove la bianca deve fermarsi: un centro e fino a cinque anelli, ciascuno coi suoi punti. Ce n'è uno per disegno, e con un bersaglio l'esercizio si può registrare colpo per colpo."
+    anchor: drill-bersaglio
     screens: [challenge.diagram_builder, challenge.edit_diagram]
     page: disegnare_un_drill
     section: strumenti

@@ -79,6 +79,7 @@ Crea un ADR quando:
 | ADR-063 | [L'admin viene scollegato dopo 30 minuti di inattività](ADR-063-admin-scollegato-dopo-inattivita.md) | Accepted | 2026-09-14 |
 | ADR-064 | [Chi accede resta collegato su quel dispositivo per trenta giorni](ADR-064-sessione-che-dura-trenta-giorni.md) | Accepted | 2026-09-17 |
 | ADR-065 | [Il profilo dell'esercizio: due vocabolari fissi, livello dichiarato, varianti, voto](ADR-065-profilo-dell-esercizio.md) | Accepted | 2026-09-19 |
+| ADR-066 | [La prova fatta di colpi: il punteggio discende dai colpi, il bersaglio è un dato del disegno](ADR-066-prova-fatta-di-colpi.md) | Accepted | 2026-09-20 |
 
 ## Come Creare un Nuovo ADR
 

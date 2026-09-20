@@ -493,6 +493,7 @@ def create_app(config_name=None, *, da_script: bool = False):
             minimum_players_for,
         )
         from models.match.break_rules import BreakRule, StartRule
+        from models.challenge.recording import RecordingMode
         from models.dashboard.comandi import ComandoDirezione
         from models.competition.models import WithdrawPolicy
 
@@ -520,6 +521,9 @@ def create_app(config_name=None, *, da_script: bool = False):
             # sempre e solo questo; l'altro vive dietro `_MATCHMAKING_MAP` e
             # non deve arrivare fino a un template.
             "MatchmakingStrategy": MatchmakingStrategy,
+            # Come si registra una prova di un esercizio (ADR-066): il modulo e
+            # la pagina dell'allenamento scelgono i comandi da qui.
+            "RecordingMode": RecordingMode,
             # La regola della gara sui ritiri: il foglio «Ritiro di …» della
             # pagina del direttore la dice prima di confermare.
             "WithdrawPolicy": WithdrawPolicy,

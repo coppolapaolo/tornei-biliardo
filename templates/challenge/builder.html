@@ -59,6 +59,9 @@
           <button class="btn wide" data-tool="text">{{ _("Testo") }}</button>
         </div>
         <div class="row" style="margin-top:6px">
+          <button class="btn wide" data-tool="target" data-help="drill-bersaglio">{{ _("Bersaglio") }}</button>
+        </div>
+        <div class="row" style="margin-top:6px">
           <button class="btn wide ghostbtn" id="undo">{{ _("Annulla mossa") }}</button>
           <button class="btn wide ghostbtn" id="redo">{{ _("Ripeti mossa") }}</button>
           <button class="btn wide ghostbtn" id="del">{{ _("Elimina") }}</button>
@@ -109,6 +112,40 @@
         <label class="chk"><input type="checkbox" id="showStick" checked> {{ _("Stecca sul tavolo") }}</label>
         <label class="chk"><input type="checkbox" id="showCard" checked> {{ _("Scheda del tiro sotto al tavolo") }}</label>
         <label class="chk"><input type="checkbox" id="showAngle"> {{ _("Etichetta dell'angolo di taglio") }}</label>
+      </div>
+
+      {# Il bersaglio (ADR-066): l'unica voce del disegno che il server legge
+         come dato. Uno per disegno; con un bersaglio l'esercizio si può
+         registrare colpo per colpo. #}
+      <div class="sec" id="sec-bersaglio">
+        <h2>{{ _("Bersaglio") }}</h2>
+        <p class="tip" id="targetEmpty">{{ _("Attiva Bersaglio e tocca il panno dove la bianca deve fermarsi. Ce n'è uno per disegno: un secondo tocco lo sposta.") }}</p>
+        <div id="targetControls" hidden>
+          <div class="field">
+            <span>{{ _("Spessore degli anelli") }}</span>
+            <select id="targetStep">
+              <option value="25">{{ _("¼ di diamante") }}</option>
+              <option value="50">{{ _("½ diamante") }}</option>
+              <option value="75">{{ _("¾ di diamante") }}</option>
+              <option value="100">{{ _("1 diamante") }}</option>
+            </select>
+          </div>
+          <div class="field">
+            <span>{{ _("Anelli") }} — <b id="targetRings">3</b></span>
+            <div class="row">
+              <button class="btn wide ghostbtn" type="button" id="targetMinus" aria-label="{{ _('Un anello in meno') }}">−</button>
+              <button class="btn wide ghostbtn" type="button" id="targetPlus" aria-label="{{ _('Un anello in più') }}">+</button>
+            </div>
+          </div>
+          <div class="field">
+            <span>{{ _("Punti, dal centro verso l'esterno") }}</span>
+            <div class="row target-values" id="targetValues"></div>
+          </div>
+          <p class="tip">{{ _("Fuori dagli anelli vale zero. Con un bersaglio l'esercizio si può registrare colpo per colpo: lo scegli in «Modifica l'esercizio».") }}</p>
+          <div class="row" style="margin-top:4px">
+            <button class="btn wide ghostbtn" type="button" id="targetRemove">{{ _("Togli il bersaglio") }}</button>
+          </div>
+        </div>
       </div>
 
       <div class="sec" id="sec-linea">

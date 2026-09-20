@@ -1650,3 +1650,171 @@ class TestIlVotoDegliEsercizi:
         altro = _esercizio_per_il_profilo(db_session)
         with pytest.raises(PermissionDeniedError):
             ChallengeRatingService.rate(contato.id, altro.id, 4)
+
+
+@pytest.mark.unit
+class TestLaProvaFattaDiColpi:
+    """`SPECIFICHE.md`, sezione «Challenge», nota del 2026-09-20.
+
+    > […] da uno a cinque anelli concentrici di uguale spessore — lo spessore si
+    > misura in quarti di diamante — ciascuno col suo valore in punti, dal
+    > centro verso l'esterno. Il colpo imbucato vale i punti dell'anello in cui
+    > si ferma la battente; sul confine fra due anelli vale quello esterno;
+    > fuori dall'ultimo anello vale zero. […] Imbucate = colpi imbucati su colpi
+    > tirati. Posizione = media, sui soli colpi imbucati, di 1 − distanza dal
+    > centro ÷ raggio esterno del bersaglio, mai sotto zero.
+
+    Le formule sono riderivate qui a mano, su un bersaglio di cui si sanno le
+    misure: un test che chiamasse `points_at` per sapere quanto deve valere
+    `points_at` confronterebbe il codice con sé stesso.
+    """
+
+    @staticmethod
+    def _bersaglio():
+        from models.challenge.target import Target
+
+        # Centro a 6 diamanti e 2, anelli da mezzo diamante: 3, 2, 1 punti.
+        return Target(x=600, y=200, step=50, values=(3, 2, 1))
+
+    @pytest.mark.parametrize(
+        "distanza,punti",
+        [
+            (0, 3),
+            (49, 3),
+            (50, 2),  # sul confine vale l'anello esterno
+            (99, 2),
+            (100, 1),
+            (149, 1),
+            (150, 0),  # l'orlo dell'ultimo anello è già fuori
+            (400, 0),
+        ],
+    )
+    def test_i_punti_dell_anello(self, distanza, punti):
+        assert self._bersaglio().points_at(600 + distanza, 200) == punti
+
+    def test_la_distanza_e_in_ogni_direzione(self):
+        # 30-40-50: a 50 unità dal centro, in diagonale, si è sul confine.
+        assert self._bersaglio().points_at(630, 240) == 2
+
+    @pytest.mark.parametrize("anelli,ammesso", [(1, True), (5, True), (6, False)])
+    def test_da_uno_a_cinque_anelli(self, anelli, ammesso):
+        import json
+
+        from models.challenge.diagram import parse_scene
+        from models.exceptions import ValidationError
+
+        scena = json.dumps(
+            {
+                "v": 4,
+                "items": [
+                    {
+                        "type": "target",
+                        "x": 400,
+                        "y": 200,
+                        "step": 25,
+                        "values": [1] * anelli,
+                    }
+                ],
+            }
+        )
+        if ammesso:
+            assert parse_scene(scena)
+        else:
+            with pytest.raises(ValidationError):
+                parse_scene(scena)
+
+    @pytest.mark.parametrize(
+        "spessore,ammesso",
+        [(25, True), (50, True), (75, True), (10, False), (60, False)],
+    )
+    def test_lo_spessore_e_in_quarti_di_diamante(self, spessore, ammesso):
+        import json
+
+        from models.challenge.diagram import parse_scene
+        from models.exceptions import ValidationError
+
+        scena = json.dumps(
+            {
+                "v": 4,
+                "items": [
+                    {"type": "target", "x": 1, "y": 1, "step": spessore, "values": [1]}
+                ],
+            }
+        )
+        if ammesso:
+            assert parse_scene(scena)
+        else:
+            with pytest.raises(ValidationError):
+                parse_scene(scena)
+
+    def test_imbucate_e_posizione_sono_due_conti_diversi(self):
+        from types import SimpleNamespace as Colpo
+
+        from models.challenge.shot_stats import pocketing_pct, position_pct
+
+        colpi = [
+            Colpo(made=True, x=600, y=200),  # sul centro: 1
+            Colpo(made=True, x=675, y=200),  # a metà raggio: 0,5
+            Colpo(made=True, x=790, y=200),  # fuori dal bersaglio: 0, mai sotto
+            Colpo(made=False, x=None, y=None),  # non ha un punto: non entra
+        ]
+        assert pocketing_pct(colpi) == 75  # tre su quattro
+        assert position_pct(colpi, self._bersaglio()) == 50  # (1 + 0,5 + 0) / 3
+
+    def test_senza_imbucate_la_posizione_non_c_e(self):
+        from types import SimpleNamespace as Colpo
+
+        from models.challenge.shot_stats import pocketing_pct, position_pct
+
+        colpi = [Colpo(made=False, x=None, y=None)]
+        assert pocketing_pct(colpi) == 0
+        assert position_pct(colpi, self._bersaglio()) is None
+
+    def test_il_punteggio_e_la_somma_dei_colpi(self, db_session):
+        import json
+
+        from models.challenge.models import Challenge
+        from models.challenge.recording import RecordingMode
+        from models.challenge.shot_service import ShotRunService
+
+        esercizio = Challenge(
+            description="x",
+            image_path="t.png",
+            diagram_scene=json.dumps(
+                {
+                    "v": 4,
+                    "items": [
+                        {
+                            "type": "target",
+                            "x": 600,
+                            "y": 200,
+                            "step": 50,
+                            "values": [3, 2, 1],
+                        }
+                    ],
+                }
+            ),
+            pass_fail_only=False,
+            recording_mode=RecordingMode.SHOTS.value,
+            shots_count=4,
+            max_score=12,
+            is_active=True,
+        )
+        from models.user.models import User
+        from models.user.role_enum import UserRole
+
+        giocatore = User(
+            username=f"c_{uuid.uuid4().hex[:8]}",
+            email=f"c_{uuid.uuid4().hex[:8]}@test.com",
+            role=UserRole.PLAYER.value,
+        )
+        giocatore.set_password("test1234")
+        db_session.add_all([esercizio, giocatore])
+        db_session.flush()
+
+        for x in (600, 660, 720):  # 3 + 2 + 1
+            ShotRunService.record_shot(
+                giocatore.id, esercizio.id, made=True, x=x, y=200
+            )
+        ShotRunService.record_shot(giocatore.id, esercizio.id, made=False)  # 0
+        assert ShotRunService.close(giocatore.id, esercizio.id).score == 6

@@ -62,6 +62,12 @@
   .drill-builder label.chk{display:flex;align-items:center;gap:8px;padding:4px 0;cursor:pointer;user-select:none}
   .drill-builder label.chk input{accent-color:var(--chalk);width:14px;height:14px;margin:0}
   .drill-builder .field{margin-top:7px}
+  /* I punti degli anelli del bersaglio (ADR-066): un campo per anello, in riga,
+     dal centro verso l'esterno. Stesso vestito dei campi di testo. */
+  .drill-builder .target-values{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}
+  .drill-builder .target-values input{background:var(--slate-3);border:1px solid var(--line);
+    border-radius:var(--radius);padding:6px 4px;width:100%;min-width:0;text-align:center;color:var(--ink)}
+  .drill-builder .target-values input:focus{outline:1px solid var(--chalk);border-color:var(--chalk)}
   .drill-builder .field > span{display:block;color:var(--muted);font-size:11px;margin-bottom:3px;letter-spacing:.04em}
   .drill-builder .field b{color:var(--ink)}
   .drill-builder #palette{display:grid;grid-template-columns:repeat(6,1fr);gap:5px;margin-top:2px}
