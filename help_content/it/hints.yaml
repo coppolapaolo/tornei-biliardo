@@ -992,6 +992,47 @@ hints:
     page: il_tuo_allenamento
     section: difficolta_misurata
 
+  # --- Schede aperte a un istruttore, e i corsi (fase 8) -------------------
+  - id: scheda.note_condivise
+    label: "Le note delle sedute"
+    short: "Quello che scrivi a fine seduta resta tuo. «Apri anche le note» lo fa leggere a chi legge la scheda; «Richiudi» torna indietro."
+    anchor: scheda-note-condivise
+    screens: [sheet.readers]
+    page: aprire_la_scheda_a_un_istruttore
+    section: cosa_vede
+
+  - id: scheda.proposta_lettura
+    label: "Fai vedere come va"
+    short: "Apre la scheda che stai prendendo a chi te l'ha proposta. Arriva spuntata perché è il motivo per cui te la manda, ma è una tua scelta: si toglie qui o dopo."
+    anchor: scheda-proposta-lettura
+    screens: [sheet.proposta]
+    page: aprire_la_scheda_a_un_istruttore
+    section: proposta
+
+  - id: istruttore.passaggio
+    label: "Valuta il passaggio di livello"
+    short: "Ha tenuto la soglia per quante sedute di fila la sua scheda ne chiede, e quella scheda dice che a sancirlo sei tu. «Confermo» lo scrive."
+    anchor: istruttore-passaggio
+    screens: [istruttore.allievi]
+    page: i_miei_allievi
+    section: gradino
+
+  - id: istruttore.media_gruppo
+    label: "Media del gruppo"
+    short: "L'ultima seduta di ciascuno, ridotta a quanto ha preso di quanto poteva e riportata sulla scala della scheda comune. Sotto c'è sempre su quante schede è fatta."
+    anchor: istruttore-media-gruppo
+    screens: [istruttore.gruppo]
+    page: i_gruppi_di_allievi
+    section: numeri
+
+  - id: istruttore.scheda_gruppo
+    label: "Scheda del gruppo"
+    short: "L'ultima scheda che hai proposto al corso. Darla a tutti è ciò che rende confrontabili i numeri: senza, la media del gruppo non vuol dire niente."
+    anchor: istruttore-scheda-gruppo
+    screens: [istruttore.gruppo, istruttore.scheda_gruppo]
+    page: i_gruppi_di_allievi
+    section: scheda_comune
+
 tours:
   - screen: dashboard.dashboard
     title: "La tua home"

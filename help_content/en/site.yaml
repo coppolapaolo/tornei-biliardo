@@ -46,6 +46,7 @@ sections:
       - sale_e_disponibilita
       - challenge
       - schede_di_allenamento
+      - aprire_la_scheda_a_un_istruttore
       - il_tuo_allenamento
       - disegnare_un_drill
       - esami
@@ -68,6 +69,16 @@ sections:
       - turni_su_misura
       - spareggi
       - opzioni_della_gara
+
+  - id: insegnare
+    title: "Teaching"
+    kicker: "For instructors"
+    icon: fa-chalkboard-user
+    summary: "Being found by people who train, following the sheets they open to you, sorting students into courses and giving everyone the same sheet."
+    pages:
+      - diventare_istruttore
+      - i_miei_allievi
+      - i_gruppi_di_allievi
 
   - id: approfondimenti
     title: "How it really works"

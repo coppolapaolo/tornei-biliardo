@@ -55,7 +55,8 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       {# L'interruttore della composizione, stessa forma: titolo, spiegazione,
          spunta a destra. È il permesso di lettura, e nasce acceso. #}
-      <label class="c7-rows__row" style="background:var(--c7-bg);border-radius:var(--c7-r-field)">
+      <label class="c7-rows__row" data-help="scheda-proposta-lettura"
+             style="background:var(--c7-bg);border-radius:var(--c7-r-field)">
         <div class="c7-rows__main">
           <div class="c7-rows__title">
             {{ _("Fai vedere a %(chi)s come va", chi=proposta.instructor.username) }}

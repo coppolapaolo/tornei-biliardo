@@ -1,0 +1,192 @@
+title: "My students"
+section: insegnare
+kind: approfondimento
+audience: [giocatore]
+minutes: 5
+summary: "Who has opened a sheet to you, split into those awaiting a decision, those worth a look and those doing fine — and how to give someone a sheet."
+screens: [istruttore.allievi, istruttore.dai_scheda]
+related: [i_gruppi_di_allievi, diventare_istruttore, aprire_la_scheda_a_un_istruttore]
+
+blocks:
+  - type: text
+    text: >-
+      **My students** is the list of people who have opened at least one of
+      their sheets to you. You do not build it and you cannot add anybody to
+      it: it fills up by itself when somebody decides to let you read how they
+      train, and it empties when they stop.
+
+  - type: shot
+    shot: istruttore-allievi
+    caption: "«My students»: who has just opened a sheet, who has reached a level up, who is worth a look and who is doing fine."
+
+  - type: text
+    text: >-
+      The page splits people into **three**, and repeats at the top those who
+      arrived recently. The three sections are not judgements: they are
+      definitions, and this page writes them out in full — because a list that
+      says «is improving» without saying how it decided is a list you cannot
+      trust.
+
+  - type: heading
+    id: appena
+    title: "They have just opened a sheet to you"
+
+  - type: text
+    text: >-
+      People who opened a sheet to you **in the last seven days**. It is not a
+      fourth section: they are the same people you find further down, repeated
+      at the top because that is the moment when there is something to do — put
+      them in a group, or give them a sheet. After the week, the row disappears
+      from here and stays where it was.
+
+  - type: heading
+    id: gradino
+    title: "Consider moving them up a level"
+
+  - type: text
+    text: >-
+      There is no estimate here: there is a **threshold that has been held**. A
+      sheet can declare a level, how much it takes to pass it, and for how many
+      sessions in a row. When the student gets there, and their sheet says a
+      person signs it off, they appear here — with the totals of the last
+      sessions and the threshold underneath, so the number can be checked by
+      eye.
+
+  - type: note
+    tone: info
+    title: "It only appears if the sheet is waiting for you"
+    text: >-
+      Whoever builds a sheet chooses **who says it has been passed**: nobody,
+      the threshold on its own, or an instructor. With the threshold on its own
+      the level up was stamped the moment it was held, and there is nothing to
+      press: that is why those sheets never come here.
+
+  - type: options
+    items:
+      - name: "I confirm"
+        text: >-
+          Writes the level up down: from that moment the sheet counts as
+          **passed**, with the date and your name. It stays passed even if the
+          sessions afterwards go worse — it is a certificate, not a
+          thermometer.
+        hint: istruttore.passaggio
+      - name: "Give the next level"
+        text: >-
+          It is a **second gesture**, and it can wait: it opens «Give a sheet»
+          already set up to offer the next step. You can be moved up before
+          having the new sheet in hand, and you can get the new sheet before
+          anyone has confirmed.
+
+  - type: note
+    tone: warning
+    title: "You do not move up someone who has not got there"
+    text: >-
+      If the threshold has not been held, «I confirm» is not there and does not
+      work even for anyone trying to get around the screen. The level up is a
+      fact, and here it stays one.
+
+  - type: heading
+    id: guardare
+    title: "Worth a look"
+
+  - type: text
+    text: >-
+      Two facts, no interpretation. Neither says *why*, and they should not:
+      they say there is something to ask about.
+
+  - type: list
+    title: "You end up here for one of two reasons"
+    items:
+      - "**They have not trained for two weeks** — or have never closed a session. Missing one happens to everyone, missing two is something you ask about."
+      - "**For five sessions they have not beaten their own best.** Someone already at the sheet's maximum does not appear: they have run out of available numbers, and telling them they are not improving would be false."
+
+  - type: note
+    tone: tip
+    text: >-
+      Someone who opened a sheet to you yesterday and has not trained yet is
+      **not** absent: they are new, and they belong to the section above.
+
+  - type: heading
+    id: bene
+    title: "All good"
+
+  - type: text
+    text: >-
+      «All good» **is not a measure**: it is the remainder — everyone who is
+      not awaiting a decision and has not set anything off. Precisely because
+      the name is generous, under each name there is no judgement but a fact
+      you can check: **when they last trained** and **how many sessions they
+      have closed in the last four weeks**.
+
+  - type: heading
+    id: dare
+    title: "Giving a sheet"
+
+  - type: text
+    text: >-
+      Beside each student there is **«Give a sheet»**. What you offer is a
+      sheet of **yours**, already built: so the first step is to build, under
+      **Sheets**, the one you run in the hall — the list of exercises, the «how
+      much of it» for each, and level and threshold if you need them.
+
+  - type: shot
+    shot: istruttore-dai-scheda
+    caption: "«Give a sheet»: from your own built sheets you pick the one to offer, add a word or two and send it."
+
+  - type: steps
+    items:
+      - title: "Pick which one"
+        text: >-
+          Only your sheets with at least one exercise inside appear: an empty
+          sheet cannot be given.
+      - title: "A word or two, if you like"
+        text: >-
+          A note pinned to the sheet — *«For the autumn, do days A and B»*. It
+          is optional.
+      - title: "Send the proposal"
+        text: >-
+          A notification goes out. **They decide**: the sheet is only born if
+          they take it, and it is born theirs. Until they answer, the row in
+          the list says *waiting*, and you can **withdraw** it.
+
+  - type: note
+    tone: warning
+    title: "You can only offer to someone who is already your student"
+    text: >-
+      You cannot send anything to someone who has not opened a sheet to you:
+      the first move is always theirs. The same holds for groups, and it holds
+      more here — a proposal is a message, and it often reaches a youngster.
+
+  - type: list
+    title: "What happens when they take it"
+    items:
+      - "A sheet of **theirs** is born, copied from yours as it is today. If you change yours tomorrow, theirs does not move."
+      - "Permission to read it is **a box on their form**, ticked by default: they can untick it, and the sheet is born anyway. In that case they have it and you do not see it."
+      - "Level, threshold and «who signs off the level up» are copied: if yours says «I confirm it», so does theirs."
+      - "One proposal at a time per person: until they have answered, a second one does not go out."
+
+  - type: faq
+    items:
+      - q: "Can I remove a student from the list?"
+        a: >-
+          No, and that is not an oversight: you entered that list because they
+          opened a sheet to you, and you leave it when they close it again. If
+          you no longer want to follow them, open their sheet and tap **«Stop
+          following it»**: that is your half of the decision, and from then on
+          only they can reopen it to you.
+      - q: "Is a student showing up twice?"
+        a: >-
+          At the top, among those who arrived recently, yes: that section is a
+          repetition. In the three real sections everyone sits in one only, the
+          one of the strongest signal — the level up before anything else, then
+          absence, then a plateau.
+      - q: "Why can I not see how many sessions they did against the planned ones?"
+        a: >-
+          Because «planned» does not exist. A sheet declares weeks and days,
+          not a frequency: inferring «one round a week» would be an invented
+          number, and it would look true.
+      - q: "Do I see my students' overall training picture?"
+        a: >-
+          No. The link is with the **sheet**: you see the sessions of the
+          sheets they opened to you, and nothing else. Radars, goals and Elo
+          stay theirs.

@@ -1113,6 +1113,54 @@ hints:
   page: il_tuo_allenamento
   section: difficolta_misurata
 
+# --- Sheets opened to an instructor, and the courses (phase 8) -------------
+- id: scheda.note_condivise
+  label: Session notes
+  short: What you write at the end of a session stays yours. «Open the notes too» lets whoever
+    reads the sheet read them; «Close them again» undoes it.
+  anchor: scheda-note-condivise
+  screens:
+  - sheet.readers
+  page: aprire_la_scheda_a_un_istruttore
+  section: cosa_vede
+- id: scheda.proposta_lettura
+  label: Let them see how it goes
+  short: 'Opens the sheet you are taking to whoever offered it. It comes ticked because that is
+    why they sent it, but it is your call: untick it here or later.'
+  anchor: scheda-proposta-lettura
+  screens:
+  - sheet.proposta
+  page: aprire_la_scheda_a_un_istruttore
+  section: proposta
+- id: istruttore.passaggio
+  label: Consider the level up
+  short: They have held the threshold for as many sessions in a row as their sheet asks, and that
+    sheet says you are the one who signs it off. «I confirm» writes it down.
+  anchor: istruttore-passaggio
+  screens:
+  - istruttore.allievi
+  page: i_miei_allievi
+  section: gradino
+- id: istruttore.media_gruppo
+  label: Group average
+  short: Everyone's last session, reduced to how much they scored out of what was available and
+    put back on the shared sheet's scale. Below it always says how many sheets it is made of.
+  anchor: istruttore-media-gruppo
+  screens:
+  - istruttore.gruppo
+  page: i_gruppi_di_allievi
+  section: numeri
+- id: istruttore.scheda_gruppo
+  label: The group's sheet
+  short: 'The last sheet you offered the course. Giving everyone the same one is what makes the
+    numbers comparable: without it, the group average means nothing.'
+  anchor: istruttore-scheda-gruppo
+  screens:
+  - istruttore.gruppo
+  - istruttore.scheda_gruppo
+  page: i_gruppi_di_allievi
+  section: scheda_comune
+
 tours:
 - screen: dashboard.dashboard
   title: Your home

@@ -1,0 +1,138 @@
+title: "Becoming an instructor"
+section: insegnare
+kind: tutorial
+audience: [giocatore]
+minutes: 3
+summary: "The role for people who teach: how to ask for it, what it opens — and above all what it does not — and who can appoint whom."
+screens: [player.roles, roles.request_role_form, roles.role_holders, roles.role_requests]
+related: [i_miei_allievi, aprire_la_scheda_a_un_istruttore, diventare_esaminatore]
+
+blocks:
+  - type: text
+    text: >-
+      An **instructor** is someone who follows another person's training. It is
+      a role that **adds** to what you already are: you stay a player, you
+      enter competitions, you train as before. On top of that, anyone looking
+      for an instructor to open a sheet to can find you.
+
+  - type: note
+    tone: warning
+    title: "The role opens nothing"
+    text: >-
+      Holding it does **not** show you a single sheet, profile or number
+      belonging to anyone. It makes you **findable**, and that is all. Every
+      look inside a sheet is opened by the student, one sheet at a time, and
+      they can close it again whenever they like.
+
+  - type: heading
+    id: chiederlo
+    title: "Asking for it"
+
+  - type: text
+    text: >-
+      You ask from your profile, under **Roles**. The page lists what you are
+      now and what you could become, with the state beside each: *active* when
+      you hold it, *you can ask for it* when it is within reach.
+
+  - type: shot
+    shot: ruoli-giocatore
+    caption: "A player's «Your roles»: player active, examiner and instructor still to be asked for."
+
+  - type: steps
+    items:
+      - title: "Train a little first"
+        text: >-
+          The request opens after **five completed exercises**. It is not an
+          exam: it is the minimum needed to know what is being talked about.
+          Until then, in place of the link the row says *«It opens as you keep
+          training»*.
+      - title: "Tap «Ask to become an instructor»"
+        text: >-
+          The form opens: you can pick who to send the request to among the
+          instructors already in place, or pick nobody and ask them all. If
+          there is no instructor yet, the request goes to whoever administers
+          the platform.
+      - title: "Wait"
+        text: >-
+          **The first to approve grants the role**, and for the others the
+          request closes. A notification arrives, and from that moment students
+          can find you.
+
+  - type: heading
+    id: scuola
+    title: "The school"
+
+  - type: text
+    text: >-
+      On the same page, for those who teach, a field appears: **school or
+      club**. It is optional, and it is there to make you recognisable —
+      someone looking for an instructor searches by username **or by school**,
+      and that is how two people with the same name are told apart. First name
+      and surname are not searchable, because they are private data.
+
+  - type: shot
+    shot: ruoli-istruttore
+    caption: "The same page for someone who holds the role: «Instructor · active», since when, who appointed them, and the school field."
+
+  - type: heading
+    id: catena
+    title: "Who appoints whom"
+
+  - type: text
+    text: >-
+      An instructor can grant the role to another instructor. That is
+      deliberate: people who teach know who teaches, while whoever administers
+      a platform has no way of knowing — and without this, every new instructor
+      would have to wait for an answer from above.
+
+  - type: text
+    text: >-
+      So that a chain of delegation does not become a blind one, **you can see
+      where each person came from**. From the roles page, the link *«Who else
+      has it, and who appointed them»* opens the list of holders: for each
+      person, who granted it and when. It is read by whoever administers and by
+      the holders **of that role**: being an examiner does not entitle you to
+      look at the instructors.
+
+  - type: shot
+    shot: ruolo-titolari
+    caption: "The instructor role holders with the chain of appointments: who granted it to whom, and since when."
+
+  - type: note
+    tone: info
+    title: "Revoking stays with the administrator"
+    text: >-
+      Appointing yes, removing no: an instructor cannot revoke the role from
+      another, and the page says so to those who cannot. And when the role is
+      taken away, **the sheets students opened to them stay open**: closing
+      those is up to the students.
+
+  - type: text
+    text: >-
+      Under your name, if you are an instructor, **«Requests to assess»** also
+      appears: the applications from people who want the role you can grant.
+      They are approved or refused one at a time.
+
+  - type: faq
+    items:
+      - q: "Do I have to be a competition director to be an instructor?"
+        a: >-
+          No, the two are independent. An instructor can be any player, and a
+          director may teach nobody.
+      - q: "Why is the bar five exercises and not twenty as for the examiner?"
+        a: >-
+          Because they are two different jobs. An examiner certifies inside the
+          app, and the bar measures how well they know it; an instructor
+          teaches in the hall, and what they know is not measured here. The
+          five exercises only serve to know what is being talked about.
+      - q: "If I become an instructor, do my students see who appointed me?"
+        a: >-
+          No. The chain of appointments is read by whoever administers and by
+          the other instructors. Publishing it beside every name would mean
+          publishing a network of relationships between people.
+      - q: "How do I get my first student?"
+        a: >-
+          By waiting for somebody to open a sheet to you: the first move is
+          always theirs. In practice you tell them in the hall, and they look
+          you up by name or by school — see [Letting an instructor read a
+          sheet](/aiuto/giocare/aprire_la_scheda_a_un_istruttore).

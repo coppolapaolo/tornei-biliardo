@@ -1,0 +1,199 @@
+title: "Letting an instructor read a sheet"
+section: giocare
+kind: tutorial
+audience: [giocatore]
+minutes: 4
+summary: "A sheet is yours and only you can see it. If you train with someone, you can open it to them — one sheet at a time, and take it back whenever you like."
+screens: [sheet.readers, sheet.my_instructors, sheet.proposta]
+related: [schede_di_allenamento, i_miei_allievi, privacy_e_dati]
+
+blocks:
+  - type: text
+    text: >-
+      A training sheet is born **yours alone**: nobody sees it, not even the
+      person who taught you how to build it. If you train with an instructor,
+      though, you can open it to them, and from that moment they see your
+      sessions and how you are getting on. You give the permission, **sheet by
+      sheet**, and you take it back whenever you want.
+
+  - type: note
+    tone: info
+    title: "The first move is always yours"
+    text: >-
+      An instructor cannot ask you for anything and cannot look you up: until
+      you open a sheet to them, you do not exist for them. That is deliberate —
+      the person training is often a youngster, and it is the person training
+      who decides what is visible.
+
+  - type: heading
+    id: aprire
+    title: "Opening a sheet"
+
+  - type: steps
+    items:
+      - title: "Open the sheet and tap «Who reads it»"
+        text: >-
+          From the sheet's register, at the bottom. The page says straight away
+          who reads it now: at the start, **nobody**.
+      - title: "Search for the instructor"
+        text: >-
+          You search by **username** or by **school**. Only people who hold the
+          instructor role appear: someone who teaches and cannot be found has
+          not asked for it yet, and it is worth telling them.
+      - title: "Tap «Open»"
+        text: >-
+          It takes effect immediately, with no waiting and no acceptance on
+          their side: they get a notification and find the sheet among their
+          students'.
+        shot: scheda-lettori
+
+  - type: text
+    text: >-
+      You can open it to **more than one instructor**: the sheet stays one, and
+      each of them reads it. And you can open different sheets to different
+      people — the technique one to the school's coach, the ghost one to
+      nobody.
+
+  - type: heading
+    id: cosa_vede
+    title: "What they see, and what they do not"
+
+  - type: options
+    items:
+      - name: "The sessions and the register"
+        values: "yes"
+        text: >-
+          Of **this** sheet, item by item: how many shots went in, when you
+          trained, how left and right are going. That is what it takes to
+          follow you, and it is all they see.
+      - name: "The session notes"
+        values: "no, unless you open them"
+        text: >-
+          What you write at the end of a session stays yours. If you want them
+          read too, turn on **«Open the notes too»** on the same page; «Close
+          them again» undoes it.
+        hint: scheda.note_condivise
+      - name: "Your other sheets"
+        values: "no"
+        text: >-
+          Every sheet has its own readers. Opening one does not open the
+          others.
+      - name: "Your training picture, matches, Elo"
+        values: "no"
+        text: >-
+          The rest of your profile is none of their business: an instructor
+          sees no more than any other player.
+
+  - type: note
+    tone: tip
+    title: "They cannot write in it"
+    text: >-
+      Whoever reads the sheet **cannot change it**: no adding exercises, no
+      correcting numbers, no closing sessions. The sheet stays yours even while
+      they are looking at it.
+
+  - type: heading
+    id: togliere
+    title: "Removing them"
+
+  - type: text
+    text: >-
+      On the same page, next to the name, there is **«Remove»**. From that
+      moment they see nothing new of that sheet — and the other sheets you
+      opened to them do not change. They get no notice: it is your decision,
+      and there is nothing to justify.
+
+  - type: heading
+    id: chi_legge
+    title: "Who reads my sheets"
+
+  - type: text
+    text: >-
+      **Sheets** also has **«Who reads my sheets»**: at a glance, one
+      instructor per row with the sheets you opened to them underneath. It is
+      not a separate list to keep up to date — an instructor appears because
+      you opened at least one sheet to them, and disappears on their own when
+      you remove them from the last one.
+
+  - type: shot
+    shot: scheda-istruttori
+    caption: "«Who reads my sheets»: one instructor per row, and which sheets you opened to them."
+
+  - type: heading
+    id: proposta
+    title: "When they offer you a sheet"
+
+  - type: text
+    text: >-
+      An instructor you have already opened a sheet to can **offer** you one of
+      theirs: the one they run in the hall, already put together. You get a
+      notification and find it at the top of **Sheets**. Before deciding you
+      see all of it — name, level, threshold, and the list of exercises with
+      their «how much of it».
+
+  - type: shot
+    shot: scheda-proposta
+    caption: "A sheet offered by an instructor: what is in it, the two boxes already ticked, and the two buttons."
+
+  - type: note
+    tone: info
+    title: "The sheet is born when you take it, and it is born yours"
+    text: >-
+      Until you tap **«Take the sheet»** nothing exists. Once taken, it becomes
+      a sheet like any other: you change it, you file it away, you decide who
+      reads it. The instructor's own stays theirs, and if they change it
+      tomorrow yours does not move.
+
+  - type: text
+    text: >-
+      Below the name there are **one or two boxes**, and they are your
+      decisions. They arrive already ticked because that is usually what you
+      want, but a tap unticks them.
+
+  - type: options
+    items:
+      - name: "Let … see how it goes"
+        values: "ticked"
+        text: >-
+          Opens the new sheet to whoever offered it. Untick it and the sheet is
+          born anyway: you keep it to yourself. You can always open it to them
+          later from **«Who reads it»**.
+      - name: "File «…» away"
+        values: "ticked, and only sometimes"
+        text: >-
+          It appears **only** when the sheet you are being offered is the next
+          level of one you have passed: it files the old one away. The sessions
+          you did stay readable — filing away is not deleting.
+
+  - type: text
+    text: >-
+      **«No, thanks»** closes the offer and creates nothing: no sheet, no
+      permission. The instructor is told, and can offer it again later.
+
+  - type: faq
+    items:
+      - q: "What if I cannot find my instructor in the search?"
+        a: >-
+          It means they do not hold the instructor role. The search only covers
+          people who do, on purpose. They just have to ask for it from their
+          profile: see [Becoming an
+          instructor](/aiuto/insegnare/diventare_istruttore).
+      - q: "Can I open the sheet to someone who does not teach?"
+        a: >-
+          No. A sheet is opened to an instructor, and the check is not only in
+          the search box: it holds for anyone trying to get around it too.
+      - q: "If I remove an instructor, does what they already saw disappear?"
+        a: >-
+          No: they stop seeing what comes **afterwards**. What they have read,
+          they have read, and there is no undoing it — as with anything already
+          shown to someone.
+      - q: "Can the instructor see my overall training picture?"
+        a: >-
+          No. The link is with the **sheet**, not with you: «My students» and
+          «My instructors» are two ways of looking at the same open sheets.
+          Your training picture, the radars and the goals stay yours.
+      - q: "Why can I not ask an instructor to follow me?"
+        a: >-
+          Because following you means reading a sheet of yours, and that choice
+          is made by opening the sheet: it is the same gesture. Open one to
+          them, and from that moment you are their student.

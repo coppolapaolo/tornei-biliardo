@@ -79,7 +79,7 @@
       </div>
       {% endif %}
       {% if vista.media %}
-      <div class="c7-kpi">
+      <div class="c7-kpi" data-help="istruttore-media-gruppo">
         <div class="c7-kpi__v">{{ vista.media.valore }}</div>
         <div class="c7-kpi__l">{{ _("Media del gruppo, su %(su)s", su=vista.media.su) }}</div>
       </div>
@@ -109,7 +109,7 @@
   <section class="c7-rows">
     <a class="c7-rows__row" style="color:inherit;text-decoration:none"
        href="{{ url_for('istruttore.scheda_gruppo', group_id=gruppo.id) }}">
-      <span class="c7-tile c7-tile--sm c7-tile--neutral"><i class="fas fa-list-check"></i></span>
+      <span class="c7-tile c7-tile--sm c7-tile--neutral" data-help="istruttore-scheda-gruppo"><i class="fas fa-list-check"></i></span>
       <div class="c7-rows__main">
         <div class="c7-rows__title">{{ _("Scheda del gruppo") }}</div>
         <div class="c7-rows__sub">

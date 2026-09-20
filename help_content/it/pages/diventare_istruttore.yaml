@@ -1,0 +1,138 @@
+title: "Diventare istruttore"
+section: insegnare
+kind: tutorial
+audience: [giocatore]
+minutes: 3
+summary: "Il ruolo di chi insegna: come si chiede, cosa apre — e soprattutto cosa non apre — e chi può nominare chi."
+screens: [player.roles, roles.request_role_form, roles.role_holders, roles.role_requests]
+related: [i_miei_allievi, aprire_la_scheda_a_un_istruttore, diventare_esaminatore]
+
+blocks:
+  - type: text
+    text: >-
+      L'**istruttore** è chi segue l'allenamento di qualcun altro. È un ruolo
+      che si **aggiunge** a quello che hai: resti giocatore, ti iscrivi alle
+      gare, ti alleni come prima. In più, chi cerca un istruttore a cui aprire
+      una scheda ti trova.
+
+  - type: note
+    tone: warning
+    title: "Il ruolo non apre niente"
+    text: >-
+      Averlo **non** ti fa vedere nessuna scheda, nessun profilo, nessun
+      numero di nessuno. Ti rende **trovabile**, e basta. Ogni sguardo dentro
+      una scheda lo apre l'allievo, una scheda per volta, e te lo può
+      richiudere quando vuole.
+
+  - type: heading
+    id: chiederlo
+    title: "Chiederlo"
+
+  - type: text
+    text: >-
+      Si chiede dal tuo profilo, alla voce **Ruoli**. La pagina elenca quello
+      che sei adesso e quello che puoi diventare, con lo stato accanto: *attivo*
+      quando ce l'hai, *puoi chiederlo* quando è a portata.
+
+  - type: shot
+    shot: ruoli-giocatore
+    caption: "«I tuoi ruoli» di un giocatore: giocatore attivo, esaminatore e istruttore ancora da chiedere."
+
+  - type: steps
+    items:
+      - title: "Allenati un po'"
+        text: >-
+          La richiesta si apre dopo **cinque esercizi completati**. Non è un
+          esame: è il minimo per sapere di cosa si parla. Finché non ci sei, al
+          posto del collegamento la riga dice *«Si apre continuando ad
+          allenarti»*.
+      - title: "Tocca «Chiedi di diventare istruttore»"
+        text: >-
+          Si apre il modulo: puoi scegliere a chi inoltrare la richiesta fra
+          gli istruttori già in carica, oppure non scegliere nessuno e chiedere
+          a tutti. Se non c'è ancora nessun istruttore, la richiesta va a chi
+          amministra la piattaforma.
+      - title: "Aspetta"
+        text: >-
+          **Il primo che approva concede il ruolo**, e per gli altri la
+          richiesta si chiude. Arriva una notifica, e da quel momento gli
+          allievi ti trovano.
+
+  - type: heading
+    id: scuola
+    title: "La scuola"
+
+  - type: text
+    text: >-
+      Nella stessa pagina, a chi insegna, compare un campo: **scuola o
+      associazione**. È facoltativo, e serve a farsi riconoscere — chi cerca
+      un istruttore cerca per nome utente **o per scuola**, e due omonimi si
+      distinguono così. Nome e cognome non entrano nella ricerca, perché sono
+      dati riservati.
+
+  - type: shot
+    shot: ruoli-istruttore
+    caption: "La stessa pagina per chi il ruolo ce l'ha: «Istruttore · attivo», da quando, nominato da chi, e il campo della scuola."
+
+  - type: heading
+    id: catena
+    title: "Chi nomina chi"
+
+  - type: text
+    text: >-
+      Un istruttore può concedere il ruolo a un altro istruttore. È voluto: chi
+      insegna sa chi insegna, mentre chi amministra una piattaforma non ha modo
+      di saperlo — e senza questa possibilità ogni nuovo istruttore dovrebbe
+      aspettare una risposta dall'alto.
+
+  - type: text
+    text: >-
+      Perché una delega a catena non diventi una delega al buio, **si vede da
+      dove arriva ciascuno**. Dalla pagina dei ruoli, il collegamento *«Chi
+      altro ce l'ha, e chi l'ha nominato»* apre l'elenco dei titolari: per ogni
+      persona, chi gliel'ha concesso e quando. La leggono chi amministra e i
+      titolari **di quel ruolo**: essere esaminatori non dà diritto a guardare
+      gli istruttori.
+
+  - type: shot
+    shot: ruolo-titolari
+    caption: "I titolari del ruolo di istruttore con la catena delle nomine: chi ha concesso a chi, e da quando."
+
+  - type: note
+    tone: info
+    title: "La revoca resta a chi amministra"
+    text: >-
+      Nominare sì, togliere no: un istruttore non può revocare il ruolo a un
+      altro, e la pagina lo dice a chi non può. E quando il ruolo viene tolto,
+      **le schede che gli allievi gli hanno aperto restano aperte**: quelle le
+      chiudono loro.
+
+  - type: text
+    text: >-
+      Sotto il tuo nome, se sei istruttore, compare anche **«Richieste da
+      valutare»**: le domande di chi vuole il ruolo che tu puoi concedere. Si
+      approvano o si rifiutano una per una.
+
+  - type: faq
+    items:
+      - q: "Devo essere direttore di gara per fare l'istruttore?"
+        a: >-
+          No, sono due cose indipendenti. Un istruttore può essere un giocatore
+          qualunque, e un direttore può non insegnare a nessuno.
+      - q: "Perché la soglia è di cinque esercizi e non venti come per l'esaminatore?"
+        a: >-
+          Perché sono due mestieri diversi. L'esaminatore certifica dentro
+          l'app, e la soglia misura quanto la conosce; l'istruttore insegna in
+          sala, e quello che sa non si misura qui. I cinque esercizi servono
+          solo a sapere di cosa si sta parlando.
+      - q: "Se divento istruttore, i miei allievi vedono chi mi ha nominato?"
+        a: >-
+          No. La catena delle nomine la leggono chi amministra e gli altri
+          istruttori. Pubblicarla accanto a ogni nome significherebbe
+          pubblicare una rete di relazioni fra persone.
+      - q: "Come faccio ad avere il primo allievo?"
+        a: >-
+          Aspettando che qualcuno ti apra una scheda: la prima mossa è sempre
+          sua. In pratica glielo dici in sala, e lui ti cerca per nome o per
+          scuola — vedi [Far leggere una scheda a un
+          istruttore](/aiuto/giocare/aprire_la_scheda_a_un_istruttore).

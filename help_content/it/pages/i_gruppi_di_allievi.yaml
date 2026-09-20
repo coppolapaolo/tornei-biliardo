@@ -1,0 +1,201 @@
+title: "I gruppi e la scheda del corso"
+section: insegnare
+kind: approfondimento
+audience: [giocatore]
+minutes: 5
+summary: "Ordinare gli allievi in corsi, dare a tutti la stessa scheda, e leggere i numeri del corso sapendo su cosa sono calcolati."
+screens: [istruttore.gruppi, istruttore.gruppo, istruttore.scheda_gruppo]
+related: [i_miei_allievi, diventare_istruttore, schede_di_allenamento]
+
+blocks:
+  - type: text
+    text: >-
+      Con tre allievi basta l'elenco. Con venti, no: **il corso del lunedì** e
+      **i ragazzi del primo anno** sono due cose diverse, e guardarli insieme
+      non dice niente. I **gruppi** servono a questo, e a niente altro.
+
+  - type: note
+    tone: warning
+    title: "Un gruppo non apre niente"
+    text: >-
+      Mettere qualcuno in un gruppo **non** ti fa vedere una riga in più.
+      Ci si mette solo chi ti ha già aperto una scheda, e quello che vedi
+      resta quello che lui ti ha aperto. Un gruppo **ordina**: non è un modo
+      per avere allievi.
+
+  - type: heading
+    id: fare
+    title: "Fare un gruppo"
+
+  - type: shot
+    shot: istruttore-gruppi
+    caption: "I gruppi: quelli in corso, il modulo per farne uno nuovo, e lo storico dei corsi chiusi."
+
+  - type: steps
+    items:
+      - title: "Dagli un nome"
+        text: >-
+          «Corso del lunedì», «Primo anno», «Ragazzi 2026». È l'unica cosa
+          obbligatoria.
+      - title: "Le date, se servono"
+        text: >-
+          **Dal** e **al** sono facoltative, e servono a una cosa sola: dire a
+          che settimana è arrivato il corso — *«settimana 6 di 13»*. Chi segue
+          tre ragazzi tutto l'anno non le mette.
+      - title: "Mettici dentro le persone"
+        text: >-
+          Dalla pagina del gruppo, sotto **«Fra chi ti ha aperto una scheda»**,
+          c'è l'elenco di chi è ancora libero: un tocco su **«Aggiungi»** e ci
+          è dentro. In due gruppi non si sta — metterlo in uno lo toglie
+          dall'altro, senza doverlo togliere prima.
+
+  - type: heading
+    id: scheda_comune
+    title: "La scheda del corso"
+
+  - type: text
+    text: >-
+      Dalla pagina del gruppo, **«Scheda del gruppo»** manda la stessa scheda a
+      tutti quelli che ne fanno parte adesso. Non è solo comodità: **è ciò che
+      rende confrontabili i numeri**. Se uno fa «51 su 60» e un altro «14 su
+      20», una media fra i due non vuol dire niente.
+
+  - type: shot
+    shot: istruttore-scheda-gruppo
+    caption: "La scheda del gruppo: quanti l'hanno presa, quanti te la fanno leggere, chi non ha risposto e chi è entrato dopo."
+
+  - type: text
+    text: >-
+      Restano **proposte, una a testa**: il gruppo decide a chi parte l'invito,
+      non chi lo accetta. Ciascuno decide da sé se prenderla e se fartela
+      leggere, e può togliertela quando vuole.
+
+  - type: options
+    items:
+      - name: "l'hanno presa, su N"
+        text: >-
+          Quanti hanno accettato, sul numero di **proposte partite** — non sugli
+          allievi di adesso. È l'unica domanda a cui quei dati possano
+          rispondere: *di quelli a cui l'ho data, quanti l'hanno presa*.
+      - name: "te la fanno leggere"
+        text: >-
+          Quante di quelle prese puoi davvero aprire. Prenderla e fartela
+          leggere sono **due decisioni**, e la seconda si può togliere il giorno
+          dopo. Questo numero sta qui perché è il denominatore della media.
+      - name: "non hanno ancora risposto"
+        text: >-
+          Le proposte in attesa. Compare solo quando ce n'è almeno una.
+
+  - type: note
+    tone: info
+    title: "Chi è entrato dopo non è un «no»"
+    text: >-
+      A chi è arrivato a corso cominciato la scheda non è mai arrivata, e la
+      pagina lo dice a parte, **coi nomi**: mandandola di nuovo arriva a loro.
+      A chi ce l'ha già non riparte — si ritroverebbe due volte la stessa
+      scheda da riempire.
+
+  - type: text
+    text: >-
+      Spuntando **«È il livello dopo»**, ogni proposta lascia indietro la copia
+      che *quell'*allievo ha della scheda di adesso: ciascuno archivia la sua,
+      e le sedute che ha fatto restano leggibili.
+
+  - type: heading
+    id: numeri
+    title: "I numeri del corso, e su cosa sono calcolati"
+
+  - type: shot
+    shot: istruttore-gruppo
+    caption: "Un corso: a che settimana è arrivato, i numeri in cima, la scheda che ha in comune e chi ne fa parte."
+
+  - type: options
+    items:
+      - name: "Media del gruppo, su N"
+        text: >-
+          Si prende **l'ultima seduta di ciascuno**, si guarda quanto ha preso
+          di quanto poteva, e si fa la media riportandola sulla scala della
+          scheda comune. Una seduta a testa e non tutte: chi si allena tre
+          volte a settimana sposterebbe da solo la media di un corso di cinque,
+          e il numero finirebbe per dire quanto si allena lui.
+        hint: istruttore.media_gruppo
+      - name: "su N schede che leggi"
+        text: >-
+          Sta **sempre** sotto la media, e va letto insieme a lei: una media su
+          tre schede di cinque è un'altra cosa da una media su cinque. Se
+          qualcuno non ha ancora fatto numeri, si conta e si dice — invece di
+          sparire nel denominatore.
+      - name: "Sedute questa settimana"
+        text: >-
+          La settimana **del corso**, quella del riquadro in cima: comincia nel
+          giorno della settimana in cui è cominciato il corso, non il lunedì.
+          Un corso senza data d'inizio non ha settimane, e allora sono gli
+          ultimi sette giorni — e l'etichetta lo dice. Si contano su **tutte**
+          le schede che leggi dei suoi allievi: la domanda è se il corso si
+          muove.
+      - name: "Al livello dopo"
+        text: >-
+          Quante persone hanno superato un livello **mentre erano nel corso**, e
+          mentre tu leggevi quella scheda. Conta il timbro, non il tuo gesto:
+          una scheda che si timbra da sola alla soglia conta come le altre.
+
+  - type: note
+    tone: tip
+    title: "La media manca? Non è uno zero"
+    text: >-
+      Se non c'è una scheda comune, o se quella scheda non ha voci che fanno
+      totale, la media **non compare**. Uno zero al posto di un numero che non
+      esiste sarebbe la bugia più facile da scrivere in questa pagina.
+
+  - type: heading
+    id: chiudere
+    title: "Chiudere un corso, e lo storico"
+
+  - type: text
+    text: >-
+      **«Chiudi il corso»** lo fa finire oggi. Le righe restano: chi c'era e
+      fino a quando. Da quel momento quelle persone possono entrare in un altro
+      gruppo, e il corso passa nello **storico**, dove ogni riga porta con sé
+      quante persone sono passate di livello dentro.
+
+  - type: note
+    tone: info
+    title: "Lo storico dice quello che hai visto succedere"
+    text: >-
+      Un ex allievo che oggi ti richiude tutte le schede **non cambia** il tuo
+      storico: il conteggio guarda se leggevi quella scheda **quando** il
+      passaggio è stato timbrato, non se la leggi adesso.
+
+  - type: text
+    text: >-
+      Il calendario e la chiusura sono due cose diverse: scrivere *«al 15
+      dicembre»* a settembre dichiara **quando finirà**, e un corso che finisce
+      fra tre mesi è in corso adesso. Un corso chiuso si riapre togliendo la
+      data di fine.
+
+  - type: faq
+    items:
+      - q: "Posso mettere in un gruppo qualcuno che non mi ha aperto una scheda?"
+        a: >-
+          No. Un gruppo ordina chi ti è già allievo: se potesse aggiungere
+          persone, sarebbe un modo per darsi da soli quello che l'allievo deve
+          decidere.
+      - q: "Un allievo può stare in due gruppi?"
+        a: >-
+          No, in uno solo. «Sposta» non è un comando a parte: metterlo in un
+          gruppo lo toglie da quello in cui era.
+      - q: "Se cambio la mia scheda, cambiano quelle dei miei allievi?"
+        a: >-
+          No. Quando la prendono ne nasce una **copia loro**, e da quel momento
+          le due vite sono separate — la tua la cambi quando vuoi, la loro è
+          loro e possono cambiarla a loro volta. È anche il motivo per cui la
+          media si fa sulle quote e non sui totali grezzi.
+      - q: "Ho mandato la scheda a cinque persone e la pagina dice che è partita a tre."
+        a: >-
+          Le altre due sono state saltate, e la pagina dice perché: o quella
+          scheda ce l'hanno già, o hanno una tua proposta ancora in attesa.
+          Nessuna delle due è un errore, e il resto del corso la riceve lo
+          stesso.
+      - q: "Gli allievi vedono il gruppo in cui li ho messi?"
+        a: >-
+          No. I gruppi sono un tuo modo di ordinare le persone, e restano tuoi.

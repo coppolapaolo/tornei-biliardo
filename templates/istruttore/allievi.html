@@ -56,8 +56,10 @@
 {% endmacro %}
 
 {% macro riga(voce) %}
-  {# Una persona: iniziali, nome, il fatto, e il gruppo in cui metterla. #}
-  <div class="c7-rows__row">
+  {# Una persona: iniziali, nome, il fatto, e il gruppo in cui metterla.
+     `--wrap` perche' i segnalini qui possono essere due — il gruppo e «in
+     attesa» — e a 390px accanto a un nome non ci stanno: scendono sotto. #}
+  <div class="c7-rows__row c7-rows__row--wrap">
     <span class="c7-avatar">{{ voce.persona.username[:2]|upper }}</span>
     <div class="c7-rows__main">
       <div class="c7-rows__title">{{ voce.persona.username }}</div>
@@ -109,7 +111,7 @@
   <div class="c7-label">{{ _("Ti hanno appena aperto una scheda") }}</div>
   <section class="c7-rows">
     {% for voce in pagina.nuovi %}
-    <div class="c7-rows__row">
+    <div class="c7-rows__row c7-rows__row--wrap">
       <span class="c7-avatar">{{ voce.persona.username[:2]|upper }}</span>
       <div class="c7-rows__main">
         <div class="c7-rows__title">{{ voce.persona.username }}</div>
@@ -138,7 +140,7 @@
 
   {# ── Valuta il passaggio di livello ─────────────────────────────────── #}
   {% if pagina.passaggio %}
-  <div class="c7-label">{{ _("Valuta il passaggio di livello") }}</div>
+  <div class="c7-label" data-help="istruttore-passaggio">{{ _("Valuta il passaggio di livello") }}</div>
   <section class="c7-rows">
     {% for voce in pagina.passaggio %}
     <div class="c7-rows__row c7-rows__row--stack">

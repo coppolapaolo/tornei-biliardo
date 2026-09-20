@@ -133,6 +133,11 @@ ascolta `pointerdown`.
 |---|---|---|---|---|
 | `Andamento` | Il tuo allenamento, radar per abilità | `challenge/andamento.html` + `models/andamento/` | 7a | **fatta il 20/09** — pagina nuova, non la sezione del profilo: quella resta lo storico di chi guarda un profilo |
 
+| `AndamentoGesto` | Lo stesso, radar per gesto | la stessa pagina, `?asse=gesto` | 7a | **fatta il 20/09** — due artboard, una pagina: l'asse è un collegamento, come i filtri del catalogo |
+| `Obiettivo` | Imposta un obiettivo (#316) | `challenge/obiettivo.html` + `models/obiettivo/` | 7b | **fatta il 20/09** — il tipo è un collegamento; la stima «a questo ritmo» sta sulla barra dell'obiettivo aperto, non nel modulo |
+| `CreaModulo` | Crea, modifica, duplica: un modulo solo (#168 #252 #253) | `challenge/form.html` | #492 (4b) | **fatta il 19/09** — «Come si registra» ha due voci: colpo per colpo ed estrazione in fase 5 |
+| `CreaCopia` | «Ha già delle prove» (#252) | foglio in `challenge/form.html` | #492 (4b) | **fatta il 19/09** — la decisione sta nel servizio (409), non nel JS |
+
 **Fase 7 chiusa il 20/09/2026.** Cinque PR invece di sei — la 7d e la 7e
 viaggiano insieme, perché il consiglio «alla tua portata» è costruito sulla
 difficoltà misurata. L'ADR nuovo è l'**ADR-068**: nell'andamento catalogo e
@@ -141,10 +146,6 @@ ottenibile, e non si fondono mai su un esercizio. Nate qui e da riusare: le
 quattro stanze (`components/_training_rooms.html`), `models/andamento/`,
 `models/obiettivo/`, e `difficulty.expected_for`, che è l'ingrediente di ogni
 consiglio futuro. Chiuse #181, #316, #184, #174, #175.
-| `AndamentoGesto` | Lo stesso, radar per gesto | la stessa pagina, `?asse=gesto` | 7a | **fatta il 20/09** — due artboard, una pagina: l'asse è un collegamento, come i filtri del catalogo |
-| `Obiettivo` | Imposta un obiettivo (#316) | `challenge/obiettivo.html` + `models/obiettivo/` | 7b | **fatta il 20/09** — il tipo è un collegamento; la stima «a questo ritmo» sta sulla barra dell'obiettivo aperto, non nel modulo |
-| `CreaModulo` | Crea, modifica, duplica: un modulo solo (#168 #252 #253) | `challenge/form.html` | #492 (4b) | **fatta il 19/09** — «Come si registra» ha due voci: colpo per colpo ed estrazione in fase 5 |
-| `CreaCopia` | «Ha già delle prove» (#252) | foglio in `challenge/form.html` | #492 (4b) | **fatta il 19/09** — la decisione sta nel servizio (409), non nel JS |
 
 ### 5 · Schede di allenamento e istruttori — fasi 6 e 8
 
@@ -157,12 +158,30 @@ consiglio futuro. Chiuse #181, #316, #184, #174, #175.
 | `SedutaPalestra` | La stessa seduta, una voce lunga | `sheet/_run_dock.html` | #514 (6c) | **fatta il 20/09** — oltre dieci tiri si conta tiro per tiro, con «scrivi il totale» |
 | `SchedaRegistro` | Il registro | `sheet/detail.html` | #515 (6d) | **fatta il 20/09** — le osservazioni tacciono sotto tre sedute e sotto il tiro di scarto |
 | `SchedaFine` | Fine seduta | `sheet/summary.html` | #514 (6c) | **fatta il 20/09** — ha un indirizzo suo e si riapre; il passaggio di livello si **chiede**, chi conferma è della fase 8 |
-| `SchedaLettori` | Chi la legge (D11: il legame è allievo–scheda–istruttore) | nuovo | 8b | da fare — la **tabella** c'è (#511), la schermata è della fase 8: senza il ruolo istruttore non c'è nessuno da cercare |
-| `IstruttoreConsenso` | Chi legge le mie schede | nuovo | 8b | da fare |
-| `IstruttoreAggiungi` | Aprire una scheda a un istruttore (D18: vale subito) | nuovo | 8b | da fare |
-| `IstruttoreDiventa` | Diventare istruttore: lo stesso percorso di «Diventa esaminatore» (D10) | `roles/request_form.html` | 8a | da fare |
-| `IstruttoreAllievi` | I miei allievi | nuovo | 8c | da fare |
-| `IstruttoreGruppo` | Un gruppo, e lo storico (D12) | nuovo | 8c | da fare |
+| `SchedaLettori` | Chi la legge (D11: il legame è allievo–scheda–istruttore) | `sheet/readers.html` | #525 (8b) | **fatta il 20/09** — la tabella era nata in #511; qui la ricerca (solo istruttori, per nome utente o scuola) e le note, chiuse per default |
+| `IstruttoreConsenso` | Chi legge le mie schede | `sheet/instructors.html` | #525 (8b) | **fatta il 20/09** — non è un elenco a parte: è la stessa riga di `training_sheet_reader` letta dall'altro lato (ADR-069) |
+| `IstruttoreAggiungi` | Aprire una scheda a un istruttore (D18: vale subito) | `sheet/readers.html` | #525 (8b) | **fatta il 20/09** — vale subito, senza stato «in attesa»; chi apre avvisa, chi toglie no |
+| `IstruttoreDiventa` | Diventare istruttore: lo stesso percorso di «Diventa esaminatore» (D10) | `player/roles.html` + `roles/request_form.html` + `roles/holders.html` | #523 (8a), #526 | **fatta il 20/09** — pagina «Ruoli» nel profilo, soglia a 5 esercizi, e la catena delle nomine visibile ai titolari (#526) |
+| `IstruttoreAllievi` | I miei allievi | `istruttore/allievi.html` + `models/istruttore/allievi_view.py` | #528 (8c), #530 #531 (8d) | **fatta il 20/09** — tre sezioni definite per esteso, «Tutto bene» è il resto; «Dai una scheda» e i due gesti del gradino |
+| `IstruttoreGruppo` | Un gruppo, e lo storico (D12) | `istruttore/gruppi.html`, `gruppo.html`, `scheda_gruppo.html` | #528 (8c), #532 (8d₃) | **fatta il 20/09** — i gruppi ordinano e non aprono niente; la scheda comune è ciò che rende confrontabile la media |
+
+**Fase 8 chiusa il 20/09/2026.** Sette PR: #523 (8a), #525 (8b), #526 (fuori
+piano, chiesta dall'utente), #528 (8c), #530 #531 #532 (la 8d, troppa per una
+PR sola) e #534 (8e: guida IT/EN, quattro pagine nuove — una lato giocatore e
+una sezione «Insegnare» con tre — undici schermate, cinque micro-aiuti, il seed
+con un istruttore vero). **Chiude #173.** Tre ADR: **ADR-069** (il legame è
+allievo–scheda–istruttore, non c'è nessuna tabella dei legami), **ADR-070** (i
+gruppi ordinano e non aprono niente) e **ADR-071** (una scheda si **propone**:
+nasce quando l'allievo accetta, e nasce sua). Più un emendamento all'ADR-041:
+chi può nominare deve poter vedere chi è già stato nominato, e da chi.
+
+Due difetti pregressi trovati **guardando le schermate catturate**, non dai
+test: la riga di «I miei allievi» con due pillole lasciava al nome settanta
+pixel a 390px («non / ha / ancora / chiuso / una / seduta»), e
+`roles/holders.html` era rimasta una tabella Bootstrap di quattro colonne —
+scritta quando la leggeva solo l'admin, e aperta ai titolari dalla #526. La
+sua conferma di revoca, per giunta, parlava di esami e certificazioni anche
+mentre si toglieva il ruolo di istruttore: ora viene da `role_copy`.
 
 ### 6 · Esami — fase 3
 
@@ -216,7 +235,7 @@ cosa si è scelto, cosa si è scartato e perché.
 | 5 | Eseguire un esercizio (#183 #452 #326) | #501 #503 #504 #507 #508 #509 | chiusa il 20/09 |
 | 6 | Schede di allenamento (#172) | #511 #513 #514 #515 #516 | **chiusa il 20/09** |
 | 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | #517 #519 #520 #521 #522 | **chiusa il 20/09** |
-| 8 | Istruttori (#173) | | da fare |
+| 8 | Istruttori (#173) | #523 #525 #526 #528 #530 #531 #532 #534 | **chiusa il 20/09** |
 | 9 | Disegnatore (#179) — indipendente, si può anticipare dopo la 4 | | da fare |
 | 10 | Chiusura: guida, racconto, issue | | da fare |
 

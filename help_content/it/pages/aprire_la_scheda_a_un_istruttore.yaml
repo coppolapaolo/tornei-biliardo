@@ -1,0 +1,195 @@
+title: "Far leggere una scheda a un istruttore"
+section: giocare
+kind: tutorial
+audience: [giocatore]
+minutes: 4
+summary: "La scheda è tua e la vedi solo tu. Se ti alleni con qualcuno, puoi aprirgliela — una scheda per volta, e togliergliela quando vuoi."
+screens: [sheet.readers, sheet.my_instructors, sheet.proposta]
+related: [schede_di_allenamento, i_miei_allievi, privacy_e_dati]
+
+blocks:
+  - type: text
+    text: >-
+      Una scheda di allenamento nasce **solo tua**: nessuno la vede, nemmeno
+      chi ti ha insegnato a farla. Se però ti alleni con un istruttore, puoi
+      aprirgliela, e da quel momento lui vede le tue sedute e come procedi.
+      Il permesso lo dai tu, **scheda per scheda**, e te lo riprendi quando
+      vuoi.
+
+  - type: note
+    tone: info
+    title: "La prima mossa è sempre tua"
+    text: >-
+      Un istruttore non può chiederti niente e non può cercarti: finché non
+      gli apri una scheda, per lui non esisti. È voluto — chi si allena è
+      spesso un ragazzo, e la visibilità la decide chi si allena.
+
+  - type: heading
+    id: aprire
+    title: "Aprire una scheda"
+
+  - type: steps
+    items:
+      - title: "Apri la scheda e tocca «Chi la legge»"
+        text: >-
+          Dal registro della scheda, in fondo. La pagina dice subito chi la
+          legge adesso: all'inizio, **nessuno**.
+      - title: "Cerca l'istruttore"
+        text: >-
+          Si cerca per **nome utente** o per **scuola**. Compaiono solo le
+          persone che hanno il ruolo di istruttore: chi insegna e non si trova
+          non l'ha ancora chiesto, e conviene dirglielo.
+      - title: "Tocca «Apri»"
+        text: >-
+          Vale subito, senza attese e senza che lui debba accettare: riceve una
+          notifica e si ritrova la scheda fra quelle dei suoi allievi.
+        shot: scheda-lettori
+
+  - type: text
+    text: >-
+      Puoi aprirla a **più di un istruttore**: la scheda resta una, e ognuno
+      di loro la legge. E puoi aprire schede diverse a persone diverse — quella
+      di tecnica al maestro della scuola, quella del ghost a nessuno.
+
+  - type: heading
+    id: cosa_vede
+    title: "Cosa vede, e cosa no"
+
+  - type: options
+    items:
+      - name: "Le sedute e il registro"
+        values: "sì"
+        text: >-
+          Di **questa** scheda, voce per voce: quanti tiri sono entrati, quando
+          ti sei allenato, come vanno destra e sinistra. È quello che serve per
+          seguirti, ed è tutto quello che vede.
+      - name: "Le note delle sedute"
+        values: "no, se non le apri"
+        text: >-
+          Quello che scrivi a fine seduta resta tuo. Se vuoi che lo legga
+          anche lui, accendi **«Apri anche le note»** nella stessa pagina; si
+          richiude con **«Richiudi»**.
+        hint: scheda.note_condivise
+      - name: "Le altre schede"
+        values: "no"
+        text: >-
+          Ogni scheda ha i suoi lettori. Aprirne una non apre le altre.
+      - name: "L'andamento, le partite, l'Elo"
+        values: "no"
+        text: >-
+          Il resto del tuo profilo non c'entra: un istruttore non vede più di
+          un altro giocatore qualsiasi.
+
+  - type: note
+    tone: tip
+    title: "Non può scriverci"
+    text: >-
+      Chi legge la scheda **non la può cambiare**: non aggiunge esercizi, non
+      corregge i numeri, non chiude le sedute. La scheda resta tua anche
+      mentre lui la guarda.
+
+  - type: heading
+    id: togliere
+    title: "Toglierlo"
+
+  - type: text
+    text: >-
+      Nella stessa pagina, accanto al nome, c'è **«Togli»**. Da quel momento
+      non vede più niente di nuovo di quella scheda — e le altre schede che
+      gli hai aperto non cambiano. Non riceve nessun avviso: è una decisione
+      tua, e non c'è niente da giustificare.
+
+  - type: heading
+    id: chi_legge
+    title: "Chi legge le mie schede"
+
+  - type: text
+    text: >-
+      Da **Schede** trovi anche **«Chi legge le mie schede»**: in un colpo solo,
+      un istruttore per riga con sotto le schede che gli hai aperto. Non è un
+      elenco a parte da tenere aggiornato — un istruttore compare perché gli
+      hai aperto almeno una scheda, e sparisce da solo quando lo togli
+      dall'ultima.
+
+  - type: shot
+    shot: scheda-istruttori
+    caption: "«Chi legge le mie schede»: un istruttore per riga, e sotto quali schede gli hai aperto."
+
+  - type: heading
+    id: proposta
+    title: "Quando è lui a proporti una scheda"
+
+  - type: text
+    text: >-
+      Un istruttore a cui hai già aperto una scheda può **proporti** una delle
+      sue: quella che fa fare in sala, già composta. Ti arriva una notifica e
+      la trovi in cima a **Schede**. Prima di decidere la vedi per intero —
+      nome, livello, soglia, e l'elenco degli esercizi con il loro «quanto
+      farne».
+
+  - type: shot
+    shot: scheda-proposta
+    caption: "Una scheda proposta da un istruttore: cosa c'è dentro, le due caselle già spuntate, e i due pulsanti."
+
+  - type: note
+    tone: info
+    title: "La scheda nasce quando la prendi, e nasce tua"
+    text: >-
+      Finché non tocchi **«Prendi la scheda»** non esiste niente. Presa,
+      diventa una scheda come le altre: la modifichi, la archivi, decidi chi la
+      legge. Quella dell'istruttore resta sua, e se domani la cambia la tua non
+      si muove.
+
+  - type: text
+    text: >-
+      Sotto il nome ci sono **una o due caselle**, e sono decisioni tue.
+      Arrivano già spuntate perché è quello che di solito si vuole, ma si
+      tolgono con un tocco.
+
+  - type: options
+    items:
+      - name: "Fai vedere a … come va"
+        values: "spuntata"
+        text: >-
+          Apre la scheda nuova a chi te l'ha proposta. Toglila, e la scheda
+          nasce comunque: te la tieni per te. Puoi sempre aprirgliela dopo da
+          **«Chi la legge»**.
+      - name: "Metti «…» nello storico"
+        values: "spuntata, e solo a volte"
+        text: >-
+          Compare **solo** quando la scheda che ti arriva è il livello dopo di
+          una che hai superato: mette quella vecchia nell'archivio. Le sedute
+          che hai fatto restano leggibili — è archiviare, non cancellare.
+
+  - type: text
+    text: >-
+      **«No, grazie»** chiude la proposta e non fa nascere niente: nessuna
+      scheda, nessun permesso. L'istruttore lo viene a sapere, e può
+      riproportela più avanti.
+
+  - type: faq
+    items:
+      - q: "Se non trovo il mio istruttore nella ricerca?"
+        a: >-
+          Vuol dire che non ha il ruolo di istruttore. Si cerca solo fra chi ce
+          l'ha, di proposito. Basta che lo chieda lui dal suo profilo: vedi
+          [Diventare istruttore](/aiuto/insegnare/diventare_istruttore).
+      - q: "Posso aprire la scheda a una persona che non insegna?"
+        a: >-
+          No. Una scheda si apre a un istruttore, e il controllo non sta solo
+          nella casella di ricerca: vale anche per chi provasse ad aggirarla.
+      - q: "Se tolgo un istruttore, quello che ha già visto sparisce?"
+        a: >-
+          No: smette di vedere quello che viene **dopo**. Quello che ha già
+          letto l'ha letto, e non c'è modo di disfarlo — come per qualunque
+          cosa si sia già mostrata a qualcuno.
+      - q: "L'istruttore può vedere il mio andamento generale?"
+        a: >-
+          No. Il legame è con la **scheda**, non con te: «I miei allievi» e «I
+          miei istruttori» sono due modi di guardare le stesse schede aperte.
+          L'andamento, i radar e gli obiettivi restano tuoi.
+      - q: "Perché non posso chiedere io a un istruttore di seguirmi?"
+        a: >-
+          Perché seguirti significa leggere una tua scheda, e quella scelta si
+          fa aprendo la scheda: è lo stesso gesto. Aprigliene una, e da quel
+          momento sei un suo allievo.

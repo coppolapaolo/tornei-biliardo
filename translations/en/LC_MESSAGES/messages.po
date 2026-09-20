@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 20:58+0200\n"
+"POT-Creation-Date: 2026-09-20 22:09+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1274,7 +1274,7 @@ msgstr "%(gara)s, place %(pos)s"
 
 #: models/dashboard/activity_feedback.py:261 models/obiettivo/progress.py:198
 #: templates/direttore/preparazione/_esercizi.html:73
-#: templates/sheet/proposta.html:99
+#: templates/sheet/proposta.html:100
 msgid "Esercizio"
 msgstr "Drill"
 
@@ -4489,7 +4489,7 @@ msgstr "Reference"
 #: templates/exam/catalog.html:64 templates/gamification/dashboard.html:150
 #: templates/individual_match/dashboard.html:178
 #: templates/individual_match/matches.html:52
-#: templates/istruttore/allievi.html:99
+#: templates/istruttore/allievi.html:101
 #: templates/public/campionatos_list.html:26
 msgid "Tutti"
 msgstr "All"
@@ -4673,31 +4673,31 @@ msgstr ""
 msgid "Tutto pronto! Buon divertimento."
 msgstr "All set! Have fun."
 
-#: routes/role_grant.py:61
+#: routes/role_grant.py:62
 msgid "Hai già questo ruolo."
 msgstr "You already have this role."
 
-#: routes/exam/requests.py:178 routes/role_grant.py:100
+#: routes/exam/requests.py:178 routes/role_grant.py:101
 msgid "Richiesta inviata."
 msgstr "Request sent."
 
-#: routes/role_grant.py:137
+#: routes/role_grant.py:138
 msgid "Richiesta approvata: il ruolo è stato concesso."
 msgstr "Request approved: the role has been granted."
 
-#: routes/exam/requests.py:225 routes/role_grant.py:139
+#: routes/exam/requests.py:225 routes/role_grant.py:140
 msgid "Richiesta rifiutata."
 msgstr "Request rejected."
 
-#: routes/role_grant.py:194
+#: routes/role_grant.py:199
 msgid "Ruolo concesso."
 msgstr "Role granted."
 
-#: routes/role_grant.py:213
+#: routes/role_grant.py:218
 msgid "Ruolo revocato."
 msgstr "Role revoked."
 
-#: routes/role_grant.py:250
+#: routes/role_grant.py:255
 msgid "Ruolo concesso (debug)."
 msgstr "Role granted (debug)."
 
@@ -7488,7 +7488,6 @@ msgstr ""
 #: templates/gamification/admin/xp_management.html:28
 #: templates/gamification/admin/xp_management.html:63
 #: templates/gamification/admin/xp_management.html:90
-#: templates/roles/holders.html:23
 msgid "Utente"
 msgstr "User"
 
@@ -8914,7 +8913,6 @@ msgstr "Select a discipline..."
 #: templates/gamification/admin/xp_management.html:89
 #: templates/individual_match/discover_players.html:38
 #: templates/public/garas_list.html:11 templates/public/garas_list.html:31
-#: templates/roles/holders.html:25
 msgid "Data"
 msgstr "Date"
 
@@ -9615,7 +9613,7 @@ msgid_plural "%(n)s email da confermare"
 msgstr[0] "%(n)s email to confirm"
 msgstr[1] "%(n)s emails to confirm"
 
-#: templates/admin/users_list.html:105 templates/roles/holders.html:9
+#: templates/admin/users_list.html:105 templates/roles/holders.html:18
 #, python-format
 msgid "Chi è %(ruolo)s"
 msgstr "Who is %(ruolo)s"
@@ -10115,7 +10113,6 @@ msgstr ""
 #: templates/player/my_venue_requests.html:23
 #: templates/public/campionatos_list.html:24
 #: templates/public/garas_list.html:13 templates/public/garas_list.html:33
-#: templates/roles/holders.html:26
 msgid "Stato"
 msgstr "Status"
 
@@ -12511,7 +12508,7 @@ msgstr "Options"
 #: templates/gamification/admin/level_config.html:169
 #: templates/gamification/admin/streak_config.html:65
 #: templates/gamification/admin/streak_config.html:147
-#: templates/roles/holders.html:38
+#: templates/roles/holders.html:55
 msgid "Attivo"
 msgstr "Active"
 
@@ -23628,16 +23625,16 @@ msgstr "Your groups"
 msgid "Dai una scheda a %(chi)s"
 msgstr "Give a sheet to %(chi)s"
 
-#: templates/istruttore/allievi.html:76
+#: templates/istruttore/allievi.html:78
 #, python-format
 msgid "Apri il registro di %(chi)s"
 msgstr "Open the log of %(chi)s"
 
-#: templates/istruttore/allievi.html:88
+#: templates/istruttore/allievi.html:90
 msgid "Nessun allievo"
 msgstr "No students"
 
-#: templates/istruttore/allievi.html:90
+#: templates/istruttore/allievi.html:92
 msgid ""
 "Qui compaiono le persone che ti hanno aperto una loro scheda. Sei tu a "
 "non poterlo chiedere: è una decisione che prendono loro, scheda per "
@@ -23646,38 +23643,38 @@ msgstr ""
 "People appear here once they open one of their sheets to you. You cannot "
 "ask for it: it is their decision, one sheet at a time."
 
-#: templates/istruttore/allievi.html:97
+#: templates/istruttore/allievi.html:99
 msgid "Filtra per gruppo"
 msgstr "Filter by group"
 
-#: templates/istruttore/allievi.html:109
+#: templates/istruttore/allievi.html:111
 msgid "Ti hanno appena aperto una scheda"
 msgstr "They have just opened a sheet to you"
 
-#: templates/istruttore/allievi.html:117 templates/istruttore/gruppi.html:34
+#: templates/istruttore/allievi.html:119 templates/istruttore/gruppi.html:34
 #: templates/istruttore/gruppo.html:40 templates/player/roles.html:34
 #: templates/sheet/readers.html:47
 #, python-format
 msgid "dal %(giorno)s"
 msgstr "since %(giorno)s"
 
-#: templates/istruttore/allievi.html:130
+#: templates/istruttore/allievi.html:132
 msgid "Metti in un gruppo"
 msgstr "Put in a group"
 
-#: templates/istruttore/allievi.html:141
+#: templates/istruttore/allievi.html:143
 msgid "Valuta il passaggio di livello"
 msgstr "Consider moving them up a level"
 
-#: templates/istruttore/allievi.html:164
+#: templates/istruttore/allievi.html:166
 msgid "Confermo"
 msgstr "I confirm"
 
-#: templates/istruttore/allievi.html:170
+#: templates/istruttore/allievi.html:172
 msgid "Dai il livello dopo"
 msgstr "Give the next level"
 
-#: templates/istruttore/allievi.html:178
+#: templates/istruttore/allievi.html:180
 msgid ""
 "Hanno superato la soglia della loro scheda tante volte di fila quante ne "
 "chiede, e la loro scheda dice che a sancirlo sei tu. «Confermo» lo "
@@ -23689,19 +23686,19 @@ msgstr ""
 "confirm” writes it down; giving them the next level sheet is a second "
 "move, and it can wait."
 
-#: templates/istruttore/allievi.html:184
+#: templates/istruttore/allievi.html:186
 msgid "Da guardare"
 msgstr "Worth a look"
 
-#: templates/istruttore/allievi.html:192
+#: templates/istruttore/allievi.html:194
 msgid "Tutto bene"
 msgstr "All good"
 
-#: templates/istruttore/allievi.html:201
+#: templates/istruttore/allievi.html:203
 msgid "Nessuno in questo gruppo"
 msgstr "Nobody in this group"
 
-#: templates/istruttore/allievi.html:203
+#: templates/istruttore/allievi.html:205
 msgid ""
 "Ci si mette chi ti ha già aperto una scheda: un gruppo serve a ordinare "
 "gli allievi, non a chiederne di nuovi."
@@ -23709,7 +23706,7 @@ msgstr ""
 "Only people who have already opened a sheet to you go in: a group sorts "
 "your students, it does not ask for new ones."
 
-#: templates/istruttore/allievi.html:207
+#: templates/istruttore/allievi.html:209
 msgid "Apri il gruppo"
 msgstr "Open the group"
 
@@ -24077,7 +24074,6 @@ msgid "Manda al corso"
 msgstr "Send to the course"
 
 #: templates/istruttore/scheda_gruppo.html:161
-#, python-format
 msgid ""
 "Restano proposte, una a testa: la scheda nasce solo per chi la prende, e "
 "nasce sua. Ciascuno decide da sé se fartela leggere, e può togliertela "
@@ -24702,7 +24698,7 @@ msgstr "Your roles"
 msgid "Chi sei, qui dentro"
 msgstr "Who you are, in here"
 
-#: templates/player/roles.html:35
+#: templates/player/roles.html:35 templates/roles/holders.html:44
 #, python-format
 msgid "nominato da %(chi)s"
 msgstr "appointed by %(chi)s"
@@ -25250,11 +25246,19 @@ msgstr "Share the result"
 msgid "Vedi le altre gare"
 msgstr "See other competitions"
 
-#: templates/roles/holders.html:3
+#: templates/roles/holders.html:17
 msgid "Titolari del ruolo"
 msgstr "Role holders"
 
-#: templates/roles/holders.html:12
+#: templates/roles/holders.html:19
+msgid "e chi l'ha nominato"
+msgstr "and who appointed them"
+
+#: templates/roles/holders.html:21
+msgid "Torna ai ruoli"
+msgstr "Back to roles"
+
+#: templates/roles/holders.html:27
 msgid ""
 "Con la propagazione il ruolo si diffonde senza passare da admin: qui si "
 "legge da dove arriva ciascun titolare."
@@ -25262,33 +25266,30 @@ msgstr ""
 "With propagation the role spreads without going through an admin: here "
 "you can see where each holder got it from."
 
-#: templates/roles/holders.html:14
+#: templates/roles/holders.html:29
 msgid "La revoca resta dell'amministratore."
 msgstr "Revoking stays with the administrator."
 
-#: templates/roles/holders.html:24
-msgid "Concesso da"
-msgstr "Granted by"
-
-#: templates/roles/holders.html:41
-msgid "Revocato il"
-msgstr "Revoked on"
-
-#: templates/roles/holders.html:50
-msgid ""
-"Revocare il ruolo? Gli esami creati e le certificazioni rilasciate "
-"restano validi."
-msgstr ""
-"Revoke the role? Exams already created and certifications already issued "
-"stay valid."
+#: templates/roles/holders.html:49
+#, python-format
+msgid "revocato il %(quando)s"
+msgstr "revoked on %(quando)s"
 
 #: templates/roles/holders.html:55
+msgid "Revocato"
+msgstr "Revoked"
+
+#: templates/roles/holders.html:64
 msgid "Revoca"
 msgstr "Revoke"
 
-#: templates/roles/holders.html:67
-msgid "Nessun titolare: il ruolo non è ancora stato concesso a nessuno."
-msgstr "No holders: the role has not been granted to anyone yet."
+#: templates/roles/holders.html:73
+msgid "Nessun titolare"
+msgstr "No holders"
+
+#: templates/roles/holders.html:75
+msgid "Il ruolo non è ancora stato concesso a nessuno."
+msgstr "The role has not been granted to anyone yet."
 
 #: templates/roles/request_form.html:3
 msgid "Richiedi un ruolo"
@@ -25614,7 +25615,7 @@ msgstr "The sessions"
 msgid "%(fatte)s caselle su %(tutte)s"
 msgstr "%(fatte)s boxes out of %(tutte)s"
 
-#: templates/sheet/detail.html:120 templates/sheet/proposta.html:103
+#: templates/sheet/detail.html:120 templates/sheet/proposta.html:104
 #: templates/sheet/run.html:25
 #, python-format
 msgid "giorno %(g)s"
@@ -25773,12 +25774,12 @@ msgstr "from %(chi)s"
 msgid "dice %(chi)s"
 msgstr "%(chi)s says"
 
-#: templates/sheet/proposta.html:61
+#: templates/sheet/proposta.html:62
 #, python-format
 msgid "Fai vedere a %(chi)s come va"
 msgstr "Let %(chi)s see how it goes"
 
-#: templates/sheet/proposta.html:64
+#: templates/sheet/proposta.html:65
 msgid ""
 "Vedrà le sedute di questa scheda, e nient'altro. Puoi togliergliela "
 "quando vuoi."
@@ -25786,32 +25787,32 @@ msgstr ""
 "They will see the sessions of this sheet, and nothing else. You can take "
 "it away whenever you like."
 
-#: templates/sheet/proposta.html:76
+#: templates/sheet/proposta.html:77
 #, python-format
 msgid "Metti «%(scheda)s» nello storico"
 msgstr "File “%(scheda)s” away"
 
-#: templates/sheet/proposta.html:79
+#: templates/sheet/proposta.html:80
 msgid "L'hai superata. Le sedute che hai fatto restano leggibili."
 msgstr "You have passed it. The sessions you have done stay readable."
 
-#: templates/sheet/proposta.html:86
+#: templates/sheet/proposta.html:87
 msgid "Prendi la scheda"
 msgstr "Take the sheet"
 
-#: templates/sheet/proposta.html:92
+#: templates/sheet/proposta.html:93
 msgid "Cosa c'è dentro"
 msgstr "What is inside"
 
-#: templates/sheet/proposta.html:107
+#: templates/sheet/proposta.html:108
 msgid "una parte per volta"
 msgstr "one part at a time"
 
-#: templates/sheet/proposta.html:118
+#: templates/sheet/proposta.html:119
 msgid "No, grazie"
 msgstr "No, thanks"
 
-#: templates/sheet/proposta.html:122
+#: templates/sheet/proposta.html:123
 #, python-format
 msgid ""
 "Presa, la scheda è tua: la cambi, la archivi e decidi chi la legge. "
