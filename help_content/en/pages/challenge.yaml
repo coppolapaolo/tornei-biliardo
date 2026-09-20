@@ -5,6 +5,7 @@ audience: [giocatore]
 minutes: 4
 summary: "Skill drills you do on your own: for practice, for unlocking milestones, and — inside a competition — for settling tie-breaks."
 screens: [challenge.today, challenge.challenge_catalog, challenge.challenge_detail, challenge.training_session,
+  challenge.training_summary,
   challenge.start_attempt, challenge.attempt_detail, challenge.create_challenge,
   challenge.edit_challenge, challenge.duplicate_challenge, challenge.challenge_statistics, player.challenge_detail]
 related: [disegnare_un_drill, progressi, numero_dispari, esami]
@@ -116,9 +117,20 @@ blocks:
   - type: text
     text: >-
       Practising means repeating: ten attempts in a row, not one at a time.
-      That is why there is **a single screen**, where the picture of the layout
-      and the instructions stay in front of you while you record one attempt
-      after another, without ever changing page.
+      That is why there is **a single screen**, where the layout and the
+      instructions stay in front of you while you record one attempt after
+      another, without ever changing page.
+
+  - type: list
+    title: "It is always made of three parts, from top to bottom"
+    items:
+      - "**The drill**: the layout and the instructions, so there is nothing to keep in your head."
+      - "**How it is going**: the chart of today's attempts, one bar each, the last one highlighted and your average as a dashed line. Underneath, a sentence that says in words what the chart shows."
+      - "**The controls**, docked at the bottom of the screen where your thumb is. They are the only part that changes from one drill to another: it depends on how the drill is recorded."
+
+  - type: shot
+    shot: allenamento-punteggio
+    caption: "Practising a scored drill: the layout, today's attempts with the chart, and at the bottom «−», the figure, «+» and «Record the attempt»."
 
   - type: steps
     items:
@@ -129,24 +141,34 @@ blocks:
       - title: "If there are variants, pick «which side»"
         text: "Right or left, A or B: your choice stays selected for every attempt you record. If you do not say, the attempt counts for the drill in general."
       - title: "Set the table up and play"
-        text: "The picture and the instructions stay at the top, always visible: nothing to keep in your head."
+        text: "The layout and the instructions stay at the top, always visible."
       - title: "Record how it went"
-        text: "On a pass-or-fail drill the two big buttons are enough: whichever you tap records the attempt straight away, with nothing to confirm. On a scored drill you set the number with «−» and «+», then tap «Record the attempt»."
+        text: "On a pass-or-fail drill the two big buttons are enough: whichever you tap records the attempt straight away, with nothing to confirm. On a scored drill you set the number with «−» and «+», then tap «Record the attempt». The other two ways — shot by shot and with a draw — are recorded while you play, and are explained below."
       - title: "Tapped the wrong one? «Undo the last one»"
         text: "It removes the attempt you just recorded, at the bottom of the screen. It exists precisely because a single tap records: the mistake is fixed afterwards, not prevented beforehand."
       - title: "Try again as often as you like"
-        text: "The attempt shows up straight away under «Your attempts», and at the top «Attempts recorded» goes up along with the second counter — «Your record» on a scored drill, «Passed» on a pass-or-fail one. The field resets itself: you are ready for the next one."
+        text: "The attempt shows up straight away in today's list and the chart grows by one bar. The field resets itself: you are ready for the next one."
       - title: "When you have had enough, tap «I'm done»"
         text: "You go back to «Today», where the drill you just did waits at the top for next time. The attempts stay in your history."
+
+  - type: note
+    tone: info
+    title: "«At this rate you finish on 14»"
+    text: >-
+      The sentence under the chart is not generic encouragement: it compares
+      what you are doing now with your earlier attempts. It appears once there
+      is enough to compare — not on the first attempt, and not without a
+      history.
 
   - type: note
     tone: tip
     title: "Turn your phone sideways"
     text: >-
-      In landscape the screen becomes a single panel: the picture on one side,
-      the buttons on the other, no scrolling. It is meant for the phone resting
-      on the rail while you play. The **X** at the top left goes back to the
-      normal screen without turning the phone upright again.
+      On drills recorded with a total — scored, or pass or fail — landscape
+      turns the screen into a single panel: the layout on one side, the buttons
+      on the other, no scrolling. It is meant for the phone resting on the rail
+      while you play. The **X** at the top left goes back to the normal screen
+      without turning the phone upright again.
 
   - type: note
     tone: info
@@ -155,8 +177,155 @@ blocks:
       stands. A bad attempt does not wipe out the good one before it.
 
   - type: heading
+    id: colpo_per_colpo
+    title: "Shot by shot: where the cue ball stopped"
+
+  - type: text
+    text: >-
+      In some drills what matters is not only whether the ball goes in, but
+      **where the cue ball stops**: two points six inches apart are two very
+      different shots, and a single score does not say so. When a drill works
+      that way, the attempt is recorded **one shot at a time** and you do not
+      write the score: the shots give it.
+
+  - type: shot
+    shot: allenamento-colpo
+    caption: "An attempt halfway through: the target with the resting points of the shots already played, the strip of shots, and «It did not go in» at the bottom."
+
+  - type: steps
+    items:
+      - title: "Play the shot"
+        text: "The layout is inside «Look at the layout again», folded away because the real table is in front of you and the space belongs to the cloth."
+      - title: "If the ball went in, tap the cloth where the cue ball stopped"
+        text: "The tap opens the close-up of the target. No need to aim with your finger: you adjust afterwards."
+        shot: allenamento-ingrandimento
+      - title: "Adjust, then confirm"
+        text: "Drag the cue ball until it is where it really stopped; the two dashed lines project it onto the edges, because distance from the centre is hard to judge by eye. «Confirm» records the shot, «Whole table» goes back without recording anything."
+      - title: "If it did not go in, «It did not go in · 0 points»"
+        text: "The shot is worth zero and has no resting point: that is why it does not appear on the cloth."
+      - title: "Watch the strip of shots"
+        text: "One slot per shot with its points; a dash is a miss, and the grey slots are the shots still to play."
+      - title: "When you have played them all, «Close the attempt»"
+        text: "The button appears by itself after the last shot, and takes you to the end of the session."
+
+  - type: options
+    items:
+      - name: "Undo the last shot"
+        text: >-
+          Removes the shot you just recorded, resting point included. Remove
+          the only shot and the open attempt disappears.
+        hint: allenamento.colpo
+      - name: "Start over"
+        text: >-
+          Throws away the attempt in progress, shots included, and starts from
+          zero: for when the table was set up wrong, not for replaying a shot
+          that went badly.
+
+  - type: note
+    tone: info
+    title: "Why two numbers and not one"
+    text: >-
+      While you play, above the controls you find **Pocketed** and
+      **Position**. The first says how many balls went in; the second how close
+      to the centre of the target the cue ball stopped. A single number would
+      go down both for missing the ball and for misjudging the pace — that is,
+      it would not say what to fix.
+
+  - type: note
+    tone: tip
+    text: >-
+      The open attempt waits for you: close the app halfway through the shots
+      and you find it where you left it. Resuming is not starting over.
+
+  - type: heading
+    id: fine_sessione
+    title: "End of session: the cloud of resting points"
+
+  - type: text
+    text: >-
+      Once the attempt is closed, the app tells you how it went. The score
+      first, and whether it is a personal best. Then the table with **all the
+      resting points together**: the thing no score sums up, because you can
+      see at a glance whether you always miss on the same side.
+
+  - type: shot
+    shot: allenamento-fine
+    caption: "End of session: the score, the cloud of resting points with the sentence that reads it, the three numbers and the notes field."
+
+  - type: list
+    items:
+      - "**You arrive long, short**: the cue ball stops beyond or short of the target. That is **pace** — how hard you hit it."
+      - "**You arrive to the right, to the left**: it stops to one side. That is **aim**, or side — where you hit it."
+      - "If the points are spread around the centre the sentence says just that: there is no recurring direction to fix, and inventing one would be advice given at random."
+
+  - type: note
+    tone: warning
+    title: "The cloud does not read on its own"
+    text: >-
+      Only the **pocketed shots** appear on the table, because the others have
+      no resting point. A tight cloud around the centre with «Pocketed» at 40%
+      means you are accurate when the ball goes in, not that the attempt went
+      well: the numbers next to it are read together with the picture.
+
+  - type: text
+    text: >-
+      Below you find **Pocketed**, **Position** and the longest run of balls
+      pocketed in a row, then every shot in order. At the bottom, the **notes
+      of the session**: «table 4, slow cloth, new cue» explains a low score
+      better than any statistic, but only if you write it now. They stay
+      attached to that attempt. Finally **«Another 8 shots»** starts again with
+      the same layout, **«I'm done»** goes back to «Today».
+
+  - type: heading
+    id: estrazione
+    title: "With a draw: the app sets the task"
+
+  - type: text
+    text: >-
+      In some drills part of the task is decided at the table, and has to be
+      **random**: how many cushions to hit, which ball to go for. Without the
+      app you would have to keep a random generator open in another tab. Here
+      the app draws before every shot, and writes it out in words: **«3 or more
+      cushions, ball 7»**.
+
+  - type: shot
+    shot: allenamento-estrazione
+    caption: "A drill with a draw: the task just drawn, the scale of outcomes with what each one is worth, and the shots already played below."
+
+  - type: steps
+    items:
+      - title: "«Draw the shot»"
+        text: "The first draw opens the attempt: with these drills, starting means being told what to do."
+      - title: "Play what you were given"
+        text: "The task stays there until you record the shot: reloading the page does not change it, and it is not a way of drawing again until you like the result."
+      - title: "Pick how it went"
+        text: "Not a score to type, but a scale of outcomes **with a name** — missed, hit, pocketed — each worth its own points. Whoever created the drill decides what they are and what they are worth."
+      - title: "The next task appears by itself"
+        text: "As soon as you record, the next one is already there: whoever is playing should not have to ask for it. Not after the last shot, because there is nothing left to prepare."
+
+  - type: note
+    tone: info
+    text: >-
+      **«Undo the last shot»** puts the task you had back on the table: undoing
+      corrects a wrong outcome, it does not draw again.
+
+  - type: note
+    tone: warning
+    title: "Not in exams, not in competitions"
+    text: >-
+      A drill with a draw is for practising on your own. Two candidates would
+      be given different tasks, so their attempts would not be comparable — and
+      an exam certifies, a competition makes standings. Try to put one in an
+      exam and the app refuses, and says so.
+
+  - type: heading
     id: due_tipi
-    title: "Two ways of counting"
+    title: "Four ways of counting"
+
+  - type: text
+    text: >-
+      The way of counting belongs to **the drill**, it is not chosen by whoever
+      practises: two attempts at the same drill must be comparable.
 
   - type: options
     items:
@@ -169,14 +338,29 @@ blocks:
       - name: "Maximum score"
         values: "optional"
         text: >-
-          Whoever creates the drill can say how far you can get: the catalogue
-          then reads «0-15 points» and while practising you see «12 / 15»
-          instead of a bare number. It can also be left empty, and rightly so
-          for drills you repeat until you miss: there a maximum does not exist.
+          Whoever creates the drill can say how far you can get: the drill's
+          page then reads «Scored · out of 15» and while practising you see
+          «12 / 15» instead of a bare number. It can also be left empty, and
+          rightly so for drills you repeat until you miss: there a maximum does
+          not exist.
       - name: "Pass or fail"
         text: >-
           There is no score: either you do it or you do not. Fine for practice,
           not for deciding standings.
+      - name: "Shot by shot"
+        values: "needs a diagram with a target"
+        text: >-
+          Every shot has its outcome and, if the ball goes in, the point where
+          the cue ball stopped. The score is the sum of the shots, and the
+          maximum is not written down: it is the number of shots times the
+          value of the centre of the target.
+      - name: "With a draw"
+        values: "needs the lists to draw from"
+        text: >-
+          The app draws the task before every shot and the outcome is picked
+          from a scale of named entries. The maximum is the number of shots
+          times the best outcome.
+        hint: challenge.estrazione
 
   - type: heading
     id: in_gara
@@ -283,11 +467,32 @@ blocks:
           picks «which side» before shooting, and the results stay separate. A
           variant that already has attempts can be renamed, not removed.
       - name: "How it is recorded"
-        values: "made or not · scored"
+        values: "made or not · scored · shot by shot · with a draw"
         text: >-
-          The two options explained in «Two ways of counting», with the optional
-          maximum score.
+          The four ways explained in «Four ways of counting», with the optional
+          maximum score. **Shot by shot** only appears if the drill is drawn and
+          the diagram has a target: without one a line says so, because it is
+          the rings of the target that give the points.
         hint: challenge.punteggio_massimo
+      - name: "Shots in an attempt"
+        values: "shot by shot and with a draw"
+        text: >-
+          How many shots an attempt lasts. The maximum score is not written
+          down: it is this number times the highest value — the centre of the
+          target, or the best outcome on the scale.
+        hint: challenge.colpi
+      - name: "What the app draws"
+        text: >-
+          The lists to draw from, one per line, in the form
+          `cushions: 1 cushion | 2 cushions | 3 or more cushions`. The lists are
+          drawn together, and the task comes out already in words. From one to
+          three lists.
+        hint: challenge.estrazione
+      - name: "How a shot is counted"
+        text: >-
+          The scale of outcomes, one per line, in the form `Pocketed = 4`, worst
+          to best. From two to eight entries: they are the buttons whoever
+          practises will see after every shot.
 
   - type: note
     tone: tip

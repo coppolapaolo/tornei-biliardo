@@ -14,6 +14,10 @@
 #   viewports  [mobile] di norma; aggiungere `desktop` solo dove il disegno
 #              della pagina cambia davvero
 #   click      selettori da premere prima dello scatto (linguette, pannelli)
+#   tap        selettori da **toccare** davvero, con gli eventi di puntatore:
+#              serve a chi ascolta `pointerdown` e vuole sapere dove si e'
+#              toccato, come il panno dell'allenamento. Tocca il centro
+#              dell'elemento, quindi il selettore si sceglie per il suo centro
 #   wait_for   selettore da attendere
 #   clip       ritaglia sullo elemento invece dell'intera finestra
 #   full_page  scatta l'intera pagina invece della sola finestra
@@ -234,6 +238,48 @@ shots:
     route: /challenges/1
     as: Marco Rossi
     caption: "La scheda di un esercizio: disposizione, etichette, istruzioni, media e record di chi guarda, le cinque bilie del voto e le prove registrate."
+    full_page: true
+
+  # --- Allenarsi: la cornice di esecuzione e i tre modi -------------------
+  # Le quattro figure qui sotto stanno in fila nella pagina «Gli esercizi» e
+  # mostrano la stessa cornice con comandi diversi: il totale, il panno da
+  # toccare, la consegna estratta. Gli esercizi 4 e 5 del seed esistono apposta
+  # (colpo per colpo e con estrazione), e su entrambi Marco Rossi ha una prova
+  # **aperta**: una schermata di allenamento vuota mostrerebbe com'è prima di
+  # cominciare, cioè non quello che il testo accanto spiega.
+  - id: allenamento-punteggio
+    route: /challenges/1/train
+    as: Marco Rossi
+    caption: "La cornice di allenamento a punteggio: la disposizione in alto, il grafico delle prove di oggi, e in basso «−», la cifra e «+» con «Registra la prova»."
+    full_page: true
+
+  - id: allenamento-colpo
+    route: /challenges/4/train
+    as: Marco Rossi
+    caption: "Una prova colpo per colpo a metà: il tavolo con gli anelli del bersaglio e i punti d'arrivo già segnati, la striscia dei colpi con i posti ancora vuoti, «Imbucate» e «Posizione», e in basso «Non è entrata»."
+    full_page: true
+
+  # Il tocco apre l'ingrandimento. Va toccato davvero (`tap`): il panno ascolta
+  # `pointerdown` per sapere dove si è toccato. Il selettore è il gruppo degli
+  # anelli perché il suo centro è il centro del bersaglio.
+  - id: allenamento-ingrandimento
+    route: /challenges/4/train
+    as: Marco Rossi
+    caption: "L'ingrandimento sul bersaglio: la battente sul punto toccato, i due mirini che la proiettano sui bordi, «Tavolo intero» e «Conferma»."
+    tap: ['[data-cloth-full] .c7-cloth__rings']
+    wait_for: "[data-cloth-zoom]:not([hidden])"
+    clip: "[data-cloth-zoom]"
+
+  - id: allenamento-estrazione
+    route: /challenges/5/train
+    as: Marco Rossi
+    caption: "Un esercizio con estrazione: l'app ha estratto «2 sponde, bilia 7» e sotto la scala degli esiti, ognuno col suo nome e quanto vale."
+    full_page: true
+
+  - id: allenamento-fine
+    route: /challenges/train/summary/10
+    as: Marco Rossi
+    caption: "La fine della sessione: il punteggio della prova, il tavolo con la nuvola dei punti d'arrivo e la frase che la legge, «Imbucate», «Posizione» e la serie più lunga, e il campo delle note."
     full_page: true
 
   # Il foglio si apre da solo quando il server rifiuta il salvataggio: si

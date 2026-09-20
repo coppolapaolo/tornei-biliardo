@@ -110,11 +110,22 @@ il turno?» andava a capo e rompeva l'allineamento delle caselle.
 
 | Artboard | Schermata | Template | PR | Stato |
 |---|---|---|---|---|
-| `EseguiPunteggio` | A punteggio, con l'avanzamento dal vivo | `challenge/training.html`, `challenge/start_attempt.html` | 5a | da fare |
-| `EseguiColpo` | Colpo per colpo (#183) | nuovo | 5b | da fare |
-| `EseguiZoom` | Il punto preciso (#183) | nuovo | 5b | da fare |
-| `EseguiCasuale` | Con estrazione (#452) | nuovo | 5c | da fare |
-| `EseguiFine` | Fine sessione | nuovo | 5d | da fare |
+| `EseguiPunteggio` | A punteggio, con l'avanzamento dal vivo | `challenge/training.html` + `_run_progress.html` + `_run_chart.html` | #501 (5a) | **fatta il 20/09** — la cornice ha tre posti fissi; il grafico e la frase li disegna il server |
+| `EseguiColpo` | Colpo per colpo (#183) | `challenge/_run_shots.html`, `_run_cloth.html`, `_run_shots_dock.html` + `static/js/exercise-shots.js` | #503, #504 (5b) | **fatta il 20/09** — il bersaglio è una voce della scena del disegnatore, i punti si persistono sul colpo (ADR-066) |
+| `EseguiZoom` | Il punto preciso (#183) | `challenge/_run_cloth.html` | #504 (5b) | **fatta il 20/09** — il tocco apre, il trascinamento corregge, «Conferma» registra |
+| `EseguiCasuale` | Con estrazione (#452) | `challenge/_run_draw.html` | #507 (5c) | **fatta il 20/09** — consegna a parole e persistita; fuori da esami e gare (#506 per il seme fissato) |
+| `EseguiFine` | Fine sessione | `challenge/summary.html` + `models/challenge/summary_view.py` | #508 (5d) | **fatta il 20/09** — la nuvola dei punti d'arrivo, letta in una frase quando dice qualcosa |
+
+**Fase 5 chiusa il 20/09/2026.** Sei PR: #501, #503, #504, #507, #508 e #509
+(guida IT/EN, cinque schermate nuove, seed con un esercizio colpo per colpo e
+uno con estrazione). Chiuse #183, #452 e — con una risposta per area — #326;
+aperte #500 (esame di prova) e #506 (estrazione anche in esami e gare).
+L'ADR nuovo è l'**ADR-066**: la prova è una sequenza di colpi, il punteggio
+**discende** dai colpi e i punti si scrivono sul colpo. Nato qui e da riusare:
+la cornice a tre posti dei `_run_*.html`, `run_view.py` e `summary_view.py`
+come forma delle viste di una prova, `dispersion.py` per l'andamento (fase 7),
+e nel manifest delle schermate il campo `tap:` — il tocco vero, che serve a chi
+ascolta `pointerdown`.
 
 ### 4 · Andamento e creazione — fasi 4 e 7
 
@@ -193,7 +204,7 @@ cosa si è scelto, cosa si è scartato e perché.
 | 2 | Referto TPA | #475 #478 #479 #481 #482 #483 (più #476 #477 #480) | chiusa il 19/09 |
 | 3 | Esami | #484 #486 #487 #488 #489 (più #485) | chiusa il 19/09 |
 | 4 | Il modello dell'esercizio (#168 #252 #253), «Oggi», voto | #490 #492 #494 #496 #498 | chiusa il 20/09 |
-| 5 | Eseguire un esercizio (#183 #452) | | da fare |
+| 5 | Eseguire un esercizio (#183 #452 #326) | #501 #503 #504 #507 #508 #509 | chiusa il 20/09 |
 | 6 | Schede di allenamento (#172) | | da fare |
 | 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | | da fare |
 | 8 | Istruttori (#173) | | da fare |

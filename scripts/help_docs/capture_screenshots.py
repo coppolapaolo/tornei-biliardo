@@ -134,9 +134,16 @@ html { scroll-behavior: auto !important; }
 # Playwright scorre, e la testata veniva dipinta sopra il contenuto (visto su
 # `referto-tpa-chiuso`, dove copriva le card dei giocatori). Da statica resta
 # in cima alla pagina, fuori dal ritaglio.
+#
+# `.c7-run-dock` sono i comandi dell'allenamento: sotto lg stanno `fixed` in
+# fondo allo schermo, e in `full_page` finivano dipinti a meta' immagine sopra
+# «Imbucate» e «Posizione». Sono il comando principale della schermata, quindi
+# valgono le ragioni di `.c7-actionbar`: statici, non nascosti. Lo spazio che
+# il contenuto si riserva sotto di loro, invece, in figura non serve.
 OVERLAY_CSS = """
 .c7-mobilenav, #chalky-container { display: none !important; }
-.c7-actionbar, .c7-head { position: static !important; }
+.c7-actionbar, .c7-head, .c7-run-dock { position: static !important; }
+body:has(.c7-run-dock) .c7-main { padding-bottom: 16px !important; }
 """
 
 # Cornice e numeri di richiamo. Ricalcano i token del design system (accento
@@ -474,6 +481,21 @@ def _capture_one(
                 raise CaptureError(
                     f"«{shot['id']}»: selettore `click` non trovato: {selector}"
                 )
+            page.wait_for_timeout(500)
+
+        for selector in shot.get("tap") or []:
+            # Un tocco **vero**, con i suoi eventi di puntatore, e non il
+            # `click()` del DOM qui sopra: il panno dell'allenamento ascolta
+            # `pointerdown` — gli serve sapere *dove* si è toccato, che un
+            # `el.click()` non dice — e con l'altra strada non succederebbe
+            # niente, in silenzio. Playwright tocca il centro dell'elemento,
+            # quindi il selettore va scelto per il suo centro: `.c7-cloth__rings`
+            # è il bersaglio, e il suo centro è il centro del bersaglio.
+            if page.query_selector(selector) is None:
+                raise CaptureError(
+                    f"«{shot['id']}»: selettore `tap` non trovato: {selector}"
+                )
+            page.click(selector)
             page.wait_for_timeout(500)
 
         if shot.get("wait_for"):

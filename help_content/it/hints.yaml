@@ -590,7 +590,7 @@ hints:
     anchor: challenge-colpi
     screens: [challenge.edit_challenge, challenge.duplicate_challenge]
     page: challenge
-    section: due_tipi
+    section: crearle
 
   - id: allenamento.esito
     label: "Superata / Non superata"
@@ -622,7 +622,7 @@ hints:
     anchor: challenge-estrazione
     screens: [challenge.create_challenge, challenge.edit_challenge, challenge.duplicate_challenge]
     page: challenge
-    section: due_tipi
+    section: crearle
 
   - id: allenamento.colpo
     label: "Colpo per colpo"
@@ -630,7 +630,7 @@ hints:
     anchor: allenamento-colpo
     screens: [challenge.training_session]
     page: challenge
-    section: allenarsi
+    section: colpo_per_colpo
 
   - id: allenamento.annulla
     label: "Annulla l'ultima"

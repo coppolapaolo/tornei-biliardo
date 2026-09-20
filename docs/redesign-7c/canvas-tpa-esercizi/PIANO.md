@@ -29,7 +29,7 @@ Sorgenti del canvas: `sorgenti/` (`kit.py`, `tpa.py`, `esercizi.py`,
 | 2 | Referto TPA | **chiusa il 19/09** — #475 (2a), #478 (2b), #479 (2c), #481 (2d), #482 (2e), #483 (2f); più #476, #477, #480 trovate strada facendo. Niente cursore salvato: vedi la nota nella fase |
 | 3 | Esami | **chiusa il 19/09** — #484 (3a), #486 (3b), #487 (3c), #488 (3d), #489 (3e); più #485 trovata strada facendo. «Accetto» nella card e non in una barra, rinuncia a una prova non persistita: vedi la nota nella fase |
 | 4 | Modello dell'esercizio (#168 #252 #253) | **chiusa il 20/09** — #490 (4a), #492 (4b), #494 (4c), #496 (4d), #498 (4e). Vocabolari come enum e non come tabelle, voto con le bilie: vedi la nota nella fase |
-| 5 | Eseguire un esercizio (#183 #452) | da fare |
+| 5 | Eseguire un esercizio (#183 #452) | **chiusa il 20/09** — #501 (5a), #503 + #504 (5b), #507 (5c), #508 (5d), #509 (5e). Chiude #183, #452 e #326; aperte #500 e #506. Colpo per colpo in due PR, niente esercizio a punteggio «vuoto»: vedi la nota nella fase |
 | 6 | Schede di allenamento (#172) | da fare |
 | 7 | Andamento, obiettivi, consigli (#181 #316 #184 #174 #175) | da fare |
 | 8 | Istruttori (#173) | da fare |
@@ -468,6 +468,41 @@ colpo per colpo, estrazione e schede. ADR nuovo.
 - 5c `feat:` estrazione casuale (#452).
 - 5d `feat:` fine sessione.
 - 5e `docs:` guida.
+
+**Com'è andata (20/09)**: sei PR invece di cinque, e l'ADR nuovo è
+l'**ADR-066** · prova fatta di colpi. Quattro cose da tenere:
+
+* **La 5b è nata in due PR**: prima il modello e il bersaglio nel disegnatore
+  (#503), poi il gesto al tavolo (#504). Il bersaglio è una voce della scena
+  del disegnatore, non una colonna: il disegno resta l'unica fonte di ciò che
+  sta sul tavolo, e i punti si **persistono sul colpo** (se domani l'autore
+  sposta il bersaglio, i colpi già tirati valgono quello che valevano — stesso
+  schema di `break_player_id`, ADR-056).
+* **Dal browser arriva l'esito e il punto, mai quanto vale**: il valore lo dà
+  il server, che ha il bersaglio o la scala. E ogni risposta riporta i due
+  pezzi che cambiano — «come sta andando» e i comandi — già disegnati dal
+  server: dopo l'ultimo colpo compare «Chiudi la prova», e due stati da tenere
+  in pari nel browser sono due stati che prima o poi divergono.
+* **Un esercizio con estrazione non entra in esami e gare**
+  (`refuse_if_drawn`): a due candidati uscirebbero consegne diverse, quindi
+  prove non confrontabili. La strada col seme fissato è la **#506**, aperta.
+* **La fine sessione ha un indirizzo suo** (`challenge.training_summary`):
+  è una cosa che si riapre, e domani ci manderà lo storico.
+
+La 5e ha chiesto una cosa al **seed**: due esercizi nuovi (colpo per colpo con
+bersaglio, e con estrazione) con tre stati — una prova chiusa, una aperta a
+metà dei colpi, una con la consegna in attesa. `DrawSpec.draw` pesca da un
+`random.Random()` suo, che **non** risponde al seme globale: la consegna si
+fissa sulla prova prima di registrare il colpo, come `_avvia_primo_turno` fissa
+il seme del sorteggio. E `capture_screenshots.py` ha imparato `tap:`, il tocco
+vero con gli eventi di puntatore: il panno ascolta `pointerdown`, e con
+`el.click()` non succedeva niente, in silenzio.
+
+Da riusare nelle fasi dopo: `models/challenge/run_view.py` e `summary_view.py`
+(viste di sola lettura di una prova in corso e di una chiusa: la seduta della
+fase 6 è la stessa forma), `templates/challenge/_run_*.html` (la cornice a tre
+posti: disegno, come sta andando, comandi), `models/challenge/dispersion.py`
+(la nuvola letta in una frase, per l'andamento della fase 7).
 
 **Prompt**: «…esegui la fase 5.»
 
