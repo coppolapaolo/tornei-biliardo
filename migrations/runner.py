@@ -139,7 +139,28 @@ def mark_all_applied(conn: sqlite3.Connection) -> None:
 
 
 def run_pending_migrations() -> int:
-    """Run all pending migrations.
+    """Esegue le migration pendenti, riprovando quelle fallite.
+
+    L'ordine di esecuzione è quello **alfabetico** dei nomi dei file, che non
+    è l'ordine delle dipendenze: una migration che aggiunge una colonna a una
+    tabella creata da un'altra passa solo se il nome di chi crea viene prima
+    in ordine alfabetico. Il 2026-09-20 sono nate dieci migration con la
+    stessa data e due hanno perso il sorteggio delle iniziali — `estrazione`
+    prima di `prova` (tabella `challenge_shot`), `note` prima di `scheda`
+    (tabella `training_sheet`) — quindi in produzione sono fallite entrambe
+    con «no such table», e con loro le pagine che leggono quelle colonne.
+
+    Una fallita non viene marcata applicata, quindi il giro successivo la
+    ritenta e allora passa: il guasto si sana da sé, ma un giorno dopo,
+    perché `auto_deploy.py` gira una volta al giorno. Qui invece si ritenta
+    **nella stessa esecuzione**: finché una passata ne salva almeno una,
+    qualcosa è cambiato nello schema e vale la pena riprovare le altre. Con
+    n migration incatenate servono al più n passate, e nessuna deve sapere
+    niente delle altre.
+
+    Quando una passata non salva più nessuna migration ci si ferma: quelle
+    che restano non aspettano un'altra tabella, sono rotte, e riprovarle
+    all'infinito terrebbe la web app disabilitata per niente.
 
     Returns number of migrations run.
     """
@@ -167,14 +188,28 @@ def run_pending_migrations() -> int:
         print("-" * 50)
 
         run_count = 0
-        for migration_file in pending:
-            success = run_migration(migration_file, db_path)
-            if success:
-                record_migration(conn, migration_file.name)
-                run_count += 1
+        rimaste = pending
+        passata = 0
+
+        while rimaste:
+            passata += 1
+            if passata > 1:
+                print(f"\n  Passata {passata}: riprovo {len(rimaste)} migration")
+            fallite = []
+            for migration_file in rimaste:
+                if run_migration(migration_file, db_path):
+                    record_migration(conn, migration_file.name)
+                    run_count += 1
+                else:
+                    fallite.append(migration_file)
+            if len(fallite) == len(rimaste):
+                break
+            rimaste = fallite
 
         print("-" * 50)
         print(f"Completed: {run_count}/{len(pending)} migrations")
+        for migration_file in rimaste:
+            print(f"  ✗ Non applicata: {migration_file.name}")
 
         return run_count
 
