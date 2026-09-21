@@ -331,5 +331,5 @@
 {% endblock %}
 
 {% block scripts %}
-{% if can_score %}<script src="{{ url_for('static', filename='js/exam-session.js') }}"></script>{% endif %}
+{% if can_score %}<script src="{{ url_for('static', filename='js/exam-session.js') }}?v={{ config.ASSET_VERSION }}"></script>{% endif %}
 {% endblock %}

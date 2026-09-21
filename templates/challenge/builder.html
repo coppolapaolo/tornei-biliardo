@@ -24,7 +24,7 @@
    quanto lo schermo, sotto è il tavolo in cima e la pagina che scorre. Era una
    regola sola scritta a mano in questo blocco, e senza il suo punto di rottura
    teneva il tavolo schiacciato sotto «Salva» sul telefono. #}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/drill-builder.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/drill-builder.css') }}?v={{ config.ASSET_VERSION }}">
 {% endblock %}
 
 {% block page_back %}
@@ -477,7 +477,7 @@ window.DRILL_BUILDER_I18N = {
     spinMax: {{ _("1 = massimo effetto utile")|tojson }}
 };
 </script>
-<script src="{{ url_for('static', filename='js/drill-builder.js') }}"></script>
+<script src="{{ url_for('static', filename='js/drill-builder.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // Se stiamo modificando, il disegno di prima torna sul tavolo. Senza

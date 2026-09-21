@@ -8,6 +8,7 @@ cache-buster negli URL cambia quando un asset viene modificato.
 """
 
 import os
+import re
 import time
 
 import pytest
@@ -97,3 +98,51 @@ class TestCacheHeaders:
         html = client.get("/privacy").get_data(as_text=True)
 
         assert f"{asset}?v={Config.ASSET_VERSION}" in html
+
+
+class TestOgniTemplatePortaIlCacheBuster:
+    """Il controllo qui sopra guarda due file di `base.html`. La promessa pero'
+    riguarda **ogni** CSS e JS: la cache lunga scatta sul prefisso dell'URL
+    (`/static/css/`, `/static/js/`), non su chi lo ha scritto.
+
+    Incidente 2026-09-21: il disegnatore rifatto (#536) e' arrivato in
+    produzione col foglio nuovo sul server e quello vecchio nei browser —
+    `challenge/builder.html` citava `drill-builder.css` senza `?v=`. La pagina
+    nuova vestita col foglio vecchio sembrava semplicemente «rimasta allo stile
+    di prima».
+    """
+
+    TEMPLATES = os.path.join(os.path.dirname(__file__), "..", "..", "..", "templates")
+
+    RIFERIMENTO = re.compile(
+        r"url_for\(\s*['\"]static['\"]\s*,\s*filename\s*=\s*['\"]"
+        r"(?P<asset>(?:css|js)/[^'\"]+)['\"]\s*\)\s*\}\}"
+        r"(?P<coda>\?v=\{\{\s*config\.ASSET_VERSION\s*\}\})?"
+    )
+
+    def _riferimenti(self):
+        for root, _dirs, files in os.walk(self.TEMPLATES):
+            for name in files:
+                if not name.endswith(".html"):
+                    continue
+                path = os.path.join(root, name)
+                with open(path, encoding="utf-8") as fh:
+                    for numero, riga in enumerate(fh, start=1):
+                        for trovato in self.RIFERIMENTO.finditer(riga):
+                            yield os.path.relpath(path, self.TEMPLATES), numero, trovato
+
+    def test_il_presidio_vede_i_riferimenti(self):
+        """Una regex che non trova niente passa sempre."""
+        assert len(list(self._riferimenti())) >= 30
+
+    def test_nessun_css_o_js_senza_cache_buster(self):
+        senza = [
+            f"{template}:{numero} {trovato['asset']}"
+            for template, numero, trovato in self._riferimenti()
+            if not trovato["coda"]
+        ]
+
+        assert not senza, (
+            "CSS/JS citati senza `?v={{ config.ASSET_VERSION }}`: con la cache "
+            "di un anno i browser restano sul file vecchio.\n" + "\n".join(senza)
+        )
