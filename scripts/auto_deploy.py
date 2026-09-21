@@ -422,12 +422,29 @@ def main():
     if not has_new_code:
         # No new commits, but check if deps are out of sync
         # (e.g. manual git pull without pip install)
-        if deps_in_sync():
+        #
+        # E soprattutto: una migration puo' essere pendente anche senza codice
+        # nuovo, perche' il codice e' arrivato ieri e la migration e' fallita.
+        # Uscire qui la lasciava pendente per sempre: il retry non arriva col
+        # giro successivo, ma col prossimo merge che porta codice — e fino ad
+        # allora l'app gira su uno schema che non ha le colonne che i modelli
+        # dichiarano. E' successo il 2026-09-20 (due migration fuori ordine,
+        # vedi `migrations/runner.py`): le pagine delle schede di allenamento
+        # rispondevano 500 e nessun giro dello scheduled task le avrebbe
+        # rimesse in piedi.
+        pendenti = count_pending_migrations()
+        if deps_in_sync() and pendenti == 0:
             log()
             log("No changes to deploy.")
             return
         log()
-        log("No new commits, but dependencies are out of sync.")
+        if pendenti != 0:
+            log(
+                f"No new commits, ma {pendenti if pendenti else 'forse'} "
+                "migration risultano pendenti: proseguo."
+            )
+        else:
+            log("No new commits, but dependencies are out of sync.")
 
     log()
 
