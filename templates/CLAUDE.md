@@ -99,6 +99,24 @@ const msg = {{ _("Elimina %(count)s elementi?", count=items|length)|tojson }};
 
 **Rule**: If JavaScript does the interpolation, don't use `%(...)s` in `_()`.
 
+### Ogni CSS e JS locale porta `?v=ASSET_VERSION` (CRITICAL)
+
+```jinja2
+{# ❌ WRONG - i browser restano sul file vecchio dopo ogni modifica #}
+<script src="{{ url_for('static', filename='js/mio.js') }}"></script>
+
+{# ✅ CORRECT #}
+<script src="{{ url_for('static', filename='js/mio.js') }}?v={{ config.ASSET_VERSION }}"></script>
+```
+
+La cache lunga scatta sul **prefisso dell'URL** (`/static/css/`, `/static/js/`),
+non su chi l'ha scritto: un template fuori da `base.html` la riceve comunque, e
+senza il `?v=` il file nuovo arriva sul server ma non nei browser. È così che
+il 2026-09-21 il disegnatore rifatto sembrava «rimasto allo stile vecchio» in
+produzione. In sviluppo è la stessa trappola: un `reload()` continua a servire
+il JS di prima. Presidio: `tests/new/unit/test_static_asset_cache.py`, che legge
+tutti i template.
+
 ### No Python Imports in Templates
 
 You cannot import Python modules in Jinja2 templates:
