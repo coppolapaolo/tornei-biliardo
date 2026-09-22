@@ -72,17 +72,29 @@ def _challenge(db_session, titolo, *, max_score=10, pass_fail=False, abilita=())
     return challenge
 
 
-def _prova(db_session, user, challenge, *, score=None, giorni_fa=1):
+def _prova(db_session, user, challenge, *, score=None, giorni_fa=1, quando=None):
     db_session.add(
         ChallengeAttempt(
             challenge_id=challenge.id,
             user_id=user.id,
             score=score,
             completed=True,
-            attempted_at=utc_now() - timedelta(days=giorni_fa),
+            attempted_at=quando or utc_now() - timedelta(days=giorni_fa),
         )
     )
     db_session.flush()
+
+
+def _settimana_scorsa(giorno: int):
+    """Un giorno della settimana ISO **prima** di questa: 0 il lunedì, 6 la domenica.
+
+    La settimana scorsa è sempre intera, qualunque giorno sia oggi. «Ieri» e
+    «l'altro ieri» no: di martedì stanno in due settimane diverse, e un test
+    che li dava per vicini era rosso un giorno su sette (22/09/2026).
+    """
+    oggi = utc_now()
+    lunedi_scorso = oggi - timedelta(days=oggi.weekday() + 7)
+    return lunedi_scorso + timedelta(days=giorno)
 
 
 def _seduta(db_session, user, challenge, valore, quanti, *, giorni_fa=1):
@@ -160,12 +172,12 @@ def test_la_costanza_conta_i_giorni_non_le_registrazioni(db_session):
     user = _user(db_session)
     challenge = _challenge(db_session, "C")
     for _volta in range(5):
-        _prova(db_session, user, challenge, score=5, giorni_fa=1)
+        _prova(db_session, user, challenge, score=5, quando=_settimana_scorsa(0))
 
     goal = TrainingGoalService.create(user.id, GoalKind.COSTANZA, per_week=2, target=4)
     assert build_progress(goal).current == 0, "un giorno solo non fa due volte"
 
-    _prova(db_session, user, challenge, score=5, giorni_fa=2)
+    _prova(db_session, user, challenge, score=5, quando=_settimana_scorsa(1))
     assert build_progress(goal).current == 1, "due giorni nella stessa settimana"
 
 
