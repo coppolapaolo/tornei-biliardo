@@ -150,6 +150,51 @@ def record_shot(session_id):
     return jsonify(_pezzi(session, _int(dati.get("at"))))
 
 
+@sheet_bp.route("/seduta/<int:session_id>/prova", methods=["POST"])
+@login_required
+def record_score_cell(session_id):
+    """Una prova a punteggio in più sulla voce (ADR-072)."""
+    session = _seduta_o_404(session_id)
+    dati = request.get_json(silent=True) or {}
+    try:
+        TrainingSessionService.record_score(
+            session.id,
+            _int(dati.get("item_id")) or 0,
+            current_user,
+            score=_int(dati.get("score")),
+            variant_id=_int(dati.get("variant_id")),
+        )
+    except ValueError as errore:
+        db.session.rollback()
+        return (
+            jsonify({"success": False, "error": str(errore)}),
+            http_status_for_exception(errore),
+        )
+    return jsonify(_pezzi(session, _int(dati.get("at"))))
+
+
+@sheet_bp.route("/seduta/<int:session_id>/prova/annulla", methods=["POST"])
+@login_required
+def undo_score_cell(session_id):
+    """Toglie l'ultima prova a punteggio della voce."""
+    session = _seduta_o_404(session_id)
+    dati = request.get_json(silent=True) or {}
+    try:
+        TrainingSessionService.undo_score(
+            session.id,
+            _int(dati.get("item_id")) or 0,
+            current_user,
+            variant_id=_int(dati.get("variant_id")),
+        )
+    except ValueError as errore:
+        db.session.rollback()
+        return (
+            jsonify({"success": False, "error": str(errore)}),
+            http_status_for_exception(errore),
+        )
+    return jsonify(_pezzi(session, _int(dati.get("at"))))
+
+
 @sheet_bp.route("/seduta/<int:session_id>/annulla", methods=["POST"])
 @login_required
 def undo_shot(session_id):

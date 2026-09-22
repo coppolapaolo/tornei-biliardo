@@ -36,7 +36,7 @@ def _challenge(db_session, titolo: str, *, varianti=()) -> Challenge:
         title=titolo,
         description="istruzioni",
         image_path="x.png",
-        pass_fail_only=False,
+        pass_fail_only=True,  # «riusciti» vuole un esito netto (ADR-072)
     )
     db_session.add(challenge)
     db_session.flush()

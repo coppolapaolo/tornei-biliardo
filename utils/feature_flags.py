@@ -527,6 +527,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "sheet.run": {"player", "director"},
     "sheet.record_cell": {"player", "director"},
     "sheet.record_shot": {"player", "director"},
+    "sheet.record_score_cell": {"player", "director"},
+    "sheet.undo_score_cell": {"player", "director"},
     "sheet.undo_shot": {"player", "director"},
     "sheet.close_session": {"player", "director"},
     "sheet.session_summary": {"player", "director"},

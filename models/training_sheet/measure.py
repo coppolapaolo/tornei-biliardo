@@ -13,8 +13,9 @@ membro rinominato non rompe i dati già scritti — la trappola delle colonne
 
 from __future__ import annotations
 
+import statistics
 from enum import Enum
-from typing import Optional
+from typing import List, Optional, Sequence
 
 from flask_babel import lazy_gettext as _l
 
@@ -62,13 +63,44 @@ class SheetMeasure(str, Enum):
     def wants_amount(self) -> bool:
         """Se il «quanto farne» è obbligatorio.
 
-        Col punteggio non lo è, e **non deve esserci**: quanto vale al massimo
-        quella prova lo dice già l'esercizio (`Challenge.max_score`), e un
-        secondo numero accanto sarebbe un secondo tetto da tenere allineato a
-        mano. Con «fatto» è facoltativo: «10 tiri» lì è un promemoria, non un
-        conto.
+        Col punteggio vuol dire **quante prove** (ADR-072): non è un secondo
+        tetto accanto a `Challenge.max_score`, che resta il massimo di ogni
+        prova, è un numero di ripetizioni. Con «fatto» è facoltativo: «10
+        tiri» lì è un promemoria, non un conto.
         """
-        return self in (SheetMeasure.MADE, SheetMeasure.WINS, SheetMeasure.MINUTES)
+        return self in (
+            SheetMeasure.MADE,
+            SheetMeasure.SCORE,
+            SheetMeasure.WINS,
+            SheetMeasure.MINUTES,
+        )
+
+    @property
+    def makes_attempts(self) -> bool:
+        """Se una casella con questa misura è fatta di prove del catalogo.
+
+        Riusciti e punteggio sì (ADR-072): sono le misure che l'esercizio
+        stesso tara. Fatto, vinte e minuti sono modi di segnare una voce che
+        non è una prova.
+        """
+        return self in (SheetMeasure.MADE, SheetMeasure.SCORE)
+
+    @classmethod
+    def for_challenge(cls, challenge) -> "SheetMeasure":
+        """La misura che discende dall'esercizio: riusciti o punteggio."""
+        return cls.MADE if getattr(challenge, "pass_fail_only", False) else cls.SCORE
+
+    @classmethod
+    def allowed_for(cls, challenge) -> List["SheetMeasure"]:
+        """Le misure ammesse su questo esercizio, la sua per prima.
+
+        «Riusciti» su un esercizio a punteggio, o «punteggio» su uno a esito
+        netto, sarebbero numeri di un altro tipo su una prova che il catalogo
+        tara altrimenti: è la ragione per cui l'ADR-067 §6 teneva le caselle
+        fuori dal catalogo, e si toglie alla radice (ADR-072).
+        """
+        propria = cls.for_challenge(challenge)
+        return [propria, cls.DONE, cls.WINS, cls.MINUTES]
 
     @property
     def caps_value(self) -> bool:
@@ -99,6 +131,53 @@ _LABELS = {
     SheetMeasure.SCORE: _l("Punteggio"),
     SheetMeasure.WINS: _l("Vinte"),
     SheetMeasure.MINUTES: _l("Minuti"),
+}
+
+
+class ScoreAggregation(str, Enum):
+    """Come le N prove a punteggio diventano il numero della casella (ADR-072).
+
+    Si copia sulla casella al momento in cui si segna, come misura e «su
+    quanto»: cambiarla sulla voce domani non riscrive il registro. In colonna
+    sta il **valore**, come per `SheetMeasure`.
+    """
+
+    SUM = "sum"
+    MEAN = "mean"
+    MEDIAN = "median"
+    MAX = "max"
+
+    @property
+    def label(self):
+        return _AGGREGATION_LABELS[self]
+
+    def apply(self, scores: Sequence[int]) -> Optional[float]:
+        """Il numero della casella dalle prove. ``None`` senza prove."""
+        valori = [s for s in scores if s is not None]
+        if not valori:
+            return None
+        if self is ScoreAggregation.SUM:
+            return float(sum(valori))
+        if self is ScoreAggregation.MEAN:
+            return sum(valori) / len(valori)
+        if self is ScoreAggregation.MEDIAN:
+            return float(statistics.median(valori))
+        return float(max(valori))
+
+    @classmethod
+    def parse(cls, raw) -> "ScoreAggregation":
+        """Dal modulo o dalla colonna. L'ignoto e il vuoto sono «media»."""
+        try:
+            return cls(raw)
+        except ValueError:
+            return cls.MEAN
+
+
+_AGGREGATION_LABELS = {
+    ScoreAggregation.SUM: _l("Somma"),
+    ScoreAggregation.MEAN: _l("Media"),
+    ScoreAggregation.MEDIAN: _l("Mediana"),
+    ScoreAggregation.MAX: _l("Massimo"),
 }
 
 
@@ -157,7 +236,7 @@ _LEVEL_UP_HINTS = {
 _UNITS = {
     SheetMeasure.DONE: _l("tiri"),
     SheetMeasure.MADE: _l("tiri"),
-    SheetMeasure.SCORE: _l("tiri"),
+    SheetMeasure.SCORE: _l("prove"),
     SheetMeasure.WINS: _l("partite"),
     SheetMeasure.MINUTES: _l("minuti"),
 }
@@ -173,7 +252,7 @@ MAX_ITEMS = 40
 
 
 def amount_label(measure: SheetMeasure, amount: Optional[int]) -> str:
-    """«5 tiri», «5 partite», «20 minuti» — o niente, se non c'è un numero."""
+    """«5 tiri», «3 prove», «5 partite», «20 minuti» — o niente, senza numero."""
     from flask_babel import gettext as _
 
     if amount is None:
@@ -182,14 +261,33 @@ def amount_label(measure: SheetMeasure, amount: Optional[int]) -> str:
         return _("%(n)s partite", n=amount)
     if measure is SheetMeasure.MINUTES:
         return _("%(n)s minuti", n=amount)
+    if measure is SheetMeasure.SCORE:
+        return _("%(n)s prove", n=amount)
     return _("%(n)s tiri", n=amount)
+
+
+def value_label(value) -> str:
+    """Il numero di una casella: intero quando lo è, una cifra decimale se no.
+
+    Una media di prove a punteggio può fare 6,5 (ADR-072); un «4 su 5» resta
+    un 4. La virgola è quella di chi legge.
+    """
+    from flask_babel import gettext as _
+
+    if value is None:
+        return "–"
+    if float(value) == int(value):
+        return str(int(value))
+    return f"{float(value):.1f}".replace(".", _(","))
 
 
 __all__ = [
     "SheetMeasure",
+    "ScoreAggregation",
     "LevelUp",
     "MIN_AMOUNT",
     "MAX_AMOUNT",
     "MAX_ITEMS",
     "amount_label",
+    "value_label",
 ]

@@ -36,6 +36,7 @@ def _entry(
     source: str,
     gara_name: Optional[str] = None,
     attempt_id: Optional[int] = None,
+    sheet_name: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Forma comune alle due sorgenti.
 
@@ -63,6 +64,8 @@ def _entry(
         "passed": passed,
         "attempted_at": attempted_at,
         "gara_name": gara_name,
+        # La scheda in cui la prova è nata (ADR-072), o ``None``.
+        "sheet_name": sheet_name,
         "source": source,
     }
 
@@ -78,15 +81,24 @@ class TrainingHistoryService:
         """Tutti i tentativi di drill completati, dal più recente.
 
         Unisce le due sorgenti: il catalogo (``ChallengeAttempt``) e le gare
-        (``GaraChallengeAttempt``).
+        (``GaraChallengeAttempt``). Fra le prove del catalogo stanno anche
+        quelle nate in una **scheda** (ADR-072), con ``source="sheet"`` e il
+        nome della scheda: non si cancellano da qui — si correggono dalla
+        seduta, che è dove il numero della casella le rilegge.
         """
         from ..competition.gara_challenge import GaraChallenge, GaraChallengeAttempt
+        from ..training_sheet.models import TrainingEntry, TrainingSession
         from .models import ChallengeAttempt
 
         entries: List[Dict[str, Any]] = []
 
         catalog = (
-            ChallengeAttempt.query.options(joinedload(ChallengeAttempt.challenge))
+            ChallengeAttempt.query.options(
+                joinedload(ChallengeAttempt.challenge),
+                joinedload(ChallengeAttempt.training_entry)
+                .joinedload(TrainingEntry.session)
+                .joinedload(TrainingSession.sheet),
+            )
             .filter(
                 ChallengeAttempt.user_id == user_id,
                 ChallengeAttempt.completed.is_(True),
@@ -96,14 +108,17 @@ class TrainingHistoryService:
         for attempt in catalog:
             if attempt.challenge is None:
                 continue
+            casella = attempt.training_entry
+            scheda = casella.session.sheet if casella and casella.session else None
             entries.append(
                 _entry(
                     challenge=attempt.challenge,
                     score=attempt.score,
                     passed=attempt.passed,
                     attempted_at=attempt.attempted_at,
-                    source="catalog",
-                    attempt_id=attempt.id,
+                    source="sheet" if casella is not None else "catalog",
+                    attempt_id=None if casella is not None else attempt.id,
+                    sheet_name=scheda.name if scheda is not None else None,
                 )
             )
 

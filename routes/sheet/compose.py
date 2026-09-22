@@ -21,6 +21,7 @@ from models.exceptions import DomainError
 from models.training_sheet import (
     MAX_AMOUNT,
     LevelUp,
+    ScoreAggregation,
     SheetItemSpec,
     SheetMeasure,
     TrainingSheetService,
@@ -62,6 +63,7 @@ def _render(sheet, items, *, form=None, status=200):
             form=form or {},
             available=_catalogo(),
             measures=list(SheetMeasure),
+            aggregations=list(ScoreAggregation),
             level_up_modi=list(LevelUp),
             level_up_scelto=LevelUp.parse(
                 (form or {}).get("level_up") or sheet.level_up
@@ -157,6 +159,7 @@ def _come_inviate(voci: List[SheetItemSpec]) -> List[Dict[str, Any]]:
             "measure": voce.measure.value,
             "measure_kind": voce.measure,
             "amount": voce.amount,
+            "aggregation": voce.aggregation.value if voce.aggregation else None,
             "per_variant": voce.per_variant,
             "section": voce.section,
             "day": voce.day,
@@ -172,6 +175,7 @@ def _items_from_form() -> List[SheetItemSpec]:
     item_ids = request.form.getlist("item_id")
     measures = request.form.getlist("measure")
     amounts = request.form.getlist("amount")
+    aggregations = request.form.getlist("aggregation")
     per_variants = request.form.getlist("per_variant")
     sections = request.form.getlist("section")
     days = request.form.getlist("day")
@@ -187,6 +191,7 @@ def _items_from_form() -> List[SheetItemSpec]:
                 item_id=_int(_alla(item_ids, posizione)),
                 measure=SheetMeasure.parse(_alla(measures, posizione)),
                 amount=_int(_alla(amounts, posizione)),
+                aggregation=_aggregazione(_alla(aggregations, posizione)),
                 per_variant=_alla(per_variants, posizione) in ("1", "true", "on"),
                 section=_alla(sections, posizione),
                 day=_alla(days, posizione),
@@ -197,6 +202,13 @@ def _items_from_form() -> List[SheetItemSpec]:
 
 def _alla(valori: List[str], posizione: int) -> Optional[str]:
     return valori[posizione] if posizione < len(valori) else None
+
+
+def _aggregazione(grezzo: Optional[str]) -> Optional[ScoreAggregation]:
+    """Vuoto è «non detto», e il servizio lo legge come media."""
+    if not grezzo:
+        return None
+    return ScoreAggregation.parse(grezzo)
 
 
 def _int(grezzo: Optional[str]) -> Optional[int]:

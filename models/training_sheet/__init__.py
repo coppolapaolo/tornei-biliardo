@@ -9,8 +9,10 @@ from .measure import (
     MAX_ITEMS,
     MIN_AMOUNT,
     LevelUp,
+    ScoreAggregation,
     SheetMeasure,
     amount_label,
+    value_label,
 )
 from .models import (
     TrainingEntry,
@@ -31,11 +33,13 @@ __all__ = [
     "TrainingEntry",
     # Vocabolario
     "SheetMeasure",
+    "ScoreAggregation",
     "LevelUp",
     "MIN_AMOUNT",
     "MAX_AMOUNT",
     "MAX_ITEMS",
     "amount_label",
+    "value_label",
     # Servizi
     "TrainingSheetService",
     "SheetItemSpec",

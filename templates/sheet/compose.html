@@ -39,13 +39,28 @@
 </label>
 {%- endmacro %}
 
+{# Le misure ammesse su un esercizio (ADR-072): «riusciti» su uno a esito
+   netto, «punteggio» su uno a punteggio, più i tre modi che non fanno prove.
+   Lo stesso elenco di `SheetMeasure.allowed_for`, nello stesso ordine. #}
+{% macro misure_ammesse(challenge) -%}
+{{ ('made' if challenge.pass_fail_only else 'score') ~ ',done,wins,minutes' }}
+{%- endmacro %}
+
 {# I comandi di una voce: la pillola che apre il foglio, e i campi che
    viaggiano col modulo. `voce` è None nello stampo delle voci nuove. #}
 {% macro quanto(voce=None) %}
   <input type="hidden" name="item_id" value="{{ voce.id if voce and voce.id else '' }}">
-  <input type="hidden" name="measure" value="{{ voce.measure if voce else 'made' }}" data-sheet-measure>
-  <input type="hidden" name="amount" value="{{ voce.amount if voce and voce.amount is not none else 5 }}" data-sheet-amount>
+  {# La misura discende dall'esercizio (ADR-072): nelle voci nuove la scrive
+     il componente da `data-seq-measure` dell'esercizio scelto. Il numero di
+     tiri o di prove **non ha un default**: chi aggiunge una voce lo dice. #}
+  <input type="hidden" name="measure" value="{{ voce.measure if voce else '' }}" data-sheet-measure data-seq-from="measure">
+  <input type="hidden" name="amount" value="{{ voce.amount if voce and voce.amount is not none else '' }}" data-sheet-amount>
+  <input type="hidden" name="aggregation" value="{{ (voce.aggregation or '') if voce else '' }}" data-sheet-aggregation>
   <input type="hidden" name="per_variant" value="{{ '1' if voce and voce.per_variant else '0' }}" data-sheet-variant>
+  {# Le misure ammesse su questo esercizio, la sua per prima; il foglio
+     nasconde le altre. Senza `name`: non viaggia col modulo. #}
+  <input type="hidden" data-seq-from="allowed" data-sheet-allowed
+         value="{{ misure_ammesse(voce.challenge) if voce else '' }}">
   <input type="hidden" name="section" value="{{ voce.section or '' if voce else '' }}" data-sheet-section>
   <input type="hidden" name="day" value="{{ voce.day or '' if voce else '' }}" data-sheet-day>
   {# Quante varianti ha l'esercizio: decide se il foglio offre «da che parte».
@@ -171,9 +186,12 @@
      data-sheet-msg-shots="{{ _('Quanti tiri') }}"
      data-sheet-msg-games="{{ _('Quante partite') }}"
      data-sheet-msg-minutes="{{ _('Quanti minuti') }}"
+     data-sheet-msg-tries="{{ _('Quante prove') }}"
+     data-sheet-msg-missing="{{ _('quante volte?') }}"
      data-sheet-unit-shots="{{ _('tiri') }}"
      data-sheet-unit-games="{{ _('partite') }}"
      data-sheet-unit-minutes="{{ _('minuti') }}"
+     data-sheet-unit-tries="{{ _('prove') }}"
      data-sheet-msg-threshold="{{ _('Entra nella soglia della scheda.') }}"
      data-sheet-msg-out="{{ _('Fuori dalla soglia: la soglia somma solo le voci «a riusciti».') }}">
   <div class="modal-dialog">
@@ -204,6 +222,18 @@
                    data-sheet-dialog-amount aria-label="{{ _('Quanto farne') }}">
             <button type="button" data-sheet-step="1" aria-label="{{ _('Più') }}"><i class="fas fa-plus"></i></button>
           </div>
+        </div>
+
+        {# Col punteggio: come le N prove diventano il numero della casella
+           (ADR-072). Si copia sulla casella quando si segna, come la misura. #}
+        <div data-sheet-aggregation-row hidden>
+          <div class="c7-label">{{ _("Come si conta") }}</div>
+          <div class="c7-hscroll">
+            {% for kind in aggregations %}
+            <button type="button" class="c7-pill" data-sheet-agg="{{ kind.value }}">{{ kind.label }}</button>
+            {% endfor %}
+          </div>
+          <div class="c7-rows__sub" style="margin-top:6px">{{ _("Il numero della casella, dalle prove fatte.") }}</div>
         </div>
 
         <label class="c7-card c7-rows__row" data-sheet-variant-row hidden>
@@ -237,6 +267,8 @@
                               titolo=_("Aggiungi un esercizio"),
                               sottotitolo=_("Lo stesso esercizio può comparire in due voci.")) -%}
   data-seq-variants="{{ challenge.variants|length }}"
+  data-seq-measure="{{ 'made' if challenge.pass_fail_only else 'score' }}"
+  data-seq-allowed="{{ misure_ammesse(challenge) }}"
 {%- endcall %}
 
 <script src="{{ url_for('static', filename='js/sequence-editor.js') }}?v={{ config.ASSET_VERSION }}"></script>

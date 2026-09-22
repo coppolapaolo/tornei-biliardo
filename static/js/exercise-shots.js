@@ -79,6 +79,17 @@
   /* ---- Le richieste ------------------------------------------------------- */
   var busy = false;
 
+  /* La casella di scheda da cui si arriva (ADR-072), o niente: la chiusura
+     la rimanda al server, che aggancia la prova e riporta alla seduta. */
+  function contestoScheda() {
+    if (!root.dataset.sheetSession) return null;
+    return {
+      sheet_session_id: root.dataset.sheetSession,
+      sheet_item_id: root.dataset.sheetItem,
+      sheet_variant_id: root.dataset.sheetVariant || null
+    };
+  }
+
   function post(url, payload) {
     if (busy) return;
     busy = true;
@@ -157,7 +168,7 @@
     }
     if (el.hasAttribute('data-shot-miss')) { post(root.dataset.shotUrl, { made: false }); return; }
     if (el.hasAttribute('data-shot-undo')) { post(root.dataset.shotUndoUrl, null); return; }
-    if (el.hasAttribute('data-shot-close')) { post(root.dataset.shotCloseUrl, null); return; }
+    if (el.hasAttribute('data-shot-close')) { post(root.dataset.shotCloseUrl, contestoScheda()); return; }
     if (el.hasAttribute('data-shot-restart')) { post(root.dataset.shotRestartUrl, null); }
   });
 })();

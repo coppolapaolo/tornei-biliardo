@@ -57,7 +57,8 @@ def _challenge(db_session, titolo: str, *, varianti=(), max_score=None) -> Chall
         title=titolo,
         description=f"{titolo}: istruzioni",
         image_path="/static/challenges/x.png",
-        pass_fail_only=False,
+        # «Riusciti» vuole un esito netto, «punteggio» un massimo (ADR-072).
+        pass_fail_only=max_score is None,
         max_score=max_score,
     )
     db_session.add(challenge)
@@ -125,6 +126,7 @@ def test_la_scheda_a_giorni_non_ha_totale_e_mescola_le_unita(db_session):
     tiri = _challenge(db_session, "Rastrello")
     partite = _challenge(db_session, "Contro il ghost")
     respiro = _challenge(db_session, "Giro di tavolo")
+    punti = _challenge(db_session, "Spot shot", max_score=10)
 
     sheet = TrainingSheetService.create_sheet(owner, "Tre giorni a settimana")
     TrainingSheetService.save_composition(
@@ -154,7 +156,9 @@ def test_la_scheda_a_giorni_non_ha_totale_e_mescola_le_unita(db_session):
                 section="Gioco",
                 day="B",
             ),
-            SheetItemSpec(challenge_id=tiri.id, measure=SheetMeasure.SCORE, day="C"),
+            SheetItemSpec(
+                challenge_id=punti.id, measure=SheetMeasure.SCORE, amount=3, day="C"
+            ),
         ],
     )
 
@@ -167,7 +171,8 @@ def test_la_scheda_a_giorni_non_ha_totale_e_mescola_le_unita(db_session):
     assert len(sheet.items_for_day("B")) == 1
     # Col punteggio il «quanto farne» non c'è: il massimo lo dice l'esercizio.
     punteggio = [i for i in sheet.active_items if i.measure == "score"][0]
-    assert punteggio.amount is None
+    # Col punteggio il «quanto farne» è il numero di prove (ADR-072).
+    assert punteggio.amount == 3
 
 
 def test_lo_stesso_esercizio_puo_comparire_in_due_voci(db_session):

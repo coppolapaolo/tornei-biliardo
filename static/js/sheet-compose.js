@@ -16,6 +16,12 @@
  * dipende da tre cose insieme: la misura (solo «riusciti» fa totale), il
  * numero, e quante varianti si segnano separate.
  *
+ * Dall'ADR-072 la misura discende dall'esercizio: la voce nuova nasce con la
+ * sua (`data-seq-measure`), il foglio mostra solo quelle ammesse, e il numero
+ * di tiri o di prove non ha un default — finché manca la pillola lo dice e il
+ * salvataggio si ferma lì. Col punteggio si sceglie anche come contare le
+ * prove.
+ *
  * Provato in tests/frontend/test_sheet_compose.cjs.
  */
 (function (root) {
@@ -28,7 +34,9 @@
   const MISURE = {
     done: { amount: 'optional', total: false, unit: 'shots' },
     made: { amount: 'required', total: true, unit: 'shots' },
-    score: { amount: 'none', total: false, unit: 'shots' },
+    /* Col punteggio il numero è **quante prove**, e si sceglie come contarle
+       (ADR-072). */
+    score: { amount: 'required', total: false, unit: 'tries', aggregation: true },
     wins: { amount: 'required', total: false, unit: 'games' },
     minutes: { amount: 'required', total: false, unit: 'minutes' }
   };
@@ -41,6 +49,8 @@
       return {
         measure: item.querySelector('[data-sheet-measure]'),
         amount: item.querySelector('[data-sheet-amount]'),
+        aggregation: item.querySelector('[data-sheet-aggregation]'),
+        allowed: item.querySelector('[data-sheet-allowed]'),
         variant: item.querySelector('[data-sheet-variant]'),
         section: item.querySelector('[data-sheet-section]'),
         day: item.querySelector('[data-sheet-day]'),
@@ -67,7 +77,28 @@
       const nome = regola(valore).unit;
       if (nome === 'games') return testi.sheetUnitGames || '';
       if (nome === 'minutes') return testi.sheetUnitMinutes || '';
+      if (nome === 'tries') return testi.sheetUnitTries || '';
       return testi.sheetUnitShots || '';
+    }
+
+    function etichettaAggregazione(valore) {
+      const pillola = dialog ? dialog.querySelector('[data-sheet-agg="' + (valore || 'mean') + '"]') : null;
+      return pillola ? pillola.textContent.trim() : (valore || '');
+    }
+
+    /* Le misure ammesse su questa voce: la sua per prima. Vuoto = tutte, per
+       le pagine che non lo dicono. */
+    function ammesse(c) {
+      const grezzo = c.allowed ? (c.allowed.value || '') : '';
+      return grezzo ? grezzo.split(',') : [];
+    }
+
+    /* Una voce senza il suo numero: la scheda non si salva finché non c'è. */
+    function manca(item) {
+      const c = campi(item);
+      if (!c.measure) return false;
+      const r = regola(c.measure.value);
+      return r.amount === 'required' && isNaN(parseInt(c.amount ? c.amount.value : '', 10));
     }
 
     /* ── Ciò che discende dai campi di una voce ───────────────────────── */
@@ -83,14 +114,22 @@
       if (c.dose) {
         const parti = [];
         const nome = etichettaMisura(misura).toLowerCase();
-        if (r.amount !== 'none' && !isNaN(numero)) {
+        const senzaNumero = manca(item);
+        if (senzaNumero) {
+          parti.push(testi.sheetMsgMissing || '?');
+        } else if (r.amount !== 'none' && !isNaN(numero)) {
           parti.push(numero + ' ' + unita(misura));
           if (separate) parti.push('×' + varianti);
         }
         /* «5 minuti · minuti» no: dove l'unità e la misura sono la stessa
            parola, dirla due volte è rumore. */
         if (parti.length === 0 || unita(misura).toLowerCase() !== nome) parti.push(nome);
+        if (r.aggregation && c.aggregation && !senzaNumero) {
+          parti.push(etichettaAggregazione(c.aggregation.value).toLowerCase());
+        }
         c.dose.textContent = parti.join(' · ');
+        const apri = c.dose.closest('[data-sheet-open]');
+        if (apri) apri.classList.toggle('is-missing', senzaNumero);
       }
       if (c.peso) {
         const peso = r.total && !isNaN(numero) ? numero * (separate ? varianti : 1) : 0;
@@ -129,8 +168,13 @@
       /* `is-active`, che è come il tema accende una pillola: `is-on` esiste ma
          è dei chip, e la classe sbagliata non dà errore — lascia solo la
          scelta senza riscontro. */
+      const consentite = ammesse(c);
       dialog.querySelectorAll('[data-sheet-pick]').forEach(function (pillola) {
-        pillola.classList.toggle('is-active', pillola.getAttribute('data-sheet-pick') === misura);
+        const valore = pillola.getAttribute('data-sheet-pick');
+        pillola.classList.toggle('is-active', valore === misura);
+        /* «Riusciti» su un esercizio a punteggio non esiste (ADR-072): la
+           pillola sparisce invece di farsi scegliere e poi rifiutare. */
+        pillola.hidden = consentite.length > 0 && consentite.indexOf(valore) === -1;
       });
 
       const riga = dialog.querySelector('[data-sheet-amount-row]');
@@ -138,10 +182,18 @@
       const etichetta = dialog.querySelector('[data-sheet-amount-label]');
       if (etichetta) {
         etichetta.textContent = r.unit === 'games' ? (testi.sheetMsgGames || '')
-          : r.unit === 'minutes' ? (testi.sheetMsgMinutes || '') : (testi.sheetMsgShots || '');
+          : r.unit === 'minutes' ? (testi.sheetMsgMinutes || '')
+          : r.unit === 'tries' ? (testi.sheetMsgTries || '') : (testi.sheetMsgShots || '');
       }
       const numero = dialog.querySelector('[data-sheet-dialog-amount]');
       if (numero) numero.value = c.amount.value;
+
+      const rigaAgg = dialog.querySelector('[data-sheet-aggregation-row]');
+      if (rigaAgg) rigaAgg.hidden = !r.aggregation;
+      const scelta = (c.aggregation && c.aggregation.value) || 'mean';
+      dialog.querySelectorAll('[data-sheet-agg]').forEach(function (pillola) {
+        pillola.classList.toggle('is-active', pillola.getAttribute('data-sheet-agg') === scelta);
+      });
 
       const varRow = dialog.querySelector('[data-sheet-variant-row]');
       if (varRow) varRow.hidden = varianti < 2;
@@ -204,6 +256,12 @@
           mostraFoglio();
           return;
         }
+        const conto = event.target.closest('[data-sheet-agg]');
+        if (conto) {
+          scrivi('aggregation', conto.getAttribute('data-sheet-agg'));
+          mostraFoglio();
+          return;
+        }
         const passo = event.target.closest('[data-sheet-step]');
         if (passo) {
           const numero = dialog.querySelector('[data-sheet-dialog-amount]');
@@ -233,6 +291,16 @@
        sua parte e questo modulo ridisegna la propria subito dopo. */
     form.addEventListener('click', function (event) {
       if (event.target.closest('[data-seq-remove]')) root.setTimeout(aggiornaTutto, 0);
+    });
+
+    /* Il salvataggio si ferma sulla prima voce senza il suo numero, e le apre
+       il foglio: il server la rifiuterebbe comunque, ma qui si vede quale. */
+    form.addEventListener('submit', function (event) {
+      const senza = Array.prototype.find.call(form.querySelectorAll('[data-seq-item]'), manca);
+      if (!senza) return;
+      event.preventDefault();
+      const apri = senza.querySelector('[data-sheet-open]');
+      if (apri) apri.click();
     });
     const idPicker = form.getAttribute('data-seq-picker-id');
     const picker = idPicker ? form.ownerDocument.getElementById(idPicker) : null;

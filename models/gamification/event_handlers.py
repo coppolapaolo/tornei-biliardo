@@ -679,9 +679,14 @@ class GamificationEventHandlers:
 
         L'esito non entra nel conto: come per l'esame in autonomia, quello che
         si premia è essersi allenati. Un drill sbagliato è comunque un drill.
+
+        **Dentro una scheda** la prova non paga (ADR-072): un «4 su 5» sono
+        cinque prove, e pagarle una per una moltiplicherebbe l'XP di una
+        seduta per il numero di tiri. Paga la seduta chiusa. Le serie invece
+        la contano: allenarsi in scheda è allenarsi.
         """
         try:
-            if not event.is_a_retry:
+            if not event.is_a_retry and not event.is_from_sheet:
                 LevelService.award_xp(
                     user_id=event.user_id,
                     xp_amount=ConfigService.get_xp_rate(

@@ -471,6 +471,16 @@ class ChallengeAttempt(BaseModel):
         nullable=True,
     )
 
+    # La casella di scheda di cui questa prova fa parte (ADR-072). NULL su
+    # ogni prova fatta da sola. Sparisce con la casella: chi la svuota dice che
+    # quelle prove non ci sono state.
+    training_entry_id = db.Column(
+        db.Integer,
+        db.ForeignKey("training_entry.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
+
     # DEPRECATED (Sprint 11, December 2025)
     # These fields violate DDD: Challenge domain shouldn't know about Gara.
     # Use GaraByeChallenge (models.competition.gara_bye_challenge) instead.
@@ -498,6 +508,12 @@ class ChallengeAttempt(BaseModel):
     )
     gara = db.relationship("Gara")  # DEPRECATED: Use GaraByeChallenge.gara instead
     variant = db.relationship("ChallengeVariant")
+    training_entry = db.relationship("TrainingEntry", back_populates="attempts")
+
+    @property
+    def is_from_sheet(self) -> bool:
+        """Se la prova è nata dentro una scheda di allenamento (ADR-072)."""
+        return self.training_entry_id is not None
 
     def complete_attempt(
         self, score: Optional[int] = None, passed: Optional[bool] = None

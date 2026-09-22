@@ -55,7 +55,7 @@ def _esercizio(nome: str, *, varianti=()) -> int:
         title=f"{nome} {uuid.uuid4().hex[:5]}",
         description="istruzioni",
         image_path="x.png",
-        pass_fail_only=False,
+        pass_fail_only=True,  # «riusciti» vuole un esito netto (ADR-072)
         is_active=True,
     )
     db.session.add(challenge)

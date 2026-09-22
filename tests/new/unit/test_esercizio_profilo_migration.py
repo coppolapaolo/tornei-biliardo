@@ -30,6 +30,7 @@ SUCCESSIVE = (
     "migrations.20260920_prova_fatta_di_colpi",
     "migrations.20260920_estrazione_e_consegna",
     "migrations.20260920_variante_specchiata",
+    "migrations.20260922_prove_in_scheda",
 )
 
 

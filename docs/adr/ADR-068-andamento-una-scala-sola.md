@@ -64,6 +64,12 @@ Perché il lettore lo sappia, la riga di ogni asse dice **quante osservazioni
 vengono dalle schede**: la scala unica permette di confrontare, non dichiara che
 le due cose siano la stessa.
 
+> **Emendata il 2026-09-22** dall'[ADR-072](ADR-072-le-prove-in-scheda-sono-prove.md):
+> le caselle «riusciti» e «punteggio» sono fatte di prove del catalogo, e
+> entrano dal lato del catalogo — una osservazione per prova, segnata come
+> «dalla scheda». La casella non si conta più, o si conterebbe due volte. Le
+> caselle senza prove (fatto, vinte, minuti) restano lette come prima.
+
 *Scartata*: due serie separate sul radar, una per mondo. Sono già due i poligoni
 (adesso e prima), e quattro poligoni sovrapposti su otto assi non si leggono su
 un telefono. Soprattutto, separarle risponderebbe a una domanda che nessuno fa:

@@ -56,6 +56,11 @@ massimo quella prova lo dice già l'esercizio (`Challenge.max_score`). Un
 secondo tetto accanto sarebbe il difetto dei due `max_score` (ADR-042) rifatto
 in casa d'altri.
 
+> **Emendata il 2026-09-22** dall'[ADR-072](ADR-072-le-prove-in-scheda-sono-prove.md):
+> la misura **discende dal tipo di esercizio** e non si sceglie libera, e col
+> punteggio il «quanto farne» torna, ma vuol dire **quante prove** — non un
+> secondo tetto. Il massimo di ogni prova resta `Challenge.max_score`.
+
 ### 2. Nel totale entrano **solo** le voci «a riusciti» (D17)
 
 Il totale della seduta — il «40 su 50» — somma le voci a riusciti e nient'altro.
@@ -121,6 +126,12 @@ vorrebbe dire prenderla senza dirlo.
 > nell'andamento i due mondi entrano **insieme**, ridotti entrambi alla quota di
 > ciò che era ottenibile, e non si fondono mai su un esercizio. Il divieto qui
 > sopra resta intero: media e record di un esercizio sono quelli del catalogo.
+
+> **Rovesciata il 2026-09-22** dall'[ADR-072](ADR-072-le-prove-in-scheda-sono-prove.md):
+> con la misura che discende dall'esercizio, una casella «riusciti» o
+> «punteggio» **è** fatta di prove del catalogo, e ogni prova nasce come
+> `ChallengeAttempt`. Il motivo di questo punto — numeri tarati diversamente —
+> non vale più, perché la scheda non può più tararli diversamente.
 
 Per lo stesso motivo la seduta **non emette eventi di dominio**: XP, serie e
 traguardi dell'allenamento a scheda sono lavoro della fase 7c, e un evento

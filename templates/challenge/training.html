@@ -29,8 +29,9 @@
 {% block title %}{{ _("Allenamento") }} - {{ challenge.get_display_name() }}{% endblock %}
 
 {% block page_back %}
-<a class="c7-head__back d-lg-none" href="{{ url_for('challenge.today') }}"
-   aria-label="{{ _('Torna agli esercizi') }}"><i class="fas fa-arrow-left"></i></a>
+{# Dalla scheda si torna alla seduta (ADR-072), non al catalogo. #}
+<a class="c7-head__back d-lg-none" href="{{ sheet_context.back_url if sheet_context else url_for('challenge.today') }}"
+   aria-label="{{ _('Torna alla seduta') if sheet_context else _('Torna agli esercizi') }}"><i class="fas fa-arrow-left"></i></a>
 {% endblock %}
 {% block page_title %}{{ challenge.get_display_name() }}{% endblock %}
 {% block page_sub %}
@@ -68,6 +69,13 @@
      data-shot-restart-url="{{ url_for('challenge.training_shot_restart', challenge_id=challenge.id) }}"
      data-draw-url="{{ url_for('challenge.training_draw', challenge_id=challenge.id) }}"
      data-outcome-url="{{ url_for('challenge.training_outcome', challenge_id=challenge.id) }}"
+     {% endif %}
+     {% if sheet_context %}
+     {# La casella di scheda da cui si arriva: viaggia con la chiusura della
+        prova, che così torna nella casella (ADR-072). #}
+     data-sheet-session="{{ sheet_context.session_id }}"
+     data-sheet-item="{{ sheet_context.item_id }}"
+     data-sheet-variant="{{ sheet_context.variant_id or '' }}"
      {% endif %}>
 
   <section class="c7-stack c7-run__main">

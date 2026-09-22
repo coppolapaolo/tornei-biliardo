@@ -9,8 +9,8 @@
  *
  * 1. il foglio si apre sulla voce da cui è partito, e mostra i suoi valori;
  * 2. cambiare misura riscrive il campo della voce, e la pillola lo dice;
- * 3. col punteggio il «quanto farne» sparisce dal foglio — il massimo lo dice
- *    l'esercizio — e la voce non manda più un numero nel totale;
+ * 3. col punteggio il «quanto farne» è **quante prove** (ADR-072): resta, e
+ *    accanto compare come si contano; la voce non manda niente nel totale;
  * 4. il totale somma **solo** le voci a riusciti, e conta due volte quelle
  *    segnate da due lati;
  * 5. dove l'unità e la misura sono la stessa parola non si ripete;
@@ -19,7 +19,10 @@
  * 7. il titoletto di sezione sta sulla prima voce che lo apre;
  * 8. gli interruttori della scheda scoprono le righe che dipendono da loro, e
  *    il giorno si chiede solo se la scheda è a giorni;
- * 9. una voce appena pescata dal foglio nasce già leggibile.
+ * 9. una voce appena pescata dal foglio nasce già leggibile, **con la misura
+ *    del suo esercizio e senza un numero**: la pillola chiede «quante volte?»
+ *    e il salvataggio si ferma lì;
+ * 10. il foglio mostra solo le misure ammesse sull'esercizio.
  *
  * Run:  cd tests/frontend && npm install && npm test
  */
@@ -37,15 +40,17 @@ const SRC = fs.readFileSync(
   "utf8"
 );
 
-function voce(id, titolo, { measure = "made", amount = 5, variant = "0", section = "", varianti = 0 } = {}) {
+function voce(id, titolo, { measure = "made", amount = 5, variant = "0", section = "", varianti = 0, allowed = "", aggregation = "" } = {}) {
   return `<li data-seq-item data-seq-key="${id}">
     <div class="c7-seq__section" data-seq-slot="section"></div>
     <button type="button" data-seq-grip></button>
     <span data-seq-fill="title">${titolo}</span>
     <input type="hidden" name="challenge_id" value="${id}" data-seq-from="key">
     <input type="hidden" name="item_id" value="">
-    <input type="hidden" name="measure" value="${measure}" data-sheet-measure>
+    <input type="hidden" name="measure" value="${measure}" data-sheet-measure data-seq-from="measure">
     <input type="hidden" name="amount" value="${amount}" data-sheet-amount>
+    <input type="hidden" name="aggregation" value="${aggregation}" data-sheet-aggregation>
+    <input type="hidden" data-seq-from="allowed" data-sheet-allowed value="${allowed}">
     <input type="hidden" name="per_variant" value="${variant}" data-sheet-variant>
     <input type="hidden" name="section" value="${section}" data-sheet-section>
     <input type="hidden" name="day" value="" data-sheet-day>
@@ -60,12 +65,12 @@ const PAGINA = `
 <form data-seq-editor data-sheet-compose data-seq-picker-id="foglio">
   <span data-seq-total data-seq-total-text="{n} tiri a riusciti"></span>
   <ol data-seq-list>
-    ${voce(1, "Stop shot", { varianti: 2, variant: "1", section: "Tecnica" })}
-    ${voce(2, "Giro di tavolo", { measure: "minutes", amount: 10, section: "Riscaldamento" })}
+    ${voce(1, "Stop shot", { varianti: 2, variant: "1", section: "Tecnica", allowed: "made,done,wins,minutes" })}
+    ${voce(2, "Giro di tavolo", { measure: "minutes", amount: 10, section: "Riscaldamento", allowed: "score,done,wins,minutes" })}
   </ol>
   <div data-seq-empty hidden>vuota</div>
   <div data-seq-live data-seq-live-text="{title}: {n}/{total}"></div>
-  <template data-seq-template>${voce("", "")}</template>
+  <template data-seq-template>${voce("", "", { measure: "", amount: "" })}</template>
 
   <label><input type="checkbox" data-sheet-toggle="has_threshold" name="has_threshold" value="1"></label>
   <div data-sheet-when="has_threshold"><input name="threshold" value="8"></div>
@@ -74,8 +79,10 @@ const PAGINA = `
 
 <div data-sheet-dialog
      data-sheet-msg-shots="Quanti tiri" data-sheet-msg-games="Quante partite"
-     data-sheet-msg-minutes="Quanti minuti"
+     data-sheet-msg-minutes="Quanti minuti" data-sheet-msg-tries="Quante prove"
+     data-sheet-msg-missing="quante volte?"
      data-sheet-unit-shots="tiri" data-sheet-unit-games="partite" data-sheet-unit-minutes="minuti"
+     data-sheet-unit-tries="prove"
      data-sheet-msg-threshold="Entra nella soglia." data-sheet-msg-out="Fuori dalla soglia.">
   <h3 data-sheet-dialog-title></h3>
   <button type="button" data-sheet-pick="done">Fatto</button>
@@ -89,6 +96,12 @@ const PAGINA = `
     <input type="number" min="1" max="999" data-sheet-dialog-amount>
     <button type="button" data-sheet-step="1"></button>
   </div>
+  <div data-sheet-aggregation-row hidden>
+    <button type="button" data-sheet-agg="sum">Somma</button>
+    <button type="button" data-sheet-agg="mean">Media</button>
+    <button type="button" data-sheet-agg="median">Mediana</button>
+    <button type="button" data-sheet-agg="max">Massimo</button>
+  </div>
   <label data-sheet-variant-row hidden><input type="checkbox" data-sheet-dialog-variant></label>
   <input type="text" data-sheet-dialog-section>
   <div data-sheet-day-row hidden><input type="text" data-sheet-dialog-day></div>
@@ -96,7 +109,10 @@ const PAGINA = `
 </div>
 
 <div id="foglio" data-seq-picker>
-  <button data-seq-option data-seq-key="9" data-seq-title="Draw shot" data-seq-variants="0"></button>
+  <button data-seq-option data-seq-key="9" data-seq-title="Draw shot" data-seq-variants="0"
+          data-seq-measure="made" data-seq-allowed="made,done,wins,minutes"></button>
+  <button data-seq-option data-seq-key="10" data-seq-title="Spot shot" data-seq-variants="0"
+          data-seq-measure="score" data-seq-allowed="score,done,wins,minutes"></button>
 </div>`;
 
 function pagina() {
@@ -121,6 +137,7 @@ function inviato(w, form) {
     ids: data.getAll("challenge_id"),
     measure: data.getAll("measure"),
     amount: data.getAll("amount"),
+    aggregation: data.getAll("aggregation"),
     variant: data.getAll("per_variant"),
     section: data.getAll("section"),
   };
@@ -163,15 +180,57 @@ function cambiare_misura_riscrive_la_voce() {
   assert.ok(!dialog.querySelector('[data-sheet-pick="minutes"]').classList.contains("is-active"));
 }
 
-function col_punteggio_il_quanto_farne_sparisce() {
+function col_punteggio_il_quanto_farne_sono_le_prove() {
   const { w, form, dialog } = pagina();
-  apri(w, form, dialog, 0);
+  /* Il giro di tavolo è su un esercizio a punteggio: «punteggio» è ammessa. */
+  apri(w, form, dialog, 1);
   click(w, dialog.querySelector('[data-sheet-pick="score"]'));
 
-  assert.strictEqual(dialog.querySelector("[data-sheet-amount-row]").hidden, true);
-  const dose = form.querySelector("[data-sheet-dose]").textContent;
-  assert.ok(!dose.includes("5"), dose);
-  assert.strictEqual(form.querySelector("[data-seq-total]").textContent, "0 tiri a riusciti");
+  assert.strictEqual(dialog.querySelector("[data-sheet-amount-row]").hidden, false);
+  assert.strictEqual(dialog.querySelector("[data-sheet-amount-label]").textContent, "Quante prove");
+  assert.strictEqual(dialog.querySelector("[data-sheet-aggregation-row]").hidden, false);
+  /* Non detta, l'aggregazione vale «media»: la pillola lo dice. */
+  assert.ok(dialog.querySelector('[data-sheet-agg="mean"]').classList.contains("is-active"));
+  const dose = form.querySelectorAll("[data-sheet-dose]")[1].textContent;
+  assert.strictEqual(dose, "10 prove · punteggio · media");
+  assert.strictEqual(form.querySelector("[data-seq-total]").textContent, "10 tiri a riusciti");
+
+  click(w, dialog.querySelector('[data-sheet-agg="max"]'));
+  assert.deepStrictEqual(inviato(w, form).aggregation, ["", "max"]);
+  assert.strictEqual(form.querySelectorAll("[data-sheet-dose]")[1].textContent, "10 prove · punteggio · massimo");
+}
+
+function il_foglio_mostra_solo_le_misure_ammesse() {
+  const { w, form, dialog } = pagina();
+  /* Stop shot è a esito netto: «punteggio» non c'è; «riusciti» sì. */
+  apri(w, form, dialog, 0);
+  assert.strictEqual(dialog.querySelector('[data-sheet-pick="score"]').hidden, true);
+  assert.strictEqual(dialog.querySelector('[data-sheet-pick="made"]').hidden, false);
+  /* Il giro di tavolo è a punteggio: il contrario. */
+  apri(w, form, dialog, 1);
+  assert.strictEqual(dialog.querySelector('[data-sheet-pick="score"]').hidden, false);
+  assert.strictEqual(dialog.querySelector('[data-sheet-pick="made"]').hidden, true);
+}
+
+function senza_il_numero_la_scheda_non_si_salva() {
+  const { w, form } = pagina();
+  const voci = form.querySelectorAll("[data-seq-item]");
+  const numero = voci[0].querySelector("[data-sheet-amount]");
+  numero.value = "";
+  form.c7Sheet.aggiornaTutto();
+
+  assert.strictEqual(voci[0].querySelector("[data-sheet-dose]").textContent, "quante volte? · riusciti");
+  assert.ok(voci[0].querySelector("[data-sheet-open]").classList.contains("is-missing"));
+
+  const invio = new w.Event("submit", { bubbles: true, cancelable: true });
+  form.dispatchEvent(invio);
+  assert.strictEqual(invio.defaultPrevented, true, "il salvataggio si ferma sulla voce senza numero");
+
+  numero.value = "5";
+  form.c7Sheet.aggiornaTutto();
+  const invio2 = new w.Event("submit", { bubbles: true, cancelable: true });
+  form.dispatchEvent(invio2);
+  assert.strictEqual(invio2.defaultPrevented, false);
 }
 
 function il_totale_conta_solo_i_riusciti_e_i_due_lati() {
@@ -257,8 +316,23 @@ function una_voce_nuova_nasce_gia_leggibile() {
      ridisegno differito, come nella pagina vera. */
   return new Promise(function (risolvi) {
     w.setTimeout(function () {
-      assert.strictEqual(voci[2].querySelector("[data-sheet-dose]").textContent, "5 tiri · riusciti");
-      assert.strictEqual(form.querySelector("[data-seq-total]").textContent, "15 tiri a riusciti");
+      /* La misura è quella dell'esercizio; il numero manca, e si vede. */
+      assert.deepStrictEqual(inviato(w, form).measure, ["made", "minutes", "made"]);
+      assert.strictEqual(voci[2].querySelector("[data-sheet-dose]").textContent, "quante volte? · riusciti");
+      assert.strictEqual(form.querySelector("[data-seq-total]").textContent, "10 tiri a riusciti");
+      risolvi();
+    }, 0);
+  });
+}
+
+function una_voce_a_punteggio_nasce_a_punteggio() {
+  const { w, form } = pagina();
+  click(w, w.document.querySelectorAll("[data-seq-option]")[1]);
+  return new Promise(function (risolvi) {
+    w.setTimeout(function () {
+      const voci = form.querySelectorAll("[data-seq-item]");
+      assert.deepStrictEqual(inviato(w, form).measure, ["made", "minutes", "score"]);
+      assert.strictEqual(voci[2].querySelector("[data-sheet-dose]").textContent, "quante volte? · punteggio");
       risolvi();
     }, 0);
   });
@@ -268,7 +342,9 @@ async function main() {
   const prove = [
     il_foglio_si_apre_sulla_voce_giusta,
     cambiare_misura_riscrive_la_voce,
-    col_punteggio_il_quanto_farne_sparisce,
+    col_punteggio_il_quanto_farne_sono_le_prove,
+    il_foglio_mostra_solo_le_misure_ammesse,
+    senza_il_numero_la_scheda_non_si_salva,
     il_totale_conta_solo_i_riusciti_e_i_due_lati,
     l_unita_non_si_ripete_quando_e_la_misura,
     da_che_parte_solo_dove_ci_sono_le_varianti,
@@ -277,6 +353,7 @@ async function main() {
     gli_interruttori_scoprono_le_loro_righe,
     il_giorno_si_chiede_solo_se_la_scheda_ne_ha,
     una_voce_nuova_nasce_gia_leggibile,
+    una_voce_a_punteggio_nasce_a_punteggio,
   ];
   for (const prova of prove) {
     await prova();

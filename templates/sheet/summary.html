@@ -66,7 +66,7 @@
       </div>
       {% if row.previous is not none %}
       <span class="c7-num" style="font-size:12px;color:var(--c7-ink-muted)">
-        {{ _("prima %(n)s", n=row.previous) }}
+        {{ _("prima %(n)s", n=row.previous_label) }}
       </span>
       {% endif %}
       <span class="c7-num-lg{% if row.tone %} c7-summary__v--{{ row.tone }}{% endif %}">

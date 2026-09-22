@@ -28,6 +28,9 @@ class DrillOrigin(Enum):
     CATALOG = "catalog"
     #: Drill di gara: prova del turno, ripetibile fino a ``max_attempts``.
     GARA = "gara"
+    #: Dentro una scheda di allenamento (ADR-072): la prova conta per le
+    #: statistiche e le serie, ma l'XP lo paga la seduta chiusa, non lei.
+    SHEET = "sheet"
 
 
 @dataclass
@@ -62,6 +65,10 @@ class ChallengeAttemptCompletedEvent(DomainEvent):
     @property
     def is_from_gara(self) -> bool:
         return self.origin == DrillOrigin.GARA.value
+
+    @property
+    def is_from_sheet(self) -> bool:
+        return self.origin == DrillOrigin.SHEET.value
 
     @property
     def is_a_retry(self) -> bool:

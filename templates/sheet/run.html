@@ -44,6 +44,8 @@
      data-record-url="{{ url_for('sheet.record_cell', session_id=run.session.id) }}"
      data-shot-url="{{ url_for('sheet.record_shot', session_id=run.session.id) }}"
      data-undo-url="{{ url_for('sheet.undo_shot', session_id=run.session.id) }}"
+     data-score-url="{{ url_for('sheet.record_score_cell', session_id=run.session.id) }}"
+     data-score-undo-url="{{ url_for('sheet.undo_score_cell', session_id=run.session.id) }}"
      data-msg-error="{{ _('Non è stato possibile segnare la casella.') }}">
 
   <section class="c7-stack c7-exam__main">
