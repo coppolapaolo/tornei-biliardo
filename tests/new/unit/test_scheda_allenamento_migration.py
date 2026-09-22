@@ -35,6 +35,7 @@ MIGRATION = "migrations.20260920_scheda_di_allenamento"
 SUCCESSIVE = (
     "migrations.20260920_note_condivise",
     "migrations.20260920_superato_il_livello",
+    "migrations.20260922_prove_in_scheda",
 )
 
 

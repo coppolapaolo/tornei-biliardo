@@ -25,7 +25,14 @@ from ..challenge.models import Challenge
 from ..exceptions import NotFoundError, PermissionDeniedError, ValidationError
 from ..transaction.manager import transactional
 from ..user.models import User
-from .measure import MAX_AMOUNT, MAX_ITEMS, MIN_AMOUNT, LevelUp, SheetMeasure
+from .measure import (
+    MAX_AMOUNT,
+    MAX_ITEMS,
+    MIN_AMOUNT,
+    LevelUp,
+    ScoreAggregation,
+    SheetMeasure,
+)
 from .models import TrainingSheet, TrainingSheetItem, TrainingSheetReader
 
 #: Quanti livelli può avere una scala di schede. Nessuno ne usa cento, e un
@@ -54,6 +61,9 @@ class SheetItemSpec:
     section: Optional[str] = None
     day: Optional[str] = None
     item_id: Optional[int] = None
+    #: Col punteggio, come le N prove fanno il numero (ADR-072). Non detta,
+    #: vale «media».
+    aggregation: Optional[ScoreAggregation] = None
 
 
 class TrainingSheetService:
@@ -237,8 +247,16 @@ class TrainingSheetService:
                 raise NotFoundError(_("Esercizio non trovato"))
 
             measure = spec.measure
+            TrainingSheetService._check_measure(challenge, measure)
             amount = TrainingSheetService._check_amount(measure, spec.amount)
             per_variant = bool(spec.per_variant) and bool(challenge.variants)
+            aggregation = (
+                ScoreAggregation.parse(
+                    spec.aggregation.value if spec.aggregation else None
+                ).value
+                if measure is SheetMeasure.SCORE
+                else None
+            )
 
             if voce is None:
                 # Alla collezione, non alla sessione: `sheet.items` deve
@@ -252,6 +270,7 @@ class TrainingSheetService:
             voce.day = (spec.day or "").strip() or None if sheet.uses_days else None
             voce.measure = measure.value
             voce.amount = amount
+            voce.aggregation = aggregation
             voce.per_variant = per_variant
             voce.is_active = True
             db.session.flush()
@@ -434,15 +453,33 @@ class TrainingSheetService:
         return value
 
     @staticmethod
-    def _check_amount(measure: SheetMeasure, amount: Optional[int]) -> Optional[int]:
-        """Il «quanto farne»: obbligatorio, facoltativo o assente.
+    def _check_measure(challenge: Challenge, measure: SheetMeasure) -> None:
+        """La misura discende dall'esercizio (ADR-072).
 
-        Col punteggio è **assente** e non vuoto: quanto vale al massimo quella
-        prova lo dice l'esercizio, e un secondo tetto accanto sarebbe il difetto
-        dei due `max_score` (ADR-042) rifatto in casa d'altri.
+        «Riusciti» su un esercizio a punteggio, o «punteggio» su uno a esito
+        netto, sarebbero numeri di un altro tipo su una prova che il catalogo
+        tara altrimenti — e la casella non potrebbe più essere fatta di prove.
         """
-        if measure is SheetMeasure.SCORE:
-            return None
+        if measure in SheetMeasure.allowed_for(challenge):
+            return
+        propria = SheetMeasure.for_challenge(challenge)
+        raise ValidationError(
+            _(
+                "%(nome)s si segna «%(propria)s», non «%(misura)s».",
+                nome=challenge.get_display_name(),
+                propria=str(propria.label),
+                misura=str(measure.label),
+            )
+        )
+
+    @staticmethod
+    def _check_amount(measure: SheetMeasure, amount: Optional[int]) -> Optional[int]:
+        """Il «quanto farne»: obbligatorio o facoltativo, mai proposto.
+
+        Col punteggio vuol dire **quante prove** (ADR-072), e va detto come
+        per i tiri: non c'è un default, perché il 5 uguale per tutti era
+        l'assunzione sbagliata da cui questa regola nasce.
+        """
         if amount is None:
             if measure.wants_amount:
                 raise ValidationError(
@@ -494,7 +531,14 @@ class TrainingSheetService:
         esercizio sì.
         """
         return tuple(
-            (item.id, item.position, item.measure, item.amount, item.per_variant)
+            (
+                item.id,
+                item.position,
+                item.measure,
+                item.amount,
+                item.aggregation,
+                item.per_variant,
+            )
             for item in sorted(sheet.active_items, key=lambda i: i.position or 0)
         )
 

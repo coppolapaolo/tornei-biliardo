@@ -135,7 +135,8 @@
             {%- if prova.max_score %} / {{ prova.max_score }}{% endif %}
           {%- endif -%}
           {%- if prova.attempted_at %} <span class="c7-sep">·</span> <span class="c7-num">{{ prova.attempted_at|datetime_local }}</span>{% endif -%}
-          {%- if prova.source == 'gara' %} <span class="c7-sep">·</span> {{ _("in gara") }}{% if prova.gara_name %}: {{ prova.gara_name }}{% endif %}{% endif -%}
+          {%- if prova.source == 'gara' %} <span class="c7-sep">·</span> {{ _("in gara") }}{% if prova.gara_name %}: {{ prova.gara_name }}{% endif %}
+          {%- elif prova.source == 'sheet' %} <span class="c7-sep">·</span> {{ _("in scheda") }}{% if prova.sheet_name %}: {{ prova.sheet_name }}{% endif %}{% endif -%}
         </div>
       </div>
 

@@ -40,25 +40,32 @@ blocks:
   - type: text
     text: >-
       Ogni voce ha il suo **«quanto farne»**, e si tocca la pillola a destra per
-      deciderlo. La prima scelta è **come si segna**, e cambia tutto il resto.
+      deciderlo. **Come si segna lo dice l'esercizio**: uno a esito netto si
+      segna «riusciti su N tiri», uno a punteggio «N prove». Il numero lo
+      scrivi tu, ogni volta: finché manca la pillola dice «quante volte?» e la
+      scheda non si salva.
 
   - type: options
     items:
       - name: "Riusciti"
-        values: "quanti su N tiri"
+        values: "quanti su N tiri · esercizi a esito netto"
         text: >-
           È l'unità del foglio di carta: «5 tiri» e alla fine dici quanti ne
           sono entrati. È anche **l'unica che fa totale**, quindi l'unica che
-          entra nella soglia.
+          entra nella soglia. Ogni tiro è una prova dell'esercizio, e conta
+          nelle sue statistiche come una prova fatta dal catalogo.
+      - name: "Punteggio"
+        values: "N prove · esercizi a punteggio"
+        text: >-
+          Fai l'esercizio N volte, e scegli **come si conta**: la somma, la
+          media, la mediana o il massimo delle prove. Il massimo di ogni prova
+          lo dà l'esercizio. Se l'esercizio si registra colpo per colpo, la
+          seduta ti manda nella sua schermata e la prova torna nella casella
+          da sola.
       - name: "Fatto"
         values: "sì o no"
         text: >-
           Per le voci che non si contano: il riscaldamento o si è fatto o no.
-      - name: "Punteggio"
-        values: "il punteggio dell'esercizio"
-        text: >-
-          Il numero lo dà l'esercizio, con il suo massimo: qui non si scrive un
-          «quanto farne», perché ce l'ha già lui.
       - name: "Vinte"
         values: "quante su N partite"
         text: >-

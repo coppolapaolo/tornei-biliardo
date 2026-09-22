@@ -11,7 +11,11 @@ e discende dalla misura e dal «quanto farne»:
   è il gesto del foglio di carta;
 * oltre dieci, tiro per tiro — trenta tiri non si contano a mente — con la
   possibilità di scrivere il totale se si è contato da sé;
-* col punteggio e coi minuti, il tastierino meno · cifra · più;
+* col punteggio, il tastierino meno · cifra · più e «Registra la prova»,
+  tante volte quante prove dice la voce (ADR-072): la casella è
+  l'aggregazione. Se l'esercizio si registra colpo per colpo, si va nella
+  schermata del catalogo e la prova torna qui;
+* coi minuti, il tastierino e basta;
 * con «fatto», due tasti.
 """
 
@@ -22,7 +26,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 from flask_babel import gettext as _
 
-from .measure import SheetMeasure, amount_label
+from .measure import SheetMeasure, amount_label, value_label
 from .models import TrainingEntry, TrainingSession, TrainingSheet, TrainingSheetItem
 
 #: Fin dove una fila di tasti resta una fila di tasti. Oltre, i bersagli
@@ -59,6 +63,30 @@ class Cell:
     @property
     def is_filled(self) -> bool:
         return bool(self.entry and self.entry.is_filled)
+
+    @property
+    def value_label(self) -> str:
+        return value_label(self.value)
+
+    @property
+    def last_time_label(self) -> str:
+        return value_label(self.last_time)
+
+    # ── Le prove dietro la casella (ADR-072) ──
+    @property
+    def attempts(self) -> List:
+        """Le prove chiuse, in ordine: sono le «prove di stasera» della voce."""
+        return self.entry.completed_attempts if self.entry else []
+
+    @property
+    def attempts_done(self) -> int:
+        return len(self.attempts)
+
+    @property
+    def is_full(self) -> bool:
+        """Se le prove sono tutte fatte: tante quante ne dice la voce."""
+        tetto = self.item.amount
+        return tetto is not None and self.attempts_done >= tetto
 
 
 @dataclass(frozen=True)
@@ -109,6 +137,19 @@ class SessionView:
         if self.dock != "buttons" or self.item is None or self.item.amount is None:
             return ()
         return range(0, self.item.amount + 1)
+
+    @property
+    def aggregation_label(self) -> str:
+        """«media», «massimo»: come le prove fanno il numero, col punteggio."""
+        kind = self.item.aggregation_kind if self.item else None
+        return str(kind.label).lower() if kind else ""
+
+    @property
+    def max_score(self) -> Optional[int]:
+        """Il massimo di ogni prova a punteggio: lo dice l'esercizio."""
+        if self.item is None or self.item.challenge is None:
+            return None
+        return self.item.challenge.max_score
 
     @property
     def progress_pct(self) -> int:
@@ -178,9 +219,16 @@ def _dock(item: Optional[TrainingSheetItem]) -> str:
     """Quali comandi servono a questa voce."""
     if item is None:
         return "none"
+    from ..challenge.recording import RecordingMode
+
     misura = item.measure_kind
     if misura is SheetMeasure.DONE:
         return "done"
+    if misura is SheetMeasure.SCORE and item.makes_attempts:
+        # N prove (ADR-072): il tastierino tante volte, o la schermata del
+        # catalogo se l'esercizio si registra colpo per colpo.
+        a_colpi = RecordingMode.parse(item.challenge.recording_mode).is_sequence
+        return "launch" if a_colpi else "scores"
     if misura is SheetMeasure.SCORE or misura is SheetMeasure.MINUTES:
         return "pad"
     if item.amount is not None and item.amount <= MAX_BUTTONS:

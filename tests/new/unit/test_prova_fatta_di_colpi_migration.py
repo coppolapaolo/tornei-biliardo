@@ -20,7 +20,10 @@ PRIMA = "migrations.20260919_profilo_esercizio"
 MIGRATION = "migrations.20260920_prova_fatta_di_colpi"
 # Le migration venute dopo sulle stesse tabelle: i modelli descrivono lo schema
 # di oggi, quindi il confronto colonna per colonna vale sulla catena intera.
-SUCCESSIVE = ("migrations.20260920_estrazione_e_consegna",)
+SUCCESSIVE = (
+    "migrations.20260920_estrazione_e_consegna",
+    "migrations.20260922_prove_in_scheda",
+)
 
 
 def _colonne(conn: sqlite3.Connection, tabella: str) -> set[str]:

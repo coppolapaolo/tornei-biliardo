@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-20 23:34+0200\n"
+"POT-Creation-Date: 2026-09-22 14:08+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -102,15 +102,15 @@ msgstr "By skill"
 msgid "Per gesto"
 msgstr "By stroke"
 
-#: models/andamento/view.py:277
+#: models/andamento/view.py:288
 msgid "solido"
 msgstr "solid"
 
-#: models/andamento/view.py:279 models/training_sheet/register_view.py:242
+#: models/andamento/view.py:290 models/training_sheet/register_view.py:242
 msgid "in crescita"
 msgstr "trending up"
 
-#: models/andamento/view.py:280
+#: models/andamento/view.py:291
 msgid "da costruire"
 msgstr "to build"
 
@@ -313,7 +313,7 @@ msgstr "This drill already has recorded attempts"
 
 #: models/challenge/authoring.py:290 models/challenge/profile_service.py:94
 #: models/challenge/rating_service.py:61 models/challenge/shot_service.py:87
-#: models/training_sheet/services.py:237
+#: models/training_sheet/services.py:247
 msgid "Esercizio non trovato"
 msgstr "Drill not found"
 
@@ -514,7 +514,7 @@ msgstr "tenth attempt"
 msgid "prova %(n)s"
 msgstr "attempt %(n)s"
 
-#: models/challenge/execution_view.py:85
+#: models/challenge/execution_view.py:85 models/training_sheet/measure.py:281
 #: templates/challenge/_exercise_bits.html:34
 msgid ","
 msgstr "."
@@ -717,15 +717,16 @@ msgstr[1] "At this pace you finish at %(proj)s: %(num)s points below your usual.
 msgid "A questo ritmo chiudi a %(proj)s: il tuo solito."
 msgstr "At this pace you finish at %(proj)s: your usual."
 
-#: models/challenge/services.py:440
+#: models/challenge/services.py:445
+#: models/training_sheet/session_service.py:386
 msgid "Prova non trovata"
 msgstr "Attempt not found"
 
-#: models/challenge/services.py:442
+#: models/challenge/services.py:447
 msgid "Questa prova non è tua"
 msgstr "This attempt is not yours"
 
-#: models/challenge/services.py:769
+#: models/challenge/services.py:774
 msgid ""
 "Il direttore non ha ancora scelto l'esercizio da giocare al posto della X"
 " in questa gara."
@@ -733,7 +734,7 @@ msgstr ""
 "The director has not yet chosen the drill to play in place of the X in "
 "this competition."
 
-#: models/challenge/services.py:815 models/challenge/services.py:949
+#: models/challenge/services.py:820 models/challenge/services.py:954
 #, python-format
 msgid ""
 "Il punteggio della prova deve essere compreso fra 0 e %(massimo)s, la "
@@ -742,16 +743,16 @@ msgstr ""
 "The challenge score must be between 0 and %(massimo)s, the widest rack "
 "difference achievable in this round."
 
-#: models/challenge/services.py:940
+#: models/challenge/services.py:945
 msgid "Serve un punteggio: la prova non ne ha ancora uno registrato."
 msgstr "A score is needed: none has been recorded for this drill yet."
 
-#: models/challenge/services.py:1239
+#: models/challenge/services.py:1244
 msgid "Questo esercizio si registra colpo per colpo, non col totale."
 msgstr "This exercise is recorded shot by shot, not with the total."
 
-#: models/challenge/services.py:1257 models/challenge/shot_service.py:162
-#: models/training_sheet/session_service.py:429
+#: models/challenge/services.py:1262 models/challenge/shot_service.py:162
+#: models/training_sheet/session_service.py:580
 msgid "Questa variante non è di questo esercizio"
 msgstr "This variant does not belong to this drill"
 
@@ -3243,8 +3244,8 @@ msgstr "Legendary"
 msgid "attività"
 msgstr "activity"
 
-#: models/notification/templates.py:146 models/training_sheet/measure.py:161
-#: templates/sheet/compose.html:175
+#: models/notification/templates.py:146 models/training_sheet/measure.py:240
+#: templates/sheet/compose.html:192
 msgid "partite"
 msgstr "matches"
 
@@ -3580,7 +3581,7 @@ msgstr ""
 "The match has reached the distance: the result must be confirmed or "
 "rejected before play continues."
 
-#: models/training_sheet/gradino.py:83 models/training_sheet/services.py:340
+#: models/training_sheet/gradino.py:83 models/training_sheet/services.py:359
 msgid "Non leggi questa scheda"
 msgstr "You do not read this sheet"
 
@@ -3610,81 +3611,111 @@ msgstr "You have held the threshold of “%(scheda)s”: level passed."
 msgid "Livello superato"
 msgstr "Level passed"
 
-#: models/training_sheet/gradino.py:152 models/training_sheet/services.py:390
+#: models/training_sheet/gradino.py:152 models/training_sheet/services.py:409
 msgid "Apri la scheda"
 msgstr "Open the sheet"
 
-#: models/training_sheet/measure.py:97 routes/feedback.py:145
+#: models/training_sheet/measure.py:129 routes/feedback.py:145
 #: templates/base.html:471 templates/components/_sequence_editor.html:141
-#: templates/sheet/_run_dock.html:83 templates/sheet/compose.html:230
+#: templates/sheet/_run_dock.html:123 templates/sheet/compose.html:260
 msgid "Fatto"
 msgstr "Done"
 
-#: models/training_sheet/measure.py:98
+#: models/training_sheet/measure.py:130
 msgid "Riusciti"
 msgstr "Made"
 
-#: models/training_sheet/measure.py:99
+#: models/training_sheet/measure.py:131
 #: templates/components/_match_card.html:160
 #: templates/components/_match_challenge_input.html:59
 #: templates/exam/session.html:154 templates/exam/session.html:236
 msgid "Punteggio"
 msgstr "Score"
 
-#: models/training_sheet/measure.py:100
+#: models/training_sheet/measure.py:132
 #: templates/components/_campionato_general_classification.html:64
 #: templates/direttore/_classifica.html:40
 msgid "Vinte"
 msgstr "Won"
 
-#: models/training_sheet/measure.py:101
+#: models/training_sheet/measure.py:133
 msgid "Minuti"
 msgstr "Minutes"
 
-#: models/training_sheet/measure.py:145
+#: models/training_sheet/measure.py:177
+msgid "Somma"
+msgstr "Sum"
+
+#: models/training_sheet/measure.py:178
+#: templates/gamification/admin/streaks.html:29
+#: templates/player/challenge_detail.html:45
+msgid "Media"
+msgstr "Average"
+
+#: models/training_sheet/measure.py:179
+msgid "Mediana"
+msgstr "Median"
+
+#: models/training_sheet/measure.py:180
+#: templates/components/_open_inscriptions_modal.html:35
+msgid "Massimo"
+msgstr "Maximum"
+
+#: models/training_sheet/measure.py:224
 msgid "Nessuno"
 msgstr "Nobody"
 
-#: models/training_sheet/measure.py:146
+#: models/training_sheet/measure.py:225
 msgid "La soglia"
 msgstr "The threshold"
 
-#: models/training_sheet/measure.py:147
+#: models/training_sheet/measure.py:226
 msgid "Un istruttore"
 msgstr "An instructor"
 
-#: models/training_sheet/measure.py:151
+#: models/training_sheet/measure.py:230
 msgid "La scheda non è fatta a livelli."
 msgstr "This sheet is not built in levels."
 
-#: models/training_sheet/measure.py:152
+#: models/training_sheet/measure.py:231
 msgid "Tenuta la soglia, il livello è superato."
 msgstr "Hold the threshold and the level is passed."
 
-#: models/training_sheet/measure.py:153
+#: models/training_sheet/measure.py:232
 msgid "Te lo conferma chi legge la scheda."
 msgstr "Whoever reads the sheet confirms it."
 
-#: models/training_sheet/measure.py:158 models/training_sheet/measure.py:159
-#: models/training_sheet/measure.py:160 templates/sheet/compose.html:174
+#: models/training_sheet/measure.py:237 models/training_sheet/measure.py:238
+#: templates/sheet/compose.html:191
 msgid "tiri"
 msgstr "shots"
 
-#: models/training_sheet/measure.py:162 templates/sheet/compose.html:176
+#: models/training_sheet/measure.py:239
+#: templates/components/_history_drills_tab.html:54
+#: templates/exam/compose.html:44 templates/sheet/compose.html:194
+msgid "prove"
+msgstr "attempts"
+
+#: models/training_sheet/measure.py:241 templates/sheet/compose.html:193
 msgid "minuti"
 msgstr "minutes"
 
-#: models/training_sheet/measure.py:182
+#: models/training_sheet/measure.py:261
 #, python-format
 msgid "%(n)s partite"
 msgstr "%(n)s games"
 
-#: models/training_sheet/measure.py:184
+#: models/training_sheet/measure.py:263
 #, python-format
 msgid "%(n)s minuti"
 msgstr "%(n)s minutes"
 
-#: models/training_sheet/measure.py:185
+#: models/training_sheet/measure.py:265 templates/exam/session.html:179
+#, python-format
+msgid "%(n)s prove"
+msgstr "%(n)s attempts"
+
+#: models/training_sheet/measure.py:266
 #, python-format
 msgid "%(n)s tiri"
 msgstr "%(n)s shots"
@@ -3702,7 +3733,7 @@ msgstr "trending down"
 msgid "fuori dalla soglia: non è a riusciti"
 msgstr "outside the threshold: not a \"made\" item"
 
-#: models/training_sheet/run_view.py:124
+#: models/training_sheet/run_view.py:165
 #: templates/istruttore/dai_scheda.html:83
 #: templates/istruttore/scheda_gruppo.html:123 templates/sheet/detail.html:26
 #: templates/sheet/index.html:22 templates/sheet/proposta.html:40
@@ -3710,180 +3741,223 @@ msgstr "outside the threshold: not a \"made\" item"
 msgid "soglia %(n)s su %(tot)s"
 msgstr "threshold %(n)s of %(tot)s"
 
-#: models/training_sheet/services.py:69
-#: models/training_sheet/session_service.py:120
+#: models/training_sheet/services.py:79
+#: models/training_sheet/session_service.py:127
 msgid "Scheda non trovata"
 msgstr "Sheet not found"
 
-#: models/training_sheet/services.py:109
-#: models/training_sheet/session_service.py:122
+#: models/training_sheet/services.py:119
+#: models/training_sheet/session_service.py:129
 msgid "Questa scheda non è tua"
 msgstr "This sheet is not yours"
 
-#: models/training_sheet/services.py:177
+#: models/training_sheet/services.py:187
 #, python-format
 msgid "Una scheda arriva a %(n)s voci."
 msgstr "A sheet holds up to %(n)s items."
 
-#: models/training_sheet/services.py:184
+#: models/training_sheet/services.py:194
 #, python-format
 msgid "Il livello va da 1 a %(n)s."
 msgstr "The level goes from 1 to %(n)s."
 
-#: models/training_sheet/services.py:191
+#: models/training_sheet/services.py:201
 #, python-format
 msgid "Le sedute di fila vanno da 1 a %(n)s."
 msgstr "Sessions in a row go from 1 to %(n)s."
 
-#: models/training_sheet/services.py:196
+#: models/training_sheet/services.py:206
 #, python-format
 msgid "Le settimane vanno da 1 a %(n)s."
 msgstr "Weeks go from 1 to %(n)s."
 
-#: models/training_sheet/services.py:234
-#: models/training_sheet/session_service.py:408
+#: models/training_sheet/services.py:244
+#: models/training_sheet/session_service.py:559
 msgid "Questa voce non è di questa scheda"
 msgstr "This item does not belong to this sheet"
 
-#: models/training_sheet/services.py:296
+#: models/training_sheet/services.py:315
 msgid "La scheda è già tua"
 msgstr "The sheet is already yours"
 
-#: models/training_sheet/services.py:299 routes/player/profile.py:187
+#: models/training_sheet/services.py:318 routes/player/profile.py:187
 msgid "Utente non trovato"
 msgstr "User not found"
 
-#: models/training_sheet/services.py:301
+#: models/training_sheet/services.py:320
 msgid "Una scheda si apre a un istruttore"
 msgstr "A sheet can only be opened to an instructor"
 
-#: models/training_sheet/services.py:381
+#: models/training_sheet/services.py:400
 msgid "Un allievo ti ha aperto una scheda"
 msgstr "A student has opened a sheet to you"
 
-#: models/training_sheet/services.py:383
+#: models/training_sheet/services.py:402
 #, python-format
 msgid "%(allievo)s ti fa leggere «%(scheda)s»: vedi le sue sedute e come procede."
 msgstr ""
 "%(allievo)s is letting you read “%(scheda)s”: you can see their sessions "
 "and how they are getting on."
 
-#: models/training_sheet/services.py:404
+#: models/training_sheet/services.py:423
 msgid "Un istruttore ha smesso di seguirti"
 msgstr "An instructor has stopped following you"
 
-#: models/training_sheet/services.py:406
+#: models/training_sheet/services.py:425
 #, python-format
 msgid "%(istruttore)s non legge più «%(scheda)s»."
 msgstr "%(istruttore)s no longer reads “%(scheda)s”."
 
-#: models/training_sheet/services.py:412 templates/sheet/detail.html:149
+#: models/training_sheet/services.py:431 templates/sheet/detail.html:149
 #: templates/sheet/readers.html:21
 msgid "Chi la legge"
 msgstr "Who reads it"
 
-#: models/training_sheet/services.py:423
+#: models/training_sheet/services.py:442
 msgid "La scheda vuole un nome"
 msgstr "The sheet needs a name"
 
-#: models/training_sheet/services.py:449
+#: models/training_sheet/services.py:468
+#, python-format
+msgid "%(nome)s si segna «%(propria)s», non «%(misura)s»."
+msgstr "%(nome)s is recorded as “%(propria)s”, not “%(misura)s”."
+
+#: models/training_sheet/services.py:486
 #, python-format
 msgid "Serve dire quanto farne: %(unita)s."
 msgstr "Say how much to do: %(unita)s."
 
-#: models/training_sheet/services.py:455
+#: models/training_sheet/services.py:492
 #, python-format
 msgid "Il «quanto farne» va da %(min)s a %(max)s."
 msgstr "The \"how much\" goes from %(min)s to %(max)s."
 
-#: models/training_sheet/services.py:469
+#: models/training_sheet/services.py:506
 msgid "La soglia è un numero positivo"
 msgstr "The threshold is a positive number"
 
-#: models/training_sheet/services.py:474
+#: models/training_sheet/services.py:511
 msgid ""
 "Per una soglia serve almeno una voce «a riusciti»: le altre non fanno "
 "totale."
 msgstr "A threshold needs at least one \"made\" item: the others do not add up."
 
-#: models/training_sheet/services.py:481
+#: models/training_sheet/services.py:518
 #, python-format
 msgid "La soglia non può superare il totale della scheda, che è %(n)s."
 msgstr "The threshold cannot be higher than the sheet total, which is %(n)s."
 
-#: models/training_sheet/session_service.py:89
+#: models/training_sheet/session_service.py:96
 msgid "Seduta non trovata"
 msgstr "Session not found"
 
-#: models/training_sheet/session_service.py:130
+#: models/training_sheet/session_service.py:137
 msgid "Questo giorno non è nella scheda"
 msgstr "This day is not in the sheet"
 
-#: models/training_sheet/session_service.py:172
+#: models/training_sheet/session_service.py:178
+msgid "Questa voce si segna una prova alla volta, non col totale"
+msgstr "This item is recorded one attempt at a time, not with a total"
+
+#: models/training_sheet/session_service.py:185
 msgid "Serve dire se l'hai fatto"
 msgstr "Say whether you did it"
 
-#: models/training_sheet/session_service.py:205
+#: models/training_sheet/session_service.py:223
 msgid "Questa voce si segna con un numero, non tiro per tiro"
 msgstr "This item is recorded with a number, not shot by shot"
 
-#: models/training_sheet/session_service.py:213
+#: models/training_sheet/session_service.py:231
 msgid "Hai già segnato tutti i tiri di questa voce"
 msgstr "You have already recorded every shot of this item"
 
-#: models/training_sheet/session_service.py:235
+#: models/training_sheet/session_service.py:261
 msgid "Non c'è nessun tiro da togliere"
 msgstr "There is no shot to undo"
 
-#: models/training_sheet/session_service.py:280
+#: models/training_sheet/session_service.py:322
+msgid "Questo esercizio si registra colpo per colpo: aprilo dalla seduta"
+msgstr "This exercise is recorded shot by shot: open it from the session"
+
+#: models/training_sheet/session_service.py:351
+msgid "Non c'è nessuna prova da togliere"
+msgstr "There is no attempt to remove"
+
+#: models/training_sheet/session_service.py:388
+msgid "Questa prova è di un altro esercizio"
+msgstr "This attempt belongs to another exercise"
+
+#: models/training_sheet/session_service.py:392
+msgid "Questa prova è già di un'altra casella"
+msgstr "This attempt already belongs to another box"
+
+#: models/training_sheet/session_service.py:414
+msgid "Questa casella non è ancora stata segnata"
+msgstr "This box has not been filled in yet"
+
+#: models/training_sheet/session_service.py:431
 msgid "Questa seduta è già chiusa"
 msgstr "This session is already closed"
 
-#: models/training_sheet/session_service.py:347
+#: models/training_sheet/session_service.py:498
 msgid "Questa seduta ha già qualcosa segnato: chiudila, non buttarla"
 msgstr "This session already has something recorded: close it, do not discard it"
 
-#: models/training_sheet/session_service.py:397
+#: models/training_sheet/session_service.py:548
 msgid "Questa seduta non è tua"
 msgstr "This session is not yours"
 
-#: models/training_sheet/session_service.py:404
+#: models/training_sheet/session_service.py:555
 msgid "Questa seduta è chiusa"
 msgstr "This session is closed"
 
-#: models/training_sheet/session_service.py:410
+#: models/training_sheet/session_service.py:561
 msgid "Questa voce non fa più parte della scheda"
 msgstr "This item is no longer part of the sheet"
 
-#: models/training_sheet/session_service.py:423
+#: models/training_sheet/session_service.py:574
 msgid "Serve dire da che parte"
 msgstr "Say which side"
 
-#: models/training_sheet/session_service.py:426
+#: models/training_sheet/session_service.py:577
 msgid "Questa voce si segna in una casella sola"
 msgstr "This item is recorded in a single box"
 
-#: models/training_sheet/session_service.py:465
-msgid "Serve il numero"
-msgstr "The number is required"
+#: models/training_sheet/session_service.py:616
+msgid "Questa voce non si segna a punteggio"
+msgstr "This item is not recorded with a score"
 
-#: models/training_sheet/session_service.py:467
+#: models/training_sheet/session_service.py:622
+msgid "Hai già fatto tutte le prove di questa voce"
+msgstr "You have already made every attempt of this item"
+
+#: models/training_sheet/session_service.py:627
+msgid "Serve il punteggio"
+msgstr "The score is required"
+
+#: models/training_sheet/session_service.py:629
+#: models/training_sheet/session_service.py:697
 msgid "Il numero non può essere negativo"
 msgstr "The number cannot be negative"
 
-#: models/training_sheet/session_service.py:473
+#: models/training_sheet/session_service.py:632
+#: models/training_sheet/session_service.py:714
+#, python-format
+msgid "Questo esercizio arriva a %(n)s."
+msgstr "This drill goes up to %(n)s."
+
+#: models/training_sheet/session_service.py:695
+msgid "Serve il numero"
+msgstr "The number is required"
+
+#: models/training_sheet/session_service.py:703
 #, python-format
 msgid "Al massimo %(n)s su questa voce."
 msgstr "At most %(n)s on this item."
 
-#: models/training_sheet/session_service.py:477
+#: models/training_sheet/session_service.py:707
 msgid "Una seduta non dura più di un giorno"
 msgstr "A session does not last longer than a day"
-
-#: models/training_sheet/session_service.py:484
-#, python-format
-msgid "Questo esercizio arriva a %(n)s."
-msgstr "This drill goes up to %(n)s."
 
 #: models/training_sheet/summary_view.py:48
 msgid "fatto"
@@ -3894,7 +3968,7 @@ msgstr "done"
 msgid "no"
 msgstr "no"
 
-#: models/training_sheet/summary_view.py:114
+#: models/training_sheet/summary_view.py:118
 #: templates/individual_match/tpa_referto.html:173
 #: templates/individual_match/tpa_referto.html:193
 msgid "Voce"
@@ -4260,11 +4334,11 @@ msgstr "A photo of the layout is required"
 msgid "Copia creata."
 msgstr "Copy created."
 
-#: routes/challenge.py:485 routes/challenge.py:862
+#: routes/challenge.py:485 routes/challenge.py:861
 msgid "Esercizio creato."
 msgstr "Drill created."
 
-#: routes/challenge.py:642 routes/challenge.py:930
+#: routes/challenge.py:642 routes/challenge.py:929
 msgid "Questo esercizio non è più disponibile."
 msgstr "This drill is no longer available."
 
@@ -4284,7 +4358,7 @@ msgstr ""
 "This exercise is recorded shot by shot: the target is needed. To remove "
 "it, change «How it is recorded» first."
 
-#: routes/challenge.py:826
+#: routes/challenge.py:825
 msgid ""
 "Questo esercizio ha già delle prove: istruzioni e punteggio si cambiano "
 "da «Modifica l'esercizio», qui salva solo il disegno."
@@ -4292,19 +4366,19 @@ msgstr ""
 "This drill already has attempts: change instructions and scoring from "
 "“Edit drill”; here, save the diagram only."
 
-#: routes/challenge.py:887
+#: routes/challenge.py:886
 msgid "Questo esercizio nasce da una foto: non c'è un disegno da modificare."
 msgstr "This drill comes from a photo: there is no drawing to edit."
 
-#: routes/challenge.py:906
+#: routes/challenge.py:905
 msgid "Disegno aggiornato."
 msgstr "Drawing updated."
 
-#: routes/challenge.py:934
+#: routes/challenge.py:933
 msgid "Gli amministratori non provano gli esercizi."
 msgstr "Administrators do not attempt drills."
 
-#: routes/challenge.py:990 routes/challenge.py:1290
+#: routes/challenge.py:990 routes/challenge.py:1382
 msgid "Prova registrata."
 msgstr "Attempt recorded."
 
@@ -4312,44 +4386,48 @@ msgstr "Attempt recorded."
 msgid "Non c'è nessuna prova da annullare."
 msgstr "There is no attempt to undo."
 
-#: routes/challenge.py:1043 routes/challenge.py:1259
+#: routes/challenge.py:1043 routes/challenge.py:1314
 msgid "Prova annullata."
 msgstr "Attempt undone."
 
-#: routes/challenge.py:1134
+#: routes/challenge.py:1189
 msgid "Il punto sul panno non è leggibile."
 msgstr "The point on the cloth cannot be read."
 
-#: routes/challenge.py:1347 routes/sheet/run.py:229
+#: routes/challenge.py:1347
+msgid "Non c'è nessuna prova aperta da chiudere."
+msgstr "There is no open attempt to close."
+
+#: routes/challenge.py:1439 routes/sheet/run.py:274
 msgid "Note salvate."
 msgstr "Notes saved."
 
-#: routes/challenge.py:1547
+#: routes/challenge.py:1639
 msgid "Tentativo registrato."
 msgstr "Attempt recorded."
 
-#: routes/challenge.py:1588 templates/challenge/catalog.html:140
+#: routes/challenge.py:1680 templates/challenge/catalog.html:140
 #: templates/challenge/today.html:171
 msgid "Non è stato possibile aggiornare i preferiti."
 msgstr "The favourites could not be updated."
 
-#: routes/challenge.py:1625
+#: routes/challenge.py:1717
 msgid "Voto registrato."
 msgstr "Rating saved."
 
-#: routes/challenge.py:1688
+#: routes/challenge.py:1780
 msgid "Esercizio di gara avviato."
 msgstr "Tournament drill started."
 
-#: routes/challenge.py:1741
+#: routes/challenge.py:1833
 msgid "Esercizio di gara registrato."
 msgstr "Tournament drill recorded."
 
-#: routes/challenge.py:1774
+#: routes/challenge.py:1866
 msgid "Esercizio non trovato."
 msgstr "Drill not found."
 
-#: routes/challenge.py:1784
+#: routes/challenge.py:1876
 msgid "Non hai i permessi per questo esercizio."
 msgstr "You do not have permission for this drill."
 
@@ -5696,7 +5774,7 @@ msgstr "Certified exams passed"
 #: templates/gamification/admin/level_config.html:98
 #: templates/gamification/admin/level_config.html:148
 #: templates/gamification/admin/level_config.html:199
-#: templates/gamification/dashboard.html:27 templates/sheet/compose.html:105
+#: templates/gamification/dashboard.html:27 templates/sheet/compose.html:120
 msgid "Livello"
 msgstr "Level"
 
@@ -6141,7 +6219,7 @@ msgstr "My sheet"
 msgid "Scheda archiviata."
 msgstr "Sheet archived."
 
-#: routes/sheet/compose.py:136
+#: routes/sheet/compose.py:138
 msgid "Scheda salvata."
 msgstr "Sheet saved."
 
@@ -6169,7 +6247,7 @@ msgstr "The notes are yours again."
 msgid "Non leggi più questa scheda."
 msgstr "You no longer read this sheet."
 
-#: routes/sheet/run.py:188
+#: routes/sheet/run.py:233
 msgid "Seduta chiusa senza segnare niente."
 msgstr "Session closed without recording anything."
 
@@ -6516,7 +6594,7 @@ msgstr "Close"
 #: templates/player/my_venue_requests.html:66
 #: templates/player/profile_edit.html:81 templates/player/venue_detail.html:287
 #: templates/player/venues.html:99 templates/roles/request_form.html:63
-#: templates/sheet/compose.html:163
+#: templates/sheet/compose.html:178
 msgid "Annulla"
 msgstr "Cancel"
 
@@ -7756,7 +7834,7 @@ msgstr "Min. competitions played"
 #: templates/gamification/admin/features.html:26
 #: templates/gamification/admin/quests.html:22
 #: templates/player/profile_edit.html:25 templates/player/venue_detail.html:49
-#: templates/sheet/compose.html:74
+#: templates/sheet/compose.html:89
 msgid "Nome"
 msgstr "Name"
 
@@ -10493,7 +10571,7 @@ msgstr "Update Password"
 
 #: templates/challenge/_challenge_detail.html:25
 #: templates/challenge/_training_board.html:27
-#: templates/challenge/training.html:83 templates/sheet/_run_progress.html:23
+#: templates/challenge/training.html:91 templates/sheet/_run_progress.html:23
 msgid "Disposizione dell'esercizio"
 msgstr "Drill layout"
 
@@ -10572,7 +10650,7 @@ msgid "Liv. %(n)s"
 msgstr "Lvl %(n)s"
 
 #: templates/challenge/_exercise_bits.html:23 templates/challenge/form.html:239
-#: templates/challenge/training.html:37
+#: templates/challenge/training.html:38
 msgid "Riuscito o no"
 msgstr "Pass or fail"
 
@@ -10583,7 +10661,7 @@ msgstr "Scored · out of %(max)s"
 
 #: templates/challenge/_exercise_bits.html:25
 #: templates/challenge/builder.html:404 templates/challenge/form.html:241
-#: templates/challenge/training.html:39 templates/challenge/training.html:40
+#: templates/challenge/training.html:40 templates/challenge/training.html:41
 #: templates/components/_challenge_bits.html:27
 #: templates/player/challenge_attempt_detail.html:49
 msgid "A punteggio"
@@ -10700,7 +10778,7 @@ msgstr "How did it go?"
 
 #: templates/challenge/_run_progress.html:51
 #: templates/challenge/_training_board.html:65
-#: templates/challenge/training.html:131
+#: templates/challenge/training.html:139
 #: templates/components/_history_drills_tab.html:133
 #: templates/components/_match_challenge_input.html:54
 #: templates/components/_player_challenge_statistics.html:55
@@ -10715,7 +10793,7 @@ msgstr "Passed"
 
 #: templates/challenge/_run_progress.html:51
 #: templates/challenge/_training_board.html:68
-#: templates/challenge/training.html:134
+#: templates/challenge/training.html:142
 #: templates/components/_history_drills_tab.html:133
 #: templates/components/_match_challenge_input.html:55
 #: templates/components/_player_challenge_statistics.html:55
@@ -10788,10 +10866,15 @@ msgstr "Undo the last shot"
 msgid "Ricomincia"
 msgstr "Start over"
 
-#: templates/challenge/_run_shots_dock.html:58
+#: templates/challenge/_run_shots_dock.html:59
+#: templates/challenge/training.html:34 templates/sheet/summary.html:141
+msgid "Torna alla seduta"
+msgstr "Back to the session"
+
+#: templates/challenge/_run_shots_dock.html:59
 #: templates/challenge/_training_board.html:95
-#: templates/challenge/summary.html:124 templates/challenge/training.html:170
-#: templates/sheet/_run_dock.html:116 templates/sheet/summary.html:142
+#: templates/challenge/summary.html:124 templates/challenge/training.html:178
+#: templates/sheet/_run_dock.html:156 templates/sheet/summary.html:142
 msgid "Ho finito"
 msgstr "I'm done"
 
@@ -11490,7 +11573,7 @@ msgstr "How the balls are set up and how the score is counted"
 msgid "Il disegno mostra la disposizione; qui si scrive la regola."
 msgstr "The drawing shows the layout; the rule goes here."
 
-#: templates/challenge/builder.html:401
+#: templates/challenge/builder.html:401 templates/sheet/compose.html:230
 msgid "Come si conta"
 msgstr "How it is scored"
 
@@ -12236,7 +12319,7 @@ msgid "Alla fine registri il punteggio"
 msgstr "At the end you record your score"
 
 #: templates/challenge/start_attempt.html:43
-#: templates/challenge/training.html:120
+#: templates/challenge/training.html:128
 msgid "Puoi riprovare quante volte vuoi: resta il tuo risultato migliore."
 msgstr "You can try as often as you like: your best result is the one that stays."
 
@@ -12276,17 +12359,17 @@ msgstr "Median score"
 msgid "Fine sessione"
 msgstr "End of session"
 
-#: templates/challenge/summary.html:16 templates/challenge/training.html:33
+#: templates/challenge/summary.html:16 templates/challenge/training.html:34
 msgid "Torna agli esercizi"
 msgstr "Back to the drills"
 
-#: templates/challenge/summary.html:27
+#: templates/challenge/summary.html:27 templates/sheet/_run_dock.html:88
 msgid "Punteggio della prova"
 msgstr "Score of the attempt"
 
-#: templates/challenge/summary.html:30 templates/challenge/training.html:39
-#: templates/challenge/training.html:143 templates/exam/session.html:238
-#: templates/sheet/_run_dock.html:71
+#: templates/challenge/summary.html:30 templates/challenge/training.html:40
+#: templates/challenge/training.html:151 templates/exam/session.html:238
+#: templates/sheet/_run_dock.html:75 templates/sheet/_run_dock.html:89
 #, python-format
 msgid "su %(n)s"
 msgstr "out of %(n)s"
@@ -12400,54 +12483,56 @@ msgstr "The drills you do at the table, in the order you do them"
 msgid "Allenamento"
 msgstr "Training"
 
-#: templates/challenge/training.html:38
+#: templates/challenge/training.html:39
 #, python-format
 msgid "%(n)s colpi"
 msgstr "%(n)s shots"
 
-#: templates/challenge/training.html:60
+#: templates/challenge/training.html:61
 msgid "Registro…"
 msgstr "Recording…"
 
-#: templates/challenge/training.html:61
+#: templates/challenge/training.html:62
 msgid "Non è stato possibile registrare la prova."
 msgstr "The attempt could not be recorded."
 
-#: templates/challenge/training.html:62
+#: templates/challenge/training.html:63
 msgid "Non è stato possibile registrare la prova. Riprova."
 msgstr "The attempt could not be recorded. Try again."
 
-#: templates/challenge/training.html:63
+#: templates/challenge/training.html:64
 msgid "Non è stato possibile annullare la prova."
 msgstr "The attempt could not be undone."
 
-#: templates/challenge/training.html:79
+#: templates/challenge/training.html:87
 msgid "Rivedi la disposizione"
 msgstr "Look at the layout again"
 
-#: templates/challenge/training.html:100 templates/sheet/compose.html:211
+#: templates/challenge/training.html:108 templates/sheet/compose.html:241
 msgid "Da che parte"
 msgstr "Which side"
 
-#: templates/challenge/training.html:102
+#: templates/challenge/training.html:110
 msgid "senza dirlo"
 msgstr "unspecified"
 
-#: templates/challenge/training.html:140 templates/exam/session.html:231
-#: templates/sheet/_run_dock.html:66 templates/sheet/run.html:90
+#: templates/challenge/training.html:148 templates/exam/session.html:231
+#: templates/sheet/_run_dock.html:70 templates/sheet/_run_dock.html:85
+#: templates/sheet/run.html:92
 msgid "Uno in meno"
 msgstr "One less"
 
-#: templates/challenge/training.html:146 templates/exam/session.html:240
-#: templates/sheet/_run_dock.html:74 templates/sheet/run.html:97
+#: templates/challenge/training.html:154 templates/exam/session.html:240
+#: templates/sheet/_run_dock.html:78 templates/sheet/_run_dock.html:92
+#: templates/sheet/run.html:99
 msgid "Uno in più"
 msgstr "One more"
 
-#: templates/challenge/training.html:157
+#: templates/challenge/training.html:165
 msgid "Registra la prova"
 msgstr "Record the attempt"
 
-#: templates/challenge/training.html:168
+#: templates/challenge/training.html:176 templates/sheet/_run_dock.html:101
 msgid "Annulla l'ultima"
 msgstr "Undo the last one"
 
@@ -14415,11 +14500,6 @@ msgstr "Passed"
 msgid "Andamento nel periodo scelto"
 msgstr "Trend over the chosen period"
 
-#: templates/components/_history_drills_tab.html:54
-#: templates/exam/compose.html:44
-msgid "prove"
-msgstr "attempts"
-
 #: templates/components/_history_drills_tab.html:70
 #, python-format
 msgid "Andamento dei punteggi, da %(first)s a %(last)s su %(max)s"
@@ -14460,29 +14540,33 @@ msgstr "Score %(score)s"
 msgid "in gara"
 msgstr "in a competition"
 
-#: templates/components/_history_drills_tab.html:144
+#: templates/components/_history_drills_tab.html:139
+msgid "in scheda"
+msgstr "in a sheet"
+
+#: templates/components/_history_drills_tab.html:145
 msgid "Vedi l'andamento"
 msgstr "See the trend"
 
-#: templates/components/_history_drills_tab.html:161
+#: templates/components/_history_drills_tab.html:162
 msgid ""
 "Cancellare questa prova? Il punteggio sparisce e i progressi si "
 "ricalcolano."
 msgstr "Delete this attempt? The score goes and your progress is recalculated."
 
-#: templates/components/_history_drills_tab.html:165
+#: templates/components/_history_drills_tab.html:166
 msgid "Cancella la prova"
 msgstr "Delete the attempt"
 
-#: templates/components/_history_drills_tab.html:179
+#: templates/components/_history_drills_tab.html:180
 msgid "Nessuna prova"
 msgstr "No attempts"
 
-#: templates/components/_history_drills_tab.html:180
+#: templates/components/_history_drills_tab.html:181
 msgid "Nessuna prova di esercizio nel periodo scelto."
 msgstr "No drill attempts in the chosen period."
 
-#: templates/components/_history_drills_tab.html:183
+#: templates/components/_history_drills_tab.html:184
 msgid "Vai agli esercizi"
 msgstr "Go to the drills"
 
@@ -15546,10 +15630,6 @@ msgstr "Open registrations"
 msgid "Minimo"
 msgstr "Minimum"
 
-#: templates/components/_open_inscriptions_modal.html:35
-msgid "Massimo"
-msgstr "Maximum"
-
 #: templates/components/_open_inscriptions_modal.html:44
 msgid ""
 "Da qui la gara è pubblica: compare nell'elenco e chi è in zona riceve la "
@@ -16119,12 +16199,12 @@ msgid "Togli"
 msgstr "Remove"
 
 #: templates/components/_sequence_editor.html:89
-#: templates/sheet/compose.html:202
+#: templates/sheet/compose.html:220
 msgid "Meno"
 msgstr "Less"
 
 #: templates/components/_sequence_editor.html:95
-#: templates/sheet/compose.html:205
+#: templates/sheet/compose.html:223
 msgid "Più"
 msgstr "More"
 
@@ -17839,7 +17919,7 @@ msgstr "to do"
 #: templates/direttore/_esercizi_turni.html:59
 #: templates/direttore/_foglio_esercizio.html:34
 #: templates/direttore/_foglio_esercizio.html:105
-#: templates/sheet/_run_dock.html:49
+#: templates/sheet/_run_dock.html:53
 msgid "Riuscito"
 msgstr "Made it"
 
@@ -19708,8 +19788,8 @@ msgstr "optional"
 
 #: templates/direttore/preparazione/_esercizi.html:58
 #: templates/direttore/preparazione/_esercizi.html:69
-#: templates/exam/compose.html:136 templates/sheet/compose.html:96
-#: templates/sheet/compose.html:237
+#: templates/exam/compose.html:136 templates/sheet/compose.html:111
+#: templates/sheet/compose.html:267
 msgid "Aggiungi un esercizio"
 msgstr "Add a drill"
 
@@ -20146,7 +20226,7 @@ msgstr ""
 msgid "Limite di tempo in minuti (facoltativo)"
 msgstr "Time limit in minutes (optional)"
 
-#: templates/exam/compose.html:80 templates/sheet/compose.html:81
+#: templates/exam/compose.html:80 templates/sheet/compose.html:96
 msgid "Gli esercizi, in ordine"
 msgstr "The drills, in order"
 
@@ -20450,7 +20530,7 @@ msgid "Oppure controproponi"
 msgstr "Or make a counter-proposal"
 
 #: templates/exam/request_detail.html:88 templates/exam/request_form.html:54
-#: templates/sheet/compose.html:224
+#: templates/sheet/compose.html:254
 msgid "Giorno"
 msgstr "Day"
 
@@ -20676,7 +20756,7 @@ msgstr "certified"
 msgid "Da 0 a %(n)s"
 msgstr "From 0 to %(n)s"
 
-#: templates/exam/session.html:123
+#: templates/exam/session.html:123 templates/sheet/_run_progress.html:76
 #, python-format
 msgid "Prova %(n)s"
 msgstr "Attempt %(n)s"
@@ -20709,11 +20789,6 @@ msgstr "No outcome recorded: this is not a fail."
 #, python-format
 msgid "%(done)s prove su %(all)s"
 msgstr "%(done)s attempts out of %(all)s"
-
-#: templates/exam/session.html:179
-#, python-format
-msgid "%(n)s prove"
-msgstr "%(n)s attempts"
 
 #: templates/exam/session.html:182
 msgid "conta la migliore"
@@ -21929,11 +22004,6 @@ msgstr "Reward applies every time streak reaches a multiple"
 msgid "Statistiche Streak"
 msgstr "Streak Statistics"
 
-#: templates/gamification/admin/streaks.html:29
-#: templates/player/challenge_detail.html:45
-msgid "Media"
-msgstr "Average"
-
 #: templates/gamification/admin/streaks.html:31
 msgid "Freeze Totali"
 msgstr "Total Freezes"
@@ -22377,7 +22447,7 @@ msgstr "Remove this venue"
 
 #: templates/individual_match/availability.html:107
 #: templates/individual_match/availability.html:135
-#: templates/sheet/compose.html:150
+#: templates/sheet/compose.html:165
 msgid "Giorni"
 msgstr "Days"
 
@@ -25578,36 +25648,62 @@ msgstr "Reject the request?"
 msgid "Nessuna richiesta in attesa."
 msgstr "No pending requests."
 
-#: templates/sheet/_run_dock.html:26
+#: templates/sheet/_run_dock.html:30
 #, python-format
 msgid "%(lato)s · quanti su %(n)s?"
 msgstr "%(lato)s · how many out of %(n)s?"
 
-#: templates/sheet/_run_dock.html:30
+#: templates/sheet/_run_dock.html:34
 msgid "svuota"
 msgstr "clear"
 
-#: templates/sheet/_run_dock.html:46
+#: templates/sheet/_run_dock.html:50
 msgid "Sbagliato"
 msgstr "Missed"
 
-#: templates/sheet/_run_dock.html:55
+#: templates/sheet/_run_dock.html:59
 msgid "Annulla il tiro"
 msgstr "Undo the shot"
 
-#: templates/sheet/_run_dock.html:59 templates/sheet/run.html:84
+#: templates/sheet/_run_dock.html:63 templates/sheet/run.html:86
 msgid "Scrivi il totale"
 msgstr "Write the total"
 
-#: templates/sheet/_run_dock.html:76 templates/sheet/run.html:100
+#: templates/sheet/_run_dock.html:80 templates/sheet/run.html:102
 msgid "Segna"
 msgstr "Record"
 
-#: templates/sheet/_run_dock.html:81
+#: templates/sheet/_run_dock.html:96
+msgid "Prove fatte"
+msgstr "Attempts done"
+
+#: templates/sheet/_run_dock.html:97
+#, python-format
+msgid "Registra la prova %(n)s di %(tot)s"
+msgstr "Record attempt %(n)s of %(tot)s"
+
+#: templates/sheet/_run_dock.html:106
+msgid "Prove fatte: passa alla voce dopo."
+msgstr "All attempts done: move on to the next item."
+
+#: templates/sheet/_run_dock.html:111
+#, python-format
+msgid "Fai la prova %(n)s di %(tot)s"
+msgstr "Make attempt %(n)s of %(tot)s"
+
+#: templates/sheet/_run_dock.html:114
+msgid ""
+"Si gioca colpo per colpo nella schermata dell'esercizio, e torna qui da "
+"sola."
+msgstr ""
+"It is played shot by shot on the exercise screen, and comes back here on "
+"its own."
+
+#: templates/sheet/_run_dock.html:121
 msgid "Non fatto"
 msgstr "Not done"
 
-#: templates/sheet/_run_dock.html:95
+#: templates/sheet/_run_dock.html:135
 #, python-format
 msgid "%(n)s su %(tot)s finora"
 msgstr "%(n)s of %(tot)s so far"
@@ -25627,19 +25723,24 @@ msgstr "Last time"
 
 #: templates/sheet/_run_progress.html:66
 #, python-format
+msgid "Prova %(n)s di %(tot)s"
+msgstr "Attempt %(n)s of %(tot)s"
+
+#: templates/sheet/_run_progress.html:94
+#, python-format
 msgid "Tiro %(n)s di %(tot)s"
 msgstr "Shot %(n)s of %(tot)s"
 
-#: templates/sheet/_run_progress.html:69
+#: templates/sheet/_run_progress.html:97
 #, python-format
 msgid "%(n)s riusciti"
 msgstr "%(n)s made"
 
-#: templates/sheet/_run_progress.html:84
+#: templates/sheet/_run_progress.html:112
 msgid "Niente da fare"
 msgstr "Nothing to do"
 
-#: templates/sheet/_run_progress.html:86
+#: templates/sheet/_run_progress.html:114
 msgid "Questa scheda non ha voci per oggi: componila, e poi comincia."
 msgstr "This sheet has no items for today: compose it, then begin."
 
@@ -25651,124 +25752,136 @@ msgstr "Compose the sheet"
 msgid "Ogni voce ha il suo «quanto farne»"
 msgstr "Every item has its own \"how much\""
 
-#: templates/sheet/compose.html:62
+#: templates/sheet/compose.html:77
 msgid "quanto farne"
 msgstr "how much"
 
-#: templates/sheet/compose.html:83
+#: templates/sheet/compose.html:98
 #, python-brace-format
 msgid "{n} tiri a riusciti"
 msgstr "{n} shots counted as made"
 
-#: templates/sheet/compose.html:86
+#: templates/sheet/compose.html:101
 msgid "Ancora nessun esercizio: una scheda vuota non si può fare."
 msgstr "No drills yet: an empty sheet cannot be done."
 
-#: templates/sheet/compose.html:100
+#: templates/sheet/compose.html:115
 msgid "Se ti servono"
 msgstr "If you need them"
 
-#: templates/sheet/compose.html:101
+#: templates/sheet/compose.html:116
 msgid "tutto facoltativo"
 msgstr "all optional"
 
-#: templates/sheet/compose.html:105
+#: templates/sheet/compose.html:120
 msgid "la scheda è un gradino di una scala"
 msgstr "the sheet is one step of a ladder"
 
-#: templates/sheet/compose.html:108
+#: templates/sheet/compose.html:123
 msgid "Che gradino"
 msgstr "Which step"
 
-#: templates/sheet/compose.html:113
+#: templates/sheet/compose.html:128
 msgid "Soglia"
 msgstr "Threshold"
 
-#: templates/sheet/compose.html:113
+#: templates/sheet/compose.html:128
 msgid "somma le voci «a riusciti»"
 msgstr "sums the \"made\" items"
 
-#: templates/sheet/compose.html:116
+#: templates/sheet/compose.html:131
 msgid "Quanto serve fare"
 msgstr "How much it takes"
 
-#: templates/sheet/compose.html:121
+#: templates/sheet/compose.html:136
 msgid "Sedute di fila sopra la soglia"
 msgstr "Sessions in a row above the threshold"
 
-#: templates/sheet/compose.html:133
+#: templates/sheet/compose.html:148
 msgid "Chi dice che l'hai passato"
 msgstr "Who says you have passed it"
 
-#: templates/sheet/compose.html:150
+#: templates/sheet/compose.html:165
 msgid "A · B · C, ognuno con le sue voci"
 msgstr "A · B · C, each with its own items"
 
-#: templates/sheet/compose.html:153
+#: templates/sheet/compose.html:168
 msgid "Durata"
 msgstr "Length"
 
-#: templates/sheet/compose.html:153
+#: templates/sheet/compose.html:168
 msgid "quante settimane"
 msgstr "how many weeks"
 
-#: templates/sheet/compose.html:156
+#: templates/sheet/compose.html:171
 msgid "Quante settimane"
 msgstr "How many weeks"
 
-#: templates/sheet/compose.html:164
+#: templates/sheet/compose.html:179
 msgid "Salva la scheda"
 msgstr "Save the sheet"
 
-#: templates/sheet/compose.html:171 templates/sheet/compose.html:198
+#: templates/sheet/compose.html:186 templates/sheet/compose.html:216
 msgid "Quanti tiri"
 msgstr "How many shots"
 
-#: templates/sheet/compose.html:172
+#: templates/sheet/compose.html:187
 msgid "Quante partite"
 msgstr "How many games"
 
-#: templates/sheet/compose.html:173
+#: templates/sheet/compose.html:188
 msgid "Quanti minuti"
 msgstr "How many minutes"
 
-#: templates/sheet/compose.html:177
+#: templates/sheet/compose.html:189
+msgid "Quante prove"
+msgstr "How many attempts"
+
+#: templates/sheet/compose.html:190
+msgid "quante volte?"
+msgstr "how many times?"
+
+#: templates/sheet/compose.html:195
 msgid "Entra nella soglia della scheda."
 msgstr "It counts toward the sheet threshold."
 
-#: templates/sheet/compose.html:178
+#: templates/sheet/compose.html:196
 msgid "Fuori dalla soglia: la soglia somma solo le voci «a riusciti»."
 msgstr "Outside the threshold: it only sums the \"made\" items."
 
-#: templates/sheet/compose.html:183 templates/sheet/compose.html:204
+#: templates/sheet/compose.html:201 templates/sheet/compose.html:222
 msgid "Quanto farne"
 msgstr "How much to do"
 
-#: templates/sheet/compose.html:188
+#: templates/sheet/compose.html:206
 msgid "Come si segna"
 msgstr "How it is recorded"
 
-#: templates/sheet/compose.html:199
+#: templates/sheet/compose.html:217
 msgid "Il «quanto farne» di questa voce."
 msgstr "The \"how much\" of this item."
 
-#: templates/sheet/compose.html:212
+#: templates/sheet/compose.html:236
+msgid "Il numero della casella, dalle prove fatte."
+msgstr "The number in the box, from the attempts made."
+
+#: templates/sheet/compose.html:242
 msgid "Destra e sinistra si segnano separate, ognuna coi suoi tiri."
 msgstr "Right and left are recorded separately, each with its own shots."
 
-#: templates/sheet/compose.html:218
+#: templates/sheet/compose.html:248
 msgid "Sezione"
 msgstr "Section"
 
-#: templates/sheet/compose.html:220
+#: templates/sheet/compose.html:250
 msgid "Riscaldamento, Tecnica, Gioco…"
 msgstr "Warm-up, Technique, Play…"
 
-#: templates/sheet/compose.html:226
+#: templates/sheet/compose.html:256
 msgid "A, B, C…"
 msgstr "A, B, C…"
 
-#: templates/sheet/compose.html:238
+#: templates/sheet/compose.html:268
 msgid "Lo stesso esercizio può comparire in due voci."
 msgstr "The same drill can appear in two items."
 
@@ -26170,19 +26283,19 @@ msgstr "Session of %(giorno)s"
 msgid "voce %(n)s di %(tot)s"
 msgstr "item %(n)s of %(tot)s"
 
-#: templates/sheet/run.html:47
+#: templates/sheet/run.html:49
 msgid "Non è stato possibile segnare la casella."
 msgstr "The box could not be recorded."
 
-#: templates/sheet/run.html:53
+#: templates/sheet/run.html:55
 msgid "Le voci della scheda"
 msgstr "The items of the sheet"
 
-#: templates/sheet/run.html:85
+#: templates/sheet/run.html:87
 msgid "Quanti ne sono riusciti, se li hai contati da te."
 msgstr "How many were made, if you counted them yourself."
 
-#: templates/sheet/run.html:93
+#: templates/sheet/run.html:95
 msgid "Quanti riusciti"
 msgstr "How many made"
 
@@ -26283,10 +26396,6 @@ msgstr "Session notes"
 #: templates/sheet/summary.html:123
 msgid "Tavolo 4. Sul follow a sinistra arrivo corto."
 msgstr "Table 4. On the follow to the left I come up short."
-
-#: templates/sheet/summary.html:141
-msgid "Torna alla seduta"
-msgstr "Back to the session"
 
 #: templates/sheet/summary.html:147
 msgid "Un'altra seduta"

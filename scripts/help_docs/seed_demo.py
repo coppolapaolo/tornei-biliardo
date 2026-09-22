@@ -550,6 +550,29 @@ def _create_challenges(db, director):
                 ),
             ),
         ),
+        # Due esercizi a esito netto, per le schede: dall'ADR-072 una voce
+        # «riusciti su N tiri» vuole un esercizio che si supera o no, e il
+        # catalogo ne aveva uno solo. Stanno in fondo: esami e gara pescano
+        # i primi per posizione.
+        (
+            "Stop shot",
+            "Imbuca la bilia e ferma la battente sul posto. Riuscito se la "
+            "battente non si muove più di una bilia.",
+            True,
+            dict(
+                abilita=["battente"],
+                gesti=["stop"],
+                declared_level=1,
+                variants=[{"label": "destra"}, {"label": "sinistra"}],
+            ),
+        ),
+        (
+            "Tiro lungo di sponda",
+            "La bilia sulla sponda lunga, la battente dall'altra parte del "
+            "tavolo: imbucata o no.",
+            True,
+            dict(abilita=["tiro"], gesti=["follow"], declared_level=2),
+        ),
     ]
     from models.challenge.profile_service import ChallengeProfileService
 
@@ -723,11 +746,16 @@ def _crea_scheda(db, player, challenges) -> None:
     from models.training_sheet.measure import LevelUp
     from models.training_sheet.models import TrainingEntry, TrainingSession
 
+    # Le voci «riusciti» vogliono esercizi a esito netto (ADR-072); la voce a
+    # minuti può stare su qualunque esercizio.
     numeriche = [c for c in challenges if not c.pass_fail_only]
-    if not player or len(numeriche) < 3:
+    a_esito = [c for c in challenges if c.pass_fail_only]
+    if not player or len(numeriche) < 3 or len(a_esito) < 2:
         return
 
-    a_lati, lungo, a_tempo = numeriche[0], numeriche[1], numeriche[2]
+    a_lati = next((c for c in a_esito if c.variants), a_esito[0])
+    lungo = next(c for c in a_esito if c is not a_lati)
+    a_tempo = numeriche[2]
     if not a_lati.variants:
         for posizione, etichetta in enumerate(("destra", "sinistra"), start=1):
             db.session.add(
@@ -892,9 +920,9 @@ def _istruttore_e_allievi(db, players, challenges) -> None:
     from models.training_sheet.measure import LevelUp
     from models.user.role_enum import UserRole
 
-    numeriche = [c for c in challenges if not c.pass_fail_only]
-    if len(numeriche) < 3:
-        log("istruttore non creato: servono almeno tre esercizi numerici")
+    a_esito = [c for c in challenges if c.pass_fail_only]
+    if len(a_esito) < 3:
+        log("istruttore non creato: servono almeno tre esercizi a esito netto")
         return
     admin = User.query.filter_by(role=UserRole.ADMIN.value).first()
     director = User.query.filter_by(username=DEMO_DIRECTOR[0]).first()
@@ -934,13 +962,13 @@ def _istruttore_e_allievi(db, players, challenges) -> None:
             level_up=LevelUp.INSTRUCTOR,
             items=[
                 SheetItemSpec(
-                    challenge_id=numeriche[0].id, measure=SheetMeasure.MADE, amount=5
+                    challenge_id=a_esito[0].id, measure=SheetMeasure.MADE, amount=5
                 ),
                 SheetItemSpec(
-                    challenge_id=numeriche[1].id, measure=SheetMeasure.MADE, amount=10
+                    challenge_id=a_esito[1].id, measure=SheetMeasure.MADE, amount=10
                 ),
                 SheetItemSpec(
-                    challenge_id=numeriche[2].id, measure=SheetMeasure.MADE, amount=5
+                    challenge_id=a_esito[2].id, measure=SheetMeasure.MADE, amount=5
                 ),
             ],
         )
@@ -954,7 +982,7 @@ def _istruttore_e_allievi(db, players, challenges) -> None:
     tecnica = TrainingSheetService.sheets_of(marco.id)[0]
     _apre_la_scheda(db, tecnica, andrea, marco, giorni_fa=40)
     personali = {
-        allievo.id: _scheda_personale(db, allievo, andrea, numeriche, giorni_fa=giorni)
+        allievo.id: _scheda_personale(db, allievo, andrea, a_esito, giorni_fa=giorni)
         for allievo, giorni in (
             (sara, 40),
             (elena, 40),
@@ -1034,7 +1062,7 @@ def _istruttore_e_allievi(db, players, challenges) -> None:
     )
     db.session.commit()
 
-    _corso_chiuso(db, andrea, giulia, numeriche)
+    _corso_chiuso(db, andrea, giulia, a_esito)
     log(
         "istruttore Andrea Ferri: 6 allievi, «Corso del lunedì» "
         "(4 schede prese su 5, 3 lette) e un corso chiuso nello storico"
@@ -1071,7 +1099,7 @@ def _apre_la_scheda(db, scheda, istruttore, proprietario, *, giorni_fa: int):
     return lettore
 
 
-def _scheda_personale(db, allievo, istruttore, numeriche, *, giorni_fa: int):
+def _scheda_personale(db, allievo, istruttore, a_esito, *, giorni_fa: int):
     """La scheda che l'allievo si scrive da se', e che apre all'istruttore.
 
     Serve a far esistere il legame: senza, l'istruttore non potrebbe proporgli
@@ -1092,10 +1120,10 @@ def _scheda_personale(db, allievo, istruttore, numeriche, *, giorni_fa: int):
         name="Esercizi di casa",
         items=[
             SheetItemSpec(
-                challenge_id=numeriche[0].id, measure=SheetMeasure.MADE, amount=10
+                challenge_id=a_esito[0].id, measure=SheetMeasure.MADE, amount=10
             ),
             SheetItemSpec(
-                challenge_id=numeriche[1].id, measure=SheetMeasure.MADE, amount=5
+                challenge_id=a_esito[1].id, measure=SheetMeasure.MADE, amount=5
             ),
         ],
     )
@@ -1142,7 +1170,7 @@ def _sedute_di_scheda(db, scheda, proprietario, sedute) -> None:
         db.session.commit()
 
 
-def _corso_chiuso(db, istruttore, allieva, numeriche) -> None:
+def _corso_chiuso(db, istruttore, allieva, a_esito) -> None:
     """Un corso finito, con dentro un passaggio di livello. E un'ex allieva.
 
     Il permesso di lettura viene **revocato** dopo il passaggio, ed e' voluto:
@@ -1171,10 +1199,10 @@ def _corso_chiuso(db, istruttore, allieva, numeriche) -> None:
         level_up=LevelUp.INSTRUCTOR,
         items=[
             SheetItemSpec(
-                challenge_id=numeriche[0].id, measure=SheetMeasure.MADE, amount=5
+                challenge_id=a_esito[0].id, measure=SheetMeasure.MADE, amount=5
             ),
             SheetItemSpec(
-                challenge_id=numeriche[1].id, measure=SheetMeasure.MADE, amount=10
+                challenge_id=a_esito[1].id, measure=SheetMeasure.MADE, amount=10
             ),
         ],
     )

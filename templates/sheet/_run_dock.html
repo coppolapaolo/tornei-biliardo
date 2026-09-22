@@ -5,7 +5,11 @@
 
    * `buttons`  una fila di tasti 0…N — il gesto del foglio di carta, un tocco;
    * `counter`  tiro per tiro, più «scrivi il totale» per chi ha contato da sé;
-   * `pad`      meno · cifra · più, per punteggio e minuti;
+   * `pad`      meno · cifra · più, per i minuti;
+   * `scores`   lo stesso tastierino più «Registra la prova», una prova alla
+                volta fino a quante ne dice la voce (ADR-072);
+   * `launch`   l'esercizio si registra colpo per colpo: si apre la schermata
+                del catalogo con il contesto della casella, e la prova torna;
    * `done`     due tasti: fatto, o no.
 
    Il tocco **è** la registrazione: nessun «conferma». A proteggere dall'errore
@@ -74,6 +78,42 @@
             aria-label="{{ _('Uno in più') }}"><i class="fas fa-plus"></i></button>
   </div>
   <button type="button" class="btn btn-primary w-100" data-pad-save>{{ _("Segna") }}</button>
+
+  {% elif run.dock == 'scores' %}
+  <div class="c7-exam-pad" data-pad data-max="{{ run.max_score or '' }}">
+    <button type="button" class="c7-exam-pad__btn" data-step="-1"
+            aria-label="{{ _('Uno in meno') }}"><i class="fas fa-minus"></i></button>
+    <div class="c7-exam-pad__figure">
+      <input class="c7-exam-pad__v" inputmode="numeric" pattern="[0-9]*" autocomplete="off"
+             data-pad-value aria-label="{{ _('Punteggio della prova') }}" value="0">
+      {% if run.max_score %}<div class="c7-exam-pad__max">{{ _("su %(n)s", n=run.max_score) }}</div>{% endif %}
+    </div>
+    <button type="button" class="c7-exam-pad__btn c7-exam-pad__btn--plus" data-step="1"
+            aria-label="{{ _('Uno in più') }}"><i class="fas fa-plus"></i></button>
+  </div>
+  <button type="button" class="btn btn-primary w-100" data-score-save
+          {% if cell.is_full %}disabled{% endif %}>
+    {%- if cell.is_full %}{{ _("Prove fatte") }}
+    {%- else %}{{ _("Registra la prova %(n)s di %(tot)s", n=cell.attempts_done + 1, tot=item.amount) }}{% endif -%}
+  </button>
+  <button type="button" class="c7-exam-dock__alt" data-score-undo
+          {% if not cell.attempts_done %}disabled{% endif %}>
+    <i class="fas fa-rotate-left" aria-hidden="true"></i>{{ _("Annulla l'ultima") }}
+  </button>
+
+  {% elif run.dock == 'launch' %}
+  {% if cell.is_full %}
+  <p class="c7-runprog__say" style="text-align:center">{{ _("Prove fatte: passa alla voce dopo.") }}</p>
+  {% else %}
+  <a class="btn btn-primary w-100"
+     href="{{ url_for('challenge.training_session', challenge_id=item.challenge_id,
+                      seduta=run.session.id, voce=item.id, lato=cell.variant_id or None) }}">
+    {{ _("Fai la prova %(n)s di %(tot)s", n=cell.attempts_done + 1, tot=item.amount) }}
+  </a>
+  <p class="c7-rows__sub" style="text-align:center">
+    {{ _("Si gioca colpo per colpo nella schermata dell'esercizio, e torna qui da sola.") }}
+  </p>
+  {% endif %}
 
   {% elif run.dock == 'done' %}
   <div class="c7-duo">

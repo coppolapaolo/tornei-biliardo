@@ -15,7 +15,7 @@ from typing import List, Optional
 
 from flask_babel import gettext as _
 
-from .measure import SheetMeasure
+from .measure import SheetMeasure, value_label
 from .models import TrainingSession, TrainingSheet
 from .session_service import TrainingSessionService
 
@@ -46,7 +46,11 @@ class Row:
     def value_label(self) -> str:
         if self.measure is SheetMeasure.DONE:
             return _("fatto") if self.done else _("no")
-        return "–" if self.value is None else str(self.value)
+        return value_label(self.value)
+
+    @property
+    def previous_label(self) -> str:
+        return value_label(self.previous)
 
 
 @dataclass(frozen=True)

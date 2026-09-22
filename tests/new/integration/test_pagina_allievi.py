@@ -61,7 +61,7 @@ def _scheda_aperta_a(allievo: User, istruttore: User, nome: str = "Tecnica"):
         title=f"Esercizio {uuid.uuid4().hex[:6]}",
         description="istruzioni",
         image_path="/static/challenges/x.png",
-        pass_fail_only=False,
+        pass_fail_only=True,  # «riusciti» vuole un esito netto (ADR-072)
     )
     db.session.add(challenge)
     db.session.flush()

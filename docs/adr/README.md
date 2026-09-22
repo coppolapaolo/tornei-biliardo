@@ -80,11 +80,12 @@ Crea un ADR quando:
 | ADR-064 | [Chi accede resta collegato su quel dispositivo per trenta giorni](ADR-064-sessione-che-dura-trenta-giorni.md) | Accepted | 2026-09-17 |
 | ADR-065 | [Il profilo dell'esercizio: due vocabolari fissi, livello dichiarato, varianti, voto](ADR-065-profilo-dell-esercizio.md) | Accepted | 2026-09-19 |
 | ADR-066 | [La prova fatta di colpi: il punteggio discende dai colpi, il bersaglio è un dato del disegno](ADR-066-prova-fatta-di-colpi.md) | Accepted | 2026-09-20 | *(emendata il 2026-09-20: la modalità con estrazione)*
-| ADR-067 | [La scheda di allenamento: una forma sola, e un registro che non si riscrive](ADR-067-scheda-di-allenamento.md) | Accepted | 2026-09-20 |
-| ADR-068 | [L'andamento mette insieme catalogo e schede su una scala sola, senza sommarli](ADR-068-andamento-una-scala-sola.md) | Accepted | 2026-09-20 |
+| ADR-067 | [La scheda di allenamento: una forma sola, e un registro che non si riscrive](ADR-067-scheda-di-allenamento.md) | Accepted | 2026-09-20 | *(emendata il 2026-09-22: ADR-072)*
+| ADR-068 | [L'andamento mette insieme catalogo e schede su una scala sola, senza sommarli](ADR-068-andamento-una-scala-sola.md) | Accepted | 2026-09-20 | *(emendata il 2026-09-22: ADR-072)*
 | ADR-069 | [Istruttore e allievo: il legame passa dalla scheda](ADR-069-istruttore-e-allievo.md) | Accepted | 2026-09-20 |
 | ADR-070 | [I gruppi ordinano, e «I miei allievi» dice fatti](ADR-070-gruppi-di-allievi-e-triage.md) | Accepted | 2026-09-20 |
 | ADR-071 | [Una scheda si propone, non si assegna](ADR-071-una-scheda-si-propone.md) | Accepted | 2026-09-20 |
+| ADR-072 | [Le prove fatte in scheda sono prove: la misura discende dall'esercizio, e ogni tentativo entra nel catalogo](ADR-072-le-prove-in-scheda-sono-prove.md) | Accepted | 2026-09-22 |
 
 ## Come Creare un Nuovo ADR
 

@@ -46,7 +46,7 @@
 <div class="c7-kpis" style="grid-template-columns:repeat({{ run.cells|length }}, 1fr)">
   {% for cell in run.cells %}
   <div class="c7-kpi">
-    <div class="c7-kpi__v">{{ cell.last_time if cell.last_time is not none else '–' }}</div>
+    <div class="c7-kpi__v">{{ cell.last_time_label }}</div>
     <div class="c7-kpi__l">
       {%- if cell.side %}{{ _("L'ultima volta, %(lato)s", lato=cell.side) }}
       {%- else %}{{ _("L'ultima volta") }}{% endif -%}
@@ -54,6 +54,34 @@
   </div>
   {% endfor %}
 </div>
+{% endif %}
+
+{# ── Le prove a punteggio: quante fatte, e il numero che ne esce ──────── #}
+{% if run.dock in ('scores', 'launch') %}
+{% for cell in run.cells %}
+<section class="c7-card c7-sheetrun__strip">
+  <div class="c7-runprog__head">
+    <span class="c7-label">
+      {%- if cell.side %}{{ cell.side }} <span class="c7-sep">·</span> {% endif -%}
+      {{ _("Prova %(n)s di %(tot)s", n=[cell.attempts_done + 1, item.amount]|min, tot=item.amount) }}
+    </span>
+    <span class="c7-num c7-runprog__now">
+      {%- if cell.is_filled %}{{ run.aggregation_label }} {{ cell.value_label }}{% endif -%}
+    </span>
+  </div>
+  {% if cell.attempts %}
+  <div class="c7-rows" style="margin-top:8px">
+    {% for prova in cell.attempts %}
+    <div class="c7-rows__row c7-runprog__row" style="padding:6px 0">
+      <span class="c7-rows__title c7-runprog__name">{{ _("Prova %(n)s", n=loop.index) }}</span>
+      <span class="c7-num c7-runprog__when">{{ prova.attempted_at|time_local }}</span>
+      <span class="c7-runprog__score">{{ prova.score }}</span>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</section>
+{% endfor %}
 {% endif %}
 
 {# ── Tiro per tiro: la striscia di com'è andata finora ────────────────── #}

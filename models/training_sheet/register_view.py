@@ -18,7 +18,7 @@ from typing import Dict, List, Optional, Sequence, Tuple
 
 from flask_babel import gettext as _
 
-from .measure import SheetMeasure
+from .measure import SheetMeasure, value_label
 from .models import TrainingSession, TrainingSheet
 from .session_service import TrainingSessionService
 
@@ -45,7 +45,7 @@ class ItemRow:
     @property
     def recent_label(self) -> str:
         """«9 · 9 · 10», dalla più vecchia alla più recente."""
-        return " · ".join("–" if v is None else str(v) for v in self.values)
+        return " · ".join(value_label(v) for v in self.values)
 
 
 @dataclass(frozen=True)

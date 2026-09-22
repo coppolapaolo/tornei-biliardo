@@ -419,7 +419,12 @@ class ChallengeService:
         except Exception:
             pass
 
-        ChallengeService._publish_attempt_completed(attempt, DrillOrigin.CATALOG)
+        # Una prova nata in una scheda lo dice (ADR-072): le serie la contano,
+        # l'XP no — lo paga la seduta.
+        ChallengeService._publish_attempt_completed(
+            attempt,
+            DrillOrigin.SHEET if attempt.training_entry_id else DrillOrigin.CATALOG,
+        )
 
         return attempt
 

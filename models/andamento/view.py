@@ -150,7 +150,9 @@ def _dal_catalogo(user_id: int) -> Tuple[List[Osservazione], int]:
                 challenge=challenge,
                 pct=quota,
                 when=voce["attempted_at"],
-                from_sheet=False,
+                # Le prove nate in una scheda arrivano da qui (ADR-072), e
+                # la riga dell'asse deve dirlo come diceva delle caselle.
+                from_sheet=voce.get("source") == "sheet",
             )
         )
     return osservazioni, senza_scala
@@ -191,8 +193,14 @@ def training_days(user_id: int) -> set:
 
 
 def _dalle_schede(user_id: int) -> Tuple[List[Osservazione], int]:
-    """Le caselle delle sedute **chiuse**: una seduta aperta è quella in corso."""
-    from sqlalchemy.orm import joinedload
+    """Le caselle delle sedute **chiuse**: una seduta aperta è quella in corso.
+
+    Una casella fatta di prove (ADR-072) **non** si conta: le sue prove sono
+    già entrate dal catalogo, una osservazione ciascuna, e contarla ancora
+    sarebbe contarla due volte. Restano le caselle senza prove — fatto, vinte,
+    minuti, e quelle scritte prima che le prove esistessero.
+    """
+    from sqlalchemy.orm import joinedload, selectinload
 
     from ..base import db
     from ..training_sheet.measure import SheetMeasure
@@ -208,6 +216,7 @@ def _dalle_schede(user_id: int) -> Tuple[List[Osservazione], int]:
         .options(
             joinedload(TrainingEntry.session),
             joinedload(TrainingEntry.item).joinedload(TrainingSheetItem.challenge),
+            selectinload(TrainingEntry.attempts),
         )
         .filter(
             TrainingSession.user_id == user_id,
@@ -222,6 +231,8 @@ def _dalle_schede(user_id: int) -> Tuple[List[Osservazione], int]:
         voce = entry.item
         challenge = getattr(voce, "challenge", None)
         if challenge is None:
+            continue
+        if entry.attempts:
             continue
         misura = entry.measure_kind
         if misura is SheetMeasure.SCORE:

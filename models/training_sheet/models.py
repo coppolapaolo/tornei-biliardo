@@ -21,8 +21,29 @@ from __future__ import annotations
 
 from typing import List, Optional
 
+from sqlalchemy.types import Float, TypeDecorator
+
 from ..base import BaseModel, db, utc_now
-from .measure import LevelUp, SheetMeasure
+from .measure import LevelUp, ScoreAggregation, SheetMeasure
+
+
+class CellNumber(TypeDecorator):
+    """Il numero di una casella: un intero quando lo è, un decimale se no.
+
+    Una media di prove a punteggio fa 6,5 (ADR-072); un «4 su 5» resta un 4,
+    e deve **restare** un 4 anche letto dal database — non un 4.0 che poi si
+    stampa con la virgola. SQLite scrive il decimale dove scriveva l'intero:
+    la colonna non cambia.
+    """
+
+    impl = Float
+    cache_ok = True
+
+    def process_result_value(self, value, dialect):
+        if value is None:
+            return None
+        numero = float(value)
+        return int(numero) if numero.is_integer() else numero
 
 
 class TrainingSheet(BaseModel):
@@ -199,9 +220,12 @@ class TrainingSheetItem(BaseModel):
     measure = db.Column(
         db.String(20), nullable=False, default="made", server_default="made"
     )
-    #: Quanti tiri, partite o minuti. NULL col punteggio, dove il massimo lo
-    #: dice già l'esercizio.
+    #: Quanti tiri, partite, minuti — o, col punteggio, **quante prove**
+    #: (ADR-072). Il massimo di ogni prova lo dice già l'esercizio.
     amount = db.Column(db.Integer, nullable=True)
+    #: Col punteggio, come le N prove diventano il numero della casella:
+    #: somma, media, mediana, massimo (`ScoreAggregation`). NULL altrove.
+    aggregation = db.Column(db.String(10), nullable=True)
     #: Se le varianti dell'esercizio si segnano separate (destra e sinistra,
     #: A e B), ognuna col suo «quanto farne».
     per_variant = db.Column(
@@ -234,6 +258,27 @@ class TrainingSheetItem(BaseModel):
     @property
     def measure_kind(self) -> SheetMeasure:
         return SheetMeasure.parse(self.measure)
+
+    @property
+    def aggregation_kind(self) -> Optional[ScoreAggregation]:
+        """Come si aggregano le prove a punteggio; ``None`` sulle altre misure."""
+        if self.measure_kind is not SheetMeasure.SCORE:
+            return None
+        return ScoreAggregation.parse(self.aggregation)
+
+    @property
+    def makes_attempts(self) -> bool:
+        """Se le caselle di questa voce sono fatte di prove del catalogo.
+
+        Serve la misura giusta **e** l'esercizio giusto (ADR-072): «riusciti»
+        su un esercizio a esito netto, «punteggio» su uno a punteggio. Una voce
+        composta prima, con la misura dell'altro tipo, resta una casella e
+        basta — leggibile, ma senza prove dietro.
+        """
+        misura = self.measure_kind
+        if not misura.makes_attempts or self.challenge is None:
+            return False
+        return SheetMeasure.for_challenge(self.challenge) is misura
 
     @property
     def variants(self):
@@ -385,6 +430,11 @@ class TrainingEntry(BaseModel):
     una stringa di ``1`` e ``0`` in ordine di tiro. Il numero resta ``value``,
     che è la verità; la striscia è il racconto, e su una voce scritta col
     totale non c'è.
+
+    Dall'ADR-072 una casella «riusciti» o «punteggio» è fatta di **prove del
+    catalogo** (``attempts``): cinque prove a esito netto per un «4 su 5», tre
+    prove a punteggio per una media. Spariscono con la casella. Le caselle
+    scritte prima non ne hanno, e si leggono come sempre.
     """
 
     __tablename__ = "training_entry"
@@ -408,18 +458,28 @@ class TrainingEntry(BaseModel):
         nullable=True,
     )
 
-    #: Il numero: riusciti, punteggio, partite vinte, minuti.
-    value = db.Column(db.Integer, nullable=True)
+    #: Il numero: riusciti, punteggio (anche una media), partite vinte, minuti.
+    value = db.Column(CellNumber, nullable=True)
     #: La spunta, per le voci che si segnano «fatto».
     done = db.Column(db.Boolean, nullable=True)
     marks = db.Column(db.String(200), nullable=True)
 
     measure = db.Column(db.String(20), nullable=False)
     target_amount = db.Column(db.Integer, nullable=True)
+    #: Copiata dalla voce come `measure`: come le prove fanno il numero.
+    aggregation = db.Column(db.String(10), nullable=True)
 
     session = db.relationship("TrainingSession", back_populates="entries")
     item = db.relationship("TrainingSheetItem", back_populates="entries")
     variant = db.relationship("ChallengeVariant")
+    #: Le prove del catalogo di cui questa casella è fatta (ADR-072), in
+    #: ordine. Vuota sulle misure che non fanno prove e sulle caselle vecchie.
+    attempts = db.relationship(
+        "ChallengeAttempt",
+        back_populates="training_entry",
+        cascade="all, delete-orphan",
+        order_by="[ChallengeAttempt.attempted_at, ChallengeAttempt.id]",
+    )
 
     __table_args__ = (
         # Una casella per (seduta, voce, variante). In SQLite un UNIQUE non
@@ -457,6 +517,26 @@ class TrainingEntry(BaseModel):
     def shots_done(self) -> int:
         """Quanti tiri sono stati segnati uno per uno. Zero col totale."""
         return len(self.marks or "")
+
+    @property
+    def aggregation_kind(self) -> Optional[ScoreAggregation]:
+        if self.measure_kind is not SheetMeasure.SCORE:
+            return None
+        return ScoreAggregation.parse(self.aggregation)
+
+    @property
+    def completed_attempts(self) -> List:
+        """Le prove chiuse, in ordine: una aperta non fa ancora numero."""
+        return [a for a in self.attempts if a.completed]
+
+    @property
+    def scores(self) -> List[int]:
+        """I punteggi delle prove chiuse, per l'aggregazione."""
+        return [a.score for a in self.completed_attempts if a.score is not None]
+
+    @property
+    def attempts_done(self) -> int:
+        return len(self.completed_attempts)
 
     def __repr__(self) -> str:  # pragma: no cover - banale
         return f"<TrainingEntry s={self.session_id} i={self.item_id} v={self.value}>"

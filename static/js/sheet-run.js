@@ -22,7 +22,9 @@
   var urls = {
     record: root.dataset.recordUrl,
     shot: root.dataset.shotUrl,
-    undo: root.dataset.undoUrl
+    undo: root.dataset.undoUrl,
+    score: root.dataset.scoreUrl,
+    scoreUndo: root.dataset.scoreUndoUrl
   };
   var msgError = root.dataset.msgError;
   var at = parseInt(root.dataset.at, 10) || 0;
@@ -79,7 +81,7 @@
 
   /* ── I gesti sulle caselle ─────────────────────────────────────────── */
   root.addEventListener('click', function (event) {
-    var tasto = event.target.closest('[data-value],[data-shot],[data-done],[data-undo],[data-clear],[data-pad-save]');
+    var tasto = event.target.closest('[data-value],[data-shot],[data-done],[data-undo],[data-clear],[data-pad-save],[data-score-save],[data-score-undo]');
     if (!tasto || tasto.disabled) return;
     var dove = cella(tasto);
     if (!dove) return;
@@ -107,6 +109,17 @@
     if (tasto.hasAttribute('data-pad-save')) {
       var campo = tasto.closest('[data-cell]').querySelector('[data-pad-value]');
       manda(urls.record, Object.assign({}, dove, { value: parseInt(campo.value, 10) || 0 }));
+      return;
+    }
+    /* Una prova a punteggio (ADR-072): il numero della casella lo rifà il
+       server dalle prove, e torna già disegnato. */
+    if (tasto.hasAttribute('data-score-save')) {
+      var punteggio = tasto.closest('[data-cell]').querySelector('[data-pad-value]');
+      manda(urls.score, Object.assign({}, dove, { score: parseInt(punteggio.value, 10) || 0 }));
+      return;
+    }
+    if (tasto.hasAttribute('data-score-undo')) {
+      manda(urls.scoreUndo, dove);
     }
   });
 

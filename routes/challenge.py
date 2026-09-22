@@ -23,7 +23,7 @@ from models import (
     Challenge,
     ChallengeAttempt,
 )
-from models.exceptions import ValidationError
+from models.exceptions import ConflictError, ValidationError
 from utils import (
     director_required,
     challenge_player_required,
@@ -806,7 +806,6 @@ def _refuse_meaning_change_from_builder(
     resto si manda al modulo, che la domanda la sa fare.
     """
     from models.challenge.authoring import ChallengeAuthoringService, ChallengeDraft
-    from models.exceptions import ConflictError
 
     if challenge is None:
         return
@@ -942,6 +941,7 @@ def training_session(challenge_id):
             attempts=_recent_attempts(challenge_id),
             best_score=_best_score(challenge),
             is_shots=_is_shots(challenge),
+            sheet_context=_sheet_context_from_args(challenge),
             **_run_context(challenge),
         )
 
@@ -1057,6 +1057,61 @@ def _is_shots(challenge) -> bool:
     from models.challenge.recording import RecordingMode
 
     return RecordingMode.parse(challenge.recording_mode).is_sequence
+
+
+def _sheet_context_from_args(challenge):
+    """La casella di scheda da cui si arriva, se si arriva da lì (ADR-072).
+
+    Tre parametri nell'indirizzo — seduta, voce, lato — che la pagina rimanda
+    alla chiusura della prova. Si accettano solo se la seduta è **propria e
+    aperta** e la voce è di questo esercizio: altrimenti la pagina è quella di
+    sempre, senza dire niente — un indirizzo storto non è un errore da
+    mostrare, è un indirizzo storto.
+    """
+    from models.training_sheet import TrainingSessionService
+    from models.training_sheet.models import TrainingSheetItem
+
+    session_id = request.args.get("seduta", type=int)
+    item_id = request.args.get("voce", type=int)
+    if not session_id or not item_id:
+        return None
+    session = db.session.get(
+        __import__(
+            "models.training_sheet.models", fromlist=["TrainingSession"]
+        ).TrainingSession,
+        session_id,
+    )
+    if session is None or session.user_id != current_user.id or not session.is_open:
+        return None
+    item = db.session.get(TrainingSheetItem, item_id)
+    if (
+        item is None
+        or item.sheet_id != session.sheet_id
+        or item.challenge_id != challenge.id
+    ):
+        return None
+    del TrainingSessionService  # solo per il tipo: la seduta si è letta sopra
+    voci = session.sheet.items_for_day(session.day)
+    indice = next((i for i, voce in enumerate(voci) if voce.id == item.id), 0)
+    return {
+        "session_id": session.id,
+        "item_id": item.id,
+        "variant_id": request.args.get("lato", type=int),
+        "back_url": url_for("sheet.run", session_id=session.id, voce=indice),
+    }
+
+
+def _sheet_context_from_payload(data):
+    """Lo stesso contesto, come lo rimanda il browser alla chiusura."""
+    session_id = _payload_int(data, "sheet_session_id")
+    item_id = _payload_int(data, "sheet_item_id")
+    if not session_id or not item_id:
+        return None
+    return {
+        "session_id": session_id,
+        "item_id": item_id,
+        "variant_id": _payload_int(data, "sheet_variant_id"),
+    }
 
 
 def _run_context(challenge):
@@ -1276,7 +1331,44 @@ def training_shot_close(challenge_id):
     # parlare di prove aperte.
     db.get_or_404(Challenge, challenge_id)
 
+    data = request.get_json(silent=True) or {}
+    contesto = _sheet_context_from_payload(data)
+
     def _chiudi():
+        if contesto is not None:
+            # Dalla scheda (ADR-072): la prova si aggancia alla casella
+            # **prima** di chiudersi, così l'evento nasce con l'origine
+            # giusta; poi la casella rilegge il numero, e si torna alla seduta.
+            from models.training_sheet import TrainingSessionService
+            from models.training_sheet.models import TrainingSession
+
+            aperta = ShotRunService.current(current_user.id, challenge_id).attempt
+            if aperta is None:
+                raise ConflictError(_("Non c'è nessuna prova aperta da chiudere."))
+            TrainingSessionService.attach_attempt(
+                contesto["session_id"],
+                contesto["item_id"],
+                current_user,
+                attempt_id=aperta.id,
+                variant_id=contesto["variant_id"],
+            )
+            ShotRunService.close(current_user.id, challenge_id)
+            TrainingSessionService.refresh_from_attempts(
+                contesto["session_id"],
+                contesto["item_id"],
+                current_user,
+                variant_id=contesto["variant_id"],
+            )
+            seduta = db.session.get(TrainingSession, contesto["session_id"])
+            voci = seduta.sheet.items_for_day(seduta.day) if seduta else []
+            indice = next(
+                (i for i, v in enumerate(voci) if v.id == contesto["item_id"]), 0
+            )
+            return {
+                "redirect_url": url_for(
+                    "sheet.run", session_id=contesto["session_id"], voce=indice
+                )
+            }
         chiusa = ShotRunService.close(current_user.id, challenge_id)
         # Chiudere porta al riepilogo: la nuvola dei punti d'arrivo e che cosa
         # dice sono la fine della sessione, non una riga in più nell'elenco.
