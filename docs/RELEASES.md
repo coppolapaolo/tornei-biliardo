@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.48.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.47.1...v1.48.0) (2026-09-22)
+
+
+### Funzioni nuove
+
+* le prove fatte in scheda sono prove del catalogo, la misura la dice l'esercizio ([#547](https://github.com/coppolapaolo/tornei-biliardo/issues/547)) ([545ecd0](https://github.com/coppolapaolo/tornei-biliardo/commit/545ecd09a5e63af8a1b2f889a5de9b08379b9a27))
+
+
+### Correzioni
+
+* il test della costanza non dipende più dal giorno della settimana ([#546](https://github.com/coppolapaolo/tornei-biliardo/issues/546)) ([a02e452](https://github.com/coppolapaolo/tornei-biliardo/commit/a02e452e9f6861da4b7a16b33e0ffbfafb93b490))
+
 ## [1.47.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.47.0...v1.47.1) (2026-09-22)
 
 
