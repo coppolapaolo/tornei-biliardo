@@ -87,7 +87,7 @@ class Config:
     #
     # Il valore compare nel footer di ogni pagina (`templates/base.html`) e
     # nella risposta di `/health`.
-    VERSION = "1.47.1"  # x-release-please-version
+    VERSION = "1.48.0"  # x-release-please-version
 
     # Cache-buster per CSS/JS (vedi _compute_asset_version). Non dipende
     # dall'ambiente ma dal filesystem, quindi resta qui.
