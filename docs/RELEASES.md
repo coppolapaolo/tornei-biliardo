@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.47.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.47.0...v1.47.1) (2026-09-22)
+
+
+### Correzioni
+
+* il disegnatore rifatto arriva anche ai browser che avevano il foglio vecchio ([#545](https://github.com/coppolapaolo/tornei-biliardo/issues/545)) ([c5ce5ef](https://github.com/coppolapaolo/tornei-biliardo/commit/c5ce5ef938f3b5ec1717dc6578452cf01921f38a))
+* una migration fuori ordine non resta pendente per sempre ([#543](https://github.com/coppolapaolo/tornei-biliardo/issues/543)) ([646014e](https://github.com/coppolapaolo/tornei-biliardo/commit/646014e48bb727e575ccbe9bf4d55ae84d2d41ee))
+
 ## [1.47.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.46.0...v1.47.0) (2026-09-20)
 
 
