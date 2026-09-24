@@ -331,6 +331,34 @@ class TestQuantoValeLaX:
         assert voce.matches_won == 1
         assert voce.rack_difference == 3
 
+    def test_la_x_vale_una_vittoria_anche_nella_classifica_generale(self, db_session):
+        """`SPECIFICHE.md` righe 147 e 154, **sul campionato**.
+
+        > abbina un giocatore alla X assegnando il match vinto, ma con zero
+        > differenza punti
+
+        I test sopra guardano la classifica della gara. Quella del campionato
+        passa da `aggregate_campionato_scores`, che scartava le X: una vittoria
+        in meno proprio nelle righe da cui partono gli inviti ai playoff
+        (campionato 5, 24/09/2026 — `test_x_negli_inviti_playoff.py`).
+        """
+        from models.campionato.models import Campionato
+
+        campionato = Campionato(name=f"Spec {uuid.uuid4().hex[:6]}")
+        db_session.add(campionato)
+        db_session.flush()
+        gara = _gara(db_session)
+        gara.campionato_id = campionato.id
+        giocatore = _utente(db_session)
+        self._con_la_x(db_session, gara, giocatore, 0)
+
+        voce = {
+            v.player_id: v
+            for v in ScoreAggregator().aggregate_campionato_scores(campionato.id)
+        }[giocatore.id]
+        assert voce.matches_won == 1
+        assert voce.rack_difference == 0
+
 
 # ══ Pareggio a distanza pari ═════════════════════════════════════════════
 

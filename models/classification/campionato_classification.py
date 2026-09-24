@@ -235,11 +235,12 @@ class ClassificationService:
         player_gare: Dict[int, set] = {}
 
         for gara in gare:
-            # Include both 'completed' and 'validated' as finished matches
+            # Include both 'completed' and 'validated' as finished matches.
+            # La X conta come partecipazione, come nella pagina
+            # (`participations` dalle `RoundClassification`): altrimenti le gare
+            # minime dei playoff darebbero due risposte nella zona e negli inviti.
             completed_matches = [
-                m
-                for m in gara.matches
-                if MatchStatus.is_finished(m.status) and not m.is_bye
+                m for m in gara.matches if MatchStatus.is_finished(m.status)
             ]
             for match in completed_matches:
                 if match.player1_id:
