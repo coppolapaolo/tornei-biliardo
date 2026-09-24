@@ -410,8 +410,10 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Redirect alla dashboard invece di ricaricare la pagina
-                    window.location.href = '/dashboard';
+                    // Dove porta il pulsante «indietro»: la gara per chi la
+                    // dirige, la dashboard per chi ci gioca. Prima era fisso
+                    // su `/dashboard`, e il direttore usciva dalla gara.
+                    window.location.href = {{ match_head.back_url(match)|trim|tojson }};
                 } else {
                     showError({{ _("Errore:")|tojson }} + ' ' + (data.error || {{ _("Impossibile confermare il risultato")|tojson }}));
                     restore();
