@@ -112,7 +112,9 @@ blocks:
           A match that reached the distance from the players' scoreboard,
           but without both confirmations, shows up in a green card with
           «Validate the result». If the score is not right, fix it with − and
-          + before validating: the card says who gets the table next.
+          + before validating: the card says who gets the table next. Like the
+          tap that closes a match, validating waits **three seconds** with
+          **Cancel** before it goes through.
       - name: "Score a trio"
         text: >-
           A trio card has three names, and under each one **+** and **−** for
