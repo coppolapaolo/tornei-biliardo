@@ -137,48 +137,9 @@ class PositionGaraClassificationStrategy(ClassificationStrategy):
         )
 
 
-class PositionCampionatoClassificationStrategy(ClassificationStrategy):
-    """Classifica di campionato per somma di punti-posizione (US-17).
-
-    I punti li assegna `position_points`, con la tabella configurata sul
-    campionato o quella di default. Tutti i pari merito di una banda prendono
-    lo stesso punteggio, perché la banda è la posizione.
-
-    A pari punti conta chi ha vinto più partite, e poi la differenza rack: sono
-    criteri secondari già disponibili e servono solo a dare un ordine di
-    elencazione stabile.
-    """
-
-    name = "position_campionato"
-    display_name = "Posizione (campionato)"
-    description = "Somma dei punti per posizione nelle gare a tabellone"
-    scope = ClassificationScope.CAMPIONATO
-
-    def get_sort_key(self, score: PlayerScore) -> Tuple[Any, ...]:
-        return (-score.points, -score.matches_won, -score.rack_difference)
-
-    def calculate(
-        self,
-        scores: Sequence[PlayerScore],
-        previous_classification: Optional[ClassificationResult] = None,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> ClassificationResult:
-        sorted_scores = sorted(scores, key=self.get_sort_key)
-        entries, has_ties = self._build_entries_with_ties(sorted_scores)
-
-        return ClassificationResult(
-            entries=tuple(entries),
-            scope=self.scope,
-            has_ties=has_ties,
-            requires_tiebreaker=False,
-            metadata={"strategy": self.name},
-        )
-
-
 __all__ = [
     "BRACKET_POSITION_KEY",
     "NO_BRACKET_POSITION",
-    "PositionCampionatoClassificationStrategy",
     "PositionGaraClassificationStrategy",
     "PositionRoundClassificationStrategy",
     "bracket_position_of",

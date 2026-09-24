@@ -126,7 +126,7 @@ tornei-biliardo/
 │   │       ├── base.py
 │   │       ├── gara_strategies.py
 │   │       ├── round_strategies.py
-│   │       ├── campionato_strategies.py
+│   │       ├── position_strategies.py
 │   │       └── challenge_strategies.py
 │   │
 │   ├── campionato/                 # Campionati (raggruppamento gare)

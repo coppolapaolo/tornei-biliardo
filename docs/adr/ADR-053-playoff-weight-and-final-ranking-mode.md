@@ -4,6 +4,8 @@
 **Stato**: Accepted
 **Decisori**: Paolo Coppola, Claude
 
+> **Aggiornamento 2026-09-24 (ADR-073).** Le due implementazioni della classifica generale citate qui — l'aggregatore sulle partite con `_apply_playoff_final_order` e il calcolo della pagina — sono diventate una: `classifica_generale`. Peso e modalità playoff valgono come descritto, in un posto solo.
+
 ## Contesto
 
 Un campionato può chiudersi con una gara di playoff. La domanda che nessuno

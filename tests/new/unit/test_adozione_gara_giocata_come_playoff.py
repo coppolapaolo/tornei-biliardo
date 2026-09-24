@@ -40,6 +40,7 @@ from models.status_enum import (
     MatchStatus,
     TournamentStatus,
 )
+from models.classification.gara_classification import RoundClassificationService
 from tests.new.unit.test_avvio_playoff import _make_config, _make_user, _uid
 
 PESO = 5
@@ -124,6 +125,9 @@ class Scenario:
             _partita(db_session, g1, v, p, (3, i))
             self.stagione[v.id] = 3
             self.stagione[p.id] = i
+        # Come l'app alla chiusura del turno: la classifica generale somma le
+        # classifiche delle gare (ADR-073), non le partite.
+        RoundClassificationService.calculate_and_save_round_classification(g1.id, 1)
         self.cfg = _make_config(db_session, self.camp, pos_to=8, max_p=8)
         self.cfg.playoff_weight = PESO
         self.camp.terminated_at = utc_now()
@@ -160,6 +164,9 @@ class Scenario:
             _partita(db_session, self.giocata, v, p, (3, 2 - (i % 3)))
             self.finale[v.id] = 3
             self.finale[p.id] = 2 - (i % 3)
+        RoundClassificationService.calculate_and_save_round_classification(
+            self.giocata.id, 1
+        )
         db_session.commit()
 
     def adotta(self, **kw):

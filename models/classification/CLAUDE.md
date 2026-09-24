@@ -24,7 +24,7 @@ from models.classification.services import (
     StrategyBasedClassificationService
 )
 
-# Update campionato classification (cached 5 min)
+# Scrive la copia della classifica generale nelle righe Classification (ADR-073)
 ClassificationService.update_campionato_classification(campionato_id)
 
 # Calculate round classification (for matchmaking)
@@ -77,7 +77,6 @@ Classification uses strategy pattern in `strategies/` subdirectory:
 | `random_gara` | Gara | Random final standings |
 | `position_round` | Round | Gare a tabellone, classifica parziale |
 | `position_gara` | Gara | Gare a tabellone, bande di pari merito |
-| `position_campionato` | Campionato | Somma dei punti per posizione (US-17) |
 
 ### Sistema POSITION (gare a tabellone)
 
@@ -93,10 +92,10 @@ divergenza deliberata dalla convenzione di `gara_strategies.py:36-46`, dove i
 pari merito *devono* far scattare lo spot shot rally.
 
 I punti di campionato stanno in `position_points.py`, con i valori della spec
-come default e una tabella sovrascrivibile su `Campionato.position_points`. Le
-due tabelle punti già presenti nel codice (`statistics_service.py` e
-`PointBasedCampionatoClassificationStrategy`) **non** vanno unificate con
-questa: sono alimentate da campionati esistenti.
+come default e una tabella sovrascrivibile su `Campionato.position_points`. È
+l'unica tabella: le altre due (10/7/5/4 della pagina, 1000/800/500 di una
+strategia mai usata) sono state tolte con la classifica generale unica
+(ADR-073).
 
 ```python
 from models.classification.registry import get_classification_registry
@@ -110,8 +109,18 @@ result = strategy.calculate(gara, round_number)
 
 ## Services
 
-### ClassificationService
-- `update_campionato_classification(campionato_id)` - Cached, aggregates all gare
+### Classifica generale del campionato: un calcolo solo (ADR-073)
+- `TournamentStatisticsService.classifica_generale(campionato_id)` — **l'unico**
+  posto in cui si calcola: somma le classifiche finali delle gare concluse
+  (`SPECIFICHE.md` riga 292), pesate, con SSR e punti per piazzamento. La
+  legge la pagina via `calculate_general_classification`.
+- `ClassificationService.update_campionato_classification(campionato_id)` —
+  ne scrive la **copia** nelle righe `Classification` (profilo, export, inviti
+  ai playoff). Non è in cache: una funzione che scrive non si mette in cache.
+
+Non esistono più strategie di campionato, né un aggregatore di campionato sulle
+partite: una regola nuova della classifica generale si scrive in
+`classifica_generale`, e basta.
 
 ### RoundClassificationService
 - `calculate_round_classification(gara_id, round_number)` - For matchmaking
@@ -149,7 +158,7 @@ Tiebreaker order depends on strategy:
 - **Do not forget to calculate after round completion** - Matchmaking needs updated classification
 - **Do not query PlayerEncounter without gara_id** - Always scope to gara
 - **Do not call `db.session.commit()`** - Services use `@transactional`
-- **Do not bypass caching** - `update_campionato_classification` is cached for performance
+- **Do not compute the campionato standings anywhere else** - `classifica_generale` is the only source; rows are its copy (ADR-073)
 
 ---
 

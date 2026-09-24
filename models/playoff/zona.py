@@ -12,9 +12,10 @@ la da' il dominio, non un «primi N» scritto nel template:
 
 La zona si calcola dalla **stessa classifica che la pagina mostra**,
 `calculate_general_classification`, e non dalle righe `Classification`
-persistite — che sono l'altro percorso della classifica generale, quello da
-cui partono gli inviti (`start_playoff` le ricalcola prima di leggerle).
-Fino al 14/09/2026 leggeva le righe: in produzione erano ferme alla gara 1,
+persistite. Dal 24/09/2026 le righe ne sono la copia (ADR-073), ma una copia
+è ferma al suo ultimo ricalcolo; gli inviti le ricalcolano prima di leggerle
+(`start_playoff`). Fino al 14/09/2026 la zona leggeva le righe: in
+produzione erano ferme alla gara 1,
 perche' la gara 2 era stata chiusa prima che la chiusura le ricalcolasse
 (PR #335), e la barra saltava il quarto in classifica per segnare il
 quattordicesimo. Un dato derivato e persistito e' coerente solo se ogni

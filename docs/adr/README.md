@@ -86,6 +86,7 @@ Crea un ADR quando:
 | ADR-070 | [I gruppi ordinano, e «I miei allievi» dice fatti](ADR-070-gruppi-di-allievi-e-triage.md) | Accepted | 2026-09-20 |
 | ADR-071 | [Una scheda si propone, non si assegna](ADR-071-una-scheda-si-propone.md) | Accepted | 2026-09-20 |
 | ADR-072 | [Le prove fatte in scheda sono prove: la misura discende dall'esercizio, e ogni tentativo entra nel catalogo](ADR-072-le-prove-in-scheda-sono-prove.md) | Accepted | 2026-09-22 |
+| ADR-073 | [La classifica generale si calcola in un posto solo](ADR-073-classifica-generale-un-calcolo-solo.md) | Accepted | 2026-09-24 |
 
 ## Come Creare un Nuovo ADR
 

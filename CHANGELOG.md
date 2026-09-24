@@ -25,6 +25,16 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
   meno proprio al momento di decidere chi entra: nel campionato 5 l'ottavo
   posto, che la pagina dava a serpico67, è andato a RIZA. Ora le due
   classifiche contano la X allo stesso modo, anche per le gare minime.
+- **La classifica generale del campionato è una sola.** Profilo, export e
+  inviti ai playoff leggevano una classifica calcolata a parte, con regole
+  proprie, che poteva dire una cosa diversa dalla pagina: oltre alla X,
+  ignorava lo spareggio (a pari merito passava chi si era registrato prima) e
+  contava anche le gare ancora in corso. Ora è la copia esatta della classifica
+  in pagina. Nei campionati a piazzamenti la pagina usa la tabella punti della
+  specifica (25, 18, 15, 12…), la stessa del profilo, e i pari merito
+  condividono la posizione; nessun campionato in corso è a piazzamenti. Una
+  gara chiusa con meno turni del previsto ora entra nella classifica generale
+  (ADR-073).
 - **Gli esercizi fra i turni davano 404 ai giocatori**, e solo in produzione:
   le due pagine con cui si registra un tentativo non erano dichiarate
   nell'elenco degli endpoint visibili, quindi l'app le nascondeva a tutti

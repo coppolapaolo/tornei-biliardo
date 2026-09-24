@@ -304,15 +304,16 @@ class TestCriterioSegueIlSistemaNonIlTipo:
             "anche se il campionato è di tipo Random."
         )
 
-    def test_strategia_persistita_segue_il_sistema(self, db_session):
-        """Anche la classifica congelata per i playoff usa lo stesso criterio.
+    def test_la_classifica_generale_segue_il_sistema(self, db_session):
+        """Pagina e righe persistite leggono lo stesso sistema.
 
-        I due percorsi (vista on-the-fly e `Classification` persistita) sono
-        implementazioni separate: se scelgono criteri diversi, i qualificati ai
-        playoff non sono quelli che i giocatori vedono in classifica.
+        Fino al 2026-09-24 la classifica persistita sceglieva una strategia
+        sua (`_get_campionato_strategy`), mappata a mano sul sistema: due
+        percorsi, due mappe da tenere allineate. Ora il calcolo è uno (ADR-073)
+        e il sistema lo dice `sistema_della_classifica_generale`.
         """
-        from models.classification.campionato_classification import (
-            ClassificationService,
+        from models.campionato.statistics_service import (
+            sistema_della_classifica_generale,
         )
 
         amalfi_a_triangoli = _make_campionato(
@@ -320,10 +321,9 @@ class TestCriterioSegueIlSistemaNonIlTipo:
             campionato_type=MatchmakingStrategy.AMALFI.value,
             system=ClassificationSystem.RACK.value,
         )
-        strategy = ClassificationService._get_campionato_strategy(amalfi_a_triangoli)
-        assert strategy.name == "random_campionato", (
-            "Il nome è storico, i criteri sono quelli del sistema RACK: "
-            "triangoli totali, poi SSR."
+        assert (
+            sistema_della_classifica_generale(amalfi_a_triangoli)
+            == ClassificationSystem.RACK
         )
 
         random_a_vittorie = _make_campionato(
@@ -331,8 +331,20 @@ class TestCriterioSegueIlSistemaNonIlTipo:
             campionato_type=MatchmakingStrategy.RANDOM.value,
             system=ClassificationSystem.WINS.value,
         )
-        strategy = ClassificationService._get_campionato_strategy(random_a_vittorie)
-        assert strategy.name == "amalfi_campionato"
+        assert (
+            sistema_della_classifica_generale(random_a_vittorie)
+            == ClassificationSystem.WINS
+        )
+
+        a_tabellone = _make_campionato(
+            db_session,
+            campionato_type=MatchmakingStrategy.DIRECT_ELIMINATION.value,
+            system=ClassificationSystem.WINS.value,
+        )
+        assert (
+            sistema_della_classifica_generale(a_tabellone)
+            == ClassificationSystem.POSITION
+        ), "un campionato a tabellone somma punti per piazzamento"
 
 
 @pytest.mark.unit
