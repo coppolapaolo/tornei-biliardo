@@ -254,7 +254,10 @@ blocks:
           fra gli iscritti, anche oltre i posti, fino all'avvio della gara, e
           resta scritto che l'hai registrato tu. Rifiutare un invito scaduto
           non serve: il posto è già libero, e se c'era qualcuno da chiamare al
-          suo posto è già stato chiamato.
+          suo posto è già stato chiamato. Una riga che dice **Ritirato** è un
+          invito tolto da una correzione dell'amministratore, perché era
+          partito da una classifica sbagliata: accanto c'è chi ha preso quel
+          posto, e il giocatore ha ricevuto un avviso che glielo spiega.
       - title: "Crea la gara"
         text: >-
           Quando le risposte bastano, **Crea la gara playoff** crea la gara e

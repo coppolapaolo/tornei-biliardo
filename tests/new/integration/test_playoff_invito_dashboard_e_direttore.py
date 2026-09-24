@@ -280,3 +280,45 @@ class TestRegoleClassificaFinaleDallaPagina:
         aggiornata = db.session.get(PlayoffConfiguration, cfg.id)
         assert aggiornata.decides_final_ranking is True
         assert aggiornata.playoff_weight == 3
+
+
+class TestInvitoRitirato:
+    """Un invito ritirato da `models/playoff/riallineamento.py` (campionato 5,
+    24/09/2026): lo stato `REPLACED` non aveva un ramo in nessuna delle due
+    pagine, e l'invito ritirato si presentava come un invito senza pulsanti."""
+
+    @staticmethod
+    def _ritira(dati, db_session):
+        invito = dati["inviti"][1]
+        invito.status = QualificationStatus.REPLACED
+        invito.replaced_by_id = dati["giocatori"][2].id
+        db_session.commit()
+        return invito
+
+    def test_il_giocatore_legge_che_l_invito_non_vale_piu(
+        self, client, db_session, campionato_con_inviti
+    ):
+        invito = self._ritira(campionato_con_inviti, db_session)
+        _login(client, campionato_con_inviti["giocatori"][1])
+
+        html = client.get(f"/player/playoff/invitation/{invito.id}").get_data(
+            as_text=True
+        )
+
+        assert "Invito ai playoff ritirato" in html
+        assert "è stato ritirato e non è più valido" in html
+        assert f"/player/playoff/confirm/{invito.id}" not in html
+
+    def test_il_direttore_vede_chi_ha_preso_il_posto(
+        self, client, db_session, campionato_con_inviti
+    ):
+        self._ritira(campionato_con_inviti, db_session)
+        _login(client, campionato_con_inviti["direttore"])
+
+        html = client.get(
+            f"/admin/campionato/{campionato_con_inviti['campionato'].id}"
+        ).get_data(as_text=True)
+
+        subentrato = campionato_con_inviti["giocatori"][2].username
+        assert f"invito ritirato, al suo posto {subentrato}" in html
+        assert "Ritirato" in html
