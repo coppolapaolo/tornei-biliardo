@@ -7,7 +7,7 @@ Contains: TournamentStatisticsService, compute_campionato_status.
 
 from __future__ import annotations
 
-from typing import List, Dict, Any
+from typing import Any, Dict, List, Optional
 
 from models.base import db
 from models.match.models import Match
@@ -20,6 +20,23 @@ from models.status_enum import (
 from .models import Campionato
 from ..transaction.manager import read_only
 from models.exceptions import NotFoundError
+
+
+def sistema_della_classifica_generale(campionato: Campionato) -> ClassificationSystem:
+    """Su cosa si ordina la classifica generale di questo campionato.
+
+    Il sistema scelto per il campionato, non il suo tipo (ADR-047) — tranne
+    per i campionati a tabellone, che sommano punti per piazzamento anche se
+    sono nati prima che il sistema POSITION fosse selezionabile
+    (`ClassificationService.uses_position_points`).
+    """
+    from models.classification.campionato_classification import (
+        ClassificationService,
+    )
+
+    if ClassificationService.uses_position_points(campionato):
+        return ClassificationSystem.POSITION
+    return campionato.classification_system
 
 
 def _racks_won_of(classification, gara_is_rack: bool) -> int:
@@ -149,12 +166,20 @@ class TournamentStatisticsService:
         self,
         garas: List,
         classification_system: ClassificationSystem,
+        campionato: Optional[Campionato] = None,
     ) -> Dict[int, Dict[str, Any]]:
         """Aggrega i totali dei giocatori per un insieme di gare.
+
+        Somma le classifiche **finali delle gare** (`SPECIFICHE.md` riga 292):
+        vittorie, triangoli e differenza dall'ultimo turno, lo spareggio e il
+        piazzamento dalla classifica della gara. La X c'è perché c'è nella
+        classifica della gara, con la sua vittoria.
 
         Args:
             garas: Lista di gare da aggregare
             classification_system: Sistema di classifica del campionato
+            campionato: serve alla tabella dei punti per piazzamento, che il
+                campionato può sovrascrivere; senza, vale quella di default
 
         Returns:
             Dizionario user_id -> dati aggregati del giocatore
@@ -170,7 +195,20 @@ class TournamentStatisticsService:
         # N+1 fix (hot path homepage anonima): invece di una query
         # RoundClassification + un lazy-load user PER OGNI gara, batcha tutto in
         # un'unica query sulle coppie (gara_id, round-finale) con user eager.
-        final_round_by_gara = {g.id: g.rounds_count for g in garas}
+        # L'ultimo turno è quello **giocato**, come lo legge la chiusura della
+        # gara (`SpareggioService._get_effective_final_round`), che scrive lì le
+        # posizioni finali: una gara chiusa con meno turni del previsto non ha
+        # classifica al turno `rounds_count`, e sparirebbe dalla somma.
+        ultimo_giocato = dict(
+            db.session.query(Match.gara_id, db.func.max(Match.round_number))
+            .filter(Match.gara_id.in_([g.id for g in garas]))
+            .group_by(Match.gara_id)
+            .all()
+        )
+        final_round_by_gara = {
+            g.id: ultimo_giocato.get(g.id) or g.current_round or g.rounds_count
+            for g in garas
+        }
         rc_rows = (
             db.session.query(RoundClassification)
             .filter(
@@ -190,6 +228,7 @@ class TournamentStatisticsService:
         # ogni sistema, non solo a RACK — anche la classifica a vittorie usa lo
         # spareggio come terzo criterio (`Campionato.get_scoring_system`).
         ssr_by_gara: Dict[int, Dict[int, int]] = {}
+        piazzamento_by_gara: Dict[int, Dict[int, int]] = {}
         gc_rows = (
             db.session.query(GaraClassification)
             .filter(GaraClassification.gara_id.in_(final_round_by_gara.keys()))
@@ -197,6 +236,7 @@ class TournamentStatisticsService:
         )
         for gc in gc_rows:
             ssr_by_gara.setdefault(gc.gara_id, {})[gc.user_id] = gc.spot_shot_wins or 0
+            piazzamento_by_gara.setdefault(gc.gara_id, {})[gc.user_id] = gc.position
 
         # Quali gare classificano a triangoli totali. Si legge dalle gare già in
         # mano invece che da `rc.gara`, che sarebbe un lazy-load per riga.
@@ -213,7 +253,7 @@ class TournamentStatisticsService:
 
             gara_is_rack = gara.id in rack_gara_ids
             # Il peso moltiplica ogni contributo della gara prima della somma
-            # (ADR-053, come `ScoreAggregator.aggregate_campionato_scores`).
+            # (ADR-053).
             # Vale 0 per la gara di un playoff che decide la classifica: chi
             # l'ha giocata compare comunque, con contributo nullo.
             peso = gara.classification_weight
@@ -254,34 +294,27 @@ class TournamentStatisticsService:
                 ] += peso * gara_ssr_scores.get(user_id, 0)
                 player_totals[user_id]["participations"] += 1
 
-        # Per il sistema a piazzamenti, calcola i punti.
-        # NB: questa tabella è volutamente diversa da quella di
-        # `position_points.py` (25/18/15/12) — vedi il docstring di quel modulo:
-        # alimentano campionati diversi e unificarle riscriverebbe classifiche
-        # già pubblicate.
+        # Il sistema a piazzamenti somma i punti del piazzamento **finale** di
+        # ogni gara — la banda del tabellone, dove i pari merito condividono la
+        # posizione — con la tabella della specifica o quella del campionato
+        # (`position_points.py`). Fino al 2026-09-24 qui c'era una seconda
+        # tabella, 10/7/5/4, letta dalla posizione nell'ultimo turno: la pagina
+        # e le righe davano punti diversi agli stessi piazzamenti.
         if classification_system == ClassificationSystem.POSITION:
-            position_points = {
-                1: 10,
-                2: 7,
-                3: 5,
-                4: 4,
-                5: 3,
-                6: 2,
-                7: 2,
-                8: 1,
-                9: 1,
-                10: 1,
-            }
+            from models.classification.position_points import (
+                points_for_position,
+                points_table_for_campionato,
+            )
+
+            tabella = points_table_for_campionato(campionato)
             for gara in garas:
-                # Riusa i dati già batch-caricati sopra (niente nuove query).
-                for classification in rc_by_gara.get(gara.id, []):
-                    user_id = classification.user_id
+                for user_id, posizione in piazzamento_by_gara.get(gara.id, {}).items():
                     if user_id in player_totals:
-                        points = position_points.get(classification.position, 0)
-                        # Anche i punti per piazzamento seguono il peso della
-                        # gara (ADR-053), come nelle righe persistite.
-                        player_totals[user_id]["total_points"] += (
-                            gara.classification_weight * points
+                        # Anche i punti seguono il peso della gara (ADR-053).
+                        player_totals[user_id][
+                            "total_points"
+                        ] += gara.classification_weight * points_for_position(
+                            posizione, tabella
                         )
 
         return player_totals
@@ -334,34 +367,46 @@ class TournamentStatisticsService:
             Lista di tuple (posizione, user_id) ordinate
         """
         if classification_system == ClassificationSystem.RACK:
-            sorted_players = sorted(
-                player_totals.items(),
-                key=lambda x: (
-                    -x[1]["total_racks_won"],
-                    -x[1]["total_spot_shot_wins"],
-                ),
-            )
-        elif classification_system == ClassificationSystem.POSITION:
-            sorted_players = sorted(
-                player_totals.items(),
-                key=lambda x: (
-                    -x[1].get("total_points", 0),
-                    -x[1]["total_matches_won"],
-                    -x[1]["total_rack_difference"],
-                ),
-            )
-        else:
-            sorted_players = sorted(
-                player_totals.items(),
-                key=lambda x: (
-                    -x[1]["total_matches_won"],
-                    -x[1]["total_rack_difference"],
-                    -x[1]["total_spot_shot_wins"],
-                ),
-            )
 
-        # Restituisce lista di (posizione, user_id)
-        return [(pos, user_id) for pos, (user_id, _) in enumerate(sorted_players, 1)]
+            def chiave(dati: Dict[str, Any]) -> tuple:
+                return (-dati["total_racks_won"], -dati["total_spot_shot_wins"])
+
+        elif classification_system == ClassificationSystem.POSITION:
+
+            def chiave(dati: Dict[str, Any]) -> tuple:
+                return (
+                    -dati.get("total_points", 0),
+                    -dati["total_matches_won"],
+                    -dati["total_rack_difference"],
+                )
+
+        else:
+
+            def chiave(dati: Dict[str, Any]) -> tuple:
+                return (
+                    -dati["total_matches_won"],
+                    -dati["total_rack_difference"],
+                    -dati["total_spot_shot_wins"],
+                )
+
+        sorted_players = sorted(player_totals.items(), key=lambda x: chiave(x[1]))
+
+        if classification_system != ClassificationSystem.POSITION:
+            return [
+                (pos, user_id) for pos, (user_id, _) in enumerate(sorted_players, 1)
+            ]
+
+        # A piazzamenti il pari merito è l'esito, non un'ambiguità (ADR-040):
+        # chi ha la stessa chiave condivide la posizione, e il successivo salta
+        # quelle occupate (1, 2, 2, 4).
+        ranking: List[tuple] = []
+        precedente = None
+        for indice, (user_id, dati) in enumerate(sorted_players, 1):
+            if chiave(dati) != precedente:
+                posizione = indice
+                precedente = chiave(dati)
+            ranking.append((posizione, user_id))
+        return ranking
 
     @read_only(domain="campionato")
     def calculate_general_classification(self, campionato_id: int) -> List[tuple]:
@@ -369,6 +414,23 @@ class TournamentStatisticsService:
 
         Include il calcolo del trend (previous_position) confrontando la classifica
         attuale con quella calcolata escludendo l'ultima gara completata.
+        Il calcolo sta in `classifica_generale`; qui c'è solo la sessione in
+        sola lettura.
+        """
+        return self.classifica_generale(campionato_id)
+
+    def classifica_generale(self, campionato_id: int) -> List[tuple]:
+        """La classifica generale: l'**unico** posto in cui si calcola.
+
+        La leggono la pagina del campionato (attraverso
+        `calculate_general_classification`) e le righe `Classification`, che
+        ne sono la copia (`ClassificationService.update_campionato_classification`):
+        profilo, export e inviti ai playoff. Fino al 2026-09-24 le righe
+        rifacevano i conti dalle partite con regole loro, e ogni regola nuova
+        andava scritta due volte (ADR-073).
+
+        Non ha decoratori di sessione perché la chiama anche chi scrive, dentro
+        la propria transazione.
         """
         from models.competition.models import Gara
         from models.campionato.models import Campionato
@@ -409,25 +471,25 @@ class TournamentStatisticsService:
         if not completed_garas:
             return []
 
-        # Il criterio è il sistema di classifica scelto per il campionato, non
-        # il suo tipo: sono due configurazioni indipendenti (ADR-047).
-        system = campionato.classification_system
+        system = sistema_della_classifica_generale(campionato)
 
         # Calcola posizioni precedenti (tutte le gare tranne l'ultima)
         previous_positions: Dict[int, int] = {}
         if len(completed_garas) > 1:
             previous_garas = completed_garas[:-1]
-            previous_totals = self._aggregate_player_totals(previous_garas, system)
+            previous_totals = self._aggregate_player_totals(
+                previous_garas, system, campionato
+            )
             previous_ranking = self._sort_and_rank_players(previous_totals, system)
             previous_positions = {user_id: pos for pos, user_id in previous_ranking}
 
         # Calcola classifica attuale (tutte le gare)
-        player_totals = self._aggregate_player_totals(completed_garas, system)
+        player_totals = self._aggregate_player_totals(
+            completed_garas, system, campionato
+        )
         current_ranking = self._sort_and_rank_players(player_totals, system)
         # Quando la classifica finale la decide il playoff, l'ordine dei
-        # partecipanti lo detta la gara di playoff (ADR-053). Stessa regola
-        # delle righe `Classification`: questa pagina e il profilo devono
-        # dire la stessa cosa.
+        # partecipanti lo detta la gara di playoff (ADR-053).
         current_ranking = self._ordine_deciso_dal_playoff(campionato, current_ranking)
 
         # Costruisci risultato con posizione precedente

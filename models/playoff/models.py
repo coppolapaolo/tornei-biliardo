@@ -394,10 +394,10 @@ class PlayoffConfiguration(BaseModel):
     def _meets_minimum_requirements(self, classification: Any) -> bool:
         """Check if the player of this row meets minimum requirements.
 
-        Legge `gare_played` dalla riga in mano — una `Classification`
-        (popolata da `ClassificationService._count_gare_played`, che conta le
-        gare con almeno un match completed/validated) o una riga calcolata al
-        volo dalla zona playoff. Filtrare per `Gara.status == "completed"`
+        Legge `gare_played` dalla riga in mano — una `Classification` o una
+        riga calcolata al volo dalla zona playoff: sono la stessa classifica
+        (ADR-073), e contano le gare concluse in cui il giocatore compare nella
+        classifica finale. Filtrare per `Gara.status == "completed"`
         non e' affidabile perche' una gara puo' essere di fatto conclusa pur
         restando in PLAYING finche' il director non la chiude formalmente.
         Prima rifaceva una query per candidato, sulle sole righe persistite.

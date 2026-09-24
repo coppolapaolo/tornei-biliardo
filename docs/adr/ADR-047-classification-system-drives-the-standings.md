@@ -4,6 +4,8 @@
 **Stato**: Accepted
 **Decisori**: Paolo Coppola
 
+> **Aggiornamento 2026-09-24 (ADR-073).** `_get_campionato_strategy` e le strategie di campionato non esistono più: il sistema della classifica generale lo dice `sistema_della_classifica_generale`, e il calcolo è uno solo.
+
 ## Contesto
 
 Un campionato ha due configurazioni indipendenti:

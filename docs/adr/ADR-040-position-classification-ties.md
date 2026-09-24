@@ -4,6 +4,8 @@
 **Stato**: Accepted
 **Decisori**: Paolo Coppola
 
+> **Aggiornamento 2026-09-24 (ADR-073).** Delle tre tabelle punti citate qui ne resta una, quella di `position_points.py`: pagina e righe della classifica generale la usano entrambe, e i pari merito condividono la posizione anche nella classifica generale.
+
 ## Contesto
 
 Il sistema di classifica `POSITION` esisteva come valore ammesso ma era un

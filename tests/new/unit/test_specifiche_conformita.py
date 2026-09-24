@@ -332,32 +332,42 @@ class TestQuantoValeLaX:
         assert voce.rack_difference == 3
 
     def test_la_x_vale_una_vittoria_anche_nella_classifica_generale(self, db_session):
-        """`SPECIFICHE.md` righe 147 e 154, **sul campionato**.
+        """`SPECIFICHE.md` righe 147 e 154, **sul campionato** (riga 292).
 
         > abbina un giocatore alla X assegnando il match vinto, ma con zero
         > differenza punti
 
         I test sopra guardano la classifica della gara. Quella del campionato
-        passa da `aggregate_campionato_scores`, che scartava le X: una vittoria
-        in meno proprio nelle righe da cui partono gli inviti ai playoff
-        (campionato 5, 24/09/2026 — `test_x_negli_inviti_playoff.py`).
+        è la somma delle classifiche delle gare (riga 292), e deve portarsi
+        dietro la X: le righe da cui partono gli inviti ai playoff la
+        scartavano (campionato 5, 24/09/2026 — `test_x_negli_inviti_playoff.py`).
         """
         from models.campionato.models import Campionato
+        from models.campionato.statistics_service import TournamentStatisticsService
+        from models.classification.gara_classification import (
+            RoundClassificationService,
+        )
 
         campionato = Campionato(name=f"Spec {uuid.uuid4().hex[:6]}")
         db_session.add(campionato)
         db_session.flush()
         gara = _gara(db_session)
         gara.campionato_id = campionato.id
+        gara.rounds_count = 1
+        gara.status = GaraStatus.COMPLETED.value
         giocatore = _utente(db_session)
         self._con_la_x(db_session, gara, giocatore, 0)
+        RoundClassificationService.calculate_and_save_round_classification(gara.id, 1)
+        db_session.commit()
 
         voce = {
-            v.player_id: v
-            for v in ScoreAggregator().aggregate_campionato_scores(campionato.id)
+            dati["user_id"]: dati
+            for _pos, dati in TournamentStatisticsService().classifica_generale(
+                campionato.id
+            )
         }[giocatore.id]
-        assert voce.matches_won == 1
-        assert voce.rack_difference == 0
+        assert voce["total_matches_won"] == 1
+        assert voce["total_rack_difference"] == 0
 
 
 # ══ Pareggio a distanza pari ═════════════════════════════════════════════

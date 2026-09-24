@@ -113,6 +113,12 @@ def random_campionato_with_matches(db_session):
         winner_id=player_a.id,
     )
     db_session.add(match)
+    db_session.flush()
+    # Come l'app alla chiusura del turno: la classifica generale somma le
+    # classifiche delle gare (ADR-073).
+    from models.classification.gara_classification import RoundClassificationService
+
+    RoundClassificationService.calculate_and_save_round_classification(gara.id, 1)
     db_session.commit()
 
     return {

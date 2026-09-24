@@ -1,8 +1,8 @@
 """Il peso della prova, dal modulo fino alla colonna (issue #64).
 
 Il motore c'era già: `Gara.weight` esiste, `Gara.classification_weight` lo
-legge, e `ScoreAggregator.aggregate_campionato_scores` moltiplica per quel
-valore il contributo di ogni gara prima di sommarlo (ADR-053). Mancava soltanto
+legge, e la classifica generale moltiplica per quel valore il contributo di
+ogni gara prima di sommarlo (ADR-053, ADR-073). Mancava soltanto
 il modo di **dirlo**: l'unico peso che una schermata sapesse impostare era
 quello del playoff, e ogni altra gara nasceva a 1 senza che nessuno potesse
 scegliere diversamente.

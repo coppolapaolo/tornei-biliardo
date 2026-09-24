@@ -137,25 +137,12 @@ def _bootstrap_registry(registry: ClassificationStrategyRegistry) -> None:
     # Position strategies (gare a tabellone: la classifica la dà il tabellone,
     # non il conteggio delle vittorie)
     from .strategies.position_strategies import (
-        PositionCampionatoClassificationStrategy,
         PositionGaraClassificationStrategy,
         PositionRoundClassificationStrategy,
     )
 
     registry.register(PositionRoundClassificationStrategy())
     registry.register(PositionGaraClassificationStrategy())
-    registry.register(PositionCampionatoClassificationStrategy())
-
-    # Campionato strategies
-    from .strategies.campionato_strategies import (
-        AmalfiCampionatoClassificationStrategy,
-        RandomCampionatoClassificationStrategy,
-        PointBasedCampionatoClassificationStrategy,
-    )
-
-    registry.register(AmalfiCampionatoClassificationStrategy())
-    registry.register(RandomCampionatoClassificationStrategy())
-    registry.register(PointBasedCampionatoClassificationStrategy())
 
     # Challenge strategies
     from .strategies.challenge_strategies import ChallengeClassificationStrategy

@@ -8,13 +8,13 @@ I valori di default sono quelli della spec (`CLASSIFICATION_SYSTEM.md` §7.5):
 può sovrascriverli (`Campionato.position_points`); chi non lo fa non deve
 configurare nulla.
 
-**Perché una terza tabella punti.** Nel codice ce ne sono già due —
-`statistics_service.py` (10/7/5/4…) e
-`campionato_strategies.PointBasedCampionatoClassificationStrategy`
-(1000/800/500…) — e la tentazione di unificarle è forte. Non si fa: sono
-alimentate da campionati esistenti, e cambiarne i valori riscriverebbe in
-silenzio classifiche già pubblicate. Restano dove sono; questa serve al solo
-sistema POSITION.
+**L'unica tabella punti.** Fino al 2026-09-24 ce n'erano altre due: la
+pagina del campionato usava 10/7/5/4…, e una strategia mai scelta da nessuno
+(`PointBasedCampionatoClassificationStrategy`) 1000/800/500…. Le righe
+`Classification` usavano questa, quindi pagina e righe davano punti diversi
+agli stessi piazzamenti. Le altre due sono state tolte con la classifica
+generale unica (ADR-073): in produzione nessun campionato era a piazzamenti,
+quindi nessuna classifica pubblicata è cambiata.
 
 Tutti i pari merito di una banda ricevono lo stesso punteggio, perché la banda
 **è** la posizione: quattro quartifinalisti sono tutti 5° e prendono tutti i

@@ -121,6 +121,13 @@ def test_start_playoff_finds_qualified_after_terminate(db_session):
     ]
     db_session.add_all(matches)
     db_session.commit()
+    # La classifica del turno, come la scrive l'app a partite chiuse: è quella
+    # che la dashboard mostrava nel bug 8, e la classifica generale è la somma
+    # delle classifiche delle gare (ADR-073).
+    from models.classification.gara_classification import RoundClassificationService
+
+    RoundClassificationService.calculate_and_save_round_classification(gara.id, 1)
+    db_session.commit()
 
     # Playoff config: top 3, min 1 gara giocata
     config = PlayoffConfiguration(

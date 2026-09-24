@@ -22,7 +22,6 @@ from models.base import db, utc_now
 from models.campionato.models import Campionato
 from models.classification.campionato_classification import ClassificationService
 from models.classification.models import GaraClassification
-from models.classification.score_aggregator import ScoreAggregator
 from models.competition.models import Gara
 from models.match.models import Match
 from models.playoff.models import (
@@ -95,6 +94,11 @@ def _make_match(db_session, gara, winner, loser, score=(5, 2)):
     )
     db_session.add(match)
     db_session.flush()
+    # Come l'app alla chiusura della partita: la classifica generale somma le
+    # classifiche delle gare (ADR-073), che nascono da qui.
+    from models.classification.gara_classification import RoundClassificationService
+
+    RoundClassificationService.calculate_and_save_round_classification(gara.id, 1)
     return match
 
 
@@ -113,6 +117,25 @@ def _make_config(db_session, campionato, **kwargs):
     db_session.add(cfg)
     db_session.flush()
     return cfg
+
+
+def _classifica(campionato_id):
+    """La classifica generale, riga per riga, nei nomi di un `PlayerScore`."""
+    from types import SimpleNamespace
+
+    from models.campionato.statistics_service import TournamentStatisticsService
+
+    return [
+        SimpleNamespace(
+            player_id=dati["user_id"],
+            matches_won=dati["total_matches_won"],
+            racks_won=dati["total_racks_won"],
+            rack_difference=dati["total_rack_difference"],
+        )
+        for _pos, dati in TournamentStatisticsService().classifica_generale(
+            campionato_id
+        )
+    ]
 
 
 def _score_for(scores, player_id):
@@ -142,7 +165,7 @@ class TestPesoDellaProva:
         _make_match(db_session, g2, a, b, (5, 3))
         db_session.commit()
 
-        scores = ScoreAggregator().aggregate_campionato_scores(camp.id)
+        scores = _classifica(camp.id)
 
         punteggio_a = _score_for(scores, a.id)
         assert punteggio_a.matches_won == 2
@@ -164,7 +187,7 @@ class TestPesoDellaProva:
         _make_match(db_session, g2, a, b, (5, 3))
         db_session.commit()
 
-        scores = ScoreAggregator().aggregate_campionato_scores(camp.id)
+        scores = _classifica(camp.id)
 
         punteggio_a = _score_for(scores, a.id)
         # 1 vittoria + 3 x 1 vittoria
@@ -175,7 +198,7 @@ class TestPesoDellaProva:
         assert punteggio_a.rack_difference == 9
 
         punteggio_b = _score_for(scores, b.id)
-        assert punteggio_b.matches_lost == 4
+        assert punteggio_b.matches_won == 0
         assert punteggio_b.racks_won == 2 + 3 * 3
 
     def test_il_peso_ribalta_la_classifica(self, db_session):
@@ -340,7 +363,7 @@ class TestClassificaFinale:
         playoff = db.session.get(Gara, dati["playoff"].id)
         assert playoff.classification_weight == 0
 
-        scores = ScoreAggregator().aggregate_campionato_scores(dati["campionato"].id)
+        scores = _classifica(dati["campionato"].id)
         # D ha perso entrambe le prove di campionato e vinto solo il playoff.
         assert _score_for(scores, dati["d"].id).matches_won == 0
 
@@ -699,9 +722,10 @@ class TestPesoSuiPuntiPerPosizione:
         camp, a, b = self._campionato_a_piazzamenti(db_session, weight=3)
         righe = TournamentService().calculate_general_classification(camp.id)
         punti = {dati["username"]: dati["total_points"] for _, dati in righe}
-        # Tabella della pagina 10/7: A = 10 + 3*7 = 31, B = 7 + 3*10 = 37.
-        assert punti[a.username] == 31
-        assert punti[b.username] == 37
+        # La tabella è quella delle righe, 25/18 (ADR-073): fino al 2026-09-24
+        # la pagina ne aveva una sua, 10/7, e questo test la difendeva.
+        assert punti[a.username] == 79
+        assert punti[b.username] == 93
         assert _classifica_in_pagina(camp.id)[b.username] == 1
 
     def test_con_peso_uno_e_pari(self, db_session):
