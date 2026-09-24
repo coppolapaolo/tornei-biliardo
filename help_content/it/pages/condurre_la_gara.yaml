@@ -113,7 +113,9 @@ blocks:
           Una partita arrivata alla distanza dal segnapunti dei giocatori,
           ma senza la conferma di entrambi, compare in una card verde con
           «Valida il risultato». Se il punteggio non è quello, correggilo con
-          − e + prima di validare: la card dice a chi passa il tavolo.
+          − e + prima di validare: la card dice a chi passa il tavolo. Come il
+          tocco che chiude, anche la validazione aspetta **tre secondi** con
+          **Annulla**, prima di partire.
       - name: "Segnare un trio"
         text: >-
           La card del trio ha tre nomi, e sotto ognuno **+** e **−** per i

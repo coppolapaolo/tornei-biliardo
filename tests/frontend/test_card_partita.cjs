@@ -17,6 +17,8 @@
  *    confermato (Ronin Cup, 16/09/2026: «tap e non succede niente»);
  * 6. il tocco che chiude **aspetta** prima di partire: la card dice che si sta
  *    chiudendo e offre «Annulla»; se la pagina se ne va, parte lo stesso.
+ * 7. «Valida il risultato» aspetta come il tocco che chiude (`attendi`),
+ *    con la stessa striscia e lo stesso «Annulla» (gara del 23/09/2026).
  *
  * Run:  cd tests/frontend && npm install && npm test
  */
@@ -280,6 +282,62 @@ async function se_la_pagina_se_ne_va_la_chiusura_parte_lo_stesso() {
   assert.strictEqual(a.inviati.length, 1, "e non parte una seconda volta");
 }
 
+function ambienteValida() {
+  const dom = new JSDOM(
+    '<!doctype html><body><article class="c7-partita" id="c">' +
+      '<div class="c7-partita__lati"></div>' +
+      '<button id="v">Valida il risultato</button></article></body>',
+    { runScripts: "outside-only" }
+  );
+  const w = dom.window;
+  w.eval(SRC);
+  const chiamate = [];
+  const btn = w.document.getElementById("v");
+  const card = w.document.getElementById("c");
+  const opzioni = { attesaChiusura: ATTESA, testi: { chiusura: "si chiude fra {n}", annulla: "annulla" } };
+  return {
+    w: w,
+    btn: btn,
+    chiamate: chiamate,
+    striscia: function () { return card.querySelector(".c7-partita__chiusura"); },
+    valida: function () {
+      return w.CardPartita.attendi(btn, function (keepalive) { chiamate.push(keepalive); }, opzioni);
+    },
+  };
+}
+
+async function valida_aspetta_prima_di_partire() {
+  const a = ambienteValida();
+  assert.strictEqual(a.valida(), true);
+  assert.strictEqual(a.chiamate.length, 0, "la validazione non parte subito");
+  assert.ok(a.striscia(), "la card dice che si sta chiudendo");
+  assert.ok(a.striscia().textContent.indexOf("si chiude fra") !== -1);
+  assert.strictEqual(a.btn.disabled, true, "un secondo tocco non accoda niente");
+  assert.strictEqual(a.valida(), false);
+  await dopo(ATTESA + 20);
+  assert.deepStrictEqual(a.chiamate, [false], "parte una volta sola");
+  assert.strictEqual(a.striscia(), null);
+}
+
+async function annulla_ferma_la_validazione() {
+  const a = ambienteValida();
+  a.valida();
+  a.striscia().querySelector("button").click();
+  assert.strictEqual(a.striscia(), null);
+  assert.strictEqual(a.btn.disabled, false, "il pulsante torna disponibile");
+  await dopo(ATTESA + 20);
+  assert.strictEqual(a.chiamate.length, 0);
+}
+
+async function se_la_pagina_se_ne_va_la_validazione_parte_lo_stesso() {
+  const a = ambienteValida();
+  a.valida();
+  a.w.dispatchEvent(new a.w.Event("pagehide"));
+  assert.deepStrictEqual(a.chiamate, [true], "con keepalive");
+  await dopo(ATTESA + 20);
+  assert.strictEqual(a.chiamate.length, 1, "e non parte una seconda volta");
+}
+
 (async function () {
   const prove = [
     la_partita_a_due_si_ferma_alla_distanza,
@@ -295,6 +353,9 @@ async function se_la_pagina_se_ne_va_la_chiusura_parte_lo_stesso() {
     annulla_ferma_la_chiusura,
     il_meno_durante_l_attesa_annulla,
     se_la_pagina_se_ne_va_la_chiusura_parte_lo_stesso,
+    valida_aspetta_prima_di_partire,
+    annulla_ferma_la_validazione,
+    se_la_pagina_se_ne_va_la_validazione_parte_lo_stesso,
   ];
   for (const prova of prove) {
     await prova();

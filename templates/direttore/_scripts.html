@@ -1410,12 +1410,13 @@
   }
 
   /** Un POST dalla card che, se va, ricarica la pagina. */
-  function inviaAllaCard(url, btn, dati) {
+  function inviaAllaCard(url, btn, dati, keepalive) {
     var restore = withLoading(btn);
     return fetch(url, {
       method: 'POST',
       headers: { 'X-CSRFToken': csrfToken(), 'X-Requested-With': 'XMLHttpRequest' },
-      body: dati || new FormData()
+      body: dati || new FormData(),
+      keepalive: keepalive === true
     })
       .then(function (r) { return r.json().then(function (d) { return { ok: r.ok, d: d }; }); })
       .then(function (esito) {
@@ -1432,9 +1433,24 @@
       });
   }
 
-  /** «Valida il risultato» dalla card verde del trio. */
+  /** Le opzioni dell'attesa prima di chiudere: gli stessi testi degli
+   *  stepper, perche' e' la stessa striscia. */
+  function opzioniAttesa() {
+    return {
+      testi: {
+        chiusura: GARA_CONFIG.i18n.cardChiusura,
+        annulla: GARA_CONFIG.i18n.cardAnnulla
+      }
+    };
+  }
+
+  /** «Valida il risultato» dalla card verde del trio: parte dopo i tre
+   *  secondi con «Annulla», come il tocco che chiude. */
   function validaTrio(trioId, btn) {
-    return inviaAllaCard('/admin/gara/trio/' + trioId + '/confirm', btn, null);
+    return window.CardPartita.attendi(btn, function (keepalive) {
+      btn.disabled = false;
+      inviaAllaCard('/admin/gara/trio/' + trioId + '/confirm', btn, null, keepalive);
+    }, opzioniAttesa());
   }
 
   /** «Inizia il set N» dalla card della partita a set. */
@@ -1451,12 +1467,22 @@
   }
 
   /** «Valida il risultato» dalla card verde: la nota sulla card ha gia'
-   *  detto cosa succede, non serve una seconda domanda. */
+   *  detto cosa succede, non serve una seconda domanda. Parte dopo i tre
+   *  secondi con «Annulla», come il tocco che chiude (gara del 23/09/2026:
+   *  validare chiude la partita quanto l'ultimo +, e non aspettava). */
   function validaDallaCard(matchId, btn) {
+    return window.CardPartita.attendi(btn, function (keepalive) {
+      btn.disabled = false;
+      spedisciValidazione(matchId, btn, keepalive);
+    }, opzioniAttesa());
+  }
+
+  function spedisciValidazione(matchId, btn, keepalive) {
     var restore = withLoading(btn);
     fetch('/admin/match/' + matchId + '/validate', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken() }
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'X-CSRFToken': csrfToken() },
+      keepalive: keepalive === true
     })
       .then(function (r) { return r.json(); })
       .then(function (data) {

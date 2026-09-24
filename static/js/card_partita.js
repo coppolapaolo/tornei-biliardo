@@ -35,6 +35,8 @@
  *   confermata la card lo dice, e solo dopo un attimo la pagina si ricarica
  *   (`attesaRicarica`) — altrimenti la card sparisce in fondo senza che si
  *   capisca se il tocco e' andato.
+ * - **anche «Valida il risultato» aspetta** (`attendi`), con la stessa
+ *   striscia: chiude la partita quanto l'ultimo + (gara del 23/09/2026).
  *
  * Il foglio della correzione usa le stesse funzioni sui suoi lati: `due`, o
  * `trio` senza `data-piu` e con `data-massimo` e `data-totale`, i limiti del
@@ -176,8 +178,10 @@
     togliStriscia(card);
   }
 
-  /** La striscia «si chiude fra N» con «Annulla», in fondo alla card. */
-  function mostraAttesa(card, o, millisecondi) {
+  /** La striscia «si chiude fra N» con «Annulla», sotto i punteggi.
+   *  `alAnnulla` e' quel che fa «Annulla»: tornare al punteggio di prima per
+   *  gli stepper, rimettere il pulsante per «Valida il risultato». */
+  function mostraAttesa(card, o, millisecondi, alAnnulla) {
     togliStriscia(card);
     const doc = card.ownerDocument;
     const striscia = doc.createElement('div');
@@ -202,15 +206,7 @@
       if (restano > 1) { restano -= 1; scrivi(); }
     }, 1000);
 
-    annulla.addEventListener('click', function () {
-      const st = statoDi(card);
-      const prima = st.prima;
-      fermaAttesa(card);
-      if (!prima) return;
-      card.dataset.punti = prima.join(',');
-      aggiorna(card);
-      if (!uguali(prima, st.confermati)) spedisci(card, o);
-    });
+    annulla.addEventListener('click', alAnnulla);
   }
 
   function mostraChiusa(card, o, soloSet) {
@@ -242,12 +238,53 @@
     if (!st.timer) st.prima = prima;
     fermaAttesa(card);
     st.opzioni = o;
+    st.parti = function (keepalive) { return richiesta(card, o, keepalive); };
     inAttesa.add(card);
-    mostraAttesa(card, o, millisecondi);
+    mostraAttesa(card, o, millisecondi, function () {
+      const prima = st.prima;
+      fermaAttesa(card);
+      if (!prima) return;
+      card.dataset.punti = prima.join(',');
+      aggiorna(card);
+      if (!uguali(prima, st.confermati)) spedisci(card, o);
+    });
     st.timer = root.setTimeout(function () {
       fermaAttesa(card);
       spedisci(card, o);
     }, millisecondi);
+  }
+
+  /**
+   * «Valida il risultato» (e ogni comando che chiude una partita senza
+   * passare dagli stepper): la stessa attesa del tocco che chiude, con la
+   * stessa striscia e lo stesso «Annulla». Rilievo della gara del
+   * 2026-09-23: segnando i punteggi il direttore aveva tre secondi per
+   * ripensarci, validando no — e validare chiude quanto l'ultimo +.
+   *
+   * `azione(keepalive)` fa la richiesta; `keepalive` e' vero quando parte
+   * perche' la pagina se ne sta andando (`pagehide`). Durante l'attesa il
+   * pulsante e' spento: un secondo tocco non accoda una seconda chiusura.
+   */
+  function attendi(btn, azione, opzioni) {
+    const o = opzioni || {};
+    const card = btn.closest('.c7-partita') || btn.parentElement;
+    const st = statoDi(card);
+    if (st.timer) return false;
+    const millisecondi = o.attesaChiusura === undefined ? 3000 : o.attesaChiusura;
+    btn.disabled = true;
+    st.prima = null;
+    st.opzioni = o;
+    st.parti = function (keepalive) { return azione(keepalive); };
+    inAttesa.add(card);
+    mostraAttesa(card, o, millisecondi, function () {
+      fermaAttesa(card);
+      btn.disabled = false;
+    });
+    st.timer = root.setTimeout(function () {
+      fermaAttesa(card);
+      azione(false);
+    }, millisecondi);
+    return true;
   }
 
   /** Spedisce il punteggio della card; una richiesta alla volta per card. */
@@ -316,9 +353,9 @@
      stato, e perderlo in silenzio e' peggio di chiudere tre secondi prima. */
   root.addEventListener('pagehide', function () {
     Array.from(inAttesa).forEach(function (card) {
-      const o = statoDi(card).opzioni || {};
+      const parti = statoDi(card).parti;
       fermaAttesa(card);
-      try { richiesta(card, o, true); } catch (e) { /* la pagina sta uscendo */ }
+      try { if (parti) parti(true); } catch (e) { /* la pagina sta uscendo */ }
     });
   });
 
@@ -364,5 +401,7 @@
     return spedisci(card, o);
   }
 
-  root.CardPartita = { limiti: limiti, aggiorna: aggiorna, passo: passo, punti: punti };
+  root.CardPartita = {
+    limiti: limiti, aggiorna: aggiorna, passo: passo, punti: punti, attendi: attendi
+  };
 })(window);
