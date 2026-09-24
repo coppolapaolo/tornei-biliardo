@@ -159,13 +159,12 @@ blocks:
     text: >-
       Sotto «Come si gioca», insieme a disciplina e distanza, ci sono due
       scelte che riguardano il **tiro di apertura**. Non sono obbligatorie: se
-      non le tocchi, apre il primo dei due e poi ci si alterna, che è come si
-      è sempre giocato.
+      non le tocchi, si tira l'acchito e poi ci si alterna.
 
   - type: options
     items:
       - name: "Regola di inizio"
-        values: "predefinito «Primo giocatore»"
+        values: "predefinito «Acchito»"
         text: >-
           Chi esegue il primo tiro. Con **Acchito** il segnapunti, prima del
           primo triangolo, chiede chi ha vinto l'acchito e chi apre — perché

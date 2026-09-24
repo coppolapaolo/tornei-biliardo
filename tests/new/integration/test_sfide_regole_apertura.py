@@ -117,18 +117,19 @@ class TestDalModuloAlDatabase:
         )
         db_session.commit()
 
-        assert match.start_rule == StartRule.FIRST_PLAYER.value
+        assert match.start_rule == StartRule.LAG.value
         assert match.break_rule == BreakRule.ALTERNATE.value
 
-    def test_senza_scelta_valgono_i_default_storici(self, db_session):
+    def test_senza_scelta_valgono_i_default(self, db_session):
+        """Acchito e tiri alternati: l'acchito è il default dal 2026-09-24."""
         gioc = _giocatori(db_session)
 
         match = QuickMatchService.start(user_id=gioc[0].id, opponent_id=gioc[1].id)
         db_session.commit()
 
-        assert match.effective_start_rule is StartRule.FIRST_PLAYER
+        assert match.effective_start_rule is StartRule.LAG
         assert match.effective_break_rule is BreakRule.ALTERNATE
-        assert match.needs_lag is False
+        assert match.needs_lag is True
 
     def test_la_sfida_successiva_ripropone_le_stesse_regole(self, db_session):
         """`get_defaults` legge l'ultima sfida: se non leggesse `start_rule`,
@@ -196,9 +197,18 @@ class TestLaProposta:
             distance=5,
             is_race_to=True,
         )
-        proposta.start_rule = None
         db_session.add(proposta)
         db_session.commit()
+        # NULL scritto a mano, come l'avrebbe lasciato la migration: assegnato
+        # sull'oggetto, SQLAlchemy lo sostituisce col default della colonna.
+        # Finché il default era il primo giocatore la differenza non si vedeva.
+        db_session.execute(
+            db.text("UPDATE match_proposal SET start_rule = NULL WHERE id = :id"),
+            {"id": proposta.id},
+        )
+        db_session.commit()
+        db_session.expire_all()
+        assert proposta.start_rule is None
 
         match = proposta.accept(gioc[1].id)
         db_session.commit()
@@ -214,12 +224,12 @@ class TestLaCorrezione:
         match_id = match.id
 
         base = QuickMatchService.settings_of(match)
-        assert base["start_rule"] == StartRule.FIRST_PLAYER.value
+        assert base["start_rule"] == StartRule.LAG.value
 
         risolte = QuickMatchService.resolve_settings(
-            base, {"start_rule": StartRule.LAG.value}
+            base, {"start_rule": StartRule.FIRST_PLAYER.value}
         )
-        assert risolte["start_rule"] == StartRule.LAG.value
+        assert risolte["start_rule"] == StartRule.FIRST_PLAYER.value
         # E il resto della configurazione non si muove.
         assert risolte["break_rule"] == base["break_rule"]
         assert risolte["discipline"] == base["discipline"]

@@ -17,6 +17,7 @@ from flask import g
 from models import User, db
 from models.base import utc_now
 from models.individual_match.models import IndividualMatch
+from models.match.break_rules import StartRule
 from models.status_enum import Discipline, MatchStatus
 from models.user.role_enum import UserRole
 
@@ -51,6 +52,9 @@ def _match_in_corso(player1, player2, **kwargs):
         discipline=Discipline.EIGHT_BALL.value,
         distance=5,
         is_race_to=True,
+        # Il tabellone con le due metà, senza l'acchito da registrare prima
+        # (il default dal 2026-09-24): le domande hanno i loro test.
+        start_rule=StartRule.FIRST_PLAYER.value,
     )
     defaults.update(kwargs)
     match = IndividualMatch(**defaults)

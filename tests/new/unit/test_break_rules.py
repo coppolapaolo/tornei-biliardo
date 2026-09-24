@@ -89,9 +89,9 @@ class TestValoriIgnoti:
         assert BreakRule.normalize("alternate") is BreakRule.ALTERNATE
         assert BreakRule.normalize(BreakRule.LOSER_BREAKS) is BreakRule.LOSER_BREAKS
 
-    def test_i_default_sono_il_comportamento_storico(self):
-        """Chi non configura niente non deve vedere cambiare niente."""
-        assert DEFAULT_START_RULE is StartRule.FIRST_PLAYER
+    def test_i_default(self):
+        """Acchito per ciò che nasce (2026-09-24); a turno fra i triangoli."""
+        assert DEFAULT_START_RULE is StartRule.LAG
         assert DEFAULT_BREAK_RULE is BreakRule.ALTERNATE
 
 

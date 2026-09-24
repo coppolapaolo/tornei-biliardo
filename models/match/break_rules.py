@@ -37,6 +37,7 @@ __all__ = [
     "BreakRule",
     "DEFAULT_START_RULE",
     "DEFAULT_BREAK_RULE",
+    "LEGACY_START_RULE",
     "break_player_for_rack",
 ]
 
@@ -52,11 +53,12 @@ class StartRule(_StrEnum):
     """Come si decide chi esegue il tiro di apertura del **primo** triangolo."""
 
     #: Apre il primo giocatore della coppia, senza chiedere niente a nessuno.
-    #: È il comportamento che l'app ha sempre avuto, ed è il default: chi non
-    #: configura nulla non vede cambiare niente.
+    #: Era il default fino al 2026-09-24, e resta il ripiego di ciò che è nato
+    #: prima dell'ADR-056 senza una regola (`LEGACY_START_RULE`).
     FIRST_PLAYER = "first_player"
     #: Si tira l'acchito. Il segnapunti fa le due domande del regolamento —
     #: chi ha vinto, e chi apre — prima di lasciar segnare il primo triangolo.
+    #: È il default: nei tornei si comincia così.
     LAG = "lag"
 
     @property
@@ -143,7 +145,16 @@ class BreakRule(_StrEnum):
 #: Radice delle due catene di ereditarietà. `alternate` era già il default
 #: della colonna sulle sfide individuali dal 2026-02: cambiarlo qui
 #: cambierebbe il passato di quelle partite.
-DEFAULT_START_RULE = StartRule.FIRST_PLAYER
+#:
+#: La regola di inizio è l'acchito dal 2026-09-24 (rilievo della gara del
+#: 23/09): è quella che i moduli propongono e che le righe nuove ricevono.
+DEFAULT_START_RULE = StartRule.LAG
+#: Cosa vuol dire una regola di inizio **assente** — una gara senza campionato
+#: nata prima dell'ADR-056, un match staccato dalla sua gara. Per quelle righe
+#: NULL ha sempre voluto dire «apre il primo giocatore», e deve continuare a
+#: dirlo: col default nuovo, una gara già cominciata si sarebbe trovata le
+#: domande dell'acchito a metà. Non è il default, e non va usato come tale.
+LEGACY_START_RULE = StartRule.FIRST_PLAYER
 DEFAULT_BREAK_RULE = BreakRule.ALTERNATE
 
 

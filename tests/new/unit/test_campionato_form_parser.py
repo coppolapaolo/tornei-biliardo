@@ -33,9 +33,9 @@ class TestParseDefaultSettings:
             "has_handicap": False,
             # None = "usa la tabella punti di default" (US-17)
             "position_points": None,
-            # ADR-056: i default sono il comportamento storico — apre il primo
-            # giocatore, tiri di apertura alternati.
-            "default_start_rule": "first_player",
+            # ADR-056: si tira l'acchito (default dal 2026-09-24), tiri di
+            # apertura alternati.
+            "default_start_rule": "lag",
             "default_break_rule": "alternate",
         }
 
@@ -50,9 +50,9 @@ class TestParseDefaultSettings:
             "has_handicap": False,
             # None = "usa la tabella punti di default" (US-17)
             "position_points": None,
-            # ADR-056: i default sono il comportamento storico — apre il primo
-            # giocatore, tiri di apertura alternati.
-            "default_start_rule": "first_player",
+            # ADR-056: si tira l'acchito (default dal 2026-09-24), tiri di
+            # apertura alternati.
+            "default_start_rule": "lag",
             "default_break_rule": "alternate",
         }
 

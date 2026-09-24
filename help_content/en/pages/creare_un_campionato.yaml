@@ -126,7 +126,7 @@ blocks:
   - type: options
     items:
       - name: "Start rule"
-        values: "default «First player»"
+        values: "default «Lag»"
         text: >-
           With **First player** the first of the two always breaks. With
           **Lag** the scoreboard, before the first rack, asks who won the lag

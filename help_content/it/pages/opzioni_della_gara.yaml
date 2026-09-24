@@ -259,7 +259,7 @@ blocks:
           tutti non viene chiesta.
         hint: gara.multiset
       - name: "Regola di inizio"
-        values: "predefinito «Primo giocatore» · dentro un campionato si può ereditare"
+        values: "predefinito «Acchito» · dentro un campionato si può ereditare"
         text: >-
           Chi esegue il primo tiro della partita. Con **Primo giocatore** apre
           sempre il primo dei due, senza sorteggio. Con **Acchito** il

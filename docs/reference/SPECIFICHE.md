@@ -215,7 +215,7 @@ Il **match** ha una **regola di inizio** e una **regola di apertura**, entrambe 
 
 La **regola di inizio** dice chi esegue il tiro di apertura del primo rack e può essere:
 - **"primo giocatore"**: apre il primo dei due, senza sorteggio;
-- **"acchito"**: si tira l'acchito. Chi lo vince **sceglie chi** esegue il tiro di apertura, e può scegliere l'avversario.
+- **"acchito"**: si tira l'acchito. Chi lo vince **sceglie chi** esegue il tiro di apertura, e può scegliere l'avversario. È il default.
 
 La **regola di apertura** dice come il tiro di apertura passa da un rack al successivo e può essere:
 - **"spacca chi ha vinto"** (`winner_breaks`): apre chi ha vinto il rack precedente;
@@ -230,6 +230,8 @@ Un rack chiuso in **una sola visita** è un **run-out**; se a quel rack l'apertu
 > 2. La regola di inizio lasciava intendere che chi vince l'acchito cominci. Il regolamento FIBiS («Regole generali pool», 1.2) dice altro: «Il giocatore che vince l'acchito **sceglie chi** eseguirà il tiro di apertura.» Sono due domande, non una.
 > 3. Sui match di **gara** non esisteva nulla: né le due regole su `Campionato`/`Gara`/`Match`, né il posto dove scrivere chi avesse aperto un rack. Esisteva solo sulle sfide individuali, dove il match **è** la radice perché una gara da cui ereditare non c'è.
 > 4. Il default della regola di apertura è `alternate` perché è quello che le sfide individuali avevano già dal 2026-02: cambiarlo riscriverebbe il passato di quelle partite.
+>
+> **Nota del 2026-09-24.** La regola di inizio predefinita è l'**acchito**. Prima di questa data la specifica non ne indicava una e il codice proponeva «primo giocatore», che nei tornei il direttore doveva cambiare ogni volta (rilievo della gara del 2026-09-23). Il default vale per ciò che nasce: una gara senza campionato creata prima dell'ADR-056, che non ha una regola scritta, continua a cominciare dal primo giocatore.
 >
 > Nota lessicale, dallo stesso regolamento: «acchito» ha **due** significati — il primo tiro che decide l'ordine di gioco (1.2) e la preparazione delle bilie nel triangolo (1.4, «Acchito delle bilie», «Riacchito»). Qui vale sempre il primo. Per *run-out* e *break and run* un termine italiano nel regolamento non c'è, e «serie» è già occupato (indica il **gruppo** di bilie assegnato): restano in inglese.
 

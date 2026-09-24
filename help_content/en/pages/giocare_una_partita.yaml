@@ -202,8 +202,9 @@ blocks:
     tone: info
     title: "If the competition does not use a lag you see none of this"
     text: >-
-      With the **First player** rule — which is the default — the first of the
-      two breaks and the questions never appear.
+      With the **First player** rule the first of the two breaks and the
+      questions never appear. The default rule is the lag: whoever creates
+      the competition picks it.
 
   - type: note
     tone: tip

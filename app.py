@@ -492,7 +492,7 @@ def create_app(config_name=None, *, da_script: bool = False):
             MatchmakingStrategy,
             minimum_players_for,
         )
-        from models.match.break_rules import BreakRule, StartRule
+        from models.match.break_rules import BreakRule, DEFAULT_START_RULE, StartRule
         from models.challenge.recording import RecordingMode
         from models.dashboard.comandi import ComandoDirezione
         from models.competition.models import WithdrawPolicy
@@ -549,6 +549,10 @@ def create_app(config_name=None, *, da_script: bool = False):
             # di dichiarazione è quello delle tendine.
             "StartRule": StartRule,
             "BreakRule": BreakRule,
+            # Quella che i moduli di creazione preselezionano. Letta da qui e
+            # non scritta a mano nei template: cambiare il default deve
+            # cambiare tutti i moduli insieme.
+            "DEFAULT_START_RULE": DEFAULT_START_RULE,
         }
 
     # Production endpoint allowlist (ADR-028) — pass-through in dev/test.
