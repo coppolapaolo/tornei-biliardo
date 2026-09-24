@@ -140,6 +140,15 @@ class ScoringService:
                 )
                 if authoritative or user_id == loser_id:
                     match.confirm_result(loser_id)
+            elif authoritative:
+                # Pareggio (in «esattamente N» con N pari). Qui nessuno ha
+                # perso, quindi nessuna firma si può dare per implicita — tranne
+                # quella di chi dirige la gara, il cui punteggio è già quello
+                # ufficiale: vale col vincitore e vale senza. Fino al
+                # 2026-09-24 il ramo mancava e il direttore restava davanti a
+                # «Conferma».
+                match.confirm_result(match.player1_id)
+                match.confirm_result(match.player2_id)
 
         # Soft transition: pending → playing
         if match.status == MatchStatus.PENDING.value:
