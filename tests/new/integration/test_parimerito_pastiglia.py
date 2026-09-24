@@ -40,7 +40,11 @@ def test_i_parimerito_hanno_la_pastiglia_pari(admin_client, db_session):
     assert "Serve uno spareggio" in html
     sezione = html.split("Parimerito")[1].split("</section>")[0]
     assert "&lt;span" not in sezione
-    assert sezione.count('<span class="c7-state c7-state--warn">pari</span>') == 4
+    # Una pastiglia per gruppo, non per giocatore: i posti in palio sono del
+    # gruppo (2026-09-24). Qui due gruppi da due.
+    assert sezione.count('<span class="c7-state c7-state--warn">pari</span>') == 2
+    assert "Spareggio per il 1° e il 2° posto" in sezione
+    assert "Spareggio per il 3° posto" in sezione
 
 
 def test_nessun_template_incolla_html_a_una_stringa_tradotta():

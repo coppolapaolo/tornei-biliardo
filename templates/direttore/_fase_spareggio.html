@@ -27,7 +27,11 @@
       {% for g in ssr_groups %}
       {% set _ordinati = g.players | sort(attribute='current_ssr_score', reverse=true) %}
       {% for p in _ordinati %}{{ p.username }} <span class="c7-num">{{ p.current_ssr_score }}</span>{% if not loop.last %} · {% endif %}{% endfor %}.
-      {{ _('Il %(pos)s° posto va a %(nome)s.', pos=g.position, nome=_ordinati[0].username) }}
+      {# Ogni posto in palio col suo nome: con due posti in palio diceva
+         solo il primo, e il secondo restava da dedurre. #}
+      {% for posto in g.posti_in_palio %}
+      {{ _('Il %(pos)s° posto va a %(nome)s.', pos=posto, nome=_ordinati[loop.index0].username) }}
+      {% endfor %}
       {% endfor %}
     </div>
     {% endif %}
