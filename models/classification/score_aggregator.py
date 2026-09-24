@@ -116,14 +116,17 @@ class ScoreAggregator:
             weight = gara.classification_weight
             gara_stats: Dict[int, Dict[str, int]] = {}
 
-            # Include both 'completed' and 'validated' as finished matches
-            matches = [
-                m
-                for m in gara.matches
-                if MatchStatus.is_finished(m.status) and not m.is_bye
-            ]
+            # Include both 'completed' and 'validated' as finished matches.
+            # La X entra come nella classifica di gara: una vittoria e i
+            # triangoli di `player1_score` — zero, o il punteggio della prova
+            # (SPECIFICHE.md righe 147-148). Scartarla qui toglieva una
+            # vittoria nelle righe da cui partono gli inviti ai playoff, mentre
+            # la pagina la contava (campionato 5, 24/09/2026).
+            matches = [m for m in gara.matches if MatchStatus.is_finished(m.status)]
             for match in matches:
-                if match.is_trio and match.trio_match:
+                if match.is_bye:
+                    self._process_bye_match(match, gara_stats)
+                elif match.is_trio and match.trio_match:
                     self._process_trio_match(match, gara_stats)
                 else:
                     self._process_regular_match(match, gara_stats)

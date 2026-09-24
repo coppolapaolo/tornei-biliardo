@@ -19,6 +19,12 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **Gli inviti ai playoff non tenevano conto della X.** La classifica in
+  pagina conta la X come una vittoria, come dice la specifica; quella da cui
+  partono gli inviti la scartava. Chi aveva avuto una X aveva una vittoria in
+  meno proprio al momento di decidere chi entra: nel campionato 5 l'ottavo
+  posto, che la pagina dava a serpico67, è andato a RIZA. Ora le due
+  classifiche contano la X allo stesso modo, anche per le gare minime.
 - **Gli esercizi fra i turni davano 404 ai giocatori**, e solo in produzione:
   le due pagine con cui si registra un tentativo non erano dichiarate
   nell'elenco degli endpoint visibili, quindi l'app le nascondeva a tutti
