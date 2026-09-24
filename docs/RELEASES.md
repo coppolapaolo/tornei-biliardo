@@ -1,5 +1,21 @@
 # Changelog
 
+## [1.49.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.48.0...v1.49.0) (2026-09-24)
+
+
+### Funzioni nuove
+
+* script per riallineare gli inviti ai playoff partiti da una classifica sbagliata ([#551](https://github.com/coppolapaolo/tornei-biliardo/issues/551)) ([5877031](https://github.com/coppolapaolo/tornei-biliardo/commit/587703119d4df4c0ddde811eba084fc604819e38))
+
+
+### Correzioni
+
+* il pareggio segnato dal direttore chiude la partita, e la conferma torna alla gara ([#554](https://github.com/coppolapaolo/tornei-biliardo/issues/554)) ([d511d58](https://github.com/coppolapaolo/tornei-biliardo/commit/d511d58a138079dbd52f5e3ca7c51540daec7983))
+* la regola di inizio proposta è l'acchito, non il primo giocatore ([#555](https://github.com/coppolapaolo/tornei-biliardo/issues/555)) ([f23850e](https://github.com/coppolapaolo/tornei-biliardo/commit/f23850e82484f3cc2c74c3a67754a83e6f925b9d))
+* la X conta come vittoria anche nella classifica da cui partono gli inviti ai playoff ([#550](https://github.com/coppolapaolo/tornei-biliardo/issues/550)) ([d42a039](https://github.com/coppolapaolo/tornei-biliardo/commit/d42a0390ea70378e8eae483ca5deebf59305dc0d))
+* lo spareggio dice quali posti sono in palio ([#556](https://github.com/coppolapaolo/tornei-biliardo/issues/556)) ([6f14d35](https://github.com/coppolapaolo/tornei-biliardo/commit/6f14d3525dd342ee7130b56bc988e0477eb4d3a0))
+* validare dalla card aspetta tre secondi con Annulla, come il tocco che chiude ([#557](https://github.com/coppolapaolo/tornei-biliardo/issues/557)) ([4f9e66d](https://github.com/coppolapaolo/tornei-biliardo/commit/4f9e66de97826153483df180855f2fe96f9fd62e))
+
 ## [1.48.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.47.1...v1.48.0) (2026-09-22)
 
 
