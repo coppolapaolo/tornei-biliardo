@@ -69,8 +69,6 @@
       "errorValidation": {{ _("Errore:") | tojson }},
       "errorValidationWait": {{ _("Errore durante la validazione") | tojson }},
       "errorTableNetwork": {{ _("Errore di rete durante l'operazione sul tavolo") | tojson }},
-      "errorSsrScoreFormat": {{ _("Tutti i punteggi devono essere numeri interi non negativi") | tojson }},
-      "errorSsrDuplicates": {{ _("I punteggi devono essere tutti diversi per risolvere il parimerito") | tojson }},
       "errorSsrGroupScores": {{ _("I punteggi devono essere numeri interi non negativi") | tojson }},
       "errorSsrGroupDuplicates": {{ _("Serve un vincitore netto: il punteggio più alto del gruppo non può essere condiviso") | tojson }},
       "infoSsrStart": {{ _("Usa 'Avvia SSR' per inserire i punteggi degli spareggi") | tojson }},
@@ -81,9 +79,6 @@
       "warnSenzaCategoria": {{ (avviso_categorie or "") | tojson }},
       "infoUnknown": {{ _("Errore sconosciuto") | tojson }},
       "infoValidateImpossible": {{ _("Impossibile validare il risultato") | tojson }},
-      "tieFor": {{ _("Pari merito per il") | tojson }},
-      "place": {{ _("posto") | tojson }},
-      "ssrPoints": {{ _("Punti SSR") | tojson }},
       "swapTitle": {{ _("Tocca per scambiare con la partita che occupa il tavolo") | tojson }},
       "tablePrefix": {{ _("Tavolo") | tojson }}
     }
@@ -246,151 +241,6 @@
           restore();
         });
     });
-  }
-
-  function showSsrModal(garaId, tiebreakers) {
-    const modal = document.getElementById('ssrModal');
-    const form = document.getElementById('ssrForm');
-    const groupsContainer = document.getElementById('ssrGroupsContainer');
-
-    // Store gara ID in form data attribute
-    form.dataset.garaId = garaId;
-
-    // Clear previous content
-    while (groupsContainer.firstChild) {
-      groupsContainer.removeChild(groupsContainer.firstChild);
-    }
-
-    const i18n = GARA_CONFIG.i18n;
-
-    // Build UI for each tiebreaker group using safe DOM methods
-    tiebreakers.forEach(function (group) {
-      // Card su fondo pagina: dentro il modal, che e' gia' superficie card,
-      // il gruppo si distingue per superficie e non per bordo.
-      const groupDiv = document.createElement('div');
-      groupDiv.className = 'c7-card';
-      groupDiv.style.background = 'var(--c7-bg)';
-
-      const header = document.createElement('div');
-      header.className = 'd-flex align-items-center gap-2 mb-3';
-
-      const title = document.createElement('div');
-      title.className = 'c7-kicker flex-fill';
-      title.textContent = i18n.tieFor + ' ' + group.position + '° ' + i18n.place;
-      header.appendChild(title);
-
-      const rackInfo = document.createElement('span');
-      rackInfo.className = 'c7-state c7-state--muted';
-      rackInfo.textContent = group.rack_totali + ' rack';
-      header.appendChild(rackInfo);
-
-      groupDiv.appendChild(header);
-
-      const players = document.createElement('div');
-      players.className = 'c7-stack';
-      players.style.gap = '8px';
-
-      group.players.forEach(function (player) {
-        const row = document.createElement('div');
-        row.className = 'd-flex align-items-center gap-3';
-
-        const name = document.createElement('span');
-        name.className = 'flex-fill';
-        name.style.cssText = 'font-size:14px;font-weight:700';
-        name.textContent = player.username;
-
-        const input = document.createElement('input');
-        input.type = 'number';
-        input.className = 'form-control ssr-score-input text-center';
-        input.name = 'ssr_' + player.user_id;
-        input.dataset.userId = player.user_id;
-        input.min = '0';
-        input.step = '1';
-        input.style.width = '110px';
-        input.placeholder = i18n.ssrPoints;
-        input.required = true;
-        if (player.current_ssr_score != null) {
-          input.value = player.current_ssr_score;
-        }
-
-        row.appendChild(name);
-        row.appendChild(input);
-        players.appendChild(row);
-      });
-
-      groupDiv.appendChild(players);
-      groupsContainer.appendChild(groupDiv);
-    });
-
-    // Show modal
-    const bsModal = new bootstrap.Modal(modal);
-    bsModal.show();
-  }
-
-  function submitSsrScores() {
-    const form = document.getElementById('ssrForm');
-    const garaId = form.dataset.garaId;
-    const inputs = document.querySelectorAll('.ssr-score-input');
-
-    // Collect scores
-    const scores = {};
-    let hasErrors = false;
-
-    inputs.forEach(function (input) {
-      const userId = input.dataset.userId;
-      const value = parseInt(input.value, 10);
-
-      if (isNaN(value) || value < 0) {
-        input.classList.add('is-invalid');
-        hasErrors = true;
-      } else {
-        input.classList.remove('is-invalid');
-        scores[userId] = value;
-      }
-    });
-
-    if (hasErrors) {
-      showError(GARA_CONFIG.i18n.errorSsrScoreFormat);
-      return;
-    }
-
-    // Check for duplicates within each group
-    const scoreValues = Object.values(scores);
-    if (new Set(scoreValues).size !== scoreValues.length) {
-      showError(GARA_CONFIG.i18n.errorSsrDuplicates);
-      return;
-    }
-
-    // Submit scores
-    const removeOverlay = showModalLoading('#ssrModal');
-    fetch(`/admin/gara/${garaId}/save_ssr_scores`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Requested-With': 'XMLHttpRequest',
-      'X-CSRFToken': csrfToken()},
-      body: JSON.stringify({ scores: scores })
-    }).then(response => response.json())
-      .then(data => {
-        if (data.success) {
-          // Close modal and reload
-          const modal = bootstrap.Modal.getInstance(document.getElementById('ssrModal'));
-          if (modal) modal.hide();
-          location.reload();
-        } else if (data.needs_tiebreaker) {
-          // Still have unresolved tiebreakers - update modal
-          removeOverlay();
-          showSsrModal(garaId, data.tiebreakers);
-          showInfo(data.message);
-        } else {
-          showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || data.message));
-          removeOverlay();
-        }
-      }).catch(error => {
-        console.error('Error:', error);
-        showError(GARA_CONFIG.i18n.errorSsrSave);
-        removeOverlay();
-      });
   }
 
   /**

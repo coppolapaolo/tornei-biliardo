@@ -216,36 +216,3 @@
     </div>
   </div>
 </div>
-
-<div class="modal fade" id="ssrModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">{{ _('Risolvi Spareggi') }}</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ _('Chiudi') }}"></button>
-      </div>
-      <div class="modal-body">
-        <div class="c7-stack">
-          <div class="alert alert-warning">
-            <div>
-              {{ _('Ci sono parimerito nelle prime %(pos)s posizioni. Inserire il punteggio finale dello Spot Shot Rally (SSR) per ogni giocatore.', pos=gara.tiebreaker_until_position or 3) }}
-              <div style="margin-top: 4px; color: var(--c7-ink-muted);">{{ _('Punteggi più alti = posizione migliore') }}</div>
-            </div>
-          </div>
-
-          <form id="ssrForm">
-            <div class="c7-stack" id="ssrGroupsContainer">
-              {# I gruppi li inserisce showSsrModal() #}
-            </div>
-          </form>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ _('Annulla') }}</button>
-        <button type="button" class="btn btn-primary" onclick="submitSsrScores()">
-          <i class="fas fa-check"></i> {{ _('Conferma e Termina Gara') }}
-        </button>
-      </div>
-    </div>
-  </div>
-</div>

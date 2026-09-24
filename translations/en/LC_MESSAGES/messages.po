@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-24 13:00+0200\n"
+"POT-Creation-Date: 2026-09-24 15:33+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -22,23 +22,23 @@ msgstr ""
 msgid "Accedi per vedere questa pagina."
 msgstr "Log in to see this page."
 
-#: app.py:884 templates/errors/403.html:3
+#: app.py:888 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr "Access denied"
 
-#: app.py:902
+#: app.py:906
 msgid "Non è il tuo turno"
 msgstr "Not your turn yet"
 
-#: app.py:903
+#: app.py:907
 msgid "Colpo irregolare"
 msgstr "Illegal shot"
 
-#: app.py:922
+#: app.py:926
 msgid "Operazione non consentita"
 msgstr "That shot isn't allowed."
 
-#: app.py:936
+#: app.py:940
 msgid "Tiro non valido"
 msgstr "Foul shot"
 
@@ -943,7 +943,7 @@ msgstr "%(direttore)s cancelled your registration for the competition %(gara)s."
 msgid "Sei stato promosso dalla lista d'attesa per %(gara)s"
 msgstr "You've been moved up from the waiting list for %(gara)s"
 
-#: models/competition/models.py:571
+#: models/competition/models.py:573
 #: templates/admin/amalfi_classification.html:23
 #: templates/components/_new_gara_modal.html:69
 #, python-format
@@ -2438,7 +2438,7 @@ msgstr "The match has reached the distance: no more racks can be scored."
 
 #: models/individual_match/individual_rack_service.py:200
 #: models/individual_match/individual_rack_service.py:211
-#: models/match/scoring_service.py:162 models/match/scoring_service.py:173
+#: models/match/scoring_service.py:171 models/match/scoring_service.py:182
 msgid "Partita non trovata."
 msgstr "Match not found."
 
@@ -2896,19 +2896,19 @@ msgstr "Activity alert"
 msgid "Si e verificato un calo di attivita sulla piattaforma."
 msgstr "There has been a drop in activity on the platform."
 
-#: models/match/break_rules.py:65
+#: models/match/break_rules.py:67
 msgid "Primo giocatore"
 msgstr "First player"
 
-#: models/match/break_rules.py:66
+#: models/match/break_rules.py:68
 msgid "Acchito"
 msgstr "Lag"
 
-#: models/match/break_rules.py:72
+#: models/match/break_rules.py:74
 msgid "Apre il primo dei due, senza sorteggio."
 msgstr "The first of the two breaks, with no lag."
 
-#: models/match/break_rules.py:74
+#: models/match/break_rules.py:76
 msgid ""
 "Si tira l'acchito: chi vince sceglie chi esegue il tiro di apertura, e "
 "può scegliere l'avversario."
@@ -2916,38 +2916,38 @@ msgstr ""
 "Players lag: the winner chooses who takes the break shot, and may choose "
 "the opponent."
 
-#: models/match/break_rules.py:113
+#: models/match/break_rules.py:115
 msgid "Spacca chi ha vinto"
 msgstr "Winner breaks"
 
-#: models/match/break_rules.py:114
+#: models/match/break_rules.py:116
 msgid "A turno"
 msgstr "Alternating"
 
-#: models/match/break_rules.py:115
+#: models/match/break_rules.py:117
 msgid "A turno ogni due"
 msgstr "Alternating every two"
 
-#: models/match/break_rules.py:116
+#: models/match/break_rules.py:118
 msgid "Spacca chi ha perso"
 msgstr "Loser breaks"
 
-#: models/match/break_rules.py:122
+#: models/match/break_rules.py:124
 msgid "Apre chi ha vinto il triangolo prima."
 msgstr "The winner of the previous rack breaks."
 
-#: models/match/break_rules.py:124
+#: models/match/break_rules.py:126
 #: templates/admin/campionato_wizard_step2.html:150
 #: templates/admin/gara_create_standalone.html:428
 #: templates/components/_campionato_edit_form.html:207
 msgid "Tiri di apertura alternati, la regola standard FIBiS."
 msgstr "Alternating break shots, the standard FIBiS rule."
 
-#: models/match/break_rules.py:126
+#: models/match/break_rules.py:128
 msgid "Due triangoli a testa, poi si cambia."
 msgstr "Two racks each, then it switches."
 
-#: models/match/break_rules.py:127
+#: models/match/break_rules.py:129
 msgid "Apre chi ha perso il triangolo prima."
 msgstr "The loser of the previous rack breaks."
 
@@ -2985,7 +2985,7 @@ msgid "I triangoli non possono essere negativi"
 msgstr "Racks cannot be negative"
 
 #: models/match/correction_service.py:398
-#: templates/direttore/_scripts.html:1683
+#: templates/direttore/_scripts.html:1559
 #, python-format
 msgid "La partita è decisa al set %(num)s: i set dopo non si giocano"
 msgstr "The match is decided at set %(num)s: the sets after it are not played"
@@ -3005,20 +3005,20 @@ msgstr ""
 "player must win more"
 
 #: models/match/correction_service.py:435
-#: templates/direttore/_scripts.html:1696
+#: templates/direttore/_scripts.html:1572
 #, python-format
 msgid "Nessuno arriva a %(n)s set: la partita non è finita"
 msgstr "Nobody reaches %(n)s sets: the match is not finished"
 
 #: models/match/correction_service.py:441
-#: templates/direttore/_scripts.html:1580
-#: templates/direttore/_scripts.html:1699
+#: templates/direttore/_scripts.html:1456
+#: templates/direttore/_scripts.html:1575
 #, python-format
 msgid "Si giocano esattamente %(n)s set"
 msgstr "Exactly %(n)s sets are played"
 
 #: models/match/correction_service.py:462
-#: templates/direttore/_scripts.html:1562
+#: templates/direttore/_scripts.html:1438
 #, python-format
 msgid ""
 "Nel trio si giocano %(n)s triangoli: la somma dei tre punteggi deve fare "
@@ -3121,7 +3121,7 @@ msgstr "The result was recorded by the director: it cannot be changed."
 msgid "Triangolo non trovato."
 msgstr "Rack not found."
 
-#: models/match/scoring_service.py:207 models/match/trio_scoring_service.py:148
+#: models/match/scoring_service.py:216 models/match/trio_scoring_service.py:148
 msgid ""
 "Il risultato è già stato validato: per correggerlo serve il direttore di "
 "gara"
@@ -3129,36 +3129,36 @@ msgstr ""
 "This result has already been validated: correcting it requires the "
 "tournament director"
 
-#: models/match/scoring_service.py:335
+#: models/match/scoring_service.py:344
 msgid "La partita a tre si segna dal suo tabellino, non dai triangoli a due"
 msgstr ""
 "A three-player match is scored from its own score sheet, not from two-"
 "player racks"
 
-#: models/match/scoring_service.py:343
+#: models/match/scoring_service.py:352
 msgid "La partita è già finita, non è possibile aggiungere altri punti"
 msgstr "The match is already over, no more points can be added"
 
-#: models/match/scoring_service.py:566
+#: models/match/scoring_service.py:575
 #, python-format
 msgid "Partita già completata - limite raggiunto per '%(distanza)s'"
 msgstr "Match already complete - limit reached for '%(distanza)s'"
 
-#: models/match/scoring_service.py:575 models/match/scoring_service.py:652
+#: models/match/scoring_service.py:584 models/match/scoring_service.py:661
 #, python-format
 msgid ""
 "Non è possibile superare il limite di %(n)s triangoli totali per questa "
 "partita"
 msgstr "The limit of %(n)s total racks for this match cannot be exceeded"
 
-#: models/match/scoring_service.py:641
+#: models/match/scoring_service.py:650
 #, python-format
 msgid ""
 "In una partita 'al %(n)s', entrambi i giocatori non possono avere %(n)s o"
 " più punti!"
 msgstr "In a 'race to %(n)s' match, both players cannot have %(n)s or more points!"
 
-#: models/match/scoring_service.py:660
+#: models/match/scoring_service.py:669
 #, python-format
 msgid ""
 "In modalità 'esatto numero', il totale dei triangoli (%(totale)s) deve "
@@ -5949,7 +5949,7 @@ msgstr "Match updated."
 msgid "Orari aggiornati con successo!"
 msgstr "Times updated successfully!"
 
-#: routes/individual_match/matches.py:720 templates/match_detail.html:465
+#: routes/individual_match/matches.py:720 templates/match_detail.html:467
 msgid "Forfait dichiarato"
 msgstr "Forfeit declared"
 
@@ -6451,8 +6451,7 @@ msgstr "Information"
 #: templates/components/_page_modal.html:17
 #: templates/components/_player_activity_feedback.html:211
 #: templates/components/_soft_delete_modal.html:7
-#: templates/direttore/_modali_gioco.html:34
-#: templates/direttore/_modali_gioco.html:225 templates/gara_detail.html:251
+#: templates/direttore/_modali_gioco.html:34 templates/gara_detail.html:251
 #: templates/individual_match/create_proposal.html:17
 #: templates/individual_match/edit_match.html:12
 #: templates/individual_match/quick_match.html:16
@@ -6596,7 +6595,6 @@ msgstr "Close"
 #: templates/components/_new_gara_modal.html:415
 #: templates/components/_soft_delete_modal.html:48
 #: templates/direttore/_modali_gioco.html:117
-#: templates/direttore/_modali_gioco.html:244
 #: templates/direttore/_scripts.html:64 templates/exam/compose.html:130
 #: templates/gamification/admin/achievement_form.html:124
 #: templates/gamification/admin/level_config.html:173
@@ -6912,22 +6910,22 @@ msgstr "Drills are technical exercises you can complete during the match."
 #: templates/match_detail.html:251 templates/match_detail.html:284
 #: templates/match_detail.html:310 templates/match_detail.html:335
 #: templates/match_detail.html:366 templates/match_detail.html:391
-#: templates/match_detail.html:416 templates/match_detail.html:441
-#: templates/match_detail.html:468 templates/match_detail.html:496
-#: templates/match_detail.html:522 templates/match_detail.html:547
-#: templates/match_detail.html:600 templates/match_detail.html:649
-#: templates/match_detail.html:672
+#: templates/match_detail.html:418 templates/match_detail.html:443
+#: templates/match_detail.html:470 templates/match_detail.html:498
+#: templates/match_detail.html:524 templates/match_detail.html:549
+#: templates/match_detail.html:602 templates/match_detail.html:651
+#: templates/match_detail.html:674
 msgid "Errore:"
 msgstr "Error:"
 
 #: templates/components/_match_admin_controls.html:392
 #: templates/components/_match_admin_controls.html:434
-#: templates/direttore/_scripts.html:82
+#: templates/direttore/_scripts.html:80
 #: templates/individual_match/match_detail.html:671
 #: templates/match_detail.html:183 templates/match_detail.html:215
 #: templates/match_detail.html:251 templates/match_detail.html:284
-#: templates/match_detail.html:310 templates/match_detail.html:496
-#: templates/match_detail.html:600
+#: templates/match_detail.html:310 templates/match_detail.html:498
+#: templates/match_detail.html:602
 msgid "Errore sconosciuto"
 msgstr "Unknown error"
 
@@ -6937,7 +6935,7 @@ msgstr "Error adding rack to trio"
 
 #: templates/individual_match/match_detail.html:554
 #: templates/match_detail.html:221 templates/match_detail.html:341
-#: templates/match_detail.html:528
+#: templates/match_detail.html:530
 msgid "Errore durante la rimozione del triangolo"
 msgstr "Error while removing the rack"
 
@@ -6958,7 +6956,7 @@ msgstr "Error registering forfeit"
 msgid "Errore durante l'aggiunta del triangolo"
 msgstr "Error while adding rack"
 
-#: templates/match_detail.html:335 templates/match_detail.html:522
+#: templates/match_detail.html:335 templates/match_detail.html:524
 msgid "Impossibile rimuovere il triangolo"
 msgstr "Unable to remove rack"
 
@@ -6967,31 +6965,31 @@ msgstr "Unable to remove rack"
 msgid "Errore durante la registrazione dell'acchito"
 msgstr "Error recording the lag"
 
-#: templates/match_detail.html:416
+#: templates/match_detail.html:418
 msgid "Impossibile confermare il risultato"
 msgstr "Unable to confirm result"
 
 #: templates/individual_match/match_detail.html:585
-#: templates/match_detail.html:422
+#: templates/match_detail.html:424
 msgid "Errore durante la conferma"
 msgstr "Error during confirmation"
 
-#: templates/match_detail.html:428
+#: templates/match_detail.html:430
 msgid ""
 "Sei sicuro di voler rifiutare il risultato? L'ultimo triangolo verrà "
 "rimosso."
 msgstr "Are you sure you want to reject the result? The last rack will be removed."
 
-#: templates/match_detail.html:441
+#: templates/match_detail.html:443
 msgid "Impossibile rifiutare il risultato"
 msgstr "Unable to reject the result"
 
 #: templates/individual_match/match_detail.html:612
-#: templates/match_detail.html:447
+#: templates/match_detail.html:449
 msgid "Errore durante il rifiuto"
 msgstr "Error during rejection"
 
-#: templates/match_detail.html:454
+#: templates/match_detail.html:456
 msgid ""
 "Sei sicuro di voler dichiarare forfait? Questo comporterà la tua uscita "
 "dalla gara secondo la policy impostata."
@@ -6999,36 +6997,36 @@ msgstr ""
 "Are you sure you want to declare forfeit? This will result in your exit "
 "from the competition according to the set policy."
 
-#: templates/match_detail.html:468
+#: templates/match_detail.html:470
 msgid "Impossibile dichiarare forfait"
 msgstr "Unable to declare forfeit"
 
 #: templates/individual_match/match_detail.html:637
-#: templates/match_detail.html:474
+#: templates/match_detail.html:476
 msgid "Errore durante la dichiarazione di forfait"
 msgstr "Error during forfeit declaration"
 
-#: templates/match_detail.html:502
+#: templates/match_detail.html:504
 msgid "Errore durante l'aggiunta del triangolo al set"
 msgstr "Error adding rack to set"
 
-#: templates/match_detail.html:508
+#: templates/match_detail.html:510
 msgid "Rimuovere l'ultimo triangolo dal set?"
 msgstr "Remove the last rack from the set?"
 
-#: templates/match_detail.html:547
+#: templates/match_detail.html:549
 msgid "Impossibile iniziare il nuovo set"
 msgstr "Unable to start new set"
 
-#: templates/match_detail.html:553
+#: templates/match_detail.html:555
 msgid "Errore durante l'avvio del nuovo set"
 msgstr "Error starting new set"
 
-#: templates/admin/venue_form.html:314 templates/match_detail.html:607
+#: templates/admin/venue_form.html:314 templates/match_detail.html:609
 msgid "Errore durante l'aggiornamento"
 msgstr "Error during update"
 
-#: templates/match_detail.html:615
+#: templates/match_detail.html:617
 msgid ""
 "Sei sicuro di voler resettare completamente questa partita? Tutti i "
 "risultati verranno cancellati."
@@ -7036,13 +7034,13 @@ msgstr ""
 "Are you sure you want to completely reset this match? All results will be"
 " deleted."
 
-#: templates/direttore/_scripts.html:67 templates/match_detail.html:626
-#: templates/match_detail.html:631 templates/match_detail.html:649
-#: templates/match_detail.html:654
+#: templates/direttore/_scripts.html:67 templates/match_detail.html:628
+#: templates/match_detail.html:633 templates/match_detail.html:651
+#: templates/match_detail.html:656
 msgid "Errore durante il reset"
 msgstr "Error during reset"
 
-#: templates/match_detail.html:637
+#: templates/match_detail.html:639
 msgid ""
 "Sei sicuro di voler resettare completamente questa partita trio? Tutti i "
 "risultati verranno cancellati."
@@ -7050,8 +7048,8 @@ msgstr ""
 "Are you sure you want to completely reset this trio match? All results "
 "will be deleted."
 
-#: templates/direttore/_scripts.html:51 templates/direttore/_scripts.html:1092
-#: templates/match_detail.html:660
+#: templates/direttore/_scripts.html:51 templates/direttore/_scripts.html:942
+#: templates/match_detail.html:662
 msgid ""
 "Confermi di voler validare questo risultato? Il tavolo verrà liberato e "
 "assegnato alla prossima partita in attesa."
@@ -7059,11 +7057,11 @@ msgstr ""
 "Do you confirm you want to validate this result? The table will be freed "
 "and assigned to the next pending match."
 
-#: templates/direttore/_scripts.html:83 templates/match_detail.html:672
+#: templates/direttore/_scripts.html:81 templates/match_detail.html:674
 msgid "Impossibile validare il risultato"
 msgstr "Unable to validate result"
 
-#: templates/direttore/_scripts.html:70 templates/match_detail.html:677
+#: templates/direttore/_scripts.html:70 templates/match_detail.html:679
 msgid "Errore durante la validazione"
 msgstr "Error during validation"
 
@@ -11418,7 +11416,7 @@ msgstr "Remove the stretch"
 #: templates/direttore/_card_partita.html:224
 #: templates/direttore/_fase_gioco.html:243
 #: templates/direttore/_partite.html:31 templates/direttore/_partite.html:62
-#: templates/direttore/_scripts.html:88 templates/public/schermo_sala.html:110
+#: templates/direttore/_scripts.html:83 templates/public/schermo_sala.html:110
 #: templates/public/schermo_sala.html:129
 msgid "Tavolo"
 msgstr "Table"
@@ -14860,14 +14858,14 @@ msgstr "Score the racks from your phone, the standings update on their own."
 #: templates/components/_match_admin_controls.html:15
 #: templates/direttore/_modali_gioco.html:15
 #: templates/direttore/_modali_gioco.html:179
-#: templates/direttore/_scripts.html:1640
+#: templates/direttore/_scripts.html:1516
 msgid "Un triangolo in meno"
 msgstr "One rack less"
 
 #: templates/components/_match_admin_controls.html:21
 #: templates/direttore/_modali_gioco.html:20
 #: templates/direttore/_modali_gioco.html:181
-#: templates/direttore/_scripts.html:1639
+#: templates/direttore/_scripts.html:1515
 msgid "Un triangolo in più"
 msgstr "One rack more"
 
@@ -14952,7 +14950,7 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:176
 #: templates/direttore/_card_partita.html:208
 #: templates/direttore/_card_partita.html:277
-#: templates/direttore/_scripts.html:1601
+#: templates/direttore/_scripts.html:1477
 #, python-format
 msgid "Set %(num)s"
 msgstr "Set %(num)s"
@@ -15276,7 +15274,7 @@ msgid "Azzera il risultato"
 msgstr "Reset the result"
 
 #: templates/components/_match_result_row.html:200
-#: templates/direttore/_scripts.html:1282
+#: templates/direttore/_scripts.html:1132
 msgid "Assegna un tavolo"
 msgstr "Assign a table"
 
@@ -17730,7 +17728,7 @@ msgid "Correggi"
 msgstr "Correct"
 
 #: templates/direttore/_card_partita.html:220
-#: templates/direttore/_scripts.html:1281
+#: templates/direttore/_scripts.html:1131
 msgid "Cambia tavolo"
 msgstr "Change table"
 
@@ -18968,27 +18966,6 @@ msgstr ""
 "The final score remains. The correction stays written on the match: "
 "whoever saw the earlier result can tell why it changed."
 
-#: templates/direttore/_modali_gioco.html:224
-msgid "Risolvi Spareggi"
-msgstr "Resolve Tiebreakers"
-
-#: templates/direttore/_modali_gioco.html:231
-#, python-format
-msgid ""
-"Ci sono parimerito nelle prime %(pos)s posizioni. Inserire il punteggio "
-"finale dello Spot Shot Rally (SSR) per ogni giocatore."
-msgstr ""
-"There are ties in the top %(pos)s places. Enter the final Spot Shot Rally"
-" (SSR) score for each player."
-
-#: templates/direttore/_modali_gioco.html:232
-msgid "Punteggi più alti = posizione migliore"
-msgstr "Higher scores = better position"
-
-#: templates/direttore/_modali_gioco.html:246
-msgid "Conferma e Termina Gara"
-msgstr "Confirm and End Competition"
-
 #: templates/direttore/_partite.html:66
 #, python-format
 msgid "Correggi il risultato di %(p1)s – %(p2)s – %(p3)s"
@@ -19192,11 +19169,11 @@ msgstr ""
 "Every registered player will get a cancellation notice.\n"
 "This action CANNOT BE UNDONE!"
 
-#: templates/direttore/_scripts.html:49 templates/direttore/_scripts.html:1040
+#: templates/direttore/_scripts.html:49 templates/direttore/_scripts.html:890
 msgid "Sei sicuro di voler resettare questa partita?"
 msgstr "Are you sure you want to reset this match?"
 
-#: templates/direttore/_scripts.html:50 templates/direttore/_scripts.html:1064
+#: templates/direttore/_scripts.html:50 templates/direttore/_scripts.html:914
 msgid "Sei sicuro di voler resettare questo trio?"
 msgstr "Are you sure you want to reset this trio?"
 
@@ -19258,18 +19235,10 @@ msgid "Errore di rete durante l'operazione sul tavolo"
 msgstr "Network error during table operation"
 
 #: templates/direttore/_scripts.html:72
-msgid "Tutti i punteggi devono essere numeri interi non negativi"
-msgstr "All scores must be non-negative integers"
-
-#: templates/direttore/_scripts.html:73
-msgid "I punteggi devono essere tutti diversi per risolvere il parimerito"
-msgstr "Scores must all be different to resolve the tie"
-
-#: templates/direttore/_scripts.html:74
 msgid "I punteggi devono essere numeri interi non negativi"
 msgstr "Scores must be non-negative integers"
 
-#: templates/direttore/_scripts.html:75
+#: templates/direttore/_scripts.html:73
 msgid ""
 "Serve un vincitore netto: il punteggio più alto del gruppo non può essere"
 " condiviso"
@@ -19277,27 +19246,15 @@ msgstr ""
 "A clear winner is required: the highest score in the group cannot be "
 "shared"
 
-#: templates/direttore/_scripts.html:76
+#: templates/direttore/_scripts.html:74
 msgid "Usa 'Avvia SSR' per inserire i punteggi degli spareggi"
 msgstr "Use 'Start SSR' to enter tiebreaker scores"
 
-#: templates/direttore/_scripts.html:84
-msgid "Pari merito per il"
-msgstr "Tie for"
-
-#: templates/direttore/_scripts.html:85
-msgid "posto"
-msgstr "place"
-
-#: templates/direttore/_scripts.html:86
-msgid "Punti SSR"
-msgstr "SSR Points"
-
-#: templates/direttore/_scripts.html:87
+#: templates/direttore/_scripts.html:82
 msgid "Tocca per scambiare con la partita che occupa il tavolo"
 msgstr "Tap to swap with the match on this table"
 
-#: templates/direttore/_scripts.html:725
+#: templates/direttore/_scripts.html:575
 msgid ""
 "Sei sicuro di voler chiudere le iscrizioni? La gara tornerà allo stato di"
 " setup."
@@ -19305,49 +19262,49 @@ msgstr ""
 "Are you sure you want to close registrations? The competition will return"
 " to setup state."
 
-#: templates/direttore/_scripts.html:885
+#: templates/direttore/_scripts.html:735
 msgid "I triangoli non possono essere negativi."
 msgstr "Racks cannot be negative."
 
-#: templates/direttore/_scripts.html:887
+#: templates/direttore/_scripts.html:737
 #, python-format
 msgid "Nessun giocatore può avere più di %(d)s triangoli."
 msgstr "No player can have more than %(d)s racks."
 
-#: templates/direttore/_scripts.html:891
+#: templates/direttore/_scripts.html:741
 #, python-format
 msgid "Somma triangoli troppo alta: massimo %(d)s."
 msgstr "Rack sum too high: maximum %(d)s."
 
-#: templates/direttore/_scripts.html:893
+#: templates/direttore/_scripts.html:743
 #, python-format
 msgid "Risultato incompleto: uno dei due deve raggiungere %(d)s."
 msgstr "Incomplete result: one player must reach %(d)s."
 
-#: templates/direttore/_scripts.html:898
+#: templates/direttore/_scripts.html:748
 #, python-format
 msgid "Somma triangoli troppo alta: il totale esatto è %(d)s."
 msgstr "Rack sum too high: the exact total is %(d)s."
 
-#: templates/direttore/_scripts.html:900
+#: templates/direttore/_scripts.html:750
 #, python-format
 msgid "Risultato incompleto: la somma deve essere esattamente %(d)s."
 msgstr "Incomplete result: the sum must be exactly %(d)s."
 
-#: templates/direttore/_scripts.html:1177
+#: templates/direttore/_scripts.html:1027
 msgid "tavolo attuale"
 msgstr "current table"
 
-#: templates/direttore/_scripts.html:1186
+#: templates/direttore/_scripts.html:1036
 msgid "libero · tocca per assegnare"
 msgstr "free · tap to assign"
 
-#: templates/direttore/_scripts.html:1315
+#: templates/direttore/_scripts.html:1165
 #, python-format
 msgid "Ritiro di %(nome)s…"
 msgstr "%(nome)s withdraws…"
 
-#: templates/direttore/_scripts.html:1334
+#: templates/direttore/_scripts.html:1184
 msgid ""
 "Torna da giocare e il tavolo si libera. Si può finché il turno dopo non è"
 " avviato."
@@ -19355,66 +19312,66 @@ msgstr ""
 "It goes back to be played and the table frees up. Possible until the next"
 " round starts."
 
-#: templates/direttore/_scripts.html:1350
+#: templates/direttore/_scripts.html:1200
 msgid "Il turno torna a valere zero e l'esercizio torna da registrare."
 msgstr "The round counts zero again and the drill goes back to be recorded."
 
-#: templates/direttore/_scripts.html:1371
+#: templates/direttore/_scripts.html:1221
 #, python-format
 msgid "Ritiro di %(nome)s"
 msgstr "%(nome)s withdraws"
 
-#: templates/direttore/_scripts.html:1374
+#: templates/direttore/_scripts.html:1224
 #, python-format
 msgid "%(nome)s vince a tavolino"
 msgstr "%(nome)s wins by walkover"
 
-#: templates/direttore/_scripts.html:1540
-#: templates/direttore/_scripts.html:1703
+#: templates/direttore/_scripts.html:1416
+#: templates/direttore/_scripts.html:1579
 msgid "Pareggio: nessun vincitore."
 msgstr "Draw: no winner."
 
-#: templates/direttore/_scripts.html:1541
-#: templates/direttore/_scripts.html:1561
+#: templates/direttore/_scripts.html:1417
+#: templates/direttore/_scripts.html:1437
 #, python-format
 msgid "Vince %(nome)s."
 msgstr "%(nome)s wins."
 
-#: templates/direttore/_scripts.html:1543
+#: templates/direttore/_scripts.html:1419
 #, python-format
 msgid "Uno dei due deve arrivare a %(n)s."
 msgstr "One of the two must reach %(n)s."
 
-#: templates/direttore/_scripts.html:1544
+#: templates/direttore/_scripts.html:1420
 #, python-format
 msgid "La somma deve essere esattamente %(n)s."
 msgstr "The sum must be exactly %(n)s."
 
-#: templates/direttore/_scripts.html:1560
+#: templates/direttore/_scripts.html:1436
 msgid "Pari in testa: nessuno vince la partita."
 msgstr "Tied at the top: nobody wins the match."
 
-#: templates/direttore/_scripts.html:1579
+#: templates/direttore/_scripts.html:1455
 #, python-format
 msgid "Si vince a %(n)s set"
 msgstr "Race to %(n)s sets"
 
-#: templates/direttore/_scripts.html:1582
+#: templates/direttore/_scripts.html:1458
 #, python-format
 msgid "ogni set al %(n)s"
 msgstr "each set a race to %(n)s"
 
-#: templates/direttore/_scripts.html:1583
+#: templates/direttore/_scripts.html:1459
 #, python-format
 msgid "ogni set di esattamente %(n)s triangoli"
 msgstr "each set exactly %(n)s racks"
 
-#: templates/direttore/_scripts.html:1690
+#: templates/direttore/_scripts.html:1566
 #, python-format
 msgid "Il set %(num)s non è ancora finito."
 msgstr "Set %(num)s is not finished yet."
 
-#: templates/direttore/_scripts.html:1704
+#: templates/direttore/_scripts.html:1580
 #, python-format
 msgid "Vince %(nome)s, %(a)s set a %(b)s."
 msgstr "%(nome)s wins, %(a)s sets to %(b)s."
