@@ -258,7 +258,11 @@ blocks:
           join the entrants, even beyond the places, until the competition
           starts, and it stays on record that you registered it. Declining an
           expired invitation is pointless: the place is already free, and if
-          someone was to be called in their place, they already have been.
+          someone was to be called in their place, they already have been. A
+          row that says **Withdrawn** is an invitation removed by an
+          administrator's correction, because it was sent from a wrong
+          ranking: next to it is who took that place, and the player received
+          a notice explaining it.
       - title: "Create the competition"
         text: >-
           When there are enough answers, **Create the playoff competition**

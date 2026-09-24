@@ -307,6 +307,7 @@
                 {{ _('%(pos)s° in classifica', pos=q.qualifying_position) }}
                 {% if _stato == 'declined' and q.replaced_by %} · {{ _('al suo posto %(nome)s', nome=q.replaced_by.username) }}{% endif %}
                 {% if _stato == 'expired' and q.replaced_by %} · {{ _('scaduto, al suo posto %(nome)s', nome=q.replaced_by.username) }}{% endif %}
+                {% if _stato == 'replaced' %} · {% if q.replaced_by %}{{ _('invito ritirato, al suo posto %(nome)s', nome=q.replaced_by.username) }}{% else %}{{ _('invito ritirato') }}{% endif %}{% endif %}
                 {% if q.user_id in _al_posto_di %} · {{ _('invitato al posto di %(nome)s', nome=_al_posto_di[q.user_id]) }}{% endif %}
                 {% if q.answered_on_behalf %} · {{ _("registrato da %(name)s", name=q.responded_by.username if q.responded_by else _("direzione")) }}{% endif %}
               </div>
@@ -369,6 +370,7 @@
                 </button>
               </form>
               {% endif %}
+              {% elif _stato == 'replaced' %}<span class="c7-state c7-state--muted">{{ _("Ritirato") }}</span>
               {% endif %}
               {% if cfg.gara is none and _stato in ('pending', 'confirmed') %}
               <form method="POST" action='{{ url_for("admin.campionato.playoff_remove_player", campionato_id=campionato.id, config_id=cfg.id) }}'>
