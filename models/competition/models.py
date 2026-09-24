@@ -10,7 +10,7 @@ from enum import Enum
 from models.status_enum import GaraStatus, MatchStatus, WithdrawPolicy  # noqa: F401
 from models.match.break_rules import (
     DEFAULT_BREAK_RULE,
-    DEFAULT_START_RULE,
+    LEGACY_START_RULE,
     BreakRule,
     StartRule,
 )
@@ -460,8 +460,10 @@ class Gara(SoftDeleteMixin, db.Model):
         """Regola di inizio effettiva: gara → campionato → primo giocatore.
 
         NULL su `start_rule` significa "eredita dal campionato" (ADR-056). Su
-        una gara standalone non c'è niente da cui ereditare e vale il default
-        del progetto, che è il comportamento storico: apre il primo giocatore.
+        una gara standalone non c'è niente da cui ereditare: NULL lì c'è solo
+        sulle gare nate prima della regola, e per loro vale il comportamento
+        storico, apre il primo giocatore (`LEGACY_START_RULE`). Le gare nuove
+        la ricevono scritta dal modulo, che propone l'acchito.
         """
         scelta = StartRule.normalize(self.start_rule)
         if scelta is not None:
@@ -470,7 +472,7 @@ class Gara(SoftDeleteMixin, db.Model):
             ereditata = StartRule.normalize(self.campionato.default_start_rule)
             if ereditata is not None:
                 return ereditata
-        return DEFAULT_START_RULE
+        return LEGACY_START_RULE
 
     @property
     def effective_break_rule(self) -> "BreakRule":

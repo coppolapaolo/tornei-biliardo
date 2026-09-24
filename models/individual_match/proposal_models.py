@@ -11,7 +11,11 @@ from enum import Enum
 
 from ..base import db, BaseModel, utc_now
 from ..status_enum import Discipline
-from ..match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
+from ..match.break_rules import (
+    DEFAULT_BREAK_RULE,
+    DEFAULT_START_RULE,
+    LEGACY_START_RULE,
+)
 
 if TYPE_CHECKING:
     from .match_models import IndividualMatch
@@ -238,7 +242,9 @@ class MatchProposal(BaseModel):
             distance=self.distance,
             is_race_to=self.is_race_to,
             break_rule=self.break_rule,
-            start_rule=self.start_rule or DEFAULT_START_RULE.value,
+            # NULL solo sulle proposte scritte prima della migration: per
+            # loro valeva il primo giocatore, e l'accettazione non lo cambia.
+            start_rule=self.start_rule or LEGACY_START_RULE.value,
             # Phase 6: Copy multi-set configuration
             is_multi_set=self.is_multi_set if self.is_multi_set is not None else False,
             match_distance=self.match_distance,

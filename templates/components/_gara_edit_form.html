@@ -290,7 +290,7 @@
         <select class="form-select" id="start_rule" name="start_rule">
           {% if gara.campionato %}
           <option value="" {% if gara.start_rule is none %}selected{% endif %}>
-            {{ _('Eredita dal campionato') }} ({{ (StartRule.normalize(gara.campionato.default_start_rule) or StartRule.FIRST_PLAYER).display_name }})
+            {{ _('Eredita dal campionato') }} ({{ (StartRule.normalize(gara.campionato.default_start_rule) or DEFAULT_START_RULE).display_name }})
           </option>
           {% endif %}
           {% for rule in StartRule %}

@@ -51,7 +51,12 @@ def _giocatori(db_session, quanti=2):
 
 def _match_di_gara(db_session, giocatori, *, break_rule=None, start_rule=None):
     """Un match dentro una gara, con le due regole dove le vuole l'ADR."""
-    campionato = Campionato(name=f"C{uuid.uuid4().hex[:6]}")
+    # Il campionato comincia dal primo giocatore, dichiarato: dal 2026-09-24
+    # il default è l'acchito, e questi test lo chiedono solo dove serve.
+    campionato = Campionato(
+        name=f"C{uuid.uuid4().hex[:6]}",
+        default_start_rule=StartRule.FIRST_PLAYER.value,
+    )
     db_session.add(campionato)
     db_session.flush()
 
@@ -305,7 +310,7 @@ class TestSfideIndividuali:
             discipline=Discipline.NINE_BALL.value,
             distance=5,
             is_race_to=True,
-            **kwargs,
+            **{"start_rule": StartRule.FIRST_PLAYER.value, **kwargs},
         )
         db.session.add(match)
         db.session.commit()

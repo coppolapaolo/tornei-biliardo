@@ -774,6 +774,21 @@ class TestRegoleDiApertura:
 
         assert [r.value for r in StartRule] == ["first_player", "lag"]
 
+    def test_l_acchito_e_il_default(self):
+        """SPECIFICHE.md riga 218: «acchito […] È il default» (nota del 2026-09-24).
+
+        Il default è quello che i moduli propongono; le gare nate prima della
+        regola, senza una regola scritta, restano al primo giocatore.
+        """
+        from models.match.break_rules import (
+            DEFAULT_START_RULE,
+            LEGACY_START_RULE,
+            StartRule,
+        )
+
+        assert DEFAULT_START_RULE is StartRule.LAG
+        assert LEGACY_START_RULE is StartRule.FIRST_PLAYER
+
     def test_a_turno_e_il_default(self):
         """SPECIFICHE.md riga 139: «È il default».
 

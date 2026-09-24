@@ -260,7 +260,7 @@ blocks:
           sets are a race: the option to play them all is not offered.
         hint: gara.multiset
       - name: "Start rule"
-        values: "default «First player» · inside a championship it can be inherited"
+        values: "default «Lag» · inside a championship it can be inherited"
         text: >-
           Who takes the first shot of the match. With **First player** the
           first of the two always breaks, with no lag. With **Lag** the

@@ -151,13 +151,12 @@ blocks:
     text: >-
       Under «How you play», next to discipline and distance, there are two
       choices about the **break shot**. Neither is compulsory: leave them alone
-      and the first of the two breaks, then it alternates — the way it has
-      always worked.
+      and you lag for the break, then it alternates.
 
   - type: options
     items:
       - name: "Start rule"
-        values: "default «First player»"
+        values: "default «Lag»"
         text: >-
           Who takes the first shot. With **Lag** the scoreboard, before the
           first rack, asks who won the lag and who breaks — because the lag

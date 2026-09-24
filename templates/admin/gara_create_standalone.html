@@ -413,7 +413,7 @@
                                     <label for="start_rule" class="form-label" data-help="gara-regola-inizio">{{ _("Regola di inizio") }}</label>
                                     <select class="form-select" id="start_rule" name="start_rule">
                                         {% for rule in StartRule %}
-                                        <option value="{{ rule.value }}" {% if rule == StartRule.FIRST_PLAYER %}selected{% endif %}>{{ rule.display_name }}</option>
+                                        <option value="{{ rule.value }}" {% if rule == DEFAULT_START_RULE %}selected{% endif %}>{{ rule.display_name }}</option>
                                         {% endfor %}
                                     </select>
                                     <small class="text-muted">{{ _("Con l'acchito il segnapunti chiede chi ha vinto e chi apre: chi vince può mandare al tavolo l'avversario.") }}</small>

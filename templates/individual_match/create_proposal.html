@@ -157,7 +157,7 @@
 
       <div>
         {% set selected_break_rule = rematch_params.break_rule if rematch_params else BreakRule.ALTERNATE.value %}
-        {% set selected_start_rule = rematch_params.start_rule if rematch_params else StartRule.FIRST_PLAYER.value %}
+        {% set selected_start_rule = rematch_params.start_rule if rematch_params else DEFAULT_START_RULE.value %}
         {# Le opzioni le detta l'enum, non questo file: `BreakRule` e
            `StartRule` sono iniettati nel contesto Jinja (`app.py`), e i form
            di gara e campionato iterano gli stessi. Scritte a mano qui, lo

@@ -16,7 +16,7 @@ from __future__ import annotations
 import pytest
 
 from models.match.base_match import BaseMatchMixin
-from models.match.break_rules import DEFAULT_BREAK_RULE, DEFAULT_START_RULE
+from models.match.break_rules import DEFAULT_BREAK_RULE, StartRule
 from models.match.distance import Distance
 from models.status_enum import MatchStatus
 
@@ -76,7 +76,10 @@ class _Match(BaseMatchMixin):
         p1_confirmed=False,
         p2_confirmed=False,
         racks=None,
-        start_rule=DEFAULT_START_RULE,
+        # Il tabellone con le due metà: senza acchito da registrare. Col
+        # default — l'acchito, dal 2026-09-24 — la pagina farebbe prima le
+        # due domande, che hanno i loro test.
+        start_rule=StartRule.FIRST_PLAYER,
         break_rule=DEFAULT_BREAK_RULE,
         first_break_player_id=None,
     ):

@@ -392,13 +392,14 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         Sul match non c'è un override, ed è una scelta: la regola di inizio e
         quella di apertura descrivono come si gioca la gara, non come si gioca
         una singola partita. Un match staccato dalla sua gara ricade sul
-        default del progetto.
+        comportamento storico, apre il primo giocatore: è una partita già
+        giocata, e le domande dell'acchito non hanno più nessuno a cui farle.
         """
-        from models.match.break_rules import DEFAULT_START_RULE
+        from models.match.break_rules import LEGACY_START_RULE
 
         if self.gara is not None:
             return self.gara.effective_start_rule
-        return DEFAULT_START_RULE
+        return LEGACY_START_RULE
 
     @property
     def effective_break_rule(self):

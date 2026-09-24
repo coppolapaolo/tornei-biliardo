@@ -200,8 +200,9 @@ blocks:
     tone: info
     title: "Se la gara non usa l'acchito non vedi niente"
     text: >-
-      Con la regola **Primo giocatore** — che è quella predefinita — apre il
-      primo dei due e le domande non compaiono affatto.
+      Con la regola **Primo giocatore** apre il primo dei due e le domande
+      non compaiono affatto. La regola predefinita è l'acchito: la sceglie chi
+      crea la gara.
 
   - type: note
     tone: tip

@@ -126,7 +126,7 @@ blocks:
   - type: options
     items:
       - name: "Regola di inizio"
-        values: "predefinito «Primo giocatore»"
+        values: "predefinito «Acchito»"
         text: >-
           Con **Primo giocatore** apre sempre il primo dei due. Con
           **Acchito** il segnapunti, prima del primo triangolo, chiede chi ha
