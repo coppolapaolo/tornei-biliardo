@@ -67,7 +67,9 @@
 </section>
 
 {# Chi e' a pari merito, prima di avviare lo spareggio (canvas 4.1): la
-   fascia dice che serve, qui si vede fra chi. #}
+   fascia dice che serve, qui si vede fra chi e per quali posti — una riga
+   per gruppo, perche' i posti in palio sono del gruppo, non del singolo. #}
+{% import "components/_posti_in_palio.html" as posti_in_palio %}
 {% if tipo_comando == 'avvia_spareggio' and ssr_groups %}
 <div>
   {{ d.sezione(_('Parimerito'), nota=_('fino al %(pos)s° posto', pos=gara.tiebreaker_until_position or 3)) }}
@@ -76,10 +78,11 @@
        Markup, e incollarlo a una stringa ne proteggeva l'HTML, che la pagina
        mostrava come testo (2026-09-13). #}
     {% set pastiglia_pari %}<span class="c7-state c7-state--warn">{{ _('pari') }}</span>{% endset %}
-    {% for g in ssr_groups %}{% for p in g.players %}
-    {{ d.riga('fa-scale-balanced', p.username, _('%(pos)s° posto a pari merito', pos=g.position), tone='warn',
+    {% for g in ssr_groups %}
+    {% set _sotto %}{{ posti_in_palio.titolo(g.posti_in_palio) }}{% set _n = posti_in_palio.nota(g.posti_in_palio, g.players|length)|trim %}{% if _n %} · {{ _n }}{% endif %}{% endset %}
+    {{ d.riga('fa-scale-balanced', g.players|map(attribute='username')|join(' · '), _sotto, tone='warn',
               right=pastiglia_pari) }}
-    {% endfor %}{% endfor %}
+    {% endfor %}
   </div>
 </div>
 {% endif %}

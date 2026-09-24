@@ -82,7 +82,10 @@ def test_in_spareggio_i_punti_si_segnano_con_gli_stepper(admin_client, db_sessio
     html = admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
 
     assert "Inserisci i punti" in html
-    assert "Parimerito per il 1° posto" in html
+    # I posti in palio per esteso (rilievo del 2026-09-23): i due vincitori
+    # si giocano il 1° e il 2°, i due perdenti il 3° soltanto.
+    assert "Spareggio per il 1° e il 2° posto" in html
+    assert "Spareggio per il 3° posto" in html
     assert "passoSsr(this, 1)" in html
     assert "ssr-group-input" in html
     # «Termina» resta spento finche' i gruppi non sono sciolti.

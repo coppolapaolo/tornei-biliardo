@@ -30,6 +30,10 @@ class TiebreakerGroup(TypedDict):
     # Quanti punteggi in cima al gruppo devono essere strettamente separati
     # perché lo spareggio sia risolto (vedi positions_to_discriminate).
     needs_distinct_top: int
+    # Le posizioni che lo spareggio decide: dalla posizione del gruppo fino a
+    # tiebreaker_until_position (vedi posti_in_palio). Serve a dire al
+    # direttore *che* spareggio è — per il 2° e il 3°, o solo per il 3°.
+    posti_in_palio: List[int]
 
 
 class SpareggioService:
@@ -80,6 +84,25 @@ class SpareggioService:
             return 0
         contested = tiebreaker_limit - group_position + 1
         return max(0, min(group_size - 1, contested))
+
+    @staticmethod
+    def posti_in_palio(
+        group_size: int, group_position: int, tiebreaker_limit: int
+    ) -> List[int]:
+        """Le posizioni che lo spareggio di questo gruppo decide.
+
+        Un gruppo di ``n`` alla posizione ``p`` occupa ``p .. p+n-1``, ma solo
+        quelle fino a ``tiebreaker_limit`` sono in palio: quattro giocatori al
+        3° posto con limite 3 si contendono il 3° e basta, e gli altri tre
+        restano a pari merito (issue #63). È la stessa regola di
+        `positions_to_discriminate`, detta in posti invece che in punteggi:
+        per assegnare ``k`` posti bastano ``k`` punteggi distinti in cima, ma
+        se i posti sono tanti quanti i giocatori l'ultimo si deduce.
+        """
+        if group_size < 2:
+            return []
+        ultimo = min(group_position + group_size - 1, tiebreaker_limit)
+        return list(range(group_position, ultimo + 1))
 
     @staticmethod
     def draw_order_map(gara_id: int) -> Dict[int, int]:
@@ -314,6 +337,9 @@ class SpareggioService:
                                 "rack_totali": rack_count,
                                 "players": players,
                                 "needs_distinct_top": needed,
+                                "posti_in_palio": SpareggioService.posti_in_palio(
+                                    len(group), current_position, tiebreaker_limit
+                                ),
                             }
                         )
 
@@ -419,6 +445,9 @@ class SpareggioService:
                             SpareggioService.positions_to_discriminate(
                                 len(group), current_position, tiebreaker_limit
                             )
+                        ),
+                        "posti_in_palio": SpareggioService.posti_in_palio(
+                            len(group), current_position, tiebreaker_limit
                         ),
                     }
                 )

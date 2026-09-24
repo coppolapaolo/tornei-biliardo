@@ -99,6 +99,7 @@ def _gruppi(punti_a=None, punti_b=None):
         {
             "position": 3,
             "needs_distinct_top": 1,
+            "posti_in_palio": [3],
             "players": [
                 {"user_id": 3, "username": "bianchi", "current_ssr_score": punti_a},
                 {"user_id": 4, "username": "ferrari", "current_ssr_score": punti_b},
@@ -116,7 +117,8 @@ def test_i_punti_ssr_si_segnano_con_gli_stepper(app):
         can_edit_ssr=True,
         gara=SimpleNamespace(id=7),
     )
-    assert "Parimerito per il 3° posto" in html
+    assert "Spareggio per il 3° posto" in html
+    assert "restano a pari merito" not in html
     assert html.count("passoSsr(this, 1)") == 2
     # Il campo che `saveSsrGroup` legge, con i suoi attributi.
     assert html.count('class="ssr-group-input c7-ssr__valore c7-num"') == 2
@@ -135,3 +137,36 @@ def test_a_gara_conclusa_i_punti_ssr_sono_in_sola_lettura(app):
     )
     assert "passoSsr" not in html and "ssr-group-input" not in html
     assert ">4<" in html and ">2<" in html
+
+
+def test_il_foglio_ssr_dice_quali_posti_sono_in_palio(app):
+    """Rilievo della gara del 2026-09-23: il 2° e il 3°, non «il 2°»."""
+    gruppo = dict(_gruppi()[0], position=2, posti_in_palio=[2, 3])
+    html = _render(
+        app,
+        "components/_ssr_section.html",
+        ssr_groups=[gruppo],
+        has_unresolved_tiebreakers=True,
+        can_edit_ssr=True,
+        gara=SimpleNamespace(id=7),
+    )
+    assert "Spareggio per il 2° e il 3° posto" in html
+
+
+def test_se_i_giocatori_sono_piu_dei_posti_lo_dice(app):
+    """Issue #63: quattro al 3° posto con limite 3 si contendono il 3° e basta."""
+    gruppo = dict(_gruppi()[0], posti_in_palio=[3])
+    gruppo["players"] = gruppo["players"] + [
+        {"user_id": 5, "username": "verdi", "current_ssr_score": None},
+        {"user_id": 6, "username": "neri", "current_ssr_score": None},
+    ]
+    html = _render(
+        app,
+        "components/_ssr_section.html",
+        ssr_groups=[gruppo],
+        has_unresolved_tiebreakers=True,
+        can_edit_ssr=True,
+        gara=SimpleNamespace(id=7),
+    )
+    assert "Spareggio per il 3° posto" in html
+    assert "Gli altri restano a pari merito al 4° posto." in html

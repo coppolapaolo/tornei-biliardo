@@ -8,6 +8,7 @@
    lettura. Attese: ssr_groups, has_unresolved_tiebreakers, can_edit_ssr,
    gara. #}
 
+{% import "components/_posti_in_palio.html" as posti_in_palio %}
 {% if ssr_groups %}
 <section class="c7-stack c7-ssr">
   <div class="c7-sechead">
@@ -22,9 +23,11 @@
   {% for group in ssr_groups %}
   <div class="c7-card" data-ssr-gruppo="{{ group.position }}">
     <div class="c7-sechead">
-      <h3 style="flex:1">{{ _('Parimerito per il %(pos)s° posto', pos=group.position) }}</h3>
+      <h3 style="flex:1">{{ posti_in_palio.titolo(group.posti_in_palio) }}</h3>
       <span class="c7-state c7-state--muted">{{ ngettext('%(n)d giocatore', '%(n)d giocatori', group.players|length, n=group.players|length) }}</span>
     </div>
+    {% set _nota_posti = posti_in_palio.nota(group.posti_in_palio, group.players|length) %}
+    {% if _nota_posti|trim %}<div class="c7-nota" style="margin-bottom:10px">{{ _nota_posti }}</div>{% endif %}
 
     <div class="c7-ssr__lati">
       {% for player in group.players %}

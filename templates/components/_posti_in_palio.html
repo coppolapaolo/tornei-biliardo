@@ -1,0 +1,28 @@
+{# templates/components/_posti_in_palio.html
+
+   Che spareggio è: i posti che decide, detti per esteso. Prima si leggeva
+   solo la posizione da cui il gruppo parte («2° posto a pari merito»), e il
+   direttore non sapeva se lo spot shot rally valesse il 2° e il 3° posto o
+   il 2° soltanto (rilievo della gara del 2026-09-23). I posti li calcola
+   `SpareggioService.posti_in_palio`: la pagina prima dell'avvio e il foglio
+   dei punti li leggono dallo stesso gruppo, quindi non possono dire cose
+   diverse. #}
+
+{% macro titolo(posti) -%}
+{%- if posti|length == 1 -%}
+{{ _('Spareggio per il %(pos)s° posto', pos=posti[0]) }}
+{%- elif posti|length == 2 -%}
+{{ _('Spareggio per il %(a)s° e il %(b)s° posto', a=posti[0], b=posti[1]) }}
+{%- else -%}
+{{ _('Spareggio dal %(a)s° al %(b)s° posto', a=posti[0], b=posti[-1]) }}
+{%- endif -%}
+{%- endmacro %}
+
+{# Quando fuori dai posti in palio restano almeno due giocatori, restano a
+   pari merito: va detto, altrimenti sembra che lo spareggio li ordini
+   tutti. Uno solo non è un pari merito: prende il posto dopo, e basta. #}
+{% macro nota(posti, giocatori) -%}
+{%- if posti and giocatori - posti|length >= 2 -%}
+{{ _('Gli altri restano a pari merito al %(pos)s° posto.', pos=posti[-1] + 1) }}
+{%- endif -%}
+{%- endmacro %}
