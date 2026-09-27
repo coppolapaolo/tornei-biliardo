@@ -239,3 +239,60 @@ che su NFS non è coerente: bastavano la web app e uno scheduled task, senza
 nessuno alla console. Ecco perché la regola «script di scrittura solo con web
 app Disabled», da sola, non avrebbe mai fermato i due incidenti del 2026-06-10 e
 2026-08-17.
+
+## Cambiare la versione di Python in produzione
+
+Fatto una volta, il 27/09/2026: da 3.10 a 3.12, perché 3.10 usciva dal
+supporto a fine ottobre e SQLAlchemy 2.1 vuole almeno 3.11. La versione di
+produzione è scritta in **`.python-version`**, e la CI la legge da lì
+(`test_python_di_produzione.py`). Quel file si cambia **dopo** aver migrato la
+produzione, mai prima: se no la CI approva ciò che in produzione non si
+installa.
+
+**Le versioni disponibili dipendono dall'immagine di sistema** (Account →
+System Image). `haggis` arriva a 3.10; `innit` (Ubuntu 22.04) ha 3.11, 3.12 e
+3.13, e conserva anche 3.10. Gli interpreti stanno in `/usr/local/bin`, non in
+`/usr/bin`: `ls /usr/local/bin/python3*` è il controllo giusto. Il venv del
+2023 era nato da `~/.local/bin/python3`, un link a `/usr/local/bin/python3.10`.
+
+**Il venv si chiama `venv` e si ricrea, non si rinomina**: il nome è scritto
+in `auto_deploy.py` (`venv_python()`), negli scheduled task e nelle istruzioni
+degli script. Un venv rinominato ha i percorsi sbagliati negli script di
+`bin/`. Il vecchio si mette da parte con `mv`, e resta la strada per tornare
+indietro.
+
+```bash
+# 0. Momento tranquillo: nessuna gara in corso, auto_deploy e backup_db non
+#    nella prossima ora. Poi un backup.
+cd ~/mysite && venv/bin/python scripts/backup_db.py
+# 1. Tab Web → Disable. 2. Se serve, Account → System Image.
+# 3. In una console Bash NUOVA (quelle aperte restano sull'immagine vecchia):
+rm -rf ~/.cache/pip                       # consigliato dalla guida di PythonAnywhere
+mv venv venv-<immagine>-<versione>        # es. venv-haggis-3.10
+python3.12 -m venv venv
+venv/bin/python -m pip install -q -r requirements.txt   # ~3 minuti
+venv/bin/python scripts/requirements_check.py requirements.txt && echo OK
+venv/bin/python migrations/runner.py --status           # importa app e modelli
+```
+
+**Con la web app disabilitata il tab Web nasconde la configurazione**,
+compreso il menu *Python version*. Riabilitarla prima di cambiarla vorrebbe
+dire farla ripartire col Python vecchio sul venv nuovo, cioè fallire a ogni
+richiesta. La versione si cambia via API, con l'app ancora ferma
+(`$API_TOKEN` c'è già nelle console):
+
+```bash
+U=https://www.pythonanywhere.com/api/v0/user/paolocoppola/webapps/www.torneibiliardo.it/
+curl -s -H "Authorization: Token $API_TOKEN" $U; echo                        # prima
+curl -s -X PATCH -H "Authorization: Token $API_TOKEN" -d "python_version=3.12" $U; echo
+```
+
+Poi **Re-enable webapp**. Nell'error log compare la riga «Logging del server
+web…» una volta per processo, tre in tutto, e dopo nessun traceback. Gli
+scheduled task usano `venv/bin/python` e passano da soli alla versione nuova:
+il mattino dopo conviene guardare il log di `auto_deploy`.
+
+**Per tornare indietro**: Disable, immagine vecchia se era cambiata, console
+nuova, `rm -rf venv && mv venv-<…> venv`, `python_version` di nuovo alla
+versione vecchia via API, Re-enable. Qualche giorno dopo un passaggio riuscito,
+il venv vecchio si cancella.
