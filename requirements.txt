@@ -1,5 +1,5 @@
 Flask==2.3.3
-Flask-SQLAlchemy==3.0.5
+Flask-SQLAlchemy==3.1.1
 # SQLAlchemy arriva da Flask-SQLAlchemy, che chiede solo `>=1.4.18`: senza un
 # limite qui ogni ambiente nuovo prende l'ultima uscita, e il 27/09/2026 la CI
 # si è trovata la 2.1 mentre sviluppo e produzione erano sulla 2.0. La 2.1
@@ -10,10 +10,10 @@ Flask-Login==0.6.3
 Werkzeug==2.3.7
 cryptography>=42.0.0,<44.0.0
 Pillow==12.3.0
-networkx==3.1
+networkx==3.7
 Flask-Babel==4.0.0
-Flask-Mail==0.9.1
-python-dotenv==1.2.1
+Flask-Mail==0.10.0
+python-dotenv==1.2.3
 sentry-sdk[flask]>=1.40.0,<3.0.0
 Flask-WTF>=1.3.0,<2.0.0
 Flask-Limiter>=3.5.0,<4.0.0
