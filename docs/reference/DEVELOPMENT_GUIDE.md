@@ -6,7 +6,7 @@
 
 | Requisito | Versione |
 |-----------|----------|
-| Python | 3.11+ (venv incluso) |
+| Python | quella di produzione o più nuova: `.python-version` dice la produzione (oggi 3.12) |
 | pip | Ultima versione |
 | Git | 2.x+ |
 | SQLite | 3.x (incluso con Python) |
@@ -19,7 +19,7 @@ git clone <repo-url> tornei-biliardo
 cd tornei-biliardo
 
 # 2. Crea e attiva virtual environment
-python3.11 -m venv venv
+python3 -m venv venv   # >= la versione in .python-version
 source venv/bin/activate  # macOS/Linux
 
 # 3. Installa dipendenze

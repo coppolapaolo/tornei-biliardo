@@ -38,6 +38,6 @@
     "reportAttributeAccessIssue": false,
     "reportAssignmentType": false,
     "useLibraryCodeForTypes": true,
-    "pythonVersion": "3.9",
+    "pythonVersion": "3.12",
     "typeCheckingMode": "basic"
 }
