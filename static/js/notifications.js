@@ -109,37 +109,35 @@ function showInfo(message) {
  * @param {string} message - Messaggio da mostrare
  * @param {function} onConfirm - Callback da eseguire se l'utente conferma
  * @param {object} options - Opzioni aggiuntive
- * @param {string} options.title - Titolo del modal (default: "Conferma")
- * @param {string} options.confirmText - Testo bottone conferma (default: "Conferma")
+ * @param {string} options.title - Titolo del modal (default: «Conferma», tradotto)
+ * @param {string} options.confirmText - Testo bottone conferma: il nome dell'azione (ADR-074)
  * @param {string} options.confirmClass - Classe bottone conferma (default: "btn-danger")
  */
 // Store current callback globally so we can access it from the click handler
 let _confirmCallback = null;
 
 function showConfirm(message, onConfirm, options = {}) {
-  console.log('showConfirm called with message:', message);
-  const {
-    title = 'Conferma',
-    confirmText = 'Conferma',
-    confirmClass = 'btn-danger'
-  } = options;
-
   const modalEl = document.getElementById('confirmModal');
-  console.log('confirmModal element found:', !!modalEl);
   if (!modalEl) {
-    console.error('Confirm modal not found! Add #confirmModal to base.html');
-    // Fallback a confirm() nativo
+    // Unico `confirm()` ammesso (ADR-074): una pagina senza il modale di
+    // base.html. Chiedere col browser è meglio che non chiedere affatto.
     if (confirm(message)) {
       onConfirm();
     }
     return;
   }
 
+  // I testi predefiniti arrivano già tradotti da base.html: un letterale qui
+  // sarebbe italiano per tutti.
+  const {
+    title = modalEl.dataset.defaultTitle,
+    confirmText = modalEl.dataset.defaultConfirm,
+    confirmClass = 'btn-danger'
+  } = options;
+
   const modalTitle = modalEl.querySelector('.modal-title');
   const modalBody = document.getElementById('confirmModalBody');
   const confirmBtn = document.getElementById('confirmModalBtn');
-
-  console.log('confirmBtn found:', !!confirmBtn, confirmBtn);
 
   if (modalTitle) modalTitle.textContent = title;
   modalBody.textContent = message;
@@ -149,23 +147,18 @@ function showConfirm(message, onConfirm, options = {}) {
   // Store callback for the click handler
   _confirmCallback = onConfirm;
 
-  const modal = new bootstrap.Modal(modalEl);
+  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
 
   // Use onclick instead of addEventListener to ensure only one handler
   confirmBtn.onclick = function() {
-    console.log('Confirm button clicked!');
     modal.hide();
     if (_confirmCallback) {
-      console.log('Calling callback...');
       _confirmCallback();
       _confirmCallback = null;
     }
   };
-  console.log('Click handler set via onclick');
 
-  console.log('Showing modal...');
   modal.show();
-  console.log('Modal show() called');
 }
 
 // === VALIDAZIONE INLINE ===

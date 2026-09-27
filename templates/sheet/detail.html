@@ -41,7 +41,7 @@
     </p>
     <form method="POST" action="{{ url_for('sheet.leave_sheet', sheet_id=sheet.id) }}"
           style="margin-top:12px"
-          onsubmit="return confirm({{ _('Smetti di seguire questa scheda? Potrà riaprirtela solo chi la possiede.')|tojson }})">
+          onsubmit='return confirmSubmit(this, {{ _('Smetti di seguire questa scheda? Potrà riaprirtela solo chi la possiede.')|tojson }}, {confirmText: {{ _("Non seguirla più")|tojson }}, confirmClass: "btn-danger"})'>
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-secondary btn-sm">{{ _("Non seguirla più") }}</button>
     </form>

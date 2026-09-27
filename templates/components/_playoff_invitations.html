@@ -50,7 +50,7 @@
         <form method="POST" action="{{ url_for('player.playoff_decline', qualification_id=invito.id) }}">
           <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
           <button type="submit" class="btn btn-secondary"
-                  onclick='return confirm({{ _("Rifiutare il posto ai playoff? L'invito passera' al primo degli esclusi.")|tojson }})'>{{ _('Rifiuta') }}</button>
+                  onclick='return confirmSubmit(this.form, {{ _("Rifiutare il posto ai playoff? L'invito passera' al primo degli esclusi.")|tojson }}, {confirmText: {{ _("Rifiuta")|tojson }}, confirmClass: "btn-danger"})'>{{ _('Rifiuta') }}</button>
         </form>
       </div>
 

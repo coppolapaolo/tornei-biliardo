@@ -122,7 +122,7 @@
                                   action='{{ url_for("admin.campionato.playoff_deactivate_config", campionato_id=campionato.id, config_id=cfg.id) }}'>
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                                 <button type="submit" class="btn btn-sm btn-outline-danger"
-                                        onclick='return confirm({{ _("Disattivare questa configurazione?")|tojson }})'>
+                                        onclick='return confirmSubmit(this.form, {{ _("Disattivare questa configurazione?")|tojson }}, {confirmText: {{ _("Disattiva")|tojson }}, confirmClass: "btn-danger"})'>
                                     <i class="fas fa-times"></i>
                                 </button>
                             </form>
@@ -323,7 +323,7 @@
               <form method="POST" action='{{ url_for("admin.campionato.prova_rispondi_invito", campionato_id=campionato.id, qualification_id=q.id, risposta="rifiuta") }}'>
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn btn-sm btn-secondary"
-                        onclick='return confirm({{ _("Rifiutare il posto ai playoff? L'invito passera' al primo degli esclusi.")|tojson }})'>
+                        onclick='return confirmSubmit(this.form, {{ _("Rifiutare il posto ai playoff? L'invito passera' al primo degli esclusi.")|tojson }}, {confirmText: {{ _("Rifiuta")|tojson }}, confirmClass: "btn-danger"})'>
                   <i class="fas fa-times"></i> {{ _("Rifiuta") }}
                 </button>
               </form>
@@ -337,7 +337,7 @@
                 <input type="hidden" name="answer" value="accept">
                 <button type="submit" class="btn btn-sm btn-success" data-help="playoff-risposta-invito"
                         title='{{ _("Conferma per conto del giocatore") }}'
-                        onclick='return confirm({{ _("Confermare la partecipazione per conto di questo giocatore?")|tojson }})'>
+                        onclick='return confirmSubmit(this.form, {{ _("Confermare la partecipazione per conto di questo giocatore?")|tojson }}, {confirmText: {{ _("Accetta")|tojson }}, confirmClass: "btn-success"})'>
                   <i class="fas fa-check"></i> {{ _("Accetta") }}
                 </button>
               </form>
@@ -347,7 +347,7 @@
                 <input type="hidden" name="answer" value="decline">
                 <button type="submit" class="btn btn-sm btn-secondary"
                         title='{{ _("Rifiuta per conto del giocatore") }}'
-                        onclick='return confirm({{ _("Registrare il rifiuto? L'invito passera' al primo degli esclusi.")|tojson }})'>
+                        onclick='return confirmSubmit(this.form, {{ _("Registrare il rifiuto? L'invito passera' al primo degli esclusi.")|tojson }}, {confirmText: {{ _("Registra il rifiuto")|tojson }}, confirmClass: "btn-danger"})'>
                   <i class="fas fa-times"></i> {{ _("Rifiuta") }}
                 </button>
               </form>
@@ -365,7 +365,7 @@
                 <input type="hidden" name="answer" value="accept">
                 <button type="submit" class="btn btn-sm btn-outline-success" data-help="playoff-invito-scaduto"
                         title='{{ _("Accetta per conto del giocatore, anche se l'invito è scaduto") }}'
-                        onclick='return confirm({{ _("L'invito è scaduto. Confermare comunque la partecipazione per conto di questo giocatore? Entra anche oltre i posti.")|tojson }})'>
+                        onclick='return confirmSubmit(this.form, {{ _("L'invito è scaduto. Confermare comunque la partecipazione per conto di questo giocatore? Entra anche oltre i posti.")|tojson }}, {confirmText: {{ _("Accetta")|tojson }}, confirmClass: "btn-success"})'>
                   <i class="fas fa-check"></i> {{ _("Accetta") }}
                 </button>
               </form>
@@ -377,7 +377,7 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="qualification_id" value="{{ q.id }}">
                 <button type="submit" class="c7-iconbtn" title="{{ _('Rimuovi dai playoff') }}" aria-label="{{ _('Rimuovi %(nome)s dai playoff', nome=q.user.username) }}"
-                        onclick='return confirm({{ _("Rimuovere questo giocatore?")|tojson }})'>
+                        onclick='return confirmSubmit(this.form, {{ _("Rimuovere questo giocatore?")|tojson }}, {confirmText: {{ _("Rimuovi")|tojson }}, confirmClass: "btn-danger"})'>
                   <i class="fas fa-user-minus"></i>
                 </button>
               </form>
@@ -409,7 +409,7 @@
           <form method="POST" action='{{ url_for("admin.campionato.create_playoff_gara", campionato_id=campionato.id, config_id=cfg.id) }}'>
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-primary w-100"
-                    onclick='return confirm({{ _("Creare la gara playoff e iscrivere i giocatori confermati?")|tojson }})'>
+                    onclick='return confirmSubmit(this.form, {{ _("Creare la gara playoff e iscrivere i giocatori confermati?")|tojson }}, {confirmText: {{ _("Crea la gara")|tojson }}, confirmClass: "btn-success"})'>
               <i class="fas fa-trophy"></i> {{ ngettext('Crea la gara playoff · %(n)d confermato', 'Crea la gara playoff · %(n)d confermati', cs.confirmed, n=cs.confirmed) }}
             </button>
           </form>

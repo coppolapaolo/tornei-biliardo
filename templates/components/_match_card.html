@@ -149,7 +149,7 @@
             action="{{ url_for('admin.competition.reset_x_replacement', gara_id=match.gara_id, round_number=match.round_number, user_id=match.player1_id) }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-sm btn-outline-secondary"
-                onclick='return confirm({{ _("Azzerare la prova? Il turno torna a valere zero.")|tojson }})'>{{ _('Azzera') }}</button>
+                onclick='return confirmSubmit(this.form, {{ _("Azzerare la prova? Il turno torna a valere zero.")|tojson }}, {confirmText: {{ _("Azzera")|tojson }}, confirmClass: "btn-danger"})'>{{ _('Azzera') }}</button>
       </form>
     </div>
     {% else %}

@@ -50,7 +50,7 @@
          riga flessibile finirebbe a capo sotto di lui. #}
       <form method="POST" class="d-flex align-items-center"
             action="{{ url_for('admin.campionato.prova_elimina', campionato_id=_radice.id) if _campionato else url_for('admin.competition.prova_elimina', gara_id=gara.id) }}"
-            onsubmit='return confirm({{ (_("Eliminare la prova con tutto il campionato, le gare, le partite e i giocatori fittizi? Non si torna indietro.") if _tutto_il_campionato else _("Eliminare la prova con tutte le partite e i giocatori fittizi? Non si torna indietro."))|tojson }})'>
+            onsubmit='return confirmSubmit(this, {{ (_("Eliminare la prova con tutto il campionato, le gare, le partite e i giocatori fittizi? Non si torna indietro.") if _tutto_il_campionato else _("Eliminare la prova con tutte le partite e i giocatori fittizi? Non si torna indietro."))|tojson }}, {confirmText: {{ _("Elimina la prova")|tojson }}, confirmClass: "btn-danger"})'>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-outline-danger flex-fill" data-help="prova-elimina">
           <i class="fas fa-trash-can me-1"></i>{{ _("Elimina la prova") }}

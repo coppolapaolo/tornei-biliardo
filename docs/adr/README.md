@@ -87,6 +87,7 @@ Crea un ADR quando:
 | ADR-071 | [Una scheda si propone, non si assegna](ADR-071-una-scheda-si-propone.md) | Accepted | 2026-09-20 |
 | ADR-072 | [Le prove fatte in scheda sono prove: la misura discende dall'esercizio, e ogni tentativo entra nel catalogo](ADR-072-le-prove-in-scheda-sono-prove.md) | Accepted | 2026-09-22 |
 | ADR-073 | [La classifica generale si calcola in un posto solo](ADR-073-classifica-generale-un-calcolo-solo.md) | Accepted | 2026-09-24 |
+| ADR-074 | [Le conferme seguono cosa fa l'azione](ADR-074-le-conferme-seguono-cosa-fa-l-azione.md) | Accepted | 2026-09-27 |
 
 ## Come Creare un Nuovo ADR
 

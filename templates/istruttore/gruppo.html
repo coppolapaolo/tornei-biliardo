@@ -225,7 +225,7 @@
 
   {% if gruppo.is_open %}
   <form method="POST" action="{{ url_for('istruttore.chiudi_gruppo', group_id=gruppo.id) }}"
-        onsubmit="return confirm({{ _('Chiudi il corso? Resta nello storico con chi ne faceva parte, e da oggi quelle persone possono entrare in un altro gruppo.')|tojson }})">
+        onsubmit='return confirmSubmit(this, {{ _('Chiudi il corso? Resta nello storico con chi ne faceva parte, e da oggi quelle persone possono entrare in un altro gruppo.')|tojson }}, {confirmText: {{ _("Chiudi il corso")|tojson }}, confirmClass: "btn-danger"})'>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <button type="submit" class="btn btn-outline-danger w-100">
       {{ _("Chiudi il corso") }}

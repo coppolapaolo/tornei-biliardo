@@ -159,7 +159,7 @@
                                challenge_id=request.args.get('challenge_id'),
                                date_from=filters.date_from.isoformat() if filters.date_from else None,
                                date_to=filters.date_to.isoformat() if filters.date_to else None) }}"
-            onsubmit='return confirm({{ _("Cancellare questa prova? Il punteggio sparisce e i progressi si ricalcolano.")|tojson }})'>
+            onsubmit='return confirmSubmit(this, {{ _("Cancellare questa prova? Il punteggio sparisce e i progressi si ricalcolano.")|tojson }}, {confirmText: {{ _("Cancella la prova")|tojson }}, confirmClass: "btn-danger"})'>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="c7-iconbtn"
                 style="background:var(--c7-err-bg);color:var(--c7-err-ink)"

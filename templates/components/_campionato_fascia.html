@@ -101,7 +101,7 @@
       <form method="POST" action='{{ url_for("admin.campionato.create_playoff_gara", campionato_id=campionato.id, config_id=cs.configuration.id) }}'>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit" class="btn btn-success"
-                onclick='return confirm({{ _("Creare la gara playoff e iscrivere i giocatori confermati?")|tojson }})'>
+                onclick='return confirmSubmit(this.form, {{ _("Creare la gara playoff e iscrivere i giocatori confermati?")|tojson }}, {confirmText: {{ _("Crea la gara")|tojson }}, confirmClass: "btn-success"})'>
           <i class="fas fa-trophy"></i> {{ ngettext('Crea la gara playoff · %(n)d confermato', 'Crea la gara playoff · %(n)d confermati', cs.confirmed, n=cs.confirmed) }}
         </button>
       </form>
