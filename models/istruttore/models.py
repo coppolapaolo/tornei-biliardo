@@ -34,9 +34,14 @@ Da questo discendono le tre scelte che si vedono nello schema.
 from __future__ import annotations
 
 from enum import Enum
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
+
+from sqlalchemy.orm import Mapped
 
 from ..base import BaseModel, db, utc_now
+
+if TYPE_CHECKING:
+    from ..user.models import User
 
 
 class TrainingGroup(BaseModel):
@@ -144,8 +149,13 @@ class TrainingGroupMember(BaseModel):
     #: Quando ne è uscito. NULL = ci sta ancora.
     left_at = db.Column(db.DateTime, nullable=True)
 
-    group = db.relationship("TrainingGroup", back_populates="members")
-    user = db.relationship("User", foreign_keys=[user_id])
+    # Annotate con `Mapped`: da Flask-SQLAlchemy 3.1 `db.relationship` ha un
+    # tipo suo, e senza annotazione pyright vede la proprietà invece del
+    # gruppo (`allievi_view.RigaAllievo.gruppo`).
+    group: Mapped["TrainingGroup"] = db.relationship(
+        "TrainingGroup", back_populates="members"
+    )
+    user: Mapped["User"] = db.relationship("User", foreign_keys=[user_id])
 
     __table_args__ = (
         db.Index(
