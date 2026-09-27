@@ -19,6 +19,10 @@ versionamento segue [Semantic Versioning](https://semver.org/lang/it/).
 
 ### Corretto
 
+- **Le pagine in inglese si dichiaravano italiane.** L'attributo `lang` era
+  fisso su `it`: chi aveva scelto l'inglese se lo sentiva leggere dal lettore
+  di schermo con la pronuncia italiana, e il browser gli proponeva di tradurre
+  «dall'italiano». Ora segue la lingua scelta.
 - **Gli inviti ai playoff non tenevano conto della X.** La classifica in
   pagina conta la X come una vittoria, come dice la specifica; quella da cui
   partono gli inviti la scartava. Chi aveva avuto una X aveva una vittoria in
