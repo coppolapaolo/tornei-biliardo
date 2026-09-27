@@ -17,7 +17,7 @@ Created: 2025-08-01
 
 from __future__ import annotations
 
-from typing import List, Optional, Dict, Any, Tuple
+from typing import List, Optional, Dict, Any
 from sqlalchemy.engine.row import Row
 
 from ..base import db, utc_now
@@ -197,7 +197,7 @@ class UserService:
         )  # Changed to only allow admins, not directors
 
     @staticmethod
-    def get_users_with_stats() -> List[Row[Tuple[User, int, int, Any]]]:
+    def get_users_with_stats() -> List[Row[User, int, int, Any]]:
         """Delegate to UserStatsService for users with statistics."""
         return UserStatsService.get_users_with_stats()
 

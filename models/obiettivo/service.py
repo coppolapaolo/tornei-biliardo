@@ -173,7 +173,7 @@ def _prepara_esercizio(
     rule: GoalRule,
     target: int,
 ) -> None:
-    challenge = Challenge.query.get(challenge_id) if challenge_id else None
+    challenge = db.session.get(Challenge, challenge_id) if challenge_id else None
     if challenge is None:
         raise ValidationError(_("Scegli su quale esercizio."))
     if challenge.pass_fail_only:

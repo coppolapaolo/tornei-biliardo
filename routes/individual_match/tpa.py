@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 def _load(match_id: int):
     """Il match e il suo referto, con l'utente corrente gia' verificato."""
-    match = IndividualMatch.query.get_or_404(match_id)
+    match = db.get_or_404(IndividualMatch, match_id)
     if current_user.id not in (match.player1_id, match.player2_id):
         return match, None, False
     return match, TpaRefertoService.get_for_match(match_id), True

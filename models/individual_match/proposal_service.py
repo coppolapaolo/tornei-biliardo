@@ -353,7 +353,7 @@ class ProposalService:
     ) -> bool:
         """Respond to a match invitation."""
 
-        invitation = ProposalInvitation.query.get(invitation_id)
+        invitation = db.session.get(ProposalInvitation, invitation_id)
         if not invitation or invitation.invited_user_id != invitee_id:
             return False
 

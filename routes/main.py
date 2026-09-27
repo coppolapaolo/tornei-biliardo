@@ -808,7 +808,7 @@ def debug_fill_gara(gara_id):
     if not current_app.config.get("DEBUG_MODE", False):
         return "Funzione non disponibile in produzione", 403
 
-    gara = Gara.query.get_or_404(gara_id)
+    gara = db.get_or_404(Gara, gara_id)
     current_active = _current_active_inscriptions(gara_id)
 
     min_required = gara.min_participants or 0
@@ -863,7 +863,7 @@ def debug_inscribe_next_player(gara_id):
     if not current_app.config.get("DEBUG_MODE", False):
         return "Funzione non disponibile in produzione", 403
 
-    gara = Gara.query.get_or_404(gara_id)
+    gara = db.get_or_404(Gara, gara_id)
     current_active = _current_active_inscriptions(gara_id)
 
     if gara.max_participants and current_active >= gara.max_participants:
@@ -928,7 +928,7 @@ def _debug_simula(gara_id: int, azione: str):
     if not current_app.config.get("DEBUG_MODE", False):
         return "Funzione non disponibile in produzione", 403
 
-    Gara.query.get_or_404(gara_id)
+    db.get_or_404(Gara, gara_id)
     try:
         # Il footer serve a far avanzare la gara: chiude anche le partite che
         # nella prova resterebbero in attesa del direttore.

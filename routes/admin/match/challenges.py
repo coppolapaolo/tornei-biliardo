@@ -7,6 +7,7 @@ from flask import (
 from flask_babel import _
 from flask_login import current_user, login_required
 
+from models.base import db
 from utils.route_helpers import safe_json_error
 
 from . import match_bp
@@ -92,7 +93,7 @@ def record_challenge_attempt():
         from models.competition.gara_challenge import GaraChallenge
 
         # Verify gara challenge exists and user has permissions
-        gara_challenge = GaraChallenge.query.get(data["gara_challenge_id"])
+        gara_challenge = db.session.get(GaraChallenge, data["gara_challenge_id"])
         if not gara_challenge:
             return jsonify({"success": False, "error": "Challenge non trovata"}), 404
 
@@ -230,7 +231,7 @@ def record_challenge_attempts():
 
         # Authorization: l'utente deve gestire la gara di OGNI challenge
         for gc_id in {a["gara_challenge_id"] for a in attempts_data}:
-            gara_challenge = GaraChallenge.query.get(gc_id)
+            gara_challenge = db.session.get(GaraChallenge, gc_id)
             if not gara_challenge:
                 return (
                     jsonify({"success": False, "error": "Challenge non trovata"}),

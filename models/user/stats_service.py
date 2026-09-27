@@ -5,7 +5,7 @@ This service extracts user statistics responsibilities from UserService
 following Task 1.3 decomposition patterns.
 """
 
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any
 from sqlalchemy.engine.row import Row
 from sqlalchemy import func
 from models.base import db
@@ -168,7 +168,7 @@ class UserStatsService:
 
     @staticmethod
     @read_only(domain="user")
-    def get_users_with_stats() -> List[Row[Tuple[User, int, int, Any]]]:
+    def get_users_with_stats() -> List[Row[User, int, int, Any]]:
         """Get all users with aggregated statistics in single query.
 
         Returns:

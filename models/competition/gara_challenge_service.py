@@ -79,7 +79,7 @@ class GaraChallengeService:
             raise ConflictError(_("Esercizio già presente per questo turno della gara"))
 
         # Verify challenge exists
-        challenge = Challenge.query.get(challenge_id)
+        challenge = db.session.get(Challenge, challenge_id)
         if not challenge:
             raise NotFoundError("Challenge non trovata")
 
@@ -207,7 +207,7 @@ class GaraChallengeService:
         Raises:
             ValueError: If user has reached max attempts or other validation errors
         """
-        gara_challenge = GaraChallenge.query.get(gara_challenge_id)
+        gara_challenge = db.session.get(GaraChallenge, gara_challenge_id)
         if not gara_challenge:
             raise ValueError("Gara challenge non trovata")
 
@@ -504,7 +504,9 @@ class GaraChallengeService:
         # Update classification once after all attempts
         if attempts_data:
             first_attempt = attempts_data[0]
-            gara_challenge = GaraChallenge.query.get(first_attempt["gara_challenge_id"])
+            gara_challenge = db.session.get(
+                GaraChallenge, first_attempt["gara_challenge_id"]
+            )
             if gara_challenge:
                 GaraChallengeService.update_gara_classification(gara_challenge.gara_id)
 

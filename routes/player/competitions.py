@@ -45,7 +45,7 @@ def inscribe_to_gara(gara_id):
     from models.competition.invite_service import GaraInviteService
     from utils.safe_redirect import safe_next_url
 
-    gara = Gara.query.get_or_404(gara_id)
+    gara = db.get_or_404(Gara, gara_id)
 
     # Dove tornare dopo l'iscrizione: il pulsante sulla pagina della gara lo
     # valorizza, così chi si iscrive da lì ci resta invece di essere spedito
@@ -118,7 +118,7 @@ def inscribe_to_gara(gara_id):
 @player_only
 def unsubscribe_from_gara(gara_id):
     """Disiscrizione da una gara"""
-    gara = Gara.query.get_or_404(gara_id)
+    gara = db.get_or_404(Gara, gara_id)
 
     # Verifica che l'utente sia iscritto
     inscription = Inscription.query.filter_by(

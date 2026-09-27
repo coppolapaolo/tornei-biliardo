@@ -23,6 +23,7 @@ from functools import wraps
 from flask import abort, flash, redirect, url_for, request
 from flask_login import current_user
 
+from models.base import db
 from models.user.permissions import PermissionChecker, RoleRequirement
 
 # --------------------------------------------------------------------------
@@ -184,7 +185,7 @@ def rack_manager_required(f):
         from models import Rack  # Local import to avoid circular dependency
 
         rack_id = kwargs.get("rack_id")
-        rack = Rack.query.get_or_404(rack_id)
+        rack = db.get_or_404(Rack, rack_id)
         gara_id = rack.match.gara_id
 
         if not PermissionChecker.can_manage_competition(current_user, gara_id):
@@ -207,7 +208,7 @@ def trio_manager_required(f):
         from models import TrioMatch  # Local import to avoid circular dependency
 
         trio_id = kwargs.get("trio_id")
-        trio = TrioMatch.query.get_or_404(trio_id)
+        trio = db.get_or_404(TrioMatch, trio_id)
         gara_id = trio.match.gara_id
 
         # Use gara-level permission check which handles both standalone and
@@ -285,7 +286,7 @@ def match_player_required(f):
             abort(400)  # Bad request if match_id is missing
 
         # Check if user is a player in this match
-        match = Match.query.get(match_id)
+        match = db.session.get(Match, match_id)
         if not match:
             abort(404)
 
@@ -313,7 +314,7 @@ def trio_player_required(f):
             abort(400)  # Bad request if match_id is missing
 
         # Get the match and check it's a trio
-        match = Match.query.get(match_id)
+        match = db.session.get(Match, match_id)
         if not match:
             abort(404)
 
@@ -346,7 +347,7 @@ def inscription_owner_required(f):
             abort(400)  # Bad request if inscription_id is missing
 
         # Check if user is the owner of this inscription
-        inscription = Inscription.query.get(inscription_id)
+        inscription = db.session.get(Inscription, inscription_id)
         if not inscription:
             abort(404)
 
@@ -371,7 +372,7 @@ def challenge_player_required(f):
             abort(400)  # Bad request if challenge_id is missing
 
         # Check if user has access to this challenge
-        challenge = Challenge.query.get(challenge_id)
+        challenge = db.session.get(Challenge, challenge_id)
         if not challenge:
             abort(404)
 
@@ -398,7 +399,7 @@ def challenge_attempt_player_required(f):
             abort(400)  # Bad request if attempt_id is missing
 
         # Check if user is the owner of this attempt
-        attempt = ChallengeAttempt.query.get(attempt_id)
+        attempt = db.session.get(ChallengeAttempt, attempt_id)
         if not attempt:
             abort(404)
 
@@ -426,7 +427,7 @@ def individual_match_player_required(f):
             abort(400)  # Bad request if match_id is missing
 
         # Check if user is a player in this individual match
-        match = IndividualMatch.query.get(match_id)
+        match = db.session.get(IndividualMatch, match_id)
         if not match:
             abort(404)
 

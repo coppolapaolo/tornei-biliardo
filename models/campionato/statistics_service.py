@@ -113,17 +113,19 @@ class TournamentStatisticsService:
         from models.competition.models import Gara, Inscription
         from sqlalchemy import func, distinct
 
-        # Giocatori unici che hanno mai partecipato al campionato
+        # Giocatori unici che hanno mai partecipato al campionato. `count` di
+        # un `distinct`, non `query(distinct(...)).count()`: SQLAlchemy 2.1
+        # segnala un `distinct()` di colonna fuori da un'aggregazione.
         unique_players_query = (
-            db.session.query(distinct(Inscription.user_id))
+            db.session.query(func.count(distinct(Inscription.user_id)))
             .join(Gara, Inscription.gara_id == Gara.id)
             .filter(Gara.campionato_id == campionato_id)
         )
-        total_unique_players = unique_players_query.count()
+        total_unique_players = unique_players_query.scalar() or 0
 
         # Giocatori attualmente iscritti a gare con iscrizioni aperte
         active_inscriptions_query = (
-            db.session.query(distinct(Inscription.user_id))
+            db.session.query(func.count(distinct(Inscription.user_id)))
             .join(Gara, Inscription.gara_id == Gara.id)
             .filter(
                 Gara.campionato_id == campionato_id,
@@ -131,7 +133,7 @@ class TournamentStatisticsService:
                 Gara.status == GaraStatus.INSCRIPTION.value,
             )
         )
-        currently_inscribed_players = active_inscriptions_query.count()
+        currently_inscribed_players = active_inscriptions_query.scalar() or 0
 
         # Match totali completati in tutte le gare
         completed_matches_query = (

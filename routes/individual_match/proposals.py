@@ -14,6 +14,7 @@ from flask_babel import gettext as _
 from flask_login import current_user
 from datetime import timedelta
 
+from models.base import db
 from models.individual_match.services import MatchProposalService
 from models.individual_match.models import MatchProposal, ProposalType
 from models.individual_match.pending_confirmation import PendingConfirmationError
@@ -47,7 +48,7 @@ def proposal_list():
 def proposal_detail(proposal_id):
     """View individual match proposal details."""
     try:
-        proposal = MatchProposal.query.get_or_404(proposal_id)
+        proposal = db.get_or_404(MatchProposal, proposal_id)
 
         # Check if user has access to this proposal
         user_id = current_user.id
