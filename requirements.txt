@@ -5,7 +5,7 @@ Flask-SQLAlchemy==3.0.5
 # installato la 2.1.1 mentre lo sviluppo era sulla 2.0: i test passavano,
 # pyright no (`Row` tipizzato in un altro modo), e ogni PR restava bloccata.
 # Passare alla 2.1 va deciso apposta, non trovato in un ambiente nuovo.
-SQLAlchemy>=2.0,<2.1
+SQLAlchemy>=2.0.54,<2.1
 Flask-Login==0.6.3
 Werkzeug==2.3.7
 cryptography>=42.0.0,<44.0.0
