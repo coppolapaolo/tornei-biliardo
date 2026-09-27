@@ -6,7 +6,7 @@
 
 | Requisito | Versione |
 |-----------|----------|
-| Python | quella di produzione o più nuova: `.python-version` dice la produzione (oggi 3.10) |
+| Python | quella di produzione o più nuova: `.python-version` dice la produzione (oggi 3.12) |
 | pip | Ultima versione |
 | Git | 2.x+ |
 | SQLite | 3.x (incluso con Python) |
