@@ -237,6 +237,22 @@ Sostituisce i nativi `alert()` con componenti Bootstrap per una UX migliore.
 | `showValidationError(el, msg)` | Validazione form | Alert inline sotto l'elemento |
 | `clearValidationError(el)` | Rimuove validazione | Pulisce stato errore |
 
+### Quale conferma (ADR-074)
+
+La forma la decide **cosa fa l'azione**, non la pagina in cui sta:
+
+| L'azione… | Conferma | Esempi |
+|---|---|---|
+| è frequente, dentro un flusso, e si disfa | **nessuna domanda**: tre secondi con **Annulla** (`CardPartita.attendi`) | validare o chiudere dalla card, segnare un rack, un colpo |
+| tocca qualcun altro o non si disfa | **foglio** che dice cosa succederà; pulsante col **nome dell'azione** | rifiuto di un invito (parte la cascata), eliminare, ritirare, chiudere un corso |
+| qualunque | **mai `confirm()` del browser** | se l'utente ha zittito i dialoghi torna `false` in silenzio e il pulsante non fa nulla |
+
+Per una domanda sola: `confirmSubmit(form, msg, {confirmText: <nome dell'azione>, confirmClass})`.
+Un foglio dedicato serve solo se c'è altro da chiedere (campi, scelte). Il
+pulsante non si chiama mai «Conferma»: «Registra il rifiuto», «Chiudi il
+corso». Presidi: `test_nessun_confirm_del_browser.py`,
+`test_tojson_negli_attributi_evento.py`.
+
 ### Helper per Form/Link con Conferma
 
 | Funzione | Uso | Pattern HTML |
@@ -295,7 +311,7 @@ Presenti in `base.html`:
 | `if (!confirm(msg)) { return; }` | `showConfirm(msg, () => { /* resto funzione */ })` |
 | `onsubmit="return confirm('...')"` | `onsubmit="return confirmSubmit(this, '...')"` |
 | `onclick="return confirm('...')"` (link) | `onclick="return confirmLink(this, '...')"` |
-| `onclick="return confirm('...')"` (button) | `onclick="confirmSubmit(this.closest('form'), '...')"` + `type="button"` |
+| `onclick="return confirm('...')"` (button) | `onclick='return confirmSubmit(this.form, …, {confirmText: …})'` — con campi da validare, meglio `onsubmit` sul form |
 
 ### Separazione Jinja2 e JavaScript
 
@@ -1263,6 +1279,7 @@ Principi, in ordine di importanza:
 | 2026-09-13 | Esercizio fra i turni come sezione di righe, un foglio per registrare il tentativo | Stessa grammatica delle partite: riga con lo stato, foglio con − e + o due scelte grandi; fra un turno e l'altro sta sopra le partite, durante il turno sotto (PR #377) |
 | 2026-09-13 | Squadre e categorie come righe con foglio, chip della squadra, foglio del ritiro con le conseguenze, riga distruttiva «Elimina la gara» in fondo alla preparazione | Ciò che non appartiene a una fase segue una grammatica sola, riga e foglio; il ritiro dice cosa comporta prima della conferma; l'eliminazione non è mai un pulsante rosso in vista (PR #379) |
 | 2026-09-20 | Il voto di un esercizio si dà con **cinque bilie numerate** (`.c7-ballvote`, token `--c7-ball-1…5`), non con le stelle; accanto alla media, sulle card, una bilia in piccolo (`.c7-ballmark`) | Decisione dell'utente: una scala da 1 a 5 nel biliardo ha già i suoi oggetti, e le stelle sono il lessico di un negozio. I cinque colori sono **iconografia del gioco**, non semantici: non si usano per dire «ok» o «attenzione». Piatte, senza gradienti; toccare di nuovo la propria bilia toglie il voto |
+| 2026-09-27 | Le conferme seguono cosa fa l'azione: Annulla in tre secondi se frequente e reversibile, foglio col nome dell'azione se tocca altri o non si disfa, mai `confirm()` del browser | La migrazione del gennaio 2026 non era presidiata e 17 `confirm()` erano ricomparsi; in produzione il browser aveva zittito i dialoghi e «Accetta» non faceva nulla. Ora ci sono due presidi statici (ADR-074) |
 
 ---
 

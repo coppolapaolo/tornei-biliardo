@@ -112,7 +112,7 @@
     <div class="c7-sheetcard__minor">
       <a href="{{ url_for('sheet.detail', sheet_id=scheda.id) }}">{{ _("Il registro") }}</a>
       <form method="POST" action="{{ url_for('sheet.archive', sheet_id=scheda.id) }}"
-            onsubmit="return confirm({{ _('Togli questa scheda dall\'elenco? Le sedute che hai fatto restano.')|tojson }})">
+            onsubmit='return confirmSubmit(this, {{ _('Togli questa scheda dall\'elenco? Le sedute che hai fatto restano.')|tojson }}, {confirmText: {{ _("Archivia")|tojson }}, confirmClass: "btn-primary"})'>
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <button type="submit">{{ _("Archivia") }}</button>
       </form>

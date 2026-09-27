@@ -145,7 +145,7 @@
         <h3 class="mb-0">{{ _('Correggi il risultato') }}</h3>
         {% if match_can_correct %}
         <form method="POST" action="{{ url_for('admin.match.correct_match_result', match_id=match.id) }}" class="c7-stack" style="gap:10px"
-              onsubmit='return confirm({{ _("I triangoli segnati uno per uno vengono cancellati: resta solo il punteggio finale. La correzione resterà visibile sulla partita. Procedere?")|tojson }})'>
+              onsubmit='return confirmSubmit(this, {{ _("I triangoli segnati uno per uno vengono cancellati: resta solo il punteggio finale. La correzione resterà visibile sulla partita. Procedere?")|tojson }}, {confirmText: {{ _("Correggi il risultato")|tojson }}, confirmClass: "btn-danger"})'>
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px;">
                 {% if _tm %}

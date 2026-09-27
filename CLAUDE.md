@@ -495,6 +495,7 @@ grafo anti-rematch. Non reimplementare algoritmi su grafi — usa `nx`, è già 
 | Rimettere `WTF_CSRF_SSL_STRICT` (o fidarsi del default di Flask-WTF) | Su HTTPS pretende anche l'header `Referer`, che browser con la privacy stretta, webview e proxy tolgono: per quegli utenti **ogni** POST è 400 — login compreso, quindi restano fuori. La difesa è il token + `SameSite=Lax` + il controllo di `Origin` in `app.py` (ADR-050) |
 | Lasciare a Flask-WTF il default di `WTF_CSRF_TIME_LIMIT` (un'ora) | Si conta dalla generazione della pagina, non dall'ultimo uso: sul telefono il browser non si chiude, la scheda di ieri sera ha il cookie buono e il token scaduto → 400 «sessione scaduta» al primo invio. `None` lega il token alla sessione (ADR-050, emendamento) |
 | Modifica di sicurezza trasversale (CSRF, cookie, header) dentro una PR che parla d'altro | Il CSRF è nato il 2026-08-16 **dentro la PR #107, «drill negli esami»**: quando la settimana dopo sono piovuti i 400 al login, nessuno li ha collegati a un cambiamento del sito — nel diario dei rilasci era invisibile. Una modifica così viaggia in una PR dedicata, col suo nome, i default esaminati uno a uno (qui: referrer obbligatorio e token a scadenza oraria, entrambi sbagliati per noi) e un occhio ai log nei giorni successivi (ADR-050) |
+| `onclick='return confirm(...)'` | Il browser può zittire i dialoghi («impedisci altre finestre di dialogo»): da lì `confirm()` torna `false` in silenzio e il pulsante non fa nulla, senza traccia nei log (produzione, 27/09/2026). `confirmSubmit(this.form, msg, {confirmText: <nome dell'azione>})`, o l'Annulla in tre secondi se l'azione è frequente e reversibile (ADR-074, presidio `test_nessun_confirm_del_browser.py`) |
 | `alert('{{ _("l'errore") }}')` in JS | `alert({{ _("l'errore")\|tojson }})` |
 | `{{ _("%(count)s items")\|tojson }}` + JS replace | Use `"{count} items"` with JS replace |
 | `onclick="func({{ x\|tojson }})"` | `onclick='func({{ x\|tojson }})'` (single quotes) |
@@ -636,6 +637,7 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [071](docs/adr/ADR-071-una-scheda-si-propone.md) | una scheda si **propone**: nasce quando l'allievo accetta e nasce **sua**, si propone solo a chi ti è già allievo, e il permesso di lettura è una casella del modulo di accettazione — spuntata, ma togliibile |
 | [072](docs/adr/ADR-072-le-prove-in-scheda-sono-prove.md) | le prove fatte in scheda sono prove del catalogo: la misura discende dall'esercizio, ogni tentativo entra nel catalogo |
 | [073](docs/adr/ADR-073-classifica-generale-un-calcolo-solo.md) | la classifica generale si calcola in **un posto solo** (somma delle classifiche delle gare); le righe `Classification` ne sono la copia, senza cache |
+| [074](docs/adr/ADR-074-le-conferme-seguono-cosa-fa-l-azione.md) | le conferme seguono **cosa fa l'azione**: Annulla in tre secondi se frequente e reversibile, foglio col nome dell'azione se tocca altri o non si disfa; mai `confirm()` del browser |
 
 ---
 

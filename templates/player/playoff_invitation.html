@@ -43,7 +43,7 @@
         <form method="POST" action='{{ url_for("player.playoff_decline", qualification_id=qualification.id) }}'>
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-danger w-100"
-                    onclick='return confirm({{ _("Confermi il rifiuto? Il tuo posto passa al prossimo in classifica.")|tojson }})'>
+                    onclick='return confirmSubmit(this.form, {{ _("Confermi il rifiuto? Il tuo posto passa al prossimo in classifica.")|tojson }}, {confirmText: {{ _("Rinuncio")|tojson }}, confirmClass: "btn-danger"})'>
                 {{ _("Rinuncio") }}
             </button>
         </form>
