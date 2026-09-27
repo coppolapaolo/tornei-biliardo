@@ -216,7 +216,12 @@ class User(UserMixin, BaseModel, SoftDeleteMixin):
     # Auth helpers
     # ───────────────────
     def set_password(self, password: str) -> None:
-        self.password_hash = generate_password_hash(password)
+        # pbkdf2 e non lo scrypt che Werkzeug 3 usa di default: quegli hash
+        # sono lunghi 162 caratteri e la colonna ne dichiara 120. Allargarla
+        # in SQLite vorrebbe dire ricostruire `user`, a cui puntano piu' di
+        # cento chiavi esterne. Le iterazioni non si fissano: il costo resta
+        # quello di Werkzeug, che lo alza di versione in versione.
+        self.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
 
     def check_password(self, password: str) -> bool:
         return check_password_hash(self.password_hash, password)
