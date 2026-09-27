@@ -14,7 +14,7 @@ networkx==3.7
 Flask-Babel==4.0.0
 Flask-Mail==0.10.0
 python-dotenv==1.2.3
-sentry-sdk[flask]>=1.40.0,<3.0.0
+sentry-sdk[flask]>=2.70.0,<3.0.0
 Flask-WTF>=1.3.0,<2.0.0
 Flask-Limiter>=3.5.0,<4.0.0
 # Contenuti del mini-sito di aiuto (help_content/*.yaml). Serve in produzione:
