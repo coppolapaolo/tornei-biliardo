@@ -80,9 +80,9 @@ class TestVenueManagerNotifications:
         """Test that a player's venue manager request creates notification for admin."""
         with app.app_context():
             # Get fresh objects from session
-            admin = User.query.get(self.admin_id)
-            player = User.query.get(self.player_id)
-            venue = BilliardHall.query.get(self.venue_id)
+            admin = db.session.get(User, self.admin_id)
+            player = db.session.get(User, self.player_id)
+            venue = db.session.get(BilliardHall, self.venue_id)
 
             # Count initial notifications
             initial_admin_notifications = Notification.query.filter_by(
@@ -136,9 +136,9 @@ class TestVenueManagerNotifications:
         """
         with app.app_context():
             # Get fresh objects from session
-            admin = User.query.get(self.admin_id)
-            director = User.query.get(self.director_id)
-            venue = BilliardHall.query.get(self.venue_id)
+            admin = db.session.get(User, self.admin_id)
+            director = db.session.get(User, self.director_id)
+            venue = db.session.get(BilliardHall, self.venue_id)
 
             # Count initial notifications
             initial_admin_notifications = Notification.query.filter_by(
@@ -191,10 +191,10 @@ class TestVenueManagerNotifications:
         """
         with app.app_context():
             # Get fresh objects from session
-            admin = User.query.get(self.admin_id)
-            player = User.query.get(self.player_id)
-            director = User.query.get(self.director_id)
-            venue = BilliardHall.query.get(self.venue_id)
+            admin = db.session.get(User, self.admin_id)
+            player = db.session.get(User, self.player_id)
+            director = db.session.get(User, self.director_id)
+            venue = db.session.get(BilliardHall, self.venue_id)
 
             # First, assign a manager to the venue
             from models.user.services import VenueManagementService

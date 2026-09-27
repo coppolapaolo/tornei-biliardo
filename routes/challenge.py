@@ -1610,7 +1610,7 @@ def _parse_complete_attempt_payload(data):
 def complete_attempt(attempt_id):
     """Complete a challenge attempt with results."""
     try:
-        attempt = ChallengeAttempt.query.get_or_404(attempt_id)
+        attempt = db.get_or_404(ChallengeAttempt, attempt_id)
 
         # Verify user owns this attempt
         if attempt.user_id != current_user.id:
@@ -1724,7 +1724,7 @@ def rate_challenge(challenge_id):
 def challenge_statistics(challenge_id):
     """View challenge statistics (directors only)."""
     try:
-        challenge = Challenge.query.get_or_404(challenge_id)
+        challenge = db.get_or_404(Challenge, challenge_id)
         statistics = challenge.get_statistics()
 
         if request.is_json:
@@ -1796,7 +1796,7 @@ def complete_x_replacement(attempt_id):
     from models.competition.gara_bye_challenge import GaraByeChallenge
 
     try:
-        attempt = ChallengeAttempt.query.get_or_404(attempt_id)
+        attempt = db.get_or_404(ChallengeAttempt, attempt_id)
 
         # Check if this is an X replacement via GaraByeChallenge (new pattern)
         bye_challenge = GaraByeChallenge.query.filter_by(

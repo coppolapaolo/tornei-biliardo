@@ -70,9 +70,14 @@ class TestChallengeRoutes:
             )
             db.session.add(challenge)
             db.session.commit()
+            challenge_id = challenge.id
             yield challenge
-            db.session.delete(challenge)
-            db.session.commit()
+            # Il test di cancellazione lo ha già tolto: si chiede al database,
+            # non alla sessione, se c'è ancora qualcosa da pulire.
+            ancora = Challenge.query.filter_by(id=challenge_id).first()
+            if ancora is not None:
+                db.session.delete(ancora)
+                db.session.commit()
 
     def test_challenge_catalog_access(self, client, admin_user):
         """Test challenge catalog access."""
@@ -374,9 +379,14 @@ class TestChallengeAttemptRoutes:
             )
             db.session.add(challenge)
             db.session.commit()
+            challenge_id = challenge.id
             yield challenge
-            db.session.delete(challenge)
-            db.session.commit()
+            # Il test di cancellazione lo ha già tolto: si chiede al database,
+            # non alla sessione, se c'è ancora qualcosa da pulire.
+            ancora = Challenge.query.filter_by(id=challenge_id).first()
+            if ancora is not None:
+                db.session.delete(ancora)
+                db.session.commit()
 
     @pytest.fixture
     def test_attempt(self, app, player_user, test_challenge):

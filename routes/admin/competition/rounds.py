@@ -138,7 +138,7 @@ def terminate_gara(gara_id):
     """
     from models.competition.spareggio_service import SpareggioService
 
-    gara = Gara.query.get_or_404(gara_id)
+    gara = db.get_or_404(Gara, gara_id)
     is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
 
     # Accept both playing and awaiting_ssr statuses
@@ -234,7 +234,7 @@ def start_ssr(gara_id):
     from models.competition.spareggio_service import SpareggioService
     from models.competition.state_service import StateService
 
-    gara = Gara.query.get_or_404(gara_id)
+    gara = db.get_or_404(Gara, gara_id)
     is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
 
     # Must be in playing state
@@ -326,7 +326,7 @@ def cancel_ssr(gara_id):
     """
     from models.competition.state_service import StateService
 
-    gara = Gara.query.get_or_404(gara_id)
+    gara = db.get_or_404(Gara, gara_id)
     is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest"
 
     if gara.status != GaraStatus.AWAITING_SSR.value:
@@ -373,7 +373,7 @@ def save_ssr_group(gara_id):
     """
     from models.competition.spareggio_service import SpareggioService
 
-    gara = Gara.query.get_or_404(gara_id)
+    gara = db.get_or_404(Gara, gara_id)
 
     # Accept both playing and awaiting_ssr states
     if gara.status not in [GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value]:
@@ -449,7 +449,7 @@ def save_ssr_scores(gara_id):
     """
     from models.competition.spareggio_service import SpareggioService
 
-    gara = Gara.query.get_or_404(gara_id)
+    gara = db.get_or_404(Gara, gara_id)
 
     # Accept both playing and awaiting_ssr states
     if gara.status not in [GaraStatus.PLAYING.value, GaraStatus.AWAITING_SSR.value]:
@@ -529,7 +529,7 @@ def save_ssr_scores(gara_id):
 @gara_manager_required
 def amalfi_classification(gara_id, round_number):
     """Visualizza classifica Amalfi dopo un turno specifico"""
-    gara = Gara.query.get_or_404(gara_id)
+    gara = db.get_or_404(Gara, gara_id)
 
     # Verifica che il turno sia valido
     if round_number < 1 or round_number > gara.rounds_count:
@@ -604,7 +604,7 @@ def amalfi_start_round(gara_id, round_number):
     """Avvia un turno specifico con algoritmo Amalfi"""
     from models.competition.round_service import RoundService
 
-    gara = Gara.query.get_or_404(gara_id)
+    gara = db.get_or_404(Gara, gara_id)
 
     try:
         # Validazioni preliminari
@@ -699,7 +699,7 @@ def start_round_generic(gara_id, round_number):
     """Avvia un turno specifico con la strategia configurata nella gara"""
     from models.competition.round_service import RoundService
 
-    gara = Gara.query.get_or_404(gara_id)
+    gara = db.get_or_404(Gara, gara_id)
 
     try:
         # Validazioni preliminari

@@ -325,7 +325,7 @@ class CommunityService:
 
         results = []
         for uid, count in sorted_users:
-            user = User.query.get(uid)
+            user = db.session.get(User, uid)
             if user:
                 results.append(
                     {"user_id": uid, "username": user.username, "match_count": count}

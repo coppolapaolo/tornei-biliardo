@@ -12,7 +12,7 @@ from datetime import date, timedelta
 import pytest
 
 from models import Gara, Inscription, User
-from models.base import utc_now
+from models.base import db, utc_now
 from models.match.models import Match, TrioMatch
 from models.status_enum import GaraStatus, MatchStatus
 from models.user.role_enum import UserRole
@@ -97,8 +97,8 @@ def test_complete_round_completes_trio_matches(client, db_session):
     )
     assert resp.status_code in (302, 303)
 
-    normal_after = Match.query.get(normal_match.id)
-    trio_after = Match.query.get(trio_match.id)
+    normal_after = db.session.get(Match, normal_match.id)
+    trio_after = db.session.get(Match, trio_match.id)
     db_session.refresh(trio)
 
     assert MatchStatus.is_finished(normal_after.status)

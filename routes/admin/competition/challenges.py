@@ -163,7 +163,7 @@ def remove_challenge_from_gara(gara_id):
             )
 
         # Verifica che la gara challenge appartenga alla gara corrente
-        gara_challenge = GaraChallenge.query.get(gara_challenge_id)
+        gara_challenge = db.session.get(GaraChallenge, gara_challenge_id)
         if not gara_challenge or gara_challenge.gara_id != gara_id:
             return jsonify({"success": False, "error": "Challenge non trovata"}), 404
 

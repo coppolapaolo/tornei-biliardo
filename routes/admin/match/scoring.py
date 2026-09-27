@@ -83,7 +83,7 @@ def set_match_result_direct(match_id):
         from models.match.models import Match
         from models.competition.round_service import RoundService
 
-        match = Match.query.get(match_id)
+        match = db.session.get(Match, match_id)
         if match and match.gara_id:
             RoundService.update_round_progression(match.gara_id)
 
@@ -454,7 +454,7 @@ def remove_rack_admin(rack_id):
         # Prima ottieni le info del match per il round update e SSE
         from models.competition.round_service import RoundService
 
-        rack = Rack.query.get(rack_id)
+        rack = db.session.get(Rack, rack_id)
         gara_id = None
         match_id = None
         if rack and rack.match:

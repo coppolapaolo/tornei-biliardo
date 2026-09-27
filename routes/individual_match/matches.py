@@ -48,7 +48,7 @@ def match_list():
 def match_detail(match_id):
     """View individual match details and submit results."""
     try:
-        match = IndividualMatch.query.get_or_404(match_id)
+        match = db.get_or_404(IndividualMatch, match_id)
 
         # Verify user is part of this match
         if current_user.id not in (match.player1_id, match.player2_id):
@@ -197,7 +197,7 @@ def add_rack(match_id):
         from routes.sse import emit_individual_match_event
         from models.base import db
 
-        match = IndividualMatch.query.get(match_id)
+        match = db.session.get(IndividualMatch, match_id)
         db.session.refresh(match)  # Force fresh state after @transactional commit
         emit_individual_match_event(
             match_id,
@@ -331,7 +331,7 @@ def remove_rack(match_id):
         from routes.sse import emit_individual_match_event
         from models.base import db
 
-        match = IndividualMatch.query.get(match_id)
+        match = db.session.get(IndividualMatch, match_id)
         db.session.refresh(match)  # Force fresh state after @transactional commit
         emit_individual_match_event(
             match_id,
@@ -564,7 +564,7 @@ def edit_match(match_id):
     from models.individual_match.quick_match_service import QuickMatchService
     from models.location.models import BilliardHall
 
-    match = IndividualMatch.query.get_or_404(match_id)
+    match = db.get_or_404(IndividualMatch, match_id)
 
     if not match.is_player(current_user.id):
         flash(_("Accesso negato a questa sfida."), "danger")
@@ -740,7 +740,7 @@ def rematch(match_id):
     con i parametri precompilati."""
     from models.base import utc_now
 
-    match = IndividualMatch.query.get_or_404(match_id)
+    match = db.get_or_404(IndividualMatch, match_id)
 
     # Verify user is part of this match
     if current_user.id not in (match.player1_id, match.player2_id):
