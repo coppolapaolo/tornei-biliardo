@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           # Serve la storia per confrontare la PR con la sua base (vedi sotto).
           fetch-depth: 0
@@ -83,7 +83,7 @@ jobs:
 
       - name: Set up Python
         if: steps.scope.outputs.docs_only != 'true'
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
           # Il Python della produzione, non uno qualunque: una CI su un
           # Python più nuovo passa verde ciò che in produzione non si
