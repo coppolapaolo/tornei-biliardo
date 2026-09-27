@@ -130,7 +130,7 @@ def _capture_handler_exception(
     if not _sentry_available:
         return
     try:
-        with _sentry_sdk.push_scope() as scope:
+        with _sentry_sdk.new_scope() as scope:
             scope.set_extra("event_type", event.get_event_type())
             scope.set_extra("event_id", event.event_id)
             scope.set_extra("handler_name", handler.handler_name)

@@ -234,7 +234,7 @@ class TestEventBus:
         with patch("models.events.base._sentry_available", True), patch(
             "models.events.base._sentry_sdk"
         ) as mock_sdk:
-            mock_sdk.push_scope.return_value = scope_cm
+            mock_sdk.new_scope.return_value = scope_cm
             EventBus.publish(event)
 
             assert mock_sdk.capture_exception.call_count == 1
@@ -303,7 +303,7 @@ class TestEventBus:
         with patch("models.events.base._sentry_available", True), patch(
             "models.events.base._sentry_sdk"
         ) as mock_sdk:
-            mock_sdk.push_scope.side_effect = RuntimeError("sentry exploded")
+            mock_sdk.new_scope.side_effect = RuntimeError("sentry exploded")
             # Must not raise
             EventBus.publish(event)
 
@@ -329,7 +329,7 @@ class TestEventBus:
 
             mock_sdk.add_breadcrumb.assert_not_called()
             mock_sdk.capture_exception.assert_not_called()
-            mock_sdk.push_scope.assert_not_called()
+            mock_sdk.new_scope.assert_not_called()
 
     def test_eventbus_logger_is_ignored_by_sentry_logging_integration(self):
         """The EventBus logger is excluded from Sentry's LoggingIntegration
