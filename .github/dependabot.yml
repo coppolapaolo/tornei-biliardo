@@ -1,0 +1,42 @@
+# Aggiornamenti delle dipendenze: pochi, deliberati, e tutti dalla CI.
+#
+# Le versioni in requirements.txt sono fissate apposta, perché CI, sviluppo e
+# produzione girino sulla stessa cosa (il 27/09/2026 la CI aveva preso da sola
+# SQLAlchemy 2.1 e bloccato ogni PR). Dependabot è il modo di aggiornarle
+# senza aspettare che si rompa qualcosa: apre le PR, la CI le prova sul Python
+# della produzione (`.python-version`, che Dependabot legge anche lui), e il
+# merge resta una scelta.
+#
+# - una volta al mese, non ogni giorno: ogni PR di aggiornamento costa una
+#   lettura e un giro di CI;
+# - minori e patch raggruppati in una PR sola; un salto di versione
+#   principale arriva da solo, perché è lì che si rompe qualcosa;
+# - prefisso `build`: il job pr-title lo accetta, e release-please non
+#   alza il numero di versione per un aggiornamento di dipendenze.
+version: 2
+updates:
+  - package-ecosystem: pip
+    directory: "/"
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      dipendenze-minori:
+        update-types:
+          - minor
+          - patch
+
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      azioni:
+        patterns:
+          - "*"
