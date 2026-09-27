@@ -85,7 +85,10 @@ jobs:
         if: steps.scope.outputs.docs_only != 'true'
         uses: actions/setup-python@v6
         with:
-          python-version: "3.11"
+          # Il Python della produzione, non uno qualunque: una CI su un
+          # Python più nuovo passa verde ciò che in produzione non si
+          # installa (test_python_di_produzione.py).
+          python-version-file: .python-version
           cache: "pip"
 
       - name: Install dependencies
