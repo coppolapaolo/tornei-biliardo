@@ -6,11 +6,12 @@ from importlib import import_module
 
 @pytest.fixture(scope="session", autouse=True)
 def _fast_password_hashing():
-    """Velocizza i test sostituendo l'hashing PBKDF2 di default (~600k iter)
-    con una variante a 1 iterazione. Solo per i test: la produzione continua
-    a usare il default Werkzeug. `check_password_hash` legge le iterazioni
-    dall'hash salvato, quindi gli utenti creati nei test si autenticano
-    correttamente. Vedi issue #47.
+    """Velocizza i test sostituendo l'hashing PBKDF2 (1M iterazioni con
+    Werkzeug 3.1) con una variante a 1 iterazione. Solo per i test: la
+    produzione usa `set_password` com'è — vedi
+    `unit/test_password_hash_nella_colonna.py`, che rimette la funzione vera.
+    `check_password_hash` legge le iterazioni dall'hash salvato, quindi gli
+    utenti creati nei test si autenticano correttamente. Vedi issue #47.
 
     Patcha il nome `generate_password_hash` nel namespace di
     `models.user.models`, unico call-site reale (tutto passa da
