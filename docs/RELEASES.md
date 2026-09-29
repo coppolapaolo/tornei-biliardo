@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.50.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.49.1...v1.50.0) (2026-09-29)
+
+
+### Funzioni nuove
+
+* a gara avviata si cambiano ancora sala, orario e regole dal turno dopo ([#588](https://github.com/coppolapaolo/tornei-biliardo/issues/588)) ([2377cca](https://github.com/coppolapaolo/tornei-biliardo/commit/2377cca7eade46ea0db535570e5a6b928e9073ad))
+
+
+### Correzioni
+
+* una partita giocata resta con le regole con cui è stata giocata ([#586](https://github.com/coppolapaolo/tornei-biliardo/issues/586)) ([36b46d8](https://github.com/coppolapaolo/tornei-biliardo/commit/36b46d8b10aec1a3a8eee5bce7353597b12d5576))
+
 ## [1.49.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.49.0...v1.49.1) (2026-09-29)
 
 
