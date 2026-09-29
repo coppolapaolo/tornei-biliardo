@@ -275,6 +275,17 @@
                   <i class="fas fa-times"></i> {{ _("Rifiuta") }}
                 </button>
               </form>
+              {% elif _stato == 'confirmed' and q.campi_da_riconfermare %}
+              {# Data, sala o quota cambiate dopo il sì (ADR-075). #}
+              <span class="c7-state c7-state--warn" title="{{ _('I playoff sono cambiati dopo il suo sì') }}">{{ _("da riconfermare") }}</span>
+              {% if feature_visible('admin.campionato.playoff_riconferma_per_conto') %}
+              <form method="POST" class="d-inline" action='{{ url_for("admin.campionato.playoff_riconferma_per_conto", campionato_id=campionato.id, config_id=cfg.id) }}'>
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="qualification_id" value="{{ q.id }}">
+                <button type="submit" class="c7-iconbtn" title="{{ _('Riconferma al suo posto') }}"
+                        aria-label="{{ _('Riconferma %(nome)s', nome=q.user.username) }}"><i class="fas fa-user-check"></i></button>
+              </form>
+              {% endif %}
               {% elif _stato == 'confirmed' %}<span class="c7-state c7-state--ok">{{ _("Confermato") }}</span>
               {% elif _stato == 'declined' %}<span class="c7-state c7-state--err">{{ _("Rifiutato") }}</span>
               {% elif _stato == 'expired' %}<span class="c7-state c7-state--muted">{{ _("Scaduto") }}</span>

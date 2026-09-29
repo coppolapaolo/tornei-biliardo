@@ -26,6 +26,8 @@
       <div class="fw-bold mt-1">{{ _('Giocatore tolto a mano') }}</div>
       {% elif voce.action == 'risposta_per_conto' %}
       <div class="fw-bold mt-1">{{ _('Risposta registrata per conto del giocatore') }}</div>
+      {% elif voce.action == 'riconferma' %}
+      <div class="fw-bold mt-1">{{ _('Iscrizione riconfermata per conto del giocatore') }}</div>
       {% elif voce.action == 'ricalcolo' %}
       <div class="fw-bold mt-1">{{ _('Correzione a gara finita: la classifica è stata ricalcolata') }}</div>
       {% elif voce.action == 'proposta_accettata' %}

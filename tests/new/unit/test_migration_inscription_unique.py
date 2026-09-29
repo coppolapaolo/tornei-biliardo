@@ -49,7 +49,8 @@ CREATE TABLE inscription (
     waitlist_reason VARCHAR(20),
     squadra_id INTEGER,
     categoria_id INTEGER,
-    inscribed_by_id INTEGER
+    inscribed_by_id INTEGER,
+    accepted_terms TEXT
 );
 CREATE TABLE hidden_inscription (
     id INTEGER PRIMARY KEY,
