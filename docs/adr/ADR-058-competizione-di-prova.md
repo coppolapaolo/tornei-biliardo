@@ -182,3 +182,11 @@ serva a qualcuno.
   push per le notifiche, quindi non c'è nulla da spegnere.
 * Sequenza di consegna in `docs/usecases/competizione-di-prova.md`: questa
   ADR accompagna la tappa 1 (fondamenta e gara singola).
+
+## Emendamento (2026-09-29, ADR-075)
+
+«Lo ereditano alla creazione, come la regola di apertura»: il paragone resta
+giusto, ma dal 2026-09-29 la regola di apertura non si rilegge più dal
+campionato in diretta. Si **copia** sulla gara quando nasce, come tutti gli
+altri valori del campionato (`GaraService._copia_dal_campionato`). Il flag di
+prova ha sempre funzionato così: niente cambia per le competizioni di prova.

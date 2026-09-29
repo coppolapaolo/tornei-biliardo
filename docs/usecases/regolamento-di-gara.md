@@ -212,30 +212,43 @@ rifiuta (e il cambio non si salva) o modifica a mano.
 
 ## Criteri di accettazione
 
-- [ ] La finale dei playoff appena creata, con gli iscritti, permette di
+Tutti soddisfatti il 2026-09-29, a attuazione completata (ADR-075, sezione
+«Attuazione»). Accanto a ciascuno, il test che lo presidia.
+
+- [x] La finale dei playoff appena creata, con gli iscritti, permette di
       cambiare sala e chi spacca; la modifica compare nel Regolamento di gara.
-- [ ] Amalfi al turno 3: la distanza portata da 5 a 7 lascia al 5 il turno 3
+      (`test_storia_modifiche_gara.py`, `test_regolamento_di_gara.py`)
+- [x] Amalfi al turno 3: la distanza portata da 5 a 7 lascia al 5 il turno 3
       (anche le partite non iniziate) e mette al 7 il turno 4.
-- [ ] Una partita in corso non cambia chi spacca quando il direttore cambia
+      (`test_modifica_a_gara_avviata.py::test_sala_e_distanza_in_due_voci`)
+- [x] Una partita in corso non cambia chi spacca quando il direttore cambia
       la regola; la partita del turno dopo usa la regola nuova.
-- [ ] Un ricalcolo del punteggio ELO usa le categorie che valevano quando la
+      (`test_regole_fissate_sulla_partita.py`)
+- [x] Un ricalcolo del punteggio ELO usa le categorie che valevano quando la
       partita è stata giocata.
-- [ ] Gara casuale avviata: distanza e chi spacca non si modificano; la sala sì.
-- [ ] Il numero di turni non si modifica dopo l'avvio.
-- [ ] Cambio della quota nel campionato: compaiono le gare non avviate, già
+      (`test_regole_fissate_sulla_partita.py::test_le_categorie_sono_fissate_alla_nascita`)
+- [x] Gara casuale avviata: distanza e chi spacca non si modificano; la sala sì.
+      (`test_modifica_a_gara_avviata.py::test_con_la_casuale_le_regole_restano`)
+- [x] Il numero di turni non si modifica dopo l'avvio.
+      (`test_modifica_a_gara_avviata.py::test_la_struttura_non_si_cambia`)
+- [x] Cambio della quota nel campionato: compaiono le gare non avviate, già
       spuntate quelle che avevano la quota vecchia.
-- [ ] Peso della gara 5 corretto a campionato finito: la classifica si
+      (`test_campionato_valori_proposti.py`)
+- [x] Peso della gara 5 corretto a campionato finito: la classifica si
       ricalcola, «×2» con «×1» barrato nell'elenco gare, riga di ricalcolo
-      sopra la classifica.
-- [ ] Correzione dopo gli inviti che cambia chi rientra nei posti: il
+      sopra la classifica. (`test_ricalcolo_a_gara_finita.py`)
+- [x] Correzione dopo gli inviti che cambia chi rientra nei posti: il
       direttore vede la proposta e può accettarla, rifiutarla o fare a mano.
-- [ ] Sala A → B → C in 10 minuti: due voci nella storia, **una** notifica
+      (`test_ricalcolo_a_gara_finita.py::TestLaPropostaDiInviti`)
+- [x] Sala A → B → C in 10 minuti: due voci nella storia, **una** notifica
       «A → C», **una** richiesta di riconferma. A → B → A: nessuna notifica.
-- [ ] Chi non riconferma resta iscritto «da riconfermare»; il direttore può
-      riconfermare per lui, e la storia lo dice.
-- [ ] Gara 7 spostata dopo la gara 8: compare la proposta di spostare le
-      successive.
-- [ ] La promessa del modulo («gli iscritti ricevono una notifica») è vera.
+      (`test_notifiche_accorpate.py`, `test_riconferma_iscritti.py`)
+- [x] Chi non riconferma resta iscritto «da riconfermare»; il direttore può
+      riconfermare per lui, e la storia lo dice. (`test_riconferma_iscritti.py`)
+- [x] Gara 7 spostata dopo la gara 8: compare la proposta di spostare le
+      successive. (`test_sposta_gare_successive.py`)
+- [x] La promessa del modulo («gli iscritti ricevono una notifica») è vera.
+      (`test_notifiche_accorpate.py`)
 
 ## Verifica sul codice (rifatta il 2026-09-29, su `main` a385248)
 
