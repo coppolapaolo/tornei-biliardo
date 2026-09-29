@@ -425,10 +425,11 @@ Accorgimenti che discendono dal codice:
 
 ### Domande aperte
 
-1. Gli script di correzione `set_gara_discipline.py`, `set_gara_handicap.py`
-   e `set_gara_categorie.py` esistono per correggere gare **già giocate**, e
-   funzionano proprio perché le partite rileggono la gara. Con le regole
-   fissate sulla partita smetterebbero di avere effetto.
+1. ~~Gli script di correzione~~ **Decisa il 2026-09-29**: gli script
+   `set_gara_discipline.py`, `set_gara_handicap.py` e `set_gara_categorie.py`
+   correggono **anche le partite** della gara, e ogni correzione entra nella
+   storia come «correzione dei dati (script)» con il motivo. Sono dati scritti
+   male, non un cambio di regole a partita giocata.
 2. Il sistema di classifica del campionato: «tutte le gare dello stesso
    sistema» (`SPECIFICHE.md:294`) non sta insieme alle caselle da spuntare
    gara per gara.
