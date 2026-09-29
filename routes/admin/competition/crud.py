@@ -314,6 +314,48 @@ def create_gara():
         )
 
 
+def _proposta_di_spostamento(gara: Gara, cambiati: dict):
+    """La data nuova scavalca le gare successive: la proposta (ADR-075).
+
+    Restituisce la pagina della proposta, oppure `None` quando si può salvare:
+    niente da spostare, o il direttore ha già accettato di spostarle — e in
+    quel caso le successive sono appena state spostate.
+    """
+    if "date" not in cambiati and "time" not in cambiati:
+        return None
+    from models.competition.spostamento import piano, sposta
+
+    proposta = piano(
+        gara, cambiati.get("date", gara.date), cambiati.get("time", gara.time)
+    )
+    if proposta is None:
+        return None
+    if proposta.bloccata_da is not None:
+        raise ValueError(
+            _(
+                "La nuova data supera %(gara)s, che è già avviata: non si può "
+                "spostare.",
+                gara=proposta.bloccata_da.display_name,
+            )
+        )
+    if request.form.get("sposta_successive") == "1":
+        sposta(
+            proposta,
+            autore=current_user,
+            motivo=request.form.get("motivo")
+            or _("Spostata insieme a %(gara)s", gara=gara.display_name),
+        )
+        return None
+    campi = [
+        (chiave, valore)
+        for chiave, valore in request.form.items(multi=True)
+        if chiave not in ("csrf_token", "sposta_successive")
+    ]
+    return render_template(
+        "admin/proposta_spostamento.html", gara=gara, piano=proposta, campi=campi
+    )
+
+
 def _avviso_in_attesa(gara_id: int):
     from models.storia.avvisi import AvvisiModifiche
 
@@ -428,6 +470,9 @@ def edit_gara(gara_id):
             if "location" in cambiati:
                 cambiati["billiard_hall_id"] = billiard_hall_id  # FK to BilliardHall
 
+            pagina = _proposta_di_spostamento(gara, cambiati)
+            if pagina is not None:
+                return pagina
             if not cambiati:
                 flash(_("Nessuna modifica da salvare."), "info")
             else:
@@ -547,6 +592,9 @@ def _edit_gara_avviata(gara: Gara):
             cambiati = GaraFormParser.campi_cambiati(data, originali)
             if "location" in cambiati:
                 cambiati["billiard_hall_id"] = billiard_hall_id
+            pagina = _proposta_di_spostamento(gara, cambiati)
+            if pagina is not None:
+                return pagina
             if not cambiati:
                 flash(_("Nessuna modifica da salvare."), "info")
             else:

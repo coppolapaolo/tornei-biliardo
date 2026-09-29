@@ -503,6 +503,13 @@ class GaraService:
                 dal_turno=turno,
             )
 
+        # Capienza alzata: chi aspetta in lista entra, in ordine (ADR-075).
+        capienza = cambi.get("max_participants")
+        if capienza and (capienza[1] or 0) > (capienza[0] or 0):
+            from models.competition.inscription_service import InscriptionService
+
+            InscriptionService.promuovi_per_capienza(gara)
+
         # Gli iscritti ricevono una notifica, accorpata con le modifiche
         # ravvicinate (ADR-075). A gara finita non c'è niente da annunciare.
         if not chiusa:
