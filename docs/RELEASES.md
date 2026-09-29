@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.49.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.49.0...v1.49.1) (2026-09-29)
+
+
+### Correzioni
+
+* la gara si corregge anche con gli iscritti, e la correzione resta scritta ([#585](https://github.com/coppolapaolo/tornei-biliardo/issues/585)) ([295e7e9](https://github.com/coppolapaolo/tornei-biliardo/commit/295e7e969898789f9641b188c1255f003120446d))
+* la pagina dichiara la lingua in cui è scritta ([#580](https://github.com/coppolapaolo/tornei-biliardo/issues/580)) ([df0f7a7](https://github.com/coppolapaolo/tornei-biliardo/commit/df0f7a771a60042af970344f408fc00ed7522172))
+
 ## [1.49.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.48.0...v1.49.0) (2026-09-27)
 
 
