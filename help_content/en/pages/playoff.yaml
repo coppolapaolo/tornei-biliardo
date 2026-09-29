@@ -261,6 +261,16 @@ blocks:
           history**, at the bottom of the play-offs tab: who, when and what.
           The reason is optional, but write it: it will help in case of
           disputes.
+      - title: "If a correction changes the standings"
+        text: >-
+          If after the invitations you correct a competition's weight or the
+          position points, the standings are recalculated and who is within
+          the places may change. Above the list of invited players appears
+          **The standings changed after the invitations**, with who would
+          lose the invitation and who would receive it. **Update the
+          invitations** changes them and notifies the players; **Leave the
+          invitations as they are** keeps them. Either way the choice stays on
+          record, and you can always fix things by hand.
       - title: "If an invitation has expired"
         text: >-
           The row says **Expired**, but still has **Accept**. If the player

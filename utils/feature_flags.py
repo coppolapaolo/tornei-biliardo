@@ -241,6 +241,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.campionato.create_playoff_gara": {"director"},
     "admin.campionato.update_playoff_min": {"director"},
     "admin.campionato.playoff_proposta_finale": {"director"},
+    "admin.campionato.playoff_proposta_inviti": {"director"},
     "admin.campionato.playoff_add_config": {"director"},
     "admin.campionato.playoff_edit_config": {"director"},
     "admin.campionato.playoff_deactivate_config": {"director"},

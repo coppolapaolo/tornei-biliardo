@@ -4,7 +4,8 @@
    (che valgono dal turno successivo), lo spareggio finché non è cominciato, il
    peso. Il resto compare col lucchetto e il motivo. Cosa è ammesso lo decide
    `models/competition/campi_modificabili.py`, non questo template: qui si
-   mostra `ammessi` e si spiega `bloccati`. #}
+   mostra `ammessi` e si spiega `bloccati`. Con `chiusa` (gara finita) resta
+   solo il peso nel campionato: come si è giocato non si tocca. #}
 
 {% block title %}{{ _('Modifica') }} {{ gara.display_name }}{% endblock %}
 {% block page_title %}{{ _('Modifica') }} {{ gara.display_name }}{% endblock %}
@@ -24,6 +25,17 @@
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
   <input type="hidden" name="stato_iniziale" value='{{ stato_iniziale|tojson }}'>
 
+  {% if chiusa %}
+  <div class="c7-flash c7-flash--info">
+    <span class="c7-flash__ico"><i class="fas fa-flag-checkered"></i></span>
+    <div class="c7-flash__body">
+      <div class="c7-flash__title">{{ _('Gara finita') }}</div>
+      <div class="c7-flash__text">
+        {{ _("Come si è giocato non si cambia più. Si può correggere quanto conta la gara nel campionato: la classifica si ricalcola, e la pagina del campionato mostra il peso di prima barrato e chi l'ha corretto.") }}
+      </div>
+    </div>
+  </div>
+  {% else %}
   <div class="c7-flash c7-flash--info">
     <span class="c7-flash__ico"><i class="fas fa-play"></i></span>
     <div class="c7-flash__body">
@@ -34,6 +46,9 @@
       </div>
     </div>
   </div>
+  {% endif %}
+
+  {% if not chiusa %}
 
   {# ---------------- Informazioni ---------------- #}
   <div class="c7-card">
@@ -177,6 +192,7 @@
     <p class="c7-nota mb-0"><i class="fas fa-lock" style="font-size:11px"></i> {{ bloccati['distance'] }}</p>
     {% endif %}
   </div>
+  {% endif %}
 
   {# ---------------- Spareggio ---------------- #}
   {% if 'tiebreaker_until_position' in ammessi %}

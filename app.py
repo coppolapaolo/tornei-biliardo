@@ -678,6 +678,12 @@ def create_app(config_name=None, *, da_script: bool = False):
     app.jinja_env.globals["etichetta_storia"] = etichetta_storia
     app.jinja_env.globals["valore_storia"] = valore_storia
 
+    # Le correzioni a gare finite: il peso di prima barrato e la riga di
+    # ricalcolo sopra la classifica (ADR-075).
+    from models.storia.ricalcolo import ricalcoli_del_campionato
+
+    app.jinja_env.globals["ricalcoli_del_campionato"] = ricalcoli_del_campionato
+
     # Righe del form "punti per posizione" (US-17): soglia, etichetta della
     # banda e valore configurato. Una funzione sola invece di due variabili di
     # contesto da tenere allineate in ogni route che mostra il blocco.

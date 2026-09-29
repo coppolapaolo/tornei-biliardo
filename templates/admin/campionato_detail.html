@@ -314,6 +314,34 @@
         {{ d.nota(_('Chi rifiuta lascia il posto al primo degli esclusi. Se un giocatore te lo dice a voce, rispondi tu dalla sua riga: la risposta resta registrata a tuo nome.')) }}
         {{ d.nota(_('Puoi creare la gara anche con inviti in attesa: chi accetta dopo entra fra gli iscritti, finché ci sono posti. Chi aggiungi tu entra anche oltre i posti; se la gara non ammette dispari, aspetta un secondo giocatore. Quando avvii la gara gli inviti senza risposta scadono e si gioca con chi c’è; se annulli l’avvio, tornano validi.')) }}
 
+        {# Una correzione ha spostato la classifica dopo gli inviti: la
+           proposta, che il direttore accetta o rifiuta (ADR-075). #}
+        {% set _proposta = (proposte_inviti or {}).get(cfg.id) %}
+        {% if _proposta %}
+        <div class="c7-flash c7-flash--warn" style="display:block">
+          <div class="c7-flash__title">{{ _('La classifica è cambiata dopo gli inviti') }}</div>
+          <div class="c7-flash__text">
+            {{ _("Con la classifica di adesso cambierebbe chi rientra nei posti. Se accetti, gli inviti si aggiornano e i giocatori ricevono un avviso; se rifiuti, restano come sono. Puoi anche sistemare a mano dall'elenco qui sotto.") }}
+            <ul class="mb-1 mt-1">
+              {% for r in _proposta.da_ritirare %}
+              <li>{{ _("ritirare l'invito a %(nome)s, ora %(pos)s°", nome=r.username, pos=r.posizione_in_pagina or '—') }}</li>
+              {% endfor %}
+              {% for i in _proposta.da_invitare %}
+              <li>{{ _('invitare %(nome)s, ora %(pos)s°', nome=i.username, pos=i.posizione) }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+          <form method="POST" class="d-flex flex-wrap gap-2 align-items-center"
+                action='{{ url_for("admin.campionato.playoff_proposta_inviti", campionato_id=campionato.id, config_id=cfg.id) }}'>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="text" name="motivo" class="form-control form-control-sm" style="max-width:280px" maxlength="1000"
+                   placeholder="{{ _('Motivo, opzionale') }}" aria-label="{{ _('Motivo della modifica') }}">
+            <button type="submit" name="decisione" value="accetta" class="btn btn-sm btn-primary">{{ _('Aggiorna gli inviti') }}</button>
+            <button type="submit" name="decisione" value="rifiuta" class="btn btn-sm btn-secondary">{{ _('Lascia gli inviti come sono') }}</button>
+          </form>
+        </div>
+        {% endif %}
+
         {# Come si gioca la finale si corregge fino al suo avvio; chi si
            qualifica no, perché gli inviti sono partiti (ADR-075). #}
         <div>

@@ -17,8 +17,9 @@ Le fasce:
 * **struttura** (strategia, sistema di classifica, numero di turni, primo
   turno, set, anti-reincontro, opzioni del tabellone, minimo e capienza): solo
   prima dell'avvio; dopo, si cambia annullando l'avvio;
-* **peso** nel campionato: sempre (conta quanto vale la gara, non come si
-  gioca).
+* **peso** nel campionato: sempre, anche a gara conclusa (conta quanto vale
+  la gara, non come si gioca). Corretto a gara finita, la classifica si
+  ricalcola e la pagina lo segnala (`models/storia/ricalcolo.py`).
 
 Sul tabellone alcune regole non sono una scelta ma una conseguenza del formato
 (`bracket_derived_fields`): restano bloccate come nel modulo di creazione.
@@ -136,9 +137,15 @@ def campi_bloccati(gara: Any) -> Dict[str, Any]:
 
     if e_chiusa(gara):
         motivo = _l("La gara è chiusa.")
-        return {
+        bloccati_tutti = {
             campo: motivo for campo in LOGISTICA | REGOLE | SPAREGGIO | STRUTTURA | PESO
         }
+        # A gara finita come si è giocato non si tocca; quanto conta nel
+        # campionato sì (ADR-075). Una gara annullata non conta per niente.
+        if gara.status == GaraStatus.COMPLETED.value and gara.campionato_id:
+            motivo = _l("La gara è finita: si corregge solo quanto conta.")
+            return {campo: motivo for campo in bloccati_tutti if campo not in PESO}
+        return bloccati_tutti
 
     bloccati: Dict[str, Any] = {}
     # Prima dell'avvio si cambia tutto, strategia compresa: le conseguenze del

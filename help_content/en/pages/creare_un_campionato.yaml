@@ -226,6 +226,6 @@ blocks:
       - q: "What happens if I cancel one of the championship's competitions?"
         a: "Its results leave the overall standings. The other competitions are unaffected."
       - q: "Can I change the position points once the championship has started?"
-        a: "Yes, from the championship settings. Bear in mind the overall standings are recalculated with the new values, so competitions already finished change score: if the championship is under way, tell the participants."
+        a: "Yes, from the championship settings. The overall standings are recalculated with the new values, so competitions already finished change score: a line above the standings says so, with who made the correction and why. If the play-off invitations have already been sent and the correction changes who is within the places, the app suggests how to update them."
       - q: "I cannot see the position points table."
         a: "It only appears on knockout or double elimination championships. With Amalfi, random or round robin the standings do not go by position and those points serve no purpose."

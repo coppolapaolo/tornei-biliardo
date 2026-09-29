@@ -188,6 +188,10 @@ blocks:
           end: if the last one weighs more, nobody takes it with two
           competitions to spare. A competition outside a championship has no
           such field, because there are no general standings to weigh it in.
+          It is the only thing that can be corrected after the competition has
+          finished: the standings are recalculated, the list of competitions
+          shows the previous weight struck through, and a line above the
+          standings says who corrected it and when.
         hint: gara.peso
 
   - type: heading

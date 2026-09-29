@@ -342,6 +342,7 @@ class GaraService:
             REGOLE,
             campi_bloccati,
             dal_turno,
+            e_chiusa,
         )
 
         # Campo per campo, non più un blocco solo (ADR-075): la logistica si
@@ -475,12 +476,22 @@ class GaraService:
         # Da dove arriva: la pagina della gara, oppure il campionato o i
         # playoff che hanno proposto un valore e il direttore l'ha accettato.
         da_dove = provenienza or SettingsChangeSource.GARA
+        # A gara finita l'unica correzione è quanto conta: la classifica già
+        # vista cambia, e la voce lo dice (ADR-075, «Segno in classifica»).
+        from models.storia.models import SettingsChangeAction
+
+        chiusa = e_chiusa(gara)
         StoriaModificheService.registra(
             cambi=resto,
             gara_id=gara.id,
             autore=autore,
             motivo=motivo,
             provenienza=da_dove,
+            azione=(
+                SettingsChangeAction.RICALCOLO
+                if chiusa
+                else SettingsChangeAction.MODIFICA
+            ),
         )
         if regole:
             StoriaModificheService.registra(
@@ -491,6 +502,12 @@ class GaraService:
                 provenienza=da_dove,
                 dal_turno=turno,
             )
+
+        peso = cambi.get("weight")
+        if peso and serializza(peso[0]) != serializza(peso[1]):
+            from models.storia.ricalcolo import ricalcola_campionato
+
+            ricalcola_campionato(gara.campionato_id)
 
         return gara
 

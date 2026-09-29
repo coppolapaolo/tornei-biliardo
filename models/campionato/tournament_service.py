@@ -236,15 +236,43 @@ class TournamentService(TournamentStatisticsService):
         if cambia_sistema:
             self._propaga_sistema(campionato, autore=autore, motivo=motivo)
 
+        cambi = {campo: (prima[campo], getattr(campionato, campo)) for campo in prima}
+        # I punti per posizione cambiano quanto contano gare già giocate:
+        # con una gara conclusa sono un ricalcolo, in una voce a sé, e la
+        # classifica lo segnala (ADR-075).
+        from models.storia.models import SettingsChangeAction
+        from models.storia.ricalcolo import (
+            gara_finita_nel_campionato,
+            ricalcola_campionato,
+        )
+        from models.storia.service import serializza
+
+        punti = cambi.pop("position_points", None)
+        punti_cambiati = punti is not None and serializza(punti[0]) != serializza(
+            punti[1]
+        )
         StoriaModificheService.registra(
-            cambi={
-                campo: (prima[campo], getattr(campionato, campo)) for campo in prima
-            },
+            cambi=cambi,
             campionato_id=campionato.id,
             autore=autore,
             motivo=motivo,
             provenienza=SettingsChangeSource.CAMPIONATO,
         )
+        if punti_cambiati:
+            assert punti is not None
+            StoriaModificheService.registra(
+                cambi={"position_points": punti},
+                campionato_id=campionato.id,
+                autore=autore,
+                motivo=motivo,
+                provenienza=SettingsChangeSource.CAMPIONATO,
+                azione=(
+                    SettingsChangeAction.RICALCOLO
+                    if gara_finita_nel_campionato(campionato)
+                    else SettingsChangeAction.MODIFICA
+                ),
+            )
+            ricalcola_campionato(campionato.id)
 
         campionato.updated_at = utc_now()
         return campionato

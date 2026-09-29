@@ -43,6 +43,23 @@
     <span class="c7-sechead__note">{{ _('dopo la gara %(num)s', num=last_completed_gara_number) }}</span>
     {% endif %}
   </div>
+  {# Correzioni a gare finite (ADR-075): la classifica è cambiata dopo che
+     i giocatori l'avevano vista, e lo si dice sopra di lei. #}
+  {% set _ricalcoli = ricalcoli_del_campionato(campionato).voci %}
+  {% for voce in _ricalcoli %}
+  {% set _gara_voce = voce.gara %}
+  <details class="c7-flash c7-flash--warn" style="display:block">
+    <summary class="c7-flash__text" style="cursor:pointer">
+      <i class="fas fa-rotate"></i>
+      {{ _('Classifica ricalcolata il %(quando)s', quando=voce.created_at|date_local) }}:
+      {% for riga in voce.fields %}{{ etichetta_storia(riga.field) }}{% if _gara_voce %} · {{ _gara_voce.display_name }}{% endif %} {{ _('da %(prima)s a %(dopo)s', prima=valore_storia(riga.field, riga.old_value), dopo=valore_storia(riga.field, riga.new_value)) }}{% if not loop.last %}; {% endif %}{% endfor %}
+      {%- if voce.author %} — {{ voce.author.username }}{% endif %}
+    </summary>
+    <div class="c7-flash__text mt-1">
+      {% if voce.reason %}«{{ voce.reason }}»{% else %}{{ _('Nessun motivo indicato.') }}{% endif %}
+    </div>
+  </details>
+  {% endfor %}
   {% if general_classification|length > _prime %}
   <div class="c7-classifica__pillole">
     <button type="button" class="c7-pill is-active" aria-pressed="true" data-cg-vista="prime" onclick="mostraClassificaGenerale('prime')">{{ _('Prime %(n)s', n=_prime) }}</button>

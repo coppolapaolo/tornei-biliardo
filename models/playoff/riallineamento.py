@@ -169,8 +169,13 @@ def pianifica(config_id: int) -> Riallineamento:
 
 
 @transactional(domain="playoff")
-def esegui(config_id: int) -> Riallineamento:
-    """Ritira gli inviti sbagliati e manda quelli mancanti."""
+def esegui(config_id: int, classifica_corretta: bool = False) -> Riallineamento:
+    """Ritira gli inviti sbagliati e manda quelli mancanti.
+
+    `classifica_corretta` dice perché: il direttore ha corretto quanto conta
+    una gara (ADR-075, `proposta_inviti.py`), invece di un errore di calcolo.
+    Cambia solo il testo che leggono il giocatore e il direttore.
+    """
     from .services import PlayoffService
 
     piano = pianifica(config_id)
@@ -204,9 +209,10 @@ def esegui(config_id: int) -> Riallineamento:
         qual.status = QualificationStatus.REPLACED
         qual.responded_at = adesso
         qual.qualification_reason = (
-            "Invito ritirato: era partito da una classifica calcolata male "
-            f"(era: {qual.qualification_reason})"
-        )
+            "Invito ritirato: la classifica è stata corretta dopo gli inviti "
+            if classifica_corretta
+            else "Invito ritirato: era partito da una classifica calcolata male "
+        ) + f"(era: {qual.qualification_reason})"
         if indice < len(piano.da_invitare):
             subentra = piano.da_invitare[indice]
             qual.replaced_by_id = subentra.user_id
@@ -214,7 +220,7 @@ def esegui(config_id: int) -> Riallineamento:
 
     db.session.flush()
     for ritiro in piano.da_ritirare:
-        _avvisa_del_ritiro(config, ritiro, adesso)
+        _avvisa_del_ritiro(config, ritiro, adesso, classifica_corretta)
     PlayoffService._send_playoff_invitations(config, nuovi)
 
     piano.eseguito = True
@@ -222,7 +228,10 @@ def esegui(config_id: int) -> Riallineamento:
 
 
 def _avvisa_del_ritiro(
-    config: PlayoffConfiguration, ritiro: Ritiro, adesso: Any
+    config: PlayoffConfiguration,
+    ritiro: Ritiro,
+    adesso: Any,
+    classifica_corretta: bool = False,
 ) -> None:
     """Fa scadere il vecchio avviso d'invito e ne manda uno che spiega."""
     from flask_babel import lazy_gettext as _l
@@ -249,12 +258,22 @@ def _avvisa_del_ritiro(
         user_id=ritiro.user_id,
         notification_type=NotificationType.PLAYOFF_INVITATION,
         title=_l("Invito ai playoff ritirato — %(nome)s", nome=config.name),
-        message=_l(
-            "L'invito a %(nome)s del campionato %(campionato)s è partito da una "
-            "classifica calcolata male e non è più valido. Ci scusiamo per "
-            "l'errore.",
-            nome=config.name,
-            campionato=campionato,
+        message=(
+            _l(
+                "La classifica del campionato %(campionato)s è stata corretta "
+                "dopo gli inviti, e con la classifica nuova non rientri nei "
+                "posti di %(nome)s: l'invito non è più valido.",
+                nome=config.name,
+                campionato=campionato,
+            )
+            if classifica_corretta
+            else _l(
+                "L'invito a %(nome)s del campionato %(campionato)s è partito da "
+                "una classifica calcolata male e non è più valido. Ci scusiamo "
+                "per l'errore.",
+                nome=config.name,
+                campionato=campionato,
+            )
         ),
         priority=NotificationPriority.HIGH,
         action_url=f"/player/playoff/invitation/{ritiro.qualification_id}",
