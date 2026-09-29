@@ -143,6 +143,18 @@ class StoriaModificheService:
         )
 
     @staticmethod
+    def voci_dei_playoff(config_ids: Iterable[int]) -> List[SettingsChange]:
+        """La storia di una o più configurazioni dei playoff, dalla più recente."""
+        ids = list(config_ids)
+        if not ids:
+            return []
+        return (
+            SettingsChange.query.filter(SettingsChange.playoff_config_id.in_(ids))
+            .order_by(SettingsChange.created_at.desc(), SettingsChange.id.desc())
+            .all()
+        )
+
+    @staticmethod
     def campi(voci: Iterable[SettingsChange]) -> List[str]:
         """I nomi dei campi toccati da un insieme di voci, senza ripetizioni."""
         visti: List[str] = []

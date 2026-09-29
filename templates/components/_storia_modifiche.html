@@ -1,7 +1,8 @@
 {# templates/components/_storia_modifiche.html — Design System 7c
    La storia delle modifiche (ADR-075): una voce per salvataggio, dalla più
    recente, con chi, quando, da dove, perché e le righe prima → dopo.
-   Richiede `storia` (lista di SettingsChange). I nomi dei campi e i valori
+   Richiede `storia` (lista di SettingsChange); `storia_da` facoltativo, la
+   provenienza che è già ovvia dalla pagina e non si ripete a ogni voce. I nomi dei campi e i valori
    passano da `etichetta_storia` / `valore_storia`, nella lingua di chi legge. #}
 <div class="c7-card mt-4" id="storia-modifiche">
   <h3 class="mb-1">{{ _('Storia delle modifiche') }}</h3>
@@ -14,11 +15,17 @@
         {{ voce.created_at|datetime_local }}
         · {% if voce.author %}{{ voce.author.username }}{% else %}{{ _('correzione dei dati') }}{% endif %}
         {%- if voce.author_role == 'admin' %} ({{ _('amministratore') }}){% elif voce.author_role == 'direttore' %} ({{ _('direttore') }}){% endif %}
-        {%- if voce.source == 'campionato' %} · {{ _('modificato dal campionato') }}{% elif voce.source == 'playoff' %} · {{ _('modificato dai playoff') }}{% elif voce.source == 'script' %} · {{ _('correzione dei dati') }}{% endif %}
+        {%- if voce.source == 'campionato' %} · {{ _('modificato dal campionato') }}{% elif voce.source == 'playoff' and storia_da != 'playoff' %} · {{ _('modificato dai playoff') }}{% elif voce.source == 'script' %} · {{ _('correzione dei dati') }}{% endif %}
         {%- if voce.from_round %} · {{ _('vale dal turno %(n)s', n=voce.from_round) }}{% endif %}
       </div>
       {% if voce.action == 'annulla_avvio' %}
       <div class="fw-bold mt-1">{{ _('Avvio annullato') }}</div>
+      {% elif voce.action == 'giocatore_aggiunto' %}
+      <div class="fw-bold mt-1">{{ _('Giocatore aggiunto a mano') }}</div>
+      {% elif voce.action == 'giocatore_tolto' %}
+      <div class="fw-bold mt-1">{{ _('Giocatore tolto a mano') }}</div>
+      {% elif voce.action == 'risposta_per_conto' %}
+      <div class="fw-bold mt-1">{{ _('Risposta registrata per conto del giocatore') }}</div>
       {% endif %}
       {% if voce.fields %}
       <ul class="list-unstyled mt-1 mb-0">

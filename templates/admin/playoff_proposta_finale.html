@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{# La configurazione dei playoff propone, la finale decide (ADR-075) —
+   Design System 7c. Dopo aver corretto la configurazione con la finale già
+   creata e non avviata: quali campi applicarle. Richiede `campionato`,
+   `config`, `voce` (la voce della storia dei playoff), `campi`
+   (CampoProposto), `ritorno`. #}
+
+{% block title %}{{ _('Applicare alla finale?') }}{% endblock %}
+{% block page_title %}{{ _('Applicare alla finale?') }}{% endblock %}
+{% block page_sub %}{{ campionato.name }} · {{ config.name }}{% endblock %}
+
+{% block content %}
+<div style="max-width:860px">
+<form method="POST" class="c7-stack" style="gap:16px">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="c7-flash c7-flash--info">
+    <span class="c7-flash__ico"><i class="fas fa-circle-info"></i></span>
+    <div class="c7-flash__body">
+      <div class="c7-flash__text">
+        {{ _('La finale è già stata creata e ha i suoi valori: la configurazione corretta non la cambia da sola. Scegli cosa applicarle. Sono già spuntati i campi in cui la finale aveva il valore di prima; quelli scelti apposta per la finale no.') }}
+      </div>
+    </div>
+  </div>
+
+  <div class="c7-card">
+    <h3 class="mb-2">{{ config.gara.display_name }}</h3>
+    {% if campi %}
+    <ul class="list-unstyled mb-0">
+      {% for campo in campi %}
+      <li class="form-check mb-1">
+        <input class="form-check-input" type="checkbox" name="scelta"
+               id="scelta-{{ campo.campo_gara }}"
+               value="{{ campo.campo_gara }}" {% if campo.spuntato %}checked{% endif %}>
+        <label class="form-check-label" for="scelta-{{ campo.campo_gara }}">
+          <span class="fw-bold">{{ etichetta_storia(campo.campo_gara) }}</span>:
+          {{ valore_storia(campo.campo_gara, campo.attuale|string if campo.attuale is not none else '') }}
+          → {{ valore_storia(campo.campo_gara, campo.nuovo) }}
+          {% if not campo.spuntato %}<span class="c7-nota">· {{ _('valore scelto per la finale') }}</span>{% endif %}
+        </label>
+      </li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <p class="c7-nota mb-0">{{ _('La finale ha già questi valori.') }}</p>
+    {% endif %}
+    <p class="c7-nota mt-2 mb-0">{{ _('Formula e sistema di classifica cambiano la forma della gara: si decidono dalla pagina della finale.') }}</p>
+  </div>
+
+  <div class="c7-card">
+    <label for="motivo" class="form-label">{{ _('Motivo della modifica') }} · {{ _('opzionale') }}</label>
+    <textarea class="form-control" id="motivo" name="motivo" rows="2" maxlength="1000"
+              placeholder="{{ _('Scrivi perché: servirà in caso di contestazioni') }}">{{ voce.reason or '' }}</textarea>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="{{ ritorno }}" class="btn btn-secondary">{{ _("Lascia la finale com'è") }}</a>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> {{ _('Applica alla finale') }}</button>
+  </div>
+</form>
+</div>
+{% endblock %}

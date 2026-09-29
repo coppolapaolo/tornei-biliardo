@@ -8,7 +8,7 @@ che ha modificato parlava italiano.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 from typing import Dict
 
 from flask_babel import gettext as _
@@ -64,6 +64,19 @@ ETICHETTE: Dict[str, object] = {
     "default_start_rule": _l("Chi apre, proposto"),
     "default_break_rule": _l("Chi spacca, proposto"),
     "position_points": _l("Punti per posizione"),
+    # La configurazione dei playoff.
+    "positions_from": _l("Dalla posizione"),
+    "positions_to": _l("Alla posizione"),
+    "min_garas_played": _l("Gare giocate, almeno"),
+    "strategy_type": _l("Strategia di abbinamento"),
+    "scheduled_date": _l("Data dei playoff"),
+    "response_deadline": _l("Scadenza degli inviti"),
+    "final_ranking_mode": _l("Classifica finale"),
+    "playoff_weight": _l("Peso della finale"),
+    "is_active": _l("Attiva"),
+    # Gli strumenti a mano dei playoff.
+    "giocatore": _l("Giocatore"),
+    "risposta": _l("Risposta"),
 }
 
 #: I valori del campionato si leggono come il campo della gara che propongono.
@@ -75,6 +88,7 @@ _COME_CAMPO_DELLA_GARA = {
     "default_start_rule": "start_rule",
     "default_break_rule": "break_rule",
     "campionato_type": "matchmaking_strategy",
+    "strategy_type": "matchmaking_strategy",
 }
 
 
@@ -108,6 +122,14 @@ def _valori_noti() -> Dict[str, Dict[str, object]]:
             "RACKS": _l("Triangoli"),
             "POSITION": _l("Punti per posizione"),
         },
+        "final_ranking_mode": {
+            "campionato_plus_playoff": _l("Campionato + gara di playoff"),
+            "playoff_only": _l("Solo i playoff"),
+        },
+        "risposta": {
+            "accettato": _l("ha accettato"),
+            "rifiutato": _l("ha rifiutato"),
+        },
         "withdraw_policy": {
             "Forfeit": _l("Perde a tavolino le partite restanti"),
             "Exclude": _l("Esce dalla gara"),
@@ -129,6 +151,12 @@ def valore(campo: str, grezzo: str | None) -> str:
 
         sala = db.session.get(BilliardHall, int(grezzo))
         return sala.name if sala else grezzo
+    if campo == "giocatore" and grezzo:
+        from models.base import db
+        from models.user.models import User
+
+        utente = db.session.get(User, int(grezzo))
+        return utente.username if utente else grezzo
     if grezzo is None or grezzo == "":
         if campo in ("start_rule", "break_rule", "has_handicap"):
             return _("come il campionato")
@@ -146,6 +174,15 @@ def valore(campo: str, grezzo: str | None) -> str:
         enum_cls = StartRule if campo == "start_rule" else BreakRule
         membro = enum_cls.normalize(grezzo)
         return membro.display_name if membro else grezzo
+    if campo in ("scheduled_date", "response_deadline"):
+        from utils.local_time import resolve_timezone, to_local_naive
+
+        try:
+            momento = datetime.fromisoformat(grezzo)
+        except ValueError:
+            return grezzo
+        # Salvato in UTC come ogni orario: si legge nel fuso di chi legge.
+        return to_local_naive(momento, resolve_timezone()).strftime("%d/%m/%Y %H:%M")
     if campo == "date":
         try:
             giorno = date.fromisoformat(grezzo)

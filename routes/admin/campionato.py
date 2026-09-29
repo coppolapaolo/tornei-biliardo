@@ -529,6 +529,7 @@ def campionato_detail(campionato_id):
         # della vetrina.
         vincitori_gare=vincitori_delle_gare(gare),
         campionato_players=campionato_players,
+        storia_playoff=_storia_dei_playoff(campionato),
         # La data con cui il modale «Nuova gara» si presenta: oggi o una
         # settimana dopo l'ultima; in una prova, domani o il giorno dopo
         # l'ultima (ADR-016 vuole le gare in ordine).
@@ -622,6 +623,17 @@ def edit_campionato(campionato_id):
         matchmaking_strategies=matchmaking_strategies,
         odd_policies=odd_policies,
     )
+
+
+def _storia_dei_playoff(campionato):
+    """La storia di tutte le configurazioni dei playoff del campionato."""
+    from models.playoff.models import PlayoffConfiguration
+    from models.storia.service import StoriaModificheService
+
+    ids = [
+        c.id for c in PlayoffConfiguration.query.filter_by(campionato_id=campionato.id)
+    ]
+    return StoriaModificheService.voci_dei_playoff(ids)
 
 
 @campionato_bp.route(
@@ -797,7 +809,13 @@ def update_playoff_min(campionato_id):
         )
 
     try:
-        campionato_service.update_playoff_min_garas(campionato_id, config_id, new_min)
+        campionato_service.update_playoff_min_garas(
+            campionato_id,
+            config_id,
+            new_min,
+            autore=current_user,
+            motivo=request.form.get("motivo"),
+        )
         flash(_("Requisito minimo gare aggiornato."), "success")
     except ValueError as ve:
         flash(str(ve), "error")
@@ -880,6 +898,8 @@ def playoff_calendario(campionato_id, config_id):
                 response_deadline=parse_local_datetime(
                     request.form.get("response_deadline")
                 ),
+                autore=current_user,
+                motivo=request.form.get("motivo"),
             )
             flash(_("Data e scadenza del playoff aggiornate."), "success")
         except ValueError as errore:
@@ -944,7 +964,13 @@ def playoff_add_player(campionato_id, config_id):
         )
 
     try:
-        PlayoffService.admin_add_player(config_id, user_id, current_user.username)
+        PlayoffService.admin_add_player(
+            config_id,
+            user_id,
+            current_user.username,
+            autore=current_user,
+            motivo=request.form.get("motivo"),
+        )
         flash(_("Giocatore aggiunto ai playoff."), "success")
     except ValueError as ve:
         flash(str(ve), "error")
@@ -971,7 +997,12 @@ def playoff_remove_player(campionato_id, config_id):
         )
 
     try:
-        PlayoffService.admin_remove_player(qualification_id, current_user.username)
+        PlayoffService.admin_remove_player(
+            qualification_id,
+            current_user.username,
+            autore=current_user,
+            motivo=request.form.get("motivo"),
+        )
         flash(_("Giocatore rimosso dai playoff."), "success")
     except ValueError as ve:
         flash(str(ve), "error")
@@ -1004,6 +1035,7 @@ def playoff_respond_for_player(campionato_id, config_id):
             qualification_id,
             accept=(answer == "accept"),
             responded_by_id=current_user.id,
+            motivo=request.form.get("motivo"),
         )
     except ValueError as ve:
         flash(str(ve), "error")
@@ -1046,6 +1078,8 @@ def playoff_update_scoring(campionato_id, config_id):
             config_id,
             final_ranking_mode=request.form.get("final_ranking_mode"),
             playoff_weight=request.form.get("playoff_weight", type=int),
+            autore=current_user,
+            motivo=request.form.get("motivo"),
         )
         flash(_("Regole della classifica finale aggiornate."), "success")
     except ValueError as ve:
@@ -1104,13 +1138,85 @@ def playoff_edit_config(campionato_id, config_id):
             fields[key] = None  # Clear override → inherit from campionato
 
     try:
-        PlayoffService.update_configuration(config_id, **fields)
+        config = PlayoffService.update_configuration(
+            config_id,
+            autore=current_user,
+            motivo=request.form.get("motivo"),
+            **fields,
+        )
         flash(_("Configurazione playoff aggiornata."), "success")
     except ValueError as ve:
         flash(str(ve), "error")
+        return redirect(
+            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+        )
 
+    # La finale c'è già e non è avviata: il cambio le si propone, non le si
+    # impone (ADR-075), come il campionato fa con le sue gare.
+    from models.playoff.proposta_finale import proposta_alla_finale
+    from models.storia.service import StoriaModificheService
+
+    voci = StoriaModificheService.voci_dei_playoff([config.id])
+    if voci:
+        cambi = {r.field: (r.old_value, r.new_value) for r in voci[0].fields}
+        if proposta_alla_finale(config, cambi):
+            return redirect(
+                url_for(
+                    "admin.campionato.playoff_proposta_finale",
+                    campionato_id=campionato_id,
+                    config_id=config.id,
+                    voce_id=voci[0].id,
+                )
+            )
     return redirect(
         url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    )
+
+
+@campionato_bp.route(
+    "/<int:campionato_id>/playoff/<int:config_id>/proposta/<int:voce_id>",
+    methods=["GET", "POST"],
+)
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def playoff_proposta_finale(campionato_id, config_id, voce_id):
+    """Applicare alla finale già creata la configurazione corretta? (ADR-075)"""
+    from models.playoff.models import PlayoffConfiguration
+    from models.playoff.proposta_finale import (
+        applica_alla_finale,
+        proposta_alla_finale,
+    )
+    from models.storia.models import SettingsChange
+
+    config = db.get_or_404(PlayoffConfiguration, config_id)
+    voce = db.get_or_404(SettingsChange, voce_id)
+    if config.campionato_id != campionato_id or voce.playoff_config_id != config.id:
+        abort(404)
+    ritorno = url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    cambi = {r.field: (r.old_value, r.new_value) for r in voce.fields}
+
+    if request.method == "POST":
+        try:
+            if applica_alla_finale(
+                config,
+                request.form.getlist("scelta"),
+                autore=current_user,
+                motivo=request.form.get("motivo") or voce.reason,
+            ):
+                flash(_("Finale aggiornata."), "success")
+            else:
+                flash(_("La finale resta com'era."), "info")
+        except ValueError as ve:
+            flash(str(ve), "error")
+        return redirect(ritorno)
+
+    return render_template(
+        "admin/playoff_proposta_finale.html",
+        campionato=config.campionato,
+        config=config,
+        voce=voce,
+        campi=proposta_alla_finale(config, cambi),
+        ritorno=ritorno,
     )
 
 
@@ -1144,6 +1250,8 @@ def playoff_add_config(campionato_id):
             positions_from=positions_from,
             positions_to=positions_to,
             max_participants=max_participants,
+            autore=current_user,
+            motivo=request.form.get("motivo"),
             **kwargs,
         )
         flash(_("Configurazione playoff aggiunta."), "success")
@@ -1165,7 +1273,9 @@ def playoff_deactivate_config(campionato_id, config_id):
     from models.playoff.services import PlayoffService
 
     try:
-        PlayoffService.deactivate_configuration(config_id)
+        PlayoffService.deactivate_configuration(
+            config_id, autore=current_user, motivo=request.form.get("motivo")
+        )
         flash(_("Configurazione playoff disattivata."), "success")
     except ValueError as ve:
         flash(str(ve), "error")

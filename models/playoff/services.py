@@ -32,6 +32,38 @@ PLAYOFF_MIN_PARTICIPANTS = 2
 #: I giorni per rispondere a un invito, quando non c'è una scadenza davanti.
 PLAYOFF_RESPONSE_DAYS = 7
 
+#: Chi si qualifica: si decide prima degli inviti e poi non si tocca più
+#: (ADR-075). Tutto il resto della configurazione dice **come si gioca** la
+#: finale, e si corregge fino all'avvio della finale.
+CRITERI_DI_QUALIFICAZIONE = (
+    "positions_from",
+    "positions_to",
+    "max_participants",
+    "min_garas_played",
+)
+
+
+def _scrivi_nella_storia(
+    config: PlayoffConfiguration,
+    cambi: Dict[str, Tuple[Any, Any]],
+    *,
+    autore: Any = None,
+    motivo: Optional[str] = None,
+    azione: Optional[str] = None,
+) -> None:
+    """Una voce nella storia dei playoff (ADR-075)."""
+    from ..storia.models import SettingsChangeAction, SettingsChangeSource
+    from ..storia.service import StoriaModificheService
+
+    StoriaModificheService.registra(
+        cambi=cambi,
+        playoff_config_id=config.id,
+        autore=autore,
+        motivo=motivo,
+        provenienza=SettingsChangeSource.PLAYOFF,
+        azione=azione or SettingsChangeAction.MODIFICA,
+    )
+
 
 class PlayoffService:
     """Service for playoff management and business logic."""
@@ -162,7 +194,9 @@ class PlayoffService:
         # inviti partono prima della gara e le risposte non arrivano tutte
         # insieme. Senza, il sì di un ritardatario — o del sostituto chiamato
         # da un rifiuto — restava confermato ma fuori dalla gara.
-        PlayoffService._iscrivi_alla_gara(qualification, d_ufficio=_d_ufficio)
+        PlayoffService._iscrivi_alla_gara(
+            qualification, d_ufficio=_d_ufficio, inscribed_by_id=responded_by_id
+        )
 
         # Check if we can start the playoff campionato
         PlayoffService._check_playoff_readiness(qualification.configuration_id)
@@ -182,13 +216,18 @@ class PlayoffService:
 
     @staticmethod
     def _iscrivi_alla_gara(
-        qualification: PlayoffQualification, *, d_ufficio: bool = False
+        qualification: PlayoffQualification,
+        *,
+        d_ufficio: bool = False,
+        inscribed_by_id: Optional[int] = None,
     ) -> None:
         """Iscrive alla gara di playoff, se esiste già, un qualificato confermato.
 
         `d_ufficio` è l'aggiunta decisa dal direttore: entra anche oltre i
         posti. Chi arriva da un invito rispetta i posti, e trovandoli pieni va
-        in lista d'attesa come in ogni gara.
+        in lista d'attesa come in ogni gara. `inscribed_by_id` è il direttore
+        che lo iscrive al posto del giocatore: resta scritto sull'iscrizione,
+        come per le iscrizioni fatte dal direttore in ogni gara.
         """
         from ..competition.inscription_service import InscriptionService
 
@@ -200,6 +239,7 @@ class PlayoffService:
             gara_id=gara.id,
             _bypass_playoff_check=True,
             _d_ufficio=d_ufficio,
+            inscribed_by_id=inscribed_by_id,
         )
 
     @staticmethod
@@ -280,7 +320,10 @@ class PlayoffService:
     @staticmethod
     @transactional(domain="playoff")
     def respond_on_behalf(
-        qualification_id: int, accept: bool, responded_by_id: int
+        qualification_id: int,
+        accept: bool,
+        responded_by_id: int,
+        motivo: Optional[str] = None,
     ) -> Optional[PlayoffQualification]:
         """Il direttore registra la risposta che il giocatore gli ha dato.
 
@@ -318,6 +361,22 @@ class PlayoffService:
         if qualification.status != QualificationStatus.PENDING and not scaduta:
             raise ValueError("Questa qualificazione ha già una risposta")
 
+        # Rispondere per conto di un giocatore decide chi gioca la finale:
+        # resta nella storia dei playoff (ADR-075).
+        from ..storia.models import SettingsChangeAction
+        from ..user.models import User
+
+        _scrivi_nella_storia(
+            qualification.configuration,
+            {
+                "giocatore": (None, qualification.user_id),
+                "risposta": (None, "accettato" if accept else "rifiutato"),
+            },
+            autore=db.session.get(User, responded_by_id),
+            motivo=motivo,
+            azione=SettingsChangeAction.RISPOSTA_PER_CONTO,
+        )
+
         if accept:
             if scaduta:
                 # Torna in attesa un istante prima: a registrare la risposta
@@ -344,6 +403,8 @@ class PlayoffService:
         config_id: int,
         final_ranking_mode: Optional[str] = None,
         playoff_weight: Optional[int] = None,
+        autore: Any = None,
+        motivo: Optional[str] = None,
     ) -> PlayoffConfiguration:
         """Cambia come il playoff entra nella classifica finale.
 
@@ -358,6 +419,10 @@ class PlayoffService:
         config = db.session.get(PlayoffConfiguration, config_id)
         if config is None:
             raise NotFoundError("Configurazione playoff non trovata")
+        prima = {
+            "final_ranking_mode": config.final_ranking_mode,
+            "playoff_weight": config.playoff_weight,
+        }
 
         if final_ranking_mode is not None:
             modalita = PlayoffRankingMode.normalize(final_ranking_mode)
@@ -386,6 +451,18 @@ class PlayoffService:
             if config.gara is not None:
                 config.gara.weight = weight
 
+        _scrivi_nella_storia(
+            config,
+            {
+                "final_ranking_mode": (
+                    prima["final_ranking_mode"],
+                    config.final_ranking_mode,
+                ),
+                "playoff_weight": (prima["playoff_weight"], config.playoff_weight),
+            },
+            autore=autore,
+            motivo=motivo,
+        )
         db.session.flush()
         PlayoffService._recalculate_campionato_classification(config.campionato_id)
         return config
@@ -778,24 +855,40 @@ class PlayoffService:
 
         return campionato
 
-    # ── Config management (pre-avvio) ──────────────────────────────
+    # ── Config management ────────────────────────────────────────
 
     @staticmethod
     @transactional(domain="playoff")
-    def update_configuration(config_id: int, **fields: Any) -> PlayoffConfiguration:
-        """Update a playoff configuration. Blocked if qualifications exist."""
+    def update_configuration(
+        config_id: int,
+        autore: Any = None,
+        motivo: Optional[str] = None,
+        **fields: Any,
+    ) -> PlayoffConfiguration:
+        """Corregge una configurazione dei playoff (ADR-075).
+
+        **Chi si qualifica** (`CRITERI_DI_QUALIFICAZIONE`) si decide prima
+        degli inviti: partiti quelli, qualcuno è già stato chiamato e un
+        criterio nuovo cambierebbe chi è dentro. Fino al 2026-09-29 a inviti
+        partiti si bloccava tutta la configurazione; ora solo i criteri.
+        **Come si gioca** la finale si corregge fino al suo avvio, e se la
+        finale esiste già il cambio non la tocca da solo: la route propone al
+        direttore di applicarlo (`proposta_alla_finale`). Ogni salvataggio
+        resta nella storia dei playoff.
+        """
         config = db.session.get(PlayoffConfiguration, config_id)
         if config is None:
             raise NotFoundError("Configurazione playoff non trovata")
-        if config.has_qualifications():
-            raise ValueError("Non modificabile dopo avvio playoff")
+        if PlayoffService._gara_avviata(config):
+            raise ConflictError(
+                _(
+                    "La finale è già cominciata: le sue regole si cambiano dalla "
+                    "pagina della gara."
+                )
+            )
 
         allowed = {
             "name",
-            "positions_from",
-            "positions_to",
-            "max_participants",
-            "min_garas_played",
             "location",
             "scheduled_date",
             "entry_fee",
@@ -806,18 +899,63 @@ class PlayoffService:
             "strategy_type",
             "odd_number_policy",
             "classification_system",
+            *CRITERI_DI_QUALIFICAZIONE,
         }
+        from ..storia.service import serializza
+
         PlayoffService._verifica_valori_della_finale(fields)
-        for key, value in fields.items():
-            if key in allowed:
-                setattr(config, key, value)
+        valori = {k: v for k, v in fields.items() if k in allowed}
+        prima = {k: getattr(config, k) for k in valori}
+        if config.has_qualifications():
+            toccati = [
+                campo
+                for campo in CRITERI_DI_QUALIFICAZIONE
+                if campo in valori
+                and serializza(valori[campo]) != serializza(prima[campo])
+            ]
+            if toccati:
+                raise ConflictError(
+                    _(
+                        "Gli inviti sono già partiti: chi si qualifica non si "
+                        "cambia più. Si può ancora aggiungere o togliere un "
+                        "giocatore a mano."
+                    )
+                )
+        for key, value in valori.items():
+            setattr(config, key, value)
 
         # Una scelta che, con la somma, conterebbe un'altra cosa si ferma qui e
         # non all'avvio dei playoff: la transazione annulla quanto scritto sopra.
         PlayoffService._verifica_finale_sommabile(
             config, PlayoffService._sistema_della_finale(config).value
         )
+        _scrivi_nella_storia(
+            config,
+            {k: (prima[k], getattr(config, k)) for k in valori},
+            autore=autore,
+            motivo=motivo,
+        )
         return config
+
+    @staticmethod
+    @transactional(domain="playoff")
+    def update_min_garas(
+        config_id: int,
+        min_garas_played: int,
+        autore: Any = None,
+        motivo: Optional[str] = None,
+    ) -> PlayoffConfiguration:
+        """Il minimo di gare giocate: un criterio, quindi solo prima degli inviti.
+
+        Fino al 2026-09-29 la scorciatoia della pagina del campionato lo
+        cambiava senza nessun controllo, anche a inviti partiti.
+        """
+        return PlayoffService.update_configuration(
+            config_id,
+            autore=autore,
+            motivo=motivo,
+            min_garas_played=min_garas_played,
+        )
 
     @staticmethod
     @transactional(domain="playoff")
@@ -828,6 +966,8 @@ class PlayoffService:
         positions_to: int,
         max_participants: int,
         min_garas_played: Optional[int] = None,
+        autore: Any = None,
+        motivo: Optional[str] = None,
         **kwargs: Any,
     ) -> PlayoffConfiguration:
         """Add a new playoff configuration.
@@ -865,11 +1005,26 @@ class PlayoffService:
                 setattr(config, key, kwargs[key])
 
         db.session.add(config)
+        db.session.flush()
+        _scrivi_nella_storia(
+            config,
+            {
+                "name": (None, name),
+                "positions_from": (None, positions_from),
+                "positions_to": (None, positions_to),
+                "max_participants": (None, max_participants),
+                "min_garas_played": (None, min_garas_played),
+            },
+            autore=autore,
+            motivo=motivo,
+        )
         return config
 
     @staticmethod
     @transactional(domain="playoff")
-    def deactivate_configuration(config_id: int) -> PlayoffConfiguration:
+    def deactivate_configuration(
+        config_id: int, autore: Any = None, motivo: Optional[str] = None
+    ) -> PlayoffConfiguration:
         """Deactivate a playoff configuration. Blocked if qualifications exist."""
         config = db.session.get(PlayoffConfiguration, config_id)
         if config is None:
@@ -878,6 +1033,9 @@ class PlayoffService:
             raise ValueError("Non modificabile dopo avvio playoff")
 
         config.is_active = False
+        _scrivi_nella_storia(
+            config, {"is_active": (True, False)}, autore=autore, motivo=motivo
+        )
         return config
 
     # ── Avvio playoff ────────────────────────────────────────────
@@ -961,6 +1119,8 @@ class PlayoffService:
         *,
         scheduled_date: Optional[datetime] = None,
         response_deadline: Optional[datetime] = None,
+        autore: Any = None,
+        motivo: Optional[str] = None,
     ) -> PlayoffConfiguration:
         """Il direttore sposta la data dei playoff o la scadenza degli inviti.
 
@@ -998,6 +1158,10 @@ class PlayoffService:
         if _invariato(scheduled_date, config.scheduled_date):
             scheduled_date = None
         PlayoffService._valida_calendario(scheduled_date, response_deadline)
+        prima = {
+            "scheduled_date": config.scheduled_date,
+            "response_deadline": config.response_deadline,
+        }
 
         if response_deadline is not None:
             config.response_deadline = response_deadline
@@ -1021,10 +1185,37 @@ class PlayoffService:
                     )
                 except ValueError as errore:
                     raise ValidationError(str(errore)) from errore
+                from ..storia.models import SettingsChangeSource
+                from ..storia.service import StoriaModificheService
+
+                # La data della finale è un fatto della gara: resta anche
+                # nella sua storia, con la provenienza.
+                StoriaModificheService.registra(
+                    cambi={
+                        "date": (gara.date, scheduled_date.date()),
+                        "time": (gara.time, scheduled_date.time()),
+                    },
+                    gara_id=gara.id,
+                    autore=autore,
+                    motivo=motivo,
+                    provenienza=SettingsChangeSource.PLAYOFF,
+                )
                 gara.date = scheduled_date.date()
                 gara.time = scheduled_date.time()
             config.scheduled_date = scheduled_date
 
+        _scrivi_nella_storia(
+            config,
+            {
+                "scheduled_date": (prima["scheduled_date"], config.scheduled_date),
+                "response_deadline": (
+                    prima["response_deadline"],
+                    config.response_deadline,
+                ),
+            },
+            autore=autore,
+            motivo=motivo,
+        )
         return config
 
     @staticmethod
@@ -1376,7 +1567,11 @@ class PlayoffService:
     @staticmethod
     @transactional(domain="playoff")
     def admin_add_player(
-        configuration_id: int, user_id: int, admin_username: str
+        configuration_id: int,
+        user_id: int,
+        admin_username: str,
+        autore: Any = None,
+        motivo: Optional[str] = None,
     ) -> PlayoffQualification:
         """Manually add a player to a playoff config.
 
@@ -1433,14 +1628,29 @@ class PlayoffService:
         )
         db.session.add(qual)
         db.session.flush()
-        # Una scelta esplicita del direttore: entra anche oltre i posti.
-        PlayoffService._iscrivi_alla_gara(qual, d_ufficio=True)
+        # Una scelta esplicita del direttore: entra anche oltre i posti, e
+        # sull'iscrizione resta scritto chi l'ha iscritto.
+        PlayoffService._iscrivi_alla_gara(
+            qual, d_ufficio=True, inscribed_by_id=getattr(autore, "id", None)
+        )
+        from ..storia.models import SettingsChangeAction
+
+        _scrivi_nella_storia(
+            config,
+            {"giocatore": (None, user_id)},
+            autore=autore,
+            motivo=motivo,
+            azione=SettingsChangeAction.GIOCATORE_AGGIUNTO,
+        )
         return qual
 
     @staticmethod
     @transactional(domain="playoff")
     def admin_remove_player(
-        qualification_id: int, admin_username: str
+        qualification_id: int,
+        admin_username: str,
+        autore: Any = None,
+        motivo: Optional[str] = None,
     ) -> PlayoffQualification:
         """Remove a player from a playoff config. Sets status to DECLINED."""
         qual = db.session.get(PlayoffQualification, qualification_id)
@@ -1466,6 +1676,15 @@ class PlayoffService:
             f"Rimosso da {admin_username} (era: {original_reason})"
         )
         qual.responded_at = utc_now()
+        from ..storia.models import SettingsChangeAction
+
+        _scrivi_nella_storia(
+            config,
+            {"giocatore": (qual.user_id, None)},
+            autore=autore,
+            motivo=motivo,
+            azione=SettingsChangeAction.GIOCATORE_TOLTO,
+        )
         return qual
 
     @staticmethod
