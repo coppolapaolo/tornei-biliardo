@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.52.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.51.0...v1.52.0) (2026-09-29)
+
+
+### Funzioni nuove
+
+* a gara finita si corregge quanto conta, e la classifica lo dice ([#592](https://github.com/coppolapaolo/tornei-biliardo/issues/592)) ([d81d072](https://github.com/coppolapaolo/tornei-biliardo/commit/d81d0721c06048c79754fa3104bb2ab00a13192c))
+* chi è iscritto conferma di esserci ancora dopo un cambio di data, sala o quota ([#595](https://github.com/coppolapaolo/tornei-biliardo/issues/595)) ([202f2e1](https://github.com/coppolapaolo/tornei-biliardo/commit/202f2e1a8c5fea1c83864330ac04a7c05895bcc1))
+* la pagina pubblica Regolamento di gara ([#597](https://github.com/coppolapaolo/tornei-biliardo/issues/597)) ([2a279fb](https://github.com/coppolapaolo/tornei-biliardo/commit/2a279fb4c80e3625e6db2bfe929453f015d43da4))
+* le modifiche a una gara arrivano agli iscritti in una notifica sola ([#594](https://github.com/coppolapaolo/tornei-biliardo/issues/594)) ([99f1183](https://github.com/coppolapaolo/tornei-biliardo/commit/99f11833b1488276287eaaa3c7a5e35cd36816d1))
+* una data che scavalca le gare successive propone di spostarle ([#596](https://github.com/coppolapaolo/tornei-biliardo/issues/596)) ([69673d8](https://github.com/coppolapaolo/tornei-biliardo/commit/69673d83ec06071de6cd70efffcc10933b09253c))
+
 ## [1.51.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.50.0...v1.51.0) (2026-09-29)
 
 
