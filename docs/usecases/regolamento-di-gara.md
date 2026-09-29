@@ -430,9 +430,13 @@ Accorgimenti che discendono dal codice:
    correggono **anche le partite** della gara, e ogni correzione entra nella
    storia come «correzione dei dati (script)» con il motivo. Sono dati scritti
    male, non un cambio di regole a partita giocata.
-2. Il sistema di classifica del campionato: «tutte le gare dello stesso
-   sistema» (`SPECIFICHE.md:294`) non sta insieme alle caselle da spuntare
-   gara per gara.
+2. ~~Il sistema di classifica del campionato~~ **Decisa il 2026-09-29**: il
+   sistema di classifica è l'**unica eccezione** alla regola delle caselle.
+   Vale per tutto il campionato; si cambia finché **nessuna gara del
+   campionato è stata avviata** (anche se ha già iscritti), e il cambio arriva
+   a tutte le gare, con la sua voce nella storia di ciascuna. Dopo il primo
+   avvio è bloccato. Così la classifica generale somma sempre classifiche
+   dello stesso tipo (`SPECIFICHE.md:294`).
 3. Il link esterno: oggi serve anche per il modulo di pagamento o la pagina
    della sala, e ha già un'etichetta scelta dal direttore; e, con la
    locandina, segue il campionato in diretta.
