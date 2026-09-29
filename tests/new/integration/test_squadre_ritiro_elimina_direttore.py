@@ -161,7 +161,9 @@ def test_dopo_il_sorteggio_le_squadre_restano_bloccate_e_in_sola_lettura(
     gara = _gara(db_session, GaraStatus.INSCRIPTION.value, separate_teammates=True)
     squadra = SquadraService.create(gara, "Circolo Sud")
     db_session.commit()
-    gara.status = GaraStatus.PLAYING.value
+    # Dal 2026-09-29 (ADR-075) le categorie si cambiano anche a gara avviata:
+    # non si modificano più a gara conclusa.
+    gara.status = GaraStatus.COMPLETED.value
     gara.current_round = 1
     db_session.commit()
 
@@ -188,7 +190,9 @@ def test_le_categorie_restano_quando_non_si_modificano_piu(admin_client, db_sess
     admin = User.query.filter(User.username.like("sre_admin_%")).first()
     CategoriaService.set_inscription_categoria_by_name(gara, inscription, "B", admin)
     db_session.commit()
-    gara.status = GaraStatus.PLAYING.value
+    # Dal 2026-09-29 (ADR-075) le categorie si cambiano anche a gara avviata:
+    # non si modificano più a gara conclusa.
+    gara.status = GaraStatus.COMPLETED.value
     gara.current_round = 1
     db_session.commit()
 

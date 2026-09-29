@@ -88,7 +88,9 @@ def gara_preparazione(gara_id, passo):
         user_can_manage=True,
         passo=passo,
         nav=navigazione(gara, passo),
-        in_preparazione=gara.status == GaraStatus.SETUP.value,
+        # Fino all'avvio i turni si configurano, anche a iscrizioni aperte
+        # (ADR-075): prima si chiudevano all'apertura delle iscrizioni.
+        in_preparazione=not gara.is_avviata,
         discipline_choices=Discipline.get_choices(),
         **contesto,
     )

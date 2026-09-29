@@ -261,15 +261,17 @@ class TestAntiIDOR:
 
 
 class TestFinestraDiModifica:
-    def test_a_gara_avviata_risponde_409(self, db_session, client):
+    def test_a_gara_chiusa_risponde_409(self, db_session, client):
+        """Dal 2026-09-29 (ADR-075) a gara avviata si cambiano, e valgono dal
+        turno successivo: la finestra si chiude a gara conclusa."""
         gara, director = _gara(db_session)
         giocatore = _players(db_session, 1)[0]
         InscriptionService.inscribe_user(giocatore.id, gara.id)
         db_session.commit()
         ins = _inscription_of(gara, giocatore)
 
-        gara.status = "playing"
-        gara.current_round = 1
+        gara.status = "completed"
+        gara.current_round = 3
         db_session.commit()
         _login(client, director, "director123")
 

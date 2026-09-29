@@ -282,7 +282,7 @@
        (Oggi la rotta di modifica si chiude già prima, alla prima iscrizione;
        la difesa resta perché il giorno in cui quel cancello si allarga questo
        non deve cedere con lui.) #}
-    {% set regole_modificabili = gara.can_be_modified() %}
+    {% set regole_modificabili = not gara.is_avviata %}
     <div class="d-flex gap-3 flex-wrap mt-3">
       <div class="flex-fill" style="min-width:220px">
         <label for="start_rule" class="form-label">{{ _('Regola di inizio') }}</label>

@@ -1002,6 +1002,43 @@ def list_round_configs(gara_id: int):
     )
 
 
+_CAMPI_DEL_TURNO = (
+    "discipline",
+    "distance",
+    "is_race_to",
+    "is_multi_set",
+    "match_distance",
+    "is_race_to_sets",
+)
+
+
+def _valori_del_turno(gara_id: int, round_number: int) -> dict:
+    """Le regole scritte per un turno (None dove il turno segue la gara)."""
+    from models.competition.round_configuration import RoundConfiguration
+
+    config = RoundConfiguration.get_for_gara_round(gara_id, round_number)
+    return {
+        campo: (getattr(config, campo) if config is not None else None)
+        for campo in _CAMPI_DEL_TURNO
+    }
+
+
+def _scrivi_nella_storia(gara, round_number: int, prima: dict) -> None:
+    """Le regole di un turno cambiate finiscono nella storia (ADR-075)."""
+    from models.storia.service import StoriaModificheService
+
+    dopo = _valori_del_turno(gara.id, round_number)
+    StoriaModificheService.registra(
+        cambi={
+            f"turno_{round_number}.{campo}": (prima[campo], dopo[campo])
+            for campo in _CAMPI_DEL_TURNO
+        },
+        gara_id=gara.id,
+        autore=current_user,
+        dal_turno=round_number if gara.is_avviata else None,
+    )
+
+
 @competition_bp.route(
     "/<int:gara_id>/round-config/<int:round_number>", methods=["POST"]
 )
@@ -1021,17 +1058,11 @@ def upsert_round_config(gara_id: int, round_number: int):
 
     gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
-    if gara.status != GaraStatus.SETUP.value:
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "error": "Gli override per turno sono modificabili "
-                    "solo in stato setup.",
-                }
-            ),
-            409,
-        )
+    from models.competition.campi_modificabili import motivo_turno_non_modificabile
+
+    motivo = motivo_turno_non_modificabile(gara, round_number)
+    if motivo is not None:
+        return jsonify({"success": False, "error": str(motivo)}), 409
 
     if round_number < 1 or round_number > gara.rounds_count:
         return (
@@ -1072,7 +1103,8 @@ def upsert_round_config(gara_id: int, round_number: int):
 
     @transactional(domain="competition")
     def _persist() -> RoundConfiguration:
-        return RoundConfiguration.create_or_update(
+        prima = _valori_del_turno(gara.id, round_number)
+        config = RoundConfiguration.create_or_update(
             gara_id=gara.id,
             round_number=round_number,
             discipline=payload.get("discipline"),
@@ -1082,6 +1114,8 @@ def upsert_round_config(gara_id: int, round_number: int):
             match_distance=payload.get("match_distance"),
             is_race_to_sets=payload.get("is_race_to_sets"),
         )
+        _scrivi_nella_storia(gara, round_number, prima)
+        return config
 
     try:
         config = _persist()
@@ -1103,21 +1137,18 @@ def delete_round_config(gara_id: int, round_number: int):
 
     gara = get_or_ajax_404(Gara, gara_id, "Gara")
 
-    if gara.status != GaraStatus.SETUP.value:
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "error": "Gli override per turno sono modificabili "
-                    "solo in stato setup.",
-                }
-            ),
-            409,
-        )
+    from models.competition.campi_modificabili import motivo_turno_non_modificabile
+
+    motivo = motivo_turno_non_modificabile(gara, round_number)
+    if motivo is not None:
+        return jsonify({"success": False, "error": str(motivo)}), 409
 
     @transactional(domain="competition")
     def _delete() -> bool:
-        return RoundConfiguration.delete_for_round(gara.id, round_number)
+        prima = _valori_del_turno(gara.id, round_number)
+        tolto = RoundConfiguration.delete_for_round(gara.id, round_number)
+        _scrivi_nella_storia(gara, round_number, prima)
+        return tolto
 
     deleted = _delete()
     return jsonify({"success": True, "deleted": deleted})

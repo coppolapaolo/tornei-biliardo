@@ -201,12 +201,17 @@ class TestGaraModel:
         db_session.add(inscription)
         db_session.commit()
 
-        # Con gli iscritti si modifica ancora: la correzione resta nella
-        # storia (ADR-075). Si chiude solo all'avvio.
+        # Con gli iscritti si modifica ancora, e anche a gara avviata: cosa si
+        # può cambiare lo dice `campi_modificabili` (ADR-075). Il modulo si
+        # chiude solo a gara conclusa.
         assert gara.can_be_modified() is True
 
         gara.status = GaraStatus.PLAYING.value
         gara.current_round = 1
+        db_session.commit()
+        assert gara.can_be_modified() is True
+
+        gara.status = GaraStatus.COMPLETED.value
         db_session.commit()
         assert gara.can_be_modified() is False
 
@@ -495,11 +500,13 @@ class TestGaraService:
         )
         assert db_session.get(Gara, gara.id).name == "New Name"
 
+        # A gara avviata la logistica passa, la struttura no.
         gara.status = GaraStatus.PLAYING.value
         gara.current_round = 1
         db_session.commit()
+        GaraService.update_gara(gara_id=gara.id, name="Another")
         with pytest.raises(ValueError):
-            GaraService.update_gara(gara_id=gara.id, name="Another")
+            GaraService.update_gara(gara_id=gara.id, rounds_count=9)
         db_session.rollback()
 
     def test_delete_gara(self, db_session):

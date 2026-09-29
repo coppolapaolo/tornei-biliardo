@@ -75,9 +75,11 @@ def avviso_senza_categoria(gara) -> str:
 
     return ngettext(
         "%(num)s iscritto su %(tot)s non ha una categoria: le sue partite non "
-        "conteranno per l'Elo, e dopo l'avvio non potrai più cambiarla.",
+        "conteranno per l'Elo. Una categoria data a gara avviata vale per le "
+        "partite dei turni successivi.",
         "%(num)s iscritti su %(tot)s non hanno una categoria: le loro partite "
-        "non conteranno per l'Elo, e dopo l'avvio non potrai più cambiarle.",
+        "non conteranno per l'Elo. Una categoria data a gara avviata vale per "
+        "le partite dei turni successivi.",
         senza,
         # `num` lo lega flask_babel dal conteggio: passarlo di nuovo qui
         # solleva «got multiple values for argument 'num'».

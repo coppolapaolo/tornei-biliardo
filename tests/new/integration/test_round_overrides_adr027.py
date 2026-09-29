@@ -284,9 +284,15 @@ class TestRoundConfigAPIEnforcement:
         assert RoundConfiguration.get_for_gara_round(gara_setup.id, 2) is None
 
     def test_post_blocked_outside_setup(self, admin_client, gara_setup, db_session):
-        """Una volta aperte le iscrizioni, gli override sono congelati."""
+        """Un turno già avviato non si tocca.
+
+        Emendato il 2026-09-29 (ADR-075): prima gli override si congelavano
+        all'apertura delle iscrizioni; ora si cambiano fino all'avvio, e a gara
+        avviata per i turni non ancora avviati.
+        """
         client, _ = admin_client
-        gara_setup.status = GaraStatus.INSCRIPTION.value
+        gara_setup.status = GaraStatus.PLAYING.value
+        gara_setup.current_round = 1
         db_session.commit()
 
         resp = client.post(

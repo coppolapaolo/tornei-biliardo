@@ -320,10 +320,15 @@ blocks:
           it, when, what changed and, if you write it, why. Registered players
           signed up knowing the earlier rules: the reason helps explain it.
       - name: "Competition started"
-        values: "little"
+        values: "logistics and rules"
         text: >-
-          The match format is frozen. Surrounding information (notes, tables)
-          stays editable and, with due care, results that are not yet locked.
+          Name, date, venue, fee and notes change at once. Play rules
+          (distance, discipline, who opens, who breaks, handicap, odd numbers,
+          withdrawals) can be changed and apply **from the next round**: matches
+          already created keep the rules they started with. The structure —
+          strategy, number of rounds, standings system — changes only by
+          cancelling the start. With the random strategy the rules stay as they
+          were at the start.
 
   - type: faq
     items:

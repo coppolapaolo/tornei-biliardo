@@ -25,7 +25,7 @@ blocks:
       - name: "Registrations open"
         text: "The competition is public and players sign themselves up. Settings remain editable, and every change stays in the competition's history."
       - name: "In progress"
-        text: "The first round has started. The match format is frozen: changing it would falsify results already recorded."
+        text: "The first round has started. The competition's structure is fixed; venue, time and play rules can still be changed, and the rules apply from the next round."
 
   - type: heading
     id: aprire

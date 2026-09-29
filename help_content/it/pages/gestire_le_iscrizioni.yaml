@@ -25,7 +25,7 @@ blocks:
       - name: "Iscrizioni aperte"
         text: "La gara è pubblica e i giocatori si iscrivono da soli. Le impostazioni restano modificabili, e ogni modifica resta nella storia della gara."
       - name: "In corso"
-        text: "Il primo turno è partito. Il formato di gioco è congelato: cambiarlo falserebbe i risultati già registrati."
+        text: "Il primo turno è partito. La struttura della gara è fissata; sala, orario e regole di gioco si possono ancora cambiare, e le regole valgono dal turno successivo."
 
   - type: heading
     id: aprire

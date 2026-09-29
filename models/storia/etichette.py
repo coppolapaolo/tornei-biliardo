@@ -55,6 +55,11 @@ ETICHETTE: Dict[str, object] = {
 
 
 def etichetta(campo: str) -> str:
+    # Le regole di un singolo turno arrivano come `turno_3.distance`.
+    if campo.startswith("turno_") and "." in campo:
+        turno, interno = campo.split(".", 1)
+        numero = turno.split("_", 1)[1]
+        return _("Turno %(n)s", n=numero) + " · " + etichetta(interno)
     return str(ETICHETTE.get(campo, campo))
 
 
@@ -88,6 +93,11 @@ def _valori_noti() -> Dict[str, Dict[str, object]]:
 
 def valore(campo: str, grezzo: str | None) -> str:
     """Il valore salvato, in parole."""
+    if campo.startswith("turno_") and "." in campo:
+        interno = campo.split(".", 1)[1]
+        if grezzo is None or grezzo == "":
+            return _("come la gara")
+        return valore(interno, grezzo)
     if grezzo is None or grezzo == "":
         if campo in ("start_rule", "break_rule", "has_handicap"):
             return _("come il campionato")

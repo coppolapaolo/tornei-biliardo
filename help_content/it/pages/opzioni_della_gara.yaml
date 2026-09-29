@@ -321,11 +321,15 @@ blocks:
           è cambiato e, se lo scrivi, perché. Chi si è iscritto lo ha fatto
           conoscendo le regole di prima: il motivo aiuta a spiegarglielo.
       - name: "Gara avviata"
-        values: "poco"
+        values: "logistica e regole"
         text: >-
-          Il formato di gioco è congelato. Restano modificabili le informazioni
-          di contorno (note, tavoli) e, con le dovute cautele, i risultati non
-          ancora bloccati.
+          Nome, data, sala, quota e note cambiano subito. Le regole di gioco
+          (distanza, disciplina, chi apre, chi spacca, handicap, dispari,
+          ritiri) si cambiano e valgono **dal turno successivo**: le partite
+          già nate restano con le regole con cui sono cominciate. La struttura
+          — strategia, numero di turni, sistema di classifica — si cambia solo
+          annullando l'avvio. Con la strategia casuale le regole restano
+          quelle dell'avvio.
 
   - type: faq
     items:

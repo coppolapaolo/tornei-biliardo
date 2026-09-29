@@ -839,21 +839,27 @@ class Gara(SoftDeleteMixin, db.Model):
         return self.status in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value]
 
     def can_be_modified(self):
-        """Si può aprire il modulo di modifica: la gara non è ancora avviata.
+        """Si può aprire il modulo di modifica: la gara non è chiusa.
 
         Fino al 2026-09-29 bastava **un** iscritto per chiudere il modulo, e la
         finale dei playoff — che nasce con gli iscritti dentro — non si poteva
-        correggere mai: né la sala né chi spacca. Ora vale ciò che dice
-        l'ADR-075: prima dell'avvio si corregge tutto, anche con gli iscritti,
-        e ogni correzione resta nella storia della gara.
-
-        «Avviata» è `current_round > 0`: dopo «Annulla l'avvio» il turno torna
-        a zero e la gara è di nuovo modificabile.
+        correggere mai. Ora (ADR-075) si modifica fino alla fine della gara, e
+        cosa si può cambiare lo dice campo per campo
+        `models.competition.campi_modificabili`: la logistica sempre, le regole
+        dal turno successivo, la struttura solo prima dell'avvio. Ogni
+        correzione resta nella storia della gara.
         """
-        return self.status in (
-            GaraStatus.SETUP.value,
-            GaraStatus.INSCRIPTION.value,
-        ) and not (self.current_round or 0)
+        return self.status not in (
+            GaraStatus.COMPLETED.value,
+            GaraStatus.CANCELLED.value,
+        )
+
+    @property
+    def is_avviata(self) -> bool:
+        """Il primo turno è partito (e non è stato annullato)."""
+        from models.competition.campi_modificabili import e_avviata
+
+        return e_avviata(self)
 
     def can_be_deleted(self):
         """Verifica se la gara può essere cancellata"""

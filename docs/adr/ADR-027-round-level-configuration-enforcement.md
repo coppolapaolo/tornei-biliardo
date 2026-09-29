@@ -247,3 +247,11 @@ prima si rileggevano dalla gara e perdevano l'override del turno),
 resta solo come ripiego per righe mai fissate. Resta intatta l'eccezione di
 `effective_distance` sul valore 1: lo spareggio a un triangolo la usa oggi, e
 cambiarla è un'altra decisione.
+
+## Emendamento (2026-09-29, ADR-075, passo 3)
+
+Gli override per turno non si modificano più «solo in setup»: si modificano
+fino all'avvio del primo turno (anche a iscrizioni aperte) e, a gara avviata,
+per i turni **non ancora avviati**, mai con la strategia casuale. La regola
+sta in `campi_modificabili.motivo_turno_non_modificabile`, e ogni cambio
+finisce nella storia della gara (`turno_N.campo`).

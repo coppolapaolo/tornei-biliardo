@@ -266,7 +266,7 @@ class TestAvailableTablesEditableWithInscriptions:
         db_session.add(inscription)
         db_session.commit()
 
-        gara.status = GaraStatus.PLAYING.value
+        gara.status = GaraStatus.COMPLETED.value
         gara.current_round = 1
         db_session.commit()
         assert not gara.can_be_modified()

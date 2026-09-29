@@ -214,9 +214,19 @@ class TestChiPuoScrivere:
 
 
 class TestFinestraDiModifica:
-    def test_dopo_l_avvio_si_rifiuta(self, db_session):
-        gara = _gara(db_session, "chiusa", status=GaraStatus.PLAYING.value)
+    def test_dopo_l_avvio_si_cambia_e_vale_per_le_partite_nuove(self, db_session):
+        """ADR-075: le categorie sono fissate sulla partita quando nasce."""
+        gara = _gara(db_session, "avviata", status=GaraStatus.PLAYING.value)
         gara.current_round = 1
+        db_session.flush()
+        ins = _inscription(db_session, gara, _user(db_session, "p"))
+
+        assert CategoriaService.is_editable(gara) is True
+        CategoriaService.set_inscription_categoria_by_name(gara, ins, "B")
+
+    def test_a_gara_chiusa_si_rifiuta(self, db_session):
+        gara = _gara(db_session, "chiusa", status=GaraStatus.COMPLETED.value)
+        gara.current_round = 3
         db_session.flush()
         ins = _inscription(db_session, gara, _user(db_session, "p"))
 
