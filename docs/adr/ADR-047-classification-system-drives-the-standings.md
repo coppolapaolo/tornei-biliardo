@@ -186,3 +186,15 @@ ricavare i triangoli da un match stanno in `_process_regular_match`,
 `_process_trio_match` e `_process_bye_match` — trio, bye e set multipli contano
 in modo diverso. Riscriverle in SQL avrebbe creato una seconda implementazione
 divergente: esattamente il difetto che questo ADR chiude.
+
+## Emendamento (2026-09-29, ADR-075)
+
+«Le gare del campionato ereditano il sistema senza poterlo cambiare» resta
+vero nella sostanza — tutte le gare di un campionato hanno lo stesso sistema,
+perché la classifica generale somma classifiche dello stesso tipo — ma cambia
+come ci si arriva. Il sistema si cambia **dal campionato**, finché **nessuna
+gara è avviata**, anche se ha già gli iscritti; il cambio arriva a tutte le
+gare, con la sua voce nella storia di ciascuna
+(`TournamentService._verifica_cambio_sistema` e `_propaga_sistema`). Dopo il
+primo avvio è bloccato. È l'unica eccezione alla regola «il campionato propone,
+la gara decide».

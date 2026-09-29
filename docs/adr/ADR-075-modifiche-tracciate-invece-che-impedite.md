@@ -1,7 +1,7 @@
 # [075] Le impostazioni si correggono e restano scritte, invece di bloccarsi
 
 **Data**: 2026-09-29
-**Stato**: Accepted — attuazione in corso, una PR per parte (vedi «Attuazione»)
+**Stato**: Accepted — attuazione completata il 2026-09-29 (vedi «Attuazione»)
 **Decisori**: Paolo Coppola, Claude
 
 Specifica completa, con i casi e la verifica sul codice:
@@ -139,18 +139,28 @@ Discussa e scartata durante l'intervista.
 
 ## Attuazione
 
-Una PR per parte, ciascuna con le note datate in `SPECIFICHE.md` e negli ADR
-che emenda, così specifica e codice non divergono mai:
+**Completata il 2026-09-29**, rilasciata nelle versioni dalla 1.49.1 alla 1.53.0. Una PR
+per parte, ciascuna con le note datate in `SPECIFICHE.md` e negli ADR che
+emenda, così specifica e codice non divergono mai:
 
-1. storia delle modifiche della gara; modifica con iscritti prima dell'avvio;
-2. regole fissate sulla partita;
-3. modifica a gara avviata, dal turno successivo;
-4. campionato: valori proposti;
-5. playoff;
-6. correzione a gara finita e segno in classifica;
-7. notifiche accorpate;
-8. riconferma;
-9. date che scavalcano le gare successive;
-10. pagina «Regolamento di gara» e `/aiuto`.
+| # | Parte | PR | Presidio principale |
+|---|---|---|---|
+| 1 | Storia delle modifiche della gara; modifica con iscritti prima dell'avvio | #585 | `test_storia_modifiche_gara.py` |
+| 2 | Regole fissate sulla partita | #586 | `test_regole_fissate_sulla_partita.py` |
+| 3 | Modifica a gara avviata, dal turno successivo | #588 | `test_modifica_a_gara_avviata.py` |
+| 4 | Campionato: valori proposti | #589 | `test_campionato_valori_proposti.py` |
+| 5 | Playoff: criteri bloccati, proposta alla finale, storia | #591 | `test_playoff_storia_e_proposta.py` |
+| 6 | Correzione a gara finita, segno in classifica, proposta di inviti | #592 | `test_ricalcolo_a_gara_finita.py` |
+| 7 | Notifiche accorpate | #594 | `test_notifiche_accorpate.py` |
+| 8 | Riconferma | #595 | `test_riconferma_iscritti.py` |
+| 9 | Date che scavalcano le gare successive; capienza che ripesca | #596 | `test_sposta_gare_successive.py` |
+| 10 | Pagina «Regolamento di gara» e `/aiuto` | #597 | `test_regolamento_di_gara.py` |
+| 11 | Pagina «Regolamento del campionato» | #599 | `test_regolamento_campionato.py` |
 
-ADR da emendare lungo la strada: 016, 027, 047, 049, 053, 056, 058.
+La specifica è stata scritta nella #584. Nella stessa giornata è entrata la
+#583, che non discende da questo ADR ma chiude un difetto trovato durante la
+verifica: le route dei playoff non controllavano che configurazione e invito
+fossero del campionato dell'indirizzo.
+
+ADR emendati: 016, 027, 047, 049, 053, 056, 058. I criteri di accettazione
+della specifica sono spuntati, ciascuno col test che lo presidia.

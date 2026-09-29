@@ -640,7 +640,7 @@ Puntatori: il dettaglio sta nel documento, qui c'è solo a cosa serve.
 | [072](docs/adr/ADR-072-le-prove-in-scheda-sono-prove.md) | le prove fatte in scheda sono prove del catalogo: la misura discende dall'esercizio, ogni tentativo entra nel catalogo |
 | [073](docs/adr/ADR-073-classifica-generale-un-calcolo-solo.md) | la classifica generale si calcola in **un posto solo** (somma delle classifiche delle gare); le righe `Classification` ne sono la copia, senza cache |
 | [074](docs/adr/ADR-074-le-conferme-seguono-cosa-fa-l-azione.md) | le conferme seguono **cosa fa l'azione**: Annulla in tre secondi se frequente e reversibile, foglio col nome dell'azione se tocca altri o non si disfa; mai `confirm()` del browser |
-| [075](docs/adr/ADR-075-modifiche-tracciate-invece-che-impedite.md) | le impostazioni si **correggono e restano scritte** invece di bloccarsi: storia delle modifiche, regole fissate sulla partita, cambio valido dal turno successivo, il campionato propone e la gara decide. Attuazione in corso (`docs/usecases/regolamento-di-gara.md`) |
+| [075](docs/adr/ADR-075-modifiche-tracciate-invece-che-impedite.md) | le impostazioni si **correggono e restano scritte** invece di bloccarsi: storia delle modifiche, regole fissate sulla partita, cambio valido dal turno successivo, il campionato propone e la gara decide. Attuazione completata il 2026-09-29 (`docs/usecases/regolamento-di-gara.md`) |
 
 ---
 
