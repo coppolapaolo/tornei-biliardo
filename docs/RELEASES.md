@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.53.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.52.0...v1.53.0) (2026-09-29)
+
+
+### Funzioni nuove
+
+* la pagina pubblica Regolamento del campionato ([#599](https://github.com/coppolapaolo/tornei-biliardo/issues/599)) ([aff1c6b](https://github.com/coppolapaolo/tornei-biliardo/commit/aff1c6ba80c8fcdd4d73b84ec0c68658181e01ce))
+
+
+### Correzioni
+
+* i playoff si toccano solo dal loro campionato ([#583](https://github.com/coppolapaolo/tornei-biliardo/issues/583)) ([0bf4055](https://github.com/coppolapaolo/tornei-biliardo/commit/0bf405542736bb7a65cb135de6e1fa35a4dc5ce7))
+
 ## [1.52.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.51.0...v1.52.0) (2026-09-29)
 
 
