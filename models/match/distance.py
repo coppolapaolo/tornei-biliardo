@@ -169,9 +169,13 @@ class Distance:
                 is_race_to_sets=True,
             )
 
-        # Multi-set: i rack-per-set vengono dalla gara (single source per i set
-        # ancora non istanziati); per set già istanziati usa Distance.from_set.
-        gara_dist = gara.distance if gara else 5
+        # Multi-set: i rack-per-set sono fissati sulla partita quando nasce
+        # (ADR-075), e comprendono l'override del turno; le partite di prima
+        # della colonna rileggono la gara. Per i set già istanziati vale
+        # Distance.from_set.
+        gara_dist = getattr(match, "set_distance", None) or (
+            gara.distance if gara else 5
+        )
         return cls(
             racks=gara_dist,
             is_race_to_racks=is_race_to,

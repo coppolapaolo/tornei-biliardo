@@ -7,9 +7,12 @@ deve avere l'handicap:
     python scripts/set_gara_handicap.py --gara 19 --commit   # applica
     python scripts/set_gara_handicap.py --gara 19 --off --commit  # disattiva
 
-Imposta `gara.has_handicap`. I match della gara che hanno `has_handicap=NULL`
-(default) erediteranno automaticamente il valore via Match.effective_has_handicap,
-quindi non aggiorneranno più i rating. Non tocca i match con override esplicito.
+Imposta `gara.has_handicap` **e** l'handicap fissato sulle partite della gara.
+Dal 2026-09-29 (ADR-075) le regole si fissano sulla partita quando nasce, così
+un cambio a gara avviata vale dal turno successivo; questo script però
+**corregge** un dato scritto male, quindi arriva anche alle partite già giocate
+e lascia una voce nella storia della gara («correzione dei dati»). Dopo, va
+ricalcolato l'ELO: la correzione decide quali partite ci entrano.
 
 Idempotente: rilanciarlo non cambia nulla se il valore è già quello voluto.
 """
@@ -45,7 +48,27 @@ def set_handicap(gara_id: int, value: bool, commit: bool) -> int:
         gara.has_handicap = value
         db.session.add(gara)
 
+        from models.match.models import Match
+        from models.storia.models import SettingsChangeSource
+        from models.storia.service import StoriaModificheService
+
+        partite = (
+            db.session.query(Match)
+            .filter(Match.gara_id == gara_id)
+            .update({Match.has_handicap: value}, synchronize_session=False)
+        )
+        print(f"  partite corrette: {partite}")
+
         if commit:
+            # La voce della storia si scrive solo quando si salva davvero:
+            # `registra` è transazionale, e nella prova a vuoto salverebbe
+            # anche la modifica.
+            StoriaModificheService.registra(
+                cambi={"has_handicap": (old, value)},
+                gara_id=gara_id,
+                provenienza=SettingsChangeSource.SCRIPT,
+                motivo="Correzione dei dati: scripts/set_gara_handicap.py",
+            )
             db.session.commit()
             print("  ✓ Modifica committata.")
         else:

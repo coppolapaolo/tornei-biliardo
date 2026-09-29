@@ -216,6 +216,8 @@ Si sceglie la combinazione con score minimo (lessicografico). La ricomposizione 
 Un **match** è una parte di una gara. È formato da uno o più **set**.
 Il **match** ha una **regola di inizio** e una **regola di apertura**, entrambe ereditate dalla gara a cui appartiene: sul singolo match non si scelgono.
 
+> **Nota (2026-09-29, ADR-075).** «Ereditate» vuol dire **copiate quando il match nasce**, non rilette dalla gara a ogni accesso: vale per le due regole qui sopra e per tutte le regole di gioco del match (distanza, «al N» o «esattamente N», disciplina, triangoli per set, handicap, X con prova, categorie dei giocatori per l'ELO). Un cambio della gara vale così per i match che nasceranno, e un match giocato resta con le regole con cui è stato giocato. Una **correzione** di un dato scritto male (gli script `set_gara_*`, la riassegnazione di un partecipante) invece arriva anche ai match già giocati, e resta nella storia della gara.
+
 La **regola di inizio** dice chi esegue il tiro di apertura del primo rack e può essere:
 - **"primo giocatore"**: apre il primo dei due, senza sorteggio;
 - **"acchito"**: si tira l'acchito. Chi lo vince **sceglie chi** esegue il tiro di apertura, e può scegliere l'avversario. È il default.

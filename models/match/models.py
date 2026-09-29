@@ -155,6 +155,25 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     # seleziona e non la scrive mai. Vedi migrations/20260819.
     handicap_explanation = db.Column(db.String(255), nullable=True)
 
+    # Le regole fissate sulla partita quando nasce (ADR-075). Un cambio di
+    # regola della gara vale dal turno successivo: una partita giocata, o in
+    # corso, resta con le regole con cui è cominciata. Le scrive
+    # `models.match.regole_fissate` alla creazione — per ogni strada, da un
+    # ascoltatore del flush — e la migration 20260929_regole_fissate per le
+    # partite di prima. NULL solo su partite senza gara o mai fissate: allora
+    # si ricade sulla gara, come prima.
+    start_rule = db.Column(db.String(20), nullable=True)
+    break_rule = db.Column(db.String(20), nullable=True)
+    #: Triangoli per set, nelle partite a set. A set unico resta NULL: la
+    #: distanza sta in `match_distance`.
+    set_distance = db.Column(db.Integer, nullable=True)
+    #: Su una X: si sostituisce con una prova? NULL fuori dalle X.
+    x_with_challenge = db.Column(db.Boolean, nullable=True)
+    #: Le categorie dei giocatori (ADR-049), come JSON `{"user_id": id|null}`.
+    #: Decidono se la partita conta per l'ELO in una gara con handicap: fissate
+    #: qui, un ricalcolo non rilegge le categorie di oggi sulle partite di ieri.
+    categories_snapshot = db.Column(db.Text, nullable=True)
+
     # Validazione finale del risultato (nuova UX semplificata)
     player1_confirmed = db.Column(db.Boolean, default=False, nullable=False)
     player2_confirmed = db.Column(db.Boolean, default=False, nullable=False)
@@ -318,12 +337,20 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
 
     @property
     def is_x_with_challenge(self) -> bool:
-        """Questa X si sostituisce con una prova invece di stare fermi."""
+        """Questa X si sostituisce con una prova invece di stare fermi.
+
+        Lo dice la partita, fissato quando è nata (ADR-075): se il direttore
+        passa dalla X secca alla X con prova a gara avviata, le X già date
+        restano quello che erano. Le X di prima della colonna rileggono la gara.
+        """
         from models.matchmaking.configuration import OddNumberPolicy
 
+        if not self.is_bye:
+            return False
+        if self.x_with_challenge is not None:
+            return bool(self.x_with_challenge)
         return bool(
-            self.is_bye
-            and self.gara is not None
+            self.gara is not None
             and self.gara.odd_number_policy == OddNumberPolicy.BYE_WITH_CHALLENGE.value
         )
 
@@ -387,25 +414,32 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
 
     @property
     def effective_start_rule(self):
-        """Regola di inizio effettiva: **sempre** quella della gara (ADR-056).
+        """Regola di inizio: quella fissata sulla partita quando è nata.
 
-        Sul match non c'è un override, ed è una scelta: la regola di inizio e
-        quella di apertura descrivono come si gioca la gara, non come si gioca
-        una singola partita. Un match staccato dalla sua gara ricade sul
-        comportamento storico, apre il primo giocatore: è una partita già
-        giocata, e le domande dell'acchito non hanno più nessuno a cui farle.
+        Fino al 2026-09-29 era **sempre** quella della gara (ADR-056), riletta a
+        ogni accesso: finché la gara non si modificava dopo l'avvio non faceva
+        differenza. Con la modifica tracciata (ADR-075) un cambio vale dal turno
+        successivo, quindi la partita porta con sé la sua. Le partite senza
+        regola fissata ricadono sulla gara; quelle staccate dalla gara sul
+        comportamento storico, apre il primo giocatore.
         """
-        from models.match.break_rules import LEGACY_START_RULE
+        from models.match.break_rules import LEGACY_START_RULE, StartRule
 
+        fissata = StartRule.normalize(self.start_rule)
+        if fissata is not None:
+            return fissata
         if self.gara is not None:
             return self.gara.effective_start_rule
         return LEGACY_START_RULE
 
     @property
     def effective_break_rule(self):
-        """Regola di apertura effettiva: **sempre** quella della gara (ADR-056)."""
-        from models.match.break_rules import DEFAULT_BREAK_RULE
+        """Regola di apertura: fissata sulla partita, come quella di inizio."""
+        from models.match.break_rules import DEFAULT_BREAK_RULE, BreakRule
 
+        fissata = BreakRule.normalize(self.break_rule)
+        if fissata is not None:
+            return fissata
         if self.gara is not None:
             return self.gara.effective_break_rule
         return DEFAULT_BREAK_RULE
@@ -1263,3 +1297,10 @@ class MatchCorrection(TimestampMixin, db.Model):
             f"{self.previous_player1_score}-{self.previous_player2_score} → "
             f"{self.new_player1_score}-{self.new_player2_score}>"
         )
+
+
+# Le regole si fissano sulla partita quando nasce, per ogni strada di
+# creazione (ADR-075): l'ascoltatore del flush sta in `regole_fissate`.
+from .regole_fissate import registra_ascoltatore  # noqa: E402
+
+registra_ascoltatore()

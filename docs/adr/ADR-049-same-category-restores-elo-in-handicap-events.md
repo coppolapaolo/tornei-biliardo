@@ -261,3 +261,15 @@ prima volta.
   `test_categoria_model.py`, `test_categoria_service.py`,
   `test_categorie_routes.py`, più i casi aggiunti a
   `test_rating_idempotency_revert.py`
+
+## Emendamento (2026-09-29, ADR-075)
+
+Le categorie dei giocatori si **fissano sulla partita** quando nasce
+(`Match.categories_snapshot`, JSON `{user_id: categoria_id}`), e
+`RatingEligibility` legge quelle: un ricalcolo dell'ELO non rilegge più le
+categorie di oggi sulle partite di ieri. Le partite di prima le hanno ricevute
+dalla migration `20260929_regole_fissate`, con i valori delle iscrizioni al
+momento del rilascio. Una **correzione** (`CategoriaService` con
+`force=True`: lo script di riparazione e la riassegnazione di un partecipante,
+ADR-048) arriva anche alle partite giocate; un cambio a gara in corso vale per
+le partite che nasceranno.

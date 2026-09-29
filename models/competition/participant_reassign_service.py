@@ -311,6 +311,12 @@ class GaraParticipantReassignService:
         db.session.flush()
         db.session.expire_all()
 
+        # Le categorie fissate sulle partite (ADR-075) seguono chi le ha
+        # giocate davvero: la chiave passa dal sorgente al destinatario.
+        from models.match.regole_fissate import sposta_categoria
+
+        sposta_categoria(gara_id, source_id, target_id)
+
         # Prima del ricalcolo dell'ELO, non dopo: la categoria decide quali
         # partite ci entrano (ADR-049), e il replay del rating è globale.
         report["categoria"]["applied"] = (
@@ -681,15 +687,19 @@ class GaraParticipantReassignService:
             return preview
 
         prima = RatingEligibility.build_index(matches)
-        dopo = dict(prima)
-        dopo[(gara.id, source_id)] = nuovo_id
+        # La categoria nuova scavalca anche quella fissata sulla partita
+        # (ADR-075): la riassegnazione è una correzione, e le partite già
+        # giocate la ricevono (`regole_fissate.correggi_categoria`).
+        sostituita = {(gara.id, source_id): nuovo_id}
 
         for match in matches:
             avversario = (
                 match.player2_id if match.player1_id == source_id else match.player1_id
             )
             motivo_prima = RatingEligibility.exclusion_reason(match, prima)
-            motivo_dopo = RatingEligibility.exclusion_reason(match, dopo)
+            motivo_dopo = RatingEligibility.exclusion_reason(
+                match, prima, sostituite=sostituita
+            )
             if motivo_prima == motivo_dopo:
                 continue
             preview["elo_effect"].append(

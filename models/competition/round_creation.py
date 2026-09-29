@@ -112,6 +112,9 @@ def create_matches_from_pairings(
         "is_multi_set": is_multi_set,
         "is_race_to": is_race_to_override,
         "is_race_to_sets": is_race_to_sets_override,
+        # Nelle partite a set, i triangoli per set del turno (ADR-075): prima
+        # si rileggevano dalla gara, e l'override del turno andava perso.
+        "set_distance": round_distance if is_multi_set else None,
     }
 
     # Quanto vale un tavolino lo dice il value object `Distance`, che è

@@ -124,11 +124,41 @@ class RatingEligibility:
         return row[0] if row else None
 
     @staticmethod
+    def _categorie(
+        match,
+        gara_id: int,
+        player_ids: List[Optional[int]],
+        index: Optional[CategoriaIndex],
+        sostituite: Optional[CategoriaIndex],
+    ) -> List[Optional[int]]:
+        """Le categorie con cui la partita è stata giocata (ADR-075).
+
+        Prima quelle ``sostituite`` (l'anteprima di una correzione), poi quelle
+        **fissate sulla partita** quando è nata, e solo per le partite di prima
+        quelle scritte oggi sulle iscrizioni. Senza la seconda, un ricalcolo
+        dell'ELO rileggerebbe le categorie di oggi sulle partite di ieri.
+        """
+        from models.match.regole_fissate import leggi_categorie
+
+        fissate = leggi_categorie(match)
+        risultato: List[Optional[int]] = []
+        for pid in player_ids:
+            chiave = (gara_id, pid)
+            if sostituite is not None and chiave in sostituite:
+                risultato.append(sostituite[chiave])
+            elif fissate is not None and pid in fissate:
+                risultato.append(fissate[pid])
+            else:
+                risultato.append(RatingEligibility._categoria_id(gara_id, pid, index))
+        return risultato
+
+    @staticmethod
     def exclusion_reason(
         match,
         index: Optional[CategoriaIndex] = None,
         *,
         is_walkover: Optional[bool] = None,
+        sostituite: Optional[CategoriaIndex] = None,
     ) -> Optional[RatingExclusion]:
         """Il motivo per cui questa partita non conta, o ``None`` se conta.
 
@@ -163,9 +193,9 @@ class RatingEligibility:
             # Slot vuoto o bye: non c'è un confronto fra due giocatori.
             return RatingExclusion.HANDICAP_CATEGORY_MISSING
 
-        categorie = [
-            RatingEligibility._categoria_id(gara_id, pid, index) for pid in player_ids
-        ]
+        categorie = RatingEligibility._categorie(
+            match, gara_id, player_ids, index, sostituite
+        )
         if any(cat is None for cat in categorie):
             # «Non lo so» non è «sono uguali»: senza categoria si conserva il
             # comportamento storico, cioè nessun aggiornamento.

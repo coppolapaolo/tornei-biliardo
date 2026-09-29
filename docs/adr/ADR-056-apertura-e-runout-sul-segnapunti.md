@@ -152,6 +152,14 @@ un valore esplicito.
 **A gara cominciata i campi si affossano**, non si avvertono soltanto:
 cambiarli a metà riscriverebbe chi ha aperto i triangoli già giocati.
 
+> **Emendamento (2026-09-29, ADR-075).** Le due regole ora si **fissano sulla
+> partita** quando nasce (`Match.start_rule`, `Match.break_rule`), e la
+> partita non le rilegge più dalla gara: la ragione di sopra — non riscrivere
+> chi ha aperto i triangoli giocati — è ora garantita dal dato, non dal campo
+> affossato. Un cambio della gara vale per le partite che nasceranno. I campi
+> sulla gara si riaprono a gara avviata insieme alle altre regole (passo 3
+> dell'ADR-075).
+
 I campi vivono in schermate che esistono già, mai in pagine nuove:
 
 | Momento | File |
