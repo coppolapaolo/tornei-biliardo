@@ -89,6 +89,10 @@ decide per sé. Una regola sola per tutti i valori.
   iscritti) viene tolto.
 - **Disciplina e distanza** restano come oggi: la gara nuova le copia dalla
   precedente.
+- Due eccezioni, decise dopo la verifica (vedi «Decisioni prese dopo la
+  verifica»): il **sistema di classifica** vale per tutto il campionato e si
+  blocca al primo avvio; **link esterno, link al regolamento e locandina**
+  seguono il campionato in diretta.
 
 ## 3. Playoff
 
@@ -133,7 +137,7 @@ decide per sé. Una regola sola per tutti i valori.
 ### Regolamento di gara
 
 Una pagina pubblica, visibile a tutti, raggiungibile dalla pagina della gara
-e dalla vetrina, dove sostituisce il pulsante del link esterno.
+e dalla vetrina, accanto al pulsante del link esterno, che resta com'è.
 
 1. **In vigore**: ogni impostazione, e se è stata cambiata da quale turno
    vale.
@@ -141,7 +145,8 @@ e dalla vetrina, dove sostituisce il pulsante del link esterno.
    dal turno 4: al 7 (cambiato il 29/09 alle 21:40)».
 3. **Storia delle modifiche**, dalla più recente.
 4. In fondo, se c'è, il pulsante **«Regolamento completo»** verso il documento
-   esterno (il campo «Link esterno» di oggi).
+   del regolamento (il campo nuovo «Link al regolamento», che segue il
+   campionato in diretta come la locandina).
 
 Sulla pagina del campionato, lo stesso per i valori proposti dal campionato e
 per i playoff, con la storia dei playoff.
@@ -262,7 +267,7 @@ affermazioni che toccano una decisione sono state riverificate a mano.
   (casuale), «… del turno 1», «Annulla il sorteggio» (tabellone), «… del turno
   N». Oggi, tornata in iscrizioni aperte con gli iscritti, la gara resta
   comunque bloccata da `can_be_modified`: la struttura diventa davvero
-  modificabile solo col passo 4.
+  modificabile solo quando quel blocco sarà sostituito.
 - **Blocchi da sostituire**: `Gara.can_be_modified()` (`competition/models.py:841`:
   SETUP e **nessuna riga** di iscrizione, ritirati e lista d'attesa compresi),
   controllato in `crud.py:322` e `services.py:312`, e in **7** template (non
@@ -399,7 +404,8 @@ Accorgimenti che discendono dal codice:
 
 - il modulo di modifica promette notifiche (`_gara_edit_form.html:19`, `:41`)
   che nessuno manda; oggi quel testo non si vede mai (la pagina non si apre con
-  degli iscritti), diventerebbe falso col passo 4;
+  degli iscritti), diventerebbe falso appena la modifica con iscritti è
+  permessa;
 - `/aiuto` sui punti per posizione (`creare_un_campionato.yaml:228-229`);
   `abbinamenti.yaml:188-189` («chi spacca? L'app non lo decide») è falso da
   ADR-056;
@@ -414,7 +420,8 @@ Accorgimenti che discendono dal codice:
 - in multi-set il cambio di distanza per turno si perde (i triangoli per set
   si rileggono dalla gara), e i set nascono da `gara.is_race_to` ignorando il
   cambio per turno (`match_service.py:603-610`); i triangoli dei set non
-  salvano chi ha aperto (`set_models.py:220`). Il passo 2 sistema i primi due;
+  salvano chi ha aperto (`set_models.py:220`). Fissare le regole sulla partita
+  sistema i primi due;
 - ogni salvataggio di una gara a tabellone riporta `seeding_rating` a «elo»
   (`form_parser.py`, `_parse_bracket_options`: il modulo non manda il campo);
 - la **bella** del doppio KO: `start_round_generic` rifiuta i turni oltre
@@ -423,7 +430,9 @@ Accorgimenti che discendono dal codice:
 - `cancel_gara`, `soft_delete_gara`, `soft_delete_campionato` ricevono chi
   agisce e lo buttano via.
 
-### Domande aperte
+### Decisioni prese dopo la verifica
+
+Erano le domande aperte da questa verifica; ora sono tutte decise.
 
 1. ~~Gli script di correzione~~ **Decisa il 2026-09-29**: gli script
    `set_gara_discipline.py`, `set_gara_handicap.py` e `set_gara_categorie.py`
@@ -436,10 +445,19 @@ Accorgimenti che discendono dal codice:
    campionato è stata avviata** (anche se ha già iscritti), e il cambio arriva
    a tutte le gare, con la sua voce nella storia di ciascuna. Dopo il primo
    avvio è bloccato. Così la classifica generale somma sempre classifiche
-   dello stesso tipo (`SPECIFICHE.md:294`).
-3. Il link esterno: oggi serve anche per il modulo di pagamento o la pagina
-   della sala, e ha già un'etichetta scelta dal direttore; e, con la
-   locandina, segue il campionato in diretta.
+   dello stesso tipo (`SPECIFICHE.md:294`). Regge anche per i campionati a
+   tabellone: eliminazione diretta e doppio KO, su cui si appoggia anche la
+   FISBB, ammettono solo la classifica a punti per posizione, gli altri
+   formati solo vittorie o triangoli (`matchmaking/configuration.py:35-60`).
+   Nessuna issue a parte.
+3. ~~Il link esterno~~ **Decisa il 2026-09-29**: il **link esterno** resta
+   com'è, in vetrina, con l'etichetta scelta dal direttore (serve anche per il
+   modulo di pagamento o la pagina della sala). Si aggiunge un campo nuovo,
+   **«Link al regolamento»**, solo per il documento del regolamento, mostrato
+   in fondo alla pagina «Regolamento di gara» come «Regolamento completo».
+   Link esterno, link al regolamento e locandina **seguono il campionato in
+   diretta**: sono presentazione, non regole, e restano l'eccezione alla
+   regola dei valori proposti.
 
 ## Documenti da emendare
 
@@ -473,5 +491,6 @@ Accorgimenti che discendono dal codice:
 - Ai giocatori si mandano **notifiche**, non avvisi.
 - Per l'Amalfi non c'è sorteggio: si **avvia** il primo turno. Il gesto per
   cambiare la struttura è **«Annulla l'avvio»**, che esiste già.
-- «Regolamento di gara» riunisce la pagina nuova e il link esterno al
-  regolamento, che oggi si chiama allo stesso modo.
+- «Regolamento di gara» è la pagina nuova; il documento del regolamento ci
+  sta dentro come «Regolamento completo». Il «Link esterno» della vetrina
+  resta un'altra cosa, con l'etichetta del direttore.
