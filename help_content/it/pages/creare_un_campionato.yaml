@@ -80,10 +80,10 @@ blocks:
     text: >-
       Tutte le gare di un campionato usano lo **stesso** sistema di
       classifica, e anche la finale dei playoff quando il suo punteggio si
-      somma a quello della stagione: non si possono sommare mele e pere. Sceglilo con attenzione ora. Puoi cambiarlo solo finché nessuna
-      gara ha aperto le iscrizioni o ha già degli iscritti, e allora il cambio
-      vale per tutte le gare. Dopo non si può più: cambieresti le regole a chi
-      si è iscritto o ha già giocato.
+      somma a quello della stagione: non si possono sommare mele e pere. Sceglilo con attenzione ora. Puoi cambiarlo finché nessuna
+      gara è stata avviata, anche se ha già degli iscritti, e allora il cambio
+      vale per tutte le gare e resta nella storia di ciascuna. Dopo il primo
+      avvio non si può più: cambieresti le regole a chi ha già giocato.
 
   - type: heading
     id: passo2
@@ -102,7 +102,9 @@ blocks:
     text: >-
       Sono **valori di partenza**, non regole ferree: ogni singola gara resta
       modificabile. Servono a non ridigitare le stesse dieci scelte per sei
-      serate.
+      serate. Se più avanti ne cambi uno, l'app ti chiede a quali gare già
+      create, e non ancora avviate, applicarlo: sono già spuntate quelle che
+      avevano il valore di prima.
 
   - type: note
     tone: info
@@ -142,9 +144,9 @@ blocks:
   - type: note
     tone: info
     text: >-
-      Ogni gara può discostarsi, oppure lasciare scritto «eredita dal
-      campionato» e seguirlo anche se un domani lo cambi. La scelta si blocca
-      quando la gara comincia.
+      Ogni gara nasce con la regola del campionato e può discostarsi. Se un
+      domani cambi quella del campionato, l'app ti chiede a quali gare non
+      ancora avviate applicarla: nessuna cambia da sola.
 
   - type: heading
     id: punti_posizione

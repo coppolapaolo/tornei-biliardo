@@ -51,6 +51,30 @@ ETICHETTE: Dict[str, object] = {
     "x_challenge_id": _l("Esercizio al posto della X"),
     "tiebreaker_enabled": _l("Spareggio"),
     "tiebreaker_until_position": _l("Spareggio fino al posto"),
+    # I valori del campionato (quelli proposti alle gare).
+    "campionato_type": _l("Tipo di campionato"),
+    "planned_gare_count": _l("Gare previste"),
+    "challenge_mode": _l("Modalità esercizi"),
+    "default_classification_system": _l("Sistema di classifica"),
+    "default_venue_id": _l("Sala proposta"),
+    "default_entry_fee": _l("Quota proposta"),
+    "default_rounds_count": _l("Turni proposti"),
+    "default_odd_policy": _l("Dispari proposti"),
+    "default_anti_rematch": _l("Anti-reincontro proposto"),
+    "default_start_rule": _l("Chi apre, proposto"),
+    "default_break_rule": _l("Chi spacca, proposto"),
+    "position_points": _l("Punti per posizione"),
+}
+
+#: I valori del campionato si leggono come il campo della gara che propongono.
+_COME_CAMPO_DELLA_GARA = {
+    "default_classification_system": "classification_system",
+    "default_entry_fee": "entry_fee",
+    "default_odd_policy": "odd_number_policy",
+    "default_anti_rematch": "anti_rematch_enabled",
+    "default_start_rule": "start_rule",
+    "default_break_rule": "break_rule",
+    "campionato_type": "matchmaking_strategy",
 }
 
 
@@ -98,6 +122,13 @@ def valore(campo: str, grezzo: str | None) -> str:
         if grezzo is None or grezzo == "":
             return _("come la gara")
         return valore(interno, grezzo)
+    campo = _COME_CAMPO_DELLA_GARA.get(campo, campo)
+    if campo in ("default_venue_id", "billiard_hall_id") and grezzo:
+        from models.base import db
+        from models.location.models import BilliardHall
+
+        sala = db.session.get(BilliardHall, int(grezzo))
+        return sala.name if sala else grezzo
     if grezzo is None or grezzo == "":
         if campo in ("start_rule", "break_rule", "has_handicap"):
             return _("come il campionato")

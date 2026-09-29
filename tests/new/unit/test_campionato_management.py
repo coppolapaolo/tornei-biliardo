@@ -146,8 +146,9 @@ class TestCampionatoModel:
         db_session.add(inscription)
         db_session.commit()
 
-        # Now should not be modifiable
-        assert campionato.can_be_modified() is False
+        # Dal 2026-09-29 (ADR-075) il campionato resta modificabile anche con
+        # gli iscritti: i suoi valori si propongono alle gare, non si impongono.
+        assert campionato.can_be_modified() is True
 
     def test_campionato_can_be_deleted(self, db_session):
         """Test campionato deletion rules."""
@@ -369,7 +370,12 @@ class TestTournamentService:
         assert updated_campionato.challenge_mode is True
 
     def test_update_campionato_with_inscriptions(self, db_session):
-        """Test updating campionato that has inscriptions (should fail)."""
+        """Un campionato con iscritti si modifica lo stesso (ADR-075, 2026-09-29).
+
+        Fino ad allora il primo iscritto bloccava tutto il campionato. Ora la
+        modifica passa e resta scritta nella storia; alle gare già create si
+        propone, non si impone.
+        """
         # Create director and campionato
         unique_id = str(uuid.uuid4())[:8]
         director = User(
@@ -421,13 +427,11 @@ class TestTournamentService:
         db_session.add(inscription)
         db_session.commit()
 
-        # Try to update - should raise ValueError
-        with pytest.raises(ValueError):
-            tournament_service.update_campionato(
-                campionato_id=campionato.id,
-                name="New Name",
-                campionato_type="Round Robin",
-            )
+        updated = tournament_service.update_campionato(
+            campionato_id=campionato.id,
+            name="New Name",
+        )
+        assert updated.name == "New Name"
 
     def test_delete_campionato(self, db_session):
         """Test deleting campionato."""

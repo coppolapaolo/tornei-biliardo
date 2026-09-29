@@ -404,9 +404,8 @@ blocks:
         hint: gara.peso
       - name: "Who breaks"
         text: >-
-          The break rule. «Inherits» means the competition uses the one chosen
-          for the whole championship; if you picked another one when editing
-          the competition, the row says so.
+          The break rule. It starts equal to the championship's; if you picked
+          another one when editing the competition, the row says so.
       - name: "Allowed dates"
         text: >-
           The competitions of a championship stay in order: competition 4

@@ -106,7 +106,7 @@
       <div class="flex-fill" style="min-width:220px">
         <label for="start_rule" class="form-label">{{ _('Regola di inizio') }}</label>
         <select class="form-select" id="start_rule" name="start_rule">
-          {% if gara.campionato %}
+          {% if gara.campionato and gara.start_rule is none %}
           <option value="" {% if gara.start_rule is none %}selected{% endif %}>
             {{ _('Eredita dal campionato') }} ({{ (StartRule.normalize(gara.campionato.default_start_rule) or DEFAULT_START_RULE).display_name }})
           </option>
@@ -119,7 +119,7 @@
       <div class="flex-fill" style="min-width:220px">
         <label for="break_rule" class="form-label">{{ _('Chi spacca') }}</label>
         <select class="form-select" id="break_rule" name="break_rule">
-          {% if gara.campionato %}
+          {% if gara.campionato and gara.break_rule is none %}
           <option value="" {% if gara.break_rule is none %}selected{% endif %}>
             {{ _('Eredita dal campionato') }} ({{ (BreakRule.normalize(gara.campionato.default_break_rule) or BreakRule.ALTERNATE).display_name }})
           </option>
@@ -133,7 +133,7 @@
     <div class="mb-3" style="max-width:320px">
       <label for="has_handicap" class="form-label">{{ _("Gioco con handicap") }}</label>
       <select class="form-select" id="has_handicap" name="has_handicap">
-        {% if gara.campionato %}
+        {% if gara.campionato and gara.has_handicap is none %}
         <option value="" {% if gara.has_handicap is none %}selected{% endif %}>
           {{ _("Eredita dal campionato") }} ({{ _("Sì") if gara.campionato.has_handicap else _("No") }})
         </option>

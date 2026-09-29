@@ -414,9 +414,8 @@ blocks:
         hint: gara.peso
       - name: "Chi spacca"
         text: >-
-          La regola di apertura. «Eredita» vuol dire che la gara usa quella
-          scelta per tutto il campionato; se nella modifica della gara ne hai
-          scelta un'altra, la riga lo dice.
+          La regola di apertura. Nasce uguale a quella del campionato; se nella
+          modifica della gara ne hai scelta un'altra, la riga lo dice.
       - name: "Date ammesse"
         text: >-
           Le gare di un campionato stanno in ordine: la gara 4 non può

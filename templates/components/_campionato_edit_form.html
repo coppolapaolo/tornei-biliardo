@@ -228,9 +228,15 @@
 
             <hr class="my-4">
 
-            <div class="alert alert-warning">
-                <i class="fas fa-exclamation-triangle"></i>
-                <strong>{{ _("Attenzione:") }}</strong> {{ _("Una volta che una gara del campionato avra' delle iscrizioni, non sara' piu' possibile modificare le impostazioni del campionato.") }}
+            <div class="alert alert-info">
+                <i class="fas fa-circle-info"></i>
+                {{ _("Questi sono i valori proposti alle gare nuove. Se ne cambi uno, ti chiederemo a quali gare già create e non ancora avviate applicarlo. Il sistema di classifica vale per tutte le gare, e si cambia finché nessuna è avviata. Ogni modifica resta nella storia del campionato.") }}
+            </div>
+
+            <div class="mb-3">
+                <label for="motivo" class="form-label">{{ _('Motivo della modifica') }} · {{ _('opzionale') }}</label>
+                <textarea class="form-control" id="motivo" name="motivo" rows="2" maxlength="1000"
+                          placeholder="{{ _('Scrivi perché: servirà in caso di contestazioni') }}"></textarea>
             </div>
 
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">

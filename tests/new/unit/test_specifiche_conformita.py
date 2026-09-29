@@ -1297,11 +1297,13 @@ def _gara_del_campionato(db_session, campionato, *, numero: int, stato: str) -> 
 
 @pytest.mark.unit
 class TestUnSoloSistemaDiClassificaPerCampionato:
-    """`SPECIFICHE.md` riga 289.
+    """`SPECIFICHE.md`, sezione del sistema di classifica del campionato.
 
     > Tutte le gare di un campionato devono usare lo stesso sistema di
-    > classifica, compresa la gara di playoff […]. Il sistema si può cambiare
-    > solo finché nessuna gara del campionato ha aperto le iscrizioni […]
+    > classifica, compresa la gara di playoff […]. Il sistema del campionato si
+    > può cambiare finché nessuna gara del campionato è stata **avviata**, anche
+    > se ha già degli iscritti *(modificato il 2026-09-29, ADR-075: prima
+    > bastava una gara con le iscrizioni aperte)* […]
     """
 
     def test_la_gara_di_playoff_eredita_il_sistema_del_campionato(self, db_session):
@@ -1334,13 +1336,12 @@ class TestUnSoloSistemaDiClassificaPerCampionato:
     @pytest.mark.parametrize(
         "stato",
         [
-            GaraStatus.INSCRIPTION.value,
             GaraStatus.PLAYING.value,
             GaraStatus.AWAITING_SSR.value,
             GaraStatus.COMPLETED.value,
         ],
     )
-    def test_aperte_le_iscrizioni_il_sistema_non_si_cambia(self, db_session, stato):
+    def test_avviata_una_gara_il_sistema_non_si_cambia(self, db_session, stato):
         from models import Campionato
         from models.campionato.tournament_service import TournamentService
         from models.exceptions import ValidationError
@@ -1363,23 +1364,27 @@ class TestUnSoloSistemaDiClassificaPerCampionato:
         assert rimasto.default_classification_system == "WINS"
         assert {g.classification_system for g in rimasto.gare} == {"WINS"}
 
-    def test_una_gara_ancora_da_aprire_con_iscritti_blocca_il_cambio(self, db_session):
-        """Gli iscritti ci sono anche prima dell'apertura: la gara di playoff li
-        riceve dagli inviti, e il direttore aggiunge giocatori a mano."""
+    def test_con_iscritti_ma_senza_avvio_il_cambio_arriva_alla_gara(self, db_session):
+        """Emendata il 2026-09-29 (ADR-075): gli iscritti non bloccano più il
+        cambio, lo blocca il primo avvio. Il cambio arriva alla gara e resta
+        nella sua storia."""
         from models.campionato.tournament_service import TournamentService
-        from models.exceptions import ValidationError
 
         campionato = _campionato(db_session, "WINS")
         gara = _gara_del_campionato(
-            db_session, campionato, numero=1, stato=GaraStatus.SETUP.value
+            db_session, campionato, numero=1, stato=GaraStatus.INSCRIPTION.value
         )
         db_session.add(Inscription(user_id=_utente(db_session).id, gara_id=gara.id))
         db_session.commit()
 
-        with pytest.raises(ValidationError):
-            TournamentService().update_campionato(
-                campionato_id=campionato.id, default_classification_system="RACK"
-            )
+        TournamentService().update_campionato(
+            campionato_id=campionato.id, default_classification_system="RACK"
+        )
+        db_session.expire_all()
+        assert db_session.get(type(gara), gara.id).classification_system in (
+            "RACK",
+            "RACKS",
+        )
 
     def test_prima_delle_iscrizioni_il_cambio_arriva_a_tutte_le_gare(self, db_session):
         from models import Campionato

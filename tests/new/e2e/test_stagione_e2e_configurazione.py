@@ -108,8 +108,9 @@ class TestLeQuattroGare:
             # Il numero di rack è **esatto**, non un traguardo.
             assert gara.is_race_to is False, quale
             assert gara.is_multi_set is False, quale
-            # «Eredita dal campionato», che non è «no».
-            assert gara.has_handicap is None, quale
+            # Copiato dal campionato quando la gara nasce (ADR-075,
+            # 2026-09-29): prima restava «eredita», cioè None.
+            assert gara.has_handicap is True, quale
             assert gara.effective_has_handicap is True, quale
 
     def test_ogni_gara_ha_la_sua_disciplina_e_la_sua_distanza(

@@ -190,12 +190,33 @@ class TournamentService(TournamentStatisticsService):
         return campionato
 
     @transactional(domain="campionato")
-    def update_campionato(self, campionato_id: int, **kwargs: Any) -> Campionato:
-        """Aggiorna un campionato con i campi forniti."""
+    def update_campionato(
+        self,
+        campionato_id: int,
+        autore: Any = None,
+        motivo: Optional[str] = None,
+        **kwargs: Any,
+    ) -> Campionato:
+        """Aggiorna un campionato con i campi forniti, e lo scrive nella storia.
+
+        Fino al 2026-09-29 bastava una gara con iscrizioni aperte, in corso o
+        conclusa per bloccare tutto il campionato. Ora (ADR-075) si modifica
+        sempre: i suoi valori sono quelli **proposti** alle gare, e cambiarli
+        non tocca le gare già create — a quelle l'app li propone
+        (`models/campionato/proposte.py`). Il sistema di classifica fa
+        eccezione: vale per tutto il campionato e si blocca al primo avvio.
+        """
+        from models.storia.models import SettingsChangeSource
+        from models.storia.service import StoriaModificheService
 
         campionato = db.session.get(Campionato, campionato_id)
         if not campionato:
             raise NotFoundError("Campionato not found")
+        prima = {
+            campo: getattr(campionato, campo)
+            for campo in kwargs
+            if hasattr(campionato, campo)
+        }
 
         # Il form rimanda sempre il sistema: conta solo se cambia davvero.
         from models.status_enum import ClassificationSystem
@@ -207,19 +228,23 @@ class TournamentService(TournamentStatisticsService):
         if cambia_sistema:
             self._verifica_cambio_sistema(campionato)
 
-        if not campionato.can_be_modified():
-            raise ValueError(
-                "Impossibile modificare il campionato: "
-                "alcune gare hanno già delle iscrizioni!"
-            )
-
         # Aggiorna solo i campi forniti
         for field, value in kwargs.items():
             if hasattr(campionato, field):
                 setattr(campionato, field, value)
 
         if cambia_sistema:
-            self._propaga_sistema(campionato)
+            self._propaga_sistema(campionato, autore=autore, motivo=motivo)
+
+        StoriaModificheService.registra(
+            cambi={
+                campo: (prima[campo], getattr(campionato, campo)) for campo in prima
+            },
+            campionato_id=campionato.id,
+            autore=autore,
+            motivo=motivo,
+            provenienza=SettingsChangeSource.CAMPIONATO,
+        )
 
         campionato.updated_at = utc_now()
         return campionato
@@ -241,33 +266,33 @@ class TournamentService(TournamentStatisticsService):
 
     @classmethod
     def _verifica_cambio_sistema(cls, campionato: Campionato) -> None:
-        """Il sistema di classifica si cambia solo prima delle iscrizioni.
+        """Il sistema di classifica si cambia finché nessuna gara è avviata.
 
-        Aperte le iscrizioni — o arrivato anche un solo iscritto, come in una
-        gara di playoff o per mano del direttore — cambiarlo vorrebbe dire
-        cambiare le regole a chi si è iscritto o ha già giocato
-        (SPECIFICHE.md riga 289).
-
-        Il controllo generale `can_be_modified` oggi blocca già quei casi, ma
-        per tutta la modifica e con un messaggio che non nomina il sistema:
-        questo resta anche se quel lucchetto un giorno si allenta.
+        È l'unico valore del campionato che vale per **tutte** le sue gare: la
+        classifica generale somma le classifiche delle gare, e devono essere
+        dello stesso tipo (SPECIFICHE.md, «Tutte le gare di un campionato
+        devono usare lo stesso sistema»). Fino al 2026-09-29 si bloccava alla
+        prima gara con le iscrizioni aperte; ora (ADR-075) al primo avvio,
+        anche se le gare hanno già iscritti: il cambio arriva a tutte, e resta
+        nella storia di ciascuna.
         """
         from flask_babel import gettext as _
-        from models.status_enum import GaraStatus
+        from models.competition.campi_modificabili import e_avviata
 
         for gara in cls._gare_col_sistema_del_campionato(campionato):
-            if gara.status != GaraStatus.SETUP.value or gara.inscriptions:
+            if e_avviata(gara):
                 raise ValidationError(
                     _(
                         "Il sistema di classifica non si può più cambiare: la "
-                        "gara «%(gara)s» ha già aperto le iscrizioni o ha degli "
-                        "iscritti.",
+                        "gara «%(gara)s» è già avviata.",
                         gara=gara.name,
                     )
                 )
 
     @classmethod
-    def _propaga_sistema(cls, campionato: Campionato) -> None:
+    def _propaga_sistema(
+        cls, campionato: Campionato, autore: Any = None, motivo: Any = None
+    ) -> None:
         """Porta il sistema nuovo del campionato a tutte le sue gare.
 
         Arrivati qui sono tutte da aprire. Una gara che col sistema nuovo non
@@ -279,10 +304,21 @@ class TournamentService(TournamentStatisticsService):
         from models.competition.validators import validate_gara
         from models.matchmaking.configuration import resolve_classification_system
 
+        from models.storia.models import SettingsChangeSource
+        from models.storia.service import StoriaModificheService
+
         sistema = campionato.classification_system.value
         for gara in cls._gare_col_sistema_del_campionato(campionato):
+            vecchio = gara.classification_system
             gara.classification_system = resolve_classification_system(
                 gara.matchmaking_strategy, sistema
+            )
+            StoriaModificheService.registra(
+                cambi={"classification_system": (vecchio, gara.classification_system)},
+                gara_id=gara.id,
+                autore=autore,
+                motivo=motivo,
+                provenienza=SettingsChangeSource.CAMPIONATO,
             )
             errori, _avvisi = validate_gara(gara)
             if errori:
