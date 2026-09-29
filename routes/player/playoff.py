@@ -75,3 +75,17 @@ def playoff_decline(qualification_id):
         flash(str(ve), "error")
 
     return redirect(url_for("dashboard.dashboard"))
+
+
+@player_bp.route("/playoff/riconferma/<int:qualification_id>", methods=["POST"])
+@login_required
+def playoff_riconferma(qualification_id):
+    """Chi ha accettato l'invito dice che c'è ancora, dopo un cambio (ADR-075)."""
+    from models.competition.riconferma import riconferma_invito
+
+    qual = db.session.get(PlayoffQualification, qualification_id)
+    if not qual or qual.user_id != current_user.id:
+        abort(404)
+    riconferma_invito(qual.id, autore=current_user)
+    flash(_("Grazie: la tua partecipazione è confermata."), "success")
+    return redirect(url_for("player.playoff_invitation", qualification_id=qual.id))

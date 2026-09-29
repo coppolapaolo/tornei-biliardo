@@ -10,6 +10,7 @@ from flask import (
     url_for,
     flash,
     jsonify,
+    abort,
 )
 from flask_login import login_required, current_user
 from flask_babel import _, ngettext
@@ -18,6 +19,7 @@ from models import (
     db,
     Campionato,
     Gara,
+    Inscription,
 )
 from models.status_enum import Discipline, GaraStatus
 from models.competition.models import WithdrawPolicy
@@ -316,6 +318,33 @@ def _avviso_in_attesa(gara_id: int):
     from models.storia.avvisi import AvvisiModifiche
 
     return AvvisiModifiche.in_attesa(gara_id)
+
+
+@competition_bp.route(
+    "/<int:gara_id>/iscrizione/<int:inscription_id>/riconferma", methods=["POST"]
+)
+@login_required
+@gara_manager_required
+def riconferma_per_conto(gara_id, inscription_id):
+    """Il direttore riconferma al posto del giocatore; resta nella storia."""
+    from models.competition.riconferma import riconferma
+
+    inscription = db.get_or_404(Inscription, inscription_id)
+    if inscription.gara_id != gara_id:
+        abort(404)
+    try:
+        riconferma(inscription.id, autore=current_user)
+        flash(
+            _(
+                "Iscrizione di %(nome)s riconfermata: resta scritto che l'hai "
+                "fatto tu.",
+                nome=inscription.user.username,
+            ),
+            "success",
+        )
+    except ValueError as errore:
+        flash(str(errore), "error")
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
 
 @competition_bp.route("/<int:gara_id>/avviso/invia", methods=["POST"])

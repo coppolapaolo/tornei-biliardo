@@ -1080,6 +1080,18 @@ class Inscription(db.Model):
     is_withdrawn = db.Column(db.Boolean, default=False, nullable=False)
     withdrawn_at = db.Column(db.DateTime, nullable=True)
 
+    #: Le condizioni che il giocatore ha accettato (data, ora, sala, quota),
+    #: in JSON: si scrivono quando l'iscrizione nasce e quando riconferma.
+    #: Se quelle della gara cambiano oltre soglia, gli si chiede se c'è ancora
+    #: (ADR-075, `models/competition/riconferma.py`).
+    accepted_terms = db.Column(db.Text, nullable=True)
+
+    @property
+    def campi_da_riconfermare(self) -> list:
+        from .riconferma import da_riconfermare
+
+        return da_riconfermare(self)
+
     # Forfait status (for withdraw policy handling)
     is_forfeit = db.Column(db.Boolean, default=False, nullable=False)
     forfeit_at = db.Column(db.DateTime, nullable=True)
@@ -1128,3 +1140,10 @@ class Inscription(db.Model):
 
     def __repr__(self):
         return f"<Inscription {self.user_id} -> {self.gara_id}>"
+
+
+# Un'iscrizione ricorda le condizioni che il giocatore ha accettato, per ogni
+# strada di creazione (ADR-075): l'ascoltatore sta in `riconferma`.
+from .riconferma import registra_ascoltatore  # noqa: E402
+
+registra_ascoltatore()

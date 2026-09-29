@@ -54,6 +54,23 @@
         <span class="c7-flash__ico"><i class="fas fa-check"></i></span>
         <span class="c7-flash__body">{{ _("Hai confermato la partecipazione.") }}</span>
     </div>
+    {# Data, sala o quota cambiate dopo il sì (ADR-075): ci sei ancora? #}
+    {% if qualification.campi_da_riconfermare %}
+    <div class="c7-flash c7-flash--warn" style="margin-top: 12px;">
+        <span class="c7-flash__ico"><i class="fas fa-circle-question"></i></span>
+        <div class="c7-flash__body">
+            <div class="c7-flash__title">{{ _("I playoff sono cambiati: ci sei ancora?") }}</div>
+            <div class="c7-flash__text">
+                {% for campo in qualification.campi_da_riconfermare %}{{ etichetta_storia(campo) }}{% if not loop.last %}, {% endif %}{% endfor %}.
+                {{ _("Se ci sei, confermalo. Finché non rispondi resti dentro, e decide il direttore.") }}
+            </div>
+            <form method="POST" action='{{ url_for("player.playoff_riconferma", qualification_id=qualification.id) }}' class="mt-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> {{ _("Ci sono") }}</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
 
     {% elif qualification.status.value == 'declined' %}
     <div class="c7-flash c7-flash--info" style="margin-top: 18px;">

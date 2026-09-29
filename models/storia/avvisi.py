@@ -223,12 +223,20 @@ class AvvisiModifiche:
         tipo = NotificationType.GARA_MODIFICATA
         restano: List[int] = []
         arrivate = 0
+        # Chi deve riconfermare (data, orario, sala, quota in aumento) lo
+        # legge nella stessa notifica: una sola richiesta, non due messaggi.
+        da_chiedere = {
+            i.user_id
+            for i in Inscription.query.filter_by(gara_id=gara.id, is_withdrawn=False)
+            if i.campi_da_riconfermare
+        }
         for user_id in destinatari:
+            chiedi = user_id in da_chiedere
             notifica = NotificationService.create_notification(
                 user_id=user_id,
                 notification_type=tipo,
                 title=lambda: _titolo(gara),
-                message=lambda: _messaggio(righe),
+                message=lambda chiedi=chiedi: _messaggio(righe, chiedi),
                 priority=NotificationPriority.NORMAL,
                 related_entities={"gara_id": gara.id},
                 action_url=f"/gara/{gara.id}",
@@ -274,14 +282,22 @@ def _titolo(gara: Any) -> str:
     return _("%(gara)s è cambiata", gara=gara.display_name)
 
 
-def _messaggio(righe: List[Tuple[str, str, str]]) -> str:
+def _messaggio(righe: List[Tuple[str, str, str]], chiedi: bool = False) -> str:
     """Le righe nella lingua di chi riceve: si compone dentro la sua lingua."""
+    from flask_babel import gettext as _
+
     from .etichette import etichetta, valore
 
-    return "\n".join(
+    testo = "\n".join(
         f"{etichetta(campo)}: {valore(campo, prima)} → {valore(campo, dopo)}"
         for campo, prima, dopo in righe
     )
+    if chiedi:
+        testo += "\n" + _(
+            "Ci sei ancora? Apri la gara e confermalo: finché non rispondi resti "
+            "iscritto, e decide il direttore."
+        )
+    return testo
 
 
 __all__ = ["SettingsNotice", "AvvisiModifiche", "righe_da_annunciare"]

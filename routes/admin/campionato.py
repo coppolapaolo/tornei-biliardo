@@ -1190,6 +1190,34 @@ def playoff_edit_config(campionato_id, config_id):
 
 
 @campionato_bp.route(
+    "/<int:campionato_id>/playoff/<int:config_id>/riconferma", methods=["POST"]
+)
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def playoff_riconferma_per_conto(campionato_id, config_id):
+    """Il direttore riconferma l'invito accettato al posto del giocatore."""
+    from models.competition.riconferma import riconferma_invito
+    from models.playoff.models import PlayoffQualification
+
+    ritorno = url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    qual = db.session.get(
+        PlayoffQualification, request.form.get("qualification_id", type=int)
+    )
+    if (
+        qual is None
+        or qual.configuration_id != config_id
+        or qual.configuration.campionato_id != campionato_id
+    ):
+        flash(_("Invito non trovato."), "error")
+        return redirect(ritorno)
+    riconferma_invito(qual.id, autore=current_user)
+    flash(
+        _("Partecipazione riconfermata: resta scritto che l'hai fatto tu."), "success"
+    )
+    return redirect(ritorno)
+
+
+@campionato_bp.route(
     "/<int:campionato_id>/playoff/<int:config_id>/proposta-inviti", methods=["POST"]
 )
 @login_required

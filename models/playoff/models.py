@@ -495,6 +495,17 @@ class PlayoffQualification(BaseModel):
     # sarebbero indistinguibili, e in una lista di sei qualificati «confermato»
     # non direbbe più da chi.
     responded_by_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    #: Le condizioni dei playoff quando il giocatore ha accettato (ADR-075):
+    #: se data, sala o quota cambiano prima che la finale nasca, gli si chiede
+    #: se c'è ancora (`models/competition/riconferma.py`).
+    accepted_terms = db.Column(db.Text, nullable=True)
+
+    @property
+    def campi_da_riconfermare(self) -> list:
+        from ..competition.riconferma import invito_da_riconfermare
+
+        return invito_da_riconfermare(self)
+
     # Legacy field (kept for compatibility)
     notified_at = db.Column(db.DateTime, nullable=True)  # Deprecated: use invited_at
 
@@ -528,6 +539,10 @@ class PlayoffQualification(BaseModel):
 
         self.status = QualificationStatus.CONFIRMED
         self.responded_at = utc_now()
+        if self.configuration is not None:
+            from ..competition.riconferma import scrivi, termini_della_config
+
+            self.accepted_terms = scrivi(termini_della_config(self.configuration))
         self.responded_by_id = (
             responded_by_id if responded_by_id is not None else self.user_id
         )
