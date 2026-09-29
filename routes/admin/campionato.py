@@ -892,6 +892,40 @@ def start_playoff(campionato_id):
     )
 
 
+def _config_del_campionato(campionato_id: int, config_id: int):
+    """La configurazione playoff, se appartiene al campionato dell'indirizzo.
+
+    Il permesso si controlla sul campionato dell'indirizzo: una configurazione
+    di un altro campionato, passata come numero, non va toccata. Altrimenti il
+    direttore di un campionato agirebbe sui playoff di un altro cambiando un
+    numero nell'indirizzo. In quel caso dice «non trovata» e torna ``None``.
+    """
+    from models.playoff.models import PlayoffConfiguration
+
+    config = db.session.get(PlayoffConfiguration, config_id)
+    if not config or config.campionato_id != campionato_id:
+        flash(_("Configurazione playoff non trovata."), "error")
+        return None
+    return config
+
+
+def _invito_della_config(config_id: int, qualification_id: int):
+    """L'invito, se appartiene alla configurazione dell'indirizzo; o ``None``."""
+    from models.playoff.models import PlayoffQualification
+
+    qualifica = db.session.get(PlayoffQualification, qualification_id)
+    if not qualifica or qualifica.configuration_id != config_id:
+        flash(_("Invito non trovato."), "error")
+        return None
+    return qualifica
+
+
+def _alla_pagina_del_campionato(campionato_id: int):
+    return redirect(
+        url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    )
+
+
 @campionato_bp.route(
     "/<int:campionato_id>/playoff/<int:config_id>/calendario", methods=["POST"]
 )
@@ -970,6 +1004,9 @@ def create_playoff_gara(campionato_id, config_id):
 @campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def playoff_add_player(campionato_id, config_id):
     """Aggiunge manualmente un giocatore alla lista playoff."""
+    if _config_del_campionato(campionato_id, config_id) is None:
+        return _alla_pagina_del_campionato(campionato_id)
+
     from models.playoff.services import PlayoffService
 
     user_id = request.form.get("user_id", type=int)
@@ -1003,6 +1040,9 @@ def playoff_add_player(campionato_id, config_id):
 @campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def playoff_remove_player(campionato_id, config_id):
     """Rimuove un giocatore dalla lista playoff."""
+    if _config_del_campionato(campionato_id, config_id) is None:
+        return _alla_pagina_del_campionato(campionato_id)
+
     from models.playoff.services import PlayoffService
 
     qualification_id = request.form.get("qualification_id", type=int)
@@ -1011,6 +1051,9 @@ def playoff_remove_player(campionato_id, config_id):
         return redirect(
             url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
         )
+
+    if _invito_della_config(config_id, qualification_id) is None:
+        return _alla_pagina_del_campionato(campionato_id)
 
     try:
         PlayoffService.admin_remove_player(
@@ -1035,6 +1078,9 @@ def playoff_remove_player(campionato_id, config_id):
 @campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def playoff_respond_for_player(campionato_id, config_id):
     """Registra la risposta che un qualificato ha dato a voce al direttore."""
+    if _config_del_campionato(campionato_id, config_id) is None:
+        return _alla_pagina_del_campionato(campionato_id)
+
     from models.playoff.services import PlayoffService
 
     qualification_id = request.form.get("qualification_id", type=int)
@@ -1045,6 +1091,9 @@ def playoff_respond_for_player(campionato_id, config_id):
         return redirect(
             url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
         )
+
+    if _invito_della_config(config_id, qualification_id) is None:
+        return _alla_pagina_del_campionato(campionato_id)
 
     try:
         replacement = PlayoffService.respond_on_behalf(
@@ -1087,6 +1136,9 @@ def playoff_respond_for_player(campionato_id, config_id):
 @campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def playoff_update_scoring(campionato_id, config_id):
     """Decide se la classifica finale è quella dei playoff, e con che peso."""
+    if _config_del_campionato(campionato_id, config_id) is None:
+        return _alla_pagina_del_campionato(campionato_id)
+
     from models.playoff.services import PlayoffService
 
     try:
@@ -1113,6 +1165,9 @@ def playoff_update_scoring(campionato_id, config_id):
 @campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def playoff_edit_config(campionato_id, config_id):
     """Modifica una configurazione playoff (solo pre-avvio)."""
+    if _config_del_campionato(campionato_id, config_id) is None:
+        return _alla_pagina_del_campionato(campionato_id)
+
     from models.playoff.services import PlayoffService
 
     fields = {}
@@ -1354,6 +1409,9 @@ def playoff_add_config(campionato_id):
 @campionato_manager_required(lambda campionato_id, **_: campionato_id)
 def playoff_deactivate_config(campionato_id, config_id):
     """Disattiva una configurazione playoff."""
+    if _config_del_campionato(campionato_id, config_id) is None:
+        return _alla_pagina_del_campionato(campionato_id)
+
     from models.playoff.services import PlayoffService
 
     try:
