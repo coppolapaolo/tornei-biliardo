@@ -5,6 +5,9 @@
    classification_system, trio_warning, strategy_description. #}
 <form action="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" method="POST" class="c7-stack" style="gap:16px">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {# Lo stato che il modulo mostra adesso (ADR-075): al salvataggio dice quali
+     campi sono stati cambiati, e se qualcun altro li ha toccati nel frattempo. #}
+  <input type="hidden" name="stato_iniziale" value='{{ stato_iniziale|tojson }}'>
 
   {# Avviso in testa: quanti iscritti ci sono gia'. #}
   {% set iscritti = gara.get_active_inscriptions_count() %}
@@ -16,7 +19,7 @@
         {{ ngettext('%(num)d giocatore già iscritto', '%(num)d giocatori già iscritti', iscritti, num=iscritti) }}
       </div>
       <div class="c7-flash__text">
-        {{ _('Una volta avviato il primo turno la gara non sarà più modificabile. Cambiando data o sala gli iscritti ricevono una notifica.') }}
+        {{ _("Fino all'avvio del primo turno si può cambiare tutto. Ogni modifica resta nella storia della gara, visibile in fondo a questa pagina, e gli iscritti ricevono una notifica: le modifiche ravvicinate arrivano insieme.") }}
       </div>
     </div>
   </div>
@@ -37,9 +40,6 @@
         <label for="date" class="form-label">{{ _('Data') }}</label>
         <input type="date" class="form-control" id="date" name="date"
                value="{{ gara.date.isoformat() if gara.date else '' }}" required>
-        {% if iscritti > 0 %}
-        <div class="form-text"><i class="fas fa-bell" style="font-size:10px"></i> {{ _('Gli iscritti riceveranno una notifica') }}</div>
-        {% endif %}
       </div>
       <div style="width:140px">
         <label for="time" class="form-label">{{ _('Ora') }}</label>
@@ -142,9 +142,11 @@
       {% if gara.campionato %}
       <label for="has_handicap" class="form-label">{{ _("Gioco con handicap") }}</label>
       <select class="form-select" id="has_handicap" name="has_handicap">
-        <option value="" {% if gara.has_handicap is none %}selected{% endif %}>
+        {% if gara.has_handicap is none %}
+        <option value="" selected>
           {{ _("Eredita dal campionato") }} ({{ _("Sì") if gara.campionato.has_handicap else _("No") }})
         </option>
+        {% endif %}
         <option value="true" {% if gara.has_handicap is true %}selected{% endif %}>{{ _("Sì") }}</option>
         <option value="false" {% if gara.has_handicap is false %}selected{% endif %}>{{ _("No") }}</option>
       </select>
@@ -282,13 +284,13 @@
        (Oggi la rotta di modifica si chiude già prima, alla prima iscrizione;
        la difesa resta perché il giorno in cui quel cancello si allarga questo
        non deve cedere con lui.) #}
-    {% set regole_modificabili = gara.can_be_modified() %}
+    {% set regole_modificabili = not gara.is_avviata %}
     <div class="d-flex gap-3 flex-wrap mt-3">
       <div class="flex-fill" style="min-width:220px">
         <label for="start_rule" class="form-label">{{ _('Regola di inizio') }}</label>
         {% if regole_modificabili %}
         <select class="form-select" id="start_rule" name="start_rule">
-          {% if gara.campionato %}
+          {% if gara.campionato and gara.start_rule is none %}
           <option value="" {% if gara.start_rule is none %}selected{% endif %}>
             {{ _('Eredita dal campionato') }} ({{ (StartRule.normalize(gara.campionato.default_start_rule) or DEFAULT_START_RULE).display_name }})
           </option>
@@ -309,7 +311,7 @@
         <label for="break_rule" class="form-label">{{ _('Chi spacca') }}</label>
         {% if regole_modificabili %}
         <select class="form-select" id="break_rule" name="break_rule">
-          {% if gara.campionato %}
+          {% if gara.campionato and gara.break_rule is none %}
           <option value="" {% if gara.break_rule is none %}selected{% endif %}>
             {{ _('Eredita dal campionato') }} ({{ (BreakRule.normalize(gara.campionato.default_break_rule) or BreakRule.ALTERNATE).display_name }})
           </option>
@@ -389,6 +391,13 @@
     </div>
   </div>
 
+  <div class="c7-card">
+    <label for="motivo" class="form-label">{{ _('Motivo della modifica') }} · {{ _('opzionale') }}</label>
+    <textarea class="form-control" id="motivo" name="motivo" rows="2" maxlength="1000"
+              placeholder="{{ _('Scrivi perché: servirà in caso di contestazioni') }}"></textarea>
+    <div class="form-text">{{ _('Compare nella storia della gara, con il tuo nome e l\'ora.') }}</div>
+  </div>
+
   <div class="d-flex gap-2 justify-content-end">
     <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary">{{ _('Annulla') }}</a>
     <button type="submit" class="btn btn-primary">
@@ -396,6 +405,9 @@
     </button>
   </div>
 </form>
+
+{% include "components/_avviso_in_attesa.html" %}
+{% include "components/_storia_modifiche.html" %}
 
 {# `data-help-capture-hide`: escluso dalle schermate della guida (vedi
    scripts/help_docs/capture_screenshots.py). #}

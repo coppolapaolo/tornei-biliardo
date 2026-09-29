@@ -60,6 +60,21 @@ def _third_place_applies(strategy: str, double_ko_rounds: Optional[int]) -> bool
 # senza passare da questo form.
 _bracket_derived_fields = bracket_derived_fields
 
+#: In modifica, questi campi assenti dal modulo restano come sono invece di
+#: prendere il valore predefinito. Sono quelli con un valore di ripiego nel
+#: parser: le caselle da spuntare no, perché per loro «assente» vuol dire
+#: «non spuntata».
+_CAMPI_ASSENTI_NON_SI_TOCCANO = (
+    "seeding_rating",
+    "first_round_policy",
+    "odd_number_policy",
+    "tiebreaker_until_position",
+    "rounds_count",
+    "min_participants",
+    "entry_fee",
+    "withdraw_policy",
+)
+
 
 class GaraFormParser:
     """Extract and validate gara form fields from a Flask request.
@@ -231,12 +246,160 @@ class GaraFormParser:
             request.form.get("tiebreaker_until_position", 3)
         )
 
+        # In modifica, un campo che il modulo non manda vuol dire «non
+        # toccare», come per chi apre e chi spacca: rimettere il valore
+        # predefinito cambierebbe la gara senza che nessuno l'abbia chiesto —
+        # ed è ciò che succedeva al criterio di sorteggio del tabellone, che
+        # il modulo non mostra e ogni salvataggio riportava a «elo». Ora
+        # quella modifica finirebbe anche nella storia, a nome del direttore.
+        if self.gara is not None:
+            for campo in _CAMPI_ASSENTI_NON_SI_TOCCANO:
+                if campo not in request.form and hasattr(self.gara, campo):
+                    data[campo] = getattr(self.gara, campo)
+            if (
+                "odd_number_policy" not in request.form
+                and "x_challenge_id" not in request.form
+                and hasattr(self.gara, "x_challenge_id")
+            ):
+                data["x_challenge_id"] = self.gara.x_challenge_id
+
         # Ultimo passaggio: sul tabellone alcune di queste impostazioni sono
         # conseguenze, non scelte. Le si impone qui — dopo che tutto il resto
         # è stato letto — così una gara resta coerente anche se il form arriva
         # da una schermata vecchia o con il JavaScript spento.
         data.update(_bracket_derived_fields(data))
 
+        return data
+
+    #: I campi che il modulo di modifica può cambiare, oltre a quelli letti da
+    #: `parse`: nome e sala li legge la route.
+    CAMPI_DEL_MODULO = (
+        "name",
+        "location",
+        "date",
+        "time",
+        "available_tables",
+        "description",
+        "rounds_count",
+        "min_participants",
+        "max_participants",
+        "entry_fee",
+        "discipline",
+        "distance",
+        "is_race_to",
+        "withdraw_policy",
+        "is_multi_set",
+        "match_distance",
+        "is_race_to_sets",
+        "has_handicap",
+        "start_rule",
+        "break_rule",
+        "matchmaking_strategy",
+        "anti_rematch_enabled",
+        "odd_number_policy",
+        "first_round_policy",
+        "classification_system",
+        "separate_teammates",
+        "third_place_match",
+        "seeding_rating",
+        "double_ko_rounds",
+        "weight",
+        "x_challenge_id",
+        "tiebreaker_enabled",
+        "tiebreaker_until_position",
+    )
+
+    @staticmethod
+    def valori_attuali(gara: Any) -> Dict[str, str]:
+        """Ciò che il modulo mostra, nella forma con cui la storia confronta.
+
+        Viaggia nel modulo come «stato iniziale»: al salvataggio dice quali
+        campi il direttore ha cambiato davvero, e se qualcun altro li ha
+        cambiati nel frattempo (ADR-075).
+        """
+        from models.storia.service import serializza
+
+        valori: Dict[str, str] = {}
+        for campo in GaraFormParser.CAMPI_DEL_MODULO:
+            if campo == "available_tables":
+                valori[campo] = serializza(gara.get_available_tables())
+            else:
+                valori[campo] = serializza(getattr(gara, campo, None))
+        return valori
+
+    @staticmethod
+    def campi_cambiati(
+        data: Dict[str, Any], originali: Optional[Dict[str, str]]
+    ) -> Dict[str, Any]:
+        """Solo i campi il cui valore differisce da quello mostrato dal modulo.
+
+        Senza «stato iniziale» (un modulo aperto prima di questa versione) si
+        passano tutti, come prima: il servizio scrive comunque nella storia
+        solo ciò che cambia davvero.
+        """
+        from models.storia.service import serializza
+
+        if not originali:
+            return dict(data)
+        return {
+            campo: valore
+            for campo, valore in data.items()
+            if campo not in originali or serializza(valore) != originali[campo]
+        }
+
+    def parse_a_gara_avviata(self, ammessi: Any) -> Dict[str, Any]:
+        """I campi della pagina «gara avviata»: solo quelli ammessi e presenti.
+
+        La pagina mostra solo ciò che a gara avviata si può ancora cambiare
+        (`models.competition.campi_modificabili`). Qui si legge quello e basta:
+        un campo che la pagina non mostra non c'è, e resta com'è.
+        """
+        form = request.form
+        data: Dict[str, Any] = {}
+        gara = self.gara
+
+        if "date" in ammessi and form.get("date"):
+            data["date"] = datetime.strptime(form["date"], "%Y-%m-%d").date()
+        if "time" in ammessi and form.get("time"):
+            data["time"] = datetime.strptime(form["time"], "%H:%M").time()
+        if "description" in ammessi and "description" in form:
+            data["description"] = form.get("description", "").strip()
+        if "entry_fee" in ammessi and form.get("entry_fee", "").strip():
+            data["entry_fee"] = float(form["entry_fee"])
+
+        if "distance" in ammessi and form.get("distance"):
+            data["distance"] = int(form["distance"])
+            if "is_race_to" in ammessi:
+                data["is_race_to"] = "exact_number" not in form
+        if "discipline" in ammessi and form.get("discipline"):
+            data["discipline"] = form["discipline"]
+        for campo, enum_cls in (("start_rule", StartRule), ("break_rule", BreakRule)):
+            if campo in ammessi and campo in form:
+                scelta = enum_cls.normalize(form.get(campo, ""))
+                data[campo] = scelta.value if scelta is not None else None
+        if "has_handicap" in ammessi and "has_handicap" in form:
+            grezzo = form.get("has_handicap", "")
+            data["has_handicap"] = (
+                True if grezzo == "true" else False if grezzo == "false" else None
+            )
+        if "withdraw_policy" in ammessi and "withdraw_policy" in form:
+            data["withdraw_policy"] = GaraFormParser._parse_withdraw_policy()
+        if "odd_number_policy" in ammessi and form.get("odd_number_policy"):
+            data["odd_number_policy"] = form["odd_number_policy"]
+            if "x_challenge_id" in ammessi:
+                data["x_challenge_id"] = GaraFormParser._parse_x_challenge(
+                    data["odd_number_policy"]
+                )
+        # La casella dello spareggio c'è solo se c'è la sua sezione: il posto
+        # fino a cui si spareggia fa da segnale.
+        if "tiebreaker_until_position" in ammessi and form.get(
+            "tiebreaker_until_position"
+        ):
+            data["tiebreaker_enabled"] = form.get("tiebreaker_enabled") == "on"
+            data["tiebreaker_until_position"] = int(form["tiebreaker_until_position"])
+        if "weight" in ammessi and gara is not None and gara.campionato_id:
+            if form.get("weight", "").strip():
+                data["weight"] = GaraFormParser._parse_weight(self.campionato)
         return data
 
     @staticmethod

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{# Il campionato propone, la gara decide (ADR-075) — Design System 7c.
+   Dopo aver cambiato un valore del campionato: a quali gare già create, e non
+   ancora avviate, applicarlo. Una casella per gara e per campo; già spuntate
+   quelle che avevano il valore vecchio del campionato. Richiede `campionato`,
+   `voce` (la voce della storia del campionato), `righe` (GaraProposta),
+   `ritorno`. #}
+
+{% block title %}{{ _('Applicare alle gare?') }}{% endblock %}
+{% block page_title %}{{ _('Applicare alle gare?') }}{% endblock %}
+{% block page_sub %}{{ campionato.name }}{% endblock %}
+
+{% block content %}
+<div style="max-width:860px">
+<form method="POST" class="c7-stack" style="gap:16px">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="c7-flash c7-flash--info">
+    <span class="c7-flash__ico"><i class="fas fa-circle-info"></i></span>
+    <div class="c7-flash__body">
+      <div class="c7-flash__text">
+        {{ _('I valori del campionato sono quelli proposti alle gare nuove. Le gare già create hanno i loro: scegli a quali applicare il valore nuovo. Sono già spuntate quelle che avevano il valore di prima; quelle con un valore scelto apposta no. Le gare avviate non compaiono: si modificano dalla loro pagina.') }}
+      </div>
+    </div>
+  </div>
+
+  {% for riga in righe %}
+  <div class="c7-card">
+    <h3 class="mb-2">{{ riga.gara.display_name }}
+      <span class="c7-nota" style="font-weight:400">· {{ riga.gara.date|date_local if riga.gara.date }}</span>
+    </h3>
+    <ul class="list-unstyled mb-0">
+      {% for campo in riga.campi %}
+      <li class="form-check mb-1">
+        <input class="form-check-input" type="checkbox" name="scelta"
+               id="scelta-{{ riga.gara.id }}-{{ campo.campo_gara }}"
+               value="{{ riga.gara.id }}:{{ campo.campo_gara }}" {% if campo.spuntato %}checked{% endif %}>
+        <label class="form-check-label" for="scelta-{{ riga.gara.id }}-{{ campo.campo_gara }}">
+          <span class="fw-bold">{{ etichetta_storia(campo.campo_gara) }}</span>:
+          {% if campo.campo_gara == 'billiard_hall_id' %}{{ riga.gara.location or '—' }}{% else %}{{ valore_storia(campo.campo_gara, campo.attuale|string if campo.attuale is not none else '') }}{% endif %}
+          → {{ valore_storia(campo.campo_gara, campo.nuovo) if campo.campo_gara != 'billiard_hall_id' else _('la sala nuova del campionato') }}
+          {% if not campo.spuntato %}<span class="c7-nota">· {{ _('valore scelto per questa gara') }}</span>{% endif %}
+        </label>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% else %}
+  <div class="c7-card"><p class="c7-nota mb-0">{{ _('Nessuna gara da aggiornare.') }}</p></div>
+  {% endfor %}
+
+  <div class="c7-card">
+    <label for="motivo" class="form-label">{{ _('Motivo della modifica') }} · {{ _('opzionale') }}</label>
+    <textarea class="form-control" id="motivo" name="motivo" rows="2" maxlength="1000"
+              placeholder="{{ _('Scrivi perché: servirà in caso di contestazioni') }}">{{ voce.reason or '' }}</textarea>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="{{ ritorno }}" class="btn btn-secondary">{{ _('Lascia le gare come sono') }}</a>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> {{ _('Applica alle gare scelte') }}</button>
+  </div>
+</form>
+</div>
+{% endblock %}

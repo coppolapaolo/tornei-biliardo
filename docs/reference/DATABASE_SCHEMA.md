@@ -1,7 +1,7 @@
 # Database Schema Reference
 
 > **Auto-generated** from SQLAlchemy models.
-> Last updated: 2026-09-19 21:20 UTC
+> Last updated: 2026-09-29 17:54 UTC
 >
 > To regenerate: `python scripts/generate_schema_docs.py`
 
@@ -42,6 +42,7 @@
 | `phone` | VARCHAR(100) | YES |  |  |  |
 | `first_name` | VARCHAR(100) | YES |  |  |  |
 | `last_name` | VARCHAR(100) | YES |  |  |  |
+| `organization` | VARCHAR(120) | YES |  |  |  |
 | `elo_rating` | INTEGER | YES |  |  |  |
 | `previous_username` | VARCHAR(80) | YES |  |  |  |
 | `home_city` | VARCHAR(100) | YES |  |  |  |
@@ -118,10 +119,10 @@
 - UNIQUE(venue_id, is_active)
 
 **Foreign Keys:**
-- `venue_id` → `billiard_hall.id` (ON DELETE NO ACTION)
-- `assigned_by_id` → `user.id` (ON DELETE NO ACTION)
 - `user_id` → `user.id` (ON DELETE NO ACTION)
+- `venue_id` → `billiard_hall.id` (ON DELETE NO ACTION)
 - `revoked_by_id` → `user.id` (ON DELETE NO ACTION)
+- `assigned_by_id` → `user.id` (ON DELETE NO ACTION)
 
 ### venue_manager_request
 
@@ -144,9 +145,9 @@
 - UNIQUE(user_id, venue_id)
 
 **Foreign Keys:**
-- `processed_by_id` → `user.id` (ON DELETE NO ACTION)
 - `venue_id` → `billiard_hall.id` (ON DELETE NO ACTION)
 - `user_id` → `user.id` (ON DELETE NO ACTION)
+- `processed_by_id` → `user.id` (ON DELETE NO ACTION)
 
 ### user_privacy_setting
 
@@ -203,8 +204,8 @@
 - UNIQUE(user_id, inscription_id)
 
 **Foreign Keys:**
-- `user_id` → `user.id` (ON DELETE CASCADE)
 - `inscription_id` → `inscription.id` (ON DELETE CASCADE)
+- `user_id` → `user.id` (ON DELETE CASCADE)
 
 ### hidden_campionato
 
@@ -221,8 +222,8 @@
 - UNIQUE(user_id, campionato_id)
 
 **Foreign Keys:**
-- `user_id` → `user.id` (ON DELETE CASCADE)
 - `campionato_id` → `campionato.id` (ON DELETE CASCADE)
+- `user_id` → `user.id` (ON DELETE CASCADE)
 
 ---
 
@@ -243,7 +244,7 @@
 | `default_odd_policy` | VARCHAR(30) | NO |  | bye |  |
 | `default_anti_rematch` | BOOLEAN | NO |  | True |  |
 | `default_classification_system` | VARCHAR(10) | NO |  | WINS |  |
-| `default_start_rule` | VARCHAR(20) | NO |  | first_player |  |
+| `default_start_rule` | VARCHAR(20) | NO |  | lag |  |
 | `default_break_rule` | VARCHAR(20) | NO |  | alternate |  |
 | `position_points` | TEXT | YES |  |  |  |
 | `without_x` | BOOLEAN | YES |  | False |  |
@@ -253,6 +254,7 @@
 | `banner_path` | VARCHAR(255) | YES |  |  |  |
 | `external_url` | VARCHAR(500) | YES |  |  |  |
 | `external_label` | VARCHAR(60) | YES |  |  |  |
+| `rules_url` | VARCHAR(500) | YES |  |  |  |
 | `description` | TEXT | YES |  |  |  |
 | `public_token` | VARCHAR(32) | YES | UQ | func |  |
 | `slug` | VARCHAR(60) | YES | UQ |  |  |
@@ -302,6 +304,7 @@
 | `banner_path` | VARCHAR(255) | YES |  |  |  |
 | `external_url` | VARCHAR(500) | YES |  |  |  |
 | `external_label` | VARCHAR(60) | YES |  |  |  |
+| `rules_url` | VARCHAR(500) | YES |  |  |  |
 | `slug` | VARCHAR(60) | YES | UQ |  |  |
 | `discipline` | VARCHAR(50) | NO |  |  |  |
 | `distance` | INTEGER | NO |  |  |  |
@@ -341,11 +344,11 @@
 - UNIQUE(public_token)
 
 **Foreign Keys:**
-- `playoff_config_id` → `playoff_configuration.id` (ON DELETE SET NULL)
-- `campionato_id` → `campionato.id` (ON DELETE CASCADE)
 - `director_id` → `user.id` (ON DELETE NO ACTION)
 - `tiebreaker_challenge_id` → `challenge.id` (ON DELETE SET NULL)
+- `playoff_config_id` → `playoff_configuration.id` (ON DELETE SET NULL)
 - `x_challenge_id` → `challenge.id` (ON DELETE SET NULL)
+- `campionato_id` → `campionato.id` (ON DELETE CASCADE)
 - `billiard_hall_id` → `billiard_hall.id` (ON DELETE SET NULL)
 
 ### inscription
@@ -360,6 +363,7 @@
 | `inscribed_by_id` | INTEGER | YES | FK→user.id |  |  |
 | `is_withdrawn` | BOOLEAN | NO |  | False |  |
 | `withdrawn_at` | DATETIME | YES |  |  |  |
+| `accepted_terms` | TEXT | YES |  |  |  |
 | `is_forfeit` | BOOLEAN | NO |  | False |  |
 | `forfeit_at` | DATETIME | YES |  |  |  |
 | `is_waitlist` | BOOLEAN | NO |  | False |  |
@@ -372,11 +376,11 @@
 - UNIQUE(gara_id, user_id)
 
 **Foreign Keys:**
+- `gara_id` → `gara.id` (ON DELETE CASCADE)
+- `categoria_id` → `categoria.id` (ON DELETE SET NULL)
+- `user_id` → `user.id` (ON DELETE NO ACTION)
 - `inscribed_by_id` → `user.id` (ON DELETE NO ACTION)
 - `squadra_id` → `squadra.id` (ON DELETE SET NULL)
-- `gara_id` → `gara.id` (ON DELETE CASCADE)
-- `user_id` → `user.id` (ON DELETE NO ACTION)
-- `categoria_id` → `categoria.id` (ON DELETE SET NULL)
 
 ### round_configuration
 
@@ -444,6 +448,11 @@
 | `player1_handicap` | INTEGER | YES |  | 0 |  |
 | `player2_handicap` | INTEGER | YES |  | 0 |  |
 | `handicap_explanation` | VARCHAR(255) | YES |  |  |  |
+| `start_rule` | VARCHAR(20) | YES |  |  |  |
+| `break_rule` | VARCHAR(20) | YES |  |  |  |
+| `set_distance` | INTEGER | YES |  |  |  |
+| `x_with_challenge` | BOOLEAN | YES |  |  |  |
+| `categories_snapshot` | TEXT | YES |  |  |  |
 | `player1_confirmed` | BOOLEAN | NO |  | False |  |
 | `player2_confirmed` | BOOLEAN | NO |  | False |  |
 | `player1_confirmed_at` | DATETIME | YES |  |  |  |
@@ -451,12 +460,12 @@
 | `updated_at` | DATETIME | NO |  | func |  |
 
 **Foreign Keys:**
-- `gara_id` → `gara.id` (ON DELETE SET NULL)
-- `player2_id` → `user.id` (ON DELETE NO ACTION)
 - `lag_winner_id` → `user.id` (ON DELETE NO ACTION)
-- `winner_id` → `user.id` (ON DELETE NO ACTION)
 - `first_break_player_id` → `user.id` (ON DELETE NO ACTION)
 - `player1_id` → `user.id` (ON DELETE NO ACTION)
+- `gara_id` → `gara.id` (ON DELETE SET NULL)
+- `player2_id` → `user.id` (ON DELETE NO ACTION)
+- `winner_id` → `user.id` (ON DELETE NO ACTION)
 
 ### rack
 
@@ -481,11 +490,11 @@
 
 **Foreign Keys:**
 - `winner_id` → `user.id` (ON DELETE NO ACTION)
-- `reported_by_id` → `user.id` (ON DELETE NO ACTION)
 - `removed_by_id` → `user.id` (ON DELETE NO ACTION)
 - `break_player_id` → `user.id` (ON DELETE NO ACTION)
 - `match_id` → `match.id` (ON DELETE CASCADE)
 - `added_by_id` → `user.id` (ON DELETE NO ACTION)
+- `reported_by_id` → `user.id` (ON DELETE NO ACTION)
 
 ### match_result
 
@@ -527,15 +536,15 @@
 | `created_at` | DATETIME | YES |  | func |  |
 
 **Foreign Keys:**
-- `forfeit_player_id` → `user.id` (ON DELETE NO ACTION)
-- `match_id` → `match.id` (ON DELETE NO ACTION)
-- `winner_id` → `user.id` (ON DELETE NO ACTION)
-- `player3_id` → `user.id` (ON DELETE NO ACTION)
-- `player1_id` → `user.id` (ON DELETE NO ACTION)
 - `player2_id` → `user.id` (ON DELETE NO ACTION)
-- `current_player1_id` → `user.id` (ON DELETE NO ACTION)
-- `waiting_player_id` → `user.id` (ON DELETE NO ACTION)
+- `player3_id` → `user.id` (ON DELETE NO ACTION)
 - `current_player2_id` → `user.id` (ON DELETE NO ACTION)
+- `winner_id` → `user.id` (ON DELETE NO ACTION)
+- `current_player1_id` → `user.id` (ON DELETE NO ACTION)
+- `player1_id` → `user.id` (ON DELETE NO ACTION)
+- `match_id` → `match.id` (ON DELETE NO ACTION)
+- `waiting_player_id` → `user.id` (ON DELETE NO ACTION)
+- `forfeit_player_id` → `user.id` (ON DELETE NO ACTION)
 
 ### trio_rack
 
@@ -555,13 +564,13 @@
 | `removed_at` | DATETIME | YES |  |  |  |
 
 **Foreign Keys:**
-- `player2_id` → `user.id` (ON DELETE NO ACTION)
-- `trio_match_id` → `trio_match.id` (ON DELETE CASCADE)
-- `removed_by_id` → `user.id` (ON DELETE NO ACTION)
 - `waiting_player_id` → `user.id` (ON DELETE NO ACTION)
-- `player1_id` → `user.id` (ON DELETE NO ACTION)
 - `winner_id` → `user.id` (ON DELETE NO ACTION)
+- `trio_match_id` → `trio_match.id` (ON DELETE CASCADE)
+- `player1_id` → `user.id` (ON DELETE NO ACTION)
 - `added_by_id` → `user.id` (ON DELETE NO ACTION)
+- `player2_id` → `user.id` (ON DELETE NO ACTION)
+- `removed_by_id` → `user.id` (ON DELETE NO ACTION)
 
 ### set
 
@@ -614,8 +623,8 @@
 
 **Foreign Keys:**
 - `set_id` → `set.id` (ON DELETE CASCADE)
-- `break_player_id` → `user.id` (ON DELETE NO ACTION)
 - `winner_id` → `user.id` (ON DELETE NO ACTION)
+- `break_player_id` → `user.id` (ON DELETE NO ACTION)
 - `reported_by_id` → `user.id` (ON DELETE NO ACTION)
 
 ---
@@ -639,8 +648,8 @@
 | `updated_at` | DATETIME | NO |  | func |  |
 
 **Foreign Keys:**
-- `user_id` → `user.id` (ON DELETE NO ACTION)
 - `campionato_id` → `campionato.id` (ON DELETE CASCADE)
+- `user_id` → `user.id` (ON DELETE NO ACTION)
 
 ### gara_classification
 
@@ -707,9 +716,9 @@
 - UNIQUE(gara_id, player1_id, player2_id)
 
 **Foreign Keys:**
-- `player2_id` → `user.id` (ON DELETE NO ACTION)
 - `player1_id` → `user.id` (ON DELETE NO ACTION)
 - `gara_id` → `gara.id` (ON DELETE CASCADE)
+- `player2_id` → `user.id` (ON DELETE NO ACTION)
 
 ### leaderboard_entry
 
@@ -782,6 +791,7 @@
 | `expires_at` | DATETIME | YES |  |  |  |
 | `responded_at` | DATETIME | YES |  |  |  |
 | `responded_by_id` | INTEGER | YES | FK→user.id |  |  |
+| `accepted_terms` | TEXT | YES |  |  |  |
 | `notified_at` | DATETIME | YES |  |  |  |
 | `replaced_by_id` | INTEGER | YES | FK→user.id |  |  |
 | `replacement_position` | INTEGER | YES |  |  |  |
@@ -789,10 +799,10 @@
 | `updated_at` | DATETIME | NO |  | func |  |
 
 **Foreign Keys:**
-- `replaced_by_id` → `user.id` (ON DELETE NO ACTION)
-- `responded_by_id` → `user.id` (ON DELETE NO ACTION)
-- `user_id` → `user.id` (ON DELETE CASCADE)
 - `configuration_id` → `playoff_configuration.id` (ON DELETE CASCADE)
+- `user_id` → `user.id` (ON DELETE CASCADE)
+- `responded_by_id` → `user.id` (ON DELETE NO ACTION)
+- `replaced_by_id` → `user.id` (ON DELETE NO ACTION)
 
 ### playoff_campionato
 
@@ -816,9 +826,9 @@
 | `updated_at` | DATETIME | NO |  | func |  |
 
 **Foreign Keys:**
-- `gara_id` → `gara.id` (ON DELETE NO ACTION)
 - `winner_id` → `user.id` (ON DELETE NO ACTION)
 - `configuration_id` → `playoff_configuration.id` (ON DELETE CASCADE)
+- `gara_id` → `gara.id` (ON DELETE NO ACTION)
 
 ### playoff_match
 
@@ -840,10 +850,10 @@
 | `completed_at` | DATETIME | YES |  |  |  |
 
 **Foreign Keys:**
+- `player1_id` → `user.id` (ON DELETE NO ACTION)
 - `tiebreaker_id` → `tiebreaker.id` (ON DELETE NO ACTION)
 - `winner_id` → `user.id` (ON DELETE NO ACTION)
 - `player2_id` → `user.id` (ON DELETE NO ACTION)
-- `player1_id` → `user.id` (ON DELETE NO ACTION)
 
 ### tiebreaker
 
@@ -865,12 +875,12 @@
 | `notes` | TEXT | YES |  |  |  |
 
 **Foreign Keys:**
-- `campionato_id` → `campionato.id` (ON DELETE NO ACTION)
-- `match_id` → `match.id` (ON DELETE NO ACTION)
-- `winner_id` → `user.id` (ON DELETE NO ACTION)
-- `player1_id` → `user.id` (ON DELETE NO ACTION)
-- `player2_id` → `user.id` (ON DELETE NO ACTION)
 - `gara_id` → `gara.id` (ON DELETE NO ACTION)
+- `player2_id` → `user.id` (ON DELETE NO ACTION)
+- `winner_id` → `user.id` (ON DELETE NO ACTION)
+- `match_id` → `match.id` (ON DELETE NO ACTION)
+- `campionato_id` → `campionato.id` (ON DELETE NO ACTION)
+- `player1_id` → `user.id` (ON DELETE NO ACTION)
 
 ### tiebreaker_configuration
 
@@ -888,8 +898,8 @@
 | `updated_at` | DATETIME | YES |  | func |  |
 
 **Foreign Keys:**
-- `gara_id` → `gara.id` (ON DELETE NO ACTION)
 - `campionato_id` → `campionato.id` (ON DELETE NO ACTION)
+- `gara_id` → `gara.id` (ON DELETE NO ACTION)
 
 ### spot_shot
 
@@ -947,6 +957,9 @@
 | `family` | VARCHAR(80) | YES |  |  |  |
 | `family_step` | INTEGER | YES |  |  |  |
 | `cue_ball_reset` | BOOLEAN | YES |  |  |  |
+| `recording_mode` | VARCHAR(20) | NO |  | total |  |
+| `shots_count` | INTEGER | YES |  |  |  |
+| `draw_spec` | TEXT | YES |  |  |  |
 | `created_by_id` | INTEGER | YES | FK→user.id |  |  |
 | `is_active` | BOOLEAN | NO |  | True |  |
 | `created_at` | DATETIME | NO |  | func |  |
@@ -967,17 +980,20 @@
 | `completed` | BOOLEAN | NO |  | False |  |
 | `attempted_at` | DATETIME | NO |  | func |  |
 | `notes` | TEXT | YES |  |  |  |
+| `pending_prompt` | VARCHAR(200) | YES |  |  |  |
 | `variant_id` | INTEGER | YES | FK→challenge_variant.id |  |  |
+| `training_entry_id` | INTEGER | YES | FK→training_entry.id |  |  |
 | `gara_id` | INTEGER | YES | FK→gara.id |  |  |
 | `round_number` | INTEGER | YES |  |  |  |
 | `created_at` | DATETIME | NO |  | func |  |
 | `updated_at` | DATETIME | NO |  | func |  |
 
 **Foreign Keys:**
+- `training_entry_id` → `training_entry.id` (ON DELETE CASCADE)
+- `gara_id` → `gara.id` (ON DELETE SET NULL)
+- `variant_id` → `challenge_variant.id` (ON DELETE SET NULL)
 - `user_id` → `user.id` (ON DELETE CASCADE)
 - `challenge_id` → `challenge.id` (ON DELETE CASCADE)
-- `variant_id` → `challenge_variant.id` (ON DELETE SET NULL)
-- `gara_id` → `gara.id` (ON DELETE SET NULL)
 
 ### challenge_favorite
 
@@ -1086,11 +1102,11 @@
 - UNIQUE(gara_id, user_id, round_number)
 
 **Foreign Keys:**
-- `match_id` → `match.id` (ON DELETE SET NULL)
-- `gara_id` → `gara.id` (ON DELETE CASCADE)
-- `validated_by_id` → `user.id` (ON DELETE SET NULL)
 - `challenge_attempt_id` → `challenge_attempt.id` (ON DELETE SET NULL)
 - `user_id` → `user.id` (ON DELETE CASCADE)
+- `match_id` → `match.id` (ON DELETE SET NULL)
+- `validated_by_id` → `user.id` (ON DELETE SET NULL)
+- `gara_id` → `gara.id` (ON DELETE CASCADE)
 
 ### exam
 
@@ -1173,9 +1189,9 @@
 **Foreign Keys:**
 - `billiard_hall_id` → `billiard_hall.id` (ON DELETE NO ACTION)
 - `examiner_id` → `user.id` (ON DELETE NO ACTION)
-- `user_id` → `user.id` (ON DELETE CASCADE)
-- `exam_id` → `exam.id` (ON DELETE CASCADE)
 - `exam_request_id` → `exam_request.id` (ON DELETE NO ACTION)
+- `exam_id` → `exam.id` (ON DELETE CASCADE)
+- `user_id` → `user.id` (ON DELETE CASCADE)
 
 ### exam_challenge_result
 
@@ -1195,8 +1211,8 @@
 - UNIQUE(exam_attempt_id, exam_challenge_id, attempt_number)
 
 **Foreign Keys:**
-- `exam_challenge_id` → `exam_challenge.id` (ON DELETE CASCADE)
 - `exam_attempt_id` → `exam_attempt.id` (ON DELETE CASCADE)
+- `exam_challenge_id` → `exam_challenge.id` (ON DELETE CASCADE)
 
 ---
 
@@ -1218,7 +1234,7 @@
 | `distance` | INTEGER | YES |  | 5 |  |
 | `is_race_to` | BOOLEAN | YES |  | True |  |
 | `break_rule` | VARCHAR(20) | YES |  | alternate |  |
-| `start_rule` | VARCHAR(20) | YES |  | first_player |  |
+| `start_rule` | VARCHAR(20) | YES |  | lag |  |
 | `description` | TEXT | YES |  |  |  |
 | `is_multi_set` | BOOLEAN | YES |  | False |  |
 | `match_distance` | INTEGER | YES |  |  |  |
@@ -1229,9 +1245,9 @@
 | `updated_at` | DATETIME | NO |  | func |  |
 
 **Foreign Keys:**
-- `proposer_id` → `user.id` (ON DELETE CASCADE)
-- `accepted_by_id` → `user.id` (ON DELETE SET NULL)
 - `billiard_hall_id` → `billiard_hall.id` (ON DELETE SET NULL)
+- `accepted_by_id` → `user.id` (ON DELETE SET NULL)
+- `proposer_id` → `user.id` (ON DELETE CASCADE)
 
 ### proposal_invitation
 
@@ -1249,8 +1265,8 @@
 - UNIQUE(proposal_id, invited_user_id)
 
 **Foreign Keys:**
-- `proposal_id` → `match_proposal.id` (ON DELETE CASCADE)
 - `invited_user_id` → `user.id` (ON DELETE CASCADE)
+- `proposal_id` → `match_proposal.id` (ON DELETE CASCADE)
 
 ### individual_match
 
@@ -1268,7 +1284,7 @@
 | `distance` | INTEGER | YES |  |  |  |
 | `is_race_to` | BOOLEAN | NO |  | True |  |
 | `break_rule` | VARCHAR(20) | NO |  | alternate |  |
-| `start_rule` | VARCHAR(20) | NO |  | first_player |  |
+| `start_rule` | VARCHAR(20) | NO |  | lag |  |
 | `lag_winner_id` | INTEGER | YES | FK→user.id |  |  |
 | `first_break_player_id` | INTEGER | YES | FK→user.id |  |  |
 | `is_multi_set` | BOOLEAN | NO |  | False |  |
@@ -1291,13 +1307,13 @@
 - UNIQUE(proposal_id)
 
 **Foreign Keys:**
-- `lag_winner_id` → `user.id` (ON DELETE NO ACTION)
 - `proposal_id` → `match_proposal.id` (ON DELETE NO ACTION)
-- `player2_id` → `user.id` (ON DELETE CASCADE)
+- `winner_id` → `user.id` (ON DELETE NO ACTION)
 - `player1_id` → `user.id` (ON DELETE CASCADE)
 - `first_break_player_id` → `user.id` (ON DELETE NO ACTION)
 - `billiard_hall_id` → `billiard_hall.id` (ON DELETE SET NULL)
-- `winner_id` → `user.id` (ON DELETE NO ACTION)
+- `player2_id` → `user.id` (ON DELETE CASCADE)
+- `lag_winner_id` → `user.id` (ON DELETE NO ACTION)
 
 ### individual_rack
 
@@ -1323,11 +1339,11 @@
 - UNIQUE(match_id, rack_number)
 
 **Foreign Keys:**
-- `match_id` → `individual_match.id` (ON DELETE CASCADE)
-- `winner_id` → `user.id` (ON DELETE NO ACTION)
 - `added_by_id` → `user.id` (ON DELETE NO ACTION)
-- `removed_by_id` → `user.id` (ON DELETE NO ACTION)
 - `individual_set_id` → `individual_set.id` (ON DELETE CASCADE)
+- `winner_id` → `user.id` (ON DELETE NO ACTION)
+- `match_id` → `individual_match.id` (ON DELETE CASCADE)
+- `removed_by_id` → `user.id` (ON DELETE NO ACTION)
 - `break_player_id` → `user.id` (ON DELETE NO ACTION)
 
 ---
@@ -1355,8 +1371,8 @@
 - UNIQUE(user_id, rating_system)
 
 **Foreign Keys:**
-- `user_id` → `user.id` (ON DELETE CASCADE)
 - `verified_by_id` → `user.id` (ON DELETE NO ACTION)
+- `user_id` → `user.id` (ON DELETE CASCADE)
 
 ---
 
@@ -1435,8 +1451,8 @@
 - UNIQUE(user_id, achievement_id)
 
 **Foreign Keys:**
-- `achievement_id` → `achievement.id` (ON DELETE CASCADE)
 - `user_id` → `user.id` (ON DELETE CASCADE)
+- `achievement_id` → `achievement.id` (ON DELETE CASCADE)
 
 ### streak_tracker
 
@@ -1515,8 +1531,8 @@
 - UNIQUE(user_id, quest_id)
 
 **Foreign Keys:**
-- `user_id` → `user.id` (ON DELETE CASCADE)
 - `quest_id` → `quest.id` (ON DELETE CASCADE)
+- `user_id` → `user.id` (ON DELETE CASCADE)
 
 ### gamification_config
 
@@ -1682,8 +1698,8 @@
 - UNIQUE(user_id, billiard_hall_id)
 
 **Foreign Keys:**
-- `user_id` → `user.id` (ON DELETE CASCADE)
 - `billiard_hall_id` → `billiard_hall.id` (ON DELETE CASCADE)
+- `user_id` → `user.id` (ON DELETE CASCADE)
 
 ---
 
@@ -1765,13 +1781,13 @@
 | `updated_at` | DATETIME | NO |  | func |  |
 
 **Constraints:**
-- UNIQUE(gara_id, normalized_name)
 - CHECK: (campionato_id IS NOT NULL AND gara_id IS NULL) OR (campionato_id IS NULL AND gara_id IS NOT NULL)
+- UNIQUE(gara_id, normalized_name)
 - UNIQUE(campionato_id, normalized_name)
 
 **Foreign Keys:**
-- `gara_id` → `gara.id` (ON DELETE CASCADE)
 - `campionato_id` → `campionato.id` (ON DELETE CASCADE)
+- `gara_id` → `gara.id` (ON DELETE CASCADE)
 
 ### challenge_category
 
@@ -1806,8 +1822,30 @@
 - UNIQUE(challenge_id, user_id)
 
 **Foreign Keys:**
-- `user_id` → `user.id` (ON DELETE CASCADE)
 - `challenge_id` → `challenge.id` (ON DELETE CASCADE)
+- `user_id` → `user.id` (ON DELETE CASCADE)
+
+### challenge_shot
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `attempt_id` | INTEGER | NO | FK→challenge_attempt.id |  |  |
+| `position` | INTEGER | NO |  |  |  |
+| `made` | BOOLEAN | YES |  |  |  |
+| `points` | INTEGER | NO |  | 0 |  |
+| `x` | FLOAT | YES |  |  |  |
+| `y` | FLOAT | YES |  |  |  |
+| `prompt` | VARCHAR(200) | YES |  |  |  |
+| `outcome_label` | VARCHAR(60) | YES |  |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Constraints:**
+- UNIQUE(attempt_id, position)
+
+**Foreign Keys:**
+- `attempt_id` → `challenge_attempt.id` (ON DELETE CASCADE)
 
 ### challenge_variant
 
@@ -1817,6 +1855,7 @@
 | `challenge_id` | INTEGER | NO | FK→challenge.id |  |  |
 | `label` | VARCHAR(40) | NO |  |  |  |
 | `position` | INTEGER | NO |  | 1 |  |
+| `mirrored` | BOOLEAN | NO |  | False |  |
 | `created_at` | DATETIME | NO |  | func |  |
 | `updated_at` | DATETIME | NO |  | func |  |
 
@@ -1843,8 +1882,8 @@
 | `updated_at` | DATETIME | NO |  | func |  |
 
 **Foreign Keys:**
-- `consumed_by_gara_id` → `gara.id` (ON DELETE SET NULL)
 - `user_id` → `user.id` (ON DELETE CASCADE)
+- `consumed_by_gara_id` → `gara.id` (ON DELETE SET NULL)
 
 ### exam_request
 
@@ -1865,12 +1904,12 @@
 | `updated_at` | DATETIME | NO |  | func |  |
 
 **Foreign Keys:**
-- `requester_id` → `user.id` (ON DELETE NO ACTION)
-- `negotiating_with_id` → `user.id` (ON DELETE NO ACTION)
 - `billiard_hall_id` → `billiard_hall.id` (ON DELETE NO ACTION)
+- `exam_id` → `exam.id` (ON DELETE CASCADE)
+- `negotiating_with_id` → `user.id` (ON DELETE NO ACTION)
 - `accepted_by_id` → `user.id` (ON DELETE NO ACTION)
 - `last_proposed_by_id` → `user.id` (ON DELETE NO ACTION)
-- `exam_id` → `exam.id` (ON DELETE CASCADE)
+- `requester_id` → `user.id` (ON DELETE NO ACTION)
 
 ### exam_request_recipient
 
@@ -1906,8 +1945,8 @@
 
 **Foreign Keys:**
 - `proposed_by_id` → `user.id` (ON DELETE NO ACTION)
-- `request_id` → `exam_request.id` (ON DELETE CASCADE)
 - `billiard_hall_id` → `billiard_hall.id` (ON DELETE NO ACTION)
+- `request_id` → `exam_request.id` (ON DELETE CASCADE)
 
 ### feature_config
 
@@ -2013,8 +2052,8 @@
 | `updated_at` | DATETIME | NO |  | func |  |
 
 **Foreign Keys:**
-- `match_id` → `match.id` (ON DELETE CASCADE)
 - `corrected_by_id` → `user.id` (ON DELETE NO ACTION)
+- `match_id` → `match.id` (ON DELETE CASCADE)
 
 ### match_rating_history
 
@@ -2092,8 +2131,65 @@
 - UNIQUE(request_id, recipient_id)
 
 **Foreign Keys:**
-- `recipient_id` → `user.id` (ON DELETE NO ACTION)
 - `request_id` → `role_request.id` (ON DELETE NO ACTION)
+- `recipient_id` → `user.id` (ON DELETE NO ACTION)
+
+### settings_change
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `gara_id` | INTEGER | YES | FK→gara.id |  |  |
+| `campionato_id` | INTEGER | YES | FK→campionato.id |  |  |
+| `playoff_config_id` | INTEGER | YES | FK→playoff_configuration.id |  |  |
+| `author_id` | INTEGER | YES | FK→user.id |  |  |
+| `author_role` | VARCHAR(20) | YES |  |  |  |
+| `source` | VARCHAR(20) | NO |  | gara |  |
+| `action` | VARCHAR(30) | NO |  | modifica |  |
+| `reason` | TEXT | YES |  |  |  |
+| `from_round` | INTEGER | YES |  |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Foreign Keys:**
+- `playoff_config_id` → `playoff_configuration.id` (ON DELETE CASCADE)
+- `campionato_id` → `campionato.id` (ON DELETE CASCADE)
+- `gara_id` → `gara.id` (ON DELETE CASCADE)
+- `author_id` → `user.id` (ON DELETE SET NULL)
+
+### settings_change_field
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `change_id` | INTEGER | NO | FK→settings_change.id |  |  |
+| `field` | VARCHAR(50) | NO |  |  |  |
+| `old_value` | TEXT | YES |  |  |  |
+| `new_value` | TEXT | YES |  |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Foreign Keys:**
+- `change_id` → `settings_change.id` (ON DELETE CASCADE)
+
+### settings_notice
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `gara_id` | INTEGER | NO | FK→gara.id, UQ |  |  |
+| `initial_values` | TEXT | NO |  | {} |  |
+| `pending_user_ids` | TEXT | YES |  |  |  |
+| `first_change_at` | DATETIME | NO |  | func |  |
+| `last_change_at` | DATETIME | NO |  | func |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Constraints:**
+- UNIQUE(gara_id)
+
+**Foreign Keys:**
+- `gara_id` → `gara.id` (ON DELETE CASCADE)
 
 ### squadra
 
@@ -2109,13 +2205,13 @@
 | `updated_at` | DATETIME | NO |  | func |  |
 
 **Constraints:**
-- UNIQUE(gara_id, normalized_name)
-- CHECK: (campionato_id IS NOT NULL AND gara_id IS NULL) OR (campionato_id IS NULL AND gara_id IS NOT NULL)
 - UNIQUE(campionato_id, normalized_name)
+- CHECK: (campionato_id IS NOT NULL AND gara_id IS NULL) OR (campionato_id IS NULL AND gara_id IS NOT NULL)
+- UNIQUE(gara_id, normalized_name)
 
 **Foreign Keys:**
-- `gara_id` → `gara.id` (ON DELETE CASCADE)
 - `campionato_id` → `campionato.id` (ON DELETE CASCADE)
+- `gara_id` → `gara.id` (ON DELETE CASCADE)
 
 ### tpa_comando
 
@@ -2151,8 +2247,197 @@
 - UNIQUE(individual_match_id)
 
 **Foreign Keys:**
-- `individual_match_id` → `individual_match.id` (ON DELETE CASCADE)
 - `compiler_id` → `user.id` (ON DELETE NO ACTION)
+- `individual_match_id` → `individual_match.id` (ON DELETE CASCADE)
+
+### training_assignment
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `instructor_id` | INTEGER | NO | FK→user.id |  |  |
+| `user_id` | INTEGER | NO | FK→user.id |  |  |
+| `source_sheet_id` | INTEGER | NO | FK→training_sheet.id |  |  |
+| `sheet_id` | INTEGER | YES | FK→training_sheet.id |  |  |
+| `promotes_sheet_id` | INTEGER | YES | FK→training_sheet.id |  |  |
+| `group_id` | INTEGER | YES | FK→training_group.id |  |  |
+| `message` | VARCHAR(500) | YES |  |  |  |
+| `proposed_at` | DATETIME | NO |  | func |  |
+| `closed_at` | DATETIME | YES |  |  |  |
+| `outcome` | VARCHAR(12) | YES |  |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Foreign Keys:**
+- `user_id` → `user.id` (ON DELETE CASCADE)
+- `group_id` → `training_group.id` (ON DELETE SET NULL)
+- `source_sheet_id` → `training_sheet.id` (ON DELETE CASCADE)
+- `instructor_id` → `user.id` (ON DELETE CASCADE)
+- `sheet_id` → `training_sheet.id` (ON DELETE SET NULL)
+- `promotes_sheet_id` → `training_sheet.id` (ON DELETE SET NULL)
+
+### training_entry
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `session_id` | INTEGER | NO | FK→training_session.id |  |  |
+| `item_id` | INTEGER | NO | FK→training_sheet_item.id |  |  |
+| `variant_id` | INTEGER | YES | FK→challenge_variant.id |  |  |
+| `value` | FLOAT | YES |  |  |  |
+| `done` | BOOLEAN | YES |  |  |  |
+| `marks` | VARCHAR(200) | YES |  |  |  |
+| `measure` | VARCHAR(20) | NO |  |  |  |
+| `target_amount` | INTEGER | YES |  |  |  |
+| `aggregation` | VARCHAR(10) | YES |  |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Foreign Keys:**
+- `variant_id` → `challenge_variant.id` (ON DELETE CASCADE)
+- `item_id` → `training_sheet_item.id` (ON DELETE CASCADE)
+- `session_id` → `training_session.id` (ON DELETE CASCADE)
+
+### training_goal
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `user_id` | INTEGER | NO | FK→user.id |  |  |
+| `kind` | VARCHAR(20) | NO |  |  |  |
+| `challenge_id` | INTEGER | YES | FK→challenge.id |  |  |
+| `axis` | VARCHAR(20) | YES |  |  |  |
+| `axis_value` | VARCHAR(40) | YES |  |  |  |
+| `target` | INTEGER | NO |  |  |  |
+| `rule` | VARCHAR(20) | YES |  |  |  |
+| `per_week` | INTEGER | YES |  |  |  |
+| `baseline` | INTEGER | YES |  |  |  |
+| `deadline_kind` | VARCHAR(20) | NO |  |  |  |
+| `deadline` | DATE | YES |  |  |  |
+| `reached_at` | DATETIME | YES |  |  |  |
+| `abandoned_at` | DATETIME | YES |  |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Foreign Keys:**
+- `user_id` → `user.id` (ON DELETE CASCADE)
+- `challenge_id` → `challenge.id` (ON DELETE CASCADE)
+
+### training_group
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `instructor_id` | INTEGER | NO | FK→user.id |  |  |
+| `name` | VARCHAR(120) | NO |  |  |  |
+| `started_on` | DATE | YES |  |  |  |
+| `ended_on` | DATE | YES |  |  |  |
+| `closed_at` | DATETIME | YES |  |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Foreign Keys:**
+- `instructor_id` → `user.id` (ON DELETE CASCADE)
+
+### training_group_member
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `group_id` | INTEGER | NO | FK→training_group.id |  |  |
+| `instructor_id` | INTEGER | NO | FK→user.id |  |  |
+| `user_id` | INTEGER | NO | FK→user.id |  |  |
+| `joined_at` | DATETIME | NO |  | func |  |
+| `left_at` | DATETIME | YES |  |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Foreign Keys:**
+- `user_id` → `user.id` (ON DELETE CASCADE)
+- `group_id` → `training_group.id` (ON DELETE CASCADE)
+- `instructor_id` → `user.id` (ON DELETE CASCADE)
+
+### training_session
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `sheet_id` | INTEGER | NO | FK→training_sheet.id |  |  |
+| `user_id` | INTEGER | NO | FK→user.id |  |  |
+| `sheet_version` | INTEGER | NO |  | 1 |  |
+| `day` | VARCHAR(12) | YES |  |  |  |
+| `started_at` | DATETIME | NO |  | func |  |
+| `ended_at` | DATETIME | YES |  |  |  |
+| `notes` | TEXT | YES |  |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Foreign Keys:**
+- `sheet_id` → `training_sheet.id` (ON DELETE CASCADE)
+- `user_id` → `user.id` (ON DELETE CASCADE)
+
+### training_sheet
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `name` | VARCHAR(120) | NO |  |  |  |
+| `owner_id` | INTEGER | NO | FK→user.id |  |  |
+| `level` | INTEGER | YES |  |  |  |
+| `threshold` | INTEGER | YES |  |  |  |
+| `threshold_streak` | INTEGER | NO |  | 1 |  |
+| `weeks` | INTEGER | YES |  |  |  |
+| `uses_days` | BOOLEAN | NO |  | False |  |
+| `readers_see_notes` | BOOLEAN | NO |  | False |  |
+| `level_up` | VARCHAR(12) | NO |  | auto |  |
+| `passed_at` | DATETIME | YES |  |  |  |
+| `passed_by_id` | INTEGER | YES | FK→user.id |  |  |
+| `version` | INTEGER | NO |  | 1 |  |
+| `is_active` | BOOLEAN | NO |  | True |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Foreign Keys:**
+- `owner_id` → `user.id` (ON DELETE CASCADE)
+- `passed_by_id` → `user.id` (ON DELETE SET NULL)
+
+### training_sheet_item
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `sheet_id` | INTEGER | NO | FK→training_sheet.id |  |  |
+| `challenge_id` | INTEGER | NO | FK→challenge.id |  |  |
+| `position` | INTEGER | NO |  |  |  |
+| `section` | VARCHAR(60) | YES |  |  |  |
+| `day` | VARCHAR(12) | YES |  |  |  |
+| `measure` | VARCHAR(20) | NO |  | made |  |
+| `amount` | INTEGER | YES |  |  |  |
+| `aggregation` | VARCHAR(10) | YES |  |  |  |
+| `per_variant` | BOOLEAN | NO |  | False |  |
+| `is_active` | BOOLEAN | NO |  | True |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Foreign Keys:**
+- `sheet_id` → `training_sheet.id` (ON DELETE CASCADE)
+- `challenge_id` → `challenge.id` (ON DELETE CASCADE)
+
+### training_sheet_reader
+
+| Column | Type | Nullable | Key | Default | Description |
+|--------|------|----------|-----|---------|-------------|
+| `id` | INTEGER | NO | PK |  |  |
+| `sheet_id` | INTEGER | NO | FK→training_sheet.id |  |  |
+| `user_id` | INTEGER | NO | FK→user.id |  |  |
+| `granted_at` | DATETIME | NO |  | func |  |
+| `revoked_at` | DATETIME | YES |  |  |  |
+| `created_at` | DATETIME | NO |  | func |  |
+| `updated_at` | DATETIME | NO |  | func |  |
+
+**Foreign Keys:**
+- `sheet_id` → `training_sheet.id` (ON DELETE CASCADE)
+- `user_id` → `user.id` (ON DELETE CASCADE)
 
 ### user_feature_usage
 
@@ -2209,5 +2494,5 @@
 
 ## Summary
 
-- **Total tables**: 92
+- **Total tables**: 105
 - **Domains**: 13

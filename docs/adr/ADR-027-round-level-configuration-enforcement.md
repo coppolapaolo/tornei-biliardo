@@ -233,3 +233,25 @@ Body:
 - Endpoint: `routes/admin/competition/rounds.py` (in fondo)
 - Helper: `models/competition/round_creation.py::resolve_round_overrides`
 - Property: `models/match/models.py::Match.effective_*`
+
+## Emendamento (2026-09-29, ADR-075)
+
+Le regole si **fissano sulla partita** quando nasce: `is_race_to`,
+`is_race_to_sets` e `discipline` si scrivono sempre con il valore risolto
+(override del turno o gara), non più solo quando differiscono dalla gara, e si
+aggiungono `start_rule`, `break_rule`, `set_distance` (triangoli per set, che
+prima si rileggevano dalla gara e perdevano l'override del turno),
+`x_with_challenge` e le categorie dei giocatori. Lo fa un ascoltatore del flush
+(`models/match/regole_fissate.py`) per ogni strada di creazione, e la migration
+`20260929_regole_fissate` per le partite di prima. NULL = «eredita dalla gara»
+resta solo come ripiego per righe mai fissate. Resta intatta l'eccezione di
+`effective_distance` sul valore 1: lo spareggio a un triangolo la usa oggi, e
+cambiarla è un'altra decisione.
+
+## Emendamento (2026-09-29, ADR-075, passo 3)
+
+Gli override per turno non si modificano più «solo in setup»: si modificano
+fino all'avvio del primo turno (anche a iscrizioni aperte) e, a gara avviata,
+per i turni **non ancora avviati**, mai con la strategia casuale. La regola
+sta in `campi_modificabili.motivo_turno_non_modificabile`, e ogni cambio
+finisce nella storia della gara (`turno_N.campo`).

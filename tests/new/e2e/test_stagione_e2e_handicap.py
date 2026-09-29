@@ -13,8 +13,9 @@ contro uno che gioca al 3. Quello che fa (ADR-049) è due cose:
    rating, perché il risultato riflette l'handicap e non la forza. E «non lo
    so» non è «sono uguali»: senza categoria il rating non si muove.
 
-La finestra per assegnarle si chiude all'avvio del primo turno, e prima
-dell'avvio la pagina avvisa quanti iscritti sono ancora senza.
+Prima dell'avvio la pagina avvisa quanti iscritti sono ancora senza. Dal
+2026-09-29 (ADR-075) si cambiano anche a gara avviata, e valgono dal turno
+successivo: le partite già nate hanno le categorie fissate.
 """
 
 from __future__ import annotations
@@ -48,16 +49,18 @@ class TestLHandicapSiEredita:
     ):
         """Il direttore lo accende una volta sola, sul campionato.
 
-        Il campo della gara resta su «eredita» (`None`), che non è la stessa
-        cosa di «no»: se domani il campionato cambiasse idea, le gare
-        seguirebbero.
+        Dal 2026-09-29 (ADR-075) il valore si **copia** sulla gara quando
+        nasce: se domani il campionato cambiasse idea, l'app proporrebbe al
+        direttore di applicarlo alle gare non ancora avviate, invece di
+        spostarle da sola. Fino ad allora il campo della gara restava `None`,
+        «eredita».
         """
         campionato_id, gare, _direttore, _giocatori = gara_con_iscritti
 
         assert campionato.campionato(campionato_id).has_handicap is True
         for gara_id in gare.values():
             gara = campionato.gara(gara_id)
-            assert gara.has_handicap is None, "la gara non deve decidere da sé"
+            assert gara.has_handicap is True, "copiato dal campionato"
             assert gara.effective_has_handicap is True
 
 
@@ -132,11 +135,17 @@ class TestAssegnareLeCategorie:
         assert "non hanno una categoria" in pagina
         assert "non conteranno per l" in pagina
 
-    def test_avviato_il_turno_le_categorie_sono_congelate(
+    def test_avviato_il_turno_la_categoria_vale_dal_turno_dopo(
         self, campionato: CampionatoDriver, gara_con_iscritti
     ):
-        """Sono loro a decidere quali partite contano: cambiarle dopo l'avvio
-        riscriverebbe le regole a partita in corso."""
+        """Emendato il 2026-09-29 (ADR-075).
+
+        Prima la categoria si congelava all'avvio, perché cambiarla avrebbe
+        riscritto le partite già giocate. Ora le categorie sono fissate sulla
+        partita quando nasce: cambiarla a gara avviata vale per le partite
+        che nasceranno, e quelle del turno in corso restano come sono (lo
+        verifica `test_regole_fissate_sulla_partita.py`).
+        """
         _campionato_id, gare, direttore, giocatori = gara_con_iscritti
         gara_id = gare[1]
         for giocatore in giocatori:
@@ -147,8 +156,8 @@ class TestAssegnareLeCategorie:
 
         esito = campionato.assegna_categoria(gara_id, giocatori[0], "C")
 
-        assert esito["status"] >= 400, esito
-        assert campionato.categoria_di(gara_id, giocatori[0]) == "B"
+        assert esito["status"] < 400, esito
+        assert campionato.categoria_di(gara_id, giocatori[0]) == "C"
 
     def test_un_giocatore_non_assegna_le_categorie(
         self, campionato: CampionatoDriver, gara_con_iscritti

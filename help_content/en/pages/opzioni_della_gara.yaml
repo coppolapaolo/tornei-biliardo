@@ -188,6 +188,10 @@ blocks:
           end: if the last one weighs more, nobody takes it with two
           competitions to spare. A competition outside a championship has no
           such field, because there are no general standings to weigh it in.
+          It is the only thing that can be corrected after the competition has
+          finished: the standings are recalculated, the list of competitions
+          shows the previous weight struck through, and a line above the
+          standings says who corrected it and when.
         hint: gara.peso
 
   - type: heading
@@ -260,7 +264,7 @@ blocks:
           sets are a race: the option to play them all is not offered.
         hint: gara.multiset
       - name: "Start rule"
-        values: "default «Lag» · inside a championship it can be inherited"
+        values: "default «Lag» · inside a championship it starts from the championship's"
         text: >-
           Who takes the first shot of the match. With **First player** the
           first of the two always breaks, with no lag. With **Lag** the
@@ -269,7 +273,7 @@ blocks:
           who breaks, and may send the opponent to the table.
         hint: gara.regola_inizio
       - name: "Who breaks"
-        values: "default «Alternating» · inside a championship it can be inherited"
+        values: "default «Alternating» · inside a championship it starts from the championship's"
         text: >-
           How the break shot passes from one rack to the next. **Alternating**
           is the standard rule and switches every rack; **Alternating every
@@ -311,20 +315,24 @@ blocks:
 
   - type: options
     items:
-      - name: "Competition in draft"
+      - name: "Before the start"
         values: "everything"
-        text: "Nobody has registered yet: you can change any field."
-      - name: "Registrations open"
-        values: "almost everything"
         text: >-
-          Dates, venue, notes and capacity stay editable. Changing the format
-          and pairings is technically possible but unwise: people registered
-          knowing the earlier rules.
+          As a draft and with registrations open you can change any field, even
+          with players already registered. Every change stays in the
+          **competition's history**, at the bottom of the edit page: who made
+          it, when, what changed and, if you write it, why. Registered players
+          signed up knowing the earlier rules: the reason helps explain it.
       - name: "Competition started"
-        values: "little"
+        values: "logistics and rules"
         text: >-
-          The match format is frozen. Surrounding information (notes, tables)
-          stays editable and, with due care, results that are not yet locked.
+          Name, date, venue, fee and notes change at once. Play rules
+          (distance, discipline, who opens, who breaks, handicap, odd numbers,
+          withdrawals) can be changed and apply **from the next round**: matches
+          already created keep the rules they started with. The structure —
+          strategy, number of rounds, standings system — changes only by
+          cancelling the start. With the random strategy the rules stay as they
+          were at the start.
 
   - type: faq
     items:

@@ -216,6 +216,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # === Director only: campionato/gara creation and management ===
     "admin.campionato.create_campionato": {"director"},
     "admin.campionato.edit_campionato": {"director"},
+    # A quali gare applicare i valori nuovi del campionato (ADR-075).
+    "admin.campionato.proposta_gare": {"director"},
     "admin.campionato.campionato_detail": {"director"},
     "admin.campionato.wizard_start": {"director"},
     "admin.campionato.wizard_create": {"director"},
@@ -238,6 +240,15 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.campionato.playoff_calendario": {"director"},
     "admin.campionato.create_playoff_gara": {"director"},
     "admin.campionato.update_playoff_min": {"director"},
+    "admin.campionato.playoff_proposta_finale": {"director"},
+    "admin.campionato.playoff_proposta_inviti": {"director"},
+    "admin.competition.invia_avviso_modifiche": {"director"},
+    # Il Regolamento di gara (ADR-075): pubblico, come la pagina della gara.
+    "main.regolamento_gara": {"anonimo", "player", "director"},
+    "admin.competition.riconferma_per_conto": {"director"},
+    "admin.campionato.playoff_riconferma_per_conto": {"director"},
+    "player.riconferma_iscrizione": {"player", "director"},
+    "player.playoff_riconferma": {"player", "director"},
     "admin.campionato.playoff_add_config": {"director"},
     "admin.campionato.playoff_edit_config": {"director"},
     "admin.campionato.playoff_deactivate_config": {"director"},

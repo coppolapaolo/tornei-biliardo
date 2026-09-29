@@ -158,10 +158,16 @@ blocks:
 
   - type: text
     text: >-
-      If the rules, the payment form or the venue page live elsewhere, put them
-      in the **External link** field: they appear as a button at the bottom of
-      the showcase. This too can be written once on the championship and used
-      by all of its competitions.
+      Every competition has a public **Competition rules** page, reachable
+      from the competition page and from the showcase: it shows the settings
+      in force, from which round each change applies, the rules round by
+      round when they are not all the same, and the history of changes with
+      who made them and why. If the rules document lives elsewhere, put it in
+      the **Link to the rules** field: at the bottom of that page appears the
+      **Full rules** button. The payment form or the venue page go instead in
+      the **External link**, which appears as a button at the bottom of the
+      showcase. Both can be written once on the championship and apply to
+      all of its competitions.
 
   - type: faq
     items:

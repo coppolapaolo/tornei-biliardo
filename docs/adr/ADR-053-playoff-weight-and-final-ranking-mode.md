@@ -204,3 +204,12 @@ chi non ha giocato resta a zero.
 - ADR-047 — il sistema di classifica decide su cosa si ordina
 - `docs/reference/SPECIFICHE.md` righe 183-186 — i playoff e la cascata dei rifiuti
 - `tests/new/unit/test_playoff_classifica_finale_e_peso.py`
+
+## Emendamento (2026-09-29, ADR-075, passo 5)
+
+«Quando si può cambiare» si restringe: a inviti partiti `update_configuration`
+blocca solo **chi si qualifica** (`CRITERI_DI_QUALIFICAZIONE`: posizioni,
+posti, gare minime), non più tutta la configurazione. Come si gioca la finale
+si corregge fino al suo avvio, e se la finale esiste già il cambio le si
+propone (`models/playoff/proposta_finale.py`). Modalità e peso restano su
+`update_scoring`; tutte e tre le strade scrivono nella storia dei playoff.

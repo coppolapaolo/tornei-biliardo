@@ -57,10 +57,12 @@ blocks:
 
   - type: text
     text: >-
-      La configurazione per turno si decide **prima** che le iscrizioni si
-      aprano. Dopo l'avvio non è più modificabile, e il motivo è semplice: i
-      giocatori si sono iscritti conoscendo il formato, e i risultati già
-      registrati sono stati ottenuti con quelle regole.
+      La configurazione per turno si decide fino all'avvio del primo turno,
+      anche a iscrizioni aperte. A gara avviata si possono ancora cambiare le
+      regole dei turni **non ancora avviati**: quelli già giocati, o in corso,
+      restano con le regole con cui sono cominciati. Con la strategia casuale
+      no: lì tutti i turni esistono già dall'avvio. Ogni cambio resta nella
+      storia della gara.
 
   - type: heading
     id: cosa_vedono
@@ -84,7 +86,7 @@ blocks:
   - type: faq
     items:
       - q: "Posso cambiare regole a un solo turno in mezzo alla gara?"
-        a: "Solo se lo hai deciso prima dell'avvio. A gara iniziata il formato è congelato."
+        a: "Sì, per i turni non ancora avviati: quelli già giocati restano come sono. Il cambio resta nella storia della gara. Con la strategia casuale no, perché tutti i turni nascono all'avvio."
       - q: "La classifica regge formati diversi fra i turni?"
         a: "Sì: vittorie e differenza triangoli si sommano comunque. Attenzione però al sistema «Triangoli», dove turni con distanze diverse pesano diversamente."
       - q: "Vale anche per le gare a tabellone?"

@@ -23,9 +23,9 @@ blocks:
       - name: "Draft"
         text: "The competition exists but nobody can register. This is when you can change any setting."
       - name: "Registrations open"
-        text: "The competition is public and players sign themselves up. Play settings remain editable, with care."
+        text: "The competition is public and players sign themselves up. Settings remain editable, and every change stays in the competition's history."
       - name: "In progress"
-        text: "The first round has started. The match format is frozen: changing it would falsify results already recorded."
+        text: "The first round has started. The competition's structure is fixed; venue, time and play rules can still be changed, and the rules apply from the next round."
 
   - type: heading
     id: aprire
@@ -114,6 +114,21 @@ blocks:
     text: >-
       If both constraints are active, the app checks parity first and the
       maximum second.
+
+  - type: heading
+    id: riconferma
+    title: "If you change the date, venue or fee"
+  - type: text
+    text: >-
+      The entrants receive a notification, and if the change may affect their
+      decision to take part — the date, the time by more than an hour, the
+      venue, a higher fee — the app asks them whether they are still in. In
+      the list of entrants whoever has not answered shows **to reconfirm**,
+      visible to everyone like the entry itself. Nobody is removed
+      automatically: whoever does not answer stays entered, and you decide.
+      If a player confirms to you in person, tap the icon next to their name:
+      it stays on record that you did it. If you put the previous value back,
+      the request disappears.
 
   - type: heading
     id: chiudere

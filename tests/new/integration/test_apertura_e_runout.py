@@ -160,13 +160,21 @@ class TestChiHaApertoSiScriveSulTriangolo:
         assert dopo == prima
 
     def test_la_gara_eredita_dal_campionato(self, db_session):
+        """La gara segue il campionato; la partita già nata tiene la sua regola.
+
+        Emendato il 2026-09-29 (ADR-075): la regola si fissa sulla partita
+        quando nasce, quindi un cambio del campionato vale per le partite che
+        nasceranno, non per quelle già in gioco.
+        """
         gioc = _giocatori(db_session)
         campionato, gara, match = _match_di_gara(db_session, gioc, break_rule=None)
+        prima = match.effective_break_rule
         campionato.default_break_rule = BreakRule.ALTERNATE_TWO.value
         db_session.commit()
 
         assert gara.break_rule is None  # NULL = eredita
-        assert match.effective_break_rule is BreakRule.ALTERNATE_TWO
+        assert gara.effective_break_rule is BreakRule.ALTERNATE_TWO
+        assert db_session.get(Match, match.id).effective_break_rule is prima
 
     def test_con_l_acchito_non_registrato_non_si_inventa_chi_apre(self, db_session):
         """`None`, non un ripiego: è il segnale che fa comparire le domande."""

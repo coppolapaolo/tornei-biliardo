@@ -1,0 +1,58 @@
+{# templates/components/_storia_modifiche.html — Design System 7c
+   La storia delle modifiche (ADR-075): una voce per salvataggio, dalla più
+   recente, con chi, quando, da dove, perché e le righe prima → dopo.
+   Richiede `storia` (lista di SettingsChange); `storia_da` facoltativo, la
+   provenienza che è già ovvia dalla pagina e non si ripete a ogni voce. I nomi dei campi e i valori
+   passano da `etichetta_storia` / `valore_storia`, nella lingua di chi legge. #}
+<div class="c7-card mt-4" id="storia-modifiche">
+  <h3 class="mb-1">{{ _('Storia delle modifiche') }}</h3>
+  <p class="c7-nota mb-3">{{ _('Ogni modifica resta scritta: chi, quando, cosa e perché. Le modifiche fatte prima che la storia esistesse non sono registrate.') }}</p>
+  {% if storia %}
+  <ol class="list-unstyled mb-0">
+    {% for voce in storia %}
+    <li class="{% if not loop.last %}mb-3 pb-3{% endif %}" {% if not loop.last %}style="border-bottom:1px solid var(--c7-line)"{% endif %}>
+      <div style="font-size:13px;color:var(--c7-ink-muted)">
+        {{ voce.created_at|datetime_local }}
+        · {% if voce.author %}{{ voce.author.username }}{% else %}{{ _('correzione dei dati') }}{% endif %}
+        {%- if voce.author_role == 'admin' %} ({{ _('amministratore') }}){% elif voce.author_role == 'direttore' %} ({{ _('direttore') }}){% endif %}
+        {%- if voce.source == 'campionato' %} · {{ _('modificato dal campionato') }}{% elif voce.source == 'playoff' and storia_da != 'playoff' %} · {{ _('modificato dai playoff') }}{% elif voce.source == 'script' %} · {{ _('correzione dei dati') }}{% endif %}
+        {%- if voce.from_round %} · {{ _('vale dal turno %(n)s', n=voce.from_round) }}{% endif %}
+      </div>
+      {% if voce.action == 'annulla_avvio' %}
+      <div class="fw-bold mt-1">{{ _('Avvio annullato') }}</div>
+      {% elif voce.action == 'giocatore_aggiunto' %}
+      <div class="fw-bold mt-1">{{ _('Giocatore aggiunto a mano') }}</div>
+      {% elif voce.action == 'giocatore_tolto' %}
+      <div class="fw-bold mt-1">{{ _('Giocatore tolto a mano') }}</div>
+      {% elif voce.action == 'risposta_per_conto' %}
+      <div class="fw-bold mt-1">{{ _('Risposta registrata per conto del giocatore') }}</div>
+      {% elif voce.action == 'riconferma' %}
+      <div class="fw-bold mt-1">{{ _('Iscrizione riconfermata per conto del giocatore') }}</div>
+      {% elif voce.action == 'ricalcolo' %}
+      <div class="fw-bold mt-1">{{ _('Correzione a gara finita: la classifica è stata ricalcolata') }}</div>
+      {% elif voce.action == 'proposta_accettata' %}
+      <div class="fw-bold mt-1">{{ _('Proposta di inviti accettata') }}</div>
+      {% elif voce.action == 'proposta_rifiutata' %}
+      <div class="fw-bold mt-1">{{ _('Proposta di inviti rifiutata: gli inviti restano come sono') }}</div>
+      {% endif %}
+      {% if voce.fields %}
+      <ul class="list-unstyled mt-1 mb-0">
+        {% for riga in voce.fields %}
+        <li>
+          <span class="fw-bold">{{ etichetta_storia(riga.field) }}</span>:
+          <s style="color:var(--c7-ink-muted)">{{ valore_storia(riga.field, riga.old_value) }}</s>
+          → {{ valore_storia(riga.field, riga.new_value) }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% if voce.reason %}
+      <div class="mt-1" style="font-style:italic">«{{ voce.reason }}»</div>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  {% else %}
+  <p class="c7-nota mb-0">{{ _('Nessuna modifica registrata.') }}</p>
+  {% endif %}
+</div>

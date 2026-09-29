@@ -8,7 +8,6 @@ Dependencies: models.base.db, models.user.models
 from typing import TYPE_CHECKING
 from models.base import db, utc_now
 from models.status_enum import (
-    GaraStatus,
     EntityType,
     ClassificationSystem,
 )
@@ -97,6 +96,9 @@ class Campionato(db.Model):
     banner_path = db.Column(db.String(255), nullable=True)
     external_url = db.Column(db.String(500), nullable=True)
     external_label = db.Column(db.String(60), nullable=True)
+    #: Il documento del regolamento, per tutte le gare che non ne hanno uno
+    #: (ADR-075, «Regolamento completo»).
+    rules_url = db.Column(db.String(500), nullable=True)
     # La descrizione libera, che il campionato non aveva: una gara ce l'ha da
     # sempre, e senza, la vetrina del campionato sarebbe un calendario e basta
     # — mai una riga che dica di cosa si tratta e a chi è aperto.
@@ -176,19 +178,14 @@ class Campionato(db.Model):
     )
 
     def can_be_modified(self):
-        """Verifica se il campionato può essere modificato"""
-        # Fix: Properly access the relationship collection
-        gare = getattr(self, "gare", [])
-        for gara in gare:
-            # Cannot modify if gara has advanced status or has inscriptions
-            if gara.status in [
-                GaraStatus.INSCRIPTION.value,
-                GaraStatus.PLAYING.value,
-                GaraStatus.COMPLETED.value,
-            ]:
-                return False
-            if getattr(gara, "inscriptions", []):  # Se ha iscrizioni
-                return False
+        """Il campionato si modifica sempre (ADR-075).
+
+        Fino al 2026-09-29 bastava una gara con le iscrizioni aperte, in corso
+        o conclusa per bloccarlo, e una gara finita lo bloccava per sempre. Ora
+        i suoi valori sono quelli **proposti** alle gare: cambiarli non tocca le
+        gare già create, a cui l'app li propone una per una. Il sistema di
+        classifica ha la sua regola (`TournamentService._verifica_cambio_sistema`).
+        """
         return True
 
     def can_be_deleted(self):

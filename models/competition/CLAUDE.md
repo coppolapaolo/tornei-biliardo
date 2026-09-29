@@ -81,6 +81,12 @@ if lock == RoundLockStatus.LOCKED:
 ### Inscription
 **Key Fields:** `user_id`, `gara_id`, `is_withdrawn`, `is_forfeit`, `is_waitlist`, `waitlist_position`, `initial_order`
 
+`accepted_terms` (ADR-075): data, ora, sala e quota che il giocatore ha
+accettato, scritte alla nascita dell'iscrizione da un ascoltatore
+(`riconferma.registra_ascoltatore`) e a ogni riconferma. «Da riconfermare»
+**si calcola** (`campi_da_riconfermare`): data, orario spostato di più di
+un'ora, sala, quota in aumento. Nessun ritiro automatico.
+
 ---
 
 ## Services
@@ -217,8 +223,10 @@ via API:
 | `POST /admin/gara/<id>/round-config/<n>` | Upsert (JSON body) |
 | `DELETE /admin/gara/<id>/round-config/<n>` | Rimuovi override (idempotente) |
 
-Bloccato fuori da setup → 409 Conflict. Un round senza override usa i
-default della gara.
+Dal 2026-09-29 (ADR-075) si cambiano i turni non ancora avviati, anche a
+gara avviata; mai con la strategia casuale, dove esistono già tutti
+(`campi_modificabili.motivo_turno_non_modificabile`, 409 altrimenti). Un
+round senza override usa i default della gara.
 
 I match creati dal round-creation sono popolati con i valori effettivi
 (override ∨ default gara) tramite l'helper `resolve_round_overrides(gara, n)`

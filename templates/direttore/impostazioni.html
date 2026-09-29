@@ -61,7 +61,7 @@
   {# In preparazione turni ed esercizi si modificano: sono nella pagina
      della gara, dove la fase li elenca. Qui il rimando. #}
   <div class="c7-rows">
-    {{ d.riga('fa-list-ol', _('Turni e distanze'), _('si modificano dalla pagina della gara, fino all’apertura delle iscrizioni'),
+    {{ d.riga('fa-list-ol', _('Turni e distanze'), _('si modificano dalla pagina della gara, fino all’avvio del primo turno'),
               href=url_for('admin.competition.gara_detail', gara_id=gara.id) ~ '#sezioneTurni') }}
   </div>
   {% else %}

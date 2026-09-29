@@ -32,6 +32,8 @@ blocks:
         text: "When someone proposes a friendly, and when they answer one of yours."
       - name: "Changes in registrations"
         text: "If you come off the waitlist, or if a director adds you to or removes you from a competition."
+      - name: "A competition you entered has changed"
+        text: "If the director changes the venue, the date, the time by more than an hour, raises the fee or changes the rules of play. Changes made close together arrive together, in a single notification, about half an hour after the last one; straight away if the competition starts within three hours. Name, tables and small time adjustments stay only in the competition's history."
       - name: "Play-off invitations"
         text: "If you qualify for a championship final, with the invitation to accept or decline."
       - name: "Milestones reached"

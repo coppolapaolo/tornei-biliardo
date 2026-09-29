@@ -61,9 +61,10 @@ copia: se il calendario cambia si cambia là, e tutti i test seguono.
    **«numero esatto di rack»**, mette minimo 6 e massimo 15, accende lo
    spareggio fino al terzo posto, e dichiara gli otto tavoli della sala.
 3. Sulla **quarta gara** apre il pannello degli override e configura i tre
-   turni uno per uno. Questo si può fare **solo finché la gara è in setup**:
-   dopo l'avvio il pannello rifiuta le modifiche, perché cambiare il formato a
-   metà gara falserebbe i turni già giocati.
+   turni uno per uno. Questo si può fare **fino all'avvio del primo turno**,
+   anche a iscrizioni aperte; dopo, solo per i turni non ancora avviati, e mai
+   con la strategia casuale *(emendato il 2026-09-29, ADR-075: prima solo in
+   setup)*. I turni già giocati restano con le regole con cui sono cominciati.
 
 **Cosa può andare storto qui**: una gara datata prima della precedente viene
 rifiutata; un override su un turno che non esiste (il quarto, di una gara che
@@ -217,9 +218,10 @@ distanza 5 — perché in quel caso la differenza triangoli è solo
    aggiornato a ogni salvataggio: *«N iscritti su M non hanno una categoria: le
    loro partite non conteranno per l'Elo, e dopo l'avvio non potrai più
    cambiarle»*.
-4. **All'avvio del primo turno la finestra si chiude.** Le categorie decidono
-   quali partite contano per l'Elo: cambiarle dopo sarebbe riscrivere le regole
-   a partita in corso.
+4. **A gara avviata una categoria nuova vale dal turno successivo.** Le
+   categorie decidono quali partite contano per l'Elo, e ogni partita tiene
+   quelle che valevano quando è nata *(emendato il 2026-09-29, ADR-075: prima
+   la finestra si chiudeva all'avvio)*.
 5. Dalla seconda gara in poi il lavoro è quasi tutto fatto: iscrivendosi, ogni
    giocatore **si porta dietro la categoria** della gara precedente dello
    stesso campionato. Il direttore corregge solo chi è cambiato di categoria, e

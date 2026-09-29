@@ -76,9 +76,13 @@ Defines playoff rules for a campionato.
   Con `campionato_plus_playoff` la finale deve avere il sistema del
   campionato; con `playoff_only` è libero e il tabellone porta POSITION
   (`PlayoffService._verifica_finale_sommabile`, SPECIFICHE.md riga 289).
-  Si modificano solo prima dell'avvio: dopo, la finale esiste e la si
-  cambia dal form della gara, che non le impone strategia e sistema del
-  campionato
+  Dal 2026-09-29 (ADR-075) a inviti partiti si bloccano solo i **criteri
+  di qualificazione** (`CRITERI_DI_QUALIFICAZIONE`: posizioni, posti, gare
+  minime); il resto si corregge fino all'avvio della finale. La finale
+  nasce copiando i valori e da lì ha i suoi: correggere la configurazione
+  **propone** il cambio alla finale (`proposta_finale.py`), come il
+  campionato fa con le sue gare. Dopo l'avvio la finale si cambia dal form
+  della gara
 
 ### PlayoffQualification
 Individual player qualification record.
@@ -117,6 +121,22 @@ CONFIRMED      DECLINED → invite next eligible
 ```
 
 ---
+
+## Storia dei playoff (ADR-075)
+
+Ogni servizio che cambia la configurazione o la lista scrive una voce con
+`playoff_config_id` (`_scrivi_nella_storia`): `update_configuration`,
+`update_min_garas`, `add_configuration`, `deactivate_configuration`,
+`update_scoring`, `aggiorna_calendario`, e gli strumenti a mano
+`admin_add_player` / `admin_remove_player` / `respond_on_behalf` (azioni
+`giocatore_aggiunto`, `giocatore_tolto`, `risposta_per_conto`, con la riga
+`giocatore`). Chi il direttore iscrive alla finale porta `inscribed_by_id`.
+
+Una correzione che sposta la classifica dopo gli inviti (peso di una gara,
+punti per posizione) produce una **proposta** (`proposta_inviti.py`): è il
+piano di `riallineamento.pianifica`, che il direttore accetta (`esegui` con
+`classifica_corretta=True`, testi e notifiche dicono «classifica corretta»)
+o rifiuta. Una proposta rifiutata non si ripresenta finché non cambia.
 
 ## Do Not
 

@@ -122,6 +122,8 @@ from .location.models import (
 from .demand.models import DemandSignal, DemandSignalStatus
 from .squadra.models import Squadra
 from .categoria.models import Categoria
+from .storia.models import SettingsChange, SettingsChangeField
+from .storia.avvisi import SettingsNotice
 from .feedback.models import (
     FeedbackReport,
     FeedbackStatus,
@@ -277,6 +279,9 @@ __all__ = [
     "DayOfWeek",
     "Squadra",
     "Categoria",
+    "SettingsChange",
+    "SettingsChangeField",
+    "SettingsNotice",
     "FeedbackReport",
     "FeedbackStatus",
     "FeedbackSyncState",

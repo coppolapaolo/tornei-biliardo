@@ -89,6 +89,12 @@
       <input type="text" class="form-control" id="external_label" name="external_label"
              value="{{ campionato.external_label or '' }}" maxlength="60"
              placeholder="{{ _('Regolamento') }}">
+      {# Il documento del regolamento (ADR-075): vale per tutte le gare che
+         non ne hanno uno, come la locandina. #}
+      <label class="c7-label mt-3" for="rules_url">{{ _("Link al regolamento") }} · {{ _("opzionale") }}</label>
+      <input type="url" class="form-control" id="rules_url" name="rules_url"
+             value="{{ campionato.rules_url or '' }}" placeholder="https://…">
+      <div class="form-text">{{ _("Compare come «Regolamento completo» nella pagina «Regolamento di gara» di ogni gara che non ne ha uno suo.") }}</div>
     </div>
     <button type="submit" class="btn btn-primary mt-3 w-100">
       <i class="fa-solid fa-floppy-disk me-2"></i>{{ _("Salva") }}

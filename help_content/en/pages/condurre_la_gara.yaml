@@ -404,9 +404,8 @@ blocks:
         hint: gara.peso
       - name: "Who breaks"
         text: >-
-          The break rule. «Inherits» means the competition uses the one chosen
-          for the whole championship; if you picked another one when editing
-          the competition, the row says so.
+          The break rule. It starts equal to the championship's; if you picked
+          another one when editing the competition, the row says so.
       - name: "Allowed dates"
         text: >-
           The competitions of a championship stay in order: competition 4
@@ -467,4 +466,4 @@ blocks:
       - q: "I cancelled a round by mistake."
         a: "Start it again: the app will re-form the pairs. They will not necessarily be the same as before, because the pairing is recalculated."
       - q: "Can I change the distance halfway through?"
-        a: "The format is frozen at the start. If you need a different distance for a specific round, it has to be set before kick-off, while the competition is still a draft."
+        a: "Yes, from «Edit»: it applies from the next round, and matches already created keep the distance they started with. The change stays in the competition's history. Not with the random strategy, where every round is created at the start."

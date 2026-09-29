@@ -131,6 +131,7 @@ def salva_gara_vetrina(gara_id):
             slug=request.form.get("slug"),
             external_url=request.form.get("external_url"),
             external_label=request.form.get("external_label"),
+            rules_url=request.form.get("rules_url"),
         )
         flash(_("Vetrina aggiornata."), "success")
     except DomainError as errore:

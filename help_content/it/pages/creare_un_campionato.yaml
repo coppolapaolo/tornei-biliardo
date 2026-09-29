@@ -80,10 +80,10 @@ blocks:
     text: >-
       Tutte le gare di un campionato usano lo **stesso** sistema di
       classifica, e anche la finale dei playoff quando il suo punteggio si
-      somma a quello della stagione: non si possono sommare mele e pere. Sceglilo con attenzione ora. Puoi cambiarlo solo finché nessuna
-      gara ha aperto le iscrizioni o ha già degli iscritti, e allora il cambio
-      vale per tutte le gare. Dopo non si può più: cambieresti le regole a chi
-      si è iscritto o ha già giocato.
+      somma a quello della stagione: non si possono sommare mele e pere. Sceglilo con attenzione ora. Puoi cambiarlo finché nessuna
+      gara è stata avviata, anche se ha già degli iscritti, e allora il cambio
+      vale per tutte le gare e resta nella storia di ciascuna. Dopo il primo
+      avvio non si può più: cambieresti le regole a chi ha già giocato.
 
   - type: heading
     id: passo2
@@ -102,7 +102,9 @@ blocks:
     text: >-
       Sono **valori di partenza**, non regole ferree: ogni singola gara resta
       modificabile. Servono a non ridigitare le stesse dieci scelte per sei
-      serate.
+      serate. Se più avanti ne cambi uno, l'app ti chiede a quali gare già
+      create, e non ancora avviate, applicarlo: sono già spuntate quelle che
+      avevano il valore di prima.
 
   - type: note
     tone: info
@@ -142,9 +144,9 @@ blocks:
   - type: note
     tone: info
     text: >-
-      Ogni gara può discostarsi, oppure lasciare scritto «eredita dal
-      campionato» e seguirlo anche se un domani lo cambi. La scelta si blocca
-      quando la gara comincia.
+      Ogni gara nasce con la regola del campionato e può discostarsi. Se un
+      domani cambi quella del campionato, l'app ti chiede a quali gare non
+      ancora avviate applicarla: nessuna cambia da sola.
 
   - type: heading
     id: punti_posizione
@@ -201,7 +203,10 @@ blocks:
         text: >-
           Le date devono essere in ordine crescente: la gara 2 non può
           precedere la gara 1. Puoi crearle tutte subito, con le date del
-          calendario, oppure una alla volta.
+          calendario, oppure una alla volta. Se poi sposti una gara oltre la
+          successiva, l'app ti propone di spostare anche le gare che scavalca
+          dello stesso numero di giorni: scegli tu se farlo, tornare al
+          modulo o lasciare tutto com'era.
 
   - type: heading
     id: classifica_generale
@@ -226,6 +231,6 @@ blocks:
       - q: "Cosa succede se annullo una gara del campionato?"
         a: "I suoi risultati escono dalla classifica generale. Le altre gare non ne risentono."
       - q: "Posso cambiare i punti per posizione a campionato iniziato?"
-        a: "Sì, dalle impostazioni del campionato. Tieni presente che la classifica generale si ricalcola con i valori nuovi, quindi le gare già concluse cambiano punteggio: se il campionato è in corso, avvisa i partecipanti."
+        a: "Sì, dalle impostazioni del campionato. La classifica generale si ricalcola con i valori nuovi, quindi le gare già concluse cambiano punteggio: sopra la classifica compare una riga che lo dice, con chi ha fatto la correzione e il motivo. Se gli inviti ai playoff sono già partiti e la correzione cambia chi rientra nei posti, l'app ti propone come aggiornarli."
       - q: "Non vedo la tabella dei punti per posizione."
         a: "Compare solo sui campionati a eliminazione diretta o doppio KO. Con Amalfi, casuale o girone all'italiana la classifica non è per posizione e quei punti non servono."

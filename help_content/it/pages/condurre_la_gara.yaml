@@ -414,9 +414,8 @@ blocks:
         hint: gara.peso
       - name: "Chi spacca"
         text: >-
-          La regola di apertura. «Eredita» vuol dire che la gara usa quella
-          scelta per tutto il campionato; se nella modifica della gara ne hai
-          scelta un'altra, la riga lo dice.
+          La regola di apertura. Nasce uguale a quella del campionato; se nella
+          modifica della gara ne hai scelta un'altra, la riga lo dice.
       - name: "Date ammesse"
         text: >-
           Le gare di un campionato stanno in ordine: la gara 4 non può
@@ -478,4 +477,4 @@ blocks:
       - q: "Ho annullato il turno per sbaglio."
         a: "Riavvialo: l'app riformerà le coppie. Non saranno necessariamente le stesse di prima, perché l'abbinamento viene ricalcolato."
       - q: "Posso cambiare la distanza a metà gara?"
-        a: "Il formato è congelato all'avvio. Se serve una distanza diversa per un turno specifico, va impostata prima della partenza, quando la gara è ancora in bozza."
+        a: "Sì, da «Modifica»: vale dal turno successivo, e le partite già nate restano alla distanza con cui sono cominciate. Il cambio resta nella storia della gara. Con la strategia casuale no, perché tutti i turni nascono all'avvio."

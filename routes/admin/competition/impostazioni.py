@@ -16,7 +16,6 @@ from flask_login import login_required
 
 from models import db, Gara
 from models.competition.direttore_view import contesto_campionato
-from models.status_enum import GaraStatus
 from utils import gara_manager_required
 
 from . import competition_bp
@@ -33,7 +32,9 @@ def gara_impostazioni(gara_id):
         "direttore/impostazioni.html",
         gara=gara,
         user_can_manage=True,
-        in_preparazione=gara.status == GaraStatus.SETUP.value,
+        # Fino all'avvio i turni si configurano, anche a iscrizioni aperte
+        # (ADR-075): prima si chiudevano all'apertura delle iscrizioni.
+        in_preparazione=not gara.is_avviata,
         campionato_ctx=contesto_campionato(gara),
         **contesto,
     )

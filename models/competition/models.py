@@ -156,6 +156,10 @@ class Gara(SoftDeleteMixin, db.Model):
     banner_path = db.Column(db.String(255), nullable=True)
     external_url = db.Column(db.String(500), nullable=True)
     external_label = db.Column(db.String(60), nullable=True)
+    #: Il documento del regolamento (ADR-075): in fondo alla pagina
+    #: «Regolamento di gara», come «Regolamento completo». Se manca vale
+    #: quello del campionato, in diretta come la locandina.
+    rules_url = db.Column(db.String(500), nullable=True)
     #: Indirizzo leggibile facoltativo, accanto a `public_token`: `/g/<slug>`
     #: e `/g/<token>` aprono la stessa pagina. Il token non si tocca mai — le
     #: locandine già stampate devono continuare a funzionare.
@@ -509,6 +513,15 @@ class Gara(SoftDeleteMixin, db.Model):
         return None
 
     @property
+    def effective_rules_url(self) -> Optional[str]:
+        """Il documento del regolamento: della gara, o del suo campionato."""
+        if self.rules_url:
+            return self.rules_url
+        if self.campionato is not None:
+            return self.campionato.rules_url or None
+        return None
+
+    @property
     def effective_external_link(self) -> Optional[Tuple[str, Optional[str]]]:
         """Link fuori dall'applicazione: (indirizzo, etichetta), o `None`.
 
@@ -839,9 +852,27 @@ class Gara(SoftDeleteMixin, db.Model):
         return self.status in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value]
 
     def can_be_modified(self):
-        """Verifica se la gara può essere modificata"""
-        inscriptions_list = getattr(self, "inscriptions", []) or []
-        return not inscriptions_list and self.status == GaraStatus.SETUP.value
+        """Si può aprire il modulo di modifica: la gara non è chiusa.
+
+        Fino al 2026-09-29 bastava **un** iscritto per chiudere il modulo, e la
+        finale dei playoff — che nasce con gli iscritti dentro — non si poteva
+        correggere mai. Ora (ADR-075) si modifica fino alla fine della gara, e
+        cosa si può cambiare lo dice campo per campo
+        `models.competition.campi_modificabili`: la logistica sempre, le regole
+        dal turno successivo, la struttura solo prima dell'avvio. Ogni
+        correzione resta nella storia della gara.
+        """
+        return self.status not in (
+            GaraStatus.COMPLETED.value,
+            GaraStatus.CANCELLED.value,
+        )
+
+    @property
+    def is_avviata(self) -> bool:
+        """Il primo turno è partito (e non è stato annullato)."""
+        from models.competition.campi_modificabili import e_avviata
+
+        return e_avviata(self)
 
     def can_be_deleted(self):
         """Verifica se la gara può essere cancellata"""
@@ -1062,6 +1093,18 @@ class Inscription(db.Model):
     is_withdrawn = db.Column(db.Boolean, default=False, nullable=False)
     withdrawn_at = db.Column(db.DateTime, nullable=True)
 
+    #: Le condizioni che il giocatore ha accettato (data, ora, sala, quota),
+    #: in JSON: si scrivono quando l'iscrizione nasce e quando riconferma.
+    #: Se quelle della gara cambiano oltre soglia, gli si chiede se c'è ancora
+    #: (ADR-075, `models/competition/riconferma.py`).
+    accepted_terms = db.Column(db.Text, nullable=True)
+
+    @property
+    def campi_da_riconfermare(self) -> list:
+        from .riconferma import da_riconfermare
+
+        return da_riconfermare(self)
+
     # Forfait status (for withdraw policy handling)
     is_forfeit = db.Column(db.Boolean, default=False, nullable=False)
     forfeit_at = db.Column(db.DateTime, nullable=True)
@@ -1110,3 +1153,10 @@ class Inscription(db.Model):
 
     def __repr__(self):
         return f"<Inscription {self.user_id} -> {self.gara_id}>"
+
+
+# Un'iscrizione ricorda le condizioni che il giocatore ha accettato, per ogni
+# strada di creazione (ADR-075): l'ascoltatore sta in `riconferma`.
+from .riconferma import registra_ascoltatore  # noqa: E402
+
+registra_ascoltatore()

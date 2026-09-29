@@ -106,4 +106,12 @@
     <hr class="c7-divider">
     <p class="text-muted" style="margin: 0; font-size: 13px; line-height: 1.55;">{{ gara.description }}</p>
     {% endif %}
+
+    {# Il Regolamento di gara (ADR-075): tutte le impostazioni, turno per
+       turno, e la storia delle modifiche. Visibile a tutti. #}
+    {% if feature_visible('main.regolamento_gara') %}
+    <a class="btn btn-secondary w-100 mt-3" href="{{ url_for('main.regolamento_gara', gara_id=gara.id) }}">
+      <i class="fas fa-scale-balanced"></i> {{ _('Regolamento di gara') }}
+    </a>
+    {% endif %}
 </section>

@@ -23,9 +23,9 @@ blocks:
       - name: "Bozza"
         text: "La gara esiste ma nessuno può iscriversi. È il momento in cui puoi cambiare qualunque impostazione."
       - name: "Iscrizioni aperte"
-        text: "La gara è pubblica e i giocatori si iscrivono da soli. Le impostazioni di gioco restano modificabili con prudenza."
+        text: "La gara è pubblica e i giocatori si iscrivono da soli. Le impostazioni restano modificabili, e ogni modifica resta nella storia della gara."
       - name: "In corso"
-        text: "Il primo turno è partito. Il formato di gioco è congelato: cambiarlo falserebbe i risultati già registrati."
+        text: "Il primo turno è partito. La struttura della gara è fissata; sala, orario e regole di gioco si possono ancora cambiare, e le regole valgono dal turno successivo."
 
   - type: heading
     id: aprire
@@ -110,6 +110,20 @@ blocks:
     text: >-
       Se sono attivi tutti e due i vincoli, l'app controlla prima la parità e
       poi il numero massimo.
+
+  - type: heading
+    id: riconferma
+    title: "Se cambi data, sala o quota"
+  - type: text
+    text: >-
+      Gli iscritti ricevono una notifica, e se il cambio può spostare la loro
+      decisione di esserci — la data, l'orario di più di un'ora, la sala, una
+      quota che sale — l'app chiede loro se ci sono ancora. Nell'elenco degli
+      iscritti chi non ha risposto porta **da riconfermare**, visibile a
+      tutti come l'iscrizione. Nessuno viene tolto da solo: chi non risponde
+      resta iscritto, e decidi tu. Se un giocatore ti conferma a voce, tocca
+      l'icona accanto al suo nome: resta scritto che l'hai fatto tu. Se
+      rimetti il valore di prima, la richiesta sparisce.
 
   - type: heading
     id: chiudere

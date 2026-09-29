@@ -118,7 +118,7 @@ class TestConfigManagement:
         assert updated.positions_to == 8
         assert updated.max_participants == 8
 
-    def test_update_configuration_blocked_after_avvio(self, db_session):
+    def test_dopo_gli_inviti_si_bloccano_solo_i_criteri(self, db_session):
         c = _make_campionato(db_session, terminated=True)
         cfg = _make_config(db_session, c)
         players = [_make_user(db_session) for _ in range(6)]
@@ -130,8 +130,11 @@ class TestConfigManagement:
 
         PlayoffService.start_playoff(c.id)
 
-        with pytest.raises(ValueError, match="Non modificabile"):
-            PlayoffService.update_configuration(cfg.id, name="X")
+        # Dal 2026-09-29 (ADR-075) a inviti partiti si bloccano solo i
+        # criteri di qualificazione; come si gioca la finale si corregge.
+        with pytest.raises(ValueError, match="chi si qualifica"):
+            PlayoffService.update_configuration(cfg.id, max_participants=8)
+        assert PlayoffService.update_configuration(cfg.id, name="X").name == "X"
 
     def test_add_configuration(self, db_session):
         c = _make_campionato(db_session, terminated=True)

@@ -56,10 +56,12 @@ blocks:
 
   - type: text
     text: >-
-      Per-round setup is decided **before** registrations open. After the start
-      it can no longer be changed, and the reason is simple: players registered
-      knowing the format, and results already recorded were obtained under
-      those rules.
+      Per-round setup is decided until the first round starts, even with
+      registrations open. Once the competition is under way you can still
+      change the rules of rounds **not yet started**: rounds already played,
+      or in progress, keep the rules they started with. Not with the random
+      strategy, where every round exists from the start. Every change stays in
+      the competition's history.
 
   - type: heading
     id: cosa_vedono
@@ -83,7 +85,7 @@ blocks:
   - type: faq
     items:
       - q: "Can I change the rules of a single round mid-competition?"
-        a: "Only if you decided it before the start. Once the competition is under way the format is frozen."
+        a: "Yes, for rounds not yet started: rounds already played stay as they are. The change stays in the competition's history. Not with the random strategy, where every round is created at the start."
       - q: "Do the standings cope with different formats between rounds?"
         a: "Yes: wins and rack difference add up regardless. Watch out with the «Racks» system though, where rounds of different distances carry different weight."
       - q: "Does it work for bracket competitions too?"

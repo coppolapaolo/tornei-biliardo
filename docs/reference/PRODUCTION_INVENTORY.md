@@ -66,6 +66,8 @@ Per costruire la production allowlist, scorri ogni area in Sezione 1 e marca esp
 | `/admin/gara/create_standalone` | GET, POST | `admin.competition.create_gara_standalone` | `@director_or_admin_required` | UI page + action | Crea gara standalone |
 | `/admin/gara/create` | POST | `admin.competition.create_gara` | `@login_required` (permessi sul campionato verificati inline) | action | Crea gara entro campionato (POST via wizard) |
 | `/admin/gara/<int:gara_id>/edit` | GET, POST | `admin.competition.edit_gara` | `@gara_manager_required` | UI page + action | Modifica configurazione gara |
+| `/admin/gara/<int:gara_id>/avviso/invia` | POST | `admin.competition.invia_avviso_modifiche` | `@gara_manager_required` | action | Manda subito agli iscritti la notifica accorpata delle modifiche (ADR-075) |
+| `/admin/gara/<int:gara_id>/iscrizione/<int:inscription_id>/riconferma` | POST | `admin.competition.riconferma_per_conto` | `@gara_manager_required` | action | Il direttore riconferma l'iscrizione al posto del giocatore (ADR-075) |
 | `/admin/gara/<int:gara_id>/preparazione/<passo>` | GET | `admin.competition.gara_preparazione` | `@gara_manager_required` | UI page | I passi della preparazione della gara — turni, tavoli, esercizi, direttori — uno per pagina sul telefono (canvas 1.2–1.6) |
 | `/admin/gara/<int:gara_id>/impostazioni` | GET | `admin.competition.gara_impostazioni` | `@gara_manager_required` | UI page | «Impostazioni gara»: direttori, vetrina, tavoli, squadre e categorie in ogni fase; turni e accoppiamento in sola lettura dopo l'avvio (canvas pagina gara a fasi) |
 | `/admin/gara/<int:gara_id>/vetrina` | GET | `admin.competition.gara_vetrina` | `@gara_manager_required` | UI page | Vetrina social: locandina, link esterno, indirizzo leggibile (issue #235) |
@@ -444,6 +446,7 @@ cosa che il rating decide da solo è **quali partite entrano nell'Elo**:
 | `/player/gara/<int:gara_id>` | GET | `player.gara_detail` | `@login_required` | UI page | Dettaglio gara per player |
 | `/player/gara/<int:gara_id>/inscribe` | POST | `player.inscribe_to_gara` | `@login_required` | action | Iscrivi player a gara |
 | `/player/gara/<int:gara_id>/unsubscribe` | POST | `player.unsubscribe_from_gara` | `@login_required` | action | Disiscriviti da gara |
+| `/player/gara/<int:gara_id>/riconferma` | POST | `player.riconferma_iscrizione` | `@login_required` | action | «Ci sono»: riconferma dopo un cambio di data, sala o quota (ADR-075) |
 | `/player/history` | GET | `player.history` | `@login_required` | UI page | Storico gare partecipate |
 
 **Matches (in Gara):**
@@ -466,6 +469,7 @@ cosa che il rating decide da solo è **quali partite entrano nell'Elo**:
 |-----------|--------|----------|-----------|------|-------------|
 | `/player/playoff/invitation/<int:qualification_id>` | GET | `player.playoff_invitation` | `@login_required` | UI page | Visualizza invito playoff |
 | `/player/playoff/confirm/<int:qualification_id>` | POST | `player.playoff_confirm` | `@login_required` | action | Accetta playoff |
+| `/player/playoff/riconferma/<int:qualification_id>` | POST | `player.playoff_riconferma` | `@login_required` | action | Riconferma l'invito accettato dopo un cambio (ADR-075) |
 | `/player/playoff/decline/<int:qualification_id>` | POST | `player.playoff_decline` | `@login_required` | action | Rifiuta playoff |
 
 **Notifications & Venue Manager:**
@@ -508,6 +512,7 @@ cosa che il rating decide da solo è **quali partite entrano nell'Elo**:
 | `/campionato/<int:campionato_id>/public` | GET | `main.campionato_detail_public` | None (public) | UI page | Dettaglio campionato pubblico |
 | `/garas` | GET | `main.public_garas_list` | None (public) | UI page | Lista gare standalone pubbliche |
 | `/gara/<int:gara_id>` | GET | `main.gara_detail_public` | None (public) | UI page | Dettaglio gara (redirect a unified view) |
+| `/gara/<int:gara_id>/regolamento` | GET | `main.regolamento_gara` | pubblica | UI page | Regolamento di gara: impostazioni in vigore, turno per turno, storia delle modifiche (ADR-075) |
 | `/public/gara/<int:gara_id>` | GET | `main.gara_detail_public` | None (public) | UI page | Dettaglio gara (deprecated, redirects) |
 | `/g/<token>` | GET | `main.gara_invite` | None (public) | Vetrina / Redirect | Link pubblico di una gara (#61, #235). Per l'anonimo — e quindi per lo scraper dei social — è la **vetrina**: locandina, quando, dove, formato, quota, posti liberi e una chiamata all'azione. L'autenticato prosegue al flusso di iscrizione; `?anteprima=1` mostra la vetrina anche a lui. Accetta il token o l'indirizzo leggibile |
 | `/g/<token>/sala` | GET | `main.schermo_sala` | — (pubblica) | UI page | Schermo in sala: tavoli, classifica e turno prima da proiettare |

@@ -152,6 +152,14 @@ un valore esplicito.
 **A gara cominciata i campi si affossano**, non si avvertono soltanto:
 cambiarli a metà riscriverebbe chi ha aperto i triangoli già giocati.
 
+> **Emendamento (2026-09-29, ADR-075).** Le due regole ora si **fissano sulla
+> partita** quando nasce (`Match.start_rule`, `Match.break_rule`), e la
+> partita non le rilegge più dalla gara: la ragione di sopra — non riscrivere
+> chi ha aperto i triangoli giocati — è ora garantita dal dato, non dal campo
+> affossato. Un cambio della gara vale per le partite che nasceranno. I campi
+> sulla gara si riaprono a gara avviata insieme alle altre regole (passo 3
+> dell'ADR-075).
+
 I campi vivono in schermate che esistono già, mai in pagine nuove:
 
 | Momento | File |
@@ -300,3 +308,13 @@ Verifica finale che nessun test può dare: **il tabellone sta dietro
 `(orientation: landscape) and (max-height: 520px) and (pointer: coarse)`**, che
 il browser pilotato non emula. Il gesto sul trattino va provato su un telefono
 vero prima di dire che funziona.
+
+## Emendamento (2026-09-29, ADR-075, passo 4)
+
+Chi apre e chi spacca non si **ereditano** più dal campionato: si **copiano**
+sulla gara quando nasce (`GaraService._copia_dal_campionato`), come tutti gli
+altri valori del campionato, e la migration `20260929_valori_del_campionato_copiati`
+ha scritto sulle gare esistenti il valore che usavano. La voce «Eredita dal
+campionato» sparisce dai moduli. Se il direttore cambia la regola del
+campionato, l'app propone a quali gare non ancora avviate applicarla
+(`models/campionato/proposte.py`).

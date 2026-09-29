@@ -108,8 +108,9 @@ class TestLeQuattroGare:
             # Il numero di rack è **esatto**, non un traguardo.
             assert gara.is_race_to is False, quale
             assert gara.is_multi_set is False, quale
-            # «Eredita dal campionato», che non è «no».
-            assert gara.has_handicap is None, quale
+            # Copiato dal campionato quando la gara nasce (ADR-075,
+            # 2026-09-29): prima restava «eredita», cioè None.
+            assert gara.has_handicap is True, quale
             assert gara.effective_has_handicap is True, quale
 
     def test_ogni_gara_ha_la_sua_disciplina_e_la_sua_distanza(
@@ -190,10 +191,15 @@ class TestLaQuartaGaraCambiaTurnoPerTurno:
             assert distanza.racks == TURNI_MISTI[0].distanza
             assert distanza.is_race_to_racks is False
 
-    def test_a_gara_avviata_gli_override_non_si_toccano_piu(
+    def test_a_gara_avviata_il_turno_avviato_non_si_tocca(
         self, campionato: CampionatoDriver, stagione
     ):
-        """Cambiare il formato a metà gara falserebbe i turni già giocati."""
+        """Cambiare le regole di un turno già avviato falserebbe le sue partite.
+
+        Emendato il 2026-09-29 (ADR-075): a gara avviata si cambiano i turni
+        **non ancora avviati** (lo copre `test_modifica_a_gara_avviata.py`);
+        il turno 1, già avviato, resta com'è.
+        """
         _campionato_id, gare, direttore = stagione
         quarta = gare[4]
         giocatori = campionato.crea_giocatori(MINIMO_ISCRITTI)
@@ -204,10 +210,11 @@ class TestLaQuartaGaraCambiaTurnoPerTurno:
         campionato.entra(direttore)
         campionato.avvia_primo_turno(quarta)
 
-        esito = campionato.configura_turno(quarta, 2, distance=9)
+        prima = campionato.override_dei_turni(quarta).get(1, {}).get("distance")
+        esito = campionato.configura_turno(quarta, 1, distance=9)
 
         assert esito["status"] == 409
-        assert campionato.override_dei_turni(quarta)[2]["distance"] == 6
+        assert campionato.override_dei_turni(quarta).get(1, {}).get("distance") == prima
 
     def test_un_turno_fuori_dai_tre_viene_rifiutato(
         self, campionato: CampionatoDriver, stagione

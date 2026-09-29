@@ -239,8 +239,11 @@ blocks:
           Tap **Start the playoffs**: a sheet opens asking **When the playoff
           is played** and **Invited players reply by**, in your time zone.
           Both dates must be in the future. With **Start the playoffs and send
-          the invitations** the qualified players receive the invitation and
-          the configurations are locked.
+          the invitations** the qualified players receive the invitation, and
+          **who qualifies** (positions, places, minimum events) can no longer
+          change. How the final is played still can, with **How the final is
+          played** below the list of invited players, until the competition
+          starts.
       - title: "Move the date and the deadline, if needed"
         text: >-
           Above the list of invited players of each play-off there is the
@@ -251,6 +254,23 @@ blocks:
           or is later, the sheet tells you: whoever has not answered would
           expire right when you open the page to start the competition. A few
           hours earlier is better.
+      - title: "Every correction stays on record"
+        text: >-
+          Corrections to the configuration, players added or removed by hand
+          and answers recorded on someone's behalf end up in the **Change
+          history**, at the bottom of the play-offs tab: who, when and what.
+          The reason is optional, but write it: it will help in case of
+          disputes.
+      - title: "If a correction changes the standings"
+        text: >-
+          If after the invitations you correct a competition's weight or the
+          position points, the standings are recalculated and who is within
+          the places may change. Above the list of invited players appears
+          **The standings changed after the invitations**, with who would
+          lose the invitation and who would receive it. **Update the
+          invitations** changes them and notifies the players; **Leave the
+          invitations as they are** keeps them. Either way the choice stays on
+          record, and you can always fix things by hand.
       - title: "If an invitation has expired"
         text: >-
           The row says **Expired**, but still has **Accept**. If the player
@@ -267,7 +287,10 @@ blocks:
         text: >-
           When there are enough answers, **Create the playoff competition**
           creates it and enters everyone who accepted. From then on the
-          button becomes **Go to playoff competition**.
+          button becomes **Go to playoff competition**. The competition starts
+          with the configuration's values and from then on has its own: if you
+          later correct the configuration, the app asks whether to apply the
+          change to the final too, field by field.
       - title: "Play"
         text: >-
           As soon as the play-off competition starts, the band says **Playoffs
@@ -283,7 +306,8 @@ blocks:
           In the configuration of each play-off, with **Edit**. Left on
           **Inherit**, the final is played like the first completed
           competition of the season, including "race to N" or "exactly N". You
-          can change all of them, but only before starting the play-offs.
+          can change them until the final starts; after that, the final is
+          corrected from its own page.
       - name: "Standings system"
         text: >-
           With "Championship + play-off event" the final uses the

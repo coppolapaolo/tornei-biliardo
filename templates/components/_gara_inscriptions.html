@@ -93,6 +93,30 @@
   </div>
   {% endif %}
 
+  {# ---- La riconferma di chi guarda (ADR-075) ----
+     La gara è cambiata dopo che si è iscritto: data, orario, sala o quota.
+     Gli si chiede solo se c'è ancora; se non risponde resta iscritto. #}
+  {% if current_user.is_authenticated %}
+  {% for inscription in _attivi + _attesa %}{% if inscription.user_id == current_user.id and inscription.campi_da_riconfermare %}
+  <div class="c7-flash c7-flash--warn">
+    <span class="c7-flash__ico"><i class="fas fa-circle-question"></i></span>
+    <div class="c7-flash__body">
+      <div class="c7-flash__title">{{ _('La gara è cambiata: ci sei ancora?') }}</div>
+      <div class="c7-flash__text">
+        {% for campo in inscription.campi_da_riconfermare %}{{ etichetta_storia(campo) }}{% if not loop.last %}, {% endif %}{% endfor %}.
+        {{ _("Se ci sei, confermalo; se non puoi più, disiscriviti. Finché non rispondi resti iscritto, e decide il direttore.") }}
+      </div>
+      {% if feature_visible('player.riconferma_iscrizione') %}
+      <form method="POST" action="{{ url_for('player.riconferma_iscrizione', gara_id=gara.id) }}" class="mt-2">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> {{ _('Ci sono') }}</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+  {% endif %}{% endfor %}
+  {% endif %}
+
   {# ---- Gli iscritti ---- #}
   {% if not inscriptions_headerless %}
   <div class="c7-sechead">
@@ -133,6 +157,20 @@
       </div>
       {% if inscription.is_forfeit %}
       <span class="c7-state c7-state--muted" title="{{ _('Ha dato forfait') }}">{{ _('Forfait') }}</span>
+      {% endif %}
+
+      {# Da riconfermare (ADR-075): visibile come l'iscrizione. Il direttore
+         può riconfermare per lui, e resta nella storia. #}
+      {% set _da_riconfermare = inscription.campi_da_riconfermare %}
+      {% if _da_riconfermare %}
+      <span class="c7-state c7-state--warn" title="{{ _('La gara è cambiata dopo la sua iscrizione') }}">{{ _('da riconfermare') }}</span>
+      {% if user_can_manage and feature_visible('admin.competition.riconferma_per_conto') %}
+      <form method="POST" class="d-inline" action="{{ url_for('admin.competition.riconferma_per_conto', gara_id=gara.id, inscription_id=inscription.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="c7-iconbtn" title="{{ _('Riconferma al suo posto') }}"
+                aria-label="{{ _('Riconferma %(nome)s', nome=inscription.user.username) }}"><i class="fas fa-user-check"></i></button>
+      </form>
+      {% endif %}
       {% endif %}
 
       {# Categoria dell'iscritto (ADR-049), come chip: un nome gia' in elenco

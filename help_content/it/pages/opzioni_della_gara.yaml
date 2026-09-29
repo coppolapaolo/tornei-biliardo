@@ -186,7 +186,10 @@ blocks:
           tre gare. Serve a tenere il campionato aperto fino in fondo: se
           l'ultima prova pesa di più, nessuno se lo aggiudica con due gare di
           anticipo. Una gara che non fa parte di un campionato non ha questo
-          campo, perché non c'è nessuna classifica generale in cui pesare.
+          campo, perché non c'è nessuna classifica generale in cui pesare. È
+          l'unica cosa che si corregge anche a gara finita: la classifica si
+          ricalcola, nell'elenco delle gare compare il peso di prima barrato e
+          sopra la classifica una riga dice chi l'ha corretto e quando.
         hint: gara.peso
 
   - type: heading
@@ -259,7 +262,7 @@ blocks:
           tutti non viene chiesta.
         hint: gara.multiset
       - name: "Regola di inizio"
-        values: "predefinito «Acchito» · dentro un campionato si può ereditare"
+        values: "predefinito «Acchito» · dentro un campionato parte da quella del campionato"
         text: >-
           Chi esegue il primo tiro della partita. Con **Primo giocatore** apre
           sempre il primo dei due, senza sorteggio. Con **Acchito** il
@@ -268,7 +271,7 @@ blocks:
           apre, e può mandare al tavolo l'avversario.
         hint: gara.regola_inizio
       - name: "Chi spacca"
-        values: "predefinito «A turno» · dentro un campionato si può ereditare"
+        values: "predefinito «A turno» · dentro un campionato parte da quella del campionato"
         text: >-
           Come passa il tiro di apertura da un triangolo al successivo. **A
           turno** è la regola standard e alterna a ogni triangolo; **A turno
@@ -312,21 +315,24 @@ blocks:
 
   - type: options
     items:
-      - name: "Gara in bozza"
+      - name: "Prima dell'avvio"
         values: "tutto"
-        text: "Nessuno si è ancora iscritto: puoi cambiare qualunque campo."
-      - name: "Iscrizioni aperte"
-        values: "quasi tutto"
         text: >-
-          Date, sala, note e capienza restano modificabili. Cambiare formato e
-          abbinamenti è tecnicamente possibile ma sconsigliato: chi si è già
-          iscritto lo ha fatto conoscendo le regole di prima.
+          In bozza e a iscrizioni aperte puoi cambiare qualunque campo, anche
+          con giocatori già iscritti. Ogni modifica resta nella **storia della
+          gara**, in fondo alla pagina di modifica: chi l'ha fatta, quando, cosa
+          è cambiato e, se lo scrivi, perché. Chi si è iscritto lo ha fatto
+          conoscendo le regole di prima: il motivo aiuta a spiegarglielo.
       - name: "Gara avviata"
-        values: "poco"
+        values: "logistica e regole"
         text: >-
-          Il formato di gioco è congelato. Restano modificabili le informazioni
-          di contorno (note, tavoli) e, con le dovute cautele, i risultati non
-          ancora bloccati.
+          Nome, data, sala, quota e note cambiano subito. Le regole di gioco
+          (distanza, disciplina, chi apre, chi spacca, handicap, dispari,
+          ritiri) si cambiano e valgono **dal turno successivo**: le partite
+          già nate restano con le regole con cui sono cominciate. La struttura
+          — strategia, numero di turni, sistema di classifica — si cambia solo
+          annullando l'avvio. Con la strategia casuale le regole restano
+          quelle dell'avvio.
 
   - type: faq
     items:

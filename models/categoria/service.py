@@ -97,8 +97,22 @@ class CategoriaService:
 
     @staticmethod
     def is_editable(gara) -> bool:
-        """Le categorie di questa gara si possono ancora toccare?"""
-        return gara.status in _EDITABLE_STATUSES and (gara.current_round or 0) == 0
+        """Le categorie di questa gara si possono ancora toccare?
+
+        Fino al 2026-09-29 solo prima dell'avvio: decidono quali partite
+        contano per l'ELO, e cambiarle a gara in corso avrebbe riscritto le
+        partite già giocate. Ora (ADR-075) le categorie sono **fissate sulla
+        partita** quando nasce, quindi un cambio vale per le partite che
+        nasceranno: si cambiano fino alla fine della gara. Non con la strategia
+        casuale, dove tutte le partite esistono già dall'avvio.
+        """
+        from models.competition.campi_modificabili import e_avviata, e_chiusa
+
+        if gara.status in _EDITABLE_STATUSES and (gara.current_round or 0) == 0:
+            return True
+        if e_chiusa(gara) or not e_avviata(gara):
+            return False
+        return not gara.creates_all_rounds_at_startup()
 
     @staticmethod
     def assert_editable(gara, *, force: bool = False) -> None:
@@ -106,8 +120,8 @@ class CategoriaService:
             return
         if not CategoriaService.is_editable(gara):
             raise ConflictError(
-                "Il primo turno è già partito: le categorie decidono quali "
-                "partite contano per l'ELO e non sono più modificabili."
+                "Le categorie non si cambiano più: la gara è chiusa, o con la "
+                "strategia casuale tutte le partite esistono già dall'avvio."
             )
 
     @staticmethod
@@ -279,6 +293,7 @@ class CategoriaService:
         cleaned = clean_display_name(name or "")
         if not cleaned:
             inscription.categoria_id = None
+            CategoriaService._correggi_partite(gara, inscription, force)
             return None
 
         cleaned = CategoriaService._clean_name(cleaned)
@@ -291,7 +306,24 @@ class CategoriaService:
             categoria.is_active = True
 
         inscription.categoria_id = categoria.id
+        CategoriaService._correggi_partite(gara, inscription, force)
         return categoria
+
+    @staticmethod
+    def _correggi_partite(gara, inscription, force: bool) -> None:
+        """Con ``force`` è una correzione: arriva anche alle partite giocate.
+
+        Le categorie sono fissate sulla partita quando nasce (ADR-075), così un
+        ricalcolo dell'ELO non rilegge quelle di oggi. Lo script che ripara una
+        gara già giocata, e la riassegnazione di un partecipante, correggono
+        un dato scritto male: lì la categoria va riscritta anche sulle
+        partite, altrimenti la correzione non cambierebbe niente.
+        """
+        if not force:
+            return
+        from models.match.regole_fissate import correggi_categoria
+
+        correggi_categoria(gara.id, inscription.user_id, inscription.categoria_id)
 
     @staticmethod
     def suggest_for_user(gara, user) -> Optional[Categoria]:

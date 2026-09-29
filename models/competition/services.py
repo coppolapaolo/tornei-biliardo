@@ -13,7 +13,7 @@ Nota sprint 4 (migrazione soft):
 
 from __future__ import annotations
 
-from typing import Optional, TYPE_CHECKING
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from models.shared.operation_result import OperationResult
@@ -172,6 +172,14 @@ class GaraService:
             if campionato_e_di_prova(campionato_id):
                 kwargs["is_prova"] = True
 
+        # Il campionato propone, la gara decide (ADR-075): chi apre, chi spacca
+        # e l'handicap si **copiano** sulla gara quando nasce, come già tutti
+        # gli altri valori del campionato. Fino al 2026-09-29 restavano NULL e
+        # la gara li rileggeva dal campionato a ogni accesso: un cambio del
+        # campionato arrivava alle gare senza che nessuno le toccasse.
+        if campionato_id:
+            GaraService._copia_dal_campionato(campionato_id, kwargs)
+
         gara = Gara(
             number=number,
             name=name,
@@ -303,16 +311,98 @@ class GaraService:
 
     @staticmethod
     @transactional(domain="competition")
-    def update_gara(gara_id: int, **kwargs) -> Gara:
-        """Aggiorna una gara con i campi forniti."""
+    def update_gara(
+        gara_id: int,
+        autore: Any = None,
+        motivo: Optional[str] = None,
+        originali: Optional[Dict[str, str]] = None,
+        provenienza: Optional[str] = None,
+        **kwargs,
+    ) -> Gara:
+        """Aggiorna una gara con i campi forniti, e lo scrive nella storia.
+
+        Si modifica finché la gara non è avviata, anche con gli iscritti
+        (ADR-075): ogni campo che cambia davvero finisce in una voce della
+        storia, con `autore` e il `motivo` facoltativo.
+
+        `originali` sono i valori che il modulo mostrava quando il direttore
+        l'ha aperto, nella forma di `serializza`. Se un campo che si vuole
+        cambiare è stato nel frattempo cambiato da qualcun altro, il
+        salvataggio si ferma invece di cancellarne la modifica.
+        """
+        from models.exceptions import ConflictError
+        from models.storia.models import SettingsChangeSource
+        from models.storia.service import StoriaModificheService, serializza
+
         gara = db.session.get(Gara, gara_id)
         if not gara:
             raise ValueError(f"Gara {gara_id} non trovata")
 
-        if not gara.can_be_modified():
-            raise ValueError(
-                "Impossibile modificare la gara: ci sono già delle iscrizioni!"
+        from models.competition.campi_modificabili import (
+            REGOLE,
+            campi_bloccati,
+            dal_turno,
+            e_chiusa,
+        )
+
+        # Campo per campo, non più un blocco solo (ADR-075): la logistica si
+        # cambia sempre, le regole valgono dal turno successivo, la struttura
+        # solo prima dell'avvio. Un campo bloccato che arriva col suo valore di
+        # adesso non è una richiesta di cambiarlo, e passa.
+        bloccati = campi_bloccati(gara)
+        alias_bloccati = {"date_str": "date", "time_str": "time"}
+        for campo, valore in kwargs.items():
+            nome = alias_bloccati.get(campo, campo)
+            if nome not in bloccati:
+                continue
+            attuale = (
+                gara.get_available_tables()
+                if nome == "available_tables"
+                else getattr(gara, nome, None)
             )
+            if serializza(valore) != serializza(attuale):
+                raise ConflictError(f"{nome}: {bloccati[nome]}")
+
+        # I campi come li legge la storia: `date_str`/`time_str` sono il
+        # vecchio modo di passare data e ora, ma nella storia sono data e ora.
+        alias = {"date_str": "date", "time_str": "time"}
+        campi_storia = [
+            alias.get(campo, campo)
+            for campo in kwargs
+            if campo == "available_tables" or hasattr(gara, alias.get(campo, campo))
+        ]
+        prima = GaraService._valori_per_la_storia(gara, campi_storia)
+
+        if originali:
+            in_conflitto = [
+                campo
+                for campo in kwargs
+                if campo in originali
+                and campo in prima
+                and serializza(prima[campo]) != originali[campo]
+                and serializza(kwargs[campo]) != serializza(prima[campo])
+            ]
+            if in_conflitto:
+                raise ConflictError(
+                    "Nel frattempo qualcun altro ha modificato: "
+                    + ", ".join(in_conflitto)
+                    + ". Ricarica la pagina e rifai la modifica."
+                )
+
+        # La capienza non scende sotto chi è già dentro: toglierebbe il posto
+        # a qualcuno senza che nessuno l'abbia deciso.
+        nuovo_max = kwargs.get("max_participants")
+        if nuovo_max is not None and nuovo_max != gara.max_participants:
+            dentro = gara.get_active_inscriptions_count()
+            if nuovo_max < dentro:
+                raise ValueError(
+                    f"Ci sono già {dentro} iscritti: la capienza non può scendere "
+                    f"a {nuovo_max}."
+                )
+
+        accende_squadre = bool(kwargs.get("separate_teammates")) and not bool(
+            gara.separate_teammates
+        )
 
         # Estrai available_tables (list) — va impostato via set_available_tables()
         available_tables = kwargs.pop("available_tables", None)
@@ -323,6 +413,13 @@ class GaraService:
         for field, value in kwargs.items():
             if hasattr(gara, field):
                 setattr(gara, field, value)
+
+        # Separare i compagni a iscrizioni aperte (ADR-039): chi è già dentro
+        # riceve la squadra come l'avrebbe ricevuta iscrivendosi adesso. Chi
+        # non ha corrispondenza nell'elenco resta senza, e si sistema dalla
+        # schermata delle squadre — com'è per ogni iscrizione.
+        if accende_squadre:
+            GaraService._precompila_squadre(gara)
 
         # Gestione speciale per date
         if "date_str" in kwargs:
@@ -369,7 +466,112 @@ class GaraService:
             for warning in classification_warnings:
                 logger.warning(f"Gara config warning (update): {warning}")
 
+        dopo = GaraService._valori_per_la_storia(gara, campi_storia)
+        cambi = {campo: (prima.get(campo), dopo[campo]) for campo in dopo}
+        # A gara avviata le regole valgono dal turno successivo, la logistica
+        # subito: due voci, così la storia non dice «dal turno 4» di una sala.
+        turno = dal_turno(gara)
+        regole = {c: v for c, v in cambi.items() if turno and c in REGOLE}
+        resto = {c: v for c, v in cambi.items() if c not in regole}
+        # Da dove arriva: la pagina della gara, oppure il campionato o i
+        # playoff che hanno proposto un valore e il direttore l'ha accettato.
+        da_dove = provenienza or SettingsChangeSource.GARA
+        # A gara finita l'unica correzione è quanto conta: la classifica già
+        # vista cambia, e la voce lo dice (ADR-075, «Segno in classifica»).
+        from models.storia.models import SettingsChangeAction
+
+        chiusa = e_chiusa(gara)
+        StoriaModificheService.registra(
+            cambi=resto,
+            gara_id=gara.id,
+            autore=autore,
+            motivo=motivo,
+            provenienza=da_dove,
+            azione=(
+                SettingsChangeAction.RICALCOLO
+                if chiusa
+                else SettingsChangeAction.MODIFICA
+            ),
+        )
+        if regole:
+            StoriaModificheService.registra(
+                cambi=regole,
+                gara_id=gara.id,
+                autore=autore,
+                motivo=motivo,
+                provenienza=da_dove,
+                dal_turno=turno,
+            )
+
+        # Capienza alzata: chi aspetta in lista entra, in ordine (ADR-075).
+        capienza = cambi.get("max_participants")
+        if capienza and (capienza[1] or 0) > (capienza[0] or 0):
+            from models.competition.inscription_service import InscriptionService
+
+            InscriptionService.promuovi_per_capienza(gara)
+
+        # Gli iscritti ricevono una notifica, accorpata con le modifiche
+        # ravvicinate (ADR-075). A gara finita non c'è niente da annunciare.
+        if not chiusa:
+            from models.storia.avvisi import AvvisiModifiche
+
+            AvvisiModifiche.accoda(gara, cambi)
+
+        peso = cambi.get("weight")
+        if peso and serializza(peso[0]) != serializza(peso[1]):
+            from models.storia.ricalcolo import ricalcola_campionato
+
+            ricalcola_campionato(gara.campionato_id)
+
         return gara
+
+    @staticmethod
+    def _copia_dal_campionato(campionato_id: int, kwargs: Dict[str, Any]) -> None:
+        """I valori che una volta la gara rileggeva dal campionato, copiati."""
+        from models.campionato.models import Campionato
+        from models.match.break_rules import (
+            DEFAULT_BREAK_RULE,
+            LEGACY_START_RULE,
+            BreakRule,
+            StartRule,
+        )
+
+        campionato = db.session.get(Campionato, campionato_id)
+        if campionato is None:
+            return
+        if kwargs.get("start_rule") is None:
+            kwargs["start_rule"] = (
+                StartRule.normalize(campionato.default_start_rule) or LEGACY_START_RULE
+            ).value
+        if kwargs.get("break_rule") is None:
+            kwargs["break_rule"] = (
+                BreakRule.normalize(campionato.default_break_rule) or DEFAULT_BREAK_RULE
+            ).value
+        if kwargs.get("has_handicap") is None:
+            kwargs["has_handicap"] = bool(campionato.has_handicap)
+
+    @staticmethod
+    def _valori_per_la_storia(gara: Gara, campi: List[str]) -> Dict[str, Any]:
+        """I valori attuali di `campi`, come la storia li confronta."""
+        valori: Dict[str, Any] = {}
+        for campo in campi:
+            if campo == "available_tables":
+                valori[campo] = gara.get_available_tables()
+            else:
+                valori[campo] = getattr(gara, campo, None)
+        return valori
+
+    @staticmethod
+    def _precompila_squadre(gara: Gara) -> None:
+        """Dà la squadra del profilo agli iscritti che non ne hanno una."""
+        from models.squadra.service import SquadraService
+
+        for ins in gara.inscriptions:
+            if ins.squadra_id or ins.is_withdrawn:
+                continue
+            suggerita = SquadraService.suggest_for_user(gara, ins.user)
+            if suggerita:
+                ins.squadra_id = suggerita.id
 
     @staticmethod
     @transactional(domain="competition")

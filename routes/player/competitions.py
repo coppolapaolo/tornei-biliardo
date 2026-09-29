@@ -320,3 +320,27 @@ def history():
         filters=filters,
         filter_options=filter_options,
     )
+
+
+# ============ RICONFERMA (ADR-075) ============
+
+
+@player_bp.route("/gara/<int:gara_id>/riconferma", methods=["POST"])
+@login_required
+def riconferma_iscrizione(gara_id):
+    """Il giocatore dice che c'è ancora, dopo che la gara è cambiata."""
+    from models.competition.riconferma import riconferma
+    from utils.safe_redirect import safe_next_url
+
+    inscription = Inscription.query.filter_by(
+        user_id=current_user.id, gara_id=gara_id
+    ).first_or_404()
+    try:
+        riconferma(inscription.id, autore=current_user)
+        flash(_("Grazie: la tua iscrizione è confermata."), "success")
+    except ValueError as errore:
+        flash(str(errore), "error")
+    return redirect(
+        safe_next_url(request.form.get("next"))
+        or url_for("admin.competition.gara_detail", gara_id=gara_id)
+    )

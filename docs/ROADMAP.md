@@ -204,7 +204,7 @@ lasciare lì».
 #1 (match a squadre) · #7 (CSP nonce) · #192 (formati di handicap) ·
 #203 e #204 (voci del profilo) · #215 (decisione sul multi-set) ·
 #250 (`garas`/`campionatos`) · #257 (livelli dell'error log) ·
-#265 (modificare una regola in corsa)
+#265 (modificare una regola in corsa: in attuazione, ADR-075)
 
 Due meritano una nota, perché il giorno in cui servono si saprà in anticipo:
 **#7** diventa urgente se l'app esce dalla cerchia dei conoscenti, e **#257** se

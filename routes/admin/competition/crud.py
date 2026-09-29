@@ -10,6 +10,7 @@ from flask import (
     url_for,
     flash,
     jsonify,
+    abort,
 )
 from flask_login import login_required, current_user
 from flask_babel import _, ngettext
@@ -18,8 +19,9 @@ from models import (
     db,
     Campionato,
     Gara,
+    Inscription,
 )
-from models.status_enum import Discipline
+from models.status_enum import Discipline, GaraStatus
 from models.competition.models import WithdrawPolicy
 from utils import (
     gara_manager_required,
@@ -312,6 +314,101 @@ def create_gara():
         )
 
 
+def _proposta_di_spostamento(gara: Gara, cambiati: dict):
+    """La data nuova scavalca le gare successive: la proposta (ADR-075).
+
+    Restituisce la pagina della proposta, oppure `None` quando si può salvare:
+    niente da spostare, o il direttore ha già accettato di spostarle — e in
+    quel caso le successive sono appena state spostate.
+    """
+    if "date" not in cambiati and "time" not in cambiati:
+        return None
+    from models.competition.spostamento import piano, sposta
+
+    proposta = piano(
+        gara, cambiati.get("date", gara.date), cambiati.get("time", gara.time)
+    )
+    if proposta is None:
+        return None
+    if proposta.bloccata_da is not None:
+        raise ValueError(
+            _(
+                "La nuova data supera %(gara)s, che è già avviata: non si può "
+                "spostare.",
+                gara=proposta.bloccata_da.display_name,
+            )
+        )
+    if request.form.get("sposta_successive") == "1":
+        sposta(
+            proposta,
+            autore=current_user,
+            motivo=request.form.get("motivo")
+            or _("Spostata insieme a %(gara)s", gara=gara.display_name),
+        )
+        return None
+    campi = [
+        (chiave, valore)
+        for chiave, valore in request.form.items(multi=True)
+        if chiave not in ("csrf_token", "sposta_successive")
+    ]
+    return render_template(
+        "admin/proposta_spostamento.html", gara=gara, piano=proposta, campi=campi
+    )
+
+
+def _avviso_in_attesa(gara_id: int):
+    from models.storia.avvisi import AvvisiModifiche
+
+    return AvvisiModifiche.in_attesa(gara_id)
+
+
+@competition_bp.route(
+    "/<int:gara_id>/iscrizione/<int:inscription_id>/riconferma", methods=["POST"]
+)
+@login_required
+@gara_manager_required
+def riconferma_per_conto(gara_id, inscription_id):
+    """Il direttore riconferma al posto del giocatore; resta nella storia."""
+    from models.competition.riconferma import riconferma
+
+    inscription = db.get_or_404(Inscription, inscription_id)
+    if inscription.gara_id != gara_id:
+        abort(404)
+    try:
+        riconferma(inscription.id, autore=current_user)
+        flash(
+            _(
+                "Iscrizione di %(nome)s riconfermata: resta scritto che l'hai "
+                "fatto tu.",
+                nome=inscription.user.username,
+            ),
+            "success",
+        )
+    except ValueError as errore:
+        flash(str(errore), "error")
+    return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+@competition_bp.route("/<int:gara_id>/avviso/invia", methods=["POST"])
+@login_required
+@gara_manager_required
+def invia_avviso_modifiche(gara_id):
+    """Manda subito agli iscritti la notifica delle modifiche (ADR-075)."""
+    from models.storia.avvisi import AvvisiModifiche
+
+    db.get_or_404(Gara, gara_id)
+    arrivate = AvvisiModifiche.invia(gara_id)
+    flash(
+        ngettext(
+            "Notifica mandata a %(num)d giocatore.",
+            "Notifica mandata a %(num)d giocatori.",
+            arrivate,
+        ),
+        "success",
+    )
+    return redirect(url_for("admin.competition.edit_gara", gara_id=gara_id))
+
+
 @competition_bp.route("/<int:gara_id>/edit", methods=["GET", "POST"])
 @login_required
 @gara_manager_required
@@ -319,18 +416,39 @@ def edit_gara(gara_id):
     """Modifica gara"""
     gara = db.get_or_404(Gara, gara_id)
 
+    # A gara finita si corregge solo quanto conta nel campionato (ADR-075):
+    # la pagina è quella della gara avviata, con il solo peso.
+    if gara.status == GaraStatus.COMPLETED.value and gara.campionato_id:
+        return _edit_gara_avviata(gara)
+
     if not gara.can_be_modified():
-        flash("Impossibile modificare la gara: ci sono già delle iscrizioni!")
+        flash(_("La gara è chiusa: non si modifica più."), "warning")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
+    from .form_parser import GaraFormParser
+
+    # A gara avviata la pagina è un'altra: mostra solo ciò che si può ancora
+    # cambiare, e dice da che turno valgono le regole (ADR-075).
+    if gara.is_avviata:
+        return _edit_gara_avviata(gara)
+
     if request.method == "POST":
-        from .form_parser import GaraFormParser
+        import json
 
         # Venue auto-creation -> (location_str, billiard_hall_id)
         location = request.form.get("location", "").strip()
         tables_input = request.form.get("available_tables", "").strip()
 
         location, billiard_hall_id = _handle_venue_creation(location, tables_input)
+
+        # Lo stato che il modulo mostrava all'apertura (ADR-075): dice quali
+        # campi il direttore ha cambiato, e se qualcun altro li ha toccati.
+        try:
+            originali = json.loads(request.form.get("stato_iniziale") or "{}")
+        except ValueError:
+            originali = {}
+        if not isinstance(originali, dict):
+            originali = {}
 
         try:
             # Single source of truth for form↔model mapping: reuse the same parser
@@ -346,15 +464,26 @@ def edit_gara(gara_id):
                 flash(f"Configurazione non valida: {', '.join(errors)}", "error")
                 return redirect(url_for("admin.competition.edit_gara", gara_id=gara_id))
 
-            GaraService.update_gara(
-                gara_id=gara_id,
-                name=request.form.get("name", gara.name),
-                billiard_hall_id=billiard_hall_id,  # FK to BilliardHall
-                location=location,  # String for backward compat/display cache
-                **data,
-            )
+            data["name"] = request.form.get("name", gara.name)
+            data["location"] = location  # String for backward compat/display cache
+            cambiati = GaraFormParser.campi_cambiati(data, originali)
+            if "location" in cambiati:
+                cambiati["billiard_hall_id"] = billiard_hall_id  # FK to BilliardHall
 
-            flash("Gara aggiornata con successo!")
+            pagina = _proposta_di_spostamento(gara, cambiati)
+            if pagina is not None:
+                return pagina
+            if not cambiati:
+                flash(_("Nessuna modifica da salvare."), "info")
+            else:
+                GaraService.update_gara(
+                    gara_id=gara_id,
+                    autore=current_user,
+                    motivo=request.form.get("motivo"),
+                    originali=originali,
+                    **cambiati,
+                )
+                flash(_("Gara aggiornata: la modifica resta nella sua storia."))
         except ValueError as ve:
             flash(str(ve), "error")
 
@@ -371,16 +500,135 @@ def edit_gara(gara_id):
     )
 
     from models.challenge.services import ChallengeService
+    from models.storia.service import StoriaModificheService
 
     return render_template(
         "admin/gara_edit.html",
         gara=gara,
+        stato_iniziale=GaraFormParser.valori_attuali(gara),
+        storia=StoriaModificheService.voci_della_gara(gara.id),
+        avviso_in_attesa=_avviso_in_attesa(gara.id),
         # Gli esercizi offribili per la X (issue #267).
         x_challenges=ChallengeService.get_challenges_for_x_choice(
             includi_id=gara.x_challenge_id
         ),
         WithdrawPolicy=WithdrawPolicy,
         available_strategies=available_strategies,
+        verified_venues=verified_venues,
+        discipline_choices=Discipline.get_choices(),
+    )
+
+
+def _stato_iniziale_dal_modulo() -> dict:
+    """Lo stato che il modulo mostrava all'apertura (ADR-075)."""
+    import json
+
+    try:
+        originali = json.loads(request.form.get("stato_iniziale") or "{}")
+    except ValueError:
+        return {}
+    return originali if isinstance(originali, dict) else {}
+
+
+def _edit_gara_avviata(gara: Gara):
+    """Modifica di una gara avviata: logistica, regole dal turno dopo, spareggio."""
+    from models.challenge.services import ChallengeService
+    from models.competition.campi_modificabili import (
+        LOGISTICA,
+        PESO,
+        REGOLE,
+        SPAREGGIO,
+        campi_bloccati,
+        dal_turno,
+    )
+    from models.matchmaking.configuration import (
+        FirstRoundPolicy,
+        MatchmakingStrategy,
+        OddNumberPolicy,
+        StrategyConfiguration,
+    )
+    from models.storia.service import StoriaModificheService
+
+    from .form_parser import GaraFormParser
+
+    bloccati = campi_bloccati(gara)
+    ammessi = (LOGISTICA | REGOLE | SPAREGGIO | PESO) - set(bloccati)
+
+    if request.method == "POST":
+        originali = _stato_iniziale_dal_modulo()
+        try:
+            parser = GaraFormParser(campionato=gara.campionato, gara=gara)
+            data = parser.parse_a_gara_avviata(ammessi)
+            if "name" in ammessi and "name" in request.form:
+                data["name"] = request.form.get("name", gara.name)
+            billiard_hall_id = None
+            if "location" in ammessi and "location" in request.form:
+                location, billiard_hall_id = _handle_venue_creation(
+                    request.form.get("location", "").strip(), ""
+                )
+                data["location"] = location
+
+            # Le regole nuove devono stare in piedi con la struttura che resta.
+            if {"odd_number_policy", "distance", "is_race_to"} & data.keys():
+                errori = StrategyConfiguration(
+                    strategy=MatchmakingStrategy(gara.matchmaking_strategy),
+                    first_round_policy=FirstRoundPolicy(
+                        gara.first_round_policy or "random"
+                    ),
+                    odd_number_policy=OddNumberPolicy(
+                        data.get("odd_number_policy", gara.odd_number_policy)
+                    ),
+                    anti_rematch_enabled=bool(gara.anti_rematch_enabled),
+                    rounds_count=gara.rounds_count,
+                ).validate(
+                    distance=data.get("distance", gara.distance),
+                    is_race_to=data.get("is_race_to", gara.is_race_to),
+                )
+                if errori:
+                    raise ValueError(
+                        _("Configurazione non valida: %(e)s", e=", ".join(errori))
+                    )
+
+            cambiati = GaraFormParser.campi_cambiati(data, originali)
+            if "location" in cambiati:
+                cambiati["billiard_hall_id"] = billiard_hall_id
+            pagina = _proposta_di_spostamento(gara, cambiati)
+            if pagina is not None:
+                return pagina
+            if not cambiati:
+                flash(_("Nessuna modifica da salvare."), "info")
+            else:
+                GaraService.update_gara(
+                    gara_id=gara.id,
+                    autore=current_user,
+                    motivo=request.form.get("motivo"),
+                    originali=originali,
+                    **cambiati,
+                )
+                flash(_("Gara aggiornata: la modifica resta nella sua storia."))
+        except ValueError as ve:
+            flash(str(ve), "error")
+        return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
+
+    verified_venues = (
+        BilliardHall.query.filter_by(is_active=True, verified=True)
+        .order_by(BilliardHall.name)
+        .all()
+    )
+    return render_template(
+        "admin/gara_edit_avviata.html",
+        gara=gara,
+        chiusa=gara.status == GaraStatus.COMPLETED.value,
+        stato_iniziale=GaraFormParser.valori_attuali(gara),
+        storia=StoriaModificheService.voci_della_gara(gara.id),
+        avviso_in_attesa=_avviso_in_attesa(gara.id),
+        bloccati=bloccati,
+        ammessi=ammessi,
+        dal_turno=dal_turno(gara),
+        x_challenges=ChallengeService.get_challenges_for_x_choice(
+            includi_id=gara.x_challenge_id
+        ),
+        WithdrawPolicy=WithdrawPolicy,
         verified_venues=verified_venues,
         discipline_choices=Discipline.get_choices(),
     )
