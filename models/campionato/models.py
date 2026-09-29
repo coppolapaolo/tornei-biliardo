@@ -96,6 +96,9 @@ class Campionato(db.Model):
     banner_path = db.Column(db.String(255), nullable=True)
     external_url = db.Column(db.String(500), nullable=True)
     external_label = db.Column(db.String(60), nullable=True)
+    #: Il documento del regolamento, per tutte le gare che non ne hanno uno
+    #: (ADR-075, «Regolamento completo»).
+    rules_url = db.Column(db.String(500), nullable=True)
     # La descrizione libera, che il campionato non aveva: una gara ce l'ha da
     # sempre, e senza, la vetrina del campionato sarebbe un calendario e basta
     # — mai una riga che dica di cosa si tratta e a chi è aperto.

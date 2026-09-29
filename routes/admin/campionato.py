@@ -1623,6 +1623,7 @@ def salva_campionato_vetrina(campionato_id):
             external_url=request.form.get("external_url"),
             external_label=request.form.get("external_label"),
             description=request.form.get("description"),
+            rules_url=request.form.get("rules_url"),
         )
         flash(_("Vetrina del campionato aggiornata."), "success")
     except DomainError as errore:

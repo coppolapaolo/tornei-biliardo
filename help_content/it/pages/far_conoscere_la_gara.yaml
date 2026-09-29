@@ -156,10 +156,16 @@ blocks:
 
   - type: text
     text: >-
-      Se il regolamento, il modulo di pagamento o la pagina della sala stanno
-      altrove, mettili nel campo **Link esterno**: compaiono come un pulsante
-      in fondo alla vetrina. Anche questo si può scrivere una volta sul
-      campionato e vale per tutte le sue gare.
+      Ogni gara ha una pagina pubblica **Regolamento di gara**, raggiungibile
+      dalla pagina della gara e dalla vetrina: mostra le impostazioni in
+      vigore, da quale turno vale ogni cambio, le regole turno per turno
+      quando non sono tutte uguali, e la storia delle modifiche con chi le ha
+      fatte e perché. Se il documento del regolamento sta altrove, mettilo nel
+      campo **Link al regolamento**: in fondo a quella pagina compare il
+      pulsante **Regolamento completo**. Il modulo di pagamento o la pagina
+      della sala vanno invece nel **Link esterno**, che compare come un
+      pulsante in fondo alla vetrina. Tutti e due si possono scrivere una
+      volta sul campionato e valgono per tutte le sue gare.
 
   - type: faq
     items:

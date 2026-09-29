@@ -98,7 +98,7 @@
      Gli si chiede solo se c'è ancora; se non risponde resta iscritto. #}
   {% if current_user.is_authenticated %}
   {% for inscription in _attivi + _attesa %}{% if inscription.user_id == current_user.id and inscription.campi_da_riconfermare %}
-  <div class="c7-flash c7-flash--warn" id="riconferma-iscrizione">
+  <div class="c7-flash c7-flash--warn">
     <span class="c7-flash__ico"><i class="fas fa-circle-question"></i></span>
     <div class="c7-flash__body">
       <div class="c7-flash__title">{{ _('La gara è cambiata: ci sei ancora?') }}</div>
