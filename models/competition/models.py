@@ -839,9 +839,21 @@ class Gara(SoftDeleteMixin, db.Model):
         return self.status in [GaraStatus.SETUP.value, GaraStatus.INSCRIPTION.value]
 
     def can_be_modified(self):
-        """Verifica se la gara può essere modificata"""
-        inscriptions_list = getattr(self, "inscriptions", []) or []
-        return not inscriptions_list and self.status == GaraStatus.SETUP.value
+        """Si può aprire il modulo di modifica: la gara non è ancora avviata.
+
+        Fino al 2026-09-29 bastava **un** iscritto per chiudere il modulo, e la
+        finale dei playoff — che nasce con gli iscritti dentro — non si poteva
+        correggere mai: né la sala né chi spacca. Ora vale ciò che dice
+        l'ADR-075: prima dell'avvio si corregge tutto, anche con gli iscritti,
+        e ogni correzione resta nella storia della gara.
+
+        «Avviata» è `current_round > 0`: dopo «Annulla l'avvio» il turno torna
+        a zero e la gara è di nuovo modificabile.
+        """
+        return self.status in (
+            GaraStatus.SETUP.value,
+            GaraStatus.INSCRIPTION.value,
+        ) and not (self.current_round or 0)
 
     def can_be_deleted(self):
         """Verifica se la gara può essere cancellata"""

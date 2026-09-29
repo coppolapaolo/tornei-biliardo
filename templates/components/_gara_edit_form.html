@@ -5,6 +5,9 @@
    classification_system, trio_warning, strategy_description. #}
 <form action="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" method="POST" class="c7-stack" style="gap:16px">
   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  {# Lo stato che il modulo mostra adesso (ADR-075): al salvataggio dice quali
+     campi sono stati cambiati, e se qualcun altro li ha toccati nel frattempo. #}
+  <input type="hidden" name="stato_iniziale" value='{{ stato_iniziale|tojson }}'>
 
   {# Avviso in testa: quanti iscritti ci sono gia'. #}
   {% set iscritti = gara.get_active_inscriptions_count() %}
@@ -16,7 +19,7 @@
         {{ ngettext('%(num)d giocatore già iscritto', '%(num)d giocatori già iscritti', iscritti, num=iscritti) }}
       </div>
       <div class="c7-flash__text">
-        {{ _('Una volta avviato il primo turno la gara non sarà più modificabile. Cambiando data o sala gli iscritti ricevono una notifica.') }}
+        {{ _('Fino all\'avvio del primo turno si può cambiare tutto. Ogni modifica resta nella storia della gara, visibile in fondo a questa pagina.') }}
       </div>
     </div>
   </div>
@@ -37,9 +40,6 @@
         <label for="date" class="form-label">{{ _('Data') }}</label>
         <input type="date" class="form-control" id="date" name="date"
                value="{{ gara.date.isoformat() if gara.date else '' }}" required>
-        {% if iscritti > 0 %}
-        <div class="form-text"><i class="fas fa-bell" style="font-size:10px"></i> {{ _('Gli iscritti riceveranno una notifica') }}</div>
-        {% endif %}
       </div>
       <div style="width:140px">
         <label for="time" class="form-label">{{ _('Ora') }}</label>
@@ -389,6 +389,13 @@
     </div>
   </div>
 
+  <div class="c7-card">
+    <label for="motivo" class="form-label">{{ _('Motivo della modifica') }} · {{ _('opzionale') }}</label>
+    <textarea class="form-control" id="motivo" name="motivo" rows="2" maxlength="1000"
+              placeholder="{{ _('Scrivi perché: servirà in caso di contestazioni') }}"></textarea>
+    <div class="form-text">{{ _('Compare nella storia della gara, con il tuo nome e l\'ora.') }}</div>
+  </div>
+
   <div class="d-flex gap-2 justify-content-end">
     <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary">{{ _('Annulla') }}</a>
     <button type="submit" class="btn btn-primary">
@@ -396,6 +403,8 @@
     </button>
   </div>
 </form>
+
+{% include "components/_storia_modifiche.html" %}
 
 {# `data-help-capture-hide`: escluso dalle schermate della guida (vedi
    scripts/help_docs/capture_screenshots.py). #}

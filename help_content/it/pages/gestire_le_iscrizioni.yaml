@@ -23,7 +23,7 @@ blocks:
       - name: "Bozza"
         text: "La gara esiste ma nessuno può iscriversi. È il momento in cui puoi cambiare qualunque impostazione."
       - name: "Iscrizioni aperte"
-        text: "La gara è pubblica e i giocatori si iscrivono da soli. Le impostazioni di gioco restano modificabili con prudenza."
+        text: "La gara è pubblica e i giocatori si iscrivono da soli. Le impostazioni restano modificabili, e ogni modifica resta nella storia della gara."
       - name: "In corso"
         text: "Il primo turno è partito. Il formato di gioco è congelato: cambiarlo falserebbe i risultati già registrati."
 

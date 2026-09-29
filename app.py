@@ -670,6 +670,14 @@ def create_app(config_name=None, *, da_script: bool = False):
     app.jinja_env.globals["challenge_image_url"] = challenge_image_url
     app.jinja_env.globals["challenge_image_filename"] = challenge_image_filename
 
+    # La storia delle modifiche (ADR-075): nomi dei campi e valori in parole,
+    # nella lingua di chi legge.
+    from models.storia.etichette import etichetta as etichetta_storia
+    from models.storia.etichette import valore as valore_storia
+
+    app.jinja_env.globals["etichetta_storia"] = etichetta_storia
+    app.jinja_env.globals["valore_storia"] = valore_storia
+
     # Righe del form "punti per posizione" (US-17): soglia, etichetta della
     # banda e valore configurato. Una funzione sola invece di due variabili di
     # contesto da tenere allineate in ogni route che mostra il blocco.

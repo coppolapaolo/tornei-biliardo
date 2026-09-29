@@ -23,7 +23,7 @@ blocks:
       - name: "Draft"
         text: "The competition exists but nobody can register. This is when you can change any setting."
       - name: "Registrations open"
-        text: "The competition is public and players sign themselves up. Play settings remain editable, with care."
+        text: "The competition is public and players sign themselves up. Settings remain editable, and every change stays in the competition's history."
       - name: "In progress"
         text: "The first round has started. The match format is frozen: changing it would falsify results already recorded."
 

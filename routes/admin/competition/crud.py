@@ -320,17 +320,34 @@ def edit_gara(gara_id):
     gara = db.get_or_404(Gara, gara_id)
 
     if not gara.can_be_modified():
-        flash("Impossibile modificare la gara: ci sono già delle iscrizioni!")
+        flash(
+            _(
+                "La gara è già avviata: da qui non si modifica. Per cambiarne la "
+                "struttura si annulla l'avvio."
+            ),
+            "warning",
+        )
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 
+    from .form_parser import GaraFormParser
+
     if request.method == "POST":
-        from .form_parser import GaraFormParser
+        import json
 
         # Venue auto-creation -> (location_str, billiard_hall_id)
         location = request.form.get("location", "").strip()
         tables_input = request.form.get("available_tables", "").strip()
 
         location, billiard_hall_id = _handle_venue_creation(location, tables_input)
+
+        # Lo stato che il modulo mostrava all'apertura (ADR-075): dice quali
+        # campi il direttore ha cambiato, e se qualcun altro li ha toccati.
+        try:
+            originali = json.loads(request.form.get("stato_iniziale") or "{}")
+        except ValueError:
+            originali = {}
+        if not isinstance(originali, dict):
+            originali = {}
 
         try:
             # Single source of truth for form↔model mapping: reuse the same parser
@@ -346,15 +363,23 @@ def edit_gara(gara_id):
                 flash(f"Configurazione non valida: {', '.join(errors)}", "error")
                 return redirect(url_for("admin.competition.edit_gara", gara_id=gara_id))
 
-            GaraService.update_gara(
-                gara_id=gara_id,
-                name=request.form.get("name", gara.name),
-                billiard_hall_id=billiard_hall_id,  # FK to BilliardHall
-                location=location,  # String for backward compat/display cache
-                **data,
-            )
+            data["name"] = request.form.get("name", gara.name)
+            data["location"] = location  # String for backward compat/display cache
+            cambiati = GaraFormParser.campi_cambiati(data, originali)
+            if "location" in cambiati:
+                cambiati["billiard_hall_id"] = billiard_hall_id  # FK to BilliardHall
 
-            flash("Gara aggiornata con successo!")
+            if not cambiati:
+                flash(_("Nessuna modifica da salvare."), "info")
+            else:
+                GaraService.update_gara(
+                    gara_id=gara_id,
+                    autore=current_user,
+                    motivo=request.form.get("motivo"),
+                    originali=originali,
+                    **cambiati,
+                )
+                flash(_("Gara aggiornata: la modifica resta nella sua storia."))
         except ValueError as ve:
             flash(str(ve), "error")
 
@@ -371,10 +396,13 @@ def edit_gara(gara_id):
     )
 
     from models.challenge.services import ChallengeService
+    from models.storia.service import StoriaModificheService
 
     return render_template(
         "admin/gara_edit.html",
         gara=gara,
+        stato_iniziale=GaraFormParser.valori_attuali(gara),
+        storia=StoriaModificheService.voci_della_gara(gara.id),
         # Gli esercizi offribili per la X (issue #267).
         x_challenges=ChallengeService.get_challenges_for_x_choice(
             includi_id=gara.x_challenge_id

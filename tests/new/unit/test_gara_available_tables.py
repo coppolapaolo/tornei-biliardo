@@ -260,12 +260,15 @@ class TestAvailableTablesEditableWithInscriptions:
         db_session.add(gara)
         db_session.commit()
 
-        # Add inscription (makes can_be_modified() return False)
+        # Add inscription: dal 2026-09-29 (ADR-075) la gara resta
+        # modificabile fino all'avvio; i tavoli lo sono comunque sempre.
         inscription = Inscription(user_id=user.id, gara_id=gara.id)
         db_session.add(inscription)
         db_session.commit()
 
-        # Verify gara cannot be fully modified
+        gara.status = GaraStatus.PLAYING.value
+        gara.current_round = 1
+        db_session.commit()
         assert not gara.can_be_modified()
 
         # But available_tables can still be set directly

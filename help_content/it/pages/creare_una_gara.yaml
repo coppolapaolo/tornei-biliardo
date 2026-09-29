@@ -188,7 +188,7 @@ blocks:
   - type: faq
     items:
       - q: "Posso modificare una gara dopo averla creata?"
-        a: "Sì, liberamente finché è in bozza. Dopo l'apertura delle iscrizioni restano modificabili le date; una volta avviato il primo turno il formato di gioco è congelato."
+        a: "Sì, finché non avvii il primo turno: anche con le iscrizioni aperte e i giocatori già iscritti. Ogni modifica resta nella storia della gara. Una volta avviato il primo turno il formato di gioco è congelato; per cambiarlo si annulla l'avvio."
       - q: "Ho sbagliato tutto, posso cancellarla?"
         a: "Una gara in bozza può essere eliminata da un amministratore. Se sono già state fatte iscrizioni, la strada normale è annullarla, non cancellarla: resta traccia per chi si era iscritto."
       - q: "Quanti giocatori servono?"

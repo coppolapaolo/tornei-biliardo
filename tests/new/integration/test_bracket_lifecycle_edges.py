@@ -186,19 +186,38 @@ class TestRitiroDopoIlSorteggio:
 
 
 class TestFinestraDiConfigurazione:
-    def test_le_opzioni_non_si_cambiano_a_iscrizioni_aperte(self, db_session):
-        """US-6: si decide in setup, così ogni iscrizione nasce con la squadra."""
+    def test_a_iscrizioni_aperte_gli_iscritti_prendono_la_squadra(self, db_session):
+        """US-6, emendata dall'ADR-075 (2026-09-29).
+
+        Prima l'opzione si decideva solo in preparazione, «così ogni iscrizione
+        nasce con la squadra». Ora si accende anche a iscrizioni aperte, e chi
+        è già dentro riceve la squadra che avrebbe ricevuto iscrivendosi
+        adesso: quella del profilo. Chi non ha corrispondenza resta senza, e
+        si sistema dalla schermata delle squadre, come ogni iscrizione.
+        """
+        from models import Inscription
+        from models.squadra.models import Squadra
+
         players = _players(db_session, 4)
+        players[0].squadra = "Stecca d'Oro"
+        players[1].squadra = "stecca d'oro"
+        db_session.commit()
         gara = _gara(db_session, players, separate_teammates=False)
+        db_session.add(Squadra(name="Stecca d'Oro", gara_id=gara.id))
+        db_session.commit()
 
-        with pytest.raises(ValueError):
-            GaraService.update_gara(gara.id, separate_teammates=True)
+        GaraService.update_gara(gara.id, separate_teammates=True)
 
-        db_session.rollback()
-        assert db_session.get(Gara, gara.id).separate_teammates is False
+        squadre = {
+            ins.user_id: ins.squadra_id
+            for ins in Inscription.query.filter_by(gara_id=gara.id).all()
+        }
+        assert squadre[players[0].id] is not None
+        assert squadre[players[0].id] == squadre[players[1].id]
+        assert squadre[players[2].id] is None
 
     def test_in_setup_si_cambiano(self, db_session):
-        """Il divieto è sulle iscrizioni aperte, non sulla configurazione."""
+        """In preparazione si cambiano, come sempre."""
         gara = _gara(db_session, [], separate_teammates=False)
         gara.status = GaraStatus.SETUP.value
         db_session.commit()

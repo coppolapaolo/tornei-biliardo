@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-27 14:28+0200\n"
+"POT-Creation-Date: 2026-09-29 14:54+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -22,23 +22,23 @@ msgstr ""
 msgid "Accedi per vedere questa pagina."
 msgstr "Log in to see this page."
 
-#: app.py:888 templates/errors/403.html:3
+#: app.py:896 templates/errors/403.html:3
 msgid "Accesso negato"
 msgstr "Access denied"
 
-#: app.py:906
+#: app.py:914
 msgid "Non è il tuo turno"
 msgstr "Not your turn yet"
 
-#: app.py:907
+#: app.py:915
 msgid "Colpo irregolare"
 msgstr "Illegal shot"
 
-#: app.py:926
+#: app.py:934
 msgid "Operazione non consentita"
 msgstr "That shot isn't allowed."
 
-#: app.py:940
+#: app.py:948
 msgid "Tiro non valido"
 msgstr "Foul shot"
 
@@ -886,7 +886,7 @@ msgid "Esercizio già presente per questo turno della gara"
 msgstr "This drill is already set for this round of the competition"
 
 #: models/competition/gara_challenge_service.py:305
-#: routes/admin/match/challenges.py:161
+#: routes/admin/match/challenges.py:162
 msgid "Tentativo non trovato"
 msgstr "Attempt not found"
 
@@ -1030,7 +1030,7 @@ msgstr ""
 "Competition certified by tiebreaker: cancel the tiebreaker first to "
 "cancel the round"
 
-#: models/competition/services.py:488
+#: models/competition/services.py:587
 #, python-format
 msgid ""
 "La %(gara)s del campionato '%(campionato)s' del %(data)s è stata "
@@ -1039,12 +1039,12 @@ msgstr ""
 "%(gara)s of the championship '%(campionato)s' on %(data)s has been "
 "cancelled."
 
-#: models/competition/services.py:495
+#: models/competition/services.py:594
 #, python-format
 msgid "La %(gara)s del %(data)s è stata cancellata."
 msgstr "%(gara)s on %(data)s has been cancelled."
 
-#: models/competition/services.py:506
+#: models/competition/services.py:605
 msgid "Gara Cancellata"
 msgstr "Competition cancelled"
 
@@ -3506,6 +3506,339 @@ msgstr[1] ""
 "«%(nome)s» will disappear on its own in %(num)s days. If you're done, you"
 " can delete it yourself."
 
+#: models/storia/etichette.py:20 templates/admin/campionato_detail.html:143
+#: templates/admin/campionato_detail.html:231
+#: templates/admin/campionato_detail.html:440
+#: templates/admin/campionato_wizard_step2.html:24
+#: templates/admin/venues_list.html:30
+#: templates/components/_gara_edit_form.html:33
+#: templates/components/_new_gara_modal.html:77
+#: templates/components/_user_info_card.html:10
+#: templates/components/_user_info_card.html:88
+#: templates/components/_user_info_card.html:90 templates/exam/compose.html:63
+#: templates/exam/manage.html:68
+#: templates/gamification/admin/achievement_form.html:26
+#: templates/gamification/admin/feature_create.html:32
+#: templates/gamification/admin/feature_detail.html:35
+#: templates/gamification/admin/features.html:26
+#: templates/gamification/admin/quests.html:22
+#: templates/player/profile_edit.html:25 templates/player/venue_detail.html:49
+#: templates/sheet/compose.html:89
+msgid "Nome"
+msgstr "Name"
+
+#: models/storia/etichette.py:21 models/storia/etichette.py:22
+#: templates/admin/venue_manager_requests.html:31
+#: templates/components/_gara_edit_form.html:220
+#: templates/components/_gara_info.html:21
+#: templates/components/_history_filters.html:41
+#: templates/components/_match_info.html:31
+#: templates/components/_nearby_gare.html:125
+#: templates/components/_player_dashboard_content.html:36
+#: templates/components/_playoff_invitations.html:36
+#: templates/direttore/_fase_preparazione.html:184
+#: templates/exam/request_detail.html:96 templates/exam/request_form.html:63
+#: templates/individual_match/match_detail.html:211
+#: templates/player/my_venue_requests.html:21
+#: templates/public/garas_list.html:12 templates/public/garas_list.html:32
+msgid "Sala"
+msgstr "Venue"
+
+#: models/storia/etichette.py:23
+#: templates/admin/gara_create_standalone.html:164
+#: templates/components/_gara_edit_form.html:40
+#: templates/components/_gara_info.html:17
+#: templates/components/_match_info.html:27
+#: templates/components/_match_info.html:50
+#: templates/components/_nearby_gare.html:130
+#: templates/components/_new_gara_modal.html:86
+#: templates/gamification/admin/xp_management.html:89
+#: templates/individual_match/discover_players.html:38
+#: templates/public/garas_list.html:11 templates/public/garas_list.html:31
+msgid "Data"
+msgstr "Date"
+
+#: models/storia/etichette.py:24 templates/components/_gara_edit_form.html:45
+#: templates/components/_new_gara_modal.html:92
+#: templates/exam/request_detail.html:92 templates/exam/request_form.html:58
+#: templates/individual_match/discover_players.html:42
+msgid "Ora"
+msgstr "Time"
+
+#: models/storia/etichette.py:25 routes/admin/competition/preparazione.py:30
+#: templates/admin/venues_list.html:33
+#: templates/components/_gara_edit_form.html:233
+#: templates/components/_new_gara_modal.html:124
+#: templates/direttore/_fase_gioco.html:149
+#: templates/direttore/_fase_gioco.html:238
+#: templates/direttore/_fase_iscrizioni.html:122
+#: templates/direttore/_fase_preparazione.html:158
+#: templates/player/venues.html:29 templates/public/schermo_sala.html:124
+msgid "Tavoli"
+msgstr "Tables"
+
+#: models/storia/etichette.py:26 templates/admin/campionato_vetrina.html:59
+#: templates/components/_gara_edit_form.html:386 templates/exam/compose.html:68
+#: templates/exam/manage.html:72
+#: templates/gamification/admin/achievement_form.html:34
+#: templates/gamification/admin/feature_create.html:38
+#: templates/gamification/admin/feature_detail.html:45
+#: templates/gamification/admin/level_config.html:101
+#: templates/gamification/admin/level_config.html:163
+#: templates/gamification/admin/level_config.html:214
+#: templates/gamification/admin/quest_form.html:24
+#: templates/gamification/admin/xp_config.html:33
+msgid "Descrizione"
+msgstr "Description"
+
+#: models/storia/etichette.py:27
+msgid "Numero di turni"
+msgstr "Number of rounds"
+
+#: models/storia/etichette.py:28
+msgid "Minimo iscritti"
+msgstr "Minimum entrants"
+
+#: models/storia/etichette.py:29
+msgid "Capienza"
+msgstr "Capacity"
+
+#: models/storia/etichette.py:30
+msgid "Quota d'iscrizione"
+msgstr "Entry fee"
+
+#: models/storia/etichette.py:31 templates/admin/campionato_detail.html:173
+#: templates/admin/gara_create_standalone.html:152
+#: templates/components/_gara_edit_form.html:337
+#: templates/components/_history_filters.html:27
+#: templates/components/_match_info.html:24
+#: templates/components/_match_info.html:45
+#: templates/components/_new_gara_modal.html:189
+#: templates/direttore/preparazione/_turni.html:77
+#: templates/direttore/preparazione/_turni.html:148
+#: templates/individual_match/create_proposal.html:105
+#: templates/individual_match/edit_match.html:63
+#: templates/individual_match/match_detail.html:196
+#: templates/individual_match/quick_match.html:155
+#: templates/public/garas_list.html:10 templates/public/garas_list.html:27
+msgid "Disciplina"
+msgstr "Discipline"
+
+#: models/storia/etichette.py:32 templates/admin/campionato_detail.html:165
+#: templates/components/_distance_configurator.html:15
+#: templates/components/_player_dashboard_content.html:40
+#: templates/direttore/preparazione/_turni.html:150
+#: templates/individual_match/create_proposal.html:127
+#: templates/individual_match/edit_match.html:78
+#: templates/individual_match/proposal_detail.html:55
+#: templates/individual_match/quick_match.html:170
+msgid "Distanza"
+msgstr "Distance"
+
+#: models/storia/etichette.py:33
+#, python-brace-format
+msgid "Si vince al numero di triangoli"
+msgstr "Race to a number of racks"
+
+#: models/storia/etichette.py:34
+msgid "Chi si ritira"
+msgstr "Withdrawals"
+
+#: models/storia/etichette.py:35
+#: templates/components/_distance_configurator.html:44
+msgid "Partita a set"
+msgstr "Set match"
+
+#: models/storia/etichette.py:36
+msgid "Set per vincere"
+msgstr "Sets to win"
+
+#: models/storia/etichette.py:37
+#, python-brace-format
+msgid "Si vince al numero di set"
+msgstr "Race to a number of sets"
+
+#: models/storia/etichette.py:38
+msgid "Handicap"
+msgstr "Handicap"
+
+#: models/storia/etichette.py:39
+msgid "Chi apre"
+msgstr "Who opens"
+
+#: models/storia/etichette.py:40
+#: templates/admin/campionato_wizard_step2.html:144
+#: templates/admin/gara_create_standalone.html:422
+#: templates/components/_gara_edit_form.html:309
+#: templates/direttore/_dal_campionato.html:38
+#: templates/individual_match/create_proposal.html:176
+#: templates/individual_match/edit_match.html:108
+#: templates/individual_match/quick_match.html:199
+msgid "Chi spacca"
+msgstr "Who breaks"
+
+#: models/storia/etichette.py:41
+#: templates/admin/campionato_wizard_step1.html:64
+#: templates/components/_gara_edit_form.html:54
+msgid "Strategia di abbinamento"
+msgstr "Pairing strategy"
+
+#: models/storia/etichette.py:42 templates/components/_gara_info.html:57
+#: templates/direttore/preparazione/_turni.html:153
+msgid "Anti-reincontro"
+msgstr "Rematch avoidance"
+
+#: models/storia/etichette.py:43
+msgid "Numero dispari di giocatori"
+msgstr "Odd number of players"
+
+#: models/storia/etichette.py:44
+msgid "Primo turno"
+msgstr "First round"
+
+#: models/storia/etichette.py:45 templates/admin/campionato_detail.html:200
+#: templates/admin/campionato_wizard_step1.html:41
+#: templates/components/_gara_edit_form.html:57
+msgid "Sistema di classifica"
+msgstr "Standings system"
+
+#: models/storia/etichette.py:46
+msgid "Separare i compagni di squadra"
+msgstr "Separate teammates"
+
+#: models/storia/etichette.py:47
+msgid "Finalina"
+msgstr "3rd/4th place match"
+
+#: models/storia/etichette.py:48
+msgid "Criterio del sorteggio"
+msgstr "Draw criterion"
+
+#: models/storia/etichette.py:49
+msgid "Turni della fase a gironi"
+msgstr "Group stage rounds"
+
+#: models/storia/etichette.py:50
+msgid "Peso nel campionato"
+msgstr "Weight in the championship"
+
+#: models/storia/etichette.py:51
+msgid "Esercizio al posto della X"
+msgstr "Drill in place of the X"
+
+#: models/storia/etichette.py:52 templates/components/_campionato_gare.html:29
+#: templates/direttore/_striscia.html:16
+msgid "Spareggio"
+msgstr "Tiebreaker"
+
+#: models/storia/etichette.py:53
+msgid "Spareggio fino al posto"
+msgstr "Tiebreaker up to position"
+
+#: models/storia/etichette.py:64 routes/admin/campionato.py:60
+#: templates/components/_tabellone_macros.html:126
+msgid "Amalfi"
+msgstr "Amalfi"
+
+#: models/storia/etichette.py:65
+#: templates/admin/gara_create_standalone.html:319
+#: templates/components/_gara_edit_form.html:165
+#: templates/components/_new_gara_modal.html:253
+#: templates/components/_tabellone_macros.html:127
+msgid "Casuale"
+msgstr "Random"
+
+#: models/storia/etichette.py:66
+#: templates/components/_campionato_details_info.html:15
+#: templates/components/_tabellone_macros.html:128
+#: templates/components/_trio_rack_input.html:55
+msgid "Girone all'italiana"
+msgstr "Round-robin"
+
+#: models/storia/etichette.py:67 routes/admin/campionato.py:62
+#: templates/admin/campionato_wizard_step1.html:88
+#: templates/components/_tabellone_macros.html:129
+msgid "Eliminazione diretta"
+msgstr "Single elimination"
+
+#: models/storia/etichette.py:68 routes/admin/campionato.py:63
+#: templates/admin/campionato_wizard_step1.html:95
+#: templates/components/_tabellone_macros.html:130
+msgid "Doppio KO"
+msgstr "Double knockout"
+
+#: models/storia/etichette.py:71
+#: templates/components/_gara_lista_attesa.html:17
+#: templates/components/_tessera_gara.html:117
+#: templates/components/_tessera_playoff.html:44
+#: templates/components/_unified_cards.html:139 utils/jinja.py:471
+msgid "Lista d'attesa"
+msgstr "Waitlist"
+
+#: models/storia/etichette.py:72 templates/individual_match/statistics.html:206
+#: templates/individual_match/statistics.html:213
+msgid "X"
+msgstr "D"
+
+#: models/storia/etichette.py:73
+msgid "X con esercizio"
+msgstr "X with drill"
+
+#: models/storia/etichette.py:74 templates/components/_match_card.html:32
+#: templates/components/_match_result_row.html:21
+#: templates/components/_user_recent_matches_table.html:47
+msgid "Trio"
+msgstr "Trio"
+
+#: models/storia/etichette.py:77 templates/admin/campionato_detail.html:203
+#: templates/admin/campionato_wizard_step2.html:30
+#: templates/admin/users_list.html:152 templates/admin/users_list.html:248
+#: templates/components/_classification_mobile.html:30
+#: templates/components/_classification_mobile.html:56
+#: templates/components/_detailed_classification.html:20
+#: templates/components/_gara_edit_form.html:67
+#: templates/components/_gara_edit_form.html:77
+#: templates/components/_history_filters.html:95
+#: templates/components/_history_matches_tab.html:23
+#: templates/components/_player_statistics.html:36
+msgid "Vittorie"
+msgstr "Wins"
+
+#: models/storia/etichette.py:78 models/storia/etichette.py:79
+#: templates/components/_campionato_general_classification.html:58
+#: templates/components/_unified_rack_history.html:61
+#: templates/direttore/preparazione/_turni.html:86
+#: templates/individual_match/tpa_referto.html:101
+msgid "Triangoli"
+msgstr "Racks"
+
+#: models/storia/etichette.py:80 templates/components/_position_points.html:27
+msgid "Punti per posizione"
+msgstr "Position points"
+
+#: models/storia/etichette.py:83
+msgid "Perde a tavolino le partite restanti"
+msgstr "Forfeits the remaining matches"
+
+#: models/storia/etichette.py:84 templates/direttore/_regola_ritiro.html:9
+msgid "Esce dalla gara"
+msgstr "Leaves the competition"
+
+#: models/storia/etichette.py:93
+msgid "come il campionato"
+msgstr "as the championship"
+
+#: models/storia/etichette.py:96 templates/base.html:602
+#: templates/base.html:605
+msgid "sì"
+msgstr "yes"
+
+#: models/storia/etichette.py:96 models/training_sheet/summary_view.py:48
+#: templates/base.html:602 templates/base.html:605
+#: templates/exam/session.html:42
+msgid "no"
+msgstr "no"
+
 #: models/tpa/services.py:74
 msgid "Il referto lo tiene uno dei due giocatori."
 msgstr "The scoresheet is kept by one of the two players."
@@ -3981,11 +4314,6 @@ msgstr "A session does not last longer than a day"
 #: models/training_sheet/summary_view.py:48
 msgid "fatto"
 msgstr "done"
-
-#: models/training_sheet/summary_view.py:48 templates/base.html:602
-#: templates/base.html:605 templates/exam/session.html:42
-msgid "no"
-msgstr "no"
 
 #: models/training_sheet/summary_view.py:118
 #: templates/individual_match/tpa_referto.html:173
@@ -4806,26 +5134,9 @@ msgstr "Role revoked."
 msgid "Ruolo concesso (debug)."
 msgstr "Role granted (debug)."
 
-#: routes/admin/campionato.py:60
-#: templates/components/_tabellone_macros.html:126
-msgid "Amalfi"
-msgstr "Amalfi"
-
 #: routes/admin/campionato.py:61
 msgid "Random"
 msgstr "Random"
-
-#: routes/admin/campionato.py:62
-#: templates/admin/campionato_wizard_step1.html:88
-#: templates/components/_tabellone_macros.html:129
-msgid "Eliminazione diretta"
-msgstr "Single elimination"
-
-#: routes/admin/campionato.py:63
-#: templates/admin/campionato_wizard_step1.html:95
-#: templates/components/_tabellone_macros.html:130
-msgid "Doppio KO"
-msgstr "Double knockout"
 
 #: routes/admin/campionato.py:119 routes/admin/campionato.py:356
 msgid "Il nome del campionato è obbligatorio"
@@ -5136,20 +5447,36 @@ msgstr[1] "%(num)d players copied from the previous competition."
 msgid "Nessun iscritto da copiare dalla gara precedente."
 msgstr "No players to copy from the previous competition."
 
-#: routes/admin/competition/crud.py:414
+#: routes/admin/competition/crud.py:325
+msgid ""
+"La gara è già avviata: da qui non si modifica. Per cambiarne la struttura"
+" si annulla l'avvio."
+msgstr ""
+"The competition has already started: it can't be edited from here. To "
+"change its structure, cancel the start."
+
+#: routes/admin/competition/crud.py:373
+msgid "Nessuna modifica da salvare."
+msgstr "No changes to save."
+
+#: routes/admin/competition/crud.py:382
+msgid "Gara aggiornata: la modifica resta nella sua storia."
+msgstr "Competition updated: the change stays in its history."
+
+#: routes/admin/competition/crud.py:442
 msgid "Tavoli salvati."
 msgstr "Tables saved."
 
-#: routes/admin/competition/crud.py:439
+#: routes/admin/competition/crud.py:467
 #, python-format
 msgid "Gara «%(nome)s» eliminata."
 msgstr "Competition «%(nome)s» deleted."
 
-#: routes/admin/competition/crud.py:536
+#: routes/admin/competition/crud.py:564
 msgid "La gara non è stata annullata per un errore imprevisto."
 msgstr "The competition was not cancelled because of an unexpected error."
 
-#: routes/admin/competition/crud.py:543
+#: routes/admin/competition/crud.py:571
 #, python-format
 msgid "«%(nome)s» annullata: gli iscritti ricevono la notifica."
 msgstr "«%(nome)s» cancelled: registered players will be notified."
@@ -5220,18 +5547,6 @@ msgstr "The match is closed: to change it, reset it from the scoreboard."
 #: templates/gara_detail.html:47
 msgid "Turni"
 msgstr "Rounds"
-
-#: routes/admin/competition/preparazione.py:30
-#: templates/admin/venues_list.html:33
-#: templates/components/_gara_edit_form.html:233
-#: templates/components/_new_gara_modal.html:124
-#: templates/direttore/_fase_gioco.html:149
-#: templates/direttore/_fase_gioco.html:238
-#: templates/direttore/_fase_iscrizioni.html:122
-#: templates/direttore/_fase_preparazione.html:158
-#: templates/player/venues.html:29 templates/public/schermo_sala.html:124
-msgid "Tavoli"
-msgstr "Tables"
 
 #: routes/admin/competition/preparazione.py:31 templates/base.html:261
 #: templates/base.html:561 templates/challenge/today.html:14
@@ -5327,9 +5642,9 @@ msgstr ""
 
 #: routes/admin/competition/rounds.py:360 routes/individual_match/matches.py:42
 #: routes/individual_match/matches.py:83
-#: routes/individual_match/proposals.py:41
-#: routes/individual_match/proposals.py:69
-#: routes/individual_match/proposals.py:425 routes/individual_match/tpa.py:175
+#: routes/individual_match/proposals.py:42
+#: routes/individual_match/proposals.py:70
+#: routes/individual_match/proposals.py:426 routes/individual_match/tpa.py:175
 #: routes/individual_match/tpa.py:196 routes/individual_match/tpa.py:219
 #: routes/individual_match/tpa.py:242 routes/individual_match/tpa.py:273
 #: routes/individual_match/tpa.py:307 routes/individual_match/views.py:34
@@ -5425,7 +5740,7 @@ msgstr ""
 "Poster removed: the competition goes back to the championship one, if "
 "there is one."
 
-#: routes/admin/match/challenges.py:37
+#: routes/admin/match/challenges.py:38
 msgid "Il giocatore non gioca questa gara"
 msgstr "The player is not playing in this competition"
 
@@ -5961,27 +6276,27 @@ msgstr "Forfeit declared. Match ended."
 msgid "Solo le sfide completate permettono di giocarne un'altra."
 msgstr "Only completed matches allow playing another."
 
-#: routes/individual_match/proposals.py:61
+#: routes/individual_match/proposals.py:62
 msgid "Accesso negato a questa proposta."
 msgstr "Access denied to this proposal."
 
-#: routes/individual_match/proposals.py:295
+#: routes/individual_match/proposals.py:296
 msgid "Proposta di sfida creata con successo!"
 msgstr "Match proposal created successfully!"
 
-#: routes/individual_match/proposals.py:331
+#: routes/individual_match/proposals.py:332
 msgid "Proposta accettata con successo!"
 msgstr "Proposal accepted successfully!"
 
-#: routes/individual_match/proposals.py:364
+#: routes/individual_match/proposals.py:365
 msgid "Proposta annullata con successo!"
 msgstr "Proposal cancelled successfully!"
 
-#: routes/individual_match/proposals.py:401
+#: routes/individual_match/proposals.py:402
 msgid "Proposta cancellata."
 msgstr "Proposal deleted."
 
-#: routes/individual_match/proposals.py:418 routes/sheet/proposte.py:92
+#: routes/individual_match/proposals.py:419 routes/sheet/proposte.py:92
 msgid "Proposta rifiutata."
 msgstr "Proposal declined."
 
@@ -6399,11 +6714,12 @@ msgstr "Debug"
 msgid "Reset DB"
 msgstr "Reset DB"
 
-#: templates/base.html:352
+#: templates/base.html:352 templates/components/_storia_modifiche.html:16
 msgid "amministratore"
 msgstr "administrator"
 
-#: templates/base.html:353 templates/direttore/preparazione/_direttori.html:39
+#: templates/base.html:353 templates/components/_storia_modifiche.html:16
+#: templates/direttore/preparazione/_direttori.html:39
 #: templates/direttore/preparazione/_direttori.html:87
 msgid "direttore"
 msgstr "director"
@@ -6502,10 +6818,6 @@ msgstr "Exams:"
 msgid "esaminatore"
 msgstr "examiner"
 
-#: templates/base.html:602 templates/base.html:605
-msgid "sì"
-msgstr "yes"
-
 #: templates/base.html:605
 msgid "override"
 msgstr "override"
@@ -6591,7 +6903,7 @@ msgstr "Close"
 #: templates/challenge/form.html:41
 #: templates/components/_campionato_create_modal.html:35
 #: templates/components/_campionato_edit_form.html:239
-#: templates/components/_gara_edit_form.html:393
+#: templates/components/_gara_edit_form.html:400
 #: templates/components/_new_gara_modal.html:415
 #: templates/components/_soft_delete_modal.html:48
 #: templates/direttore/_modali_gioco.html:117
@@ -7824,7 +8136,6 @@ msgstr "Deactivate this configuration?"
 
 #: templates/admin/campionato_detail.html:125
 #: templates/admin/venues_list.html:126
-#: templates/gamification/admin/features.html:46
 msgid "Disattiva"
 msgstr "Deactivate"
 
@@ -7840,27 +8151,6 @@ msgstr "Max participants"
 #: templates/admin/campionato_detail.html:134
 msgid "Min. gare giocate"
 msgstr "Min. competitions played"
-
-#: templates/admin/campionato_detail.html:143
-#: templates/admin/campionato_detail.html:231
-#: templates/admin/campionato_detail.html:440
-#: templates/admin/campionato_wizard_step2.html:24
-#: templates/admin/venues_list.html:30
-#: templates/components/_gara_edit_form.html:30
-#: templates/components/_new_gara_modal.html:77
-#: templates/components/_user_info_card.html:10
-#: templates/components/_user_info_card.html:88
-#: templates/components/_user_info_card.html:90 templates/exam/compose.html:63
-#: templates/exam/manage.html:68
-#: templates/gamification/admin/achievement_form.html:26
-#: templates/gamification/admin/feature_create.html:32
-#: templates/gamification/admin/feature_detail.html:35
-#: templates/gamification/admin/features.html:26
-#: templates/gamification/admin/quests.html:22
-#: templates/player/profile_edit.html:25 templates/player/venue_detail.html:49
-#: templates/sheet/compose.html:89
-msgid "Nome"
-msgstr "Name"
 
 #: templates/admin/campionato_detail.html:147
 #: templates/admin/campionato_detail.html:234
@@ -7885,17 +8175,6 @@ msgstr "Max"
 msgid "Min gare"
 msgstr "Min competitions"
 
-#: templates/admin/campionato_detail.html:165
-#: templates/components/_distance_configurator.html:15
-#: templates/components/_player_dashboard_content.html:40
-#: templates/direttore/preparazione/_turni.html:150
-#: templates/individual_match/create_proposal.html:127
-#: templates/individual_match/edit_match.html:78
-#: templates/individual_match/proposal_detail.html:55
-#: templates/individual_match/quick_match.html:170
-msgid "Distanza"
-msgstr "Distance"
-
 #: templates/admin/campionato_detail.html:166
 #: templates/admin/campionato_detail.html:170
 #: templates/admin/campionato_detail.html:175
@@ -7904,23 +8183,6 @@ msgstr "Distance"
 #: templates/admin/campionato_detail.html:202
 msgid "Eredita"
 msgstr "Inherit"
-
-#: templates/admin/campionato_detail.html:173
-#: templates/admin/gara_create_standalone.html:152
-#: templates/components/_gara_edit_form.html:337
-#: templates/components/_history_filters.html:27
-#: templates/components/_match_info.html:24
-#: templates/components/_match_info.html:45
-#: templates/components/_new_gara_modal.html:189
-#: templates/direttore/preparazione/_turni.html:77
-#: templates/direttore/preparazione/_turni.html:148
-#: templates/individual_match/create_proposal.html:105
-#: templates/individual_match/edit_match.html:63
-#: templates/individual_match/match_detail.html:196
-#: templates/individual_match/quick_match.html:155
-#: templates/public/garas_list.html:10 templates/public/garas_list.html:27
-msgid "Disciplina"
-msgstr "Discipline"
 
 #: templates/admin/campionato_detail.html:182
 #: templates/public/campionato_detail.html:78
@@ -7933,26 +8195,6 @@ msgstr "Format"
 #: templates/direttore/preparazione/_turni.html:156
 msgid "Dispari"
 msgstr "Odd Players"
-
-#: templates/admin/campionato_detail.html:200
-#: templates/admin/campionato_wizard_step1.html:41
-#: templates/components/_gara_edit_form.html:57
-msgid "Sistema di classifica"
-msgstr "Standings system"
-
-#: templates/admin/campionato_detail.html:203
-#: templates/admin/campionato_wizard_step2.html:30
-#: templates/admin/users_list.html:152 templates/admin/users_list.html:248
-#: templates/components/_classification_mobile.html:30
-#: templates/components/_classification_mobile.html:56
-#: templates/components/_detailed_classification.html:20
-#: templates/components/_gara_edit_form.html:67
-#: templates/components/_gara_edit_form.html:77
-#: templates/components/_history_filters.html:95
-#: templates/components/_history_matches_tab.html:23
-#: templates/components/_player_statistics.html:36
-msgid "Vittorie"
-msgstr "Wins"
 
 #: templates/admin/campionato_detail.html:204
 #: templates/admin/campionato_wizard_step2.html:31
@@ -8456,20 +8698,6 @@ msgstr "Without an image, competition links show the site artwork."
 msgid "Carica locandina"
 msgstr "Upload poster"
 
-#: templates/admin/campionato_vetrina.html:59
-#: templates/components/_gara_edit_form.html:386 templates/exam/compose.html:68
-#: templates/exam/manage.html:72
-#: templates/gamification/admin/achievement_form.html:34
-#: templates/gamification/admin/feature_create.html:38
-#: templates/gamification/admin/feature_detail.html:45
-#: templates/gamification/admin/level_config.html:101
-#: templates/gamification/admin/level_config.html:163
-#: templates/gamification/admin/level_config.html:214
-#: templates/gamification/admin/quest_form.html:24
-#: templates/gamification/admin/xp_config.html:33
-msgid "Descrizione"
-msgstr "Description"
-
 #: templates/admin/campionato_vetrina.html:61
 msgid ""
 "Di cosa si tratta, a chi è aperto, come funziona: è la riga che spiega il"
@@ -8591,11 +8819,6 @@ msgid ""
 "Punti per quanto si arriva avanti nel tabellone. Solo eliminazione "
 "diretta o doppio KO."
 msgstr "Points by bracket position. Single or double elimination only."
-
-#: templates/admin/campionato_wizard_step1.html:64
-#: templates/components/_gara_edit_form.html:54
-msgid "Strategia di abbinamento"
-msgstr "Pairing strategy"
 
 #: templates/admin/campionato_wizard_step1.html:75
 msgid "Abbinamenti dalla classifica, evita i reincontri."
@@ -8795,16 +9018,6 @@ msgid ""
 msgstr ""
 "With a lag the scoreboard asks who won it and who breaks: the winner may "
 "send the opponent to the table."
-
-#: templates/admin/campionato_wizard_step2.html:144
-#: templates/admin/gara_create_standalone.html:422
-#: templates/components/_gara_edit_form.html:309
-#: templates/direttore/_dal_campionato.html:38
-#: templates/individual_match/create_proposal.html:176
-#: templates/individual_match/edit_match.html:108
-#: templates/individual_match/quick_match.html:199
-msgid "Chi spacca"
-msgstr "Who breaks"
 
 #: templates/admin/campionato_wizard_step2.html:158
 #: templates/components/_campionato_details_info.html:105
@@ -9039,19 +9252,6 @@ msgstr ""
 msgid "Seleziona disciplina..."
 msgstr "Select a discipline..."
 
-#: templates/admin/gara_create_standalone.html:164
-#: templates/components/_gara_edit_form.html:37
-#: templates/components/_gara_info.html:17
-#: templates/components/_match_info.html:27
-#: templates/components/_match_info.html:50
-#: templates/components/_nearby_gare.html:130
-#: templates/components/_new_gara_modal.html:86
-#: templates/gamification/admin/xp_management.html:89
-#: templates/individual_match/discover_players.html:38
-#: templates/public/garas_list.html:11 templates/public/garas_list.html:31
-msgid "Data"
-msgstr "Date"
-
 #: templates/admin/gara_create_standalone.html:168
 msgid "Ora Inizio"
 msgstr "Start Time"
@@ -9164,13 +9364,6 @@ msgstr ""
 #: templates/admin/gara_create_standalone.html:316
 msgid "Primo Turno"
 msgstr "First Round"
-
-#: templates/admin/gara_create_standalone.html:319
-#: templates/components/_gara_edit_form.html:165
-#: templates/components/_new_gara_modal.html:253
-#: templates/components/_tabellone_macros.html:127
-msgid "Casuale"
-msgstr "Random"
 
 #: templates/admin/gara_create_standalone.html:320
 #: templates/components/_player_ratings.html:19
@@ -9942,6 +10135,7 @@ msgstr "Active"
 #: templates/admin/venue_detail.html:62 templates/admin/venue_form.html:245
 #: templates/admin/venue_form.html:311 templates/admin/venues_list.html:87
 #: templates/direttore/_squadre_categorie.html:70
+#: templates/gamification/admin/features.html:46
 msgid "Disattivata"
 msgstr "Disabled"
 
@@ -10292,22 +10486,6 @@ msgstr "Who asked to manage a venue"
 msgid "Tutte le Richieste"
 msgstr "All Requests"
 
-#: templates/admin/venue_manager_requests.html:31
-#: templates/components/_gara_edit_form.html:220
-#: templates/components/_gara_info.html:21
-#: templates/components/_history_filters.html:41
-#: templates/components/_match_info.html:31
-#: templates/components/_nearby_gare.html:125
-#: templates/components/_player_dashboard_content.html:36
-#: templates/components/_playoff_invitations.html:36
-#: templates/direttore/_fase_preparazione.html:184
-#: templates/exam/request_detail.html:96 templates/exam/request_form.html:63
-#: templates/individual_match/match_detail.html:211
-#: templates/player/my_venue_requests.html:21
-#: templates/public/garas_list.html:12 templates/public/garas_list.html:32
-msgid "Sala"
-msgstr "Venue"
-
 #: templates/admin/venue_manager_requests.html:34
 msgid "Processata"
 msgstr "Processed"
@@ -10375,8 +10553,9 @@ msgid "importante per contenzioso"
 msgstr "important for disputes"
 
 #: templates/admin/venue_manager_requests.html:147
-#: templates/components/_gara_edit_form.html:30
+#: templates/components/_gara_edit_form.html:33
 #: templates/components/_gara_edit_form.html:386
+#: templates/components/_gara_edit_form.html:393
 #: templates/player/venue_detail.html:280
 msgid "opzionale"
 msgstr "optional"
@@ -12844,12 +13023,6 @@ msgstr "Championship Information"
 msgid "Tipo"
 msgstr "Type"
 
-#: templates/components/_campionato_details_info.html:15
-#: templates/components/_tabellone_macros.html:128
-#: templates/components/_trio_rack_input.html:55
-msgid "Girone all'italiana"
-msgstr "Round-robin"
-
 #: templates/components/_campionato_details_info.html:20
 #: templates/public/campionatos_list.html:65
 msgid "Creato"
@@ -13149,11 +13322,6 @@ msgstr "Next: competition %(num)s, %(quando)s."
 msgid "Nuova gara"
 msgstr "New competition"
 
-#: templates/components/_campionato_gare.html:29
-#: templates/direttore/_striscia.html:16
-msgid "Spareggio"
-msgstr "Tiebreaker"
-
 #: templates/components/_campionato_gare.html:31
 #: templates/components/_proposal_labels.html:22
 #: templates/player/my_venue_requests.html:47 utils/status_ui.py:182
@@ -13244,13 +13412,6 @@ msgstr "Top %(n)s"
 #, python-format
 msgid "Tutti (%(n)s)"
 msgstr "All (%(n)s)"
-
-#: templates/components/_campionato_general_classification.html:58
-#: templates/components/_unified_rack_history.html:61
-#: templates/direttore/preparazione/_turni.html:86
-#: templates/individual_match/tpa_referto.html:101
-msgid "Triangoli"
-msgstr "Racks"
 
 #: templates/components/_campionato_general_classification.html:61
 msgid "Punti"
@@ -13639,10 +13800,6 @@ msgstr ""
 "Every rack is played instead of stopping at the first player to reach the"
 " distance."
 
-#: templates/components/_distance_configurator.html:44
-msgid "Partita a set"
-msgstr "Set match"
-
 #: templates/components/_distance_configurator.html:45
 msgid "La partita si divide in più set, come nei tornei professionali."
 msgstr "The match is split into several sets, as in professional tournaments."
@@ -13827,42 +13984,31 @@ msgstr ""
 "shown for each player.They are played once the round is over, with the "
 "attempts specified for each player."
 
-#: templates/components/_gara_edit_form.html:16
+#: templates/components/_gara_edit_form.html:19
 #, python-format
 msgid "%(num)d giocatore già iscritto"
 msgid_plural "%(num)d giocatori già iscritti"
 msgstr[0] "%(num)d player already registered"
 msgstr[1] "%(num)d players already registered"
 
-#: templates/components/_gara_edit_form.html:19
+#: templates/components/_gara_edit_form.html:22
 msgid ""
-"Una volta avviato il primo turno la gara non sarà più modificabile. "
-"Cambiando data o sala gli iscritti ricevono una notifica."
+"Fino all'avvio del primo turno si può cambiare tutto. Ogni modifica resta"
+" nella storia della gara, visibile in fondo a questa pagina."
 msgstr ""
-"Once the first round has started the tournament can no longer be changed."
-" If you change the date or venue the entrants get a notification."
+"Everything can be changed until the first round starts. Every change "
+"stays in the competition's history, shown at the bottom of this page."
 
-#: templates/components/_gara_edit_form.html:27
+#: templates/components/_gara_edit_form.html:30
 #: templates/components/_user_info_card.html:6
 #: templates/individual_match/match_detail.html:193
 #: templates/player/profile.html:62
 msgid "Informazioni"
 msgstr "Information"
 
-#: templates/components/_gara_edit_form.html:32
+#: templates/components/_gara_edit_form.html:35
 msgid "es. Semifinale, Gara di Ferragosto…"
 msgstr "e.g. Semi-final, August tournament…"
-
-#: templates/components/_gara_edit_form.html:41
-msgid "Gli iscritti riceveranno una notifica"
-msgstr "Registered players will get a notification"
-
-#: templates/components/_gara_edit_form.html:45
-#: templates/components/_new_gara_modal.html:92
-#: templates/exam/request_detail.html:92 templates/exam/request_form.html:58
-#: templates/individual_match/discover_players.html:42
-msgid "Ora"
-msgstr "Time"
 
 #: templates/components/_gara_edit_form.html:70
 msgid "dai playoff"
@@ -14036,12 +14182,24 @@ msgstr "Requires a Spot Shot Rally to break ties in the top places"
 msgid "Note per gli iscritti: ritrovo, parcheggio, premi…"
 msgstr "Notes for entrants: meeting point, parking, prizes…"
 
+#: templates/components/_gara_edit_form.html:393
+msgid "Motivo della modifica"
+msgstr "Reason for the change"
+
 #: templates/components/_gara_edit_form.html:395
+msgid "Scrivi perché: servirà in caso di contestazioni"
+msgstr "Write why: it will help if anyone disputes it"
+
+#: templates/components/_gara_edit_form.html:396
+msgid "Compare nella storia della gara, con il tuo nome e l'ora."
+msgstr "It appears in the competition's history, with your name and the time."
+
+#: templates/components/_gara_edit_form.html:402
 #: templates/gamification/admin/feature_detail.html:74
 msgid "Salva modifiche"
 msgstr "Save changes"
 
-#: templates/components/_gara_edit_form.html:422
+#: templates/components/_gara_edit_form.html:431
 #, python-brace-format
 msgid ""
 "Con anti-rematch attivo e {maxParticipants} partecipanti massimi, puoi "
@@ -14107,11 +14265,6 @@ msgstr "no limit"
 #: templates/components/_unified_cards.html:57
 msgid "Gratuita"
 msgstr "Free"
-
-#: templates/components/_gara_info.html:57
-#: templates/direttore/preparazione/_turni.html:153
-msgid "Anti-reincontro"
-msgstr "Rematch avoidance"
 
 #: templates/components/_gara_info.html:59
 #: templates/direttore/preparazione/_turni.html:155
@@ -14274,13 +14427,6 @@ msgstr "Maximum limit reached"
 #: templates/components/_gara_inscriptions.html:215
 msgid "Chi arriva adesso finisce in lista d’attesa."
 msgstr "Anyone arriving now goes on the waiting list."
-
-#: templates/components/_gara_lista_attesa.html:17
-#: templates/components/_tessera_gara.html:117
-#: templates/components/_tessera_playoff.html:44
-#: templates/components/_unified_cards.html:139 utils/jinja.py:471
-msgid "Lista d'attesa"
-msgstr "Waitlist"
 
 #: templates/components/_gara_lista_attesa.html:18
 msgid "entra quando si libera un posto"
@@ -15072,12 +15218,6 @@ msgstr "Error updating timing"
 #, python-format
 msgid "%(player)s passa al turno successivo senza giocare."
 msgstr "%(player)s moves on to the next round without playing."
-
-#: templates/components/_match_card.html:32
-#: templates/components/_match_result_row.html:21
-#: templates/components/_user_recent_matches_table.html:47
-msgid "Trio"
-msgstr "Trio"
 
 #: templates/components/_match_card.html:57
 #: templates/direttore/_card_partita.html:227
@@ -16011,10 +16151,6 @@ msgstr ""
 "The playoff score is added to the championship score, multiplied by the "
 "weight. Weight 1 = an event like any other."
 
-#: templates/components/_position_points.html:27
-msgid "Punti per posizione"
-msgstr "Position points"
-
 #: templates/components/_position_points.html:29
 msgid ""
 "Quanti punti di campionato vale ciascun piazzamento nelle gare a "
@@ -16469,6 +16605,44 @@ msgstr "One SSR point more for %(nome)s"
 #: templates/components/_ssr_section.html:66
 msgid "Salva i punti SSR"
 msgstr "Save the SSR points"
+
+#: templates/components/_storia_modifiche.html:7
+msgid "Storia delle modifiche"
+msgstr "Change history"
+
+#: templates/components/_storia_modifiche.html:8
+msgid ""
+"Ogni modifica resta scritta: chi, quando, cosa e perché. Le modifiche "
+"fatte prima che la storia esistesse non sono registrate."
+msgstr ""
+"Every change stays on record: who, when, what and why. Changes made "
+"before the history existed are not recorded."
+
+#: templates/components/_storia_modifiche.html:15
+#: templates/components/_storia_modifiche.html:17
+msgid "correzione dei dati"
+msgstr "data correction"
+
+#: templates/components/_storia_modifiche.html:17
+msgid "modificato dal campionato"
+msgstr "changed from the championship"
+
+#: templates/components/_storia_modifiche.html:17
+msgid "modificato dai playoff"
+msgstr "changed from the playoffs"
+
+#: templates/components/_storia_modifiche.html:18
+#, python-format
+msgid "vale dal turno %(n)s"
+msgstr "applies from round %(n)s"
+
+#: templates/components/_storia_modifiche.html:21
+msgid "Avvio annullato"
+msgstr "Start cancelled"
+
+#: templates/components/_storia_modifiche.html:41
+msgid "Nessuna modifica registrata."
+msgstr "No changes recorded."
 
 #: templates/components/_tabellone_macros.html:15
 msgid "Finale"
@@ -19010,10 +19184,6 @@ msgid ""
 "Per correggere una partita si tocca la sua riga: si può finché la gara "
 "non è chiusa."
 msgstr "To correct a match tap its row: possible until the competition is closed."
-
-#: templates/direttore/_regola_ritiro.html:9
-msgid "Esce dalla gara"
-msgstr "Leaves the competition"
 
 #: templates/direttore/_regola_ritiro.html:9
 msgid "la sua iscrizione si toglie: dal turno dopo non entra negli abbinamenti"
@@ -23567,11 +23737,6 @@ msgstr "lost"
 #: templates/individual_match/statistics.html:201
 msgid "Ultime sfide"
 msgstr "Latest matches"
-
-#: templates/individual_match/statistics.html:206
-#: templates/individual_match/statistics.html:213
-msgid "X"
-msgstr "D"
 
 #: templates/individual_match/statistics.html:223
 #, python-format

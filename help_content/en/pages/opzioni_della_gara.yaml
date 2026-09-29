@@ -311,15 +311,14 @@ blocks:
 
   - type: options
     items:
-      - name: "Competition in draft"
+      - name: "Before the start"
         values: "everything"
-        text: "Nobody has registered yet: you can change any field."
-      - name: "Registrations open"
-        values: "almost everything"
         text: >-
-          Dates, venue, notes and capacity stay editable. Changing the format
-          and pairings is technically possible but unwise: people registered
-          knowing the earlier rules.
+          As a draft and with registrations open you can change any field, even
+          with players already registered. Every change stays in the
+          **competition's history**, at the bottom of the edit page: who made
+          it, when, what changed and, if you write it, why. Registered players
+          signed up knowing the earlier rules: the reason helps explain it.
       - name: "Competition started"
         values: "little"
         text: >-

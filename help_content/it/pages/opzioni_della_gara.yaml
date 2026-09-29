@@ -312,15 +312,14 @@ blocks:
 
   - type: options
     items:
-      - name: "Gara in bozza"
+      - name: "Prima dell'avvio"
         values: "tutto"
-        text: "Nessuno si è ancora iscritto: puoi cambiare qualunque campo."
-      - name: "Iscrizioni aperte"
-        values: "quasi tutto"
         text: >-
-          Date, sala, note e capienza restano modificabili. Cambiare formato e
-          abbinamenti è tecnicamente possibile ma sconsigliato: chi si è già
-          iscritto lo ha fatto conoscendo le regole di prima.
+          In bozza e a iscrizioni aperte puoi cambiare qualunque campo, anche
+          con giocatori già iscritti. Ogni modifica resta nella **storia della
+          gara**, in fondo alla pagina di modifica: chi l'ha fatta, quando, cosa
+          è cambiato e, se lo scrivi, perché. Chi si è iscritto lo ha fatto
+          conoscendo le regole di prima: il motivo aiuta a spiegarglielo.
       - name: "Gara avviata"
         values: "poco"
         text: >-

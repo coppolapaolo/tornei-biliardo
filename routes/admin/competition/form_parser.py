@@ -60,6 +60,21 @@ def _third_place_applies(strategy: str, double_ko_rounds: Optional[int]) -> bool
 # senza passare da questo form.
 _bracket_derived_fields = bracket_derived_fields
 
+#: In modifica, questi campi assenti dal modulo restano come sono invece di
+#: prendere il valore predefinito. Sono quelli con un valore di ripiego nel
+#: parser: le caselle da spuntare no, perché per loro «assente» vuol dire
+#: «non spuntata».
+_CAMPI_ASSENTI_NON_SI_TOCCANO = (
+    "seeding_rating",
+    "first_round_policy",
+    "odd_number_policy",
+    "tiebreaker_until_position",
+    "rounds_count",
+    "min_participants",
+    "entry_fee",
+    "withdraw_policy",
+)
+
 
 class GaraFormParser:
     """Extract and validate gara form fields from a Flask request.
@@ -231,6 +246,23 @@ class GaraFormParser:
             request.form.get("tiebreaker_until_position", 3)
         )
 
+        # In modifica, un campo che il modulo non manda vuol dire «non
+        # toccare», come per chi apre e chi spacca: rimettere il valore
+        # predefinito cambierebbe la gara senza che nessuno l'abbia chiesto —
+        # ed è ciò che succedeva al criterio di sorteggio del tabellone, che
+        # il modulo non mostra e ogni salvataggio riportava a «elo». Ora
+        # quella modifica finirebbe anche nella storia, a nome del direttore.
+        if self.gara is not None:
+            for campo in _CAMPI_ASSENTI_NON_SI_TOCCANO:
+                if campo not in request.form and hasattr(self.gara, campo):
+                    data[campo] = getattr(self.gara, campo)
+            if (
+                "odd_number_policy" not in request.form
+                and "x_challenge_id" not in request.form
+                and hasattr(self.gara, "x_challenge_id")
+            ):
+                data["x_challenge_id"] = self.gara.x_challenge_id
+
         # Ultimo passaggio: sul tabellone alcune di queste impostazioni sono
         # conseguenze, non scelte. Le si impone qui — dopo che tutto il resto
         # è stato letto — così una gara resta coerente anche se il form arriva
@@ -238,6 +270,82 @@ class GaraFormParser:
         data.update(_bracket_derived_fields(data))
 
         return data
+
+    #: I campi che il modulo di modifica può cambiare, oltre a quelli letti da
+    #: `parse`: nome e sala li legge la route.
+    CAMPI_DEL_MODULO = (
+        "name",
+        "location",
+        "date",
+        "time",
+        "available_tables",
+        "description",
+        "rounds_count",
+        "min_participants",
+        "max_participants",
+        "entry_fee",
+        "discipline",
+        "distance",
+        "is_race_to",
+        "withdraw_policy",
+        "is_multi_set",
+        "match_distance",
+        "is_race_to_sets",
+        "has_handicap",
+        "start_rule",
+        "break_rule",
+        "matchmaking_strategy",
+        "anti_rematch_enabled",
+        "odd_number_policy",
+        "first_round_policy",
+        "classification_system",
+        "separate_teammates",
+        "third_place_match",
+        "seeding_rating",
+        "double_ko_rounds",
+        "weight",
+        "x_challenge_id",
+        "tiebreaker_enabled",
+        "tiebreaker_until_position",
+    )
+
+    @staticmethod
+    def valori_attuali(gara: Any) -> Dict[str, str]:
+        """Ciò che il modulo mostra, nella forma con cui la storia confronta.
+
+        Viaggia nel modulo come «stato iniziale»: al salvataggio dice quali
+        campi il direttore ha cambiato davvero, e se qualcun altro li ha
+        cambiati nel frattempo (ADR-075).
+        """
+        from models.storia.service import serializza
+
+        valori: Dict[str, str] = {}
+        for campo in GaraFormParser.CAMPI_DEL_MODULO:
+            if campo == "available_tables":
+                valori[campo] = serializza(gara.get_available_tables())
+            else:
+                valori[campo] = serializza(getattr(gara, campo, None))
+        return valori
+
+    @staticmethod
+    def campi_cambiati(
+        data: Dict[str, Any], originali: Optional[Dict[str, str]]
+    ) -> Dict[str, Any]:
+        """Solo i campi il cui valore differisce da quello mostrato dal modulo.
+
+        Senza «stato iniziale» (un modulo aperto prima di questa versione) si
+        passano tutti, come prima: il servizio scrive comunque nella storia
+        solo ciò che cambia davvero.
+        """
+        from models.storia.service import serializza
+
+        if not originali:
+            return dict(data)
+        return {
+            campo: valore
+            for campo, valore in data.items()
+            if campo not in originali or serializza(valore) != originali[campo]
+        }
 
     @staticmethod
     def _parse_x_challenge(odd_number_policy: str) -> Optional[int]:
