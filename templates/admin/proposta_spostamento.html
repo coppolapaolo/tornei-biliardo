@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{# La data nuova scavalca le gare successive (ADR-075, ADR-016) — Design
+   System 7c. Il cambio non è ancora salvato: il modulo torna qui con tutti i
+   suoi campi nascosti, e «Sposta anche le successive» lo rimanda con
+   `sposta_successive=1`. Richiede `gara`, `piano` (PianoSpostamento),
+   `campi` (i campi del modulo da rimandare). #}
+
+{% block title %}{{ _('Spostare anche le gare successive?') }}{% endblock %}
+{% block page_title %}{{ _('Spostare anche le gare successive?') }}{% endblock %}
+{% block page_sub %}{% if gara.campionato %}{{ gara.campionato.name }} · {% endif %}{{ gara.display_name }}{% endblock %}
+
+{% block content %}
+<div style="max-width:720px">
+<form method="POST" action="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" class="c7-stack" style="gap:16px">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="sposta_successive" value="1">
+  {% for chiave, valore in campi %}
+  <input type="hidden" name="{{ chiave }}" value="{{ valore }}">
+  {% endfor %}
+
+  <div class="c7-flash c7-flash--warn">
+    <span class="c7-flash__ico"><i class="fas fa-calendar-days"></i></span>
+    <div class="c7-flash__body">
+      <div class="c7-flash__title">
+        {{ ngettext('La nuova data supera la gara successiva', 'La nuova data supera le gare successive', piano.spostamenti|length) }}
+      </div>
+      <div class="c7-flash__text">
+        {{ _('Le gare del campionato restano in ordine di data. Se sposti anche queste dello stesso numero di giorni, ognuna avrà la sua voce nella storia e i suoi iscritti riceveranno la notifica. Il cambio non è ancora salvato.') }}
+      </div>
+    </div>
+  </div>
+
+  <div class="c7-card">
+    <h3 class="mb-2">{{ ngettext('Spostare di %(num)d giorno:', 'Spostare di %(num)d giorni:', piano.giorni) }}</h3>
+    <ul class="mb-0">
+      {% for s in piano.spostamenti %}
+      <li><span class="fw-bold">{{ s.gara.display_name }}</span>: {{ s.da|date_local }} → {{ s.a|date_local }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end flex-wrap">
+    <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary">{{ _('Annulla: non salvare') }}</a>
+    <a href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" class="btn btn-secondary">{{ _('Torna al modulo') }}</a>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-check"></i> {{ _('Sposta anche le successive') }}</button>
+  </div>
+</form>
+</div>
+{% endblock %}

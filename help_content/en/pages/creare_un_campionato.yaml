@@ -201,7 +201,10 @@ blocks:
         text: >-
           Dates must be in increasing order: competition 2 cannot come before
           competition 1. You can create them all at once, with the calendar
-          dates, or one at a time.
+          dates, or one at a time. If you later move a competition past the
+          next one, the app suggests moving the competitions it overtakes by
+          the same number of days: you choose whether to do it, go back to the
+          form or leave everything as it was.
 
   - type: heading
     id: classifica_generale

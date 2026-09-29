@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-29 17:25+0000\n"
+"POT-Creation-Date: 2026-09-29 17:39+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -925,40 +925,40 @@ msgid ""
 "%(prima)s non si tolgono più."
 msgstr ""
 
-#: models/competition/inscription_service.py:571
-#: models/competition/inscription_service.py:606
+#: models/competition/inscription_service.py:612
+#: models/competition/inscription_service.py:647
 #, python-format
 msgid "Gara %(numero)s"
 msgstr ""
 
-#: models/competition/inscription_service.py:575
+#: models/competition/inscription_service.py:616
 msgid "Posto disponibile!"
 msgstr ""
 
-#: models/competition/inscription_service.py:577
+#: models/competition/inscription_service.py:618
 #, python-format
 msgid "Sei stato promosso dalla lista d'attesa per la gara '%(gara)s'"
 msgstr ""
 
-#: models/competition/inscription_service.py:630
+#: models/competition/inscription_service.py:671
 msgid "Aggiornamento gara"
 msgstr ""
 
-#: models/competition/inscription_service.py:640 models/demand/service.py:414
+#: models/competition/inscription_service.py:681 models/demand/service.py:414
 msgid "Vedi la gara"
 msgstr ""
 
-#: models/competition/inscription_service.py:677
+#: models/competition/inscription_service.py:718
 #, python-format
 msgid "%(direttore)s ti ha tolto dalla lista d'attesa della gara %(gara)s."
 msgstr ""
 
-#: models/competition/inscription_service.py:684
+#: models/competition/inscription_service.py:725
 #, python-format
 msgid "%(direttore)s ha annullato la tua iscrizione alla gara %(gara)s."
 msgstr ""
 
-#: models/competition/inscription_service.py:745
+#: models/competition/inscription_service.py:786
 #, python-format
 msgid "Sei stato promosso dalla lista d'attesa per %(gara)s"
 msgstr ""
@@ -1041,19 +1041,19 @@ msgid ""
 "il turno"
 msgstr ""
 
-#: models/competition/services.py:683
+#: models/competition/services.py:690
 #, python-format
 msgid ""
 "La %(gara)s del campionato '%(campionato)s' del %(data)s è stata "
 "cancellata."
 msgstr ""
 
-#: models/competition/services.py:690
+#: models/competition/services.py:697
 #, python-format
 msgid "La %(gara)s del %(data)s è stata cancellata."
 msgstr ""
 
-#: models/competition/services.py:701
+#: models/competition/services.py:708
 msgid "Gara Cancellata"
 msgstr ""
 
@@ -5275,7 +5275,7 @@ msgid "Playoff avviati: %(count)s giocatori qualificati."
 msgstr ""
 
 #: routes/admin/campionato.py:908 routes/admin/campionato.py:941
-#: routes/admin/campionato.py:1231
+#: routes/admin/campionato.py:1233
 msgid "Configurazione playoff non trovata."
 msgstr ""
 
@@ -5312,12 +5312,12 @@ msgstr ""
 msgid "Partecipazione confermata per conto del giocatore."
 msgstr ""
 
-#: routes/admin/campionato.py:1067 routes/admin/campionato.py:1571
+#: routes/admin/campionato.py:1067 routes/admin/campionato.py:1573
 #, python-format
 msgid "Rifiuto registrato: l'invito passa a %(name)s."
 msgstr ""
 
-#: routes/admin/campionato.py:1074 routes/admin/campionato.py:1578
+#: routes/admin/campionato.py:1074 routes/admin/campionato.py:1580
 msgid "Rifiuto registrato. Nessun altro giocatore idoneo da invitare."
 msgstr ""
 
@@ -5333,89 +5333,89 @@ msgstr ""
 msgid "Invito non trovato."
 msgstr ""
 
-#: routes/admin/campionato.py:1214
+#: routes/admin/campionato.py:1215
 msgid "Partecipazione riconfermata: resta scritto che l'hai fatto tu."
 msgstr ""
 
-#: routes/admin/campionato.py:1242
+#: routes/admin/campionato.py:1244
 #, python-format
 msgid "Inviti aggiornati: %(ritirati)d ritirati, %(nuovi)d nuovi."
 msgstr ""
 
-#: routes/admin/campionato.py:1250
+#: routes/admin/campionato.py:1252
 msgid "Gli inviti restano come sono."
 msgstr ""
 
-#: routes/admin/campionato.py:1252
+#: routes/admin/campionato.py:1254
 msgid "Scelta non valida."
 msgstr ""
 
-#: routes/admin/campionato.py:1288
+#: routes/admin/campionato.py:1290
 msgid "Finale aggiornata."
 msgstr ""
 
-#: routes/admin/campionato.py:1290
+#: routes/admin/campionato.py:1292
 msgid "La finale resta com'era."
 msgstr ""
 
-#: routes/admin/campionato.py:1318
+#: routes/admin/campionato.py:1320
 msgid "Tutti i campi obbligatori devono essere compilati."
 msgstr ""
 
-#: routes/admin/campionato.py:1339
+#: routes/admin/campionato.py:1341
 msgid "Configurazione playoff aggiunta."
 msgstr ""
 
-#: routes/admin/campionato.py:1361
+#: routes/admin/campionato.py:1363
 msgid "Configurazione playoff disattivata."
 msgstr ""
 
-#: routes/admin/campionato.py:1461
+#: routes/admin/campionato.py:1463
 msgid ""
 "Una competizione di prova non ha vetrina né link pubblico: in un "
 "campionato vero qui trovi il link da condividere."
 msgstr ""
 
-#: routes/admin/campionato.py:1526 routes/admin/competition/prova.py:134
+#: routes/admin/campionato.py:1528 routes/admin/competition/prova.py:134
 #, python-format
 msgid "Prova «%(nome)s» eliminata."
 msgstr ""
 
-#: routes/admin/campionato.py:1567
+#: routes/admin/campionato.py:1569
 msgid "Invito accettato."
 msgstr ""
 
-#: routes/admin/campionato.py:1603
+#: routes/admin/campionato.py:1605
 msgid "Nessun invito in attesa."
 msgstr ""
 
-#: routes/admin/campionato.py:1605
+#: routes/admin/campionato.py:1607
 #, python-format
 msgid "%(quanti)s inviti accettati."
 msgstr ""
 
-#: routes/admin/campionato.py:1625
+#: routes/admin/campionato.py:1627
 msgid "Vetrina del campionato aggiornata."
 msgstr ""
 
-#: routes/admin/campionato.py:1654 routes/admin/competition/vetrina.py:150
+#: routes/admin/campionato.py:1656 routes/admin/competition/vetrina.py:150
 msgid "Nessuna immagine selezionata."
 msgstr ""
 
-#: routes/admin/campionato.py:1657 routes/admin/competition/vetrina.py:154
+#: routes/admin/campionato.py:1659 routes/admin/competition/vetrina.py:154
 msgid "Formato non supportato. Usa JPG, PNG o GIF."
 msgstr ""
 
-#: routes/admin/campionato.py:1670
+#: routes/admin/campionato.py:1672
 msgid "Locandina caricata: la useranno tutte le gare senza una propria."
 msgstr ""
 
-#: routes/admin/campionato.py:1675 routes/admin/competition/vetrina.py:172
+#: routes/admin/campionato.py:1677 routes/admin/competition/vetrina.py:172
 #, python-format
 msgid "Non è stato possibile caricare l'immagine: %(errore)s"
 msgstr ""
 
-#: routes/admin/campionato.py:1689
+#: routes/admin/campionato.py:1691
 msgid "Locandina rimossa."
 msgstr ""
 
@@ -5540,49 +5540,59 @@ msgstr[1] ""
 msgid "Nessun iscritto da copiare dalla gara precedente."
 msgstr ""
 
-#: routes/admin/competition/crud.py:339
+#: routes/admin/competition/crud.py:336
+#, python-format
+msgid "La nuova data supera %(gara)s, che è già avviata: non si può spostare."
+msgstr ""
+
+#: routes/admin/competition/crud.py:346
+#, python-format
+msgid "Spostata insieme a %(gara)s"
+msgstr ""
+
+#: routes/admin/competition/crud.py:381
 #, python-format
 msgid "Iscrizione di %(nome)s riconfermata: resta scritto che l'hai fatto tu."
 msgstr ""
 
-#: routes/admin/competition/crud.py:361
+#: routes/admin/competition/crud.py:403
 #, python-format
 msgid "Notifica mandata a %(num)d giocatore."
 msgid_plural "Notifica mandata a %(num)d giocatori."
 msgstr[0] ""
 msgstr[1] ""
 
-#: routes/admin/competition/crud.py:383
+#: routes/admin/competition/crud.py:425
 msgid "La gara è chiusa: non si modifica più."
 msgstr ""
 
-#: routes/admin/competition/crud.py:432 routes/admin/competition/crud.py:551
+#: routes/admin/competition/crud.py:477 routes/admin/competition/crud.py:599
 msgid "Nessuna modifica da salvare."
 msgstr ""
 
-#: routes/admin/competition/crud.py:441 routes/admin/competition/crud.py:560
+#: routes/admin/competition/crud.py:486 routes/admin/competition/crud.py:608
 msgid "Gara aggiornata: la modifica resta nella sua storia."
 msgstr ""
 
-#: routes/admin/competition/crud.py:544
+#: routes/admin/competition/crud.py:589
 #, python-format
 msgid "Configurazione non valida: %(e)s"
 msgstr ""
 
-#: routes/admin/competition/crud.py:614
+#: routes/admin/competition/crud.py:662
 msgid "Tavoli salvati."
 msgstr ""
 
-#: routes/admin/competition/crud.py:639
+#: routes/admin/competition/crud.py:687
 #, python-format
 msgid "Gara «%(nome)s» eliminata."
 msgstr ""
 
-#: routes/admin/competition/crud.py:736
+#: routes/admin/competition/crud.py:784
 msgid "La gara non è stata annullata per un errore imprevisto."
 msgstr ""
 
-#: routes/admin/competition/crud.py:743
+#: routes/admin/competition/crud.py:791
 #, python-format
 msgid "«%(nome)s» annullata: gli iscritti ricevono la notifica."
 msgstr ""
@@ -10073,6 +10083,44 @@ msgstr ""
 msgid "Applica alla finale"
 msgstr ""
 
+#: templates/admin/proposta_spostamento.html:8
+#: templates/admin/proposta_spostamento.html:9
+msgid "Spostare anche le gare successive?"
+msgstr ""
+
+#: templates/admin/proposta_spostamento.html:25
+msgid "La nuova data supera la gara successiva"
+msgid_plural "La nuova data supera le gare successive"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/admin/proposta_spostamento.html:28
+msgid ""
+"Le gare del campionato restano in ordine di data. Se sposti anche queste "
+"dello stesso numero di giorni, ognuna avrà la sua voce nella storia e i "
+"suoi iscritti riceveranno la notifica. Il cambio non è ancora salvato."
+msgstr ""
+
+#: templates/admin/proposta_spostamento.html:34
+#, python-format
+msgid "Spostare di %(num)d giorno:"
+msgid_plural "Spostare di %(num)d giorni:"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/admin/proposta_spostamento.html:43
+msgid "Annulla: non salvare"
+msgstr ""
+
+#: templates/admin/proposta_spostamento.html:44
+#: templates/challenge/form.html:401
+msgid "Torna al modulo"
+msgstr ""
+
+#: templates/admin/proposta_spostamento.html:45
+msgid "Sposta anche le successive"
+msgstr ""
+
 #: templates/admin/users_list.html:5
 msgid "Gestione Utenti - Admin"
 msgstr ""
@@ -12490,10 +12538,6 @@ msgstr ""
 
 #: templates/challenge/form.html:400
 msgid "Modifica comunque questo"
-msgstr ""
-
-#: templates/challenge/form.html:401
-msgid "Torna al modulo"
 msgstr ""
 
 #: templates/challenge/form.html:413

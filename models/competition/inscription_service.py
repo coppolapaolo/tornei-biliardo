@@ -316,6 +316,47 @@ class InscriptionService:
         return None
 
     @staticmethod
+    def promuovi_per_capienza(gara: "Gara") -> int:
+        """La capienza è salita: entra dalla lista d'attesa chi ci sta, in ordine.
+
+        Fino al 2026-09-29 la lista si muoveva solo quando qualcuno si
+        toglieva: alzando la capienza i posti nuovi restavano vuoti con la
+        gente in attesa (ADR-075). Solo la lista per capienza: quella per la
+        parità segue la sua regola. Restituisce quanti sono entrati.
+        """
+        from models.competition.models import WaitlistReason
+
+        if not gara.max_participants or not (
+            InscriptionService._lista_attesa_ancora_aperta(gara)
+        ):
+            return 0
+        entrati = 0
+        while True:
+            attivi = (
+                db.session.query(Inscription)
+                .filter_by(gara_id=gara.id, is_waitlist=False, is_withdrawn=False)
+                .count()
+            )
+            if attivi >= gara.max_participants:
+                return entrati
+            primo = (
+                db.session.query(Inscription)
+                .filter_by(
+                    gara_id=gara.id,
+                    is_waitlist=True,
+                    waitlist_reason=WaitlistReason.CAPACITY.value,
+                    is_withdrawn=False,
+                )
+                .order_by(Inscription.waitlist_position.asc())
+                .first()
+            )
+            if primo is None:
+                return entrati
+            InscriptionService._promote_and_notify(primo, gara)
+            db.session.flush()
+            entrati += 1
+
+    @staticmethod
     def _lista_attesa_ancora_aperta(gara: "Gara") -> bool:
         """La lista d'attesa serve **solo fino all'avvio della gara**.
 
@@ -901,6 +942,7 @@ class InscriptionService:
                 )
             else:
                 gara.max_participants = max_participants
+                InscriptionService.promuovi_per_capienza(gara)
 
         if gara.date and gara.time:
             from datetime import datetime as dt

@@ -203,7 +203,10 @@ blocks:
         text: >-
           Le date devono essere in ordine crescente: la gara 2 non può
           precedere la gara 1. Puoi crearle tutte subito, con le date del
-          calendario, oppure una alla volta.
+          calendario, oppure una alla volta. Se poi sposti una gara oltre la
+          successiva, l'app ti propone di spostare anche le gare che scavalca
+          dello stesso numero di giorni: scegli tu se farlo, tornare al
+          modulo o lasciare tutto com'era.
 
   - type: heading
     id: classifica_generale

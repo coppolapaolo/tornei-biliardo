@@ -143,3 +143,16 @@ except ValueError as e:
   - `routes/admin/competition/crud.py` - Exception handling + parsing time
   - `templates/components/_new_gara_modal.html` - UI campi separati
 - Test: `tests/new/unit/test_gara_date_validation.py`
+
+## Emendamento (2026-09-29, ADR-075, passo 9)
+
+Una data che **scavalca** le gare successive non è più solo un rifiuto: il
+modulo di modifica propone di spostarle dello stesso numero di giorni
+(`models/competition/spostamento.py`, pagina `admin/proposta_spostamento.html`).
+Si spostano solo quelle che servono, dalla prima scavalcata in avanti finché la
+catena si ferma. Il direttore accetta — ogni gara spostata ha la sua voce nella
+storia e la sua notifica agli iscritti —, annulla senza salvare, o torna al
+modulo. Una gara successiva già avviata o conclusa non si sposta: lì resta il
+rifiuto. L'ordine resta la regola: la validazione di questo ADR non cambia, e
+le successive si spostano dall'ultima perché regga a ogni passo.
+
