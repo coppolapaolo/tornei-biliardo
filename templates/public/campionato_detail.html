@@ -81,6 +81,11 @@
         {% endif %}
         {{ d.riga('fa-users', _('Giocatori'),
                   ((ngettext('%(n)d giocatore', '%(n)d giocatori', giocatori, n=giocatori) ~ ' · ') if giocatori else '') ~ campionato.conteggio_gare.gare_testo) }}
+        {# Il Regolamento del campionato (ADR-075): valori, gare, playoff e
+           storia delle modifiche, per chiunque. #}
+        {% if feature_visible('main.regolamento_campionato') %}
+        {{ d.riga('fa-scale-balanced', _('Regolamento del campionato'), _('regole, playoff e storia delle modifiche'), href=url_for('main.regolamento_campionato', campionato_id=campionato.id)) }}
+        {% endif %}
         {% if vetrina_url and feature_visible('main.campionato_invite') %}
         {{ d.riga('fa-rectangle-ad', _('Vetrina'), _('locandina e link da condividere'), href=vetrina_url) }}
         {% endif %}

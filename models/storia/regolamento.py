@@ -163,4 +163,120 @@ def regolamento(gara: Any) -> Regolamento:
     )
 
 
-__all__ = ["Regolamento", "regolamento", "CAMPI_IN_VIGORE"]
+#: I valori del campionato: quelli che propone alle sue gare (ADR-075).
+CAMPI_DEL_CAMPIONATO: Tuple[str, ...] = (
+    "campionato_type",
+    "default_classification_system",
+    "planned_gare_count",
+    "default_venue_id",
+    "default_entry_fee",
+    "default_rounds_count",
+    "default_odd_policy",
+    "default_anti_rematch",
+    "default_start_rule",
+    "default_break_rule",
+    "has_handicap",
+    "position_points",
+)
+
+#: Chi si qualifica ai playoff e come si gioca la finale.
+CAMPI_DEI_PLAYOFF: Tuple[str, ...] = (
+    "positions_from",
+    "positions_to",
+    "max_participants",
+    "min_garas_played",
+    "scheduled_date",
+    "location",
+    "discipline",
+    "distance",
+    "rounds_count",
+    "strategy_type",
+    "odd_number_policy",
+    "final_ranking_mode",
+    "playoff_weight",
+)
+
+
+@dataclass
+class PlayoffDelRegolamento:
+    config: Any
+    impostazioni: List[Impostazione] = field(default_factory=list)
+
+
+@dataclass
+class RegolamentoCampionato:
+    campionato: Any
+    in_vigore: List[Impostazione] = field(default_factory=list)
+    gare: List[Any] = field(default_factory=list)
+    playoff: List[PlayoffDelRegolamento] = field(default_factory=list)
+    storia: List[SettingsChange] = field(default_factory=list)
+    link_regolamento: Optional[str] = None
+
+
+def _impostazioni(
+    oggetto: Any, campi: Tuple[str, ...], storia: List[SettingsChange]
+) -> List[Impostazione]:
+    ultima = _ultima_modifica(storia)
+    risultato = []
+    for campo in campi:
+        valore = serializza(getattr(oggetto, campo, None))
+        if valore != "":
+            risultato.append(Impostazione(campo, valore, ultima.get(campo)))
+    return risultato
+
+
+def regolamento_campionato(campionato: Any) -> RegolamentoCampionato:
+    """Il regolamento di un campionato: i valori che propone, le gare, i playoff.
+
+    Le regole di ogni gara stanno nella sua pagina: qui ci sono i valori
+    proposti dal campionato, il peso di ogni gara, i criteri dei playoff e la
+    storia del campionato e dei playoff insieme.
+    """
+    from ..playoff.models import PlayoffConfiguration
+
+    storia_campionato = StoriaModificheService.voci_del_campionato(campionato.id)
+    configurazioni = (
+        PlayoffConfiguration.query.filter_by(
+            campionato_id=campionato.id, is_active=True
+        )
+        .order_by(PlayoffConfiguration.positions_from, PlayoffConfiguration.id)
+        .all()
+    )
+    tutte = PlayoffConfiguration.query.filter_by(campionato_id=campionato.id).all()
+    storia_playoff = StoriaModificheService.voci_dei_playoff([c.id for c in tutte])
+    playoff = []
+    for config in configurazioni:
+        sue = [v for v in storia_playoff if v.playoff_config_id == config.id]
+        playoff.append(
+            PlayoffDelRegolamento(
+                config=config,
+                impostazioni=_impostazioni(config, CAMPI_DEI_PLAYOFF, sue),
+            )
+        )
+    storia = sorted(
+        storia_campionato + storia_playoff,
+        key=lambda v: (v.created_at, v.id),
+        reverse=True,
+    )
+    return RegolamentoCampionato(
+        campionato=campionato,
+        in_vigore=_impostazioni(campionato, CAMPI_DEL_CAMPIONATO, storia_campionato),
+        gare=sorted(
+            (g for g in campionato.gare if not g.is_deleted),
+            key=lambda g: g.number or 0,
+        ),
+        playoff=playoff,
+        storia=storia,
+        link_regolamento=campionato.rules_url or None,
+    )
+
+
+__all__ = [
+    "Regolamento",
+    "RegolamentoCampionato",
+    "regolamento",
+    "regolamento_campionato",
+    "CAMPI_IN_VIGORE",
+    "CAMPI_DEL_CAMPIONATO",
+    "CAMPI_DEI_PLAYOFF",
+]

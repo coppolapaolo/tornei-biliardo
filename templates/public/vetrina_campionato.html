@@ -236,6 +236,13 @@
       </div>
       {% endif %}
 
+      {% if feature_visible('main.regolamento_campionato') %}
+      <a class="c7-vt__out" href="{{ url_for('main.regolamento_campionato', campionato_id=campionato.id) }}">
+        <span><i class="fa-solid fa-scale-balanced me-2"></i>{{ _('Regolamento del campionato') }}</span>
+        <i class="fa-solid fa-chevron-right text-muted"></i>
+      </a>
+      {% endif %}
+
       {% if vetrina.link_esterno %}
       <a class="c7-vt__out" href="{{ vetrina.link_esterno }}" target="_blank" rel="noopener noreferrer">
         <span><i class="fa-solid fa-arrow-up-right-from-square me-2"></i>{{ vetrina.etichetta_link }}</span>

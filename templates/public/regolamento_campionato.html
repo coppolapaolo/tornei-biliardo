@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{# Il Regolamento del campionato (ADR-075) — Design System 7c. Pagina
+   pubblica: i valori che il campionato propone alle gare, le gare con il loro
+   peso e il collegamento al regolamento di ciascuna, i playoff, la storia
+   delle modifiche di campionato e playoff insieme, e il documento del
+   regolamento se c'è. Richiede `campionato` e `r`
+   (models/storia/regolamento.RegolamentoCampionato). #}
+
+{% block title %}{{ _('Regolamento del campionato') }} · {{ campionato.name }}{% endblock %}
+{% block page_title %}{{ _('Regolamento del campionato') }}{% endblock %}
+{% block page_sub %}{{ campionato.name }}{% endblock %}
+
+{% macro elenco(impostazioni) %}
+<dl class="mb-0" style="display:grid;grid-template-columns:auto 1fr;gap:8px 18px">
+  {% for imp in impostazioni %}
+  <dt class="text-muted" style="font-weight:700">{{ etichetta_storia(imp.campo) }}</dt>
+  <dd class="mb-0">
+    {{ valore_storia(imp.campo, imp.valore) }}
+    {% if imp.cambiata %}<span class="c7-nota">· {{ _('cambiato il %(quando)s', quando=imp.cambiata.created_at|datetime_local) }}</span>{% endif %}
+  </dd>
+  {% endfor %}
+</dl>
+{% endmacro %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:860px;gap:16px">
+
+  <div class="c7-card">
+    <h3 class="mb-1">{{ _('Valori del campionato') }}</h3>
+    <p class="c7-nota mb-3">{{ _("Sono i valori con cui nasce ogni gara. Ogni gara poi ha i suoi: le regole con cui si gioca stanno nel suo regolamento, qui sotto.") }}</p>
+    {{ elenco(r.in_vigore) }}
+  </div>
+
+  {% if r.gare %}
+  <div class="c7-card">
+    <h3 class="mb-3">{{ _('Le gare') }}</h3>
+    <ul class="list-unstyled mb-0">
+      {% for gara in r.gare %}
+      <li class="mb-2 d-flex gap-2 align-items-baseline flex-wrap">
+        <span class="fw-bold">{{ gara.display_name }}</span>
+        {% if gara.date %}<span class="c7-nota">{{ gara.date|date_local }}</span>{% endif %}
+        {% if gara.classification_weight != 1 %}<span class="c7-state c7-state--warn">&times;{{ gara.classification_weight }}</span>{% endif %}
+        {% if feature_visible('main.regolamento_gara') %}
+        <a href="{{ url_for('main.regolamento_gara', gara_id=gara.id) }}" class="ms-auto">{{ _('Regolamento di gara') }}</a>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% for p in r.playoff %}
+  <div class="c7-card">
+    <h3 class="mb-1">{{ _('Playoff') }} · {{ p.config.name }}</h3>
+    <p class="c7-nota mb-3">{{ _("Chi si qualifica non cambia più dopo che sono partiti gli inviti; come si gioca la finale si corregge fino al suo avvio.") }}</p>
+    {{ elenco(p.impostazioni) }}
+  </div>
+  {% endfor %}
+
+  {% with storia=r.storia %}{% include "components/_storia_modifiche.html" %}{% endwith %}
+
+  {% if r.link_regolamento %}
+  <a class="btn btn-primary" href="{{ r.link_regolamento }}" target="_blank" rel="noopener noreferrer">
+    <i class="fas fa-file-lines"></i> {{ _('Regolamento completo') }}
+  </a>
+  {% endif %}
+</div>
+{% endblock %}
