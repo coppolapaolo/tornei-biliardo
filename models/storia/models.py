@@ -50,6 +50,9 @@ class SettingsChangeAction:
     GIOCATORE_AGGIUNTO = "giocatore_aggiunto"
     GIOCATORE_TOLTO = "giocatore_tolto"
     RISPOSTA_PER_CONTO = "risposta_per_conto"
+    #: Una correzione di quanto conta una gara già finita (peso, punti per
+    #: posizione): la classifica si ricalcola, e la pagina lo segnala.
+    RICALCOLO = "ricalcolo"
 
 
 class SettingsChange(BaseModel):
@@ -88,6 +91,8 @@ class SettingsChange(BaseModel):
     from_round = db.Column(db.Integer, nullable=True)
 
     author = db.relationship("User", foreign_keys=[author_id])
+    #: Sola lettura: la voce appartiene alla gara, non la governa.
+    gara = db.relationship("Gara", foreign_keys=[gara_id], viewonly=True)
     fields = db.relationship(
         "SettingsChangeField",
         backref="change",

@@ -132,6 +132,12 @@ Ogni servizio che cambia la configurazione o la lista scrive una voce con
 `giocatore_aggiunto`, `giocatore_tolto`, `risposta_per_conto`, con la riga
 `giocatore`). Chi il direttore iscrive alla finale porta `inscribed_by_id`.
 
+Una correzione che sposta la classifica dopo gli inviti (peso di una gara,
+punti per posizione) produce una **proposta** (`proposta_inviti.py`): è il
+piano di `riallineamento.pianifica`, che il direttore accetta (`esegui` con
+`classifica_corretta=True`, testi e notifiche dicono «classifica corretta»)
+o rifiuta. Una proposta rifiutata non si ripresenta finché non cambia.
+
 ## Do Not
 
 - **Do not manually create qualifications** - Use `generate_qualifications()`

@@ -256,6 +256,15 @@ blocks:
           **Storia delle modifiche**, in fondo alla scheda dei playoff: chi,
           quando e cosa. Il motivo è facoltativo, ma scrivilo: servirà in caso
           di contestazioni.
+      - title: "Se una correzione cambia la classifica"
+        text: >-
+          Se dopo gli inviti correggi il peso di una gara o i punti per
+          posizione, la classifica si ricalcola e può cambiare chi rientra nei
+          posti. Sopra l'elenco degli invitati compare **La classifica è
+          cambiata dopo gli inviti**, con chi perderebbe l'invito e chi lo
+          riceverebbe. **Aggiorna gli inviti** li cambia e avvisa i giocatori;
+          **Lascia gli inviti come sono** li tiene. In tutti e due i casi la
+          scelta resta nella storia, e puoi sempre sistemare a mano.
       - title: "Se un invito è scaduto"
         text: >-
           La riga dice **Scaduto**, ma ha ancora **Accetta**. Se il giocatore

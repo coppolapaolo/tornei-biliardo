@@ -186,7 +186,10 @@ blocks:
           tre gare. Serve a tenere il campionato aperto fino in fondo: se
           l'ultima prova pesa di più, nessuno se lo aggiudica con due gare di
           anticipo. Una gara che non fa parte di un campionato non ha questo
-          campo, perché non c'è nessuna classifica generale in cui pesare.
+          campo, perché non c'è nessuna classifica generale in cui pesare. È
+          l'unica cosa che si corregge anche a gara finita: la classifica si
+          ricalcola, nell'elenco delle gare compare il peso di prima barrato e
+          sopra la classifica una riga dice chi l'ha corretto e quando.
         hint: gara.peso
 
   - type: heading

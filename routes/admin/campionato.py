@@ -530,6 +530,7 @@ def campionato_detail(campionato_id):
         vincitori_gare=vincitori_delle_gare(gare),
         campionato_players=campionato_players,
         storia_playoff=_storia_dei_playoff(campionato),
+        proposte_inviti=_proposte_inviti(playoff_status),
         # La data con cui il modale «Nuova gara» si presenta: oggi o una
         # settimana dopo l'ultima; in una prova, domani o il giorno dopo
         # l'ultima (ADR-016 vuole le gare in ordine).
@@ -623,6 +624,21 @@ def edit_campionato(campionato_id):
         matchmaking_strategies=matchmaking_strategies,
         odd_policies=odd_policies,
     )
+
+
+def _proposte_inviti(playoff_status):
+    """Per ogni playoff con inviti partiti, la proposta dopo una correzione."""
+    from models.playoff.proposta_inviti import proposta_inviti
+
+    if not playoff_status or not playoff_status.get("has_playoffs"):
+        return {}
+    proposte = {}
+    for stato in playoff_status.get("configurations", []):
+        config = stato["configuration"]
+        piano = proposta_inviti(config.id)
+        if piano is not None:
+            proposte[config.id] = piano
+    return proposte
 
 
 def _storia_dei_playoff(campionato):
@@ -1171,6 +1187,46 @@ def playoff_edit_config(campionato_id, config_id):
     return redirect(
         url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
     )
+
+
+@campionato_bp.route(
+    "/<int:campionato_id>/playoff/<int:config_id>/proposta-inviti", methods=["POST"]
+)
+@login_required
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def playoff_proposta_inviti(campionato_id, config_id):
+    """Accetta o rifiuta la proposta di inviti dopo una correzione (ADR-075)."""
+    from models.playoff import proposta_inviti
+    from models.playoff.models import PlayoffConfiguration
+
+    ritorno = url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+    config = db.session.get(PlayoffConfiguration, config_id)
+    if not config or config.campionato_id != campionato_id:
+        flash(_("Configurazione playoff non trovata."), "error")
+        return redirect(ritorno)
+    decisione = request.form.get("decisione")
+    motivo = request.form.get("motivo")
+    try:
+        if decisione == "accetta":
+            piano = proposta_inviti.accetta(
+                config_id, autore=current_user, motivo=motivo
+            )
+            flash(
+                _(
+                    "Inviti aggiornati: %(ritirati)d ritirati, %(nuovi)d nuovi.",
+                    ritirati=len(piano.da_ritirare),
+                    nuovi=len(piano.da_invitare),
+                ),
+                "success",
+            )
+        elif decisione == "rifiuta":
+            proposta_inviti.rifiuta(config_id, autore=current_user, motivo=motivo)
+            flash(_("Gli inviti restano come sono."), "info")
+        else:
+            flash(_("Scelta non valida."), "error")
+    except ValueError as ve:
+        flash(str(ve), "error")
+    return redirect(ritorno)
 
 
 @campionato_bp.route(

@@ -36,6 +36,7 @@
   {% set _conteggio = campionato.conteggio_gare %}
   {{ d.sezione(_('Gare'), nota=_('%(n)s di %(tot)s', n=stato.giocate|length, tot=stato.previste) ~ ((' · ' ~ _conteggio.finale_testo) if _conteggio.finali else '')) }}
   {% if gare %}
+  {% set _pesi_prima = ricalcoli_del_campionato(campionato).pesi_prima %}
   <div class="c7-rows" style="margin-top:10px">
     {% for gara in gare | sort(attribute='number', reverse=true) %}
     <div class="c7-rows__row c7-cgara">
@@ -45,7 +46,10 @@
       <a class="c7-rows__main c7-cgara__link" href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}">
         <span class="c7-rows__title d-block">
           {{ gara.display_name }}
-          {%- if gara.classification_weight > 1 %} <span class="c7-state c7-state--warn c7-cgara__peso" title="{{ _('Il punteggio di questa prova conta %(n)s volte nella classifica del campionato', n=gara.classification_weight) }}">&times;{{ gara.classification_weight }}</span>{% endif %}
+          {#- Peso corretto a gara finita (ADR-075): quello di prima, barrato. #}
+          {%- set _prima = _pesi_prima.get(gara.id) %}
+          {%- if _prima %} <s class="c7-nota" title="{{ _('Peso prima della correzione') }}">&times;{{ _prima }}</s>{% endif %}
+          {%- if gara.classification_weight > 1 or _prima %} <span class="c7-state c7-state--warn c7-cgara__peso" title="{{ _('Il punteggio di questa prova conta %(n)s volte nella classifica del campionato', n=gara.classification_weight) }}">&times;{{ gara.classification_weight }}</span>{% endif %}
         </span>
         {% set _vincitore = (vincitori_gare or {}).get(gara.id) if gara.status == GaraStatus.COMPLETED.value else none %}
         <span class="c7-rows__sub d-block">
@@ -57,7 +61,7 @@
       </a>
       {{ stato_gara(gara) }}
       {% if not _sola_lettura %}
-      {% if gara.can_be_modified() %}
+      {% if gara.can_be_modified() or (gara.status == GaraStatus.COMPLETED.value and gara.campionato_id) %}
       <a class="c7-iconbtn" href="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}"
          title="{{ _('Modifica') }}" aria-label="{{ _('Modifica %(gara)s', gara=gara.display_name) }}"><i class="fas fa-pencil"></i></a>
       {% endif %}

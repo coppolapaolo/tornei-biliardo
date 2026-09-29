@@ -77,6 +77,9 @@ ETICHETTE: Dict[str, object] = {
     # Gli strumenti a mano dei playoff.
     "giocatore": _l("Giocatore"),
     "risposta": _l("Risposta"),
+    # La proposta di inviti dopo una correzione della classifica.
+    "inviti_ritirati": _l("Inviti ritirati"),
+    "inviti_nuovi": _l("Inviti nuovi"),
 }
 
 #: I valori del campionato si leggono come il campo della gara che propongono.
@@ -194,4 +197,6 @@ def valore(campo: str, grezzo: str | None) -> str:
         return str(noti[grezzo])
     if campo == "entry_fee":
         return f"{grezzo} €"
+    if campo in ("weight", "playoff_weight"):
+        return f"×{grezzo}"
     return grezzo

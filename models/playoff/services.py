@@ -451,6 +451,9 @@ class PlayoffService:
             if config.gara is not None:
                 config.gara.weight = weight
 
+        from ..competition.campi_modificabili import e_chiusa
+        from ..storia.models import SettingsChangeAction
+
         _scrivi_nella_storia(
             config,
             {
@@ -462,6 +465,12 @@ class PlayoffService:
             },
             autore=autore,
             motivo=motivo,
+            # A finale giocata è una correzione della classifica già vista.
+            azione=(
+                SettingsChangeAction.RICALCOLO
+                if config.gara is not None and e_chiusa(config.gara)
+                else None
+            ),
         )
         db.session.flush()
         PlayoffService._recalculate_campionato_classification(config.campionato_id)

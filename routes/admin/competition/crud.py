@@ -19,7 +19,7 @@ from models import (
     Campionato,
     Gara,
 )
-from models.status_enum import Discipline
+from models.status_enum import Discipline, GaraStatus
 from models.competition.models import WithdrawPolicy
 from utils import (
     gara_manager_required,
@@ -319,6 +319,11 @@ def edit_gara(gara_id):
     """Modifica gara"""
     gara = db.get_or_404(Gara, gara_id)
 
+    # A gara finita si corregge solo quanto conta nel campionato (ADR-075):
+    # la pagina è quella della gara avviata, con il solo peso.
+    if gara.status == GaraStatus.COMPLETED.value and gara.campionato_id:
+        return _edit_gara_avviata(gara)
+
     if not gara.can_be_modified():
         flash(_("La gara è chiusa: non si modifica più."), "warning")
         return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
@@ -509,6 +514,7 @@ def _edit_gara_avviata(gara: Gara):
     return render_template(
         "admin/gara_edit_avviata.html",
         gara=gara,
+        chiusa=gara.status == GaraStatus.COMPLETED.value,
         stato_iniziale=GaraFormParser.valori_attuali(gara),
         storia=StoriaModificheService.voci_della_gara(gara.id),
         bloccati=bloccati,
