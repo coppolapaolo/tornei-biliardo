@@ -95,6 +95,9 @@ def e_avviata(gara: Any) -> bool:
     return bool(gara.current_round or 0) or gara.status in (
         GaraStatus.PLAYING.value,
         GaraStatus.AWAITING_SSR.value,
+        # Una gara conclusa è stata avviata, anche se un dato vecchio ha
+        # lasciato il contatore dei turni a zero.
+        GaraStatus.COMPLETED.value,
     )
 
 

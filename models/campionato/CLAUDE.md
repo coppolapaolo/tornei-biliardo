@@ -6,7 +6,7 @@ Tournament container that groups multiple competitions (Gare) under unified conf
 
 **Core Responsibilities:**
 - Tournament lifecycle management
-- Default configuration inheritance for Gare
+- Valori proposti alle gare (copiati quando la gara nasce, ADR-075)
 - Director assignment management
 - Aggregated classification across Gare
 
@@ -49,9 +49,18 @@ service.remove_director(campionato.id, user_id)
 - `challenge_mode`: Enable challenge drill mode
 - `planned_gare_count`: Target number of gare
 
-**Default Values (inherited by Gare):**
+**Valori proposti alle gare (ADR-075: copiati, non ereditati):**
 - `default_venue_id`, `default_entry_fee`
 - `default_rounds_count`, `default_odd_policy`, `default_anti_rematch`
+- `default_start_rule`, `default_break_rule`, `has_handicap`
+
+Si **copiano** sulla gara quando nasce (`GaraService._copia_dal_campionato`
+per le tre che fino al 2026-09-29 la gara rileggeva). Cambiarli non tocca le
+gare già create: `models/campionato/proposte.py` propone a quali gare non
+ancora avviate applicarli. Il sistema di classifica fa eccezione: vale per
+tutte le gare e si cambia finché nessuna è avviata. Il campionato non si
+blocca più (`can_be_modified` è sempre vero), e ogni modifica va nella storia
+(`settings_change.campionato_id`).
 
 **Computed Properties:**
 - `directors`: List of assigned directors (via DirectorAssignment)

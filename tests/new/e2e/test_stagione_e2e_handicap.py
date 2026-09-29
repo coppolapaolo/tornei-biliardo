@@ -49,16 +49,18 @@ class TestLHandicapSiEredita:
     ):
         """Il direttore lo accende una volta sola, sul campionato.
 
-        Il campo della gara resta su «eredita» (`None`), che non è la stessa
-        cosa di «no»: se domani il campionato cambiasse idea, le gare
-        seguirebbero.
+        Dal 2026-09-29 (ADR-075) il valore si **copia** sulla gara quando
+        nasce: se domani il campionato cambiasse idea, l'app proporrebbe al
+        direttore di applicarlo alle gare non ancora avviate, invece di
+        spostarle da sola. Fino ad allora il campo della gara restava `None`,
+        «eredita».
         """
         campionato_id, gare, _direttore, _giocatori = gara_con_iscritti
 
         assert campionato.campionato(campionato_id).has_handicap is True
         for gara_id in gare.values():
             gara = campionato.gara(gara_id)
-            assert gara.has_handicap is None, "la gara non deve decidere da sé"
+            assert gara.has_handicap is True, "copiato dal campionato"
             assert gara.effective_has_handicap is True
 
 

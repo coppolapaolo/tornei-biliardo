@@ -134,6 +134,15 @@ class StoriaModificheService:
         )
 
     @staticmethod
+    def voci_del_campionato(campionato_id: int) -> List[SettingsChange]:
+        """La storia dei valori del campionato, dalla voce più recente."""
+        return (
+            SettingsChange.query.filter_by(campionato_id=campionato_id)
+            .order_by(SettingsChange.created_at.desc(), SettingsChange.id.desc())
+            .all()
+        )
+
+    @staticmethod
     def campi(voci: Iterable[SettingsChange]) -> List[str]:
         """I nomi dei campi toccati da un insieme di voci, senza ripetizioni."""
         visti: List[str] = []

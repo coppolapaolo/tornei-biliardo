@@ -216,6 +216,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # === Director only: campionato/gara creation and management ===
     "admin.campionato.create_campionato": {"director"},
     "admin.campionato.edit_campionato": {"director"},
+    # A quali gare applicare i valori nuovi del campionato (ADR-075).
+    "admin.campionato.proposta_gare": {"director"},
     "admin.campionato.campionato_detail": {"director"},
     "admin.campionato.wizard_start": {"director"},
     "admin.campionato.wizard_create": {"director"},

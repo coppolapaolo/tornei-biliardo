@@ -81,10 +81,11 @@ blocks:
       Every competition in a championship uses the **same** standings system,
       and so does the play-off final when its score is added to the season's:
       you cannot add apples to pears. Choose carefully
-      now. You can change it only while no competition has opened
-      registrations or has any registered players, and then the change applies
-      to every competition. After that it can no longer be changed: you would
-      be changing the rules for players who have registered or already played.
+      now. You can change it until a competition has started, even if it
+      already has registered players, and then the change applies to every
+      competition and stays in each one's history. After the first start it
+      can no longer be changed: you would be changing the rules for players who
+      have already played.
 
   - type: heading
     id: passo2
@@ -142,9 +143,9 @@ blocks:
   - type: note
     tone: info
     text: >-
-      Each competition may differ, or leave «inherit from championship» in
-      place and follow it even if you change it later. The choice locks once
-      the competition starts.
+      Each competition starts with the championship's rule and may differ. If
+      you later change the championship's rule, the app asks which
+      competitions not yet started should take it: none changes by itself.
 
   - type: heading
     id: punti_posizione

@@ -259,7 +259,7 @@ blocks:
           tutti non viene chiesta.
         hint: gara.multiset
       - name: "Regola di inizio"
-        values: "predefinito «Acchito» · dentro un campionato si può ereditare"
+        values: "predefinito «Acchito» · dentro un campionato parte da quella del campionato"
         text: >-
           Chi esegue il primo tiro della partita. Con **Primo giocatore** apre
           sempre il primo dei due, senza sorteggio. Con **Acchito** il
@@ -268,7 +268,7 @@ blocks:
           apre, e può mandare al tavolo l'avversario.
         hint: gara.regola_inizio
       - name: "Chi spacca"
-        values: "predefinito «A turno» · dentro un campionato si può ereditare"
+        values: "predefinito «A turno» · dentro un campionato parte da quella del campionato"
         text: >-
           Come passa il tiro di apertura da un triangolo al successivo. **A
           turno** è la regola standard e alterna a ogni triangolo; **A turno

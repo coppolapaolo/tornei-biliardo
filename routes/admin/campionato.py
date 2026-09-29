@@ -19,7 +19,7 @@ from flask import (
 )
 from flask_login import login_required, current_user
 from sqlalchemy.exc import IntegrityError
-from flask_babel import _, lazy_gettext as _l
+from flask_babel import _, lazy_gettext as _l, ngettext
 
 from models import (
     db,
@@ -544,17 +544,6 @@ def edit_campionato(campionato_id):
 
     campionato = db.get_or_404(Campionato, campionato_id)
 
-    if not campionato.can_be_modified():
-        flash(
-            (
-                "Impossibile modificare il campionato: alcune gare hanno già delle "
-                "iscrizioni!"
-            )
-        )
-        return redirect(
-            url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
-        )
-
     if request.method == "POST":
         # Usa il service layer invece del direct database access
         try:
@@ -565,8 +554,15 @@ def edit_campionato(campionato_id):
             # Default-gare settings (single source shared with wizard_create)
             settings = CampionatoFormParser.parse_default_settings(request.form)
 
+            from models.storia.service import StoriaModificheService
+
+            voci_prima = {
+                v.id for v in StoriaModificheService.voci_del_campionato(campionato_id)
+            }
             campionato_service.update_campionato(
                 campionato_id=campionato_id,
+                autore=current_user,
+                motivo=request.form.get("motivo"),
                 # Step 1 fields
                 name=request.form["name"],
                 campionato_type=request.form.get("campionato_type", "amalfi"),
@@ -578,7 +574,32 @@ def edit_campionato(campionato_id):
                 # Step 2 fields - Default gare settings (shared parser)
                 **settings,
             )
-            flash("Campionato aggiornato con successo!")
+            flash(_("Campionato aggiornato: la modifica resta nella sua storia."))
+
+            # Il campionato propone, la gara decide (ADR-075): se è cambiato un
+            # valore proposto e ci sono gare da avviare, si chiede a quali
+            # applicarlo invece di spingerlo su tutte.
+            nuove = [
+                v
+                for v in StoriaModificheService.voci_del_campionato(campionato_id)
+                if v.id not in voci_prima
+            ]
+            if nuove:
+                from models.campionato.proposte import CAMPI_PROPOSTI, proposta
+
+                cambi = {
+                    r.field: (r.old_value, r.new_value)
+                    for r in nuove[0].fields
+                    if r.field in CAMPI_PROPOSTI
+                }
+                if cambi and proposta(db.session.get(Campionato, campionato_id), cambi):
+                    return redirect(
+                        url_for(
+                            "admin.campionato.proposta_gare",
+                            campionato_id=campionato_id,
+                            voce_id=nuove[0].id,
+                        )
+                    )
         except ValueError as ve:
             flash(str(ve), "error")
 
@@ -600,6 +621,69 @@ def edit_campionato(campionato_id):
         venues=venues,
         matchmaking_strategies=matchmaking_strategies,
         odd_policies=odd_policies,
+    )
+
+
+@campionato_bp.route(
+    "/<int:campionato_id>/proposta/<int:voce_id>", methods=["GET", "POST"]
+)
+@campionato_manager_required(lambda campionato_id, **_: campionato_id)
+def proposta_gare(campionato_id, voce_id):
+    """A quali gare già create applicare i valori nuovi del campionato (ADR-075).
+
+    Si mostrano le gare non ancora avviate, campo per campo; sono spuntate
+    quelle che avevano il valore vecchio del campionato. Nessuna gara cambia
+    senza una scelta del direttore.
+    """
+    from models.campionato.proposte import CAMPI_PROPOSTI, applica, proposta
+    from models.storia.models import SettingsChange
+
+    campionato = db.get_or_404(Campionato, campionato_id)
+    voce = db.get_or_404(SettingsChange, voce_id)
+    if voce.campionato_id != campionato.id:
+        abort(404)
+    cambi = {
+        r.field: (r.old_value, r.new_value)
+        for r in voce.fields
+        if r.field in CAMPI_PROPOSTI
+    }
+    ritorno = url_for("admin.campionato.campionato_detail", campionato_id=campionato_id)
+
+    if request.method == "POST":
+        nuovi = {CAMPI_PROPOSTI[c]: nuovo for c, (_v, nuovo) in cambi.items()}
+        scelte: dict = {}
+        for chiave in request.form.getlist("scelta"):
+            gara_id, _sep, campo = chiave.partition(":")
+            if gara_id.isdigit() and campo in nuovi:
+                scelte.setdefault(int(gara_id), []).append(campo)
+        try:
+            toccate = applica(
+                campionato,
+                scelte,
+                nuovi,
+                autore=current_user,
+                motivo=request.form.get("motivo") or voce.reason,
+            )
+            if toccate:
+                flash(
+                    ngettext(
+                        "Valori applicati a %(num)d gara.",
+                        "Valori applicati a %(num)d gare.",
+                        toccate,
+                    )
+                )
+            else:
+                flash(_("Nessuna gara cambiata: restano con i loro valori."), "info")
+        except ValueError as ve:
+            flash(str(ve), "error")
+        return redirect(ritorno)
+
+    return render_template(
+        "admin/campionato_proposta_gare.html",
+        campionato=campionato,
+        voce=voce,
+        righe=proposta(campionato, cambi),
+        ritorno=ritorno,
     )
 
 

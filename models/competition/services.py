@@ -172,6 +172,14 @@ class GaraService:
             if campionato_e_di_prova(campionato_id):
                 kwargs["is_prova"] = True
 
+        # Il campionato propone, la gara decide (ADR-075): chi apre, chi spacca
+        # e l'handicap si **copiano** sulla gara quando nasce, come già tutti
+        # gli altri valori del campionato. Fino al 2026-09-29 restavano NULL e
+        # la gara li rileggeva dal campionato a ogni accesso: un cambio del
+        # campionato arrivava alle gare senza che nessuno le toccasse.
+        if campionato_id:
+            GaraService._copia_dal_campionato(campionato_id, kwargs)
+
         gara = Gara(
             number=number,
             name=name,
@@ -308,6 +316,7 @@ class GaraService:
         autore: Any = None,
         motivo: Optional[str] = None,
         originali: Optional[Dict[str, str]] = None,
+        provenienza: Optional[str] = None,
         **kwargs,
     ) -> Gara:
         """Aggiorna una gara con i campi forniti, e lo scrive nella storia.
@@ -322,6 +331,7 @@ class GaraService:
         salvataggio si ferma invece di cancellarne la modifica.
         """
         from models.exceptions import ConflictError
+        from models.storia.models import SettingsChangeSource
         from models.storia.service import StoriaModificheService, serializza
 
         gara = db.session.get(Gara, gara_id)
@@ -462,8 +472,15 @@ class GaraService:
         turno = dal_turno(gara)
         regole = {c: v for c, v in cambi.items() if turno and c in REGOLE}
         resto = {c: v for c, v in cambi.items() if c not in regole}
+        # Da dove arriva: la pagina della gara, oppure il campionato o i
+        # playoff che hanno proposto un valore e il direttore l'ha accettato.
+        da_dove = provenienza or SettingsChangeSource.GARA
         StoriaModificheService.registra(
-            cambi=resto, gara_id=gara.id, autore=autore, motivo=motivo
+            cambi=resto,
+            gara_id=gara.id,
+            autore=autore,
+            motivo=motivo,
+            provenienza=da_dove,
         )
         if regole:
             StoriaModificheService.registra(
@@ -471,10 +488,36 @@ class GaraService:
                 gara_id=gara.id,
                 autore=autore,
                 motivo=motivo,
+                provenienza=da_dove,
                 dal_turno=turno,
             )
 
         return gara
+
+    @staticmethod
+    def _copia_dal_campionato(campionato_id: int, kwargs: Dict[str, Any]) -> None:
+        """I valori che una volta la gara rileggeva dal campionato, copiati."""
+        from models.campionato.models import Campionato
+        from models.match.break_rules import (
+            DEFAULT_BREAK_RULE,
+            LEGACY_START_RULE,
+            BreakRule,
+            StartRule,
+        )
+
+        campionato = db.session.get(Campionato, campionato_id)
+        if campionato is None:
+            return
+        if kwargs.get("start_rule") is None:
+            kwargs["start_rule"] = (
+                StartRule.normalize(campionato.default_start_rule) or LEGACY_START_RULE
+            ).value
+        if kwargs.get("break_rule") is None:
+            kwargs["break_rule"] = (
+                BreakRule.normalize(campionato.default_break_rule) or DEFAULT_BREAK_RULE
+            ).value
+        if kwargs.get("has_handicap") is None:
+            kwargs["has_handicap"] = bool(campionato.has_handicap)
 
     @staticmethod
     def _valori_per_la_storia(gara: Gara, campi: List[str]) -> Dict[str, Any]:
