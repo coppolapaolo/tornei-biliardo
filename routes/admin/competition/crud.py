@@ -312,6 +312,32 @@ def create_gara():
         )
 
 
+def _avviso_in_attesa(gara_id: int):
+    from models.storia.avvisi import AvvisiModifiche
+
+    return AvvisiModifiche.in_attesa(gara_id)
+
+
+@competition_bp.route("/<int:gara_id>/avviso/invia", methods=["POST"])
+@login_required
+@gara_manager_required
+def invia_avviso_modifiche(gara_id):
+    """Manda subito agli iscritti la notifica delle modifiche (ADR-075)."""
+    from models.storia.avvisi import AvvisiModifiche
+
+    db.get_or_404(Gara, gara_id)
+    arrivate = AvvisiModifiche.invia(gara_id)
+    flash(
+        ngettext(
+            "Notifica mandata a %(num)d giocatore.",
+            "Notifica mandata a %(num)d giocatori.",
+            arrivate,
+        ),
+        "success",
+    )
+    return redirect(url_for("admin.competition.edit_gara", gara_id=gara_id))
+
+
 @competition_bp.route("/<int:gara_id>/edit", methods=["GET", "POST"])
 @login_required
 @gara_manager_required
@@ -407,6 +433,7 @@ def edit_gara(gara_id):
         gara=gara,
         stato_iniziale=GaraFormParser.valori_attuali(gara),
         storia=StoriaModificheService.voci_della_gara(gara.id),
+        avviso_in_attesa=_avviso_in_attesa(gara.id),
         # Gli esercizi offribili per la X (issue #267).
         x_challenges=ChallengeService.get_challenges_for_x_choice(
             includi_id=gara.x_challenge_id
@@ -517,6 +544,7 @@ def _edit_gara_avviata(gara: Gara):
         chiusa=gara.status == GaraStatus.COMPLETED.value,
         stato_iniziale=GaraFormParser.valori_attuali(gara),
         storia=StoriaModificheService.voci_della_gara(gara.id),
+        avviso_in_attesa=_avviso_in_attesa(gara.id),
         bloccati=bloccati,
         ammessi=ammessi,
         dal_turno=dal_turno(gara),

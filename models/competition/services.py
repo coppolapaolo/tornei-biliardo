@@ -503,6 +503,13 @@ class GaraService:
                 dal_turno=turno,
             )
 
+        # Gli iscritti ricevono una notifica, accorpata con le modifiche
+        # ravvicinate (ADR-075). A gara finita non c'è niente da annunciare.
+        if not chiusa:
+            from models.storia.avvisi import AvvisiModifiche
+
+            AvvisiModifiche.accoda(gara, cambi)
+
         peso = cambi.get("weight")
         if peso and serializza(peso[0]) != serializza(peso[1]):
             from models.storia.ricalcolo import ricalcola_campionato

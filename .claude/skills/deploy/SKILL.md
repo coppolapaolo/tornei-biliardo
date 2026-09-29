@@ -222,6 +222,12 @@ non importa nulla dal progetto.
 > PythonAnywhere non scendono sotto l'ora: finestra e cadenza sono ora
 > entrambe orarie, così il promemoria arriva fra le 2 e le 3 ore prima del
 > match.
+>
+> Dal 2026-09-29 lo stesso task manda anche le **notifiche accorpate** delle
+> modifiche alle gare (ADR-075, `AvvisiModifiche.invia_scaduti`): non serve
+> un secondo scheduled task. Se il task si ferma, le notifiche restano in
+> attesa (tabella `settings_notice`) e partono al primo giro utile, o dal
+> pulsante «Invia ora» nella pagina di modifica della gara.
 
 ## SQLite su NFS: diagnosticare un `malformed`
 

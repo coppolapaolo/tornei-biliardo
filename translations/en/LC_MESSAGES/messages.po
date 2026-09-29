@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-29 16:46+0000\n"
+"POT-Creation-Date: 2026-09-29 17:08+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -1084,7 +1084,7 @@ msgstr ""
 "Competition certified by tiebreaker: cancel the tiebreaker first to "
 "cancel the round"
 
-#: models/competition/services.py:676
+#: models/competition/services.py:683
 #, python-format
 msgid ""
 "La %(gara)s del campionato '%(campionato)s' del %(data)s è stata "
@@ -1093,12 +1093,12 @@ msgstr ""
 "%(gara)s of the championship '%(campionato)s' on %(data)s has been "
 "cancelled."
 
-#: models/competition/services.py:683
+#: models/competition/services.py:690
 #, python-format
 msgid "La %(gara)s del %(data)s è stata cancellata."
 msgstr "%(gara)s on %(data)s has been cancelled."
 
-#: models/competition/services.py:694
+#: models/competition/services.py:701
 msgid "Gara Cancellata"
 msgstr "Competition cancelled"
 
@@ -3456,12 +3456,12 @@ msgstr "How many times a week? Between %(min)s and %(max)s."
 msgid "Per quante settimane? Fra %(min)s e %(max)s."
 msgstr "For how many weeks? Between %(min)s and %(max)s."
 
-#: models/playoff/riallineamento.py:263
+#: models/playoff/riallineamento.py:260
 #, python-format
 msgid "Invito ai playoff ritirato — %(nome)s"
 msgstr "Playoff invitation withdrawn — %(nome)s"
 
-#: models/playoff/riallineamento.py:266
+#: models/playoff/riallineamento.py:263
 #, python-format
 msgid ""
 "La classifica del campionato %(campionato)s è stata corretta dopo gli "
@@ -3472,7 +3472,7 @@ msgstr ""
 " invitations, and with the new standings you are not within the places of"
 " %(nome)s: the invitation is no longer valid."
 
-#: models/playoff/riallineamento.py:274
+#: models/playoff/riallineamento.py:271
 #, python-format
 msgid ""
 "L'invito a %(nome)s del campionato %(campionato)s è partito da una "
@@ -3482,7 +3482,7 @@ msgstr ""
 "on a miscalculated ranking and is no longer valid. We apologize for the "
 "mistake."
 
-#: models/playoff/riallineamento.py:283
+#: models/playoff/riallineamento.py:280
 msgid "Vedi l'invito"
 msgstr "View the invitation"
 
@@ -3586,6 +3586,11 @@ msgstr[0] ""
 msgstr[1] ""
 "«%(nome)s» will disappear on its own in %(num)s days. If you're done, you"
 " can delete it yourself."
+
+#: models/storia/avvisi.py:278
+#, python-format
+msgid "%(gara)s è cambiata"
+msgstr "%(gara)s has changed"
 
 #: models/storia/etichette.py:20 templates/admin/campionato_detail.html:155
 #: templates/admin/campionato_detail.html:406
@@ -5708,37 +5713,44 @@ msgstr[1] "%(num)d players copied from the previous competition."
 msgid "Nessun iscritto da copiare dalla gara precedente."
 msgstr "No players to copy from the previous competition."
 
-#: routes/admin/competition/crud.py:328
+#: routes/admin/competition/crud.py:332
+#, python-format
+msgid "Notifica mandata a %(num)d giocatore."
+msgid_plural "Notifica mandata a %(num)d giocatori."
+msgstr[0] "Notification sent to %(num)d player."
+msgstr[1] "Notification sent to %(num)d players."
+
+#: routes/admin/competition/crud.py:354
 msgid "La gara è chiusa: non si modifica più."
 msgstr "The competition is closed: it can no longer be edited."
 
-#: routes/admin/competition/crud.py:377 routes/admin/competition/crud.py:495
+#: routes/admin/competition/crud.py:403 routes/admin/competition/crud.py:522
 msgid "Nessuna modifica da salvare."
 msgstr "No changes to save."
 
-#: routes/admin/competition/crud.py:386 routes/admin/competition/crud.py:504
+#: routes/admin/competition/crud.py:412 routes/admin/competition/crud.py:531
 msgid "Gara aggiornata: la modifica resta nella sua storia."
 msgstr "Competition updated: the change stays in its history."
 
-#: routes/admin/competition/crud.py:488
+#: routes/admin/competition/crud.py:515
 #, python-format
 msgid "Configurazione non valida: %(e)s"
 msgstr "Invalid configuration: %(e)s"
 
-#: routes/admin/competition/crud.py:557
+#: routes/admin/competition/crud.py:585
 msgid "Tavoli salvati."
 msgstr "Tables saved."
 
-#: routes/admin/competition/crud.py:582
+#: routes/admin/competition/crud.py:610
 #, python-format
 msgid "Gara «%(nome)s» eliminata."
 msgstr "Competition «%(nome)s» deleted."
 
-#: routes/admin/competition/crud.py:679
+#: routes/admin/competition/crud.py:707
 msgid "La gara non è stata annullata per un errore imprevisto."
 msgstr "The competition was not cancelled because of an unexpected error."
 
-#: routes/admin/competition/crud.py:686
+#: routes/admin/competition/crud.py:714
 #, python-format
 msgid "«%(nome)s» annullata: gli iscritti ricevono la notifica."
 msgstr "«%(nome)s» cancelled: registered players will be notified."
@@ -13302,6 +13314,25 @@ msgstr "Without X"
 msgid "Con X"
 msgstr "With Bye"
 
+#: templates/components/_avviso_in_attesa.html:10
+msgid "Notifica in attesa per gli iscritti"
+msgstr "Notification pending for the entrants"
+
+#: templates/components/_avviso_in_attesa.html:12
+#, python-format
+msgid ""
+"Le modifiche fatte a poca distanza partono insieme, in una notifica sola,"
+" 30 minuti dopo l'ultima: non prima delle %(ora)s. Se la gara comincia "
+"entro tre ore partono subito."
+msgstr ""
+"Changes made close together go out together, in a single notification, 30"
+" minutes after the last one: not before %(ora)s. If the competition "
+"starts within three hours they go out straight away."
+
+#: templates/components/_avviso_in_attesa.html:17
+msgid "Invia ora"
+msgstr "Send now"
+
 #: templates/components/_bracket_options.html:28
 msgid "Opzioni del tabellone"
 msgstr "Bracket options"
@@ -14494,10 +14525,14 @@ msgstr[1] "%(num)d players already registered"
 #: templates/components/_gara_edit_form.html:22
 msgid ""
 "Fino all'avvio del primo turno si può cambiare tutto. Ogni modifica resta"
-" nella storia della gara, visibile in fondo a questa pagina."
+" nella storia della gara, visibile in fondo a questa pagina, e gli "
+"iscritti ricevono una notifica: le modifiche ravvicinate arrivano "
+"insieme."
 msgstr ""
-"Everything can be changed until the first round starts. Every change "
-"stays in the competition's history, shown at the bottom of this page."
+"Until the first round starts everything can be changed. Every change "
+"stays in the competition's history, shown at the bottom of this page, and"
+" the entrants receive a notification: changes made close together arrive "
+"together."
 
 #: templates/components/_gara_edit_form.html:35
 msgid "es. Semifinale, Gara di Ferragosto…"
@@ -14649,7 +14684,7 @@ msgstr "Requires a Spot Shot Rally to break ties in the top places"
 msgid "Note per gli iscritti: ritrovo, parcheggio, premi…"
 msgstr "Notes for entrants: meeting point, parking, prizes…"
 
-#: templates/components/_gara_edit_form.html:433
+#: templates/components/_gara_edit_form.html:434
 #, python-brace-format
 msgid ""
 "Con anti-rematch attivo e {maxParticipants} partecipanti massimi, puoi "
