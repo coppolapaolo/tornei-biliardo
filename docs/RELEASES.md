@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.51.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.50.0...v1.51.0) (2026-09-29)
+
+
+### Funzioni nuove
+
+* i playoff si correggono e restano scritti ([#591](https://github.com/coppolapaolo/tornei-biliardo/issues/591)) ([ba67c55](https://github.com/coppolapaolo/tornei-biliardo/commit/ba67c552ab781502be933be701114bbfe141cefd))
+* il campionato propone i valori, la gara decide ([#589](https://github.com/coppolapaolo/tornei-biliardo/issues/589)) ([dcd82f0](https://github.com/coppolapaolo/tornei-biliardo/commit/dcd82f05e9cc66d7685b6fa00660607697479ad7))
+
 ## [1.50.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.49.1...v1.50.0) (2026-09-29)
 
 
