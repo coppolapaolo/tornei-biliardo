@@ -852,18 +852,31 @@ class TournamentService(TournamentStatisticsService):
 
     @transactional(domain="campionato")
     def update_playoff_min_garas(
-        self, campionato_id: int, config_id: int, new_min: int
+        self,
+        campionato_id: int,
+        config_id: int,
+        new_min: int,
+        autore: Any = None,
+        motivo: Optional[str] = None,
     ) -> None:
-        """Aggiorna min_garas_played di una PlayoffConfiguration."""
+        """Aggiorna min_garas_played di una PlayoffConfiguration.
+
+        È un criterio di qualificazione: dal 2026-09-29 passa dagli stessi
+        controlli della configurazione (bloccato a inviti partiti) e resta
+        nella storia dei playoff (ADR-075).
+        """
 
         from models.playoff.models import PlayoffConfiguration
+        from models.playoff.services import PlayoffService
 
         config = db.session.get(PlayoffConfiguration, config_id)
         if not config:
             raise NotFoundError("PlayoffConfiguration not found")
         if config.campionato_id != campionato_id:
             raise ValueError("Configurazione non appartiene a questo campionato")
-        config.min_garas_played = new_min
+        PlayoffService.update_min_garas(
+            config_id, new_min, autore=autore, motivo=motivo
+        )
 
     def start_playoff(
         self,

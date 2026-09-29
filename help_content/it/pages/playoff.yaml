@@ -236,8 +236,10 @@ blocks:
           Tocca **Avvia i playoff**: si apre un foglio che chiede **Quando si
           gioca il playoff** e **Gli invitati rispondono entro**, nel tuo fuso
           orario. Tutte e due le date devono essere nel futuro. Con **Avvia i
-          playoff e invia gli inviti** i qualificati ricevono l'invito e le
-          configurazioni si bloccano.
+          playoff e invia gli inviti** i qualificati ricevono l'invito, e
+          **chi si qualifica** (posizioni, posti, gare minime) non si cambia
+          più. Come si gioca la finale sì, con **Come si gioca la finale**
+          sotto l'elenco degli invitati, fino all'avvio della gara.
       - title: "Sposta data e scadenza, se serve"
         text: >-
           Sopra l'elenco degli invitati di ogni playoff c'è la riga **Data e
@@ -247,6 +249,13 @@ blocks:
           scadenza coincide con l'orario di gioco o lo supera, il foglio te
           lo dice: chi non ha risposto risulterebbe scaduto proprio quando
           apri la pagina per avviare la gara. Meglio qualche ora prima.
+      - title: "Ogni correzione resta scritta"
+        text: >-
+          Le correzioni alla configurazione, i giocatori aggiunti o tolti a
+          mano e le risposte registrate per conto di qualcuno finiscono nella
+          **Storia delle modifiche**, in fondo alla scheda dei playoff: chi,
+          quando e cosa. Il motivo è facoltativo, ma scrivilo: servirà in caso
+          di contestazioni.
       - title: "Se un invito è scaduto"
         text: >-
           La riga dice **Scaduto**, ma ha ancora **Accetta**. Se il giocatore
@@ -262,7 +271,9 @@ blocks:
         text: >-
           Quando le risposte bastano, **Crea la gara playoff** crea la gara e
           ci iscrive chi ha accettato. Da lì il pulsante diventa **Vai alla
-          gara playoff**.
+          gara playoff**. La gara nasce con i valori della configurazione e da
+          lì ha i suoi: se poi correggi la configurazione, l'app ti chiede se
+          applicare il cambio anche alla finale, campo per campo.
       - title: "Si gioca"
         text: >-
           Appena la gara di playoff comincia, la fascia dice **Playoff in
@@ -277,8 +288,8 @@ blocks:
         text: >-
           Nella configurazione di ogni playoff, con **Modifica**. Lasciate su
           **Eredita**, la finale si gioca come la prima gara conclusa della
-          stagione, compreso «al N» o «esattamente N». Le puoi cambiare tutte,
-          ma solo prima di avviare i playoff.
+          stagione, compreso «al N» o «esattamente N». Le puoi cambiare fino
+          all'avvio della finale; dopo, la finale si corregge dalla sua pagina.
       - name: "Sistema di classifica"
         text: >-
           Con «Campionato + gara di playoff» la finale usa quello del

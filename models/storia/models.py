@@ -46,6 +46,10 @@ class SettingsChangeAction:
     PROPOSTA_ACCETTATA = "proposta_accettata"
     PROPOSTA_RIFIUTATA = "proposta_rifiutata"
     NOTA = "nota"
+    #: Gli strumenti a mano dei playoff: la riga `giocatore` dice chi.
+    GIOCATORE_AGGIUNTO = "giocatore_aggiunto"
+    GIOCATORE_TOLTO = "giocatore_tolto"
+    RISPOSTA_PER_CONTO = "risposta_per_conto"
 
 
 class SettingsChange(BaseModel):
