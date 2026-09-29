@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-29 15:53+0000\n"
+"POT-Creation-Date: 2026-09-29 16:19+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -298,7 +298,7 @@ msgstr ""
 "The standings system can no longer be changed: the competition «%(gara)s»"
 " has already started."
 
-#: models/campionato/tournament_service.py:329
+#: models/campionato/tournament_service.py:327
 #, python-format
 msgid ""
 "Con il nuovo sistema di classifica la gara «%(gara)s» non sarebbe valida:"
@@ -881,22 +881,22 @@ msgstr "jump"
 msgid "massé"
 msgstr "massé"
 
-#: models/competition/campi_modificabili.py:135
-#: models/competition/campi_modificabili.py:188
+#: models/competition/campi_modificabili.py:138
+#: models/competition/campi_modificabili.py:191
 msgid "La gara è chiusa."
 msgstr "The competition is closed."
 
-#: models/competition/campi_modificabili.py:148
+#: models/competition/campi_modificabili.py:151
 msgid "Sul tabellone lo decide il formato."
 msgstr "In a bracket the format decides it."
 
-#: models/competition/campi_modificabili.py:152
+#: models/competition/campi_modificabili.py:155
 msgid "La gara è avviata: la struttura si cambia annullando l'avvio."
 msgstr ""
 "The competition has started: its structure changes only by cancelling the"
 " start."
 
-#: models/competition/campi_modificabili.py:157
+#: models/competition/campi_modificabili.py:160
 msgid ""
 "Con la strategia casuale tutti i turni esistono già: le regole di gioco "
 "non si cambiano dopo l'avvio."
@@ -904,17 +904,17 @@ msgstr ""
 "With the random strategy every round already exists: play rules can't "
 "change after the start."
 
-#: models/competition/campi_modificabili.py:163
+#: models/competition/campi_modificabili.py:166
 msgid ""
 "Non restano turni da avviare: un cambio di regola non avrebbe partite a "
 "cui arrivare."
 msgstr "No rounds left to start: a rule change would have no matches to apply to."
 
-#: models/competition/campi_modificabili.py:168
+#: models/competition/campi_modificabili.py:171
 msgid "Lo spareggio è già cominciato."
 msgstr "The tiebreaker has already started."
 
-#: models/competition/campi_modificabili.py:193
+#: models/competition/campi_modificabili.py:196
 msgid ""
 "Con la strategia casuale tutti i turni esistono già: le regole dei turni "
 "non si cambiano dopo l'avvio."
@@ -922,7 +922,7 @@ msgstr ""
 "With the random strategy every round already exists: round rules can't "
 "change after the start."
 
-#: models/competition/campi_modificabili.py:198
+#: models/competition/campi_modificabili.py:201
 #, python-format
 msgid ""
 "Il turno %(n)s è già avviato: le sue partite hanno le regole con cui sono"
@@ -1080,7 +1080,7 @@ msgstr ""
 "Competition certified by tiebreaker: cancel the tiebreaker first to "
 "cancel the round"
 
-#: models/competition/services.py:660
+#: models/competition/services.py:659
 #, python-format
 msgid ""
 "La %(gara)s del campionato '%(campionato)s' del %(data)s è stata "
@@ -1089,12 +1089,12 @@ msgstr ""
 "%(gara)s of the championship '%(campionato)s' on %(data)s has been "
 "cancelled."
 
-#: models/competition/services.py:667
+#: models/competition/services.py:666
 #, python-format
 msgid "La %(gara)s del %(data)s è stata cancellata."
 msgstr "%(gara)s on %(data)s has been cancelled."
 
-#: models/competition/services.py:678
+#: models/competition/services.py:677
 msgid "Gara Cancellata"
 msgstr "Competition cancelled"
 
@@ -8825,7 +8825,6 @@ msgid "la sala nuova del campionato"
 msgstr "the championship's new venue"
 
 #: templates/admin/campionato_proposta_gare.html:42
-#, python-format
 msgid "valore scelto per questa gara"
 msgstr "value chosen for this competition"
 
