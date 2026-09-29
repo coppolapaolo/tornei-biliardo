@@ -190,7 +190,7 @@ blocks:
   - type: faq
     items:
       - q: "Can I change a competition after creating it?"
-        a: "Yes, freely while it is a draft. After registrations open the dates stay editable; once the first round has started the match format is frozen."
+        a: "Yes, until you start the first round: even with registrations open and players already registered. Every change stays in the competition's history. Once the first round has started the match format is frozen; to change it you cancel the start."
       - q: "I got everything wrong, can I delete it?"
         a: "A draft competition can be deleted by an administrator. If registrations have already happened, the normal route is to cancel it rather than delete it: the people who registered keep a record."
       - q: "How many players do I need?"

@@ -128,6 +128,13 @@ schermata non è un vincolo.
 - Un director che attiva la separazione **dopo** che le iscrizioni sono
   aperte avrebbe metà iscritti senza squadra. Impedito: le opzioni del
   tabellone si decidono in `setup`, come ogni altra configurazione della gara.
+
+  > **Emendamento (2026-09-29, ADR-075).** Il divieto è caduto con la
+  > modifica tracciata: le opzioni si cambiano fino all'avvio anche a
+  > iscrizioni aperte. Accendendo la separazione, chi è già iscritto riceve la
+  > squadra del profilo, come se si iscrivesse adesso
+  > (`GaraService._precompila_squadre`); chi non ha corrispondenza resta senza
+  > e si sistema dalla schermata delle squadre, com'è per ogni iscrizione.
 - La qualità della separazione dipende da quanto l'elenco è pulito. Da qui
   l'insistenza sui nomi simili *prima* della creazione, invece che sull'unione
   dopo.

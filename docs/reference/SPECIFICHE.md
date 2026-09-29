@@ -19,6 +19,9 @@ Un **campionato** può avere anche dei **playoff** che possono essere giocati al
 > **Nota (2026-09-14).** Le **gare previste** di un campionato sono quelle della stagione: la gara di playoff **non è una di queste**, è la conclusione. Ogni conteggio mostrato — pagina del direttore, vetrina, tessere, elenchi — conta le gare regolari e aggiunge la finale a parte: «5 gare + finale», «2 di 2 · finale». Una gara è di playoff se è collegata a una configurazione dei playoff, non per il nome. Fino a questa data la finale finiva nel numeratore e la pagina del direttore scriveva «3 di 2».
 
 ``admin`` o un utente ``director`` creano, modificano e cancellano un **campionato**. Non sempre le modifiche e le cancellazioni sono possibili: ad esempio, se una **gara** è in itinere (i giocatori stanno giocando le partire della **gara**) allora non è possibile modificarla. 
+
+> **Nota (2026-09-29, ADR-075).** Fino a questa data una **gara** non si poteva modificare appena aveva **un** iscritto, anche prima di cominciare: la finale dei playoff, che nasce con gli iscritti dentro, non si correggeva mai. Ora una gara si modifica **fino all'avvio del primo turno**, anche con gli iscritti, e ogni modifica resta nella sua **storia delle modifiche** (chi, quando, cosa, motivo facoltativo). Cosa si potrà cambiare a gara avviata, e come, lo dice [`docs/usecases/regolamento-di-gara.md`](../usecases/regolamento-di-gara.md): arriva per passi, e questa nota sarà aggiornata a ogni passo.
+
 Nel caso di cancellazione di un **campionato** con alcune **gare** già giocate, si opera un _soft delete_ e i **match** giocati vengono mantenuti per le **statistiche** personali dei vari **player**.
 Un **campionato** può avere 0 o più direttori di gara. Se ne ha zero allora viene gestito dall'``admin``. 
 

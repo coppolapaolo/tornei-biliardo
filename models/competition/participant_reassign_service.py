@@ -165,6 +165,10 @@ _SKIPPED_TABLES: Dict[str, str] = {
         "corrected_by_id: è il direttore che ha corretto il risultato, "
         "non chi ha giocato la partita"
     ),
+    "settings_change": (
+        "author_id: è chi ha modificato le impostazioni della gara (ADR-075), "
+        "non chi l'ha giocata"
+    ),
 }
 
 #: Colonne che, pur stando in una tabella spostata, restano dove sono.

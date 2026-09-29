@@ -198,11 +198,11 @@ class TestGaraServiceCharacterization:
         assert updated.name == "Updated Name"
         assert updated.distance == 7
 
-        # Con iscrizioni non si può modificare
+        # Con iscrizioni si modifica ancora (ADR-075): si blocca all'avvio.
         InscriptionService.inscribe_user(self.player_user.id, gara.id)
-
-        with pytest.raises(ValueError, match="Impossibile modificare.*iscrizioni"):
-            GaraService.update_gara(gara.id, name="Another Name")
+        assert GaraService.update_gara(gara.id, name="Another Name").name == (
+            "Another Name"
+        )
 
     def test_delete_gara_characterization(self):
         """Caratterizza la cancellazione gare."""
