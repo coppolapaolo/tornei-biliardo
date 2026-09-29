@@ -279,6 +279,7 @@ class CategoriaService:
         cleaned = clean_display_name(name or "")
         if not cleaned:
             inscription.categoria_id = None
+            CategoriaService._correggi_partite(gara, inscription, force)
             return None
 
         cleaned = CategoriaService._clean_name(cleaned)
@@ -291,7 +292,24 @@ class CategoriaService:
             categoria.is_active = True
 
         inscription.categoria_id = categoria.id
+        CategoriaService._correggi_partite(gara, inscription, force)
         return categoria
+
+    @staticmethod
+    def _correggi_partite(gara, inscription, force: bool) -> None:
+        """Con ``force`` è una correzione: arriva anche alle partite giocate.
+
+        Le categorie sono fissate sulla partita quando nasce (ADR-075), così un
+        ricalcolo dell'ELO non rilegge quelle di oggi. Lo script che ripara una
+        gara già giocata, e la riassegnazione di un partecipante, correggono
+        un dato scritto male: lì la categoria va riscritta anche sulle
+        partite, altrimenti la correzione non cambierebbe niente.
+        """
+        if not force:
+            return
+        from models.match.regole_fissate import correggi_categoria
+
+        correggi_categoria(gara.id, inscription.user_id, inscription.categoria_id)
 
     @staticmethod
     def suggest_for_user(gara, user) -> Optional[Categoria]:

@@ -9,9 +9,13 @@ non è quella che si è giocata. Succede quando la specialità non esisteva anco
 in elenco e il direttore ha scelto la più vicina, scrivendo quella vera nelle
 note.
 
-**Cosa cambia.** Solo `gara.discipline`. Le partite e i turni la ereditano:
-`Match.discipline` e `RoundConfiguration.discipline` sono override *nullable*,
-e valgono NULL quando nessuno ha scelto diversamente per quel turno.
+**Cosa cambia.** `gara.discipline`, e le partite della gara che hanno la
+disciplina vecchia. Dal 2026-09-29 (ADR-075) la disciplina si fissa sulla
+partita quando nasce, così un cambio a gara avviata vale dal turno successivo;
+questo script però **corregge** un dato scritto male, quindi arriva anche alle
+partite già giocate, e lascia una voce nella storia della gara («correzione dei
+dati»). Le partite con una terza disciplina — un turno scelto diverso dal
+direttore — restano dove sono.
 
 **Cosa NON cambia da solo.** Gli override che nominano ancora la disciplina
 vecchia. Un override non dice se è una scelta del direttore per quel turno o la
@@ -262,6 +266,23 @@ def main() -> int:
         gara.discipline = target.value
         moved = (
             _propagate(gara.id, old, target.value) if args.propagate_overrides else {}
+        )
+        if "match" not in moved:
+            from models.match.models import Match
+
+            moved["match"] = (
+                db.session.query(Match)
+                .filter(Match.gara_id == gara.id, Match.discipline == old)
+                .update({Match.discipline: target.value}, synchronize_session=False)
+            )
+        from models.storia.models import SettingsChangeSource
+        from models.storia.service import StoriaModificheService
+
+        StoriaModificheService.registra(
+            cambi={"discipline": (old, target.value)},
+            gara_id=gara.id,
+            provenienza=SettingsChangeSource.SCRIPT,
+            motivo="Correzione dei dati: scripts/set_gara_discipline.py",
         )
         db.session.commit()
 

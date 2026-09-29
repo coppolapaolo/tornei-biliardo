@@ -598,16 +598,18 @@ class MatchService:
         existing_sets = match.sets or []
         next_set_number = len(existing_sets) + 1
 
-        # Get distance from gara or match configuration
+        # Triangoli per set e modalità: quelli fissati sulla partita (ADR-075),
+        # che comprendono l'override del turno. Qui si rileggeva la gara, e il
+        # cambio per turno andava perso sui set.
         gara = match.gara
-        set_distance = gara.distance if gara else 5  # Default to 5 if no gara
+        set_distance = match.set_distance or (gara.distance if gara else 5)
 
         # Create new set
         new_set = Set(
             match_id=match_id,
             set_number=next_set_number,
             distance=set_distance,
-            is_race_to=gara.is_race_to if gara else True,
+            is_race_to=match.effective_is_race_to,
             status="playing",
             started_at=utc_now(),
         )
