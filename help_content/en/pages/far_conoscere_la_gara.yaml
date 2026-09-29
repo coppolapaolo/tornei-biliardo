@@ -167,7 +167,10 @@ blocks:
       **Full rules** button. The payment form or the venue page go instead in
       the **External link**, which appears as a button at the bottom of the
       showcase. Both can be written once on the championship and apply to
-      all of its competitions.
+      all of its competitions. The championship has its own **Championship
+      rules** page too, from its page and its showcase: the values it
+      proposes to its competitions, the competitions with their weight, the
+      play-offs and the history of changes.
 
   - type: faq
     items:

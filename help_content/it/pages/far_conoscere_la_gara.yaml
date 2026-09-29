@@ -165,7 +165,10 @@ blocks:
       pulsante **Regolamento completo**. Il modulo di pagamento o la pagina
       della sala vanno invece nel **Link esterno**, che compare come un
       pulsante in fondo alla vetrina. Tutti e due si possono scrivere una
-      volta sul campionato e valgono per tutte le sue gare.
+      volta sul campionato e valgono per tutte le sue gare. Anche il
+      campionato ha la sua pagina **Regolamento del campionato**, dalla sua
+      pagina e dalla sua vetrina: i valori che propone alle gare, le gare con
+      il loro peso, i playoff e la storia delle modifiche.
 
   - type: faq
     items:

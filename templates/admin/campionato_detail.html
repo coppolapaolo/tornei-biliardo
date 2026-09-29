@@ -498,6 +498,11 @@
       <div class="collapse" id="gestioneImpostazioni" style="margin-top:10px">
         <div class="c7-stack">
           {% include "components/_campionato_details_info.html" %}
+          {% if feature_visible('main.regolamento_campionato') %}
+          <a class="btn btn-secondary w-100 mt-3" href="{{ url_for('main.regolamento_campionato', campionato_id=campionato.id) }}">
+            <i class="fas fa-scale-balanced"></i> {{ _('Regolamento del campionato') }}
+          </a>
+          {% endif %}
           {% include "components/_campionato_statistics.html" %}
           {% if campionato.can_be_modified() %}
           <a href="{{ url_for('admin.campionato.edit_campionato', campionato_id=campionato.id) }}" class="btn btn-secondary w-100">

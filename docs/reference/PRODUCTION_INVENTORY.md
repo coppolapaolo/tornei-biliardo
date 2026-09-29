@@ -513,6 +513,7 @@ cosa che il rating decide da solo è **quali partite entrano nell'Elo**:
 | `/garas` | GET | `main.public_garas_list` | None (public) | UI page | Lista gare standalone pubbliche |
 | `/gara/<int:gara_id>` | GET | `main.gara_detail_public` | None (public) | UI page | Dettaglio gara (redirect a unified view) |
 | `/gara/<int:gara_id>/regolamento` | GET | `main.regolamento_gara` | pubblica | UI page | Regolamento di gara: impostazioni in vigore, turno per turno, storia delle modifiche (ADR-075) |
+| `/campionato/<int:campionato_id>/regolamento` | GET | `main.regolamento_campionato` | pubblica | UI page | Regolamento del campionato: valori proposti, gare, playoff, storia delle modifiche (ADR-075) |
 | `/public/gara/<int:gara_id>` | GET | `main.gara_detail_public` | None (public) | UI page | Dettaglio gara (deprecated, redirects) |
 | `/g/<token>` | GET | `main.gara_invite` | None (public) | Vetrina / Redirect | Link pubblico di una gara (#61, #235). Per l'anonimo — e quindi per lo scraper dei social — è la **vetrina**: locandina, quando, dove, formato, quota, posti liberi e una chiamata all'azione. L'autenticato prosegue al flusso di iscrizione; `?anteprima=1` mostra la vetrina anche a lui. Accetta il token o l'indirizzo leggibile |
 | `/g/<token>/sala` | GET | `main.schermo_sala` | — (pubblica) | UI page | Schermo in sala: tavoli, classifica e turno prima da proiettare |

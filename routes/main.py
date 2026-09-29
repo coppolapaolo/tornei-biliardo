@@ -708,6 +708,25 @@ def schermo_sala(token):
     )
 
 
+@main_bp.route("/campionato/<int:campionato_id>/regolamento")
+def regolamento_campionato(campionato_id):
+    """Il Regolamento del campionato (ADR-075): pubblico, come quello di gara.
+
+    I valori che il campionato propone alle gare, il peso di ogni gara, i
+    playoff e la storia delle modifiche di campionato e playoff insieme.
+    """
+    from models.storia.regolamento import regolamento_campionato as costruisci
+
+    campionato = db.get_or_404(Campionato, campionato_id)
+    if campionato.is_deleted:
+        abort(404)
+    return render_template(
+        "public/regolamento_campionato.html",
+        campionato=campionato,
+        r=costruisci(campionato),
+    )
+
+
 @main_bp.route("/gara/<int:gara_id>/regolamento")
 def regolamento_gara(gara_id):
     """Il Regolamento di gara (ADR-075): pubblico, per eventuali contestazioni.
