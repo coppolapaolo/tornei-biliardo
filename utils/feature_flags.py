@@ -243,6 +243,8 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.campionato.playoff_proposta_finale": {"director"},
     "admin.campionato.playoff_proposta_inviti": {"director"},
     "admin.competition.invia_avviso_modifiche": {"director"},
+    # Il Regolamento di gara (ADR-075): pubblico, come la pagina della gara.
+    "main.regolamento_gara": {"anonimo", "player", "director"},
     "admin.competition.riconferma_per_conto": {"director"},
     "admin.campionato.playoff_riconferma_per_conto": {"director"},
     "player.riconferma_iscrizione": {"player", "director"},

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{# Il Regolamento di gara (ADR-075) — Design System 7c. Pagina pubblica, per
+   chiunque voglia sapere con che regole si gioca e cosa è cambiato: in
+   vigore (con da quale turno), per turno se i turni non sono tutti uguali, la
+   storia delle modifiche e, se c'è, il documento del regolamento. Richiede
+   `gara` e `r` (models/storia/regolamento.Regolamento). #}
+
+{% block title %}{{ _('Regolamento di gara') }} · {{ gara.display_name }}{% endblock %}
+{% block page_title %}{{ _('Regolamento di gara') }}{% endblock %}
+{% block page_sub %}{% if gara.campionato %}{{ gara.campionato.name }} · {% endif %}{{ gara.display_name }}{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i> {{ _('Torna alla gara') }}
+</a>
+{% endblock %}
+
+{% macro regole_del_turno(regole) -%}
+  {%- set disciplina, distanza, al_n, apre, spacca = regole -%}
+  {{ valore_storia('discipline', disciplina) }}
+  · {% if al_n == 'true' %}{{ _('al %(n)s', n=distanza) }}{% else %}{{ _('esattamente %(n)s', n=distanza) }}{% endif %}
+  · {{ _('chi apre: %(regola)s', regola=valore_storia('start_rule', apre)) }}
+  · {{ _('chi spacca: %(regola)s', regola=valore_storia('break_rule', spacca)) }}
+{%- endmacro %}
+
+{% block content %}
+<div class="c7-stack" style="max-width:860px;gap:16px">
+
+  <div class="c7-card">
+    <h3 class="mb-1">{{ _('In vigore') }}</h3>
+    <p class="c7-nota mb-3">{{ _("Le impostazioni di adesso. Se una è stata cambiata, accanto c'è quando e da quale turno vale.") }}</p>
+    <dl class="mb-0" style="display:grid;grid-template-columns:auto 1fr;gap:8px 18px">
+      {% for imp in r.in_vigore %}
+      <dt class="text-muted" style="font-weight:700">{{ etichetta_storia(imp.campo) }}</dt>
+      <dd class="mb-0">
+        {{ valore_storia(imp.campo, imp.valore) }}
+        {% if imp.cambiata %}
+        <span class="c7-nota">
+          · {{ _('cambiato il %(quando)s', quando=imp.cambiata.created_at|datetime_local) }}{% if imp.cambiata.from_round %}, {{ _('vale dal turno %(n)s', n=imp.cambiata.from_round) }}{% endif %}
+        </span>
+        {% endif %}
+      </dd>
+      {% endfor %}
+    </dl>
+  </div>
+
+  {% if r.per_turno %}
+  <div class="c7-card">
+    <h3 class="mb-1">{{ _('Turno per turno') }}</h3>
+    <p class="c7-nota mb-3">{{ _('I turni non si giocano tutti con le stesse regole. Le partite già nate restano con le regole con cui sono cominciate.') }}</p>
+    <ul class="list-unstyled mb-0">
+      {% for g in r.per_turno %}
+      <li class="mb-2">
+        <span class="fw-bold">{% if g.dal == g.al %}{{ _('Turno %(n)s', n=g.dal) }}{% else %}{{ _('Turni %(dal)s–%(al)s', dal=g.dal, al=g.al) }}{% endif %}</span>:
+        {{ regole_del_turno(g.regole) }}
+        {% if g.cambiata %}<span class="c7-nota">({{ _('cambiato il %(quando)s', quando=g.cambiata.created_at|datetime_local) }})</span>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  {% with storia=r.storia %}{% include "components/_storia_modifiche.html" %}{% endwith %}
+
+  {% if r.link_regolamento %}
+  <a class="btn btn-primary" href="{{ r.link_regolamento }}" target="_blank" rel="noopener noreferrer">
+    <i class="fas fa-file-lines"></i> {{ _('Regolamento completo') }}
+  </a>
+  {% endif %}
+</div>
+{% endblock %}

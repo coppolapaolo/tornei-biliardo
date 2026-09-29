@@ -156,6 +156,10 @@ class Gara(SoftDeleteMixin, db.Model):
     banner_path = db.Column(db.String(255), nullable=True)
     external_url = db.Column(db.String(500), nullable=True)
     external_label = db.Column(db.String(60), nullable=True)
+    #: Il documento del regolamento (ADR-075): in fondo alla pagina
+    #: «Regolamento di gara», come «Regolamento completo». Se manca vale
+    #: quello del campionato, in diretta come la locandina.
+    rules_url = db.Column(db.String(500), nullable=True)
     #: Indirizzo leggibile facoltativo, accanto a `public_token`: `/g/<slug>`
     #: e `/g/<token>` aprono la stessa pagina. Il token non si tocca mai — le
     #: locandine già stampate devono continuare a funzionare.
@@ -506,6 +510,15 @@ class Gara(SoftDeleteMixin, db.Model):
             return self.banner_path
         if self.campionato is not None:
             return self.campionato.banner_path or None
+        return None
+
+    @property
+    def effective_rules_url(self) -> Optional[str]:
+        """Il documento del regolamento: della gara, o del suo campionato."""
+        if self.rules_url:
+            return self.rules_url
+        if self.campionato is not None:
+            return self.campionato.rules_url or None
         return None
 
     @property

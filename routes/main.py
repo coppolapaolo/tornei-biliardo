@@ -708,6 +708,23 @@ def schermo_sala(token):
     )
 
 
+@main_bp.route("/gara/<int:gara_id>/regolamento")
+def regolamento_gara(gara_id):
+    """Il Regolamento di gara (ADR-075): pubblico, per eventuali contestazioni.
+
+    Cosa vale adesso, e da quale turno; le regole turno per turno quando non
+    sono le stesse; la storia delle modifiche; il documento del regolamento.
+    """
+    from models.storia.regolamento import regolamento
+
+    gara = db.get_or_404(Gara, gara_id)
+    if gara.is_deleted:
+        abort(404)
+    return render_template(
+        "public/regolamento_gara.html", gara=gara, r=regolamento(gara)
+    )
+
+
 @main_bp.route("/gara/<int:gara_id>")
 @main_bp.route("/public/gara/<int:gara_id>")
 def gara_detail_public(gara_id):

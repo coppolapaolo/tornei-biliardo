@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-29 17:39+0000\n"
+"POT-Creation-Date: 2026-09-29 17:53+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -963,7 +963,7 @@ msgstr ""
 msgid "Sei stato promosso dalla lista d'attesa per %(gara)s"
 msgstr ""
 
-#: models/competition/models.py:573
+#: models/competition/models.py:586
 #: templates/admin/amalfi_classification.html:23
 #: templates/components/_new_gara_modal.html:69
 #, python-format
@@ -1060,6 +1060,7 @@ msgstr ""
 #: models/competition/showcase_view.py:200
 #: models/competition/showcase_view.py:206
 #: templates/direttore/_card_partita.html:278
+#: templates/public/regolamento_gara.html:20
 #, python-format
 msgid "al %(n)s"
 msgstr ""
@@ -3813,6 +3814,7 @@ msgid "Inviti nuovi"
 msgstr ""
 
 #: models/storia/etichette.py:103 templates/direttore/_menu_turno.html:21
+#: templates/public/regolamento_gara.html:53
 #, python-format
 msgid "Turno %(n)s"
 msgstr ""
@@ -5394,28 +5396,28 @@ msgstr ""
 msgid "%(quanti)s inviti accettati."
 msgstr ""
 
-#: routes/admin/campionato.py:1627
+#: routes/admin/campionato.py:1628
 msgid "Vetrina del campionato aggiornata."
 msgstr ""
 
-#: routes/admin/campionato.py:1656 routes/admin/competition/vetrina.py:150
+#: routes/admin/campionato.py:1657 routes/admin/competition/vetrina.py:151
 msgid "Nessuna immagine selezionata."
 msgstr ""
 
-#: routes/admin/campionato.py:1659 routes/admin/competition/vetrina.py:154
+#: routes/admin/campionato.py:1660 routes/admin/competition/vetrina.py:155
 msgid "Formato non supportato. Usa JPG, PNG o GIF."
 msgstr ""
 
-#: routes/admin/campionato.py:1672
+#: routes/admin/campionato.py:1673
 msgid "Locandina caricata: la useranno tutte le gare senza una propria."
 msgstr ""
 
-#: routes/admin/campionato.py:1677 routes/admin/competition/vetrina.py:172
+#: routes/admin/campionato.py:1678 routes/admin/competition/vetrina.py:173
 #, python-format
 msgid "Non è stato possibile caricare l'immagine: %(errore)s"
 msgstr ""
 
-#: routes/admin/campionato.py:1691
+#: routes/admin/campionato.py:1692
 msgid "Locandina rimossa."
 msgstr ""
 
@@ -5824,15 +5826,15 @@ msgid ""
 "vera qui trovi il link da condividere."
 msgstr ""
 
-#: routes/admin/competition/vetrina.py:135
+#: routes/admin/competition/vetrina.py:136
 msgid "Vetrina aggiornata."
 msgstr ""
 
-#: routes/admin/competition/vetrina.py:169
+#: routes/admin/competition/vetrina.py:170
 msgid "Locandina caricata."
 msgstr ""
 
-#: routes/admin/competition/vetrina.py:192
+#: routes/admin/competition/vetrina.py:193
 msgid "Locandina rimossa: la gara torna a usare quella del campionato, se c'è."
 msgstr ""
 
@@ -7137,9 +7139,9 @@ msgstr ""
 msgid "Descrizione (opzionale)"
 msgstr ""
 
-#: templates/admin/_vetrina_form.html:85
+#: templates/admin/_vetrina_form.html:96
 #: templates/admin/campionato_detail.html:596
-#: templates/admin/campionato_vetrina.html:94 templates/base.html:825
+#: templates/admin/campionato_vetrina.html:100 templates/base.html:825
 #: templates/components/_playoff_config_form.html:89
 #: templates/components/_playoff_scoring_form.html:28
 #: templates/gamification/admin/level_config.html:42
@@ -7167,6 +7169,7 @@ msgstr ""
 #: templates/direttore/impostazioni.html:18
 #: templates/direttore/preparazione.html:24 templates/gara_bracket.html:10
 #: templates/player/gara_challenge_detail.html:10
+#: templates/public/regolamento_gara.html:13
 msgid "Torna alla gara"
 msgstr ""
 
@@ -7694,13 +7697,13 @@ msgstr ""
 msgid "Condividi"
 msgstr ""
 
-#: templates/admin/campionato_vetrina.html:103
+#: templates/admin/campionato_vetrina.html:109
 #: templates/components/_gara_public_link.html:43 templates/public_base.html:48
 msgid "Copia link"
 msgstr ""
 
-#: templates/admin/_vetrina_form.html:108
-#: templates/admin/campionato_vetrina.html:120 templates/public_base.html:49
+#: templates/admin/_vetrina_form.html:119
+#: templates/admin/campionato_vetrina.html:126 templates/public_base.html:49
 msgid "Link copiato"
 msgstr ""
 
@@ -7826,17 +7829,42 @@ msgstr ""
 msgid "Regolamento"
 msgstr ""
 
-#: templates/admin/_vetrina_form.html:90
-#: templates/admin/campionato_vetrina.html:99
+#: templates/admin/_vetrina_form.html:88
+#: templates/admin/campionato_vetrina.html:94
+msgid "Link al regolamento"
+msgstr ""
+
+#: templates/admin/_vetrina_form.html:88
+#: templates/admin/campionato_proposta_gare.html:53
+#: templates/admin/campionato_vetrina.html:94
+#: templates/admin/gara_edit_avviata.html:88
+#: templates/admin/gara_edit_avviata.html:236
+#: templates/admin/playoff_proposta_finale.html:51
+#: templates/admin/venue_manager_requests.html:147
+#: templates/components/_campionato_edit_form.html:237
+#: templates/components/_gara_edit_form.html:33
+#: templates/components/_gara_edit_form.html:388
+#: templates/components/_gara_edit_form.html:395
+#: templates/components/_playoff_config_form.html:84
+#: templates/player/venue_detail.html:280
+msgid "opzionale"
+msgstr ""
+
+#: templates/admin/_vetrina_form.html:92
+msgid "Vuoto: vale quello del campionato."
+msgstr ""
+
+#: templates/admin/_vetrina_form.html:101
+#: templates/admin/campionato_vetrina.html:105
 msgid "Link da condividere"
 msgstr ""
 
-#: templates/admin/_vetrina_form.html:94
+#: templates/admin/_vetrina_form.html:105
 msgid "Copia il link"
 msgstr ""
 
-#: templates/admin/_vetrina_form.html:97
-#: templates/admin/campionato_vetrina.html:106
+#: templates/admin/_vetrina_form.html:108
+#: templates/admin/campionato_vetrina.html:112
 msgid "Anteprima"
 msgstr ""
 
@@ -8713,20 +8741,6 @@ msgstr ""
 msgid "Nessuna gara da aggiornare."
 msgstr ""
 
-#: templates/admin/campionato_proposta_gare.html:53
-#: templates/admin/gara_edit_avviata.html:88
-#: templates/admin/gara_edit_avviata.html:236
-#: templates/admin/playoff_proposta_finale.html:51
-#: templates/admin/venue_manager_requests.html:147
-#: templates/components/_campionato_edit_form.html:237
-#: templates/components/_gara_edit_form.html:33
-#: templates/components/_gara_edit_form.html:388
-#: templates/components/_gara_edit_form.html:395
-#: templates/components/_playoff_config_form.html:84
-#: templates/player/venue_detail.html:280
-msgid "opzionale"
-msgstr ""
-
 #: templates/admin/campionato_proposta_gare.html:55
 #: templates/admin/gara_edit_avviata.html:238
 #: templates/admin/playoff_proposta_finale.html:53
@@ -8823,6 +8837,12 @@ msgstr ""
 #: templates/admin/campionato_vetrina.html:88
 #: templates/istruttore/gruppo.html:204
 msgid "Come si chiama"
+msgstr ""
+
+#: templates/admin/campionato_vetrina.html:97
+msgid ""
+"Compare come «Regolamento completo» nella pagina «Regolamento di gara» di"
+" ogni gara che non ne ha uno suo."
 msgstr ""
 
 #: templates/admin/campionato_wizard_step1.html:3
@@ -14319,6 +14339,13 @@ msgstr[1] ""
 msgid "Direzione di gara"
 msgstr ""
 
+#: templates/components/_gara_info.html:114
+#: templates/public/regolamento_gara.html:8
+#: templates/public/regolamento_gara.html:9
+#: templates/public/vetrina_gara.html:193
+msgid "Regolamento di gara"
+msgstr ""
+
 #: templates/components/_gara_inscriptions.html:37
 msgid "Iscrivi un giocatore"
 msgstr ""
@@ -16638,6 +16665,7 @@ msgid "modificato dai playoff"
 msgstr ""
 
 #: templates/components/_storia_modifiche.html:19
+#: templates/public/regolamento_gara.html:38
 #, python-format
 msgid "vale dal turno %(n)s"
 msgstr ""
@@ -25191,6 +25219,56 @@ msgstr ""
 msgid "Vedi le gare"
 msgstr ""
 
+#: templates/public/regolamento_gara.html:20
+#, python-format
+msgid "esattamente %(n)s"
+msgstr ""
+
+#: templates/public/regolamento_gara.html:21
+#, python-format
+msgid "chi apre: %(regola)s"
+msgstr ""
+
+#: templates/public/regolamento_gara.html:22
+#, python-format
+msgid "chi spacca: %(regola)s"
+msgstr ""
+
+#: templates/public/regolamento_gara.html:29
+msgid "In vigore"
+msgstr ""
+
+#: templates/public/regolamento_gara.html:30
+msgid ""
+"Le impostazioni di adesso. Se una è stata cambiata, accanto c'è quando e "
+"da quale turno vale."
+msgstr ""
+
+#: templates/public/regolamento_gara.html:38
+#: templates/public/regolamento_gara.html:55
+#, python-format
+msgid "cambiato il %(quando)s"
+msgstr ""
+
+#: templates/public/regolamento_gara.html:48
+msgid "Turno per turno"
+msgstr ""
+
+#: templates/public/regolamento_gara.html:49
+msgid ""
+"I turni non si giocano tutti con le stesse regole. Le partite già nate "
+"restano con le regole con cui sono cominciate."
+msgstr ""
+
+#: templates/public/regolamento_gara.html:53
+#, python-format
+msgid "Turni %(dal)s–%(al)s"
+msgstr ""
+
+#: templates/public/regolamento_gara.html:66
+msgid "Regolamento completo"
+msgstr ""
+
 #: templates/public/schermo_sala.html:34 templates/public/vetrina_gara.html:56
 #, python-format
 msgid "Locandina di %(gara)s"
@@ -25381,7 +25459,7 @@ msgid "Iscriviti alla gara"
 msgstr ""
 
 #: templates/public/vetrina_campionato.html:249
-#: templates/public/vetrina_gara.html:199
+#: templates/public/vetrina_gara.html:208
 msgid "Organizza"
 msgstr ""
 

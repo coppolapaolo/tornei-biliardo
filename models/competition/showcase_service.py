@@ -167,6 +167,7 @@ def update_gara_showcase(
     slug: Optional[str] = None,
     external_url: Optional[str] = None,
     external_label: Optional[str] = None,
+    rules_url: Optional[str] = None,
 ) -> Gara:
     """Salva i campi della vetrina di una gara.
 
@@ -192,6 +193,7 @@ def update_gara_showcase(
     # persisterla, altrimenti resterebbe in colonna a comparire il giorno in
     # cui qualcuno rimette un indirizzo, con il nome di una pagina diversa.
     gara.external_label = etichetta[:60] if (etichetta and gara.external_url) else None
+    gara.rules_url = normalize_external_url(rules_url)
     return gara
 
 
@@ -258,6 +260,7 @@ def update_campionato_showcase(
     external_url: Optional[str] = None,
     external_label: Optional[str] = None,
     description: Optional[str] = None,
+    rules_url: Optional[str] = None,
 ):
     """Salva i campi della vetrina di un campionato.
 
@@ -285,6 +288,7 @@ def update_campionato_showcase(
         etichetta[:60] if (etichetta and campionato.external_url) else None
     )
     campionato.description = (description or "").strip() or None
+    campionato.rules_url = normalize_external_url(rules_url)
     return campionato
 
 
