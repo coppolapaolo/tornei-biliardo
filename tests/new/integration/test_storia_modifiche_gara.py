@@ -241,12 +241,12 @@ class TestIlServizio:
         GaraService.update_gara(gara_con_iscritti.id, distance=7)
         assert db_session.get(Gara, gara_con_iscritti.id).distance == 7
 
-    def test_a_gara_avviata_no(self, db_session, gara_con_iscritti):
+    def test_a_gara_avviata_la_struttura_no(self, db_session, gara_con_iscritti):
         gara_con_iscritti.status = GaraStatus.PLAYING.value
         gara_con_iscritti.current_round = 1
         db_session.commit()
         with pytest.raises(ConflictError):
-            GaraService.update_gara(gara_con_iscritti.id, name="Altro")
+            GaraService.update_gara(gara_con_iscritti.id, rounds_count=9)
         db_session.rollback()
 
     def test_dopo_annulla_l_avvio_si_torna_a_modificare(

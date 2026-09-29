@@ -151,7 +151,7 @@ blocks:
       - q: "Quanto dura una partita «al 4»?"
         a: "Nella pratica venti-trenta minuti a palla 8. «Al 5» ne chiede una decina in più, e su tre turni la differenza si sente parecchio."
       - q: "Si può cambiare la distanza durante la gara?"
-        a: "No, non dopo l'avvio. Il direttore può però impostare formati diversi per singoli turni, ma va deciso prima che la gara parta."
+        a: "Sì, e vale dal turno successivo: le partite già nate restano alla distanza con cui sono cominciate. Il cambio resta nella storia della gara. Con la strategia casuale no, perché tutti i turni nascono all'avvio."
       - q: "Perché la mia partita si è chiusa sul 4-2 se erano previsti 7 triangoli?"
         a: "Perché il formato era «al 4»: raggiunti i 4 triangoli la partita è vinta. I 7 sono il massimo possibile, non il numero da giocare."
       - q: "Con «numero esatto» chi vince se finisce in parità?"

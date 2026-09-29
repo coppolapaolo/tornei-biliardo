@@ -149,7 +149,7 @@ blocks:
       - q: "How long does a «race to 4» match take?"
         a: "In practice twenty to thirty minutes at 8-ball. «Race to 5» asks for about ten more, and over three rounds the difference is very noticeable."
       - q: "Can the distance be changed during the competition?"
-        a: "No, not after the start. The director can however set different formats for individual rounds, but it has to be decided before the competition begins."
+        a: "Yes, and it applies from the next round: matches already created keep the distance they started with. The change stays in the competition's history. Not with the random strategy, where every round is created at the start."
       - q: "Why did my match close at 4-2 if 7 racks were planned?"
         a: "Because the format was «race to 4»: reaching 4 racks wins the match. The 7 is the maximum possible, not the number to play."
       - q: "With «exact number», who wins if it ends level?"

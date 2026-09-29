@@ -328,11 +328,29 @@ class GaraService:
         if not gara:
             raise ValueError(f"Gara {gara_id} non trovata")
 
-        if not gara.can_be_modified():
-            raise ConflictError(
-                "La gara è già avviata: da qui non si modifica. Per cambiarne la "
-                "struttura si annulla l'avvio."
+        from models.competition.campi_modificabili import (
+            REGOLE,
+            campi_bloccati,
+            dal_turno,
+        )
+
+        # Campo per campo, non più un blocco solo (ADR-075): la logistica si
+        # cambia sempre, le regole valgono dal turno successivo, la struttura
+        # solo prima dell'avvio. Un campo bloccato che arriva col suo valore di
+        # adesso non è una richiesta di cambiarlo, e passa.
+        bloccati = campi_bloccati(gara)
+        alias_bloccati = {"date_str": "date", "time_str": "time"}
+        for campo, valore in kwargs.items():
+            nome = alias_bloccati.get(campo, campo)
+            if nome not in bloccati:
+                continue
+            attuale = (
+                gara.get_available_tables()
+                if nome == "available_tables"
+                else getattr(gara, nome, None)
             )
+            if serializza(valore) != serializza(attuale):
+                raise ConflictError(f"{nome}: {bloccati[nome]}")
 
         # I campi come li legge la storia: `date_str`/`time_str` sono il
         # vecchio modo di passare data e ora, ma nella storia sono data e ora.
@@ -438,12 +456,23 @@ class GaraService:
                 logger.warning(f"Gara config warning (update): {warning}")
 
         dopo = GaraService._valori_per_la_storia(gara, campi_storia)
+        cambi = {campo: (prima.get(campo), dopo[campo]) for campo in dopo}
+        # A gara avviata le regole valgono dal turno successivo, la logistica
+        # subito: due voci, così la storia non dice «dal turno 4» di una sala.
+        turno = dal_turno(gara)
+        regole = {c: v for c, v in cambi.items() if turno and c in REGOLE}
+        resto = {c: v for c, v in cambi.items() if c not in regole}
         StoriaModificheService.registra(
-            cambi={campo: (prima.get(campo), dopo[campo]) for campo in dopo},
-            gara_id=gara.id,
-            autore=autore,
-            motivo=motivo,
+            cambi=resto, gara_id=gara.id, autore=autore, motivo=motivo
         )
+        if regole:
+            StoriaModificheService.registra(
+                cambi=regole,
+                gara_id=gara.id,
+                autore=autore,
+                motivo=motivo,
+                dal_turno=turno,
+            )
 
         return gara
 

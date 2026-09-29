@@ -95,8 +95,8 @@ blocks:
 
   - type: text
     text: >-
-      Dopo l'avvio del primo turno la riga resta, con la tessera grigia:
-      l'elenco si apre ancora, ma solo per leggerlo.
+      A gara chiusa la riga resta, con la tessera grigia: l'elenco si apre
+      ancora, ma solo per leggerlo.
 
   - type: heading
     id: quando
@@ -104,9 +104,11 @@ blocks:
 
   - type: text
     text: >-
-      Fino all'avvio del primo turno. Dopo, le partite sono già formate e le
-      categorie hanno già deciso quali contano: cambiarle darebbe un rating che
-      non corrisponde più a quello che si vede.
+      Fino alla fine della gara. Ogni partita tiene le categorie che valevano
+      quando è nata: una categoria cambiata a gara avviata vale per le partite
+      dei turni successivi, e quelle già giocate contano per l'Elo come prima.
+      Con la strategia casuale si chiudono all'avvio, perché lì tutte le
+      partite esistono già.
 
   - type: note
     tone: warning

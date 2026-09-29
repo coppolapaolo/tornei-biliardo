@@ -95,8 +95,8 @@ blocks:
 
   - type: text
     text: >-
-      Once the first round has started the row stays, with a grey tile: the
-      list still opens, but only to read it.
+      Once the competition is closed the row stays, with a grey tile: the list
+      still opens, but only to read it.
 
   - type: heading
     id: quando
@@ -104,9 +104,11 @@ blocks:
 
   - type: text
     text: >-
-      Until the first round starts. After that the matches are already drawn and
-      the categories have already decided which ones count: changing them would
-      give a rating that no longer matches what you see.
+      Until the competition ends. Each match keeps the categories that applied
+      when it was created: a category changed once play is under way applies to
+      the matches of later rounds, and matches already played count for Elo as
+      before. With the random strategy they close at the start, because every
+      match already exists.
 
   - type: note
     tone: warning

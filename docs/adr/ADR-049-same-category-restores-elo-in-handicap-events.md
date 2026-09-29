@@ -273,3 +273,10 @@ momento del rilascio. Una **correzione** (`CategoriaService` con
 `force=True`: lo script di riparazione e la riassegnazione di un partecipante,
 ADR-048) arriva anche alle partite giocate; un cambio a gara in corso vale per
 le partite che nasceranno.
+
+## Emendamento (2026-09-29, ADR-075, passo 3)
+
+La finestra delle categorie non si chiude più all'avvio: con le categorie
+fissate sulla partita, un cambio a gara avviata vale per le partite dei turni
+successivi. Si chiude a gara conclusa, e all'avvio con la strategia casuale,
+dove tutte le partite esistono già (`CategoriaService.is_editable`).

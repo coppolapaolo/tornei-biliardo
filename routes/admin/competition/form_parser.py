@@ -347,6 +347,61 @@ class GaraFormParser:
             if campo not in originali or serializza(valore) != originali[campo]
         }
 
+    def parse_a_gara_avviata(self, ammessi: Any) -> Dict[str, Any]:
+        """I campi della pagina «gara avviata»: solo quelli ammessi e presenti.
+
+        La pagina mostra solo ciò che a gara avviata si può ancora cambiare
+        (`models.competition.campi_modificabili`). Qui si legge quello e basta:
+        un campo che la pagina non mostra non c'è, e resta com'è.
+        """
+        form = request.form
+        data: Dict[str, Any] = {}
+        gara = self.gara
+
+        if "date" in ammessi and form.get("date"):
+            data["date"] = datetime.strptime(form["date"], "%Y-%m-%d").date()
+        if "time" in ammessi and form.get("time"):
+            data["time"] = datetime.strptime(form["time"], "%H:%M").time()
+        if "description" in ammessi and "description" in form:
+            data["description"] = form.get("description", "").strip()
+        if "entry_fee" in ammessi and form.get("entry_fee", "").strip():
+            data["entry_fee"] = float(form["entry_fee"])
+
+        if "distance" in ammessi and form.get("distance"):
+            data["distance"] = int(form["distance"])
+            if "is_race_to" in ammessi:
+                data["is_race_to"] = "exact_number" not in form
+        if "discipline" in ammessi and form.get("discipline"):
+            data["discipline"] = form["discipline"]
+        for campo, enum_cls in (("start_rule", StartRule), ("break_rule", BreakRule)):
+            if campo in ammessi and campo in form:
+                scelta = enum_cls.normalize(form.get(campo, ""))
+                data[campo] = scelta.value if scelta is not None else None
+        if "has_handicap" in ammessi and "has_handicap" in form:
+            grezzo = form.get("has_handicap", "")
+            data["has_handicap"] = (
+                True if grezzo == "true" else False if grezzo == "false" else None
+            )
+        if "withdraw_policy" in ammessi and "withdraw_policy" in form:
+            data["withdraw_policy"] = GaraFormParser._parse_withdraw_policy()
+        if "odd_number_policy" in ammessi and form.get("odd_number_policy"):
+            data["odd_number_policy"] = form["odd_number_policy"]
+            if "x_challenge_id" in ammessi:
+                data["x_challenge_id"] = GaraFormParser._parse_x_challenge(
+                    data["odd_number_policy"]
+                )
+        # La casella dello spareggio c'è solo se c'è la sua sezione: il posto
+        # fino a cui si spareggia fa da segnale.
+        if "tiebreaker_until_position" in ammessi and form.get(
+            "tiebreaker_until_position"
+        ):
+            data["tiebreaker_enabled"] = form.get("tiebreaker_enabled") == "on"
+            data["tiebreaker_until_position"] = int(form["tiebreaker_until_position"])
+        if "weight" in ammessi and gara is not None and gara.campionato_id:
+            if form.get("weight", "").strip():
+                data["weight"] = GaraFormParser._parse_weight(self.campionato)
+        return data
+
     @staticmethod
     def _parse_x_challenge(odd_number_policy: str) -> Optional[int]:
         """Quale esercizio si gioca al posto della X, se il direttore lo sceglie.

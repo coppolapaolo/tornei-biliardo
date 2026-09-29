@@ -1,0 +1,234 @@
+{% extends "base.html" %}
+{# Modifica di una gara avviata (ADR-075) — Design System 7c.
+   Mostra solo ciò che si può ancora cambiare: la logistica, le regole di gioco
+   (che valgono dal turno successivo), lo spareggio finché non è cominciato, il
+   peso. Il resto compare col lucchetto e il motivo. Cosa è ammesso lo decide
+   `models/competition/campi_modificabili.py`, non questo template: qui si
+   mostra `ammessi` e si spiega `bloccati`. #}
+
+{% block title %}{{ _('Modifica') }} {{ gara.display_name }}{% endblock %}
+{% block page_title %}{{ _('Modifica') }} {{ gara.display_name }}{% endblock %}
+{% block page_sub %}
+  {% if not gara.is_standalone %}{{ gara.campionato.name }} · {% endif %}
+  {{ gara.date|date_local if gara.date }}
+{% endblock %}
+{% block page_actions %}
+<a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary btn-sm d-none d-lg-inline-flex">
+  <i class="fas fa-arrow-left"></i> {{ _('Annulla') }}
+</a>
+{% endblock %}
+
+{% block content %}
+<div style="max-width:860px">
+<form action="{{ url_for('admin.competition.edit_gara', gara_id=gara.id) }}" method="POST" class="c7-stack" style="gap:16px">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <input type="hidden" name="stato_iniziale" value='{{ stato_iniziale|tojson }}'>
+
+  <div class="c7-flash c7-flash--info">
+    <span class="c7-flash__ico"><i class="fas fa-play"></i></span>
+    <div class="c7-flash__body">
+      <div class="c7-flash__title">{{ _('Gara avviata · turno %(n)s', n=gara.current_round or 1) }}</div>
+      <div class="c7-flash__text">
+        {% if dal_turno %}{{ _('Sala, orario e informazioni cambiano subito. Le regole di gioco valgono dal turno %(n)s: le partite già nate restano con le regole con cui sono cominciate.', n=dal_turno) }}{% endif %}
+        {{ _('Ogni modifica resta nella storia della gara.') }}
+      </div>
+    </div>
+  </div>
+
+  {# ---------------- Informazioni ---------------- #}
+  <div class="c7-card">
+    <h3 class="mb-3">{{ _('Informazioni') }}</h3>
+    <div class="mb-3">
+      <label for="name" class="form-label">{{ _('Nome') }}</label>
+      <input type="text" class="form-control" id="name" name="name" value="{{ gara.name or '' }}">
+    </div>
+    <div class="d-flex gap-3 flex-wrap mb-3">
+      <div class="flex-fill" style="min-width:180px">
+        <label for="date" class="form-label">{{ _('Data') }}</label>
+        <input type="date" class="form-control" id="date" name="date"
+               value="{{ gara.date.isoformat() if gara.date else '' }}" required>
+      </div>
+      <div style="width:140px">
+        <label for="time" class="form-label">{{ _('Ora') }}</label>
+        <input type="time" class="form-control" id="time" name="time"
+               value="{{ gara.time.strftime('%H:%M') if gara.time else '20:00' }}">
+      </div>
+    </div>
+    <div class="mb-3">
+      <label for="location" class="form-label">{{ _('Sala') }}</label>
+      <input type="text" class="form-control" id="location" name="location" value="{{ gara.location or '' }}"
+             list="venue-suggestions" autocomplete="off">
+      <datalist id="venue-suggestions">
+        {% for venue in verified_venues or [] %}
+        <option value="{{ venue.name }}">{{ venue.name }} - {{ venue.city or _('Città non specificata') }}</option>
+        {% endfor %}
+      </datalist>
+    </div>
+    <div class="mb-3" style="max-width:220px">
+      <label for="entry_fee" class="form-label">{{ _("Quota d'iscrizione") }}</label>
+      <input type="number" class="form-control" id="entry_fee" name="entry_fee" min="0" step="0.5"
+             value="{{ gara.entry_fee if gara.entry_fee is not none else '' }}">
+    </div>
+    <div>
+      <label for="description" class="form-label">{{ _('Descrizione') }} · {{ _('opzionale') }}</label>
+      <textarea class="form-control" id="description" name="description" rows="3">{{ gara.description or '' }}</textarea>
+    </div>
+  </div>
+
+  {# ---------------- Regole di gioco ---------------- #}
+  <div class="c7-card">
+    <h3 class="mb-1">{{ _('Regole di gioco') }}</h3>
+    {% if 'distance' in ammessi %}
+    <p class="c7-nota mb-3">{{ _('Valgono dal turno %(n)s.', n=dal_turno) }}</p>
+    <div class="d-flex gap-3 flex-wrap mb-3">
+      <div style="width:160px">
+        <label for="distance" class="form-label">{{ _('Distanza') }}</label>
+        <input type="number" class="form-control" id="distance" name="distance" min="1" max="50"
+               value="{{ gara.distance }}" required>
+      </div>
+      {% if 'is_race_to' in ammessi %}
+      <div class="form-check align-self-end mb-2">
+        <input class="form-check-input" type="checkbox" id="exact_number" name="exact_number"
+               {% if not gara.is_race_to %}checked{% endif %}>
+        <label class="form-check-label" for="exact_number">{{ _('Numero esatto di triangoli') }}</label>
+      </div>
+      {% endif %}
+      <div class="flex-fill" style="min-width:200px">
+        <label for="discipline" class="form-label">{{ _('Disciplina') }}</label>
+        <select class="form-select" id="discipline" name="discipline">
+          {% for value, label in discipline_choices %}
+          <option value="{{ value }}" {% if gara.discipline == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="d-flex gap-3 flex-wrap mb-3">
+      <div class="flex-fill" style="min-width:220px">
+        <label for="start_rule" class="form-label">{{ _('Regola di inizio') }}</label>
+        <select class="form-select" id="start_rule" name="start_rule">
+          {% if gara.campionato %}
+          <option value="" {% if gara.start_rule is none %}selected{% endif %}>
+            {{ _('Eredita dal campionato') }} ({{ (StartRule.normalize(gara.campionato.default_start_rule) or DEFAULT_START_RULE).display_name }})
+          </option>
+          {% endif %}
+          {% for rule in StartRule %}
+          <option value="{{ rule.value }}" {% if gara.start_rule == rule.value %}selected{% endif %}>{{ rule.display_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="flex-fill" style="min-width:220px">
+        <label for="break_rule" class="form-label">{{ _('Chi spacca') }}</label>
+        <select class="form-select" id="break_rule" name="break_rule">
+          {% if gara.campionato %}
+          <option value="" {% if gara.break_rule is none %}selected{% endif %}>
+            {{ _('Eredita dal campionato') }} ({{ (BreakRule.normalize(gara.campionato.default_break_rule) or BreakRule.ALTERNATE).display_name }})
+          </option>
+          {% endif %}
+          {% for rule in BreakRule %}
+          <option value="{{ rule.value }}" {% if gara.break_rule == rule.value %}selected{% endif %}>{{ rule.display_name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="mb-3" style="max-width:320px">
+      <label for="has_handicap" class="form-label">{{ _("Gioco con handicap") }}</label>
+      <select class="form-select" id="has_handicap" name="has_handicap">
+        {% if gara.campionato %}
+        <option value="" {% if gara.has_handicap is none %}selected{% endif %}>
+          {{ _("Eredita dal campionato") }} ({{ _("Sì") if gara.campionato.has_handicap else _("No") }})
+        </option>
+        {% endif %}
+        <option value="true" {% if gara.has_handicap is true %}selected{% endif %}>{{ _("Sì") }}</option>
+        <option value="false" {% if gara.has_handicap is false or (gara.has_handicap is none and not gara.campionato) %}selected{% endif %}>{{ _("No") }}</option>
+      </select>
+    </div>
+    {% if 'odd_number_policy' in ammessi %}
+    <div class="d-flex gap-3 flex-wrap mb-3">
+      <div class="flex-fill" style="min-width:220px">
+        <label for="odd_number_policy" class="form-label">{{ _('Giocatori dispari') }}</label>
+        <select class="form-select" id="odd_number_policy" name="odd_number_policy">
+          {% for valore, nome in opzioni_dispari(gara.classification_system) %}
+          <option value="{{ valore }}" {% if (gara.odd_number_policy or 'bye') == valore %}selected{% endif %}>{{ nome }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="flex-fill" style="min-width:220px">
+        <label for="x_challenge_id" class="form-label">{{ _('Esercizio per la X') }}</label>
+        <select class="form-select" id="x_challenge_id" name="x_challenge_id">
+          <option value="">{{ _('Solo con «X a tavolino con esercizio»') }}</option>
+          {% for esercizio in x_challenges or [] %}
+          <option value="{{ esercizio.id }}" {% if gara.x_challenge_id == esercizio.id %}selected{% endif %}>{{ esercizio.get_display_name() }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    {% endif %}
+    {% if 'withdraw_policy' in ammessi %}
+    <div class="mb-0" style="max-width:420px">
+      <label for="withdraw_policy" class="form-label">{{ _('Gestione ritiri') }}</label>
+      <select class="form-select" id="withdraw_policy" name="withdraw_policy">
+        <option value="{{ WithdrawPolicy.EXCLUDE.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value else '' }}>{{ _('Escludi — X a tavolino o partita a tre') }}</option>
+        <option value="{{ WithdrawPolicy.FORFEIT.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.FORFEIT.value else '' }}>{{ _("Forfait — vittoria all'avversario") }}</option>
+      </select>
+      <div class="form-text">{{ _('Vale per i ritiri da qui in avanti.') }}</div>
+    </div>
+    {% endif %}
+    {% else %}
+    <p class="c7-nota mb-0"><i class="fas fa-lock" style="font-size:11px"></i> {{ bloccati['distance'] }}</p>
+    {% endif %}
+  </div>
+
+  {# ---------------- Spareggio ---------------- #}
+  {% if 'tiebreaker_until_position' in ammessi %}
+  <div class="c7-card">
+    <h3 class="mb-3">{{ _('Spareggio') }}</h3>
+    <div class="form-check mb-2">
+      <input class="form-check-input" type="checkbox" id="tiebreaker_enabled" name="tiebreaker_enabled"
+             {% if gara.tiebreaker_enabled %}checked{% endif %}>
+      <label class="form-check-label" for="tiebreaker_enabled">{{ _('Spareggio per i pari merito sul podio') }}</label>
+    </div>
+    <select class="form-select" name="tiebreaker_until_position" style="max-width:220px" aria-label="{{ _('Fino a che posto') }}">
+      <option value="1" {% if gara.tiebreaker_until_position == 1 %}selected{% endif %}>{{ _('Solo il 1° posto') }}</option>
+      <option value="2" {% if gara.tiebreaker_until_position == 2 %}selected{% endif %}>{{ _('Fino al 2° posto') }}</option>
+      <option value="3" {% if gara.tiebreaker_until_position == 3 or not gara.tiebreaker_until_position %}selected{% endif %}>{{ _('Fino al 3° posto') }}</option>
+    </select>
+  </div>
+  {% endif %}
+
+  {% if gara.campionato_id and 'weight' in ammessi %}
+  <div class="c7-card">
+    <label for="weight" class="form-label">{{ _('Peso nella classifica') }}</label>
+    <input type="number" class="form-control" id="weight" name="weight" min="1" max="10" step="1"
+           value="{{ gara.weight or 1 }}" style="max-width:160px">
+  </div>
+  {% endif %}
+
+  {# ---------------- Cosa non si cambia più ---------------- #}
+  {% set motivi = bloccati.values()|map('string')|unique|list %}
+  {% if motivi %}
+  <div class="c7-card c7-card--locked">
+    <h3 class="mb-2"><i class="fas fa-lock" style="font-size:14px"></i> {{ _('Non si cambia più') }}</h3>
+    <ul class="mb-0">
+      {% for motivo in motivi %}
+      <li>{{ motivo }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endif %}
+
+  <div class="c7-card">
+    <label for="motivo" class="form-label">{{ _('Motivo della modifica') }} · {{ _('opzionale') }}</label>
+    <textarea class="form-control" id="motivo" name="motivo" rows="2" maxlength="1000"
+              placeholder="{{ _('Scrivi perché: servirà in caso di contestazioni') }}"></textarea>
+    <div class="form-text">{{ _('Compare nella storia della gara, con il tuo nome e l\'ora.') }}</div>
+  </div>
+
+  <div class="d-flex gap-2 justify-content-end">
+    <a href="{{ url_for('admin.competition.gara_detail', gara_id=gara.id) }}" class="btn btn-secondary">{{ _('Annulla') }}</a>
+    <button type="submit" class="btn btn-primary"><i class="fas fa-floppy-disk"></i> {{ _('Salva modifiche') }}</button>
+  </div>
+</form>
+
+{% include "components/_storia_modifiche.html" %}
+</div>
+{% endblock %}
