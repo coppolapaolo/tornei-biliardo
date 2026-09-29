@@ -19,7 +19,7 @@
         {{ ngettext('%(num)d giocatore già iscritto', '%(num)d giocatori già iscritti', iscritti, num=iscritti) }}
       </div>
       <div class="c7-flash__text">
-        {{ _('Fino all\'avvio del primo turno si può cambiare tutto. Ogni modifica resta nella storia della gara, visibile in fondo a questa pagina.') }}
+        {{ _("Fino all'avvio del primo turno si può cambiare tutto. Ogni modifica resta nella storia della gara, visibile in fondo a questa pagina, e gli iscritti ricevono una notifica: le modifiche ravvicinate arrivano insieme.") }}
       </div>
     </div>
   </div>
@@ -406,6 +406,7 @@
   </div>
 </form>
 
+{% include "components/_avviso_in_attesa.html" %}
 {% include "components/_storia_modifiche.html" %}
 
 {# `data-help-capture-hide`: escluso dalle schermate della guida (vedi

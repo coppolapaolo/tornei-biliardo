@@ -35,6 +35,9 @@ class NotificationType(Enum):
     )
     TOURNAMENT_STARTING = "campionato_starting"  # Campionato is starting
     TOURNAMENT_RESULTS = "campionato_results"  # Campionato results available
+    #: Le impostazioni di una gara a cui sei iscritto sono cambiate: le
+    #: modifiche ravvicinate arrivano in una notifica sola (ADR-075).
+    GARA_MODIFICATA = "gara_modificata"
 
     PLAYOFF_INVITATION = "playoff_invitation"  # Invited to playoffs
     PLAYOFF_DEADLINE = "playoff_deadline"  # Playoff response deadline approaching

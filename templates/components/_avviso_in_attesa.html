@@ -1,0 +1,22 @@
+{# templates/components/_avviso_in_attesa.html — Design System 7c
+   La notifica delle modifiche in attesa per gli iscritti (ADR-075): le
+   modifiche ravvicinate partono insieme, 30 minuti dopo l'ultima, o subito
+   con «Invia ora». Richiede `gara`; `avviso_in_attesa` facoltativo. Il
+   pulsante sta fuori dal modulo di modifica: un form non si annida. #}
+{% if avviso_in_attesa is defined and avviso_in_attesa %}
+<div class="c7-flash c7-flash--info mt-4" id="avviso-in-attesa">
+  <span class="c7-flash__ico"><i class="fas fa-bell"></i></span>
+  <div class="c7-flash__body">
+    <div class="c7-flash__title">{{ _('Notifica in attesa per gli iscritti') }}</div>
+    <div class="c7-flash__text">
+      {{ _("Le modifiche fatte a poca distanza partono insieme, in una notifica sola, 30 minuti dopo l'ultima: non prima delle %(ora)s. Se la gara comincia entro tre ore partono subito.", ora=avviso_in_attesa.parte_alle()|datetime_local) }}
+    </div>
+    {% if feature_visible('admin.competition.invia_avviso_modifiche') %}
+    <form method="POST" action="{{ url_for('admin.competition.invia_avviso_modifiche', gara_id=gara.id) }}" class="mt-2">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-sm btn-primary"><i class="fas fa-paper-plane"></i> {{ _('Invia ora') }}</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endif %}

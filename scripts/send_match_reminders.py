@@ -13,6 +13,11 @@ due ore".
 Non è accorpabile a ``daily_jobs.py``: quello è il runner dei lavori
 *giornalieri*, questo ha una cadenza sua.
 
+Dal 2026-09-29 fa anche il giro delle **notifiche accorpate** delle modifiche
+alle gare (ADR-075, ``models/storia/avvisi.py``): quelle che hanno aspettato
+30 minuti senza nuove modifiche partono qui. È l'unico lavoro orario, e un
+secondo scheduled task sarebbe una cosa in più da ricordarsi di configurare.
+
 Usage:
     python scripts/send_match_reminders.py
 
@@ -58,6 +63,11 @@ def main() -> int:
             # raggiungibile: `send_match_reminders` conta solo i match per cui
             # è uscita almeno una notifica.
             print("No reminders sent")
+
+        from models.storia.avvisi import AvvisiModifiche
+
+        avvisati = AvvisiModifiche.invia_scaduti()
+        print(f"Notifiche di modifica alle gare: {avvisati} consegnate")
 
     return 0
 

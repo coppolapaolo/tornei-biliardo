@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-09-29 16:46+0000\n"
+"POT-Creation-Date: 2026-09-29 17:08+0000\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -1041,19 +1041,19 @@ msgid ""
 "il turno"
 msgstr ""
 
-#: models/competition/services.py:676
+#: models/competition/services.py:683
 #, python-format
 msgid ""
 "La %(gara)s del campionato '%(campionato)s' del %(data)s è stata "
 "cancellata."
 msgstr ""
 
-#: models/competition/services.py:683
+#: models/competition/services.py:690
 #, python-format
 msgid "La %(gara)s del %(data)s è stata cancellata."
 msgstr ""
 
-#: models/competition/services.py:694
+#: models/competition/services.py:701
 msgid "Gara Cancellata"
 msgstr ""
 
@@ -3340,12 +3340,12 @@ msgstr ""
 msgid "Per quante settimane? Fra %(min)s e %(max)s."
 msgstr ""
 
-#: models/playoff/riallineamento.py:263
+#: models/playoff/riallineamento.py:260
 #, python-format
 msgid "Invito ai playoff ritirato — %(nome)s"
 msgstr ""
 
-#: models/playoff/riallineamento.py:266
+#: models/playoff/riallineamento.py:263
 #, python-format
 msgid ""
 "La classifica del campionato %(campionato)s è stata corretta dopo gli "
@@ -3353,14 +3353,14 @@ msgid ""
 "l'invito non è più valido."
 msgstr ""
 
-#: models/playoff/riallineamento.py:274
+#: models/playoff/riallineamento.py:271
 #, python-format
 msgid ""
 "L'invito a %(nome)s del campionato %(campionato)s è partito da una "
 "classifica calcolata male e non è più valido. Ci scusiamo per l'errore."
 msgstr ""
 
-#: models/playoff/riallineamento.py:283
+#: models/playoff/riallineamento.py:280
 msgid "Vedi l'invito"
 msgstr ""
 
@@ -3443,6 +3443,11 @@ msgid_plural ""
 "eliminarla tu."
 msgstr[0] ""
 msgstr[1] ""
+
+#: models/storia/avvisi.py:278
+#, python-format
+msgid "%(gara)s è cambiata"
+msgstr ""
 
 #: models/storia/etichette.py:20 templates/admin/campionato_detail.html:155
 #: templates/admin/campionato_detail.html:406
@@ -5521,37 +5526,44 @@ msgstr[1] ""
 msgid "Nessun iscritto da copiare dalla gara precedente."
 msgstr ""
 
-#: routes/admin/competition/crud.py:328
+#: routes/admin/competition/crud.py:332
+#, python-format
+msgid "Notifica mandata a %(num)d giocatore."
+msgid_plural "Notifica mandata a %(num)d giocatori."
+msgstr[0] ""
+msgstr[1] ""
+
+#: routes/admin/competition/crud.py:354
 msgid "La gara è chiusa: non si modifica più."
 msgstr ""
 
-#: routes/admin/competition/crud.py:377 routes/admin/competition/crud.py:495
+#: routes/admin/competition/crud.py:403 routes/admin/competition/crud.py:522
 msgid "Nessuna modifica da salvare."
 msgstr ""
 
-#: routes/admin/competition/crud.py:386 routes/admin/competition/crud.py:504
+#: routes/admin/competition/crud.py:412 routes/admin/competition/crud.py:531
 msgid "Gara aggiornata: la modifica resta nella sua storia."
 msgstr ""
 
-#: routes/admin/competition/crud.py:488
+#: routes/admin/competition/crud.py:515
 #, python-format
 msgid "Configurazione non valida: %(e)s"
 msgstr ""
 
-#: routes/admin/competition/crud.py:557
+#: routes/admin/competition/crud.py:585
 msgid "Tavoli salvati."
 msgstr ""
 
-#: routes/admin/competition/crud.py:582
+#: routes/admin/competition/crud.py:610
 #, python-format
 msgid "Gara «%(nome)s» eliminata."
 msgstr ""
 
-#: routes/admin/competition/crud.py:679
+#: routes/admin/competition/crud.py:707
 msgid "La gara non è stata annullata per un errore imprevisto."
 msgstr ""
 
-#: routes/admin/competition/crud.py:686
+#: routes/admin/competition/crud.py:714
 #, python-format
 msgid "«%(nome)s» annullata: gli iscritti ricevono la notifica."
 msgstr ""
@@ -12834,6 +12846,22 @@ msgstr ""
 msgid "Con X"
 msgstr ""
 
+#: templates/components/_avviso_in_attesa.html:10
+msgid "Notifica in attesa per gli iscritti"
+msgstr ""
+
+#: templates/components/_avviso_in_attesa.html:12
+#, python-format
+msgid ""
+"Le modifiche fatte a poca distanza partono insieme, in una notifica sola,"
+" 30 minuti dopo l'ultima: non prima delle %(ora)s. Se la gara comincia "
+"entro tre ore partono subito."
+msgstr ""
+
+#: templates/components/_avviso_in_attesa.html:17
+msgid "Invia ora"
+msgstr ""
+
 #: templates/components/_bracket_options.html:28
 msgid "Opzioni del tabellone"
 msgstr ""
@@ -13963,7 +13991,9 @@ msgstr[1] ""
 #: templates/components/_gara_edit_form.html:22
 msgid ""
 "Fino all'avvio del primo turno si può cambiare tutto. Ogni modifica resta"
-" nella storia della gara, visibile in fondo a questa pagina."
+" nella storia della gara, visibile in fondo a questa pagina, e gli "
+"iscritti ricevono una notifica: le modifiche ravvicinate arrivano "
+"insieme."
 msgstr ""
 
 #: templates/components/_gara_edit_form.html:35
@@ -14107,7 +14137,7 @@ msgstr ""
 msgid "Note per gli iscritti: ritrovo, parcheggio, premi…"
 msgstr ""
 
-#: templates/components/_gara_edit_form.html:433
+#: templates/components/_gara_edit_form.html:434
 #, python-brace-format
 msgid ""
 "Con anti-rematch attivo e {maxParticipants} partecipanti massimi, puoi "

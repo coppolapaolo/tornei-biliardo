@@ -32,6 +32,8 @@ blocks:
         text: "Quando qualcuno ti propone un'amichevole, e quando risponde a una tua proposta."
       - name: "Movimenti nelle iscrizioni"
         text: "Se entri dalla lista d'attesa, o se un direttore ti iscrive o ti toglie da una gara."
+      - name: "Una gara a cui sei iscritto è cambiata"
+        text: "Se il direttore cambia sala, data, orario di più di un'ora, quota in aumento o le regole di gioco. Le modifiche fatte a poca distanza arrivano insieme, in una notifica sola, circa mezz'ora dopo l'ultima; subito se la gara comincia entro tre ore. Nome, tavoli e piccoli ritocchi d'orario restano solo nella storia della gara."
       - name: "Inviti ai playoff"
         text: "Se ti qualifichi per una gara finale di un campionato, con l'invito da accettare o rifiutare."
       - name: "Traguardi raggiunti"
