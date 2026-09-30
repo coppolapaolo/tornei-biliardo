@@ -27,7 +27,7 @@ Due scelte da conoscere:
 * chi lavora fuori da una richiesta — il servizio, il job di scadenza, i
   test — chiede le prove esplicitamente con `prova_visibili()` o con
   `execution_options(include_prova=True)`. È lo stesso onere di
-  `with_deleted()` per il soft delete.
+  `execution_options(include_deleted=True)` per il soft delete.
 
 Ricorsione: calcolare l'ambito esegue query — l'utente di sessione, le sue
 prove — che passano da questo stesso listener. Mentre l'ambito è in calcolo

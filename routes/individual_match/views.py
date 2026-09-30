@@ -16,6 +16,7 @@ from flask_login import current_user
 from models.individual_match.services import IndividualMatchService
 from models.user.permissions import RoleRequirement
 from utils import admin_required
+from utils.route_helpers import ajax_error
 
 from . import individual_match_bp
 
@@ -57,12 +58,13 @@ def user_statistics():
             )
 
     except Exception as e:
-        error_msg = f"Error loading statistics: {str(e)}"
+        # Imprevisto: nel log il dettaglio, all'utente un messaggio generico
+        # tradotto. Il testo dell'eccezione non e' per lui.
+        logger.error("Error loading statistics: %s", e, exc_info=True)
         if request.is_json:
-            return jsonify({"success": False, "error": error_msg}), 400
-        else:
-            flash(error_msg, "danger")
-            return redirect(url_for("individual_match.dashboard"))
+            return ajax_error(_("Errore interno del server"), status=500)
+        flash(_("Errore interno del server"), "danger")
+        return redirect(url_for("individual_match.dashboard"))
 
 
 # Availability and player-discovery routes live in availability.py
@@ -88,7 +90,7 @@ def admin_overview():
 def individual_match_not_found(error):
     """Handle 404 errors in individual match blueprint."""
     if request.is_json:
-        return jsonify({"success": False, "error": "Resource not found"}), 404
+        return jsonify({"success": False, "error": _("Risorsa non trovata.")}), 404
     else:
         flash(_("Risorsa non trovata."), "danger")
         return redirect(url_for("individual_match.dashboard"))
@@ -98,7 +100,7 @@ def individual_match_not_found(error):
 def individual_match_access_denied(error):
     """Handle 403 errors in individual match blueprint."""
     if request.is_json:
-        return jsonify({"success": False, "error": "Access denied"}), 403
+        return jsonify({"success": False, "error": _("Accesso negato.")}), 403
     else:
         flash(_("Accesso negato."), "danger")
         return redirect(url_for("individual_match.dashboard"))

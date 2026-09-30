@@ -588,29 +588,6 @@ class TournamentService(TournamentStatisticsService):
         return success
 
     @transactional(domain="campionato")
-    def restore_campionato(self, campionato_id: int) -> bool:
-        """
-        Restore a soft-deleted campionato.
-        Returns True if successful, False if not deleted.
-        """
-
-        campionato = db.session.get(Campionato, campionato_id)
-        if not campionato:
-            raise NotFoundError("Campionato not found")
-
-        if not campionato.is_deleted:
-            return False
-
-        success = campionato.restore()
-        return success
-
-    @read_only(domain="campionato")
-    def get_deleted_campionatos(self) -> List[Campionato]:
-        """Get all soft-deleted campionati."""
-
-        return Campionato.get_deleted_campionatos().all()
-
-    @transactional(domain="campionato")
     def permanently_delete_campionato(self, campionato_id: int) -> None:
         """
         Permanently delete a campionato (hard delete).

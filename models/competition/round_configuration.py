@@ -143,10 +143,6 @@ class RoundConfiguration(BaseModel):
     def get_effective_is_race_to_sets(self, fallback: bool) -> bool:
         return self.is_race_to_sets if self.is_race_to_sets is not None else fallback
 
-    # Deprecated: usa get_effective_is_race_to. Mantenuto per back-compat.
-    def get_effective_best_of(self, fallback_best_of: bool) -> bool:
-        return self.get_effective_is_race_to(fallback_best_of)
-
     def effective_distance_config(self, gara):
         """La distanza di questo turno come `Distance`, con i ripieghi della gara.
 
