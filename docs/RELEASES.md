@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.53.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.53.0...v1.53.1) (2026-09-30)
+
+
+### Correzioni
+
+* gli avvisi KPI arrivano agli admin e la pagina KPI conta gli utenti ([#603](https://github.com/coppolapaolo/tornei-biliardo/issues/603)) ([8b18543](https://github.com/coppolapaolo/tornei-biliardo/commit/8b18543fe86a9c24b1db6389c950c96bbb7b24dd))
+
 ## [1.53.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.52.0...v1.53.0) (2026-09-29)
 
 
