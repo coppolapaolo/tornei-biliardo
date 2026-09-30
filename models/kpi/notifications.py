@@ -28,8 +28,12 @@ class KpiNotificationService:
 
     @staticmethod
     def get_admin_user_ids() -> List[int]:
-        """Get all admin user IDs."""
-        admins = User.query.filter_by(role=UserRole.ADMIN.value, is_deleted=False).all()
+        """Get all admin user IDs.
+
+        Gli eliminati li esclude già il filtro di sessione: `is_deleted` è una
+        property, e un `filter_by(is_deleted=False)` non troverebbe nessuno.
+        """
+        admins = User.query.filter_by(role=UserRole.ADMIN.value).all()
         return [admin.id for admin in admins]
 
     @staticmethod
