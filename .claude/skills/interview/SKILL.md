@@ -20,86 +20,14 @@ Suggerisci questa skill quando nella conversazione:
 
 **Frase suggerita**: "Prima di implementare, vuoi che faccia un'intervista per chiarire tutti i dettagli? Usa `/interview`"
 
-## Metodologia di Intervista
+## Metodo
 
-### Fase 1: Comprensione del Contesto
-
-Inizia sempre capendo il "perché":
-
-```
-1. Qual è il PROBLEMA che questa feature risolve?
-2. Chi sono gli UTENTI principali? (admin, director, player, guest)
-3. Quanto è URGENTE/IMPORTANTE rispetto ad altre priorità?
-4. Esistono VINCOLI tecnici o di business già noti?
-```
-
-### Fase 2: Definizione Funzionale
-
-Approfondisci il "cosa":
-
-```
-1. Descrivi il COMPORTAMENTO ATTESO in 2-3 frasi
-2. Cosa succede PRIMA che l'utente usi questa feature?
-3. Cosa succede DOPO che l'ha usata con successo?
-4. Quali DATI sono coinvolti? (input, output, persistenza)
-```
-
-### Fase 3: User Journey Simulation
-
-Simula percorsi utente concreti:
-
-```
-"Immaginiamo che [tipo utente] voglia [azione].
-Passo 1: Dove si trova? Cosa vede?
-Passo 2: Cosa clicca/inserisce?
-Passo 3: Cosa succede? Cosa vede dopo?
-..."
-```
-
-Chiedi conferma ad ogni passo. Identifica:
-- Punti di confusione UX
-- Azioni mancanti nel flow
-- Feedback visivi necessari
-
-### Fase 4: Edge Cases & Error Handling
-
-Esplora sistematicamente i casi limite:
-
-```
-SCENARI DA VERIFICARE:
-□ Cosa succede se l'utente NON ha i permessi?
-□ Cosa succede se i dati di input sono INVALIDI?
-□ Cosa succede se l'operazione FALLISCE a metà?
-□ Cosa succede se l'utente ANNULLA l'azione?
-□ Cosa succede con dati VUOTI o NULLI?
-□ Cosa succede in caso di CONCORRENZA? (due utenti contemporanei)
-□ Cosa succede se la connessione CADE durante l'operazione?
-□ L'azione è REVERSIBILE? Come si fa UNDO?
-```
-
-### Fase 5: Data Model Implications
-
-Analizza impatto sui dati:
-
-```
-1. Servono NUOVE TABELLE o campi?
-2. Quali RELAZIONI con entità esistenti?
-3. Ci sono VINCOLI di integrità da rispettare?
-4. Servono MIGRAZIONI per dati esistenti?
-5. Come impatta su STATISTICHE o REPORT?
-```
-
-### Fase 6: Integrazione con Esistente
-
-Verifica coerenza con il sistema:
-
-```
-1. Come interagisce con il SISTEMA DI NOTIFICHE?
-2. Ci sono impatti sul SISTEMA DI GAMIFICATION? (XP, achievements)
-3. Quali PERMESSI/RUOLI sono coinvolti?
-4. Serve supporto per MULTI-LINGUA?
-5. Ci sono implicazioni per l'APP MOBILE futura?
-```
+Obiettivo: arrivare alle specifiche del modello di output qui sotto senza
+domande aperte bloccanti. Copri il problema e il suo perché, attori e permessi,
+il percorso utente, casi limite ed errori, l'impatto su dati, notifiche,
+gamification e traduzioni — nell'ordine che la conversazione suggerisce, poche
+domande per volta, riformulando per conferma. Le domande tipo più sotto dicono
+dove questo progetto nasconde i casi limite.
 
 ## Output dell'Intervista
 
@@ -154,10 +82,10 @@ Come [tipo utente], voglio [azione], in modo da [beneficio].
 ## Domande Tipo per Questo Progetto
 
 ### Per Feature relative a Gare/Tornei:
-- Funziona per tutti i tipi di gara (Amalfi, Round-Robin, Random)?
+- Funziona per tutte le strategie di `MatchmakingStrategy` (Amalfi, girone all'italiana, casuale, eliminazione diretta, doppia eliminazione)?
 - Funziona sia per gare standalone che dentro campionati?
 - Chi può farlo? Admin, Director, entrambi?
-- Funziona durante tutti gli stati della gara (DRAFT, OPEN, PLAYING, COMPLETED)?
+- Funziona in tutti gli stati della gara (`GaraStatus`: setup, iscrizioni, in corso, attesa spareggi, conclusa, annullata)?
 
 ### Per Feature relative a Match:
 - Funziona per match singoli E multi-set?

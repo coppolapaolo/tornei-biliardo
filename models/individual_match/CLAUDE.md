@@ -9,7 +9,7 @@ Player-to-player casual match organization system outside formal tournaments.
 - Player Availability: venue-based player discovery (`UserLocationAvailability`, ADR-033)
 - Multi-Set Support: Single-set and multi-set configurations
 - Match History: Track casual game statistics
-- Bilateral Confirmation: VALIDATED status after both players confirm result
+- Bilateral Confirmation: `CONFIRMED_BY_BOTH` status (value "validated") after both players confirm result
 - Rematch: Quick "play another" with same opponent and pre-filled settings
 - Quick Start: match aperto **già in corso** per chi è in sala adesso, senza proposta né accettazione (ADR-051)
 - Notifications: Proposal expiration, open proposals, match reminders
@@ -28,6 +28,7 @@ from models.individual_match.models import (
 from models.individual_match.services import IndividualMatchService
 from models.individual_match.availability_service import AvailabilityService
 from models.individual_match.statistics_service import IndividualMatchStatisticsService
+from models.status_enum import Discipline
 
 # Create direct proposal (invite specific players)
 proposal = IndividualMatchService.create_direct_proposal(
@@ -35,9 +36,9 @@ proposal = IndividualMatchService.create_direct_proposal(
     invited_user_ids=[player1.id, player2.id],
     location="Sala Biliardo",
     scheduled_at=datetime(2025, 10, 15, 19, 0),
-    discipline="palla_8",
+    discipline=Discipline.EIGHT_BALL.value,
     distance=7,
-    best_of=True
+    is_race_to=True
 )
 
 # Create open proposal (community-wide, notifies eligible players)
@@ -45,7 +46,7 @@ proposal = IndividualMatchService.create_open_proposal(
     proposer_id=user.id,
     location="Sala Biliardo",
     scheduled_at=datetime(2025, 10, 15, 19, 0),
-    discipline="palla_9",
+    discipline=Discipline.NINE_BALL.value,
     distance=9
 )
 
@@ -69,7 +70,7 @@ SCHEDULED → IN_PROGRESS → (distance reached) → is_ready_for_validation() =
                                              ↓
                               Both players call confirm_result()
                                              ↓
-                                         VALIDATED
+                                    CONFIRMED_BY_BOTH
 ```
 
 **In attesa di conferma (2026-09-14)** — `pending_confirmation.py`:
@@ -88,7 +89,7 @@ SCHEDULED → IN_PROGRESS → (distance reached) → is_ready_for_validation() =
 - Match does NOT auto-complete when distance is reached
 - `is_ready_for_validation()` returns True when score reaches distance
 - Both players must call `confirm_result()` to finalize
-- After bilateral confirmation, status becomes `VALIDATED`
+- After bilateral confirmation, status becomes `CONFIRMED_BY_BOTH` (value "validated")
 - Use `reject_result()` to undo last rack and reset confirmations
 
 ---

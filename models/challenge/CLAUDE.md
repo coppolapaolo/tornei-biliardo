@@ -37,9 +37,9 @@ attempt = ChallengeService.record_attempt(
     passed=True,       # drill riuscita-o-no
 )
 
-# Get player stats
-stats = ChallengeService.get_player_statistics(user_id=player.id)
-# Returns: {attempts, avg_score, best_score, pass_rate}
+# Storico drill del giocatore: catalogo + gara, dal piu' recente
+from models.challenge.training_service import TrainingHistoryService
+attempts = TrainingHistoryService.get_drill_attempts(player.id)
 ```
 
 ---
@@ -172,11 +172,6 @@ nuova del builder si **ri-prefissa**, non si incolla grezzo.
 > farlo: derivarlo renderebbe di nuovo impossibile far pesare lo stesso
 > esercizio in due modi in due esami. Il primo serve dove l'esame non arriva —
 > mostrare «12 / 15» a chi si allena, e rifiutare un 20 su una prova da 15.
->
-> Storicamente `challenge.max_score` **non esisteva** e veniva letto lo stesso,
-> dentro un `except Exception: pass`: è il bug che ha tenuto vuoto lo storico
-> drill del profilo per mesi. Oggi la colonna c'è, quindi quel difetto non si
-> riproduce più cercando un `AttributeError`.
 
 ### Il profilo: che cosa allena, quanto è difficile, in che varianti (ADR-065)
 
@@ -423,25 +418,22 @@ tiro. Le conseguenze (XP, streak `WEEKLY_DRILL`) stanno in
 
 ## Gara Challenge Integration
 
-For X-substitution in tournaments with odd players:
+For X-substitution in tournaments with odd players (the drill played instead
+of the bye) the entry points are on `ChallengeService`:
 
 ```python
-from models.challenge.gara_challenge_service import GaraChallengeService
+from models.challenge.services import ChallengeService
 
-# Assign challenge to bye player
-GaraChallengeService.assign_challenge_to_player(
-    gara_id=gara.id,
-    user_id=bye_player.id,
-    challenge_id=challenge.id
+attempt = ChallengeService.create_x_replacement_attempt(
+    user_id=bye_player.id, gara_id=gara.id, round_number=2
 )
-
-# Record result (affects round classification)
-GaraChallengeService.record_challenge_result(
-    gara_id=gara.id,
-    user_id=bye_player.id,
-    score=12
-)
+ChallengeService.complete_x_replacement_attempt(attempt.id, score=12)
+# Il direttore registra/convalida: ChallengeService.validate_x_replacement(...)
 ```
+
+The between-rounds drill («drill di turno») is a different thing:
+`GaraChallengeService` in `models/competition/gara_challenge_service.py`
+(`add_challenge_to_gara`, `record_challenge_attempt`, ...).
 
 ---
 
@@ -449,7 +441,6 @@ GaraChallengeService.record_challenge_result(
 
 - **Do not use pass/fail challenges for X-substitution** - Only numeric challenges allowed
 - **Do not set `passed` for numeric challenges** - Leave as `None`
-- **Do not assume 70% pass threshold** - Removed; pass/fail is explicit only
 - **Do not call `db.session.commit()`** - Services use `@transactional`
 
 ---

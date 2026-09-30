@@ -28,22 +28,23 @@ Attiva questa skill quando nella conversazione:
 
 ```
 docs/adr/
-├── 0001-use-flask-sqlalchemy.md
-├── 0002-transactional-decorator-pattern.md
-├── 0003-soft-delete-for-users.md
+├── ADR-001-….md
+├── …
+├── ADR-075-modifiche-tracciate-invece-che-impedite.md
 ├── TEMPLATE.md
-└── README.md
+└── README.md   (indice)
 ```
 
-**Naming convention**: `NNNN-titolo-kebab-case.md`
+**Naming convention**: `ADR-NNN-titolo-kebab-case.md` (tre cifre); il titolo
+nel file è `# [NNN] Titolo`.
 
 ## Template ADR
 
 ```markdown
-# [NNNN] Titolo Decisione
+# [NNN] Titolo Decisione
 
 **Data**: YYYY-MM-DD
-**Stato**: Proposed | Accepted | Deprecated | Superseded by [NNNN]
+**Stato**: Proposed | Accepted | Deprecated | Superseded by [NNN]
 **Decisori**: Chi ha partecipato alla decisione
 
 ## Contesto
@@ -98,7 +99,7 @@ Segnali che indicano la necessità di un ADR:
 Prima di scrivere l'ADR:
 ```bash
 # Trova il prossimo numero disponibile
-ls docs/adr/*.md 2>/dev/null | tail -1
+ls docs/adr/ADR-*.md | tail -1
 ```
 
 Chiedi o deduci:
@@ -108,7 +109,7 @@ Chiedi o deduci:
 
 ### 3. Creare l'ADR
 
-1. Determina il numero sequenziale (es. 0004)
+1. Determina il numero sequenziale (il successivo all'ultimo `ADR-NNN`)
 2. Crea il file con naming corretto
 3. Compila tutte le sezioni del template
 4. Status iniziale: "Proposed" o "Accepted"
@@ -122,60 +123,10 @@ Dopo la creazione:
 
 ## Esempi di ADR per Questo Progetto
 
-### ADR già documentabili (da creare retroattivamente):
-
-1. **Uso del decorator @transactional** - Pattern per gestione transazioni
-2. **Soft delete per User model** - Perché non hard delete
-3. **Strategy pattern per matchmaking** - Amalfi, Round-Robin, etc.
-4. **Event-driven notifications** - Decoupling con domain events
-5. **Race-to-N terminology** - Convenzione "Al N" vs "Best of N"
-
 ### Esempio Completo
 
-```markdown
-# 0003 Soft Delete per User Model
-
-**Data**: 2025-01-15
-**Stato**: Accepted
-**Decisori**: Team sviluppo
-
-## Contesto
-
-Gli utenti hanno relazioni con molte entità (match, iscrizioni,
-statistiche). L'eliminazione hard causerebbe violazioni FK o
-perdita di dati storici.
-
-## Decisione
-
-Implementiamo soft delete con campo `is_deleted` e filtering
-automatico a livello di session SQLAlchemy.
-
-## Alternative Considerate
-
-### Alternativa 1: Hard Delete con CASCADE
-- Pro: Semplice, nessun campo extra
-- Contro: Perdiamo storico partite, statistiche
-
-### Alternativa 2: Anonimizzazione senza delete
-- Pro: Mantiene tutti i dati
-- Contro: Complessità gestione, GDPR compliance
-
-## Conseguenze
-
-### Positive
-- Storico preservato
-- Rollback possibile
-- Statistiche accurate
-
-### Negative
-- Query più complesse (WHERE is_deleted=False)
-- Storage aggiuntivo
-
-## Note Implementative
-
-Vedi `models/user/base.py` per implementazione.
-Usa `User.query.with_deleted()` per includere eliminati.
-```
+Un ADR reale del progetto, con contesto, alternative ed emendamenti:
+`docs/adr/ADR-073-classifica-generale-un-calcolo-solo.md`.
 
 ## Stati ADR
 
@@ -189,7 +140,7 @@ Usa `User.query.with_deleted()` per includere eliminati.
 ## Regole
 
 1. **Un ADR per decisione** - Non raggruppare decisioni diverse
-2. **Immutabilità** - Non modificare ADR accepted, crea uno nuovo
+2. **Emendamenti datati, non riscritture** - Una correzione o un'estensione di un ADR accepted va in una sezione `## Emendamento (YYYY-MM-DD)` che dice cosa cambia e perché; una decisione che ribalta la precedente è un ADR nuovo, e la vecchia passa a Superseded
 3. **Contesto completo** - Chi legge tra 6 mesi deve capire
 4. **Alternative documentate** - Spiega perché NON hai scelto le altre
 5. **Link bidirezionali** - ADR → codice e codice → ADR

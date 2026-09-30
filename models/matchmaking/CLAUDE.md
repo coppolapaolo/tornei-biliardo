@@ -88,7 +88,7 @@ registry.create_strategy(name, seed=42)  # Deterministic for testing
 - Bye history: `Match.query filter_by(is_bye=True)` (bye does not create `PlayerEncounter`).
 - Forced rematches: `logger.warning` emitted with gara_id/round_number/n_rematches for audit trail.
 - Determinism: `set_context(PairingContext(seed))` enables reproducible pairing generation for testing/replay.
-- Odd player handling with `OddNumberPolicy.NO`: enforced at **inscription level**, not in the strategy. `InscriptionService` keeps `active_count` even by moving the last inscription to a parity waitlist (`is_waitlist=True`, `waitlist_reason=WaitlistReason.PARITY`); the strategy filters `is_waitlist=False` inscriptions like all others. See [`inscription_service.py:130-170`](../competition/inscription_service.py) and [`spec-random-odd-policy-no.md`](../../_bmad-output/implementation-artifacts/spec-random-odd-policy-no.md).
+- Odd player handling with `OddNumberPolicy.NO`: enforced at **inscription level**, not in the strategy. `InscriptionService` keeps `active_count` even by moving the last inscription to a parity waitlist (`is_waitlist=True`, `waitlist_reason=WaitlistReason.PARITY`); the strategy filters `is_waitlist=False` inscriptions like all others. See [`inscription_service.py`](../competition/inscription_service.py) (`WaitlistReason.PARITY`) and [`spec-random-odd-policy-no.md`](../../_bmad-output/implementation-artifacts/spec-random-odd-policy-no.md).
 - Full spec: [`_bmad-output/implementation-artifacts/spec-random-anti-rematch.md`](../../_bmad-output/implementation-artifacts/spec-random-anti-rematch.md)
 
 ---
@@ -134,7 +134,7 @@ class FirstRoundPolicy(str, Enum):
 class OddNumberPolicy(str, Enum):
     NO = "no"                                # Parity waitlist — odd player moved to waitlist
     BYE = "bye"                              # Odd player sits out (automatic win)
-    BYE_WITH_CHALLENGE = "bye_with_challenge"  # Bye + challenge completion for XP
+    BYE_WITH_CHALLENGE = "bye_with_challenge"  # X played as a drill: win + rack difference = drill score (SPECIFICHE.md riga 65)
     TRIO = "trio"                            # 3-player match (requires distance 2-7, ADR-005)
 ```
 

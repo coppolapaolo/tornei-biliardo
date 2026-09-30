@@ -27,8 +27,8 @@ from models.classification.services import (
 # Scrive la copia della classifica generale nelle righe Classification (ADR-073)
 ClassificationService.update_campionato_classification(campionato_id)
 
-# Calculate round classification (for matchmaking)
-RoundClassificationService.calculate_round_classification(gara_id, round_number)
+# Calculate and save round classification (for matchmaking)
+RoundClassificationService.calculate_and_save_round_classification(gara_id, round_number)
 
 # Strategy-based classification (recommended for new code)
 service = StrategyBasedClassificationService()
@@ -36,7 +36,7 @@ result = service.calculate_round_classification(gara, round_number)
 # Returns: ClassificationResult with PlayerScore list
 
 # Check anti-rematch
-encounters = PlayerEncounter.get_encounters_in_gara(gara_id, player1_id, player2_id)
+played = PlayerEncounter.have_played(gara_id, player1_id, player2_id)
 ```
 
 ---
@@ -51,7 +51,7 @@ Campionato-level standings across all gare.
 ### RoundClassification
 Per-round standings within a gara. Used by matchmaking for pairing.
 
-**Fields:** `gara_id`, `round_number`, `user_id`, `position`, `matches_won`, `racks_won`, `racks_lost`, `point_difference`
+**Fields:** `gara_id`, `round_number`, `user_id`, `position`, `matches_won`, `racks_won`, `rack_difference`, `previous_position`
 
 ### GaraClassification
 Final rankings for a completed gara. Includes SSR tiebreaker scores.
@@ -61,7 +61,7 @@ Final rankings for a completed gara. Includes SSR tiebreaker scores.
 ### PlayerEncounter
 Tracks player matchups for anti-rematch logic.
 
-**Fields:** `gara_id`, `player1_id`, `player2_id`, `round_number`, `match_id`
+**Fields:** `gara_id`, `player1_id`, `player2_id`, `round_number`
 
 ---
 
@@ -102,7 +102,7 @@ from models.classification.registry import get_classification_registry
 
 registry = get_classification_registry()
 strategy = registry.get("amalfi_round")
-result = strategy.calculate(gara, round_number)
+result = strategy.calculate(scores, previous_classification)  # scores: List[PlayerScore]
 ```
 
 ---
@@ -123,8 +123,8 @@ partite: una regola nuova della classifica generale si scrive in
 `classifica_generale`, e basta.
 
 ### RoundClassificationService
-- `calculate_round_classification(gara_id, round_number)` - For matchmaking
-- `get_classification_for_round(gara_id, round_number)` - Query existing
+- `calculate_and_save_round_classification(gara_id, round_number)` - For matchmaking
+- `get_round_standings(gara_id, round_number)` - Query existing
 
 ### StrategyBasedClassificationService (Recommended)
 - `calculate_round_classification(gara, round_number)` - Strategy-based
@@ -135,20 +135,20 @@ partite: una regola nuova della classifica generale si scrive in
 
 ## Tiebreaker Resolution
 
-Tiebreaker order depends on strategy:
+Tiebreaker order depends on strategy; the source of truth is each strategy's
+`get_sort_key` in `strategies/round_strategies.py` and `gara_strategies.py`.
 
-### Random Strategy
+### Random Strategy (`random_round`)
 1. Total racks won
 2. **SSR (Spot Shot Rally)** - loaded from `GaraClassification.spot_shot_wins`
 3. Rack difference (racks won - racks lost)
-4. Player ID (stability)
+4. Previous position
+5. Player ID (stability)
 
 ### Amalfi Strategy
-1. Matches won
-2. Rack difference (racks won - racks lost)
-3. Head-to-head result
-4. Total racks won
-5. Initial inscription order
+- `amalfi_round`: matches won → rack difference → previous position → player ID
+- `amalfi_gara`: matches won → rack difference → spot shot wins; player ID is
+  deliberately left out, so real ties trigger the spot shot rally
 
 ---
 

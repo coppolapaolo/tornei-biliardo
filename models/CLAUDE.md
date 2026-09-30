@@ -68,7 +68,7 @@ la sottoclasse specifica dove la distinzione conta; `ValueError` generico → 40
 ```python
 from models.transaction.manager import transactional
 
-@transactional
+@transactional()
 def create_inscription(gara_id: int, user_id: int) -> Inscription:
     inscription = Inscription(gara_id=gara_id, user_id=user_id)
     db.session.add(inscription)
@@ -78,8 +78,8 @@ def create_inscription(gara_id: int, user_id: int) -> Inscription:
 ### Soft Delete (User Model)
 
 ```python
-# ✅ Correct - filter out deleted users
-active_users = User.query.filter_by(is_deleted=False).all()
+# ✅ Deleted users are excluded automatically
+active_users = User.query.all()
 
 # ✅ Soft delete preserves relationships
 user.anonymize()
@@ -231,24 +231,28 @@ user.is_admin = True  # This won't work
 ### Event System
 
 ```python
-from models.events.base import DomainEvent, EventType
+from models.events.base import EventBus
+from models.events.competition_events import InscriptionCreatedEvent
 
-DomainEvent.emit(
-    event_type=EventType.INSCRIPTION_CREATED,
-    entity_id=inscription.id,
-    actor_id=user_id
-)
+EventBus.publish(InscriptionCreatedEvent(
+    inscription_id=inscription.id, gara_id=gara.id, gara_name=gara.name,
+    user_id=user.id, username=user.username,
+))
 ```
+
+Vedi `models/events/CLAUDE.md`.
 
 ### Matchmaking Strategies
 
 ```python
-from models.matchmaking.service import MatchmakingService
-from models.matchmaking.config import MatchmakingStrategy
+from models.matchmaking.configuration import MatchmakingStrategy
+from models.competition.round_service import RoundService
 
-service = MatchmakingService(gara_id=gara.id, strategy=MatchmakingStrategy.AMALFI)
-matches = service.create_next_round()
+# Routes create rounds through the round service, never the strategy directly
+RoundService.create_round_with_strategy(gara_id=gara.id, round_number=2)
 ```
+
+Vedi `models/matchmaking/CLAUDE.md`.
 
 ### Base Classes
 

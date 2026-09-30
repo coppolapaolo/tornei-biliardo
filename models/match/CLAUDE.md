@@ -39,12 +39,9 @@ match = MatchService.create_match(
     player2_id=20
 )
 
-# Add rack
-rack = RackService.add_rack(
-    match_id=match.id,
-    winner_id=10,
-    discipline="palla_8"
-)
+# Add rack (helper: computes the next rack_number, then RackService.add_rack_result)
+from models.match.services import add_rack
+rack = add_rack(match.id, winner_id=10, added_by_id=director.id)
 
 # Complete match
 MatchService.to_completed(match.id)
@@ -93,7 +90,6 @@ discipline: str(50) - nullable (override gara discipline)
 has_handicap: bool - default False
 player1_handicap: int - default 0
 player2_handicap: int - default 0
-handicap_rule_id: int (FK, nullable)
 handicap_explanation: str(255)
 ```
 
@@ -133,7 +129,7 @@ match = Match(
     player1_id=10,
     player2_id=20,
     is_multi_set=True,
-    match_distance=3  # Best of 5 sets
+    match_distance=3  # Race to 3 sets
 )
 
 # Check completion
@@ -155,7 +151,7 @@ set_number: int
 
 # Scoring Configuration
 distance: int - default 5 (racks to win)
-best_of: bool - default True
+is_race_to: bool
 
 # Current Scores
 player1_racks: int - default 0
@@ -208,7 +204,7 @@ get_discipline_for_rack(rack_number: int) -> str
 **Key Methods:**
 
 ```python
-@transactional
+@transactional(domain="match")
 def create_match(
     gara_id: int,
     round_number: int,
@@ -219,26 +215,19 @@ def create_match(
     """Create a match with pending status."""
 
 # State Machine
-@transactional
+@transactional(domain="match")
 def to_playing(match_id: int) -> Match:
     """Transition pending → playing"""
 
-@transactional
+@transactional(domain="match")
 def to_completed(match_id: int) -> Match:
     """Transition playing → completed
 
     Also records PlayerEncounter for anti-rematch logic.
     """
 
-def reset_to_pending(match_id: int, clear_validation: bool = True) -> OperationResult:
-    """Reset match to pending (clears racks)
-
-    NOTE: NOT decorated with @transactional due to custom
-    transaction management with OperationResult pattern.
-    """
-
 # Trio Match Support
-@transactional
+@transactional(domain="match")
 def create_trio_match(match_id: int, player3_id: int) -> TrioMatch:
     """Create trio match entity."""
 ```
@@ -258,27 +247,26 @@ pending ──→ playing ──→ completed
 
 **Key Methods:**
 ```python
-@transactional
-def add_rack(
+@transactional(domain="match")
+def add_rack_result(
     match_id: int,
+    rack_number: int,
     winner_id: int,
-    discipline: Optional[str] = None
+    reported_by_id: int,
+    *,
+    confirmed_by_player: bool = False,
+    validated_by_admin: bool = False,
+    admin_note: Optional[str] = None,
+    bypass_validation: bool = False,
 ) -> Rack:
-    """Add rack to match and update scores.
+    """Add rack, persist break_player_id, update match scores,
+    pending → playing. Does not close the match."""
 
-    Automatically transitions match to playing if pending.
-    Completes match if winning score reached.
-    """
+@transactional(domain="match")
+def remove_last_rack(match_id: int) -> Optional[Rack]:
+    """Delete the last non-deleted rack of the match."""
 
-@transactional
-def remove_rack(rack_id: int) -> bool:
-    """Remove rack and update match scores.
-
-    Reopens match to playing if was completed.
-    Returns True if removed, False if not found.
-    """
-
-@transactional
+@transactional(domain="match")
 def reset_match_complete(match_id: int) -> None:
     """Remove all racks from match and reset to pending."""
 ```
@@ -408,14 +396,13 @@ match = MatchService.create_match(
 )
 
 # 2. Add racks as they are played
-rack1 = RackService.add_rack(match.id, winner_id=10)  # Player 1 wins rack
-rack2 = RackService.add_rack(match.id, winner_id=20)  # Player 2 wins rack
-rack3 = RackService.add_rack(match.id, winner_id=10)  # Player 1 wins rack
+from models.match.services import add_rack
+add_rack(match.id, winner_id=10, added_by_id=director.id)  # Player 1 wins rack
+add_rack(match.id, winner_id=20, added_by_id=director.id)  # Player 2 wins rack
 # ...
 
-# 3. Match auto-completes when winning score reached
-# If distance=5 and best_of=True, winning score = 3
-# After 3rd rack won by player 1, match is completed
+# 3. Race to 5 (distance=5, is_race_to=True): the first to win 5 racks wins.
+# Closing the match is a separate step (MatchService.to_completed)
 ```
 
 ### Multi-Set Match Workflow
@@ -431,13 +418,13 @@ match = Match(
     player1_id=10,
     player2_id=20,
     is_multi_set=True,
-    match_distance=3  # Best of 5 sets (first to 3)
+    match_distance=3  # Race to 3 sets
 )
 db.session.add(match)
 db.session.commit()
 
 # 2. Create first set
-set1 = Set(match_id=match.id, set_number=1, distance=5, best_of=True)
+set1 = Set(match_id=match.id, set_number=1, distance=5, is_race_to=True)
 db.session.add(set1)
 db.session.commit()
 
@@ -475,9 +462,7 @@ if not match.is_completed():
 - `COMPLETED`: Winning score reached or admin marked complete
 
 **Auto-Transitions:**
-- `add_rack()`: pending → playing (first rack)
-- `add_rack()`: playing → completed (winning score reached)
-- `remove_rack()`: completed → playing (if score no longer winning)
+- `RackService.add_rack_result()`: pending → playing (first rack)
 
 ### Anti-Rematch Integration
 
@@ -487,7 +472,8 @@ When `MatchService.to_completed()` is called, it automatically records a `Player
 
 Matches can exist without a gara (`gara_id = NULL`) in two scenarios:
 1. **Soft delete with keep_matches**: When a gara/campionato is soft deleted with "Mantieni match" option
-2. **Future**: Individual matches proposed outside tournaments
+2. Casual matches between players are **not** `Match` rows: they live in
+   `individual_match` (`models/individual_match/`)
 
 **Handling in Code:**
 ```python
@@ -545,8 +531,6 @@ Vedi `docs/adr/ADR-027-round-level-configuration-enforcement.md`.
 - **Do not interpret scores without checking `is_multi_set`** - Scores are racks (single) or sets (multi-set)
 - **Do not call `db.session.commit()`** - Use `@transactional` in services
 - **Do not access `match.gara` without null check** - Standalone matches have `gara_id=NULL`
-- **Do not forget `@transactional` on `reset_to_pending`** - Uses custom transaction with OperationResult
-- **Do not manually complete matches** - Use `RackService.add_rack()` which auto-completes
 
 ---
 

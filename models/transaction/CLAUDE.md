@@ -18,8 +18,9 @@ Advanced transaction management infrastructure ensuring data consistency across 
 ```python
 from models.transaction.manager import transactional, read_only
 
-# Basic usage - auto commit on success, rollback on exception
-@transactional
+# Basic usage - auto commit on success, rollback on exception.
+# `transactional` is a decorator factory: always call it, `@transactional()`
+@transactional()
 def create_something():
     entity = MyEntity(name="test")
     db.session.add(entity)
@@ -33,7 +34,7 @@ def update_gara(gara_id: int):
     return gara
 
 # Read-only optimization
-@read_only
+@read_only()
 def get_statistics():
     return db.session.query(Match).filter_by(status="completed").count()
 

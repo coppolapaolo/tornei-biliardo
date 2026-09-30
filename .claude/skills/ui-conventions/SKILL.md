@@ -89,9 +89,8 @@ Proponi modifiche per allineare il codice esistente.
 **Utente**: "Quale icona usiamo per le sale biliardo?"
 
 **Risposta attesa**:
-1. Leggo UI_CONVENTIONS.md → `fa-building` già usato per "Sale Biliardo"
-2. Confermo: "È già documentato: `fa-building` per le sale biliardo"
-3. Se non esistesse → propongo opzioni, documento la scelta
+1. Leggo UI_CONVENTIONS.md → trovo (o non trovo) la voce per le sale
+2. Se c'è, la cito con la riga; se non c'è, propongo opzioni e documento la scelta
 
 ### Esempio 2: Cambio Colore Badge
 
@@ -99,9 +98,9 @@ Proponi modifiche per allineare il codice esistente.
 
 **Risposta attesa**:
 1. Verifico convenzione attuale → `bg-warning` (giallo Bootstrap)
-2. Spiego: Bootstrap non ha arancione nativo, opzioni:
-   - Usare `bg-warning` (giallo standard)
-   - Creare classe custom `bg-orange`
+2. Spiego: i colori vengono dai token di `static/css/tokens-7c.css`; se il
+   token di stato che serve manca, è una decisione di design system da
+   discutere, non una classe nuova
 3. Se si decide, aggiorno documentazione + changelog
 
 ### Esempio 3: Nuovo Pattern Layout
@@ -112,8 +111,7 @@ Proponi modifiche per allineare il codice esistente.
 1. Documento in sezione Layout:
    ```markdown
    ### Pattern Pagine Dettaglio
-   - Contenuto principale: `col-md-8`
-   - Sidebar: `col-md-4`
+   - Contenuto e colonna laterale con `c7-cols` (due colonne da lg, pila sotto)
    ```
 2. Aggiungo al changelog con motivazione
 
@@ -127,15 +125,4 @@ Proponi modifiche per allineare il codice esistente.
 
 ## Struttura UI_CONVENTIONS.md
 
-Il file è organizzato in sezioni:
-1. Icone (Font Awesome)
-2. Colori e Stati
-3. Bottoni
-4. Badge
-5. Alert e Messaggi
-6. Card Structure
-7. Layout e Spacing
-8. Typography
-9. Form Conventions
-10. Responsive Breakpoints
-11. Changelog Decisioni
+Le sezioni sono elencate nel «Sommario» in cima al file: leggilo da lì.

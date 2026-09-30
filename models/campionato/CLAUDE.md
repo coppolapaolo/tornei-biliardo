@@ -31,9 +31,8 @@ campionato = service.create_campionato_with_director(
     default_odd_policy=OddNumberPolicy.BYE.value
 )
 
-# Get computed status
-status = service.get_campionato_status(campionato.id)
-# Returns: TournamentStatus (NOT_STARTED, IN_PROGRESS, COMPLETED)
+# Get computed status (string value of TournamentStatus)
+status = service.calculate_campionato_status(campionato.id)
 
 # Add/remove directors
 service.add_director(campionato.id, user_id, assigned_by_id)
@@ -69,7 +68,7 @@ blocca più (`can_be_modified` è sempre vero), e ogni modifica va nella storia
 **Deprecated Fields** (do not use):
 - `without_x` → use `default_odd_policy`
 - `final_playoffs` → use PlayoffConfiguration
-- `scoring_policy` → automatic from `campionato_type`
+- `scoring_policy` → sorting follows `classification_system` (ADR-047)
 
 ---
 
@@ -82,27 +81,22 @@ blocca più (`can_be_modified` è sempre vero), e ogni modifica va nella storia
 - `create_campionato_with_director(...)` - Full wizard creation
 
 **Status:**
-- `get_campionato_status(id)` - Computed status based on gare states
-- `get_campionato_progress(id)` - Progress metrics
+- `calculate_campionato_status(campionato_id)` - Computed status based on gare states
 
 **Directors:**
 - `add_director(campionato_id, user_id, assigned_by_id)`
 - `remove_director(campionato_id, user_id)`
 
 **Lifecycle:**
-- `soft_delete_campionato(id, reason)` - Soft delete with cascade options
+- `soft_delete_campionato(campionato_id, deleted_by_id, cascade_option, reason)` - Soft delete with cascade options
 
 ---
 
 ## Status Computation
 
-Status is computed from Gare states, not stored:
-
-```
-NOT_STARTED: All gare in setup/inscription
-IN_PROGRESS: At least one gara playing, not all completed
-COMPLETED: All gare completed
-```
+Status is computed from Gare states and `terminated_at`, not stored: values in
+`TournamentStatus` (`models/status_enum.py`), rules in the docstring of
+`compute_campionato_status` (`models/campionato/statistics_service.py`).
 
 ---
 
@@ -110,7 +104,7 @@ COMPLETED: All gare completed
 
 - **Do not use deprecated fields** - `without_x`, `final_playoffs`, `scoring_policy` are deprecated
 - **Do not access `directors` as relationship** - It's a computed property, not modifiable
-- **Do not store status** - Use `get_campionato_status()` for computed status
+- **Do not store status** - Use `calculate_campionato_status()` for computed status
 - **Do not call `db.session.commit()`** - Services use `@transactional`
 - **Do not use string literals** - Use `MatchmakingStrategy.AMALFI.value`
 

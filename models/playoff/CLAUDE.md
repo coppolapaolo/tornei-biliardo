@@ -32,14 +32,13 @@ config = PlayoffConfiguration(
     min_garas_played=5
 )
 
-# Generate qualifications from classification
-PlayoffService.generate_qualifications(config.id)
+# Start playoffs: generates qualifications from the classification,
+# sets invited_at and sends the invitations
+PlayoffService.start_playoff(campionato.id)
 
-# Invite player
-PlayoffService.invite_player(qualification_id=qual.id)
-
-# Player confirms
-PlayoffService.confirm_participation(qualification_id=qual.id, user_id=player.id)
+# Player answers
+PlayoffService.confirm_qualification(qualification_id=qual.id, user_id=player.id)
+PlayoffService.decline_qualification(qualification_id=qual.id, user_id=player.id)
 ```
 
 ---
@@ -88,19 +87,19 @@ Defines playoff rules for a campionato.
 Individual player qualification record.
 
 **Key Fields:**
-- `playoff_config_id`, `user_id`, `classification_position`
+- `configuration_id`, `user_id`, `qualifying_position`, `qualification_reason`
 - `status`: PENDING → CONFIRMED / DECLINED / EXPIRED / REPLACED
-- `invited_at`, `responded_at`, `replaced_by_id`
+- `invited_at`, `responded_at`, `replaced_by_id`, `replacement_position`
 - `responded_by_id` — chi ha materialmente risposto: il giocatore, oppure il
   direttore che ha registrato la risposta ricevuta a voce
   (`PlayoffService.respond_on_behalf`). `answered_on_behalf` li distingue
 
 ### PlayoffTournament
-Actual playoff tournament (links to generated Campionato).
+Links the configuration to the final's Gara.
 
 **Key Fields:**
-- `playoff_config_id`, `generated_campionato_id`
-- `status`, `started_at`, `completed_at`
+- `configuration_id`, `gara_id`
+- `status`, `completed_at`, `winner_id`
 
 ---
 
@@ -109,15 +108,13 @@ Actual playoff tournament (links to generated Campionato).
 ```
 Classification Complete
         ↓
-generate_qualifications() → Creates PlayoffQualification records
-        ↓
-invite_player() → Sets status=PENDING, sends notification
+start_playoff() → PlayoffQualification records (PENDING), invited_at, notifications
         ↓
     ┌───────┴───────┐
     ↓               ↓
-confirm()       decline()
+confirm_qualification()   decline_qualification()
     ↓               ↓
-CONFIRMED      DECLINED → invite next eligible
+CONFIRMED      DECLINED → find_replacement_player() invites the next eligible
 ```
 
 ---
@@ -140,9 +137,8 @@ o rifiuta. Una proposta rifiutata non si ripresenta finché non cambia.
 
 ## Do Not
 
-- **Do not manually create qualifications** - Use `generate_qualifications()`
+- **Do not manually create qualifications** - Use `start_playoff()` (or `admin_add_player` for a manual addition)
 - **Do not skip min_garas_played check** - Players must meet minimum participation
-- **Do not forget to invite** - Qualifications are created but not auto-invited
 - **Do not call `db.session.commit()`** - Services use `@transactional`
 
 ---

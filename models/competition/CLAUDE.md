@@ -23,12 +23,13 @@ from models.competition.inscription_service import InscriptionService
 from models.competition.round_service import RoundService
 from models.competition.state_service import StateService
 from models.competition.round_manager import AdvancedRoundManager
-from models.status_enum import GaraStatus
+from models.status_enum import GaraStatus, Discipline
+from models.base import utc_now
 
 # Create gara
 gara = GaraService.create_gara(
     number=1, name="Prova 1", date=date(2025, 10, 15),
-    discipline="palla_8", distance=5,
+    discipline=Discipline.EIGHT_BALL.value, distance=5,
     campionato_id=campionato.id,  # or None + director_id for standalone
     time=time(18, 0), rounds_count=3, min_participants=6
 )
@@ -36,8 +37,8 @@ gara = GaraService.create_gara(
 # Open inscriptions
 gara = InscriptionService.open_inscriptions(
     gara_id=gara.id,
-    inscription_start=datetime.now(),
-    inscription_end=datetime.now() + timedelta(days=7)
+    inscription_start=utc_now(),
+    inscription_end=utc_now() + timedelta(days=7)
 )
 
 # Inscribe player (auto-waitlist if full)
@@ -62,7 +63,7 @@ if lock == RoundLockStatus.LOCKED:
 ## Key Models
 
 ### Gara
-**Key Fields:** `campionato_id` (nullable for standalone), `director_id`, `status`, `date`, `time`, `discipline`, `distance`, `best_of`, `rounds_count`, `current_round`, `min_participants`, `max_participants`, `matchmaking_strategy`, `withdraw_policy`
+**Key Fields:** `campionato_id` (nullable for standalone), `director_id`, `status`, `date`, `time`, `discipline`, `distance`, `is_race_to`, `rounds_count`, `current_round`, `min_participants`, `max_participants`, `matchmaking_strategy`, `withdraw_policy`
 
 **Status Values:** `setup`, `inscription`, `playing`, `completed`
 
@@ -70,10 +71,7 @@ if lock == RoundLockStatus.LOCKED:
 - `get_real_status()` - Actual status (considers round completion, inscription expiry)
 - «c'è un altro turno?» → `strategy.has_round(gara, n)`, **non** un confronto
   con `rounds_count`: nel doppio KO la bella sta un turno oltre quelli
-  programmati e solo se la finale la richiede (issue #239). Qui c'era
-  `can_start_new_round()`, che confrontava con `rounds_count` e non lo sapeva
-  — ed era per giunta senza chiamanti, quindi documentava un decisore che non
-  decideva niente.
+  programmati e solo se la finale la richiede (issue #239).
 - `can_inscribe()` - In inscription period?
 - `is_full()` / `has_waitlist()` - Capacity checks
 - `validate_strategy_configuration()` - Validate matchmaking config
@@ -185,8 +183,8 @@ sbagliato (vedi "Previous Assumption Debunked" in ADR-026).
   essere ri-generati diversamente al prossimo avvio."
 - **Precondizione**: nessun match del round può avere risultati parziali
   (usare `bulk_reset_round_matches` prima se necessario). **I match bye
-  (`is_bye=True`) sono esclusi dal check**: il loro `player1_score =
-  round_distance` è convenzione di persistenza per la classification
+  (`is_bye=True`) sono esclusi dal check**: il loro `player1_score`
+  (oggi `0`, SPECIFICHE.md righe 64 e 71) è convenzione di persistenza per la classification
   machinery, non risultato utente. Semanticamente il bye è "sempre in
   stato iniziale". Walkover (`is_bye=False` + forfeit → `score > 0`)
   invece bloccano — rappresentano azioni umane e vanno resettati.
@@ -213,7 +211,7 @@ sbagliato (vedi "Previous Assumption Debunked" in ADR-026).
 
 ## Round-level overrides (RoundConfiguration, ADR-027)
 
-`RoundConfiguration` permette al director (in stato `setup`) di sovrascrivere
+`RoundConfiguration` permette al director di sovrascrivere
 disciplina, distanza e modalità per ogni singolo turno della gara. Persistito
 via API:
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Ricerche di codice Python: passa dal grafo, non da grep.
 #
-# La regola è già scritta in CLAUDE.md e in memoria; questo hook esiste perché
+# La regola è già scritta in memoria; questo hook esiste perché
 # leggerla non basta — il primo `grep` costa zero e da lì si prosegue per
 # inerzia. Un rifiuto rompe l'inerzia, un promemoria no.
 #
@@ -15,6 +15,10 @@ set -uo pipefail
 cmd=$(jq -r '.tool_input.command // ""')
 [ -z "$cmd" ] && exit 0
 case "$cmd" in *codegraph-checked*) exit 0 ;; esac
+
+# Il grafo è locale (`.codegraph/` è in .gitignore): dove non c'è — un clone
+# fresco, una sessione nel cloud — non c'è nemmeno lo strumento a cui mandare.
+[ -d "${CLAUDE_PROJECT_DIR:-.}/.codegraph" ] || exit 0
 
 # Ogni segmento della riga, non solo il primo: `ls x && grep y` è comunque un
 # grep, e `pytest | grep -c passed` non lo è. Si guarda l'inizio di ciascun

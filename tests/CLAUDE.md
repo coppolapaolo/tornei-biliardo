@@ -28,7 +28,7 @@ The test suite follows a modern pytest-based approach with clear separation betw
 **Key fixture behaviors** (tests/new/conftest.py):
 - **StaticPool**: `SQLALCHEMY_ENGINE_OPTIONS` uses `StaticPool` so all DB connections share the same SQLite in-memory database. Without this, `db.drop_all()` and the Flask test client would get different connections (= different databases), breaking test isolation.
 - **Rate limiter disabled**: `limiter.enabled = False` in setup — prevents `429 Too Many Requests` from test scenarios that log in repeatedly (e.g. e2e tests).
-- **Cache cleared per test**: `cache_manager.clear_all()` runs in the `db_session` fixture. Services like `ClassificationService.update_campionato_classification` are `@cached` for 5 minutes — without clearing, stale data from previous tests leaks into subsequent ones.
+- **Cache cleared per test**: `cache_manager.clear_all()` runs in the `db_session` fixture. Services like `ClassificationService.get_campionato_standings` are `@cached` (10 minutes) — without clearing, stale data from previous tests leaks into subsequent ones.
 - **Session close vs remove**: Uses `db.session.close()` + explicit commit/rollback before `drop_all()` to ensure no pending transaction blocks DROP TABLE on the StaticPool connection.
 
 **E2E fixture override** (tests/new/e2e/conftest.py):
@@ -39,60 +39,16 @@ The test suite follows a modern pytest-based approach with clear separation betw
 ### Unit Tests (`new/unit/`)
 **Purpose**: Test individual components in isolation
 
-**Organization by Domain**:
-- `test_user_authentication.py`: Community member authentication and profiles
-- `test_user_services.py`: Community member services and social features
-- `test_competition_models.py`: Tournament and event models
-- `test_competition_services.py`: Tournament organization and community events
-- `test_match_models.py`: Both tournament and casual match functionality
-- `test_matchmaking_strategies.py`: All supported algorithms for tournaments
-- `test_individual_match_services.py`: Community casual match system
-- `test_classification_services.py`: Community rankings and statistics
-- `test_notification_services.py`: Community communication system
+**Organization**: one file per rule or incident, named after what it guards (e.g. `test_specifiche_conformita.py`, `test_sqlite_pragmas.py`); `ls tests/new/unit/` is the index.
 
 **Testing Approach**:
 - Isolated component testing
 - Mock external dependencies
-- Fast execution (< 1 second per test)
-- High code coverage target (> 90%)
 
 ### Integration Tests (`new/integration/`)
 **Purpose**: Test component interactions and data flow
 
-**Current Test Files** (20 files, ~124 tests):
-
-| File | Description | Tests |
-|------|-------------|-------|
-| `test_admin.py` | Admin panel functionality | 4 passed, 1 skipped |
-| `test_auth.py` | Authentication workflows | 4 passed |
-| `test_challenge_image_paths_fix.py` | Challenge image path handling | 6 passed |
-| `test_challenge_routes.py` | Challenge CRUD routes | 22 passed |
-| `test_classification_display.py` | Classification/ranking display | 1 passed, 3 skipped |
-| `test_gare_usecase_1_amalfi.py` | UC1: Amalfi strategy workflow | 5 passed |
-| `test_gare_usecase_2_random.py` | UC2: Random strategy workflow | 4 passed |
-| `test_gare_usecase_3_round_robin.py` | UC3: Round-robin strategy | 3 passed |
-| `test_gare_usecase_4_campionato_workflow.py` | UC4: Championship tournaments | 3 passed, 1 skipped |
-| `test_gare_usecase_5_guest.py` | UC5: Guest access | 6 passed |
-| `test_gare_usecase_6_individual.py` | UC6: Individual match proposals | 8 passed |
-| `test_gare_usecase_7_player_availability.py` | UC7: Player availability | 3 passed |
-| `test_gare_usecase_8_modification.py` | UC8: Match modification | 5 passed |
-| `test_guest_card_to_details_workflow.py` | Guest card navigation | 6 passed |
-| `test_matchmaking_anti_rematch.py` | Anti-rematch logic | 2 passed |
-| `test_random_anti_rematch_tournament_flow.py` | Random strategy anti-rematch | 12 passed |
-| `test_random_strategy_challenge_images.py` | Random strategy challenges | 6 passed |
-| `test_ui_frontend_behaviors.py` | Frontend UI behaviors | 4 passed |
-| `test_user_profile.py` | User profile operations | 3 passed |
-| `test_venue_manager_notifications.py` | Venue manager notifications | 3 passed |
-
-**Gamification Tests** (`gamification/` subdirectory):
-
-| File | Description | Tests |
-|------|-------------|-------|
-| `test_achievement_workflow.py` | Achievement system | 2 passed, 6 skipped |
-| `test_gamification_e2e.py` | Gamification end-to-end | 12 passed |
-| `test_quest_workflow.py` | Quest system | 13 passed |
-| `test_streak_workflow.py` | Streak tracking | 7 passed |
-| `test_xp_workflow.py` | XP and leveling | 5 passed, 3 skipped |
+Integration tests live in `tests/new/integration/` (one file per flow; `gamification/` has its own subfolder).
 
 **Testing Approach**:
 - Real database connections (SQLite)
@@ -149,7 +105,7 @@ questo file lo dichiarava, ma nessun test lo importava).
 | `test_stagione_e2e_risultati.py` | Le cinque strade che chiudono una partita, i tre modi di tornare indietro, il pareggio a distanza pari, i tavoli e lo swap |
 | `test_stagione_e2e_stagione.py` | La stagione giocata con quindici iscritti: la X a ogni turno, gli override sulle partite vere, lo spareggio SSR, i playoff a 8 e la finale a tre turni diversi |
 | `test_stagione_e2e_handicap.py` | L'handicap: categorie create assegnandole, riporto da una gara all'altra, finestra chiusa all'avvio, Elo che si muove solo fra pari categoria |
-| `test_stagione_e2e_x_e_abbinamenti.py` | Quanto vale la X in classifica (rilievo aperto, `xfail(strict=True)`) e il criterio Amalfi: niente reincontri, e abbinamenti ottimi rispetto al salto verificati per forza bruta |
+| `test_stagione_e2e_x_e_abbinamenti.py` | Quanto vale la X in classifica (una vittoria e zero differenza, SPECIFICHE.md righe 64 e 71) e il criterio Amalfi: niente reincontri, e abbinamenti ottimi rispetto al salto verificati per forza bruta |
 | `test_complete_workflows.py` | Promozione a direttore, workflow storici |
 
 **Perché il livello campionato ha il suo file.** Le gare sono coperte una per
@@ -221,8 +177,8 @@ anti-invasiveness intensity scale (§11/§11-quater).
   focus). **La forma HTML** — che il `required` non sia scritto nel template —
   la presidia invece `tests/new/unit/test_x_challenge_section_template.py`:
   sono due domande diverse, e il difetto stava nella seconda.
-- Gli altri due file (`test_iscritti_ricerca.cjs`, `test_polling_cursore.cjs`)
-  coprono la ricerca fra gli iscritti e il cursore del polling live.
+- Gli altri file `.cjs` (ricerca iscritti, cursore del polling, referto TPA,
+  schede, esami, …): `ls tests/frontend/*.cjs` è l'indice.
 - **File**: `tests/frontend/test_help_hints.cjs` — la «modalità aiuto» di
   `static/js/help-hints.js` (ADR-058): si accende solo dove la pagina espone
   `[data-help-toggle]`, chiama `/aiuto/api/schermata/<endpoint>`, mette una
@@ -243,24 +199,13 @@ anti-invasiveness intensity scale (§11/§11-quater).
 ## Test Markers and Categories
 
 ### Pytest Markers
-Configuration in `pytest.ini`:
-
-```ini
-[tool:pytest]
-markers =
-    unit: Unit tests for isolated components
-    integration: Integration tests for component interactions
-    e2e: End-to-end tests for complete workflows
-    slow: Tests that take longer than 5 seconds
-    requires_network: Tests requiring external network access
-```
+Configuration in `pytest.ini` (`[pytest]`, `--strict-markers`: an undeclared marker fails collection): `unit`, `integration`, `e2e`, `legacy` (excluded via `-m "not legacy"`).
 
 ### Test Execution
-- **Default**: `pytest` (runs unit + integration)
-- **Correct Path**: `PYTHONPATH=. pytest tests/new/` (REQUIRED for proper imports)
-- **Unit only**: `PYTHONPATH=. pytest tests/new/unit/ -n auto`
-- **Integration only**: `PYTHONPATH=. pytest tests/new/integration/ -n 4` ⚠️ **MUST use -n 4**
-- **E2E only**: `PYTHONPATH=. pytest tests/new/e2e/`
+- **Default**: `pytest` (runs all of `tests/new/` — unit, integration, e2e — via `testpaths` in `pytest.ini`)
+- **Unit only**: `pytest tests/new/unit/ -n auto`
+- **Integration only**: `pytest tests/new/integration/ -n 4` ⚠️ **MUST use -n 4**
+- **E2E only**: `pytest tests/new/e2e/`
 
 **⚠️ SQLite Concurrency Warning**: Integration tests MUST use `-n 4` (not `-n auto`).
 With more workers, SQLite creates deadlocks causing infinite loops.
@@ -291,45 +236,11 @@ Tests organized by platform domains supporting community growth:
 
 ## Test Data Management
 
-### Fixtures and Factories
-- **User Factories**: Various user roles and states
-- **Competition Factories**: Different tournament configurations
-- **Match Factories**: Various match states and outcomes
-- **Database Fixtures**: Clean database state per test
-
 ### Test Data Isolation
-- **Database Transactions**: Rollback after each test
+- **Clean schema per test**: `db_session` drops and recreates all tables (see "Key fixture behaviors" above)
 - **Independent Test Data**: No shared state between tests
 - **Predictable Scenarios**: Consistent test data setup
 - **Edge Case Coverage**: Boundary condition testing
-
-## Coverage and Quality Metrics
-
-### Coverage Targets
-- **Unit Tests**: > 90% line coverage
-- **Integration Tests**: > 80% business logic coverage
-- **E2E Tests**: > 70% user workflow coverage
-- **Overall**: > 85% total application coverage
-
-### Quality Metrics
-- **Test Execution Time**: Unit tests < 30 seconds total
-- **Reliability**: < 1% flaky test rate
-- **Maintainability**: Clear test naming and structure
-- **Documentation**: Each test file has purpose and scope
-
-## Performance Testing
-
-### Load Testing Scenarios
-- **Competition Creation**: Multiple simultaneous tournaments
-- **Match Scoring**: Concurrent match updates
-- **User Registration**: High-volume user signup
-- **Matchmaking Algorithms**: Large tournament pairing for all strategies
-
-### Performance Benchmarks
-- **Database Queries**: < 100ms for standard operations
-- **Page Load Times**: < 2 seconds for standard pages
-- **API Responses**: < 500ms for API endpoints
-- **Algorithm Performance**: All strategy pairing < 5 seconds for 100 players
 
 ## Security Testing
 
@@ -354,10 +265,8 @@ Tests organized by platform domains supporting community growth:
 4. **Validate**: Ensure all tests pass
 
 ### Continuous Integration
-- **Pre-commit Hooks**: Run unit tests before commit
-- **CI Pipeline**: Full test suite on pull requests
-- **Coverage Reporting**: Track coverage trends
-- **Quality Gates**: Minimum coverage and test pass rates
+- CI (`.github/workflows/ci.yml`, job `test-and-typecheck`) runs only `pytest tests/new/unit/ -n auto` and `pyright`. Integration, e2e and `tests/frontend/` do not run in CI: their failures surface only when run locally.
+- No pre-commit hooks and no coverage gate are configured.
 
 ### Test Maintenance
 - **Regular Review**: Update tests with feature changes
@@ -367,15 +276,7 @@ Tests organized by platform domains supporting community growth:
 ## Testing Tools and Libraries
 
 ### Core Testing Framework
-- **pytest**: Primary testing framework
-- **pytest-flask**: Flask application testing utilities
-- **pytest-cov**: Coverage reporting
-- **factory-boy**: Test data factories
-
-### Database Testing
-- **SQLAlchemy**: ORM testing utilities
-- **pytest-postgresql**: Isolated database testing
-- **alembic**: Migration testing
+- pytest, pytest-xdist (`-n`), pytest-cov (requirements-dev.txt); mocking via `unittest.mock`.
 
 ### Web Testing
 - **Flask test client**: richieste HTTP vere in-process, sulle route vere. È
@@ -387,11 +288,6 @@ Tests organized by platform domains supporting community growth:
   guida. È la strada già pronta se un giorno servisse un livello con browser
   vero (il JS inline, il polling live, i modali)
 
-### Mock and Fixtures
-- **pytest-mock**: Mocking utilities
-- **responses**: HTTP request mocking
-- **freezegun**: Time-based testing
-
 ## Best Practices
 
 ### Test Writing Guidelines
@@ -402,8 +298,8 @@ Tests organized by platform domains supporting community growth:
 5. **Meaningful Assertions**: Clear validation of expected outcomes
 
 ### Development Workflow Integration
-**MANDATORY for all code changes:**
-1. **Run tests with correct path**: `PYTHONPATH=. pytest tests/new/`
+**Before committing:**
+1. **Run the suite**: `pytest tests/new/ -n 4`
 2. **Individual test isolation**: Each test must pass independently
 3. **Type safety**: Ensure all new test code passes `pyright` checks
 4. **Test data isolation**: Fix database state issues, not test logic
@@ -428,7 +324,7 @@ Tests organized by platform domains supporting community growth:
 
 - **Do not use `-n auto` for integration tests** - Use `-n 4` to avoid SQLite deadlocks
 - **Do not use `db.session.refresh()`** - Use `db.session.get()` for test isolation
-- **Do not create long workflow tests** - Keep tests 30-50 lines, focused on one behavior
+- **Keep unit/integration tests short** (30-50 lines, one behavior): long flows belong in `tests/new/e2e/`, through the HTTP drivers
 - **Do not share state between tests** - Each test must be independent
 - **Do not clear `EventBus._handlers = {}`** - This removes ALL handlers (notification, gamification, etc.) and breaks other tests running in parallel. Instead, save handlers before test and restore after:
   ```python

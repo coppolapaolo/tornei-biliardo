@@ -20,20 +20,14 @@ Attiva questa skill quando:
 - L'utente chiede di aggiungere test per un caso specifico
 - Si implementa una modifica basata su test manuali
 
-## Workflow Completo
+## Quando è fatto
 
-```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│  1. ANALISI     │ ──► │  2. FIX         │ ──► │  3. TEST        │
-│  Riproduci bug  │     │  Correggi codice│     │  Scrivi test    │
-└─────────────────┘     └─────────────────┘     └─────────────────┘
-                                                        │
-                                                        ▼
-                                               ┌─────────────────┐
-                                               │  4. DOCUMENTA   │
-                                               │  ADR + Changelog│
-                                               └─────────────────┘
-```
+Un test in `tests/new/` riproduce il bug e ora passa, la suite esistente è
+verde, e la regola coinvolta è stata confrontata con
+`docs/reference/SPECIFICHE.md` (sezione 0 di CLAUDE.md: una regola numerica va
+in `test_specifiche_conformita.py`, una divergenza non ancora corretta è
+`xfail(strict=True)`). Un ADR serve solo se il bug rivela una decisione
+architetturale.
 
 ## Fase 1: Analisi del Bug
 
@@ -75,7 +69,7 @@ Consulta:
 ```python
 # Commento che spiega il fix
 # Fix: [descrizione breve]
-# Vedi ADR: docs/adr/NNNN-*.md
+# Vedi ADR: docs/adr/ADR-NNN-*.md
 ```
 
 ### Dopo la Correzione
@@ -102,7 +96,7 @@ class TestNomeFunzionalitaRegression:
 
         Bug: [comportamento errato osservato]
         Fix: [cosa è stato corretto]
-        Vedi: docs/adr/NNNN-*.md
+        Vedi: docs/adr/ADR-NNN-*.md
         """
         # GIVEN: setup condizioni che causavano il bug
         ...
@@ -147,7 +141,7 @@ Crea ADR in `docs/adr/` se il bug:
 - Ha impatto su più moduli
 
 ```markdown
-# NNNN Bug Fix: [Titolo Descrittivo]
+# [NNN] Bug Fix: [Titolo Descrittivo]
 
 **Data**: YYYY-MM-DD
 **Stato**: Accepted
@@ -193,76 +187,6 @@ def test_caso_corretto(self):
     Regression: Corretto in data YYYY-MM-DD.
     Bug: [descrizione breve del problema]
     """
-```
-
-## Esempio Completo: Anti-Rematch Bug
-
-### Utente Riporta
-> "In una gara Amalfi ho visto match tra gli stessi giocatori nonostante anti-rematch attivo"
-
-### Workflow
-
-**1. Analisi**
-```python
-# Verifico specifiche anti-rematch
-# docs/reference/SPECIFICHE.md dice: "evita re-match tra stessi giocatori"
-
-# Cerco implementazione
-grep -rn "anti_rematch" models/matchmaking/
-
-# Verifico test esistenti
-grep -rn "anti.*rematch" tests/new/
-```
-
-**2. Riproduzione**
-```python
-# Creo test che riproduce il caso
-def test_amalfi_anti_rematch_prevents_same_pairing():
-    """Verifica che anti-rematch prevenga accoppiamenti ripetuti."""
-    # Setup: gara con anti_rematch_enabled=True
-    # Round 1: A vs B
-    # Round 2: dovrebbe evitare A vs B
-    ...
-```
-
-**3. Fix**
-```python
-# Identifico il problema nel codice
-# Correggo la logica in models/matchmaking/strategies/amalfi.py
-```
-
-**4. Documenta**
-```markdown
-# docs/adr/0001-fix-anti-rematch-enforcement.md
-```
-
-## Checklist Finale
-
-Prima di considerare completato:
-
-- [ ] Bug riprodotto e compreso
-- [ ] Root cause identificata
-- [ ] Fix implementato
-- [ ] Test di regressione scritto
-- [ ] Test passa
-- [ ] Test esistenti passano (no regressioni)
-- [ ] Documentazione aggiornata (se significativo)
-- [ ] Commit message descrittivo
-
-## Comandi Utili
-
-```bash
-# Esegui test specifici
-PYTHONPATH=. pytest tests/new/unit/test_file.py::test_name -v
-
-# Esegui tutti i test
-PYTHONPATH=. pytest tests/new/ -n auto
-
-# Cerca test correlati
-grep -rn "def test.*anti_rematch" tests/new/
-
-# Verifica copertura area specifica
-PYTHONPATH=. pytest tests/new/unit/test_matchmaking*.py -v --tb=short
 ```
 
 ## Priorità Test

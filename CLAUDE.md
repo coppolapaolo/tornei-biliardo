@@ -187,11 +187,9 @@ Le due volte in cui è successo, entrambe scoperte il 2026-08-23:
   guardare oltre — e la lista tagliata conteneva solo giocatori che avevano già
   una qualificazione, declinante compreso.
 
-**Nessuna delle due era difesa da un test come si temeva**:
-`test_declined_player_not_repicked` ha quattro giocatori per quattro posti,
-quindi passa in entrambi i mondi. Vale la pena notarlo, perché il sospetto che
-un test difendesse la deviazione era ragionevole e si è rivelato infondato: va
-verificato, non assunto.
+Che un test difenda la deviazione va **verificato, non assunto**: un test può
+passare in entrambi i mondi (`test_declined_player_not_repicked` ha quattro
+giocatori per quattro posti).
 
 Regole operative, tre:
 
@@ -249,7 +247,7 @@ The application uses **"Race to N"** terminology (Italian: "Al N").
 ```python
 # ✅ CORRECT
 gara.distance = 5  # Race to 5 (first to 5 racks wins)
-gara.best_of = False  # Always False for Race to N
+gara.is_race_to = True  # "al N": first to N wins; False = exactly N racks
 
 # ❌ WRONG
 gara.distance = 9  # This means "race to 9", not "best of 9"
@@ -262,9 +260,9 @@ All service methods that modify database state MUST use `@transactional`:
 from models.transaction.manager import transactional
 
 class GaraService:
-    @transactional
+    @transactional(domain="competition")
     def create_gara(self, campionato_id: int, data: dict) -> Gara:
-        gara = Gara(campionato_id=campionato_id, nome=data['nome'])
+        gara = Gara(campionato_id=campionato_id, name=data['name'])
         db.session.add(gara)
         return gara  # Commit happens automatically
 ```
@@ -277,7 +275,7 @@ User model has soft delete with automatic session-level filtering.
 users = User.query.all()
 
 # Include deleted records
-all_users = User.query.with_deleted().all()
+all_users = User.query.execution_options(include_deleted=True).all()
 
 # ✅ CORRECT - Soft delete preserves relationships
 user.anonymize()

@@ -143,13 +143,13 @@ def award_xp(
     user_id: int,
     xp_amount: int,
     transaction_type: XPTransactionType,
-    reason: str = "",
+    reason: Optional[str] = None,
     related_entities: Optional[Dict] = None
-) -> Tuple[UserLevel, Optional[int]]:
+) -> Tuple[UserLevel, bool]:
     """Award XP and check for level up.
 
     Returns:
-        Tuple of (UserLevel, new_level_if_leveled_up)
+        Tuple of (UserLevel, leveled_up)
 
     Side Effects:
         - Creates XPTransaction record
@@ -157,21 +157,12 @@ def award_xp(
         - Emits LevelUpEvent if level increased
     """
 
-def get_user_level(user_id: int) -> UserLevel:
-    """Get or create user level record."""
+def get_level_progress(user_id: int) -> Dict[str, Any]:
+    """UI data for level progress: current_level, current_xp, total_xp,
+    xp_for_next_level, progress_percentage, next unlock."""
 
-def get_xp_progress(user_id: int) -> Dict[str, Any]:
-    """Get XP progress for display.
-
-    Returns:
-        {
-            "current_level": int,
-            "current_xp": int,
-            "xp_for_next_level": int,
-            "progress_percentage": float,
-            "total_xp": int
-        }
-    """
+def get_user_level_stats(user_id: int) -> Dict[str, Any]:
+    """Comprehensive level statistics for the user profile."""
 ```
 
 **XP Rates** (from `xp_config.py`):
@@ -185,7 +176,7 @@ def get_xp_progress(user_id: int) -> Dict[str, Any]:
 | TOURNAMENT_WIN | 500 |
 | TOURNAMENT_PODIUM | 200 |
 | STREAK_BONUS | 30 per week |
-| CHALLENGE_COMPLETION | 75 |
+| CHALLENGE_COMPLETION | 150 |
 
 ---
 
@@ -264,12 +255,8 @@ def get_all_streaks(user_id: int) -> Dict[str, Dict[str, Any]]:
 **Purpose**: Achievement eligibility checking and unlock logic.
 
 **Achievement Categories:**
-- BEGINNER: First steps
-- COMPETITION: Tournament achievements
-- SKILL: Match wins, streaks
-- SOCIAL: Community engagement
-- DEDICATION: Long-term engagement
-- SPECIAL: Limited-time events
+- MATCH, TOURNAMENT, SOCIAL, SKILL, CONSISTENCY, EXPLORATION, MILESTONE
+  (see `AchievementCategory` in `models.py`)
 
 **Key Methods:**
 
@@ -289,11 +276,8 @@ def check_and_award_achievement(
         (UserAchievement | None, was_newly_unlocked)
     """
 
-def get_achievement_progress(
-    user_id: int,
-    achievement_code: str
-) -> Dict[str, Any]:
-    """Get achievement progress for display."""
+def get_achievement_stats(user_id: int) -> Dict[str, Any]:
+    """Achievement statistics for the user profile."""
 
 def get_user_achievements(user_id: int) -> List[Dict[str, Any]]:
     """Get all achievements for user with unlock status."""
@@ -406,100 +390,8 @@ def handle_competition_completed_for_xp(event: CompetitionCompletedEvent):
 
 ## Models Reference
 
-### UserLevel
-
-```python
-id: int (PK)
-user_id: int (FK, unique)
-current_level: int = 1
-current_xp: int = 0
-total_xp_earned: int = 0
-created_at: datetime
-updated_at: datetime
-```
-
-### XPTransaction
-
-```python
-id: int (PK)
-user_id: int (FK)
-xp_amount: int
-transaction_type: XPTransactionType (enum)
-reason: str(255)
-related_entities: JSON
-created_at: datetime
-```
-
-### StreakTracker
-
-```python
-id: int (PK)
-user_id: int (FK)
-streak_type: StreakType (enum)
-current_streak: int = 0
-longest_streak: int = 0
-freeze_count: int = 0
-total_freeze_earned: int = 0
-last_activity_week: int
-last_activity_year: int
-last_freeze_used_at: date
-last_freeze_earned_at: date
-milestone_4_reached: bool = False
-milestone_12_reached: bool = False
-milestone_52_reached: bool = False
-```
-
-### Achievement / UserAchievement
-
-```python
-# Achievement (definition)
-id: int (PK)
-code: str(50) - unique
-name: str(100)
-description: text
-category: AchievementCategory (enum)
-difficulty: AchievementDifficulty (enum)
-icon: str(50)
-xp_reward: int
-is_hidden: bool = False
-requirement_type: str(50)  # "instant" or "progress"
-requirement_value: int = 1  # Target for progress achievements
-
-# UserAchievement (user's progress/unlock)
-id: int (PK)
-user_id: int (FK)
-achievement_id: int (FK)
-unlocked_at: datetime
-progress: int = 0
-is_notified: bool = False
-```
-
-### Quest / QuestParticipation
-
-```python
-# Quest
-id: int (PK)
-name: str(100)
-description: text
-quest_type: QuestType (enum)
-status: QuestStatus (enum)
-start_date: datetime
-end_date: datetime
-requirements: JSON  # {"type": "matches_played", "target": 10}
-xp_reward: int
-participant_count: int = 0
-completion_count: int = 0
-
-# QuestParticipation
-id: int (PK)
-user_id: int (FK)
-quest_id: int (FK)
-current_progress: int = 0
-target_progress: int
-is_completed: bool = False
-completed_at: datetime
-xp_awarded: int = 0
-```
+Field lists: see `models/gamification/models.py`, or the generated
+`docs/reference/DATABASE_SCHEMA.md`.
 
 ---
 
@@ -539,7 +431,7 @@ if result["milestone_reached"]:
 
 ---
 
-## Admin Routes (`routes/gamification/__init__.py`)
+## Admin Routes (`routes/gamification/admin.py`)
 
 Admin routes for gamification management (requires admin role):
 
@@ -589,7 +481,11 @@ models/gamification/
 └── notification_handlers.py # Notification integration
 
 routes/gamification/
-└── __init__.py              # User and admin routes
+├── __init__.py              # Blueprint
+├── admin.py                 # Admin routes (below)
+├── config.py                # Admin configuration (XP, levels, streaks)
+├── dashboard.py             # User pages
+└── features.py              # Feature unlock management
 
 templates/gamification/
 ├── dashboard.html           # User dashboard
