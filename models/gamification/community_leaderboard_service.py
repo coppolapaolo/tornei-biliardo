@@ -423,7 +423,8 @@ class CommunityLeaderboardService:
             .filter(User.home_city.isnot(None))
             .scalar()
         ) or 0
-        total_users = User.query.filter_by(is_deleted=False).count()
+        # Gli eliminati li esclude il filtro di sessione (is_deleted è una property)
+        total_users = User.query.count()
 
         start = time.perf_counter()
         CommunityLeaderboardService._compute_contribution_ranking()
