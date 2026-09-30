@@ -91,7 +91,8 @@ help_content/
   it/                         lingua di riferimento
     site.yaml                 sezioni e ordine delle pagine
     hints.yaml                micro-aiuto e presentazioni (interfaccia adattiva)
-    captions.yaml             didascalie delle schermate
+    captions.yaml             didascalie delle schermate (solo lingue diverse dall'italiano:
+                              l'italiano le tiene nel campo `caption` di screenshots.yaml)
     pages/<slug>.yaml         una pagina per file
   en/                         stessa struttura, stessi slug
 
@@ -237,7 +238,7 @@ lavoro. Cosa si traduce e cosa no:
 | `title`, `summary`, testi dei blocchi | `slug` (nome del file) |
 | `title` dei `heading` | `id` dei `heading` — sono le ancore dei micro-aiuti |
 | `label` e `short` dei suggerimenti | `anchor` dei suggerimenti — e' il contratto con `data-help` |
-| Le didascalie (`captions.yaml`) | `screens`, `related`, `hint`, `kind`, `audience` |
+| Le didascalie (`caption` in `screenshots.yaml` per l'italiano, `<lingua>/captions.yaml` per le altre) | `screens`, `related`, `hint`, `kind`, `audience` |
 
 La terminologia inglese segue **l'interfaccia inglese dell'app**, non una
 traduzione a orecchio: `competition`, `championship`, `round`, `match`, `rack`,

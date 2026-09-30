@@ -778,19 +778,19 @@ somiglia a un tavolo.
 <a class="btn btn-sm" style="padding: 2px 5px;">✓</a>
 ```
 
-#### ✅ CORRETTO: Touch target minimo 44x44px
+#### ✅ CORRETTO: Touch target minimo 48x48px (`--c7-touch`)
 
 ```html
 <!-- CORRETTO: Touch target adeguato -->
-<a class="btn btn-outline-danger btn-sm" style="min-height: 44px; min-width: 44px;">
+<a class="btn btn-outline-danger" style="min-height: var(--c7-touch); min-width: var(--c7-touch);">
     <i class="fas fa-times"></i>
 </a>
 ```
 
 **Regole touch target:**
-- Minimo **44x44 pixel** per tutti gli elementi interattivi
+- Minimo **48x48 pixel** (token `--c7-touch`) per tutti gli elementi interattivi. I 44px che si trovano ancora in giro sono il vecchio minimo di Bootstrap: il token vince
 - Distanza minima **8px** tra bottoni adiacenti (usare `gap-2`)
-- Bottoni icon-only: aggiungere `min-width: 44px; min-height: 44px`
+- Bottoni icon-only: `min-width` e `min-height` a `var(--c7-touch)`
 - Link in liste: padding verticale sufficiente (`py-3`)
 
 ---
@@ -917,7 +917,7 @@ Prima di committare qualsiasi template, verificare:
 
 - [ ] **Header**: titolo e bottoni si impilano su mobile?
 - [ ] **Tabelle**: hanno versione card per mobile?
-- [ ] **Touch target**: tutti i bottoni sono almeno 44x44px?
+- [ ] **Touch target**: tutti i bottoni sono almeno 48x48px (`--c7-touch`)?
 - [ ] **Azioni distruttive**: sono separate e richiedono conferma?
 - [ ] **Form**: input hanno larghezza adeguata?
 - [ ] **Scroll**: la pagina non richiede scroll orizzontale?
@@ -964,7 +964,7 @@ Le tabelle con molte colonne devono essere sostituite da card su mobile per gara
         <div class="card-body py-2">...</div>
         <div class="card-footer py-2">
             <div class="d-flex gap-2">
-                <a class="btn btn-primary btn-sm flex-grow-1" style="min-height: 44px;">...</a>
+                <a class="btn btn-primary flex-grow-1" style="min-height: var(--c7-touch);">...</a>
             </div>
         </div>
     </div>
@@ -975,7 +975,7 @@ Le tabelle con molte colonne devono essere sostituite da card su mobile per gara
 **Convenzioni card mobile:**
 - Border colorato (`border-width: 2px`) in base allo stato
 - Padding ridotto (`py-2`) per compattezza
-- Bottoni con `min-height: 44px` per touch target adeguato
+- Bottoni con `min-height: var(--c7-touch)` per touch target adeguato
 - Footer con `d-flex gap-2` per bottoni in riga
 
 **File che usano questo pattern:**
@@ -1280,6 +1280,7 @@ Principi, in ordine di importanza:
 | 2026-09-13 | Squadre e categorie come righe con foglio, chip della squadra, foglio del ritiro con le conseguenze, riga distruttiva «Elimina la gara» in fondo alla preparazione | Ciò che non appartiene a una fase segue una grammatica sola, riga e foglio; il ritiro dice cosa comporta prima della conferma; l'eliminazione non è mai un pulsante rosso in vista (PR #379) |
 | 2026-09-20 | Il voto di un esercizio si dà con **cinque bilie numerate** (`.c7-ballvote`, token `--c7-ball-1…5`), non con le stelle; accanto alla media, sulle card, una bilia in piccolo (`.c7-ballmark`) | Decisione dell'utente: una scala da 1 a 5 nel biliardo ha già i suoi oggetti, e le stelle sono il lessico di un negozio. I cinque colori sono **iconografia del gioco**, non semantici: non si usano per dire «ok» o «attenzione». Piatte, senza gradienti; toccare di nuovo la propria bilia toglie il voto |
 | 2026-09-27 | Le conferme seguono cosa fa l'azione: Annulla in tre secondi se frequente e reversibile, foglio col nome dell'azione se tocca altri o non si disfa, mai `confirm()` del browser | La migrazione del gennaio 2026 non era presidiata e 17 `confirm()` erano ricomparsi; in produzione il browser aveva zittito i dialoghi e «Accetta» non faceva nulla. Ora ci sono due presidi statici (ADR-074) |
+| 2026-09-30 | Touch target minimo a **48px** (`--c7-touch`) anche nella sezione «Touch Target» | La sezione diceva ancora 44px, il minimo di Bootstrap, mentre il design system usa 48px dall'adozione del 7c: due numeri diversi per la stessa regola. Vale il token. Chi legge senza occhiali fatica già con testi e comandi piccoli sul telefono |
 
 ---
 

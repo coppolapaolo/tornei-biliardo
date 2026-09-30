@@ -191,10 +191,9 @@ Vedi `docs/adr/ADR-051-quick-start-moves-the-acceptance-to-the-end.md`.
 ```bash
 # Match reminders (run hourly: gli scheduled task di PythonAnywhere non
 # scendono sotto l'ora, e la finestra di ricerca è allineata a quella cadenza)
-python scripts/send_match_reminders.py
+venv/bin/python scripts/send_match_reminders.py
 
-# Proposal expiration (run hourly)
-# Called via ProposalService.expire_old_proposals()
+# Proposal expiration: ProposalService.expire_old_proposals(), called by scripts/daily_jobs.py
 ```
 
 ---

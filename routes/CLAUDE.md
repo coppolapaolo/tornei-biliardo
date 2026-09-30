@@ -19,7 +19,7 @@ Flask blueprints for the American Pool community platform with role-based access
 | `admin.campionato` | `/admin/campionato` | Tournament management |
 | `admin.competition` | `/admin/gara` | Gara management |
 | `admin.match` | `/admin/match` | Match administration |
-| `admin.user` | `/admin/user` | User management |
+| `admin.user` | `/admin` (nessun sotto-prefisso: `/admin/users`, `/admin/user/<id>`) | User management |
 | `admin.venue` | `/admin/venues` | Venue management |
 | `challenge` | `/challenges` | Challenge system |
 | `individual_match` | `/match` | Casual matches |
@@ -98,8 +98,7 @@ ENDPOINT_ROLES = {
 2. Aggiungi l'entry in `ENDPOINT_ROLES` (`utils/feature_flags.py`; anche `set()` esplicito = "solo admin", per documentare la decisione).
 3. Se la route compare in un menu/link condizionato, aggiungi `{% if feature_visible('endpoint.name') %}` nel template.
 
-⚠️ **Nessun test impone la copertura.** `tests/new/unit/test_endpoint_coverage.py`
-**non esiste** (lo citava questa pagina, per errore). Il test reale è
+⚠️ **Nessun test impone la copertura.** Il test sull'allowlist è
 `tests/new/integration/test_endpoint_allowlist.py`, e:
 
 - `test_endpoint_roles_names_are_real` fallisce sui **refusi** nei nomi;
@@ -112,7 +111,7 @@ percorrendo il flusso con `DEBUG_MODE=false`.
 
 ### In sviluppo
 
-In `development` (`DEBUG_MODE=true`) il middleware passa-through e tutto è visibile come oggi. La matrice ha effetto solo in produzione.
+In `development` (`DEBUG_MODE=true`) il middleware è pass-through: tutto è visibile. La matrice ha effetto solo in produzione.
 
 ---
 
@@ -121,23 +120,22 @@ In `development` (`DEBUG_MODE=true`) il middleware passa-through e tutto è visi
 ### AJAX vs Page Requests
 
 ```python
-from flask import request, jsonify, render_template
+from utils.route_helpers import handle_ajax_service_action
 
 @bp.route("/some-action", methods=["POST"])
 @login_required
 def some_action():
-    # Check if AJAX request
-    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        try:
-            # Do work
-            return jsonify({"success": True, "message": "Done"})
-        except Exception as e:
-            return jsonify({"success": False, "error": str(e)}), 400
-    else:
-        # Regular form submission
-        flash(_("Azione completata"), "success")
-        return redirect(url_for("some.route"))
+    # AJAX → JSON, form → flash + redirect. Le eccezioni di dominio diventano
+    # 404/409/403 (`http_status_for_exception`), l'imprevisto un 500 generico.
+    return handle_ajax_service_action(
+        action=lambda: SomeService.do_it(...),
+        redirect_url=url_for("some.route"),
+        success_message=_("Azione completata"),
+    )
 ```
+
+Non scrivere `except Exception: return jsonify(...), 400`: un «non trovato»
+diventa «richiesta non valida», e il testo dell'errore interno arriva all'utente.
 
 ### Service Layer Integration
 

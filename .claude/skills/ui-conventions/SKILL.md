@@ -89,8 +89,8 @@ Proponi modifiche per allineare il codice esistente.
 **Utente**: "Quale icona usiamo per le sale biliardo?"
 
 **Risposta attesa**:
-1. Leggo UI_CONVENTIONS.md → trovo (o non trovo) la voce per le sale
-2. Se c'è, la cito con la riga; se non c'è, propongo opzioni e documento la scelta
+1. Leggo UI_CONVENTIONS.md → `fa-map-marker-alt` è già la voce «Luogo/Venue»
+2. La cito; se non ci fosse, proporrei opzioni e documenterei la scelta
 
 ### Esempio 2: Cambio Colore Badge
 

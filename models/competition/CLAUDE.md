@@ -183,10 +183,8 @@ sbagliato (vedi "Previous Assumption Debunked" in ADR-026).
   essere ri-generati diversamente al prossimo avvio."
 - **Precondizione**: nessun match del round può avere risultati parziali
   (usare `bulk_reset_round_matches` prima se necessario). **I match bye
-  (`is_bye=True`) sono esclusi dal check**: il loro `player1_score`
-  (oggi `0`, SPECIFICHE.md righe 64 e 71) è convenzione di persistenza per la classification
-  machinery, non risultato utente. Semanticamente il bye è "sempre in
-  stato iniziale". Walkover (`is_bye=False` + forfeit → `score > 0`)
+  (`is_bye=True`) sono esclusi dal check**: non portano un risultato inserito da un
+  utente. Semanticamente il bye è "sempre in stato iniziale". Walkover (`is_bye=False` + forfeit → `score > 0`)
   invece bloccano — rappresentano azioni umane e vanno resettati.
   Spec: `spec-cancel-round-ignores-bye.md`.
 - **Bloccato se la gara ha un `Tiebreaker` attivo** (stato != `CANCELLED`) —

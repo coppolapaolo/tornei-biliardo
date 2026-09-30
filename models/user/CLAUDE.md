@@ -130,8 +130,8 @@ from utils import admin_required, gara_manager_required
 
 ## Role Hierarchy
 
-- **Admin**: Manage ALL campionatos, gare, venues
-- **Director**: Manage ASSIGNED campionatos/gare only
+- **Admin**: Manage ALL campionati, gare, venues
+- **Director**: Manage ASSIGNED campionati/gare only
 - **Player**: Inscribe to competitions, propose matches, request promotions
 
 ---
@@ -140,4 +140,4 @@ from utils import admin_required, gara_manager_required
 
 - **Competition Domain**: Inscription, director assignments
 - **Notification Domain**: User notifications
-- **Events Domain**: `DirectorRequestCreatedEvent`, `UserEvents`
+- **Events Domain**: `DirectorRequestCreatedEvent` (see `models/events/user_events.py`)

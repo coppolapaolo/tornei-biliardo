@@ -134,7 +134,7 @@ class FirstRoundPolicy(str, Enum):
 class OddNumberPolicy(str, Enum):
     NO = "no"                                # Parity waitlist — odd player moved to waitlist
     BYE = "bye"                              # Odd player sits out (automatic win)
-    BYE_WITH_CHALLENGE = "bye_with_challenge"  # X played as a drill: win + rack difference = drill score (SPECIFICHE.md riga 65)
+    BYE_WITH_CHALLENGE = "bye_with_challenge"  # X played as a drill: win + rack difference = drill score
     TRIO = "trio"                            # 3-player match (requires distance 2-7, ADR-005)
 ```
 

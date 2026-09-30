@@ -76,7 +76,7 @@ Consulta:
 
 ```bash
 # Esegui test esistenti per verificare non-regressione
-PYTHONPATH=. pytest tests/new/ -n auto --tb=short
+pytest tests/new/unit/ -n auto --tb=short && pytest tests/new/integration/ -n 4 --tb=short
 ```
 
 ## Fase 3: Creazione Test

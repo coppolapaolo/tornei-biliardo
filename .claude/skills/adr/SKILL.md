@@ -40,47 +40,7 @@ nel file è `# [NNN] Titolo`.
 
 ## Template ADR
 
-```markdown
-# [NNN] Titolo Decisione
-
-**Data**: YYYY-MM-DD
-**Stato**: Proposed | Accepted | Deprecated | Superseded by [NNN]
-**Decisori**: Chi ha partecipato alla decisione
-
-## Contesto
-
-Qual è il problema o la situazione che ha richiesto questa decisione?
-Quali vincoli o requisiti esistono?
-
-## Decisione
-
-Cosa abbiamo deciso di fare e perché.
-
-## Alternative Considerate
-
-### Alternativa 1: [Nome]
-- Pro: ...
-- Contro: ...
-
-### Alternativa 2: [Nome]
-- Pro: ...
-- Contro: ...
-
-## Conseguenze
-
-### Positive
-- ...
-
-### Negative
-- ...
-
-### Rischi
-- ...
-
-## Note Implementative
-
-Dettagli tecnici, esempi di codice, riferimenti a file.
-```
+Parti da `docs/adr/TEMPLATE.md`: è l'unica copia del modello.
 
 ## Processo
 

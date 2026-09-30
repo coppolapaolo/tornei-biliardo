@@ -23,7 +23,7 @@ pytest tests/new/unit/test_specific.py -v -n auto
 pytest tests/new/unit/test_file.py::test_name -v -s
 
 # Frontend headless tests (jsdom, Node — gamification badge/anti-invasività)
-cd tests/frontend && npm install && npm test   # run after editing static/js/gamification.js
+cd tests/frontend && npm install && npm test   # run after editing JS under static/js/ that has a suite here (list: package.json `test`)
 
 # Type check (MANDATORY before commits)
 pyright
@@ -43,7 +43,7 @@ python scripts/generate_schema_docs.py          # Regenerate DB schema docs
 
 **Production URL**: https://www.torneibiliardo.it
 
-Le tre cose che devono essere note **sempre**, non solo quando si deploya. Il
+Le quattro cose che devono essere note **sempre**, non solo quando si deploya. Il
 resto — i job della CI, la procedura manuale PythonAnywhere, le env negli
 script da console, l'ordine degli import, gli scheduled task, GlitchTip, la
 convenzione dry-run degli script sui dati storici — sta nella skill **`deploy`**
@@ -166,19 +166,19 @@ stesso identico meccanismo.
 
 Le due volte in cui è successo, entrambe scoperte il 2026-08-23:
 
-* **quanto vale la X in classifica** (SPECIFICHE.md righe 64 e 71: una vittoria
+* **quanto vale la X in classifica** (SPECIFICHE.md, «Strategia di abbinamento»: una vittoria
   e **zero** differenza rack; il codice dava +distanza). **Corretto** lo stesso
   giorno in `round_creation.py`: la X nasce con `player1_score = 0`. Notevole
   che un terzo punto del codice — `validators._validate_rack_system`, che
   vieta il bye semplice col sistema RACK «perché il giocatore con bye
   riceverebbe 0 rack» — fosse d'accordo con la specifica da sempre: nessuno
   aveva mai confrontato i tre. **Corretta lo stesso giorno anche la variante
-  con challenge** (riga 65): la differenza torna a essere il punteggio della
+  con challenge** (stessa sezione): la differenza torna a essere il punteggio della
   prova, e il limite `[0, effective_distance]` è passato dal *lettore* del dato
   a chi lo *registra*. Difendersi a valle, scartando il punteggio, equivaleva a
   cancellare la regola che si voleva applicare — vedi
   `tests/new/unit/test_x_replacement_score_scale.py`;
-* **a chi passa l'invito ai playoff quando qualcuno rifiuta** (riga 186: «al
+* **a chi passa l'invito ai playoff quando qualcuno rifiuta** (SPECIFICHE.md, «Playoff»: «al
   primo degli esclusi»; il codice non lo trovava mai e la finale partiva con un
   posto vuoto). **Corretta** il 2026-08-23: `evaluate_qualifications(posti=…)`
   sa allargare la finestra oltre `max_participants`, e
@@ -274,8 +274,11 @@ User model has soft delete with automatic session-level filtering.
 # Automatic filtering - excludes is_deleted=True
 users = User.query.all()
 
-# Include deleted records
-all_users = User.query.execution_options(include_deleted=True).all()
+# Include deleted records (same filter on User, Gara, Campionato:
+# models/soft_delete/filter.py)
+all_users = db.session.execute(
+    select(User).execution_options(include_deleted=True)
+).scalars().all()
 
 # ✅ CORRECT - Soft delete preserves relationships
 user.anonymize()
@@ -332,7 +335,7 @@ L'unico posto autorizzato a leggere `self.gara.distance`/`is_race_to` sono i
 fallback dentro `Match.effective_*` (per restituire il default della gara
 quando non c'è override). Vedi `docs/adr/ADR-027-round-level-configuration-enforcement.md`.
 
-### 7-8. Stringhe tradotte e attributi `onclick` nei template (CRITICAL)
+### 7-8. Stringhe tradotte e attributi `onclick` nei template
 
 `|tojson` è obbligatorio per ogni stringa tradotta incorporata in JavaScript:
 gli apostrofi italiani (`l'avvio`, `l'errore`) altrimenti rompono la stringa JS
@@ -400,7 +403,7 @@ Endpoint visibility in production is gated by an explicit role matrix in `utils/
 ENDPOINT_ROLES = {
     "main.public_garas_list":     {"anonimo", "player", "director"},  # public
     "dashboard.dashboard":        {"player", "director"},              # logged-in
-    "player.inscribe_to_gara":    {"player"},                          # player only
+    "player.inscribe_to_gara":    {"player", "director"},              # logged-in, non admin
     "admin.competition.start_first_round": {"director"},               # director only
     # NOT in matrix → admin-only in prod by default
 }
@@ -464,9 +467,6 @@ grafo anti-rematch. Non reimplementare algoritmi su grafi — usa `nx`, è già 
 ### Testing Requirements
 - All new features MUST have tests in `tests/new/`
 - Test isolation: use `db_session.get()` not `refresh()`
-- `tests/legacy/` non esiste più: era rimasta indietro fino a non importarsi
-  nemmeno (referenziava `UtilityMixin`, rimosso a giugno 2026), quindi nessuno
-  di quei test girava. Cancellata.
 - Unit tests: `-n auto` OK; Integration tests: `-n 4` (SQLite concurrency)
 - **EventBus isolation**: Never clear `EventBus._handlers = {}` in tests - preserve and restore:
   ```python
@@ -546,12 +546,12 @@ grafo anti-rematch. Non reimplementare algoritmi su grafi — usa `nx`, è già 
 | Migration che crea una tabella senza `created_at`/`updated_at` | `BaseModel` le aggiunge a ogni entità: l'ORM fallisce con «no such column» e la funzione muore in silenzio in produzione (incidente `categoria`, 2026-08-19). I test di comportamento non lo vedono — creano lo schema con `db.create_all()` — quindi il presidio legge il **testo** delle migration: `tests/new/unit/test_migrations_timestamps.py` |
 | Correggere la migration che ha creato la tabella sbagliata | Non serve a niente: è già marcata applicata e non gira più, e comunque è `CREATE TABLE IF NOT EXISTS`. Un DB già storto si ripara solo con una **migration nuova** che aggiunga le colonne (`20260820_timestamps_basemodel.py`) |
 | Schermata della guida ritoccata a mano in un editor | Le immagini si **generano** dall'app (`capture_screenshots.py`) sul dataset di `seed_demo.py`: una ritoccata sopravvive al cambio di interfaccia e diventa una bugia permanente |
-| Dare alla X i triangoli della distanza | La X vale una vittoria e **zero** differenza (SPECIFICHE.md righe 64 e 71): nasce con `player1_score = 0` in `round_creation.py`, e `ScoreAggregator._process_bye_match` somma quello zero ai vinti senza contarne di persi. Fino al 2026-08-23 valeva `round_distance`, e con la classifica a vittorie — che ordina per `(vittorie, differenza triangoli)` — chi riposava scavalcava chi aveva vinto giocando. Presidiato da `test_stagione_e2e_x_e_abbinamenti.py` e `test_specifiche_conformita.py` |
-| Assumere che la X con **challenge** segua la stessa regola | Non la segue: lì la differenza è **pari al punteggio della prova** (SPECIFICHE.md riga 65), non zero. Il punteggio arriva grezzo in classifica, ed è sicuro perché `complete_x_replacement_attempt` rifiuta tutto ciò che esce da `[0, effective_distance]` — la scala la impone chi registra il dato, non chi lo legge. Fino al 2026-08-23 il punteggio veniva **scartato** e sostituito dalla distanza, il che rendeva la variante con prova indistinguibile dalla X secca. Presidiato da `test_x_replacement_score_scale.py` |
+| Dare alla X i triangoli della distanza | La X vale una vittoria e **zero** differenza (SPECIFICHE.md, «Strategia di abbinamento»): nasce con `player1_score = 0` in `round_creation.py`, e `ScoreAggregator._process_bye_match` somma quello zero ai vinti senza contarne di persi. Fino al 2026-08-23 valeva `round_distance`, e con la classifica a vittorie — che ordina per `(vittorie, differenza triangoli)` — chi riposava scavalcava chi aveva vinto giocando. Presidiato da `test_stagione_e2e_x_e_abbinamenti.py` e `test_specifiche_conformita.py` |
+| Assumere che la X con **challenge** segua la stessa regola | Non la segue: lì la differenza è **pari al punteggio della prova** (SPECIFICHE.md, «Strategia di abbinamento»), non zero. Il punteggio arriva grezzo in classifica, ed è sicuro perché `complete_x_replacement_attempt` rifiuta tutto ciò che esce da `[0, effective_distance]` — la scala la impone chi registra il dato, non chi lo legge. Fino al 2026-08-23 il punteggio veniva **scartato** e sostituito dalla distanza, il che rendeva la variante con prova indistinguibile dalla X secca. Presidiato da `test_x_replacement_score_scale.py` |
 | Validare il punteggio della prova contro `gara.distance` | `match.effective_distance` (ADR-027): in un turno «al 3» dentro una gara «al 5» il massimo è 3, e leggere la gara accetterebbe un punteggio che in quel turno nessuno può ottenere giocando |
-| Cercare il sostituto ai playoff dentro `evaluate_qualifications()` senza `posti` | Quella lista è tagliata a `max_participants`, cioè contiene **solo chi ha già una qualificazione** — declinante incluso, che resta in elenco con status `DECLINED`. Il sostituto non si trovava mai e la finale partiva con un posto vuoto. Serve `evaluate_qualifications(posti=max_participants + qualificazioni_esistenti)`: «chi entra?» e «chi viene dopo?» sono due domande diverse (SPECIFICHE.md riga 188) |
+| Cercare il sostituto ai playoff dentro `evaluate_qualifications()` senza `posti` | Quella lista è tagliata a `max_participants`, cioè contiene **solo chi ha già una qualificazione** — declinante incluso, che resta in elenco con status `DECLINED`. Il sostituto non si trovava mai e la finale partiva con un posto vuoto. Serve `evaluate_qualifications(posti=max_participants + qualificazioni_esistenti)`: «chi entra?» e «chi viene dopo?» sono due domande diverse (SPECIFICHE.md, «Playoff») |
 | Sommare le partite di un campionato in un unico mucchio per fare la classifica | L'aggregazione è **per gara**, poi somma pesata su `Gara.classification_weight` (ADR-053): una gara può valere il doppio delle altre, e quella di playoff può valere **zero** quando è lei a decidere la classifica finale. Con tutti i pesi a 1 il risultato è quello di sempre |
-| Calcolare la classifica generale del campionato fuori da `classifica_generale` | Si calcola in **un posto solo**, `TournamentStatisticsService.classifica_generale` (ADR-073): somma le classifiche finali delle gare concluse, come dice `SPECIFICHE.md` riga 292. La pagina la legge via `calculate_general_classification`, le righe `Classification` (profilo, export, inviti ai playoff) ne sono la **copia** scritta da `update_campionato_classification`. Fino al 24/09/2026 le righe rifacevano i conti dalle partite con regole loro, e tre regole su tre sono vissute in un percorso solo: peso e playoff (#335), la zona playoff (#433), la X che negli inviti non contava — nel campionato 5 l'ottavo posto è andato al nono (#550). Presidio: `test_classifica_generale_una_sola.py` |
+| Calcolare la classifica generale del campionato fuori da `classifica_generale` | Si calcola in **un posto solo**, `TournamentStatisticsService.classifica_generale` (ADR-073): somma le classifiche finali delle gare concluse, come dice `SPECIFICHE.md`, «Classifica». La pagina la legge via `calculate_general_classification`, le righe `Classification` (profilo, export, inviti ai playoff) ne sono la **copia** scritta da `update_campionato_classification`. Fino al 24/09/2026 le righe rifacevano i conti dalle partite con regole loro, e tre regole su tre sono vissute in un percorso solo: peso e playoff (#335), la zona playoff (#433), la X che negli inviti non contava — nel campionato 5 l'ottavo posto è andato al nono (#550). Presidio: `test_classifica_generale_una_sola.py` |
 | Leggere le righe `Classification` per disegnare qualcosa **sopra la classifica in pagina** (zona playoff, evidenze) | Le righe sono ferme all'ultimo evento che le ha ricalcolate, la pagina calcola al volo: fino al 14/09/2026 la barra dei playoff segnava il 14º e saltava il 4º perché le righe erano ferme alla gara 1. Ciò che si disegna sulla classifica in pagina si calcola da quella (`models/playoff/zona.py`, `righe_della_classifica_in_pagina`); le righe le leggono solo profilo, export e `start_playoff`, che le ricalcola prima |
 | Cercare il peso del playoff su `PlayoffConfiguration` mentre si calcola una classifica | La fonte letta è `Gara.weight`; `playoff_weight` è il **valore di configurazione**, copiato sulla gara quando nasce (come distanza e turni). Cambiarlo senza propagarlo alla gara già creata è un comando che sembra funzionare e non sposta niente — `PlayoffService.update_scoring` lo fa |
 | Credere che senza playoff-only il playoff «non conti» per il campionato | Conta da sempre: `create_playoff_gara` gli mette `campionato_id`, quindi l'aggregatore lo sommava già con peso 1. Il default `campionato_plus_playoff` **è** il comportamento storico, e la issue #64 proponeva il contrario partendo da questo equivoco |

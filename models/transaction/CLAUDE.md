@@ -30,13 +30,13 @@ def create_something():
 @transactional(domain="competition")
 def update_gara(gara_id: int):
     gara = db.session.get(Gara, gara_id)
-    gara.status = "playing"
+    gara.status = GaraStatus.PLAYING.value
     return gara
 
 # Read-only optimization
 @read_only()
 def get_statistics():
-    return db.session.query(Match).filter_by(status="completed").count()
+    return db.session.query(Match).filter(Match.status.in_(MatchStatus.finished_values())).count()
 
 # Serializable isolation (for critical operations)
 from models.transaction.manager import serializable
@@ -187,7 +187,7 @@ TransactionIsolationLevel.SERIALIZABLE
 
 ## Import Pattern
 
-**CRITICAL**: Always import from `models.transaction.manager`:
+Always import from `models.transaction.manager` — through `models.base` the import cycle can hand you the wrong decorator (ADR-012):
 
 ```python
 # ✅ CORRECT

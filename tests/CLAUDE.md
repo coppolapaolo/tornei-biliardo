@@ -105,7 +105,7 @@ questo file lo dichiarava, ma nessun test lo importava).
 | `test_stagione_e2e_risultati.py` | Le cinque strade che chiudono una partita, i tre modi di tornare indietro, il pareggio a distanza pari, i tavoli e lo swap |
 | `test_stagione_e2e_stagione.py` | La stagione giocata con quindici iscritti: la X a ogni turno, gli override sulle partite vere, lo spareggio SSR, i playoff a 8 e la finale a tre turni diversi |
 | `test_stagione_e2e_handicap.py` | L'handicap: categorie create assegnandole, riporto da una gara all'altra, finestra chiusa all'avvio, Elo che si muove solo fra pari categoria |
-| `test_stagione_e2e_x_e_abbinamenti.py` | Quanto vale la X in classifica (una vittoria e zero differenza, SPECIFICHE.md righe 64 e 71) e il criterio Amalfi: niente reincontri, e abbinamenti ottimi rispetto al salto verificati per forza bruta |
+| `test_stagione_e2e_x_e_abbinamenti.py` | Quanto vale la X in classifica (una vittoria e zero differenza, SPECIFICHE.md «Strategia di abbinamento») e il criterio Amalfi: niente reincontri, e abbinamenti ottimi rispetto al salto verificati per forza bruta |
 | `test_complete_workflows.py` | Promozione a direttore, workflow storici |
 
 **Perché il livello campionato ha il suo file.** Le gare sono coperte una per
@@ -204,11 +204,8 @@ Configuration in `pytest.ini` (`[pytest]`, `--strict-markers`: an undeclared mar
 ### Test Execution
 - **Default**: `pytest` (runs all of `tests/new/` — unit, integration, e2e — via `testpaths` in `pytest.ini`)
 - **Unit only**: `pytest tests/new/unit/ -n auto`
-- **Integration only**: `pytest tests/new/integration/ -n 4` ⚠️ **MUST use -n 4**
+- **Integration only**: `pytest tests/new/integration/ -n 4` — con più worker SQLite va in deadlock e i test non finiscono più
 - **E2E only**: `pytest tests/new/e2e/`
-
-**⚠️ SQLite Concurrency Warning**: Integration tests MUST use `-n 4` (not `-n auto`).
-With more workers, SQLite creates deadlocks causing infinite loops.
 
 ## Testing Strategies
 

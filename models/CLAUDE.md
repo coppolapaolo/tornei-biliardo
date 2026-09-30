@@ -10,7 +10,7 @@ Domain models for the American Pool community platform using Domain-Driven Desig
 
 ## Critical Conventions
 
-### Enum Comparisons (CRITICAL)
+### Enum Comparisons
 
 **Always use `.value` when comparing status fields:**
 

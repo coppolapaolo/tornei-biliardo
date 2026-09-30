@@ -403,8 +403,10 @@ un account dopo una fusione, qui si sta correggendo un tocco sbagliato.
 ## Eventi di dominio
 
 `ChallengeAttemptCompletedEvent` (`models/challenge/events.py`) annuncia il drill
-completato. Il dominio **non** chiama la gamification: pubblica il fatto, e chi
-vuole ascolta — stessa regola dell'esame.
+completato. Per **assegnare** (XP, traguardi, serie) il dominio non chiama la
+gamification: pubblica il fatto, e chi vuole ascolta — stessa regola dell'esame.
+Per **disfare** invece la chiama direttamente: il ricalcolo dopo una prova
+cancellata (sopra) non è un fatto da annunciare, è una correzione.
 
 Lo pubblicano `ChallengeService.complete_challenge_attempt` (catalogo),
 `ChallengeService.complete_x_replacement_attempt` (drill al posto del bye) e

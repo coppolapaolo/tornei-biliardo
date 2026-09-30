@@ -507,7 +507,7 @@ templates/gamification/
 
 ## Do Not
 
-- **Do not call gamification services directly from other domains** - Use events via EventBus
+- **Do not award XP, badges or streaks by calling gamification services from other domains** - Publish an event on the EventBus. The one exception is *undoing*: recomputes and refunds after a removal are called directly (e.g. `GamificationRecalcService.recompute_after_drill_removed`, see `models/challenge/CLAUDE.md`)
 - **Do not forget to import event_handlers in app.py** - Handlers auto-register on import
 - **Do not confuse streak weeks with days** - Streaks are WEEKLY (ISO week), not daily
 - **Do not call `db.session.commit()`** - All services use `@transactional(domain="gamification")`
