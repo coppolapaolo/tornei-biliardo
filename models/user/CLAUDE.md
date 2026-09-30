@@ -17,7 +17,8 @@ Central entity of the platform, referenced by ALL other domains.
 ## Quick Reference
 
 ```python
-from models.user import User, DirectorAssignment, DirectorRequest, VenueManagement
+from models.user import User, DirectorRequest, VenueManagement
+from models.user.models import DirectorAssignment
 from models.user.services import UserService
 from models.user.permission_service import UserPermissionService
 from models.user.venue_manager_service import VenueManagerService
@@ -27,7 +28,7 @@ from models.user.role_enum import UserRole
 # Create user
 user = UserService.create_user(
     username="mario", email="mario@example.com",
-    password="secure123", role="player"
+    password="secure123", role=UserRole.PLAYER.value
 )
 
 # Check role
@@ -45,9 +46,8 @@ UserPermissionService.process_director_request(
     request_id=request.id, admin_user=admin, approve=True
 )
 
-# Soft delete with anonymization
+# Soft delete with anonymization (inside a @transactional service)
 user.anonymize()
-db.session.commit()
 # username → "deleted-{id}-{date}", email/phone → None
 ```
 
@@ -104,10 +104,15 @@ Venue manager assignment.
 - `create_venue_manager_request(...)`, `process_venue_manager_request(...)`
 
 ### PermissionChecker
-Static methods for permission checks + decorators:
+Static methods for permission checks (`can_manage_campionato`, `can_manage_competition`, ...).
+
+Route decorators live in `models/user/role_decorators.py` (`RoleRequirement`) and are
+re-exported by `utils` (`utils/permissions.py`):
 ```python
-@role_required(UserRole.ADMIN)
-@permission_required("manage_competition", competition_id_param="gara_id")
+from utils import admin_required, gara_manager_required
+
+@admin_required          # admin-only route
+@gara_manager_required   # whoever can manage the gara in the URL
 ```
 
 ---
@@ -117,7 +122,7 @@ Static methods for permission checks + decorators:
 - **Do not hard-delete User records** - Use `user.anonymize()` to preserve foreign key relationships
 - **Do not set role via properties** - `user.is_admin = True` fails; use `user.role = UserRole.ADMIN.value`
 - **Do not query encrypted fields directly** - `EncryptedString` handles encryption/decryption
-- **Do not forget soft delete filter** - `User.query.all()` auto-excludes deleted; use `with_deleted()` to include
+- **Do not forget soft delete filter** - `User.query.all()` auto-excludes deleted; use `.execution_options(include_deleted=True)` to include
 - **Do not call `db.session.commit()`** - Services use `@transactional`
 - **Do not skip permission checks** - Always verify `can_manage_*` before allowing operations
 
@@ -125,8 +130,8 @@ Static methods for permission checks + decorators:
 
 ## Role Hierarchy
 
-- **Admin**: Manage ALL campionatos, gare, venues
-- **Director**: Manage ASSIGNED campionatos/gare only
+- **Admin**: Manage ALL campionati, gare, venues
+- **Director**: Manage ASSIGNED campionati/gare only
 - **Player**: Inscribe to competitions, propose matches, request promotions
 
 ---
@@ -135,4 +140,4 @@ Static methods for permission checks + decorators:
 
 - **Competition Domain**: Inscription, director assignments
 - **Notification Domain**: User notifications
-- **Events Domain**: `DirectorRequestCreatedEvent`, `UserEvents`
+- **Events Domain**: `DirectorRequestCreatedEvent` (see `models/events/user_events.py`)

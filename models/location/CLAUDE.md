@@ -32,16 +32,15 @@ LocationService.set_user_availability(
     user_id=player.id,
     billiard_hall_id=venue.id,
     available_days=[DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY],
-    time_from=time(18, 0),
-    time_to=time(22, 0),
+    preferred_time_start="18:00",   # "%H:%M"
+    preferred_time_end="22:00",
     is_available=True
 )
 
-# Find available players at venue
-players = LocationService.get_available_players_at_venue(
+# Find players available at venue at a given time
+players = LocationService.find_available_players(
     billiard_hall_id=venue.id,
-    day=DayOfWeek.WEDNESDAY,
-    time=time(19, 0)
+    proposed_datetime=datetime(2026, 10, 14, 19, 0),
 )
 ```
 
@@ -67,8 +66,8 @@ Player availability at a specific venue.
 - `user_id`, `billiard_hall_id`
 - `is_available`
 - `available_days` (JSON list of DayOfWeek values)
-- `time_from`, `time_to`
-- `notes`
+- `preferred_time_start`, `preferred_time_end`
+- `notify_on_proposals`, `notify_on_cancellations`, `advance_notice_hours`, `max_distance_km`
 
 ### DayOfWeek (Enum)
 `MONDAY=1` through `SUNDAY=7`
@@ -80,9 +79,11 @@ Player availability at a specific venue.
 ### LocationService
 - `create_billiard_hall(...)` - Create venue
 - `set_user_availability(...)` - Set/update player availability
-- `get_available_players_at_venue(...)` - Find opponents
-- `get_user_availabilities(user_id)` - All venues for user
-- `notify_players_of_availability(...)` - Broadcast availability
+- `find_available_players(billiard_hall_id, proposed_datetime)` - Find opponents
+- `get_user_locations(user_id)` - All venues for user
+
+`get_available_players_at_venue` and `notify_players_of_availability` live on
+`AvailabilityService` (`models/individual_match/availability_service.py`).
 
 ---
 

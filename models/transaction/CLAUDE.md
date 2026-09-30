@@ -18,8 +18,9 @@ Advanced transaction management infrastructure ensuring data consistency across 
 ```python
 from models.transaction.manager import transactional, read_only
 
-# Basic usage - auto commit on success, rollback on exception
-@transactional
+# Basic usage - auto commit on success, rollback on exception.
+# `transactional` is a decorator factory: always call it, `@transactional()`
+@transactional()
 def create_something():
     entity = MyEntity(name="test")
     db.session.add(entity)
@@ -29,13 +30,13 @@ def create_something():
 @transactional(domain="competition")
 def update_gara(gara_id: int):
     gara = db.session.get(Gara, gara_id)
-    gara.status = "playing"
+    gara.status = GaraStatus.PLAYING.value
     return gara
 
 # Read-only optimization
-@read_only
+@read_only()
 def get_statistics():
-    return db.session.query(Match).filter_by(status="completed").count()
+    return db.session.query(Match).filter(Match.status.in_(MatchStatus.finished_values())).count()
 
 # Serializable isolation (for critical operations)
 from models.transaction.manager import serializable
@@ -186,7 +187,7 @@ TransactionIsolationLevel.SERIALIZABLE
 
 ## Import Pattern
 
-**CRITICAL**: Always import from `models.transaction.manager`:
+Always import from `models.transaction.manager` — through `models.base` the import cycle can hand you the wrong decorator (ADR-012):
 
 ```python
 # ✅ CORRECT

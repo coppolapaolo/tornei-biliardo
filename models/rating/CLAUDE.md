@@ -2,124 +2,99 @@
 
 ## Purpose
 
-Player skill rating and handicap system for balanced competition.
+Rating Elo dei giocatori, calcolato a **rack** e aggiornato a partita conclusa.
 
 **Core Responsibilities:**
-- Player category assignment (A/B/C/D)
-- Rating systems (Elo, internal)
-- Handicap rules for match distance adjustments
-- Rating history tracking
+- Due pool di rating (dual ELO): competitivo e globale
+- Registro dei delta applicati a ogni partita
+- Regola unica su quali partite contano (`RatingEligibility`, ADR-049)
+- Ricalcolo completo dei pool
+
+Le **categorie** dei giocatori non vivono qui: sono per competizione, su
+`Inscription.categoria_id`, in `models/categoria/` (ADR-049).
 
 ---
 
 ## Quick Reference
 
 ```python
-from models.rating.models import (
-    PlayerCategory, PlayerRating, HandicapRule,
-    CategoryLevel, RatingSystem
-)
-from models.rating.services import RatingService
+from models.rating.models import RatingSystem, PlayerRating, MatchRatingHistory
+from models.rating.calculation_service import RatingCalculationService
+from models.rating.eligibility import RatingEligibility
 
-# Assign player category
-category = RatingService.assign_category(
-    user_id=player.id,
-    category=CategoryLevel.B,
-    assigned_by_id=admin.id,
-    reason="Based on tournament performance"
-)
+# Conta per l'ELO? None = si'; altrimenti un RatingExclusion col motivo
+motivo = RatingEligibility.exclusion_reason(match)
 
-# Get current category
-current = PlayerCategory.get_user_current_category(player.id)
+# In un ciclo: costruisci l'indice delle categorie una volta sola
+index = RatingEligibility.build_index(matches)
+motivo = RatingEligibility.exclusion_reason(match, index=index)
 
-# Calculate handicap for match
-handicap = RatingService.calculate_handicap(
-    player1_id=10,
-    player2_id=20,
-    base_distance=5
-)
-# Returns: {player1_distance: 5, player2_distance: 4, explanation: "..."}
+# Aggiornamento (di solito lo fa l'handler dell'evento, non il chiamante)
+RatingCalculationService.process_match_result(match)
+RatingCalculationService.process_individual_match_result(individual_match)
 ```
 
 ---
 
-## Category Levels
+## Pool di rating (`RatingSystem`)
 
-| Level | Description | Typical Elo |
-|-------|-------------|-------------|
-| A | Advanced | 1800+ |
-| B | Intermediate | 1500-1799 |
-| C | Beginner | 1200-1499 |
-| D | Novice | <300 |
+| Sistema | Partite | Uso |
+|---|---|---|
+| `ELO` | solo match di torneo | competitivo; sincronizzato su `User.elo_rating` |
+| `ELO_GLOBAL` | tornei + sfide individuali confermate da entrambi | solo display |
+| `INTERNAL` | — | rating interno di club |
+
+Un match di torneo aggiorna entrambi i pool; una sfida individuale solo
+`ELO_GLOBAL`. Entrambi i `process_*` sono **idempotenti per pool**: se esiste
+gia' una riga di `MatchRatingHistory` per quella partita e quel sistema, non
+fanno niente (protegge da eventi ri-emessi e dai ricalcoli).
 
 ---
 
 ## Models
 
-### PlayerCategory
-Player's assigned skill category.
-
-**Key Fields:**
-- `user_id`, `category` (A/B/C/D)
-- `assigned_by_id`, `assigned_at`, `reason`
-- `is_active`, `expires_at`
-
-**Methods:**
-- `get_user_current_category(user_id)` - Active category
-- `expire_category()` - Deactivate
-
-### PlayerRating
-External rating system scores.
-
-**Key Fields:**
-- `user_id`, `rating_system` (ELO/INTERNAL)
-- `rating_value`, `confidence_level`
-- `source`, `last_updated`
-
-### HandicapRule
-Rules for distance adjustments based on category differences.
-
-**Key Fields:**
-- `category_higher`, `category_lower`
-- `distance_adjustment` (positive = advantage to lower)
-- `description`, `is_active`
+- **`PlayerRating`**: `user_id`, `rating_system`, `rating_value`, `confidence`,
+  `robustness` (rack giocati, non partite), `last_updated`, `external_id`,
+  `verified`.
+- **`MatchRatingHistory`**: un delta per (partita, giocatore, sistema) —
+  `match_id` o `individual_match_id`, `old_rating`, `new_rating`, `delta`,
+  `robustness_increment`.
 
 ---
 
-## Rating Systems
+## Il motore (`rack_engine.py`, ADR-052)
 
-| System | Source | Usage |
-|--------|--------|-------|
-| ELO | Internal calculation | Match-based updates |
-| INTERNAL | Club assignment | Custom ratings |
+`ΔR = k · (vinti − attesi)` sui **rack**, non sull'esito: un 7–0 e un 7–6
+muovono i rating in modo diverso. Scala di FargoRate (100 punti), partenza
+`rack_engine.PARTENZA`. Il motore non conosce il database: lo usa
+`RatingCalculationService`.
 
 ---
 
-## Handicap Calculation
+## Quali partite contano (`eligibility.py`, ADR-049)
 
-```python
-# Example: A vs C player, base distance 5
-# HandicapRule: A vs C = +2 adjustment for C
+`RatingEligibility.exclusion_reason` restituisce il **motivo**
+(`RatingExclusion`: `WALKOVER`, `HANDICAP_CATEGORY_MISSING`,
+`HANDICAP_DIFFERENT_CATEGORY`, `PROVA`) o `None`. Con l'handicap l'ELO si
+muove solo fra giocatori della **stessa categoria**; l'handicap da solo non
+esclude. `counts_for_rating` e' la forma booleana.
 
-player1 (A): distance = 5
-player2 (C): distance = 5 + 2 = 7
-
-# C player needs 7 racks to win, A player needs 5
-```
+Handler (`RatingEventHandlers`), ricalcoli e `scripts/diagnose_elo.py` passano
+tutti da qui: `process_match_result` **non** rilegge la regola, quindi chi lo
+chiama deve aver gia' escluso le partite che non contano.
 
 ---
 
 ## Do Not
 
-- **Do not have multiple active categories** - Expire old before assigning new
-- **Do not apply handicap without rule** - Check `HandicapRule.is_active`
-- **Do not trust expired ratings** - Check `last_updated` for freshness
-- **Do not call `db.session.commit()`** - Services use `@transactional`
+- **Do not decide ELO eligibility with your own `if`** (es. `effective_has_handicap`) - Use `RatingEligibility`
+- **Do not look for categories here or on `User`** - They live on `Inscription.categoria_id` (`models/categoria/`)
+- **Do not call `db.session.commit()`** - `RatingCalculationService` does not commit: the caller owns the transaction (`@transactional`)
 
 ---
 
 ## Cross-References
 
-- **Match**: [../match/CLAUDE.md](../match/CLAUDE.md) - Handicap fields on Match
-- **Matchmaking**: [../matchmaking/CLAUDE.md](../matchmaking/CLAUDE.md) - FirstRoundPolicy.RATING
-- **User**: [../user/](../user/) - `elo_rating` field
+- **Categorie**: `models/categoria/`
+- **Events**: `RatingEventHandlers` in `event_handlers.py` (`MatchCompletedEvent`, `IndividualMatchCompletedEvent`)
+- **ADR**: `docs/adr/ADR-049-same-category-restores-elo-in-handicap-events.md`, `docs/adr/ADR-052-rating-model-decided-by-measurement.md`

@@ -18,7 +18,7 @@ sempre, non solo quando si deploya.
 cd /home/paolocoppola/mysite
 git pull origin main
 # ATTENZIONE: migrations SOLO con web app Disabled (tab Web)!
-python migrations/runner.py
+venv/bin/python migrations/runner.py
 # poi Reload dal tab Web
 ```
 
@@ -210,10 +210,8 @@ non importa nulla dal progetto.
 > `migrate_gamification_rules.py`) **non** usano `prod_env` e restano fuori
 > dalla regola: non caricano env di produzione, quindi per loro l'ordine non
 > significa nulla. Se un domani dovessero girare in produzione, vanno prima
-> agganciati a `bootstrap_and_create_app`. `recalc_elo.py` **è già stato
-> agganciato** (era in questo elenco fino al 2026-08-21): gira in console di
-> produzione, e chi si fida dell'elenco vecchio gli sconsiglia il comando che
-> invece funziona.
+> agganciati a `bootstrap_and_create_app`. `recalc_elo.py` invece usa già
+> `bootstrap_and_create_app` e gira in console di produzione.
 
 > ⚠️ `scripts/send_match_reminders.py` è **registrato** e gira ogni ora
 > (confermato dal log del 2026-08-17). Non è accorpabile a `daily_jobs.py`:

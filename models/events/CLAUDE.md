@@ -31,11 +31,11 @@ EventBus.register_handler(MatchCompletedEvent, my_handler, priority=10)
 # Publish event (typically done by services)
 event = MatchCompletedEvent(
     match_id=123,
-    gara_id=456,
+    player1_id=10, player1_name="mario",
+    player2_id=20, player2_name="luigi",
     winner_id=10,
-    loser_id=20,
-    player1_score=5,
-    player2_score=3
+    score="5-3",
+    gara_id=456,
 )
 EventBus.publish(event)
 ```
@@ -72,22 +72,19 @@ Central dispatcher using publish-subscribe pattern.
 
 | File | Events |
 |------|--------|
-| `match_events.py` | `MatchCompletedEvent`, `MatchStartedEvent` |
-| `competition_events.py` | `InscriptionCreatedEvent`, `GaraCompletedEvent`, `DirectorAssignmentAddedEvent` |
-| `user_events.py` | `UserRegisteredEvent`, `DirectorRequestCreatedEvent` |
-| `availability_events.py` | `PlayerAvailabilityChangedEvent` |
+| `match_events.py` | `MatchProposalCreatedEvent`, `MatchAcceptedEvent`, `MatchCompletedEvent`, `MatchReopenedEvent`, `IndividualMatchCreatedEvent`, `IndividualMatchCompletedEvent` |
+| `competition_events.py` | `CampionatoCreatedEvent`, `CompetitionCreatedEvent`, `CompetitionRegistrationOpenedEvent`, `CompetitionStartedEvent`, `CompetitionCompletedEvent`, `InscriptionCreatedEvent`, `DirectorAssignmentAddedEvent`, `DirectorAssignmentRemovedEvent` |
+| `user_events.py` | `UserRegisteredEvent`, `DirectorRequestCreatedEvent`, `DirectorRequestProcessedEvent`, `VenueManagerRequestCreatedEvent`, `VenueManagerRequestProcessedEvent` |
+| `availability_events.py` | `PlayerAvailabilityCreatedEvent`, `AvailabilityNotificationEvent` |
 
 ---
 
 ## Handler Registration
 
-Handlers auto-register on import. Import in `app.py`:
-
-```python
-# app.py - Register event handlers
-from models.gamification import event_handlers  # noqa: F401
-from models.events import notification_handlers  # noqa: F401
-```
+Handlers auto-register on import, so every handler module must be imported at
+startup: see the "Register … handlers" block in `app.py` (gamification, rating,
+demand, SSE bridge, frontend bridge). `models.events.notification_handlers` is
+imported by `models/events/__init__.py`.
 
 **Handler Priority:**
 - Higher priority = earlier execution

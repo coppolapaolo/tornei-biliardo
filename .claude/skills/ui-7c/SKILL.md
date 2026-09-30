@@ -158,7 +158,7 @@ regole, presidiate da `tests/new/unit/test_motion_tokens.py`:
   vede solo provando l'azione a mano (punto 5 della verifica) — o in
   produzione. Dettagli in `templates/CLAUDE.md`.
 - **Ogni stringa visibile dentro `_()`**, comprese quelle nei componenti che
-  stai solo spostando. Le traduzioni EN si rigenerano a fine redesign.
+  stai solo spostando; a fine modifica lancia la skill `translate`.
 - **`|tojson` obbligatorio** per ogni stringa tradotta dentro JavaScript: un
   apostrofo italiano rompe tutto il JS della pagina. Gli `onclick` che lo
   usano vogliono apici singoli. Vedi `templates/CLAUDE.md`.

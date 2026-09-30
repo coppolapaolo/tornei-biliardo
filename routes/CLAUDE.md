@@ -19,9 +19,9 @@ Flask blueprints for the American Pool community platform with role-based access
 | `admin.campionato` | `/admin/campionato` | Tournament management |
 | `admin.competition` | `/admin/gara` | Gara management |
 | `admin.match` | `/admin/match` | Match administration |
-| `admin.user` | `/admin/user` | User management |
-| `admin.venue` | `/admin/venue` | Venue management |
-| `challenge` | `/challenge` | Challenge system |
+| `admin.user` | `/admin` (nessun sotto-prefisso: `/admin/users`, `/admin/user/<id>`) | User management |
+| `admin.venue` | `/admin/venues` | Venue management |
+| `challenge` | `/challenges` | Challenge system |
 | `individual_match` | `/match` | Casual matches |
 | `exam` | `/exam` | Esami: catalogo, sessioni, appuntamenti (ADR-042) |
 | `roles` | `/roles` | Ruoli concedibili e delega (ADR-041) |
@@ -86,7 +86,7 @@ ENDPOINT_ROLES = {
     "main.public_garas_list":                  {"anonimo", "player", "director"},
     "admin.competition.gara_detail":           {"anonimo", "player", "director"},  # polimorfica
     "dashboard.dashboard":                     {"player", "director"},
-    "player.inscribe_competition":             {"player"},
+    "player.inscribe_to_gara":                 {"player", "director"},
     "admin.competition.create_gara_standalone": {"director"},
     # NON listato → solo admin: admin.kpi.index, admin.user.director_requests, ecc.
 }
@@ -98,8 +98,7 @@ ENDPOINT_ROLES = {
 2. Aggiungi l'entry in `ENDPOINT_ROLES` (`utils/feature_flags.py`; anche `set()` esplicito = "solo admin", per documentare la decisione).
 3. Se la route compare in un menu/link condizionato, aggiungi `{% if feature_visible('endpoint.name') %}` nel template.
 
-⚠️ **Nessun test impone la copertura.** `tests/new/unit/test_endpoint_coverage.py`
-**non esiste** (lo citava questa pagina, per errore). Il test reale è
+⚠️ **Nessun test impone la copertura.** Il test sull'allowlist è
 `tests/new/integration/test_endpoint_allowlist.py`, e:
 
 - `test_endpoint_roles_names_are_real` fallisce sui **refusi** nei nomi;
@@ -112,7 +111,7 @@ percorrendo il flusso con `DEBUG_MODE=false`.
 
 ### In sviluppo
 
-In `development` (`DEBUG_MODE=true`) il middleware passa-through e tutto è visibile come oggi. La matrice ha effetto solo in produzione.
+In `development` (`DEBUG_MODE=true`) il middleware è pass-through: tutto è visibile. La matrice ha effetto solo in produzione.
 
 ---
 
@@ -121,28 +120,27 @@ In `development` (`DEBUG_MODE=true`) il middleware passa-through e tutto è visi
 ### AJAX vs Page Requests
 
 ```python
-from flask import request, jsonify, render_template
+from utils.route_helpers import handle_ajax_service_action
 
 @bp.route("/some-action", methods=["POST"])
 @login_required
 def some_action():
-    # Check if AJAX request
-    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        try:
-            # Do work
-            return jsonify({"success": True, "message": "Done"})
-        except Exception as e:
-            return jsonify({"success": False, "error": str(e)}), 400
-    else:
-        # Regular form submission
-        flash(_("Azione completata"), "success")
-        return redirect(url_for("some.route"))
+    # AJAX → JSON, form → flash + redirect. Le eccezioni di dominio diventano
+    # 404/409/403 (`http_status_for_exception`), l'imprevisto un 500 generico.
+    return handle_ajax_service_action(
+        action=lambda: SomeService.do_it(...),
+        redirect_url=url_for("some.route"),
+        success_message=_("Azione completata"),
+    )
 ```
+
+Non scrivere `except Exception: return jsonify(...), 400`: un «non trovato»
+diventa «richiesta non valida», e il testo dell'errore interno arriva all'utente.
 
 ### Service Layer Integration
 
 ```python
-from models.competition.services import GaraService
+from models.competition.round_service import RoundService
 
 @bp.route("/gara/<int:gara_id>/start-round", methods=["POST"])
 @login_required
@@ -156,14 +154,10 @@ def start_round(gara_id):
     if not current_user.can_manage_competition(gara_id):
         abort(403)
 
-    # Use service layer (handles @transactional)
-    service = GaraService()
-    result = service.start_next_round(gara_id)
-
-    if result.success:
-        flash(_("Turno avviato"), "success")
-    else:
-        flash(result.error, "danger")
+    # Service handles @transactional; domain errors are raised, not returned
+    round_number = gara.current_round + 1
+    total, n_normal, n_bye, n_trio, _tables = RoundService.start_next_round(gara_id, round_number)
+    flash(_("Turno avviato"), "success")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
 ```
@@ -186,7 +180,7 @@ def edit_gara(gara_id):
     # Check user can manage this specific entity
     if not current_user.can_manage_competition(gara_id):
         flash(_("Non hai i permessi"), "danger")
-        return redirect(url_for("dashboard.index"))
+        return redirect(url_for("dashboard.dashboard"))
 
     # ... rest of handler
 ```
@@ -270,7 +264,7 @@ admin_bp.register_blueprint(match_bp)
 url_for("admin.competition.gara_detail", gara_id=1)
 # → /admin/gara/1
 
-url_for("admin.campionato.detail", campionato_id=1)
+url_for("admin.campionato.campionato_detail", campionato_id=1)
 # → /admin/campionato/1
 ```
 
@@ -302,7 +296,7 @@ if user and user.is_deleted:
 ```python
 # Gara can be standalone (no campionato)
 if gara.campionato_id:
-    return redirect(url_for("admin.campionato.detail", campionato_id=gara.campionato_id))
+    return redirect(url_for("admin.campionato.campionato_detail", campionato_id=gara.campionato_id))
 else:
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara.id))
 ```
@@ -312,7 +306,7 @@ else:
 ## Do Not
 
 - **Do not use `filter_by(id=...)` for PK lookup** - Use `db.session.get(Model, id)`
-- **Do not skip permission checks** - Always verify `current_user.can_manage_*()` for entity operations
+- **Do not skip permission checks** - Entity routes use `@gara_manager_required` / `@campionato_manager_required` (utils/permissions.py); call `current_user.can_manage_*()` inline only when the check needs more than the URL id
 - **Do not call `db.session.commit()`** - Services handle transactions via `@transactional`
 - **Do not forget soft-delete check** - Deleted users should be treated as not found
 - **Do not assume gara has campionato** - Check `gara.campionato_id` before accessing

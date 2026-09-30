@@ -5,7 +5,7 @@
 Event-driven notification system for user communications across all domains.
 
 **Key Features:**
-- Event-driven: Listens to domain events via `@event_handler`
+- Event-driven: Listens to domain events via `EventBus.subscribe`
 - User preferences: Quiet hours, frequency limits, notification types
 - Bulk operations: Multi-user notifications with error handling
 - Priority levels: LOW, NORMAL, HIGH, URGENT
@@ -22,13 +22,14 @@ from models.notification.models import (
 )
 from models.notification.services import NotificationService
 from models.notification.factory import NotificationFactory
+from flask_babel import lazy_gettext as _l  # testi composti nella lingua di chi riceve (ADR-062)
 
 # Create notification (respects user preferences)
 notification = NotificationService.create_notification(
     user_id=user.id,
     notification_type=NotificationType.MATCH_PROPOSAL,
-    title="Nuova Proposta",
-    message="Paolo ti ha invitato a giocare",
+    title=_l("Nuova proposta"),
+    message=_l("%(player)s ti ha invitato a giocare", player=nome),
     priority=NotificationPriority.NORMAL,
     action_url="/player/proposals/123"
 )
@@ -37,8 +38,8 @@ notification = NotificationService.create_notification(
 notifications = NotificationFactory.create_bulk_notification(
     user_ids=[1, 2, 3],
     notification_type=NotificationType.TOURNAMENT_STARTING,
-    title="Torneo in Partenza",
-    message="Il torneo sta per iniziare!",
+    title=_l("Torneo in partenza"),
+    message=_l("Il torneo sta per iniziare!"),
     priority=NotificationPriority.HIGH
 )
 
@@ -166,5 +167,5 @@ ruolo nella lingua sbagliata. Anche i parametri tradotti vanno pigri.
 ## Cross-References
 
 - **User Domain**: FK to User for `user_id`
-- **Events Domain**: `@event_handler` for automatic notifications
+- **Events Domain**: `EventBus.subscribe` for automatic notifications
 - Used by: competition, match, individual_match, challenge, playoff domains

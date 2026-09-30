@@ -10,7 +10,7 @@ Flask/Jinja2 templates for the American Pool community platform using Bootstrap 
 
 ## Critical Conventions
 
-### Token CSRF in ogni form che scrive (CRITICAL)
+### Token CSRF in ogni form che scrive
 
 `CSRFProtect` è registrato globalmente in `app.py`: protegge **ogni** POST
 senza che la route dichiari niente. L'onere sta tutto qui, nel template.
@@ -39,7 +39,7 @@ degli esami rispondeva 400.
 Il presidio è statico, sul testo dei template:
 `tests/new/integration/test_drill_exam_manual_findings.py::test_ogni_form_post_ha_il_token_csrf`.
 
-### Translated Strings in JavaScript (CRITICAL)
+### Translated Strings in JavaScript
 
 When embedding translated strings in JavaScript, **ALWAYS use `|tojson`** filter. This prevents syntax errors from apostrophes in Italian text.
 
@@ -58,7 +58,7 @@ alert({{ _("Errore:")|tojson }} + ' ' + errorMessage);
 
 **Why this matters**: Italian text often contains apostrophes (`l'avvio`, `l'errore`, `l'iscrizione`). Without `|tojson`, these break JavaScript and cause silent failures.
 
-### Onclick Attributes with Dynamic Strings (CRITICAL)
+### Onclick Attributes with Dynamic Strings
 
 When using `|tojson` in HTML onclick attributes, **use single quotes for the attribute**:
 
@@ -76,7 +76,7 @@ When using `|tojson` in HTML onclick attributes, **use single quotes for the att
 
 **Why**: `|tojson` always produces JSON strings with double quotes. Using single quotes for the onclick attribute avoids quote conflicts.
 
-### Python-style Placeholders in JS Strings (CRITICAL)
+### Python-style Placeholders in JS Strings
 
 **NEVER use `%(name)s` placeholders** in translated strings that JavaScript will interpolate. Flask-Babel tries to substitute them at render time → `KeyError`.
 
@@ -99,7 +99,7 @@ const msg = {{ _("Elimina %(count)s elementi?", count=items|length)|tojson }};
 
 **Rule**: If JavaScript does the interpolation, don't use `%(...)s` in `_()`.
 
-### Ogni CSS e JS locale porta `?v=ASSET_VERSION` (CRITICAL)
+### Ogni CSS e JS locale porta `?v=ASSET_VERSION`
 
 ```jinja2
 {# ❌ WRONG - i browser restano sul file vecchio dopo ogni modifica #}
@@ -273,7 +273,7 @@ fetch('{{ url_for("some.route", id=item.id) }}', {
     method: 'POST',
     headers: {
         'Content-Type': 'application/json',
-        'X-CSRFToken': '{{ csrf_token() }}'
+        'X-CSRFToken': csrfToken()
     },
     body: JSON.stringify(data)
 });
@@ -312,5 +312,5 @@ const config = {{ some_dict|tojson }};
 
 - Wrap all user-visible strings: `{{ _("Text") }}`
 - Use named placeholders: `{{ _("Hello %(name)s", name=user.username) }}`
-- Run `pybabel extract/update/compile` after adding strings
+- After adding strings, invoke the `translate` skill (it carries the required pybabel flags)
 - Italian is the primary language; English is fallback
