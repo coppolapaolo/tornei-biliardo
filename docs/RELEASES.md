@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.53.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.53.1...v1.53.2) (2026-09-30)
+
+
+### Correzioni
+
+* messaggi d'errore e di revoca nella lingua di chi legge ([#605](https://github.com/coppolapaolo/tornei-biliardo/issues/605)) ([ed957f9](https://github.com/coppolapaolo/tornei-biliardo/commit/ed957f9fe60f417809cb850f18bdc833cdf88738))
+
 ## [1.53.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.53.0...v1.53.1) (2026-09-30)
 
 
