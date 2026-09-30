@@ -11,13 +11,21 @@ import logging
 from typing import Any, Callable, Optional
 
 from flask import abort, flash, jsonify, make_response, redirect, request
+from flask_babel import gettext as _
 
 from models.base import db
 from models.exceptions import http_status_for_exception
 
 logger = logging.getLogger(__name__)
 
-_GENERIC_ERROR = "Errore interno del server"
+
+def _errore_generico() -> str:
+    """Il messaggio per l'errore imprevisto, nella lingua di chi legge.
+
+    Una funzione e non una costante: tradotto all'import, resterebbe
+    nella lingua di nessuno.
+    """
+    return _("Errore interno del server")
 
 
 def get_or_ajax_404(
@@ -106,8 +114,8 @@ def handle_ajax_service_action(
     except Exception as e:
         logger.error("Unexpected error in AJAX service action: %s", e, exc_info=True)
         if is_json:
-            return ajax_error(_GENERIC_ERROR, status=500)
-        flash(_GENERIC_ERROR, "error")
+            return ajax_error(_errore_generico(), status=500)
+        flash(_errore_generico(), "error")
     return redirect(redirect_url)
 
 
@@ -146,7 +154,7 @@ def handle_service_action(
         flash(msg, "error")
     except Exception as e:
         logger.error("Unexpected error in service action: %s", e, exc_info=True)
-        flash(_GENERIC_ERROR, "error")
+        flash(_errore_generico(), "error")
     return redirect(redirect_url)
 
 
@@ -165,4 +173,4 @@ def safe_json_error(e: Exception, context: str = "") -> tuple[Any, int]:
     """
     log_msg = f"Unexpected error{f' ({context})' if context else ''}: {e}"
     logger.error(log_msg, exc_info=True)
-    return jsonify({"error": _GENERIC_ERROR}), 500
+    return jsonify({"error": _errore_generico()}), 500

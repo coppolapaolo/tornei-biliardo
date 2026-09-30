@@ -437,10 +437,5 @@ class Campionato(db.Model):
         """Get all non-deleted campionati."""
         return cls.query.filter_by(is_deleted=False)
 
-    @classmethod
-    def get_deleted_campionatos(cls):
-        """Get all soft-deleted campionati."""
-        return cls.query.filter_by(is_deleted=True)
-
     def __repr__(self):
         return f"<Campionato {self.name}>"

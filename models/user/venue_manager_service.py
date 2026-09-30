@@ -451,7 +451,10 @@ class VenueManagerService:
                 venue_name=assignment.venue.name,
                 status="revoked",
                 processed_by_id=revoked_by.id,
-                notes="Gestione sala revocata dall'amministratore",
+                # Nessun motivo: il messaggio di revoca e' gia' completo e
+                # tradotto, e un testo scritto qui arriverebbe in italiano
+                # a chiunque.
+                notes=None,
             )
         )
 
