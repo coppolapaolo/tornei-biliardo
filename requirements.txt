@@ -5,7 +5,7 @@ Flask-SQLAlchemy==3.1.1
 # si è trovata la 2.1 mentre sviluppo e produzione erano sulla 2.0. La 2.1
 # vuole Python 3.11 o superiore (`.python-version`). Il salto alla 2.2 va
 # deciso apposta, come questo.
-SQLAlchemy>=2.1,<2.2
+SQLAlchemy>=2.1.1,<2.2
 Flask-Login==0.6.3
 Werkzeug==3.1.8
 cryptography>=42.0.0,<44.0.0
