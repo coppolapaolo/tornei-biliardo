@@ -114,6 +114,15 @@ blocks:
           lag, you start it with **Start match**. When time is up the card
           turns yellow and moves to the top, among those to watch: the match
           does not close by itself.
+      - name: "Stop a match on time"
+        text: >-
+          Tap **Stop match** on the timed-out card, or from the match menu even
+          before time is up: the sheet warns you how many minutes are left. It
+          says what happens on the current score: whoever is ahead wins; on a
+          tie it is a draw, but in a bracket there are no draws and you choose
+          who goes through. The match stays in the results marked **on time**,
+          and it can be corrected like the others, even below the distance. If
+          instead it reaches the distance, it ends as always, with no mark.
       - name: "Validate a result"
         text: >-
           A match that reached the distance from the players' scoreboard,

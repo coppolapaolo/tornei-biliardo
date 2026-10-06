@@ -109,6 +109,10 @@ Parametri:
         {% else %}
         <span class="c7-sep">·</span> {{ _('%(n)s triangoli giocati', n=p1_score + p2_score) }}
         {% endif %}
+        {# Interrotta dal direttore prima della distanza (ADR-077). #}
+        {% if is_completed and match.closed_on_time is defined and match.closed_on_time %}
+        <span class="c7-sep">·</span> {{ _('a tempo') }}
+        {% endif %}
     </div>
 
     {# Il limite di tempo (ADR-077): il timer sotto il punteggio, uguale per

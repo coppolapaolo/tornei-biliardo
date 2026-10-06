@@ -25,6 +25,9 @@
         {# Il ritiro di un giocatore: un comando per giocatore, creato da
            `apriMenuPartita` dagli attributi della card. #}
         <div class="c7-stack c7-menu-ritiri" id="menuPartitaRitiri" hidden></div>
+        <button type="button" class="btn btn-secondary w-100" id="menuPartitaInterrompi" hidden>
+          <i class="fas fa-stopwatch"></i> {{ _('Interrompi partita') }}
+        </button>
         <button type="button" class="btn btn-danger w-100" id="menuPartitaAzzera">
           <i class="fas fa-rotate-left"></i> {{ _('Azzera la partita') }}
         </button>
@@ -83,6 +86,44 @@
         <button type="button" class="btn btn-danger w-100" id="ritiroConferma">
           <i class="fas fa-flag"></i> {{ _('Registra il ritiro') }}
         </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# Il foglio «Interrompi partita» (ADR-077, ADR-074): dice cosa succede prima
+   di farlo. Chi è avanti vince; a parità pareggio fuori dal tabellone, e nel
+   tabellone due pulsanti, uno per chi passa. Prima dello scadere avverte
+   quanto mancava. Lo riempie `apriInterrompi` (`_scripts.html`) dal punteggio
+   della card; la regola vera la applica il server
+   (`models/match/chiusura.py`). #}
+<div class="modal fade c7-sheet" id="interrompiModal" tabindex="-1" aria-labelledby="interrompiTitolo">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="c7-sheet__grip" aria-hidden="true"></div>
+        <h3 class="modal-title" id="interrompiTitolo">{{ _('Interrompi partita') }}</h3>
+        <div class="c7-sheet__sub" id="interrompiSotto"></div>
+      </div>
+      <div class="modal-body c7-stack">
+        <div class="c7-flash c7-flash--warning" id="interrompiMancano" hidden>
+          <span class="c7-flash__ico"><i class="fas fa-stopwatch"></i></span>
+          <span class="c7-flash__body"><span class="c7-flash__title" id="interrompiMancanoTesto"></span></span>
+        </div>
+        <div class="c7-rows">
+          <div class="c7-rows__row">
+            <span class="c7-tile c7-tile--sm c7-tile--warn"><i class="fas fa-flag-checkered"></i></span>
+            <span class="c7-rows__main">
+              <span class="c7-rows__title d-block" id="interrompiEsito"></span>
+              <span class="c7-rows__sub d-block">{{ _('la partita si chiude sul punteggio di adesso, con il segno «a tempo»') }}</span>
+            </span>
+          </div>
+        </div>
+        <div class="c7-nota">{{ _('Si corregge come le altre partite, anche sotto la distanza.') }}</div>
+        <button type="button" class="btn btn-primary w-100" id="interrompiConferma">
+          <i class="fas fa-stopwatch"></i> <span id="interrompiConfermaTesto"></span>
+        </button>
+        <div class="c7-stack" id="interrompiChiPassa" hidden></div>
       </div>
     </div>
   </div>

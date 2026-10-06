@@ -47,8 +47,11 @@ class MatchValidationService:
         if MatchStatus.is_finished(match.status):
             raise ValueError("Il match è già stato completato")
 
-        # Check distance is reached (works for both 1v1 and trio)
-        if not match.is_at_distance:
+        # Alla distanza (vale per partite a due e trio), oppure interrotta a
+        # tempo dal direttore (ADR-077): la regola sta in `chiusura`.
+        from .chiusura import chiudibile
+
+        if not chiudibile(match):
             raise ValueError("Il match non ha ancora raggiunto la distanza")
 
         # Auto-determine winner if not set
@@ -125,4 +128,5 @@ class MatchValidationService:
             "player1_score": match.player1_score,
             "player2_score": match.player2_score,
             "waiting_match_id": waiting_match_id,
+            "closed_on_time": bool(match.closed_on_time),
         }

@@ -251,7 +251,9 @@ blocks:
     text: >-
       Il cronometro diventa «Tempo scaduto» e continua a contare i minuti in
       più. La partita resta aperta: si continua a segnare, e se arrivate alla
-      distanza si chiude come sempre. È il direttore che decide se fermarla.
+      distanza si chiude come sempre. È il direttore che decide se fermarla:
+      se la interrompe, vale il punteggio di quel momento, e nei risultati la
+      partita compare con il segno **a tempo**.
 
   - type: heading
     id: sbagli

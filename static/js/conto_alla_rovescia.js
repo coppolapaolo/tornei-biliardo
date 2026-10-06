@@ -38,12 +38,16 @@
     if (card && scaduto) card.classList.add('c7-card--warn');
   }
 
+  // Lo scarto fra l'orologio del server e quello del dispositivo, misurato
+  // una volta sola al caricamento. Lo usa anche chi chiede «che ore sono»
+  // per lo stesso timer (il foglio «Interrompi partita»).
+  var scarto = 0;
+
+  function adesso() { return Date.now() + scarto; }
+
   function avvia() {
     var timer = Array.prototype.slice.call(document.querySelectorAll('[data-timer-inizio]'));
     if (!timer.length) return;
-    // Lo scarto fra l'orologio del server e quello del dispositivo, misurato
-    // una volta sola al caricamento.
-    var scarto = 0;
     var server = Date.parse(timer[0].getAttribute('data-timer-adesso') || '');
     if (!isNaN(server)) scarto = server - Date.now();
     function giro() {
@@ -54,7 +58,7 @@
     setInterval(giro, 1000);
   }
 
-  window.c7ContoAllaRovescia = { testo: testo, aggiorna: aggiorna };
+  window.c7ContoAllaRovescia = { testo: testo, aggiorna: aggiorna, adesso: adesso };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', avvia);

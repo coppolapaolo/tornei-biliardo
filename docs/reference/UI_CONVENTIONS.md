@@ -1170,6 +1170,15 @@ il punteggio della partita, schermo in sala). Un solo macro la disegna,
 `static/js/conto_alla_rovescia.js`. Senza limite di tempo non compare niente:
 nessuno spazio riservato.
 
+**Interrompere.** Sulla card scaduta il comando sta sulla card, pieno
+(«Interrompi partita»); prima dello scadere sta nel menu della partita. Il
+foglio (`interrompiModal`) segue l'ADR-074: nomina l'esito sul punteggio di
+adesso («Chiudi sul 2–1: vince Rossi»), avverte con un `c7-flash--warning` se
+mancano minuti, e nel tabellone a parità sostituisce la conferma con un
+pulsante per giocatore («Passa Rossi»). Nei risultati la partita interrotta
+porta **«a tempo»**, piccolo e spento accanto al punteggio come «corretto», con
+la stessa icona del timer.
+
 ### Schermo in sala
 
 `/g/<indirizzo>/sala`, `.c7-sala`: da leggere a tre metri su una TV 16:9.
@@ -1277,6 +1286,7 @@ Principi, in ordine di importanza:
 | 2026-06-10 | fa-8-ball per "Ai tavoli adesso" | Card "In diretta ora": era fa-table-tennis-paddle-ball (racchetta ping pong!) — allineata alla convenzione biliardo |
 | 2026-08-16 | Immagini dei drill mai ritagliate (`.c7-diagram`) | L'immagine **è** l'esercizio: `object-fit: cover` toglieva fino al 43% della foto, cioè le teste del tavolo. Cinque superfici passano a `contain` su riquadro affossato, regola unica nel tema (ADR-044) |
 | 2026-10-06 | Pastiglia `.c7-timer` per il limite di tempo | Il conto alla rovescia è un'informazione di stato, non un comando: stessa forma di `.c7-state`, cifre di servizio in mono, avviso giallo allo scadere perché il tempo scaduto non chiude niente da sé (ADR-077). `fa-stopwatch`: il cronometro, anche sul pulsante «Avvia partita» |
+| 2026-10-06 | Foglio «Interrompi partita» e segno «a tempo» | Interrompere chiude una partita sotto la distanza e non si disfa con un tocco: foglio col nome dell'azione e l'esito scritto (ADR-074). Il segno nei risultati imita «corretto»: è un'informazione su com'è finita, non uno stato da guardare (ADR-077) |
 | 2026-09-11 | Segmenti (`.c7-seg`), ricerca con chip (`.c7-search`, `.c7-chips`) e chip di posizione (`.c7-pos`) nello storico | Introdotti con lo storico delle gare (#333): i segmenti scelgono fra Gare e Campionati, i chip sono filtri persistiti nell'URL, il chip di posizione è lo stesso del podio (#332). Linguette e chip sono controlli frequenti e rispettano `--c7-touch` (48px), il minimo del design system; i 44px della sezione «Touch Target» sono il limite storico Bootstrap, il token vince |
 | 2026-09-11 | La cifra del punteggio che cambia salta (`.is-pop` / `c7-pop`), sia sul tabellone sia sulla card verticale dopo il ricaricamento | Un 3 che diventa 4 senza movimento si perde, soprattutto sull'altro telefono quando arriva l'evento live: il movimento qui è informazione. Solo se il valore è cambiato davvero, così il polling che riallinea un punteggio uguale non muove niente. Scelta la colonna «250 ms» nella pagina di confronto (#342) |
 | 2026-09-11 | Il cambio pagina è una view transition cross-document (`@view-transition`), con testata, barra laterale e nav mobile ferme | L'app è multipagina e il lampo bianco fra le pagine era il punto in cui sembrava un sito: la pagina vecchia resta finché la nuova è pronta, poi dissolve a `--c7-dur-base`. Scelta guardando la colonna «dissolvenza 250 ms» contro «lampo bianco» nella pagina di confronto. Spenta con «riduci movimento»; `location.reload()` non transita, si usa `location.replace(location.href)` (#341) |

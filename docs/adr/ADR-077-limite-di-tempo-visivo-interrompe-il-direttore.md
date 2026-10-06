@@ -166,6 +166,28 @@ L'interfaccia è quella dei turni su misura (`direttore/preparazione/_turni.html
 che oggi esiste solo per Amalfi e casuale con più di un turno: per il girone
 all'italiana e i tabelloni l'override si scrive solo dalla route.
 
+## Emendamento (2026-10-06) — l'interruzione
+
+Terza tappa: «Interrompi partita». Le regole stanno in un modulo solo,
+`models/match/chiusura.py`: `motivo_non_interrompibile` (limite di tempo,
+partita in gioco, non a set, trio o X), `esito` (chi è avanti vince; a parità
+pareggio se `pareggio_ammesso`, altrimenti serve chi passa) e `chiudibile`
+(alla distanza o interrotta). `MatchService.interrompi_partita` — solo chi
+dirige la gara — scrive vincitore e `Match.closed_on_time`, poi completa con
+`MatchValidationService.validate_and_complete`, che chiede `chiudibile`
+invece della sola distanza. `awaiting_validation` resta com'è: una partita
+interrotta non aspetta il direttore, la chiude lui.
+
+Dove si legge il vincitore indicato: `DirectEliminationStrategy._winner_of`
+leggeva già `winner_id`; `ScoreAggregator._process_regular_match` ora conta la
+vittoria di chi passa su un pari. La correzione (`correction_service`) accetta
+per le partite interrotte punteggi sotto la distanza, mai oltre; corretta
+alla distanza la partita perde il segno, e nel tabellone un pari tiene chi
+il direttore aveva fatto passare.
+
+Un ruolo di arbitro, nominato nel piano, nell'app non esiste: «Interrompi» è
+del direttore (`admin.match.interrompi_partita`, `{"director"}`).
+
 ## Riferimenti
 
 - ADR-027 (override per turno), ADR-057 (eventi live), ADR-074 (conferme),

@@ -524,6 +524,62 @@ class MatchService:
         return match
 
     @staticmethod
+    @transactional(domain="match")
+    def interrompi_partita(
+        match_id: int, user: Any, chi_passa_id: Optional[int] = None
+    ) -> Dict[str, Any]:
+        """«Interrompi partita»: il direttore chiude a tempo (ADR-077).
+
+        Chiude sul punteggio maturato: chi è avanti vince, a parità pareggio
+        fuori dal tabellone; nel tabellone il pari vuole `chi_passa_id`. La
+        partita porta `closed_on_time` e si completa come una validazione del
+        direttore: tavolo liberato e riassegnato, avanzamento del turno.
+
+        Raises:
+            NotFoundError, PermissionDeniedError (non dirige la gara),
+            ValidationError (non interrompibile, o chi passa mancante o
+            estraneo).
+        """
+        from models.exceptions import (
+            NotFoundError,
+            PermissionDeniedError,
+            ValidationError,
+        )
+        from models.match import chiusura
+        from models.user.permissions import PermissionChecker
+
+        from .validation_service import MatchValidationService
+
+        match = db.session.get(Match, match_id)
+        if match is None:
+            raise NotFoundError(_("Partita non trovata."))
+        if not (
+            match.gara_id
+            and PermissionChecker.can_manage_competition(user, match.gara_id)
+        ):
+            raise PermissionDeniedError(
+                _("Interrompe la partita solo chi dirige la gara.")
+            )
+        motivo = chiusura.motivo_non_interrompibile(match)
+        if motivo is not None:
+            raise ValidationError(str(motivo))
+
+        # Già alla distanza (aspetta solo una conferma): si chiude come
+        # sempre, senza il segno — il segno vuol dire «prima della distanza».
+        if match.is_at_distance:
+            return MatchValidationService.validate_and_complete(match_id)
+
+        esito = chiusura.esito(match)
+        vincitore = esito.vincitore_id
+        if esito.serve_chi_passa:
+            if not match.is_player(chi_passa_id):
+                raise ValidationError(_("È pari: scegli chi passa il turno."))
+            vincitore = chi_passa_id
+        match.winner_id = vincitore
+        match.closed_on_time = True
+        return MatchValidationService.validate_and_complete(match_id)
+
+    @staticmethod
     def toggle_run_out(match_id: int, rack_id: int) -> dict:
         """Marca/smarca un triangolo come runout (delegates to ScoringService)."""
         from .scoring_service import ScoringService

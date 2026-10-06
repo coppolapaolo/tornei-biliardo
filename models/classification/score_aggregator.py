@@ -198,6 +198,16 @@ class ScoreAggregator:
         elif match.player2_score > match.player1_score:
             player_stats[match.player2_id]["matches_won"] += 1
             player_stats[match.player1_id]["matches_lost"] += 1
+        elif getattr(match, "winner_id", None) in (match.player1_id, match.player2_id):
+            # Pari con chi passa indicato dal direttore: una partita del
+            # tabellone interrotta a tempo (ADR-077). Fuori dal tabellone il
+            # pari non ha vincitore, e qui non arriva.
+            vincitore = match.winner_id
+            perdente = (
+                match.player2_id if vincitore == match.player1_id else match.player1_id
+            )
+            player_stats[vincitore]["matches_won"] += 1
+            player_stats[perdente]["matches_lost"] += 1
         # else: tie - neither player gets a win
 
         # Process racks (handle multi-set)
