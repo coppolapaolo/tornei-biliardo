@@ -219,7 +219,13 @@ def wizard_create():
         return redirect(url_for("admin.campionato.wizard_start"))
 
     # Step 2 default-gare settings (single source shared with edit_campionato)
-    settings = CampionatoFormParser.parse_default_settings(request.form)
+    try:
+        settings = CampionatoFormParser.parse_default_settings(request.form)
+    except ValueError as errore:
+        # Il campo ha già min e max nel browser: qui arriva solo un invio
+        # costruito a mano, e il passo 2 si raggiunge solo dal passo 1.
+        flash(str(errore), "error")
+        return redirect(url_for("admin.campionato.wizard_start"))
 
     # Classification system comes from Step 1 (session)
     classification_system = wizard_data.get("default_classification_system", "WINS")

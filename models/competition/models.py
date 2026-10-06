@@ -184,6 +184,12 @@ class Gara(SoftDeleteMixin, db.Model):
     # I match di una gara con handicap non aggiornano il rating Elo.
     has_handicap = db.Column(db.Boolean, nullable=True)
 
+    # Limite di tempo per partita, in minuti (ADR-077). Tre valori:
+    # NULL = come il campionato (su una gara singola: nessun limite), 0 =
+    # senza limite per scelta, N = N minuti. Si fissa sulla partita quando
+    # nasce (ADR-075): vedi `effective_time_limit_minutes`.
+    time_limit_minutes = db.Column(db.Integer, nullable=True)
+
     # Regola di inizio e regola di apertura (ADR-056).
     # NULL = eredita dal campionato; su una gara standalone il ripiego è il
     # default del progetto. I match della gara le ereditano **sempre**: sul
@@ -458,6 +464,18 @@ class Gara(SoftDeleteMixin, db.Model):
         if self.campionato is not None:
             return bool(self.campionato.has_handicap)
         return False
+
+    @property
+    def effective_time_limit_minutes(self) -> Optional[int]:
+        """Minuti a disposizione di ogni partita, o None se non c'è limite.
+
+        Zero è «senza limite» per scelta della gara; NULL vuol dire «come il
+        campionato», e su una gara singola nessun limite (ADR-077).
+        """
+        valore = self.time_limit_minutes
+        if valore is None and self.campionato is not None:
+            valore = self.campionato.default_time_limit_minutes
+        return valore if valore and valore > 0 else None
 
     @property
     def effective_start_rule(self) -> "StartRule":

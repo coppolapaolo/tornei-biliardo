@@ -9,10 +9,11 @@ Le fasce:
 * **logistica** (nome, sala, data, ora, tavoli, quota, descrizione): sempre,
   fino alla fine della gara;
 * **regole di gioco** (distanza, modalità, disciplina, chi apre, chi spacca,
-  handicap, dispari, esercizio della X, ritiri): a gara avviata si cambiano e
-  valgono dal turno successivo — le partite già nate hanno le loro regole
-  fissate (`models/match/regole_fissate.py`). Non con la strategia casuale,
-  dove tutti i turni esistono già, né quando non restano turni da giocare;
+  handicap, limite di tempo, dispari, esercizio della X, ritiri): a gara
+  avviata si cambiano e valgono dal turno successivo — le partite già nate
+  hanno le loro regole fissate (`models/match/regole_fissate.py`). Non con
+  la strategia casuale, dove tutti i turni esistono già, né quando non
+  restano turni da giocare;
 * **spareggio**: finché lo spareggio non è cominciato;
 * **struttura** (strategia, sistema di classifica, numero di turni, primo
   turno, set, anti-reincontro, opzioni del tabellone, minimo e capienza): solo
@@ -54,6 +55,7 @@ REGOLE: FrozenSet[str] = frozenset(
         "start_rule",
         "break_rule",
         "has_handicap",
+        "time_limit_minutes",
         "odd_number_policy",
         "x_challenge_id",
         "withdraw_policy",

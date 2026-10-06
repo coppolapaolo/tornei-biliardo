@@ -107,6 +107,13 @@ blocks:
           back with −. After three seconds the card says **"Match closed"**,
           the table goes to the first match waiting for one and the page
           refreshes.
+      - name: "Follow the time limit"
+        text: >-
+          If the competition has a time limit, every card in progress shows the
+          clock. If the first player breaks, or the players did not record the
+          lag, you start it with **Start match**. When time is up the card
+          turns yellow and moves to the top, among those to watch: the match
+          does not close by itself.
       - name: "Validate a result"
         text: >-
           A match that reached the distance from the players' scoreboard,

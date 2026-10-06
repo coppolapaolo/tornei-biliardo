@@ -155,6 +155,14 @@ hints:
     page: formati_di_gioco
     section: handicap
 
+  - id: gara.limite_di_tempo
+    label: "Limite di tempo per partita"
+    short: "Minuti per partita, oltre alla distanza. Parte all'acchito o con «Avvia partita»; allo scadere non si chiude niente: decide il direttore. Vuoto = nessun limite."
+    anchor: gara-limite-di-tempo
+    screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2, admin.campionato.campionato_detail, admin.competition.edit_gara, admin.campionato.edit_campionato]
+    page: opzioni_della_gara
+    section: struttura
+
   - id: gara.cerca_da_iscrivere
     label: "Cerca il giocatore da iscrivere"
     short: "Scrivi username, nome o cognome: l'elenco si accorcia mentre scrivi. Chi ha messo il nome nel profilo compare con quello."
@@ -303,6 +311,22 @@ hints:
     screens: [admin.match.match_detail, individual_match.match_detail]
     page: giocare_una_partita
     section: leggere
+
+  - id: partita.limite_di_tempo
+    label: "Tempo che resta"
+    short: "I minuti a disposizione della partita, uguali per tutti. Allo scadere dice «Tempo scaduto», ma la partita resta aperta: decide il direttore."
+    anchor: partita-limite-di-tempo
+    screens: [admin.match.match_detail]
+    page: giocare_una_partita
+    section: limite-di-tempo
+
+  - id: partita.avvia
+    label: "Avvia partita"
+    short: "Fa partire il cronometro del limite di tempo. Toccalo quando la partita comincia davvero: si preme una volta sola."
+    anchor: partita-avvia
+    screens: [admin.match.match_detail]
+    page: giocare_una_partita
+    section: limite-di-tempo
 
   - id: partita.segnapunti
     label: "Segnapunti"

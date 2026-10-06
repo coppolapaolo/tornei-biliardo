@@ -86,6 +86,13 @@ class Campionato(db.Model):
     # handicap e NON aggiornano il rating Elo. Radice della catena di
     # ereditarietà has_handicap: Campionato → Gara (nullable) → Match (nullable).
     has_handicap = db.Column(db.Boolean, default=False, nullable=False)
+    # Limite di tempo per partita proposto alle gare, in minuti (ADR-077).
+    # 0 = nessun limite. Si copia sulla gara quando nasce (ADR-075), quindi
+    # non è mai NULL: lo zero copiato confronta pari col valore del campionato
+    # quando un cambio si propone alle gare (`campionato/proposte.py`).
+    default_time_limit_minutes = db.Column(
+        db.Integer, default=0, nullable=False, server_default="0"
+    )
 
     # ── Vetrina da condividere sui social (issue #235) ───────────────────
     # Non si chiamano `default_*` come `default_venue_id`: quelli sono valori

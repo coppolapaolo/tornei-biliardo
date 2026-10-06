@@ -142,6 +142,18 @@ blocks:
           iscrizioni**: chi si iscrive ha diritto di sapere se la gara è con
           handicap.
         hint: gara.handicap
+      - name: "Limite di tempo per partita"
+        values: "facoltativo · da 1 a 600 minuti · vuoto = nessun limite"
+        text: >-
+          I minuti a disposizione di ogni partita, **oltre** alla distanza: una
+          partita che arriva alla distanza si chiude come sempre. Il tempo parte
+          quando si registra l'acchito, oppure — se apre il primo giocatore —
+          quando un giocatore o il direttore tocca **Avvia partita**. È solo un
+          riferimento: allo scadere il timer dice «Tempo scaduto», la card della
+          partita sale fra quelle da guardare, e decidi tu. Nei campionati il
+          valore lo propone il campionato. Non vale per le partite a set, il
+          trio e la X.
+        hint: gara.limite_di_tempo
       - name: "Primo turno"
         values: "Casuale (predefinito) · Rating · Classifica"
         text: >-
@@ -327,8 +339,8 @@ blocks:
         values: "logistica e regole"
         text: >-
           Nome, data, sala, quota e note cambiano subito. Le regole di gioco
-          (distanza, disciplina, chi apre, chi spacca, handicap, dispari,
-          ritiri) si cambiano e valgono **dal turno successivo**: le partite
+          (distanza, disciplina, chi apre, chi spacca, handicap, limite di
+          tempo, dispari, ritiri) si cambiano e valgono **dal turno successivo**: le partite
           già nate restano con le regole con cui sono cominciate. La struttura
           — strategia, numero di turni, sistema di classifica — si cambia solo
           annullando l'avvio. Con la strategia casuale le regole restano

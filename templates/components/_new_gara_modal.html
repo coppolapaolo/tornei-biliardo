@@ -347,6 +347,13 @@
                             <small class="text-muted">{{ _("Le partite con handicap non aggiornano il rating Elo quando i giocatori sono di categorie diverse.") }}</small>
                         </div>
 
+                        {# Limite di tempo (ADR-077): il valore del campionato
+                           compare già scritto, perché la gara lo riceve quando
+                           nasce (ADR-075). #}
+                        {% set limite_id = 'create_time_limit_minutes' %}
+                        {% set limite_valore = campionato.default_time_limit_minutes if campionato else none %}
+                        {% include "components/_campo_limite_tempo.html" %}
+
                         {# Peso nella classifica generale (issue #64). Il modale
                            esiste solo dentro un campionato, quindi la classifica
                            in cui pesare c'e' sempre. #}

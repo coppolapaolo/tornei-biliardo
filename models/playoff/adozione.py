@@ -90,6 +90,7 @@ _CAMPI_CONFRONTO = (
     "odd_number_policy",
     "classification_system",
     "has_handicap",
+    "time_limit_minutes",
     "min_participants",
     "max_participants",
     "entry_fee",

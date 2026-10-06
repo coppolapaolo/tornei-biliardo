@@ -157,6 +157,14 @@
         <option value="false" {% if gara.has_handicap is false or (gara.has_handicap is none and not gara.campionato) %}selected{% endif %}>{{ _("No") }}</option>
       </select>
     </div>
+    {% if 'time_limit_minutes' in ammessi %}
+    {# Limite di tempo (ADR-077): come le altre regole, vale dal turno dopo. #}
+    <div style="max-width:320px">
+      {% set limite_valore = gara.effective_time_limit_minutes %}
+      {% set limite_nota = _('Vale per le partite dei turni che devono ancora cominciare.') %}
+      {% include "components/_campo_limite_tempo.html" %}
+    </div>
+    {% endif %}
     {% if 'odd_number_policy' in ammessi %}
     <div class="d-flex gap-3 flex-wrap mb-3">
       <div class="flex-fill" style="min-width:220px">

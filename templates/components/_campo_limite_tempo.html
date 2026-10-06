@@ -1,0 +1,26 @@
+{# Il campo «Limite di tempo per partita» (ADR-077) — Design System 7c.
+
+   Un numero di minuti; vuoto = nessun limite. Lo stesso campo nei moduli
+   della gara (singola, nuova gara del campionato, modifica, gara avviata) e
+   del campionato, che lo propone alle sue gare. I confini (1–600) sono gli
+   stessi del parser (`LIMITE_DI_TEMPO_MASSIMO`), che rifiuta il resto.
+
+   Parametri:
+   - limite_nome: nome del campo (default `time_limit_minutes`)
+   - limite_id:   id dell'input (default uguale al nome)
+   - limite_valore: minuti da mostrare; 0 o None = vuoto
+   - limite_nota: testo sotto il campo (facoltativo) #}
+{% set _nome = limite_nome|default('time_limit_minutes') %}
+{% set _id = limite_id|default(_nome) %}
+{% set _valore = limite_valore|default(none) %}
+<div class="mb-3">
+  <label for="{{ _id }}" class="form-label" data-help="gara-limite-di-tempo">{{ _('Limite di tempo per partita') }}</label>
+  <div class="input-group">
+    <input type="number" class="form-control" id="{{ _id }}" name="{{ _nome }}"
+           value="{{ _valore if _valore and _valore > 0 else '' }}"
+           min="1" max="600" step="1" inputmode="numeric"
+           placeholder="{{ _('Nessun limite') }}">
+    <span class="input-group-text">{{ _('minuti') }}</span>
+  </div>
+  <small class="text-muted">{{ limite_nota|default(_("Il tempo parte all'acchito, o con «Avvia partita». È un riferimento: a tempo scaduto decide il direttore.")) }}</small>
+</div>

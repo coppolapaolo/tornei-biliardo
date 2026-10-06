@@ -774,6 +774,9 @@
        `c7ScorePop.segna`, sulla card verticale confrontando con quello che
        c'era prima del ricaricamento (scala del movimento, tokens-7c.css). #}
     <script src="{{ url_for('static', filename='js/score_pop.js') }}?v={{ config.ASSET_VERSION }}"></script>
+    {# Il conto alla rovescia del limite di tempo (ADR-077): non fa niente
+       nelle pagine senza timer. #}
+    <script src="{{ url_for('static', filename='js/conto_alla_rovescia.js') }}?v={{ config.ASSET_VERSION }}"></script>
 
     {# Modalità aiuto (ADR-058): la «?» accanto ai comandi e la presentazione
        della schermata. Il componente chiede i testi per endpoint, quindi il

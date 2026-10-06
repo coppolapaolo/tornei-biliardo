@@ -86,6 +86,9 @@ class TavoloSala:
     #: Il tavolo e' libero davvero — `libero` resta vero e la casella lo
     #: dichiara — ma il risultato ha ancora un posto dove stare.
     conclusa: Tuple[LatoTavolo, ...] = ()
+    #: Il conto alla rovescia della partita sul tavolo (ADR-077), come lo
+    #: disegna `components/_conto_alla_rovescia.html`; None senza limite.
+    timer_view: Optional[dict] = None
 
     @property
     def libero(self) -> bool:
@@ -328,6 +331,7 @@ def _tavoli(
                 lati=_lati_tavolo(m),
                 alla_distanza=stato_partita(m) == StatoPartita.DA_VALIDARE,
                 round=rounds.get(m.id),
+                timer_view=getattr(m, "timer_view", None),
             )
         )
     return caselle

@@ -260,6 +260,18 @@ Un **match** può essere con handicap o no. Se c'è l'handicap allora dipende da
 
 La app permette anche agli utenti ``player`` di organizzare **match _standalone_** (casual match) con un altro utente. Questi match utilizzano la stessa interfaccia di gestione dei rack dei match di torneo tramite un componente unificato (**BaseMatchMixin**), garantendo una UX coerente.
 
+### Limite di tempo
+
+Un **match** può avere un **limite di tempo**, in minuti, **oltre** alla distanza: la distanza resta, e una partita che ci arriva si chiude come sempre. Il limite è facoltativo — senza, il match è quello di sempre — e segue la stessa catena delle altre regole: lo **propone il campionato**, lo **decide la gara** (anche una gara singola), si **fissa sul match quando nasce**. A gara avviata si cambia e vale per i match dei turni successivi.
+
+Il **conto alla rovescia** parte una volta sola:
+- con la regola di inizio **"acchito"**, quando si registra chi l'ha vinto;
+- con la regola **"primo giocatore"**, quando uno dei due giocatori o il direttore preme **«Avvia partita»**. Il direttore può premerlo con qualunque regola.
+
+Il timer è **solo un riferimento visivo**, uguale per i due giocatori, per il direttore e sullo schermo in sala. **A tempo scaduto non succede niente da sé**: il match resta in corso, e per il direttore la sua card sale fra quelle da guardare. In questa versione il limite non si applica ai match a set, al trio e alla X.
+
+_Nota del 2026-10-06 (ADR-077): regola nuova, nata dalla gara settimanale «30 minuti per incontro, poi vale il punteggio maturato». Come il direttore chiude un match a tempo scaduto è una regola a parte, in arrivo._
+
 ### Ciclo di vita dei Match
 
 Tutti i match (sia di torneo che individuali) condividono un set unificato di stati (**MatchStatus**):

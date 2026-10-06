@@ -129,6 +129,10 @@
             <span class="c7-kicker">{{ _('Tavolo') }}</span>
             <span class="c7-num">{{ t.nome }}</span>
           </div>
+          {% if not t.libero and t.timer_view %}
+          {% import "components/_conto_alla_rovescia.html" as cr %}
+          {{ cr.timer(t, grande=true) }}
+          {% endif %}
           {% if t.alla_distanza %}<span class="c7-state c7-state--ok">{{ _('Alla distanza') }}</span>
           {% elif not t.libero %}<span class="c7-state c7-state--accent">{{ _('In corso') }}</span>
           {% else %}<span class="c7-state c7-state--muted">{{ _('Libero') }}</span>{% endif %}
@@ -277,6 +281,8 @@
 
 {% block scripts %}
 {{ super() }}
+{# Il conto alla rovescia del limite di tempo (ADR-077). #}
+<script src="{{ url_for('static', filename='js/conto_alla_rovescia.js') }}?v={{ config.ASSET_VERSION }}"></script>
 {% if schermo.fase.value != 'conclusa' %}
 <script>
   // Lo schermo non si tocca: si ricarica da solo a ogni fatto della gara, e

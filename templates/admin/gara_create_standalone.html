@@ -428,6 +428,10 @@
                                     <small class="text-muted">{{ _("Tiri di apertura alternati, la regola standard FIBiS.") }}</small>
                                 </div>
                             </div>
+
+                            {# Limite di tempo (ADR-077): la partita ha sempre la
+                               sua distanza, il tempo è un riferimento in più. #}
+                            {% include "components/_campo_limite_tempo.html" %}
                         </div>
                     </div>
                 </div>

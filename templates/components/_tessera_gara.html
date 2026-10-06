@@ -97,6 +97,9 @@
         {% if gara.distance %}
           <span class="c7-sep">·</span> {{ gara.distance_config|format_distance }}
         {% endif %}
+        {% if gara.effective_time_limit_minutes %}
+          <span class="c7-sep">·</span> {{ _('%(n)s minuti a partita', n=gara.effective_time_limit_minutes) }}
+        {% endif %}
       </div>
       <div class="c7-tessera__meta">
         {% if card.date %}

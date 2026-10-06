@@ -4854,3 +4854,22 @@ button.c7-draw__outcome:active { transform: scale(var(--c7-press)); transition-d
   color: var(--c7-ink-faint); text-decoration: underline; cursor: pointer;
 }
 .c7-goal__drop:hover { color: var(--c7-err); }
+
+/* ── Il conto alla rovescia del limite di tempo (ADR-077) ──────────────────
+   Una pastiglia come `.c7-state`, con le cifre di servizio in mono. Prima
+   della partenza spenta, allo scadere sul fondo d'avviso: solo visivo, la
+   partita non cambia stato. `components/_conto_alla_rovescia.html`. */
+.c7-timer {
+  height: 26px; padding: 0 11px; border-radius: var(--c7-r-pill);
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  background: var(--c7-sunken); color: var(--c7-ink);
+  font-size: 12px; font-weight: 800;
+}
+.c7-timer .c7-num { font-family: var(--c7-font-mono); font-variant-numeric: tabular-nums; }
+.c7-timer.is-fermo { color: var(--c7-ink-muted); }
+.c7-timer.is-scaduto { background: var(--c7-warn-bg); color: var(--c7-warn-ink); }
+.c7-timer--grande { height: 40px; padding: 0 16px; font-size: 18px; gap: 8px; }
+.c7-score__timer { margin-top: 14px; display: flex; justify-content: center; }
+.c7-board__head .c7-timer { background: transparent; color: inherit; }
+.c7-board__head .c7-timer.is-scaduto { background: var(--c7-warn-bg); color: var(--c7-warn-ink); }
+.c7-timer.is-scaduto .c7-num { font-family: inherit; }

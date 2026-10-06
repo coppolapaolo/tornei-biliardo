@@ -1320,6 +1320,25 @@
    *  detto cosa succede, non serve una seconda domanda. Parte dopo i tre
    *  secondi con «Annulla», come il tocco che chiude (gara del 23/09/2026:
    *  validare chiude la partita quanto l'ultimo +, e non aspettava). */
+  // Il limite di tempo (ADR-077): «Avvia partita» dalla card.
+  function avviaDallaCard(matchId, btn) {
+    var restore = withLoading(btn);
+    fetch('/admin/match/' + matchId + '/avvia', {
+      method: 'POST',
+      headers: { 'X-CSRFToken': csrfToken() }
+    })
+      .then(function (r) { return r.json(); })
+      .then(function (data) {
+        if (data.success) {
+          location.reload();
+        } else {
+          showError(GARA_CONFIG.i18n.errorTitle + ' ' + (data.error || ''));
+          restore();
+        }
+      })
+      .catch(function () { restore(); });
+  }
+
   function validaDallaCard(matchId, btn) {
     return window.CardPartita.attendi(btn, function (keepalive) {
       btn.disabled = false;

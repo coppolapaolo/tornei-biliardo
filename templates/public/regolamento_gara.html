@@ -15,11 +15,12 @@
 {% endblock %}
 
 {% macro regole_del_turno(regole) -%}
-  {%- set disciplina, distanza, al_n, apre, spacca = regole -%}
+  {%- set disciplina, distanza, al_n, apre, spacca, minuti = regole -%}
   {{ valore_storia('discipline', disciplina) }}
   · {% if al_n == 'true' %}{{ _('al %(n)s', n=distanza) }}{% else %}{{ _('esattamente %(n)s', n=distanza) }}{% endif %}
   · {{ _('chi apre: %(regola)s', regola=valore_storia('start_rule', apre)) }}
   · {{ _('chi spacca: %(regola)s', regola=valore_storia('break_rule', spacca)) }}
+  {%- if minuti and minuti != '0' %} · {{ _('%(n)s minuti per partita', n=minuti) }}{% endif %}
 {%- endmacro %}
 
 {% block content %}

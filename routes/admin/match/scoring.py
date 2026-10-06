@@ -181,6 +181,37 @@ def punteggio_partita(match_id):
     )
 
 
+@match_bp.route("/<int:match_id>/avvia", methods=["POST"])
+@login_required
+@match_manager_required
+def avvia_partita(match_id):
+    """«Avvia partita» dalla card del direttore (ADR-077), in JSON.
+
+    Fa partire il conto alla rovescia del limite di tempo. Il direttore può
+    premerlo con qualunque regola di inizio: anche con l'acchito, se i
+    giocatori non lo hanno registrato e la partita è cominciata lo stesso.
+    """
+    from models.exceptions import http_status_for_exception
+    from models.match.services import MatchService
+
+    try:
+        match = MatchService.avvia_partita(match_id, current_user)
+    except ValueError as e:
+        return (
+            jsonify({"success": False, "error": str(e)}),
+            http_status_for_exception(e),
+        )
+    except Exception as e:
+        return safe_json_error(e, "admin match start timer")
+    return jsonify(
+        {
+            "success": True,
+            "timer_started_at": match.timer_started_at.isoformat() + "Z",
+            "time_limit_minutes": match.time_limit_minutes,
+        }
+    )
+
+
 @match_bp.route("/<int:match_id>/forfeit", methods=["POST"])
 @login_required
 @match_manager_required

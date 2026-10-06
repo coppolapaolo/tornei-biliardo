@@ -248,6 +248,11 @@
         {# Il pallino che pulsa dice "si sta giocando". A partita ferma
            smette: un tabellone che continua a lampeggiare su un risultato
            chiuso racconta una partita che non esiste piu'. #}
+        {# Il limite di tempo (ADR-077): lo stesso timer della vista verticale. #}
+        {% if not board.finished and match.timer_view is defined and match.timer_view %}
+        {% import "components/_conto_alla_rovescia.html" as cr %}
+        {{ cr.timer(match) }}
+        {% endif %}
         {% if board.finished %}
         <span class="c7-board__live c7-board__live--done">{{ _('Conclusa') }}</span>
         {% elif board.at_distance %}

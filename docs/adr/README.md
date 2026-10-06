@@ -89,6 +89,7 @@ Crea un ADR quando:
 | ADR-073 | [La classifica generale si calcola in un posto solo](ADR-073-classifica-generale-un-calcolo-solo.md) | Accepted | 2026-09-24 |
 | ADR-074 | [Le conferme seguono cosa fa l'azione](ADR-074-le-conferme-seguono-cosa-fa-l-azione.md) | Accepted | 2026-09-27 |
 | ADR-075 | [Le impostazioni si correggono e restano scritte, invece di bloccarsi](ADR-075-modifiche-tracciate-invece-che-impedite.md) | Accepted | 2026-09-29 |
+| ADR-077 | [Il limite di tempo è un riferimento visivo: interrompe il direttore](ADR-077-limite-di-tempo-visivo-interrompe-il-direttore.md) | Accepted | 2026-10-06 |
 
 ## Come Creare un Nuovo ADR
 

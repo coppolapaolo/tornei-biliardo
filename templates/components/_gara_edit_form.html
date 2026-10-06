@@ -160,6 +160,10 @@
       <div class="form-text">{{ _("Le partite con handicap non aggiornano il rating Elo quando i giocatori sono di categorie diverse.") }}</div>
     </div>
 
+    {# Limite di tempo (ADR-077). #}
+    {% set limite_valore = gara.effective_time_limit_minutes %}
+    {% include "components/_campo_limite_tempo.html" %}
+
     <div class="d-flex gap-3 flex-wrap" id="strategy_config_section">
       <div class="flex-fill" style="min-width:200px">
         <label for="first_round_policy" class="form-label">{{ _('Primo abbinamento') }}</label>

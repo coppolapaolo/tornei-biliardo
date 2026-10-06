@@ -1986,3 +1986,74 @@ class TestIlGironeAllItaliana:
         )
         riposi = [p[0] for turno in calendario for p in turno if len(p) == 1]
         assert sorted(riposi) == list(range(1, n + 1))
+
+
+# ══ Il limite di tempo ═══════════════════════════════════════════════════
+
+
+@pytest.mark.unit
+class TestIlLimiteDiTempo:
+    """`SPECIFICHE.md` riga 265 e riga 271 (sezione «Limite di tempo»).
+
+    > lo **propone il campionato**, lo **decide la gara** (anche una gara
+    > singola), si **fissa sul match quando nasce**.
+
+    > **A tempo scaduto non succede niente da sé**: il match resta in corso
+    """
+
+    def _gara_e_partita(self, minuti):
+        from datetime import time
+
+        from models.base import db
+        from models.competition.models import Gara
+        from models.match.models import Match
+        from models.status_enum import GaraStatus, MatchStatus
+
+        gara = Gara(
+            number=1,
+            name=f"G {uuid.uuid4().hex[:6]}",
+            date=date(2026, 1, 1),
+            time=time(20, 0),
+            discipline="8_ball",
+            distance=3,
+            rounds_count=3,
+            current_round=1,
+            min_participants=2,
+            matchmaking_strategy="round_robin",
+            status=GaraStatus.PLAYING.value,
+            time_limit_minutes=minuti,
+        )
+        db.session.add(gara)
+        db.session.flush()
+        match = Match(
+            gara_id=gara.id,
+            round_number=1,
+            status=MatchStatus.PLAYING.value,
+            match_distance=3,
+        )
+        db.session.add(match)
+        db.session.commit()
+        return gara, match
+
+    def test_trenta_minuti_si_fissano_sul_match(self, db_session):
+        from models.base import db
+
+        gara, match = self._gara_e_partita(30)
+        assert match.time_limit_minutes == 30
+        gara.time_limit_minutes = 45
+        db.session.commit()
+        assert match.time_limit_minutes == 30
+
+    def test_a_tempo_scaduto_il_match_resta_in_corso(self, db_session):
+        from datetime import datetime, timedelta
+
+        from models.match import tempo
+        from models.status_enum import MatchStatus
+
+        _, match = self._gara_e_partita(30)
+        inizio = datetime(2026, 10, 6, 20, 0)
+        tempo.avvia_conto_alla_rovescia(match, adesso=inizio)
+        dopo = inizio + timedelta(minutes=31)
+        assert tempo.tempo_scaduto(match, adesso=dopo)
+        assert match.status == MatchStatus.PLAYING.value
+        assert not match.is_awaiting_validation

@@ -145,6 +145,18 @@ hints:
   - admin.campionato.wizard_step2
   page: formati_di_gioco
   section: handicap
+- id: gara.limite_di_tempo
+  label: Time limit per match
+  short: 'Minutes per match, on top of the distance. It starts at the lag or with «Start match»; when it runs out nothing closes: the director decides. Empty = no limit.'
+  anchor: gara-limite-di-tempo
+  screens:
+  - admin.competition.create_gara_standalone
+  - admin.campionato.wizard_step2
+  - admin.campionato.campionato_detail
+  - admin.competition.edit_gara
+  - admin.campionato.edit_campionato
+  page: opzioni_della_gara
+  section: struttura
 - id: gara.cerca_da_iscrivere
   label: Search for the player to enter
   short: 'Type a username, first name or last name: the list narrows as you type. Players who added their name to their profile show up with it.'
@@ -314,6 +326,22 @@ hints:
   - individual_match.match_detail
   page: giocare_una_partita
   section: leggere
+- id: partita.limite_di_tempo
+  label: Time left
+  short: 'The minutes the match has, the same for everyone. When they run out it says «Time is up», but the match stays open: the director decides.'
+  anchor: partita-limite-di-tempo
+  screens:
+  - admin.match.match_detail
+  page: giocare_una_partita
+  section: limite-di-tempo
+- id: partita.avvia
+  label: Start match
+  short: 'Starts the time-limit clock. Tap it when the match really begins: it is pressed only once.'
+  anchor: partita-avvia
+  screens:
+  - admin.match.match_detail
+  page: giocare_una_partita
+  section: limite-di-tempo
 - id: partita.segnapunti
   label: Scoreboard
   short: After each rack press the button of whoever won it. The solid button is yours.

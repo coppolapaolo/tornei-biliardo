@@ -55,6 +55,7 @@ class TournamentService(TournamentStatisticsService):
             "default_odd_policy",
             "default_anti_rematch",
             "has_handicap",
+            "default_time_limit_minutes",
             # Deprecated but kept for compatibility
             "without_x",
             "final_playoffs",
@@ -113,6 +114,8 @@ class TournamentService(TournamentStatisticsService):
         default_anti_rematch: bool = True,
         default_classification_system: str = "WINS",
         has_handicap: bool = False,
+        # Limite di tempo per partita proposto alle gare (ADR-077). 0 = nessuno.
+        default_time_limit_minutes: int = 0,
         # Come si comincia, e chi apre poi (ADR-056). I default sono il
         # comportamento storico: apre il primo giocatore, tiri di apertura
         # alternati.
@@ -155,6 +158,7 @@ class TournamentService(TournamentStatisticsService):
             default_anti_rematch=default_anti_rematch,
             default_classification_system=default_classification_system,
             has_handicap=has_handicap,
+            default_time_limit_minutes=default_time_limit_minutes,
             default_start_rule=default_start_rule,
             default_break_rule=default_break_rule,
             position_points=position_points,
