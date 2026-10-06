@@ -165,8 +165,11 @@ class RoundRobinStrategy(BaseStrategy):
             return [i.user_id for i in ordered]
 
         order = self.order_from_seeding(seeding)
-        # Chi e' entrato dopo l'avvio (una promozione dalla lista d'attesa)
-        # non ha un posto nel seeding: si accoda, in ordine d'iscrizione.
+        # Un attivo fuori dal seeding non nasce dall'interfaccia: a gara in
+        # corso la lista d'attesa e' chiusa e il direttore iscrive solo prima
+        # dell'avvio. Resta come difesa per dati scritti a mano o storici:
+        # meglio accodarlo, in ordine d'iscrizione, che lasciarlo fuori dal
+        # calendario in silenzio.
         known = set(order)
         late = sorted(
             (i for i in active if i.user_id not in known),
