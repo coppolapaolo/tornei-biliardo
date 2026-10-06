@@ -498,7 +498,7 @@ def calculate_rounds_for_strategy(
     """Calculate optimal round count for tournament strategy and player count.
 
     Different strategies require specific round counts for proper tournament flow:
-    - Round-Robin: n-1 rounds (everyone plays everyone)
+    - Round-Robin: n-1 rounds with n even, n with n odd (everyone rests once)
     - Direct Elimination: k = log2(S) rounds (binary elimination tree)
     - Double Knockout: 2k rounds (winners, losers, finale; la bella e' a parte)
     - Flexible strategies: Sensible defaults based on tournament size
@@ -537,7 +537,13 @@ def calculate_rounds_for_strategy(
     )
 
     if strategy == MatchmakingStrategy.ROUND_ROBIN:
-        return num_players - 1 if num_players > 1 else 1
+        # Con N dispari ognuno riposa una volta: servono N turni, non N-1
+        # (`RoundRobinStrategy.get_total_rounds_needed`, metodo del poligono
+        # col giocatore fantasma). Fino al 2026-10-06 qui c'era N-1 anche per
+        # i dispari, e la validazione chiedeva un turno in meno del calendario.
+        if num_players < 2:
+            return 1
+        return num_players if num_players % 2 else num_players - 1
     elif strategy == MatchmakingStrategy.DIRECT_ELIMINATION:
         if num_players < 2:
             return 1
