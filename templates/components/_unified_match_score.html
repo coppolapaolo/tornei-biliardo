@@ -110,6 +110,14 @@ Parametri:
         <span class="c7-sep">·</span> {{ _('%(n)s triangoli giocati', n=p1_score + p2_score) }}
         {% endif %}
     </div>
+
+    {# Il limite di tempo (ADR-077): il timer sotto il punteggio, uguale per
+       chi gioca, chi dirige e chi guarda. Solo sui match di gara con un
+       limite: le sfide individuali non hanno `timer_view`. #}
+    {% if not is_completed and match.timer_view is defined and match.timer_view %}
+    {% import "components/_conto_alla_rovescia.html" as cr %}
+    <div class="c7-score__timer" data-help="partita-limite-di-tempo">{{ cr.timer(match, grande=true) }}</div>
+    {% endif %}
 </div>
 
 {% if is_completed and match_winner %}

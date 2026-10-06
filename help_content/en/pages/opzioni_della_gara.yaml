@@ -143,6 +143,17 @@ blocks:
           put in all the others. Decide it **before opening entries**: whoever
           enters has a right to know whether the competition has a handicap.
         hint: gara.handicap
+      - name: "Time limit per match"
+        values: "optional · 1 to 600 minutes · empty = no limit"
+        text: >-
+          The minutes each match has, **on top of** the distance: a match that
+          reaches the distance ends as always. The clock starts when the lag is
+          recorded or — if the first player breaks — when a player or the
+          director taps **Start match**. It is only a reference: when it runs
+          out the timer says «Time is up», the match card moves up among those
+          to watch, and you decide. In championships the championship proposes
+          the value. It does not apply to set matches, trios or the X.
+        hint: gara.limite_di_tempo
       - name: "First round"
         values: "Random (default) · Rating · Standings"
         text: >-
@@ -327,8 +338,8 @@ blocks:
         values: "logistics and rules"
         text: >-
           Name, date, venue, fee and notes change at once. Play rules
-          (distance, discipline, who opens, who breaks, handicap, odd numbers,
-          withdrawals) can be changed and apply **from the next round**: matches
+          (distance, discipline, who opens, who breaks, handicap, time limit,
+          odd numbers, withdrawals) can be changed and apply **from the next round**: matches
           already created keep the rules they started with. The structure —
           strategy, number of rounds, standings system — changes only by
           cancelling the start. With the random strategy the rules stay as they

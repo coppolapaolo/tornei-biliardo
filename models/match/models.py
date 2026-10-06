@@ -195,6 +195,15 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     #: Decidono se la partita conta per l'ELO in una gara con handicap: fissate
     #: qui, un ricalcolo non rilegge le categorie di oggi sulle partite di ieri.
     categories_snapshot = db.Column(db.Text, nullable=True)
+    #: Minuti a disposizione della partita (ADR-077), fissati alla nascita
+    #: come le altre regole. NULL = nessun limite: anche le partite nate
+    #: prima del limite di tempo, che non ne avevano.
+    time_limit_minutes = db.Column(db.Integer, nullable=True)
+    #: Quando è partito il conto alla rovescia: all'acchito, o con «Avvia
+    #: partita» se apre il primo giocatore. Si scrive una volta sola
+    #: (`models/match/tempo.py`). È un fatto, non una regola: lo scadere è
+    #: solo visivo e non chiude niente.
+    timer_started_at = db.Column(db.DateTime, nullable=True)
 
     # Validazione finale del risultato (nuova UX semplificata)
     player1_confirmed = db.Column(db.Boolean, default=False, nullable=False)
@@ -308,6 +317,34 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         if self.effective_is_race_to:
             return self.player1_score >= distance or self.player2_score >= distance
         return self.player1_score + self.player2_score == distance
+
+    @property
+    def has_time_limit(self) -> bool:
+        """La partita ha un limite di tempo che si applica (ADR-077)."""
+        from models.match import tempo
+
+        return tempo.ha_limite(self)
+
+    @property
+    def timer_deadline(self):
+        """Quando scade il tempo, se il conto alla rovescia è partito."""
+        from models.match import tempo
+
+        return tempo.scadenza(self)
+
+    @property
+    def timer_view(self):
+        """I dati del timer per i template (`tempo.vista`), o None."""
+        from models.match import tempo
+
+        return tempo.vista(self)
+
+    @property
+    def is_time_expired(self) -> bool:
+        """Tempo scaduto su una partita ancora in corso. Solo visivo."""
+        from models.match import tempo
+
+        return tempo.tempo_scaduto(self)
 
     @property
     def is_awaiting_validation(self) -> bool:

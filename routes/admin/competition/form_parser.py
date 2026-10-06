@@ -7,6 +7,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from flask import request
+from flask_babel import gettext as _
 
 from models.competition.models import Gara
 from models.competition.constants import (
@@ -73,7 +74,12 @@ _CAMPI_ASSENTI_NON_SI_TOCCANO = (
     "min_participants",
     "entry_fee",
     "withdraw_policy",
+    "time_limit_minutes",
 )
+
+#: Il limite di tempo più lungo che il modulo accetta, in minuti (ADR-077).
+#: Dieci ore: oltre non è un limite, è un errore di battitura.
+LIMITE_DI_TEMPO_MASSIMO = 600
 
 
 class GaraFormParser:
@@ -163,6 +169,11 @@ class GaraFormParser:
             data["has_handicap"] = False
         else:
             data["has_handicap"] = None  # eredita dal campionato
+
+        # ── Limite di tempo per partita (ADR-077) ────────────────
+        # Assente dal modulo = non toccare (in creazione: come il campionato).
+        if "time_limit_minutes" in request.form:
+            data["time_limit_minutes"] = self._parse_time_limit()
 
         # ── Regola di inizio e di apertura (ADR-056) ─────────────
         # Tri-stato come l'handicap: "" = eredita dal campionato (NULL), un
@@ -292,6 +303,7 @@ class GaraFormParser:
         "match_distance",
         "is_race_to_sets",
         "has_handicap",
+        "time_limit_minutes",
         "start_rule",
         "break_rule",
         "matchmaking_strategy",
@@ -382,6 +394,8 @@ class GaraFormParser:
             data["has_handicap"] = (
                 True if grezzo == "true" else False if grezzo == "false" else None
             )
+        if "time_limit_minutes" in ammessi and "time_limit_minutes" in form:
+            data["time_limit_minutes"] = self._parse_time_limit()
         if "withdraw_policy" in ammessi and "withdraw_policy" in form:
             data["withdraw_policy"] = GaraFormParser._parse_withdraw_policy()
         if "odd_number_policy" in ammessi and form.get("odd_number_policy"):
@@ -401,6 +415,43 @@ class GaraFormParser:
             if form.get("weight", "").strip():
                 data["weight"] = GaraFormParser._parse_weight(self.campionato)
         return data
+
+    def _parse_time_limit(self) -> Optional[int]:
+        """I minuti a disposizione di ogni partita: vuoto vuol dire nessun limite.
+
+        Il campo è un numero e basta, senza la voce «come il campionato»: il
+        valore del campionato il modulo lo mostra già scritto, perché una gara
+        lo riceve quando nasce (ADR-075). Vuoto si salva come 0, «senza limite»
+        per scelta — tranne su una gara nata prima del limite di tempo, che non
+        ha un valore e non ha limite: salvarla senza toccare il campo non deve
+        scriverle uno zero nella storia.
+
+        Un valore che non è un intero fra 1 e `LIMITE_DI_TEMPO_MASSIMO` si
+        rifiuta qui, dove chi l'ha scritto è ancora davanti al modulo.
+        """
+        grezzo = (request.form.get("time_limit_minutes") or "").strip()
+        if not grezzo or grezzo == "0":
+            gara = self.gara
+            if (
+                gara is not None
+                and gara.time_limit_minutes is None
+                and gara.effective_time_limit_minutes is None
+            ):
+                return None
+            return 0
+        try:
+            minuti = int(grezzo)
+        except ValueError:
+            minuti = -1
+        if minuti < 1 or minuti > LIMITE_DI_TEMPO_MASSIMO:
+            raise ValueError(
+                _(
+                    "Il limite di tempo si scrive in minuti, da 1 a %(max)s; "
+                    "lascia vuoto per non mettere limiti.",
+                    max=LIMITE_DI_TEMPO_MASSIMO,
+                )
+            )
+        return minuti
 
     @staticmethod
     def _parse_x_challenge(odd_number_policy: str) -> Optional[int]:

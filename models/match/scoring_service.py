@@ -171,6 +171,13 @@ class ScoringService:
             raise NotFoundError(_("Partita non trovata."))
         opening_service.register_lag(match, lag_winner_id, first_break_player_id)
 
+        # L'acchito è il primo tiro della partita: col limite di tempo è lì
+        # che parte il conto alla rovescia (ADR-077). Una volta sola.
+        from models.match import tempo
+
+        if tempo.avvia_conto_alla_rovescia(match):
+            tempo.evento_live(match)
+
     @staticmethod
     @transactional(domain="match")
     def toggle_run_out(match_id: int, rack_id: int) -> dict:

@@ -109,6 +109,10 @@ def fissa_regole(session: Session, match: Any) -> None:
         match.break_rule = gara.effective_break_rule.value
     if match.is_multi_set and match.set_distance is None:
         match.set_distance = gara.distance
+    if match.time_limit_minutes is None:
+        # NULL resta NULL se la gara non ha limite: per la partita vuol dire
+        # «nessun limite», come per quelle nate prima dell'ADR-077.
+        match.time_limit_minutes = gara.effective_time_limit_minutes
     if match.is_bye and match.x_with_challenge is None:
         match.x_with_challenge = (
             gara.odd_number_policy == OddNumberPolicy.BYE_WITH_CHALLENGE.value

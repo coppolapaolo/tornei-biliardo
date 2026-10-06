@@ -231,6 +231,30 @@ blocks:
       racks, the forfeit — tap the **X** in the top left.
 
   - type: heading
+    id: limite-di-tempo
+    title: "When the competition has a time limit"
+
+  - type: text
+    text: >-
+      If the director gave the matches a time limit, under the score there is
+      a **clock** with the minutes left. It is the same on your phone, on your
+      opponent's, on the director's page and on the screen in the venue.
+
+  - type: list
+    title: "When it starts"
+    items:
+      - "With the **lag**: as soon as you record who won it."
+      - "If the **first player** breaks: when one of the two taps **Start match**, under the score. The director can do it too."
+
+  - type: note
+    tone: info
+    title: "Nothing closes by itself when time is up"
+    text: >-
+      The clock turns into «Time is up» and keeps counting the extra minutes.
+      The match stays open: you keep scoring, and if you reach the distance it
+      ends as always. The director decides whether to stop it.
+
+  - type: heading
     id: sbagli
     title: "If you make a mistake"
 

@@ -167,6 +167,11 @@
         (2, match.player2.username, match.player2_score, forfeit_user_ids is defined and match.player2_id in forfeit_user_ids, finita and match.winner_id == match.player2_id, match.player2_id == current_user.id, not _stop)] %}
 {% endif %}
 {% set _nomi = lati|map(attribute=1)|join(' – ') %}
+{# Il limite di tempo (ADR-077): a tempo scaduto la card passa all'avviso e
+   sale fra quelle da guardare (`direttore_view.partite_del_turno`). Solo
+   visivo: la partita resta in corso finché qualcuno non la chiude. #}
+{% set _timer = match.timer_view if not finita else none %}
+{% set _scaduta = _timer and _timer.scaduto and stato == 'in_corso' and not mia %}
 {# Chi si puo' ritirare da questa partita: il menu propone un comando per
    giocatore. Solo a partita aperta e non bloccata dal turno dopo; nel trio
    una volta sola (`TrioMatch.handle_forfeit`). #}
@@ -174,7 +179,8 @@
 {% set _ritirabile = can_modify and stato in ('da_giocare', 'in_corso') and not (_trio and match.trio_match and match.trio_match.forfeit_player_id) %}
 {% set _ritiri = [] %}
 {% if _ritirabile %}{% for l in lati %}{% set _ = _ritiri.append({'id': _ids[loop.index0], 'nome': l[1]}) %}{% endfor %}{% endif %}
-<article class="c7-card c7-partita c7-partita--{{ stato }} c7-partita--{{ forma }}{% if mia %} c7-card--accent c7-partita--mia{% elif stato == 'da_validare' %} c7-card--ok{% elif finita %} c7-card--locked{% endif %}"
+<article class="c7-card c7-partita c7-partita--{{ stato }} c7-partita--{{ forma }}{% if mia %} c7-card--accent c7-partita--mia{% elif stato == 'da_validare' %} c7-card--ok{% elif finita %} c7-card--locked{% elif _scaduta %} c7-card--warn{% endif %}"
+         {% if _timer and stato == 'in_corso' and not mia %}data-timer-card{% endif %}
          id="partita{{ match.id }}"
          data-match-id="{{ match.id }}" data-stato="{{ stato }}"
          data-p1="{{ match.player1_score }}" data-p2="{{ match.player2_score }}"
@@ -206,6 +212,10 @@
       <span class="c7-partita__forma">{{ _('Trio · un girone') if _trio.gironi == 1 else _('Trio · %(num)s gironi', num=_trio.gironi) }}</span>
       {% elif _set %}
       <span class="c7-partita__forma">{{ _('Set %(num)s', num=_set.numero) if _set.in_corso else _('A set') }}</span>
+      {% endif %}
+      {% if _timer %}
+      {% import "components/_conto_alla_rovescia.html" as cr %}
+      {{ cr.timer(match) }}
       {% endif %}
     </div>
 
@@ -293,6 +303,14 @@
     {% endif %}
   {% endif %}
 
+  {# «Avvia partita» (ADR-077): il conto alla rovescia lo fa partire anche
+     chi dirige, con qualunque regola di inizio. #}
+  {% if _timer and not _timer.inizio and con_stepper and stato == 'in_corso' %}
+  <button type="button" class="btn btn-secondary w-100" style="margin-top:12px"
+          onclick="avviaDallaCard({{ match.id }}, this)">
+    <i class="fas fa-stopwatch"></i> {{ _('Avvia partita') }}
+  </button>
+  {% endif %}
   {% if mia %}
   <a href="{{ url_for('admin.match.match_detail', match_id=match.id) }}" class="btn btn-primary w-100" style="margin-top:12px">
     <i class="fas fa-play"></i> {{ _('Vai al segnapunti') }}

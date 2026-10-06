@@ -293,11 +293,18 @@ def partite_del_turno(
     parita' per id, che e' l'ordine di creazione.
     """
     del_turno = [m for m in matches if m.round_number == turno]
+    from models.match.tempo import tempo_scaduto
 
     def chiave(m):
         stato = stato_partita(m)
         mia = _gioca(m, user_id) and stato != StatoPartita.CONCLUSA
-        return (0 if mia else 1, _ORDINE_CARD[stato], m.id or 0)
+        # Tempo scaduto (ADR-077): la partita chiede al direttore se
+        # interromperla, quindi sta con quelle da validare. Solo visivo: lo
+        # stato della partita non cambia.
+        ordine = _ORDINE_CARD[stato]
+        if stato == StatoPartita.IN_CORSO and tempo_scaduto(m):
+            ordine = _ORDINE_CARD[StatoPartita.DA_VALIDARE]
+        return (0 if mia else 1, ordine, m.id or 0)
 
     return sorted(del_turno, key=chiave)
 

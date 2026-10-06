@@ -31,6 +31,8 @@ class TestParseDefaultSettings:
             "default_odd_policy": "trio",
             "default_anti_rematch": True,
             "has_handicap": False,
+            # ADR-077: nessun limite di tempo, se non lo si scrive.
+            "default_time_limit_minutes": 0,
             # None = "usa la tabella punti di default" (US-17)
             "position_points": None,
             # ADR-056: si tira l'acchito (default dal 2026-09-24), tiri di
@@ -48,6 +50,8 @@ class TestParseDefaultSettings:
             "default_odd_policy": "bye",
             "default_anti_rematch": False,
             "has_handicap": False,
+            # ADR-077: nessun limite di tempo, se non lo si scrive.
+            "default_time_limit_minutes": 0,
             # None = "usa la tabella punti di default" (US-17)
             "position_points": None,
             # ADR-056: si tira l'acchito (default dal 2026-09-24), tiri di

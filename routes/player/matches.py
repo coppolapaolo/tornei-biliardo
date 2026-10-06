@@ -319,6 +319,8 @@ def register_lag(match_id):
         return jsonify({"error": _("Scegli uno dei due giocatori.")}), 400
 
     try:
+        # Col limite di tempo l'acchito fa partire il conto alla rovescia
+        # (ADR-077): lo fa il servizio, insieme all'evento live.
         MatchService.register_lag(
             match_id=match_id,
             lag_winner_id=lag_winner_id,
@@ -329,6 +331,31 @@ def register_lag(match_id):
         return jsonify({"error": str(e)}), 400
     except Exception as e:
         return safe_json_error(e, "player match lag")
+
+
+@player_bp.route("/match/<int:match_id>/avvia", methods=["POST"])
+@login_required
+@match_player_required
+def avvia_partita(match_id):
+    """«Avvia partita»: il conto alla rovescia del limite di tempo (ADR-077).
+
+    Con «apre il primo giocatore» non c'è un acchito da cui farlo partire:
+    lo preme uno dei due dal segnapunti. Il direttore ha il suo pulsante
+    sulla card (`admin.match.avvia_partita`), stesso servizio.
+    """
+    try:
+        match = MatchService.avvia_partita(match_id, current_user)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), http_status_for_exception(e)
+    except Exception as e:
+        return safe_json_error(e, "player match start timer")
+    return jsonify(
+        {
+            "success": True,
+            "timer_started_at": match.timer_started_at.isoformat() + "Z",
+            "time_limit_minutes": match.time_limit_minutes,
+        }
+    )
 
 
 @player_bp.route("/match/<int:match_id>/racks/<int:rack_id>/runout", methods=["POST"])

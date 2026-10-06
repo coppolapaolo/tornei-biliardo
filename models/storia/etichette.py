@@ -36,6 +36,7 @@ ETICHETTE: Dict[str, object] = {
     "match_distance": _l("Set per vincere"),
     "is_race_to_sets": _l("Si vince al numero di set"),
     "has_handicap": _l("Handicap"),
+    "time_limit_minutes": _l("Limite di tempo per partita"),
     "start_rule": _l("Chi apre"),
     "break_rule": _l("Chi spacca"),
     "matchmaking_strategy": _l("Strategia di abbinamento"),
@@ -63,6 +64,7 @@ ETICHETTE: Dict[str, object] = {
     "default_anti_rematch": _l("Anti-reincontro proposto"),
     "default_start_rule": _l("Chi apre, proposto"),
     "default_break_rule": _l("Chi spacca, proposto"),
+    "default_time_limit_minutes": _l("Limite di tempo proposto"),
     "position_points": _l("Punti per posizione"),
     # La configurazione dei playoff.
     "positions_from": _l("Dalla posizione"),
@@ -90,6 +92,7 @@ _COME_CAMPO_DELLA_GARA = {
     "default_anti_rematch": "anti_rematch_enabled",
     "default_start_rule": "start_rule",
     "default_break_rule": "break_rule",
+    "default_time_limit_minutes": "time_limit_minutes",
     "campionato_type": "matchmaking_strategy",
     "strategy_type": "matchmaking_strategy",
 }
@@ -161,9 +164,17 @@ def valore(campo: str, grezzo: str | None) -> str:
         utente = db.session.get(User, int(grezzo))
         return utente.username if utente else grezzo
     if grezzo is None or grezzo == "":
-        if campo in ("start_rule", "break_rule", "has_handicap"):
+        if campo in ("start_rule", "break_rule", "has_handicap", "time_limit_minutes"):
             return _("come il campionato")
         return "—"
+    if campo == "time_limit_minutes":
+        try:
+            minuti = int(grezzo)
+        except ValueError:
+            return grezzo
+        if minuti <= 0:
+            return _("senza limite")
+        return _("%(n)s minuti", n=minuti)
     if grezzo in ("true", "false"):
         return _("sì") if grezzo == "true" else _("no")
     if campo == "discipline":

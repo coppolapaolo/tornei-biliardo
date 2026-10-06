@@ -149,6 +149,10 @@
         <div class="c7-comesigioca__valore">{{ gara.discipline|discipline_display }}</div></div>
       <div><div class="c7-kicker">{{ _('Distanza') }}</div>
         <div class="c7-comesigioca__valore">{{ gara.distance_config|format_distance }}</div></div>
+      {% if gara.effective_time_limit_minutes %}
+      <div><div class="c7-kicker">{{ _('Limite di tempo') }}</div>
+        <div class="c7-comesigioca__valore">{{ _('%(n)s minuti a partita', n=gara.effective_time_limit_minutes) }}</div></div>
+      {% endif %}
       {% if not _is_bracket %}
       <div><div class="c7-kicker">{{ _('Anti-reincontro') }}</div>
         <div class="c7-comesigioca__valore" style="color:{{ 'var(--c7-ok)' if gara.anti_rematch_enabled else 'var(--c7-ink-muted)' }}">

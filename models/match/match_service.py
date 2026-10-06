@@ -9,6 +9,8 @@ from __future__ import annotations
 from typing import List, Optional, Dict, Any, TYPE_CHECKING
 from datetime import datetime
 
+from flask_babel import gettext as _
+
 if TYPE_CHECKING:
     from models.shared.operation_result import OperationResult
 
@@ -471,6 +473,55 @@ class MatchService:
         return ScoringService.register_lag(
             match_id, lag_winner_id, first_break_player_id
         )
+
+    @staticmethod
+    @transactional(domain="match")
+    def avvia_partita(match_id: int, user: Any) -> Match:
+        """«Avvia partita»: fa partire il conto alla rovescia (ADR-077).
+
+        Con la regola «apre il primo giocatore» non c'è un acchito da cui
+        farlo partire: lo premono i due giocatori dal segnapunti o il
+        direttore dalla card. Premere di nuovo non sposta l'inizio.
+
+        Raises:
+            NotFoundError: la partita non esiste.
+            PermissionDeniedError: chi preme non gioca la partita e non dirige
+                la gara.
+            ValidationError: la partita non ha un limite di tempo.
+            ConflictError: la partita è già chiusa.
+        """
+        from models.exceptions import (
+            ConflictError,
+            NotFoundError,
+            PermissionDeniedError,
+            ValidationError,
+        )
+        from models.match import tempo
+        from models.user.permissions import PermissionChecker
+
+        match = db.session.get(Match, match_id)
+        if match is None:
+            raise NotFoundError(_("Partita non trovata."))
+        user_id = getattr(user, "id", None)
+        dirige = bool(
+            match.gara_id
+            and PermissionChecker.can_manage_competition(user, match.gara_id)
+        )
+        if not match.is_player(user_id) and not dirige:
+            raise PermissionDeniedError(
+                _("Possono avviarla i due giocatori o chi dirige la gara.")
+            )
+        if MatchStatus.is_finished(match.status):
+            raise ConflictError(_("La partita è già chiusa."))
+        if not tempo.ha_limite(match):
+            raise ValidationError(_("Questa partita non ha un limite di tempo."))
+        if not tempo.in_gioco(match):
+            raise ConflictError(
+                _("La partita non è ancora cominciata: aspetta il tavolo.")
+            )
+        if tempo.avvia_conto_alla_rovescia(match):
+            tempo.evento_live(match, autore_id=user_id)
+        return match
 
     @staticmethod
     def toggle_run_out(match_id: int, rack_id: int) -> dict:

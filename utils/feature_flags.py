@@ -201,6 +201,9 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     # Acchito e runout sul segnapunti da tavolo (ADR-056): stessa platea di
     # chi segna il triangolo, perché sono lo stesso gesto al tavolo.
     "player.register_lag": {"player", "director"},
+    # Limite di tempo (ADR-077): il conto alla rovescia lo avviano i giocatori
+    # della partita dal segnapunti, o chi dirige dalla card.
+    "player.avvia_partita": {"player", "director"},
     "player.toggle_run_out": {"player", "director"},
     "player.confirm_match_result": {"player", "director"},
     "player.reject_match_result": {"player", "director"},
@@ -366,6 +369,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.match.remove_rack_admin": {"director"},
     "admin.match.set_match_result_direct": {"director"},
     "admin.match.punteggio_partita": {"director"},
+    "admin.match.avvia_partita": {"director"},
     # Il ritiro deciso dal direttore, dal menu della partita.
     "admin.match.ritiro_partita": {"director"},
     "admin.match.validate_match": {"director"},

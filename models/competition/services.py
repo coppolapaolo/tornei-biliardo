@@ -549,6 +549,12 @@ class GaraService:
             ).value
         if kwargs.get("has_handicap") is None:
             kwargs["has_handicap"] = bool(campionato.has_handicap)
+        if kwargs.get("time_limit_minutes") is None:
+            # Lo zero si copia: «senza limite» è un valore, e copiato confronta
+            # pari col campionato quando un cambio gli si propone (ADR-077).
+            kwargs["time_limit_minutes"] = int(
+                campionato.default_time_limit_minutes or 0
+            )
 
     @staticmethod
     def _valori_per_la_storia(gara: Gara, campi: List[str]) -> Dict[str, Any]:

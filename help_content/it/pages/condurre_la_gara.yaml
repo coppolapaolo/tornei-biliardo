@@ -108,6 +108,13 @@ blocks:
           tocco era sbagliato lo annulli lì, o togli il triangolo con −. Passati
           i tre secondi la card dice **«Partita chiusa»**, il tavolo passa alla
           prima partita in attesa e la pagina si aggiorna.
+      - name: "Seguire il limite di tempo"
+        text: >-
+          Se la gara ha un limite di tempo, ogni card in corso mostra il
+          cronometro. Se apre il primo giocatore, o se i giocatori non hanno
+          registrato l'acchito, lo fai partire tu con **Avvia partita**. Allo
+          scadere la card diventa gialla e sale in cima, fra quelle da
+          guardare: la partita non si chiude da sola.
       - name: "Validare un risultato"
         text: >-
           Una partita arrivata alla distanza dal segnapunti dei giocatori,

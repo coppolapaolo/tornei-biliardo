@@ -50,6 +50,23 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         {% set player2_name = match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.player2 else _('X a tavolino') %}
         {% include "components/_unified_match_score.html" %}
 
+        {# «Avvia partita» (ADR-077): il conto alla rovescia del limite di tempo.
+           Con l'acchito parte da solo quando lo si registra; con «apre il primo
+           giocatore» lo fa partire uno dei due, o chi dirige. #}
+        {% if match.has_time_limit and not match.timer_started_at and MatchStatus.is_active(match.status) %}
+          {% if user_is_player and not match.needs_lag %}
+          <button type="button" class="btn btn-primary w-100" data-help="partita-avvia"
+                  onclick="avviaPartita('{{ url_for('player.avvia_partita', match_id=match.id) }}', this)">
+            <i class="fas fa-stopwatch"></i> {{ _('Avvia partita') }}
+          </button>
+          {% elif user_can_manage and not user_is_player %}
+          <button type="button" class="btn btn-primary w-100"
+                  onclick="avviaPartita('{{ url_for('admin.match.avvia_partita', match_id=match.id) }}', this)">
+            <i class="fas fa-stopwatch"></i> {{ _('Avvia partita') }}
+          </button>
+          {% endif %}
+        {% endif %}
+
         {# Multi-set breakdown (if applicable) #}
         {% if match.is_multi_set %}
         {% include "components/_multi_set_score_display.html" %}
@@ -399,6 +416,26 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
             });
     }
 
+    // ADR-077 — fa partire il conto alla rovescia del limite di tempo.
+    function avviaPartita(url, btn) {
+        const restore = withLoading(btn);
+        fetch(url, {method: 'POST', headers: {'X-CSRFToken': csrfToken()}})
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    showError({{ _("Errore:")|tojson }} + ' ' + (data.error || ''));
+                    restore();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError({{ _("Errore durante l'avvio della partita")|tojson }});
+                restore();
+            });
+    }
+
     function confirmResult(btn) {
         const restore = withLoading(btn);
         fetch(`/player/match/{{ match.id }}/confirm`, {
@@ -693,7 +730,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         {# Regular match: poll match endpoint #}
         window.Polling.reloadOnEvents({
             url: '/sse/poll/match/' + {{ match.id }},
-            reloadOn: ['rack_added', 'rack_removed', 'forfeit', 'result_confirmed', 'table_assigned', 'table_removed', 'table_swapped']
+            reloadOn: ['rack_added', 'rack_removed', 'forfeit', 'result_confirmed', 'table_assigned', 'table_removed', 'table_swapped', 'timer_started']
         });
         {% endif %}
     {% endif %}

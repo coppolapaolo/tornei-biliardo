@@ -83,6 +83,34 @@ class CampionatoFormParser:
         return form.get("is_prova") == "on"
 
     @staticmethod
+    def parse_time_limit(form: MultiDict) -> int:
+        """I minuti proposti alle gare; vuoto o zero = nessun limite (ADR-077).
+
+        Stessi confini del modulo della gara (`GaraFormParser`): un valore fuori
+        si rifiuta, non si corregge in silenzio.
+        """
+        from flask_babel import gettext as _
+
+        from routes.admin.competition.form_parser import LIMITE_DI_TEMPO_MASSIMO
+
+        grezzo = (form.get("default_time_limit_minutes") or "").strip()
+        if not grezzo:
+            return 0
+        try:
+            minuti = int(grezzo)
+        except ValueError:
+            minuti = -1
+        if minuti < 0 or minuti > LIMITE_DI_TEMPO_MASSIMO:
+            raise ValueError(
+                _(
+                    "Il limite di tempo si scrive in minuti, da 1 a %(max)s; "
+                    "lascia vuoto per non mettere limiti.",
+                    max=LIMITE_DI_TEMPO_MASSIMO,
+                )
+            )
+        return minuti
+
+    @staticmethod
     def parse_default_settings(form: MultiDict) -> Dict[str, Any]:
         """Parse the default-settings block shared by create-wizard and edit.
 
@@ -138,6 +166,8 @@ class CampionatoFormParser:
             ).value,
             # Handicap mode del campionato (ereditato da gare/match). Checkbox.
             "has_handicap": "has_handicap" in form,
+            # Limite di tempo per partita proposto alle gare (ADR-077).
+            "default_time_limit_minutes": CampionatoFormParser.parse_time_limit(form),
             # Punti per posizione delle gare a tabellone (US-17). Il campo
             # esiste solo sui campionati a tabellone; altrove resta None e la
             # colonna non viene mai letta.

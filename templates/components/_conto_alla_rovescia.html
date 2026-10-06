@@ -1,0 +1,34 @@
+{# Il conto alla rovescia del limite di tempo (ADR-077) — Design System 7c.
+
+   Una pastiglia: cronometro e minuti che restano, in cifre di servizio. Prima
+   della partenza mostra la durata, spenta; allo scadere diventa «Tempo
+   scaduto +2'» su fondo d'avviso. Solo visivo: lo aggiorna
+   `static/js/conto_alla_rovescia.js` dai data-*, che il server scrive da
+   `Match.timer_view`. Senza limite di tempo non disegna niente.
+
+   Uso: {% import "components/_conto_alla_rovescia.html" as cr %}
+        {{ cr.timer(match) }} · {{ cr.timer(match, grande=true) }}
+
+   Nessun id e nessuno script: si include anche due volte nella stessa pagina. #}
+
+{% macro testo(v) -%}
+  {%- if v.restanti > 0 -%}
+    {%- set s = v.restanti -%}{{ s // 60 }}:{{ "%02d"|format(s % 60) }}
+  {%- else -%}
+    {%- set oltre = (-v.restanti) // 60 -%}{{ _('Tempo scaduto') }}{% if oltre > 0 %} +{{ oltre }}'{% endif %}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro timer(match, grande=false) -%}
+{%- set v = match.timer_view if match.timer_view is defined else none -%}
+{%- if v -%}
+<span class="c7-timer{% if grande %} c7-timer--grande{% endif %}{% if not v.inizio %} is-fermo{% endif %}{% if v.scaduto %} is-scaduto{% endif %}"
+      data-timer-minuti="{{ v.minuti }}" data-timer-adesso="{{ v.adesso }}"
+      {% if v.inizio %}data-timer-inizio="{{ v.inizio }}"{% endif %}
+      data-et-scaduto="{{ _('Tempo scaduto') }}"
+      title="{{ _('Limite di tempo: %(n)s minuti', n=v.minuti) if v.inizio else _('Limite di tempo: %(n)s minuti, non ancora partito', n=v.minuti) }}">
+  <i class="fas fa-stopwatch" aria-hidden="true"></i>
+  <span class="c7-num" data-timer-testo>{{ testo(v) }}</span>
+</span>
+{%- endif -%}
+{%- endmacro %}

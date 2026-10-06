@@ -35,6 +35,7 @@ CAMPI_IN_VIGORE: Tuple[str, ...] = (
     "start_rule",
     "break_rule",
     "has_handicap",
+    "time_limit_minutes",
     "matchmaking_strategy",
     "rounds_count",
     "classification_system",
@@ -93,12 +94,19 @@ def _in_vigore(gara: Any, storia: List[SettingsChange]) -> List[Impostazione]:
             continue
         if campo == "tiebreaker_until_position" and not gara.tiebreaker_enabled:
             continue
+        # Senza limite di tempo la riga non c'è: chi non usa l'opzione vede la
+        # pagina di sempre (ADR-077). Se un limite c'era, lo dice la storia.
+        if campo == "time_limit_minutes" and gara.effective_time_limit_minutes is None:
+            continue
         risultato.append(Impostazione(campo, valore, ultima.get(campo)))
     return risultato
 
 
 def _regole_del_turno(gara: Any, numero: int) -> Tuple[str, ...]:
-    """Disciplina, distanza, «al N», chi apre, chi spacca di un turno."""
+    """Disciplina, distanza, «al N», chi apre, chi spacca, minuti di un turno.
+
+    I minuti sono "0" senza limite di tempo (ADR-077).
+    """
     from ..competition.round_creation import resolve_round_overrides
     from ..match.models import Match
 
@@ -114,6 +122,7 @@ def _regole_del_turno(gara: Any, numero: int) -> Tuple[str, ...]:
             serializza(partita.effective_is_race_to),
             serializza(partita.effective_start_rule),
             serializza(partita.effective_break_rule),
+            serializza(partita.time_limit_minutes or 0),
         )
     turno = resolve_round_overrides(gara, numero)
     return (
@@ -122,6 +131,7 @@ def _regole_del_turno(gara: Any, numero: int) -> Tuple[str, ...]:
         serializza(turno["round_is_race_to"]),
         serializza(gara.effective_start_rule),
         serializza(gara.effective_break_rule),
+        serializza(gara.effective_time_limit_minutes or 0),
     )
 
 
@@ -176,6 +186,7 @@ CAMPI_DEL_CAMPIONATO: Tuple[str, ...] = (
     "default_start_rule",
     "default_break_rule",
     "has_handicap",
+    "default_time_limit_minutes",
     "position_points",
 )
 
