@@ -973,6 +973,8 @@ def _serialize_round_config(config) -> dict:
         "is_multi_set": config.is_multi_set,
         "match_distance": config.match_distance,
         "is_race_to_sets": config.is_race_to_sets,
+        # Tre stati (ADR-077): None = come la gara, 0 = senza limite, N.
+        "time_limit_minutes": config.time_limit_minutes,
     }
 
 
@@ -996,6 +998,7 @@ def list_round_configs(gara_id: int):
                 "is_multi_set": gara.is_multi_set,
                 "match_distance": gara.match_distance,
                 "is_race_to_sets": getattr(gara, "is_race_to_sets", True),
+                "time_limit_minutes": gara.effective_time_limit_minutes,
             },
             "overrides": [_serialize_round_config(c) for c in configs],
         }
@@ -1009,7 +1012,41 @@ _CAMPI_DEL_TURNO = (
     "is_multi_set",
     "match_distance",
     "is_race_to_sets",
+    "time_limit_minutes",
 )
+
+
+def _limite_del_turno(payload: dict) -> object:
+    """Il limite di tempo chiesto per il turno (ADR-077), o `NON_TOCCARE`.
+
+    Tre stati: assente = non toccare, `null` o vuoto = togli l'override (il
+    turno segue la gara), 0 = senza limite, N = N minuti. Fuori da 0–600 si
+    rifiuta con ValueError.
+    """
+    from models.competition.round_configuration import NON_TOCCARE
+    from routes.admin.competition.form_parser import LIMITE_DI_TEMPO_MASSIMO
+
+    if "time_limit_minutes" not in payload:
+        return NON_TOCCARE
+    grezzo = payload["time_limit_minutes"]
+    if grezzo is None or grezzo == "":
+        return None
+    # Solo un intero: `int()` accetterebbe anche 45.9 (→ 45) e true (→ 1),
+    # e un numero enorme lo farebbe sollevare un'eccezione diversa.
+    minuti = -1
+    if isinstance(grezzo, int) and not isinstance(grezzo, bool):
+        minuti = grezzo
+    elif isinstance(grezzo, str) and grezzo.strip().isdigit():
+        minuti = int(grezzo.strip())
+    if minuti < 0 or minuti > LIMITE_DI_TEMPO_MASSIMO:
+        raise ValueError(
+            _(
+                "Il limite di tempo del turno è un numero intero di minuti, "
+                "da 0 a %(max)s: 0 vuol dire senza limite, vuoto come la gara.",
+                max=LIMITE_DI_TEMPO_MASSIMO,
+            )
+        )
+    return minuti
 
 
 def _valori_del_turno(gara_id: int, round_number: int) -> dict:
@@ -1101,6 +1138,11 @@ def upsert_round_config(gara_id: int, round_number: int):
                 400,
             )
 
+    try:
+        limite = _limite_del_turno(payload)
+    except ValueError as ve:
+        return jsonify({"success": False, "error": str(ve)}), 400
+
     @transactional(domain="competition")
     def _persist() -> RoundConfiguration:
         prima = _valori_del_turno(gara.id, round_number)
@@ -1113,6 +1155,7 @@ def upsert_round_config(gara_id: int, round_number: int):
             is_multi_set=payload.get("is_multi_set"),
             match_distance=payload.get("match_distance"),
             is_race_to_sets=payload.get("is_race_to_sets"),
+            time_limit_minutes=limite,
         )
         _scrivi_nella_storia(gara, round_number, prima)
         return config

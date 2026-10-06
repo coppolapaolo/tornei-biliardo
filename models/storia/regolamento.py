@@ -109,6 +109,7 @@ def _regole_del_turno(gara: Any, numero: int) -> Tuple[str, ...]:
     """
     from ..competition.round_creation import resolve_round_overrides
     from ..match.models import Match
+    from ..match.tempo import limite_del_turno
 
     partita = (
         Match.query.filter_by(gara_id=gara.id, round_number=numero, is_bye=False)
@@ -131,7 +132,7 @@ def _regole_del_turno(gara: Any, numero: int) -> Tuple[str, ...]:
         serializza(turno["round_is_race_to"]),
         serializza(gara.effective_start_rule),
         serializza(gara.effective_break_rule),
-        serializza(gara.effective_time_limit_minutes or 0),
+        serializza(limite_del_turno(gara, numero) or 0),
     )
 
 

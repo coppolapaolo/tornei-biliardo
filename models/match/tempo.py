@@ -47,6 +47,28 @@ def limite_minuti(match: Any) -> Optional[int]:
     return minuti if minuti and minuti > 0 else None
 
 
+def limite_del_turno(gara: Any, round_number: Optional[int]) -> Optional[int]:
+    """I minuti delle partite di un turno: quelli del turno, se li ha, o della gara.
+
+    È ciò che `fissa_regole` scrive sulla partita quando nasce. None = nessun
+    limite.
+    """
+    # Dalla relazione della gara, non con una query: `fissa_regole` gira su
+    # ogni partita nuova, e un turno ne crea molte insieme. La relazione si
+    # carica una volta per gara e per sessione.
+    config = next(
+        (
+            rc
+            for rc in (getattr(gara, "round_configurations", None) or [])
+            if rc.round_number == round_number
+        ),
+        None,
+    )
+    if config is not None:
+        return config.get_effective_time_limit_minutes(gara)
+    return gara.effective_time_limit_minutes
+
+
 def ha_limite(match: Any) -> bool:
     return limite_minuti(match) is not None
 
@@ -183,6 +205,7 @@ def evento_live(match: Any, autore_id: Optional[int] = None) -> None:
 __all__ = [
     "forma_esclusa",
     "limite_minuti",
+    "limite_del_turno",
     "ha_limite",
     "scadenza",
     "secondi_restanti",

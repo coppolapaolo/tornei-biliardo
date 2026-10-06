@@ -67,7 +67,8 @@
     al 3». Rilievo del canvas (12/09/2026): prima la testata mostrava sempre
     i valori della creazione. #}
 {%- for rc in gara.round_configurations|sort(attribute='round_number') if rc.has_overrides() %}
-<span class="c7-head__override"><span class="c7-sep">·</span> {{ _('turno %(n)s', n=rc.round_number) }}: {{ rc.get_effective_discipline(gara.discipline)|discipline_display }} {{ rc.effective_distance_config(gara)|format_distance|lower }}</span>
+<span class="c7-head__override"><span class="c7-sep">·</span> {{ _('turno %(n)s', n=rc.round_number) }}: {{ rc.get_effective_discipline(gara.discipline)|discipline_display }} {{ rc.effective_distance_config(gara)|format_distance|lower }}
+{%- if rc.time_limit_minutes is not none %}, {{ _('%(n)s minuti a partita', n=rc.time_limit_minutes) if rc.time_limit_minutes else _('senza limite di tempo') }}{% endif %}</span>
 {%- endfor %}
 {%- endmacro %}
 

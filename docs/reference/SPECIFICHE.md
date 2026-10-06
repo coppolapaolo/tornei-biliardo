@@ -262,7 +262,7 @@ La app permette anche agli utenti ``player`` di organizzare **match _standalone_
 
 ### Limite di tempo
 
-Un **match** può avere un **limite di tempo**, in minuti, **oltre** alla distanza: la distanza resta, e una partita che ci arriva si chiude come sempre. Il limite è facoltativo — senza, il match è quello di sempre — e segue la stessa catena delle altre regole: lo **propone il campionato**, lo **decide la gara** (anche una gara singola), si **fissa sul match quando nasce**. A gara avviata si cambia e vale per i match dei turni successivi.
+Un **match** può avere un **limite di tempo**, in minuti, **oltre** alla distanza: la distanza resta, e una partita che ci arriva si chiude come sempre. Il limite è facoltativo — senza, il match è quello di sempre — e segue la stessa catena delle altre regole: lo **propone il campionato**, lo **decide la gara** (anche una gara singola), si **fissa sul match quando nasce**. A gara avviata si cambia e vale per i match dei turni successivi. Come la distanza, si può cambiare anche **per un singolo turno**, con tre scelte: come la gara, senza limite, oppure un numero di minuti diverso.
 
 Il **conto alla rovescia** parte una volta sola:
 - con la regola di inizio **"acchito"**, quando si registra chi l'ha vinto;

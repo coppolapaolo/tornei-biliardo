@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-06 19:31+0200\n"
+"POT-Creation-Date: 2026-10-06 19:54+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -1075,7 +1075,7 @@ msgid "%(set)s, ogni set al %(rack)s"
 msgstr ""
 
 #: models/competition/showcase_view.py:207
-#: templates/direttore/preparazione/_turni.html:183
+#: templates/direttore/preparazione/_turni.html:203
 #, python-format
 msgid "%(n)s triangoli esatti"
 msgstr ""
@@ -3587,8 +3587,8 @@ msgstr ""
 #: templates/components/_match_info.html:45
 #: templates/components/_new_gara_modal.html:189
 #: templates/components/_playoff_config_form.html:40
-#: templates/direttore/preparazione/_turni.html:77
-#: templates/direttore/preparazione/_turni.html:148
+#: templates/direttore/preparazione/_turni.html:80
+#: templates/direttore/preparazione/_turni.html:168
 #: templates/individual_match/create_proposal.html:105
 #: templates/individual_match/edit_match.html:63
 #: templates/individual_match/match_detail.html:196
@@ -3601,7 +3601,7 @@ msgstr ""
 #: templates/components/_distance_configurator.html:15
 #: templates/components/_player_dashboard_content.html:40
 #: templates/components/_playoff_config_form.html:32
-#: templates/direttore/preparazione/_turni.html:150
+#: templates/direttore/preparazione/_turni.html:170
 #: templates/individual_match/create_proposal.html:127
 #: templates/individual_match/edit_match.html:78
 #: templates/individual_match/proposal_detail.html:55
@@ -3662,7 +3662,7 @@ msgid "Strategia di abbinamento"
 msgstr ""
 
 #: models/storia/etichette.py:43 templates/components/_gara_info.html:57
-#: templates/direttore/preparazione/_turni.html:157
+#: templates/direttore/preparazione/_turni.html:177
 msgid "Anti-reincontro"
 msgstr ""
 
@@ -3918,7 +3918,7 @@ msgstr ""
 #: models/storia/etichette.py:127 models/storia/etichette.py:128
 #: templates/components/_campionato_general_classification.html:75
 #: templates/components/_unified_rack_history.html:61
-#: templates/direttore/preparazione/_turni.html:86
+#: templates/direttore/preparazione/_turni.html:89
 #: templates/individual_match/tpa_referto.html:101
 msgid "Triangoli"
 msgstr ""
@@ -4124,6 +4124,7 @@ msgid "Vinte"
 msgstr ""
 
 #: models/training_sheet/measure.py:133
+#: templates/direttore/preparazione/_turni.html:124
 msgid "Minuti"
 msgstr ""
 
@@ -5699,7 +5700,7 @@ msgstr ""
 #: templates/components/_gara_info.html:27
 #: templates/components/_playoff_config_form.html:36
 #: templates/components/_round_navigation.html:4
-#: templates/direttore/preparazione/_turni.html:146
+#: templates/direttore/preparazione/_turni.html:166
 #: templates/gara_detail.html:47
 msgid "Turni"
 msgstr ""
@@ -5797,15 +5798,22 @@ msgstr ""
 msgid "Errore interno del server"
 msgstr ""
 
-#: routes/admin/competition/rounds.py:1181
+#: routes/admin/competition/rounds.py:1044
+#, python-format
+msgid ""
+"Il limite di tempo del turno è un numero intero di minuti, da 0 a "
+"%(max)s: 0 vuol dire senza limite, vuoto come la gara."
+msgstr ""
+
+#: routes/admin/competition/rounds.py:1224
 msgid "Il punteggio deve essere un numero."
 msgstr ""
 
-#: routes/admin/competition/rounds.py:1207
+#: routes/admin/competition/rounds.py:1250
 msgid "Prova convalidata: il punteggio è in classifica."
 msgstr ""
 
-#: routes/admin/competition/rounds.py:1254
+#: routes/admin/competition/rounds.py:1297
 msgid "Prova azzerata: il turno torna a valere zero."
 msgstr ""
 
@@ -8161,8 +8169,8 @@ msgstr ""
 #: templates/admin/venue_detail.html:34 templates/admin/venue_form.html:5
 #: templates/admin/venues_list.html:118
 #: templates/components/_campionato_gare.html:66
-#: templates/components/_gara_header.html:91
 #: templates/components/_gara_header.html:92
+#: templates/components/_gara_header.html:93
 #: templates/components/_tessera_campionato.html:116
 #: templates/components/_unified_cards.html:112
 #: templates/components/_unified_cards.html:123
@@ -9054,7 +9062,7 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:36
 #: templates/components/_new_gara_modal.html:47
-#: templates/direttore/preparazione/_turni.html:144
+#: templates/direttore/preparazione/_turni.html:164
 msgid "Strategia"
 msgstr ""
 
@@ -9617,7 +9625,7 @@ msgstr ""
 
 #: templates/admin/gara_create_standalone.html:468
 #: templates/components/_playoff_config_form.html:58
-#: templates/direttore/preparazione/_turni.html:160
+#: templates/direttore/preparazione/_turni.html:180
 msgid "Dispari"
 msgstr ""
 
@@ -13260,7 +13268,7 @@ msgstr ""
 #: templates/components/_campionato_details_info.html:107
 #: templates/components/_gara_info.html:59
 #: templates/components/_history_campionati_tab.html:26
-#: templates/direttore/preparazione/_turni.html:159
+#: templates/direttore/preparazione/_turni.html:179
 #: templates/gamification/admin/level_config.html:102
 #: templates/gamification/admin/level_config.html:169
 #: templates/gamification/admin/streak_config.html:65
@@ -13945,7 +13953,7 @@ msgid "Al"
 msgstr ""
 
 #: templates/components/_director_dashboard_content.html:27
-#: templates/direttore/preparazione/_turni.html:101
+#: templates/direttore/preparazione/_turni.html:104
 msgid "Esatto"
 msgstr ""
 
@@ -14219,7 +14227,7 @@ msgstr ""
 #: templates/components/_gara_edit_form.html:76
 #: templates/direttore/_fase_preparazione.html:96
 #: templates/direttore/preparazione/_turni.html:47
-#: templates/direttore/preparazione/_turni.html:192
+#: templates/direttore/preparazione/_turni.html:212
 msgid "default"
 msgstr ""
 
@@ -14361,8 +14369,10 @@ msgid "Di prova"
 msgstr ""
 
 #: templates/components/_gara_header.html:60
+#: templates/components/_gara_header.html:71
 #: templates/components/_tessera_gara.html:101
-#: templates/direttore/preparazione/_turni.html:154
+#: templates/direttore/preparazione/_turni.html:54
+#: templates/direttore/preparazione/_turni.html:174
 #, python-format
 msgid "%(n)s minuti a partita"
 msgstr ""
@@ -14372,7 +14382,12 @@ msgstr ""
 msgid "turno %(n)s"
 msgstr ""
 
-#: templates/components/_gara_header.html:83
+#: templates/components/_gara_header.html:71
+#: templates/direttore/preparazione/_turni.html:55
+msgid "senza limite di tempo"
+msgstr ""
+
+#: templates/components/_gara_header.html:84
 #, python-format
 msgid "Torna al campionato %(nome)s"
 msgstr ""
@@ -14408,7 +14423,7 @@ msgid "Gratuita"
 msgstr ""
 
 #: templates/components/_gara_info.html:59
-#: templates/direttore/preparazione/_turni.html:159
+#: templates/direttore/preparazione/_turni.html:179
 msgid "Non attivo"
 msgstr ""
 
@@ -14628,7 +14643,7 @@ msgstr ""
 #: templates/direttore/_fase_preparazione.html:95
 #: templates/direttore/_partite.html:31 templates/direttore/_partite.html:79
 #: templates/direttore/preparazione/_turni.html:46
-#: templates/direttore/preparazione/_turni.html:67
+#: templates/direttore/preparazione/_turni.html:70
 #: templates/public/schermo_sala.html:263
 #: templates/public/schermo_sala.html:271
 #, python-format
@@ -15496,7 +15511,7 @@ msgstr ""
 #: templates/components/_multi_set_score_display.html:60
 #: templates/components/_unified_rack_input.html:132
 #: templates/components/_unified_rack_input.html:174
-#: templates/direttore/preparazione/_turni.html:113
+#: templates/direttore/preparazione/_turni.html:133
 msgid "Set"
 msgstr ""
 
@@ -18749,7 +18764,7 @@ msgstr ""
 
 #: templates/direttore/_fase_preparazione.html:96
 #: templates/direttore/preparazione/_turni.html:47
-#: templates/direttore/preparazione/_turni.html:191
+#: templates/direttore/preparazione/_turni.html:211
 msgid "modificato"
 msgstr ""
 
@@ -20029,95 +20044,114 @@ msgstr ""
 msgid "Un turno solo: si gioca alla distanza della gara."
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:57
+#: templates/direttore/preparazione/_turni.html:60
 msgid ""
 "Con le iscrizioni aperte i turni non si toccano più: gli iscritti si sono"
 " iscritti a questa gara."
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:60
+#: templates/direttore/preparazione/_turni.html:63
 msgid ""
 "Disciplina e distanza diverse per ciascun turno. Si modificano fino "
 "all’apertura delle iscrizioni; ogni cambio si salva da solo."
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:70
+#: templates/direttore/preparazione/_turni.html:73
 msgid "Ripristina il default"
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:70
+#: templates/direttore/preparazione/_turni.html:73
 #, python-format
 msgid "Ripristina il turno %(num)s al default"
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:79
+#: templates/direttore/preparazione/_turni.html:82
 msgid "(default)"
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:106
+#: templates/direttore/preparazione/_turni.html:109
 #: templates/individual_match/create_proposal.html:121
 #: templates/individual_match/edit_match.html:73
 #: templates/individual_match/quick_match.html:165
 msgid "Multi-set"
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:121
+#: templates/direttore/preparazione/_turni.html:116
+#: templates/direttore/preparazione/_turni.html:173
+msgid "Limite di tempo"
+msgstr ""
+
+#: templates/direttore/preparazione/_turni.html:118
+#, python-format
+msgid "Come la gara (%(n)s min)"
+msgstr ""
+
+#: templates/direttore/preparazione/_turni.html:118
+msgid "Come la gara (senza)"
+msgstr ""
+
+#: templates/direttore/preparazione/_turni.html:119
+#: templates/individual_match/quick_match.html:33
+msgid "Senza limite"
+msgstr ""
+
+#: templates/direttore/preparazione/_turni.html:120
+msgid "Minuti diversi"
+msgstr ""
+
+#: templates/direttore/preparazione/_turni.html:141
 #: templates/individual_match/create_proposal.html:133
 #: templates/individual_match/edit_match.html:81
 #: templates/individual_match/quick_match.html:173
 msgid "Al N"
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:142
+#: templates/direttore/preparazione/_turni.html:162
 #: templates/individual_match/create_proposal.html:102
 #: templates/individual_match/edit_match.html:47
 #: templates/individual_match/quick_match.html:103
 msgid "Come si gioca"
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:153
-msgid "Limite di tempo"
-msgstr ""
-
-#: templates/direttore/preparazione/_turni.html:165
+#: templates/direttore/preparazione/_turni.html:185
 msgid ""
 "Il turno modificato si distingue con la pastiglia. Gli esercizi si "
 "giocano dopo il turno indicato, mentre gli altri finiscono, e fanno una "
 "classifica a parte."
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:184
+#: templates/direttore/preparazione/_turni.html:204
 #: templates/individual_match/quick_match.html:35
 #, python-format
 msgid "Al %(n)s"
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:185
+#: templates/direttore/preparazione/_turni.html:205
 #, python-format
 msgid "%(s)s set, %(r)s"
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:186
+#: templates/direttore/preparazione/_turni.html:206
 #, python-format
 msgid "Turno %(n)s salvato"
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:187
+#: templates/direttore/preparazione/_turni.html:207
 #, python-format
 msgid "Turno %(n)s ripristinato al default"
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:188
+#: templates/direttore/preparazione/_turni.html:208
 #, python-format
 msgid "Errore %(code)s nel salvataggio del turno %(n)s"
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:189
+#: templates/direttore/preparazione/_turni.html:209
 #, python-format
 msgid "Errore di rete nel salvataggio del turno %(n)s"
 msgstr ""
 
-#: templates/direttore/preparazione/_turni.html:190
+#: templates/direttore/preparazione/_turni.html:210
 #, python-format
 msgid "Impossibile caricare la configurazione (%(code)s)"
 msgstr ""
@@ -23458,10 +23492,6 @@ msgstr ""
 
 #: templates/individual_match/quick_match.html:19
 msgid "La partita che state giocando adesso"
-msgstr ""
-
-#: templates/individual_match/quick_match.html:33
-msgid "Senza limite"
 msgstr ""
 
 #: templates/individual_match/quick_match.html:34

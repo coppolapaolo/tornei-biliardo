@@ -15,6 +15,10 @@ from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 from models.base import db, BaseModel
 
+#: Per `create_or_update`: il limite di tempo non va toccato. Serve un valore
+#: a parte perché qui None ha un significato suo — togliere l'override.
+NON_TOCCARE: Any = object()
+
 if TYPE_CHECKING:
     pass
 
@@ -37,6 +41,9 @@ class RoundConfiguration(BaseModel):
     is_multi_set = db.Column(db.Boolean, nullable=True)
     match_distance = db.Column(db.Integer, nullable=True)
     is_race_to_sets = db.Column(db.Boolean, nullable=True)
+    #: Limite di tempo del turno, in minuti (ADR-077). Tre stati, come sulla
+    #: gara: NULL = come la gara, 0 = senza limite per questo turno, N.
+    time_limit_minutes = db.Column(db.Integer, nullable=True)
 
     # Deprecated: pre-ADR-027 usava `best_of` ma era dead code (mai popolato).
     # Lo manteniamo per compat schema, la migration ne ha già travasato i
@@ -85,11 +92,16 @@ class RoundConfiguration(BaseModel):
         match_distance: Optional[int] = None,
         is_race_to_sets: Optional[bool] = None,
         notes: Optional[str] = None,
+        time_limit_minutes: Any = NON_TOCCARE,
     ) -> "RoundConfiguration":
         """Upsert. Solo i campi non-None sovrascrivono lo stato esistente.
 
         Per cancellare un override esistente passare il valore esplicito
         (es. distance=gara.distance) oppure usare delete_for_round.
+
+        Il limite di tempo fa eccezione, perché ha tre stati (ADR-077): None
+        passato esplicitamente toglie l'override, 0 vuol dire «senza limite»;
+        non passarlo lo lascia com'è.
         """
         config = cls.get_for_gara_round(gara_id, round_number)
         if not config:
@@ -110,6 +122,8 @@ class RoundConfiguration(BaseModel):
             config.is_race_to_sets = is_race_to_sets
         if notes is not None:
             config.notes = notes
+        if time_limit_minutes is not NON_TOCCARE:
+            config.time_limit_minutes = time_limit_minutes
 
         return config
 
@@ -142,6 +156,12 @@ class RoundConfiguration(BaseModel):
 
     def get_effective_is_race_to_sets(self, fallback: bool) -> bool:
         return self.is_race_to_sets if self.is_race_to_sets is not None else fallback
+
+    def get_effective_time_limit_minutes(self, gara) -> Optional[int]:
+        """I minuti delle partite di questo turno, o None senza limite."""
+        if self.time_limit_minutes is None:
+            return gara.effective_time_limit_minutes
+        return self.time_limit_minutes if self.time_limit_minutes > 0 else None
 
     def effective_distance_config(self, gara):
         """La distanza di questo turno come `Distance`, con i ripieghi della gara.
@@ -176,6 +196,7 @@ class RoundConfiguration(BaseModel):
                 self.is_multi_set,
                 self.match_distance,
                 self.is_race_to_sets,
+                self.time_limit_minutes,
             )
         )
 

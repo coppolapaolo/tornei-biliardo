@@ -150,6 +150,22 @@ nulla.
   `tests/new/unit/test_limite_di_tempo.py`, `test_limite_di_tempo_moduli.py`
   e `test_specifiche_conformita.py::TestIlLimiteDiTempo`.
 
+## Emendamento (2026-10-06) — il limite di un singolo turno
+
+Seconda tappa dell'attuazione. `RoundConfiguration.time_limit_minutes`
+sovrascrive il limite per turno, come disciplina e distanza (ADR-027), ma con
+**tre** stati invece di due: NULL = come la gara, 0 = senza limite per quel
+turno, N minuti. Per questo `create_or_update` lo tratta a parte: `None`
+passato esplicitamente toglie l'override (per gli altri campi vuol dire «non
+toccare»), e non passarlo lo lascia com'è (`NON_TOCCARE`). La partita lo
+riceve alla nascita: `fissa_regole` chiede a `tempo.limite_del_turno`, che
+legge il turno prima della gara. Dalla route (`upsert_round_config`) `null`
+toglie l'override e un valore fuori da 0–600 si rifiuta con 400.
+
+L'interfaccia è quella dei turni su misura (`direttore/preparazione/_turni.html`),
+che oggi esiste solo per Amalfi e casuale con più di un turno: per il girone
+all'italiana e i tabelloni l'override si scrive solo dalla route.
+
 ## Riferimenti
 
 - ADR-027 (override per turno), ADR-057 (eventi live), ADR-074 (conferme),

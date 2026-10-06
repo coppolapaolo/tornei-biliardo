@@ -2057,3 +2057,29 @@ class TestIlLimiteDiTempo:
         assert tempo.tempo_scaduto(match, adesso=dopo)
         assert match.status == MatchStatus.PLAYING.value
         assert not match.is_awaiting_validation
+
+    def test_un_turno_con_limite_diverso(self, db_session):
+        """`SPECIFICHE.md` riga 265: «anche **per un singolo turno**, con tre
+        scelte: come la gara, senza limite, oppure un numero di minuti
+        diverso»."""
+        from models.base import db
+        from models.competition.round_configuration import RoundConfiguration
+        from models.match.models import Match
+        from models.status_enum import MatchStatus
+
+        gara, _ = self._gara_e_partita(30)
+        RoundConfiguration.create_or_update(gara.id, 2, time_limit_minutes=45)
+        RoundConfiguration.create_or_update(gara.id, 3, time_limit_minutes=0)
+        db.session.commit()
+        minuti = {}
+        for turno in (2, 3):
+            m = Match(
+                gara_id=gara.id,
+                round_number=turno,
+                status=MatchStatus.PLAYING.value,
+                match_distance=3,
+            )
+            db.session.add(m)
+            db.session.commit()
+            minuti[turno] = m.time_limit_minutes
+        assert minuti == {2: 45, 3: None}

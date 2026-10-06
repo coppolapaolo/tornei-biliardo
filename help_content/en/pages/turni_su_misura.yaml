@@ -37,6 +37,11 @@ blocks:
           matters, and that holds for every round without exception.
       - name: "Set play"
         text: "Typically kept for the last round."
+      - name: "Time limit"
+        text: >-
+          Three choices: **as the competition**, **no limit** — for instance a
+          final played to the end — or **different minutes**. It applies to the
+          matches of that round, when they are created.
 
   - type: note
     tone: info
