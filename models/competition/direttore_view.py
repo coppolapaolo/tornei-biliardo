@@ -167,11 +167,9 @@ class ConteggiTurno:
 
 
 def _e_da_validare(match) -> bool:
-    if MatchStatus.is_finished(match.status):
-        return False
-    return bool(getattr(match, "is_at_distance", False)) and not bool(
-        getattr(match, "is_player_validated", False)
-    )
+    from models.match.models import awaiting_validation
+
+    return awaiting_validation(match)
 
 
 def conteggi_turno(
