@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.56.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.55.0...v1.56.0) (2026-10-06)
+
+
+### Funzioni nuove
+
+* listino quote per categoria ([#622](https://github.com/coppolapaolo/tornei-biliardo/issues/622)) ([47cb760](https://github.com/coppolapaolo/tornei-biliardo/commit/47cb7600d7027f9ba8f29d378f14b2aa72020ab6))
+
 ## [1.55.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.54.0...v1.55.0) (2026-10-06)
 
 
