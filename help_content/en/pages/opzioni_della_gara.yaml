@@ -63,6 +63,9 @@ blocks:
       - name: "Entry fee"
         values: "informational"
         text: "Appears on the card. The app does not handle payments."
+      - name: "Fees by category"
+        values: "optional"
+        text: "Different fees per category, e.g. «Serie A €30, Amateurs €15». Every entry becomes a category to assign to the players, even without handicap; on the card the fee list replaces the entry fee. In a championship competition the fee list belongs to the championship and is changed there. See «Categories»."
       - name: "Notes / description"
         text: "Free text: the evening's format, prizes, what to bring."
 

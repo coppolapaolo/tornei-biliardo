@@ -54,7 +54,10 @@
     {% else %}
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; font-size: 12px; font-weight: 700;">
       <span class="text-muted">
-        {% if item.entity.entry_fee and item.entity.entry_fee > 0 %}<span class="c7-num">€{{ "%.2f"|format(item.entity.entry_fee) }}</span>{% else %}{{ _('Gratuita') }}{% endif %}
+        {# Il listino per categoria (ADR-079) al posto della quota unica. #}
+        {% set _listino = listino_quote(item.entity) %}
+        {% if _listino %}{% import "components/_listino.html" as listino with context %}{{ listino.testo(_listino) }}
+        {% elif item.entity.entry_fee and item.entity.entry_fee > 0 %}<span class="c7-num">€{{ "%.2f"|format(item.entity.entry_fee) }}</span>{% else %}{{ _('Gratuita') }}{% endif %}
       </span>
       <span class="text-muted">
         <span class="c7-num">{{ item.entity.get_active_inscriptions_count() }}</span>{% if item.entity.max_participants %}/<span class="c7-num">{{ item.entity.max_participants }}</span>{% endif %} {{ _('iscritti') }}

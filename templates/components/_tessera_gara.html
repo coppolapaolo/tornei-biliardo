@@ -257,7 +257,12 @@
       {% endif %}
       <div class="d-flex align-items-center gap-2 {{ 'mt-2' if gara.max_participants }}" style="font-size:12px;font-weight:700">
         <span class="flex-fill c7-tessera__muted">
-          {% if gara.entry_fee and gara.entry_fee > 0 %}
+          {% set _listino = listino_quote(gara) %}
+          {% if _listino %}
+            {# Il listino per categoria (ADR-079) al posto della quota unica. #}
+            {% import "components/_listino.html" as listino with context %}
+            {{ _('Quote') }} {{ listino.testo(_listino) }}
+          {% elif gara.entry_fee and gara.entry_fee > 0 %}
             {{ _('Quota') }} <span class="c7-num">€{{ "%.2f"|format(gara.entry_fee) }}</span>
           {% else %}
             {{ _('Gratuita') }}

@@ -1,0 +1,87 @@
+{# templates/components/_listino.html — Design System 7c
+
+   Il listino delle quote per categoria (ADR-079). Solo informazione: la
+   categoria la assegna il direttore, il giocatore vede il listino.
+
+   * `testo(gruppi)` — «Serie A €30.00 · Serie B, Serie C €20.00», in linea,
+     dove oggi sta la quota unica. `gruppi` viene da `listino_quote(entita)`.
+   * `editor(voci, nota)` — le righe nome + quota del modulo di configurazione,
+     con «Aggiungi categoria» e la × per togliere una riga. `voci` viene da
+     `listino_voci(entita)` (vuoto alla creazione). Una volta per modulo: lo
+     script si registra una volta per pagina.
+
+   Il modulo manda `listino_presente`, e tre liste parallele `listino_id`,
+   `listino_nome`, `listino_quota` lette da `models.categoria.listino.
+   leggi_dal_modulo`. Senza `listino_presente` il listino non si tocca. #}
+
+{% macro testo(gruppi) -%}
+{%- for gruppo in gruppi -%}
+{%- if not loop.first %} <span class="c7-sep">·</span> {% endif -%}
+<span class="c7-listino__voce">{{ gruppo.nomi|join(', ') }} <span class="c7-num">€{{ "%.2f"|format(gruppo.quota) }}</span></span>
+{%- endfor -%}
+{%- endmacro %}
+
+{% macro _riga(id, nome, quota) -%}
+<div class="c7-listino__riga" data-listino-riga>
+  <input type="hidden" name="listino_id" value="{{ id }}">
+  <input type="text" name="listino_nome" class="form-control" maxlength="50" value="{{ nome }}"
+         placeholder="{{ _('Categoria, es. Serie A') }}" aria-label="{{ _('Nome della categoria') }}">
+  <div class="input-group c7-listino__quota">
+    <span class="input-group-text">€</span>
+    <input type="number" name="listino_quota" class="form-control" min="0" step="0.5" inputmode="decimal"
+           value="{{ formatta_quota(quota) if quota is not none else '' }}"
+           aria-label="{{ _('Quota della categoria, in euro') }}">
+  </div>
+  <button type="button" class="c7-iconbtn" data-listino-togli
+          aria-label="{{ _('Togli dal listino') }}" title="{{ _('Togli dal listino') }}"><i class="fas fa-xmark"></i></button>
+</div>
+{%- endmacro %}
+
+{% macro editor(voci, nota='') -%}
+<div class="c7-listino c7-stack" data-listino>
+  <input type="hidden" name="listino_presente" value="1">
+  <div class="c7-listino__righe c7-stack" data-listino-righe>
+    {% for categoria in voci %}{{ _riga(categoria.id, categoria.name, categoria.entry_fee) }}{% else %}{{ _riga('', '', none) }}{% endfor %}
+  </div>
+  <template data-listino-modello>{{ _riga('', '', none) }}</template>
+  <div>
+    <button type="button" class="btn btn-secondary" data-listino-aggiungi>
+      <i class="fas fa-plus"></i> {{ _('Aggiungi categoria') }}
+    </button>
+  </div>
+  <div class="form-text">
+    {{ _('Facoltativo. Ogni voce è una categoria: la assegni tu agli iscritti, e chi guarda la gara vede il listino. Senza listino vale la quota unica.') }}
+    {% if nota %}{{ nota }}{% endif %}
+  </div>
+</div>
+<script>
+  (function () {
+    if (window.__c7Listino) return;
+    window.__c7Listino = true;
+    document.addEventListener('click', function (evento) {
+      var aggiungi = evento.target.closest('[data-listino-aggiungi]');
+      if (aggiungi) {
+        var listino = aggiungi.closest('[data-listino]');
+        var modello = listino.querySelector('template[data-listino-modello]');
+        var righe = listino.querySelector('[data-listino-righe]');
+        righe.appendChild(modello.content.cloneNode(true));
+        var campi = righe.querySelectorAll('input[name="listino_nome"]');
+        campi[campi.length - 1].focus();
+        return;
+      }
+      var togli = evento.target.closest('[data-listino-togli]');
+      if (togli) {
+        var riga = togli.closest('[data-listino-riga]');
+        var contenitore = riga.parentNode;
+        // L'ultima riga si svuota invece di sparire: resta il posto dove
+        // scrivere la prossima voce.
+        if (contenitore.querySelectorAll('[data-listino-riga]').length > 1) {
+          riga.remove();
+        } else {
+          riga.querySelectorAll('input').forEach(function (campo) { campo.value = ''; });
+        }
+      }
+    });
+  })();
+</script>
+{%- endmacro %}

@@ -138,6 +138,14 @@
                 </div>
             </div>
 
+            {# Quote diverse per categoria (ADR-079): sono le categorie del
+               campionato, quindi valgono per tutte le sue gare. #}
+            {% import "components/_listino.html" as listino with context %}
+            <div class="mb-3">
+                <label class="form-label">{{ _("Listino quote per categoria") }}</label>
+                {{ listino.editor(listino_voci(campionato), _("Vale per tutte le gare del campionato.")) }}
+            </div>
+
             <hr class="my-4">
 
             <h5 class="mb-3"><i class="fas fa-sliders-h text-primary"></i> {{ _("Opzioni Matchmaking") }}</h5>

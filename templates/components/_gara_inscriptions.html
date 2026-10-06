@@ -27,6 +27,9 @@
    ad allora il campo spariva proprio quando serviva: chi arrivava in sala
    a finestra chiusa non aveva modo di entrare. #}
 {% set _puo_iscrivere = user_can_manage and gara.status == GaraStatus.INSCRIPTION.value %}
+{# Le categorie ci sono con l'handicap o con un listino delle quote (ADR-079):
+   letto una volta, non a ogni riga. #}
+{% set _usa_categorie = gara.usa_categorie %}
 
 <section class="c7-stack">
 
@@ -175,7 +178,7 @@
 
       {# Categoria dell'iscritto (ADR-049), come chip: un nome gia' in elenco
          si completa da solo, uno nuovo crea la categoria. Salva da se'. #}
-      {% if gara.effective_has_handicap %}
+      {% if _usa_categorie %}
       {% if user_can_manage and categorie_editable %}
       <span class="c7-chip c7-chip--cat"{% if loop.first %} data-help="gara-categoria-iscritto"{% endif %}>
         <input type="text" list="categorieGara{{ gara.id }}" class="c7-categoria-input"

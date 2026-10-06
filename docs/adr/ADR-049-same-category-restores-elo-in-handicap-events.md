@@ -280,3 +280,13 @@ La finestra delle categorie non si chiude più all'avvio: con le categorie
 fissate sulla partita, un cambio a gara avviata vale per le partite dei turni
 successivi. Si chiude a gara conclusa, e all'avvio con la strategia casuale,
 dove tutte le partite esistono già (`CategoriaService.is_editable`).
+
+## Emendamento (2026-10-06, ADR-079)
+
+Le categorie **esistono anche senza handicap**: con il listino delle quote
+ogni voce è una categoria, e il direttore le assegna per sapere chi paga
+quanto. La regola di questo ADR non cambia — senza handicap la partita conta
+per l'ELO qualunque siano le categorie, e `RatingEligibility` non le legge —
+ma la schermata delle categorie compare con `Gara.usa_categorie` (handicap
+**o** listino) invece che col solo handicap. Le categorie restano senza
+colonna d'ordinamento: il listino si ordina per quota, poi per nome.

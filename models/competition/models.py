@@ -466,6 +466,22 @@ class Gara(SoftDeleteMixin, db.Model):
         return False
 
     @property
+    def usa_categorie(self) -> bool:
+        """La gara lavora con le categorie? Con l'handicap, o con un listino.
+
+        Fino all'ADR-079 le categorie esistevano solo con l'handicap, perché
+        servivano soltanto a decidere quali partite muovono l'ELO. Il listino
+        delle quote le rende utili anche senza: il direttore le assegna per
+        sapere chi paga quanto. Senza handicap restano un'informazione e non
+        toccano l'ELO (``RatingEligibility``).
+        """
+        if self.effective_has_handicap:
+            return True
+        from models.categoria.listino import ha_listino
+
+        return ha_listino(self)
+
+    @property
     def effective_time_limit_minutes(self) -> Optional[int]:
         """Minuti a disposizione di ogni partita, o None se non c'è limite.
 

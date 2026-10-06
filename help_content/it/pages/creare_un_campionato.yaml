@@ -92,7 +92,8 @@ blocks:
   - type: text
     text: >-
       Il secondo passaggio chiede come saranno fatte le gare «tipo» del
-      campionato: sala, quota di partecipazione, numero di turni, gestione del
+      campionato: sala, quota di partecipazione (e, se serve, il listino delle
+      quote per categoria, che vale per tutte le gare), numero di turni, gestione del
       numero dispari, e come si decide chi esegue il tiro di apertura. Ogni
       gara nuova nascerà già così, e tu dovrai solo cambiare nome, data e
       disciplina.

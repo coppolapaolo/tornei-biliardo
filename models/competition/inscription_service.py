@@ -228,7 +228,9 @@ class InscriptionService:
         # è cambiato di categoria. Si scrive il campo a mano invece di chiamare
         # `set_inscription_categoria_by_name`: siamo già dentro un metodo
         # `@transactional`, e annidarli fa rollback (ADR-012).
-        if gara.effective_has_handicap:
+        # Vale anche senza handicap quando c'è un listino delle quote
+        # (ADR-079): la categoria dice chi paga quanto, e si riporta uguale.
+        if gara.usa_categorie:
             from models.categoria.service import CategoriaService
 
             categoria = CategoriaService.suggest_for_user(gara, user)
