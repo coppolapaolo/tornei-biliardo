@@ -50,6 +50,8 @@
           {{ (rc.get_effective_discipline(gara.discipline) if rc else gara.discipline)|discipline_display }}
           <span class="c7-sep">·</span>
           {{ (rc.effective_distance_config(gara) if rc else gara.distance_config)|format_distance }}
+          {% set _minuti = rc.get_effective_time_limit_minutes(gara) if rc else gara.effective_time_limit_minutes %}
+          {% if _minuti %}<span class="c7-sep">·</span> {{ _('%(n)s minuti a partita', n=_minuti) }}{% endif %}
         </div>
       </div>
       {% endfor %}
@@ -105,6 +107,23 @@
                    onchange="toggleRoundMultiSet({{ round_num }})" {% if gara.is_multi_set %}checked{% endif %}>
             {{ _('Multi-set') }}
           </label>
+        </div>
+
+        {# Limite di tempo del turno (ADR-077): tre stati, come sulla gara. #}
+        <div class="c7-turno-card__campi">
+          <div>
+            <label class="c7-label" for="roundTimeMode{{ round_num }}">{{ _('Limite di tempo') }}</label>
+            <select class="form-select" id="roundTimeMode{{ round_num }}" onchange="toggleRoundTime({{ round_num }})">
+              <option value="gara">{% if gara.effective_time_limit_minutes %}{{ _('Come la gara (%(n)s min)', n=gara.effective_time_limit_minutes) }}{% else %}{{ _('Come la gara (senza)') }}{% endif %}</option>
+              <option value="senza">{{ _('Senza limite') }}</option>
+              <option value="minuti">{{ _('Minuti diversi') }}</option>
+            </select>
+          </div>
+          <div id="roundTimeBox{{ round_num }}" style="display:none">
+            <label class="c7-label" for="roundTimeLimit{{ round_num }}">{{ _('Minuti') }}</label>
+            <input type="number" class="form-control c7-num" id="roundTimeLimit{{ round_num }}"
+                   min="1" max="600" value="{{ gara.effective_time_limit_minutes or 30 }}" onchange="updateRoundConfig({{ round_num }})">
+          </div>
         </div>
 
         <div id="roundMultiSetConfig{{ round_num }}" class="c7-turno-card__set" style="display: {% if gara.is_multi_set %}block{% else %}none{% endif %};">
@@ -198,7 +217,8 @@
         isRaceTo: {{ 'true' if gara.is_race_to else 'false' }},
         isMultiSet: {{ 'true' if gara.is_multi_set else 'false' }},
         matchDistance: {{ gara.match_distance or 2 }},
-        isRaceToSets: {{ 'true' if gara.is_race_to_sets is not defined or gara.is_race_to_sets else 'false' }}
+        isRaceToSets: {{ 'true' if gara.is_race_to_sets is not defined or gara.is_race_to_sets else 'false' }},
+        timeLimit: {{ gara.effective_time_limit_minutes or 30 }}
     };
 
     for (let n = 1; n <= roundsCount; n++) {
@@ -222,7 +242,9 @@
             exactNumber: document.getElementById(`roundExactNumber${n}`).checked,
             isMultiSet: isMultiSet,
             matchDistance: parseInt(document.getElementById(`roundMatchDistance${n}`).value, 10) || garaDefaults.matchDistance,
-            isRaceToSets: document.getElementById(`roundIsRaceToSets${n}`).checked
+            isRaceToSets: document.getElementById(`roundIsRaceToSets${n}`).checked,
+            timeMode: document.getElementById(`roundTimeMode${n}`).value,
+            timeLimit: parseInt(document.getElementById(`roundTimeLimit${n}`).value, 10) || garaDefaults.timeLimit
         };
     }
 
@@ -232,6 +254,7 @@
             form.distance === garaDefaults.distance &&
             form.exactNumber === !garaDefaults.isRaceTo &&
             form.isMultiSet === garaDefaults.isMultiSet &&
+            form.timeMode === 'gara' &&
             (!form.isMultiSet || (
                 form.matchDistance === garaDefaults.matchDistance &&
                 form.isRaceToSets === garaDefaults.isRaceToSets
@@ -246,7 +269,9 @@
             is_race_to: !form.exactNumber,
             is_multi_set: form.isMultiSet,
             match_distance: form.isMultiSet ? form.matchDistance : null,
-            is_race_to_sets: form.isMultiSet ? form.isRaceToSets : null
+            is_race_to_sets: form.isMultiSet ? form.isRaceToSets : null,
+            // ADR-077: null = come la gara, 0 = senza limite, N minuti.
+            time_limit_minutes: form.timeMode === 'gara' ? null : (form.timeMode === 'senza' ? 0 : form.timeLimit)
         };
     }
 
@@ -276,6 +301,12 @@
         setChecked(`roundIsRaceToSets${n}`, isRaceToSets);
         const cfgEl = document.getElementById(`roundMultiSetConfig${n}`);
         if (cfgEl !== null) cfgEl.style.display = isMultiSet ? 'block' : 'none';
+        const minuti = o.time_limit_minutes;
+        const modo = (minuti === null || minuti === undefined) ? 'gara' : (minuti === 0 ? 'senza' : 'minuti');
+        set(`roundTimeMode${n}`, modo);
+        if (modo === 'minuti') set(`roundTimeLimit${n}`, minuti);
+        const boxEl = document.getElementById(`roundTimeBox${n}`);
+        if (boxEl !== null) boxEl.style.display = modo === 'minuti' ? 'block' : 'none';
         updatePreview(n, readForm(n));
     }
 
@@ -307,6 +338,12 @@
     window.toggleRoundMultiSet = function(n) {
         const isMultiSet = document.getElementById(`roundIsMultiSet${n}`).checked;
         document.getElementById(`roundMultiSetConfig${n}`).style.display = isMultiSet ? 'block' : 'none';
+        updateRoundConfig(n);
+    };
+
+    window.toggleRoundTime = function(n) {
+        const modo = document.getElementById(`roundTimeMode${n}`).value;
+        document.getElementById(`roundTimeBox${n}`).style.display = modo === 'minuti' ? 'block' : 'none';
         updateRoundConfig(n);
     };
 

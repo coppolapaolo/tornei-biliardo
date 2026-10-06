@@ -38,6 +38,11 @@ blocks:
           per ogni turno senza eccezioni.
       - name: "Partita a set"
         text: "Tipicamente riservata all'ultimo turno."
+      - name: "Limite di tempo"
+        text: >-
+          Tre scelte: **come la gara**, **senza limite** — per esempio una
+          finale che si gioca fino in fondo — oppure **minuti diversi**. Vale
+          per le partite di quel turno, quando nascono.
 
   - type: note
     tone: info

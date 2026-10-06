@@ -47,6 +47,26 @@ def limite_minuti(match: Any) -> Optional[int]:
     return minuti if minuti and minuti > 0 else None
 
 
+def limite_del_turno(gara: Any, round_number: Optional[int]) -> Optional[int]:
+    """I minuti delle partite di un turno: quelli del turno, se li ha, o della gara.
+
+    È ciò che `fissa_regole` scrive sulla partita quando nasce. None = nessun
+    limite.
+    """
+    from models.competition.round_configuration import RoundConfiguration
+
+    config = (
+        RoundConfiguration.query.filter_by(
+            gara_id=gara.id, round_number=round_number
+        ).first()
+        if round_number and gara.id
+        else None
+    )
+    if config is not None:
+        return config.get_effective_time_limit_minutes(gara)
+    return gara.effective_time_limit_minutes
+
+
 def ha_limite(match: Any) -> bool:
     return limite_minuti(match) is not None
 
@@ -183,6 +203,7 @@ def evento_live(match: Any, autore_id: Optional[int] = None) -> None:
 __all__ = [
     "forma_esclusa",
     "limite_minuti",
+    "limite_del_turno",
     "ha_limite",
     "scadenza",
     "secondi_restanti",

@@ -110,9 +110,12 @@ def fissa_regole(session: Session, match: Any) -> None:
     if match.is_multi_set and match.set_distance is None:
         match.set_distance = gara.distance
     if match.time_limit_minutes is None:
-        # NULL resta NULL se la gara non ha limite: per la partita vuol dire
-        # «nessun limite», come per quelle nate prima dell'ADR-077.
-        match.time_limit_minutes = gara.effective_time_limit_minutes
+        # Il turno prima della gara (ADR-027). NULL resta NULL se non c'è
+        # limite: per la partita vuol dire «nessun limite», come per quelle
+        # nate prima dell'ADR-077.
+        from models.match.tempo import limite_del_turno
+
+        match.time_limit_minutes = limite_del_turno(gara, match.round_number)
     if match.is_bye and match.x_with_challenge is None:
         match.x_with_challenge = (
             gara.odd_number_policy == OddNumberPolicy.BYE_WITH_CHALLENGE.value
