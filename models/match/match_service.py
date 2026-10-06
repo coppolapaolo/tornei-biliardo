@@ -564,6 +564,11 @@ class MatchService:
         if motivo is not None:
             raise ValidationError(str(motivo))
 
+        # Già alla distanza (aspetta solo una conferma): si chiude come
+        # sempre, senza il segno — il segno vuol dire «prima della distanza».
+        if match.is_at_distance:
+            return MatchValidationService.validate_and_complete(match_id)
+
         esito = chiusura.esito(match)
         vincitore = esito.vincitore_id
         if esito.serve_chi_passa:

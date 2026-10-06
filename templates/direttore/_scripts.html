@@ -1299,7 +1299,10 @@
     if (timer) {
       const fine = Date.parse(timer.getAttribute('data-timer-inizio')) +
         parseInt(timer.getAttribute('data-timer-minuti'), 10) * 60000;
-      const minuti = Math.ceil((fine - Date.now()) / 60000);
+      // L'ora del server, come il timer della card: un telefono avanti o
+      // indietro direbbe minuti diversi da quelli che la card mostra.
+      const ora = window.c7ContoAllaRovescia ? window.c7ContoAllaRovescia.adesso() : Date.now();
+      const minuti = Math.ceil((fine - ora) / 60000);
       if (minuti > 0) {
         document.getElementById('interrompiMancanoTesto').textContent =
           {{ _('Mancano %(n)s minuti allo scadere', n='{n}')|tojson }}.replace('{n}', minuti);

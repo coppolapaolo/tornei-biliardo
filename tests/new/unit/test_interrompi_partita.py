@@ -355,3 +355,36 @@ def test_lo_score_aggregator_legge_chi_passa_sul_pari():
     stats: dict = {}
     ScoreAggregator.__new__(ScoreAggregator)._process_regular_match(match, stats)
     assert stats[2]["matches_won"] == 1 and stats[1]["matches_lost"] == 1
+
+
+@pytest.mark.unit
+def test_alla_distanza_interrompere_chiude_senza_segno(db_session):
+    """Arrivata al 3 e in attesa di una conferma: «Interrompi» la chiude come
+    sempre, senza il segno (revisione della PR #621)."""
+    from models.match.match_service import MatchService
+
+    gara, direttore = _gara()
+    match = _partita(gara, 3, 1)
+    risultato = MatchService.interrompi_partita(match.id, direttore)
+    chiusa = db.session.get(Match, match.id)
+    assert MatchStatus.is_finished(chiusa.status)
+    assert chiusa.closed_on_time is False and risultato["closed_on_time"] is False
+
+
+@pytest.mark.unit
+def test_azzerare_toglie_il_segno_e_il_timer(db_session):
+    """Azzerata, la partita si rigioca: non è più interrotta e il conto alla
+    rovescia ripartirà (revisione della PR #621)."""
+    from models.match.match_service import MatchService
+    from models.match.rack_service import RackService
+
+    gara, direttore = _gara()
+    match = _partita(gara, 2, 1, timer_started_at=datetime(2026, 10, 6, 20, 0))
+    MatchService.interrompi_partita(match.id, direttore)
+    RackService.reset_match_complete(match.id)
+    azzerata = db.session.get(Match, match.id)
+    assert azzerata.closed_on_time is False and azzerata.timer_started_at is None
+    from models.match.validation_service import MatchValidationService
+
+    with pytest.raises(ValueError):
+        MatchValidationService.validate_and_complete(match.id)

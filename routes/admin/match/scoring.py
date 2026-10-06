@@ -244,7 +244,7 @@ def interrompi_partita(match_id):
         "winner_id": result["winner_id"],
         "player1_score": result["player1_score"],
         "player2_score": result["player2_score"],
-        "closed_on_time": True,
+        "closed_on_time": result["closed_on_time"],
         "autore": current_user.id,
     }
     # Il segnapunti dei giocatori si ricarica (`result_confirmed` è fra i suoi

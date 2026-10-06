@@ -158,6 +158,11 @@ class RackService:
         match.player1_score = 0
         match.player2_score = 0
         match.winner_id = None
+        # Il limite di tempo (ADR-077): la partita si rigioca, quindi non è
+        # più interrotta, e il conto alla rovescia ripartirà quando
+        # ricomincia (acchito o «Avvia partita»).
+        match.closed_on_time = False
+        match.timer_started_at = None
 
         # Reset player confirmations
         match.player1_confirmed = False

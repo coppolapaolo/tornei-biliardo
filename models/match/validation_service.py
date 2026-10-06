@@ -128,4 +128,5 @@ class MatchValidationService:
             "player1_score": match.player1_score,
             "player2_score": match.player2_score,
             "waiting_match_id": waiting_match_id,
+            "closed_on_time": bool(match.closed_on_time),
         }
