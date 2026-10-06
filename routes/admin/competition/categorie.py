@@ -23,6 +23,7 @@ from flask_babel import _, ngettext
 from flask_login import current_user, login_required
 
 from models import db, Gara, Inscription
+from models.categoria.listino import ListinoService, quota_dal_testo
 from models.categoria.service import CategoriaService
 from models.exceptions import DomainError, http_status_for_exception
 from utils import gara_manager_required
@@ -148,14 +149,28 @@ def set_inscription_categoria(gara_id: int, inscription_id: int):
 @login_required
 @gara_manager_required
 def rename_categoria(gara_id: int, categoria_id: int):
+    """Rinomina una voce e, se il foglio la porta, ne cambia la quota (ADR-079).
+
+    La quota si legge prima di toccare il nome: una quota sbagliata deve
+    lasciare la voce com'era, non rinominata a metà.
+    """
     gara = db.get_or_404(Gara, gara_id)
+    porta_quota = "entry_fee" in request.form
+
+    def aggiorna():
+        quota = quota_dal_testo(request.form.get("entry_fee"))
+        CategoriaService.rename(
+            gara, categoria_id, request.form.get("name", ""), current_user
+        )
+        if porta_quota:
+            ListinoService.imposta_quota(categoria_id, quota, current_user)
 
     return handle_service_action(
-        action=lambda: CategoriaService.rename(
-            gara, categoria_id, request.form.get("name", ""), current_user
-        ),
+        action=aggiorna,
         redirect_url=_back_to_gara(gara_id),
-        success_message=_("Categoria rinominata"),
+        success_message=(
+            _("Categoria aggiornata") if porta_quota else _("Categoria rinominata")
+        ),
         error_prefix=None,
     )
 

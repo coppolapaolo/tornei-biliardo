@@ -678,6 +678,14 @@ def create_app(config_name=None, *, da_script: bool = False):
     app.jinja_env.globals["etichetta_storia"] = etichetta_storia
     app.jinja_env.globals["valore_storia"] = valore_storia
 
+    # Il listino delle quote per categoria (ADR-079): voci e gruppi per quota
+    # di una gara o di un campionato, e la quota senza decimali inutili.
+    from models.categoria.listino import formatta_quota, gruppi_di, listino_di
+
+    app.jinja_env.globals["listino_quote"] = gruppi_di
+    app.jinja_env.globals["listino_voci"] = listino_di
+    app.jinja_env.globals["formatta_quota"] = formatta_quota
+
     # Le correzioni a gare finite: il peso di prima barrato e la riga di
     # ricalcolo sopra la classifica (ADR-075).
     from models.storia.ricalcolo import ricalcoli_del_campionato

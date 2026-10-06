@@ -62,6 +62,9 @@ blocks:
         hint: gara.tavoli
       - name: "Quota iscrizione"
         text: "Informativa: compare sulla scheda. L'app non gestisce pagamenti."
+      - name: "Listino quote per categoria"
+        values: "facoltativo"
+        text: "Quote diverse per categoria, per esempio «Serie A 30 €, Amatori 15 €». Ogni voce diventa una categoria da assegnare agli iscritti, anche senza handicap; sulla scheda il listino prende il posto della quota. In una gara di campionato il listino è del campionato e si cambia da lì. Vedi «Le categorie»."
       - name: "Note / descrizione"
         text: "Testo libero: formula della serata, premi, cosa portare."
 

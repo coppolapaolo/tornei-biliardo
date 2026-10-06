@@ -453,7 +453,28 @@ def costruisci_vetrina(gara: Gara) -> Vetrina:
     # La quota si mostra sempre che sia stata decisa, zero compreso: «Gratuito»
     # è un'informazione, il silenzio no — chi legge non sa se sia gratis o se
     # nessuno l'abbia scritto.
-    if gara.entry_fee is not None:
+    # Con un listino per categoria (ADR-079) la riga è il listino: «Serie A
+    # 30 € · Serie B, Serie C 20 €». Il giocatore non vede «la sua» quota,
+    # perché la categoria la assegna il direttore.
+    from models.categoria.listino import formatta_quota, gruppi_di
+
+    listino = gruppi_di(gara)
+    if listino:
+        righe.append(
+            RigaInformativa(
+                icona="fa-euro-sign",
+                etichetta=_("Quote"),
+                valore=" · ".join(
+                    _(
+                        "%(categorie)s %(fee)s €",
+                        categorie=", ".join(gruppo.nomi),
+                        fee=formatta_quota(gruppo.quota),
+                    )
+                    for gruppo in listino
+                ),
+            )
+        )
+    elif gara.entry_fee is not None:
         righe.append(
             RigaInformativa(
                 icona="fa-euro-sign",

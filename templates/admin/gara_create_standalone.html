@@ -206,6 +206,13 @@
                                 </div>
                             </div>
 
+                            {# Quote diverse per categoria (ADR-079). #}
+                            {% import "components/_listino.html" as listino with context %}
+                            <div class="mb-3">
+                                <label class="form-label">{{ _("Listino quote per categoria") }}</label>
+                                {{ listino.editor([]) }}
+                            </div>
+
                             <div class="mb-0">
                                 <label for="description" class="form-label">{{ _("Note / Descrizione") }}</label>
                                 <textarea class="form-control" id="description" name="description" rows="2"

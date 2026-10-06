@@ -75,6 +75,12 @@
                  step="0.50" min="0" max="100" placeholder="0.00">
           <div class="form-text">{{ _("Vuoto se gratuita") }}</div>
         </div>
+        {# Quote diverse per categoria (ADR-079): valgono per tutte le gare. #}
+        {% import "components/_listino.html" as listino with context %}
+        <div class="w-100">
+          <label class="form-label">{{ _("Listino quote per categoria") }}</label>
+          {{ listino.editor([], _("Vale per tutte le gare del campionato.")) }}
+        </div>
         {# Sui tabelloni i turni non sono un default: li fissa il sorteggio di
            ogni gara sugli iscritti che si presentano (ADR-038). #}
         {% if wizard_data.campionato_type not in bracket_minimum_players %}

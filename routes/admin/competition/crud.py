@@ -21,6 +21,7 @@ from models import (
     Gara,
     Inscription,
 )
+from models.categoria.listino import ListinoService, leggi_dal_modulo
 from models.status_enum import Discipline, GaraStatus
 from models.competition.models import WithdrawPolicy
 from utils import (
@@ -76,6 +77,9 @@ def create_gara_standalone():
             # Parse common fields
             parser = GaraFormParser(campionato=None)
             data = parser.parse()
+            # Il listino si legge prima di creare: una quota sbagliata non deve
+            # lasciare dietro di sé una gara mezza fatta (ADR-079).
+            voci_listino = leggi_dal_modulo(request.form)
 
             # Venue handling
             location_input = request.form.get("location", "").strip()
@@ -108,6 +112,10 @@ def create_gara_standalone():
                 director_id=current_user.id,
                 **data,
             )
+            if voci_listino:
+                ListinoService.salva(
+                    gara_id=gara.id, voci=voci_listino, nella_storia=False
+                )
 
             if e_prova:
                 from models.prova.visibility import invalida_ambito
@@ -470,10 +478,13 @@ def edit_gara(gara_id):
             if "location" in cambiati:
                 cambiati["billiard_hall_id"] = billiard_hall_id  # FK to BilliardHall
 
+            listino_cambiato = _salva_listino(gara)
             pagina = _proposta_di_spostamento(gara, cambiati)
             if pagina is not None:
                 return pagina
-            if not cambiati:
+            if not cambiati and listino_cambiato:
+                flash(_("Gara aggiornata: la modifica resta nella sua storia."))
+            elif not cambiati:
                 flash(_("Nessuna modifica da salvare."), "info")
             else:
                 GaraService.update_gara(
@@ -516,6 +527,27 @@ def edit_gara(gara_id):
         available_strategies=available_strategies,
         verified_venues=verified_venues,
         discipline_choices=Discipline.get_choices(),
+    )
+
+
+def _salva_listino(gara: Gara) -> bool:
+    """Il listino della gara singola, se il modulo lo porta (ADR-079).
+
+    Solo la gara singola: dentro un campionato le categorie, e quindi il
+    listino, sono del campionato e si cambiano dalla sua configurazione. Si
+    salva prima della proposta di spostamento delle gare, che è un'altra
+    pagina e non riporta il listino.
+    """
+    if gara.campionato_id:
+        return False
+    voci = leggi_dal_modulo(request.form)
+    if voci is None:
+        return False
+    return ListinoService.salva(
+        gara_id=gara.id,
+        voci=voci,
+        autore=current_user,
+        motivo=request.form.get("motivo"),
     )
 
 
@@ -592,10 +624,13 @@ def _edit_gara_avviata(gara: Gara):
             cambiati = GaraFormParser.campi_cambiati(data, originali)
             if "location" in cambiati:
                 cambiati["billiard_hall_id"] = billiard_hall_id
+            listino_cambiato = _salva_listino(gara)
             pagina = _proposta_di_spostamento(gara, cambiati)
             if pagina is not None:
                 return pagina
-            if not cambiati:
+            if not cambiati and listino_cambiato:
+                flash(_("Gara aggiornata: la modifica resta nella sua storia."))
+            elif not cambiati:
                 flash(_("Nessuna modifica da salvare."), "info")
             else:
                 GaraService.update_gara(

@@ -32,6 +32,7 @@ from models.matchmaking.configuration import (
     get_classification_compatibility_map,
 )
 from models.competition.constants import DEFAULT_DISTANCE
+from models.categoria.listino import ListinoService, leggi_dal_modulo
 from models.status_enum import Discipline, GaraStatus
 from utils.jinja import opzioni_dispari
 from utils import (
@@ -230,6 +231,14 @@ def wizard_create():
     # Classification system comes from Step 1 (session)
     classification_system = wizard_data.get("default_classification_system", "WINS")
 
+    # Il listino delle quote (ADR-079): letto prima di creare, perché una
+    # quota sbagliata non lasci un campionato senza il suo listino.
+    try:
+        voci_listino = leggi_dal_modulo(request.form)
+    except ValueError as errore:
+        flash(str(errore), "error")
+        return redirect(url_for("admin.campionato.wizard_start"))
+
     # Competizione di prova (ADR-058): stesso campionato, con il flag e la
     # scadenza. Il limite si controlla qui, prima di creare, ed è lo stesso
     # delle gare singole.
@@ -257,6 +266,10 @@ def wizard_create():
             default_classification_system=classification_system,
             **settings,
         )
+        if voci_listino:
+            ListinoService.salva(
+                campionato_id=campionato.id, voci=voci_listino, nella_storia=False
+            )
 
         # Create playoff configurations if enabled
         if wizard_data.get("playoff_elite_enabled"):
@@ -561,6 +574,19 @@ def edit_campionato(campionato_id):
 
             # Default-gare settings (single source shared with wizard_create)
             settings = CampionatoFormParser.parse_default_settings(request.form)
+
+            # Il listino delle quote vale per tutte le serate (ADR-079): non è un
+            # valore proposto alle gare, è l'elenco delle categorie del
+            # campionato, quindi non passa dalla proposta qui sotto: si
+            # salva prima, così la sua voce di storia non copre quella dei valori.
+            voci_listino = leggi_dal_modulo(request.form)
+            if voci_listino is not None:
+                ListinoService.salva(
+                    campionato_id=campionato_id,
+                    voci=voci_listino,
+                    autore=current_user,
+                    motivo=request.form.get("motivo"),
+                )
 
             from models.storia.service import StoriaModificheService
 

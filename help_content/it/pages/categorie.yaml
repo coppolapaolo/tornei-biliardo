@@ -3,7 +3,7 @@ section: organizzare
 kind: approfondimento
 audience: [direttore, giocatore]
 minutes: 4
-summary: "Nelle gare con handicap le categorie decidono quali partite contano per il rating: solo quelle fra giocatori dello stesso livello."
+summary: "Nelle gare con handicap le categorie decidono quali partite contano per il rating; con il listino delle quote dicono chi paga quanto."
 screens: [admin.competition.gara_detail, admin.competition.gara_impostazioni]
 related: [opzioni_della_gara, gestire_le_iscrizioni, profilo_e_statistiche]
 
@@ -119,13 +119,45 @@ blocks:
       conosci il livello — ma le sue partite resteranno fuori dal rating.
 
   - type: heading
+    id: listino
+    title: "Il listino delle quote"
+
+  - type: text
+    text: >-
+      Se la quota cambia a seconda della categoria — «Serie A 30 € · Serie B e
+      C 20 € · Amatori 15 €» — compila il **Listino quote per categoria**
+      accanto alla quota, quando crei o modifichi una gara singola, o nelle
+      impostazioni del campionato: il listino del campionato vale per tutte le
+      sue gare. Ogni voce che scrivi diventa una categoria; togliere una voce
+      la toglie dal listino ma non la cancella, perché può essere già
+      assegnata. La quota di una voce si cambia anche dall'elenco delle
+      categorie.
+
+  - type: text
+    text: >-
+      Con un listino le categorie ci sono **anche senza handicap**: le assegni
+      agli iscritti come sopra, per sapere chi paga quanto. In una gara senza
+      handicap però non cambiano niente per il rating né per le partite.
+
+  - type: note
+    tone: info
+    title: "Solo un'informazione"
+    text: >-
+      Il listino compare dove prima c'era la quota: sulla scheda della gara,
+      nella vetrina, nell'elenco delle gare e nei dettagli del campionato, dalla
+      quota più alta alla più bassa. L'app non gestisce pagamenti, e ogni
+      modifica del listino resta nella storia della gara o del campionato.
+
+  - type: heading
     id: giocatore
     title: "Cosa vede il giocatore"
 
   - type: text
     text: >-
       La propria categoria, accanto al nome nell'elenco iscritti. Non può
-      cambiarla: la assegna solo chi dirige la gara.
+      cambiarla: la assegna solo chi dirige la gara. Se c'è un listino vede il
+      listino intero, non «la sua» quota: la categoria gliela dai tu, spesso in
+      sala.
 
   - type: faq
     items:
@@ -136,6 +168,6 @@ blocks:
       - q: "Devo riassegnarle a ogni gara del campionato?"
         a: "No: alla gara successiva la categoria di ogni giocatore si ripropone da sola. Correggi solo chi nel frattempo è cambiato di categoria."
       - q: "In che ordine compaiono?"
-        a: "In ordine alfabetico. Attenzione che l'alfabeto non rispecchia la forza: «E» compare prima di «N» pur essendo il livello più basso."
+        a: "Nell'elenco, in ordine alfabetico: attenzione che l'alfabeto non rispecchia la forza, «E» compare prima di «N» pur essendo il livello più basso. Nel listino delle quote invece dalla quota più alta alla più bassa, e a parità di quota in ordine alfabetico."
       - q: "Mi sono accorto troppo tardi: la gara è già finita."
         a: "Si recupera, ma non da qui: serve l'intervento di chi amministra il sito, perché per farne effetto occorre ricalcolare il rating."

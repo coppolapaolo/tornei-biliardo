@@ -26,7 +26,9 @@
    `iscritti_senza_categoria`, `*_owner_is_campionato`) e `user_can_manage`. #}
 {% import "direttore/_macros.html" as d with context %}
 {% set _con_squadre = gara.separate_teammates and user_can_manage %}
-{% set _con_categorie = gara.effective_has_handicap and user_can_manage %}
+{# Le categorie ci sono con l'handicap (ADR-049) o con un listino delle quote
+   (ADR-079): senza handicap servono solo a sapere chi paga quanto. #}
+{% set _con_categorie = gara.usa_categorie and user_can_manage %}
 {% set _chev = '<i class="fas fa-chevron-right c7-rows__chev"></i>'|safe %}
 
 {# ---- Le righe ---- #}
@@ -65,17 +67,18 @@
 {%- endmacro %}
 
 {# Il nome della voce, quanti iscritti ha qui, se e' disattivata. #}
-{% macro _sotto(iscritti, attiva) -%}
+{% macro _sotto(iscritti, attiva, quota=none) -%}
 {%- if iscritti %}{{ ngettext('%(num)s iscritto in questa gara', '%(num)s iscritti in questa gara', iscritti) }}{% else %}{{ _('Nessun iscritto in questa gara') }}{% endif -%}
+{%- if quota is not none %} · {{ _('quota %(fee)s €', fee=formatta_quota(quota)) }}{% endif -%}
 {%- if not attiva %} · {{ _('Disattivata') }}{% endif -%}
 {%- endmacro %}
 
 {# La testa di una voce dell'elenco: la stessa riga, da leggere o da aprire. #}
-{% macro _voce(icona, nome, iscritti, attiva, apribile) -%}
+{% macro _voce(icona, nome, iscritti, attiva, apribile, quota=none) -%}
 <span class="c7-tile c7-tile--sm {{ 'c7-tile--neutral' if attiva else 'c7-tile--locked' }}"><i class="fas {{ icona }}"></i></span>
 <span class="c7-rows__main">
   <span class="c7-rows__title d-block">{{ nome }}</span>
-  <span class="c7-rows__sub d-block">{{ _sotto(iscritti, attiva) }}</span>
+  <span class="c7-rows__sub d-block">{{ _sotto(iscritti, attiva, quota) }}</span>
 </span>
 {% if apribile %}<i class="fas fa-chevron-down c7-rows__chev c7-voce__chev" aria-hidden="true"></i>{% endif %}
 {%- endmacro %}
@@ -224,14 +227,19 @@
           {% set iscritti = categoria_counts.get(categoria.id, 0) %}
           {% if categorie_editable %}
           <details class="c7-voce">
-            <summary class="c7-rows__row">{{ _voce('fa-layer-group', categoria.name, iscritti, categoria.is_active, true) }}</summary>
+            <summary class="c7-rows__row">{{ _voce('fa-layer-group', categoria.name, iscritti, categoria.is_active, true, categoria.entry_fee) }}</summary>
             <div class="c7-voce__corpo c7-stack">
               <form method="POST" action="{{ url_for('admin.competition.rename_categoria', gara_id=gara.id, categoria_id=categoria.id) }}" class="c7-elenco__campo">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <input type="hidden" name="next" value="{{ _ritorno }}#categorie">
                 <input type="text" name="name" class="form-control" maxlength="50" required
                        value="{{ categoria.name }}" aria-label="{{ _('Nuovo nome della categoria') }}">
-                <button type="submit" class="btn btn-secondary">{{ _('Rinomina') }}</button>
+                {# La quota del listino (ADR-079): vuota = fuori dal listino. #}
+                <input type="number" name="entry_fee" class="form-control c7-elenco__quota" min="0" step="0.5"
+                       inputmode="decimal" placeholder="€"
+                       value="{{ formatta_quota(categoria.entry_fee) if categoria.entry_fee is not none else '' }}"
+                       aria-label="{{ _('Quota della categoria, in euro') }}" title="{{ _('Quota della categoria, in euro') }}">
+                <button type="submit" class="btn btn-secondary">{{ _('Salva') }}</button>
               </form>
               <form method="POST" action="{{ url_for('admin.competition.toggle_categoria', gara_id=gara.id, categoria_id=categoria.id) }}">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
@@ -254,7 +262,7 @@
             </div>
           </details>
           {% else %}
-          <div class="c7-rows__row">{{ _voce('fa-layer-group', categoria.name, iscritti, categoria.is_active, false) }}</div>
+          <div class="c7-rows__row">{{ _voce('fa-layer-group', categoria.name, iscritti, categoria.is_active, false, categoria.entry_fee) }}</div>
           {% endif %}
           {% endfor %}
         </div>
@@ -263,11 +271,13 @@
         {% endif %}
 
         <div class="c7-nota">
-          {{ _('In una gara con handicap l’Elo si aggiorna solo nelle partite fra giocatori della stessa categoria.') }}
+          {% if gara.effective_has_handicap %}{{ _('In una gara con handicap l’Elo si aggiorna solo nelle partite fra giocatori della stessa categoria.') }}{% else %}{{ _('Senza handicap le categorie servono al listino delle quote: non cambiano l’Elo e non cambiano le partite.') }}{% endif %}
           {% if categorie_editable %}{{ _('Le categorie si scrivono accanto a ogni iscritto: un nome nuovo entra da solo in elenco. Da qui si riparano i refusi.') }}{% endif %}
         </div>
-        {% if not categorie_editable %}
+        {% if not categorie_editable and gara.effective_has_handicap %}
         <div class="c7-nota">{{ _('Il primo turno è partito: le categorie hanno già deciso quali partite contano per l’Elo e non si modificano più.') }}</div>
+        {% elif not categorie_editable %}
+        <div class="c7-nota">{{ _('Le categorie di questa gara non si modificano più.') }}</div>
         {% endif %}
       </div>
     </div>

@@ -94,7 +94,8 @@ blocks:
   - type: text
     text: >-
       The second step asks what the championship's «typical» competitions look
-      like: venue, entry fee, number of rounds, handling of odd numbers, and
+      like: venue, entry fee (and, if needed, the fee list by category, which
+      applies to every competition), number of rounds, handling of odd numbers, and
       how the break shot is decided. Every new competition will start out like
       that, and you will only have to change the name, date and discipline.
 

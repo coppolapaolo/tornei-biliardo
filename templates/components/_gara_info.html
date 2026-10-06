@@ -47,7 +47,11 @@
 
         <dt class="text-muted" style="font-weight: 700;">{{ _('Quota') }}</dt>
         <dd style="margin: 0; text-align: right;">
-            {% if gara.entry_fee > 0 %}<span class="c7-num">€{{ "%.2f"|format(gara.entry_fee) }}</span>{% else %}{{ _('Gratuita') }}{% endif %}
+            {# Con un listino per categoria si mostra il listino (ADR-079);
+               senza, la quota unica di sempre. #}
+            {% set _listino = listino_quote(gara) %}
+            {% if _listino %}{% import "components/_listino.html" as listino with context %}{{ listino.testo(_listino) }}
+            {% elif gara.entry_fee and gara.entry_fee > 0 %}<span class="c7-num">€{{ "%.2f"|format(gara.entry_fee) }}</span>{% else %}{{ _('Gratuita') }}{% endif %}
         </dd>
 
         {# Anti-reincontro e numero dispari non esistono sul tabellone: chi

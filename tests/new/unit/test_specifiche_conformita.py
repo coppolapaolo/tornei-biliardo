@@ -2178,3 +2178,59 @@ class TestInterrompereAtempo:
         )
         MatchValidationService.validate_and_complete(match.id)
         assert db.session.get(Match, match.id).closed_on_time is False
+
+
+class TestIlListinoDelleQuote:
+    """`SPECIFICHE.md` riga 92 (nota del 2026-10-06, ADR-079).
+
+    > ordinato dalla quota più alta alla più bassa e, a parità di quota, in
+    > ordine alfabetico [...] la categoria pesa sull'ELO solo nelle gare con
+    > handicap.
+    """
+
+    def test_dalla_quota_piu_alta_poi_alfabetico(self, db_session):
+        from models.categoria.listino import ListinoService, VoceListino, listino_di
+
+        gara = _gara(db_session)
+        ListinoService.salva(
+            gara_id=gara.id,
+            voci=[
+                VoceListino("Amatori", 15),
+                VoceListino("Serie C", 20),
+                VoceListino("Serie A", 30),
+                VoceListino("Serie B", 20),
+            ],
+        )
+        assert [(c.name, c.entry_fee) for c in listino_di(gara)] == [
+            ("Serie A", 30),
+            ("Serie B", 20),
+            ("Serie C", 20),
+            ("Amatori", 15),
+        ]
+
+    def test_senza_handicap_la_categoria_non_pesa_sull_elo(self, db_session):
+        from models.categoria.listino import ListinoService, VoceListino
+        from models.categoria.models import Categoria
+        from models.rating.eligibility import RatingEligibility
+
+        gara = _gara(db_session)
+        ListinoService.salva(
+            gara_id=gara.id, voci=[VoceListino("A", 30), VoceListino("C", 15)]
+        )
+        a, c = (
+            Categoria.query.filter_by(gara_id=gara.id, name=nome).one()
+            for nome in ("A", "C")
+        )
+        uno, due = _utente(db_session), _utente(db_session)
+        db_session.add_all(
+            [
+                Inscription(gara_id=gara.id, user_id=uno.id, categoria_id=a.id),
+                Inscription(gara_id=gara.id, user_id=due.id, categoria_id=c.id),
+            ]
+        )
+        partita = Match(
+            gara_id=gara.id, round_number=1, player1_id=uno.id, player2_id=due.id
+        )
+        db_session.add(partita)
+        db_session.flush()
+        assert RatingEligibility.exclusion_reason(partita, is_walkover=False) is None

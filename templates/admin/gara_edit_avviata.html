@@ -84,6 +84,22 @@
       <input type="number" class="form-control" id="entry_fee" name="entry_fee" min="0" step="0.5"
              value="{{ gara.entry_fee if gara.entry_fee is not none else '' }}">
     </div>
+
+    {# Quote diverse per categoria (ADR-079): la gara singola ha il suo
+       listino; dentro un campionato è quello del campionato, per tutte le
+       serate, e si cambia da lì. #}
+    {% import "components/_listino.html" as listino with context %}
+    <div class="mb-3">
+      <label class="form-label">{{ _('Listino quote per categoria') }}</label>
+      {% if gara.campionato_id %}
+        {% set _gruppi = listino_quote(gara) %}
+        <div class="form-text">
+          {% if _gruppi %}{{ listino.testo(_gruppi) }} · {% endif %}{{ _('Il listino è del campionato: vale per tutte le sue gare e si cambia dalle impostazioni del campionato.') }}
+        </div>
+      {% else %}
+        {{ listino.editor(listino_voci(gara)) }}
+      {% endif %}
+    </div>
     <div>
       <label for="description" class="form-label">{{ _('Descrizione') }} · {{ _('opzionale') }}</label>
       <textarea class="form-control" id="description" name="description" rows="3">{{ gara.description or '' }}</textarea>

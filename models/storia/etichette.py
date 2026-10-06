@@ -28,6 +28,7 @@ ETICHETTE: Dict[str, object] = {
     "min_participants": _l("Minimo iscritti"),
     "max_participants": _l("Capienza"),
     "entry_fee": _l("Quota d'iscrizione"),
+    "listino": _l("Listino quote"),
     "discipline": _l("Disciplina"),
     "distance": _l("Distanza"),
     "is_race_to": _l("Si vince al numero di triangoli"),
@@ -167,6 +168,10 @@ def valore(campo: str, grezzo: str | None) -> str:
         if campo in ("start_rule", "break_rule", "has_handicap", "time_limit_minutes"):
             return _("come il campionato")
         return "—"
+    if campo == "listino":
+        from models.categoria.listino import in_parole
+
+        return in_parole(grezzo)
     if campo == "time_limit_minutes":
         try:
             minuti = int(grezzo)

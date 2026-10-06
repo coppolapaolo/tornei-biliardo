@@ -68,7 +68,8 @@
         {% endif %}
 
         {# Default Gare Settings #}
-        {% if campionato.default_venue or campionato.default_entry_fee or campionato.default_rounds_count or campionato.default_odd_policy %}
+        {% set _listino = listino_quote(campionato) %}
+        {% if campionato.default_venue or campionato.default_entry_fee or _listino or campionato.default_rounds_count or campionato.default_odd_policy %}
         <hr class="my-3">
         <div class="row">
             <div class="col-12">
@@ -82,7 +83,14 @@
                 <span>{{ campionato.default_venue.name }}</span>
             </div>
             {% endif %}
-            {% if campionato.default_entry_fee %}
+            {% if _listino %}
+            {# Il listino per categoria (ADR-079): vale per tutte le gare. #}
+            {% import "components/_listino.html" as listino with context %}
+            <div class="col-md-4">
+                <small class="text-muted">{{ _("Quote") }}:</small><br>
+                <span>{{ listino.testo(_listino) }}</span>
+            </div>
+            {% elif campionato.default_entry_fee %}
             <div class="col-md-2">
                 <small class="text-muted">{{ _("Quota") }}:</small><br>
                 <span>€{{ "%.2f"|format(campionato.default_entry_fee) }}</span>

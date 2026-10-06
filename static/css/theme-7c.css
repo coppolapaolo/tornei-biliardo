@@ -4182,6 +4182,14 @@ button.c7-tavolo:not(:disabled):hover { filter: brightness(.96); }
 .c7-elenco__campo { display: flex; gap: 8px; }
 .c7-elenco__campo .form-control,
 .c7-elenco__campo .form-select { flex: 1; min-width: 0; }
+/* La quota della categoria (ADR-079): stretta, accanto al nome. */
+.c7-elenco__campo .c7-elenco__quota { flex: 0 0 5.5rem; }
+/* Il listino delle quote nei moduli (ADR-079): nome largo, quota stretta. */
+.c7-listino__righe { gap: 8px; }
+.c7-listino__riga { display: flex; gap: 8px; align-items: center; }
+.c7-listino__riga > .form-control { flex: 1; min-width: 0; }
+.c7-listino__quota { flex: 0 0 8rem; width: 8rem; }
+.c7-listino__voce { white-space: nowrap; }
 
 /* La squadra dell'iscritto: un chip che apre il foglio. */
 .c7-chip--squadra { border: 0; font-family: inherit; }

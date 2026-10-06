@@ -71,6 +71,11 @@ class Categoria(BaseModel):
     # già stata usata: le gare giocate non si riscrivono.
     is_active = db.Column(db.Boolean, nullable=False, default=True)
 
+    # La quota d'iscrizione di chi gioca in questa categoria (ADR-079). Solo
+    # informazione: compone il listino che la vetrina mostra. NULL = la
+    # categoria non è nel listino.
+    entry_fee = db.Column(db.Float, nullable=True)
+
     campionato = db.relationship("Campionato", foreign_keys=[campionato_id])
     gara = db.relationship("Gara", foreign_keys=[gara_id])
 

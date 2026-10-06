@@ -155,7 +155,9 @@ def contesto_direzione(gara: Gara, inscriptions=None) -> dict:
 
     categorie, categorie_all, categoria_counts = [], [], {}
     categorie_editable, iscritti_senza_categoria, avviso_categorie = False, 0, ""
-    if gara.effective_has_handicap:
+    # Con l'handicap decidono l'ELO; con un listino dicono chi paga quanto
+    # (ADR-079). Senza nessuno dei due le categorie non si mostrano.
+    if gara.usa_categorie:
         categorie = CategoriaService.list_for_gara(gara)
         categorie_editable = CategoriaService.can_edit_inscription(gara, current_user)
         categorie_all = CategoriaService.list_for_gara(gara, include_inactive=True)
@@ -722,7 +724,7 @@ def gara_detail(gara_id):
     categorie_editable = contesto.get("categorie_editable", False)
     iscritti_senza_categoria = contesto.get("iscritti_senza_categoria", 0)
     avviso_categorie = contesto.get("avviso_categorie", "")
-    if gara.effective_has_handicap and not user_can_manage:
+    if gara.usa_categorie and not user_can_manage:
         categorie = CategoriaService.list_for_gara(gara)
         categorie_editable = CategoriaService.can_edit_inscription(gara, current_user)
 
