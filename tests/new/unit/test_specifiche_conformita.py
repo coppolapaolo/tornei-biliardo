@@ -1947,3 +1947,42 @@ class TestLEsercizioConEstrazione:
         with pytest.raises(ValidationError):
             refuse_if_drawn(SimpleNamespace(recording_mode="draw"))
         refuse_if_drawn(SimpleNamespace(recording_mode="shots"))
+
+
+# ══ Il girone all'italiana ═══════════════════════════════════════════════
+
+
+@pytest.mark.unit
+class TestIlGironeAllItaliana:
+    """`SPECIFICHE.md` riga 110.
+
+    > Con `N` giocatori servono `N-1` turni se `N` è pari e `N` turni se `N`
+    > è dispari: nel dispari ogni giocatore riposa una volta, con la X.
+    """
+
+    @pytest.mark.parametrize("n", [3, 4, 5, 6, 7, 8, 11, 12])
+    def test_numero_di_turni(self, n):
+        from models.matchmaking.configuration import (
+            MatchmakingStrategy,
+            calculate_rounds_for_strategy,
+        )
+        from models.matchmaking.strategies.round_robin import RoundRobinStrategy
+
+        atteso = n - 1 if n % 2 == 0 else n
+        assert (
+            calculate_rounds_for_strategy(MatchmakingStrategy.ROUND_ROBIN, n) == atteso
+        )
+        calendario = RoundRobinStrategy()._generate_round_robin_schedule(
+            list(range(1, n + 1))
+        )
+        assert len(calendario) == atteso
+
+    @pytest.mark.parametrize("n", [5, 7])
+    def test_nel_dispari_ognuno_riposa_una_volta(self, n):
+        from models.matchmaking.strategies.round_robin import RoundRobinStrategy
+
+        calendario = RoundRobinStrategy()._generate_round_robin_schedule(
+            list(range(1, n + 1))
+        )
+        riposi = [p[0] for turno in calendario for p in turno if len(p) == 1]
+        assert sorted(riposi) == list(range(1, n + 1))
