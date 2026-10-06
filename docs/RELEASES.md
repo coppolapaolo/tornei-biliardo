@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.54.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.53.3...v1.54.0) (2026-10-06)
+
+
+### Funzioni nuove
+
+* limite di tempo per le partite ([#617](https://github.com/coppolapaolo/tornei-biliardo/issues/617)) ([c6bc691](https://github.com/coppolapaolo/tornei-biliardo/commit/c6bc6919af06b01985c50aef0d5658f210c9d347))
+
 ## [1.53.3](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.53.2...v1.53.3) (2026-10-06)
 
 
