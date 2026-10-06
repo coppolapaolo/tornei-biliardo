@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.55.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.54.0...v1.55.0) (2026-10-06)
+
+
+### Funzioni nuove
+
+* interrompere una partita a tempo ([#621](https://github.com/coppolapaolo/tornei-biliardo/issues/621)) ([8deb79a](https://github.com/coppolapaolo/tornei-biliardo/commit/8deb79add773590b15c68ca2a60224e382fa3625))
+* limite di tempo per singolo turno ([#619](https://github.com/coppolapaolo/tornei-biliardo/issues/619)) ([a2b239f](https://github.com/coppolapaolo/tornei-biliardo/commit/a2b239f77ab0e64f1707e473840fabc9cb22f30d))
+
 ## [1.54.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.53.3...v1.54.0) (2026-10-06)
 
 
