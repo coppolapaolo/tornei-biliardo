@@ -28,8 +28,9 @@ class RoundRobinStrategy(BaseStrategy):
     max_players = 16
     supports_byes = True
     requires_classification = False
-    # Lo schedule è deterministico a partire dall'ordine di iscrizione: quello
-    # è l'ordine di partenza, letto dagli accoppiamenti del primo turno.
+    # Lo schedule è deterministico a partire dall'ordine del sorteggio: quello
+    # è l'ordine di partenza, letto dagli accoppiamenti del primo turno, e dal
+    # turno 2 il calendario si ricostruisce da lì (`_calendar_order`).
     persists_seeding = True
 
     def __init__(self):
@@ -85,34 +86,36 @@ class RoundRobinStrategy(BaseStrategy):
     ) -> List[Pairing]:
         """Generate pairings for a specific round using Round Robin algorithm."""
         try:
-            # Get active players
-            inscriptions = getattr(gara, "inscriptions", [])
-            active_inscriptions = [
-                i
-                for i in inscriptions
-                if not i.is_withdrawn and not getattr(i, "is_waitlist", False)
-            ]
-            player_ids = [i.user_id for i in active_inscriptions]
-
+            player_ids = self._calendar_order(gara)
             if len(player_ids) < 2:
                 return []
 
-            # Generate complete round robin schedule
+            # Chi non gioca piu' (escluso dalla regola EXCLUDE, o comunque non
+            # piu' fra gli attivi) resta al suo posto nel calendario e diventa
+            # un "fantasma": il suo avversario di quel turno riposa, come
+            # vuole la gestione del dispari (SPECIFICHE.md, «policy per il
+            # forfait»). Con FORFEIT invece l'iscrizione resta attiva: la
+            # partita nasce e `create_matches_from_pairings` la chiude a
+            # tavolino.
+            active_ids = {i.user_id for i in self._get_active_inscriptions(gara)}
+
             schedule = self._generate_round_robin_schedule(player_ids)
+            if round_number > len(schedule):
+                return []
 
-            # Return pairings for the specific round
-            if round_number <= len(schedule):
-                round_pairings = schedule[round_number - 1]  # 0-indexed
-                return [
+            pairings: List[Pairing] = []
+            for pairing in schedule[round_number - 1]:
+                players = tuple(p for p in pairing if p in active_ids)
+                if not players:
+                    continue
+                pairings.append(
                     Pairing(
-                        players=pairing,
+                        players=players,
                         round_number=round_number,
-                        is_bye=(len(pairing) == 1),
+                        is_bye=(len(players) == 1),
                     )
-                    for pairing in round_pairings
-                ]
-
-            return []
+                )
+            return pairings
 
         except Exception:
             # La lista vuota non e' piu' un esito silenzioso: dal 2026-08-28
@@ -130,6 +133,81 @@ class RoundRobinStrategy(BaseStrategy):
                 exc_info=True,
             )
             return []
+
+    def _calendar_order(self, gara: object) -> List[int]:
+        """L'ordine su cui si costruisce il calendario, fisso per tutta la gara.
+
+        Il calendario si genera di nuovo a ogni turno, quindi l'ordine deve
+        essere lo stesso ogni volta. Dal turno 2 in poi viene dalla classifica
+        di partenza persistita (`SeedingService`), che si scrive al turno 1 e
+        contiene anche chi nel frattempo si e' ritirato: con la regola EXCLUDE
+        la sua iscrizione viene cancellata, e ricalcolare su chi resta
+        spostava tutte le coppie dei turni successivi.
+
+        Prima che il seeding esista (il turno 1) l'ordine e' quello del
+        sorteggio scritto da `start_first_round` in `initial_order`, e a
+        parita' l'ordine d'iscrizione. Fino al 2026-10-06 si leggeva
+        `gara.inscriptions`, una relazione senza ordinamento: il sorteggio non
+        contava, e la stabilita' fra un turno e l'altro dipendeva dall'ordine
+        in cui SQLite restituiva le righe.
+        """
+        active = self._get_active_inscriptions(gara)
+        seeding = self._seeding_order(gara)
+        if not seeding:
+            ordered = sorted(
+                active,
+                key=lambda i: (
+                    getattr(i, "initial_order", None) is None,
+                    getattr(i, "initial_order", None) or 0,
+                    getattr(i, "id", 0) or 0,
+                ),
+            )
+            return [i.user_id for i in ordered]
+
+        order = self.order_from_seeding(seeding)
+        # Chi e' entrato dopo l'avvio (una promozione dalla lista d'attesa)
+        # non ha un posto nel seeding: si accoda, in ordine d'iscrizione.
+        known = set(order)
+        late = sorted(
+            (i for i in active if i.user_id not in known),
+            key=lambda i: getattr(i, "id", 0) or 0,
+        )
+        return order + [i.user_id for i in late]
+
+    @staticmethod
+    def _seeding_order(gara: object) -> List[int]:
+        """La classifica di partenza della gara, o lista vuota se non c'e'."""
+        gara_id = getattr(gara, "id", None)
+        if gara_id is None:
+            return []
+        from models.classification.seeding_service import SeedingService
+
+        return [rc.user_id for rc in SeedingService.get_seeding(gara_id)]
+
+    @classmethod
+    def order_from_seeding(cls, seeding: List[int]) -> List[int]:
+        """Ricostruisce l'ordine del calendario dalla classifica di partenza.
+
+        Il seeding non e' l'ordine del calendario: `SeedingService` lo legge
+        dagli abbinamenti del turno 1, nell'ordine in cui i giocatori vi
+        compaiono. Col metodo del poligono il turno 1 accoppia la posizione
+        `i` con la `size - 1 - i`, quindi il seeding elenca le posizioni
+        0, size-1, 1, size-2, ... saltando il fantasma del dispari (che sta in
+        coda). Qui si fa il percorso inverso: e' l'unico ordine che rigenera
+        esattamente il turno 1 gia' giocato.
+        """
+        n = len(seeding)
+        size = n + (n % 2)
+        visit: List[int] = []
+        for i in range(size // 2):
+            visit.extend((i, size - 1 - i))
+        if n % 2 == 1:
+            visit.remove(size - 1)  # il posto del fantasma
+
+        order: List[int] = [0] * n
+        for slot, player_id in zip(visit, seeding):
+            order[slot] = player_id
+        return order
 
     # Sentinella "giocatore fantasma" per il caso dispari: chi viene accoppiato
     # con essa in un dato turno riposa (bye). None è sicuro perché gli id reali
