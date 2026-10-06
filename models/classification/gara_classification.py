@@ -14,6 +14,7 @@ from .models import RoundClassification, GaraClassification
 from ..caching import cached, cache_invalidate
 from ..transaction import transactional
 from ..matchmaking.configuration import MatchmakingStrategy
+from ..status_enum import ClassificationSystem
 
 # Strategy pattern imports
 from .bracket_standings import bracket_positions
@@ -140,21 +141,27 @@ class StrategyBasedClassificationService:
         Returns:
             ClassificationStrategy for this gara type
         """
-        cs = (getattr(gara, "classification_system", None) or "WINS").upper()
-        # round_robin matchmaking conserva la sua strategia round dedicata
-        # (semantica già allineata a WINS, ma serve l'ordine stabile per pairing)
-        if gara.matchmaking_strategy == MatchmakingStrategy.ROUND_ROBIN.value:
+        cs = ClassificationSystem.resolve(getattr(gara, "classification_system", None))
+        # Il round robin ha una strategia round dedicata, ma ha la semantica di
+        # WINS e vale solo li'. Fino al 2026-10-06 la si restituiva prima di
+        # guardare il sistema di classifica, e un girone RACK si ordinava per
+        # vittorie: il sistema decide su cosa si ordina, la strategia di
+        # abbinamento solo come si formano le partite (ADR-047).
+        if (
+            gara.matchmaking_strategy == MatchmakingStrategy.ROUND_ROBIN.value
+            and cs == ClassificationSystem.WINS
+        ):
             return self._registry.get("round_robin_round")
         strategy_map = {
-            "WINS": "amalfi_round",
+            ClassificationSystem.WINS: "amalfi_round",
             # POSITION era mappato su amalfi_round, cioè si comportava come
             # WINS: in un tabellone contare le vittorie è la domanda sbagliata,
             # perché chi ha avuto un bye ne ha una in meno pur essendo andato
             # più avanti.
-            "POSITION": "position_round",
-            "RACK": "random_round",
+            ClassificationSystem.POSITION: "position_round",
+            ClassificationSystem.RACK: "random_round",
         }
-        return self._registry.get(strategy_map.get(cs, "amalfi_round"))
+        return self._registry.get(strategy_map[cs])
 
     def get_gara_final_strategy(self, gara) -> Any:
         """Get strategy for final gara classification.
@@ -165,13 +172,13 @@ class StrategyBasedClassificationService:
         Returns:
             ClassificationStrategy for gara final ranking
         """
-        cs = (getattr(gara, "classification_system", None) or "WINS").upper()
+        cs = ClassificationSystem.resolve(getattr(gara, "classification_system", None))
         strategy_map = {
-            "WINS": "amalfi_gara",
-            "POSITION": "position_gara",
-            "RACK": "random_gara",
+            ClassificationSystem.WINS: "amalfi_gara",
+            ClassificationSystem.POSITION: "position_gara",
+            ClassificationSystem.RACK: "random_gara",
         }
-        return self._registry.get(strategy_map.get(cs, "amalfi_gara"))
+        return self._registry.get(strategy_map[cs])
 
     @transactional(domain="classification")
     def calculate_round_classification(
