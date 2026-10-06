@@ -53,7 +53,7 @@ match.player2|player_name_with_forfeit(is_forfeit=player2_is_forfeit) if match.p
         {# «Avvia partita» (ADR-077): il conto alla rovescia del limite di tempo.
            Con l'acchito parte da solo quando lo si registra; con «apre il primo
            giocatore» lo fa partire uno dei due, o chi dirige. #}
-        {% if match.has_time_limit and not match.timer_started_at and not MatchStatus.is_finished(match.status) %}
+        {% if match.has_time_limit and not match.timer_started_at and MatchStatus.is_active(match.status) %}
           {% if user_is_player and not match.needs_lag %}
           <button type="button" class="btn btn-primary w-100" data-help="partita-avvia"
                   onclick="avviaPartita('{{ url_for('player.avvia_partita', match_id=match.id) }}', this)">

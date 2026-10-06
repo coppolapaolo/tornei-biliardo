@@ -445,3 +445,92 @@ def test_la_storia_dice_il_limite_a_parole(app):
         assert valore("time_limit_minutes", "30") == "30 minuti"
         assert valore("time_limit_minutes", "0") == "senza limite"
         assert valore("default_time_limit_minutes", "0") == "senza limite"
+
+
+@pytest.mark.unit
+def test_la_migration_mette_le_gare_vecchie_senza_limite(tmp_path):
+    """Una gara vecchia a NULL leggerebbe in diretta il limite del campionato:
+    portato il campionato a 30, l'avrebbe anche una gara già avviata, che la
+    proposta alle gare salta. La migration le scrive 0; le partite restano
+    NULL, senza limite."""
+    import importlib.util
+    import sqlite3
+
+    percorso = tmp_path / "vecchio.db"
+    conn = sqlite3.connect(percorso)
+    conn.executescript("""
+        CREATE TABLE campionato (id INTEGER PRIMARY KEY);
+        CREATE TABLE gara (id INTEGER PRIMARY KEY, campionato_id INTEGER);
+        CREATE TABLE "match" (id INTEGER PRIMARY KEY, gara_id INTEGER);
+        INSERT INTO campionato (id) VALUES (1);
+        INSERT INTO gara (id, campionato_id) VALUES (1, 1), (2, NULL);
+        INSERT INTO "match" (id, gara_id) VALUES (1, 1);
+        """)
+    conn.commit()
+    conn.close()
+
+    spec = importlib.util.spec_from_file_location(
+        "m", "migrations/20261006_limite_di_tempo.py"
+    )
+    assert spec and spec.loader
+    modulo = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(modulo)
+    modulo.upgrade_sqlite(str(percorso))
+    modulo.upgrade_sqlite(str(percorso))  # rilanciata non fa niente
+
+    conn = sqlite3.connect(percorso)
+    assert conn.execute("SELECT time_limit_minutes FROM gara").fetchall() == [
+        (0,),
+        (0,),
+    ]
+    assert conn.execute(
+        'SELECT time_limit_minutes, timer_started_at FROM "match"'
+    ).fetchall() == [(None, None)]
+    assert conn.execute(
+        "SELECT default_time_limit_minutes FROM campionato"
+    ).fetchall() == [(0,)]
+    conn.close()
+
+
+@pytest.mark.unit
+def test_una_partita_che_aspetta_il_tavolo_non_si_avvia(db_session):
+    """Il tempo misura il gioco, non l'attesa del tavolo (revisione #617)."""
+    from models.exceptions import ConflictError
+    from models.match import tempo
+    from models.match.match_service import MatchService
+
+    gara = _gara(uuid.uuid4().hex[:6], time_limit_minutes=30, start_rule="first_player")
+    db.session.add(gara)
+    db.session.commit()
+    gioc = _giocatori()
+    match = _partita(
+        gara, gioc, status=MatchStatus.PENDING.value, table_assignment=None
+    )
+    assert tempo.avvia_conto_alla_rovescia(match) is False
+    with pytest.raises(ConflictError):
+        MatchService.avvia_partita(match.id, gioc[0])
+    assert db.session.get(Match, match.id).timer_started_at is None
+
+
+@pytest.mark.unit
+def test_due_tocchi_insieme_scrivono_una_volta_sola(db_session):
+    """La scrittura è condizionata: il secondo, anche se ha letto NULL prima
+    che il primo scrivesse, non sposta l'inizio (revisione #617)."""
+    from models.match import tempo
+
+    gara = _gara(uuid.uuid4().hex[:6], time_limit_minutes=30)
+    db.session.add(gara)
+    db.session.commit()
+    match = _partita(gara, _giocatori())
+    primo = datetime(2026, 10, 6, 20, 0)
+    # Un altro processo ha già scritto l'inizio, alle spalle di questa sessione.
+    db.session.execute(
+        db.text("UPDATE match SET timer_started_at = :t WHERE id = :id"),
+        {"t": primo, "id": match.id},
+    )
+    match.__dict__["timer_started_at"] = None  # questa sessione lo aveva letto vuoto
+    assert (
+        tempo.avvia_conto_alla_rovescia(match, adesso=primo + timedelta(minutes=1))
+        is False
+    )
+    assert db.session.get(Match, match.id).timer_started_at == primo

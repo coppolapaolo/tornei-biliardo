@@ -515,6 +515,10 @@ class MatchService:
             raise ConflictError(_("La partita è già chiusa."))
         if not tempo.ha_limite(match):
             raise ValidationError(_("Questa partita non ha un limite di tempo."))
+        if not tempo.in_gioco(match):
+            raise ConflictError(
+                _("La partita non è ancora cominciata: aspetta il tavolo.")
+            )
         if tempo.avvia_conto_alla_rovescia(match):
             tempo.evento_live(match, autore_id=user_id)
         return match

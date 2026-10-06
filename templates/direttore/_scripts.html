@@ -50,6 +50,7 @@
       "confirmResetTrio": {{ _("Sei sicuro di voler resettare questo trio?") | tojson }},
       "confirmValidate": {{ _("Confermi di voler validare questo risultato? Il tavolo verrà liberato e assegnato alla prossima partita in attesa.") | tojson }},
       "errorTitle": {{ _("Errore:") | tojson }},
+      "errorAvvioPartita": {{ _("Errore durante l'avvio della partita") | tojson }},
       "errorCancel": {{ _("Errore durante la cancellazione:") | tojson }},
       "errorTermination": {{ _("Errore durante la terminazione:") | tojson }},
       "errorTerminationWait": {{ _("Errore durante la terminazione della gara") | tojson }},
@@ -1336,7 +1337,12 @@
           restore();
         }
       })
-      .catch(function () { restore(); });
+      .catch(function () {
+        // Rete caduta o sessione scaduta (risposta non JSON): lo si dice,
+        // invece di rimettere il pulsante in silenzio.
+        showError(GARA_CONFIG.i18n.errorAvvioPartita);
+        restore();
+      });
   }
 
   function validaDallaCard(matchId, btn) {

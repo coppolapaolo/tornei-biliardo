@@ -84,6 +84,15 @@ def tempo_scaduto(match: Any, adesso: Optional[datetime] = None) -> bool:
     return restanti is not None and restanti <= 0
 
 
+def in_gioco(match: Any) -> bool:
+    """La partita si sta giocando: ha un tavolo ed è in corso.
+
+    Il conto alla rovescia non parte su una partita che aspetta ancora il
+    tavolo: misurerebbe l'attesa, non il gioco.
+    """
+    return MatchStatus.is_active(getattr(match, "status", None))
+
+
 def avvia_conto_alla_rovescia(match: Any, adesso: Optional[datetime] = None) -> bool:
     """Fa partire il conto alla rovescia, se c'è un limite e non è già partito.
 
@@ -93,14 +102,28 @@ def avvia_conto_alla_rovescia(match: Any, adesso: Optional[datetime] = None) -> 
     """
     if not ha_limite(match) or getattr(match, "timer_started_at", None) is not None:
         return False
-    if MatchStatus.is_finished(getattr(match, "status", None)):
+    if not in_gioco(match):
         return False
     if adesso is None:
         from models.base import utc_now
 
         adesso = utc_now()
-    match.timer_started_at = adesso
-    return True
+    if getattr(match, "id", None) is None:
+        match.timer_started_at = adesso
+        return True
+    # Una volta sola anche con due tocchi insieme (i due giocatori, o un
+    # giocatore e il direttore): la scrittura è condizionata, e vince chi
+    # arriva per primo. L'altro rilegge l'inizio già scritto.
+    from models.base import db
+    from models.match.models import Match
+
+    scritte = (
+        db.session.query(Match)
+        .filter(Match.id == match.id, Match.timer_started_at.is_(None))
+        .update({Match.timer_started_at: adesso}, synchronize_session=False)
+    )
+    db.session.expire(match, ["timer_started_at"])
+    return scritte == 1
 
 
 def vista(match: Any, adesso: Optional[datetime] = None) -> Optional[dict]:
@@ -164,6 +187,7 @@ __all__ = [
     "scadenza",
     "secondi_restanti",
     "tempo_scaduto",
+    "in_gioco",
     "avvia_conto_alla_rovescia",
     "vista",
     "evento_live",

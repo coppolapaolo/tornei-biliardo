@@ -1151,6 +1151,25 @@ riga: «SSR» dove lo spareggio ha deciso, «pari» sul parimerito aperto
 (`__pill`). Le prime sei e «tutti» con due pillole da 48px (`__pillole`,
 `aria-pressed`). La stessa riga serve la classifica generale del campionato.
 
+### Conto alla rovescia (limite di tempo)
+
+Il timer del limite di tempo (ADR-077) è **una pastiglia** `.c7-timer`, la
+stessa forma di `.c7-state`: icona `fa-stopwatch` e le cifre in JetBrains Mono
+(`tabular-nums`, cambiano ogni secondo). Tre stati, solo per tono:
+
+- **fermo** (`.is-fermo`): la durata, su `--c7-sunken` con l'inchiostro
+  spento — non è ancora partito;
+- **in corso**: minuti e secondi che restano;
+- **scaduto** (`.is-scaduto`): «Tempo scaduto +2'» su `--c7-warn-bg`, e il
+  testo torna Manrope perché non è più un numero. La card del direttore che
+  lo contiene (`data-timer-card`) passa a `c7-card--warn`.
+
+Due misure: quella normale (card, testata del tabellone) e `--grande` (sotto
+il punteggio della partita, schermo in sala). Un solo macro la disegna,
+`components/_conto_alla_rovescia.html`; il JavaScript è
+`static/js/conto_alla_rovescia.js`. Senza limite di tempo non compare niente:
+nessuno spazio riservato.
+
 ### Schermo in sala
 
 `/g/<indirizzo>/sala`, `.c7-sala`: da leggere a tre metri su una TV 16:9.
@@ -1257,6 +1276,7 @@ Principi, in ordine di importanza:
 | 2026-06-10 | Principio "l'azionabile va prima" (mobile) | Decisione utente da test manuale: l'interfaccia mostra prima ciò che serve in quel momento. Applicato in gara_detail.html fase gioco (Partite→Turni→Gestione collassata→Direttori via flex order-*) e turni attivi crescenti in _match_cards_mobile.html |
 | 2026-06-10 | fa-8-ball per "Ai tavoli adesso" | Card "In diretta ora": era fa-table-tennis-paddle-ball (racchetta ping pong!) — allineata alla convenzione biliardo |
 | 2026-08-16 | Immagini dei drill mai ritagliate (`.c7-diagram`) | L'immagine **è** l'esercizio: `object-fit: cover` toglieva fino al 43% della foto, cioè le teste del tavolo. Cinque superfici passano a `contain` su riquadro affossato, regola unica nel tema (ADR-044) |
+| 2026-10-06 | Pastiglia `.c7-timer` per il limite di tempo | Il conto alla rovescia è un'informazione di stato, non un comando: stessa forma di `.c7-state`, cifre di servizio in mono, avviso giallo allo scadere perché il tempo scaduto non chiude niente da sé (ADR-077). `fa-stopwatch`: il cronometro, anche sul pulsante «Avvia partita» |
 | 2026-09-11 | Segmenti (`.c7-seg`), ricerca con chip (`.c7-search`, `.c7-chips`) e chip di posizione (`.c7-pos`) nello storico | Introdotti con lo storico delle gare (#333): i segmenti scelgono fra Gare e Campionati, i chip sono filtri persistiti nell'URL, il chip di posizione è lo stesso del podio (#332). Linguette e chip sono controlli frequenti e rispettano `--c7-touch` (48px), il minimo del design system; i 44px della sezione «Touch Target» sono il limite storico Bootstrap, il token vince |
 | 2026-09-11 | La cifra del punteggio che cambia salta (`.is-pop` / `c7-pop`), sia sul tabellone sia sulla card verticale dopo il ricaricamento | Un 3 che diventa 4 senza movimento si perde, soprattutto sull'altro telefono quando arriva l'evento live: il movimento qui è informazione. Solo se il valore è cambiato davvero, così il polling che riallinea un punteggio uguale non muove niente. Scelta la colonna «250 ms» nella pagina di confronto (#342) |
 | 2026-09-11 | Il cambio pagina è una view transition cross-document (`@view-transition`), con testata, barra laterale e nav mobile ferme | L'app è multipagina e il lampo bianco fra le pagine era il punto in cui sembrava un sito: la pagina vecchia resta finché la nuova è pronta, poi dissolve a `--c7-dur-base`. Scelta guardando la colonna «dissolvenza 250 ms» contro «lampo bianco» nella pagina di confronto. Spenta con «riduci movimento»; `location.reload()` non transita, si usa `location.replace(location.href)` (#341) |

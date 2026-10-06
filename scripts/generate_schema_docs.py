@@ -149,7 +149,10 @@ def get_constraints_info(table) -> list[str]:
         elif constraint_type == "CheckConstraint":
             constraints.append(f"CHECK: {constraint.sqltext}")
 
-    return constraints
+    # In ordine: `table.constraints` è un insieme, e l'ordine di un insieme
+    # cambia da un'esecuzione all'altra — il documento rigenerato senza
+    # nessuna modifica allo schema risultava diverso.
+    return sorted(constraints)
 
 
 def format_table_markdown(table) -> str:
@@ -217,6 +220,7 @@ def format_table_markdown(table) -> str:
         )
 
     if fk_details:
+        fk_details.sort()  # vedi `get_constraints_info`: un insieme non ha ordine
         lines.append("")
         lines.append("**Foreign Keys:**")
         lines.extend(fk_details)
