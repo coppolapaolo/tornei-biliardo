@@ -206,7 +206,7 @@
               </button>
             {% endif %}
 
-            {% if match.is_at_distance and not match.validated_by_admin and not match.is_player_validated %}
+            {% if match.is_awaiting_validation %}
             <button class="btn btn-success btn-sm" onclick="validateMatchQuick({{ match.id }}, this)" title="{{ _('Valida') }}">
               <i class="fas fa-check"></i>
             </button>

@@ -17,6 +17,28 @@ if TYPE_CHECKING:
     from .set_models import Set
 
 
+def awaiting_validation(match) -> bool:
+    """La partita aspetta la validazione del direttore.
+
+    Arrivata alla distanza, non ancora chiusa e senza la doppia conferma dei
+    giocatori. Non guarda il vincitore: con «esattamente N triangoli» e N pari
+    il pareggio esiste, e a 3-3 la partita e' alla distanza con `winner_id`
+    vuoto.
+
+    E' la regola unica per la card e i conteggi del direttore
+    (`direttore_view`) e per il pulsante «Valida» delle viste della partita.
+    Fino al 2026-10-06 la pagina della partita chiedeva il vincitore e un
+    `validated_by_admin` che su `Match` non esiste, e sui pareggi il pulsante
+    non compariva. Funzione e non solo proprieta': le viste del direttore la
+    applicano anche a oggetti che di una partita hanno solo la forma.
+    """
+    if MatchStatus.is_finished(getattr(match, "status", None)):
+        return False
+    return bool(getattr(match, "is_at_distance", False)) and not bool(
+        getattr(match, "is_player_validated", False)
+    )
+
+
 class Match(db.Model, TimestampMixin, BaseMatchMixin):
     """Core match entity representing a game between players."""
 
@@ -286,6 +308,11 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         if self.effective_is_race_to:
             return self.player1_score >= distance or self.player2_score >= distance
         return self.player1_score + self.player2_score == distance
+
+    @property
+    def is_awaiting_validation(self) -> bool:
+        """La partita aspetta la validazione del direttore (`awaiting_validation`)."""
+        return awaiting_validation(self)
 
     @property
     def is_player_validated(self) -> bool:

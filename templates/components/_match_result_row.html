@@ -173,7 +173,7 @@
             {% endif %}
 
             {# Valida: distanza raggiunta ma non ancora validata #}
-            {% if match.is_at_distance and not match.validated_by_admin and not is_finished and not match.is_player_validated %}
+            {% if match.is_awaiting_validation %}
             <button class="c7-iconbtn" style="background: var(--c7-ok-bg); color: var(--c7-ok-ink);" onclick="validateMatchQuick({{ match.id }}, this)" title="{{ _('Valida il risultato') }}">
                 <i class="fas fa-check"></i>
             </button>

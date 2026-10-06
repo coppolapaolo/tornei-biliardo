@@ -107,8 +107,13 @@
         </form>
         {% endif %}
 
-        {# Validate Result Button - Show when match has winner but not validated/completed #}
-        {% if match.winner_id and not match.validated_by_admin %}
+        {# «Valida» compare quando la partita aspetta il direttore: alla
+           distanza, non chiusa, senza doppia conferma (`is_awaiting_validation`,
+           la stessa regola della card della pagina della gara). Fino al
+           2026-10-06 chiedeva `match.winner_id` e un `validated_by_admin` che
+           su Match non esiste: sui pareggi di «esattamente N» con N pari il
+           pulsante non compariva. #}
+        {% if match.is_awaiting_validation %}
         <div class="c7-stack" style="gap: 6px;">
             <button class="btn btn-success w-100" onclick="validateMatch({{ match.id }})">
                 <i class="fas fa-check-circle"></i> {{ _('Valida Risultato') }}
