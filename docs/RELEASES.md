@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.53.3](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.53.2...v1.53.3) (2026-10-06)
+
+
+### Correzioni
+
+* il girone all'italiana con sistema RACK si ordina sui triangoli ([#614](https://github.com/coppolapaolo/tornei-biliardo/issues/614)) ([08fe257](https://github.com/coppolapaolo/tornei-biliardo/commit/08fe2571e4ad40f45f90a04d5c39394aa9c1735e))
+* il girone all'italiana tiene il calendario fissato all'avvio ([#612](https://github.com/coppolapaolo/tornei-biliardo/issues/612)) ([69816cb](https://github.com/coppolapaolo/tornei-biliardo/commit/69816cb3cbcc773009e551f632cf16d86ac113da))
+* il pulsante Valida compare anche sulle partite finite in pareggio ([#615](https://github.com/coppolapaolo/tornei-biliardo/issues/615)) ([4133e71](https://github.com/coppolapaolo/tornei-biliardo/commit/4133e7141b79a68568b23085c8a4ce499fef214b))
+
 ## [1.53.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.53.1...v1.53.2) (2026-09-30)
 
 
