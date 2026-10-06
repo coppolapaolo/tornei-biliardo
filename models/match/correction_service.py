@@ -149,11 +149,27 @@ class MatchCorrectionService:
         # I triangoli non sopravvivono a un punteggio scritto a mano.
         Rack.query.filter_by(match_id=match.id).delete()
 
+        vincitore_prima = match.winner_id
         match.player1_score = player1_score
         match.player2_score = player2_score
         match.winner_id = MatchCorrectionService._winner_of(
             match, player1_score, player2_score
         )
+        if match.closed_on_time:
+            # Interrotta a tempo (ADR-077). Corretta fino alla distanza non è
+            # più «interrotta prima della distanza»; nel tabellone un pari
+            # tiene chi il direttore aveva fatto passare.
+            if match.is_at_distance:
+                match.closed_on_time = False
+            elif match.winner_id is None:
+                from models.match.chiusura import pareggio_ammesso
+
+                if not pareggio_ammesso(match):
+                    if not match.is_player(vincitore_prima):
+                        raise ValueError(
+                            str(_("È pari: nel tabellone qualcuno deve passare."))
+                        )
+                    match.winner_id = vincitore_prima
         match.reset_confirmations()
         db.session.add(match)
 
@@ -495,6 +511,33 @@ class MatchCorrectionService:
             raise ValueError(str(_("I triangoli non possono essere negativi")))
 
         distanza = match.distance_config
+
+        if match.closed_on_time:
+            # Interrotta a tempo (ADR-077): il punteggio può restare sotto la
+            # distanza, non andarci oltre.
+            if distanza.is_race_to_racks:
+                traguardo = distanza.get_winning_racks()
+                if max(p1, p2) > traguardo or min(p1, p2) >= traguardo:
+                    raise ValueError(
+                        str(
+                            _(
+                                "Interrotta a tempo: nessuno può superare "
+                                "%(n)s triangoli, e uno solo può arrivarci",
+                                n=traguardo,
+                            )
+                        )
+                    )
+            elif p1 + p2 > distanza.racks:
+                raise ValueError(
+                    str(
+                        _(
+                            "Interrotta a tempo: si giocano al massimo %(n)s "
+                            "triangoli",
+                            n=distanza.racks,
+                        )
+                    )
+                )
+            return
 
         if distanza.is_race_to_racks:
             traguardo = distanza.get_winning_racks()

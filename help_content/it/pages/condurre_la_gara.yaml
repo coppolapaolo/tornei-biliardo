@@ -115,6 +115,16 @@ blocks:
           registrato l'acchito, lo fai partire tu con **Avvia partita**. Allo
           scadere la card diventa gialla e sale in cima, fra quelle da
           guardare: la partita non si chiude da sola.
+      - name: "Interrompere una partita a tempo"
+        text: >-
+          Tocca **Interrompi partita** sulla card scaduta, o dal menu della
+          partita anche prima dello scadere: il foglio ti avverte di quanti
+          minuti mancano. Dice cosa succede sul punteggio di adesso: chi è
+          avanti vince; a parità è pareggio, ma nel tabellone il pareggio non
+          esiste e scegli tu chi passa il turno. La partita resta nei
+          risultati con il segno **a tempo**, e si corregge come le altre,
+          anche sotto la distanza. Se invece arriva alla distanza, si chiude
+          come sempre, senza segno.
       - name: "Validare un risultato"
         text: >-
           Una partita arrivata alla distanza dal segnapunti dei giocatori,

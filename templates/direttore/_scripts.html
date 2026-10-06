@@ -1172,6 +1172,13 @@
       });
     }
 
+    const interrompi = document.getElementById('menuPartitaInterrompi');
+    interrompi.hidden = !d.interrompiUrl;
+    interrompi.onclick = function () {
+      bootstrap.Modal.getOrCreateInstance(document.getElementById('menuPartitaModal')).hide();
+      apriInterrompi(btn);
+    };
+
     const azzera = document.getElementById('menuPartitaAzzera');
     azzera.hidden = !(hasScores || finished) || !canModify;
     azzera.onclick = function () {
@@ -1232,6 +1239,78 @@
       inviaAllaCard(d.ritiroUrl, conferma, dati);
     };
     bootstrap.Modal.getOrCreateInstance(document.getElementById('ritiroModal')).show();
+  }
+
+  /**
+   * Il foglio «Interrompi partita» (ADR-077): l'esito sul punteggio della card
+   * adesso, e se il tempo non è ancora scaduto quanto mancava. Nel tabellone,
+   * a parità, un pulsante per giocatore: il direttore sceglie chi passa.
+   */
+  function apriInterrompi(btn) {
+    const card = btn.closest('.c7-partita');
+    const url = btn.getAttribute('data-interrompi-url');
+    const numero = function (n) {
+      const el = card.querySelector('[data-num="' + n + '"]');
+      return parseInt(el ? el.textContent : card.getAttribute('data-p' + n), 10) || 0;
+    };
+    const p1 = numero(1), p2 = numero(2);
+    const nomi = [card.getAttribute('data-p1-name'), card.getAttribute('data-p2-name')];
+    const ids = [card.getAttribute('data-p1-id'), card.getAttribute('data-p2-id')];
+    const punteggio = p1 + '–' + p2;
+    document.getElementById('interrompiSotto').textContent = nomi.join(' – ');
+
+    const conferma = document.getElementById('interrompiConferma');
+    const chiPassa = document.getElementById('interrompiChiPassa');
+    chiPassa.innerHTML = '';
+    let esito;
+    if (p1 !== p2) {
+      esito = {{ _('Chiudi sul %(punteggio)s: vince %(nome)s', punteggio='{p}', nome='{n}')|tojson }}
+        .replace('{p}', punteggio).replace('{n}', p1 > p2 ? nomi[0] : nomi[1]);
+    } else if (card.getAttribute('data-pareggio-ammesso') === '1') {
+      esito = {{ _('Chiudi sul %(punteggio)s: pareggio', punteggio='{p}')|tojson }}.replace('{p}', punteggio);
+    } else {
+      esito = {{ _('È pari: scegli chi passa il turno')|tojson }};
+    }
+    document.getElementById('interrompiEsito').textContent = esito;
+    const serveScelta = p1 === p2 && card.getAttribute('data-pareggio-ammesso') !== '1';
+    conferma.hidden = serveScelta;
+    chiPassa.hidden = !serveScelta;
+    document.getElementById('interrompiConfermaTesto').textContent = {{ _('Interrompi partita')|tojson }};
+    conferma.onclick = function () { inviaAllaCard(url, conferma, new FormData()); };
+    if (serveScelta) {
+      [0, 1].forEach(function (i) {
+        const scelta = document.createElement('button');
+        scelta.type = 'button';
+        scelta.className = 'btn btn-primary w-100';
+        scelta.textContent = {{ _('Passa %(nome)s', nome='{n}')|tojson }}.replace('{n}', nomi[i]);
+        scelta.onclick = function () {
+          const dati = new FormData();
+          dati.append('chi_passa_id', ids[i]);
+          inviaAllaCard(url, scelta, dati);
+        };
+        chiPassa.appendChild(scelta);
+      });
+    }
+
+    // Prima dello scadere: il direttore è sovrano, ma il foglio lo avverte.
+    const timer = card.querySelector('[data-timer-inizio]');
+    const avviso = document.getElementById('interrompiMancano');
+    avviso.hidden = true;
+    if (timer) {
+      const fine = Date.parse(timer.getAttribute('data-timer-inizio')) +
+        parseInt(timer.getAttribute('data-timer-minuti'), 10) * 60000;
+      const minuti = Math.ceil((fine - Date.now()) / 60000);
+      if (minuti > 0) {
+        document.getElementById('interrompiMancanoTesto').textContent =
+          {{ _('Mancano %(n)s minuti allo scadere', n='{n}')|tojson }}.replace('{n}', minuti);
+        avviso.hidden = false;
+      }
+    } else {
+      document.getElementById('interrompiMancanoTesto').textContent =
+        {{ _('Il conto alla rovescia non è ancora partito')|tojson }};
+      avviso.hidden = false;
+    }
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('interrompiModal')).show();
   }
 
   // ---- Il punteggio dalla card (canvas 3C) ----------------------------------

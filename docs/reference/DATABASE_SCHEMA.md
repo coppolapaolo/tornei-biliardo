@@ -1,7 +1,7 @@
 # Database Schema Reference
 
 > **Auto-generated** from SQLAlchemy models.
-> Last updated: 2026-10-06 17:31 UTC
+> Last updated: 2026-10-06 18:07 UTC
 >
 > To regenerate: `python scripts/generate_schema_docs.py`
 
@@ -397,6 +397,7 @@
 | `is_multi_set` | BOOLEAN | YES |  |  |  |
 | `match_distance` | INTEGER | YES |  |  |  |
 | `is_race_to_sets` | BOOLEAN | YES |  |  |  |
+| `time_limit_minutes` | INTEGER | YES |  |  |  |
 | `best_of` | BOOLEAN | YES |  |  |  |
 | `notes` | TEXT | YES |  |  |  |
 | `created_at` | DATETIME | NO |  | func |  |
@@ -457,6 +458,7 @@
 | `categories_snapshot` | TEXT | YES |  |  |  |
 | `time_limit_minutes` | INTEGER | YES |  |  |  |
 | `timer_started_at` | DATETIME | YES |  |  |  |
+| `closed_on_time` | BOOLEAN | NO |  | False |  |
 | `player1_confirmed` | BOOLEAN | NO |  | False |  |
 | `player2_confirmed` | BOOLEAN | NO |  | False |  |
 | `player1_confirmed_at` | DATETIME | YES |  |  |  |

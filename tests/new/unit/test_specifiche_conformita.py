@@ -2083,3 +2083,98 @@ class TestIlLimiteDiTempo:
             db.session.commit()
             minuti[turno] = m.time_limit_minutes
         assert minuti == {2: 45, 3: None}
+
+
+@pytest.mark.unit
+class TestInterrompereAtempo:
+    """`SPECIFICHE.md` righe 273–278 (sezione «Limite di tempo»).
+
+    > chi è avanti **vince**; a parità è **pareggio** dove il pareggio è
+    > ammesso, cioè fuori dal tabellone [...] nel **tabellone** il pareggio
+    > non esiste: a parità il direttore indica chi passa il turno.
+
+    > un match che a tempo scaduto arriva comunque alla distanza si chiude
+    > come sempre, **senza** il segno.
+    """
+
+    def _partita(self, strategia, p1, p2, **kw):
+        from datetime import time
+
+        from models.base import db
+        from models.competition.models import Gara
+        from models.match.models import Match
+        from models.status_enum import GaraStatus, MatchStatus
+
+        gara = Gara(
+            number=1,
+            name=f"G {uuid.uuid4().hex[:6]}",
+            date=date(2026, 1, 1),
+            time=time(20, 0),
+            discipline="8_ball",
+            distance=3,
+            is_race_to=True,
+            rounds_count=3,
+            current_round=1,
+            min_participants=2,
+            matchmaking_strategy=strategia,
+            status=GaraStatus.PLAYING.value,
+            time_limit_minutes=30,
+        )
+        db.session.add(gara)
+        from models.user.models import User
+
+        giocatori = [
+            User(
+                username=f"sp{i}_{uuid.uuid4().hex[:6]}",
+                email=f"sp{i}_{uuid.uuid4().hex[:6]}@t.it",
+            )
+            for i in (1, 2)
+        ]
+        for giocatore in giocatori:
+            giocatore.set_password("pwd")
+        db.session.add_all(giocatori)
+        db.session.flush()
+        match = Match(
+            gara_id=gara.id,
+            round_number=1,
+            player1_id=giocatori[0].id,
+            player2_id=giocatori[1].id,
+            status=MatchStatus.PLAYING.value,
+            match_distance=3,
+            player1_score=p1,
+            player2_score=p2,
+            table_assignment="1",
+            **kw,
+        )
+        db.session.add(match)
+        db.session.commit()
+        return match
+
+    def test_chi_e_avanti_vince(self, db_session):
+        from models.match import chiusura
+
+        match = self._partita("round_robin", 2, 1)
+        esito = chiusura.esito(match)
+        assert esito.vincitore_id == match.player1_id
+        assert not esito.pareggio and not esito.serve_chi_passa
+
+    def test_pari_fuori_e_dentro_il_tabellone(self, db_session):
+        from models.match import chiusura
+
+        assert chiusura.esito(self._partita("round_robin", 1, 1)).pareggio
+        assert chiusura.esito(self._partita("amalfi", 1, 1)).pareggio
+        nel_tabellone = chiusura.esito(self._partita("direct_elimination", 1, 1))
+        assert nel_tabellone.serve_chi_passa and not nel_tabellone.pareggio
+
+    def test_alla_distanza_a_tempo_scaduto_nessun_segno(self, db_session):
+        from datetime import datetime
+
+        from models.base import db
+        from models.match.models import Match
+        from models.match.validation_service import MatchValidationService
+
+        match = self._partita(
+            "round_robin", 3, 1, timer_started_at=datetime(2000, 1, 1, 20, 0)
+        )
+        MatchValidationService.validate_and_complete(match.id)
+        assert db.session.get(Match, match.id).closed_on_time is False

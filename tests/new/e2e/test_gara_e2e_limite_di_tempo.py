@@ -94,3 +94,64 @@ class TestLimiteDiTempoSullaGaraSingola:
         assert "c7-timer" not in pagina
         risposta = driver.client.post(f"/player/match/{partita.id}/avvia")
         assert risposta.status_code == 422
+
+
+@pytest.mark.e2e
+class TestInterrompiSullaGaraSingola:
+    def test_il_direttore_interrompe_sul_pari_del_girone(self, driver: GaraDriver):
+        gara_id, direttore, per_id = _gara(
+            driver, time_limit_minutes=30, matchmaking_strategy="round_robin"
+        )
+        partita = driver.partite(gara_id, turno=1)[0]
+
+        driver.entra(direttore)
+        risposta = driver.client.post(
+            f"/admin/match/{partita.id}/punteggio",
+            data={"player1_score": "1", "player2_score": "1"},
+        )
+        assert risposta.status_code == 200, risposta.get_data(as_text=True)
+        assert "Interrompi partita" in driver.pagina_gara(gara_id)
+
+        risposta = driver.client.post(f"/admin/match/{partita.id}/interrompi")
+        assert risposta.status_code == 200, risposta.get_data(as_text=True)
+        chiusa = db.session.get(Match, partita.id)
+        assert chiusa.closed_on_time and chiusa.winner_id is None
+        assert (chiusa.player1_score, chiusa.player2_score) == (1, 1)
+        assert "a tempo" in driver.pagina_gara(gara_id)
+
+    def test_un_giocatore_non_interrompe(self, driver: GaraDriver):
+        gara_id, _, per_id = _gara(driver, time_limit_minutes=30)
+        partita = driver.partite(gara_id, turno=1)[0]
+        driver.entra(per_id[partita.player1_id])
+        risposta = driver.client.post(f"/admin/match/{partita.id}/interrompi")
+        assert risposta.status_code in (302, 403)
+        assert not db.session.get(Match, partita.id).closed_on_time
+
+    def test_nel_tabellone_il_pari_vuole_chi_passa(self, driver: GaraDriver):
+        direttore = driver.crea_utente(UserRole.DIRECTOR.value)
+        giocatori = driver.crea_giocatori(4)
+        driver.entra(direttore)
+        gara_id = driver.crea_gara(
+            min_participants=4,
+            max_participants=4,
+            start_rule="first_player",
+            matchmaking_strategy="direct_elimination",
+            time_limit_minutes=30,
+        )
+        driver.apri_iscrizioni(gara_id)
+        driver.iscrivi_tutti(gara_id, giocatori)
+        driver.entra(direttore)
+        driver.avvia_primo_turno(gara_id)
+        partita = driver.partite(gara_id, turno=1)[0]
+        driver.client.post(
+            f"/admin/match/{partita.id}/punteggio",
+            data={"player1_score": "1", "player2_score": "1"},
+        )
+        senza = driver.client.post(f"/admin/match/{partita.id}/interrompi")
+        assert senza.status_code == 422
+        con = driver.client.post(
+            f"/admin/match/{partita.id}/interrompi",
+            data={"chi_passa_id": str(partita.player2_id)},
+        )
+        assert con.status_code == 200, con.get_data(as_text=True)
+        assert db.session.get(Match, partita.id).winner_id == partita.player2_id

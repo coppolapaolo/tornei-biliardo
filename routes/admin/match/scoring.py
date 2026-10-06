@@ -212,6 +212,50 @@ def avvia_partita(match_id):
     )
 
 
+@match_bp.route("/<int:match_id>/interrompi", methods=["POST"])
+@login_required
+@match_manager_required
+def interrompi_partita(match_id):
+    """«Interrompi partita» dalla card del direttore (ADR-077), in JSON.
+
+    Chiude sul punteggio maturato; nel tabellone, a parità, `chi_passa_id`
+    dice chi passa il turno. Il resto lo decide `models/match/chiusura.py`.
+    """
+    from models.exceptions import http_status_for_exception
+    from models.match.services import MatchService
+
+    chi_passa = request.form.get("chi_passa_id", type=int)
+    try:
+        result = MatchService.interrompi_partita(
+            match_id, current_user, chi_passa_id=chi_passa
+        )
+    except ValueError as e:
+        return (
+            jsonify({"success": False, "error": str(e)}),
+            http_status_for_exception(e),
+        )
+    except Exception as e:
+        return safe_json_error(e, "admin match stop on time")
+
+    from routes.sse import emit_match_event
+
+    dati = {
+        "match_id": match_id,
+        "winner_id": result["winner_id"],
+        "player1_score": result["player1_score"],
+        "player2_score": result["player2_score"],
+        "closed_on_time": True,
+        "autore": current_user.id,
+    }
+    # Il segnapunti dei giocatori si ricarica (`result_confirmed` è fra i suoi
+    # eventi), la pagina della gara e lo schermo sala anche.
+    emit_match_event(match_id, "result_confirmed", dati)
+    if result["gara_id"]:
+        emit_gara_event(result["gara_id"], "match_completed", dati)
+    track_match_played()
+    return jsonify({"success": True, "match_completed": True})
+
+
 @match_bp.route("/<int:match_id>/forfeit", methods=["POST"])
 @login_required
 @match_manager_required

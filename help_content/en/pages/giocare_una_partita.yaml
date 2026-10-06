@@ -252,7 +252,9 @@ blocks:
     text: >-
       The clock turns into «Time is up» and keeps counting the extra minutes.
       The match stays open: you keep scoring, and if you reach the distance it
-      ends as always. The director decides whether to stop it.
+      ends as always. The director decides whether to stop it: if they do,
+      the score at that moment stands, and the match shows in the results
+      marked **on time**.
 
   - type: heading
     id: sbagli

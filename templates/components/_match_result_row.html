@@ -66,6 +66,13 @@
         <span style="color: var(--c7-ink-faint);">—</span>
         {% elif is_finished %}
         <span class="c7-num">{{ match.player1_score }}–{{ match.player2_score }}</span>
+        {# Interrotta dal direttore prima della distanza (ADR-077). #}
+        {% if match.closed_on_time %}
+        <span style="font-size: 11px; font-weight: 700; color: var(--c7-ink-muted); white-space: nowrap;"
+              title="{{ _('Interrotta dal direttore prima della distanza') }}">
+            <i class="fas fa-stopwatch" style="font-size: 9px;"></i> {{ _('a tempo') }}
+        </span>
+        {% endif %}
         {# Un risultato corretto dopo la chiusura lo dice qui, dove il
            punteggio si legge: chi aveva visto l'altro deve poter capire
            perché è cambiato, e i particolari stanno sulla pagina della

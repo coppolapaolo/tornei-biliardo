@@ -270,7 +270,14 @@ Il **conto alla rovescia** parte una volta sola:
 
 Il timer è **solo un riferimento visivo**, uguale per i due giocatori, per il direttore e sullo schermo in sala. **A tempo scaduto non succede niente da sé**: il match resta in corso, e per il direttore la sua card sale fra quelle da guardare. In questa versione il limite non si applica ai match a set, al trio e alla X.
 
-_Nota del 2026-10-06 (ADR-077): regola nuova, nata dalla gara settimanale «30 minuti per incontro, poi vale il punteggio maturato». Come il direttore chiude un match a tempo scaduto è una regola a parte, in arrivo._
+Il direttore può **interrompere** un match con il limite di tempo, anche prima dello scadere (l'app lo avverte di quanti minuti mancano). Il match si chiude sul punteggio di quel momento:
+- chi è avanti **vince**;
+- a parità è **pareggio** dove il pareggio è ammesso, cioè fuori dal tabellone (girone all'italiana, Amalfi, casuale);
+- nel **tabellone** il pareggio non esiste: a parità il direttore indica chi passa il turno.
+
+Il match interrotto porta il segno **«a tempo»** nei risultati. Il segno vuol dire solo «interrotto dal direttore prima della distanza»: un match che a tempo scaduto arriva comunque alla distanza si chiude come sempre, **senza** il segno. Un match interrotto si corregge come gli altri, con un punteggio che può restare sotto la distanza ma non superarla; corretto fino alla distanza perde il segno.
+
+_Nota del 2026-10-06 (ADR-077): regole nuove, nate dalla gara settimanale «30 minuti per incontro, poi vale il punteggio maturato»._
 
 ### Ciclo di vita dei Match
 

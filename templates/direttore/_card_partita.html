@@ -172,6 +172,8 @@
    visivo: la partita resta in corso finché qualcuno non la chiude. #}
 {% set _timer = match.timer_view if not finita else none %}
 {% set _scaduta = _timer and _timer.scaduto and stato == 'in_corso' and not mia %}
+{# «Interrompi partita» (ADR-077): solo chi dirige, a partita in gioco. #}
+{% set _interrompibile = _timer and stato == 'in_corso' and can_modify and forma == 'due' and not mia %}
 {# Chi si puo' ritirare da questa partita: il menu propone un comando per
    giocatore. Solo a partita aperta e non bloccata dal turno dopo; nel trio
    una volta sola (`TrioMatch.handle_forfeit`). #}
@@ -179,7 +181,9 @@
 {% set _ritirabile = can_modify and stato in ('da_giocare', 'in_corso') and not (_trio and match.trio_match and match.trio_match.forfeit_player_id) %}
 {% set _ritiri = [] %}
 {% if _ritirabile %}{% for l in lati %}{% set _ = _ritiri.append({'id': _ids[loop.index0], 'nome': l[1]}) %}{% endfor %}{% endif %}
-<article class="c7-card c7-partita c7-partita--{{ stato }} c7-partita--{{ forma }}{% if mia %} c7-card--accent c7-partita--mia{% elif stato == 'da_validare' %} c7-card--ok{% elif finita %} c7-card--locked{% elif _scaduta %} c7-card--warn{% endif %}"
+<article data-pareggio-ammesso="{{ '1' if match.allows_draw_on_stop else '0' }}"
+         data-p1-id="{{ match.player1_id }}" data-p2-id="{{ match.player2_id or '' }}"
+         class="c7-card c7-partita c7-partita--{{ stato }} c7-partita--{{ forma }}{% if mia %} c7-card--accent c7-partita--mia{% elif stato == 'da_validare' %} c7-card--ok{% elif finita %} c7-card--locked{% elif _scaduta %} c7-card--warn{% endif %}"
          {% if _timer and stato == 'in_corso' and not mia %}data-timer-card{% endif %}
          id="partita{{ match.id }}"
          data-match-id="{{ match.id }}" data-stato="{{ stato }}"
@@ -213,6 +217,7 @@
       {% elif _set %}
       <span class="c7-partita__forma">{{ _('Set %(num)s', num=_set.numero) if _set.in_corso else _('A set') }}</span>
       {% endif %}
+      {% if finita and match.closed_on_time %}<span class="c7-partita__forma">{{ _('a tempo') }}</span>{% endif %}
       {% if _timer %}
       {% import "components/_conto_alla_rovescia.html" as cr %}
       {{ cr.timer(match) }}
@@ -249,6 +254,7 @@
               data-can-modify="{{ '1' if can_modify else '0' }}"
               data-correggibile="{{ '1' if forma in ('due', 'trio', 'set') else '0' }}"
               {% if _trio %}data-trio-id="{{ _trio.trio_id }}"{% endif %}
+              {% if _interrompibile %}data-interrompi-url="{{ url_for('admin.match.interrompi_partita', match_id=match.id) }}"{% endif %}
               {% if _ritiri %}data-ritiro-url="{{ url_for('admin.competition.trio_forfeit', trio_id=_trio.trio_id) if _trio else url_for('admin.match.ritiro_partita', match_id=match.id) }}"
               data-ritiri='{{ _ritiri|tojson }}'{% endif %}
               data-detail-url="{{ url_for('admin.match.match_detail', match_id=match.id) }}">
@@ -305,6 +311,14 @@
 
   {# «Avvia partita» (ADR-077): il conto alla rovescia lo fa partire anche
      chi dirige, con qualunque regola di inizio. #}
+  {% if _scaduta and _interrompibile %}
+  {# Tempo scaduto: il comando che la card chiede sta sulla card. #}
+  <button type="button" class="btn btn-primary w-100" style="margin-top:12px"
+          data-interrompi-url="{{ url_for('admin.match.interrompi_partita', match_id=match.id) }}"
+          onclick="apriInterrompi(this)">
+    <i class="fas fa-stopwatch"></i> {{ _('Interrompi partita') }}
+  </button>
+  {% endif %}
   {% if _timer and not _timer.inizio and con_stepper and stato == 'in_corso' %}
   <button type="button" class="btn btn-secondary w-100" style="margin-top:12px"
           onclick="avviaDallaCard({{ match.id }}, this)">

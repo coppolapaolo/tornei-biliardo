@@ -370,6 +370,7 @@ ENDPOINT_ROLES: dict[str, set[Role]] = {
     "admin.match.set_match_result_direct": {"director"},
     "admin.match.punteggio_partita": {"director"},
     "admin.match.avvia_partita": {"director"},
+    "admin.match.interrompi_partita": {"director"},
     # Il ritiro deciso dal direttore, dal menu della partita.
     "admin.match.ritiro_partita": {"director"},
     "admin.match.validate_match": {"director"},

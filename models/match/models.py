@@ -204,6 +204,13 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
     #: (`models/match/tempo.py`). È un fatto, non una regola: lo scadere è
     #: solo visivo e non chiude niente.
     timer_started_at = db.Column(db.DateTime, nullable=True)
+    #: Interrotta dal direttore prima della distanza («a tempo» nei
+    #: risultati). La scrive solo «Interrompi partita»
+    #: (`MatchService.interrompi_partita`): una partita arrivata alla distanza
+    #: a tempo scaduto resta False. Vedi `models/match/chiusura.py`.
+    closed_on_time = db.Column(
+        db.Boolean, nullable=False, default=False, server_default="0"
+    )
 
     # Validazione finale del risultato (nuova UX semplificata)
     player1_confirmed = db.Column(db.Boolean, default=False, nullable=False)
@@ -331,6 +338,13 @@ class Match(db.Model, TimestampMixin, BaseMatchMixin):
         from models.match import tempo
 
         return tempo.scadenza(self)
+
+    @property
+    def allows_draw_on_stop(self) -> bool:
+        """Interrotta a tempo sul pari, finisce pari (`chiusura.pareggio_ammesso`)."""
+        from models.match.chiusura import pareggio_ammesso
+
+        return pareggio_ammesso(self)
 
     @property
     def timer_view(self):

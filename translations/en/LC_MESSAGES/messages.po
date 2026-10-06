@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-06 19:54+0200\n"
+"POT-Creation-Date: 2026-10-06 20:02+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -133,11 +133,11 @@ msgstr[1] "%(num)s competitions"
 #: models/campionato/showcase_view.py:126
 #: templates/components/_campionato_gare.html:27
 #: templates/components/_match_card.html:28
-#: templates/components/_match_result_row.html:106
-#: templates/components/_match_result_row.html:108
+#: templates/components/_match_result_row.html:113
+#: templates/components/_match_result_row.html:115
 #: templates/components/_match_scoreboard.html:257
 #: templates/components/_tessera_gara.html:31
-#: templates/direttore/_card_partita.html:209
+#: templates/direttore/_card_partita.html:213
 msgid "Conclusa"
 msgstr "Finished"
 
@@ -152,15 +152,15 @@ msgstr "Winner: %(nome)s"
 #: templates/components/_gara_matches.html:49
 #: templates/components/_match_card.html:26
 #: templates/components/_match_cards_mobile.html:44
-#: templates/components/_match_result_row.html:100
-#: templates/components/_match_result_row.html:102
+#: templates/components/_match_result_row.html:107
+#: templates/components/_match_result_row.html:109
 #: templates/components/_match_scoreboard.html:261
 #: templates/components/_match_status_labels.html:23
 #: templates/components/_multi_set_score_display.html:90
 #: templates/components/_round_navigation.html:26
 #: templates/components/_sfide_in_corso.html:64
 #: templates/components/_tessera_gara.html:35
-#: templates/direttore/_card_partita.html:208
+#: templates/direttore/_card_partita.html:212
 #: templates/direttore/_menu_turno.html:24 templates/direttore/_partite.html:83
 #: templates/individual_match/dashboard.html:115
 #: templates/individual_match/matches.html:54
@@ -192,10 +192,10 @@ msgstr "%(n)s registered"
 #: models/campionato/showcase_view.py:146
 #: templates/components/_bye_challenges.html:32
 #: templates/components/_match_card.html:24
-#: templates/components/_match_result_row.html:94
-#: templates/components/_match_result_row.html:96
+#: templates/components/_match_result_row.html:101
+#: templates/components/_match_result_row.html:103
 #: templates/components/_match_status_labels.html:22
-#: templates/direttore/_card_partita.html:210
+#: templates/direttore/_card_partita.html:214
 #: templates/direttore/_partite.html:85
 #: templates/individual_match/dashboard.html:103
 #: templates/individual_match/matches.html:53
@@ -1104,7 +1104,7 @@ msgstr "Competition cancelled"
 
 #: models/competition/showcase_view.py:200
 #: models/competition/showcase_view.py:206
-#: templates/direttore/_card_partita.html:288
+#: templates/direttore/_card_partita.html:294
 #: templates/public/regolamento_gara.html:20
 #, python-format
 msgid "al %(n)s"
@@ -2493,8 +2493,8 @@ msgstr "The match has reached the distance: no more racks can be scored."
 
 #: models/individual_match/individual_rack_service.py:200
 #: models/individual_match/individual_rack_service.py:211
-#: models/match/match_service.py:504 models/match/scoring_service.py:171
-#: models/match/scoring_service.py:189
+#: models/match/match_service.py:504 models/match/match_service.py:555
+#: models/match/scoring_service.py:171 models/match/scoring_service.py:189
 msgid "Partita non trovata."
 msgstr "Match not found."
 
@@ -3007,10 +3007,26 @@ msgstr "Two racks each, then it switches."
 msgid "Apre chi ha perso il triangolo prima."
 msgstr "The loser of the previous rack breaks."
 
+#: models/match/chiusura.py:68 models/match/match_service.py:515
+msgid "La partita è già chiusa."
+msgstr "The match is already closed."
+
+#: models/match/chiusura.py:70
+msgid "Le partite a set, a tre e la X non si interrompono a tempo."
+msgstr "Set matches, three-player matches and the X are not stopped on time."
+
+#: models/match/chiusura.py:72 models/match/match_service.py:517
+msgid "Questa partita non ha un limite di tempo."
+msgstr "This match has no time limit."
+
+#: models/match/chiusura.py:74 models/match/match_service.py:520
+msgid "La partita non è ancora cominciata: aspetta il tavolo."
+msgstr "The match has not started yet: wait for the table."
+
 #: models/match/correction_service.py:74
 #: models/match/trio_scoring_service.py:357 models/tpa/services.py:165
 #: routes/admin/competition/matches.py:198 routes/admin/match/scoring.py:125
-#: routes/admin/match/scoring.py:153 routes/admin/match/scoring.py:240
+#: routes/admin/match/scoring.py:153 routes/admin/match/scoring.py:284
 msgid "Partita non trovata"
 msgstr "Match not found"
 
@@ -3022,36 +3038,40 @@ msgstr "A walkover has no result to correct"
 msgid "Questa partita non appartiene a una gara"
 msgstr "This match does not belong to a competition"
 
-#: models/match/correction_service.py:199
+#: models/match/correction_service.py:170
+msgid "È pari: nel tabellone qualcuno deve passare."
+msgstr "It is a tie: in the bracket someone has to go through."
+
+#: models/match/correction_service.py:215
 msgid "Nel trio servono i triangoli di tutti e tre i giocatori"
 msgstr "A trio needs the racks of all three players"
 
-#: models/match/correction_service.py:294
+#: models/match/correction_service.py:310
 msgid "Nella partita a set servono i punteggi dei set"
 msgstr "A match played in sets needs the score of each set"
 
-#: models/match/correction_service.py:387
+#: models/match/correction_service.py:403
 msgid "Serve almeno un set"
 msgstr "At least one set is needed"
 
-#: models/match/correction_service.py:393
-#: models/match/correction_service.py:456
-#: models/match/correction_service.py:495
+#: models/match/correction_service.py:409
+#: models/match/correction_service.py:472
+#: models/match/correction_service.py:511
 msgid "I triangoli non possono essere negativi"
 msgstr "Racks cannot be negative"
 
-#: models/match/correction_service.py:398
-#: templates/direttore/_scripts.html:1584
+#: models/match/correction_service.py:414
+#: templates/direttore/_scripts.html:1663
 #, python-format
 msgid "La partita è decisa al set %(num)s: i set dopo non si giocano"
 msgstr "The match is decided at set %(num)s: the sets after it are not played"
 
-#: models/match/correction_service.py:409
+#: models/match/correction_service.py:425
 #, python-format
 msgid "Il set %(num)s non è finito: si gioca al %(n)s"
 msgstr "Set %(num)s is not finished: it is a race to %(n)s"
 
-#: models/match/correction_service.py:419
+#: models/match/correction_service.py:435
 #, python-format
 msgid ""
 "Il set %(num)s non è finito: si giocano esattamente %(n)s triangoli, e "
@@ -3060,47 +3080,59 @@ msgstr ""
 "Set %(num)s is not finished: exactly %(n)s racks are played, and one "
 "player must win more"
 
-#: models/match/correction_service.py:435
-#: templates/direttore/_scripts.html:1597
+#: models/match/correction_service.py:451
+#: templates/direttore/_scripts.html:1676
 #, python-format
 msgid "Nessuno arriva a %(n)s set: la partita non è finita"
 msgstr "Nobody reaches %(n)s sets: the match is not finished"
 
-#: models/match/correction_service.py:441
-#: templates/direttore/_scripts.html:1481
-#: templates/direttore/_scripts.html:1600
+#: models/match/correction_service.py:457
+#: templates/direttore/_scripts.html:1560
+#: templates/direttore/_scripts.html:1679
 #, python-format
 msgid "Si giocano esattamente %(n)s set"
 msgstr "Exactly %(n)s sets are played"
 
-#: models/match/correction_service.py:462
-#: templates/direttore/_scripts.html:1463
+#: models/match/correction_service.py:478
+#: templates/direttore/_scripts.html:1542
 #, python-format
 msgid ""
 "Nel trio si giocano %(n)s triangoli: la somma dei tre punteggi deve fare "
 "%(n)s"
 msgstr "A trio plays %(n)s racks: the three scores must add up to %(n)s"
 
-#: models/match/correction_service.py:473
+#: models/match/correction_service.py:489
 #: models/match/trio_scoring_service.py:371
 #, python-format
 msgid "Nel trio ognuno gioca %(n)s triangoli: non se ne vincono di più."
 msgstr "In a trio each player plays %(n)s racks: nobody can win more."
 
-#: models/match/correction_service.py:482
+#: models/match/correction_service.py:498
 msgid "Questo punteggio non torna con l'ordine del girone."
 msgstr "This score does not fit the order of the round robin."
 
-#: models/match/correction_service.py:505
+#: models/match/correction_service.py:524
+#, python-format
+msgid ""
+"Interrotta a tempo: nessuno può superare %(n)s triangoli, e uno solo può "
+"arrivarci"
+msgstr "Stopped on time: nobody can go past %(n)s racks, and only one can reach it"
+
+#: models/match/correction_service.py:534
+#, python-format
+msgid "Interrotta a tempo: si giocano al massimo %(n)s triangoli"
+msgstr "Stopped on time: at most %(n)s racks are played"
+
+#: models/match/correction_service.py:548
 #, python-format
 msgid "In una partita al %(n)s la vince chi arriva a %(n)s triangoli"
 msgstr "In a race to %(n)s, it is won by whoever reaches %(n)s racks"
 
-#: models/match/correction_service.py:513
+#: models/match/correction_service.py:556
 msgid "Non possono arrivarci tutti e due: uno solo vince"
 msgstr "They cannot both get there: only one wins"
 
-#: models/match/correction_service.py:523
+#: models/match/correction_service.py:566
 #, python-format
 msgid ""
 "Si giocano esattamente %(n)s triangoli: la somma dei due punteggi deve "
@@ -3141,33 +3173,29 @@ msgstr "each set exactly %(n)s racks"
 msgid "Possono avviarla i due giocatori o chi dirige la gara."
 msgstr "It can be started by the two players or by whoever runs the competition."
 
-#: models/match/match_service.py:515
-msgid "La partita è già chiusa."
-msgstr "The match is already closed."
+#: models/match/match_service.py:561
+msgid "Interrompe la partita solo chi dirige la gara."
+msgstr "Only whoever runs the competition can stop the match."
 
-#: models/match/match_service.py:517
-msgid "Questa partita non ha un limite di tempo."
-msgstr "This match has no time limit."
+#: models/match/match_service.py:571
+msgid "È pari: scegli chi passa il turno."
+msgstr "It is a tie: choose who goes through."
 
-#: models/match/match_service.py:520
-msgid "La partita non è ancora cominciata: aspetta il tavolo."
-msgstr "The match has not started yet: wait for the table."
-
-#: models/match/match_service.py:745 routes/admin/match/multi_set.py:204
+#: models/match/match_service.py:796 routes/admin/match/multi_set.py:204
 msgid "Questa non è una partita a set."
 msgstr "This is not a set match."
 
-#: models/match/match_service.py:748
+#: models/match/match_service.py:799
 msgid "Il set non è in corso: inizia il prossimo."
 msgstr "The set is not in progress: start the next one."
 
-#: models/match/match_service.py:752 routes/admin/competition/matches.py:207
+#: models/match/match_service.py:803 routes/admin/competition/matches.py:207
 #: routes/admin/match/multi_set.py:211 routes/admin/match/scoring.py:117
-#: routes/admin/match/scoring.py:433
+#: routes/admin/match/scoring.py:477
 msgid "Punteggio non valido."
 msgstr "Invalid score."
 
-#: models/match/match_service.py:760
+#: models/match/match_service.py:811
 #, python-format
 msgid "Il set si gioca al %(n)s: il punteggio va oltre."
 msgstr "The set is a race to %(n)s: this score goes beyond it."
@@ -6119,23 +6147,23 @@ msgstr "This match is scored from its own scoreboard."
 msgid "La partita è chiusa: si cambia con «Correggi il risultato»."
 msgstr "The match is closed: change it with «Correct the result»."
 
-#: routes/admin/match/scoring.py:243
+#: routes/admin/match/scoring.py:287
 msgid "La X a tavolino non ha un avversario: non c'è ritiro da registrare."
 msgstr "An X by walkover has no opponent: there is no withdrawal to record."
 
-#: routes/admin/match/scoring.py:247
+#: routes/admin/match/scoring.py:291
 msgid "Il ritiro nella partita a tre si registra dal trio."
 msgstr "A withdrawal in a three-player match is recorded from the trio."
 
-#: routes/admin/match/scoring.py:251
+#: routes/admin/match/scoring.py:295
 msgid "Scegli uno dei due giocatori della partita."
 msgstr "Choose one of the two players in the match."
 
-#: routes/admin/match/scoring.py:254
+#: routes/admin/match/scoring.py:298
 msgid "La partita è chiusa: il ritiro non si registra più."
 msgstr "The match is closed: the withdrawal can no longer be recorded."
 
-#: routes/admin/match/scoring.py:462
+#: routes/admin/match/scoring.py:506
 msgid "Risultato corretto. La correzione resta visibile sulla partita."
 msgstr "Result corrected. The correction stays visible on the match."
 
@@ -6762,7 +6790,7 @@ msgstr "Thanks: your entry is confirmed."
 #: templates/components/_match_card.html:120
 #: templates/components/_match_header.html:60
 #: templates/components/_match_result_row.html:56
-#: templates/components/_match_result_row.html:130
+#: templates/components/_match_result_row.html:137
 #: templates/components/_match_scoreboard.html:155
 #: templates/components/_multi_set_score_display.html:14
 #: templates/components/_unified_match_score.html:23
@@ -7570,7 +7598,7 @@ msgstr "No account yet?"
 msgid "Partita"
 msgstr "Match"
 
-#: templates/direttore/_card_partita.html:311 templates/match_detail.html:60
+#: templates/direttore/_card_partita.html:325 templates/match_detail.html:60
 #: templates/match_detail.html:65
 msgid "Avvia partita"
 msgstr "Start match"
@@ -12325,13 +12353,13 @@ msgstr "Remove the stretch"
 #: templates/components/_match_card.html:61
 #: templates/components/_match_card.html:71
 #: templates/components/_match_header.html:80
-#: templates/components/_match_result_row.html:121
-#: templates/components/_match_result_row.html:146
+#: templates/components/_match_result_row.html:128
+#: templates/components/_match_result_row.html:153
 #: templates/components/_tessera_gara.html:187
-#: templates/direttore/_card_partita.html:202
-#: templates/direttore/_card_partita.html:224
-#: templates/direttore/_card_partita.html:231
-#: templates/direttore/_card_partita.html:234
+#: templates/direttore/_card_partita.html:206
+#: templates/direttore/_card_partita.html:229
+#: templates/direttore/_card_partita.html:236
+#: templates/direttore/_card_partita.html:239
 #: templates/direttore/_fase_gioco.html:243
 #: templates/direttore/_partite.html:31 templates/direttore/_partite.html:62
 #: templates/direttore/_scripts.html:84 templates/public/schermo_sala.html:110
@@ -15212,7 +15240,7 @@ msgstr "Removes %(username)s from the waiting list"
 #: templates/components/_match_cards_mobile.html:64
 #: templates/components/_tabellone_macros.html:25
 #: templates/direttore/_card_partita.html:106
-#: templates/direttore/_card_partita.html:202
+#: templates/direttore/_card_partita.html:206
 #: templates/direttore/_fase_preparazione.html:95
 #: templates/direttore/_partite.html:31 templates/direttore/_partite.html:79
 #: templates/direttore/preparazione/_turni.html:46
@@ -15257,7 +15285,7 @@ msgstr "Completed"
 
 #: templates/components/_gara_my_match.html:13
 #: templates/components/_tessera_gara.html:184
-#: templates/direttore/_card_partita.html:206
+#: templates/direttore/_card_partita.html:210
 msgid "La tua partita"
 msgstr "Your match"
 
@@ -15703,7 +15731,7 @@ msgid "Apri la sfida"
 msgstr "Open the match"
 
 #: templates/components/_history_matches_tab.html:107
-#: templates/components/_match_result_row.html:170
+#: templates/components/_match_result_row.html:177
 #: templates/components/_player_recent_matches.html:68
 #: templates/individual_match/dashboard.html:131
 #: templates/individual_match/matches.html:159
@@ -15773,14 +15801,14 @@ msgstr "Score the racks from your phone, the standings update on their own."
 #: templates/components/_match_admin_controls.html:15
 #: templates/direttore/_modali_gioco.html:15
 #: templates/direttore/_modali_gioco.html:179
-#: templates/direttore/_scripts.html:1541
+#: templates/direttore/_scripts.html:1620
 msgid "Un triangolo in meno"
 msgstr "One rack less"
 
 #: templates/components/_match_admin_controls.html:21
 #: templates/direttore/_modali_gioco.html:20
 #: templates/direttore/_modali_gioco.html:181
-#: templates/direttore/_scripts.html:1540
+#: templates/direttore/_scripts.html:1619
 msgid "Un triangolo in più"
 msgstr "One rack more"
 
@@ -15864,9 +15892,9 @@ msgstr ""
 #: templates/components/_match_admin_controls.html:175
 #: templates/components/_match_admin_controls.html:178
 #: templates/components/_match_admin_controls.html:181
-#: templates/direttore/_card_partita.html:214
-#: templates/direttore/_card_partita.html:287
-#: templates/direttore/_scripts.html:1502
+#: templates/direttore/_card_partita.html:218
+#: templates/direttore/_card_partita.html:293
+#: templates/direttore/_scripts.html:1581
 #, python-format
 msgid "Set %(num)s"
 msgstr "Set %(num)s"
@@ -15974,13 +16002,13 @@ msgid "%(player)s passa al turno successivo senza giocare."
 msgstr "%(player)s moves on to the next round without playing."
 
 #: templates/components/_match_card.html:57
-#: templates/direttore/_card_partita.html:237
+#: templates/direttore/_card_partita.html:242
 msgid "Assegna tavolo"
 msgstr "Assign table"
 
 #: templates/components/_match_card.html:68
 #: templates/direttore/_card_partita.html:103
-#: templates/direttore/_card_partita.html:243
+#: templates/direttore/_card_partita.html:248
 msgid "Menu della partita"
 msgstr "Match menu"
 
@@ -16024,7 +16052,7 @@ msgid ""
 msgstr "The player has not recorded the drill yet. You can do it for them."
 
 #: templates/components/_match_card.html:190
-#: templates/components/_match_result_row.html:198
+#: templates/components/_match_result_row.html:205
 msgid "Bloccato"
 msgstr "Locked"
 
@@ -16129,8 +16157,18 @@ msgstr "no table"
 msgid "Informazioni partita"
 msgstr "Match information"
 
-#: templates/components/_match_result_row.html:76
-#: templates/direttore/_card_partita.html:352
+#: templates/components/_match_result_row.html:72
+msgid "Interrotta dal direttore prima della distanza"
+msgstr "Stopped by the director before the distance"
+
+#: templates/components/_match_result_row.html:73
+#: templates/components/_unified_match_score.html:114
+#: templates/direttore/_card_partita.html:220
+msgid "a tempo"
+msgstr "on time"
+
+#: templates/components/_match_result_row.html:83
+#: templates/direttore/_card_partita.html:366
 msgid ""
 "Il risultato è stato corretto dopo la chiusura: apri la partita per "
 "vedere da cosa a cosa"
@@ -16138,26 +16176,26 @@ msgstr ""
 "The result was corrected after the match was closed: open the match to "
 "see what it was and what it is now"
 
-#: templates/components/_match_result_row.html:77
-#: templates/direttore/_card_partita.html:353
+#: templates/components/_match_result_row.html:84
+#: templates/direttore/_card_partita.html:367
 #: templates/direttore/_partite.html:50
 msgid "corretto"
 msgstr "corrected"
 
-#: templates/components/_match_result_row.html:91
+#: templates/components/_match_result_row.html:98
 msgid "A tavolino"
 msgstr "Walkover"
 
-#: templates/components/_match_result_row.html:135
+#: templates/components/_match_result_row.html:142
 #, python-format
 msgid "Tavolo %(id)s"
 msgstr "Table %(id)s"
 
-#: templates/components/_match_result_row.html:140
+#: templates/components/_match_result_row.html:147
 msgid "Assegna"
 msgstr "Assign"
 
-#: templates/components/_match_result_row.html:148
+#: templates/components/_match_result_row.html:155
 #: templates/components/_multi_set_score_display.html:94
 #: templates/components/_playoff_invitations.html:23
 #: templates/components/_proposal_labels.html:18
@@ -16168,22 +16206,22 @@ msgstr "Assign"
 msgid "In attesa"
 msgstr "Pending"
 
-#: templates/components/_match_result_row.html:159
-#: templates/components/_match_result_row.html:164
+#: templates/components/_match_result_row.html:166
+#: templates/components/_match_result_row.html:171
 msgid "Risultato rapido"
 msgstr "Quick result"
 
-#: templates/components/_match_result_row.html:177
-#: templates/direttore/_card_partita.html:321
+#: templates/components/_match_result_row.html:184
+#: templates/direttore/_card_partita.html:335
 msgid "Valida il risultato"
 msgstr "Validate the result"
 
-#: templates/components/_match_result_row.html:188
-#: templates/components/_match_result_row.html:192
+#: templates/components/_match_result_row.html:195
+#: templates/components/_match_result_row.html:199
 msgid "Azzera il risultato"
 msgstr "Reset the result"
 
-#: templates/components/_match_result_row.html:200
+#: templates/components/_match_result_row.html:207
 #: templates/direttore/_scripts.html:1133
 msgid "Assegna un tavolo"
 msgstr "Assign a table"
@@ -16198,7 +16236,7 @@ msgid "spacca"
 msgstr "breaking"
 
 #: templates/components/_match_scoreboard.html:127
-#: templates/direttore/_card_partita.html:265 templates/exam/compose.html:110
+#: templates/direttore/_card_partita.html:271 templates/exam/compose.html:110
 #: templates/exam/request_detail.html:24
 msgid "tu"
 msgstr "you"
@@ -16334,7 +16372,7 @@ msgstr "Exactly"
 
 #: templates/components/_multi_set_score_display.html:40
 #: templates/components/_multi_set_score_display.html:50
-#: templates/direttore/_card_partita.html:275
+#: templates/direttore/_card_partita.html:281
 msgid "set vinti"
 msgstr "sets won"
 
@@ -18238,7 +18276,7 @@ msgstr "%(n)s sets played"
 msgid "%(n)s triangoli giocati"
 msgstr "%(n)s racks played"
 
-#: templates/components/_unified_match_score.html:127
+#: templates/components/_unified_match_score.html:131
 msgid "ha vinto"
 msgstr "won"
 
@@ -18715,52 +18753,59 @@ msgid ""
 "suo."
 msgstr "The player has not recorded the drill yet: you can do it for them."
 
-#: templates/direttore/_card_partita.html:207
+#: templates/direttore/_card_partita.html:211
 msgid "Da validare"
 msgstr "To validate"
 
-#: templates/direttore/_card_partita.html:212
+#: templates/direttore/_card_partita.html:216
 msgid "Trio · un girone"
 msgstr "Trio · one group"
 
-#: templates/direttore/_card_partita.html:212
+#: templates/direttore/_card_partita.html:216
 #, python-format
 msgid "Trio · %(num)s gironi"
 msgstr "Trio · %(num)s groups"
 
-#: templates/direttore/_card_partita.html:214
+#: templates/direttore/_card_partita.html:218
 msgid "A set"
 msgstr "Sets"
 
-#: templates/direttore/_card_partita.html:226 templates/exam/session.html:256
+#: templates/direttore/_card_partita.html:231 templates/exam/session.html:256
 msgid "Correggi"
 msgstr "Correct"
 
-#: templates/direttore/_card_partita.html:230
+#: templates/direttore/_card_partita.html:235
 #: templates/direttore/_scripts.html:1132
 msgid "Cambia tavolo"
 msgstr "Change table"
 
-#: templates/direttore/_card_partita.html:266
+#: templates/direttore/_card_partita.html:272
 msgid "Ha vinto"
 msgstr "Won"
 
-#: templates/direttore/_card_partita.html:288
-#: templates/direttore/_card_partita.html:345
+#: templates/direttore/_card_partita.html:294
+#: templates/direttore/_card_partita.html:359
 #, python-format
 msgid "esattamente %(n)s triangoli"
 msgstr "exactly %(n)s racks"
 
-#: templates/direttore/_card_partita.html:301
+#: templates/direttore/_card_partita.html:307
 #, python-format
 msgid "Inizia il set %(num)s"
 msgstr "Start set %(num)s"
 
-#: templates/direttore/_card_partita.html:316
+#: templates/direttore/_card_partita.html:319
+#: templates/direttore/_menu_partita.html:29
+#: templates/direttore/_menu_partita.html:105
+#: templates/direttore/_scripts.html:1278
+msgid "Interrompi partita"
+msgstr "Stop match"
+
+#: templates/direttore/_card_partita.html:330
 msgid "Vai al segnapunti"
 msgstr "Go to the scoreboard"
 
-#: templates/direttore/_card_partita.html:325
+#: templates/direttore/_card_partita.html:339
 msgid ""
 "Giocati tutti i triangoli dal segnapunti dei giocatori, senza le tre "
 "conferme. Se il punteggio non è quello, correggilo con − e + prima di "
@@ -18770,11 +18815,11 @@ msgstr ""
 "confirmations. If the score is not right, fix it with − and + before "
 "validating."
 
-#: templates/direttore/_card_partita.html:326
+#: templates/direttore/_card_partita.html:340
 msgid "Così è un pareggio: nessuno vince la partita."
 msgstr "This is a draw: nobody wins the match."
 
-#: templates/direttore/_card_partita.html:328
+#: templates/direttore/_card_partita.html:342
 #, python-format
 msgid ""
 "Chiusa dal segnapunti dei giocatori senza la doppia conferma. Se il "
@@ -18785,46 +18830,46 @@ msgstr ""
 "score is not right, fix it with − and + before validating: at %(n)s the +"
 " switches off, that is the round’s distance."
 
-#: templates/direttore/_card_partita.html:331
+#: templates/direttore/_card_partita.html:345
 #, python-format
 msgid "Validare la completa: il tavolo %(t)s passa a %(p1)s – %(p2)s."
 msgstr "Validating completes it: table %(t)s goes to %(p1)s – %(p2)s."
 
-#: templates/direttore/_card_partita.html:333
+#: templates/direttore/_card_partita.html:347
 msgid "Validare la completa e libera il tavolo."
 msgstr "Validating completes it and frees the table."
 
-#: templates/direttore/_card_partita.html:339
+#: templates/direttore/_card_partita.html:353
 #, python-format
 msgid "%(n)s triangoli, ognuno ne gioca %(m)s"
 msgstr "%(n)s racks, each player plays %(m)s"
 
-#: templates/direttore/_card_partita.html:340
+#: templates/direttore/_card_partita.html:354
 msgid "l'ordine del girone decide quali + sono accesi"
 msgstr "the group order decides which + are on"
 
-#: templates/direttore/_card_partita.html:342
+#: templates/direttore/_card_partita.html:356
 #, python-format
 msgid "si vince a %(n)s set"
 msgstr "race to %(n)s sets"
 
-#: templates/direttore/_card_partita.html:342
+#: templates/direttore/_card_partita.html:356
 #, python-format
 msgid "esattamente %(n)s set"
 msgstr "exactly %(n)s sets"
 
-#: templates/direttore/_card_partita.html:344
+#: templates/direttore/_card_partita.html:358
 #, python-format
 msgid "si vince a %(n)s"
 msgstr "race to %(n)s"
 
-#: templates/direttore/_card_partita.html:344
-#: templates/direttore/_card_partita.html:345
+#: templates/direttore/_card_partita.html:358
+#: templates/direttore/_card_partita.html:359
 msgid "alla distanza la partita si chiude e il tavolo si libera"
 msgstr "at the distance the match closes and the table frees up"
 
-#: templates/direttore/_card_partita.html:357
-#: templates/direttore/_menu_partita.html:40
+#: templates/direttore/_card_partita.html:371
+#: templates/direttore/_menu_partita.html:43
 msgid "Il turno dopo è già avviato: questa partita non si tocca più."
 msgstr "The next round has already started: this match can no longer be touched."
 
@@ -19744,55 +19789,55 @@ msgstr "Preparation steps"
 msgid "%(i)s di %(n)s"
 msgstr "%(i)s of %(n)s"
 
-#: templates/direttore/_menu_partita.html:29
+#: templates/direttore/_menu_partita.html:32
 msgid "Azzera la partita"
 msgstr "Reset the match"
 
-#: templates/direttore/_menu_partita.html:33
+#: templates/direttore/_menu_partita.html:36
 msgid "Azzera la prova"
 msgstr "Reset the drill"
 
-#: templates/direttore/_menu_partita.html:37
+#: templates/direttore/_menu_partita.html:40
 msgid "Apri il segnapunti"
 msgstr "Open the scoreboard"
 
-#: templates/direttore/_menu_partita.html:59
+#: templates/direttore/_menu_partita.html:62
 msgid "Ritiro"
 msgstr "Withdrawal"
 
-#: templates/direttore/_menu_partita.html:68
+#: templates/direttore/_menu_partita.html:71
 msgid "la partita si chiude a tavolino; chi si ritira tiene i triangoli già vinti"
 msgstr ""
 "the match closes by walkover; whoever withdraws keeps the racks already "
 "won"
 
-#: templates/direttore/_menu_partita.html:72
+#: templates/direttore/_menu_partita.html:75
 msgid "I triangoli che gli restano vanno agli avversari"
 msgstr "The racks they still had go to the opponents"
 
-#: templates/direttore/_menu_partita.html:72
+#: templates/direttore/_menu_partita.html:75
 msgid "poi la partita a tre aspetta la conferma del risultato"
 msgstr "then the three-player match waits for the result to be confirmed"
 
-#: templates/direttore/_menu_partita.html:74
+#: templates/direttore/_menu_partita.html:77
 msgid "Le sue altre partite aperte"
 msgstr "Their other open matches"
 
-#: templates/direttore/_menu_partita.html:74
+#: templates/direttore/_menu_partita.html:77
 msgid "si chiudono a tavolino anche quelle"
 msgstr "close by walkover too"
 
-#: templates/direttore/_menu_partita.html:76
+#: templates/direttore/_menu_partita.html:79
 #: templates/direttore/_ritiro_iscritto.html:24
 msgid "Riceve una notifica"
 msgstr "They get a notification"
 
-#: templates/direttore/_menu_partita.html:76
+#: templates/direttore/_menu_partita.html:79
 #: templates/direttore/_ritiro_iscritto.html:24
 msgid "gli dice chi l’ha ritirato e cosa comporta la regola della gara"
 msgstr "it says who withdrew them and what the withdrawal rule means"
 
-#: templates/direttore/_menu_partita.html:79
+#: templates/direttore/_menu_partita.html:82
 msgid ""
 "Lo decide la regola della gara sui ritiri. Azzerare la partita non lo "
 "rimette in gara."
@@ -19800,7 +19845,7 @@ msgstr ""
 "The competition's withdrawal rule decides this. Resetting the match does "
 "not bring them back."
 
-#: templates/direttore/_menu_partita.html:80
+#: templates/direttore/_menu_partita.html:83
 msgid ""
 "Lo decide la regola della gara sui ritiri. Azzerando questa partita torna"
 " in gara; le altre partite chiuse a tavolino restano chiuse."
@@ -19808,14 +19853,22 @@ msgstr ""
 "The competition's withdrawal rule decides this. Resetting this match "
 "brings them back; the other matches closed by walkover stay closed."
 
-#: templates/direttore/_menu_partita.html:82
+#: templates/direttore/_menu_partita.html:85
 msgid "Lo decide la regola della gara sui ritiri, come in una partita a due."
 msgstr "The competition's withdrawal rule decides this, as in a two-player match."
 
-#: templates/direttore/_menu_partita.html:84
+#: templates/direttore/_menu_partita.html:87
 #: templates/direttore/_ritiro_iscritto.html:28
 msgid "Registra il ritiro"
 msgstr "Record the withdrawal"
+
+#: templates/direttore/_menu_partita.html:118
+msgid "la partita si chiude sul punteggio di adesso, con il segno «a tempo»"
+msgstr "the match ends on the current score, marked «on time»"
+
+#: templates/direttore/_menu_partita.html:122
+msgid "Si corregge come le altre partite, anche sotto la distanza."
+msgstr "It can be corrected like any other match, even below the distance."
 
 #: templates/direttore/_menu_turno.html:24
 #, python-format
@@ -20304,7 +20357,7 @@ msgstr "free · tap to assign"
 msgid "Ritiro di %(nome)s…"
 msgstr "%(nome)s withdraws…"
 
-#: templates/direttore/_scripts.html:1185
+#: templates/direttore/_scripts.html:1192
 msgid ""
 "Torna da giocare e il tavolo si libera. Si può finché il turno dopo non è"
 " avviato."
@@ -20312,66 +20365,94 @@ msgstr ""
 "It goes back to be played and the table frees up. Possible until the next"
 " round starts."
 
-#: templates/direttore/_scripts.html:1201
+#: templates/direttore/_scripts.html:1208
 msgid "Il turno torna a valere zero e l'esercizio torna da registrare."
 msgstr "The round counts zero again and the drill goes back to be recorded."
 
-#: templates/direttore/_scripts.html:1222
+#: templates/direttore/_scripts.html:1229
 #, python-format
 msgid "Ritiro di %(nome)s"
 msgstr "%(nome)s withdraws"
 
-#: templates/direttore/_scripts.html:1225
+#: templates/direttore/_scripts.html:1232
 #, python-format
 msgid "%(nome)s vince a tavolino"
 msgstr "%(nome)s wins by walkover"
 
-#: templates/direttore/_scripts.html:1441
-#: templates/direttore/_scripts.html:1604
+#: templates/direttore/_scripts.html:1267
+#, python-format
+msgid "Chiudi sul %(punteggio)s: vince %(nome)s"
+msgstr "End at %(punteggio)s: %(nome)s wins"
+
+#: templates/direttore/_scripts.html:1270
+#, python-format
+msgid "Chiudi sul %(punteggio)s: pareggio"
+msgstr "End at %(punteggio)s: draw"
+
+#: templates/direttore/_scripts.html:1272
+msgid "È pari: scegli chi passa il turno"
+msgstr "It is a tie: choose who goes through"
+
+#: templates/direttore/_scripts.html:1285
+#, python-format
+msgid "Passa %(nome)s"
+msgstr "%(nome)s goes through"
+
+#: templates/direttore/_scripts.html:1305
+#, python-format
+msgid "Mancano %(n)s minuti allo scadere"
+msgstr "%(n)s minutes left before time is up"
+
+#: templates/direttore/_scripts.html:1310
+msgid "Il conto alla rovescia non è ancora partito"
+msgstr "The countdown has not started yet"
+
+#: templates/direttore/_scripts.html:1520
+#: templates/direttore/_scripts.html:1683
 msgid "Pareggio: nessun vincitore."
 msgstr "Draw: no winner."
 
-#: templates/direttore/_scripts.html:1442
-#: templates/direttore/_scripts.html:1462
+#: templates/direttore/_scripts.html:1521
+#: templates/direttore/_scripts.html:1541
 #, python-format
 msgid "Vince %(nome)s."
 msgstr "%(nome)s wins."
 
-#: templates/direttore/_scripts.html:1444
+#: templates/direttore/_scripts.html:1523
 #, python-format
 msgid "Uno dei due deve arrivare a %(n)s."
 msgstr "One of the two must reach %(n)s."
 
-#: templates/direttore/_scripts.html:1445
+#: templates/direttore/_scripts.html:1524
 #, python-format
 msgid "La somma deve essere esattamente %(n)s."
 msgstr "The sum must be exactly %(n)s."
 
-#: templates/direttore/_scripts.html:1461
+#: templates/direttore/_scripts.html:1540
 msgid "Pari in testa: nessuno vince la partita."
 msgstr "Tied at the top: nobody wins the match."
 
-#: templates/direttore/_scripts.html:1480
+#: templates/direttore/_scripts.html:1559
 #, python-format
 msgid "Si vince a %(n)s set"
 msgstr "Race to %(n)s sets"
 
-#: templates/direttore/_scripts.html:1483
+#: templates/direttore/_scripts.html:1562
 #, python-format
 msgid "ogni set al %(n)s"
 msgstr "each set a race to %(n)s"
 
-#: templates/direttore/_scripts.html:1484
+#: templates/direttore/_scripts.html:1563
 #, python-format
 msgid "ogni set di esattamente %(n)s triangoli"
 msgstr "each set exactly %(n)s racks"
 
-#: templates/direttore/_scripts.html:1591
+#: templates/direttore/_scripts.html:1670
 #, python-format
 msgid "Il set %(num)s non è ancora finito."
 msgstr "Set %(num)s is not finished yet."
 
-#: templates/direttore/_scripts.html:1605
+#: templates/direttore/_scripts.html:1684
 #, python-format
 msgid "Vince %(nome)s, %(a)s set a %(b)s."
 msgstr "%(nome)s wins, %(a)s sets to %(b)s."
