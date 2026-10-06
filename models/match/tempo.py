@@ -53,14 +53,16 @@ def limite_del_turno(gara: Any, round_number: Optional[int]) -> Optional[int]:
     È ciò che `fissa_regole` scrive sulla partita quando nasce. None = nessun
     limite.
     """
-    from models.competition.round_configuration import RoundConfiguration
-
-    config = (
-        RoundConfiguration.query.filter_by(
-            gara_id=gara.id, round_number=round_number
-        ).first()
-        if round_number and gara.id
-        else None
+    # Dalla relazione della gara, non con una query: `fissa_regole` gira su
+    # ogni partita nuova, e un turno ne crea molte insieme. La relazione si
+    # carica una volta per gara e per sessione.
+    config = next(
+        (
+            rc
+            for rc in (getattr(gara, "round_configurations", None) or [])
+            if rc.round_number == round_number
+        ),
+        None,
     )
     if config is not None:
         return config.get_effective_time_limit_minutes(gara)

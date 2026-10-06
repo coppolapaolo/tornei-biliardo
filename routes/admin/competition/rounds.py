@@ -1031,15 +1031,18 @@ def _limite_del_turno(payload: dict) -> object:
     grezzo = payload["time_limit_minutes"]
     if grezzo is None or grezzo == "":
         return None
-    try:
-        minuti = int(grezzo)
-    except (TypeError, ValueError):
-        minuti = -1
+    # Solo un intero: `int()` accetterebbe anche 45.9 (→ 45) e true (→ 1),
+    # e un numero enorme lo farebbe sollevare un'eccezione diversa.
+    minuti = -1
+    if isinstance(grezzo, int) and not isinstance(grezzo, bool):
+        minuti = grezzo
+    elif isinstance(grezzo, str) and grezzo.strip().isdigit():
+        minuti = int(grezzo.strip())
     if minuti < 0 or minuti > LIMITE_DI_TEMPO_MASSIMO:
         raise ValueError(
             _(
-                "Il limite di tempo si scrive in minuti, da 1 a %(max)s; "
-                "lascia vuoto per non mettere limiti.",
+                "Il limite di tempo del turno è un numero intero di minuti, "
+                "da 0 a %(max)s: 0 vuol dire senza limite, vuoto come la gara.",
                 max=LIMITE_DI_TEMPO_MASSIMO,
             )
         )

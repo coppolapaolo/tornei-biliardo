@@ -189,3 +189,49 @@ def test_la_storia_dice_il_limite_del_turno(app):
         assert valore("turno_2.time_limit_minutes", "") == "come la gara"
         assert valore("turno_2.time_limit_minutes", "0") == "senza limite"
         assert valore("turno_2.time_limit_minutes", "45") == "45 minuti"
+
+
+@pytest.mark.unit
+@pytest.mark.parametrize("valore", [45.9, True, 1e308, "4.5"])
+def test_solo_interi_dalla_route(direttore_client, db_session, valore):
+    """45.9 non diventa 45, true non diventa 1 (revisione della PR #619)."""
+    gara = _gara()
+    risposta = direttore_client.post(
+        f"/admin/gara/{gara.id}/round-config/2", json={"time_limit_minutes": valore}
+    )
+    assert risposta.status_code == 400
+    assert RoundConfiguration.get_for_gara_round(gara.id, 2) is None
+
+
+@pytest.mark.unit
+def test_una_query_sola_per_tutte_le_partite_del_turno(db_session):
+    """`fissa_regole` legge il turno dalla relazione della gara: nessuna query
+    per partita (revisione della PR #619)."""
+    from sqlalchemy import event
+
+    gara = _gara()
+    RoundConfiguration.create_or_update(gara.id, 2, time_limit_minutes=45)
+    db.session.commit()
+    gara = db.session.get(Gara, gara.id)
+    _ = list(gara.round_configurations)
+    query = []
+
+    def conta(_conn, _cur, statement, *_a):
+        if "round_configuration" in statement:
+            query.append(statement)
+
+    motore = db.engine
+    event.listen(motore, "before_cursor_execute", conta)
+    try:
+        for _i in range(4):
+            db.session.add(
+                Match(gara_id=gara.id, round_number=2, status=MatchStatus.PLAYING.value)
+            )
+        db.session.flush()
+    finally:
+        event.remove(motore, "before_cursor_execute", conta)
+    assert query == []
+    assert {
+        m.time_limit_minutes
+        for m in Match.query.filter_by(gara_id=gara.id, round_number=2).all()
+    } == {45}

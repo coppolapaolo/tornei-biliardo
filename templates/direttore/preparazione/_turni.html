@@ -51,7 +51,8 @@
           <span class="c7-sep">·</span>
           {{ (rc.effective_distance_config(gara) if rc else gara.distance_config)|format_distance }}
           {% set _minuti = rc.get_effective_time_limit_minutes(gara) if rc else gara.effective_time_limit_minutes %}
-          {% if _minuti %}<span class="c7-sep">·</span> {{ _('%(n)s minuti a partita', n=_minuti) }}{% endif %}
+          {% if _minuti %}<span class="c7-sep">·</span> {{ _('%(n)s minuti a partita', n=_minuti) }}
+          {% elif rc and rc.time_limit_minutes == 0 %}<span class="c7-sep">·</span> {{ _('senza limite di tempo') }}{% endif %}
         </div>
       </div>
       {% endfor %}
