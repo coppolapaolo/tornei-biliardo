@@ -145,8 +145,9 @@ FORM_GARA_STAGIONE: dict[str, str] = {
     "rounds_count": str(TURNI),
     "min_participants": str(MINIMO_ISCRITTI),
     "max_participants": str(MASSIMO_ISCRITTI),
-    "tiebreaker_enabled": "on",
-    "tiebreaker_until_position": str(SPAREGGIO_FINO_A),
+    # Lo spareggio fino al terzo è un criterio della catena di gara (ADR-078),
+    # come la manda l'editor: le voci separate da virgole.
+    "catena_gara": f"differenza_rack,ssr:{SPAREGGIO_FINO_A}",
     "entry_fee": "0",
     "location": "Sala di prova",
     # Un intero significa «quanti tavoli», non «quale tavolo». Otto tavoli

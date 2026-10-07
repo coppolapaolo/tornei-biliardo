@@ -50,7 +50,9 @@ def _gara_a_un_turno(db_session, status, *, spareggio):
         rounds_count=1,
         min_participants=4,
         classification_system="WINS",
-        tiebreaker_enabled=spareggio,
+        # Con lo spareggio la catena di default (fino al 3°), senza la sola
+        # differenza triangoli (ADR-078).
+        catena_gara=None if spareggio else '["differenza_rack"]',
     )
     db_session.add(gara)
     db_session.commit()

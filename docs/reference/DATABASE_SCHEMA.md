@@ -1,7 +1,7 @@
 # Database Schema Reference
 
 > **Auto-generated** from SQLAlchemy models.
-> Last updated: 2026-10-06 18:07 UTC
+> Last updated: 2026-10-07 09:46 UTC
 >
 > To regenerate: `python scripts/generate_schema_docs.py`
 
@@ -252,6 +252,9 @@
 | `scoring_policy` | VARCHAR(50) | NO |  | classic |  |
 | `has_handicap` | BOOLEAN | NO |  | False |  |
 | `default_time_limit_minutes` | INTEGER | NO |  | 0 |  |
+| `default_catena_turno` | TEXT | YES |  |  |  |
+| `default_catena_gara` | TEXT | YES |  |  |  |
+| `catena_generale` | TEXT | YES |  |  |  |
 | `banner_path` | VARCHAR(255) | YES |  |  |  |
 | `external_url` | VARCHAR(500) | YES |  |  |  |
 | `external_label` | VARCHAR(60) | YES |  |  |  |
@@ -333,9 +336,8 @@
 | `draw_seed` | INTEGER | YES |  |  |  |
 | `seeding_rating` | VARCHAR(16) | NO |  | elo |  |
 | `double_ko_rounds` | INTEGER | YES |  |  |  |
-| `tiebreaker_enabled` | BOOLEAN | YES |  | True |  |
-| `tiebreaker_until_position` | INTEGER | YES |  | 3 |  |
-| `tiebreaker_mode` | VARCHAR(20) | YES |  | playoff_match |  |
+| `catena_turno` | TEXT | YES |  |  |  |
+| `catena_gara` | TEXT | YES |  |  |  |
 | `tiebreaker_challenge_id` | INTEGER | YES | FK→challenge.id |  |  |
 | `x_challenge_id` | INTEGER | YES | FK→challenge.id |  |  |
 | `weight` | INTEGER | NO |  | 1 |  |
@@ -1783,6 +1785,7 @@
 | `campionato_id` | INTEGER | YES | FK→campionato.id |  |  |
 | `gara_id` | INTEGER | YES | FK→gara.id |  |  |
 | `is_active` | BOOLEAN | NO |  | True |  |
+| `entry_fee` | FLOAT | YES |  |  |  |
 | `created_at` | DATETIME | NO |  | func |  |
 | `updated_at` | DATETIME | NO |  | func |  |
 

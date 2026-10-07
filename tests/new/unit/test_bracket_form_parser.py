@@ -122,7 +122,7 @@ class TestCampiDerivati:
             # Valori che il director *potrebbe* mandare e che vanno ignorati:
             "withdraw_policy": "Exclude",
             "odd_number_policy": "trio",
-            "tiebreaker_enabled": "on",
+            "catena_gara": "differenza_rack,ssr:2",
             "rounds_count": "3",
             "exact_number": "on",
         }
@@ -165,10 +165,21 @@ class TestCampiDerivati:
         )
         assert data["anti_rematch_enabled"] is False
 
-    def test_lo_spareggio_ssr_resta_spento(self, app):
-        """Le strategie POSITION dichiarano `requires_tiebreaker=False`."""
+    def test_lo_spareggio_ssr_non_scatta(self, app):
+        """Sul tabellone la catena non si usa: i pari merito per banda sono
+        l'esito (ADR-040), anche se la catena ha lo spareggio."""
+        from types import SimpleNamespace
+
+        from models.competition.spareggio_service import SpareggioService
+
         data = self._parse(app, self._bracket_form("direct_elimination"))
-        assert data["tiebreaker_enabled"] is False
+        assert data["classification_system"] == "POSITION"
+        gara = SimpleNamespace(
+            classification_system=data["classification_system"],
+            catena_gara=data["catena_gara"],
+            campionato=None,
+        )
+        assert SpareggioService.tiebreakers_apply_to(gara) is False
 
     def test_i_turni_li_calcola_la_capienza(self, app):
         """Il valore digitato veniva buttato al sorteggio: non si chiede più."""
@@ -193,7 +204,7 @@ class TestCampiDerivati:
         data = self._parse(app, self._bracket_form("amalfi"))
         assert data["withdraw_policy"] == "Exclude"
         assert data["odd_number_policy"] == "trio"
-        assert data["tiebreaker_enabled"] is True
+        assert data["catena_gara"] == '["differenza_rack", "ssr:2"]'
         assert data["rounds_count"] == 3
         assert data["min_participants"] == 6
 

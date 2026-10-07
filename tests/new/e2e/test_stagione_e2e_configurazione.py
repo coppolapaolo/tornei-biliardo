@@ -28,6 +28,7 @@ from stagione import (
     TURNI_MISTI,
     crea_stagione,
 )
+from models.competition.spareggio_service import SpareggioService
 from models.matchmaking.configuration import MatchmakingStrategy
 from models.status_enum import GaraStatus
 from models.user.role_enum import UserRole
@@ -103,8 +104,8 @@ class TestLeQuattroGare:
             assert gara.odd_number_policy == DISPARI_CON_X, quale
             assert gara.classification_system == CLASSIFICA, quale
             assert gara.anti_rematch_enabled is True, quale
-            assert gara.tiebreaker_enabled is True, quale
-            assert gara.tiebreaker_until_position == SPAREGGIO_FINO_A, quale
+            assert SpareggioService.tiebreakers_apply_to(gara), quale
+            assert SpareggioService.ssr_fino_al(gara) == SPAREGGIO_FINO_A, quale
             # Il numero di rack è **esatto**, non un traguardo.
             assert gara.is_race_to is False, quale
             assert gara.is_multi_set is False, quale

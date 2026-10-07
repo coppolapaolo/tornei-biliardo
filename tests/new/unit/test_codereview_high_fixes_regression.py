@@ -175,8 +175,6 @@ class TestFinalizeClassificationWinsOrdering:
             max_participants=10,
             matchmaking_strategy="amalfi",
             classification_system="WINS",
-            tiebreaker_enabled=True,
-            tiebreaker_until_position=3,
             status=GaraStatus.PLAYING.value,
         )
         db_session.add(gara)

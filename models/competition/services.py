@@ -179,6 +179,7 @@ class GaraService:
         # campionato arrivava alle gare senza che nessuno le toccasse.
         if campionato_id:
             GaraService._copia_dal_campionato(campionato_id, kwargs)
+        GaraService._catene_alla_nascita(kwargs)
 
         gara = Gara(
             number=number,
@@ -371,6 +372,12 @@ class GaraService:
             for campo in kwargs
             if campo == "available_tables" or hasattr(gara, alias.get(campo, campo))
         ]
+        if "classification_system" in kwargs:
+            # Il sistema nuovo può portarsi dietro le catene di default
+            # (`_adegua_catene_al_sistema`): anche quel cambio va nella storia.
+            campi_storia += [
+                c for c in ("catena_turno", "catena_gara") if c not in campi_storia
+            ]
         prima = GaraService._valori_per_la_storia(gara, campi_storia)
 
         if originali:
@@ -409,10 +416,15 @@ class GaraService:
         if available_tables is not None:
             gara.set_available_tables(available_tables)
 
+        sistema_prima = gara.classification_system
+
         # Aggiorna solo i campi forniti
         for field, value in kwargs.items():
             if hasattr(gara, field):
                 setattr(gara, field, value)
+
+        if "classification_system" in kwargs:
+            GaraService._adegua_catene_al_sistema(gara, sistema_prima, kwargs)
 
         # Separare i compagni a iscrizioni aperte (ADR-039): chi è già dentro
         # riceve la squadra come l'avrebbe ricevuta iscrivendosi adesso. Chi
@@ -555,6 +567,64 @@ class GaraService:
             kwargs["time_limit_minutes"] = int(
                 campionato.default_time_limit_minutes or 0
             )
+        # Le catene degli spareggi proposte (ADR-078), già ammesse al livello.
+        from models.classification.catene import COLONNA_DELLA_GARA, catena_proposta
+        from models.classification.ordinamento import testo_della_catena
+
+        for livello, campo in COLONNA_DELLA_GARA.items():
+            if kwargs.get(campo) is None:
+                kwargs[campo] = testo_della_catena(catena_proposta(campionato, livello))
+
+    @staticmethod
+    def _catene_alla_nascita(kwargs: Dict[str, Any]) -> None:
+        """Una gara nasce con le sue catene degli spareggi scritte (ADR-078).
+
+        Dentro un campionato le ha già copiate `_copia_dal_campionato`; qui
+        si scrive il default dell'app per chi non ne ha (una gara singola, la
+        finale dei playoff): una gara senza catena rileggerebbe il campionato
+        in diretta, e una proposta nuova arriverebbe anche a gara avviata.
+        """
+        from models.classification.ordinamento import (
+            Livello,
+            catena_di_default,
+            normalizza_catena,
+            testo_della_catena,
+        )
+        from models.status_enum import ClassificationSystem
+
+        sistema = ClassificationSystem.resolve(kwargs.get("classification_system"))
+        if sistema not in (ClassificationSystem.WINS, ClassificationSystem.RACK):
+            sistema = ClassificationSystem.WINS
+        for campo, livello in (
+            ("catena_turno", Livello.TURNO),
+            ("catena_gara", Livello.GARA),
+        ):
+            if kwargs.get(campo) is None:
+                kwargs[campo] = testo_della_catena(
+                    normalizza_catena(
+                        catena_di_default(livello, sistema), livello, sistema
+                    )
+                )
+
+    @staticmethod
+    def _adegua_catene_al_sistema(gara: Gara, vecchio: Any, kwargs: Dict) -> None:
+        """Cambiato il sistema di classifica, le catene di default lo seguono.
+
+        Una catena che era quella di default del sistema vecchio diventa quella
+        del nuovo; una scelta dal direttore resta sua. Le catene arrivate in
+        ``kwargs`` insieme al sistema le ha già decise il modulo.
+        """
+        from models.classification.catene import COLONNA_DELLA_GARA, adegua_al_sistema
+        from models.status_enum import ClassificationSystem
+
+        prima = ClassificationSystem.resolve(vecchio)
+        dopo = ClassificationSystem.resolve(gara.classification_system)
+        for livello, campo in COLONNA_DELLA_GARA.items():
+            if campo in kwargs:
+                continue
+            nuovo = adegua_al_sistema(getattr(gara, campo), livello, prima, dopo)
+            if nuovo is not None:
+                setattr(gara, campo, nuovo)
 
     @staticmethod
     def _valori_per_la_storia(gara: Gara, campi: List[str]) -> Dict[str, Any]:

@@ -4881,3 +4881,53 @@ button.c7-draw__outcome:active { transform: scale(var(--c7-press)); transition-d
 .c7-board__head .c7-timer { background: transparent; color: inherit; }
 .c7-board__head .c7-timer.is-scaduto { background: var(--c7-warn-bg); color: var(--c7-warn-ink); }
 .c7-timer.is-scaduto .c7-num { font-family: inherit; }
+
+/* --------------------------------------------------------------------------
+   La catena degli spareggi (ADR-078): editor nella configurazione di gara e
+   campionato. Stessa grammatica del riquadro «Spareggio SSR» del wizard
+   (#14c): card su fondo pagina, chip da 42px, scelta attiva in accento.
+   -------------------------------------------------------------------------- */
+.c7-catena {
+  border-radius: var(--c7-r-field); background: var(--c7-bg); padding: var(--c7-pad-card);
+  display: flex; flex-direction: column; gap: 10px;
+}
+.c7-catena + .c7-catena { margin-top: var(--c7-gap); }
+.c7-catena__titolo { font-size: 15px; font-weight: 800; color: var(--c7-ink); }
+.c7-catena__nota { font-size: 12px; font-weight: 600; color: var(--c7-ink-muted); line-height: 1.4; }
+.c7-catena__voci { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.c7-catena__voce {
+  display: flex; align-items: center; gap: 10px; min-height: var(--c7-touch);
+  border-radius: var(--c7-r-chip); background: var(--c7-card); padding: 4px 4px 4px 12px;
+}
+.c7-catena__voce--principale { background: var(--c7-sunken); padding-right: 14px; }
+.c7-catena__n {
+  font-family: var(--c7-font-mono); font-size: 13px; font-weight: 800;
+  color: var(--c7-ink-muted); min-width: 16px; font-variant-numeric: tabular-nums;
+}
+.c7-catena__corpo { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.c7-catena__nome { font-size: 14px; font-weight: 700; color: var(--c7-ink); }
+.c7-catena__lucchetto { font-size: 11px; color: var(--c7-ink-faint); }
+.c7-catena__comandi, .c7-catena__posto { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.c7-catena .c7-iconbtn { width: var(--c7-touch); height: var(--c7-touch); border-radius: var(--c7-r-chip); font-size: 13px; }
+.c7-catena .c7-iconbtn:disabled { background: transparent; color: var(--c7-ink-faint); }
+.c7-catena__postovalore {
+  font-family: var(--c7-font-mono); font-size: 12px; font-weight: 700; color: var(--c7-ink-soft);
+  min-width: 64px; text-align: center; font-variant-numeric: tabular-nums;
+}
+.c7-catena__aggiungi { display: flex; flex-wrap: wrap; gap: 8px; }
+.c7-catena__chip {
+  min-height: 42px; border: 0; border-radius: var(--c7-r-chip); padding: 0 14px;
+  background: var(--c7-card); color: var(--c7-accent); font-size: 12px; font-weight: 700;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: transform var(--c7-dur-quick) var(--c7-ease);
+}
+.c7-catena__chip:active { transform: scale(var(--c7-press)); transition-duration: 0ms; }
+.c7-catena__frase {
+  margin: 0; border-radius: var(--c7-r-chip); background: var(--c7-accent-tint);
+  color: var(--c7-accent-tint-ink); padding: 10px 12px; font-size: 13px; font-weight: 600; line-height: 1.45;
+}
+/* Sul telefono lo spareggio ha tre comandi in più: il posto va a capo. */
+@media (max-width: 991.98px) {
+  .c7-catena__voce { flex-wrap: wrap; }
+  .c7-catena__posto { order: 3; width: 100%; justify-content: flex-start; padding: 0 0 4px 26px; }
+}

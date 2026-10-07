@@ -382,26 +382,18 @@
              value="{{ gara.rounds_count }}" required>
     </div>
 
-    <div style="background:var(--c7-bg);border-radius:var(--c7-r-field);padding:16px" data-bracket-hide>
-      <div class="c7-kicker mb-3">{{ _('Spareggio SSR') }}</div>
-
-      <label class="d-flex align-items-center gap-3 mb-3" style="cursor:pointer">
-        <span class="flex-fill">
-          <span class="c7-choice__title d-block">{{ _('Abilita spareggio per i parimerito') }}</span>
-          <span class="c7-choice__desc d-block">{{ _('Richiede Spot Shot Rally per risolvere i parimerito nelle prime posizioni') }}</span>
-        </span>
-        <span class="form-check form-switch m-0">
-          <input class="form-check-input m-0" type="checkbox" role="switch"
-                 id="tiebreaker_enabled" name="tiebreaker_enabled" {% if gara.tiebreaker_enabled %}checked{% endif %}>
-        </span>
-      </label>
-
-      <label for="tiebreaker_until_position" class="form-label">{{ _('Spareggio fino alla posizione') }}</label>
-      <select class="form-select" name="tiebreaker_until_position" id="tiebreaker_until_position" style="background:var(--c7-card)">
-        <option value="1" {% if gara.tiebreaker_until_position == 1 %}selected{% endif %}>{{ _('Solo 1° posto') }}</option>
-        <option value="2" {% if gara.tiebreaker_until_position == 2 %}selected{% endif %}>{{ _('Fino al 2° posto') }}</option>
-        <option value="3" {% if gara.tiebreaker_until_position == 3 or not gara.tiebreaker_until_position %}selected{% endif %}>{{ _('Fino al 3° posto') }}</option>
-      </select>
+    {# Le catene degli spareggi (ADR-078). Sul tabellone non si usano: i
+       pari merito per banda sono l'esito (ADR-040). #}
+    <div data-bracket-hide>
+      {% import "components/_catena_spareggi.html" as catena with context %}
+      {{ catena.editor('catena_turno', editor_catena_gara('turno', gara=gara),
+                       _('Pari merito nella classifica di turno'),
+                       _("Ordina i giocatori dopo ogni turno, e da lì nascono gli abbinamenti: l'ordine è sempre completo, lo chiude il sorteggio."),
+                       'select[name="classification_system"]') }}
+      {{ catena.editor('catena_gara', editor_catena_gara('gara', gara=gara),
+                       _('Pari merito nella classifica finale'),
+                       _('Chi resta pari dopo questi criteri condivide la posizione. Lo spareggio SSR si gioca a gara finita, fino al posto che scegli.'),
+                       'select[name="classification_system"]') }}
     </div>
 
     <div class="mt-3">

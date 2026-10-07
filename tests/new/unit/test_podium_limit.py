@@ -12,7 +12,7 @@ def test_get_podium_respects_limit(mock_get_standings):
     gara.id = 1
     gara.status = GaraStatus.COMPLETED.value
     gara.rounds_count = 3
-    gara.tiebreaker_until_position = 2  # Limit set to 2
+    gara.catena_gara = '["differenza_rack", "ssr:2"]'  # Limit set to 2
 
     # Mock standings
     mock_rc1 = MagicMock()
@@ -38,7 +38,7 @@ def test_get_podium_respects_limit(mock_get_standings):
     assert podium[1]["username"] == "player2"
 
     # Change limit to 3
-    gara.tiebreaker_until_position = 3
+    gara.catena_gara = '["differenza_rack", "ssr:3"]'
     podium = gara.get_podium()
 
     # Should now have 3 players

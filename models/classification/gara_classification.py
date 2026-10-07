@@ -300,12 +300,6 @@ class StrategyBasedClassificationService:
             context={
                 "gara_id": gara_id,
                 "spot_shot_results": spot_shot_results,
-                # Fin dove lo spareggio scioglie il pari merito. Oltre, due
-                # giocatori pari restano pari: e' un risultato, non un dato
-                # mancante da riempire.
-                "tiebreaker_until_position": getattr(
-                    gara, "tiebreaker_until_position", None
-                ),
                 **self._contesto_della_catena(gara, Livello.GARA, final_round),
             },
         )
@@ -326,7 +320,9 @@ class StrategyBasedClassificationService:
         if not ordina_con_la_catena(sistema_dichiarato(gara)):
             return {}
         catena = (
-            catena_di_turno(gara) if livello is Livello.TURNO else catena_di_gara(gara)
+            catena_di_turno(gara, fino_al_turno)
+            if livello is Livello.TURNO
+            else catena_di_gara(gara)
         )
         contesto: Dict[str, Any] = {
             "catena": catena,

@@ -149,6 +149,15 @@ gara o dal campionato in `catene.py`. Tre classifiche, tre catene:
   differenza (WINS) → SSR somma → posizione dopo la gara precedente →
   sorteggio. Ordine sempre completo.
 
+Le catene **si configurano**: `Gara.catena_turno` / `Gara.catena_gara`
+(NULL = come il campionato), proposte da `Campionato.default_catena_*`, più
+`Campionato.catena_generale`. Liste JSON (`testo_della_catena`), lette **solo**
+da `catene.py`. Lo spareggio è il criterio `ssr:N` della catena di gara: chi
+chiede «fin dove?» usa `SpareggioService.ssr_fino_al(gara)`. La catena di turno
+a gara avviata vale dal turno successivo: `catena_di_turno(gara, turno)` la
+legge dalla storia. L'editor sta in `editor_catena.py` +
+`components/_catena_spareggi.html`.
+
 Il sorteggio è un hash del seme (`draw_seed` della gara, id del campionato):
 mai l'id del giocatore. POSITION non passa dal motore (ADR-040).
 

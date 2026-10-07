@@ -257,8 +257,9 @@ class StateService:
             # (terminate_campionato → complete) bypassa quel gate, e premieremmo
             # con XP/achievement "vittoria torneo" un vincitore non ancora
             # determinato. detect_tiebreakers ritorna solo i gruppi irrisolti.
-            if getattr(gara, "tiebreaker_enabled", False) and winner_id is not None:
-                from models.competition.spareggio_service import SpareggioService
+            from models.competition.spareggio_service import SpareggioService
+
+            if SpareggioService.tiebreakers_apply_to(gara) and winner_id is not None:
 
                 unresolved = SpareggioService.detect_tiebreakers(gara.id)
                 winner_in_unresolved_tie = any(

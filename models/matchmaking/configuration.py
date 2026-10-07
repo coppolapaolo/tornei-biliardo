@@ -715,7 +715,6 @@ def bracket_derived_fields(data: Dict[str, Any]) -> Dict[str, Any]:
     derived: Dict[str, Any] = {
         "withdraw_policy": WithdrawPolicy.FORFEIT.value,
         "odd_number_policy": OddNumberPolicy.BYE.value,
-        "tiebreaker_enabled": False,
         # Sempre "a chi arriva prima", sui rack e sui set.
         "is_race_to": True,
         "is_race_to_sets": True,

@@ -93,6 +93,15 @@ class Campionato(db.Model):
     default_time_limit_minutes = db.Column(
         db.Integer, default=0, nullable=False, server_default="0"
     )
+    # Le catene degli spareggi (ADR-078), liste JSON di voci. Le prime due il
+    # campionato le **propone** alle gare, come gli altri valori (ADR-075):
+    # la catena della classifica di turno e quella della classifica di gara.
+    # La terza è sua: come si ordinano i pari merito della classifica
+    # generale. NULL = il default dell'app per il sistema del campionato. Si
+    # leggono solo da `models/classification/catene.py`.
+    default_catena_turno = db.Column(db.Text, nullable=True)
+    default_catena_gara = db.Column(db.Text, nullable=True)
+    catena_generale = db.Column(db.Text, nullable=True)
 
     # ── Vetrina da condividere sui social (issue #235) ───────────────────
     # Non si chiamano `default_*` come `default_venue_id`: quelli sono valori

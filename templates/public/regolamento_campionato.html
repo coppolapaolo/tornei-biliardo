@@ -15,7 +15,7 @@
   {% for imp in impostazioni %}
   <dt class="text-muted" style="font-weight:700">{{ etichetta_storia(imp.campo) }}</dt>
   <dd class="mb-0">
-    {{ valore_storia(imp.campo, imp.valore) }}
+    {{ imp.frase or valore_storia(imp.campo, imp.valore) }}
     {% if imp.cambiata %}<span class="c7-nota">· {{ _('cambiato il %(quando)s', quando=imp.cambiata.created_at|datetime_local) }}</span>{% endif %}
   </dd>
   {% endfor %}

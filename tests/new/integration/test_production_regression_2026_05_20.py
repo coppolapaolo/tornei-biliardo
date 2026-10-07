@@ -112,7 +112,13 @@ def _create_random_gara(
         odd_number_policy=odd_policy,
         anti_rematch_enabled=True,
         classification_system=classification_system,
-        tiebreaker_enabled=tiebreaker_enabled,
+        # Lo spareggio è un criterio della catena di gara (ADR-078): senza,
+        # la catena di default del sistema meno lo SSR.
+        catena_gara=(
+            None
+            if tiebreaker_enabled
+            else ("[]" if classification_system == "RACK" else '["differenza_rack"]')
+        ),
     )
 
 

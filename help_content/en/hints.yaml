@@ -231,14 +231,24 @@ hints:
   page: opzioni_della_gara
   section: formato
 - id: gara.spareggio
-  label: Tie-break
-  short: Up to which position level finishes are settled with an extra contest. Normally the podium. Not
-    asked on brackets.
+  label: Ties
+  short: In which order the criteria settle ties, for the round standings and the final standings. Below,
+    the sentence that goes into the rules.
   anchor: gara-spareggio
   screens:
   - admin.competition.create_gara_standalone
-  page: classifiche
-  section: pari_merito
+  page: spareggi
+  section: catena
+- id: campionato.spareggi
+  label: Ties
+  short: The two chains proposed to every competition and the one for the overall standings. Competitions
+    receive them when they are created, and can change them.
+  anchor: campionato-spareggi
+  screens:
+  - admin.campionato.wizard_step2
+  - admin.campionato.edit_campionato
+  page: spareggi
+  section: catena
 - id: gara.peso
   label: Weight in the standings
   short: How many times this competition's score counts in the championship standings. 1 = like every

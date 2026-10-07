@@ -181,6 +181,16 @@
       {% include "components/_campo_limite_tempo.html" %}
     </div>
     {% endif %}
+    {% if 'catena_turno' in ammessi %}
+    {# La catena della classifica di turno (ADR-078): come le altre regole,
+       vale dal turno dopo — le classifiche dei turni già nati restano. #}
+    <div class="mb-3">
+      {% import "components/_catena_spareggi.html" as catena with context %}
+      {{ catena.editor('catena_turno', editor_catena_gara('turno', gara=gara),
+                       _('Pari merito nella classifica di turno'),
+                       _("Vale dalla classifica del prossimo turno: quelle dei turni già cominciati restano com'erano.")) }}
+    </div>
+    {% endif %}
     {% if 'odd_number_policy' in ammessi %}
     <div class="d-flex gap-3 flex-wrap mb-3">
       <div class="flex-fill" style="min-width:220px">
@@ -218,20 +228,14 @@
   </div>
   {% endif %}
 
-  {# ---------------- Spareggio ---------------- #}
-  {% if 'tiebreaker_until_position' in ammessi %}
+  {# ---------------- Pari merito della classifica finale ---------------- #}
+  {% if 'catena_gara' in ammessi %}
   <div class="c7-card">
-    <h3 class="mb-3">{{ _('Spareggio') }}</h3>
-    <div class="form-check mb-2">
-      <input class="form-check-input" type="checkbox" id="tiebreaker_enabled" name="tiebreaker_enabled"
-             {% if gara.tiebreaker_enabled %}checked{% endif %}>
-      <label class="form-check-label" for="tiebreaker_enabled">{{ _('Spareggio per i pari merito sul podio') }}</label>
-    </div>
-    <select class="form-select" name="tiebreaker_until_position" style="max-width:220px" aria-label="{{ _('Fino a che posto') }}">
-      <option value="1" {% if gara.tiebreaker_until_position == 1 %}selected{% endif %}>{{ _('Solo il 1° posto') }}</option>
-      <option value="2" {% if gara.tiebreaker_until_position == 2 %}selected{% endif %}>{{ _('Fino al 2° posto') }}</option>
-      <option value="3" {% if gara.tiebreaker_until_position == 3 or not gara.tiebreaker_until_position %}selected{% endif %}>{{ _('Fino al 3° posto') }}</option>
-    </select>
+    <h3 class="mb-3">{{ _('Pari merito nella classifica finale') }}</h3>
+    {% import "components/_catena_spareggi.html" as catena_finale with context %}
+    {{ catena_finale.editor('catena_gara', editor_catena_gara('gara', gara=gara),
+                     _("Criteri, nell'ordine"),
+                     _('Si cambia finché lo spareggio SSR non è cominciato, e vale subito: chi resta pari condivide la posizione.')) }}
   </div>
   {% endif %}
 
@@ -272,4 +276,8 @@
 {% include "components/_avviso_in_attesa.html" %}
 {% include "components/_storia_modifiche.html" %}
 </div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/catena_spareggi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 {% endblock %}

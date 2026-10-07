@@ -66,8 +66,7 @@ class TestSpareggioServiceDetection:
         mock_gara = MagicMock()
         mock_gara.current_round = 3
         mock_gara.rounds_count = 3
-        mock_gara.tiebreaker_enabled = True
-        mock_gara.tiebreaker_until_position = 3
+        mock_gara.catena_gara = '["differenza_rack", "ssr:3"]'
         mock_db.session.get.return_value = mock_gara
         filtrati = mock_db.session.query.return_value.filter_by.return_value
         filtrati.order_by.return_value.all.return_value = []
@@ -81,8 +80,7 @@ class TestSpareggioServiceDetection:
         mock_gara = MagicMock()
         mock_gara.current_round = 3
         mock_gara.rounds_count = 3
-        mock_gara.tiebreaker_enabled = True
-        mock_gara.tiebreaker_until_position = 3
+        mock_gara.catena_gara = '["differenza_rack", "ssr:3"]'
         mock_db.session.get.return_value = mock_gara
 
         # B20: Spareggio key now uses (matches_won, rack_difference) for WINS;
@@ -126,8 +124,7 @@ class TestSpareggioServiceDetection:
         mock_gara = MagicMock()
         mock_gara.current_round = 3
         mock_gara.rounds_count = 3
-        mock_gara.tiebreaker_enabled = True
-        mock_gara.tiebreaker_until_position = 3
+        mock_gara.catena_gara = '["differenza_rack", "ssr:3"]'
         mock_db.session.get.return_value = mock_gara
 
         # B20: tie now means same (matches_won, rack_difference) tuple
@@ -173,8 +170,7 @@ class TestSpareggioServiceDetection:
         mock_gara = MagicMock()
         mock_gara.current_round = 3
         mock_gara.rounds_count = 3
-        mock_gara.tiebreaker_enabled = True
-        mock_gara.tiebreaker_until_position = 3
+        mock_gara.catena_gara = '["differenza_rack", "ssr:3"]'
         mock_db.session.get.return_value = mock_gara
 
         # B20: tie now means same (matches_won, rack_difference) tuple
@@ -253,8 +249,7 @@ class TestSpareggioServiceRandomStrategyRound:
         mock_gara.id = 1
         mock_gara.current_round = 2  # Stale - lags behind
         mock_gara.rounds_count = 3
-        mock_gara.tiebreaker_enabled = True
-        mock_gara.tiebreaker_until_position = 3
+        mock_gara.catena_gara = '["differenza_rack", "ssr:3"]'
         mock_db.session.get.return_value = mock_gara
 
         # _get_effective_final_round queries func.max(Match.round_number)
@@ -284,8 +279,7 @@ class TestSpareggioServiceRandomStrategyRound:
         mock_gara.id = 1
         mock_gara.current_round = 2  # Stale
         mock_gara.rounds_count = 3
-        mock_gara.tiebreaker_enabled = True
-        mock_gara.tiebreaker_until_position = 3
+        mock_gara.catena_gara = '["differenza_rack", "ssr:3"]'
         mock_db.session.get.return_value = mock_gara
 
         mock_query = MagicMock()
@@ -311,8 +305,7 @@ class TestSpareggioServiceRandomStrategyRound:
         mock_gara.id = 1
         mock_gara.current_round = 0
         mock_gara.rounds_count = 3
-        mock_gara.tiebreaker_enabled = True
-        mock_gara.tiebreaker_until_position = 3
+        mock_gara.catena_gara = '["differenza_rack", "ssr:3"]'
         mock_db.session.get.return_value = mock_gara
 
         mock_query = MagicMock()

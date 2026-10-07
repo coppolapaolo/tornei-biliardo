@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [direttore]
 minutes: 3
 summary: "Quando due giocatori chiudono a pari merito nelle posizioni che contano: come si decide chi sta davanti, e come si conduce lo spareggio."
-screens: [admin.competition.gara_detail]
+screens: [admin.competition.gara_detail, admin.competition.create_gara_standalone, admin.competition.edit_gara]
 related: [classifiche, challenge, condurre_la_gara]
 
 blocks:
@@ -20,9 +20,10 @@ blocks:
 
   - type: text
     text: >-
-      Alla creazione della gara si stabilisce **fino a che posizione** vale la
-      pena sciogliere i pari merito. Il valore proposto è il podio: sul quinto e
-      sesto posto, di norma, nessuno litiga.
+      Alla creazione della gara si stabilisce **come** si sciogliono i pari
+      merito, e **fino a che posizione** vale la pena giocare uno spareggio. Il
+      valore proposto è il podio: sul quinto e sesto posto, di norma, nessuno
+      litiga.
 
   - type: note
     tone: warning
@@ -32,23 +33,74 @@ blocks:
       favorire qualcuno. Stabilirla in anticipo la rende una regola del gioco.
 
   - type: heading
+    id: catena
+    title: "La catena dei pari merito"
+
+  - type: text
+    text: >-
+      Nel modulo della gara, alla voce **Pari merito**, c'è un elenco di
+      criteri in fila. In cima, col lucchetto, il criterio principale: le
+      vittorie o i triangoli vinti, secondo il sistema di classifica. Sotto,
+      i criteri che decidono fra chi è pari, uno dopo l'altro: se il primo non
+      basta, si passa al secondo, e così via.
+
+  - type: steps
+    items:
+      - title: "Sposta un criterio"
+        text: >-
+          Con le frecce su e giù lo porti prima o dopo gli altri. L'ordine è
+          quello in cui vengono applicati.
+      - title: "Togli o aggiungi"
+        text: >-
+          La × toglie un criterio. Sotto l'elenco ci sono quelli che puoi
+          ancora aggiungere: tocca il nome per metterlo in fila.
+      - title: "Leggi la frase"
+        text: >-
+          Sotto c'è la frase che finisce nel regolamento, per esempio «A pari
+          vittorie conta lo scontro diretto, poi la differenza triangoli, poi
+          lo spareggio SSR fino al 3° posto». Se la frase dice quello che
+          volevi, la catena è giusta.
+
+  - type: text
+    text: >-
+      Le catene sono due. Quella della **classifica di turno** ordina i
+      giocatori dopo ogni turno, e da lì nascono gli abbinamenti: finisce
+      sempre col sorteggio, perché due giocatori non possono restare alla pari
+      quando si decide chi gioca con chi. Quella della **classifica finale**
+      può lasciare dei pari merito: chi resta pari dopo tutti i criteri
+      condivide la posizione.
+
+  - type: heading
     id: come
-    title: "I due modi di sciogliere un pari merito"
+    title: "I criteri"
 
   - type: options
     items:
-      - name: "Scontro diretto"
+      - name: "Scontri diretti"
         text: >-
-          Se i due si sono affrontati durante la gara, sta davanti chi ha vinto
-          quella partita. Non richiede di rigiocare nulla, ed è il metodo più
-          facile da spiegare.
-      - name: "Spareggio"
-        values: "Spot Shot Rally"
+          Conta come sono andate le partite fra i giocatori pari. Se si sono
+          affrontati, sta davanti chi ha vinto. Non richiede di rigiocare
+          nulla, ed è il metodo più facile da spiegare.
+      - name: "Differenza triangoli"
+        text: "I triangoli vinti meno quelli persi."
+      - name: "Triangoli vinti"
+        text: "I triangoli vinti in tutto. Non c'è se è già il criterio principale."
+      - name: "Vittorie"
+        text: "Le partite vinte. Non c'è se è già il criterio principale."
+      - name: "Spareggio SSR"
+        values: "fino al 3° posto (si cambia con − e +)"
         text: >-
-          Una prova di abilità con un punteggio: chi fa meglio sta davanti. È
-          il metodo da usare quando i due non si sono incontrati, o quando lo
-          scontro diretto è finito in parità. Vedi [Le
-          esercizi](/aiuto/giocare/challenge).
+          Una prova di abilità con un punteggio, giocata a fine gara: chi fa
+          meglio sta davanti. Vale solo fino al posto indicato, e solo nella
+          classifica finale. Vedi [Gli esercizi](/aiuto/giocare/challenge).
+      - name: "Posizione precedente"
+        text: >-
+          Sta davanti chi era davanti al turno prima. Nel primo turno conta
+          l'ordine di partenza.
+      - name: "Sorteggio"
+        text: >-
+          Sempre l'ultimo. È un sorteggio fisso, deciso all'avvio della gara:
+          la classifica non cambia a ogni lettura.
 
   - type: heading
     id: condurlo
@@ -97,7 +149,7 @@ blocks:
         vuoi separare i due terzi, la strada è la **finalina per il 3°/4°
         posto**, da prevedere alla creazione.
       - "**Fuori dalle posizioni indicate**: i pari merito restano, due giocatori condividono la posizione e la successiva viene saltata."
-      - "**Se lo spareggio è disattivato**: la classifica resta con i pari merito così come sono."
+      - "**Se la catena non ha lo spareggio SSR**: la classifica resta con i pari merito che gli altri criteri non sciolgono."
 
   - type: faq
     items:
@@ -105,6 +157,8 @@ blocks:
         a: "Quasi sempre c'è uno spareggio in attesa: lo dice la fascia in cima alla pagina della gara. Se non vuoi giocarlo, si può annullare e la classifica resta a pari merito."
       - q: "Posso correggere un risultato mentre lo spareggio è attivo?"
         a: "No. Va prima annullato lo spareggio: certifica implicitamente i risultati della gara."
+      - q: "Posso cambiare la catena a gara cominciata?"
+        a: "Sì. Quella della classifica finale si cambia finché lo spareggio non è cominciato. Quella della classifica di turno vale dal turno successivo: le classifiche dei turni già cominciati restano com'erano. Il cambio resta nella storia della gara."
       - q: "Quanti giocatori possono essere in uno spareggio?"
         a: "Tutti quelli appaiati in quella posizione: capita che siano tre o quattro, non solo due."
       - q: "Serve un esercizio configurato?"

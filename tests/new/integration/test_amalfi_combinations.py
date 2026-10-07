@@ -570,8 +570,6 @@ class TestAmalfiSSR:
             players,
             db_session,
             rounds_count=2,
-            tiebreaker_enabled=True,
-            tiebreaker_until_position=3,
         )
 
         _run_full_tournament(gara)
@@ -583,7 +581,7 @@ class TestAmalfiSSR:
         assert isinstance(tiebreakers, list)
 
     def test_ssr_position_1_only(self, db_session):
-        """SSR with tiebreaker_until_position=1 only checks 1st place."""
+        """SSR fino al 1° posto: guarda solo il primo posto."""
         from models.competition.spareggio_service import SpareggioService
 
         director = _create_director(db_session)
@@ -593,8 +591,7 @@ class TestAmalfiSSR:
             players,
             db_session,
             rounds_count=2,
-            tiebreaker_enabled=True,
-            tiebreaker_until_position=1,
+            catena_gara='["differenza_rack", "ssr:1"]',
         )
         _run_full_tournament(gara)
 

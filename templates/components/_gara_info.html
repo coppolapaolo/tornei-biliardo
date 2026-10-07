@@ -106,6 +106,19 @@
         {% endif %}
     </dl>
 
+    {# Come si risolvono i pari merito (ADR-078): la frase del regolamento.
+       Sul tabellone non c'è catena: i pari merito per banda sono l'esito. #}
+    {% set _pari_turno = frase_spareggi(gara, 'catena_turno') %}
+    {% set _pari_gara = frase_spareggi(gara, 'catena_gara') %}
+    {% if _pari_gara %}
+    <hr class="c7-divider">
+    <div class="c7-kicker mb-1">{{ _('Pari merito') }}</div>
+    <p style="margin: 0; font-size: 13px; line-height: 1.55;">
+      <strong>{{ _('Classifica finale') }}.</strong> {{ _pari_gara }}
+      {% if _pari_turno %}<br><span class="text-muted"><strong>{{ _('Dopo ogni turno') }}.</strong> {{ _pari_turno }}</span>{% endif %}
+    </p>
+    {% endif %}
+
     {% if gara.description %}
     <hr class="c7-divider">
     <p class="text-muted" style="margin: 0; font-size: 13px; line-height: 1.55;">{{ gara.description }}</p>

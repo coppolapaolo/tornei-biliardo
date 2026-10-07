@@ -95,9 +95,11 @@ blocks:
     text: >-
       The second step asks what the championship's «typical» competitions look
       like: venue, entry fee (and, if needed, the fee list by category, which
-      applies to every competition), number of rounds, handling of odd numbers, and
-      how the break shot is decided. Every new competition will start out like
-      that, and you will only have to change the name, date and discipline.
+      applies to every competition), number of rounds, handling of odd numbers,
+      how the break shot is decided, and how **ties** are settled in the round
+      standings and in each competition's final standings. Every new
+      competition will start out like that, and you will only have to change
+      the name, date and discipline.
 
   - type: note
     tone: tip
@@ -218,6 +220,16 @@ blocks:
       it is «Racks», position points — the ones in the table above — if it is
       «Position». Anyone who misses a competition is not excluded: they simply
       gain nothing on that occasion.
+
+  - type: text
+    text: >-
+      On equal scores the **overall standings chain** decides. You choose it
+      in step 2 and when editing the championship, together with the two
+      chains proposed to the competitions. The starting one is rack
+      difference, then the sum of the SSR tiebreakers, then the position after
+      the previous competition, then the draw: it never leaves ties, because
+      playoff invitations start from there. Changing it once the championship
+      has started recalculates the standings, and a line above them says so.
 
   - type: faq
     items:

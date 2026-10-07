@@ -230,6 +230,10 @@ def wizard_create():
 
     # Classification system comes from Step 1 (session)
     classification_system = wizard_data.get("default_classification_system", "WINS")
+    # Le catene degli spareggi del passo 2 (ADR-078), ammesse al sistema.
+    settings.update(
+        CampionatoFormParser.parse_catene(request.form, classification_system)
+    )
 
     # Il listino delle quote (ADR-079): letto prima di creare, perché una
     # quota sbagliata non lasci un campionato senza il suo listino.
@@ -574,6 +578,12 @@ def edit_campionato(campionato_id):
 
             # Default-gare settings (single source shared with wizard_create)
             settings = CampionatoFormParser.parse_default_settings(request.form)
+            settings.update(
+                CampionatoFormParser.parse_catene(
+                    request.form,
+                    request.form.get("default_classification_system", "WINS"),
+                )
+            )
 
             # Il listino delle quote vale per tutte le serate (ADR-079): non è un
             # valore proposto alle gare, è l'elenco delle categorie del
@@ -618,12 +628,14 @@ def edit_campionato(campionato_id):
                 for v in StoriaModificheService.voci_del_campionato(campionato_id)
                 if v.id not in voci_prima
             ]
-            if nuove:
-                from models.campionato.proposte import CAMPI_PROPOSTI, proposta
+            from models.campionato.proposte import CAMPI_PROPOSTI, proposta
 
+            # La voce dei valori proposti: un ricalcolo (punti per posizione,
+            # catena della classifica generale) ne scrive una sua accanto.
+            for voce in nuove:
                 cambi = {
                     r.field: (r.old_value, r.new_value)
-                    for r in nuove[0].fields
+                    for r in voce.fields
                     if r.field in CAMPI_PROPOSTI
                 }
                 if cambi and proposta(db.session.get(Campionato, campionato_id), cambi):
@@ -631,7 +643,7 @@ def edit_campionato(campionato_id):
                         url_for(
                             "admin.campionato.proposta_gare",
                             campionato_id=campionato_id,
-                            voce_id=nuove[0].id,
+                            voce_id=voce.id,
                         )
                     )
         except ValueError as ve:

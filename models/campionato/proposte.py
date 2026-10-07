@@ -32,6 +32,8 @@ CAMPI_PROPOSTI: Dict[str, str] = {
     "default_break_rule": "break_rule",
     "has_handicap": "has_handicap",
     "default_time_limit_minutes": "time_limit_minutes",
+    "default_catena_turno": "catena_turno",
+    "default_catena_gara": "catena_gara",
 }
 
 
@@ -111,6 +113,9 @@ def _valore_da_scrivere(campo_gara: str, grezzo: Any) -> Dict[str, Any]:
         return {campo_gara: int(grezzo)}
     if campo_gara == "time_limit_minutes":
         return {campo_gara: int(grezzo) if grezzo not in (None, "") else 0}
+    if campo_gara in ("catena_turno", "catena_gara"):
+        # La catena vuota `[]` è un valore, non un «niente» (ADR-078).
+        return {campo_gara: grezzo if grezzo not in (None, "") else None}
     if campo_gara == "entry_fee":
         return {campo_gara: float(grezzo) if grezzo not in (None, "") else None}
     return {campo_gara: grezzo if grezzo not in ("",) else None}

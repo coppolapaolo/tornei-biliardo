@@ -24,8 +24,11 @@ from .ordinamento import (
     Criterio,
     Livello,
     Scontro,
+    catena_dal_testo,
     catena_di_default,
     normalizza_catena,
+    ssr_della_catena,
+    testo_della_catena,
 )
 
 
@@ -49,32 +52,179 @@ def ordina_con_la_catena(sistema: ClassificationSystem) -> bool:
     return sistema in (ClassificationSystem.WINS, ClassificationSystem.RACK)
 
 
-def ssr_fino_al_della_gara(gara: Any) -> Optional[int]:
-    """Fin dove la gara scioglie i pari merito con lo spareggio, o None."""
-    if not getattr(gara, "tiebreaker_enabled", False):
-        return None
-    return getattr(gara, "tiebreaker_until_position", None) or SSR_FINO_AL_DEFAULT
+#: Le colonne delle catene, per livello: sulla gara, e quella che il
+#: campionato propone alle sue gare (ADR-075). La catena della classifica
+#: generale sta solo sul campionato (`Campionato.catena_generale`).
+COLONNA_DELLA_GARA = {Livello.TURNO: "catena_turno", Livello.GARA: "catena_gara"}
+COLONNA_PROPOSTA = {
+    Livello.TURNO: "default_catena_turno",
+    Livello.GARA: "default_catena_gara",
+}
 
 
-def catena_di_turno(gara: Any) -> Catena:
-    sistema = sistema_della_gara(gara)
-    return normalizza_catena(
-        catena_di_default(Livello.TURNO, sistema), Livello.TURNO, sistema
+def _sistema_del_campionato(campionato: Any) -> ClassificationSystem:
+    sistema = ClassificationSystem.resolve(
+        getattr(campionato, "default_classification_system", None)
     )
+    return sistema if ordina_con_la_catena(sistema) else ClassificationSystem.WINS
+
+
+def catena_proposta(campionato: Any, livello: Livello) -> Catena:
+    """La catena che il campionato propone alle gare di quel livello.
+
+    Senza una scelta del campionato, il default dell'app per il suo sistema.
+    """
+    sistema = _sistema_del_campionato(campionato)
+    salvata = catena_dal_testo(getattr(campionato, COLONNA_PROPOSTA[livello], None))
+    if salvata is None:
+        salvata = catena_di_default(livello, sistema)
+    return normalizza_catena(salvata, livello, sistema)
+
+
+def _testo_al_turno(gara: Any, turno: int) -> Optional[str]:
+    """Il testo della catena di turno in vigore al turno ``turno``.
+
+    A gara avviata la catena di turno è una regola, e vale dal turno
+    successivo (ADR-075): la classifica di un turno già nato si fa con la
+    catena di allora, anche se la si ricalcola dopo una correzione. La storia
+    dice cosa valeva: il primo cambio che vale da **dopo** quel turno ha in
+    «prima» la catena di quel turno. Senza cambi così, vale quella di adesso.
+    """
+    attuale = getattr(gara, "catena_turno", None)
+    gara_id = getattr(gara, "id", None)
+    if not isinstance(gara_id, int):
+        return attuale if isinstance(attuale, str) else None
+    from models.base import db
+    from models.storia.models import SettingsChange, SettingsChangeField
+
+    riga = (
+        db.session.query(SettingsChangeField.old_value)
+        .join(SettingsChange, SettingsChange.id == SettingsChangeField.change_id)
+        .filter(
+            SettingsChange.gara_id == gara_id,
+            SettingsChange.from_round.isnot(None),
+            SettingsChange.from_round > turno,
+            SettingsChangeField.field == "catena_turno",
+        )
+        .order_by(
+            SettingsChange.from_round,
+            SettingsChange.created_at,
+            SettingsChange.id,
+        )
+        .first()
+    )
+    if riga is None:
+        return attuale if isinstance(attuale, str) else None
+    return riga[0] or None
+
+
+def _catena_della_gara(
+    gara: Any, livello: Livello, testo: Optional[str], sistema: ClassificationSystem
+) -> Catena:
+    """La catena salvata sulla gara, o quella del campionato, o il default."""
+    salvata = catena_dal_testo(testo)
+    if salvata is None:
+        campionato = getattr(gara, "campionato", None)
+        salvata = catena_dal_testo(
+            getattr(campionato, COLONNA_PROPOSTA[livello], None)
+            if campionato is not None
+            else None
+        )
+    if salvata is None:
+        salvata = catena_di_default(livello, sistema)
+    return normalizza_catena(salvata, livello, sistema)
+
+
+def catena_di_turno(gara: Any, turno: Optional[int] = None) -> Catena:
+    """La catena della classifica di turno: gara → campionato → default.
+
+    Con ``turno``, quella in vigore a quel turno (vedi `_testo_al_turno`).
+    """
+    sistema = sistema_della_gara(gara)
+    testo = (
+        _testo_al_turno(gara, turno)
+        if turno is not None
+        else getattr(gara, "catena_turno", None)
+    )
+    return _catena_della_gara(gara, Livello.TURNO, testo, sistema)
 
 
 def catena_di_gara(gara: Any) -> Catena:
+    """La catena della classifica di gara: gara → campionato → default."""
     sistema = sistema_della_gara(gara)
-    catena = catena_di_default(
-        Livello.GARA, sistema, ssr_fino_al=ssr_fino_al_della_gara(gara)
+    return _catena_della_gara(
+        gara, Livello.GARA, getattr(gara, "catena_gara", None), sistema
     )
-    return normalizza_catena(catena, Livello.GARA, sistema)
+
+
+def ssr_fino_al_della_gara(gara: Any) -> Optional[int]:
+    """Fin dove la gara scioglie i pari merito con lo spareggio, o None."""
+    voce = ssr_della_catena(catena_di_gara(gara))
+    if voce is None:
+        return None
+    return voce.fino_al or SSR_FINO_AL_DEFAULT
 
 
 def catena_generale(campionato: Any, sistema: ClassificationSystem) -> Catena:
-    return normalizza_catena(
-        catena_di_default(Livello.CAMPIONATO, sistema), Livello.CAMPIONATO, sistema
-    )
+    """La catena della classifica generale del campionato, o il default."""
+    salvata = catena_dal_testo(getattr(campionato, "catena_generale", None))
+    if salvata is None:
+        salvata = catena_di_default(Livello.CAMPIONATO, sistema)
+    return normalizza_catena(salvata, Livello.CAMPIONATO, sistema)
+
+
+def testo_dal_modulo(
+    grezzo: object, livello: Livello, sistema: ClassificationSystem
+) -> str:
+    """La catena scritta dall'editor, ammessa a quel livello e pronta da salvare.
+
+    Il modulo manda le voci separate da virgole (o una lista JSON). Le voci
+    che quel livello non ammette — il criterio principale, lo SSR nel turno,
+    un doppione — si tolgono invece di rifiutare il salvataggio: l'editor non
+    le offre, quindi arrivano solo da un invio costruito a mano o da un cambio
+    di sistema, e la regola è la stessa che vale in lettura.
+    """
+    if not ordina_con_la_catena(sistema):
+        sistema = ClassificationSystem.WINS
+    testo = grezzo if isinstance(grezzo, str) else ""
+    catena = catena_dal_testo(testo) or ()
+    return testo_della_catena(normalizza_catena(catena, livello, sistema))
+
+
+def adegua_al_sistema(
+    testo: Optional[str],
+    livello: Livello,
+    vecchio: ClassificationSystem,
+    nuovo: ClassificationSystem,
+) -> Optional[str]:
+    """La catena dopo un cambio di sistema di classifica.
+
+    Se era la catena di default del sistema vecchio, diventa quella del nuovo:
+    nessuno l'aveva scelta, era il comportamento dell'app. Lo spareggio della
+    catena di gara conserva il suo posto. Una catena scelta dal direttore
+    resta com'è (in lettura se ne toglie solo il nuovo criterio principale).
+    Restituisce None se non c'è niente da cambiare.
+    """
+    if not ordina_con_la_catena(vecchio):
+        vecchio = ClassificationSystem.WINS
+    if not ordina_con_la_catena(nuovo):
+        nuovo = ClassificationSystem.WINS
+    catena = catena_dal_testo(testo)
+    if catena is None or vecchio is nuovo:
+        return None
+    voce_ssr = ssr_della_catena(catena)
+    fino_al = voce_ssr.fino_al if voce_ssr is not None else None
+    if livello is Livello.GARA:
+        attesa = catena_di_default(livello, vecchio, ssr_fino_al=fino_al)
+        dopo = catena_di_default(livello, nuovo, ssr_fino_al=fino_al)
+    else:
+        attesa = catena_di_default(livello, vecchio)
+        dopo = catena_di_default(livello, nuovo)
+    if normalizza_catena(catena, livello, vecchio) != normalizza_catena(
+        attesa, livello, vecchio
+    ):
+        return None
+    return testo_della_catena(normalizza_catena(dopo, livello, nuovo))
 
 
 def usa_scontri(catena: Iterable[Any]) -> bool:

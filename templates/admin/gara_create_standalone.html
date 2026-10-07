@@ -363,31 +363,20 @@
                                        strategia scelta e' eliminazione diretta o doppio KO. #}
                                     {% include "components/_bracket_options.html" %}
 
-                                    <!-- SSR (Spot Shot Rally) Configuration -->
+                                    {# Le catene degli spareggi (ADR-078): sul tabellone non si usano. #}
                                     <div class="border-top pt-3 mt-3" data-bracket-hide>
                                         <h6 class="text-uppercase small fw-bold text-muted mb-3" data-help="gara-spareggio">
-                                            <i class="fas fa-balance-scale text-warning me-1"></i> {{ _("Spareggio (SSR)") }}
+                                            <i class="fas fa-balance-scale text-warning me-1"></i> {{ _("Pari merito") }}
                                         </h6>
-                                        <div class="form-check form-switch mb-2">
-                                            <input class="form-check-input" type="checkbox" id="tiebreaker_enabled"
-                                                name="tiebreaker_enabled" checked>
-                                            <label class="form-check-label" for="tiebreaker_enabled">
-                                                {{ _('Abilita spareggio (SSR) per parimerito') }}
-                                            </label>
-                                        </div>
-                                        <small class="text-muted d-block mb-2">
-                                            {{ _('Richiede Spot Shot Rally per risolvere parimerito nelle prime posizioni') }}
-                                        </small>
-                                        <div class="row">
-                                            <div class="col-sm-6">
-                                                <label for="tiebreaker_until_position" class="form-label small">{{ _('Spareggio fino alla posizione') }}</label>
-                                                <select class="form-select form-select-sm" name="tiebreaker_until_position" id="tiebreaker_until_position">
-                                                    <option value="1">{{ _('Solo 1° posto') }}</option>
-                                                    <option value="2">{{ _('Fino al 2° posto') }}</option>
-                                                    <option value="3" selected>{{ _('Fino al 3° posto') }}</option>
-                                                </select>
-                                            </div>
-                                        </div>
+                                        {% import "components/_catena_spareggi.html" as catena with context %}
+                                        {{ catena.editor('catena_turno', editor_catena_gara('turno'),
+                                                         _('Pari merito nella classifica di turno'),
+                                                         _("Ordina i giocatori dopo ogni turno, e da lì nascono gli abbinamenti: l'ordine è sempre completo, lo chiude il sorteggio."),
+                                                         '#classification_system') }}
+                                        {{ catena.editor('catena_gara', editor_catena_gara('gara'),
+                                                         _('Pari merito nella classifica finale'),
+                                                         _('Chi resta pari dopo questi criteri condivide la posizione. Lo spareggio SSR si gioca a gara finita, fino al posto che scegli.'),
+                                                         '#classification_system') }}
                                     </div>
                                 </div>
                             </div>
@@ -474,8 +463,8 @@
                                             <span id="summary-first-round" class="badge bg-secondary">- {{ _("Seeding") }}</span>
                                             <span id="summary-odd-policy" class="badge bg-secondary">- {{ _("Dispari") }}</span>
                                             <span id="summary-classification" class="badge bg-info text-dark">-</span>
-                                            <span id="summary-ssr" class="badge bg-warning text-dark">-</span>
                                         </div>
+                                        <div id="summary-spareggi" class="small text-muted mt-2"></div>
                                     </div>
                                     <div class="col-12">
                                         <h6 class="text-muted small text-uppercase mb-1">{{ _("Formato Partite") }}</h6>
@@ -515,6 +504,7 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/bracket_options.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/catena_spareggi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // ANTIGRAVITY FIX: Ensuring clean script scope and syntax
@@ -536,8 +526,6 @@
             seeding: {{ _("Seeding: {value}")|tojson }},
             oddPolicy: {{ _("Dispari: {value}")|tojson }},
             classification: {{ _("Classifica: {value}")|tojson }},
-            ssrUntil: {{ _("SSR: fino {value}")|tojson }},
-            ssrDisabled: {{ _("SSR: Disabilitato")|tojson }},
             autoCalculated: {{ _("Calcolato automaticamente")|tojson }},
             antiRematchWarning: {{ _("Con anti-rematch attivo e {max} partecipanti massimi, puoi avere al massimo {rounds} turni (ogni giocatore può incontrare al massimo {rounds} avversari unici)")|tojson }}
         };
@@ -670,19 +658,10 @@
             document.getElementById('summary-classification').textContent =
                 i18n.classification.replace('{value}', classification.options[classification.selectedIndex].text);
 
-            // SSR configuration summary
-            const ssrEnabled = document.getElementById('tiebreaker_enabled').checked;
-            const ssrPosition = document.getElementById('tiebreaker_until_position');
-            if (ssrEnabled) {
-                document.getElementById('summary-ssr').textContent =
-                    i18n.ssrUntil.replace('{value}', ssrPosition.options[ssrPosition.selectedIndex].text);
-                document.getElementById('summary-ssr').classList.remove('bg-secondary');
-                document.getElementById('summary-ssr').classList.add('bg-warning', 'text-dark');
-            } else {
-                document.getElementById('summary-ssr').textContent = i18n.ssrDisabled;
-                document.getElementById('summary-ssr').classList.remove('bg-warning', 'text-dark');
-                document.getElementById('summary-ssr').classList.add('bg-secondary');
-            }
+            // Come si risolvono i pari merito della classifica finale: la
+            // frase che l'editor della catena ha già composto.
+            const frase = document.querySelector('[data-catena][data-livello="gara"] [data-catena-frase]');
+            document.getElementById('summary-spareggi').textContent = frase ? frase.textContent : '';
 
             // Get preview text from component
             const previewText = document.getElementById('preview-text');
