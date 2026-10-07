@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.57.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.56.0...v1.57.0) (2026-10-07)
+
+
+### Funzioni nuove
+
+* motore unico della catena degli spareggi ([#624](https://github.com/coppolapaolo/tornei-biliardo/issues/624)) ([1e1dcba](https://github.com/coppolapaolo/tornei-biliardo/commit/1e1dcba55e270a09ac452974a6723b9c2752672e))
+
 ## [1.56.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.55.0...v1.56.0) (2026-10-06)
 
 
