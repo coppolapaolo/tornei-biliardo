@@ -218,99 +218,69 @@ class TestCalculatorsEquivalence:
             return gara
 
         legacy, strategy = _run_both(db_session, build)
-        assert legacy == strategy
+        # `a` e `c` hanno gli stessi rack: fra loro decide il sorteggio della
+        # gara (ADR-078), e le due gare hanno semi diversi. Si confronta la
+        # classifica come insieme di righe.
+        assert sorted(r[1:] for r in legacy) == sorted(r[1:] for r in strategy)
         # Le due colonne non si sovrascrivono più: il totale è sempre >= 0,
         # la differenza può essere negativa e resta disponibile.
         assert all(racks_won >= 0 for _pos, _mw, _rd, racks_won in legacy)
         assert any(rack_diff < 0 for _pos, _mw, rack_diff, _rw in legacy)
 
-    def test_rack_system_ssr_tiebreak(self, db_session):
-        """Lo SSR separa due giocatori con lo stesso totale rack.
+    def test_rack_turno_non_guarda_ne_lo_ssr_ne_la_differenza(self, db_session):
+        """Nel turno RACK: rack vinti → posizione precedente → sorteggio.
 
-        Era implementato solo nel calcolatore legacy. Lo scenario è costruito
-        per essere discriminante: senza SSR vincerebbe `b`, che ha differenza
-        rack nettamente migliore a parità di rack totali.
+        Fino al 2026-10-07 lo SSR e poi la differenza separavano chi aveva gli
+        stessi rack. Lo spareggio si gioca a gara finita e la specifica dice
+        «rack, poi spareggio»: nel turno non c'è nessuno dei due (ADR-078).
+        Con o senza SSR registrato, l'ordine del turno è lo stesso.
         """
+        a, b, c, d = _players(db_session, 4)
+        gara = _gara(db_session, [a, b, c, d], classification_system="RACK")
+        # Stessi rack totali (5), differenze diverse: a +1, b +5
+        _match(db_session, gara, a, c, 5, 4)
+        _match(db_session, gara, b, d, 5, 0)
+        service = StrategyBasedClassificationService()
 
-        def build():
-            a, b, c, d = _players(db_session, 4)
-            gara = _gara(db_session, [a, b, c, d], classification_system="RACK")
-            # Stessi rack totali (5), differenze diverse: a +1, b +5
-            _match(db_session, gara, a, c, 5, 4)
-            _match(db_session, gara, b, d, 5, 0)
-            db_session.add(
-                GaraClassification(
-                    gara_id=gara.id, user_id=a.id, position=1, spot_shot_wins=3
-                )
-            )
-            db_session.add(
-                GaraClassification(
-                    gara_id=gara.id, user_id=b.id, position=2, spot_shot_wins=0
-                )
-            )
+        def ordine():
+            service.calculate_round_classification(gara.id, 1)
             db_session.flush()
-            gara._winner_by_ssr = a.id  # type: ignore[attr-defined]
-            return gara
+            return [r[1] for r in _snapshot(db_session, gara.id, 1)]
 
-        gara_legacy = build()
-        gara_strategy = build()
+        senza_ssr = ordine()
+        for utente, ssr in ((a, 0), (b, 7)):
+            db_session.add(
+                GaraClassification(
+                    gara_id=gara.id, user_id=utente.id, position=1, spot_shot_wins=ssr
+                )
+            )
+        db_session.flush()
+        assert ordine() == senza_ssr
 
-        RoundClassification.calculate_classification_after_round(gara_legacy.id, 1)
-        StrategyBasedClassificationService().calculate_round_classification(
-            gara_strategy.id, 1
+    def test_alla_fine_della_gara_chi_non_ha_tirato_va_dopo_chi_ha_fatto_zero(
+        self, db_session
+    ):
+        """Nella classifica di gara lo SSR c'è, e -1 vale «non ha tirato»."""
+        from models.competition.spareggio_service import SpareggioService
+
+        a, b, c, d = _players(db_session, 4)
+        gara = _gara(db_session, [a, b, c, d], classification_system="RACK")
+        # Stessi rack totali (5): a +5, b +1
+        _match(db_session, gara, a, c, 5, 0)
+        _match(db_session, gara, b, d, 5, 4)
+        StrategyBasedClassificationService().calculate_round_classification(gara.id, 1)
+        # Solo b ha un punteggio SSR, pari a 0. `a` non ha tirato.
+        db_session.add(
+            GaraClassification(
+                gara_id=gara.id, user_id=b.id, position=1, spot_shot_wins=0
+            )
         )
         db_session.flush()
 
-        for gara in (gara_legacy, gara_strategy):
-            first = (
-                db_session.query(RoundClassification)
-                .filter_by(gara_id=gara.id, round_number=1, position=1)
-                .one()
-            )
-            assert first.user_id == gara._winner_by_ssr, (
-                "Chi ha SSR più alto deve stare davanti a parità di rack totali "
-                f"(gara {gara.id})"
-            )
-
-    def test_missing_ssr_sorts_after_zero(self, db_session):
-        """Chi non ha tirato lo SSR ordina dopo chi ha tirato e fatto 0.
-
-        Discriminante: `a` ha differenza rack migliore, quindi senza la
-        convenzione "-1 = non ha tirato" starebbe davanti.
-        """
-
-        def build():
-            a, b, c, d = _players(db_session, 4)
-            gara = _gara(db_session, [a, b, c, d], classification_system="RACK")
-            # Stessi rack totali (5), differenze diverse: a +5, b +1
-            _match(db_session, gara, a, c, 5, 0)
-            _match(db_session, gara, b, d, 5, 4)
-            # Solo b ha un punteggio SSR, pari a 0. `a` non ha tirato.
-            db_session.add(
-                GaraClassification(
-                    gara_id=gara.id, user_id=b.id, position=1, spot_shot_wins=0
-                )
-            )
-            db_session.flush()
-            gara._expected_first = b.id  # type: ignore[attr-defined]
-            return gara
-
-        gara_legacy = build()
-        gara_strategy = build()
-
-        RoundClassification.calculate_classification_after_round(gara_legacy.id, 1)
-        StrategyBasedClassificationService().calculate_round_classification(
-            gara_strategy.id, 1
-        )
-        db_session.flush()
-
-        for gara in (gara_legacy, gara_strategy):
-            first = (
-                db_session.query(RoundClassification)
-                .filter_by(gara_id=gara.id, round_number=1, position=1)
-                .one()
-            )
-            assert first.user_id == gara._expected_first
+        SpareggioService.apply_final_positions(gara.id)
+        posizioni = {r[1]: r[0] for r in _snapshot(db_session, gara.id, 1)}
+        assert posizioni[b.id] == 1
+        assert posizioni[a.id] == 2
 
     def test_seeding_tiebreak_is_honoured_by_both(self, db_session):
         """Anche il parimerito per classifica di partenza deve coincidere."""

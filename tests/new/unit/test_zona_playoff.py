@@ -60,9 +60,15 @@ def _campionato_a_quattro(db_session, seconda_gara=None, **cfg):
     db_session.add(camp)
     db_session.flush()
     a, b, c, d = (_utente(db_session, n) for n in "abcd")
-    coppie_2 = ((a, c), (b, d)) if seconda_gara is None else seconda_gara(a, b, c, d)
+    # I triangoli del perdente (terzo elemento) fanno l'ordine A > B > C > D
+    # coi numeri, non con l'ordine in cui i giocatori compaiono: a pari merito
+    # la classifica generale guarda la gara precedente, poi il sorteggio
+    # (ADR-078). C e D finiscono pari, e decide la gara 1.
+    coppie_2 = (
+        ((a, c, 0), (b, d, 1)) if seconda_gara is None else seconda_gara(a, b, c, d)
+    )
     for numero, giorno, coppie in (
-        (1, 10, ((a, d), (b, c))),
+        (1, 10, ((a, d, 0), (b, c, 1))),
         (2, 15, coppie_2),
     ):
         gara = Gara(
@@ -79,7 +85,7 @@ def _campionato_a_quattro(db_session, seconda_gara=None, **cfg):
         )
         db_session.add(gara)
         db_session.flush()
-        for vince, perde in coppie:
+        for vince, perde, persi in coppie:
             db_session.add(
                 Match(
                     gara_id=gara.id,
@@ -87,7 +93,7 @@ def _campionato_a_quattro(db_session, seconda_gara=None, **cfg):
                     player1_id=vince.id,
                     player2_id=perde.id,
                     player1_score=5,
-                    player2_score=0,
+                    player2_score=persi,
                     status=MatchStatus.CLOSED_UNILATERALLY.value,
                     winner_id=vince.id,
                 )
@@ -186,14 +192,15 @@ def test_chi_non_ha_le_gare_minime_lascia_il_posto_a_chi_viene_dopo(db_session):
     """Come `start_playoff`: il posto rimasto si copre dopo la fascia.
 
     B salta la gara 2 (al suo posto gioca E, che quindi ha una gara sola
-    anche lui): con due gare minime la fascia 1–2 e' A e B, B non e' idoneo,
-    e il posto va al primo idoneo dopo la fascia, cioe' C.
+    anche lui): con due gare minime la fascia 1–2 e' A ed E, E non e' idoneo
+    e nemmeno B, che viene dopo, e il posto va al primo idoneo dopo la fascia,
+    cioe' C.
     """
     e = {}
 
     def seconda_gara(a, b, c, d):
         e["utente"] = _utente(db.session, "e")
-        return ((a, c), (e["utente"], d))
+        return ((a, c, 0), (e["utente"], d, 0))
 
     dati = _campionato_a_quattro(
         db_session, seconda_gara=seconda_gara, min_garas_played=2
@@ -323,7 +330,7 @@ def test_le_gare_minime_si_leggono_dalla_classifica_in_pagina(db_session):
 
     def seconda_gara(a, b, c, d):
         e["utente"] = _utente(db.session, "e")
-        return ((a, c), (e["utente"], d))
+        return ((a, c, 0), (e["utente"], d, 0))
 
     dati = _campionato_a_quattro(
         db_session,

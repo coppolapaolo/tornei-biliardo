@@ -18,6 +18,15 @@ from ..status_enum import ClassificationSystem
 
 # Strategy pattern imports
 from .bracket_standings import bracket_positions
+from .catene import (
+    catena_di_gara,
+    catena_di_turno,
+    ordina_con_la_catena,
+    scontri_delle_gare,
+    sistema_dichiarato,
+    usa_scontri,
+)
+from .ordinamento import Livello, seme_della_gara
 from .strategies.base import ClassificationResult, ClassificationScope, PlayerScore
 from .strategies.position_strategies import BRACKET_POSITION_KEY
 from .registry import get_classification_registry
@@ -204,9 +213,9 @@ class StrategyBasedClassificationService:
         # Get appropriate strategy
         strategy = self.get_strategy_for_gara(gara)
 
-        # Aggregate scores from matches
+        # Aggregate scores from matches. Lo spareggio SSR non entra nella
+        # classifica di turno: si gioca a gara finita (ADR-078).
         scores = self._aggregator.aggregate_round_scores(gara_id, round_number)
-        scores = self._enrich_with_spot_shot(gara, scores)
         scores = self._enrich_with_bracket_position(gara, scores)
 
         # Get previous classification if exists. Per il turno 1 il precedente è
@@ -220,7 +229,11 @@ class StrategyBasedClassificationService:
         result = strategy.calculate(
             scores=scores,
             previous_classification=previous,
-            context={"gara_id": gara_id, "round_number": round_number},
+            context={
+                "gara_id": gara_id,
+                "round_number": round_number,
+                **self._contesto_della_catena(gara, Livello.TURNO, round_number),
+            },
         )
 
         # Persist result to database
@@ -293,6 +306,7 @@ class StrategyBasedClassificationService:
                 "tiebreaker_until_position": getattr(
                     gara, "tiebreaker_until_position", None
                 ),
+                **self._contesto_della_catena(gara, Livello.GARA, final_round),
             },
         )
 
@@ -300,6 +314,27 @@ class StrategyBasedClassificationService:
         self._save_gara_classification(gara_id, result, spot_shot_results)
 
         return result
+
+    @staticmethod
+    def _contesto_della_catena(gara, livello, fino_al_turno: int) -> Dict[str, Any]:
+        """Ciò che il motore della catena legge dalla gara (ADR-078).
+
+        La catena del livello, il seme del sorteggio e, solo se la catena ha
+        lo scontro diretto, le partite fino a quel turno. Nel sistema POSITION
+        non c'è catena: le sue strategie non leggono niente di questo.
+        """
+        if not ordina_con_la_catena(sistema_dichiarato(gara)):
+            return {}
+        catena = (
+            catena_di_turno(gara) if livello is Livello.TURNO else catena_di_gara(gara)
+        )
+        contesto: Dict[str, Any] = {
+            "catena": catena,
+            "seme_sorteggio": seme_della_gara(gara),
+        }
+        if usa_scontri(catena):
+            contesto["scontri"] = scontri_delle_gare([gara.id], fino_al_turno)
+        return contesto
 
     @staticmethod
     def _enrich_with_bracket_position(
@@ -355,34 +390,6 @@ class StrategyBasedClassificationService:
             .all()
             if gc.spot_shot_wins
         }
-
-    @staticmethod
-    def _enrich_with_spot_shot(gara, scores: List[PlayerScore]) -> List[PlayerScore]:
-        """Popola `spot_shot_wins` per le gare RACK, dove lo SSR è tiebreak.
-
-        Nelle gare a rack due giocatori con lo stesso totale rack sono separati
-        dal punteggio Spot Shot Rally prima ancora della differenza rack.
-
-        Convenzione (ereditata dal calcolo storico): chi NON ha inserito un
-        punteggio vale -1, così ordina dopo chi ha inserito 0. Il default 0 di
-        `PlayerScore` significherebbe "ha tirato e ha fatto zero", che è un
-        risultato migliore di "non ha tirato".
-        """
-        if (getattr(gara, "classification_system", None) or "WINS").upper() != "RACK":
-            return list(scores)
-
-        ssr_by_player = {
-            gc.user_id: gc.spot_shot_wins
-            for gc in db.session.query(GaraClassification)
-            .filter_by(gara_id=gara.id)
-            .all()
-            if gc.spot_shot_wins is not None
-        }
-
-        return [
-            replace(score, spot_shot_wins=ssr_by_player.get(score.player_id, -1))
-            for score in scores
-        ]
 
     def _load_previous_classification(
         self,
@@ -499,7 +506,7 @@ class StrategyBasedClassificationService:
         """Save final gara classification to database.
 
         ``spot_shot_results`` viene riscritto invece che ricavato dallo score:
-        il -1 che `_enrich_with_spot_shot` usa in memoria e' una convenzione di
+        il -1 con cui il motore ordina chi non ha tirato e' una convenzione di
         **ordinamento** («non ha tirato» ordina dopo «ha fatto zero») e non deve
         finire su disco, dove verrebbe riletto come un punteggio vero.
 

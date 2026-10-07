@@ -1,14 +1,14 @@
-"""`TiebreakerService` e `SpareggioService` devono concordare sui parimerito.
+"""Chi è a pari merito per lo spareggio: le vittorie non contano a rack.
 
-I due servizi rispondono alla stessa domanda — "quali giocatori sono a pari
-merito, e serve uno spareggio?" — ma la calcolavano con criteri diversi: in una
-gara RACK `TiebreakerService` includeva `matches_won` nella chiave di
+C'erano due servizi che rispondevano alla stessa domanda — "quali giocatori
+sono a pari merito, e serve uno spareggio?" — con criteri diversi: in una gara
+RACK `TiebreakerService` includeva `matches_won` nella chiave di
 raggruppamento, mentre `SpareggioService` raggruppa per i soli rack totali.
+Due giocatori con gli stessi rack totali ma vittorie diverse finivano in
+gruppi separati e lo spareggio non scattava.
 
-Conseguenza: due giocatori con gli stessi rack totali ma un numero diverso di
-match vinti finivano in gruppi separati, l'ex-aequo non veniva rilevato e lo
-spareggio non scattava — pur essendo, per le regole del sistema RACK, un pari
-merito a tutti gli effetti (le vittorie lì non sono un criterio di classifica).
+Dal 2026-10-07 la risposta è una sola, il motore della catena (ADR-078), e
+`TiebreakerService` — mai chiamato fuori dai test — è stato tolto.
 """
 
 from __future__ import annotations
@@ -22,7 +22,6 @@ import pytest
 from models import Gara, Inscription, Match, User
 from models.classification.models import RoundClassification
 from models.competition.spareggio_service import SpareggioService
-from models.competition.tiebreaker_service import TiebreakerService
 from models.status_enum import GaraStatus, MatchStatus
 from models.user.role_enum import UserRole
 
@@ -118,9 +117,17 @@ def _setup(db_session, classification_system: str) -> Gara:
     return gara
 
 
+def _gruppi(gara) -> set:
+    return {
+        frozenset(c.user_id for c in righe)
+        for _pos, righe in SpareggioService._fasce(gara, fino_allo_ssr=True)
+        if len(righe) > 1
+    }
+
+
 @pytest.mark.unit
 class TestTiebreakerGroupingParity:
-    """Stessa domanda, stessa risposta, in entrambi i servizi."""
+    """Chi è pari per lo spareggio, secondo il sistema."""
 
     def test_rack_system_same_totals_is_a_tie_despite_different_wins(self, db_session):
         """Sistema RACK: stessi rack totali = parimerito, anche a vittorie diverse."""
@@ -135,58 +142,24 @@ class TestTiebreakerGroupingParity:
         assert rows[gara._a].ranking_rack_value == rows[gara._b].ranking_rack_value
         assert rows[gara._a].matches_won != rows[gara._b].matches_won
 
-        ties = TiebreakerService.detect_ties(gara.id)
-        tied_players = {pid for t in ties for pid in t.player_ids}
-
-        assert gara._a in tied_players and gara._b in tied_players, (
+        assert frozenset({gara._a, gara._b}) in _gruppi(gara), (
             "in una gara RACK due giocatori con gli stessi rack totali sono "
             "parimerito: le vittorie non sono un criterio di classifica"
         )
-
-    def test_both_services_agree_on_rack_system(self, db_session):
-        """Il gruppo rilevato dai due servizi è lo stesso."""
-        gara = _setup(db_session, "RACK")
-
-        ties = TiebreakerService.detect_ties(gara.id)
-        tiebreaker_groups = {
-            frozenset(t.player_ids) for t in ties if len(t.player_ids) > 1
+        tied = {
+            p["user_id"]
+            for g in SpareggioService.detect_tiebreakers(gara.id)
+            for p in g["players"]
         }
-
-        _keys, groups_by_key = SpareggioService._group_by_classification(gara)
-        spareggio_groups = {
-            frozenset(c.user_id for c in g)
-            for g in groups_by_key.values()
-            if len(g) > 1
-        }
-
-        assert tiebreaker_groups == spareggio_groups
+        assert {gara._a, gara._b} <= tied
 
     def test_wins_system_different_wins_is_not_a_tie(self, db_session):
         """Sistema WINS: le vittorie contano, quindi NON è parimerito."""
         gara = _setup(db_session, "WINS")
 
-        ties = TiebreakerService.detect_ties(gara.id)
-        for t in ties:
-            assert not (
-                gara._a in t.player_ids and gara._b in t.player_ids
-            ), "con vittorie diverse in sistema WINS non c'è parimerito"
-
-    def test_both_services_agree_on_wins_system(self, db_session):
-        gara = _setup(db_session, "WINS")
-
-        ties = TiebreakerService.detect_ties(gara.id)
-        tiebreaker_groups = {
-            frozenset(t.player_ids) for t in ties if len(t.player_ids) > 1
-        }
-
-        _keys, groups_by_key = SpareggioService._group_by_classification(gara)
-        spareggio_groups = {
-            frozenset(c.user_id for c in g)
-            for g in groups_by_key.values()
-            if len(g) > 1
-        }
-
-        assert tiebreaker_groups == spareggio_groups
+        assert not any(
+            {gara._a, gara._b} <= g for g in _gruppi(gara)
+        ), "con vittorie diverse in sistema WINS non c'è parimerito"
 
 
 @pytest.mark.unit

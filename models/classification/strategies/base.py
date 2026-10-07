@@ -205,86 +205,83 @@ class ClassificationStrategy(ABC):
     #: Stesso default di `Gara.podio` (`tiebreaker_until_position or 3`).
     DEFAULT_TIEBREAKER_UNTIL_POSITION = 3
 
-    def _resolve_ties_with_spot_shot(
+    def _ordina_con_la_catena(
         self,
-        entries: Tuple[ClassificationEntry, ...],
-        spot_shot_results: Dict[int, int],
-        until_position: Optional[int] = None,
-    ) -> List[ClassificationEntry]:
-        """Scioglie con lo Spot Shot Rally i pari merito che vanno sciolti.
+        scores: Sequence[PlayerScore],
+        sistema: Any,
+        livello: Any,
+        context: Optional[Dict[str, Any]],
+        *,
+        ssr: Optional[Dict[int, int]] = None,
+        ssr_fino_al: Optional[int] = None,
+    ) -> Tuple[List[ClassificationEntry], bool]:
+        """Le entries ordinate dal motore unico della catena (ADR-078).
 
-        Tre regole di dominio, tutte e tre facili da tradire scrivendo un
-        `sorted()` in fretta:
+        La catena arriva nel ``context`` (``"catena"``, già normalizzata da chi
+        la legge sulla gara); senza, vale quella di default del livello. Nel
+        context possono esserci anche ``"scontri"`` (per lo scontro diretto),
+        ``"seme_sorteggio"`` e ``"punti_partita"``.
 
-        1. **Solo le posizioni di testa.** Lo spareggio vale entro
-           ``until_position`` (di norma le prime 3): oltre, il pari merito e'
-           un risultato legittimo e non si tocca — `CLASSIFICATION_SYSTEM.md`
-           §5.2, «da una certa posizione in poi i parimerito restano tali».
-        2. **Ordina solo l'SSR.** Nessun altro criterio entra qui: la posizione
-           del turno precedente e' un criterio *di turno*, e importarla
-           separerebbe due giocatori che sul tavolo hanno fatto lo stesso.
-        3. **A SSR uguale il pari merito rimane.** Non c'e' ripiego. In
-           particolare **non** l'id del giocatore, che e' l'ordine di
-           registrazione: separare due pari merito per data di iscrizione e'
-           inventare un risultato, per giunta marcandolo come «risolto».
-
-        La numerazione salta: quattro pari al 3° posto, uno solo con SSR 1,
-        danno 3° il primo e **4°** gli altri tre, ancora a pari fra loro.
+        Returns:
+            Le entries e se è rimasto qualche pari merito.
         """
-        gruppi: Dict[int, List[ClassificationEntry]] = {}
-        for entry in entries:
-            gruppi.setdefault(entry.position, []).append(entry)
-
-        soglia = (
-            until_position
-            if until_position is not None
-            else self.DEFAULT_TIEBREAKER_UNTIL_POSITION
+        from ..ordinamento import (
+            Concorrente,
+            Livello,
+            catena_di_default,
+            chiave_di_sorteggio,
+            criterio_principale,
+            normalizza_catena,
+            ordina,
         )
 
-        risolte: List[ClassificationEntry] = []
-        posizione = 1
-        for pos in sorted(gruppi):
-            gruppo = gruppi[pos]
-
-            if len(gruppo) == 1 or posizione > soglia:
-                # Un solo giocatore non ha niente da sciogliere; oltre la
-                # soglia il pari merito resta com'e'.
-                risolte.extend(self._entries_a_pari(gruppo, posizione))
-                posizione += len(gruppo)
-                continue
-
-            ordinato = sorted(
-                gruppo, key=lambda e: -spot_shot_results.get(e.player_id, 0)
+        context = context or {}
+        catena = context.get("catena")
+        if catena is None:
+            if livello is Livello.GARA:
+                catena = catena_di_default(livello, sistema, ssr_fino_al=ssr_fino_al)
+            else:
+                catena = catena_di_default(livello, sistema)
+        catena = normalizza_catena(catena, livello, sistema)
+        seme = context.get("seme_sorteggio", "")
+        per_id = {s.player_id: s for s in scores}
+        concorrenti = [
+            Concorrente(
+                player_id=s.player_id,
+                vittorie=s.matches_won,
+                rack_vinti=s.racks_won,
+                differenza_rack=s.rack_difference,
+                punti=s.points,
+                ssr=(ssr or {}).get(s.player_id),
+                posizione_precedente=s.previous_position,
+                sorteggio=chiave_di_sorteggio(seme, s.player_id),
             )
-            indice = 0
-            while indice < len(ordinato):
-                ssr = spot_shot_results.get(ordinato[indice].player_id, 0)
-                stesso_ssr = [
-                    e for e in ordinato if spot_shot_results.get(e.player_id, 0) == ssr
-                ]
-                risolte.extend(self._entries_a_pari(stesso_ssr, posizione + indice))
-                indice += len(stesso_ssr)
-            posizione += len(ordinato)
-
-        return risolte
-
-    @staticmethod
-    def _entries_a_pari(
-        gruppo: Sequence[ClassificationEntry], posizione: int
-    ) -> List[ClassificationEntry]:
-        """Le entries di un gruppo, tutte alla stessa posizione."""
-        da_solo = len(gruppo) == 1
-        ids = tuple(e.player_id for e in gruppo)
-        return [
-            ClassificationEntry(
-                player_id=e.player_id,
-                position=posizione,
-                score=e.score,
-                tied_with=() if da_solo else tuple(i for i in ids if i != e.player_id),
-                tiebreaker_resolved=da_solo,
-            )
-            for e in gruppo
+            for s in scores
         ]
+        fasce = ordina(
+            concorrenti,
+            criterio_principale(sistema),
+            catena,
+            scontri=context.get("scontri") or (),
+            punti_partita=context.get("punti_partita") or (3, 1, 0),
+        )
+        entries: List[ClassificationEntry] = []
+        pari = False
+        for fascia in fasce:
+            ids = tuple(c.player_id for c in fascia.giocatori)
+            da_solo = len(ids) == 1
+            pari = pari or not da_solo
+            for pid in ids:
+                entries.append(
+                    ClassificationEntry(
+                        player_id=pid,
+                        position=fascia.posizione,
+                        score=per_id[pid],
+                        tied_with=() if da_solo else tuple(i for i in ids if i != pid),
+                        tiebreaker_resolved=da_solo,
+                    )
+                )
+        return entries, pari
 
     def _enrich_with_previous(
         self,

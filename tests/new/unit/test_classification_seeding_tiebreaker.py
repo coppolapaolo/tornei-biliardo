@@ -176,8 +176,18 @@ class TestSeedingBreaksRoundTies:
         )
         assert rc_round1.previous_position == 2
 
-    def test_without_seeding_falls_back_to_user_id(self, db_session):
-        """Gare pre-esistenti (nessun turno 0): comportamento storico invariato."""
+    def test_without_seeding_falls_back_to_the_draw(self, db_session):
+        """Gare senza turno 0: a pari merito decide il sorteggio, non l'id.
+
+        Fino al 2026-10-07 l'ultima risorsa era l'id del giocatore, cioè
+        l'ordine di registrazione. Ora è il sorteggio deterministico della gara
+        (ADR-078): stessa classifica a ogni lettura, ma non per anzianità.
+        """
+        from models.classification.ordinamento import (
+            chiave_di_sorteggio,
+            seme_della_gara,
+        )
+
         a, b, c, d = _make_players(db_session, 4)
         gara = _make_gara(db_session, [a, b, c, d])
 
@@ -187,7 +197,23 @@ class TestSeedingBreaksRoundTies:
         RoundClassification.calculate_classification_after_round(gara.id, 1)
         db_session.flush()
 
-        assert _positions(db_session, gara.id, 1) == [a.id, c.id, b.id, d.id]
+        seme = seme_della_gara(gara)
+
+        def per_sorteggio(*giocatori):
+            return sorted(
+                (g.id for g in giocatori), key=lambda i: chiave_di_sorteggio(seme, i)
+            )
+
+        assert _positions(db_session, gara.id, 1) == per_sorteggio(
+            a, c
+        ) + per_sorteggio(b, d)
+
+        # Rileggere non cambia niente.
+        RoundClassification.calculate_classification_after_round(gara.id, 1)
+        db_session.flush()
+        assert _positions(db_session, gara.id, 1) == per_sorteggio(
+            a, c
+        ) + per_sorteggio(b, d)
 
     def test_rack_system_tie_follows_seeding(self, db_session):
         """Anche il sistema RACK usa il seeding prima dell'user_id."""

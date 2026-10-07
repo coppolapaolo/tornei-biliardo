@@ -183,3 +183,7 @@ blocks:
         a: "They are recalculated when every match in the round is finished."
       - q: "How do the championship standings add up?"
         a: "By summing: wins and rack difference with «Wins», total racks with «Racks», position points with «Position». If a competition carries a weight, its score is multiplied by that number first."
+      - q: "In the championship two players have the same numbers: who is ahead?"
+        a: "Whoever was ahead after the previous competition. If they were level there too, the draw decides: it is fixed, so the standings do not change each time you look, and it does not depend on who registered first."
+      - q: "During a competition, level on wins and rack difference, who is ahead?"
+        a: "Whoever was ahead in the previous round, and in round one whoever was ahead in the starting order. With the «Racks» system the difference does not count: level on racks, the previous round decides straight away. The tie-break is played only at the end of the competition."

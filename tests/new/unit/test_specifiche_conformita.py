@@ -157,6 +157,118 @@ class TestSistemiDiClassifica:
         assert SpareggioService.tiebreakers_apply_to(gara) is True
 
 
+# ══ Classifica: come si risolvono i pari merito ══════════════════════════
+
+
+def _partita(db_session, gara, vince, perde, persi: int, turno: int = 1) -> None:
+    db_session.add(
+        Match(
+            gara_id=gara.id,
+            round_number=turno,
+            player1_id=vince.id,
+            player2_id=perde.id,
+            player1_score=gara.distance,
+            player2_score=persi,
+            winner_id=vince.id,
+            status=MatchStatus.CLOSED_UNILATERALLY.value,
+        )
+    )
+
+
+@pytest.mark.unit
+class TestCateneDegliSpareggi:
+    """`SPECIFICHE.md`, «Classifica», «Come si risolvono i pari merito»."""
+
+    @pytest.mark.parametrize(
+        "livello, sistema, attesa",
+        [
+            ("turno", "WINS", ["differenza_rack", "posizione_precedente", "sorteggio"]),
+            ("turno", "RACK", ["posizione_precedente", "sorteggio"]),
+            ("gara", "WINS", ["differenza_rack", "ssr:3"]),
+            ("gara", "RACK", ["ssr:3"]),
+            (
+                "campionato",
+                "WINS",
+                ["differenza_rack", "ssr", "posizione_precedente", "sorteggio"],
+            ),
+            ("campionato", "RACK", ["ssr", "posizione_precedente", "sorteggio"]),
+        ],
+    )
+    def test_la_tabella_delle_catene(self, livello, sistema, attesa):
+        """La tabella: una catena per classifica e per sistema."""
+        from models.classification.ordinamento import (
+            Livello,
+            catena_di_default,
+            serializza_catena,
+        )
+        from models.status_enum import ClassificationSystem
+
+        assert (
+            serializza_catena(
+                catena_di_default(Livello(livello), ClassificationSystem(sistema))
+            )
+            == attesa
+        )
+
+    def test_nel_turno_a_rack_non_contano_ne_lo_ssr_ne_la_differenza(self, db_session):
+        """> rack vinti → posizione al turno precedente → sorteggio
+
+        Stessi rack, differenze diverse: decide la classifica di partenza.
+        """
+        from models.classification.models import RoundClassification
+        from models.classification.seeding_service import SeedingService
+
+        gara = _gara(db_session, sistema="RACK")
+        a, b, c, d = (_utente(db_session) for _ in range(4))
+        SeedingService.ensure_seeding(gara.id, [b.id, a.id, d.id, c.id])
+        _partita(db_session, gara, a, c, 0)  # a: 5 rack, +5
+        _partita(db_session, gara, b, d, 4)  # b: 5 rack, +1
+        db_session.commit()
+
+        RoundClassification.calculate_classification_after_round(gara.id, 1)
+        primo = RoundClassification.query.filter_by(
+            gara_id=gara.id, round_number=1, position=1
+        ).one()
+        assert primo.user_id == b.id, "b era davanti nella classifica di partenza"
+
+    def test_nel_campionato_decide_la_gara_precedente(self, db_session):
+        """> SSR (somma) → posizione dopo la gara precedente → sorteggio
+
+        A e B chiudono pari in tutto. Dopo la gara 1 era davanti A, dopo la
+        gara 2 B: decide la gara **precedente**, cioè la 2. Fino al
+        2026-10-07 restava davanti A, perché compariva prima nei dati.
+        """
+        from models.campionato.models import Campionato
+        from models.campionato.statistics_service import TournamentStatisticsService
+        from models.classification.models import RoundClassification
+
+        camp = Campionato(name=f"Spec {uuid.uuid4().hex[:6]}", planned_gare_count=3)
+        db_session.add(camp)
+        db_session.flush()
+        a, b, c, d = (_utente(db_session) for _ in range(4))
+        for numero, coppie in (
+            (1, ((a, c, 0), (b, d, 1))),  # dopo la gara 1: A +5, B +4
+            (2, ((b, c, 0), (a, d, 2))),  # dopo la gara 2: B +9, A +8
+            (3, ((a, c, 0), (b, d, 1))),  # alla fine: A +13, B +13
+        ):
+            gara = _gara(db_session)
+            gara.campionato_id = camp.id
+            gara.number = numero
+            gara.date = date(2026, 1, 10 + numero)
+            gara.status = GaraStatus.COMPLETED.value
+            gara.rounds_count = 1
+            for vince, perde, persi in coppie:
+                _partita(db_session, gara, vince, perde, persi)
+            db_session.flush()
+            RoundClassification.calculate_classification_after_round(gara.id, 1)
+        db_session.commit()
+
+        classifica = TournamentStatisticsService().classifica_generale(camp.id)
+        ordine = [dati["user_id"] for _pos, dati in classifica]
+        assert ordine[:2] == [b.id, a.id]
+        assert [pos for pos, _ in classifica] == [1, 2, 3, 4], "ordine completo"
+
+
 # ══ A chi tocca la X nel primo turno ═════════════════════════════════════
 
 

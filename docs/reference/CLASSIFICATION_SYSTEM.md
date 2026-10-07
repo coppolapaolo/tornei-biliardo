@@ -231,6 +231,24 @@ Quando un giocatore dà forfait durante un match:
 
 ## 5. Spareggi (Tiebreaker)
 
+### 5.0 La catena degli spareggi (ADR-078)
+
+Dal 2026-10-07 i pari merito si risolvono con una **catena di criteri**,
+applicata a gruppi da un motore solo (`models/classification/ordinamento.py`).
+Turno, gara e campionato hanno ciascuno la sua catena; le catene di default e
+cosa è cambiato rispetto a prima stanno in SPECIFICHE.md, «Classifica», «Come
+si risolvono i pari merito». In breve:
+
+| Classifica | WINS | RACK |
+|---|---|---|
+| Turno | vittorie → differenza → posizione precedente → sorteggio | rack → posizione precedente → sorteggio |
+| Gara | vittorie → differenza → SSR fino al 3° | rack → SSR fino al 3° |
+| Campionato | vittorie → differenza → SSR (somma) → posizione dopo la gara precedente → sorteggio | rack → SSR (somma) → posizione dopo la gara precedente → sorteggio |
+
+Lo **scontro diretto** è un criterio del motore: fra due decide chi ha vinto la
+partita, fra tre o più la mini-classifica fra loro; se non si sono incontrati
+tutti non decide.
+
 ### 5.1 Quando si applicano
 
 Lo spareggio si applica alla **fine della gara** per risolvere i parimerito.

@@ -56,9 +56,12 @@ def dati(db_session):
     db_session.add(camp)
     db_session.flush()
     a, b, c, d = (_utente(db_session, n) for n in "abcd")
+    # I triangoli del perdente fanno l'ordine A > B > C > D coi numeri: a pari
+    # merito la classifica generale guarda la gara precedente, poi il
+    # sorteggio (ADR-078), non l'ordine in cui i giocatori compaiono.
     for numero, giorno, coppie in (
-        (1, 10, ((a, d), (b, c))),
-        (2, 15, ((a, c), (b, d))),
+        (1, 10, ((a, d, 0), (b, c, 1))),
+        (2, 15, ((a, c, 0), (b, d, 1))),
     ):
         gara = Gara(
             campionato_id=camp.id,
@@ -74,7 +77,7 @@ def dati(db_session):
         )
         db_session.add(gara)
         db_session.flush()
-        for vince, perde in coppie:
+        for vince, perde, persi in coppie:
             db_session.add(
                 Match(
                     gara_id=gara.id,
@@ -82,7 +85,7 @@ def dati(db_session):
                     player1_id=vince.id,
                     player2_id=perde.id,
                     player1_score=5,
-                    player2_score=0,
+                    player2_score=persi,
                     status=MatchStatus.CLOSED_UNILATERALLY.value,
                     winner_id=vince.id,
                 )

@@ -182,3 +182,7 @@ blocks:
         a: "Si ricalcola quando tutte le partite del turno sono concluse."
       - q: "Come si somma la classifica del campionato?"
         a: "Sommando: vittorie e differenza triangoli con «Vittorie», triangoli totali con «Triangoli», punti-posizione con «Posizione». Se una gara ha un peso, il suo punteggio viene prima moltiplicato per quel numero."
+      - q: "Nel campionato due giocatori hanno gli stessi numeri: chi sta davanti?"
+        a: "Chi stava davanti dopo la gara precedente. Se erano pari anche lì, decide il sorteggio: è fisso, quindi la classifica non cambia a ogni lettura, e non dipende da chi si è iscritto prima."
+      - q: "Durante la gara, a pari vittorie e pari differenza, chi sta davanti?"
+        a: "Chi era davanti al turno prima, e al primo turno chi era davanti nell'ordine di partenza. Con il sistema «Triangoli» la differenza non conta: a pari triangoli vale subito il turno prima. Lo spareggio si gioca solo a fine gara."

@@ -387,8 +387,11 @@ class Campionato(db.Model):
         if system == ClassificationSystem.RACK:
             return {
                 "type": "racks",
-                "ordering": ["racks_won", "ssr", "previous_order"],
-                "description": "Triangoli totali → SSR → Ordine precedente",
+                "ordering": ["racks_won", "ssr", "previous_order", "draw"],
+                "description": (
+                    "Triangoli totali → SSR → Posizione dopo la gara precedente "
+                    "→ Sorteggio"
+                ),
             }
         if system == ClassificationSystem.POSITION:
             return {
@@ -401,9 +404,10 @@ class Campionato(db.Model):
             }
         return {
             "type": "wins",
-            "ordering": ["wins", "rack_difference", "ssr", "previous_order"],
+            "ordering": ["wins", "rack_difference", "ssr", "previous_order", "draw"],
             "description": (
-                "Vittorie → Differenza triangoli → SSR → Ordine precedente"
+                "Vittorie → Differenza triangoli → SSR → Posizione dopo la gara "
+                "precedente → Sorteggio"
             ),
         }
 

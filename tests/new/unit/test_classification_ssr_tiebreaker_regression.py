@@ -1,13 +1,11 @@
 """
-Regression test: SSR tiebreaker in calculate_classification_after_round.
+Regression test: lo SSR separa due giocatori con gli stessi rack.
 
-Bug: When two players have equal racks_won in Random strategy,
-the player with higher SSR score should be ranked higher.
-
-Before fix: Used rack_difference as tiebreaker (ignoring SSR)
-After fix: Uses spot_shot_wins from GaraClassification as tiebreaker
-
-Vedi: https://github.com/... (if applicable)
+Bug: a pari rack vinti, in una gara RACK, contava la differenza rack invece
+dello spareggio. Dal 2026-10-07 (ADR-078) lo SSR non è più un criterio della
+classifica di **turno** — si gioca a gara finita — ma della classifica di
+**gara**, che riscrive le posizioni dell'ultimo turno: dopo un ricalcolo, la
+classifica finale rimette chi ha vinto lo spareggio davanti.
 """
 
 import pytest
@@ -182,10 +180,13 @@ class TestSSRTiebreakerRegression:
         player_a = db_session.get(User, data["player_a"].id)
         player_b = db_session.get(User, data["player_b"].id)
 
-        # WHEN: Recalculate classification
+        # WHEN: Recalculate classification, poi la classifica di gara
+        from models.competition.spareggio_service import SpareggioService
+
         RoundClassification.calculate_classification_after_round(
             gara.id, gara.current_round
         )
+        SpareggioService.reapply_final_positions_if_resolved(gara.id)
 
         # THEN: Get the new classifications
         classifications = (
