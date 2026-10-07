@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.58.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.57.0...v1.58.0) (2026-10-07)
+
+
+### Funzioni nuove
+
+* catene degli spareggi configurabili ([#626](https://github.com/coppolapaolo/tornei-biliardo/issues/626)) ([9f72d77](https://github.com/coppolapaolo/tornei-biliardo/commit/9f72d77a83145d3f8075f400ec52d4db3c28226c))
+
 ## [1.57.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.56.0...v1.57.0) (2026-10-07)
 
 
