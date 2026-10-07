@@ -38,11 +38,11 @@ una chiave di ordinamento: vale **fra i soli pari**.
 2. **I criteri**: scontri diretti, differenza rack, rack vinti, vittorie,
    spareggio SSR (con un posto «fino al N°», o senza limite nella classifica
    generale, dove è la somma), posizione precedente, sorteggio.
-   - **Scontri diretti**: fra due decide chi ha vinto lo scontro; fra tre o più
-     una mini-classifica sulle partite fra loro (vittorie a WINS, rack a RACK).
-     Se non si sono incontrati **tutti**, non decide. Se la mini-classifica
-     lascia un sottogruppo più piccolo ancora pari, lo scontro diretto si
-     ripete fra quei soli giocatori prima di passare al criterio successivo.
+   - **Scontri diretti**: fra due decide chi ha vinto lo scontro. *(Fra tre o
+     più la regola è cambiata il 2026-10-07: vedi «Emendamento: lo scontro
+     diretto ordina solo quello che i risultati dicono». Prima era una
+     mini-classifica sulle partite fra loro, che non decideva se non si erano
+     incontrati tutti.)*
    - **Spareggio SSR**: oltre il suo posto non decide; chi non ha tirato vale
      -1, cioè viene dopo chi ha fatto zero.
    - **Sorteggio**: deterministico, un hash del seme e del giocatore. Il seme
@@ -131,6 +131,34 @@ spareggio smette di essere un interruttore.
    (`catene.testo_dal_modulo`): l'editor evita solo di offrire ciò che non è
    ammesso. La frase compare nel regolamento (`storia/regolamento.py`,
    `frase_della_catena`) e nella pagina pubblica della gara e del campionato.
+
+## Emendamento 2026-10-07: lo scontro diretto ordina solo quello che i risultati dicono
+
+Deciso dall'utente. La mini-classifica fra tre o più pari aveva due difetti:
+non decideva appena mancava un incontro (con una sola partita giocata fra i
+pari, l'informazione si buttava), e quando decideva poteva contraddire un
+risultato diretto a favore di un conteggio. La regola nuova
+(`_Motore._per_scontri`):
+
+1. fra i pari sul criterio corrente, ogni coppia che si è incontrata dà un
+   **vincolo** «X davanti a Y» se X ha vinto più scontri di Y; più partite
+   fra gli stessi due — in gare diverse del campionato — si contano tutte; a
+   parità, o con un pareggio (la chiusura a tempo lo ammette), nessun vincolo.
+   Trio e X non sono scontri; nel campionato non contano le gare con peso 0;
+2. i **cicli** (A>B>C>A) si condensano nelle componenti fortemente connesse
+   (`networkx.condensation`): chi si è battuto a vicenda in giro resta pari
+   sullo scontro, e fra le componenti il grafo è aciclico;
+3. l'ordine è un **ordinamento topologico** del grafo condensato in cui, a
+   ogni passo, fra chi non ha più nessuno davanti decide il **resto della
+   catena**. Nessun risultato diretto viene contraddetto, e fra chi non si è
+   incontrato decide il criterio successivo. Chi resta indistinguibile resta
+   pari (gara) o va al sorteggio (turno, campionato);
+4. con due soli pari coincide con la regola di sempre
+   (CLASSIFICATION_SYSTEM.md §5.3).
+
+Lo scontro diretto non dipende più dal sistema: si contano le vittorie anche
+a triangoli (prima la mini-classifica a RACK sommava i triangoli fra loro).
+Nessuna gara esistente lo usa: le catene di default non lo contengono.
 
 ## Alternative Considerate
 

@@ -245,9 +245,10 @@ si risolvono i pari merito». In breve:
 | Gara | vittorie → differenza → SSR fino al 3° | rack → SSR fino al 3° |
 | Campionato | vittorie → differenza → SSR (somma) → posizione dopo la gara precedente → sorteggio | rack → SSR (somma) → posizione dopo la gara precedente → sorteggio |
 
-Lo **scontro diretto** è un criterio del motore: fra due decide chi ha vinto la
-partita, fra tre o più la mini-classifica fra loro; se non si sono incontrati
-tutti non decide.
+Lo **scontro diretto** è un criterio del motore: ogni coppia di pari che si è
+incontrata dice chi sta davanti (chi ha vinto più scontri fra i due); chi si è
+battuto a vicenda in giro resta pari; fra chi non si è incontrato decide il
+criterio successivo, senza rovesciare un risultato diretto (§5.3).
 
 Le catene **si configurano** (emendamento del 2026-10-07): la gara ha la
 catena di turno e quella di gara, il campionato le propone alle sue gare e ha
@@ -281,8 +282,10 @@ migration `20261007_catene_degli_spareggi` li ha fusi nella catena.
 Challenge speciale dove i giocatori accumulano punti. Chi ha più punti vince lo spareggio.
 
 #### Scontro diretto
-Se due giocatori sono pari e si sono affrontati nella gara, vince chi ha vinto lo scontro diretto.
+Se due giocatori sono pari e si sono affrontati, vince chi ha vinto lo scontro diretto.
 - Se non si sono affrontati o lo scontro è pari, si usa l'altro metodo o restano parimerito.
+- Più incontri fra gli stessi due (in gare diverse del campionato) si contano tutti: sta davanti chi ne ha vinti di più.
+- **Fra tre o più** (dal 2026-10-07): ogni coppia che si è incontrata dà un vincolo «X davanti a Y»; chi si è battuto a vicenda in giro (A>B>C>A) resta pari sullo scontro; l'ordine rispetta tutti i vincoli, e fra chi non ha più nessuno davanti decide il criterio successivo della catena. La X e il trio non sono scontri; nel campionato non contano le gare che pesano zero.
 
 ---
 

@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-07 11:34+0200\n"
+"POT-Creation-Date: 2026-10-07 12:05+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: it\n"
@@ -859,38 +859,72 @@ msgstr ""
 msgid "massé"
 msgstr ""
 
-#: models/classification/editor_catena.py:84
-#: models/classification/ordinamento.py:615
+#: models/classification/editor_catena.py:50
+msgid ""
+"fra i pari sta davanti chi vince lo scontro; chi si batte in giro resta "
+"pari"
+msgstr ""
+
+#: models/classification/editor_catena.py:53
+msgid "triangoli vinti meno triangoli persi"
+msgstr ""
+
+#: models/classification/editor_catena.py:54
+msgid "triangoli vinti in tutto"
+msgstr ""
+
+#: models/classification/editor_catena.py:55
+msgid "partite vinte"
+msgstr ""
+
+#: models/classification/editor_catena.py:57
+msgid "la somma degli spareggi delle gare"
+msgstr ""
+
+#: models/classification/editor_catena.py:59
+msgid "una prova a punti, giocata a gara finita"
+msgstr ""
+
+#: models/classification/editor_catena.py:62
+msgid "chi era davanti dopo la gara precedente"
+msgstr ""
+
+#: models/classification/editor_catena.py:64
+msgid "chi era davanti al turno precedente"
+msgstr ""
+
+#: models/classification/editor_catena.py:109
+#: models/classification/ordinamento.py:646
 #, python-format
 msgid "%(a_pari)s conta %(elenco)s."
 msgstr ""
 
-#: models/classification/editor_catena.py:86
-#: models/classification/ordinamento.py:614
+#: models/classification/editor_catena.py:111
+#: models/classification/ordinamento.py:645
 #, python-format
 msgid ", poi %(x)s"
 msgstr ""
 
-#: models/classification/editor_catena.py:88
-#: models/classification/ordinamento.py:611
+#: models/classification/editor_catena.py:113
+#: models/classification/ordinamento.py:642
 #, python-format
 msgid "%(a_pari)s i giocatori restano a pari merito."
 msgstr ""
 
-#: models/classification/editor_catena.py:90
+#: models/classification/editor_catena.py:115
 #, python-format
 msgid "fino al %(n)s°"
 msgstr ""
 
-#: models/classification/editor_catena.py:91
+#: models/classification/editor_catena.py:116
 msgid "Sposta prima"
 msgstr ""
 
-#: models/classification/editor_catena.py:92
+#: models/classification/editor_catena.py:117
 msgid "Sposta dopo"
 msgstr ""
 
-#: models/classification/editor_catena.py:93
+#: models/classification/editor_catena.py:118
 #: templates/components/_sequence_editor.html:75
 #: templates/direttore/_foglio_esercizio.html:107
 #: templates/exam/examiners.html:28 templates/istruttore/gruppo.html:145
@@ -898,32 +932,32 @@ msgstr ""
 msgid "Togli"
 msgstr ""
 
-#: models/classification/editor_catena.py:94
+#: models/classification/editor_catena.py:119
 msgid "Un posto in meno"
 msgstr ""
 
-#: models/classification/editor_catena.py:95
+#: models/classification/editor_catena.py:120
 msgid "Un posto in più"
 msgstr ""
 
-#: models/classification/editor_catena.py:96
+#: models/classification/editor_catena.py:121
 #: templates/components/_catena_spareggi.html:26
 msgid "Aggiungi un criterio"
 msgstr ""
 
-#: models/classification/editor_catena.py:97
+#: models/classification/editor_catena.py:122
 msgid "criterio principale"
 msgstr ""
 
-#: models/classification/editor_catena.py:98
+#: models/classification/editor_catena.py:123
 msgid "sempre ultimo: chiude l'ordine"
 msgstr ""
 
-#: models/classification/editor_catena.py:99
+#: models/classification/editor_catena.py:124
 msgid "Non restano criteri da aggiungere."
 msgstr ""
 
-#: models/classification/ordinamento.py:557 models/storia/etichette.py:136
+#: models/classification/ordinamento.py:588 models/storia/etichette.py:136
 #: templates/admin/campionato_wizard_step2.html:30
 #: templates/admin/users_list.html:152 templates/admin/users_list.html:248
 #: templates/components/_classification_mobile.html:30
@@ -938,93 +972,93 @@ msgstr ""
 msgid "Vittorie"
 msgstr ""
 
-#: models/classification/ordinamento.py:558
+#: models/classification/ordinamento.py:589
 #: templates/components/_history_matches_tab.html:35
 #: templates/individual_match/statistics.html:155
 msgid "Triangoli vinti"
 msgstr ""
 
-#: models/classification/ordinamento.py:559
+#: models/classification/ordinamento.py:590
 #: templates/components/_campionato_general_classification.html:78
 msgid "Punti"
 msgstr ""
 
-#: models/classification/ordinamento.py:560
+#: models/classification/ordinamento.py:591
 #: templates/components/_classification_mobile.html:32
 msgid "Differenza triangoli"
 msgstr ""
 
-#: models/classification/ordinamento.py:561
+#: models/classification/ordinamento.py:592
 msgid "Scontri diretti"
 msgstr ""
 
-#: models/classification/ordinamento.py:562
+#: models/classification/ordinamento.py:593
 msgid "Spareggio SSR"
 msgstr ""
 
-#: models/classification/ordinamento.py:563
+#: models/classification/ordinamento.py:594
 msgid "Posizione precedente"
 msgstr ""
 
-#: models/classification/ordinamento.py:564
+#: models/classification/ordinamento.py:595
 msgid "Sorteggio"
 msgstr ""
 
-#: models/classification/ordinamento.py:571
+#: models/classification/ordinamento.py:602
 msgid "lo scontro diretto"
 msgstr ""
 
-#: models/classification/ordinamento.py:573
+#: models/classification/ordinamento.py:604
 msgid "la differenza triangoli"
 msgstr ""
 
-#: models/classification/ordinamento.py:575
+#: models/classification/ordinamento.py:606
 msgid "i triangoli vinti"
 msgstr ""
 
-#: models/classification/ordinamento.py:577
+#: models/classification/ordinamento.py:608
 msgid "le vittorie"
 msgstr ""
 
-#: models/classification/ordinamento.py:580
+#: models/classification/ordinamento.py:611
 msgid "lo spareggio SSR"
 msgstr ""
 
-#: models/classification/ordinamento.py:581
+#: models/classification/ordinamento.py:612
 #, python-format
 msgid "lo spareggio SSR fino al %(n)s° posto"
 msgstr ""
 
-#: models/classification/ordinamento.py:584
+#: models/classification/ordinamento.py:615
 msgid "la posizione dopo la gara precedente"
 msgstr ""
 
-#: models/classification/ordinamento.py:586
+#: models/classification/ordinamento.py:617
 msgid "la posizione al turno precedente"
 msgstr ""
 
-#: models/classification/ordinamento.py:587
+#: models/classification/ordinamento.py:618
 msgid "la posizione precedente"
 msgstr ""
 
-#: models/classification/ordinamento.py:588
+#: models/classification/ordinamento.py:619
 msgid "il sorteggio"
 msgstr ""
 
-#: models/classification/ordinamento.py:593
+#: models/classification/ordinamento.py:624
 msgid "A pari triangoli vinti"
 msgstr ""
 
-#: models/classification/ordinamento.py:594
+#: models/classification/ordinamento.py:625
 msgid "A pari vittorie"
 msgstr ""
 
-#: models/classification/ordinamento.py:621
+#: models/classification/ordinamento.py:652
 #, python-format
 msgid "Spareggio SSR fino al %(n)s°"
 msgstr ""
 
-#: models/classification/ordinamento.py:633
+#: models/classification/ordinamento.py:664
 msgid "nessun criterio: i pari merito restano tali"
 msgstr ""
 
@@ -9469,7 +9503,6 @@ msgstr ""
 
 #: templates/admin/campionato_wizard_step2.html:197
 #: templates/components/_campionato_edit_form.html:84
-#, python-format
 msgid "Classifica di turno"
 msgstr ""
 

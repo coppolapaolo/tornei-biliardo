@@ -78,9 +78,12 @@ blocks:
     items:
       - name: "Head to head"
         text: >-
-          What counts is how the matches between the tied players went. If they
-          met, whoever won finishes ahead. Nothing has to be replayed, and it is
-          the easiest to explain.
+          What counts is how the matches between the tied players went. If two
+          of them met, whoever won finishes ahead (if they met more than once,
+          whoever won more often). Players who beat each other in a circle — A
+          beat B, B beat C, C beat A — stay level, and the next criterion
+          decides. Between players who never met the next criterion decides,
+          without ever overturning a direct result.
       - name: "Rack difference"
         text: "Racks won minus racks lost."
       - name: "Racks won"

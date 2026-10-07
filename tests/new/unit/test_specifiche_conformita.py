@@ -269,9 +269,6 @@ class TestCateneDegliSpareggi:
         assert [pos for pos, _ in classifica] == [1, 2, 3, 4], "ordine completo"
 
 
-# ══ A chi tocca la X nel primo turno ═════════════════════════════════════
-
-
 @pytest.mark.unit
 class TestLeCateneSiConfigurano:
     """`SPECIFICHE.md`, «Classifica», «Le catene si configurano»."""
@@ -411,6 +408,166 @@ class TestLeCateneSiConfigurano:
         ]
         conn.close()
         assert catene == [["differenza_rack", "ssr:2"], []]
+
+
+@pytest.mark.unit
+class TestLoScontroDiretto:
+    """`SPECIFICHE.md`, «Classifica», «Lo scontro diretto» (2026-10-07)."""
+
+    @staticmethod
+    def _ordina(concorrenti, scontri, *criteri):
+        from models.classification.ordinamento import Criterio, Voce, ordina
+
+        catena = (Voce(Criterio.SCONTRI_DIRETTI),) + tuple(Voce(c) for c in criteri)
+        return ordina(concorrenti, Criterio.VITTORIE, catena, scontri=scontri)
+
+    def test_fra_due_vince_chi_ha_vinto_lo_scontro(self):
+        """> se si sono affrontati sta davanti chi ha vinto lo scontro,
+        altrimenti decide il criterio successivo"""
+        from models.classification.ordinamento import (
+            Concorrente,
+            Criterio,
+            Scontro,
+        )
+
+        a = Concorrente(1, vittorie=2, differenza_rack=0)
+        b = Concorrente(2, vittorie=2, differenza_rack=5)
+        vinto = self._ordina([a, b], [Scontro(1, 2, 5, 3, 1)], Criterio.DIFFERENZA_RACK)
+        assert [g.player_id for f in vinto for g in f.giocatori] == [1, 2]
+        mai = self._ordina([a, b], [], Criterio.DIFFERENZA_RACK)
+        assert [g.player_id for f in mai for g in f.giocatori] == [2, 1]
+
+    def test_conta_chi_ha_vinto_piu_scontri_e_la_parita_non_decide(self):
+        """> sta davanti chi ne ha vinti di più; a parità, o con un pareggio,
+        lo scontro non decide"""
+        from models.classification.ordinamento import (
+            Concorrente,
+            Criterio,
+            Scontro,
+        )
+
+        a = Concorrente(1, vittorie=2, differenza_rack=0)
+        b = Concorrente(2, vittorie=2, differenza_rack=5)
+        uno_a_uno = [Scontro(1, 2, 5, 3, 1), Scontro(2, 1, 5, 3, 2)]
+        fasce = self._ordina([a, b], uno_a_uno, Criterio.DIFFERENZA_RACK)
+        assert [g.player_id for f in fasce for g in f.giocatori] == [2, 1]
+        pareggio = [Scontro(1, 2, 2, 2, None)]
+        fasce = self._ordina([a, b], pareggio, Criterio.DIFFERENZA_RACK)
+        assert [g.player_id for f in fasce for g in f.giocatori] == [2, 1]
+
+    def test_fra_chi_non_si_e_incontrato_decide_il_criterio_dopo(self):
+        """> nessun risultato diretto viene contraddetto, e fra chi non si è
+        incontrato decide il criterio successivo
+
+        A ha battuto B, C non ha incontrato nessuno e ha la differenza
+        migliore di A ma peggiore di B: C, A, B. Fino al 2026-10-07 lo
+        scontro diretto fra tre non decideva se non si erano incontrati
+        tutti, e la differenza dava B, C, A.
+        """
+        from models.classification.ordinamento import (
+            Concorrente,
+            Criterio,
+            Scontro,
+        )
+
+        fasce = self._ordina(
+            [
+                Concorrente(1, vittorie=2, differenza_rack=1),
+                Concorrente(2, vittorie=2, differenza_rack=9),
+                Concorrente(3, vittorie=2, differenza_rack=5),
+            ],
+            [Scontro(1, 2, 5, 3, 1)],
+            Criterio.DIFFERENZA_RACK,
+        )
+        assert [g.player_id for f in fasce for g in f.giocatori] == [3, 1, 2]
+
+    def test_chi_si_e_battuto_in_giro_resta_pari(self):
+        """> chi si è battuto a vicenda in giro resta pari sullo scontro"""
+        from models.classification.ordinamento import (
+            Concorrente,
+            Scontro,
+        )
+
+        fasce = self._ordina(
+            [Concorrente(p, vittorie=3) for p in (1, 2, 3, 4)],
+            [
+                Scontro(1, 2, 5, 3, 1),
+                Scontro(2, 3, 5, 3, 2),
+                Scontro(3, 1, 5, 3, 3),
+                Scontro(1, 4, 5, 3, 1),
+                Scontro(2, 4, 5, 3, 2),
+                Scontro(3, 4, 5, 3, 3),
+            ],
+        )
+        assert [len(f.giocatori) for f in fasce] == [3, 1]
+        assert [g.player_id for g in fasce[1].giocatori] == [4]
+
+    def _campionato(self, db_session, giornate):
+        """Un campionato con la catena generale «scontri, differenza»."""
+        from models.campionato.models import Campionato
+        from models.classification.models import RoundClassification
+
+        camp = Campionato(
+            name=f"Spec {uuid.uuid4().hex[:6]}",
+            planned_gare_count=len(giornate),
+            catena_generale='["scontri_diretti", "differenza_rack", "sorteggio"]',
+        )
+        db_session.add(camp)
+        db_session.flush()
+        for numero, (peso, partite) in enumerate(giornate, start=1):
+            gara = _gara(db_session)
+            gara.campionato_id = camp.id
+            gara.number = numero
+            gara.date = date(2026, 1, 10 + numero)
+            gara.status = GaraStatus.COMPLETED.value
+            gara.rounds_count = 1
+            gara.weight = peso
+            for vince, perde, persi in partite:
+                _partita(db_session, gara, vince, perde, persi)
+            db_session.flush()
+            RoundClassification.calculate_classification_after_round(gara.id, 1)
+        db_session.commit()
+        return camp
+
+    def test_nel_campionato_gli_scontri_si_sommano_fra_le_gare(self, db_session):
+        """> più partite fra gli stessi due, anche in gare diverse del
+        campionato, si contano tutte
+
+        A batte B nella gara 1 e nella 3, B batte A nella 2: A davanti, anche
+        con la differenza peggiore.
+        """
+        from models.campionato.statistics_service import TournamentStatisticsService
+
+        a, b, c, d = (_utente(db_session) for _ in range(4))
+        camp = self._campionato(
+            db_session,
+            [
+                (1, ((a, b, 4), (c, d, 0))),
+                (1, ((b, a, 0), (d, c, 0))),
+                (1, ((a, b, 4), (c, d, 0))),
+            ],
+        )
+        classifica = TournamentStatisticsService().classifica_generale(camp.id)
+        ordine = [dati["user_id"] for _pos, dati in classifica]
+        assert ordine.index(a.id) < ordine.index(b.id)
+
+    def test_una_gara_che_pesa_zero_non_conta_negli_scontri(self, db_session):
+        """> nel campionato non contano le gare con peso 0"""
+        from models.campionato.statistics_service import TournamentStatisticsService
+
+        a, b, c, d = (_utente(db_session) for _ in range(4))
+        camp = self._campionato(
+            db_session,
+            [
+                # A e B una vittoria a testa, B con la differenza migliore.
+                (1, ((a, c, 4), (b, d, 0))),
+                # A batte B, ma la gara pesa zero.
+                (0, ((a, b, 4), (c, d, 4))),
+            ],
+        )
+        classifica = TournamentStatisticsService().classifica_generale(camp.id)
+        ordine = [dati["user_id"] for _pos, dati in classifica]
+        assert ordine.index(b.id) < ordine.index(a.id)
 
 
 @pytest.mark.unit

@@ -220,7 +220,7 @@ class ClassificationStrategy(ABC):
         La catena arriva nel ``context`` (``"catena"``, già normalizzata da chi
         la legge sulla gara); senza, vale quella di default del livello. Nel
         context possono esserci anche ``"scontri"`` (per lo scontro diretto),
-        ``"seme_sorteggio"`` e ``"punti_partita"``.
+        e ``"seme_sorteggio"``.
 
         Returns:
             Le entries e se è rimasto qualche pari merito.
@@ -263,7 +263,6 @@ class ClassificationStrategy(ABC):
             criterio_principale(sistema),
             catena,
             scontri=context.get("scontri") or (),
-            punti_partita=context.get("punti_partita") or (3, 1, 0),
         )
         entries: List[ClassificationEntry] = []
         pari = False

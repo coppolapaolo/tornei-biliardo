@@ -135,9 +135,8 @@
     var corpo = crea('span', 'c7-catena__corpo');
     corpo.appendChild(crea('span', 'c7-catena__nome', this.nome(voce)));
     var fisso = c === SORTEGGIO && cfg.completa;
-    if (c === SORTEGGIO) {
-      corpo.appendChild(crea('span', 'c7-catena__nota', t.sorteggioNota));
-    }
+    var descrizione = c === SORTEGGIO ? t.sorteggioNota : (cfg.descrizioni || {})[c];
+    if (descrizione) corpo.appendChild(crea('span', 'c7-catena__nota', descrizione));
     li.appendChild(corpo);
 
     if (c === SSR && cfg.ssrConPosto) {
