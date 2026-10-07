@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.59.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.58.0...v1.59.0) (2026-10-07)
+
+
+### Funzioni nuove
+
+* lo scontro diretto ordina solo quello che i risultati dicono ([#628](https://github.com/coppolapaolo/tornei-biliardo/issues/628)) ([e6084a1](https://github.com/coppolapaolo/tornei-biliardo/commit/e6084a1b905e7f3ae29e26b763734da1845dc17c))
+
 ## [1.58.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.57.0...v1.58.0) (2026-10-07)
 
 
