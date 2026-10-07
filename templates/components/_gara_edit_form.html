@@ -66,6 +66,7 @@
           <i class="fas fa-lock" style="font-size:12px"></i>
           {% if gara_system == 'WINS' %}{{ _('Vittorie') }}
           {% elif gara_system in ['RACK', 'RACKS'] %}{{ _('Triangoli totali') }}
+          {% elif gara_system == 'POINTS' %}{{ _('Punti') }}
           {% else %}{{ gara_system }}{% endif %}
           <span class="ms-auto" style="font-size:11px;color:var(--c7-ink-faint)">{{ _('dai playoff') if gara.is_playoff else _('dal campionato') }}</span>
         </div>
@@ -76,6 +77,7 @@
           {{ _('Diverso dal campionato') }} ({{ _('default') }}:
           {% if campionato_default == 'WINS' %}{{ _('Vittorie') }}
           {% elif campionato_default == 'RACK' %}{{ _('Triangoli totali') }}
+          {% elif campionato_default == 'POINTS' %}{{ _('Punti') }}
           {% else %}{{ campionato_default }}{% endif %})
         </div>
         {% endif %}
@@ -83,8 +85,23 @@
         <select class="form-select" id="classification_system" name="classification_system">
           <option value="WINS" {% if (gara.classification_system or 'WINS') == 'WINS' %}selected{% endif %}>{{ _('Vittorie — partite vinte, poi differenza triangoli') }}</option>
           <option value="RACK" {% if gara.classification_system == 'RACK' %}selected{% endif %}>{{ _('Triangoli totali — ogni triangolo conta') }}</option>
+          <option value="POINTS" {% if gara.classification_system == 'POINTS' %}selected{% endif %}>{{ _('Punti — vittoria, pareggio e sconfitta') }}</option>
         </select>
       {% endif %}
+    </div>
+
+    {# I punti della classifica a punti (ADR-078): sulla gara singola seguono
+       il selettore, dentro un campionato si vedono se il campionato è a punti. #}
+    <div data-bracket-hide>
+    {% if gara.campionato_id %}
+      {% with punti_valori=punti_della_gara(gara), punti_visibile=(gara.classification_system == 'POINTS') %}
+      {% include "components/_campo_punti.html" %}
+      {% endwith %}
+    {% else %}
+      {% with punti_valori=punti_della_gara(gara), punti_sistema_da='#classification_system' %}
+      {% include "components/_campo_punti.html" %}
+      {% endwith %}
+    {% endif %}
     </div>
 
     {# Peso nella classifica generale (issue #64). Solo dentro un campionato:

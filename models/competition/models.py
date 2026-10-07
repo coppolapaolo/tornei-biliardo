@@ -217,7 +217,14 @@ class Gara(SoftDeleteMixin, db.Model):
     # See docs/CLASSIFICATION_SYSTEM.md for constraints per system
     classification_system = db.Column(
         db.String(10), nullable=False, default="WINS"
-    )  # RACK, WINS, POSITION
+    )  # RACK, WINS, POINTS, POSITION
+    # Classifica a punti (POINTS): quanto valgono vittoria, pareggio e
+    # sconfitta. NULL = come il campionato, e su una gara singola il default
+    # dell'app (3/1/0). Si copiano dal campionato quando la gara nasce
+    # (ADR-075) e si leggono **solo** da `models/classification/punti.py`.
+    points_win = db.Column(db.Integer, nullable=True)
+    points_draw = db.Column(db.Integer, nullable=True)
+    points_loss = db.Column(db.Integer, nullable=True)
 
     # Matchmaking strategy configuration
     matchmaking_strategy = db.Column(

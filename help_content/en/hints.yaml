@@ -92,13 +92,22 @@ hints:
   section: quale
 - id: gara.classifica_sistema
   label: Standings system
-  short: 'Wins counts matches won, Racks counts total racks. Not shown on brackets: there the standings
-    go by position, full stop.'
+  short: 'Wins counts matches won, Racks counts total racks, Points the points of each result. Not
+    shown on brackets: there the standings go by position.'
   anchor: gara-classifica-sistema
   screens:
   - admin.competition.create_gara_standalone
   page: classifiche
   section: vittorie
+- id: gara.punti
+  label: Points in the standings
+  short: 'How many points a win, a draw and a loss are worth (usually 3, 1, 0). The X counts as a win.
+    Ordered on points only.'
+  anchor: gara-punti
+  screens:
+  - admin.competition.create_gara_standalone
+  page: classifiche
+  section: punti
 - id: gara.anti_rematch
   label: Avoid rematches
   short: 'Stops two players meeting twice in the same competition. Not asked on brackets: losers go out.'

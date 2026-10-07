@@ -74,7 +74,7 @@
       {% if classification_sys == ClassificationSystem.RACK %}
       <span class="c7-classifica__col c7-label">{{ _('Triangoli') }}</span>
       <span class="c7-classifica__col c7-classifica__col--sec c7-label">SSR</span>
-      {% elif classification_sys == ClassificationSystem.POSITION %}
+      {% elif classification_sys in (ClassificationSystem.POSITION, ClassificationSystem.POINTS) %}
       <span class="c7-classifica__col c7-label">{{ _('Punti') }}</span>
       <span class="c7-classifica__col c7-classifica__col--sec c7-label">{{ _('Diff') }}</span>
       {% else %}
@@ -116,7 +116,7 @@
       {% if classification_sys == ClassificationSystem.RACK %}
       <span class="c7-classifica__col c7-num">{{ dati.total_racks_won }}</span>
       <span class="c7-classifica__col c7-classifica__col--sec c7-num">{{ dati.total_spot_shot_wins or '–' }}</span>
-      {% elif classification_sys == ClassificationSystem.POSITION %}
+      {% elif classification_sys in (ClassificationSystem.POSITION, ClassificationSystem.POINTS) %}
       <span class="c7-classifica__col c7-num">{{ dati.total_points or 0 }}</span>
       <span class="c7-classifica__col c7-classifica__col--sec c7-num">{% if dati.total_rack_difference > 0 %}+{% endif %}{{ dati.total_rack_difference }}</span>
       {% else %}
@@ -133,6 +133,8 @@
     {{ _("Classifica generale: ordinata per triangoli totali, poi per punti spareggio (SSR).") }}
     {% elif classification_sys == ClassificationSystem.POSITION %}
     {{ _("Classifica generale basata sui punti ottenuti in tutte le gare completate.") }}
+    {% elif classification_sys == ClassificationSystem.POINTS %}
+    {{ _("Classifica generale: somma dei punti delle gare (%(punti)s), moltiplicati per il peso di ciascuna gara.", punti=descrivi_punti(punti_proposti(campionato))) }}
     {% else %}
     {{ _("Classifica generale: ordinata per partite vinte, poi per differenza triangoli totale.") }}
     {% endif %}

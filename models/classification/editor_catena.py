@@ -34,7 +34,11 @@ from .ordinamento import (
     serializza_catena,
 )
 
-_SISTEMI = (ClassificationSystem.WINS, ClassificationSystem.RACK)
+_SISTEMI = (
+    ClassificationSystem.WINS,
+    ClassificationSystem.RACK,
+    ClassificationSystem.POINTS,
+)
 
 
 def _sistema(valore: Any) -> ClassificationSystem:

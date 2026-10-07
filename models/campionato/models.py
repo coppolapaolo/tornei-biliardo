@@ -52,7 +52,21 @@ class Campionato(db.Model):
     )  # Default anti-rematch setting
     default_classification_system = db.Column(
         db.String(10), nullable=False, default="WINS"
-    )  # Default: RACK, WINS, POSITION (see docs/CLASSIFICATION_SYSTEM.md)
+    )  # Default: RACK, WINS, POINTS, POSITION (see docs/CLASSIFICATION_SYSTEM.md)
+    # Classifica a punti: i punti di vittoria, pareggio e sconfitta proposti
+    # alle gare (ADR-075), che li ricevono quando nascono. Mai NULL: il
+    # default dell'app è scritto, come il limite di tempo, così confronta pari
+    # con la gara quando un cambio le si propone. Si leggono da
+    # `models/classification/punti.py`.
+    default_points_win = db.Column(
+        db.Integer, nullable=False, default=3, server_default="3"
+    )
+    default_points_draw = db.Column(
+        db.Integer, nullable=False, default=1, server_default="1"
+    )
+    default_points_loss = db.Column(
+        db.Integer, nullable=False, default=0, server_default="0"
+    )
 
     # Regola di inizio e regola di apertura predefinite delle gare (ADR-056).
     # Radice della catena Campionato → Gara (nullable) → match, che eredita
@@ -400,6 +414,21 @@ class Campionato(db.Model):
                 "description": (
                     "Triangoli totali → SSR → Posizione dopo la gara precedente "
                     "→ Sorteggio"
+                ),
+            }
+        if system == ClassificationSystem.POINTS:
+            return {
+                "type": "points",
+                "ordering": [
+                    "points",
+                    "rack_difference",
+                    "ssr",
+                    "previous_order",
+                    "draw",
+                ],
+                "description": (
+                    "Punti → Differenza triangoli → SSR → Posizione dopo la gara "
+                    "precedente → Sorteggio"
                 ),
             }
         if system == ClassificationSystem.POSITION:

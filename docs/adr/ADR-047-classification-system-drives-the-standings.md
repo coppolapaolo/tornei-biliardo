@@ -198,3 +198,11 @@ gare, con la sua voce nella storia di ciascuna
 (`TournamentService._verifica_cambio_sistema` e `_propaga_sistema`). Dopo il
 primo avvio è bloccato. È l'unica eccezione alla regola «il campionato propone,
 la gara decide».
+
+## Emendamento (2026-10-07, ADR-078)
+
+I sistemi sono quattro: si aggiunge `POINTS`, la classifica a punti
+(vittoria, pareggio e sconfitta, di norma 3/1/0, scelti dalla gara e
+proposti dal campionato). Vale la regola di questo ADR: chi mostra o somma
+una classifica guarda il sistema, e a punti la colonna che conta sono i
+punti. Il dettaglio sta nell'ADR-078, «Emendamento: la classifica a punti».

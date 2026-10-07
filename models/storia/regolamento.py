@@ -152,7 +152,42 @@ def _in_vigore(gara: Any, storia: List[SettingsChange]) -> List[Impostazione]:
         if campo == "time_limit_minutes" and gara.effective_time_limit_minutes is None:
             continue
         risultato.append(Impostazione(campo, valore, ultima.get(campo)))
+        if campo == "classification_system":
+            risultato.extend(_punti_in_vigore(gara, ultima))
     return risultato
+
+
+def _punti_in_vigore(
+    gara: Any, ultima: Dict[str, SettingsChange]
+) -> List[Impostazione]:
+    """La riga dei punti, solo nella classifica a punti (ADR-078).
+
+    Una frase sola per i tre numeri, «3 punti la vittoria, 1 il pareggio, 0
+    la sconfitta»; accanto, l'ultima modifica di uno dei tre.
+    """
+    from ..classification.punti import (
+        COLONNE_DELLA_GARA,
+        descrivi_punti,
+        punti_della_gara,
+    )
+    from ..status_enum import ClassificationSystem
+
+    if (
+        ClassificationSystem.resolve(getattr(gara, "classification_system", None))
+        is not ClassificationSystem.POINTS
+    ):
+        return []
+    punti = punti_della_gara(gara)
+    voci = [ultima[c] for c in COLONNE_DELLA_GARA if c in ultima]
+    cambiata = max(voci, key=lambda v: (v.created_at, v.id)) if voci else None
+    return [
+        Impostazione(
+            "punti_in_classifica",
+            serializza(list(punti.come_tupla())),
+            cambiata,
+            frase=descrivi_punti(punti),
+        )
+    ]
 
 
 def _regole_del_turno(gara: Any, numero: int) -> Tuple[str, ...]:

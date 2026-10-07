@@ -3,7 +3,7 @@ section: approfondimenti
 kind: approfondimento
 audience: [tutti]
 minutes: 5
-summary: "Tre modi di ordinare i giocatori — vittorie, triangoli, posizione — e come si risolvono i pari merito."
+summary: "Quattro modi di ordinare i giocatori — vittorie, triangoli, punti, posizione — e come si risolvono i pari merito."
 related: [seguire_la_gara, abbinamenti, formati_di_gioco]
 
 blocks:
@@ -58,6 +58,35 @@ blocks:
       **numero esatto di triangoli**). Altrimenti chi vince nettamente smette prima
       e accumula meno triangoli di chi vince a fatica: il conteggio premierebbe il
       contrario di quello che vuole premiare.
+
+  - type: heading
+    id: punti
+    title: "Punti — vittoria, pareggio, sconfitta"
+
+  - type: text
+    text: >-
+      Ogni partita dà i **punti del suo risultato**: di norma **3** la
+      vittoria, **1** il pareggio, **0** la sconfitta. La classifica si
+      ordina **solo sui punti**; a pari punti decidono i criteri dei pari
+      merito, che partono come nel sistema a vittorie: differenza triangoli,
+      poi spareggio o sorteggio.
+
+  - type: list
+    title: "Come vale ogni risultato"
+    items:
+      - "**Vittoria** e **sconfitta**: i punti che hai scelto per ciascuna."
+      - "**Pareggio** — a numero esatto di triangoli pari (3-3 al 6), o una partita fermata a tempo sul pari — i punti del pareggio a tutti e due."
+      - "**X a tavolino**: vale una vittoria, con zero differenza triangoli. Con l'esercizio al posto della X, la differenza è il punteggio della prova."
+      - "**Partita a tre** con un vincitore: a lui la vittoria, agli altri due la sconfitta. Senza vincitore, chi è appaiato in testa prende il pareggio e il terzo, se staccato, la sconfitta (a 4-4-1: pareggio, pareggio, sconfitta). Chi si ritira prende la sconfitta."
+
+  - type: text
+    text: >-
+      I punti si scelgono nel modulo della gara, alla voce **Punti in
+      classifica**, che compare quando il sistema è **Punti**: numeri da 0 a
+      99, con la vittoria che vale più della sconfitta e il pareggio in mezzo.
+      In un campionato li propone il campionato e ogni gara li riceve quando
+      nasce. Dopo l'avvio non si cambiano più. La classifica generale somma i
+      punti delle gare, moltiplicati per il peso di ciascuna.
 
   - type: heading
     id: posizione

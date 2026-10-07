@@ -20,12 +20,13 @@ Questo documento definisce il sistema di classificazione per gare e campionati.
 
 ## 1. Sistemi di Classifica
 
-Esistono **3 sistemi di classifica** mutuamente esclusivi:
+Esistono **4 sistemi di classifica** mutuamente esclusivi:
 
 | Sistema | Criteri ordinamento | Uso tipico |
 |---------|---------------------|------------|
 | **RACK** | 1) Rack totali vinti ↓ 2) Spareggio | Gare con focus su rack accumulati |
 | **WINS** | 1) Match vinti ↓ 2) Diff rack ↓ 3) Spareggio | Gare con focus su vittorie |
+| **POINTS** | 1) Punti ↓ (vittoria/pareggio/sconfitta, di norma 3/1/0) 2) Catena degli spareggi | Gironi e serate «a punti», dove il pareggio esiste |
 | **POSITION** | Punti per posizione nel tabellone | Eliminazione / Doppio KO |
 
 ### 1.1 Sistema RACK
@@ -45,7 +46,27 @@ Ordina i giocatori per:
 - **Uso**: Gare tradizionali dove vincere il match è prioritario.
 - **Filosofia**: Prima conta vincere, poi conta il margine.
 
-### 1.3 Sistema POSITION
+### 1.3 Sistema POINTS (dal 2026-10-07)
+
+Ogni partita dà i **punti del suo esito**; si ordina **solo sui punti**, e fra
+chi è a pari punti decide la catena degli spareggi (§5.0).
+
+- **Punti**: vittoria, pareggio, sconfitta sulla gara (`Gara.points_win/draw/loss`),
+  proposti dal campionato (`Campionato.default_points_*`) e copiati sulla gara
+  quando nasce (ADR-075). Default 3/1/0; interi 0–99 con
+  vittoria ≥ pareggio ≥ sconfitta e vittoria > sconfitta. Struttura: a gara
+  avviata non si cambiano. Si leggono da `models/classification/punti.py`.
+- **X**: vale una vittoria (punti della vittoria, zero differenza; con
+  l'esercizio la differenza è il punteggio della prova).
+- **Pareggio** (exactly N con N pari, interruzione a tempo a parità fuori dal
+  tabellone): i punti del pareggio a entrambi.
+- **Trio**: con un vincitore, vittoria a lui e sconfitta agli altri due; senza,
+  pareggio a chi è a pari merito in testa e sconfitta al terzo staccato; chi
+  si ritira prende la sconfitta.
+- **Classifica generale**: somma dei punti delle gare, moltiplicati per il
+  peso della gara (ADR-053); la copia sta in `Classification.total_position_points`.
+
+### 1.4 Sistema POSITION
 
 Assegna **punti per posizione** nel tabellone di eliminazione.
 
@@ -67,6 +88,7 @@ Assegna **punti per posizione** nel tabellone di eliminazione.
 | **WINS** | Race to N | Sempre un vincitore |
 | **WINS** | Exactly N (dispari) | Sempre un vincitore |
 | **WINS** | Exactly N (pari) | Pareggi possibili: 0 vittorie e 0 diff a entrambi |
+| **POINTS** | come WINS | Il pareggio dà i punti del pareggio |
 | **POSITION** | Race to N | Sempre un vincitore |
 | **POSITION** | Exactly N (dispari) | Sempre un vincitore |
 
@@ -76,6 +98,7 @@ Assegna **punti per posizione** nel tabellone di eliminazione.
 |---------|-----------|------|
 | **RACK** | ❌ No | Match più lunghi darebbero più opportunità di rack |
 | **WINS** | ✅ Sì | Conta chi vince il match (più set) |
+| **POINTS** | ✅ Sì | Come WINS |
 | **POSITION** | ✅ Sì | Conta chi vince il match |
 
 ### 2.3 Gestione Dispari
@@ -84,6 +107,7 @@ Assegna **punti per posizione** nel tabellone di eliminazione.
 |---------|-----|------|--------------|-----------------|--------------|
 | **RACK** | ✅ | ✅ (dist. 2-7) | ❌ (0 rack = penalizzato) | ✅ | ✅ |
 | **WINS** | ✅ | ✅ (dist. 2-7) | ✅ (1 win, 0 diff) | ✅ | N/A |
+| **POINTS** | ✅ | ✅ (dist. 2-7) | ✅ (punti vittoria, 0 diff) | ✅ | N/A |
 | **POSITION** | ❌ | N/A | Bye bracket | N/A | N/A |
 
 **NO**: Se abilitato, i giocatori che rendono il numero dispari vanno in lista d'attesa fino a quando non si iscrive un altro giocatore. Vedi [sezione 3.5](#35-no-nessuna-gestione-dispari).
@@ -94,6 +118,7 @@ Assegna **punti per posizione** nel tabellone di eliminazione.
 |---------|---------|---------|
 | **RACK** | ✅ | ✅ |
 | **WINS** | ✅ | ✅ |
+| **POINTS** | ✅ | ✅ |
 | **POSITION** | ❌ | ✅ (solo) |
 
 ### 2.5 Matchmaking
@@ -102,6 +127,7 @@ Assegna **punti per posizione** nel tabellone di eliminazione.
 |---------|--------|--------|-------------|--------------|-----------|
 | **RACK** | ✅ | ✅ | ✅ | ❌ | ❌ |
 | **WINS** | ✅ | ✅ | ✅ | ❌ | ❌ |
+| **POINTS** | ✅ | ✅ | ✅ | ❌ | ❌ |
 | **POSITION** | ❌ | ❌ | ❌ | ✅ | ✅ |
 
 ---
@@ -245,6 +271,12 @@ si risolvono i pari merito». In breve:
 | Gara | vittorie → differenza → SSR fino al 3° | rack → SSR fino al 3° |
 | Campionato | vittorie → differenza → SSR (somma) → posizione dopo la gara precedente → sorteggio | rack → SSR (somma) → posizione dopo la gara precedente → sorteggio |
 
+A punti (POINTS) le catene di default sono quelle WINS col principale «punti»:
+turno punti → differenza → posizione precedente → sorteggio; gara punti →
+differenza → SSR fino al 3°; campionato punti → differenza → SSR (somma) →
+posizione dopo la gara precedente → sorteggio. «Vittorie» lì è un criterio
+che si può aggiungere alla catena.
+
 Lo **scontro diretto** è un criterio del motore: ogni coppia di pari che si è
 incontrata dice chi sta davanti (chi ha vinto più scontri fra i due); chi si è
 battuto a vicenda in giro resta pari; fra chi non si è incontrato decide il
@@ -342,6 +374,7 @@ La classifica del campionato **aggrega sommando** le classifiche delle singole g
 |---------|--------------|
 | **RACK** | Σ rack totali vinti |
 | **WINS** | Σ vittorie, Σ diff rack |
+| **POINTS** | Σ punti (pesati) |
 | **POSITION** | Σ punti posizione |
 
 ### 7.3 Partecipazione parziale
@@ -442,6 +475,14 @@ SE sistema = WINS:
   ✓ dispari ∈ {NO, Trio, Bye, Bye+Challenge}
   ✓ matchmaking ∈ {Random, Amalfi, Round Robin}
   ✗ matchmaking ∉ {Eliminazione, Doppio KO}
+```
+
+### 9.2-bis Validazioni per Sistema POINTS
+
+```
+SE sistema = POINTS:
+  come WINS (stessa funzione `_validate_wins_system`)
+  ✓ punti: interi 0–99, vittoria ≥ pareggio ≥ sconfitta, vittoria > sconfitta
 ```
 
 ### 9.3 Validazioni per Sistema POSITION
@@ -593,3 +634,4 @@ Riepilogo di tutte le combinazioni valide.
 
 - **2025-10-XX**: Creazione documento con specifiche complete del sistema di classificazione.
 - **2026-01-24**: Verificato allineamento con codebase.
+- **2026-10-07**: Sistema POINTS (classifica a punti), ADR-078 emendamento.

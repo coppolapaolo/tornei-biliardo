@@ -186,6 +186,13 @@ def formula_classifica(campionato) -> str:
         return _("Classifica a triangoli vinti")
     if sistema == ClassificationSystem.POSITION:
         return _("Classifica a punti per piazzamento")
+    if sistema == ClassificationSystem.POINTS:
+        from models.classification.punti import descrivi_punti, punti_proposti
+
+        return _(
+            "Classifica a punti: %(punti)s",
+            punti=descrivi_punti(punti_proposti(campionato)),
+        )
     return _("Classifica a vittorie")
 
 
@@ -217,7 +224,7 @@ def _classifica(campionato, generale) -> List[RigaClassifica]:
     )
     if sistema == ClassificationSystem.RACK:
         chiave, unita = "total_racks_won", _("T")
-    elif sistema == ClassificationSystem.POSITION:
+    elif sistema in (ClassificationSystem.POSITION, ClassificationSystem.POINTS):
         chiave, unita = "total_points", _("P")
     else:
         chiave, unita = "total_matches_won", _("V")

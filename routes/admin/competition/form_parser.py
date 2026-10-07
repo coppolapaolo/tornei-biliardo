@@ -254,6 +254,11 @@ class GaraFormParser:
         # Assenti dal modulo = non toccare (in creazione: come il campionato).
         data.update(self._parse_catene(request.form, data["classification_system"]))
 
+        # ── Punti della classifica a punti (ADR-078, emendamento) ──
+        data.update(
+            GaraFormParser._parse_punti(request.form, data["classification_system"])
+        )
+
         # In modifica, un campo che il modulo non manda vuol dire «non
         # toccare», come per chi apre e chi spacca: rimettere il valore
         # predefinito cambierebbe la gara senza che nessuno l'abbia chiesto —
@@ -316,6 +321,9 @@ class GaraFormParser:
         "x_challenge_id",
         "catena_turno",
         "catena_gara",
+        "points_win",
+        "points_draw",
+        "points_loss",
     )
 
     @staticmethod
@@ -441,6 +449,34 @@ class GaraFormParser:
             for livello, campo in COLONNA_DELLA_GARA.items()
             if campo in form
         }
+
+    @staticmethod
+    def _parse_punti(form: Any, sistema: Any) -> Dict[str, int]:
+        """I punti di vittoria, pareggio e sconfitta, se la gara è a punti.
+
+        Con un altro sistema i tre campi stanno nascosti nel modulo, e qui non
+        si leggono: un valore lasciato a metà in un campo che non si vede non
+        deve fermare il salvataggio. Assenti dal modulo = non toccare. Un
+        valore fuori dai limiti si rifiuta con un messaggio
+        (`punti.valida_punti`).
+        """
+        from models.classification.punti import (
+            COLONNE_DELLA_GARA,
+            PUNTI_DEFAULT,
+            valida_punti,
+        )
+        from models.status_enum import ClassificationSystem
+
+        if ClassificationSystem.resolve(sistema) is not ClassificationSystem.POINTS:
+            return {}
+        if not any(colonna in form for colonna in COLONNE_DELLA_GARA):
+            return {}
+        grezzi = [
+            (form.get(colonna) or "").strip() or str(default)
+            for colonna, default in zip(COLONNE_DELLA_GARA, PUNTI_DEFAULT.come_tupla())
+        ]
+        punti = valida_punti(*grezzi)
+        return dict(zip(COLONNE_DELLA_GARA, punti.come_tupla()))
 
     def _parse_time_limit(self) -> Optional[int]:
         """I minuti a disposizione di ogni partita: vuoto vuol dire nessun limite.

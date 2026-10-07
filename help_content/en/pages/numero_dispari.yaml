@@ -35,7 +35,7 @@ blocks:
     items:
       - "**For**: simple, immediate, no extra time."
       - "**Against**: somebody sits out for a round."
-      - "**Use with** the «Wins» standings system."
+      - "**Use with** the «Wins» or «Points» standings system: there the X counts as a win."
 
   - type: note
     tone: warning

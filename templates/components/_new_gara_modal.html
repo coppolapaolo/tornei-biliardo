@@ -379,6 +379,13 @@
                         <div {% if modal_is_bracket %}style="display:none"{% endif %}>
                         <hr class="my-3">
                         <h6 class="text-primary mb-3"><i class="fas fa-balance-scale"></i> {{ _("Pari merito") }}</h6>
+                        {# La classifica a punti (ADR-078): i punti che il
+                           campionato propone, già scritti, solo se è a punti. #}
+                        {% if campionato and campionato.default_classification_system == 'POINTS' %}
+                        {% with punti_valori=punti_proposti(campionato) %}
+                        {% include "components/_campo_punti.html" %}
+                        {% endwith %}
+                        {% endif %}
                         {# Le catene degli spareggi (ADR-078): parte da quelle che il
                            campionato propone, e la gara le può cambiare. #}
                         {% import "components/_catena_spareggi.html" as catena with context %}

@@ -77,6 +77,20 @@ Classification uses strategy pattern in `strategies/` subdirectory:
 | `random_gara` | Gara | Random final standings |
 | `position_round` | Round | Gare a tabellone, classifica parziale |
 | `position_gara` | Gara | Gare a tabellone, bande di pari merito |
+| `points_round` | Round | Classifica a punti (POINTS), turno |
+| `points_gara` | Gara | Classifica a punti (POINTS), finale |
+
+### Sistema POINTS (classifica a punti, ADR-078 emendamento)
+
+Si ordina **solo sui punti**, poi la catena (default = quella WINS). I punti
+di vittoria/pareggio/sconfitta (default 3/1/0) stanno sulla gara
+(`points_win/draw/loss`), proposti dal campionato (`default_points_*`), e si
+leggono **solo** da `punti.py`. `ScoreAggregator` conta i pareggi
+(`matches_drawn`) e somma i punti (`_esito`) solo nelle gare a punti: la X
+vale una vittoria, il trio senza vincitore dà il pareggio a chi è in testa e
+la sconfitta al terzo. Le righe di classifica tengono `points` (NULL con gli
+altri sistemi); la classifica generale somma `total_points` pesati, copiati
+in `Classification.total_position_points`.
 
 ### Sistema POSITION (gare a tabellone)
 

@@ -5,9 +5,27 @@ Data Structures: ScoreAggregator
 Dependencies: typing, .strategies.base, models.base
 """
 
+from dataclasses import replace
 from typing import List, Dict, Any, Optional
+from .punti import Punti
 from .strategies.base import PlayerScore
-from models.status_enum import MatchStatus
+from models.status_enum import ClassificationSystem, MatchStatus
+
+#: Gli esiti di una partita per la classifica a punti (`punti.py`).
+VITTORIA, PAREGGIO, SCONFITTA = "vittoria", "pareggio", "sconfitta"
+
+
+def _nuove_statistiche() -> Dict[str, int]:
+    return {
+        "matches_won": 0,
+        "matches_lost": 0,
+        "matches_drawn": 0,
+        "racks_won": 0,
+        "racks_lost": 0,
+        "sets_won": 0,
+        "sets_lost": 0,
+        "points": 0,
+    }
 
 
 class ScoreAggregator:
@@ -20,7 +38,35 @@ class ScoreAggregator:
     - Regular matches (single and multi-set)
     - Bye matches (player1 gets automatic win)
     - Cumulative stats across multiple rounds
+
+    Nella classifica a punti (POINTS) ogni partita dà anche i **punti** del
+    suo esito (`punti.py`): vittoria, pareggio o sconfitta. Gli esiti si
+    contano sempre, i punti solo in quel sistema: altrove restano zero.
     """
+
+    #: I punti della gara che si sta aggregando, None se non è a punti. Lo
+    #: imposta `aggregate_round_scores`; chi processa una partita da sola
+    #: (`_process_*`) conta gli esiti senza punti.
+    _punti: Optional[Punti] = None
+
+    def _esito(
+        self, player_stats: Dict[int, Dict[str, int]], pid: int, esito: str
+    ) -> None:
+        """Registra l'esito di una partita per la classifica a punti.
+
+        Le vittorie e le sconfitte le conta già chi chiama (`matches_won`,
+        `matches_lost`, con le regole di sempre); qui si contano i pareggi e
+        si sommano i punti.
+        """
+        if esito == PAREGGIO:
+            player_stats[pid]["matches_drawn"] += 1
+        if self._punti is None:
+            return
+        player_stats[pid]["points"] += {
+            VITTORIA: self._punti.vittoria,
+            PAREGGIO: self._punti.pareggio,
+            SCONFITTA: self._punti.sconfitta,
+        }[esito]
 
     def aggregate_round_scores(
         self,
@@ -36,8 +82,19 @@ class ScoreAggregator:
         Returns:
             List of PlayerScore objects for all players with matches
         """
+        from models.competition.models import Gara
         from models.match.models import Match
         from models.base import db
+
+        gara = db.session.get(Gara, gara_id)
+        self._punti = None
+        if gara is not None and (
+            ClassificationSystem.resolve(gara.classification_system)
+            is ClassificationSystem.POINTS
+        ):
+            from .punti import punti_della_gara
+
+            self._punti = punti_della_gara(gara)
 
         # Include both 'completed' (admin) and 'validated' (player confirmation)
         matches = (
@@ -66,6 +123,8 @@ class ScoreAggregator:
                 player_id=pid,
                 matches_won=stats.get("matches_won", 0),
                 matches_lost=stats.get("matches_lost", 0),
+                matches_drawn=stats.get("matches_drawn", 0),
+                points=stats.get("points", 0),
                 racks_won=stats.get("racks_won", 0),
                 racks_lost=stats.get("racks_lost", 0),
                 rack_difference=stats.get("racks_won", 0) - stats.get("racks_lost", 0),
@@ -105,20 +164,7 @@ class ScoreAggregator:
             for score in scores:
                 spot_wins = spot_shot_results.get(score.player_id, 0)
                 if spot_wins > 0:
-                    # Create new PlayerScore with spot_shot_wins
-                    enriched.append(
-                        PlayerScore(
-                            player_id=score.player_id,
-                            matches_won=score.matches_won,
-                            matches_lost=score.matches_lost,
-                            racks_won=score.racks_won,
-                            racks_lost=score.racks_lost,
-                            rack_difference=score.rack_difference,
-                            sets_won=score.sets_won,
-                            sets_lost=score.sets_lost,
-                            spot_shot_wins=spot_wins,
-                        )
-                    )
+                    enriched.append(replace(score, spot_shot_wins=spot_wins))
                 else:
                     enriched.append(score)
             return enriched
@@ -179,25 +225,17 @@ class ScoreAggregator:
         # Initialize players if not seen
         for pid in [match.player1_id, match.player2_id]:
             if pid and pid not in player_stats:
-                player_stats[pid] = {
-                    "matches_won": 0,
-                    "matches_lost": 0,
-                    "racks_won": 0,
-                    "racks_lost": 0,
-                    "sets_won": 0,
-                    "sets_lost": 0,
-                }
+                player_stats[pid] = _nuove_statistiche()
 
         if not match.player1_id or not match.player2_id:
             return
 
         # Determine winner (handle ties - neither gets a win)
+        vincitore = perdente = None
         if match.player1_score > match.player2_score:
-            player_stats[match.player1_id]["matches_won"] += 1
-            player_stats[match.player2_id]["matches_lost"] += 1
+            vincitore, perdente = match.player1_id, match.player2_id
         elif match.player2_score > match.player1_score:
-            player_stats[match.player2_id]["matches_won"] += 1
-            player_stats[match.player1_id]["matches_lost"] += 1
+            vincitore, perdente = match.player2_id, match.player1_id
         elif getattr(match, "winner_id", None) in (match.player1_id, match.player2_id):
             # Pari con chi passa indicato dal direttore: una partita del
             # tabellone interrotta a tempo (ADR-077). Fuori dal tabellone il
@@ -206,9 +244,17 @@ class ScoreAggregator:
             perdente = (
                 match.player2_id if vincitore == match.player1_id else match.player1_id
             )
+        if vincitore is not None and perdente is not None:
             player_stats[vincitore]["matches_won"] += 1
             player_stats[perdente]["matches_lost"] += 1
-        # else: tie - neither player gets a win
+            self._esito(player_stats, vincitore, VITTORIA)
+            self._esito(player_stats, perdente, SCONFITTA)
+        else:
+            # Pareggio: esattamente N pari, o interrotta a tempo a parità
+            # fuori dal tabellone (ADR-077). Nessuna vittoria, i punti del
+            # pareggio a entrambi.
+            self._esito(player_stats, match.player1_id, PAREGGIO)
+            self._esito(player_stats, match.player2_id, PAREGGIO)
 
         # Process racks (handle multi-set)
         if match.is_multi_set:
@@ -248,17 +294,12 @@ class ScoreAggregator:
             return
 
         if pid not in player_stats:
-            player_stats[pid] = {
-                "matches_won": 0,
-                "matches_lost": 0,
-                "racks_won": 0,
-                "racks_lost": 0,
-                "sets_won": 0,
-                "sets_lost": 0,
-            }
+            player_stats[pid] = _nuove_statistiche()
 
-        # Bye player gets automatic win
+        # Bye player gets automatic win. La X vale una vittoria anche a punti
+        # (SPECIFICHE.md, «Strategia di abbinamento»).
         player_stats[pid]["matches_won"] += 1
+        self._esito(player_stats, pid, VITTORIA)
         player_stats[pid]["racks_won"] += match.player1_score or 0
         # No rack_lost for bye matches
 
@@ -292,14 +333,7 @@ class ScoreAggregator:
         # Initialize all three players if not seen
         for pid in player_ids:
             if pid and pid not in player_stats:
-                player_stats[pid] = {
-                    "matches_won": 0,
-                    "matches_lost": 0,
-                    "racks_won": 0,
-                    "racks_lost": 0,
-                    "sets_won": 0,
-                    "sets_lost": 0,
-                }
+                player_stats[pid] = _nuove_statistiche()
 
         winner_id = match.winner_id
 
@@ -314,11 +348,23 @@ class ScoreAggregator:
                 if pid == winner_id:
                     player_stats[pid]["matches_won"] += 1
                     player_stats[pid]["racks_won"] += distance
+                    self._esito(player_stats, pid, VITTORIA)
                 else:
                     player_stats[pid]["matches_lost"] += 1
+                    self._esito(player_stats, pid, SCONFITTA)
             return
 
         racks = [trio.player1_racks, trio.player2_racks, trio.player3_racks]
+        # Senza vincitore, chi è a pari merito in testa prende i punti del
+        # pareggio e il terzo, se staccato, quelli della sconfitta
+        # (SPECIFICHE.md, «Classifica»). Nessuna vittoria, come a WINS. Chi si
+        # è ritirato non è mai in testa: il pari si guarda fra gli altri due,
+        # come per il vincitore (`trio_punteggio.vincitore_del_trio`).
+        ritirato = getattr(trio, "forfeit_player_id", None)
+        in_gara = [
+            r or 0 for pid, r in zip(player_ids, racks) if pid and pid != ritirato
+        ]
+        massimo = max(in_gara) if in_gara else 0
         bonus_racks = distance % 2  # 1 for distance 3,5; 0 for distance 2,4
 
         # Process each player
@@ -340,8 +386,13 @@ class ScoreAggregator:
             if winner_id:
                 if pid == winner_id:
                     player_stats[pid]["matches_won"] += 1
+                    self._esito(player_stats, pid, VITTORIA)
                 else:
                     player_stats[pid]["matches_lost"] += 1
+                    self._esito(player_stats, pid, SCONFITTA)
+            else:
+                in_testa = pid != ritirato and (player_racks or 0) == massimo
+                self._esito(player_stats, pid, PAREGGIO if in_testa else SCONFITTA)
 
 
 __all__ = ["ScoreAggregator"]

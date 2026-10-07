@@ -109,11 +109,19 @@ hints:
 
   - id: gara.classifica_sistema
     label: "Sistema di classifica"
-    short: "Vittorie conta le partite vinte, Triangoli i triangoli totali. Sui tabelloni non compare: lì la classifica è per posizione e basta."
+    short: "Vittorie conta le partite vinte, Triangoli i triangoli totali, Punti i punti di ogni risultato. Sui tabelloni non compare: lì la classifica è per posizione."
     anchor: gara-classifica-sistema
     screens: [admin.competition.create_gara_standalone]
     page: classifiche
     section: vittorie
+
+  - id: gara.punti
+    label: "Punti in classifica"
+    short: "Quanti punti valgono vittoria, pareggio e sconfitta (di norma 3, 1, 0). La X vale una vittoria. Si ordina solo sui punti."
+    anchor: gara-punti
+    screens: [admin.competition.create_gara_standalone]
+    page: classifiche
+    section: punti
 
   - id: gara.anti_rematch
     label: "Evita reincontri"

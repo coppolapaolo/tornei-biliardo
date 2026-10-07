@@ -319,6 +319,9 @@ def _collect_user_data(user_id: int) -> Dict[str, Any]:
             "total_matches_won": classif.total_matches_won,
             "total_racks_won": classif.total_racks_won,
             "total_point_difference": classif.total_point_difference,
+            # I punti, nei campionati che ne hanno: per piazzamento o per
+            # risultato (classifica a punti).
+            "total_points": classif.total_position_points or 0,
             "gare_played": classif.gare_played,
         }
         for classif in classifications

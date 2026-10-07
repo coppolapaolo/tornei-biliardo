@@ -237,7 +237,7 @@
           {% elif not schermo.turno_classifica %}{{ _('Classifica complessiva') }}
           {% else %}{{ _('Classifica dopo il turno %(n)s', n=schermo.turno_classifica) }}{% endif %}
         </h3>
-        <span class="c7-sechead__note">{{ _('Vinti · persi') if schermo.rack else _('Vinte · diff') }}</span>
+        <span class="c7-sechead__note">{{ _('Vinti · persi') if schermo.rack else (_('Punti · diff') if schermo.punti else _('Vinte · diff')) }}</span>
       </div>
       <div class="c7-rows c7-sala__classifica">
         {% for r in schermo.classifica %}

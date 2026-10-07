@@ -524,7 +524,7 @@ class PlayoffService:
         ammessi = {
             "strategy_type": {s.value for s in MatchmakingStrategy},
             "odd_number_policy": {p.value for p in OddNumberPolicy},
-            "classification_system": {"WINS", "RACK"},
+            "classification_system": {"WINS", "RACK", "POINTS"},
         }
         for campo, valori in ammessi.items():
             valore = fields.get(campo)

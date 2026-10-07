@@ -44,10 +44,12 @@ blocks:
           How many you expect. It is an indicative target, not a constraint:
           you can add or remove them.
       - name: "Standings system"
-        values: "Wins · Racks · Position"
+        values: "Wins · Racks · Points · Position"
         text: >-
           How the standings are ordered. **Wins** is the normal choice: it
-          counts matches won, and rack difference when level. The three modes
+          counts matches won, and rack difference when level. With **Points**
+          every result is worth the points you choose in the next step
+          (usually 3 for a win, 1 for a draw, 0 for a loss). The four modes
           are explained in [How standings are worked
           out](/aiuto/approfondimenti/classifiche).
         hint: campionato.classifica
@@ -217,7 +219,8 @@ blocks:
     text: >-
       They update on their own at the end of each competition by adding up the
       results: wins and rack difference if the system is «Wins», total racks if
-      it is «Racks», position points — the ones in the table above — if it is
+      it is «Racks», the competitions' points — multiplied by their weight —
+      if it is «Points», position points — the ones in the table above — if it is
       «Position». Anyone who misses a competition is not excluded: they simply
       gain nothing on that occasion.
 

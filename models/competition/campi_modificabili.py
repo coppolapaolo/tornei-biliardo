@@ -17,7 +17,8 @@ Le fasce:
   restano turni da giocare;
 * **spareggio** (la catena della classifica di gara, che contiene lo
   spareggio SSR): finché lo spareggio non è cominciato;
-* **struttura** (strategia, sistema di classifica, numero di turni, primo
+* **struttura** (strategia, sistema di classifica e punti della classifica a
+  punti, numero di turni, primo
   turno, set, anti-reincontro, opzioni del tabellone, minimo e capienza): solo
   prima dell'avvio; dopo, si cambia annullando l'avvio;
 * **peso** nel campionato: sempre, anche a gara conclusa (conta quanto vale
@@ -73,6 +74,11 @@ STRUTTURA: FrozenSet[str] = frozenset(
     {
         "matchmaking_strategy",
         "classification_system",
+        # I punti della classifica a punti: come il sistema, decidono la
+        # classifica di tutti i turni, quindi non si cambiano a gara avviata.
+        "points_win",
+        "points_draw",
+        "points_loss",
         "rounds_count",
         "first_round_policy",
         "is_multi_set",

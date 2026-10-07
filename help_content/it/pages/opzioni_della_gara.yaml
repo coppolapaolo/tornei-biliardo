@@ -176,10 +176,12 @@ blocks:
           costruisce, non una politica da scegliere.
         hint: gara.dispari
       - name: "Sistema di classifica"
-        values: "Vittorie (predefinito) · Triangoli"
+        values: "Vittorie (predefinito) · Triangoli · Punti"
         text: >-
           Come si ordinano i giocatori. **Vittorie** conta le partite vinte e,
-          a parità, la differenza triangoli. **Triangoli** conta i triangoli totali. Sui
+          a parità, la differenza triangoli. **Triangoli** conta i triangoli totali.
+          **Punti** dà a ogni risultato i punti scelti in **Punti in
+          classifica** (di norma 3, 1 e 0) e ordina solo su quelli. Sui
           tabelloni il campo non compare, perché la classifica è per
           **posizione** e non c'è altro da scegliere. Vedi [Come si calcolano
           le classifiche](/aiuto/approfondimenti/classifiche).

@@ -77,24 +77,37 @@ function config(livello, voci) {
     ssrConPosto: gara,
     ssrDefault: 3,
     ssrMassimo: 99,
-    ammessi: { WINS: ammessi("vittorie"), RACK: ammessi("rack_vinti") },
-    principale: { WINS: "Vittorie", RACK: "Triangoli vinti" },
+    ammessi: {
+      WINS: ammessi("vittorie"),
+      RACK: ammessi("rack_vinti"),
+      POINTS: ammessi("punti"),
+    },
+    principale: { WINS: "Vittorie", RACK: "Triangoli vinti", POINTS: "Punti" },
     default: gara
-      ? { WINS: ["differenza_rack", "ssr:3"], RACK: ["ssr:3"] }
+      ? {
+          WINS: ["differenza_rack", "ssr:3"],
+          RACK: ["ssr:3"],
+          POINTS: ["differenza_rack", "ssr:3"],
+        }
       : {
           WINS: ["differenza_rack", "posizione_precedente", "sorteggio"],
           RACK: ["posizione_precedente", "sorteggio"],
+          POINTS: ["differenza_rack", "posizione_precedente", "sorteggio"],
         },
     nomi: NOMI,
     frasi: FRASI,
-    aPari: { WINS: "A pari vittorie", RACK: "A pari triangoli vinti" },
+    aPari: {
+      WINS: "A pari vittorie",
+      RACK: "A pari triangoli vinti",
+      POINTS: "A pari punti",
+    },
     testi: TESTI,
   };
 }
 
 function editor(livello, voci) {
   const html = `<!doctype html><body>
-    <select id="sistema"><option value="WINS" selected>W</option><option value="RACK">R</option></select>
+    <select id="sistema"><option value="WINS" selected>W</option><option value="RACK">R</option><option value="POINTS">P</option></select>
     <div data-catena data-sistema-da="#sistema">
       <input type="hidden" name="catena" data-catena-valore>
       <ol data-catena-voci></ol><div data-catena-aggiungi></div><p data-catena-frase></p>
@@ -195,6 +208,14 @@ check("cambio di sistema: una catena scelta perde solo il nuovo principale", () 
   const e = editor("gara", ["rack_vinti", "scontri_diretti"]);
   e.sistema("RACK");
   assert.strictEqual(e.valore(), "scontri_diretti");
+});
+
+check("cambio di sistema: a punti la catena di default è quella a vittorie", () => {
+  const e = editor("gara", ["differenza_rack", "ssr:3"]);
+  e.sistema("POINTS");
+  assert.strictEqual(e.valore(), "differenza_rack,ssr:3");
+  assert.ok(e.frase().startsWith("A pari punti"));
+  assert.ok(e.c('[data-aggiungi="vittorie"]'), "a punti le vittorie si aggiungono");
 });
 
 console.log(`${controlli} controlli superati`);

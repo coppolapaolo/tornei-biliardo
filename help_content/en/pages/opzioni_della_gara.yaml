@@ -176,10 +176,12 @@ blocks:
           policy to choose.
         hint: gara.dispari
       - name: "Standings system"
-        values: "Wins (default) · Racks"
+        values: "Wins (default) · Racks · Points"
         text: >-
           How players are ordered. **Wins** counts matches won and, when level,
-          rack difference. **Racks** counts total racks. On brackets the field
+          rack difference. **Racks** counts total racks. **Points** gives every
+          result the points chosen in **Points in the standings** (usually 3,
+          1 and 0) and orders on those alone. On brackets the field
           does not appear, because the standings go by **position** and there
           is nothing else to choose. See [How standings are worked
           out](/aiuto/approfondimenti/classifiche).

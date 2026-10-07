@@ -36,7 +36,8 @@
   }
 
   function sistemaValido(valore) {
-    return valore === 'RACK' || valore === 'RACKS' ? 'RACK' : 'WINS';
+    if (valore === 'RACK' || valore === 'RACKS') return 'RACK';
+    return valore === 'POINTS' ? 'POINTS' : 'WINS';
   }
 
   function uguali(a, b) {

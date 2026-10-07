@@ -123,6 +123,10 @@ class TournamentService(TournamentStatisticsService):
         default_catena_turno: Optional[str] = None,
         default_catena_gara: Optional[str] = None,
         catena_generale: Optional[str] = None,
+        # I punti della classifica a punti proposti alle gare (ADR-078).
+        default_points_win: int = 3,
+        default_points_draw: int = 1,
+        default_points_loss: int = 0,
         # Come si comincia, e chi apre poi (ADR-056). I default sono il
         # comportamento storico: apre il primo giocatore, tiri di apertura
         # alternati.
@@ -169,6 +173,9 @@ class TournamentService(TournamentStatisticsService):
             default_catena_turno=default_catena_turno,
             default_catena_gara=default_catena_gara,
             catena_generale=catena_generale,
+            default_points_win=default_points_win,
+            default_points_draw=default_points_draw,
+            default_points_loss=default_points_loss,
             default_start_rule=default_start_rule,
             default_break_rule=default_break_rule,
             position_points=position_points,

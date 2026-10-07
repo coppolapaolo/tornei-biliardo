@@ -1,7 +1,7 @@
 # Database Schema Reference
 
 > **Auto-generated** from SQLAlchemy models.
-> Last updated: 2026-10-07 09:46 UTC
+> Last updated: 2026-10-07 10:41 UTC
 >
 > To regenerate: `python scripts/generate_schema_docs.py`
 
@@ -244,6 +244,9 @@
 | `default_odd_policy` | VARCHAR(30) | NO |  | bye |  |
 | `default_anti_rematch` | BOOLEAN | NO |  | True |  |
 | `default_classification_system` | VARCHAR(10) | NO |  | WINS |  |
+| `default_points_win` | INTEGER | NO |  | 3 |  |
+| `default_points_draw` | INTEGER | NO |  | 1 |  |
+| `default_points_loss` | INTEGER | NO |  | 0 |  |
 | `default_start_rule` | VARCHAR(20) | NO |  | lag |  |
 | `default_break_rule` | VARCHAR(20) | NO |  | alternate |  |
 | `position_points` | TEXT | YES |  |  |  |
@@ -326,6 +329,9 @@
 | `current_round` | INTEGER | YES |  | 0 |  |
 | `withdraw_policy` | VARCHAR(10) | NO |  | Forfeit |  |
 | `classification_system` | VARCHAR(10) | NO |  | WINS |  |
+| `points_win` | INTEGER | YES |  |  |  |
+| `points_draw` | INTEGER | YES |  |  |  |
+| `points_loss` | INTEGER | YES |  |  |  |
 | `matchmaking_strategy` | VARCHAR(50) | NO |  | amalfi |  |
 | `first_round_policy` | VARCHAR(50) | YES |  | random |  |
 | `odd_number_policy` | VARCHAR(50) | YES |  | bye |  |
@@ -672,6 +678,7 @@
 | `racks_won` | INTEGER | YES |  | 0 |  |
 | `racks_lost` | INTEGER | YES |  | 0 |  |
 | `rack_difference` | INTEGER | YES |  | 0 |  |
+| `points` | INTEGER | YES |  |  |  |
 | `tied_with_player_ids` | JSON | YES |  |  |  |
 | `tiebreaker_resolved` | BOOLEAN | YES |  | True |  |
 | `spot_shot_wins` | INTEGER | YES |  | 0 |  |
@@ -699,6 +706,7 @@
 | `rack_difference` | INTEGER | YES |  | 0 |  |
 | `racks_won` | INTEGER | YES |  |  |  |
 | `previous_position` | INTEGER | YES |  |  |  |
+| `points` | INTEGER | YES |  |  |  |
 | `created_at` | DATETIME | YES |  | func |  |
 
 **Constraints:**

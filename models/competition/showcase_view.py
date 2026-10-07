@@ -30,7 +30,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date as _date
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 from flask_babel import format_date, gettext as _
 
@@ -396,17 +396,34 @@ def _nome_giocatore(utente) -> str:
     return getattr(utente, "display_name", None) or utente.username
 
 
+def _valore_in_classifica(riga) -> Tuple[int, str]:
+    """Il numero della riga e la sua unità, dal sistema di classifica (ADR-047).
+
+    Triangoli vinti (T) a triangoli, punti (P) a punti, vittorie (V) altrove:
+    fino al 2026-10-07 la vetrina mostrava le vittorie anche dove la
+    classifica era ordinata su altro, e sembrava ordinata male.
+    """
+    if getattr(riga, "is_rack_ranking", False) is True:
+        return riga.total_racks_value, _("T")
+    if getattr(riga, "is_points_ranking", False) is True:
+        return riga.points or 0, _("P")
+    return riga.matches_won or 0, _("V")
+
+
 def _righe_classifica(classifiche) -> List[RigaClassifica]:
     """Il podio più un contorno, con i nomi già risolti."""
-    return [
-        RigaClassifica(
-            posizione=riga.position,
-            nome=_nome_giocatore(riga.user),
-            valore=riga.matches_won or 0,
-            unita=_("V"),
+    righe = []
+    for riga in classifiche[:RIGHE_CLASSIFICA_VETRINA]:
+        valore, unita = _valore_in_classifica(riga)
+        righe.append(
+            RigaClassifica(
+                posizione=riga.position,
+                nome=_nome_giocatore(riga.user),
+                valore=valore,
+                unita=unita,
+            )
         )
-        for riga in classifiche[:RIGHE_CLASSIFICA_VETRINA]
-    ]
+    return righe
 
 
 def costruisci_vetrina(gara: Gara) -> Vetrina:

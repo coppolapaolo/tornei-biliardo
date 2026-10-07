@@ -261,6 +261,9 @@ class TournamentStatisticsService:
         # tabella, 10/7/5/4, letta dalla posizione nell'ultimo turno: la pagina
         # e le righe davano punti diversi agli stessi piazzamenti.
         a_piazzamenti = classification_system == ClassificationSystem.POSITION
+        # A punti (POINTS) si sommano i punti della classifica finale di ogni
+        # gara, pesati come tutto il resto (ADR-053, ADR-078 emendamento).
+        a_punti = classification_system == ClassificationSystem.POINTS
         tabella = None
         if a_piazzamenti:
             from models.classification.position_points import (
@@ -315,6 +318,10 @@ class TournamentStatisticsService:
                 player_totals[user_id][
                     "total_spot_shot_wins"
                 ] += peso * gara_ssr_scores.get(user_id, 0)
+                if a_punti:
+                    player_totals[user_id]["total_points"] += peso * (
+                        classification.points or 0
+                    )
                 player_totals[user_id]["participations"] += 1
 
             if a_piazzamenti:
@@ -373,7 +380,7 @@ class TournamentStatisticsService:
     ) -> List[tuple]:
         """Ordina i giocatori e assegna le posizioni.
 
-        A vittorie e a rack: il criterio principale del sistema, poi la catena
+        A vittorie, a rack e a punti: il criterio principale del sistema, poi la catena
         della classifica generale col motore unico (ADR-078). Di default
         «differenza rack (solo WINS) → spareggio SSR (somma) → posizione dopo
         la gara precedente → sorteggio». L'ordine è sempre completo: da questa
@@ -412,6 +419,7 @@ class TournamentStatisticsService:
                 vittorie=dati["total_matches_won"],
                 rack_vinti=dati["total_racks_won"],
                 differenza_rack=dati["total_rack_difference"],
+                punti=dati.get("total_points", 0),
                 ssr=dati["total_spot_shot_wins"],
                 posizione_precedente=previous_positions.get(user_id),
                 sorteggio=chiave_di_sorteggio(seme, user_id),

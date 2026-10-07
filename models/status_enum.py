@@ -495,11 +495,15 @@ class ClassificationSystem(_StrEnum):
 
     - `WINS`     → vittorie, poi differenza triangoli
     - `RACK`     → triangoli totali, poi spareggio SSR
+    - `POINTS`   → punti per risultato (vittoria, pareggio, sconfitta;
+      di norma 3/1/0), poi la catena degli spareggi (ADR-078, emendamento
+      «la classifica a punti»)
     - `POSITION` → punti per piazzamento (formati a tabellone)
     """
 
     RACK = "RACK"
     WINS = "WINS"
+    POINTS = "POINTS"
     POSITION = "POSITION"
 
     @classmethod

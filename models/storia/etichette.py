@@ -45,6 +45,14 @@ ETICHETTE: Dict[str, object] = {
     "odd_number_policy": _l("Numero dispari di giocatori"),
     "first_round_policy": _l("Primo turno"),
     "classification_system": _l("Sistema di classifica"),
+    # La classifica a punti (ADR-078, emendamento).
+    "punti_in_classifica": _l("Punti in classifica"),
+    "points_win": _l("Punti per la vittoria"),
+    "points_draw": _l("Punti per il pareggio"),
+    "points_loss": _l("Punti per la sconfitta"),
+    "default_points_win": _l("Punti per la vittoria, proposti"),
+    "default_points_draw": _l("Punti per il pareggio, proposti"),
+    "default_points_loss": _l("Punti per la sconfitta, proposti"),
     "separate_teammates": _l("Separare i compagni di squadra"),
     "third_place_match": _l("Finalina"),
     "seeding_rating": _l("Criterio del sorteggio"),
@@ -103,6 +111,9 @@ _COME_CAMPO_DELLA_GARA = {
     "default_time_limit_minutes": "time_limit_minutes",
     "default_catena_turno": "catena_turno",
     "default_catena_gara": "catena_gara",
+    "default_points_win": "points_win",
+    "default_points_draw": "points_draw",
+    "default_points_loss": "points_loss",
     "campionato_type": "matchmaking_strategy",
     "strategy_type": "matchmaking_strategy",
 }
@@ -137,6 +148,7 @@ def _valori_noti() -> Dict[str, Dict[str, object]]:
             "RACK": _l("Triangoli"),
             "RACKS": _l("Triangoli"),
             "POSITION": _l("Punti per posizione"),
+            "POINTS": _l("Punti"),
         },
         "final_ranking_mode": {
             "campionato_plus_playoff": _l("Campionato + gara di playoff"),
@@ -185,6 +197,9 @@ def valore(campo: str, grezzo: str | None) -> str:
             "time_limit_minutes",
             "catena_turno",
             "catena_gara",
+            "points_win",
+            "points_draw",
+            "points_loss",
         ):
             return _("come il campionato")
         if campo == "catena_generale":

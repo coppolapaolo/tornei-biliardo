@@ -37,6 +37,8 @@ class _GaraConCatena(ClassificationStrategy):
         """La chiave della catena di default, senza l'id (vedi il modulo)."""
         if self.sistema is ClassificationSystem.RACK:
             return (-score.racks_won, -score.spot_shot_wins)
+        if self.sistema is ClassificationSystem.POINTS:
+            return (-score.points, -score.rack_difference, -score.spot_shot_wins)
         return (-score.matches_won, -score.rack_difference, -score.spot_shot_wins)
 
     def calculate(
@@ -114,4 +116,20 @@ class RandomGaraClassificationStrategy(_GaraConCatena):
     sistema = ClassificationSystem.RACK
 
 
-__all__ = ["AmalfiGaraClassificationStrategy", "RandomGaraClassificationStrategy"]
+class PointsGaraClassificationStrategy(_GaraConCatena):
+    """Classifica finale a punti (ADR-078, emendamento).
+
+    Default: punti → differenza triangoli → spareggio SSR fino al N° posto.
+    """
+
+    name = "points_gara"
+    display_name = "Points Gara Final"
+    description = "Points, then the gara tiebreak chain"
+    sistema = ClassificationSystem.POINTS
+
+
+__all__ = [
+    "AmalfiGaraClassificationStrategy",
+    "PointsGaraClassificationStrategy",
+    "RandomGaraClassificationStrategy",
+]

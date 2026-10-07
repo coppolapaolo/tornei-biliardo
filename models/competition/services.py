@@ -214,6 +214,7 @@ class GaraService:
         # Valida la configurazione classificazione (RACK/WINS/POSITION)
         from models.competition.validators import validate_gara
 
+        GaraService._valida_punti(gara)
         classification_errors, classification_warnings = validate_gara(gara)
         if classification_errors:
             raise ValueError(
@@ -464,6 +465,7 @@ class GaraService:
         # Valida la configurazione classificazione dopo le modifiche
         from models.competition.validators import validate_gara
 
+        GaraService._valida_punti(gara)
         classification_errors, classification_warnings = validate_gara(gara)
         if classification_errors:
             raise ValueError(
@@ -538,6 +540,24 @@ class GaraService:
         return gara
 
     @staticmethod
+    def _valida_punti(gara: Gara) -> None:
+        """I punti della classifica a punti, se la gara ne ha di suoi.
+
+        Il garante della regola è il servizio, come per le date (ADR-016): il
+        modulo li controlla già, ma una gara può nascere anche da altre strade
+        (la finale dei playoff, uno script).
+        """
+        from models.classification.punti import (
+            COLONNE_DELLA_GARA,
+            punti_della_gara,
+            valida_punti,
+        )
+
+        if all(getattr(gara, colonna, None) is None for colonna in COLONNE_DELLA_GARA):
+            return
+        valida_punti(*punti_della_gara(gara).come_tupla())
+
+    @staticmethod
     def _copia_dal_campionato(campionato_id: int, kwargs: Dict[str, Any]) -> None:
         """I valori che una volta la gara rileggeva dal campionato, copiati."""
         from models.campionato.models import Campionato
@@ -567,6 +587,17 @@ class GaraService:
             kwargs["time_limit_minutes"] = int(
                 campionato.default_time_limit_minutes or 0
             )
+        # I punti della classifica a punti, proposti dal campionato: si
+        # copiano sempre, anche a un campionato con un altro sistema, così una
+        # gara ha i suoi valori scritti e un cambio di sistema non la lascia a
+        # leggere quelli del campionato in diretta (ADR-075).
+        from models.classification.punti import COLONNE_DELLA_GARA, punti_proposti
+
+        for colonna, valore in zip(
+            COLONNE_DELLA_GARA, punti_proposti(campionato).come_tupla()
+        ):
+            if kwargs.get(colonna) is None:
+                kwargs[colonna] = valore
         # Le catene degli spareggi proposte (ADR-078), già ammesse al livello.
         from models.classification.catene import COLONNA_DELLA_GARA, catena_proposta
         from models.classification.ordinamento import testo_della_catena
@@ -592,8 +623,10 @@ class GaraService:
         )
         from models.status_enum import ClassificationSystem
 
+        from models.classification.catene import ordina_con_la_catena
+
         sistema = ClassificationSystem.resolve(kwargs.get("classification_system"))
-        if sistema not in (ClassificationSystem.WINS, ClassificationSystem.RACK):
+        if not ordina_con_la_catena(sistema):
             sistema = ClassificationSystem.WINS
         for campo, livello in (
             ("catena_turno", Livello.TURNO),

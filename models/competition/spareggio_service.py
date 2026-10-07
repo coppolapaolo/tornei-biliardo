@@ -244,6 +244,7 @@ class SpareggioService:
                 # scritte prima della separazione delle colonne (20260728).
                 rack_vinti=rc.total_racks_value,
                 differenza_rack=rc.rack_difference or 0,
+                punti=rc.points or 0,
                 ssr=ssr.get(rc.user_id),
                 posizione_precedente=rc.previous_position,
                 sorteggio=chiave_di_sorteggio(seme, rc.user_id),
@@ -619,6 +620,7 @@ class SpareggioService:
                     # differenza in ogni gara che non sia RACK.
                     racks_won=round_class.total_racks_value,
                     rack_difference=round_class.rack_difference or 0,
+                    points=round_class.points,
                 )
                 db.session.add(gara_class)
 
@@ -715,6 +717,7 @@ class SpareggioService:
                     # differenza in ogni gara che non sia RACK.
                     racks_won=round_class.total_racks_value,
                     rack_difference=round_class.rack_difference or 0,
+                    points=round_class.points,
                 )
                 db.session.add(gara_class)
 
@@ -895,9 +898,11 @@ class SpareggioService:
                         racks_won=round_class.total_racks_value,
                         rack_difference=round_class.rack_difference or 0,
                         matches_won=round_class.matches_won,
+                        points=round_class.points,
                     )
                     db.session.add(gara_class)
                 gara_class.position = position
+                gara_class.points = round_class.points
                 # Anche la classifica di turno, perché è quella che la pagina
                 # mostra.
                 round_class.position = position

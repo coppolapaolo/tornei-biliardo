@@ -2644,3 +2644,157 @@ class TestIlListinoDelleQuote:
         db_session.add(partita)
         db_session.flush()
         assert RatingEligibility.exclusion_reason(partita, is_walkover=False) is None
+
+
+# ══ La classifica a punti ════════════════════════════════════════════════
+
+
+@pytest.mark.unit
+class TestLaClassificaAPunti:
+    """`SPECIFICHE.md`, «Classifica», «La classifica a punti» (2026-10-07).
+
+    > Il criterio principale sono **solo i punti** […] Di norma 3, 1 e 0.
+    """
+
+    @staticmethod
+    def _gara_a_punti(db_session, **campi) -> Gara:
+        gara = _gara(db_session, sistema="POINTS")
+        for nome, valore in campi.items():
+            setattr(gara, nome, valore)
+        db_session.flush()
+        return gara
+
+    @staticmethod
+    def _punti(gara, giocatori) -> list[int]:
+        voci = _punteggi(gara.id)
+        return [voci[g.id].points for g in giocatori]
+
+    def test_di_norma_tre_uno_zero(self):
+        """> Di norma 3, 1 e 0."""
+        from models.classification.punti import punti_della_gara
+
+        class _GaraSingola:
+            points_win = points_draw = points_loss = None
+            campionato = None
+
+        assert punti_della_gara(_GaraSingola()).come_tupla() == (3, 1, 0)
+
+    def test_vittoria_e_sconfitta(self, db_session):
+        """> una **vittoria** dà i punti della vittoria, una **sconfitta**
+        > quelli della sconfitta"""
+        gara = self._gara_a_punti(db_session)
+        uno, due = _utente(db_session), _utente(db_session)
+        _partita(db_session, gara, uno, due, persi=2)
+        db_session.commit()
+        assert self._punti(gara, [uno, due]) == [3, 0]
+
+    def test_il_pareggio_da_i_punti_del_pareggio_a_entrambi(self, db_session):
+        """> il **pareggio** — a esattamente N rack con N pari […] — dà i punti
+        > del pareggio a entrambi"""
+        gara = self._gara_a_punti(db_session, distance=6)
+        uno, due = _utente(db_session), _utente(db_session)
+        db_session.add(
+            Match(
+                gara_id=gara.id,
+                round_number=1,
+                player1_id=uno.id,
+                player2_id=due.id,
+                player1_score=3,
+                player2_score=3,
+                winner_id=None,
+                status=MatchStatus.CLOSED_UNILATERALLY.value,
+            )
+        )
+        db_session.commit()
+        assert self._punti(gara, [uno, due]) == [1, 1]
+
+    def test_la_x_vale_i_punti_della_vittoria_e_zero_differenza(self, db_session):
+        """> la **X** vale una vittoria: i punti della vittoria e zero
+        > differenza rack"""
+        gara = self._gara_a_punti(db_session)
+        giocatore = _utente(db_session)
+        TestQuantoValeLaX._con_la_x(db_session, gara, giocatore, 0)
+        voce = _punteggi(gara.id)[giocatore.id]
+        assert (voce.points, voce.rack_difference) == (3, 0)
+
+    def test_la_x_con_esercizio_porta_la_differenza_della_prova(self, db_session):
+        """> con l'esercizio al posto della X, i punti della vittoria e la
+        > differenza pari al punteggio della prova"""
+        gara = self._gara_a_punti(db_session, odd_number_policy="bye_with_challenge")
+        giocatore = _utente(db_session)
+        TestQuantoValeLaX._con_la_x(db_session, gara, giocatore, 3)
+        voce = _punteggi(gara.id)[giocatore.id]
+        assert (voce.points, voce.rack_difference) == (3, 3)
+
+    def test_ordina_solo_sui_punti(self):
+        """> Il criterio principale sono **solo i punti**: le vittorie non
+        > contano da sole
+
+        Quattro pareggi (4 punti) davanti a una vittoria e una sconfitta (3).
+        """
+        from models.classification.strategies.base import PlayerScore
+        from models.classification.strategies.round_strategies import (
+            PointsRoundClassificationStrategy,
+        )
+
+        vince_e_perde = PlayerScore(player_id=1, matches_won=1, points=3)
+        pareggia = PlayerScore(player_id=2, matches_won=0, points=4)
+        risultato = PointsRoundClassificationStrategy().calculate(
+            [vince_e_perde, pareggia]
+        )
+        assert [e.player_id for e in risultato.entries] == [2, 1]
+
+    def _trio(self, db_session, distanza, punteggi):
+        from models.match.trio_scoring_service import TrioScoringService
+
+        gara, giocatori, trio = TestIlTrioInClassifica._nuovo_trio(db_session, distanza)
+        gara.classification_system = "POINTS"
+        TrioScoringService.set_result_direct(trio.id, *punteggi)
+        db_session.commit()
+        return self._punti(gara, giocatori)
+
+    def test_il_trio_con_un_vincitore(self, db_session):
+        """> nel **trio** con un vincitore, lui prende i punti della vittoria e
+        > gli altri due quelli della sconfitta"""
+        assert self._trio(db_session, 4, (4, 1, 1)) == [3, 0, 0]
+
+    def test_il_trio_senza_vincitore_pareggio_in_testa(self, db_session):
+        """> a 4-4-1 due pareggi e una sconfitta"""
+        assert self._trio(db_session, 6, (4, 4, 1)) == [1, 1, 0]
+
+    def test_il_trio_senza_vincitore_a_tre(self, db_session):
+        """> a 3-3-3 tre pareggi"""
+        assert self._trio(db_session, 6, (3, 3, 3)) == [1, 1, 1]
+
+    def test_chi_si_ritira_dal_trio_prende_la_sconfitta(self, db_session):
+        """> Chi si ritira dal trio non è mai in testa, e prende la sconfitta.
+
+        Marco 3, Luca 3 e Gianni ritirato con 3 (l'esempio del ritiro, più
+        sopra nella specifica): nessuno vince, Marco e Luca pareggiano.
+        """
+        from models.match.trio_scoring_service import TrioScoringService
+
+        gara, giocatori, trio = TestIlTrioInClassifica._nuovo_trio(db_session, 6)
+        gara.classification_system = "POINTS"
+        marco, luca, gianni = giocatori
+        for indice in [0, 2, 1, 0, 2, 2, 1]:
+            TrioScoringService.add_rack_win(trio.id, giocatori[indice].id)
+        db_session.commit()
+        assert trio.handle_forfeit(gianni.id)
+        trio.confirm_result_by_admin()
+        db_session.commit()
+
+        assert trio.player_racks_list == [3, 3, 3]
+        assert self._punti(gara, giocatori) == [1, 1, 0]
+
+    def test_i_punti_si_scelgono_entro_i_limiti(self, app):
+        """> numeri interi da 0 a 99, con la vittoria che vale almeno il
+        > pareggio, il pareggio almeno la sconfitta, e la vittoria più della
+        > sconfitta"""
+        from models.classification.punti import valida_punti
+
+        with app.test_request_context():
+            assert valida_punti(2, 1, 0).come_tupla() == (2, 1, 0)
+            for terna in ((1, 1, 1), (1, 2, 0), (100, 0, 0), (3, 1, -1)):
+                with pytest.raises(ValueError):
+                    valida_punti(*terna)
