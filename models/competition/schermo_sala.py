@@ -225,6 +225,8 @@ class SchermoSala:
     #: Il turno della classifica; 0 vuol dire complessiva (formula casuale).
     turno_classifica: int = 0
     rack: bool = False
+    #: A punti la prima colonna sono i punti (ADR-078, emendamento).
+    punti: bool = False
     turno_prima: List[PartitaChiusa] = field(default_factory=list)
     numero_turno_prima: Optional[int] = None
     #: Le partite del turno **in corso** gia' concluse che su un tavolo non
@@ -352,10 +354,13 @@ def _righe(rows: List) -> Tuple[List[RigaSala], bool]:
             righe.append(RigaSala(r.position, nome, r.total_racks_value, persi))
         else:
             diff = r.ranking_rack_value
+            primo = (
+                (r.points or 0)
+                if getattr(r, "is_points_ranking", False) is True
+                else (r.matches_won or 0)
+            )
             righe.append(
-                RigaSala(
-                    r.position, nome, r.matches_won or 0, f"{diff:+d}" if diff else "0"
-                )
+                RigaSala(r.position, nome, primo, f"{diff:+d}" if diff else "0")
             )
     return righe, rack
 
@@ -637,6 +642,8 @@ def schermo_sala(
         classifica=righe,
         turno_classifica=turno_classifica,
         rack=rack,
+        punti=bool(righe_classifica)
+        and getattr(righe_classifica[0], "is_points_ranking", False) is True,
         turno_prima=turno_prima,
         numero_turno_prima=numero_turno_prima,
         chiuse_del_turno=chiuse_del_turno,

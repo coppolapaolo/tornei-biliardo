@@ -98,7 +98,7 @@ Una **gara** con un masssimo di iscritti ha anche una **lista di attesa**. I gio
 
 Una gara ha una **strategia di abbinamento** tra turni, una policy per definire l'abbinamento del primo turno (ad esempio casuale oppure sulla base della classifica) e una policy per la gestione del numero dispari di giocatori (NO, Bye, Bye+Challenge, Bye+N rack, o Trio). Tutti questi valori hanno un default che dipende dal campionato a cui appartiene la gara.
 
-Una gara ha un **sistema di classifica** che può essere RACK (rack totali vinti), WINS (match vinti + differenza rack) o POSITION (punti per posizione nel tabellone). Il sistema di classifica determina i vincoli sulle altre opzioni (distanza, multi-set, gestione dispari). Vedi [CLASSIFICATION_SYSTEM.md](CLASSIFICATION_SYSTEM.md) per i dettagli completi.
+Una gara ha un **sistema di classifica** che può essere RACK (rack totali vinti), WINS (match vinti + differenza rack), POINTS (punti per risultato: vittoria, pareggio, sconfitta) o POSITION (punti per posizione nel tabellone). Il sistema di classifica determina i vincoli sulle altre opzioni (distanza, multi-set, gestione dispari). Vedi [CLASSIFICATION_SYSTEM.md](CLASSIFICATION_SYSTEM.md) per i dettagli completi.
 Una gara ha una **classifica** finale con un eventuale meccanismo per definire gli spareggi. Ad esempio una gara potrebbe definire gli spareggi solo per le prime tre posizioni con uno "_spot shot rally_": se nelle prime tre posizioni ci sono 2 o più giocatori pari merito, allora si affrontano in una **challenge** di tipo spot shot. Un altro tipo di spareggio potrebbe essere un match con un solo rack. 
 Una **gara** ha una **policy per il forfait** il cui valore di default è definito dal campionato. La policy definisce come trattare un giocatore che ha dichiarato forfait negli abbinamenti e nei match successivi:
 - **EXCLUDE**: il giocatore viene eliminato dagli abbinamenti futuri (ma resta in classifica con i punti accumulati). Se questo cambia la parità dei giocatori, si applica la gestione dispari configurata.
@@ -158,7 +158,7 @@ Una variante, sempre per _amalfi_ consiste nel gestire la X con una challenge ch
 
 Se il numero di giocatori è dispari, si può gestire con diverse opzioni:
 - **NO**: i giocatori che rendono dispari vanno in lista d'attesa fino a quando non si iscrive un altro giocatore
-- **Bye**: un giocatore salta il turno (solo per sistema WINS: ottiene 1 vittoria, 0 diff rack)
+- **Bye**: un giocatore salta il turno (solo per sistema WINS: ottiene 1 vittoria, 0 diff rack; vale anche per il sistema POINTS, dove la vittoria dà i suoi punti)
 - **Bye+Challenge**: un giocatore esegue una challenge che determina il suo punteggio
 - **Bye+N rack**: un giocatore ottiene automaticamente N rack (solo per sistema RACK)
 - **Trio**: tre giocatori giocano insieme mini gironi
@@ -175,6 +175,8 @@ Il **trio** è possibile solo per le distanze da 2 a 7. I giocatori nel trio gio
 | 7 | 3 | 6 | 9 | 1 + rack vinti |
 
 Per il sistema WINS, nel trio vince chi ha il punteggio più alto (1 vittoria), gli altri ottengono 0 vittorie. Se il punteggio più alto è di due o tre giocatori, nessuno prende la vittoria: il pari in testa non si scioglie con lo scontro diretto. Chi si ritira dal trio non vince, e il pari si guarda fra gli altri due. La differenza rack è sempre calcolata dai risultati effettivi. _Nota del 2026-09-13: la frase «se c'è pareggio» è stata riscritta perché ambigua. Il codice scioglieva il pari in testa con lo scontro diretto, per una scelta presa il 2026-05-10 durante una sessione di prove e mai riportata qui, `docs/_archive/2026-05-10-test-session.md`; la decisione del 2026-09-13 conferma la specifica e supera quella scelta. Lo stesso giorno è stata decisa la regola del ritiro: chi si ritira dal trio non vince mai, nemmeno col totale più alto, e il pari si guarda solo fra gli altri due; prima lo scioglieva lo scontro diretto fra i due rimasti. Esempi alla distanza 6, nove triangoli: Marco 3, Luca 3 e Gianni ritirato con 3, nessuno vince; Marco 3, Luca 2 e Gianni ritirato con 4, vince Marco, anche se Gianni ha il totale più alto._
+
+Per il sistema POINTS il trio dà i punti dell'esito: la vittoria al vincitore e la sconfitta agli altri due; senza vincitore, il pareggio a chi è a pari merito in testa e la sconfitta al terzo staccato (vedi «Classifica», «La classifica a punti»).
 
 Per distanze superiori a 7, i rack totali da giocare diventano troppi rispetto a quelli che giocano le coppie e quindi il trio allungherebbe troppo i tempi della gara.
 ### Gare amalfi
@@ -314,12 +316,22 @@ Un **rack** è relativo ad una disciplina come, ad esempio, "palla 8", "palla 9"
 
 Una **classifica** può essere collegata ad un turno, una **gara** o ad un **campionato**.
 
-Esistono tre sistemi di classifica:
+Esistono quattro sistemi di classifica:
 - **RACK**: ordina per rack totali vinti (decrescente), poi spareggio
 - **WINS**: ordina per match vinti (decrescente), poi differenza rack (decrescente), poi spareggio
+- **POINTS**: ordina per punti (decrescente), poi la catena degli spareggi; ogni match dà i punti del suo esito — vittoria, pareggio, sconfitta — di norma **3, 1 e 0**
 - **POSITION**: assegna punti per posizione nel tabellone (solo per gare a eliminazione)
 
-**Come si risolvono i pari merito** (2026-10-07, ADR-078). Il sistema dà il **criterio principale** (vittorie o rack vinti); fra chi è pari sul principale decide una **catena di criteri**, applicati uno dopo l'altro. Le classifiche sono tre — del **turno**, della **gara** e del **campionato** — e ognuna ha la sua catena:
+**La classifica a punti** (2026-10-07, ADR-078). Il criterio principale sono **solo i punti**: le vittorie non contano da sole, e fra chi è a pari punti decide la catena degli spareggi. Quanto vale ogni esito lo **sceglie la gara**, anche una gara singola: punti per la vittoria, per il pareggio e per la sconfitta, numeri interi da 0 a 99, con la vittoria che vale almeno il pareggio, il pareggio almeno la sconfitta, e la vittoria più della sconfitta. Di norma 3, 1 e 0. Il campionato li **propone** alle sue gare, che li ricevono quando nascono (il campionato propone, la gara decide); come il sistema di classifica, a gara avviata non si cambiano. Gli esiti:
+
+- una **vittoria** dà i punti della vittoria, una **sconfitta** quelli della sconfitta;
+- la **X** vale una vittoria: i punti della vittoria e zero differenza rack; con l'esercizio al posto della X, i punti della vittoria e la differenza pari al punteggio della prova (la regola della X più sopra, «Strategia di abbinamento»);
+- il **pareggio** — a esattamente N rack con N pari, o un match interrotto a tempo a parità fuori dal tabellone (vedi «Limite di tempo») — dà i punti del pareggio a entrambi;
+- nel **trio** con un vincitore, lui prende i punti della vittoria e gli altri due quelli della sconfitta. **Senza vincitore**, chi è a pari merito in testa prende i punti del pareggio e il terzo, se è staccato, quelli della sconfitta: a 4-4-1 due pareggi e una sconfitta, a 3-3-3 tre pareggi. Chi si ritira dal trio non è mai in testa, e prende la sconfitta.
+
+Le catene di default sono quelle a vittorie, col principale cambiato: nel turno punti → differenza rack → posizione al turno precedente → sorteggio; nella gara punti → differenza rack → spareggio SSR fino al 3° posto; nel campionato punti → differenza rack → SSR (somma) → posizione dopo la gara precedente → sorteggio. La **classifica generale** di un campionato a punti somma i punti delle classifiche finali delle gare, ciascuno moltiplicato per il peso della gara, come ogni altro numero. I vincoli sono quelli del sistema WINS: X semplice ammessa, match a set, pareggi a distanza pari, strategie _amalfi_, _casuale_ e _round robin_; il tabellone resta a piazzamenti (POSITION). _Nota del 2026-10-07: sistema nuovo, nato dalla gara settimanale «a pari punti conta lo scontro diretto»; nessuna gara esistente lo usa._
+
+**Come si risolvono i pari merito** (2026-10-07, ADR-078). Il sistema dà il **criterio principale** (vittorie, rack vinti o punti); fra chi è pari sul principale decide una **catena di criteri**, applicati uno dopo l'altro. Le classifiche sono tre — del **turno**, della **gara** e del **campionato** — e ognuna ha la sua catena:
 
 | Classifica | WINS | RACK | Chi resta pari |
 |---|---|---|---|

@@ -114,11 +114,13 @@ def _bootstrap_registry(registry: ClassificationStrategyRegistry) -> None:
     # Round strategies
     from .strategies.round_strategies import (
         AmalfiRoundClassificationStrategy,
+        PointsRoundClassificationStrategy,
         RandomRoundClassificationStrategy,
         RoundRobinRoundClassificationStrategy,
     )
 
     registry.register(AmalfiRoundClassificationStrategy())
+    registry.register(PointsRoundClassificationStrategy())
     registry.register(RandomRoundClassificationStrategy())
     # `get_strategy_for_gara` la richiede per le gare round robin, ma non era
     # mai stata registrata: il KeyError non emergeva perché in produzione il
@@ -128,10 +130,12 @@ def _bootstrap_registry(registry: ClassificationStrategyRegistry) -> None:
     # Gara strategies
     from .strategies.gara_strategies import (
         AmalfiGaraClassificationStrategy,
+        PointsGaraClassificationStrategy,
         RandomGaraClassificationStrategy,
     )
 
     registry.register(AmalfiGaraClassificationStrategy())
+    registry.register(PointsGaraClassificationStrategy())
     registry.register(RandomGaraClassificationStrategy())
 
     # Position strategies (gare a tabellone: la classifica la dà il tabellone,

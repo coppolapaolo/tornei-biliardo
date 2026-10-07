@@ -29,6 +29,7 @@
         <div class="mt-1" style="font-size:14px;font-weight:800">
           {% if wizard_data.default_classification_system == 'WINS' %}{{ _("Vittorie") }}
           {% elif wizard_data.default_classification_system == 'RACK' %}{{ _("Triangoli totali") }}
+          {% elif wizard_data.default_classification_system == 'POINTS' %}{{ _("Punti") }}
           {% else %}{{ wizard_data.default_classification_system }}{% endif %}
         </div>
       </div>
@@ -185,6 +186,15 @@
       {% set limite_nota = _("Proposto a ogni gara del campionato, che può cambiarlo. Il tempo parte all'acchito, o con «Avvia partita»: è un riferimento, a tempo scaduto decide il direttore.") %}
       {% include "components/_campo_limite_tempo.html" %}
     </div>
+
+    {# I punti della classifica a punti (ADR-078), proposti alle gare. #}
+    {% if classification_system == 'POINTS' %}
+    <div class="c7-card">
+      {% with punti_prefisso='default_', punti_valori=punti_default, punti_nota=_("Proposti a ogni gara del campionato, che li riceve quando nasce. Si ordina solo sui punti; a pari punti decidono i criteri dei pari merito.") %}
+      {% include "components/_campo_punti.html" %}
+      {% endwith %}
+    </div>
+    {% endif %}
 
     {# Le catene degli spareggi (ADR-078): due proposte alle gare, una per la
        classifica generale. Sui campionati a tabellone non si usano (ADR-040). #}

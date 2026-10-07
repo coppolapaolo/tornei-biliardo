@@ -49,7 +49,11 @@ def sistema_dichiarato(gara: Any) -> ClassificationSystem:
 
 def ordina_con_la_catena(sistema: ClassificationSystem) -> bool:
     """Se quel sistema si ordina con la catena. POSITION no (ADR-040)."""
-    return sistema in (ClassificationSystem.WINS, ClassificationSystem.RACK)
+    return sistema in (
+        ClassificationSystem.WINS,
+        ClassificationSystem.RACK,
+        ClassificationSystem.POINTS,
+    )
 
 
 #: Le colonne delle catene, per livello: sulla gara, e quella che il

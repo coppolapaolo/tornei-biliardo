@@ -9,7 +9,8 @@ Le tre strategie di turno ordinano col motore unico della catena (ADR-078):
 criterio principale dal sistema di classifica, poi la catena di turno della
 gara, che finisce sempre col sorteggio — la classifica di turno serve agli
 abbinamenti e non ammette pari merito. Si distinguono solo per il sistema:
-WINS (`amalfi_round`, `round_robin_round`) e RACK (`random_round`).
+WINS (`amalfi_round`, `round_robin_round`), RACK (`random_round`) e POINTS
+(`points_round`).
 """
 
 from typing import Sequence, Dict, Any, Optional, Tuple
@@ -56,6 +57,13 @@ class _RoundConCatena(ClassificationStrategy):
         """
         if self.sistema is ClassificationSystem.RACK:
             return (-score.racks_won, _previous_position(score), score.player_id)
+        if self.sistema is ClassificationSystem.POINTS:
+            return (
+                -score.points,
+                -score.rack_difference,
+                _previous_position(score),
+                score.player_id,
+            )
         return (
             -score.matches_won,
             -score.rack_difference,
@@ -131,8 +139,23 @@ class RoundRobinRoundClassificationStrategy(_RoundConCatena):
     sistema = ClassificationSystem.WINS
 
 
+class PointsRoundClassificationStrategy(_RoundConCatena):
+    """Classifica di turno a punti (ADR-078, emendamento).
+
+    Default: punti → differenza triangoli → posizione al turno precedente →
+    sorteggio, la catena di WINS col principale cambiato. Vale per ogni
+    strategia di abbinamento che non sia a tabellone.
+    """
+
+    name = "points_round"
+    display_name = "Points Round"
+    description = "Points, then the round tiebreak chain"
+    sistema = ClassificationSystem.POINTS
+
+
 __all__ = [
     "AmalfiRoundClassificationStrategy",
+    "PointsRoundClassificationStrategy",
     "RandomRoundClassificationStrategy",
     "RoundRobinRoundClassificationStrategy",
 ]

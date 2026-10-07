@@ -67,6 +67,17 @@
         </div>
         {% endif %}
 
+        {# La classifica a punti (ADR-078): i punti proposti alle gare. #}
+        {% if campionato.default_classification_system == 'POINTS' %}
+        <hr class="my-3">
+        <div class="row">
+            <div class="col-12">
+                <strong><i class="fas fa-list-ol text-primary"></i> {{ _("Punti in classifica") }}:</strong>
+                <span>{{ descrivi_punti(punti_proposti(campionato)) }}</span>
+            </div>
+        </div>
+        {% endif %}
+
         {# La classifica generale: come si ordinano i pari merito (ADR-078). #}
         {% set _pari_generale = frase_spareggi(campionato, 'catena_generale') %}
         {% if _pari_generale %}

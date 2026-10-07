@@ -160,6 +160,66 @@ Lo scontro diretto non dipende più dal sistema: si contano le vittorie anche
 a triangoli (prima la mini-classifica a RACK sommava i triangoli fra loro).
 Nessuna gara esistente lo usa: le catene di default non lo contengono.
 
+## Emendamento 2026-10-07: la classifica a punti
+
+Terza parte della decisione, presa dall'utente: un quarto sistema,
+`ClassificationSystem.POINTS`, che il motore prevedeva già (`Criterio.PUNTI`,
+`Concorrente.punti`).
+
+1. **Principale: solo i punti.** Ogni partita dà i punti del suo esito —
+   vittoria, pareggio, sconfitta — e la classifica si ordina sui punti; fra i
+   pari decide la catena, come negli altri sistemi. Le vittorie non entrano da
+   sole: nella catena a punti sono un criterio che si può aggiungere.
+2. **Quanto vale un esito.** Sulla gara `points_win/draw/loss` (NULL = come il
+   campionato, fuori da un campionato il default 3/1/0), sul campionato
+   `default_points_*`, NOT NULL con il default scritto. La gara li riceve alla
+   nascita (`GaraService._copia_dal_campionato`) e il campionato li propone
+   alle gare non avviate (`campionato/proposte.py`). Sono **struttura**
+   (`campi_modificabili.STRUTTURA`): decidono la classifica di ogni turno, e
+   a gara avviata non si cambiano, come il sistema. Interi 0–99,
+   vittoria ≥ pareggio ≥ sconfitta e vittoria > sconfitta
+   (`punti.valida_punti`, riapplicata dal servizio). Si leggono **solo** da
+   `models/classification/punti.py`.
+3. **Gli esiti** (`ScoreAggregator._esito`): la X vale una vittoria (e zero
+   differenza, o la differenza della prova con l'esercizio); il pareggio —
+   esattamente N pari, o l'interruzione a tempo a parità fuori dal tabellone
+   (ADR-077) — dà il pareggio a entrambi, e da ora l'aggregatore conta i
+   pareggi (`matches_drawn`). Nel trio con un vincitore, vittoria a lui e
+   sconfitta agli altri due, come le vittorie e le sconfitte di WINS; **senza
+   vincitore**, il pareggio a chi è a pari merito in testa e la sconfitta al
+   terzo staccato. Chi si ritira dal trio non è mai in testa (stessa regola di
+   `trio_punteggio.vincitore_del_trio`). I punti si calcolano solo nelle gare a
+   punti: altrove restano zero, e nelle righe di classifica NULL.
+4. **Catene di default**: quelle di WINS, col principale cambiato — turno
+   punti → differenza → posizione precedente → sorteggio; gara punti →
+   differenza → SSR fino al 3°; campionato punti → differenza → SSR (somma) →
+   posizione dopo la gara precedente → sorteggio. Nessun codice nuovo:
+   `catena_di_default` tratta come WINS ogni sistema che non sia RACK.
+5. **Dove stanno i punti.** `RoundClassification.points` e
+   `GaraClassification.points` (migration `20261007_classifica_a_punti`); la
+   classifica generale li somma pesati (`_aggregate_player_totals`, chiave
+   `total_points`, la stessa dei punti per piazzamento) e la copia li scrive
+   in `Classification.total_position_points`, la colonna dei punti che
+   POSITION già usava.
+6. **Vincoli**: quelli di WINS (`validators._validate_wins_system`): X
+   semplice, set, pareggi a distanza pari; strategie amalfi, casuale e girone
+   all'italiana (`STRATEGY_CONSTRAINTS`). Il tabellone resta POSITION
+   (`resolve_classification_system`), il campionato resta omogeneo.
+7. **Interfaccia**: il campo `components/_campo_punti.html` (tre numeri,
+   visibile solo a punti; `static/js/campo_punti.js` segue il selettore del
+   sistema) nei moduli della gara singola, della modifica, del modale «nuova
+   gara», del wizard e della modifica del campionato; la colonna «Punti» al
+   posto di «Vittorie» nelle classifiche di turno, di gara e generale, nelle
+   tessere dei campionati, nella vetrina e sullo schermo in sala; la frase
+   «3 punti la vittoria, 1 il pareggio, 0 la sconfitta» nel regolamento e
+   nelle pagine pubbliche.
+
+Due difetti trovati strada facendo e corretti: la tessera di un campionato a
+tabellone e la vetrina di una gara mostravano le vittorie anche dove la
+classifica si ordina su altro; il modulo di modifica di un campionato a
+tabellone non aveva la voce «Posizione» e a ogni salvataggio mandava
+«Vittorie».
+
 ## Alternative Considerate
 
 ### Alternativa 1: una chiave di ordinamento configurabile
@@ -222,7 +282,10 @@ Nessuna gara esistente lo usa: le catene di default non lo contengono.
 - ADR-040 (pari merito per banda nel tabellone), ADR-047 (il sistema decide
   l'ordinamento), ADR-073 (la classifica generale si calcola in un posto solo)
 - SPECIFICHE.md, «Classifica», «Come si risolvono i pari merito»
-- Test: `test_ordinamento_motore.py`, `test_ordinamento_equivalenza.py`,
+- Test: `test_classifica_a_punti.py`,
+  `test_classifica_a_punti_route.py` (integrazione),
+  `test_specifiche_conformita.py::TestLaClassificaAPunti`,
+  `test_ordinamento_motore.py`, `test_ordinamento_equivalenza.py`,
   `test_catene_configurabili.py`, `test_catene_spareggi_route.py`
   (integrazione), `test_specifiche_conformita.py::TestLeCateneSiConfigurano`,
   `test_specifiche_conformita.py::TestCateneDegliSpareggi`

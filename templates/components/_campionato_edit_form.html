@@ -70,8 +70,22 @@
                     <option value="RACK" {% if campionato.default_classification_system == "RACK" %}selected{% endif %}>
                         {{ _("Triangoli Totali (triangoli accumulati)") }}
                     </option>
+                    <option value="POINTS" {% if campionato.default_classification_system == "POINTS" %}selected{% endif %}>
+                        {{ _("Punti (vittoria, pareggio, sconfitta)") }}
+                    </option>
+                    {# Un campionato a tabellone resta a piazzamenti: senza la voce
+                       il modulo mandava «Vittorie» a ogni salvataggio. #}
+                    {% if campionato.default_classification_system == "POSITION" %}
+                    <option value="POSITION" selected>{{ _("Posizione nel tabellone — quanto avanti si arriva") }}</option>
+                    {% endif %}
                 </select>
             </div>
+
+            {# I punti della classifica a punti (ADR-078), proposti alle gare:
+               seguono il sistema qui sopra. #}
+            {% with punti_prefisso='default_', punti_valori=punti_proposti(campionato), punti_sistema_da='#default_classification_system', punti_nota=_("Proposti a ogni gara del campionato, che li riceve quando nasce. Si ordina solo sui punti; a pari punti decidono i criteri dei pari merito.") %}
+            {% include "components/_campo_punti.html" %}
+            {% endwith %}
 
             {# Le catene degli spareggi (ADR-078): le due proposte alle gare e
                quella della classifica generale. Seguono il sistema qui sopra;
@@ -278,6 +292,7 @@
 </div>
 
 <script src="{{ url_for('static', filename='js/catena_spareggi.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/campo_punti.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Toggle type descriptions

@@ -189,6 +189,7 @@ def catena_dal_testo(testo: object) -> Optional[Catena]:
 _PRINCIPALE: Dict[ClassificationSystem, Criterio] = {
     ClassificationSystem.WINS: Criterio.VITTORIE,
     ClassificationSystem.RACK: Criterio.RACK_VINTI,
+    ClassificationSystem.POINTS: Criterio.PUNTI,
 }
 
 
@@ -281,6 +282,9 @@ def catena_di_default(
     Decise il 2026-10-07 (ADR-078); le differenze col codice di prima sono
     scritte in SPECIFICHE.md, «Classifica». ``ssr_fino_al=None`` toglie lo
     spareggio dalla catena di gara (la gara che non lo prevede).
+
+    A punti (POINTS) le catene sono quelle a vittorie, criterio per criterio:
+    la differenza triangoli subito dopo il principale (deciso il 2026-10-07).
     """
     d = Voce(Criterio.DIFFERENZA_RACK)
     prec = Voce(Criterio.POSIZIONE_PRECEDENTE)
@@ -622,6 +626,8 @@ def _nella_frase(voce: Voce, livello: Optional[Livello] = None) -> str:
 def _a_pari(sistema: ClassificationSystem) -> str:
     if sistema is ClassificationSystem.RACK:
         return _("A pari triangoli vinti")
+    if sistema is ClassificationSystem.POINTS:
+        return _("A pari punti")
     return _("A pari vittorie")
 
 

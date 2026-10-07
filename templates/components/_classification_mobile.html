@@ -5,6 +5,7 @@
 {# B14: respect gara.classification_system. RACK → only racks; else → wins + racks. #}
 {% set classification_sys = (gara.classification_system or 'WINS')|upper %}
 {% set is_rack_only = classification_sys == 'RACK' %}
+{% set is_points = classification_sys == 'POINTS' %}
 <section class="c7-stack" style="margin-top: 16px;">
   <div class="d-flex align-items-center justify-content-between" style="gap: 12px;">
     <h3 style="margin: 0;">{{ _('Classifica') }}</h3>
@@ -26,7 +27,9 @@
         <span class="c7-state c7-state--warn" title="{{ _('Spot Shot Rally') }}">SSR {{ ssr_score }}</span>
         {% endif %}
       {% endif %}
-      {% if not is_rack_only %}
+      {% if is_points %}
+      <span class="c7-num" title="{{ _('Punti') }}">{{ entry.points or 0 }}</span>
+      {% elif not is_rack_only %}
       <span class="c7-num" title="{{ _('Vittorie') }}">{{ entry.matches_won }}</span>
       {% endif %}
       <span class="c7-num" style="color: var(--c7-ink-muted); min-width: 34px; text-align: right;" title="{% if is_rack_only %}{{ _('Triangoli totali') }}{% else %}{{ _('Differenza triangoli') }}{% endif %}">{{ entry.ranking_rack_value }}</span>
@@ -52,7 +55,9 @@
           <span class="c7-state c7-state--warn" title="{{ _('Spot Shot Rally') }}">SSR {{ ssr_score }}</span>
           {% endif %}
         {% endif %}
-        {% if not is_rack_only %}
+        {% if is_points %}
+        <span class="c7-num" title="{{ _('Punti') }}">{{ entry.points or 0 }}</span>
+        {% elif not is_rack_only %}
         <span class="c7-num" title="{{ _('Vittorie') }}">{{ entry.matches_won }}</span>
         {% endif %}
         <span class="c7-num" style="color: var(--c7-ink-muted); min-width: 34px; text-align: right;">{{ entry.ranking_rack_value }}</span>

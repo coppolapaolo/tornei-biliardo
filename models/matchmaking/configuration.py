@@ -58,7 +58,7 @@ def resolve_classification_system(strategy: str, requested: str) -> str:
     """
     if strategy in BRACKET_STRATEGIES:
         return "POSITION"
-    return requested if requested in ("WINS", "RACK") else "WINS"
+    return requested if requested in ("WINS", "RACK", "POINTS") else "WINS"
 
 
 def minimum_players_for(strategy: str) -> int:
@@ -384,6 +384,7 @@ class StrategyConfiguration:
 # this strategy
 #   - WINS: ranking by match wins, then rack difference
 #   - RACK: ranking by total racks won
+#   - POINTS: ranking by points per result (win/draw/loss), then the chain
 #   - POSITION: ranking by bracket position (elimination formats only)
 STRATEGY_CONSTRAINTS = {
     MatchmakingStrategy.ROUND_ROBIN: {
@@ -393,7 +394,7 @@ STRATEGY_CONSTRAINTS = {
         "anti_rematch": False,
         "anti_rematch_required": False,
         "description": "Girone all'italiana: tutti contro tutti",
-        "compatible_classification_systems": ["WINS", "RACK"],
+        "compatible_classification_systems": ["WINS", "RACK", "POINTS"],
     },
     MatchmakingStrategy.DIRECT_ELIMINATION: {
         "first_round_policies": ["random", "rating", "classification"],
@@ -420,7 +421,7 @@ STRATEGY_CONSTRAINTS = {
         "anti_rematch": True,
         "anti_rematch_required": True,
         "description": "Sistema Amalfi: abbinamenti dinamici con anti-reincontro",
-        "compatible_classification_systems": ["WINS", "RACK"],
+        "compatible_classification_systems": ["WINS", "RACK", "POINTS"],
     },
     MatchmakingStrategy.RANDOM: {
         "first_round_policies": ["random"],
@@ -429,7 +430,7 @@ STRATEGY_CONSTRAINTS = {
         "anti_rematch": True,
         "anti_rematch_required": False,
         "description": "Abbinamenti casuali con anti-reincontro",
-        "compatible_classification_systems": ["WINS", "RACK"],
+        "compatible_classification_systems": ["WINS", "RACK", "POINTS"],
     },
 }
 

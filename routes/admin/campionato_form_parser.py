@@ -134,6 +134,31 @@ class CampionatoFormParser:
         }
 
     @staticmethod
+    def parse_punti(form: MultiDict, sistema: Any) -> Dict[str, int]:
+        """I punti di vittoria, pareggio e sconfitta proposti alle gare.
+
+        Solo per un campionato a punti, e solo se il modulo li manda: con un
+        altro sistema i campi sono nascosti e non si leggono (stessa regola
+        del modulo della gara, `GaraFormParser._parse_punti`).
+        """
+        from models.classification.punti import (
+            COLONNE_PROPOSTE,
+            PUNTI_DEFAULT,
+            valida_punti,
+        )
+        from models.status_enum import ClassificationSystem
+
+        if ClassificationSystem.resolve(sistema) is not ClassificationSystem.POINTS:
+            return {}
+        if not any(colonna in form for colonna in COLONNE_PROPOSTE):
+            return {}
+        grezzi = [
+            (form.get(colonna) or "").strip() or str(default)
+            for colonna, default in zip(COLONNE_PROPOSTE, PUNTI_DEFAULT.come_tupla())
+        ]
+        return dict(zip(COLONNE_PROPOSTE, valida_punti(*grezzi).come_tupla()))
+
+    @staticmethod
     def parse_default_settings(form: MultiDict) -> Dict[str, Any]:
         """Parse the default-settings block shared by create-wizard and edit.
 

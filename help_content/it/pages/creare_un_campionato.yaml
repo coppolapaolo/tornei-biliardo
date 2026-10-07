@@ -44,10 +44,12 @@ blocks:
           Quante gare prevedi. È un obiettivo indicativo, non un vincolo:
           potrai aggiungerne o toglierne.
       - name: "Sistema di classifica"
-        values: "Vittorie · Triangoli · Posizione"
+        values: "Vittorie · Triangoli · Punti · Posizione"
         text: >-
           Come si ordina la classifica. **Vittorie** è la scelta normale: conta
-          quante partite hai vinto, e a parità la differenza triangoli. Le tre
+          quante partite hai vinto, e a parità la differenza triangoli. Con
+          **Punti** ogni risultato vale i punti che scegli al passo successivo
+          (di norma 3 la vittoria, 1 il pareggio, 0 la sconfitta). Le quattro
           modalità sono spiegate in [Come si calcolano le
           classifiche](/aiuto/approfondimenti/classifiche).
         hint: campionato.classifica
@@ -218,7 +220,8 @@ blocks:
     text: >-
       Si aggiorna da sola alla fine di ogni gara sommando i risultati: le
       vittorie e la differenza triangoli se il sistema è «Vittorie», i triangoli totali
-      se è «Triangoli», i punti per posizione — quelli della tabella qui sopra — se
+      se è «Triangoli», i punti delle gare — moltiplicati per il peso — se è
+      «Punti», i punti per posizione — quelli della tabella qui sopra — se
       è «Posizione». Chi salta una gara non viene escluso: semplicemente non
       guadagna nulla in quell'occasione.
 

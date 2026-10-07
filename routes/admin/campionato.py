@@ -33,7 +33,7 @@ from models.matchmaking.configuration import (
 )
 from models.competition.constants import DEFAULT_DISTANCE
 from models.categoria.listino import ListinoService, leggi_dal_modulo
-from models.status_enum import Discipline, GaraStatus
+from models.status_enum import ClassificationSystem, Discipline, GaraStatus
 from utils.jinja import opzioni_dispari
 from utils import (
     campionato_manager_required,
@@ -135,9 +135,10 @@ def wizard_step2():
     if campionato_type not in CAMPIONATO_TYPE_VALUES:
         campionato_type = MatchmakingStrategy.AMALFI.value
 
-    classification_system = request.form.get("default_classification_system", "WINS")
-    if classification_system not in ["WINS", "RACK", "POSITION"]:
-        classification_system = "WINS"
+    # Un valore ignoto ricade su WINS (`ClassificationSystem.resolve`).
+    classification_system = ClassificationSystem.resolve(
+        request.form.get("default_classification_system")
+    ).value
 
     # I formati a tabellone ammettono solo POSITION: imporlo qui evita che la
     # scelta del sistema di classifica e quella del formato possano divergere
@@ -234,6 +235,14 @@ def wizard_create():
     settings.update(
         CampionatoFormParser.parse_catene(request.form, classification_system)
     )
+    # I punti della classifica a punti, se il campionato è a punti.
+    try:
+        settings.update(
+            CampionatoFormParser.parse_punti(request.form, classification_system)
+        )
+    except ValueError as errore:
+        flash(str(errore), "error")
+        return redirect(url_for("admin.campionato.wizard_start"))
 
     # Il listino delle quote (ADR-079): letto prima di creare, perché una
     # quota sbagliata non lasci un campionato senza il suo listino.
@@ -580,6 +589,12 @@ def edit_campionato(campionato_id):
             settings = CampionatoFormParser.parse_default_settings(request.form)
             settings.update(
                 CampionatoFormParser.parse_catene(
+                    request.form,
+                    request.form.get("default_classification_system", "WINS"),
+                )
+            )
+            settings.update(
+                CampionatoFormParser.parse_punti(
                     request.form,
                     request.form.get("default_classification_system", "WINS"),
                 )

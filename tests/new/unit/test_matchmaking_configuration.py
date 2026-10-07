@@ -36,8 +36,10 @@ class TestStrategyConstraints:
             ), f"compatible_classification_systems cannot be empty for {strategy}"
 
     def test_classification_systems_are_valid_values(self):
-        """Classification systems must be WINS, RACK, or POSITION."""
-        valid_systems = {"WINS", "RACK", "POSITION"}
+        """Classification systems must be members of `ClassificationSystem`."""
+        from models.status_enum import ClassificationSystem
+
+        valid_systems = {s.value for s in ClassificationSystem}
 
         for strategy, constraints in STRATEGY_CONSTRAINTS.items():
             for system in constraints["compatible_classification_systems"]:

@@ -32,12 +32,13 @@ class PlayerScore:
     player_id: int
     matches_won: int = 0
     matches_lost: int = 0
+    matches_drawn: int = 0  # Pareggi: esattamente N pari, interruzione a tempo
     racks_won: int = 0
     racks_lost: int = 0
     rack_difference: int = 0
     sets_won: int = 0  # For multi-set matches
     sets_lost: int = 0
-    points: int = 0  # For point-based systems
+    points: int = 0  # Classifica a punti (POINTS): `classification/punti.py`
     spot_shot_wins: int = 0  # For tiebreakers
     challenge_score: int = 0  # For challenge classifications
     previous_position: Optional[int] = None
@@ -49,6 +50,7 @@ class PlayerScore:
             player_id=self.player_id,
             matches_won=self.matches_won,
             matches_lost=self.matches_lost,
+            matches_drawn=self.matches_drawn,
             racks_won=self.racks_won,
             racks_lost=self.racks_lost,
             rack_difference=self.rack_difference,

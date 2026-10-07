@@ -34,6 +34,9 @@ CAMPI_PROPOSTI: Dict[str, str] = {
     "default_time_limit_minutes": "time_limit_minutes",
     "default_catena_turno": "catena_turno",
     "default_catena_gara": "catena_gara",
+    "default_points_win": "points_win",
+    "default_points_draw": "points_draw",
+    "default_points_loss": "points_loss",
 }
 
 
@@ -109,7 +112,7 @@ def _valore_da_scrivere(campo_gara: str, grezzo: Any) -> Dict[str, Any]:
         }
     if campo_gara in ("has_handicap", "anti_rematch_enabled"):
         return {campo_gara: str(grezzo).lower() in ("true", "1")}
-    if campo_gara == "rounds_count":
+    if campo_gara in ("rounds_count", "points_win", "points_draw", "points_loss"):
         return {campo_gara: int(grezzo)}
     if campo_gara == "time_limit_minutes":
         return {campo_gara: int(grezzo) if grezzo not in (None, "") else 0}

@@ -1,0 +1,41 @@
+{# Il campo «Punti in classifica» della classifica a punti (ADR-078,
+   emendamento) — Design System 7c.
+
+   Tre numeri: quanti punti valgono vittoria, pareggio e sconfitta (di norma
+   3, 1 e 0). Gli stessi tre campi nei moduli della gara (singola, nuova gara
+   del campionato, modifica) e del campionato, che li propone alle sue gare.
+   I confini sono quelli di `punti.valida_punti`, che il server riapplica.
+
+   Si vede solo col sistema a punti. Con `punti_sistema_da` (il selettore CSS
+   del <select> del sistema) lo segue `static/js/campo_punti.js`; senza, lo
+   decide `punti_visibile` dal server (il sistema non si cambia lì).
+
+   Parametri:
+   - punti_prefisso: `''` per la gara (`points_win`…), `'default_'` per il
+     campionato (`default_points_win`…)
+   - punti_valori: un `Punti` (`punti_della_gara`, `punti_proposti`)
+   - punti_sistema_da: selettore del <select> del sistema (facoltativo)
+   - punti_visibile: se si vede, quando il sistema non si cambia qui
+   - punti_nota: testo sotto il campo (facoltativo)
+
+   Senza `id` fissi né `<script>`: gli id prendono il prefisso. #}
+{% set _pre = punti_prefisso|default('') %}
+{% set _val = punti_valori %}
+{% set _da = punti_sistema_da|default('') %}
+{% set _vis = punti_visibile|default(true) %}
+<fieldset class="mb-3 c7-punti" data-punti{% if _da %} data-sistema-da="{{ _da }}"{% endif %}{% if not _vis %} hidden{% endif %}>
+  <legend class="form-label" data-help="gara-punti">{{ _('Punti in classifica') }}</legend>
+  <div class="row g-2">
+    {% for colonna, nome, valore in [
+         (_pre ~ 'points_win', _('Vittoria'), _val.vittoria),
+         (_pre ~ 'points_draw', _('Pareggio'), _val.pareggio),
+         (_pre ~ 'points_loss', _('Sconfitta'), _val.sconfitta)] %}
+    <div class="col-4">
+      <label for="f-{{ colonna }}" class="form-label small text-muted mb-1">{{ nome }}</label>
+      <input type="number" class="form-control c7-num" id="f-{{ colonna }}" name="{{ colonna }}"
+             value="{{ valore }}" min="0" max="99" step="1" inputmode="numeric" required{% if not _vis %} disabled{% endif %}>
+    </div>
+    {% endfor %}
+  </div>
+  <small class="text-muted">{{ punti_nota|default(_("Si ordina solo sui punti; a pari punti decidono i criteri dei pari merito. La X vale una vittoria.")) }}</small>
+</fieldset>

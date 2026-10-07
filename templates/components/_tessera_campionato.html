@@ -12,13 +12,14 @@
 
    Riceve una `CampionatoCardVM` (models/dashboard/campionato_cards.py). #}
 
-{% macro _riga(riga, is_rack) %}
+{% macro _riga(riga, misura) %}
   <div class="c7-tessera__row{{ ' is-me' if riga.is_me }}">
     <span class="c7-pos{{ ' c7-pos--' ~ riga.posizione if riga.posizione <= 3 }}">{{ riga.posizione }}</span>
     <span class="flex-fill text-truncate">{{ riga.username }}</span>
     <span class="c7-tessera__muted" style="font-size:12px;font-weight:600;flex-shrink:0">
       <span class="c7-num" style="font-size:12px">{{ riga.valore }}</span>
-      {% if is_rack %}{{ ngettext('triangolo', 'triangoli', riga.valore) }}
+      {% if misura == 'triangoli' %}{{ ngettext('triangolo', 'triangoli', riga.valore) }}
+      {% elif misura == 'punti' %}{{ ngettext('punto', 'punti', riga.valore) }}
       {% else %}{{ ngettext('vittoria', 'vittorie', riga.valore) }}{% endif %}
     </span>
   </div>
@@ -68,8 +69,8 @@
     <div class="c7-kicker">{{ _('Classifica finale') if card.is_concluso else _('Classifica generale') }}</div>
     {% if card.testa %}
     <div class="d-flex flex-column mt-1">
-      {% for riga in card.testa %}{{ _riga(riga, card.is_rack) }}{% endfor %}
-      {% if card.mia_riga %}{{ _riga(card.mia_riga, card.is_rack) }}{% endif %}
+      {% for riga in card.testa %}{{ _riga(riga, card.misura) }}{% endfor %}
+      {% if card.mia_riga %}{{ _riga(card.mia_riga, card.misura) }}{% endif %}
     </div>
     {% else %}
     <div class="c7-tessera__meta mt-1">

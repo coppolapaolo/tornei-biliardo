@@ -693,6 +693,20 @@ def create_app(config_name=None, *, da_script: bool = False):
     app.jinja_env.globals["editor_catena_gara"] = editor_della_gara
     app.jinja_env.globals["editor_catena_campionato"] = editor_del_campionato
 
+    # La classifica a punti (ADR-078, emendamento): i punti di una gara o
+    # quelli che il campionato propone, e la frase del regolamento.
+    from models.classification.punti import (
+        PUNTI_DEFAULT,
+        descrivi_punti,
+        punti_della_gara,
+        punti_proposti,
+    )
+
+    app.jinja_env.globals["punti_della_gara"] = punti_della_gara
+    app.jinja_env.globals["punti_proposti"] = punti_proposti
+    app.jinja_env.globals["punti_default"] = PUNTI_DEFAULT
+    app.jinja_env.globals["descrivi_punti"] = descrivi_punti
+
     # Il listino delle quote per categoria (ADR-079): voci e gruppi per quota
     # di una gara o di un campionato, e la quota senza decimali inutili.
     from models.categoria.listino import formatta_quota, gruppi_di, listino_di

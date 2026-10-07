@@ -3,7 +3,7 @@ section: approfondimenti
 kind: approfondimento
 audience: [tutti]
 minutes: 5
-summary: "Three ways of ordering players — wins, racks, position — and how level finishes are settled."
+summary: "Four ways of ordering players — wins, racks, points, position — and how level finishes are settled."
 related: [seguire_la_gara, abbinamenti, formati_di_gioco]
 
 blocks:
@@ -58,6 +58,36 @@ blocks:
       of racks** option). Otherwise whoever wins comfortably stops earlier and
       collects fewer racks than someone who wins narrowly: the count would
       reward the opposite of what it means to reward.
+
+  - type: heading
+    id: punti
+    title: "Points — win, draw, loss"
+
+  - type: text
+    text: >-
+      Every match gives the **points of its result**: usually **3** for a
+      win, **1** for a draw, **0** for a loss. The standings are ordered
+      **on points only**; on equal points the tiebreak criteria decide, and
+      they start as in the wins system: rack difference, then tiebreaker or
+      draw.
+
+  - type: list
+    title: "What each result is worth"
+    items:
+      - "**Win** and **loss**: the points you chose for each."
+      - "**Draw** — an even exact number of racks (3-3 at 6), or a match stopped on time while level — the draw points to both."
+      - "**X by walkover**: worth a win, with zero rack difference. With the exercise in place of the X, the difference is the exercise score."
+      - "**Three-player match** with a winner: the win to them, the loss to the other two. With no winner, whoever is level at the top gets the draw and the third, if behind, the loss (at 4-4-1: draw, draw, loss). Whoever withdraws gets the loss."
+
+  - type: text
+    text: >-
+      You choose the points in the competition form, under **Points in the
+      standings**, which appears when the system is **Points**: numbers from
+      0 to 99, with a win worth more than a loss and the draw in between. In
+      a championship the championship proposes them and every competition
+      receives them when it is created. After the start they can no longer
+      be changed. The overall standings add up the points of the
+      competitions, each multiplied by its weight.
 
   - type: heading
     id: posizione

@@ -35,7 +35,7 @@ blocks:
     items:
       - "**Pro**: semplice, immediato, nessun tempo aggiuntivo."
       - "**Contro**: qualcuno sta fermo un turno."
-      - "**Va usato con** il sistema di classifica «Vittorie»."
+      - "**Va usato con** il sistema di classifica «Vittorie» o «Punti»: lì la X vale una vittoria."
 
   - type: note
     tone: warning

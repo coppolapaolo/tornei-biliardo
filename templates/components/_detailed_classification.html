@@ -4,6 +4,9 @@
    - RACK → only "Rack Totali" (no wins column) #}
 {% set classification_sys = (gara.classification_system or 'WINS')|upper %}
 {% set is_rack_only = classification_sys == 'RACK' %}
+{# A punti (POINTS) la prima colonna sono i punti, il criterio, al posto
+   delle vittorie (ADR-078). #}
+{% set is_points = classification_sys == 'POINTS' %}
 {% set is_random_strategy = gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
 <section class="c7-stack">
     <h3 style="margin: 0;">
@@ -17,7 +20,8 @@
                 <tr>
                     <th style="width: 8%;">{{ _('Pos.') }}</th>
                     <th style="width: 27%;">{{ _('Giocatore') }}</th>
-                    {% if not is_rack_only %}<th style="width: 14%;">{{ _('Vittorie') }}</th>{% endif %}
+                    {% if is_points %}<th style="width: 14%;">{{ _('Punti') }}</th>
+                    {% elif not is_rack_only %}<th style="width: 14%;">{{ _('Vittorie') }}</th>{% endif %}
                     <th style="width: 15%;">{% if is_rack_only %}{{ _('Triangoli totali') }}{% else %}{{ _('Diff. triangoli') }}{% endif %}</th>
                     {% if ssr_scores_map %}<th style="width: 10%;" title="{{ _('Spot Shot Rally - punteggio spareggio') }}">SSR</th>{% endif %}
                     {# "Turno" esplicito: qui la posizione precedente è quella del
@@ -41,7 +45,9 @@
                         <span class="c7-num" style="{% if player_class.position <= 3 %}color: var(--c7-accent);{% else %}color: var(--c7-ink-faint);{% endif %}">{{ player_class.position }}</span>
                     </td>
                     <td><strong>{{ player_class.user.username }}</strong></td>
-                    {% if not is_rack_only %}
+                    {% if is_points %}
+                    <td><span class="c7-num">{{ player_class.points or 0 }}</span></td>
+                    {% elif not is_rack_only %}
                     <td><span class="c7-num">{{ player_class.matches_won }}</span></td>
                     {% endif %}
                     <td>

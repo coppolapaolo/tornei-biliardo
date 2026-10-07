@@ -83,6 +83,21 @@ class CampionatoCardVM:
         return self.campionato.classification_system == ClassificationSystem.RACK
 
     @property
+    def misura(self) -> str:
+        """Che cosa conta il numero delle righe: «triangoli», «punti», «vittorie».
+
+        Dal sistema di classifica, come `is_rack`. A punti (POINTS) e a
+        piazzamenti (POSITION) sono i punti: fino al 2026-10-07 la tessera di
+        un campionato a tabellone mostrava le vittorie, che lì non ordinano.
+        """
+        sistema = self.campionato.classification_system
+        if sistema == ClassificationSystem.RACK:
+            return "triangoli"
+        if sistema in (ClassificationSystem.POINTS, ClassificationSystem.POSITION):
+            return "punti"
+        return "vittorie"
+
+    @property
     def hai_giocato(self) -> bool:
         return self.is_concluso and self.is_inscribed
 
@@ -199,7 +214,7 @@ def enrich_with_classifica(
         righe: List[RigaClassificaVM] = []
         mia: Optional[RigaClassificaVM] = None
         for posizione, dati in classifica:
-            riga = _riga(posizione, dati, card.is_rack, user_id)
+            riga = _riga(posizione, dati, card.misura, user_id)
             if riga.is_me:
                 mia = riga
             righe.append(riga)
@@ -209,10 +224,17 @@ def enrich_with_classifica(
         card.mia_riga = mia if mia is not None and mia not in card.testa else None
 
 
+_CHIAVE_DELLA_MISURA = {
+    "triangoli": "total_racks_won",
+    "punti": "total_points",
+    "vittorie": "total_matches_won",
+}
+
+
 def _riga(
-    posizione: int, dati: Dict[str, Any], is_rack: bool, user_id: Optional[int]
+    posizione: int, dati: Dict[str, Any], misura: str, user_id: Optional[int]
 ) -> RigaClassificaVM:
-    valore = dati.get("total_racks_won" if is_rack else "total_matches_won", 0) or 0
+    valore = dati.get(_CHIAVE_DELLA_MISURA[misura], 0) or 0
     return RigaClassificaVM(
         posizione=posizione,
         username=str(dati.get("username", "")),

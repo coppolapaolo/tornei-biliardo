@@ -17,6 +17,7 @@
 {% if classification %}
 {% set _rack = classification[0].is_rack_ranking %}
 {% set _posizione = classification[0].is_position_ranking %}
+{% set _punti = classification[0].is_points_ranking %}
 {% set _casuale = gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value %}
 {% set _prime = 6 %}
 <section class="c7-stack c7-classifica" style="gap:10px" id="classificaDirettore">
@@ -37,7 +38,7 @@
       <span class="c7-classifica__pos"></span>
       <span class="c7-classifica__trend"></span>
       <span class="c7-classifica__gioc c7-label">{{ _('Giocatore') }}</span>
-      <span class="c7-classifica__col c7-label">{{ _('Vinti') if _rack else _('Vinte') }}</span>
+      <span class="c7-classifica__col c7-label">{{ _('Vinti') if _rack else (_('Punti') if _punti else _('Vinte')) }}</span>
       <span class="c7-classifica__col c7-classifica__col--sec c7-label">{{ _('Persi') if _rack else _('Diff') }}</span>
     </div>
     {% for riga in classification %}
@@ -68,7 +69,7 @@
       <span class="c7-classifica__col c7-num">{{ riga.total_racks_value }}</span>
       <span class="c7-classifica__col c7-classifica__col--sec c7-num">{% if riga.racks_won is not none %}{{ riga.racks_won - (riga.rack_difference or 0) }}{% else %}–{% endif %}</span>
       {% else %}
-      <span class="c7-classifica__col c7-num">{{ riga.matches_won }}</span>
+      <span class="c7-classifica__col c7-num">{{ (riga.points or 0) if _punti else riga.matches_won }}</span>
       {% set _diff = riga.ranking_rack_value %}
       <span class="c7-classifica__col c7-classifica__col--sec c7-num">{% if _diff > 0 %}+{% endif %}{{ _diff }}</span>
       {% endif %}
@@ -78,6 +79,7 @@
   <div class="c7-nota">
     {% if _rack %}{{ _('Sistema a triangoli: ordinata per triangoli vinti in tutta la gara, poi punti SSR. La X a tavolino vale zero triangoli.') }}
     {% elif _posizione %}{{ _('Ordinata per piazzamento nel tabellone.') }}
+    {% elif _punti %}{{ _('Ordinata per punti: %(punti)s. A pari punti decidono i criteri dei pari merito. La X a tavolino vale una vittoria.', punti=descrivi_punti(punti_della_gara(gara))) }}
     {% else %}{{ _('Ordinata per vittorie, poi differenza triangoli. La X a tavolino vale una vittoria e zero differenza.') }}{% endif %}
     {% if medaglie is defined and medaglie and round_number and round_number > 1 %}{{ _('La freccia confronta con la classifica dopo il turno %(n)s.', n=round_number - 1) }}
     {% else %}{{ _('La freccia confronta con il turno prima.') }}{% endif %}

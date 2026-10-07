@@ -169,6 +169,7 @@ class StrategyBasedClassificationService:
             # più avanti.
             ClassificationSystem.POSITION: "position_round",
             ClassificationSystem.RACK: "random_round",
+            ClassificationSystem.POINTS: "points_round",
         }
         return self._registry.get(strategy_map[cs])
 
@@ -186,6 +187,7 @@ class StrategyBasedClassificationService:
             ClassificationSystem.WINS: "amalfi_gara",
             ClassificationSystem.POSITION: "position_gara",
             ClassificationSystem.RACK: "random_gara",
+            ClassificationSystem.POINTS: "points_gara",
         }
         return self._registry.get(strategy_map[cs])
 
@@ -373,6 +375,17 @@ class StrategyBasedClassificationService:
         ]
 
     @staticmethod
+    def _a_punti(gara_id: int) -> bool:
+        """Se la gara classifica a punti: solo lì le righe portano i punti."""
+        from models.competition.models import Gara
+
+        gara = db.session.get(Gara, gara_id)
+        return gara is not None and (
+            ClassificationSystem.resolve(gara.classification_system)
+            is ClassificationSystem.POINTS
+        )
+
+    @staticmethod
     def _recorded_spot_shot(gara_id: int) -> Dict[int, int]:
         """Lo Spot Shot Rally gia' registrato per questa gara.
 
@@ -422,6 +435,7 @@ class StrategyBasedClassificationService:
                 # `total_racks_value` è sempre il totale, e copre le righe
                 # pre-separazione dove `racks_won` è NULL.
                 racks_won=rc.total_racks_value,
+                points=rc.points or 0,
                 previous_position=rc.previous_position,
             )
             entries.append(
@@ -488,6 +502,11 @@ class StrategyBasedClassificationService:
             classification.rack_difference = entry.score.rack_difference
             classification.racks_won = entry.score.racks_won
             classification.previous_position = entry.score.previous_position
+            # I punti solo dove il sistema li ha: altrove la colonna resta
+            # NULL, e chi la legge non scambia uno zero per un risultato.
+            classification.points = (
+                entry.score.points if self._a_punti(gara_id) else None
+            )
 
         # Righe stale: giocatori che dopo un reset non hanno più match validi
         for orphan in existing_by_user.values():
@@ -526,6 +545,7 @@ class StrategyBasedClassificationService:
                 racks_won=entry.score.racks_won,
                 racks_lost=entry.score.racks_lost,
                 rack_difference=entry.score.rack_difference,
+                points=entry.score.points if self._a_punti(gara_id) else None,
                 spot_shot_wins=spot_shot_results.get(entry.player_id, 0),
                 tied_with_player_ids=list(entry.tied_with) if entry.tied_with else None,
                 tiebreaker_resolved=entry.tiebreaker_resolved,

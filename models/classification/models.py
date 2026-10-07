@@ -39,9 +39,12 @@ class Classification(db.Model, TimestampMixin):
     total_racks_won = db.Column(db.Integer, default=0)  # For Random strategy sort key
     total_point_difference = db.Column(db.Integer, default=0)  # = rack_difference
     gare_played = db.Column(db.Integer, default=0)
-    # Somma dei punti per posizione delle gare a tabellone (sistema POSITION,
-    # US-17). Resta 0 per i campionati che classificano per vittorie o rack:
-    # è la colonna che rende leggibile *perché* uno è davanti all'altro.
+    # I punti della classifica generale, quando il sistema ne ha: la somma
+    # dei punti per piazzamento delle gare a tabellone (POSITION, US-17) o dei
+    # punti per risultato (POINTS, ADR-078), pesati. Resta 0 per i campionati
+    # che classificano per vittorie o rack: è la colonna che rende leggibile
+    # *perché* uno è davanti all'altro. Il nome viene da POSITION, che è nato
+    # prima.
     total_position_points = db.Column(db.Integer, default=0)
 
     # Relations
@@ -94,6 +97,9 @@ class RoundClassification(db.Model):
     # 20260728): usare `ranking_rack_value`, che gestisce il fallback.
     racks_won = db.Column(db.Integer)
     previous_position = db.Column(db.Integer)  # posizione turno precedente
+    # I punti della classifica a punti (POINTS), cumulati fino al turno. NULL
+    # nelle gare con un altro sistema: lì i punti non esistono.
+    points = db.Column(db.Integer, nullable=True)
 
     # Metadata
     created_at = db.Column(db.DateTime, default=utc_now)
@@ -133,6 +139,21 @@ class RoundClassification(db.Model):
             getattr(gara, "classification_system", None)
         )
         return system == ClassificationSystem.RACK
+
+    @property
+    def is_points_ranking(self) -> bool:
+        """True se la gara classifica a punti (ADR-078, emendamento).
+
+        Gemello di `is_rack_ranking`: chi mostra la classifica deve mettere in
+        testa la colonna dei punti, che è il criterio, e non le vittorie.
+        """
+        gara = self.gara
+        if gara is None:
+            return False
+        system = ClassificationSystem.resolve(
+            getattr(gara, "classification_system", None)
+        )
+        return system == ClassificationSystem.POINTS
 
     @property
     def is_position_ranking(self) -> bool:
@@ -322,6 +343,8 @@ class GaraClassification(db.Model, TimestampMixin):
     racks_won = db.Column(db.Integer, default=0)
     racks_lost = db.Column(db.Integer, default=0)
     rack_difference = db.Column(db.Integer, default=0)
+    # I punti della classifica a punti (POINTS); NULL con gli altri sistemi.
+    points = db.Column(db.Integer, nullable=True)
 
     # Tiebreaker resolution
     tied_with_player_ids = db.Column(

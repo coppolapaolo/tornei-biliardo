@@ -98,7 +98,12 @@ def validate_gara_configuration(
         _validate_rack_system(
             distance_type, multi_set, odd_handling, matchmaking, errors, warnings
         )
-    elif classification_system == ClassificationSystem.WINS:
+    elif classification_system in (
+        ClassificationSystem.WINS,
+        ClassificationSystem.POINTS,
+    ):
+        # A punti valgono i vincoli a vittorie (CLASSIFICATION_SYSTEM.md §2):
+        # la X semplice dà la vittoria, i set e i pareggi sono ammessi.
         _validate_wins_system(
             distance_type,
             distance,
