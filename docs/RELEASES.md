@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.60.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.59.0...v1.60.0) (2026-10-07)
+
+
+### Funzioni nuove
+
+* classifica a punti ([#630](https://github.com/coppolapaolo/tornei-biliardo/issues/630)) ([b0836dd](https://github.com/coppolapaolo/tornei-biliardo/commit/b0836ddf910f4fbf250bf0a037b2ba7e188e8381))
+
 ## [1.59.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.58.0...v1.59.0) (2026-10-07)
 
 
