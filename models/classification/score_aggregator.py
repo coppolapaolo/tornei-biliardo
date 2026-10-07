@@ -72,12 +72,16 @@ class ScoreAggregator:
         self,
         gara_id: int,
         up_to_round: int,
+        *,
+        escludi_x: bool = False,
     ) -> List[PlayerScore]:
         """Aggregate scores from matches up to specified round.
 
         Args:
             gara_id: ID of the gara
             up_to_round: Include matches up to and including this round
+            escludi_x: lascia fuori la X: sono le **partite giocate**, con cui
+                si confrontano giocatori di gironi diversi (ADR-076)
 
         Returns:
             List of PlayerScore objects for all players with matches
@@ -111,7 +115,8 @@ class ScoreAggregator:
 
         for match in matches:
             if match.is_bye:
-                self._process_bye_match(match, player_stats)
+                if not escludi_x:
+                    self._process_bye_match(match, player_stats)
             elif match.is_trio and match.trio_match:
                 self._process_trio_match(match, player_stats)
             else:

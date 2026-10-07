@@ -30,7 +30,7 @@ import json
 import secrets
 
 if TYPE_CHECKING:
-    pass
+    from models.matchmaking.gironi import ComposizioneGironi
 
 # Byte di entropia del token del link pubblico di iscrizione (issue #61).
 # 6 byte → 8 caratteri url-safe, ~4.7e13 combinazioni: abbastanza corto da
@@ -273,6 +273,17 @@ class Gara(SoftDeleteMixin, db.Model):
     # Vale solo per la strategia double_knockout.
     double_ko_rounds = db.Column(db.Integer, nullable=True)
 
+    # ── Girone all'italiana a più gironi (ADR-076) ──────────────────────────
+    # Il tetto dei gironi («Gironi: fino a N»): NULL = come il campionato (su
+    # una gara singola: girone unico), 1 = girone unico. Il numero esatto lo
+    # fissa il direttore all'avvio, sugli iscritti presenti, e si legge dagli
+    # iscritti (`Inscription.group_index`). Vale solo per il girone
+    # all'italiana: vedi `effective_max_groups`.
+    max_groups = db.Column(db.Integer, nullable=True)
+    # Come si compongono i gironi: sorteggio, per ELO, per categoria
+    # (`ComposizioneGironi`). NULL = come il campionato, poi il sorteggio.
+    group_seeding = db.Column(db.String(20), nullable=True)
+
     # Le catene degli spareggi (ADR-078): come si ordinano i pari merito nella
     # classifica di turno e in quella di gara. Una lista JSON di voci
     # (`ordinamento.testo_della_catena`); NULL = come il campionato, e su una
@@ -491,6 +502,33 @@ class Gara(SoftDeleteMixin, db.Model):
         from models.categoria.listino import ha_listino
 
         return ha_listino(self)
+
+    @property
+    def effective_max_groups(self) -> int:
+        """Il tetto dei gironi della gara: 1 = girone unico (ADR-076).
+
+        Solo il girone all'italiana si divide in gironi; NULL vuol dire «come
+        il campionato», e su una gara singola girone unico.
+        """
+        from models.matchmaking.configuration import MatchmakingStrategy
+        from models.matchmaking.gironi import tetto_di_gironi
+
+        if self.matchmaking_strategy != MatchmakingStrategy.ROUND_ROBIN.value:
+            return 1
+        valore = self.max_groups
+        if valore is None and self.campionato is not None:
+            valore = self.campionato.default_max_groups
+        return tetto_di_gironi(valore)
+
+    @property
+    def effective_group_seeding(self) -> "ComposizioneGironi":
+        """Come si compongono i gironi: gara → campionato → sorteggio."""
+        from models.matchmaking.gironi import ComposizioneGironi
+
+        valore = self.group_seeding
+        if not valore and self.campionato is not None:
+            valore = self.campionato.default_group_seeding
+        return ComposizioneGironi.resolve(valore)
 
     @property
     def effective_time_limit_minutes(self) -> Optional[int]:
@@ -1184,6 +1222,14 @@ class Inscription(db.Model):
         db.Integer, db.ForeignKey("categoria.id", ondelete="SET NULL"), nullable=True
     )
     categoria = db.relationship("Categoria", foreign_keys=[categoria_id])
+
+    # Il girone del giocatore in QUESTA gara, 0-based (A = 0), nel girone
+    # all'italiana a più gironi (ADR-076). Lo scrive l'avvio e lo azzera
+    # l'annullamento dell'avvio; NULL = girone unico, o gara non avviata.
+    # Sta sull'iscrizione perché i gironi si vedono prima delle partite; le
+    # partite ricevono lo stesso indice in `Match.bracket_group`, che resta
+    # anche quando un ritiro con la regola EXCLUDE cancella l'iscrizione.
+    group_index = db.Column(db.Integer, nullable=True)
 
     @classmethod
     def active_for_gara(cls, gara_id: int) -> list["Inscription"]:

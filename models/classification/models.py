@@ -100,6 +100,12 @@ class RoundClassification(db.Model):
     # I punti della classifica a punti (POINTS), cumulati fino al turno. NULL
     # nelle gare con un altro sistema: lì i punti non esistono.
     points = db.Column(db.Integer, nullable=True)
+    # Nel girone all'italiana a più gironi (ADR-076): il girone (0-based, A =
+    # 0) e la posizione dentro il girone. `position` resta la posizione nella
+    # classifica della gara, che mette prima i primi di ogni girone, poi i
+    # secondi, e così via. NULL nelle gare a girone unico.
+    group_index = db.Column(db.Integer, nullable=True)
+    group_position = db.Column(db.Integer, nullable=True)
 
     # Metadata
     created_at = db.Column(db.DateTime, default=utc_now)
@@ -345,6 +351,9 @@ class GaraClassification(db.Model, TimestampMixin):
     rack_difference = db.Column(db.Integer, default=0)
     # I punti della classifica a punti (POINTS); NULL con gli altri sistemi.
     points = db.Column(db.Integer, nullable=True)
+    # Girone e posizione nel girone, come su `RoundClassification` (ADR-076).
+    group_index = db.Column(db.Integer, nullable=True)
+    group_position = db.Column(db.Integer, nullable=True)
 
     # Tiebreaker resolution
     tied_with_player_ids = db.Column(

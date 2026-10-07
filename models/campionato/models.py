@@ -113,6 +113,14 @@ class Campionato(db.Model):
     # La terza è sua: come si ordinano i pari merito della classifica
     # generale. NULL = il default dell'app per il sistema del campionato. Si
     # leggono solo da `models/classification/catene.py`.
+    # Il girone all'italiana a più gironi (ADR-076): il tetto dei gironi e la
+    # loro composizione, proposti alle gare (ADR-075). 1 = girone unico.
+    default_max_groups = db.Column(
+        db.Integer, default=1, nullable=False, server_default="1"
+    )
+    default_group_seeding = db.Column(
+        db.String(20), default="sorteggio", nullable=False, server_default="sorteggio"
+    )
     default_catena_turno = db.Column(db.Text, nullable=True)
     default_catena_gara = db.Column(db.Text, nullable=True)
     catena_generale = db.Column(db.Text, nullable=True)

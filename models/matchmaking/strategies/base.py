@@ -283,8 +283,9 @@ class BaseStrategy(PairingStrategy):
                     f"Insufficient players: {player_count} < {self.min_players}"
                 )
 
-            if self.max_players and player_count > self.max_players:
-                errors.append(f"Too many players: {player_count} > {self.max_players}")
+            tetto = self._max_players_for(gara)
+            if tetto and player_count > tetto:
+                errors.append(f"Too many players: {player_count} > {tetto}")
 
             if player_count % 2 != 0 and not self.supports_byes:
                 errors.append(
@@ -363,6 +364,14 @@ class BaseStrategy(PairingStrategy):
         - Elimination: Pair winners from previous round
         - Random: Generate random assignments with anti-rematch filtering
         """
+
+    def _max_players_for(self, gara: object) -> Optional[int]:
+        """Quanti giocatori al massimo per questa gara: di norma `max_players`.
+
+        Il girone all'italiana a più gironi lo moltiplica per i gironi: il
+        tetto vale per girone (ADR-076).
+        """
+        return self.max_players
 
     def _validate_strategy_specific(self, gara: object) -> Dict[str, List[str]]:
         """Override for strategy-specific validation."""

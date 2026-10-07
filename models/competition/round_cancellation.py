@@ -73,6 +73,12 @@ class RoundCancellationService:
         # irrilevante.)
         gara.draw_seed = None
 
+        # I gironi si ricompongono al riavvio, sugli iscritti di allora
+        # (ADR-076).
+        from models.competition.gironi_service import GironiService
+
+        GironiService.azzera(gara_id)
+
         RoundClassification.query.filter_by(gara_id=gara_id).delete()
         GaraClassification.query.filter_by(gara_id=gara_id).delete()
 

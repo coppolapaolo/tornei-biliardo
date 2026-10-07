@@ -50,7 +50,8 @@ CREATE TABLE inscription (
     squadra_id INTEGER,
     categoria_id INTEGER,
     inscribed_by_id INTEGER,
-    accepted_terms TEXT
+    accepted_terms TEXT,
+    group_index INTEGER
 );
 CREATE TABLE hidden_inscription (
     id INTEGER PRIMARY KEY,

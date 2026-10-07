@@ -228,15 +228,20 @@ class StrategyBasedClassificationService:
             previous = self._load_previous_classification(gara_id, round_number - 1)
 
         # Calculate using strategy
+        contesto = self._contesto_della_catena(gara, Livello.TURNO, round_number)
         result = strategy.calculate(
             scores=scores,
             previous_classification=previous,
             context={
                 "gara_id": gara_id,
                 "round_number": round_number,
-                **self._contesto_della_catena(gara, Livello.TURNO, round_number),
+                **contesto,
             },
         )
+        # Nel girone all'italiana a più gironi ogni girone si ordina per sé, e
+        # la classifica della gara mette prima i primi di ogni girone, poi i
+        # secondi (ADR-076).
+        result = self._a_gironi(gara, result, contesto, Livello.TURNO, round_number)
 
         # Persist result to database
         self._save_round_classification(gara_id, round_number, result)
@@ -296,20 +301,103 @@ class StrategyBasedClassificationService:
         )
 
         # Calculate final classification
+        contesto = self._contesto_della_catena(gara, Livello.GARA, final_round)
         result = strategy.calculate(
             scores=final_scores,
             previous_classification=previous,
             context={
                 "gara_id": gara_id,
                 "spot_shot_results": spot_shot_results,
-                **self._contesto_della_catena(gara, Livello.GARA, final_round),
+                **contesto,
             },
+        )
+        result = self._a_gironi(
+            gara, result, contesto, Livello.GARA, final_round, ssr=spot_shot_results
         )
 
         # Persist final gara classification
         self._save_gara_classification(gara_id, result, spot_shot_results)
 
         return result
+
+    @staticmethod
+    def _a_gironi(
+        gara,
+        result: ClassificationResult,
+        contesto: Dict[str, Any],
+        livello,
+        fino_al_turno: int,
+        ssr: Optional[Dict[int, int]] = None,
+    ) -> ClassificationResult:
+        """La classifica riordinata a gironi, o quella data se i gironi non ci sono.
+
+        Ogni girone si ordina con la catena del livello; la gara mette prima
+        i primi di ogni girone, poi i secondi, confrontandoli per partita
+        giocata (`classification/gironi.py`). Girone e posizione nel girone
+        viaggiano nei metadati (``"gironi"``), e li scrivono i salvataggi.
+        """
+        from models.competition.gironi_service import GironiService
+
+        from .gironi_della_gara import classifica_a_gironi, concorrente
+        from .ordinamento import normalizza_catena
+        from .catene import sistema_della_gara
+        from .strategies.base import ClassificationEntry
+
+        catena = contesto.get("catena")
+        girone = GironiService.girone_dei_giocatori(gara) if catena is not None else {}
+        if not girone:
+            return result
+        sistema = sistema_della_gara(gara)
+        per_id = {e.player_id: e for e in result.entries}
+        concorrenti = [
+            concorrente(
+                gara,
+                e.player_id,
+                vittorie=e.score.matches_won,
+                rack_vinti=e.score.racks_won,
+                differenza_rack=e.score.rack_difference,
+                punti=e.score.points,
+                ssr=(ssr or {}).get(e.player_id),
+                posizione_precedente=e.score.previous_position,
+            )
+            for e in result.entries
+        ]
+        esito = classifica_a_gironi(
+            gara,
+            concorrenti,
+            girone,
+            normalizza_catena(catena, livello, sistema),
+            fino_al_turno,
+            completa=livello is not Livello.GARA,
+        )
+        entries = []
+        pari = False
+        for fascia in esito.fasce:
+            ids = tuple(c.player_id for c in fascia.giocatori)
+            da_solo = len(ids) == 1
+            pari = pari or not da_solo
+            for pid in ids:
+                entries.append(
+                    ClassificationEntry(
+                        player_id=pid,
+                        position=fascia.posizione,
+                        score=per_id[pid].score,
+                        tied_with=() if da_solo else tuple(i for i in ids if i != pid),
+                        tiebreaker_resolved=da_solo,
+                    )
+                )
+        return replace(
+            result,
+            entries=tuple(entries),
+            has_ties=pari if livello is Livello.GARA else result.has_ties,
+            metadata={
+                **result.metadata,
+                "gironi": {
+                    pid: (esito.girone[pid], esito.posizione_nel_girone[pid])
+                    for pid in esito.girone
+                },
+            },
+        )
 
     @staticmethod
     def _contesto_della_catena(gara, livello, fino_al_turno: int) -> Dict[str, Any]:
@@ -486,6 +574,7 @@ class StrategyBasedClassificationService:
             .all()
         }
 
+        gironi = result.metadata.get("gironi") or {}
         for entry in result.entries:
             classification = existing_by_user.pop(entry.player_id, None)
 
@@ -506,6 +595,9 @@ class StrategyBasedClassificationService:
             # NULL, e chi la legge non scambia uno zero per un risultato.
             classification.points = (
                 entry.score.points if self._a_punti(gara_id) else None
+            )
+            classification.group_index, classification.group_position = gironi.get(
+                entry.player_id, (None, None)
             )
 
         # Righe stale: giocatori che dopo un reset non hanno più match validi
@@ -535,8 +627,12 @@ class StrategyBasedClassificationService:
         db.session.query(GaraClassification).filter_by(gara_id=gara_id).delete()
 
         # Create new classifications
+        gironi = result.metadata.get("gironi") or {}
         for entry in result.entries:
+            group_index, group_position = gironi.get(entry.player_id, (None, None))
             classification = GaraClassification(
+                group_index=group_index,
+                group_position=group_position,
                 gara_id=gara_id,
                 user_id=entry.player_id,
                 position=entry.position,

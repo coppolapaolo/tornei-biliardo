@@ -42,7 +42,9 @@ class RoundService:
     @staticmethod
     @transactional(domain="competition")
     def start_first_round(
-        gara_id: int, bye_to_last_inscribed: bool | None = None
+        gara_id: int,
+        bye_to_last_inscribed: bool | None = None,
+        groups_count: int | None = None,
     ) -> Gara:
         """Avvia il primo turno della gara con controlli e sorteggio.
 
@@ -51,6 +53,11 @@ class RoundService:
         quel che la gara ha già). Va registrata **prima** del sorteggio: sono
         le strategie a leggerla dalla gara. Vedi
         `models/matchmaking/bye_preference.py`.
+
+        `groups_count` è il numero di gironi scelto dal direttore nel girone
+        all'italiana (`None` = la proposta del foglio di avvio). I gironi si
+        compongono qui, prima del primo turno, e decidono anche il numero di
+        turni (ADR-076).
         """
         from models.competition.models import Inscription
         import random
@@ -93,6 +100,14 @@ class RoundService:
         # Assegna ordine sorteggio
         for i, inscription in enumerate(inscriptions, 1):
             inscription.initial_order = i
+
+        # Il girone all'italiana fissa qui i suoi turni, sugli iscritti
+        # presenti, e si divide nei gironi scelti (ADR-076). Prima il numero di
+        # turni restava quello stimato alla creazione sui posti dichiarati.
+        if gara.matchmaking_strategy == MatchmakingStrategy.ROUND_ROBIN.value:
+            from .gironi_service import GironiService
+
+            GironiService.fissa_all_avvio(gara, inscriptions, groups_count)
 
         # Forfeit routing: identical pattern to _create_round_impl so that
         # players marked is_forfeit=True BEFORE gara start are properly
