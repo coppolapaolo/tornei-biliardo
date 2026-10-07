@@ -21,7 +21,7 @@ di implementazione dell'unione.
 mano e a cui puntano i riferimenti — e su di lei si scrive:
 
 * i campi vuoti si riempiono con quelli delle altre (categoria, squadra,
-  ordine di sorteggio): un valore assente non è una scelta, è un buco;
+  ordine di sorteggio, girone): un valore assente non è una scelta, è un buco;
 * lo stato si prende **in blocco** dalla riga più avanzata, dove
   *attivo > lista d'attesa > ritirato*. In blocco e non campo per campo perché
   i sette campi di stato si raccontano a vicenda: `waitlist_position` senza
@@ -48,8 +48,9 @@ CAMPI_STATO = (
     "forfeit_at",
 )
 
-#: Campi che sono un dato indipendente: si riempiono a buchi.
-CAMPI_DATO = ("categoria_id", "squadra_id", "initial_order")
+#: Campi che sono un dato indipendente: si riempiono a buchi. Il girone
+#: (ADR-076) come l'ordine di sorteggio: lo scrive l'avvio, una volta.
+CAMPI_DATO = ("categoria_id", "squadra_id", "initial_order", "group_index")
 
 
 @dataclass

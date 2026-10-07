@@ -37,6 +37,7 @@ import hashlib
 import json
 from dataclasses import dataclass
 from enum import Enum
+from fractions import Fraction
 from typing import (
     Callable,
     Dict,
@@ -46,6 +47,7 @@ from typing import (
     Sequence,
     Set,
     Tuple,
+    Union,
 )
 
 from flask_babel import gettext as _
@@ -328,6 +330,11 @@ def prima_dello_ssr(catena: Iterable[Voce]) -> Catena:
 # ── I dati ───────────────────────────────────────────────────────────────
 
 
+#: Un numero della classifica: intero, o una frazione quando si confrontano
+#: giocatori di gironi diversi «per partita giocata» (`classification/gironi.py`).
+Numero = Union[int, Fraction]
+
+
 @dataclass(frozen=True)
 class Concorrente:
     """Un giocatore con i numeri che la catena può guardare.
@@ -337,10 +344,10 @@ class Concorrente:
     """
 
     player_id: int
-    vittorie: int = 0
-    rack_vinti: int = 0
-    differenza_rack: int = 0
-    punti: int = 0
+    vittorie: Numero = 0
+    rack_vinti: Numero = 0
+    differenza_rack: Numero = 0
+    punti: Numero = 0
     ssr: Optional[int] = None
     posizione_precedente: Optional[int] = None
     sorteggio: int = 0
@@ -397,7 +404,7 @@ def seme_del_campionato(campionato: object) -> str:
 _Gruppo = List[Concorrente]
 
 
-def _valore(c: Concorrente, criterio: Criterio) -> int:
+def _valore(c: Concorrente, criterio: Criterio) -> Numero:
     """Il valore di un criterio semplice: più alto viene prima."""
     if criterio is Criterio.VITTORIE:
         return c.vittorie
@@ -418,9 +425,11 @@ def _valore(c: Concorrente, criterio: Criterio) -> int:
     raise ValueError(f"Criterio senza valore: {criterio}")
 
 
-def _per_valore(gruppo: _Gruppo, valore: Callable[[Concorrente], int]) -> List[_Gruppo]:
+def _per_valore(
+    gruppo: _Gruppo, valore: Callable[[Concorrente], Numero]
+) -> List[_Gruppo]:
     """Il gruppo spezzato per valore decrescente, ordine stabile."""
-    per: Dict[int, _Gruppo] = {}
+    per: Dict[Numero, _Gruppo] = {}
     for c in gruppo:
         per.setdefault(valore(c), []).append(c)
     return [per[v] for v in sorted(per, reverse=True)]
@@ -558,6 +567,7 @@ def ordina(
     *,
     scontri: Sequence[Scontro] = (),
     completa: bool = False,
+    da_posizione: int = 1,
 ) -> List[Fascia]:
     """Ordina i giocatori: principale decrescente, poi la catena a gruppi.
 
@@ -567,6 +577,9 @@ def ordina(
         catena: la catena degli spareggi, già normalizzata da chi chiama.
         scontri: le partite fra giocatori, se la catena ha lo scontro diretto.
         completa: aggiunge il sorteggio in coda se manca (turno, campionato).
+        da_posizione: la posizione del primo; serve a chi ordina un pezzo di
+            classifica (i gironi, `classification/gironi.py`), perché lo
+            spareggio SSR «fino al N°» guarda la posizione vera.
 
     Returns:
         Le fasce in ordine. Una fascia di più giocatori è un pari merito: i suoi
@@ -577,7 +590,7 @@ def ordina(
         voci = voci + (Voce(Criterio.SORTEGGIO),)
     motore = _Motore(principale, scontri)
     fasce: List[Fascia] = []
-    posizione = 1
+    posizione = da_posizione
     for gruppo in _per_valore(list(concorrenti), lambda c: _valore(c, principale)):
         for fascia in motore.ordina_gruppo(gruppo, voci, posizione):
             fasce.append(Fascia(posizione, tuple(fascia)))
@@ -678,6 +691,7 @@ __all__ = [
     "Fascia",
     "Livello",
     "NOMI",
+    "Numero",
     "SSR_FINO_AL_DEFAULT",
     "Scontro",
     "Voce",

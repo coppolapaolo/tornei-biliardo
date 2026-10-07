@@ -190,7 +190,19 @@ class SpareggioService:
 
     @staticmethod
     def _fasce(gara: Gara, fino_allo_ssr: bool = False) -> List[Tuple[int, List]]:
+        """Le righe dell'ultimo turno in fasce: vedi `_fasce_e_gironi`."""
+        return SpareggioService._fasce_e_gironi(gara, fino_allo_ssr)[0]
+
+    @staticmethod
+    def _fasce_e_gironi(
+        gara: Gara, fino_allo_ssr: bool = False
+    ) -> Tuple[List[Tuple[int, List]], Dict[int, Tuple[int, int]]]:
         """Le righe dell'ultimo turno in fasce, secondo la catena di gara.
+
+        Il secondo valore, nel girone all'italiana a più gironi, dice per ogni
+        giocatore girone e posizione nel girone (ADR-076): lì la gara mette
+        prima i primi di ogni girone, poi i secondi, e lo spareggio scioglie
+        i pari di questa classifica. Vuoto con il girone unico.
 
         Una fascia è ``(posizione, righe)``: più righe sono un pari merito. È
         **l'unica** risposta alla domanda «chi è a pari merito?», per lo
@@ -224,7 +236,7 @@ class SpareggioService:
             .all()
         )
         if not righe:
-            return []
+            return [], {}
         ssr = {
             gc.user_id: gc.spot_shot_wins
             for gc in db.session.query(GaraClassification)
@@ -251,16 +263,32 @@ class SpareggioService:
             )
             for rc in righe
         ]
+        per_id = {rc.user_id: rc for rc in righe}
+        from models.competition.gironi_service import GironiService
+
+        girone = GironiService.girone_dei_giocatori(gara)
+        if girone:
+            from models.classification.gironi_della_gara import classifica_a_gironi
+
+            esito = classifica_a_gironi(
+                gara, concorrenti, girone, catena, final_round, completa=False
+            )
+            return [
+                (fascia.posizione, [per_id[c.player_id] for c in fascia.giocatori])
+                for fascia in esito.fasce
+            ], {
+                pid: (esito.girone[pid], esito.posizione_nel_girone[pid])
+                for pid in esito.girone
+            }
         scontri = (
             scontri_delle_gare([gara.id], final_round) if usa_scontri(catena) else ()
         )
-        per_id = {rc.user_id: rc for rc in righe}
         return [
             (fascia.posizione, [per_id[c.player_id] for c in fascia.giocatori])
             for fascia in ordina(
                 concorrenti, criterio_principale(sistema), catena, scontri=scontri
             )
-        ]
+        ], {}
 
     @staticmethod
     def _get_effective_final_round(gara: Gara) -> int:
@@ -870,10 +898,11 @@ class SpareggioService:
         # (ADR-078): chi resta pari dopo la catena condivide la posizione.
         classification_system = (gara.classification_system or "WINS").upper()
         fasce: Optional[List[Tuple[int, List]]] = None
+        gironi: Dict[int, Tuple[int, int]] = {}
         if classification_system == "POSITION":
             fasce = SpareggioService._fasce_del_tabellone(gara, final_round)
         if fasce is None:
-            fasce = SpareggioService._fasce(gara)
+            fasce, gironi = SpareggioService._fasce_e_gironi(gara)
 
         # A pari merito l'ordine di ELENCAZIONE è quello di estrazione, non la
         # posizione di partenza né il rowid: è l'unico criterio che il
@@ -906,6 +935,12 @@ class SpareggioService:
                 # Anche la classifica di turno, perché è quella che la pagina
                 # mostra.
                 round_class.position = position
+                if gironi:
+                    gruppo, nel_girone = gironi.get(round_class.user_id, (None, None))
+                    gara_class.group_index = round_class.group_index = gruppo
+                    gara_class.group_position = round_class.group_position = (
+                        nel_girone
+                    )
 
         return True, "Classifica finale aggiornata"
 
