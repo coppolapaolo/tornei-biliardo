@@ -42,6 +42,30 @@ def _sistema(valore: Any) -> ClassificationSystem:
     return sistema if sistema in _SISTEMI else ClassificationSystem.WINS
 
 
+def _descrizioni(livello: Livello) -> Dict[str, str]:
+    """Una riga sotto ogni criterio dell'editor: cosa guarda."""
+    campionato = livello is Livello.CAMPIONATO
+    return {
+        Criterio.SCONTRI_DIRETTI.value: _(
+            "fra i pari sta davanti chi vince lo scontro; chi si batte in giro "
+            "resta pari"
+        ),
+        Criterio.DIFFERENZA_RACK.value: _("triangoli vinti meno triangoli persi"),
+        Criterio.RACK_VINTI.value: _("triangoli vinti in tutto"),
+        Criterio.VITTORIE.value: _("partite vinte"),
+        Criterio.SPAREGGIO_SSR.value: (
+            _("la somma degli spareggi delle gare")
+            if campionato
+            else _("una prova a punti, giocata a gara finita")
+        ),
+        Criterio.POSIZIONE_PRECEDENTE.value: (
+            _("chi era davanti dopo la gara precedente")
+            if campionato
+            else _("chi era davanti al turno precedente")
+        ),
+    }
+
+
 def config_editor(
     livello: str, catena: Optional[Iterable[Voce]], sistema: Any
 ) -> Dict[str, Any]:
@@ -76,6 +100,7 @@ def config_editor(
             for s in _SISTEMI
         },
         "nomi": {c.value: str(nome) for c, nome in NOMI.items()},
+        "descrizioni": _descrizioni(liv),
         "frasi": frasi,
         "aPari": {s.value: _a_pari(s) for s in _SISTEMI},
         "testi": {

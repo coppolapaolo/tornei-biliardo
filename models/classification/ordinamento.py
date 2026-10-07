@@ -9,9 +9,10 @@ Una classifica a vittorie, a rack o a punti si stila in due tempi:
 
 Si lavora a gruppi, e non con una chiave di ordinamento, perché lo scontro
 diretto non è una proprietà del singolo giocatore: vale **fra i soli pari**.
-Fra due decide chi ha vinto lo scontro; fra tre o più una mini-classifica sulle
-partite giocate fra loro; se non si sono incontrati tutti, il criterio non
-decide e si passa al successivo.
+Ogni coppia di pari che si è incontrata dice chi sta davanti (chi ha vinto più
+scontri fra i due); chi si è battuto a vicenda in giro resta pari sullo
+scontro; fra chi non si è incontrato decide il criterio successivo, senza mai
+contraddire un risultato diretto (`_Motore._per_scontri`).
 
 Le classifiche sono tre, e ognuna ha la sua catena (decisione del 2026-10-07):
 
@@ -43,6 +44,7 @@ from typing import (
     List,
     Optional,
     Sequence,
+    Set,
     Tuple,
 )
 
@@ -425,47 +427,88 @@ class _Motore:
         self,
         principale: Criterio,
         scontri: Sequence[Scontro],
-        punti_partita: Tuple[int, int, int],
     ) -> None:
         self.principale = principale
         self.scontri = scontri
-        self.punti_partita = punti_partita
 
     # Scontro diretto ------------------------------------------------------
 
-    def _mini_classifica(self, gruppo: _Gruppo) -> Optional[List[_Gruppo]]:
+    def _vincoli(self, gruppo: _Gruppo) -> Set[Tuple[int, int]]:
+        """Le coppie «X sta davanti a Y» che gli scontri fra i pari dicono.
+
+        Per ogni coppia che si è incontrata si contano le vittorie dell'uno
+        sull'altro, anche su più partite (in gare diverse del campionato): sta
+        davanti chi ne ha vinte di più. A parità, o con un pareggio (la
+        chiusura a tempo lo ammette), nessun vincolo. Il trio e la X non sono
+        scontri: non arrivano qui (`catene._scontro`).
+        """
         ids = {c.player_id for c in gruppo}
-        interne = [
-            s
-            for s in self.scontri
-            if s.giocatore1 in ids
-            and s.giocatore2 in ids
-            and s.giocatore1 != s.giocatore2
-        ]
-        incontrati = {frozenset((s.giocatore1, s.giocatore2)) for s in interne}
-        coppie = len(ids) * (len(ids) - 1) // 2
-        if len(incontrati) < coppie:
-            # Non si sono incontrati tutti: il criterio non decide.
-            return None
-        vinta, pari, persa = self.punti_partita
-        mini: Dict[int, int] = {pid: 0 for pid in ids}
-        for s in interne:
-            if self.principale is Criterio.RACK_VINTI:
-                mini[s.giocatore1] += s.rack1
-                mini[s.giocatore2] += s.rack2
-                continue
-            if s.vincitore is None:
-                if self.principale is Criterio.PUNTI:
-                    mini[s.giocatore1] += pari
-                    mini[s.giocatore2] += pari
+        vinte: Dict[Tuple[int, int], int] = {}
+        for s in self.scontri:
+            if (
+                s.giocatore1 not in ids
+                or s.giocatore2 not in ids
+                or s.giocatore1 == s.giocatore2
+                or s.vincitore not in (s.giocatore1, s.giocatore2)
+            ):
                 continue
             perdente = s.giocatore2 if s.vincitore == s.giocatore1 else s.giocatore1
-            if self.principale is Criterio.PUNTI:
-                mini[s.vincitore] += vinta
-                mini[perdente] += persa
-            else:
-                mini[s.vincitore] += 1
-        return _per_valore(gruppo, lambda c: mini[c.player_id])
+            chiave = (s.vincitore, perdente)
+            vinte[chiave] = vinte.get(chiave, 0) + 1
+        return {(a, b) for (a, b), n in vinte.items() if n > vinte.get((b, a), 0)}
+
+    def _per_scontri(
+        self, gruppo: _Gruppo, resto: Catena, posizione: int
+    ) -> List[_Gruppo]:
+        """Lo scontro diretto: i vincoli fra i pari, e il resto della catena.
+
+        Decisione del 2026-10-07 (ADR-078, emendamento):
+
+        1. ogni coppia che si è incontrata dà un vincolo «X davanti a Y» se X
+           ha vinto più scontri di Y (`_vincoli`);
+        2. chi si è battuto a vicenda in giro (A>B>C>A) resta pari sullo
+           scontro: si condensano le componenti fortemente connesse, e fra le
+           componenti il grafo è aciclico;
+        3. l'ordine è un ordinamento topologico: a ogni passo, fra chi non ha
+           più nessuno davanti per gli scontri, decide il **resto della
+           catena**. Nessun risultato diretto viene contraddetto, e fra chi
+           non si è incontrato decide il criterio successivo. Chi resta
+           indistinguibile anche dopo resta pari (gara) o va al sorteggio
+           (turno, campionato), come per ogni criterio.
+
+        Con due soli pari è la regola di sempre: se si sono affrontati sta
+        davanti chi ha vinto, altrimenti decide il criterio dopo.
+        """
+        archi = self._vincoli(gruppo)
+        if not archi:
+            return self.ordina_gruppo(gruppo, resto, posizione)
+        import networkx as nx
+
+        grafo = nx.DiGraph()
+        grafo.add_nodes_from(c.player_id for c in gruppo)
+        grafo.add_edges_from(archi)
+        condensato = nx.condensation(grafo)
+        componente = condensato.graph["mapping"]
+        davanti = {n: condensato.in_degree(n) for n in condensato.nodes}
+        da_collocare = {
+            n: len(condensato.nodes[n]["members"]) for n in condensato.nodes
+        }
+        rimasti = list(gruppo)
+        fasce: List[_Gruppo] = []
+        while rimasti:
+            liberi = [c for c in rimasti if davanti[componente[c.player_id]] == 0]
+            prima = self.ordina_gruppo(liberi, resto, posizione)[0]
+            fasce.append(prima)
+            posizione += len(prima)
+            usciti = {c.player_id for c in prima}
+            rimasti = [c for c in rimasti if c.player_id not in usciti]
+            for pid in usciti:
+                nodo = componente[pid]
+                da_collocare[nodo] -= 1
+                if da_collocare[nodo] == 0:
+                    for dopo in condensato.successors(nodo):
+                        davanti[dopo] -= 1
+        return fasce
 
     # Un criterio su un gruppo --------------------------------------------
 
@@ -473,8 +516,6 @@ class _Motore:
         self, voce: Voce, gruppo: _Gruppo, posizione: int
     ) -> Optional[List[_Gruppo]]:
         criterio = voce.criterio
-        if criterio is Criterio.SCONTRI_DIRETTI:
-            return self._mini_classifica(gruppo)
         if (
             criterio is Criterio.SPAREGGIO_SSR
             and voce.fino_al is not None
@@ -494,21 +535,14 @@ class _Motore:
         if len(gruppo) <= 1 or not voci:
             return [gruppo]
         voce, resto = voci[0], voci[1:]
+        if voce.criterio is Criterio.SCONTRI_DIRETTI:
+            return self._per_scontri(gruppo, resto, posizione)
         sottogruppi = self._separa(voce, gruppo, posizione)
         if sottogruppi is None or len(sottogruppi) <= 1:
             return self.ordina_gruppo(gruppo, resto, posizione)
         fasce: List[_Gruppo] = []
         for sotto in sottogruppi:
-            # Dalla mini-classifica può restare un gruppo più piccolo ancora
-            # pari: lo scontro diretto si ripete fra quei soli giocatori prima
-            # di passare al criterio successivo (fra due che si sono
-            # incontrati, decide il loro scontro).
-            prossime = (
-                voci
-                if voce.criterio is Criterio.SCONTRI_DIRETTI and len(sotto) > 1
-                else resto
-            )
-            fasce.extend(self.ordina_gruppo(sotto, prossime, posizione))
+            fasce.extend(self.ordina_gruppo(sotto, resto, posizione))
             posizione += len(sotto)
         return fasce
 
@@ -519,7 +553,6 @@ def ordina(
     catena: Iterable[Voce],
     *,
     scontri: Sequence[Scontro] = (),
-    punti_partita: Tuple[int, int, int] = (3, 1, 0),
     completa: bool = False,
 ) -> List[Fascia]:
     """Ordina i giocatori: principale decrescente, poi la catena a gruppi.
@@ -529,8 +562,6 @@ def ordina(
         principale: il criterio principale del sistema.
         catena: la catena degli spareggi, già normalizzata da chi chiama.
         scontri: le partite fra giocatori, se la catena ha lo scontro diretto.
-        punti_partita: punti per vittoria, pareggio e sconfitta, per la
-            mini-classifica dello scontro diretto nel sistema a punti.
         completa: aggiunge il sorteggio in coda se manca (turno, campionato).
 
     Returns:
@@ -540,7 +571,7 @@ def ordina(
     voci = tuple(catena)
     if completa and not any(v.criterio is Criterio.SORTEGGIO for v in voci):
         voci = voci + (Voce(Criterio.SORTEGGIO),)
-    motore = _Motore(principale, scontri, punti_partita)
+    motore = _Motore(principale, scontri)
     fasce: List[Fascia] = []
     posizione = 1
     for gruppo in _per_valore(list(concorrenti), lambda c: _valore(c, principale)):

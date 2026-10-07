@@ -78,9 +78,12 @@ blocks:
     items:
       - name: "Scontri diretti"
         text: >-
-          Conta come sono andate le partite fra i giocatori pari. Se si sono
-          affrontati, sta davanti chi ha vinto. Non richiede di rigiocare
-          nulla, ed è il metodo più facile da spiegare.
+          Conta come sono andate le partite fra i giocatori pari. Se due si
+          sono affrontati sta davanti chi ha vinto (se si sono affrontati più
+          volte, chi ha vinto più spesso). Chi si è battuto a vicenda in giro
+          — A ha battuto B, B ha battuto C, C ha battuto A — resta pari, e
+          decide il criterio dopo. Fra chi non si è incontrato decide il
+          criterio dopo, senza mai rovesciare un risultato diretto.
       - name: "Differenza triangoli"
         text: "I triangoli vinti meno quelli persi."
       - name: "Triangoli vinti"

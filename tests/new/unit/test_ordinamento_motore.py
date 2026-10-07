@@ -231,106 +231,124 @@ class TestScontriDiretti:
         )
         assert _posizioni(fasce) == {1: 1, 2: 1}
 
-    def test_fra_tre_conta_la_mini_classifica(self):
-        # 1 batte 2 e 3; 3 batte 2: mini-classifica 1, 3, 2.
-        fasce = ordina(
-            [_c(1, vittorie=2), _c(2, vittorie=2), _c(3, vittorie=2)],
-            Criterio.VITTORIE,
-            (V(Criterio.SCONTRI_DIRETTI),),
-            scontri=[
-                Scontro(1, 2, 3, 1, vincitore=1),
-                Scontro(1, 3, 3, 2, vincitore=1),
-                Scontro(3, 2, 3, 0, vincitore=3),
-            ],
-        )
-        assert _ordine(fasce) == [1, 3, 2]
-
-    def test_fra_tre_in_cerchio_non_decide(self):
-        # 1>2, 2>3, 3>1: una vittoria a testa nella mini-classifica.
+    def test_fra_due_in_parita_di_scontri_non_decide(self):
+        """Due incontri, una vittoria a testa (in gare diverse del campionato,
+        o all'andata e al ritorno): nessun vincolo, decide il criterio dopo."""
         fasce = ordina(
             [
                 _c(1, vittorie=2, differenza_rack=1),
-                _c(2, vittorie=2, differenza_rack=3),
-                _c(3, vittorie=2, differenza_rack=2),
+                _c(2, vittorie=2, differenza_rack=4),
             ],
             Criterio.VITTORIE,
             (V(Criterio.SCONTRI_DIRETTI), V(Criterio.DIFFERENZA_RACK)),
             scontri=[
                 Scontro(1, 2, 3, 1, vincitore=1),
-                Scontro(2, 3, 3, 1, vincitore=2),
-                Scontro(3, 1, 3, 1, vincitore=3),
+                Scontro(2, 1, 3, 0, vincitore=2),
             ],
         )
-        assert _ordine(fasce) == [2, 3, 1]
+        assert _ordine(fasce) == [2, 1]
 
-    def test_fra_tre_se_manca_un_incontro_non_decide(self):
+    def test_fra_due_conta_chi_ha_vinto_piu_scontri(self):
         fasce = ordina(
-            [
-                _c(1, vittorie=2, differenza_rack=1),
-                _c(2, vittorie=2, differenza_rack=3),
-                _c(3, vittorie=2, differenza_rack=2),
-            ],
+            [_c(1, vittorie=2, differenza_rack=9), _c(2, vittorie=2)],
             Criterio.VITTORIE,
             (V(Criterio.SCONTRI_DIRETTI), V(Criterio.DIFFERENZA_RACK)),
             scontri=[
                 Scontro(1, 2, 3, 1, vincitore=1),
-                Scontro(1, 3, 3, 1, vincitore=1),
+                Scontro(2, 1, 3, 0, vincitore=2),
+                Scontro(2, 1, 3, 2, vincitore=2),
             ],
         )
-        assert _ordine(fasce) == [2, 3, 1]
+        assert _ordine(fasce) == [2, 1]
 
-    def test_dalla_mini_classifica_restano_due_pari_e_decide_il_loro_scontro(self):
-        # Quattro pari: 1 batte tutti, 4 perde con tutti, 2 e 3 una vittoria
-        # a testa nella mini-classifica: fra loro decide lo scontro (2>3).
+    def test_tre_con_un_vincolo_solo(self):
+        """1 ha battuto 2; 3 non ha incontrato nessuno. Il 3 lo colloca il
+        criterio successivo, e l'1 resta sempre davanti al 2."""
+        scontri = [Scontro(1, 2, 3, 1, vincitore=1)]
+        catena = (V(Criterio.SCONTRI_DIRETTI), V(Criterio.DIFFERENZA_RACK))
+
+        def ordine(d1, d2, d3):
+            return _ordine(
+                ordina(
+                    [
+                        _c(1, vittorie=2, differenza_rack=d1),
+                        _c(2, vittorie=2, differenza_rack=d2),
+                        _c(3, vittorie=2, differenza_rack=d3),
+                    ],
+                    Criterio.VITTORIE,
+                    catena,
+                    scontri=scontri,
+                )
+            )
+
+        # Il 3 meglio di tutti per differenza: primo.
+        assert ordine(1, 5, 9) == [3, 1, 2]
+        # Il 3 in mezzo: il 2 ha la differenza migliore ma ha perso con l'1.
+        assert ordine(1, 9, 5) == [3, 1, 2]
+        assert ordine(6, 4, 5) == [1, 3, 2]
+        # Passato l'1, fra il 2 e il 3 decide la differenza.
+        assert ordine(6, 9, 5) == [1, 2, 3]
+        # Il 3 peggio di tutti.
+        assert ordine(6, 9, 0) == [1, 2, 3]
+
+    def test_il_cerchio_resta_pari_e_il_battuto_da_tutti_e_ultimo(self):
+        """1>2, 2>3, 3>1 e tutti hanno battuto il 4: chi si è battuto a
+        vicenda in giro resta pari sullo scontro, e lo ordina il criterio
+        dopo; il 4 è ultimo anche con la differenza migliore."""
         scontri = [
-            Scontro(1, 2, 3, 0, vincitore=1),
-            Scontro(1, 3, 3, 0, vincitore=1),
-            Scontro(1, 4, 3, 0, vincitore=1),
+            Scontro(1, 2, 3, 1, vincitore=1),
             Scontro(2, 3, 3, 1, vincitore=2),
-            Scontro(2, 4, 0, 3, vincitore=4),
+            Scontro(3, 1, 3, 1, vincitore=3),
+            Scontro(1, 4, 3, 0, vincitore=1),
+            Scontro(2, 4, 3, 0, vincitore=2),
             Scontro(3, 4, 3, 0, vincitore=3),
         ]
-        # mini: 1=3, 2=1, 3=1, 4=1 -> 2,3,4 pari a 1; fra loro: 2>3, 4>2, 3>4
-        # = cerchio, non decide; il criterio successivo decide.
         fasce = ordina(
             [
-                _c(1, vittorie=3),
-                _c(2, vittorie=3, differenza_rack=1),
-                _c(3, vittorie=3, differenza_rack=3),
-                _c(4, vittorie=3, differenza_rack=2),
+                _c(1, vittorie=3, differenza_rack=1),
+                _c(2, vittorie=3, differenza_rack=3),
+                _c(3, vittorie=3, differenza_rack=2),
+                _c(4, vittorie=3, differenza_rack=9),
             ],
             Criterio.VITTORIE,
             (V(Criterio.SCONTRI_DIRETTI), V(Criterio.DIFFERENZA_RACK)),
             scontri=scontri,
         )
-        assert _ordine(fasce) == [1, 3, 4, 2]
+        assert _ordine(fasce) == [2, 3, 1, 4]
 
-        # Senza 4 nel gruppo: 1 batte 2 e 3, 2 batte 3. Se fra 2 e 3 la
-        # mini-classifica a tre li lasciasse pari, il loro scontro decide.
-        scontri_due = [
-            Scontro(1, 2, 3, 0, vincitore=1),
-            Scontro(1, 3, 0, 3, vincitore=3),
-            Scontro(2, 3, 3, 0, vincitore=2),
-            Scontro(2, 5, 3, 0, vincitore=2),
-            Scontro(5, 1, 3, 0, vincitore=5),
-            Scontro(5, 3, 0, 3, vincitore=3),
+    def test_nel_cerchio_senza_altri_criteri_si_resta_pari(self):
+        scontri = [
+            Scontro(1, 2, 3, 1, vincitore=1),
+            Scontro(2, 3, 3, 1, vincitore=2),
+            Scontro(3, 1, 3, 1, vincitore=3),
+            Scontro(1, 4, 3, 0, vincitore=1),
         ]
-        # mini fra 1,2,3,5: 1=1 (su 2), 2=2 (su 3 e 5), 3=2 (su 1 e 5), 5=1 (su 1)
-        # -> {2,3} a 2, {1,5} a 1; fra 2 e 3 vince 2; fra 1 e 5 vince 5.
         fasce = ordina(
-            [
-                _c(1, vittorie=3),
-                _c(2, vittorie=3),
-                _c(3, vittorie=3),
-                _c(5, vittorie=3),
-            ],
+            [_c(p, vittorie=3) for p in (1, 2, 3, 4)],
             Criterio.VITTORIE,
             (V(Criterio.SCONTRI_DIRETTI),),
-            scontri=scontri_due,
+            scontri=scontri,
         )
-        assert _ordine(fasce) == [2, 3, 5, 1]
+        assert _posizioni(fasce) == {1: 1, 2: 1, 3: 1, 4: 4}
 
-    def test_a_rack_la_mini_classifica_conta_i_rack_fra_loro(self):
+    def test_nessun_risultato_diretto_viene_contraddetto(self):
+        """Una catena lunga di vincoli: 1>2>3>4, con le differenze al
+        contrario. L'ordine è quello degli scontri."""
+        scontri = [
+            Scontro(1, 2, 3, 2, vincitore=1),
+            Scontro(2, 3, 3, 2, vincitore=2),
+            Scontro(3, 4, 3, 2, vincitore=3),
+        ]
+        fasce = ordina(
+            [_c(p, vittorie=2, differenza_rack=p) for p in (1, 2, 3, 4)],
+            Criterio.VITTORIE,
+            (V(Criterio.SCONTRI_DIRETTI), V(Criterio.DIFFERENZA_RACK)),
+            scontri=scontri,
+        )
+        assert _ordine(fasce) == [1, 2, 3, 4]
+
+    def test_conta_chi_vince_non_i_triangoli(self):
+        """A triangoli vale lo stesso: chi ha vinto lo scontro sta davanti."""
         fasce = ordina(
             [_c(1, rack_vinti=8), _c(2, rack_vinti=8)],
             Criterio.RACK_VINTI,
@@ -338,6 +356,21 @@ class TestScontriDiretti:
             scontri=[Scontro(1, 2, 2, 3, vincitore=2)],
         )
         assert _ordine(fasce) == [2, 1]
+
+    def test_nel_turno_chi_resta_indistinguibile_va_al_sorteggio(self):
+        scontri = [
+            Scontro(1, 2, 3, 1, vincitore=1),
+            Scontro(2, 3, 3, 1, vincitore=2),
+            Scontro(3, 1, 3, 1, vincitore=3),
+        ]
+        fasce = ordina(
+            [_c(p, vittorie=2) for p in (1, 2, 3)],
+            Criterio.VITTORIE,
+            (V(Criterio.SCONTRI_DIRETTI),),
+            scontri=scontri,
+            completa=True,
+        )
+        assert [len(f.giocatori) for f in fasce] == [1, 1, 1]
 
 
 class TestSorteggio:
