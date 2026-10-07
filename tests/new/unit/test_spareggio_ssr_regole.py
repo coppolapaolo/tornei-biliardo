@@ -3,50 +3,58 @@
 Confermate dall'utente il 2026-08-19, e tutte e tre facili da tradire scrivendo
 un `sorted()` in fretta:
 
-1. lo spareggio vale **solo** entro `tiebreaker_until_position`; oltre, il pari
-   merito e' un risultato legittimo;
+1. lo spareggio vale **solo** entro il suo posto («spareggio SSR fino al N°
+   posto»); oltre, il pari merito e' un risultato legittimo;
 2. dentro un gruppo ordina **solo** l'SSR;
 3. a SSR uguale il pari merito **rimane** — nessun ripiego, in particolare non
    l'id del giocatore, che e' l'ordine di iscrizione.
 
-Il risolutore vive nella classe base: fino al 2026-08-19 era duplicato alla
-lettera nelle due strategie di gara, ed e' cosi' che una correzione applicata a
-una copia non ha mai raggiunto l'altra.
+Dal 2026-10-07 lo SSR e' un anello della catena di gara e lo applica il motore
+unico (`models/classification/ordinamento.py`, ADR-078). Fino al 2026-08-19 il
+risolutore era duplicato alla lettera nelle due strategie di gara, ed e' cosi'
+che una correzione applicata a una copia non ha mai raggiunto l'altra: oggi
+c'e' un motore solo, e il presidio in fondo lo verifica.
 """
 
 from typing import Dict, List
 
-from models.classification.strategies.base import (
-    ClassificationEntry,
-    PlayerScore,
+from models.classification.ordinamento import (
+    SSR_FINO_AL_DEFAULT,
+    Concorrente,
+    Criterio,
+    Voce,
+    ordina,
 )
-from models.classification.strategies.gara_strategies import (
-    RandomGaraClassificationStrategy,
-)
 
 
-def _entries(gruppi: List[List[int]]) -> tuple:
-    """Entries gia' raggruppate: ogni sotto-lista condivide una posizione."""
-    out = []
-    posizione = 1
-    for gruppo in gruppi:
-        for player_id in gruppo:
-            out.append(
-                ClassificationEntry(
-                    player_id=player_id,
-                    position=posizione,
-                    score=PlayerScore(player_id=player_id),
-                    tied_with=tuple(p for p in gruppo if p != player_id),
-                    tiebreaker_resolved=len(gruppo) == 1,
-                )
-            )
-        posizione += len(gruppo)
-    return tuple(out)
+def _risolvi(gruppi: List[List[int]], ssr: Dict[int, int], soglia=None):
+    """Gruppi gia' pari sul principale, poi lo SSR fino a ``soglia``.
+
+    Ogni sotto-lista e' un gruppo a pari vittorie, in ordine decrescente.
+    """
+    concorrenti = [
+        Concorrente(player_id=pid, vittorie=100 - indice, ssr=ssr.get(pid))
+        for indice, gruppo in enumerate(gruppi)
+        for pid in gruppo
+    ]
+    voce = Voce(
+        Criterio.SPAREGGIO_SSR,
+        soglia if soglia is not None else SSR_FINO_AL_DEFAULT,
+    )
+    fasce = ordina(concorrenti, Criterio.VITTORIE, (voce,))
+    return [
+        _Esito(g.player_id, f.posizione, tuple(x.player_id for x in f.giocatori))
+        for f in fasce
+        for g in f.giocatori
+    ]
 
 
-def _risolvi(gruppi, ssr: Dict[int, int], soglia=None):
-    strategia = RandomGaraClassificationStrategy()
-    return strategia._resolve_ties_with_spot_shot(_entries(gruppi), ssr, soglia)
+class _Esito:
+    def __init__(self, player_id, position, fascia):
+        self.player_id = player_id
+        self.position = position
+        self.tied_with = tuple(p for p in fascia if p != player_id)
+        self.tiebreaker_resolved = len(fascia) == 1
 
 
 def _posizioni(risolte) -> Dict[int, int]:
@@ -117,31 +125,22 @@ def test_banco_di_prova_gara_35():
     assert per_id[58].tiebreaker_resolved is False
 
 
-def test_le_strategie_di_gara_condividono_un_solo_risolutore():
-    """Presidio strutturale: nessuna classe puo' ridefinire il risolutore.
+def test_le_strategie_di_gara_condividono_un_solo_motore():
+    """Presidio strutturale: nessuna strategia ordina da se'.
 
     Il difetto del ripiego su `player_id` e' sopravvissuto per anni perche' il
-    metodo era copiato alla lettera in due classi: correggerne una lasciava
+    risolutore era copiato alla lettera in due classi: correggerne una lasciava
     l'altra indietro, senza che niente lo segnalasse. Il posto giusto e' uno
-    solo, ed e' la classe base.
+    solo: il motore della catena, chiamato dalla classe base.
     """
     from models.classification.strategies.base import ClassificationStrategy
-    from models.classification.strategies import gara_strategies
+    from models.classification.strategies import gara_strategies, round_strategies
 
-    base = ClassificationStrategy._resolve_ties_with_spot_shot
-    ridefinizioni = [
-        nome
-        for nome, oggetto in vars(gara_strategies).items()
-        if isinstance(oggetto, type)
-        and issubclass(oggetto, ClassificationStrategy)
-        and oggetto is not ClassificationStrategy  # la base *deve* definirlo
-        and vars(oggetto).get("_resolve_ties_with_spot_shot") is not None
-    ]
-    assert not ridefinizioni, (
-        "queste strategie ridefiniscono il risolutore invece di usare quello "
-        f"della classe base: {ridefinizioni}"
-    )
-    assert (
-        gara_strategies.RandomGaraClassificationStrategy._resolve_ties_with_spot_shot
-        is base
-    )
+    base = ClassificationStrategy._ordina_con_la_catena
+    for modulo in (gara_strategies, round_strategies):
+        for nome, oggetto in vars(modulo).items():
+            if isinstance(oggetto, type) and issubclass(
+                oggetto, ClassificationStrategy
+            ):
+                assert oggetto._ordina_con_la_catena is base, nome
+    assert not hasattr(ClassificationStrategy, "_resolve_ties_with_spot_shot")

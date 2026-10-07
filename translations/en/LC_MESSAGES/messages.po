@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2026-10-06 20:52+0200\n"
+"POT-Creation-Date: 2026-10-07 10:47+0200\n"
 "PO-Revision-Date: 2025-12-22 21:56+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -880,6 +880,110 @@ msgstr "jump"
 #: models/challenge/vocabulary.py:141
 msgid "massé"
 msgstr "massé"
+
+#: models/classification/ordinamento.py:517 models/storia/etichette.py:127
+#: templates/admin/campionato_wizard_step2.html:30
+#: templates/admin/users_list.html:152 templates/admin/users_list.html:248
+#: templates/components/_classification_mobile.html:30
+#: templates/components/_classification_mobile.html:56
+#: templates/components/_detailed_classification.html:20
+#: templates/components/_gara_edit_form.html:67
+#: templates/components/_gara_edit_form.html:77
+#: templates/components/_history_filters.html:95
+#: templates/components/_history_matches_tab.html:23
+#: templates/components/_player_statistics.html:36
+#: templates/components/_playoff_config_form.html:70
+msgid "Vittorie"
+msgstr "Wins"
+
+#: models/classification/ordinamento.py:518
+#: templates/components/_history_matches_tab.html:35
+#: templates/individual_match/statistics.html:155
+msgid "Triangoli vinti"
+msgstr "Racks won"
+
+#: models/classification/ordinamento.py:519
+#: templates/components/_campionato_general_classification.html:78
+msgid "Punti"
+msgstr "Points"
+
+#: models/classification/ordinamento.py:520
+#: templates/components/_classification_mobile.html:32
+msgid "Differenza triangoli"
+msgstr "Rack difference"
+
+#: models/classification/ordinamento.py:521
+msgid "Scontri diretti"
+msgstr "Head-to-head"
+
+#: models/classification/ordinamento.py:522
+#: templates/components/_gara_edit_form.html:386
+msgid "Spareggio SSR"
+msgstr "SSR tiebreaker"
+
+#: models/classification/ordinamento.py:523
+msgid "Posizione precedente"
+msgstr "Previous position"
+
+#: models/classification/ordinamento.py:524
+msgid "Sorteggio"
+msgstr "Draw"
+
+#: models/classification/ordinamento.py:531
+msgid "lo scontro diretto"
+msgstr "the head-to-head result"
+
+#: models/classification/ordinamento.py:533
+msgid "la differenza triangoli"
+msgstr "the rack difference"
+
+#: models/classification/ordinamento.py:535
+msgid "i triangoli vinti"
+msgstr "the racks won"
+
+#: models/classification/ordinamento.py:537
+msgid "le vittorie"
+msgstr "the wins"
+
+#: models/classification/ordinamento.py:540
+msgid "lo spareggio SSR"
+msgstr "the SSR tiebreaker"
+
+#: models/classification/ordinamento.py:541
+#, python-format
+msgid "lo spareggio SSR fino al %(n)s° posto"
+msgstr "the SSR tiebreaker up to place %(n)s"
+
+#: models/classification/ordinamento.py:543
+msgid "la posizione precedente"
+msgstr "the previous position"
+
+#: models/classification/ordinamento.py:544
+msgid "il sorteggio"
+msgstr "the draw"
+
+#: models/classification/ordinamento.py:549
+msgid "A pari triangoli vinti"
+msgstr "Level on racks won"
+
+#: models/classification/ordinamento.py:550
+msgid "A pari vittorie"
+msgstr "Level on wins"
+
+#: models/classification/ordinamento.py:561
+#, python-format
+msgid "%(a_pari)s i giocatori restano a pari merito."
+msgstr "%(a_pari)s, players stay tied."
+
+#: models/classification/ordinamento.py:564
+#, python-format
+msgid ", poi %(x)s"
+msgstr ", then %(x)s"
+
+#: models/classification/ordinamento.py:565
+#, python-format
+msgid "%(a_pari)s conta %(elenco)s."
+msgstr "%(a_pari)s, the order is set by %(elenco)s."
 
 #: models/competition/campi_modificabili.py:141
 #: models/competition/campi_modificabili.py:200
@@ -4088,21 +4192,6 @@ msgstr "X with drill"
 #: templates/components/_user_recent_matches_table.html:47
 msgid "Trio"
 msgstr "Trio"
-
-#: models/storia/etichette.py:127
-#: templates/admin/campionato_wizard_step2.html:30
-#: templates/admin/users_list.html:152 templates/admin/users_list.html:248
-#: templates/components/_classification_mobile.html:30
-#: templates/components/_classification_mobile.html:56
-#: templates/components/_detailed_classification.html:20
-#: templates/components/_gara_edit_form.html:67
-#: templates/components/_gara_edit_form.html:77
-#: templates/components/_history_filters.html:95
-#: templates/components/_history_matches_tab.html:23
-#: templates/components/_player_statistics.html:36
-#: templates/components/_playoff_config_form.html:70
-msgid "Vittorie"
-msgstr "Wins"
 
 #: models/storia/etichette.py:128 models/storia/etichette.py:129
 #: templates/components/_campionato_general_classification.html:75
@@ -14227,10 +14316,6 @@ msgstr "Top %(n)s"
 msgid "Tutti (%(n)s)"
 msgstr "All (%(n)s)"
 
-#: templates/components/_campionato_general_classification.html:78
-msgid "Punti"
-msgstr "Points"
-
 #: templates/components/_campionato_general_classification.html:79
 #: templates/components/_campionato_general_classification.html:82
 #: templates/direttore/_classifica.html:41
@@ -14348,10 +14433,6 @@ msgstr "Top 6"
 #: templates/components/_classification_mobile.html:52
 msgid "Spot Shot Rally"
 msgstr "Spot Shot Rally"
-
-#: templates/components/_classification_mobile.html:32
-msgid "Differenza triangoli"
-msgstr "Rack difference"
 
 #: templates/components/_classification_mobile.html:37
 #, python-format
@@ -14969,10 +15050,6 @@ msgstr "Select a discipline…"
 #: templates/components/_gara_edit_form.html:377
 msgid "Turni e spareggi"
 msgstr "Rounds and tiebreakers"
-
-#: templates/components/_gara_edit_form.html:386
-msgid "Spareggio SSR"
-msgstr "SSR tiebreaker"
 
 #: templates/components/_gara_edit_form.html:390
 msgid "Abilita spareggio per i parimerito"
@@ -15734,11 +15811,6 @@ msgstr "No competitions found with the selected filters."
 #: templates/components/_history_matches_tab.html:31
 msgid "Vittorie su giocate"
 msgstr "Wins per played"
-
-#: templates/components/_history_matches_tab.html:35
-#: templates/individual_match/statistics.html:155
-msgid "Triangoli vinti"
-msgstr "Racks won"
 
 #: templates/components/_history_matches_tab.html:39
 msgid "Triangoli persi"

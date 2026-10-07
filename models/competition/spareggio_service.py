@@ -6,7 +6,7 @@ Purpose: Handle spot shot rally (SSR) tiebreakers for top 3 positions
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Callable, Dict, List, Optional, Tuple, TypedDict
+from typing import TYPE_CHECKING, Dict, List, Optional, Tuple, TypedDict
 from sqlalchemy import func
 from models.base import db
 from models.classification.bracket_standings import bracket_positions
@@ -56,11 +56,30 @@ class SpareggioService:
         Vale per tutte le porte d'ingresso dello spareggio, non solo per la
         schermata: il vincolo sta qui, non nella UI.
         """
-        if not getattr(gara, "tiebreaker_enabled", False):
+        from models.classification.catene import (
+            catena_di_gara,
+            ordina_con_la_catena,
+            sistema_dichiarato,
+        )
+        from models.classification.ordinamento import ssr_della_catena
+
+        if not ordina_con_la_catena(sistema_dichiarato(gara)):
             return False
-        return (
-            getattr(gara, "classification_system", None) or "WINS"
-        ).upper() != "POSITION"
+        return ssr_della_catena(catena_di_gara(gara)) is not None
+
+    @staticmethod
+    def ssr_fino_al(gara) -> int:
+        """Il posto fin dove lo spareggio SSR della catena di gara decide."""
+        from models.classification.catene import catena_di_gara
+        from models.classification.ordinamento import (
+            SSR_FINO_AL_DEFAULT,
+            ssr_della_catena,
+        )
+
+        voce = ssr_della_catena(catena_di_gara(gara))
+        if voce is None or voce.fino_al is None:
+            return SSR_FINO_AL_DEFAULT
+        return voce.fino_al
 
     @staticmethod
     def positions_to_discriminate(
@@ -170,64 +189,77 @@ class SpareggioService:
         )
 
     @staticmethod
-    def _group_by_classification(gara: Gara) -> Tuple[List, Dict]:
-        """Carica le RoundClassification del final round e le raggruppa per la
-        chiave di parimerito appropriata al ``classification_system`` della gara.
+    def _fasce(gara: Gara, fino_allo_ssr: bool = False) -> List[Tuple[int, List]]:
+        """Le righe dell'ultimo turno in fasce, secondo la catena di gara.
 
-        Una "chiave di parimerito" identifica univocamente lo stato classifica
-        di un giocatore: due giocatori che condividono la stessa chiave sono
-        parimerito (e candidati a SSR se nelle prime ``tiebreaker_until_position``
-        posizioni).
+        Una fascia è ``(posizione, righe)``: più righe sono un pari merito. È
+        **l'unica** risposta alla domanda «chi è a pari merito?», per lo
+        spareggio da giocare come per la classifica finale (ADR-078). Prima
+        la si calcolava in tre posti, ciascuno con la sua chiave.
 
-        - **WINS** (default): chiave ``(matches_won, rack_difference)``.
-          Due giocatori sono parimerito solo se *entrambi* coincidono. Bug B20:
-          prima il servizio raggruppava sempre per ``rack_difference`` solo,
-          generando falsi parimerito quando la gara è WINS e due player hanno
-          stesso rack_diff ma diversi matches_won.
-        - **RACK**: chiave ``rack_difference`` (intero), come prima.
-        - **POSITION**: non arriva mai qui, perché lo spareggio è spento
-          (``tiebreakers_apply_to``): i pari merito del tabellone sono l'esito
-          voluto e non vanno sciolti.
-
-        Returns:
-            Tuple ``(sorted_keys, groups_by_key)``. Le keys sono ordinate
-            descending; per le tuple WINS lessicograficamente ``(wins, diff)``.
-            Lista vuota se non ci sono classifications per il final round.
+        Con ``fino_allo_ssr`` la catena si ferma prima dello spareggio: sono i
+        pari che lo spareggio deve sciogliere, se partono entro il suo posto.
+        Il sistema POSITION non arriva mai qui (``tiebreakers_apply_to``).
         """
-        classification_system = (gara.classification_system or "WINS").upper()
-        final_round = SpareggioService._get_effective_final_round(gara)
-        query = db.session.query(RoundClassification).filter_by(
-            gara_id=gara.id, round_number=final_round
+        from models.classification.catene import (
+            catena_di_gara,
+            scontri_delle_gare,
+            sistema_della_gara,
+            usa_scontri,
         )
-        if classification_system == "RACK":
-            # `ranking_rack_value` in SQL: `racks_won` con fallback su
-            # `rack_difference` per le righe scritte prima della separazione
-            # delle due colonne (migration 20260728).
-            rack_total = func.coalesce(
-                RoundClassification.racks_won, RoundClassification.rack_difference
+        from models.classification.ordinamento import (
+            Concorrente,
+            chiave_di_sorteggio,
+            criterio_principale,
+            ordina,
+            prima_dello_ssr,
+            seme_della_gara,
+        )
+
+        final_round = SpareggioService._get_effective_final_round(gara)
+        righe = (
+            db.session.query(RoundClassification)
+            .filter_by(gara_id=gara.id, round_number=final_round)
+            .order_by(RoundClassification.position)
+            .all()
+        )
+        if not righe:
+            return []
+        ssr = {
+            gc.user_id: gc.spot_shot_wins
+            for gc in db.session.query(GaraClassification)
+            .filter_by(gara_id=gara.id)
+            .all()
+        }
+        sistema = sistema_della_gara(gara)
+        catena = catena_di_gara(gara)
+        if fino_allo_ssr:
+            catena = prima_dello_ssr(catena)
+        seme = seme_della_gara(gara)
+        concorrenti = [
+            Concorrente(
+                player_id=rc.user_id,
+                vittorie=rc.matches_won or 0,
+                # `total_racks_value`: il totale, con il ripiego per le righe
+                # scritte prima della separazione delle colonne (20260728).
+                rack_vinti=rc.total_racks_value,
+                differenza_rack=rc.rack_difference or 0,
+                ssr=ssr.get(rc.user_id),
+                posizione_precedente=rc.previous_position,
+                sorteggio=chiave_di_sorteggio(seme, rc.user_id),
             )
-            classifications = query.order_by(rack_total.desc()).all()
-        else:
-            classifications = query.order_by(
-                RoundClassification.matches_won.desc(),
-                RoundClassification.rack_difference.desc(),
-            ).all()
-
-        if not classifications:
-            return [], {}
-
-        def classification_key(c):
-            if classification_system == "RACK":
-                return c.ranking_rack_value
-            return (c.matches_won, c.rack_difference)
-
-        groups_by_key: Dict = {}
-        for c in classifications:
-            key = classification_key(c)
-            groups_by_key.setdefault(key, []).append(c)
-
-        sorted_keys = sorted(groups_by_key.keys(), reverse=True)
-        return sorted_keys, groups_by_key
+            for rc in righe
+        ]
+        scontri = (
+            scontri_delle_gare([gara.id], final_round) if usa_scontri(catena) else ()
+        )
+        per_id = {rc.user_id: rc for rc in righe}
+        return [
+            (fascia.posizione, [per_id[c.player_id] for c in fascia.giocatori])
+            for fascia in ordina(
+                concorrenti, criterio_principale(sistema), catena, scontri=scontri
+            )
+        ]
 
     @staticmethod
     def _get_effective_final_round(gara: Gara) -> int:
@@ -269,85 +301,67 @@ class SpareggioService:
         if not SpareggioService.tiebreakers_apply_to(gara):
             return []
 
-        # Get the position limit for tiebreakers (default to 3 if not set)
-        tiebreaker_limit = gara.tiebreaker_until_position or 3
+        tiebreaker_limit = SpareggioService.ssr_fino_al(gara)
 
-        sorted_keys, groups_by_key = SpareggioService._group_by_classification(gara)
-        if not sorted_keys:
-            return []
-
-        # Find groups that affect top 3 positions
         tiebreaker_groups: List[TiebreakerGroup] = []
-        current_position = 1
-
-        for key in sorted_keys:
-            group = groups_by_key[key]
-            # rack_totali nel TiebreakerGroup tiene il rack_difference comune
-            # del gruppo (per WINS è il secondo elemento della tuple, per RACK
-            # è la chiave intera). Mantenuto per compat col template.
-            rack_count = key[1] if isinstance(key, tuple) else key
-
-            # Check if this group includes any position within tiebreaker limit
-            if current_position <= tiebreaker_limit and len(group) > 1:
-                # If the group spans into top positions, it needs a tiebreaker
-                if current_position <= tiebreaker_limit:
-                    # Check existing SSR scores to see if already resolved
-                    existing_gara_class = (
-                        db.session.query(GaraClassification)
-                        .filter(
-                            GaraClassification.gara_id == gara_id,
-                            GaraClassification.user_id.in_([c.user_id for c in group]),
-                        )
-                        .all()
-                    )
-                    ssr_scores = {
-                        gc.user_id: gc.spot_shot_wins for gc in existing_gara_class
-                    }
-
-                    # Build player list with SSR scores
-                    players = []
-                    for c in group:
-                        user = c.user
-                        players.append(
-                            {
-                                "user_id": c.user_id,
-                                "username": (
-                                    user.username if user else f"User {c.user_id}"
-                                ),
-                                "current_ssr_score": ssr_scores.get(
-                                    c.user_id
-                                ),  # None if not entered
-                            }
-                        )
-
-                    # Il gruppo è risolto quando tutti hanno un punteggio (0 è
-                    # valido, None = non inserito) e i punteggi separano le
-                    # sole posizioni contese. I pari merito oltre
-                    # tiebreaker_until_position sono legittimi (issue #63).
-                    needed = SpareggioService.positions_to_discriminate(
-                        len(group), current_position, tiebreaker_limit
-                    )
-                    scores = [p["current_ssr_score"] for p in players]
-                    is_resolved = SpareggioService.scores_resolve_group(scores, needed)
-
-                    if not is_resolved:
-                        tiebreaker_groups.append(
-                            {
-                                "position": current_position,
-                                "rack_totali": rack_count,
-                                "players": players,
-                                "needs_distinct_top": needed,
-                                "posti_in_palio": SpareggioService.posti_in_palio(
-                                    len(group), current_position, tiebreaker_limit
-                                ),
-                            }
-                        )
-
-            current_position += len(group)
-
-            # Stop if we've passed the tiebreaker position limit
+        # `rack_totali` è il valore su cui il gruppo è pari: la differenza
+        # nel sistema a vittorie, il totale nel sistema a rack.
+        for current_position, group in SpareggioService._fasce(
+            gara, fino_allo_ssr=True
+        ):
+            # Oltre il posto dello spareggio i pari merito restano tali.
             if current_position > tiebreaker_limit:
                 break
+            if len(group) < 2:
+                continue
+            rack_count = (
+                group[0].ranking_rack_value
+                if (gara.classification_system or "WINS").upper() == "RACK"
+                else group[0].rack_difference or 0
+            )
+            existing_gara_class = (
+                db.session.query(GaraClassification)
+                .filter(
+                    GaraClassification.gara_id == gara_id,
+                    GaraClassification.user_id.in_([c.user_id for c in group]),
+                )
+                .all()
+            )
+            ssr_scores = {gc.user_id: gc.spot_shot_wins for gc in existing_gara_class}
+
+            players = []
+            for c in group:
+                user = c.user
+                players.append(
+                    {
+                        "user_id": c.user_id,
+                        "username": user.username if user else f"User {c.user_id}",
+                        "current_ssr_score": ssr_scores.get(
+                            c.user_id
+                        ),  # None if not entered
+                    }
+                )
+
+            # Il gruppo è risolto quando tutti hanno un punteggio (0 è
+            # valido, None = non inserito) e i punteggi separano le sole
+            # posizioni contese. I pari merito oltre il posto dello
+            # spareggio sono legittimi (issue #63).
+            needed = SpareggioService.positions_to_discriminate(
+                len(group), current_position, tiebreaker_limit
+            )
+            scores = [p["current_ssr_score"] for p in players]
+            if not SpareggioService.scores_resolve_group(scores, needed):
+                tiebreaker_groups.append(
+                    {
+                        "position": current_position,
+                        "rack_totali": rack_count,
+                        "players": players,
+                        "needs_distinct_top": needed,
+                        "posti_in_palio": SpareggioService.posti_in_palio(
+                            len(group), current_position, tiebreaker_limit
+                        ),
+                    }
+                )
 
         return tiebreaker_groups
 
@@ -389,74 +403,62 @@ class SpareggioService:
         if not SpareggioService.tiebreakers_apply_to(gara):
             return []
 
-        # Get the position limit for tiebreakers (default to 3 if not set)
-        tiebreaker_limit = gara.tiebreaker_until_position or 3
+        tiebreaker_limit = SpareggioService.ssr_fino_al(gara)
 
-        sorted_keys, groups_by_key = SpareggioService._group_by_classification(gara)
-        if not sorted_keys:
-            return []
-
-        # Find ALL groups that affect top 3 positions (resolved or not)
         all_groups: List[TiebreakerGroup] = []
-        current_position = 1
-
-        for key in sorted_keys:
-            group = groups_by_key[key]
-            # rack_totali è il rack_difference comune del gruppo (per WINS è il
-            # secondo elemento della tuple, per RACK è la chiave intera).
-            rack_count = key[1] if isinstance(key, tuple) else key
-
-            # Check if this group includes any position within tiebreaker
-            # limit AND has multiple players
-            if current_position <= tiebreaker_limit and len(group) > 1:
-                # Get existing SSR scores
-                existing_gara_class = (
-                    db.session.query(GaraClassification)
-                    .filter(
-                        GaraClassification.gara_id == gara_id,
-                        GaraClassification.user_id.in_([c.user_id for c in group]),
-                    )
-                    .all()
+        # `rack_totali` è il valore su cui il gruppo è pari: la differenza
+        # nel sistema a vittorie, il totale nel sistema a rack.
+        for current_position, group in SpareggioService._fasce(
+            gara, fino_allo_ssr=True
+        ):
+            # Oltre il posto dello spareggio i pari merito restano tali.
+            if current_position > tiebreaker_limit:
+                break
+            if len(group) < 2:
+                continue
+            rack_count = (
+                group[0].ranking_rack_value
+                if (gara.classification_system or "WINS").upper() == "RACK"
+                else group[0].rack_difference or 0
+            )
+            existing_gara_class = (
+                db.session.query(GaraClassification)
+                .filter(
+                    GaraClassification.gara_id == gara_id,
+                    GaraClassification.user_id.in_([c.user_id for c in group]),
                 )
-                ssr_scores = {
-                    gc.user_id: gc.spot_shot_wins for gc in existing_gara_class
-                }
+                .all()
+            )
+            ssr_scores = {gc.user_id: gc.spot_shot_wins for gc in existing_gara_class}
 
-                # Build player list with SSR scores
-                players = []
-                for c in group:
-                    user = c.user
-                    players.append(
-                        {
-                            "user_id": c.user_id,
-                            "username": user.username if user else f"User {c.user_id}",
-                            "current_ssr_score": ssr_scores.get(
-                                c.user_id
-                            ),  # None if not entered
-                        }
-                    )
-
-                all_groups.append(
+            players = []
+            for c in group:
+                user = c.user
+                players.append(
                     {
-                        "position": current_position,
-                        "rack_totali": rack_count,
-                        "players": players,
-                        "needs_distinct_top": (
-                            SpareggioService.positions_to_discriminate(
-                                len(group), current_position, tiebreaker_limit
-                            )
-                        ),
-                        "posti_in_palio": SpareggioService.posti_in_palio(
-                            len(group), current_position, tiebreaker_limit
-                        ),
+                        "user_id": c.user_id,
+                        "username": user.username if user else f"User {c.user_id}",
+                        "current_ssr_score": ssr_scores.get(
+                            c.user_id
+                        ),  # None if not entered
                     }
                 )
 
-            current_position += len(group)
-
-            # Stop if we've passed the tiebreaker position limit
-            if current_position > tiebreaker_limit:
-                break
+            all_groups.append(
+                {
+                    "position": current_position,
+                    "rack_totali": rack_count,
+                    "players": players,
+                    "needs_distinct_top": (
+                        SpareggioService.positions_to_discriminate(
+                            len(group), current_position, tiebreaker_limit
+                        )
+                    ),
+                    "posti_in_palio": SpareggioService.posti_in_palio(
+                        len(group), current_position, tiebreaker_limit
+                    ),
+                }
+            )
 
         return all_groups
 
@@ -851,25 +853,6 @@ class SpareggioService:
         # Expire all to ensure we get fresh data from DB
         db.session.expire_all()
 
-        # Get all round classifications.
-        # `order_by(position)` non è cosmetico: il sort qui sotto è stabile e
-        # non ha criteri oltre lo SSR, quindi i parimerito che lo SSR non
-        # risolve (o le gare con tiebreaker disabilitato) ereditano l'ordine di
-        # questa lista. Senza order_by sarebbe l'ordine di rowid, cioè le
-        # posizioni di quando le righe furono create la prima volta, e il
-        # parimerito risolto per posizione di partenza andrebbe perso proprio
-        # nella classifica finale.
-        round_classifications = (
-            db.session.query(RoundClassification)
-            .filter_by(gara_id=gara_id, round_number=final_round)
-            .order_by(RoundClassification.position)
-            .all()
-        )
-
-        # Build a map for quick lookup
-        round_class_map = {rc.user_id: rc for rc in round_classifications}
-
-        # Get existing gara classifications (with SSR scores)
         existing_gara_class = {
             gc.user_id: gc
             for gc in db.session.query(GaraClassification)
@@ -877,109 +860,81 @@ class SpareggioService:
             .all()
         }
 
-        # Build combined data for sorting
-        player_data = []
-        for rc in round_classifications:
-            gc = existing_gara_class.get(rc.user_id)
-            # SSR score: None means not entered, treat as -1 for sorting (lowest)
-            ssr_score = (
-                gc.spot_shot_wins if gc and gc.spot_shot_wins is not None else -1
-            )
-            player_data.append(
-                {
-                    "user_id": rc.user_id,
-                    # Criterio di classifica della gara: totale rack se RACK,
-                    # differenza altrove. La scelta è dentro
-                    # `ranking_rack_value`, unico punto che conosce la
-                    # configurazione.
-                    "rack_totali": rc.ranking_rack_value,
-                    # Il totale vero, che è cosa diversa dal valore di
-                    # classifica: serve solo a scrivere `racks_won`.
-                    "racks_total": rc.total_racks_value,
-                    "rack_difference": rc.rack_difference or 0,
-                    "ssr_score": ssr_score,
-                    "matches_won": rc.matches_won,
-                }
-            )
-
-        # La chiave di MERITO dipende dal classification_system, coerente
-        # con _group_by_classification (che definisce quali giocatori sono a
-        # pari merito). Lo SSR è il tiebreaker DECISIVO entro gruppi a pari
-        # merito, quindi va sempre per ultimo.
-        # - RACK: (rack totali DESC, ssr_score DESC)
-        # - WINS / POSITION (default): (matches_won DESC, rack_difference DESC,
-        #   ssr_score DESC). Senza matches_won il vincitore reale per vittorie
-        #   veniva scavalcato (bug high).
-        # -1 (SSR non inserito) ordina per ultimo a pari chiave primaria.
-        classification_system = (gara.classification_system or "WINS").upper()
-        merit_key: Callable[[Dict], Tuple[int, ...]] = (
-            (lambda x: (-x["rack_totali"], -x["ssr_score"]))
-            if classification_system == "RACK"
-            else (lambda x: (-x["matches_won"], -x["rack_totali"], -x["ssr_score"]))
-        )
-
         # POSITION: la classifica la dà il tabellone, non i totali. Chi è
-        # uscito allo stesso turno condivide la banda e quindi la chiave, così
-        # `assign_shared_positions` gli assegna la stessa posizione — che è
-        # esattamente il risultato voluto, non un pareggio da sciogliere.
-        # In produzione la classifica finale passa da qui, non da
-        # `calculate_gara_classification`.
+        # uscito allo stesso turno condivide la banda e quindi la posizione —
+        # che è esattamente il risultato voluto, non un pareggio da sciogliere
+        # (ADR-040). Tutti gli altri sistemi passano dalla catena di gara
+        # (ADR-078): chi resta pari dopo la catena condivide la posizione.
+        classification_system = (gara.classification_system or "WINS").upper()
+        fasce: Optional[List[Tuple[int, List]]] = None
         if classification_system == "POSITION":
-            bracket = bracket_positions(gara)
-            if bracket:
-                for data in player_data:
-                    data["bracket_position"] = bracket.get(
-                        data["user_id"], NO_BRACKET_POSITION
-                    )
-                merit_key = lambda x: (x["bracket_position"],)  # noqa: E731
-            else:
-                # Gara POSITION senza tabellone persistito: meglio l'ordine
-                # per vittorie di una classifica tutta a pari merito.
-                logger.warning(
-                    "Gara %s è POSITION ma non ha un tabellone persistito: "
-                    "posizioni finali calcolate per vittorie",
-                    gara_id,
-                )
+            fasce = SpareggioService._fasce_del_tabellone(gara, final_round)
+        if fasce is None:
+            fasce = SpareggioService._fasce(gara)
 
         # A pari merito l'ordine di ELENCAZIONE è quello di estrazione, non la
         # posizione di partenza né il rowid: è l'unico criterio che il
-        # giocatore vede e riconosce ("Ordine sorteggio"). Resta fuori dalla
-        # chiave di merito, quindi non separa le posizioni (issue #67).
+        # giocatore vede e riconosce ("Ordine sorteggio"). Non separa le
+        # posizioni (issue #67).
         draw_order = SpareggioService.draw_order_map(gara_id)
         no_draw_order = 10**6
-        player_data.sort(
-            key=lambda x: (
-                merit_key(x),
-                draw_order.get(x["user_id"], no_draw_order),
-                x["user_id"],
+
+        for position, righe in fasce:
+            righe = sorted(
+                righe,
+                key=lambda rc: (draw_order.get(rc.user_id, no_draw_order), rc.user_id),
             )
-        )
-
-        # Update/create GaraClassification and RoundClassification with
-        # correct positions. Chi condivide la chiave di merito condivide la
-        # posizione (1, 2, 2, 4): prima erano sempre progressive e due
-        # giocatori a pari punti, che nessuno spareggio doveva separare,
-        # comparivano come 7° e 8° (issue #67).
-        for position, data in SpareggioService.assign_shared_positions(
-            player_data, merit_key
-        ):
-            gara_class = existing_gara_class.get(data["user_id"])
-
-            if not gara_class:
-                gara_class = GaraClassification(
-                    gara_id=gara_id,
-                    user_id=data["user_id"],
-                    racks_won=data["racks_total"],
-                    rack_difference=data["rack_difference"],
-                    matches_won=data["matches_won"],
-                )
-                db.session.add(gara_class)
-
-            gara_class.position = position
-
-            # Also update RoundClassification position so UI shows correct ordering
-            round_class = round_class_map.get(data["user_id"])
-            if round_class:
+            for round_class in righe:
+                gara_class = existing_gara_class.get(round_class.user_id)
+                if not gara_class:
+                    gara_class = GaraClassification(
+                        gara_id=gara_id,
+                        user_id=round_class.user_id,
+                        # `total_racks_value`, non `ranking_rack_value`: qui si
+                        # **persiste** un totale.
+                        racks_won=round_class.total_racks_value,
+                        rack_difference=round_class.rack_difference or 0,
+                        matches_won=round_class.matches_won,
+                    )
+                    db.session.add(gara_class)
+                gara_class.position = position
+                # Anche la classifica di turno, perché è quella che la pagina
+                # mostra.
                 round_class.position = position
 
         return True, "Classifica finale aggiornata"
+
+    @staticmethod
+    def _fasce_del_tabellone(
+        gara: Gara, final_round: int
+    ) -> Optional[List[Tuple[int, List]]]:
+        """Le fasce del sistema POSITION: la banda del tabellone (ADR-040).
+
+        None se la gara non ha un tabellone persistito: allora si ordina per
+        vittorie con la catena, che è meglio di una classifica tutta a pari.
+        """
+        bracket = bracket_positions(gara)
+        if not bracket:
+            logger.warning(
+                "Gara %s è POSITION ma non ha un tabellone persistito: "
+                "posizioni finali calcolate per vittorie",
+                gara.id,
+            )
+            return None
+        righe = (
+            db.session.query(RoundClassification)
+            .filter_by(gara_id=gara.id, round_number=final_round)
+            .order_by(RoundClassification.position)
+            .all()
+        )
+        per_banda: Dict[int, List] = {}
+        for rc in righe:
+            per_banda.setdefault(
+                bracket.get(rc.user_id, NO_BRACKET_POSITION), []
+            ).append(rc)
+        fasce: List[Tuple[int, List]] = []
+        posizione = 1
+        for banda in sorted(per_banda):
+            fasce.append((posizione, per_banda[banda]))
+            posizione += len(per_banda[banda])
+        return fasce

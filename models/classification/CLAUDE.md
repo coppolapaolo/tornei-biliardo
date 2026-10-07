@@ -133,24 +133,24 @@ partite: una regola nuova della classifica generale si scrive in
 
 ---
 
-## Tiebreaker Resolution
+## Tiebreaker Resolution: la catena (ADR-078)
 
-Tiebreaker order depends on strategy; the source of truth is each strategy's
-`get_sort_key` in `strategies/round_strategies.py` and `gara_strategies.py`.
+Un motore solo, `ordinamento.py` (puro): criterio principale del sistema,
+poi la **catena** applicata a gruppi. Le catene e gli scontri si leggono dalla
+gara o dal campionato in `catene.py`. Tre classifiche, tre catene:
 
-### Random Strategy (`random_round`)
-1. Total racks won
-2. **SSR (Spot Shot Rally)** - loaded from `GaraClassification.spot_shot_wins`
-3. Rack difference (racks won - racks lost)
-4. Previous position
-5. Player ID (stability)
+- **turno** (`round_strategies.py`): WINS differenza → posizione precedente →
+  sorteggio; RACK posizione precedente → sorteggio. Ordine sempre completo.
+  Lo SSR non c'è: si gioca a gara finita.
+- **gara** (`SpareggioService.apply_final_positions` → `_fasce`, e
+  `gara_strategies.py` per i ricalcoli): WINS differenza → SSR fino al N°;
+  RACK SSR fino al N°. Chi resta pari condivide la posizione.
+- **campionato** (`TournamentStatisticsService._sort_and_rank_players`):
+  differenza (WINS) → SSR somma → posizione dopo la gara precedente →
+  sorteggio. Ordine sempre completo.
 
-### Amalfi Strategy
-- `amalfi_round`: matches won → rack difference → previous position → player ID
-- `amalfi_gara`: matches won → rack difference → spot shot wins; player ID is
-  deliberately left out, so real ties trigger the spot shot rally
-
----
+Il sorteggio è un hash del seme (`draw_seed` della gara, id del campionato):
+mai l'id del giocatore. POSITION non passa dal motore (ADR-040).
 
 ## Do Not
 
@@ -158,6 +158,7 @@ Tiebreaker order depends on strategy; the source of truth is each strategy's
 - **Do not forget to calculate after round completion** - Matchmaking needs updated classification
 - **Do not query PlayerEncounter without gara_id** - Always scope to gara
 - **Do not call `db.session.commit()`** - Services use `@transactional`
+- **Do not sort a WINS/RACK classification with your own key** - Use `ordinamento.ordina` (ADR-078)
 - **Do not compute the campionato standings anywhere else** - `classifica_generale` is the only source; rows are its copy (ADR-073)
 
 ---

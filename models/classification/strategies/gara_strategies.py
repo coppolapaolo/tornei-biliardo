@@ -2,11 +2,23 @@
 Module: models/classification/strategies/gara_strategies.py
 Purpose: Classification strategies for final gara ranking
 Data Structures: AmalfiGaraClassificationStrategy, RandomGaraClassificationStrategy
-Dependencies: typing, .base
+Dependencies: typing, .base, ..ordinamento
+
+La classifica finale di gara ordina col motore unico della catena (ADR-078):
+principale del sistema, poi la catena di gara. Chi resta pari **condivide la
+posizione** (1, 2, 2, 4): l'id del giocatore non entra mai, perché separare
+due pari merito per ordine di registrazione sarebbe inventare un risultato —
+e nasconderebbe proprio i pari che devono far scattare lo spareggio SSR.
+
+La classifica mostrata in pagina la scrive `SpareggioService.apply_final_positions`
+con la stessa catena; queste strategie servono ai ricalcoli di
+`StrategyBasedClassificationService.calculate_gara_classification`.
 """
 
 from typing import Sequence, Dict, Any, Optional, Tuple
 
+from ...status_enum import ClassificationSystem
+from ..ordinamento import Livello, normalizza_catena, ssr_della_catena
 from .base import (
     ClassificationStrategy,
     ClassificationScope,
@@ -15,189 +27,91 @@ from .base import (
 )
 
 
-class AmalfiGaraClassificationStrategy(ClassificationStrategy):
-    """Final Amalfi gara classification strategy.
+class _GaraConCatena(ClassificationStrategy):
+    """Classifica finale: principale del sistema, poi la catena di gara."""
 
-    Takes the final round classification and resolves any ties using
-    spot shot rally results. The final gara classification determines:
-    - Prize positions
-    - Campionato points (if part of a campionato)
+    scope = ClassificationScope.GARA
+    sistema: ClassificationSystem = ClassificationSystem.WINS
 
-    Composition: final_round_classification + spot_shot_results → final_ranking
+    def get_sort_key(self, score: PlayerScore) -> Tuple[Any, ...]:
+        """La chiave della catena di default, senza l'id (vedi il modulo)."""
+        if self.sistema is ClassificationSystem.RACK:
+            return (-score.racks_won, -score.spot_shot_wins)
+        return (-score.matches_won, -score.rack_difference, -score.spot_shot_wins)
+
+    def calculate(
+        self,
+        scores: Sequence[PlayerScore],
+        previous_classification: Optional[ClassificationResult] = None,
+        context: Optional[Dict[str, Any]] = None,
+    ) -> ClassificationResult:
+        """La classifica finale della gara.
+
+        Args:
+            scores: ignorati; i numeri vengono dall'ultimo turno
+            previous_classification: la classifica dell'ultimo turno
+                (obbligatoria)
+            context: ``spot_shot_results`` (i punteggi dello spareggio),
+                ``tiebreaker_until_position`` (il posto dello spareggio nella
+                catena di default), ``catena`` (la catena di gara scelta)
+        """
+        if previous_classification is None:
+            raise ValueError(f"{self.name} requires final round classification")
+
+        context = dict(context or {})
+        spot_shot_results = context.get("spot_shot_results") or {}
+        until_position = context.get("tiebreaker_until_position")
+        catena = context.get("catena")
+        if catena is not None:
+            catena = normalizza_catena(catena, Livello.GARA, self.sistema)
+
+        entries, pari = self._ordina_con_la_catena(
+            [e.score for e in previous_classification.entries],
+            self.sistema,
+            Livello.GARA,
+            context,
+            ssr=spot_shot_results,
+            ssr_fino_al=(
+                until_position
+                if until_position is not None
+                else self.DEFAULT_TIEBREAKER_UNTIL_POSITION
+            ),
+        )
+        con_ssr = catena is None or ssr_della_catena(catena) is not None
+        return ClassificationResult(
+            entries=tuple(entries),
+            scope=self.scope,
+            has_ties=pari,
+            requires_tiebreaker=pari and con_ssr and not spot_shot_results,
+            metadata={
+                "strategy": self.name,
+                "tiebreaker_applied": bool(spot_shot_results),
+            },
+        )
+
+
+class AmalfiGaraClassificationStrategy(_GaraConCatena):
+    """Classifica finale a vittorie.
+
+    Default: vittorie → differenza rack → spareggio SSR fino al N° posto.
     """
 
     name = "amalfi_gara"
     display_name = "Amalfi Gara Final"
-    description = "Final round classification with spot shot tiebreaker"
-    scope = ClassificationScope.GARA
-
-    def get_sort_key(self, score: PlayerScore) -> Tuple[Any, ...]:
-        """Sort key includes spot shot wins for tiebreaking.
-
-        player_id intenzionalmente escluso: due giocatori altrimenti parimerito
-        DEVONO ricevere la stessa chiave perché `_build_entries_with_ties`
-        rilevi `has_ties=True` e SpareggioService possa attivare lo spareggio.
-        """
-        return (
-            -score.matches_won,
-            -score.rack_difference,
-            -score.spot_shot_wins,  # Tiebreaker
-        )
-
-    def calculate(
-        self,
-        scores: Sequence[PlayerScore],
-        previous_classification: Optional[ClassificationResult] = None,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> ClassificationResult:
-        """Calculate final Amalfi gara classification.
-
-        For Amalfi, the final gara classification is typically the last round's
-        classification, with ties resolved by spot shot rally.
-
-        Args:
-            scores: Final scores (can be empty if using previous_classification)
-            previous_classification: Final round classification (required)
-            context: Should contain 'spot_shot_results' dict if ties need resolution
-
-        Returns:
-            ClassificationResult with resolved positions
-        """
-        if previous_classification is None:
-            raise ValueError("Amalfi gara requires final round classification")
-
-        # Get spot shot results for tiebreaking
-        spot_shot_results = context.get("spot_shot_results") if context else None
-        until_position = context.get("tiebreaker_until_position") if context else None
-
-        # Ricostruisci entries usando il sort key di GARA (senza player_id, vedi
-        # `get_sort_key`) per rilevare ties che il round strategy ha nascosto
-        # includendo player_id. Bug 4 produzione 2026-05-20: senza questo, due
-        # giocatori parimerito ricevono position diverse e SSR non scatta.
-        rebuilt_scores = sorted(
-            (e.score for e in previous_classification.entries),
-            key=self.get_sort_key,
-        )
-        rebuilt_entries, rebuilt_has_ties = self._build_entries_with_ties(
-            rebuilt_scores
-        )
-
-        if not rebuilt_has_ties or not spot_shot_results:
-            return ClassificationResult(
-                entries=tuple(rebuilt_entries),
-                scope=self.scope,
-                has_ties=rebuilt_has_ties,
-                requires_tiebreaker=rebuilt_has_ties and not spot_shot_results,
-                metadata={
-                    "strategy": self.name,
-                    "tiebreaker_applied": False,
-                },
-            )
-
-        # Resolve ties using spot shot results
-        resolved_entries = self._resolve_ties_with_spot_shot(
-            tuple(rebuilt_entries), spot_shot_results, until_position
-        )
-
-        # Non tutti i pari merito sono spariti: oltre la soglia restano, e a
-        # SSR uguale pure. Dichiarare `has_ties=False` mentirebbe a chi legge.
-        pari_rimasti = any(e.tied_with for e in resolved_entries)
-
-        return ClassificationResult(
-            entries=tuple(resolved_entries),
-            scope=self.scope,
-            has_ties=pari_rimasti,
-            requires_tiebreaker=False,
-            metadata={
-                "strategy": self.name,
-                "tiebreaker_applied": True,
-            },
-        )
+    description = "Matches won, then the gara tiebreak chain"
+    sistema = ClassificationSystem.WINS
 
 
-class RandomGaraClassificationStrategy(ClassificationStrategy):
-    """Final Random gara classification strategy.
+class RandomGaraClassificationStrategy(_GaraConCatena):
+    """Classifica finale a rack.
 
-    Similar to Amalfi but with Random-specific ranking criteria.
-    Total racks won is primary, with spot shot for ties.
+    Default: rack vinti → spareggio SSR fino al N° posto.
     """
 
     name = "random_gara"
     display_name = "Random Gara Final"
-    description = "Total racks with spot shot tiebreaker"
-    scope = ClassificationScope.GARA
+    description = "Total racks, then the gara tiebreak chain"
+    sistema = ClassificationSystem.RACK
 
-    def get_sort_key(self, score: PlayerScore) -> Tuple[Any, ...]:
-        """Sort key: racks_won DESC, spot_shot DESC.
 
-        player_id intenzionalmente escluso: vedi nota in AmalfiGara.
-        """
-        return (
-            -score.racks_won,
-            -score.spot_shot_wins,
-        )
-
-    def calculate(
-        self,
-        scores: Sequence[PlayerScore],
-        previous_classification: Optional[ClassificationResult] = None,
-        context: Optional[Dict[str, Any]] = None,
-    ) -> ClassificationResult:
-        """Calculate final Random gara classification.
-
-        Args:
-            scores: Final scores with spot_shot_wins populated
-            previous_classification: Final round classification
-            context: Should contain 'spot_shot_results' if needed
-
-        Returns:
-            ClassificationResult with resolved positions
-        """
-        if previous_classification is None:
-            raise ValueError("Random gara requires final round classification")
-
-        spot_shot_results = context.get("spot_shot_results") if context else None
-        until_position = context.get("tiebreaker_until_position") if context else None
-
-        # Vedi nota in AmalfiGara.calculate: ricostruisci entries usando il
-        # sort key di gara per rilevare i parimerito che il round strategy
-        # nasconde tramite player_id nel sort key.
-        rebuilt_scores = sorted(
-            (e.score for e in previous_classification.entries),
-            key=self.get_sort_key,
-        )
-        rebuilt_entries, rebuilt_has_ties = self._build_entries_with_ties(
-            rebuilt_scores
-        )
-
-        if not rebuilt_has_ties or not spot_shot_results:
-            return ClassificationResult(
-                entries=tuple(rebuilt_entries),
-                scope=self.scope,
-                has_ties=rebuilt_has_ties,
-                requires_tiebreaker=rebuilt_has_ties and not spot_shot_results,
-                metadata={
-                    "strategy": self.name,
-                    "tiebreaker_applied": False,
-                },
-            )
-
-        # Use parent class resolve method reapplied
-        resolved_entries = self._resolve_ties_with_spot_shot(
-            tuple(rebuilt_entries), spot_shot_results, until_position
-        )
-
-        # Non tutti i pari merito sono spariti: oltre la soglia restano, e a
-        # SSR uguale pure. Dichiarare `has_ties=False` mentirebbe a chi legge.
-        pari_rimasti = any(e.tied_with for e in resolved_entries)
-
-        return ClassificationResult(
-            entries=tuple(resolved_entries),
-            scope=self.scope,
-            has_ties=pari_rimasti,
-            requires_tiebreaker=False,
-            metadata={
-                "strategy": self.name,
-                "tiebreaker_applied": True,
-            },
-        )
+__all__ = ["AmalfiGaraClassificationStrategy", "RandomGaraClassificationStrategy"]
