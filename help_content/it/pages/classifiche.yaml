@@ -92,33 +92,40 @@ blocks:
 
   - type: text
     text: >-
-      Capita spesso che due giocatori chiudano identici. Il direttore decide
-      alla creazione **fino a che posizione** vale la pena scioglierli: di
-      norma il podio, perché sul quinto e sesto posto nessuno litiga.
+      Capita spesso che due giocatori chiudano identici. Fra chi è pari decide
+      una **catena di criteri**, applicati uno dopo l'altro: per esempio lo
+      scontro diretto, poi la differenza triangoli, poi uno spareggio SSR fino
+      al 3° posto. La catena la compone il direttore, e la frase che ne viene
+      fuori («A pari vittorie conta …») si legge nella pagina della gara e nel
+      suo regolamento. Come si compone: [Gli spareggi di fine
+      gara](/aiuto/organizzare/spareggi).
 
   - type: options
-    title: "Come si scioglie un pari merito"
+    title: "Tre classifiche, tre catene"
     items:
-      - name: "Scontro diretto"
+      - name: "Classifica di turno"
+        values: "di norma: differenza triangoli → posizione al turno precedente → sorteggio"
         text: >-
-          Se i due si sono già affrontati durante la gara, sta davanti chi ha
-          vinto quella partita. Semplice e non richiede di rigiocare.
-      - name: "Spareggio"
+          Serve agli abbinamenti, quindi non lascia mai pari merito: finisce
+          sempre col sorteggio. Lo spareggio SSR qui non c'è, si gioca a gara
+          finita.
+      - name: "Classifica finale della gara"
+        values: "di norma: differenza triangoli → spareggio SSR fino al 3° posto"
         text: >-
-          Una prova aggiuntiva — di solito lo Spot Shot Rally — che assegna un
-          punteggio: sta davanti chi fa meglio. Vedi [Gli
-          esercizi](/aiuto/giocare/challenge).
-      - name: "Nessuno dei due"
+          Chi resta pari dopo tutti i criteri condivide la posizione, e la
+          successiva viene saltata (1, 2, 2, 4).
+      - name: "Classifica generale del campionato"
+        values: "di norma: differenza triangoli → SSR (somma) → posizione dopo la gara precedente → sorteggio"
         text: >-
-          Fuori dalle posizioni da spareggiare, il pari merito resta: due
-          giocatori occupano la stessa posizione e la successiva viene saltata.
+          La sceglie il campionato, e non lascia pari merito: da lì partono gli
+          inviti ai playoff.
 
   - type: note
     tone: info
     title: "Nelle gare a tabellone non si spareggia"
     text: >-
       Lì il pari merito per banda è il risultato voluto, non un'ambiguità:
-      infatti l'opzione dello spareggio non viene nemmeno chiesta alla
+      infatti la catena dei pari merito non viene nemmeno chiesta alla
       creazione. L'unica eccezione è la **finalina per il terzo posto**, che si
       può prevedere alla creazione e fa giocare il terzo posto ai due
       semifinalisti sconfitti.

@@ -81,7 +81,6 @@ def gara_con_spareggio(app, db_session):
         director_id=direttore.id,
         status=GaraStatus.COMPLETED.value,
         current_round=1,
-        tiebreaker_until_position=3,
         inscription_start=utc_now() - timedelta(days=5),
         inscription_end=utc_now() - timedelta(days=2),
     )

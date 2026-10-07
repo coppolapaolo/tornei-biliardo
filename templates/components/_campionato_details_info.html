@@ -67,6 +67,18 @@
         </div>
         {% endif %}
 
+        {# La classifica generale: come si ordinano i pari merito (ADR-078). #}
+        {% set _pari_generale = frase_spareggi(campionato, 'catena_generale') %}
+        {% if _pari_generale %}
+        <hr class="my-3">
+        <div class="row">
+            <div class="col-12">
+                <strong><i class="fas fa-scale-balanced text-primary"></i> {{ _("Pari merito nella classifica generale") }}:</strong>
+                <span>{{ _pari_generale }}</span>
+            </div>
+        </div>
+        {% endif %}
+
         {# Default Gare Settings #}
         {% set _listino = listino_quote(campionato) %}
         {% if campionato.default_venue or campionato.default_entry_fee or _listino or campionato.default_rounds_count or campionato.default_odd_policy %}

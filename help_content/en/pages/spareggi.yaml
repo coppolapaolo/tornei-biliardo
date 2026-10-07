@@ -4,7 +4,7 @@ kind: approfondimento
 audience: [direttore]
 minutes: 3
 summary: "When two players finish level in the positions that matter: how to decide who is ahead, and how to run the tie-break."
-screens: [admin.competition.gara_detail]
+screens: [admin.competition.gara_detail, admin.competition.create_gara_standalone, admin.competition.edit_gara]
 related: [classifiche, challenge, condurre_la_gara]
 
 blocks:
@@ -20,9 +20,10 @@ blocks:
 
   - type: text
     text: >-
-      When creating the competition you set **up to which position** it is worth
-      settling level finishes. The proposed value is the podium: over fifth and
-      sixth place, as a rule, nobody argues.
+      When creating the competition you set **how** level finishes are
+      settled, and **up to which position** a tie-break is worth playing. The
+      proposed value is the podium: over fifth and sixth place, as a rule,
+      nobody argues.
 
   - type: note
     tone: warning
@@ -33,21 +34,73 @@ blocks:
       rule of the game.
 
   - type: heading
+    id: catena
+    title: "The chain of tie criteria"
+
+  - type: text
+    text: >-
+      In the competition form, under **Ties**, there is a list of criteria in
+      a row. At the top, with the padlock, the main criterion: wins or racks
+      won, depending on the standings system. Below it, the criteria that
+      decide between tied players, one after the other: if the first is not
+      enough, the second applies, and so on.
+
+  - type: steps
+    items:
+      - title: "Move a criterion"
+        text: >-
+          The up and down arrows move it before or after the others. The order
+          is the order in which they apply.
+      - title: "Remove or add"
+        text: >-
+          The × removes a criterion. Below the list are the ones you can still
+          add: tap a name to put it in the row.
+      - title: "Read the sentence"
+        text: >-
+          Below is the sentence that goes into the rules, for example «With the
+          same wins the head to head counts, then the rack difference, then the
+          SSR tiebreaker up to place 3». If the sentence says what you meant,
+          the chain is right.
+
+  - type: text
+    text: >-
+      There are two chains. The **round standings** chain orders the players
+      after each round, and pairings come from it: it always ends with the
+      draw, because two players cannot stay level when deciding who plays whom.
+      The **final standings** chain may leave ties: players still level after
+      every criterion share the place.
+
+  - type: heading
     id: come
-    title: "The two ways of settling a level finish"
+    title: "The criteria"
 
   - type: options
     items:
       - name: "Head to head"
         text: >-
-          If the two met during the competition, whoever won that match finishes
-          ahead. Nothing has to be replayed, and it is the easiest to explain.
-      - name: "Tie-break"
-        values: "Spot Shot Rally"
+          What counts is how the matches between the tied players went. If they
+          met, whoever won finishes ahead. Nothing has to be replayed, and it is
+          the easiest to explain.
+      - name: "Rack difference"
+        text: "Racks won minus racks lost."
+      - name: "Racks won"
+        text: "Total racks won. Not offered when it is already the main criterion."
+      - name: "Wins"
+        text: "Matches won. Not offered when it is already the main criterion."
+      - name: "SSR tiebreaker"
+        values: "up to 3rd place (change it with − and +)"
         text: >-
-          A skill drill with a score: the better score finishes ahead. This is
-          the method for when the two never met, or when the head to head ended
-          level. See [Challenges](/aiuto/giocare/challenge).
+          A skill drill with a score, played after the competition: the better
+          score finishes ahead. It only applies up to the place you set, and
+          only in the final standings. See [Challenges](/aiuto/giocare/challenge).
+      - name: "Previous position"
+        text: >-
+          Whoever was ahead in the previous round finishes ahead. In the first
+          round the starting order counts.
+      - name: "Draw"
+        text: >-
+          Always last. It is a fixed draw, made when the competition starts: the
+          standings do not change every time you look.
 
   - type: heading
     id: condurlo
@@ -97,12 +150,14 @@ blocks:
         to separate the two third places, the way to do it is the **3rd/4th
         place final**, planned at creation.
       - "**Outside the positions you specified**: level finishes stand, two players share the position and the next one is skipped."
-      - "**If tie-breaks are switched off**: the standings keep the level finishes as they are."
+      - "**If the chain has no SSR tiebreaker**: the standings keep the level finishes the other criteria do not settle."
 
   - type: faq
     items:
       - q: "The competition will not close and I cannot see why."
         a: "Almost always there is a tie-break waiting: the band at the top of the competition page says so. If you do not want to play it, it can be cancelled and the standings keep the level finish."
+      - q: "Can I change the chain once the competition has started?"
+        a: "Yes. The final standings chain can be changed until the tie-break has started. The round standings chain applies from the next round: the standings of rounds already started stay as they were. The change stays in the competition's history."
       - q: "Can I correct a result while a tie-break is active?"
         a: "No. The tie-break has to be cancelled first: it implicitly certifies the competition's results."
       - q: "How many players can be in a tie-break?"

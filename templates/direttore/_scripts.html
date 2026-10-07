@@ -12,7 +12,7 @@
     "gara": {
       "id": {{ gara.id }},
       "number": {{ gara.number }},
-      "tiebreakerUntilPosition": {{ gara.tiebreaker_until_position or 3 }},
+      "tiebreakerUntilPosition": {{ ssr_fino_al(gara) }},
       "campionatoId": {{ gara.campionato_id | tojson }},
       "senzaCategoria": {{ (iscritti_senza_categoria or 0) | tojson }},
       "discipline": {{ gara.discipline | tojson }},
@@ -41,7 +41,7 @@
       "confirmCancelFirstRound": {{ _("Sei sicuro di voler cancellare l'avvio del primo turno? Tutte le partite del primo turno verranno eliminate e la gara tornerà allo stato di iscrizioni.") | tojson }},
       "confirmCancelCurrentRound": {{ _("Sei sicuro di voler cancellare l'avvio del turno corrente? Tutte le partite del turno verranno eliminate e si tornerà al turno precedente.") | tojson }},
       "confirmTerminate": {{ _("Sei sicuro di voler terminare la gara?\n\nDopo la conferma, i risultati saranno definitivi e non sarà più possibile modificarli.") | tojson }},
-      "confirmStartSsr": {{ _("Avviare la fase di spareggio (SSR)?\n\nDovrai inserire i punteggi per risolvere i parimerito nelle prime %(pos)s posizioni.", pos=gara.tiebreaker_until_position or 3) | tojson }},
+      "confirmStartSsr": {{ _("Avviare la fase di spareggio (SSR)?\n\nDovrai inserire i punteggi per risolvere i parimerito nelle prime %(pos)s posizioni.", pos=ssr_fino_al(gara)) | tojson }},
       "confirmCancelSsr": {{ _("Annullare la fase di spareggio (SSR)?\n\nI punteggi SSR già inseriti verranno azzerati e la gara tornerà in gioco, così potrai correggere i risultati.") | tojson }},
       "errorSsrCancel": {{ _("Errore durante l'annullamento della fase SSR") | tojson }},
       "confirmResetRound": {{ _("Sei sicuro di voler resettare l'ultimo turno?\n\nTutti i risultati del turno verranno azzerati e le partite torneranno in stato 'In Attesa'.\n\nQuesta azione è IRREVERSIBILE!") | tojson }},

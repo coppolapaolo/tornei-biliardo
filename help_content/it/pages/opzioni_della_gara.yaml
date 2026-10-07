@@ -184,14 +184,16 @@ blocks:
           **posizione** e non c'è altro da scegliere. Vedi [Come si calcolano
           le classifiche](/aiuto/approfondimenti/classifiche).
         hint: gara.classifica
-      - name: "Spareggio"
-        values: "attivo fino al 3° posto"
+      - name: "Pari merito"
+        values: "due catene: classifica di turno e classifica finale"
         text: >-
-          Se e fino a che posizione risolvere i pari merito con una prova
-          aggiuntiva. Dal podio in giù, di norma, i pari merito si lasciano
-          tali. Sui tabelloni non si chiede: lì i pari merito per banda — i due
-          semifinalisti sconfitti, i quattro quartifinalisti — sono il
-          risultato voluto, e nessuno spareggio scatterebbe.
+          Come si ordinano i giocatori a pari merito: una fila di criteri da
+          comporre, con lo spareggio SSR «fino al N° posto» fra quelli della
+          classifica finale. Il valore proposto riproduce le regole di sempre:
+          differenza triangoli, e lo spareggio fino al podio. Vedi [Gli
+          spareggi di fine gara](/aiuto/organizzare/spareggi). Sui tabelloni
+          non si chiede: lì i pari merito per banda — i due semifinalisti
+          sconfitti, i quattro quartifinalisti — sono il risultato voluto.
         hint: gara.spareggio
       - name: "Peso nella classifica"
         values: "1 · solo dentro un campionato"

@@ -228,12 +228,20 @@ hints:
     section: formato
 
   - id: gara.spareggio
-    label: "Spareggio"
-    short: "Fino a che posizione sciogliere i pari merito con una prova aggiuntiva. Di norma il podio. Sui tabelloni non si chiede."
+    label: "Pari merito"
+    short: "In che ordine i criteri sciolgono i pari merito, per la classifica di turno e per quella finale. Sotto, la frase che finisce nel regolamento."
     anchor: gara-spareggio
     screens: [admin.competition.create_gara_standalone]
-    page: classifiche
-    section: pari_merito
+    page: spareggi
+    section: catena
+
+  - id: campionato.spareggi
+    label: "Pari merito"
+    short: "Le due catene proposte a ogni gara e quella della classifica generale. Le gare le ricevono quando nascono, e le possono cambiare."
+    anchor: campionato-spareggi
+    screens: [admin.campionato.wizard_step2, admin.campionato.edit_campionato]
+    page: spareggi
+    section: catena
 
   - id: gara.peso
     label: "Peso nella classifica"

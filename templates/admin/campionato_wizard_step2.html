@@ -186,6 +186,25 @@
       {% include "components/_campo_limite_tempo.html" %}
     </div>
 
+    {# Le catene degli spareggi (ADR-078): due proposte alle gare, una per la
+       classifica generale. Sui campionati a tabellone non si usano (ADR-040). #}
+    {% if classification_system != 'POSITION' %}
+    <div class="c7-card">
+      <h3 class="mb-1" data-help="campionato-spareggi">{{ _("Pari merito") }}</h3>
+      <p class="c7-nota mb-3">{{ _("Come si ordinano i giocatori a pari merito. Le prime due catene sono proposte a ogni gara, che può cambiarle; la terza vale per la classifica generale.") }}</p>
+      {% import "components/_catena_spareggi.html" as catena with context %}
+      {{ catena.editor('default_catena_turno', editor_catena_campionato('turno', sistema=classification_system),
+                       _('Classifica di turno'),
+                       _("Da lì nascono gli abbinamenti: l'ordine è sempre completo, lo chiude il sorteggio.")) }}
+      {{ catena.editor('default_catena_gara', editor_catena_campionato('gara', sistema=classification_system),
+                       _('Classifica finale di ogni gara'),
+                       _('Chi resta pari condivide la posizione. Lo spareggio SSR si gioca a gara finita, fino al posto che scegli.')) }}
+      {{ catena.editor('catena_generale', editor_catena_campionato('campionato', sistema=classification_system),
+                       _('Classifica generale'),
+                       _("Somma le classifiche delle gare. L'ordine è sempre completo: da lì partono gli inviti ai playoff.")) }}
+    </div>
+    {% endif %}
+
     {# Punti per posizione: solo sui campionati a tabellone. Qui il tipo è già
        stato scelto allo step 1, quindi la visibilità si decide server-side. #}
     {% if wizard_data.campionato_type in bracket_minimum_players %}
@@ -207,6 +226,7 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/catena_spareggi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const policySelect = document.getElementById('default_odd_policy');

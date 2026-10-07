@@ -56,6 +56,9 @@ class TournamentService(TournamentStatisticsService):
             "default_anti_rematch",
             "has_handicap",
             "default_time_limit_minutes",
+            "default_catena_turno",
+            "default_catena_gara",
+            "catena_generale",
             # Deprecated but kept for compatibility
             "without_x",
             "final_playoffs",
@@ -116,6 +119,10 @@ class TournamentService(TournamentStatisticsService):
         has_handicap: bool = False,
         # Limite di tempo per partita proposto alle gare (ADR-077). 0 = nessuno.
         default_time_limit_minutes: int = 0,
+        # Le catene degli spareggi (ADR-078): None = il default dell'app.
+        default_catena_turno: Optional[str] = None,
+        default_catena_gara: Optional[str] = None,
+        catena_generale: Optional[str] = None,
         # Come si comincia, e chi apre poi (ADR-056). I default sono il
         # comportamento storico: apre il primo giocatore, tiri di apertura
         # alternati.
@@ -159,6 +166,9 @@ class TournamentService(TournamentStatisticsService):
             default_classification_system=default_classification_system,
             has_handicap=has_handicap,
             default_time_limit_minutes=default_time_limit_minutes,
+            default_catena_turno=default_catena_turno,
+            default_catena_gara=default_catena_gara,
+            catena_generale=catena_generale,
             default_start_rule=default_start_rule,
             default_break_rule=default_break_rule,
             position_points=position_points,
@@ -238,6 +248,7 @@ class TournamentService(TournamentStatisticsService):
                 setattr(campionato, field, value)
 
         if cambia_sistema:
+            self._adegua_catene_del_campionato(campionato, nuovo_sistema, prima, kwargs)
             self._propaga_sistema(campionato, autore=autore, motivo=motivo)
 
         cambi = {campo: (prima[campo], getattr(campionato, campo)) for campo in prima}
@@ -251,10 +262,16 @@ class TournamentService(TournamentStatisticsService):
         )
         from models.storia.service import serializza
 
-        punti = cambi.pop("position_points", None)
-        punti_cambiati = punti is not None and serializza(punti[0]) != serializza(
-            punti[1]
-        )
+        # Lo stesso vale per la catena della classifica generale (ADR-078):
+        # riordina i pari merito di gare già giocate.
+        ricalcolo = {
+            campo: cambi.pop(campo)
+            for campo in ("position_points", "catena_generale")
+            if campo in cambi
+            and serializza(cambi[campo][0]) != serializza(cambi[campo][1])
+        }
+        for campo in ("position_points", "catena_generale"):
+            cambi.pop(campo, None)
         StoriaModificheService.registra(
             cambi=cambi,
             campionato_id=campionato.id,
@@ -262,10 +279,9 @@ class TournamentService(TournamentStatisticsService):
             motivo=motivo,
             provenienza=SettingsChangeSource.CAMPIONATO,
         )
-        if punti_cambiati:
-            assert punti is not None
+        if ricalcolo:
             StoriaModificheService.registra(
-                cambi={"position_points": punti},
+                cambi=ricalcolo,
                 campionato_id=campionato.id,
                 autore=autore,
                 motivo=motivo,
@@ -280,6 +296,36 @@ class TournamentService(TournamentStatisticsService):
 
         campionato.updated_at = utc_now()
         return campionato
+
+    @staticmethod
+    def _adegua_catene_del_campionato(
+        campionato: Campionato, nuovo_sistema: Any, prima: Dict, kwargs: Dict
+    ) -> None:
+        """Cambiato il sistema, le catene di default del campionato lo seguono.
+
+        Solo quelle che il modulo non ha mandato: le altre le ha già decise
+        il direttore. Il cambio finisce nella storia con gli altri.
+        """
+        from models.classification.catene import adegua_al_sistema
+        from models.classification.ordinamento import Livello
+        from models.status_enum import ClassificationSystem
+
+        vecchio = ClassificationSystem.resolve(
+            prima.get("default_classification_system")
+        )
+        nuovo = ClassificationSystem.resolve(nuovo_sistema)
+        for campo, livello in (
+            ("default_catena_turno", Livello.TURNO),
+            ("default_catena_gara", Livello.GARA),
+            ("catena_generale", Livello.CAMPIONATO),
+        ):
+            if campo in kwargs:
+                continue
+            attuale = getattr(campionato, campo)
+            adeguata = adegua_al_sistema(attuale, livello, vecchio, nuovo)
+            if adeguata is not None and adeguata != attuale:
+                prima[campo] = attuale
+                setattr(campionato, campo, adeguata)
 
     @staticmethod
     def _gare_col_sistema_del_campionato(campionato: Campionato) -> list:
@@ -339,14 +385,32 @@ class TournamentService(TournamentStatisticsService):
         from models.storia.models import SettingsChangeSource
         from models.storia.service import StoriaModificheService
 
+        from models.classification.catene import COLONNA_DELLA_GARA, adegua_al_sistema
+        from models.status_enum import ClassificationSystem
+
         sistema = campionato.classification_system.value
         for gara in cls._gare_col_sistema_del_campionato(campionato):
             vecchio = gara.classification_system
             gara.classification_system = resolve_classification_system(
                 gara.matchmaking_strategy, sistema
             )
+            cambi: Dict[str, Any] = {
+                "classification_system": (vecchio, gara.classification_system)
+            }
+            # Le catene di default seguono il sistema; quelle scelte restano.
+            for livello, campo in COLONNA_DELLA_GARA.items():
+                prima = getattr(gara, campo)
+                nuova = adegua_al_sistema(
+                    prima,
+                    livello,
+                    ClassificationSystem.resolve(vecchio),
+                    ClassificationSystem.resolve(gara.classification_system),
+                )
+                if nuova is not None and nuova != prima:
+                    setattr(gara, campo, nuova)
+                    cambi[campo] = (prima, nuova)
             StoriaModificheService.registra(
-                cambi={"classification_system": (vecchio, gara.classification_system)},
+                cambi=cambi,
                 gara_id=gara.id,
                 autore=autore,
                 motivo=motivo,

@@ -33,6 +33,7 @@ partite (`Scontro`).
 from __future__ import annotations
 
 import hashlib
+import json
 from dataclasses import dataclass
 from enum import Enum
 from typing import (
@@ -82,6 +83,9 @@ class Livello(str, Enum):
 #: podio. Stesso valore del vecchio `tiebreaker_until_position or 3`.
 SSR_FINO_AL_DEFAULT = 3
 
+#: Il posto più lontano fin dove si può chiedere lo spareggio SSR.
+SSR_FINO_AL_MASSIMO = 99
+
 #: Chi non ha una posizione precedente (iscritto dopo, nessuna gara prima)
 #: viene dopo tutti quelli che ce l'hanno. Stessa sentinella di
 #: `seeding_service.NO_SEEDING_POSITION`.
@@ -124,7 +128,9 @@ class Voce:
             fino_al = int(resto)
         except ValueError:
             return None
-        return cls(criterio, fino_al) if fino_al >= 1 else None
+        if not 1 <= fino_al <= SSR_FINO_AL_MASSIMO:
+            return None
+        return cls(criterio, fino_al)
 
 
 Catena = Tuple[Voce, ...]
@@ -140,6 +146,40 @@ def parse_catena(valori: Optional[Iterable[object]]) -> Catena:
 
 def serializza_catena(catena: Iterable[Voce]) -> List[str]:
     return [voce.serializza() for voce in catena]
+
+
+def testo_della_catena(catena: Iterable[Voce]) -> str:
+    """La catena come si salva in colonna: una lista JSON di voci.
+
+    JSON e non una lista separata da virgole perché la catena **vuota** è una
+    scelta («a pari vittorie si resta pari») e deve restare diversa da NULL,
+    che vuol dire «come il campionato»: ``[]`` e NULL nella storia si leggono
+    come due valori diversi. La forma è canonica (stessi separatori sempre),
+    così due catene uguali hanno lo stesso testo e la storia non vede cambi
+    che non ci sono.
+    """
+    return json.dumps(serializza_catena(catena))
+
+
+def catena_dal_testo(testo: object) -> Optional[Catena]:
+    """La catena salvata in ``testo``, o None se non ce n'è una.
+
+    None (o una stringa vuota) vuol dire «nessuna catena scelta qui»: chi
+    legge ripiega sul campionato o sul default. Accetta anche la forma
+    separata da virgole.
+    """
+    if not isinstance(testo, str) or not testo.strip():
+        return None
+    grezzo = testo.strip()
+    if grezzo.startswith("["):
+        try:
+            valori = json.loads(grezzo)
+        except ValueError:
+            return None
+        if not isinstance(valori, list):
+            return None
+        return parse_catena(valori)
+    return parse_catena(v for v in grezzo.split(",") if v.strip())
 
 
 # ── Criterio principale e criteri ammessi ─────────────────────────────────
@@ -525,7 +565,7 @@ NOMI: Dict[Criterio, object] = {
 }
 
 
-def _nella_frase(voce: Voce) -> str:
+def _nella_frase(voce: Voce, livello: Optional[Livello] = None) -> str:
     c = voce.criterio
     if c is Criterio.SCONTRI_DIRETTI:
         return _("lo scontro diretto")
@@ -540,6 +580,10 @@ def _nella_frase(voce: Voce) -> str:
             return _("lo spareggio SSR")
         return _("lo spareggio SSR fino al %(n)s° posto", n=voce.fino_al)
     if c is Criterio.POSIZIONE_PRECEDENTE:
+        if livello is Livello.CAMPIONATO:
+            return _("la posizione dopo la gara precedente")
+        if livello is not None:
+            return _("la posizione al turno precedente")
         return _("la posizione precedente")
     return _("il sorteggio")
 
@@ -550,19 +594,44 @@ def _a_pari(sistema: ClassificationSystem) -> str:
     return _("A pari vittorie")
 
 
-def descrivi_catena(catena: Iterable[Voce], sistema: ClassificationSystem) -> str:
+def descrivi_catena(
+    catena: Iterable[Voce],
+    sistema: ClassificationSystem,
+    livello: Optional[Livello] = None,
+) -> str:
     """La frase del regolamento: «A pari vittorie conta …, poi …, poi …».
 
-    Senza catena: «A pari vittorie i giocatori restano a pari merito.»
+    Senza catena: «A pari vittorie i giocatori restano a pari merito.» Col
+    ``livello`` la posizione precedente dice quale: al turno precedente o
+    dopo la gara precedente.
     """
     voci = list(catena)
     if not voci:
         return _(
             "%(a_pari)s i giocatori restano a pari merito.", a_pari=_a_pari(sistema)
         )
-    parti = [_nella_frase(v) for v in voci]
+    parti = [_nella_frase(v, livello) for v in voci]
     elenco = parti[0] + "".join(_(", poi %(x)s", x=p) for p in parti[1:])
     return _("%(a_pari)s conta %(elenco)s.", a_pari=_a_pari(sistema), elenco=elenco)
+
+
+def nome_della_voce(voce: Voce) -> str:
+    """Il nome di una voce nell'editor e nella storia: «Spareggio SSR fino al 3°»."""
+    if voce.criterio is Criterio.SPAREGGIO_SSR and voce.fino_al is not None:
+        return _("Spareggio SSR fino al %(n)s°", n=voce.fino_al)
+    return str(NOMI[voce.criterio])
+
+
+def elenca_catena(catena: Iterable[Voce]) -> str:
+    """La catena in breve, senza il sistema: «Differenza triangoli → Sorteggio».
+
+    È la forma della storia delle modifiche, che salva la catena senza sapere
+    con quale sistema verrà letta.
+    """
+    voci = list(catena)
+    if not voci:
+        return _("nessun criterio: i pari merito restano tali")
+    return " → ".join(nome_della_voce(v) for v in voci)
 
 
 __all__ = [
@@ -580,7 +649,10 @@ __all__ = [
     "chiave_di_sorteggio",
     "criteri_ammessi",
     "criterio_principale",
+    "catena_dal_testo",
     "descrivi_catena",
+    "elenca_catena",
+    "nome_della_voce",
     "normalizza_catena",
     "ordina",
     "parse_catena",
@@ -589,4 +661,5 @@ __all__ = [
     "seme_della_gara",
     "serializza_catena",
     "ssr_della_catena",
+    "testo_della_catena",
 ]

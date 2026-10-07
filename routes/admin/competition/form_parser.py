@@ -69,7 +69,6 @@ _CAMPI_ASSENTI_NON_SI_TOCCANO = (
     "seeding_rating",
     "first_round_policy",
     "odd_number_policy",
-    "tiebreaker_until_position",
     "rounds_count",
     "min_participants",
     "entry_fee",
@@ -251,11 +250,9 @@ class GaraFormParser:
             data["odd_number_policy"]
         )
 
-        # ── SSR tiebreaker ───────────────────────────────────────
-        data["tiebreaker_enabled"] = request.form.get("tiebreaker_enabled") == "on"
-        data["tiebreaker_until_position"] = int(
-            request.form.get("tiebreaker_until_position", 3)
-        )
+        # ── Catene degli spareggi (ADR-078) ──────────────────────
+        # Assenti dal modulo = non toccare (in creazione: come il campionato).
+        data.update(self._parse_catene(request.form, data["classification_system"]))
 
         # In modifica, un campo che il modulo non manda vuol dire «non
         # toccare», come per chi apre e chi spacca: rimettere il valore
@@ -317,8 +314,8 @@ class GaraFormParser:
         "double_ko_rounds",
         "weight",
         "x_challenge_id",
-        "tiebreaker_enabled",
-        "tiebreaker_until_position",
+        "catena_turno",
+        "catena_gara",
     )
 
     @staticmethod
@@ -335,9 +332,23 @@ class GaraFormParser:
         for campo in GaraFormParser.CAMPI_DEL_MODULO:
             if campo == "available_tables":
                 valori[campo] = serializza(gara.get_available_tables())
+            elif campo in ("catena_turno", "catena_gara"):
+                # L'editor mostra la catena che vale, anche quando la gara non
+                # ne ha una sua: confrontata con quella, salvare senza toccarla
+                # non è un cambio (ADR-078).
+                valori[campo] = GaraFormParser._catena_mostrata(gara, campo)
             else:
                 valori[campo] = serializza(getattr(gara, campo, None))
         return valori
+
+    @staticmethod
+    def _catena_mostrata(gara: Any, campo: str) -> str:
+        from models.classification import catene
+        from models.classification.ordinamento import testo_della_catena
+
+        if campo == "catena_turno":
+            return testo_della_catena(catene.catena_di_turno(gara))
+        return testo_della_catena(catene.catena_di_gara(gara))
 
     @staticmethod
     def campi_cambiati(
@@ -404,17 +415,32 @@ class GaraFormParser:
                 data["x_challenge_id"] = GaraFormParser._parse_x_challenge(
                     data["odd_number_policy"]
                 )
-        # La casella dello spareggio c'è solo se c'è la sua sezione: il posto
-        # fino a cui si spareggia fa da segnale.
-        if "tiebreaker_until_position" in ammessi and form.get(
-            "tiebreaker_until_position"
-        ):
-            data["tiebreaker_enabled"] = form.get("tiebreaker_enabled") == "on"
-            data["tiebreaker_until_position"] = int(form["tiebreaker_until_position"])
+        # Le catene: la catena di turno vale dal turno successivo, quella di
+        # gara finché lo spareggio non è cominciato (campi_modificabili).
+        catene = self._parse_catene(form, gara.classification_system if gara else "")
+        data.update({campo: v for campo, v in catene.items() if campo in ammessi})
         if "weight" in ammessi and gara is not None and gara.campionato_id:
             if form.get("weight", "").strip():
                 data["weight"] = GaraFormParser._parse_weight(self.campionato)
         return data
+
+    @staticmethod
+    def _parse_catene(form: Any, sistema: Any) -> Dict[str, str]:
+        """Le catene degli spareggi dell'editor, quelle che il modulo manda.
+
+        Ogni catena arriva in un campo nascosto (`catena_turno`,
+        `catena_gara`), scritto dall'editor. Si salva ammessa al suo livello e
+        al sistema della gara (`catene.testo_dal_modulo`).
+        """
+        from models.classification.catene import COLONNA_DELLA_GARA, testo_dal_modulo
+        from models.status_enum import ClassificationSystem
+
+        risolto = ClassificationSystem.resolve(sistema)
+        return {
+            campo: testo_dal_modulo(form.get(campo, ""), livello, risolto)
+            for livello, campo in COLONNA_DELLA_GARA.items()
+            if campo in form
+        }
 
     def _parse_time_limit(self) -> Optional[int]:
         """I minuti a disposizione di ogni partita: vuoto vuol dire nessun limite.

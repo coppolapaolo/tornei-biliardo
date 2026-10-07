@@ -249,17 +249,25 @@ Lo **scontro diretto** è un criterio del motore: fra due decide chi ha vinto la
 partita, fra tre o più la mini-classifica fra loro; se non si sono incontrati
 tutti non decide.
 
+Le catene **si configurano** (emendamento del 2026-10-07): la gara ha la
+catena di turno e quella di gara, il campionato le propone alle sue gare e ha
+in più quella della classifica generale. Il direttore le compone nell'editor
+dei moduli di gara e di campionato; il principale non si sceglie, il sorteggio
+è sempre in fondo (e nel turno e nel campionato c'è sempre), lo SSR una volta
+sola e mai nel turno. Le regole complete stanno in SPECIFICHE.md, «Le catene si
+configurano»; il codice in `models/classification/catene.py`.
+
 ### 5.1 Quando si applicano
 
 Lo spareggio si applica alla **fine della gara** per risolvere i parimerito.
 
 ### 5.2 Configurazione posizioni
 
-È configurabile per quali posizioni applicare lo spareggio:
-- **Esempio 1**: Solo podio (posizioni 1-3).
-- **Esempio 2**: Solo posizione 1.
-- **Esempio 3**: Tutte le posizioni.
-- **Default**: Da una certa posizione in poi, i parimerito restano tali.
+Lo spareggio SSR è un criterio della catena di gara, «fino al N° posto»
+(`ssr:N`, di norma 3): oltre quel posto i parimerito restano tali. Toglierlo
+dalla catena vuol dire che la gara non lo prevede. Fino al 2026-10-07 erano
+due campi della gara, `tiebreaker_enabled` e `tiebreaker_until_position`: la
+migration `20261007_catene_degli_spareggi` li ha fusi nella catena.
 
 ### 5.3 Opzioni di spareggio
 

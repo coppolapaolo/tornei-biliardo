@@ -118,8 +118,7 @@ class TestLaPagina:
                 "odd_number_policy": "bye",
                 "x_challenge_id": "",
                 "withdraw_policy": gara.withdraw_policy,
-                "tiebreaker_enabled": "on" if gara.tiebreaker_enabled else "",
-                "tiebreaker_until_position": str(gara.tiebreaker_until_position or 3),
+                "catena_gara": GaraFormParser.valori_attuali(gara)["catena_gara"],
                 "motivo": "Si fa tardi",
             },
         )
@@ -164,10 +163,10 @@ class TestIlServizio:
 
     def test_lo_spareggio_cominciato_si_blocca(self, db_session, direttore):
         gara = _gara_avviata(db_session, direttore)
-        assert "tiebreaker_enabled" not in campi_bloccati(gara)
+        assert "catena_gara" not in campi_bloccati(gara)
         gara.status = GaraStatus.AWAITING_SSR.value
         db_session.commit()
-        assert "tiebreaker_enabled" in campi_bloccati(gara)
+        assert "catena_gara" in campi_bloccati(gara)
 
     def test_a_gara_chiusa_non_si_apre_niente(self, client, db_session, direttore):
         gara = _gara_avviata(db_session, direttore)

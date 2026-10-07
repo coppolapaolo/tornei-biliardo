@@ -96,7 +96,7 @@ def _make_gara(
         classification_system="POSITION",
         first_round_policy="random",
         third_place_match=third_place_match,
-        tiebreaker_enabled=True,
+        catena_gara='["differenza_rack", "ssr:3"]',
     )
     db_session.add(gara)
     db_session.commit()
@@ -228,7 +228,7 @@ class TestSpareggioSpento:
         _play_whole_gara(db_session, gara)
         StateService.complete(gara)
 
-        assert gara.tiebreaker_enabled, "il flag della gara è acceso..."
+        assert "ssr" in gara.catena_gara, "la catena ha lo spareggio..."
         assert not SpareggioService.tiebreakers_apply_to(gara), "...ma POSITION no"
         assert SpareggioService.detect_tiebreakers(gara.id) == []
         assert SpareggioService.get_all_ssr_groups(gara.id) == []
@@ -255,7 +255,6 @@ class TestSpareggioSpento:
             status=GaraStatus.PLAYING.value,
             matchmaking_strategy="random",
             classification_system="WINS",
-            tiebreaker_enabled=True,
         )
         db_session.add(gara)
         db_session.flush()

@@ -489,18 +489,14 @@ class TestChiusuraDellaFinale:
     def test_la_finale_nasce_con_lo_spareggio_acceso(
         self, campionato: CampionatoDriver, campionato_breve
     ):
-        """La finale non eredita tutto, e su un punto diverge senza dirlo.
+        """La finale ha lo spareggio, come le gare del campionato.
 
-        Le gare create dal form arrivano con lo spareggio SSR **spento**
-        (`tiebreaker_enabled` è una casella non spuntata, quindi assente). La
-        gara di playoff non passa da nessun form: `create_playoff_gara`
-        eredita disciplina, distanza, turni, strategia, dispari, sede e quota,
-        e per tutto il resto prende i default del modello — fra cui lo
-        spareggio **acceso**.
-
-        È difendibile (una finale i pari merito li deve sciogliere) ma nessuno
-        l'ha scelto. Questo test tiene ferma la divergenza, così se un domani
-        l'ereditarietà venisse completata la cosa si nota subito.
+        Fino al 2026-10-07 divergevano senza dirlo: le gare create dal form
+        arrivavano con lo spareggio **spento** (una casella non spuntata), la
+        finale — che non passa da nessun form — con quello **acceso** del
+        modello. Ora lo spareggio è un criterio della catena di gara (ADR-078)
+        e ogni gara nasce con la catena che il campionato propone: un modulo
+        che non manda la catena la riceve dal campionato, e così la finale.
 
         Che poi lo spareggio *serva* dipende dai risultati, non dal formato:
         con la classifica a vittorie due giocatori sono pari merito solo se
@@ -509,6 +505,8 @@ class TestChiusuraDellaFinale:
         se ci sono pari merito li scioglie e ritermina — e si guarda solo che
         la finale arrivi in fondo.
         """
+        from models.competition.spareggio_service import SpareggioService
+
         campionato_id, direttore, giocatori = campionato_breve
 
         campionato.entra(direttore)
@@ -518,10 +516,9 @@ class TestChiusuraDellaFinale:
         gara_playoff = campionato.crea_gara_playoff(campionato_id, configurazione.id)
 
         finale = campionato.gara(gara_playoff)
-        assert finale.tiebreaker_enabled is True
-        # Le gare del campionato, nate dal form, lo hanno spento.
+        assert SpareggioService.tiebreakers_apply_to(finale)
         assert all(
-            gara.tiebreaker_enabled is False
+            finale.catena_gara == gara.catena_gara
             for gara in campionato.gare_del_campionato(campionato_id)
             if gara.playoff_config_id is None
         )

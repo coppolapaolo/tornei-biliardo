@@ -678,6 +678,21 @@ def create_app(config_name=None, *, da_script: bool = False):
     app.jinja_env.globals["etichetta_storia"] = etichetta_storia
     app.jinja_env.globals["valore_storia"] = valore_storia
 
+    # Le catene degli spareggi (ADR-078): fin dove arriva lo spareggio SSR di
+    # una gara, e la frase del regolamento di una catena.
+    from models.competition.spareggio_service import SpareggioService
+    from models.storia.regolamento import frase_della_catena
+
+    app.jinja_env.globals["ssr_fino_al"] = SpareggioService.ssr_fino_al
+    app.jinja_env.globals["frase_spareggi"] = frase_della_catena
+    from models.classification.editor_catena import (
+        editor_del_campionato,
+        editor_della_gara,
+    )
+
+    app.jinja_env.globals["editor_catena_gara"] = editor_della_gara
+    app.jinja_env.globals["editor_catena_campionato"] = editor_del_campionato
+
     # Il listino delle quote per categoria (ADR-079): voci e gruppi per quota
     # di una gara o di un campionato, e la quota senza decimali inutili.
     from models.categoria.listino import formatta_quota, gruppi_di, listino_di

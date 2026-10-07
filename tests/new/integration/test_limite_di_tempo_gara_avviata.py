@@ -50,8 +50,7 @@ def test_trenta_minuti_dal_turno_dopo(client, db_session, direttore):  # noqa: F
             "odd_number_policy": "bye",
             "x_challenge_id": "",
             "withdraw_policy": gara.withdraw_policy,
-            "tiebreaker_enabled": "on" if gara.tiebreaker_enabled else "",
-            "tiebreaker_until_position": str(gara.tiebreaker_until_position or 3),
+            "catena_gara": GaraFormParser.valori_attuali(gara)["catena_gara"],
         },
     )
     gara = db_session.get(Gara, gara.id)

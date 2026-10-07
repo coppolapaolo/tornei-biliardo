@@ -15,12 +15,13 @@
 {% endblock %}
 
 {% macro regole_del_turno(regole) -%}
-  {%- set disciplina, distanza, al_n, apre, spacca, minuti = regole -%}
+  {%- set disciplina, distanza, al_n, apre, spacca, minuti, pari = regole -%}
   {{ valore_storia('discipline', disciplina) }}
   · {% if al_n == 'true' %}{{ _('al %(n)s', n=distanza) }}{% else %}{{ _('esattamente %(n)s', n=distanza) }}{% endif %}
   · {{ _('chi apre: %(regola)s', regola=valore_storia('start_rule', apre)) }}
   · {{ _('chi spacca: %(regola)s', regola=valore_storia('break_rule', spacca)) }}
   {%- if minuti and minuti != '0' %} · {{ _('%(n)s minuti per partita', n=minuti) }}{% endif %}
+  {%- if pari %} · {{ _('pari merito: %(catena)s', catena=valore_storia('catena_turno', pari)) }}{% endif %}
 {%- endmacro %}
 
 {% block content %}
@@ -33,7 +34,7 @@
       {% for imp in r.in_vigore %}
       <dt class="text-muted" style="font-weight:700">{{ etichetta_storia(imp.campo) }}</dt>
       <dd class="mb-0">
-        {{ valore_storia(imp.campo, imp.valore) }}
+        {{ imp.frase or valore_storia(imp.campo, imp.valore) }}
         {% if imp.cambiata %}
         <span class="c7-nota">
           · {{ _('cambiato il %(quando)s', quando=imp.cambiata.created_at|datetime_local) }}{% if imp.cambiata.from_round %}, {{ _('vale dal turno %(n)s', n=imp.cambiata.from_round) }}{% endif %}

@@ -93,33 +93,40 @@ blocks:
 
   - type: text
     text: >-
-      It often happens that two players finish identically. At creation the
-      director decides **up to which position** it is worth separating them:
-      normally the podium, because nobody argues over fifth and sixth.
+      It often happens that two players finish identically. Between tied
+      players a **chain of criteria** decides, applied one after the other: for
+      example the head to head, then the rack difference, then an SSR
+      tiebreaker up to 3rd place. The director composes the chain, and the
+      sentence it produces («With the same wins …») can be read on the
+      competition page and in its rules. How to compose it: [End-of-competition
+      tie-breaks](/aiuto/organizzare/spareggi).
 
   - type: options
-    title: "How a level finish is settled"
+    title: "Three standings, three chains"
     items:
-      - name: "Head to head"
+      - name: "Round standings"
+        values: "by default: rack difference → position in the previous round → draw"
         text: >-
-          If the two already met during the competition, whoever won that match
-          finishes ahead. Simple, and no replay needed.
-      - name: "Tie-break"
+          They drive the pairings, so they never leave a tie: they always end
+          with the draw. The SSR tiebreaker is not here, it is played after the
+          competition.
+      - name: "Final standings of the competition"
+        values: "by default: rack difference → SSR tiebreaker up to 3rd place"
         text: >-
-          An extra contest — usually the Spot Shot Rally — that produces a
-          score: the better one finishes ahead. See
-          [Challenges](/aiuto/giocare/challenge).
-      - name: "Neither"
+          Players still level after every criterion share the place, and the
+          next one is skipped (1, 2, 2, 4).
+      - name: "Overall championship standings"
+        values: "by default: rack difference → SSR (sum) → position after the previous competition → draw"
         text: >-
-          Outside the positions set for tie-breaking, the level finish stands:
-          two players share the same position and the next one is skipped.
+          The championship chooses them, and they leave no ties: playoff
+          invitations start from there.
 
   - type: note
     tone: info
     title: "Bracket competitions are never played off"
     text: >-
       There, a level finish by band is the intended result and not an
-      ambiguity: the tie-break option is not even asked for at creation. The one
+      ambiguity: the tie chain is not even asked for at creation. The one
       exception is the **third-place final**, which can be planned at creation
       and has the two beaten semi-finalists play for third.
 

@@ -184,14 +184,17 @@ blocks:
           is nothing else to choose. See [How standings are worked
           out](/aiuto/approfondimenti/classifiche).
         hint: gara.classifica
-      - name: "Tie-break"
-        values: "on up to 3rd place"
+      - name: "Ties"
+        values: "two chains: round standings and final standings"
         text: >-
-          Whether and up to which position to settle level finishes with an
-          extra contest. Below the podium, as a rule, level finishes are left
-          as they are. On brackets it is not asked: there, level finishes by
-          band — the two beaten semi-finalists, the four quarter-finalists —
-          are the intended outcome, and no tie-break would ever fire.
+          How tied players are ordered: a row of criteria to compose, with the
+          SSR tiebreaker «up to place N» among those of the final standings.
+          The proposed value repeats the usual rules: rack difference, and the
+          tiebreaker up to the podium. See [End-of-competition
+          tie-breaks](/aiuto/organizzare/spareggi). On brackets it is not
+          asked: there, level finishes by band — the two beaten
+          semi-finalists, the four quarter-finalists — are the intended
+          outcome.
         hint: gara.spareggio
       - name: "Weight in the standings"
         values: "1 · only inside a championship"

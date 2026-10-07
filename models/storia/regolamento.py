@@ -44,8 +44,8 @@ CAMPI_IN_VIGORE: Tuple[str, ...] = (
     "withdraw_policy",
     "min_participants",
     "max_participants",
-    "tiebreaker_enabled",
-    "tiebreaker_until_position",
+    "catena_turno",
+    "catena_gara",
 )
 
 
@@ -55,6 +55,53 @@ class Impostazione:
     valore: str
     #: L'ultima voce della storia che l'ha cambiata, se c'è.
     cambiata: Optional[SettingsChange] = None
+    #: Al posto del valore, una frase intera: le catene degli spareggi si
+    #: leggono «A pari vittorie conta …» (ADR-078).
+    frase: Optional[str] = None
+
+
+#: Le catene degli spareggi, campo → livello (ADR-078).
+_CATENE = {
+    "catena_turno": "turno",
+    "catena_gara": "gara",
+    "default_catena_turno": "turno",
+    "default_catena_gara": "gara",
+    "catena_generale": "campionato",
+}
+
+
+def frase_della_catena(oggetto: Any, campo: str) -> Optional[str]:
+    """La frase del regolamento per una catena di gara o di campionato.
+
+    La catena è quella che vale davvero (gara → campionato → default), con il
+    sistema di chi la legge. None nel sistema POSITION, che non ha catena.
+    """
+    from ..classification import catene
+    from ..classification.ordinamento import Livello, descrivi_catena
+    from ..status_enum import ClassificationSystem
+
+    livello = Livello(_CATENE[campo])
+    if campo in ("catena_turno", "catena_gara"):
+        sistema = catene.sistema_dichiarato(oggetto)
+        if not catene.ordina_con_la_catena(sistema):
+            return None
+        catena = (
+            catene.catena_di_turno(oggetto)
+            if livello is Livello.TURNO
+            else catene.catena_di_gara(oggetto)
+        )
+    else:
+        sistema = ClassificationSystem.resolve(
+            getattr(oggetto, "default_classification_system", None)
+        )
+        if not catene.ordina_con_la_catena(sistema):
+            return None
+        catena = (
+            catene.catena_generale(oggetto, sistema)
+            if livello is Livello.CAMPIONATO
+            else catene.catena_proposta(oggetto, livello)
+        )
+    return descrivi_catena(catena, sistema, livello)
 
 
 @dataclass
@@ -90,9 +137,15 @@ def _in_vigore(gara: Any, storia: List[SettingsChange]) -> List[Impostazione]:
     risultato = []
     for campo in CAMPI_IN_VIGORE:
         valore = serializza(valori.get(campo))
-        if valore == "":
+        if valore == "" and campo not in _CATENE:
             continue
-        if campo == "tiebreaker_until_position" and not gara.tiebreaker_enabled:
+        if campo in _CATENE:
+            # La catena che vale, anche se la gara non ne ha una sua.
+            frase = frase_della_catena(gara, campo)
+            if frase is not None:
+                risultato.append(
+                    Impostazione(campo, valore, ultima.get(campo), frase=frase)
+                )
             continue
         # Senza limite di tempo la riga non c'è: chi non usa l'opzione vede la
         # pagina di sempre (ADR-077). Se un limite c'era, lo dice la storia.
@@ -103,9 +156,10 @@ def _in_vigore(gara: Any, storia: List[SettingsChange]) -> List[Impostazione]:
 
 
 def _regole_del_turno(gara: Any, numero: int) -> Tuple[str, ...]:
-    """Disciplina, distanza, «al N», chi apre, chi spacca, minuti di un turno.
+    """Disciplina, distanza, «al N», chi apre, chi spacca, minuti, pari merito.
 
-    I minuti sono "0" senza limite di tempo (ADR-077).
+    I minuti sono "0" senza limite di tempo (ADR-077); i pari merito sono la
+    catena di turno in vigore a quel turno (ADR-078).
     """
     from ..competition.round_creation import resolve_round_overrides
     from ..match.models import Match
@@ -124,6 +178,7 @@ def _regole_del_turno(gara: Any, numero: int) -> Tuple[str, ...]:
             serializza(partita.effective_start_rule),
             serializza(partita.effective_break_rule),
             serializza(partita.time_limit_minutes or 0),
+            _catena_del_turno(gara, numero),
         )
     turno = resolve_round_overrides(gara, numero)
     return (
@@ -133,7 +188,21 @@ def _regole_del_turno(gara: Any, numero: int) -> Tuple[str, ...]:
         serializza(gara.effective_start_rule),
         serializza(gara.effective_break_rule),
         serializza(limite_del_turno(gara, numero) or 0),
+        _catena_del_turno(gara, numero),
     )
+
+
+def _catena_del_turno(gara: Any, numero: int) -> str:
+    """Le voci della catena di turno in vigore a quel turno (ADR-078).
+
+    Vuoto nel sistema POSITION, che non ha catena.
+    """
+    from ..classification import catene
+    from ..classification.ordinamento import testo_della_catena
+
+    if not catene.ordina_con_la_catena(catene.sistema_dichiarato(gara)):
+        return ""
+    return testo_della_catena(catene.catena_di_turno(gara, numero))
 
 
 def _per_turno(gara: Any, storia: List[SettingsChange]) -> List[GruppoDiTurni]:
@@ -188,6 +257,9 @@ CAMPI_DEL_CAMPIONATO: Tuple[str, ...] = (
     "default_break_rule",
     "has_handicap",
     "default_time_limit_minutes",
+    "default_catena_turno",
+    "default_catena_gara",
+    "catena_generale",
     "position_points",
 )
 
@@ -232,6 +304,13 @@ def _impostazioni(
     risultato = []
     for campo in campi:
         valore = serializza(getattr(oggetto, campo, None))
+        if campo in _CATENE and hasattr(oggetto, "default_classification_system"):
+            frase = frase_della_catena(oggetto, campo)
+            if frase is not None:
+                risultato.append(
+                    Impostazione(campo, valore, ultima.get(campo), frase=frase)
+                )
+            continue
         if valore != "":
             risultato.append(Impostazione(campo, valore, ultima.get(campo)))
     return risultato
@@ -288,6 +367,7 @@ __all__ = [
     "RegolamentoCampionato",
     "regolamento",
     "regolamento_campionato",
+    "frase_della_catena",
     "CAMPI_IN_VIGORE",
     "CAMPI_DEL_CAMPIONATO",
     "CAMPI_DEI_PLAYOFF",

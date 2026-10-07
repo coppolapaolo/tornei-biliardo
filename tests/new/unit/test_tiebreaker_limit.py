@@ -10,8 +10,7 @@ def test_detect_tiebreakers_respects_limit(mock_db):
     mock_gara = MagicMock()
     mock_gara.current_round = 3
     mock_gara.rounds_count = 3
-    mock_gara.tiebreaker_enabled = True
-    mock_gara.tiebreaker_until_position = 2  # Only top 2
+    mock_gara.catena_gara = '["differenza_rack", "ssr:2"]'  # Only top 2
     # B20: SpareggioService now keys on (matches_won, rack_difference) for WINS;
     # tests must populate matches_won for proper tuple comparison.
     mock_gara.classification_system = "WINS"
@@ -58,7 +57,7 @@ def test_detect_tiebreakers_respects_limit(mock_db):
     assert len(result) == 0
 
     # Change limit to 3
-    mock_gara.tiebreaker_until_position = 3
+    mock_gara.catena_gara = '["differenza_rack", "ssr:3"]'
     result = SpareggioService.detect_tiebreakers(1)
 
     # Now it should detect the tie at position 3

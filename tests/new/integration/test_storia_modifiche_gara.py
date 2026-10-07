@@ -100,13 +100,14 @@ def _modulo(gara: Gara, **cambi) -> dict:
         "first_round_policy": gara.first_round_policy or "random",
         "odd_number_policy": gara.odd_number_policy or "bye",
         "classification_system": gara.classification_system or "WINS",
-        "tiebreaker_until_position": str(gara.tiebreaker_until_position or 3),
+        # Le catene come le scrive l'editor: quella che vale (ADR-078).
+        "catena_turno": GaraFormParser.valori_attuali(gara)["catena_turno"],
+        "catena_gara": GaraFormParser.valori_attuali(gara)["catena_gara"],
         "stato_iniziale": json.dumps(GaraFormParser.valori_attuali(gara)),
     }
     # Le caselle spuntate, come le manda la pagina vera.
     for casella in (
         "anti_rematch_enabled",
-        "tiebreaker_enabled",
         "is_race_to_sets",
         "is_multi_set",
         "separate_teammates",

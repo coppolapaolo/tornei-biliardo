@@ -59,6 +59,9 @@
     <section data-c7-tab="classifica">
       {% if general_classification %}
       {% with classifica_finale=concluso %}{% include "components/_campionato_general_classification.html" %}{% endwith %}
+      {# Come si ordinano i pari merito (ADR-078). #}
+      {% set _pari_generale = frase_spareggi(campionato, 'catena_generale') %}
+      {% if _pari_generale %}<p class="c7-nota" style="margin:10px 4px 0">{{ _pari_generale }}</p>{% endif %}
       {% else %}
       {{ d.sezione(_('Classifica generale')) }}
       <div class="c7-card" style="margin-top:10px">

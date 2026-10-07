@@ -43,7 +43,7 @@
     {% elif tipo_comando == 'avvia_spareggio' %}
     <h3 class="c7-fascia__titolo">{{ _('Serve uno spareggio') }}</h3>
     <div class="c7-fascia__corpo">
-      {{ _('Ci sono giocatori a pari merito fino al %(pos)s° posto. Lo spareggio si gioca a Spot Shot Rally: tu inserisci i punti.', pos=gara.tiebreaker_until_position or 3) }}
+      {{ _('Ci sono giocatori a pari merito fino al %(pos)s° posto. Lo spareggio si gioca a Spot Shot Rally: tu inserisci i punti.', pos=ssr_fino_al(gara)) }}
     </div>
     {% else %}
     <h3 class="c7-fascia__titolo">{{ _('Puoi chiudere la gara') }}</h3>
@@ -72,7 +72,7 @@
 {% import "components/_posti_in_palio.html" as posti_in_palio %}
 {% if tipo_comando == 'avvia_spareggio' and ssr_groups %}
 <div>
-  {{ d.sezione(_('Parimerito'), nota=_('fino al %(pos)s° posto', pos=gara.tiebreaker_until_position or 3)) }}
+  {{ d.sezione(_('Parimerito'), nota=_('fino al %(pos)s° posto', pos=ssr_fino_al(gara))) }}
   <div class="c7-rows" style="margin-top:10px">
     {# La pastiglia e' un blocco, non una concatenazione: `_('pari')` e' gia'
        Markup, e incollarlo a una stringa ne proteggeva l'HTML, che la pagina

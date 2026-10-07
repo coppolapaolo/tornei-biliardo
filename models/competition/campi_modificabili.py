@@ -9,12 +9,14 @@ Le fasce:
 * **logistica** (nome, sala, data, ora, tavoli, quota, descrizione): sempre,
   fino alla fine della gara;
 * **regole di gioco** (distanza, modalità, disciplina, chi apre, chi spacca,
-  handicap, limite di tempo, dispari, esercizio della X, ritiri): a gara
+  handicap, limite di tempo, catena degli spareggi di turno, dispari,
+  esercizio della X, ritiri): a gara
   avviata si cambiano e valgono dal turno successivo — le partite già nate
   hanno le loro regole fissate (`models/match/regole_fissate.py`). Non con
   la strategia casuale, dove tutti i turni esistono già, né quando non
   restano turni da giocare;
-* **spareggio**: finché lo spareggio non è cominciato;
+* **spareggio** (la catena della classifica di gara, che contiene lo
+  spareggio SSR): finché lo spareggio non è cominciato;
 * **struttura** (strategia, sistema di classifica, numero di turni, primo
   turno, set, anti-reincontro, opzioni del tabellone, minimo e capienza): solo
   prima dell'avvio; dopo, si cambia annullando l'avvio;
@@ -56,15 +58,16 @@ REGOLE: FrozenSet[str] = frozenset(
         "break_rule",
         "has_handicap",
         "time_limit_minutes",
+        "catena_turno",
         "odd_number_policy",
         "x_challenge_id",
         "withdraw_policy",
     }
 )
 
-SPAREGGIO: FrozenSet[str] = frozenset(
-    {"tiebreaker_enabled", "tiebreaker_until_position"}
-)
+#: La catena della classifica di gara, dove sta lo spareggio SSR (ADR-078):
+#: si cambia finché lo spareggio non è cominciato, e vale subito.
+SPAREGGIO: FrozenSet[str] = frozenset({"catena_gara"})
 
 STRUTTURA: FrozenSet[str] = frozenset(
     {
@@ -88,8 +91,15 @@ STRUTTURA: FrozenSet[str] = frozenset(
 PESO: FrozenSet[str] = frozenset({"weight"})
 
 #: Le regole che sul tabellone discendono dal formato (`bracket_derived_fields`).
+#: Le catene degli spareggi non si usano sul tabellone (ADR-040).
 REGOLE_DEL_TABELLONE: FrozenSet[str] = frozenset(
-    {"odd_number_policy", "withdraw_policy", "is_race_to", "x_challenge_id"}
+    {
+        "odd_number_policy",
+        "withdraw_policy",
+        "is_race_to",
+        "x_challenge_id",
+        "catena_turno",
+    }
 )
 
 

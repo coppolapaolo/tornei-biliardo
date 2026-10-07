@@ -181,18 +181,18 @@ def terminate_gara(gara_id):
                         "success": False,
                         "needs_tiebreaker": True,
                         "tiebreakers": tiebreakers,
-                        "message": (
-                            f"Ci sono parimerito nelle prime "
-                            f"{gara.tiebreaker_until_position or 3} posizioni. "
-                            f"Usa 'Avvia SSR' per inserire i punteggi."
+                        "message": _(
+                            "Ci sono parimerito nelle prime %(n)s posizioni. "
+                            "Usa «Avvia SSR» per inserire i punteggi.",
+                            n=SpareggioService.ssr_fino_al(gara),
                         ),
                     }
                 )
             flash(
-                (
-                    f"Ci sono parimerito nelle prime "
-                    f"{gara.tiebreaker_until_position or 3} posizioni. "
-                    f"Usa 'Avvia SSR' per inserire i punteggi."
+                _(
+                    "Ci sono parimerito nelle prime %(n)s posizioni. "
+                    "Usa «Avvia SSR» per inserire i punteggi.",
+                    n=SpareggioService.ssr_fino_al(gara),
                 ),
                 "warning",
             )

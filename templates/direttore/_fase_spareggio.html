@@ -8,7 +8,7 @@
    l'ultimo turno, con la pastiglia «pari» sui parimerito aperti, e le
    partite in righe. #}
 
-{% set _limite = gara.tiebreaker_until_position or 3 %}
+{% set _limite = ssr_fino_al(gara) %}
 {% set _pari = [] %}
 {% for g in ssr_groups %}{% for p in g.players %}{% if p.current_ssr_score is none %}{% set _ = _pari.append(p.user_id) %}{% endif %}{% endfor %}{% endfor %}
 

@@ -111,6 +111,29 @@ class CampionatoFormParser:
         return minuti
 
     @staticmethod
+    def parse_catene(form: MultiDict, sistema: Any) -> Dict[str, str]:
+        """Le tre catene degli spareggi del campionato, se il modulo le manda.
+
+        Le due proposte alle gare (turno e gara) e quella della classifica
+        generale (ADR-078). Un campo assente non si tocca.
+        """
+        from models.classification.catene import testo_dal_modulo
+        from models.classification.ordinamento import Livello
+        from models.status_enum import ClassificationSystem
+
+        risolto = ClassificationSystem.resolve(sistema)
+        campi = (
+            ("default_catena_turno", Livello.TURNO),
+            ("default_catena_gara", Livello.GARA),
+            ("catena_generale", Livello.CAMPIONATO),
+        )
+        return {
+            campo: testo_dal_modulo(form.get(campo, ""), livello, risolto)
+            for campo, livello in campi
+            if campo in form
+        }
+
+    @staticmethod
     def parse_default_settings(form: MultiDict) -> Dict[str, Any]:
         """Parse the default-settings block shared by create-wizard and edit.
 

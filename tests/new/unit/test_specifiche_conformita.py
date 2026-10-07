@@ -273,6 +273,147 @@ class TestCateneDegliSpareggi:
 
 
 @pytest.mark.unit
+class TestLeCateneSiConfigurano:
+    """`SPECIFICHE.md`, «Classifica», «Le catene si configurano»."""
+
+    def test_il_principale_non_entra_nella_catena(self):
+        """> il **criterio principale** non entra nella catena"""
+        from models.classification.catene import testo_dal_modulo
+        from models.classification.ordinamento import Livello
+        from models.status_enum import ClassificationSystem
+
+        assert (
+            testo_dal_modulo(
+                "vittorie,scontri_diretti", Livello.GARA, ClassificationSystem.WINS
+            )
+            == '["scontri_diretti"]'
+        )
+        assert (
+            testo_dal_modulo(
+                "rack_vinti,scontri_diretti", Livello.GARA, ClassificationSystem.RACK
+            )
+            == '["scontri_diretti"]'
+        )
+
+    def test_il_sorteggio_e_l_ultimo_e_nel_turno_c_e_sempre(self):
+        """> il **sorteggio** è sempre l'ultimo; nel turno e nel campionato c'è
+        sempre"""
+        from models.classification.catene import testo_dal_modulo
+        from models.classification.ordinamento import Livello
+        from models.status_enum import ClassificationSystem
+
+        wins = ClassificationSystem.WINS
+        assert (
+            testo_dal_modulo("sorteggio,scontri_diretti", Livello.GARA, wins)
+            == '["scontri_diretti", "sorteggio"]'
+        )
+        assert testo_dal_modulo("", Livello.TURNO, wins) == '["sorteggio"]'
+        assert testo_dal_modulo("", Livello.CAMPIONATO, wins) == '["sorteggio"]'
+
+    def test_lo_ssr_una_volta_e_mai_nel_turno(self):
+        """> lo **spareggio SSR** compare al massimo una volta e mai nella
+        catena di turno"""
+        from models.classification.catene import testo_dal_modulo
+        from models.classification.ordinamento import Livello
+        from models.status_enum import ClassificationSystem
+
+        wins = ClassificationSystem.WINS
+        assert testo_dal_modulo("ssr:2,ssr:3", Livello.GARA, wins) == '["ssr:2"]'
+        assert testo_dal_modulo("ssr:2", Livello.TURNO, wins) == '["sorteggio"]'
+        assert testo_dal_modulo("ssr:2", Livello.CAMPIONATO, wins) == (
+            '["ssr", "sorteggio"]'
+        )
+
+    def test_la_catena_di_gara_vuota_lascia_i_pari(self):
+        """> una catena di gara **vuota** è ammessa: chi è pari sul principale
+        resta pari"""
+        from models.classification.ordinamento import (
+            Concorrente,
+            Criterio,
+            normalizza_catena,
+            ordina,
+            Livello,
+        )
+        from models.status_enum import ClassificationSystem
+
+        catena = normalizza_catena((), Livello.GARA, ClassificationSystem.WINS)
+        assert catena == ()
+        fasce = ordina(
+            [Concorrente(1, vittorie=2, differenza_rack=3), Concorrente(2, vittorie=2)],
+            Criterio.VITTORIE,
+            catena,
+        )
+        assert [f.posizione for f in fasce] == [1]
+
+    def test_la_catena_di_turno_vale_dal_turno_successivo(self, db_session):
+        """> la catena di turno è una regola di gioco e, a gara avviata, vale
+        **dal turno successivo**: la classifica di un turno già cominciato si
+        fa con la catena di allora"""
+        from datetime import date
+
+        from models.base import db
+        from models.classification.catene import catena_di_turno
+        from models.classification.ordinamento import Criterio
+        from models.competition.models import Gara
+        from models.competition.services import GaraService
+        from models.status_enum import GaraStatus
+
+        gara = Gara(
+            number=1,
+            name="Dal turno dopo",
+            date=date(2026, 1, 1),
+            discipline="8_ball",
+            distance=3,
+            rounds_count=4,
+            current_round=2,
+            matchmaking_strategy="amalfi",
+            status=GaraStatus.PLAYING.value,
+            catena_turno='["differenza_rack", "posizione_precedente", "sorteggio"]',
+        )
+        db.session.add(gara)
+        db.session.commit()
+        GaraService.update_gara(
+            gara.id, catena_turno='["scontri_diretti", "sorteggio"]'
+        )
+        gara = db.session.get(Gara, gara.id)
+        assert catena_di_turno(gara, 2)[0].criterio is Criterio.DIFFERENZA_RACK
+        assert catena_di_turno(gara, 3)[0].criterio is Criterio.SCONTRI_DIRETTI
+
+    def test_le_gare_di_prima_tengono_il_loro_spareggio(self, tmp_path):
+        """> Ogni gara esistente ha ricevuto la catena di gara che riproduce il
+        suo interruttore"""
+        import importlib.util
+        import json
+        import sqlite3
+
+        percorso = tmp_path / "prima.db"
+        conn = sqlite3.connect(percorso)
+        conn.executescript("""
+            CREATE TABLE campionato (id INTEGER PRIMARY KEY,
+                default_classification_system TEXT);
+            CREATE TABLE gara (id INTEGER PRIMARY KEY, classification_system TEXT,
+                tiebreaker_enabled BOOLEAN, tiebreaker_until_position INTEGER);
+            INSERT INTO gara VALUES (1, 'WINS', 1, 2), (2, 'RACK', 0, 3);
+            """)
+        conn.commit()
+        conn.close()
+        spec = importlib.util.spec_from_file_location(
+            "m", "migrations/20261007_catene_degli_spareggi.py"
+        )
+        assert spec and spec.loader
+        modulo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(modulo)
+        modulo.upgrade_sqlite(str(percorso))
+        conn = sqlite3.connect(percorso)
+        catene = [
+            json.loads(r[0])
+            for r in conn.execute("SELECT catena_gara FROM gara ORDER BY id")
+        ]
+        conn.close()
+        assert catene == [["differenza_rack", "ssr:2"], []]
+
+
+@pytest.mark.unit
 class TestAChiToccaLaXNelPrimoTurno:
     """`SPECIFICHE.md` riga 67.
 

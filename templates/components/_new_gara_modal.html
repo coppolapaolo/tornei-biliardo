@@ -374,36 +374,20 @@
                             </div>
                         </div>
 
-                        {# Le strategie POSITION dichiarano `requires_tiebreaker=False`:
-                           i pari merito per banda sono l'esito voluto. #}
+                        {# Sul tabellone le catene non si usano: i pari merito per banda
+                           sono l'esito voluto (ADR-040). #}
                         <div {% if modal_is_bracket %}style="display:none"{% endif %}>
                         <hr class="my-3">
-                        <h6 class="text-primary mb-3"><i class="fas fa-balance-scale"></i> {{ _("Spareggio (SSR)") }}</h6>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="tiebreaker_enabled"
-                                            id="create_tiebreaker_enabled" checked>
-                                        <label class="form-check-label" for="create_tiebreaker_enabled">
-                                            <strong>{{ _("Abilita spareggio") }}</strong>
-                                        </label>
-                                    </div>
-                                    <small class="text-muted ms-4">{{ _("Spot Shot Rally per pari punti") }}</small>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="tiebreaker_until_position" class="form-label">{{ _("Spareggio fino a") }}</label>
-                                    <select class="form-control" name="tiebreaker_until_position" id="create_tiebreaker_until_position">
-                                        <option value="1">{{ _("Solo 1° posto") }}</option>
-                                        <option value="2">{{ _("Fino al 2° posto") }}</option>
-                                        <option value="3" selected>{{ _("Fino al 3° posto (podio)") }}</option>
-                                        <option value="5">{{ _("Fino al 5° posto") }}</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
+                        <h6 class="text-primary mb-3"><i class="fas fa-balance-scale"></i> {{ _("Pari merito") }}</h6>
+                        {# Le catene degli spareggi (ADR-078): parte da quelle che il
+                           campionato propone, e la gara le può cambiare. #}
+                        {% import "components/_catena_spareggi.html" as catena with context %}
+                        {{ catena.editor('catena_turno', editor_catena_gara('turno', campionato=campionato),
+                                         _('Pari merito nella classifica di turno'),
+                                         _("Ordina i giocatori dopo ogni turno, e da lì nascono gli abbinamenti: l'ordine è sempre completo, lo chiude il sorteggio.")) }}
+                        {{ catena.editor('catena_gara', editor_catena_gara('gara', campionato=campionato),
+                                         _('Pari merito nella classifica finale'),
+                                         _('Chi resta pari dopo questi criteri condivide la posizione. Lo spareggio SSR si gioca a gara finita, fino al posto che scegli.')) }}
                         </div>{# fine blocco spareggio, nascosto sui tabelloni #}
 
                         <hr class="my-3">

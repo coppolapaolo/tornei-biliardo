@@ -67,8 +67,6 @@ def _setup(db_session, classification_system: str) -> Gara:
         min_participants=4,
         matchmaking_strategy="random",
         classification_system=classification_system,
-        tiebreaker_enabled=True,
-        tiebreaker_until_position=3,
         status=GaraStatus.PLAYING.value,
     )
     db_session.add(gara)

@@ -1,0 +1,29 @@
+{# templates/components/_catena_spareggi.html — Design System 7c
+
+   L'editor della catena degli spareggi (ADR-078): come si ordinano i
+   giocatori a pari merito. In cima il criterio principale del sistema, fisso;
+   sotto le voci della catena, che si spostano, si tolgono e si aggiungono;
+   in fondo la frase che finisce nel regolamento.
+
+   * `editor(nome, config, titolo, nota, sistema_da)` — `nome` è il campo del
+     modulo (`catena_turno`, `catena_gara`, `default_catena_turno`, …);
+     `config` viene da `editor_catena_gara(...)` o
+     `editor_catena_campionato(...)`; `sistema_da` è il selettore CSS del
+     <select> del sistema di classifica, se nel modulo si può cambiare.
+
+   Senza `id` né `<script>`: si può includere più volte nella stessa pagina.
+   La pagina carica `static/js/catena_spareggi.js`, che trova da sé ogni
+   editor. Il valore viaggia nel campo nascosto, le voci separate da
+   virgole; lo legge `catene.testo_dal_modulo`. #}
+
+{% macro editor(nome, cfg, titolo, nota='', sistema_da='') -%}
+<div class="c7-catena" data-catena data-livello="{{ cfg.livello }}"
+     data-config='{{ cfg|tojson }}'{% if sistema_da %} data-sistema-da="{{ sistema_da }}"{% endif %}>
+  <input type="hidden" name="{{ nome }}" value="{{ cfg.voci|join(',') }}" data-catena-valore>
+  <div class="c7-catena__titolo">{{ titolo }}</div>
+  {% if nota %}<div class="c7-catena__nota">{{ nota }}</div>{% endif %}
+  <ol class="c7-catena__voci" data-catena-voci aria-label="{{ titolo }}"></ol>
+  <div class="c7-catena__aggiungi" data-catena-aggiungi role="group" aria-label="{{ _('Aggiungi un criterio') }}"></div>
+  <p class="c7-catena__frase" data-catena-frase aria-live="polite"></p>
+</div>
+{%- endmacro %}

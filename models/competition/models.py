@@ -266,16 +266,20 @@ class Gara(SoftDeleteMixin, db.Model):
     # Vale solo per la strategia double_knockout.
     double_ko_rounds = db.Column(db.Integer, nullable=True)
 
-    # Tiebreaker configuration (spareggio fine gara)
-    tiebreaker_enabled = db.Column(
-        db.Boolean, default=True
-    )  # Se True, spareggio per pari merito nel podio
-    tiebreaker_until_position = db.Column(
-        db.Integer, default=3
-    )  # Spareggio fino a questa posizione (es. 3 = podio)
-    tiebreaker_mode = db.Column(
-        db.String(20), default="playoff_match"
-    )  # "playoff_match" (partita secca) | "challenge" (drill dalla banca dati)
+    # Le catene degli spareggi (ADR-078): come si ordinano i pari merito nella
+    # classifica di turno e in quella di gara. Una lista JSON di voci
+    # (`ordinamento.testo_della_catena`); NULL = come il campionato, e su una
+    # gara singola il default dell'app. Si copiano dal campionato quando la
+    # gara nasce (ADR-075). Si leggono **solo** da
+    # `models/classification/catene.py`, che ripiega e normalizza.
+    #
+    # Lo spareggio SSR è un criterio della catena di gara (`ssr:N`, fino al
+    # N° posto): fino al 2026-10-07 erano le colonne `tiebreaker_enabled` e
+    # `tiebreaker_until_position`, che restano nel database ma non nel
+    # modello, insieme a `tiebreaker_mode` che nessuno ha mai letto. La
+    # migration 20261007 le ha fuse nella catena.
+    catena_turno = db.Column(db.Text, nullable=True)
+    catena_gara = db.Column(db.Text, nullable=True)
     tiebreaker_challenge_id = db.Column(
         db.Integer, db.ForeignKey("challenge.id", ondelete="SET NULL"), nullable=True
     )  # FK a Challenge se mode = "challenge"
@@ -1034,8 +1038,8 @@ class Gara(SoftDeleteMixin, db.Model):
 
     def get_podium(self):
         """
-        Restituisce il podio (top positions) della classifica finale in base
-        a tiebreaker_until_position.
+        Restituisce il podio (top positions) della classifica finale: fin dove
+        arriva lo spareggio della catena di gara.
 
         Returns:
             List[dict]: Lista di dizionari con 'position', 'user', 'username'
@@ -1048,8 +1052,11 @@ class Gara(SoftDeleteMixin, db.Model):
         try:
             from models.classification.services import RoundClassificationService
 
-            # Use tiebreaker_until_position to define the podium size
-            limit = self.tiebreaker_until_position or 3
+            # Il podio arriva fin dove arriva lo spareggio della catena di
+            # gara (3 se la catena non ha lo spareggio).
+            from models.competition.spareggio_service import SpareggioService
+
+            limit = SpareggioService.ssr_fino_al(self)
 
             standings = RoundClassificationService.get_round_standings(
                 self.id, self.rounds_count
