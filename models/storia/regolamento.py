@@ -129,13 +129,21 @@ def _ultima_modifica(storia: List[SettingsChange]) -> Dict[str, SettingsChange]:
     return ultima
 
 
-def _in_vigore(gara: Any, storia: List[SettingsChange]) -> List[Impostazione]:
+#: Il formato scritto sulla gara: tace quando nessun turno lo gioca.
+_FORMATO_DELLA_GARA = ("discipline", "distance", "is_race_to")
+
+
+def _in_vigore(
+    gara: Any, storia: List[SettingsChange], *, senza_formato: bool = False
+) -> List[Impostazione]:
     from ..competition.services import GaraService
 
     valori = GaraService._valori_per_la_storia(gara, list(CAMPI_IN_VIGORE))
     ultima = _ultima_modifica(storia)
     risultato = []
     for campo in CAMPI_IN_VIGORE:
+        if senza_formato and campo in _FORMATO_DELLA_GARA:
+            continue
         valore = serializza(valori.get(campo))
         if valore == "" and campo not in _CATENE:
             continue
@@ -269,10 +277,14 @@ def _per_turno(gara: Any, storia: List[SettingsChange]) -> List[GruppoDiTurni]:
 
 def regolamento(gara: Any) -> Regolamento:
     storia = StoriaModificheService.voci_della_gara(gara.id)
+    per_turno = _per_turno(gara, storia)
+    # Con le regole turno per turno in pagina, il formato della gara che
+    # nessun turno gioca confonderebbe e basta (gara 50, 08/10/2026).
+    senza_formato = bool(per_turno) and not gara.formato_della_gara_in_uso
     return Regolamento(
         gara=gara,
-        in_vigore=_in_vigore(gara, storia),
-        per_turno=_per_turno(gara, storia),
+        in_vigore=_in_vigore(gara, storia, senza_formato=senza_formato),
+        per_turno=per_turno,
         storia=storia,
         link_regolamento=gara.effective_rules_url,
     )

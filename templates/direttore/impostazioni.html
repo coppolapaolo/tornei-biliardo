@@ -69,7 +69,7 @@
   {% set _esercizi = gara.gara_challenges|selectattr("is_active", "equalto", true)|list|length %}
   <div class="c7-rows">
     {{ d.riga('fa-list-ol', _('Turni e distanze'),
-              _('%(n)s turni · %(disc)s · %(dist)s', n=gara.rounds_count, disc=gara.discipline|discipline_display, dist=gara.distance_config|format_distance),
+              _('%(n)s turni · %(disc)s · %(dist)s', n=gara.rounds_count, disc=gara.formato_breve[0], dist=gara.formato_breve[1]),
               tone='locked') }}
     {{ d.riga('fa-diagram-project', _('Accoppiamento'),
               gara.matchmaking_strategy.replace('_', ' ')|title ~ (' · ' ~ _('anti-reincontro attivo') if gara.anti_rematch_enabled else ''),

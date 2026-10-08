@@ -25,11 +25,13 @@
       <div class="c7-tessera__meta">
         {% if card.campionato_name %}{{ card.campionato_name }} <span class="c7-sep">·</span>{% endif %}
         {{ _('Playoff') }}
-        {% if card.discipline %}
+        {% if gara %}
+          {% set _disciplina, _distanza = gara.formato_breve %}
+          {% if _disciplina %}<span class="c7-sep">·</span> {{ _disciplina }}{% endif %}
+          {% if _distanza %}<span class="c7-sep">·</span> {{ _distanza }}{% endif %}
+        {% elif card.discipline %}
+          {#- Finale non ancora creata: la disciplina scelta nella configurazione. #}
           <span class="c7-sep">·</span> {{ card.discipline|discipline_display }}
-        {% endif %}
-        {% if gara and gara.distance %}
-          <span class="c7-sep">·</span> {{ gara.distance_config|format_distance }}
         {% endif %}
       </div>
       <div class="c7-tessera__meta">
