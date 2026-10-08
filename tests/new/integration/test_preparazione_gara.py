@@ -167,6 +167,61 @@ def test_la_testata_dice_i_turni_modificati(admin_client, db_session):
     assert "al 3 triangoli" in html
 
 
+def _testata(html: str) -> str:
+    inizio = html.index("c7-head__sub")
+    return html[inizio : html.index("</header>", inizio)]
+
+
+def test_con_tutti_i_turni_modificati_il_formato_della_gara_sparisce(
+    admin_client, db_session
+):
+    """Rilievo dalla produzione (gara 50, 08/10/2026): «Esattamente 5
+    triangoli · Palla 8» in testata, seguito da tre turni che giocavano tutti
+    altro. Un formato che nessun turno usa non descrive la gara: confonde."""
+    gara = _gara(db_session)
+    for turno, disciplina in (
+        (1, Discipline.NINE_BALL.value),
+        (2, Discipline.NINE_BALL.value),
+        (3, Discipline.TEN_BALL.value),
+    ):
+        db_session.add(
+            RoundConfiguration(
+                gara_id=gara.id, round_number=turno, discipline=disciplina, distance=6
+            )
+        )
+    db_session.commit()
+
+    testata = _testata(
+        admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    )
+
+    assert "Al 5" not in testata
+    assert "Palla 8" not in testata
+    assert "turno 1" in testata and "turno 3" in testata
+
+
+def test_con_un_turno_al_formato_della_gara_il_formato_resta(admin_client, db_session):
+    """Il formato della gara è quello dei turni che non lo cambiano: finché
+    un turno lo gioca, la testata lo dice."""
+    gara = _gara(db_session)
+    db_session.add(
+        RoundConfiguration(
+            gara_id=gara.id,
+            round_number=2,
+            discipline=Discipline.NINE_BALL.value,
+            distance=3,
+        )
+    )
+    db_session.commit()
+
+    testata = _testata(
+        admin_client.get(f"/admin/gara/{gara.id}").get_data(as_text=True)
+    )
+
+    assert "Al 5" in testata
+    assert "Palla 8" in testata
+
+
 # ── Apri le iscrizioni ────────────────────────────────────────────────────────
 
 

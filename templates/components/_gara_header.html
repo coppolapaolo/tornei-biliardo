@@ -55,11 +55,15 @@
    e ogni turno la scrive da se'. #}
 {% macro sub(gara) -%}
 {%- if gara.is_prova %}<span class="c7-state c7-state--warn">{{ _('Di prova') }}</span> {% endif -%}
-{%- if gara.location %}{{ gara.location }} <span class="c7-sep">·</span> {% endif -%}
-{{ gara.distance_config|format_distance }}
-{%- if gara.effective_time_limit_minutes %} <span class="c7-sep">·</span> {{ _('%(n)s minuti a partita', n=gara.effective_time_limit_minutes) }}{% endif %}
+{#- Il formato della gara si dice solo se un turno lo gioca: con tutti i
+    turni modificati resterebbe un formato che non si gioca mai, e la testata
+    si leggerebbe come una contraddizione (gara 50, 08/10/2026). #}
+{%- set _formato = gara.formato_della_gara_in_uso -%}
+{%- if gara.location %}{{ gara.location }}{% if _formato or gara.effective_time_limit_minutes %} <span class="c7-sep">·</span> {% endif %}{% endif -%}
+{%- if _formato %}{{ gara.distance_config|format_distance }}{% endif -%}
+{%- if gara.effective_time_limit_minutes %}{% if _formato %} <span class="c7-sep">·</span> {% endif %}{{ _('%(n)s minuti a partita', n=gara.effective_time_limit_minutes) }}{% endif %}
 <span class="d-none d-lg-inline">
-  <span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}
+  {%- if _formato %} <span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}{% endif %}
   <span class="c7-sep">·</span> <span class="c7-num">{{ gara.date|date_local }}</span>
 </span>
 {#- I turni configurati diversamente (ADR-027): la descrizione della gara e'

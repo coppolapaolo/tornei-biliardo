@@ -207,6 +207,31 @@ def _regola_di_gioco(
     return _("%(n)s triangoli esatti", n=distance)
 
 
+def _formato_della_gara(gara: Gara) -> tuple:
+    """`(nome disciplina, regola)` del formato scritto sulla gara, senza turni."""
+    return (
+        _nome_disciplina(gara.discipline),
+        _regola_di_gioco(
+            distance=gara.distance,
+            is_race_to=gara.is_race_to,
+            is_multi_set=gara.is_multi_set,
+            match_distance=gara.match_distance,
+            is_race_to_sets=bool(getattr(gara, "is_race_to_sets", True)),
+        ),
+    )
+
+
+def formato_della_gara_in_uso(gara: Gara) -> bool:
+    """Almeno un turno si gioca col formato scritto sulla gara?
+
+    Se tutti i turni lo cambiano (ADR-027), quel formato non descrive niente
+    di quello che si giochera': la testata lo tace e lascia parlare i turni.
+    Rilievo dalla produzione, gara 50 del 08/10/2026: «Esattamente 5 triangoli
+    · Palla 8» seguito da tre turni che giocavano tutti altro.
+    """
+    return _formato_della_gara(gara) in _formati_dei_turni(gara)
+
+
 def _formati_dei_turni(gara: Gara) -> List[tuple]:
     """Disciplina e regola di ogni turno, con gli override risolti (ADR-027).
 
@@ -222,16 +247,7 @@ def _formati_dei_turni(gara: Gara) -> List[tuple]:
     gara_irts = bool(getattr(gara, "is_race_to_sets", True))
 
     def della_gara():
-        return (
-            _nome_disciplina(gara.discipline),
-            _regola_di_gioco(
-                distance=gara.distance,
-                is_race_to=gara.is_race_to,
-                is_multi_set=gara.is_multi_set,
-                match_distance=gara.match_distance,
-                is_race_to_sets=gara_irts,
-            ),
-        )
+        return _formato_della_gara(gara)
 
     if not gara.rounds_count:
         return [della_gara()]
