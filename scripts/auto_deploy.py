@@ -67,10 +67,12 @@ import os
 import re
 import subprocess
 import sys
+import time
+import urllib.error
 import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Callable, Dict, Optional
 
 # Configuration
 PROJECT_DIR = Path(__file__).parent.parent
@@ -78,6 +80,12 @@ REMOTE = "origin"
 BRANCH = "main"
 PA_USERNAME = "paolocoppola"
 PA_DOMAIN = "www.torneibiliardo.it"  # domain_name della webapp (vedi WSGI file)
+
+# Tentativi per ogni chiamata all'API della web app, e attesa fra l'uno e
+# l'altro. Il 2026-10-08 il `disable` ha risposto 502 una volta sola: era
+# l'API di PythonAnywhere, non noi, e un secondo tentativo sarebbe bastato.
+API_TENTATIVI = 3
+API_ATTESA_SECONDI = 15
 
 # Il file WSGI e' la fonte unica delle env di produzione (ENCRYPTION_KEY,
 # FLASK_ENV, credenziali mail...). Questo script NON le eredita: gira in un
@@ -139,6 +147,40 @@ def run_command(cmd: list, cwd: Path = None) -> tuple:
         return False, "Command timed out"
     except Exception as e:
         return False, str(e)
+
+
+def git_head() -> Optional[str]:
+    """Il commit su cui sta il working tree, o None se git non risponde."""
+    success, output = run_command(["git", "rev-parse", "HEAD"])
+    return output if success and output else None
+
+
+def ripristina_codice(commit: Optional[str]) -> str:
+    """Riporta il disco al commit da cui il deploy era partito.
+
+    Serve ogni volta che il deploy si ferma **dopo** il pull. Una web app non
+    ricaricata non resta «sul codice precedente»: i moduli gia' importati sono
+    quelli vecchi, ma i template e i moduli importati piu' tardi si leggono dal
+    disco, quindi sono nuovi. E' successo il 2026-10-08: `disable` in 502,
+    migration saltate, e la web app ha cominciato a rispondere 500 su
+    `ClassificationSystem.POINTS` e su funzioni dei template mai registrate;
+    ogni processo nuovo partiva invece col codice nuovo su uno schema senza le
+    sue colonne. Riportato il disco indietro, il giro successivo trova di nuovo
+    commit da portare e ritenta da capo.
+
+    `--keep` e non `--hard`: aggiorna solo i file che cambiano fra i due commit
+    e si rifiuta se uno di quelli ha modifiche locali, invece di cancellarle.
+    """
+    if not commit:
+        return "Ripristino del codice impossibile: commit di partenza ignoto."
+    success, output = run_command(["git", "reset", "--keep", commit])
+    if success:
+        return f"Codice riportato a {commit[:8]}: il prossimo giro ritenta il deploy."
+    return (
+        f"ATTENZIONE: ripristino a {commit[:8]} non riuscito ({output}). Il disco "
+        "ha il codice nuovo e la web app no: completa il deploy a mano o "
+        f"`git reset --keep {commit}` e Reload."
+    )
 
 
 def git_pull() -> tuple:
@@ -325,32 +367,59 @@ def webapp_api(action: str) -> tuple:
     request = urllib.request.Request(
         url, method="POST", headers={"Authorization": f"Token {token}"}
     )
-    try:
-        with urllib.request.urlopen(request, timeout=30) as response:
-            ok = 200 <= response.status < 300
-            return ok, f"{action}: HTTP {response.status}"
-    except Exception as e:
-        return False, f"{action}: {e}"
+    # Si riprova solo cio' che puo' cambiare da solo: un 5xx o la rete. Un 4xx
+    # e' un token o un indirizzo sbagliato, e ripeterlo non lo aggiusta.
+    errore = ""
+    for tentativo in range(1, API_TENTATIVI + 1):
+        try:
+            with urllib.request.urlopen(request, timeout=30) as response:
+                ok = 200 <= response.status < 300
+                return ok, f"{action}: HTTP {response.status}"
+        except urllib.error.HTTPError as e:
+            errore = f"{action}: {e}"
+            if e.code < 500:
+                return False, errore
+        except Exception as e:
+            errore = f"{action}: {e}"
+        if tentativo < API_TENTATIVI:
+            log(f"{errore} — tentativo {tentativo}/{API_TENTATIVI}, riprovo")
+            time.sleep(API_ATTESA_SECONDI)
+    return False, errore
 
 
-def run_migrations_safely() -> tuple:
+def run_migrations_safely(
+    ripristina: Optional[Callable[[], str]] = None,
+) -> tuple:
     """Esegue le migrations con la web app disabilitata.
 
     Disable -> migrations -> Enable (sempre, anche su errore). Se il disable
     fallisce (es. token mancante) le migrations NON vengono eseguite: meglio
     un deploy fermo che un DB corrotto da writer concorrenti.
+
+    `ripristina` riporta il disco al codice di prima quando le migrations non
+    girano o falliscono (vedi `ripristina_codice`). Nel secondo caso va chiamato
+    **prima** dell'enable: l'enable fa ripartire i worker dal disco, e devono
+    trovarci il codice che va d'accordo con lo schema rimasto.
     """
     ok, msg = webapp_api("disable")
     log(f"Disable web app: {msg}")
     if not ok:
-        return False, (
-            "web app NON disabilitata: migrations NON eseguite per evitare "
-            "scritture concorrenti su SQLite. Procedura manuale: tab Web -> "
-            "Disable, `python migrations/runner.py`, tab Web -> Enable + Reload."
+        nota = ripristina() if ripristina else ""
+        return (
+            False,
+            (
+                "web app NON disabilitata: migrations NON eseguite per evitare "
+                "scritture concorrenti su SQLite. Procedura manuale: tab Web -> "
+                "Disable, `venv/bin/python migrations/runner.py`, tab Web -> "
+                f"Enable + Reload. {nota}"
+            ).strip(),
         )
+    success, output = False, "migrations interrotte da un'eccezione"
     try:
         success, output = run_migrations()
     finally:
+        if not success and ripristina:
+            output = f"{output}\n{ripristina()}"
         # L'enable gira anche se run_migrations solleva un'eccezione.
         ok_enable, msg_enable = webapp_api("enable")
         log(f"Enable web app: {msg_enable}")
@@ -410,7 +479,9 @@ def main():
 
     log()
 
-    # Step 1: Git pull
+    # Step 1: Git pull. Il commit di partenza si annota prima: da qui in poi
+    # ogni uscita a meta' deve riportarci il disco (vedi `ripristina_codice`).
+    commit_di_partenza = git_head()
     success, output = git_pull()
     log(f"Git pull: {output}")
     if not success:
@@ -465,6 +536,7 @@ def main():
             f"       Riprova a mano: {venv_python()} -m pip install -r "
             f"{PROJECT_DIR / 'requirements.txt'}"
         )
+        log(ripristina_codice(commit_di_partenza))
         sys.exit(1)
 
     log()
@@ -487,11 +559,14 @@ def main():
                 "ERROR: migrations pendenti ma ENCRYPTION_KEY non disponibile "
                 f"(non letta da {WSGI_FILE}). Una migration sui PII fallirebbe "
                 "in silenzio. Deploy interrotto. Procedura manuale: tab Web -> "
-                "Disable, `ENCRYPTION_KEY='...' python migrations/runner.py`, "
-                "tab Web -> Enable."
+                "Disable, `ENCRYPTION_KEY='...' venv/bin/python "
+                "migrations/runner.py`, tab Web -> Enable."
             )
+            log(ripristina_codice(commit_di_partenza))
             sys.exit(1)
-        success, output = run_migrations_safely()
+        success, output = run_migrations_safely(
+            lambda: ripristina_codice(commit_di_partenza)
+        )
         log(f"Migrations: {output}")
         if not success:
             log("ERROR: migrations non eseguite/fallite, deploy interrotto")
