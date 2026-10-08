@@ -84,7 +84,7 @@
                                 {% endif %}
                                 <p class="mb-2">
                                     <i class="fas fa-trophy text-muted me-2"></i>
-                                    {{ gara.discipline|discipline_display }} - {{ _("Al") }} {{ gara.distance }}
+                                    {{ gara.formato_breve|select|join(' · ') }}
                                 </p>
 
                                 <!-- User's position in this gara -->

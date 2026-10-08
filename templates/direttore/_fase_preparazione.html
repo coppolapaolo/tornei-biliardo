@@ -143,7 +143,7 @@
     <div class="c7-rows" id="daPreparare">
       {% if _turni_configurabili %}
       {{ d.riga('fa-list-ol', _('Turni e distanze'),
-                (_('%(n)s turni · %(disc)s · %(dist)s', n=gara.rounds_count, disc=gara.discipline|discipline_display, dist=gara.distance_config|format_distance)
+                (_('%(n)s turni · %(disc)s · %(dist)s', n=gara.rounds_count, disc=gara.formato_breve[0], dist=gara.formato_breve[1])
                  ~ (' · ' ~ ngettext('%(n)d turno modificato', '%(n)d turni modificati', _override|length, n=_override|length) if _override else '')),
                 tone='ok', href=_url_passo.get('turni', '#')) }}
       {% endif %}

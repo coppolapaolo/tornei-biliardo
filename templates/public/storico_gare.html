@@ -76,7 +76,8 @@
         <span class="c7-rows__title d-block">{{ riga.name }}</span>
         <span class="c7-rows__sub d-block">
           {% if riga.date %}<span class="c7-num">{{ riga.date|date_local }}</span>{% endif %}
-          {% if riga.discipline %}<span class="c7-sep">·</span> {{ riga.discipline|discipline_display }}{% endif %}
+          {% set _disciplina = riga.gara.formato_breve[0] %}
+          {% if _disciplina %}<span class="c7-sep">·</span> {{ _disciplina }}{% endif %}
           {% if riga.location %}<span class="c7-sep">·</span> {{ riga.location }}{% endif %}
           {% if riga.campionato_name %}<span class="c7-sep">·</span> {{ riga.campionato_name }}{% endif %}
         </span>

@@ -25,8 +25,9 @@
                     {% endif %}
                 </td>
                 <td data-label="{{ _("Disciplina") }}">
-                    {{ gara.discipline|discipline_display }}
-                    <div class="text-muted" style="font-size: 12px; font-weight: 600;">{{ gara.distance_config|format_distance }}</div>
+                    {% set _disciplina, _distanza = gara.formato_breve %}
+                    {{ _disciplina }}
+                    <div class="text-muted" style="font-size: 12px; font-weight: 600;">{{ _distanza }}</div>
                 </td>
                 <td data-label="{{ _("Data") }}"><span class="c7-num">{{ gara.date|date_local }}</span></td>
                 <td data-label="{{ _("Sala") }}">{{ gara.location or "—" }}</td>

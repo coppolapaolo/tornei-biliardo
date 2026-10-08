@@ -90,7 +90,8 @@
         <span class="c7-num c7-tessera__muted" style="flex-shrink:0">{{ gara.date|date_local }}</span>
         <span class="text-truncate flex-fill">
           {{ gara.display_name }}
-          {% if gara.discipline %}<span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}{% endif %}
+          {% set _disciplina = gara.formato_breve[0] %}
+          {% if _disciplina %}<span class="c7-sep">·</span> {{ _disciplina }}{% endif %}
           {% if gara.location %}<span class="c7-sep">·</span> {{ gara.location }}{% endif %}
         </span>
       </div>

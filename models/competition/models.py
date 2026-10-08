@@ -991,6 +991,13 @@ class Gara(SoftDeleteMixin, db.Model):
             return False
 
     @property
+    def formato_breve(self) -> tuple:
+        """`(disciplina, distanza)` dei turni, per le righe di riepilogo."""
+        from models.competition.showcase_view import formato_breve
+
+        return formato_breve(self)
+
+    @property
     def formato_della_gara_in_uso(self) -> bool:
         """Almeno un turno gioca il formato della gara (vedi showcase_view)."""
         from models.competition.showcase_view import formato_della_gara_in_uso

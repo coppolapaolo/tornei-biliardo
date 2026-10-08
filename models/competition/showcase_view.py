@@ -232,6 +232,35 @@ def formato_della_gara_in_uso(gara: Gara) -> bool:
     return _formato_della_gara(gara) in _formati_dei_turni(gara)
 
 
+def formato_breve(gara: Gara) -> tuple:
+    """`(disciplina, distanza)` per descrivere la gara in una riga.
+
+    Le card, gli elenchi e le righe di riepilogo leggevano `gara.discipline` e
+    `gara.distance_config`, cioè il formato scritto alla creazione: con i turni
+    modificati (ADR-027) dicevano un formato che magari nessun turno gioca
+    (gara 50, 08/10/2026). Qui si parte dai turni:
+
+    * tutti uguali → la loro disciplina e la loro distanza, anche se diverse
+      da quelle della gara;
+    * discipline diverse → i nomi in fila, «Palla 8, Palla 9, Palla 10»;
+    * distanze diverse → «distanze diverse per turno». Il dettaglio sta nel
+      regolamento della gara, che le mette in fila turno per turno.
+    """
+    from models.competition.round_configuration import RoundConfiguration
+
+    formati = _formati_dei_turni(gara)
+    disciplina = ", ".join(dict.fromkeys(d for d, _regola in formati))
+    if len({regola for _d, regola in formati}) > 1:
+        return disciplina, _("distanze diverse per turno")
+    primo = (
+        RoundConfiguration.get_for_gara_round(gara.id, 1) if gara.rounds_count else None
+    )
+    if primo is None and not gara.distance:
+        return disciplina, ""
+    distanza = primo.effective_distance_config(gara) if primo else gara.distance_config
+    return disciplina, distanza.to_display_string()
+
+
 def _formati_dei_turni(gara: Gara) -> List[tuple]:
     """Disciplina e regola di ogni turno, con gli override risolti (ADR-027).
 

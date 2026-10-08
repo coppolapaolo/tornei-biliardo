@@ -91,11 +91,12 @@
       <div class="c7-tessera__meta">
         {% if card.campionato_name %}{{ card.campionato_name }}
         {% elif gara.is_standalone %}{{ _('Gara singola') }}{% endif %}
-        {% if gara.discipline %}
-          <span class="c7-sep">·</span> {{ gara.discipline|discipline_display }}
+        {% set _disciplina, _distanza = gara.formato_breve %}
+        {% if _disciplina %}
+          <span class="c7-sep">·</span> {{ _disciplina }}
         {% endif %}
-        {% if gara.distance %}
-          <span class="c7-sep">·</span> {{ gara.distance_config|format_distance }}
+        {% if _distanza %}
+          <span class="c7-sep">·</span> {{ _distanza }}
         {% endif %}
         {% if gara.effective_time_limit_minutes %}
           <span class="c7-sep">·</span> {{ _('%(n)s minuti a partita', n=gara.effective_time_limit_minutes) }}
