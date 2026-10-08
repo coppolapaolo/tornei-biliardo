@@ -53,6 +53,17 @@ venv/bin/python migrations/runner.py
   > di PythonAnywhere. È da lì che veniva il «set di pacchetti diverso» citato
   > più sotto a proposito di `pyOpenSSL`/`pymongo`.
 
+  > ⚠️ **Un deploy che si ferma dopo il pull riporta il disco al commit di
+  > partenza** (`ripristina_codice`, `git reset --keep`), dal 2026-10-08.
+  > Quella notte il `disable` ha risposto `502` e lo script si è fermato senza
+  > migration, ma col codice nuovo già sul disco. Una web app non ricaricata
+  > **non resta sul codice vecchio**: i moduli già importati sono vecchi,
+  > template e import tardivi nuovi. Il risultato sono stati 500 su
+  > `ClassificationSystem.POINTS` e su `ssr_fino_al` non definito, mentre i
+  > processi nuovi (`daily_jobs`) trovavano lo schema senza `gara.points_win`.
+  > Le chiamate all'API ora si ritentano tre volte sui 5xx. Presidio:
+  > `tests/new/unit/test_auto_deploy_ripristino.py`.
+
   > ⚠️ **Nelle notti senza commit nuovi lo script decide se reinstallare con
   > `scripts/requirements_check.py`**, lanciato col venv: confronta
   > `requirements.txt` coi metadati dei pacchetti installati usando `packaging`.
