@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.60.1](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.60.0...v1.60.1) (2026-10-08)
+
+
+### Correzioni
+
+* card, elenchi e regolamento descrivono la gara coi suoi turni ([#635](https://github.com/coppolapaolo/tornei-biliardo/issues/635)) ([a8b913b](https://github.com/coppolapaolo/tornei-biliardo/commit/a8b913b1d096c7e0813263f8f3dc62c2287b6f08))
+* la testata della gara tace il formato che nessun turno gioca ([#634](https://github.com/coppolapaolo/tornei-biliardo/issues/634)) ([3d95a31](https://github.com/coppolapaolo/tornei-biliardo/commit/3d95a31151f735a103404e0834c90f9561f5a7a6))
+* un deploy interrotto dopo il pull riporta il disco al codice di prima ([#632](https://github.com/coppolapaolo/tornei-biliardo/issues/632)) ([8dbe17e](https://github.com/coppolapaolo/tornei-biliardo/commit/8dbe17eff4573bf7d63551910b8f2c5b8b97463b))
+
 ## [1.60.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.59.0...v1.60.0) (2026-10-07)
 
 
