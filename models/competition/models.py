@@ -991,6 +991,13 @@ class Gara(SoftDeleteMixin, db.Model):
             return False
 
     @property
+    def formato_della_gara_in_uso(self) -> bool:
+        """Almeno un turno gioca il formato della gara (vedi showcase_view)."""
+        from models.competition.showcase_view import formato_della_gara_in_uso
+
+        return formato_della_gara_in_uso(self)
+
+    @property
     def distance_config(self):
         """Get Distance value object for this gara.
 
