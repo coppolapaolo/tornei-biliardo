@@ -38,7 +38,7 @@ strategia.
 
 from __future__ import annotations
 
-from typing import Dict, List, Mapping, Optional, Sequence, Tuple
+from typing import Callable, Dict, List, Mapping, Optional, Sequence, Tuple
 
 from .bracket import (
     QUALIFIERS_PER_GROUP,
@@ -221,7 +221,7 @@ def _match_row_to_groups(
 
 
 def qualifier_seeding(qualified_by_group: Sequence[Sequence[int]]) -> List[int]:
-    """Ordine di testa di serie dei qualificati al tabellone finale.
+    """Ordine di testa di serie dei qualificati al tabellone finale (FISBB).
 
     Si legge "per colonne": prima i primi qualificati di ogni girone, poi i
     secondi, e cosi' via fino ai quarti. Cioe' i `g` migliori diretti sono i
@@ -237,6 +237,9 @@ def qualifier_seeding(qualified_by_group: Sequence[Sequence[int]]) -> List[int]:
     davvero e' la separazione applicata dalla strategia sopra questo ordine
     (`_assign_slots(..., groups_of=...)`), che quando non ci sono squadre da
     separare usa proprio il girone.
+
+    La formula FISBB qualifica sempre quattro atleti per girone; la lettura
+    per colonne, con un numero qualunque di qualificati, e' `seed_per_colonne`.
     """
     if not qualified_by_group:
         return []
@@ -248,11 +251,40 @@ def qualifier_seeding(qualified_by_group: Sequence[Sequence[int]]) -> List[int]:
             f"ricevuto {[len(group) for group in qualified_by_group]}"
         )
 
-    return [
-        group[rank]
-        for rank in range(QUALIFIERS_PER_GROUP)
-        for group in qualified_by_group
-    ]
+    return seed_per_colonne(qualified_by_group)
 
 
-__all__ = ["assign_groups", "distribute_into_groups", "qualifier_seeding"]
+def seed_per_colonne(
+    qualified_by_group: Sequence[Sequence[int]],
+    column_key: Optional[Callable[[int], object]] = None,
+) -> List[int]:
+    """I qualificati in ordine di testa di serie, letti per colonne.
+
+    Prima tutti i primi qualificati dei gironi, poi tutti i secondi, e cosi'
+    via: e' `qualifier_seeding` senza il vincolo dei quattro per girone. Lo
+    usa anche il girone all'italiana col tabellone finale (i primi `K` di
+    ogni girone, `models/matchmaking/fase_finale.py`).
+
+    Args:
+        qualified_by_group: i qualificati di ogni girone, ciascuno nel suo
+            ordine; le liste possono avere lunghezze diverse (un girone che
+            ne qualifica uno in meno salta quella colonna).
+        column_key: ordina i giocatori **dentro** ogni colonna (chi e'
+            migliore fra i primi). Assente, vale l'ordine dei gironi.
+    """
+    longest = max((len(group) for group in qualified_by_group), default=0)
+    seeded: List[int] = []
+    for rank in range(longest):
+        column = [group[rank] for group in qualified_by_group if len(group) > rank]
+        if column_key is not None:
+            column = sorted(column, key=column_key)
+        seeded.extend(column)
+    return seeded
+
+
+__all__ = [
+    "assign_groups",
+    "distribute_into_groups",
+    "qualifier_seeding",
+    "seed_per_colonne",
+]

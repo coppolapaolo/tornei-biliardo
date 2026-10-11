@@ -48,10 +48,16 @@ def limite_minuti(match: Any) -> Optional[int]:
 
 
 def limite_del_turno(gara: Any, round_number: Optional[int]) -> Optional[int]:
-    """I minuti delle partite di un turno: quelli del turno, se li ha, o della gara.
+    """I minuti delle partite di un turno, o None se non c'è limite.
 
-    È ciò che `fissa_regole` scrive sulla partita quando nasce. None = nessun
-    limite.
+    È ciò che `fissa_regole` scrive sulla partita quando nasce. L'ordine:
+
+    1. l'**override del turno** (ADR-027), se dice qualcosa: «senza limite» o
+       N minuti;
+    2. nei turni del **tabellone dopo i gironi**, il limite della fase finale
+       (`Gara.effective_final_phase_time_limit_minutes`: come i gironi,
+       senza limite o N minuti);
+    3. il limite della **gara**.
     """
     # Dalla relazione della gara, non con una query: `fissa_regole` gira su
     # ogni partita nuova, e un turno ne crea molte insieme. La relazione si
@@ -64,8 +70,13 @@ def limite_del_turno(gara: Any, round_number: Optional[int]) -> Optional[int]:
         ),
         None,
     )
-    if config is not None:
-        return config.get_effective_time_limit_minutes(gara)
+    if config is not None and config.time_limit_minutes is not None:
+        return config.time_limit_minutes if config.time_limit_minutes > 0 else None
+    if getattr(gara, "ha_tabellone_finale", False) is True:
+        from models.competition.fase_finale_service import e_della_fase_finale
+
+        if e_della_fase_finale(gara, round_number):
+            return gara.effective_final_phase_time_limit_minutes
     return gara.effective_time_limit_minutes
 
 

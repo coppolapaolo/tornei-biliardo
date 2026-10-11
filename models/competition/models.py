@@ -31,6 +31,7 @@ import secrets
 
 if TYPE_CHECKING:
     from models.matchmaking.gironi import ComposizioneGironi
+    from models.matchmaking.fase_finale import FaseFinale
 
 # Byte di entropia del token del link pubblico di iscrizione (issue #61).
 # 6 byte → 8 caratteri url-safe, ~4.7e13 combinazioni: abbastanza corto da
@@ -283,6 +284,18 @@ class Gara(SoftDeleteMixin, db.Model):
     # Come si compongono i gironi: sorteggio, per ELO, per categoria
     # (`ComposizioneGironi`). NULL = come il campionato, poi il sorteggio.
     group_seeding = db.Column(db.String(20), nullable=True)
+    # La fase finale dopo i gironi (`FaseFinale`): nessuna, tabellone (i
+    # primi `qualifiers_per_group` di ogni girone a eliminazione diretta),
+    # piazzamento. NULL = come il campionato, e su una gara singola nessuna.
+    # Vale solo per il girone all'italiana: vedi `effective_final_phase_mode`.
+    final_phase_mode = db.Column(db.String(20), nullable=True)
+    # Quanti passano al tabellone da ogni girone: NULL = come il campionato,
+    # poi 2.
+    qualifiers_per_group = db.Column(db.Integer, nullable=True)
+    # Il limite di tempo delle partite della fase finale, a tre stati come
+    # `time_limit_minutes`: NULL = come i gironi, 0 = senza limite, N = N
+    # minuti. Si fissa sulla partita quando nasce (ADR-075, ADR-077).
+    final_phase_time_limit_minutes = db.Column(db.Integer, nullable=True)
 
     # Le catene degli spareggi (ADR-078): come si ordinano i pari merito nella
     # classifica di turno e in quella di gara. Una lista JSON di voci
@@ -529,6 +542,50 @@ class Gara(SoftDeleteMixin, db.Model):
         if not valore and self.campionato is not None:
             valore = self.campionato.default_group_seeding
         return ComposizioneGironi.resolve(valore)
+
+    @property
+    def effective_final_phase_mode(self) -> "FaseFinale":
+        """Cosa si gioca dopo i gironi: gara → campionato → nessuna fase finale.
+
+        Solo il girone all'italiana ha una fase finale.
+        """
+        from models.matchmaking.configuration import MatchmakingStrategy
+        from models.matchmaking.fase_finale import FaseFinale
+
+        if self.matchmaking_strategy != MatchmakingStrategy.ROUND_ROBIN.value:
+            return FaseFinale.NESSUNA
+        valore = self.final_phase_mode
+        if not valore and self.campionato is not None:
+            valore = getattr(self.campionato, "default_final_phase_mode", None)
+        return FaseFinale.resolve(valore)
+
+    @property
+    def ha_tabellone_finale(self) -> bool:
+        """I gironi finiscono in un tabellone fra i primi di ogni girone."""
+        from models.matchmaking.fase_finale import FaseFinale
+
+        return self.effective_final_phase_mode is FaseFinale.TABELLONE
+
+    @property
+    def effective_qualifiers_per_group(self) -> int:
+        """Quanti passano al tabellone da ogni girone: gara → campionato → 2."""
+        from models.matchmaking.fase_finale import qualificati_per_girone
+
+        valore = self.qualifiers_per_group
+        if valore is None and self.campionato is not None:
+            valore = getattr(self.campionato, "default_qualifiers_per_group", None)
+        return qualificati_per_girone(valore)
+
+    @property
+    def effective_final_phase_time_limit_minutes(self) -> Optional[int]:
+        """I minuti delle partite della fase finale, o None senza limite.
+
+        NULL vuol dire «come i gironi»; zero «senza limite» per scelta.
+        """
+        valore = self.final_phase_time_limit_minutes
+        if valore is None:
+            return self.effective_time_limit_minutes
+        return valore if valore > 0 else None
 
     @property
     def effective_time_limit_minutes(self) -> Optional[int]:

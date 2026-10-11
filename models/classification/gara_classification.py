@@ -5,7 +5,7 @@ Purpose: Gara-level classification services (round, final, strategy-based)
 
 import logging
 from dataclasses import replace
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy.orm import joinedload
 from models.base import db
 from models.competition.models import Inscription
@@ -215,33 +215,40 @@ class StrategyBasedClassificationService:
         # Get appropriate strategy
         strategy = self.get_strategy_for_gara(gara)
 
+        # Col tabellone dopo i gironi, nei turni del tabellone i numeri sono
+        # quelli dei gironi (le partite del tabellone non cambiano la
+        # classifica di un girone) e la posizione la dà il tabellone (UC6).
+        fino = self._fine_dei_gironi(gara, round_number)
+
         # Aggregate scores from matches. Lo spareggio SSR non entra nella
         # classifica di turno: si gioca a gara finita (ADR-078).
-        scores = self._aggregator.aggregate_round_scores(gara_id, round_number)
+        scores = self._aggregator.aggregate_round_scores(gara_id, fino)
         scores = self._enrich_with_bracket_position(gara, scores)
 
         # Get previous classification if exists. Per il turno 1 il precedente è
         # il turno 0, cioè la classifica di partenza (SeedingService): serve
         # come criterio di parimerito già dal primo turno.
         previous = None
-        if round_number >= 1:
-            previous = self._load_previous_classification(gara_id, round_number - 1)
+        if fino >= 1:
+            previous = self._load_previous_classification(gara_id, fino - 1)
 
         # Calculate using strategy
-        contesto = self._contesto_della_catena(gara, Livello.TURNO, round_number)
+        contesto = self._contesto_della_catena(gara, Livello.TURNO, fino)
         result = strategy.calculate(
             scores=scores,
             previous_classification=previous,
             context={
                 "gara_id": gara_id,
-                "round_number": round_number,
+                "round_number": fino,
                 **contesto,
             },
         )
         # Nel girone all'italiana a più gironi ogni girone si ordina per sé, e
         # la classifica della gara mette prima i primi di ogni girone, poi i
         # secondi (ADR-076).
-        result = self._a_gironi(gara, result, contesto, Livello.TURNO, round_number)
+        result = self._a_gironi(gara, result, contesto, Livello.TURNO, fino)
+        if fino != round_number:
+            result = self._con_il_tabellone(gara, result, round_number)
 
         # Persist result to database
         self._save_round_classification(gara_id, round_number, result)
@@ -311,9 +318,12 @@ class StrategyBasedClassificationService:
                 **contesto,
             },
         )
+        fino = self._fine_dei_gironi(gara, final_round)
         result = self._a_gironi(
-            gara, result, contesto, Livello.GARA, final_round, ssr=spot_shot_results
+            gara, result, contesto, Livello.GARA, fino, ssr=spot_shot_results
         )
+        if fino != final_round:
+            result = self._con_il_tabellone(gara, result, final_round)
 
         # Persist final gara classification
         self._save_gara_classification(gara_id, result, spot_shot_results)
@@ -398,6 +408,60 @@ class StrategyBasedClassificationService:
                 },
             },
         )
+
+    @staticmethod
+    def _fine_dei_gironi(gara, round_number: int) -> int:
+        """Il turno fin dove contano i numeri: l'ultimo dei gironi, nel tabellone.
+
+        Fuori dal tabellone finale, il turno stesso.
+        """
+        from models.competition.fase_finale_service import (
+            e_della_fase_finale,
+            turni_dei_gironi,
+        )
+
+        if e_della_fase_finale(gara, round_number):
+            return turni_dei_gironi(gara)
+        return round_number
+
+    @staticmethod
+    def _con_il_tabellone(
+        gara, result: ClassificationResult, fino_al_turno: int
+    ) -> ClassificationResult:
+        """Le posizioni del tabellone finale sopra la classifica dei gironi (UC6).
+
+        ``result`` è la classifica alla fine dei gironi, già in fasce; qui si
+        mette in cima chi ha giocato il tabellone, nell'ordine in cui ne è
+        uscito, e sotto gli altri. I numeri restano quelli dei gironi, e così
+        girone e posizione nel girone.
+        """
+        from models.competition.fase_finale_service import classifica_finale
+
+        per_id = {e.player_id: e for e in result.entries}
+        fasce_dei_gironi: List[Tuple[int, List[int]]] = []
+        for entry in sorted(result.entries, key=lambda e: e.position):
+            if fasce_dei_gironi and fasce_dei_gironi[-1][0] == entry.position:
+                fasce_dei_gironi[-1][1].append(entry.player_id)
+            else:
+                fasce_dei_gironi.append((entry.position, [entry.player_id]))
+        entries = []
+        pari = False
+        for posizione, ids in classifica_finale(gara, fasce_dei_gironi, fino_al_turno):
+            presenti = [pid for pid in ids if pid in per_id]
+            da_solo = len(presenti) == 1
+            pari = pari or not da_solo
+            for pid in presenti:
+                entries.append(
+                    replace(
+                        per_id[pid],
+                        position=posizione,
+                        tied_with=(
+                            () if da_solo else tuple(i for i in presenti if i != pid)
+                        ),
+                        tiebreaker_resolved=da_solo,
+                    )
+                )
+        return replace(result, entries=tuple(entries), has_ties=pari)
 
     @staticmethod
     def _contesto_della_catena(gara, livello, fino_al_turno: int) -> Dict[str, Any]:

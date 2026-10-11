@@ -66,6 +66,12 @@ class SpareggioService:
 
         if not ordina_con_la_catena(sistema_dichiarato(gara)):
             return False
+        # Col tabellone dopo i gironi il podio lo dà il tabellone, e i due
+        # semifinalisti senza finalina sono terzi a pari merito (UC6): come
+        # nel sistema POSITION, lo spareggio inventerebbe una gerarchia che
+        # il tabellone non ha prodotto (ADR-040).
+        if getattr(gara, "ha_tabellone_finale", False) is True:
+            return False
         return ssr_della_catena(catena_di_gara(gara)) is not None
 
     @staticmethod
@@ -238,6 +244,10 @@ class SpareggioService:
         )
         if not righe:
             return [], {}
+        from models.competition import fase_finale_service
+
+        if fase_finale_service.e_della_fase_finale(gara, final_round):
+            return SpareggioService._fasce_col_tabellone(gara, righe, final_round)
         ssr = {
             gc.user_id: gc.spot_shot_wins
             for gc in db.session.query(GaraClassification)
@@ -290,6 +300,31 @@ class SpareggioService:
                 concorrenti, criterio_principale(sistema), catena, scontri=scontri
             )
         ], {}
+
+    @staticmethod
+    def _fasce_col_tabellone(
+        gara: Gara, righe: List, final_round: int
+    ) -> Tuple[List[Tuple[int, List]], Dict[int, Tuple[int, int]]]:
+        """Le fasce di una gara col tabellone dopo i gironi (UC6).
+
+        Prima chi ha giocato il tabellone, nell'ordine in cui ne è uscito; poi
+        gli altri, nella classifica a gironi fatta con la catena di gara.
+        """
+        from models.competition import fase_finale_service
+        from models.competition.gironi_service import GironiService
+
+        fasce_dei_gironi, posti = fase_finale_service.ordine_dei_gironi(
+            gara, completa=False
+        )
+        per_id = {rc.user_id: rc for rc in righe}
+        fasce = [
+            (posizione, [per_id[pid] for pid in ids if pid in per_id])
+            for posizione, ids in fase_finale_service.classifica_finale(
+                gara, fasce_dei_gironi, final_round
+            )
+        ]
+        gironi = posti if GironiService.girone_dei_giocatori(gara) else {}
+        return [(p, r) for p, r in fasce if r], gironi
 
     @staticmethod
     def _get_effective_final_round(gara: Gara) -> int:

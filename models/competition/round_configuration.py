@@ -158,9 +158,16 @@ class RoundConfiguration(BaseModel):
         return self.is_race_to_sets if self.is_race_to_sets is not None else fallback
 
     def get_effective_time_limit_minutes(self, gara) -> Optional[int]:
-        """I minuti delle partite di questo turno, o None senza limite."""
+        """I minuti delle partite di questo turno, o None senza limite.
+
+        Senza override vale quel che vale il turno senza di lui: la gara, o
+        nel tabellone dopo i gironi il limite della fase finale
+        (`tempo.limite_del_turno`).
+        """
         if self.time_limit_minutes is None:
-            return gara.effective_time_limit_minutes
+            from models.match.tempo import limite_del_turno
+
+            return limite_del_turno(gara, self.round_number)
         return self.time_limit_minutes if self.time_limit_minutes > 0 else None
 
     def effective_distance_config(self, gara):
