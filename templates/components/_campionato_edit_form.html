@@ -239,6 +239,9 @@
                seguono il tipo di campionato, che qui si cambia senza ricaricare. #}
             {% with gironi_prefisso='default_', gironi_strategia_da='#campionato_type', gironi_sistema_da='#default_classification_system',
                     gironi_tetto=campionato.default_max_groups, gironi_composizione=campionato.default_group_seeding,
+                    fase_modo=campionato.default_final_phase_mode, fase_k=campionato.default_qualifiers_per_group,
+                    fase_finalina=campionato.default_third_place_match,
+                    fase_tempo=campionato.default_final_phase_time_limit_minutes,
                     gironi_nota=_("Proposti a ogni gara del campionato, che può cambiarli. Quanti gironi, lo sceglie il direttore all'avvio di ogni gara, sugli iscritti presenti: almeno 3 giocatori per girone.") %}
             {% include "components/_campo_gironi.html" %}
             {% endwith %}

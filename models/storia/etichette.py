@@ -62,6 +62,16 @@ ETICHETTE: Dict[str, object] = {
     "group_seeding": _l("Composizione dei gironi"),
     "default_max_groups": _l("Gironi proposti"),
     "default_group_seeding": _l("Composizione dei gironi proposta"),
+    # La fase finale dopo i gironi (ADR-081).
+    "final_phase_mode": _l("Fase finale"),
+    "qualifiers_per_group": _l("Qualificati per girone"),
+    "final_phase_time_limit_minutes": _l("Limite di tempo della fase finale"),
+    "default_final_phase_mode": _l("Fase finale proposta"),
+    "default_qualifiers_per_group": _l("Qualificati per girone, proposti"),
+    "default_third_place_match": _l("Finalina proposta"),
+    "default_final_phase_time_limit_minutes": _l(
+        "Limite di tempo della fase finale, proposto"
+    ),
     "weight": _l("Peso nel campionato"),
     "x_challenge_id": _l("Esercizio al posto della X"),
     # Le catene degli spareggi (ADR-078).
@@ -123,6 +133,10 @@ _COME_CAMPO_DELLA_GARA = {
     "default_points_loss": "points_loss",
     "default_max_groups": "max_groups",
     "default_group_seeding": "group_seeding",
+    "default_final_phase_mode": "final_phase_mode",
+    "default_qualifiers_per_group": "qualifiers_per_group",
+    "default_third_place_match": "third_place_match",
+    "default_final_phase_time_limit_minutes": "final_phase_time_limit_minutes",
     "campionato_type": "matchmaking_strategy",
     "strategy_type": "matchmaking_strategy",
 }
@@ -172,6 +186,11 @@ def _valori_noti() -> Dict[str, Dict[str, object]]:
             "elo": _l("per ELO"),
             "categoria": _l("per categoria"),
         },
+        "final_phase_mode": {
+            "nessuna": _l("nessuna"),
+            "tabellone": _l("tabellone fra i primi di ogni girone"),
+            "piazzamento": _l("finali per piazzamento"),
+        },
         "withdraw_policy": {
             "Forfeit": _l("Perde a tavolino le partite restanti"),
             "Exclude": _l("Esce dalla gara"),
@@ -203,6 +222,11 @@ def valore(campo: str, grezzo: str | None) -> str:
 
         utente = db.session.get(User, int(grezzo))
         return utente.username if utente else grezzo
+    if campo == "final_phase_time_limit_minutes":
+        # Tre stati (ADR-081): vuoto vuol dire «come i gironi».
+        if grezzo is None or grezzo == "":
+            return _("come i gironi")
+        campo = "time_limit_minutes"
     if grezzo is None or grezzo == "":
         if campo in (
             "start_rule",

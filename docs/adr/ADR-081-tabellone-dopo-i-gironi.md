@@ -138,7 +138,8 @@ girone, e la gara partita con un girone solo finisce col girone.
   paga una query in più dove serve (generazione, classifiche, limite di
   tempo), solo nelle gare col tabellone finale.
 - Le viste del tabellone sono ancora legate alle strategie a tabellone
-  (`BRACKET_STRATEGIES`): mostrarle anche qui è il lavoro della PR dei moduli.
+  (`BRACKET_STRATEGIES`): mostrarle anche qui è il lavoro della PR delle
+  pagine, che segue quella dei moduli.
 
 ### Rischi
 
@@ -158,6 +159,30 @@ girone, e la gara partita con un girone solo finisce col girone.
 - Presidi: `test_gironi_fase_finale_regole.py`,
   `test_gironi_tabellone_finale.py`, `test_fase_finale_migration.py`,
   `test_specifiche_conformita.py::TestLaFaseFinaleDopoIGironi`.
+
+## Interfaccia (2026-10-12)
+
+- **Moduli**: il blocco dei gironi (`components/_campo_gironi.html`,
+  `static/js/campo_gironi.js`) ha dentro «più gironi» la fase finale —
+  nessuna o tabellone, qualificati per girone, finalina, limite della fase
+  finale (`components/_campo_limite_fase_finale.html`, tre stati:
+  `LimiteDellaFaseFinale`). Col girone unico il blocco si spegne e il parser
+  scrive «nessuna» (`form_parser.leggi_la_fase_finale`, lo stesso per gara e
+  campionato). «Finali per piazzamento» non si offre e il parser la rifiuta.
+  Col tabellone «esattamente N» sparisce dal configuratore della distanza e
+  dal modale, con la nota che spiega perché; il servizio resta il garante.
+  La finalina del tabellone a eliminazione diretta ha lo stesso nome di
+  campo: quella nascosta si spegne (`bracket_options.js`).
+- **Proposta del campionato a piazzamenti** (ADR-075):
+  `Campionato.default_final_phase_mode`, `default_qualifiers_per_group`,
+  `default_third_place_match`, `default_final_phase_time_limit_minutes`
+  (migration `20261012_fase_finale_proposta`), copiati alla nascita solo
+  sulle gare a girone e, il tabellone, solo con più gironi; proposti solo
+  alle gare a girone. Passando a sommare i totali la fase finale torna
+  «nessuna», sul campionato e sulle gare da avviare.
+- **Foglio di avvio**: ogni voce conta anche i turni del tabellone; «Girone
+  unico» dice che il tabellone non si gioca.
+- **Frase**: `descrivi_fase_finale`, in coda a quella dei gironi.
 
 ## Riferimenti
 

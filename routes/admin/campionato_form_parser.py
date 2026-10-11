@@ -207,7 +207,7 @@ class CampionatoFormParser:
 
     @staticmethod
     def parse_gironi(form: MultiDict) -> Dict[str, Any]:
-        """Tetto e composizione dei gironi proposti alle gare (ADR-076).
+        """Tetto, composizione e fase finale proposti alle gare (ADR-076, 081).
 
         Solo se il modulo li manda: col girone all'italiana si vedono, con le
         altre strategie sono nascosti e non arrivano. Stessi confini del modulo
@@ -215,6 +215,7 @@ class CampionatoFormParser:
         """
         from routes.admin.competition.form_parser import (
             leggi_composizione,
+            leggi_la_fase_finale,
             leggi_tetto_dei_gironi,
         )
 
@@ -226,6 +227,12 @@ class CampionatoFormParser:
         if "default_group_seeding" in form:
             valori["default_group_seeding"] = leggi_composizione(
                 form.get("default_group_seeding")
+            )
+        # La fase finale proposta (ADR-081): solo col tetto, e solo con più
+        # gironi; col girone unico torna «nessuna».
+        if "default_max_groups" in valori:
+            valori.update(
+                leggi_la_fase_finale(form, "default_", valori["default_max_groups"])
             )
         return valori
 

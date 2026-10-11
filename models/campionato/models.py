@@ -127,6 +127,21 @@ class Campionato(db.Model):
     default_group_seeding = db.Column(
         db.String(20), default="sorteggio", nullable=False, server_default="sorteggio"
     )
+    # La fase finale dopo i gironi (ADR-081), proposta alle gare a girone
+    # all'italiana: nessuna o tabellone, quanti passano per girone, la
+    # finalina e il limite di tempo della fase finale (NULL = come i gironi,
+    # 0 = senza limite, N minuti). Solo nei campionati a piazzamenti: chi
+    # somma i totali non ha fase finale (ADR-080).
+    default_final_phase_mode = db.Column(
+        db.String(20), default="nessuna", nullable=False, server_default="nessuna"
+    )
+    default_qualifiers_per_group = db.Column(
+        db.Integer, default=2, nullable=False, server_default="2"
+    )
+    default_third_place_match = db.Column(
+        db.Boolean, default=False, nullable=False, server_default="0"
+    )
+    default_final_phase_time_limit_minutes = db.Column(db.Integer, nullable=True)
     default_catena_turno = db.Column(db.Text, nullable=True)
     default_catena_gara = db.Column(db.Text, nullable=True)
     catena_generale = db.Column(db.Text, nullable=True)

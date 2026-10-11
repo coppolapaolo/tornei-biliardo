@@ -556,7 +556,7 @@ class Gara(SoftDeleteMixin, db.Model):
             return FaseFinale.NESSUNA
         valore = self.final_phase_mode
         if not valore and self.campionato is not None:
-            valore = getattr(self.campionato, "default_final_phase_mode", None)
+            valore = self.campionato.default_final_phase_mode
         return FaseFinale.resolve(valore)
 
     @property
@@ -573,7 +573,7 @@ class Gara(SoftDeleteMixin, db.Model):
 
         valore = self.qualifiers_per_group
         if valore is None and self.campionato is not None:
-            valore = getattr(self.campionato, "default_qualifiers_per_group", None)
+            valore = self.campionato.default_qualifiers_per_group
         return qualificati_per_girone(valore)
 
     @property

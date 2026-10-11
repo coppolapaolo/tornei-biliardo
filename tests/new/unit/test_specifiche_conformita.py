@@ -3391,6 +3391,56 @@ class TestLaFaseFinaleDopoIGironi:
         gara.matchmaking_strategy = "amalfi"
         assert not gara.ha_tabellone_finale  # solo il girone all'italiana
 
+    def test_il_campionato_a_piazzamenti_propone_e_chi_somma_la_toglie(
+        self, db_session
+    ):
+        """> Il campionato a piazzamenti **propone** alle sue gare a girone la
+        > fase finale […] una gara che nasce a girone unico non riceve il
+        > tabellone. Un campionato che passa a **sommare i totali** toglie la
+        > fase finale alle gare non ancora avviate (nota del 2026-10-12)."""
+        from datetime import date, timedelta
+
+        from models.campionato.models import Campionato
+        from models.campionato.tournament_service import TournamentService
+        from models.competition.services import GaraService
+
+        camp = Campionato(
+            name="Lunedì al 74 conformità",
+            campionato_type="round_robin",
+            default_classification_system="POSITION",
+            is_active=True,
+            default_max_groups=2,
+            default_final_phase_mode="tabellone",
+        )
+        db_session.add(camp)
+        db_session.commit()
+
+        def nuova(numero, **extra):
+            return GaraService.create_gara(
+                campionato_id=camp.id,
+                number=numero,
+                name=f"Serata {numero}",
+                date=date.today() + timedelta(days=7 * numero),
+                discipline="8_ball",
+                distance=3,
+                is_race_to=True,
+                matchmaking_strategy="round_robin",
+                first_round_policy="random",
+                odd_number_policy="bye",
+                rounds_count=3,
+                **extra,
+            )
+
+        con_gironi = nuova(1)
+        girone_unico = nuova(2, max_groups=1)
+        assert con_gironi.ha_tabellone_finale
+        assert not girone_unico.ha_tabellone_finale
+        TournamentService().update_campionato(
+            camp.id, default_classification_system="WINS"
+        )
+        db_session.refresh(con_gironi)
+        assert not con_gironi.ha_tabellone_finale
+
     def test_chi_passa_e_quanti(self):
         """> `K` va da 1 al numero di giocatori del girone più piccolo, e i
         > qualificati devono essere almeno due […] chi si è ritirato lascia il

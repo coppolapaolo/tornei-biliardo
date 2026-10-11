@@ -14,7 +14,11 @@
 
    Nel girone all'italiana a più gironi (ADR-076) il foglio chiede quanti
    gironi — da 1 a quanti ne stanno, con la proposta già scelta e le taglie
-   scritte su ogni voce — e come si compongono (`anteprima_gironi`). #}
+   scritte su ogni voce — e come si compongono (`anteprima_gironi`). Col
+   tabellone dopo i gironi (ADR-081) i turni di ogni voce contano anche
+   quelli del tabellone, e la voce «Girone unico» dice che il tabellone non
+   si gioca: la gara finisce col girone
+   (`Anteprima.girone_unico_senza_tabellone`). #}
 {% from "components/_form_macros.html" import choice, form_macros_scripts %}
 
 {% import "components/_tabellone_macros.html" as t with context %}
@@ -62,6 +66,11 @@
           {{ d.riga('fa-diagram-project', _('Il turno 1 si sorteggia adesso'),
                     _('i turni dopo nascono dai risultati, uno alla volta'), tone='ok') }}
           {% endif %}
+          {% if _ag and _ag.girone_unico_senza_tabellone %}
+          {{ d.riga('fa-sitemap', ngettext('Poi il tabellone fra i primi di ogni girone', 'Poi il tabellone fra i primi %(num)d di ogni girone', _ag.qualificati_per_girone),
+                    (_('a eliminazione diretta, con la finalina; con un girone solo non si gioca') if gara.third_place_match else _('a eliminazione diretta; con un girone solo non si gioca')),
+                    tone=('ok' if _ag.massimo > 1 else 'warn')) }}
+          {% endif %}
           {% if _girone %}
             {# Nel girone il riposo non vale niente (SPECIFICHE.md, nota del
                2026-10-11), e con più gironi conta la taglia di ognuno. #}
@@ -90,11 +99,18 @@
           {% if g == 1 %}
             {% set _titolo = _('Girone unico') %}
             {% set _desc = _('tutti contro tutti') %}
+            {% if _ag.girone_unico_senza_tabellone %}
+              {# Il tabellone è fra i primi di ogni girone (ADR-081). #}
+              {% set _desc = _desc ~ ' · ' ~ _('il tabellone non si gioca: la gara finisce col girone') %}
+            {% endif %}
           {% else %}
             {% set _titolo = _('%(n)s gironi', n=g) %}
             {% set _pezzi = [] %}
             {% for t in _taglie %}{% set _void = _pezzi.append(_('Girone %(nome)s: %(n)s', nome=nome_del_girone(loop.index0), n=t)) %}{% endfor %}
             {% set _desc = _pezzi|join(' · ') %}
+            {% if _ag.girone_unico_senza_tabellone %}
+              {% set _desc = _desc ~ ' · ' ~ _('poi il tabellone') %}
+            {% endif %}
           {% endif %}
           {% set _titolo = _titolo ~ ' · ' ~ ngettext('%(num)d turno', '%(num)d turni', _ag.turni[g]) %}
           {% if g == _ag.proposta %}{% set _desc = _desc ~ ' · ' ~ _('proposta') %}{% endif %}

@@ -164,7 +164,9 @@
       {# A piazzamenti la gara sceglie il formato: i gironi seguono il menu
          della strategia, come nella gara singola (ADR-080). #}
       {% with gironi_strategia_da='#matchmaking_strategy', gironi_tetto=gara.max_groups, gironi_composizione=gara.group_seeding,
-              gironi_compagni=true, gironi_compagni_valore=gara.separate_teammates %}
+              gironi_compagni=true, gironi_compagni_valore=gara.separate_teammates,
+              fase_modo=gara.final_phase_mode, fase_k=gara.qualifiers_per_group,
+              fase_finalina=gara.third_place_match, fase_tempo=gara.final_phase_time_limit_minutes %}
       {% include "components/_campo_gironi.html" %}
       {% endwith %}
       {% else %}
@@ -176,7 +178,9 @@
       {% endif %}
     {% else %}
       {% with gironi_strategia_da='#matchmaking_strategy', gironi_tetto=gara.max_groups, gironi_composizione=gara.group_seeding,
-              gironi_compagni=true, gironi_compagni_valore=gara.separate_teammates %}
+              gironi_compagni=true, gironi_compagni_valore=gara.separate_teammates,
+              fase_modo=gara.final_phase_mode, fase_k=gara.qualifiers_per_group,
+              fase_finalina=gara.third_place_match, fase_tempo=gara.final_phase_time_limit_minutes %}
       {% include "components/_campo_gironi.html" %}
       {% endwith %}
     {% endif %}

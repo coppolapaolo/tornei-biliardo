@@ -174,6 +174,31 @@ def descrivi_gironi(
     return frase + "."
 
 
+def descrivi_fase_finale(
+    qualificati: int, finalina: bool, minuti: Optional[int] = None
+) -> str:
+    """La frase del tabellone dopo i gironi (ADR-081), per regolamento e pagine.
+
+    «Poi i primi 2 di ogni girone vanno al tabellone, con la finalina per il
+    3° posto; nel tabellone 45 minuti a partita.» Il limite si dice solo se
+    è diverso da quello dei gironi: ``minuti`` è il valore della gara, a tre
+    stati (None come i gironi, 0 senza limite, N minuti).
+    """
+    frase = ngettext(
+        "Poi il primo di ogni girone va al tabellone",
+        "Poi i primi %(num)d di ogni girone vanno al tabellone",
+        qualificati,
+    )
+    if finalina:
+        frase += _(", con la finalina per il 3° posto")
+    if minuti is not None:
+        if minuti > 0:
+            frase += _("; nel tabellone %(n)s minuti a partita", n=minuti)
+        else:
+            frase += _("; nel tabellone senza limite di tempo")
+    return frase + "."
+
+
 class GironiService:
     """I gironi di una gara a girone all'italiana."""
 
@@ -383,7 +408,12 @@ class GironiService:
 
     @staticmethod
     def frase(gara: Optional[Gara]) -> Optional[str]:
-        """La frase della formula a gironi di una gara, o None col girone unico."""
+        """La frase della formula a gironi di una gara, o None col girone unico.
+
+        Con il tabellone dopo i gironi segue la frase della fase finale
+        (`descrivi_fase_finale`). Una gara partita con un girone solo non ha
+        frase: è il girone di sempre, e il tabellone non si gioca.
+        """
         if gara is None or not _a_gironi_possibili(gara):
             return None
         from .campi_modificabili import e_avviata
@@ -392,12 +422,19 @@ class GironiService:
         # Avviata con un girone solo, o senza tetto: è il girone di sempre.
         if not composti and (gara.effective_max_groups <= 1 or e_avviata(gara)):
             return None
-        return descrivi_gironi(
+        frase = descrivi_gironi(
             [len(g) for g in composti] or None,
             gara.effective_max_groups,
             gara.effective_group_seeding,
             bool(gara.separate_teammates),
         )
+        if gara.ha_tabellone_finale:
+            frase += " " + descrivi_fase_finale(
+                gara.effective_qualifiers_per_group,
+                bool(gara.third_place_match),
+                gara.final_phase_time_limit_minutes,
+            )
+        return frase
 
     @staticmethod
     def azzera(gara_id: int) -> None:
@@ -411,6 +448,7 @@ __all__ = [
     "Anteprima",
     "GironiService",
     "come_si_compongono",
+    "descrivi_fase_finale",
     "descrivi_gironi",
     "nome_del_girone",
     "voci_della_composizione",

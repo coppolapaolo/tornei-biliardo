@@ -378,7 +378,10 @@
                            della modifica della gara. #}
                         {% with gironi_id='create_', gironi_strategia_da='#create_matchmaking_strategy',
                                 gironi_tetto=campionato.default_max_groups, gironi_composizione=campionato.default_group_seeding,
-                                gironi_compagni=true %}
+                                gironi_compagni=true,
+                                fase_modo=campionato.default_final_phase_mode, fase_k=campionato.default_qualifiers_per_group,
+                                fase_finalina=campionato.default_third_place_match,
+                                fase_tempo=campionato.default_final_phase_time_limit_minutes %}
                         {% include "components/_campo_gironi.html" %}
                         {% endwith %}
                         {% with bracket_id='create_' %}
@@ -758,7 +761,8 @@
         // Update game mode text
         const i18n = {
             exactNumber: {{ _("Esatto numero: {distance} triangoli totali")|tojson }},
-            raceTo: {{ _("Al {distance} (si vince a {distance} triangoli)")|tojson }}
+            raceTo: {{ _("Al {distance} (si vince a {distance} triangoli)")|tojson }},
+            soloAlN: {{ _("Con il tabellone dopo i gironi si gioca a chi arriva prima: nel tabellone il pareggio non esiste.")|tojson }}
         };
         function updateGameModeText() {
             if (!distanceInput || !gameModeText) return;
@@ -768,6 +772,9 @@
                 gameModeText.textContent = i18n.exactNumber.replace('{distance}', distance);
             } else {
                 gameModeText.textContent = i18n.raceTo.replace(/\{distance\}/g, distance);
+            }
+            if (typeof window.gironiConTabellone === 'function' && window.gironiConTabellone()) {
+                gameModeText.textContent += ' · ' + i18n.soloAlN;
             }
         }
 
@@ -779,8 +786,15 @@
 
             const distance = parseInt(distanceInput?.value) || 0;
 
-            // Exact number is always available when distance > 0
-            if (distance > 0) {
+            // Col tabellone dopo i gironi (ADR-081) si gioca a chi arriva
+            // prima: il numero esatto non si offre (`campo_gironi.js`).
+            const conTabellone = typeof window.gironiConTabellone === 'function'
+                && window.gironiConTabellone();
+            if (conTabellone) {
+                exactNumberCheckbox.disabled = true;
+                exactNumberCheckbox.checked = false;
+                if (exactNumberContainer) exactNumberContainer.style.opacity = '0.5';
+            } else if (distance > 0) {
                 exactNumberCheckbox.disabled = false;
                 if (exactNumberContainer) exactNumberContainer.style.opacity = '1';
             } else {
@@ -827,6 +841,7 @@
         if (oddPolicySelect) {
             oddPolicySelect.addEventListener('change', updateTrioWarning);
         }
+        document.addEventListener('gara:fase-finale', updateExactNumberAvailability);
 
         // Reset wizard when modal is opened
         const modal = document.getElementById('newProvaModal');
