@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.64.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.63.0...v1.64.0) (2026-10-11)
+
+
+### Funzioni nuove
+
+* una classifica per girone nelle pagine della gara ([#643](https://github.com/coppolapaolo/tornei-biliardo/issues/643)) ([fda32d0](https://github.com/coppolapaolo/tornei-biliardo/commit/fda32d0b632905a00aafa10e34f9eb19783a29ab))
+
 ## [1.63.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.62.0...v1.63.0) (2026-10-11)
 
 
