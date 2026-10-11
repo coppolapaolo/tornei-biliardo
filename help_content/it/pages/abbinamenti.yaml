@@ -149,6 +149,31 @@ blocks:
       con accanto a ogni nome la posizione nel girone («1º girone A»).
 
   - type: heading
+    id: fase_finale
+    title: "Dopo i gironi: il tabellone"
+
+  - type: text
+    text: >-
+      Con più gironi la gara può finire con un **tabellone**: nel modulo,
+      sotto i gironi, scegli **Fase finale → Tabellone**, quanti passano da
+      ogni girone (**Qualificati per girone**, di norma 2), se giocare la
+      **finale per il 3°/4° posto** e il **limite di tempo della fase
+      finale**: come i gironi, senza limite o un limite diverso. Con due
+      gironi e due qualificati si giocano le semifinali 1ºA–2ºB e 1ºB–2ºA,
+      poi la finale.
+
+  - type: list
+    title: "Le regole"
+    items:
+      - "Il tabellone c'è solo con **più gironi**: con il girone unico la voce non compare."
+      - "I turni del tabellone si contano già all'avvio: due gironi da 4 con due qualificati fanno 3 turni di girone più semifinali e finale. Il foglio di avvio li scrive su ogni voce."
+      - "Se all'avvio scegli **un girone solo**, il tabellone **non si gioca**: la gara finisce col girone, e il foglio di avvio lo dice."
+      - "Chi viene dallo stesso girone si incontra il più tardi possibile. Se i qualificati non riempiono il tabellone, i migliori primi passano il primo turno senza giocare."
+      - "Con il tabellone si gioca **a chi arriva prima**, anche nei gironi: nel tabellone qualcuno deve passare il turno. «Esattamente N triangoli» non si può scegliere."
+      - "La classifica finale: prima chi ha giocato il tabellone, nell'ordine in cui ne è uscito, poi gli altri nell'ordine dei gironi."
+      - "In un campionato la fase finale la propone il campionato **a piazzamenti**; chi somma vittorie, triangoli o punti non ce l'ha."
+
+  - type: heading
     id: eliminazione
     title: "Eliminazione diretta"
 

@@ -693,6 +693,21 @@ def create_app(config_name=None, *, da_script: bool = False):
     from models.matchmaking.gironi import nome_del_girone
 
     app.jinja_env.globals["nome_del_girone"] = nome_del_girone
+    # La fase finale dopo i gironi (ADR-081): le voci del modulo e il limite
+    # di tempo di ogni turno, con la sua precedenza.
+    from models.match.tempo import limite_del_turno
+    from models.matchmaking.fase_finale import (
+        MASSIMO_QUALIFICATI_PER_GIRONE,
+        FaseFinale,
+        LimiteDellaFaseFinale,
+    )
+
+    app.jinja_env.globals["FaseFinale"] = FaseFinale
+    app.jinja_env.globals["LimiteDellaFaseFinale"] = LimiteDellaFaseFinale
+    app.jinja_env.globals["massimo_qualificati_per_girone"] = (
+        MASSIMO_QUALIFICATI_PER_GIRONE
+    )
+    app.jinja_env.globals["limite_del_turno"] = limite_del_turno
     # Le classifiche per girone delle pagine della gara (ADR-076).
     from models.classification.gironi_in_pagina import (
         girone_della_riga,

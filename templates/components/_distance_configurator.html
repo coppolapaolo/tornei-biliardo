@@ -83,6 +83,14 @@ Parametri:
             {{ _('Sul tabellone si gioca sempre a chi arriva prima: conta solo chi passa il turno, quindi i triangoli giocati dopo che il vincitore è deciso non cambierebbero nulla.') }}
         </div></div>
     </div>
+    {# Il tabellone dopo i gironi (ADR-081): anche lì si gioca a chi arriva
+       prima, e la regola vale per tutta la gara, gironi compresi. #}
+    <div id="gironi-distance-note" class="c7-flash c7-flash--info" style="display:none;margin-top:12px">
+        <span class="c7-flash__ico"><i class="fas fa-circle-info"></i></span>
+        <div class="c7-flash__body"><div class="c7-flash__text">
+            {{ _('Con il tabellone dopo i gironi si gioca a chi arriva prima, anche nei gironi: nel tabellone qualcuno deve passare il turno, e il pareggio non esiste.') }}
+        </div></div>
+    </div>
 </section>
 
 <script>
@@ -165,13 +173,19 @@ function syncBracketDistance() {
     const strategy = document.getElementById('matchmaking_strategy');
     if (!nota || !strategy) { return; }
 
-    const isBracket = {{ bracket_strategies|tojson }}.indexOf(strategy.value) >= 0;
+    const isTabellone = {{ bracket_strategies|tojson }}.indexOf(strategy.value) >= 0;
+    /* Il tabellone dopo i gironi lo dice il blocco dei gironi (`campo_gironi.js`). */
+    const isGironi = !isTabellone && typeof window.gironiConTabellone === 'function'
+        && window.gironiConTabellone();
+    const isBracket = isTabellone || isGironi;
+    const notaGironi = document.getElementById('gironi-distance-note');
+    if (notaGironi) { notaGironi.style.display = isGironi ? '' : 'none'; }
     const exact = document.getElementById('exact_number');
     const exactRow = document.getElementById('exact_number_row');
     const raceToSets = document.getElementById('is_race_to_sets');
     const raceToSetsRow = document.getElementById('race_to_sets_row');
 
-    nota.style.display = isBracket ? '' : 'none';
+    nota.style.display = isTabellone ? '' : 'none';
     if (exactRow) { exactRow.style.display = isBracket ? 'none' : ''; }
     if (raceToSetsRow) { raceToSetsRow.style.display = isBracket ? 'none' : ''; }
 

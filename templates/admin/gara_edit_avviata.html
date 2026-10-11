@@ -181,6 +181,16 @@
       {% include "components/_campo_limite_tempo.html" %}
     </div>
     {% endif %}
+    {% if 'final_phase_time_limit_minutes' in ammessi and gara.ha_tabellone_finale %}
+    {# Il limite della fase finale (ADR-081): vale per i turni del tabellone
+       che devono ancora cominciare. #}
+    <div style="max-width:420px">
+      {% with tempo_valore=gara.final_phase_time_limit_minutes,
+              tempo_nota=_('Vale per le partite del tabellone dei turni che devono ancora cominciare.') %}
+      {% include "components/_campo_limite_fase_finale.html" %}
+      {% endwith %}
+    </div>
+    {% endif %}
     {% if 'catena_turno' in ammessi %}
     {# La catena della classifica di turno (ADR-078): come le altre regole,
        vale dal turno dopo — le classifiche dei turni già nati restano. #}
@@ -280,4 +290,5 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/catena_spareggi.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/campo_gironi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 {% endblock %}

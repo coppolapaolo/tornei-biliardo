@@ -58,6 +58,10 @@ class TournamentService(TournamentStatisticsService):
             "default_time_limit_minutes",
             "default_max_groups",
             "default_group_seeding",
+            "default_final_phase_mode",
+            "default_qualifiers_per_group",
+            "default_third_place_match",
+            "default_final_phase_time_limit_minutes",
             "default_gara_classification_system",
             "default_catena_turno",
             "default_catena_gara",
@@ -129,6 +133,11 @@ class TournamentService(TournamentStatisticsService):
         # I gironi del girone all'italiana proposti alle gare (ADR-076).
         default_max_groups: int = 1,
         default_group_seeding: str = "sorteggio",
+        # La fase finale dopo i gironi proposta alle gare (ADR-081).
+        default_final_phase_mode: str = "nessuna",
+        default_qualifiers_per_group: int = 2,
+        default_third_place_match: bool = False,
+        default_final_phase_time_limit_minutes: Optional[int] = None,
         # Le catene degli spareggi (ADR-078): None = il default dell'app.
         default_catena_turno: Optional[str] = None,
         default_catena_gara: Optional[str] = None,
@@ -183,6 +192,12 @@ class TournamentService(TournamentStatisticsService):
             default_time_limit_minutes=default_time_limit_minutes,
             default_max_groups=default_max_groups,
             default_group_seeding=default_group_seeding,
+            default_final_phase_mode=default_final_phase_mode,
+            default_qualifiers_per_group=default_qualifiers_per_group,
+            default_third_place_match=default_third_place_match,
+            default_final_phase_time_limit_minutes=(
+                default_final_phase_time_limit_minutes
+            ),
             default_catena_turno=default_catena_turno,
             default_catena_gara=default_catena_gara,
             catena_generale=catena_generale,
@@ -415,6 +430,11 @@ class TournamentService(TournamentStatisticsService):
         )
         if not somma_i_totali(dopo):
             return
+        # Senza gironi non c'è fase finale (ADR-081): si toglie insieme.
+        from models.matchmaking.fase_finale import FaseFinale
+
+        if campionato.default_final_phase_mode != FaseFinale.NESSUNA.value:
+            kwargs["default_final_phase_mode"] = FaseFinale.NESSUNA.value
         if "default_max_groups" in kwargs:
             if tetto_di_gironi(kwargs["default_max_groups"]) > 1:
                 raise ValidationError(cls._messaggio_girone_unico())
@@ -489,6 +509,7 @@ class TournamentService(TournamentStatisticsService):
             sistema_della_serata,
             sistema_delle_gare,
         )
+        from models.matchmaking.fase_finale import FaseFinale
         from models.matchmaking.gironi import tetto_di_gironi
 
         a_piazzamenti = e_a_piazzamenti(campionato)
@@ -529,6 +550,17 @@ class TournamentService(TournamentStatisticsService):
             if not a_piazzamenti and tetto_di_gironi(gara.max_groups) > 1:
                 cambi["max_groups"] = (gara.max_groups, 1)
                 gara.max_groups = 1
+            # Sommando i totali non c'è fase finale (ADR-081).
+            if (
+                not a_piazzamenti
+                and gara.final_phase_mode
+                and gara.final_phase_mode != FaseFinale.NESSUNA.value
+            ):
+                cambi["final_phase_mode"] = (
+                    gara.final_phase_mode,
+                    FaseFinale.NESSUNA.value,
+                )
+                gara.final_phase_mode = FaseFinale.NESSUNA.value
             # Le catene di default seguono il sistema; quelle scelte restano.
             for livello, campo in COLONNA_DELLA_GARA.items():
                 prima = getattr(gara, campo)

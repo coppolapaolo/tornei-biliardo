@@ -1,0 +1,43 @@
+{# Il campo «Limite di tempo della fase finale» (ADR-081) — Design System 7c.
+
+   Tre stati, come la colonna `Gara.final_phase_time_limit_minutes`: come i
+   gironi (NULL), senza limite (0), un limite diverso (N minuti). Un menu e,
+   solo con «Un limite diverso», il campo dei minuti; lo scoprimento lo fa
+   `static/js/campo_gironi.js`. I confini (1–600) sono quelli del parser
+   (`fase_finale.limite_dal_modulo`), che rifiuta il resto.
+
+   Lo stesso campo nel blocco dei gironi (`_campo_gironi.html`) e nella
+   pagina della gara avviata, dove vale dal turno successivo come le altre
+   regole (ADR-075).
+
+   Parametri:
+   - tempo_prefisso: '' per la gara, 'default_' per il campionato
+   - tempo_id: prefisso degli id (default '')
+   - tempo_valore: il valore salvato (None, 0 o N)
+   - tempo_spento: i campi nascono spenti (il blocco è nascosto)
+   - tempo_nota: testo sotto il campo (facoltativo) #}
+{% set _tp = tempo_prefisso|default('') %}
+{% set _tid = tempo_id|default('') %}
+{% set _tv = tempo_valore|default(none) %}
+{% set _ts = tempo_spento|default(false) %}
+{% set _modo = LimiteDellaFaseFinale.del_valore(_tv).value %}
+{% set _minuti = _modo == LimiteDellaFaseFinale.MINUTI.value %}
+<div class="mt-3" data-fase-tempo>
+  <label for="{{ _tid }}{{ _tp }}final_phase_time_limit" class="form-label" data-help="gara-limite-fase-finale">{{ _('Limite di tempo della fase finale') }}</label>
+  <div class="d-flex gap-2 flex-wrap">
+    <select class="form-select" style="flex:1 1 180px" id="{{ _tid }}{{ _tp }}final_phase_time_limit" name="{{ _tp }}final_phase_time_limit"
+            data-fase-tempo-modo {% if _ts %}disabled{% endif %}>
+      <option value="{{ LimiteDellaFaseFinale.COME_I_GIRONI.value }}" {% if _modo == LimiteDellaFaseFinale.COME_I_GIRONI.value %}selected{% endif %}>{{ _('Come i gironi') }}</option>
+      <option value="{{ LimiteDellaFaseFinale.SENZA.value }}" {% if _modo == LimiteDellaFaseFinale.SENZA.value %}selected{% endif %}>{{ _('Senza limite') }}</option>
+      <option value="{{ LimiteDellaFaseFinale.MINUTI.value }}" data-fase-tempo-minuti {% if _minuti %}selected{% endif %}>{{ _('Un limite diverso') }}</option>
+    </select>
+    <div class="input-group" style="flex:1 1 150px" data-fase-tempo-campo {% if not _minuti %}hidden{% endif %}>
+      <input type="number" class="form-control" name="{{ _tp }}final_phase_time_limit_minutes"
+             aria-label="{{ _('Minuti della fase finale') }}"
+             value="{{ _tv if _tv and _tv > 0 else '' }}" min="1" max="600" step="1" inputmode="numeric"
+             {% if _ts or not _minuti %}disabled{% endif %}>
+      <span class="input-group-text">{{ _('minuti') }}</span>
+    </div>
+  </div>
+  <small class="text-muted d-block">{{ tempo_nota|default(_('Vale per le partite del tabellone. Un singolo turno si può ancora cambiare dalla configurazione dei turni.')) }}</small>
+</div>

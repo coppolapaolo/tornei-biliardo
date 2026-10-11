@@ -338,6 +338,10 @@ CAMPI_DEL_CAMPIONATO: Tuple[str, ...] = (
     "default_time_limit_minutes",
     "default_max_groups",
     "default_group_seeding",
+    "default_final_phase_mode",
+    "default_qualifiers_per_group",
+    "default_third_place_match",
+    "default_final_phase_time_limit_minutes",
     "default_catena_turno",
     "default_catena_gara",
     "catena_generale",
@@ -378,6 +382,15 @@ class RegolamentoCampionato:
     link_regolamento: Optional[str] = None
 
 
+#: La fase finale proposta dal campionato, dal modo agli altri tre.
+_FASE_FINALE_PROPOSTA: Tuple[str, ...] = (
+    "default_final_phase_mode",
+    "default_qualifiers_per_group",
+    "default_third_place_match",
+    "default_final_phase_time_limit_minutes",
+)
+
+
 def _impostazioni(
     oggetto: Any, campi: Tuple[str, ...], storia: List[SettingsChange]
 ) -> List[Impostazione]:
@@ -402,8 +415,22 @@ def _impostazioni(
         # limite di tempo senza limite. Chi non usa l'opzione non la vede.
         if (
             campo in ("default_max_groups", "default_group_seeding")
-            and (getattr(oggetto, "default_max_groups", 1) or 1) <= 1
-        ):
+            or campo in _FASE_FINALE_PROPOSTA
+        ) and (getattr(oggetto, "default_max_groups", 1) or 1) <= 1:
+            continue
+        # La fase finale proposta (ADR-081): senza tabellone tacciono anche
+        # qualificati, finalina e limite.
+        if campo in _FASE_FINALE_PROPOSTA[1:]:
+            from ..matchmaking.fase_finale import FaseFinale
+
+            if (
+                FaseFinale.resolve(getattr(oggetto, "default_final_phase_mode", None))
+                is not FaseFinale.TABELLONE
+            ):
+                continue
+        if campo == "default_final_phase_time_limit_minutes" and valore == "":
+            # «Come i gironi» si dice: vuoto non è un valore mancante.
+            risultato.append(Impostazione(campo, valore, ultima.get(campo)))
             continue
         if valore != "":
             risultato.append(Impostazione(campo, valore, ultima.get(campo)))

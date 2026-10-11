@@ -102,6 +102,10 @@
        * nascosta, non deve arrivare al server insieme all'altra. */
       var compagni = perId('separate_teammates');
       if (compagni) { compagni.disabled = !isBracket; }
+      /* Così la finalina: il tabellone dopo i gironi ha la sua, nel blocco
+       * dei gironi, con lo stesso nome (ADR-081). */
+      var finalina = perId('third_place_match');
+      if (finalina) { finalina.disabled = !isBracket; }
       Array.prototype.forEach.call(hideable, function (node) {
         setHidden(node, isBracket);
       });

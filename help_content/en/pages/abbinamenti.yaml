@@ -151,6 +151,31 @@ blocks:
       to the name («#1 in group A»).
 
   - type: heading
+    id: fase_finale
+    title: "After the groups: the bracket"
+
+  - type: text
+    text: >-
+      With more than one group the competition can end with a **bracket**:
+      in the form, below the groups, choose **Final phase → Bracket**, how
+      many go through from each group (**Qualifiers per group**, normally 2),
+      whether to play the **3rd/4th place final**, and the **time limit of
+      the final phase**: same as the groups, no limit or a different limit.
+      With two groups and two qualifiers the semi-finals are 1stA–2ndB and
+      1stB–2ndA, then the final.
+
+  - type: list
+    title: "The rules"
+    items:
+      - "The bracket exists only with **more than one group**: with a single group the option does not appear."
+      - "The bracket rounds are counted at the start: two groups of 4 with two qualifiers make 3 group rounds plus semi-finals and final. The start sheet shows them on each option."
+      - "If at the start you choose **a single group**, the bracket **is not played**: the competition ends with the group, and the start sheet says so."
+      - "Players from the same group meet as late as possible. If the qualifiers do not fill the bracket, the best group winners skip the first round."
+      - "With the bracket matches are **race to N**, groups included: in the bracket someone has to go through. «Exactly N racks» cannot be chosen."
+      - "Final standings: first those who played the bracket, in the order they left it, then the others in the order of the groups."
+      - "In a championship the final phase is proposed by a championship **with placements**; one that adds up wins, racks or points does not have it."
+
+  - type: heading
     id: eliminazione
     title: "Knockout"
 

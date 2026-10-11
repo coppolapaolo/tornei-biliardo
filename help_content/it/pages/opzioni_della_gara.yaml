@@ -121,7 +121,9 @@ blocks:
           massimo; quanti farne davvero lo scegli all'avvio, sugli iscritti
           presenti, con almeno 3 giocatori per girone. Con più di un girone
           compaiono anche **Composizione dei gironi** (sorteggio, per ELO, per
-          categoria) e la separazione dei compagni di squadra. Nei campionati
+          categoria), la separazione dei compagni di squadra e la **Fase
+          finale** (nessuna, o un tabellone fra i primi di ogni girone, con
+          qualificati, finalina e limite di tempo suoi). Nei campionati
           il valore lo propone il campionato, e c'è solo se il campionato è a
           piazzamenti: chi somma vittorie, triangoli o punti resta a girone
           unico. Vedi [Il girone all'italiana a

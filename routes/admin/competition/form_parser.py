@@ -80,7 +80,8 @@ _CAMPI_ASSENTI_NON_SI_TOCCANO = (
 )
 
 #: Il limite di tempo più lungo che il modulo accetta, in minuti (ADR-077).
-#: Dieci ore: oltre non è un limite, è un errore di battitura.
+#: Dieci ore: oltre non è un limite, è un errore di battitura. Lo stesso
+#: confine vale per il limite della fase finale (ADR-081).
 LIMITE_DI_TEMPO_MASSIMO = 600
 
 
@@ -110,6 +111,81 @@ def leggi_composizione(grezzo: Any) -> str:
     if valore not in {c.value for c in ComposizioneGironi}:
         raise ValueError(_("Composizione dei gironi sconosciuta: %(v)s", v=valore))
     return valore
+
+
+def leggi_fase_finale(grezzo: Any) -> str:
+    """La fase finale dal modulo: nessuna o tabellone (ADR-081).
+
+    «Finali per piazzamento» esiste nel dominio ma non si gioca ancora: il
+    modulo non la offre, e qui si rifiuta se arriva lo stesso.
+    """
+    from models.matchmaking.fase_finale import FaseFinale
+
+    valore = str(grezzo or "").strip() or FaseFinale.NESSUNA.value
+    if valore == FaseFinale.PIAZZAMENTO.value:
+        raise ValueError(
+            _("Le finali per piazzamento non si possono ancora scegliere.")
+        )
+    if valore not in (FaseFinale.NESSUNA.value, FaseFinale.TABELLONE.value):
+        raise ValueError(_("Fase finale sconosciuta: %(v)s", v=valore))
+    return valore
+
+
+def leggi_qualificati(grezzo: Any) -> int:
+    """Quanti passano al tabellone da ogni girone: da 1 a 8 (ADR-081)."""
+    from models.matchmaking.fase_finale import MASSIMO_QUALIFICATI_PER_GIRONE
+
+    try:
+        k = int(str(grezzo or "").strip())
+    except ValueError:
+        k = 0
+    if k < 1 or k > MASSIMO_QUALIFICATI_PER_GIRONE:
+        raise ValueError(
+            _(
+                "Al tabellone passano da 1 a %(max)s giocatori per girone.",
+                max=MASSIMO_QUALIFICATI_PER_GIRONE,
+            )
+        )
+    return k
+
+
+def leggi_la_fase_finale(form: Any, prefisso: str, tetto: Any) -> Dict[str, Any]:
+    """Fase finale, qualificati, finalina e limite della fase finale (ADR-081).
+
+    Lo stesso blocco nei moduli della gara (``prefisso`` vuoto) e del
+    campionato (``default_``), che lo propone alle sue gare. Il blocco si vede
+    solo quando i gironi possono essere più di uno: con il girone unico la
+    gara non ha tabellone (decisione del 2026-10-11), quindi la fase finale
+    torna «nessuna» e la finalina si spegne, anche se il modulo non le manda.
+    Assenti dal modulo, gli altri campi non si toccano.
+    """
+    from models.matchmaking.fase_finale import FaseFinale, limite_dal_modulo
+
+    data: Dict[str, Any] = {}
+    if (tetto or 1) <= 1:
+        data[f"{prefisso}final_phase_mode"] = FaseFinale.NESSUNA.value
+        data[f"{prefisso}third_place_match"] = False
+        return data
+    campo = f"{prefisso}final_phase_mode"
+    if campo not in form:
+        return data
+    data[campo] = leggi_fase_finale(form.get(campo))
+    tabellone = data[campo] == FaseFinale.TABELLONE.value
+    data[f"{prefisso}third_place_match"] = (
+        tabellone and form.get(f"{prefisso}third_place_match") == "on"
+    )
+    if not tabellone:
+        return data
+    if f"{prefisso}qualifiers_per_group" in form:
+        data[f"{prefisso}qualifiers_per_group"] = leggi_qualificati(
+            form.get(f"{prefisso}qualifiers_per_group")
+        )
+    if f"{prefisso}final_phase_time_limit" in form:
+        data[f"{prefisso}final_phase_time_limit_minutes"] = limite_dal_modulo(
+            form.get(f"{prefisso}final_phase_time_limit"),
+            form.get(f"{prefisso}final_phase_time_limit_minutes"),
+        )
+    return data
 
 
 class GaraFormParser:
@@ -384,6 +460,9 @@ class GaraFormParser:
         "double_ko_rounds",
         "max_groups",
         "group_seeding",
+        "final_phase_mode",
+        "qualifiers_per_group",
+        "final_phase_time_limit_minutes",
         "weight",
         "x_challenge_id",
         "catena_turno",
@@ -482,6 +561,16 @@ class GaraFormParser:
             )
         if "time_limit_minutes" in ammessi and "time_limit_minutes" in form:
             data["time_limit_minutes"] = self._parse_time_limit()
+        if (
+            "final_phase_time_limit_minutes" in ammessi
+            and "final_phase_time_limit" in form
+        ):
+            from models.matchmaking.fase_finale import limite_dal_modulo
+
+            data["final_phase_time_limit_minutes"] = limite_dal_modulo(
+                form.get("final_phase_time_limit"),
+                form.get("final_phase_time_limit_minutes"),
+            )
         if "withdraw_policy" in ammessi and "withdraw_policy" in form:
             data["withdraw_policy"] = GaraFormParser._parse_withdraw_policy()
         if "odd_number_policy" in ammessi and form.get("odd_number_policy"):
@@ -574,6 +663,11 @@ class GaraFormParser:
         data["separate_teammates"] = (tetto or 1) > 1 and form.get(
             "separate_teammates"
         ) == "on"
+        # La fase finale dopo i gironi (ADR-081): solo con più gironi. Una
+        # gara senza tetto scritto vale quello che legge dal campionato.
+        if tetto is None and self.gara is not None:
+            tetto = getattr(self.gara, "effective_max_groups", None)
+        data.update(leggi_la_fase_finale(form, "", tetto))
         return data
 
     def _parse_time_limit(self) -> Optional[int]:

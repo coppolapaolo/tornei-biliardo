@@ -143,7 +143,7 @@ hints:
     label: "Finale per il 3°/4° posto"
     short: "I due semifinalisti sconfitti si giocano il terzo posto, nel turno della finale. Senza, sono terzi a pari merito."
     anchor: gara-finalina
-    screens: [admin.competition.create_gara_standalone]
+    screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2, admin.campionato.campionato_detail, admin.competition.edit_gara, admin.campionato.edit_campionato]
     page: tabellone
     section: terzo_posto
 
@@ -187,9 +187,33 @@ hints:
     page: abbinamenti
     section: gironi
 
+  - id: gara.fase_finale
+    label: "Fase finale"
+    short: "Solo con più gironi: «Tabellone» manda i primi di ogni girone a un tabellone a eliminazione diretta (1ºA–2ºB e 1ºB–2ºA). «Nessuna» chiude la gara coi gironi."
+    anchor: gara-fase-finale
+    screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2, admin.campionato.campionato_detail, admin.competition.edit_gara, admin.campionato.edit_campionato, admin.competition.gara_detail]
+    page: abbinamenti
+    section: fase_finale
+
+  - id: gara.qualificati_per_girone
+    label: "Qualificati per girone"
+    short: "Quanti passano al tabellone da ogni girone. Se i qualificati non riempiono il tabellone, i migliori primi passano il primo turno senza giocare."
+    anchor: gara-qualificati-per-girone
+    screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2, admin.campionato.campionato_detail, admin.competition.edit_gara, admin.campionato.edit_campionato, admin.competition.gara_detail]
+    page: abbinamenti
+    section: fase_finale
+
+  - id: gara.limite_fase_finale
+    label: "Limite di tempo della fase finale"
+    short: "Come i gironi, senza limite o un limite diverso, per le partite del tabellone. Un singolo turno si cambia ancora dalla configurazione dei turni."
+    anchor: gara-limite-fase-finale
+    screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2, admin.campionato.campionato_detail, admin.competition.edit_gara, admin.campionato.edit_campionato, admin.competition.gara_detail]
+    page: abbinamenti
+    section: fase_finale
+
   - id: gara.gironi_avvio
     label: "Quanti gironi?"
-    short: "All'avvio scegli quanti gironi fare, sugli iscritti presenti. Ogni voce mostra le taglie e i turni; la proposta è un girone ogni sei iscritti."
+    short: "All'avvio scegli quanti gironi fare, sugli iscritti presenti. Ogni voce mostra taglie e turni, tabellone compreso; con un girone solo il tabellone non si gioca."
     anchor: gara-gironi-avvio
     screens: [admin.competition.gara_detail]
     page: condurre_la_gara

@@ -68,6 +68,63 @@ class FaseFinale(str, Enum):
             return cls.NESSUNA
 
 
+class LimiteDellaFaseFinale(str, Enum):
+    """I tre stati del limite di tempo della fase finale, come li sceglie il modulo.
+
+    Sulla gara il valore è un numero a tre stati
+    (`Gara.final_phase_time_limit_minutes`): NULL come i gironi, 0 senza
+    limite, N minuti. Il modulo li chiede con un menu e un campo dei minuti.
+    """
+
+    COME_I_GIRONI = "gironi"
+    SENZA = "nessuno"
+    MINUTI = "minuti"
+
+    @classmethod
+    def del_valore(cls, minuti: Optional[int]) -> "LimiteDellaFaseFinale":
+        """Il modo che il modulo mostra per un valore salvato."""
+        if minuti is None:
+            return cls.COME_I_GIRONI
+        return cls.MINUTI if minuti > 0 else cls.SENZA
+
+
+#: Il limite più lungo che si può scrivere, in minuti: lo stesso del limite
+#: della gara (`form_parser.LIMITE_DI_TEMPO_MASSIMO`).
+LIMITE_MASSIMO_IN_MINUTI = 600
+
+
+def limite_dal_modulo(modo: object, minuti: object) -> Optional[int]:
+    """Il valore da salvare per la scelta del modulo: None, 0 o N minuti.
+
+    Raises:
+        ValueError: un modo sconosciuto, o minuti fuori da 1–600 quando si
+            sceglie un limite diverso.
+    """
+    from flask_babel import gettext as _
+
+    try:
+        scelta = LimiteDellaFaseFinale(str(modo or "").strip())
+    except ValueError:
+        raise ValueError(_("Limite di tempo della fase finale sconosciuto."))
+    if scelta is LimiteDellaFaseFinale.COME_I_GIRONI:
+        return None
+    if scelta is LimiteDellaFaseFinale.SENZA:
+        return 0
+    try:
+        valore = int(str(minuti or "").strip())
+    except ValueError:
+        valore = 0
+    if valore < 1 or valore > LIMITE_MASSIMO_IN_MINUTI:
+        raise ValueError(
+            _(
+                "Il limite di tempo della fase finale si scrive in minuti, da 1 "
+                "a %(max)s.",
+                max=LIMITE_MASSIMO_IN_MINUTI,
+            )
+        )
+    return valore
+
+
 def qualificati_per_girone(valore: object) -> int:
     """Il `K` della gara, letto con tolleranza: assente o non valido vale 2."""
     try:
@@ -147,9 +204,12 @@ def semina_del_tabellone(
 
 __all__ = [
     "FaseFinale",
+    "LIMITE_MASSIMO_IN_MINUTI",
+    "LimiteDellaFaseFinale",
     "MASSIMO_QUALIFICATI_PER_GIRONE",
     "QUALIFICATI_PER_GIRONE_DEFAULT",
     "TAGLIA_MINIMA",
+    "limite_dal_modulo",
     "qualificati_dei_gironi",
     "qualificati_per_girone",
     "semina_del_tabellone",

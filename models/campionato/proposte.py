@@ -39,12 +39,29 @@ CAMPI_PROPOSTI: Dict[str, str] = {
     "default_points_loss": "points_loss",
     "default_max_groups": "max_groups",
     "default_group_seeding": "group_seeding",
+    # La fase finale dopo i gironi (ADR-081).
+    "default_final_phase_mode": "final_phase_mode",
+    "default_qualifiers_per_group": "qualifiers_per_group",
+    "default_third_place_match": "third_place_match",
+    "default_final_phase_time_limit_minutes": "final_phase_time_limit_minutes",
     # Il sistema delle serate di un campionato a piazzamenti (ADR-080).
     "default_gara_classification_system": "classification_system",
 }
 
-#: I campi che hanno senso solo col girone all'italiana (ADR-076).
-_SOLO_GIRONE = frozenset({"max_groups", "group_seeding"})
+#: La fase finale dopo i gironi (ADR-081): solo con più gironi.
+_FASE_FINALE = frozenset(
+    {
+        "final_phase_mode",
+        "qualifiers_per_group",
+        "third_place_match",
+        "final_phase_time_limit_minutes",
+    }
+)
+
+#: I campi che hanno senso solo col girone all'italiana (ADR-076). La
+#: finalina proposta è quella del tabellone dopo i gironi: una gara a
+#: eliminazione diretta decide la sua.
+_SOLO_GIRONE = frozenset({"max_groups", "group_seeding"}) | _FASE_FINALE
 
 
 @dataclass
@@ -105,6 +122,14 @@ def proposta(campionato: Any, cambi: Mapping[str, Iterable[Any]]) -> List[GaraPr
                 continue
             if campo_gara in _SOLO_GIRONE and not _e_a_girone(gara):
                 continue
+            # Il tabellone è fra i primi di ogni girone: a una gara a girone
+            # unico la fase finale si propone solo insieme ai gironi.
+            if (
+                campo_gara in _FASE_FINALE
+                and (gara.max_groups or 1) <= 1
+                and "default_max_groups" not in cambi
+            ):
+                continue
             # Il tabellone ha il piazzamento: un sistema da serata non lo
             # riguarda (ADR-080).
             if campo_gara == "classification_system" and _e_a_tabellone(gara):
@@ -149,8 +174,14 @@ def _valore_da_scrivere(campo_gara: str, grezzo: Any) -> Dict[str, Any]:
         "points_draw",
         "points_loss",
         "max_groups",
+        "qualifiers_per_group",
     ):
         return {campo_gara: int(grezzo)}
+    if campo_gara == "third_place_match":
+        return {campo_gara: str(grezzo).lower() in ("true", "1")}
+    if campo_gara == "final_phase_time_limit_minutes":
+        # Tre stati: vuoto «come i gironi», 0 «senza limite», N minuti.
+        return {campo_gara: int(grezzo) if grezzo not in (None, "") else None}
     if campo_gara == "time_limit_minutes":
         return {campo_gara: int(grezzo) if grezzo not in (None, "") else 0}
     if campo_gara in ("catena_turno", "catena_gara"):

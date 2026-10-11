@@ -744,6 +744,34 @@ class GaraService:
             kwargs["max_groups"] = int(campionato.default_max_groups or 1)
         if kwargs.get("group_seeding") is None:
             kwargs["group_seeding"] = campionato.default_group_seeding
+        # La fase finale dopo i gironi (ADR-081): vale solo per il girone
+        # all'italiana, e la finalina proposta è quella del tabellone dopo i
+        # gironi — una gara a eliminazione diretta decide la sua.
+        from models.matchmaking.configuration import MatchmakingStrategy
+
+        from models.matchmaking.fase_finale import FaseFinale
+        from models.matchmaking.gironi import tetto_di_gironi
+
+        if kwargs.get("final_phase_mode") is None:
+            # Il tabellone è fra i primi di ogni girone: una gara che nasce a
+            # girone unico non lo riceve (decisione del 2026-10-11).
+            kwargs["final_phase_mode"] = (
+                campionato.default_final_phase_mode
+                if tetto_di_gironi(kwargs.get("max_groups")) > 1
+                else FaseFinale.NESSUNA.value
+            )
+        if kwargs.get("qualifiers_per_group") is None:
+            kwargs["qualifiers_per_group"] = campionato.default_qualifiers_per_group
+        if "final_phase_time_limit_minutes" not in kwargs:
+            kwargs["final_phase_time_limit_minutes"] = (
+                campionato.default_final_phase_time_limit_minutes
+            )
+        if (
+            kwargs.get("third_place_match") is None
+            and kwargs.get("matchmaking_strategy")
+            == MatchmakingStrategy.ROUND_ROBIN.value
+        ):
+            kwargs["third_place_match"] = bool(campionato.default_third_place_match)
         # I punti della classifica a punti, proposti dal campionato: si
         # copiano sempre, anche a un campionato con un altro sistema, così una
         # gara ha i suoi valori scritti e un cambio di sistema non la lascia a
