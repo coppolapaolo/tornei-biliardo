@@ -1,16 +1,27 @@
 <!-- New Gara Modal Component - Wizard Version -->
 
-{# La gara eredita la strategia dal campionato, quindi qui non c'e' un
-   selettore e la decisione si prende **a render time**: `bracket_options.js`
-   non puo' aiutare, perche' esce subito quando non trova
-   `matchmaking_strategy`.
+{# Due modi, a seconda di come le gare entrano nel campionato (ADR-080).
+
+   - **A piazzamenti** (`scelta_libera`) ogni serata sceglie il suo formato e
+     il suo sistema di classifica: nel campionato entra il posto. I due menu
+     partono dalle proposte del campionato (il tipo, e
+     `default_gara_classification_system`), e i campi che dipendono dal
+     formato li governano gli stessi file della modifica della gara:
+     `bracket_options.js` (tabellone, campi `data-bracket-hide`),
+     `strategia_gara.js` (primo abbinamento, dispari, anti-reincontro),
+     `campo_gironi.js` (gironi), `campo_punti.js` e `catena_spareggi.js` (che
+     seguono il sistema). Gli id hanno il prefisso `create_`.
+   - **Sommando i totali** formato e sistema li impone il campionato: niente
+     menu, e la decisione su cosa mostrare si prende a render time, come
+     prima.
 
    Sui formati a tabellone spariscono gli stessi campi che spariscono negli
    altri due form della gara (turni, numero esatto di rack, forfait, dispari,
    anti-reincontro, spareggio): non hanno effetto, e il parser li impone
-   comunque. Qui erano rimasti tutti visibili — il modale era la terza
-   schermata di creazione e non era stata toccata. #}
-{% set modal_is_bracket = campionato.campionato_type in bracket_minimum_players %}
+   comunque. #}
+{% set scelta_libera = campionato_a_piazzamenti(campionato) %}
+{% set strategia_proposta = campionato.campionato_type or MatchmakingStrategy.AMALFI.value %}
+{% set modal_is_bracket = strategia_proposta in bracket_minimum_players %}
 
 <div class="modal fade" id="newProvaModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
@@ -59,6 +70,42 @@
                     <!-- Step 1: Info Base -->
                     <div class="wizard-content" id="step1" style="display: block;">
                         <h6 class="text-primary mb-3"><i class="fas fa-info-circle"></i> {{ _("Informazioni Base") }}</h6>
+                        {% if scelta_libera %}
+                        {# Il formato e il sistema della serata: nel campionato a
+                           piazzamenti entra il posto, quindi ogni serata può
+                           giocarsi come vuole (ADR-080). Il campionato propone,
+                           la gara decide (ADR-075). #}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="create_matchmaking_strategy" class="form-label">{{ _("Formato della serata") }}</label>
+                                    <select class="form-select" name="matchmaking_strategy" id="create_matchmaking_strategy"
+                                            data-strategia-gara data-prefisso="create_"
+                                            data-vincoli='{{ available_strategies|tojson }}'
+                                            data-girone="{{ MatchmakingStrategy.ROUND_ROBIN.value }}">
+                                        {% for valore, nome in strategie_gara %}
+                                        <option value="{{ valore }}" {% if valore == strategia_proposta %}selected{% endif %}>{{ nome }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6" data-bracket-hide>
+                                <div class="mb-3">
+                                    <label for="create_classification_system" class="form-label">{{ _("Classifica della serata") }}</label>
+                                    {% set sistema_proposto = sistema_delle_gare(campionato) %}
+                                    <select class="form-select" name="classification_system" id="create_classification_system">
+                                        <option value="{{ ClassificationSystem.WINS.value }}" {% if sistema_proposto == ClassificationSystem.WINS.value %}selected{% endif %}>{{ _('Vittorie — partite vinte, poi differenza triangoli') }}</option>
+                                        <option value="{{ ClassificationSystem.RACK.value }}" {% if sistema_proposto == ClassificationSystem.RACK.value %}selected{% endif %}>{{ _('Triangoli totali — ogni triangolo conta') }}</option>
+                                        <option value="{{ ClassificationSystem.POINTS.value }}" {% if sistema_proposto == ClassificationSystem.POINTS.value %}selected{% endif %}>{{ _('Punti — vittoria, pareggio e sconfitta') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <small class="text-muted d-block">
+                            <i class="fas fa-info-circle"></i> {{ _("Il campionato è a piazzamenti: ogni serata può avere il suo formato, e nel campionato entra il posto. Sul tabellone la classifica è per posizione.") }}
+                        </small>
+                        <hr class="my-3">
+                        {% endif %}
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="mb-3">
@@ -202,7 +249,7 @@
                                 </div>
                             </div>
                             {# I turni li fissa il sorteggio sugli iscritti effettivi. #}
-                            <div class="col-md-4" {% if modal_is_bracket %}style="display:none"{% endif %}>
+                            <div class="col-md-4" data-bracket-hide {% if modal_is_bracket %}style="display:none"{% endif %}>
                                 <div class="mb-3">
                                     <label for="rounds_count" class="form-label">{{ _("Numero Turni") }}</label>
                                     <input type="number" class="form-control" name="rounds_count" id="create_rounds_count"
@@ -213,7 +260,7 @@
                         </div>
                         <div class="row">
                             {# Sul tabellone si gioca sempre a chi arriva prima. #}
-                            <div class="col-md-6" {% if modal_is_bracket %}style="display:none"{% endif %}>
+                            <div class="col-md-6" data-bracket-hide {% if modal_is_bracket %}style="display:none"{% endif %}>
                                 <div class="mb-3">
                                     <label class="form-label">{{ _("Modalità Punteggio") }}</label>
                                     <div class="form-check" id="create_exact_number_container">
@@ -229,13 +276,18 @@
                                 </div>
                             </div>
                             {# Dopo il sorteggio il ritiro e' sempre walkover. #}
-                            <div class="col-md-6" {% if modal_is_bracket %}style="display:none"{% endif %}>
+                            <div class="col-md-6" data-bracket-hide {% if modal_is_bracket %}style="display:none"{% endif %}>
                                 <div class="mb-3">
                                     <label for="withdraw_policy" class="form-label">{{ _("Gestione Forfait") }}</label>
+                                    {# A piazzamenti il nome di «Escludi» segue il formato
+                                       scelto (`campo_gironi.js`). #}
                                     <select class="form-control" name="withdraw_policy" id="withdraw_policy"
+                                            {% if scelta_libera %}data-segue-strategia="#create_matchmaking_strategy" data-girone="{{ MatchmakingStrategy.ROUND_ROBIN.value }}"{% endif %}
                                             {% if not modal_is_bracket %}required{% endif %}>
                                         <option value="{{ WithdrawPolicy.FORFEIT.value }}" selected>{{ WithdrawPolicy.FORFEIT.value|etichetta_ritiro }}</option>
-                                        <option value="{{ WithdrawPolicy.EXCLUDE.value }}">{{ WithdrawPolicy.EXCLUDE.value|etichetta_ritiro(campionato.campionato_type) }}</option>
+                                        <option value="{{ WithdrawPolicy.EXCLUDE.value }}"
+                                                data-label="{{ WithdrawPolicy.EXCLUDE.value|etichetta_ritiro }}"
+                                                data-label-girone="{{ WithdrawPolicy.EXCLUDE.value|etichetta_ritiro(MatchmakingStrategy.ROUND_ROBIN.value) }}">{{ WithdrawPolicy.EXCLUDE.value|etichetta_ritiro(strategia_proposta) }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -257,17 +309,20 @@
                                 </div>
                             </div>
                             {# I bye del tabellone sono strutturali, non una politica. #}
-                            <div class="col-md-6" {% if modal_is_bracket %}style="display:none"{% endif %}>
+                            <div class="col-md-6" data-bracket-hide {% if modal_is_bracket %}style="display:none"{% endif %}>
                                 <div class="mb-3">
                                     <label for="odd_number_policy" class="form-label">{{ _("Gestione Dispari") }}</label>
                                     <select class="form-control" name="odd_number_policy" id="create_odd_number_policy">
-                                        {# La strategia la fissa il campionato: col girone resta il solo
-                                           riposo, e la X con prova proposta ripiega li' (SPECIFICHE.md,
-                                           nota del 2026-10-11). #}
-                                        {% set opzioni_modale = opzioni_dispari(strategy=campionato.campionato_type) %}
-                                        {% set scelta_dispari = odd_policy_for_strategy(campionato.campionato_type, campionato.default_odd_policy or OddNumberPolicy.BYE.value) %}
+                                        {# Sommando i totali la strategia la fissa il campionato:
+                                           col girone resta il solo riposo, e la X con prova
+                                           proposta ripiega li' (SPECIFICHE.md, nota del
+                                           2026-10-11). A piazzamenti le formule ci sono tutte, e
+                                           `strategia_gara.js` lascia quelle che il formato e il
+                                           sistema scelti ammettono. #}
+                                        {% set opzioni_modale = opzioni_dispari() if scelta_libera else opzioni_dispari(strategy=strategia_proposta) %}
+                                        {% set scelta_dispari = odd_policy_for_strategy(strategia_proposta, campionato.default_odd_policy or OddNumberPolicy.BYE.value) %}
                                         {% for valore, nome in opzioni_modale %}
-                                        <option value="{{ valore }}" {% if scelta_dispari == valore %}selected{% endif %}>{{ nome }}</option>
+                                        <option value="{{ valore }}" {% if scelta_dispari == valore %}selected{% endif %}{% if scelta_libera %} data-label="{{ nome }}"{% if valore == OddNumberPolicy.BYE.value %} data-label-girone="{{ valore|etichetta_dispari(MatchmakingStrategy.ROUND_ROBIN.value) }}"{% endif %}{% endif %}>{{ nome }}</option>
                                         {% endfor %}
                                     </select>
                                     <small id="create_trio_warning" class="form-text text-warning" style="display: none;">
@@ -317,24 +372,42 @@
                            propone già scritti, e la gara li può cambiare. Solo a
                            piazzamenti: chi somma i totali resta a girone unico
                            (ADR-080). #}
-                        {% with gironi_id='create_', gironi_visibile=(campionato.campionato_type == MatchmakingStrategy.ROUND_ROBIN.value and campionato_a_piazzamenti(campionato)),
+                        {% if scelta_libera %}
+                        {# A piazzamenti i gironi seguono il formato scelto, e
+                           compaiono le opzioni del tabellone: gli stessi blocchi
+                           della modifica della gara. #}
+                        {% with gironi_id='create_', gironi_strategia_da='#create_matchmaking_strategy',
                                 gironi_tetto=campionato.default_max_groups, gironi_composizione=campionato.default_group_seeding,
                                 gironi_compagni=true %}
                         {% include "components/_campo_gironi.html" %}
                         {% endwith %}
+                        {% with bracket_id='create_' %}
+                        {% include "components/_bracket_options.html" %}
+                        {% endwith %}
+                        {% else %}
+                        {% with gironi_id='create_', gironi_visibile=false,
+                                gironi_tetto=campionato.default_max_groups, gironi_composizione=campionato.default_group_seeding,
+                                gironi_compagni=true %}
+                        {% include "components/_campo_gironi.html" %}
+                        {% endwith %}
+                        {% endif %}
 
                         {# Amalfi lo impone acceso; sul tabellone non esiste proprio,
                            perche' chi perde esce e non puo' esserci un reincontro. #}
-                        {% set anti_rematch_forced = campionato.campionato_type in [MatchmakingStrategy.AMALFI.value] %}
+                        {# A piazzamenti la casella la governa `strategia_gara.js`
+                                           col formato scelto: nascosta e accesa con Amalfi,
+                                           nascosta e spenta col girone. #}
+                        {% set anti_rematch_forced = strategia_proposta in [MatchmakingStrategy.AMALFI.value] %}
                         <div class="row" id="create_anti_rematch_section"
-                             {% if anti_rematch_forced or modal_is_bracket %}style="display: none;"{% endif %}>
+                             {% if scelta_libera %}data-bracket-hide data-nascondi-se-imposto{% if anti_rematch_forced %} hidden{% endif %}{% if modal_is_bracket %} style="display: none;"{% endif %}
+                             {% elif anti_rematch_forced or modal_is_bracket %}style="display: none;"{% endif %}>
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" name="anti_rematch_enabled"
                                             id="create_anti_rematch_enabled" {% if anti_rematch_forced or campionato.default_anti_rematch is none or campionato.default_anti_rematch %}checked{% endif %}
-                                            {% if anti_rematch_forced %}disabled{% endif %}>
-                                        {% if anti_rematch_forced %}
+                                            {% if anti_rematch_forced and not scelta_libera %}disabled{% endif %}>
+                                        {% if anti_rematch_forced and not scelta_libera %}
                                         <input type="hidden" name="anti_rematch_enabled" value="on">
                                         {% endif %}
                                         <label class="form-check-label" for="create_anti_rematch_enabled">
@@ -390,12 +463,18 @@
 
                         {# Sul tabellone le catene non si usano: i pari merito per banda
                            sono l'esito voluto (ADR-040). #}
-                        <div {% if modal_is_bracket %}style="display:none"{% endif %}>
+                        <div data-bracket-hide {% if modal_is_bracket %}style="display:none"{% endif %}>
                         <hr class="my-3">
                         <h6 class="text-primary mb-3"><i class="fas fa-balance-scale"></i> {{ _("Pari merito") }}</h6>
                         {# La classifica a punti (ADR-078): i punti che il
-                           campionato propone, già scritti, solo se è a punti. #}
-                        {% if campionato and sistema_delle_gare(campionato) == 'POINTS' %}
+                           campionato propone, già scritti. A piazzamenti
+                           seguono il sistema scelto per la serata; sommando i
+                           totali si vedono solo se il campionato è a punti. #}
+                        {% if scelta_libera %}
+                        {% with punti_valori=punti_proposti(campionato), punti_sistema_da='#create_classification_system' %}
+                        {% include "components/_campo_punti.html" %}
+                        {% endwith %}
+                        {% elif campionato and sistema_delle_gare(campionato) == ClassificationSystem.POINTS.value %}
                         {% with punti_valori=punti_proposti(campionato) %}
                         {% include "components/_campo_punti.html" %}
                         {% endwith %}
@@ -403,12 +482,15 @@
                         {# Le catene degli spareggi (ADR-078): parte da quelle che il
                            campionato propone, e la gara le può cambiare. #}
                         {% import "components/_catena_spareggi.html" as catena with context %}
+                        {% set sistema_da = '#create_classification_system' if scelta_libera else '' %}
                         {{ catena.editor('catena_turno', editor_catena_gara('turno', campionato=campionato),
                                          _('Pari merito nella classifica di turno'),
-                                         _("Ordina i giocatori dopo ogni turno, e da lì nascono gli abbinamenti: l'ordine è sempre completo, lo chiude il sorteggio.")) }}
+                                         _("Ordina i giocatori dopo ogni turno, e da lì nascono gli abbinamenti: l'ordine è sempre completo, lo chiude il sorteggio."),
+                                         sistema_da) }}
                         {{ catena.editor('catena_gara', editor_catena_gara('gara', campionato=campionato),
                                          _('Pari merito nella classifica finale'),
-                                         _('Chi resta pari dopo questi criteri condivide la posizione. Lo spareggio SSR si gioca a gara finita, fino al posto che scegli.')) }}
+                                         _('Chi resta pari dopo questi criteri condivide la posizione. Lo spareggio SSR si gioca a gara finita, fino al posto che scegli.'),
+                                         sistema_da) }}
                         </div>{# fine blocco spareggio, nascosto sui tabelloni #}
 
                         <hr class="my-3">
@@ -717,7 +799,11 @@
             const oddPolicy = oddPolicySelect.value;
             if (oddPolicy === 'trio' && (distance < 2 || distance > 7)) {
                 trioWarning.style.display = 'block';
-                oddPolicySelect.value = 'bye';
+                // Il ripiego e' il riposo, se il formato e il sistema scelti
+                // lo ammettono; altrimenti la prima formula ammessa.
+                const valide = Array.from(oddPolicySelect.options)
+                    .filter(o => o.value && !o.disabled).map(o => o.value);
+                oddPolicySelect.value = valide.includes('bye') ? 'bye' : (valide[0] || 'bye');
                 // Assegnare `.value` non emette `change`: chi ascolta la
                 // politica resterebbe fermo alla scelta precedente. Qui il
                 // ripiego e' su 'bye', che nasconde la sezione dell'esercizio
@@ -763,3 +849,8 @@
 <script src="{{ url_for('static', filename='js/x-challenge-picker.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/x_challenge_section.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/campo_gironi.js') }}?v={{ config.ASSET_VERSION }}"></script>
+{# Il formato si sceglie qui solo a piazzamenti: altrove i due file non
+   trovano il loro menu ed escono subito. #}
+<script src="{{ url_for('static', filename='js/bracket_options.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/strategia_gara.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/campo_punti.js') }}?v={{ config.ASSET_VERSION }}"></script>

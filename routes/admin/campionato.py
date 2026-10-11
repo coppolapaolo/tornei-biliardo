@@ -29,6 +29,7 @@ from models.location.models import BilliardHall
 from models.matchmaking.configuration import (
     MatchmakingStrategy,
     OddNumberPolicy,
+    get_available_strategies,
 )
 from models.competition.constants import DEFAULT_DISTANCE
 from models.categoria.listino import ListinoService, leggi_dal_modulo
@@ -569,6 +570,11 @@ def campionato_detail(campionato_id):
         default_discipline=Discipline.NINE_BALL.value,
         # Le formule che la finale dei playoff può scegliere.
         strategie_playoff=CAMPIONATO_TYPES,
+        # Nel campionato a piazzamenti il modale «Nuova gara» sceglie il
+        # formato della serata (ADR-080): i nomi, e i vincoli di ogni formato
+        # che `strategia_gara.js` applica ai menu.
+        strategie_gara=CAMPIONATO_TYPES,
+        available_strategies=get_available_strategies(),
         playoff_feasibility=playoff_feasibility,
         playoff_status=playoff_status,
         # A che punto sono i playoff: la fascia e gli invitati ne dipendono.

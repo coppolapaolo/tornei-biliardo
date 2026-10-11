@@ -160,6 +160,13 @@ gare e aggiungere un booleano per come entrano nel campionato.
   `sistema_delle_gare`, non più alla colonna.
 - Il modale «Nuova gara» del campionato propone ancora la strategia del
   campionato: il formato si cambia dalla modifica della gara (PR successiva).
+  *Risolto il 2026-10-11: a piazzamenti il modale sceglie formato e sistema
+  della serata, partendo dalle proposte del campionato, coi blocchi e i file
+  della modifica della gara (`_bracket_options.html` con prefisso degli id,
+  `bracket_options.js`, il nuovo `strategia_gara.js`, `_campo_gironi.html`).
+  Sommando i totali il modale resta com'era. Una serata Amalfi in un
+  campionato che non propone l'anti-reincontro lo riceve acceso
+  (`anti_rematch_for_strategy`): prima la validazione la rifiutava.*
 
 ### Rischi
 

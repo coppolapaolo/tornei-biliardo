@@ -750,6 +750,27 @@ def bracket_derived_fields(data: Dict[str, Any]) -> Dict[str, Any]:
     return derived
 
 
+def anti_rematch_for_strategy(strategy: Any, anti_rematch: bool) -> bool:
+    """L'anti-reincontro **proposto** a una gara, data la sua strategia.
+
+    Serve quando la gara non lo sceglie e prende la proposta del campionato.
+    Amalfi lo impone (`anti_rematch_required`): un campionato girone
+    all'italiana non lo propone, perché lì non serve, e la sua serata Amalfi
+    veniva rifiutata dalla validazione della strategia. Qui la proposta si
+    accende; le altre strategie la tengono com'è.
+
+    Non vale per una scelta esplicita: chi spegne la casella su una gara
+    Amalfi riceve il rifiuto con il suo messaggio.
+    """
+    strategia = getattr(strategy, "value", strategy)
+    vincoli = next(
+        (v for k, v in STRATEGY_CONSTRAINTS.items() if k.value == strategia), {}
+    )
+    if vincoli.get("anti_rematch_required"):
+        return True
+    return bool(anti_rematch)
+
+
 def odd_policy_for_strategy(strategy: Any, odd_policy: Any) -> Any:
     """La formula dei dispari che la gara tiene davvero, data la strategia.
 

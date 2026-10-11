@@ -124,7 +124,9 @@
 
     <div class="mb-3">
       <label for="matchmaking_strategy" class="form-label">{{ _('Tipo di competizione') }}</label>
-      <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy" required>
+      <select class="form-select" id="matchmaking_strategy" name="matchmaking_strategy" required
+              data-strategia-gara data-vincoli='{{ available_strategies|tojson }}'
+              data-girone="{{ MatchmakingStrategy.ROUND_ROBIN.value }}">
         {% for strategy_key, strategy_info in available_strategies.items() %}
         <option value="{{ strategy_key }}" {% if strategy_key == (gara.matchmaking_strategy or 'amalfi') %}selected{% endif %}
                 data-description="{{ strategy_info.description }}">{{ strategy_info.display_name }}</option>

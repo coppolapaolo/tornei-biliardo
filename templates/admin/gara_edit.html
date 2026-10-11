@@ -23,87 +23,19 @@
 <script src="{{ url_for('static', filename='js/campo_gironi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/catena_spareggi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/campo_punti.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/strategia_gara.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Strategy configuration management
-        const strategySelect = document.getElementById('matchmaking_strategy');
-        const firstRoundSelect = document.getElementById('first_round_policy');
+        // I vincoli della strategia (primo abbinamento, dispari,
+        // anti-reincontro) li applica strategia_gara.js, condiviso col modale
+        // «Nuova gara» del campionato. Qui restano distanza e partita a tre.
         const oddPolicySelect = document.getElementById('odd_number_policy');
-        const antiRematchCheck = document.getElementById('anti_rematch_enabled');
-        const strategyDescription = document.getElementById('strategy_description');
         const trioWarning = document.getElementById('trio_warning');
-        const classificationSelect = document.getElementById('classification_system');
 
-        // Exact number logic elements
         const distanceInput = document.getElementById('distance');
         const exactNumberCheckbox = document.getElementById('exact_number');
         const exactNumberContainer = document.getElementById('exact_number_container');
         const gameModeText = document.getElementById('game-mode-text');
-
-        // Classification system constraints for odd policies
-        const classificationOddPolicies = {
-            'WINS': ['no', 'bye', 'bye_with_challenge', 'trio'],
-            'RACK': ['no', 'bye_with_challenge', 'trio'],  // No 'bye' for RACK
-            'POINTS': ['no', 'bye', 'bye_with_challenge', 'trio'],  // come WINS
-            'POSITION': []  // No odd policy selection for POSITION
-        };
-
-        const strategyConstraints = {{ available_strategies | tojson }};
-
-        function updateStrategyUI() {
-            if (!strategySelect) return;
-
-            const selectedStrategy = strategySelect.value;
-            const constraints = strategyConstraints[selectedStrategy]?.constraints || {};
-
-            const selectedOption = strategySelect.options[strategySelect.selectedIndex];
-            if (strategyDescription) {
-                strategyDescription.textContent = selectedOption.dataset.description || '';
-            }
-
-            if (firstRoundSelect) {
-                const allowedFirstPolicies = constraints.first_round_policies || ['random'];
-                Array.from(firstRoundSelect.options).forEach(option => {
-                    if (option.value) {
-                        option.disabled = !allowedFirstPolicies.includes(option.value);
-                        if (option.disabled && option.selected) {
-                            firstRoundSelect.value = allowedFirstPolicies[0];
-                        }
-                    }
-                });
-            }
-
-            if (oddPolicySelect) {
-                const allowedOddPolicies = constraints.odd_policies || ['bye'];
-                const gironeScelto = selectedStrategy === {{ MatchmakingStrategy.ROUND_ROBIN.value|tojson }};
-                Array.from(oddPolicySelect.options).forEach(option => {
-                    if (option.value) {
-                        option.disabled = !allowedOddPolicies.includes(option.value);
-                        if (option.disabled && option.selected) {
-                            oddPolicySelect.value = allowedOddPolicies[0];
-                        }
-                        // Nel girone il riposo ha un nome suo: non vale punti.
-                        if (option.dataset.labelGirone) {
-                            option.textContent = gironeScelto ? option.dataset.labelGirone : option.dataset.label;
-                        }
-                    }
-                });
-            }
-
-            if (antiRematchCheck) {
-                if (constraints.anti_rematch === false) {
-                    antiRematchCheck.checked = false;
-                    antiRematchCheck.disabled = true;
-                } else {
-                    antiRematchCheck.disabled = false;
-                    if (constraints.anti_rematch_required) {
-                        antiRematchCheck.checked = true;
-                    }
-                }
-            }
-
-            updateTrioWarning();
-        }
 
         function updateTrioWarning() {
             if (!distanceInput || !oddPolicySelect || !trioWarning) return;
@@ -114,45 +46,12 @@
             // Trio valido solo per distanze 2-7 (ADR-005)
             if (oddPolicy === 'trio' && (distance < 2 || distance > 7)) {
                 trioWarning.style.display = 'block';
-                const system = classificationSelect ? classificationSelect.value : 'WINS';
-                const validPolicies = classificationOddPolicies[system] || ['bye'];
-                oddPolicySelect.value = validPolicies.includes('bye') ? 'bye' : validPolicies[0];
+                const valide = Array.from(oddPolicySelect.options).filter(o => o.value && !o.disabled).map(o => o.value);
+                oddPolicySelect.value = valide.includes('bye') ? 'bye' : (valide[0] || 'bye');
+                oddPolicySelect.dispatchEvent(new Event('change'));
             } else {
                 trioWarning.style.display = 'none';
             }
-        }
-
-        function updateOddPoliciesForClassification() {
-            if (!oddPolicySelect || !classificationSelect) return;
-
-            const system = classificationSelect.value;
-            const strategy = strategySelect ? strategySelect.value : '';
-            const strategyPolicies = (strategyConstraints[strategy]?.constraints || {}).odd_policies;
-            let validPolicies = classificationOddPolicies[system] || ['bye'];
-            // Nel girone all'italiana decide solo la strategia: il riposo non
-            // vale niente, e per questo e' ammesso anche coi triangoli totali
-            // (SPECIFICHE.md, nota del 2026-10-11).
-            const girone = strategy === {{ MatchmakingStrategy.ROUND_ROBIN.value|tojson }};
-            if (girone) {
-                validPolicies = strategyPolicies || ['bye'];
-            } else if (strategyPolicies) {
-                validPolicies = validPolicies.filter(p => strategyPolicies.includes(p));
-            }
-
-            Array.from(oddPolicySelect.options).forEach(option => {
-                if (option.value) {
-                    const isValid = validPolicies.includes(option.value);
-                    option.disabled = !isValid;
-                    option.style.display = isValid ? '' : 'none';
-                    if (option.disabled && option.selected) {
-                        oddPolicySelect.value = validPolicies[0] || 'bye';
-                    }
-                    // Il nome del riposo cambia col girone: li' non si vince a tavolino.
-                    if (option.dataset.labelGirone) {
-                        option.textContent = girone ? option.dataset.labelGirone : option.dataset.label;
-                    }
-                }
-            });
         }
 
         function updateExactNumberAvailability() {
@@ -191,22 +90,10 @@
             }
         }
 
-        if (strategySelect) {
-            strategySelect.addEventListener('change', function () {
-                updateStrategyUI();
-                updateOddPoliciesForClassification();
-            });
-        }
         if (oddPolicySelect) {
             oddPolicySelect.addEventListener('change', function () {
                 updateTrioWarning();
                 updateExactNumberAvailability();
-            });
-        }
-        if (classificationSelect) {
-            classificationSelect.addEventListener('change', function () {
-                updateOddPoliciesForClassification();
-                updateTrioWarning();
             });
         }
         if (distanceInput) {
@@ -223,14 +110,8 @@
             exactNumberCheckbox.addEventListener('change', updateGameModeText);
         }
 
-        updateStrategyUI();
-        updateOddPoliciesForClassification();
+        updateTrioWarning();
         updateExactNumberAvailability();
-        setTimeout(function () {
-            updateStrategyUI();
-            updateOddPoliciesForClassification();
-            updateExactNumberAvailability();
-        }, 100);
     });
 </script>
 {% endblock %}
