@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.73.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.72.0...v1.73.0) (2026-10-11)
+
+
+### Funzioni nuove
+
+* finali per piazzamento nei moduli, nel foglio di avvio e nei nomi dei turni ([#673](https://github.com/coppolapaolo/tornei-biliardo/issues/673)) ([73b2e9c](https://github.com/coppolapaolo/tornei-biliardo/commit/73b2e9c90d792bd07d4b6a3ea43c8b37de3cee06))
+
 ## [1.72.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.71.0...v1.72.0) (2026-10-11)
 
 
