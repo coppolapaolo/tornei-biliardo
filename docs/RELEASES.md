@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.63.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.62.0...v1.63.0) (2026-10-11)
+
+
+### Funzioni nuove
+
+* gironi multipli nei moduli e nel foglio di avvio ([#641](https://github.com/coppolapaolo/tornei-biliardo/issues/641)) ([415b770](https://github.com/coppolapaolo/tornei-biliardo/commit/415b770a96fa82d11296855f617f0e5f8ddc5f05))
+
 ## [1.62.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.61.0...v1.62.0) (2026-10-11)
 
 
