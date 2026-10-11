@@ -83,6 +83,24 @@ def e_della_fase_finale(gara: Any, round_number: Optional[int]) -> bool:
     return round_number > turni_dei_gironi(gara)
 
 
+def distanza_della_fase(gara: Any, round_number: Optional[int]) -> int:
+    """La distanza di un turno senza override del turno (ADR-027, ADR-081).
+
+    Nei turni del tabellone dopo i gironi quella della fase finale
+    (`Gara.effective_final_phase_distance`: come i gironi o «al N»),
+    altrimenti quella della gara. La sola finale può averne un'altra:
+    `distanza_della_finale`.
+    """
+    if ha_tabellone_finale(gara) and e_della_fase_finale(gara, round_number):
+        return gara.effective_final_phase_distance
+    return gara.distance
+
+
+def distanza_della_finale(gara: Any) -> int:
+    """La distanza della sola finale: la sua, o come la fase finale."""
+    return gara.effective_final_distance
+
+
 def motivo_tabellone_impossibile(taglie: Sequence[int], k: int) -> Optional[str]:
     """Perché coi gironi composti il tabellone non si fa: una chiave, o None."""
     return verifica_qualificati(taglie, k)
@@ -302,6 +320,8 @@ __all__ = [
     "bande",
     "chi_va_al_tabellone",
     "classifica_finale",
+    "distanza_della_fase",
+    "distanza_della_finale",
     "e_della_fase_finale",
     "ha_tabellone_finale",
     "si_gioca_il_tabellone",

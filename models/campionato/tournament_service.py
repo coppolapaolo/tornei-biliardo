@@ -62,6 +62,9 @@ class TournamentService(TournamentStatisticsService):
             "default_qualifiers_per_group",
             "default_third_place_match",
             "default_final_phase_time_limit_minutes",
+            "default_final_phase_distance",
+            "default_final_time_limit_minutes",
+            "default_final_distance",
             "default_gara_classification_system",
             "default_catena_turno",
             "default_catena_gara",
@@ -138,6 +141,10 @@ class TournamentService(TournamentStatisticsService):
         default_qualifiers_per_group: int = 2,
         default_third_place_match: bool = False,
         default_final_phase_time_limit_minutes: Optional[int] = None,
+        # Le regole del tabellone per fase (emendamento del 2026-10-12).
+        default_final_phase_distance: Optional[int] = None,
+        default_final_time_limit_minutes: Optional[int] = None,
+        default_final_distance: Optional[int] = None,
         # Le catene degli spareggi (ADR-078): None = il default dell'app.
         default_catena_turno: Optional[str] = None,
         default_catena_gara: Optional[str] = None,
@@ -198,6 +205,9 @@ class TournamentService(TournamentStatisticsService):
             default_final_phase_time_limit_minutes=(
                 default_final_phase_time_limit_minutes
             ),
+            default_final_phase_distance=default_final_phase_distance,
+            default_final_time_limit_minutes=default_final_time_limit_minutes,
+            default_final_distance=default_final_distance,
             default_catena_turno=default_catena_turno,
             default_catena_gara=default_catena_gara,
             catena_generale=catena_generale,

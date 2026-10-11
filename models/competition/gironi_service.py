@@ -175,14 +175,23 @@ def descrivi_gironi(
 
 
 def descrivi_fase_finale(
-    qualificati: int, finalina: bool, minuti: Optional[int] = None
+    qualificati: int,
+    finalina: bool,
+    minuti: Optional[int] = None,
+    *,
+    distanza: Optional[int] = None,
+    minuti_finale: Optional[int] = None,
+    distanza_finale: Optional[int] = None,
 ) -> str:
     """La frase del tabellone dopo i gironi (ADR-081), per regolamento e pagine.
 
     «Poi i primi 2 di ogni girone vanno al tabellone, con la finalina per il
-    3° posto; nel tabellone 45 minuti a partita.» Il limite si dice solo se
-    è diverso da quello dei gironi: ``minuti`` è il valore della gara, a tre
-    stati (None come i gironi, 0 senza limite, N minuti).
+    3° posto; nel tabellone al 4, 45 minuti a partita; la finale al 7, senza
+    limite di tempo.» Si dice solo ciò che è diverso: ``minuti`` e
+    ``distanza`` sono i valori della gara per la fase finale (None come i
+    gironi; i minuti 0 senza limite), ``minuti_finale`` e ``distanza_finale``
+    quelli della sola finale (None come la fase finale). La finalina segue la
+    fase finale (emendamento del 2026-10-12).
     """
     frase = ngettext(
         "Poi il primo di ogni girone va al tabellone",
@@ -191,12 +200,27 @@ def descrivi_fase_finale(
     )
     if finalina:
         frase += _(", con la finalina per il 3° posto")
-    if minuti is not None:
-        if minuti > 0:
-            frase += _("; nel tabellone %(n)s minuti a partita", n=minuti)
-        else:
-            frase += _("; nel tabellone senza limite di tempo")
+    nel_tabellone = _regole_dette(distanza, minuti)
+    if nel_tabellone:
+        frase += _("; nel tabellone %(regole)s", regole=nel_tabellone)
+    in_finale = _regole_dette(distanza_finale, minuti_finale)
+    if in_finale:
+        frase += _("; la finale %(regole)s", regole=in_finale)
     return frase + "."
+
+
+def _regole_dette(distanza: Optional[int], minuti: Optional[int]) -> str:
+    """«al 4, 45 minuti a partita»: le regole che cambiano, in fila."""
+    parti = []
+    if distanza:
+        parti.append(_("al %(n)s", n=distanza))
+    if minuti is not None:
+        parti.append(
+            _("%(n)s minuti a partita", n=minuti)
+            if minuti > 0
+            else _("senza limite di tempo")
+        )
+    return ", ".join(parti)
 
 
 class GironiService:
@@ -433,6 +457,9 @@ class GironiService:
                 gara.effective_qualifiers_per_group,
                 bool(gara.third_place_match),
                 gara.final_phase_time_limit_minutes,
+                distanza=gara.final_phase_distance,
+                minuti_finale=gara.final_time_limit_minutes,
+                distanza_finale=gara.final_distance,
             )
         return frase
 

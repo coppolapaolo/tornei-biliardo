@@ -1,0 +1,45 @@
+{# La distanza della fase finale, o della sola finale (ADR-081, emendamento
+   del 2026-10-12) — Design System 7c.
+
+   Due stati, come le colonne `Gara.final_phase_distance` e
+   `Gara.final_distance`: come prima (NULL: come i gironi, o come la fase
+   finale) oppure «al N». Il tabellone si gioca sempre al N, quindi non c'è
+   «esattamente». Un menu e, solo con «Un'altra distanza», il numero; lo
+   scoprimento lo fa `static/js/campo_gironi.js`, con gli stessi segni del
+   limite di tempo (`data-fase-regola`). I confini (1–15) sono quelli del
+   parser (`fase_finale.distanza_dal_modulo`).
+
+   Parametri:
+   - distanza_prefisso: '' per la gara, 'default_' per il campionato
+   - distanza_id: prefisso degli id (default '')
+   - distanza_valore: il valore salvato (None o N)
+   - distanza_spento: i campi nascono spenti (il blocco è nascosto)
+   - distanza_finale: la distanza della sola finale invece della fase finale #}
+{% set _dp = distanza_prefisso|default('') %}
+{% set _did = distanza_id|default('') %}
+{% set _dv = distanza_valore|default(none) %}
+{% set _ds = distanza_spento|default(false) %}
+{% set _fin = distanza_finale|default(false) %}
+{% set _campo = 'final_distance' if _fin else 'final_phase_distance' %}
+{% set _altra = DistanzaDellaFase.del_valore(_dv) == DistanzaDellaFase.ALTRA %}
+<div class="mt-3" data-fase-regola>
+  {% if _fin %}
+  <label for="{{ _did }}{{ _dp }}{{ _campo }}_mode" class="form-label">{{ _('Distanza della finale') }}</label>
+  {% else %}
+  <label for="{{ _did }}{{ _dp }}{{ _campo }}_mode" class="form-label" data-help="gara-distanza-fase-finale">{{ _('Distanza della fase finale') }}</label>
+  {% endif %}
+  <div class="d-flex gap-2 flex-wrap">
+    <select class="form-select" style="flex:1 1 180px" id="{{ _did }}{{ _dp }}{{ _campo }}_mode" name="{{ _dp }}{{ _campo }}_mode"
+            data-fase-regola-modo {% if _ds %}disabled{% endif %}>
+      <option value="{{ DistanzaDellaFase.COME_PRIMA.value }}" {% if not _altra %}selected{% endif %}>{% if _fin %}{{ _('Come la fase finale') }}{% else %}{{ _('Come i gironi') }}{% endif %}</option>
+      <option value="{{ DistanzaDellaFase.ALTRA.value }}" data-fase-regola-valore {% if _altra %}selected{% endif %}>{{ _('Un’altra distanza') }}</option>
+    </select>
+    <div class="input-group" style="flex:1 1 150px" data-fase-regola-campo {% if not _altra %}hidden{% endif %}>
+      <span class="input-group-text">{{ _('al') }}</span>
+      <input type="number" class="form-control" name="{{ _dp }}{{ _campo }}"
+             aria-label="{% if _fin %}{{ _('Triangoli per vincere la finale') }}{% else %}{{ _('Triangoli per vincere nella fase finale') }}{% endif %}"
+             value="{{ _dv or '' }}" min="1" max="{{ distanza_massima_fase }}" step="1" inputmode="numeric"
+             {% if _ds or not _altra %}disabled{% endif %}>
+    </div>
+  </div>
+</div>

@@ -20,11 +20,12 @@ blocks:
   - type: text
     text: >-
       Quando il turno parte, la tua partita compare nella tua home **dentro la
-      scheda della gara** — sotto **«Le tue gare»**, con il turno, l'avversario
-      e il tavolo — e il pulsante **Gioca la tua partita** ti porta al
-      segnapunti. La ritrovi nella pagina della gara, dove il pulsante si
-      chiama **Inserisci risultato**. Ricevi anche una notifica. Toccala e sei
-      dentro.
+      scheda della gara** — sotto **«Le tue gare»**, nel riquadro **La tua
+      partita**, con il turno, l'avversario e il tavolo. Nel tabellone, al
+      posto del numero del turno c'è il suo nome: **Quarti**, **Semifinale**,
+      **Finale**, **Finalina**. Tocca il riquadro e sei al segnapunti. La
+      ritrovi nella pagina della gara, dove il pulsante si chiama **Inserisci
+      risultato**. Ricevi anche una notifica. Toccala e sei dentro.
 
   - type: note
     tone: info

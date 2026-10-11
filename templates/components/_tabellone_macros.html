@@ -26,6 +26,25 @@
 {%- endif -%}
 {%- endmacro %}
 
+{# Il nome di **una partita** del tabellone, al singolare: «Semifinale»,
+   «Finale», «Finalina». Lo usa la tessera in dashboard («La tua partita ·
+   Semifinale», decisione del 2026-10-12); la chiave viene da `nome_del_nodo`,
+   la stessa delle caselle dello schermo in sala. I turni senza nome
+   ricadono su «Turno N» col numero di gara, `turno`. #}
+{% macro nome_partita(n, turno) -%}
+{%- if n.chiave == 'finale' -%}{{ _('Finale') }}
+{%- elif n.chiave == 'semifinali' -%}{{ _('Semifinale') }}
+{%- elif n.chiave == 'quarti' -%}{{ _('Quarti') }}
+{%- elif n.chiave == 'ottavi' -%}{{ _('Ottavi') }}
+{%- elif n.chiave == 'sedicesimi' -%}{{ _('Sedicesimi') }}
+{%- elif n.chiave == 'finalina' -%}{{ _('Finalina') }}
+{%- elif n.chiave == 'bella' -%}{{ _('Bella') }}
+{%- elif n.chiave == 'recupero' -%}{{ _('Recupero %(num)s', num=n.numero) }}
+{%- elif n.chiave == 'vincenti' -%}{{ _('Turno %(num)s dei vincenti', num=n.numero) }}
+{%- else -%}{{ _('Turno %(num)s', num=turno) }}
+{%- endif -%}
+{%- endmacro %}
+
 {# Il nome di un turno di gara: nel doppio KO un turno contiene due round. #}
 {% macro nome_turno(parti) -%}
 {%- for p in parti -%}{{ nome_round(p) }}{% if not loop.last %} · {% endif %}{%- endfor -%}

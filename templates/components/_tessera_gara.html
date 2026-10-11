@@ -25,6 +25,9 @@
    Gli stati si confrontano con `GaraStatus` e `ProvaDerivedStatus`, iniettati
    da `inject_enums`. #}
 
+{# I nomi dei turni del tabellone, per «La tua partita · Semifinale». #}
+{% import "components/_tabellone_macros.html" as tabellone_nomi with context %}
+
 {% macro pastiglia_stato(card) %}
   {% set st = card.real_status %}
   {% if st in [GaraStatus.COMPLETED.value, ProvaDerivedStatus.TOURNAMENT_COMPLETED.value] %}
@@ -187,7 +190,9 @@
       <span class="flex-fill" style="min-width:0">
         <span class="c7-kicker d-block">
           {{ _('La tua partita') }}
-          <span class="c7-sep">·</span> {{ _('Turno') }} {{ partita.round_number }}
+          {# Nel tabellone il nome del turno, «Semifinale» (decisione del
+             2026-10-12); nei gironi e nelle gare a turni il numero. #}
+          <span class="c7-sep">·</span> {% if card.nome_partita %}{{ tabellone_nomi.nome_partita(card.nome_partita, partita.round_number) }}{% else %}{{ _('Turno') }} {{ partita.round_number }}{% endif %}
           {% if partita.table_assignment %}
             <span class="c7-sep">·</span> {{ _('Tavolo') }} {{ partita.table_assignment }}
           {% endif %}

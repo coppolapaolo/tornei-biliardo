@@ -225,6 +225,32 @@ hints:
   - admin.competition.gara_detail
   page: abbinamenti
   section: fase_finale
+- id: gara.distanza_fase_finale
+  label: Distance of the final phase
+  short: 'Same as the groups, or another distance for the bracket matches, 3rd place final included. It is always a race to N.'
+  anchor: gara-distanza-fase-finale
+  screens:
+  - admin.competition.create_gara_standalone
+  - admin.campionato.wizard_step2
+  - admin.campionato.campionato_detail
+  - admin.competition.edit_gara
+  - admin.campionato.edit_campionato
+  - admin.competition.gara_detail
+  page: abbinamenti
+  section: fase_finale
+- id: gara.regole_finale
+  label: The final
+  short: 'Time limit and distance of the final alone: for example «no limit» or «race to 7». The 3rd place final plays like the rest of the bracket.'
+  anchor: gara-regole-finale
+  screens:
+  - admin.competition.create_gara_standalone
+  - admin.campionato.wizard_step2
+  - admin.campionato.campionato_detail
+  - admin.competition.edit_gara
+  - admin.campionato.edit_campionato
+  - admin.competition.gara_detail
+  page: abbinamenti
+  section: fase_finale
 - id: gara.gironi_avvio
   label: How many groups?
   short: 'At the start you choose how many groups, on the players present. Each option shows sizes and rounds, bracket included; with a single group the bracket is not played.'

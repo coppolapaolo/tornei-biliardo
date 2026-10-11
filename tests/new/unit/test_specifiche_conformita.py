@@ -3521,6 +3521,40 @@ class TestLaFaseFinaleDopoIGironi:
         gara.final_phase_time_limit_minutes = 45
         assert gara.effective_final_phase_time_limit_minutes == 45
 
+    def test_regole_della_finale_per_fase(self, db_session):
+        """SPECIFICHE.md, «Fase finale dopo i gironi» → «Regole del tabellone,
+        per fase» (nota del 2026-10-12):
+
+        > La **finalina** segue la fase finale, non la finale. [...] L'ordine
+        > è: l'override del singolo turno (se c'è), poi la finale, poi la
+        > fase finale, poi la gara."""
+        from types import SimpleNamespace
+
+        from models.matchmaking.bracket import BRACKET_THIRD_PLACE, BRACKET_WINNERS
+        from models.matchmaking.fase_finale import la_finale_del_turno
+
+        gara = _gara(db_session)
+        gara.matchmaking_strategy = "round_robin"
+        gara.distance = 3
+        gara.time_limit_minutes = 30
+        assert (gara.effective_final_phase_distance, gara.effective_final_distance) == (
+            3,
+            3,
+        )
+        assert gara.effective_final_time_limit_minutes == 30
+        gara.final_phase_distance = 4
+        gara.final_phase_time_limit_minutes = 45
+        assert gara.effective_final_distance == 4
+        assert gara.effective_final_time_limit_minutes == 45
+        gara.final_distance = 7
+        gara.final_time_limit_minutes = 0
+        assert gara.effective_final_distance == 7
+        assert gara.effective_final_time_limit_minutes is None
+        # La finalina sta nel turno della finale ma non è la finale.
+        finale = SimpleNamespace(bracket_type=BRACKET_WINNERS, bracket_group=None)
+        finalina = SimpleNamespace(bracket_type=BRACKET_THIRD_PLACE, bracket_group=None)
+        assert la_finale_del_turno([finalina, finale]) is finale
+
     def test_nel_tabellone_si_gioca_al_n(self, db_session):
         """> le partite si giocano «al N» (con «esattamente N» la gara col
         > tabellone viene rifiutata, come ogni tabellone)."""

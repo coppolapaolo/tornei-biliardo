@@ -29,13 +29,20 @@ function pagina({ tetto = "2", fase = "nessuna", modo = "gironi" } = {}) {
           <div data-fase-se-tabellone>
             <select name="qualifiers_per_group"><option value="2">2</option></select>
             <input type="checkbox" name="third_place_match">
-            <div data-fase-tempo>
-              <select name="final_phase_time_limit" data-fase-tempo-modo>
+            <div data-fase-regola>
+              <select name="final_phase_time_limit" data-fase-regola-modo>
                 <option value="gironi" ${modo === "gironi" ? "selected" : ""}>g</option>
                 <option value="nessuno" ${modo === "nessuno" ? "selected" : ""}>n</option>
-                <option value="minuti" data-fase-tempo-minuti ${modo === "minuti" ? "selected" : ""}>m</option>
+                <option value="minuti" data-fase-regola-valore ${modo === "minuti" ? "selected" : ""}>m</option>
               </select>
-              <div data-fase-tempo-campo><input name="final_phase_time_limit_minutes"></div>
+              <div data-fase-regola-campo><input name="final_phase_time_limit_minutes"></div>
+            </div>
+            <div data-fase-regola>
+              <select name="final_distance_mode" data-fase-regola-modo>
+                <option value="come" selected>c</option>
+                <option value="altra" data-fase-regola-valore>a</option>
+              </select>
+              <div data-fase-regola-campo id="distanzaFinale"><input name="final_distance"></div>
             </div>
           </div>
         </div>
@@ -59,7 +66,7 @@ function pagina({ tetto = "2", fase = "nessuna", modo = "gironi" } = {}) {
     eventi,
     campo,
     seTabellone: doc.querySelector("[data-fase-se-tabellone]"),
-    minuti: doc.querySelector("[data-fase-tempo-campo]"),
+    minuti: doc.querySelector("[data-fase-regola-campo]"),
     tetto: (v) => cambia(campo("max_groups"), v),
     strategia: (v) => cambia(doc.getElementById("strategia"), v),
     modo: (v) => cambia(campo("final_phase_time_limit"), v),
@@ -119,6 +126,24 @@ check("fuori dal girone all'italiana non c'è tabellone dopo i gironi", () => {
   p.strategia("amalfi");
   assert.strictEqual(p.win.gironiConTabellone(), false);
   assert.strictEqual(p.campo("qualifiers_per_group").disabled, true);
+});
+
+check("la distanza della finale segue il tabellone e la sua voce", () => {
+  const p = pagina();
+  const doc = p.win.document;
+  const cambia = (el, v) => { el.value = v; el.dispatchEvent(new p.win.Event("change")); };
+  assert.strictEqual(p.campo("final_distance_mode").disabled, true);
+  p.fase("tabellone");
+  assert.strictEqual(p.campo("final_distance_mode").disabled, false);
+  assert.strictEqual(doc.getElementById("distanzaFinale").hidden, true);
+  assert.strictEqual(p.campo("final_distance").disabled, true);
+  cambia(p.campo("final_distance_mode"), "altra");
+  assert.strictEqual(doc.getElementById("distanzaFinale").hidden, false);
+  assert.strictEqual(p.campo("final_distance").disabled, false);
+  // Il limite della fase finale resta indipendente.
+  assert.strictEqual(p.minuti.hidden, true);
+  p.tetto("1");
+  assert.strictEqual(p.campo("final_distance").disabled, true);
 });
 
 console.log(`${controlli} controlli superati`);

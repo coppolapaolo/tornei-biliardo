@@ -47,17 +47,27 @@ def limite_minuti(match: Any) -> Optional[int]:
     return minuti if minuti and minuti > 0 else None
 
 
-def limite_del_turno(gara: Any, round_number: Optional[int]) -> Optional[int]:
+def limite_del_turno(
+    gara: Any, round_number: Optional[int], *, finale: bool = False
+) -> Optional[int]:
     """I minuti delle partite di un turno, o None se non c'è limite.
 
     È ciò che `fissa_regole` scrive sulla partita quando nasce. L'ordine:
 
     1. l'**override del turno** (ADR-027), se dice qualcosa: «senza limite» o
        N minuti;
-    2. nei turni del **tabellone dopo i gironi**, il limite della fase finale
+    2. per la **finale** del tabellone dopo i gironi (``finale``, lo dice chi
+       crea le partite: `fase_finale.la_finale_del_turno`), il limite della
+       sola finale (`Gara.effective_final_time_limit_minutes`: come la fase
+       finale, senza limite o N minuti). La finalina segue la fase finale;
+    3. nei turni del **tabellone dopo i gironi**, il limite della fase finale
        (`Gara.effective_final_phase_time_limit_minutes`: come i gironi,
        senza limite o N minuti);
-    3. il limite della **gara**.
+    4. il limite della **gara**.
+
+    Finale e fase finale si scrivono **per fase** e non per turno: prima
+    dell'avvio non si sa quale numero di turno sarà la finale (decisione
+    dell'utente del 2026-10-12).
     """
     # Dalla relazione della gara, non con una query: `fissa_regole` gira su
     # ogni partita nuova, e un turno ne crea molte insieme. La relazione si
@@ -76,6 +86,8 @@ def limite_del_turno(gara: Any, round_number: Optional[int]) -> Optional[int]:
         from models.competition.fase_finale_service import e_della_fase_finale
 
         if e_della_fase_finale(gara, round_number):
+            if finale:
+                return gara.effective_final_time_limit_minutes
             return gara.effective_final_phase_time_limit_minutes
     return gara.effective_time_limit_minutes
 

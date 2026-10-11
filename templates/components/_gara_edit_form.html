@@ -166,7 +166,9 @@
       {% with gironi_strategia_da='#matchmaking_strategy', gironi_tetto=gara.max_groups, gironi_composizione=gara.group_seeding,
               gironi_compagni=true, gironi_compagni_valore=gara.separate_teammates,
               fase_modo=gara.final_phase_mode, fase_k=gara.qualifiers_per_group,
-              fase_finalina=gara.third_place_match, fase_tempo=gara.final_phase_time_limit_minutes %}
+              fase_finalina=gara.third_place_match, fase_tempo=gara.final_phase_time_limit_minutes,
+              fase_distanza=gara.final_phase_distance, fase_finale_tempo=gara.final_time_limit_minutes,
+              fase_finale_distanza=gara.final_distance %}
       {% include "components/_campo_gironi.html" %}
       {% endwith %}
       {% else %}
@@ -180,7 +182,9 @@
       {% with gironi_strategia_da='#matchmaking_strategy', gironi_tetto=gara.max_groups, gironi_composizione=gara.group_seeding,
               gironi_compagni=true, gironi_compagni_valore=gara.separate_teammates,
               fase_modo=gara.final_phase_mode, fase_k=gara.qualifiers_per_group,
-              fase_finalina=gara.third_place_match, fase_tempo=gara.final_phase_time_limit_minutes %}
+              fase_finalina=gara.third_place_match, fase_tempo=gara.final_phase_time_limit_minutes,
+              fase_distanza=gara.final_phase_distance, fase_finale_tempo=gara.final_time_limit_minutes,
+              fase_finale_distanza=gara.final_distance %}
       {% include "components/_campo_gironi.html" %}
       {% endwith %}
     {% endif %}

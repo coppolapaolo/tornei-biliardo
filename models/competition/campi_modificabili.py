@@ -62,6 +62,12 @@ REGOLE: FrozenSet[str] = frozenset(
         # Il limite di tempo della fase finale: come quello dei gironi, vale
         # per le partite che nasceranno.
         "final_phase_time_limit_minutes",
+        # Le altre regole del tabellone, per fase (ADR-081, emendamento del
+        # 2026-10-12): distanza della fase finale, limite e distanza della
+        # sola finale. Valgono per le partite che nasceranno.
+        "final_phase_distance",
+        "final_time_limit_minutes",
+        "final_distance",
         "catena_turno",
         "odd_number_policy",
         "x_challenge_id",

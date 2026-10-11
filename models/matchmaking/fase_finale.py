@@ -34,9 +34,9 @@ Quattro domande, quattro risposte di questo modulo, tutte sul tabellone:
 from __future__ import annotations
 
 from enum import Enum
-from typing import Container, Dict, List, Mapping, Optional, Sequence
+from typing import Any, Container, Dict, List, Mapping, Optional, Sequence
 
-from .bracket import bracket_levels, bracket_size
+from .bracket import BRACKET_WINNERS, bracket_levels, bracket_size
 from .group_phase import seed_per_colonne
 
 #: Quanti passano per girone se la gara non lo dice.
@@ -93,8 +93,14 @@ class LimiteDellaFaseFinale(str, Enum):
 LIMITE_MASSIMO_IN_MINUTI = 600
 
 
-def limite_dal_modulo(modo: object, minuti: object) -> Optional[int]:
+def limite_dal_modulo(
+    modo: object, minuti: object, *, finale: bool = False
+) -> Optional[int]:
     """Il valore da salvare per la scelta del modulo: None, 0 o N minuti.
+
+    Lo stesso per il limite della sola finale (`Gara.final_time_limit_minutes`),
+    dove «come i gironi» vuol dire «come la fase finale»: ``finale`` cambia
+    solo il messaggio d'errore.
 
     Raises:
         ValueError: un modo sconosciuto, o minuti fuori da 1–600 quando si
@@ -114,6 +120,14 @@ def limite_dal_modulo(modo: object, minuti: object) -> Optional[int]:
         valore = int(str(minuti or "").strip())
     except ValueError:
         valore = 0
+    if (valore < 1 or valore > LIMITE_MASSIMO_IN_MINUTI) and finale:
+        raise ValueError(
+            _(
+                "Il limite di tempo della finale si scrive in minuti, da 1 a "
+                "%(max)s.",
+                max=LIMITE_MASSIMO_IN_MINUTI,
+            )
+        )
     if valore < 1 or valore > LIMITE_MASSIMO_IN_MINUTI:
         raise ValueError(
             _(
@@ -123,6 +137,87 @@ def limite_dal_modulo(modo: object, minuti: object) -> Optional[int]:
             )
         )
     return valore
+
+
+class DistanzaDellaFase(str, Enum):
+    """I due stati della distanza della fase finale o della finale, nel modulo.
+
+    Sulla gara il valore è un numero o NULL (`Gara.final_phase_distance`,
+    `Gara.final_distance`): NULL «come i gironi» (o «come la fase finale»),
+    N «al N». Il tabellone si gioca sempre al N: qualcuno deve passare.
+    """
+
+    COME_PRIMA = "come"
+    ALTRA = "altra"
+
+    @classmethod
+    def del_valore(cls, distanza: Optional[int]) -> "DistanzaDellaFase":
+        return cls.ALTRA if distanza else cls.COME_PRIMA
+
+
+#: La distanza più lunga che si può scrivere: la stessa del modulo della gara
+#: (`_distance_configurator.html`).
+DISTANZA_MASSIMA = 15
+
+
+def distanza_dal_modulo(
+    modo: object, valore: object, *, finale: bool = False
+) -> Optional[int]:
+    """Il valore da salvare per la scelta del modulo: None o N.
+
+    Args:
+        finale: la distanza della sola finale, per il messaggio d'errore.
+
+    Raises:
+        ValueError: un modo sconosciuto, o una distanza fuori da 1–15.
+    """
+    from flask_babel import gettext as _
+
+    try:
+        scelta = DistanzaDellaFase(str(modo or "").strip())
+    except ValueError:
+        raise ValueError(_("Distanza del tabellone sconosciuta."))
+    if scelta is DistanzaDellaFase.COME_PRIMA:
+        return None
+    try:
+        n = int(str(valore or "").strip())
+    except ValueError:
+        n = 0
+    if n < 1 or n > DISTANZA_MASSIMA:
+        if finale:
+            raise ValueError(
+                _(
+                    "La distanza della finale va da 1 a %(max)s triangoli.",
+                    max=DISTANZA_MASSIMA,
+                )
+            )
+        raise ValueError(
+            _(
+                "La distanza della fase finale va da 1 a %(max)s triangoli.",
+                max=DISTANZA_MASSIMA,
+            )
+        )
+    return n
+
+
+def la_finale_del_turno(nodi: Sequence[Any]) -> Optional[Any]:
+    """La partita della finale fra quelle di un turno del tabellone, o None.
+
+    È l'unico nodo dei vincenti del turno: il tabellone si dimezza a ogni
+    turno, e i bye del primo turno sono nodi pieni (ADR-038), quindi un turno
+    con un solo nodo dei vincenti è la finale — anche al primo turno, quando
+    i qualificati sono due. La finalina (`3P`) sta nello stesso turno e non è
+    la finale: segue le regole della fase finale (decisione dell'utente del
+    2026-10-12). Si guardano i soli nodi del tabellone dopo i gironi, senza
+    girone.
+    """
+    vincenti = [
+        n
+        for n in nodi
+        if getattr(n, "bracket_type", None) == BRACKET_WINNERS
+        and getattr(n, "bracket_group", None) is None
+    ]
+    return vincenti[0] if len(vincenti) == 1 else None
 
 
 def qualificati_per_girone(valore: object) -> int:
@@ -203,12 +298,16 @@ def semina_del_tabellone(
 
 
 __all__ = [
+    "DISTANZA_MASSIMA",
+    "DistanzaDellaFase",
     "FaseFinale",
     "LIMITE_MASSIMO_IN_MINUTI",
     "LimiteDellaFaseFinale",
     "MASSIMO_QUALIFICATI_PER_GIRONE",
     "QUALIFICATI_PER_GIRONE_DEFAULT",
     "TAGLIA_MINIMA",
+    "distanza_dal_modulo",
+    "la_finale_del_turno",
     "limite_dal_modulo",
     "qualificati_dei_gironi",
     "qualificati_per_girone",

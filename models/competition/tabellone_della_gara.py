@@ -25,7 +25,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Iterable, List, Optional, Sequence
+from typing import Any, Dict, Iterable, List, Optional, Sequence
 
 from models.matchmaking.configuration import BRACKET_STRATEGIES, MatchmakingStrategy
 
@@ -140,10 +140,38 @@ def albero_della_gara(gara: Any, partite: Iterable[Any]):
     )
 
 
+def nomi_delle_partite(gara: Any, partite: Iterable[Any]) -> Dict[int, Any]:
+    """Il nome di ogni partita del tabellone, per id: «finale», «semifinali»…
+
+    Una fonte sola per chi nomina una partita fuori dal disegno del
+    tabellone — le caselle dei tavoli sullo schermo in sala, la tessera in
+    dashboard («La tua partita · Semifinale»): `nome_del_nodo` sull'albero
+    della gara. I nomi sono simbolici (`NomeRound`), le parole le mette il
+    template. Le partite dei gironi del girone all'italiana non ci sono; nelle
+    gare senza tabellone il dizionario è vuoto.
+    """
+    return nomi_dei_nodi(albero_della_gara(gara, partite))
+
+
+def nomi_dei_nodi(albero: Any) -> Dict[int, Any]:
+    """`nomi_delle_partite` per chi ha già l'albero (None: nessun nome)."""
+    from models.competition.tabellone_view import nome_del_nodo
+
+    if albero is None:
+        return {}
+    return {
+        n.match.id: nome_del_nodo(albero, n)
+        for n in albero.nodi
+        if n.match is not None and n.match.id is not None
+    }
+
+
 __all__ = [
     "FaseDellaGara",
     "NESSUN_TABELLONE",
     "TabelloneDellaGara",
     "albero_della_gara",
+    "nomi_dei_nodi",
+    "nomi_delle_partite",
     "tabellone_della_gara",
 ]

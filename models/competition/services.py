@@ -766,6 +766,15 @@ class GaraService:
             kwargs["final_phase_time_limit_minutes"] = (
                 campionato.default_final_phase_time_limit_minutes
             )
+        # Le altre regole del tabellone, per fase (emendamento del 2026-10-12):
+        # NULL vuol dire «come prima» anche sul campionato.
+        for campo in (
+            "final_phase_distance",
+            "final_time_limit_minutes",
+            "final_distance",
+        ):
+            if campo not in kwargs:
+                kwargs[campo] = getattr(campionato, f"default_{campo}")
         if (
             kwargs.get("third_place_match") is None
             and kwargs.get("matchmaking_strategy")

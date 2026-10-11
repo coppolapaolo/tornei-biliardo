@@ -189,6 +189,25 @@
               tempo_nota=_('Vale per le partite del tabellone dei turni che devono ancora cominciare.') %}
       {% include "components/_campo_limite_fase_finale.html" %}
       {% endwith %}
+      {% if 'final_phase_distance' in ammessi %}
+      {% with distanza_valore=gara.final_phase_distance %}
+      {% include "components/_campo_distanza_fase_finale.html" %}
+      {% endwith %}
+      {% endif %}
+      {# Le regole della sola finale (emendamento del 2026-10-12): valgono
+         se la finale non è ancora nata. #}
+      {% if 'final_time_limit_minutes' in ammessi %}
+      <div class="mt-4 mb-3" data-fase-la-finale>
+        <div class="form-label mb-0" data-help="gara-regole-finale">{{ _('La finale') }}</div>
+        <div class="c7-choice__desc">{{ _('Solo la partita per il 1° posto: la finalina gioca come il resto del tabellone.') }}</div>
+        {% with tempo_valore=gara.final_time_limit_minutes, tempo_finale=true %}
+        {% include "components/_campo_limite_fase_finale.html" %}
+        {% endwith %}
+        {% with distanza_valore=gara.final_distance, distanza_finale=true %}
+        {% include "components/_campo_distanza_fase_finale.html" %}
+        {% endwith %}
+      </div>
+      {% endif %}
     </div>
     {% endif %}
     {% if 'catena_turno' in ammessi %}

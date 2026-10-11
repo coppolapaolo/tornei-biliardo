@@ -142,6 +142,12 @@ class Campionato(db.Model):
         db.Boolean, default=False, nullable=False, server_default="0"
     )
     default_final_phase_time_limit_minutes = db.Column(db.Integer, nullable=True)
+    # Le regole del tabellone proposte (ADR-081, emendamento del 2026-10-12):
+    # distanza della fase finale (NULL = come i gironi), limite e distanza
+    # della sola finale (NULL = come la fase finale; il limite 0 = senza).
+    default_final_phase_distance = db.Column(db.Integer, nullable=True)
+    default_final_time_limit_minutes = db.Column(db.Integer, nullable=True)
+    default_final_distance = db.Column(db.Integer, nullable=True)
     default_catena_turno = db.Column(db.Text, nullable=True)
     default_catena_gara = db.Column(db.Text, nullable=True)
     catena_generale = db.Column(db.Text, nullable=True)
