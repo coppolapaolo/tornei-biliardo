@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.66.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.65.0...v1.66.0) (2026-10-11)
+
+
+### Funzioni nuove
+
+* a pari punti nel campionato a piazzamenti decide una catena sui piazzamenti ([#647](https://github.com/coppolapaolo/tornei-biliardo/issues/647)) ([dd83abf](https://github.com/coppolapaolo/tornei-biliardo/commit/dd83abf545686c7712ff7f44444b5ee76c1858ca))
+
 ## [1.65.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.64.0...v1.65.0) (2026-10-11)
 
 
