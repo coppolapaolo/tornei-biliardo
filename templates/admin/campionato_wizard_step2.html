@@ -108,7 +108,16 @@
         <option value="{{ value }}" {% if value == 'bye' %}selected{% endif %}>{{ label }}</option>
         {% endfor %}
       </select>
-      <div class="mt-3">
+      {% set _girone = wizard_data.campionato_type == MatchmakingStrategy.ROUND_ROBIN.value %}
+      {% if _girone %}
+      {# Col girone il dispari ha una formula sola (SPECIFICHE.md, nota del
+         2026-10-11): le descrizioni qui sotto non valgono. #}
+      <div class="c7-flash c7-flash--info mt-3">
+        <span class="c7-flash__ico"><i class="fas fa-user-clock"></i></span>
+        <div class="c7-flash__body"><div class="c7-flash__text">{{ _("Col girone all'italiana il dispari è sempre «Riposo, non vale punti»: ognuno riposa una volta e il riposo non dà niente. Una X con esercizio proposta qui, nelle gare a girone diventa riposo.") }}</div></div>
+      </div>
+      {% endif %}
+      <div class="mt-3" {% if _girone %}hidden{% endif %}>
         <div id="policy-description-no" class="c7-flash c7-flash--info d-none">
           <span class="c7-flash__ico"><i class="fas fa-list-ol"></i></span>
           <div class="c7-flash__body"><div class="c7-flash__text">{{ _("Chi rende il numero dispari va in lista d'attesa. Appena si iscrive un altro giocatore entrano entrambi.") }}</div></div>
@@ -132,6 +141,15 @@
         </div>
       </div>
     </div>
+
+    {# I gironi del girone all'italiana (ADR-076), proposti alle gare. #}
+    {% if wizard_data.campionato_type == MatchmakingStrategy.ROUND_ROBIN.value %}
+    <div class="c7-card">
+      {% with gironi_prefisso='default_', gironi_nota=_("Proposti a ogni gara del campionato, che può cambiarli. Quanti gironi, lo sceglie il direttore all'avvio di ogni gara, sugli iscritti presenti: almeno 3 giocatori per girone.") %}
+      {% include "components/_campo_gironi.html" %}
+      {% endwith %}
+    </div>
+    {% endif %}
 
     {# Come si comincia, e chi apre poi (ADR-056). Sono due domande diverse:
        il regolamento FIBiS le tiene distinte, e la seconda non discende dalla
@@ -237,6 +255,7 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/catena_spareggi.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/campo_gironi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const policySelect = document.getElementById('default_odd_policy');

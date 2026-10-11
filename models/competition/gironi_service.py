@@ -22,12 +22,14 @@ from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence
 
 from flask_babel import gettext as _
+from flask_babel import ngettext
 
 from models.base import db
 from models.exceptions import ValidationError
 from models.matchmaking.configuration import MatchmakingStrategy
 from models.matchmaking.gironi import (
     MINIMO_PER_GIRONE,
+    ComposizioneGironi,
     Iscritto,
     componi_gironi,
     gironi_possibili,
@@ -65,6 +67,88 @@ class Anteprima:
     def tetto_ridotto(self) -> bool:
         """Il tetto della gara è più alto di quanti gironi ci stanno."""
         return self.massimo < self.tetto
+
+    @property
+    def turni(self) -> Dict[int, int]:
+        """Numero di gironi → turni della gara: quelli del girone più numeroso."""
+        return {g: turni_dei_gironi(taglie) for g, taglie in self.taglie.items()}
+
+
+def voci_della_composizione() -> List[tuple]:
+    """Le voci di «Composizione dei gironi»: (valore, nome, spiegazione).
+
+    Una sola fonte per i moduli della gara, del campionato e per il foglio di
+    avvio. Nell'interfaccia non si dice «serpentina» né «abbinamenti» (ADR-076).
+    """
+    return [
+        (
+            ComposizioneGironi.SORTEGGIO.value,
+            _("Sorteggio"),
+            _("La fila degli iscritti la decide il sorteggio della gara."),
+        ),
+        (
+            ComposizioneGironi.ELO.value,
+            _("Per ELO"),
+            _("Dal più alto: i più forti finiscono in gironi diversi."),
+        ),
+        (
+            ComposizioneGironi.CATEGORIA.value,
+            _("Per categoria"),
+            _(
+                "Nell'ordine del listino, poi per ELO: le prime categorie si "
+                "dividono fra i gironi."
+            ),
+        ),
+    ]
+
+
+def come_si_compongono(composizione: object) -> str:
+    """«a sorteggio», «per ELO», «per categoria»: il pezzo della frase."""
+    voce = ComposizioneGironi.resolve(getattr(composizione, "value", composizione))
+    if voce is ComposizioneGironi.ELO:
+        return _("per ELO")
+    if voce is ComposizioneGironi.CATEGORIA:
+        return _("per categoria")
+    return _("a sorteggio")
+
+
+def descrivi_gironi(
+    taglie: Optional[Sequence[int]],
+    tetto: int,
+    composizione: object,
+    separa_compagni: bool = False,
+) -> str:
+    """La frase della formula a gironi, per il regolamento e le pagine.
+
+    Prima dell'avvio (``taglie`` None) dice il tetto: «Fino a 2 gironi
+    all'italiana, composti per ELO: quanti, lo sceglie il direttore all'avvio».
+    Dopo, i gironi veri: «2 gironi all'italiana da 6 e 5 giocatori, composti
+    per ELO».
+    """
+    come = come_si_compongono(composizione)
+    if taglie:
+        numero = len(taglie)
+        diverse = sorted(set(taglie), reverse=True)
+        quanti = _(" e ").join(str(t) for t in diverse)
+        frase = ngettext(
+            "%(num)d girone all'italiana da %(taglie)s giocatori, composto %(come)s",
+            "%(num)d gironi all'italiana da %(taglie)s giocatori, composti %(come)s",
+            numero,
+            taglie=quanti,
+            come=come,
+        )
+    else:
+        frase = _(
+            "Fino a %(n)s gironi all'italiana, composti %(come)s: quanti, lo "
+            "sceglie il direttore all'avvio, con almeno %(minimo)s giocatori "
+            "per girone",
+            n=tetto,
+            come=come,
+            minimo=MINIMO_PER_GIRONE,
+        )
+    if separa_compagni:
+        frase += _("; i compagni di squadra in gironi diversi, quando si può")
+    return frase + "."
 
 
 class GironiService:
@@ -239,6 +323,24 @@ class GironiService:
         return [sorted(per[g]) for g in sorted(per)]
 
     @staticmethod
+    def frase(gara: Optional[Gara]) -> Optional[str]:
+        """La frase della formula a gironi di una gara, o None col girone unico."""
+        if gara is None or not _a_gironi_possibili(gara):
+            return None
+        from .campi_modificabili import e_avviata
+
+        composti = GironiService.gironi(gara)
+        # Avviata con un girone solo, o senza tetto: è il girone di sempre.
+        if not composti and (gara.effective_max_groups <= 1 or e_avviata(gara)):
+            return None
+        return descrivi_gironi(
+            [len(g) for g in composti] or None,
+            gara.effective_max_groups,
+            gara.effective_group_seeding,
+            bool(gara.separate_teammates),
+        )
+
+    @staticmethod
     def azzera(gara_id: int) -> None:
         """Toglie i gironi: annullare l'avvio vuol dire ricomporli."""
         db.session.query(Inscription).filter(Inscription.gara_id == gara_id).update(
@@ -246,4 +348,11 @@ class GironiService:
         )
 
 
-__all__ = ["Anteprima", "GironiService", "nome_del_girone"]
+__all__ = [
+    "Anteprima",
+    "GironiService",
+    "come_si_compongono",
+    "descrivi_gironi",
+    "nome_del_girone",
+    "voci_della_composizione",
+]

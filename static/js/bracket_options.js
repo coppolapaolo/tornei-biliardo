@@ -86,6 +86,11 @@
       var isBracket = BRACKET_STRATEGIES.indexOf(value) >= 0;
 
       section.style.display = isBracket ? '' : 'none';
+      /* La separazione dei compagni c'e' anche nel blocco dei gironi
+       * (`_campo_gironi.html`), con lo stesso nome: quella del tabellone,
+       * nascosta, non deve arrivare al server insieme all'altra. */
+      var compagni = document.getElementById('separate_teammates');
+      if (compagni) { compagni.disabled = !isBracket; }
       Array.prototype.forEach.call(hideable, function (node) {
         setHidden(node, isBracket);
       });

@@ -92,6 +92,55 @@ blocks:
       dopo **vince a tavolino**, con tutti i triangoli della distanza.
 
   - type: heading
+    id: gironi
+    title: "Il girone all'italiana a più gironi"
+
+  - type: text
+    text: >-
+      Con tanti iscritti il girone unico diventa lungo. La voce **Gironi**
+      del modulo dice quanti gironi si possono fare al massimo — «fino a 2»,
+      per esempio — e all'avvio scegli quanti farne davvero, sugli iscritti
+      presenti: ognuno gioca solo contro quelli del suo girone, e i gironi
+      giocano in parallelo. Con 11 iscritti e «fino a 2» l'app propone due
+      gironi, da 6 e da 5.
+
+  - type: list
+    title: "Le regole"
+    items:
+      - "Almeno **3 giocatori per girone**: con pochi iscritti il numero massimo scende da solo."
+      - "La proposta è **un girone ogni sei iscritti**, e la puoi cambiare nel foglio di avvio."
+      - "Le taglie differiscono al più di uno: il giocatore in più va ai primi gironi."
+      - "I gironi si fissano all'avvio e **non cambiano più**, nemmeno con un ritiro. Annullando l'avvio si ricompongono."
+      - "I turni della gara sono quelli del girone più numeroso: un girone che ha finito si ferma."
+
+  - type: options
+    items:
+      - name: "Composizione dei gironi"
+        values: "Sorteggio · Per ELO · Per categoria"
+        text: >-
+          Gli iscritti si mettono in fila in quest'ordine e vanno uno per
+          girone a turno, andata e ritorno: con due gironi il primo va in A,
+          il secondo e il terzo in B, il quarto e il quinto in A. Così i primi
+          della fila finiscono in gironi diversi. **Per categoria** segue
+          l'ordine del listino, e dentro la categoria l'ELO.
+        hint: gara.composizione_gironi
+      - name: "Compagni di squadra in gironi diversi"
+        values: "predefinito no"
+        text: >-
+          Quando si può, la composizione mette i compagni di squadra in
+          gironi diversi, senza cambiare l'equilibrio della fila.
+
+  - type: note
+    tone: info
+    title: "La classifica della gara a gironi"
+    text: >-
+      Dentro ogni girone si ordina come al solito. Nella classifica della
+      gara vengono prima tutti i **primi** dei gironi, poi tutti i secondi, e
+      così via. Fra gironi di taglia diversa si confronta **per partita
+      giocata** — vittorie, triangoli e punti divisi per le partite giocate —
+      perché in un girone da 6 si gioca una partita in più che in uno da 5.
+
+  - type: heading
     id: eliminazione
     title: "Eliminazione diretta"
 

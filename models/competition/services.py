@@ -609,6 +609,11 @@ class GaraService:
             kwargs["time_limit_minutes"] = int(
                 campionato.default_time_limit_minutes or 0
             )
+        # I gironi del girone all'italiana (ADR-076): tetto e composizione.
+        if kwargs.get("max_groups") is None:
+            kwargs["max_groups"] = int(campionato.default_max_groups or 1)
+        if kwargs.get("group_seeding") is None:
+            kwargs["group_seeding"] = campionato.default_group_seeding
         # I punti della classifica a punti, proposti dal campionato: si
         # copiano sempre, anche a un campionato con un altro sistema, così una
         # gara ha i suoi valori scritti e un cambio di sistema non la lascia a

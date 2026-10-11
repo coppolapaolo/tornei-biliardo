@@ -32,6 +32,13 @@
         <dt class="text-muted" style="font-weight: 700;">{{ _('Accoppiamento') }}</dt>
         <dd style="margin: 0; text-align: right;">{{ t_info.nome_formula(gara.matchmaking_strategy) }}</dd>
 
+        {# I gironi (ADR-076): la frase della formula, solo con più gironi. #}
+        {% set _gironi = frase_gironi(gara) %}
+        {% if _gironi %}
+        <dt class="text-muted" style="font-weight: 700;">{{ _('Gironi') }}</dt>
+        <dd style="margin: 0; text-align: right;">{{ _gironi }}</dd>
+        {% endif %}
+
         <dt class="text-muted" style="font-weight: 700;">{{ _('Iscritti') }}</dt>
         <dd style="margin: 0; text-align: right;">
             <span class="c7-num">{{ gara.get_active_inscriptions_count() }}</span>{% if gara.max_participants %}<span style="color: var(--c7-ink-faint);">/</span><span class="c7-num">{{ gara.max_participants }}</span>{% endif %}
@@ -114,7 +121,9 @@
     {% if gara.classification_system == 'POINTS' %}
     <hr class="c7-divider">
     <div class="c7-kicker mb-1">{{ _('Punti in classifica') }}</div>
-    <p style="margin: 0; font-size: 13px; line-height: 1.55;">{{ descrivi_punti(punti_della_gara(gara)) }}. {{ _('La X vale una vittoria.') }}</p>
+    {# Nel girone il riposo non vale niente (SPECIFICHE.md, nota del
+       2026-10-11): la X vale una vittoria solo nelle altre formule. #}
+    <p style="margin: 0; font-size: 13px; line-height: 1.55;">{{ descrivi_punti(punti_della_gara(gara)) }}. {{ _('Il riposo non vale punti.') if gara.matchmaking_strategy == MatchmakingStrategy.ROUND_ROBIN.value else _('La X vale una vittoria.') }}</p>
     {% endif %}
     {% if _pari_gara %}
     <hr class="c7-divider">

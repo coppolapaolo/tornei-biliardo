@@ -89,6 +89,9 @@ STRUTTURA: FrozenSet[str] = frozenset(
         "third_place_match",
         "seeding_rating",
         "double_ko_rounds",
+        # I gironi del girone all'italiana (ADR-076): si fissano all'avvio.
+        "max_groups",
+        "group_seeding",
         "min_participants",
         "max_participants",
     }

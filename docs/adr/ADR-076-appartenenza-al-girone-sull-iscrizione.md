@@ -143,6 +143,14 @@ appartenenza.
   `test_gironi_regole.py`, `test_gironi_classifica.py`,
   `test_gironi_avvio_e_turni.py`, `test_gironi_classifiche.py`,
   `test_gironi_migration.py`.
+- Interfaccia (2026-10-11): il blocco `components/_campo_gironi.html` nei
+  moduli della gara e del campionato (parser `GaraFormParser._parse_gironi`,
+  `CampionatoFormParser.parse_gironi`), la proposta del campionato copiata
+  alla nascita (`GaraService._copia_dal_campionato`, `proposte.CAMPI_PROPOSTI`),
+  il foglio di avvio con «Quanti gironi?» e la composizione
+  (`_avvia_gara.html`, `rounds._gironi_dal_foglio`), la frase della formula
+  (`GironiService.frase`) in regolamento e pagine. Le tabelle per girone
+  arrivano con la PR successiva.
 - Fase finale dopo i gironi (tabellone, finali per piazzamento): PR successive
   del piano. Con più di due gironi, le finali per piazzamento restano un punto
   aperto.

@@ -228,6 +228,7 @@ def wizard_create():
     # Step 2 default-gare settings (single source shared with edit_campionato)
     try:
         settings = CampionatoFormParser.parse_default_settings(request.form)
+        settings.update(CampionatoFormParser.parse_gironi(request.form))
     except ValueError as errore:
         # Il campo ha già min e max nel browser: qui arriva solo un invio
         # costruito a mano, e il passo 2 si raggiunge solo dal passo 1.
@@ -592,6 +593,7 @@ def edit_campionato(campionato_id):
 
             # Default-gare settings (single source shared with wizard_create)
             settings = CampionatoFormParser.parse_default_settings(request.form)
+            settings.update(CampionatoFormParser.parse_gironi(request.form))
             settings.update(
                 CampionatoFormParser.parse_catene(
                     request.form,

@@ -37,6 +37,7 @@ CAMPI_IN_VIGORE: Tuple[str, ...] = (
     "has_handicap",
     "time_limit_minutes",
     "matchmaking_strategy",
+    "max_groups",
     "rounds_count",
     "classification_system",
     "odd_number_policy",
@@ -158,6 +159,16 @@ def _in_vigore(
         # Senza limite di tempo la riga non c'è: chi non usa l'opzione vede la
         # pagina di sempre (ADR-077). Se un limite c'era, lo dice la storia.
         if campo == "time_limit_minutes" and gara.effective_time_limit_minutes is None:
+            continue
+        # I gironi (ADR-076): una frase, e solo se la gara ne ha più di uno.
+        if campo == "max_groups":
+            from ..competition.gironi_service import GironiService
+
+            frase_gironi = GironiService.frase(gara)
+            if frase_gironi:
+                risultato.append(
+                    Impostazione(campo, valore, ultima.get(campo), frase=frase_gironi)
+                )
             continue
         risultato.append(Impostazione(campo, valore, ultima.get(campo)))
         if campo == "classification_system":
@@ -304,6 +315,8 @@ CAMPI_DEL_CAMPIONATO: Tuple[str, ...] = (
     "default_break_rule",
     "has_handicap",
     "default_time_limit_minutes",
+    "default_max_groups",
+    "default_group_seeding",
     "default_catena_turno",
     "default_catena_gara",
     "catena_generale",
@@ -357,6 +370,13 @@ def _impostazioni(
                 risultato.append(
                     Impostazione(campo, valore, ultima.get(campo), frase=frase)
                 )
+            continue
+        # I gironi proposti (ADR-076): tacciono col girone unico, come il
+        # limite di tempo senza limite. Chi non usa l'opzione non la vede.
+        if (
+            campo in ("default_max_groups", "default_group_seeding")
+            and (getattr(oggetto, "default_max_groups", 1) or 1) <= 1
+        ):
             continue
         if valore != "":
             risultato.append(Impostazione(campo, valore, ultima.get(campo)))

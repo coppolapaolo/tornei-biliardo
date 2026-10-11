@@ -56,6 +56,8 @@ class TournamentService(TournamentStatisticsService):
             "default_anti_rematch",
             "has_handicap",
             "default_time_limit_minutes",
+            "default_max_groups",
+            "default_group_seeding",
             "default_catena_turno",
             "default_catena_gara",
             "catena_generale",
@@ -119,6 +121,9 @@ class TournamentService(TournamentStatisticsService):
         has_handicap: bool = False,
         # Limite di tempo per partita proposto alle gare (ADR-077). 0 = nessuno.
         default_time_limit_minutes: int = 0,
+        # I gironi del girone all'italiana proposti alle gare (ADR-076).
+        default_max_groups: int = 1,
+        default_group_seeding: str = "sorteggio",
         # Le catene degli spareggi (ADR-078): None = il default dell'app.
         default_catena_turno: Optional[str] = None,
         default_catena_gara: Optional[str] = None,
@@ -170,6 +175,8 @@ class TournamentService(TournamentStatisticsService):
             default_classification_system=default_classification_system,
             has_handicap=has_handicap,
             default_time_limit_minutes=default_time_limit_minutes,
+            default_max_groups=default_max_groups,
+            default_group_seeding=default_group_seeding,
             default_catena_turno=default_catena_turno,
             default_catena_gara=default_catena_gara,
             catena_generale=catena_generale,

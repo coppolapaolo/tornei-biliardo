@@ -151,6 +151,21 @@
        da sé quando la strategia scelta è una di quelle. #}
     {% include "components/_bracket_options.html" %}
 
+    {# I gironi del girone all'italiana (ADR-076): si mostrano col girone.
+       Dentro un campionato la strategia la decide il campionato. #}
+    {% if gara.campionato_id and not gara.is_playoff %}
+      {% set _gironi_qui = gara.campionato.campionato_type == MatchmakingStrategy.ROUND_ROBIN.value %}
+      {% with gironi_visibile=_gironi_qui, gironi_tetto=gara.max_groups, gironi_composizione=gara.group_seeding,
+              gironi_compagni=true, gironi_compagni_valore=gara.separate_teammates %}
+      {% include "components/_campo_gironi.html" %}
+      {% endwith %}
+    {% else %}
+      {% with gironi_strategia_da='#matchmaking_strategy', gironi_tetto=gara.max_groups, gironi_composizione=gara.group_seeding,
+              gironi_compagni=true, gironi_compagni_valore=gara.separate_teammates %}
+      {% include "components/_campo_gironi.html" %}
+      {% endwith %}
+    {% endif %}
+
     {# Dentro un campionato l'handicap ha **tre** stati — eredita / sì / no — e
        un interruttore non può dirli: lì resta un menù. Su una gara standalone
        non c'è niente da cui ereditare, quindi è sì/no e si comporta come le
@@ -295,12 +310,15 @@
       </div>
       <div class="flex-fill" style="min-width:200px" data-bracket-hide>
         <label for="withdraw_policy" class="form-label">{{ _('Gestione ritiri') }}</label>
-        <select class="form-select" id="withdraw_policy" name="withdraw_policy" required>
-          <option value="{{ WithdrawPolicy.EXCLUDE.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value else '' }}>
-            {{ _('Escludi — X a tavolino o partita a tre') }}
+        <select class="form-select" id="withdraw_policy" name="withdraw_policy" required
+                data-segue-strategia="#matchmaking_strategy" data-girone="{{ MatchmakingStrategy.ROUND_ROBIN.value }}">
+          <option value="{{ WithdrawPolicy.EXCLUDE.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value else '' }}
+                  data-label="{{ WithdrawPolicy.EXCLUDE.value|etichetta_ritiro }}"
+                  data-label-girone="{{ WithdrawPolicy.EXCLUDE.value|etichetta_ritiro(MatchmakingStrategy.ROUND_ROBIN.value) }}">
+            {{ WithdrawPolicy.EXCLUDE.value|etichetta_ritiro(gara.matchmaking_strategy) }}
           </option>
           <option value="{{ WithdrawPolicy.FORFEIT.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.FORFEIT.value else '' }}>
-            {{ _("Forfait — vittoria all'avversario") }}
+            {{ WithdrawPolicy.FORFEIT.value|etichetta_ritiro }}
           </option>
         </select>
       </div>

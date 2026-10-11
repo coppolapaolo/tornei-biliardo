@@ -101,7 +101,7 @@ blocks:
           che si presentano davvero. Prima del sorteggio l'app ne mostra solo
           una stima, calcolata sulla capienza massima.
       - name: "Gestione forfait"
-        values: "Vincita a tavolino (predefinito) · Escludi dal turno"
+        values: "Forfait — vittoria all'avversario (predefinito) · Escludi"
         text: >-
           Cosa fare di chi abbandona a metà gara. Con **vincita a tavolino**
           resta negli abbinamenti e i suoi avversari vincono senza giocare —
@@ -114,6 +114,17 @@ blocks:
           sorteggiato il tabellone non si tocca più e togliere qualcuno
           lascerebbe una casella vuota.
         hint: gara.forfait
+      - name: "Gironi"
+        values: "solo girone all'italiana · girone unico (predefinito) · fino a 2…8 gironi"
+        text: >-
+          Divide gli iscritti in gironi giocati in parallelo. Qui scrivi il
+          massimo; quanti farne davvero lo scegli all'avvio, sugli iscritti
+          presenti, con almeno 3 giocatori per girone. Con più di un girone
+          compaiono anche **Composizione dei gironi** (sorteggio, per ELO, per
+          categoria) e la separazione dei compagni di squadra. Nei campionati
+          il valore lo propone il campionato. Vedi [Il girone all'italiana a
+          più gironi](/aiuto/approfondimenti/abbinamenti#gironi).
+        hint: gara.gironi
       - name: "Min partecipanti"
         values: "obbligatorio · consigliato 4"
         text: >-

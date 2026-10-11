@@ -135,7 +135,7 @@ hints:
     label: "Evita incontri fra compagni di squadra"
     short: "Il sorteggio del tabellone allontana i compagni il più possibile. Con squadre numerose il derby viene rinviato, non evitato."
     anchor: gara-separazione-squadre
-    screens: [admin.competition.create_gara_standalone]
+    screens: [admin.competition.create_gara_standalone, admin.competition.edit_gara, admin.campionato.campionato_detail]
     page: squadre
     section: come_funziona
 
@@ -170,6 +170,30 @@ hints:
     screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2, admin.campionato.campionato_detail, admin.competition.edit_gara, admin.campionato.edit_campionato]
     page: opzioni_della_gara
     section: struttura
+
+  - id: gara.gironi
+    label: "Gironi"
+    short: "Solo col girone all'italiana: «fino a N» divide gli iscritti in gironi giocati in parallelo. Quanti, lo scegli all'avvio, con almeno 3 giocatori per girone."
+    anchor: gara-gironi
+    screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2, admin.campionato.campionato_detail, admin.competition.edit_gara, admin.campionato.edit_campionato, admin.competition.gara_detail]
+    page: abbinamenti
+    section: gironi
+
+  - id: gara.composizione_gironi
+    label: "Composizione dei gironi"
+    short: "Sorteggio, per ELO o per categoria: gli iscritti si mettono in fila e vanno uno per girone a turno, così i primi della fila finiscono in gironi diversi."
+    anchor: gara-composizione-gironi
+    screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2, admin.campionato.campionato_detail, admin.competition.edit_gara, admin.campionato.edit_campionato, admin.competition.gara_detail]
+    page: abbinamenti
+    section: gironi
+
+  - id: gara.gironi_avvio
+    label: "Quanti gironi?"
+    short: "All'avvio scegli quanti gironi fare, sugli iscritti presenti. Ogni voce mostra le taglie e i turni; la proposta è un girone ogni sei iscritti."
+    anchor: gara-gironi-avvio
+    screens: [admin.competition.gara_detail]
+    page: condurre_la_gara
+    section: primo_turno
 
   - id: gara.cerca_da_iscrivere
     label: "Cerca il giocatore da iscrivere"

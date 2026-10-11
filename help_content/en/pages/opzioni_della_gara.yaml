@@ -115,6 +115,17 @@ blocks:
           been drawn it is not touched again and removing somebody would leave
           an empty slot.
         hint: gara.forfait
+      - name: "Groups"
+        values: "round robin only · single group (default) · up to 2…8 groups"
+        text: >-
+          Splits the players into groups played in parallel. Here you set the
+          maximum; how many to make you choose at the start, on the players
+          present, with at least 3 players per group. With more than one
+          group **Group composition** (draw, by ELO, by category) and teammate
+          separation appear too. In championships the value is proposed by
+          the championship. See [Round robin in several
+          groups](/aiuto/approfondimenti/abbinamenti#gironi).
+        hint: gara.gironi
       - name: "Minimum entrants"
         values: "required · recommended 4"
         text: >-

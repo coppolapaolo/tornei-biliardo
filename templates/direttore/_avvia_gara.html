@@ -10,7 +10,11 @@
    Prende il posto della conferma secca e del vecchio modale «a chi va la
    X»: la scelta della X (`bye_preference.choice_applies`) e' una riga di
    questo foglio, quando la domanda ha senso. Il form posta a
-   `start_first_round`; `x_choice_last_inscribed` viene da `detail.py`. #}
+   `start_first_round`; `x_choice_last_inscribed` viene da `detail.py`.
+
+   Nel girone all'italiana a più gironi (ADR-076) il foglio chiede quanti
+   gironi — da 1 a quanti ne stanno, con la proposta già scelta e le taglie
+   scritte su ogni voce — e come si compongono (`anteprima_gironi`). #}
 {% from "components/_form_macros.html" import choice, form_macros_scripts %}
 
 {% import "components/_tabellone_macros.html" as t with context %}
@@ -18,6 +22,8 @@
 {% set _iscritti = gara.get_active_inscriptions_count() %}
 {% set _tavoli = gara.get_available_tables() %}
 {% set _dispari = _iscritti % 2 == 1 %}
+{% set _girone = gara.matchmaking_strategy == MatchmakingStrategy.ROUND_ROBIN.value %}
+{% set _ag = anteprima_gironi if anteprima_gironi is defined else none %}
 
 <div class="modal fade c7-sheet" id="avviaGaraModal" tabindex="-1" aria-labelledby="avviaGaraTitolo">
   <div class="modal-dialog">
@@ -46,6 +52,9 @@
           {% if forma is defined and forma and not forma_stima %}
           {{ d.riga('fa-diagram-project', t.forma(forma), _('con gli iscritti di adesso'), tone='ok') }}
           {% endif %}
+          {% elif _girone %}
+          {{ d.riga('fa-diagram-project', _('Il calendario si fissa adesso'),
+                    (_('ognuno incontra tutti gli altri del suo girone; i gironi giocano in parallelo') if _ag else _('ognuno incontra tutti gli altri una volta; i turni si giocano uno alla volta')), tone='ok') }}
           {% elif gara.creates_all_rounds_at_startup() %}
           {{ d.riga('fa-diagram-project', ngettext('%(n)d turno generato adesso', '%(n)d turni generati adesso', gara.rounds_count, n=gara.rounds_count),
                     _('la formula casuale crea tutti i turni all’avvio'), tone='ok') }}
@@ -53,7 +62,12 @@
           {{ d.riga('fa-diagram-project', _('Il turno 1 si sorteggia adesso'),
                     _('i turni dopo nascono dai risultati, uno alla volta'), tone='ok') }}
           {% endif %}
-          {% if not _is_bracket %}
+          {% if _girone %}
+            {# Nel girone il riposo non vale niente (SPECIFICHE.md, nota del
+               2026-10-11), e con più gironi conta la taglia di ognuno. #}
+            {{ d.riga('fa-scale-balanced', _('Riposo, non vale punti'),
+                      _('in un girone dispari ognuno riposa una volta'), tone='neutral') }}
+          {% elif not _is_bracket %}
             {% if _dispari and x_choice_last_inscribed %}
             {{ d.riga('fa-scale-balanced', _('Un giocatore riposa'),
                       _('gli iscritti sono dispari: uno prende la X del primo turno, scegli chi qui sotto'), tone='warn') }}
@@ -68,6 +82,37 @@
                     (_('in quest’ordine: il primo alla partita di cartello') if _tavoli else _('le partite si avviano dal segnapunti, senza assegnazione')),
                     tone=('ok' if _tavoli else 'warn')) }}
         </div>
+
+        {% if _ag %}
+        {% set _scelte = [] %}
+        {% for g in _ag.scelte %}
+          {% set _taglie = _ag.taglie[g] %}
+          {% if g == 1 %}
+            {% set _titolo = _('Girone unico') %}
+            {% set _desc = _('tutti contro tutti') %}
+          {% else %}
+            {% set _titolo = _('%(n)s gironi', n=g) %}
+            {% set _pezzi = [] %}
+            {% for t in _taglie %}{% set _void = _pezzi.append(_('Girone %(nome)s: %(n)s', nome=nome_del_girone(loop.index0), n=t)) %}{% endfor %}
+            {% set _desc = _pezzi|join(' · ') %}
+          {% endif %}
+          {% set _titolo = _titolo ~ ' · ' ~ ngettext('%(num)d turno', '%(num)d turni', _ag.turni[g]) %}
+          {% if g == _ag.proposta %}{% set _desc = _desc ~ ' · ' ~ _('proposta') %}{% endif %}
+          {% set _void = _scelte.append({'value': g|string, 'icon': 'fa-layer-group', 'title': _titolo, 'desc': _desc}) %}
+        {% endfor %}
+        <div data-help="gara-gironi-avvio">
+        {{ choice('groups_count', _('Quanti gironi?'), _scelte, selected=(_ag.proposta|string),
+                  hint=(_('La gara ammette fino a %(tetto)s gironi: con %(n)s iscritti ne stanno al massimo %(max)s, almeno 3 per girone.', tetto=_ag.tetto, n=_ag.iscritti, max=_ag.massimo) if _ag.tetto_ridotto else _('Almeno 3 giocatori per girone. I gironi non cambiano più, nemmeno con un ritiro.'))) }}
+        </div>
+        {% if _ag.massimo > 1 %}
+        {% set _voci = [] %}
+        {% for valore, nome, spiegazione in voci_composizione_gironi() %}
+          {% set _void = _voci.append({'value': valore, 'title': nome, 'desc': spiegazione}) %}
+        {% endfor %}
+        {{ choice('group_seeding', _('Composizione dei gironi'), _voci, selected=gara.effective_group_seeding.value,
+                  hint=(_('I compagni di squadra finiscono in gironi diversi, quando si può.') if gara.separate_teammates else '')) }}
+        {% endif %}
+        {% endif %}
 
         {% if x_choice_last_inscribed %}
         <div data-help="gara-x-ultimo-iscritto">
@@ -101,4 +146,4 @@
     </div>
   </div>
 </div>
-{% if x_choice_last_inscribed %}{{ form_macros_scripts() }}{% endif %}
+{% if x_choice_last_inscribed or _ag %}{{ form_macros_scripts() }}{% endif %}

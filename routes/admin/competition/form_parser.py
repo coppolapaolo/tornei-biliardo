@@ -82,6 +82,34 @@ _CAMPI_ASSENTI_NON_SI_TOCCANO = (
 LIMITE_DI_TEMPO_MASSIMO = 600
 
 
+def leggi_tetto_dei_gironi(grezzo: Any) -> int:
+    """Il tetto dei gironi dal modulo: un intero da 1 a `MASSIMO_DI_GIRONI`."""
+    from models.matchmaking.gironi import MASSIMO_DI_GIRONI
+
+    try:
+        tetto = int(str(grezzo or "1").strip())
+    except ValueError:
+        tetto = 0
+    if tetto < 1 or tetto > MASSIMO_DI_GIRONI:
+        raise ValueError(
+            _(
+                "I gironi vanno da 1 (girone unico) a %(max)s.",
+                max=MASSIMO_DI_GIRONI,
+            )
+        )
+    return tetto
+
+
+def leggi_composizione(grezzo: Any) -> str:
+    """La composizione dei gironi dal modulo: una delle voci ammesse."""
+    from models.matchmaking.gironi import ComposizioneGironi
+
+    valore = str(grezzo or "").strip() or ComposizioneGironi.SORTEGGIO.value
+    if valore not in {c.value for c in ComposizioneGironi}:
+        raise ValueError(_("Composizione dei gironi sconosciuta: %(v)s", v=valore))
+    return valore
+
+
 class GaraFormParser:
     """Extract and validate gara form fields from a Flask request.
 
@@ -243,6 +271,10 @@ class GaraFormParser:
 
         data.update(GaraFormParser._parse_bracket_options(data["matchmaking_strategy"]))
 
+        # ── Gironi del girone all'italiana (ADR-076) ─────────────
+        # Assenti dal modulo = non toccare (in creazione: come il campionato).
+        data.update(self._parse_gironi(request.form, data["matchmaking_strategy"]))
+
         # ── Peso nella classifica del campionato (issue #64) ─────
         data["weight"] = GaraFormParser._parse_weight(camp)
 
@@ -328,6 +360,8 @@ class GaraFormParser:
         "third_place_match",
         "seeding_rating",
         "double_ko_rounds",
+        "max_groups",
+        "group_seeding",
         "weight",
         "x_challenge_id",
         "catena_turno",
@@ -488,6 +522,37 @@ class GaraFormParser:
         ]
         punti = valida_punti(*grezzi)
         return dict(zip(COLONNE_DELLA_GARA, punti.come_tupla()))
+
+    def _parse_gironi(self, form: Any, strategia: str) -> Dict[str, Any]:
+        """«Gironi: fino a N» e «Composizione dei gironi», col girone all'italiana.
+
+        Con un'altra strategia i campi non si leggono: sono nascosti, e le
+        strategie diverse dal girone hanno sempre un girone solo
+        (`Gara.effective_max_groups`). Un valore fuori scala si rifiuta qui,
+        dove chi l'ha scritto è ancora davanti al modulo.
+
+        La separazione dei compagni di squadra vale anche per il girone,
+        quando i gironi possono essere più di uno: è la composizione a
+        spostarli (ADR-039). Con il girone unico non c'è niente da separare.
+        """
+        if strategia != MatchmakingStrategy.ROUND_ROBIN.value:
+            return {}
+        data: Dict[str, Any] = {}
+        if "max_groups" in form:
+            data["max_groups"] = leggi_tetto_dei_gironi(form.get("max_groups"))
+        if "group_seeding" in form:
+            data["group_seeding"] = leggi_composizione(form.get("group_seeding"))
+
+        tetto = data.get("max_groups")
+        if tetto is None:
+            if self.gara is not None:
+                tetto = getattr(self.gara, "max_groups", None)
+            elif self.campionato is not None:
+                tetto = getattr(self.campionato, "default_max_groups", None)
+        data["separate_teammates"] = (tetto or 1) > 1 and form.get(
+            "separate_teammates"
+        ) == "on"
+        return data
 
     def _parse_time_limit(self) -> Optional[int]:
         """I minuti a disposizione di ogni partita: vuoto vuol dire nessun limite.

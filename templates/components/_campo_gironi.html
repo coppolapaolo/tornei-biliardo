@@ -1,0 +1,80 @@
+{# I gironi del girone all'italiana (ADR-076) — Design System 7c.
+
+   «Gironi: fino a N» e «Composizione dei gironi», più — nei moduli della
+   gara — la separazione dei compagni di squadra, che col girone vuol dire
+   «in gironi diversi, quando si può». Lo stesso blocco nei moduli della gara
+   (singola, nuova gara del campionato, modifica) e del campionato, che li
+   propone alle sue gare (ADR-075).
+
+   Esiste solo col girone all'italiana: le altre strategie hanno un girone
+   solo. Quando la strategia si sceglie nella stessa pagina il blocco segue il
+   selettore (`gironi_strategia_da`, `static/js/campo_gironi.js`); quando è
+   fissata (la gara nasce dentro un campionato) lo decide il server con
+   `gironi_visibile`. Un blocco nascosto ha i campi spenti, quindi non arriva
+   al server: il parser non tocca ciò che non riceve.
+
+   Nell'interfaccia non si dice «serpentina» né «abbinamenti»: abbinamenti,
+   nell'app, è chi gioca contro chi.
+
+   Parametri:
+   - gironi_prefisso: '' per la gara, 'default_' per il campionato
+   - gironi_id: prefisso degli id (default '')
+   - gironi_tetto, gironi_composizione: i valori da mostrare
+   - gironi_strategia_da: selettore CSS del menu della strategia (facoltativo)
+   - gironi_visibile: senza selettore, se mostrare il blocco (default sì)
+   - gironi_compagni: mostra la separazione dei compagni (solo la gara)
+   - gironi_compagni_valore: la separazione è accesa
+   - gironi_nota: testo sotto il tetto (facoltativo) #}
+{% set _pre = gironi_prefisso|default('') %}
+{% set _id = gironi_id|default('') %}
+{% set _tetto = (gironi_tetto|default(1)) or 1 %}
+{% set _comp = gironi_composizione|default('sorteggio') or 'sorteggio' %}
+{% set _da = gironi_strategia_da|default('') %}
+{% set _visibile = gironi_visibile|default(true) %}
+<div class="c7-gironi mb-3" data-gironi
+     {% if _da %}data-strategia-da="{{ _da }}" data-girone="{{ MatchmakingStrategy.ROUND_ROBIN.value }}"{% endif %}
+     {% if not _visibile and not _da %}hidden{% endif %}>
+  <label for="{{ _id }}{{ _pre }}max_groups" class="form-label" data-help="gara-gironi">{{ _('Gironi') }}</label>
+  <select class="form-select" id="{{ _id }}{{ _pre }}max_groups" name="{{ _pre }}max_groups" data-gironi-tetto
+          {% if not _visibile and not _da %}disabled{% endif %}>
+    <option value="1" {% if _tetto <= 1 %}selected{% endif %}>{{ _('Girone unico') }}</option>
+    {% for n in range(2, massimo_di_gironi + 1) %}
+    <option value="{{ n }}" {% if _tetto == n %}selected{% endif %}>{{ _('Fino a %(n)s gironi', n=n) }}</option>
+    {% endfor %}
+  </select>
+  <small class="text-muted d-block">{{ gironi_nota|default(_("I gironi si giocano in parallelo: ognuno incontra tutti quelli del suo girone. Quanti, lo scegli all'avvio sugli iscritti presenti, con almeno 3 giocatori per girone.")) }}</small>
+
+  <div class="mt-3" data-gironi-se-piu {% if _tetto <= 1 %}hidden{% endif %}>
+    <div class="form-label" data-help="gara-composizione-gironi">{{ _('Composizione dei gironi') }}</div>
+    <div class="c7-stack" role="radiogroup">
+      {% for valore, nome, spiegazione in voci_composizione_gironi() %}
+      <label class="c7-choice{{ ' is-selected' if valore == _comp }}">
+        <input type="radio" name="{{ _pre }}group_seeding" value="{{ valore }}" class="d-none"
+               {% if valore == _comp %}checked{% endif %}
+               {% if (not _visibile and not _da) or _tetto <= 1 %}disabled{% endif %}>
+        <span class="flex-fill">
+          <span class="c7-choice__title d-block">{{ nome }}</span>
+          <span class="c7-choice__desc d-block">{{ spiegazione }}</span>
+        </span>
+        <i class="fas fa-circle-check c7-choice__mark"></i>
+      </label>
+      {% endfor %}
+    </div>
+    <small class="text-muted d-block mt-1">{{ _('Gli iscritti si mettono in fila in quest’ordine e vanno uno per girone a turno, andata e ritorno: i primi della fila finiscono in gironi diversi.') }}</small>
+
+    {% if gironi_compagni|default(false) %}
+    <label class="c7-card d-flex align-items-center gap-3 mt-3 mb-0" style="background:var(--c7-bg);cursor:pointer">
+      <span class="flex-fill">
+        <span class="c7-choice__title d-block" data-help="gara-separazione-squadre">{{ _('Compagni di squadra in gironi diversi') }}</span>
+        <span class="c7-choice__desc d-block">{{ _('Quando si può, la composizione mette i compagni in gironi diversi, senza cambiare l’ordine della fila.') }}</span>
+      </span>
+      <span class="form-check form-switch m-0">
+        <input class="form-check-input m-0" type="checkbox" role="switch"
+               id="{{ _id }}separate_teammates_gironi" name="separate_teammates"
+               {% if gironi_compagni_valore|default(false) %}checked{% endif %}
+               {% if (not _visibile and not _da) or _tetto <= 1 %}disabled{% endif %}>
+      </span>
+    </label>
+    {% endif %}
+  </div>
+</div>

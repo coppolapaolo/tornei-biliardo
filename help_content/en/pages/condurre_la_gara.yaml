@@ -53,6 +53,17 @@ blocks:
 
   - type: note
     tone: tip
+    title: "In a round robin with several groups, choose how many"
+    text: >-
+      If the competition is a round robin with «Groups: up to 2» or more, the
+      start sheet asks **how many groups** to make, with the suggestion
+      already selected: each option shows the sizes («Group A: 6 · Group B:
+      5») and the rounds. Below you can still change the **group
+      composition**. Once the competition has started the groups never
+      change; to redo them, cancel the start.
+
+  - type: note
+    tone: tip
     title: "With an odd number of players, you choose who gets the X"
     text: >-
       When registrations are odd and the competition handles that with the X
