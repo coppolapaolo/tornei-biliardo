@@ -54,7 +54,10 @@ class UserStatsService:
             - win_percentage: Win rate as percentage (0-100)
             - inscription_count: Number of tournament registrations
         """
-        user = db.session.get(User, user_id)
+        # Un id assente non identifica nessuno: chiederlo al DB fa avvisare
+        # SQLAlchemy («fully NULL primary key»), che la 2.1 annuncia come
+        # errore futuro. Stessa risposta di un id che non esiste.
+        user = db.session.get(User, user_id) if user_id is not None else None
         if not user:
             raise ValueError("User not found")
 

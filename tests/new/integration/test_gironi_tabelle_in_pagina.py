@@ -1,7 +1,8 @@
 """Le pagine della gara con due gironi (ADR-076).
 
 Sette giocatori in due gironi da quattro e tre, composti per ELO: vince
-sempre chi ha l'ELO più alto, 3-0. Mentre si gioca il direttore, l'ospite,
+sempre chi ha l'ELO più alto, 3-0 se è il più forte del suo girone e 3-1
+altrimenti. Mentre si gioca il direttore, l'ospite,
 lo schermo in sala e la tessera di chi gioca vedono una classifica per
 girone; a gara conclusa la classifica della gara, con «1º girone A» accanto
 al nome. Col girone unico le pagine restano quelle di sempre.
@@ -75,6 +76,14 @@ def _gara(gironi: int, turni_da_giocare: int) -> Tuple[Gara, User, List[User]]:
         InscriptionService.inscribe_user(player.id, gara.id)
 
     elo = {p.id: p.elo_rating for p in players}
+    # Le teste dei due gironi (con la composizione per ELO, il 1º in A e il 2º
+    # in B) vincono senza concedere triangoli, gli altri ne concedono uno. Con
+    # tutte le partite 3-0 il primo posto poteva essere un pari merito: dopo
+    # due turni del girone A il sorteggio del calendario può far battere al
+    # 4º il 5º e il 7º, e il 4º arriva a 2 vinte e +6 come il 1º, che non ha
+    # ancora incontrato. Lì decide il sorteggio della catena (ADR-078), e la
+    # tessera diceva «2°» una volta su tre circa.
+    teste = {players[0].id, players[1].id}
     RoundService.start_first_round(gara.id, groups_count=gironi)
     for r in range(1, turni_da_giocare + 1):
         if r > 1:
@@ -83,6 +92,14 @@ def _gara(gironi: int, turni_da_giocare: int) -> Tuple[Gara, User, List[User]]:
             if match.is_bye or MatchStatus.is_finished(match.status):
                 continue
             vince = max((match.player1_id, match.player2_id), key=lambda p: elo[p])
+            perde = match.player2_id if vince == match.player1_id else match.player1_id
+            if vince not in teste:
+                RackService.add_rack_with_score_update(
+                    match_id=match.id,
+                    winner_id=perde,
+                    reported_by_id=perde,
+                    validated_by_admin=True,
+                )
             for _ in range(match.match_distance):
                 RackService.add_rack_with_score_update(
                     match_id=match.id,

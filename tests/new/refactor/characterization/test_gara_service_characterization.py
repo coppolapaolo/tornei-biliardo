@@ -576,14 +576,6 @@ class TestGaraServiceCharacterization:
         not_removed = GaraService.remove_director(gara.id, co_director.id)
         assert not_removed is False
 
-    def test_get_director_garas_characterization(self):
-        """REMOVED: get_director_garas method was removed in Task 1.2 cleanup.
-
-        This method was identified as unused in production routes and removed
-        as part of the GaraService decomposition cleanup phase.
-        """
-        pytest.skip("Method get_director_garas removed in refactoring Task 1.2")
-
 
 class TestInscriptionServiceCharacterization:
     """Test che caratterizzano il comportamento attuale di InscriptionService."""
