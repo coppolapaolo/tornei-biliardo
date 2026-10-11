@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.67.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.66.0...v1.67.0) (2026-10-11)
+
+
+### Funzioni nuove
+
+* nel campionato a piazzamenti la nuova gara sceglie formato e sistema ([#649](https://github.com/coppolapaolo/tornei-biliardo/issues/649)) ([9e8a3ad](https://github.com/coppolapaolo/tornei-biliardo/commit/9e8a3ad8b029fe712451644ede9610295bc798e4))
+
 ## [1.66.0](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.65.0...v1.66.0) (2026-10-11)
 
 
