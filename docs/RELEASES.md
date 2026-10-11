@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.67.3](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.67.2...v1.67.3) (2026-10-11)
+
+
+### Correzioni
+
+* i messaggi dei servizi della gara tradotti ([#655](https://github.com/coppolapaolo/tornei-biliardo/issues/655)) ([2702eea](https://github.com/coppolapaolo/tornei-biliardo/commit/2702eead42227b2d02f01908a254ddb2c24c3c9c))
+
 ## [1.67.2](https://github.com/coppolapaolo/tornei-biliardo/compare/v1.67.1...v1.67.2) (2026-10-11)
 
 
