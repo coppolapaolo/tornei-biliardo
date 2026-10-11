@@ -124,6 +124,8 @@ hints:
   anchor: gara-separazione-squadre
   screens:
   - admin.competition.create_gara_standalone
+  - admin.competition.edit_gara
+  - admin.campionato.campionato_detail
   page: squadre
   section: come_funziona
 - id: gara.finalina
@@ -154,6 +156,40 @@ hints:
   - admin.campionato.wizard_step2
   page: formati_di_gioco
   section: handicap
+- id: gara.gironi
+  label: Groups
+  short: 'Round robin only: «up to N» splits the players into groups played in parallel. How many, you choose at the start, with at least 3 players per group.'
+  anchor: gara-gironi
+  screens:
+  - admin.competition.create_gara_standalone
+  - admin.campionato.wizard_step2
+  - admin.campionato.campionato_detail
+  - admin.competition.edit_gara
+  - admin.campionato.edit_campionato
+  - admin.competition.gara_detail
+  page: abbinamenti
+  section: gironi
+- id: gara.composizione_gironi
+  label: Group composition
+  short: 'Draw, by ELO or by category: players line up and go one per group in turn, so the first in line end up in different groups.'
+  anchor: gara-composizione-gironi
+  screens:
+  - admin.competition.create_gara_standalone
+  - admin.campionato.wizard_step2
+  - admin.campionato.campionato_detail
+  - admin.competition.edit_gara
+  - admin.campionato.edit_campionato
+  - admin.competition.gara_detail
+  page: abbinamenti
+  section: gironi
+- id: gara.gironi_avvio
+  label: How many groups?
+  short: 'At the start you choose how many groups, on the players present. Each option shows sizes and rounds; the suggestion is one group every six players.'
+  anchor: gara-gironi-avvio
+  screens:
+  - admin.competition.gara_detail
+  page: condurre_la_gara
+  section: primo_turno
 - id: gara.limite_di_tempo
   label: Time limit per match
   short: 'Minutes per match, on top of the distance. It starts at the lag or with «Start match»; when it runs out nothing closes: the director decides. Empty = no limit.'

@@ -37,7 +37,12 @@ CAMPI_PROPOSTI: Dict[str, str] = {
     "default_points_win": "points_win",
     "default_points_draw": "points_draw",
     "default_points_loss": "points_loss",
+    "default_max_groups": "max_groups",
+    "default_group_seeding": "group_seeding",
 }
+
+#: I campi che hanno senso solo col girone all'italiana (ADR-076).
+_SOLO_GIRONE = frozenset({"max_groups", "group_seeding"})
 
 
 @dataclass
@@ -67,6 +72,12 @@ def gare_proponibili(campionato: Any) -> List[Any]:
     ]
 
 
+def _e_a_girone(gara: Any) -> bool:
+    from models.matchmaking.configuration import MatchmakingStrategy
+
+    return gara.matchmaking_strategy == MatchmakingStrategy.ROUND_ROBIN.value
+
+
 def valore_della_gara(gara: Any, campo_gara: str) -> Any:
     return getattr(gara, campo_gara, None)
 
@@ -83,6 +94,8 @@ def proposta(campionato: Any, cambi: Mapping[str, Iterable[Any]]) -> List[GaraPr
         for campo_camp, (vecchio, nuovo) in cambi.items():
             campo_gara = CAMPI_PROPOSTI.get(campo_camp)
             if campo_gara is None:
+                continue
+            if campo_gara in _SOLO_GIRONE and not _e_a_girone(gara):
                 continue
             attuale = valore_della_gara(gara, campo_gara)
             if campo_gara == "odd_number_policy":
@@ -118,7 +131,13 @@ def _valore_da_scrivere(campo_gara: str, grezzo: Any) -> Dict[str, Any]:
         }
     if campo_gara in ("has_handicap", "anti_rematch_enabled"):
         return {campo_gara: str(grezzo).lower() in ("true", "1")}
-    if campo_gara in ("rounds_count", "points_win", "points_draw", "points_loss"):
+    if campo_gara in (
+        "rounds_count",
+        "points_win",
+        "points_draw",
+        "points_loss",
+        "max_groups",
+    ):
         return {campo_gara: int(grezzo)}
     if campo_gara == "time_limit_minutes":
         return {campo_gara: int(grezzo) if grezzo not in (None, "") else 0}

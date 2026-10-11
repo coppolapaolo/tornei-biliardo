@@ -58,14 +58,22 @@ def start_first_round(gara_id):
     bye_to_last_inscribed = None if bye_choice is None else bye_choice == "1"
 
     try:
+        # Il girone all'italiana a più gironi (ADR-076): quanti gironi, e come
+        # si compongono, li sceglie il direttore nel foglio di avvio. Campo
+        # assente = la proposta e la composizione della gara. Il numero lo
+        # verifica il servizio (da 1 al tetto, almeno 3 per girone).
+        groups_count = _gironi_dal_foglio(gara)
+
         RoundService.start_first_round(
-            gara_id, bye_to_last_inscribed=bye_to_last_inscribed
+            gara_id,
+            bye_to_last_inscribed=bye_to_last_inscribed,
+            groups_count=groups_count,
         )
 
         if gara.matchmaking_strategy == MatchmakingStrategy.RANDOM.value:
-            flash("Gara avviata! Tutti i turni sono stati creati.", "success")
+            flash(_("Gara avviata! Tutti i turni sono stati creati."), "success")
         else:
-            flash("Primo turno avviato!", "success")
+            flash(_("Primo turno avviato!"), "success")
 
     except ValueError as ve:
         flash(str(ve), "error")
@@ -74,6 +82,34 @@ def start_first_round(gara_id):
         flash("Errore interno del server", "error")
 
     return redirect(url_for("admin.competition.gara_detail", gara_id=gara_id))
+
+
+def _gironi_dal_foglio(gara):
+    """Numero e composizione dei gironi scelti nel foglio di avvio (ADR-076).
+
+    La composizione, se il direttore la cambia lì, si scrive sulla gara prima
+    dell'avvio, con la sua voce nella storia: è una modifica della gara come
+    un'altra, fatta un attimo prima di avviarla. Restituisce il numero di
+    gironi, o None se il foglio non lo chiede.
+    """
+    if gara.matchmaking_strategy != MatchmakingStrategy.ROUND_ROBIN.value:
+        return None
+    composizione = request.form.get("group_seeding")
+    if composizione:
+        from .form_parser import leggi_composizione
+
+        scelta = leggi_composizione(composizione)
+        if scelta != gara.effective_group_seeding.value:
+            GaraService.update_gara(
+                gara_id=gara.id, autore=current_user, group_seeding=scelta
+            )
+    grezzo = (request.form.get("groups_count") or "").strip()
+    if not grezzo:
+        return None
+    try:
+        return int(grezzo)
+    except ValueError:
+        raise ValueError(_("Il numero di gironi non è valido."))
 
 
 @competition_bp.route("/<int:gara_id>/cancel_first_round", methods=["POST"])

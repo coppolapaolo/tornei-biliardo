@@ -655,6 +655,7 @@ def create_app(config_name=None, *, da_script: bool = False):
         player_name_with_forfeit,
         trio_config_for_distance,
         etichetta_dispari,
+        etichetta_ritiro,
         opzioni_dispari,
     )
 
@@ -665,6 +666,7 @@ def create_app(config_name=None, *, da_script: bool = False):
     app.jinja_env.filters["player_name_with_forfeit"] = player_name_with_forfeit
     app.jinja_env.filters["trio_config_for_distance"] = trio_config_for_distance
     app.jinja_env.filters["etichetta_dispari"] = etichetta_dispari
+    app.jinja_env.filters["etichetta_ritiro"] = etichetta_ritiro
     # Le voci dei menu «giocatori dispari»: stessi nomi del filtro qui sopra.
     app.jinja_env.globals["opzioni_dispari"] = opzioni_dispari
     # La formula che una gara di quella strategia tiene davvero: col girone la
@@ -672,6 +674,21 @@ def create_app(config_name=None, *, da_script: bool = False):
     from models.matchmaking.configuration import odd_policy_for_strategy
 
     app.jinja_env.globals["odd_policy_for_strategy"] = odd_policy_for_strategy
+
+    # I gironi del girone all'italiana (ADR-076): la frase della formula e le
+    # voci di «Composizione dei gironi», una sola fonte per moduli e pagine.
+    from models.competition.gironi_service import (
+        GironiService,
+        voci_della_composizione,
+    )
+    from models.matchmaking.gironi import MASSIMO_DI_GIRONI
+
+    app.jinja_env.globals["frase_gironi"] = GironiService.frase
+    app.jinja_env.globals["voci_composizione_gironi"] = voci_della_composizione
+    app.jinja_env.globals["massimo_di_gironi"] = MASSIMO_DI_GIRONI
+    from models.matchmaking.gironi import nome_del_girone
+
+    app.jinja_env.globals["nome_del_girone"] = nome_del_girone
 
     # Register image path template functions
     from utils.image_paths import challenge_image_url, challenge_image_filename

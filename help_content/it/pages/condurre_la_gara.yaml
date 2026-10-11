@@ -53,6 +53,17 @@ blocks:
 
   - type: note
     tone: tip
+    title: "Nel girone a più gironi, scegli quanti gironi"
+    text: >-
+      Se la gara è un girone all'italiana con «Gironi: fino a 2» o più, il
+      foglio di avvio chiede **quanti gironi** fare, con la proposta già
+      scelta: ogni voce dice le taglie («Girone A: 6 · Girone B: 5») e i
+      turni. Sotto puoi ancora cambiare la **composizione dei gironi**. Una
+      volta avviata la gara i gironi non cambiano più; per rifarli si annulla
+      l'avvio.
+
+  - type: note
+    tone: tip
     title: "Se i giocatori sono dispari, scegli tu a chi va la X"
     text: >-
       Quando gli iscritti sono dispari e la gara gestisce il caso con l'X a

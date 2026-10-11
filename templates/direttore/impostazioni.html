@@ -74,6 +74,10 @@
     {{ d.riga('fa-diagram-project', _('Accoppiamento'),
               gara.matchmaking_strategy.replace('_', ' ')|title ~ (' · ' ~ _('anti-reincontro attivo') if gara.anti_rematch_enabled else ''),
               tone='locked') }}
+    {% set _gironi = frase_gironi(gara) %}
+    {% if _gironi %}
+    {{ d.riga('fa-layer-group', _('Gironi'), _gironi, tone='locked') }}
+    {% endif %}
     {% if gara.ammette_esercizi_fra_i_turni %}
     {{ d.riga('fa-bullseye', _('Esercizi fra i turni'),
               (ngettext('%(n)d esercizio', '%(n)d esercizi', _esercizi, n=_esercizi) if _esercizi else _('nessuno')),

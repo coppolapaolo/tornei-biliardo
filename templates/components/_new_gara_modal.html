@@ -234,8 +234,8 @@
                                     <label for="withdraw_policy" class="form-label">{{ _("Gestione Forfait") }}</label>
                                     <select class="form-control" name="withdraw_policy" id="withdraw_policy"
                                             {% if not modal_is_bracket %}required{% endif %}>
-                                        <option value="Forfeit" selected>{{ _("Vincita a tavolino") }}</option>
-                                        <option value="Exclude">{{ _("Escludi dal turno") }}</option>
+                                        <option value="{{ WithdrawPolicy.FORFEIT.value }}" selected>{{ WithdrawPolicy.FORFEIT.value|etichetta_ritiro }}</option>
+                                        <option value="{{ WithdrawPolicy.EXCLUDE.value }}">{{ WithdrawPolicy.EXCLUDE.value|etichetta_ritiro(campionato.campionato_type) }}</option>
                                     </select>
                                 </div>
                             </div>
@@ -312,6 +312,14 @@
                                 </div>
                             </div>
                         </div>
+
+                        {# I gironi del girone all'italiana (ADR-076): il campionato li
+                           propone già scritti, e la gara li può cambiare. #}
+                        {% with gironi_id='create_', gironi_visibile=(campionato.campionato_type == MatchmakingStrategy.ROUND_ROBIN.value),
+                                gironi_tetto=campionato.default_max_groups, gironi_composizione=campionato.default_group_seeding,
+                                gironi_compagni=true %}
+                        {% include "components/_campo_gironi.html" %}
+                        {% endwith %}
 
                         {# Amalfi lo impone acceso; sul tabellone non esiste proprio,
                            perche' chi perde esce e non puo' esserci un reincontro. #}
@@ -752,3 +760,4 @@
 </script>
 <script src="{{ url_for('static', filename='js/x-challenge-picker.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/x_challenge_section.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/campo_gironi.js') }}?v={{ config.ASSET_VERSION }}"></script>

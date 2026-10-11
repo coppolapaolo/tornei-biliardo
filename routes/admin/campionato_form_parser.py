@@ -159,6 +159,30 @@ class CampionatoFormParser:
         return dict(zip(COLONNE_PROPOSTE, valida_punti(*grezzi).come_tupla()))
 
     @staticmethod
+    def parse_gironi(form: MultiDict) -> Dict[str, Any]:
+        """Tetto e composizione dei gironi proposti alle gare (ADR-076).
+
+        Solo se il modulo li manda: col girone all'italiana si vedono, con le
+        altre strategie sono nascosti e non arrivano. Stessi confini del modulo
+        della gara (`leggi_tetto_dei_gironi`, `leggi_composizione`).
+        """
+        from routes.admin.competition.form_parser import (
+            leggi_composizione,
+            leggi_tetto_dei_gironi,
+        )
+
+        valori: Dict[str, Any] = {}
+        if "default_max_groups" in form:
+            valori["default_max_groups"] = leggi_tetto_dei_gironi(
+                form.get("default_max_groups")
+            )
+        if "default_group_seeding" in form:
+            valori["default_group_seeding"] = leggi_composizione(
+                form.get("default_group_seeding")
+            )
+        return valori
+
+    @staticmethod
     def parse_default_settings(form: MultiDict) -> Dict[str, Any]:
         """Parse the default-settings block shared by create-wizard and edit.
 

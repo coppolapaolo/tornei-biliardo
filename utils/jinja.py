@@ -486,6 +486,28 @@ def etichetta_dispari(policy, strategy=None) -> str:
     return etichette.get(valore, valore or "")
 
 
+def etichetta_ritiro(policy, strategy=None) -> str:
+    """Il nome, tradotto, della regola dei ritiri nei moduli della gara.
+
+    «Escludi» non vuol dire la stessa cosa in ogni strategia: con Amalfi e il
+    casuale chi resta dispari prende la X o gioca a tre; nel girone
+    all'italiana l'escluso resta al suo posto nel calendario e il suo
+    avversario **vince a tavolino** (SPECIFICHE.md, «policy per il forfait»).
+    """
+    from models.matchmaking.configuration import MatchmakingStrategy
+    from models.status_enum import WithdrawPolicy
+
+    valore = getattr(policy, "value", policy)
+    strategia = getattr(strategy, "value", strategy)
+    if valore == WithdrawPolicy.EXCLUDE.value:
+        if strategia == MatchmakingStrategy.ROUND_ROBIN.value:
+            return _("Escludi — chi doveva incontrarlo vince a tavolino")
+        return _("Escludi — X a tavolino o partita a tre")
+    if valore == WithdrawPolicy.FORFEIT.value:
+        return _("Forfait — vittoria all'avversario")
+    return valore or ""
+
+
 def opzioni_dispari(classification_system=None, strategy=None) -> list[tuple[str, str]]:
     """Le formule dei dispari come voci di un menu: `(valore, nome tradotto)`.
 

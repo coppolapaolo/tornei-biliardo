@@ -93,6 +93,55 @@ blocks:
       distance.
 
   - type: heading
+    id: gironi
+    title: "Round robin in several groups"
+
+  - type: text
+    text: >-
+      With many players a single round robin gets long. The **Groups** option
+      says how many groups you can have at most — «up to 2», for example —
+      and at the start you choose how many to make, on the players present:
+      each player only plays the others in their group, and the groups play
+      in parallel. With 11 players and «up to 2» the app suggests two groups,
+      of 6 and 5.
+
+  - type: list
+    title: "The rules"
+    items:
+      - "At least **3 players per group**: with few players the maximum drops by itself."
+      - "The suggestion is **one group every six players**, and you can change it on the start sheet."
+      - "Sizes differ by at most one; the extra player goes to the first groups."
+      - "Groups are fixed at the start and **never change**, not even when someone withdraws. Cancelling the start recomposes them."
+      - "The competition has as many rounds as the largest group; a group that has finished stops."
+
+  - type: options
+    items:
+      - name: "Group composition"
+        values: "Draw · By ELO · By category"
+        text: >-
+          Players line up in this order and go one per group in turn, there
+          and back: with two groups the first goes to A, the second and third
+          to B, the fourth and fifth to A. So the first in line end up in
+          different groups. **By category** follows the price list order,
+          then ELO within the category.
+        hint: gara.composizione_gironi
+      - name: "Teammates in different groups"
+        values: "default off"
+        text: >-
+          When possible, the composition puts teammates in different groups,
+          without changing the balance of the line.
+
+  - type: note
+    tone: info
+    title: "The standings of a competition in groups"
+    text: >-
+      Within each group the order is the usual one. In the competition
+      standings come first all the group **winners**, then all the seconds,
+      and so on. Between groups of different size the comparison is **per
+      match played** — wins, racks and points divided by the matches played —
+      because a group of 6 plays one match more than a group of 5.
+
+  - type: heading
     id: eliminazione
     title: "Knockout"
 

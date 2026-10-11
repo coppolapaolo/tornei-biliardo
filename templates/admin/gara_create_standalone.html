@@ -254,10 +254,15 @@
                                 </div>
                                 <div class="col-sm-6 mb-3" data-bracket-hide>
                                     <label for="withdraw_policy" class="form-label" data-help="gara-forfait">{{ _("Gestione Forfait") }}</label>
-                                    <select class="form-select" id="withdraw_policy" name="withdraw_policy" required>
-                                        <option value="{{ WithdrawPolicy.FORFEIT.value }}" selected>{{ _("Vincita a tavolino avversario") }}
+                                    {# «Escludi» cambia nome col girone: lì l'avversario
+                                       dell'escluso vince a tavolino (campo_gironi.js). #}
+                                    <select class="form-select" id="withdraw_policy" name="withdraw_policy" required
+                                            data-segue-strategia="#matchmaking_strategy" data-girone="{{ MatchmakingStrategy.ROUND_ROBIN.value }}">
+                                        <option value="{{ WithdrawPolicy.FORFEIT.value }}" selected>{{ WithdrawPolicy.FORFEIT.value|etichetta_ritiro }}
                                         </option>
-                                        <option value="{{ WithdrawPolicy.EXCLUDE.value }}">{{ _("Escludi — X a tavolino o partita a tre") }}
+                                        <option value="{{ WithdrawPolicy.EXCLUDE.value }}"
+                                                data-label="{{ WithdrawPolicy.EXCLUDE.value|etichetta_ritiro }}"
+                                                data-label-girone="{{ WithdrawPolicy.EXCLUDE.value|etichetta_ritiro(MatchmakingStrategy.ROUND_ROBIN.value) }}">{{ WithdrawPolicy.EXCLUDE.value|etichetta_ritiro }}
                                         </option>
                                     </select>
                                 </div>
@@ -370,6 +375,12 @@
                                     {# Opzioni dei formati a tabellone: si mostrano da sole quando la
                                        strategia scelta e' eliminazione diretta o doppio KO. #}
                                     {% include "components/_bracket_options.html" %}
+
+                                    {# I gironi del girone all'italiana (ADR-076): si mostrano da
+                                       soli quando la strategia è il girone. #}
+                                    {% with gironi_strategia_da='#matchmaking_strategy', gironi_compagni=true %}
+                                    {% include "components/_campo_gironi.html" %}
+                                    {% endwith %}
 
                                     {# Le catene degli spareggi (ADR-078): sul tabellone non si usano. #}
                                     <div class="border-top pt-3 mt-3" data-bracket-hide>
@@ -512,6 +523,7 @@
 
 {% block scripts %}
 <script src="{{ url_for('static', filename='js/bracket_options.js') }}?v={{ config.ASSET_VERSION }}"></script>
+<script src="{{ url_for('static', filename='js/campo_gironi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/catena_spareggi.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script src="{{ url_for('static', filename='js/campo_punti.js') }}?v={{ config.ASSET_VERSION }}"></script>
 <script>

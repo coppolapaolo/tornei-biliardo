@@ -174,6 +174,10 @@
     <div class="c7-rows">
       {{ d.riga('fa-diagram-project', _('Accoppiamento'),
                 t.nome_formula(gara.matchmaking_strategy) ~ (' · ' ~ _('anti-reincontro attivo') if gara.anti_rematch_enabled and not is_tabellone else '')) }}
+      {% set _gironi = frase_gironi(gara) %}
+      {% if _gironi %}
+      {{ d.riga('fa-layer-group', _('Gironi'), _gironi, attrs='data-help="gara-gironi"') }}
+      {% endif %}
       {% if forma %}
       {{ d.riga('fa-sitemap', _('Tabellone'), t.forma(forma) ~ ((' · ' ~ _('se si arriva a %(n)s iscritti', n=forma.iscritti)) if forma_stima else '')) }}
       {% endif %}

@@ -216,8 +216,8 @@
     <div class="mb-0" style="max-width:420px">
       <label for="withdraw_policy" class="form-label">{{ _('Gestione ritiri') }}</label>
       <select class="form-select" id="withdraw_policy" name="withdraw_policy">
-        <option value="{{ WithdrawPolicy.EXCLUDE.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value else '' }}>{{ _('Escludi — X a tavolino o partita a tre') }}</option>
-        <option value="{{ WithdrawPolicy.FORFEIT.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.FORFEIT.value else '' }}>{{ _("Forfait — vittoria all'avversario") }}</option>
+        <option value="{{ WithdrawPolicy.EXCLUDE.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.EXCLUDE.value else '' }}>{{ WithdrawPolicy.EXCLUDE.value|etichetta_ritiro(gara.matchmaking_strategy) }}</option>
+        <option value="{{ WithdrawPolicy.FORFEIT.value }}" {{ 'selected' if gara.withdraw_policy == WithdrawPolicy.FORFEIT.value else '' }}>{{ WithdrawPolicy.FORFEIT.value|etichetta_ritiro }}</option>
       </select>
       <div class="form-text">{{ _('Vale per i ritiri da qui in avanti.') }}</div>
     </div>

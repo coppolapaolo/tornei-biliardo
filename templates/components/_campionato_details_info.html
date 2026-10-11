@@ -128,7 +128,14 @@
             {% if campionato.default_odd_policy %}
             <div class="col-md-3">
                 <small class="text-muted">{{ _("Gestione Dispari") }}:</small><br>
-                <span>{{ campionato.default_odd_policy|etichetta_dispari }}</span>
+                <span>{{ odd_policy_for_strategy(campionato.campionato_type, campionato.default_odd_policy)|etichetta_dispari(campionato.campionato_type) }}</span>
+            </div>
+            {% endif %}
+            {# I gironi proposti (ADR-076): solo col girone, e con più di uno. #}
+            {% if campionato.campionato_type == MatchmakingStrategy.ROUND_ROBIN.value and (campionato.default_max_groups or 1) > 1 %}
+            <div class="col-md-3">
+                <small class="text-muted">{{ _("Gironi") }}:</small><br>
+                <span>{{ valore_storia('max_groups', campionato.default_max_groups|string) }} · {{ valore_storia('group_seeding', campionato.default_group_seeding) }}</span>
             </div>
             {% endif %}
             {% if campionato.default_anti_rematch is not none %}

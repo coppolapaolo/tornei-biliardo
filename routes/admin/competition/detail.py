@@ -882,6 +882,14 @@ def gara_detail(gara_id):
                 None,
             )
 
+    # Quanti gironi, nel girone all'italiana a più gironi (ADR-076): il foglio
+    # di avvio propone un numero sugli iscritti di adesso e ne mostra le taglie.
+    anteprima_gironi = None
+    if user_can_manage and gara.current_round == 0:
+        from models.competition.gironi_service import GironiService
+
+        anteprima_gironi = GironiService.anteprima(gara)
+
     prova_iscrizioni = contesto.get("prova_iscrizioni")
 
     # La pagina del direttore e' un template a se' (canvas «Pagina gara del
@@ -915,6 +923,7 @@ def gara_detail(gara_id):
         **vista,
         prova_iscrizioni=prova_iscrizioni,
         x_choice_last_inscribed=x_choice_last_inscribed,
+        anteprima_gironi=anteprima_gironi,
         can_inscribe_now=can_inscribe_now,
         show_login_to_inscribe=show_login_to_inscribe,
         public_invite_url=public_invite_url,

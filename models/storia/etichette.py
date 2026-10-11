@@ -57,6 +57,11 @@ ETICHETTE: Dict[str, object] = {
     "third_place_match": _l("Finalina"),
     "seeding_rating": _l("Criterio del sorteggio"),
     "double_ko_rounds": _l("Turni della fase a gironi"),
+    # Il girone all'italiana a più gironi (ADR-076).
+    "max_groups": _l("Gironi"),
+    "group_seeding": _l("Composizione dei gironi"),
+    "default_max_groups": _l("Gironi proposti"),
+    "default_group_seeding": _l("Composizione dei gironi proposta"),
     "weight": _l("Peso nel campionato"),
     "x_challenge_id": _l("Esercizio al posto della X"),
     # Le catene degli spareggi (ADR-078).
@@ -114,6 +119,8 @@ _COME_CAMPO_DELLA_GARA = {
     "default_points_win": "points_win",
     "default_points_draw": "points_draw",
     "default_points_loss": "points_loss",
+    "default_max_groups": "max_groups",
+    "default_group_seeding": "group_seeding",
     "campionato_type": "matchmaking_strategy",
     "strategy_type": "matchmaking_strategy",
 }
@@ -157,6 +164,11 @@ def _valori_noti() -> Dict[str, Dict[str, object]]:
         "risposta": {
             "accettato": _l("ha accettato"),
             "rifiutato": _l("ha rifiutato"),
+        },
+        "group_seeding": {
+            "sorteggio": _l("a sorteggio"),
+            "elo": _l("per ELO"),
+            "categoria": _l("per categoria"),
         },
         "withdraw_policy": {
             "Forfeit": _l("Perde a tavolino le partite restanti"),
@@ -214,6 +226,14 @@ def valore(campo: str, grezzo: str | None) -> str:
         from models.categoria.listino import in_parole
 
         return in_parole(grezzo)
+    if campo == "max_groups":
+        try:
+            tetto = int(grezzo)
+        except ValueError:
+            return grezzo
+        if tetto <= 1:
+            return _("girone unico")
+        return _("fino a %(n)s", n=tetto)
     if campo == "time_limit_minutes":
         try:
             minuti = int(grezzo)
