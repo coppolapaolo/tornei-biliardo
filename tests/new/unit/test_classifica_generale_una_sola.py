@@ -183,9 +183,12 @@ class TestRigheUgualiAllaPagina:
         assert punti == {a.id: 25, b.id: 18}
         assert _righe(camp) == _pagina(camp)
 
-    def test_a_piazzamenti_i_pari_merito_condividono_la_posizione(self, db_session):
-        """ADR-040: nel sistema a piazzamenti il pari merito è l'esito, non
-        un'ambiguità. Le righe lo dicevano già, la pagina no."""
+    def test_a_piazzamenti_i_pari_punti_li_scioglie_la_catena(self, db_session):
+        """Due secondi a pari merito nella gara: stessi punti, stessi
+        piazzamenti. Fino al 2026-10-11 condividevano la posizione anche
+        nella classifica generale; da allora a pari punti decide la catena,
+        che finisce col sorteggio (ADR-080, emendamento). Righe e pagina
+        restano uguali."""
         camp = _campionato(db_session, sistema="POSITION", tipo="direct_elimination")
         a, b, c = (_utente(db_session, n) for n in "abc")
         gara = _gara(db_session, camp, 1, [(1, a, b, 5, 3), (1, a, c, 5, 3)])
@@ -199,7 +202,7 @@ class TestRigheUgualiAllaPagina:
         db_session.commit()
 
         posizioni = sorted(p for p, _u, _v, _pt in _pagina(camp))
-        assert posizioni == [1, 2, 2]
+        assert posizioni == [1, 2, 3]
         assert _righe(camp) == _pagina(camp)
 
     def test_una_gara_chiusa_con_meno_turni_del_previsto_conta(self, db_session):

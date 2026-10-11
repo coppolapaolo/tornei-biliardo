@@ -35,9 +35,12 @@
     return parti.length > 1 ? parseInt(parti[1], 10) : null;
   }
 
-  function sistemaValido(valore) {
-    if (valore === 'RACK' || valore === 'RACKS') return 'RACK';
-    return valore === 'POINTS' ? 'POINTS' : 'WINS';
+  /* Il sistema come lo conosce l'editor: quelli che ha in `ammessi`. La
+   * classifica generale conosce anche POSITION (il campionato a piazzamenti,
+   * ADR-080); gli altri editor ripiegano su WINS. */
+  function sistemaValido(valore, cfg) {
+    if (valore === 'RACKS') valore = 'RACK';
+    return cfg.ammessi && cfg.ammessi[valore] ? valore : 'WINS';
   }
 
   function uguali(a, b) {
@@ -67,7 +70,7 @@
   function Editor(radice) {
     this.radice = radice;
     this.cfg = JSON.parse(radice.getAttribute('data-config'));
-    this.sistema = sistemaValido(this.cfg.sistema);
+    this.sistema = sistemaValido(this.cfg.sistema, this.cfg);
     this.voci = this.cfg.voci.slice();
     this.valore = radice.querySelector('[data-catena-valore]');
     this.lista = radice.querySelector('[data-catena-voci]');
@@ -207,7 +210,7 @@
   };
 
   Editor.prototype.cambiaSistema = function (nuovo) {
-    nuovo = sistemaValido(nuovo);
+    nuovo = sistemaValido(nuovo, this.cfg);
     if (nuovo === this.sistema) return;
     var predefinita = this.cfg.default[this.sistema];
     var ssr = this.voci.filter(function (v) { return criterio(v) === SSR; })[0];

@@ -370,7 +370,14 @@ Un campionato sceglie **come le gare entrano** nella classifica generale:
   (`default_gara_classification_system`, NULL = WINS) e la gara lo può
   cambiare; il tabellone resta POSITION. Chi non gioca prende zero; i pari
   merito di una gara prendono i punti del posto condiviso; oltre la tabella si
-  prende zero.
+  prende zero. A **pari punti** decide la catena della classifica generale
+  (`Campionato.catena_generale`), con criteri suoi: migliori piazzamenti
+  (`Criterio.PIAZZAMENTI`: più primi posti, poi più secondi…; il posto è
+  quello della classifica della gara, pesato come i punti), posizione dopo la
+  gara precedente, scontri diretti, sorteggio. Di default «migliori
+  piazzamenti → sorteggio». Vittorie, rack, differenza e SSR non sono
+  ammessi (emendamento del 2026-10-11: prima decidevano vittorie e
+  differenza sommate, e i pari condividevano il posto).
 
 Le regole di lettura stanno in `models/campionato/piazzamenti.py`
 (`e_a_piazzamenti`, `sistema_delle_gare`, `sistema_per_la_gara`). Presidi:

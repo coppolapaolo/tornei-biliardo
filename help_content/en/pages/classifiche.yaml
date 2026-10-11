@@ -121,7 +121,9 @@ blocks:
       different formats — an evening with groups, an Amalfi one, a bracket —
       and the size of a group does not matter. Anyone who misses a
       competition gets zero; tied players get the points of the shared place.
-      Bracket championships always use placements.
+      Bracket championships always use placements. On equal points the
+      overall standings chain decides: by default whoever has more first
+      places, then more second places, and so on, and finally the draw.
 
   - type: text
     text: >-
@@ -165,7 +167,9 @@ blocks:
         values: "by default: rack difference → SSR (sum) → position after the previous competition → draw"
         text: >-
           The championship chooses them, and they leave no ties: playoff
-          invitations start from there.
+          invitations start from there. In a placement championship, by
+          default: best placements (more first places, then more second
+          places…) → draw.
 
   - type: note
     tone: info
@@ -239,6 +243,6 @@ blocks:
       - q: "How do the championship standings add up?"
         a: "By summing: wins and rack difference with «Wins», total racks with «Racks», points for the place in each competition with «Placements». If a competition carries a weight, its score is multiplied by that number first."
       - q: "In the championship two players have the same numbers: who is ahead?"
-        a: "Whoever was ahead after the previous competition. If they were level there too, the draw decides: it is fixed, so the standings do not change each time you look, and it does not depend on who registered first."
+        a: "The overall standings chain decides, written below the standings. By default, in championships that add up, the rack difference, the tiebreaker, then whoever was ahead after the previous competition; in placement championships whoever has more first places, then more second places. Finally the draw: it is fixed, so the standings do not change each time you look, and it does not depend on who registered first."
       - q: "During a competition, level on wins and rack difference, who is ahead?"
         a: "Whoever was ahead in the previous round, and in round one whoever was ahead in the starting order. With the «Racks» system the difference does not count: level on racks, the previous round decides straight away. The tie-break is played only at the end of the competition."

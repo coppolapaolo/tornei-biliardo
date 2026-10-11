@@ -3247,3 +3247,126 @@ class TestIlCampionatoAPiazzamenti:
         assert punti[a.id] == 50
         assert punti[b.id] == punti[c.id] == 18  # assenti alla gara 2: zero
         assert punti[d.id] == 18
+
+
+@pytest.mark.unit
+class TestAPariPuntiNelCampionatoAPiazzamenti:
+    """`SPECIFICHE.md` righe 382-389 («Come una gara entra nel campionato»),
+    nota del 2026-10-11, ADR-080 emendamento."""
+
+    def test_criteri_ammessi_e_catena_di_default(self):
+        """> - **migliori piazzamenti** […] - **posizione dopo la gara
+        > precedente**; - **scontri diretti** […] - **sorteggio**, sempre
+        > ultimo. Vittorie, rack e differenza rack **non** sono criteri
+        > ammessi, e nemmeno lo spareggio SSR. Di norma: migliori
+        > piazzamenti, poi sorteggio."""
+        from models.classification.ordinamento import (
+            Criterio,
+            Livello,
+            catena_di_default,
+            criteri_ammessi,
+            normalizza_catena,
+        )
+        from models.status_enum import ClassificationSystem
+
+        pos, liv = ClassificationSystem.POSITION, Livello.CAMPIONATO
+        assert set(criteri_ammessi(liv, pos)) == {
+            Criterio.PIAZZAMENTI,
+            Criterio.POSIZIONE_PRECEDENTE,
+            Criterio.SCONTRI_DIRETTI,
+            Criterio.SORTEGGIO,
+        }
+        assert [
+            v.criterio for v in normalizza_catena(catena_di_default(liv, pos), liv, pos)
+        ] == [
+            Criterio.PIAZZAMENTI,
+            Criterio.SORTEGGIO,
+        ]
+
+    def test_piu_primi_posti_poi_piu_secondi(self):
+        """> chi ha più primi posti; a pari primi posti, chi ha più secondi;
+        > poi più terzi, e così via. […] L'ordine è sempre completo."""
+        from models.classification.ordinamento import (
+            Concorrente,
+            Criterio,
+            Voce,
+            ordina,
+        )
+
+        # Tutti a pari punti. A: un 1º e un 5º; B: un 2º e un 3º; C e D: un
+        # 2º e un 4º. A ha l'unico primo posto; B, a pari secondi, ha un
+        # terzo. Le vittorie (C ne ha più di tutti) non contano.
+        a = Concorrente(1, punti=33, vittorie=1, piazzamenti=(1, 0, 0, 0, 1))
+        b = Concorrente(2, punti=33, vittorie=4, piazzamenti=(0, 1, 1, 0, 0))
+        c = Concorrente(3, punti=33, vittorie=9, piazzamenti=(0, 1, 0, 1, 0))
+        d = Concorrente(4, punti=33, vittorie=0, piazzamenti=(0, 1, 0, 1, 0))
+        fasce = ordina(
+            [d, c, b, a],
+            Criterio.PUNTI,
+            (Voce(Criterio.PIAZZAMENTI), Voce(Criterio.SORTEGGIO)),
+            completa=True,
+        )
+        ordine = [f.giocatori[0].player_id for f in fasce]
+        assert ordine[:2] == [1, 2]
+        assert sorted(ordine[2:]) == [3, 4]  # stessi piazzamenti: sorteggio
+        assert [f.posizione for f in fasce] == [1, 2, 3, 4]
+
+    def test_due_secondi_a_pari_merito_e_la_gara_a_peso_zero(self, db_session):
+        """> due secondi a pari merito contano entrambi come un secondo posto.
+        > Un piazzamento pesa come i punti della gara: una gara a peso zero
+        > non conta, una gara a peso 2 conta due volte."""
+        from models.campionato.statistics_service import (
+            TournamentStatisticsService,
+        )
+        from models.classification.gara_classification import (
+            RoundClassificationService,
+        )
+        from models.classification.models import GaraClassification
+        from models.status_enum import ClassificationSystem
+
+        campionato = _campionato(db_session, "POSITION")
+        a, b, c = (_utente(db_session) for _ in range(3))
+        posti_per_gara = (
+            (1, ((a, 1), (b, 2), (c, 2))),  # B e C secondi a pari merito
+            (0, ((c, 1), (a, 2), (b, 3))),  # peso zero: non conta
+            (2, ((a, 1), (b, 2), (c, 3))),  # peso 2: conta due volte
+        )
+        gare = []
+        for numero, (peso, posti) in enumerate(posti_per_gara, 1):
+            gara = _gara_del_campionato(
+                db_session, campionato, numero=numero, stato=GaraStatus.COMPLETED.value
+            )
+            gara.classification_system = "WINS"
+            gara.current_round = 1
+            gara.weight = peso
+            for giocatore, _posto in posti:
+                db_session.add(
+                    Match(
+                        gara_id=gara.id,
+                        round_number=1,
+                        player1_id=giocatore.id,
+                        player2_id=None,
+                        player1_score=0,
+                        player2_score=0,
+                        status=MatchStatus.CLOSED_UNILATERALLY.value,
+                        winner_id=giocatore.id,
+                    )
+                )
+            db_session.flush()
+            RoundClassificationService.calculate_and_save_round_classification(
+                gara.id, 1
+            )
+            for giocatore, posto in posti:
+                riga = GaraClassification.query.filter_by(
+                    gara_id=gara.id, user_id=giocatore.id
+                ).first() or GaraClassification(gara_id=gara.id, user_id=giocatore.id)
+                riga.position = posto
+                db_session.add(riga)
+            gare.append(gara)
+        db_session.flush()
+        totali = TournamentStatisticsService()._aggregate_player_totals(
+            gare, ClassificationSystem.POSITION, campionato
+        )
+        assert totali[a.id]["piazzamenti"] == {1: 3}
+        assert totali[b.id]["piazzamenti"] == {2: 3}
+        assert totali[c.id]["piazzamenti"] == {2: 1, 3: 2}

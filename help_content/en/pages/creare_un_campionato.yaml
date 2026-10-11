@@ -243,9 +243,15 @@ blocks:
       chains proposed to the competitions. The starting one is rack
       difference, then the sum of the SSR tiebreakers, then the position after
       the previous competition, then the draw: it never leaves ties, because
-      playoff invitations start from there. With placements there is no
-      chain: on equal points the summed wins and rack difference count, and
-      players still level share the place. Changing it once the championship
+      playoff invitations start from there. With placements the chain has
+      its own criteria: **best placements** (whoever has more first places,
+      then more second places, and so on), position after the previous
+      competition, head-to-head and draw; the starting one is best
+      placements, then the draw. Wins and racks cannot be chosen here: with
+      groups of different sizes, whoever is in the larger group plays one
+      more match. Two players tied for second in a competition both count as
+      a second place, and a competition that weighs zero does not count.
+      Changing it once the championship
       has started recalculates the standings, and a line above them says so.
 
   - type: faq

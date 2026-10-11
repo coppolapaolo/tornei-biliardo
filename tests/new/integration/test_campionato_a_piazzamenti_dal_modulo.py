@@ -248,3 +248,59 @@ def test_un_campionato_a_vittorie_rifiuta_i_gironi(client, db_session, direttore
     assert "girone unico" in pagina
     db_session.expire_all()
     assert db_session.get(Campionato, camp.id).default_max_groups == 1
+
+
+def test_la_catena_della_classifica_generale_a_piazzamenti(
+    client, db_session, direttore
+):
+    """A pari punti decide la catena scelta nel wizard (2026-10-11).
+
+    Le vittorie non sono ammesse: il server le toglie. La modifica del
+    campionato mostra l'editor, e il regolamento dice la frase.
+    """
+    _login(client, direttore)
+    nome = f"Piazzamenti {uuid.uuid4().hex[:6]}"
+    camp = _wizard(
+        client,
+        nome,
+        "POSITION",
+        "amalfi",
+        catena_generale="scontri_diretti,vittorie,piazzamenti",
+    )
+    assert camp.catena_generale == '["scontri_diretti", "piazzamenti", "sorteggio"]'
+
+    modifica = client.get(f"/admin/campionato/{camp.id}/edit").get_data(as_text=True)
+    assert 'name="catena_generale"' in modifica
+
+    regolamento = client.get(f"/campionato/{camp.id}/regolamento").get_data(
+        as_text=True
+    )
+    assert "A pari punti conta lo scontro diretto, poi chi ha più primi posti" in (
+        regolamento.replace("&#39;", "'")
+    )
+
+
+def test_anche_un_campionato_a_tabellone_sceglie_la_catena(
+    client, db_session, direttore
+):
+    _login(client, direttore)
+    nome = f"Tabelloni {uuid.uuid4().hex[:6]}"
+    pagina = client.post(
+        "/admin/campionato/wizard/step2",
+        data={
+            "name": nome,
+            "planned_gare_count": "3",
+            "campionato_type": "direct_elimination",
+            "default_classification_system": "WINS",
+        },
+    ).get_data(as_text=True)
+    assert 'name="catena_generale"' in pagina
+    assert 'name="default_catena_turno"' not in pagina
+    client.post(
+        "/admin/campionato/wizard/create",
+        data={"default_rounds_count": "3", "catena_generale": "piazzamenti"},
+        follow_redirects=True,
+    )
+    camp = Campionato.query.filter_by(name=nome).first()
+    assert camp.default_classification_system == "POSITION"
+    assert camp.catena_generale == '["piazzamenti", "sorteggio"]'

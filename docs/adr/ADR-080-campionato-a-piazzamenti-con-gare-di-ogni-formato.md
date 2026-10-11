@@ -60,7 +60,8 @@ fra tipo di campionato e sistema di classifica.
    i pari merito di una gara prendono i punti del posto condiviso (come le
    fasce del tabellone, ADR-040), oltre la tabella si prende zero. Il suo
    ordinamento (punti, poi vittorie e differenza sommate, i pari condividono
-   il posto) resta quello di prima.
+   il posto) restava quello di prima — *cambiato lo stesso giorno: vedi
+   l'emendamento qui sotto.*
 5. **Il cambio di sistema** segue ADR-075: si cambia finché nessuna gara è
    avviata. Passando ai piazzamenti ogni gara tiene il sistema della sua
    serata; passando a sommare i totali le gare ricevono il sistema del
@@ -68,6 +69,43 @@ fra tipo di campionato e sistema di classifica.
    tabellone ferma il cambio.
 6. **Playoff**: in un campionato a piazzamenti la finale si somma col suo
    posto qualunque formato abbia (`_verifica_finale_sommabile`).
+
+## Emendamento 2026-10-11: a pari punti decide una catena sui piazzamenti
+
+Deciso dall'utente lo stesso giorno. Il punto 4 lasciava a vittorie e
+differenza sommate il compito di sciogliere i pari punti: proprio i numeri
+che la taglia dei gironi falsa (vedi «Rischi»). Ora:
+
+1. **La catena della classifica generale vale anche a piazzamenti**
+   (`Campionato.catena_generale`, ADR-078), tabelloni compresi. Il motore è
+   lo stesso: il principale sono i punti dei posti
+   (`criterio_principale(POSITION, Livello.CAMPIONATO)` = punti).
+2. **Criteri ammessi** (`ordinamento.criteri_ammessi`): migliori piazzamenti
+   (`Criterio.PIAZZAMENTI`, nuovo), posizione dopo la gara precedente,
+   scontri diretti, sorteggio. Vittorie, triangoli, differenza e SSR no.
+   **Default**: migliori piazzamenti → sorteggio. L'ordine è sempre completo,
+   come in ogni classifica generale: i pari non condividono più il posto.
+3. **Migliori piazzamenti** («countback»): si confrontano quanti primi posti,
+   poi quanti secondi, e così via. Il posto è `GaraClassification.position`,
+   quindi due secondi a pari merito (1, 2, 2, 4) contano entrambi come un
+   secondo, coerente coi punti già assegnati. Ogni piazzamento pesa come i
+   punti (ADR-053): la gara a peso zero non conta, a peso 2 conta due volte.
+   Il vettore lo costruisce `_aggregate_player_totals` (chiave
+   `piazzamenti`), il motore lo confronta lessicograficamente
+   (`Concorrente.piazzamenti`).
+4. **Il piazzamento nell'ultima gara giocata da entrambi** non è un criterio
+   nuovo: la «posizione dopo la gara precedente», già nel motore, risponde
+   alla stessa domanda (chi andava meglio fino a ieri).
+5. **Interfaccia**: l'editor della catena generale compare anche a
+   piazzamenti (wizard, modifica del campionato) e segue il selettore del
+   sistema; la frase «A pari punti conta chi ha più primi posti, poi più
+   secondi e così via, poi il sorteggio.» va nel regolamento e nella pagina
+   pubblica. Cambiando sistema, la catena di default segue
+   (`catene.adegua_al_sistema`); una catena salvata che era il default di un
+   sistema che somma i totali vale come non scelta (`catene.catena_generale`).
+6. **Dati esistenti**: in produzione nessun campionato è a piazzamenti (le
+   quattro classifiche pubbliche al 2026-10-11 sono a vittorie o a
+   triangoli), quindi nessuna classifica già vista cambia. Nessuna migration.
 
 ## Alternative Considerate
 
@@ -127,7 +165,8 @@ gare e aggiungere un booleano per come entrano nel campionato.
 
 - Nella classifica generale a piazzamenti il secondo e il terzo criterio
   (vittorie e differenza sommate) risentono ancora della taglia dei gironi:
-  servono solo a parità di punti.
+  servono solo a parità di punti. *Risolto dall'emendamento del
+  2026-10-11: a pari punti decide una catena sui piazzamenti.*
 
 ## Note Implementative
 

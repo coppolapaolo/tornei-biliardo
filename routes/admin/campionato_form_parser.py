@@ -111,24 +111,33 @@ class CampionatoFormParser:
         return minuti
 
     @staticmethod
-    def parse_catene(form: MultiDict, sistema: Any) -> Dict[str, str]:
+    def parse_catene(
+        form: MultiDict, sistema: Any, sistema_generale: Any = None
+    ) -> Dict[str, str]:
         """Le tre catene degli spareggi del campionato, se il modulo le manda.
 
-        Le due proposte alle gare (turno e gara) e quella della classifica
-        generale (ADR-078). Un campo assente non si tocca.
+        Le due proposte alle gare (turno e gara), lette col sistema delle
+        gare ``sistema``, e quella della classifica generale (ADR-078), letta
+        col sistema del campionato ``sistema_generale`` — a piazzamenti
+        POSITION, che ha criteri suoi (ADR-080). Un campo assente non si tocca.
         """
         from models.classification.catene import testo_dal_modulo
         from models.classification.ordinamento import Livello
         from models.status_enum import ClassificationSystem
 
         risolto = ClassificationSystem.resolve(sistema)
+        generale = ClassificationSystem.resolve(sistema_generale or sistema)
         campi = (
             ("default_catena_turno", Livello.TURNO),
             ("default_catena_gara", Livello.GARA),
             ("catena_generale", Livello.CAMPIONATO),
         )
         return {
-            campo: testo_dal_modulo(form.get(campo, ""), livello, risolto)
+            campo: testo_dal_modulo(
+                form.get(campo, ""),
+                livello,
+                generale if livello is Livello.CAMPIONATO else risolto,
+            )
             for campo, livello in campi
             if campo in form
         }

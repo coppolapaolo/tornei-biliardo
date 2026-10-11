@@ -41,9 +41,20 @@ _SISTEMI = (
 )
 
 
-def _sistema(valore: Any) -> ClassificationSystem:
+def _sistemi(livello: Livello) -> tuple:
+    """I sistemi che un editor di quel livello conosce.
+
+    La classifica generale anche POSITION: il campionato a piazzamenti ha la
+    sua catena (ADR-080, emendamento del 2026-10-11).
+    """
+    if livello is Livello.CAMPIONATO:
+        return _SISTEMI + (ClassificationSystem.POSITION,)
+    return _SISTEMI
+
+
+def _sistema(valore: Any, livello: Livello = Livello.GARA) -> ClassificationSystem:
     sistema = ClassificationSystem.resolve(valore)
-    return sistema if sistema in _SISTEMI else ClassificationSystem.WINS
+    return sistema if sistema in _sistemi(livello) else ClassificationSystem.WINS
 
 
 def _descrizioni(livello: Livello) -> Dict[str, str]:
@@ -53,6 +64,9 @@ def _descrizioni(livello: Livello) -> Dict[str, str]:
         Criterio.SCONTRI_DIRETTI.value: _(
             "fra i pari sta davanti chi vince lo scontro; chi si batte in giro "
             "resta pari"
+        ),
+        Criterio.PIAZZAMENTI.value: _(
+            "più primi posti nelle gare, poi più secondi, e così via"
         ),
         Criterio.DIFFERENZA_RACK.value: _("triangoli vinti meno triangoli persi"),
         Criterio.RACK_VINTI.value: _("triangoli vinti in tutto"),
@@ -75,7 +89,8 @@ def config_editor(
 ) -> Dict[str, Any]:
     """La configurazione di un editor: livello, voci di partenza, parole."""
     liv = Livello(livello)
-    sis = _sistema(sistema)
+    sis = _sistema(sistema, liv)
+    sistemi = _sistemi(liv)
     if catena is None:
         catena = catena_di_default(liv, sis)
     voci = normalizza_catena(catena, liv, sis)
@@ -94,19 +109,21 @@ def config_editor(
         "ssrDefault": SSR_FINO_AL_DEFAULT,
         "ssrMassimo": SSR_FINO_AL_MASSIMO,
         "ammessi": {
-            s.value: [c.value for c in criteri_ammessi(liv, s)] for s in _SISTEMI
+            s.value: [c.value for c in criteri_ammessi(liv, s)] for s in sistemi
         },
-        "principale": {s.value: str(NOMI[criterio_principale(s)]) for s in _SISTEMI},
+        "principale": {
+            s.value: str(NOMI[criterio_principale(s, liv)]) for s in sistemi
+        },
         "default": {
             s.value: serializza_catena(
                 normalizza_catena(catena_di_default(liv, s), liv, s)
             )
-            for s in _SISTEMI
+            for s in sistemi
         },
         "nomi": {c.value: str(nome) for c, nome in NOMI.items()},
         "descrizioni": _descrizioni(liv),
         "frasi": frasi,
-        "aPari": {s.value: _a_pari(s) for s in _SISTEMI},
+        "aPari": {s.value: _a_pari(s) for s in sistemi},
         "testi": {
             # I segnaposto `{…}` li riempie il JavaScript.
             "conta": _(
@@ -168,8 +185,17 @@ def editor_del_campionato(
     if campionato is None:
         return config_editor(livello, None, sistema)
     if liv is Livello.CAMPIONATO:
-        sistema = sistema or getattr(campionato, "default_classification_system", None)
-        catena = catene.catena_generale(campionato, _sistema(sistema))
+        if not sistema:
+            # Un campionato a tabellone è a piazzamenti anche col sistema
+            # scritto diverso (ADR-080).
+            from models.campionato.piazzamenti import e_a_piazzamenti
+
+            sistema = (
+                ClassificationSystem.POSITION.value
+                if e_a_piazzamenti(campionato)
+                else getattr(campionato, "default_classification_system", None)
+            )
+        catena = catene.catena_generale(campionato, _sistema(sistema, liv))
     else:
         # Le catene proposte alle gare seguono il sistema delle gare: in un
         # campionato a piazzamenti quello delle serate (ADR-080).

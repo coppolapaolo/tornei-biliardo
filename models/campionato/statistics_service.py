@@ -330,13 +330,27 @@ class TournamentStatisticsService:
                         # Anche i punti seguono il peso della gara (ADR-053).
                         player_totals[user_id][
                             "total_points"
-                        ] += gara.classification_weight * points_for_position(
-                            posizione, tabella
-                        )
+                        ] += peso * points_for_position(posizione, tabella)
+                        # I piazzamenti, per «più primi posti, poi più
+                        # secondi…» a pari punti (2026-10-11). Il posto è
+                        # quello della classifica della gara: due secondi a
+                        # pari merito sono due secondi. Pesano come i punti,
+                        # quindi la gara a peso zero non conta.
+                        if posizione and peso:
+                            conteggi = player_totals[user_id].setdefault(
+                                "piazzamenti", {}
+                            )
+                            conteggi[posizione] = conteggi.get(posizione, 0) + peso
 
             if progressivi is not None:
                 progressivi.append(
-                    {uid: dict(dati) for uid, dati in player_totals.items()}
+                    {
+                        uid: {
+                            **dati,
+                            "piazzamenti": dict(dati.get("piazzamenti", {})),
+                        }
+                        for uid, dati in player_totals.items()
+                    }
                 )
 
         return player_totals
@@ -386,8 +400,11 @@ class TournamentStatisticsService:
         la gara precedente → sorteggio». L'ordine è sempre completo: da questa
         posizione discendono gli inviti ai playoff.
 
-        A piazzamenti (POSITION) il pari merito è l'esito, non un'ambiguità
-        (ADR-040), e la catena non si usa.
+        A piazzamenti (POSITION) il principale sono i punti dei posti, e la
+        catena ha i suoi criteri: di default «più primi posti, poi più
+        secondi… → sorteggio» (ADR-080, emendamento del 2026-10-11). Fino a
+        quella data decidevano vittorie e differenza sommate, e chi restava
+        pari condivideva il posto.
 
         Args:
             player_totals: Dizionario user_id -> dati aggregati
@@ -399,12 +416,10 @@ class TournamentStatisticsService:
         Returns:
             Lista di tuple (posizione, user_id) ordinate
         """
-        if classification_system == ClassificationSystem.POSITION:
-            return self._ordine_a_piazzamenti(player_totals)
-
         from models.classification.catene import catena_generale
         from models.classification.ordinamento import (
             Concorrente,
+            Livello,
             chiave_di_sorteggio,
             criterio_principale,
             ordina,
@@ -413,6 +428,17 @@ class TournamentStatisticsService:
 
         previous_positions = previous_positions or {}
         seme = seme_del_campionato(campionato)
+        # I piazzamenti come vettore «quanti 1º, quanti 2º, …», della stessa
+        # lunghezza per tutti: il confronto è lessicografico.
+        ultimo_posto = max(
+            (p for d in player_totals.values() for p in d.get("piazzamenti", {})),
+            default=0,
+        )
+
+        def piazzamenti(dati: Dict[str, Any]) -> tuple:
+            conteggi = dati.get("piazzamenti", {})
+            return tuple(conteggi.get(p, 0) for p in range(1, ultimo_posto + 1))
+
         concorrenti = [
             Concorrente(
                 player_id=user_id,
@@ -420,6 +446,7 @@ class TournamentStatisticsService:
                 rack_vinti=dati["total_racks_won"],
                 differenza_rack=dati["total_rack_difference"],
                 punti=dati.get("total_points", 0),
+                piazzamenti=piazzamenti(dati),
                 ssr=dati["total_spot_shot_wins"],
                 posizione_precedente=previous_positions.get(user_id),
                 sorteggio=chiave_di_sorteggio(seme, user_id),
@@ -428,7 +455,7 @@ class TournamentStatisticsService:
         ]
         fasce = ordina(
             concorrenti,
-            criterio_principale(classification_system),
+            criterio_principale(classification_system, Livello.CAMPIONATO),
             catena_generale(campionato, classification_system),
             scontri=scontri,
             completa=True,
@@ -438,33 +465,6 @@ class TournamentStatisticsService:
             for fascia in fasce
             for giocatore in fascia.giocatori
         ]
-
-    @staticmethod
-    def _ordine_a_piazzamenti(player_totals: Dict[int, Dict[str, Any]]) -> List[tuple]:
-        """La classifica generale a piazzamenti: chi ha la stessa chiave è pari.
-
-        A piazzamenti il pari merito è l'esito, non un'ambiguità (ADR-040):
-        chi ha la stessa chiave condivide la posizione, e il successivo salta
-        quelle occupate (1, 2, 2, 4).
-        """
-
-        def chiave(dati: Dict[str, Any]) -> tuple:
-            return (
-                -dati.get("total_points", 0),
-                -dati["total_matches_won"],
-                -dati["total_rack_difference"],
-            )
-
-        sorted_players = sorted(player_totals.items(), key=lambda x: chiave(x[1]))
-        ranking: List[tuple] = []
-        precedente = None
-        posizione = 0
-        for indice, (user_id, dati) in enumerate(sorted_players, 1):
-            if chiave(dati) != precedente:
-                posizione = indice
-                precedente = chiave(dati)
-            ranking.append((posizione, user_id))
-        return ranking
 
     @read_only(domain="campionato")
     def calculate_general_classification(self, campionato_id: int) -> List[tuple]:
@@ -540,9 +540,7 @@ class TournamentStatisticsService:
         )
 
         scontri_per_gara: Dict[int, List[Any]] = {}
-        if system != ClassificationSystem.POSITION and usa_scontri(
-            catena_generale(campionato, system)
-        ):
+        if usa_scontri(catena_generale(campionato, system)):
             scontri_per_gara = {
                 g.id: scontri_delle_gare([g.id])
                 for g in completed_garas

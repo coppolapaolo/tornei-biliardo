@@ -568,3 +568,294 @@ class TestLaFinaleDeiPlayoff:
         with app.test_request_context():
             with pytest.raises(ValidationError):
                 PlayoffService._verifica_finale_sommabile(_Config(), "POSITION")
+
+
+# ── A pari punti decide la catena (decisione del 2026-10-11) ───────────────
+
+
+@pytest.mark.unit
+class TestLaCatenaDellaClassificaGeneraleAPiazzamenti:
+    """A pari punti non decidono più vittorie e differenza sommate.
+
+    Con gironi di taglia diversa chi sta nel girone più numeroso gioca una
+    partita in più: le vittorie sommate lo premierebbero. A pari punti decide
+    una catena configurabile, con criteri sui piazzamenti (ADR-080,
+    emendamento del 2026-10-11).
+    """
+
+    def test_criteri_ammessi_solo_sui_piazzamenti(self):
+        from models.classification.ordinamento import (
+            Criterio,
+            Livello,
+            criteri_ammessi,
+        )
+        from models.status_enum import ClassificationSystem
+
+        ammessi = criteri_ammessi(Livello.CAMPIONATO, ClassificationSystem.POSITION)
+        assert ammessi == (
+            Criterio.SCONTRI_DIRETTI,
+            Criterio.PIAZZAMENTI,
+            Criterio.POSIZIONE_PRECEDENTE,
+            Criterio.SORTEGGIO,
+        )
+        # Nei campionati che sommano i totali i piazzamenti non ci sono.
+        for sistema in ("WINS", "RACK", "POINTS"):
+            assert Criterio.PIAZZAMENTI not in criteri_ammessi(
+                Livello.CAMPIONATO, ClassificationSystem(sistema)
+            )
+
+    def test_la_catena_di_default(self):
+        from models.classification.ordinamento import (
+            Criterio,
+            Livello,
+            catena_di_default,
+            normalizza_catena,
+        )
+        from models.status_enum import ClassificationSystem
+
+        pos = ClassificationSystem.POSITION
+        catena = normalizza_catena(
+            catena_di_default(Livello.CAMPIONATO, pos), Livello.CAMPIONATO, pos
+        )
+        assert [v.criterio for v in catena] == [
+            Criterio.PIAZZAMENTI,
+            Criterio.SORTEGGIO,
+        ]
+
+    def test_vittorie_e_differenza_dal_modulo_si_tolgono(self):
+        from models.classification.catene import testo_dal_modulo
+        from models.classification.ordinamento import Livello
+        from models.status_enum import ClassificationSystem
+
+        testo = testo_dal_modulo(
+            "vittorie,differenza_rack,ssr,scontri_diretti,piazzamenti",
+            Livello.CAMPIONATO,
+            ClassificationSystem.POSITION,
+        )
+        assert testo == '["scontri_diretti", "piazzamenti", "sorteggio"]'
+
+    def test_la_frase_del_regolamento(self, app):
+        from models.classification.ordinamento import (
+            Criterio,
+            Livello,
+            Voce,
+            descrivi_catena,
+        )
+        from models.status_enum import ClassificationSystem
+
+        with app.test_request_context():
+            frase = descrivi_catena(
+                (Voce(Criterio.PIAZZAMENTI), Voce(Criterio.SORTEGGIO)),
+                ClassificationSystem.POSITION,
+                Livello.CAMPIONATO,
+            )
+        assert frase == (
+            "A pari punti conta chi ha più primi posti, poi più secondi e "
+            "così via, poi il sorteggio."
+        )
+
+    def test_cambiando_sistema_la_catena_di_default_segue(self):
+        """Da vittorie a piazzamenti: la catena mai scelta diventa quella nuova."""
+        from models.classification.catene import adegua_al_sistema
+        from models.classification.ordinamento import (
+            Livello,
+            catena_di_default,
+            testo_della_catena,
+        )
+        from models.status_enum import ClassificationSystem as CS
+
+        wins = testo_della_catena(catena_di_default(Livello.CAMPIONATO, CS.WINS))
+        dopo = adegua_al_sistema(wins, Livello.CAMPIONATO, CS.WINS, CS.POSITION)
+        assert dopo == '["piazzamenti", "sorteggio"]'
+        indietro = adegua_al_sistema(dopo, Livello.CAMPIONATO, CS.POSITION, CS.WINS)
+        assert indietro == wins
+
+    def test_l_editor_conosce_il_sistema_a_piazzamenti(self, app):
+        from models.classification.editor_catena import config_editor
+
+        with app.test_request_context():
+            cfg = config_editor("campionato", None, "POSITION")
+        assert cfg["sistema"] == "POSITION"
+        assert cfg["voci"] == ["piazzamenti", "sorteggio"]
+        assert "vittorie" not in cfg["ammessi"]["POSITION"]
+        assert cfg["principale"]["POSITION"] == "Punti"
+        assert cfg["aPari"]["POSITION"] == "A pari punti"
+
+    def test_l_editor_delle_gare_non_offre_i_piazzamenti(self, app):
+        from models.classification.editor_catena import config_editor
+
+        with app.test_request_context():
+            cfg = config_editor("gara", None, "POSITION")
+        assert cfg["sistema"] == "WINS"
+        assert "POSITION" not in cfg["ammessi"]
+
+
+@pytest.mark.unit
+class TestIlCountbackInClassificaGenerale:
+    def test_piu_primi_posti_batte_piu_vittorie(self, db_session):
+        """A: 1º e 5º (25 + 8 = 33); B: 2º e 3º (18 + 15 = 33).
+
+        B ha vinto più partite di A, ma A ha un primo posto: davanti A.
+        """
+        camp = _campionato(db_session)
+        a, b, c, d, e = (_utente(db_session, n) for n in "abcde")
+        # Gara 1: A primo con una vittoria, B secondo con due.
+        _gara_conclusa(
+            db_session,
+            camp,
+            1,
+            [(a, c), (b, d), (b, e)],
+            [(a, 1), (b, 2), (c, 3), (d, 4), (e, 5)],
+            matchmaking_strategy="amalfi",
+            classification_system="WINS",
+        )
+        # Gara 2: B terzo con due vittorie, A quinto senza vittorie.
+        _gara_conclusa(
+            db_session,
+            camp,
+            2,
+            [(c, a), (d, e), (b, e), (b, c)],
+            [(c, 1), (d, 2), (b, 3), (e, 4), (a, 5)],
+            matchmaking_strategy="amalfi",
+            classification_system="WINS",
+        )
+        punti = _punti(camp)
+        assert punti[a.id][1] == punti[b.id][1] == 33
+        assert punti[a.id][0] < punti[b.id][0]
+
+    def test_due_secondi_a_pari_merito_contano_entrambi_come_secondi(self, db_session):
+        """Tabella 10, 6, 6: il 2º e il 3º valgono uguale.
+
+        Gara 1: A 1º, B e C 2º a pari merito (1, 2, 2, 4). Gara 2: A 1º,
+        D 2º, F 3º. C e F hanno 6 punti; C ha un secondo posto, F un terzo:
+        il secondo a pari merito conta come un secondo, e C sta davanti.
+        """
+        camp = _campionato(db_session, position_points='{"1": 10, "2": 6, "3": 6}')
+        a, b, c, d, f = (_utente(db_session, n) for n in "abcdf")
+        _gara_conclusa(
+            db_session,
+            camp,
+            1,
+            [(a, d), (b, c)],
+            [(a, 1), (b, 2), (c, 2), (d, 4)],
+            matchmaking_strategy="round_robin",
+            classification_system="WINS",
+            max_groups=2,
+        )
+        _gara_conclusa(
+            db_session,
+            camp,
+            2,
+            [(a, d), (f, b)],
+            [(a, 1), (d, 2), (f, 3)],
+            matchmaking_strategy="amalfi",
+            classification_system="WINS",
+        )
+        punti = _punti(camp)
+        assert punti[c.id][1] == punti[f.id][1] == 6
+        assert punti[c.id][0] < punti[f.id][0]
+
+    def test_stessi_piazzamenti_decide_il_sorteggio_e_l_ordine_e_completo(
+        self, db_session
+    ):
+        """Prima chi aveva gli stessi punti condivideva il posto; ora no."""
+        camp = _campionato(db_session)
+        a, b, c, d = (_utente(db_session, n) for n in "abcd")
+        _gara_conclusa(
+            db_session,
+            camp,
+            1,
+            [(a, b), (c, d)],
+            [(a, 1), (c, 1), (b, 3), (d, 3)],
+            matchmaking_strategy="round_robin",
+            classification_system="WINS",
+            max_groups=2,
+        )
+        posizioni = sorted(pos for pos, _ in _punti(camp).values())
+        assert posizioni == [1, 2, 3, 4]
+
+    def test_la_gara_a_peso_zero_non_conta_nei_piazzamenti(self, db_session):
+        """A: 1º e 5º (33); B: 2º e 3º (33); poi B primo in una gara a peso zero.
+
+        Contando quella gara (A secondo) i due avrebbero un primo e un secondo
+        a testa, e il terzo posto di B lo metterebbe davanti; ma pesa zero,
+        come per i punti: A ha un primo, B nessuno, A davanti.
+        """
+        camp = _campionato(db_session)
+        a, b, c, d = (_utente(db_session, n) for n in "abcd")
+        _gara_conclusa(
+            db_session,
+            camp,
+            1,
+            [(a, c), (b, d)],
+            [(a, 1), (b, 2), (c, 3), (d, 4)],
+            matchmaking_strategy="amalfi",
+            classification_system="WINS",
+        )
+        _gara_conclusa(
+            db_session,
+            camp,
+            2,
+            [(c, a), (b, d)],
+            [(c, 1), (d, 2), (b, 3), (a, 5)],
+            matchmaking_strategy="amalfi",
+            classification_system="WINS",
+        )
+        _gara_conclusa(
+            db_session,
+            camp,
+            3,
+            [(b, a)],
+            [(b, 1), (a, 2)],
+            matchmaking_strategy="amalfi",
+            classification_system="WINS",
+            weight=0,
+        )
+        punti = _punti(camp)
+        assert punti[a.id][1] == punti[b.id][1] == 33
+        assert punti[a.id][0] < punti[b.id][0]
+
+    def test_lo_scontro_diretto_si_puo_scegliere(self, db_session):
+        """Catena «scontri diretti → piazzamenti»: B ha battuto A, B davanti."""
+        camp = _campionato(
+            db_session, catena_generale='["scontri_diretti", "piazzamenti"]'
+        )
+        a, b, c, d = (_utente(db_session, n) for n in "abcd")
+        _gara_conclusa(
+            db_session,
+            camp,
+            1,
+            [(a, c), (b, d)],
+            [(a, 1), (b, 2), (c, 3), (d, 4)],
+            matchmaking_strategy="amalfi",
+            classification_system="WINS",
+        )
+        _gara_conclusa(
+            db_session,
+            camp,
+            2,
+            [(b, a), (c, d)],
+            [(c, 1), (d, 2), (b, 3), (a, 5)],
+            matchmaking_strategy="amalfi",
+            classification_system="WINS",
+        )
+        punti = _punti(camp)
+        assert punti[a.id][1] == punti[b.id][1] == 33
+        assert punti[b.id][0] < punti[a.id][0]
+
+    def test_la_frase_del_regolamento_del_campionato(self, db_session, app):
+        from models.storia.regolamento import frase_della_catena
+
+        camp = _campionato(db_session)
+        with app.test_request_context():
+            frase = frase_della_catena(camp, "catena_generale")
+        assert frase is not None and frase.startswith("A pari punti conta chi ha")
+
+    def test_anche_un_vecchio_campionato_a_tabellone(self, db_session, app):
+        """Sistema scritto WINS, tipo a tabellone: è a piazzamenti."""
+        from models.storia.regolamento import frase_della_catena
+
+        camp = _campionato(db_session, sistema="WINS", tipo="direct_elimination")
+        with app.test_request_context():
+            frase = frase_della_catena(camp, "catena_generale")
+        assert frase is not None and frase.startswith("A pari punti")
