@@ -198,6 +198,30 @@ blocks:
       gironi; a gara conclusa resta la classifica finale della serata.
 
   - type: heading
+    id: finali_piazzamento
+    title: "Dopo i gironi: le finali per piazzamento"
+
+  - type: text
+    text: >-
+      Con **due gironi** la gara può finire con le **finali per
+      piazzamento**: il 1º del girone A contro il 1º del girone B per il
+      primo posto, il 2º contro il 2º per il terzo, e così via. Giocano
+      tutti, in un turno solo. Nel modulo la voce **Fase finale → Finali per
+      piazzamento** compare solo con **Gironi: fino a 2**; non si scelgono
+      qualificati né finalina, perché ogni posto ha la sua finale. Limite di
+      tempo e distanza della fase finale valgono anche qui, e **la finale**
+      con le sue regole è la partita per il 1°/2° posto.
+
+  - type: list
+    title: "Le regole"
+    items:
+      - "Il turno delle finali si conta già all'avvio: due gironi da 4 fanno 3 turni di girone più 1. Il foglio di avvio lo scrive su ogni voce."
+      - "Se all'avvio scegli **un girone solo**, le finali **non si giocano**: la gara finisce col girone, e il foglio di avvio lo dice."
+      - "Con gironi di taglia diversa (5 e 4) l'ultimo del girone più numeroso non ha avversario: è 9º direttamente."
+      - "Il pareggio non esiste: si gioca **a chi arriva prima**, e «Esattamente N triangoli» non si può scegliere."
+      - "Finiti i gironi il comando del direttore diventa **Avvia le finali**. Ogni partita ha il suo nome — «Finale 1°/2° posto», «Finale 3°/4° posto» — sulla tessera di chi la gioca e sullo schermo in sala."
+
+  - type: heading
     id: eliminazione
     title: "Eliminazione diretta"
 

@@ -296,6 +296,8 @@ class TournamentService(TournamentStatisticsService):
         for field, value in kwargs.items():
             if hasattr(campionato, field):
                 setattr(campionato, field, value)
+        if {"default_max_groups", "default_final_phase_mode"} & set(kwargs):
+            self._verifica_piazzamento_proposto(campionato)
 
         if cambia_sistema or sistema_delle_gare(campionato) != gare_prima:
             self._adegua_catene_del_campionato(campionato, gare_prima, prima, kwargs)
@@ -416,6 +418,34 @@ class TournamentService(TournamentStatisticsService):
             and tetto_di_gironi(campionato.default_max_groups) > 1
         ):
             raise ValidationError(cls._messaggio_girone_unico())
+        cls._verifica_piazzamento_proposto(campionato)
+
+    @staticmethod
+    def _verifica_piazzamento_proposto(campionato: Campionato) -> None:
+        """Le finali per piazzamento si propongono solo con «Gironi: fino a 2».
+
+        Con più gironi la formula non è definita (ADR-081, emendamento del
+        2026-10-12); col girone unico la proposta non arriva alle gare e non
+        si rifiuta, come il tabellone.
+        """
+        from flask_babel import gettext as _
+
+        from models.matchmaking.fase_finale import FaseFinale, verifica_piazzamento
+        from models.matchmaking.gironi import tetto_di_gironi
+
+        tetto = tetto_di_gironi(campionato.default_max_groups)
+        if (
+            FaseFinale.resolve(campionato.default_final_phase_mode)
+            is FaseFinale.PIAZZAMENTO
+            and tetto > 1
+            and verifica_piazzamento(tetto) is not None
+        ):
+            raise ValidationError(
+                _(
+                    "Le finali per piazzamento si giocano fra due gironi: "
+                    "scegli «Gironi: fino a 2», oppure un'altra fase finale."
+                )
+            )
 
     @classmethod
     def _gironi_alla_somma(cls, campionato: Campionato, kwargs: Dict) -> None:

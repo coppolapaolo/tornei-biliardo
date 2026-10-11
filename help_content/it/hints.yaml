@@ -189,7 +189,7 @@ hints:
 
   - id: gara.fase_finale
     label: "Fase finale"
-    short: "Solo con più gironi: «Tabellone» manda i primi di ogni girone a un tabellone a eliminazione diretta (1ºA–2ºB e 1ºB–2ºA). «Nessuna» chiude la gara coi gironi."
+    short: "Solo con più gironi: «Tabellone» manda i primi di ogni girone a un tabellone (1ºA–2ºB, 1ºB–2ºA). Con due gironi, «Finali per piazzamento»: 1º contro 1º, 2º contro 2º…"
     anchor: gara-fase-finale
     screens: [admin.competition.create_gara_standalone, admin.campionato.wizard_step2, admin.campionato.campionato_detail, admin.competition.edit_gara, admin.campionato.edit_campionato, admin.competition.gara_detail]
     page: abbinamenti

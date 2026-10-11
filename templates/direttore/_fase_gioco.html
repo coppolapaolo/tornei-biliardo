@@ -21,6 +21,9 @@
 {% set _quale = tabellone_della_gara if tabellone_della_gara is defined else none %}
 {% set _nei_gironi = _quale is not none and _quale.nei_gironi %}
 {% set _dopo_i_gironi = _tabellone and _quale is not none and _quale.dopo_i_gironi %}
+{# Le finali per piazzamento (ADR-081, emendamento del 2026-10-12): non un
+   tabellone, solo il nome del loro turno. #}
+{% set _finali = turno_finali is defined and turno_finali %}
 {% import "components/_tabellone_macros.html" as t with context %}
 {# Gli esercizi fra i turni: fra un turno e l'altro quelli da registrare
    stanno sopra le partite, mentre si gioca sotto (`_esercizi_turni.html`). #}
@@ -107,7 +110,7 @@
    fra i turni: il comando si annuncia lo stesso, spento, con cosa manca. #}
 <section class="c7-card c7-card--accent c7-fascia">
   <div class="c7-fascia__testo">
-    {% set _nomi_prossimo = nomi_turni.get(comando.turno, []) if (_tabellone or _nei_gironi) else [] %}
+    {% set _nomi_prossimo = nomi_turni.get(comando.turno, []) if (_tabellone or _nei_gironi or _finali) else [] %}
     {% set _nomi_chiuso = nomi_turni.get(gara.current_round, []) if _tabellone else [] %}
     <div class="c7-kicker">{% if _nomi_chiuso %}{{ t.nome_turno(_nomi_chiuso) }} · {% endif %}{{ _('Turno %(n)s di %(tot)s · concluso', n=gara.current_round, tot=gara.rounds_count) }}</div>
     {% if comando.bloccato %}
@@ -121,6 +124,8 @@
     <div class="c7-fascia__corpo">
       {% if _nei_gironi and _nomi_prossimo %}
       {{ ngettext('I gironi sono finiti. All’avvio si sorteggia il tabellone fra il primo di ogni girone.', 'I gironi sono finiti. All’avvio si sorteggia il tabellone fra i primi %(num)d di ogni girone.', gara.effective_qualifiers_per_group) }}
+      {% elif _finali and _nomi_prossimo %}
+      {{ _('I gironi sono finiti. All’avvio nascono le finali: il 1° di un girone contro il 1° dell’altro per il primo posto, il 2° contro il 2° per il terzo, e così via.') }}
       {% elif _nomi_prossimo|length == 1 and _nomi_prossimo[0].chiave == 'bella' %}
       {{ _('La finale l’ha vinta chi arrivava dai ripescati. Nel doppio KO si esce alla seconda sconfitta, quindi i due si rigiocano la partita da pari.') }}
       {% elif _tabellone %}
@@ -128,7 +133,7 @@
       {% else %}
       {{ _('Tutte le partite del turno sono chiuse.') }}
       {% endif %}
-      {% if _tabellone or (_nei_gironi and _nomi_prossimo) %}
+      {% if _tabellone or ((_nei_gironi or _finali) and _nomi_prossimo) %}
       {% elif gara.creates_all_rounds_at_startup() %}{{ _('Gli abbinamenti del turno %(n)s sono già fissati dal sorteggio iniziale.', n=comando.turno) }}
       {% else %}{{ _('Gli abbinamenti del turno %(n)s si calcolano all’avvio, sulla classifica di adesso.', n=comando.turno) }}{% endif %}
     </div>
@@ -146,7 +151,7 @@
 <section class="c7-card c7-card--accent c7-console">
   <div class="c7-console__row">
     <div class="c7-console__cella">
-      <div class="c7-kicker">{% if _tabellone and nomi_turni.get(conteggi.turno) %}{{ t.nome_turno(nomi_turni.get(conteggi.turno)) }} · {% endif %}{{ _('Turno %(n)s di %(tot)s', n=conteggi.turno, tot=conteggi.turni_totali) }}</div>
+      <div class="c7-kicker">{% if (_tabellone or _finali) and nomi_turni.get(conteggi.turno) %}{{ t.nome_turno(nomi_turni.get(conteggi.turno)) }} · {% endif %}{{ _('Turno %(n)s di %(tot)s', n=conteggi.turno, tot=conteggi.turni_totali) }}</div>
       <div class="c7-console__valore">
         <span class="c7-num">{{ conteggi.chiuse }}/{{ conteggi.totali }}</span>
         <span class="c7-console__sotto">{{ _('partite chiuse') }}</span>

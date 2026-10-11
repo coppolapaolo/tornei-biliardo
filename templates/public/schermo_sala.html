@@ -46,7 +46,7 @@
       </div>
       <div class="c7-sala__turno">
         {% if _fase == 'gioco' and schermo.turni %}
-        <span class="c7-kicker">{{ _('Turno') }}</span>
+        <span class="c7-kicker">{% if schermo.nomi_turno %}{{ tb.nome_turno(schermo.nomi_turno) }} · {% endif %}{{ _('Turno') }}</span>
         <span class="c7-num c7-sala__turno-num">{{ schermo.turno }}<small>/{{ schermo.turni }}</small></span>
         <span class="c7-state c7-state--onaccent">{{ _('in corso') }}</span>
         {% elif _fase == 'tabellone' and schermo.turni %}

@@ -430,12 +430,16 @@ def _impostazioni(
             continue
         # La fase finale proposta (ADR-081): senza tabellone tacciono anche
         # qualificati, finalina e limite.
+        # Con le finali per piazzamento ci giocano tutti e ogni posto ha la
+        # sua finale: tacciono qualificati e finalina, le regole si dicono.
         if campo in _FASE_FINALE_PROPOSTA[1:]:
             from ..matchmaking.fase_finale import FaseFinale
 
-            if (
-                FaseFinale.resolve(getattr(oggetto, "default_final_phase_mode", None))
-                is not FaseFinale.TABELLONE
+            fase = FaseFinale.resolve(
+                getattr(oggetto, "default_final_phase_mode", None)
+            )
+            if fase is FaseFinale.NESSUNA or (
+                fase is FaseFinale.PIAZZAMENTO and campo in _FASE_FINALE_PROPOSTA[1:3]
             ):
                 continue
         if campo in _VUOTO_SI_DICE and valore == "":

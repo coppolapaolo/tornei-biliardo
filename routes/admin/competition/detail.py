@@ -399,8 +399,15 @@ def _vista_tabellone(gara: Gara, all_matches) -> dict:
     vale la classifica della gara, che ha in cima il tabellone. Mentre si
     giocano i gironi serve solo il nome del turno che sta per nascere:
     «Avvia le semifinali».
+
+    Le finali per piazzamento non sono un tabellone: hanno solo il nome del
+    loro turno («Finali per piazzamento», «Avvia le finali»), in
+    `turno_finali` e `nomi_turni`.
     """
-    from models.competition.tabellone_della_gara import tabellone_della_gara
+    from models.competition.tabellone_della_gara import (
+        nomi_del_turno_delle_finali,
+        tabellone_della_gara,
+    )
     from models.competition.tabellone_view import (
         bande_finali,
         costruisci_tabellone,
@@ -420,7 +427,13 @@ def _vista_tabellone(gara: Gara, all_matches) -> dict:
         "bande_finali": [],
         "righe_bande": [],
         "turni_giocati": max((m.round_number or 0 for m in all_matches), default=0),
+        "turno_finali": None,
     }
+    finali = nomi_del_turno_delle_finali(gara, all_matches)
+    if finali:
+        vista["nomi_turni"] = finali
+        vista["turno_finali"] = next(iter(finali))
+        return vista
     if quale.nei_gironi:
         vista["nomi_turni"] = _nomi_del_tabellone_da_sorteggiare(gara)
         return vista

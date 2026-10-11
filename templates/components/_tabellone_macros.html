@@ -10,6 +10,13 @@
    importa `with context`: le macro usano `_`, `ngettext` e
    `MatchmakingStrategy`. #}
 
+{# Il nome di una finale per piazzamento dalla sua coppia (da 1): «Finale
+   1°/2° posto» per la 1, «Finale 3°/4° posto» per la 2 (ADR-081,
+   emendamento «le finali per piazzamento»). #}
+{% macro finale_per_il_posto(coppia) -%}
+{{ _('Finale %(primo)s°/%(secondo)s° posto', primo=2 * coppia - 1, secondo=2 * coppia) }}
+{%- endmacro %}
+
 {# Il nome di un round o di una colonna: «Semifinali», «Recupero 2». #}
 {% macro nome_round(n) -%}
 {%- if n.chiave == 'finale' -%}{{ _('Finale') }}
@@ -22,6 +29,8 @@
 {%- elif n.chiave == 'recupero' -%}{{ _('Recupero %(num)s', num=n.numero) }}
 {%- elif n.chiave == 'vincenti' -%}{{ _('Turno %(num)s dei vincenti', num=n.numero) }}
 {%- elif n.chiave == 'gironi' -%}{{ _('Gironi, turno %(num)s', num=n.numero) }}
+{%- elif n.chiave == 'piazzamento' -%}{{ finale_per_il_posto(n.numero) }}
+{%- elif n.chiave == 'finali_piazzamento' -%}{{ _('Finali per piazzamento') }}
 {%- else -%}{{ _('Turno %(num)s', num=n.numero) }}
 {%- endif -%}
 {%- endmacro %}
@@ -41,6 +50,7 @@
 {%- elif n.chiave == 'bella' -%}{{ _('Bella') }}
 {%- elif n.chiave == 'recupero' -%}{{ _('Recupero %(num)s', num=n.numero) }}
 {%- elif n.chiave == 'vincenti' -%}{{ _('Turno %(num)s dei vincenti', num=n.numero) }}
+{%- elif n.chiave == 'piazzamento' -%}{{ finale_per_il_posto(n.numero) }}
 {%- else -%}{{ _('Turno %(num)s', num=turno) }}
 {%- endif -%}
 {%- endmacro %}
@@ -60,6 +70,7 @@
 {%- elif n.chiave == 'ottavi' -%}{{ _('Ottavi pronti') }}
 {%- elif n.chiave == 'sedicesimi' -%}{{ _('Sedicesimi pronti') }}
 {%- elif n.chiave == 'bella' -%}{{ _('Serve la bella') }}
+{%- elif n.chiave == 'finali_piazzamento' -%}{{ _('Finali pronte') }}
 {%- elif n.chiave == 'recupero' -%}{{ _('Recupero %(num)s pronto', num=n.numero) }}
 {%- else -%}{{ _('Il turno %(n)s è pronto', n=turno) }}
 {%- endif -%}
@@ -75,6 +86,7 @@
 {%- elif n.chiave == 'ottavi' -%}{{ _('Avvia gli ottavi') }}
 {%- elif n.chiave == 'sedicesimi' -%}{{ _('Avvia i sedicesimi') }}
 {%- elif n.chiave == 'bella' -%}{{ _('Avvia la bella') }}
+{%- elif n.chiave == 'finali_piazzamento' -%}{{ _('Avvia le finali') }}
 {%- elif n.chiave == 'recupero' -%}{{ _('Avvia il recupero %(num)s', num=n.numero) }}
 {%- else -%}{{ _('Avvia il turno %(n)s', n=turno) }}
 {%- endif -%}

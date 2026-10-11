@@ -3700,6 +3700,19 @@ class TestLeFinaliPerPiazzamento:
         assert verifica_piazzamento(2) is None
         assert verifica_piazzamento(3) is not None
 
+    def test_il_modulo_non_le_accetta_con_tre_gironi(self, app):
+        """> con «fino a 3» o più la formula non si sceglie (il modulo della
+        > gara e quello del campionato, 2026-10-12)."""
+        from routes.admin.competition.form_parser import leggi_la_fase_finale
+
+        modulo = {"final_phase_mode": "piazzamento"}
+        with app.test_request_context():
+            assert leggi_la_fase_finale(modulo, "", 2)["final_phase_mode"] == (
+                "piazzamento"
+            )
+            with pytest.raises(ValueError):
+                leggi_la_fase_finale(modulo, "", 3)
+
     def test_un_turno_solo(self):
         """> due gironi da 4 fanno 3 + 1 turni, 5 + 4 ne fanno 5 + 1."""
         from models.competition.gironi_service import Anteprima

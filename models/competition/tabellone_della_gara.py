@@ -178,6 +178,47 @@ def nomi_delle_partite(gara: Any, partite: Iterable[Any]) -> Dict[int, Any]:
     return nomi
 
 
+def turno_delle_finali(gara: Any, partite: Iterable[Any]) -> Optional[int]:
+    """Il turno di gara delle finali per piazzamento, o None se non si giocano.
+
+    Dalle partite, senza database: se le finali sono nate è il loro turno;
+    prima, con due gironi in campo, è l'ultimo turno della gara, perché
+    all'avvio i turni si fissano come quelli dei gironi più uno
+    (`GironiService._turni_della_fase_finale`). Con un girone solo le finali
+    non si giocano e la gara finisce col girone.
+    """
+    from models.matchmaking.bracket import BRACKET_PLACEMENT
+
+    if getattr(gara, "ha_finali_per_piazzamento", False) is not True:
+        return None
+    tutte = list(partite)
+    nate = [
+        m.round_number
+        for m in tutte
+        if getattr(m, "bracket_type", None) == BRACKET_PLACEMENT and m.round_number
+    ]
+    if nate:
+        return min(nate)
+    if _gironi_giocati(tutte) >= 2 and getattr(gara, "rounds_count", None):
+        return int(gara.rounds_count)
+    return None
+
+
+def nomi_del_turno_delle_finali(gara: Any, partite: Iterable[Any]) -> Dict[int, Any]:
+    """Turno di gara → ``[NomeRound("finali_piazzamento")]``, se si giocano.
+
+    Lo stesso dizionario di `Tabellone.nomi_turni`: le pagine del direttore lo
+    usano per la card del turno («Finali per piazzamento · turno 4») e per il
+    comando che lo avvia («Avvia le finali»).
+    """
+    from models.competition.tabellone_view import NomeRound
+
+    turno = turno_delle_finali(gara, partite)
+    if turno is None:
+        return {}
+    return {turno: [NomeRound("finali_piazzamento")]}
+
+
 def nomi_dei_nodi(albero: Any) -> Dict[int, Any]:
     """`nomi_delle_partite` per chi ha già l'albero (None: nessun nome)."""
     from models.competition.tabellone_view import nome_del_nodo
@@ -197,6 +238,8 @@ __all__ = [
     "TabelloneDellaGara",
     "albero_della_gara",
     "nomi_dei_nodi",
+    "nomi_del_turno_delle_finali",
     "nomi_delle_partite",
     "tabellone_della_gara",
+    "turno_delle_finali",
 ]
