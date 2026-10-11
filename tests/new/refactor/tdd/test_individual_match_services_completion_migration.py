@@ -258,9 +258,11 @@ class TestIndividualMatchServicesTransactionMigrationPhase2:
 
             yield individual_match, proposal
 
-            # Cleanup racks first due to foreign key constraints
-            for rack in individual_match.racks:
-                db.session.delete(rack)
+            # I triangoli se ne vanno con la partita: `racks` ha
+            # cascade="all, delete-orphan". Cancellarli anche a mano li faceva
+            # cancellare due volte — il caricamento pigro delle altre relazioni
+            # della partita svuota la sessione a metà — e la seconda DELETE,
+            # che non trova più la riga, è un SAWarning, cioè un errore.
             db.session.delete(individual_match)
             db.session.delete(proposal)
             db.session.commit()
